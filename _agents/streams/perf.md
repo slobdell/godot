@@ -335,6 +335,23 @@ Proof, builder0 light lane, one process, the HUD test then the army-cap file
 (`references/round26/perf/leak-army-cap-845dc7af/`): old+old **9 passed, 5 failed** (the orchestrator's five);
 old HUD + new army-cap 14/0; new HUD + old army-cap 14/0; new+new 14/0.
 
+### C25.6 squads past five on the laptop preset (orchestrator, URGENT, 2026-10-11): FIXED, `05a0f884`
+
+Orders' windowed showmatch (laptop preset) logged "Elements.form: 7 members is more than one squad ... refused (C19.1)"
+and three of 6: under the cap `SkirmishMode.capped` trimmed a faction army to 20 and folded it with
+`SquadConsolidation.for_player`, which packs squads past five (the player's side was folded first too), so those
+squads fought with no element: every laptop skirmish with a faction army since N6 (`94c26255`). Fix:
+`SkirmishMode.fielded` caps both sides alike under the ceiling (the role-keeping trim, then `_pack` into <= cap squads
+of <= 5, own family first, then role, every vehicle kept; a garage-shaped army keeps its first squads only when past
+the cap, so syndicate's 17 and condemned's 20 in five squads are no longer cut by a squad); at the ceiling the answer
+is unchanged. Tests: `test_native_army_cap` +4; `make native-cap-probe` (headless skirmish, `--render-preset=laptop`,
+four faction pairs, FAIL on any refused element). Proof, builder0 light lane (`references/round26/perf/cap-five-05a0f884/`):
+old code: probe FAIL, refused 2 in gangs v law and 2 in condemned v gangs (the new tests do not parse); new: 28/0
+(army_cap, every_unit_selectable, army_size), probe PASS, refused 0 in all four, 4 squads a side, 17-20 vehicles.
+**Not changed (for the lead to know):** at the desktop ceiling the PLAYER's faction army is still folded by
+`for_player` into squads past five (round 8's rule: five number keys); those are formed by the controls, not
+ElementCommander.
+
 ### Requests to other streams
 
 - **brains (through the orchestrator), 2026-10-11:** in `TankBrain._cover_spots`, test the toughness/shield early-out

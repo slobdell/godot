@@ -1,0 +1,95 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make test FILTER=test_native_army_cap|test_every_unit_selectable|test_army_size WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://game/ai/manoeuvre.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/native/test_native_mover_record.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_behind.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_nav_order_probe_seed.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_pace_cover_spots.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS  test_army_size::test_the_cap_is_one_constant_and_the_money_is_its_own
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+  PASS  test_army_size::test_the_game_catalog_offers_the_cap_and_two_thousand_credits
+  PASS  test_army_size::test_twenty_five_rat_rods_fill_the_cap_and_a_26th_is_refused
+  PASS  test_army_size::test_a_tank_army_still_doubles
+MEASURE r22_table at 2000 CR, cap 25: gang_scout 25, gang_tank 20, law_scout 25, law_tank 13, syn_scout 16, syn_tank 7, scout 25, tank 17
+  PASS  test_army_size::test_the_table_at_two_thousand
+  PASS  test_army_size::test_the_opponent_buys_two_thousand_under_the_cap
+  PASS  test_army_size::test_his_squads_reach_the_field_as_he_built_them
+  PASS  test_army_size::test_a_full_army_fits_its_share_code
+ARMY_LAYOUT_UNCHECKED team=0: 5 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable (no faction) seed 1: { "units": 5, "squads": 2, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 5 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable (no faction) seed 7: { "units": 5, "squads": 2, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 5 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable (no faction) seed 42: { "units": 5, "squads": 2, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 44 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable gangs seed 1: { "units": 44, "squads": 5, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 125 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable gangs seed 7: { "units": 40, "squads": 5, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 71 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable gangs seed 42: { "units": 41, "squads": 5, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable law seed 1: { "units": 24, "squads": 5, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable law seed 7: { "units": 24, "squads": 4, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable law seed 42: { "units": 24, "squads": 4, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable syndicate seed 1: { "units": 17, "squads": 4, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable syndicate seed 7: { "units": 17, "squads": 4, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable syndicate seed 42: { "units": 17, "squads": 4, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 36 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable condemned seed 1: { "units": 36, "squads": 5, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 42 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable condemned seed 7: { "units": 42, "squads": 5, "squadless": [], "ungrouped": [] }
+ARMY_LAYOUT_UNCHECKED team=0: 42 standable queries had no baked navigation map (the obstacle boxes were still checked)
+MEASURE selectable condemned seed 42: { "units": 42, "squads": 5, "squadless": [], "ungrouped": [] }
+  PASS  test_every_unit_selectable::test_every_unit_of_the_players_army_is_in_a_control_group
+  PASS  test_every_unit_selectable::test_the_family_folds_first_then_the_smallest_by_role
+  PASS  test_every_unit_selectable::test_the_skirmish_builds_the_players_army_through_it
+  PASS  test_native_army_cap::test_the_rule_by_preset
+  PASS  test_native_army_cap::test_headless_is_desktop_so_baselines_do_not_move
+  PASS  test_native_army_cap::test_laptop_reads_four_squads_twenty_vehicles
+  PASS  test_native_army_cap::test_the_garage_shows_the_cap_the_match_uses
+  PASS  test_native_army_cap::test_a_saved_five_squad_army_keeps_its_first_four_and_says_so
+  PASS  test_native_army_cap::test_the_desktop_keeps_a_five_squad_army_whole
+  PASS  test_native_army_cap::test_the_cpu_opponent_is_capped_the_same_way
+  PASS  test_native_army_cap::test_the_players_fold_reads_the_cap
+  PASS  test_native_army_cap::test_a_laptop_cap_cpu_army_keeps_its_role_mix
+  PASS  test_native_army_cap::test_the_desktop_cpu_army_is_unchanged
+  PASS  test_native_army_cap::test_the_skirmish_cap_folds_then_trims
+  PASS  test_native_army_cap::test_squad_cap_flag_pins_the_cap_for_measurements
+  PASS  test_native_army_cap::test_the_planning_hint_names_the_cap
+  PASS  test_native_army_cap::test_the_laptop_cap_fields_squads_of_at_most_five_on_both_sides
+  PASS  test_native_army_cap::test_pack_spreads_by_family_then_role_and_never_past_five
+  PASS  test_native_army_cap::test_the_desktop_fields_what_it_always_did
+  PASS  test_native_army_cap::test_every_capped_cpu_squad_forms_its_element
+
+LIVE ORPHAN NODES LEFT BY 1 TEST(S) (43 nodes, not queued for deletion; a pending deferred add counts here too; a real leak fails `test` at exit):
+  +43  test_every_unit_selectable::test_every_unit_of_the_players_army_is_in_a_control_group
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+engine: 0 errors, 0 warnings
+28 passed, 0 failed
+>> remote: copy-back verified, 453 files, sha256
+>> remote: make test FILTER=test_native_army_cap|test_every_unit_selectable|test_army_size WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

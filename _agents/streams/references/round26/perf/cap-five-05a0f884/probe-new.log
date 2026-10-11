@@ -1,0 +1,26 @@
+>> remote: syncing godot-perf to slobdell@builder0:~/tank_squad/godot-perf-light
+>> remote: make native-cap-probe WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://game/ai/manoeuvre.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/native/test_native_mover_record.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_behind.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_nav_order_probe_seed.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+WARNING: Missing .uid file for path "res://tests/test_pace_cover_spots.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> native-cap-probe gangs v law: ARMY_CAP preset=laptop squads=4 units=20 | ARMY_CAP_FIELDED squads=4 green_squads=4 green=20 rust_squads=4 rust=20 | refused 0
+>> native-cap-probe law v syndicate: ARMY_CAP preset=laptop squads=4 units=20 | ARMY_CAP_FIELDED squads=4 green_squads=4 green=20 rust_squads=4 rust=17 | refused 0
+>> native-cap-probe syndicate v condemned: ARMY_CAP preset=laptop squads=4 units=20 | ARMY_CAP_FIELDED squads=4 green_squads=4 green=17 rust_squads=4 rust=20 | refused 0
+>> native-cap-probe condemned v gangs: ARMY_CAP preset=laptop squads=4 units=20 | ARMY_CAP_FIELDED squads=4 green_squads=4 green=20 rust_squads=4 rust=20 | refused 0
+>> native-cap-probe: PASS
+>> remote: copy-back verified, 453 files, sha256
+>> remote: make native-cap-probe WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)
