@@ -40,7 +40,7 @@ func test_a_seed_also_shifts_the_order_tick() -> void:
 	var ticks := {}
 	for seed_value in [1, 2, 3, 4]:
 		ticks[PROBE.extra_ticks(seed_value)] = true
-	assert_eq(ticks.size(), 4, "seeds 1-4 issue their orders on four different ticks (%s)" % ticks.keys())
+	assert_eq(ticks.size(), 4, "seeds 1-4 issue their orders on four different ticks (%s)" % [ticks.keys()])
 
 
 func test_no_seed_is_the_historical_start() -> void:
