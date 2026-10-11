@@ -135,6 +135,29 @@ scoped for him.**
   rule for every declared change this round: its cost at 25 a side is measured, pre-registered and reported beside
   its behaviour numbers.
 
+- **C26.6 rulings (2026-10-11, traffic's CP1a at 5c31c58f: check 2381/2, thirteen and determinism unmoved; both failures
+  brains' tests, both CP1a fixing what they measured).** Granted to traffic for CP1a's declared commit, those two files
+  only: (1) `test_tactics_make_room` (the Cut, four Law tanks): APPROVED "the squad arrives, in both arms", swaps
+  REPORTED not asserted. Its stage reproduced round 19's crew pressed 70 s against a parked squadmate; CP1a's running
+  stall clock lets the give-way free the corner, so make-room no longer fires there. Make-room is left WITHOUT a
+  falsifier: brains (after B1) either builds a stage that still needs it with CP1a on, or prices it by removal
+  (lesson: attribute only by removing). (2) `test_tactics_pursuit` out-of-sight: the line is C25.3 ruling (2) as already
+  approved — "killed by THIS squad, or the squad ends within 40 m" — the test's −1 (target dead) was never wired to
+  it; the kill must be credited to one of this squad's crews in the kill log, not merely "the target is dead".
+
+- **C26.6 ruling (2026-10-11 ~01:35, brains B1): his bridge line counts every SURVIVING crew across**, a crew killed in
+  the fight excused only if it was not stuck (no rim and no deck-jam time ≥ 3 s in the 10 s before its death), with a
+  reason line per excused crew and a mutation check (stalled ≥ 3 s then killed fails). Preliminary (builder0 aa5defa1 =
+  stream/brains + CP1a cherry-picked, scratch): his side 53/54, the CPU's 53/54, deck jam 135 / 92 crew-s (round 25:
+  45 and 41–42/54, 1013 / 754, older code); the only failure each side a crew killed by the lancers. `bridge-pooled`
+  joins `check` after CP1a, if ≤ ~3 min in check's lanes (the orchestrator adds the mk/core.mk line).
+
+- **CP1a merged 2026-10-11 ~05:00 (e9f9e946 = db019850).** Correction filed after the merge (traffic, traced): the
+  yard_open CROSSING case started and ended squad B behind the container walls at x = ±50 (blocked/no_path in BOTH
+  arms), so its numbers are VOID; the stage now runs inside the walls (12cecbe8) and every arm is re-measured there.
+  The Terminus regression (a crew yielding to a parked squadmate) is CP1a2's. `make nav-orders` ignores --seed (brains'
+  probe): every "nav-orders over seeds" so far is n = 1.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;

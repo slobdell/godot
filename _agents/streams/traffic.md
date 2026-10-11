@@ -94,4 +94,66 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-10 night (traffic worker). Every number names commit, machine, workload and n._
+
+### The plan (ordered)
+
+1. **T0 instrument** (`tests/traffic/traffic_stage.gd`, `traffic_probe.gd`, `traffic_table.py`, `mk/traffic.mk`:
+   `make remote T=traffic-series`). His two cases on yard_open (the band: open ground) and Terminus (18 m streets),
+   two friendly squads of five mixed Law hulls each (`law_tank, law_ifv, law_scout, law_suppressor, law_tank`, the same
+   in both squads so neither is faster), his right-click (a plain element move), plus each squad alone (the solo time),
+   pooled over start ticks {1,3,6,8,11,16} x seeds {1,2,3}. Stuck is measured from DISPLACEMENT over 1 s, never
+   `estimated_velocity` (a hull pressed nose to nose keeps ~6.7 m/s of slide velocity while it does not move).
+2. **CP1a (C26.8, granted by the orchestrator 2026-10-10 night): the element-feed slot slide.** Found in T0's first
+   trace (below). DECLARED, its own commit, merged ALONE before the convention.
+3. **T0 baseline** = CP1a's commit with `--traffic-off=slide` (the old key exactly: the off path is the pre-CP1a code),
+   then the same with it on.
+4. **T1** census in big fights at main (Sumps 25 a side, army series).
+5. **T2** the convention (design in `navigation.md` first), CP1b, with perf's port.
+6. **T3** census again; **T4** stretch.
+
+### T0's first finding (2026-10-10 night): THE ROOT CAUSE IS THE ELEMENT FEED, NOT AVOIDANCE
+
+His head-on case, traced (laptop, uncommitted probe on `b57838ed`, yard_open, seed 1, n = 1; a lead, not a result):
+4 of 10 crews pinned nose to nose in the middle for the whole 60 s, phase `driving`, never `blocked`, no ask, no
+give-way, no sidestep. `Movement._order_ticks` cycled 8, 5, 2, 8, 5, 2… and `stalled_s` never passed 0.27 s. Why:
+`ElementFeed.context`'s `key` carried the crew's slot as a float string; the element slides that slot by millimetres
+every update (~9 ticks), so `ElementFeed.changed()` read true, `TankBrain._poll_element` called `interrupt()` →
+`Movement.reset()`, zeroing `stalled_ticks` and `_order_ticks` every ~0.3 s. So `_avoid`'s start-of-order grace
+(`AVOID_GRACE_TICKS` 10) never ended — ORCA only ever SLOWED a crew, never steered it aside — and the stall that starts
+ask/yield (1 s / 2 s) and `held_back` never fired. Every element move, both sides. A prototype that ignores a slide
+under 2 m: 10/10 arrived by 24 s, 0 friendly-stuck crew-s (same run). Sent to the orchestrator; granted as C26.8.
+
+**CP1a** (`game/ai/element_feed.gd` the key + `changed()`, `game/ai/traffic.gd` `SLOT_SLIDE_M` and the switch
+`--traffic-off=slide`, `tests/test_traffic_feed.gd`): the slot leaves the key; `changed()` is true when the key
+changes OR the slot jumps more than 2 m between two reads OR a slot is given or taken away. 2 m = Movement's own
+goal-jump distance (`_track_progress`) and a quarter of the tightest doctrine spacing (8 m), so a re-seat always
+interrupts. No native port: nothing in `native/` reads the key.
+
+### Pass lines, PRE-REGISTERED before any series ran (C26.6)
+
+**CP1a (declared, alone):** pooled over {1,3,6,8,11,16} x seeds {1,2,3}, builder0, the two arms on one commit:
+(a) his four cases (2 maps x head/cross): crews arrived not fewer in any case, friendly-stuck crew-seconds lower in
+total; (b) `make nav-orders`: never_completed not more, t100 not more than +10 %; (c) `make bridge-pooled`: not fewer
+runs passing than main; (d) the arrive series and element digest MOVE (declared) and are reported, not judged; the
+thirteen lines read as declared; `make check` green.
+
+**CP1b, the convention (T2's line, suggested by the brief, adopted):** on his four cases, measured against T0's
+baseline arm: every crew arrives in every run; friendly-stuck crew-seconds cut by >= 75 %; the crossing's last arrival
+<= 1.2x the same squad's solo time (median over runs; worst reported); zero friendly contacts at > 2 m/s closing.
+`make nav-orders` and `make bridge-pooled` not worse. If CP1a alone already meets a part of this, the convention is
+judged on what is left (contacts, the ratio), against CP1a's arm.
+
+### Merge notes
+
+- New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
+  Makefile edit), `game/ai/traffic.gd`.
+- `game/ai/element_feed.gd` the key + `changed()` hunk: C26.8's grant.
+
+### Questions for the lead
+
+None yet.
+
+### Requests to other streams
+
+None yet (the feed-key hunk became a grant instead of a request to brains).

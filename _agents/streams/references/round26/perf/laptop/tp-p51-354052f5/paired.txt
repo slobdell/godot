@@ -1,0 +1,9 @@
+light: hulls alive at the window's ends: foundry-main-31337 39->29, foundry-main-5988 39->28, foundry-main-92721 39->32, parade-main-31337 39->29, parade-main-5988 39->29, parade-main-92721 39->30
+lighter v light tick: -3.50 % (se 1.89, n 6; outside 2 se: False)
+lighter v light ctrl: -4.15 % (se 1.79, n 6; outside 2 se: True)
+lighter v light game speed: +0.013 (se 0.010, n 6)
+lighter v light elements: -0.089 ms (se 0.099, n 6), base 4.55 ms
+lighter v light prio0: -0.053 ms (se 0.060, n 6), base 2.46 ms
+   foundry: tick -2.74 % (se 4.14, n 3), 27.20 v 28.02 ms, speed 0.914 v 0.909
+   parade: tick -4.25 % (se 0.30, n 3), 27.50 v 28.73 ms, speed 0.919 v 0.899
+lighter: game speed in the window 0.917 (base 0.904), tick scripts 27.35 v 28.37 ms

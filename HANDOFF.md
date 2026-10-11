@@ -4,12 +4,17 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 ~23:20 — **ROUND 26 IS LAUNCHED (the section below): five worktrees (traffic 1, manoeuvre 2,
-orders 3, brains 4, perf 5), all workers running from `b57838ed`. Main's launch check: `b57838ed`, builder0, `make check
-exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7. Since: `85fd4b40`
-(worktree.sh seeds .godot, nice 19; lesson 289), `3f3197d9` (C26.8: traffic granted the ElementFeed key hunk — the slot
-slide that resets every crew's movement every ~0.3 s; CP1a, declared, alone). Queued: perf's laptop slot for P1 (granted
-only when the laptop is quiet). He pushes `main`.**_
+_Last updated: 2026-10-11 ~07:00 — **ROUND 26 IS RUNNING; the lead ASLEEP (orchestrator decides, morning report).
+Main GREEN at `6434f968` (builder0: check exited 0, 2400/0, thirteen unmoved, determinism 762a0576; perf-judge NOT
+JUDGED, box busy). Merged: CP0 (brains B0, facing in armed tasks), perf's `_cover_spots` early-out (−0.26 ms a tick),
+brains' bridge verdict tooling, **CP1a** (traffic C26.8: the slot slide no longer resets every crew's stall clock —
+his head-on cases and his bridge drill fixed, see workstreams *CP1a merged*). Queue: CP1a2 (traffic, no give-way to a
+parked squadmate), then `manoeuvre-cp2` (M1/M1b + perf's port + re-adopted baseline), orders' `_same_order` stale-
+facing fix (test_control_order_marks is flaky until it lands), brains' nav-orders seed fix; B2 (drill unpin) breaks
+pursuit/ambush/mixed-legs → traced first, likely NOT this round. Decided by him: round 27 = stage 1 C++ (now
+~2.5–3 weeks, speed unchanged). Lighter look: NOT shipped (no measured gain; the laptop is CPU-bound at 20 a side).
+builder0's disk filled ~05:40 (lesson 290): cleaned to 24 GB free, editor settings regenerated; anything run there
+05:30–05:55 is void. He pushes `main`.**_
 
 ## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 

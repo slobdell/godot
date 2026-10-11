@@ -4,6 +4,9 @@ extends TestCase
 ## that corner (its order counted as arrived), and each of the three fresh seatings came back the same (0312). Now the
 ## stuck crew trades slots with the stationary squadmate beside it (Element.MAKE_ROOM), which drives off and frees the
 ## corner. Both sides: an element is an element.
+## Round 26 (traffic CP1a, C26.6 ruling): that 70 s press had no ask because the element feed's slot slide reset every
+## crew's stall clock every ~0.3 s (C26.8); with the clock running, the give-way frees the corner, and the squad arrives
+## in both arms without a swap (30.8 s, builder0, 5c31c58f). Swaps are reported, not asserted.
 
 const METRES := 150.0
 const SECONDS := 90.0
@@ -47,5 +50,4 @@ func test_four_tanks_round_the_block_on_the_cut_and_arrive() -> void:
 	var on: Dictionary = await _attack_move(true)
 	print("MEASURE make_room cut seed 3 four Law tanks: re-seat only %s | make room %s" % [off, on])
 	assert_true(float(on["arrived_s"]) > 0.0, "the squad arrives (%s)" % on)
-	assert_true(int(on["swaps"]) >= 1, "by making room (%s)" % on)
-	assert_true(float(off["arrived_s"]) < 0.0, "control: without it the squad stops short (%s)" % off)
+	assert_true(float(off["arrived_s"]) > 0.0, "and without making room too: the give-way frees the corner (%s)" % off)
