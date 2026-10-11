@@ -145,11 +145,12 @@ was wrong, fix what the trace shows and write the difference for him in player t
 
 _Updated 2026-10-10 evening by the brains worker (godot-brains, stream/brains)._
 
-**REPORT (round 25, brains).** Merged on main: **CP1 F1** (`6bb01c44`: seats by nearest on his right-click, the halt
-re-seat), **CP2 F2** (`c7b20c9f`: the funnel at a deck) with the lab's start-tick pin, **F3′** (`5cabcafb` → main
-`6f24bd76`: his bridge drill much better, not fixed). Green and named, waiting to merge: **F3″** `13b678f5` (a crew stopped
-ON a deck is always sent on), **F4** `a438003f` (the overwatch bound at every think phase), **stretch (b) + F7**
-`b41e8f2a` (the crossing guard in check; the order read on signal, equal answer). Findings, nothing shipped: **stretch
+**REPORT (round 25, brains; FINAL).** Green and handed over (merged or accepted by the orchestrator): **CP1 F1**
+`6bb01c44` (seats by nearest on his right-click, the halt re-seat), **CP2 F2** `c7b20c9f` (the funnel at a deck) with the
+lab's start-tick pin, **F3′** `5cabcafb` (his bridge drill much better, not fixed), **F3″** `13b678f5` (a crew stopped ON a
+deck is always sent on), **F4** `a438003f` (the overwatch bound at every think phase), **stretch (b) + F7** `b41e8f2a`
+(the crossing guard in check; the order read on signal, equal answer), the docs tip `27027bc9` (+ the measurement-only
+give-way switch), **F1b part 1** `5e45da98` → main `4a6c7295` (his "stay on the chase"). Findings, nothing shipped: **stretch
 (a)** the give-way costs ~0 (+0.09 s, se 0.23) by removal; **F6** measured worse; **F1b**: his answer "stay on the chase"
 shipped as part 1 (`5e45da98`); the drill-leader unpin measured worse on his bridge drill (branch `brains-f1b-full`,
 round 26); **F5** (the engine-deck
@@ -535,3 +536,27 @@ orchestrator approved and its vacuous-pass guard): his bridge drill at start tic
 builder0): his side 45 → 38/54 pass, the CPU's 42 → 40/54, squads arriving 37 → 32 / 40 → 31, deck jam 1013 → 1401 /
 754 → 1869 crew-s (the CPU's pooled set 13 → 16/18 the only gain). A loss: the pin stays this round. Reading: nearest
 seats on a drill move change who reaches the bridge mouth first, and F3′ was tuned with the pinned order. Round 26.
+
+### Round 26 carry-overs (for whoever takes brains next)
+
+1. **The drill-leader unpin (F1b part 2): measured WORSE, not shipped.** Branch `brains-f1b-full` = `2894ded7` (the
+   unpin + the three C25.3 test lines the orchestrator approved + its vacuous-pass guard). builder0, his bridge drill
+   at start ticks 1–18 × seeds 1–3 (108 runs): his side 45 → 38/54 pass, the CPU's 42 → 40/54, squads arriving 37 →
+   32 / 40 → 31, deck jam 1013 → 1401 / 754 → 1869 crew-s (only the CPU's pooled set gained, 13 → 16/18). Reading:
+   nearest seats on a drill move change who reaches a bridge mouth first, and F3′'s feed/re-send was tuned with the
+   pinned order. Next: re-tune the mouth feed for the unpinned order (who goes first = who is nearest the deck,
+   already F3′'s rule; look at why more crews stand short of the far exit), then re-run the 108.
+2. **F5, the scout onto the engine deck at think phases 2 and 5** (deck 4/22 against 41/43): traced with
+   `ORBIT_PROBE=1` — both phases run the same for 10 s; at phase 2 the scout then sits 15–22 m in FRONT of the tank's gun
+   (gun off it 0–3°, angular rate 1–9°/s, speed 4.9 m/s again and again: likely reversing) and never starts its attack
+   run. Ruled out: the orbit's way round dead ahead (hysteresis on `tangent · hull`: byte-identical). Next: the scout's
+   Movement driver and reverse reason at phase 2, 10–15 s (`BridgeStage._decided` shows how to read them).
+3. **The street-funnel trade (his call):** F2 funnels at a DECK only. Funnelling in narrow streets too (`16cc698c`)
+   made ordinary plain moves arrive 1.1 s sooner (se 0.39, 100 paired, builder0) but stopped round 23's line along
+   its own axis forming on the way (`test_tactics_pace`). In player terms: "squads squeeze into a narrow street instead
+   of keeping their full width (a second quicker), but a line you send down a street no longer forms up on the way".
+4. **His bridge drill is not fixed:** `make bridge-pooled` (off by default, pace's set) — 45/54 his side, 41–42/54 the
+   CPU's at 3 seeds × 18 start ticks; the remaining failures are crews standing short in a mouth or a far exit and
+   queues on the deck (F3′'s traces).
+5. **F6:** the role/task flips that reach a crew a think late are ~1 % of element changes; the obvious fix re-rolled
+   fights and lost on the CPU's crossing (branch `brains-f6-trial` = `b6835713`). Only worth revisiting with a reason.
