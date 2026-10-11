@@ -272,6 +272,21 @@ that. Caveats: the accounting is on means; at 0.97 the clock would run ~2.9 tick
 slow frames start losing time, so the real need is somewhat MORE than 3.5 ms. Script levers left (measured this
 round): the order-feed re-reads ~0.26 ms headless, the rest of the ranked list <= ~1 ms; none reaches 3.5.
 
+### Scope: `act` after F4 (the orchestrator asked; measurement only, existing laps, no code)
+
+Measured (builder0, headless `native-tp-headless`, Sumps 25 + leaders, 8-20 s, seeds 92721 31337 5988, n = 3, at
+`cb10e426` = main `e88fde5f` (F4) merged; tick scripts 32.6-35.4 ms; `references/round25/native/act-scope/act-split.txt`):
+`act` **1.52 ms a tick**, 11.7 calls a tick (think ticks only), **~130 us a call**: ENGAGE 0.73 (3.2 calls, 230 us,
+of it combat_move 0.44), MOVE 0.68 (7.0 calls, 97 us), HOLD 0.11, the rest < 0.03 each; **the prelude 0.41 (35 us a
+call)**; set_move 0.05, set_weapon 0.05.
+**Batched prelude:** not a fit -- act runs for ~12 different crews a tick, each on its own situation Dictionary on its
+own think tick; nothing to batch over the record. Ported per call, the prelude (contacts scan, _face_threat_or,
+_contact) is 35 us a call: at the 15-45 % ports realize, **0.06-0.18 ms headless: not worth it.**
+**Whole `act` as one call** (decide's shape, ~130 us a call, which did pay): the per-option arms call back into
+movement, tactics' queries and the order helpers (`_move_to`, combat_move, set_move/set_weapon), so it would be the
+drive's shape with many callbacks; estimate **0.3-0.6 ms headless (1-2 %)**, and `act` is the function brains changes
+most (F4 changed its SUPPRESS arm this round): the heaviest C25.2 burden for ~1 %. **Not recommended.**
+
 ### Waiting on
 
 - N5c: no diff sent yet by brains or pace.
