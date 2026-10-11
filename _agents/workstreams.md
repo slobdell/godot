@@ -13,9 +13,9 @@ laptop's pricing workload.**
 
 | Stream | Brief | Round 25 | Checkpoint |
 |---|---|---|---|
-| **brains** | [streams/brains.md](streams/brains.md) | **F0** his crossing counted by cause from the recording + a failing scenario; **F1** seats by nearest (DECLARED); **F2** funnel through a crossing and re-open (DECLARED); **F3** the give-way at the bridge mouth; stretch: B1's +0.5 s | **CP1**: F1 merged alone; **CP2**: F2 merged alone → pace and native merge main |
-| **pace** | [streams/pace.md](streams/pace.md) | **P0** the fight scenarios' pass lines: behaviour or brittle threshold, per scenario that L1 broke; **P1** the quiet census (which crew-ticks a smarter quiet could slow, and the most it can buy); **P2** the smarter quiet, DECLARED, priced on the laptop | re-verify P2 on main after CP2 |
-| **native** | [streams/native.md](streams/native.md) | **N5a** a water map (locks) in `make native-tick-profile`; **N5b** `native_el` re-priced on it; **N5c** mirror every behaviour change to a ported function (C25.2, first priority whenever asked); **N5d** `native_scan` re-priced in contact; stretch: the Android device proof | none of its own |
+| **brains** | [streams/archive/round25/brains.md](streams/archive/round25/brains.md) | **F0** his crossing counted by cause from the recording + a failing scenario; **F1** seats by nearest (DECLARED); **F2** funnel through a crossing and re-open (DECLARED); **F3** the give-way at the bridge mouth; stretch: B1's +0.5 s | **CP1**: F1 merged alone; **CP2**: F2 merged alone → pace and native merge main |
+| **pace** | [streams/archive/round25/pace.md](streams/archive/round25/pace.md) | **P0** the fight scenarios' pass lines: behaviour or brittle threshold, per scenario that L1 broke; **P1** the quiet census (which crew-ticks a smarter quiet could slow, and the most it can buy); **P2** the smarter quiet, DECLARED, priced on the laptop | re-verify P2 on main after CP2 |
+| **native** | [streams/archive/round25/native.md](streams/archive/round25/native.md) | **N5a** a water map (locks) in `make native-tick-profile`; **N5b** `native_el` re-priced on it; **N5c** mirror every behaviour change to a ported function (C25.2, first priority whenever asked); **N5d** `native_scan` re-priced in contact; stretch: the Android device proof | none of its own |
 
 **Ownership (every path exactly one owner; the full lists are in each brief's header and *Don't touch*):**
 brains `game/ai/**` minus native's and pace's below, `game/tactics/**`, `tests/ai_scenarios/**` (pace may change a pass

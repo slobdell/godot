@@ -1,3 +1,4 @@
+> **ARCHIVED (round 25 closed 2026-10-10).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: pace (no slow motion at 25 a side on his laptop: a smarter "quiet" think rate)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *his pick of the think-rate setting*

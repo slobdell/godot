@@ -3687,3 +3687,29 @@ instrument that cannot lie about load — removal within one run — and let eve
 282. **One stalled run moves a mean of six.** (Round 24, the orchestrator.) The feed cache's laptop price read −2.3 ms
    on means and −1.1 ms (se 0.47) paired without one OFF run 8 ms high; native's first session after a parallel
    build read +45 % in every segment. Pair by seed, alternate arms, cool down, and void a session that ran hot.
+283. **Start every scenario from the same place in the frame loop.** (Round 25, pace, found by bisection.) The scenario
+   runner leaked the previous case's render-frame phase into the next one, so a case's result depended on which case ran
+   before it. `await process_frame` before each case fixed it (00b91730); the TacticsLab's start tick depended on render
+   frames the same way (START_TICK=1, `--lab-start-tick`). Any "flaky" scenario: suspect phase before behaviour, and
+   pool a pass line over pre-registered start ticks ({1,3,6,8,11,16}) rather than trusting one.
+284. **Re-ask a decision when its numbers move.** (Round 25, the orchestrator.) He picked "20 now" on an estimate that
+   it reached 0.97; measured, it was 0.881. I re-asked on the measured number before shipping, and his pick held — but
+   only he could say so. A decision taken on an estimate is a decision on that estimate.
+285. **A cap that follows a preset needs a pin in every measurement.** (Round 25, native.) Once the laptop preset
+   fields 20 a side, a "25 a side on the laptop" run silently measures 20 unless it passes `--squad-cap=5`. Read
+   `ARMY_CAP_FIELDED` in every log; a size the log doesn't print is a size you don't know.
+286. **Per-crew C++ calls don't pay; measure the marshalling before porting a function.** (Round 25, native N7.) Two
+   weapon slices proved equal-answer and moved the controller band −0.4/+0.4/−0.2 %: one call per crew per tick with
+   10–16 arguments read off nodes and dictionaries costs about what the GDScript did. Only a port batched over the
+   native record, one that removes a crossing INTO GDScript, or one whose per-call work dwarfs its marshalling (decide,
+   ~100 µs a call) pays. Native then measured its whole remaining list in a day of throwaway laps and closed it — and a
+   three-stream round 26 the lead had approved was saved by those measurements. Price a port with sub-laps before
+   building it.
+287. **A behaviour tuned around a workaround can depend on it.** (Round 25, brains F1b.) The drill leader pin hid what
+   F3' later fixed (the Locks passed unpinned after F3'), but F3' itself was tuned with the pinned arrival order, so
+   removing the pin lost his bridge drill (his side 45 → 38/54). Remove a workaround only with the series that tuned
+   its neighbours re-run.
+288. **A global make variable leaks into every target.** (Round 25, the orchestrator.) `ENEMY_FACTION ?= syndicate`,
+   meant for `skirmish-factions`, pinned `make skirmish`'s opponent to the Syndicate for 24 days and nobody's test saw
+   it: the tests launch Godot directly. Defaults for one target go inside that target (`$(or $(VAR),default)`), and
+   `make -n <target>` is the check for what a target actually passes.

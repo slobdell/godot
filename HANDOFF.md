@@ -4,12 +4,23 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 afternoon — **ROUND 25 IS RUNNING: brains and native active, pace done. Main's last green
-check: `4a6c7295`, builder0, `make check exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved. He is
-playtesting; his answers: play the laptop at 20 first (lighter laptop look if slow), pursuit "stay on the chase" (shipped).
-His round 26 feedback is coming in (`game_design.md` *Round 26 direction*). He pushes `main`.**_
+_Last updated: 2026-10-10 evening — **ROUND 25 IS CLOSED (the section below). No worktrees. Round 26 is NOT yet
+split: his feedback is still coming in (`game_design.md` *Round 26 direction*, `roadmap.md` *Round 26 candidates*). He
+pushes `main`.**_
 
-## ⏱ ROUND 25 — WHERE IT STANDS (2026-10-10 afternoon)
+## ✅ ROUND 25 IS CLOSED (2026-10-10) — read this first
+
+Briefs in `streams/archive/round25/` (each Status holds its final report; brains' has *Round 26 carry-overs*), evidence
+and every main check log under `streams/references/round25/`. Worktrees removed, `stream/*` branches deleted. Kept for
+round 26: local branches `brains-f1b-full` (2894ded7, drill seats by nearest, lost his bridge drill) and
+`brains-f6-trial` (b6835713), tag `n7-weapon-slices` (148104c0). Lessons 283–288 in `orchestration.md`.
+
+**What he plays now** (`make native && make skirmish` on the laptop; the menu opens with the enemy on Random again):
+seats by nearest on plain moves (heavies to the front at the halt); the bridge funnel; his attack-move bridge much
+better, not fixed; the laptop preset fields 4 squads / 20 a side (0.881 of real time in the opening clash vs 0.769 at
+25, laptop, `379e0567`, n = 6); the overwatch bound advances; a damaged crew stays on a chase he ordered.
+
+### Round 25 merges and findings (as it stood through the day)
 
 | Merge | What | Main's check (builder0) |
 |---|---|---|
@@ -40,7 +51,7 @@ measurement only) to price it. The lead hears this at the checkpoint.
 no C++ stream in round 26. The 0.97 gap at 20 a side is 3.5 ms a game tick (scripts 28.6, physics 0.6, outside the
 simulation 8.6; native `59c3ecca`) — his call: a lighter laptop look, or less AI work.
 
-**Open:** F1b (drill seats by nearest) waits on his pursuit answer — unpinned, a hurt crew in front breaks away
+**Open at the close:** see `roadmap.md` *Round 26 candidates*. (Kept as written below:)
 mid-chase; the Locks now passes unpinned after F3'. Brains F7 (order feed read on dirty only, ~0.26 ms) and F6
 (element changes that skip the signal); crossing guard extended to Locks/Sumps/Terminus (`d49130eb`, to merge). F5 (cp2 scout misses the deck at phase 2); F1b (drill seats by nearest). Held for him: Android device proof;
 funnelling in streets (+1.1 s plain moves vs line-forming).

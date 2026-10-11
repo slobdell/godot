@@ -1,3 +1,4 @@
+> **ARCHIVED (round 25 closed 2026-10-10).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: native (water in the laptop's price; the C++ kept in step with this round's behaviour changes)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/native.md` (everything: the flags, the hazards, the

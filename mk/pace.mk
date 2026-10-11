@@ -1,5 +1,5 @@
 # Round 25 pace: the think rate's pass lines (P0), the quiet census (P1), the smarter quiet (P2).
-# Owner: pace (_agents/streams/pace.md). Included by the root Makefile (mk/*.mk).
+# Owner: pace (_agents/streams/archive/round25/pace.md). Included by the root Makefile (mk/*.mk).
 
 # P0: each scenario L1's settings broke, at each setting, at several think phases (`--think-phase=`: every brain's first
 # think shifted by n ticks, the rate unchanged). A line that flips on the phase alone at today's rate measures timing

@@ -1,3 +1,4 @@
+> **ARCHIVED (round 25 closed 2026-10-10).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: brains (the bridge, again: wide shapes stick on the crossing, some crews never cross; seats by nearest)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 25 direction* (his words, the

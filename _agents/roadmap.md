@@ -209,10 +209,27 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 26 plan (APPROVED by him 2026-10-10 ~12:15: *"ok your round 26 plan sounds good to go"*)
+## Round 26 candidates (his playtest of round 25, 2026-10-10) — NOT YET SPLIT
+
+His words in `game_design.md` *Round 26 direction*; the orchestrator's readings (1)–(6) beside them.
+- **Friendly vehicles deconflict** (his first item): two friendly squads ordered through each other head-on, or crossing
+  at right angles, jam. A shared convention among teammates (keep right; who yields at a crossing), NOT applied against
+  enemies (a charging crew may block). His two cases become scenarios with pass lines first; congestion in big clumps
+  measured before and after (stuck crew-seconds against friendlies).
+- **Facing for every armed order** (screen, support by fire, attack-move, ambush): today they fire on the left PRESS and
+  take no direction. Decided for him: press at the spot, drag toward the facing, release (as a right-drag move);
+  a click keeps the automatic facing.
+- **Laptop speed:** he plays 20 a side first; if the opening clash feels slow, a lighter laptop look (the gap is 3.5 ms a
+  game tick, native `59c3ecca`; outside-the-simulation 8.6 ms, scripts 28.6). No C++ stream (below).
+- **Carry-overs from round 25** (`streams/archive/round25/brains.md` *Round 26 carry-overs*): drill seats by nearest (the
+  unpin lost his bridge drill; `brains-f1b-full` 2894ded7); his bridge drill still not fixed (`make bridge-pooled`); F5;
+  the street-funnel trade (his call); Android device proof (low).
+- **Done the same day:** `make skirmish` always dealt the Syndicate (a leaking Makefile default) — fixed `0070a027`.
+
+## Round 26 plan (APPROVED by him 2026-10-10 ~12:15, then SUPERSEDED the same day by native's measurements — kept as written)
 
 **Three C++ streams, side by side, after brains lands his bridge (round 25's F2/F3 and the river rim at every start
-tick).** Basis: native's ranked list (`streams/native.md` *What the remaining equal-answer ports buy*, round 25; ~5.3 ms a
+tick).** Basis: native's ranked list (`streams/archive/round25/native.md` *What the remaining equal-answer ports buy*, round 25; ~5.3 ms a
 tick, 2.7–8, ~17–19 agent-days serial). Expected: ~1–1.5 weeks wall clock, not a third of serial (the laptop is one
 instrument; small ports must be bundled, lesson 280). **For him:** at 20 a side (the laptop preset since round 25) the
 opening clash very likely reaches full speed; at 25 a side about 85–90 %, so the laptop stays at 20 until
@@ -236,7 +253,7 @@ cp2 scout's phase-2 miss, F1b's drill seats in files not frozen); the laptop ser
 orchestrator keeps; bundles pre-registered per stream; the C++ shared files (`native/src` bridge/registration,
 `tank_record`) with one owner (native-exec) and additive edits from the others.
 
-## Round 25 candidates (collected during round 24 and at its close) — his first item at the top — LAUNCHED 2026-10-10 morning as brains + pace + native (`workstreams.md` *Round 25*)
+## Round 25 candidates (collected during round 24 and at its close) — his first item at the top — LAUNCHED 2026-10-10 morning as brains + pace + native, CLOSED 2026-10-10 evening (`workstreams.md` *Round 25*)
 
 - **HIS, FIRST (2026-10-10, playing round 24's close on the Crossing): squads crossing a bridge in a wide formation get
   stuck (the wedge is wider than the bridge), some never make it across; and the squad slows while the "point" crew
