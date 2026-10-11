@@ -23,6 +23,9 @@ func _spawned(args: PackedStringArray) -> String:
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, {"name": "NavOrders", "squads": squads}), "", "setup")
 	var tanks: Array = game_match.tanks.get_children()
 	var digest := PROBE.spawn_digest(tanks)
+	if not tanks.is_empty():
+		print("NAV_SEED_PROBE %s first %s at %s, jitter %.2f" % [args, tanks[0].name, (tanks[0] as Tank).global_position,
+				game_match.spawn_jitter])
 	game_match.queue_free()
 	arena.queue_free()
 	return digest
@@ -38,5 +41,6 @@ func test_two_seeds_are_two_different_starts() -> void:
 func test_no_seed_is_the_historical_start() -> void:
 	var plain := _spawned(PackedStringArray())
 	var unjittered := _spawned(PackedStringArray(["--seed=1"]))
-	assert_true(plain != unjittered, "without --seed nothing is jittered (the run every recorded number came from)")
+	assert_true(plain != unjittered, "without --seed nothing is jittered (the run every recorded number came from): %s vs %s"
+			% [plain, unjittered])
 	assert_eq(_spawned(PackedStringArray()), plain, "and it is the same start every time")

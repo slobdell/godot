@@ -99,6 +99,12 @@ fights: `test_tactics_cpu_hold` (the bay ambush: green wiped 0 alive, guns not o
 `test_tactics_mixed_legs` (Sumps two-scout squad 26.1 s for ~20). So B2's bridge gain comes with fight changes: to be
 re-trialled on main + CP1a (+ CP1a2) and each failure traced before anything is claimed (lesson 287).
 
+**Queued from the orchestrator (2026-10-11, after the B2 traces): make-room's new stage.** Traffic's trace (builder0,
+traffic-cp1a2, Terminus crossing, squad A alone, seed 3, start tick 8): with CP1a, never ×3 of 6 ticks; nearest seating
+put crew 3 at (10.6, −7.7), across the route of crew 5 (wheeled law_tank, slot 25 m behind); crew 5 shuffles at full lock,
+crew 3 refuses every ask. Make it make-room's stage (CP1a on: arrives; make-room off: does not) and find why make-room
+does not fire. Ask traffic for the exact command.
+
 **Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
 traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
 phase 2) → B4 stretch.
