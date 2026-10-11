@@ -153,6 +153,23 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   keeps its arrival heading by design and its turret takes the facing; the orchestrator asked manoeuvre (face-at-rest,
   C26.9) to split hull numbers by hull class. Ambush's guns at a flat 30 deg are odd (for brains). Few runs settle in
   75 s (crews still nudging); the before-CP0 table above is the "before".
+- **O2 after CP2** (main 2aadc60c merged = `5acc4c42`; M1b turn-at-rest + reverses for short moves behind). Quiet arm,
+  builder0, foundry, seeds 3/5/8, 15 elements per task, same probe as above:
+
+  | task | lines within 15 deg | line err median/worst | gun err median/worst | hull err median/worst (CP0 -> CP2 median) |
+  |---|---|---|---|---|
+  | screen | 12/15 | 4.7/18.8 | 0.0/30.0 | 38.9/107.2 (45.1 -> 38.9) |
+  | support by fire | 11/15 | 4.4/61.3 | 0.0/30.0 | 27.2/160.9 (92.0 -> 27.2) |
+  | ambush | 11/15 | 6.3/30.6 | 30.0/30.0 | 45.5/167.4 (99.8 -> 45.5) |
+  | attack-move | - | - | 0.0/164.2 | 29.2/103.8 (38.4 -> 29.2) |
+  | move (armed M) | - | - | 0.0/30.0 | 36.0/153.1 (34.8 -> 36.0) |
+  | move (right-drag) | - | - | 0.0/30.0 | 59.0/157.5 (54.3 -> 59.0) |
+
+  **Read:** the hulls of the line tasks now mostly turn to the drawn facing (support by fire and ambush medians halved
+  or better); plain moves did not change. Each task still has a tail of hulls 100-167 deg off, and no run is still
+  for 3 s inside 75 s (`runs settled` 0/3 everywhere), so these are 75 s readings. Support by fire and ambush report
+  0/15 operational `arrived` while their lines are already within 15 deg: that flag is the element's, worth a look
+  by brains. Hull numbers stay manoeuvre's (C26.9).
 - **Found by main's check** (`test_control_order_marks` failed on main d28bf8c5, 1/2392; builder0 diagnostics). Since
   B0 the leader's first issue copies a task's facing onto its crews' orders, and a task re-given WITHOUT a heading
   leaves the crews on the old one. Two halves:
@@ -172,7 +189,9 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
 - **Settled frames** (`facing-shots`, `--enemy=player_default --no-element-cpu --no-vision-camera`, 1854x1011 and
   1200x540): `_1_drag` (ring + arrow in the order's colour on the spot), `_2_moving` (the pin with its chevrons),
   `_3_settled` (the camera back on the spot; the line across the arrow, guns along it). Looked at on builder0's output
-  at `19f6a418`+: the arrow sits on its ring, the hint stays on screen at both sizes.
+  at `19f6a418`+: the arrow sits on its ring, the hint stays on screen at both sizes. Since `681f0d22` windowed runs
+  move the OS pointer with their events (the hint and hover tooltip follow the real pointer, so they had shown where
+  the window's pointer was left, over the command card at 1200x540); rerun on builder0: the hint sits at the arrow tip.
 
 ### Report (2026-10-11)
 
@@ -187,7 +206,7 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
 - **Playtest:** `make skirmish`, select a squad, press E/R/B/A/M, then press on the ground and drag toward where they
   should face; `make remote LIGHT=1 T=facing-probe` (numbers); `make remote LIGHT=1 T=facing-shots` (frames under
   `build/light/build/facing/<size>/<scenario>/shots`).
-- **Next:** after brains' 3214dddf merges: `git merge main`, rerun the probe's quiet arm.
+- **Next:** after brains' 3214dddf merges: `git merge main`, rerun the probe's quiet arm (the after-CP2 table is the baseline).
 - **Merge notes:** new files `tools/facing_probe_table.py` (approved), `tests/ai_scenarios/scenario_orders_facing.gd`
   (its `.uid` appears on the first import); `game/control/orders.gd` `_same_order` (element branch, heading present vs
   absent); `game/ui/control_hints.gd` (two strings).
