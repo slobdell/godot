@@ -3717,4 +3717,7 @@ instrument that cannot lie about load — removal within one run — and let eve
    ran a full Godot import from scratch per folder (~6 of 8 cores, 1–2 min each); five in a row, plus five worker
    sessions starting, put the load average at 30. `tools/worktree.sh` now seeds `.godot` from the main checkout and
    imports at `nice 19` (a test folder: 37 s wall, 28 s CPU under load, against ~4 CPU-minutes per folder before). Anything
-   heavy you start locally, even setup, is CPU the lead and the workers don't have.
+   heavy you start locally, even setup, is CPU the lead and the workers don't have. Two more from the same hour: my own
+   `until ! pgrep -f 'worktree.sh add'` wait never ended — `pgrep -f` matched its own shell's command line — and spun
+   pgrep at ~120 % CPU for 20 minutes (use `pgrep -x` or a pid file); and workers ran `make lint` locally (a Godot per
+   script). The rule since (C26.7): every Godot run on builder0, the laptop only in a granted slot.

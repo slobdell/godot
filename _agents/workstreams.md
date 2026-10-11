@@ -97,7 +97,7 @@ scoped for him.**
   TacticsLab or scenario result is timing-sensitive.
 - **C26.7 The laptop is one instrument** (C25.4 carried). Flightdeck sessions are serialized through the orchestrator;
   perf has priority for pricing, the others for his-pose clips and screenshots; pair by seed, ABBA, cooldown, void a hot
-  session; pin `--squad-cap` and read `ARMY_CAP_FIELDED` (lesson 285). builder0 for everything else.
+  session; pin `--squad-cap` and read `ARMY_CAP_FIELDED` (lesson 285). builder0 for everything else. **Ruled 2026-10-10 ~23:30 (the laptop saturated at launch): EVERY Godot run goes to builder0 (`make remote T=lint`, `T=check`, `T=<target>`), lint, single tests and probes included; the laptop runs Godot only in a slot the orchestrator grants.**
 - **C25.6 (the army cap follows the render preset), C24.6, C24.7 (the bar), C24.8 (the seams), C23.1a, C23.2,
   C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
 
