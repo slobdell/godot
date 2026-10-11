@@ -62,6 +62,11 @@ func _run_probe() -> void:
 	SlotGround.WET_ENABLED = _flag("wet-ground", "on") != "off"  # round 24 (brains R1): the arrive series' arm
 	# Round 25 (brains F1): seats by nearest, the arrive series' arm (`--seat-nearest=off` = round 24's seating).
 	TacticsFormation.NEAREST_ENABLED = _flag("seat-nearest", "on") != "off"
+	# Round 25 (brains stretch a): `--give-way=on|off` prices Movement's give-way by removal, BOTH arms on the GDScript
+	# drive (the native drive has no switch for it).
+	if _flag("give-way", "") != "":
+		BrainSwitches.native_drive = false
+		Movement.GIVE_WAY_ENABLED = _flag("give-way", "on") != "off"
 	# Round 25 (brains F2): `--funnel=off` = the travelling shape at full width through every choke (the paired arm).
 	ElementPlan.FUNNEL_ENABLED = _flag("funnel", "on") != "off"
 	ElementPlan.NEAREST_ON_ROUTE = TacticsFormation.NEAREST_ENABLED
