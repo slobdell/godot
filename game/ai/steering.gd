@@ -66,8 +66,6 @@ const WHEELS_FULL_LOCK_DEG := 45.0
 ## Throttle while backing up in a three-point turn, and the least throttle in a hard forward turn (it must roll to turn).
 const WHEELS_REVERSE_THROTTLE := 0.6
 const WHEELS_MIN_THROTTLE := 0.35
-## Round 26 (traffic): how far above the plant's creep line a forward hard turn is driven (throttle units).
-const CREEP_MARGIN := 0.05
 
 
 ## Vector2(throttle, turn) for a wheeled hull driving to `target`: pure pursuit (the circle through here and the point,
@@ -110,12 +108,4 @@ static func _wheels(position: Vector3, forward: Vector3, target: Vector3, arrive
 	var swing := -error / deg_to_rad(WHEELS_FULL_LOCK_DEG)
 	var turn := clampf(pursuit if absf(pursuit) > absf(swing) else swing, -1.0, 1.0)
 	var throttle := clampf(slow_for / SLOW_RADIUS, WHEELS_MIN_THROTTLE, 1.0) * (1.0 - 0.25 * absf(turn))
-	throttle = maxf(throttle, WHEELS_MIN_THROTTLE)
-	# Round 26 (traffic, manoeuvre's C26.5 relay): never ask for less than the plant's creep line in a hard turn. Below
-	# |throttle| = WHEEL_CREEP_THROTTLE x |turn| a wheeled hull does not roll round the arc: the plant shuffles it in
-	# 0.5 s legs (TankMotion's creep), and a crew steering past a parked friend near its slot shuffled beside it for the
-	# rest of a run (the Terminus seed-3 and Sumps arrive traces; 81 of manoeuvre's 149 long-turn episodes were beside a
-	# friend). At full lock near the goal this asked 0.26-0.47. `--traffic-off=creep` restores it.
-	if not Traffic.off("creep"):
-		throttle = maxf(throttle, TankMotion.WHEEL_CREEP_THROTTLE * absf(turn) + CREEP_MARGIN)
-	return Vector2(throttle * gear, turn)
+	return Vector2(maxf(throttle, WHEELS_MIN_THROTTLE) * gear, turn)
