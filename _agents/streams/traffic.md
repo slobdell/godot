@@ -345,6 +345,12 @@ manoeuvre's pace/creep guard in drive() are the owners; (4) fast friendly contac
 
 ### Merge notes
 
+- **Green: `755b31a7`** (builder0, make check exited 0, 2464 passed / 0 failed, 24 targets ALL JUDGED, every sim-baseline
+  line unmoved against main's file, determinism 2875411ff4ec6be7). The commit after it only records this line (docs).
+  The tip's game/ equals main's: it carries the traffic tooling (mk/traffic.mk; tests/traffic/ census_probe,
+  census_table, parked_probe, traffic_clip and their .uid, traffic_stage's on_tick/meeting_point/slot_m) and the docs.
+- The convention (CP1b) is NOT here: branch `traffic-cp1b-v4` (144c0e38; v4 = 6cfd6a1f), for round 27.
+
 - New directory `tests/traffic/` (traffic's, new this round), `mk/traffic.mk` (picked up by `include mk/*.mk`: no
   Makefile edit), `game/ai/traffic.gd`.
 - `game/ai/element_feed.gd` the key + `changed()` hunk: C26.8's grant.
