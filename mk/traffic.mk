@@ -107,3 +107,11 @@ traffic-settle-trace: import ## Round 26 (traffic): one arrive-series cell trace
 			--seconds=120 --drills=on --trace=on --traffic-off=$$arm $(TRAFFIC_FLAGS) > $(BUILD_DIR)/traffic-settle-$$arm.log 2>&1 || true; \
 		echo "$$arm: $$(grep -o 'SETTLE_PROBE {.*' $(BUILD_DIR)/traffic-settle-$$arm.log | cut -c1-300)"; \
 	done
+
+.PHONY: traffic-census-one
+traffic-census-one: import ## Round 26 (traffic): one census run with its whole log (CENSUS_ONE="sumps law gangs 1000 opponent 1") -> build/traffic-census-one.log
+	@set -- $(or $(CENSUS_ONE),sumps law gangs 1000 opponent 1); \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
+		--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(or $(TRAFFIC_CENSUS_SECONDS),20) $(TRAFFIC_FLAGS) \
+		> $(BUILD_DIR)/traffic-census-one.log 2>&1 || true; \
+	grep -E "TRAFFIC_CENSUS|SCRIPT ERROR|ERROR|error" $(BUILD_DIR)/traffic-census-one.log | head -20
