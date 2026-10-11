@@ -4,12 +4,15 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 ~23:20 — **ROUND 26 IS LAUNCHED (the section below): five worktrees (traffic 1, manoeuvre 2,
-orders 3, brains 4, perf 5), all workers running from `b57838ed`. Main's launch check: `b57838ed`, builder0, `make check
-exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7. Since: `85fd4b40`
-(worktree.sh seeds .godot, nice 19; lesson 289), `3f3197d9` (C26.8: traffic granted the ElementFeed key hunk — the slot
-slide that resets every crew's movement every ~0.3 s; CP1a, declared, alone). Queued: perf's laptop slot for P1 (granted
-only when the laptop is quiet). He pushes `main`.**_
+_Last updated: 2026-10-11 ~01:10 — **ROUND 26 IS RUNNING (the section below); the lead is ASLEEP: "stop asking me
+questions. Just take the course of action you would otherwise recommended" — the orchestrator decides overnight and
+reports in the morning.** Main: `7f792de9` = CP0 merged (brains B0, green at 63adfedd: 2392/0, thirteen unmoved); main's
+own check after the merge queued on builder0. Decided by him tonight: P3 → round 27 does the execute half in C++
+(`game_design.md` *Round 26: his C++ decision*) — **perf is re-pricing it in the per-crew-call-over-record shape stage 1
+needs; if the laptop estimate moves, put it back to him (lesson 284).** Laptop slot: perf P1 laptop half, granted ~01:05.
+Next merges: CP1a = `db019850` (traffic) when green with its series; CP1b (cost line ≤ 0.5 ms, C26.10); CP2/CP3.
+Rulings since launch: C26.8 (feed key → traffic), C26.9 (no face turn after a short move behind → manoeuvre), C26.10
+(cost line), C26.6 rulings (make-room, pursuit). He pushes `main`.**_
 
 ## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 
