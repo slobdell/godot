@@ -96,7 +96,7 @@ right-drag move tells the crews the facing but the hulls are 69 / 140 deg off it
 (face-at-rest, C26.9); brains to report any element-layer cause (station or slot heading overriding the order).
 (2) CP1a makes `test_tactics_make_room`'s case resolve by give-way: make-room has NO falsifier; after B1, a stage that
 still needs it with CP1a on, or price it by removal. (3) perf's free item: `_cover_spots` early-out before `threat_list`
-(done in the B3/cover commit below; pre-registered: thirteen lines and determinism UNMOVED).
+(granted to perf, 2026-10-11: my early version, 7beac85c, reverted on this branch so the two never meet).
 
 ### B3: the scout at think phase 2 (F5) — traced, handed to manoeuvre (2026-10-11)
 

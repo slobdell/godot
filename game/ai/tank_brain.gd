@@ -2126,15 +2126,10 @@ func build_situation() -> Dictionary:
 ## Nearby hiding places from the visible threats, best first (TacticalQuery.find_cover), for worn tanks.
 ## Cached for QUERY_EVERY_TICKS unless the tank moved QUERY_MOVED.
 func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> Array:
+	var threats := TankBrain.threat_list(contacts, tank.global_position)
 	var toughness := (tank.health + tank.shield) / maxf(tank.max_health + tank.max_shield, 1.0)
 	var shield_down := tank.max_shield > 0.0 and tank.shield <= 0.0
-	# Round 26 (perf's finding, equal answer): a crew that is not worn needs no threat list; sorting every visible contact
-	# for every thinking crew first cost ~0.4-0.5 ms a tick at 25 a side (builder0, 4f23b414, n = 3).
-	if toughness >= COVER_QUERY_TOUGHNESS and not shield_down:
-		_cover_cache = {}
-		return []
-	var threats := TankBrain.threat_list(contacts, tank.global_position)
-	if threats.is_empty():
+	if threats.is_empty() or (toughness >= COVER_QUERY_TOUGHNESS and not shield_down):
 		_cover_cache = {}
 		return []
 	if not _cover_cache.is_empty() and game_match.tick - int(_cover_cache["tick"]) < QUERY_EVERY_TICKS \
