@@ -82,7 +82,9 @@ _(the worker keeps this current; started 2026-10-10 ~06:00 PDT from `fccc520c`, 
 
 ### The report (read this first)
 
-**Merge notes.** Last GREEN merged by the orchestrator: `3c9419c5` (builder0, 2338/0 ALL JUDGED: native_el ON as its
+**Merge notes. GREEN, merge here: `40060c44`** (builder0, `make check exited 0`, 2374 passed, 0 failed, 23 targets ALL
+JUDGED, sim-baseline/determinism passing; = N6 + the planning hint + main `6f24bd76` (brains F3'); log
+`references/round25/native/native-check-40060c44.log`). Earlier: `3c9419c5` (builder0, 2338/0 ALL JUDGED: native_el ON as its
 own commit `0988ed88`). Since then: **N6 (C25.6)** green at `94c26255` (builder0, `make check exited 0`, 2365 passed, 0
 failed, ALL JUDGED), then mk help lines / docs (`379e0567`), the laptop evidence, and main `13de4dc6` merged
 (`a2c85757`); the final check of the tip is named in the newest Done line once it is green.
@@ -93,9 +95,14 @@ for measurements. Files (granted): units.gd, army.gd, army_catalog.gd, army_draf
 garage_screen.gd (the cap note only), skirmish_mode.gd, squad_consolidation.gd (one line, brains acknowledged),
 mk/fx.mk + mk/ai.mk (perf targets pin or say so), verification.md.
 
+**Since 40060c44 (merged as main 840507d7):** main `8e42247e` merged (`4a03c482`); N7 sized and built in part, then
+stopped on measurement (weapon slices proven equal but ~0: reverted, tag `n7-weapon-slices`; the k-turn planner sized
+at <= 0.1 ms: not built); the lesson and the re-ranked list in `_agents/native.md` *N7*. The branch's code = main's
+merge (no net code change since 40060c44 besides main's); the tip's check is named in Done when green.
+
 **Done this round:** N5a, N5b (`native_el` **ON** on a fresh pre-registered n = 12), N5d (`native_scan` OFF), stretch
 (b), the 20-a-side measurement (0.896, --size path; 0.881 through the real cap path), the remaining ports priced, N6.
-**Waiting:** N5c (brains' "don't reverse into a squadmate", queued after N6),  **Blocked:** stretch (a), no Android device.
+**Waiting:** N5c (brains' "don't reverse into a squadmate" is OFF: no longer reproduces; F3' touched no ported function, only additive slot_ground helpers); the orchestrator's pick of the next port.  **Blocked:** stretch (a), no Android device.
 
 **What to playtest:** on his laptop, `make garage` (a saved 5-squad army opens with its first four and a status-line
 note) and `make skirmish` (4 squads a side). His LOOK toggle changes the cap from the next match.
@@ -199,6 +206,86 @@ Items under ~0.7 ms (2 % of the tick) cannot pass the bar alone at n = 6 (se ~0.
 scripts at 20 a side ≈ 0.75-0.8 × 35.2 = 26.5-28 ms, saving ~7-8.7 ms a tick: about the whole gap by itself, and with
 item 6 (half a day) likely over it. One laptop session settles it: `make native-tick-profile NATIVE_TP_SIZE=20` (bar
 workload, shipped arm, ~15 min). Native can run it whenever the laptop is free.
+
+### N7 (granted 8e42247e; round 26's native-exec item started early): the weapon / act / k-turn bundle
+
+Plan agreed with the orchestrator (2026-10-10 afternoon): build `native_weapon` (gunnery.gd's aim + lanes after the
+scan: lead, Difficulty offset, cover, aim checks, Engagement.engage, the fire-lane hold), then `act` (tank_brain.gd),
+then the k-turn planner (the native drive's `planned_reverse` callback, native-owned); each with its own equal-answer
+proof against the LIVE GDScript (N2b pattern), each merged OFF on its own green; C25.2 holds. They are priced on the
+laptop as ONE pre-registered bundle (one slot, told to the orchestrator first); if it misses the bar, it is reported
+measured and nothing ships ON. The scan stays out (engine ray). Sizing: `references/round25/native/n7-weapon-split/`
+(weapon's replaceable part ~1.4 ms of section headless; the k-turn planner 10-12 us a drive).
+**State (2026-10-10 evening):** weapon slice 1 (`f5968c56`, the aim solution: 600 poses, 0 mismatches) and slice 2
+(`148104c0`, Engagement.Lay.engage: 1200 poses, 0 mismatches) built, proven, OFF; native-proof with
+`--brains-on=native_weapon` (+ leaders) on = off = ab = `b646df113768ddb8`. **Priced headless they save ~0**
+(`ai-ab-match AB_SWITCH=native_weapon` x 3, builder0: controller band −0.4 / +0.4 / −0.2 %): a per-crew call with
+10-16 arguments read off nodes costs what the GDScript did. The lanes slice is NOT built (the same shape). **Ruled (orchestrator): stopped; both slices reverted (`eafcfc10`, `cee722d8`), kept on the tag `n7-weapon-slices` (= `148104c0`) for a batched version.** The lesson and the re-ranked list: `_agents/native.md` *N7: what a port must look like to pay*. **Lesson:
+only batched ports (one call over all crews, reading the native record) or removing the native drive's callbacks INTO
+GDScript pay.** The k-turn planner sized (throwaway laps, `cc5f8da2`): ~0.13 ms a tick of GDScript, at most ~0.1 ms to win: not built; `act` only as a batched design, after
+brains' F4 (tank_brain.gd's SUPPRESS arm + `_bounding_slot`, commit a438003f) is on main. The bundle's pre-registration (members,
+config: laptop preset, `--squad-cap=5`, foundry + parade x 3 seeds, 8-20 s; pass: 2 % of tick scripts outside 2 se) is
+committed here BEFORE any laptop run.
+
+### Scope: a batched `t.poll` (the orchestrator asked, for round 26's plan; design + measurement only, no brains file edited)
+
+**Measured** (builder0, headless `native-tp-headless`, Sumps 25 a side + leaders, 8-20 s, seeds 92721 31337 5988, n = 3;
+`6bc6f52f` + throwaway laps on `local/native-laps-poll`, never merged; tick scripts 20.2 ms;
+`references/round25/native/tpoll-scope/poll-split.txt`): `t.poll` **1.54 ms a tick** (47 calls: every crew every tick) =
+element 0.63 (of it `ElementFeed.context` reads 0.43, 11.2 a tick) + order 0.50 (`OrderFeed.current` 0.28 + `key` 0.05,
+11.5 reads a tick) + squad 0.23 (`game_match.squad_for`) + station 0.11 + home 0.03; `_due_to_think` 0.10. The rest,
+~0.8 ms, is per-crew gate overhead (~17 us a crew a tick: the feed lookups, flags, the squad lookup).
+**Why reads happen:** order: 2.2 a tick on the dirty flag (all 2.2 order changes a tick arrive this way), 9.3 on a
+think tick with signals connected -- **those found a changed order 0 times**. Element: 1.8 on dirty, 9.4 on think --
+and **1.7 element changes a tick were found ONLY by the think-tick read** (not signalled: the context changes without
+`element_changed`, e.g. through the order verb or a slot); a crew sees those up to one think interval late. (For
+brains: a fact, not a request.)
+
+**The seam a batched C++ port would need:** tank_brain.gd `_think`'s prologue (lines ~566-603: home, `squad_for` +
+`order_serial`, `_poll_order` 684-715, `_poll_element` 747-763, the station) replaced by one call over every crew,
+fed by a per-crew record of: the order key (+ goal, verb, pace), the element feed key and context, the squad's serial,
+the station. Those values are produced by GDScript objects (control's Orders, tactics' Elements/ElementFeed, Match's
+squads), so the record would have to be PUSHED by them on every change -- or the batch crosses into them per crew,
+which is the per-crew shape N7 measured at ~0. **C25.2 churn:** any change to Orders.current / goal_position /
+pace_factor, OrderFeed.current / normalize / key, ElementFeed.context / normalize / changed, Element.feed_key,
+Match.squad_for / order_serial, OrderFeed.station would need the C++ (and the push) changed with it: control's, brains'
+and tactics' files, every round.
+**Estimate, batched C++:** only the gate overhead can go (the reads stay GDScript): **0.1-0.3 ms headless (0.5-1.5 %)**,
+for the largest churn surface of any port. **Not recommended.** The cheaper lever is GDScript, in brains' file: read the
+order feed on the dirty flag only (the 9.3 think-tick re-reads found nothing): ~0.26 ms headless (~1.3 %), a
+behaviour-neutral change IF the order signal is complete (pre-register: the thirteen lines and determinism unmoved);
+the element reads cannot be dropped (they find real changes).
+
+### What is left between 20 a side (0.881) and 0.97 on the laptop (the orchestrator asked; from existing logs, no new run)
+
+Source: `references/round25/perf/laptop/tp-bar-real20-379e0567/` (the real-path arm: the game's own cap, 20 v 20;
+`379e0567` = green 94c26255 game code, flightdeck, his preset, foundry + parade 8-20 s, seeds 92721 31337 5988, n = 6).
+Exact accounting on the means: game speed = ticks a frame x 33.33 / frame ms, so wall time per GAME tick = frame /
+ticks a frame = 96.5 / 2.55 = **37.8 ms**; 0.97 needs **34.4 ms**: **3.5 ms a game tick short (9 %)**.
+Per game tick: **scripts 28.6 ms** (76 %: controllers 20.8, elements 4.4, the rest -- tank, match, visfield, shells --
+3.5); **the engine's physics step 0.6** (2 %); **outside the simulation 8.6** (22 %: R = 22.0 ms a frame spread over
+2.55 ticks -- rendering, the HUD and every `_process`, buffer swap). The 3.5 ms is 12 % of the scripts, or 40 % of
+everything outside the sim, or a mix; physics cannot supply it (0.6 in all). **What the data cannot say:** how R
+splits into render v HUD v `_process` -- the engine's TIME_PROCESS monitor in these logs overlaps the physics ticks
+(it reads 42.5 ms a frame, sd 19.7, more than R), so it is not usable; perf-play's layer arms are the instrument for
+that. Caveats: the accounting is on means; at 0.97 the clock would run ~2.9 ticks a frame, near its 3-tick cap, where
+slow frames start losing time, so the real need is somewhat MORE than 3.5 ms. Script levers left (measured this
+round): the order-feed re-reads ~0.26 ms headless, the rest of the ranked list <= ~1 ms; none reaches 3.5.
+
+### Scope: `act` after F4 (the orchestrator asked; measurement only, existing laps, no code)
+
+Measured (builder0, headless `native-tp-headless`, Sumps 25 + leaders, 8-20 s, seeds 92721 31337 5988, n = 3, at
+`cb10e426` = main `e88fde5f` (F4) merged; tick scripts 32.6-35.4 ms; `references/round25/native/act-scope/act-split.txt`):
+`act` **1.52 ms a tick**, 11.7 calls a tick (think ticks only), **~130 us a call**: ENGAGE 0.73 (3.2 calls, 230 us,
+of it combat_move 0.44), MOVE 0.68 (7.0 calls, 97 us), HOLD 0.11, the rest < 0.03 each; **the prelude 0.41 (35 us a
+call)**; set_move 0.05, set_weapon 0.05.
+**Batched prelude:** not a fit -- act runs for ~12 different crews a tick, each on its own situation Dictionary on its
+own think tick; nothing to batch over the record. Ported per call, the prelude (contacts scan, _face_threat_or,
+_contact) is 35 us a call: at the 15-45 % ports realize, **0.06-0.18 ms headless: not worth it.**
+**Whole `act` as one call** (decide's shape, ~130 us a call, which did pay): the per-option arms call back into
+movement, tactics' queries and the order helpers (`_move_to`, combat_move, set_move/set_weapon), so it would be the
+drive's shape with many callbacks; estimate **0.3-0.6 ms headless (1-2 %)**, and `act` is the function brains changes
+most (F4 changed its SUPPRESS arm this round): the heaviest C25.2 burden for ~1 %. **Not recommended.**
 
 ### Waiting on
 
