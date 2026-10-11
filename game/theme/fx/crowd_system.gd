@@ -118,6 +118,8 @@ func apply_quality() -> void:
 		var tier := FxQuality.tier()
 		if RenderLevers.on("crowd_medium"):
 			tier = mini(tier, FxQuality.Tier.MEDIUM)  # a priced lever (round 16), off unless --render-levers names it
+		if RenderLevers.on("crowd_low"):
+			tier = FxQuality.Tier.LOW  # round 26 (perf P5): the lighter look's crowd
 		multimesh_instance.multimesh.visible_instance_count = mini(seats.size(), PER_TIER[tier])
 
 

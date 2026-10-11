@@ -9,22 +9,37 @@ extends RefCounted
 ##   no_env_fog             no depth/height fog in the arena
 ##   crowd_medium           the medium tier's crowd (3 600 figures, not all 7 700 seats)
 ##   unlit_stands           the stands drawn flat-lit (no moonlight shading on the kit)
+## Round 26 (perf P5, stretch: "a lighter look he can switch on"; each priced on his laptop by removal):
+##   scale_065              the 3D picture at 65 % of the window's lines
+##   no_glow                no Environment glow (the neon bloom)
+##   fx_lean                half the transient-effect budget: effects 96, scorch marks 8, sprays 3, overdraw 2000 m2,
+##                          no projectile ground splats
+##   crowd_low              the low tier's crowd (the fewest figures)
 ##
 ## The presets (the lead's taps on the levers page, 2026-10-03, game_design.md "Round 16: the render levers, decided on
 ## the page"; his words: "We should still have the option to keep scale at 1.0 on better gaming setups"):
 ##   laptop   his five taps: scale_075, lights_2, no_env_fog, no_haze, crowd_medium   (~5.9 ms GPU at his window, UHD 620)
 ##   desktop  none: full resolution, fog, haze, four pooled lights, the full crowd
+##   lighter  (round 26, perf P5) laptop's five + scale_065, no_glow, fx_lean, crowd_low: OPT-IN ONLY (the HUD's LOOK
+##            toggle or --render-preset=lighter); never chosen by the adapter, so no machine's default look changes.
 ## `unlit_stands` (tapped OFF) and `scale_085` (untapped) are in no preset; both stay reachable by --render-levers.
 ##
 ## Which, resolved ONCE per launch: --render-levers=a,b (exactly those) > --render-preset=laptop|desktop > the player's
 ## saved choice (user://render_preset.cfg, the HUD's toggle) > the video adapter (`preset_for_adapter`). Logged as one
 ## RENDER_PRESET line. A headless run is always desktop, so baselines and parity shots never move with it.
 
-const NAMES := ["scale_085", "scale_075", "lights_2", "no_haze", "no_env_fog", "crowd_medium", "unlit_stands"]
+const NAMES := ["scale_085", "scale_075", "lights_2", "no_haze", "no_env_fog", "crowd_medium", "unlit_stands",
+		"scale_065", "no_glow", "fx_lean", "crowd_low"]
 const PRESETS := {
 	"laptop": ["scale_075", "lights_2", "no_env_fog", "no_haze", "crowd_medium"],
 	"desktop": [],
+	"lighter": ["scale_075", "lights_2", "no_env_fog", "no_haze", "crowd_medium", "scale_065", "no_glow", "fx_lean",
+			"crowd_low"],
 }
+## The LOOK toggle's cycle: full -> light -> lighter -> full.
+const CYCLE := ["desktop", "laptop", "lighter"]
+## fx_lean's caps (half the LOW tier's transient budget, no splats).
+const LEAN := {"effects": 96, "decals": 8, "sprays": 3, "overdraw": 2000.0}
 const SAVE_PATH := "user://render_preset.cfg"
 
 static var _on: Dictionary = {}
@@ -83,14 +98,15 @@ static func apply_preset(name: String, from := "player", persist := false) -> vo
 	print("RENDER_PRESET %s (%s) levers=%s" % [_preset, source, ",".join(PackedStringArray(_on.keys()))])
 
 
-## The other preset (for a two-state toggle).
+## The next preset in the LOOK toggle's cycle (full -> light -> lighter -> full); a custom lever list goes to full.
 static func next_preset() -> String:
-	return "desktop" if preset() == "laptop" else "laptop"
+	var at := CYCLE.find(preset())
+	return CYCLE[(at + 1) % CYCLE.size()] if at >= 0 else "desktop"
 
 
 ## What a button shows: the preset and what it means in a word.
 static func label() -> String:
-	return {"laptop": "LOOK LIGHT", "desktop": "LOOK FULL"}.get(preset(), "LOOK CUSTOM")
+	return {"laptop": "LOOK LIGHT", "desktop": "LOOK FULL", "lighter": "LOOK LIGHTER"}.get(preset(), "LOOK CUSTOM")
 
 
 ## For tests: set the levers directly ([] = all off).
@@ -141,6 +157,8 @@ static func _resolve() -> void:
 static func adjust(key: String, value: Variant) -> Variant:
 	match key:
 		"render_scale":
+			if on("scale_065"):
+				return minf(float(value), 0.65)
 			if on("scale_075"):
 				return minf(float(value), 0.75)
 			if on("scale_085"):
@@ -151,4 +169,16 @@ static func adjust(key: String, value: Variant) -> Variant:
 		"haze":
 			if on("no_haze"):
 				return false
+		"glow":
+			if on("no_glow"):
+				return false
+		"splats":
+			if on("fx_lean"):
+				return false
+		"effects", "decals", "sprays":
+			if on("fx_lean"):
+				return mini(int(value), int(LEAN[key]))
+		"overdraw":
+			if on("fx_lean"):
+				return minf(float(value), float(LEAN[key]))
 	return value
