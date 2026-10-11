@@ -6,6 +6,15 @@ extends TestCase
 const R := 3.0
 
 
+## The convention is OFF by default (it did not ship in round 26): every test here switches it on and restores it after.
+func teardown() -> void:
+	Traffic.set_off("keepright", true)
+	Traffic.set_off("crossing", true)
+	Traffic.set_off("strict", false)
+	Traffic.set_off("roomright", false)
+	super.teardown()
+
+
 func _reset() -> void:
 	Traffic.set_off("keepright", false)
 	Traffic.set_off("crossing", false)

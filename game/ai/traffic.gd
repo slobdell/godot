@@ -91,11 +91,22 @@ static var _parsed := false
 static func off(name: String) -> bool:
 	if not _parsed:
 		_parsed = true
+		# Round 26: the convention did NOT ship (CP1b failed its pre-registered line at v2, v3 and v4: Status). It stays
+		# in the tree OFF by default for round 27; `--traffic-on=keepright,crossing` measures it.
+		for name_off: String in OFF_BY_DEFAULT:
+			_off[name_off] = true
 		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--traffic-on="):
+				for part in String(arg).trim_prefix("--traffic-on=").split(",", false):
+					_off.erase(part.strip_edges())
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):
 					_off[part.strip_edges()] = true
 	return _off.has(name)
+
+
+## The behaviours that did not ship this round (on only with --traffic-on=...).
+const OFF_BY_DEFAULT: Array[String] = ["keepright", "crossing"]
 
 
 ## Tests: switch a behaviour off (true) or back on, whatever the command line said.
