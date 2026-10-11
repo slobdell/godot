@@ -34,7 +34,7 @@ const MOVED_M := 3.0
 ## five; `make facing-probe`), so the four scenarios above keep their meaning.
 const FACED := {"faced_screen": KEY_E, "faced_support_by_fire": KEY_R, "faced_ambush": KEY_B,
 		"faced_attack_move": KEY_A, "faced_move": KEY_M}
-## The drawn facing is this far off the travel (left of it): far enough that the automatic pick (the travel, or the
+## The drawn facing is this far off the travel (counter-clockwise of it): far enough that the automatic pick (the travel, or the
 ## threat) cannot pass by accident at FACED_TOLERANCE_DEG.
 const FACED_OFF_TRAVEL_DEG := 60.0
 const FACED_WATCH_S := 75.0
@@ -175,10 +175,14 @@ func _faced(scenario: String) -> void:
 		return
 	_resume()
 	controls.selection.set_units(members)
-	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	# ACROSS our own half, toward the arena's middle line, not forward: forward 60 m ran the squads into a holding
+	# enemy's base on Foundry (the quiet arm met it within 3-33 m), so the arm meant to be out of contact was not.
+	var right: Vector3 = Match.team_frame(controls.team)["right"]
 	var centre := _centroid(members)
-	var at := ElementPlan.clamp_to_arena(centre + forward * OFF_M)
-	var facing := forward.rotated(Vector3.UP, deg_to_rad(FACED_OFF_TRAVEL_DEG)).normalized()
+	var travel := -right if centre.dot(right) > 0.0 else right
+	var at := ElementPlan.clamp_to_arena(centre + travel * OFF_M)
+	var facing := travel.rotated(Vector3.UP, deg_to_rad(FACED_OFF_TRAVEL_DEG)).normalized()
+	row["nearest_enemy_at_press_m"] = snappedf(_nearest_enemy(members), 0.1)
 	row["at"] = [snappedf(at.x, 0.1), snappedf(at.z, 0.1)]
 	row["drawn"] = [snappedf(facing.x, 0.001), snappedf(facing.z, 0.001)]
 	# Look at the spot from his pose: the press must land on the ground there, the release toward the facing.
@@ -275,6 +279,18 @@ func _faced(scenario: String) -> void:
 	_results.append(row)
 	controls.order_selection("stop", {})
 	await _seconds(1.0)
+
+
+func _nearest_enemy(members: Array[String]) -> float:
+	var nearest := INF
+	for child in controls.game_match.tanks.get_children():
+		var enemy := child as Tank
+		if enemy == null or enemy.team == controls.team or not enemy.is_alive():
+			continue
+		for unit_name: String in members:
+			if _alive(unit_name):
+				nearest = minf(nearest, _position_of(unit_name).distance_to(enemy.global_position))
+	return nearest if nearest < INF else -1.0
 
 
 func _both_arrived() -> bool:
