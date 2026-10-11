@@ -124,13 +124,22 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
 - **What to playtest:** `make native && make skirmish`; select one vehicle and right-click a point a few metres
   behind it (with and without a right-drag facing the way it already points): it reverses onto the point and does
   not turn round after. A War Rig told to face behind it at rest turns in three legs and stays on its spot.
-- **M3 (the orchestrator's request: the creep line), branch `manoeuvre-m3` (`f46fae96` + main):** right after
-  `cmd.throttle = drive_vector.x * speed_factor * pace` in drive(), a wheeled hull not in a planned leg whose
-  |throttle| fell under the creep line (0.5 x |turn|) is raised to the line when speed_factor x pace >= 0.5, else
-  holds still. Census A/B (builder0, GDScript path, 3 workloads x 3 seeds, `--nav-off=creepline` control): creep
-  episodes 114 -> 1; turns in <= 3 legs friendly 75.6 -> 85.3 %, open 75.5 -> 87.0 %; episodes fall (friendly
-  316 -> 150, open 441 -> 322). drive() is mirrored: the diff is with perf (C26.2); the series (bridge, arrive, his
-  goal-behind cases, the Terminus drive) wait for the port. Time-boxed to two series rounds.
+- **M3 (the orchestrator's request: the creep line) — TIME-BOXED OUT, written up for round 27 (branch `manoeuvre-m3`,
+  NOT for merge).** Rule: right after `cmd.throttle = drive_vector.x * speed_factor * pace` in drive(), a wheeled
+  hull not in a planned leg whose |throttle| fell under the creep line (0.5 x |turn|) gets the line. All builder0,
+  GDScript path, `--nav-off=creepline` the control, main+CP1a2+CP3:
+  - Round 1 (`f46fae96`: lift above half pace, else HOLD STILL): census creep episodes 114 -> 1, <= 3-leg turns
+    friendly 75.6 -> 85.3 %, open 75.5 -> 87.0 %; but **his bridge drill 9/18** (control 18/18) and the Terminus
+    drive's mixed squad arrived 151/192 vs 180, leg time 1019 -> 2163 s: crews held still at the bridge mouth and in
+    the streets.
+  - Round 2 (`f8f142ab`: lift only): bridge 18/18; census creep 1, <= 3-leg friendly 82.9 %, open 85.9 %; but the
+    Terminus drive is worse: mixed contacts 1047 -> 1662, press/unstick 63 -> 154; rigs arrivals 104 -> 98, leg time
+    1160 -> 1623 s, contacts 4628 -> 7344. Rolling the arc at the line drives hulls into the walls the shuffle was
+    nudging round.
+  - What it says: the creep is a SYMPTOM of a turn that the street has no room for at pace; neither stopping nor
+    rolling fixes it alone. Round 27: plan the turn (M2's planner for every hull, with the pocket and carrot cases
+    fixed first), or let avoidance's pace hand the hull a planned give-way instead of a slowed arc. Perf's port
+    (`9749c766` + `1024845a`, round 1's rule) is held, not queued.
 - **Next steps:** M2's check + paired series -> declare CP3 (rigs only); then the creep (with traffic) and the
   pocket case (with brains).
 
