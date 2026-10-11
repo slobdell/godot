@@ -101,7 +101,21 @@ scoped for him.**
 - **C25.6 (the army cap follows the render preset), C24.6, C24.7 (the bar), C24.8 (the seams), C23.1a, C23.2,
   C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
 
-**Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1** traffic's convention + perf's port,
+- **C26.8 Grant to traffic (2026-10-10 night): `ElementFeed.changed` / the `key` built in `ElementFeed.context`
+  (`element_feed.gd` ~190–207), that hunk only.** Traffic found the head-on jam's root cause there: the key carries the
+  crew's slot as a float string, the element slides that slot by millimetres every update (~9 ticks), so `changed()`
+  reads true, `TankBrain._poll_element` interrupts, and `Movement.reset()` zeroes `stalled_ticks`/`_order_ticks` every
+  ~0.3 s: `_avoid`'s start-of-order grace never ends (ORCA only slows, never steers aside) and ask/yield/held_back never
+  fire. Every element move, both sides. (Laptop probe on b57838ed, yard_open, his head-on case, n = 1, seed 1: 4/10 crews
+  nose to nose all 60 s, 207 friendly-stuck crew-s; prototype ignoring a slot slide < 2 m with the rest of the key
+  equal: 10/10 by 24 s, 0.) **Terms:** a DECLARED change (C26.1) of its own, **CP1a, merged alone BEFORE the convention
+  (CP1b)**, so each one's effect is measured separately; a real re-seat (a slot that jumps, a role/task/drill change)
+  must still interrupt (a unit test for each); the series: his two cases, `nav-orders`, `bridge-pooled`, the arrive
+  series, the element digest (moves: declared), the thirteen lines, the think-rate census (perf P4: fewer interrupts
+  may move the quiet share). Brains does not edit `ElementFeed.changed` or the key this round and re-runs its bridge
+  108 after CP1a.
+
+**Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
 traffic re-reads the friendly share.
