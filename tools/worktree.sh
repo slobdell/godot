@@ -58,12 +58,18 @@ MK
 config/use_custom_user_dir=true
 config/custom_user_dir_name="tank_squad_$stream"
 CFG
-    echo ">> importing (first run builds $dir/.godot)"
-    make -C "$dir" import >/dev/null 2>&1 || make -C "$dir" import
+    # Seed the import cache from the main checkout so the import below only re-checks files (a full import from scratch
+    # takes ~6 of the laptop's 8 cores for a minute or two; five worktrees in a row saturated it, round 26's launch).
+    if [[ -d "$main_root/.godot" && ! -d "$dir/.godot" ]]; then
+      echo ">> seeding $dir/.godot from the main checkout's import cache"
+      cp -a --reflink=auto "$main_root/.godot" "$dir/.godot"
+    fi
+    echo ">> importing at low priority (re-checks the seeded cache)"
+    nice -n 19 make -C "$dir" import >/dev/null 2>&1 || nice -n 19 make -C "$dir" import
     echo
     echo "Worktree ready: $dir  (branch $branch, ports +$((10 * offset)))"
     echo "Start its agent:  cd $dir && claude"
-    echo "Tell it: the /goal kickoff in HANDOFF.md (Overnight run), with <stream> = $stream"
+    echo "Tell it: the kickoff prompt in _agents/orchestration.md (the same line for every stream)"
     ;;
   list)
     printf "%-34s %-26s %-10s %-7s %s\n" "FOLDER" "BRANCH" "PORTS+" "DIRTY" "VS MAIN (behind/ahead)"

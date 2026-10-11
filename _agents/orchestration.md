@@ -121,7 +121,8 @@ make remote T=check                                     # or make check; fix int
    anything under `assets/` a worker generated (`rsync -a` into the main checkout; check `git status --ignored` in each
    worktree). The 30-minute backup timer only watches the main checkout, so until you copy it in, a worktree's payload
    exists **once** ([backups.md](backups.md)).
-3. `make worktree-remove STREAM=<s>`, then delete merged branches (`git branch -D` after the ancestor check; `-d`
+3. `make worktree-remove STREAM=<s>`, **and its builder0 folders: `ssh builder0 rm -rf ~/tank_squad/godot-<s>*`** (lesson 290),
+   then delete merged branches (`git branch -D` after the ancestor check; `-d`
    refuses when the remote branch is behind).
 4. Archive briefs: `git mv _agents/streams/<s>.md _agents/streams/archive/roundN/`, add an archive banner, fix links
    (code comments reference briefs too: grep the whole repo).
@@ -137,7 +138,9 @@ The kickoff prompt is one line; this section is the rest.
 
 1. **Orient:** confirm `pwd` is `godot-<stream>` and `git branch --show-current` is `stream/<stream>` (stop if they
    disagree). Read `CLAUDE.md` → `HANDOFF.md` → [orientation.md](orientation.md) → [game_design.md](game_design.md)
-   → [workstreams.md](workstreams.md) → your brief. Start from a green `make remote T=check`.
+   → [workstreams.md](workstreams.md) → your brief. Start from a green check: the orchestrator's launch check named in
+   `HANDOFF.md` covers your starting commit, so don't re-run it (round 26: five baseline checks of the same commit
+   saturated builder0 and delayed every stream's real work); run one only if HANDOFF names no green check for it.
 2. **Plan** the brief's backlog into an ordered list in its Status (smallest foundation first). Where the brief leaves a
    choice, decide like a good game designer/engineer and record a one-line reason.
 3. **Loop per item:** a failing test or scenario first → build → `make remote T=check` → **smoke test like a player**
@@ -3713,3 +3716,16 @@ instrument that cannot lie about load — removal within one run — and let eve
    meant for `skirmish-factions`, pinned `make skirmish`'s opponent to the Syndicate for 24 days and nobody's test saw
    it: the tests launch Godot directly. Defaults for one target go inside that target (`$(or $(VAR),default)`), and
    `make -n <target>` is the check for what a target actually passes.
+289. **Launching a round is a load too.** (Round 26, the orchestrator; the lead saw the laptop saturated.) `make worktree`
+   ran a full Godot import from scratch per folder (~6 of 8 cores, 1–2 min each); five in a row, plus five worker
+   sessions starting, put the load average at 30. `tools/worktree.sh` now seeds `.godot` from the main checkout and
+   imports at `nice 19` (a test folder: 37 s wall, 28 s CPU under load, against ~4 CPU-minutes per folder before). Anything
+   heavy you start locally, even setup, is CPU the lead and the workers don't have. Two more from the same hour: my own
+   `until ! pgrep -f 'worktree.sh add'` wait never ended — `pgrep -f` matched its own shell's command line — and spun
+   pgrep at ~120 % CPU for 20 minutes (use `pgrep -x` or a pid file); and workers ran `make lint` locally (a Godot per
+   script). The rule since (C26.7): every Godot run on builder0, the laptop only in a granted slot.
+290. **builder0's disk is part of the round's close.** (Round 26, 05:40, overnight.) `remote_builds.md` said to delete a
+   stream's builder0 folders when its round closed; nobody had since round 16. ~60 folders (~45 GB) filled the root disk
+   to 100 %, a write truncated the SHARED `.tools/.../editor_settings-4.7.tres` (every stream's Godot read a parse
+   error), and every check in that window was void. Deleted everything without a current stream's prefix (25 GB free);
+   the close checklist now removes each stream's remote folders with its worktree.

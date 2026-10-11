@@ -1,0 +1,4 @@
+m065     v lighter  R 20.03 v 19.01 ms a frame: +1.02 ms (se 0.58), +5.8 % (se 3.2), n 6, outside 2 se: False
+mglow    v lighter  R 19.69 v 19.01 ms a frame: +0.68 ms (se 0.95), +4.7 % (se 5.8), n 6, outside 2 se: False
+mlean    v lighter  R 19.22 v 19.01 ms a frame: +0.21 ms (se 0.73), +1.9 % (se 4.1), n 6, outside 2 se: False
+mcrowd   v lighter  R 18.65 v 19.01 ms a frame: -0.36 ms (se 0.81), -1.1 % (se 4.6), n 6, outside 2 se: False
