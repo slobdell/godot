@@ -643,28 +643,32 @@ A batched pass pays only when MANY sections read ONE gather a tick; then the 0.5
 runs at ~r of its GDScript. That is the whole-brain pass's case, and it is exactly what per-section porting (N7) never
 had.
 
-### P3: the estimate (the rule above, applied; confidence medium-low)
+### P3: the estimate (the rule above, applied; confidence medium-low; CORRECTED 01:10 on the orchestrator's check)
 
 **What the pass would replace** (P1's builder0 split, `b57838ed`, foundry/parade 25 a side, shares of the tick's
-scripts): the controllers are 74-75 %; of that ~7 % is engine work that stays (the scan's sight ray ~4.5, rays and
-navmesh queries ~2.7), so **~67 % of the tick's scripts is GDScript or Variant-shaped C++ the pass would rewrite**
-(think 41-44 %, execute 29-30 % less the engine, wall contact 1.2). Elements (15-16 %), tank (5-6), match (3.5-4) stay.
+scripts): the controllers are 74-75 %; ~7 % of it is engine work that stays (the scan's sight ray ~4.5, rays and navmesh
+queries ~2.7), which leaves ~67 %. **Of that, ~18 % is ALREADY C++** (the native drive's own part ~7 of its 10, the
+drive's GDScript callbacks being ~30 % of a drive by `--native-drive-profile`; decide 5.3; situation's core ~5; avoid,
+cover, nav, dodge inside other sections ~1), so **~49 % is GDScript the pass would rewrite**. The already-native 18 %
+saves only its marshalling (Dictionaries built for GDScript consumers, member reads through Variants): **m = 0.3-0.5**
+of it. Elements (15-16 %), tank (5-6), match (3.5-4) stay.
 
-**r** (C++ time / GDScript time for the same work over structs): the prototype's tight loop measured 0.05; branchy
-state machines over hash maps will not get that far: **central 0.15, range 0.08-0.25**. **Fixed costs a tick:** the
-record and contacts gather (measured 0.5 ms = 1.1 % of the loaded tick) + the state the GDScript PUSHES into the
-record (orders, element calls, squad serials: not measured, sized at 1-2x the gather) + handing commands, intents and
-choices back: **2-4 % of the tick**.
+**r** (C++ time / GDScript time for the same work over structs): the prototype's tight loop measured 0.05; logic-heavy
+sections (decide-like scoring, act's arms, the state machines) will not get that far: **central 0.15, range 0.08-0.3**.
+**Fixed costs a tick:** the record and contacts gather (measured 0.5 ms = 1.1 % of the loaded tick) + the state the
+GDScript PUSHES into the record (orders, element calls, squad serials: not measured, sized at 1-2x the gather) +
+handing commands, intents and choices back: **2-4 %**.
 
-**Saving = 0.67 x (1 - r) - fixed = 54 % of the tick's scripts (46-60 %).**
+**Saving = 0.49 x (1 - r) + 0.18 x m - fixed = 46 % of the tick's scripts (36 % at r 0.3, m 0.3, fixed 4 %; 52 % at
+r 0.08, m 0.5, fixed 2 %).**
 
-| his laptop (his preset, the opening clash) | today (measured) | the whole pass (est.) | the execute half alone (est.) |
+| his laptop (his preset, the opening clash) | today (measured) | the whole pass (est., central / low) | the execute half alone (est., central / low) |
 |---|---|---|---|
-| 20 a side (379e0567, n = 6: scripts 28.6, wall 37.8 ms a game tick, 0.97 needs 34.4) | **0.881** | scripts ~13 (11.5-15.4) -> **full speed with ~35-60 % to spare** | scripts ~23 -> **~1.0: just full speed** |
-| 25 a side (49e2bdcd, n = 6: scripts 35.2, 0.769) | **0.769** | scripts ~16 (14-19) -> **full speed (1.2-1.5 uncapped)** | ~0.91 |
+| 20 a side (379e0567, n = 6: scripts 28.6, wall 37.8 ms a game tick, 0.97 needs 34.4) | **0.881** | wall 24.6 / 27.5 ms -> **full speed** (1.36 / 1.21 uncapped) | 33.2 / 34.2 -> **~1.00 / 0.975: just full speed** |
+| 25 a side (49e2bdcd, n = 6: scripts 35.2, 0.769, wall 43.3) | **0.769** | 27.1 / 30.6 -> **full speed** (1.23 / 1.09) | **0.88 / 0.86** |
 
-The execute half (drive and its callbacks, weapon, unstick, wall contact; ~24 % of the tick after the engine work)
-saves ~19 % on its own; the think half (gate, situation, decide, act) the rest.
+The execute half (drive callbacks, weapon, unstick, wall contact: ~17 % GDScript + the drive's native 7 % after the
+engine work) saves ~16 % (12.5-16) on its own; the think half the rest.
 
 **The work:** ~9 000 lines of GDScript (tank_brain.gd 3 480, movement.gd's GDScript callbacks ~2 000, combat_motion
 1 100, order_controller 580, gunnery 380, ai_tick_cache 390, think_quiet, incoming_fire, squad_tactics and the feeds'

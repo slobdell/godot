@@ -114,14 +114,15 @@ builder0. Laptop sessions only when the orchestrator grants one, C26.7.)_
 ### prototype and the arithmetic)
 
 **In player terms:** today his laptop plays 20 a side at 0.88 of full speed in the opening clash (it felt fine).
-Rewriting the whole vehicle brain as one C++ pass would, by our estimate, let the laptop play **25 a side at full speed
-with room to spare** (and 20 a side with a third to spare). It costs **about five weeks** of one stream (4-7), during
+Rewriting the whole vehicle brain as one C++ pass would, by our estimate, let the laptop play **25 a side at full speed**
+(1.09-1.23 uncapped) and 20 a side with a fifth to a third to spare. (Corrected 01:10: already-native time counted at its
+marshalling only, r up to 0.3: the saving is 46 % of the tick's scripts, 36-52 %.) It costs **about five weeks** of one stream (4-7), during
 which AI changes in the parts being rewritten either wait or are written twice; afterwards every AI change costs
 **~1.5-2x** (written in both languages and proven equal) — or we make the C++ the only brain, and the browser version
 keeps today's AI.
 
 **Halfway point:** the "execute" half alone (driving, gunnery: the code that changes least) is ~2 weeks and gets 20 a
-side to **just full speed** (~1.0), not 25.
+side to **just full speed** (0.975-1.0), not 25 (0.86-0.88).
 
 **Recommendation (one):** do it in two stages, both proven equal (nothing he sees changes): **stage 1, the execute half,
 next round** once this round's driving changes (traffic's convention, manoeuvre's reverse and three-point turn) have
@@ -130,7 +131,7 @@ part brains reshapes every round, so it is cheapest once his AI direction settle
 
 **The evidence and its limits:** the prototype (`local/perf-p3-proto` tip `b32c6a45`, never merged; builder0, n = 3;
 equal answer 0/23 000) measured the C++ at 5 % of its GDScript for a tight loop and one shared gather at ~0.5 ms a
-tick; the estimate assumes branchy brain code reaches 15 % (8-25 %) and the pushed state costs 1-2 gathers. Nothing
+tick; the estimate assumes branchy brain code reaches 15 % (8-30 %), already-native sections save 30-50 % (their marshalling) and the pushed state costs 1-2 gathers. Nothing
 here is a laptop measurement: the laptop's split (P1, queued) re-bases it, and stage 1's own laptop price is the
 check on the whole estimate before stage 2 is started.
 
