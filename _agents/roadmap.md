@@ -215,7 +215,9 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
 manoeuvre (three-point turns, the short move behind), orders (facing for armed orders), brains (B0 the facing in every
 armed task; his bridge drill; carry-overs), perf (the C++ kept in step, the batched ports that pay, the whole-brain
 batched pass priced for him; stretch a lighter look). Laptop speed: he said the clash at 20 a side felt fine, and asked
-that low-end hardware stay the target (`game_design.md` reading (9)). The list below is kept as written.
+that low-end hardware stay the target (`game_design.md` reading (9)). **Round 27 (his decision 2026-10-11, perf P3):** the
+execute half of the brain (move, weapon, act) as one batched C++ pass over the record, ~2 weeks, after CP1–CP3; the think
+half later, his call (`game_design.md` *Round 26: his C++ decision*). The list below is kept as written.
 
 His words in `game_design.md` *Round 26 direction*; the orchestrator's readings (1)–(6) beside them.
 - **Friendly vehicles deconflict** (his first item): two friendly squads ordered through each other head-on, or crossing
