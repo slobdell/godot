@@ -341,11 +341,15 @@ func _both_arrived() -> bool:
 ## task was GIVEN (what brains is asked to honour; the gesture's own error is `gesture_error_deg` on the row).
 func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 	var heading := Vector3.ZERO
+	var guns := Vector3.ZERO
 	var points: Array[Vector3] = []
 	for unit_name in crews:
-		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		var nose := -tank.global_basis.z
 		heading += Vector3(nose.x, 0.0, nose.z).normalized()
+		# Where the gun points (a turret's heading), which is what "faces it" means for a turreted crew.
+		var gun := -tank.turret.global_basis.z if tank.turret != null else nose
+		guns += Vector3(gun.x, 0.0, gun.z).normalized()
 		points.append(_position_of(unit_name))
 	var result := {"crews": crews.size()}
 	if crews.is_empty():
@@ -353,6 +357,7 @@ func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 		return result
 	var hull_error := rad_to_deg(Vector2(heading.x, heading.z).angle_to(Vector2(facing.x, facing.z)))
 	result["hull_error_deg"] = snappedf(absf(hull_error), 0.1)
+	result["gun_error_deg"] = snappedf(absf(rad_to_deg(Vector2(guns.x, guns.z).angle_to(Vector2(facing.x, facing.z)))), 0.1)
 	var ok := absf(hull_error) <= FACED_TOLERANCE_DEG
 	if lines and points.size() >= 3:
 		var axis := _line_axis(points)
