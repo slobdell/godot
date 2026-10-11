@@ -172,6 +172,11 @@ time inside one squad (crossing solo 126 -> 145 crew-s). **What a player sees at
 Terminus street not one run in 18 got every crew through; on open ground half did. What is left after CP1a is the
 convention's job: fast friendly contacts (654 / 76 / 280 / 207) and the crossings' stuck time.
 
+**His bridge drill (brains' evidence, builder0, `aa5defa1` = stream/brains + `5c31c58f`, 108 runs paired at one
+commit):** `--traffic-off=slide` reproduces round 25 exactly (his side 45/54 across, CPU 42/54, squads arriving 37/40,
+deck jam 1013 / 754 crew-s); CP1a on: 53/54 and 53/54, squads arriving 54/54, deck jam 135 / 92 (-87 %). No run got
+worse; the one miss a side is a crew the lancers kill, which misses with the switch off too.
+
 Solo arms do not always "arrive" either (Terminus head-on solo_b crew 5 in 16 of 18 runs; Terminus crossing crew 4):
 the probe now reports each crew's final distance to its slot (`82ce362f`) to tell a slot it cannot reach from a stall.
 
