@@ -207,20 +207,21 @@ cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera (AN
 # `make demo` is play.mk's scripted driver, and the Makefile's SEED ?= 1 is global: a showmatch rolls its own seed
 # unless SEED is given on the command line or in the environment.
 DEMO_SEED_GIVEN = $(if $(filter command line environment environment override,$(origin SEED)),$(SEED))
-DEMO_RES ?= 1920x1080
 DEMO_FPS ?= 30
 DEMO_END_S ?= 5
 
 # O5 (the lead: "pit 2 computer players against each other so I can easily record the game to share with people").
+# Movie Maker ignores --resolution and records the project's window size: project.godot's `.movie` overrides make it
+# 1920x1080 (the `movie` feature tag is only set while recording).
 .PHONY: showmatch
-showmatch: import ## Two computer players fight, filmed by the self-directing camera with no HUD (sound on). Random factions (never a mirror) and arena from SEED, printed as DEMO_SEED; SEED= FACTION= ENEMY_FACTION= ARENA= pin them, SIZE= squads a side, HUD=1 keeps the score. MOVIE=out.mp4 (or .avi) records it at RES=1920x1080 FPS=30: it renders slower than real time, but the file plays smoothly
+showmatch: import ## Two computer players fight, filmed by the self-directing camera with no HUD (sound on). Random factions (never a mirror) and arena from SEED, printed as DEMO_SEED; SEED= FACTION= ENEMY_FACTION= ARENA= pin them, SIZE= squads a side, HUD=1 keeps the score. MOVIE=out.mp4 (or .avi) records it in 1080p at FPS=30: it renders slower than real time, but the file plays smoothly. RES=WxH sizes the window for watching
 	@seed=$(or $(DEMO_SEED_GIVEN),$$(( $$(date +%s%N) / 1000 % 100000 ))); \
 	echo "DEMO_SEED $$seed (replay: make showmatch SEED=$$seed)"; \
 	movie="$(MOVIE)"; avi=""; record=""; finish=""; \
 	if [ -n "$$movie" ]; then \
 		case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
 		avi="$${movie%.*}.avi"; mkdir -p "$$(dirname "$$movie")"; \
-		record="--write-movie $$avi --fixed-fps $(or $(FPS),$(DEMO_FPS)) --resolution $(or $(RES),$(DEMO_RES))"; \
+		record="--write-movie $$avi --fixed-fps $(or $(FPS),$(DEMO_FPS))"; \
 		finish="--quit-after-end=$(DEMO_END_S)"; \
 	elif [ -n "$(RES)" ]; then record="--resolution $(RES)"; fi; \
 	started=$$(date +%s); \
