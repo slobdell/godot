@@ -127,6 +127,14 @@ scoped for him.**
   three-point turn at rest instead of the creep, the same planner as M2). Part of CP2 (declared). If the rule needs
   `game/control/orders.gd`'s heading, that hunk is a request to orders through the orchestrator, not an edit.
 
+- **C26.10 A behaviour change carries a cost line (2026-10-11 ~00:30).** Perf sized traffic's CP1b draft (5b881905,
+  builder0 light lane loaded, Sumps 25 a side + leaders, n = 3): `Traffic.shape` ~36 calls a tick × ~80 µs = 2.8 ms,
+  refresh 0.75, ~4 ms a tick (5–6 %): more than N7's whole remaining port list. So CP1b's pass line includes **≤ 0.5 ms a
+  tick on the GDScript path at 25 a side on Sumps** (perf's sub-lap workload), reached by the algorithm first (ORCA's
+  neighbour table, one decision per meeting pair, idle crews skipped); perf ports the SETTLED version once. The same
+  rule for every declared change this round: its cost at 25 a side is measured, pre-registered and reported beside
+  its behaviour numbers.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
