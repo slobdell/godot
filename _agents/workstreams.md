@@ -35,6 +35,8 @@ a merge note) · native `native/**`, `game/ai/native/**`, `mk/native.mk`, `avoid
 request), `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`,
 `mk/core.mk`.
 
+**C25.3 rulings, 2026-10-10 (brains F1b, his pursuit answer "stay on the chase"):** (1) pursuit: a crew may open the range only if hull < 15 % or the target's gun was on it within 2 s, AND every other crew keeps closing; (2) out-of-sight target: killed by this squad, or the squad ends within 40 m; (3) elements: ≥ 0.3 × top speed × 6 s on the element centre's progress, AND no crew's route remaining grows. Each tightened so the line cannot pass when the squad as a whole lets go.
+
 **Grant, 2026-10-10 (native, N7):** a new `if BrainSwitches.native_weapon :` seam at the top of `gunnery.gd`'s lanes and aim functions, switch OFF until an equal-answer proof against the live GDScript passes (the N2b pattern), then ON as its own merge. This is round 26's native-exec item started early; native-exec inherits it. `act` (`tank_brain.gd`) follows on the same terms. C25.2 holds: any behaviour change to those functions lands in GDScript and C++ together.
 
 **Contracts (round 25):**
