@@ -73,7 +73,7 @@ Nothing; he judges the gesture in play.
 
 ## Status
 
-_Updated 2026-10-11 (worker, `godot-orders`)._
+_Updated 2026-10-11 evening (worker, `godot-orders`): final report for round 26 below._
 
 **Plan (in order):** O1 the gesture (tests first) → O3 legibility (the hint text and the marker; small, and the
 marker already reads a task's facing) → the O2 probe built now on today's code (it shows which tasks ignore a drawn
@@ -200,38 +200,52 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   move the OS pointer with their events (the hint and hover tooltip follow the real pointer, so they had shown where
   the window's pointer was left, over the command card at 1200x540); rerun on builder0: the hint sits at the arrow tip.
 
-### Report (2026-10-11)
+### Report (2026-10-11, final for round 26)
 
-- **Backlog:** O1 done, O3 done, O2 done (probe + 15-deg pass line + frames; the hull numbers are manoeuvre's, C26.9),
-  O4 (a) built, O4 (b) written up as a question. Nothing blocked on me.
-- **O5 done** (`bc117050`, `5a9b86a1`): `make showmatch`. `SkirmishMode.demo_flags` (both CPU, cinematic, factions
-  rolled from the seed, the enemy never the first side's), `--clean` = `CleanFeed` (game/ui/clean_feed.gd: hides every
-  HUD child but the end banner, `--clean-score` keeps the bug; selects nothing), the spectated end banner names the
-  winner ("WINNER: THE LAW", `make cinematic` too), `--quit-after-end=5`. MOVIE=x.mp4 records an AVI with
-  `--write-movie --fixed-fps 30` and ffmpeg makes the mp4 (no ffmpeg: the AVI is kept, and it says so). Movie Maker
-  IGNORES `--resolution` (it records the project's window size), so project.godot has `.movie` window overrides
-  (1920x1080, only while recording; granted). Tests: `tests/test_control_showmatch.gd` (8). Movies on builder0
-  (windowed, laptop preset there, 4 squads / 20 a side): seed 3666 yard_open law vs gangs, 66.0 s, 231 s to render,
-  1280x720 (before the override); seed 43496 docks syndicate vs law, HUD=1, **88.3 s at 1920x1080, 344 s to render
-  (~3.9x real time), 226 MB**; frames at the start, mid-fight and the end banner looked at: no chrome, the score bug
-  reads on video, the end banner names the winner. Known: the cinematic camera's last shot can tilt into the floor
-  below the arena (game/camera, not touched). For the lead: `make showmatch` to watch, `make showmatch
-  MOVIE=build/showmatch.mp4` to record (replay a good one with `SEED=`).
-- **Green hash:** see *Checks* below (the last line names the commit to merge).
-- **Requests to other streams:** brains: ambush's guns at a flat 30 deg (the off-team `_should_issue` heading case is
-  already theirs, 3214dddf). Manoeuvre: hulls
-  at rest vs the drawn facing, split by hull class.
-- **Known issues:** few probe runs settle inside 75 s (crews keep nudging), so `settled` is mostly "at 75 s"; the
-  contact arm is reported, not judged.
-- **Playtest:** `make showmatch` (O5; `MOVIE=build/showmatch.mp4` records it). `make skirmish`, select a squad, press E/R/B/A/M, then press on the ground and drag toward where they
-  should face; `make remote LIGHT=1 T=facing-probe` (numbers); `make remote LIGHT=1 T=facing-shots` (frames under
-  `build/light/build/facing/<size>/<scenario>/shots`).
-- **Next:** after brains' 3214dddf merges: `git merge main`, rerun the probe's quiet arm (the after-CP2 table is the baseline).
-- **Merge notes:** new files `tools/facing_probe_table.py` (approved), `tests/ai_scenarios/scenario_orders_facing.gd`
-  (its `.uid` committed); `game/control/orders.gd` `_same_order` (element branch, heading present vs
-  absent); `game/ui/control_hints.gd` (two strings); O5: `game/ui/clean_feed.gd` (new), `game/modes/skirmish_mode.gd` (demo flags, the
-  spectated end banner, the clean feed in the cinematic branch: granted), `project.godot` (two `.movie` lines: granted),
-  `tests/baselines/ai_scenarios_count.txt` 45 -> 46 (approved), perf's 845dc7af cherry-picked as e736248a.
+**State:** every backlog item is done (O1-O5, O4 (b) written up and decided); merged on main as `aca71957` (green
+`702269f7`, builder0 2449/0, ALL JUDGED, thirteen unmoved). One thing left: after brains' heading fix (3214dddf)
+reaches main, `git merge main` and rerun the quiet probe (the after-CP2 table above is its baseline).
+
+**What he'll notice when he plays:**
+- Any armed order (Screen E, Support by fire R, Ambush B, Attack-move A, Move M): press on the ground where they
+  should go and DRAG toward the way they should face, then let go. A ring and an arrow in the order's colour follow the
+  drag; the order's pin then carries chevrons pointing that way. A plain click is exactly the order it always was. The
+  hints and the command card's tooltips say "drag to face".
+- Shift-drag queues a faced move or attack-move (its heading shows on the queued pin); Escape or a right click during
+  the drag cancels it. Dragging up past the horizon uses the last ground the drag crossed, like the right-drag.
+- On a phone, a tap is still the order; a one-finger press-drag is the facing gesture.
+- The squad's LINE lies across the arrow and its guns point along it (11-12 of 15 runs within 15 deg); after CP2 most
+  hulls turn to it too, plain moves less so (the hull numbers are manoeuvre's).
+- `make showmatch`: two computer players fight, filmed by the self-directing camera, with no HUD, the announcer and
+  music on, and "WINNER: <FACTION>" at the end. Each run prints `DEMO_SEED N`; `make showmatch SEED=N` replays it.
+
+**Commands (exactly):**
+- `make skirmish` then select a squad (1-4 or a click), press E / R / B / A / M, and press-drag-release on the ground.
+- `make showmatch` to watch; `make showmatch HUD=1` keeps the score bug; `make showmatch SEED=3666` replays a match;
+  `FACTION=law ENEMY_FACTION=gangs ARENA=docks SIZE=3` pin the rest.
+- `make showmatch MOVIE=build/showmatch.mp4` records it: 1080p, 30 fps, sound, an mp4 ready to share (via ffmpeg; without
+  ffmpeg it keeps the .avi and says so). It renders slower than real time (builder0: an 88 s match took 344 s, about 4x;
+  his laptop will be slower) but the file plays smoothly; it quits by itself 5 s after the end banner.
+- Numbers and frames: `make remote LIGHT=1 T=facing-probe`, `make remote LIGHT=1 T=facing-shots`.
+
+**Round 27 candidates:**
+1. Attack with a direction: press on an enemy + drag = come at it from that side (an approach vector on brains' attack
+   task). Decided not this round (he did not ask).
+2. The cinematic camera's last shot can tilt so the bottom third is the purple floor under the arena (seen in the
+   HUD=1 movie's end frame, seed 43496 docks): game/camera's framing, untouched here.
+3. Ambush's guns sit at a flat 30 deg off the drawn facing in every run (brains).
+4. Hulls at rest against the drawn facing, by hull class (manoeuvre, C26.9); the tail of 100-167 deg hulls on every task.
+5. The laptop preset's army fold gives the CPU squads of 6-7, which elements refuse (C19.1), so they fight leaderless
+   (perf has it; my guard keeps the controls safe either way).
+
+**Known issues:** few probe runs are still for 3 s inside 75 s, so its numbers are 75 s readings; the contact arm is
+reported, not judged; Movie Maker renders at about 4x real time on builder0.
+
+**Merge notes (all merged in `aca71957`):** new `tools/facing_probe_table.py` (approved), `game/ui/clean_feed.gd`,
+`tests/ai_scenarios/scenario_orders_facing.gd` (REQUIRED, `.uid` committed), `tests/test_control_showmatch.gd`,
+`tests/test_control_oversize_squad.gd`; `game/control/orders.gd` `_same_order`; `game/ui/control_hints.gd` (two strings);
+`game/modes/skirmish_mode.gd` (demo flags, the spectated end banner, the clean feed: granted); `project.godot` (two
+`.movie` lines: granted); `tests/baselines/ai_scenarios_count.txt` 45 -> 46 (approved); perf's 845dc7af as e736248a.
 
 ### Checks (builder0, `make remote T=check`)
 
@@ -244,8 +258,9 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   scenario (re-recorded `1226372a`, approved). Thirteen unmoved, determinism 762a0576f944f5b7 on every one.
 - **Final: `ba3e3480` green: builder0 `make check exited 0`, 2449 passed / 0 failed, 24 targets ALL JUDGED, thirteen
   unmoved, determinism 762a0576f944f5b7.** It holds `_same_order` + the required scenario + the count (`1226372a`),
-  perf's leak fix (`e736248a`), O5 (`bc117050`, `5a9b86a1`) and the null-element guard (`ba3e3480`). Merge `ba3e3480`
-  (later commits on this branch are Status only).
+  perf's leak fix (`e736248a`), O5 (`bc117050`, `5a9b86a1`) and the null-element guard (`ba3e3480`). Merged as 28578083.
+- `702269f7` green: 2449/0, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7 (the above-horizon ruling,
+  `c967c055`). Merged as `aca71957`.
 
 - **Null-element guard** (`ba3e3480`, perf's finding, builder0 a5ab7518): where `Elements.form` refuses (over five,
   C19.1) and returns null, `assign_task` / `_task_squad` send a unit verb straight to the crews and refuse a squad-only
