@@ -89,7 +89,35 @@ Nothing. Questions go in Status; take the most reversible option.
 
 ## Status
 
-_Updated 2026-10-10 ~23:45 by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`)._
+_Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`)._
+
+### The report (read this first)
+
+- **Done:** M0a (the goal-behind probe), M0b (the turn census), **M1 + M1b = CP2, MERGED on main as `0845c3c7`**
+  (`25f8cfa4`, check 2406/0 ALL JUDGED; bridge 18/18 = main; arrive 99/100 = main). His short move behind: War Rig
+  10 m astern settled 43.1 -> 1.7 s, scout 5 m with a facing 6.07 -> 0.67 s, tank 10 m 3.67 -> 2.47 s; every cell
+  faster or equal (sections below).
+- **M2 = CP3 candidate** on `stream/manoeuvre` (`57054f60`; its check is running): the planned AWAY leg (leg 3 of a
+  three-point turn driven as a leg, not left to the pursuit law) and the inside-circle back-up, **for long hulls
+  (>= 10 m: the War Rig) by default**: on all wheels it halved the rigs' wall contacts but cost the mixed squad 14 %
+  more (Terminus drive A/B below), so it follows round 15's `kturnbrake` precedent. Not DECLARED-ready until its check
+  and the paired series (bridge, arrive) are in.
+- **Against M2's pre-registered line (>= 95 % of static turns in <= 3 legs, pooled):** NOT met as a clean pass. The
+  pooled census reads 85.5 % at main, 93.3 % at main+CP1a, **95.6 % at CP2** (one run each; the Sumps fights move
+  this +/- 3 points run to run); the Terminus drive alone, 8 seeds: 80.6 % -> 84.4 % with M2 on all wheels. What
+  fails it: turns whose goal is re-issued mid-turn (`end: new_goal`, a CPU element re-seating), a rig boxed in a
+  pocket where no back-up fits (the circle plan refuses; Steering's circle rule then shuffles against a carrot that
+  flips sides — the route's corner under the hull, brains' route code), and reverse legs meeting walls the navmesh
+  sweep passed. Written up rather than forced (time-box, contract item 9).
+- **Requests to other streams:** traffic — the in-drive CREEP is the largest source of long turns (149 episodes in
+  one census, 81 of them `friendly`): a wheeled hull at full lock whose throttle avoidance has paced under the
+  plant's creep threshold (0.5 x |turn|) shuffles in 0.5 s legs beside a friend; brains — the route carrot that flips
+  between a corner under/behind the hull and one ahead (Terminus rigs seed 2, Green_S0_3 at (-18.7, -21.3), 23 legs).
+- **What to playtest:** `make native && make skirmish`; select one vehicle and right-click a point a few metres
+  behind it (with and without a right-drag facing the way it already points): it reverses onto the point and does
+  not turn round after. A War Rig told to face behind it at rest turns in three legs and stays on its spot.
+- **Next steps:** M2's check + paired series -> declare CP3 (rigs only); then the creep (with traffic) and the
+  pocket case (with brains).
 
 ### Plan (ordered, smallest foundation first)
 
