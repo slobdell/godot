@@ -311,3 +311,62 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
 ### Questions for the lead
 
 - None open (P3 decided 2026-10-11).
+
+### DRAFT — round 27's stage-1 brief (for the orchestrator to lift into `streams/` when round 26 closes)
+
+> **Stream: native-exec (stage 1: the driving and shooting half of the brain in C++, equal answer)**
+>
+> **The lead's direction (2026-10-11):** "Driving+shooting half (Recommended)" — the execute half next round, after
+> CP1-CP3, priced on his laptop (`game_design.md` *Round 26: his C++ decision*). What he was told: 20 a side reaches about
+> full speed on his laptop (0.96-1.03 depending on the day's baseline; 0.918 measured at `d84f7503`), 25 a side
+> 0.88-0.92; ~2 weeks; driving and shooting changes wait or are written twice meanwhile; stage 2 (the think half) only
+> if he wants bigger armies.
+>
+> **Where things stand (verify at main):** the native drive (with GDScript callbacks), avoidance, the route tail,
+> situation's core, decide, the two TacticalQuery functions, dodge, cover, nav, native_el, M1's gate are C++. The
+> callbacks the drive makes into GDScript: `_next_waypoint`'s re-plan (~45 us a drive), `_planned_reverse` and the
+> k-turn planner, `_negotiate`/`_blocker`/the give-way, `_keep_station`, `_approach_gate`, `_repair`,
+> `_inflate_corners`, `_chord_slack`, `_manoeuvre`'s decision, `Traffic` (CP1b's settled version, ported in round 26 or
+> first here). Measured for this design (round 26, builder0): one native call per crew reading a shared record costs
+> ~8 us of crossing; the C++ does the work at ~5 % of the GDScript; **reading the 97 fixed-type members of a crew's
+> Movement/Gunnery/Lay through the engine costs ~23 us a crew (464 us a gather for 20 crews,
+> `test_native_mover_record`, `631e678f`)** — so the execute state must LIVE in C++ (owned, written by the C++), with
+> GDScript reading it through accessors, never re-gathered every tick.
+>
+> **Shape:** ONE native call per crew per tick at the top of `OrderController.compute_command`, equal answer (the
+> think/execute interleave stays; a batched execute was priced at +0.005 game speed for a declared change: not taken).
+> The per-tick record (pose, contacts) gathered once a tick and shared with avoidance.
+>
+> **Ownership (grants):** perf's own (`native/**`, `game/ai/native/**`, `tests/native/**`, `tests/test_native*.gd`,
+> `mk/native.mk`, `brain_switches.gd`) plus: the seam at the top of `OrderController.compute_command`; `Movement`'s and
+> `Gunnery`'s member STORAGE behind accessors (movement.gd: brains', traffic's and manoeuvre's blocks; gunnery.gd);
+> `Traffic` (traffic's) for its port; `wall_contact.gd`'s observer.
+>
+> **The freeze (C26.2 widened to the whole execute step):** while the stream runs, a behaviour change to
+> `movement.gd`'s drive and its callbacks, `gunnery.gd`, `order_controller.gd`'s execute path, `steering.gd`,
+> `avoidance.gd`, `traffic.gd`, `wall_contact.gd`, `clothoid.gd` waits, or comes to native-exec as a diff to port.
+> Think-side files (`tank_brain.gd`'s situation/decide/act, tactics, elements) are NOT frozen.
+>
+> **Backlog (in order):**
+> 1. **E1 the execute state owned in C++** (from round 26's `MoverRecord`, `native/src/mover_record.*`, OFF): Movement's,
+>    Gunnery's and the lay's members move into native structs with GDScript accessors (`Movement.state()`,
+>    `route_arms()`, the census counters, `in_kturn`, `is_under_way`, `straight_and_clear`, the HUD's and explain
+>    overlay's reads); the field-by-field test kept; OFF, then ON with the full check unmoved.
+> 2. **E2 the drive's callbacks**, cheapest first, each proven by `test_native_drive` (live-function): `_chord_slack`,
+>    `_inflate_corners`, `_keep_station`, `_approach_gate`, `_repair`; then `_negotiate`/`_blocker`; then
+>    `_planned_reverse` + the k-turn planner; then the re-plan block; `_manoeuvre`'s decision last.
+> 3. **E3 gunnery** (the scan loop around the engine's ray, aim, engage, lanes, cover, `_clear_to_fire`, suppress,
+>    indirect) — tag `n7-weapon-slices` has proven aim and engage to start from.
+> 4. **E4 reflexes, unstick, the wall-contact observer.**
+> 5. **E5 the per-crew `execute` seam** ON in an A/B (`--brains-off=native_exec`), `native-proof` equal with and without
+>    leaders, the thirteen lines and determinism unmoved, `make check` and `make check NATIVE=off`.
+> 6. **E6 the laptop's ruling.**
+>
+> **The bar and the arms (written before the run):** `make native-tick-profile`, bar workload (foundry + parade, 8-20 s,
+> seeds 92721 31337 5988), his preset, **arms `s20@20` and `s25@25`, each ON v `--brains-off=native_exec`, ABBA, n = 6
+> paired**, `--squad-cap` pinned, ARMY_CAP_FIELDED read in every log, a session voided if prio0 moves; **ON when the tick's
+> scripts fall >= 2 % outside 2 se** at 20 a side; reported: game speed at 20 and 25, the split (P1's table) re-taken.
+> The estimate it checks: 11-15 % of the tick's scripts.
+>
+> **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
+> read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
