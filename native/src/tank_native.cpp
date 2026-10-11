@@ -490,6 +490,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.keep_levers = config.get("levers", Variant());
 	c.keep_tank_command = config.get("tank_command", Variant());
 	c.keep_nav = config.get("nav", Variant());
+	c.BEHIND_GAP_TICKS = (int64_t)config.get("BEHIND_GAP_TICKS", -1);
 	c.keep_avoidance = config.get("avoidance", Variant());
 	c.keep_switches = config.get("switches", Variant());
 	c.avoidance_script = c.keep_avoidance.get_validated_object();
