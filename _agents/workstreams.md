@@ -97,11 +97,45 @@ scoped for him.**
   TacticsLab or scenario result is timing-sensitive.
 - **C26.7 The laptop is one instrument** (C25.4 carried). Flightdeck sessions are serialized through the orchestrator;
   perf has priority for pricing, the others for his-pose clips and screenshots; pair by seed, ABBA, cooldown, void a hot
-  session; pin `--squad-cap` and read `ARMY_CAP_FIELDED` (lesson 285). builder0 for everything else.
+  session; pin `--squad-cap` and read `ARMY_CAP_FIELDED` (lesson 285). builder0 for everything else. **Ruled 2026-10-10 ~23:30 (the laptop saturated at launch): EVERY Godot run goes to builder0 (`make remote T=lint`, `T=check`, `T=<target>`), lint, single tests and probes included; the laptop runs Godot only in a slot the orchestrator grants.**
 - **C25.6 (the army cap follows the render preset), C24.6, C24.7 (the bar), C24.8 (the seams), C23.1a, C23.2,
   C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5, C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
 
-**Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1** traffic's convention + perf's port,
+- **C26.8 Grant to traffic (2026-10-10 night): `ElementFeed.changed` / the `key` built in `ElementFeed.context`
+  (`element_feed.gd` ~190–207), that hunk only.** Traffic found the head-on jam's root cause there: the key carries the
+  crew's slot as a float string, the element slides that slot by millimetres every update (~9 ticks), so `changed()`
+  reads true, `TankBrain._poll_element` interrupts, and `Movement.reset()` zeroes `stalled_ticks`/`_order_ticks` every
+  ~0.3 s: `_avoid`'s start-of-order grace never ends (ORCA only slows, never steers aside) and ask/yield/held_back never
+  fire. Every element move, both sides. (Laptop probe on b57838ed, yard_open, his head-on case, n = 1, seed 1: 4/10 crews
+  nose to nose all 60 s, 207 friendly-stuck crew-s; prototype ignoring a slot slide < 2 m with the rest of the key
+  equal: 10/10 by 24 s, 0.) **Terms:** a DECLARED change (C26.1) of its own, **CP1a, merged alone BEFORE the convention
+  (CP1b)**, so each one's effect is measured separately; a real re-seat (a slot that jumps, a role/task/drill change)
+  must still interrupt (a unit test for each); the series: his two cases, `nav-orders`, `bridge-pooled`, the arrive
+  series, the element digest (moves: declared), the thirteen lines, the think-rate census (perf P4: fewer interrupts
+  may move the quiet share). Brains does not edit `ElementFeed.changed` or the key this round and re-runs its bridge
+  108 after CP1a.
+
+- **C26.9 Ruling + grant to manoeuvre (2026-10-10 ~23:40): the short move behind ends WITHOUT a face turn.** Manoeuvre's M0
+  (`make manoeuvre-behind`, builder0, b57838ed): most of his "N point turn" on a short move behind is the POST-ARRIVAL
+  face turn. A plain move's heading is the travel direction, so a crew that arrives (or is already inside its settle
+  radius) then turns to face backward, and a wheeled hull does it by the plant's creep in 0.5 s legs: War Rig 5 m astern
+  arrived at once, then 89 creep legs in 45 s; 10 m astern done 7.6 s, settled 43 s. **Ruling (his reading (8), applied):**
+  a plain move with NO drawn facing whose goal falls in M1's short-move envelope arrives keeping the hull's heading at
+  the order (reverse onto it, or back-up-then-forward, and stop: no face turn); a drawn facing still wins. **Grant:**
+  manoeuvre owns the face-at-rest path in `game/ai/order_controller.gd` this round (`_same_face`, `face_giveup_on`,
+  `_face_giving_up`, the face branch of `_apply_move`) for M1 and for M1b, **a planned face turn for wheeled hulls** (a
+  three-point turn at rest instead of the creep, the same planner as M2). Part of CP2 (declared). If the rule needs
+  `game/control/orders.gd`'s heading, that hunk is a request to orders through the orchestrator, not an edit.
+
+- **C26.10 A behaviour change carries a cost line (2026-10-11 ~00:30).** Perf sized traffic's CP1b draft (5b881905,
+  builder0 light lane loaded, Sumps 25 a side + leaders, n = 3): `Traffic.shape` ~36 calls a tick × ~80 µs = 2.8 ms,
+  refresh 0.75, ~4 ms a tick (5–6 %): more than N7's whole remaining port list. So CP1b's pass line includes **≤ 0.5 ms a
+  tick on the GDScript path at 25 a side on Sumps** (perf's sub-lap workload), reached by the algorithm first (ORCA's
+  neighbour table, one decision per meeting pair, idle crews skipped); perf ports the SETTLED version once. The same
+  rule for every declared change this round: its cost at 25 a side is measured, pre-registered and reported beside
+  its behaviour numbers.
+
+**Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
 traffic re-reads the friendly share.

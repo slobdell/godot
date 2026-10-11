@@ -59,6 +59,12 @@ today's route, and take the cheapest that is clear; a drawn facing picks which e
 (`_planned_reverse`) or a new `manoeuvre.gd`; send perf any `drive()` diff (C26.2). Pass: M0(a)'s line; the thirteen
 lines as declared; the clip looked at. Both sides (the CPU's crews take the same path).
 
+**M1b — the face at rest (C26.9, added 2026-10-10 ~23:40 from your M0).** A short move behind with no drawn facing
+arrives keeping the hull's heading at the order (no face turn); a drawn facing still wins. A wheeled hull that must
+face a new way at rest does a planned three-point turn (M2's planner) instead of the creep's 0.5 s legs. Granted:
+the face-at-rest path in `order_controller.gd`. Pass: M0(a)'s cases settled (not only arrived) in ≤ 2 legs plus at most
+one planned face turn, faster than main; part of CP2.
+
 **M2 — the three-point turn (DECLARED; CP3).** When stuck against a static obstacle: leg 1 forward as far as is clear
 (not a fixed short leg), leg 2 reverse exactly far enough that leg 3's full-lock arc clears (computed by `_arc_hit`
 over the obstacle, not by trial), leg 3 away; re-plan only when the world changed (a friendly moved in), counted. Pass:
