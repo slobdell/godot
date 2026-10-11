@@ -173,6 +173,29 @@ tank 20 m with a drawn facing (done 4.10 -> 4.87 s, +0.77: the reverse is forced
 Known and unchanged from main: the scout does not turn to a drawn facing at rest (it ends 84 / 40 deg off at
 120 / 150 deg; main 171 / 166) — a fixed-gun scout's post facing is brains' S6 rule, not this path.
 
+### ✅ CP2 READY (2026-10-11 ~08:00): `manoeuvre-cp2` at `25f8cfa4` is green — builder0 `make check exited 0`, 2406/0, 23 targets, ALL JUDGED
+
+Census on the cp2 tip vs main+CP1a (`--nav-off=behind,faceturn` on the same tree; builder0; files
+`references/round26/manoeuvre/census_{main_cp1a,cp2}.txt`): static 104 eps 93.3 % <= 3 legs -> 91 eps 95.6 %;
+friendly (traffic's C26.5 input) 287, 69.3 % -> 329, 73.9 %; open 77.6 -> 79.4 %; face at rest on the Terminus
+4/49 -> 31/47 within 3 legs.
+
+### CP2 = branch `manoeuvre-cp2` (the orchestrator's recipe: my fixed CP2 + main + perf's port; M2 is NOT in it)
+
+`613f665b` (M1 + M1b) -> `9cd4310e` (face turns bounded to their spot and refused when the world refuses them) ->
+`c50765a4` (brains' creep-bound CONTROL arm also switches `faceturn` off: C26.6, granted; not a loosened line) ->
+merge main `3701f398` (CP1a) -> merge perf `c892870c` (the native drive calls `_manoeuvre` back) -> `20182a58`
+(test_manoeuvre_behind back on the native default path) -> `25f8cfa4` (sim baselines: 10 maps moved, read twice on
+builder0 at `20182a58`, agreeing; yard, pit, crossing unmoved). The goal-behind probe on `20182a58` (native ON)
+reproduces the GDScript table cell for cell, except the War Rig's drawn-facing cells after the face fixes:
+120 deg 9.2 -> 9.6 s, 150 deg 5.8 -> 6.5 s (main 22.6 / 33.8). **Cost:** perf sized the callback at 0.04-0.08 ms a
+tick at Sumps 25 a side (builder0, c892870c); the planner runs once per new goal (counter `behind_asked`).
+**Hull facing at rest (orders' relay), `make nav-facing` (yard, 30 crews, 5 squads told to face 90 deg off their
+travel), builder0 `20182a58`:** heading error at +10 s median 1.1 deg, 24/26 within 15 deg; its control
+(`--nav-off=faceturn,behind`, main's creep) 1.7 deg, 23/26; shuffle median 0.84 vs 1.11 m. The two misses in both
+arms are fixed-gun scouts on `stop` (brains' S6). So on this roster the hulls DO come round with or without CP2; the
+35-100 deg of orders' gang-squad probe is not reproduced here (a turreted wheel under `wheelhold` is opt-in and off).
+
 ### M0b: the turn census (builder0; 3 Terminus drives x 2 squads, 3 sim-baseline matches, 3 Sumps 25 a side 60 s)
 
 Episodes (first reversal on a forward order -> driving clear), share in <= 3 legs, by what was in the way. "main" is
