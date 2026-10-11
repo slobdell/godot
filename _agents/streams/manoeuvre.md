@@ -93,6 +93,11 @@ _Updated 2026-10-11 ~12:00 by the manoeuvre worker (`godot-manoeuvre`, `stream/m
 
 ### The report (read this first)
 
+**Final check: `e92f80ef` is green** (builder0, `make check exited 0`, 2454 passed / 0 failed, 24 targets, ALL JUDGED);
+commits after it are this Status only. builder0 folders to remove at close: `~/tank_squad/godot-manoeuvre`,
+`~/tank_squad/godot-manoeuvre-light` (cp2, m3, mainwt and their -light twins already removed). Local branches kept:
+`manoeuvre-cp2` (merged), `manoeuvre-m3` (M3's two rounds, NOT for merge).
+
 - **Done:** M0a (the goal-behind probe), M0b (the turn census), **M1 + M1b = CP2, MERGED on main as `0845c3c7`**
   (`25f8cfa4`, check 2406/0 ALL JUDGED; bridge 18/18 = main; arrive 99/100 = main). His short move behind: War Rig
   10 m astern settled 43.1 -> 1.7 s, scout 5 m with a facing 6.07 -> 0.67 s, tank 10 m 3.67 -> 2.47 s; every cell
