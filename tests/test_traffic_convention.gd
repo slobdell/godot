@@ -108,3 +108,15 @@ func test_switched_off_nothing_changes() -> void:
 	Traffic.set_off("crossing", true)
 	assert_eq(Traffic.shape("B", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "--traffic-off=crossing")
 	_reset()
+
+
+func test_a_crossing_verdict_is_the_pairs_and_both_crews_read_it() -> void:
+	_reset()
+	Traffic.load_rows([
+		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true],
+		["B", 0, -20.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true],
+	])
+	var b := Traffic.shape("B", Vector2(10.0, 0.0))
+	var a := Traffic.shape("A", Vector2(0.0, -10.0))
+	assert_true(b.length() < 8.0 and is_equal_approx(a.length(), 10.0), "one yields, the other holds: %s %s" % [a, b])
+	assert_eq(Traffic.shape("B", Vector2(10.0, 0.0)), b, "asked again on the same tick: the same answer")
