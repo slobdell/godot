@@ -190,6 +190,12 @@ scoped for him.**
   M3 request). Round 27: a re-seat that seats the blocked crew around the parked one; make-room priced by removal; an
   arrive line that counts every crew inside its settle radius.
 
+- **CP1b's partial-gain rule (pre-registered 2026-10-11 ~15:30, before v4's numbers):** v4 (6cfd6a1f) ships if on ALL
+  four of his cases v base (n = 18): crews arrived / all-in not worse beyond noise (≥ base − 2 crews); friendly-stuck
+  ≤ base × 1.2 + 10 crew-s; fast friendly contacts drop in ≥ 3 of 4 and rise in none by > 10 %; plus bridge-pooled 18/18,
+  arrive 99/100 = main, cost ≤ 0.5 ms. Otherwise round 27; no v5 this round. (v2 failed: crossing-yield's zero floor
+  tripled friendly-stuck; v3 better but open-ground head-on worse.)
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
