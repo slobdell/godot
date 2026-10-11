@@ -256,6 +256,22 @@ order feed on the dirty flag only (the 9.3 think-tick re-reads found nothing): ~
 behaviour-neutral change IF the order signal is complete (pre-register: the thirteen lines and determinism unmoved);
 the element reads cannot be dropped (they find real changes).
 
+### What is left between 20 a side (0.881) and 0.97 on the laptop (the orchestrator asked; from existing logs, no new run)
+
+Source: `references/round25/perf/laptop/tp-bar-real20-379e0567/` (the real-path arm: the game's own cap, 20 v 20;
+`379e0567` = green 94c26255 game code, flightdeck, his preset, foundry + parade 8-20 s, seeds 92721 31337 5988, n = 6).
+Exact accounting on the means: game speed = ticks a frame x 33.33 / frame ms, so wall time per GAME tick = frame /
+ticks a frame = 96.5 / 2.55 = **37.8 ms**; 0.97 needs **34.4 ms**: **3.5 ms a game tick short (9 %)**.
+Per game tick: **scripts 28.6 ms** (76 %: controllers 20.8, elements 4.4, the rest -- tank, match, visfield, shells --
+3.5); **the engine's physics step 0.6** (2 %); **outside the simulation 8.6** (22 %: R = 22.0 ms a frame spread over
+2.55 ticks -- rendering, the HUD and every `_process`, buffer swap). The 3.5 ms is 12 % of the scripts, or 40 % of
+everything outside the sim, or a mix; physics cannot supply it (0.6 in all). **What the data cannot say:** how R
+splits into render v HUD v `_process` -- the engine's TIME_PROCESS monitor in these logs overlaps the physics ticks
+(it reads 42.5 ms a frame, sd 19.7, more than R), so it is not usable; perf-play's layer arms are the instrument for
+that. Caveats: the accounting is on means; at 0.97 the clock would run ~2.9 ticks a frame, near its 3-tick cap, where
+slow frames start losing time, so the real need is somewhat MORE than 3.5 ms. Script levers left (measured this
+round): the order-feed re-reads ~0.26 ms headless, the rest of the ranked list <= ~1 ms; none reaches 3.5.
+
 ### Waiting on
 
 - N5c: no diff sent yet by brains or pace.
