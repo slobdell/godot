@@ -140,9 +140,42 @@ direction of travel, so after a short move behind the post faces BACKWARDS and t
 wheeled hull turns on a `face` order by the plant's creep (0.35 throttle at full lock < the 0.5 creep threshold:
 alternating 0.5 s legs). Reversing onto the point fixes the arrival; the turn after it needs orders (Requests).
 
+### M1 + M1b (CP2, DECLARED; GDScript path `--brains-off=native` until perf's callback; builder0, 540 rows)
+
+What changed (`game/ai/manoeuvre.gd`, `movement.gd` `_manoeuvre` / `keeps_heading` / `face_turn`, the face branch of
+`order_controller.gd` under the C26.9 grant):
+- **M1:** per new goal behind (more than 100 deg off the nose, or inside a wheeled hull's forward circle, within 25 m),
+  the forward drive and a reverse are SIMULATED with the plant and Steering's laws, cleared with `_outline_ok` and
+  hull discs; the cheaper clear one is driven (`reverse: true` on the order); a drawn facing within 60 deg of the nose
+  forces the reverse, any other forces the forward drive. A goal that replaces another within 2 s while the hull kept
+  driving is a re-aimed steering point (brains' orbit): forward drive, never a reverse (`refused.reaimed`).
+- **C26.9:** a post face that is the TRAVEL of a short move behind (post heading more than 100 deg off the nose and
+  within 25 deg of start->post) is held: no turn after arriving. A drawn facing is not the travel, so it still wins.
+  Covers the goal already inside the arrive radius (the War Rig 5 m astern never drives).
+- **M1b:** a wheeled hull facing a new way at rest drives a planned turn: n equal legs alternating gear on one lock
+  (each <= 60 deg of heading), the fewest n that is clear and ends within its settle radius (a half turn = 3 legs and
+  back on its spot); else legs as long as the room allows; else the creep as before. The plan holds while the spot's
+  bearing from where it began holds (a post's face spot is re-issued every think from wherever the hull is).
+
+Settled seconds, main (`b57838ed`, native) -> M1 (GDScript), every cell identical over 6 start ticks x 3 seeds:
+
+| hull | 5 m | 5 m drawn | 10 m | 10 m drawn | 20 m | 20 m drawn | 120 deg | 120 drawn | 150 deg | 150 drawn |
+|---|---|---|---|---|---|---|---|---|---|---|
+| tank | 2.50 -> 0.97 | 5.37 -> 0.97 | 3.67 -> 2.47 | 5.73 -> 2.47 | 4.37 -> 4.37 | 7.00 -> 4.97 | 2.90 -> 2.90 | 4.60 -> 4.10 | 3.30 -> 2.50 | 5.33 -> 3.47 |
+| scout | 3.13 -> 0.67 | 6.07 -> 0.67 | 3.20 -> 1.57 | 6.53 -> 1.57 | 3.70 -> 3.00 | 19.90 -> 3.00 | 2.43 -> 2.20 | 2.63 -> 2.20 | 2.83 -> 1.77 | 3.10 -> 1.77 |
+| War Rig | never -> 0 (stays: inside its 6 m settle radius) | never -> 0 | 43.1 -> 1.7 | 22.8 -> 1.7 | 36.4 -> 4.2 | 27.6 -> 4.2 | 31.6 -> 5.6 | 22.6 -> 9.2 | 36.7 -> 3.8 | 33.8 -> 6.1 |
+
+Legs (median): 1 everywhere except the War Rig at 120/150 deg (2; with a drawn facing 4 and 3 = two to arrive plus
+one planned face turn). Full table `references/round26/manoeuvre/m1_table.txt`. **Against the pre-registered lines:**
+settled faster or equal in all 30 cells (equal where today's drive is still the cheaper: tank 20 m and 120 deg with no
+facing); legs <= 2 + one planned face turn everywhere; `done` within +0.5 s of main in 29 of 30 cells, the exception
+tank 20 m with a drawn facing (done 4.10 -> 4.87 s, +0.77: the reverse is forced by the facing; settled 7.00 -> 4.97).
+Known and unchanged from main: the scout does not turn to a drawn facing at rest (it ends 84 / 40 deg off at
+120 / 150 deg; main 171 / 166) — a fixed-gun scout's post facing is brains' S6 rule, not this path.
+
 ### Requests to other streams
 
-- **orders (through the orchestrator):** a plain move with NO drawn facing whose destination is a short move behind the
+- ~~orders~~ (superseded by the orchestrator's C26.9 ruling, done in my granted path): a plain move with NO drawn facing whose destination is a short move behind the
   group (within `Manoeuvre.MAX_M` = 25 m of its centre and more than `Manoeuvre.BEHIND_DEG` = 100 deg off its mean
   forward) keeps `heading` = the group's mean forward (`Orders._resolve_group`, where `heading = travel.normalized()`),
   so the post faces where the crews faced and nobody turns round after reversing onto it. Measured cost today: the rig

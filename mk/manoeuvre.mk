@@ -11,7 +11,7 @@ manoeuvre-behind: import ## manoeuvre M0a: a player's plain move to a goal 5/10/
 	@for h in $(MANOEUVRE_HULLS); do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/goal_behind_probe.gd -- \
 			--hull=$$h --seeds=$(MANOEUVRE_SEEDS) $(if $(MANOEUVRE_CASE),--case=$(MANOEUVRE_CASE)) \
-			$(if $(MANOEUVRE_TICKS),--ticks=$(MANOEUVRE_TICKS)) $(NAV_FLAGS) \
+			$(if $(MANOEUVRE_TICKS),--ticks=$(MANOEUVRE_TICKS)) $(if $(MANOEUVRE_TRACE),--trace=1) $(NAV_FLAGS) \
 			> $(BUILD_DIR)/manoeuvre/behind_$$h.log 2>&1 & \
 	done; wait
 	python3 tests/manoeuvre/behind_table.py $(foreach h,$(MANOEUVRE_HULLS),$(BUILD_DIR)/manoeuvre/behind_$(h).log)
@@ -45,3 +45,11 @@ manoeuvre-census: import ## manoeuvre M0b: the turn census (legs per turn by obs
 			--turn-log $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/census/sumps-$$seed.log 2>&1 || true; \
 		echo ">> manoeuvre-census: sumps $$seed"; done;; esac
 	$(PYTHON) tests/manoeuvre/census_table.py $(BUILD_DIR)/manoeuvre/census/*.log
+
+# A quick parse check of the stream's own scripts (the whole-tree `lint` is -P1 and takes ~1 h on a loaded builder0).
+MANOEUVRE_PARSE ?= game/ai/manoeuvre.gd game/ai/manoeuvre_census.gd game/ai/movement.gd game/ai/order_controller.gd \
+	tests/manoeuvre/goal_behind_probe.gd tests/test_manoeuvre_behind.gd
+.PHONY: manoeuvre-parse
+manoeuvre-parse: import ## manoeuvre: --check-only on the stream's scripts (MANOEUVRE_PARSE), the real messages printed
+	@for f in $(MANOEUVRE_PARSE); do out=$$($(GODOT) --headless --path . --check-only --script res://$$f 2>&1 | grep -E "Parse Error|SCRIPT ERROR|ERROR" | grep -v "depended scripts" || true); \
+		if [ -n "$$out" ]; then echo "== $$f"; echo "$$out" | head -8; else echo "ok $$f"; fi; done
