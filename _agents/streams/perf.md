@@ -184,6 +184,17 @@ answer and saves ~0.4-0.5 ms a tick (~1 % of the loaded tick). Sent to brains th
 
 ### Done (each with commit, machine, workload, n)
 
+- **P1, laptop half** (slot granted 01:10, ran 01:14-01:29; `d84f7503` = b57838ed game code + inert prep; flightdeck,
+  his preset, laptop-built library; bar workload foundry + parade 8-20 s, seeds 92721 31337 5988; arms s20@20 / s25@25
+  ABBA n = 6 paired; ARMY_CAP_FIELDED 20 v 20 x6 and 25 v 25 x6; load <= 2.7, one Godot; evidence
+  `references/round26/perf/laptop/tp-bar-s20s25-d84f7503/`): **game speed 0.918 at 20 a side (sd 0.015), 0.803 at 25**
+  (+0.115, se 0.011); tick scripts 27.8 v 33.5 ms (-16.9 %, se 1.7). **Where a game tick goes at 20 a side:** wall 36.4
+  ms = scripts 27.8 (controllers 19.9 = think 11.8 + execute 7.3 + wall contact 0.3; elements 4.5; tank 1.5, match 0.9,
+  visfield 0.4) + the engine's physics step 0.6 + outside the simulation 8.0 (R 17.2 ms a frame over 2.15 ticks); 0.97
+  needs 34.4: **2.0 ms a game tick short**. At 25: frame 120.8 ms, 2.91 ticks a frame (at the cap), R 46.8-ish
+  process. The laptop's shares match builder0's (controllers 72 %, think 42.5, execute 26.3, elements 16). Session to
+  session the base drifts (round 25: 0.881-0.896 at 20, 0.769-0.792 at 25), so compare arms only within a session.
+
 - **P1, builder0 half** (`b57838ed`, builder0 light lane UNDER LOAD ~16 from five streams' checks, so read SHARES, not
   ms; headless `native-tp-headless`, leaders on both sides, window 8-20 s, seeds 92721 31337 5988, n = 3 per cell;
   table `tests/native/p1_table.py`, evidence `references/round26/perf/p1-headless-b57838ed/table.txt`). Share of the
