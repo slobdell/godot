@@ -176,8 +176,9 @@ control-scale-shots: import ## The control playtest with ~30 units a side, frame
 	@echo "Now LOOK at $(CONTROL_PLAYTEST_DIR)/scale/*.png"
 
 ## Control X5: the faction menu, and a faction skirmish you can actually play.
-FACTION ?= gangs
-ENEMY_FACTION ?= syndicate
+## Round 25 (the lead: "the opponent is always The Syndicate"): the gangs-v-Syndicate defaults live INSIDE
+## skirmish-factions. As global `?=` lines they leaked into `make skirmish`, which pinned the enemy to the Syndicate
+## and skipped Random (play.mk), and into `make vehicle-gallery`'s FACTION.
 
 faction-menu-shot: import ## Screenshot the faction picker in build/screenshots/faction-menu.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
@@ -204,7 +205,7 @@ cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera (AN
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
 skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate [ARENA=pit]): size follows the roster
-	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) $(if $(ARENA),--arena=$(ARENA)) \
+	$(GODOT) --path . -- --skirmish --player-faction=$(or $(FACTION),gangs) --enemy-faction=$(or $(ENEMY_FACTION),syndicate) $(if $(ARENA),--arena=$(ARENA)) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
 COMMAND_PLAYTEST_DIR := $(BUILD_DIR)/command-playtest
