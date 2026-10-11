@@ -92,6 +92,12 @@ Not a behaviour change (bridge-pooled is off by default; the probe is env-gated)
 53/54, 135 / 92 — the pinned arm byte-identical to the CP1a run without the trial (the switch arms the old code exactly).
 The seed-1 tick-15 crew that died pinned lives unpinned. The CPU's deck jam +31 crew-s over 54 runs (~0.6 s a run), no run
 failing. Queued: its check, the drill arrive series by the same switch, the cost at 25 a side (C26.10, pre-registered ~0).
+**Its check (builder0, `24f7ca2c`, exited 2): 2393 passed / 5 failed.** Two are CP1a's own at that pre-merge commit
+(`test_tactics_make_room`, `test_traffic_feed`: traffic edited both inside the merged CP1a). Three are the unpin's, in
+fights: `test_tactics_cpu_hold` (the bay ambush: green wiped 0 alive, guns not on the kill zone),
+`test_tactics_pursuit` 8 m/s (the whole squad let go: every crew excused, all four killed by the spotter),
+`test_tactics_mixed_legs` (Sumps two-scout squad 26.1 s for ~20). So B2's bridge gain comes with fight changes: to be
+re-trialled on main + CP1a (+ CP1a2) and each failure traced before anything is claimed (lesson 287).
 
 **Plan (the backlog in order):** B0 (facing on every armed task; CP0, merge early) → B1 (his bridge drill; after
 traffic's CP1a/CP1 merges, re-run the 108 before claiming) → B2 (drill seats by nearest on B1's feed) → B3 (the scout at
