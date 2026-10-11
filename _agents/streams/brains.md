@@ -83,6 +83,25 @@ BridgeStage's `dead`, `tools/tactics/bridge_verdict.py`, its known answers in ta
 main + CP1a, re-run after the merge; then `bridge-pooled` goes into check (≤ ~3 min wall time on builder0, the
 orchestrator adds the core.mk line).
 
+**B1 ON MAIN (`eb987e87` = stream/brains merged with main `6434f968`, which carries CP1a; builder0, the 108, 06:43–07:08):
+`bridge_verdict.py` reads `BRIDGE_POOLED 108 of 108 runs pass`.** The raw numbers match the scratch run exactly: 53/54
+a side, every squad arrives, deck jam 135 / 92 crew-s. The two raw failures are excused under the ruled line: seed 1, tick 15,
+`Green_S_1` killed by `Rust_G_2` at 14.5 s, and `Rust_S_1` killed by `Green_G_2` at 14.5 s. Both crews had been held
+under 0.5 s in their last 10 s, so they were in a fight, not stuck. **B1 done, pending the check on `eb987e87`/`efc571c0`.**
+For the check entry: the full 108 took ~25 min of wall time on a busy builder0, so `bridge-pooled` in check needs a cut.
+Proposal for the orchestrator: seeds 1–3 × ticks {1, 8, 15} × 2 sides = 18 runs, ~4 min, including both seed-1 tick-15
+excusals, so the dead-crew branch is exercised every check.
+
+**nav-orders seed (`517b848f`, plus the test's own format-argument fix `efc571c0`):** the nudge and the tick shift
+work. On builder0 at `517b848f`: two seeds give two different starts, the same seed repeats, and no `--seed` is the
+historical start (digest `14857e4e91ad953c` both times). The third test failed only on its own message, where an array
+was passed as the format arguments. That is fixed in `efc571c0`, which still needs its filtered run.
+
+**B2 cost (C26.10, 25 a side, `native-tp-headless`, builder0 during the busy window 05:46–07:30): NOT READABLE.** The
+same arm read 26.2 then 61.7 ms of tick scripts (pinned) and 44.6 then 64.3 ms (nearest). The elements segment read
+6.8 / 15.7 pinned against 11.8 / 16.5 nearest. Noise is wider than any effect, so there is no claim either way. It
+needs perf-judge's pinned-core method, or a quiet box.
+
 **Branch tip GREEN: `a38cf118`** (builder0, `make check exited 0`, 2392 passed / 0 failed, 23 targets ALL JUDGED,
 thirteen UNMOVED, determinism `762a0576f944f5b7`): B0, the B1 verdict tooling (`fafc3eae`), the B3 probe, Status.
 Not a behaviour change (bridge-pooled is off by default; the probe is env-gated).
@@ -101,6 +120,19 @@ re-trialled on main + CP1a (+ CP1a2) and each failure traced before anything is 
 Drill arrive series on the same trial (builder0, `24f7ca2c`, 5 maps × 5 squads × 4 seeds, paired by `--seat-leader`):
 unpinned 100/100 arrive, pinned 99/100; unpinned − pinned **−0.03 s (se 0.46, median +0.20)**, 45 faster / 54 slower:
 neutral — PROVISIONAL: it finished at 05:38, inside the window when builder0 was out of disk (the orchestrator: re-run, do not read); re-run on main + CP1a with the B2 re-trial. The cost run died on the full disk: re-running.
+**The three fight failures, read against the pinned check (`a38cf118`) at first pass (2026-10-11):**
+- `cpu_hold`: the bay ambush sprang at 12.1 s with the element's centre at x 55.7, against the line |x| > 56. Pinned, it
+  springs at 15.3 s from x 64.5. Unpinned, the nearest crews sit nearer the floor, see the line sooner, and spring before
+  the element is in the bay.
+- `mixed_legs`, Sumps two scouts: 26.1 s against 20.8 s pinned, on a 25 s line. The four-tank squad is 37.6 s
+  against 40.3 s pinned.
+- `pursuit` 8 m/s: it fails the "whole squad let go" line, which the B2 commit itself brings in (round 25's C25.3 line).
+  Pinned, all five crews also die with the target alive, but that build has no such line. Whether pinned fails it too
+  decides whether this is the unpin or the line.
+Re-trial on main: `fe45a510` (lab `lab/brains-b2m`) is `eb987e87` plus `2894ded7`, cherry-picked. Main's
+`found_again` line was kept over the trial's copy, and its new fields were added. The three tests run in both arms under
+the same test lines (`pace-p0-tests`, arms `base` / `--seat-leader=pinned`), then the 108 in both arms, then the check.
+The arrive series on `fe45a510` was re-run outside the disk window.
 
 **Queued from the orchestrator (2026-10-11, after the B2 traces): make-room's new stage.** Traffic's trace (builder0,
 traffic-cp1a2, Terminus crossing, squad A alone, seed 3, start tick 8): with CP1a, never ×3 of 6 ticks; nearest seating
