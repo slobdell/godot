@@ -411,7 +411,14 @@ func test_a_squad_re_given_its_task_without_a_heading_sheds_the_old_one() -> voi
 	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
 		assert_true(f.orders.current(unit_name).has("facing"), "setup: %s carries the task's heading" % unit_name)
 	element.assign({"verb": "move", "to": [30.0, 10.0], "drills": false})
-	await wait_physics_frames(10)
+	# The leader re-issues on its own cadence, not at the assign (builder0: 120-240 frames for the first crew; brains'
+	# to say whether a re-assign that only takes the heading away should re-issue at once). What this guards is that
+	# the re-issue, when it comes, is not dropped as a repeat: before the fix one crew still held it past 240 frames.
+	var waited := 0
+	while waited < 360 and (f.orders.current("Green_Bravo_1").has("facing") or f.orders.current("Green_Bravo_2").has("facing")):
+		await wait_physics_frames(10)
+		waited += 10
+	print("MEASURE stale_heading_shed_frames ", waited)
 	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
 		assert_true(not f.orders.current(unit_name).has("facing"),
-				"%s dropped the old heading (%s)" % [unit_name, f.orders.current(unit_name)])
+				"%s dropped the old heading within 6 s (%s)" % [unit_name, f.orders.current(unit_name)])
