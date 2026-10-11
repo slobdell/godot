@@ -8,6 +8,8 @@ extends RefCounted
 ## Every behaviour change of the round has an off switch for its A/B, `--traffic-off=<name>[,<name>...]` on any run:
 ##   slide   CP1a (C26.8): an element slot that SLIDES under SLOT_SLIDE_M between two reads is not a new call from the
 ##           leader (ElementFeed.changed), so the brain does not interrupt its mover for it.
+##   parked  CP1a2: a crew whose ask a PARKED friend refused does not give way to it (nobody to let past)
+##           (Movement._negotiate; counter Movement.parked_refusals).
 ##   keepright  CP1b (C26.1, C26.4): friendlies meeting head-on both bias to their own right, early.
 ##   crossing   CP1b: at a crossing at any other angle, the crew reaching the conflict point later slows to pass behind.
 ##

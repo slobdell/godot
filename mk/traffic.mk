@@ -78,3 +78,17 @@ traffic-clip: import ## Round 26 (traffic): his crossing cases at his pose, per 
 		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -vf "select='not(mod(n\,10))',scale=320:-1,tile=6x4" -frames:v 1 $$dir/$${tag}_sheet.png || true; \
 		find $$dir -name "$${tag}_[0-9]*.png" ! -name "*0000.png" ! -name "*00[1-9]0.png" -delete; \
 	done; done
+
+# Round 26 (traffic CP1a2): the falsifier of "never give way to a parked friend" — a friend parked in the only lane (the
+# maze's 8 m west serpentine) to where another crew is sent. TRAFFIC_PARKED_HULLS x TRAFFIC_SEEDS, both arms (the old rule:
+# --traffic-off=parked) -> one PARKED_PROBE line each: reached_s, gap_m, how far the parked crew moved, the counters.
+TRAFFIC_PARKED_HULLS ?= gang_tank law_tank
+.PHONY: traffic-parked
+traffic-parked: import ## Round 26 (traffic CP1a2): a friend parked in the only lane, both arms x TRAFFIC_PARKED_HULLS x TRAFFIC_SEEDS -> PARKED_PROBE lines
+	@echo ">> traffic-parked on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@for hull in $(TRAFFIC_PARKED_HULLS); do for seed in $(TRAFFIC_SEEDS); do for arm in old new; do \
+		if [ $$arm = old ]; then flag=--traffic-off=parked; else flag=; fi; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/parked_probe.gd -- \
+			--parked=$$hull --asker=law_tank --seed=$$seed --seconds=60 $$flag 2>/dev/null | grep -o 'PARKED_PROBE {.*' \
+			| sed "s/^PARKED_PROBE {/PARKED_PROBE {\"arm\":\"$$arm\",/" || echo "PARKED_PROBE MISSING $$hull $$seed $$arm"; \
+	done; done; done
