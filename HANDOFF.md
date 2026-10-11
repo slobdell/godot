@@ -4,12 +4,14 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-10 evening — **ROUND 26 IS PREPARED, NOT LAUNCHED (the section below): five streams, briefs
-committed in `_agents/streams/`, contracts C26.1–C26.7 in `workstreams.md` *Round 26*. Next: `make worktree` per stream
-(offsets below), then the lead pastes the kickoff prompt in each. Main's last green check: see the section below.
-He pushes `main`.**_
+_Last updated: 2026-10-10 ~23:20 — **ROUND 26 IS LAUNCHED (the section below): five worktrees (traffic 1, manoeuvre 2,
+orders 3, brains 4, perf 5), all workers running from `b57838ed`. Main's launch check: `b57838ed`, builder0, `make check
+exited 0`, 2377 passed, 0 failed, ALL JUDGED, thirteen unmoved, determinism 762a0576f944f5b7. Since: `85fd4b40`
+(worktree.sh seeds .godot, nice 19; lesson 289), `3f3197d9` (C26.8: traffic granted the ElementFeed key hunk — the slot
+slide that resets every crew's movement every ~0.3 s; CP1a, declared, alone). Queued: perf's laptop slot for P1 (granted
+only when the laptop is quiet). He pushes `main`.**_
 
-## 🚀 ROUND 26 IS PREPARED (2026-10-10 evening) — read this first
+## 🚀 ROUND 26 IS LAUNCHED (2026-10-10 ~23:00) — read this first
 
 **From his playtest of round 25** (`game_design.md` *Round 26 direction*, his words and readings (1)–(9); the split and
 contracts C26.1–C26.7 in `workstreams.md` *Round 26*; briefs in `streams/`):
