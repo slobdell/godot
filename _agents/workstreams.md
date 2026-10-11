@@ -177,6 +177,10 @@ scoped for him.**
   that squad is silently dropped. **Decided (a):** the player's fold gives squads of ≤ 5 at every cap, the overflow on
   groups 6–10 (every vehicle on a key, every squad an element); perf builds it (grant: `SquadConsolidation.for_player`);
   orders guards the null element (a move falls back to per-unit orders; a task gets a notice with the reason).
+  **RETRACTED the same hour:** through the REAL path (recall_group → order_selection) `SelectionSquads.split` deals
+  every group past five into squads of ≤ 5 first; every order lands (perf's re-probe, gangs/condemned/law seed 7). The
+  first probe called assign_task directly. (a) NOT built (kept as a patch under references/round26/perf/); the desktop
+  fold stays; orders' null guard ships as hygiene. Lesson: probe the path the player's input takes.
 
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
