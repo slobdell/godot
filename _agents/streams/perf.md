@@ -97,7 +97,9 @@ done; the granted `_cover_spots` early-out is on main (`1d19d337`, -0.26 ms a ti
 (`c892870c`), traffic CP1b HELD for traffic's settled version (waiting on traffic); P4 baseline and the after-CP1a
 census done (engaged share unmoved or lower), its re-runs after CP1b and CP3 wait on main; stage-1 groundwork
 (MoverRecord, OFF, `631e678f`) and the ownership re-cost are in the draft brief below. Main `ec9b8672` merged and green.
-Merge point: the newest *Green commits* line (`b16c58ea`).
+Merge point: the newest *Green commits* line (`b16c58ea`). **`b9db67e0` MERGED on main** (orchestrator, 2026-10-11):
+the M1 port is on main, inert until manoeuvre's CP2 merges (it carries the same `c892870c`). Traffic names CP1b after
+CP1a2; the laptop slot after CP3 is noted.
 
 **Done, with numbers:** P1 builder0 shares and the laptop split (20 a side 0.918, 25 a side 0.803; a game tick at 20
 = scripts 27.8 + physics 0.6 + outside the sim 8.0 ms, 2.0 short of 0.97); P2 (no port in my grant pays; one free
