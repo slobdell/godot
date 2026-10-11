@@ -187,6 +187,7 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 	var end_tick: int = game_match.tick - given
 	var arrive_s := {}
 	var arrived_ticks := {}
+	var slot_m := {}  # per crew, where it ended against its element's slot (-1: no slot)
 	for squad: String in squads:
 		var element: Element = elements[squad]
 		var to: Vector3 = stage[squad][1]
@@ -197,6 +198,7 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 				var last: Vector3 = trail[-1]
 				var slot: Variant = element.slots.get(unit_name)
 				var target: Vector3 = Vector3(slot.x, 0.0, slot.z) if slot is Vector3 else to
+				slot_m[unit_name] = snappedf(last.distance_to(target), 0.1) if slot is Vector3 else -1.0
 				if last.distance_to(target) <= SLOT_M:
 					at = trail.size()
 					while at > 0 and (trail[at - 1] as Vector3).distance_to(last) <= ARRIVED_M:
@@ -219,7 +221,7 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 		friend_s[unit_name] = _s(n)
 	var report := {"seed": seed_value, "arena": arena, "kind": kind, "which": which, "side": side, "crews": everyone.size(),
 			"arrived": arrived_ticks.values().filter(func(v: int) -> bool: return v >= 0).size(),
-			"arrive_s": arrive_s, "end_s": _s(end_tick),
+			"arrive_s": arrive_s, "slot_m": slot_m, "end_s": _s(end_tick),
 			"friend_stuck_s": _s(friend_ticks), "stuck_s": _s(stuck_ticks), "friend_stuck_by": friend_s,
 			"contacts": contacts, "contacts_fast": contacts_fast, "kturns": kturns, "kturns_friend": kturns_friend,
 			"yields": yields, "kept_right": Traffic.kept_right, "crossing_yields": Traffic.crossing_yields,
