@@ -158,6 +158,12 @@ scoped for him.**
   The Terminus regression (a crew yielding to a parked squadmate) is CP1a2's. `make nav-orders` ignores --seed (brains'
   probe): every "nav-orders over seeds" so far is n = 1.
 
+- **B2 (drill seats by nearest) does NOT ship this round (2026-10-11 ~08:00).** Paired at one commit (fe45a510 = main +
+  the unpin, builder0, phase 0, the same test lines both arms): nearest 4/3 fight tests vs pinned 7/0 — pursuit 8 m/s the
+  squad lets go at 7.5 s (pinned holds), the bay ambush springs early (x 55.7 at 12.1 s v 64.6 at 15.5 s), the Sumps
+  two-scout squad 26.1 v 20.4 s. His bridge passes with CP1a alone. The "whole squad let go" line enters as a guard
+  (main passes it). Round 27 carry-over.
+
 **Checkpoints:** **CP0** brains' B0 (facing honoured) → orders merges main. **CP1a** traffic's feed-key fix (C26.8), alone; **CP1b** traffic's convention + perf's port,
 merged as a pair → everyone merges main; brains re-runs its bridge 108 on it. **CP2** manoeuvre's short move behind
 (+ perf's port if any) → everyone merges main. **CP3** manoeuvre's three-point turn (+ port) → everyone merges main;
