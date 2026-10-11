@@ -683,3 +683,48 @@ Think half: brains' tank_brain.gd (situation, decide, act) and the feeds' reader
 **Afterwards, the two ways (above):** both languages (every AI change ported and proven: ~1.5-2x the work of a change,
 for as long as the AI keeps changing every round) or the C++ as the only brain (one implementation; the browser build
 keeps a frozen GDScript brain, his son's checkout needs a C++ compiler to play at full speed).
+
+## Stage 1 (decided by the lead 2026-10-11, "Driving+shooting half": NEXT round, after CP1-CP3; `game_design.md` *Round 26: his C++ decision*) — the launch design
+
+**Scope: the execute step, per crew, every tick:** `OrderController.compute_command` and everything under it —
+`_sense`, `_apply_reflexes`, `_apply_move` -> `Movement.drive` (already native) **with its GDScript callbacks ported**
+(the re-plan block of `_next_waypoint` ~45 us a drive, `_planned_reverse` and the k-turn planner, `_negotiate` /
+`_blocker` / the give-way, `_keep_station`, `_approach_gate`, `_repair`, `_inflate_corners`, `_chord_slack`, traffic's
+`Traffic.shape` as settled in CP1b, manoeuvre's `_manoeuvre` gate from CP2/CP3), `Movement.unstick`, `Gunnery.apply`
+(the scan loop around the engine's sight ray, `_aim_solution`, `Engagement.Lay.engage`, the fire lanes, `_cover`,
+`_clear_to_fire`, suppress and indirect), and the wall-contact observer. **Not in it:** think (situation, decide, act,
+the polls: stage 2), elements, the CPU commander, Match, the engine's ray and navmesh queries (called from C++ as now).
+
+**Shape (equal answer kept, so it is NOT one call over all crews):** the controllers interleave `think_i` then
+`execute_i` in scene order, and crew i's execute writes state crew j's think and execute read the same tick (the mover's
+phase, `yield_to`, the avoidance table built at the first avoid). Batching every execute after every think would reorder
+those reads (a DECLARED change). So: **ONE native call per crew per tick** (`TankNative.execute(row, ...)`, the seam at
+the top of `compute_command`), each replacing ~200-300 us of GDScript (N7 rule (c): large per call), all of them reading
+**ONE record gathered once a tick** (P3's prototype: the gather is ~0.5 ms; it then also feeds avoidance, which today
+gathers its own table). The per-crew state that the GDScript keeps in members today (Movement's ~140 fields, the
+gunnery lay, reflex state) moves INTO the record as C++ structs, with GDScript accessors for the readers outside the
+execute step (`Movement.state()`, `route_arms()` and the census counters, the HUD's and explain overlay's reads,
+`straight_and_clear`, `in_kturn`, `is_under_way`).
+
+**Seams (grants the round needs):** the top of `OrderController.compute_command` (brains' file); `Movement` and
+`Gunnery` member storage behind accessors (movement.gd: brains', traffic's and manoeuvre's blocks; gunnery.gd: brains');
+`Traffic` (traffic's, after CP1b settles); the native drive's callbacks become direct C++ calls.
+
+**The freeze it needs (C26.2 for the whole execute step):** while stage 1 runs, a behaviour change to `movement.gd`'s
+drive and its callbacks, `gunnery.gd`, `order_controller.gd`'s execute path, `steering.gd`, `avoidance.gd`,
+`traffic.gd`, `wall_contact.gd`, `clothoid.gd` either waits or comes to perf as a diff to port (both languages, the
+live-function proof). Think-side files (tank_brain.gd's situation/decide/act, tactics) are NOT frozen.
+
+**Proof:** `test_native_drive` widened to the whole execute step (every crew executed both ways from one snapshot of
+all movers and lays: command, every member, every static); `native-proof` (one hash on, off, A/B) with and without
+leaders; the thirteen lines and determinism unmoved; `make check` and `make check NATIVE=off`.
+
+**Price and bar:** P3's estimate for this half is 12.5-16 % of the tick's scripts (laptop 20 a side 0.975-1.0, 25 a
+side 0.86-0.88); ruled on his laptop (`native-tick-profile`, bar workload, 20 and 25 a side pinned, ABBA, n >= 6, the
+paired column), ON only outside 2 se. The measured number re-bases stage 2's estimate before he is asked again.
+
+**Order of work (~2 weeks, one stream):** (1) the record v2 (mover + lay state as structs, accessors, the shared
+gather replacing avoidance's own) with its field-by-field test, OFF; (2) the drive's callbacks one by one, each proven
+(the cheapest first: `_chord_slack`, `_inflate_corners`, `_keep_station`, `_approach_gate`; then `_negotiate`/`_blocker`;
+then `_planned_reverse` and the k-turn planner; then the re-plan block); (3) gunnery (scan, aim, engage, lanes, cover,
+fire); (4) reflexes, unstick, wall contact; (5) the per-crew `execute` seam ON in an A/B; (6) the laptop's ruling.
