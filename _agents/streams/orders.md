@@ -65,7 +65,7 @@ Nothing; he judges the gesture in play.
 
 ## Status
 
-_Updated 2026-10-10 night (worker, `godot-orders`)._
+_Updated 2026-10-11 (worker, `godot-orders`)._
 
 **Plan (in order):** O1 the gesture (tests first) → O3 legibility (the hint text and the marker; small, and the
 marker already reads a task's facing) → the O2 probe built now on today's code (it shows which tasks ignore a drawn
@@ -153,12 +153,44 @@ facing BEFORE CP0, so B0's effect can be measured) → O2 proper after CP0 (`git
   keeps its arrival heading by design and its turret takes the facing; the orchestrator asked manoeuvre (face-at-rest,
   C26.9) to split hull numbers by hull class. Ambush's guns at a flat 30 deg are odd (for brains). Few runs settle in
   75 s (crews still nudging); the before-CP0 table above is the "before".
-- **Found by main's check, fixed** (`518d7775`, approved by the orchestrator): `test_control_order_marks` failed on main
-  d28bf8c5 (1/2392). Cause (builder0 diagnostic): since B0 the crews' orders carry the task's facing, and a task
-  re-given WITHOUT one was dropped by `Orders._same_order` as a repeat (the element branch compared only the place), so
-  the crews kept the old heading 60-240+ physics frames and turned to it. Now facing present vs absent is a new order
-  (drift still ignored); no heading on either side = the old rule, so the thirteen lines are pre-registered unmoved. The
-  pin test waits for the leader's issue (C26.6 reason in the test). Regression tests in `test_control_armed_facing`.
+- **Found by main's check** (`test_control_order_marks` failed on main d28bf8c5, 1/2392; builder0 diagnostics). Since
+  B0 the leader's first issue copies a task's facing onto its crews' orders, and a task re-given WITHOUT a heading
+  leaves the crews on the old one. Two halves:
+  1. **Orders' half, fixed** (`518d7775`, approved by the orchestrator): `Orders._same_order` dropped an element order
+     that only lost its heading as a repeat. Now facing present vs absent is a new order (drift still ignored; no heading
+     on either side = the old rule, so the thirteen lines did not move). Unit test in `test_control_armed_facing`.
+  2. **His re-order was already fine; the stale path is off the player's team.** My first repro used the control
+     fixture, which sets no "player_team" meta, so `Element.preempting()` is false and the element re-issues only on
+     its own cadence; there `Element._should_issue` (no heading compare) kept the old heading 360+ frames (builder0 at
+     `ba541b96`). On his team the task's first update re-issues every crew under the new task id and the heading sheds
+     in ~5 frames (brains measured, builder0 lab 8fd6209a). So `tests/ai_scenarios/scenario_orders_facing.gd` now
+     sets `player_team = GREEN` and is REQUIRED (orchestrator's ruling); the off-team path is brains' 3214dddf
+     (`_should_issue` treats a heading given / taken away / turned >20 deg as a new intention), tested in their
+     `test_tactics_reorder_heading`.
+  The pin test no longer depends on this: it judges the pin on the task alone, with both assigns in the same frame
+  (`1e58cc7c`, reason C26.6 in the test).
+- **Settled frames** (`facing-shots`, `--enemy=player_default --no-element-cpu --no-vision-camera`, 1854x1011 and
+  1200x540): `_1_drag` (ring + arrow in the order's colour on the spot), `_2_moving` (the pin with its chevrons),
+  `_3_settled` (the camera back on the spot; the line across the arrow, guns along it). Looked at on builder0's output
+  at `19f6a418`+: the arrow sits on its ring, the hint stays on screen at both sizes.
+
+### Report (2026-10-11)
+
+- **Backlog:** O1 done, O3 done, O2 done (probe + 15-deg pass line + frames; the hull numbers are manoeuvre's, C26.9),
+  O4 (a) built, O4 (b) written up as a question. Nothing blocked on me.
+- **Green hash:** see *Checks* below (the last line names the commit to merge).
+- **Requests to other streams:** brains: ambush's guns at a flat 30 deg (the off-team `_should_issue` heading case is
+  already theirs, 3214dddf). Manoeuvre: hulls
+  at rest vs the drawn facing, split by hull class.
+- **Known issues:** few probe runs settle inside 75 s (crews keep nudging), so `settled` is mostly "at 75 s"; the
+  contact arm is reported, not judged.
+- **Playtest:** `make skirmish`, select a squad, press E/R/B/A/M, then press on the ground and drag toward where they
+  should face; `make remote LIGHT=1 T=facing-probe` (numbers); `make remote LIGHT=1 T=facing-shots` (frames under
+  `build/light/build/facing/<size>/<scenario>/shots`).
+- **Next:** after brains' 3214dddf merges: `git merge main`, rerun the probe's quiet arm.
+- **Merge notes:** new files `tools/facing_probe_table.py` (approved), `tests/ai_scenarios/scenario_orders_facing.gd`
+  (its `.uid` appears on the first import); `game/control/orders.gd` `_same_order` (element branch, heading present vs
+  absent); `game/ui/control_hints.gd` (two strings).
 
 **Decisions (reversible):** (1) the above-horizon release refuses rather than using the last ground crossed (as the
 right-drag does): an armed order is deliberate, so a guessed heading is worse than a retry; (2) Escape mid-drag disarms
