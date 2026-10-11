@@ -99,16 +99,17 @@ give two different starts, the same seed repeats, and no `--seed` is the histori
 both times). The third test failed only on its own message (an array passed as the format arguments: the one failure of
 the check on `eb987e87`, 2402 / 1, all 22 other targets green); fixed in `efc571c0`. Merges with the heading fix's check.
 
-**The stale heading (the orchestrator's priority item, 2026-10-11; DECLARED, player-facing; `25e33d1c`).** Orders'
-trace (builder0, ba541b96): `Element._should_issue` compared verb, place and target but not the heading. So a squad
-re-given its task without the heading drawn on the first (or with another) kept the old one on every crew already
-moving. Red on builder0 (`b93fdc14`): order ids 1 and 2 still carried facing [0, −1] after 360 frames. Now a heading
-given, taken away, or turned past `HEADING_REISSUE_DEG` (20) is a changed intention, both on our order and once it has
-finished; drift under 20 deg re-issues nothing. `--reissue-heading=off`. With orders' `Orders._same_order` hunk
-(`518d7775`, in the lab only): every crew takes it in 5 frames, all three ways (builder0, `7f1b73ac`, 20 passed / 0).
-The test fixture sets no player team, so those three are an element's own re-issue path; his own team's path is
-measured in both arms by two more tests. Whether the fix passes without orders' hunk (it may need `518d7775` merged
-first) is being run.
+**The stale heading (the orchestrator's priority item, 2026-10-11; DECLARED; `07bdde89`).** Orders' trace (builder0,
+ba541b96): `Element._should_issue` compared verb, place and target but not the heading, so an element re-given its task
+without the heading drawn on the first (or with another) kept the old one on every crew already moving. Red on builder0
+(`b93fdc14`): order ids 1 and 2 still carried facing [0, −1] after 360 frames. Now a heading given, taken away, or
+turned past `HEADING_REISSUE_DEG` (20) is a changed intention, both on our order and once it has finished; drift under
+20 deg re-issues nothing. `--reissue-heading=off`. With orders' `Orders._same_order` hunk (`518d7775`, in the lab only)
+every crew takes it in 5 frames, all three ways (builder0, `7f1b73ac`, 20 passed / 0).
+**It is NOT his own re-order.** `control_fixture` sets no player team, so orders' repro runs an element's own re-issue.
+On his team a task's first update issues every crew with the new task id, and the OLD rule sheds the heading in 5
+frames too (builder0, `8fd6209a`, both arms measured). What this fixes is an element re-issuing on its own: a CPU
+squad re-tasked, or a plan whose heading changes under the same task. Whether it passes without orders' hunk is being run.
 
 **B2 does NOT ship this round: a round-27 carry-over (the orchestrator, 2026-10-11).** The bridge passes with CP1a alone
 (B1). The unpin (drill seats by nearest, `2894ded7`) on main (`fe45a510` = `eb987e87` + `2894ded7`, lab
@@ -126,7 +127,7 @@ would need:** a drill's seating must keep the lead crew's role in pursuit and am
 one the chase or the bay depends on. Nearest seating hands point to whichever crew is closest, which is how the squad lets go of the
 chase and how the ambush springs before it is in the bay. Its cost was not readable (below); its arrive series was
 never re-run outside the disk window (the 05:38 series is void).
-**The let-go line comes in on its own as a guard** (the orchestrator; `b9503a94`): round 25's line without the excuses
+**The let-go line comes in on its own as a guard** (the orchestrator; `059d6985`): round 25's line without the excuses
 it carried on the two older pursuit lines. Main passes it (builder0, `7f1b73ac`).
 
 **B2 cost (C26.10, 25 a side, `native-tp-headless`, builder0 during the busy window 05:46–07:30): NOT READABLE.** The
