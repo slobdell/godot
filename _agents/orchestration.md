@@ -3713,3 +3713,8 @@ instrument that cannot lie about load — removal within one run — and let eve
    meant for `skirmish-factions`, pinned `make skirmish`'s opponent to the Syndicate for 24 days and nobody's test saw
    it: the tests launch Godot directly. Defaults for one target go inside that target (`$(or $(VAR),default)`), and
    `make -n <target>` is the check for what a target actually passes.
+289. **Launching a round is a load too.** (Round 26, the orchestrator; the lead saw the laptop saturated.) `make worktree`
+   ran a full Godot import from scratch per folder (~6 of 8 cores, 1–2 min each); five in a row, plus five worker
+   sessions starting, put the load average at 30. `tools/worktree.sh` now seeds `.godot` from the main checkout and
+   imports at `nice 19` (a test folder: 37 s wall, 28 s CPU under load, against ~4 CPU-minutes per folder before). Anything
+   heavy you start locally, even setup, is CPU the lead and the workers don't have.
