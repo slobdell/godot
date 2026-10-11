@@ -94,7 +94,7 @@ _Round 26 brains worker, started 2026-10-10 evening at `b57838ed`._
 the green hash is named below when it reads (the merge is only if the thirteen lines read UNMOVED: the orchestrator).
 Questions for the lead: none open. builder0 folders of this stream: `godot-brains`, `godot-brains-lab2`, `godot-brains-lab3`
 (+ `-light`), to remove at close; local worktrees `godot-brains-lab2`, `godot-brains-lab3` (scratch, nothing unmerged needed
-from them except the round-27 prototypes `26b94aa6` and `f082af36`, which this section names).
+from them except the round-27 prototypes: `26b94aa6` on branch `lab/brains-mr2` (the clock pause), `f082af36` on `lab/brains-carrot` (the under-hull rule, on manoeuvre's `3c981eb0`); keep those two branches).
 
 **B1 (preliminary, scratch `aa5defa1` = stream/brains + traffic's CP1a `5c31c58f`, builder0, the 108):** his side
 53/54, the CPU's 53/54, deck jam 135 / 92 crew-s (round 25 at its own code: 45/54, 41-42/54, 1013 / 754). The one
