@@ -60,9 +60,6 @@ struct DriveConfig {
 	// Round 26 (perf, C26.2, manoeuvre M1): Movement._manoeuvre's per-tick gate natively; the decision (a new goal or a
 	// gap in the drive ticks) is called back. BEHIND_GAP_TICKS < 0: this movement.gd has no _manoeuvre (no gate).
 	int64_t BEHIND_GAP_TICKS = -1;
-	// Round 26 (perf, C26.2, manoeuvre M3): a hard turn on wheels is never handed to the plant's creep (Movement.drive,
-	// after the throttle and turn are set). CREEP_LIFT_PACE < 0: this movement.gd has no M3 (the rule is off).
-	double CREEP_LIFT_PACE = -1.0, CREEP_LINE_MARGIN = 0.0, WHEEL_CREEP_THROTTLE = 0.0;
 	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
