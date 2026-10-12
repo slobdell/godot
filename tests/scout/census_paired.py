@@ -165,10 +165,29 @@ def breakdown(directory):
               100 * b / max(t, 1e-9), 100 * b / max(r, 1e-9)))
 
 
+def ranges(directory):
+    """Mean range (m) while in reach and while bearing, under ENGAGE, pooled (cells with 5 entries only)."""
+    reach = bear = rr = rb = 0.0
+    for f in os.listdir(directory):
+        row = read(os.path.join(directory, f)) if f.endswith(".log") else None
+        for label, cell in (row or {}).get("breakdown", {}).items():
+            if label.startswith("ENGAGE/") and len(cell) >= 5:
+                reach += cell[1]
+                bear += cell[2]
+                rr += cell[3]
+                rb += cell[4]
+    print("RANGE %s engage in reach %.0f s at %.1f m mean; bearing %.0f s at %.1f m mean" % (directory, reach,
+          rr / max(reach, 1e-9), bear, rb / max(bear, 1e-9)))
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "--primary":
+    if sys.argv[1] == "--ranges":
+        for d in sys.argv[2:]:
+            ranges(d)
+    elif sys.argv[1] == "--primary":
         primary(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "--breakdown":
         breakdown(sys.argv[2])
     else:
         main(sys.argv[1], sys.argv[2])
+

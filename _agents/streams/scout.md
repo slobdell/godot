@@ -102,7 +102,43 @@ Nothing. He judges the clips.
 
 ## Status
 
-_Updated 2026-10-11 evening (scout worker)._
+_Updated 2026-10-11 night (scout worker)._
+
+### Report (the short version)
+- **Done: S0, S1+S2 (one mechanism), S3 declared.** CP-S = `CombatMotion.plan_lay`, the gun-lay planner for fixed guns,
+  ON by default, `--scout-off=gunlay` the A/B. It passed its pre-registered v2 bar on a blind census (below). Merge
+  hash: named in *CP-S merge* once `make check` is green.
+- **What he will see** (seed 13 clips): a scout whose target slides past its nose backs up the other way with the gun
+  held on it, instead of driving on and looping round; scouts bump into enemies less. **Honest limit:** kills, damage
+  dealt and deaths by fixed guns are unchanged within noise over 22 showmatch seeds — the gun is on target more, the
+  fights are not measurably won more. Next trace item: does the planner need a range term (backing up opens range)?
+- **Not mine, filed by the orchestrator for brains:** 45 % of a fixed gun's fight time is SUPPRESS / FLANK /
+  CLEAR_LANE / ENGAGE out of reach; most enemy contacts happen under ordered MOVEs (squads ordered into the enemy).
+- **S4:** law_scout 4/5 bars, gang_scout 3/5 (written up below; follow-up).
+
+### CP-S merge
+**`ae0a50a4` is green, merge here** (builder0, `make check exited 0`, **2471 passed, 0 failed**, 24 targets ALL JUDGED;
+sim-baseline as declared in 36d67c08 (all thirteen read "unmoved" against it); determinism `2875411ff4ec6be7`, the same
+as main's 090b345d). Commits after it on this branch are Status/tooling only (no game file).
+
+### What to playtest (exact commands)
+- `make showmatch SEED=13` (Parade, Gangs v Law) — watch the Law's police-car scouts; `CONTROL_FLAGS=--scout-off=gunlay`
+  for the old behaviour. Clips (1080p, rendered on builder0 at `90413868`/`ae0a50a4` tree):
+  `/tmp/claude-1000/-home-slobdell-projects-godot-scout/7cba1883-a101-4c5c-89cd-c1f8c9cf9a81/scratchpad/clips/`
+  `scout_before.mp4` (110 s, off) and `scout_after.mp4` (100 s, on); also `before_seed1.mp4` (Locks).
+- `make scout-cross` (his case, pooled) · `make scout-census SCOUT_SEEDS=13,14,…` · `make scout-cost`.
+
+### Merge notes (shared-file edits)
+- `game/ai/tank_brain.gd`: inside my hunks (`_combat_move`: the request's plan_lay fields, the "outranging it" stop
+  skipped for a fixed gun on the planner, the `why` text) **plus one member line** `var _motion_prev_lay := -1` next
+  to `_motion_prev_reverse` (~line 553, outside the listed hunk: the planner's commitment memory).
+- `decide` NOT touched (no native port needed); `movement.gd` NOT touched (M1's `reaimed` rule unchanged: fight hops
+  are `direct`, `_manoeuvre` never sees them); `manoeuvre.gd` NOT touched.
+- New: `mk/scout.mk` (auto-included by `include mk/*.mk`, no Makefile line), `tests/scout/` (census, cost probe, paired
+  analysis — a new folder, not in anyone's list), `tests/test_scout_lay.gd`, `tests/ai_scenarios/scenario_scout_cross.gd`
+  (auto-discovered, no `run_scenarios.gd` line needed). Baselines: `sim_state_hash.txt` 7 lines (36d67c08),
+  `ai_scenarios_count.txt` 46 → 51 (ae0a50a4), both declared.
+- Guards: `manoeuvre-behind` byte-identical to round 26's M1 table (builder0 light lane, ae0a50a4).
 
 ### Plan (ordered)
 1. **S0** scenario `scenario_scout_cross` (5 cases, PENDING bars written before any number) + `make scout-cross` (pooled
