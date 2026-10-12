@@ -1179,11 +1179,49 @@ static func gunlay_on() -> bool:
 	if gunlay_pin >= 0:
 		return gunlay_pin == 1
 	if _gunlay_off < 0:
-		_gunlay_off = 0
-		for arg in OS.get_cmdline_user_args():
-			if String(arg).begins_with("--scout-off=") and Array(String(arg).trim_prefix("--scout-off=").split(",")).has("gunlay"):
-				_gunlay_off = 1
+		_gunlay_off = 1 if scout_switched_off("gunlay") else 0
 	return _gunlay_off == 0
+
+
+## The scout stream's A/B switches: `--scout-off=gunlay,halt` (any run). Read once; names are checked against
+## SCOUT_SWITCHES so a typo is an error, not a silent null arm.
+const SCOUT_SWITCHES := ["gunlay", "halt"]
+static var _scout_off: Variant = null
+
+
+static func scout_switched_off(name: String) -> bool:
+	assert(SCOUT_SWITCHES.has(name), "unknown scout switch " + name)
+	if _scout_off == null:
+		var off: Array = []
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--scout-off="):
+				for item: String in String(arg).trim_prefix("--scout-off=").split(","):
+					if not SCOUT_SWITCHES.has(item):
+						push_error("--scout-off: unknown switch '%s' (known: %s)" % [item, SCOUT_SWITCHES])
+					off.append(item)
+		_scout_off = off
+	return (_scout_off as Array).has(name)
+
+
+## Round 27 (scout S4): a fixed gun on the lay planner takes the short halt (TankBrain._combat_move: slow-reload guns
+## brake so the gun is loaded as the hull stops) only when its gun already bears and it stands outside its turning room.
+## Traced: a gang scout (spear gun) 3.1 m from a tank short-halted with its nose in the tank's side, and the planner was
+## never asked. `--scout-off=halt` restores CP-S (the halt regardless).
+static var halt_pin := -1
+
+
+static func halt_gated() -> bool:
+	if halt_pin >= 0:
+		return halt_pin == 1
+	return gunlay_on() and not scout_switched_off("halt")
+
+
+## May a fixed gun at `here` facing `forward` short-halt on a target at `target_at`? (The gate above.)
+static func halt_allowed(here: Vector3, forward: Vector3, target_at: Vector3, aim_tolerance_deg: float, room: float) -> bool:
+	var to := _flat(target_at) - _flat(here)
+	if to.length() < room:
+		return false
+	return absf(_flat(forward).signed_angle_to(to, Vector3.UP)) <= deg_to_rad(aim_tolerance_deg)
 
 
 ## How close a fixed gun may come to its target and still bring its nose round on it: the diameter of its turning circle

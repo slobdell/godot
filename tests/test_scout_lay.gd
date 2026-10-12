@@ -65,3 +65,14 @@ func test_the_switch_restores_the_ring() -> void:
 	CombatMotion.gunlay_pin = 0
 	var result := CombatMotion.choose(request)
 	assert_true(not result.has("lay"), "--scout-off=gunlay: round 7's standoff ring (%s)" % result)
+
+
+## S4: a fixed gun on the planner short-halts only with its gun bearing, outside its turning room.
+func test_the_short_halt_needs_the_gun_on_and_room_to_turn() -> void:
+	var room := 14.0
+	assert_true(CombatMotion.halt_allowed(Vector3.ZERO, Vector3.FORWARD, Vector3(0, 0, -20), 4.0, room),
+			"gun on, 20 m out: it may halt")
+	assert_true(not CombatMotion.halt_allowed(Vector3.ZERO, Vector3.FORWARD, Vector3(0, 0, -3), 4.0, room),
+			"nose in the target's side at 3 m: no halt (the gang scout's touch)")
+	assert_true(not CombatMotion.halt_allowed(Vector3.ZERO, Vector3.FORWARD, Vector3(20, 0, 0), 4.0, room),
+			"20 m out but 90 deg off: no halt, the planner lays the gun")
