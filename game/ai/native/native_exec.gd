@@ -47,9 +47,10 @@ static func execute(ctl: OrderController, delta: float) -> Variant:
 			var n := maxi(int(p["executes"]), 1)
 			var parts := []
 			for key: String in p:
-				if key != "executes":
+				if key != "executes" and key != "sweeps" and key != "sweep":
 					parts.append("%s %.2f" % [key, float(p[key]) / n])
-			print("NATIVE_EXEC_PROFILE %d executes, usec an execute: %s" % [n, ", ".join(parts)])
+			print("NATIVE_EXEC_PROFILE %d executes, usec an execute: %s; the registry's sweep %.2f usec a frame (%d frames)" % [
+					n, ", ".join(parts), float(p["sweep"]) / maxi(int(p["sweeps"]), 1), int(p["sweeps"])])
 			var d: Dictionary = NativeBridge.impl.drive_profile(false)
 			var dparts := []
 			for key: String in d:

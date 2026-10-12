@@ -45,17 +45,17 @@ void note_hand_back(int reason, const Variant &type);
 // time is open (a part's time excludes nothing: the parts are sequential).
 struct ExecProfile {
 	bool on = false;
-	double usec[12] = {};
-	int64_t executes = 0;
+	double usec[13] = {};
+	int64_t executes = 0, sweeps = 0; // sweeps: physics frames swept (the "sweep" part is per frame, not per execute)
 };
 ExecProfile &exec_profile() {
 	static ExecProfile p;
 	return p;
 }
 enum ProfilePart { P_PRECHECK = 0, P_STATE, P_BIND, P_COMMAND, P_DRIVE, P_UNSTICK, P_GUN, P_NOTE, P_PUSH, P_GUN_GD,
-	P_GUN_RAY, P_GUN_SPOTTER, P_SEAM_COUNT };
+	P_GUN_RAY, P_GUN_SPOTTER, P_SWEEP, P_SEAM_COUNT };
 const char *const PROFILE_NAMES[P_SEAM_COUNT] = { "precheck", "state", "bind", "command", "drive", "unstick", "gun", "note",
-	"push", "gun.gdscript_calls", "gun.rays", "gun.spotter" };
+	"push", "gun.gdscript_calls", "gun.rays", "gun.spotter", "sweep" };
 struct PartClock {
 	std::chrono::steady_clock::time_point t0;
 	PartClock() {
@@ -265,7 +265,16 @@ const StringName &sn_native_stale() {
 // The mover's persistent state, pulled again when the GDScript has written it since (`native_stale`); with `verify`, a
 // fresh pull is compared with it field by field first.
 ExecState *persistent_state(Object *mover, bool verify) {
-	exec_states().sweep((int64_t)Engine::get_singleton()->get_physics_frames());
+	{
+		const int64_t frame = (int64_t)Engine::get_singleton()->get_physics_frames();
+		const bool timing = exec_profile().on && exec_states().swept_frame != frame;
+		const auto t0 = timing ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+		exec_states().sweep(frame);
+		if (timing) {
+			exec_profile().usec[P_SWEEP] += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
+			exec_profile().sweeps++;
+		}
+	}
 	ExecState *found = exec_states().of(mover, true);
 	ExecState &state = *found;
 	ExecState *holder = found; // `fresh`: pulled at least once
@@ -419,6 +428,7 @@ Dictionary execute_profile(bool reset) {
 	ExecProfile &p = exec_profile();
 	Dictionary out;
 	out["executes"] = p.executes;
+	out["sweeps"] = p.sweeps;
 	for (int i = 0; i < P_SEAM_COUNT; i++) {
 		out[PROFILE_NAMES[i]] = p.usec[i];
 	}
