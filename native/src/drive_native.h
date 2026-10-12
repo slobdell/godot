@@ -92,6 +92,9 @@ struct DriveConfig {
 	// Round 27 (E2): Movement._planned_reverse's look up to its cheap exits natively (kturn_look_ready false: the callback).
 	bool kturn_look_ready = false;
 	double KTURN_MIN_ERROR_DEG = 0.0, KTURN_CIRCLE_SPEED = 0.0;
+	// Round 27 (E5c): Movement.right_of_way natively (yield_ready false: handed back).
+	bool yield_ready = false;
+	double YIELD_REACHED = 0, YIELD_CLEAR = 0, YIELD_HOLD_SECONDS = 0;
 	// Round 27 (E4): Movement.unstick natively (unstick_ready false: the GDScript).
 	bool unstick_ready = false;
 	double STUCK_SPEED = 0, STUCK_SECONDS = 0, UNSTICK_SECONDS = 0, UNSTICK_CLEARANCE = 0, PRESS_ESCAPE_THROTTLE = 0,
@@ -110,6 +113,8 @@ struct ExecState;
 bool drive_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, ExecState *state);
 bool unstick_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,
 		ExecState *state);
+// Movement.right_of_way(cmd, delta): 1 giving way (cmd filled), 0 not, -1 not configured.
+int right_of_way_with(const DriveConfig &config, Object *mover, Object *cmd, ExecState *state);
 // Round 27 (stage 1 E4): Movement.unstick(cmd, order, delta) natively, on the live members or the owned state.
 bool unstick_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned);
 // Steering.drive_toward(position, forward, target, arrive_radius) (remaining -1), for the other execute ports.

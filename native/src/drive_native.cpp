@@ -136,7 +136,7 @@ struct N {
 			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
 			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" },
 			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" },
-			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" };
+			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" };
 };
 const N &n_() {
 	static const N names;
@@ -1380,6 +1380,79 @@ struct Drive {
 		return true;
 	}
 
+	// ---- Movement.right_of_way (round 27, stage 1 E5c), line by line; `_end_yield` natively unless its diagnosis record
+	// is open (yield_log: then the GDScript, which writes it). 1: giving way (cmd filled), 0: not (or it just ended). ----
+	int right_of_way(Object *cmd) {
+		static const String yielding("yielding"), driving("driving"), arrived("arrived");
+		const String yield_to = v.yield_to();
+		if (yield_to.is_empty()) {
+			return 0;
+		}
+		v.set__yield_left(v._yield_left() - step);
+		Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+		Node *asker_node = root != nullptr ? root->get_node_or_null(NodePath(yield_to)) : nullptr;
+		Node3D *asker = asker_node != nullptr && asker_node->get(k.alive).get_type() == Variant::BOOL ?
+				Object::cast_to<Node3D>(asker_node) : nullptr;
+		const Vector3 yield_point = v._yield_point();
+		const double stop_m = v._yield_stop_m();
+		const bool there = flat_distance(here, yield_point) <= c.YIELD_REACHED ||
+				(stop_m > 0.0 && flat_distance(here, v._yield_from()) >= stop_m);
+		if (there) {
+			v.set__yield_held(v._yield_held() + step);
+		}
+		bool passed = asker == nullptr || !(bool)asker->get(k.alive);
+		if (!passed) {
+			const Vector3 at = asker->get_global_position();
+			passed = flat_distance(here, at) > c.YIELD_CLEAR ||
+					(double)Vector2((real_t)((double)at.x - (double)here.x), (real_t)((double)at.z - (double)here.z))
+									.dot(v._yield_dir()) > 0.0;
+		}
+		Object *asker_mover = asker != nullptr ? mover_of(asker) : nullptr;
+		if (asker_mover != nullptr && String(asker_mover->get(k.phase)) == arrived) {
+			passed = true;
+		}
+		if (v._yield_left() <= 0 || (passed && (there || v._yield_held() >= (int64_t)(c.YIELD_HOLD_SECONDS * (double)c.TICK_RATE)))) {
+			if (!v._yield_rec().is_empty()) {
+				cb(k._end_yield);
+			} else {
+				v.set__last_yielded_to(yield_to);
+				v.set_yield_to(String());
+				v.set__yield_point(V3_INF);
+				v.set_blocked_by(String());
+				v.set_phase(driving);
+				v.set_stalled_ticks(0);
+				v.set__progress_goal(V3_INF);
+				v.set__repath_left(0.0);
+			}
+			return 0;
+		}
+		v.set_phase(yielding);
+		v.set_blocked_by(yield_to);
+		if (!there) {
+			const Vector3 forward = -basis_z;
+			const double arrive = c.YIELD_REACHED * 0.5;
+			Vector2 drive_vector = drive_toward(c, here, forward, yield_point, arrive, -1.0, false);
+			const double radius = wheel_radius();
+			if (radius > 0.0) {
+				const double speed = tank->get(k._speed);
+				drive_vector = wheels(c, here, forward, yield_point, arrive, radius, speed, -1.0,
+						straight_behind(yield_point) ? -1.0 : 1.0);
+			} else if (straight_behind(yield_point)) {
+				drive_vector = drive_toward(c, here, forward, yield_point, arrive, -1.0, true);
+			}
+			cmd->set(k.throttle, (double)drive_vector.x * 0.7);
+			cmd->set(k.turn, (double)drive_vector.y);
+		}
+		return 1;
+	}
+
+	// Movement._straight_behind(point)
+	bool straight_behind(const Vector3 &point) const {
+		const Vector2 to((real_t)((double)point.x - (double)here.x), (real_t)((double)point.z - (double)here.z));
+		const Vector2 back(basis_z.x, basis_z.z);
+		return (double)to.length_squared() > 0.01 && (double)back.normalized().dot(to.normalized()) >= 0.9;
+	}
+
 	// ---- Movement._track_goal ----
 	void track_goal(const Vector3 &goal) {
 		const int64_t ticks = (int64_t)v._ticks() + step;
@@ -2021,6 +2094,18 @@ bool drive_with(const DriveConfig &config, Object *mover, Object *cmd, const Dic
 	}
 	Drive<StructView> d(config, mover, StructView(mover, state));
 	return d.bind() && d.run(cmd, order, delta);
+}
+
+int right_of_way_with(const DriveConfig &config, Object *mover, Object *cmd, ExecState *state) {
+	if (!config.ready || !config.yield_ready || mover == nullptr || cmd == nullptr) {
+		return -1;
+	}
+	if (state == nullptr) {
+		Drive<ObjectView> d(config, mover, ObjectView(mover));
+		return d.bind() ? d.right_of_way(cmd) : -1;
+	}
+	Drive<StructView> d(config, mover, StructView(mover, state));
+	return d.bind() ? d.right_of_way(cmd) : -1;
 }
 
 bool unstick_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,

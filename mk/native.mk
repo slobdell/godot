@@ -96,6 +96,20 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 	if [ $$same = 1 ] && [ -n "$$first" ]; then echo "native-proof: EQUAL ($$first) on $$(hostname)"; \
 	else echo "native-proof: NOT EQUAL on $$(hostname) -- the port changed the fight"; exit 1; fi
 
+# Round 27 (stage 1 E5b): every owned execute verified against a fresh pull of the members, through the whole suite and
+# the AI scenarios (TANK_NATIVE_EXEC_VERIFY=1 -> NativeExec.verify; a mismatch is an engine ERROR, which fails the test or
+# scenario that reached it). Finds a GDScript writer of mover/gunnery/lay members that does not mark native_stale.
+native-verify-suite: import ## Stage 1's doors audit: the suite + AI scenarios with every owned native execute verified (a missed native_stale fails)
+	@t=0; s=0; TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory test || t=$$?; \
+	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory ai-scenarios || s=$$?; \
+	echo "native-verify-suite: test exited $$t, ai-scenarios exited $$s"; [ $$t = 0 ] && [ $$s = 0 ]
+
+# The check's guard (round 27: the whole suite under verification takes ~26 min on builder0; the AI scenarios alone ~4):
+# the brain-driven scenarios with every owned execute verified, so a GDScript writer of the owned state that does not
+# mark native_stale fails the check that first reaches it.
+native-verify-scenarios: import ## Stage 1's doors guard for check: the AI scenarios with every owned native execute verified (~4 min builder0)
+	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory ai-scenarios
+
 # The band sized for the lead (round 23, the orchestrator's ask): N a side with leaders both sides (perf's army files),
 # NATIVE_SIZE_RUNS matches each with --brains-parts (the shares: execute v think v engine calls) and with --sim-profile
 # (the uninflated band), pinned (NATIVE_SIZE_CPUS=0-3 on builder0); tests/native/sizing_table.py prints the table.

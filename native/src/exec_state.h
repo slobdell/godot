@@ -104,6 +104,7 @@ struct ExecState {
 	ExecDirty<GF::COUNT> g_dirty;
 	ExecDirty<LF::COUNT> l_dirty;
 	int64_t pulls = 0, pushes = 0, pushed_fields = 0;
+	bool fresh = false; // E5b: pulled at least once (the registry's states start empty)
 
 	// Every member of `mover`, its controller's Gunnery and that Gunnery's Lay into the struct (dirty bits cleared).
 	// Returns the members whose Variant type was not the table's (stored converted; the test asserts 0).
@@ -124,13 +125,18 @@ struct ExecState {
 	static int scramble(Object *mover);
 };
 
-// Every crew's state, keyed by its Movement's instance id (the seam's, the tests'). One per process. Its Variants hold
-// references (the Lay, the station PID, Arrays), so it is emptied when the library is unloaded (register_types.cpp), while
-// the engine is still up: a static destructor runs after the engine has gone and would free them into nothing (the
-// segfault at exit that E1's first mirror run hit).
+// Every crew's state, keyed by its Movement's instance id (the owned execute's, the tests'). One per process. Its Variants
+// hold references (the Lay, the station PID, Arrays), so it is emptied when the library is unloaded (register_types.cpp),
+// while the engine is still up: a static destructor runs after the engine has gone and would free them into nothing (the
+// segfault at exit that E1's first mirror run hit). E5b first held each state in an extension-class object on its mover
+// (`native_state`): movers kept alive by GDScript statics are freed after the library unloads, and destroying an instance of
+// an unloaded class corrupted the heap at exit ("corrupted size vs. prev_size"); so: this registry, swept every frame.
 struct ExecStates {
 	HashMap<uint64_t, ExecState *> by_mover;
 	ExecState *of(Object *mover, bool create);
+	// E5b: forget the states of movers that no longer exist (once a physics frame; the states' Variants hold references).
+	int64_t swept_frame = -1;
+	void sweep(int64_t frame);
 	void forget(Object *mover);
 	void clear();
 	int size() const { return by_mover.size(); }

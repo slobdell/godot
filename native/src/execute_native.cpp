@@ -8,7 +8,6 @@
 // start, the changed fields pushed at the end; the callbacks still left sync it in between).
 #include "execute_native.h"
 
-#include "exec_holder.h"
 #include "exec_view.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -46,17 +45,17 @@ void note_hand_back(int reason, const Variant &type);
 // time is open (a part's time excludes nothing: the parts are sequential).
 struct ExecProfile {
 	bool on = false;
-	double usec[12] = {};
-	int64_t executes = 0;
+	double usec[13] = {};
+	int64_t executes = 0, sweeps = 0; // sweeps: physics frames swept (the "sweep" part is per frame, not per execute)
 };
 ExecProfile &exec_profile() {
 	static ExecProfile p;
 	return p;
 }
 enum ProfilePart { P_PRECHECK = 0, P_STATE, P_BIND, P_COMMAND, P_DRIVE, P_UNSTICK, P_GUN, P_NOTE, P_PUSH, P_GUN_GD,
-	P_GUN_RAY, P_GUN_SPOTTER, P_SEAM_COUNT };
+	P_GUN_RAY, P_GUN_SPOTTER, P_SWEEP, P_SEAM_COUNT };
 const char *const PROFILE_NAMES[P_SEAM_COUNT] = { "precheck", "state", "bind", "command", "drive", "unstick", "gun", "note",
-	"push", "gun.gdscript_calls", "gun.rays", "gun.spotter" };
+	"push", "gun.gdscript_calls", "gun.rays", "gun.spotter", "sweep" };
 struct PartClock {
 	std::chrono::steady_clock::time_point t0;
 	PartClock() {
@@ -182,7 +181,11 @@ struct Exec {
 		// _apply_move: right_of_way is false (not giving way); a move_to drives, a stop idles (and `match` does nothing).
 		lap(P_COMMAND);
 		ExecState *state = state_of();
-		if (moving) {
+		// _apply_move: `if movement.right_of_way(cmd, delta): return` -- giving way fills cmd and skips the order; a
+		// give-way that just ended goes on with the order this same tick.
+		if (right_of_way_with(*x.drive, mover, cmd, state) == 1) {
+			// nothing more of _apply_move
+		} else if (moving) {
 			drive_with(*x.drive, mover, cmd, move_order, delta, state);
 		} else {
 			idle();
@@ -254,10 +257,6 @@ void note_hand_back(int reason, const Variant &type) {
 	}
 }
 
-const StringName &sn_native_state() {
-	static const StringName n("native_state");
-	return n;
-}
 const StringName &sn_native_stale() {
 	static const StringName n("native_stale");
 	return n;
@@ -266,14 +265,19 @@ const StringName &sn_native_stale() {
 // The mover's persistent state, pulled again when the GDScript has written it since (`native_stale`); with `verify`, a
 // fresh pull is compared with it field by field first.
 ExecState *persistent_state(Object *mover, bool verify) {
-	NativeExecState *holder = Object::cast_to<NativeExecState>(mover->get(sn_native_state()).get_validated_object());
-	if (holder == nullptr) {
-		Ref<NativeExecState> made;
-		made.instantiate();
-		mover->set(sn_native_state(), made);
-		holder = made.ptr();
+	{
+		const int64_t frame = (int64_t)Engine::get_singleton()->get_physics_frames();
+		const bool timing = exec_profile().on && exec_states().swept_frame != frame;
+		const auto t0 = timing ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+		exec_states().sweep(frame);
+		if (timing) {
+			exec_profile().usec[P_SWEEP] += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
+			exec_profile().sweeps++;
+		}
 	}
-	ExecState &state = holder->state;
+	ExecState *found = exec_states().of(mover, true);
+	ExecState &state = *found;
+	ExecState *holder = found; // `fresh`: pulled at least once
 	// Movement.STALE_ALL / STALE_ORDER / STALE_GUN / STALE_STALL (movement.gd): what the GDScript wrote since.
 	const int64_t stale = mover->get(sn_native_stale());
 	if (!holder->fresh || (stale & 1)) {
@@ -319,6 +323,13 @@ ExecState *persistent_state(Object *mover, bool verify) {
 					exec_counts_.first_mismatch =
 							(key + String(": held ") + String(a) + String(", members ") + String(b)).utf8().get_data();
 				}
+				// An engine ERROR, so a test or a check target run with verification fails on it: a door into the owned
+				// state that does not mark native_stale (native.md *Stage 1 as built*, the doors).
+				UtilityFunctions::push_error(String("NativeExec verify: the owned state differs from the members (a door that does not mark native_stale): ") +
+						key + String(" held ") + String(a) + String(", members ") + String(b) + String(" on ") +
+						String(((Node *)Object::cast_to<Node>(mover->get(StringName("ctl")).get_validated_object())) != nullptr ?
+										Object::cast_to<Node>(mover->get(StringName("ctl")).get_validated_object())->get_name() :
+										StringName("?")));
 				state.pull(mover); // go on from the truth
 				break;
 			}
@@ -355,7 +366,7 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 				String(mover->get(k._wheel_radius_unit)) == String(tank->get(k.unit_id)) &&
 				(double)mover->get(k._wheel_radius_value) <= 0.0;
 		const int reason = !(bool)tank->get(k.alive) ? 0 : (!((Array)ctl->get(k.reflexes)).is_empty() ? 1 :
-				(!String(mover->get(k.yield_to)).is_empty() ? 2 :
+				((!String(mover->get(k.yield_to)).is_empty() && !config.drive->yield_ready) ? 2 :
 				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : -1)));
 		if (reason >= 0) {
 			note_hand_back(reason, type);
@@ -417,6 +428,7 @@ Dictionary execute_profile(bool reset) {
 	ExecProfile &p = exec_profile();
 	Dictionary out;
 	out["executes"] = p.executes;
+	out["sweeps"] = p.sweeps;
 	for (int i = 0; i < P_SEAM_COUNT; i++) {
 		out[PROFILE_NAMES[i]] = p.usec[i];
 	}

@@ -769,6 +769,44 @@ game speed by <= 0.008. At 20 a side a game tick is 36.4 ms of wall time, 27.8 o
 `d84f7503`): the CPU's simulation, not the picture, is what keeps the laptop under full speed. Not shipped; the
 evidence that the C++ (stage 1) is where the laptop's speed is.
 
+## Stage 1 as built (round 27, stream native; numbers and rulings in `streams/native.md` Status)
+
+**The pieces (all in `native/src/`, all OFF by default until E6 rules):**
+
+| piece | file | what |
+|---|---|---|
+| the table | `exec_fields.h` | every script member of Movement, Gunnery, Engagement.Lay (X-macro, 145 fields); `test_native_exec_state` fails when a script's members and the table disagree and prints the line to add |
+| the owned state | `exec_state.{h,cpp}`, `exec_holder.h` | the typed struct, `pull` (members -> struct; `pull_gun`, `pull_mover_field` for parts), `push` (struct -> members: all, or the dirty fields; dirty = the bits changed); each Movement holds its `NativeExecState` in `native_state` (freed with it) |
+| the view | `exec_view.h` | `ObjectView` (the live members through get/set) and `StructView` (the owned struct); every port is written once against `V` |
+| the drive | `drive_native.cpp` | `Drive<V>`; E2's callback ports under `native_cb`; E4's `unstick` |
+| the gun | `gun_native.cpp` | Gunnery.apply incl. ARC's `_apply_indirect`; Tank's reload/ammo reads |
+| the execute | `execute_native.cpp` | compute_command's common path (living hull, no reflexes, not giving way; move_to, stop, a tracked hull's plain face) as ONE call per crew; anything else handed back before a write |
+
+**The doors (the mirror's one rule):** the C++ owns the state during a crew's execute and pushes back the fields it
+changed; any GDScript that WRITES the state outside the native execute marks `Movement.native_stale` with its bit
+(`STALE_ALL`: reset, idle, ask, a hand-back, the seam's off branch; `STALE_ORDER`: new_order; `STALE_GUN`: OrderController's
+gun forwarders; `STALE_STALL`: its stalled_ticks forwarder), and the next native execute pulls that part first. A new door
+(a GDScript writer of these members outside the execute step) must mark its bit; `--native-exec-verify` (native-proof's
+`exec_verify` arm) pulls afresh before every execute and counts any field that differs: that is how a missed door shows.
+**Tests are doors too:** a test that sets a mover up by writing its members (a k-turn leg, a yield) must go through a
+method that marks stale, or mark `native_stale |= Movement.STALE_ALL` itself. Stage 1's ON commit found one
+(`test_nav_kturn_brake`: members written, then `_kturn_start_leg`, which now marks).
+
+**Switches:** `native_exec` (the seam), `native_owned` (on the owned state; else the live members), `native_cb` (E2's
+callback ports; OFF by its price, round 27 B), `native_gun` (the gun alone, outside the execute seam). Stage 1 ON = the
+first three together (`--brains-on=native_exec,native_cb,native_owned`).
+
+**The proofs:** `test_native_exec_state` (table, pull, scramble + push, changed-only push), `test_native_drive` (both
+views; unstick's branches), `test_native_gun` (three arms, every order type), `test_native_execute` (compute_command
+three ways, hand-backs write nothing); `make native-proof NATIVE_PROOF_ARMS="on off ab exec exec_owned exec_verify stage1
+stage1_ab"` (one hash; `AB_FLAGS="--green-elements --rust-elements"` for leaders); `--native-exec-profile` for where an
+execute's microseconds go.
+
+**Two traps found building it:** a namespace-scope object holding a godot type (a `String` in a counters struct) is
+constructed when the library loads, before godot-cpp can make one: Godot's `--import` crashed (signal 11, an empty
+backtrace). And a registry of states keyed by id freed its Variants after the engine at exit ("corrupted size vs.
+prev_size"): state must live as long as its owner, not the process.
+
 ## Round 26: what the C++ followed (C26.2)
 
 | change | port | proof | cost |

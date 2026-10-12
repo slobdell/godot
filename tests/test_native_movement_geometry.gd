@@ -94,6 +94,7 @@ func test_the_seams_answer_as_the_live_gdscript() -> void:
 		var turn := -1.0 if n % 2 == 0 else 1.0
 		# wheel_radius() memoises by unit: the radius is set the way it caches it.
 		mover._wheel_radius_unit = mover.ctl.tank.unit_id
+		mover.native_stale |= Movement.STALE_ALL  # a direct write: a door into the C++-owned state (E5b)
 		mover._wheel_radius_value = [6.0, 12.0, 4.0][n % 3] as float
 		var cap := INF if n % 4 < 2 else rng.randf_range(2.0, 12.0)
 		var target := at + Vector3(rng.randf_range(-40.0, 40.0), 0.0, rng.randf_range(-40.0, 40.0))

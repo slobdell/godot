@@ -372,8 +372,8 @@ static var _registry := {}
 
 ## The composer this mover belongs to (an OrderController, or a TankBrain).
 var ctl: OrderController
-## Round 27 (native, stage 1 E5b): this crew's execute state owned by the C++ (a NativeExecState, freed with this mover),
-## and what the GDScript has written of it since the C++ last read it: a bit per door, so the C++ reads again only that
+## Round 27 (native, stage 1 E5b): this crew's execute state is owned by the C++ (a registry keyed by this mover's id,
+## swept of movers that are gone); here is what the GDScript has written of it since the C++ last read it: a bit per door, so the C++ reads again only that
 ## part before it executes (game/ai/native/native_exec.gd). STALE_ALL: reset, idle, ask here, a tick the native execute
 ## hands back; STALE_ORDER: new_order's two members; STALE_GUN: OrderController's gun forwarders; STALE_STALL: its
 ## stalled_ticks forwarder.
@@ -381,7 +381,6 @@ const STALE_ALL := 1
 const STALE_ORDER := 2
 const STALE_GUN := 4
 const STALE_STALL := 8
-var native_state: RefCounted = null
 var native_stale := STALE_ALL
 
 ## Stuck detection (round-3 X1): consecutive ticks a move_to made no progress toward its goal (0 while arrived or not
@@ -2357,6 +2356,7 @@ func _around_friends(waypoint: Vector3) -> Vector3:
 func wheel_radius() -> float:
 	var tank := ctl.tank
 	if _wheel_radius_unit != tank.unit_id:
+		native_stale |= STALE_ALL  # round 27 (native E5b): the brains' think step can fill this cache (a door)
 		_wheel_radius_unit = tank.unit_id
 		_wheel_radius_value = 0.0
 		if String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels":
@@ -3743,6 +3743,7 @@ static func fill_on() -> bool:
 
 ## Start driving one leg, Vector2(gear, metres), from where the hull is now.
 func _kturn_start_leg(leg: Vector2) -> void:
+	native_stale |= STALE_ALL  # round 27 (native E5b): a door into the owned state (the planner, or a test that sets up a leg)
 	_kturn_gear = int(leg.x)
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position

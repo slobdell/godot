@@ -19,7 +19,10 @@ static func usable(ctl: OrderController) -> bool:
 
 ## E5b: `--native-exec-verify` (with `--native-exec-owned`): before every owned execute the C++ reads the members afresh
 ## and compares them with the state it owns (a door into the state that does not set `native_stale` shows up here).
-static var verify := OS.get_cmdline_user_args().has("--native-exec-verify")
+## The environment's TANK_NATIVE_EXEC_VERIFY=1 does the same for every Godot a make target starts (`make native-verify-suite`:
+## the whole suite and the AI scenarios with every owned execute verified; a mismatch is an engine ERROR, so it fails).
+static var verify := OS.get_cmdline_user_args().has("--native-exec-verify") \
+		or OS.get_environment("TANK_NATIVE_EXEC_VERIFY") == "1"
 const EXEC_LIVE := 0
 const EXEC_OWNED := 1
 const EXEC_OWNED_VERIFY := 2
@@ -44,9 +47,10 @@ static func execute(ctl: OrderController, delta: float) -> Variant:
 			var n := maxi(int(p["executes"]), 1)
 			var parts := []
 			for key: String in p:
-				if key != "executes":
+				if key != "executes" and key != "sweeps" and key != "sweep":
 					parts.append("%s %.2f" % [key, float(p[key]) / n])
-			print("NATIVE_EXEC_PROFILE %d executes, usec an execute: %s" % [n, ", ".join(parts)])
+			print("NATIVE_EXEC_PROFILE %d executes, usec an execute: %s; the registry's sweep %.2f usec a frame (%d frames)" % [
+					n, ", ".join(parts), float(p["sweep"]) / maxi(int(p["sweeps"]), 1), int(p["sweeps"])])
 			var d: Dictionary = NativeBridge.impl.drive_profile(false)
 			var dparts := []
 			for key: String in d:

@@ -572,6 +572,10 @@ bool TankNative::drive_configure(const Dictionary &config) {
 			*slots[i] = config[names[i]];
 		}
 	}
+	c.yield_ready = config.has("YIELD_REACHED") && config.has("YIELD_CLEAR") && config.has("YIELD_HOLD_SECONDS");
+	c.YIELD_REACHED = config.get("YIELD_REACHED", 0.0);
+	c.YIELD_CLEAR = config.get("YIELD_CLEAR", 0.0);
+	c.YIELD_HOLD_SECONDS = config.get("YIELD_HOLD_SECONDS", 0.0);
 	c.kturn_look_ready = config.has("KTURN_MIN_ERROR_DEG") && config.has("KTURN_CIRCLE_SPEED") && c.manoeuvre_census != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;

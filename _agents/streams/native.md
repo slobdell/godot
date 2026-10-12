@@ -80,6 +80,20 @@ builder0 and must not be the design. The publish's own cost is pre-registered as
 **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
 read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
 
+## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)
+
+1. **N1 E6 now** (GO'd; running from 11:21:56 PDT on `19543dae`'s code), rule D as pre-registered.
+2. **N2 the ruling commit:** if E6 meets rule D, flip `native_exec`/`native_owned` ON in one commit (`native_cb` only if it
+   ever clears its own bar), thirteen lines and determinism unmoved, check, hand the orchestrator the hash; if not, write
+   up why and what would.
+3. **N3 the port partner (C28.2):** traffic (the crossing rule, `right_of_way`/`_avoid`), manoeuvre (turret hulls turning
+   to a drawn facing, a planned turn for the creep, the face path), scout/brains for any `decide` diff. They send settled
+   diffs; native ports each with an equal-answer proof; the pairs merge back to back. Every OFF-proven port stays green.
+4. **N4 stage 2 priced for him:** the think half (situation/decide/act/tactics polls) as one batched pass: days and the
+   expected laptop speed at 25 a side, as a decision he can make in player terms.
+
+Merge main (44b6be5c) after E6 is reported, not during.
+
 ## Who changes your frozen files this round (C27.2)
 
 - **Scout** may change `_manoeuvre`'s M1 `reaimed` rule in `movement.gd` and `game/ai/manoeuvre.gd` (still GDScript
@@ -103,12 +117,35 @@ situation/decide/act outside your seams, `game/tactics/**`, elements); orders' `
 
 ## Waiting on the lead
 
-E6 (the laptop's ruling) needs a laptop slot; he plays the result.
+E6 (the laptop's ruling) needs a laptop slot; he plays the result. **Asked for 2026-10-12 ~05:00 PDT** (`63f8cca4`).
 
 ## Status
 
 _Started 2026-10-11 18:25 PDT from `c37605f0` (main's green check `090b345d` covers it: no baseline re-run). Heavy runs on
 builder0; the laptop only in a granted slot (C27.6)._
+
+### The report (read this first; kept current)
+
+**State (2026-10-12 ~07:00 PDT):** E1-E5 done, equal answer, all OFF; **E6 (the laptop's ruling) waits for a laptop slot**
+(asked of the orchestrator ~05:00 PDT; the lead's laptop: C27.6). Last green: **`19543dae`** (builder0 `make check
+exited 0`, 2520/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), the E6 candidate; main has everything up to
+`8623c224`.
+
+| item | state |
+|---|---|
+| E1 the execute state owned in C++ | DONE (mirror design, priced ~2 us a crew; on main) |
+| E2 the drive's callbacks | DONE for the common callbacks (`native_cb`, OFF by its price, B); left as callbacks: the k-turn planner's body, `_manoeuvre`'s decision, `_negotiate`'s body, `_repair` (rare paths; the planner ~0.5-1 % of a tick) |
+| E3 gunnery | DONE (incl. ARC) |
+| E4 reflexes, unstick, wall contact | unstick DONE; reflexes hand back (brains never set any); the wall-contact observer stays GDScript (it runs before think, outside the seam; ~0.47 ms a tick headless) |
+| E5 the per-crew execute seam | DONE: `native_exec` + `native_owned` (+ `native_cb`) = stage 1; native-proof equal on every arm; builder0 headless -7.6 to -8.8 % of the tick's scripts (C) |
+| E6 the laptop's ruling | DONE: rules ON (20 a side -8.59 %, 0.890 -> 0.930; 25 a side -7.21 %, 0.818 -> 0.865) |
+
+**What to playtest (after E6, if it rules ON):** `make native && make skirmish` with stage 1 on:
+`make skirmish ARGS=--brains-on=native_exec,native_cb,native_owned` (or the switches' defaults flipped in their own
+commit). The same fights as before, at whatever speed the laptop gives; nothing should look different.
+
+**Known issues:** none open in native's code. Wheeled hulls under a `face` order and crews with reflexes still hand back
+(~3.6 % of executes in his Sumps).
 
 ### Plan (in order; one-line reasons)
 
@@ -158,7 +195,10 @@ packed snapshot a tick; the mirror's cost is changed-fields x ~0.1 us, pre-regis
   cheap exits. builder0: `test_native_drive` 5/0 both views (2160 + 1440 drives, 0 mismatches); `native-proof`
   on = off = ab = owned (Sumps `770df71a443ba743`, foundry `a401412b50925d19`).
 
-- **E3 / E4 / E5 written, in test** (uncommitted until their proofs run): `gun_native.cpp` (Gunnery.apply line by line
+- **Since the slot** (`a9357a96`, `63f8cca4` green: builder0 check 2520/0, ALL JUDGED, thirteen unmoved, det
+  `2875411ff4ec6be7`; its first run failed test_combat's respawn flake, the orchestrator's, fixed on main): the gun's last
+  GDScript calls ported; `--native-exec-profile`. Merged main at `8623c224` (green, merged to main by the orchestrator).
+- **E3 / E4 / E5 written, in test** (since committed, see above): `gun_native.cpp` (Gunnery.apply line by line
   on the view: the scan loop, `_shootable`, Engagement's `is_seen`/`acquire_seconds`/`crossing_rate`/`Lay.engage`/`lose`,
   Ballistics, Difficulty's wander, OrderFeed.point, `_cover`, `_clear_to_fire`; still called: ARC's `_apply_indirect`,
   the native scan's seam, AiTickCache, the spotter, Difficulty.for_team (once a frame a team), FireLanes.for_shot (once a
@@ -232,6 +272,25 @@ OFF, and the split re-taken to find what the ON arm still pays. Reported either 
   (-8.5 %); 25 a side foundry 15.81 -> 14.53 (-8.1 %), parade 15.63 -> 14.26 (-8.8 %); execute ~88 -> ~65 us a crew;
   think unchanged. Below the 11-15 % estimate so far: what the owned execute still pays is the next work, before E6.
 
+### E6, the laptop's ruling (2026-10-12 11:21-11:54 PDT, flightdeck = his laptop, `19543dae`'s code at `6d9fa7a4`, his
+preset, bar workload, ABBA, 3 cycles a run, n = 6 paired a size; `references/round27/native/e6-19543dae/`)
+
+| | tick's scripts | outside 2 se | game speed in the window (base -> stage 1) |
+|---|---|---|---|
+| 20 a side | **-8.59 %** (se 3.90; foundry -12.0 se 8.0, parade -5.2 se 0.5) | yes | **0.890 -> 0.930** (+0.040, se 0.033) |
+| 25 a side | **-7.21 %** (se 0.68; foundry -7.1, parade -7.3) | yes | **0.818 -> 0.865** (+0.047, se 0.006) |
+
+- **Rule D: met at both sizes -> stage 1 rules ON.** Priority 0 not moved by the arm (20: -0.048 ms se 0.099; 25:
+  +0.051 se 0.031); elements unmoved; ARMY_CAP_FIELDED right in all 24 logs (4 x 5, 5 x 5); the laptop's load steady
+  1.7-2.5 through both sessions. One void cell: Godot crashed in `--import` (signal 11, inside the engine, no frame of
+  ours) before parade 5988's last three runs; that cell was re-run alone, all four arms, its own cooldown and ABBA order.
+- **Against the prediction:** 20 a side tick -8.59 % is inside -8 to -11 % (central -9.5); its game speed 0.930 is NOT
+  0.97-0.99, because today's base is 0.890, not P1's 0.918: the prediction applied the saving to a base the laptop did
+  not reproduce. 25 a side -7.21 % is just under -8 (above the -6 falsifier: no re-take of P1's split needed); its game
+  speed 0.865 is inside 0.85-0.87. No falsifier fired (-6 floor not crossed; -13 ceiling not crossed).
+- **For him (C28.3):** at 20 a side his laptop now runs the opening clash at ~0.93 of real time (0.89 without), not the
+  1.00-1.03 he was told when he chose; at 25 a side ~0.87 (0.82 without).
+
 ### E6's prediction (pre-registered 2026-10-12 ~04:00 PDT, before the laptop session; the orchestrator's ask)
 
 **What the ON arm is at E6:** `a9357a96`+ with `native_exec`, `native_cb`, `native_owned` (rule D). Since the slot's C
@@ -255,10 +314,73 @@ multi-day port of manoeuvre's planner) ~0.5-1 %.
 - **Falsifiers:** below -6 % at 20 a side means the laptop's execute share is smaller than builder0's (re-take P1's split);
   above -13 % means the instrumented profile overstated the drive (re-take without clocks).
 - If the measured number is under the 11-15 % he decided on, the orchestrator tells him so with the measured game speed.
+- **Addendum (2026-10-12 ~06:20 PDT, still before E6):** if E6 runs on a later commit than `63f8cca4`, it also has
+  `right_of_way` native (E5c: crews giving way were ~5 % of executes and handed back to the GDScript; now 0, his Sumps
+  native-proof). Expected to add ~0.2-0.5 point at 20 a side; the prediction's range stands.
+
+### The doors audit (the orchestrator's condition on the ON commit, 2026-10-12 ~13:00 PDT)
+
+Every GDScript write to an owned member (Movement's 128, Gunnery's 12, the Lay's 3) that can happen OUTSIDE the native
+execute, by entry point (found by listing every Movement/Gunnery method called from outside its own script and every
+member assignment outside it; `game/` only: tests set up state and are covered by the detector below):
+
+| entry (who calls it, when) | writes owned members? | marks stale? |
+|---|---|---|
+| OrderController's 9 forwarding setters (brains' think: watch_point, spotter, hold_for_friends, engaged_target, ...) | yes | **yes** (STALE_GUN / STALE_STALL, on a change) |
+| `set_orders` -> `Movement.new_order` (orders, the CPU, Movement.request) | yes | **yes** (STALE_ORDER) |
+| `interrupt` -> `Movement.reset` (a new order or element call, Movement.request) | yes | **yes** (STALE_ALL) |
+| `Movement.ask` (another crew's `_negotiate`/`_ask_behind`, called back from ITS native drive) | yes (`_begin_yield`) | **yes** (STALE_ALL) |
+| `Movement.wheel_radius` (brains' `_wheel_radius()` on the think side) | yes, its cache, first use only | **yes, since this audit** (STALE_ALL) |
+| `Movement._kturn_start_leg` (the planner, called back; tests) | yes | **yes, since `0465a11e`** |
+| the GDScript compute_command (`bind`, `idle`, `drive`, `right_of_way`, `face_turn`, `keeps_heading`, `unstick`, `note_decision`, `Gunnery.apply/dead/held_aim_point`) | yes | **safe:** it runs only when the native seam is off (the seam's else marks STALE_ALL) or the native execute handed the tick back (it marks STALE_ALL) |
+| a drive callback into GDScript (`_planned_reverse`, `_manoeuvre`, `_negotiate`, `_repair`, ...; manoeuvre.gd under them) | yes | **safe:** the callback is wrapped (push the struct before, pull it all after) |
+| `observe_contact` -> `WallContact.observe` (every tick, before think) | no owned member (its own fields; `_yield_rec`/`_kturn_rec` Dictionaries mutated in place, shared with the struct) | n/a |
+| manoeuvre_census, avoidance (`is_under_way`), tank_brain (`straight_and_clear`), rts_controls/movement_readout/two_squads_playtest (`corridor`, `legibility`, `state`), Gunnery `_nearest_shootable` | reads only | n/a |
+
+**The detector:** `--native-exec-verify` / `TANK_NATIVE_EXEC_VERIFY=1` compares a fresh pull with the owned state before
+every owned execute and raises an engine ERROR on a difference; `make native-verify-suite` runs the whole suite and the AI
+scenarios that way, and native-proof's `exec_verify` arm a whole match. **C28.2's new rule** (the orchestrator): every
+stream writing mover/gunnery members marks `native_stale`.
+
+**Results (builder0, stage 1 ON):** the first `native-verify-suite` found no game door beyond the list; its 6 failures
+were the proof harness itself writing members (`MoverState.restore`'s deep copies, a direct `_wheel_radius_unit` write),
+now marked. It also exposed a **lifetime bug**: test processes aborted at exit ("corrupted size vs. prev_size") because
+the owned states (first an extension object on each mover, then a registry emptied at the library's unload) were freed
+after the GDScript language had finished, while holding script objects (the Lay, the station PID, the spotter lambda).
+Fixed: a crew's state is released in `OrderController._exit_tree` (while scripts are alive; the scene tree frees its
+nodes at quit), with a per-frame sweep of movers that are gone. `a3790744`: `native-verify-suite` 2520/0 tests, 50/0
+scenarios, 0 verify mismatches, no exit crash; native-proof on = off = exec_verify = `0398922d31f335f8`.
+
+### N4: stage 2 (the think half) priced for him (2026-10-12 ~12:40 PDT; an estimate, confidence low-medium)
+
+**What it is:** situation, decide, act and the tactics polls (each crew's thinking: what to do next) as ONE batched C++
+pass over all crews a tick, the GDScript kept as the reference with live-function proofs (the way stage 1 was built).
+Stage 1 moved the execute half (how each crew drives and shoots).
+
+**The estimate and its calibration:** P3 (round 26, builder0, `b57838ed`) put the whole pass at 46 % of the tick's
+scripts, the execute half ~16 %, so the think half ~30 % (24-36). Stage 1's estimate landed at ~0.6 of itself on his
+laptop (predicted ~13 % central; measured -8.6 % at 20 a side, -7.2 % at 25). Applying the same 0.6: **the think half
+saves ~18 % of the tick's scripts (14-22 %).** On E6's laptop numbers with stage 1 ON (25 a side: 0.865 of real time,
+tick scripts 30.4 ms, a game tick ~38.5 ms of wall time): 18 % is ~5.5 ms -> **25 a side ~1.0 (full speed; 0.975 at the
+low end)**; 20 a side (0.93, 26.0 ms of scripts) -> **full speed with headroom.**
+
+**The cost:** stage 1 was costed at 2.5-3 weeks and took ~1.5 days of this stream's time (Oct 11 18:25 -> Oct 12 12:30),
+because the drive was already native and the proofs were reusable; the think half has no such head start (tank_brain.gd
+~3 500 lines, the tactics feeds) and its inputs are Dictionary-shaped: **~1-2 weeks of one stream** (low confidence). The
+real price is afterwards: the thinking is what brains changes every round, and every such change is then written twice
+(GDScript + C++, proven equal), as driving changes are now (C28.2): **AI-thinking changes cost ~1.5-2x the work for as
+long as the AI keeps changing.**
+
+**The question for him, in player terms (one recommendation):** *"Your laptop now runs 20 a side at about 0.93 of real
+time and 25 a side at about 0.87. Moving the AI's thinking to C++ too would make 25 a side run at full speed (20 a side
+with room to spare), and take about one to two weeks; after that, every change to how the AI decides costs about twice
+the work. Do it now, or once the AI's decisions have settled?"* **Recommendation: once the AI's decisions settle**
+(brains reshapes the thinking every round today: doubling that cost now slows the smarter-AI work he keeps asking for;
+20 a side is close to full speed already). The orchestrator puts it to him.
 
 ### Questions for the lead
 
-- None.
+- **Stage 2 (N4):** do it now, or once the AI's decisions settle? (above; the orchestrator asks him)
 
 ### Requests to other streams
 
