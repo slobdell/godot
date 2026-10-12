@@ -77,6 +77,51 @@ Nothing.
 
 ## Status
 
+### FINAL REPORT (round 27, 2026-10-12 ~04:10)
+
+**Last green: `a66a95bc`** (builder0, `make check exited 0`, 2516 passed / 0 failed, 24 targets ALL JUDGED, thirteen
+UNMOVED, determinism `2875411ff4ec6be7`). Since main `3dc04293` it carries only tooling (approach stage `--live`,
+`--his/--theirs`, `--moving`, target hits by facing; `APPROACH_FLAGS`) and this Status: game code equals main. Nothing
+here is waiting to merge except the tooling (optional).
+
+| item | state | where |
+|---|---|---|
+| B0 attack honours a drawn approach (CP0) | DONE, merged | `9603c1d7`; stage 18/18 v 0/18 |
+| B1 the arrive line counts every crew | DONE (tooling; the orchestrator ruled the 8 m line judged, strict reported) | `3aa67b17`, `81217755` |
+| B2 a crew stuck behind a parked squadmate gets a seat round it | SHIPPED (v5, DECLARED), merged | `2dccf781` → main `3dc04293` |
+| B3 make-room priced by removal | KEEP: under B2 it gains (8 m line 97 v 93, +5/−1 cells, +0.0 %); on main it gained nothing | below |
+| B4 drill seats by nearest keeping the lead's role | RETIRED (blocked: breaks 5 fight tests) | `lab/brains-b4-point` |
+| B5 ambush guns on the drawn facing | DONE, rode in B2's merge (ruled: default-path change, its own line) | `417863c7` |
+| flank stall (orders' probe) | not a bug: artillery's standoff; `lab/brains-close` PARKED | below |
+| live-flank follow-up | PARKED for good (fails its bar on an even fight; fights worse than B0's rule) | `lab/brains-flank-live` `64355ff2` |
+| B6 street funnel | held (his call), untouched | — |
+
+**B3 under B2 (the decision):** `make squad-arrive-series ARRIVE_ARM_FLAG=make-room ARRIVE_SEEDS="13 14 15 16"`, builder0,
+stream `70eca453` (game = main `3dc04293`, B2 in): make-room on 97 v off 93 (8 m line), 76 v 72 (strict); gained 5
+cells (every one with a swap), lost 1, median +0.0 %; 14 swaps in 9 cells; crews > 12 m off 2 v 6. On round 26's base
+it gained nothing (68 v 68: the stuck watch rarely reached it); B2's watch and kept seats now hand it the case it was built
+for. KEPT; nothing changes in code.
+**The flank re-run (judged, the even roster):** five gun trucks v one holding Law IFV (calibrated on clicked attacks only:
+the one roster in the 30–70 % band; gun trucks lose 0/9 to every real Law squad, a balance candidate the orchestrator
+files), builder0 `370fc64d`, fresh seeds 4–6 × 6 ticks, n = 18 an arm: on side fix 0/18 (65°), B0's rule 0/18 (76°),
+clicked 0/18 (89°); target killed 10 / 15 / 10; his alive 1.83 / 2.78 / 2.28; side/rear hit share 0.68 / 0.76 /
+0.81. Fails; parked for good. **Lesson (the orchestrator's):** the stage's "first crew within 50 m" mark coincided with
+the fix's own circle (the target's reach), so "on side" measured the wrong moment — a stage's measuring point must be
+checked against what each arm does. **Side note for the lead:** on that even roster the SHIPPED drawn gesture (B0's
+rule) beats a clicked attack, 15 v 10 kills, 2.78 v 2.28 alive (n = 18).
+**Kept branches (never merge):** `lab/brains-b4-point` (B4's role-follows-point, fails), `lab/brains-close` (the
+close-at-reach fix, parked), `lab/brains-flank-live` `64355ff2` (the live-flank fix, parked for good), and round 26's `lab/brains-carrot`.
+`lab/brains-mr2` is superseded by B2 (can go). Scratch worktrees to remove at close: `godot-brains-lab`,
+`godot-brains-lab2` (+ their builder0 folders `godot-brains-lab`, `-lab2`, `-light`).
+**Questions for the lead (the orchestrator collects them):** (1) artillery and a drawn approach: bombard from that side,
+or ignore it? (2) dragging an attack onto a stronger squad: swing round anyway, or give up the flank? (3) is 8 m off a
+seat too loose for how a halted formation looks (the strict line read 31 hollow of 100 on main)?
+**What to playtest:** `make native && make skirmish`: order a squad across the Sumps lanes with an attack-move (A) and
+watch every crew settle on its seat (B2); press on an enemy and drag (orders' gesture) against a holding target: the
+squad swings round to the side you dragged (B0); set an ambush with a facing drag: the guns point the way you drew (B5).
+**Merge notes:** all in my paths (`game/tactics/**`, `game/ai/tank_brain.gd` act (B5), `tests/tactics/**`,
+`tests/test_tactics_*`, `mk/tactics.mk`, `tools/tactics/**`); no shared-file edits.
+
 **Plan (2026-10-11, in order):** B0 (attack honours `approach`; CP0 → orders) → B1 (the every-crew arrive line, tooling
 + mutation check, re-read the arrive series and the Sumps cell) → B2 (re-seat round the parked crew, from
 `lab/brains-mr2`; DECLARED) → B3 (make-room priced by removal under B1's line) → B4 (drill seats by nearest keeping the
@@ -120,7 +165,19 @@ on main (S_2, the IFV, 11.3 m off), as round 26 traced.
   floor, `ArrivalLine.ELEMENT_TOLERANCE_M`); lesson 293's stuck crews (19–26 m) fail both. Both are reported; the
   strict one stays the line until ruled.
 
-**B2 (DECLARED) — v5 is the last attempt (the orchestrator: no v6; if v5 fails any rule B2 is parked and written up).**
+**B2 (DECLARED) — SHIPPED: v5 GREEN at `2dccf781`, merged by the orchestrator as `2dccf781` (2026-10-12 ~01:40).**
+builder0 `make check exited 0`, 2497 passed / 0 failed, 24 targets ALL JUDGED, thirteen unmoved, determinism
+`2875411ff4ec6be7`. Rule sheet (all at v5 `3e54110e`): (1) PASS Sumps seed 1 tick 1 arrives 82.6 s, seed 1 6/6;
+(2) PASS fresh seeds 9–12, 8 m line 95 v 88, 1 lost, median +0.0 % (strict 74 v 67); (3) PASS his 108 106 v 106
+(identical failures: the candidate below), bridge-pooled 18/18; (4) PASS; (5) cost NOT READABLE (pinned 0–7, 25 a
+side Sumps, GDScript path, n = 3 × 2 repeats: tick scripts 62.9 v 62.2 then 80.6 v 74.1 ms; elements segment +0.12 ms
+in the quieter repeat; identical survivors); (6) CPU side seeds 9–10 45 v 43 (2 lost, +0.0 %); (7) 15 v 13 of 18;
+(8) fresh 9–12 24 v 23 of 24; fight guards 39/0; resends 25 in 19 cells, max 3 in a cell, none twice.
+**B5 rode inside that merge (the orchestrator's ruling, accepted after the fact):** `TankBrain.AMBUSH_LAY_ENABLED`
+applies to EVERY unsprung ambush (the CPU's and undrawn ones too), a default-path behaviour change; `--ambush-lay=off`
+is the old bare hold. Guards (bay ambush, fights) 39/0 and the thirteen unmoved at that hash. Lesson for me: a
+default-path change gets its own commit and a message to the orchestrator first.
+History (v1–v5, the version table below):
 Mechanism (v5, `3e54110e`, on main `f4c5f7c9` merged as `5877710e`): (1) the stuck clock PAUSES on a slow tick only while
 the crew presses a squadmate parked on its own slot (`Element._pressing_parked`), else resets as before; (2) a re-seat
 keeps every squadmate parked on its own slot in its seat (`_parked_seats` → `plan.reseat_keep` →
@@ -247,7 +304,13 @@ round-18 D1 rule). Think-side fix: an unsprung ambush crew with a sector gets `a
 fires; the ambush still holds). `--ambush-lay=off` = the old bare hold. Test: the ambush case of
 `test_tactics_facing_tasks_live` now also holds the squad's mean GUN within 15° of the drawn facing.
 
-**lab/brains-close (DECLARED; queued after/independent of B2, each merges alone).** Orders' flank-probe (main + CP0,
+**lab/brains-close — PARKED (the orchestrator, 2026-10-12): no ship.** (a) did not reproduce for direct fire: tanks in
+the quiet stage (target holds fire, cannot die) close to 22 m in both arms; orders' seeds 3/13 stall was the player's
+group 1 being ARTILLERY ("Battery", wrecker catapults) holding its standoff against a target that could not die.
+(b)'s rework (a still target lost from sight while going round is not a pursuit) is unproven alone; it is folded into
+the live-flank follow-up below. Candidate for the lead (the orchestrator takes it): should artillery honour a drawn
+approach (bombard from that side) or ignore it? Today it partly honours it. The `8de99ab8` runs are void.
+Original write-up: Orders' flank-probe (main + CP0,
 real input path): seeds 3 and 13 the attack never closes in either arm. Traced to two causes: (a) PRE-B0 — an attack
 goes in (line + `attack`) only once its centre is within the crews' shortest EFFECTIVE range (45 m); below that its crews
 are on attack-moves, which stop to fight at full range (70 m): with a target that never fires back nothing sends them
@@ -256,6 +319,26 @@ in (they parked 50–75 m off for 90 s). Fix: go in within the crews' longest re
 (it stopped 40–54° off). Fix: round at the crews' shortest sight (`--approach-sight=off`); not declared alone. Branch
 `lab/brains-close` (worktree `godot-brains-lab2`) = main + the stage tooling + the fix. Bar registered before numbers
 (accepted, + 6 fresh flank-probe seeds as its blind part of (1)); blind runs in flight.
+
+**B4 — BLOCKED (written up, no declared run; recommend retiring).** Tried: drill seats by nearest with the role going
+with the point (the crew in slot 0 leads the flow, legs and chase; `--drill-seats=nearest`, `--point-leads=off`).
+builder0, `pace-p0-tests` phase 0 on `2dccf781` + B4: base 31/0, nearest 26/5 — the pursuit at 8 m/s (when the point
+changed hands the old leader's crew turned 178° and opened 53 → 142 m), elements, mixed_legs (Sumps two scouts), the
+cannot-catch pursuit, seat_nearest (it tests the pin). "Keep the lead crew's role" is what the pinned leader already
+does; the unpin's one measured gain (his bridge 54 v 53/54, round 26) was overtaken by CP1a. Parked on
+`lab/brains-b4-point` `9f15bfd9`.
+
+**Live-flank follow-up — PARTIAL, parked on `lab/brains-flank-live` (`33bf5862`), game code off the stream.** Orders'
+flank clips (gun trucks v a Law squad, target held, damage on) never reached the drawn side. Traced: B0's circle at the
+crews' own reach (a twin MG: 35 m, inside the Law guns); a near ambush by the target's squadmates (spread up to 36 m from
+it) sprang assault-through; under a CPU commander the target itself drove at 8–10 m/s and B0 made anything at ≥ 2 m/s a
+pursuit (no side). Fix (circle ≥ the target's reach; pursuit only at ≥ 6 m/s now; no assault-through on the target's own
+squad within 40 m): ApproachStage `--live=on`, seeds 1–3 × 6 ticks, builder0 `33bf5862`: 0/18 on side in all three
+arms (fix 74° median off, B0's rule 83°, clicked 86°) — but every gun truck died in every arm and the target never
+did: the stage was a fight nobody wins (the orchestrator, C27.5). One re-run allowed on an EVEN fight calibrated on
+clicked attacks only (`--his=`/`--theirs=`), fresh seeds 4–6 × 6 ticks, same bar (≥ 12/18); under it → parked for good.
+Lead question (the orchestrator collects them): "drag an attack onto a stronger squad: swing round anyway, or give up
+the flank?"
 
 **Candidates noted (not preempting B0–B4):** his bridge 108 reads 106/108 at round 27's base in BOTH of B2's arms
 (`3e54110e`, builder0): seed 2, his side tick 5 and the CPU's tick 9, one law_tank hesitating 3.5–6.8 s at the rim, all
