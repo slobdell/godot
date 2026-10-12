@@ -1,6 +1,6 @@
 # Workstreams: the current round
 
-> **ROUND 27 IS PREPARED (2026-10-11 evening): four streams (scout, brains, orders, native), contracts C27.1–C27.7
+> **ROUND 27 (2026-10-11 → 12): scout, orders, brains CLOSED (briefs in `streams/archive/round27/`); native still running; contracts C27.1–C27.7
 > below; briefs in `streams/`.** Round 26's briefs are in `streams/archive/round26/`, its contracts C26.1–C26.10 below.
 
 ## Round 27: four streams (prepared 2026-10-11 evening; briefs in `streams/`)
@@ -12,9 +12,9 @@ keeps moving; everything that rewrites the drive (traffic's convention, the whee
 
 | Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|
-| **scout** | `godot-scout` (1) | [streams/scout.md](streams/scout.md) | scouts fight from a distance they can still turn in, and back up to keep a target that slides past their nose | **CP-S** S1+S2, DECLARED, alone (+ native's port if `decide` moved) |
-| **brains** | `godot-brains` (2) | [streams/brains.md](streams/brains.md) | a squad told to arrive has every crew on its seat (no crew stuck behind a parked squadmate); drill seats by nearest that keep the lead's role; ambush guns on the drawn facing | **CP0** B0 (attack honours `approach`) → orders merges main |
-| **orders** | `godot-orders` (3) | [streams/orders.md](streams/orders.md) | press on an enemy and drag: the squad attacks from that side; showmatch's end shot stays on the arena | after **CP0** |
+| **scout** | `godot-scout` (1) | [streams/archive/round27/scout.md](streams/archive/round27/scout.md) | scouts fight from a distance they can still turn in, and back up to keep a target that slides past their nose | **CP-S** S1+S2, DECLARED, alone (+ native's port if `decide` moved) |
+| **brains** | `godot-brains` (2) | [streams/archive/round27/brains.md](streams/archive/round27/brains.md) | a squad told to arrive has every crew on its seat (no crew stuck behind a parked squadmate); drill seats by nearest that keep the lead's role; ambush guns on the drawn facing | **CP0** B0 (attack honours `approach`) → orders merges main |
+| **orders** | `godot-orders` (3) | [streams/archive/round27/orders.md](streams/archive/round27/orders.md) | press on an enemy and drag: the squad attacks from that side; showmatch's end shot stays on the arena | after **CP0** |
 | **native** | `godot-native` (4) | [streams/native.md](streams/native.md) | nothing in play until E5/E6; then 20 a side at about full speed on his laptop | E1 OFF on main early; E5 ON in an A/B |
 
 **Not this round (wait for stage 1, the drive is frozen):** traffic's friendly convention (his crossing cases already

@@ -3746,3 +3746,16 @@ instrument that cannot lie about load — removal within one run — and let eve
    first trace found the element's slot sliding by millimetres re-ordered every crew every ~0.3 s, so no avoidance or
    give-way ever ran. Fixing that (CP1a) cleared his head-on case and his bridge drill (−87 % deck jam); the rule he
    asked for measured worse and did not ship. Reproduce his case and trace one crew before designing the mechanism.
+
+295. **A stage nobody can win measures nothing.** (Round 27, brains' live flank.) The first live stage killed every crew in
+   every arm, clicked included, so 0/18 on side said nothing about the fix. Calibrate the CONTROL arm first (it must win
+   some and lose some) and record the calibration before the judged run.
+296. **Check what the probe's squad is before calling it a bug.** (Round 27.) The flank "stall" on seeds 3/13 was the
+   recalled hotkey group being artillery, which backs off to its standoff by design; a fix was built and parked for it.
+   A probe through the player's input names the units it commanded.
+297. **A stage's measuring point must be checked against what each arm does.** (Round 27.) The fix's new 50 m circle
+   coincided with the stage's "first crew within 50 m" mark, so on-side was read at the wrong moment. Read one trace
+   per arm against the metric before the judged run.
+298. **Fresh seeds after tuning, and a last attempt named in advance.** (Round 27, scout CP-S and brains B2.) Each failed
+   version moved its judged runs to seeds it had never seen, and B2 v5 was declared the last attempt before it ran: it
+   passed on its own merits, and the alternative was a v6 tuned on the seeds that judged v5.

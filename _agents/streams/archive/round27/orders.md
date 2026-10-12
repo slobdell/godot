@@ -1,3 +1,4 @@
+> **ARCHIVED (round 27: this stream finished 2026-10-12; native continues, C27.7).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: orders (attack from a side you draw; showmatch recordings worth sharing)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 26 direction* (reading (5), the

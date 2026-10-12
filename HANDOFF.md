@@ -4,10 +4,37 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-11 evening — **ROUND 27 IS PREPARED (the section below): four streams, worktrees created, not yet
-kicked off.** Main's green check covering every stream's starting commit: **`090b345d`, builder0, `make check exited 0`,
-2464 passed, 0 failed, 24 targets ALL JUDGED, determinism 2875411ff4ec6be7** (everything since is docs only: workers do
-NOT re-run a baseline check). He pushes `main`._
+_Last updated: 2026-10-12 ~03:45 — **ROUND 27: scout, orders and brains are DONE and closed (the section below); native
+(stage 1 C++) is still running in `godot-native` (C27.7).** Main's last green check: `3dc04293` (builder0, exited 0,
+2516/0, ALL JUDGED, thirteen unmoved, det 2875411ff4ec6be7), with native `8623c224` (2520/0) and the finished streams'
+tooling merged on top; a combined check of `03b5be9e` was running at 03:30 (`build/main_check_final27.log`). He pushes
+`main`._
+
+## 🟡 ROUND 27: THREE STREAMS CLOSED, NATIVE RUNNING (2026-10-12) — read this first
+
+**What he plays now** (`make native && make skirmish`):
+- **Scouts keep turning room and back up to keep the gun on a moving target** (CP-S, a 2.1 s rollout lay planner for fixed
+  guns): blind census seeds 13–36, gun on target in reach +16.1 pts (se 5.2), all fight time +5.2, enemy contacts down;
+  kills/damage/deaths unchanged within noise. **His clips: `build/scout_clips/scout_{before,after}.mp4`** (seed 13,
+  Parade, Gangs v Law, ~30–60 s).
+- **Attack from a drawn side:** press on an enemy, drag toward the side to come from, release. Against a passive target it
+  comes round (12/12 orders' probe); in a live fight it rarely gets all the way round but still beats a clicked attack on
+  an even roster (kills 15 v 10, n = 18). A running target (≥ 2 m/s) is a pursuit.
+- **A squad that arrives has every crew on its seat** (B2): a crew pressing a squadmate parked on its slot is re-seated
+  round it; an idle crew > 8 m off is re-sent once; fresh seeds 95 v 88 of 100 arrive. **Ambush guns lie on the drawn
+  facing** (B5).
+- **Showmatch recordings stay inside the arena** (the director owns the angle; the player's camera unchanged).
+
+**Not shipped:** scout S4 (`scout-s4-halt`), drill seats by nearest (B4, retired: `lab/brains-b4-point`), the attack-close
+fix (artillery, `lab/brains-close`), the live-flank fix (`lab/brains-flank-live`).
+
+**Native (still running):** E1–E5b merged, every switch OFF (play unchanged). Quiet slot: `native_cb` stays OFF (< 2 %);
+stage 1 headless −7.6 to −8.8 % of the tick's scripts v the 11–15 % estimate he chose on — internal until E6 on his laptop
+(native pre-registers what the remaining ports add first). Laptop slots go through the orchestrator.
+
+**Waiting on him:** the calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (four decisions; `read_db`
+`decisions/<id>`); the scout clips. Round 28 candidates: `roadmap.md`. Lessons 295–298. Briefs of the closed streams:
+`streams/archive/round27/`; worktrees and builder0 folders removed; kept branches listed in each report.
 
 ## 🚀 ROUND 27 IS PREPARED (2026-10-11 evening) — read this first
 
