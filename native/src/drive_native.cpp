@@ -2000,6 +2000,21 @@ bool drive_with(const DriveConfig &config, Object *mover, Object *cmd, const Dic
 	if (!config.ready || mover == nullptr || cmd == nullptr) {
 		return false;
 	}
+	profiling_ = config.profile;
+	struct DriveTotal {
+		std::chrono::steady_clock::time_point t0;
+		DriveTotal() {
+			if (profiling_) {
+				t0 = std::chrono::steady_clock::now();
+			}
+		}
+		~DriveTotal() {
+			if (profiling_) {
+				clock_().total += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
+				clock_().drives++;
+			}
+		}
+	} total;
 	if (state == nullptr) {
 		Drive<ObjectView> d(config, mover, ObjectView(mover));
 		return d.bind() && d.run(cmd, order, delta);
@@ -2047,17 +2062,6 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 		return false;
 	}
 	profiling_ = config.profile;
-	const auto t0 = profiling_ ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
-	struct Total {
-		std::chrono::steady_clock::time_point t0;
-		~Total() {
-			if (!profiling_) {
-				return;
-			}
-			clock_().total += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count();
-			clock_().drives++;
-		}
-	} total{ t0 };
 	if (!owned) {
 		return drive_with(config, mover, cmd, order, delta, nullptr);
 	}

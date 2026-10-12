@@ -27,8 +27,32 @@ const REPORT_EVERY := 20000
 static var _executes := 0
 
 
+## Measurement only: `--native-exec-profile` prints NATIVE_EXEC_PROFILE (us an execute in each part of the native
+## execute, execute_native.cpp's clocks, and the drive's callbacks through --native-drive-profile's) every REPORT_EVERY.
+static var profile := OS.get_cmdline_user_args().has("--native-exec-profile")
+static var _profile_set := false
+
+
 ## The crew's command for this tick natively, or null (the GDScript compute_command runs).
 static func execute(ctl: OrderController, delta: float) -> Variant:
+	if profile:
+		if not _profile_set:
+			_profile_set = true
+			NativeBridge.impl.execute_profile_on(true)
+		if (_executes + 1) % REPORT_EVERY == 0:
+			var p: Dictionary = NativeBridge.impl.execute_profile(false)
+			var n := maxi(int(p["executes"]), 1)
+			var parts := []
+			for key: String in p:
+				if key != "executes":
+					parts.append("%s %.2f" % [key, float(p[key]) / n])
+			print("NATIVE_EXEC_PROFILE %d executes, usec an execute: %s" % [n, ", ".join(parts)])
+			var d: Dictionary = NativeBridge.impl.drive_profile(false)
+			var dparts := []
+			for key: String in d:
+				if key != "drives":
+					dparts.append("%s %.2f" % [key, float(d[key]) / maxi(int(d["drives"]), 1)])
+			print("NATIVE_EXEC_DRIVE %d drives, usec a drive: %s" % [int(d["drives"]), ", ".join(dparts)])
 	var mode := (EXEC_OWNED_VERIFY if verify else EXEC_OWNED) if NativeDrive.owned or BrainSwitches.native_owned \
 			else EXEC_LIVE
 	_executes += 1

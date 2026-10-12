@@ -132,6 +132,8 @@ public:
 		return execute_native(config, ctl, delta, mode);
 	}
 	Dictionary execute_counts(bool reset) const { return ::godot::execute_counts(reset); }
+	void execute_profile_on(bool on) const { ::godot::execute_profile_on(on); }
+	Dictionary execute_profile(bool reset) const { return ::godot::execute_profile(reset); }
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
