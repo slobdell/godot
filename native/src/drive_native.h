@@ -92,6 +92,10 @@ struct DriveConfig {
 	// Round 27 (E2): Movement._planned_reverse's look up to its cheap exits natively (kturn_look_ready false: the callback).
 	bool kturn_look_ready = false;
 	double KTURN_MIN_ERROR_DEG = 0.0, KTURN_CIRCLE_SPEED = 0.0;
+	// Round 27 (E4): Movement.unstick natively (unstick_ready false: the GDScript).
+	bool unstick_ready = false;
+	double STUCK_SPEED = 0, STUCK_SECONDS = 0, UNSTICK_SECONDS = 0, UNSTICK_CLEARANCE = 0, PRESS_ESCAPE_THROTTLE = 0,
+		   PRESS_BACKOFF_M = 0, PRESS_SECONDS = 0, PRESS_PROGRESS_M = 0, PRESS_ESCAPE_MAX_S = 0, THROTTLE_MIN = 0;
 	Object *manoeuvre_census = nullptr; // ManoeuvreCensus (its trace_unit: a traced unit takes the GDScript, which prints)
 	Variant keep_manoeuvre_census;
 };
@@ -100,6 +104,17 @@ struct DriveConfig {
 // C++-owned state (ExecState, exec_view.h's StructView) instead of the live members; the same bits either way.
 bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,
 		bool owned = false);
+// Round 27 (stage 1 E5): the drive and unstick on a state the CALLER manages (null: the live members; else the C++-owned
+// state, which the caller pulled and will push: only callbacks into GDScript sync it inside).
+struct ExecState;
+bool drive_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, ExecState *state);
+bool unstick_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,
+		ExecState *state);
+// Round 27 (stage 1 E4): Movement.unstick(cmd, order, delta) natively, on the live members or the owned state.
+bool unstick_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned);
+// Steering.drive_toward(position, forward, target, arrive_radius) (remaining -1), for the other execute ports.
+Vector2 steering_drive_toward(const DriveConfig &c, const Vector3 &position, const Vector3 &forward, const Vector3 &target,
+		double arrive_radius);
 // Measurement: owned drives, and the transition's pulls and pushes they made; `reset` zeroes them.
 Dictionary drive_owned_counts(bool reset);
 // Measurement only: microseconds a callback took (by name), "drives", "total"; `reset` zeroes it.

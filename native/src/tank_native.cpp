@@ -39,6 +39,11 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("exec_fields"), &TankNative::exec_fields);
 	ClassDB::bind_method(D_METHOD("drive_owned", "mover", "cmd", "order", "delta"), &TankNative::drive_owned);
 	ClassDB::bind_method(D_METHOD("drive_owned_counts", "reset"), &TankNative::drive_owned_counts);
+	ClassDB::bind_method(D_METHOD("gun_configure", "config"), &TankNative::gun_configure);
+	ClassDB::bind_method(D_METHOD("unstick", "mover", "cmd", "order", "delta", "owned"), &TankNative::unstick);
+	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "owned"), &TankNative::execute);
+	ClassDB::bind_method(D_METHOD("execute_counts", "reset"), &TankNative::execute_counts);
+	ClassDB::bind_method(D_METHOD("gun_apply", "gunnery", "cmd", "seconds", "owned"), &TankNative::gun_apply);
 	ClassDB::bind_method(D_METHOD("exec_pull", "mover"), &TankNative::exec_pull);
 	ClassDB::bind_method(D_METHOD("exec_push", "mover", "force"), &TankNative::exec_push);
 	ClassDB::bind_method(D_METHOD("exec_row", "mover"), &TankNative::exec_row);
@@ -551,6 +556,20 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.manoeuvre_census = c.keep_manoeuvre_census.get_validated_object();
 	c.KTURN_MIN_ERROR_DEG = config.get("KTURN_MIN_ERROR_DEG", 0.0);
 	c.KTURN_CIRCLE_SPEED = config.get("KTURN_CIRCLE_SPEED", 0.0);
+	{
+		const char *names[] = { "STUCK_SPEED", "STUCK_SECONDS", "UNSTICK_SECONDS", "UNSTICK_CLEARANCE", "PRESS_ESCAPE_THROTTLE",
+			"PRESS_BACKOFF_M", "PRESS_SECONDS", "PRESS_PROGRESS_M", "PRESS_ESCAPE_MAX_S", "THROTTLE_MIN" };
+		double *slots[] = { &c.STUCK_SPEED, &c.STUCK_SECONDS, &c.UNSTICK_SECONDS, &c.UNSTICK_CLEARANCE, &c.PRESS_ESCAPE_THROTTLE,
+			&c.PRESS_BACKOFF_M, &c.PRESS_SECONDS, &c.PRESS_PROGRESS_M, &c.PRESS_ESCAPE_MAX_S, &c.THROTTLE_MIN };
+		c.unstick_ready = true;
+		for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+			if (!config.has(names[i])) {
+				c.unstick_ready = false;
+				break;
+			}
+			*slots[i] = config[names[i]];
+		}
+	}
 	c.kturn_look_ready = config.has("KTURN_MIN_ERROR_DEG") && config.has("KTURN_CIRCLE_SPEED") && c.manoeuvre_census != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;

@@ -158,6 +158,17 @@ packed snapshot a tick; the mirror's cost is changed-fields x ~0.1 us, pre-regis
   cheap exits. builder0: `test_native_drive` 5/0 both views (2160 + 1440 drives, 0 mismatches); `native-proof`
   on = off = ab = owned (Sumps `770df71a443ba743`, foundry `a401412b50925d19`).
 
+- **E3 / E4 / E5 written, in test** (uncommitted until their proofs run): `gun_native.cpp` (Gunnery.apply line by line
+  on the view: the scan loop, `_shootable`, Engagement's `is_seen`/`acquire_seconds`/`crossing_rate`/`Lay.engage`/`lose`,
+  Ballistics, Difficulty's wander, OrderFeed.point, `_cover`, `_clear_to_fire`; still called: ARC's `_apply_indirect`,
+  the native scan's seam, AiTickCache, the spotter, Difficulty.for_team (once a frame a team), FireLanes.for_shot (once a
+  reload), Tank.ready_to_fire/ammo_fraction), switch `native_gun` OFF; `unstick` + the pressed-wall escape in the drive's
+  template (the rare stuck event's `_hull_within`/`_ask_behind` called); `execute_native.cpp`: compute_command's common
+  path (living hull, no reflexes, not giving way, a move_to) as ONE call composing drive + unstick + gun +
+  `note_decision` + `held_aim_point` + `bind` on one view, anything else handed back untouched; switch `native_exec` OFF.
+  Proofs: `test_native_gun` (three arms from one snapshot, synthetic orders for every branch), unstick inside
+  `test_native_drive` (forced states for every branch), `test_native_execute` (compute_command three ways).
+
 **The mirror's price (the orchestrator's condition on E1, 2026-10-11 ~20:30):** the push of CHANGED fields at a drive's
 end, which is what E5 keeps. builder0 (load ~15-20), `native-tp-headless` 20 a side + leaders, `--native-exec-owned`,
 seeds 92721 31337 5988, 25 000 drives each (whole match, not only the window), `9b641aca`: **foundry 8.1 fields,

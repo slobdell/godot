@@ -8,6 +8,18 @@ extends RefCounted
 ## them with a different value, and pushes the struct back. The match must hash as one run without it: push is lossless.
 
 static var mirror := NativeBridge.available and OS.get_cmdline_user_args().has("--native-exec-mirror")
+
+
+## E5: can this crew's execute step go native this tick? (The library, the switches, the drive's default configuration,
+## the gun configured.) The native call itself still hands back (NIL) anything off the common path.
+static func usable(ctl: OrderController) -> bool:
+	return BrainSwitches.native and BrainSwitches.native_exec and NativeDrive.usable(ctl.movement) \
+			and NativeGun.configure()
+
+
+## The crew's command for this tick natively, or null (the GDScript compute_command runs).
+static func execute(ctl: OrderController, delta: float) -> Variant:
+	return NativeBridge.impl.execute(ctl, delta, NativeDrive.owned)
 ## Measurement: crews mirrored, members scrambled (a mirror that scrambled nothing proves nothing).
 static var mirrored := 0
 static var scrambled := 0

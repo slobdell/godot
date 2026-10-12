@@ -281,6 +281,12 @@ func set_orders(new_move: Variant, new_weapon: Variant, new_reflexes: Variant = 
 func compute_command(delta: float) -> TankCommand:
 	if NativeExec.mirror:
 		NativeExec.mirror_one(movement)  # round 27 (native E1): measurement only, the push proven lossless
+	if NativeExec.usable(self):
+		# Round 27 (native E5): the whole execute step below as one native call (execute_native.cpp), the same bits; null
+		# off its common path (a dead hull, reflexes, giving way, an order that is not a move), and the GDScript runs.
+		var native_cmd: Variant = NativeExec.execute(self, delta)
+		if native_cmd != null:
+			return native_cmd
 	movement.bind()
 	if not tank.is_alive():
 		gunnery.dead()  # N5: nothing engaged, and a respawned crew starts its lay from scratch
@@ -302,7 +308,10 @@ func compute_command(delta: float) -> TankCommand:
 			add_part("by.%s.%s" % [String(move_order.get("type", "none")),
 					"still" if tank.estimated_velocity.length_squared() < 0.04 else "moving"], Time.get_ticks_usec() - clock)
 		clock = Time.get_ticks_usec()
-	gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
+	if NativeGun.usable(gunnery):
+		NativeGun.apply(gunnery, cmd, _seconds_step())  # round 27 (native E3): the same, as one native call
+	else:
+		gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
 	movement.note_decision(cmd, move_order)
 	if profiling:
 		add_part("weapon", Time.get_ticks_usec() - clock)

@@ -89,6 +89,71 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 	return [drives, mismatches, first]
 
 
+## Round 27 (stage 1 E4): `Movement.unstick` natively (TankNative.unstick, both views) against the live GDScript, for
+## every mover with a move order, from one snapshot of all movers: the game's own state, then forced states that reach
+## each branch (about to fire the stall rule, backing off, escaping a pressed wall, about to call a press). Returns
+## [compared, mismatches, first, branches].
+func _unstick_compare(movers: Array[Movement], controllers: Array[OrderController], rng: RandomNumberGenerator,
+		frame: int) -> Array:
+	var delta := 1.0 / float(SimClock.TICK_RATE)
+	var compared := 0
+	var mismatches := 0
+	var first := ""
+	var branches := {}
+	for i in movers.size():
+		var mover := movers[i]
+		var order: Dictionary = controllers[i].move_order
+		if String(order.get("type", "")) != "move_to" or not mover.ctl.tank.is_alive():
+			continue
+		for variant in 5:
+			var start := _capture_all(movers)
+			match variant:
+				1:
+					mover._unstick_left = 0.0
+					mover._stuck_time = Movement.STUCK_SECONDS - 0.01
+				2:
+					mover._unstick_left = 0.5
+					mover._escape_gear = 0.0
+					mover._unstick_pivot = rng.randf() < 0.5
+				3:
+					mover._unstick_left = rng.randf_range(0.01, 0.5)
+					mover._escape_gear = 1.0 if rng.randf() < 0.5 else -1.0
+					mover._escape_turn = 1.0 if rng.randf() < 0.5 else -1.0
+					mover._press_from = mover.ctl.tank.global_position + Vector3(rng.randf_range(-2.0, 2.0), 0.0, 0.5)
+				4:
+					mover._unstick_left = 0.0
+					mover._press_time = Movement.PRESS_SECONDS - 0.01
+			var forced := _capture_all(movers)
+			var throttle := 1.0 if variant == 1 else rng.randf_range(-1.0, 1.0)
+			var turn := rng.randf_range(-1.0, 1.0)
+			var arms := []
+			for arm in 3:
+				_restore_all(movers, forced)
+				var cmd := TankCommand.new(throttle, turn, Vector3.ZERO)
+				if arm == 0:
+					mover.unstick(cmd, order, delta)
+				else:
+					NativeBridge.impl.unstick(mover, cmd, order, delta, arm == 2)
+				arms.append([MoverState.command(cmd), _capture_all(movers)])
+			_restore_all(movers, start)
+			compared += 1
+			var key := "%d:%s" % [variant, "fired" if arms[0][1][i]["_unstick_left"] > forced[i]["_unstick_left"] else "-"]
+			branches[key] = int(branches.get(key, 0)) + 1
+			for arm in [1, 2]:
+				var differ := ""
+				for j in movers.size():
+					differ = MoverState.diff(arms[0][1][j], arms[arm][1][j])
+					if differ != "":
+						differ = "mover %d: %s" % [j, differ]
+						break
+				if arms[0][0] != arms[arm][0] or differ != "":
+					mismatches += 1
+					if first == "":
+						first = "frame %d %s variant %d arm %d: command live %s native %s; %s" % [frame,
+								mover.ctl.tank.name, variant, arm, arms[0][0], arms[arm][0], differ.left(400)]
+	return [compared, mismatches, first, branches]
+
+
 ## Wheeled hulls nose-on to walls with their goal behind them: the k-turn planner, its legs, their ends.
 func test_the_k_turn_legs_are_the_live_gdscript() -> void:
 	await _k_turn_case(false)
@@ -126,6 +191,10 @@ func _k_turn_case(owned: bool) -> void:
 		movers.append(Movement.of(orders.tank))
 	var map: RID = controllers[0].tank.get_world_3d().navigation_map
 	var kturn_before := [Movement.kturns + Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
+	var unstick_compared := 0
+	var unstick_mismatches := 0
+	var unstick_first := ""
+	var unstick_branches := {}
 	var drives := 0
 	var mismatches := 0
 	var first := ""
@@ -155,11 +224,24 @@ func _k_turn_case(owned: bool) -> void:
 		mismatches += result[1]
 		if first == "" and result[2] != "":
 			first = result[2]
+		var stuck := _unstick_compare(movers, controllers, rng, frame) if not owned else [0, 0, "", {}]
+		unstick_compared += stuck[0]
+		unstick_mismatches += stuck[1]
+		if unstick_first == "" and stuck[2] != "":
+			unstick_first = stuck[2]
+		for key: String in stuck[3]:
+			unstick_branches[key] = int(unstick_branches.get(key, 0)) + int(stuck[3][key])
 	var kturn_after := [Movement.kturns + Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
 	NativeDrive.owned = false
 	print("native drive k-turns%s: %d drives, plans / leg ticks / aborted %s -> %s, %d mismatches" % [
 			" (owned state)" if owned else "", drives, kturn_before, kturn_after, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive through k-turns: %s" % first)
+	if not owned:
+		print("native unstick: %d compared (by variant:fired %s), %d mismatches" % [unstick_compared, unstick_branches,
+				unstick_mismatches])
+		assert_eq(unstick_mismatches, 0, "the native unstick is the live GDScript unstick: %s" % unstick_first)
+		assert_true(unstick_compared >= 1000 and int(unstick_branches.get("1:fired", 0)) >= 20,
+				"every branch asked (%s)" % unstick_branches)
 	assert_true(int(kturn_after[0]) - int(kturn_before[0]) >= 5 and int(kturn_after[1]) - int(kturn_before[1]) >= 60,
 			"k-turns planned and driven (%s -> %s)" % [kturn_before, kturn_after])
 

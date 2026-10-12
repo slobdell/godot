@@ -134,7 +134,9 @@ struct N {
 			ki{ "ki" }, kd{ "kd" }, integral_limit{ "integral_limit" }, output_limit{ "output_limit" },
 			integral{ "integral" }, _primed{ "_primed" }, alive{ "alive" }, _registry{ "_registry" },
 			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
-			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" };
+			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" },
+			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" },
+			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" };
 };
 const N &n_() {
 	static const N names;
@@ -1279,6 +1281,105 @@ struct Drive {
 		return result;
 	}
 
+	// ---- Movement.unstick / _unstick / _pressing_escape (round 27, stage 1 E4), line by line; `_off` empty (the native
+	// drive's configuration): press_on() true, `unstick` not switched off. The rare stuck event's two neighbour questions
+	// (_hull_within, _ask_behind: Avoidance's table) are the live GDScript. ----
+	void unstick(Object *cmd, const Dictionary &order, double delta) {
+		const double left = v._unstick_left();
+		if (left > 0.0) {
+			const double now_left = left - delta;
+			v.set__unstick_left(now_left);
+			const double gear = v._escape_gear();
+			if (gear != 0.0) {
+				cmd->set(k.throttle, gear * c.PRESS_ESCAPE_THROTTLE);
+				cmd->set(k.turn, v._escape_turn());
+				if (now_left <= 0.0 || flat_distance(here, v._press_from()) >= c.PRESS_BACKOFF_M) {
+					v.set__escape_gear(0.0);
+					v.set__unstick_left(0.0);
+				}
+				return;
+			}
+			if (v._unstick_pivot()) {
+				cmd->set(k.throttle, 0.0);
+			} else {
+				cmd->set(k.throttle, (bool)order.get(k.reverse, false) ? 1.0 : -1.0);
+			}
+			cmd->set(k.turn, 1.0);
+			return;
+		}
+		static const String move_to("move_to");
+		if (String(order.get(k.type, String())) == move_to && !(bool)order.get(k.direct, false) && pressing_escape(cmd, delta)) {
+			return;
+		}
+		const double throttle = cmd->get(k.throttle);
+		const Vector3 velocity = tank->get(k.estimated_velocity);
+		if (std::fabs(throttle) > 0.5 && (double)velocity.length() < c.STUCK_SPEED) {
+			const double stuck = v._stuck_time() + delta;
+			v.set__stuck_time(stuck);
+			if (stuck >= c.STUCK_SECONDS) {
+				v.set__stuck_time(0.0);
+				const double backing = (bool)order.get(k.reverse, false) ? 1.0 : -1.0;
+				const Vector2 direction = Vector2(-basis_z.x, -basis_z.z) * (real_t)backing;
+				const bool pivot = cb(k._hull_within, direction, c.UNSTICK_CLEARANCE);
+				v.set__unstick_pivot(pivot);
+				if (!pivot || wheel_radius() <= 0.0) {
+					v.set__unstick_left(c.UNSTICK_SECONDS);
+					sadd(k.unstick_fires, 1);
+				} else {
+					cb(k._ask_behind, direction);
+				}
+			}
+		} else {
+			v.set__stuck_time(0.0);
+		}
+	}
+
+	bool pressing_escape(Object *cmd, double delta) {
+		if (!v.g_engaged_target().is_empty()) {
+			v.set__press_time(0.0);
+			return false;
+		}
+		const double throttle = cmd->get(k.throttle), turn = cmd->get(k.turn);
+		const bool asked = std::fabs(throttle) >= c.THROTTLE_MIN || std::fabs(turn) >= 0.05;
+		Object *wall = v.contact().get_validated_object();
+		if (!(wall != nullptr && (bool)wall->get(k.touching) && asked)) {
+			v.set__press_time(0.0);
+			return false;
+		}
+		if (v._press_time() == 0.0) {
+			v.set__press_from(here);
+		}
+		const double press_time = v._press_time() + delta;
+		v.set__press_time(press_time);
+		if (press_time < c.PRESS_SECONDS) {
+			return false;
+		}
+		const double moved = flat_distance(here, v._press_from());
+		v.set__press_time(0.0);
+		if (moved >= c.PRESS_PROGRESS_M) {
+			return false;
+		}
+		const Vector2 forward = Vector2(-basis_z.x, -basis_z.z).normalized();
+		const Vector3 normal = wall->get(k.normal), point = wall->get(k.point);
+		const Vector2 away(normal.x, normal.z);
+		const Vector2 r((real_t)((double)point.x - (double)here.x), (real_t)((double)point.z - (double)here.z));
+		const double along = forward.dot(away);
+		const double gear = std::fabs(along) > 0.2 ? (along > 0.0 ? 1.0 : (along < 0.0 ? -1.0 : 0.0)) :
+													  ((double)forward.dot(r) > 0.0 ? -1.0 : 1.0);
+		// WallContact.swing_of(centre, at, 1.0): Vector2(-r.y, r.x) * signf(1.0)
+		const Vector2 swing = Vector2(-r.y, r.x) * (real_t)1.0;
+		const double escape_turn = (double)swing.dot(away) > 0.0 ? 1.0 : -1.0;
+		v.set__escape_gear(gear);
+		v.set__escape_turn(escape_turn);
+		v.set__unstick_left(c.PRESS_ESCAPE_MAX_S);
+		v.set__press_from(here);
+		v.set__repath_left(0.0);
+		sadd(k.press_escapes, 1);
+		cmd->set(k.throttle, gear * c.PRESS_ESCAPE_THROTTLE);
+		cmd->set(k.turn, escape_turn);
+		return true;
+	}
+
 	// ---- Movement._track_goal ----
 	void track_goal(const Vector3 &goal) {
 		const int64_t ticks = (int64_t)v._ticks() + step;
@@ -1890,6 +1991,57 @@ struct OwnedCounts {
 } owned_counts_;
 } // namespace
 
+Vector2 steering_drive_toward(const DriveConfig &c, const Vector3 &position, const Vector3 &forward, const Vector3 &target,
+		double arrive_radius) {
+	return drive_toward(c, position, forward, target, arrive_radius, -1.0, false);
+}
+
+bool drive_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, ExecState *state) {
+	if (!config.ready || mover == nullptr || cmd == nullptr) {
+		return false;
+	}
+	if (state == nullptr) {
+		Drive<ObjectView> d(config, mover, ObjectView(mover));
+		return d.bind() && d.run(cmd, order, delta);
+	}
+	Drive<StructView> d(config, mover, StructView(mover, state));
+	return d.bind() && d.run(cmd, order, delta);
+}
+
+bool unstick_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,
+		ExecState *state) {
+	if (!config.ready || !config.unstick_ready || mover == nullptr || cmd == nullptr) {
+		return false;
+	}
+	const N &k = n_();
+	if (config.manoeuvre_census != nullptr && (bool)config.manoeuvre_census->get(k.on)) {
+		if (state != nullptr) {
+			StructView(mover, state).push_out();
+		}
+		mover->call(k.unstick_m, cmd, order, delta); // the census observes every unstick: the GDScript, as it is
+		if (state != nullptr) {
+			state->pull(mover);
+		}
+		return true;
+	}
+	if (state == nullptr) {
+		ObjectView view(mover);
+		view.bind_gunnery();
+		Drive<ObjectView> d(config, mover, view);
+		if (!d.bind()) {
+			return false;
+		}
+		d.unstick(cmd, order, delta);
+		return true;
+	}
+	Drive<StructView> d(config, mover, StructView(mover, state));
+	if (!d.bind()) {
+		return false;
+	}
+	d.unstick(cmd, order, delta);
+	return true;
+}
+
 bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) {
 	if (!config.ready || mover == nullptr || cmd == nullptr) {
 		return false;
@@ -1907,11 +2059,7 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 		}
 	} total{ t0 };
 	if (!owned) {
-		Drive<ObjectView> d(config, mover, ObjectView(mover));
-		if (!d.bind()) {
-			return false;
-		}
-		return d.run(cmd, order, delta);
+		return drive_with(config, mover, cmd, order, delta, nullptr);
 	}
 	// The owned state: pulled whole at the start while the drive still calls GDScript back (E2-E4), pushed at the end.
 	// A local state while the drive still calls GDScript back (it is pulled whole at the start anyway): no reference
@@ -1934,6 +2082,17 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 	owned_counts_.drives++;
 	owned_counts_.pulls += d.v.pulls + 1;
 	owned_counts_.pushes += d.v.pushes;
+	return done;
+}
+
+bool unstick_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) {
+	if (!owned) {
+		return unstick_with(config, mover, cmd, order, delta, nullptr);
+	}
+	ExecState local;
+	local.pull(mover);
+	const bool done = unstick_with(config, mover, cmd, order, delta, &local);
+	local.push(mover, false);
 	return done;
 }
 

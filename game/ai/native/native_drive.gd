@@ -82,6 +82,12 @@ static func configure() -> bool:
 		"BLOCKER_AHEAD_COS": Movement.BLOCKER_AHEAD_COS, "MESH_EPSILON": Pathing.MESH_EPSILON,
 		"KTURN_MIN_ERROR_DEG": Movement.KTURN_MIN_ERROR_DEG, "KTURN_CIRCLE_SPEED": Movement.KTURN_CIRCLE_SPEED,
 		"manoeuvre_census": ManoeuvreCensus,
+		# Round 27 (stage 1 E4): Movement.unstick
+		"STUCK_SPEED": Movement.STUCK_SPEED, "STUCK_SECONDS": Movement.STUCK_SECONDS,
+		"UNSTICK_SECONDS": Movement.UNSTICK_SECONDS, "UNSTICK_CLEARANCE": Movement.UNSTICK_CLEARANCE,
+		"PRESS_ESCAPE_THROTTLE": Movement.PRESS_ESCAPE_THROTTLE, "PRESS_BACKOFF_M": Movement.PRESS_BACKOFF_M,
+		"PRESS_SECONDS": Movement.PRESS_SECONDS, "PRESS_PROGRESS_M": Movement.PRESS_PROGRESS_M,
+		"PRESS_ESCAPE_MAX_S": Movement.PRESS_ESCAPE_MAX_S, "THROTTLE_MIN": WallContact.THROTTLE_MIN,
 		# Round 26 (manoeuvre M1, C26.2): the gate of Movement._manoeuvre natively; absent (-1) before manoeuvre lands.
 		"BEHIND_GAP_TICKS": int((Movement as Script).get_script_constant_map().get("BEHIND_GAP_TICKS", -1)),
 	})
