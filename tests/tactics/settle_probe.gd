@@ -8,6 +8,8 @@ extends SceneTree
 ##   ordered_s    every crew holds an order from the new task (R2's acknowledgement: 0.0-0.1 s)
 ##   arrived_s    the element declares arrival (`Element.arrived`): the player's order is COMPLETED from here (B7)
 ##   stopped_s    every crew is below STILL_MPS and stays there for STILL_HOLD_S: the squad has stopped moving
+##   all_in_s     round 27 (B1): every living crew within its radius of its OWN slot, held 1 s (ArrivalLine): the
+##                arrival the series count (`hollow`: the element said arrived, the line never held)
 ##
 ## plus `in_slot_s` (every crew within IN_SLOT_M of its slot), the worst crew's distance from its slot at the end, and
 ## the closest any two hull centres came (a collision proxy: B7's bar is "no rise in collisions").
@@ -177,6 +179,10 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var digest_on := _flag("digest", "off") == "on"
 	var digest_ctx := HashingContext.new()
 	digest_ctx.start(HashingContext.HASH_MD5)
+	# Round 27 (B1): the arrive line that counts every crew (ArrivalLine). `--arrive-mutate=on` is its mutation check: the
+	# line reads the first crew's slot 20 m off where it is, so a squad that arrives must FAIL it.
+	var line := ArrivalLine.new()
+	var mutate := _flag("arrive-mutate", "off") == "on"
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
@@ -184,6 +190,17 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			ordered = now
 		if arrived < 0 and element.arrived:
 			arrived = now
+		var on_slots: Array = []
+		for unit_name: String in names:
+			var crew_tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if crew_tank == null or not crew_tank.is_alive():
+				continue
+			var crew_slot: Variant = element.slots.get(unit_name)
+			if mutate and crew_slot is Vector3 and unit_name == names[0]:
+				crew_slot = (crew_slot as Vector3) + Vector3(20.0, 0.0, 0.0)
+			on_slots.append({"name": unit_name, "unit": crew_tank.unit_id, "position": crew_tank.global_position,
+					"slot": crew_slot})
+		line.sample(now, on_slots)
 		if element.in_transit():
 			transit_seen = true
 			for unit_name: String in names:
@@ -353,8 +370,12 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			if still_since < 0:
 				still_since = now
 			if now - still_since >= int(STILL_HOLD_S * SimClock.TICK_RATE):
-				stopped = still_since
-				break
+				if stopped < 0:
+					stopped = still_since
+				# Round 27 (B1): stopped with a crew still off its slot is not the end of the run: it may yet be re-seated
+				# and arrive (the line's answer). The digest's run keeps its old end, so its hash is unmoved.
+				if line.arrived_tick >= 0 or digest_on:
+					break
 		else:
 			still_since = -1
 	var off := {}
@@ -376,6 +397,12 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"metres": metres, "seed": seed_value, "formation": element.formation,
 			"ack_s": _s(acked.values().max()) if acked.size() == names.size() else null,
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
+			# Round 27 (B1): every living crew within its radius of its own slot, held 1 s (ArrivalLine): the series'
+			# arrival. `hollow`: the element said arrived and the line never held. `worst_off_m`: the farthest crew from
+			# its slot at the end, and who.
+			"all_in_s": _s(line.arrived_tick), "hollow": arrived >= 0 and line.arrived_tick < 0,
+			"worst_off_m": snappedf(float(line.worst.get("off_m", -1.0)), 0.1) if is_finite(float(line.worst.get("off_m", -1.0))) else -1.0,
+			"worst_crew": String(line.worst.get("name", "")), "arrive_mutate": mutate,
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
 			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
 			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off", "shape": _flag("shape", "auto"),
