@@ -77,6 +77,33 @@ Nothing.
 
 ## Status
 
+### REPORT (round 27, as of 2026-10-12 ~02:40; B3 and the flank re-run pending a builder0 slot)
+
+| item | state | where |
+|---|---|---|
+| B0 attack honours a drawn approach (CP0) | DONE, merged | `9603c1d7`; stage 18/18 v 0/18 |
+| B1 the arrive line counts every crew | DONE (tooling; the orchestrator ruled the 8 m line judged, strict reported) | `3aa67b17`, `81217755` |
+| B2 a crew stuck behind a parked squadmate gets a seat round it | SHIPPED (v5, DECLARED), merged | `2dccf781` → main `3dc04293` |
+| B3 make-room priced by removal | main: 68 v 68 (no gain); under B2: queued (seeds 13–16) | below |
+| B4 drill seats by nearest keeping the lead's role | RETIRED (blocked: breaks 5 fight tests) | `lab/brains-b4-point` |
+| B5 ambush guns on the drawn facing | DONE, rode in B2's merge (ruled: default-path change, its own line) | `417863c7` |
+| flank stall (orders' probe) | not a bug: artillery's standoff; `lab/brains-close` PARKED | below |
+| live-flank follow-up | PARTIAL; one re-run on an even fight queued | `lab/brains-flank-live` |
+| B6 street funnel | held (his call), untouched | — |
+
+**Kept branches (never merge):** `lab/brains-b4-point` (B4's role-follows-point, fails), `lab/brains-close` (the
+close-at-reach fix, parked), `lab/brains-flank-live` (the live-flank fix, partial), and round 26's `lab/brains-carrot`.
+`lab/brains-mr2` is superseded by B2 (can go). Scratch worktrees to remove at close: `godot-brains-lab`,
+`godot-brains-lab2` (+ their builder0 folders `godot-brains-lab`, `-lab2`, `-light`).
+**Questions for the lead (the orchestrator collects them):** (1) artillery and a drawn approach: bombard from that side,
+or ignore it? (2) dragging an attack onto a stronger squad: swing round anyway, or give up the flank? (3) is 8 m off a
+seat too loose for how a halted formation looks (the strict line read 31 hollow of 100 on main)?
+**What to playtest:** `make native && make skirmish`: order a squad across the Sumps lanes with an attack-move (A) and
+watch every crew settle on its seat (B2); press on an enemy and drag (orders' gesture) against a holding target: the
+squad swings round to the side you dragged (B0); set an ambush with a facing drag: the guns point the way you drew (B5).
+**Merge notes:** all in my paths (`game/tactics/**`, `game/ai/tank_brain.gd` act (B5), `tests/tactics/**`,
+`tests/test_tactics_*`, `mk/tactics.mk`, `tools/tactics/**`); no shared-file edits.
+
 **Plan (2026-10-11, in order):** B0 (attack honours `approach`; CP0 → orders) → B1 (the every-crew arrive line, tooling
 + mutation check, re-read the arrive series and the Sumps cell) → B2 (re-seat round the parked crew, from
 `lab/brains-mr2`; DECLARED) → B3 (make-room priced by removal under B1's line) → B4 (drill seats by nearest keeping the
