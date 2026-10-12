@@ -56,7 +56,7 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   ports `_manoeuvre` LAST, after scout's CP). A change to `decide` or `build_situation`'s core (C++) goes to native as a
   diff before the commit (SendMessage, orchestrator copied); the pair merges back to back.
 - **C27.3 A drawn approach reaches the attack task** (orders ↔ brains, C26.3's shape). Orders puts the drag on the task as
-  `task["approach"] = [x, z]` (normalised; the direction the squad comes FROM, toward the target); absent = today,
+  `task["approach"] = [x, z]` (normalised; the direction of the run IN: release point → target, so the squad attacks from the target's side the drag was released on; confirmed both sides 2026-10-11, orders `cd113207` `rts_controls.gd:1810`, brains `9603c1d7`; a target running ≥ 2 m/s is a pursuit and ignores it); absent = today,
   byte-identical. Brains (B0, first) honours it and merges it as CP0; orders then merges main. Until then orders tests
   against a stub in its own paths.
 - **C27.4 A behaviour change carries a cost line** (C26.10 carried): its cost a tick at 25 a side on Sumps, GDScript path,
