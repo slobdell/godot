@@ -116,6 +116,10 @@ public:
 	// (NativeDrive.configure); `drive` runs one tick's drive on the mover's members, false if not configured.
 	bool drive_configure(const Dictionary &config);
 	bool drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
+	// Round 27 (E1c): the same drive on the C++-owned state (pulled at its start, pushed at its end; synced around every
+	// callback while there are any). `drive_owned_counts` says how many syncs that took.
+	bool drive_owned(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
+	Dictionary drive_owned_counts(bool reset) const;
 	Dictionary drive_profile(bool reset) const;
 	Vector3 drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const;
 	bool drive_fire_ready() const;

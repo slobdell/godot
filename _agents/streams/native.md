@@ -141,7 +141,15 @@ packed snapshot a tick; the mirror's cost is changed-fields x ~0.1 us, pre-regis
 
 ### Done
 
-_(nothing yet)_
+- **E1a the table and the owned struct** (`bfd90266`): `native/src/exec_fields.h` (143 fields: Movement 128, Gunnery
+  12, Lay 3), `exec_state.{h,cpp}`, bindings `exec_*` on TankNative. builder0, `test_native_exec_state` 4/0: the table
+  is the scripts' 143 members; 600 pulls in a Sumps fight, 85 800 values, 0 mismatches; 34 320 members scrambled then
+  pushed back, 0 not restored (Arrays/Dictionaries by identity); a changed-only push writes exactly the 6 changed
+  fields. OFF (nothing in the game calls it).
+- **E1b the in-game proof** (`bfd90266`): `native-proof NATIVE_PROOF_ARMS="on off ab mirror"`, builder0: every crew
+  pulled, scrambled and pushed back at the top of every `compute_command` (135 000 crews, 19.0 M members):
+  on = off = ab = mirror = `770df71a443ba743`. (First run segfaulted at process exit: the static registry freed its
+  Variants after the engine; now emptied at the library's unload and the mirror uses a local struct.)
 
 ### Questions for the lead
 

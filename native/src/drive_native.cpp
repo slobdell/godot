@@ -1,8 +1,10 @@
 #include "drive_native.h"
 
 #include "avoidance.h"
+#include "exec_view.h"
 #include "nav_native.h"
 
+#include <godot_cpp/classes/navigation_server3d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
@@ -126,7 +128,13 @@ struct N {
 			cols{ "cols" }, rows{ "rows" }, origin{ "origin" }, density{ "density" }, beaten{ "beaten" },
 			along{ "along" }, _fire_since{ "_fire_since" }, _fire_detour_since{ "_fire_detour_since" },
 			_fire_detour_until{ "_fire_detour_until" }, _fire_detour_again{ "_fire_detour_again" },
-			fire_detours{ "fire_detours" }, fire_no_way_round{ "fire_no_way_round" };
+			fire_detours{ "fire_detours" }, fire_no_way_round{ "fire_no_way_round" },
+			// _keep_station (round 27, E2): Units.stat, Pid.new, ControlGains.for_loop and the PID's members
+			stat{ "stat" }, faction{ "faction" }, for_loop{ "for_loop" }, station_loop{ "station" }, kp{ "kp" },
+			ki{ "ki" }, kd{ "kd" }, integral_limit{ "integral_limit" }, output_limit{ "output_limit" },
+			integral{ "integral" }, _primed{ "_primed" }, alive{ "alive" }, _registry{ "_registry" },
+			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
+			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" };
 };
 const N &n_() {
 	static const N names;
@@ -200,10 +208,16 @@ Vector2 wheels(const DriveConfig &c, const Vector3 &position, const Vector3 &for
 
 // ---- the mover, its tank and its statics ----
 
+// Round 27 (stage 1 E1c): the drive over a view of the crew's state (exec_view.h): ObjectView = the live GDScript members
+// (the drive as it always was), StructView = the C++-owned ExecState. Every member read or write goes through `v`; a call
+// into GDScript that may READ this crew's members goes through `gd` (the struct's changes pushed first), a callback that
+// may WRITE them through `cb` (pushed first, pulled back after). Under ObjectView both are plain calls.
+template <class V>
 struct Drive {
 	const DriveConfig &c;
 	const N &k;
 	Object *m; // the Movement
+	V v; // its state
 	Object *script; // its script (the statics)
 	Object *ctl;
 	Node3D *tank;
@@ -218,8 +232,21 @@ struct Drive {
 	double chord_slack = 0.0;
 	PackedFloat64Array chord_samples;
 
-	Drive(const DriveConfig &p_c, Object *p_m) :
-			c(p_c), k(n_()), m(p_m) {}
+	Drive(const DriveConfig &p_c, Object *p_m, const V &p_v) :
+			c(p_c), k(n_()), m(p_m), v(p_v) {}
+
+	template <typename... Args>
+	Variant gd(Object *object, const StringName &method, const Args &...args) {
+		v.push_out();
+		return object->call(method, args...);
+	}
+	template <typename... Args>
+	Variant cb(const StringName &method, const Args &...args) {
+		v.push_out();
+		const Variant answer = m->call(method, args...);
+		v.pull_in();
+		return answer;
+	}
 
 	// The mover's script, controller, hull and this tick's pose; false when one is missing.
 	bool bind() {
@@ -239,8 +266,6 @@ struct Drive {
 		return true;
 	}
 
-	Variant get(const StringName &name) const { return m->get(name); }
-	void set(const StringName &name, const Variant &v) { m->set(name, v); }
 	Variant sget(const StringName &name) const { return script->get(name); }
 	void sset(const StringName &name, const Variant &v) { script->set(name, v); }
 	void sadd(const StringName &name, int64_t by) { script->set(name, (int64_t)script->get(name) + by); }
@@ -249,7 +274,7 @@ struct Drive {
 	bool pathing_ready() {
 		if (!ready_known) {
 			ready_known = true;
-			ready_value = (bool)c.pathing->get(k.enabled) && (bool)c.pathing->call(k.is_ready, tank);
+			ready_value = (bool)c.pathing->get(k.enabled) && (bool)gd(c.pathing, k.is_ready, tank);
 		}
 		return ready_value;
 	}
@@ -257,10 +282,10 @@ struct Drive {
 	double wheel_radius() {
 		// Movement.wheel_radius(): its per-unit cache, filled by the GDScript the first time.
 		const String unit = tank->get(k.unit_id);
-		if (String(get(k._wheel_radius_unit)) == unit) {
-			return get(k._wheel_radius_value);
+		if (String(v._wheel_radius_unit()) == unit) {
+			return v._wheel_radius_value();
 		}
-		return m->call(k.wheel_radius);
+		return cb(k.wheel_radius);
 	}
 
 	// Movement._chord_on_mesh (chord_memo on): the memo in the mover's members, as the GDScript keeps it.
@@ -268,14 +293,14 @@ struct Drive {
 		if (frame < 0) {
 			frame = Engine_frames();
 		}
-		if ((int64_t)get(k._chord_frame) == frame && (Vector3)get(k._chord_from) == from && (Vector3)get(k._chord_to) == to) {
-			return get(k._chord_answer);
+		if ((int64_t)v._chord_frame() == frame && (Vector3)v._chord_from() == from && (Vector3)v._chord_to() == to) {
+			return v._chord_answer();
 		}
 		const bool answer = chord_compute(from, to);
-		set(k._chord_answer, answer);
-		set(k._chord_frame, frame);
-		set(k._chord_from, from);
-		set(k._chord_to, to);
+		v.set__chord_answer(answer);
+		v.set__chord_frame(frame);
+		v.set__chord_from(from);
+		v.set__chord_to(to);
 		return answer;
 	}
 
@@ -339,7 +364,7 @@ struct Drive {
 	}
 
 	Vector3 route_end(const PackedVector3Array &path, const Vector3 &goal) const {
-		if ((bool)get(k._reachable) || path.is_empty()) {
+		if ((bool)v._reachable() || path.is_empty()) {
 			return goal;
 		}
 		const Vector3 end = path[path.size() - 1];
@@ -371,8 +396,8 @@ struct Drive {
 	}
 
 	double remaining_path_distance(const Vector3 &goal) const {
-		const PackedVector3Array path = get(k._path);
-		const int64_t path_index = get(k._path_index);
+		const PackedVector3Array path = v._path();
+		const int64_t path_index = v._path_index();
 		if (path_index >= path.size()) {
 			return flat_distance(here, goal);
 		}
@@ -398,9 +423,9 @@ struct Drive {
 		Object *av = c.avoidance_script;
 		if ((int64_t)av->get(k._table_root) != (int64_t)tanks_root->get_instance_id() ||
 				(int64_t)av->get(k._table_frame) != Engine_frames()) {
-			av->call(k.refresh, tanks_root);
+			gd(av, k.refresh, tanks_root);
 		}
-		const double slow = clampd((double)get(k._remaining) / c.SLOW_RADIUS, 0.35, 1.0);
+		const double slow = clampd((double)v._remaining() / c.SLOW_RADIUS, 0.35, 1.0);
 		const double max_speed = tank->get(k.max_forward_speed);
 		const double desired = max_speed * speed_factor * slow;
 		const Vector2 preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: scalars narrowed
@@ -441,14 +466,14 @@ struct Drive {
 				}
 			}
 		} else {
-			chosen = av->call(k.solve, name, position, velocity, preferred, max_speed, radius, delta, cap);
+			chosen = gd(av, k.solve, name, position, velocity, preferred, max_speed, radius, delta, cap);
 		}
 		if ((double)chosen.distance_squared_to(preferred) < 0.04) {
 			return;
 		}
 		const double speed = chosen.length();
 		double keep = clampd(speed / MAX(desired, 0.1), 0.0, 1.0);
-		const bool starting = (int64_t)get(k._order_ticks) < c.AVOID_GRACE_TICKS;
+		const bool starting = (int64_t)v._order_ticks() < c.AVOID_GRACE_TICKS;
 		if (starting && (double)chosen.dot(preferred) > 0.0) {
 			keep = MAX(keep, c.AVOID_MIN_PACE);
 		}
@@ -491,7 +516,7 @@ struct Drive {
 	double hull_chord_slack() {
 		const double bake = script->get(k._bake_radius);
 		if (bake < 0.0) {
-			return m->call(k._chord_slack);
+			return cb(k._chord_slack);
 		}
 		const String unit = tank->get(k.unit_id);
 		const double *known = c.hull_width_of.getptr(unit);
@@ -508,23 +533,75 @@ struct Drive {
 
 	// BrainLevers.chord_samples (chord) or orca_neighbours (!chord) for this tank: per team for this physics frame
 	// while the per-unit split is off, else asked of the GDScript.
-	int64_t lever(bool chord) {
+	enum Lever { L_CHORD = 0, L_ORCA = 1, L_KTURN_CHECK = 2 };
+	int64_t lever(bool chord) { return lever_of(chord ? L_CHORD : L_ORCA); }
+	// BrainLevers.chord_samples / orca_neighbours / kturn_check_ticks for this tank: per team for this physics frame while
+	// the per-unit split is off (then they do not read the unit), else asked of the GDScript.
+	int64_t lever_of(Lever which) {
+		const StringName &method = which == L_CHORD ? k.chord_samples : (which == L_ORCA ? k.orca_neighbours : k.kturn_check_ticks);
 		const int64_t team = tank->get(k.team);
 		if (team < 0 || team > 1 || (bool)c.levers->get(k.split)) {
-			return c.levers->call(chord ? k.chord_samples : k.orca_neighbours, team, String(tank->get_name()));
+			return c.levers->call(method, team, String(tank->get_name()));
 		}
 		const int64_t now = Engine_frames();
 		if (c.levers_frame != now) {
 			c.levers_frame = now;
 			c.chord_samples_known[0] = c.chord_samples_known[1] = c.orca_known[0] = c.orca_known[1] = false;
+			c.kturn_check_known[0] = c.kturn_check_known[1] = false;
 		}
-		bool *known = chord ? c.chord_samples_known : c.orca_known;
-		int64_t *value = chord ? c.chord_samples_of : c.orca_of;
+		bool *known = which == L_CHORD ? c.chord_samples_known : (which == L_ORCA ? c.orca_known : c.kturn_check_known);
+		int64_t *value = which == L_CHORD ? c.chord_samples_of : (which == L_ORCA ? c.orca_of : c.kturn_check_of);
 		if (!known[team]) {
 			known[team] = true;
-			value[team] = c.levers->call(chord ? k.chord_samples : k.orca_neighbours, team, String(tank->get_name()));
+			value[team] = c.levers->call(method, team, String(tank->get_name()));
 		}
 		return value[team];
+	}
+
+	// ---- Movement._planned_reverse's look, up to its cheap exits (round 27, stage 1 E2) ----
+	// Reached where the drive calls _planned_reverse with no leg under way and the check due (_kturn_check - step <= 0):
+	//   _kturn_check -= ctl._step  (not > 0 here);  _kturn_check = BrainLevers.kturn_check_ticks(tank.team, name)
+	//   forward := Vector3(-basis.z.x, 0, -basis.z.z).normalized(); to := Vector3(waypoint.x - here.x, 0, waypoint.z - here.z)
+	//   if to.length() < 0.5: return false
+	//   error := forward.signed_angle_to(to, Vector3.UP)          (reverse_log: off in the native drive)
+	//   if ManoeuvreCensus.trace_unit == name: print a trace     (-> the GDScript, which prints it)
+	//   if circle_plan_on() and _away_here() and absf(speed) < KTURN_CIRCLE_SPEED and _inside_circle(...): _plan_circle
+	//   if absf(error) < deg_to_rad(KTURN_MIN_ERROR_DEG): return false
+	// circle_plan_on() is away_on() is kturn_on(): true with Movement._off empty; _away_here() is a long hull. True when it
+	// answered (false, `_kturn_check` written); false when the live GDScript must run _planned_reverse from the top (nothing
+	// has been written).
+	bool planned_reverse_cheap(const Vector3 &waypoint) {
+		const String name = tank->get_name();
+		if (String(c.manoeuvre_census->get(k.trace_unit)) == name) {
+			return false;
+		}
+		const Vector3 forward = Vector3(-basis_z.x, 0, -basis_z.z).normalized();
+		const Vector3 to((real_t)((double)waypoint.x - (double)here.x), 0, (real_t)((double)waypoint.z - (double)here.z));
+		bool answered = false;
+		if ((double)to.length() < 0.5) {
+			answered = true;
+		} else {
+			const double error = forward.signed_angle_to(to, Vector3(0, 1, 0));
+			const bool away_here = hull_length(tank->get(k.unit_id)) >= c.KTURN_BRAKE_HULL_M;
+			if (away_here && std::fabs((double)tank->get(k._speed)) < c.KTURN_CIRCLE_SPEED && inside_circle(forward, waypoint)) {
+				return false; // a circle plan to try: the GDScript
+			}
+			answered = std::fabs(error) < deg_to_rad(c.KTURN_MIN_ERROR_DEG);
+		}
+		if (answered) {
+			v.set__kturn_check(lever_of(L_KTURN_CHECK));
+		}
+		return answered;
+	}
+
+	// Movement._inside_circle(here, forward, point)
+	bool inside_circle(const Vector3 &forward, const Vector3 &point) {
+		const double radius = wheel_radius();
+		const Vector3 to((real_t)((double)point.x - (double)here.x), 0, (real_t)((double)point.z - (double)here.z));
+		const double side = (double)forward.signed_angle_to(to, Vector3(0, 1, 0)) >= 0.0 ? 1.0 : -1.0;
+		const Vector3 left(forward.z, 0, -forward.x);
+		const Vector3 centre = Vector3(here.x, 0, here.z) + left * (real_t)side * (real_t)radius;
+		return (double)centre.distance_to(Vector3(point.x, 0, point.z)) < radius;
 	}
 
 	// ---- the k-turn leg (no reverse_log / kturn_log: _kturn_rec stays empty, so _kturn_end only clears the looks) ----
@@ -534,7 +611,7 @@ struct Drive {
 		if (known != nullptr) {
 			return *known;
 		}
-		const double value = m->call(k._braking);
+		const double value = cb(k._braking);
 		c.braking_of.insert(unit, value);
 		return value;
 	}
@@ -558,48 +635,48 @@ struct Drive {
 		if (!kturn_brake_on()) {
 			return 0.0;
 		}
-		const double speed = (double)tank->get(k._speed) * (double)(int64_t)get(k._kturn_gear);
+		const double speed = (double)tank->get(k._speed) * (double)(int64_t)v._kturn_gear();
 		return speed > 0.0 ? speed * speed / (2.0 * braking()) : 0.0;
 	}
 
 	void kturn_end() {
-		Array looks = get(k._kturn_looks);
+		Array looks = v._kturn_looks();
 		looks.clear();
 	}
 
 	void kturn_start_leg(const Vector2 &leg) {
-		set(k._kturn_gear, (int64_t)leg.x);
-		set(k._kturn_left_m, (double)leg.y);
-		set(k._kturn_from, here);
+		v.set__kturn_gear((int64_t)leg.x);
+		v.set__kturn_left_m((double)leg.y);
+		v.set__kturn_from(here);
 		double timeout = (double)leg.y * c.KTURN_SECONDS_PER_M + 1.0;
 		const double speed = tank->get(k._speed);
 		const bool rolling = !kturn_brake_on() || speed * (double)leg.x > -c.KTURN_ROLLING_SPEED;
-		set(k._kturn_rolling, rolling);
+		v.set__kturn_rolling(rolling);
 		if (!rolling) {
 			timeout += std::fabs(speed) / braking();
 		}
-		set(k._kturn_timeout, timeout);
-		set(k._kturn_leg_no, (int64_t)get(k._kturn_leg_no) + 1);
-		set(k._kturn_plan_pose, Array());
+		v.set__kturn_timeout(timeout);
+		v.set__kturn_leg_no((int64_t)v._kturn_leg_no() + 1);
+		v.set__kturn_plan_pose(Array());
 	}
 
 	// _planned_reverse while a leg is being driven (_kturn_left_m > 0): true and the leg's throttle/turn, or false
 	// (the leg ended; the caller drives on as a normal tick).
 	bool kturn_leg(double delta, Vector2 &out) {
-		const int64_t gear = get(k._kturn_gear);
-		if (!(bool)get(k._kturn_rolling)) {
+		const int64_t gear = v._kturn_gear();
+		if (!(bool)v._kturn_rolling()) {
 			if ((double)tank->get(k._speed) * (double)gear > c.KTURN_ROLLING_SPEED) {
-				set(k._kturn_rolling, true);
+				v.set__kturn_rolling(true);
 			}
-			set(k._kturn_from, here);
+			v.set__kturn_from(here);
 		}
-		const double backed = flat_distance(here, get(k._kturn_from));
-		const double left = get(k._kturn_left_m);
+		const double backed = flat_distance(here, v._kturn_from());
+		const double left = v._kturn_left_m();
 		const bool reached = backed + kturn_stopping() >= left;
-		const double timeout = (double)get(k._kturn_timeout) - delta;
-		set(k._kturn_timeout, timeout);
+		const double timeout = (double)v._kturn_timeout() - delta;
+		v.set__kturn_timeout(timeout);
 		const Vector2 nose(-basis_z.x, -basis_z.z);
-		Object *wall = get(k.contact).get_validated_object();
+		Object *wall = v.contact().get_validated_object();
 		bool lead_hit = false;
 		if (wall != nullptr && (bool)wall->get(k.touching)) {
 			const Dictionary decided_now = wall->get(k.decided);
@@ -610,25 +687,25 @@ struct Drive {
 				lead_hit = (double)Vector2(wall_normal.x, wall_normal.z).dot(nose * (real_t)gear) < -c.KTURN_INTO_WALL_COS;
 			}
 		}
-		Array legs = get(k._kturn_legs);
+		Array legs = v._kturn_legs();
 		if (reached && !legs.is_empty()) {
 			kturn_end();
 			const Vector2 next = legs.pop_front();
 			kturn_start_leg(next);
 		} else if (reached || timeout <= 0.0 || lead_hit) {
 			kturn_end();
-			set(k._kturn_check, 0);
+			v.set__kturn_check(0);
 			if (!reached) {
 				sadd(k.kturn_aborted, 1);
-				set(k._kturn_check, c.KTURN_RETRY_TICKS);
+				v.set__kturn_check(c.KTURN_RETRY_TICKS);
 			}
-			set(k._kturn_left_m, 0.0);
+			v.set__kturn_left_m(0.0);
 			legs.clear();
-			set(k._repath_left, 0.0);
+			v.set__repath_left(0.0);
 			return false;
 		}
-		const int64_t gear_now = get(k._kturn_gear);
-		out = Vector2((real_t)(c.KTURN_THROTTLE * (double)gear_now), (real_t)(double)get(k._kturn_turn));
+		const int64_t gear_now = v._kturn_gear();
+		out = Vector2((real_t)(c.KTURN_THROTTLE * (double)gear_now), (real_t)(double)v._kturn_turn());
 		sadd(k.kturn_ticks, step);
 		return true;
 	}
@@ -719,7 +796,7 @@ struct Drive {
 		if (game_match == nullptr) {
 			return true;
 		}
-		if (get(k._fire_detour).get_type() != Variant::NIL) {
+		if (v._fire_detour().get_type() != Variant::NIL) {
 			return false;
 		}
 		const int64_t tick = game_match->get(k.tick);
@@ -729,7 +806,7 @@ struct Drive {
 			return (tick + offset) % c.FIRE_CHECK_TICKS != 0;
 		}
 		if (stride > 1) {
-			return tick - (int64_t)get(k._fire_checked_tick) < c.FIRE_CHECK_TICKS;
+			return tick - (int64_t)v._fire_checked_tick() < c.FIRE_CHECK_TICKS;
 		}
 		return false;
 	}
@@ -900,15 +977,15 @@ struct Drive {
 		const double reach = MIN(c.FIRE_LOOKAHEAD, MAX(flat_distance(here, goal), 1.0));
 		const int64_t tick = game_match->get(k.tick);
 		const int64_t stride = ctl->get(k._stride);
-		const Variant detour = get(k._fire_detour);
+		const Variant detour = v._fire_detour();
 		if (detour.get_type() == Variant::NIL) {
 			if (stride == 1 && (tick + (int64_t)ctl->get(k.think_offset)) % c.FIRE_CHECK_TICKS != 0) {
 				return waypoint;
 			}
-			if (stride > 1 && tick - (int64_t)get(k._fire_checked_tick) < c.FIRE_CHECK_TICKS) {
+			if (stride > 1 && tick - (int64_t)v._fire_checked_tick() < c.FIRE_CHECK_TICKS) {
 				return waypoint;
 			}
-			set(k._fire_checked_tick, tick);
+			v.set__fire_checked_tick(tick);
 		}
 		const FireReader fire(c, k, fields, team);
 		const Vector3 ahead = here + direction * (real_t)reach;
@@ -917,25 +994,25 @@ struct Drive {
 		const bool still_swept = straight >= c.BEATEN_ZONE_DENSITY * c.FIRE_KEEP_SHARE;
 		if (detour.get_type() != Variant::NIL) {
 			const Vector3 leg = detour;
-			const int64_t fire_since = get(k._fire_since);
-			if (!still_swept && tick - (int64_t)get(k._fire_detour_since) >= c.FIRE_LEG_MIN_TICKS) {
-				set(k._fire_detour, Variant());
-				set(k._fire_since, -1);
+			const int64_t fire_since = v._fire_since();
+			if (!still_swept && tick - (int64_t)v._fire_detour_since() >= c.FIRE_LEG_MIN_TICKS) {
+				v.set__fire_detour(Variant());
+				v.set__fire_since(-1);
 			} else if (fire_since >= 0 && tick - fire_since >= c.FIRE_AVOID_MAX) {
-				set(k._fire_detour, Variant());
-				set(k._fire_since, -1);
-				set(k._fire_detour_again, tick + c.FIRE_DETOUR_COOLDOWN);
-			} else if (tick >= (int64_t)get(k._fire_detour_until) || flat_distance(here, leg) <= c.FIRE_DETOUR_REACHED) {
-				set(k._fire_detour, Variant());
+				v.set__fire_detour(Variant());
+				v.set__fire_since(-1);
+				v.set__fire_detour_again(tick + c.FIRE_DETOUR_COOLDOWN);
+			} else if (tick >= (int64_t)v._fire_detour_until() || flat_distance(here, leg) <= c.FIRE_DETOUR_REACHED) {
+				v.set__fire_detour(Variant());
 			} else {
 				oc_add(k.fire_detours, step);
 				return leg;
 			}
 		}
 		if (!still_swept) {
-			set(k._fire_since, -1);
+			v.set__fire_since(-1);
 		}
-		if (!ahead_beaten || tick < (int64_t)get(k._fire_detour_again)) {
+		if (!ahead_beaten || tick < (int64_t)v._fire_detour_again()) {
 			return waypoint;
 		}
 		const Vector3 across(-direction.z, 0, direction.x);
@@ -957,67 +1034,297 @@ struct Drive {
 			}
 		}
 		if (found) {
-			set(k._fire_detour, best);
-			set(k._fire_detour_until, tick + c.FIRE_DETOUR_TICKS);
-			set(k._fire_detour_since, tick);
-			if ((int64_t)get(k._fire_since) < 0) {
-				set(k._fire_since, tick);
+			v.set__fire_detour(best);
+			v.set__fire_detour_until(tick + c.FIRE_DETOUR_TICKS);
+			v.set__fire_detour_since(tick);
+			if ((int64_t)v._fire_since() < 0) {
+				v.set__fire_since(tick);
 			}
 			oc_add(k.fire_detours, step);
 			return best;
 		}
 		oc_add(k.fire_no_way_round, 1);
-		set(k._fire_since, -1);
-		set(k._fire_detour_again, tick + c.FIRE_DETOUR_COOLDOWN);
+		v.set__fire_since(-1);
+		v.set__fire_detour_again(tick + c.FIRE_DETOUR_COOLDOWN);
 		return waypoint;
+	}
+
+	// ---- Movement._keep_station (X6), round 27 (stage 1 E2): line by line, with Pid.step_with_rate (game/ai/pid.gd) on the
+	// mover's station PID, whose members are read and written in place (it stays a GDScript object: the station PID is
+	// made by Pid.new(ControlGains.for_loop("station", faction)) when there is none or the faction changed) ----
+	//   var faction := String(Units.stat(tank.unit_id, "faction", ""))
+	//   if _station == null or faction != _station_faction: _station = Pid.new(ControlGains.for_loop("station", faction)); ...
+	//   forward := Vector2(-basis.z.x, -basis.z.z).normalized(); gap := Vector2(goal.x - here.x, goal.z - here.z)
+	//   along := gap.dot(forward); feed_forward := _goal_velocity.dot(forward); my_speed := tank.speed()
+	//   correction := _station.step_with_rate(along, my_speed - feed_forward, delta); wanted := feed_forward + correction
+	//   ahead := Vector3(goal.x + _goal_velocity.x * LEAD, 0, goal.z + _goal_velocity.y * LEAD)
+	//   drive_vector := Steering.drive_toward(here, -basis.z, ahead, 0.3); cmd.turn = drive_vector.y
+	//   cmd.throttle = cap if cap < 0.999 else clampf(wanted / maxf(tank.max_forward_speed, 0.1), -0.5, 1.0)
+	//   return Vector2(cmd.throttle, cmd.turn)
+	Vector2 keep_station(Object *cmd, const Vector3 &goal, double delta, double cap) {
+		const String unit = tank->get(k.unit_id);
+		const String *known = c.faction_of.getptr(unit);
+		String faction;
+		if (known != nullptr) {
+			faction = *known;
+		} else {
+			faction = String(c.units->call(k.stat, unit, k.faction, String()));
+			c.faction_of.insert(unit, faction);
+		}
+		Variant station = v._station();
+		if (station.get_type() != Variant::OBJECT || station.get_validated_object() == nullptr || faction != v._station_faction()) {
+			station = c.pid_script->call(k.new_, c.control_gains->call(k.for_loop, String(k.station_loop), faction));
+			v.set__station(station);
+			v.set__station_faction(faction);
+		}
+		Object *pid = station.get_validated_object();
+		const Vector2 forward = Vector2(-basis_z.x, -basis_z.z).normalized();
+		const Vector2 gap((real_t)((double)goal.x - (double)here.x), (real_t)((double)goal.z - (double)here.z));
+		const double along = gap.dot(forward);
+		const Vector2 goal_velocity = v._goal_velocity();
+		const double feed_forward = goal_velocity.dot(forward);
+		const double my_speed = tank->get(k._speed);
+		const double correction = pid_step_with_rate(pid, along, my_speed - feed_forward, delta);
+		const double wanted = feed_forward + correction;
+		const Vector3 ahead((real_t)((double)goal.x + (double)goal_velocity.x * c.STATION_LEAD_SECONDS), 0,
+				(real_t)((double)goal.z + (double)goal_velocity.y * c.STATION_LEAD_SECONDS));
+		const Vector2 drive_vector = drive_toward(c, here, -basis_z, ahead, 0.3, -1.0, false);
+		const double turn = drive_vector.y;
+		cmd->set(k.turn, turn);
+		const double max_speed = tank->get(k.max_forward_speed);
+		const double throttle = cap < 0.999 ? cap : clampd(wanted / MAX(max_speed, 0.1), -0.5, 1.0);
+		cmd->set(k.throttle, throttle);
+		return Vector2((real_t)throttle, (real_t)turn);
+	}
+
+	// Pid.step_with_rate(error, measurement_rate, dt) on a PID object's members (game/ai/pid.gd):
+	//   unclamped := kp * error + ki * integral - kd * measurement_rate
+	//   saturated_same_way := (unclamped >= output_limit and error > 0.0) or (unclamped <= -output_limit and error < 0.0)
+	//   if not saturated_same_way: integral = clampf(integral + error * dt, -integral_limit, integral_limit)
+	//   return clampf(kp * error + ki * integral - kd * measurement_rate, -output_limit, output_limit)
+	double pid_step_with_rate(Object *pid, double error, double measurement_rate, double dt) {
+		const double kp = pid->get(k.kp), ki = pid->get(k.ki), kd = pid->get(k.kd);
+		const double integral_limit = pid->get(k.integral_limit), output_limit = pid->get(k.output_limit);
+		double integral = pid->get(k.integral);
+		const double unclamped = kp * error + ki * integral - kd * measurement_rate;
+		const bool saturated_same_way = (unclamped >= output_limit && error > 0.0) || (unclamped <= -output_limit && error < 0.0);
+		if (!saturated_same_way) {
+			integral = clampd(integral + error * dt, -integral_limit, integral_limit);
+			pid->set(k.integral, integral);
+		}
+		return clampd(kp * error + ki * integral - kd * measurement_rate, -output_limit, output_limit);
+	}
+
+	// Movement.hull_box(unit)[2], memoized by unit (a pure function of the roster).
+	double hull_length(const String &unit) {
+		const double *known = c.hull_length_of.getptr(unit);
+		if (known != nullptr) {
+			return *known;
+		}
+		const Array size = script->call(k.hull_box, unit);
+		const double length = size[2];
+		c.hull_length_of.insert(unit, length);
+		return length;
+	}
+
+	// ---- Movement._blocker (round 27, stage 1 E2), with `blockreach` not switched off (the native drive's config) ----
+	//   toward := (_path[_path_index] if _path_index < _path.size() and not direct else goal) - here; toward.y = 0.0
+	//   if toward.length_squared() < 0.01: toward = -tank.global_basis.z
+	//   toward = toward.normalized(); my_half := float(hull_box(tank.unit_id)[2]) * 0.5
+	//   for other in ctl.tanks_root.get_children(): (a living Tank, not me)
+	//     offset := hull.global_position - here; offset.y = 0.0; distance := offset.length()
+	//     reach := maxf(BLOCKER_REACH, my_half + float(hull_box(hull.unit_id)[2]) * 0.5 + BLOCKER_GAP_M)
+	//     if distance >= reach or distance >= best_distance or distance < 0.01: continue
+	//     if offset.dot(toward) / distance < BLOCKER_AHEAD_COS: continue
+	//     best = String(hull.name); best_distance = distance
+	//   best, else "no_path" (an unfinished route), else "terrain"
+	// The reach is only worked out for a hull at least BLOCKER_REACH away: nearer than that it cannot reach past it.
+	String blocker(const Vector3 &goal, bool direct) {
+		static const String no_path("no_path"), terrain("terrain");
+		const PackedVector3Array path = v._path();
+		const int64_t path_index = v._path_index();
+		Vector3 toward = (path_index < path.size() && !direct ? path[path_index] : goal) - here;
+		toward.y = 0;
+		if ((double)toward.length_squared() < 0.01) {
+			toward = -basis_z;
+		}
+		toward = toward.normalized();
+		String best;
+		double best_distance = INFINITY;
+		const double my_half = hull_length(tank->get(k.unit_id)) * 0.5;
+		Object *root = ctl->get(k.tanks_root).get_validated_object();
+		Node *tanks_root = Object::cast_to<Node>(root);
+		if (tanks_root != nullptr) {
+			const int count = tanks_root->get_child_count();
+			for (int i = 0; i < count; i++) {
+				Node3D *hull = Object::cast_to<Node3D>(tanks_root->get_child(i));
+				if (hull == nullptr || hull == tank) {
+					continue;
+				}
+				const Variant alive = hull->get(k.alive);
+				if (alive.get_type() != Variant::BOOL || !(bool)alive) {
+					continue; // not a Tank (no `alive`), or a dead one
+				}
+				Vector3 offset = hull->get_global_position() - here;
+				offset.y = 0;
+				const double distance = offset.length();
+				if (distance >= best_distance || distance < 0.01) {
+					continue;
+				}
+				if (distance >= c.BLOCKER_REACH) {
+					const double reach = MAX(c.BLOCKER_REACH, my_half + hull_length(hull->get(k.unit_id)) * 0.5 + c.BLOCKER_GAP_M);
+					if (distance >= reach) {
+						continue;
+					}
+				}
+				if ((double)offset.dot(toward) / distance < c.BLOCKER_AHEAD_COS) {
+					continue;
+				}
+				best = hull->get_name();
+				best_distance = distance;
+			}
+		}
+		if (!best.is_empty()) {
+			return best;
+		}
+		if (!direct && !path.is_empty() && flat_distance(path[path.size() - 1], goal) > c.NO_PATH_MARGIN) {
+			return no_path;
+		}
+		return terrain;
+	}
+
+	// Movement.of(unit): the registry's mover for this hull, if it is still that hull's.
+	Dictionary registry;
+	bool registry_known = false;
+	Object *mover_of(Node *unit) {
+		if (unit == nullptr) {
+			return nullptr;
+		}
+		if (!registry_known) {
+			registry = script->get(k._registry);
+			registry_known = true;
+		}
+		Object *mover = registry.get((int64_t)unit->get_instance_id(), Variant()).get_validated_object();
+		if (mover == nullptr) {
+			return nullptr;
+		}
+		Object *its_ctl = mover->get(k.ctl).get_validated_object();
+		if (its_ctl == nullptr || its_ctl->get(k.tank).get_validated_object() != unit) {
+			return nullptr;
+		}
+		return mover;
+	}
+
+	// ---- Movement._negotiate's early returns (round 27, stage 1 E2) ----
+	//   if _off.has("yield"): return                       (never, in the native drive's configuration)
+	//   name := _hull_ahead(goal, direct)                   (_blocker, with "no_path" and "terrain" read as "")
+	//   if name == "": return
+	//   other := tanks_root.get_node_or_null(name) as Tank; if other == null or other.team != tank.team: return
+	//   mover := Movement.of(other); if mover == null or mover.yield_to != "": return
+	//   if still_only and mover.is_under_way(): return
+	// Past them (a friend's mover ahead that could be asked), the live GDScript runs _negotiate from the top: nothing
+	// above writes, so it reads the same state and takes the same early-outs, then decides who gives way.
+	void negotiate(const Vector3 &goal, bool direct, bool still_only) {
+		static const String no_path("no_path"), terrain("terrain"), arrived("arrived");
+		const String name = blocker(goal, direct);
+		if (name.is_empty() || name == no_path || name == terrain) {
+			return;
+		}
+		Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+		Node *other = root != nullptr ? root->get_node_or_null(NodePath(name)) : nullptr;
+		if (other == nullptr || other->get(k.alive).get_type() != Variant::BOOL ||
+				(int64_t)other->get(k.team) != (int64_t)tank->get(k.team)) {
+			return;
+		}
+		Object *mover = mover_of(other);
+		if (mover == nullptr || !String(mover->get(k.yield_to)).is_empty()) {
+			return;
+		}
+		if (still_only && String(mover->get(k.phase)) != arrived) {
+			return;
+		}
+		cb(k._negotiate, goal, direct, still_only);
+	}
+
+	// ---- Pathing.query(tank, from, to) (round 27, stage 1 E2), line by line; `is_ready` is the drive's own answer (asked
+	// once a drive: Pathing.enabled and is_ready(tank), the same expression query opens with), the path is the engine's
+	// own query, the closest point Pathing.closest_point's (native_nav: N2a's index). The result is the same Dictionary,
+	// keys in the same order: the mover keeps it as `_route_reading`. ----
+	Dictionary path_query(const Vector3 &from, const Vector3 &to) {
+		Dictionary result;
+		result[k.points] = PackedVector3Array();
+		result[k.ready] = false;
+		result[k.reachable] = false;
+		result[k.goal_on_mesh] = false;
+		result[k.end_gap_m] = INFINITY;
+		result[k.goal_gap_m] = INFINITY;
+		if (!pathing_ready()) {
+			return result;
+		}
+		const RID map = tank->get_world_3d()->get_navigation_map();
+		const PackedVector3Array points = NavigationServer3D::get_singleton()->map_get_path(map, from, to, true);
+		const Vector3 nearest = closest_point(map, to, k.query);
+		const double goal_gap = Vector2((real_t)((double)to.x - (double)nearest.x), (real_t)((double)to.z - (double)nearest.z)).length();
+		double end_gap = INFINITY;
+		if (points.size() > 0) {
+			const Vector3 end = points[points.size() - 1];
+			end_gap = Vector2((real_t)((double)end.x - (double)nearest.x), (real_t)((double)end.z - (double)nearest.z)).length();
+		}
+		result[k.points] = points;
+		result[k.ready] = true;
+		result[k.goal_gap_m] = goal_gap;
+		result[k.end_gap_m] = end_gap;
+		result[k.reachable] = end_gap <= c.MESH_EPSILON;
+		result[k.goal_on_mesh] = goal_gap <= c.MESH_EPSILON;
+		return result;
 	}
 
 	// ---- Movement._track_goal ----
 	void track_goal(const Vector3 &goal) {
-		const int64_t ticks = (int64_t)get(k._ticks) + step;
-		set(k._ticks, ticks);
-		const bool reissued = get(k._reissued);
-		set(k._reissued, false);
-		const Vector3 seen = get(k._goal_seen);
+		const int64_t ticks = (int64_t)v._ticks() + step;
+		v.set__ticks(ticks);
+		const bool reissued = v._reissued();
+		v.set__reissued(false);
+		const Vector3 seen = v._goal_seen();
 		if (seen == V3_INF) {
-			set(k._goal_seen, goal);
-			set(k._goal_changed_at, ticks);
-			set(k._goal_velocity, Vector2());
+			v.set__goal_seen(goal);
+			v.set__goal_changed_at(ticks);
+			v.set__goal_velocity(Vector2());
 			return;
 		}
 		const Vector2 moved((real_t)((double)goal.x - (double)seen.x), (real_t)((double)goal.z - (double)seen.z));
-		const double seconds = (double)(ticks - (int64_t)get(k._goal_changed_at)) / (double)c.TICK_RATE;
+		const double seconds = (double)(ticks - (int64_t)v._goal_changed_at()) / (double)c.TICK_RATE;
 		if ((double)moved.length_squared() > 0.0001) {
 			const Vector2 velocity = moved / (real_t)MAX(seconds, 1.0 / (double)c.TICK_RATE);
 			const double max_speed = tank->get(k.max_forward_speed);
-			set(k._goal_velocity, (double)velocity.length() > 2.0 * max_speed ? Vector2() : velocity);
-			set(k._goal_seen, goal);
-			set(k._goal_changed_at, ticks);
+			v.set__goal_velocity((double)velocity.length() > 2.0 * max_speed ? Vector2() : velocity);
+			v.set__goal_seen(goal);
+			v.set__goal_changed_at(ticks);
 		} else if (seconds > c.STATION_STALE_SECONDS || (reissued && seconds > c.STATION_STOPPED_SECONDS)) {
-			set(k._goal_velocity, Vector2());
+			v.set__goal_velocity(Vector2());
 		}
 	}
 
 	// ---- Movement._next_waypoint (a1, repath, notready, carrot, chord all at their defaults) ----
 	Vector3 next_waypoint(const Vector3 &goal, double delta) {
-		double repath_left = (double)get(k._repath_left) - delta;
-		set(k._repath_left, repath_left);
-		PackedVector3Array path = get(k._path);
-		int64_t path_index = get(k._path_index);
+		double repath_left = (double)v._repath_left() - delta;
+		v.set__repath_left(repath_left);
+		PackedVector3Array path = v._path();
+		int64_t path_index = v._path_index();
 		const bool is_off_path = path.size() >= 2 && off_path(path, path_index, here) > c.OFF_PATH_REPATH;
-		const int64_t stalled_ticks = get(k.stalled_ticks);
+		const int64_t stalled_ticks = v.stalled_ticks();
 		const int64_t blocked_every = (int64_t)(c.BLOCKED_SECONDS * (double)c.TICK_RATE);
 		const bool stalled = stalled_ticks > 0 && stalled_ticks % blocked_every == 0;
-		set(k.last_replan, k.empty);
+		v.set_last_replan(k.empty);
 		const bool cadence_due = repath_left <= 0.0;
 		if (cadence_due) {
 			sadd(k.a1_cadence_due, 1);
 			repath_left = c.REPATH_SECONDS;
-			set(k._repath_left, repath_left);
+			v.set__repath_left(repath_left);
 		}
 		const bool drifted = cadence_due;
-		const double goal_shift = flat_distance(goal, get(k._path_goal));
-		const bool sliding = (double)((Vector2)get(k._goal_velocity)).length() >= c.STATION_MIN_SPEED;
+		const double goal_shift = flat_distance(goal, v._path_goal());
+		const bool sliding = (double)((Vector2)v._goal_velocity()).length() >= c.STATION_MIN_SPEED;
 		const double tolerance = 1.0;
 		const bool goal_moved = goal_shift > tolerance;
 		const bool event = goal_moved || is_off_path || stalled;
@@ -1036,32 +1343,37 @@ struct Drive {
 			}
 			const String key_s = key;
 			by_cause[key_s] = (int64_t)by_cause.get(key_s, 0) + 1;
-			set(k.last_replan, key);
-			set(k._repath_left, c.REPATH_SECONDS);
-			set(k._path_goal, goal);
+			v.set_last_replan(key);
+			v.set__repath_left(c.REPATH_SECONDS);
+			v.set__path_goal(goal);
 			Dictionary route;
 			{
 				Timed t("query");
-				route = c.pathing->call(k.query, tank, here, goal);
+				route = cb_on && c.query_ready ? path_query(here, goal) : (Dictionary)gd(c.pathing, k.query, tank, here, goal);
 			}
-			{
+			// Movement._inflate_corners(points): `if not inflate_on() ...: return path` -- inflate_on() is
+			// switched_off("inflate"), and the native drive runs only with Movement._off empty (NativeDrive.usable), so the
+			// route's points come back as they are (round 27, E2: no call into GDScript).
+			if (cb_on) {
+				path = route[k.points];
+			} else {
 				Timed t("inflate_corners");
-				path = m->call(k._inflate_corners, route[k.points]);
+				path = cb(k._inflate_corners, route[k.points]);
 			}
-			set(k._path, path);
+			v.set__path(path);
 			const bool reachable = !(bool)route[k.ready] || path.size() < 2 ||
 					((bool)route[k.reachable] && (double)route[k.goal_gap_m] <= c.NO_PATH_MARGIN);
-			set(k._reachable, reachable);
-			set(k._route_reading, route);
+			v.set__reachable(reachable);
+			v.set__route_reading(route);
 			path_index = path.size() >= 2 ? 1 : path.size();
-			set(k._path_index, path_index);
+			v.set__path_index(path_index);
 			if (!(bool)route[k.ready]) {
-				set(k._repath_left, 0.0);
+				v.set__repath_left(0.0);
 				sadd(k.route_not_ready, 1);
 			}
 		}
 		if (path.size() < 2) {
-			set(k._path_index, (int64_t)path.size());
+			v.set__path_index((int64_t)path.size());
 			return goal;
 		}
 		// Where am I along the route: the nearest point on the next few segments (never backwards).
@@ -1079,7 +1391,7 @@ struct Drive {
 			}
 		}
 		path_index = best_segment + 1;
-		set(k._path_index, path_index);
+		v.set__path_index(path_index);
 		const double radius = wheel_radius();
 		const double look = MAX(c.PATH_LOOKAHEAD, radius * c.WHEELS_LOOKAHEAD_RADII);
 		const Vector2 forward(-basis_z.x, -basis_z.z);
@@ -1127,8 +1439,8 @@ struct Drive {
 		if (chord_on_mesh(here, waypoint)) {
 			return waypoint;
 		}
-		const PackedVector3Array path = get(k._path);
-		int64_t first = get(k._path_index);
+		const PackedVector3Array path = v._path();
+		int64_t first = v._path_index();
 		while (first < path.size() - 1 && flat_distance(path[first], here) < c.WAYPOINT_MIN_M) {
 			first += 1;
 		}
@@ -1144,8 +1456,8 @@ struct Drive {
 
 	// ---- Movement._note_wedge ----
 	void note_wedge(bool deflected) {
-		Array window = get(k._deflect_window);
-		Array trail = get(k._wedge_trail);
+		Array window = v._deflect_window();
+		Array trail = v._wedge_trail();
 		window.append(deflected);
 		trail.append(here);
 		if (window.size() > c.WEDGED_WINDOW) {
@@ -1153,7 +1465,7 @@ struct Drive {
 			trail.remove_at(0);
 		}
 		if (window.size() < c.WEDGED_WINDOW) {
-			set(k.wedged, false);
+			v.set_wedged(false);
 			return;
 		}
 		int64_t hits = 0;
@@ -1171,11 +1483,11 @@ struct Drive {
 			hull = size[2];
 			c.hull_length_of.insert(unit, hull);
 		}
-		const bool was = get(k.wedged);
-		set(k.wedge_moved_m, moved);
-		set(k.wedge_hull_m, hull);
+		const bool was = v.wedged();
+		v.set_wedge_moved_m(moved);
+		v.set_wedge_hull_m(hull);
 		const bool wedged = (double)hits / (double)c.WEDGED_WINDOW > c.WEDGED_SHARE && moved < hull;
-		set(k.wedged, wedged);
+		v.set_wedged(wedged);
 		if (wedged && !was) {
 			sadd(k.wedged_units, 1);
 		}
@@ -1183,15 +1495,15 @@ struct Drive {
 
 	// ---- Movement._track_progress ----
 	void track_progress(const Vector3 &goal, const Vector2 &drive_vector, double remaining) {
-		if (flat_distance(goal, get(k._progress_goal)) > 2.0 || drive_vector == Vector2()) {
-			set(k._progress_goal, goal);
-			set(k._progress_best, remaining);
-			set(k.stalled_ticks, 0);
-		} else if (remaining < (double)get(k._progress_best) - 0.5) {
-			set(k._progress_best, remaining);
-			set(k.stalled_ticks, 0);
+		if (flat_distance(goal, v._progress_goal()) > 2.0 || drive_vector == Vector2()) {
+			v.set__progress_goal(goal);
+			v.set__progress_best(remaining);
+			v.set_stalled_ticks(0);
+		} else if (remaining < (double)v._progress_best() - 0.5) {
+			v.set__progress_best(remaining);
+			v.set_stalled_ticks(0);
 		} else {
-			set(k.stalled_ticks, (int64_t)get(k.stalled_ticks) + step);
+			v.set_stalled_ticks((int64_t)v.stalled_ticks() + step);
 		}
 	}
 
@@ -1199,40 +1511,43 @@ struct Drive {
 	void update_phase(const Vector3 &goal, const Vector2 &drive_vector, bool direct) {
 		static const String arrived("arrived"), blocked("blocked"), no_path("no_path"), pathing("pathing"),
 				driving("driving"), none("");
-		const bool reachable = get(k._reachable);
-		if (drive_vector == Vector2() && (flat_distance(here, goal) <= (double)get(k._arrive) + 0.5 ||
-												 ((bool)get(k._nose_at_end) && reachable))) {
-			set(k.phase, arrived);
-			set(k.blocked_by, none);
+		const bool reachable = v._reachable();
+		if (drive_vector == Vector2() && (flat_distance(here, goal) <= (double)v._arrive() + 0.5 ||
+												 ((bool)v._nose_at_end() && reachable))) {
+			v.set_phase(arrived);
+			v.set_blocked_by(none);
 			return;
 		}
-		const PackedVector3Array path = get(k._path);
+		const PackedVector3Array path = v._path();
 		if (!reachable && !direct && !path.is_empty() && flat_distance(here, path[path.size() - 1]) <= c.UNREACHABLE_AT_END) {
-			if ((bool)m->call(k._repair, goal)) {
+			if ((bool)cb(k._repair, goal)) {
 				return;
 			}
-			set(k.phase, blocked);
-			set(k.blocked_by, no_path);
+			v.set_phase(blocked);
+			v.set_blocked_by(no_path);
 			return;
 		}
-		if ((int64_t)get(k.stalled_ticks) >= (int64_t)(c.BLOCKED_SECONDS * (double)c.TICK_RATE)) {
-			int64_t left = (int64_t)get(k._blocker_left) - step;
-			set(k._blocker_left, left);
-			if (String(get(k.phase)) != blocked || left <= 0) {
-				set(k._blocker_left, c.TICK_RATE / 2);
-				set(k.blocked_by, m->call(k._blocker, goal, direct));
+		if ((int64_t)v.stalled_ticks() >= (int64_t)(c.BLOCKED_SECONDS * (double)c.TICK_RATE)) {
+			int64_t left = (int64_t)v._blocker_left() - step;
+			v.set__blocker_left(left);
+			if (String(v.phase()) != blocked || left <= 0) {
+				v.set__blocker_left(c.TICK_RATE / 2);
+				v.set_blocked_by(cb_on && c.blocker_ready ? blocker(goal, direct) : String(cb(k._blocker, goal, direct)));
 			}
-			set(k.phase, blocked);
+			v.set_phase(blocked);
 			return;
 		}
-		set(k.blocked_by, none);
-		if (!direct && (bool)c.pathing->get(k.enabled) && path.is_empty() && !(bool)c.pathing->call(k.is_ready, tank)) {
-			set(k.phase, pathing);
+		v.set_blocked_by(none);
+		if (!direct && (bool)c.pathing->get(k.enabled) && path.is_empty() && !(bool)gd(c.pathing, k.is_ready, tank)) {
+			v.set_phase(pathing);
 		} else {
-			set(k.phase, driving);
+			v.set_phase(driving);
 		}
 	}
 
+	// Round 27 (E2): BrainSwitches.native_cb, read once a drive (the A/B flips it between ticks): the ported callbacks
+	// run natively only while it is on; off, each is called back as before.
+	bool cb_on = false;
 	bool run(Object *cmd, const Dictionary &order, double delta);
 	Dictionary manoeuvre(const Dictionary &order);
 };
@@ -1245,7 +1560,8 @@ struct Drive {
 namespace godot {
 namespace {
 
-int64_t Drive::Engine_frames() {
+template <class V>
+int64_t Drive<V>::Engine_frames() {
 	return (int64_t)Engine::get_singleton()->get_physics_frames();
 }
 
@@ -1259,7 +1575,8 @@ int64_t Drive::Engine_frames() {
 //   if gap or _behind_goal == INF or _flat_distance(goal, _behind_goal) > NEW_GOAL_JUMP: <the decision>
 //   if _behind_plan != "reverse": return order
 //   reversed := order.duplicate(); reversed["reverse"] = true; reversed.erase("facing"); return reversed
-Dictionary Drive::manoeuvre(const Dictionary &order) {
+template <class V>
+Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 	static const String r_reverse_plan("reverse");
 	if (c.BEHIND_GAP_TICKS < 0) {
 		return order;
@@ -1269,14 +1586,14 @@ Dictionary Drive::manoeuvre(const Dictionary &order) {
 	}
 	const Vector3 goal((real_t)(double)order[k.x], 0, (real_t)(double)order[k.z]);
 	const int64_t tick = Engine_frames();
-	const bool gap = tick - (int64_t)get(k._behind_tick) > c.BEHIND_GAP_TICKS;
-	const Vector3 behind_goal = get(k._behind_goal);
+	const bool gap = tick - (int64_t)v._behind_tick() > c.BEHIND_GAP_TICKS;
+	const Vector3 behind_goal = v._behind_goal();
 	if (gap || behind_goal == V3_INF || flat_distance(goal, behind_goal) > c.NEW_GOAL_JUMP) {
 		Timed t("manoeuvre");
-		return m->call(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+		return cb(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
 	}
-	set(k._behind_tick, tick);
-	if (String(get(k._behind_plan)) != r_reverse_plan) {
+	v.set__behind_tick(tick);
+	if (String(v._behind_plan()) != r_reverse_plan) {
 		return order;
 	}
 	Dictionary reversed = order.duplicate();
@@ -1285,37 +1602,39 @@ Dictionary Drive::manoeuvre(const Dictionary &order) {
 	return reversed;
 }
 
-bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
+template <class V>
+bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 	static const String r_order("order"), r_station("station"), r_circle("circle"), r_other("other"), cancelled("cancelled");
+	cb_on = (bool)c.switches->get(k.native_cb);
 	const Dictionary order = manoeuvre(order_in);
 	// var goal := Vector3(order["x"], 0.0, order["z"])
 	Vector3 goal((real_t)(double)order[k.x], 0, (real_t)(double)order[k.z]);
 	if (order.has(k.leash)) {
 		sadd(k.leash_orders, step); // leash_on() is the opt-in arm: off here
 	}
-	const Vector3 repair_for = get(k._repair_for);
+	const Vector3 repair_for = v._repair_for();
 	if (repair_for != V3_INF) {
 		if (flat_distance(goal, repair_for) > c.NEW_GOAL_JUMP) {
-			set(k._repair_for, V3_INF);
-			set(k._repair_to, V3_INF);
+			v.set__repair_for(V3_INF);
+			v.set__repair_to(V3_INF);
 		} else {
-			const Vector3 repair_to = get(k._repair_to);
+			const Vector3 repair_to = v._repair_to();
 			if (repair_to != V3_INF) {
 				goal = repair_to;
 			}
 		}
 	}
-	const Vector3 old_goal = get(k._goal);
+	const Vector3 old_goal = v._goal();
 	if (old_goal == V3_INF || flat_distance(goal, old_goal) > c.NEW_GOAL_JUMP) {
-		set(k._order_ticks, 0);
+		v.set__order_ticks(0);
 	}
-	set(k._goal, goal);
+	v.set__goal(goal);
 	{
 		Timed t("~track_goal");
 		track_goal(goal);
 	}
-	const int64_t order_ticks = (int64_t)get(k._order_ticks) + step;
-	set(k._order_ticks, order_ticks);
+	const int64_t order_ticks = (int64_t)v._order_ticks() + step;
+	v.set__order_ticks(order_ticks);
 	const bool direct = order.get(k.direct, false);
 	// _approach_gate: a tracked or hover hull, or an order with no facing, aims at the goal itself.
 	double radius;
@@ -1328,21 +1647,21 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 		Timed t("~approach_gate");
 		aim = approach_gate(goal, order, radius);
 	}
-	set(k.arc_live, aim != goal);
+	v.set_arc_live(aim != goal);
 	Vector3 routed;
 	{
 		Timed t("~next_waypoint");
 		routed = direct ? aim : next_waypoint(aim, delta);
 	}
 	if (!direct && routed != aim && flat_distance(routed, here) < c.WAYPOINT_MIN_M) {
-		const PackedVector3Array path = get(k._path);
-		routed = corner_beyond(path, get(k._path_index), aim);
+		const PackedVector3Array path = v._path();
+		routed = corner_beyond(path, v._path_index(), aim);
 	}
 	Vector3 around_fire = routed;
 	if (!fire_check_skips()) {
 		Timed t("around_fire");
 		around_fire = c.fire_ready && (bool)c.switches->get(k.native_fire) ? this->around_fire(routed, goal, order) :
-																			 (Vector3)m->call(k._around_fire, routed, goal, order);
+																			 (Vector3)cb(k._around_fire, routed, goal, order);
 	}
 	Vector3 waypoint = around_fire;
 	const double speed_factor = clampd((double)order.get(k.speed, 1.0), 0.2, 1.0);
@@ -1360,17 +1679,17 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 	}
 	const double arrive_order = clampd((double)order.get(k.arrive, c.ARRIVE_RADIUS), 0.5, 10.0);
 	const double arrive_field = MAX(arrive_order, settle);
-	set(k._arrive, arrive_field);
+	v.set__arrive(arrive_field);
 	double arrive = around_fire == goal ? arrive_field : 0.5;
 	double remaining;
 	{
 		Timed t("~remaining");
 		remaining = direct ? flat_distance(here, goal) : remaining_path_distance(goal);
 	}
-	set(k._remaining, remaining);
+	v.set__remaining(remaining);
 	double pace = 1.0;
 	bool deflected = false;
-	set(k._deflected, false);
+	v.set__deflected(false);
 	const bool reverse = order.get(k.reverse, false);
 	if ((bool)sget(k.avoidance_on) && !reverse && ctl->get(k.tanks_root).get_type() == Variant::OBJECT &&
 			ctl->get(k.tanks_root).get_validated_object() != nullptr && flat_distance(here, around_fire) > arrive) {
@@ -1383,31 +1702,31 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 		if (point != waypoint) {
 			arrive = 0.1;
 			deflected = true;
-			set(k._deflected, true);
+			v.set__deflected(true);
 		}
 		waypoint = point;
 		pace = keep;
 	}
 	if ((bool)order.get(k.paced, false)) {
-		int64_t give_way_left = get(k._give_way_left);
+		int64_t give_way_left = v._give_way_left();
 		if (give_way_left > 0) {
-			set(k._give_way_left, give_way_left - step);
+			v.set__give_way_left(give_way_left - step);
 			pace = MIN(pace, c.GIVE_WAY_PACE);
 		} else if (deflected && pace < 0.95) {
-			int64_t blocked_ticks = (int64_t)get(k._blocked_ticks) + step;
-			set(k._blocked_ticks, blocked_ticks);
+			int64_t blocked_ticks = (int64_t)v._blocked_ticks() + step;
+			v.set__blocked_ticks(blocked_ticks);
 			if (blocked_ticks >= c.GIVE_WAY_AFTER_TICKS) {
-				set(k._blocked_ticks, 0);
-				set(k._give_way_left, c.GIVE_WAY_TICKS);
-				set(k.give_ways, (int64_t)get(k.give_ways) + 1);
+				v.set__blocked_ticks(0);
+				v.set__give_way_left(c.GIVE_WAY_TICKS);
+				v.set_give_ways((int64_t)v.give_ways() + 1);
 				pace = MIN(pace, c.GIVE_WAY_PACE);
 			}
 		} else {
-			set(k._blocked_ticks, 0);
+			v.set__blocked_ticks(0);
 		}
 	} else {
-		set(k._blocked_ticks, 0);
-		set(k._give_way_left, 0);
+		v.set__blocked_ticks(0);
+		v.set__give_way_left(0);
 	}
 	if (!direct && waypoint != goal) {
 		Timed t("~guard");
@@ -1427,8 +1746,8 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 				const Variant leg_ref = c.tank_command->call(k.new_);
 				Object *leg = leg_ref;
 				bool planned = false;
-				const int64_t check_left = (int64_t)get(k._kturn_check) - step;
-				if ((double)get(k._kturn_left_m) > 0.0) {
+				const int64_t check_left = (int64_t)v._kturn_check() - step;
+				if ((double)v._kturn_left_m() > 0.0) {
 					Vector2 leg_vector;
 					Timed t("~kturn_leg");
 					if (kturn_leg(delta, leg_vector)) {
@@ -1438,18 +1757,20 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 					}
 				} else if (check_left > 0) {
 					// _planned_reverse between checks: `_kturn_check -= ctl._step; if _kturn_check > 0: return false`.
-					set(k._kturn_check, check_left);
+					v.set__kturn_check(check_left);
 				} else {
 					Timed t("planned_reverse");
-					planned = m->call(k._planned_reverse, leg_ref, waypoint, delta);
+					if (!cb_on || !c.kturn_look_ready || !planned_reverse_cheap(waypoint)) {
+						planned = cb(k._planned_reverse, leg_ref, waypoint, delta);
+					}
 				}
 				if (planned) {
 					drive_vector = Vector2((real_t)(double)leg->get(k.throttle), (real_t)(double)leg->get(k.turn));
 				}
-			} else if ((double)get(k._kturn_left_m) > 0.0) {
-				m->call(k._kturn_end, cancelled);
-				set(k._kturn_left_m, 0.0);
-				Array legs = get(k._kturn_legs);
+			} else if ((double)v._kturn_left_m() > 0.0) {
+				cb(k._kturn_end, cancelled);
+				v.set__kturn_left_m(0.0);
+				Array legs = v._kturn_legs();
 				legs.clear();
 			}
 		}
@@ -1461,16 +1782,16 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 	double throttle = (double)drive_vector.x * speed_factor * pace;
 	cmd->set(k.throttle, throttle);
 	cmd->set(k.turn, (double)drive_vector.y);
-	const double kturn_left = get(k._kturn_left_m);
+	const double kturn_left = v._kturn_left_m();
 	if (kturn_left > 0.0) {
 		throttle = drive_vector.x;
 		cmd->set(k.throttle, throttle);
-		set(k._ease_ticks, 0);
+		v.set__ease_ticks(0);
 	} else {
-		const int64_t ease_ticks = get(k._ease_ticks);
+		const int64_t ease_ticks = v._ease_ticks();
 		if (ease_ticks > 0) {
-			set(k._ease_ticks, ease_ticks - step);
-			const double ease_throttle = get(k._ease_throttle);
+			v.set__ease_ticks(ease_ticks - step);
+			const double ease_throttle = v._ease_throttle();
 			if (throttle > ease_throttle) {
 				throttle = ease_throttle;
 				cmd->set(k.throttle, throttle);
@@ -1481,43 +1802,52 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 	const bool circling = radius > 0.0 && !reverse && (double)drive_vector.x < 0.0 && kturn_left <= 0.0;
 	if (circling) {
 		sadd(k.circle_reverse_ticks, step);
-		if (!(bool)get(k._circling)) {
+		if (!(bool)v._circling()) {
 			sadd(k.circle_reverses, 1);
 		}
 	}
-	set(k._circling, circling);
-	set(k._nose_at_end, false); // _nose_stop: nose_stop_on() is the opt-in arm, off here
-	set(k.steer_to, waypoint);
-	set(k.pace_now, pace);
+	v.set__circling(circling);
+	v.set__nose_at_end(false); // _nose_stop: nose_stop_on() is the opt-in arm, off here
+	v.set_steer_to(waypoint);
+	v.set_pace_now(pace);
 	{
 		Timed t("~note_wedge");
 		note_wedge(pace < 0.999);
 	}
 	bool stationed = false;
-	set(k.stationed_now, false);
+	v.set_stationed_now(false);
 	if ((bool)sget(k.station_on) && !direct && !reverse && pace >= 0.99 && waypoint == goal &&
-			remaining <= c.STATION_RANGE && (double)((Vector2)get(k._goal_velocity)).length() >= c.STATION_MIN_SPEED) {
+			remaining <= c.STATION_RANGE && (double)((Vector2)v._goal_velocity()).length() >= c.STATION_MIN_SPEED) {
 		{
 			Timed t("keep_station");
-			drive_vector = m->call(k._keep_station, cmd, goal, delta, (bool)order.get(k.paced, false) ? speed_factor : 1.0);
+			const double cap = (bool)order.get(k.paced, false) ? speed_factor : 1.0;
+			drive_vector = cb_on && c.station_ready ? keep_station(cmd, goal, delta, cap) :
+											 (Vector2)cb(k._keep_station, cmd, goal, delta, cap);
 		}
 		stationed = true;
-		set(k.stationed_now, true);
+		v.set_stationed_now(true);
 	} else {
-		const Variant station = get(k._station);
+		const Variant station = v._station();
 		if (station.get_type() == Variant::OBJECT && station.get_validated_object() != nullptr) {
-			station.get_validated_object()->call(k.reset);
+			// Pid.reset() (round 27, E2: its two writes in place of a call into GDScript): integral = 0.0; _primed = false
+			Object *pid = station.get_validated_object();
+			if (cb_on) {
+				pid->set(k.integral, 0.0);
+				pid->set(k._primed, false);
+			} else {
+				pid->call(k.reset);
+			}
 		}
 	}
-	if ((double)get(k._kturn_left_m) <= 0.0 && (double)cmd->get(k.throttle) < 0.0) {
+	if ((double)v._kturn_left_m() <= 0.0 && (double)cmd->get(k.throttle) < 0.0) {
 		if (reverse) {
-			set(k._reverse_why, r_order);
+			v.set__reverse_why(r_order);
 		} else if (stationed) {
-			set(k._reverse_why, r_station);
+			v.set__reverse_why(r_station);
 		} else if (circling) {
-			set(k._reverse_why, r_circle);
+			v.set__reverse_why(r_circle);
 		} else {
-			set(k._reverse_why, r_other);
+			v.set__reverse_why(r_other);
 		}
 	}
 	track_progress(goal, drive_vector, remaining);
@@ -1527,24 +1857,40 @@ bool Drive::run(Object *cmd, const Dictionary &order_in, double delta) {
 	}
 	const bool held_back = pace < c.AVOID_ASK_PACE && order_ticks >= c.AVOID_GRACE_TICKS;
 	const int64_t ask_after = (int64_t)(c.ASK_SECONDS * (double)c.TICK_RATE);
-	const int64_t stalled_ticks = get(k.stalled_ticks);
+	const int64_t stalled_ticks = v.stalled_ticks();
 	if (stalled_ticks >= ask_after || held_back) {
-		int64_t ask_left = (int64_t)get(k._ask_left) - step;
-		set(k._ask_left, ask_left);
+		int64_t ask_left = (int64_t)v._ask_left() - step;
+		v.set__ask_left(ask_left);
 		if (ask_left <= 0) {
-			set(k._ask_left, (int64_t)(c.ASK_EVERY_SECONDS * (double)c.TICK_RATE));
+			v.set__ask_left((int64_t)(c.ASK_EVERY_SECONDS * (double)c.TICK_RATE));
 			Timed t("negotiate");
-			m->call(k._negotiate, goal, direct, stalled_ticks < ask_after);
+			if (cb_on && c.blocker_ready) {
+				negotiate(goal, direct, stalled_ticks < ask_after);
+			} else {
+				cb(k._negotiate, goal, direct, stalled_ticks < ask_after);
+			}
 		}
 	} else {
-		set(k._ask_left, 0);
+		v.set__ask_left(0);
 	}
 	return true;
 }
 
 } // namespace
 
-bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta) {
+namespace {
+// Round 27 (E1c): the drives run on the owned state, and the transition's syncs they made (the pulls after callbacks and
+// the pushes before GDScript reads; measurement: what is left of them is what E2-E4 have not ported yet).
+struct OwnedCounts {
+	int64_t drives = 0, pulls = 0, pushes = 0;
+	// The price of the mirror (the orchestrator's condition on E1's design): the push at each drive's END, which is
+	// what the owned execute keeps at E5 (the changed fields only), and the transition's pull at its start.
+	int64_t end_push_fields = 0;
+	double end_push_usec = 0.0, start_pull_usec = 0.0;
+} owned_counts_;
+} // namespace
+
+bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) {
 	if (!config.ready || mover == nullptr || cmd == nullptr) {
 		return false;
 	}
@@ -1560,16 +1906,54 @@ bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const D
 			clock_().drives++;
 		}
 	} total{ t0 };
-	Drive d(config, mover);
+	if (!owned) {
+		Drive<ObjectView> d(config, mover, ObjectView(mover));
+		if (!d.bind()) {
+			return false;
+		}
+		return d.run(cmd, order, delta);
+	}
+	// The owned state: pulled whole at the start while the drive still calls GDScript back (E2-E4), pushed at the end.
+	// A local state while the drive still calls GDScript back (it is pulled whole at the start anyway): no reference
+	// outlives the drive. (A registry held across ticks freed its Variants after the engine at exit: "corrupted size vs.
+	// prev_size" in every owned run. E5's persistent state is tied to the mover's lifetime.)
+	ExecState local;
+	ExecState *state = &local;
+	const auto p0 = std::chrono::steady_clock::now();
+	state->pull(mover);
+	owned_counts_.start_pull_usec += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - p0).count();
+	Drive<StructView> d(config, mover, StructView(mover, state));
 	if (!d.bind()) {
 		return false;
 	}
-	return d.run(cmd, order, delta);
+	const bool done = d.run(cmd, order, delta);
+	owned_counts_.end_push_fields += state->m_dirty.count() + state->g_dirty.count() + state->l_dirty.count();
+	const auto e0 = std::chrono::steady_clock::now();
+	d.v.push_out();
+	owned_counts_.end_push_usec += std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - e0).count();
+	owned_counts_.drives++;
+	owned_counts_.pulls += d.v.pulls + 1;
+	owned_counts_.pushes += d.v.pushes;
+	return done;
+}
+
+Dictionary drive_owned_counts(bool reset) {
+	Dictionary out;
+	out["drives"] = owned_counts_.drives;
+	out["pulls"] = owned_counts_.pulls;
+	out["pushes"] = owned_counts_.pushes;
+	out["end_push_fields"] = owned_counts_.end_push_fields;
+	out["end_push_usec"] = owned_counts_.end_push_usec;
+	out["start_pull_usec"] = owned_counts_.start_pull_usec;
+	if (reset) {
+		owned_counts_ = OwnedCounts();
+	}
+	return out;
 }
 
 Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,
 		const Dictionary &order) {
-	Drive d(config, mover);
+	Drive<ObjectView> d(config, mover, ObjectView(mover));
 	if (!config.ready || !config.fire_ready || mover == nullptr || !d.bind()) {
 		return waypoint;
 	}

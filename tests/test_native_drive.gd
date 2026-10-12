@@ -91,9 +91,19 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 
 ## Wheeled hulls nose-on to walls with their goal behind them: the k-turn planner, its legs, their ends.
 func test_the_k_turn_legs_are_the_live_gdscript() -> void:
+	await _k_turn_case(false)
+
+
+## Round 27 (stage 1 E1c): the same, the native drive running on the C++-owned state (ExecState, StructView).
+func test_the_k_turn_legs_on_the_owned_state() -> void:
+	await _k_turn_case(true)
+
+
+func _k_turn_case(owned: bool) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
+	NativeDrive.owned = owned
 	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
 	await ArenaFixture.build(self, "sumps")
 	var game_match: Match = MATCH.instantiate()
@@ -146,8 +156,9 @@ func test_the_k_turn_legs_are_the_live_gdscript() -> void:
 		if first == "" and result[2] != "":
 			first = result[2]
 	var kturn_after := [Movement.kturns + Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]
-	print("native drive k-turns: %d drives, plans / leg ticks / aborted %s -> %s, %d mismatches" % [drives, kturn_before,
-			kturn_after, mismatches])
+	NativeDrive.owned = false
+	print("native drive k-turns%s: %d drives, plans / leg ticks / aborted %s -> %s, %d mismatches" % [
+			" (owned state)" if owned else "", drives, kturn_before, kturn_after, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive through k-turns: %s" % first)
 	assert_true(int(kturn_after[0]) - int(kturn_before[0]) >= 5 and int(kturn_after[1]) - int(kturn_before[1]) >= 60,
 			"k-turns planned and driven (%s -> %s)" % [kturn_before, kturn_after])
@@ -165,9 +176,21 @@ func test_the_harness_reaches_the_statics() -> void:
 
 
 func test_drive_is_the_live_gdscript() -> void:
+	await _drive_case(false)
+
+
+## Round 27 (stage 1 E1c): the same fight, the native drive running on the C++-owned state (ExecState, StructView:
+## pulled at the start of each drive, synced around every GDScript callback, pushed at its end).
+func test_drive_on_the_owned_state_is_the_live_gdscript() -> void:
+	await _drive_case(true)
+
+
+func _drive_case(owned: bool) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the drive equality is not exercised in this run")
 		return
+	NativeDrive.owned = owned
+	NativeBridge.impl.drive_owned_counts(true)
 	assert_true(Movement._off.is_empty(), "the default configuration (no --nav-off switch)")
 	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
 	await ArenaFixture.build(self, "sumps")
@@ -278,8 +301,18 @@ func test_drive_is_the_live_gdscript() -> void:
 	print("native drive: gates (the fight's own drives) %s -> %s" % [gates_before, Movement.gate_report()])
 	print("native drive: k-turns planned / back-and-fills / leg ticks / aborted, the fight's own drives: %s -> %s"
 			% [kturn_before, [Movement.kturns, Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]])
-	print("native drive: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
-			% [asked, wheeled, replans, native_replans, stationed, avoided, reversing, negotiated, mismatches])
+	NativeDrive.owned = false
+	print("native drive%s: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
+			% [" (owned state)" if owned else "", asked, wheeled, replans, native_replans, stationed, avoided, reversing,
+			negotiated, mismatches])
+	if owned:
+		var counts: Dictionary = NativeBridge.impl.drive_owned_counts(true)
+		print("native drive (owned state): %d drives, %.2f pulls and %.2f pushes a drive (the transition's syncs)" % [
+				int(counts["drives"]), float(counts["pulls"]) / maxi(int(counts["drives"]), 1),
+				float(counts["pushes"]) / maxi(int(counts["drives"]), 1)])
+		# The match's own controllers drive on the owned state too while NativeDrive.owned is set: at least the test's.
+		assert_true(int(counts["drives"]) >= asked, "every native drive ran on the owned state (%d >= %d)" % [
+				int(counts["drives"]), asked])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)
 	assert_true(asked >= 1000 and wheeled >= 200, "a real sample (%d drives, %d wheeled)" % [asked, wheeled])
 	assert_true(replans >= 20 and native_replans == replans, "re-plans happen, and the native arm counts them through the statics (%d, %d)" % [replans, native_replans])

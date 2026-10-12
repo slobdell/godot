@@ -66,13 +66,14 @@ native-bench: import ## The price of ONE GDScript->native call, each way of call
 # the plain run (native ON), the whole run with --brains-off=native, and the 30-tick A/B must print one state hash.
 # On the laptop this is the machine's own proof (its hashes differ from builder0's by glibc, determinism.md).
 # NATIVE_PROOF_ARMS adds arms: `mirror` (round 27, stage 1 E1) runs --native-exec-mirror, every crew's execute state
-# pulled, scrambled and pushed back by the C++ every tick (game/ai/native/native_exec.gd): push must be lossless.
+# pulled, scrambled and pushed back by the C++ every tick (game/ai/native/native_exec.gd): push must be lossless;
+# `owned` (E1c) runs --native-exec-owned, the native drive on the C++-owned state (NativeDrive.owned).
 NATIVE_PROOF_ARMS ?= on off ab
 native-proof: import ## The equality proof: one match three ways (native on, off, A/B; NATIVE_PROOF_ARMS adds mirror) must give one state hash
 	@mkdir -p $(BUILD_DIR)/native-proof
 	@for arm in $(NATIVE_PROOF_ARMS); do \
 		case $$arm in on) flags="";; off) flags="--brains-off=native";; ab) flags="--brains-ab-run=native";; \
-			mirror) flags="--native-exec-mirror";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
+			mirror) flags="--native-exec-mirror";; owned) flags="--native-exec-owned";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 			--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 			$$flags $(AB_FLAGS) > $(BUILD_DIR)/native-proof/$$arm.log 2>&1 || true; \

@@ -16,6 +16,12 @@ static var _configured := false
 static var profile := OS.get_cmdline_user_args().has("--native-drive-profile")
 const PROFILE_EVERY := 20000
 static var _drives := 0
+## Round 27 (stage 1 E1c): the native drive on the C++-owned state (ExecState) instead of the live members; the same bits.
+## `--native-exec-owned` (native-proof's `owned` arm) or a test sets it. Slower while the drive still calls GDScript back
+## (the whole state is pulled at each drive's start and after each callback): a proof, not a speed, until E5.
+static var owned := OS.get_cmdline_user_args().has("--native-exec-owned")
+const OWNED_EVERY := 5000
+static var _owned_drives := 0
 
 
 static func usable(_mover: Movement) -> bool:
@@ -70,6 +76,12 @@ static func configure() -> bool:
 		"FIRE_DETOUR_COOLDOWN": Movement.FIRE_DETOUR_COOLDOWN, "FIRE_LEG_MIN_TICKS": Movement.FIRE_LEG_MIN_TICKS,
 		"match_script": Match, "suppression_feed": SuppressionFeed, "order_controller": OrderController,
 		"brain_variants": BrainVariants,
+		# Round 27 (stage 1 E2): Movement._keep_station natively (its PID's step_with_rate in place).
+		"STATION_LEAD_SECONDS": Movement.STATION_LEAD_SECONDS, "units": Units, "pid": Pid, "control_gains": ControlGains,
+		"BLOCKER_REACH": Movement.BLOCKER_REACH, "BLOCKER_GAP_M": Movement.BLOCKER_GAP_M,
+		"BLOCKER_AHEAD_COS": Movement.BLOCKER_AHEAD_COS, "MESH_EPSILON": Pathing.MESH_EPSILON,
+		"KTURN_MIN_ERROR_DEG": Movement.KTURN_MIN_ERROR_DEG, "KTURN_CIRCLE_SPEED": Movement.KTURN_CIRCLE_SPEED,
+		"manoeuvre_census": ManoeuvreCensus,
 		# Round 26 (manoeuvre M1, C26.2): the gate of Movement._manoeuvre natively; absent (-1) before manoeuvre lands.
 		"BEHIND_GAP_TICKS": int((Movement as Script).get_script_constant_map().get("BEHIND_GAP_TICKS", -1)),
 	})
@@ -86,7 +98,17 @@ static func configure() -> bool:
 
 
 static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: float) -> void:
-	NativeBridge.impl.drive(mover, cmd, order, delta)
+	if owned:
+		NativeBridge.impl.drive_owned(mover, cmd, order, delta)
+		_owned_drives += 1
+		if _owned_drives % OWNED_EVERY == 0:
+			var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
+			var n := maxi(int(c["drives"]), 1)
+			print("NATIVE_EXEC_OWNED %d drives: end push %.2f fields %.3f usec a drive; start pull %.2f usec; syncs a drive %.2f pulls %.2f pushes" % [
+					n, float(c["end_push_fields"]) / n, float(c["end_push_usec"]) / n, float(c["start_pull_usec"]) / n,
+					float(c["pulls"]) / n, float(c["pushes"]) / n])
+	else:
+		NativeBridge.impl.drive(mover, cmd, order, delta)
 	if profile:
 		_drives += 1
 		if _drives % PROFILE_EVERY == 0:

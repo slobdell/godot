@@ -63,11 +63,12 @@ static var native_fire := true  # Movement._around_fire (the beaten-zone check, 
 ## TOGETHER: in contact, laptop windowed 58056d54, n = 6 paired, tick scripts -4.11 % (se 0.47) against all three off,
 ## game speed in the window 0.835 v 0.810. `--brains-off=native_n4` turns the group off as one.
 static var native_el := true  # SlotGround natively: the water rules (on_anchor_side, pulled_dry) and standable_for (C24.8; ON round 25 by a FRESH pre-registered n = 12 on the WATER workload: tick -4.85 %, se 0.47, b1884509 flightdeck, locks + crossing 12-24 s, ABBA; earlier, OFF by the in-contact rule: laptop windowed 4ba8fd0b, ABBA n = 6 paired, tick -0.37 %, se 0.67 -- his foundry/parade have no water, so only standable_for's -0.15 ms of elements shows; headless Sumps elements 4.21 -> 3.27 ms; round 25 on the WATER workload, locks + crossing 12-24 s, 49e2bdcd n = 6 paired: tick -1.64 %, se 1.65, still OFF, though elements -2.06 ms, se 0.33)
+static var native_cb := true  # Round 27 (stage 1 E2): the native drive's GDScript callbacks ported (_keep_station + its PID, the PID reset, _inflate_corners, Pathing.query, _blocker, _negotiate's early returns, _planned_reverse's cheap look); off = every one of them called back as before
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -170,6 +171,8 @@ static func set_named(name: String, on: bool) -> void:
 			native_fire = on
 		"native_el":
 			native_el = on
+		"native_cb":
+			native_cb = on
 		"native_n4":
 			native_situation = on
 			native_tq = on
