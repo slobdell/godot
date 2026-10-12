@@ -82,8 +82,30 @@ Nothing.
 `lab/brains-mr2`; DECLARED) → B3 (make-room priced by removal under B1's line) → B4 (drill seats by nearest keeping the
 lead's role; DECLARED) → B5 (ambush guns 30° off: trace first) → B6 held.
 
-**B0 — in progress.** Design (one line each): the attack drives ROUND the target at its guns' reach (the band) in 45°
-notches (fixed points, so crews are not re-sent every update) until its centre is within 30° of the drawn side, then it
-is "in" for the life of the task and attacks as before; the way round is the shorter one, kept once chosen; on the way
-the crews are on a NAMED MOVE (guns laid on the target, shooting on the move, nobody stopping to fight from the wrong
-side). A running target is a pursuit and ignores the side (a chase has no flank to come round to).
+**B0 — DONE. CP0 GREEN, merge here: `9603c1d7`** (builder0, `make check exited 0`, 2475 passed / 0 failed = main's
+2464 + B0's 11; thirteen UNMOVED; determinism `2875411ff4ec6be7` unchanged; 2 NOT JUDGED for the busy box only:
+perf-judge refused ×3 at ratio ~2.4, scenario_perf unpinned). Told the orchestrator 2026-10-11 ~19:50; orders confirmed
+the sign (approach = enemy − release point, the run in). `task["approach"] = [x, z]` (attack only; validated; the
+direction of the run IN, toward the target, as orders' brief reads it). Design (decided, one line each): the attack
+drives ROUND the target at its crews' longest reach (`range`, 70 m for a tank; at 45 m effective it drove inside the
+target's guns) in 45° notches, each at least 15° ahead (fixed points, so crews are not re-sent every update; a notch
+it had to land on exactly stalled the squad 6° short for 25 s), until its centre is within 30° of the drawn side; then
+it is "in" for the life of the task and attacks as before. The way round is the shorter one, kept once chosen. On the
+way the crews are on a NAMED MOVE (guns laid on the target, shooting on the move); react to contact, far ambush and a
+near ambush on the target itself yield until it is round (each sends crews straight in from the wrong side). A running
+target is a pursuit and has no side. Absent = today's path (the plan writes `approach_round` only when the key is there;
+`Drills.rounding_to_approach` reads false for every other task).
+- Tests: `tests/test_tactics_approach.gd` (9, plan level: validation per verb, on-side identical to no approach, far
+  side goes round at reach, notches, kept way, latched in, line in reach, pursuit unchanged),
+  `tests/test_tactics_approach_live.gd` (2, a real match, both arms). builder0: 11 passed / 0.
+- Stage `make approach-series` (`ApproachStage`: his four tanks 100 m south of two enemy tanks on yard_open, a hold-fire
+  scout spotting; attack one from the EAST v no approach), builder0, tree `c37605f0` + B0, n = 18 per arm (seeds 1–3 ×
+  start ticks {1,3,6,8,11,16}): **east 18/18 closed in from within 35° of the east side** (median 27°, worst 30°),
+  control 0/18 (median 88°: straight up from the south). Cost of the drive round: target killed 18.9 s v 14.5 s
+  (medians), his crews alive 3.61 v 3.11 (mean).
+- CP0 is NOT declared (default path unchanged). Merge note: touches `element_task.gd`, `element_plan.gd`,
+  `element.gd`, `drills.gd` (all mine), `mk/tactics.mk` (+ approach-series), new tests and `tools/tactics/approach_table.py`.
+
+**Candidates noted (not preempting B0–B4):** scout's census (main `c37605f0`, builder0, 12 showmatch seeds): 254 of 365
+enemy hull contacts came while the crew was on an ordered MOVE (squads, the CPU's included, moved into the enemy outside
+CombatMotion): an arrive point inside the enemy, or an attack-move that does not stand off. Seeds/ticks in scout's Status.
