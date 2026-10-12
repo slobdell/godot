@@ -91,10 +91,17 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	var pursuing := bool(state.get("pursuing", false))
 	if pursuing and PURSUIT_YIELDS.has(current):
 		current = ""
+	# Round 27 (B0, C27.3): an attack still going round to the side he drew is not stopped by contact either: "return
+	# fire" orders every crew in reach to `attack`, which closes straight at the target from the side he said not to come
+	# from, and a far ambush splits it. They shoot on the move (a named move) until they are round.
+	var rounding := rounding_to_approach(state)
+	if rounding and PURSUIT_YIELDS.has(current):
+		current = ""
 	# ...and the target it is chasing coming back into sight is not an ambush: out of sight it drops from the element's
 	# known contacts, so it reappears "sudden", and near ambush + assault through charged PAST the spot it was seen at
 	# (the scenario's 180-degree turns). An ambush by anyone else is still one.
-	var chased := String(task.get("target", "")) if pursuing else ""
+	# Round 27 (B0): so is the target an attack is still going round (it is in sight the whole way: not an ambush).
+	var chased := String(task.get("target", "")) if pursuing or rounding else ""
 	if chased != "" and ["near_ambush", "assault_through"].has(current) and String(state.get("drill_target", "")) == chased:
 		current = ""
 	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
@@ -144,12 +151,12 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
 	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
 	# the start of the drill (that flip-flop cost the far-ambush scenario its maneuver, 2026-09-16).
-	if not pursuing and table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
+	if not pursuing and not rounding and table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("react_to_contact", "contact: return fire, take cover, report", nearest_contact(situation))
 	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver (only while engaged; a
 	# contact watched from 100 m is not an ambush).
-	if manoeuvres and not pursuing and not obeyed and table.runs_drill("far_ambush") and _has_visible(situation) \
+	if manoeuvres and not pursuing and not rounding and not obeyed and table.runs_drill("far_ambush") and _has_visible(situation) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
 	# 8. Halted with something out there but not yet in contact: herringbone, all-round security. Its entry must not
@@ -309,6 +316,15 @@ static func nearest_visible(situation: Dictionary) -> Dictionary:
 
 
 # ---- Internals ----------------------------------------------------------------------------------------
+
+## Round 27 (B0): whether an attack with a drawn approach has yet to come round to its side (ElementPlan._plan_approach
+## latches "in"). Only a task with an approach is ever rounding, so every other task reads false here. Pure.
+static func rounding_to_approach(state: Dictionary) -> bool:
+	var task: Dictionary = state.get("task", {})
+	if String(task.get("verb", "")) != "attack" or not task.has("approach") or bool(state.get("pursuing", false)):
+		return false
+	return not bool((state.get("approach_round", {}) as Dictionary).get("in", false))
+
 
 ## Abort conditions, per drill: when the reason for the drill is gone, so is the drill.
 static func _finished(drill: String, situation: Dictionary, state: Dictionary, table: DoctrineTable,
