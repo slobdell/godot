@@ -59,7 +59,7 @@ Nothing.
 
 ## Status
 
-_Updated 2026-10-11 night (worker, `godot-orders`)._
+_Updated 2026-10-12 (worker, `godot-orders`): final report at the end of this section._
 
 **Plan (in order):** O1 the gesture with a stub (the task drops `approach` until brains' CP0 teaches ElementTask the
 key) → O2 the end shot (a measuring hook first, then the fix) → O3 the hull probe (built while builder0 runs the
@@ -125,11 +125,35 @@ others) → O1 end to end after CP0 (`git merge main` when told) → O4 the flan
 - **`9c6f3381` (main f4c5f7c9 merged): exited 0, 2505 passed / 0 failed, 24 targets ALL JUDGED**, determinism foundry
   2875411ff4ec6be7. **Merge here for O1 + O2** (named to the orchestrator).
 
-### In progress
+- **O3, hull facing at rest** (report only; `make hull-rest-probe` at `9c6f3381`, builder0, foundry, all four factions x
+  seeds 3/5/8/11/13/21, quiet arm, drawn v clicked on the SAME seeds, 313 crews per task per arm; full table
+  `references/round27/orders_hull_rest.txt`). Median hull error from the drawn heading, drawn / clicked (share within 15
+  deg drawn), per hull class (locomotion/mount):
 
-- **O3:** `make hull-rest-probe` (drawn v clicked on the same seeds, every faction, per hull class) +
-  `tools/hull_rest_table.py`: running on builder0.
-- **O4 clip:** `make flank-clip` (Movie Maker, 1080p) queued after it.
+  | task | hover/turret (n 52) | tracks/turret (n 16) | wheels/fixed (n 77) | wheels/turret (n 168) |
+  |---|---|---|---|---|
+  | move (M) | **1.4** / 39.3 (100 %) | **2.2** / 27.6 (81 %) | **3.8** / 40.2 (82 %) | 60.0 / 61.0 (26 %), p 1.0 |
+  | move (right-drag) | **1.5** / 39.0 (100 %) | **1.9** / 23.5 (100 %) | **3.3** / 40.3 (86 %) | 68.3 / 57.8 (23 %), p 0.22 |
+  | attack-move | **1.5** / 38.2 (100 %) | **2.5** / 70.9 (69 %) | **3.4** / 56.4 (69 %) | 60.2 / 88.6 (11 %) |
+  | screen | 28.8 / 40.6 | 28.1 / 35.5 | 28.5 / 40.2 | 37.4 / 56.2 |
+  | support by fire | 28.1 / 31.5 | 26.9 / 31.6 | 27.6 / 32.8 | **90.9 / 55.9 (worse drawn, p 0.001)** |
+  | ambush | 27.9 / 33.3 | 27.6 / 26.4 | 27.2 / 36.1 | 75.8 / 57.5 |
+
+  **Read:** (1) on moves and attack-move a drawn facing turns every hull that CAN turn onto it (hover, tracks, wheeled
+  fixed guns: medians 1.4-3.8 deg, p <= 0.013 against clicked). (2) **The 100-167 deg tail is the wheeled TURRETED hulls**
+  (gang tank/IFV/artillery, law tank/artillery, condemned artillery/burner: over half the crews): drawn is no better than
+  clicked, 23-46 % of them 100 deg or more off. That is order_controller's design (a wheeled turreted hull keeps its
+  arrival heading and its TURRET takes the facing; round 26 measured the guns on the facing), so a player sees the guns
+  right and the hulls anyhow. (3) Line tasks stand at ~27-29 deg: brains' 30 deg interlocking sectors, by design.
+  (4) Support by fire's wheeled turreted hulls are WORSE drawn than clicked (90.9 v 55.9 deg). (5) tracks/turret has
+  n = 16 (one condemned tank a run), short of n >= 30; the rest meet it. Fix requests below (nothing to fix in orders).
+
+### O4, the flank clip
+
+- `make flank-clip` (MOVIE=, default build/flank.mp4; FLANK_CLIP_SEED 21, SIDE=left|right): the flank scenario recorded
+  through Movie Maker, damage on, the camera on his squad. **Not rendered:** the orchestrator asked to wait for brains'
+  close-on-target fix (an attack that never closes, seeds 3/13) so he sees the fixed behaviour; asked again 2026-10-12
+  with main at db4633f0 (fix not merged).
 
 ### Questions for the lead
 
@@ -142,6 +166,10 @@ others) → O1 end to end after CP0 (`git merge main` when told) → O4 the flan
   sits 50-75 m off for 90 s; drawn it circles at reach 40-54 deg off the side and stops). Repro: `make remote
   T=flank-probe FLANK_SEEDS="3 13"`, traces in `build/flank/*/*/screen.json` (`trace` = [s, side err, m, target speed]).
 
+- native / brains (O3, for the lead to decide if he wants HULLS on the facing): a wheeled turreted hull at rest keeps its
+  arrival heading (order_controller, frozen for stage 1), so a drawn facing turns its turret, not its hull; and support
+  by fire's wheeled turreted hulls end further off drawn than clicked (90.9 v 55.9 deg median, n 168, p 0.001).
+
 ### Known issues
 
 - The first-time hint column clips its longer lines at 1200x540 ("screen / support by fire (dra"): round 26's string,
@@ -152,3 +180,32 @@ others) → O1 end to end after CP0 (`git merge main` when told) → O4 the flan
 ### Files touched in `game/ui/**`
 
 - `game/ui/control_hints.gd` (one hint, "flank").
+
+
+### Report (2026-10-12, final for round 27)
+
+**State:** O1, O2 done and merged on main (`eb9363e2` = `9c6f3381`, green: builder0 2505/0, ALL JUDGED). O3 done
+(report above, numbers in references). O4: help text done (merged); the clip target is built and waits on brains'
+close-on-target fix, the orchestrator's call.
+
+**What he'll notice when he plays:**
+- Select a squad, press the RIGHT button on an enemy and drag out to the side you want to hit it from, let go: a ring
+  on the enemy and an arrow from your side into it while you drag; the HUD says "attack Tank 3 from the W"; the squad
+  swings round to that side as it closes (9 of 12 runs within 35 deg, usually by 15-25 s). A plain right-click on an
+  enemy is the attack it always was. With A armed, a left press-drag on an enemy does the same. A handful of vehicles
+  that is not a squad attacks head-on and says a side needs a squad.
+- `make showmatch`: the camera never looks under the arena (0 of 1303 sampled seconds, was 7 of 650); when the fight is
+  by the near wall it cuts to the other side and films toward the crowd.
+
+**Commands:** `make skirmish` (1-4 selects a squad; right-drag off an enemy); `make showmatch`;
+`make remote T=flank-probe`, `T=flank-shots`, `T=showmatch-end-shots`, `T=hull-rest-probe`; `make flank-clip` when told.
+
+**Decisions (reversible):** the release point is the side to come FROM (the hand puts the squad there; the arrow runs
+into the enemy); a click on an enemy is decided on the release (one rule for every press that can become a drag);
+shift on an approach drag only keeps attack-move armed (tasks never queue); a non-squad selection attacks head-on with a
+notice rather than forming a squad on its own; the showmatch director owns its camera angle (yaw-follow off, cuts only).
+
+**Next steps:** render the flank clip after brains' close fix; if he wants hulls on the facing, the wheeled-turret rule
+is native's/brains' (requests above).
+
+**Merge notes:** merged as eb9363e2. Since then: `_agents/streams/orders.md` (Status), `references/round27/orders_hull_rest.txt`.
