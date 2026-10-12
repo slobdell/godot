@@ -94,6 +94,17 @@ read-only gather into ownership one owner at a time (the lay first: 3 fields, on
 
 Merge main (44b6be5c) after E6 is reported, not during.
 
+**Round 28 additions (the orchestrator, 2026-10-12 afternoon; the lead's stage 2 call in `game_design.md` *Round 28: his
+stage 2 call*):** stage 2 (the think half) is **DEFERRED**, an open item. A new principle supersedes "port only what
+pays": *"even if there's not an obvious benefit to moving to C++ … long-term we are better positioned for a good game by
+having the core components in C++."* So, after N3 (which stays first whenever a stream sends a diff):
+
+5. **N5 the rest of the execute in C++**, equal-answer proofs, even where the gain is ~0: the k-turn planner's body, what is
+   left of the re-plan block, the drive's remaining callbacks (`_manoeuvre`'s decision, `_negotiate`'s body with
+   `ask`/`_begin_yield`, `_repair`, the first-use caches). Every port keeps `native-verify-suite` green and the doors rule.
+6. **N6 propose (do not start)** the next core components outside the AI's thinking (perception / line of sight, combat
+   resolution, nav queries), sized in days, for the orchestrator to order.
+
 ## Who changes your frozen files this round (C27.2)
 
 - **Scout** may change `_manoeuvre`'s M1 `reaimed` rule in `movement.gd` and `game/ai/manoeuvre.gd` (still GDScript
