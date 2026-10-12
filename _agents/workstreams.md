@@ -1,7 +1,65 @@
 # Workstreams: the current round
 
-> **ROUND 27 IS PREPARED (2026-10-11 evening): four streams (scout, brains, orders, native), contracts C27.1–C27.7
-> below; briefs in `streams/`.** Round 26's briefs are in `streams/archive/round26/`, its contracts C26.1–C26.10 below.
+> **ROUND 28 IS LAUNCHED (2026-10-12): traffic, manoeuvre, brains, native (continuing), scout; contracts C28.1–C28.6
+> below; briefs in `streams/`.** Round 27's closed briefs are in `streams/archive/round27/`.
+
+## Round 28: five streams (launched 2026-10-12 ~11:45 PDT; native continues from round 27)
+
+**Goal: his four calls (`game_design.md` *Round 28 direction*): squads crossing take turns; wheeled turret vehicles turn
+their whole hull to a drawn facing; artillery shells from a drawn side; a drawn flank is carried out even onto a stronger
+squad. Beside them: stage 1's laptop ruling (E6) and the C++ that keeps up with every driving change; scouts that keep
+their gun on target while suppressing.**
+
+| Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two of his squads crossing slow and take turns instead of nosing into each other | **CP-T** T1, DECLARED, + native's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | wheeled turret vehicles end nose-on to a drawn facing; no creeping shuffle in tight streets | **CP-M1**, **CP-M2**, each DECLARED, + port |
+| **brains** | `godot-brains` (3) | [streams/brains.md](streams/brains.md) | a drawn flank is carried out in a live fight; artillery shells from the drawn side; squads not ordered into the enemy | B1, B2 as they go green |
+| **native** | `godot-native` (4) | [streams/native.md](streams/native.md) | E6 on his laptop rules stage 1 ON or OFF; then every driving change ported; stage 2 priced for him | E6 → the ON commit |
+| **scout** | `godot-scout` (5) | [streams/scout.md](streams/scout.md) | scouts keep the gun on target while suppressing | **CP-S1** DECLARED |
+
+**Ownership:** each brief's header lists its paths. In `movement.gd`: traffic the give-way block, `_avoid`,
+`_around_friends`, `_ask_behind`, `_hull_within`; manoeuvre the `drive()` body, `_nose_stop`, `unstick`,
+`_pressing_escape`, `_manoeuvre`, the k-turn/reverse/circle block; native the member STORAGE (stage 1's grant); brains the
+rest. `order_controller.gd`: manoeuvre the face-at-rest path; native the seams and storage; nobody else. `tank_brain.gd`:
+scout the fight-motion hunk (+ SUPPRESS's motion for a fixed gun, agreed with brains through the orchestrator); native its
+seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`, `game/units/**`, `game/garage/**`,
+`game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`, `game/announcer/**`, `game/theme/**`, `arenas/**`,
+`game/arena/**`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
+
+**Contracts (round 28):**
+
+- **C28.1 Every change to fights is DECLARED** (C27.1 carried): one commit, merged alone, with its scenario and paired
+  series, the CPU on the same behaviour; **the bar (with a partial-gain rule) is sent to the orchestrator before its
+  numbers**; judged runs on seeds the change was not tuned on (lesson 298); a stage's control arm must be able to win and
+  lose (lesson 295) and its measuring point is checked against each arm (lesson 297).
+- **C28.2 The C++ follows, and native carries it** (C26.2 with stage 1's surface). The drive, `_avoid`/`Avoidance.solve`,
+  `right_of_way`, unstick, gunnery and the per-crew execute have C++ twins held equal by live-function proofs
+  (`test_native_drive`, `test_native_execute`, `exec_verify`, `native-proof`). Behaviour streams develop on the GDScript
+  path (`--brains-off=native` or the switch off) and send native each SETTLED diff before its commit (SendMessage,
+  orchestrator copied); native ports it with an equal-answer proof; the orchestrator merges the pair back to back and
+  checks once. Native keeps every port it has OFF-proven green at all times.
+  **Stage 1 is ON (E6, 2026-10-12): the C++ OWNS the execute state.** Any GDScript code that writes a `Movement` /
+  `Gunnery` / lay member outside the native execute MUST mark it stale (`movement.native_stale |= Movement.STALE_*`),
+  or the native drive keeps the old value (found: `_kturn_start_leg`, 31006db9's check). Native audits every such door;
+  traffic and manoeuvre add the stale line to every new write and run `exec_verify` on their scenarios.
+- **C28.3 Stage 1's ruling is the laptop's** (E6, rule D in native's Status): ON only if the laptop's paired ABBA arms meet
+  the pre-registered bar; the prediction (20 a side 0.97–0.99, 25 a side 0.85–0.87 of real time) is told to him as
+  measured, beside the 1.00–1.03 he was told when he chose.
+- **C28.4 A behaviour change carries a cost line** (C27.4): its cost a tick at 25 a side on Sumps, GDScript path,
+  ≤ 0.5 ms or NOT READABLE.
+- **C28.5 A pass line changes only with its reason written down** (C27.5): the arrival line is `all_in8_s` (every crew
+  within max(8 m, settle radius), held 1 s), the strict line reported beside it.
+- **C28.6 builder0 runs every Godot run** (C27.6); the laptop only in a slot the orchestrator grants (E6 first).
+- **C27.2's freeze is lifted** and replaced by C28.2 (stage 1 is built; a driving change is written twice from here).
+- C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
+
+**Checkpoints:** E6 → native's ON commit (if it rules ON) → everyone merges main. CP-T, CP-M1, CP-M2, CP-S1 and brains'
+B1/B2 each merged ALONE as they go green (with native's port where C28.2 applies), queued by the orchestrator.
+
+**Decided for him (his calls, 2026-10-12):** take turns; turn the whole hull; artillery honours the side; swing round anyway.
+
+**Standing rules:** rounds 12–27's (lessons 225–298).
 
 ## Round 27: four streams (prepared 2026-10-11 evening; briefs in `streams/`)
 
@@ -12,9 +70,9 @@ keeps moving; everything that rewrites the drive (traffic's convention, the whee
 
 | Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|
-| **scout** | `godot-scout` (1) | [streams/scout.md](streams/scout.md) | scouts fight from a distance they can still turn in, and back up to keep a target that slides past their nose | **CP-S** S1+S2, DECLARED, alone (+ native's port if `decide` moved) |
-| **brains** | `godot-brains` (2) | [streams/brains.md](streams/brains.md) | a squad told to arrive has every crew on its seat (no crew stuck behind a parked squadmate); drill seats by nearest that keep the lead's role; ambush guns on the drawn facing | **CP0** B0 (attack honours `approach`) → orders merges main |
-| **orders** | `godot-orders` (3) | [streams/orders.md](streams/orders.md) | press on an enemy and drag: the squad attacks from that side; showmatch's end shot stays on the arena | after **CP0** |
+| **scout** | `godot-scout` (1) | [streams/archive/round27/scout.md](streams/archive/round27/scout.md) | scouts fight from a distance they can still turn in, and back up to keep a target that slides past their nose | **CP-S** S1+S2, DECLARED, alone (+ native's port if `decide` moved) |
+| **brains** | `godot-brains` (2) | [streams/archive/round27/brains.md](streams/archive/round27/brains.md) | a squad told to arrive has every crew on its seat (no crew stuck behind a parked squadmate); drill seats by nearest that keep the lead's role; ambush guns on the drawn facing | **CP0** B0 (attack honours `approach`) → orders merges main |
+| **orders** | `godot-orders` (3) | [streams/archive/round27/orders.md](streams/archive/round27/orders.md) | press on an enemy and drag: the squad attacks from that side; showmatch's end shot stays on the arena | after **CP0** |
 | **native** | `godot-native` (4) | [streams/native.md](streams/native.md) | nothing in play until E5/E6; then 20 a side at about full speed on his laptop | E1 OFF on main early; E5 ON in an A/B |
 
 **Not this round (wait for stage 1, the drive is frozen):** traffic's friendly convention (his crossing cases already
@@ -221,6 +279,32 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   point fails 5 fight tests (base 31/0, nearest 26/5: pursuit 8 m/s the old leader turns 178° and opens 53 → 142 m;
   mixed_legs, cannot-catch, elements, seat_nearest). The pinned leader IS "keep the lead's role"; the unpin's one gain was
   overtaken by CP1a. Kept on `lab/brains-b4-point` (`9f15bfd9`).
+
+- **Native's quiet slot (2026-10-12 02:29–02:49, `ed6ecaa9`, builder0 quiet, pinned 0-3, n = 3 a arm, no void):** A —
+  execute ~30 % of the tick's scripts at 20 a side, GDScript in it 19–22 % of the tick (inside the 12–22 % band: the
+  estimate is not re-told); ~60 µs of GDScript a crew (the "27" and "200–300" figures both retired). B — `native_cb`
+  saves 0.8–1.3 % at 50 v 50 (< 2 %): STAYS OFF. C (second reading, no ruling) — stage 1 v default: tick's scripts
+  −7.6 % / −8.5 % at 20 a side (foundry / parade), −8.1 % / −8.8 % at 25; execute ~88 → ~65 µs a crew. **Below the
+  11–15 % estimate he decided on; internal until E6 (the laptop rules), with native's pre-registered estimate of what the
+  remaining ports add written first.**
+
+- **Live-flank calibration (brains, clicked arm only, builder0, seeds 1–3 × ticks 1/8/16, won = enemy wiped in 90 s):** 5
+  gang gun trucks v Law {IFV,IFV,scout} 0/9, {IFV,IFV,scout,scout} 0/9, {IFV,IFV,tank} 0/9, {IFV,scout} 0/9, **one holding
+  IFV 3/9 (chosen)**; 4 gang tanks v {IFV,IFV,scout} one-sided. Caveat: no squadmates, so the near-ambush part is untested;
+  **+ a reported arm with the IFV under the CPU commander (moving) for the pursuit rule** — a fix that still collapses into
+  pursuit there does not ship. **Balance candidate:** gang gun trucks lose 0/9 (clicked) to every real Law squad tried.
+
+- **Live-flank fix PARKED FOR GOOD (2026-10-12, brains `370fc64d`, builder0, 5 gun trucks v one holding Law IFV, fresh
+  seeds 4–6 × 6 ticks, n = 18 an arm):** on side 0/18 in every arm (fix 65°, B0 rule 76°, clicked 89°); the fix fights
+  WORSE than B0's rule (kills 10 v 15, alive 1.83 v 2.78). Instrument caveat: the stage's "first crew within 50 m" mark
+  coincided with the fix's new 50 m circle (by its own state the element reached the 30° cone 18/18). **Kept finding: on
+  the even roster the SHIPPED drawn gesture (B0's rule) beats a clicked attack: kills 15 v 10, alive 2.78 v 2.28,
+  side/rear hit share 0.76 v 0.81.** Branch `lab/brains-flank-live` (`64355ff2`).
+
+- **B3: make-room KEPT (2026-10-12, brains, builder0, game = main `3dc04293`, fresh seeds 13–16, 100 cells paired):** 8 m line
+  on 97 v off 93 (gained 5, every one with a swap; lost 1; median +0.0 %), strict 76 v 72, crews > 12 m off 2 v 6. On round
+  26's base it bought nothing (68 = 68); B2's watch now hands it the case it was built for. Brains' backlog done; final
+  report at `a66a95bc` (check running).
 
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.

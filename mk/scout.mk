@@ -1,5 +1,5 @@
 # ---- scout (round 27): a scout fights from a distance it can still turn in, and reverses to keep a moving target ------
-# Owner: the scout stream (_agents/streams/scout.md).
+# Owner: the scout stream (_agents/streams/archive/round27/scout.md).
 
 SCOUT_FILTER ?= scenario_scout_cross
 scout_comma := ,

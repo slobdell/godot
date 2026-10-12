@@ -330,7 +330,7 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
                  ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard \
-                 bridge-pooled
+                 bridge-pooled native-verify-scenarios
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #

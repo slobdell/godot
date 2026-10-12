@@ -1,5 +1,5 @@
 extends TestCase
-## Round 27 (scout S0): the lead's showmatch case, reproduced before anything is fixed (`_agents/streams/scout.md`).
+## Round 27 (scout S0): the lead's showmatch case, reproduced before anything is fixed (`_agents/streams/archive/round27/scout.md`).
 ##
 ## The lead: *"the scouts seem to drive super close to their target, leaving no room for them to turn and maintain their
 ## target, and they don't seem to drive backwards when they have that option to turn and maintain their target (i.e. if

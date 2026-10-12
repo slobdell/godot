@@ -616,13 +616,16 @@ APPROACH_SEEDS ?= 1 2 3
 APPROACH_TICKS ?= 1 3 6 8 11 16
 APPROACH_ARMS ?= east none
 APPROACH_SECONDS ?= 60
+## Probe flags on every run: e.g. APPROACH_FLAGS="--quiet=on --immortal=on" (the target holds its fire and cannot die),
+## "--live=on" (his gang gun trucks v a Law squad of five fighting under the CPU's commander: orders' flank clips).
+APPROACH_FLAGS ?=
 .PHONY: approach-series
 approach-series: import ## Round 27 (B0): his attack from a drawn side, APPROACH_SEEDS x APPROACH_TICKS x APPROACH_ARMS (east none) -> build/approach-series.jsonl + table
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/approach-series.jsonl
 	@echo ">> approach-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for seed in $(APPROACH_SEEDS); do for at in $(APPROACH_TICKS); do for arm in $(APPROACH_ARMS); do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/approach_probe.gd -- \
-			--seed=$$seed --approach=$$arm --seconds=$(APPROACH_SECONDS) --lab-start-tick=$$at 2>/dev/null | grep -o 'APPROACH_PROBE {.*' | sed 's/^APPROACH_PROBE //' >> $(BUILD_DIR)/approach-series.jsonl \
+			--seed=$$seed --approach=$$arm --seconds=$(APPROACH_SECONDS) --lab-start-tick=$$at $(APPROACH_FLAGS) 2>/dev/null | grep -o 'APPROACH_PROBE {.*' | sed 's/^APPROACH_PROBE //' >> $(BUILD_DIR)/approach-series.jsonl \
 			|| echo "{\"seed\":$$seed,\"approach\":\"$$arm\",\"start_tick\":$$at,\"missing\":true}" >> $(BUILD_DIR)/approach-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/approach_table.py $(BUILD_DIR)/approach-series.jsonl

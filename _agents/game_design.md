@@ -3835,3 +3835,28 @@ convention and the wheeled creep: both rewrite the drive stage 1 freezes, and hi
 26's CP1a. His question for when the convention runs: *"When two of your squads cross, would you rather they slow down
 and take turns (fewer bumps, they arrive later), or push through and bump (faster, messier)?"*
 
+## Round 28 direction: his four calls (2026-10-12 ~11:20 PDT, on the calls page; "I chose the recommended one for all of them")
+
+Recorded from https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (`decisions/<id>`, read back 2026-10-12):
+1. **Squads crossing: TAKE TURNS** (`squad-cross` = take-turns): fewer bumps, both squads arrive a little later. The friendly
+   crossing convention is built to that line: it may trade some arrival time for fewer bumps, never crews that fail to
+   arrive.
+2. **Wheeled vehicles with a turret: TURN THE WHOLE VEHICLE** to a drawn facing (`turret-hull-facing` = turn-hull): front
+   armour faces where he pointed, a few seconds longer on arrival.
+3. **Artillery with a drawn attack side: SHELL FROM HIS SIDE** (`artillery-side` = honour): a drag means the same thing
+   for every unit.
+4. **A drawn flank onto a stronger squad: SWING ROUND ANYWAY** (`flank-stronger` = swing-round): he chose the flank; the
+   squad carries out the order even if it costs crews.
+
+His words on the session (2026-10-12): *"I think I told you not to ask me questions and continue execution."* and *"I'm
+about leave for work for the day so I want you to have a bunch of work to do."*
+
+### Round 28: stage 1 measured on his laptop (E6, 2026-10-12 11:21–11:54 PDT; for him, as measured)
+
+Native's E6 (`19543dae`, his preset, bar workload, ABBA, n = 6 paired a size, laptop load steady 1.7–2.5): **stage 1 rules
+ON.** 20 a side: tick's scripts −8.6 % (se 3.9), game speed in the opening clash **0.890 → 0.930** of real time; 25 a
+side: −7.2 % (se 0.7), **0.818 → 0.865**. He chose stage 1 on "20 a side ~1.00–1.03"; the saving landed inside its
+predicted band, but today's base on his laptop is 0.890, not round 26's 0.918, so 20 a side reaches ~0.93, not full speed.
+Shipped as measured (native_exec + native_owned + native_cb ON). The rest of the gap is the think half (stage 2), which
+native prices for him next (N4).
+

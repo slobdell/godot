@@ -209,6 +209,26 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Round 28 candidates (collected during round 27, 2026-10-12) — SPLIT 2026-10-12 ~11:45 as traffic + manoeuvre + brains + native + scout (`workstreams.md` *Round 28*); his four calls answered (all recommended)
+
+**His answers first:** the calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (`read_db` `decisions/<id>`):
+squads crossing (take turns v push through) → traffic's convention, after stage 1; wheeled turreted hulls at rest
+(turn the hull v turret only) → the frozen face path, after stage 1; artillery and a drawn side; a flank onto a stronger
+squad. Plus: is 8 m off a slot too loose for a formation's look (brains B1; pictures owed).
+
+- **Stage 1 continues** (native, C27.7): the remaining ~65 µs a crew in the owned execute; E6 the laptop ruling against a
+  pre-registered estimate. Headless second reading −7.6 to −8.8 % of the tick's scripts, below the 11–15 % he was told:
+  tell him the laptop number plainly.
+- **His bridge 108 at 106/108** since round 26's tail (between `eb987e87` and `090b345d`): one law_tank 3.5–6.8 s at the rim.
+- **Scout:** fixed guns under SUPPRESS (20 % of a scout's fight time, outside the lay planner); law_scout 4/5, gang_scout
+  3/5 bars; the halt gate on turning room only (`scout-s4-halt`).
+- **Attack from a side in a live fight** reaches the side 0/18 (the parked fix fought worse); the shipped gesture still
+  beats a clicked attack on the even roster. A new design, not a threshold tweak, if he wants it.
+- **Balance:** gang gun trucks lose 0/9 (clicked) to every real Law squad tried (brains' calibration).
+- **Support by fire with a drawn facing** leaves wheeled turreted hulls worse than clicked (91° v 56°, orders O3).
+- **Contacts under an ordered MOVE** (254 of 365 in scout's base census): squads ordered into the enemy.
+- Carried: traffic's convention, the wheeled creep (M3), the rig carrot — after stage 1.
+
 ## Round 27 candidates (round 26's carry-overs, 2026-10-11) — SPLIT 2026-10-11 evening as scout + brains + orders + native (`workstreams.md` *Round 27*); traffic's convention and the wheeled creep wait for stage 1
 
 **His decision (2026-10-11):** stage 1 C++ — the execute half (move, weapon, act) as one native call per crew over a

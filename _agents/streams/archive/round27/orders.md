@@ -1,3 +1,4 @@
+> **ARCHIVED (round 27: this stream finished 2026-10-12; native continues, C27.7).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: orders (attack from a side you draw; showmatch recordings worth sharing)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 26 direction* (reading (5), the
@@ -211,7 +212,8 @@ display for Movie Maker; it needs builder0's desktop like `showmatch MOVIE=`). I
 30 fps, sound; ffmpeg is on builder0), copied back with `build/`. Expected render: the scenario runs at most ~95 s of game
 (it ends when the target dies) at ~4x on builder0, so **about 5-7 minutes**. Seed 21 reached the drawn side within 35 deg in
 the probe; if the clip shows the squad not closing, seeds 5 and 8 also reached it. Look at `build/flank/clip/run.log`'s
-`SCREEN` line (`reached_side_s`) before sharing.
+`SCREEN` line (`reached_side_s`) before sharing. **Never run yet:** the scenario is the one flank-probe/flank-shots ran
+green; the Movie Maker and ffmpeg steps are untried.
 
 **Next steps:** the flank clip as above; if he wants hulls on the facing, the wheeled-turret rule
 is native's/brains' (requests above).
