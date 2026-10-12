@@ -56,12 +56,6 @@ func _left_drag(f: Fixture, from: Vector2, to: Vector2, shift := false) -> void:
 	await tree.process_frame
 
 
-## Whether brains' CP0 has taught the element task the key. Before it, the side is dropped at the task (its validator
-## refuses unknown keys) and the attack is today's; after it, the task must carry exactly what was drawn.
-static func _task_takes_approach() -> bool:
-	return ElementTask.KEYS.has("approach")
-
-
 func _assert_attack_from_west(f: Fixture, heard: Array, how: String) -> void:
 	assert_true(not heard.is_empty(), "%s: an order was given" % how)
 	var command: Dictionary = heard[heard.size() - 1]["command"]
@@ -73,10 +67,7 @@ func _assert_attack_from_west(f: Fixture, heard: Array, how: String) -> void:
 	assert_true(not command.has("facing"), "%s: an approach is not a facing" % how)
 	var task := _task(f)
 	assert_eq(String(task.get("verb", "")), "attack", "%s: the squad took an attack task (%s)" % [how, task])
-	if _task_takes_approach():
-		assert_true(_approach(task).distance_to(Vector2(1.0, 0.0)) < 0.05, "%s: the task carries it (%s)" % [how, task])
-	else:
-		assert_true(not task.has("approach"), "%s: before CP0 the task is today's attack (%s)" % [how, task])
+	assert_true(_approach(task).distance_to(Vector2(1.0, 0.0)) < 0.05, "%s: the task carries it (%s)" % [how, task])
 	assert_true(f.controls.describe(command).ends_with("from the W"), "%s: the HUD says the side (%s)"
 			% [how, f.controls.describe(command)])
 
@@ -173,9 +164,8 @@ func test_two_squads_each_take_the_side() -> void:
 	for entry: Dictionary in attacks:
 		assert_eq(String(entry["error"]), "", "nothing refused")
 		assert_true(_approach(entry["command"]).distance_to(Vector2(1.0, 0.0)) < 0.05, "each from the west (%s)" % [entry])
-	if _task_takes_approach():
-		var bravo_task: Dictionary = f.controls.elements.of("Green_Bravo_1").task
-		assert_true(_approach(bravo_task).distance_to(Vector2(1.0, 0.0)) < 0.05, "Bravo's task too (%s)" % [bravo_task])
+	var bravo_task: Dictionary = f.controls.elements.of("Green_Bravo_1").task
+	assert_true(_approach(bravo_task).distance_to(Vector2(1.0, 0.0)) < 0.05, "Bravo's task too (%s)" % [bravo_task])
 
 
 func test_a_drag_released_above_the_horizon_uses_the_last_ground_crossed() -> void:

@@ -1178,10 +1178,9 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	return error
 
 
-## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]`. Until brains' CP0 teaches
-## ElementTask the key, its validator refuses unknown keys, so the side is dropped here and the attack is today's.
+## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
 func _copy_approach(extra: Dictionary, task: Dictionary) -> void:
-	if extra.has("approach") and task["verb"] == "attack" and ElementTask.KEYS.has("approach"):
+	if extra.has("approach") and task["verb"] == "attack":
 		task["approach"] = extra["approach"]
 
 
