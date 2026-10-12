@@ -97,6 +97,17 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   2 se):** on target / all fight-s; in-reach ENGAGE share of fight-s; fight-option enemy contacts. Plus scenario (1) all 5
   bars n = 18, check green, thirteen declared, ≤ 0.5 ms a tick.
 
+- **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
+  check of native E1 + CP0 together running; then orders merges main.
+- **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
+  every crew parked on its own slot seated; both arms under B1's line (every living crew within max(3.5 m, settle radius)
+  of its slot, held 1 s). Ships only if ALL: (1) the Sumps cell (law_scout:law_ifv:law_tank:law_tank, seed 1, drills on,
+  150 m) arrives within 120 s at start tick 1 and in ≥ 5 of 6 pooled ticks; (2) arrive series 100 cells paired v main:
+  arrivals ≥ main's, ≤ 1 cell main-arrives/B2-fails, median all_in_s ≤ +10 %; (3) bridge-pooled 18/18, the 108 ≤ 1 run a
+  side worse; (4) thirteen and determinism unmoved or explained; (5) ≤ 0.5 ms a tick (or NOT READABLE); **(6) symmetric,
+  reported per side; (7) the Sumps cell at seeds 2–4 reported (the orchestrator's additions).** Sumps fixed with (2)/(3)
+  failing → lab branch, no ship.
+
 **Checkpoints:** **CP0** brains' B0 → orders merges main. **CP-S** scout's declared change (+ native's port of any
 `decide` diff) → everyone merges main. **CP-B2**, **CP-B4** brains' declared changes, each alone. Native's E1 (OFF)
 merges whenever green; native merges main at CP-S.
