@@ -103,7 +103,7 @@ situation/decide/act outside your seams, `game/tactics/**`, elements); orders' `
 
 ## Waiting on the lead
 
-E6 (the laptop's ruling) needs a laptop slot; he plays the result.
+E6 (the laptop's ruling) needs a laptop slot; he plays the result. **Asked for 2026-10-12 ~05:00 PDT** (`63f8cca4`).
 
 ## Status
 
@@ -158,7 +158,10 @@ packed snapshot a tick; the mirror's cost is changed-fields x ~0.1 us, pre-regis
   cheap exits. builder0: `test_native_drive` 5/0 both views (2160 + 1440 drives, 0 mismatches); `native-proof`
   on = off = ab = owned (Sumps `770df71a443ba743`, foundry `a401412b50925d19`).
 
-- **E3 / E4 / E5 written, in test** (uncommitted until their proofs run): `gun_native.cpp` (Gunnery.apply line by line
+- **Since the slot** (`a9357a96`, `63f8cca4` green: builder0 check 2520/0, ALL JUDGED, thirteen unmoved, det
+  `2875411ff4ec6be7`; its first run failed test_combat's respawn flake, the orchestrator's, fixed on main): the gun's last
+  GDScript calls ported; `--native-exec-profile`. Merged main at `8623c224` (green, merged to main by the orchestrator).
+- **E3 / E4 / E5 written, in test** (since committed, see above): `gun_native.cpp` (Gunnery.apply line by line
   on the view: the scan loop, `_shootable`, Engagement's `is_seen`/`acquire_seconds`/`crossing_rate`/`Lay.engage`/`lose`,
   Ballistics, Difficulty's wander, OrderFeed.point, `_cover`, `_clear_to_fire`; still called: ARC's `_apply_indirect`,
   the native scan's seam, AiTickCache, the spotter, Difficulty.for_team (once a frame a team), FireLanes.for_shot (once a
