@@ -555,6 +555,8 @@ var _run_phase := "run"
 ## Round 7 (nav): the direction CombatMotion chose last plan, handed back so it can commit to it.
 var _motion_prev_index := -1
 var _motion_prev_reverse := false
+## Round 27 (scout): the gun-lay planner's last candidate (CombatMotion.plan_lay), for its commitment.
+var _motion_prev_lay := -1
 
 
 func think(_delta: float) -> void:
@@ -3039,7 +3041,10 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# Outranging (a Lancer on a tank): standing where its gun can't reach and mine can, there's nothing to dodge. Hold still
 	# and shoot, moving only if something is on its way or it closes in.
 	var their_reach := float(Weapons.profile(String(contact.get("weapon", ""))).get("range", 0.0))
-	if style != "run" and distance > their_reach + OUTRANGE_MARGIN and distance <= TankBrain.fire_band(weapon) \
+	# Round 27 (scout): not for a fixed gun the lay planner drives — its hull is its aim, and the census caught scouts
+	# "outranging" 140-155 deg off their target; the planner's own hold is this stop when the gun bears.
+	var lays := style == "standoff" and CombatMotion.gunlay_on()
+	if style != "run" and not lays and distance > their_reach + OUTRANGE_MARGIN and distance <= TankBrain.fire_band(weapon) \
 			and (s.get("incoming", []) as Array).is_empty():
 		why = TankBrain._join(why, "outranging it")
 		return {"type": "stop"}
@@ -3122,9 +3127,21 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
 	request["previous_index"] = _motion_prev_index  # round 7 (nav): commitment to last plan's direction
 	request["previous_reverse"] = _motion_prev_reverse
+	if style == "standoff":
+		# Round 27 (scout): what CombatMotion.plan_lay needs to lay a fixed gun by rollout (its gate, its plant's braking,
+		# both hulls for the turning room), and its last plan for commitment.
+		var target_box: Array = Movement.hull_box(String(contact.get("unit", "tank"))) if Units.PROFILES.has(String(contact.get("unit", ""))) else [2.9, 4.0, 9.7]
+		request["aim_tolerance_deg"] = float(weapon["aim_tolerance_deg"])
+		request["range"] = float(weapon["range"])
+		request["braking"] = float(Units.stat(tank.unit_id, "braking_mps2", tank.acceleration))
+		request["hull_length"] = float(Movement.hull_box(tank.unit_id)[2])
+		request["target_half_width"] = float(target_box[0]) * 0.5
+		request["target_half_length"] = float(target_box[2]) * 0.5
+		request["previous_lay"] = _motion_prev_lay
 	var result := CombatMotion.choose(request)
 	_motion_prev_index = int(result.get("index", -1))
 	_motion_prev_reverse = bool(result.get("reverse", false))
+	_motion_prev_lay = int(result.get("lay", -1))
 	if OrderController.profiling:
 		OrderController.add_part("motion", Time.get_ticks_usec() - clock)
 	if result.is_empty():
@@ -3147,7 +3164,10 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		"run":
 			why = TankBrain._join(why, "attack run" if _run_phase == "run" else "breaking away")
 		"standoff":
-			why = TankBrain._join(why, "moving to a firing position")
+			if result.has("lay"):
+				why = TankBrain._join(why, "backing up to keep its gun on it" if bool(result["reverse"]) else "laying its gun")
+			else:
+				why = TankBrain._join(why, "moving to a firing position")
 		"angle":
 			why = TankBrain._join(why, "weaving, front armor on it")
 		_:
