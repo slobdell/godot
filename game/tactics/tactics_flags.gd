@@ -61,6 +61,10 @@ static func _parse() -> void:
 		# Round 20 (brains M1): round 12's stations from the first tick (the control arm of form-up-on-the-move).
 		if arg == "--converge=off":
 			ElementPlan.CONVERGE_ENABLED = false
+		# Round 27 (orders' flank clips): B0's rule (any target at 2 m/s makes the drive round a pursuit; a near ambush
+		# by the target's own squad springs assault-through).
+		if arg == "--approach-live=off":
+			ElementPlan.APPROACH_LIVE = false
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))

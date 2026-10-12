@@ -30,6 +30,10 @@ def main(path: str) -> int:
                   statistics.median([r["reach_s"] for r in reached]) if reached else -1,
                   len(kills), len(runs), statistics.median(kills) if kills else -1,
                   statistics.mean(r["alive"] for r in runs)))
+        ends = sorted(r.get("nearest_end_m", -1) for r in runs if r.get("nearest_end_m", -1) >= 0)
+        if ends:
+            print("APPROACH_TABLE arm=%s nearest crew at the end (immortal target): median %.1f m, worst %.1f m, within 45 m %d/%d"
+                  % (arm, statistics.median(ends), ends[-1], sum(1 for e in ends if e <= 45.0), len(ends)))
     if missing:
         print("APPROACH_TABLE missing %d runs" % len(missing))
         return 1
