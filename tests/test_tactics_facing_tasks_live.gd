@@ -15,7 +15,7 @@ func _forward(tank: Tank) -> Vector3:
 	return TacticsFormation.flat(-tank.global_basis.z)
 
 
-func _run(seed_value: int, task: Dictionary, seconds: int, what: String) -> void:
+func _run(seed_value: int, task: Dictionary, seconds: int, what: String, guns_judged := false) -> void:
 	var lab := TacticsLab.create(self, seed_value)
 	var names: Array = []
 	for i in 4:
@@ -33,8 +33,15 @@ func _run(seed_value: int, task: Dictionary, seconds: int, what: String) -> void
 		mean += forward
 		worst = maxf(worst, rad_to_deg(forward.angle_to(EAST)))
 	var off := rad_to_deg(TacticsFormation.flat(mean).angle_to(EAST))
-	print("MEASURE b0_facing %s element heading %s, mean hull %.1f deg off, worst %.1f deg" % [what, alpha.heading,
-			off, worst])
+	# Round 27 (B5): where the GUNS point, the squad's mean turret heading (orders' probe: an ambush read a flat 30 deg).
+	var guns := Vector3.ZERO
+	for unit_name: String in names:
+		guns += TacticsFormation.flat(lab.tank_of(unit_name).turret_forward())
+	var gun_off := rad_to_deg(TacticsFormation.flat(guns).angle_to(EAST))
+	print("MEASURE b0_facing %s element heading %s, mean hull %.1f deg off, worst %.1f deg, mean gun %.1f deg off" % [what,
+			alpha.heading, off, worst, gun_off])
+	if guns_judged:
+		assert_true(gun_off <= 15.0, "%s: the squad's guns look the way he drew (mean %.1f deg off)" % [what, gun_off])
 	assert_true((alpha.heading as Vector3).dot(EAST) > 0.996, "%s: the formation is laid facing east (%s)"
 			% [what, alpha.heading])
 	assert_true(off <= 15.0, "%s: the squad's hulls face the way he drew (mean %.1f deg off)" % [what, off])
@@ -52,7 +59,8 @@ func test_support_by_fire_faces_the_way_he_drew() -> void:
 
 
 func test_an_ambush_faces_the_way_he_drew() -> void:
-	await _run(43, {"verb": "ambush", "to": [LANE_X + 40.0, 0.0], "facing": [1.0, 0.0]}, 35, "ambush")
+	# Round 27 (B5): and its guns, laid on their sectors while it holds its fire.
+	await _run(43, {"verb": "ambush", "to": [LANE_X + 40.0, 0.0], "facing": [1.0, 0.0]}, 35, "ambush", true)
 
 
 func test_an_attack_move_arrives_facing_the_way_he_drew() -> void:
