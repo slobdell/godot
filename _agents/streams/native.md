@@ -126,10 +126,10 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-12 ~07:00 PDT):** E1-E5 done, equal answer, all OFF; **E6 (the laptop's ruling) waits for a laptop slot**
-(asked of the orchestrator ~05:00 PDT; the lead's laptop: C27.6). Last green: **`19543dae`** (builder0 `make check
-exited 0`, 2520/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), the E6 candidate; main has everything up to
-`8623c224`.
+**State (2026-10-12 ~14:30 PDT): stage 1 is ON.** E6 ruled it (rule D met at 20 and 25 a side); the ON commit with
+the doors audit and the exit-lifetime fix is green at **`057e3fa0`** (builder0 `make check exited 0`, 2520/0, ALL
+JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), handed to the orchestrator to merge. Round 28: N3 (porting the
+behaviour streams' driving diffs) and N4 (stage 2 priced, below) next.
 
 | item | state |
 |---|---|
@@ -137,12 +137,12 @@ exited 0`, 2520/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), the E6
 | E2 the drive's callbacks | DONE for the common callbacks (`native_cb`, OFF by its price, B); left as callbacks: the k-turn planner's body, `_manoeuvre`'s decision, `_negotiate`'s body, `_repair` (rare paths; the planner ~0.5-1 % of a tick) |
 | E3 gunnery | DONE (incl. ARC) |
 | E4 reflexes, unstick, wall contact | unstick DONE; reflexes hand back (brains never set any); the wall-contact observer stays GDScript (it runs before think, outside the seam; ~0.47 ms a tick headless) |
-| E5 the per-crew execute seam | DONE: `native_exec` + `native_owned` (+ `native_cb`) = stage 1; native-proof equal on every arm; builder0 headless -7.6 to -8.8 % of the tick's scripts (C) |
+| E5 the per-crew execute seam | DONE and ON: `native_exec` + `native_owned` + `native_cb`; native-proof equal on every arm; the doors audited (`native-verify-suite`, `native-verify-scenarios`) |
 | E6 the laptop's ruling | DONE: rules ON (20 a side -8.59 %, 0.890 -> 0.930; 25 a side -7.21 %, 0.818 -> 0.865) |
 
-**What to playtest (after E6, if it rules ON):** `make native && make skirmish` with stage 1 on:
-`make skirmish ARGS=--brains-on=native_exec,native_cb,native_owned` (or the switches' defaults flipped in their own
-commit). The same fights as before, at whatever speed the laptop gives; nothing should look different.
+**What to playtest:** `make native && make skirmish` on his laptop: the same fights as before, nothing should look or
+play differently, and the opening clash at 20 a side should run at ~0.93 of real time (0.89 before). `--brains-off=
+native_exec` puts the old execute back for a side-by-side.
 
 **Known issues:** none open in native's code. Wheeled hulls under a `face` order and crews with reflexes still hand back
 (~3.6 % of executes in his Sumps).
