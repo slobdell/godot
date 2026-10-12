@@ -227,6 +227,9 @@ static var RESEAT_KEEP_ENABLED := true
 ## Round 27 (B2, DECLARED): the stuck watch runs on after the element says arrived (`_watch_progress`).
 ## `--watch-arrived=off` is round 26's (it stopped at arrival).
 static var WATCH_ARRIVED_ENABLED := true
+## Round 27 (B2 v5): after arrival an idle crew more than REISSUE_M off its seat is sent on once per seat (`_should_issue`).
+## `--resend-short=off`.
+static var RESEND_SHORT_ENABLED := true
 ## ...and skips a crew hit this recently (5 s): under fire it is fighting, not stuck.
 const WATCH_HIT_TICKS := SimClock.TICK_RATE * 5
 ## ...and at most this many in one movement: past it the element stops asking (logged), so a re-seat that cannot help
@@ -262,6 +265,12 @@ var swaps := 0
 var reseats := 0
 ## Round 27 (B2): how many of those came after the element said arrived (the post-arrival watch).
 var reseats_after_arrival := 0
+## Round 27 (B2 v5): crews sent on after arrival from short of their seats (`_should_issue`), and to where:
+## {unit: seat}. A probe reads who is STILL idle more than REISSUE_M off it (no second resend is ever given).
+var resends_short := 0
+var resent_short := {}
+## Per crew, ticks since its last hit, from this update's situation (`_issue` fills it for `_should_issue`).
+var _since_hit := {}
 
 
 func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: PackedStringArray = [],
@@ -314,6 +323,7 @@ func assign(new_task: Variant) -> String:
 	pursuing = false
 	ducks = {}
 	approach_round = {}
+	resent_short = {}
 	_log("task: %s" % ElementTask.describe(task))
 	revision += 1
 	return ""
@@ -1343,8 +1353,10 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 	if orders == null:
 		return
 	var positions := {}
+	_since_hit = {}
 	for member: Dictionary in situation["members"]:
 		positions[String(member["name"])] = member["position"]
+		_since_hit[String(member["name"])] = int(member.get("since_hit", 1_000_000))
 	var names: Array = (plan["orders"] as Dictionary).keys()
 	names.sort()
 	var player_team := OrderFeed.player_team(game_match)
@@ -1473,6 +1485,18 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		var on_deck: bool = off_seat and SlotGround.near_deck(position, 0.0)
 		var mouth: bool = on_deck or (off_seat and SlotGround.near_deck(position, MOUTH_REACH_M) \
 				and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M))
+		# Round 27 (B2 v5): after the element has arrived, a crew that finished our order SHORT and stands idle beyond the
+		# element's own tolerance (REISSUE_M) from its seat is sent on once per seat, the mouth rule's once. Traced (Sumps,
+		# seed 1, start tick 1): the scout yielded to two squadmates, its move completed 11.4 m short, and it stood idle
+		# there for 70 s, the squad "arrived". Not in a drill (a crew off its seat in a fight is fighting).
+		# Once per seat: a crew re-sent and still idle short of it is not sent again (the idle-window thrash, round 6).
+		if RESEND_SHORT_ENABLED and arrived and drill == "" and desired["to"] is Vector3 \
+				and int(_since_hit.get(unit_name, 1_000_000)) >= WATCH_HIT_TICKS \
+				and position.distance_to(desired["to"]) > REISSUE_M \
+				and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M):
+			mouth = true
+			resends_short += 1
+			resent_short[unit_name] = desired["to"]
 		if again and String(desired["verb"]) in ["move", "hold"] and _same_place(mine, desired, REISSUE_M) and not mouth:
 			return false
 		if mouth:

@@ -643,7 +643,7 @@ cell-series: import ## Round 27 (B2): one arrive cell (CELL_ARENA/CELL_UNITS, 15
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/cell-series.jsonl
 	@echo ">> cell-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for seed in $(CELL_SEEDS); do for at in $(CELL_TICKS); do for arm in $(CELL_ARMS); do \
-		flags=""; [ "$$arm" = "off" ] && flags="--stuck-pause=off --reseat-keep=off --watch-arrived=off"; \
+		flags=""; [ "$$arm" = "off" ] && flags="--stuck-pause=off --reseat-keep=off --watch-arrived=off --resend-short=off"; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
 			--arena=$(CELL_ARENA) --dir=forward --metres=150 --seed=$$seed --units=$(CELL_UNITS) --seconds=120 \
 			--drills=on --lab-start-tick=$$at $$flags $(CELL_FLAGS) 2>/dev/null | grep -o 'SETTLE_PROBE {.*' \

@@ -57,6 +57,7 @@ func _run_probe() -> void:
 		Element.STUCK_PAUSE_ENABLED = false
 		Element.RESEAT_KEEP_ENABLED = false
 		Element.WATCH_ARRIVED_ENABLED = false
+		Element.RESEND_SHORT_ENABLED = false
 	ElementPlan.PURSUIT_ENABLED = _flag("pursuit", "on") != "off"  # round 21 (P2): the arrive series' arm
 	SlotGround.SIDE_ENABLED = not ["off", "nearest"].has(_flag("slot-side", "on"))  # round 21 (stretch d): its arm
 	# Round 20 (M1): `--converge=off` is form-up-on-the-move's control arm (round 12's stations from the first tick).
@@ -419,7 +420,9 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
 			"formations_moving": formations_seen, "reseats": element.reseats,
-			"reseats_after_arrival": element.reseats_after_arrival, "swaps": element.swaps,
+			"reseats_after_arrival": element.reseats_after_arrival,
+			# B2 v5: crews sent on from short after arrival, and how many of those still stand more than 8 m off that seat.
+			"resends_short": element.resends_short, "resent_still_off": _still_off(game_match, element.resent_short), "swaps": element.swaps,
 			"element_digest": digest_ctx.finish().hex_encode() if digest_on else "",
 			"to_go_m": snappedf(_centre(game_match, names).distance_to(goal), 0.1),
 			"stopped_at": [snappedf(_centre(game_match, names).x, 0.1), snappedf(_centre(game_match, names).z, 0.1)],
@@ -436,6 +439,15 @@ static func _cm(point: Variant) -> String:
 	if typeof(point) == TYPE_ARRAY and (point as Array).size() >= 2:
 		return "%d,%d" % [roundi(float(point[0]) * 100.0), roundi(float(point[1]) * 100.0)]
 	return "-"
+
+
+static func _still_off(game_match: Match, resent: Dictionary) -> int:
+	var count := 0
+	for unit_name: String in resent:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive() and _flat(tank.global_position).distance_to(_flat(resent[unit_name])) > Element.REISSUE_M:
+			count += 1
+	return count
 
 
 static func _s(ticks: int) -> Variant:
