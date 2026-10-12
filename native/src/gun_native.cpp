@@ -1,6 +1,9 @@
 #include "gun_native.h"
 
 #include "exec_view.h"
+#include "execute_native.h"
+
+#include <chrono>
 
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/script.hpp>
@@ -36,7 +39,10 @@ struct GN {
 			tanks_by_name{ "tanks_by_name" }, tanks{ "tanks" }, _apply_indirect{ "_apply_indirect" },
 			_nearest_shootable{ "_nearest_shootable" }, native{ "native" }, native_scan{ "native_scan" },
 			enemies_of{ "enemies_of" }, perception{ "Perception" }, stop{ "stop" }, fixed{ "fixed" }, aim{ "aim" },
-			suppress{ "suppress" }, fire_at_will{ "fire_at_will" }, target{ "target" }, get_parent{ "get_parent" };
+			suppress{ "suppress" }, fire_at_will{ "fire_at_will" }, target{ "target" }, get_parent{ "get_parent" }, simulate{ "simulate" }, ammo{ "ammo" },
+			sync_ammo{ "sync_ammo" }, heat_capacity{ "heat_capacity" }, heat{ "heat" }, sync_heat{ "sync_heat" },
+			_reload_ticks{ "_reload_ticks" }, sync_reload{ "sync_reload" }, heat_per_shot{ "heat_per_shot" },
+			max_ammo{ "max_ammo" }, min_range{ "min_range" }, flight_speed{ "flight_speed" };
 };
 const GN &gn_() {
 	static const GN names;
@@ -148,6 +154,24 @@ bool script_is(Object *object, Object *script) {
 	return false;
 }
 
+// Measurement only (the native execute's profile): one part's microseconds while it is on.
+struct GunTimed {
+	int part;
+	bool on;
+	std::chrono::steady_clock::time_point t0;
+	explicit GunTimed(int p_part) :
+			part(p_part), on(execute_profile_is_on()) {
+		if (on) {
+			t0 = std::chrono::steady_clock::now();
+		}
+	}
+	~GunTimed() {
+		if (on) {
+			execute_profile_add(part, std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count());
+		}
+	}
+};
+
 template <class V>
 struct Gun {
 	const GunConfig &g;
@@ -188,11 +212,13 @@ struct Gun {
 	// write it (pushed first, pulled after).
 	template <typename... Args>
 	Variant gd(Object *object, const StringName &method, const Args &...args) {
+		GunTimed t(9);
 		v.push_out();
 		return object->call(method, args...);
 	}
 	template <typename... Args>
 	Variant cb(const StringName &method, const Args &...args) {
+		GunTimed t(9);
 		v.push_out();
 		const Variant answer = gunnery->call(method, args...);
 		v.pull_in();
@@ -211,8 +237,31 @@ struct Gun {
 	Vector3 muzzle() const {
 		return Object::cast_to<Node3D>(tank->get(k.turret).get_validated_object())->get_global_position();
 	}
-	bool ready_to_fire() { return gd(tank, k.ready_to_fire); }
-	double ammo_fraction() { return gd(tank, k.ammo_fraction); }
+	// Tank.shells_left / ready_to_fire / ammo_fraction (game/tank/tank.gd), read off the hull's members (round 27: a call
+	// into GDScript each was most of the gun's remaining cost; test_native_gun and native-proof hold them to the live ones):
+	//   shells_left: ammo if simulate else sync_ammo
+	//   ready_to_fire: current_heat := heat if simulate else sync_heat * heat_capacity
+	//                  reloaded := _reload_ticks <= 1 if simulate else sync_reload >= 1.0
+	//                  reloaded and shells_left() != 0 and current_heat + float(weapon.get("heat_per_shot", 0.0)) <= heat_capacity + 0.001
+	//   ammo_fraction: 1.0 if max_ammo <= 0 else float(maxi(shells_left(), 0)) / max_ammo
+	int64_t shells_left() {
+		return (bool)tank->get(k.simulate) ? (int64_t)tank->get(k.ammo) : (int64_t)tank->get(k.sync_ammo);
+	}
+	bool ready_to_fire() {
+		const bool simulate = tank->get(k.simulate);
+		const double heat_capacity = tank->get(k.heat_capacity);
+		const double current_heat = simulate ? (double)tank->get(k.heat) : (double)tank->get(k.sync_heat) * heat_capacity;
+		const bool reloaded = simulate ? (int64_t)tank->get(k._reload_ticks) <= 1 : (double)tank->get(k.sync_reload) >= 1.0;
+		if (!reloaded || shells_left() == 0) {
+			return false;
+		}
+		const Dictionary w = tank->get(k.weapon);
+		return current_heat + (double)w.get(k.heat_per_shot, 0.0) <= heat_capacity + 0.001;
+	}
+	double ammo_fraction() {
+		const int64_t max_ammo = tank->get(k.max_ammo);
+		return max_ammo <= 0 ? 1.0 : (double)MAX(shells_left(), (int64_t)0) / (double)max_ammo;
+	}
 
 	// Gunnery._cover(point, cmd)
 	void cover(const Vector3 &point, Object *cmd) {
@@ -225,6 +274,7 @@ struct Gun {
 
 	// Perception.has_line_of_sight(viewer, target): the same engine ray.
 	bool line_of_sight(Node3D *viewer, Node3D *target) {
+		GunTimed t(10);
 		PhysicsDirectSpaceState3D *space = viewer->get_world_3d()->get_direct_space_state();
 		const Vector3 up = Vector3(0, 1, 0) * (real_t)g.EYE_HEIGHT;
 		Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(viewer->get_global_position() + up,
@@ -239,6 +289,7 @@ struct Gun {
 		}
 		const Callable spotter = v.g_spotter();
 		if (spotter.is_valid()) {
+			GunTimed t(11);
 			v.push_out();
 			return spotter.call(enemy);
 		}
@@ -350,11 +401,11 @@ struct Gun {
 
 	// Gunnery._named_tank(name)
 	Node3D *named_tank(const String &name) {
-		if (brain_owns_root()) {
-			const Dictionary by_name = gd(g.ai_tick_cache, k.tanks_by_name, game_match);
-			return Object::cast_to<Node3D>(by_name.get(name, Variant()).get_validated_object());
-		}
-		return Object::cast_to<Node3D>(tanks_root->get_node_or_null(NodePath(name)));
+		// AiTickCache.tanks_by_name(match) is Match.tanks_by_name(): every hull under match.tanks keyed by its name, the
+		// same node get_node_or_null finds when match.tanks is tanks_root (brain_owns_root); the cache's per-tick refresh
+		// is the think step's (it runs before this crew's execute). Only a Tank counts (`as Tank`): one with `alive`.
+		Node3D *found = Object::cast_to<Node3D>(tanks_root->get_node_or_null(NodePath(name)));
+		return found != nullptr && found->get(k.alive).get_type() == Variant::BOOL ? found : nullptr;
 	}
 
 	// Gunnery._clear_to_fire(would_fire, aim)
@@ -517,13 +568,87 @@ struct Gun {
 		cmd->set(k.fire, clear_to_fire(in_range && aimed && ready_to_fire(), aim));
 	}
 
+	// Gunnery._apply_indirect(cmd) (round 27: was the gun's last whole callback), line by line:
+	//   if tanks_root == null or type in ["hold_fire", "aim"]: aim -> _cover(spot); elif watch_point: _cover(watch); return
+	//   sees := spotter if spotter.is_valid() else Perception.has_line_of_sight(tank, other)
+	//   in_window := d >= weapon["min_range"] and d <= weapon["range"]   (d: hull to hull)
+	//   target: a named target (alive, an enemy, seen, in the window); else under fire_at_will or a fallback the nearest
+	//   enemy (_enemies(), in order) in the window and seen; none -> engaged_target = "", cover the watch point, return
+	//   flight := d / weapon["flight_speed"]; aim := target + velocity * flight; _cover(aim)
+	//   cmd.fire = _clear_to_fire(aim_error(muzzle, turret_forward, aim) <= tolerance and ready_to_fire(), aim)
+	bool sees(Node3D *other) {
+		const Callable spotter = v.g_spotter();
+		if (spotter.is_valid()) {
+			GunTimed t(11);
+			v.push_out();
+			return spotter.call(other);
+		}
+		return line_of_sight(tank, other);
+	}
+	bool in_window(Node3D *other) {
+		const double d = here.distance_to(other->get_global_position());
+		return d >= (double)weapon[k.min_range] && d <= (double)weapon[k.range];
+	}
+	void apply_indirect(Object *cmd) {
+		static const String hold_fire("hold_fire"), t_aim("aim"), t_target("target"), t_fire_at_will("fire_at_will");
+		weapon_order = ctl->get(k.weapon_order);
+		const Variant type = weapon_order[k.type];
+		if (tanks_root == nullptr || type == Variant(hold_fire) || type == Variant(t_aim)) {
+			if (type == Variant(t_aim)) {
+				cover(Vector3((real_t)(double)weapon_order[k.x], 0.0, (real_t)(double)weapon_order[k.z]), cmd);
+			} else if (v.g_watch_point().get_type() != Variant::NIL) {
+				cover((Vector3)v.g_watch_point(), cmd);
+			}
+			return;
+		}
+		Node3D *target = nullptr;
+		if (type == Variant(t_target)) {
+			Node3D *named = named_tank(String(weapon_order[k.name]));
+			if (named != nullptr && (bool)named->get(k.alive) && (int64_t)named->get(k.team) != (int64_t)tank->get(k.team) &&
+					sees(named) && in_window(named)) {
+				target = named;
+			}
+		}
+		if (target == nullptr && (type == Variant(t_fire_at_will) || (bool)weapon_order.get(k.fallback, false))) {
+			double best_distance = INFINITY;
+			const Array enemies = brain_owns_root() ? (Array)gd(g.ai_tick_cache, k.enemies, game_match, tank->get(k.team)) :
+													  (Array)gd(g.perception, k.enemies_of, tank, tanks_root);
+			for (int64_t i = 0; i < enemies.size(); i++) {
+				Node3D *enemy = Object::cast_to<Node3D>(enemies[i].get_validated_object());
+				if (enemy == nullptr) {
+					continue;
+				}
+				const double d = here.distance_to(enemy->get_global_position());
+				if (d < best_distance && in_window(enemy) && sees(enemy)) {
+					best_distance = d;
+					target = enemy;
+				}
+			}
+		}
+		if (target == nullptr) {
+			v.set_g_engaged_target(String());
+			if (v.g_watch_point().get_type() != Variant::NIL) {
+				cover((Vector3)v.g_watch_point(), cmd);
+			}
+			return;
+		}
+		v.set_g_engaged_target(String(target->get_name()));
+		const Vector3 target_at = target->get_global_position();
+		const double flight = (double)here.distance_to(target_at) / (double)weapon[k.flight_speed];
+		const Vector3 velocity = target->get(k.estimated_velocity);
+		const Vector3 aim = target_at + velocity * (real_t)flight;
+		cover(aim, cmd);
+		const bool aimed = aim_error(muzzle(), turret_forward(), aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg]);
+		cmd->set(k.fire, clear_to_fire(aimed && ready_to_fire(), aim));
+	}
+
 	// Gunnery._apply_weapon(cmd)
 	void apply_weapon(Object *cmd) {
 		static const String t_aim("aim"), t_suppress("suppress"), t_fire_at_will("fire_at_will"), t_target("target");
 		v.set_g_engaged_target(String());
 		weapon = tank->get(k.weapon);
 		if ((int64_t)weapon[k.kind] == g.KIND_ARC) {
-			cb(k._apply_indirect, cmd);
+			apply_indirect(cmd);
 			return;
 		}
 		weapon_order = ctl->get(k.weapon_order);

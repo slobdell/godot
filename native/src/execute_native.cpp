@@ -13,6 +13,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 
+#include <chrono>
 #include <cmath>
 #include <string>
 #include <godot_cpp/classes/node3d.hpp>
@@ -40,6 +41,38 @@ const EN &en_() {
 }
 
 void note_hand_back(int reason, const Variant &type);
+
+// Measurement only (--native-exec-profile): microseconds a native execute spends in each part, summed; one clock at a
+// time is open (a part's time excludes nothing: the parts are sequential).
+struct ExecProfile {
+	bool on = false;
+	double usec[12] = {};
+	int64_t executes = 0;
+};
+ExecProfile &exec_profile() {
+	static ExecProfile p;
+	return p;
+}
+enum ProfilePart { P_PRECHECK = 0, P_STATE, P_BIND, P_COMMAND, P_DRIVE, P_UNSTICK, P_GUN, P_NOTE, P_PUSH, P_GUN_GD,
+	P_GUN_RAY, P_GUN_SPOTTER, P_SEAM_COUNT };
+const char *const PROFILE_NAMES[P_SEAM_COUNT] = { "precheck", "state", "bind", "command", "drive", "unstick", "gun", "note",
+	"push", "gun.gdscript_calls", "gun.rays", "gun.spotter" };
+struct PartClock {
+	std::chrono::steady_clock::time_point t0;
+	PartClock() {
+		if (exec_profile().on) {
+			t0 = std::chrono::steady_clock::now();
+		}
+	}
+	void lap(int part) {
+		if (!exec_profile().on) {
+			return;
+		}
+		const auto now = std::chrono::steady_clock::now();
+		exec_profile().usec[part] += std::chrono::duration<double, std::micro>(now - t0).count();
+		t0 = now;
+	}
+};
 
 template <class V>
 struct Exec {
@@ -127,6 +160,13 @@ struct Exec {
 		v.set__remaining(0.0);
 	}
 
+	PartClock *clock = nullptr;
+	void lap(int part) {
+		if (clock != nullptr) {
+			clock->lap(part);
+		}
+	}
+
 	Variant run(double delta) {
 		static const String move_to("move_to"), stop("stop");
 		const Dictionary move_order = ctl->get(k.move_order);
@@ -134,11 +174,13 @@ struct Exec {
 		const bool moving = type == Variant(move_to); // the hand-back tests ran in execute_native, on the live members
 		const Variant stop_v(stop);
 		bind_registry();
+		lap(P_BIND);
 		const Variant cmd_ref = x.drive->tank_command->call(k.new_, 0.0, 0.0, held_aim_point());
 		Object *cmd = cmd_ref;
 		// _sense: visible_enemy_names = PackedStringArray(); then nothing (no reflexes). _apply_reflexes: nothing.
 		ctl->set(k.visible_enemy_names, PackedStringArray());
 		// _apply_move: right_of_way is false (not giving way); a move_to drives, a stop idles (and `match` does nothing).
+		lap(P_COMMAND);
 		ExecState *state = state_of();
 		if (moving) {
 			drive_with(*x.drive, mover, cmd, move_order, delta, state);
@@ -153,10 +195,14 @@ struct Exec {
 				cmd->set(k.turn, std::fabs((double)turn_only.y) > 0.08 ? (double)turn_only.y : 0.0);
 			}
 		}
+		lap(P_DRIVE);
 		unstick_with(*x.drive, mover, cmd, move_order, delta, state);
+		lap(P_UNSTICK);
 		const double seconds = (double)(int64_t)ctl->get(k._step) / (double)x.drive->TICK_RATE;
 		gun_with(*x.gun, *x.drive, gunnery, cmd, seconds, state);
+		lap(P_GUN);
 		note_decision(cmd, move_order);
+		lap(P_NOTE);
 		return cmd_ref;
 	}
 
@@ -295,6 +341,7 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 	if (mover == nullptr || gunnery == nullptr || tank == nullptr) {
 		return Variant();
 	}
+	PartClock clock;
 	// The hand-back tests first, on the live members (before an owned state is fetched: a dead hull fetched and pulled it
 	// every tick for nothing, the first E5b run's 72 775 full pulls).
 	{
@@ -319,31 +366,66 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 			return Variant();
 		}
 	}
+	clock.lap(P_PRECHECK);
 	Variant answer;
 	if (mode == EXEC_LIVE) {
 		ObjectView view(mover);
 		view.bind_gunnery();
 		Exec<ObjectView> e(config, ctl, mover, gunnery, view);
 		e.tank = tank;
+		e.clock = &clock;
 		answer = e.run(delta);
 		mover->set(sn_native_stale(), (int64_t)mover->get(sn_native_stale()) | 1); // written live: an owned state is stale
 	} else {
 		ExecState *state = persistent_state(mover, mode == EXEC_OWNED_VERIFY);
+		clock.lap(P_STATE);
 		Exec<StructView> e(config, ctl, mover, gunnery, StructView(mover, state));
 		e.tank = tank;
+		e.clock = &clock;
 		answer = e.run(delta);
 		if (answer.get_type() == Variant::NIL) {
 			mover->set(sn_native_stale(), (int64_t)mover->get(sn_native_stale()) | 1); // the GDScript executes this tick
 		} else {
 			state->push(mover, false);
+			clock.lap(P_PUSH);
 		}
 	}
 	if (answer.get_type() == Variant::NIL) {
 		exec_counts_.handed_back++;
 	} else {
 		exec_counts_.native++;
+		exec_profile().executes++;
 	}
 	return answer;
+}
+
+// gun_native.cpp's clocks: inside the gun section, its calls into GDScript, its sight rays and its spotter calls.
+void execute_profile_add(int part, double usec) {
+	if (exec_profile().on && part >= 0 && part < P_SEAM_COUNT) {
+		exec_profile().usec[part] += usec;
+	}
+}
+bool execute_profile_is_on() {
+	return exec_profile().on;
+}
+
+void execute_profile_on(bool on) {
+	exec_profile().on = on;
+}
+
+Dictionary execute_profile(bool reset) {
+	ExecProfile &p = exec_profile();
+	Dictionary out;
+	out["executes"] = p.executes;
+	for (int i = 0; i < P_SEAM_COUNT; i++) {
+		out[PROFILE_NAMES[i]] = p.usec[i];
+	}
+	if (reset) {
+		const bool on = p.on;
+		p = ExecProfile();
+		p.on = on;
+	}
+	return out;
 }
 
 Dictionary execute_counts(bool reset) {
