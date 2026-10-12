@@ -154,6 +154,13 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   OFF until priced on a quiet box** (it was `true` on the branch, unpriced) — ON in its own commit once it clears the bar.
   Native's warning: E5 on live members may not be faster (C++ reads via Object::get); the payoff is E5b's owned state.
 
+- **B2 v4 FAILED (2026-10-11, brains `5877710e` merged base, builder0):** (1) Sumps seed 1 tick 1 never arrives (seeds 1–4
+  21/24 v 14/24); (2) fresh seeds 5–8, 8 m line: 85 v 83, 4 gained, 2 lost (≤ 1), median −0.4 %. Guards 39/0; his 108
+  106/108. Trace: an idle crew whose stalled move "completed" 11.4 m short is never re-sent (the element's thrash rule);
+  6–12 m is now the bulk of hollow runs (17/29). **Ruled: v5 (re-send an idle crew > 8 m off its slot once per seat) is
+  the LAST attempt this round — no v6;** judged on fresh seeds 9–12, all eight rules + resend count and no thrash
+  loop. Fails → parked and written up. brains-close's judged runs may proceed meanwhile; first green merges first.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
