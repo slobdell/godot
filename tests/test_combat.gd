@@ -97,11 +97,16 @@ func test_kill_scores_and_respawns() -> void:
 	target.health = 10
 	target.max_shield = 0.0
 	target.shield = 0.0
+	# The death is recorded by its signal, not polled: respawn runs on a wall-clock timer (Match, create_timer), so on a
+	# loaded machine 30 physics frames can outlast respawn_seconds and the tank is already back when is_alive() is read
+	# (round 27: failed 1 check in many on builder0 with "Shooter destroyed Target" printed just before the assert).
+	var deaths := [0]
+	target.died.connect(func() -> void: deaths[0] += 1)
 	shooter.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 	await wait_physics_frames(1)
 	shooter.command = TankCommand.new()
 	await wait_physics_frames(30)
-	assert_true(not target.is_alive(), "the hit destroys a tank on 10 HP")
+	assert_eq(deaths[0], 1, "the hit destroys a tank on 10 HP")
 	assert_eq(game_match.score_green, 1, "the kill scores for Green")
 	await tree.create_timer(1.2).timeout
 	await wait_physics_frames(2)
