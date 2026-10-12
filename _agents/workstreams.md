@@ -139,6 +139,14 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   paired, outcome within noise; (6) thirteen/determinism or explained, ≤ 0.5 ms. Partial: split (a) from (b); (b) alone
   not declared if thirteen unmoved.
 
+- **Scout's range trace (2026-10-11, seeds 13–36, builder0): no range term.** ENGAGE bearing seconds 455 → 526 (+16 %), mean
+  range while bearing 21.1 → 26.4 m (inside the MG's 35 m edge); flat damage most likely fire outside ENGAGE (SUPPRESS 20 %)
+  + per-seed noise. **S4 bar (pre-registered, DECLARED):** `_combat_move`'s short-halt early return no longer stops a fixed
+  gun on the planner unless it bears and stands outside its turning room (`--scout-off=halt`). PRIMARY gang_scout
+  scenario pool n = 18/case, his case contacts → 0, 5/5 bars (partial: ≥ 50 % fewer contact runs ships with a note);
+  guards: scout 5/5, law_scout 4/5 kept; fresh census seeds 37–60 on-target-in-reach and contacts not worse beyond 2 se;
+  **+ (orchestrator) a blind gang_scout contacts line on ≥ 12 fresh gang seeds, and the cost measured, not asserted.**
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
