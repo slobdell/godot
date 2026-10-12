@@ -205,7 +205,16 @@ into the enemy); a click on an enemy is decided on the release (one rule for eve
 shift on an approach drag only keeps attack-move armed (tasks never queue); a non-squad selection attacks head-on with a
 notice rather than forming a squad on its own; the showmatch director owns its camera angle (yaw-follow off, cuts only).
 
-**Next steps:** render the flank clip after brains' close fix; if he wants hulls on the facing, the wheeled-turret rule
+**The flank clip (the orchestrator runs it after brains-close merges):** in the orders worktree after merging main,
+`make remote T="flank-clip FLANK_CLIP_SEED=21 SIDE=left"` (MAIN lane, not light: it is one process but holds a
+display for Movie Maker; it needs builder0's desktop like `showmatch MOVIE=`). It writes `build/flank.mp4` (1080p,
+30 fps, sound; ffmpeg is on builder0), copied back with `build/`. Expected render: the scenario runs at most ~95 s of game
+(it ends when the target dies) at ~4x on builder0, so **about 5-7 minutes**. Seed 21 reached the drawn side within 35 deg in
+the probe; if the clip shows the squad not closing, seeds 5 and 8 also reached it. Look at `build/flank/clip/run.log`'s
+`SCREEN` line (`reached_side_s`) before sharing.
+
+**Next steps:** the flank clip as above; if he wants hulls on the facing, the wheeled-turret rule
 is native's/brains' (requests above).
 
-**Merge notes:** merged as eb9363e2. Since then: `_agents/streams/orders.md` (Status), `references/round27/orders_hull_rest.txt`.
+**Merge notes:** merged as eb9363e2 (= `9c6f3381`, green). **The tip is Status-only past `9c6f3381`**: since then only
+`_agents/streams/orders.md` and `references/round27/orders_hull_rest.txt` (docs; no code, no re-check needed).
