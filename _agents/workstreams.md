@@ -113,6 +113,12 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   re-seats); guarded by round 26's paired fight tests, the let-go guard, bridge-pooled, and no re-seat of a crew engaging, in a
   drill or under a moving task. B3: make-room priced by removal, 68 = 68/100 (1 swap): no measured gain.
 
+- **B2 disclosure (2026-10-11):** the Sumps cell (seeds 1–4 × 6 ticks) was seen under both lines before the ruling and tuned
+  on (v1's pause everywhere regressed seed 2: 6/6 at 24.8 s → 3/6 at 57.1 s, re-seats 4 → 47; v2 narrows the pause to a crew
+  pressing a parked squadmate: 8 m line 14 → 17/24). So bar (1) is required but not evidence; **the blind evidence is the
+  arrive series (fresh seeds 5–8 if any B2 variant has touched seeds 1–4 of it) + the fight guards; (8) reported: the
+  Sumps cell at fresh seeds 5–8.**
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
