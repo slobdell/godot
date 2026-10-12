@@ -104,6 +104,15 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   **C27.5 ruling:** check's scout_cross subset runs start ticks {1,6,11}, bars unchanged: APPROVED. Next trace: does the
   lay planner open range (in-reach seconds −21 %)?
 
+- **C27.5 ruling (2026-10-11, brains B1, before any B2 number):** the arrive series on main (`3aa67b17`, builder0, 100
+  cells): the element says 99/100 arrived, the strict every-crew line (3.5 m) 68/100 — 31 hollow (worst crew ≤ 6 m: 13,
+  6–12: 8, > 12: 10). Many are the element's DESIGNED tolerance (REISSUE_M / IN_POSITION_M = 8 m). **Ruled: `all_in8_s`
+  (every living crew within max(8 m, settle radius) of its own slot, held 1 s) is the judged line for B2; the strict line is
+  reported beside it.** Whether 8 m is too loose for a formation's look is a separate candidate (for the lead, with
+  pictures). B2 gains a third part: the stuck-crew watch keeps running after arrival (8 of the 10 > 12 m runs had 0
+  re-seats); guarded by round 26's paired fight tests, the let-go guard, bridge-pooled, and no re-seat of a crew engaging, in a
+  drill or under a moving task. B3: make-room priced by removal, 68 = 68/100 (1 swap): no measured gain.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
