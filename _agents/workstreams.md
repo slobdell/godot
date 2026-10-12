@@ -71,6 +71,17 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
 - **C26.4–C26.10's rulings, C25.6, C24.6–C24.8, C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5,
   C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
 
+- **CP-S ship rule (pre-registered 2026-10-11, scout, before the paired comparison; full text in scout's Status):**
+  `CombatMotion.plan_lay` (2.1 s rollout over the fixed gun's plant v the target's predicted pose; forward/reverse/brake x
+  5 locks by gun-on-target time; turning room a cost; `--scout-off=gunlay`; `decide` and M1 untouched, no port). Ships if
+  (1) `scenario_scout_cross` n = 18/case passes its 5 bars and base fails his case; (2) scout-census, 12 showmatch seeds
+  new v off: fixed-gun gun-on-target +5 pts (+2..+5 ships with a note, < +2 no), **the gain outside 2 se of the 12 paired
+  per-seed differences (the orchestrator's addition)**, fight-option enemy contacts not up, inside-turning-room share
+  not up > 1 pt; (3) check green, thirteen lines' moves declared; (4) ≤ 0.5 ms a tick, 25 a side Sumps; (5) symmetric.
+  (1)'s pool was seen before registration (disclosed): (2) is the blind test. Census base (main `c37605f0`, builder0, 12
+  seeds): gun on target 18.4 % of 1537 fight-s; 365 enemy contacts, **254 under an ordered MOVE** (squads ordered into
+  the enemy: brains' side, filed).
+
 **Checkpoints:** **CP0** brains' B0 → orders merges main. **CP-S** scout's declared change (+ native's port of any
 `decide` diff) → everyone merges main. **CP-B2**, **CP-B4** brains' declared changes, each alone. Native's E1 (OFF)
 merges whenever green; native merges main at CP-S.
