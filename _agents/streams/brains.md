@@ -120,7 +120,19 @@ on main (S_2, the IFV, 11.3 m off), as round 26 traced.
   floor, `ArrivalLine.ELEMENT_TOLERANCE_M`); lesson 293's stuck crews (19–26 m) fail both. Both are reported; the
   strict one stays the line until ruled.
 
-**B2 (DECLARED) — v5 is the last attempt (the orchestrator: no v6; if v5 fails any rule B2 is parked and written up).**
+**B2 (DECLARED) — SHIPPED: v5 GREEN at `2dccf781`, merged by the orchestrator as `2dccf781` (2026-10-12 ~01:40).**
+builder0 `make check exited 0`, 2497 passed / 0 failed, 24 targets ALL JUDGED, thirteen unmoved, determinism
+`2875411ff4ec6be7`. Rule sheet (all at v5 `3e54110e`): (1) PASS Sumps seed 1 tick 1 arrives 82.6 s, seed 1 6/6;
+(2) PASS fresh seeds 9–12, 8 m line 95 v 88, 1 lost, median +0.0 % (strict 74 v 67); (3) PASS his 108 106 v 106
+(identical failures: the candidate below), bridge-pooled 18/18; (4) PASS; (5) cost NOT READABLE (pinned 0–7, 25 a
+side Sumps, GDScript path, n = 3 × 2 repeats: tick scripts 62.9 v 62.2 then 80.6 v 74.1 ms; elements segment +0.12 ms
+in the quieter repeat; identical survivors); (6) CPU side seeds 9–10 45 v 43 (2 lost, +0.0 %); (7) 15 v 13 of 18;
+(8) fresh 9–12 24 v 23 of 24; fight guards 39/0; resends 25 in 19 cells, max 3 in a cell, none twice.
+**B5 rode inside that merge (the orchestrator's ruling, accepted after the fact):** `TankBrain.AMBUSH_LAY_ENABLED`
+applies to EVERY unsprung ambush (the CPU's and undrawn ones too), a default-path behaviour change; `--ambush-lay=off`
+is the old bare hold. Guards (bay ambush, fights) 39/0 and the thirteen unmoved at that hash. Lesson for me: a
+default-path change gets its own commit and a message to the orchestrator first.
+History (v1–v5, the version table below):
 Mechanism (v5, `3e54110e`, on main `f4c5f7c9` merged as `5877710e`): (1) the stuck clock PAUSES on a slow tick only while
 the crew presses a squadmate parked on its own slot (`Element._pressing_parked`), else resets as before; (2) a re-seat
 keeps every squadmate parked on its own slot in its seat (`_parked_seats` → `plan.reseat_keep` →
@@ -247,7 +259,13 @@ round-18 D1 rule). Think-side fix: an unsprung ambush crew with a sector gets `a
 fires; the ambush still holds). `--ambush-lay=off` = the old bare hold. Test: the ambush case of
 `test_tactics_facing_tasks_live` now also holds the squad's mean GUN within 15° of the drawn facing.
 
-**lab/brains-close (DECLARED; queued after/independent of B2, each merges alone).** Orders' flank-probe (main + CP0,
+**lab/brains-close — PARKED (the orchestrator, 2026-10-12): no ship.** (a) did not reproduce for direct fire: tanks in
+the quiet stage (target holds fire, cannot die) close to 22 m in both arms; orders' seeds 3/13 stall was the player's
+group 1 being ARTILLERY ("Battery", wrecker catapults) holding its standoff against a target that could not die.
+(b)'s rework (a still target lost from sight while going round is not a pursuit) is unproven alone; it is folded into
+the live-flank follow-up below. Candidate for the lead (the orchestrator takes it): should artillery honour a drawn
+approach (bombard from that side) or ignore it? Today it partly honours it. The `8de99ab8` runs are void.
+Original write-up: Orders' flank-probe (main + CP0,
 real input path): seeds 3 and 13 the attack never closes in either arm. Traced to two causes: (a) PRE-B0 — an attack
 goes in (line + `attack`) only once its centre is within the crews' shortest EFFECTIVE range (45 m); below that its crews
 are on attack-moves, which stop to fight at full range (70 m): with a target that never fires back nothing sends them
