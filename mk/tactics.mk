@@ -605,3 +605,22 @@ BRIDGE_POOLED_TICKS ?= 1 8 15
 bridge-pooled: import ## His bridge drill: BRIDGE_POOLED_SEEDS x BRIDGE_POOLED_TICKS x both sides (18 runs); fails unless every surviving crew crosses (bridge_verdict.py)
 	@$(MAKE) --no-print-directory bridge-series BRIDGE_ARMS=on "BRIDGE_SEEDS=$(BRIDGE_POOLED_SEEDS)" "BRIDGE_CASES=locks,green,3 locks,rust,3" "BRIDGE_TICKS=$(BRIDGE_POOLED_TICKS)"
 	@$(PYTHON) tools/tactics/bridge_verdict.py $(BUILD_DIR)/bridge-series.jsonl
+
+# Round 27 (brains B0, C27.3): his attack with a drawn approach (ApproachStage: four tanks 80 m south of one enemy tank on
+# yard_open, told to attack it coming in from the east; the control arm draws none) over APPROACH_SEEDS x the pooled start
+# ticks (C27.5) x both arms -> build/approach-series.jsonl + table (tools/tactics/approach_table.py: the side it attacked
+# from, when it got there, the kill).
+APPROACH_SEEDS ?= 1 2 3
+APPROACH_TICKS ?= 1 3 6 8 11 16
+APPROACH_ARMS ?= east none
+APPROACH_SECONDS ?= 60
+.PHONY: approach-series
+approach-series: import ## Round 27 (B0): his attack from a drawn side, APPROACH_SEEDS x APPROACH_TICKS x APPROACH_ARMS (east none) -> build/approach-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/approach-series.jsonl
+	@echo ">> approach-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(APPROACH_SEEDS); do for at in $(APPROACH_TICKS); do for arm in $(APPROACH_ARMS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/approach_probe.gd -- \
+			--seed=$$seed --approach=$$arm --seconds=$(APPROACH_SECONDS) --lab-start-tick=$$at 2>/dev/null | grep -o 'APPROACH_PROBE {.*' | sed 's/^APPROACH_PROBE //' >> $(BUILD_DIR)/approach-series.jsonl \
+			|| echo "{\"seed\":$$seed,\"approach\":\"$$arm\",\"start_tick\":$$at,\"missing\":true}" >> $(BUILD_DIR)/approach-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/approach_table.py $(BUILD_DIR)/approach-series.jsonl
