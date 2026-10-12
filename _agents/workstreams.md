@@ -177,6 +177,14 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   gun in the drill: 4 law_tanks v 3 lancers). Between `eb987e87` (108/108) and `090b345d`: a round-27/28 brains
   candidate (one tank hesitating 3.5–6.8 s at the rim; all crews cross).
 
+- **Orders O3, hull facing at rest (report; `9c6f3381`, builder0, foundry, 4 factions × seeds 3/5/8/11/13/21, 313 crews a
+  task an arm; `streams/references/round27/orders_hull_rest.txt`):** a drawn facing works for hover, tracks and wheeled
+  fixed guns (median 1.4–3.8°, 69–100 % within 15°, v 23–71° clicked); **wheeled turreted hulls are the whole 100–167° tail**
+  (168/313 crews, median 60–68° drawn = clicked; by design their turret takes the facing); line tasks ~27–29° (the 30°
+  sectors); support by fire on wheeled turreted hulls is WORSE drawn (90.9° v 55.9°, p = 0.001). Candidates: wheeled
+  turreted hulls face at rest (frozen order_controller, after stage 1) — a question for him; support-by-fire wheeled
+  drawn (brains). O4's flank clip: the orchestrator renders it after brains-close merges.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
