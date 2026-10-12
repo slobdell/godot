@@ -2357,6 +2357,7 @@ func _around_friends(waypoint: Vector3) -> Vector3:
 func wheel_radius() -> float:
 	var tank := ctl.tank
 	if _wheel_radius_unit != tank.unit_id:
+		native_stale |= STALE_ALL  # round 27 (native E5b): the brains' think step can fill this cache (a door)
 		_wheel_radius_unit = tank.unit_id
 		_wheel_radius_value = 0.0
 		if String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels":

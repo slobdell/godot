@@ -19,7 +19,10 @@ static func usable(ctl: OrderController) -> bool:
 
 ## E5b: `--native-exec-verify` (with `--native-exec-owned`): before every owned execute the C++ reads the members afresh
 ## and compares them with the state it owns (a door into the state that does not set `native_stale` shows up here).
-static var verify := OS.get_cmdline_user_args().has("--native-exec-verify")
+## The environment's TANK_NATIVE_EXEC_VERIFY=1 does the same for every Godot a make target starts (`make native-verify-suite`:
+## the whole suite and the AI scenarios with every owned execute verified; a mismatch is an engine ERROR, so it fails).
+static var verify := OS.get_cmdline_user_args().has("--native-exec-verify") \
+		or OS.get_environment("TANK_NATIVE_EXEC_VERIFY") == "1"
 const EXEC_LIVE := 0
 const EXEC_OWNED := 1
 const EXEC_OWNED_VERIFY := 2

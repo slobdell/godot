@@ -96,6 +96,13 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 	if [ $$same = 1 ] && [ -n "$$first" ]; then echo "native-proof: EQUAL ($$first) on $$(hostname)"; \
 	else echo "native-proof: NOT EQUAL on $$(hostname) -- the port changed the fight"; exit 1; fi
 
+# Round 27 (stage 1 E5b): every owned execute verified against a fresh pull of the members, through the whole suite and
+# the AI scenarios (TANK_NATIVE_EXEC_VERIFY=1 -> NativeExec.verify; a mismatch is an engine ERROR, which fails the test or
+# scenario that reached it). Finds a GDScript writer of mover/gunnery/lay members that does not mark native_stale.
+native-verify-suite: import ## Stage 1's doors audit: the suite + AI scenarios with every owned native execute verified (a missed native_stale fails)
+	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory test
+	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory ai-scenarios
+
 # The band sized for the lead (round 23, the orchestrator's ask): N a side with leaders both sides (perf's army files),
 # NATIVE_SIZE_RUNS matches each with --brains-parts (the shares: execute v think v engine calls) and with --sim-profile
 # (the uninflated band), pinned (NATIVE_SIZE_CPUS=0-3 on builder0); tests/native/sizing_table.py prints the table.

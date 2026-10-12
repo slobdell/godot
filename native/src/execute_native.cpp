@@ -323,6 +323,13 @@ ExecState *persistent_state(Object *mover, bool verify) {
 					exec_counts_.first_mismatch =
 							(key + String(": held ") + String(a) + String(", members ") + String(b)).utf8().get_data();
 				}
+				// An engine ERROR, so a test or a check target run with verification fails on it: a door into the owned
+				// state that does not mark native_stale (native.md *Stage 1 as built*, the doors).
+				UtilityFunctions::push_error(String("NativeExec verify: the owned state differs from the members (a door that does not mark native_stale): ") +
+						key + String(" held ") + String(a) + String(", members ") + String(b) + String(" on ") +
+						String(((Node *)Object::cast_to<Node>(mover->get(StringName("ctl")).get_validated_object())) != nullptr ?
+										Object::cast_to<Node>(mover->get(StringName("ctl")).get_validated_object())->get_name() :
+										StringName("?")));
 				state.pull(mover); // go on from the truth
 				break;
 			}
