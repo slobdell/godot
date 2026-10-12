@@ -205,6 +205,12 @@ func _faced(scenario: String) -> void:
 		rig.snap()
 	var press := camera.unproject_position(at)
 	var release := camera.unproject_position(at + facing * FACED_DRAG_M)
+	# Round 27 (O3): `--faced-click` is the A/B's other arm: the same order CLICKED at the same spot (automatic facing),
+	# judged against the same heading, so what the drawn facing buys the hulls is read on the same seeds.
+	var clicked := LaunchFlags.from_environment().has("faced-click")
+	row["clicked"] = clicked
+	if clicked:
+		release = press
 	row["drag_px"] = snappedf(press.distance_to(release), 0.1)
 	_mouse(press, true, button)
 	for i in range(1, 7):
@@ -212,7 +218,7 @@ func _faced(scenario: String) -> void:
 	await get_tree().process_frame
 	await _shot(scenario + "_1_drag")
 	var spot: Variant = controls.armed_gesture().get("spot", controls._right_press_ground)
-	if spot is Vector3:
+	if spot is Vector3 and not clicked:
 		release = camera.unproject_position((spot as Vector3) + facing * FACED_DRAG_M)  # this frame's camera
 	_motion(release, button)
 	_mouse(release, false, button)
@@ -343,15 +349,21 @@ func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 	var heading := Vector3.ZERO
 	var guns := Vector3.ZERO
 	var points: Array[Vector3] = []
+	# Round 27 (O3): every crew's own hull error and hull class (locomotion/mount), so the tail can be read per class.
+	var each := []
 	for unit_name in crews:
 		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		var nose := -tank.global_basis.z
 		heading += Vector3(nose.x, 0.0, nose.z).normalized()
+		each.append({"unit": unit_name, "id": tank.unit_id,
+				"class": "%s/%s" % [Units.stat(tank.unit_id, "locomotion", "?"), Units.stat(tank.unit_id, "mount", "?")],
+				"hull_error_deg": snappedf(absf(rad_to_deg(Vector2(nose.x, nose.z).angle_to(Vector2(facing.x, facing.z)))), 0.1),
+				"still": _all_still([unit_name] as Array[String])})
 		# Where the gun points (a turret's heading), which is what "faces it" means for a turreted crew.
 		var gun := -tank.turret.global_basis.z if tank.turret != null else nose
 		guns += Vector3(gun.x, 0.0, gun.z).normalized()
 		points.append(_position_of(unit_name))
-	var result := {"crews": crews.size()}
+	var result := {"crews": crews.size(), "each": each}
 	if crews.is_empty():
 		result["ok"] = true
 		return result
