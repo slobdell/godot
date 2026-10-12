@@ -318,6 +318,39 @@ multi-day port of manoeuvre's planner) ~0.5-1 %.
   `right_of_way` native (E5c: crews giving way were ~5 % of executes and handed back to the GDScript; now 0, his Sumps
   native-proof). Expected to add ~0.2-0.5 point at 20 a side; the prediction's range stands.
 
+### The doors audit (the orchestrator's condition on the ON commit, 2026-10-12 ~13:00 PDT)
+
+Every GDScript write to an owned member (Movement's 128, Gunnery's 12, the Lay's 3) that can happen OUTSIDE the native
+execute, by entry point (found by listing every Movement/Gunnery method called from outside its own script and every
+member assignment outside it; `game/` only: tests set up state and are covered by the detector below):
+
+| entry (who calls it, when) | writes owned members? | marks stale? |
+|---|---|---|
+| OrderController's 9 forwarding setters (brains' think: watch_point, spotter, hold_for_friends, engaged_target, ...) | yes | **yes** (STALE_GUN / STALE_STALL, on a change) |
+| `set_orders` -> `Movement.new_order` (orders, the CPU, Movement.request) | yes | **yes** (STALE_ORDER) |
+| `interrupt` -> `Movement.reset` (a new order or element call, Movement.request) | yes | **yes** (STALE_ALL) |
+| `Movement.ask` (another crew's `_negotiate`/`_ask_behind`, called back from ITS native drive) | yes (`_begin_yield`) | **yes** (STALE_ALL) |
+| `Movement.wheel_radius` (brains' `_wheel_radius()` on the think side) | yes, its cache, first use only | **yes, since this audit** (STALE_ALL) |
+| `Movement._kturn_start_leg` (the planner, called back; tests) | yes | **yes, since `0465a11e`** |
+| the GDScript compute_command (`bind`, `idle`, `drive`, `right_of_way`, `face_turn`, `keeps_heading`, `unstick`, `note_decision`, `Gunnery.apply/dead/held_aim_point`) | yes | **safe:** it runs only when the native seam is off (the seam's else marks STALE_ALL) or the native execute handed the tick back (it marks STALE_ALL) |
+| a drive callback into GDScript (`_planned_reverse`, `_manoeuvre`, `_negotiate`, `_repair`, ...; manoeuvre.gd under them) | yes | **safe:** the callback is wrapped (push the struct before, pull it all after) |
+| `observe_contact` -> `WallContact.observe` (every tick, before think) | no owned member (its own fields; `_yield_rec`/`_kturn_rec` Dictionaries mutated in place, shared with the struct) | n/a |
+| manoeuvre_census, avoidance (`is_under_way`), tank_brain (`straight_and_clear`), rts_controls/movement_readout/two_squads_playtest (`corridor`, `legibility`, `state`), Gunnery `_nearest_shootable` | reads only | n/a |
+
+**The detector:** `--native-exec-verify` / `TANK_NATIVE_EXEC_VERIFY=1` compares a fresh pull with the owned state before
+every owned execute and raises an engine ERROR on a difference; `make native-verify-suite` runs the whole suite and the AI
+scenarios that way, and native-proof's `exec_verify` arm a whole match. **C28.2's new rule** (the orchestrator): every
+stream writing mover/gunnery members marks `native_stale`.
+
+**Results (builder0, stage 1 ON):** the first `native-verify-suite` found no game door beyond the list; its 6 failures
+were the proof harness itself writing members (`MoverState.restore`'s deep copies, a direct `_wheel_radius_unit` write),
+now marked. It also exposed a **lifetime bug**: test processes aborted at exit ("corrupted size vs. prev_size") because
+the owned states (first an extension object on each mover, then a registry emptied at the library's unload) were freed
+after the GDScript language had finished, while holding script objects (the Lay, the station PID, the spotter lambda).
+Fixed: a crew's state is released in `OrderController._exit_tree` (while scripts are alive; the scene tree frees its
+nodes at quit), with a per-frame sweep of movers that are gone. `a3790744`: `native-verify-suite` 2520/0 tests, 50/0
+scenarios, 0 verify mismatches, no exit crash; native-proof on = off = exec_verify = `0398922d31f335f8`.
+
 ### N4: stage 2 (the think half) priced for him (2026-10-12 ~12:40 PDT; an estimate, confidence low-medium)
 
 **What it is:** situation, decide, act and the tactics polls (each crew's thinking: what to do next) as ONE batched C++
