@@ -7,7 +7,8 @@
 _Last updated: 2026-10-12 ~03:45 — **ROUND 27: scout, orders and brains are DONE and closed (the section below); native
 (stage 1 C++) is still running in `godot-native` (C27.7).** Main's last green check: `3dc04293` (builder0, exited 0,
 2516/0, ALL JUDGED, thirteen unmoved, det 2875411ff4ec6be7), with native `8623c224` (2520/0) and the finished streams'
-tooling merged on top; a combined check of `03b5be9e` was running at 03:30 (`build/main_check_final27.log`). He pushes
+tooling merged on top; **the combined check of `03b5be9e` is GREEN** (builder0, exited 0, 2520/0, 24 targets ALL JUDGED, thirteen unmoved, det
+2875411ff4ec6be7); after it, docs and one test-only fix (`test_combat` counts the kill by signal: a wall-clock respawn flake). He pushes
 `main`._
 
 ## 🟡 ROUND 27: THREE STREAMS CLOSED, NATIVE RUNNING (2026-10-12) — read this first
