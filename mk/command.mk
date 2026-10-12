@@ -554,6 +554,33 @@ hull-rest-probe: import ## O3: hull facing at rest per hull class, drawn v click
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
 	python3 tools/hull_rest_table.py $(HULL_DIR)
 
+# Round 27 (O1 end to end, C27.3): squad 1 recalled with its key, the real right-drag off the nearest enemy to a side 90
+# deg off the line of approach (left and right), drawn v clicked on the same seeds; the squad's bearing from its target
+# every second against the side drawn. Quiet arm (the enemy holds at its base, no damage). Report only.
+FLANK_SEEDS ?= 3 5 8 11 13 21
+FLANK_DIR ?= build/flank
+.PHONY: flank-probe
+flank-probe: import ## O1: attack from a drawn side through the real input, drawn v clicked, left/right, FLANK_SEEDS -> build/flank/ + a table
+	rm -rf $(FLANK_DIR) && mkdir -p $(FLANK_DIR)
+	for arm in drawn clicked; do for side in left right; do for seed in $(FLANK_SEEDS); do echo "$$arm $$side $$seed"; \
+		done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
+		d=$(FLANK_DIR)/$$0/$$1-$$2; mkdir -p $$d; click=""; [ $$0 = clicked ] && click=--faced-click; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu $$click --flank-side=$$1 \
+			--screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1; \
+		grep -q SCREEN_DONE $$d/run.log || echo "flank-probe: $$d has no SCREEN_DONE"; \
+		! grep -m1 "SCRIPT ERROR" $$d/run.log'
+	python3 tools/flank_probe_table.py $(FLANK_DIR)
+
+FLANK_SHOT_FLAGS ?= --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --no-vision-camera
+flank-shots: import ## O1: the flank drag in windows (FACING_SIZES): the drag, closing at 30 s, the end -> build/flank/<size>/shots/*.png (needs a display)
+	for size in $(FACING_SIZES); do d=$(FLANK_DIR)/$$size; rm -rf $$d && mkdir -p $$d; \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) $(FLANK_SHOT_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1 || true; \
+		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log | cut -c1-400 || true; grep -q SCREEN_DONE $$d/run.log || exit 1; \
+	done
+	@echo "Now LOOK at $(FLANK_DIR)/*/shots/*.png"
+
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
 		d=$(FACING_DIR)/$$size/$$task; rm -rf $$d && mkdir -p $$d; \

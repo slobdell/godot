@@ -77,7 +77,9 @@ func run() -> void:
 			else:
 				wanted.append(name)
 	for scenario: String in wanted:
-		if FACED.has(scenario):
+		if scenario == "flank":
+			await _flank()
+		elif FACED.has(scenario):
 			await _faced(scenario)
 		elif scenario in ["grouped", "ungrouped", "near", "move_after"]:
 			await _scenario(scenario)
@@ -308,6 +310,103 @@ func _faced(scenario: String) -> void:
 	_results.append(row)
 	controls.order_selection("stop", {})
 	await _seconds(1.0)
+
+
+## Round 27 (orders O1, C27.3, lesson 291: the path the player's input takes). Squad 1 recalled with its key, then the
+## REAL right-drag: press on the nearest enemy, drag out FLANK_SIDE_DEG off the line from the squad, release. Every second
+## the squad's bearing from its target against the side drawn. `--faced-click` clicks the same enemy instead (today's
+## attack), judged against the same side: the A/B on the same seed. `--flank-side=left|right` picks the side.
+const FLANK_SIDE_DEG := 90.0
+const FLANK_DRAG_M := 30.0
+const FLANK_WATCH_S := 90.0
+const FLANK_WITHIN_DEG := 35.0
+
+
+func _flank() -> void:
+	var flags := LaunchFlags.from_environment()
+	var clicked := flags.has("faced-click")
+	var row := {"scenario": "flank", "clicked": clicked}
+	await _key(KEY_1)
+	await _seconds(0.3)
+	var members: Array[String] = []
+	members.assign(controls.selection.units)
+	if members.is_empty():
+		row["why"] = "squad 1 has no living members"
+		_results.append(row)
+		return
+	_resume()
+	var centre := _centroid(members)
+	var target: Tank = null
+	for child in controls.game_match.tanks.get_children():
+		var enemy := child as Tank
+		if enemy != null and enemy.team != controls.team and enemy.is_alive() \
+				and (target == null or enemy.global_position.distance_to(centre) < target.global_position.distance_to(centre)):
+			target = enemy
+	if target == null:
+		row["why"] = "no enemy"
+		_results.append(row)
+		return
+	controls.reveal_all = true  # the probe presses on an enemy at its base; the player would press on one he can see
+	var to_target := Vector3(target.global_position.x - centre.x, 0.0, target.global_position.z - centre.z).normalized()
+	var turn := FLANK_SIDE_DEG if flags.text("flank-side", "left") == "left" else -FLANK_SIDE_DEG
+	var side := (-to_target).rotated(Vector3.UP, deg_to_rad(turn)).normalized()  # from the target out to the drawn side
+	row["target"] = String(target.name)
+	row["start_m"] = snappedf(centre.distance_to(target.global_position), 0.1)
+	row["side"] = [snappedf(side.x, 0.001), snappedf(side.z, 0.001)]
+	var rig := controls.rig
+	if rig != null:
+		rig.focus = target.global_position
+		rig.snap()
+	await get_tree().process_frame
+	if rig != null:
+		rig.focus = target.global_position
+		rig.snap()
+	var camera := controls.camera
+	var press := camera.unproject_position(target.global_position)
+	var release := press if clicked else camera.unproject_position(target.global_position + side * FLANK_DRAG_M)
+	_mouse(press, true, MOUSE_BUTTON_RIGHT)
+	for i in range(1, 7):
+		_motion(press.lerp(release, i / 6.0), MOUSE_BUTTON_RIGHT)
+	await get_tree().process_frame
+	await _shot("flank_1_drag")
+	_mouse(release, false, MOUSE_BUTTON_RIGHT)
+	await get_tree().process_frame
+	var element: Element = controls.elements.of(members[0]) if controls.elements != null else null
+	var task: Dictionary = element.task if element != null else {}
+	row["task_verb"] = String(task.get("verb", ""))
+	row["task_target"] = String(task.get("target", ""))
+	row["task_approach"] = task.get("approach", [])
+	var trace := []
+	var reached := -1.0
+	var waited := 0.0
+	while waited < FLANK_WATCH_S:
+		await _seconds(1.0)
+		waited += 1.0
+		if not target.is_alive():
+			break
+		var alive := members.filter(func(n: String) -> bool: return _alive(n))
+		if alive.is_empty():
+			break
+		var at := _centroid(alive)
+		var out := Vector3(at.x - target.global_position.x, 0.0, at.z - target.global_position.z)
+		var error := rad_to_deg(absf(Vector2(out.x, out.z).angle_to(Vector2(side.x, side.z))))
+		trace.append([waited, snappedf(error, 0.1), snappedf(out.length(), 0.1)])
+		if reached < 0.0 and error <= FLANK_WITHIN_DEG:
+			reached = waited
+		if waited == 30.0:
+			await _shot("flank_2_closing")
+	await _shot("flank_3_end")
+	row["trace"] = trace
+	row["reached_side_s"] = reached
+	if not trace.is_empty():
+		row["end_side_error_deg"] = trace[trace.size() - 1][1]
+		row["end_m"] = trace[trace.size() - 1][2]
+		var best := 180.0
+		for sample: Array in trace:
+			best = minf(best, float(sample[1]))
+		row["best_side_error_deg"] = best
+	print("SCREEN %s" % JSON.stringify(row))
+	_results.append(row)
 
 
 func _nearest_enemy(members: Array[String]) -> float:
