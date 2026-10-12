@@ -88,6 +88,15 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   (fight-option 121 → 52, ordered-MOVE 225 → 47 — the MOVE drop unexplained: divergence or a path, to trace). Next: where
   the 81 % off-target fight time goes (option × motion, in reach, planner active); any v2 bar sent before its census.
 
+- **CP-S v2 bar (pre-registered 2026-10-11, scout proposed, the orchestrator amended, before the census):** v1's MOVE
+  contact drop was divergence (arms differ before first contact). 45 % of a scout's fight time is outside the planner
+  (ENGAGE out of reach/sight 24 %; SUPPRESS 20 %, FLANK 9 %, CLEAR_LANE 4 %: brains' motion — filed). Two v1 defects fixed
+  (a hold winning on commitment 134° off; `_combat_move`'s outranging stop firing 140–155° off). **PRIMARY:** gun on
+  target in reach (range + LOS) during ENGAGE, paired new − `--scout-off=gunlay`, **fresh seeds 13–36** (1–12 were traced:
+  reported only); ≥ +5 pts outside 2 se ships, +2..+5 outside 2 se ships with a note. **GUARDS (paired, not worse beyond
+  2 se):** on target / all fight-s; in-reach ENGAGE share of fight-s; fight-option enemy contacts. Plus scenario (1) all 5
+  bars n = 18, check green, thirteen declared, ≤ 0.5 ms a tick.
+
 **Checkpoints:** **CP0** brains' B0 → orders merges main. **CP-S** scout's declared change (+ native's port of any
 `decide` diff) → everyone merges main. **CP-B2**, **CP-B4** brains' declared changes, each alone. Native's E1 (OFF)
 merges whenever green; native merges main at CP-S.
