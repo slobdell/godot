@@ -222,6 +222,14 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   mixed_legs, cannot-catch, elements, seat_nearest). The pinned leader IS "keep the lead's role"; the unpin's one gain was
   overtaken by CP1a. Kept on `lab/brains-b4-point` (`9f15bfd9`).
 
+- **Native's quiet slot (2026-10-12 02:29–02:49, `ed6ecaa9`, builder0 quiet, pinned 0-3, n = 3 a arm, no void):** A —
+  execute ~30 % of the tick's scripts at 20 a side, GDScript in it 19–22 % of the tick (inside the 12–22 % band: the
+  estimate is not re-told); ~60 µs of GDScript a crew (the "27" and "200–300" figures both retired). B — `native_cb`
+  saves 0.8–1.3 % at 50 v 50 (< 2 %): STAYS OFF. C (second reading, no ruling) — stage 1 v default: tick's scripts
+  −7.6 % / −8.5 % at 20 a side (foundry / parade), −8.1 % / −8.8 % at 25; execute ~88 → ~65 µs a crew. **Below the
+  11–15 % estimate he decided on; internal until E6 (the laptop rules), with native's pre-registered estimate of what the
+  remaining ports add written first.**
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
