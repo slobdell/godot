@@ -86,6 +86,13 @@ const PURSUIT_LEAD_S := 3.0
 ## closing on it while it runs); one that is attacking keeps attacking until this much farther out (metres), so a crew
 ## at the edge of its reach is not re-ordered every update.
 const PURSUIT_HYSTERESIS_M := 15.0
+## Round 27 (B0, C27.3): AN ATTACK WITH A DRAWN APPROACH comes in from the side he drew. Until the element stands within
+## this many degrees of that side (bearing from the target), it drives round the target at its guns' longest reach, a notch of
+## APPROACH_STEP_DEG at a time (a fixed point per notch, so the crews are not re-sent every update); then it goes in as
+## any attack does. A running target is a pursuit and has no side (the chase above).
+const APPROACH_CONE_DEG := 30.0
+const APPROACH_STEP_DEG := 45.0
+const APPROACH_LEAD_DEG := 15.0
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
@@ -202,6 +209,9 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		if bool(state.get("pursuing", false)):
 			_plan_pursuit(plan, situation, state, table, destination)
 			return
+		var approach: Variant = ElementTask.approach(task)
+		if approach is Vector3 and _plan_approach(plan, situation, state, table, destination, approach, band):
+			return
 		if to_go <= band:
 			plan["formation"] = "line"
 			plan["arrived"] = false
@@ -251,6 +261,61 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
 			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
 
+
+
+## Round 27 (B0, C27.3): an attack with a drawn `approach` (the direction of the run in). Until the element is on that
+## side of the target (APPROACH_CONE_DEG of bearing), it drives round at its guns' longest reach (`range`, at least `band`) to the next notch
+## toward it, the shorter way round (kept once chosen), on a named move: the crews lay their guns on the target and shoot
+## on the way, but nobody stops to fight on the wrong side. Once there it is "in" for the life of the task (a fight that
+## swings the element about does not send it round again) and this returns false: the attack goes in as before.
+## Writes plan["approach_round"] = {"in", "side"} (Element keeps it). Returns true when it planned the drive round.
+static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		target_point: Vector3, approach: Vector3, band: float) -> bool:
+	var kept: Dictionary = state.get("approach_round", {})
+	if bool(kept.get("in", false)):
+		plan["approach_round"] = kept
+		return false
+	var center: Vector3 = situation["center"]
+	var off := approach_off_deg(center, target_point, approach)
+	if absf(off) <= APPROACH_CONE_DEG:
+		plan["approach_round"] = {"in": true, "side": int(kept.get("side", 0))}
+		return false
+	var side := int(kept.get("side", 0))
+	if side == 0:
+		side = 1 if off >= 0.0 else -1
+	plan["approach_round"] = {"in": false, "side": side}
+	# The angle still to go round, the chosen way (past 180 when the element was carried across the far side).
+	var remaining := fposmod(off * side, 360.0)
+	# The notch at least APPROACH_LEAD_DEG further round: a formation never stands exactly on its point (its centre sat
+	# 6 deg short of a notch for 25 s on the stage, every crew on its slot), so "the notch I am at" must not be one.
+	var notch := maxf(0.0, floorf((remaining - APPROACH_LEAD_DEG) / APPROACH_STEP_DEG)) * APPROACH_STEP_DEG
+	# Round at the crews' longest reach (a tank's cannon: 70 m, against 45 effective): wide of the target's own guns
+	# where it can, and still shooting. Round at 45 m the stage's squad drove inside them and was "ambushed" by its target.
+	var radius := band
+	for member: Dictionary in members_of(situation):
+		radius = maxf(radius, float(member.get("range", 0.0)))
+	if not is_finite(radius):
+		radius = 60.0
+	var around := atan2(-approach.z, -approach.x) + deg_to_rad(notch * side)
+	var waypoint := clamp_to_arena(target_point + Vector3(cos(around), 0.0, sin(around)) * radius)
+	var heading := TacticsFormation.flat(waypoint - center)
+	plan["heading"] = heading
+	plan["anchor"] = waypoint
+	plan["arrived"] = false
+	plan["why"] = "%s; going round to attack from the side ordered" % String(plan["why"])
+	var spacing := table.spacing(String(situation["terrain"]))
+	_group(plan, slot_order(situation), String(plan["formation"]), waypoint, heading, spacing, "move",
+			String((state.get("task", {}) as Dictionary).get("target", "")))
+	return true
+
+
+## Round 27 (B0): how far round the target (signed degrees, -180..180) the element at `center` stands from the side an
+## approach comes from (the target's side opposite to `approach`); 0 = on it. Pure.
+static func approach_off_deg(center: Vector3, target_point: Vector3, approach: Vector3) -> float:
+	var at := center - target_point
+	if Vector2(at.x, at.z).length_squared() < 1e-6:
+		return 0.0
+	return rad_to_deg(wrapf(atan2(at.z, at.x) - atan2(-approach.z, -approach.x), -PI, PI))
 
 
 ## A plain move (X4: the player's right-click to a whole element) is the lead's form-up formula taken literally: ONE

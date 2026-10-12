@@ -77,4 +77,13 @@ Nothing.
 
 ## Status
 
-_Not started._
+**Plan (2026-10-11, in order):** B0 (attack honours `approach`; CP0 → orders) → B1 (the every-crew arrive line, tooling
++ mutation check, re-read the arrive series and the Sumps cell) → B2 (re-seat round the parked crew, from
+`lab/brains-mr2`; DECLARED) → B3 (make-room priced by removal under B1's line) → B4 (drill seats by nearest keeping the
+lead's role; DECLARED) → B5 (ambush guns 30° off: trace first) → B6 held.
+
+**B0 — in progress.** Design (one line each): the attack drives ROUND the target at its guns' reach (the band) in 45°
+notches (fixed points, so crews are not re-sent every update) until its centre is within 30° of the drawn side, then it
+is "in" for the life of the task and attacks as before; the way round is the shorter one, kept once chosen; on the way
+the crews are on a NAMED MOVE (guns laid on the target, shooting on the move, nobody stopping to fight from the wrong
+side). A running target is a pursuit and ignores the side (a chase has no flank to come round to).
