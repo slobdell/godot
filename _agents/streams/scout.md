@@ -121,6 +121,15 @@ _Updated 2026-10-11 night (scout worker)._
 sim-baseline as declared in 36d67c08 (all thirteen read "unmoved" against it); determinism `2875411ff4ec6be7`, the same
 as main's 090b345d). Commits after it on this branch are Status/tooling only (no game file).
 
+### After CP-S: the range trace (the orchestrator's question: does backing up open range, so damage stays flat?)
+Census seeds 13–36, ENGAGE only, builder0, tree 16e9fd89 (CP-S + range columns), off → new: seconds in reach 1448 →
+1138; **seconds bearing 455 → 526 (+16 %)**; mean range while bearing **21.1 → 26.4 m**; while in reach 21.2 → 23.9 m.
+The planner does open the range ~5 m, but it bears MORE seconds and stays well inside the machine gun's 35 m
+fire-discipline edge (Engagement holds fire past `effective_range`); acquisition (the other gate) does not reset on
+aim. **Reading: no range term is warranted by this evidence.** The flat damage (−142 a seed, se 191) is most likely
+fire outside ENGAGE (SUPPRESS is 20 % of fixed-gun fight time and fires at ground/targets the brain-target measure does
+not count) plus per-seed noise; not traced further (the damage per option would need a per-shot attribution).
+
 ### What to playtest (exact commands)
 - `make showmatch SEED=13` (Parade, Gangs v Law) — watch the Law's police-car scouts; `CONTROL_FLAGS=--scout-off=gunlay`
   for the old behaviour. Clips (1080p, rendered on builder0 at `90413868`/`ae0a50a4` tree):
@@ -289,8 +298,12 @@ SECONDS new engage_in_reach=1138 fight=4023
 | | cross10 L→R / R→L | 0.43→0.63 / 0.88→0.83 | 0.6→0.4 / 0.7→0.6 | 0 / 0 |
 | | **his case** | 0.61→0.64 | 3.2→0.6 | 24 (18) → **9 (9)** |
 Law scout: 4 of 5 bars (his case's re-acquire 2.3 s). Gang scout: 3 of 5 (cross5 L→R re-acquire 2.1 s; his case still
-touches in half the runs). Next step (not in CP-S): trace the gang scout's contacts in his case (a 4.5 m circle and a
-faster hull: the touch margin `hull_length × 0.4` may be too tight at 18 m/s).
+touches in half the runs). **Traced** (SCOUT_PROBE, start ticks 1/6/11, seed 1, builder0 light lane, 16e9fd89): the
+touch is in the first 0.5 s and the planner never ran: (a) the first think is PURSUE ("ordered, closing in": an ordered
+target not yet seen drives at its position, 2 m arrive — brains' `act`), then (b) `_combat_move`'s **short halt**
+(slow-reload guns: the spear gun reloads long enough) returns "stop" at 3.1 m before the planner is asked — a halt
+that knows neither the aim nor the turning room. (b) is mine: candidate for the next declared change (a fixed gun on
+the planner short-halts only when its gun bears and it stands outside its turning room).
 
 ### Questions for the lead
 None yet.
