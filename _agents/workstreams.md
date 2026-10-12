@@ -39,6 +39,10 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   path (`--brains-off=native` or the switch off) and send native each SETTLED diff before its commit (SendMessage,
   orchestrator copied); native ports it with an equal-answer proof; the orchestrator merges the pair back to back and
   checks once. Native keeps every port it has OFF-proven green at all times.
+  **Stage 1 is ON (E6, 2026-10-12): the C++ OWNS the execute state.** Any GDScript code that writes a `Movement` /
+  `Gunnery` / lay member outside the native execute MUST mark it stale (`movement.native_stale |= Movement.STALE_*`),
+  or the native drive keeps the old value (found: `_kturn_start_leg`, 31006db9's check). Native audits every such door;
+  traffic and manoeuvre add the stale line to every new write and run `exec_verify` on their scenarios.
 - **C28.3 Stage 1's ruling is the laptop's** (E6, rule D in native's Status): ON only if the laptop's paired ABBA arms meet
   the pre-registered bar; the prediction (20 a side 0.97–0.99, 25 a side 0.85–0.87 of real time) is told to him as
   measured, beside the 1.00–1.03 he was told when he chose.
