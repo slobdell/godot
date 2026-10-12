@@ -171,8 +171,11 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   9 → 4; resends 25 in 19 cells, none twice, no loop; (3) 108: 106 = 106 control; fight guards 39/0; (7) 15 v 13/18;
   (8) 24 v 23/24. CPU side, check and cost pending.
 - **FOUND (brains): his bridge 108 is 106/108 on main `f4c5f7c9`** (seed 2: his side tick 5, CPU tick 9, one rim crew each;
-  round 26 left it 108/108 at `eb987e87`). Not B2 (both arms). Bisect given to scout: 090b345d v f4c5f7c9 v
-  `--scout-off=gunlay`.
+  round 26 left it 108/108 at `eb987e87`). Not B2 (both arms). **Bisected (2026-10-12): round 26's tail, not round 27.** Both cells
+  fail identically at `090b345d` (round 26's close; orchestrator, builder0 light: green t5 rim 4.1 s, rust t9 rim 6.8 s,
+  4/4 crossed, arrived 51.0 / 51.9 s) and at `f4c5f7c9` with and without CP-S (scout: byte-identical records; no fixed
+  gun in the drill: 4 law_tanks v 3 lancers). Between `eb987e87` (108/108) and `090b345d`: a round-27/28 brains
+  candidate (one tank hesitating 3.5–6.8 s at the rim; all crews cross).
 
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
