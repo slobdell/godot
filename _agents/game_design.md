@@ -3860,3 +3860,15 @@ predicted band, but today's base on his laptop is 0.890, not round 26's 0.918, s
 Shipped as measured (native_exec + native_owned + native_cb ON). The rest of the gap is the think half (stage 2), which
 native prices for him next (N4).
 
+### Round 28: his stage 2 call, and a C++ principle (2026-10-12, in chat)
+
+> ok sure we'll go with your recommendation and defer, but we should flag as an open item. I think at this point, even if
+> there's not an obvious benefit to moving to C++, it would appear that long-term we are better positioned for a good game
+> by having the core components in C++
+
+Decided: **stage 2 (the AI's thinking in C++) is DEFERRED, an open item** (`roadmap.md` *Open items*), to be taken up once
+the AI's decisions settle. **His principle, superseding round 25's "port only what pays":** core components belong in C++
+long-term even without a measured speed gain; a port that is equal-answer, proven, and moves a core component (the
+execute's remaining GDScript, nav, perception, combat resolution) is worth doing on its own. The think half waits only
+because it is still changing.
+

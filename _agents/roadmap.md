@@ -209,6 +209,12 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
+## Open items (standing; revisit each round)
+
+- **Stage 2: the AI's thinking in C++** (deferred by him 2026-10-12, `game_design.md` *Round 28: his stage 2 call*): ~18 %
+  of the tick's scripts, 25 a side ~full speed on his laptop, ~1–2 weeks; AI-decision changes ~1.5–2× after. Take it up
+  when the tactics settle. His principle: core components in C++ long-term, even without a measured gain.
+
 ## Round 28 candidates (collected during round 27, 2026-10-12) — SPLIT 2026-10-12 ~11:45 as traffic + manoeuvre + brains + native + scout (`workstreams.md` *Round 28*); his four calls answered (all recommended)
 
 **His answers first:** the calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (`read_db` `decisions/<id>`):
