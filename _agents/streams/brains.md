@@ -120,16 +120,35 @@ on main (S_2, the IFV, 11.3 m off), as round 26 traced.
   floor, `ArrivalLine.ELEMENT_TOLERANCE_M`); lesson 293's stuck crews (19–26 m) fail both. Both are reported; the
   strict one stays the line until ruled.
 
-**B2 — v1 measured, FAILS its rule; v2 running.** Built: round 26's clock pause (`lab/brains-mr2`) + a re-seat that keeps
-every squadmate parked on its own slot in its seat (`Element._parked_seats` → `plan.reseat_keep` →
-`TacticsFormation.seat` opts `keep`; `--reseat-keep=off`). Ship rule sent before numbers (accepted, + (6) the CPU's side
-reported per side, (7) the Sumps cell at seeds 2–4 reported). v1, `make cell-series` (Sumps, seeds 1–4 × start ticks
-{1,3,6,8,11,16}), builder0, tree `3aa67b17` + B2, strict line: control 12/24, B2 14/24; seed 1 1/6 → 4/6 (tick 1 still
-fails: rule (1) not met); **seed 2 6/6 at 24.8 s → 3/6 at 57.1 s**; re-seats 4 → 47. Cause: the pause banked "stuck"
-time for every slow-but-driving crew (pacing, queuing). v2: the clock pauses only while the crew presses a squadmate
-parked on its slot (`Element._pressing_parked`); elsewhere a slow tick resets it, as before.
+**B2 (DECLARED) — built at `787cd2e4` (+ `1468b21b`: `--b2=off`, the probe's control flag); judged runs in flight.**
+Three parts, one change: (1) the stuck clock PAUSES on a slow tick only while the crew presses a squadmate parked on its
+own slot (`Element._pressing_parked`), else resets as before; (2) a re-seat keeps every squadmate parked on its own slot
+in its seat (`_parked_seats` → `plan.reseat_keep` → `TacticsFormation.seat` `keep`); (3) the stuck watch runs on after
+the element says arrived (8 of the arrive series' 10 crews left 13–29 m off had 0 re-seats), guarded per the
+orchestrator: it rests while a drill runs and skips a crew on an attack order or hit in the last 5 s
+(`reseats_after_arrival` counted). Switches `--stuck-pause=off`, `--reseat-keep=off`, `--watch-arrived=off`.
+- Ship rule registered before numbers, accepted with (6) the CPU's side per side, (7) Sumps seeds 2–4 reported, (8)
+  Sumps at fresh seeds 5–8 reported. **The judged line is `all_in8_s` (C27.5 ruling)**; the strict line beside it.
+- **Tuning history (disclosed to the orchestrator; Sumps seeds 1–4 are tuning data now):** v1 (pause everywhere + keep),
+  strict line: control 12/24, B2 14/24, seed 2 6/6 at 24.8 s → 3/6 at 57.1 s, re-seats 4 → 47 → the pause narrowed.
+  v2 (narrowed pause + keep): 8 m line control 14/24 → 17/24, seed 2 back to 6/6. v3 = + the watch after arrival
+  (unguarded, tuning only).
+- **Fight guards at `787cd2e4`** (builder0, light lane; pursuit incl. the let-go guard, cpu_hold, mixed_legs,
+  make_room, elements, facing live, reseat_keep, arrival_line): **39 passed / 0 failed**; Sumps two scouts 20.4 s
+  (main 20.4); four tanks 53.0 s.
+- In flight: the 100-cell arrive series `ARRIVE_ARM_FLAG=b2` (seeds 1–4, both arms in one run), the CPU's side
+  (`--side=cpu`, seeds 1–2), the Sumps cell seeds 1–4 and 5–8 (both arms), his bridge 108 (scratch worktree
+  `godot-brains-lab` at `1468b21b`).
 
-**B5 — cause found, fix built (uncommitted, untested).** An unsprung ambush's weapon order is a bare `hold_fire`
+**B3 — make-room priced by removal: NO measured gain on main.** Arrive series (round 18's five squads × yard /
+terminus / pit / sumps / cut × seeds 1–4 = 100 cells per arm), builder0, `3aa67b17`, B1's strict line: make-room on
+68/100, off 68/100, identical cell for cell except the Sumps four-tank row (1 swap in 100 runs, no extra arrival; the
+element's own flag said 99 v 98). Decision (the orchestrator's ruling): NOT retired inside B2; after B2 merges, the same
+series with and without make-room under B2 decides it (retire if still ~0; it stays the swap budget's only user).
+
+**B5 — DONE on the branch (`417863c7`); merges after B2 (it rides the same checks).** B5 measured at `787cd2e4`
+(builder0, `test_tactics_facing_tasks_live`): the ambush's mean GUN 0.2° off the drawn facing (round 26: a flat 30°),
+hulls 1.4° mean. Cause and fix: An unsprung ambush's weapon order is a bare `hold_fire`
 (`TankBrain._order_weapon`), and Gunnery leaves a hold-fire turret where it was ("keep the turret where it is"), so the
 sector the line gave each crew never reached its gun; every other line task lays an idle gun on its sector (Gunnery's
 round-18 D1 rule). Think-side fix: an unsprung ambush crew with a sector gets `aim` at a point 60 m out on it (aim never

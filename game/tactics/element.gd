@@ -526,8 +526,12 @@ func _watch_progress(game_match: Match) -> void:
 		var slot: Variant = slots[unit_name]
 		if tank == null or not (slot is Vector3):
 			continue
+		# ...and after arrival it watches only a crew pressing a squadmate parked on its slot: a halt settling into its
+		# seats also "drives without closing" for a few seconds, and watched as a whole (v3) it re-seated 89 times in 61
+		# of the arrive series' 100 cells and lost 4 of them (builder0, the 8 m line).
 		if arrived and (tank.ticks_since_hit < WATCH_HIT_TICKS \
-				or String((_issued.get(unit_name, {}) as Dictionary).get("verb", "")) in ["attack", "attack_move"]):
+				or String((_issued.get(unit_name, {}) as Dictionary).get("verb", "")) in ["attack", "attack_move"] \
+				or not _pressing_parked(unit_name, tank, by_name)):
 			_closest.erase(unit_name)
 			continue
 		var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
