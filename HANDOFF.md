@@ -23,7 +23,10 @@ baseline check). He pushes `main`._
 | **scout** | `godot-scout` (5) | scouts keep the gun on target while suppressing |
 
 **E6 DONE (11:21–11:54): stage 1 rules ON** — his laptop, 20 a side 0.890 → 0.930 of real time, 25 a side 0.818 → 0.865
-(he was told 1.00–1.03 at 20; tell him plainly). Native ships the measured set ON next (N2). **The orchestrator's jobs:** E6 is GRANTED (he approved the laptop; native was re-sent GO 11:25 after missing the 04:00
+(he was told 1.00–1.03 at 20; tell him plainly). **Stage 1 is ON on main (`129951d5` = native `57331307`; green `057e3fa0`)** with the doors audit, the exec-verify
+detector (`native-verify-scenarios` now in CHECK_TARGETS, `bf710e49`) and an exit-time heap-corruption fix. Stage 2 (the
+think half: ~18 % of the tick's scripts, 25 a side ~full speed, ~1–2 weeks, AI-decision changes ~1.5–2× after) is on his
+calls page as question 5 (`stage2-cpp`), recommended "later, once the AI's decisions settle". **The orchestrator's jobs:** E6 is GRANTED (he approved the laptop; native was re-sent GO 11:25 after missing the 04:00
 one); merge each declared change ALONE with native's port (C28.2); collect each bar before its numbers; read his answers
 from the calls page if he adds more. **He is away at work: never ask him; decide and tell him after** (memory).
 
