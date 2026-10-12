@@ -166,6 +166,14 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   seeds 37–60 (13 gang): contacts +0.08/seed, se 0.66, no effect. Kept on branch `scout-s4-halt`; reverted on
   stream/scout. **Scout's backlog is complete; it stops after its final report** (frees builder0 for native's quiet slot).
 
+- **B2 v5 (2026-10-12, brains `3e54110e`, builder0, 8 m line), passing so far:** (1) Sumps seed 1 tick 1 arrives 82.6 s, seed 1
+  6/6; (2) fresh seeds 9–12: 95 v 88, gained 8, lost 1, median +0.0 % (strict 74 v 67); hollow 33 → 26, crews > 12 m off
+  9 → 4; resends 25 in 19 cells, none twice, no loop; (3) 108: 106 = 106 control; fight guards 39/0; (7) 15 v 13/18;
+  (8) 24 v 23/24. CPU side, check and cost pending.
+- **FOUND (brains): his bridge 108 is 106/108 on main `f4c5f7c9`** (seed 2: his side tick 5, CPU tick 9, one rim crew each;
+  round 26 left it 108/108 at `eb987e87`). Not B2 (both arms). Bisect given to scout: 090b345d v f4c5f7c9 v
+  `--scout-off=gunlay`.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
