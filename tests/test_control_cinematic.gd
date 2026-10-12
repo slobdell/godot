@@ -154,3 +154,12 @@ func test_the_directed_camera_never_shows_under_the_arena_by_the_wall() -> void:
 	var off := CinematicCamera.off_arena(f.rig.camera, size)
 	assert_eq(float(off["under"]), 0.0, "no ground cut away (%s, near %.2f)" % [off, f.rig.camera.near])
 	assert_true(director.shot().size() > 0, "and it is still filming them")
+	assert_true(not f.rig.yaw_follow, "the director owns the angle: the rig's yaw-follow is off")
+	var turns := 0
+	var last := f.rig.yaw
+	for frame in 40:
+		await tree.process_frame
+		if not is_equal_approx(f.rig.yaw, last):
+			turns += 1
+			last = f.rig.yaw
+	assert_eq(turns, 0, "and it holds that angle instead of flapping between two")

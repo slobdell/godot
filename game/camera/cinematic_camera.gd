@@ -61,6 +61,10 @@ func start() -> void:
 	rig.vision_region = null
 	rig.stop_tracking("replaced")
 	rig.follow_target = null
+	# Round 27 (O2): the director owns the angle. The rig's yaw-follow turned the view toward a selection's facing,
+	# which fought the director's turns away from the wall (seed 202 Docks: 139 jumps of 60 deg+ in 201 s).
+	if not keep_angle:
+		rig.yaw_follow = false
 	_age = SHOT_SECONDS  # the first frame picks a shot
 
 
