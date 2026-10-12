@@ -201,6 +201,61 @@ not, whether the planner ran — the census now breaks fight time down by option
 - And: scenario (1) all five bars at n = 18 (v2: passes); `make check` green; thirteen lines declared; cost ≤ 0.5 ms.
 - Seeds 1–12 under v2 (traced, not judged; v1 numbers): primary +7.98 pts se 5.61; all-fight +1.34 se 3.06.
 
+### CP-S v2 result: PASSES (blind census, tree `90413868`, builder0, seeds 13–36, new v `--scout-off=gunlay`)
+```
+seed  arena        factions             |   rOFF   rNEW   bOFF   bNEW   diff | allOFF allNEW
+13    parade       gangs/law            |    91s    93s  18.2%  48.6% +30.4 |   9.3%  23.9%
+14    pit          law/syndicate        |     5s    12s   9.3%  79.9% +70.7 |  20.8%  31.9%
+15    no ENGAGE in reach (off 0 s, new 0 s): not paired
+16    pit          condemned/law        |   185s   118s  37.4%  69.6% +32.2 |  18.9%  24.6%
+17    yard         gangs/syndicate      |    25s    21s  31.4%  14.9% -16.5 |   5.3%   2.1%
+18    gorge        law/condemned        |     8s    10s  85.3%  89.8%  +4.5 |  34.7%  46.3%
+19    yard         syndicate/gangs      |     6s     2s  39.4%  56.9% +17.5 |   3.3%   1.6%
+20    cut          syndicate/gangs      |    51s    68s  13.6%  15.1%  +1.5 |  10.0%  10.7%
+21    parade       condemned/syndicate  |     6s     7s  33.9%  46.9% +13.0 |  18.9%  12.1%
+22    terminus     gangs/condemned      |   129s    91s  37.0%  63.6% +26.6 |  18.0%  26.9%
+23    yard         law/gangs            |    17s    70s  16.3%  39.2% +22.9 |   7.8%  23.6%
+24    yard         syndicate/law        |     3s     7s  39.8%  73.2% +33.5 |  13.9%  28.7%
+25    crossing     condemned/gangs      |    11s    23s  39.9%  76.3% +36.4 |  21.8%  39.1%
+26    cut          gangs/law            |   362s   224s  34.6%  44.6% +10.0 |  17.3%  22.4%
+27    no ENGAGE in reach (off 0 s, new 0 s): not paired
+28    yard_open    syndicate/condemned  |    77s    74s  11.4%  47.6% +36.2 |  21.1%  30.6%
+29    terminus     condemned/law        |    38s    16s  15.5%  17.6%  +2.1 |  17.6%  24.1%
+30    yard         condemned/law        |     8s     9s  48.5%  63.8% +15.3 |  38.4%  43.1%
+31    archipelago  gangs/syndicate      |    25s     8s  69.4%  19.5% -49.9 |  13.5%   1.1%
+32    docks        law/condemned        |    64s   106s  17.3%  43.5% +26.2 |  20.2%  26.4%
+33    locks        syndicate/gangs      |    17s    11s  25.5%  46.2% +20.7 |  17.6%  26.1%
+34    no ENGAGE in reach (off 0 s, new 0 s): not paired
+35    pit          gangs/condemned      |   234s   112s  42.9%  44.6%  +1.7 |  24.1%  21.8%
+36    archipelago  law/gangs            |    85s    57s  11.8%  15.6%  +3.8 |   6.3%   6.1%
+PRIMARY n=21 engage_in_reach_on_target diff mean +16.14 pts, se 5.16 (2 se 10.33)
+GUARD   n=21 all_fight_on_target diff mean +5.46 pts, se 1.72 (2 se 3.43)
+GUARD   n=21 engage_in_reach_share diff mean -3.42 pts, se 2.01 (2 se 4.03)
+GUARD   n=21 fight_option_contacts diff mean -6.57 a seed, se 3.63 (2 se 7.26)
+SECONDS off engage_in_reach=1448 fight=4229
+SECONDS new engage_in_reach=1138 fight=4023
+```
+(b = gun on target within reach during ENGAGE; r = those in-reach seconds; all = on target / all fight-s.)
+- PRIMARY **+16.1 pts, se 5.16** (outside 2 se, ≥ +5): ships. GUARDS: all fight-s **+5.5 pts, se 1.7** (up);
+  in-reach share −3.4 pts, se 2.0 (inside 2 se: passes, closest of the guards; the scout spends ~20 % fewer seconds
+  with its target in reach — the turning room and the backing up); fight-option contacts −6.6 a seed, se 3.6 (not up).
+- **Cost (C27.4):** `make scout-cost` (Sumps, 2000 credits ≈ 16–25 a side, 3 faction pairs, seed 1, 8–90 s, builder0
+  light lane while loaded): plan_lay **0.035 ms a tick mean, 0.062 max**, ~400 µs a plan, 0.01–0.13 plans a tick.
+- Unit tests: `tests/test_scout_lay.gd` 7/7 and `test_ai_combat_motion` 15/15 (builder0 light lane, `90413868`).
+
+### S4 (stretch): the other fixed guns (all wheeled; the Syndicate fields none), scenario pool n = 18 a case
+| hull | case | on target off → new | re-acquire s off → new | contacts (runs) off → new |
+|---|---|---|---|---|
+| law_scout (R 5.5) | cross5 L→R / R→L | 0.40→0.66 / 0.50→0.77 | 6.8→1.0 / 2.6→1.1 | 0 / 0 |
+| | cross10 L→R / R→L | 0.41→0.67 / 0.70→0.78 | 0.7→0.8 / 1.2→1.0 | 0 / 0 |
+| | **his case** | 0.54→0.74 | 3.8→**2.3** (bar 2.0) | 18 (18) → 0 |
+| gang_scout (R 4.5, spear gun) | cross5 L→R / R→L | 0.42→0.52 / 0.83→0.65 | 0.7→**2.1** / 0.9→1.0 | 39 (18) → 0 / 0 |
+| | cross10 L→R / R→L | 0.43→0.63 / 0.88→0.83 | 0.6→0.4 / 0.7→0.6 | 0 / 0 |
+| | **his case** | 0.61→0.64 | 3.2→0.6 | 24 (18) → **9 (9)** |
+Law scout: 4 of 5 bars (his case's re-acquire 2.3 s). Gang scout: 3 of 5 (cross5 L→R re-acquire 2.1 s; his case still
+touches in half the runs). Next step (not in CP-S): trace the gang scout's contacts in his case (a 4.5 m circle and a
+faster hull: the touch margin `hull_length × 0.4` may be too tight at 18 m/s).
+
 ### Questions for the lead
 None yet.
 

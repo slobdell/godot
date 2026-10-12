@@ -25,11 +25,11 @@ extends TestCase
 ##   dies        who would have died (damage against max health + shield; both are durable so the run stays measurable)
 ##
 ## Default: one start tick and one seed per case (the check's subset). `--scout-pool` runs every start tick over
-## SEEDS seeds (`make scout-cross`, mk/scout.mk). The tests are PENDING until S1/S2 ship (the behaviour is not built):
-## the bars were written before any number was measured.
+## SEEDS seeds (`make scout-cross`, mk/scout.mk). The bars were written before any number was measured (PENDING at S0,
+## promoted at CP-S).
 
-const PENDING := ["test_crossing_5m_left_to_right", "test_crossing_5m_right_to_left", "test_crossing_10m_left_to_right",
-		"test_crossing_10m_right_to_left", "test_target_drives_away_east_from_contact"]
+## Round 27: promoted at CP-S (CombatMotion.plan_lay); `--scout-off=gunlay` fails four of the five again.
+const PENDING := []
 
 const START_TICKS := [1, 3, 6, 8, 11, 16]
 const SEEDS := [1, 2, 3]
@@ -50,6 +50,14 @@ const ON_TARGET_BAR := 0.5
 const REACQUIRE_BAR := 2.0
 
 
+## S4: which fixed gun plays the scout (`--scout-unit=gang_scout`; default the Condemned scout).
+static func _unit() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--scout-unit="):
+			return String(arg).trim_prefix("--scout-unit=")
+	return "scout"
+
+
 static func _pooled() -> bool:
 	return OS.get_cmdline_user_args().has("--scout-pool")
 
@@ -57,7 +65,7 @@ static func _pooled() -> bool:
 ## One case: where the tank starts (relative to the scout, in the scout's frame: x right, z ahead), its yaw, and where
 ## it drives.
 static func case_setup(kind: String) -> Dictionary:
-	var scout_half := 3.04 / 2.0
+	var scout_half := float(Movement.hull_box(_unit())[2]) / 2.0
 	var tank_half_width := 2.90 / 2.0
 	match kind:
 		"cross5_lr", "cross5_rl", "cross10_lr", "cross10_rl":
@@ -82,7 +90,7 @@ func run_case(kind: String, start_tick: int, seed_value: int, probe := false) ->
 	var target := s.shooter(Match.Team.RUST, "Rust_Tank_1", setup["from"], float(setup["yaw"]), {"type": "stop"},
 			{"type": "fire_at_will"})
 	AiScenario.make_durable(target)
-	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", SCOUT_AT, 0.0, {}, "scout")
+	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", SCOUT_AT, 0.0, {}, _unit())
 	var scout_full := float(scout.max_health) + float(scout.max_shield)
 	AiScenario.make_durable(scout)
 	var orders := s.orders()
@@ -225,8 +233,8 @@ func pool(kind: String) -> Dictionary:
 	var out := {"n": n, "on_target": on_target / n, "contacts": contacts, "touched_runs": touched_runs,
 			"reacquire_median": median, "lost_runs": reacquires.size(), "never": never, "reverse_s": reverse_s / n,
 			"west_3s": west / n, "shots": shots / float(n), "hits": hits / float(n), "scout_dies": scout_dies}
-	print("MEASURE scout_cross %s n=%d on_target=%.2f reacquire_median=%.1f (lost in %d, never back %d) contacts=%d in %d runs reverse_s=%.1f dx_3s=%.1f shots=%.0f hits=%.0f scout_dies=%d" % [
-			kind, n, out["on_target"], median, reacquires.size(), never, contacts, touched_runs, out["reverse_s"],
+	print("MEASURE scout_cross %s unit=%s n=%d on_target=%.2f reacquire_median=%.1f (lost in %d, never back %d) contacts=%d in %d runs reverse_s=%.1f dx_3s=%.1f shots=%.0f hits=%.0f scout_dies=%d" % [
+			kind, _unit(), n, out["on_target"], median, reacquires.size(), never, contacts, touched_runs, out["reverse_s"],
 			out["west_3s"], out["shots"], out["hits"], scout_dies])
 	return out
 

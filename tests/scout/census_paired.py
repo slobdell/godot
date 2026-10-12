@@ -78,6 +78,24 @@ def primary(new_dir, off_dir):
         seconds["new"][1] += new["fight_s"]
         print("%-5s %-12s %-20s | %5.0fs %5.0fs %5.1f%% %5.1f%% %+5.1f | %5.1f%% %5.1f%%" % (seed, new["arena"],
               "/".join(new["factions"]), ro, rn, 100 * bo / ro, 100 * bn / rn, diffs[-1], 100 * a_off, 100 * a_new))
+    # The guards with a denominator outside the primary's (every seed with fight time in both arms), and outcomes.
+    guard, contacts, outcomes = [], [], {"kills": [], "damage": [], "deaths": []}
+    for seed in seeds:
+        new = read(os.path.join(new_dir, seed + ".log"))
+        off = read(os.path.join(off_dir, seed + ".log"))
+        if new is None or off is None or new["fight_s"] <= 0 or off["fight_s"] <= 0:
+            continue
+        guard.append(100 * (new["on_target_s"] / new["fight_s"] - off["on_target_s"] / off["fight_s"]))
+        contacts.append(new["fight_contacts"] - off["fight_contacts"])
+        if "kills" in new and "kills" in off:
+            for k in outcomes:
+                outcomes[k].append((off[k], new[k]))
+    if outcomes["kills"]:
+        for k in outcomes:
+            d = [n - o for o, n in outcomes[k]]
+            dm, dse = stats(d)
+            print("OUTCOME n=%d fixed-gun %s off %.0f new %.0f, paired diff mean %+.1f a seed, se %.1f" % (len(d), k,
+                  sum(o for o, _ in outcomes[k]), sum(n for _, n in outcomes[k]), dm, dse))
     m, se = stats(diffs)
     gm, gse = stats(guard)
     print("PRIMARY n=%d engage_in_reach_on_target diff mean %+.2f pts, se %.2f (2 se %.2f)" % (len(diffs), m, se, 2 * se))

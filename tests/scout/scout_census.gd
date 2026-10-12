@@ -49,6 +49,22 @@ func _run() -> void:
 	var main: Node = (load("res://game/main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	var game_match: Match = main.get("game_match")
+	# Outcomes (the orchestrator's question: do scouts fight less?): fixed guns' kills, damage dealt and deaths. Rounds
+	# are matched to their shooter by projectile id (weapon_fired names the shooter, projectile_impact the damage).
+	var outcome := {"kills": 0, "damage": 0.0, "deaths": 0}
+	var shooter_of := {}
+	var fixed_names := {}
+	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		shooter_of[event.get("projectile_id", -1)] = String(event.get("shooter", "")))
+	game_match.projectile_impact.connect(func(event: Dictionary) -> void:
+		var shooter := String(shooter_of.get(event.get("projectile_id", -1), ""))
+		if fixed_names.has(shooter):
+			outcome["damage"] = float(outcome["damage"]) + float(event.get("damage", 0.0)))
+	game_match.unit_destroyed.connect(func(event: Dictionary) -> void:
+		if fixed_names.has(String(event.get("killer", ""))) and String(event.get("cause", "")) == "enemy":
+			outcome["kills"] = int(outcome["kills"]) + 1
+		if String(Units.stat(String(event.get("unit_id", "")), "mount", "turret")) == "fixed":
+			outcome["deaths"] = int(outcome["deaths"]) + 1)
 	var seconds := float(_flag("seconds", "180"))
 	var trace := _flag("trace", "")  # SCOUT_TRACE every 5 ticks for scouts whose name contains this
 	var dt := 1.0 / SimClock.TICK_RATE
@@ -81,6 +97,7 @@ func _run() -> void:
 				continue
 			fixed_alive += 1
 			var name := String(scout.name)
+			fixed_names[name] = true
 			var row: Dictionary = per.get_or_add(name, {"unit": scout.unit_id, "team": scout.team, "alive_s": 0.0,
 					"fight_s": 0.0, "on_target_s": 0.0, "close_s": 0.0, "reverse_s": 0.0, "contacts": 0,
 					"contacts_target": 0})
@@ -154,5 +171,6 @@ func _run() -> void:
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [],
 			"scouts": per.size(), "per_scout": per, "breakdown": breakdown}
 	out.merge(total)
+	out.merge(outcome)
 	print("SCOUT_CENSUS " + JSON.stringify(out))
 	quit(0)
