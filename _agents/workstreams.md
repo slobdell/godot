@@ -230,6 +230,12 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   11–15 % estimate he decided on; internal until E6 (the laptop rules), with native's pre-registered estimate of what the
   remaining ports add written first.**
 
+- **Live-flank calibration (brains, clicked arm only, builder0, seeds 1–3 × ticks 1/8/16, won = enemy wiped in 90 s):** 5
+  gang gun trucks v Law {IFV,IFV,scout} 0/9, {IFV,IFV,scout,scout} 0/9, {IFV,IFV,tank} 0/9, {IFV,scout} 0/9, **one holding
+  IFV 3/9 (chosen)**; 4 gang tanks v {IFV,IFV,scout} one-sided. Caveat: no squadmates, so the near-ambush part is untested;
+  **+ a reported arm with the IFV under the CPU commander (moving) for the pursuit rule** — a fix that still collapses into
+  pursuit there does not ship. **Balance candidate:** gang gun trucks lose 0/9 (clicked) to every real Law squad tried.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
