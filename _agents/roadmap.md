@@ -209,7 +209,7 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 28 candidates (collected during round 27, 2026-10-12) — NOT YET SPLIT; native (stage 1) still running
+## Round 28 candidates (collected during round 27, 2026-10-12) — SPLIT 2026-10-12 ~11:45 as traffic + manoeuvre + brains + native + scout (`workstreams.md` *Round 28*); his four calls answered (all recommended)
 
 **His answers first:** the calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (`read_db` `decisions/<id>`):
 squads crossing (take turns v push through) → traffic's convention, after stage 1; wheeled turreted hulls at rest

@@ -4,12 +4,30 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-12 ~03:45 — **ROUND 27: scout, orders and brains are DONE and closed (the section below); native
-(stage 1 C++) is still running in `godot-native` (C27.7).** Main's last green check: `3dc04293` (builder0, exited 0,
-2516/0, ALL JUDGED, thirteen unmoved, det 2875411ff4ec6be7), with native `8623c224` (2520/0) and the finished streams'
-tooling merged on top; **the combined check of `03b5be9e` is GREEN** (builder0, exited 0, 2520/0, 24 targets ALL JUDGED, thirteen unmoved, det
-2875411ff4ec6be7); after it, docs and one test-only fix (`test_combat` counts the kill by signal: a wall-clock respawn flake). He pushes
-`main`._
+_Last updated: 2026-10-12 ~11:45 PDT — **ROUND 28 IS LAUNCHED (the section below).** Main's green check covering every
+new stream's starting commit: **`ecc0d6e0`, builder0, `make check exited 0`, 2520 passed, 0 failed, 24 targets ALL
+JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7** (everything since is docs only: workers do NOT re-run a
+baseline check). He pushes `main`._
+
+## 🚀 ROUND 28 IS LAUNCHED (2026-10-12 ~11:45 PDT) — read this first
+
+**From his four calls** (`game_design.md` *Round 28 direction*: all four recommended options) and round 27's carry-overs
+(`roadmap.md` *Round 28 candidates*); split and contracts C28.1–C28.6 in `workstreams.md` *Round 28*; briefs in `streams/`.
+
+| Stream | Folder (offset) | What he will notice |
+|---|---|---|
+| **traffic** | `godot-traffic` (1) | two of his squads crossing take turns: fewer bumps, nobody left behind |
+| **manoeuvre** | `godot-manoeuvre` (2) | wheeled turret vehicles turn their whole hull to a drawn facing; no creeping in tight streets |
+| **brains** | `godot-brains` (3) | a drawn flank is carried out in a live fight; artillery shells from the drawn side |
+| **native** | `godot-native` (4, continuing) | E6 rules stage 1 on his laptop; then every driving change ported; stage 2 priced |
+| **scout** | `godot-scout` (5) | scouts keep the gun on target while suppressing |
+
+**The orchestrator's jobs:** E6 is GRANTED (he approved the laptop; native was re-sent GO 11:25 after missing the 04:00
+one); merge each declared change ALONE with native's port (C28.2); collect each bar before its numbers; read his answers
+from the calls page if he adds more. **He is away at work: never ask him; decide and tell him after** (memory).
+
+**Launch:** `make worktree STREAM=traffic OFFSET=1`, `manoeuvre 2`, `brains 3`, `scout 5` (native's worktree exists);
+kickoff prompt: `orchestration.md` *The kickoff prompt* (the same line for every stream).
 
 ## 🟡 ROUND 27: THREE STREAMS CLOSED, NATIVE RUNNING (2026-10-12) — read this first
 
