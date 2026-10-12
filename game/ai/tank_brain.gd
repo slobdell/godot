@@ -3059,17 +3059,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 				tank.estimated_velocity, incoming)
 		var loaded_for := 0 if _loaded_tick < 0 else tick - _loaded_tick
 		var halt_lead := float(s.get("features", {}).get("short_halt_lead", SHORT_HALT_LEAD))
-		# Round 27 (scout S4): a fixed gun on the lay planner halts only with its gun bearing, outside its turning room.
-		var halt_ok := true
-		if lays and CombatMotion.halt_gated():
-			var target_box: Array = Movement.hull_box(String(contact.get("unit", "tank"))) \
-					if Units.PROFILES.has(String(contact.get("unit", ""))) else [2.9, 4.0, 9.7]
-			var room := CombatMotion.turning_room({"wheels": String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels",
-					"min_turn_radius": float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0)),
-					"hull_length": float(Movement.hull_box(tank.unit_id)[2]), "target_half_width": float(target_box[0]) * 0.5})
-			halt_ok = CombatMotion.halt_allowed(my_position, me["forward"], contact["position"],
-					float(weapon["aim_tolerance_deg"]), room)
-		if halt_ok and ready_in <= braking + halt_lead and loaded_for <= SHORT_HALT_MAX_TICKS and not about_to_be_hit \
+		if ready_in <= braking + halt_lead and loaded_for <= SHORT_HALT_MAX_TICKS and not about_to_be_hit \
 				and _window_open(s, contact, braking + SHORT_HALT_EXPOSURE, loaded_for):
 			why = TankBrain._join(why, "short halt")
 			return {"type": "stop"}

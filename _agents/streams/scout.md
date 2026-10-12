@@ -130,6 +130,34 @@ aim. **Reading: no range term is warranted by this evidence.** The flat damage (
 fire outside ENGAGE (SUPPRESS is 20 % of fixed-gun fight time and fires at ground/targets the brain-target measure does
 not count) plus per-seed noise; not traced further (the damage per option would need a per-shot attribution).
 
+### S4 declared change: the short halt (pre-registered with the orchestrator before any number; tree `0b4c2879`)
+Change: `_combat_move`'s short halt (slow-reload guns) no longer stops a fixed gun on the planner unless its gun bears
+and it stands outside its turning room (`CombatMotion.halt_allowed`); `--scout-off=halt` = CP-S.
+- PRIMARY (tuning data, traced): `scenario_scout_cross SCOUT_UNIT=gang_scout` pooled n = 18: his case 9 contacts in 9
+  of 18 runs → 0, and all five bars pass (CP-S: 3 of 5).
+- BLIND (orchestrator's addition): census FRESH seeds 37–60, new v `--scout-off=halt`: gang_scout fight-option enemy
+  contacts per seed, paired, over seeds fielding gang scouts in both arms (≥ 12, else extend the seeds): down, or not up
+  beyond 2 se.
+- GUARDS: scout 5/5 and law_scout 4/5 bars kept; census all-fixed-gun on-target-in-reach during ENGAGE not down beyond
+  2 se and fight-option contacts not up beyond 2 se; check green; thirteen lines declared if they move; cost MEASURED
+  (`make scout-cost`, new v halt-off; the planner now runs where the halt used to cut it short).
+- Partial: gang his case contacts ≥ 50 % fewer runs (not 0) with guards holding → ships with a note.
+
+**S4 result: DOES NOT SHIP (by its pre-registered rule).** Tree `0b4c2879`, builder0. Kept on branch `scout-s4-halt`;
+reverted on `stream/scout` (game/ equals main's CP-S again; the census's per-unit line is kept).
+- PRIMARY (scenario, n = 18, gang_scout, halt-off → new): his case contacts **9 runs → 0**, re-acquire 0.6 → 1.5 s,
+  passes; cross 5 m L→R on target 0.52 → 0.46 (still fails, now on that bar), cross 10 m L→R **0.63 → 0.50** (now
+  fails at the bar); the two R→L crosses pass. **3 of 5 → 3 of 5: the "all five" primary fails.**
+- BLIND census seeds 37–60 (13 seeds field gang scouts): gang_scout fight-option contacts **+0.08 a seed, se 0.66** —
+  not up, and not down either: no real-fight effect.
+- Guards held: scout 5/5 and law_scout 4/5 byte-identical (the machine gun never short-halts); census on target in
+  reach +0.68 pts se 1.67, all-fight +0.50 se 0.71, in-reach share −1.31 se 0.81, contacts −3.1 a seed se 2.3;
+  outcomes unchanged (kills 44 → 41, damage −44 a seed se 53, deaths 356 → 357). Cost 0.024 v 0.023 ms a tick.
+- Reading: the halt gate fixes the traced touch but costs the spear gun its standing shots on a crossing target (a
+  3 s reload gun fires ~4 rounds in 12 s; a halt with the gun near-on is worth more to it than continuous laying).
+  Not tuned further on the same data. If wanted later: a gate on the turning room only (no bearing condition) is the
+  untested candidate — a new bar on fresh seeds.
+
 ### What to playtest (exact commands)
 - `make showmatch SEED=13` (Parade, Gangs v Law) — watch the Law's police-car scouts; `CONTROL_FLAGS=--scout-off=gunlay`
   for the old behaviour. Clips (1080p, rendered on builder0 at `90413868`/`ae0a50a4` tree):
