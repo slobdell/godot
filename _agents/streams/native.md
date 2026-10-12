@@ -220,6 +220,18 @@ fall >= 2 % outside 2 se, paired; a session where priority 0 (tanks, match) move
 **Partial rule:** if 20 a side clears and 25 does not, it ships ON (20 a side is his preset's army); if neither clears,
 OFF, and the split re-taken to find what the ON arm still pays. Reported either way: game speed at 20 and 25.
 
+### The quiet slot (2026-10-12 02:29-02:49 PDT, builder0 quiet, pinned 0-3, `ed6ecaa9`, 3 seeds an arm; priority 0 unmoved in every pair: none void; `references/round27/native/slot-ed6ecaa9/`)
+
+- **A, the reconciliation:** execute ~30 % of the tick's scripts at 20 a side (foundry 3.44 of 11.55 ms, parade 3.60 of
+  11.80), the native drive section 1.26-1.41 ms of it, so GDScript in execute ~19-22 %: inside 12-22 %, the estimate is
+  not re-told. ~86-90 us an execute a crew, ~55-65 us of it GDScript (40 executes a tick, dead hulls included). The
+  "27 us" and "200-300 us" are both retired: ~60 us of GDScript a crew-tick, headless builder0.
+- **B, `native_cb`:** 50 v 50 band 0.8 / 1.3 / 1.0 % saved (his Sumps -0.1/-0.3/-1.1, 25 a side -0.4/-0.4/-0.5), hashes
+  equal: under 2 %: **stays OFF**.
+- **C, stage 1 headless (no ruling):** tick's scripts 20 a side foundry 11.55 -> 10.67 (-7.6 %), parade 11.80 -> 10.80
+  (-8.5 %); 25 a side foundry 15.81 -> 14.53 (-8.1 %), parade 15.63 -> 14.26 (-8.8 %); execute ~88 -> ~65 us a crew;
+  think unchanged. Below the 11-15 % estimate so far: what the owned execute still pays is the next work, before E6.
+
 ### Questions for the lead
 
 - None.

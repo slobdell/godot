@@ -1,0 +1,27 @@
+2026-10-12 02:29:37 PDT build: ed6ecaa9
+2026-10-12 02:29:45 PDT build: exited 0 NATIVE godot-cpp 10.0.0-stable | api 4.7.2 | gcc 15.2.0 | -O2 -ffp-contract=off -fno-fast-math | built on builder0 | rea
+2026-10-12 02:29:46 PDT tph plain 20 foundry start ()
+2026-10-12 02:30:31 PDT tph plain 20 foundry done: exited 0
+2026-10-12 02:30:32 PDT tph off 20 foundry start ()
+2026-10-12 02:31:30 PDT tph off 20 foundry done: exited 0
+2026-10-12 02:31:30 PDT tph plain 20 parade start ()
+2026-10-12 02:32:16 PDT tph plain 20 parade done: exited 0
+2026-10-12 02:32:17 PDT tph off 20 parade start ()
+2026-10-12 02:33:16 PDT tph off 20 parade done: exited 0
+2026-10-12 02:33:16 PDT A done
+2026-10-12 02:33:16 PDT price native_cb start
+2026-10-12 02:44:24 PDT price native_cb done: exited 0
+2026-10-12 02:44:25 PDT tph stage1 20 foundry start ()
+2026-10-12 02:45:08 PDT tph stage1 20 foundry done: exited 0
+2026-10-12 02:45:08 PDT tph plain 25 foundry start ()
+2026-10-12 02:46:04 PDT tph plain 25 foundry done: exited 0
+2026-10-12 02:46:04 PDT tph stage1 25 foundry start ()
+2026-10-12 02:46:56 PDT tph stage1 25 foundry done: exited 0
+2026-10-12 02:46:56 PDT tph stage1 20 parade start ()
+2026-10-12 02:47:41 PDT tph stage1 20 parade done: exited 0
+2026-10-12 02:47:41 PDT tph plain 25 parade start ()
+2026-10-12 02:48:37 PDT tph plain 25 parade done: exited 0
+2026-10-12 02:48:37 PDT tph stage1 25 parade start ()
+2026-10-12 02:49:30 PDT tph stage1 25 parade done: exited 0
+2026-10-12 02:49:30 PDT C done
+2026-10-12 02:49:30 PDT NATIVE_SLOT_DONE
