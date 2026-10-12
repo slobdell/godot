@@ -275,6 +275,26 @@ in (they parked 50–75 m off for 90 s). Fix: go in within the crews' longest re
 `lab/brains-close` (worktree `godot-brains-lab2`) = main + the stage tooling + the fix. Bar registered before numbers
 (accepted, + 6 fresh flank-probe seeds as its blind part of (1)); blind runs in flight.
 
+**B4 — BLOCKED (written up, no declared run; recommend retiring).** Tried: drill seats by nearest with the role going
+with the point (the crew in slot 0 leads the flow, legs and chase; `--drill-seats=nearest`, `--point-leads=off`).
+builder0, `pace-p0-tests` phase 0 on `2dccf781` + B4: base 31/0, nearest 26/5 — the pursuit at 8 m/s (when the point
+changed hands the old leader's crew turned 178° and opened 53 → 142 m), elements, mixed_legs (Sumps two scouts), the
+cannot-catch pursuit, seat_nearest (it tests the pin). "Keep the lead crew's role" is what the pinned leader already
+does; the unpin's one measured gain (his bridge 54 v 53/54, round 26) was overtaken by CP1a. Parked on
+`lab/brains-b4-point` `9f15bfd9`.
+
+**Live-flank follow-up — PARTIAL, parked on `lab/brains-flank-live` (`33bf5862`), game code off the stream.** Orders'
+flank clips (gun trucks v a Law squad, target held, damage on) never reached the drawn side. Traced: B0's circle at the
+crews' own reach (a twin MG: 35 m, inside the Law guns); a near ambush by the target's squadmates (spread up to 36 m from
+it) sprang assault-through; under a CPU commander the target itself drove at 8–10 m/s and B0 made anything at ≥ 2 m/s a
+pursuit (no side). Fix (circle ≥ the target's reach; pursuit only at ≥ 6 m/s now; no assault-through on the target's own
+squad within 40 m): ApproachStage `--live=on`, seeds 1–3 × 6 ticks, builder0 `33bf5862`: 0/18 on side in all three
+arms (fix 74° median off, B0's rule 83°, clicked 86°) — but every gun truck died in every arm and the target never
+did: the stage was a fight nobody wins (the orchestrator, C27.5). One re-run allowed on an EVEN fight calibrated on
+clicked attacks only (`--his=`/`--theirs=`), fresh seeds 4–6 × 6 ticks, same bar (≥ 12/18); under it → parked for good.
+Lead question (the orchestrator collects them): "drag an attack onto a stronger squad: swing round anyway, or give up
+the flank?"
+
 **Candidates noted (not preempting B0–B4):** his bridge 108 reads 106/108 at round 27's base in BOTH of B2's arms
 (`3e54110e`, builder0): seed 2, his side tick 5 and the CPU's tick 9, one law_tank hesitating 3.5–6.8 s at the rim, all
 crews crossing. Bisected by scout for the orchestrator: identical at `090b345d` (round 26's close) and at `f4c5f7c9` with
