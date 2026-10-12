@@ -22,6 +22,14 @@ direction*, *Round 27: the launch*; the split and contracts C27.1–C27.7 in `wo
 | **orders** | `godot-orders` (3) | press on an enemy and drag: the squad comes at it from that side; showmatch's end shot stays on the arena | after CP0 |
 | **native** | `godot-native` (4) | stage 1 (E1–E6, ~2.5–3 weeks): nothing in play until E5; then 20 a side at about full speed on his laptop | E1 OFF early; outlives the round (C27.7) |
 
+**Merges so far:** `1e21d570` native E1 (OFF): the execute state as one C++ table, MIRROR design (C++ pushes changed
+fields back into the GDScript members; no outside reader changes) — check covered by `bfd90266` (builder0, exited 0,
+2468/0, ALL JUDGED, thirteen unmoved, det 2875411ff4ec6be7; main differs by docs only). Open: the mirror's per-tick cost,
+asked of native before E2 goes deep. `1c8da4d8` brains CP0 (attack honours a drawn approach): **main's check GREEN at `1c8da4d8`** (builder0, exited 0,
+2479/0, 24 targets ALL JUDGED, thirteen unmoved, det 2875411ff4ec6be7); orders told to merge main. Scout's CP-S v2 PASSED
+its pre-registered blind census (`workstreams.md`); merge prep in progress, first in the declared queue, brains B2 next.
+Native: the mirror priced ~2–3 µs a crew a tick (accepted); a clean execute-cost reconciliation waits for a quiet builder0.
+
 **Waiting for stage 1** (the drive is frozen, C27.2): traffic's friendly convention (his question on it is in
 `game_design.md` *Round 27: the launch*) and the wheeled creep.
 

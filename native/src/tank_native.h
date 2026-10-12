@@ -11,6 +11,7 @@
 #include "drive_native.h"
 #include "el_native.h"
 #include "tq_native.h"
+#include "exec_state.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -164,6 +165,22 @@ public:
 	Dictionary mover_record_row(int r) const { return movers.row(r); }
 	int64_t mover_record_usec() const { return movers.last_usec; }
 	int64_t mover_record_mismatches() const { return movers.type_mismatches; }
+
+	// Round 27 (stage 1 E1): the execute state owned by the C++ (exec_state.h), one per mover. `exec_pull` copies the
+	// mover's, its Gunnery's and its Lay's members in (returns the type mismatches), `exec_push` copies them back (every
+	// field, or only the changed ones; returns the fields written), `exec_mirror` is the in-game proof (pull, scramble,
+	// push: measurement only, --native-exec-mirror). The rest are for the tests.
+	Array exec_fields() const { return exec_field_table(); }
+	int exec_pull(Object *mover);
+	int exec_push(Object *mover, bool force);
+	Dictionary exec_row(Object *mover) const;
+	bool exec_set(Object *mover, const String &key, const Variant &value);
+	int exec_dirty(Object *mover) const;
+	int exec_scramble(Object *mover) { return mover != nullptr ? ExecState::scramble(mover) : 0; }
+	int exec_mirror(Object *mover);
+	void exec_forget(Object *mover) { exec_states().forget(mover); }
+	void exec_clear() { exec_states().clear(); }
+	int exec_count() const { return exec_states().size(); }
 
 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
 	Dictionary record_layout() const;
