@@ -788,6 +788,9 @@ changed; any GDScript that WRITES the state outside the native execute marks `Mo
 gun forwarders; `STALE_STALL`: its stalled_ticks forwarder), and the next native execute pulls that part first. A new door
 (a GDScript writer of these members outside the execute step) must mark its bit; `--native-exec-verify` (native-proof's
 `exec_verify` arm) pulls afresh before every execute and counts any field that differs: that is how a missed door shows.
+**Tests are doors too:** a test that sets a mover up by writing its members (a k-turn leg, a yield) must go through a
+method that marks stale, or mark `native_stale |= Movement.STALE_ALL` itself. Stage 1's ON commit found one
+(`test_nav_kturn_brake`: members written, then `_kturn_start_leg`, which now marks).
 
 **Switches:** `native_exec` (the seam), `native_owned` (on the owned state; else the live members), `native_cb` (E2's
 callback ports; OFF by its price, round 27 B), `native_gun` (the gun alone, outside the execute seam). Stage 1 ON = the
