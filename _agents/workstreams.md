@@ -82,6 +82,12 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   seeds): gun on target 18.4 % of 1537 fight-s; 365 enemy contacts, **254 under an ordered MOVE** (squads ordered into
   the enemy: brains' side, filed).
 
+- **CP-S v1 FAILED its pre-registered census (2026-10-11, scout, builder0, 12 paired seeds): no ship.** (1) passed:
+  `scenario_scout_cross` n = 18/case, all 5 bars on new, off fails 4 of 5 incl. his case (gun on target 0.20 → 0.75,
+  re-acquire 8.4 → 0.5 s). (2) failed: real-match gun on target +1.34 pts, se 3.06 (18.4 → 18.8 %). Contacts fell
+  (fight-option 121 → 52, ordered-MOVE 225 → 47 — the MOVE drop unexplained: divergence or a path, to trace). Next: where
+  the 81 % off-target fight time goes (option × motion, in reach, planner active); any v2 bar sent before its census.
+
 **Checkpoints:** **CP0** brains' B0 → orders merges main. **CP-S** scout's declared change (+ native's port of any
 `decide` diff) → everyone merges main. **CP-B2**, **CP-B4** brains' declared changes, each alone. Native's E1 (OFF)
 merges whenever green; native merges main at CP-S.
