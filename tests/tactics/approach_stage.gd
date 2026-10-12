@@ -27,7 +27,7 @@ const REACH_M := 50.0
 ## CLOSES, or parks at its guns' reach trading fire).
 static func run(case: TestCase, seed_value: int, seconds: float, approach: Variant, trace := false, arena := "yard_open",
 		immortal := false, quiet := false, live := false, his: PackedStringArray = [],
-		theirs: PackedStringArray = []) -> Dictionary:
+		theirs: PackedStringArray = [], moving := false) -> Dictionary:
 	var lab := TacticsLab.create(case, seed_value, arena)
 	lab.game_match.set_meta("player_team", Match.Team.GREEN)
 	var jitter := RandomNumberGenerator.new()
@@ -51,7 +51,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 		var kinds: Array = Array(theirs) if not theirs.is_empty() else ["law_ifv", "law_ifv", "law_tank", "law_tank", "law_scout"]
 		for i in kinds.size():
 			var spot := TARGET + Vector3((i - (kinds.size() - 1) * 0.5) * 9.0, 0.0, -6.0 * (i % 2))
-			if i == 0:
+			if i == 0 and not moving:
 				law.append(String(lab.gun(Match.Team.RUST, "Rust_L_1", spot, PI, kinds[i]).name))
 			else:
 				law.append(String(lab.unit(Match.Team.RUST, "Rust_L_%d" % (i + 1), spot, PI, kinds[i]).name))
@@ -68,7 +68,13 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 	(lab.game_match.brains.get_node("Orders_Green_Eyes_1") as OrderController).set_orders({"type": "stop"},
 			{"type": "hold_fire"})
 	var alpha := lab.element(names, "Alpha", DoctrineTable.load_table("gangs")["table"] if live else null)
+	# `moving` (the orchestrator's reported arm): the target is a crew with a brain in a Law element under the CPU's
+	# commander, so it moves (and at times runs), which is what turns an attack into a pursuit.
+	if live and moving:
+		lab.elements.form(law, "Law", DoctrineTable.load_table("law")["table"])
 	await lab.start()
+	if live and moving:
+		ElementCommander.install(lab.game_match, Match.Team.RUST, lab.elements)
 	var task := {"verb": "attack", "target": String(enemy.name)}
 	if approach != null:
 		task["approach"] = approach
@@ -80,6 +86,10 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 	lab.game_match.projectile_impact.connect(func(event: Dictionary) -> void:
 		if String(event.get("target", "")) == String(enemy.name) and faces.has(String(event.get("face", ""))):
 			faces[String(event["face"])] += 1)
+	var pursuing_ticks := 0
+	var rounding_pursuing_ticks := 0
+	var target_fastest := 0.0
+	var speed_at_pursuit := -1.0
 	var in_tick := -1
 	var reach_tick := -1
 	var reach_off := -1.0
@@ -96,6 +106,15 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 				var crew := lab.tank_of(unit_name)
 				if crew != null and crew.is_alive():
 					nearest_end = minf(nearest_end, _flat(crew.global_position).distance_to(TARGET))
+		if enemy.is_alive():
+			var target_speed := Vector2(enemy.estimated_velocity.x, enemy.estimated_velocity.z).length()
+			target_fastest = maxf(target_fastest, target_speed)
+			if alpha.pursuing:
+				pursuing_ticks += 1
+				if not bool(alpha.approach_round.get("in", false)):
+					rounding_pursuing_ticks += 1
+				if speed_at_pursuit < 0.0:
+					speed_at_pursuit = target_speed
 		if in_tick < 0 and bool(alpha.approach_round.get("in", false)):
 			in_tick = tick
 		if killed < 0 and not enemy.is_alive():
@@ -129,6 +148,8 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 					absf(ElementPlan.approach_off_deg(lab.center_of(names), TARGET, -side)), nearest, alpha.drill,
 					alpha.approach_round, ",".join(verbs), alpha.reason])
 	var report := {"seed": seed_value, "approach": "none" if approach == null else "east", "error": error,
+			"pursuing_s": _s(pursuing_ticks), "pursuing_before_in_s": _s(rounding_pursuing_ticks),
+			"target_fastest_mps": snappedf(target_fastest, 0.1), "target_mps_at_first_pursuit": snappedf(speed_at_pursuit, 0.1),
 			"his": ",".join(mine), "theirs": ",".join(law) if live else "",
 			"enemy_alive": lab.alive(law) if live else -1,
 			"in_s": _s(in_tick), "reach_s": _s(reach_tick), "reach_off_deg": snappedf(reach_off, 0.1),
