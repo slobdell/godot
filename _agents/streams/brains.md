@@ -106,6 +106,36 @@ target is a pursuit and has no side. Absent = today's path (the plan writes `app
 - CP0 is NOT declared (default path unchanged). Merge note: touches `element_task.gd`, `element_plan.gd`,
   `element.gd`, `drills.gd` (all mine), `mk/tactics.mk` (+ approach-series), new tests and `tools/tactics/approach_table.py`.
 
+**B1 — the line is built; the series re-read is running.** `tests/tactics/arrival_line.gd` (`ArrivalLine`): every
+living crew within max(3.5 m, its hull's settle radius) of its OWN slot, held 1 s. `settle_probe` reports `all_in_s`,
+`hollow` (the element said arrived, the line never held), `worst_off_m`/`worst_crew`; a stopped squad with a crew off
+its slot now runs on (the digest run keeps its old end). Mutation check `--arrive-mutate=on` (the first crew's slot
+read 20 m off). builder0, `3aa67b17`: unit tests 6/0; yard four tanks seed 1 — element arrived 22.3 s, line NEVER
+(hollow: two crews 5.8 / 8.4 m off); with the mutation also never (worst 20.8 m). The Sumps cell (seed 1) never arrives
+on main (S_2, the IFV, 11.3 m off), as round 26 traced.
+- **Finding for the orchestrator's ruling (C27.5):** the yard's hollowness is DESIGNED tolerance, not a stuck crew. The
+  halt re-seated at 24 s (seats 0321 → 0231) and two crews' seats moved under 8 m, which the element does not re-send
+  (`Element.REISSUE_M` 8 m; it calls a crew in position within `ElementPlan.IN_POSITION_M` 8 m). So the strict 3.5 m line
+  fails ragged halts the element itself calls done. The probe now ALSO reports `all_in8_s` (the same line with an 8 m
+  floor, `ArrivalLine.ELEMENT_TOLERANCE_M`); lesson 293's stuck crews (19–26 m) fail both. Both are reported; the
+  strict one stays the line until ruled.
+
+**B2 — v1 measured, FAILS its rule; v2 running.** Built: round 26's clock pause (`lab/brains-mr2`) + a re-seat that keeps
+every squadmate parked on its own slot in its seat (`Element._parked_seats` → `plan.reseat_keep` →
+`TacticsFormation.seat` opts `keep`; `--reseat-keep=off`). Ship rule sent before numbers (accepted, + (6) the CPU's side
+reported per side, (7) the Sumps cell at seeds 2–4 reported). v1, `make cell-series` (Sumps, seeds 1–4 × start ticks
+{1,3,6,8,11,16}), builder0, tree `3aa67b17` + B2, strict line: control 12/24, B2 14/24; seed 1 1/6 → 4/6 (tick 1 still
+fails: rule (1) not met); **seed 2 6/6 at 24.8 s → 3/6 at 57.1 s**; re-seats 4 → 47. Cause: the pause banked "stuck"
+time for every slow-but-driving crew (pacing, queuing). v2: the clock pauses only while the crew presses a squadmate
+parked on its slot (`Element._pressing_parked`); elsewhere a slow tick resets it, as before.
+
+**B5 — cause found, fix built (uncommitted, untested).** An unsprung ambush's weapon order is a bare `hold_fire`
+(`TankBrain._order_weapon`), and Gunnery leaves a hold-fire turret where it was ("keep the turret where it is"), so the
+sector the line gave each crew never reached its gun; every other line task lays an idle gun on its sector (Gunnery's
+round-18 D1 rule). Think-side fix: an unsprung ambush crew with a sector gets `aim` at a point 60 m out on it (aim never
+fires; the ambush still holds). `--ambush-lay=off` = the old bare hold. Test: the ambush case of
+`test_tactics_facing_tasks_live` now also holds the squad's mean GUN within 15° of the drawn facing.
+
 **Candidates noted (not preempting B0–B4):** scout's census (main `c37605f0`, builder0, 12 showmatch seeds): 254 of 365
 enemy hull contacts came while the crew was on an ordered MOVE (squads, the CPU's included, moved into the enemy outside
 CombatMotion): an arrive point inside the enemy, or an attack-move that does not stand off. Seeds/ticks in scout's Status.

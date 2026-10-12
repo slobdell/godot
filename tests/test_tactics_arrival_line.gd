@@ -61,3 +61,14 @@ func test_it_must_hold_for_a_second() -> void:
 	assert_eq(line.arrived_tick, 200, "an arrival stands once made")
 	assert_eq(String(line.worst["name"]), "Green_S_2", "the worst crew is reported")
 	assert_near(float(line.worst["off_m"]), 9.0, 0.001, "with its distance")
+
+
+func test_the_element_tolerance_line_passes_a_ragged_halt_and_fails_a_stuck_crew() -> void:
+	var hold := int(ArrivalLine.HOLD_S * SimClock.TICK_RATE)
+	var ragged := ArrivalLine.new(ArrivalLine.ELEMENT_TOLERANCE_M)
+	var stuck := ArrivalLine.new(ArrivalLine.ELEMENT_TOLERANCE_M)
+	for tick in hold + 1:
+		ragged.sample(tick, _crews([0.0, 5.8, 8.0, 2.0]))
+		stuck.sample(tick, _crews([0.0, 5.8, 20.0, 2.0]))
+	assert_eq(ragged.arrived_tick, 0, "crews 5.8 and 8 m off (the element's own tolerance): in on the 8 m line")
+	assert_eq(stuck.arrived_tick, -1, "a crew 20 m off: out on the 8 m line too")

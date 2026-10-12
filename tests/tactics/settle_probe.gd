@@ -101,7 +101,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var lab := TacticsLab.create(case, seed_value, arena_name)
 	var game_match := lab.game_match
 	# The player commands GREEN, as in `make skirmish`: the element is a player's squad (R2's pre-emption applies).
-	game_match.set_meta("player_team", Match.Team.GREEN)
+	# Round 27 (B2, C27.1's symmetry): `--side=cpu` makes it the COMPUTER's squad (the player is the other team).
+	game_match.set_meta("player_team", Match.Team.RUST if _flag("side", "his") == "cpu" else Match.Team.GREEN)
 	var home := Match.spawn_position(Match.Team.GREEN, 0)
 	var toward := TacticsFormation.flat(Vector3(-home.x, 0.0, -home.z))
 	var right := Vector3(-toward.z, 0.0, toward.x)
@@ -182,6 +183,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	# Round 27 (B1): the arrive line that counts every crew (ArrivalLine). `--arrive-mutate=on` is its mutation check: the
 	# line reads the first crew's slot 20 m off where it is, so a squad that arrives must FAIL it.
 	var line := ArrivalLine.new()
+	var loose := ArrivalLine.new(ArrivalLine.ELEMENT_TOLERANCE_M)
 	var mutate := _flag("arrive-mutate", "off") == "on"
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
@@ -201,6 +203,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			on_slots.append({"name": unit_name, "unit": crew_tank.unit_id, "position": crew_tank.global_position,
 					"slot": crew_slot})
 		line.sample(now, on_slots)
+		loose.sample(now, on_slots)
 		if element.in_transit():
 			transit_seen = true
 			for unit_name: String in names:
@@ -400,7 +403,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			# Round 27 (B1): every living crew within its radius of its own slot, held 1 s (ArrivalLine): the series'
 			# arrival. `hollow`: the element said arrived and the line never held. `worst_off_m`: the farthest crew from
 			# its slot at the end, and who.
-			"all_in_s": _s(line.arrived_tick), "hollow": arrived >= 0 and line.arrived_tick < 0,
+			"side": _flag("side", "his"), "all_in_s": _s(line.arrived_tick), "all_in8_s": _s(loose.arrived_tick), "hollow": arrived >= 0 and line.arrived_tick < 0,
 			"worst_off_m": snappedf(float(line.worst.get("off_m", -1.0)), 0.1) if is_finite(float(line.worst.get("off_m", -1.0))) else -1.0,
 			"worst_crew": String(line.worst.get("name", "")), "arrive_mutate": mutate,
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,

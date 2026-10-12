@@ -37,7 +37,7 @@ def main(path, flag="make-room"):
         print(f"{flag} {arm}: arrived k of n (median s), re-seats, swaps")
         print("| squad | " + " | ".join(maps) + " |")
         print("|---|" + "---|" * len(maps))
-        total = arrived = said = 0
+        total = arrived = said = loose = 0
         hollow_total = [0]
         for squad in squads:
             line = []
@@ -47,6 +47,7 @@ def main(path, flag="make-room"):
                 hollow = sum(1 for r in runs if r.get("hollow"))
                 hollow_total[0] += hollow
                 said += sum(1 for r in runs if r.get("arrived_s") is not None)
+                loose += sum(1 for r in runs if r.get("all_in8_s") is not None)
                 total += len(cells[(arm, squad, arena)])
                 arrived += len(done)
                 median = f" ({statistics.median(done):.1f})" if done else ""
@@ -55,7 +56,7 @@ def main(path, flag="make-room"):
                             f"{sum(int(r.get('reseats', 0)) for r in runs)}, {sum(int(r.get('swaps', 0)) for r in runs)}")
             print(f"| {squad} | " + " | ".join(line) + " |")
         print(f"SQUAD_ARRIVE {flag}={arm}: {arrived} of {total} arrive (every crew on its slot); the element said "
-              f"{said}; hollow {hollow_total[0]}")
+              f"{said}; hollow {hollow_total[0]}; within the element's own 8 m tolerance {loose}")
         # How far off the worst crew stood at the end of each HOLLOW run: a ragged halt (a few metres) and a crew stuck
         # behind a squadmate (lesson 293: 19-26 m) are different failures.
         offs = sorted(float(r.get("worst_off_m", -1)) for squad in squads for arena in maps

@@ -12,7 +12,13 @@ extends RefCounted
 ##   line.arrived_tick   -1 until the line holds; then the tick its HOLD_S window started
 
 const HOLD_S := 1.0
+## Round 27 (B1, reported beside the strict line for the orchestrator's ruling): the element's own tolerance, the
+## distance inside which it calls a crew in position and does not re-send it to a seat that moved (Element.REISSUE_M,
+## ElementPlan.IN_POSITION_M: 8 m). A crew stuck behind a squadmate (lesson 293: 19-26 m) fails this one too.
+const ELEMENT_TOLERANCE_M := 8.0
 
+## A floor under every crew's radius (0 = the strict line; ELEMENT_TOLERANCE_M = the element's own tolerance).
+var floor_m := 0.0
 var arrived_tick := -1
 ## The tick the current unbroken "every crew in" window started (-1: not in).
 var _since := -1
@@ -49,16 +55,23 @@ static func _off(crew: Dictionary) -> float:
 	return Vector2(at.x - slot.x, at.z - slot.z).length()
 
 
+func _init(p_floor_m := 0.0) -> void:
+	floor_m = p_floor_m
+
+
 ## Feed one tick. Returns true once the line has held (and stays true: an arrival is the first time it held).
 func sample(tick: int, crews: Array) -> bool:
 	worst = {}
+	var every := not crews.is_empty()
 	for crew: Dictionary in crews:
 		var off := _off(crew) if crew.get("slot") is Vector3 else INF
+		var radius := maxf(radius_of(String(crew.get("unit", ""))), floor_m)
+		every = every and off <= radius
 		if worst.is_empty() or off > float(worst["off_m"]):
-			worst = {"name": String(crew.get("name", "")), "off_m": off, "radius_m": radius_of(String(crew.get("unit", "")))}
+			worst = {"name": String(crew.get("name", "")), "off_m": off, "radius_m": radius}
 	if arrived_tick >= 0:
 		return true
-	if all_in(crews):
+	if every:
 		if _since < 0:
 			_since = tick
 		if tick - _since >= int(HOLD_S * SimClock.TICK_RATE):
