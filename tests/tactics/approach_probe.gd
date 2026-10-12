@@ -17,12 +17,17 @@ func _flag(name: String, fallback: String) -> String:
 	return fallback
 
 
+func _list(text: String) -> PackedStringArray:
+	return PackedStringArray() if text == "" else text.split(",")
+
+
 func _run() -> void:
 	var case := TestCase.new()
 	case.tree = self
 	var approach: Variant = null if _flag("approach", "east") == "none" else ApproachStage.FROM_EAST
 	var report := await ApproachStage.run(case, int(_flag("seed", "1")), float(_flag("seconds", "60")), approach,
-			_flag("trace", "off") == "on", _flag("arena", "yard_open"), _flag("immortal", "off") == "on", _flag("quiet", "off") == "on", _flag("live", "off") == "on")
+			_flag("trace", "off") == "on", _flag("arena", "yard_open"), _flag("immortal", "off") == "on", _flag("quiet", "off") == "on", _flag("live", "off") == "on",
+			_list(_flag("his", "")), _list(_flag("theirs", "")))
 	report["start_tick"] = int(_flag("lab-start-tick", str(TacticsLab.START_TICK)))
 	print("APPROACH_PROBE " + JSON.stringify(report))
 	case.teardown()

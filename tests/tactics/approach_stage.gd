@@ -26,7 +26,8 @@ const REACH_M := 50.0
 ## `immortal`: the target is healed every tick (orders' flank probe: a target that cannot die shows whether the attack
 ## CLOSES, or parks at its guns' reach trading fire).
 static func run(case: TestCase, seed_value: int, seconds: float, approach: Variant, trace := false, arena := "yard_open",
-		immortal := false, quiet := false, live := false) -> Dictionary:
+		immortal := false, quiet := false, live := false, his: PackedStringArray = [],
+		theirs: PackedStringArray = []) -> Dictionary:
 	var lab := TacticsLab.create(case, seed_value, arena)
 	lab.game_match.set_meta("player_team", Match.Team.GREEN)
 	var jitter := RandomNumberGenerator.new()
@@ -34,19 +35,22 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 	var names: Array = []
 	# `live` (orders' flank clips, round 27): his gangs' gun trucks (gang_ifv, five) against a Law squad of five
 	# (scout, two tanks, two IFVs), damage on; he attacks one of its IFVs.
-	for i in (5 if live else 4):
-		var at := START + Vector3(i * 8.0 - 12.0 + jitter.randf_range(-JITTER_M, JITTER_M), 0.0,
+	# Round 27 (the orchestrator's re-run): `his` / `theirs` pick the rosters of a live fight (an EVEN one, calibrated on
+	# clicked attacks only); the defaults are orders' clip (five gun trucks v a Law squad of five).
+	var mine: PackedStringArray = his if not his.is_empty() else (PackedStringArray(["gang_ifv", "gang_ifv", "gang_ifv",
+			"gang_ifv", "gang_ifv"]) if live else PackedStringArray(["tank", "tank", "tank", "tank"]))
+	for i in mine.size():
+		var at := START + Vector3(i * 8.0 - (mine.size() - 1) * 4.0 + jitter.randf_range(-JITTER_M, JITTER_M), 0.0,
 				jitter.randf_range(-JITTER_M, JITTER_M))
-		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, 0.0,
-				"gang_ifv" if live else "tank").name))
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, 0.0, mine[i]).name))
 	var enemy: Tank = null
 	var law: Array = []
 	if live:
 		# As orders' flank clip stages it: the target HOLDS where it is (a standing gun that fires), its squadmates
 		# are idle crews with their own brains and no commander (--no-element-cpu), damage on.
-		var kinds := ["law_ifv", "law_ifv", "law_tank", "law_tank", "law_scout"]
+		var kinds: Array = Array(theirs) if not theirs.is_empty() else ["law_ifv", "law_ifv", "law_tank", "law_tank", "law_scout"]
 		for i in kinds.size():
-			var spot := TARGET + Vector3((i - 2) * 9.0, 0.0, -6.0 * (i % 2))
+			var spot := TARGET + Vector3((i - (kinds.size() - 1) * 0.5) * 9.0, 0.0, -6.0 * (i % 2))
 			if i == 0:
 				law.append(String(lab.gun(Match.Team.RUST, "Rust_L_1", spot, PI, kinds[i]).name))
 			else:
@@ -125,6 +129,8 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 					absf(ElementPlan.approach_off_deg(lab.center_of(names), TARGET, -side)), nearest, alpha.drill,
 					alpha.approach_round, ",".join(verbs), alpha.reason])
 	var report := {"seed": seed_value, "approach": "none" if approach == null else "east", "error": error,
+			"his": ",".join(mine), "theirs": ",".join(law) if live else "",
+			"enemy_alive": lab.alive(law) if live else -1,
 			"in_s": _s(in_tick), "reach_s": _s(reach_tick), "reach_off_deg": snappedf(reach_off, 0.1),
 			"closest_m": snappedf(closest, 0.1) if is_finite(closest) else -1.0, "killed_s": _s(killed),
 			"target_hits": faces, "target_flank_share": snappedf(float(faces["side"] + faces["rear"])
