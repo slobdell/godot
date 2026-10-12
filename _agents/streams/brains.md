@@ -257,6 +257,10 @@ in (they parked 50–75 m off for 90 s). Fix: go in within the crews' longest re
 `lab/brains-close` (worktree `godot-brains-lab2`) = main + the stage tooling + the fix. Bar registered before numbers
 (accepted, + 6 fresh flank-probe seeds as its blind part of (1)); blind runs in flight.
 
-**Candidates noted (not preempting B0–B4):** scout's census (main `c37605f0`, builder0, 12 showmatch seeds): 254 of 365
+**Candidates noted (not preempting B0–B4):** his bridge 108 reads 106/108 at round 27's base in BOTH of B2's arms
+(`3e54110e`, builder0): seed 2, his side tick 5 and the CPU's tick 9, one law_tank hesitating 3.5–6.8 s at the rim, all
+crews crossing. Bisected by scout for the orchestrator: identical at `090b345d` (round 26's close) and at `f4c5f7c9` with
+and without CP-S, so it came in between `eb987e87` (108/108) and `090b345d`. Not taken on yet.
+ scout's census (main `c37605f0`, builder0, 12 showmatch seeds): 254 of 365
 enemy hull contacts came while the crew was on an ordered MOVE (squads, the CPU's included, moved into the enemy outside
 CombatMotion): an arrive point inside the enemy, or an attack-move that does not stand off. Seeds/ticks in scout's Status.
