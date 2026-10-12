@@ -232,6 +232,30 @@ OFF, and the split re-taken to find what the ON arm still pays. Reported either 
   (-8.5 %); 25 a side foundry 15.81 -> 14.53 (-8.1 %), parade 15.63 -> 14.26 (-8.8 %); execute ~88 -> ~65 us a crew;
   think unchanged. Below the 11-15 % estimate so far: what the owned execute still pays is the next work, before E6.
 
+### E6's prediction (pre-registered 2026-10-12 ~04:00 PDT, before the laptop session; the orchestrator's ask)
+
+**What the ON arm is at E6:** `a9357a96`+ with `native_exec`, `native_cb`, `native_owned` (rule D). Since the slot's C
+(`ed6ecaa9`) the gun's remaining GDScript calls were ported (`a9357a96`: ARC's `_apply_indirect`, Tank's reload/ammo
+reads, the named-target lookup): the gun's GDScript calls ~21 -> ~4.8 us an execute (instrumented, foundry 20 a side).
+An unclean re-take (builder0 not quiet: void as a reading) put the stage-1/default execute ratio at 0.73/0.67
+(foundry/parade) against C's 0.74/0.73.
+
+**What is still paid inside the owned execute** (`--native-exec-profile`, instrumented, builder0 foundry 20 a side,
+~18 900 native executes a seed; shares of a native execute): the drive ~62 % (its own C++ plus the callbacks still left:
+the k-turn planner past its cheap exits ~8 % of the drive, `_manoeuvre`'s decision and `_negotiate`'s body ~2 % each;
+the engine's path query and the avoidance solve), the gun ~25 %, note_decision ~7 %, the command's creation ~4 %, the
+state's bits ~4 %. No single remaining port is worth more than ~1 % of the tick this stage: the planner (the biggest, a
+multi-day port of manoeuvre's planner) ~0.5-1 %.
+
+**The prediction for E6** (his laptop, bar workload, paired ABBA n = 6; its reasoning: C's headless -7.6 to -8.8 % plus
+~1 point from the gun's port, the laptop's shares being the builder0 shares within P1's accuracy):
+- **20 a side: the tick's scripts -8 to -11 % (central -9.5 %)**; on P1's base (`d84f7503`: 0.918, wall 36.4 ms, scripts
+  27.8) that is game speed **0.97-0.99** (central 0.98), not the 1.00-1.03 he was told.
+- **25 a side: -8 to -11 %; game speed 0.85-0.87** (P1's base 0.803).
+- **Falsifiers:** below -6 % at 20 a side means the laptop's execute share is smaller than builder0's (re-take P1's split);
+  above -13 % means the instrumented profile overstated the drive (re-take without clocks).
+- If the measured number is under the 11-15 % he decided on, the orchestrator tells him so with the measured game speed.
+
 ### Questions for the lead
 
 - None.
