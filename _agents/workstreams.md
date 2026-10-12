@@ -130,6 +130,15 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   B0 circled at 70 m, past a tank's 62 m sight → the attack became a pursuit (no side) and stopped 40–54° off. Fix on
   `lab/brains-close` (`b93638fb`): DECLARED, after B2, bar before numbers.
 
+- **brains-close bar (pre-registered 2026-10-11, before its numbers; DECLARED):** (a) an attack goes in once within the crews'
+  LONGEST weapon range (control `--attack-close=effective`); (b) B0's drive round at min crew sight − 6 m
+  (`--approach-sight=off`). Ships only if ALL: (1) flank-probe drawn ≥ 11/12 within 35° incl. seeds 3 and 13, clicked nearest
+  crew ≤ 45 m ≥ 11/12, **+ 6 fresh probe seeds reported (the orchestrator's addition; 3/13 were traced)**; (2) quiet stage
+  ≤ 45 m ≥ 17/18; (3) targets that fire back: approach-series side ≥ 17/18, kill time ≤ +10 %, crews alive ≥ −0.25;
+  (4) fight guards, tactics-drills, ai-scenarios, bridge-pooled 18/18, the 108 ≤ 1 a side; (5) CPU v CPU army-series
+  paired, outcome within noise; (6) thirteen/determinism or explained, ≤ 0.5 ms. Partial: split (a) from (b); (b) alone
+  not declared if thirteen unmoved.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
