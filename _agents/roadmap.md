@@ -209,7 +209,7 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   after the match was decided; the bundle changes outcomes. Every lever OFF. The instruments stay (`--brains-census`,
   `BRAINS_ARM`, `ai-lever-perfplay`, `unit_ai.md` *pricing a decision lever*).
 
-## Round 27 candidates (round 26's carry-overs, 2026-10-11) — NOT YET SPLIT
+## Round 27 candidates (round 26's carry-overs, 2026-10-11) — SPLIT 2026-10-11 evening as scout + brains + orders + native (`workstreams.md` *Round 27*); traffic's convention and the wheeled creep wait for stage 1
 
 **His decision (2026-10-11):** stage 1 C++ — the execute half (move, weapon, act) as one native call per crew over a
 record gathered once a tick, the C++ OWNING the mover/gunnery state (~2.5–3 weeks; laptop 20 a side ~1.00–1.03 of real

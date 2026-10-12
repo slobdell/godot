@@ -3823,3 +3823,15 @@ Decided for him overnight 2026-10-11 (orders' two questions; reversible, he judg
 > ok, here's some quick feedback before the next round. I did the make showmatch command, and in watching the slow motion game I noticed some other defects. Mostly - the scouts absolutely suck at attacking targets. Similar to how we were talking about inefficient turning previously (N point turns versus 3 point turns) the scouts seem to drive super close to their target, leaving no room for them to turn and maintain their target, and they don't seem to drive backwards when they have that option to turn and maintain their target (i.e. if they're right up against a vehicle, and the vehicle moves east, the car seems to only move forward, so it seems to not consider the option of driving in reverse and to the west so that they can maintain the target)
 
 Orchestrator's reading (not his words): (1) a scout's attack run closes inside its own turning room — it should hold a standoff that keeps the target inside the arc it can still turn to (its turning circle plus a margin), not drive to contact; (2) in a fight, reverse is a real option: when the target crosses or passes, the scout picks forward OR reverse by which keeps its gun on the target soonest (his case: target moves east, scout backs west and keeps it in arc), the same "cheapest manoeuvre by planned time" idea as round 26's short move behind (CP2), applied to an engagement; (3) it is related to round 26's open items: brains' F5 (the scout's orbit point re-aimed every think, answered with planned reverses that carry it away; `_arc_hit` swept from the rollout pose) and manoeuvre's M3 reading (a turn the space has no room for). Scenario first: a scout v a tank that crosses its nose at 5/10 m, both directions, timed gun-on-target seconds and contact; the scout's existing tests (scenario_cp2's engine deck, the orbit) as guards. Code: the scout orbit / CombatMotion (`combat_motion.gd`, brains' orbit in `game/ai/`), the drive's reverse choice (manoeuvre's block, C++-mirrored).
+
+### Round 27: the launch (2026-10-11 evening, the orchestrator; decided for him, reversible)
+
+Split (`workstreams.md` *Round 27*): **scout** (his showmatch feedback: turning room, forward-or-reverse by gun-on-target
+time, merged BEFORE stage 1's freeze reaches the files it needs), **brains** (an arrival counts every crew; a crew blocked
+by a parked squadmate gets a seat round it; drill seats by nearest that keep the lead's role; ambush guns on the facing;
+attack honours a drawn approach), **orders** (press on an enemy + drag = attack from that side; the showmatch end shot
+stays on the arena), **native** (his stage 1 decision; outlives the round). **Waiting for stage 1:** traffic's friendly
+convention and the wheeled creep: both rewrite the drive stage 1 freezes, and his two-squad crossing passes since round
+26's CP1a. His question for when the convention runs: *"When two of your squads cross, would you rather they slow down
+and take turns (fewer bumps, they arrive later), or push through and bump (faster, messier)?"*
+

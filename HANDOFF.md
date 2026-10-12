@@ -4,12 +4,34 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-11 evening — **ROUND 26 IS CLOSED (the section below). No worktrees. Round 27 is NOT split:
-his decision is stage 1 C++ (`roadmap.md` *Round 27 candidates*, perf's draft brief in `streams/archive/round26/perf.md`);
-one question for him first (traffic's: take turns at crossings or push through); **his new scout feedback is in
-`game_design.md` *Round 27 direction*.** **Main's closing check: `090b345d`,
-builder0, `make check exited 0`, 2464 passed, 0 failed, 24 targets ALL JUDGED, determinism 2875411ff4ec6be7.** He
-pushes `main`.**_
+_Last updated: 2026-10-11 evening — **ROUND 27 IS PREPARED (the section below): four streams, worktrees created, not yet
+kicked off.** Main's green check covering every stream's starting commit: **`090b345d`, builder0, `make check exited 0`,
+2464 passed, 0 failed, 24 targets ALL JUDGED, determinism 2875411ff4ec6be7** (everything since is docs only: workers do
+NOT re-run a baseline check). He pushes `main`._
+
+## 🚀 ROUND 27 IS PREPARED (2026-10-11 evening) — read this first
+
+**From his stage 1 C++ decision and his showmatch feedback** (`game_design.md` *Round 26: his C++ decision*, *Round 27
+direction*, *Round 27: the launch*; the split and contracts C27.1–C27.7 in `workstreams.md` *Round 27*; briefs in
+`streams/`):
+
+| Stream | Folder (offset) | What he will notice | Checkpoint |
+|---|---|---|---|
+| **scout** | `godot-scout` (1) | scouts fight from a distance they can still turn in, and back up to keep a target sliding past their nose; a before/after showmatch clip | **CP-S** declared, alone |
+| **brains** | `godot-brains` (2) | every crew on its seat when a squad arrives (no crew stuck behind a parked squadmate); drill seats by nearest that keep the lead's role; ambush guns on the facing | **CP0** attack honours a drawn approach → orders |
+| **orders** | `godot-orders` (3) | press on an enemy and drag: the squad comes at it from that side; showmatch's end shot stays on the arena | after CP0 |
+| **native** | `godot-native` (4) | stage 1 (E1–E6, ~2.5–3 weeks): nothing in play until E5; then 20 a side at about full speed on his laptop | E1 OFF early; outlives the round (C27.7) |
+
+**Waiting for stage 1** (the drive is frozen, C27.2): traffic's friendly convention (his question on it is in
+`game_design.md` *Round 27: the launch*) and the wheeled creep.
+
+**The orchestrator's jobs:** merge CP0 early and tell orders; merge each declared change ALONE (C27.1), with native's
+port of any `decide` diff back to back (C27.2); collect each declared change's ship rule BEFORE its numbers (lesson 292);
+tell native to merge main at CP-S; grant laptop slots (C27.6; native's E6 first); put scout's before/after clips in front
+of him.
+
+**Launch:** worktrees exist (`make worktrees`); kickoff prompt: `orchestration.md` *The kickoff prompt* (the same line for
+every stream, pasted in each `~/projects/godot-<stream>` terminal).
 
 ## ✅ ROUND 26 IS CLOSED (2026-10-11) — read this first
 

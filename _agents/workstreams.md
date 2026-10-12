@@ -1,7 +1,85 @@
 # Workstreams: the current round
 
-> **ROUND 26 IS CLOSED (2026-10-11).** No round is running. Round 26's briefs are in `streams/archive/round26/`, its contracts
-> C26.1–C26.10 below; round 27 is not yet split (`roadmap.md`, `HANDOFF.md`).
+> **ROUND 27 IS PREPARED (2026-10-11 evening): four streams (scout, brains, orders, native), contracts C27.1–C27.7
+> below; briefs in `streams/`.** Round 26's briefs are in `streams/archive/round26/`, its contracts C26.1–C26.10 below.
+
+## Round 27: four streams (prepared 2026-10-11 evening; briefs in `streams/`)
+
+**Goal: his decision (stage 1 C++: the driving and shooting half, the C++ owning the execute state, ~2.5–3 weeks) and his
+showmatch feedback (`game_design.md` *Round 27 direction*: scouts close to contact with no room to turn, and never
+reverse to keep a moving target). The scout fix goes FIRST and lands while the freeze still allows it; the think side
+keeps moving; everything that rewrites the drive (traffic's convention, the wheeled creep) waits for stage 1.**
+
+| Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|
+| **scout** | `godot-scout` (1) | [streams/scout.md](streams/scout.md) | scouts fight from a distance they can still turn in, and back up to keep a target that slides past their nose | **CP-S** S1+S2, DECLARED, alone (+ native's port if `decide` moved) |
+| **brains** | `godot-brains` (2) | [streams/brains.md](streams/brains.md) | a squad told to arrive has every crew on its seat (no crew stuck behind a parked squadmate); drill seats by nearest that keep the lead's role; ambush guns on the drawn facing | **CP0** B0 (attack honours `approach`) → orders merges main |
+| **orders** | `godot-orders` (3) | [streams/orders.md](streams/orders.md) | press on an enemy and drag: the squad attacks from that side; showmatch's end shot stays on the arena | after **CP0** |
+| **native** | `godot-native` (4) | [streams/native.md](streams/native.md) | nothing in play until E5/E6; then 20 a side at about full speed on his laptop | E1 OFF on main early; E5 ON in an A/B |
+
+**Not this round (wait for stage 1, the drive is frozen):** traffic's friendly convention (his crossing cases already
+pass since round 26's CP1a; his question on taking turns v pushing through is put to him for when it runs); manoeuvre's
+wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeuvre-m3`, `local/perf-m3-port`,
+`lab/brains-mr2` (brains B2 starts from it), `lab/brains-carrot`.
+
+**Ownership (every path exactly one owner; the full lists are in each brief's header):**
+
+- **scout:** `game/ai/combat_motion.gd`; in `tank_brain.gd` `_combat_move`, `_hold_motion_plan` and the ORBIT controller
+  with its constants; in `movement.gd` only `_manoeuvre`'s `reaimed` rule; `game/ai/manoeuvre.gd`;
+  `tests/test_ai_combat_motion.gd`, new `tests/test_scout*.gd`, `tests/ai_scenarios/scenario_scout*.gd`, `mk/scout.mk`.
+- **brains:** `game/ai/**` except scout's, native's and the frozen files (C27.2); `game/tactics/**`,
+  `tests/ai_scenarios/**` (others add their own `scenario_<stream>*.gd` + one registration line), `tests/tactics/**`,
+  `tests/nav/**`, `tests/test_ai*.gd` (not combat_motion's), `tests/test_tactics*.gd`, `tests/test_nav*.gd`,
+  `tests/test_form_up.gd`, `mk/ai.mk`, `mk/tactics.mk`, `mk/nav.mk`, `doctrines/doctrine_*.json`.
+- **orders:** `game/control/**`, the order hints in `game/ui/**`, `tests/test_control*.gd`, `mk/command.mk`'s control
+  targets, the showmatch tooling, and (grant) `game/camera/**`'s cinematic framing.
+- **native:** `native/**`, `game/ai/native/**`, `tests/native/**`, `tests/test_native*.gd`, `mk/native.mk`,
+  `mk/pace.mk`, `brain_switches.gd` (one switch line each from others: merge note), `cover_map.gd`, `think_quiet.gd`,
+  the seams on main, and stage 1's grants: the seam at the top of `OrderController.compute_command`, `Movement`'s and
+  `Gunnery`'s member STORAGE behind accessors, `traffic.gd` for its port, `wall_contact.gd`'s observer.
+- **Nobody** (a request through the orchestrator): `game/match/**`, `game/tank/**`, `game/units/**`, `game/garage/**`,
+  `game/modes/**`, `game/network/**`, `game/audio/**`, `game/announcer/**`, `game/theme/**`, `arenas/**`,
+  `game/arena/**`, `tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
+
+**Contracts (round 27):**
+
+- **C27.1 Every change to fights is DECLARED** (C26.1 carried): scout's S1+S2, brains' B2 and B4, each one commit,
+  merged alone with its scenario and paired series, the CPU on the same behaviour. Everything else pre-registers
+  UNMOVED on the thirteen lines and determinism. Two declared changes never share a merge: the orchestrator queues them.
+  **The bar is written before the numbers** (lesson 292): each declared change messages the orchestrator its ship rule
+  (including a partial-gain rule) before its comparison runs.
+- **C27.2 The execute step is frozen for stage 1** (native's draft, C26.2 widened). While native runs, a behaviour change
+  to `movement.gd`'s drive and its callbacks, `gunnery.gd`, `order_controller.gd`'s execute path, `steering.gd`,
+  `avoidance.gd`, `traffic.gd`, `wall_contact.gd`, `clothoid.gd` waits, or goes to native as a diff to port. Think-side
+  files (`tank_brain.gd`'s situation/decide/act, tactics, elements, `combat_motion.gd`) are NOT frozen. **Exception for
+  scout:** `_manoeuvre`'s `reaimed` rule and `manoeuvre.gd` (GDScript callbacks from the native drive; native's E2
+  ports `_manoeuvre` LAST, after scout's CP). A change to `decide` or `build_situation`'s core (C++) goes to native as a
+  diff before the commit (SendMessage, orchestrator copied); the pair merges back to back.
+- **C27.3 A drawn approach reaches the attack task** (orders ↔ brains, C26.3's shape). Orders puts the drag on the task as
+  `task["approach"] = [x, z]` (normalised; the direction the squad comes FROM, toward the target); absent = today,
+  byte-identical. Brains (B0, first) honours it and merges it as CP0; orders then merges main. Until then orders tests
+  against a stub in its own paths.
+- **C27.4 A behaviour change carries a cost line** (C26.10 carried): its cost a tick at 25 a side on Sumps, GDScript path,
+  measured, pre-registered and reported beside its behaviour numbers (≤ 0.5 ms unless the orchestrator rules otherwise).
+- **C27.5 A pass line changes only with its reason written down** (C26.6 carried): the trace, the old and new line and
+  what a player would see, approved by the orchestrator before commit. Pool timing-sensitive results over start ticks
+  {1,3,6,8,11,16}. An arrival counts every crew inside its settle radius (lesson 293; brains B1 builds the line).
+- **C27.6 builder0 runs every Godot run** (C26.7 ruling carried): `make remote T=…`, lint and single tests included; the
+  laptop runs Godot only in a slot the orchestrator grants (native's E6 has priority).
+- **C27.7 native outlives the round.** At round 27's close native's worktree and branch are kept (not archived); its
+  merges land as they go green (E1 OFF first). Scout's and brains' declared merges are checkpoints native merges.
+- **C26.4–C26.10's rulings, C25.6, C24.6–C24.8, C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5,
+  C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+**Checkpoints:** **CP0** brains' B0 → orders merges main. **CP-S** scout's declared change (+ native's port of any
+`decide` diff) → everyone merges main. **CP-B2**, **CP-B4** brains' declared changes, each alone. Native's E1 (OFF)
+merges whenever green; native merges main at CP-S.
+
+**Decided for him (reversible):** the scout keeps turning room and picks forward or reverse by gun-on-target time (his
+reading); traffic and the wheeled creep wait for stage 1 (both rewrite the frozen drive; his crossing cases pass); attack
+with a drawn direction is built (it completes the gesture round 26 gave every other armed order).
+
+**Standing rules:** rounds 12–26's (lessons 225–294).
 
 ## Round 26: five streams (launched 2026-10-10 night, CLOSED 2026-10-11; briefs in `streams/archive/round26/`)
 
