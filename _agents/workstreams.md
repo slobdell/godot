@@ -197,6 +197,15 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   / 42.1 m (group "Guns"). orders' probe (immortal target holding fire) reached it on the same seeds. Given to brains:
   the unit type, then trace whether the fight reflex overrides the drive round. No clip for him until it works.
 
+- **Live-flank traced (brains, 2026-10-12, builder0; "Guns" = gang_ifv, direct fire):** B0 plans the drive round once, then
+  the attack becomes a PURSUIT because the CPU's target shuffles ≥ 2 m/s (PURSUIT_MPS) and a pursuit has no side; at 64 m a
+  near-ambush by the target's squadmates triggers assault-through and the squad charges the middle (0/1 reached; all 5
+  dead by 19 s). **Fix accepted (approach path, not declared if thirteen unmoved):** a drawn approach outranks pursuit
+  below 6 m/s, circle on the target's current position; no assault-through from the target's own squad while going round.
+  **Bar (pre-registered):** live stage seeds 1–3 × 6 ticks reached ≥ 12/18 (< 12 = partial, no ship); kills ≥ control − 2,
+  crews alive ≥ control − 0.5 where control = a CLICKED attack, same seed/tick (today's drawn reported); side-armour hit
+  share reported; B0 approach-series ≥ 17/18; pursuit tests unchanged; flank-clip seeds 5/8/21 + fresh 61/67/71 reported.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
