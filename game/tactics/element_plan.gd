@@ -93,12 +93,6 @@ const PURSUIT_HYSTERESIS_M := 15.0
 const APPROACH_CONE_DEG := 30.0
 const APPROACH_STEP_DEG := 45.0
 const APPROACH_LEAD_DEG := 15.0
-## Round 27 (orders' flank clips): a target this fast (m/s) is running, and the chase outranks the drawn side; slower,
-## the attack keeps going round (`pursues`). And while it goes round, a "near ambush" by a contact this close to the
-## TARGET (its own squad) is the fight it was sent to, not an ambush (Drills). `--approach-live=off` is B0's rule.
-const APPROACH_RUNNING_MPS := 6.0
-const APPROACH_TARGET_SQUAD_M := 40.0
-static var APPROACH_LIVE := true
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
@@ -302,10 +296,6 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	var radius := band
 	for member: Dictionary in members_of(situation):
 		radius = maxf(radius, float(member.get("range", 0.0)))
-	# ...and at least the TARGET's reach (orders' flank clips): gun trucks (a twin MG, 35 m) went "round" well inside a
-	# Law squad's guns and were ambushed by it on the way. Wide of what is shooting at them, then in from the side.
-	if APPROACH_LIVE:
-		radius = maxf(radius, _contact_reach(situation, String((state.get("task", {}) as Dictionary).get("target", ""))))
 	if not is_finite(radius):
 		radius = 60.0
 	var around := atan2(-approach.z, -approach.x) + deg_to_rad(notch * side)
@@ -319,17 +309,6 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	_group(plan, slot_order(situation), String(plan["formation"]), waypoint, heading, spacing, "move",
 			String((state.get("task", {}) as Dictionary).get("target", "")))
 	return true
-
-
-## Round 27 (orders' flank clips): the named contact's weapon range (m), from its unit's catalogue; 0 if unknown. Pure.
-static func _contact_reach(situation: Dictionary, target: String) -> float:
-	for contact: Dictionary in situation.get("contacts", []):
-		if String(contact["name"]) == target:
-			var unit := String(contact.get("unit", ""))
-			if unit == "" or not Units.exists(unit):
-				return 0.0
-			return float(Weapons.profile(String(Units.stat(unit, "weapon", ""))).get("range", 0.0))
-	return 0.0
 
 
 ## Round 27 (B0): how far round the target (signed degrees, -180..180) the element at `center` stands from the side an
@@ -2044,19 +2023,10 @@ static func pursues(task: Dictionary, state: Dictionary, situation: Dictionary) 
 	var track: Dictionary = state.get("pursuit", {})
 	if track.is_empty() or String(track.get("name", "")) != target:
 		return false
-	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
-	var speed := Vector2(velocity.x, velocity.z).length()
-	# Round 27 (orders' flank clips): an attack still going round to the side he drew is not a pursuit unless its target
-	# is really RUNNING. B0 let any target at PURSUIT_MPS (2 m/s: a CPU squad shuffling in a fight) turn it into one, and
-	# a pursuit has no side: in a live fight his gun trucks drove straight in from 97-103 deg off. Seen or not (B0's
-	# circle is past a tank's sight), a target slower than this keeps the drive round.
-	# Decided on its speed NOW while going round (not sticky): a CPU squad repositions in bursts, and one burst over
-	# the line made the whole attack a pursuit for good (traced).
-	if APPROACH_LIVE and task.has("approach") and not bool((state.get("approach_round", {}) as Dictionary).get("in", false)):
-		return speed >= APPROACH_RUNNING_MPS
 	if bool(state.get("pursuing", false)):
 		return true
-	return speed >= PURSUIT_MPS or _ordered_target(task, situation).is_empty()
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	return Vector2(velocity.x, velocity.z).length() >= PURSUIT_MPS or _ordered_target(task, situation).is_empty()
 
 
 ## Round 21 (P2): the chase. His recording (foundry, 18:38): the vee's stations were re-laid round wherever the spotter

@@ -120,8 +120,7 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 1. Near ambush: close, sudden and deadly. Turn into it and charge; nothing else outranks this.
 	if table.runs_drill("near_ambush") and current != "near_ambush" and current != "assault_through" \
 			and is_near_ambush(situation, table, CONTACT_DRILLS.has(previous)) \
-			and (chased == "" or String(nearest_contact(situation).get("name", "")) != chased) \
-			and not (rounding and ElementPlan.APPROACH_LIVE and _by_target(situation, task)):
+			and (chased == "" or String(nearest_contact(situation).get("name", "")) != chased):
 		var ambush := nearest_contact(situation)
 		return _drill("near_ambush", "ambushed at %d m: turn into it and assault through"
 				% int(float(ambush.get("distance", 0.0))), ambush)
@@ -317,19 +316,6 @@ static func nearest_visible(situation: Dictionary) -> Dictionary:
 
 
 # ---- Internals ----------------------------------------------------------------------------------------
-
-## Round 27 (orders' flank clips): whether the nearest contact stands within APPROACH_TARGET_SQUAD_M of the task's
-## target: its own squad, the fight the attack was sent to (going round, that is no ambush). Pure.
-static func _by_target(situation: Dictionary, task: Dictionary) -> bool:
-	var target := String(task.get("target", ""))
-	var nearest := nearest_contact(situation)
-	if target == "" or nearest.is_empty():
-		return false
-	for contact: Dictionary in situation.get("contacts", []):
-		if String(contact["name"]) == target:
-			return (contact["position"] as Vector3).distance_to(nearest["position"]) <= ElementPlan.APPROACH_TARGET_SQUAD_M
-	return false
-
 
 ## Round 27 (B0): whether an attack with a drawn approach has yet to come round to its side (ElementPlan._plan_approach
 ## latches "in"). Only a task with an approach is ever rounding, so every other task reads false here. Pure.
