@@ -33,6 +33,10 @@ Parade, Gangs v Law). **`eb9363e2` orders O1 + O2 merged** (attack from a drawn 
 unchanged; covered by `9c6f3381`, builder0 exited 0, 2505/0, ALL JUDGED). Scout: CP-S shipped, S4 not (branch
 `scout-s4-halt`), wrapping up. Brains: B2 v5 = last attempt (no v6), judged at `3e54110e`; brains-close judged on the
 merged base. Native: E3/E4/E5 equal-answer OFF on its branch; `native_cb` OFF until priced; the quiet slot is owed.
+**Scout and orders are DONE and stopped** (final reports in their briefs; tips merged `db4633f0`, and orders' final report).
+**Owed by the orchestrator:** the flank clip after brains-close merges — merge main into `godot-orders`, then
+`make remote T="flank-clip FLANK_CLIP_SEED=21 SIDE=left"` (main lane: Movie Maker; ~5–7 min; never run before; check
+`reached_side_s` in `build/flank/clip/run.log`; seeds 5, 8 as fallbacks) → `build/flank.mp4` for him.
 Native: the mirror priced ~2–3 µs a crew a tick (accepted); a clean execute-cost reconciliation waits for a quiet builder0.
 
 **Waiting for stage 1** (the drive is frozen, C27.2): traffic's friendly convention (his question on it is in
