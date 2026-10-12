@@ -100,8 +100,9 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 # the AI scenarios (TANK_NATIVE_EXEC_VERIFY=1 -> NativeExec.verify; a mismatch is an engine ERROR, which fails the test or
 # scenario that reached it). Finds a GDScript writer of mover/gunnery/lay members that does not mark native_stale.
 native-verify-suite: import ## Stage 1's doors audit: the suite + AI scenarios with every owned native execute verified (a missed native_stale fails)
-	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory test
-	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory ai-scenarios
+	@t=0; s=0; TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory test || t=$$?; \
+	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory ai-scenarios || s=$$?; \
+	echo "native-verify-suite: test exited $$t, ai-scenarios exited $$s"; [ $$t = 0 ] && [ $$s = 0 ]
 
 # The band sized for the lead (round 23, the orchestrator's ask): N a side with leaders both sides (perf's army files),
 # NATIVE_SIZE_RUNS matches each with --brains-parts (the shares: execute v think v engine calls) and with --sim-profile

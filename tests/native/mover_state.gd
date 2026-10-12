@@ -74,6 +74,8 @@ static func restore(mover: Movement, state: Dictionary) -> void:
 		for key: String in state:
 			if key.begins_with("_station."):
 				station.set(key.trim_prefix("_station."), _copy(state[key]))
+	# Round 27 (E5b): restoring writes the members (new containers): a door into the C++-owned state.
+	mover.native_stale |= Movement.STALE_ALL
 
 
 ## The keys whose values differ (`==` on Variants: bit-exact for floats and vectors), with both values, or "".
