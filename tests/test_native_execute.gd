@@ -103,7 +103,10 @@ func test_execute_is_the_live_compute_command() -> void:
 			var live := _capture(movers, ctl)
 			for owned in [false, true]:
 				_restore(movers, ctl, start)
-				var answer: Variant = NativeBridge.impl.execute(ctl, delta, owned)
+				for each in movers:
+					each.native_stale = Movement.STALE_ALL  # the test wrote the members back: a door from outside
+				var answer: Variant = NativeBridge.impl.execute(ctl, delta, NativeExec.EXEC_OWNED_VERIFY if owned \
+						else NativeExec.EXEC_LIVE)
 				var after := _capture(movers, ctl)
 				if answer == null:
 					handed_back += 1
@@ -122,7 +125,11 @@ func test_execute_is_the_live_compute_command() -> void:
 								ctl.tank.name, ctl.tank.unit_id, owned, ctl.move_order, ctl.weapon_order,
 								_command(live_cmd), _command(answer as TankCommand), differ]
 			_restore(movers, ctl, start)
+			for each in movers:
+				each.native_stale = Movement.STALE_ALL
 	BrainSwitches.native_exec = was_exec
+	var counts: Dictionary = NativeBridge.impl.execute_counts(true)
+	print("native execute counts: %s" % counts)
 	print("native execute: %d executes native (both views), %d handed back, %d mismatches" % [native, handed_back, mismatches])
 	assert_eq(mismatches, 0, "the native execute is the live compute_command: %s" % first)
 	assert_true(native >= 2000, "a real sample (%d native executes)" % native)

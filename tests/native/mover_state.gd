@@ -10,6 +10,8 @@ const SOURCE := "res://game/ai/movement.gd"
 ## Statics that are configuration or caches, not state a drive changes (and the registry, which holds objects).
 const SKIP_STATICS: Array[String] = ["_registry", "_off", "_off_parsed", "avoidance_on", "station_on", "yield_log",
 		"kturn_log", "leg_print", "reverse_log", "_bake_radius"]
+## Round 27 (E5b): the native execute's own bookkeeping (its state holder and the stale flag): not drive state.
+const NATIVE_MEMBERS: Array[String] = ["native_state", "native_stale"]
 ## Members that hold objects (compared by identity, never deep-copied).
 const OBJECT_MEMBERS: Array[String] = ["ctl", "contact", "_station"]
 
@@ -40,6 +42,8 @@ static func capture(mover: Movement) -> Dictionary:
 		if (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) == 0:
 			continue
 		var name: String = prop["name"]
+		if NATIVE_MEMBERS.has(name):
+			continue
 		if OBJECT_MEMBERS.has(name):
 			# The object itself goes back on restore ("@": never compared: a PID made fresh in each arm is two objects
 			# with one state); what is compared is whether there is one, and (below) the station PID's own members.

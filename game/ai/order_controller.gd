@@ -127,6 +127,8 @@ var stalled_ticks: int:
 	get:
 		return movement.stalled_ticks
 	set(value):
+		if movement != null and movement.stalled_ticks != value:
+			movement.native_stale |= Movement.STALE_STALL  # round 27 (native E5b): a write from outside the native execute
 		movement.stalled_ticks = value
 
 
@@ -137,41 +139,57 @@ var engaged_target: String:
 	get:
 		return gunnery.engaged_target
 	set(value):
+		if movement != null and gunnery.engaged_target != value:
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.engaged_target = value
 var watch_point: Variant:
 	get:
 		return gunnery.watch_point
 	set(value):
+		if movement != null and not is_same(gunnery.watch_point, value):
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.watch_point = value
 var spotter: Callable:
 	get:
 		return gunnery.spotter
 	set(value):
+		if movement != null and not is_same(gunnery.spotter, value):
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.spotter = value
 var engagement_lay: Engagement.Lay:
 	get:
 		return gunnery.engagement_lay
 	set(value):
+		if movement != null and not is_same(gunnery.engagement_lay, value):
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.engagement_lay = value
 var ticks_since_fire: int:
 	get:
 		return gunnery.ticks_since_fire
 	set(value):
+		if movement != null and gunnery.ticks_since_fire != value:
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.ticks_since_fire = value
 var lane_blocked_ticks: int:
 	get:
 		return gunnery.lane_blocked_ticks
 	set(value):
+		if movement != null and gunnery.lane_blocked_ticks != value:
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.lane_blocked_ticks = value
 var lane_blocker: String:
 	get:
 		return gunnery.lane_blocker
 	set(value):
+		if movement != null and gunnery.lane_blocker != value:
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.lane_blocker = value
 var hold_for_friends: bool:
 	get:
 		return gunnery.hold_for_friends
 	set(value):
+		if movement != null and gunnery.hold_for_friends != value:
+			movement.native_stale |= Movement.STALE_GUN
 		gunnery.hold_for_friends = value
 
 
@@ -287,6 +305,8 @@ func compute_command(delta: float) -> TankCommand:
 		var native_cmd: Variant = NativeExec.execute(self, delta)
 		if native_cmd != null:
 			return native_cmd
+	else:
+		movement.native_stale |= Movement.STALE_ALL  # the GDScript below writes the state the C++ may own (the A/B's off blocks)
 	movement.bind()
 	if not tank.is_alive():
 		gunnery.dead()  # N5: nothing engaged, and a respawned crew starts its lay from scratch

@@ -41,7 +41,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_owned_counts", "reset"), &TankNative::drive_owned_counts);
 	ClassDB::bind_method(D_METHOD("gun_configure", "config"), &TankNative::gun_configure);
 	ClassDB::bind_method(D_METHOD("unstick", "mover", "cmd", "order", "delta", "owned"), &TankNative::unstick);
-	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "owned"), &TankNative::execute);
+	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
 	ClassDB::bind_method(D_METHOD("execute_counts", "reset"), &TankNative::execute_counts);
 	ClassDB::bind_method(D_METHOD("gun_apply", "gunnery", "cmd", "seconds", "owned"), &TankNative::gun_apply);
 	ClassDB::bind_method(D_METHOD("exec_pull", "mover"), &TankNative::exec_pull);

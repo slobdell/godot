@@ -141,7 +141,16 @@ int ExecState::pull(Object *mover) {
 	}
 	EXEC_MOVER_FIELDS(EXEC_PULL_M)
 #undef EXEC_PULL_M
+	m.native_state = Variant(); // the holder of this very state: never held here (a reference cycle), never pushed
 	m_dirty.clear();
+	bad += pull_gun();
+	pulls++;
+	return bad;
+}
+
+int ExecState::pull_gun() {
+	const ExecNames &k = exec_names();
+	int bad = 0;
 	Object *gunnery = gunnery_of(m.ctl);
 	gunnery_id = ObjectID(gunnery != nullptr ? gunnery->get_instance_id() : 0);
 	if (gunnery != nullptr) {
@@ -168,15 +177,29 @@ int ExecState::pull(Object *mover) {
 #undef EXEC_PULL_L
 	}
 	l_dirty.clear();
-	pulls++;
 	return bad;
+}
+
+void ExecState::pull_mover_field(Object *mover, int field) {
+	const ExecNames &k = exec_names();
+	switch (field) {
+#define EXEC_PULL_ONE(t, vt, n)                     \
+	case MF::n:                                     \
+		m.n = static_cast<t>(mover->get(k.m.n));    \
+		break;
+		EXEC_MOVER_FIELDS(EXEC_PULL_ONE)
+#undef EXEC_PULL_ONE
+		default:
+			break;
+	}
+	m.native_state = Variant();
 }
 
 int ExecState::push(Object *mover, bool force) {
 	const ExecNames &k = exec_names();
 	int written = 0;
 #define EXEC_PUSH_M(t, vt, n)                       \
-	if (force || m_dirty.has(MF::n)) {              \
+	if ((force || m_dirty.has(MF::n)) && MF::n != MF::native_state) { \
 		mover->set(k.m.n, Variant(m.n));            \
 		written++;                                  \
 	}

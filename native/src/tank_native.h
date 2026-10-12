@@ -125,11 +125,11 @@ public:
 	// Round 27 (stage 1 E3): Gunnery.apply as one call (gun_native.cpp); `gun_configure` takes the live constants and
 	// scripts once (NativeGun.configure). `owned`: on the C++-owned state.
 	// Round 27 (stage 1 E5): OrderController.compute_command's common path as one call (execute_native.cpp).
-	Variant execute(Object *ctl, double delta, bool owned) const {
+	Variant execute(Object *ctl, double delta, int mode) const {
 		ExecConfig config;
 		config.drive = &drive_config;
 		config.gun = &gun_config;
-		return execute_native(config, ctl, delta, owned);
+		return execute_native(config, ctl, delta, mode);
 	}
 	Dictionary execute_counts(bool reset) const { return ::godot::execute_counts(reset); }
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {

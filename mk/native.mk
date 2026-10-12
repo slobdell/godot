@@ -75,7 +75,8 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 	@for arm in $(NATIVE_PROOF_ARMS); do \
 		case $$arm in on) flags="";; off) flags="--brains-off=native";; ab) flags="--brains-ab-run=native";; \
 			mirror) flags="--native-exec-mirror";; owned) flags="--native-exec-owned";; \
-			exec) flags="--brains-on=native_exec";; exec_owned) flags="--brains-on=native_exec --native-exec-owned";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
+			exec) flags="--brains-on=native_exec";; exec_owned) flags="--brains-on=native_exec --native-exec-owned";; \
+			exec_verify) flags="--brains-on=native_exec --native-exec-owned --native-exec-verify";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 			--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 			$$flags $(AB_FLAGS) > $(BUILD_DIR)/native-proof/$$arm.log 2>&1 || true; \

@@ -108,6 +108,10 @@ struct ExecState {
 	// Every member of `mover`, its controller's Gunnery and that Gunnery's Lay into the struct (dirty bits cleared).
 	// Returns the members whose Variant type was not the table's (stored converted; the test asserts 0).
 	int pull(Object *mover);
+	// Part of a pull (E5b's stale bits): the Gunnery's and the Lay's members (the Gunnery found through `m.ctl`), or one
+	// Movement member. Dirty bits are not touched for the mover's field (the caller pulls only what nothing has changed).
+	int pull_gun();
+	void pull_mover_field(Object *mover, int field);
 	// The struct into the members: every field when `force`, else only the dirty ones (then cleared). Returns the
 	// fields written. The Gunnery is the controller's (`m.ctl.gunnery`), the Lay the struct's `g.engagement_lay`.
 	int push(Object *mover, bool force);
