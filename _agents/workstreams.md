@@ -128,7 +128,7 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
 - **The flank stall traced (brains, from orders' flank-probe seeds 3/13):** (a) pre-B0: below the attack's close-in band
   the crews are on attack-moves that stop at full range (70 m); a target that never fires back is never closed on; (b)
   B0 circled at 70 m, past a tank's 62 m sight → the attack became a pursuit (no side) and stopped 40–54° off. Fix on
-  `lab/brains-close` (`b93638fb`): DECLARED, after B2, bar before numbers.
+  `lab/brains-close` (`b93638fb`): DECLARED, after B2, bar before numbers. **(Overturned 2026-10-12: artillery; parked — below.)**
 
 - **brains-close bar (pre-registered 2026-10-11, before its numbers; DECLARED):** (a) an attack goes in once within the crews'
   LONGEST weapon range (control `--attack-close=effective`); (b) B0's drive round at min crew sight − 6 m
@@ -138,6 +138,89 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   (4) fight guards, tactics-drills, ai-scenarios, bridge-pooled 18/18, the 108 ≤ 1 a side; (5) CPU v CPU army-series
   paired, outcome within noise; (6) thirteen/determinism or explained, ≤ 0.5 ms. Partial: split (a) from (b); (b) alone
   not declared if thirteen unmoved.
+
+- **Scout's range trace (2026-10-11, seeds 13–36, builder0): no range term.** ENGAGE bearing seconds 455 → 526 (+16 %), mean
+  range while bearing 21.1 → 26.4 m (inside the MG's 35 m edge); flat damage most likely fire outside ENGAGE (SUPPRESS 20 %)
+  + per-seed noise. **S4 bar (pre-registered, DECLARED):** `_combat_move`'s short-halt early return no longer stops a fixed
+  gun on the planner unless it bears and stands outside its turning room (`--scout-off=halt`). PRIMARY gang_scout
+  scenario pool n = 18/case, his case contacts → 0, 5/5 bars (partial: ≥ 50 % fewer contact runs ships with a note);
+  guards: scout 5/5, law_scout 4/5 kept; fresh census seeds 37–60 on-target-in-reach and contacts not worse beyond 2 se;
+  **+ (orchestrator) a blind gang_scout contacts line on ≥ 12 fresh gang seeds, and the cost measured, not asserted.**
+
+- **Native progress (2026-10-11):** green at `791821cf` (pre-CP-S base; builder0 exited 0, 2472/0, ALL JUDGED, thirteen
+  unmoved): E3 (`native_gun`, OFF, 8400 applies 0 mismatches), E4 (unstick + pressed-wall escape inside the native drive),
+  E5 (one native call per crew, `native_exec`, OFF, 10 624 executes 0 mismatches); native-proof Sumps all arms
+  770df71a443ba743. NOT merged early (nothing in play; stale base). **Ruling: `native_cb` (E2a's callback ports) defaults
+  OFF until priced on a quiet box** (it was `true` on the branch, unpriced) — ON in its own commit once it clears the bar.
+  Native's warning: E5 on live members may not be faster (C++ reads via Object::get); the payoff is E5b's owned state.
+
+- **B2 v4 FAILED (2026-10-11, brains `5877710e` merged base, builder0):** (1) Sumps seed 1 tick 1 never arrives (seeds 1–4
+  21/24 v 14/24); (2) fresh seeds 5–8, 8 m line: 85 v 83, 4 gained, 2 lost (≤ 1), median −0.4 %. Guards 39/0; his 108
+  106/108. Trace: an idle crew whose stalled move "completed" 11.4 m short is never re-sent (the element's thrash rule);
+  6–12 m is now the bulk of hollow runs (17/29). **Ruled: v5 (re-send an idle crew > 8 m off its slot once per seat) is
+  the LAST attempt this round — no v6;** judged on fresh seeds 9–12, all eight rules + resend count and no thrash
+  loop. Fails → parked and written up. brains-close's judged runs may proceed meanwhile; first green merges first.
+
+- **Scout S4 NOT SHIPPED (2026-10-11, tree `0b4c2879`, builder0):** the halt gate fixed the traced touch (gang_scout his case
+  contacts 9 runs → 0) but crossing targets lost standing shots (cross 5 m 0.52 → 0.46, 10 m 0.63 → 0.50: 3/5 bars); blind
+  seeds 37–60 (13 gang): contacts +0.08/seed, se 0.66, no effect. Kept on branch `scout-s4-halt`; reverted on
+  stream/scout. **Scout's backlog is complete; it stops after its final report** (frees builder0 for native's quiet slot).
+
+- **B2 v5 (2026-10-12, brains `3e54110e`, builder0, 8 m line), passing so far:** (1) Sumps seed 1 tick 1 arrives 82.6 s, seed 1
+  6/6; (2) fresh seeds 9–12: 95 v 88, gained 8, lost 1, median +0.0 % (strict 74 v 67); hollow 33 → 26, crews > 12 m off
+  9 → 4; resends 25 in 19 cells, none twice, no loop; (3) 108: 106 = 106 control; fight guards 39/0; (7) 15 v 13/18;
+  (8) 24 v 23/24. CPU side, check and cost pending.
+- **FOUND (brains): his bridge 108 is 106/108 on main `f4c5f7c9`** (seed 2: his side tick 5, CPU tick 9, one rim crew each;
+  round 26 left it 108/108 at `eb987e87`). Not B2 (both arms). **Bisected (2026-10-12): round 26's tail, not round 27.** Both cells
+  fail identically at `090b345d` (round 26's close; orchestrator, builder0 light: green t5 rim 4.1 s, rust t9 rim 6.8 s,
+  4/4 crossed, arrived 51.0 / 51.9 s) and at `f4c5f7c9` with and without CP-S (scout: byte-identical records; no fixed
+  gun in the drill: 4 law_tanks v 3 lancers). Between `eb987e87` (108/108) and `090b345d`: a round-27/28 brains
+  candidate (one tank hesitating 3.5–6.8 s at the rim; all crews cross).
+
+- **Orders O3, hull facing at rest (report; `9c6f3381`, builder0, foundry, 4 factions × seeds 3/5/8/11/13/21, 313 crews a
+  task an arm; `streams/references/round27/orders_hull_rest.txt`):** a drawn facing works for hover, tracks and wheeled
+  fixed guns (median 1.4–3.8°, 69–100 % within 15°, v 23–71° clicked); **wheeled turreted hulls are the whole 100–167° tail**
+  (168/313 crews, median 60–68° drawn = clicked; by design their turret takes the facing); line tasks ~27–29° (the 30°
+  sectors); support by fire on wheeled turreted hulls is WORSE drawn (90.9° v 55.9°, p = 0.001). Candidates: wheeled
+  turreted hulls face at rest (frozen order_controller, after stage 1) — a question for him; support-by-fire wheeled
+  drawn (brains). O4's flank clip: the orchestrator renders it after brains-close merges.
+
+- **CORRECTION (2026-10-12, brains): the flank "stall" on orders' seeds 3/13 was ARTILLERY, not an attack-closing bug.** The
+  player's group 1 there is the gangs' wrecker catapults; they back off to their 68 m standoff and the immortal target
+  never ends the fight. Direct-fire tanks in the quiet stage close to 22 m in both arms (lab `8b3039fb`). **`lab/brains-close`
+  is PARKED** ((a) no player failure shown; (b)'s rework unproven; `8de99ab8` runs void). Candidate for him: should
+  artillery honour a drawn approach (bombard from that side) or ignore it? flank-probe should pick a direct-fire squad or
+  report per group. B2 v5 CPU side (seeds 9–10, 50 cells, 8 m): 45 v 43, 2 lost, median +0.0 % (reported; accepted).
+
+- **FOUND (2026-10-12, the orchestrator's flank clips, main `d1101179`, builder0, gangs v law, target alive and firing):** the
+  drawn approach did NOT reach the side in any of 3 — seed 21 best 70.1° / end 36.5 m, seed 5 71.2° / 38.5 m, seed 8 87.2°
+  / 42.1 m (group "Guns"). orders' probe (immortal target holding fire) reached it on the same seeds. Given to brains:
+  the unit type, then trace whether the fight reflex overrides the drive round. No clip for him until it works.
+
+- **Live-flank traced (brains, 2026-10-12, builder0; "Guns" = gang_ifv, direct fire):** B0 plans the drive round once, then
+  the attack becomes a PURSUIT because the CPU's target shuffles ≥ 2 m/s (PURSUIT_MPS) and a pursuit has no side; at 64 m a
+  near-ambush by the target's squadmates triggers assault-through and the squad charges the middle (0/1 reached; all 5
+  dead by 19 s). **Fix accepted (approach path, not declared if thirteen unmoved):** a drawn approach outranks pursuit
+  below 6 m/s, circle on the target's current position; no assault-through from the target's own squad while going round.
+  **Bar (pre-registered):** live stage seeds 1–3 × 6 ticks reached ≥ 12/18 (< 12 = partial, no ship); kills ≥ control − 2,
+  crews alive ≥ control − 0.5 where control = a CLICKED attack, same seed/tick (today's drawn reported); side-armour hit
+  share reported; B0 approach-series ≥ 17/18; pursuit tests unchanged; flank-clip seeds 5/8/21 + fresh 61/67/71 reported.
+
+- **B2 merged 2026-10-12 (`3dc04293` = brains `2dccf781`, builder0 exited 0, 2497/0, ALL JUDGED, thirteen unmoved).** Rule
+  sheet all PASS at v5 (cost NOT READABLE). **B5 (ambush lays its guns on its sectors, every ambush) rode inside the
+  declared merge: accepted after the fact** (fight guards 39/0, thirteen unmoved; `--ambush-lay=off`); a default-path
+  change gets its own commit next time.
+- **Live-flank fix: PARTIAL, not shipped (2026-10-12, `33bf5862` → lab branch).** Stage (5 gang_ifv v a Law squad of 5):
+  0/18 on side in EVERY arm and alive 0.00 in every arm: an unwinnable stage, uninformative (C27.5, the orchestrator's
+  miss too). Traces: B0 circled at the crews' own reach (35 m, inside the Law guns); a near-ambush by the target's
+  squadmates sprang assault-through; under a commander the target drives 8–10 m/s (≥ 2 m/s = pursuit). **One re-run
+  allowed on an EVEN stage** (clicked survival 30–70 %, calibrated on clicked arms only), same bar, fresh seeds 4–6; under
+  12/18 → parked for good. After B3.
+
+- **B4 RETIRED (2026-10-12, brains, builder0 light, 2dccf781 + `--drill-seats=nearest`):** letting the role go with the
+  point fails 5 fight tests (base 31/0, nearest 26/5: pursuit 8 m/s the old leader turns 178° and opens 53 → 142 m;
+  mixed_legs, cannot-catch, elements, seat_nearest). The pinned leader IS "keep the lead's role"; the unpin's one gain was
+  overtaken by CP1a. Kept on `lab/brains-b4-point` (`9f15bfd9`).
 
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.

@@ -199,7 +199,8 @@ static func _touching(body: Tank, other: Tank) -> bool:
 ## Every run of `kind` (the check's one, or the pool), and the pooled line.
 func pool(kind: String) -> Dictionary:
 	# The check's subset: three of the pre-registered start ticks on one seed, so a median bar is not one run's coin (his
-	# case's start-1 run read 2.3 s in the suite and 0.5 s alone; pooled n = 18 it is 0.6 s).
+	# case's start-1 run read 2.3 s in the suite and 0.5 s alone; pooled n = 18 it is 0.6 s). Ruled by the orchestrator
+	# (C27.5, round 27): DO NOT shrink this back to one run — that is the pooled-start-tick rule, not a speed knob.
 	var ticks: Array = START_TICKS if _pooled() else [START_TICKS[0], START_TICKS[2], START_TICKS[4]]
 	var seeds: Array = SEEDS if _pooled() else [SEEDS[0]]
 	var probe := OS.get_environment("SCOUT_PROBE") == "1"

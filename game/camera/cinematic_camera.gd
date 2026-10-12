@@ -35,10 +35,21 @@ var game_match: Match
 
 var _age := 0.0
 var _shot := {}
+## Round 27 (orders O2): `--end-shots=<dir>` saves the end of the match as the recording shows it (frames after the
+## result, then quits), and prints how much of each frame looks past the arena. Read from the command line here
+## because it is a measuring flag of this camera's own, not a mode's.
+var end_shots_dir := ""
+## `--cinematic-keep-angle`: round 26's director (never turns to keep the camera inside the arena), the A/B's other arm.
+var keep_angle := false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	var flags := LaunchFlags.from_environment()
+	end_shots_dir = flags.text("end-shots")
+	keep_angle = flags.has("cinematic-keep-angle")
+	if end_shots_dir != "" and game_match != null:
+		game_match.finished.connect(func(_result: Dictionary) -> void: _shoot_the_end())
 
 
 ## Start directing. Takes the camera off the player's vision framing: this view is the spectator's.
@@ -50,6 +61,10 @@ func start() -> void:
 	rig.vision_region = null
 	rig.stop_tracking("replaced")
 	rig.follow_target = null
+	# Round 27 (O2): the director owns the angle. The rig's yaw-follow turned the view toward a selection's facing,
+	# which fought the director's turns away from the wall (seed 202 Docks: 139 jumps of 60 deg+ in 201 s).
+	if not keep_angle:
+		rig.yaw_follow = false
 	_age = SHOT_SECONDS  # the first frame picks a shot
 
 
@@ -74,6 +89,23 @@ func _process(delta: float) -> void:
 		_shot = best  # the action stayed put: keep rolling, but re-score it
 		_age = 0.0
 	_frame(_shot)
+	if end_shots_dir != "":
+		_sample_whole_match(delta)
+
+
+## With `--end-shots`, every second of the match: how much of the frame shows under the arena (CINEMATIC_FRAME lines),
+## so the A/B reads every shot of a match, not only the last.
+var _sampled := 0.0
+
+
+func _sample_whole_match(delta: float) -> void:
+	_sampled += delta
+	if _sampled < 1.0 or rig.camera == null:
+		return
+	_sampled = 0.0
+	var off := CinematicCamera.off_arena(rig.camera, rig.camera.get_viewport().get_visible_rect().size)
+	print("CINEMATIC_FRAME under=%.3f bottom_under=%.3f near=%.2f yaw=%.0f" % [off["under"], off["bottom_under"],
+			rig.camera.near, rad_to_deg(rig.yaw)])
 
 
 ## Whether a scene is close enough to the one on screen that moving there isn't a new shot.
@@ -98,9 +130,44 @@ func _frame(scene: Dictionary) -> void:
 	var points: Array = scene["points"]
 	if points.is_empty():
 		return
-	var goal := RtsCamera.frame_pose(points, rig.yaw, _aspect(), MIN_ZOOM, RtsCamera.FRAME_INSET, rig.pitch)
+	var heading := rig.yaw if keep_angle else CinematicCamera.heading_for(points, rig.yaw, _aspect(), rig.pitch)
+	var turned := not is_equal_approx(heading, rig.yaw)
+	rig.yaw = heading
+	var goal := RtsCamera.frame_pose(points, heading, _aspect(), MIN_ZOOM, RtsCamera.FRAME_INSET, rig.pitch)
 	rig.focus = goal[0]
 	rig.zoom = float(goal[1])
+	if turned:
+		rig.snap()  # a new angle is a cut, never a swing round the arena
+
+
+## Round 27 (orders O2; round 26's showmatch end frame, seed 43496 Docks: the bottom third of the shot was the purple
+## floor under the arena). A shot of vehicles near the wall on the CAMERA's side puts the camera out past the wall, and
+## the rig's cutaway (RtsCamera.cutaway_near) then moves the near plane up to the wall to clear the stands: that plane
+## slices off the ground in front of it too, and the bottom of the frame shows what is under the arena. The player's
+## camera keeps that trade (he chose the angle, and a vehicle against the wall stays in view); the director picks its
+## own angle, so it films from INSIDE the arena: the heading it has if that needs no cut, else the turn round, else a
+## quarter turn that does not (the least cut when every one does). Pure, for tests.
+static func heading_for(points: Array, yaw: float, aspect: float, pitch_deg: float) -> float:
+	var best := yaw
+	var least := INF
+	# The turn round first: the camera then looks AT the wall it was behind, the crowd as the backdrop (a broadcast
+	# shoots across the action toward the stands), then the quarter turns.
+	for quarter in [0, 2, 1, -1]:
+		var heading := wrapf(yaw + quarter * PI * 0.5, -PI, PI)
+		var near := CinematicCamera.cut_at(points, heading, aspect, pitch_deg)
+		if near <= RtsCamera.NEAR_DEFAULT:
+			return heading if quarter != 0 else yaw
+		if near < least:
+			least = near
+			best = heading
+	return best
+
+
+## The near plane the rig would cut at, framing `points` from `heading` (RtsCamera.NEAR_DEFAULT = no cut).
+static func cut_at(points: Array, heading: float, aspect: float, pitch_deg: float) -> float:
+	var goal := RtsCamera.frame_pose(points, heading, aspect, MIN_ZOOM, RtsCamera.FRAME_INSET, pitch_deg)
+	var distance := RtsCamera.distance_for(float(goal[1]))
+	return RtsCamera.cutaway_near(goal[0], heading, distance, RtsCamera.tilt_at(pitch_deg, distance), RtsCamera.perimeter_half())
 
 
 func _aspect() -> float:
@@ -152,3 +219,71 @@ func scenes() -> Array:
 				"points": cell["points"]})
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["score"]) > float(b["score"]))
 	return result
+
+
+# ---- Round 27 (orders O2): the end shot stays on the arena ---------------------------------------------------------
+
+## Seconds after the result at which `--end-shots` saves a frame (the banner, the hold, the last frame of a recording).
+const END_SHOT_SECONDS := [0.5, 2.5, 4.5]
+
+
+func _shoot_the_end() -> void:
+	DirAccess.make_dir_recursive_absolute(end_shots_dir)
+	var view := rig.camera.get_viewport()
+	var size := view.get_visible_rect().size
+	var tag := "%dx%d" % [int(size.x), int(size.y)]
+	var waited := 0.0
+	for i in END_SHOT_SECONDS.size():
+		await get_tree().create_timer(float(END_SHOT_SECONDS[i]) - waited, true, false, true).timeout
+		waited = float(END_SHOT_SECONDS[i])
+		await RenderingServer.frame_post_draw
+		var path := end_shots_dir.path_join("end-%s-%d.png" % [tag, i + 1])
+		view.get_texture().get_image().save_png(path)
+		var off := CinematicCamera.off_arena(rig.camera, size)
+		print("CINEMATIC_END_SHOT %s t=%.1f under=%.3f bottom_under=%.3f off=%.3f void=%.3f near=%.2f yaw=%.0f pitch=%.1f distance=%.1f focus=%s shot=%s" % [
+				path.get_file(), waited, off["under"], off["bottom_under"], off["off"], off["void"], rig.camera.near,
+				rad_to_deg(rig.yaw),
+				rad_to_deg(-rig.camera.global_rotation.x), rig.camera.global_position.distance_to(rig.focus),
+				rig.focus, _shot.get("why", "-")])
+	get_tree().quit()
+
+
+## Sample columns and rows of the frame for `off_arena`.
+const OFF_SAMPLES := Vector2i(16, 18)
+
+
+## How much of what `camera` shows (a `view`-sized frame) is not the arena: {"off": the share of the frame's ground
+## past the arena's walls, "void": the share past the ground itself (the purple under the arena: the ground ends
+## Arena.GROUND_MARGIN beyond the walls), "bottom_void": the same for the bottom third of the frame, "under": the share
+## of the ground the near plane cuts away (the frame shows what is under the arena there: what the lead saw),
+## "bottom_under": the same for the bottom third}. Shares are of the samples whose ray reaches the ground; the sky is neither.
+static func off_arena(camera: Camera3D, view: Vector2, data: Dictionary = Arena.active) -> Dictionary:
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var ground_half := bound + Arena.GROUND_MARGIN
+	var counts := {"ground": 0, "off": 0, "void": 0, "bottom": 0, "bottom_void": 0, "under": 0, "bottom_under": 0}
+	var forward := -camera.global_basis.z
+	for row in OFF_SAMPLES.y:
+		for col in OFF_SAMPLES.x:
+			var at := Vector2((col + 0.5) / OFF_SAMPLES.x * view.x, (row + 0.5) / OFF_SAMPLES.y * view.y)
+			var origin := camera.project_ray_origin(at)
+			var normal := camera.project_ray_normal(at)
+			var bottom := row >= OFF_SAMPLES.y * 2 / 3
+			if normal.y >= -1e-4:
+				continue  # the sky
+			var hit := origin + normal * (-origin.y / normal.y)
+			counts["ground"] += 1
+			counts["bottom"] += int(bottom)
+			if not ArenaShape.contains(kind, bound, Vector2(hit.x, hit.z)):
+				counts["off"] += 1
+			if (hit - camera.global_position).dot(forward) < camera.near:
+				counts["under"] += 1  # the near plane cut this ground away: the frame shows what is under the arena
+				counts["bottom_under"] += int(bottom)
+			if absf(hit.x) > ground_half or absf(hit.z) > ground_half:
+				counts["void"] += 1
+				counts["bottom_void"] += int(bottom)
+	return {"off": float(counts["off"]) / maxf(counts["ground"], 1.0),
+			"void": float(counts["void"]) / maxf(counts["ground"], 1.0),
+			"bottom_void": float(counts["bottom_void"]) / maxf(counts["bottom"], 1.0),
+			"under": float(counts["under"]) / maxf(counts["ground"], 1.0),
+			"bottom_under": float(counts["bottom_under"]) / maxf(counts["bottom"], 1.0)}
