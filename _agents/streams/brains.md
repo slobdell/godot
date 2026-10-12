@@ -77,7 +77,12 @@ Nothing.
 
 ## Status
 
-### FINAL REPORT (round 27, 2026-10-12 ~03:40)
+### FINAL REPORT (round 27, 2026-10-12 ~04:10)
+
+**Last green: `a66a95bc`** (builder0, `make check exited 0`, 2516 passed / 0 failed, 24 targets ALL JUDGED, thirteen
+UNMOVED, determinism `2875411ff4ec6be7`). Since main `3dc04293` it carries only tooling (approach stage `--live`,
+`--his/--theirs`, `--moving`, target hits by facing; `APPROACH_FLAGS`) and this Status: game code equals main. Nothing
+here is waiting to merge except the tooling (optional).
 
 | item | state | where |
 |---|---|---|
