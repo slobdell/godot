@@ -192,6 +192,11 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   artillery honour a drawn approach (bombard from that side) or ignore it? flank-probe should pick a direct-fire squad or
   report per group. B2 v5 CPU side (seeds 9–10, 50 cells, 8 m): 45 v 43, 2 lost, median +0.0 % (reported; accepted).
 
+- **FOUND (2026-10-12, the orchestrator's flank clips, main `d1101179`, builder0, gangs v law, target alive and firing):** the
+  drawn approach did NOT reach the side in any of 3 — seed 21 best 70.1° / end 36.5 m, seed 5 71.2° / 38.5 m, seed 8 87.2°
+  / 42.1 m (group "Guns"). orders' probe (immortal target holding fire) reached it on the same seeds. Given to brains:
+  the unit type, then trace whether the fight reflex overrides the drive round. No clip for him until it works.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
