@@ -97,6 +97,13 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   2 se):** on target / all fight-s; in-reach ENGAGE share of fight-s; fight-option enemy contacts. Plus scenario (1) all 5
   bars n = 18, check green, thirteen declared, ≤ 0.5 ms a tick.
 
+- **CP-S v2 PASSED its blind census (2026-10-11, scout, builder0, tree `90413868`, seeds 13–36):** primary +16.14 pts
+  (se 5.16, n = 21); guards over n = 22: all fight-s on target +5.21 (se 1.66), contacts −6.27/seed (se 3.47), in-reach
+  share −3.42 (se 2.01, passes, close). **Outcomes (reported): kills 40 → 36, damage 21970 → 18845 (−14 % pooled, inside 1
+  se), deaths 354 → 359 — unchanged within noise.** Thirteen lines: 7 moved (declared, `36d67c08`, read 4× identical).
+  **C27.5 ruling:** check's scout_cross subset runs start ticks {1,6,11}, bars unchanged: APPROVED. Next trace: does the
+  lay planner open range (in-reach seconds −21 %)?
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
