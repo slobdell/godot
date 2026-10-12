@@ -165,7 +165,8 @@ func test_a_push_after_a_scramble_restores_every_member() -> void:
 				if not _same((owners[field[0]] as Object).get(field[1]), before[key]):
 					differs += 1
 			assert_eq(differs, changed, "the scramble changed what it says it changed")
-			assert_eq(int(native.exec_push(mover, true)), table.size(), "a forced push writes every field")
+			# Every field but `native_state` (E5b: the holder of the C++ state itself, never pulled or pushed).
+			assert_eq(int(native.exec_push(mover, true)), table.size() - 1, "a forced push writes every field")
 			for field: Array in table:
 				var key: String = PREFIX[field[0]] + String(field[1])
 				checks += 1

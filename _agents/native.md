@@ -699,7 +699,7 @@ the polls: stage 2), elements, the CPU commander, Match, the engine's ray and na
 `execute_i` in scene order, and crew i's execute writes state crew j's think and execute read the same tick (the mover's
 phase, `yield_to`, the avoidance table built at the first avoid). Batching every execute after every think would reorder
 those reads (a DECLARED change). So: **ONE native call per crew per tick** (`TankNative.execute(row, ...)`, the seam at
-the top of `compute_command`), each replacing ~200-300 us of GDScript (N7 rule (c): large per call), all of them reading
+the top of `compute_command`), each replacing ~200-300 us of GDScript (N7 rule (c): large per call; **round 27: that figure was never measured** -- the estimate below is built from shares, not from it; the measured per-crew number is in `streams/native.md` Status), all of them reading
 **ONE record gathered once a tick** (P3's prototype: the gather is ~0.5 ms; it then also feeds avoidance, which today
 gathers its own table). The per-crew state that the GDScript keeps in members today (Movement's ~140 fields, the
 gunnery lay, reflex state) moves INTO the record as C++ structs, with GDScript accessors for the readers outside the
@@ -727,7 +727,7 @@ lane, load high, foundry 25 a side + leaders, 8-20 s, seeds 92721 31337 5988, n 
 per crew 9.7 us a call (28 calls a tick: 0.27 ms), of which the C++ work 1.7 us (r = 0.06) and **the crossing ~8 us a
 call** (four arguments: a name and three floats; nothing read off nodes or Dictionaries); the shared gather 0.65 ms
 (record 0.55, contacts on intel refresh 0.10). So reading the record instead of marshalled arguments removes N7's
-problem: a per-crew call costs ~8 us, which against ~200-300 us of execute work per crew is ~3-4 %.
+problem: a per-crew call costs ~8 us, which against ~200-300 us of execute work per crew (unmeasured, see above) is ~3-4 %.
 
 **Stage 1's estimate, with that overhead:** 17 % GDScript x (1 - r) + 7 % already-native x m - gather 1.05 % - crossings
 (46 a tick x 8 us = 0.6 %) - the think->execute hand-off (~0.5 %) = **15 % of the tick's scripts (11 % at r 0.3, m 0.3,

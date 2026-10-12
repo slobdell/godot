@@ -37,6 +37,13 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mover_record_usec"), &TankNative::mover_record_usec);
 	ClassDB::bind_method(D_METHOD("mover_record_mismatches"), &TankNative::mover_record_mismatches);
 	ClassDB::bind_method(D_METHOD("exec_fields"), &TankNative::exec_fields);
+	ClassDB::bind_method(D_METHOD("drive_owned", "mover", "cmd", "order", "delta"), &TankNative::drive_owned);
+	ClassDB::bind_method(D_METHOD("drive_owned_counts", "reset"), &TankNative::drive_owned_counts);
+	ClassDB::bind_method(D_METHOD("gun_configure", "config"), &TankNative::gun_configure);
+	ClassDB::bind_method(D_METHOD("unstick", "mover", "cmd", "order", "delta", "owned"), &TankNative::unstick);
+	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
+	ClassDB::bind_method(D_METHOD("execute_counts", "reset"), &TankNative::execute_counts);
+	ClassDB::bind_method(D_METHOD("gun_apply", "gunnery", "cmd", "seconds", "owned"), &TankNative::gun_apply);
 	ClassDB::bind_method(D_METHOD("exec_pull", "mover"), &TankNative::exec_pull);
 	ClassDB::bind_method(D_METHOD("exec_push", "mover", "force"), &TankNative::exec_push);
 	ClassDB::bind_method(D_METHOD("exec_row", "mover"), &TankNative::exec_row);
@@ -528,6 +535,42 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.ready = c.pathing != nullptr && c.levers != nullptr && c.tank_command != nullptr && c.nav != nullptr &&
 			c.avoidance_script != nullptr && c.switches != nullptr;
 	c.profile = config.get("profile", false);
+	// Round 27 (E2): _keep_station's constant and scripts; any missing keeps the callback (station_ready false).
+	c.faction_of.clear();
+	c.keep_units = config.get("units", Variant());
+	c.keep_pid_script = config.get("pid", Variant());
+	c.keep_control_gains = config.get("control_gains", Variant());
+	c.units = c.keep_units.get_validated_object();
+	c.pid_script = c.keep_pid_script.get_validated_object();
+	c.control_gains = c.keep_control_gains.get_validated_object();
+	c.STATION_LEAD_SECONDS = config.get("STATION_LEAD_SECONDS", 0.0);
+	c.station_ready = config.has("STATION_LEAD_SECONDS") && c.units != nullptr && c.pid_script != nullptr &&
+			c.control_gains != nullptr;
+	c.blocker_ready = config.has("BLOCKER_REACH") && config.has("BLOCKER_GAP_M") && config.has("BLOCKER_AHEAD_COS");
+	c.BLOCKER_REACH = config.get("BLOCKER_REACH", 0.0);
+	c.BLOCKER_GAP_M = config.get("BLOCKER_GAP_M", 0.0);
+	c.BLOCKER_AHEAD_COS = config.get("BLOCKER_AHEAD_COS", 0.0);
+	c.query_ready = config.has("MESH_EPSILON");
+	c.MESH_EPSILON = config.get("MESH_EPSILON", 0.0);
+	c.keep_manoeuvre_census = config.get("manoeuvre_census", Variant());
+	c.manoeuvre_census = c.keep_manoeuvre_census.get_validated_object();
+	c.KTURN_MIN_ERROR_DEG = config.get("KTURN_MIN_ERROR_DEG", 0.0);
+	c.KTURN_CIRCLE_SPEED = config.get("KTURN_CIRCLE_SPEED", 0.0);
+	{
+		const char *names[] = { "STUCK_SPEED", "STUCK_SECONDS", "UNSTICK_SECONDS", "UNSTICK_CLEARANCE", "PRESS_ESCAPE_THROTTLE",
+			"PRESS_BACKOFF_M", "PRESS_SECONDS", "PRESS_PROGRESS_M", "PRESS_ESCAPE_MAX_S", "THROTTLE_MIN" };
+		double *slots[] = { &c.STUCK_SPEED, &c.STUCK_SECONDS, &c.UNSTICK_SECONDS, &c.UNSTICK_CLEARANCE, &c.PRESS_ESCAPE_THROTTLE,
+			&c.PRESS_BACKOFF_M, &c.PRESS_SECONDS, &c.PRESS_PROGRESS_M, &c.PRESS_ESCAPE_MAX_S, &c.THROTTLE_MIN };
+		c.unstick_ready = true;
+		for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+			if (!config.has(names[i])) {
+				c.unstick_ready = false;
+				break;
+			}
+			*slots[i] = config[names[i]];
+		}
+	}
+	c.kturn_look_ready = config.has("KTURN_MIN_ERROR_DEG") && config.has("KTURN_CIRCLE_SPEED") && c.manoeuvre_census != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;
 	const char *fire_doubles[] = { "FIRE_LOOKAHEAD", "FIRE_DETOUR_MARGIN", "FIRE_DETOUR_REACHED", "FIRE_KEEP_SHARE",
@@ -569,6 +612,14 @@ Dictionary TankNative::drive_profile(bool reset) const {
 
 bool TankNative::drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const {
 	return drive_native(drive_config, mover, cmd, order, delta);
+}
+
+bool TankNative::drive_owned(Object *mover, Object *cmd, const Dictionary &order, double delta) const {
+	return drive_native(drive_config, mover, cmd, order, delta, true);
+}
+
+Dictionary TankNative::drive_owned_counts(bool reset) const {
+	return ::godot::drive_owned_counts(reset);
 }
 
 Vector3 TankNative::drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const {

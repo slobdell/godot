@@ -372,6 +372,17 @@ static var _registry := {}
 
 ## The composer this mover belongs to (an OrderController, or a TankBrain).
 var ctl: OrderController
+## Round 27 (native, stage 1 E5b): this crew's execute state owned by the C++ (a NativeExecState, freed with this mover),
+## and what the GDScript has written of it since the C++ last read it: a bit per door, so the C++ reads again only that
+## part before it executes (game/ai/native/native_exec.gd). STALE_ALL: reset, idle, ask here, a tick the native execute
+## hands back; STALE_ORDER: new_order's two members; STALE_GUN: OrderController's gun forwarders; STALE_STALL: its
+## stalled_ticks forwarder.
+const STALE_ALL := 1
+const STALE_ORDER := 2
+const STALE_GUN := 4
+const STALE_STALL := 8
+var native_state: RefCounted = null
+var native_stale := STALE_ALL
 
 ## Stuck detection (round-3 X1): consecutive ticks a move_to made no progress toward its goal (0 while arrived or not
 ## driving to a point). Brains time out options with it; N1 reports `blocked` from it.
@@ -836,6 +847,7 @@ func reading() -> Dictionary:
 ## A new order: drop the unstick routine, the old path, the fire detour and the stall bookkeeping, so the new order
 ## drives this very tick (K1 response guarantee).
 func reset() -> void:
+	native_stale |= STALE_ALL
 	_fire_detour = null
 	_fire_detour_again = 0
 	_fire_since = -1
@@ -886,12 +898,14 @@ func bind() -> void:
 
 ## Forget the route (a new move order): the next drive() repaths at once.
 func new_order() -> void:
+	native_stale |= STALE_ORDER
 	_repath_left = 0.0
 	_reissued = true
 
 
 ## The move order isn't a move_to (stop, face, drive, or a dead hull): nothing to report but "arrived".
 func idle() -> void:
+	native_stale |= STALE_ALL
 	yield_to = ""
 	arc_live = false
 	_deflected = false
@@ -1627,6 +1641,7 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 ## found a validated spot and is giving way; false when it can't (it is already giving way, it just gave way to the
 ## same asker, or there is no room) — and then the asker gives way itself.
 func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bool:
+	native_stale |= STALE_ALL
 	if yield_to != "" or asker == _last_yielded_to:
 		return false
 	if _begin_yield(asker, from, direction, via):

@@ -50,8 +50,9 @@ struct DriveConfig {
 	// BrainLevers.chord_samples / orca_neighbours per team, for one physics frame (they read the team's brain variant,
 	// which nothing changes inside a tick); used only while BrainLevers.split is off (then they do not read the unit).
 	mutable int64_t levers_frame = -1;
-	mutable int64_t chord_samples_of[2] = { 0, 0 }, orca_of[2] = { 0, 0 };
-	mutable bool chord_samples_known[2] = { false, false }, orca_known[2] = { false, false };
+	mutable int64_t chord_samples_of[2] = { 0, 0 }, orca_of[2] = { 0, 0 }, kturn_check_of[2] = { 0, 0 };
+	mutable bool chord_samples_known[2] = { false, false }, orca_known[2] = { false, false },
+				 kturn_check_known[2] = { false, false };
 	double CHORD_SLACK, CHORD_MARGIN;
 	double APPROACH_RADII, APPROACH_MIN, APPROACH_MAX, APPROACH_ALIGNED_COS, MESH_GATE_SLACK, GATE_REACHED;
 	double OFF_MESH_PROBES[3];
@@ -75,10 +76,47 @@ struct DriveConfig {
 	Object *match_script = nullptr, *suppression_feed = nullptr, *order_controller = nullptr, *brain_variants = nullptr;
 	Variant keep_match_script, keep_suppression_feed, keep_order_controller, keep_brain_variants;
 	bool profile = false; // drive_profile's clocks run only when asked (--native-drive-profile)
+	// Round 27 (stage 1 E2): Movement._keep_station natively (Pid.step_with_rate on the mover's station PID, read and
+	// written in place); station_ready false (a missing script or constant) keeps the callback.
+	bool station_ready = false;
+	double STATION_LEAD_SECONDS = 0.0;
+	Object *units = nullptr, *pid_script = nullptr, *control_gains = nullptr;
+	Variant keep_units, keep_pid_script, keep_control_gains;
+	mutable HashMap<String, String> faction_of; // String(Units.stat(unit, "faction", "")), pure
+	// Round 27 (E2): Movement._blocker natively (blocker_ready false keeps the callback).
+	bool blocker_ready = false;
+	double BLOCKER_REACH = 0.0, BLOCKER_GAP_M = 0.0, BLOCKER_AHEAD_COS = 0.0;
+	// Round 27 (E2): Pathing.query natively in the re-plan (query_ready false keeps the call into GDScript).
+	bool query_ready = false;
+	double MESH_EPSILON = 0.0;
+	// Round 27 (E2): Movement._planned_reverse's look up to its cheap exits natively (kturn_look_ready false: the callback).
+	bool kturn_look_ready = false;
+	double KTURN_MIN_ERROR_DEG = 0.0, KTURN_CIRCLE_SPEED = 0.0;
+	// Round 27 (E4): Movement.unstick natively (unstick_ready false: the GDScript).
+	bool unstick_ready = false;
+	double STUCK_SPEED = 0, STUCK_SECONDS = 0, UNSTICK_SECONDS = 0, UNSTICK_CLEARANCE = 0, PRESS_ESCAPE_THROTTLE = 0,
+		   PRESS_BACKOFF_M = 0, PRESS_SECONDS = 0, PRESS_PROGRESS_M = 0, PRESS_ESCAPE_MAX_S = 0, THROTTLE_MIN = 0;
+	Object *manoeuvre_census = nullptr; // ManoeuvreCensus (its trace_unit: a traced unit takes the GDScript, which prints)
+	Variant keep_manoeuvre_census;
 };
 
-// Executes one drive: returns false (nothing done) when the configuration is missing.
-bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta);
+// Executes one drive: returns false (nothing done) when the configuration is missing. `owned` (round 27, E1c): on the
+// C++-owned state (ExecState, exec_view.h's StructView) instead of the live members; the same bits either way.
+bool drive_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,
+		bool owned = false);
+// Round 27 (stage 1 E5): the drive and unstick on a state the CALLER manages (null: the live members; else the C++-owned
+// state, which the caller pulled and will push: only callbacks into GDScript sync it inside).
+struct ExecState;
+bool drive_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, ExecState *state);
+bool unstick_with(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta,
+		ExecState *state);
+// Round 27 (stage 1 E4): Movement.unstick(cmd, order, delta) natively, on the live members or the owned state.
+bool unstick_native(const DriveConfig &config, Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned);
+// Steering.drive_toward(position, forward, target, arrive_radius) (remaining -1), for the other execute ports.
+Vector2 steering_drive_toward(const DriveConfig &c, const Vector3 &position, const Vector3 &forward, const Vector3 &target,
+		double arrive_radius);
+// Measurement: owned drives, and the transition's pulls and pushes they made; `reset` zeroes them.
+Dictionary drive_owned_counts(bool reset);
 // Measurement only: microseconds a callback took (by name), "drives", "total"; `reset` zeroes it.
 Dictionary drive_profile(bool reset);
 // Movement._around_fire(waypoint, goal, order) natively on this mover (the proof asks it beside the live GDScript).

@@ -8,6 +8,37 @@ extends RefCounted
 ## them with a different value, and pushes the struct back. The match must hash as one run without it: push is lossless.
 
 static var mirror := NativeBridge.available and OS.get_cmdline_user_args().has("--native-exec-mirror")
+
+
+## E5: can this crew's execute step go native this tick? (The library, the switches, the drive's default configuration,
+## the gun configured.) The native call itself still hands back (NIL) anything off the common path.
+static func usable(ctl: OrderController) -> bool:
+	return BrainSwitches.native and BrainSwitches.native_exec and ctl.tank.alive \
+			and NativeDrive.usable(ctl.movement) and NativeGun.configure()
+
+
+## E5b: `--native-exec-verify` (with `--native-exec-owned`): before every owned execute the C++ reads the members afresh
+## and compares them with the state it owns (a door into the state that does not set `native_stale` shows up here).
+static var verify := OS.get_cmdline_user_args().has("--native-exec-verify")
+const EXEC_LIVE := 0
+const EXEC_OWNED := 1
+const EXEC_OWNED_VERIFY := 2
+const REPORT_EVERY := 20000
+static var _executes := 0
+
+
+## The crew's command for this tick natively, or null (the GDScript compute_command runs).
+static func execute(ctl: OrderController, delta: float) -> Variant:
+	var mode := (EXEC_OWNED_VERIFY if verify else EXEC_OWNED) if NativeDrive.owned or BrainSwitches.native_owned \
+			else EXEC_LIVE
+	_executes += 1
+	if mode != EXEC_LIVE and _executes % REPORT_EVERY == 0:
+		var c: Dictionary = NativeBridge.impl.execute_counts(false)
+		print("NATIVE_EXEC %d native, %d handed back (dead %d, reflexes %d, yielding %d, face %d, drive %d, other %d), %d stale pulls, %d part pulls, %d verified, %d verify mismatches %s" % [
+				int(c["native"]), int(c["handed_back"]), int(c["dead"]), int(c["reflexes"]), int(c["yielding"]),
+				int(c["face"]), int(c["drive"]), int(c["other_order"]), int(c["stale_pulls"]), int(c["part_pulls"]), int(c["verified"]),
+				int(c["verify_mismatches"]), c["first_mismatch"]])
+	return NativeBridge.impl.execute(ctl, delta, mode)
 ## Measurement: crews mirrored, members scrambled (a mirror that scrambled nothing proves nothing).
 static var mirrored := 0
 static var scrambled := 0

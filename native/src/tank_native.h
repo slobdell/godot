@@ -12,6 +12,8 @@
 #include "el_native.h"
 #include "tq_native.h"
 #include "exec_state.h"
+#include "gun_native.h"
+#include "execute_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -116,6 +118,27 @@ public:
 	// (NativeDrive.configure); `drive` runs one tick's drive on the mover's members, false if not configured.
 	bool drive_configure(const Dictionary &config);
 	bool drive(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
+	// Round 27 (E1c): the same drive on the C++-owned state (pulled at its start, pushed at its end; synced around every
+	// callback while there are any). `drive_owned_counts` says how many syncs that took.
+	bool drive_owned(Object *mover, Object *cmd, const Dictionary &order, double delta) const;
+	Dictionary drive_owned_counts(bool reset) const;
+	// Round 27 (stage 1 E3): Gunnery.apply as one call (gun_native.cpp); `gun_configure` takes the live constants and
+	// scripts once (NativeGun.configure). `owned`: on the C++-owned state.
+	// Round 27 (stage 1 E5): OrderController.compute_command's common path as one call (execute_native.cpp).
+	Variant execute(Object *ctl, double delta, int mode) const {
+		ExecConfig config;
+		config.drive = &drive_config;
+		config.gun = &gun_config;
+		return execute_native(config, ctl, delta, mode);
+	}
+	Dictionary execute_counts(bool reset) const { return ::godot::execute_counts(reset); }
+	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
+		return unstick_native(drive_config, mover, cmd, order, delta, owned);
+	}
+	bool gun_configure(const Dictionary &config) { return ::godot::gun_configure(gun_config, config); }
+	bool gun_apply(Object *gunnery, Object *cmd, double seconds, bool owned) const {
+		return ::godot::gun_apply(gun_config, drive_config, gunnery, cmd, seconds, owned);
+	}
 	Dictionary drive_profile(bool reset) const;
 	Vector3 drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const;
 	bool drive_fire_ready() const;
@@ -193,6 +216,7 @@ private:
 	ContactsTable contacts[2];
 	int last_scan_rays = 0;
 	DriveConfig drive_config;
+	GunConfig gun_config;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;
 	ElTerrain el_terrain_table;
