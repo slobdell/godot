@@ -6,7 +6,8 @@
 
 _Last updated: 2026-10-11 evening — **ROUND 26 IS CLOSED (the section below). No worktrees. Round 27 is NOT split:
 his decision is stage 1 C++ (`roadmap.md` *Round 27 candidates*, perf's draft brief in `streams/archive/round26/perf.md`);
-one question for him first (traffic's: take turns at crossings or push through). **Main's closing check: `090b345d`,
+one question for him first (traffic's: take turns at crossings or push through); **his new scout feedback is in
+`game_design.md` *Round 27 direction*.** **Main's closing check: `090b345d`,
 builder0, `make check exited 0`, 2464 passed, 0 failed, 24 targets ALL JUDGED, determinism 2875411ff4ec6be7.** He
 pushes `main`.**_
 

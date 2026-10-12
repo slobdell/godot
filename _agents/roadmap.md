@@ -217,6 +217,11 @@ time on today's base). Perf's draft brief: `streams/archive/round26/perf.md` *DR
 first, from MoverRecord, OFF on main). The freeze it needs collides with driving work, so the behaviour items below
 either go first or wait.
 
+**His new feedback (2026-10-11, watching showmatch; `game_design.md` *Round 27 direction*):** scouts attack badly —
+they close to contact with no room to turn, and never reverse to keep a moving target in arc. A scout standoff that
+keeps its turning room, and forward-or-reverse chosen by gun-on-target time (CP2's idea applied to a fight). Likely
+the first behaviour item, BEFORE stage 1 freezes the drive and gunnery files.
+
 **Carry-overs (each with its stage command in the archived brief named):**
 - **A friendly convention that works** (traffic, branch `traffic-cp1b-v4`): keep-right alone helped in the Terminus
   street (177/180) but hurt formation-to-formation on open ground; the crossing yield needs its 40 % floor (v3). His
