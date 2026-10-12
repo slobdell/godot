@@ -320,6 +320,7 @@ const FLANK_SIDE_DEG := 90.0
 const FLANK_DRAG_M := 30.0
 const FLANK_WATCH_S := 90.0
 const FLANK_WITHIN_DEG := 35.0
+const FLANK_START_M := 55.0
 
 
 func _flank() -> void:
@@ -346,7 +347,21 @@ func _flank() -> void:
 		row["why"] = "no enemy"
 		_results.append(row)
 		return
-	controls.reveal_all = true  # the probe presses on an enemy at its base; the player would press on one he can see
+	# He attacks what he can see (a tank sees ~62 m; brains' stage starts 50 m out): the target is brought FLANK_START_M
+	# ahead of the squad, toward the enemy's side, before the press. The quiet arm's enemy holds; a target off its slot
+	# may drive back, so every sample reads where it is now.
+	var ahead := Vector3(target.global_position.x - centre.x, 0.0, target.global_position.z - centre.z).normalized()
+	target.global_position = ElementPlan.clamp_to_arena(centre + ahead * FLANK_START_M)
+	target.reset_physics_interpolation()
+	# Holding there: a target driving back to its slot is a mover, and brains pursues a mover (>= 2 m/s) with the side
+	# ignored (its B0 rule), so the first probe measured the pursuit, not the flank. Out of its element first, so its
+	# leader does not re-slot it.
+	var owner: Element = controls.elements.of(String(target.name)) if controls.elements != null else null
+	if owner != null:
+		owner.remove(String(target.name))
+	row["target_hold"] = controls.orders.issue({"units": [String(target.name)], "verb": "hold", "source": "player"}, target.team)
+	await _seconds(0.5)
+	controls.reveal_all = true
 	var to_target := Vector3(target.global_position.x - centre.x, 0.0, target.global_position.z - centre.z).normalized()
 	var turn := FLANK_SIDE_DEG if flags.text("flank-side", "left") == "left" else -FLANK_SIDE_DEG
 	var side := (-to_target).rotated(Vector3.UP, deg_to_rad(turn)).normalized()  # from the target out to the drawn side
@@ -390,7 +405,8 @@ func _flank() -> void:
 		var at := _centroid(alive)
 		var out := Vector3(at.x - target.global_position.x, 0.0, at.z - target.global_position.z)
 		var error := rad_to_deg(absf(Vector2(out.x, out.z).angle_to(Vector2(side.x, side.z))))
-		trace.append([waited, snappedf(error, 0.1), snappedf(out.length(), 0.1)])
+		trace.append([waited, snappedf(error, 0.1), snappedf(out.length(), 0.1),
+				snappedf(Vector2(target.velocity.x, target.velocity.z).length(), 0.1)])
 		if reached < 0.0 and error <= FLANK_WITHIN_DEG:
 			reached = waited
 		if waited == 30.0:
