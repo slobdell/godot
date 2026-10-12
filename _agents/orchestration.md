@@ -3759,3 +3759,7 @@ instrument that cannot lie about load — removal within one run — and let eve
 298. **Fresh seeds after tuning, and a last attempt named in advance.** (Round 27, scout CP-S and brains B2.) Each failed
    version moved its judged runs to seeds it had never seen, and B2 v5 was declared the last attempt before it ran: it
    passed on its own merits, and the alternative was a v6 tuned on the seeds that judged v5.
+299. **A GO is sent when its receiver acknowledges it.** (Round 27, E6.) The orchestrator's 04:00 GO for the laptop slot,
+   sent to a socket address, never reached native's inbox; native waited "for a slot" until 11:21 and the night's laptop
+   window was lost. Send slot grants by the session NAME (`ListAgents`), ask for a one-line ack, and check the ack
+   arrived before treating the slot as running.
