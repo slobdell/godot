@@ -167,6 +167,15 @@ Sumps 8.5 fields, 2.3-2.5 us. Against the 9.7 us crossing and the execute GDScri
 it: Gunnery's and the Lay's fields (E3; ~3-5 changed a tick expected, ~+1 us). First version marked every set dirty
 (22 fields, ~4 us); setters now mark only a change of bits.
 
+**Reconciling "~200-300 us a crew" (the orchestrator, 2026-10-11 ~20:45):** that number is design text in `native.md`
+*Stage 1* (round 26), never measured; the 11-15 % he decided on comes from SHARES (perf P3, `b57838ed`), and the 27 us
+(perf `304d6b59`) is the prototype think-side slice. Neither feeds the estimate, so nothing is re-told to him until the
+clean bar-workload measurement (plain native v `--brains-off=native`, foundry + parade, 20 a side, pinned, n = 3 seeds,
+a quiet box the orchestrator holds) gives execute ms a tick, its GDScript part and us a crew a tick. A first, unclean
+reading (parade 20 a side + leaders, builder0 load 15-20, owned arm with its transition pulls, every sub-lap timed,
+`9b641aca`): brain/execute 11.8 of 37.2 ms tick scripts (32 %), ~37 hulls alive, ~300 us a crew a tick, of it the native
+drive 5.0 ms and the weapon 4.2 -- NOT for relaying.
+
 ### Questions for the lead
 
 - None.
