@@ -22,7 +22,7 @@ func _run() -> void:
 	case.tree = self
 	var approach: Variant = null if _flag("approach", "east") == "none" else ApproachStage.FROM_EAST
 	var report := await ApproachStage.run(case, int(_flag("seed", "1")), float(_flag("seconds", "60")), approach,
-			_flag("trace", "off") == "on", _flag("arena", "yard_open"))
+			_flag("trace", "off") == "on", _flag("arena", "yard_open"), _flag("immortal", "off") == "on")
 	report["start_tick"] = int(_flag("lab-start-tick", str(TacticsLab.START_TICK)))
 	print("APPROACH_PROBE " + JSON.stringify(report))
 	case.teardown()
