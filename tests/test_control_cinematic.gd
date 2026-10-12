@@ -99,3 +99,58 @@ func test_it_frames_the_vehicles_in_shot() -> void:
 			"everyone in the shot is on screen")
 	assert_true(f.rig.zoom >= CinematicCamera.MIN_ZOOM - 0.001, "and it never jams the lens into a hull (%.2f)" % f.rig.zoom)
 	print("MEASURE control_cinematic zoom=%.2f units=%d why=%s" % [f.rig.zoom, int(shot["units"]), shot["why"]])
+
+
+# ---- Round 27 (orders O2): the end shot stays on the arena -----------------------------------------------------------
+
+## Round 26's showmatch end frame (seed 43496, Docks): the bottom third was the floor UNDER the arena. Vehicles by the
+## wall on the camera's side put the camera past the wall, where the rig's cutaway near plane slices the ground away.
+## The director films them from inside the arena instead.
+func test_a_shot_by_the_near_wall_is_filmed_from_inside_the_arena() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)  # the match's arena and perimeter, as the director sees them
+	var south := Vector3(0.0, 0.0, RtsCamera.perimeter_half() - 4.0)  # yaw 0 puts the camera south of the focus
+	var points := [south, south + Vector3(30.0, 0.0, 0.0), south + Vector3(-30.0, 0.0, -2.0)]
+	assert_true(CinematicCamera.cut_at(points, 0.0, 16.0 / 9.0, RtsCamera.DEFAULT_PITCH_DEG) > RtsCamera.NEAR_DEFAULT,
+			"setup: from the south the camera is past the wall and the rig cuts")
+	for aspect: float in [16.0 / 9.0, 1200.0 / 540.0]:
+		var heading := CinematicCamera.heading_for(points, 0.0, aspect, RtsCamera.DEFAULT_PITCH_DEG)
+		assert_true(absf(wrapf(heading - PI, -PI, PI)) < 0.01, "it turns round to film toward the wall (%.2f rad, aspect %.2f)"
+				% [heading, aspect])
+		assert_true(CinematicCamera.cut_at(points, heading, aspect, RtsCamera.DEFAULT_PITCH_DEG) <= RtsCamera.NEAR_DEFAULT,
+				"where nothing is cut")
+
+
+func test_a_shot_in_the_middle_keeps_its_angle() -> void:
+	var points := [Vector3(-10.0, 0.0, 0.0), Vector3(10.0, 0.0, 6.0)]
+	for yaw: float in [0.0, 0.7, -2.0]:
+		assert_eq(CinematicCamera.heading_for(points, yaw, 16.0 / 9.0, RtsCamera.DEFAULT_PITCH_DEG), yaw,
+				"no cut, no turn (yaw %.1f)" % yaw)
+
+
+func test_the_directed_camera_never_shows_under_the_arena_by_the_wall() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var edge := RtsCamera.perimeter_half() - 4.0
+	var i := 0
+	for node in f.game_match.tanks.get_children():
+		var tank := node as Tank
+		tank.global_position = Vector3(-20.0 + 8.0 * i, 0.0, edge)
+		tank.reset_physics_interpolation()
+		i += 1
+	f.rig.yaw = 0.0
+	var placed: Array = []
+	for node in f.game_match.tanks.get_children():
+		placed.append(Vector3((node as Tank).global_position.x, 0.0, (node as Tank).global_position.z))
+	assert_true(CinematicCamera.cut_at(placed, 0.0, 16.0 / 9.0, f.rig.pitch) > RtsCamera.NEAR_DEFAULT,
+			"setup: round 26's angle would cut the ground here")
+	var director := _director(f)
+	await _frames(4)
+	f.rig.snap()
+	await _frames(2)
+	assert_true(absf(wrapf(f.rig.yaw, -PI, PI)) > 0.01, "it turned off the angle past the wall (%.2f)" % f.rig.yaw)
+	assert_true(f.rig.camera.near <= RtsCamera.NEAR_DEFAULT + 1e-4, "and the rig cuts nothing (near %.2f)" % f.rig.camera.near)
+	var size := f.rig.camera.get_viewport().get_visible_rect().size
+	var off := CinematicCamera.off_arena(f.rig.camera, size)
+	assert_eq(float(off["under"]), 0.0, "no ground cut away (%s, near %.2f)" % [off, f.rig.camera.near])
+	assert_true(director.shot().size() > 0, "and it is still filming them")

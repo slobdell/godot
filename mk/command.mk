@@ -237,6 +237,25 @@ showmatch: import ## Two computer players fight, filmed by the self-directing ca
 			-movflags +faststart "$$movie" && rm -f "$$avi" && echo "DEMO_MOVIE $$movie"; \
 	elif [ -n "$$movie" ]; then echo "DEMO_MOVIE $$avi"; fi
 
+# Round 27 (O2): the showmatch's end shot, as the recording shows it, over seeds and two aspects. Each run plays a whole
+# match in real time (~1-2 min) and saves three frames after the result; each frame prints CINEMATIC_END_SHOT with the
+# share of its ground past the walls (off) and past the ground itself (void, the purple under the arena).
+END_SHOT_SEEDS ?= 43496 3666 101 202
+END_SHOT_SIZES ?= 1920x1080 1200x540
+END_SHOT_DIR ?= $(BUILD_DIR)/showmatch-end
+## END_SHOT_FLAGS=--cinematic-keep-angle: round 26's director (the A/B's before arm).
+END_SHOT_FLAGS ?=
+.PHONY: showmatch-end-shots
+showmatch-end-shots: import ## The showmatch's end frames over END_SHOT_SEEDS at END_SHOT_SIZES (desktop, phone) in build/showmatch-end/ (needs a display)
+	rm -rf $(END_SHOT_DIR) && mkdir -p $(END_SHOT_DIR) && touch $(BUILD_DIR)/.gdignore
+	for seed in $(END_SHOT_SEEDS); do for res in $(END_SHOT_SIZES); do \
+		timeout 400 $(GODOT) --path . --resolution $$res -- --skirmish --demo-match --clean --seed=$$seed \
+			--arena=$(or $(ARENA),random) --announcer=off --music=off $(END_SHOT_FLAGS) \
+			--end-shots=$(CURDIR)/$(END_SHOT_DIR)/$$seed 2>&1 | grep -E 'CINEMATIC_|DEMO_|SCRIPT ERROR|arena' \
+			| sed "s/^/seed=$$seed /" | tee -a $(END_SHOT_DIR)/end.log; \
+	done; done
+	@echo "Now LOOK at $(END_SHOT_DIR)/*/end-*.png"
+
 skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate [ARENA=pit]): size follows the roster
 	$(GODOT) --path . -- --skirmish --player-faction=$(or $(FACTION),gangs) --enemy-faction=$(or $(ENEMY_FACTION),syndicate) $(if $(ARENA),--arena=$(ARENA)) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
@@ -512,6 +531,28 @@ facing-probe: import ## O2: every armed task given a drawn facing by the real ge
 		! grep -q 'SCRIPT ERROR' $$d/run.log || exit 1; \
 	done; done; done
 	for arm in $(FACING_ARMS); do python3 tools/facing_probe_table.py $(FACING_DIR)/headless/$$arm $$arm; done
+
+# Round 27 (O3): hull facing at rest, per hull class, same-seed A/B. Arm `drawn` = the real press-drag-release (as
+# facing-probe's quiet arm); arm `clicked` = the same order clicked at the same spot (automatic facing), judged against
+# the same heading. Every faction in HULL_FACTIONS (their hull classes differ), HULL_SEEDS each; JOBS in parallel.
+# Report only -> build/hull-rest/<arm>/<faction>/<task>-<seed>/screen.json + the table (tools/hull_rest_table.py).
+HULL_FACTIONS ?= gangs law syndicate condemned
+HULL_SEEDS ?= 3 5 8 11 13 21
+HULL_DIR ?= build/hull-rest
+HULL_JOBS ?= 6
+.PHONY: hull-rest-probe
+hull-rest-probe: import ## O3: hull facing at rest per hull class, drawn v clicked on the same seeds (quiet arm), every faction -> build/hull-rest/ + a table
+	rm -rf $(HULL_DIR) && mkdir -p $(HULL_DIR)
+	for arm in drawn clicked; do for faction in $(HULL_FACTIONS); do for seed in $(HULL_SEEDS); do for task in $(_FACING_TASKS); do \
+		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
+		d=$(HULL_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
+		click=""; [ $$0 = clicked ] && click=--faced-click; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+			--no-element-cpu $$click --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+		grep -q SCREEN_DONE $$d/run.log || echo "hull-rest-probe: $$d has no SCREEN_DONE"; \
+		! grep -m1 "SCRIPT ERROR" $$d/run.log'
+	python3 tools/hull_rest_table.py $(HULL_DIR)
 
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
