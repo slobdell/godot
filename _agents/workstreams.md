@@ -161,6 +161,11 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   the LAST attempt this round — no v6;** judged on fresh seeds 9–12, all eight rules + resend count and no thrash
   loop. Fails → parked and written up. brains-close's judged runs may proceed meanwhile; first green merges first.
 
+- **Scout S4 NOT SHIPPED (2026-10-11, tree `0b4c2879`, builder0):** the halt gate fixed the traced touch (gang_scout his case
+  contacts 9 runs → 0) but crossing targets lost standing shots (cross 5 m 0.52 → 0.46, 10 m 0.63 → 0.50: 3/5 bars); blind
+  seeds 37–60 (13 gang): contacts +0.08/seed, se 0.66, no effect. Kept on branch `scout-s4-halt`; reverted on
+  stream/scout. **Scout's backlog is complete; it stops after its final report** (frees builder0 for native's quiet slot).
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
