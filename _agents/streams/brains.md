@@ -77,22 +77,35 @@ Nothing.
 
 ## Status
 
-### REPORT (round 27, as of 2026-10-12 ~02:40; B3 and the flank re-run pending a builder0 slot)
+### FINAL REPORT (round 27, 2026-10-12 ~03:40)
 
 | item | state | where |
 |---|---|---|
 | B0 attack honours a drawn approach (CP0) | DONE, merged | `9603c1d7`; stage 18/18 v 0/18 |
 | B1 the arrive line counts every crew | DONE (tooling; the orchestrator ruled the 8 m line judged, strict reported) | `3aa67b17`, `81217755` |
 | B2 a crew stuck behind a parked squadmate gets a seat round it | SHIPPED (v5, DECLARED), merged | `2dccf781` → main `3dc04293` |
-| B3 make-room priced by removal | main: 68 v 68 (no gain); under B2: queued (seeds 13–16) | below |
+| B3 make-room priced by removal | KEEP: under B2 it gains (8 m line 97 v 93, +5/−1 cells, +0.0 %); on main it gained nothing | below |
 | B4 drill seats by nearest keeping the lead's role | RETIRED (blocked: breaks 5 fight tests) | `lab/brains-b4-point` |
 | B5 ambush guns on the drawn facing | DONE, rode in B2's merge (ruled: default-path change, its own line) | `417863c7` |
 | flank stall (orders' probe) | not a bug: artillery's standoff; `lab/brains-close` PARKED | below |
-| live-flank follow-up | PARTIAL; one re-run on an even fight queued | `lab/brains-flank-live` |
+| live-flank follow-up | PARKED for good (fails its bar on an even fight; fights worse than B0's rule) | `lab/brains-flank-live` `64355ff2` |
 | B6 street funnel | held (his call), untouched | — |
 
+**B3 under B2 (the decision):** `make squad-arrive-series ARRIVE_ARM_FLAG=make-room ARRIVE_SEEDS="13 14 15 16"`, builder0,
+stream `70eca453` (game = main `3dc04293`, B2 in): make-room on 97 v off 93 (8 m line), 76 v 72 (strict); gained 5
+cells (every one with a swap), lost 1, median +0.0 %; 14 swaps in 9 cells; crews > 12 m off 2 v 6. On round 26's base
+it gained nothing (68 v 68: the stuck watch rarely reached it); B2's watch and kept seats now hand it the case it was built
+for. KEPT; nothing changes in code.
+**The flank re-run (judged, the even roster):** five gun trucks v one holding Law IFV (calibrated on clicked attacks only:
+the one roster in the 30–70 % band; gun trucks lose 0/9 to every real Law squad, a balance candidate the orchestrator
+files), builder0 `370fc64d`, fresh seeds 4–6 × 6 ticks, n = 18 an arm: on side fix 0/18 (65°), B0's rule 0/18 (76°),
+clicked 0/18 (89°); target killed 10 / 15 / 10; his alive 1.83 / 2.78 / 2.28; side/rear hit share 0.68 / 0.76 /
+0.81. Fails; parked for good. **Lesson (the orchestrator's):** the stage's "first crew within 50 m" mark coincided with
+the fix's own circle (the target's reach), so "on side" measured the wrong moment — a stage's measuring point must be
+checked against what each arm does. **Side note for the lead:** on that even roster the SHIPPED drawn gesture (B0's
+rule) beats a clicked attack, 15 v 10 kills, 2.78 v 2.28 alive (n = 18).
 **Kept branches (never merge):** `lab/brains-b4-point` (B4's role-follows-point, fails), `lab/brains-close` (the
-close-at-reach fix, parked), `lab/brains-flank-live` (the live-flank fix, partial), and round 26's `lab/brains-carrot`.
+close-at-reach fix, parked), `lab/brains-flank-live` `64355ff2` (the live-flank fix, parked for good), and round 26's `lab/brains-carrot`.
 `lab/brains-mr2` is superseded by B2 (can go). Scratch worktrees to remove at close: `godot-brains-lab`,
 `godot-brains-lab2` (+ their builder0 folders `godot-brains-lab`, `-lab2`, `-light`).
 **Questions for the lead (the orchestrator collects them):** (1) artillery and a drawn approach: bombard from that side,
