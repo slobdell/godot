@@ -3851,3 +3851,12 @@ Recorded from https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (`decisions/<id>
 His words on the session (2026-10-12): *"I think I told you not to ask me questions and continue execution."* and *"I'm
 about leave for work for the day so I want you to have a bunch of work to do."*
 
+### Round 28: stage 1 measured on his laptop (E6, 2026-10-12 11:21–11:54 PDT; for him, as measured)
+
+Native's E6 (`19543dae`, his preset, bar workload, ABBA, n = 6 paired a size, laptop load steady 1.7–2.5): **stage 1 rules
+ON.** 20 a side: tick's scripts −8.6 % (se 3.9), game speed in the opening clash **0.890 → 0.930** of real time; 25 a
+side: −7.2 % (se 0.7), **0.818 → 0.865**. He chose stage 1 on "20 a side ~1.00–1.03"; the saving landed inside its
+predicted band, but today's base on his laptop is 0.890, not round 26's 0.918, so 20 a side reaches ~0.93, not full speed.
+Shipped as measured (native_exec + native_owned + native_cb ON). The rest of the gap is the think half (stage 2), which
+native prices for him next (N4).
+

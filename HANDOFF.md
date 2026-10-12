@@ -22,7 +22,8 @@ baseline check). He pushes `main`._
 | **native** | `godot-native` (4, continuing) | E6 rules stage 1 on his laptop; then every driving change ported; stage 2 priced |
 | **scout** | `godot-scout` (5) | scouts keep the gun on target while suppressing |
 
-**The orchestrator's jobs:** E6 is GRANTED (he approved the laptop; native was re-sent GO 11:25 after missing the 04:00
+**E6 DONE (11:21–11:54): stage 1 rules ON** — his laptop, 20 a side 0.890 → 0.930 of real time, 25 a side 0.818 → 0.865
+(he was told 1.00–1.03 at 20; tell him plainly). Native ships the measured set ON next (N2). **The orchestrator's jobs:** E6 is GRANTED (he approved the laptop; native was re-sent GO 11:25 after missing the 04:00
 one); merge each declared change ALONE with native's port (C28.2); collect each bar before its numbers; read his answers
 from the calls page if he adds more. **He is away at work: never ask him; decide and tell him after** (memory).
 
