@@ -206,6 +206,17 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   crews alive ≥ control − 0.5 where control = a CLICKED attack, same seed/tick (today's drawn reported); side-armour hit
   share reported; B0 approach-series ≥ 17/18; pursuit tests unchanged; flank-clip seeds 5/8/21 + fresh 61/67/71 reported.
 
+- **B2 merged 2026-10-12 (`3dc04293` = brains `2dccf781`, builder0 exited 0, 2497/0, ALL JUDGED, thirteen unmoved).** Rule
+  sheet all PASS at v5 (cost NOT READABLE). **B5 (ambush lays its guns on its sectors, every ambush) rode inside the
+  declared merge: accepted after the fact** (fight guards 39/0, thirteen unmoved; `--ambush-lay=off`); a default-path
+  change gets its own commit next time.
+- **Live-flank fix: PARTIAL, not shipped (2026-10-12, `33bf5862` → lab branch).** Stage (5 gang_ifv v a Law squad of 5):
+  0/18 on side in EVERY arm and alive 0.00 in every arm: an unwinnable stage, uninformative (C27.5, the orchestrator's
+  miss too). Traces: B0 circled at the crews' own reach (35 m, inside the Law guns); a near-ambush by the target's
+  squadmates sprang assault-through; under a commander the target drives 8–10 m/s (≥ 2 m/s = pursuit). **One re-run
+  allowed on an EVEN stage** (clicked survival 30–70 %, calibrated on clicked arms only), same bar, fresh seeds 4–6; under
+  12/18 → parked for good. After B3.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
