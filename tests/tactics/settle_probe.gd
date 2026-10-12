@@ -51,6 +51,12 @@ func _run_probe() -> void:
 	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
 	Element.MAKE_ROOM_ENABLED = _flag("make-room", "on") != "off"
+	# Round 27 (B2, DECLARED): `--b2=off` is the change's control arm, all three parts off (round 26's watch): the clock's
+	# pause, the re-seat that keeps parked crews, the watch after arrival (the arrive series' ARRIVE_ARM_FLAG=b2).
+	if _flag("b2", "on") == "off":
+		Element.STUCK_PAUSE_ENABLED = false
+		Element.RESEAT_KEEP_ENABLED = false
+		Element.WATCH_ARRIVED_ENABLED = false
 	ElementPlan.PURSUIT_ENABLED = _flag("pursuit", "on") != "off"  # round 21 (P2): the arrive series' arm
 	SlotGround.SIDE_ENABLED = not ["off", "nearest"].has(_flag("slot-side", "on"))  # round 21 (stretch d): its arm
 	# Round 20 (M1): `--converge=off` is form-up-on-the-move's control arm (round 12's stations from the first tick).
