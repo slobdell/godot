@@ -14,18 +14,23 @@ import sys
 FIGHT = {"ENGAGE", "ORBIT", "FLANK", "COVER_FIRE", "CLEAR_LANE", "SUPPRESS", "BOMBARD", "PURSUE"}
 
 
-def read(path):
+def read(path, unit=None):
+    """The census row, with enemy contacts under a fight option and under MOVE (only `unit`'s scouts when given)."""
     row, fight_contacts, move_contacts = None, 0, 0
+    events = []
     for line in open(path, errors="replace"):
         if line.startswith("SCOUT_CENSUS "):
             row = json.loads(line[len("SCOUT_CENSUS "):])
         elif line.startswith("SCOUT_EVENT"):
             m = re.search(r"option=([A-Z_]*)", line)
-            option = m.group(1) if m else ""
-            if option in FIGHT:
-                fight_contacts += 1
-            elif option == "MOVE":
-                move_contacts += 1
+            events.append((line.split()[2], m.group(1) if m else ""))
+    for name, option in events:
+        if unit is not None and (row is None or row["per_scout"].get(name, {}).get("unit") != unit):
+            continue
+        if option in FIGHT:
+            fight_contacts += 1
+        elif option == "MOVE":
+            move_contacts += 1
     if row is not None:
         row["fight_contacts"] = fight_contacts
         row["move_contacts"] = move_contacts
@@ -165,10 +170,52 @@ def breakdown(directory):
               100 * b / max(t, 1e-9), 100 * b / max(r, 1e-9)))
 
 
+def ranges(directory):
+    """Mean range (m) while in reach and while bearing, under ENGAGE, pooled (cells with 5 entries only)."""
+    reach = bear = rr = rb = 0.0
+    for f in os.listdir(directory):
+        row = read(os.path.join(directory, f)) if f.endswith(".log") else None
+        for label, cell in (row or {}).get("breakdown", {}).items():
+            if label.startswith("ENGAGE/") and len(cell) >= 5:
+                reach += cell[1]
+                bear += cell[2]
+                rr += cell[3]
+                rb += cell[4]
+    print("RANGE %s engage in reach %.0f s at %.1f m mean; bearing %.0f s at %.1f m mean" % (directory, reach,
+          rr / max(reach, 1e-9), bear, rb / max(bear, 1e-9)))
+
+
+def unit_contacts(new_dir, off_dir, unit):
+    """Blind line (S4): `unit`'s fight-option enemy contacts per seed, paired, over seeds that field it in both arms."""
+    seeds = sorted({f[:-4] for f in os.listdir(new_dir) if f.endswith(".log")}, key=lambda s: int(s))
+    diffs = []
+    for seed in seeds:
+        new = read(os.path.join(new_dir, seed + ".log"), unit)
+        off = read(os.path.join(off_dir, seed + ".log"), unit)
+        if new is None or off is None:
+            continue
+        if not any(r.get("unit") == unit for r in new["per_scout"].values()) or \
+                not any(r.get("unit") == unit for r in off["per_scout"].values()):
+            continue
+        diffs.append(new["fight_contacts"] - off["fight_contacts"])
+        print("%-5s %-12s %-20s %s contacts off %d new %d" % (seed, new["arena"], "/".join(new["factions"]), unit,
+              off["fight_contacts"], new["fight_contacts"]))
+    m, se = stats(diffs) if len(diffs) > 1 else (0.0, 0.0)
+    print("UNIT %s n=%d seeds fielding it; fight_option_contacts diff mean %+.2f a seed, se %.2f (2 se %.2f)" % (unit,
+          len(diffs), m, se, 2 * se))
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "--primary":
+    if sys.argv[1] == "--unit":
+        unit_contacts(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif sys.argv[1] == "--ranges":
+        for d in sys.argv[2:]:
+            ranges(d)
+    elif sys.argv[1] == "--primary":
         primary(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "--breakdown":
         breakdown(sys.argv[2])
     else:
         main(sys.argv[1], sys.argv[2])
+
+

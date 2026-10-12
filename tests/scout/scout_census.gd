@@ -149,10 +149,15 @@ func _run() -> void:
 						"y" if reachable else "n", String(move.get("type", "?")), goal, str(brain.get("why"))])
 			# Diagnosis (not a decision metric): fight time by option x motion, [seconds, in reach, bearing].
 			var label := "%s/%s" % [String(choice.get("option", "")), _motion(str(brain.get("why")))]
-			var cell: Array = breakdown.get_or_add(label, [0.0, 0.0, 0.0])
+			var cell: Array = breakdown.get_or_add(label, [0.0, 0.0, 0.0, 0.0, 0.0])
 			cell[0] += dt
 			cell[1] += dt if reachable else 0.0
 			cell[2] += dt if bearing else 0.0
+			# ...and, in reach, the summed range (the range question: does backing up to keep the gun on open it?) and
+			# the summed range while bearing.
+			var range_m := muzzle.distance_to(target.global_position)
+			cell[3] += range_m * dt if reachable else 0.0
+			cell[4] += range_m * dt if bearing else 0.0
 			var room := 2.0 * float(Units.stat(scout.unit_id, "min_turn_radius_m", 0.0)) \
 					+ float(Movement.hull_box(scout.unit_id)[2]) * 0.5 + float(Movement.hull_box(target.unit_id)[0]) * 0.5
 			if Vector2(scout.global_position.x - target.global_position.x,
