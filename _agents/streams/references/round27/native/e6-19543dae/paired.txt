@@ -1,0 +1,19 @@
+b20: hulls alive at the window's ends: foundry-main-31337 39->31, foundry-main-5988 39->28, foundry-main-92721 39->28, parade-main-31337 39->28, parade-main-5988 40->27, parade-main-92721 40->28
+e20 v b20 tick: -8.59 % (se 3.90, n 6; outside 2 se: True)
+e20 v b20 ctrl: -11.26 % (se 3.69, n 6; outside 2 se: True)
+e20 v b20 game speed: +0.040 (se 0.033, n 6)
+e20 v b20 elements: -0.214 ms (se 0.346, n 6), base 4.70 ms
+e20 v b20 prio0: -0.048 ms (se 0.099, n 6), base 2.47 ms
+   foundry: tick -12.02 % (se 7.99, n 3), 26.58 v 30.75 ms, speed 0.926 v 0.854
+   parade: tick -5.16 % (se 0.49, n 3), 25.43 v 26.81 ms, speed 0.934 v 0.926
+e20: game speed in the window 0.930 (base 0.890), tick scripts 26.00 v 28.78 ms
+
+b25: hulls alive at the window's ends: foundry-main-31337 49->41, foundry-main-5988 50->37, foundry-main-92721 49->38, parade-main-31337 49->34, parade-main-5988 49->35, parade-main-92721 49->34
+e25 v b25 tick: -7.21 % (se 0.68, n 6; outside 2 se: True)
+e25 v b25 ctrl: -10.12 % (se 0.69, n 6; outside 2 se: True)
+e25 v b25 game speed: +0.047 (se 0.006, n 6)
+e25 v b25 elements: -0.053 ms (se 0.106, n 6), base 5.41 ms
+e25 v b25 prio0: +0.051 ms (se 0.031, n 6), base 2.86 ms
+   foundry: tick -7.11 % (se 1.25, n 3), 30.99 v 33.37 ms, speed 0.853 v 0.808
+   parade: tick -7.31 % (se 0.84, n 3), 29.86 v 32.21 ms, speed 0.876 v 0.827
+e25: game speed in the window 0.865 (base 0.818), tick scripts 30.43 v 32.79 ms

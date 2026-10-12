@@ -80,6 +80,20 @@ builder0 and must not be the design. The publish's own cost is pre-registered as
 **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
 read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
 
+## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)
+
+1. **N1 E6 now** (GO'd; running from 11:21:56 PDT on `19543dae`'s code), rule D as pre-registered.
+2. **N2 the ruling commit:** if E6 meets rule D, flip `native_exec`/`native_owned` ON in one commit (`native_cb` only if it
+   ever clears its own bar), thirteen lines and determinism unmoved, check, hand the orchestrator the hash; if not, write
+   up why and what would.
+3. **N3 the port partner (C28.2):** traffic (the crossing rule, `right_of_way`/`_avoid`), manoeuvre (turret hulls turning
+   to a drawn facing, a planned turn for the creep, the face path), scout/brains for any `decide` diff. They send settled
+   diffs; native ports each with an equal-answer proof; the pairs merge back to back. Every OFF-proven port stays green.
+4. **N4 stage 2 priced for him:** the think half (situation/decide/act/tactics polls) as one batched pass: days and the
+   expected laptop speed at 25 a side, as a decision he can make in player terms.
+
+Merge main (44b6be5c) after E6 is reported, not during.
+
 ## Who changes your frozen files this round (C27.2)
 
 - **Scout** may change `_manoeuvre`'s M1 `reaimed` rule in `movement.gd` and `game/ai/manoeuvre.gd` (still GDScript
@@ -124,7 +138,7 @@ exited 0`, 2520/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), the E6
 | E3 gunnery | DONE (incl. ARC) |
 | E4 reflexes, unstick, wall contact | unstick DONE; reflexes hand back (brains never set any); the wall-contact observer stays GDScript (it runs before think, outside the seam; ~0.47 ms a tick headless) |
 | E5 the per-crew execute seam | DONE: `native_exec` + `native_owned` (+ `native_cb`) = stage 1; native-proof equal on every arm; builder0 headless -7.6 to -8.8 % of the tick's scripts (C) |
-| E6 the laptop's ruling | WAITING for a slot; prediction pre-registered: 20 a side -8 to -11 %, game speed 0.97-0.99 |
+| E6 the laptop's ruling | DONE: rules ON (20 a side -8.59 %, 0.890 -> 0.930; 25 a side -7.21 %, 0.818 -> 0.865) |
 
 **What to playtest (after E6, if it rules ON):** `make native && make skirmish` with stage 1 on:
 `make skirmish ARGS=--brains-on=native_exec,native_cb,native_owned` (or the switches' defaults flipped in their own
@@ -257,6 +271,25 @@ OFF, and the split re-taken to find what the ON arm still pays. Reported either 
 - **C, stage 1 headless (no ruling):** tick's scripts 20 a side foundry 11.55 -> 10.67 (-7.6 %), parade 11.80 -> 10.80
   (-8.5 %); 25 a side foundry 15.81 -> 14.53 (-8.1 %), parade 15.63 -> 14.26 (-8.8 %); execute ~88 -> ~65 us a crew;
   think unchanged. Below the 11-15 % estimate so far: what the owned execute still pays is the next work, before E6.
+
+### E6, the laptop's ruling (2026-10-12 11:21-11:54 PDT, flightdeck = his laptop, `19543dae`'s code at `6d9fa7a4`, his
+preset, bar workload, ABBA, 3 cycles a run, n = 6 paired a size; `references/round27/native/e6-19543dae/`)
+
+| | tick's scripts | outside 2 se | game speed in the window (base -> stage 1) |
+|---|---|---|---|
+| 20 a side | **-8.59 %** (se 3.90; foundry -12.0 se 8.0, parade -5.2 se 0.5) | yes | **0.890 -> 0.930** (+0.040, se 0.033) |
+| 25 a side | **-7.21 %** (se 0.68; foundry -7.1, parade -7.3) | yes | **0.818 -> 0.865** (+0.047, se 0.006) |
+
+- **Rule D: met at both sizes -> stage 1 rules ON.** Priority 0 not moved by the arm (20: -0.048 ms se 0.099; 25:
+  +0.051 se 0.031); elements unmoved; ARMY_CAP_FIELDED right in all 24 logs (4 x 5, 5 x 5); the laptop's load steady
+  1.7-2.5 through both sessions. One void cell: Godot crashed in `--import` (signal 11, inside the engine, no frame of
+  ours) before parade 5988's last three runs; that cell was re-run alone, all four arms, its own cooldown and ABBA order.
+- **Against the prediction:** 20 a side tick -8.59 % is inside -8 to -11 % (central -9.5); its game speed 0.930 is NOT
+  0.97-0.99, because today's base is 0.890, not P1's 0.918: the prediction applied the saving to a base the laptop did
+  not reproduce. 25 a side -7.21 % is just under -8 (above the -6 falsifier: no re-take of P1's split needed); its game
+  speed 0.865 is inside 0.85-0.87. No falsifier fired (-6 floor not crossed; -13 ceiling not crossed).
+- **For him (C28.3):** at 20 a side his laptop now runs the opening clash at ~0.93 of real time (0.89 without), not the
+  1.00-1.03 he was told when he chose; at 25 a side ~0.87 (0.82 without).
 
 ### E6's prediction (pre-registered 2026-10-12 ~04:00 PDT, before the laptop session; the orchestrator's ask)
 
