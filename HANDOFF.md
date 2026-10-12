@@ -32,6 +32,9 @@ fix (artillery, `lab/brains-close`), the live-flank fix (`lab/brains-flank-live`
 **Native (still running):** E1–E5b merged, every switch OFF (play unchanged). Quiet slot: `native_cb` stays OFF (< 2 %);
 stage 1 headless −7.6 to −8.8 % of the tick's scripts v the 11–15 % estimate he chose on — internal until E6 on his laptop
 (native pre-registers what the remaining ports add first). Laptop slots go through the orchestrator.
+**E6 on his laptop GRANTED 2026-10-12 ~04:00 (he approved, away ~1.5 h):** candidate `19543dae` (green, all switches OFF),
+prediction pre-registered in native's Status: 20 a side 0.97–0.99 of real time (NOT the 1.00–1.03 he was told), 25 a side
+0.85–0.87 — tell him the measured number plainly.
 
 **Waiting on him:** the calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (four decisions; `read_db`
 `decisions/<id>`); the scout clips. Round 28 candidates: `roadmap.md`. Lessons 295–298. Briefs of the closed streams:
