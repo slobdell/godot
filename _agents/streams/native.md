@@ -318,9 +318,36 @@ multi-day port of manoeuvre's planner) ~0.5-1 %.
   `right_of_way` native (E5c: crews giving way were ~5 % of executes and handed back to the GDScript; now 0, his Sumps
   native-proof). Expected to add ~0.2-0.5 point at 20 a side; the prediction's range stands.
 
+### N4: stage 2 (the think half) priced for him (2026-10-12 ~12:40 PDT; an estimate, confidence low-medium)
+
+**What it is:** situation, decide, act and the tactics polls (each crew's thinking: what to do next) as ONE batched C++
+pass over all crews a tick, the GDScript kept as the reference with live-function proofs (the way stage 1 was built).
+Stage 1 moved the execute half (how each crew drives and shoots).
+
+**The estimate and its calibration:** P3 (round 26, builder0, `b57838ed`) put the whole pass at 46 % of the tick's
+scripts, the execute half ~16 %, so the think half ~30 % (24-36). Stage 1's estimate landed at ~0.6 of itself on his
+laptop (predicted ~13 % central; measured -8.6 % at 20 a side, -7.2 % at 25). Applying the same 0.6: **the think half
+saves ~18 % of the tick's scripts (14-22 %).** On E6's laptop numbers with stage 1 ON (25 a side: 0.865 of real time,
+tick scripts 30.4 ms, a game tick ~38.5 ms of wall time): 18 % is ~5.5 ms -> **25 a side ~1.0 (full speed; 0.975 at the
+low end)**; 20 a side (0.93, 26.0 ms of scripts) -> **full speed with headroom.**
+
+**The cost:** stage 1 was costed at 2.5-3 weeks and took ~1.5 days of this stream's time (Oct 11 18:25 -> Oct 12 12:30),
+because the drive was already native and the proofs were reusable; the think half has no such head start (tank_brain.gd
+~3 500 lines, the tactics feeds) and its inputs are Dictionary-shaped: **~1-2 weeks of one stream** (low confidence). The
+real price is afterwards: the thinking is what brains changes every round, and every such change is then written twice
+(GDScript + C++, proven equal), as driving changes are now (C28.2): **AI-thinking changes cost ~1.5-2x the work for as
+long as the AI keeps changing.**
+
+**The question for him, in player terms (one recommendation):** *"Your laptop now runs 20 a side at about 0.93 of real
+time and 25 a side at about 0.87. Moving the AI's thinking to C++ too would make 25 a side run at full speed (20 a side
+with room to spare), and take about one to two weeks; after that, every change to how the AI decides costs about twice
+the work. Do it now, or once the AI's decisions have settled?"* **Recommendation: once the AI's decisions settle**
+(brains reshapes the thinking every round today: doubling that cost now slows the smarter-AI work he keeps asking for;
+20 a side is close to full speed already). The orchestrator puts it to him.
+
 ### Questions for the lead
 
-- None.
+- **Stage 2 (N4):** do it now, or once the AI's decisions settle? (above; the orchestrator asks him)
 
 ### Requests to other streams
 
