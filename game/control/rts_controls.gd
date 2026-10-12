@@ -54,7 +54,7 @@ const BOX_MARGIN_PX := 4.0
 const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire",
 		KEY_B: "ambush"}
 ## Round 26 (O3): every order that takes a facing names the drag, so the gesture can be discovered where it is used.
-const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy (drag to face)",
+const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground (drag to face) or an enemy (drag to flank)",
 		"follow": "FOLLOW: click a friendly unit", "move": "MOVE: click the ground (drag to face)",
 		"screen": "SCREEN: click the flank to cover (drag to face)",
 		"support_by_fire": "SUPPORT BY FIRE: click what to cover (drag to face)",
@@ -162,6 +162,11 @@ var _armed_press_shift := false
 var _armed_now := Vector2.ZERO
 ## The last ground the armed drag crossed: the heading when it is released above the horizon (the right-drag's rule).
 var _armed_ground_now: Variant = null
+## Round 27 (O1, C27.3), a press on an ENEMY (a right press, or a left press with attack-move armed) waiting for its
+## release: {} when none, else {"target": String, "at": Vector2 (pressed), "now": Vector2, "shift": bool, "armed": bool
+## (the left button with attack-move armed), "ground_now": Variant (the last ground the drag crossed)}. A click is
+## today's attack; a drag is an attack from the side the hand was drawn to (`approach`).
+var _attack_press := {}
 ## Order acknowledgements: [{"kind", "position": Vector3, "left": seconds}], newest last.
 var _acks: Array = []
 ## UI clock (seconds since ready, advancing while paused) for double taps.
@@ -467,6 +472,14 @@ func _gui_input(event: InputEvent) -> void:
 			_armed_ground_now = armed_ground
 		queue_redraw()
 		accept_event()
+	if event is InputEventMouseMotion and not _attack_press.is_empty():
+		var at_now := (event as InputEventMouseMotion).position
+		_attack_press["now"] = at_now
+		var crossed: Variant = ground_under(at_now)
+		if crossed != null:
+			_attack_press["ground_now"] = crossed
+		queue_redraw()
+		accept_event()
 	if event is InputEventMouseMotion and _right_press_at != null:
 		# A right drag is never a box: _press_at (the left button's) is untouched here, so the branch above cannot see it.
 		_right_now = (event as InputEventMouseMotion).position
@@ -495,6 +508,9 @@ func _left_button(button: InputEventMouseButton) -> void:
 		return
 	if _armed_press_at != null:
 		_armed_release(button)
+		return
+	if not _attack_press.is_empty() and bool(_attack_press["armed"]):
+		_attack_release(button)
 		return
 	if _press_at == null:
 		return
@@ -694,6 +710,7 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 	# carry it until they do.
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
+	_copy_approach(extra, task)
 	# Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 	# The shape he picked with G rides the task, so a squad uses it instead of the doctrine table's pick. AUTO is
 	# not sent: that is the leader-decides default his own 2026-09-16 ruling asked for. Round 19: the SQUAD's shape.
@@ -850,7 +867,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	match key.keycode:
 		KEY_ESCAPE:
-			if mode != "":
+			if not _attack_press.is_empty() and not bool(_attack_press["armed"]):
+				_clear_attack_press()  # a right drag on an enemy, cancelled; the selection stays
+			elif mode != "":
 				disarm()
 			else:
 				selection.clear()
@@ -1142,6 +1161,7 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 		task["target"] = String(extra["target"])
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
+	_copy_approach(extra, task)
 	if shape != UnitCommand.AUTO:
 		task["formation"] = shape
 	if task["verb"] == "move" and not task.has("to"):
@@ -1158,9 +1178,18 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	return error
 
 
+## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]`. Until brains' CP0 teaches
+## ElementTask the key, its validator refuses unknown keys, so the side is dropped here and the attack is today's.
+func _copy_approach(extra: Dictionary, task: Dictionary) -> void:
+	if extra.has("approach") and task["verb"] == "attack" and ElementTask.KEYS.has("approach"):
+		task["approach"] = extra["approach"]
+
+
 ## A direct order for these units (a queued route, or units in no squad): the elements they were in stop commanding
-## them, exactly as the single-selection direct path does.
-func _direct(units: Array, verb: String, extra: Dictionary, shape: String) -> String:
+## them, exactly as the single-selection direct path does. A unit order has no `approach` (only a leader plans one).
+func _direct(units: Array, verb: String, given: Dictionary, shape: String) -> String:
+	var extra := given.duplicate()
+	extra.erase("approach")
 	if elements != null:
 		for unit_name: String in units:
 			var owner := elements.of(unit_name)
@@ -1469,6 +1498,8 @@ func _right_button_down(button: InputEventMouseButton) -> void:
 	_right_press_at = null
 	_right_press_ground = null
 	_right_ground_now = null
+	if not _attack_press.is_empty():
+		_clear_attack_press()  # a right press during a left drag on an enemy cancels it, as it cancels the armed drag
 	if mode != "":
 		# Right-click cancels an armed order, like StarCraft - and that press is spent. Round 10 (R2): it SAYS so. The
 		# lead right-clicked a moving squad and "they didnt respond"; a press eaten by a forgotten armed button is one
@@ -1479,7 +1510,7 @@ func _right_button_down(button: InputEventMouseButton) -> void:
 		return
 	var tank := pick_unit(button.position)
 	if tank != null and tank.team != team:
-		right_click_order(button.position, button.shift_pressed)
+		_press_on_enemy(button, tank, false)
 		return
 	var ground: Variant = ground_under(button.position)
 	if ground == null:
@@ -1494,6 +1525,9 @@ func _right_button_down(button: InputEventMouseButton) -> void:
 ## The release that completes a ground order. Past FACING_DRAG_PX it carries the heading the player drew; inside it,
 ## it is the plain move a right click has always been, with the facing key ABSENT rather than empty.
 func _right_button_up(button: InputEventMouseButton) -> void:
+	if not _attack_press.is_empty() and not bool(_attack_press["armed"]):
+		_attack_release(button)
+		return
 	if _right_press_at == null:
 		return
 	var from: Vector2 = _right_press_at
@@ -1522,12 +1556,7 @@ func right_click_order(at: Vector2, queue := false, facing: Variant = null) -> S
 		return ""
 	var tank := pick_unit(at)
 	if tank != null and tank.team != team:
-		# X3: a whole element gets an attack task and its leader works out who shoots and from where; a handful
-		# of units keeps the smart-attack split, which is the player doing that job by hand.
-		# Round 19: several squads attack as several squads (one task each), never as one heap.
-		if _is_task("attack", {"queue": queue}) or several_squads():
-			return order_selection("attack", {"target": String(tank.name), "queue": queue})
-		return smart_attack(tank, queue)
+		return _right_attack(tank, queue)
 	# A right-click on your own vehicles is a move to that spot, not a follow (game_design.md: "right-click ground =
 	# move ... F + click a friendly = follow/escort"). The lead, round 5: with an army packed on the start line, half of
 	# "go there" landed on his own units and became "trail that one", so his squads never went where he clicked.
@@ -1538,6 +1567,16 @@ func right_click_order(at: Vector2, queue := false, facing: Variant = null) -> S
 	if facing is Vector3:
 		extra["facing"] = [(facing as Vector3).x, (facing as Vector3).z]
 	return order_selection("move", extra)
+
+
+## A right click on an enemy: attack it.
+func _right_attack(tank: Tank, queue: bool) -> String:
+	# X3: a whole element gets an attack task and its leader works out who shoots and from where; a handful
+	# of units keeps the smart-attack split, which is the player doing that job by hand.
+	# Round 19: several squads attack as several squads (one task each), never as one heap.
+	if _is_task("attack", {"queue": queue}) or several_squads():
+		return order_selection("attack", {"target": String(tank.name), "queue": queue})
+	return smart_attack(tank, queue)
 
 
 ## A right click on the radar (a world point): move there (queued with shift).
@@ -1677,7 +1716,10 @@ func _armed_press(button: InputEventMouseButton) -> void:
 	var tank := pick_unit(at)
 	var on_enemy := tank != null and tank.team != team
 	var ground: Variant = ground_under(at)
-	if not FACED_MODES.has(mode) or (mode == "attack_move" and on_enemy) or ground == null:
+	if mode == "attack_move" and on_enemy:
+		_press_on_enemy(button, tank, true)
+		return
+	if not FACED_MODES.has(mode) or ground == null:
 		armed_click_order(at, button.shift_pressed)  # exactly today's press, including its refusals
 		return
 	_armed_press_at = at
@@ -1723,6 +1765,98 @@ func armed_gesture() -> Dictionary:
 		return {}
 	return {"spot": _armed_press_ground, "at": _armed_press_at, "now": _armed_now,
 			"facing": (_armed_press_at as Vector2).distance_to(_armed_now) > FACING_DRAG_PX}
+
+
+# ---- Round 27 (O1, C27.3): attack from a side the player draws ---------------------------------------------------
+
+## The lead (round 26): *"I was trying to get tanks oriented ... This is probably the case for all our specialized
+## cases (attack, ambush, screen, etc)."* Round 26 gave every armed order to a PLACE a drawn facing; an attack was left
+## out because its heading is its target's. What a drag can say about an attack is WHERE TO COME FROM: press on the
+## enemy, drag out to the side the squad should hit it from, release. The release point is that side (one-line reason:
+## the hand puts the squad where it wants it, like a move, and the arrow then runs from there INTO the enemy, which is
+## the heading the squad attacks along). `approach` = the flat unit direction from the release toward the enemy
+## (C27.3: the direction the squad comes FROM, toward the target). A click is exactly today's attack, decided on the
+## release instead of the press (one gesture, one rule: every press that can become a drag waits for its release).
+## A drawn approach needs a squad, because the leader is what plans the flank: a handful that is not a squad gets
+## today's attack and a notice saying so.
+func _press_on_enemy(button: InputEventMouseButton, tank: Tank, armed: bool) -> void:
+	_attack_press = {"target": String(tank.name), "at": button.position, "now": button.position,
+			"shift": button.shift_pressed, "armed": armed, "ground_now": ground_under(button.position)}
+	queue_redraw()
+
+
+func _clear_attack_press() -> void:
+	if not _attack_press.is_empty():
+		queue_redraw()
+	_attack_press = {}
+
+
+func _attack_release(button: InputEventMouseButton) -> void:
+	var press := _attack_press
+	_clear_attack_press()
+	var armed := bool(press["armed"])
+	var queue := bool(press["shift"])
+	var tank := game_match.tanks.get_node_or_null(NodePath(String(press["target"]))) as Tank if game_match != null else null
+	if tank == null or not tank.is_alive():
+		if armed and not queue:
+			disarm()
+		return  # the enemy died under the hand: there is nothing left to attack
+	var approach: Variant = null
+	if (press["at"] as Vector2).distance_to(button.position) > FACING_DRAG_PX:
+		var release: Variant = ground_under(button.position)
+		if release == null:
+			release = press["ground_now"]  # dragged above the horizon: the last ground crossed (the right-drag's rule)
+		if release != null:
+			var toward := Vector3(tank.global_position.x - (release as Vector3).x, 0.0,
+					tank.global_position.z - (release as Vector3).z)
+			if toward.length() >= FACING_DRAG_MIN_M:
+				approach = toward.normalized()
+	if approach == null:
+		if armed:
+			_armed_attack(tank, queue)
+		else:
+			_right_attack(tank, queue)
+		return
+	attack_from(tank, approach, queue, armed)
+
+
+## Attack-move armed and clicked on `tank`: `armed_click_order`'s enemy branch, for the enemy pressed (it may have
+## moved off that pixel before the release).
+func _armed_attack(tank: Tank, queue: bool) -> String:
+	if not queue:
+		disarm()
+	return order_selection("attack", {"target": String(tank.name), "queue": queue})
+
+
+## Attack `tank` from the side `approach` comes from (a flat unit Vector3, toward the target). The selected squad(s)
+## take an attack task carrying it; tasks replace, they never queue, so shift only keeps an armed order armed. A
+## selection that is not made of squads cannot plan a flank: it gets today's attack and says why.
+func attack_from(tank: Tank, approach: Vector3, queue := false, armed := false) -> String:
+	if armed and not queue:
+		disarm()
+	if selection.units.is_empty():
+		return ""
+	if not can_attack_from():
+		notice.emit("Attacking head-on: a drawn approach needs a whole squad (Ctrl+1-9 makes one)", true)
+		return order_selection("attack", {"target": String(tank.name), "queue": queue}) if armed else _right_attack(tank, queue)
+	var hints := get_node_or_null("ControlHints") as ControlHints
+	if hints != null:
+		hints.learn("flank")
+	return order_selection("attack", {"target": String(tank.name), "approach": [approach.x, approach.z]})
+
+
+## The selection can take an attack task: one whole squad, or several squads (loose units beside them attack as today).
+func can_attack_from() -> bool:
+	return elements != null and (several_squads() or selected_element() != null or selected_group() > 0)
+
+
+## The attack drag in progress, for the draw and for tests: {} when none, else {"target": String, "at": Vector2,
+## "now": Vector2, "approach": bool (past the threshold: the release will carry a side)}.
+func attack_gesture() -> Dictionary:
+	if _attack_press.is_empty():
+		return {}
+	return {"target": _attack_press["target"], "at": _attack_press["at"], "now": _attack_press["now"],
+			"approach": (_attack_press["at"] as Vector2).distance_to(_attack_press["now"]) > FACING_DRAG_PX}
 
 
 ## A left click while an order is armed. Shift keeps it armed for the next click (queue a chain). `facing` (round 26)
@@ -1775,6 +1909,8 @@ func arm(p_mode: String) -> void:
 func disarm() -> void:
 	mode = ""
 	_clear_armed_press()
+	if not _attack_press.is_empty() and bool(_attack_press["armed"]):
+		_clear_attack_press()
 
 
 ## A right press spent cancelling the armed order: disarm, and tell the player the NEXT right-click moves.
@@ -2034,6 +2170,34 @@ func _draw_facing_drag() -> void:
 		_draw_drag_arrow(_right_press_at, _right_press_ground, _right_now, _order_color("move"))
 	if _armed_press_at != null and _armed_press_ground != null:
 		_draw_drag_arrow(_armed_press_at, _armed_press_ground, _armed_now, _order_color(mode))
+	_draw_attack_drag()
+
+
+## Round 27 (O1): a press on an enemy rings it in the attack colour; past the threshold an arrow runs from the pointer
+## INTO the ring: the side the squad will come from and the way it will hit.
+func _draw_attack_drag() -> void:
+	var gesture := attack_gesture()
+	if gesture.is_empty() or game_match == null:
+		return
+	var tank := game_match.tanks.get_node_or_null(NodePath(String(gesture["target"]))) as Tank
+	if tank == null:
+		return
+	var spot := Shown.at(tank)
+	spot.y = 0.0
+	var color := _order_color("attack")
+	_draw_ground_ring(spot, 6.0, Color(color, 0.7), 2.0)
+	if not bool(gesture["approach"]):
+		return
+	var tip: Variant = _screen_point(spot)
+	var now: Vector2 = gesture["now"]
+	if not tip is Vector2 or (tip as Vector2).distance_to(now) < 1.0:
+		return
+	var direction := ((tip as Vector2) - now).normalized()
+	var end := (tip as Vector2) - direction * 14.0  # stop short of the ring's middle: the head points AT the enemy
+	var side := Vector2(-direction.y, direction.x)
+	draw_line(now, end, Color(color, 0.85), 2.0)
+	draw_colored_polygon(PackedVector2Array([end + direction * 8.0, end + side * 6.0, end - side * 6.0]),
+			Color(color, 0.95))
 
 
 func _draw_drag_arrow(from: Vector2, spot: Vector3, now: Vector2, color: Color) -> void:
@@ -2760,6 +2924,10 @@ func describe(command: Dictionary) -> String:
 	var way: Array = command.get("facing", [])
 	if way.size() == 2 and Vector2(float(way[0]), float(way[1])).length() > 0.001:
 		words += " facing " + compass_point(Vector2(float(way[0]), float(way[1])))
+	# Round 27 (O1): an attack drawn from a side names the side ("attack Tank 3 from the W"): approach points AT it.
+	var side: Array = command.get("approach", [])
+	if side.size() == 2 and Vector2(float(side[0]), float(side[1])).length() > 0.001:
+		words += " from the " + compass_point(-Vector2(float(side[0]), float(side[1])))
 	if command.get("queue", false) and command.get("verb") != "stop":
 		words += " (queued)"
 	return "%s: %s" % [who, words]
