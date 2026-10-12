@@ -147,6 +147,13 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   guards: scout 5/5, law_scout 4/5 kept; fresh census seeds 37–60 on-target-in-reach and contacts not worse beyond 2 se;
   **+ (orchestrator) a blind gang_scout contacts line on ≥ 12 fresh gang seeds, and the cost measured, not asserted.**
 
+- **Native progress (2026-10-11):** green at `791821cf` (pre-CP-S base; builder0 exited 0, 2472/0, ALL JUDGED, thirteen
+  unmoved): E3 (`native_gun`, OFF, 8400 applies 0 mismatches), E4 (unstick + pressed-wall escape inside the native drive),
+  E5 (one native call per crew, `native_exec`, OFF, 10 624 executes 0 mismatches); native-proof Sumps all arms
+  770df71a443ba743. NOT merged early (nothing in play; stale base). **Ruling: `native_cb` (E2a's callback ports) defaults
+  OFF until priced on a quiet box** (it was `true` on the branch, unpriced) — ON in its own commit once it clears the bar.
+  Native's warning: E5 on live members may not be faster (C++ reads via Object::get); the payoff is E5b's owned state.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
