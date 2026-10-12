@@ -102,4 +102,39 @@ Nothing. He judges the clips.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-11 evening (scout worker)._
+
+### Plan (ordered)
+1. **S0** scenario `scenario_scout_cross` (5 cases, PENDING bars written before any number) + `make scout-cross` (pooled
+   {1,3,6,8,11,16} x 3 seeds) + `make scout-census` (the showmatch's own match headless, every fixed gun) → trace → the
+   "before" showmatch seed and clip.
+2. **S1 + S2 as ONE mechanism** (decided: the two readings are one question for a fixed gun, *which way puts the gun
+   back on the target soonest, and keeps it there, without closing inside my turning room*): `CombatMotion.plan_lay`,
+   a receding-horizon rollout over the hull's own plant against the target's predicted pose; forward and reverse scored
+   alike; the turning room (2 turning radii + both hulls + 1 m, per hull from its profile) a cost, the target's hull a
+   wall. Behind `--scout-off=gunlay` (my own switch in combat_motion.gd; no shared switch file touched).
+3. Unit tests `tests/test_scout_lay.gd`; guards (cp2 engine deck, combat_motion, bridge-pooled, manoeuvre-behind,
+   thirteen lines, determinism); cost line (C27.4); pre-registered bar → orchestrator; S3 declared; after clip.
+4. S4 stretch: engine deck phase 2; other fixed guns.
+
+### S0 findings (main `c37605f0`, builder0)
+- **A lone scout with no order SPOTs** (backs off to watch), so the scenario orders the attack, as a squad/CPU does.
+- **His case traced** (`away_east`, start tick 1, seed 1): CombatMotion's standoff ring scores RANGE, not the gun. From
+  3.4 m it took the forward candidate that opens range fastest — tail to the tank, 149–168° off — out to 27 m, then
+  "held at standoff" 127° off: a wheeled hull cannot turn at rest (Gunnery's turn on a `stop` order), so the gun bore
+  again 9.7 s after the tank moved. Gun on target 4 % of 12 s. Crosses: 0–29 % (0.12 / 0.00 / 0.29 / 0.68 one run each).
+  Root cause is the scoring, not a bug: nothing in the fixed-gun path measures where the gun points over time.
+- **The census** (`make scout-census`, 12 showmatch seeds, 207 fixed-gun crews, 1537 fight-seconds): **gun on target
+  18.4 %** of fight time, 9.1 % inside turning room, reversing 15.5 %, 365 enemy hull contacts — **254 of them under an
+  ordered MOVE** (squads ordered into/through the enemy: brains'/orders' path, not the fight path; most in one Parade
+  match, seed 5, 286 contacts), 86 on HOLD, ~100 in ENGAGE/FLANK "moving to a firing position"/"swinging wide".
+- `PURSUE` (an ordered target out of sight) and ENGAGE's chase ("it is running: after it") drive AT the target's
+  position with a 2 m arrive radius — brains' hunks of `act`, outside mine; noted as a request if the census still
+  shows contacts there after S1/S2.
+
+### Questions for the lead
+None yet.
+
+### Requests to other streams
+None yet.
+
