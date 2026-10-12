@@ -66,11 +66,12 @@ static var native_el := true  # SlotGround natively: the water rules (on_anchor_
 static var native_cb := false  # Round 27 (stage 1 E2; OFF until priced on a quiet builder0, the orchestrator 2026-10-11): the native drive's GDScript callbacks ported (_keep_station + its PID, the PID reset, _inflate_corners, Pathing.query, _blocker, _negotiate's early returns, _planned_reverse's cheap look); off = every one of them called back as before
 static var native_gun := false  # Round 27 (stage 1 E3): Gunnery.apply as one native call per crew (gun_native.cpp; OFF until priced)
 static var native_exec := false  # Round 27 (stage 1 E5): OrderController.compute_command's common path as ONE native call per crew (execute_native.cpp; OFF until the laptop rules)
+static var native_owned := false  # Round 27 (stage 1 E5b): native_exec on the C++-owned state (a switch, so the laptop's tick-profile arms can name it; --native-exec-owned is the same)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -179,6 +180,8 @@ static func set_named(name: String, on: bool) -> void:
 			native_gun = on
 		"native_exec":
 			native_exec = on
+		"native_owned":
+			native_owned = on
 		"native_n4":
 			native_situation = on
 			native_tq = on

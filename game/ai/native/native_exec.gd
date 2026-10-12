@@ -29,7 +29,8 @@ static var _executes := 0
 
 ## The crew's command for this tick natively, or null (the GDScript compute_command runs).
 static func execute(ctl: OrderController, delta: float) -> Variant:
-	var mode := (EXEC_OWNED_VERIFY if verify else EXEC_OWNED) if NativeDrive.owned else EXEC_LIVE
+	var mode := (EXEC_OWNED_VERIFY if verify else EXEC_OWNED) if NativeDrive.owned or BrainSwitches.native_owned \
+			else EXEC_LIVE
 	_executes += 1
 	if mode != EXEC_LIVE and _executes % REPORT_EVERY == 0:
 		var c: Dictionary = NativeBridge.impl.execute_counts(false)

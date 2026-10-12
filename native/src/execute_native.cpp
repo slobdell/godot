@@ -13,6 +13,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 
+#include <cmath>
 #include <string>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/variant/array.hpp>
@@ -29,7 +30,8 @@ struct EN {
 			move_order{ "move_order" }, type{ "type" }, _apply_move{ "_apply_move" }, _step{ "_step" },
 			driver_ticks{ "driver_ticks" }, decided{ "decided" }, direct{ "direct" }, throttle{ "throttle" }, turn{ "turn" },
 			lazy_path{ "lazy_path" }, driver{ "driver" }, deflected{ "deflected" }, steer_to{ "steer_to" }, why{ "why" },
-			leg{ "leg" }, path{ "path" }, path_all{ "path_all" }, path_from{ "path_from" }, profile_detail{ "profile_detail" }, yield_to{ "yield_to" },
+			leg{ "leg" }, path{ "path" }, path_all{ "path_all" }, path_from{ "path_from" }, profile_detail{ "profile_detail" }, yield_to{ "yield_to" }, from{ "from" }, x{ "x" }, z{ "z" },
+			_wheel_radius_unit{ "_wheel_radius_unit" }, _wheel_radius_value{ "_wheel_radius_value" }, unit_id{ "unit_id" },
 			order_controller{ "OrderController" };
 };
 const EN &en_() {
@@ -130,6 +132,7 @@ struct Exec {
 		const Dictionary move_order = ctl->get(k.move_order);
 		const Variant type = move_order.get(k.type, Variant());
 		const bool moving = type == Variant(move_to); // the hand-back tests ran in execute_native, on the live members
+		const Variant stop_v(stop);
 		bind_registry();
 		const Variant cmd_ref = x.drive->tank_command->call(k.new_, 0.0, 0.0, held_aim_point());
 		Object *cmd = cmd_ref;
@@ -141,6 +144,14 @@ struct Exec {
 			drive_with(*x.drive, mover, cmd, move_order, delta, state);
 		} else {
 			idle();
+			if (type != stop_v) {
+				// "face" (a tracked hull's plain facing): turn_only := Steering.drive_toward(here, -basis.z, spot, 0.0)
+				// cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0
+				const Vector3 spot((real_t)(double)move_order[k.x], 0, (real_t)(double)move_order[k.z]);
+				const Vector3 forward = -tank->get_global_transform().basis.get_column(2);
+				const Vector2 turn_only = steering_drive_toward(*x.drive, tank->get_global_position(), forward, spot, 0.0);
+				cmd->set(k.turn, std::fabs((double)turn_only.y) > 0.08 ? (double)turn_only.y : 0.0);
+			}
 		}
 		unstick_with(*x.drive, mover, cmd, move_order, delta, state);
 		const double seconds = (double)(int64_t)ctl->get(k._step) / (double)x.drive->TICK_RATE;
@@ -290,9 +301,15 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 		static const String move_to("move_to"), stop("stop");
 		const Dictionary move_order = ctl->get(k.move_order);
 		const Variant type = move_order.get(k.type, Variant());
+		static const String face("face"), post("post");
+		// A face order natively only on a tracked hull's plain facing: Movement.keeps_heading answers false (the order
+		// is not "from" a post), face_turn false (no wheels), _wheel_hold off (opt-in): the turn toward the spot.
+		const bool simple_face = type == Variant(face) && String(move_order.get(k.from, String())) != post &&
+				String(mover->get(k._wheel_radius_unit)) == String(tank->get(k.unit_id)) &&
+				(double)mover->get(k._wheel_radius_value) <= 0.0;
 		const int reason = !(bool)tank->get(k.alive) ? 0 : (!((Array)ctl->get(k.reflexes)).is_empty() ? 1 :
 				(!String(mover->get(k.yield_to)).is_empty() ? 2 :
-				((type != Variant(move_to) && type != Variant(stop)) ? 3 : -1)));
+				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : -1)));
 		if (reason >= 0) {
 			note_hand_back(reason, type);
 			if (mode != EXEC_LIVE) {
@@ -309,6 +326,7 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 		Exec<ObjectView> e(config, ctl, mover, gunnery, view);
 		e.tank = tank;
 		answer = e.run(delta);
+		mover->set(sn_native_stale(), (int64_t)mover->get(sn_native_stale()) | 1); // written live: an owned state is stale
 	} else {
 		ExecState *state = persistent_state(mover, mode == EXEC_OWNED_VERIFY);
 		Exec<StructView> e(config, ctl, mover, gunnery, StructView(mover, state));

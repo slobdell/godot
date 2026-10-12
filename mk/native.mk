@@ -76,7 +76,9 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 		case $$arm in on) flags="";; off) flags="--brains-off=native";; ab) flags="--brains-ab-run=native";; \
 			mirror) flags="--native-exec-mirror";; owned) flags="--native-exec-owned";; \
 			exec) flags="--brains-on=native_exec";; exec_owned) flags="--brains-on=native_exec --native-exec-owned";; \
-			exec_verify) flags="--brains-on=native_exec --native-exec-owned --native-exec-verify";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
+			exec_verify) flags="--brains-on=native_exec --native-exec-owned --native-exec-verify";; \
+			stage1) flags="--brains-on=native_exec,native_cb,native_owned";; \
+			stage1_ab) flags="--brains-on=native_cb,native_owned --brains-ab-run=native_exec";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 			--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 			$$flags $(AB_FLAGS) > $(BUILD_DIR)/native-proof/$$arm.log 2>&1 || true; \

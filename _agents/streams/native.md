@@ -187,6 +187,39 @@ reading (parade 20 a side + leaders, builder0 load 15-20, owned arm with its tra
 `9b641aca`): brain/execute 11.8 of 37.2 ms tick scripts (32 %), ~37 hulls alive, ~300 us a crew a tick, of it the native
 drive 5.0 ms and the weapon 4.2 -- NOT for relaying.
 
+- **E3-E5** (`791821cf`, green: builder0 check 2472/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`):
+  `test_native_gun` 8400 applies, `test_native_execute` 10 624 executes, unstick 7200, 0 mismatches each.
+- **Merged main at CP-S** (`062425a5`).
+- **E5b** (`47407dee`, green: builder0 check 2490/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`): the
+  persistent owned state with stale bits; `exec_verify`: 91 399 executes, 169 full + 15 695 part pulls, all verified,
+  0 mismatches. Found on the way: a namespace-scope `String` crashed `--import` (signal 11); dead hulls pulled the whole
+  state every tick before handing back (72 775 needless full pulls). Then (`native_owned` switch, tracked-hull `face`
+  native): native-proof on = exec_verify = stage1 = stage1_ab = `0398922d31f335f8`; first in-run A/B (one Sumps match,
+  his armies, builder0 loaded, n = 1, NOT a ruling): `native_exec` on the owned state, band -3.6 %, tick scripts -3.2 %.
+
+### The measurements and their rules (written 2026-10-12 before any of these numbers exist; lesson 292)
+
+**A. Reconciliation (the orchestrator's quiet builder0 slot, pinned 0-3):** `native-tp-headless`, 20 a side + leaders,
+foundry and parade x seeds 92721 31337 5988, arms plain native v `--brains-off=native`. Reported: tick scripts, the
+controllers' execute ms a tick and its native part (`brain/m.native_drive`), us a crew a tick (executed crews), against
+the 17 % GDScript-in-execute share the 11-15 % estimate used. **Rule:** the estimate is re-told to him only if the
+measured GDScript-in-execute share is outside 12-22 % of the tick's scripts (the estimate's own range at r 0.08-0.3).
+
+**B. `native_cb` (E2a's callback ports), same slot:** `native-price NATIVE_PRICE_SWITCH=native_cb`, n = 3, pinned.
+**Rule (round 23's execute-port rule):** ON when the 50 v 50 controller band falls >= 2 % outside 2 se, hashes equal;
+otherwise it stays OFF (equal answer is not enough: N7).
+
+**C. Stage 1 headless (same slot, the second reading):** `native-tp-headless`, 20 and 25 a side, foundry + parade, 3 seeds,
+arms default v `--brains-on=native_exec,native_cb,native_owned`. Reported only; no ruling from it.
+
+**D. E6, the laptop (a slot the orchestrator grants; the ruling):** `make native-tick-profile` bar workload, his preset,
+`NATIVE_TP_ARMS="b20@20= e20@20=--brains-on=native_exec,native_cb,native_owned b25@25= e25@25=--brains-on=native_exec,native_cb,native_owned"`
+(ABBA built in, n = 6 paired each size, `--squad-cap` pinned by the target, ARMY_CAP_FIELDED read in every log).
+**Rule:** stage 1 ships ON (`native_exec`, `native_cb`, `native_owned` true together) when the tick's scripts at 20 a side
+fall >= 2 % outside 2 se, paired; a session where priority 0 (tanks, match) moves with the arm is void and re-run.
+**Partial rule:** if 20 a side clears and 25 does not, it ships ON (20 a side is his preset's army); if neither clears,
+OFF, and the split re-taken to find what the ON arm still pays. Reported either way: game speed at 20 and 25.
+
 ### Questions for the lead
 
 - None.
