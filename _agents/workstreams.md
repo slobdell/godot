@@ -236,6 +236,13 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   **+ a reported arm with the IFV under the CPU commander (moving) for the pursuit rule** — a fix that still collapses into
   pursuit there does not ship. **Balance candidate:** gang gun trucks lose 0/9 (clicked) to every real Law squad tried.
 
+- **Live-flank fix PARKED FOR GOOD (2026-10-12, brains `370fc64d`, builder0, 5 gun trucks v one holding Law IFV, fresh
+  seeds 4–6 × 6 ticks, n = 18 an arm):** on side 0/18 in every arm (fix 65°, B0 rule 76°, clicked 89°); the fix fights
+  WORSE than B0's rule (kills 10 v 15, alive 1.83 v 2.78). Instrument caveat: the stage's "first crew within 50 m" mark
+  coincided with the fix's new 50 m circle (by its own state the element reached the 30° cone 18/18). **Kept finding: on
+  the even roster the SHIPPED drawn gesture (B0's rule) beats a clicked attack: kills 15 v 10, alive 2.78 v 2.28,
+  side/rear hit share 0.76 v 0.81.** Branch `lab/brains-flank-live` (`64355ff2`).
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
