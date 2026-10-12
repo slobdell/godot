@@ -2,6 +2,7 @@
 #include "register_types.h"
 
 #include "cover_native.h"
+#include "exec_state.h"
 #include "nav_native.h"
 #include "tank_native.h"
 
@@ -24,6 +25,7 @@ void uninitialize_tank_native_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	exec_states().clear(); // its Variants hold references: freed while the engine is still up (exec_state.h)
 }
 
 extern "C" {

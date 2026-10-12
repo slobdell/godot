@@ -107,4 +107,50 @@ E6 (the laptop's ruling) needs a laptop slot; he plays the result.
 
 ## Status
 
-_Not started._
+_Started 2026-10-11 18:25 PDT from `c37605f0` (main's green check `090b345d` covers it: no baseline re-run). Heavy runs on
+builder0; the laptop only in a granted slot (C27.6)._
+
+### Plan (in order; one-line reasons)
+
+1. **E1a the field table and the owned struct** (`native/src/exec_fields.h`, `exec_state.{h,cpp}`): ONE X-macro list of
+   every script member of Movement (128), Gunnery (12 stored; its 5 forwarding getters are not state) and the Lay (3),
+   generating the typed C++ struct, the names, `pull` (GDScript -> C++), `push` (C++ -> GDScript: every field, or only
+   those the C++ changed), and a field-by-field `row`. Tests (`test_native_exec_state`): the table IS the scripts'
+   member list with their types (drift fails); pull == the GDScript's read in a Sumps fight; scramble every member ->
+   push puts back exactly what was pulled (containers by identity); a changed-only push writes exactly the changed
+   fields. OFF: nothing in the game calls it. *Why a table, not MoverRecord's runtime spec:* the execute code needs
+   typed fields at compile time; the drift test keeps the table honest the way the runtime spec did.
+2. **E1b the in-game proof** (`--native-exec-mirror`, measurement only): at the top of `compute_command` pull, scramble,
+   push; `native-proof` must print the one hash (push is lossless over a whole match).
+3. **E1c the View template:** `drive_native.cpp` rewritten over a typed view `V` (`ObjectView` = the live members
+   through get/set, today's behaviour; `StructView` = the owned struct). ObjectView ON = today's numbers exactly
+   (`test_native_drive`, `native-proof`); StructView proven by the same tests. *Why:* every E2-E4 port is then written
+   once and pays at once in today's mode (it removes a crossing, N7 (b)), and at E5 the same code runs on the owned
+   struct with no rewrite.
+4. **E2** the drive's callbacks in the brief's order, each with `test_native_drive` (live-function) and `native-proof`.
+5. **E3** gunnery; **E4** reflexes, unstick, wall contact; **E5** the per-crew `execute` seam on StructView (pull only
+   when GDScript wrote the state: a dirty mark at every outside writer, with a verify mode that pulls and diffs every
+   tick to find a missed one); **E6** the laptop (a granted slot).
+
+**Decision (E1, recorded for the orchestrator): a MIRROR, not accessors.** With the C++ owning the state, after each
+native execute the C++ pushes back only the fields it changed (dirty bits, a set costs ~0.1 us), so the GDScript
+members are always current and every reader outside the execute step (OrderController's forwarders, think_quiet,
+the census, match_recorder, the HUD, tank_brain's `straight_and_clear`, other crews' think) keeps working with NO
+code change and no stale-read risk. The brief's accessor design needed ~47 game sites + 73 test sites repointed and a
+packed snapshot a tick; the mirror's cost is changed-fields x ~0.1 us, pre-registered and measured at E5.
+
+### Done
+
+_(nothing yet)_
+
+### Questions for the lead
+
+- None.
+
+### Requests to other streams
+
+- None.
+
+### Merge notes
+
+- None yet.

@@ -65,22 +65,28 @@ native-bench: import ## The price of ONE GDScript->native call, each way of call
 # The equality on one Sumps match (ai-ab-match's workload, Law v Condemned, seed 92721, 180 s; AB_FLAGS= for leaders):
 # the plain run (native ON), the whole run with --brains-off=native, and the 30-tick A/B must print one state hash.
 # On the laptop this is the machine's own proof (its hashes differ from builder0's by glibc, determinism.md).
-native-proof: import ## The equality proof: one match three ways (native on, off, A/B) must give one state hash
+# NATIVE_PROOF_ARMS adds arms: `mirror` (round 27, stage 1 E1) runs --native-exec-mirror, every crew's execute state
+# pulled, scrambled and pushed back by the C++ every tick (game/ai/native/native_exec.gd): push must be lossless.
+NATIVE_PROOF_ARMS ?= on off ab
+native-proof: import ## The equality proof: one match three ways (native on, off, A/B; NATIVE_PROOF_ARMS adds mirror) must give one state hash
 	@mkdir -p $(BUILD_DIR)/native-proof
-	@for arm in on off ab; do \
-		case $$arm in on) flags="";; off) flags="--brains-off=native";; ab) flags="--brains-ab-run=native";; esac; \
+	@for arm in $(NATIVE_PROOF_ARMS); do \
+		case $$arm in on) flags="";; off) flags="--brains-off=native";; ab) flags="--brains-ab-run=native";; \
+			mirror) flags="--native-exec-mirror";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \
 			--budget=$(or $(PROF_BUDGET),4600) --time-limit=$(or $(PROF_TIME),180) --seed=$(or $(PROF_SEED),92721) --arena=$(or $(PROF_ARENA),sumps) \
 			$$flags $(AB_FLAGS) > $(BUILD_DIR)/native-proof/$$arm.log 2>&1 || true; \
 		h=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/native-proof/$$arm.log | head -1); \
 		echo "native-proof $$arm: $${h:-NO HASH (see build/native-proof/$$arm.log)} on $$(hostname)"; \
 	done
-	@grep -h '^BRAINS_AB ' $(BUILD_DIR)/native-proof/ab.log || true
-	@grep -h '^NATIVE ' $(BUILD_DIR)/native-proof/on.log | head -1 || true
-	@on=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/native-proof/on.log | head -1); \
-	off=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/native-proof/off.log | head -1); \
-	ab=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/native-proof/ab.log | head -1); \
-	if [ -n "$$on" ] && [ "$$on" = "$$off" ] && [ "$$on" = "$$ab" ]; then echo "native-proof: EQUAL ($$on) on $$(hostname)"; \
+	@grep -h '^BRAINS_AB ' $(BUILD_DIR)/native-proof/ab.log 2>/dev/null || true
+	@grep -h '^NATIVE_EXEC_MIRROR ' $(BUILD_DIR)/native-proof/mirror.log 2>/dev/null | tail -1 || true
+	@grep -h '^NATIVE ' $(BUILD_DIR)/native-proof/on.log 2>/dev/null | head -1 || true
+	@first=""; same=1; for arm in $(NATIVE_PROOF_ARMS); do \
+		h=$$(grep -o '"state_hash":"[0-9a-f]*"' $(BUILD_DIR)/native-proof/$$arm.log | head -1); \
+		if [ -z "$$h" ]; then same=0; elif [ -z "$$first" ]; then first=$$h; elif [ "$$h" != "$$first" ]; then same=0; fi; \
+	done; \
+	if [ $$same = 1 ] && [ -n "$$first" ]; then echo "native-proof: EQUAL ($$first) on $$(hostname)"; \
 	else echo "native-proof: NOT EQUAL on $$(hostname) -- the port changed the fight"; exit 1; fi
 
 # The band sized for the lead (round 23, the orchestrator's ask): N a side with leaders both sides (perf's army files),

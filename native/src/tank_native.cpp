@@ -36,6 +36,17 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mover_record_row", "r"), &TankNative::mover_record_row);
 	ClassDB::bind_method(D_METHOD("mover_record_usec"), &TankNative::mover_record_usec);
 	ClassDB::bind_method(D_METHOD("mover_record_mismatches"), &TankNative::mover_record_mismatches);
+	ClassDB::bind_method(D_METHOD("exec_fields"), &TankNative::exec_fields);
+	ClassDB::bind_method(D_METHOD("exec_pull", "mover"), &TankNative::exec_pull);
+	ClassDB::bind_method(D_METHOD("exec_push", "mover", "force"), &TankNative::exec_push);
+	ClassDB::bind_method(D_METHOD("exec_row", "mover"), &TankNative::exec_row);
+	ClassDB::bind_method(D_METHOD("exec_set", "mover", "key", "value"), &TankNative::exec_set);
+	ClassDB::bind_method(D_METHOD("exec_dirty", "mover"), &TankNative::exec_dirty);
+	ClassDB::bind_method(D_METHOD("exec_scramble", "mover"), &TankNative::exec_scramble);
+	ClassDB::bind_method(D_METHOD("exec_mirror", "mover"), &TankNative::exec_mirror);
+	ClassDB::bind_method(D_METHOD("exec_forget", "mover"), &TankNative::exec_forget);
+	ClassDB::bind_method(D_METHOD("exec_clear"), &TankNative::exec_clear);
+	ClassDB::bind_method(D_METHOD("exec_count"), &TankNative::exec_count);
 	ClassDB::bind_method(D_METHOD("closest_approach", "here", "velocity", "round_position", "round_velocity", "seconds"),
 			&TankNative::closest_approach);
 	ClassDB::bind_method(D_METHOD("would_be_hit", "here", "now", "planned", "incoming", "turn_seconds", "acceleration",
@@ -619,6 +630,47 @@ Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iterat
 		return point;
 	}
 	return el_ground.standable_for(index, map, iteration, point, clearance, bake_radius);
+}
+
+int TankNative::exec_pull(Object *mover) {
+	ExecState *state = exec_states().of(mover, true);
+	return state != nullptr ? state->pull(mover) : -1;
+}
+
+int TankNative::exec_push(Object *mover, bool force) {
+	ExecState *state = exec_states().of(mover, false);
+	return state != nullptr ? state->push(mover, force) : -1;
+}
+
+Dictionary TankNative::exec_row(Object *mover) const {
+	ExecState *state = exec_states().of(mover, false);
+	return state != nullptr ? state->row() : Dictionary();
+}
+
+bool TankNative::exec_set(Object *mover, const String &key, const Variant &value) {
+	ExecState *state = exec_states().of(mover, false);
+	return state != nullptr && state->set_field(key, value);
+}
+
+int TankNative::exec_dirty(Object *mover) const {
+	ExecState *state = exec_states().of(mover, false);
+	return state != nullptr ? state->m_dirty.count() + state->g_dirty.count() + state->l_dirty.count() : -1;
+}
+
+// The in-game proof of the mirror (measurement only): pull every member, overwrite every member with a different value,
+// push the struct back. A match run this way must hash as one run without it (push is lossless). Returns the members
+// the scramble changed, or -1 on a type mismatch in the pull.
+int TankNative::exec_mirror(Object *mover) {
+	if (mover == nullptr) {
+		return -1;
+	}
+	ExecState state; // a local one: the proof keeps nothing (no reference outlives the call)
+	if (state.pull(mover) != 0) {
+		return -1;
+	}
+	const int changed = ExecState::scramble(mover);
+	state.push(mover, true);
+	return changed;
 }
 
 int TankNative::mover_record_configure(const Array &spec) {

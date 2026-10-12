@@ -279,6 +279,8 @@ func set_orders(new_move: Variant, new_weapon: Variant, new_reflexes: Variant = 
 
 
 func compute_command(delta: float) -> TankCommand:
+	if NativeExec.mirror:
+		NativeExec.mirror_one(movement)  # round 27 (native E1): measurement only, the push proven lossless
 	movement.bind()
 	if not tank.is_alive():
 		gunnery.dead()  # N5: nothing engaged, and a respawned crew starts its lay from scratch
