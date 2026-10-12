@@ -128,7 +128,7 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
 - **The flank stall traced (brains, from orders' flank-probe seeds 3/13):** (a) pre-B0: below the attack's close-in band
   the crews are on attack-moves that stop at full range (70 m); a target that never fires back is never closed on; (b)
   B0 circled at 70 m, past a tank's 62 m sight → the attack became a pursuit (no side) and stopped 40–54° off. Fix on
-  `lab/brains-close` (`b93638fb`): DECLARED, after B2, bar before numbers.
+  `lab/brains-close` (`b93638fb`): DECLARED, after B2, bar before numbers. **(Overturned 2026-10-12: artillery; parked — below.)**
 
 - **brains-close bar (pre-registered 2026-10-11, before its numbers; DECLARED):** (a) an attack goes in once within the crews'
   LONGEST weapon range (control `--attack-close=effective`); (b) B0's drive round at min crew sight − 6 m
@@ -184,6 +184,13 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   sectors); support by fire on wheeled turreted hulls is WORSE drawn (90.9° v 55.9°, p = 0.001). Candidates: wheeled
   turreted hulls face at rest (frozen order_controller, after stage 1) — a question for him; support-by-fire wheeled
   drawn (brains). O4's flank clip: the orchestrator renders it after brains-close merges.
+
+- **CORRECTION (2026-10-12, brains): the flank "stall" on orders' seeds 3/13 was ARTILLERY, not an attack-closing bug.** The
+  player's group 1 there is the gangs' wrecker catapults; they back off to their 68 m standoff and the immortal target
+  never ends the fight. Direct-fire tanks in the quiet stage close to 22 m in both arms (lab `8b3039fb`). **`lab/brains-close`
+  is PARKED** ((a) no player failure shown; (b)'s rework unproven; `8de99ab8` runs void). Candidate for him: should
+  artillery honour a drawn approach (bombard from that side) or ignore it? flank-probe should pick a direct-fire squad or
+  report per group. B2 v5 CPU side (seeds 9–10, 50 cells, 8 m): 45 v 43, 2 lost, median +0.0 % (reported; accepted).
 
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
