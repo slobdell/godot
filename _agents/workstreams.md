@@ -217,6 +217,11 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   allowed on an EVEN stage** (clicked survival 30–70 %, calibrated on clicked arms only), same bar, fresh seeds 4–6; under
   12/18 → parked for good. After B3.
 
+- **B4 RETIRED (2026-10-12, brains, builder0 light, 2dccf781 + `--drill-seats=nearest`):** letting the role go with the
+  point fails 5 fight tests (base 31/0, nearest 26/5: pursuit 8 m/s the old leader turns 178° and opens 53 → 142 m;
+  mixed_legs, cannot-catch, elements, seat_nearest). The pinned leader IS "keep the lead's role"; the unpin's one gain was
+  overtaken by CP1a. Kept on `lab/brains-b4-point` (`9f15bfd9`).
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
