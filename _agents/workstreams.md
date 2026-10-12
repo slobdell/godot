@@ -119,6 +119,17 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   arrive series (fresh seeds 5–8 if any B2 variant has touched seeds 1–4 of it) + the fight guards; (8) reported: the
   Sumps cell at fresh seeds 5–8.**
 
+- **CP-S merged 2026-10-11 (`f4c5f7c9` = scout `ae0a50a4`, builder0 exited 0, 2471/0, ALL JUDGED; seven sim lines moved,
+  declared).** Clips for the lead: `build/scout_clips/` (seed 13, Parade, Gangs v Law; before/after).
+- **B2 v3 FAILED rule (2) (2026-10-11, brains, game code `787cd2e4`, builder0, series seeds 1–4, 8 m line):** 89 v 86
+  arrived but 4 cells lost (≤ 1) and +13.4 % median (≤ 10 %); the post-arrival watch re-seated 89× in 61 cells (control 6
+  in 100): an ordinary halt settling also "drives without closing". v4 (`730788b1`): post-arrival only for a crew pressing
+  a squadmate parked on its slot; judged on FRESH series seeds 5–8, control paired in the same run.
+- **The flank stall traced (brains, from orders' flank-probe seeds 3/13):** (a) pre-B0: below the attack's close-in band
+  the crews are on attack-moves that stop at full range (70 m); a target that never fires back is never closed on; (b)
+  B0 circled at 70 m, past a tank's 62 m sight → the attack became a pursuit (no side) and stopped 40–54° off. Fix on
+  `lab/brains-close` (`b93638fb`): DECLARED, after B2, bar before numbers.
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
