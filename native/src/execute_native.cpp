@@ -8,7 +8,6 @@
 // start, the changed fields pushed at the end; the callbacks still left sync it in between).
 #include "execute_native.h"
 
-#include "exec_holder.h"
 #include "exec_view.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -258,10 +257,6 @@ void note_hand_back(int reason, const Variant &type) {
 	}
 }
 
-const StringName &sn_native_state() {
-	static const StringName n("native_state");
-	return n;
-}
 const StringName &sn_native_stale() {
 	static const StringName n("native_stale");
 	return n;
@@ -270,14 +265,10 @@ const StringName &sn_native_stale() {
 // The mover's persistent state, pulled again when the GDScript has written it since (`native_stale`); with `verify`, a
 // fresh pull is compared with it field by field first.
 ExecState *persistent_state(Object *mover, bool verify) {
-	NativeExecState *holder = Object::cast_to<NativeExecState>(mover->get(sn_native_state()).get_validated_object());
-	if (holder == nullptr) {
-		Ref<NativeExecState> made;
-		made.instantiate();
-		mover->set(sn_native_state(), made);
-		holder = made.ptr();
-	}
-	ExecState &state = holder->state;
+	exec_states().sweep((int64_t)Engine::get_singleton()->get_physics_frames());
+	ExecState *found = exec_states().of(mover, true);
+	ExecState &state = *found;
+	ExecState *holder = found; // `fresh`: pulled at least once
 	// Movement.STALE_ALL / STALE_ORDER / STALE_GUN / STALE_STALL (movement.gd): what the GDScript wrote since.
 	const int64_t stale = mover->get(sn_native_stale());
 	if (!holder->fresh || (stale & 1)) {

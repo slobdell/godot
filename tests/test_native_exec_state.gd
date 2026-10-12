@@ -122,8 +122,6 @@ func test_the_pull_reads_what_the_gdscript_reads() -> void:
 			var owners := _owners(mover)
 			for field: Array in table:
 				var key: String = PREFIX[field[0]] + String(field[1])
-				if key == "m:native_state":
-					continue  # the holder of the C++ state itself: never pulled (E5b)
 				var live: Variant = (owners[field[0]] as Object).get(field[1])
 				compared += 1
 				if not _same(live, row[key]):
@@ -133,7 +131,7 @@ func test_the_pull_reads_what_the_gdscript_reads() -> void:
 				non_default[key] = true
 	print("native exec state: %d pulls, %d values compared, %d mismatches" % [pulls, compared, mismatches])
 	assert_eq(mismatches, 0, "the pull is the GDScript's read: %s" % first)
-	assert_true(pulls >= 400 and compared >= 400 * 139, "a real sample (%d pulls, %d values)" % [pulls, compared])
+	assert_true(pulls >= 400 and compared >= 400 * 140, "a real sample (%d pulls, %d values)" % [pulls, compared])
 	assert_eq(int(native.exec_count()), _movers(game_match).size(), "one state per mover")
 	native.exec_clear()
 
@@ -167,12 +165,9 @@ func test_a_push_after_a_scramble_restores_every_member() -> void:
 				if not _same((owners[field[0]] as Object).get(field[1]), before[key]):
 					differs += 1
 			assert_eq(differs, changed, "the scramble changed what it says it changed")
-			# Every field but `native_state` (E5b: the holder of the C++ state itself, never pulled or pushed).
-			assert_eq(int(native.exec_push(mover, true)), table.size() - 1, "a forced push writes every field")
+			assert_eq(int(native.exec_push(mover, true)), table.size(), "a forced push writes every field")
 			for field: Array in table:
 				var key: String = PREFIX[field[0]] + String(field[1])
-				if key == "m:native_state":
-					continue  # never pushed (E5b): the scramble nulls it and nothing puts it back
 				checks += 1
 				if not _same((owners[field[0]] as Object).get(field[1]), before[key]):
 					unrestored += 1

@@ -1,5 +1,8 @@
 #include "exec_state.h"
 
+#include <godot_cpp/core/object.hpp>
+#include <godot_cpp/templates/local_vector.hpp>
+
 #include <cmath>
 
 namespace godot {
@@ -141,7 +144,6 @@ int ExecState::pull(Object *mover) {
 	}
 	EXEC_MOVER_FIELDS(EXEC_PULL_M)
 #undef EXEC_PULL_M
-	m.native_state = Variant(); // the holder of this very state: never held here (a reference cycle), never pushed
 	m_dirty.clear();
 	bad += pull_gun();
 	pulls++;
@@ -192,14 +194,13 @@ void ExecState::pull_mover_field(Object *mover, int field) {
 		default:
 			break;
 	}
-	m.native_state = Variant();
 }
 
 int ExecState::push(Object *mover, bool force) {
 	const ExecNames &k = exec_names();
 	int written = 0;
 #define EXEC_PUSH_M(t, vt, n)                       \
-	if ((force || m_dirty.has(MF::n)) && MF::n != MF::native_state) { \
+	if (force || m_dirty.has(MF::n)) {              \
 		mover->set(k.m.n, Variant(m.n));            \
 		written++;                                  \
 	}
@@ -329,6 +330,23 @@ void ExecStates::forget(Object *mover) {
 	ExecState **found = by_mover.getptr(id);
 	if (found != nullptr) {
 		delete *found;
+		by_mover.erase(id);
+	}
+}
+
+void ExecStates::sweep(int64_t frame) {
+	if (frame == swept_frame) {
+		return;
+	}
+	swept_frame = frame;
+	LocalVector<uint64_t> gone;
+	for (const KeyValue<uint64_t, ExecState *> &e : by_mover) {
+		if (ObjectDB::get_instance(e.key) == nullptr) {
+			gone.push_back(e.key);
+		}
+	}
+	for (uint64_t id : gone) {
+		delete by_mover[id];
 		by_mover.erase(id);
 	}
 }

@@ -12,7 +12,6 @@
 
 #define EXEC_MOVER_FIELDS(F) \
 	F(Variant, OBJECT, ctl) \
-	F(Variant, OBJECT, native_state) \
 	F(int64_t, INT, native_stale) \
 	F(int64_t, INT, stalled_ticks) \
 	F(String, STRING, phase) \
