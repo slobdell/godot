@@ -107,6 +107,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 					else String(situation.get("leader", "")),
 			"previous_seats": {} if bool(state.get("reseat", false)) else state.get("seats", {}),
 			"reseat": bool(state.get("reseat", false)),
+			# Round 27 (B2): the parked crews' seats this re-seat keeps (Element._parked_seats).
+			"reseat_keep": state.get("reseat_keep", {}) if bool(state.get("reseat", false)) else {},
 			"facing_sent": bool(state.get("facing_sent", false)),
 			"route": [], "route_index": 0, "pitch": Vector2(TacticsFormation.DEFAULT_SPACING,
 			TacticsFormation.DEFAULT_SPACING), "corridor_m": float(situation.get("corridor_m", INF)), "file": 0.0,
@@ -1791,6 +1793,15 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 			# X2 (A8): a MOVING formation deforms to the corridor it is driving through; a halt does not — it is
 			# standing in an area, not filing through a gap, and its all-round sectors are the point of it.
 			"corridor_m": INF if halt else float(plan.get("corridor_m", INF))}
+	# Round 27 (B2): a re-seat keeps the seats of the crews parked on them, in this shape at this size.
+	var keep := {}
+	var parked: Dictionary = plan.get("reseat_keep", {})
+	for member: Dictionary in members:
+		var seat: Variant = parked.get(String(member["name"]))
+		if seat is Array and String(seat[0]) == formation and int(seat[1]) == members.size():
+			keep[String(member["name"])] = int(seat[2])
+	if not keep.is_empty():
+		place_opts["keep"] = keep
 	# Round 25 (F1): the caller's seating extras (a plain move's seats laid along its route, its halt re-seat).
 	place_opts.merge(seat_extra, true)
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing, place_opts)

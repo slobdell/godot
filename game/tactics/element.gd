@@ -215,12 +215,28 @@ const STUCK_GAIN_M := 1.0
 const STUCK_TICKS := SimClock.TICK_RATE * 4
 const STUCK_FAR_M := 6.0
 const RESEAT_COOLDOWN_TICKS := SimClock.TICK_RATE * 10
+## Round 26 (brains, make-room's stage: Sumps, law_scout:law_ifv:law_tank:law_tank, seed 1, drills on): a crew SHUFFLING
+## behind a parked squadmate passes under STUCK_MPS at every reversal, and that reset its clock, so it never read stuck
+## (110 s, 1.6 m back and forth, no re-seat, no make-room). Round 27 (B2): while a crew presses a squadmate parked on its
+## own slot (`_pressing_parked`) its clock PAUSES on a slow tick and runs while it drives: STUCK_TICKS of driving without
+## closing, however broken up. Elsewhere a slow tick resets it, as before. `--stuck-pause=off` is the old reset.
+static var STUCK_PAUSE_ENABLED := true
+## Round 27 (B2, DECLARED): a re-seat keeps every squadmate parked on its own slot in its seat (`_parked_seats`).
+## `--reseat-keep=off` is the control arm (round 26's whole fresh seating).
+static var RESEAT_KEEP_ENABLED := true
+## Round 27 (B2, DECLARED): the stuck watch runs on after the element says arrived (`_watch_progress`).
+## `--watch-arrived=off` is round 26's (it stopped at arrival).
+static var WATCH_ARRIVED_ENABLED := true
+## ...and skips a crew hit this recently (5 s): under fire it is fighting, not stuck.
+const WATCH_HIT_TICKS := SimClock.TICK_RATE * 5
 ## ...and at most this many in one movement: past it the element stops asking (logged), so a re-seat that cannot help
 ## (the Cut, seed 3: 17 re-seats in 180 s beside a block's face in open ground) cannot run for the whole move.
 const MAX_RESEATS := 3
 var _reseats_this_move := 0
 var _closest := {}
 var _reseat := false
+## Round 27 (B2): the parked squadmates' seats the next re-seat keeps (`_parked_seats`), for that one update.
+var _reseat_keep := {}
 ## ...and after one, the leader is not pinned to the point until this movement ends (arrival or a new task): pinned
 ## again on the next update, it took the front seat straight back.
 var _unpinned := false
@@ -244,6 +260,8 @@ var _swaps_this_move := 0
 var swaps := 0
 ## How many fresh seatings a stuck crew asked for (probes and tests).
 var reseats := 0
+## Round 27 (B2): how many of those came after the element said arrived (the post-arrival watch).
+var reseats_after_arrival := 0
 
 
 func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: PackedStringArray = [],
@@ -370,13 +388,14 @@ func update(game_match: Match, orders: Object) -> bool:
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
-			"reseat": _reseat, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
+			"reseat": _reseat, "reseat_keep": _reseat_keep if _reseat else {}, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
 			"player": team == OrderFeed.player_team(game_match),
 			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking(), "anchor_by_drill": anchor_by_drill,
 			"ducks": ducks, "approach_round": approach_round}
 	var reseating := _reseat
 	_reseat = false
+	_reseat_keep = {}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	if reseating and plan.get("seats", {}) == seats:
 		_reseat_useless = true
@@ -492,7 +511,12 @@ func _track_pursuit(game_match: Match) -> void:
 ## put in its way (a squadmate parked in its own slot in a single-file lane, the Sumps' 14 m lanes: the pinned leader
 ## behind, holding the front seat). Ask for one fresh seating on the next update.
 func _watch_progress(game_match: Match) -> void:
-	if arrived or not ElementTask.runs_drills(task):
+	# Round 27 (B2): an element that has said "arrived" keeps watching (WATCH_ARRIVED_ENABLED). On main it stopped there,
+	# and 8 of the arrive series' 10 crews left 13-29 m off their slots (builder0, 3aa67b17, B1's line) had never been
+	# re-seated: the element's centre had reached the spot, its crews had not.
+	# After arrival a crew off its slot is often FIGHTING, not stuck (the orchestrator's guards, C27.1): the watch rests
+	# while the element runs a drill, and skips a crew on an attack order or hit in the last WATCH_HIT_TICKS.
+	if (arrived and (not WATCH_ARRIVED_ENABLED or drill != "")) or not ElementTask.runs_drills(task):
 		_closest = {}
 		_unpinned = false
 		return
@@ -502,15 +526,30 @@ func _watch_progress(game_match: Match) -> void:
 		var slot: Variant = slots[unit_name]
 		if tank == null or not (slot is Vector3):
 			continue
+		if arrived and (tank.ticks_since_hit < WATCH_HIT_TICKS \
+				or String((_issued.get(unit_name, {}) as Dictionary).get("verb", "")) in ["attack", "attack_move"]):
+			_closest.erase(unit_name)
+			continue
 		var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
 		var flat_slot := Vector3((slot as Vector3).x, 0.0, (slot as Vector3).z)
 		var gap := here.distance_to(flat_slot)
-		var best: Array = _closest.get(unit_name, [INF, game_match.tick, flat_slot])
+		var best: Array = _closest.get(unit_name, [INF, game_match.tick, flat_slot, game_match.tick])
 		# A new leg or a re-seat moves the slot: progress is measured toward the slot the crew has NOW.
 		if (best[2] as Vector3).distance_to(flat_slot) > STUCK_GAIN_M:
-			best = [INF, game_match.tick, flat_slot]
-		if gap < float(best[0]) - STUCK_GAIN_M or gap <= STUCK_FAR_M or tank.estimated_velocity.length() < STUCK_MPS:
-			_closest[unit_name] = [minf(gap, float(best[0])), game_match.tick, flat_slot]
+			best = [INF, game_match.tick, flat_slot, game_match.tick]
+		var slow := tank.estimated_velocity.length() < STUCK_MPS
+		var last: int = int(best[3]) if best.size() > 3 else game_match.tick
+		if not slow:
+			_closest[unit_name] = [best[0], best[1], best[2], game_match.tick]
+		# Round 27 (B2): the clock PAUSES on a slow tick only while the crew is pressing a squadmate parked on its own slot
+		# (the Sumps shuffle); anywhere else a slow tick resets it as before. Paused everywhere (round 26's lab), every
+		# paced or queuing crew banked "stuck" time: 47 re-seats in 24 Sumps runs against 4, and seed 2 went from 6/6
+		# arrivals at 24.8 s to 3/6 at 57 s (builder0, the strict line).
+		var pausing := slow and STUCK_PAUSE_ENABLED and _pressing_parked(unit_name, tank, by_name)
+		if gap < float(best[0]) - STUCK_GAIN_M or gap <= STUCK_FAR_M or (slow and not pausing):
+			_closest[unit_name] = [minf(gap, float(best[0])), game_match.tick, flat_slot, game_match.tick]
+		elif slow:
+			_closest[unit_name] = [float(best[0]), int(best[1]) + game_match.tick - last, flat_slot, game_match.tick]
 		elif game_match.tick - int(best[1]) >= STUCK_TICKS and game_match.tick - _reseat_tick >= RESEAT_COOLDOWN_TICKS:
 			# Round 25 (brains F3'): not on or at a deck. A crew held up there is in the crossing's queue, and a fresh
 			# seating or a swap sends two crews ON the deck across each other: traced (the CPU's side, start tick 6,
@@ -538,11 +577,55 @@ func _watch_progress(game_match: Match) -> void:
 						% [unit_name, (game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap, blocker])
 				return
 			_reseat = true
+			_reseat_keep = _parked_seats(unit_name, by_name) if RESEAT_KEEP_ENABLED else {}
 			_unpinned = true
 			reseats += 1
+			if arrived:
+				reseats_after_arrival += 1
 			_log("re-seat: %s has driven %d s without closing on its slot (%.0f m)" % [unit_name,
 					(game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap])
 			return
+
+
+## Round 27 (B2): whether `unit_name` is up against a squadmate PARKED on its own slot (standing still within its
+## arrive radius of it, and within MAKE_ROOM_M of this crew): the crew that shuffles behind it is stuck even though its
+## speed keeps passing zero.
+func _pressing_parked(unit_name: String, tank: Tank, by_name: Dictionary) -> bool:
+	for other: String in slots:
+		if other == unit_name or not (slots[other] is Vector3):
+			continue
+		var parked := by_name.get(other) as Tank
+		if parked == null or not parked.is_alive() or parked.estimated_velocity.length() >= STUCK_MPS:
+			continue
+		var near := Vector2(parked.global_position.x - tank.global_position.x,
+				parked.global_position.z - tank.global_position.z).length()
+		if near > MAKE_ROOM_M:
+			continue
+		var slot: Vector3 = slots[other]
+		var off := Vector2(parked.global_position.x - slot.x, parked.global_position.z - slot.z).length()
+		if off <= maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(parked.unit_id)):
+			return true
+	return false
+
+
+## Round 27 (B2, DECLARED): the seats a re-seat must not take away: every squadmate of `stuck` that is PARKED on its own
+## slot (standing still, within ArrivalLine's radius of it: the order's 3.5 m or its hull's settle radius). Round 26's
+## Sumps re-seat (0312 -> 1302) freed the IFV pressing a parked tank by handing the TANK a far seat, and it ended 19-26 m
+## off its slot while the element read arrived. Kept, the parked crew stays; the crew that was stuck takes one of the
+## seats still open, round it. {name: seat ([formation, count, index])}.
+func _parked_seats(stuck: String, by_name: Dictionary) -> Dictionary:
+	var kept := {}
+	for other: String in slots:
+		if other == stuck or not (seats.get(other) is Array) or not (slots[other] is Vector3):
+			continue
+		var tank := by_name.get(other) as Tank
+		if tank == null or not tank.is_alive() or tank.estimated_velocity.length() >= STUCK_MPS:
+			continue
+		var slot: Vector3 = slots[other]
+		var off := Vector2(tank.global_position.x - slot.x, tank.global_position.z - slot.z).length()
+		if off <= maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(tank.unit_id)):
+			kept[other] = seats[other]
+	return kept
 
 
 ## Round 19 (B4): the stationary squadmate nearest `unit_name`, within MAKE_ROOM_M; "" if none. A new swap replaces the

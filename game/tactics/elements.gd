@@ -68,6 +68,17 @@ static func install(p_match: Match, p_orders: Object = null) -> Elements:
 	# Round 19 (B4/B6): `--no-make-room` is the make-room swap's control arm for whole-match series (per process).
 	if OS.get_cmdline_user_args().has("--no-make-room"):
 		Element.MAKE_ROOM_ENABLED = false
+	# Round 27 (B2, from round 26's lab): the stuck clock's pause (Element.STUCK_PAUSE_ENABLED); `--stuck-pause=off` is the old reset.
+	if OS.get_cmdline_user_args().has("--stuck-pause=off"):
+		Element.STUCK_PAUSE_ENABLED = false
+	# Round 27 (B2): a re-seat keeps the parked crews' seats (Element.RESEAT_KEEP_ENABLED); `--reseat-keep=off` is round 26's.
+	if OS.get_cmdline_user_args().has("--reseat-keep=off"):
+		Element.RESEAT_KEEP_ENABLED = false
+	if OS.get_cmdline_user_args().has("--watch-arrived=off"):
+		Element.WATCH_ARRIVED_ENABLED = false
+	# Round 27 (B5): an unsprung ambush lays its guns on its sectors (TankBrain.AMBUSH_LAY_ENABLED); `--ambush-lay=off`.
+	if OS.get_cmdline_user_args().has("--ambush-lay=off"):
+		TankBrain.AMBUSH_LAY_ENABLED = false
 	var elements := Elements.new()
 	elements.name = "Elements"
 	elements.game_match = p_match
