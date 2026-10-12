@@ -102,7 +102,7 @@ Nothing. He judges the clips.
 
 ## Status
 
-_Updated 2026-10-11 night (scout worker)._
+_Final report, 2026-10-12 (scout worker). Stopped at the orchestrator's request (builder0 freed for native)._
 
 ### Report (the short version)
 - **Done: S0, S1+S2 (one mechanism), S3 declared.** CP-S = `CombatMotion.plan_lay`, the gun-lay planner for fixed guns,
@@ -114,7 +114,10 @@ _Updated 2026-10-11 night (scout worker)._
   fights are not measurably won more. Next trace item: does the planner need a range term (backing up opens range)?
 - **Not mine, filed by the orchestrator for brains:** 45 % of a fixed gun's fight time is SUPPRESS / FLANK /
   CLEAR_LANE / ENGAGE out of reach; most enemy contacts happen under ordered MOVEs (squads ordered into the enemy).
-- **S4:** law_scout 4/5 bars, gang_scout 3/5 (written up below; follow-up).
+- **S4:** law_scout 4/5 bars, gang_scout 3/5. The gang scout's traced touch (the short halt) got a declared fix that
+  did NOT ship by its pre-registered bar (below; branch `scout-s4-halt`). The range question: no range term warranted.
+- **Backlog state:** S0 ✔, S1+S2 ✔ (CP-S, merged on main as f4c5f7c9), S3 ✔ (declared, clips made), S4 written up
+  (one fix measured and not shipped). Nothing waits on the lead except watching the clips.
 
 ### CP-S merge
 **`ae0a50a4` is green, merge here** (builder0, `make check exited 0`, **2471 passed, 0 failed**, 24 targets ALL JUDGED;
@@ -157,6 +160,10 @@ reverted on `stream/scout` (game/ equals main's CP-S again; the census's per-uni
   3 s reload gun fires ~4 rounds in 12 s; a halt with the gun near-on is worth more to it than continuous laying).
   Not tuned further on the same data. If wanted later: a gate on the turning room only (no bearing condition) is the
   untested candidate — a new bar on fresh seeds.
+
+### Final check
+**`2cc98d8d` is green** (builder0, `make check exited 0`, **2486 passed, 0 failed**, 24 targets ALL JUDGED, the
+thirteen lines unmoved against main's adopted lines). game/ == main f4c5f7c9; the commit after it is this Status only.
 
 ### What to playtest (exact commands)
 - `make showmatch SEED=13` (Parade, Gangs v Law) — watch the Law's police-car scouts; `CONTROL_FLAGS=--scout-off=gunlay`
@@ -334,8 +341,32 @@ that knows neither the aim nor the turning room. (b) is mine: candidate for the 
 the planner short-halts only when its gun bears and it stands outside its turning room).
 
 ### Questions for the lead
-None yet.
+None: he judges the seed 13 before/after clips (`build/scout_clips/` in the main checkout, copied by the orchestrator).
 
-### Requests to other streams
-None yet.
+### Requests to other streams (relayed by the orchestrator, filed for brains)
+- **ENGAGE out of reach is 24 % of a fixed gun's fight time; SUPPRESS 20 %, FLANK 9 %, CLEAR_LANE 4 %** (census,
+  seeds 1–12): the lay planner never runs there. SUPPRESS lays a wheeled fixed gun with a `face` order (it cannot
+  turn at rest); FLANK's "swinging wide" drives past the target. Brains' `act`.
+- **Ordered MOVEs drive squads into the enemy:** 254 of 365 fixed-gun enemy contacts at main c37605f0 were under an
+  ordered MOVE (seed 5, `make showmatch SEED=5`, Parade, Law v Condemned, t ≈ 14–30 s: Rust_Eyes5/Eyes6 scouts into
+  Green_Sirens/Hunters around (0, 0); per-event lines: `make scout-census SCOUT_SEEDS=5`, `SCOUT_EVENT` lines).
+- **PURSUE's first think** (an ordered target not yet seen) drives at its position with a 2 m arrive: the gang scout's
+  contact in his case starts there.
+
+### The bridge 106/108 bisect (orchestrator's request, 2026-10-12)
+Brains found his bridge 108 at 106/108 on main f4c5f7c9 (seed 2: green tick 5, rust tick 9). At `2cc98d8d` (game/ ==
+f4c5f7c9), builder0 light lane: both cells reproduce — green tick 5 rim crew **Green_S_3 (law_tank) 3.5 s**, rust tick
+9 rim crew **Rust_S_1 (law_tank) 5.1 s**, all four crossed in both — and the records are **byte-identical with
+`--scout-off=gunlay`**: CP-S is cleared (the drill fields no fixed gun; every CP-S path is gated on `standoff`). The
+(a) arm at 090b345d was not run (a second old checkout through remote.sh; builder0 was to be freed) — the invocation is
+in the message to the orchestrator.
+
+### Next steps / candidates for later (for whoever picks this up)
+- The untested S4 candidate: gate the short halt on the turning room only (no bearing condition), on fresh seeds.
+- Fixed guns under SUPPRESS (20 % of their fight time, outside the planner: a wheeled hull laid by a `face` order).
+- The other fixed guns' bars still failing at CP-S: law_scout his case re-acquire 2.3 s (bar 2.0); gang_scout cross
+  5 m L→R (on target / re-acquire) and his case's touch (from PURSUE + the short halt).
+- Kept branch: `scout-s4-halt` (0b4c2879, the measured-and-not-shipped halt gate).
+- The damage question: per-shot attribution by option (why +16 % bearing seconds give flat damage).
+- Native: `plan_lay` is GDScript (0.02–0.06 ms a tick measured); nothing to port unless stage 1 moves `_combat_move`.
 
