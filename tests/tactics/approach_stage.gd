@@ -23,7 +23,10 @@ const JITTER_M := 2.0
 const REACH_M := 50.0
 
 
-static func run(case: TestCase, seed_value: int, seconds: float, approach: Variant, trace := false, arena := "yard_open") -> Dictionary:
+## `immortal`: the target is healed every tick (orders' flank probe: a target that cannot die shows whether the attack
+## CLOSES, or parks at its guns' reach trading fire).
+static func run(case: TestCase, seed_value: int, seconds: float, approach: Variant, trace := false, arena := "yard_open",
+		immortal := false) -> Dictionary:
 	var lab := TacticsLab.create(case, seed_value, arena)
 	lab.game_match.set_meta("player_team", Match.Team.GREEN)
 	var jitter := RandomNumberGenerator.new()
@@ -53,6 +56,8 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 	var killed := -1
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
+		if immortal and enemy.is_alive():
+			enemy.health = enemy.max_health
 		if in_tick < 0 and bool(alpha.approach_round.get("in", false)):
 			in_tick = tick
 		if killed < 0 and not enemy.is_alive():
@@ -71,10 +76,13 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			else:
 				closest = minf(closest, nearest)
 		if trace and tick % SimClock.TICK_RATE == 0:
-			print("APPROACH_TRACE t=%ds centre %s off %.0f nearest %.0f drill=%s round=%s why=%s" % [
+			var verbs := []
+			for unit_name: String in names:
+				verbs.append(String((lab.orders.call("current", unit_name) as Dictionary).get("verb", "-")))
+			print("APPROACH_TRACE t=%ds centre %s off %.0f nearest %.0f drill=%s round=%s orders=%s why=%s" % [
 					tick / SimClock.TICK_RATE, lab.center_of(names).snappedf(0.1),
 					absf(ElementPlan.approach_off_deg(lab.center_of(names), TARGET, -side)), nearest, alpha.drill,
-					alpha.approach_round, alpha.reason])
+					alpha.approach_round, ",".join(verbs), alpha.reason])
 	var report := {"seed": seed_value, "approach": "none" if approach == null else "east", "error": error,
 			"in_s": _s(in_tick), "reach_s": _s(reach_tick), "reach_off_deg": snappedf(reach_off, 0.1),
 			"closest_m": snappedf(closest, 0.1) if is_finite(closest) else -1.0, "killed_s": _s(killed),

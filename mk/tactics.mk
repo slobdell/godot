@@ -220,6 +220,8 @@ ARRIVE_ARMS ?= on off
 ## attack-move (drills on: no travelling anchor) or a plain move (drills off: the anchor, where M1 lives).
 ARRIVE_ARM_FLAG ?= make-room
 ARRIVE_DRILLS ?= on
+## Round 27 (B2): extra probe flags on every run, e.g. ARRIVE_FLAGS=--side=cpu (the CPU's squad: C27.1's symmetry).
+ARRIVE_FLAGS ?=
 ARRIVE_SQUADS ?= scout:scout:ifv:tank law_scout:law_scout:law_ifv:law_tank law_scout:law_ifv:law_tank:law_tank law_ifv:law_ifv:law_suppressor:law_tank law_tank:law_tank:law_tank:law_tank
 .PHONY: squad-arrive-series
 squad-arrive-series: import ## Round 19 (B4): his attack-move 150 m for round 18's five squads x ARRIVE_MAPS x ARRIVE_SEEDS, MAKE_ROOM on/off -> build/squad-arrive.jsonl + table
@@ -228,7 +230,7 @@ squad-arrive-series: import ## Round 19 (B4): his attack-move 150 m for round 18
 	@for map in $(ARRIVE_MAPS); do for squad in $(ARRIVE_SQUADS); do for seed in $(ARRIVE_SEEDS); do for arm in $(ARRIVE_ARMS); do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
 			--arena=$$map --dir=forward --metres=150 --seed=$$seed --units=$$squad --seconds=$(or $(ARRIVE_SECONDS),120) \
-			--drills=$(ARRIVE_DRILLS) --$(ARRIVE_ARM_FLAG)=$$arm 2>/dev/null | grep -o 'SETTLE_PROBE {.*' | sed "s/^SETTLE_PROBE {/{\"arm\":\"$$arm\",/" >> $(BUILD_DIR)/squad-arrive.jsonl \
+			--drills=$(ARRIVE_DRILLS) --$(ARRIVE_ARM_FLAG)=$$arm $(ARRIVE_FLAGS) 2>/dev/null | grep -o 'SETTLE_PROBE {.*' | sed "s/^SETTLE_PROBE {/{\"arm\":\"$$arm\",/" >> $(BUILD_DIR)/squad-arrive.jsonl \
 			|| echo "{\"arm\":\"$$arm\",\"arena\":\"$$map\",\"units\":\"$$squad\",\"seed\":$$seed,\"missing\":true}" >> $(BUILD_DIR)/squad-arrive.jsonl; \
 	done; done; done; done
 	@$(PYTHON) tools/tactics/squad_arrive_table.py $(BUILD_DIR)/squad-arrive.jsonl $(ARRIVE_ARM_FLAG)
@@ -624,3 +626,28 @@ approach-series: import ## Round 27 (B0): his attack from a drawn side, APPROACH
 			|| echo "{\"seed\":$$seed,\"approach\":\"$$arm\",\"start_tick\":$$at,\"missing\":true}" >> $(BUILD_DIR)/approach-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/approach_table.py $(BUILD_DIR)/approach-series.jsonl
+
+# Round 27 (brains B2, DECLARED): ONE arrive cell pooled over seeds x start ticks (C27.5), both arms of B2 (on = the
+# stuck clock's pause + the re-seat that keeps parked crews + the watch after arrival; off = --stuck-pause=off
+# --reseat-keep=off --watch-arrived=off, round 26's), read
+# by B1's every-crew line (settle_probe's all_in_s). Default: round 26's Sumps cell. CELL_FLAGS adds probe flags to both
+# arms (e.g. --side=cpu) -> build/cell-series.jsonl + table.
+CELL_ARENA ?= sumps
+CELL_UNITS ?= law_scout:law_ifv:law_tank:law_tank
+CELL_SEEDS ?= 1 2 3 4
+CELL_TICKS ?= 1 3 6 8 11 16
+CELL_ARMS ?= on off
+CELL_FLAGS ?=
+.PHONY: cell-series
+cell-series: import ## Round 27 (B2): one arrive cell (CELL_ARENA/CELL_UNITS, 150 m, drills on) over CELL_SEEDS x CELL_TICKS, B2 on/off, every-crew line -> build/cell-series.jsonl + table
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/cell-series.jsonl
+	@echo ">> cell-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(CELL_SEEDS); do for at in $(CELL_TICKS); do for arm in $(CELL_ARMS); do \
+		flags=""; [ "$$arm" = "off" ] && flags="--stuck-pause=off --reseat-keep=off --watch-arrived=off --resend-short=off"; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$(CELL_ARENA) --dir=forward --metres=150 --seed=$$seed --units=$(CELL_UNITS) --seconds=120 \
+			--drills=on --lab-start-tick=$$at $$flags $(CELL_FLAGS) 2>/dev/null | grep -o 'SETTLE_PROBE {.*' \
+			| sed "s/^SETTLE_PROBE {/{\"arm\":\"$$arm\",\"start_tick\":$$at,/" >> $(BUILD_DIR)/cell-series.jsonl \
+			|| echo "{\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$at,\"missing\":true}" >> $(BUILD_DIR)/cell-series.jsonl; \
+	done; done; done
+	@$(PYTHON) tools/tactics/cell_table.py $(BUILD_DIR)/cell-series.jsonl
