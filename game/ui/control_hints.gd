@@ -11,6 +11,8 @@ const HINTS := {
 	"order": ["RIGHT-CLICK", "move there / attack it"],
 	"pause": ["SPACE", "pause to plan"],
 	"attack_move": ["A + CLICK", "attack-move (drag to face)"],
+	# Round 27 (O4): press on an enemy and drag out to a side, the squad attacks from there. Learned on the first one.
+	"flank": ["RIGHT-DRAG", "off an enemy: flank it"],
 	"tasks": ["E / R", "screen / support by fire (drag to face)"],
 	"alert": ["Q", "jump to trouble"],
 	"tilt": ["PGUP / PGDN", "tilt the camera (O: map view)"],
