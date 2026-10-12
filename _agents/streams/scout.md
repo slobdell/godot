@@ -132,6 +132,24 @@ _Updated 2026-10-11 evening (scout worker)._
   position with a 2 m arrive radius — brains' hunks of `act`, outside mine; noted as a request if the census still
   shows contacts there after S1/S2.
 
+### CP-S ship rule (pre-registered 2026-10-11 ~19:30, before the paired comparison; sent to the orchestrator)
+Seen before writing it (disclosed): the scenario's pooled NEW arm (n = 18 a case, all five bars pass) and its one-run
+base. NOT seen: the pooled base arm, and the census new arm. The rule:
+1. **His case and the crosses:** `scenario_scout_cross` pooled n = 18 a case passes all five bars (no contact; gun on
+   target ≥ 50 %; median re-acquire ≤ 2.0 s; his case backs west, dx over 3 s < −0.5 m), and the base arm
+   (`--scout-off=gunlay`, same commit) fails at least his case — else the change is not what fixes it.
+2. **Real fights:** `make scout-census` over the same 12 showmatch seeds, new v `--scout-off=gunlay` on one commit:
+   fixed-gun gun-on-target share up ≥ 5 points absolute; enemy contacts under a fight option (not MOVE/HOLD) not up;
+   share of fight time inside the turning room not up by more than 1 point.
+   **Partial-gain rule:** +2 to +5 points with (1) passing ships with the note (his case is the spec); under +2 points
+   or down: does not ship, back to the trace.
+3. **Guards:** `make check` green (cp2's engine deck, test_ai_combat_motion, scenario_motion's scout tests, the scenario
+   counts moving only by the five promoted scenarios), `make bridge-pooled` in check, `make manoeuvre-behind` unchanged
+   (M1 untouched), determinism repeatable; the thirteen lines MOVE (every map fields fixed guns) — declared and
+   re-recorded with the reason.
+4. **Cost (C27.4):** ≤ 0.5 ms a tick at 25 a side on Sumps, GDScript path.
+5. Symmetric: one code path for both sides (CombatMotion has no team).
+
 ### Questions for the lead
 None yet.
 
