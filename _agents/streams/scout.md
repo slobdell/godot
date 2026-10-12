@@ -149,6 +149,57 @@ base. NOT seen: the pooled base arm, and the census new arm. The rule:
    re-recorded with the reason.
 4. **Cost (C27.4):** ≤ 0.5 ms a tick at 25 a side on Sumps, GDScript path.
 5. Symmetric: one code path for both sides (CombatMotion has no team).
+**Orchestrator's addition (accepted 2026-10-11):** (2)'s gain is judged on the PAIRED per-seed difference (new − off,
+same seed): the +2 floor must also be outside 2 se of the 12 paired differences, else noise, no ship. Per-seed table
+reported. (2) is the blind test that decides (1)'s pool was seen first.
+
+### CP-S results (commit under test: working tree on `e6862e5e`, builder0)
+**(1) scenario_scout_cross, pooled n = 18 a case** (start ticks {1,3,6,8,11,16} x seeds {1,2,3}):
+
+| case | gun on target off → new | median re-acquire s | contacts (runs) | dx 3 s | bars off / new |
+|---|---|---|---|---|---|
+| cross 5 m L→R | 0.39 → 0.64 | 7.0 → 0.8 | 0 → 0 | +6.8 → +4.8 | FAIL / pass |
+| cross 5 m R→L | 0.47 → 0.69 | 3.6 → 0.9 | 0 → 0 | +5.1 → −0.1 | FAIL / pass |
+| cross 10 m L→R | 0.34 → 0.58 | 0.7 → 0.7 | 0 → 0 | +9.5 → +4.0 | FAIL / pass |
+| cross 10 m R→L | 0.75 → 0.77 | 1.4 → 0.7 | 0 → 0 | +1.3 → +0.1 | pass / pass |
+| **his case: away east** | **0.20 → 0.75** | **8.4 → 0.5** | **18 (18) → 0** | −13.1 → −5.3 | FAIL / **pass** |
+
+(The base's −13.1 m "west" in his case is the scout driving forward away tail-first, not backing; the new arm backs
+up with the gun within 0–2° — the SCOUT_PROBE trace.) **(1) PASSES.**
+
+**(2) the census, blind, 12 showmatch seeds, new v `--scout-off=gunlay` on one tree (e6862e5e + the planner), builder0:
+FAILS.** Gun-on-target paired diff **+1.34 pts, se 3.06** (2 se 6.1); pooled off 18.4 % → new 18.8 % of fight time;
+inside the turning room +1.4 pts (se 1.6). Contacts under a fight option 121 → 52, under an ordered MOVE 225 → 47
+(most of both in seed 5, the Parade). Per seed (on target off → new): 1 locks 28.7 → 58.4, 2 terminus 19.5 → 24.9,
+3 pit 18.3 → 22.4, 4 terminus 18.2 → 13.0, 5 parade 18.7 → 22.6, 6 sumps 3.4 → 5.0, 7 cut 31.4 → 17.8, 8 archipelago
+18.6 → 23.1, 9 gorge 14.8 → 13.5, 10 archipelago 19.2 → 18.0, 11 cut 21.8 → 14.8, 12 gorge 31.8 → 26.8.
+**By the rule: did not ship; back to the trace** (where real-fight time goes: which option, in reach or
+not, whether the planner ran — the census now breaks fight time down by option x motion).
+
+### v1 → v2: the trace (2026-10-11 night)
+- **(a) the MOVE-contact drop (225 → 47) is divergence**, not an effect: in every seed checked the arms differ before
+  their first contact (seed 5: 14.1 v 14.3 s; seeds 8, 10 earlier). Per-seed contact deltas are noise.
+- **(b) the denominator:** of 1537 fight-s (off arm, seeds 1–12) 24 % is ENGAGE with the target out of reach/sight,
+  20 % SUPPRESS, 9 % FLANK, 4 % CLEAR_LANE (brains' motion: SUPPRESS lays a wheeled fixed gun with a `face` order,
+  FLANK "swinging wide" drives past the target; filed by the orchestrator). In the planner's domain (ENGAGE
+  lay/hold/ring, in reach) the gun bore 29.8 % → 38 %; v1's lay segments alone 30 %.
+- **Two defects of mine found by `SCOUT_TRACE` (seed 9):** (1) with no control bearing inside the 2.1 s horizon (a
+  turn of more than ~135°), every candidate tied on "never bears" and the hold won on commitment — a scout held 134°
+  off a moving target for a second; fixed with LAY_AIM (the aim error left at the horizon's end). (2)
+  `_combat_move`'s "outranging it" stop fired with the gun 140–155° off; a fixed gun on the planner now skips it (the
+  planner's own hold is that stop when the gun bears).
+- v2 scenario pool (n = 18 a case): gun on target 0.57 / 0.69 / 0.71 / 0.76 / 0.67 (his case), median re-acquire
+  0.6–0.9 s, 0 contacts: all five bars pass.
+
+### CP-S v2 rule (pre-registered with the orchestrator 2026-10-11 night, before its census)
+- **PRIMARY:** gun on target WITHIN REACH (range + line of sight) during ENGAGE — the planner's domain — paired per
+  seed, new − `--scout-off=gunlay`, **fresh seeds 13–36** (24; seeds 1–12 were traced, reported not judged):
+  mean ≥ +5 pts AND outside 2 se ships; +2..+5 outside 2 se ships with a note; else no ship.
+- **GUARDS** (paired, not worse beyond 2 se): the original measure (on target / all fight-s); the in-reach ENGAGE
+  share of fight time (the primary must not rise by the scout simply spending less time in reach; absolute
+  in-reach seconds per arm reported); fight-option enemy contacts per seed.
+- And: scenario (1) all five bars at n = 18 (v2: passes); `make check` green; thirteen lines declared; cost ≤ 0.5 ms.
+- Seeds 1–12 under v2 (traced, not judged; v1 numbers): primary +7.98 pts se 5.61; all-fight +1.34 se 3.06.
 
 ### Questions for the lead
 None yet.

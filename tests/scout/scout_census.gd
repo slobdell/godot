@@ -30,13 +30,30 @@ func _flag(name: String, fallback: String) -> String:
 	return fallback
 
 
+## The brain's motion, from its `why`: the gun-lay planner, a hold, the standoff ring, a chase, the orbit, or other.
+static func _motion(why: String) -> String:
+	if why.contains("laying its gun") or why.contains("backing up to keep"):
+		return "lay"
+	if why.contains("holding at standoff") or why.contains("short halt") or why.contains("outranging"):
+		return "hold"
+	if why.contains("firing position"):
+		return "ring"
+	if why.contains("after it") or why.contains("closing in"):
+		return "chase"
+	if why.contains("circling") or why.contains("attack run"):
+		return "orbit"
+	return "other"
+
+
 func _run() -> void:
 	var main: Node = (load("res://game/main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	var game_match: Match = main.get("game_match")
 	var seconds := float(_flag("seconds", "180"))
+	var trace := _flag("trace", "")  # SCOUT_TRACE every 5 ticks for scouts whose name contains this
 	var dt := 1.0 / SimClock.TICK_RATE
 	var per := {}
+	var breakdown := {}
 	var touching := {}
 	var started := -1
 	var last_tick := -1
@@ -94,11 +111,31 @@ func _run() -> void:
 			row["fight_s"] = float(row["fight_s"]) + dt
 			var muzzle := scout.turret.global_position
 			var weapon := scout.weapon
-			if Ballistics.aim_error(muzzle, scout.turret_forward(), target.global_position) \
-					<= deg_to_rad(float(weapon["aim_tolerance_deg"])) \
-					and muzzle.distance_to(target.global_position) <= float(weapon["range"]) \
-					and Perception.has_line_of_sight(scout, target):
+			var reachable := muzzle.distance_to(target.global_position) <= float(weapon["range"]) \
+					and Perception.has_line_of_sight(scout, target)
+			var bearing := reachable and Ballistics.aim_error(muzzle, scout.turret_forward(), target.global_position) \
+					<= deg_to_rad(float(weapon["aim_tolerance_deg"]))
+			if bearing:
 				row["on_target_s"] = float(row["on_target_s"]) + dt
+			if trace != "" and name.contains(trace) and (tick - started) % 5 == 0:
+				var to := target.global_position - scout.global_position
+				var move: Dictionary = brain.get("move_order")
+				var goal := "-"
+				if move.has("x"):
+					var g := Vector3(float(move["x"]), 0.0, float(move["z"])) - scout.global_position
+					goal = "%.0fm@%.0f%s" % [Vector2(g.x, g.z).length(), rad_to_deg((-scout.global_basis.z).signed_angle_to(g, Vector3.UP)),
+							"R" if bool(move.get("reverse", false)) else ""]
+				print("SCOUT_TRACE t=%.2f %s tgt=%s d=%.1f off=%.0f tv=%.1f v=%.1f los=%s move=%s goal=%s why=%s" % [t, name,
+						target_name, Vector2(to.x, to.z).length(),
+						rad_to_deg((-scout.global_basis.z).signed_angle_to(Vector3(to.x, 0, to.z), Vector3.UP)),
+						target.estimated_velocity.length(), scout.estimated_velocity.dot(-scout.global_basis.z),
+						"y" if reachable else "n", String(move.get("type", "?")), goal, str(brain.get("why"))])
+			# Diagnosis (not a decision metric): fight time by option x motion, [seconds, in reach, bearing].
+			var label := "%s/%s" % [String(choice.get("option", "")), _motion(str(brain.get("why")))]
+			var cell: Array = breakdown.get_or_add(label, [0.0, 0.0, 0.0])
+			cell[0] += dt
+			cell[1] += dt if reachable else 0.0
+			cell[2] += dt if bearing else 0.0
 			var room := 2.0 * float(Units.stat(scout.unit_id, "min_turn_radius_m", 0.0)) \
 					+ float(Movement.hull_box(scout.unit_id)[2]) * 0.5 + float(Movement.hull_box(target.unit_id)[0]) * 0.5
 			if Vector2(scout.global_position.x - target.global_position.x,
@@ -115,7 +152,7 @@ func _run() -> void:
 	var flags := SkirmishMode.demo_flags(LaunchFlags.parse(OS.get_cmdline_user_args())) if OS.get_cmdline_user_args().has("--demo-match") else null
 	var out := {"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [],
-			"scouts": per.size(), "per_scout": per}
+			"scouts": per.size(), "per_scout": per, "breakdown": breakdown}
 	out.merge(total)
 	print("SCOUT_CENSUS " + JSON.stringify(out))
 	quit(0)

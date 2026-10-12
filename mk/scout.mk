@@ -24,5 +24,20 @@ scout-census: native-for-check import ## scout S0: every fixed gun in showmatch 
 	@echo ">> scout-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(NAV_FLAGS)'"
 	@for seed in $(subst _, ,$(subst $(scout_comma), ,$(SCOUT_SEEDS))); do echo $$seed; done | xargs -P $(SCOUT_JOBS) -I{} sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
 		--script res://tests/scout/scout_census.gd -- --skirmish --demo-match --clean --seed={} --arena=random --mute \
-		--seconds=$(SCOUT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/scout/census/{}.log 2>&1 || true'
+		--seconds=$(SCOUT_SECONDS) $(if $(SCOUT_TRACE),--trace=$(SCOUT_TRACE)) $(NAV_FLAGS) > $(BUILD_DIR)/scout/census/{}.log 2>&1 || true'
 	@$(PYTHON) tests/scout/census_table.py $(BUILD_DIR)/scout/census/*.log
+
+# C27.4's cost line: plan_lay's thread time a tick at ~25 a side on Sumps (CPU v CPU, two factions with fixed guns),
+# SCOUT_COST_SEEDS one process each, GDScript path (CombatMotion has no native port).
+SCOUT_COST_SEEDS ?= 1 2 3
+SCOUT_COST_CASES ?= condemned,gangs gangs,law law,condemned
+.PHONY: scout-cost
+scout-cost: native-for-check import ## scout C27.4: the gun-lay planner's ms a tick at ~25 a side on Sumps (SCOUT_COST_CASES green,rust x SCOUT_COST_SEEDS, one process at a time) -> build/scout/cost.jsonl
+	@mkdir -p $(BUILD_DIR)/scout; rm -f $(BUILD_DIR)/scout/cost.jsonl
+	@echo ">> scout-cost on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for c in $(SCOUT_COST_CASES); do for seed in $(subst _, ,$(subst $(scout_comma), ,$(SCOUT_COST_SEEDS))); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/scout/scout_cost.gd -- --arena=sumps \
+			--seed=$$seed --green=$${c%%,*} --rust=$${c##*,} --credits=1000 --from=8 --seconds=60 $(NAV_FLAGS) 2>/dev/null \
+			| grep -a '^SCOUT_COST' | sed 's/^SCOUT_COST //' | tee -a $(BUILD_DIR)/scout/cost.jsonl; \
+	done; done
+	@$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open('$(BUILD_DIR)/scout/cost.jsonl')]; ms=[r['lay_ms_per_tick'] for r in rows]; print('SCOUT_COST_POOLED n=%d lay_ms_per_tick mean=%.3f max=%.3f us_per_plan=%.0f units=%s' % (len(ms), sum(ms)/len(ms), max(ms), sum(r['us_per_plan'] for r in rows)/len(rows), [r['units'] for r in rows][:3]))"
