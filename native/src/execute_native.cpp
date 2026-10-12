@@ -182,7 +182,11 @@ struct Exec {
 		// _apply_move: right_of_way is false (not giving way); a move_to drives, a stop idles (and `match` does nothing).
 		lap(P_COMMAND);
 		ExecState *state = state_of();
-		if (moving) {
+		// _apply_move: `if movement.right_of_way(cmd, delta): return` -- giving way fills cmd and skips the order; a
+		// give-way that just ended goes on with the order this same tick.
+		if (right_of_way_with(*x.drive, mover, cmd, state) == 1) {
+			// nothing more of _apply_move
+		} else if (moving) {
 			drive_with(*x.drive, mover, cmd, move_order, delta, state);
 		} else {
 			idle();
@@ -355,7 +359,7 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 				String(mover->get(k._wheel_radius_unit)) == String(tank->get(k.unit_id)) &&
 				(double)mover->get(k._wheel_radius_value) <= 0.0;
 		const int reason = !(bool)tank->get(k.alive) ? 0 : (!((Array)ctl->get(k.reflexes)).is_empty() ? 1 :
-				(!String(mover->get(k.yield_to)).is_empty() ? 2 :
+				((!String(mover->get(k.yield_to)).is_empty() && !config.drive->yield_ready) ? 2 :
 				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : -1)));
 		if (reason >= 0) {
 			note_hand_back(reason, type);

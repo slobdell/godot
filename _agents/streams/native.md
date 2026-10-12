@@ -258,6 +258,9 @@ multi-day port of manoeuvre's planner) ~0.5-1 %.
 - **Falsifiers:** below -6 % at 20 a side means the laptop's execute share is smaller than builder0's (re-take P1's split);
   above -13 % means the instrumented profile overstated the drive (re-take without clocks).
 - If the measured number is under the 11-15 % he decided on, the orchestrator tells him so with the measured game speed.
+- **Addendum (2026-10-12 ~06:20 PDT, still before E6):** if E6 runs on a later commit than `63f8cca4`, it also has
+  `right_of_way` native (E5c: crews giving way were ~5 % of executes and handed back to the GDScript; now 0, his Sumps
+  native-proof). Expected to add ~0.2-0.5 point at 20 a side; the prediction's range stands.
 
 ### Questions for the lead
 
