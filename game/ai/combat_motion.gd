@@ -192,6 +192,12 @@ static func a7_on() -> bool:
 ## Round 3-8's additive score, kept whole as the control arm. A control that is also rewritten is not a control.
 static func choose_blended(request: Dictionary) -> Dictionary:
 	var style: String = request.get("style", "strafe")
+	# Round 27 (scout): a fixed gun within its gun's reach lays its hull by the rollout below (plan_lay), forward or
+	# reverse, keeping its turning room; the ring stays the approach (and the whole of it with --scout-off=gunlay).
+	if style == "standoff" and gunlay_on() and request.has("aim_tolerance_deg"):
+		var lay := plan_lay(request)
+		if not lay.is_empty():
+			return lay
 	if style == "standoff" and standoff_holds(request):
 		return {"hold": true, "point": _flat(request["position"]), "reverse": false, "index": -1, "score": 0.0}
 	var weights: Dictionary = WEIGHTS.get(style, WEIGHTS["strafe"])
@@ -1099,3 +1105,244 @@ static func _band(value: float, low: float, high: float) -> float:
 
 static func _flat(point: Vector3) -> Vector3:
 	return Vector3(point.x, 0.0, point.z)
+
+
+# ---- Round 27 (scout S1 + S2): THE GUN-LAY PLANNER for fixed guns ----------------------------------------------------
+# The lead, watching `make showmatch`: *"the scouts seem to drive super close to their target, leaving no room for them
+# to turn and maintain their target, and they don't seem to drive backwards when they have that option to turn and
+# maintain their target (i.e. if they're right up against a vehicle, and the vehicle moves east, the car seems to only
+# move forward, so it seems to not consider the option of driving in reverse and to the west so that they can maintain
+# the target)"*.
+#
+# Traced at main (c37605f0, builder0, scenario_scout_cross, his case): the standoff ring above scores RANGE, not the gun.
+# A scout 4 m from a tank that drives east took the forward candidate that opened the range fastest — straight away
+# with its tail to the target (150-170 deg off) — then "held" 127 deg off at 27 m, where a wheeled hull cannot turn at
+# rest: the gun was back on the tank 9.7 s later. A hull-fixed gun's hull IS its aim, so for it the question is never
+# "which way opens the range" but "which way puts the gun back on the target soonest, and keeps it there".
+#
+# The standard answer is a receding-horizon rollout over the vehicle's own plant (the dynamic-window family: Fox,
+# Burgard & Thrun 1997, applied to a pursuit-evasion objective — fire-control manoeuvring): every candidate control
+# (forward / reverse / brake, at five steering locks) is driven for LAY_HORIZON_S through the plant's equations (the
+# speed law TankMotion.next_speed_braking, yaw = speed x lock / turning radius for wheels, lock x turn rate otherwise)
+# against the target's PREDICTED pose (constant velocity), and the candidate is scored on:
+#   1. how soon the gun bears (the gate Gunnery fires on: within aim tolerance, in range),
+#   2. how much of the horizon it keeps bearing,
+#   3. the TURNING ROOM it keeps: never closer to the target than `turning_room` (its turning circle's diameter for
+#      wheels, plus both hulls and a margin, from its own profile; a hull that pivots needs only the hulls), and never
+#      into the target's hull (rejected),
+#   4. the weapon band (no backing out past it), commitment to the last plan, and the slot leash.
+# Forward and reverse are scored the same way — reverse is simply the candidate that wins when the target slides past
+# the nose (his case). The winner is driven as a direct hop at a point along its own arc, in its own gear; braking to a
+# stop (the hold) is a candidate like any other, so "stop and shoot" happens exactly when the gun already bears and
+# will keep bearing. Re-planned on the brain's motion cadence (TankBrain.MOTION_REPLAN_TICKS: a 0.25 s receding horizon).
+# `--scout-off=gunlay` restores round 7's standoff ring (the A/B control).
+
+const LAY_DT := 0.15
+const LAY_HORIZON_S := 2.1
+const LAY_LOCKS := [-1.0, -0.5, 0.0, 0.5, 1.0]
+## Throttle per gear: full ahead, full astern, and brake (lock 0 only for a hull that cannot pivot).
+const LAY_THROTTLES := [1.0, -1.0, 0.0]
+## Turning room margin beyond the turning circle and both hulls (metres).
+const ROOM_MARGIN_M := 1.0
+## The steer point: the candidate's pose this far along its rollout, pushed on along its heading so the drive's pure
+## pursuit traces the arc rather than arriving.
+const LAY_STEER_S := 1.2
+const LAY_STEER_PAST_M := 4.0
+## Scores (in rollout steps): a step earlier on target is worth FIRST, a step on target ON; a metre inside the turning room
+## costs ROOM a step, a metre past the band's far edge at the horizon BAND, and the last plan's candidate keeps COMMIT.
+const LAY_FIRST := 1.5
+const LAY_ON := 1.0
+const LAY_ROOM := 0.6
+const LAY_BAND := 0.5
+const LAY_COMMIT := 1.0
+const LAY_LEASH := 4.0
+## ...and a radian the gun is still off the target at the horizon's end costs AIM (progress, for a turn longer than the
+## horizon: without it every candidate ties on "never bears" and the hold wins on commitment — traced in the census,
+## seed 9, a scout holding 134 deg off a moving target for over a second).
+const LAY_AIM := 3.0
+
+static var _gunlay_off := -1
+static var lay_plans := 0      # measurement: plans the planner made
+static var lay_reverse := 0    # ...that drove astern
+static var lay_holds := 0      # ...that braked to a hold
+## Measurement only (C27.4's cost line, tests/scout/scout_cost.gd): when on, plan_lay's thread time is summed here. Never
+## read by a decision.
+static var lay_timing := false
+static var lay_usec := 0
+
+
+## ON by default; `--scout-off=gunlay` (any run) turns it off for the A/B. Pinned by tests through `gunlay_pin`.
+static var gunlay_pin := -1
+
+
+static func gunlay_on() -> bool:
+	if gunlay_pin >= 0:
+		return gunlay_pin == 1
+	if _gunlay_off < 0:
+		_gunlay_off = 0
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--scout-off=") and Array(String(arg).trim_prefix("--scout-off=").split(",")).has("gunlay"):
+				_gunlay_off = 1
+	return _gunlay_off == 0
+
+
+## How close a fixed gun may come to its target and still bring its nose round on it: the diameter of its turning circle
+## (wheels; 0 for a hull that pivots), its own half length, the target's half width and a margin. A scout on a tank:
+## 2 x 5 + 1.52 + 1.45 + 1 = 14.0 m.
+static func turning_room(request: Dictionary) -> float:
+	var radius := float(request.get("min_turn_radius", 0.0)) if bool(request.get("wheels", false)) else 0.0
+	return 2.0 * radius + float(request.get("hull_length", 3.0)) * 0.5 + float(request.get("target_half_width", 1.5)) \
+			+ ROOM_MARGIN_M
+
+
+## The plan for a fixed gun fighting `request["target"]`, or {} when it should not plan here (out of its gun's reach:
+## the approach is the ring's). Same result shape as `choose` (+ "hold" for the braking candidate).
+static func plan_lay(request: Dictionary) -> Dictionary:
+	if not lay_timing:
+		return _plan_lay(request)
+	var clock := Time.get_ticks_usec()
+	var plan := _plan_lay(request)
+	lay_usec += Time.get_ticks_usec() - clock
+	return plan
+
+
+static func _plan_lay(request: Dictionary) -> Dictionary:
+	var here := _flat(request["position"])
+	var forward := _flat(request["forward"]).normalized()
+	var target: Dictionary = request["target"]
+	var target_at := _flat(target["position"])
+	var target_velocity := _flat(target.get("velocity", Vector3.ZERO))
+	var reach := float(request.get("range", 45.0))
+	var distance := here.distance_to(target_at)
+	if distance > reach:
+		return {}
+	var band: Array = request.get("band", [15.0, 40.0])
+	var band_high := float(band[1])
+	var wheels: bool = request.get("wheels", false)
+	var radius := maxf(float(request.get("min_turn_radius", 0.0)), 0.1)
+	var max_rate := deg_to_rad(float(request.get("turn_rate_deg", 90.0)))
+	var top := float(request["speed"])
+	var top_reverse := float(request.get("reverse_speed", 0.0))
+	var acceleration := float(request.get("acceleration", 10.0))
+	var braking := float(request.get("braking", acceleration))
+	var tolerance := deg_to_rad(float(request.get("aim_tolerance_deg", 4.0)))
+	var room := turning_room(request)
+	# Its hull: a nose this close to the target's box (its own half length, less a little for the corners) is a touch.
+	var touch := float(request.get("hull_length", 3.0)) * 0.4
+	var target_forward := _flat(target.get("forward", Vector3.FORWARD)).normalized()
+	var half_width := float(request.get("target_half_width", 1.5))
+	var half_length := float(request.get("target_half_length", 4.0))
+	var box_now := _box_gap(here - target_at, target_forward, half_width, half_length)
+	var speed_now := _flat(request.get("velocity", Vector3.ZERO)).dot(forward)
+	var limit := float(request.get("limit", Match.DRIVABLE_LIMIT)) - 4.0
+	var leash: Dictionary = request.get("leash", {})
+	var leash_radius := float(leash.get("radius", 0.0))
+	var leash_center := _flat(leash.get("center", Vector3.ZERO))
+	var previous := int(request.get("previous_lay", -1))
+	var steps := int(round(LAY_HORIZON_S / LAY_DT))
+	var steer_step := int(round(LAY_STEER_S / LAY_DT))
+	var scored: Array = []
+	var index := -1
+	for throttle: float in LAY_THROTTLES:
+		for lock: float in LAY_LOCKS:
+			index += 1
+			if throttle == 0.0 and lock != 0.0 and wheels:
+				continue
+			if throttle < 0.0 and top_reverse <= 0.0:
+				continue
+			var at := here
+			var heading := forward
+			var speed := speed_now
+			var first := steps
+			var on := 0
+			var inside := 0.0
+			var hit_target := false
+			var steer := here
+			var steer_heading := forward
+			for step in steps:
+				speed = TankMotion.next_speed_braking(speed, throttle, top, top_reverse, acceleration, braking, LAY_DT)
+				var yaw := clampf(speed * lock / radius, -max_rate, max_rate) if wheels else lock * max_rate
+				heading = TankMotion.turn_heading(heading, yaw * LAY_DT)
+				at += heading * speed * LAY_DT
+				var then := target_at + target_velocity * (LAY_DT * (step + 1))
+				var to := then - at
+				var gap := to.length()
+				# Into the target's hull (a box at its predicted pose): rejected, unless it starts there and is opening.
+				var box := _box_gap(at - then, target_forward, half_width, half_length)
+				if box < touch and box < box_now:
+					hit_target = true
+					break
+				inside += maxf(0.0, room - gap)
+				# The gate Gunnery fires on, widened by half this step's swing so a crossing between samples counts.
+				if gap <= reach and absf(heading.signed_angle_to(to, Vector3.UP)) <= tolerance + absf(yaw) * LAY_DT * 0.5:
+					on += 1
+					first = mini(first, step)
+				if step + 1 == steer_step:
+					steer = at
+					steer_heading = heading
+			if hit_target:
+				continue
+			if steer_step > steps:
+				steer = at
+				steer_heading = heading
+			var end_target := target_at + target_velocity * LAY_HORIZON_S
+			var end_gap := at.distance_to(end_target)
+			var end_aim := absf(heading.signed_angle_to(end_target - at, Vector3.UP))
+			var score := -LAY_FIRST * first + LAY_ON * on - LAY_ROOM * inside \
+					- LAY_BAND * maxf(0.0, end_gap - band_high) - LAY_AIM * end_aim
+			if index == previous:
+				score += LAY_COMMIT
+			if leash_radius > 0.0:
+				score -= LAY_LEASH * clampf((leash_center.distance_to(at) - leash_radius) / LEASH_FALLOFF, 0.0, 1.0)
+			var gear := 0 if throttle == 0.0 else (1 if throttle > 0.0 else -1)
+			var point := steer + steer_heading * (LAY_STEER_PAST_M * gear)
+			scored.append([-score, index, gear, point, at])
+	if scored.is_empty():
+		return {}
+	scored.sort()
+	var map: CoverMap = request.get("map")
+	var beaten: Callable = request.get("beaten", Callable())
+	var incoming: Array = request.get("incoming", [])
+	var velocity_now := _flat(request.get("velocity", Vector3.ZERO))
+	var fallback: Array = []
+	for entry: Array in scored:
+		var gear := int(entry[2])
+		var point: Vector3 = entry[3]
+		var end: Vector3 = entry[4]
+		if gear != 0:
+			if absf(point.x) > limit or absf(point.z) > limit:
+				continue
+			if map != null and (map.path_blocked(Vector2(here.x, here.z), Vector2(point.x, point.z), OBSTACLE_GROW)
+					or map.inside_any(Vector2(end.x, end.z), OBSTACLE_GROW)):
+				continue
+			if beaten.is_valid() and beaten.call(here, end):
+				continue
+		if fallback.is_empty():
+			fallback = entry
+		if not incoming.is_empty():
+			var planned := (point - here).normalized() * (top if gear > 0 else top_reverse) * float(gear)
+			if CombatMotion.would_be_hit(here, velocity_now, planned, incoming, 0.0, acceleration):
+				continue
+		return _lay_result(entry)
+	if not fallback.is_empty():
+		return _lay_result(fallback)
+	return {}
+
+
+## Distance from a point (relative to a box's centre) to a box of the given half sizes whose long axis is `forward`.
+static func _box_gap(offset: Vector3, forward: Vector3, half_width: float, half_length: float) -> float:
+	var along := absf(offset.dot(forward)) - half_length
+	var across := absf(offset.x * -forward.z + offset.z * forward.x) - half_width
+	return Vector2(maxf(along, 0.0), maxf(across, 0.0)).length()
+
+
+static func _lay_result(entry: Array) -> Dictionary:
+	lay_plans += 1
+	var gear := int(entry[2])
+	if gear == 0:
+		lay_holds += 1
+		return {"hold": true, "lay": int(entry[1]), "point": entry[3], "reverse": false, "index": -1, "score": -float(entry[0])}
+	if gear < 0:
+		lay_reverse += 1
+	return {"point": entry[3], "reverse": gear < 0, "lay": int(entry[1]), "index": -1, "score": -float(entry[0]),
+			"dodging": false}

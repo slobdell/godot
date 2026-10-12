@@ -102,4 +102,163 @@ Nothing. He judges the clips.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-11 evening (scout worker)._
+
+### Plan (ordered)
+1. **S0** scenario `scenario_scout_cross` (5 cases, PENDING bars written before any number) + `make scout-cross` (pooled
+   {1,3,6,8,11,16} x 3 seeds) + `make scout-census` (the showmatch's own match headless, every fixed gun) → trace → the
+   "before" showmatch seed and clip.
+2. **S1 + S2 as ONE mechanism** (decided: the two readings are one question for a fixed gun, *which way puts the gun
+   back on the target soonest, and keeps it there, without closing inside my turning room*): `CombatMotion.plan_lay`,
+   a receding-horizon rollout over the hull's own plant against the target's predicted pose; forward and reverse scored
+   alike; the turning room (2 turning radii + both hulls + 1 m, per hull from its profile) a cost, the target's hull a
+   wall. Behind `--scout-off=gunlay` (my own switch in combat_motion.gd; no shared switch file touched).
+3. Unit tests `tests/test_scout_lay.gd`; guards (cp2 engine deck, combat_motion, bridge-pooled, manoeuvre-behind,
+   thirteen lines, determinism); cost line (C27.4); pre-registered bar → orchestrator; S3 declared; after clip.
+4. S4 stretch: engine deck phase 2; other fixed guns.
+
+### S0 findings (main `c37605f0`, builder0)
+- **A lone scout with no order SPOTs** (backs off to watch), so the scenario orders the attack, as a squad/CPU does.
+- **His case traced** (`away_east`, start tick 1, seed 1): CombatMotion's standoff ring scores RANGE, not the gun. From
+  3.4 m it took the forward candidate that opens range fastest — tail to the tank, 149–168° off — out to 27 m, then
+  "held at standoff" 127° off: a wheeled hull cannot turn at rest (Gunnery's turn on a `stop` order), so the gun bore
+  again 9.7 s after the tank moved. Gun on target 4 % of 12 s. Crosses: 0–29 % (0.12 / 0.00 / 0.29 / 0.68 one run each).
+  Root cause is the scoring, not a bug: nothing in the fixed-gun path measures where the gun points over time.
+- **The census** (`make scout-census`, 12 showmatch seeds, 207 fixed-gun crews, 1537 fight-seconds): **gun on target
+  18.4 %** of fight time, 9.1 % inside turning room, reversing 15.5 %, 365 enemy hull contacts — **254 of them under an
+  ordered MOVE** (squads ordered into/through the enemy: brains'/orders' path, not the fight path; most in one Parade
+  match, seed 5, 286 contacts), 86 on HOLD, ~100 in ENGAGE/FLANK "moving to a firing position"/"swinging wide".
+- `PURSUE` (an ordered target out of sight) and ENGAGE's chase ("it is running: after it") drive AT the target's
+  position with a 2 m arrive radius — brains' hunks of `act`, outside mine; noted as a request if the census still
+  shows contacts there after S1/S2.
+
+### CP-S ship rule (pre-registered 2026-10-11 ~19:30, before the paired comparison; sent to the orchestrator)
+Seen before writing it (disclosed): the scenario's pooled NEW arm (n = 18 a case, all five bars pass) and its one-run
+base. NOT seen: the pooled base arm, and the census new arm. The rule:
+1. **His case and the crosses:** `scenario_scout_cross` pooled n = 18 a case passes all five bars (no contact; gun on
+   target ≥ 50 %; median re-acquire ≤ 2.0 s; his case backs west, dx over 3 s < −0.5 m), and the base arm
+   (`--scout-off=gunlay`, same commit) fails at least his case — else the change is not what fixes it.
+2. **Real fights:** `make scout-census` over the same 12 showmatch seeds, new v `--scout-off=gunlay` on one commit:
+   fixed-gun gun-on-target share up ≥ 5 points absolute; enemy contacts under a fight option (not MOVE/HOLD) not up;
+   share of fight time inside the turning room not up by more than 1 point.
+   **Partial-gain rule:** +2 to +5 points with (1) passing ships with the note (his case is the spec); under +2 points
+   or down: does not ship, back to the trace.
+3. **Guards:** `make check` green (cp2's engine deck, test_ai_combat_motion, scenario_motion's scout tests, the scenario
+   counts moving only by the five promoted scenarios), `make bridge-pooled` in check, `make manoeuvre-behind` unchanged
+   (M1 untouched), determinism repeatable; the thirteen lines MOVE (every map fields fixed guns) — declared and
+   re-recorded with the reason.
+4. **Cost (C27.4):** ≤ 0.5 ms a tick at 25 a side on Sumps, GDScript path.
+5. Symmetric: one code path for both sides (CombatMotion has no team).
+**Orchestrator's addition (accepted 2026-10-11):** (2)'s gain is judged on the PAIRED per-seed difference (new − off,
+same seed): the +2 floor must also be outside 2 se of the 12 paired differences, else noise, no ship. Per-seed table
+reported. (2) is the blind test that decides (1)'s pool was seen first.
+
+### CP-S results (commit under test: working tree on `e6862e5e`, builder0)
+**(1) scenario_scout_cross, pooled n = 18 a case** (start ticks {1,3,6,8,11,16} x seeds {1,2,3}):
+
+| case | gun on target off → new | median re-acquire s | contacts (runs) | dx 3 s | bars off / new |
+|---|---|---|---|---|---|
+| cross 5 m L→R | 0.39 → 0.64 | 7.0 → 0.8 | 0 → 0 | +6.8 → +4.8 | FAIL / pass |
+| cross 5 m R→L | 0.47 → 0.69 | 3.6 → 0.9 | 0 → 0 | +5.1 → −0.1 | FAIL / pass |
+| cross 10 m L→R | 0.34 → 0.58 | 0.7 → 0.7 | 0 → 0 | +9.5 → +4.0 | FAIL / pass |
+| cross 10 m R→L | 0.75 → 0.77 | 1.4 → 0.7 | 0 → 0 | +1.3 → +0.1 | pass / pass |
+| **his case: away east** | **0.20 → 0.75** | **8.4 → 0.5** | **18 (18) → 0** | −13.1 → −5.3 | FAIL / **pass** |
+
+(The base's −13.1 m "west" in his case is the scout driving forward away tail-first, not backing; the new arm backs
+up with the gun within 0–2° — the SCOUT_PROBE trace.) **(1) PASSES.**
+
+**(2) the census, blind, 12 showmatch seeds, new v `--scout-off=gunlay` on one tree (e6862e5e + the planner), builder0:
+FAILS.** Gun-on-target paired diff **+1.34 pts, se 3.06** (2 se 6.1); pooled off 18.4 % → new 18.8 % of fight time;
+inside the turning room +1.4 pts (se 1.6). Contacts under a fight option 121 → 52, under an ordered MOVE 225 → 47
+(most of both in seed 5, the Parade). Per seed (on target off → new): 1 locks 28.7 → 58.4, 2 terminus 19.5 → 24.9,
+3 pit 18.3 → 22.4, 4 terminus 18.2 → 13.0, 5 parade 18.7 → 22.6, 6 sumps 3.4 → 5.0, 7 cut 31.4 → 17.8, 8 archipelago
+18.6 → 23.1, 9 gorge 14.8 → 13.5, 10 archipelago 19.2 → 18.0, 11 cut 21.8 → 14.8, 12 gorge 31.8 → 26.8.
+**By the rule: did not ship; back to the trace** (where real-fight time goes: which option, in reach or
+not, whether the planner ran — the census now breaks fight time down by option x motion).
+
+### v1 → v2: the trace (2026-10-11 night)
+- **(a) the MOVE-contact drop (225 → 47) is divergence**, not an effect: in every seed checked the arms differ before
+  their first contact (seed 5: 14.1 v 14.3 s; seeds 8, 10 earlier). Per-seed contact deltas are noise.
+- **(b) the denominator:** of 1537 fight-s (off arm, seeds 1–12) 24 % is ENGAGE with the target out of reach/sight,
+  20 % SUPPRESS, 9 % FLANK, 4 % CLEAR_LANE (brains' motion: SUPPRESS lays a wheeled fixed gun with a `face` order,
+  FLANK "swinging wide" drives past the target; filed by the orchestrator). In the planner's domain (ENGAGE
+  lay/hold/ring, in reach) the gun bore 29.8 % → 38 %; v1's lay segments alone 30 %.
+- **Two defects of mine found by `SCOUT_TRACE` (seed 9):** (1) with no control bearing inside the 2.1 s horizon (a
+  turn of more than ~135°), every candidate tied on "never bears" and the hold won on commitment — a scout held 134°
+  off a moving target for a second; fixed with LAY_AIM (the aim error left at the horizon's end). (2)
+  `_combat_move`'s "outranging it" stop fired with the gun 140–155° off; a fixed gun on the planner now skips it (the
+  planner's own hold is that stop when the gun bears).
+- v2 scenario pool (n = 18 a case): gun on target 0.57 / 0.69 / 0.71 / 0.76 / 0.67 (his case), median re-acquire
+  0.6–0.9 s, 0 contacts: all five bars pass.
+
+### CP-S v2 rule (pre-registered with the orchestrator 2026-10-11 night, before its census)
+- **PRIMARY:** gun on target WITHIN REACH (range + line of sight) during ENGAGE — the planner's domain — paired per
+  seed, new − `--scout-off=gunlay`, **fresh seeds 13–36** (24; seeds 1–12 were traced, reported not judged):
+  mean ≥ +5 pts AND outside 2 se ships; +2..+5 outside 2 se ships with a note; else no ship.
+- **GUARDS** (paired, not worse beyond 2 se): the original measure (on target / all fight-s); the in-reach ENGAGE
+  share of fight time (the primary must not rise by the scout simply spending less time in reach; absolute
+  in-reach seconds per arm reported); fight-option enemy contacts per seed.
+- And: scenario (1) all five bars at n = 18 (v2: passes); `make check` green; thirteen lines declared; cost ≤ 0.5 ms.
+- Seeds 1–12 under v2 (traced, not judged; v1 numbers): primary +7.98 pts se 5.61; all-fight +1.34 se 3.06.
+
+### CP-S v2 result: PASSES (blind census, tree `90413868`, builder0, seeds 13–36, new v `--scout-off=gunlay`)
+```
+seed  arena        factions             |   rOFF   rNEW   bOFF   bNEW   diff | allOFF allNEW
+13    parade       gangs/law            |    91s    93s  18.2%  48.6% +30.4 |   9.3%  23.9%
+14    pit          law/syndicate        |     5s    12s   9.3%  79.9% +70.7 |  20.8%  31.9%
+15    no ENGAGE in reach (off 0 s, new 0 s): not paired
+16    pit          condemned/law        |   185s   118s  37.4%  69.6% +32.2 |  18.9%  24.6%
+17    yard         gangs/syndicate      |    25s    21s  31.4%  14.9% -16.5 |   5.3%   2.1%
+18    gorge        law/condemned        |     8s    10s  85.3%  89.8%  +4.5 |  34.7%  46.3%
+19    yard         syndicate/gangs      |     6s     2s  39.4%  56.9% +17.5 |   3.3%   1.6%
+20    cut          syndicate/gangs      |    51s    68s  13.6%  15.1%  +1.5 |  10.0%  10.7%
+21    parade       condemned/syndicate  |     6s     7s  33.9%  46.9% +13.0 |  18.9%  12.1%
+22    terminus     gangs/condemned      |   129s    91s  37.0%  63.6% +26.6 |  18.0%  26.9%
+23    yard         law/gangs            |    17s    70s  16.3%  39.2% +22.9 |   7.8%  23.6%
+24    yard         syndicate/law        |     3s     7s  39.8%  73.2% +33.5 |  13.9%  28.7%
+25    crossing     condemned/gangs      |    11s    23s  39.9%  76.3% +36.4 |  21.8%  39.1%
+26    cut          gangs/law            |   362s   224s  34.6%  44.6% +10.0 |  17.3%  22.4%
+27    no ENGAGE in reach (off 0 s, new 0 s): not paired
+28    yard_open    syndicate/condemned  |    77s    74s  11.4%  47.6% +36.2 |  21.1%  30.6%
+29    terminus     condemned/law        |    38s    16s  15.5%  17.6%  +2.1 |  17.6%  24.1%
+30    yard         condemned/law        |     8s     9s  48.5%  63.8% +15.3 |  38.4%  43.1%
+31    archipelago  gangs/syndicate      |    25s     8s  69.4%  19.5% -49.9 |  13.5%   1.1%
+32    docks        law/condemned        |    64s   106s  17.3%  43.5% +26.2 |  20.2%  26.4%
+33    locks        syndicate/gangs      |    17s    11s  25.5%  46.2% +20.7 |  17.6%  26.1%
+34    no ENGAGE in reach (off 0 s, new 0 s): not paired
+35    pit          gangs/condemned      |   234s   112s  42.9%  44.6%  +1.7 |  24.1%  21.8%
+36    archipelago  law/gangs            |    85s    57s  11.8%  15.6%  +3.8 |   6.3%   6.1%
+PRIMARY n=21 engage_in_reach_on_target diff mean +16.14 pts, se 5.16 (2 se 10.33)
+GUARD   n=21 all_fight_on_target diff mean +5.46 pts, se 1.72 (2 se 3.43)
+GUARD   n=21 engage_in_reach_share diff mean -3.42 pts, se 2.01 (2 se 4.03)
+GUARD   n=21 fight_option_contacts diff mean -6.57 a seed, se 3.63 (2 se 7.26)
+SECONDS off engage_in_reach=1448 fight=4229
+SECONDS new engage_in_reach=1138 fight=4023
+```
+(b = gun on target within reach during ENGAGE; r = those in-reach seconds; all = on target / all fight-s.)
+- PRIMARY **+16.1 pts, se 5.16** (outside 2 se, ≥ +5): ships. GUARDS: all fight-s **+5.5 pts, se 1.7** (up);
+  in-reach share −3.4 pts, se 2.0 (inside 2 se: passes, closest of the guards; the scout spends ~20 % fewer seconds
+  with its target in reach — the turning room and the backing up); fight-option contacts −6.6 a seed, se 3.6 (not up).
+- **Cost (C27.4):** `make scout-cost` (Sumps, 2000 credits ≈ 16–25 a side, 3 faction pairs, seed 1, 8–90 s, builder0
+  light lane while loaded): plan_lay **0.035 ms a tick mean, 0.062 max**, ~400 µs a plan, 0.01–0.13 plans a tick.
+- Unit tests: `tests/test_scout_lay.gd` 7/7 and `test_ai_combat_motion` 15/15 (builder0 light lane, `90413868`).
+
+### S4 (stretch): the other fixed guns (all wheeled; the Syndicate fields none), scenario pool n = 18 a case
+| hull | case | on target off → new | re-acquire s off → new | contacts (runs) off → new |
+|---|---|---|---|---|
+| law_scout (R 5.5) | cross5 L→R / R→L | 0.40→0.66 / 0.50→0.77 | 6.8→1.0 / 2.6→1.1 | 0 / 0 |
+| | cross10 L→R / R→L | 0.41→0.67 / 0.70→0.78 | 0.7→0.8 / 1.2→1.0 | 0 / 0 |
+| | **his case** | 0.54→0.74 | 3.8→**2.3** (bar 2.0) | 18 (18) → 0 |
+| gang_scout (R 4.5, spear gun) | cross5 L→R / R→L | 0.42→0.52 / 0.83→0.65 | 0.7→**2.1** / 0.9→1.0 | 39 (18) → 0 / 0 |
+| | cross10 L→R / R→L | 0.43→0.63 / 0.88→0.83 | 0.6→0.4 / 0.7→0.6 | 0 / 0 |
+| | **his case** | 0.61→0.64 | 3.2→0.6 | 24 (18) → **9 (9)** |
+Law scout: 4 of 5 bars (his case's re-acquire 2.3 s). Gang scout: 3 of 5 (cross5 L→R re-acquire 2.1 s; his case still
+touches in half the runs). Next step (not in CP-S): trace the gang scout's contacts in his case (a 4.5 m circle and a
+faster hull: the touch margin `hull_length × 0.4` may be too tight at 18 m/s).
+
+### Questions for the lead
+None yet.
+
+### Requests to other streams
+None yet.
+
