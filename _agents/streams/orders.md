@@ -113,11 +113,23 @@ others) → O1 end to end after CP0 (`git merge main` when told) → O4 the flan
 - **Frames** (`make flank-shots`, 1854x1011 and 1200x540): the ring on the enemy and the arrow from the drawn side into
   it read at both sizes.
 
+- **Camera scope (the orchestrator's question):** the player's skirmish camera is unchanged. `CinematicCamera` is built only
+  at `skirmish_mode.gd:613` under `--cinematic` (showmatch, cinematic); its `start()` turning the rig's yaw-follow off
+  is its only change to the rig. Pinned by `test_control_cinematic::test_the_players_camera_keeps_yaw_follow` (`a5d3a31b`).
+- **Main f4c5f7c9 merged** (`9c6f3381`, scout's CP-S).
+
+### Checks (builder0, `make remote T=check`)
+
+- `1d3b1bcb` (CP0 merged, O1 + O2 + probes): exited 0, **2497 passed / 0 failed, 24 targets ALL JUDGED**, determinism
+  foundry 2875411ff4ec6be7.
+- **`9c6f3381` (main f4c5f7c9 merged): exited 0, 2505 passed / 0 failed, 24 targets ALL JUDGED**, determinism foundry
+  2875411ff4ec6be7. **Merge here for O1 + O2** (named to the orchestrator).
+
 ### In progress
 
 - **O3:** `make hull-rest-probe` (drawn v clicked on the same seeds, every faction, per hull class) +
-  `tools/hull_rest_table.py`; runs after the check.
-- **Check** on `1d3b1bcb` running on builder0.
+  `tools/hull_rest_table.py`: running on builder0.
+- **O4 clip:** `make flank-clip` (Movie Maker, 1080p) queued after it.
 
 ### Questions for the lead
 
