@@ -243,6 +243,11 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   the even roster the SHIPPED drawn gesture (B0's rule) beats a clicked attack: kills 15 v 10, alive 2.78 v 2.28,
   side/rear hit share 0.76 v 0.81.** Branch `lab/brains-flank-live` (`64355ff2`).
 
+- **B3: make-room KEPT (2026-10-12, brains, builder0, game = main `3dc04293`, fresh seeds 13–16, 100 cells paired):** 8 m line
+  on 97 v off 93 (gained 5, every one with a swap; lost 1; median +0.0 %), strict 76 v 72, crews > 12 m off 2 v 6. On round
+  26's base it bought nothing (68 = 68); B2's watch now hands it the case it was built for. Brains' backlog done; final
+  report at `a66a95bc` (check running).
+
 - **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
   check of native E1 + CP0 together running; then orders merges main.
 - **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
