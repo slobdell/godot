@@ -9,6 +9,8 @@ extends RefCounted
 ##    "target": "Rust_1",  an enemy unit: required for attack, optional for support_by_fire
 ##    "facing": [x, z],    optional: which way the element faces when it gets there (a plain move or a hold); the
 ##                         screen, support-by-fire and ambush tasks face their point by their own geometry
+##    "approach": [x, z],  optional, attack only (round 27, C27.3): the way the squad drives IN, toward the target (a unit
+##                         direction; it comes from the target's side opposite to it). Absent = straight at it, as before.
 ##    "from": [x, z],      optional, ambush only (round 18): where the ambush lies (a hidden spot on the kill zone's
 ##                         flank). Without it the line stands at a fraction of its guns' range from the kill zone.
 ##    "drills": false}     optional (default true): false = a plain move. The element travels formed up and its crews
@@ -27,7 +29,7 @@ extends RefCounted
 const VERBS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
 const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
-const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from"]
+const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from", "approach"]
 ## Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 ## His 2026-09-16 ruling stands as the DEFAULT -- "there's essentially always a formation for any given task OR
 ## there's always a central decision maker ... that automatically determines what the formation is" -- so a task with
@@ -75,6 +77,13 @@ static func validate(task: Variant) -> String:
 			return "'from' is for an ambush only"
 		if typeof(from) != TYPE_ARRAY or (from as Array).size() != 2 or not _finite(from[0]) or not _finite(from[1]):
 			return "'from' must be [x, z] in meters"
+	if task.has("approach"):
+		var approach: Variant = task["approach"]
+		if verb != "attack":
+			return "'approach' is for an attack only"
+		if typeof(approach) != TYPE_ARRAY or (approach as Array).size() != 2 or not _finite(approach[0]) \
+				or not _finite(approach[1]) or Vector2(float(approach[0]), float(approach[1])).length() < 1e-6:
+			return "'approach' must be a non-zero [x, z] direction"
 	if task.has("drills") and typeof(task["drills"]) != TYPE_BOOL:
 		return "'drills' must be true or false"
 	return ""
@@ -90,6 +99,13 @@ static func facing(task: Dictionary) -> Variant:
 	if not task.has("facing"):
 		return null
 	return Vector3(float(task["facing"][0]), 0.0, float(task["facing"][1])).normalized()
+
+
+## Round 27 (C27.3): the task's `approach` (the direction of the run in, toward the target) as a flat unit vector, or null.
+static func approach(task: Dictionary) -> Variant:
+	if not task.has("approach"):
+		return null
+	return Vector3(float(task["approach"][0]), 0.0, float(task["approach"][1])).normalized()
 
 
 static func make(verb: String, extra: Dictionary = {}) -> Dictionary:

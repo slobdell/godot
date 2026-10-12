@@ -56,7 +56,7 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   ports `_manoeuvre` LAST, after scout's CP). A change to `decide` or `build_situation`'s core (C++) goes to native as a
   diff before the commit (SendMessage, orchestrator copied); the pair merges back to back.
 - **C27.3 A drawn approach reaches the attack task** (orders ↔ brains, C26.3's shape). Orders puts the drag on the task as
-  `task["approach"] = [x, z]` (normalised; the direction the squad comes FROM, toward the target); absent = today,
+  `task["approach"] = [x, z]` (normalised; the direction of the run IN: release point → target, so the squad attacks from the target's side the drag was released on; confirmed both sides 2026-10-11, orders `cd113207` `rts_controls.gd:1810`, brains `9603c1d7`; a target running ≥ 2 m/s is a pursuit and ignores it); absent = today,
   byte-identical. Brains (B0, first) honours it and merges it as CP0; orders then merges main. Until then orders tests
   against a stub in its own paths.
 - **C27.4 A behaviour change carries a cost line** (C26.10 carried): its cost a tick at 25 a side on Sumps, GDScript path,
@@ -70,6 +70,43 @@ wheeled creep (M3) and the rig carrot. Kept branches: `traffic-cp1b-v4`, `manoeu
   merges land as they go green (E1 OFF first). Scout's and brains' declared merges are checkpoints native merges.
 - **C26.4–C26.10's rulings, C25.6, C24.6–C24.8, C23.1a, C23.2, C22.4–C22.7, C21.1, C21.3–C21.5, C20.1, C20.4, C20.5,
   C19.3–C19.7, C18.7, C16.3, C12.6, C18.3 stand.**
+
+- **CP-S ship rule (pre-registered 2026-10-11, scout, before the paired comparison; full text in scout's Status):**
+  `CombatMotion.plan_lay` (2.1 s rollout over the fixed gun's plant v the target's predicted pose; forward/reverse/brake x
+  5 locks by gun-on-target time; turning room a cost; `--scout-off=gunlay`; `decide` and M1 untouched, no port). Ships if
+  (1) `scenario_scout_cross` n = 18/case passes its 5 bars and base fails his case; (2) scout-census, 12 showmatch seeds
+  new v off: fixed-gun gun-on-target +5 pts (+2..+5 ships with a note, < +2 no), **the gain outside 2 se of the 12 paired
+  per-seed differences (the orchestrator's addition)**, fight-option enemy contacts not up, inside-turning-room share
+  not up > 1 pt; (3) check green, thirteen lines' moves declared; (4) ≤ 0.5 ms a tick, 25 a side Sumps; (5) symmetric.
+  (1)'s pool was seen before registration (disclosed): (2) is the blind test. Census base (main `c37605f0`, builder0, 12
+  seeds): gun on target 18.4 % of 1537 fight-s; 365 enemy contacts, **254 under an ordered MOVE** (squads ordered into
+  the enemy: brains' side, filed).
+
+- **CP-S v1 FAILED its pre-registered census (2026-10-11, scout, builder0, 12 paired seeds): no ship.** (1) passed:
+  `scenario_scout_cross` n = 18/case, all 5 bars on new, off fails 4 of 5 incl. his case (gun on target 0.20 → 0.75,
+  re-acquire 8.4 → 0.5 s). (2) failed: real-match gun on target +1.34 pts, se 3.06 (18.4 → 18.8 %). Contacts fell
+  (fight-option 121 → 52, ordered-MOVE 225 → 47 — the MOVE drop unexplained: divergence or a path, to trace). Next: where
+  the 81 % off-target fight time goes (option × motion, in reach, planner active); any v2 bar sent before its census.
+
+- **CP-S v2 bar (pre-registered 2026-10-11, scout proposed, the orchestrator amended, before the census):** v1's MOVE
+  contact drop was divergence (arms differ before first contact). 45 % of a scout's fight time is outside the planner
+  (ENGAGE out of reach/sight 24 %; SUPPRESS 20 %, FLANK 9 %, CLEAR_LANE 4 %: brains' motion — filed). Two v1 defects fixed
+  (a hold winning on commitment 134° off; `_combat_move`'s outranging stop firing 140–155° off). **PRIMARY:** gun on
+  target in reach (range + LOS) during ENGAGE, paired new − `--scout-off=gunlay`, **fresh seeds 13–36** (1–12 were traced:
+  reported only); ≥ +5 pts outside 2 se ships, +2..+5 outside 2 se ships with a note. **GUARDS (paired, not worse beyond
+  2 se):** on target / all fight-s; in-reach ENGAGE share of fight-s; fight-option enemy contacts. Plus scenario (1) all 5
+  bars n = 18, check green, thirteen declared, ≤ 0.5 ms a tick.
+
+- **CP0 merged 2026-10-11 (`1c8da4d8` = brains `9603c1d7`, builder0 check exited 0, 2475/0, thirteen unmoved).** Main's
+  check of native E1 + CP0 together running; then orders merges main.
+- **B2 ship rule (pre-registered 2026-10-11, brains, before any numbers; DECLARED):** the clock pause + a re-seat that keeps
+  every crew parked on its own slot seated; both arms under B1's line (every living crew within max(3.5 m, settle radius)
+  of its slot, held 1 s). Ships only if ALL: (1) the Sumps cell (law_scout:law_ifv:law_tank:law_tank, seed 1, drills on,
+  150 m) arrives within 120 s at start tick 1 and in ≥ 5 of 6 pooled ticks; (2) arrive series 100 cells paired v main:
+  arrivals ≥ main's, ≤ 1 cell main-arrives/B2-fails, median all_in_s ≤ +10 %; (3) bridge-pooled 18/18, the 108 ≤ 1 run a
+  side worse; (4) thirteen and determinism unmoved or explained; (5) ≤ 0.5 ms a tick (or NOT READABLE); **(6) symmetric,
+  reported per side; (7) the Sumps cell at seeds 2–4 reported (the orchestrator's additions).** Sumps fixed with (2)/(3)
+  failing → lab branch, no ship.
 
 **Checkpoints:** **CP0** brains' B0 → orders merges main. **CP-S** scout's declared change (+ native's port of any
 `decide` diff) → everyone merges main. **CP-B2**, **CP-B4** brains' declared changes, each alone. Native's E1 (OFF)
