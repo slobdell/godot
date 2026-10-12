@@ -3743,6 +3743,7 @@ static func fill_on() -> bool:
 
 ## Start driving one leg, Vector2(gear, metres), from where the hull is now.
 func _kturn_start_leg(leg: Vector2) -> void:
+	native_stale |= STALE_ALL  # round 27 (native E5b): a door into the owned state (the planner, or a test that sets up a leg)
 	_kturn_gear = int(leg.x)
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position
