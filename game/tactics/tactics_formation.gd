@@ -758,6 +758,7 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var pin := false
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
+	var keep: Dictionary = opts.get("keep", {})
 	var along_route := nearest and not halted and SQUARED_ALONG_ROUTE and opts.has("at")
 	var placed_at: Array = opts.get("at", [])
 	var world: Array[Vector3] = []
@@ -808,6 +809,10 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
 					value += _PINNED
+			# Round 27 (B2): a crew whose seat is kept (`keep`: {name: index}, a re-seat round a parked squadmate) takes
+			# that seat and no other.
+			if keep.has(String(member.get("name", ""))) and int(keep[String(member.get("name", ""))]) != j:
+				value += _PINNED
 			row[j] = value
 		cost.append(row)
 	var best := _hungarian(cost)

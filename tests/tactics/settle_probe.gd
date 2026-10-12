@@ -8,6 +8,8 @@ extends SceneTree
 ##   ordered_s    every crew holds an order from the new task (R2's acknowledgement: 0.0-0.1 s)
 ##   arrived_s    the element declares arrival (`Element.arrived`): the player's order is COMPLETED from here (B7)
 ##   stopped_s    every crew is below STILL_MPS and stays there for STILL_HOLD_S: the squad has stopped moving
+##   all_in_s     round 27 (B1): every living crew within its radius of its OWN slot, held 1 s (ArrivalLine): the
+##                arrival the series count (`hollow`: the element said arrived, the line never held)
 ##
 ## plus `in_slot_s` (every crew within IN_SLOT_M of its slot), the worst crew's distance from its slot at the end, and
 ## the closest any two hull centres came (a collision proxy: B7's bar is "no rise in collisions").
@@ -49,6 +51,13 @@ func _run_probe() -> void:
 	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
 	Element.MAKE_ROOM_ENABLED = _flag("make-room", "on") != "off"
+	# Round 27 (B2, DECLARED): `--b2=off` is the change's control arm, all three parts off (round 26's watch): the clock's
+	# pause, the re-seat that keeps parked crews, the watch after arrival (the arrive series' ARRIVE_ARM_FLAG=b2).
+	if _flag("b2", "on") == "off":
+		Element.STUCK_PAUSE_ENABLED = false
+		Element.RESEAT_KEEP_ENABLED = false
+		Element.WATCH_ARRIVED_ENABLED = false
+		Element.RESEND_SHORT_ENABLED = false
 	ElementPlan.PURSUIT_ENABLED = _flag("pursuit", "on") != "off"  # round 21 (P2): the arrive series' arm
 	SlotGround.SIDE_ENABLED = not ["off", "nearest"].has(_flag("slot-side", "on"))  # round 21 (stretch d): its arm
 	# Round 20 (M1): `--converge=off` is form-up-on-the-move's control arm (round 12's stations from the first tick).
@@ -99,7 +108,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var lab := TacticsLab.create(case, seed_value, arena_name)
 	var game_match := lab.game_match
 	# The player commands GREEN, as in `make skirmish`: the element is a player's squad (R2's pre-emption applies).
-	game_match.set_meta("player_team", Match.Team.GREEN)
+	# Round 27 (B2, C27.1's symmetry): `--side=cpu` makes it the COMPUTER's squad (the player is the other team).
+	game_match.set_meta("player_team", Match.Team.RUST if _flag("side", "his") == "cpu" else Match.Team.GREEN)
 	var home := Match.spawn_position(Match.Team.GREEN, 0)
 	var toward := TacticsFormation.flat(Vector3(-home.x, 0.0, -home.z))
 	var right := Vector3(-toward.z, 0.0, toward.x)
@@ -177,6 +187,11 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var digest_on := _flag("digest", "off") == "on"
 	var digest_ctx := HashingContext.new()
 	digest_ctx.start(HashingContext.HASH_MD5)
+	# Round 27 (B1): the arrive line that counts every crew (ArrivalLine). `--arrive-mutate=on` is its mutation check: the
+	# line reads the first crew's slot 20 m off where it is, so a squad that arrives must FAIL it.
+	var line := ArrivalLine.new()
+	var loose := ArrivalLine.new(ArrivalLine.ELEMENT_TOLERANCE_M)
+	var mutate := _flag("arrive-mutate", "off") == "on"
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
@@ -184,6 +199,18 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			ordered = now
 		if arrived < 0 and element.arrived:
 			arrived = now
+		var on_slots: Array = []
+		for unit_name: String in names:
+			var crew_tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if crew_tank == null or not crew_tank.is_alive():
+				continue
+			var crew_slot: Variant = element.slots.get(unit_name)
+			if mutate and crew_slot is Vector3 and unit_name == names[0]:
+				crew_slot = (crew_slot as Vector3) + Vector3(20.0, 0.0, 0.0)
+			on_slots.append({"name": unit_name, "unit": crew_tank.unit_id, "position": crew_tank.global_position,
+					"slot": crew_slot})
+		line.sample(now, on_slots)
+		loose.sample(now, on_slots)
 		if element.in_transit():
 			transit_seen = true
 			for unit_name: String in names:
@@ -353,8 +380,12 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			if still_since < 0:
 				still_since = now
 			if now - still_since >= int(STILL_HOLD_S * SimClock.TICK_RATE):
-				stopped = still_since
-				break
+				if stopped < 0:
+					stopped = still_since
+				# Round 27 (B1): stopped with a crew still off its slot is not the end of the run: it may yet be re-seated
+				# and arrive (the line's answer). The digest's run keeps its old end, so its hash is unmoved.
+				if line.arrived_tick >= 0 or digest_on:
+					break
 		else:
 			still_since = -1
 	var off := {}
@@ -376,13 +407,22 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"metres": metres, "seed": seed_value, "formation": element.formation,
 			"ack_s": _s(acked.values().max()) if acked.size() == names.size() else null,
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
+			# Round 27 (B1): every living crew within its radius of its own slot, held 1 s (ArrivalLine): the series'
+			# arrival. `hollow`: the element said arrived and the line never held. `worst_off_m`: the farthest crew from
+			# its slot at the end, and who.
+			"side": _flag("side", "his"), "all_in_s": _s(line.arrived_tick), "all_in8_s": _s(loose.arrived_tick), "hollow": arrived >= 0 and line.arrived_tick < 0,
+			"worst_off_m": snappedf(float(line.worst.get("off_m", -1.0)), 0.1) if is_finite(float(line.worst.get("off_m", -1.0))) else -1.0,
+			"worst_crew": String(line.worst.get("name", "")), "arrive_mutate": mutate,
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
 			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
 			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off", "shape": _flag("shape", "auto"),
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
-			"formations_moving": formations_seen, "reseats": element.reseats, "swaps": element.swaps,
+			"formations_moving": formations_seen, "reseats": element.reseats,
+			"reseats_after_arrival": element.reseats_after_arrival,
+			# B2 v5: crews sent on from short after arrival, and how many of those still stand more than 8 m off that seat.
+			"resends_short": element.resends_short, "resent_still_off": _still_off(game_match, element.resent_short), "swaps": element.swaps,
 			"element_digest": digest_ctx.finish().hex_encode() if digest_on else "",
 			"to_go_m": snappedf(_centre(game_match, names).distance_to(goal), 0.1),
 			"stopped_at": [snappedf(_centre(game_match, names).x, 0.1), snappedf(_centre(game_match, names).z, 0.1)],
@@ -399,6 +439,15 @@ static func _cm(point: Variant) -> String:
 	if typeof(point) == TYPE_ARRAY and (point as Array).size() >= 2:
 		return "%d,%d" % [roundi(float(point[0]) * 100.0), roundi(float(point[1]) * 100.0)]
 	return "-"
+
+
+static func _still_off(game_match: Match, resent: Dictionary) -> int:
+	var count := 0
+	for unit_name: String in resent:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive() and _flat(tank.global_position).distance_to(_flat(resent[unit_name])) > Element.REISSUE_M:
+			count += 1
+	return count
 
 
 static func _s(ticks: int) -> Variant:

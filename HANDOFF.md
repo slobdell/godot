@@ -29,7 +29,20 @@ asked of native before E2 goes deep. `1c8da4d8` brains CP0 (attack honours a dra
 2479/0, 24 targets ALL JUDGED, thirteen unmoved, det 2875411ff4ec6be7); orders told to merge main. **`f4c5f7c9` scout CP-S (DECLARED) merged; main's check GREEN at `f4c5f7c9`** (builder0, exited 0, 2486/0, 22 passed + 2
 NOT JUDGED for box load: perf-judge and scenario_perf, owed on a quiet box; thirteen = scout's declared lines, det
 2875411ff4ec6be7); every stream told to merge main. **For him: `build/scout_clips/scout_{before,after}.mp4`** (seed 13,
-Parade, Gangs v Law). Declared queue: brains B2 v4, then brains-close (the attack that never closes on a silent target).
+Parade, Gangs v Law). **`eb9363e2` orders O1 + O2 merged** (attack from a drawn side; showmatch director inside the arena, player camera
+unchanged; covered by `9c6f3381`, builder0 exited 0, 2505/0, ALL JUDGED). Scout: CP-S shipped, S4 not (branch
+`scout-s4-halt`), wrapping up. Brains: B2 v5 = last attempt (no v6), judged at `3e54110e`; brains-close judged on the
+merged base. Native: E3/E4/E5 equal-answer OFF on its branch; `native_cb` OFF until priced; the quiet slot is owed.
+**`3dc04293` brains B2 merged; main's check GREEN at `3dc04293`** (builder0, exited 0, 2516/0, 24 targets ALL JUDGED,
+thirteen unmoved, det 2875411ff4ec6be7). B4 retired, brains-close parked, the live-flank fix gets one re-run on an even
+stage. Native's QUIET builder0 slot started 2026-10-12 ~02:40 (A reconciliation, B native_cb price, C stage-1
+headless; brains holding). **His open calls are on one page: https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6** (squads crossing: take turns
+v push through; wheeled turreted hull at rest; artillery and a drawn side; flank onto a stronger squad). Read his
+answers with `read_db` on `decisions/<id>` (squad-cross, turret-hull-facing, artillery-side, flank-stronger) and file them
+in `game_design.md` before archiving round 27 (close step 5a). **Scout and orders are DONE and stopped** (final reports in their briefs; tips merged `db4633f0`, and orders' final report).
+**Owed by the orchestrator:** the flank clip after brains-close merges — merge main into `godot-orders`, then
+`make remote T="flank-clip FLANK_CLIP_SEED=21 SIDE=left"` (main lane: Movie Maker; ~5–7 min; never run before; check
+`reached_side_s` in `build/flank/clip/run.log`; seeds 5, 8 as fallbacks) → `build/flank.mp4` for him.
 Native: the mirror priced ~2–3 µs a crew a tick (accepted); a clean execute-cost reconciliation waits for a quiet builder0.
 
 **Waiting for stage 1** (the drive is frozen, C27.2): traffic's friendly convention (his question on it is in

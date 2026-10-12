@@ -24,7 +24,7 @@ const ROWS := [
 	{"id": "hold", "then": "now", "name": "Hold", "hotkey": "H", "kind": "order", "earned": true,
 		"line": "Stay on this ground and fight from it. Nobody chases."},
 	{"id": "attack_move", "then": "click", "name": "Attack-move", "hotkey": "A", "kind": "order", "earned": true,
-		"line": "Click a spot: go there, fighting anything met on the way. Drag to face: arrive facing that way."},
+		"line": "Click a spot: go there, fighting anything met on the way. Drag to face: arrive facing that way. On an enemy, drag out to a side: the squad attacks it from there."},
 	# Screen and Support by Fire were held off the card until squad showed the behaviour (with no enemy in sight a
 	# support-by-fire task used to hold every unit where it stood). Earned 2026-09-18, squad `df736a8e`: SBF → a 30 m
 	# line 54-56 m off the point, all facing it, firing, no contact drill selected; screen → a 42 m line across its point.

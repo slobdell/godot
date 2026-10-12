@@ -237,6 +237,25 @@ showmatch: import ## Two computer players fight, filmed by the self-directing ca
 			-movflags +faststart "$$movie" && rm -f "$$avi" && echo "DEMO_MOVIE $$movie"; \
 	elif [ -n "$$movie" ]; then echo "DEMO_MOVIE $$avi"; fi
 
+# Round 27 (O2): the showmatch's end shot, as the recording shows it, over seeds and two aspects. Each run plays a whole
+# match in real time (~1-2 min) and saves three frames after the result; each frame prints CINEMATIC_END_SHOT with the
+# share of its ground past the walls (off) and past the ground itself (void, the purple under the arena).
+END_SHOT_SEEDS ?= 43496 3666 101 202
+END_SHOT_SIZES ?= 1920x1080 1200x540
+END_SHOT_DIR ?= $(BUILD_DIR)/showmatch-end
+## END_SHOT_FLAGS=--cinematic-keep-angle: round 26's director (the A/B's before arm).
+END_SHOT_FLAGS ?=
+.PHONY: showmatch-end-shots
+showmatch-end-shots: import ## The showmatch's end frames over END_SHOT_SEEDS at END_SHOT_SIZES (desktop, phone) in build/showmatch-end/ (needs a display)
+	rm -rf $(END_SHOT_DIR) && mkdir -p $(END_SHOT_DIR) && touch $(BUILD_DIR)/.gdignore
+	for seed in $(END_SHOT_SEEDS); do for res in $(END_SHOT_SIZES); do \
+		timeout 400 $(GODOT) --path . --resolution $$res -- --skirmish --demo-match --clean --seed=$$seed \
+			--arena=$(or $(ARENA),random) --announcer=off --music=off $(END_SHOT_FLAGS) \
+			--end-shots=$(CURDIR)/$(END_SHOT_DIR)/$$seed 2>&1 | grep -E 'CINEMATIC_|DEMO_|SCRIPT ERROR|arena' \
+			| sed "s/^/seed=$$seed /" | tee -a $(END_SHOT_DIR)/end.log; \
+	done; done
+	@echo "Now LOOK at $(END_SHOT_DIR)/*/end-*.png"
+
 skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate [ARENA=pit]): size follows the roster
 	$(GODOT) --path . -- --skirmish --player-faction=$(or $(FACTION),gangs) --enemy-faction=$(or $(ENEMY_FACTION),syndicate) $(if $(ARENA),--arena=$(ARENA)) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
@@ -512,6 +531,70 @@ facing-probe: import ## O2: every armed task given a drawn facing by the real ge
 		! grep -q 'SCRIPT ERROR' $$d/run.log || exit 1; \
 	done; done; done
 	for arm in $(FACING_ARMS); do python3 tools/facing_probe_table.py $(FACING_DIR)/headless/$$arm $$arm; done
+
+# Round 27 (O3): hull facing at rest, per hull class, same-seed A/B. Arm `drawn` = the real press-drag-release (as
+# facing-probe's quiet arm); arm `clicked` = the same order clicked at the same spot (automatic facing), judged against
+# the same heading. Every faction in HULL_FACTIONS (their hull classes differ), HULL_SEEDS each; JOBS in parallel.
+# Report only -> build/hull-rest/<arm>/<faction>/<task>-<seed>/screen.json + the table (tools/hull_rest_table.py).
+HULL_FACTIONS ?= gangs law syndicate condemned
+HULL_SEEDS ?= 3 5 8 11 13 21
+HULL_DIR ?= build/hull-rest
+HULL_JOBS ?= 6
+.PHONY: hull-rest-probe
+hull-rest-probe: import ## O3: hull facing at rest per hull class, drawn v clicked on the same seeds (quiet arm), every faction -> build/hull-rest/ + a table
+	rm -rf $(HULL_DIR) && mkdir -p $(HULL_DIR)
+	for arm in drawn clicked; do for faction in $(HULL_FACTIONS); do for seed in $(HULL_SEEDS); do for task in $(_FACING_TASKS); do \
+		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
+		d=$(HULL_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
+		click=""; [ $$0 = clicked ] && click=--faced-click; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+			--no-element-cpu $$click --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+		grep -q SCREEN_DONE $$d/run.log || echo "hull-rest-probe: $$d has no SCREEN_DONE"; \
+		! grep -m1 "SCRIPT ERROR" $$d/run.log'
+	python3 tools/hull_rest_table.py $(HULL_DIR)
+
+# Round 27 (O1 end to end, C27.3): squad 1 recalled with its key, the real right-drag off the nearest enemy to a side 90
+# deg off the line of approach (left and right), drawn v clicked on the same seeds; the squad's bearing from its target
+# every second against the side drawn. Quiet arm (the enemy holds at its base, no damage). Report only.
+FLANK_SEEDS ?= 3 5 8 11 13 21
+FLANK_DIR ?= build/flank
+.PHONY: flank-probe
+flank-probe: import ## O1: attack from a drawn side through the real input, drawn v clicked, left/right, FLANK_SEEDS -> build/flank/ + a table
+	rm -rf $(FLANK_DIR) && mkdir -p $(FLANK_DIR)
+	for arm in drawn clicked; do for side in left right; do for seed in $(FLANK_SEEDS); do echo "$$arm $$side $$seed"; \
+		done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
+		d=$(FLANK_DIR)/$$0/$$1-$$2; mkdir -p $$d; click=""; [ $$0 = clicked ] && click=--faced-click; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu $$click --flank-side=$$1 \
+			--screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1; \
+		grep -q SCREEN_DONE $$d/run.log || echo "flank-probe: $$d has no SCREEN_DONE"; \
+		! grep -m1 "SCRIPT ERROR" $$d/run.log'
+	python3 tools/flank_probe_table.py $(FLANK_DIR)
+
+FLANK_SHOT_FLAGS ?= --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --no-vision-camera
+flank-shots: import ## O1: the flank drag in windows (FACING_SIZES): the drag, closing at 30 s, the end -> build/flank/<size>/shots/*.png (needs a display)
+	for size in $(FACING_SIZES); do d=$(FLANK_DIR)/$$size; rm -rf $$d && mkdir -p $$d; \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			$(SCREEN_FLAGS) $(FLANK_SHOT_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1 || true; \
+		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log | cut -c1-400 || true; grep -q SCREEN_DONE $$d/run.log || exit 1; \
+	done
+	@echo "Now LOOK at $(FLANK_DIR)/*/shots/*.png"
+
+# O4: his flank clip. The flank scenario recorded through Movie Maker (1080p at DEMO_FPS, sound), damage ON so it ends
+# when the target dies, the camera following his squad (the vision camera). MOVIE= the .mp4 (default build/flank.mp4).
+FLANK_CLIP_SEED ?= 21
+flank-clip: import ## O4: a short clip of a flank attack through the real gesture -> MOVIE (default build/flank.mp4; renders slower than real time, needs a display)
+	@movie="$(or $(MOVIE),$(CURDIR)/$(BUILD_DIR)/flank.mp4)"; case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
+	avi="$${movie%.*}.avi"; d=$(FLANK_DIR)/clip; rm -rf $$d && mkdir -p $$d "$$(dirname "$$movie")"; \
+	timeout 900 $(GODOT) --path . --write-movie "$$avi" --fixed-fps $(DEMO_FPS) -- --skirmish --seed=$(FLANK_CLIP_SEED) \
+		--no-pick-faction --arena=$(FACING_ARENA) --player-faction=gangs --enemy-faction=law \
+		--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --hints=off --flank-side=$(or $(SIDE),left) \
+		--screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1 || true; \
+	grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log | cut -c1-300; grep -q SCREEN_DONE $$d/run.log || exit 1; \
+	if command -v ffmpeg >/dev/null; then ffmpeg -loglevel error -y -i "$$avi" -c:v libx264 -preset slow -crf 18 \
+		-pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$$movie" && rm -f "$$avi" && echo "FLANK_MOVIE $$movie"; \
+	else echo "FLANK_MOVIE $$avi"; fi
 
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \

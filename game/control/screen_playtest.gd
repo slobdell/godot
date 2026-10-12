@@ -77,7 +77,9 @@ func run() -> void:
 			else:
 				wanted.append(name)
 	for scenario: String in wanted:
-		if FACED.has(scenario):
+		if scenario == "flank":
+			await _flank()
+		elif FACED.has(scenario):
 			await _faced(scenario)
 		elif scenario in ["grouped", "ungrouped", "near", "move_after"]:
 			await _scenario(scenario)
@@ -205,6 +207,12 @@ func _faced(scenario: String) -> void:
 		rig.snap()
 	var press := camera.unproject_position(at)
 	var release := camera.unproject_position(at + facing * FACED_DRAG_M)
+	# Round 27 (O3): `--faced-click` is the A/B's other arm: the same order CLICKED at the same spot (automatic facing),
+	# judged against the same heading, so what the drawn facing buys the hulls is read on the same seeds.
+	var clicked := LaunchFlags.from_environment().has("faced-click")
+	row["clicked"] = clicked
+	if clicked:
+		release = press
 	row["drag_px"] = snappedf(press.distance_to(release), 0.1)
 	_mouse(press, true, button)
 	for i in range(1, 7):
@@ -212,7 +220,7 @@ func _faced(scenario: String) -> void:
 	await get_tree().process_frame
 	await _shot(scenario + "_1_drag")
 	var spot: Variant = controls.armed_gesture().get("spot", controls._right_press_ground)
-	if spot is Vector3:
+	if spot is Vector3 and not clicked:
 		release = camera.unproject_position((spot as Vector3) + facing * FACED_DRAG_M)  # this frame's camera
 	_motion(release, button)
 	_mouse(release, false, button)
@@ -304,6 +312,119 @@ func _faced(scenario: String) -> void:
 	await _seconds(1.0)
 
 
+## Round 27 (orders O1, C27.3, lesson 291: the path the player's input takes). Squad 1 recalled with its key, then the
+## REAL right-drag: press on the nearest enemy, drag out FLANK_SIDE_DEG off the line from the squad, release. Every second
+## the squad's bearing from its target against the side drawn. `--faced-click` clicks the same enemy instead (today's
+## attack), judged against the same side: the A/B on the same seed. `--flank-side=left|right` picks the side.
+const FLANK_SIDE_DEG := 90.0
+const FLANK_DRAG_M := 30.0
+const FLANK_WATCH_S := 90.0
+const FLANK_WITHIN_DEG := 35.0
+const FLANK_START_M := 55.0
+
+
+func _flank() -> void:
+	var flags := LaunchFlags.from_environment()
+	var clicked := flags.has("faced-click")
+	var row := {"scenario": "flank", "clicked": clicked}
+	await _key(KEY_1)
+	await _seconds(0.3)
+	var members: Array[String] = []
+	members.assign(controls.selection.units)
+	if members.is_empty():
+		row["why"] = "squad 1 has no living members"
+		_results.append(row)
+		return
+	_resume()
+	var centre := _centroid(members)
+	var target: Tank = null
+	for child in controls.game_match.tanks.get_children():
+		var enemy := child as Tank
+		if enemy != null and enemy.team != controls.team and enemy.is_alive() \
+				and (target == null or enemy.global_position.distance_to(centre) < target.global_position.distance_to(centre)):
+			target = enemy
+	if target == null:
+		row["why"] = "no enemy"
+		_results.append(row)
+		return
+	# He attacks what he can see (a tank sees ~62 m; brains' stage starts 50 m out): the target is brought FLANK_START_M
+	# ahead of the squad, toward the enemy's side, before the press. The quiet arm's enemy holds; a target off its slot
+	# may drive back, so every sample reads where it is now.
+	var ahead := Vector3(target.global_position.x - centre.x, 0.0, target.global_position.z - centre.z).normalized()
+	target.global_position = ElementPlan.clamp_to_arena(centre + ahead * FLANK_START_M)
+	target.reset_physics_interpolation()
+	# Holding there: a target driving back to its slot is a mover, and brains pursues a mover (>= 2 m/s) with the side
+	# ignored (its B0 rule), so the first probe measured the pursuit, not the flank. Out of its element first, so its
+	# leader does not re-slot it.
+	var owner: Element = controls.elements.of(String(target.name)) if controls.elements != null else null
+	if owner != null:
+		owner.remove(String(target.name))
+	row["target_hold"] = controls.orders.issue({"units": [String(target.name)], "verb": "hold", "source": "player"}, target.team)
+	await _seconds(0.5)
+	controls.reveal_all = true
+	var to_target := Vector3(target.global_position.x - centre.x, 0.0, target.global_position.z - centre.z).normalized()
+	var turn := FLANK_SIDE_DEG if flags.text("flank-side", "left") == "left" else -FLANK_SIDE_DEG
+	var side := (-to_target).rotated(Vector3.UP, deg_to_rad(turn)).normalized()  # from the target out to the drawn side
+	row["target"] = String(target.name)
+	row["start_m"] = snappedf(centre.distance_to(target.global_position), 0.1)
+	row["side"] = [snappedf(side.x, 0.001), snappedf(side.z, 0.001)]
+	var rig := controls.rig
+	if rig != null:
+		rig.focus = target.global_position
+		rig.snap()
+	await get_tree().process_frame
+	if rig != null:
+		rig.focus = target.global_position
+		rig.snap()
+	var camera := controls.camera
+	var press := camera.unproject_position(target.global_position)
+	var release := press if clicked else camera.unproject_position(target.global_position + side * FLANK_DRAG_M)
+	_mouse(press, true, MOUSE_BUTTON_RIGHT)
+	for i in range(1, 7):
+		_motion(press.lerp(release, i / 6.0), MOUSE_BUTTON_RIGHT)
+	await get_tree().process_frame
+	await _shot("flank_1_drag")
+	_mouse(release, false, MOUSE_BUTTON_RIGHT)
+	await get_tree().process_frame
+	var element: Element = controls.elements.of(members[0]) if controls.elements != null else null
+	var task: Dictionary = element.task if element != null else {}
+	row["task_verb"] = String(task.get("verb", ""))
+	row["task_target"] = String(task.get("target", ""))
+	row["task_approach"] = task.get("approach", [])
+	var trace := []
+	var reached := -1.0
+	var waited := 0.0
+	while waited < FLANK_WATCH_S:
+		await _seconds(1.0)
+		waited += 1.0
+		if not target.is_alive():
+			break
+		var alive := members.filter(func(n: String) -> bool: return _alive(n))
+		if alive.is_empty():
+			break
+		var at := _centroid(alive)
+		var out := Vector3(at.x - target.global_position.x, 0.0, at.z - target.global_position.z)
+		var error := rad_to_deg(absf(Vector2(out.x, out.z).angle_to(Vector2(side.x, side.z))))
+		trace.append([waited, snappedf(error, 0.1), snappedf(out.length(), 0.1),
+				snappedf(Vector2(target.velocity.x, target.velocity.z).length(), 0.1)])
+		if reached < 0.0 and error <= FLANK_WITHIN_DEG:
+			reached = waited
+		if waited == 30.0:
+			await _shot("flank_2_closing")
+	await _shot("flank_3_end")
+	row["trace"] = trace
+	row["reached_side_s"] = reached
+	if not trace.is_empty():
+		row["end_side_error_deg"] = trace[trace.size() - 1][1]
+		row["end_m"] = trace[trace.size() - 1][2]
+		var best := 180.0
+		for sample: Array in trace:
+			best = minf(best, float(sample[1]))
+		row["best_side_error_deg"] = best
+	print("SCREEN %s" % JSON.stringify(row))
+	_results.append(row)
+
+
 func _nearest_enemy(members: Array[String]) -> float:
 	var nearest := INF
 	for child in controls.game_match.tanks.get_children():
@@ -343,15 +464,21 @@ func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 	var heading := Vector3.ZERO
 	var guns := Vector3.ZERO
 	var points: Array[Vector3] = []
+	# Round 27 (O3): every crew's own hull error and hull class (locomotion/mount), so the tail can be read per class.
+	var each := []
 	for unit_name in crews:
 		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		var nose := -tank.global_basis.z
 		heading += Vector3(nose.x, 0.0, nose.z).normalized()
+		each.append({"unit": unit_name, "id": tank.unit_id,
+				"class": "%s/%s" % [Units.stat(tank.unit_id, "locomotion", "?"), Units.stat(tank.unit_id, "mount", "?")],
+				"hull_error_deg": snappedf(absf(rad_to_deg(Vector2(nose.x, nose.z).angle_to(Vector2(facing.x, facing.z)))), 0.1),
+				"still": _all_still([unit_name] as Array[String])})
 		# Where the gun points (a turret's heading), which is what "faces it" means for a turreted crew.
 		var gun := -tank.turret.global_basis.z if tank.turret != null else nose
 		guns += Vector3(gun.x, 0.0, gun.z).normalized()
 		points.append(_position_of(unit_name))
-	var result := {"crews": crews.size()}
+	var result := {"crews": crews.size(), "each": each}
 	if crews.is_empty():
 		result["ok"] = true
 		return result

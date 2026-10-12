@@ -247,6 +247,11 @@ const MOTION_REPLAN_TICKS := SimClock.TICK_RATE / 4
 # solves a problem that no longer exists — and I would be shipping a mechanism whose falsifier I cannot evaluate.
 # `MEASURE brain_redecides` gives the before/after, and the flip is this one constant.
 static var TUBE_ENABLED := false
+## Round 27 (brains B5): an unsprung ambush's crews lay their guns on their sectors (`_order_weapon`), this far out (a
+## point on the sector, snapped to the metre so a crew rocking on its spot does not re-send it). `--ambush-lay=off`
+## (Elements.install) is round 26's bare hold, the turret left where it was.
+static var AMBUSH_LAY_ENABLED := true
+const AMBUSH_LAY_M := 60.0
 ## The tube's radii: the decision is re-taken when the target has moved this far from where it was when the plan was
 ## made, or when the unit itself has. 8 m is the same order as `Element.REISSUE_M` — below it the steer point (12 m
 ## out) has not meaningfully moved, which is the same argument the cadence rests on, applied to state instead of time.
@@ -3486,6 +3491,14 @@ func _order_weapon(order: Dictionary) -> void:
 	# is empty. The element springs it (Drills: an enemy in the kill zone, or the ambush found), and then every gun fires.
 	if ElementFeed.holds_fire(element) and ["fire_at_will", "target", "suppress"].has(String(order.get("type", ""))):
 		order = {"type": "hold_fire"}
+		# Round 27 (brains B5): ...with its gun LAID on its sector. A bare hold_fire leaves the turret wherever it was
+		# (Gunnery: "keep the turret where it is"), so the sector the line gave each crew never reached its gun: orders'
+		# probe read an ambush's guns at a flat 30 deg off his drawn facing in every run (round 26), where every other line
+		# task lays an idle gun on its sector. `aim` covers a point and never fires (the ambush still holds).
+		var sector: Variant = OrderFeed.point(element.get("facing")) if AMBUSH_LAY_ENABLED else null
+		if sector is Vector3 and (sector as Vector3).length_squared() > 0.0001:
+			var at := tank.global_position + (sector as Vector3).normalized() * AMBUSH_LAY_M
+			order = {"type": "aim", "x": snappedf(at.x, 1.0), "z": snappedf(at.z, 1.0)}
 	if not order.recursive_equal(weapon_order, 2):
 		var set_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		set_orders(null, order)
