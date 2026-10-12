@@ -205,6 +205,14 @@ func _ready() -> void:
 	BrainsAB.ensure(get_parent(), get("game_match"))
 
 
+## Round 27 (native, stage 1 E5b): the C++-owned execute state of this crew is released while scripts are alive (its
+## Variants hold the Lay, the station PID, the spotter): a state released at the library's unload, after the GDScript
+## language has finished, corrupted the heap at exit.
+func _exit_tree() -> void:
+	if NativeBridge.available:
+		NativeBridge.impl.exec_forget(movement)
+
+
 func _physics_process(delta: float) -> void:
 	if tank == null or not is_instance_valid(tank):
 		return
