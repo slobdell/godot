@@ -151,6 +151,22 @@ packed snapshot a tick; the mirror's cost is changed-fields x ~0.1 us, pre-regis
   on = off = ab = mirror = `770df71a443ba743`. (First run segfaulted at process exit: the static registry freed its
   Variants after the engine; now emptied at the library's unload and the mirror uses a local struct.)
 
+- **E1c + E2a** (`9b641aca`, check pending): the drive on a typed view (`exec_view.h`): live members (ObjectView,
+  as before) or the owned struct (StructView, `--native-exec-owned`). E2a under switch `native_cb` (ON; price pending):
+  `_keep_station` + its PID's `step_with_rate` and `reset` in place, `_inflate_corners` (the identity in the native
+  drive's configuration), `Pathing.query`, `_blocker`, `_negotiate`'s early returns, `_planned_reverse`'s look to its
+  cheap exits. builder0: `test_native_drive` 5/0 both views (2160 + 1440 drives, 0 mismatches); `native-proof`
+  on = off = ab = owned (Sumps `770df71a443ba743`, foundry `a401412b50925d19`).
+
+**The mirror's price (the orchestrator's condition on E1, 2026-10-11 ~20:30):** the push of CHANGED fields at a drive's
+end, which is what E5 keeps. builder0 (load ~15-20), `native-tp-headless` 20 a side + leaders, `--native-exec-owned`,
+seeds 92721 31337 5988, 25 000 drives each (whole match, not only the window), `9b641aca`: **foundry 8.1 fields,
+1.51 / 1.59 / 1.64 us a drive; parade 8.0 fields, 1.87 / 3.18 / 3.29 us** (the slow seeds' pulls were slow too: load);
+Sumps 8.5 fields, 2.3-2.5 us. Against the 9.7 us crossing and the execute GDScript it replaces (stage 1's estimate
+~200-300 us a crew; the prototype slice ~27 us) the push is ~2-3 us, under the third the orchestrator set. Not yet in
+it: Gunnery's and the Lay's fields (E3; ~3-5 changed a tick expected, ~+1 us). First version marked every set dirty
+(22 fields, ~4 us); setters now mark only a change of bits.
+
 ### Questions for the lead
 
 - None.
