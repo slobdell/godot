@@ -581,6 +581,21 @@ flank-shots: import ## O1: the flank drag in windows (FACING_SIZES): the drag, c
 	done
 	@echo "Now LOOK at $(FLANK_DIR)/*/shots/*.png"
 
+# O4: his flank clip. The flank scenario recorded through Movie Maker (1080p at DEMO_FPS, sound), damage ON so it ends
+# when the target dies, the camera following his squad (the vision camera). MOVIE= the .mp4 (default build/flank.mp4).
+FLANK_CLIP_SEED ?= 21
+flank-clip: import ## O4: a short clip of a flank attack through the real gesture -> MOVIE (default build/flank.mp4; renders slower than real time, needs a display)
+	@movie="$(or $(MOVIE),$(CURDIR)/$(BUILD_DIR)/flank.mp4)"; case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
+	avi="$${movie%.*}.avi"; d=$(FLANK_DIR)/clip; rm -rf $$d && mkdir -p $$d "$$(dirname "$$movie")"; \
+	timeout 900 $(GODOT) --path . --write-movie "$$avi" --fixed-fps $(DEMO_FPS) -- --skirmish --seed=$(FLANK_CLIP_SEED) \
+		--no-pick-faction --arena=$(FACING_ARENA) --player-faction=gangs --enemy-faction=law \
+		--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --hints=off --flank-side=$(or $(SIDE),left) \
+		--screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1 || true; \
+	grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log | cut -c1-300; grep -q SCREEN_DONE $$d/run.log || exit 1; \
+	if command -v ffmpeg >/dev/null; then ffmpeg -loglevel error -y -i "$$avi" -c:v libx264 -preset slow -crf 18 \
+		-pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$$movie" && rm -f "$$avi" && echo "FLANK_MOVIE $$movie"; \
+	else echo "FLANK_MOVIE $$avi"; fi
+
 facing-shots: import ## O2: the same in windows (FACING_SIZES: his 1854x1011 and a 1200x540 phone): the drag, moving, settled -> build/facing/<size>/<task>/shots/*.png (needs a display)
 	for size in $(FACING_SIZES); do for task in $(_FACING_TASKS); do \
 		d=$(FACING_DIR)/$$size/$$task; rm -rf $$d && mkdir -p $$d; \

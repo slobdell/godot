@@ -163,3 +163,23 @@ func test_the_directed_camera_never_shows_under_the_arena_by_the_wall() -> void:
 			turns += 1
 			last = f.rig.yaw
 	assert_eq(turns, 0, "and it holds that angle instead of flapping between two")
+
+
+## The orchestrator's question (round 27): the director's yaw-follow switch is the spectator's camera only. A rig no
+## director starts (every skirmish the player commands: SkirmishMode adds the director only for --cinematic) keeps
+## yaw-follow on, and so does a director told to keep round 26's angle.
+func test_the_players_camera_keeps_yaw_follow() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	assert_true(f.rig.yaw_follow, "the player's rig: yaw-follow on, as before")
+	await _frames(3)
+	assert_true(f.rig.yaw_follow, "nothing but the director turns it off")
+	var kept := CinematicCamera.new()
+	kept.rig = f.rig
+	kept.game_match = f.game_match
+	add_to_tree(kept)
+	kept.keep_angle = true
+	kept.start()
+	assert_true(f.rig.yaw_follow, "round 26's director (--cinematic-keep-angle) leaves it on")
+	_director(f)
+	assert_true(not f.rig.yaw_follow, "the round 27 director owns the angle")
