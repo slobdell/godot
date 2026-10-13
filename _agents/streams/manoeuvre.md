@@ -111,6 +111,14 @@ _Updated 2026-10-12 ~19:30 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
   GDScript path, new v `--nav-off=creeplift,circlefill`.
 - **M3 (stretch) NOT NEEDED:** in the base census tracked hulls (tank, law_ifv) had 9 of 917 episodes, none over 3 legs.
 
+### M1 smoke test like a player (2026-10-12 ~22:50, `38064858` = M1's code, builder0 light lane, windowed)
+
+`make facing-shots FACING_ONLY=faced_move,faced_screen` (Gangs, seed 3, quiet enemy), change v `--nav-off=turnhull,faceslot`,
+1854x1011 and 1200x540; looked at the drag and settled frames (the drag up-left; the gang artillery trucks end cab
+toward it). Per-crew errors in those runs: **drawn move** change 7 of 10 within 6 deg, 3 still turning at 75 s; base
+settled at 21.5 s with 5 of 8 wheeled turret hulls 65-170 deg off. **Drawn screen** change settled 44.5 s (base 56.5 s),
+hulls within their +/-30 deg sectors but one IFV 130 deg (both arms). Phone layout unaffected.
+
 ### M2 judged (2026-10-12 ~21:40, `27b56521`, builder0, GDScript path both arms, census seeds 4-7 + sim 3-5)
 
 Bar (sent and accepted before numbers): (1) creep episodes -50 % (30-50 % with a note, < 30 % no); (2) episodes over
