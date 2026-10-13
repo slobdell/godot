@@ -71,6 +71,41 @@ Nothing: his call is made.
 
 _Updated 2026-10-12 evening (traffic worker). Every number names commit, machine, workload and n._
 
+### FINAL VERDICT ON T1 (2026-10-12 ~21:50 PDT): v3 FAILED the pre-registered bar on the judged seeds; nothing ships
+
+Judged run (builder0, `672eb785` both arms, GDScript path, seeds {4,5,6} x start ticks {1,3,6,8,11,16}, n = 18 a case;
+base = `--traffic-off=turns,streetright,streetturns`, = main's path):
+
+| case | fast contacts (bar: ≥ −25 % in 3 of 4, none > +10 %) | between squads | crews (≥ base − 2) | all-in median (≤ +20 %) | friendly-stuck |
+|---|---|---|---|---|---|
+| Terminus crossing | 183 → 199 (**+8.7 %**) | 82 → 58 | 176 → 179 | 35.6 → 42.7 (+19.9 %) | 100 → 37 |
+| Terminus head-on | 871 → **419 (−52 %)** | 474 → 190 | 170 → 172 | 56.9 → 64.0 | 700 → 572 |
+| yard_open crossing | 309 → **205 (−34 %)** | 108 → 84 | 165 → 163 (at the line) | 90.0 → 88.5 | 228 → 99 |
+| yard_open head-on | 122 → 118 (−3 %) | 63 → 60 | 179 → 179 | 39.4 → 41.8 | 6.1 → 5.8 |
+| CPU side (`--side=rust`) Terminus crossing | 183 → 171 | 82 → 59 | 177 → 178 | 35.6 → 33.5 | 100 → 26 |
+| CPU side Terminus head-on | 868 → 431 | 474 → 191 | 169 → 174 | 56.9 → 64.3 | 703 → 583 |
+
+Down ≥ 25 % in **2 of 4** (the bar needs 3): **FAILED**. Every other line held (no crew left behind, no case slower than
++20 %, friendly-stuck down in all four, the CPU side the same rule). The miss: at the Terminus crossing the bumps BETWEEN
+squads fell 29 % but squadmates' own bumps rose 101 → 141; the bar counts all friendly contacts, and on these seeds that
+case's base was low (183, against 294 on the tuning seeds). v3 was named the last attempt before it ran: no v4.
+Data: `references/round28/traffic/` (README). Cost (not judged after the fail; builder0 loaded): shape 0.376 + refresh
+0.139 = 0.515 ms a tick at Sumps 25 a side, n = 3, at a tick of 46.5 ms (load-scaled; NOT READABLE against 0.5 ms).
+
+**In his terms:** *When two of your squads meet head-on in a street, one now waits at the mouth and the other comes
+through — hard bumps halved, a few more crews in, about 7 s later for the last one.* *Squads crossing do take turns,
+and bump each other less, but their own squadmates bump each other a little more while they slow, so in the street
+crossing the total bumps did not drop.* It is not in the game: it missed the line set before it was measured.
+
+**Where it lives:** branch `traffic-t1-v3` (= the tip at the verdict); stream/traffic's `game/` is main's again.
+
+**For round 29 (what the measurements say):** (1) the head-on street rule (one-lane bridge: `_street_meeting`) is the
+strongest single gain this stream has measured (−48 % tuning, −52 % judged, more crews in); judged alone, against a bar
+on the cases it acts on, it would likely pass; (2) squad-level verdicts at crossings cut between-squad bumps 22–63 %; the
+total is dominated by squadmates' bumps (a solo squad alone makes ~6 fast contacts a run on the Terminus crossing), which
+the formation's own spacing (brains) owns; (3) a bar on what he sees ("nosing into each other" = between-squad contacts)
+would separate the rule from its squadmates' noise; set before any numbers.
+
 ### The plan (ordered)
 
 1. **T0**: the base. `make traffic-series` at `c6e32d03` (= main's green `94b5fc0d` + docs), GDScript path
@@ -121,6 +156,8 @@ uses T0's solo runs. A base arm with every switch off (`--traffic-off=turns,stre
 | v1 `32a91a71` turns + streetright | 278 | **990** | 241 | 114 | 176/175/**166**/179 | 39.7/66.0/89.5/37.8 |
 | v2 `32a91a71` turns only | 290 (83) | 852 (451) | 244 (57) | 114 (60) | 176/174/165/179 | 39.7/65.8/89.3/37.8 |
 | **v2b** `e85c92cc` + squadheading, wholesquad | **198 (43)** | 699 (370) | **162 (45)** | 113 (60) | 178/171/170/179 | 45.6/64.8/67.6/37.2 |
+| v2c `c5b91937` + streetturns (wait at 0.4) | 198 (43) | 551 (302) | 164 (45) | 113 (60) | 178/175/171/179 | 45.6/56.8/70.9/37.2 |
+| **v2d = v3** `672eb785` street wait at 0.2 | **198 (43)** | **374 (179)** | **160 (45)** | 113 (60) | 178/**177**/169/179 | 45.6/62.2/66.5/37.2 |
 
 Read: (1) **keep-right in the street made his head-on case worse** (fast +38 %, friendly-stuck 489 → 844); off from v2.
 (2) Most fast contacts are squadmates: the solo runs alone account for ~110 of Terminus cross's 294. The per-crew
@@ -128,3 +165,49 @@ verdict cut contacts between squads but not the totals. (3) v2b's squad-level re
 headings, the whole yielding squad slowing together) passes the bar at both crossings with margin, and arrivals are
 no later (yard crossing all-in 75.6 → 67.6 s). (4) **What is left is the head-on meeting in the street** (−2 %), where the
 bar's "3 of 4" needs −25 % (ORCA owns yard head-on, unchanged by design).
+(5) v2b's clip of his Terminus head-on case (seed 1, fixed camera: `traffic-clip` now looks down Terminus' streets and
+takes TRAFFIC_FLAGS) showed why: both squads wedge into ONE clump of ten in the 18 m street between the blocks. Keep-right
+cannot help where a squad fills the street; taking turns can. **v2c/v2d: a head-on squad pair whose middle is a street
+takes turns like a one-lane bridge.** The squad whose lead crew is still in the open waits; if both or neither are in
+the open, the later one waits, then the greater id. The waiting squad slows as a whole, at 0.2 of its wish (still about
+1.6 m/s, over the stall line), and the meeting is seen 8 s / 100 m ahead. v2c's clip: squad B comes down the street, A waits
+at the mouth; 10/10 arrived (base 7/10), between-squad fast bumps 14 → 8.
+(6) Friendly-stuck and pace: the waiting squad is not "stuck" in the probe's sense (it moves); friendly-stuck fell or held
+in every case.
+
+**v3 FROZEN = `672eb785`** (v2d's code; the orchestrator accepted the naming 2026-10-12: v1–v2d were tuning arms on seeds
+1–3 only, v3 is the one judged version). Judged run launched: seeds {4,5,6}, both arms, all four cases, plus the CPU side
+(`--side=rust`) on both Terminus cases.
+
+### T2: what native ports (the settled rule, v3 = `672eb785`; `game/ai/traffic.gd` is the reference)
+
+- **Seat:** `Movement._avoid`, between the route's wish and `Avoidance.solve`: `preferred = Traffic.shape(name,
+  route_preferred)` when any of turns/streetright/streetturns is on, and the "no deflection" test still compares ORCA's
+  answer with `route_preferred` (not the shaped wish). Nothing else in Movement changes; Traffic writes NO Movement
+  member (no `native_stale` door: the state is Traffic's statics).
+- **The table** (`Traffic.refresh`, every `TABLE_TICKS` = 3 physics frames, per match root): per team, per living
+  hull: name, x, z, direction (velocity / |v| when |v| ≥ 1 m/s, else the hull's flat forward), |v|, `Avoidance.radius_of`,
+  moving (= `is_under_way() and yield_to == "" and not in_kturn()`), group (`"e:" + brain.element.id`, or `"u:" + name`),
+  and per group the normalized sum of its MOVING crews' directions (`gdir`). Verdicts older than their expiry frame are
+  dropped at refresh. A new root clears answers, verdicts, street reads and shares.
+- **Per crew** (`shape`): a crew re-solves when its answer is ≥ `SOLVE_TICKS` (6) old or `(frame + (name.hash() &
+  0xffff)) % 6 == 0`, else reuses it. **Order matters**: a squad pair's verdict is made by whichever crew meets first and
+  then kept, and `_shares` is filled by solves, so the C++ must solve crews in the same order and on the same frames as
+  GDScript, reading the same statics (verdicts, shares, street cache) as shared state.
+- **_solve:** for every other MOVING crew j of my team: skip if behind my line (`ahead < -clearance`); a head-on
+  street case (`streetturns` on, crew facing ≤ cos 140°, other group, ahead > 0) reaches 100 m, everything else 45 m.
+  Street case → `_street_meeting` (squad headings head-on, |lateral| ≤ 14 m, meet ≤ 8 s, the middle a street on first
+  sight → one verdict per squad pair, `_decide_street`; the waiting squad's crews get cap 0 with floor `STREET_FLOOR`
+  0.2 and a squad share 0.2). Else the real-meeting test (closest approach within clearance inside 4.5 s), then
+  keep-right (only with streetturns OFF) or the crossing (`_crossing_kind`: squad headings between cos 140° and cos 30°;
+  `_crossing` → `_decide` per squad pair; a yielding crew within 1 m of the zone edge does not yield; cap = entry /
+  clear_at; squad share max(cap / v_me, 0.4) at the crossing point).
+- **shape's output:** speed kept = min(max(cap, floor × wish), squad share × wish) where the squad share applies to a
+  crew whose group noted one within SOLVE_TICKS and which is still short of the share's point (along − radius − 1.5 >
+  1 m); the wish's direction is kept (keep-right, when on, rotates it first).
+- **The street read** (`_street`): Pathing.closest_point (native nav already has it) probes every 4 m out to 16 m on
+  each side; a probe > 1 m off the mesh walls that side; a street = both sides walled. Cached per key for 30 frames
+  (keys: crew names, "@" + pair key, "@lead:" + group).
+- **Switches** (the A/B): `--traffic-off=turns,streetright,streetturns` = main's path exactly (T0's 72 "both" runs on
+  seeds 1–3 re-run with them off at `e85c92cc`: 72/72 identical in every crew's arrival, contacts, stuck time, end); `squadheading`, `wholesquad`, `streetfloor` select the tuning arms.
+- **Counters** (measurement only): `Traffic.verdicts`, `crossing_yields`, `kept_right`.
