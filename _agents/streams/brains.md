@@ -188,7 +188,18 @@ B_4 never arrives (traffic's own trace matches).
 - B_4 stalls on the last leg ("terrain" for 2 s, then `no_path` at (-75.9, 87.8)) and is still there at the end.
 - At the hand-over the slot did NOT read `no_path` from B_4's spot: the path reached it (0.0 m short). It read
   `no_path` only once B_4 was stuck west of it.
-- The Sumps cell is traced next.
+**Sumps cell** (law_scout:law_ifv:law_tank:law_tank, seed 1; `make traffic-settle-trace TRAFFIC_SETTLE_ARMS=none`; all
+in at 83.0 s):
+- Crew 4's slot (11.1, -73.4) read blocked/`no_path` from 48 s to 61 s.
+- At 61.0 s make-room traded it to crew 3, which was parked beside it (seats 2310 → 2301, round 28's T3 pair).
+- Crew 3 then read `no_path` too, from 64 s to 71 s, and reached the slot at 81 s by a long way round.
+**Plan (accepted in principle by godot-67; bar before numbers, after B2):**
+(i) Make-room never trades away a slot its stuck crew reads `no_path` for.
+(ii) After arrival, a crew whose movement has read `no_path` at its slot for N s gets that slot moved to the nearest point
+it can stand on and reach. The bar must name N and the reachable-point rule. Guard: a crew merely pausing (a give-way, or
+traffic's hold) is not re-slotted.
+Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
+`build/round29/artillery_side_by_side.mp4`.
 
 ### Requests to other streams
 - **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).
