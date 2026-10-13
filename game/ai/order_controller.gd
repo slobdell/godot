@@ -536,6 +536,13 @@ static var wheel_holds := 0
 static var wheel_arc_stops := 0
 
 
+## Round 28 (manoeuvre M1, his call 2026-10-12 "turn the whole vehicle"): a wheeled TURRETED hull given a DRAWN facing
+## turns its hull to it (M1b's planned turn, `Movement.face_turn`) instead of leaving it to the turret. The brain reads
+## this where it declines untold faces (`TankBrain._order_move`). `--nav-off=turnhull` = round 27's behaviour (the A/B).
+static func hull_turn_on() -> bool:
+	return not Movement.switched_off("turnhull")
+
+
 static func wheel_hold_on() -> bool:
 	return Movement.switched_off("wheelhold")
 

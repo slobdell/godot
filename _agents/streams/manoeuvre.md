@@ -67,4 +67,26 @@ Nothing: his call is made.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-12 ~19:30 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`; base `c6e32d03`)._
+
+### Plan (ordered, smallest foundation first)
+
+1. **M0** `make hull-rest-probe` at the base (builder0, 4 factions x 6 seeds x 6 tasks x drawn/clicked = O3's
+   workload, n >= 30 per class per task), plus each run's `settled_after_s` for the arrival-to-settled line.
+2. **M1** the rule (traced, below) + `tests/test_manoeuvre_turret_hull.gd` (fails at base, passes after) + the probe
+   re-run on the change, `bridge-pooled`, the arrive series, check; the bar to the orchestrator BEFORE the numbers.
+3. **M2** the creep: census at the base first, then M1b's planner for a wheeled hull whose arc is blocked at pace.
+4. **M3** (stretch) only if the census shows tracked hulls needing it.
+
+### M1 trace (2026-10-12, base `c6e32d03`, read in code)
+
+The arrival-heading rule is NOT in `order_controller.gd` (`_wheel_hold` there is opt-in and OFF). It is
+`TankBrain._order_move` (round 8): any `face` order that is not `told` is turned into a `stop` for a wheeled turreted
+hull (`turret_carries_aim`). A squad's drawn facing reaches its crews as the element's SECTOR watch (`HOLD` branch,
+`from: _sector_source()` = "order") and that face is never `told`, so it is declined and the hull keeps its arrival
+heading. Only a detached crew's `_face_intended_or` (told) was turning. **Change:** the decline skips a face whose
+`from` is "order" when the crew's K1 order itself carries a facing (`_ordered_facing()`: drawn); a clicked order has
+none, so it is still declined (the turret takes it). Switch `--nav-off=turnhull` (= base) in
+`OrderController.hull_turn_on()`. **Merge note:** a 3-line edit in brains' `tank_brain.gd` `_order_move` (the rule the
+brief assigned to manoeuvre lives there) and `turnhull` added to `Movement.OFF_NAMES`; no C++ (the think half is
+GDScript; the face is executed by M1b's `face_turn`, already ported).
