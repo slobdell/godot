@@ -1,0 +1,50 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (syndicate): 7 skimmers, 3 limousine gunships, 3 railgun platforms, 4 spotter platforms (5140 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (condemned): 16 tanks, 5 IFVs, 6 lancers (5150 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 27 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=17 rust_squads=7 rust=27
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-45, 86) zoom=0.59 vehicles=7
+DEMO_SEED 15 arena=docks syndicate vs condemned (replay: make showmatch SEED=15)
+CONTROL_GROUPS squads=4 (Eyes:7 Guns:3 Hunters:3 Lances:4) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-38-44-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "15", "arena": "random", "mute": "", "seconds": "180", "screen-standoff": "off" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns3_5 destroyed Green_Hunters_1 (score Green 0 : 1 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 2 takes command
+Green_Hunters_3 destroyed Rust_Guns4_1 (score Green 1 : 1 Rust)
+HUD_MESSAGE [warning] Hunters: shields down
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 2 left
+HUD_MESSAGE [info] Destroyed an enemy Tank (26 left)
+Green_Lances_2 destroyed Rust_Hunters_2 (score Green 2 : 1 Rust)
+NATIVE_EXEC 19996 native, 3 handed back (dead 0, reflexes 0, yielding 0, face 3, drive 0, other 0), 450 stale pulls, 2728 part pulls, 0 verified, 0 verify mismatches 
+Rust_Guns3_5 destroyed Green_Hunters_3 (score Green 2 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy IFV (25 left)
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 1 left
+Rust_Lances_4 destroyed Green_Hunters_2 (score Green 2 : 3 Rust)
+HUD_MESSAGE [warning] The enemy took the warehouse yard
+Green_Lances_3 destroyed Rust_Guns_1 (score Green 3 : 3 Rust)
+HUD_MESSAGE [error] Hunters destroyed
+Rust_Guns_4 destroyed Green_Guns_2 (score Green 3 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (24 left)
+HUD_MESSAGE [warning] Guns lost a Railgun Platform, 2 left
+Green_Guns_3 destroyed Rust_Hunters_3 (score Green 4 : 4 Rust)
+Green_Guns_1 destroyed Rust_Guns_4 (score Green 5 : 4 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (22 left)
+Rust_Lances_4 destroyed Green_Lances_2 (score Green 5 : 5 Rust)
+HUD_MESSAGE [warning] Lances lost a Spotter Platform, 3 left
+Green_Guns_1 destroyed Rust_Guns_3 (score Green 6 : 5 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (21 left)
+SCOUT_CENSUS {"arena":"docks","breakdown":{},"close_s":0.0,"contacts":0,"contacts_target":0,"damage":0.0,"deaths":0,"factions":["syndicate","condemned"],"fight_s":0.0,"kills":0,"on_target_s":0.0,"per_scout":{},"reverse_s":0.0,"scouts":0,"seed":15}

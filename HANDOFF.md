@@ -4,10 +4,31 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-12 ~11:45 PDT — **ROUND 28 IS LAUNCHED (the section below).** Main's green check covering every
-new stream's starting commit: **`ecc0d6e0`, builder0, `make check exited 0`, 2520 passed, 0 failed, 24 targets ALL
-JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7** (everything since is docs only: workers do NOT re-run a
-baseline check). He pushes `main`._
+_Last updated: 2026-10-13 — **ROUND 28 IS CLOSED (below); native (C++) continues in `godot-native`.** **Main's check GREEN at `b4ad1b2c`** (builder0, `make check exited 0`, 2537 passed, 0 failed, 26 targets ALL JUDGED incl.
+native-live-guard, thirteen unmoved, determinism 2875411ff4ec6be7): round 28 + native N6.3 (perception), the profile-gate fix,
+N7.1 (projectiles: incoming_projectiles, IncomingFire._count_in_flight, Shell._fly; native_incoming + native_shell ON),
+N7.2 (the suppression field's stamps/decay + Match._update_suppression's settle; native_threat ON; at/peak/mean stay GDScript),
+and test_combat_cover's order dependence fixed (the sheltering crew overlapped the wall). Native is on N7.6 (the match
+recorder). N7.3 (order_controller's scheduling, 3-4 days) waits for a freeze window the orchestrator names; N7.4/N7.5 after
+round 29's split. E6b (his laptop) held for my GO while he's away. Round 29 is NOT split: `roadmap.md` *Round 29 candidates*.
+He pushes `main`._
+
+## ✅ ROUND 28 IS CLOSED (2026-10-13) — read this first
+
+**What he plays now** (`make native && make skirmish`):
+- **Stage 1 C++ ON** (his laptop: 20 a side 0.89 → 0.93 of real time, 25 a side 0.82 → 0.865), plus the tank's drive,
+  combat's rules and the nav wrappers in C++ (equal answer; `native-verify-scenarios` guards every check).
+- **His queued screen (B5):** waypoint(s), then shift + screen / support by fire / ambush queues behind them and lays from
+  the last waypoint; drawn while planning ("SCREEN · next" with chevrons); one squad or several.
+- **The CPU's recon no longer screens into his army** (B3): fixed-gun contacts under an ordered MOVE 36 → 0.
+- **A spear-gun scout no longer rams** (scout S3).
+
+**Not shipped (each parked with a round-29 write-up):** take turns (traffic T1/T1b), turn the whole hull (manoeuvre M1),
+the creep (M2), the flank carried out (brains B1), artillery from his side (B2), his bridge 106/108 (B4), scout S1.
+
+**His open call:** calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 question 6 (`artillery-wait`).
+**Lessons 299–302.** Worktrees, builder0 folders and merged branches of the four closed streams removed; briefs in
+`streams/archive/round28/`.
 
 ## 🚀 ROUND 28 IS LAUNCHED (2026-10-12 ~11:45 PDT) — read this first
 

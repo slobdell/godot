@@ -654,3 +654,57 @@ cell-series: import ## Round 27 (B2): one arrive cell (CELL_ARENA/CELL_UNITS, 15
 			|| echo "{\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$at,\"missing\":true}" >> $(BUILD_DIR)/cell-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/cell_table.py $(BUILD_DIR)/cell-series.jsonl
+
+# Round 28 (brains B1): ONE ApproachStage run with its per-second trace (the element's drill, round state, crews' orders and
+# brains) -> build/approach-trace.log. APPROACH_SEED=4 APPROACH_TICK=1 APPROACH_ARM=east|none APPROACH_FLAGS=...
+.PHONY: approach-trace
+approach-trace: import ## Round 28 (B1): one ApproachStage run traced per second (APPROACH_SEED, APPROACH_TICK, APPROACH_ARM, APPROACH_FLAGS) -> build/approach-trace.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> approach-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/approach_probe.gd -- \
+		--seed=$(or $(APPROACH_SEED),4) --approach=$(or $(APPROACH_ARM),east) --seconds=$(APPROACH_SECONDS) \
+		--lab-start-tick=$(or $(APPROACH_TICK),1) --trace=on $(APPROACH_FLAGS) 2>&1 \
+		| grep -E "APPROACH_TRACE|APPROACH_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/approach-trace.log || true
+
+# Round 28 (brains B3): who orders scouts into the enemy -- the showmatch seed scout's census measured, each recon
+# element's task, drill, reason, its task point's distance to the nearest enemy and its crews' (RECON lines, once a second).
+RECON_SEED ?= 5
+RECON_SECONDS ?= 60
+.PHONY: recon-probe
+recon-probe: native-for-check import ## Round 28 (B3): the recon elements' tasks in showmatch seed RECON_SEED (RECON_MATCH=Eyes, RECON_FLAGS) -> build/recon-probe.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> recon-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seed $(RECON_SEED)"
+	@timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/recon_probe.gd -- --skirmish \
+		--demo-match --clean --seed=$(RECON_SEED) --arena=random --mute --seconds=$(RECON_SECONDS) \
+		--recon-match=$(or $(RECON_MATCH),Eyes) $(RECON_FLAGS) 2>&1 | grep -E "^RECON|SCRIPT ERROR|DEMO_SEED" > $(BUILD_DIR)/recon-probe.log || true
+	@grep -c "^RECON " $(BUILD_DIR)/recon-probe.log
+
+# Round 28 (brains B3, DECLARED): recon at a spotter's distance, measured over every unit (CONTACT_SEEDS showmatch
+# seeds, both arms: the standoff on, and --screen-standoff=off) -> build/contact-census/<arm>-<seed>.log + table.
+CONTACT_SEEDS ?= 13 14 15 16 17 18 19 20 21 22 23 24
+CONTACT_JOBS ?= 4
+CONTACT_SECONDS ?= 180
+.PHONY: contact-census
+contact-census: native-for-check import ## Round 28 (B3): enemy hull contacts by option/role, recon deaths, screen re-tasks, both arms over CONTACT_SEEDS -> build/contact-census/ + table
+	@rm -rf $(BUILD_DIR)/contact-census; mkdir -p $(BUILD_DIR)/contact-census
+	@echo ">> contact-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(CONTACT_SEEDS)"
+	@for seed in $(CONTACT_SEEDS); do for arm in on off; do echo "$$arm $$seed"; done; done | xargs -P $(CONTACT_JOBS) -L 1 sh -c '\
+		flag=""; [ $$0 = off ] && flag=--screen-standoff=off; \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/contact_census.gd -- \
+			--skirmish --demo-match --clean --seed=$$1 --arena=random --mute --seconds=$(CONTACT_SECONDS) $$flag \
+			> $(BUILD_DIR)/contact-census/$$0-$$1.log 2>&1 || true'
+	@$(PYTHON) tools/tactics/contact_table.py $(BUILD_DIR)/contact-census/*.log
+
+# Round 28 (brains B5): his queued screen in a window (FACING_SIZES): planned in the pause (a waypoint, then a shifted
+# screen beyond it), then frames when the screen starts, forming, settled -> build/queued-screen/<size>/*.png + QUEUED_SHOTS.
+QUEUED_SCREEN_SEED ?= 3
+.PHONY: queued-screen-shots
+queued-screen-shots: import ## Round 28 (B5): his waypoint + shift-screen in windows (FACING_SIZES) -> build/queued-screen/<size>/*.png (needs a display)
+	@for size in $(FACING_SIZES); do d=$(BUILD_DIR)/queued-screen/$$size; rm -rf $$d && mkdir -p $$d; \
+		timeout 300 $(GODOT) --path . --resolution $$size --script res://tests/tactics/queued_screen_shots.gd -- --skirmish \
+			--seed=$(QUEUED_SCREEN_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) $(SCREEN_FLAGS) \
+			--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --shots=$(CURDIR)/$$d > $$d/run.log 2>&1 || true; \
+		grep -E "QUEUED_SHOTS|SCRIPT ERROR" $$d/run.log | cut -c1-600; \
+		grep -q '"settled_after_screen_s":[0-9]' $$d/run.log || { echo "queued-screen-shots: $$size: the line never settled (every crew within 8 m) inside 30 s"; exit 1; }; \
+	done
+	@echo "Now LOOK at $(BUILD_DIR)/queued-screen/*/*.png"

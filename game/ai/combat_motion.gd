@@ -1188,6 +1188,31 @@ static func gunlay_on() -> bool:
 	return _gunlay_off == 0
 
 
+## Round 28 (scout S3): a fixed gun on the lay planner takes the short halt (TankBrain._combat_move: a slow-reload gun
+## brakes so it is loaded as the hull stops) only OUTSIDE its turning room. Round 27 traced a gang scout (spear gun)
+## short-halting 3.1 m from a tank with its nose in the tank's side before the planner was asked; S4's gate (bearing
+## AND outside the room) fixed that and cost the spear gun its standing shots on crossing targets, so this one keeps
+## the halt wherever the hull can still turn (round 27's untested candidate). `--scout-off=halt` restores CP-S.
+static var halt_pin := -1
+static var _halt_off := -1
+
+
+static func halt_gated() -> bool:
+	if halt_pin >= 0:
+		return halt_pin == 1
+	if _halt_off < 0:
+		_halt_off = 0
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--scout-off=") and Array(String(arg).trim_prefix("--scout-off=").split(",")).has("halt"):
+				_halt_off = 1
+	return _halt_off == 0 and gunlay_on()
+
+
+## May a fixed gun at `here` short-halt on a target at `target_at`? Only outside its turning room `room`.
+static func halt_allowed(here: Vector3, target_at: Vector3, room: float) -> bool:
+	return _flat(here).distance_to(_flat(target_at)) >= room
+
+
 ## How close a fixed gun may come to its target and still bring its nose round on it: the diameter of its turning circle
 ## (wheels; 0 for a hull that pivots), its own half length, the target's half width and a margin. A scout on a tank:
 ## 2 x 5 + 1.52 + 1.45 + 1 = 14.0 m.

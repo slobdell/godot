@@ -1,0 +1,104 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (condemned): 11 scouts, 5 tanks, 5 IFVs, 10 artillery (5160 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 31 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (law): 14 pursuit cruisers, 4 assault guns, 5 gas rocket trucks, 4 sonic emitters (5170 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 27 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=31 rust_squads=6 rust=27
+ERROR: Elements.form: 10 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-57, 89) zoom=0.64 vehicles=10
+DEMO_SEED 16 arena=pit condemned vs law (replay: make showmatch SEED=16)
+CONTROL_GROUPS squads=5 (Battery:10 Eyes:6 Eyes II:5 Guns:5 Hunters:5) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-33-47-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "16", "arena": "random", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+NATIVE_EXEC 17727 native, 2272 handed back (dead 0, reflexes 0, yielding 0, face 2272, drive 0, other 0), 741 stale pulls, 1788 part pulls, 0 verified, 0 verify mismatches 
+Green_Battery_9 destroyed Rust_Sirens_1 (score Green 1 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (26 left)
+Green_Battery_7 destroyed Rust_Sirens_2 (score Green 2 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (25 left)
+HUD_MESSAGE [warning] The enemy took the west yard
+Green_Battery_9 destroyed Rust_Sirens_4 (score Green 3 : 0 Rust)
+Rust_Eyes_4 destroyed Green_Hunters_4 (score Green 3 : 1 Rust)
+NATIVE_EXEC 35221 native, 4778 handed back (dead 0, reflexes 0, yielding 0, face 4778, drive 0, other 0), 1241 stale pulls, 5041 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (24 left)
+HUD_MESSAGE [warning] Hunters lost an IFV, 4 left
+Green_Hunters_2 destroyed Rust_Eyes_4 (score Green 4 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (23 left)
+SCOUT_EVENT t=29.0 Rust_Eyes_5 contact Green_Hunters_1 at (-16, -30) option=SUPPRESS why=assault through, squad focus, suppressing Green_Hunters_1
+Green_Hunters_5 destroyed Rust_Eyes_1 (score Green 5 : 1 Rust)
+Green_Hunters_5 destroyed Rust_Eyes_3 (score Green 6 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (21 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 5 hit Hunters 3
+Green_Battery_8 destroyed Rust_Eyes3_1 (score Green 7 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (20 left)
+NATIVE_EXEC 50392 native, 9607 handed back (dead 0, reflexes 0, yielding 0, face 9607, drive 0, other 0), 1588 stale pulls, 8054 part pulls, 0 verified, 0 verify mismatches 
+Green_Battery_1 destroyed Rust_Eyes3_3 (score Green 8 : 1 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 2 hit Hunters 1
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (19 left)
+Green_Guns_1 destroyed Rust_Eyes_2 (score Green 9 : 1 Rust)
+Green_Battery_9 destroyed Rust_Eyes_5 (score Green 10 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (17 left)
+Green_Guns_4 destroyed Rust_Eyes3_4 (score Green 11 : 1 Rust)
+Green_Battery_7 destroyed Rust_Eyes2_1 (score Green 12 : 1 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 1 hit Hunters 2
+HUD_MESSAGE [info] Destroyed 2 enemies (15 left)
+Green_Battery_4 destroyed Rust_Eyes3_2 (score Green 13 : 1 Rust)
+Green_Battery_9 destroyed Rust_Eyes2_5 (score Green 14 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (13 left)
+Green_Guns_2 destroyed Rust_Eyes2_3 (score Green 15 : 1 Rust)
+NATIVE_EXEC 66205 native, 13794 handed back (dead 0, reflexes 0, yielding 0, face 13794, drive 0, other 0), 1973 stale pulls, 11187 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_4 destroyed Rust_Eyes2_2 (score Green 16 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (11 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 3 hit Hunters 2
+Green_Guns_4 destroyed Rust_Guns_4 (score Green 17 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (10 left)
+Green_Guns_3 destroyed Rust_Guns_3 (score Green 18 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (9 left)
+NATIVE_EXEC 83199 native, 16800 handed back (dead 0, reflexes 0, yielding 0, face 16800, drive 0, other 0), 2150 stale pulls, 13098 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_2 destroyed Rust_Guns_2 (score Green 19 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (8 left)
+Rust_Guns_1 destroyed Green_Guns_2 (score Green 19 : 2 Rust)
+Green_Guns_4 destroyed Rust_Guns_1 (score Green 20 : 2 Rust)
+HUD_MESSAGE [warning] Guns lost a Tank, 4 left
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (7 left)
+NATIVE_EXEC 99468 native, 20531 handed back (dead 0, reflexes 0, yielding 0, face 20531, drive 0, other 0), 2299 stale pulls, 14817 part pulls, 0 verified, 0 verify mismatches 
+Green_Battery_10 destroyed Rust_Battery_5 (score Green 21 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (6 left)
+Green_Battery_4 destroyed Rust_Battery_2 (score Green 22 : 2 Rust)
+Green_Guns_3 destroyed Rust_Sirens_3 (score Green 23 : 2 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (4 left)
+Green_Battery_4 destroyed Rust_Battery_4 (score Green 24 : 2 Rust)
+NATIVE_EXEC 115956 native, 24043 handed back (dead 0, reflexes 0, yielding 0, face 24043, drive 0, other 0), 2494 stale pulls, 16417 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (3 left)
+HUD_MESSAGE [warning] Friendly fire: Battery 10 hit Eyes 2
+Green_Guns_4 destroyed Rust_Battery_1 (score Green 25 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (2 left)
+Green_Guns_3 destroyed Rust_Battery_3 (score Green 26 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (1 left)
+Green_Guns_1 destroyed Rust_Eyes2_4 (score Green 27 : 2 Rust)
+HUD_MESSAGE [info] VICTORY
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (0 left)
+NATIVE_EXEC 133542 native, 26457 handed back (dead 0, reflexes 0, yielding 0, face 26457, drive 0, other 0), 2744 stale pulls, 17715 part pulls, 0 verified, 0 verify mismatches 
+NATIVE_EXEC 152838 native, 27161 handed back (dead 0, reflexes 0, yielding 0, face 27161, drive 0, other 0), 2845 stale pulls, 17993 part pulls, 0 verified, 0 verify mismatches 
+TANK_OFF_FLOOR Green_Guns_4 (tank) y=0.78 at (60.2, 45.5): separated from something along the vertical; it is now drawn above the floor
+NATIVE_EXEC 171163 native, 28836 handed back (dead 0, reflexes 0, yielding 0, face 28836, drive 0, other 0), 2907 stale pulls, 18284 part pulls, 0 verified, 0 verify mismatches 
+SCOUT_CENSUS {"arena":"pit","breakdown":{"CLEAR_LANE/other":[13.0,6.19999999999999,0.0,215.751203854879,0.0],"ENGAGE/chase":[24.166666666667,5.96666666666666,1.06666666666667,240.905344518026,42.720468266805],"ENGAGE/hold":[46.2333333333333,20.5666666666668,18.1333333333334,733.35542456309,659.717680040995],"ENGAGE/lay":[60.8333333333324,23.166666666667,7.83333333333332,817.818076133728,282.483101145427],"ENGAGE/other":[87.4999999999976,0.0,0.0,0.0,0.0],"ENGAGE/ring":[28.9666666666673,1.53333333333333,0.266666666666667,67.0564414978027,11.7554793039958],"FLANK/other":[37.3333333333338,11.7333333333333,2.36666666666667,343.191695976257,77.9987723032634],"SUPPRESS/other":[147.399999999994,92.766666666664,39.3333333333337,2386.67134621143,1066.36484910647]},"close_s":19.2,"contacts":1,"contacts_target":1,"damage":628.32999920845,"deaths":14,"factions":["condemned","law"],"fight_s":445.433333333339,"kills":1,"on_target_s":68.9999999999999,"per_scout":{"Green_Eyes II_1":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes II_2":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes II_3":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes II_4":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes II_5":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes_1":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":20.4666666666668,"on_target_s":1.9,"reverse_s":1.0,"team":0,"unit":"scout"},"Green_Eyes_2":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":17.8666666666667,"on_target_s":0.933333333333333,"reverse_s":2.26666666666667,"team":0,"unit":"scout"},"Green_Eyes_3":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":21.7666666666669,"on_target_s":9.19999999999998,"reverse_s":0.9,"team":0,"unit":"scout"},"Green_Eyes_4":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":12.1666666666666,"on_target_s":0.9,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes_5":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":15.9333333333333,"on_target_s":0.0,"reverse_s":1.13333333333333,"team":0,"unit":"scout"},"Green_Eyes_6":{"alive_s":180.033333333326,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":15.9666666666666,"on_target_s":4.53333333333333,"reverse_s":1.63333333333334,"team":0,"unit":"scout"},"Rust_Eyes2_1":{"alive_s":44.1666666666667,"close_s":2.0,"contacts":0,"contacts_target":0,"fight_s":26.0000000000005,"on_target_s":5.36666666666666,"reverse_s":8.26666666666665,"team":1,"unit":"law_scout"},"Rust_Eyes2_2":{"alive_s":50.633333333333,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":32.4666666666674,"on_target_s":9.76666666666664,"reverse_s":9.69999999999998,"team":1,"unit":"law_scout"},"Rust_Eyes2_3":{"alive_s":49.8999999999997,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":31.4333333333341,"on_target_s":0.5,"reverse_s":5.96666666666666,"team":1,"unit":"law_scout"},"Rust_Eyes2_4":{"alive_s":118.399999999996,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":36.0666666666672,"on_target_s":6.73333333333332,"reverse_s":7.16666666666665,"team":1,"unit":"law_scout"},"Rust_Eyes2_5":{"alive_s":48.6999999999998,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":30.433333333334,"on_target_s":0.0,"reverse_s":7.86666666666665,"team":1,"unit":"law_scout"},"Rust_Eyes3_1":{"alive_s":32.7000000000007,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":12.6,"on_target_s":0.1,"reverse_s":1.76666666666667,"team":1,"unit":"law_scout"},"Rust_Eyes3_2":{"alive_s":47.8999999999998,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":27.6000000000005,"on_target_s":2.5,"reverse_s":11.4333333333333,"team":1,"unit":"law_scout"},"Rust_Eyes3_3":{"alive_s":36.4000000000005,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":16.1,"on_target_s":3.96666666666666,"reverse_s":4.36666666666666,"team":1,"unit":"law_scout"},"Rust_Eyes3_4":{"alive_s":43.8000000000001,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":23.2000000000003,"on_target_s":0.666666666666667,"reverse_s":3.66666666666666,"team":1,"unit":"law_scout"},"Rust_Eyes_1":{"alive_s":30.433333333334,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":15.4333333333333,"on_target_s":3.56666666666666,"reverse_s":0.5,"team":1,"unit":"law_scout"},"Rust_Eyes_2":{"alive_s":41.6666666666669,"close_s":9.73333333333331,"contacts":0,"contacts_target":0,"fight_s":28.6333333333339,"on_target_s":6.09999999999999,"reverse_s":8.79999999999998,"team":1,"unit":"law_scout"},"Rust_Eyes_3":{"alive_s":31.8000000000007,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":17.5333333333334,"on_target_s":4.19999999999999,"reverse_s":2.43333333333333,"team":1,"unit":"law_scout"},"Rust_Eyes_4":{"alive_s":27.2333333333338,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":15.8,"on_target_s":5.93333333333332,"reverse_s":2.96666666666667,"team":1,"unit":"law_scout"},"Rust_Eyes_5":{"alive_s":42.1000000000002,"close_s":7.46666666666665,"contacts":1,"contacts_target":1,"fight_s":27.9666666666672,"on_target_s":2.13333333333334,"reverse_s":10.4333333333333,"team":1,"unit":"law_scout"}},"reverse_s":92.2666666666665,"scouts":25,"seed":16}

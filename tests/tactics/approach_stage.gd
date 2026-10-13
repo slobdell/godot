@@ -21,6 +21,8 @@ const FROM_EAST := [-1.0, 0.0]
 const JITTER_M := 2.0
 ## Inside a tank's effective reach (45 m) and a margin: a crew this close is attacking, not going round.
 const REACH_M := 50.0
+## Round 28 (B1's bar): "on side" is within this many degrees of the side drawn.
+const SIDE_DEG := 35.0
 
 
 ## `immortal`: the target is healed every tick (orders' flank probe: a target that cannot die shows whether the attack
@@ -83,9 +85,34 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			else Vector3(-float(approach[0]), 0.0, -float(approach[1])).normalized()
 	# What the flank is for: the share of the target's hits that strike its side or rear armour.
 	var faces := {"front": 0, "side": 0, "rear": 0}
+	# Round 28 (B1): where on the target's hull each hit landed, as degrees off the side drawn (the impact point's bearing
+	# from the target's centre at that tick). The same reading for every arm, whatever its route or its circle (lesson
+	# 297: round 27's "first crew within 50 m" fell inside the parked fix's own circle and misread it).
+	var hit_offs: Array = []
 	lab.game_match.projectile_impact.connect(func(event: Dictionary) -> void:
 		if String(event.get("target", "")) == String(enemy.name) and faces.has(String(event.get("face", ""))):
-			faces[String(event["face"])] += 1)
+			faces[String(event["face"])] += 1
+			if is_instance_valid(enemy):
+				var at: Array = event["position"]
+				hit_offs.append(absf(ElementPlan.approach_off_deg(Vector3(at[0], 0.0, at[2]), _flat(enemy.global_position),
+						-side))))
+	# Round 28 (B2): where his crews FIRE from (each round's shooter, degrees off the side drawn, from the target's
+	# position at that tick) and when the first one goes: artillery's arcs land anywhere on the hull, so the side it
+	# shells from is the firing position's.
+	var fire_offs: Array = []
+	var first_shot := [-1]
+	lab.game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		var shooter := String(event.get("shooter", ""))
+		if not names.has(shooter) or not is_instance_valid(enemy) or not enemy.is_alive():
+			return
+		var crew := lab.tank_of(shooter)
+		if crew == null:
+			return
+		if first_shot[0] < 0:
+			first_shot[0] = int(event.get("tick", 0))
+		fire_offs.append(absf(ElementPlan.approach_off_deg(_flat(crew.global_position), _flat(enemy.global_position),
+				-side))))
+	var start_tick := lab.game_match.tick
 	var pursuing_ticks := 0
 	var rounding_pursuing_ticks := 0
 	var target_fastest := 0.0
@@ -121,15 +148,17 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			killed = tick
 		if killed >= 0:
 			continue
+		# Round 28: from where the target IS (under the CPU's commander it moves; TARGET is only where it started).
+		var target_at := _flat(enemy.global_position)
 		var nearest := INF
 		for unit_name: String in names:
 			var tank := lab.tank_of(unit_name)
 			if tank != null and tank.is_alive():
-				nearest = minf(nearest, _flat(tank.global_position).distance_to(TARGET))
+				nearest = minf(nearest, _flat(tank.global_position).distance_to(target_at))
 		if reach_tick < 0:
 			if nearest <= REACH_M:
 				reach_tick = tick
-				reach_off = absf(ElementPlan.approach_off_deg(lab.center_of(names), TARGET, -side))
+				reach_off = absf(ElementPlan.approach_off_deg(lab.center_of(names), target_at, -side))
 			else:
 				closest = minf(closest, nearest)
 		if trace and tick % SimClock.TICK_RATE == 0:
@@ -145,7 +174,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 					alpha.pursuing])
 			print("APPROACH_TRACE t=%ds centre %s off %.0f nearest %.0f drill=%s round=%s orders=%s why=%s" % [
 					tick / SimClock.TICK_RATE, lab.center_of(names).snappedf(0.1),
-					absf(ElementPlan.approach_off_deg(lab.center_of(names), TARGET, -side)), nearest, alpha.drill,
+					absf(ElementPlan.approach_off_deg(lab.center_of(names), target_at, -side)), nearest, alpha.drill,
 					alpha.approach_round, ",".join(verbs), alpha.reason])
 	var report := {"seed": seed_value, "approach": "none" if approach == null else "east", "error": error,
 			"pursuing_s": _s(pursuing_ticks), "pursuing_before_in_s": _s(rounding_pursuing_ticks),
@@ -156,9 +185,22 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			"closest_m": snappedf(closest, 0.1) if is_finite(closest) else -1.0, "killed_s": _s(killed),
 			"target_hits": faces, "target_flank_share": snappedf(float(faces["side"] + faces["rear"])
 					/ maxf(float(faces["front"] + faces["side"] + faces["rear"]), 1.0), 0.01),
+			"shots": fire_offs.size(), "fire_off_median_deg": _median(fire_offs),
+			"first_shot_s": _s(first_shot[0] - start_tick) if first_shot[0] >= 0 else -1.0,
+			"hits": hit_offs.size(), "hit_off_median_deg": _median(hit_offs),
+			"hit_on_side_share": snappedf(float(hit_offs.filter(func(o: float) -> bool: return o <= SIDE_DEG).size())
+					/ maxf(float(hit_offs.size()), 1.0), 0.01),
 			"alive": lab.alive(names), "nearest_end_m": snappedf(nearest_end, 0.1) if is_finite(nearest_end) else -1.0}
 	lab.dispose()
 	return report
+
+
+static func _median(values: Array) -> float:
+	if values.is_empty():
+		return -1.0
+	var sorted := values.duplicate()
+	sorted.sort()
+	return snappedf(float(sorted[sorted.size() / 2]), 0.1)
 
 
 static func _s(tick: int) -> float:

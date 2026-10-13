@@ -1,0 +1,496 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (gangs): 16 rat rods, 7 gun trucks, 14 wrecker catapults, 7 resupply tankers (5180 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 362 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (condemned): 16 tanks, 5 IFVs, 6 lancers (5150 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 27 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=44 rust_squads=7 rust=27
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-50, 89) zoom=0.70 vehicles=14
+DEMO_SEED 22 arena=terminus gangs vs condemned (replay: make showmatch SEED=22)
+CONTROL_GROUPS squads=5 (Battery:14 Hunters:7 Spears:8 Spears II:8 Wrenches:7) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-36-02-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "22", "arena": "random", "mute": "", "seconds": "180" }
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+Rust_Guns3_5 destroyed Green_Spears_7 (score Green 0 : 1 Rust)
+Rust_Guns3_1 destroyed Green_Spears_1 (score Green 0 : 2 Rust)
+HUD_MESSAGE [warning] Spears: commander down, Spears 2 takes command
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+HUD_MESSAGE [warning] Spears lost 2 vehicles (Rat Rod, Rat Rod), 6 left
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+NATIVE_EXEC 19998 native, 1 handed back (dead 0, reflexes 0, yielding 0, face 1, drive 0, other 0), 319 stale pulls, 1796 part pulls, 0 verified, 0 verify mismatches 
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+Rust_Guns3_3 destroyed Green_Spears_3 (score Green 0 : 3 Rust)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+Green_Spears_4 destroyed Rust_Guns3_5 (score Green 1 : 3 Rust)
+Rust_Guns3_1 destroyed Green_Spears_6 (score Green 1 : 4 Rust)
+HUD_MESSAGE [warning] Spears lost 2 vehicles (Rat Rod, Rat Rod), 4 left
+HUD_MESSAGE [info] We hold the east ring
+HUD_MESSAGE [info] Destroyed an enemy Tank (26 left)
+Rust_Guns_4 destroyed Green_Spears II_2 (score Green 1 : 5 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 2 (39 tanks left)
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 7 left
+Rust_Guns3_3 destroyed Green_Spears_5 (score Green 1 : 6 Rust)
+Green_Spears II_3 destroyed Rust_Guns3_1 (score Green 2 : 6 Rust)
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 3 left
+Rust_Hunters_5 destroyed Green_Spears II_1 (score Green 2 : 7 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 1 (37 tanks left)
+HUD_MESSAGE [warning] Spears II: commander down, Spears II 3 takes command
+HUD_MESSAGE [info] Destroyed an enemy Tank (25 left)
+Rust_Guns_4 destroyed Green_Spears_2 (score Green 2 : 8 Rust)
+HUD_MESSAGE [warning] Spears: commander down, Spears 4 takes command
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 6 left
+NATIVE_EXEC 39997 native, 2 handed back (dead 0, reflexes 0, yielding 0, face 2, drive 0, other 0), 485 stale pulls, 5417 part pulls, 0 verified, 0 verify mismatches 
+Rust_Guns3_2 destroyed Green_Spears II_6 (score Green 2 : 9 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 6 (35 tanks left)
+Rust_Hunters_5 destroyed Green_Spears II_5 (score Green 2 : 10 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 5 (34 tanks left)
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 2 left
+HUD_MESSAGE [warning] Spears II lost 2 vehicles (Rat Rod, Rat Rod), 4 left
+Green_Spears_4 destroyed Rust_Guns3_3 (score Green 3 : 10 Rust)
+Rust_Hunters_3 destroyed Green_Spears II_4 (score Green 3 : 11 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 4 (33 tanks left)
+Rust_Guns_4 destroyed Green_Spears_8 (score Green 3 : 12 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (24 left)
+Rust_Guns3_2 destroyed Green_Spears II_7 (score Green 3 : 13 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 7 (31 tanks left)
+HUD_MESSAGE [warning] Spears II lost 2 vehicles (Rat Rod, Rat Rod), 2 left
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 1 left
+Green_Spears II_3 destroyed Rust_Guns_4 (score Green 4 : 13 Rust)
+Rust_Hunters_3 destroyed Green_Spears_4 (score Green 4 : 14 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (23 left)
+ERROR: Elements.form: 14 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] form_elements (res://game/tactics/element_commander.gd:180)
+       [2] _physics_process (res://game/tactics/element_commander.gd:204)
+HUD_MESSAGE [error] Spears destroyed
+NATIVE_EXEC 59997 native, 2 handed back (dead 0, reflexes 0, yielding 0, face 2, drive 0, other 0), 616 stale pulls, 9008 part pulls, 0 verified, 0 verify mismatches 
+Rust_Hunters_2 destroyed Green_Hunters_2 (score Green 4 : 15 Rust)
+Rust_Hunters_5 destroyed Green_Spears II_3 (score Green 4 : 16 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 3 (28 tanks left)
+HUD_MESSAGE [warning] Spears II: commander down, Spears II 8 takes command
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 6 left
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 1 left
+Rust_Guns3_2 destroyed Green_Hunters_4 (score Green 4 : 17 Rust)
+Rust_Guns2_2 destroyed Green_Hunters_5 (score Green 4 : 18 Rust)
+Green_Battery_1 destroyed Rust_Hunters_3 (score Green 5 : 18 Rust)
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (Gun Truck, Gun Truck), 4 left
+HUD_MESSAGE [info] Destroyed an enemy IFV (22 left)
+Rust_Hunters_1 destroyed Green_Hunters_6 (score Green 5 : 19 Rust)
+Rust_Hunters_2 destroyed Green_Hunters_1 (score Green 5 : 20 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 3 takes command
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (Gun Truck, Gun Truck), 2 left
+Rust_Guns3_2 destroyed Green_Hunters_7 (score Green 5 : 21 Rust)
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 1 left
+NATIVE_EXEC 79995 native, 4 handed back (dead 0, reflexes 0, yielding 0, face 4, drive 0, other 0), 674 stale pulls, 11335 part pulls, 0 verified, 0 verify mismatches 
+Green_Wrenches_4 destroyed Rust_Hunters_2 (score Green 6 : 21 Rust)
+HUD_MESSAGE [info] Destroyed an enemy IFV (21 left)
+Rust_Hunters_5 destroyed Green_Spears II_8 (score Green 6 : 22 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 8 (22 tanks left)
+SCOUT_CENSUS {"arena":"terminus","breakdown":{"COVER_FIRE/other":[18.4666666666667,14.1333333333333,3.03333333333333,303.642586676279,68.6646710077922],"ENGAGE/chase":[0.933333333333333,0.166666666666667,0.0,4.33848304748535,0.0],"ENGAGE/hold":[62.399999999999,46.9666666666666,41.2666666666669,1068.39174146652,940.065202109019],"ENGAGE/lay":[45.8,42.5666666666668,17.6,959.612296390533,393.098477458954],"ENGAGE/other":[82.2333333333312,0.0,0.0,0.0,0.0],"ENGAGE/ring":[38.966666666667,3.2,0.8,91.6109662373861,22.6871302922567]},"close_s":2.4,"contacts":0,"contacts_target":0,"damage":1868.64999580383,"deaths":16,"factions":["gangs","condemned"],"fight_s":248.800000000001,"kills":4,"on_target_s":62.6999999999999,"per_scout":{"Green_Spears II_1":{"alive_s":17.7666666666667,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":12.6666666666666,"on_target_s":2.06666666666667,"reverse_s":0.0,"team":0,"unit":"gang_scout"},"Green_Spears II_2":{"alive_s":13.6333333333333,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":9.46666666666664,"on_target_s":0.0,"reverse_s":2.6,"team":0,"unit":"gang_scout"},"Green_Spears II_3":{"alive_s":33.333333333334,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":22.866666666667,"on_target_s":7.29999999999998,"reverse_s":3.5,"team":0,"unit":"gang_scout"},"Green_Spears II_4":{"alive_s":23.7333333333337,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":18.7333333333334,"on_target_s":1.46666666666667,"reverse_s":4.36666666666666,"team":0,"unit":"gang_scout"},"Green_Spears II_5":{"alive_s":20.1333333333335,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":14.9666666666666,"on_target_s":0.0,"reverse_s":1.5,"team":0,"unit":"gang_scout"},"Green_Spears II_6":{"alive_s":20.0333333333335,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":15.7333333333333,"on_target_s":2.4,"reverse_s":2.13333333333334,"team":0,"unit":"gang_scout"},"Green_Spears II_7":{"alive_s":25.2000000000004,"close_s":0.5,"contacts":0,"contacts_target":0,"fight_s":18.5666666666667,"on_target_s":3.13333333333333,"reverse_s":4.99999999999999,"team":0,"unit":"gang_scout"},"Green_Spears II_8":{"alive_s":47.7333333333332,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":43.2000000000001,"on_target_s":5.59999999999999,"reverse_s":7.23333333333332,"team":0,"unit":"gang_scout"},"Green_Spears_1":{"alive_s":7.46666666666665,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":3.63333333333333,"on_target_s":0.266666666666667,"reverse_s":0.0,"team":0,"unit":"gang_scout"},"Green_Spears_2":{"alive_s":18.7000000000001,"close_s":1.4,"contacts":0,"contacts_target":0,"fight_s":14.5333333333333,"on_target_s":8.39999999999998,"reverse_s":4.13333333333333,"team":0,"unit":"gang_scout"},"Green_Spears_3":{"alive_s":10.8,"close_s":0.5,"contacts":0,"contacts_target":0,"fight_s":6.96666666666665,"on_target_s":0.7,"reverse_s":0.333333333333333,"team":0,"unit":"gang_scout"},"Green_Spears_4":{"alive_s":29.333333333334,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":24.3333333333337,"on_target_s":12.0,"reverse_s":7.53333333333332,"team":0,"unit":"gang_scout"},"Green_Spears_5":{"alive_s":15.8333333333333,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":11.7666666666666,"on_target_s":5.56666666666666,"reverse_s":3.36666666666666,"team":0,"unit":"gang_scout"},"Green_Spears_6":{"alive_s":12.2666666666666,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":8.26666666666665,"on_target_s":4.39999999999999,"reverse_s":2.53333333333333,"team":0,"unit":"gang_scout"},"Green_Spears_7":{"alive_s":7.39999999999998,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":3.56666666666666,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"gang_scout"},"Green_Spears_8":{"alive_s":23.766666666667,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":19.5333333333335,"on_target_s":9.39999999999998,"reverse_s":4.79999999999999,"team":0,"unit":"gang_scout"}},"reverse_s":49.0333333333333,"scouts":16,"seed":22}

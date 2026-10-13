@@ -1,0 +1,79 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (syndicate): 7 skimmers, 4 limousine gunships, 3 railgun platforms, 3 spotter platforms (5100 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (law): 4 pursuit cruisers, 8 retired apcs, 4 assault guns, 4 gas rocket trucks, 4 sonic emitters (5080 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 275 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=17 rust_squads=6 rust=24
+ERROR: Elements.form: 7 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-45, 86) zoom=0.59 vehicles=7
+DEMO_SEED 24 arena=yard syndicate vs law (replay: make showmatch SEED=24)
+CONTROL_GROUPS squads=4 (Eyes:7 Guns:3 Hunters:4 Lances:3) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-36-26-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "24", "arena": "random", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Lances_2 destroyed Rust_Eyes_3 (score Green 1 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (23 left)
+HUD_MESSAGE [warning] The enemy took the west depot
+HUD_MESSAGE [warning] Hunters: shields down
+Green_Hunters_3 destroyed Rust_Guns_2 (score Green 2 : 0 Rust)
+Green_Guns_2 destroyed Rust_Hunters2_1 (score Green 3 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (21 left)
+NATIVE_EXEC 19682 native, 317 handed back (dead 0, reflexes 0, yielding 0, face 317, drive 0, other 0), 440 stale pulls, 3052 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_1 destroyed Rust_Sirens_2 (score Green 4 : 0 Rust)
+Green_Guns_2 destroyed Rust_Sirens_1 (score Green 5 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (19 left)
+Green_Hunters_2 destroyed teammate Green_Hunters_3 (friendly fire)
+HUD_MESSAGE [warning] Friendly fire! Hunters 2 destroyed Hunters 3
+Green_Guns_3 destroyed Rust_Hunters2_2 (score Green 6 : 0 Rust)
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 3 left
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (18 left)
+Green_Hunters_4 destroyed Rust_Hunters2_3 (score Green 7 : 0 Rust)
+Green_Guns_1 destroyed Rust_Sirens_4 (score Green 8 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (16 left)
+Green_Guns_2 destroyed Rust_Hunters_2 (score Green 9 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (15 left)
+Green_Guns_3 destroyed Rust_Sirens_3 (score Green 10 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (14 left)
+Rust_Guns_3 destroyed Green_Hunters_2 (score Green 10 : 1 Rust)
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 2 left
+Green_Guns_3 destroyed Rust_Guns_4 (score Green 11 : 1 Rust)
+NATIVE_EXEC 39016 native, 983 handed back (dead 0, reflexes 0, yielding 0, face 983, drive 0, other 0), 613 stale pulls, 6085 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Hunters: shields down
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (13 left)
+Green_Guns_2 destroyed Rust_Hunters_1 (score Green 12 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (12 left)
+Rust_Guns_3 destroyed Green_Hunters_1 (score Green 12 : 2 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 4 takes command
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 1 left
+Rust_Guns_3 destroyed Green_Hunters_4 (score Green 12 : 3 Rust)
+HUD_MESSAGE [error] Hunters destroyed
+Green_Guns_1 destroyed Rust_Guns_3 (score Green 13 : 3 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (11 left)
+Green_Guns_3 destroyed Rust_Hunters_4 (score Green 14 : 3 Rust)
+Rust_Battery_3 destroyed Green_Lances_2 (score Green 14 : 4 Rust)
+Green_Guns_2 destroyed Rust_Hunters_3 (score Green 15 : 4 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (9 left)
+NATIVE_EXEC 57152 native, 2847 handed back (dead 0, reflexes 0, yielding 0, face 2847, drive 0, other 0), 668 stale pulls, 6621 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Lances lost a Spotter Platform, 2 left
+Green_Lances_1 destroyed Rust_Hunters_5 (score Green 16 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (8 left)
+Green_Guns_3 destroyed Rust_Guns_1 (score Green 17 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (7 left)
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Guns_3 destroyed Rust_Eyes_4 (score Green 18 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (6 left)
+Green_Eyes_7 destroyed Rust_Eyes_1 (score Green 19 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (5 left)
+Green_Guns_2 destroyed Rust_Eyes_2 (score Green 20 : 4 Rust)
+SCOUT_CENSUS {"arena":"yard","breakdown":{"ENGAGE/hold":[7.53333333333332,1.26666666666667,0.166666666666667,37.4632248560588,5.21524817148844],"ENGAGE/lay":[2.03333333333334,1.76666666666667,0.0,52.2106414794922,0.0],"ENGAGE/ring":[0.3,0.0,0.0,0.0,0.0],"FLANK/other":[2.83333333333333,1.63333333333334,0.166666666666667,46.3611646016439,6.35815544128418],"SUPPRESS/other":[1.06666666666667,0.4,0.0,13.2293622334798,0.0]},"close_s":0.0,"contacts":0,"contacts_target":0,"damage":0.0,"deaths":4,"factions":["syndicate","law"],"fight_s":13.7666666666666,"kills":0,"on_target_s":0.333333333333333,"per_scout":{"Rust_Eyes_1":{"alive_s":86.0999999999977,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":4.89999999999999,"on_target_s":0.0,"reverse_s":0.933333333333333,"team":1,"unit":"law_scout"},"Rust_Eyes_2":{"alive_s":88.4666666666642,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":8.39999999999998,"on_target_s":0.266666666666667,"reverse_s":1.23333333333333,"team":1,"unit":"law_scout"},"Rust_Eyes_3":{"alive_s":8.23333333333331,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":1,"unit":"law_scout"},"Rust_Eyes_4":{"alive_s":80.5333333333313,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.466666666666667,"on_target_s":0.0666666666666667,"reverse_s":0.0,"team":1,"unit":"law_scout"}},"reverse_s":2.16666666666667,"scouts":4,"seed":24}

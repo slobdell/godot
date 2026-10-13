@@ -1,7 +1,7 @@
 # Workstreams: the current round
 
-> **ROUND 28 IS LAUNCHED (2026-10-12): traffic, manoeuvre, brains, native (continuing), scout; contracts C28.1–C28.6
-> below; briefs in `streams/`.** Round 27's closed briefs are in `streams/archive/round27/`.
+> **ROUND 28 CLOSED (2026-10-13): traffic, manoeuvre, brains, scout done (briefs in `streams/archive/round28/`); native
+> continues (`streams/native.md`, C27.7/C28.2–C28.3).** Round 29 is not yet split (`roadmap.md` *Round 29 candidates*).
 
 ## Round 28: five streams (launched 2026-10-12 ~11:45 PDT; native continues from round 27)
 
@@ -12,11 +12,11 @@ their gun on target while suppressing.**
 
 | Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two of his squads crossing slow and take turns instead of nosing into each other | **CP-T** T1, DECLARED, + native's port |
-| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | wheeled turret vehicles end nose-on to a drawn facing; no creeping shuffle in tight streets | **CP-M1**, **CP-M2**, each DECLARED, + port |
-| **brains** | `godot-brains` (3) | [streams/brains.md](streams/brains.md) | a drawn flank is carried out in a live fight; artillery shells from the drawn side; squads not ordered into the enemy | B1, B2 as they go green |
+| **traffic** | `godot-traffic` (1) | [streams/archive/round28/traffic.md](streams/archive/round28/traffic.md) | two of his squads crossing slow and take turns instead of nosing into each other | **CP-T** T1, DECLARED, + native's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/archive/round28/manoeuvre.md](streams/archive/round28/manoeuvre.md) | wheeled turret vehicles end nose-on to a drawn facing; no creeping shuffle in tight streets | **CP-M1**, **CP-M2**, each DECLARED, + port |
+| **brains** | `godot-brains` (3) | [streams/archive/round28/brains.md](streams/archive/round28/brains.md) | a drawn flank is carried out in a live fight; artillery shells from the drawn side; squads not ordered into the enemy | B1, B2 as they go green |
 | **native** | `godot-native` (4) | [streams/native.md](streams/native.md) | E6 on his laptop rules stage 1 ON or OFF; then every driving change ported; stage 2 priced for him | E6 → the ON commit |
-| **scout** | `godot-scout` (5) | [streams/scout.md](streams/scout.md) | scouts keep the gun on target while suppressing | **CP-S1** DECLARED |
+| **scout** | `godot-scout` (5) | [streams/archive/round28/scout.md](streams/archive/round28/scout.md) | scouts keep the gun on target while suppressing | **CP-S1** DECLARED |
 
 **Ownership:** each brief's header lists its paths. In `movement.gd`: traffic the give-way block, `_avoid`,
 `_around_friends`, `_ask_behind`, `_hull_within`; manoeuvre the `drive()` body, `_nose_stop`, `unstick`,
@@ -53,6 +53,217 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
 - **C28.6 builder0 runs every Godot run** (C27.6); the laptop only in a slot the orchestrator grants (E6 first).
 - **C27.2's freeze is lifted** and replaced by C28.2 (stage 1 is built; a driving change is written twice from here).
 - C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
+
+- **Traffic T1 bar (pre-registered 2026-10-12 evening, before T0's numbers):** the brief's bar unchanged; GDScript path
+  both arms, n = 18 a case, start ticks {1,3,6,8,11,16}; tuned on seeds {1,2,3}, **judged on fresh {4,5,6}**; **v3 is the
+  last attempt**. Design: one verdict per SQUAD pair (the later squad yields as a whole, v3's 0.4 floor; a crew at the
+  conflict zone never yields; tie → priority on the right, then element id); keep right head-on only in a street (static
+  geometry both sides, from the navmesh), never toward a squadmate abeam; open ground left to ORCA. + one CPU-side case;
+  native-verify-scenarios before the diff goes to native.
+
+- **Grant to scout (2026-10-12 evening):** in `tank_brain.gd`, (a) one new FIRST branch in `_act`'s "SUPPRESS": arm
+  (~2475–2499) for a fixed gun on the lay planner (standoff, gunlay on, `_moves_while_fighting`, not bounding) returning
+  `_combat_move(s, contact, spot)`, every other unit byte-for-byte; (b) `_combat_move` gains an optional `aim_point`.
+  `--scout-off=suppresslay`. No `decide` change (no port). Brains told.
+
+- **Scout CP-S1 bar (pre-registered 2026-10-12, before any census number; scenario pools seen first, disclosed):**
+  PRIMARY fresh census seeds 61–84 (85+ if < 12 pair), new v `--scout-off=suppresslay`: fixed-gun gun-on-point during
+  SUPPRESS ≥ +10 pts outside 2 se ships; +5..+10 outside 2 se ships with a note only if the scenario passes all four
+  cases. GUARDS (paired, 2 se): all-fight on target not down, contacts not up, **SUPPRESS share of fight time not down
+  (orchestrator's addition; absolute seconds reported)**; outcomes reported. Scenario `scenario_scout_suppress` n = 18 a
+  case, all four pass and off fails one; check, native-verify-scenarios, ≤ 0.5 ms, symmetric.
+
+- **Manoeuvre M1 bar + grant (2026-10-12 evening, before probe numbers):** traced: the "hull keeps its arrival heading" rule
+  is `TankBrain._order_move` (round 8: an untold face becomes a stop for a wheeled turreted hull; a squad's drawn facing
+  arrives as the element's sector watch, never "told"). **GRANT: ~3 lines of `_order_move`** (the decline skips a
+  from=="order" face when the element task carries a drawn facing; `--nav-off=turnhull`); brains told. No C++ port (face
+  turns for wheeled hulls run in GDScript). Bar: hull-rest-probe drawn wheels/turret median ≤ 15° and ≥ 70 % within 15° on
+  each of 6 tasks; settle time +≤ 6 s median; clicked within ±5° of base; bridge-pooled, arrive series, thirteen explained;
+  partial for line tasks: = hover/turret's error ±5°.
+
+- **Brains B1 bar (pre-registered 2026-10-12 evening, before numbers):** trace (even roster seed 4): B0 rounds at the trucks'
+  own 35 m reach inside the IFV's 60 m, then the TARGET's near-ambush sets off a 30 s assault-through. Design: the element
+  plan owns a drawn approach until on side — ring = max(own range, target squad's reach + 10 m); pursuit only at ≥ 6 m/s
+  for 2 s; no ambush/assault-through/break-contact from the target's own squad while rounding; after "in", the target
+  closing is not an ambush. Measure: MEDIAN HIT bearing on the target's hull within 35° (same for every arm). Judged fresh
+  seeds 7–9 × 6 ticks: (a) even roster ≥ 12/18; (c) moving target ≥ 9/18; (b) Law squad of five reported with losses;
+  side/rear share ≥ clicked; clicked byte-identical. **+ fight guard on (a)/(c): kills ≥ clicked − 2, alive ≥ clicked −
+  0.5 (orchestrator); flank-probe 3 fresh seeds + a before/after flank-clip for him.** Partial: (a) passes, (c) misses but
+  beats clicked by ≥ 5 runs → ships with (c) noted.
+
+- **Manoeuvre M2 bar (pre-registered 2026-10-12 evening):** (a) CREEP LIFT in drive() (C++ port follows): raise throttle to
+  the creep line only when avoidance's pace is untouched (≥ 0.99) and the full-lock arc lines up and is clear
+  (`--nav-off=creeplift`); (b) CIRCLE FILL in `_planned_reverse` (no port; `--nav-off=circlefill`). Base census 121 creep
+  episodes. Judged on untraced seeds, GDScript path, one commit: creep episodes down ≥ 50 % (30–50 % with a note); > 3-leg
+  episodes not up; Terminus arrivals ≥ base, wall contacts ≤ +10 %; bridge-pooled 18/18; ≤ 0.5 ms; symmetric. **+ after
+  native's port: bridge-pooled and the Terminus drive once on the ON path at the pair's commit (orchestrator).** Candidate
+  to brains: gang trucks screening into 6 m slots, one parallel-parks ~1 min.
+
+- **Scout CP-S1 NOT SHIPPED (2026-10-12, blind seeds 61–84, game/ = c138e589):** gun on point in SUPPRESS +6.32 pts, se 5.17
+  (n = 13): inside 2 se; guards held; fixed-gun kills 77 → 57 (−1.0/seed, se 0.5). Trace: ~60 % of SUPPRESS is a wheeled
+  hull coming round in legs at 19–32 % on point. Kept on `scout-s1-suppresslay`. **One last attempt after manoeuvre's M2
+  (the creep lift) merges (conditional: only if M2(a) ships): fresh seeds 85–108, kills promoted to a guard.** S2 (to brains B3): 23–30 % of fixed-gun deaths
+  under an ordered MOVE, 14–17 % retreating, 3–7 % in SUPPRESS.
+
+- **Traffic T1 v3 frozen at `672eb785` (2026-10-12 evening), single judged run on seeds {4,5,6} + the CPU side on both
+  Terminus cases.** v1–v2d were tuning arms on seeds 1–3; "v3" = the one judged version (= v2d's code). Design: a crossing
+  verdict per squad pair from mean headings (later squad slows as a whole, 0.4 floor); a head-on meeting in a street
+  (navmesh ends within 16 m both sides) is a one-lane bridge (the squad still in the open waits at 0.2); street keep-right
+  DROPPED (tuning: his head-on fast 716 → 990); open ground ORCA. Tuning seeds: fast contacts 294 → 198, 716 → 374,
+  277 → 160, 113 → 113; arrivals no fewer; no case slower. Its port queues behind manoeuvre's M2(a) (native down).
+
+- **Scout S3 bar (pre-registered):** a fixed gun on the lay planner short-halts only OUTSIDE its turning room
+  (`CombatMotion.halt_allowed`, no bearing condition; `--scout-off=halt`). PRIMARY gang_scout his case: runs with contact
+  9/18 → ≤ 4/18 (off arm ≥ 7 on the same commit); guards: gang's passing cases still pass, scout/law byte-identical; blind
+  census fresh seeds 109–132: gang contacts, in-reach on target, kills, all-fight on target not worse beyond 2 se.
+  Partial 5–6/18 with guards → ships with a note.
+
+- **Manoeuvre M2 FAILED its bar (2026-10-12, `27b56521`, builder0, GDScript path, untraced seeds):** creep episodes 148 →
+  123 (−17 %, bar ≥ 50 %); static ≤ 3-leg share 93 → 88 % (a new 39-leg episode by the circle fill); rigs on Terminus 55
+  → 51/64 arrived, contacts 1797 → 3261 → (b) circle fill OFF as pre-registered; (a) judged alone next (time-boxed); no
+  port needed yet. **M1 first judged run (`748735c9`):** line tasks meet the partial rule (27.6–27.9° v hover 28.1–28.7°;
+  base 39–103°); point tasks medians 6.5–7.5° (base 61–73°) but 55–67 % within 15° (bar 70 %), +15–27 crews still moving
+  at 75 s; a face-turn ping-pong fixed after (`--nav-off=faceslot`). **Ruled: M1's re-judge is its LAST attempt, on 6
+  fresh probe seeds, + guard: crews still moving at 75 s ≤ base + 5 per task.**
+
+- **Traffic T1 v3 FAILED (2026-10-12, `672eb785`, judged fresh seeds {4,5,6}, n = 18):** fast friendly contacts Terminus
+  crossing 183 → 199 (+8.7 %; between squads 82 → 58 but squadmates 101 → 141), Terminus head-on 871 → 419 (−52 %), yard
+  crossing 309 → 205 (−34 %), yard head-on 122 → 118: 2 of 4 (bar 3). Crews held, all-in ≤ +19.9 %, friendly-stuck down
+  in all four; CPU mirror Terminus head-on 868 → 431. Parked `traffic-t1-v3`. **Ruled: T1b = the street head-on
+  one-lane-bridge rule ALONE, last attempt, judged once on fresh seeds {7,8,9}:** Terminus head-on fast ≥ −25 %, crews
+  ≥ base − 2, all-in ≤ +20 %; other three cases not worse (fast ≤ +10 %, crews ≥ base − 2); friendly-stuck ≤ base × 1.2 +
+  10; bridge-pooled, arrive series, cost, native-verify-scenarios. The crossing half → round 29.
+
+- **C28.5 ruling on brains B1's (c) (2026-10-12 evening, before the judged run; tuning seen, disclosed):** tuning v4
+  (`c6cc7b6f`): (a) even roster on side 13/18 (median hit 33.9°) v clicked 0/18, killed 11 v 10, alive 2.11 v 2.33,
+  side/rear 0.93 v 0.81: passes. (c) under the CPU commander the lone IFV CHARGES the squad (10.5 m/s): v4 on side 8/18,
+  killed 12 v 18/18, alive 2.61 v 4.83: fails the guard. **Ruled: when the target closes inside the crews' reach, latch
+  "in" and fight where it is (`--approach-latch=off`); (c) on-side REPORTED, guard kept (kills ≥ clicked − 2, alive ≥
+  clicked − 0.5).** Reason: his call 4 was a stronger squad holding ground ((b) keeps "swing round anyway"); a target
+  charging into the squad has left the position the side was drawn against, and circling it gives a 60 m gun free shots
+  at 35 m guns. Told to him in player terms; reversible.
+
+- **Traffic T1b's judged run on {7,8,9} VOID (2026-10-12):** the rule never fired (verdict counter 0; `_avoid` gated Traffic
+  on turns/streetright only). Fixed at `474558f8` (gate includes streetturns; no parameter changed) + a live falsifier
+  (`test_traffic_turns_live`: his Terminus head-on must make a verdict). Re-run on fresh {10,11,12}, same bar, still the
+  last attempt; verdict counts per case reported.
+
+- **Manoeuvre M2 NOT SHIPPED (2026-10-12):** (a) alone also fails (creep −20 %, floor 30 %; rigs' wall contact-ticks 1797 →
+  4136: lifting rolls 10 m rigs into street walls, round 26's M3 again); 52 % of remaining creep is the friendly (pace < 1)
+  case. Kept `manoeuvre-m2`. Round 29: plan a long hull's creep as legs (M1b's planner in the drive); friendly creep via
+  traffic's give-way. No port needed. **Scout's conditional S1 retry is cancelled** (`scout-s1-suppresslay` parked).
+  M1's last attempt running at `140275af` on fresh seeds 2 4 7 9 15 19.
+
+- **B1's judged run started at `f3a0145d`** (v4 + latch, fresh seeds 7–9, three rosters). **B2 bar (pre-registered):** an
+  artillery element with a drawn approach drives to the nearest point within 20° of the side at its standoff
+  (max(80 m, target squad reach + 10), inside the mortar's band), straight if outside the enemy's reach else notching
+  round in a column. Stage: 3 mortar carriers v a holding Law IFV, attack drawn from the east. Measure: median FIRING
+  bearing within 35°. Fresh seeds 7–9: on side ≥ 15/18; first round ≤ clicked + 10 s; clicked byte-identical. **Partial
+  decided in advance: +10–15 s ships with a note; guard: crews alive ≥ clicked − 0.5 (orchestrator).**
+
+- **Traffic T1b FAILED (2026-10-12, `474558f8`, fresh seeds {10,11,12}, the rule fired: 19 verdicts on Terminus head-on):**
+  fast contacts 872 → 440 (−50 %) but crews 173 → 170 (bar ≥ 171), all-in +26 % (bar ≤ +20 %), friendly-stuck 629 → 839
+  (limit 764); other cases unchanged; CPU mirror 763 → 392, crews 170 → 173. Most of the excess is one wedged run (seed 12
+  t16: the waiting squad creeps at 0.2 into the street mouth and the squads lock). Parked `traffic-t1b`. **Round 29: a
+  real waiting spot outside the mouth that the stall clock, asks and unstick honour** (traffic + manoeuvre + brains).
+  Traffic → T3, then stops.
+
+- **Manoeuvre M1 NOT SHIPPED (2026-10-12, last attempt `140275af`, fresh seeds 2 4 7 9 15 19, 155 crews a task):** line
+  tasks pass the partial rule (screen 27.5°, ambush 26.8°, support by fire 27.6° v hover 28.1–29.0°; base 40.9–113.1°);
+  point tasks medians 5.2–6.1° (base 52–60°) but within-15° 70 / 69 / 64 % (bar 70 %) and **crews still moving at 75 s
+  +14 (move), +25 (right-drag), +12 (screen), +8 (sbf) over base (guard ≤ +5)**. Ruled (a): his price was "a few seconds
+  longer", not a minute of shuffling. Kept `manoeuvre-m1`. **Round 29: give the turn room among squadmates (a spread
+  before the face, or legs planned against squadmates' discs), re-judged on fresh seeds.**
+
+- **Native restarted (session `godot-native-34`); N6.1 + N6.2 at `d11f40ce`** (builder0 check 2522/0, 24/25: only
+  remote-guard-test's quiet-window case, a load flake at load ~27, passes alone): `native_motion` OFF by its price (the
+  planners' crossing costs more than the step: +1.7–3.5 %); `native_tank` ON (Tank._drive incl. move_and_slide as one
+  call, ~6.5 % cheaper tank/drive); `native_combat` ON (hit terms + take_hit arithmetic, 0 mismatches over 840). native-proof
+  equal on five maps. Merge after native-verify-suite; N6.4 granted (three seam lines in `pathing.gd`, `native_pathing`
+  OFF until proven). **Load-sensitive tooling:** `tools/test_quiet_window.sh` "records once the window opens" (1 of 2
+  samples in 30 s at load 27) — orchestrator's to harden.
+
+- **Brains B1 NOT SHIPPED, PARKED (2026-10-12, `f3a0145d`, fresh seeds 7–9):** (a) on side 10/18 (bar 12; tuning read 13)
+  but beats clicked clearly (median hit 33.2° v 67.8°, killed 10 v 4, alive 2.00 v 1.50, side/rear 0.87 v 0.77); (c)
+  4/18 v 0/18, guard FAILS (killed 10 v 18, alive 2.39 v 4.89: the latch keyed on the crews' 35 m reach barely fires, the
+  charging IFV stops at its own 45–60 m); (b) both arms wiped. **v8 refused:** it changes only (c)'s latch, so re-judging
+  (a) on new seeds would be seed-shopping. Kept `lab/brains-r28-flank`. Round 29: latch on the TARGET's reach; (a) is
+  close. B2 gated to batteries (B1's switch OFF, B2's ON), judged on its own bar.
+
+- **Scout S3 SHIPPED (2026-10-13, merged `de45a69f`, builder0 green 2521/0):** a fixed gun on the lay planner short-halts
+  only outside its turning room. His case (gang_scout) contact runs 9/18 → 0/18, all bars pass; blind seeds 109–132:
+  gang contacts −0.31/seed (se 0.24), in-reach on target −0.49 (se 1.71), kills 33 → 28 (inside 2 se, noted). Scout DONE;
+  kept `scout-s1-suppresslay`.
+
+- **Brains B2 PARKED (2026-10-13, `lab/brains-r28-battery` = `88b6a724`, tuning seeds 4–6):** fires from the side 18/18
+  (median shooter 28.2°), alive 3.00 = clicked, but first round 25.8 s v clicked 2.3 s (+23.5, past the +15 s cutoff):
+  ~90 m at ~4 m/s on a 90° swing after three traced fixes (a deployed mortar never leaving a named move; a relocating
+  battery holding fire via Element.relocating → ElementFeed → MOVE; the column re-laying its heading). Not judged
+  (would confirm the fail). **For him (round 29): shell from where it stands while driving round, or accept ~20–25 s.**
+- **Brains B3 FOUND: the CPU commander orders squads into the enemy** (seed 5 Parade, `make recon-probe`):
+  ElementCommander re-tasks recon squads to `screen` a point 45 m short of the enemy focus (SCREEN_AHEAD_M), the enemy
+  advances onto it (34 → 1 m by t 17) and the crews keep driving to their places. **Fix GO (DECLARED, CPU only):** stand the
+  screen off at SCOUT_STANDOFF (85 m) and re-aim when an enemy comes within it. Bar: fresh census seeds 13–24, fixed-gun
+  contacts under MOVE ≥ −50 %, recon deaths not up, CPU win rate within noise, thirteen declared; + all-unit MOVE
+  contacts and screen re-tasks/min reported (orchestrator).
+
+- **His bridge 106/108 BISECTED (brains B4, builder0):** `47b8527b`, `f193bcb8`, `2e2715e4` pass; **`7baffe24` (round 26's
+  brains merge: any heading given/taken/turned > 20° re-issues a crew's order)** and `090b345d` fail. Fix candidate
+  `254fd98f` (DECLARED; first named e3b6d2a9 in error): re-issue only when the TASK's drawn facing changed since the crew's order (`--reissue-heading=plan`
+  = round 26's rule). Bar: the 108 = 108/108 (107 with no new failing cell ships with a note); round 26's re-order tests
+  pass; arrive series fresh seeds 17–20 ≥ control − 1, median ≤ +2 %; thirteen declared; **+ the fight tests (pace-p0
+  phase 0, the let-go guard) all pass (orchestrator).**
+
+- **HIS PLAYTEST (2026-10-13): a queued screen after a waypoint** (`game_design.md` *Round 28, his playtest*) → **brains
+  B5, TOP priority** (after B3/B4's in-flight judged runs, coding now). GRANT: the order-queue hunk of
+  `game/control/rts_controls.gd` (`order_selection`'s element-task branch, the queue, `_copy_*`) and its tests. Probe
+  through the player's input (lesson 291), paused planning AND live; armed orders with an automatic facing take it from
+  the last queued waypoint; a drawn facing wins; unshifted orders byte-identical.
+
+- **Native N6.4 merged (`37e05351` = native `5033c8b1`+status; builder0 check 2523/0, native-verify-suite 0 mismatches):** the
+  nav wrappers in C++ (`native_pathing` ON, 300 pairs equal, price ~0). **N6.3 GRANTED as PERCEPTION ONLY** (line of sight,
+  sight ranges, contact gathering as one batched pass; seams in `game/ai/perception.gd` + the gathering call site;
+  `native_perception` ON once proven); **intel (what crews remember/believe) is NOT granted:** it is the AI's thinking he
+  deferred. Brains told not to edit perception.gd.
+
+- **Brains B3 judged (`b95a3d6e`, builder0, fresh showmatch seeds 13–24, n = 12 paired):** enemy hull contacts under an
+  ordered MOVE (all units) 9.25 → 2.33/seed (−75 %, se 2.71); all contacts −62 %, no role up; recon deaths 5.00 → 4.58
+  (not up); the same side wins 12/12; screen re-tasks per recon squad-minute 4.27 → 7.65 (≤ 1 a think, never < 10 m: not a
+  thrash; the knob if he sees CPU screens shuffle). Merges once the fixed-gun MOVE line (the bar's exact line) lands.
+- **Brains B4 FAILED (`254fd98f`, builder0, full 108):** 106/108: his two cells pass but two NEW cells fail (rust t5 seed
+  1 crossed 3/4; rust t16 seed 2 a rim crew). Parked `lab/brains-r28-reissue`. Round 29: the cause is pinned (7baffe24's
+  heading re-issue; `--reissue-heading=off` restores his cells); trace the two new cells before narrowing again.
+
+- **Brains B3 SHIPPED (merged `6efe3450` = `b95a3d6e`):** the bar's exact line, scout-census fixed guns, fresh seeds 13–24:
+  enemy hull contacts under an ordered MOVE 36 → 0 (per seed 3.00 → 0.00, se 1.50); all fixed-gun contacts 93 → 24; gun on
+  target 21.9 → 20.2 %, inside turning room 6.3 → 3.5 %.
+
+- **Native N6.3 (perception ONLY) at `a1174911`** (builder0 check 2524/0, 23 + 2 NOT JUDGED for box load; native-verify-suite
+  0 mismatches): C++ answers WHO SEES WHOM (Match._update_intel's per-enemy first viewer in sight radius on a clear line,
+  the gun-ready sample; rays cast from C++); intel stays GDScript (contact records, seen_tick, forgetting, stats);
+  `native_perception` ON, 240 poses / 7012 lines equal, price ~0 (the rays are the engine's). **N6 complete as granted.**
+  Queued for merge after main's closing check. Next: N7 proposal (core, outside thinking and round 29's contested code);
+  **E6b** (his laptop, everything shipped ON v all native off, rule D) on the orchestrator's GO when he is away.
+
+- **Native N7 (proposed `eaa5d433`, ordered 2026-10-13):** GO (1) projectile flight + impact queries (4–5 days; GRANT: seams in
+  shell.gd flight/hit, Match._land_rounds, Match.incoming_projectiles, _damage_estimate); then (2) the suppression field
+  (1–2 days; GRANT: threat_field.gd stamp/decay/at, Match._update_suppression). WAIT for round 29's split: (3) the tick's
+  scheduling around the brain (~3 %, needs an order_controller.gd freeze window), (4) wall contact's observer (1.47 %, on
+  nav/manoeuvre's say-so), (5) element_feed's gather (2.39 %, after round 29). (6) the match recorder last.
+
+- **CORRECTION (native, 2026-10-13): N6.4's and N6.3's prices were INVALID** — `NativePathing.usable()` /
+  `NativePerception.usable()` stepped aside when `OrderController.profile_detail` was on, and the tick profile sets it:
+  both arms ran GDScript. Correctness proofs stand (proofs, native-proof, checks and verify-suites run without the
+  profile). Fix in test (seams no longer depend on profile_detail); re-pricing. **Asked: audit every seam's gate against
+  every measurement mode; confirm E6 (stage 1 on his laptop) was NOT affected; a guard test asserting each ON switch's
+  native counter > 0 under the tick profile** (lesson 300's cousin).
+
+- **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
+  motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
+  (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
+  `game/tank/**`, seams only); (3) perception + intel as one batched pass (2–3 days; brains' file and stage 2's first
+  block: ask the orchestrator first); (4) the nav wrappers (1 day). Each: equal answer, thirteen and determinism unmoved,
+  native-proof on = off, native-verify-suite green, a switch ON once proven, its price reported. N3 diffs pre-empt.
 
 **Checkpoints:** E6 → native's ON commit (if it rules ON) → everyone merges main. CP-T, CP-M1, CP-M2, CP-S1 and brains'
 B1/B2 each merged ALONE as they go green (with native's port where C28.2 applies), queued by the orchestrator.

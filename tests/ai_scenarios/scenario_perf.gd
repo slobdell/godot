@@ -234,7 +234,17 @@ static func _first_line(path: String) -> String:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return ""
-	return file.get_line().replace(char(0), "").strip_edges()
+	# The bytes, NULs dropped, BEFORE decoding: on a hybrid machine (builder0) /sys/devices/cpu_*/cpus is NUL-padded, and
+	# get_line() decodes first, so the engine printed "Unicode parsing error ... Unexpected NUL character" once per file
+	# (round 28: check's engine-log gate failed native-verify-scenarios on exactly those two lines).
+	var bytes := PackedByteArray()
+	while not file.eof_reached():
+		var b := file.get_8()
+		if b == 10:
+			break
+		if b != 0:
+			bytes.append(b)
+	return bytes.get_string_from_utf8().strip_edges()
 
 
 ## `--perf-machine=NAME` or the kernel's hostname: the key into perf_nominal.json.

@@ -3860,3 +3860,41 @@ predicted band, but today's base on his laptop is 0.890, not round 26's 0.918, s
 Shipped as measured (native_exec + native_owned + native_cb ON). The rest of the gap is the think half (stage 2), which
 native prices for him next (N4).
 
+### Round 28: his stage 2 call, and a C++ principle (2026-10-12, in chat)
+
+> ok sure we'll go with your recommendation and defer, but we should flag as an open item. I think at this point, even if
+> there's not an obvious benefit to moving to C++, it would appear that long-term we are better positioned for a good game
+> by having the core components in C++
+
+Decided: **stage 2 (the AI's thinking in C++) is DEFERRED, an open item** (`roadmap.md` *Open items*), to be taken up once
+the AI's decisions settle. **His principle, superseding round 25's "port only what pays":** core components belong in C++
+long-term even without a measured speed gain; a port that is equal-answer, proven, and moves a core component (the
+execute's remaining GDScript, nav, perception, combat resolution) is worth doing on its own. The think half waits only
+because it is still changing.
+
+### Round 28: decided for him (the orchestrator, 2026-10-12 evening; reversible)
+
+- **A drawn flank against a target that charges your squad:** the squad stops going round and fights where it is once the
+  target is inside its guns' reach. His call 4 ("swing round anyway") stands for a squad that holds its ground; a lone
+  vehicle charging into five of yours is not the position he drew the side against, and circling it only gives it free
+  shots (measured: clicked kills it with no losses, circling costs ~2 vehicles). `--approach-latch=off` restores the
+  literal rule.
+
+## Round 28, his playtest (2026-10-13, in chat): a queued screen after a waypoint
+
+> ok, I just played the game. SOme feedback for you: I reported this earlier and it was never properly fixed. When I start
+> the game paused where I can plan initial movements in advance, I expect to be able to shift + screen click on top of an
+> existing waypoint such that my units will go to first first set of waypoints first (or just 1 waypoint as might be te
+> case in practice) then set up the screen from the angle defined by the preceding waypoint. As it stands if I shift +
+> click for screen then it just sets up the screen in a straight line from where the units currently are
+
+Orchestrator's reading and the miss: this is his round 26 report (*Round 26 direction*, the screen paragraph). Round 26
+read it as "armed orders need a facing" and built press–drag–release (C26.3); the queue he actually used was never fixed.
+Traced at main `47ce9cbe`: (1) an armed ELEMENT task never queues — `rts_controls.gd` ~1031/1110: "tasks replace, they do
+not stack — so it applies now", so shift+screen cancels his waypoints; (2) the screen's automatic heading is
+`point − element centre` (`element_plan.gd` `_plan_screen` ~1397), never the previous waypoint. **What he expects:** shift
+queues an armed order behind the squad's waypoints (one or several), in the paused planning phase and in play; the squad
+drives the waypoints in order; the screen (and every armed order with an automatic facing) is laid as seen from the LAST
+preceding waypoint (heading = screen point − that waypoint); a drawn facing still wins; a plain (unshifted) screen is
+today's behaviour. Given to brains as B5, top priority (grant: the order-queue hunk of `game/control/rts_controls.gd`).
+

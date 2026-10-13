@@ -1,0 +1,114 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (law): 4 pursuit cruisers, 8 retired apcs, 4 assault guns, 4 gas rocket trucks, 4 sonic emitters (5080 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (condemned): 16 tanks, 5 IFVs, 6 lancers (5150 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 27 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=24 rust_squads=7 rust=27
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/tactics/contact_census.gd:29)
+SKIRMISH_CAMERA focus=(-60, 88) zoom=0.61 vehicles=4
+DEMO_SEED 18 arena=gorge law vs condemned (replay: make showmatch SEED=18)
+CONTROL_GROUPS squads=5 (Battery:4 Eyes:4 Guns:4 Hunters:8 Sirens:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T01-13-54-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "18", "arena": "random", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns_2 destroyed Green_Guns_2 (score Green 0 : 1 Rust)
+NATIVE_EXEC 19722 native, 277 handed back (dead 0, reflexes 0, yielding 0, face 277, drive 0, other 0), 660 stale pulls, 2169 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 3 left
+Green_Guns_3 destroyed Rust_Guns2_4 (score Green 1 : 1 Rust)
+HUD_MESSAGE [info] We hold the far valley
+HUD_MESSAGE [info] Destroyed an enemy Tank (26 left)
+Rust_Guns4_1 destroyed Green_Eyes_4 (score Green 1 : 2 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 3 left
+HUD_MESSAGE [warning] Friendly fire: Hunters 4 hit Sirens 3
+Rust_Guns2_1 destroyed Green_Hunters_2 (score Green 1 : 3 Rust)
+Green_Guns_4 destroyed Rust_Guns4_1 (score Green 2 : 3 Rust)
+HUD_MESSAGE [warning] Eyes: shields down
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 7 left
+Rust_Guns_4 destroyed Green_Hunters_3 (score Green 2 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (25 left)
+Rust_Lances_2 destroyed Green_Eyes_2 (score Green 2 : 5 Rust)
+Rust_Guns3_5 destroyed teammate Rust_Lances_5 (friendly fire)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 6 left
+Green_Sirens_2 destroyed Rust_Guns_2 (score Green 3 : 5 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 2 left
+HUD_MESSAGE [info] Destroyed 2 enemies (23 left)
+TANK_OFF_FLOOR Rust_Guns_4 (tank) y=0.78 at (46.7, -53.5): separated from something along the vertical; it is now drawn above the floor
+HUD_MESSAGE [warning] Eyes: shields down
+Green_Guns_3 destroyed Rust_Guns2_2 (score Green 4 : 5 Rust)
+Green_Battery_3 destroyed Rust_Lances2_1 (score Green 5 : 5 Rust)
+Rust_Guns3_5 destroyed Green_Eyes_3 (score Green 5 : 6 Rust)
+Rust_Lances_2 destroyed Green_Sirens_4 (score Green 5 : 7 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (21 left)
+NATIVE_EXEC 39166 native, 833 handed back (dead 0, reflexes 0, yielding 0, face 833, drive 0, other 0), 979 stale pulls, 5346 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 1 left
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 3 left
+Rust_Guns_4 destroyed Green_Guns_1 (score Green 5 : 8 Rust)
+HUD_MESSAGE [warning] Guns: commander down, Guns 3 takes command
+HUD_MESSAGE [warning] Eyes: shields down
+Rust_Lances_4 destroyed Green_Eyes_1 (score Green 5 : 9 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 2 left
+Green_Hunters_5 destroyed Rust_Guns_3 (score Green 6 : 9 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 8 hit Hunters 7
+HUD_MESSAGE [warning] Friendly fire: Hunters 5 hit Hunters 1
+HUD_MESSAGE [error] Eyes destroyed
+HUD_MESSAGE [info] Destroyed an enemy Tank (20 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 4 hit Guns 3
+Green_Hunters_5 destroyed Rust_Guns_4 (score Green 7 : 9 Rust)
+Rust_Guns3_4 destroyed Green_Hunters_5 (score Green 7 : 10 Rust)
+Green_Hunters_1 destroyed Rust_Guns3_5 (score Green 8 : 10 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (18 left)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 5 left
+Green_Hunters_6 destroyed Rust_Guns3_4 (score Green 9 : 10 Rust)
+Rust_Guns2_1 destroyed Green_Hunters_7 (score Green 9 : 11 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Tank (17 left)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 4 left
+HUD_MESSAGE [warning] Hunters: shields down
+Rust_Guns_1 destroyed Green_Hunters_6 (score Green 9 : 12 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 3 left
+NATIVE_EXEC 59143 native, 856 handed back (dead 0, reflexes 0, yielding 0, face 856, drive 0, other 0), 1216 stale pulls, 9259 part pulls, 0 verified, 0 verify mismatches 
+Rust_Guns3_3 destroyed Green_Hunters_4 (score Green 9 : 13 Rust)
+Rust_Guns2_3 destroyed Green_Hunters_1 (score Green 9 : 14 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 8 takes command
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (Retired APC, Retired APC), 1 left
+Rust_Lances_1 destroyed Green_Hunters_8 (score Green 9 : 15 Rust)
+Green_Guns_4 destroyed Rust_Guns2_1 (score Green 10 : 15 Rust)
+HUD_MESSAGE [error] Hunters destroyed
+HUD_MESSAGE [info] Destroyed an enemy Tank (16 left)
+Rust_Guns2_5 destroyed Green_Sirens_2 (score Green 10 : 16 Rust)
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 2 left
+Rust_Guns2_3 destroyed Green_Sirens_1 (score Green 10 : 17 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 3 takes command
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 1 left
+Rust_Guns2_5 destroyed Green_Sirens_3 (score Green 10 : 18 Rust)
+HUD_MESSAGE [error] Sirens destroyed
+HUD_MESSAGE [warning] Guns: shields down
+Rust_Guns2_5 destroyed Green_Guns_4 (score Green 10 : 19 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 1 left
+Rust_Guns3_2 destroyed Green_Guns_3 (score Green 10 : 20 Rust)
+HUD_MESSAGE [error] Guns destroyed
+NATIVE_EXEC 79142 native, 857 handed back (dead 0, reflexes 0, yielding 0, face 857, drive 0, other 0), 1389 stale pulls, 10684 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] The enemy took the valley
+NATIVE_EXEC 99137 native, 862 handed back (dead 0, reflexes 0, yielding 0, face 862, drive 0, other 0), 1643 stale pulls, 11584 part pulls, 0 verified, 0 verify mismatches 
+Rust_Lances_4 destroyed Green_Battery_3 (score Green 10 : 21 Rust)
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns3_3 destroyed Green_Battery_4 (score Green 10 : 22 Rust)
+HUD_MESSAGE [warning] Battery lost 2 vehicles (Gas Rocket Truck, Gas Rocket Truck), 2 left
+HUD_MESSAGE [warning] Battery: shields down
+Rust_Guns3_3 destroyed Green_Battery_2 (score Green 10 : 23 Rust)
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 1 left
+Rust_Guns2_3 destroyed Green_Battery_1 (score Green 10 : 24 Rust)
+HUD_MESSAGE [error] DEFEAT
+HUD_MESSAGE [error] Battery destroyed
+NATIVE_EXEC 119119 native, 880 handed back (dead 0, reflexes 0, yielding 0, face 880, drive 0, other 0), 1931 stale pulls, 12212 part pulls, 0 verified, 0 verify mismatches 
+CONTACT_CENSUS {"alive":[0,16],"by_option":{},"by_role":{},"contacts":0,"recon_crews":4,"recon_deaths":4,"recon_squad_minutes":0.54,"screen_off":false,"screen_tasks":7,"seed":18,"under_move":0}

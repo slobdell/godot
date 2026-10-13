@@ -1,0 +1,78 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (syndicate): 6 skimmers, 3 limousine gunships, 4 railgun platforms, 3 spotter platforms (5060 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 16 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (gangs): 16 rat rods, 7 gun trucks, 14 wrecker catapults, 7 resupply tankers (5180 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 621 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=16 rust_squads=11 rust=44
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-45, 82) zoom=0.58 vehicles=6
+DEMO_SEED 20 arena=cut syndicate vs gangs (replay: make showmatch SEED=20)
+CONTROL_GROUPS squads=4 (Eyes:6 Guns:4 Hunters:3 Lances:3) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-35-07-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "20", "arena": "random", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [warning] Friendly fire: Eyes 1 hit Eyes 3
+Green_Guns_4 destroyed Rust_Spears_3 (score Green 1 : 0 Rust)
+Green_Guns_1 destroyed Rust_Hunters2_1 (score Green 2 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (42 left)
+NATIVE_EXEC 19430 native, 569 handed back (dead 0, reflexes 0, yielding 0, face 569, drive 0, other 0), 541 stale pulls, 2689 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_4 destroyed Rust_Wrenches2_2 (score Green 3 : 0 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 3 hit Hunters 2
+HUD_MESSAGE [warning] Friendly fire: Lances 2 hit Eyes 2
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (41 left)
+Green_Guns_2 destroyed Rust_Wrenches_4 (score Green 4 : 0 Rust)
+Green_Eyes_2 destroyed Rust_Wrenches_1 (score Green 5 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (39 left)
+Green_Eyes_2 destroyed Rust_Spears4_1 (score Green 6 : 0 Rust)
+SCOUT_EVENT t=18.7 Rust_Spears2_4 contact Green_Eyes_5 at (49, -29) option=CLEAR_LANE why=assault through, squad focus, guarding artillery, Rust_Spears3_4 in the line of fire
+Green_Guns_1 destroyed Rust_Spears_1 (score Green 7 : 0 Rust)
+Green_Hunters_3 destroyed Rust_Spears_4 (score Green 8 : 0 Rust)
+Rust_Spears3_5 destroyed Green_Eyes_6 (score Green 8 : 1 Rust)
+SCOUT_EVENT t=19.3 Rust_Spears2_4 contact Green_Eyes_3 at (47, -26) option=ENGAGE why=assault through, squad focus, guarding artillery, in its slot, holding at standoff
+SCOUT_EVENT t=19.8 Rust_Spears2_4 contact Green_Eyes_3 at (45, -26) option=ENGAGE why=assault through, guarding artillery, in its slot, going for its side, backing up to keep its gun on it
+HUD_MESSAGE [warning] The enemy took the far band
+HUD_MESSAGE [info] Destroyed 3 enemies (36 left)
+Green_Lances_1 destroyed Rust_Spears_5 (score Green 9 : 1 Rust)
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 5 left
+HUD_MESSAGE [warning] Friendly fire: Hunters 1 hit Eyes 5
+Green_Guns_4 destroyed Rust_Hunters2_2 (score Green 10 : 1 Rust)
+SCOUT_EVENT t=21.1 Rust_Spears3_4 contact Green_Eyes_4 at (60, -44) option=ENGAGE why=react to contact, squad focus, guarding artillery, short halt
+SCOUT_EVENT t=21.2 Rust_Spears3_4 contact Green_Eyes_4 at (60, -43) option=ENGAGE why=react to contact, squad focus, guarding artillery, short halt
+HUD_MESSAGE [info] Destroyed 2 enemies (34 left)
+Rust_Spears3_3 destroyed Green_Eyes_4 (score Green 10 : 2 Rust)
+Green_Lances_2 destroyed Rust_Spears2_5 (score Green 11 : 2 Rust)
+Green_Hunters_3 destroyed Rust_Spears2_4 (score Green 12 : 2 Rust)
+NATIVE_EXEC 39229 native, 770 handed back (dead 0, reflexes 0, yielding 0, face 770, drive 0, other 0), 1237 stale pulls, 6710 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 4 left
+Green_Hunters_2 destroyed Rust_Battery3_1 (score Green 13 : 2 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (31 left)
+Green_Guns_2 destroyed Rust_Wrenches_3 (score Green 14 : 2 Rust)
+Green_Hunters_3 destroyed Rust_Spears2_2 (score Green 15 : 2 Rust)
+SCOUT_EVENT t=25.9 Rust_Spears_2 contact Green_Eyes_3 at (2, -28) option=ENGAGE why=assault through, guarding artillery, short halt
+Green_Lances_2 destroyed Rust_Battery_4 (score Green 16 : 2 Rust)
+Green_Hunters_2 destroyed Rust_Battery_1 (score Green 17 : 2 Rust)
+HUD_MESSAGE [info] Destroyed 4 enemies (27 left)
+Green_Hunters_3 destroyed Rust_Spears_2 (score Green 18 : 2 Rust)
+Green_Hunters_1 destroyed Rust_Spears2_3 (score Green 19 : 2 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (25 left)
+Green_Hunters_3 destroyed Rust_Spears3_1 (score Green 20 : 2 Rust)
+Green_Hunters_1 destroyed Rust_Spears3_4 (score Green 21 : 2 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (23 left)
+Green_Hunters_2 destroyed Rust_Spears3_3 (score Green 22 : 2 Rust)
+Green_Guns_4 destroyed Rust_Spears3_2 (score Green 23 : 2 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 1 hit Eyes 3
+HUD_MESSAGE [info] Destroyed 2 enemies (21 left)
+Green_Hunters_2 destroyed Rust_Spears3_5 (score Green 24 : 2 Rust)
+Green_Hunters_3 destroyed Rust_Spears2_1 (score Green 25 : 2 Rust)
+SCOUT_CENSUS {"arena":"cut","breakdown":{"CLEAR_LANE/other":[10.8333333333333,7.76666666666665,1.0,161.773411750793,20.3647090276082],"COVER_FIRE/other":[1.6,1.56666666666667,0.0,18.2926364103953,0.0],"ENGAGE/chase":[9.46666666666664,5.33333333333332,1.4,143.588966814677,38.4566024780273],"ENGAGE/hold":[27.1333333333338,25.6666666666671,9.56666666666664,480.499150053659,189.801173353195],"ENGAGE/lay":[65.5666666666655,63.2333333333323,15.3666666666666,1191.66240420342,294.119874159495],"ENGAGE/other":[2.03333333333334,0.0,0.0,0.0,0.0],"ENGAGE/ring":[41.0333333333336,4.26666666666666,0.466666666666667,111.696037006378,13.6342871983846]},"close_s":10.8,"contacts":6,"contacts_target":4,"damage":1285.5,"deaths":16,"factions":["syndicate","gangs"],"fight_s":157.666666666666,"kills":2,"on_target_s":27.8,"per_scout":{"Rust_Spears2_1":{"alive_s":33.533333333334,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":16.9666666666667,"on_target_s":2.13333333333334,"reverse_s":4.19999999999999,"team":1,"unit":"gang_scout"},"Rust_Spears2_2":{"alive_s":25.1333333333337,"close_s":0.333333333333333,"contacts":0,"contacts_target":0,"fight_s":12.3,"on_target_s":0.6,"reverse_s":1.96666666666667,"team":1,"unit":"gang_scout"},"Rust_Spears2_3":{"alive_s":27.6666666666672,"close_s":0.366666666666667,"contacts":0,"contacts_target":0,"fight_s":12.9333333333333,"on_target_s":0.366666666666667,"reverse_s":2.86666666666667,"team":1,"unit":"gang_scout"},"Rust_Spears2_4":{"alive_s":23.4000000000003,"close_s":1.13333333333333,"contacts":3,"contacts_target":1,"fight_s":10.2333333333333,"on_target_s":1.0,"reverse_s":2.86666666666667,"team":1,"unit":"gang_scout"},"Rust_Spears2_5":{"alive_s":22.8333333333336,"close_s":1.03333333333333,"contacts":0,"contacts_target":0,"fight_s":8.99999999999998,"on_target_s":2.73333333333333,"reverse_s":4.93333333333333,"team":1,"unit":"gang_scout"},"Rust_Spears3_1":{"alive_s":29.2333333333339,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":13.4333333333333,"on_target_s":3.76666666666666,"reverse_s":5.66666666666666,"team":1,"unit":"gang_scout"},"Rust_Spears3_2":{"alive_s":31.5666666666674,"close_s":0.466666666666667,"contacts":0,"contacts_target":0,"fight_s":16.3666666666666,"on_target_s":3.1,"reverse_s":3.06666666666667,"team":1,"unit":"gang_scout"},"Rust_Spears3_3":{"alive_s":31.1000000000007,"close_s":1.2,"contacts":0,"contacts_target":0,"fight_s":15.9666666666666,"on_target_s":4.03333333333333,"reverse_s":3.9,"team":1,"unit":"gang_scout"},"Rust_Spears3_4":{"alive_s":29.5666666666673,"close_s":3.3,"contacts":2,"contacts_target":2,"fight_s":12.2,"on_target_s":3.0,"reverse_s":3.93333333333333,"team":1,"unit":"gang_scout"},"Rust_Spears3_5":{"alive_s":32.933333333334,"close_s":1.33333333333333,"contacts":0,"contacts_target":0,"fight_s":14.1333333333333,"on_target_s":3.73333333333333,"reverse_s":4.33333333333333,"team":1,"unit":"gang_scout"},"Rust_Spears4_1":{"alive_s":18.6666666666668,"close_s":0.233333333333333,"contacts":0,"contacts_target":0,"fight_s":6.16666666666665,"on_target_s":1.86666666666667,"reverse_s":2.5,"team":1,"unit":"gang_scout"},"Rust_Spears_1":{"alive_s":18.8333333333334,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":3.5,"on_target_s":0.0,"reverse_s":0.0,"team":1,"unit":"gang_scout"},"Rust_Spears_2":{"alive_s":27.1333333333338,"close_s":1.4,"contacts":1,"contacts_target":1,"fight_s":5.66666666666666,"on_target_s":0.0333333333333333,"reverse_s":1.1,"team":1,"unit":"gang_scout"},"Rust_Spears_3":{"alive_s":7.56666666666665,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0666666666666667,"on_target_s":0.0,"reverse_s":0.0,"team":1,"unit":"gang_scout"},"Rust_Spears_4":{"alive_s":19.1000000000001,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":4.89999999999999,"on_target_s":0.7,"reverse_s":0.4,"team":1,"unit":"gang_scout"},"Rust_Spears_5":{"alive_s":20.3666666666668,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":3.83333333333333,"on_target_s":0.733333333333333,"reverse_s":0.0,"team":1,"unit":"gang_scout"}},"reverse_s":41.7333333333333,"scouts":16,"seed":20}
