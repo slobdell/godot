@@ -162,6 +162,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var still_since := -1
 	var stopped := -1
 	var closest := INF
+	var events_seen := 0
 	var trace := _flag("trace", "off") == "on"
 	# Round 12: the shape ON THE WAY. While the element is in transit, each crew's distance from its station is averaged
 	# (`transit_gap_m`: the lead's "they all split apart" as a number), and the moment the anchor reaches the click is
@@ -305,6 +306,12 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 				if st is Vector3:
 					track["stations"][unit_name] = [snappedf((st as Vector3).x, 0.1), snappedf((st as Vector3).z, 0.1)]
 			print("SETTLE_TRACK " + JSON.stringify(track))
+		if trace and element.events.size() != events_seen:
+			# Round 29 (B5a): each element event (re-seat, make room) as it happens, with the crews' seats then.
+			for i in range(mini(events_seen, element.events.size()) if element.events.size() >= events_seen else 0,
+					element.events.size()):
+				print("SETTLE_EVENT t=%.1f %s" % [now / float(SimClock.TICK_RATE), element.events[i]])
+			events_seen = element.events.size()
 		if trace and now % SimClock.TICK_RATE == 0:
 			var parts: Array = []
 			for unit_name: String in names:
