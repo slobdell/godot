@@ -1009,6 +1009,13 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	# is ordered one squad at a time, side by side - never as one heap of vehicles, never as one element.
 	if verb != "stop" and several_squads():
 		return _order_squads(verb, extra, selection_squads())
+	# Round 28 (brains B5, his playtest): shift + a task on a squad that is still driving its waypoints QUEUES behind them.
+	# Only the tasks a crew cannot be given (screen, support by fire, ambush): a shifted move, attack-move or attack keeps
+	# today's direct queue (his waypoint route, which already chains from the last stop).
+	if bool(extra.get("queue", false)) and ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb) and elements != null:
+		var queued: Variant = _queue_task(verb, extra)
+		if queued is String:
+			return queued
 	if _is_task(verb, extra):
 		return assign_task(verb, extra)
 	# Round 11 (the lead, playing: *"I get warning when I try to use screen: Can't 'verb' must be one of move,
@@ -1107,7 +1114,15 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
 		var error := ""
-		if elements != null and ELEMENT_TASKS.has(verb) and (not queue or element_only):
+		# Round 28 (B5): shift + a task on squads still driving their waypoints: each squad queues behind its own.
+		var queued: Variant = null
+		if queue and element_only and elements != null:
+			var held: Element = squad.get("element")
+			queued = _queue_task_for(squad["units"], held if held != null and is_instance_valid_element(held) else null,
+					int(squad.get("number", 0)), verb, given, squad_formation(squad))
+		if queued is String:
+			error = queued
+		elif elements != null and ELEMENT_TASKS.has(verb) and (not queue or element_only):
 			error = _task_squad(squad, verb, given)
 		elif element_only:
 			error = _refuse("tasks need the doctrine layer, which this match is running without")
@@ -1176,6 +1191,83 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	if error == "":
 		_acknowledge(command)
 	return error
+
+
+## Round 28 (brains B5; the lead, 2026-10-13: *"I expect to be able to shift + screen click on top of an existing
+## waypoint such that my units will go to the first set of waypoints first … then set up the screen from the angle
+## defined by the preceding waypoint. As it stands … it just sets up the screen in a straight line from where the units
+## currently are"*; he reported it in round 26 too and it was read as "armed orders need a facing"). A shifted task on a
+## squad that is still busy — its element has a task, or its crews still drive his own shift-queued waypoints — goes
+## to the element's QUEUE (Element.enqueue) and starts when the work ahead of it is done. Its AUTOMATIC facing is the
+## way in from the last waypoint (point − waypoint); a drawn one wins. Returns
+## "" or a refusal when it queued, null when there is nothing to queue behind (the order goes on as before).
+func _queue_task(verb: String, extra: Dictionary) -> Variant:
+	return _queue_task_for(selection.units, selected_element(), selected_group(), verb, extra, selected_formation())
+
+
+## One squad's half of _queue_task (round 28, B5; also each squad of a several-squad selection, `_order_squads`).
+func _queue_task_for(units: Array, element: Element, number: int, verb: String, extra: Dictionary,
+		shape: String) -> Variant:
+	var origin: Variant = null
+	if element != null and not element.task.is_empty():
+		origin = element.last_point()
+	else:
+		if number == 0 and element == null:
+			return null
+		origin = _waypoints_end(units)
+		if origin == null:
+			return null  # nothing driving: the order applies now, as before
+		if element == null:
+			element = elements.form(units.duplicate(), groups.label(number))
+			if element == null:
+				return null
+	var task := {"verb": String(ELEMENT_TASKS[verb])}
+	if extra.has("to"):
+		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
+	if extra.has("target"):
+		task["target"] = String(extra["target"])
+	if extra.has("facing"):
+		task["facing"] = extra["facing"]
+	_copy_approach(extra, task)
+	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
+		task["formation"] = shape
+	if task["verb"] == "move" and not task.has("to"):
+		return _refuse("a move task needs somewhere to go")
+	if verb == "move":
+		task["drills"] = false
+	if origin is Vector3:
+		var from: Vector3 = origin
+		if verb != "move" and task.has("to") and not task.has("facing"):
+			var way := Vector3(float(task["to"][0]) - from.x, 0.0, float(task["to"][1]) - from.z)
+			if way.length() > 1.0:
+				task["facing"] = [way.normalized().x, way.normalized().z]
+				task["facing_from"] = "waypoint"
+	var error := element.enqueue(task)
+	_squads_changed()
+	var command := UnitCommand.make(units, verb, extra)
+	command["task"] = true
+	command_issued.emit(command, error)
+	if error == "":
+		_acknowledge(command)
+	return error
+
+
+## Round 28 (B5): where his crews' own orders (current and shift-queued) end, as the centre of their last goals; null
+## when none of them has one.
+func _waypoints_end(units: Array) -> Variant:
+	if orders == null:
+		return null
+	var total := Vector3.ZERO
+	var count := 0
+	for unit_name: String in units:
+		var chain: Array = [orders.current(unit_name)] + orders.queue(unit_name)
+		for i in range(chain.size() - 1, -1, -1):
+			var goal: Variant = Orders.goal_of(chain[i], game_match) if not (chain[i] as Dictionary).is_empty() else null
+			if goal is Vector3:
+				total += Vector3((goal as Vector3).x, 0.0, (goal as Vector3).z)
+				count += 1
+				break
+	return total / float(count) if count > 0 else null
 
 
 ## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
@@ -2567,6 +2659,59 @@ func queued_facings() -> Array:
 	return result
 
 
+## Round 28 (B5): the tasks a selected squad has QUEUED behind its waypoints, one mark each, linked from the stop
+## before it: [{"verb", "point": Vector3, "from": Vector3, "facing": Vector3 (if any)}]. He plans by looking at it.
+func queued_task_marks() -> Array:
+	var result: Array = []
+	if elements == null or selection.units.is_empty():
+		return result
+	for element in selected_elements():
+		var before: Variant = ElementTask.destination(element.task) if not element.task.is_empty() \
+				else _waypoints_end(Array(element.members()))
+		for queued: Dictionary in element.queued_tasks:
+			var point: Variant = ElementTask.destination(queued)
+			if not point is Vector3:
+				continue
+			var mark := {"verb": String(queued.get("verb", "")), "point": point}
+			if before is Vector3:
+				mark["from"] = before
+			var way: Variant = ElementTask.facing(queued)
+			if way is Vector3:
+				mark["facing"] = way
+			result.append(mark)
+			before = point
+	return result
+
+
+func _draw_queued_task_marks(font: Font, px: int, glyph_px: float) -> void:
+	for mark: Dictionary in queued_task_marks():
+		var color := Color(_order_color(String(mark["verb"])), 0.75)
+		var at: Variant = _screen_point(mark["point"])
+		if at == null:
+			continue
+		if mark.has("from"):
+			var from: Variant = _screen_point(mark["from"])
+			if from != null:
+				draw_dashed_line(from, at, Color(color, 0.6), 1.5, 8.0)
+		_draw_ground_ring(mark["point"], 6.0, color, 2.0)
+		if mark.has("facing"):
+			_draw_ordered_facing(mark["point"], mark["facing"], color)
+		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)
+		draw_line(at, head + ((at as Vector2) - head).normalized() * glyph_px * 0.62, color, 2.0)
+		draw_circle(head, glyph_px * 0.62, Color(0, 0, 0, 0.6))
+		draw_arc(head, glyph_px * 0.62, 0.0, TAU, 32, color, 1.5, true)
+		var verb := String(mark["verb"])
+		if CommandIcons.has_task_graphic(verb):
+			draw_texture_rect(CommandIcons.task_texture(verb), Rect2(head - Vector2.ONE * glyph_px * 0.42,
+					Vector2.ONE * glyph_px * 0.84), false, color)
+		var label := "%s · next" % String(ORDER_VERB_NAMES.get(verb, verb.to_upper()))
+		var text_size := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, px)
+		var plate := Rect2(head + Vector2(glyph_px * 0.8, -text_size.y * 0.5 - 3.0), text_size + Vector2(10.0, 6.0))
+		draw_rect(plate, Color(0, 0, 0, 0.6))
+		draw_string(font, plate.position + Vector2(5.0, 3.0 + font.get_ascent(px)), label, HORIZONTAL_ALIGNMENT_LEFT, -1, px,
+				color)
+
+
 func _draw_order_marks() -> void:
 	for queued: Dictionary in queued_facings():
 		_draw_ordered_facing(queued["point"], queued["facing"], Color(_order_color(queued["verb"]), 0.6))
@@ -2574,6 +2719,7 @@ func _draw_order_marks() -> void:
 	var scale := CyberStyle.ui_scale(size)
 	var px := roundi(14.0 * scale)
 	var glyph_px := ORDER_MARK_PX * scale
+	_draw_queued_task_marks(font, px, glyph_px)
 	for mark: Dictionary in order_marks():
 		var color := _order_color(String(mark["verb"]))
 		if int(mark.get("refusing", 0)) > 0:

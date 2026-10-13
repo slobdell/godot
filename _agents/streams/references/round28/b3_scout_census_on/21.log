@@ -1,0 +1,84 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (condemned): 4 scouts, 8 tanks, 8 IFVs, 5 artillery, 4 lancers (5140 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 41 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (syndicate): 4 skimmers, 6 limousine gunships, 3 railgun platforms, 3 missile rings (5190 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 16 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=29 rust_squads=5 rust=16
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-61, 78) zoom=0.58 vehicles=5
+DEMO_SEED 21 arena=parade condemned vs syndicate (replay: make showmatch SEED=21)
+CONTROL_GROUPS squads=5 (Battery:5 Eyes:4 Guns:8 Hunters:8 Lances:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-35-31-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "21", "arena": "random", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Hunters_1 destroyed Green_Hunters_4 (score Green 0 : 1 Rust)
+HUD_MESSAGE [warning] Hunters lost an IFV, 7 left
+Green_Guns_1 destroyed Rust_Hunters_1 (score Green 1 : 1 Rust)
+Rust_Hunters_5 destroyed Green_Guns_5 (score Green 1 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (15 left)
+HUD_MESSAGE [warning] Guns lost a Tank, 7 left
+Rust_Guns_2 destroyed Green_Eyes_2 (score Green 1 : 3 Rust)
+HUD_MESSAGE [warning] Friendly fire: Eyes 4 hit Guns 1
+NATIVE_EXEC 19630 native, 369 handed back (dead 0, reflexes 0, yielding 0, face 369, drive 0, other 0), 446 stale pulls, 2691 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Friendly fire: Hunters 2 hit Guns 6
+Rust_Guns_1 destroyed Green_Hunters_1 (score Green 1 : 4 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 2 takes command
+HUD_MESSAGE [warning] Eyes lost a Scout, 3 left
+Green_Hunters_5 destroyed Rust_Hunters_2 (score Green 2 : 4 Rust)
+Rust_Guns_3 destroyed Green_Guns_1 (score Green 2 : 5 Rust)
+HUD_MESSAGE [warning] Guns: commander down, Guns 2 takes command
+HUD_MESSAGE [warning] Hunters lost an IFV, 6 left
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (14 left)
+HUD_MESSAGE [warning] Friendly fire: Eyes 3 hit Hunters 3
+HUD_MESSAGE [warning] Friendly fire: Hunters 3 hit Eyes 4
+HUD_MESSAGE [warning] Guns lost a Tank, 6 left
+Green_Guns_4 destroyed Rust_Hunters_5 (score Green 3 : 5 Rust)
+Rust_Guns_2 destroyed Green_Eyes_4 (score Green 3 : 6 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (13 left)
+Rust_Hunters_4 destroyed Green_Guns_6 (score Green 3 : 7 Rust)
+HUD_MESSAGE [warning] Eyes lost a Scout, 2 left
+Rust_Guns_1 destroyed Green_Eyes_3 (score Green 3 : 8 Rust)
+HUD_MESSAGE [warning] Guns lost a Tank, 5 left
+Green_Guns_3 destroyed Rust_Eyes_3 (score Green 4 : 8 Rust)
+Rust_Guns_3 destroyed Green_Hunters_2 (score Green 4 : 9 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 3 takes command
+Rust_Battery_3 destroyed Green_Hunters_5 (score Green 4 : 10 Rust)
+HUD_MESSAGE [warning] Eyes lost a Scout, 1 left
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (12 left)
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (IFV, IFV), 4 left
+Green_Lances_4 destroyed Rust_Hunters_4 (score Green 5 : 10 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (11 left)
+HUD_MESSAGE [warning] Hunters: shields down
+Green_Guns_3 destroyed Rust_Eyes_1 (score Green 6 : 10 Rust)
+Rust_Guns_1 destroyed Green_Hunters_3 (score Green 6 : 11 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 6 takes command
+HUD_MESSAGE [warning] Friendly fire: Eyes 1 hit Guns 2
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (10 left)
+HUD_MESSAGE [warning] Hunters lost an IFV, 3 left
+Green_Hunters_7 destroyed Rust_Eyes_2 (score Green 7 : 11 Rust)
+Green_Guns_2 destroyed Rust_Eyes_4 (score Green 8 : 11 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (8 left)
+Rust_Guns_2 destroyed Green_Guns_2 (score Green 8 : 12 Rust)
+HUD_MESSAGE [warning] Guns: commander down, Guns 3 takes command
+Rust_Guns_3 destroyed Green_Eyes_1 (score Green 8 : 13 Rust)
+SCOUT_CENSUS {"arena":"parade","breakdown":{"CLEAR_LANE/other":[0.766666666666667,0.766666666666667,0.0,29.111766688029,0.0],"ENGAGE/chase":[0.2,0.0666666666666667,0.0666666666666667,2.38102213541667,2.38102213541667],"ENGAGE/lay":[4.83333333333333,4.83333333333333,1.9,138.377159277598,44.6626756668091],"ENGAGE/ring":[4.96666666666666,0.4,0.0,17.397411219279,0.0],"FLANK/other":[12.3333333333333,6.43333333333332,0.633333333333333,232.016320196788,25.5074635823568],"SUPPRESS/other":[19.3333333333335,19.3333333333335,3.63333333333333,509.523258654276,105.063161659241]},"close_s":0.966666666666667,"contacts":0,"contacts_target":0,"damage":81.9899985790253,"deaths":4,"factions":["condemned","syndicate"],"fight_s":42.4333333333336,"kills":0,"on_target_s":6.23333333333333,"per_scout":{"Green_Eyes_1":{"alive_s":34.4333333333339,"close_s":0.366666666666667,"contacts":0,"contacts_target":0,"fight_s":22.1000000000003,"on_target_s":3.76666666666666,"reverse_s":5.19999999999999,"team":0,"unit":"scout"},"Green_Eyes_2":{"alive_s":14.2666666666666,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":3.06666666666667,"on_target_s":0.333333333333333,"reverse_s":0.0,"team":0,"unit":"scout"},"Green_Eyes_3":{"alive_s":22.7333333333336,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":8.73333333333331,"on_target_s":1.7,"reverse_s":1.43333333333333,"team":0,"unit":"scout"},"Green_Eyes_4":{"alive_s":20.2666666666668,"close_s":0.6,"contacts":0,"contacts_target":0,"fight_s":8.53333333333331,"on_target_s":0.433333333333333,"reverse_s":1.5,"team":0,"unit":"scout"}},"reverse_s":8.13333333333333,"scouts":4,"seed":21}
+Green_Guns_4 destroyed Rust_Hunters2_1 (score Green 9 : 13 Rust)

@@ -1,0 +1,76 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (law): 4 pursuit cruisers, 8 retired apcs, 8 assault guns, 4 sonic emitters (5120 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (syndicate): 6 skimmers, 3 limousine gunships, 3 missile rings, 5 spotter platforms (5000 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=24 rust_squads=5 rust=17
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/scout/scout_census.gd:50)
+SKIRMISH_CAMERA focus=(-46, 87) zoom=0.62 vehicles=4
+DEMO_SEED 14 arena=pit law vs syndicate (replay: make showmatch SEED=14)
+CONTROL_GROUPS squads=4 (Eyes:4 Guns:8 Hunters:8 Sirens:4) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T02-33-47-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "14", "arena": "random", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Battery_2 destroyed Green_Eyes_3 (score Green 0 : 1 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 3 left
+HUD_MESSAGE [info] We hold the east yard
+Rust_Lances_3 destroyed Green_Sirens_1 (score Green 0 : 2 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 2 takes command
+NATIVE_EXEC 19557 native, 442 handed back (dead 0, reflexes 0, yielding 0, face 442, drive 0, other 0), 390 stale pulls, 2321 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 3 left
+Green_Hunters_2 destroyed Rust_Hunters_2 (score Green 1 : 2 Rust)
+Green_Hunters_6 destroyed Rust_Eyes_3 (score Green 2 : 2 Rust)
+NATIVE_EXEC 38654 native, 1345 handed back (dead 0, reflexes 0, yielding 0, face 1345, drive 0, other 0), 582 stale pulls, 5870 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed 2 enemies (15 left)
+Rust_Lances_4 destroyed Green_Hunters_7 (score Green 2 : 3 Rust)
+Green_Guns_1 destroyed Rust_Eyes_5 (score Green 3 : 3 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 7 left
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (14 left)
+Rust_Battery_1 destroyed Green_Hunters_5 (score Green 3 : 4 Rust)
+Rust_Lances_2 destroyed Green_Hunters_4 (score Green 3 : 5 Rust)
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (Retired APC, Retired APC), 5 left
+Rust_Lances_5 destroyed Green_Hunters_3 (score Green 3 : 6 Rust)
+HUD_MESSAGE [warning] Eyes: shields down
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 4 left
+HUD_MESSAGE [warning] Friendly fire: Eyes 4 hit Eyes 1
+Green_Guns_1 destroyed Rust_Hunters_1 (score Green 4 : 6 Rust)
+HUD_MESSAGE [warning] Hunters: shields down
+Rust_Lances_3 destroyed Green_Eyes_4 (score Green 4 : 7 Rust)
+Rust_Lances_3 destroyed Green_Eyes_1 (score Green 4 : 8 Rust)
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 2 takes command
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (13 left)
+HUD_MESSAGE [warning] Eyes lost 2 vehicles (Pursuit Cruiser, Pursuit Cruiser), 1 left
+NATIVE_EXEC 58239 native, 1760 handed back (dead 0, reflexes 0, yielding 0, face 1760, drive 0, other 0), 885 stale pulls, 9420 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_8 destroyed Rust_Hunters_3 (score Green 5 : 8 Rust)
+Rust_Battery_1 destroyed Green_Hunters_2 (score Green 5 : 9 Rust)
+Rust_Lances_1 destroyed Green_Guns_3 (score Green 5 : 10 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (12 left)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 3 left
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 7 left
+Green_Guns_1 destroyed Rust_Eyes_1 (score Green 6 : 10 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (11 left)
+Rust_Battery_3 destroyed Green_Hunters_1 (score Green 6 : 11 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 6 takes command
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 2 left
+HUD_MESSAGE [warning] Eyes: shields down
+Rust_Lances_4 destroyed Green_Eyes_2 (score Green 6 : 12 Rust)
+SCOUT_CENSUS {"arena":"pit","breakdown":{"CLEAR_LANE/other":[0.7,0.0,0.0,0.0,0.0],"ENGAGE/chase":[0.2,0.2,0.2,7.91560223897298,7.91560223897298],"ENGAGE/hold":[0.3,0.0,0.0,0.0,0.0],"ENGAGE/lay":[4.66666666666666,2.46666666666667,1.7,92.4988145192464,65.7529900868734],"ENGAGE/other":[3.9,0.0,0.0,0.0,0.0],"ENGAGE/ring":[1.53333333333333,0.1,0.0666666666666667,4.47003135681152,2.9741881052653],"FLANK/other":[2.3,0.533333333333333,0.0,18.7132436116536,0.0],"SUPPRESS/other":[36.7333333333338,36.5666666666672,18.4333333333334,1389.91133861542,709.054860051473]},"close_s":0.0,"contacts":0,"contacts_target":0,"damage":126.649999856949,"deaths":4,"factions":["law","syndicate"],"fight_s":50.3333333333336,"kills":0,"on_target_s":20.4,"per_scout":{"Green_Eyes_1":{"alive_s":51.8666666666663,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":19.5000000000001,"on_target_s":8.59999999999998,"reverse_s":1.6,"team":0,"unit":"law_scout"},"Green_Eyes_2":{"alive_s":64.4666666666656,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":11.1,"on_target_s":1.5,"reverse_s":0.0,"team":0,"unit":"law_scout"},"Green_Eyes_3":{"alive_s":9.36666666666664,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":0.0,"on_target_s":0.0,"reverse_s":0.0,"team":0,"unit":"law_scout"},"Green_Eyes_4":{"alive_s":51.3666666666663,"close_s":0.0,"contacts":0,"contacts_target":0,"fight_s":19.7333333333335,"on_target_s":10.3,"reverse_s":1.26666666666667,"team":0,"unit":"law_scout"}},"reverse_s":2.86666666666667,"scouts":4,"seed":14}

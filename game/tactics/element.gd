@@ -140,6 +140,11 @@ var bounding := 0
 var bait_hide: Variant = null
 var bait_back := false
 var arrived := false
+## Round 28 (brains B5, his playtest): tasks he shift-queued behind this one (or behind his crews' own shift-queued
+## waypoints when the element has no task yet), each started when the one before is done: a move when the element has
+## arrived; no task when every crew's own orders have run out. An unshifted task clears it (assign). Tasks that never
+## finish (a screen, a hold) keep what is behind them until he orders something new.
+var queued_tasks: Array = []
 ## Round 21 (P2): the element's memory of the target its attack names, {"name", "position", "velocity", "seen_tick"}
 ## (flat), from its team's intel each update and kept after intel forgets it (12 s), until the target dies or the task
 ## changes; and whether the attack has become a pursuit (ElementPlan.pursues, sticky for the task).
@@ -284,11 +289,13 @@ func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: Packed
 
 
 ## Give the element something to do. "" or a human-readable reason it can't.
-func assign(new_task: Variant) -> String:
+func assign(new_task: Variant, keep_queue := false) -> String:
 	_state_stamp += 1
 	var error := ElementTask.validate(new_task)
 	if error != "":
 		return error
+	if not keep_queue:
+		queued_tasks.clear()
 	task = (new_task as Dictionary).duplicate(true)
 	_fresh_task = true
 	_preempt = true
@@ -361,6 +368,48 @@ func retarget(new_task: Variant) -> String:
 
 
 ## Stop: the element holds where it stands.
+## Round 28 (B5): queue `new_task` behind what the element is doing. "" or why it was refused.
+func enqueue(new_task: Variant) -> String:
+	var error := ElementTask.validate(new_task)
+	if error != "":
+		return error
+	_state_stamp += 1
+	queued_tasks.append((new_task as Dictionary).duplicate(true))
+	revision += 1
+	return ""
+
+
+## Round 28 (B5): where the element will be when everything ahead of a new queued task is done: the last queued task's
+## point, else the current task's (a move's spot), else null.
+func last_point() -> Variant:
+	for i in range(queued_tasks.size() - 1, -1, -1):
+		var point: Variant = ElementTask.destination(queued_tasks[i])
+		if point != null:
+			return point
+	return ElementTask.destination(task) if not task.is_empty() else null
+
+
+## Round 28 (B5): start the next queued task when the one before is done. A move is done when the element has arrived;
+## no task is done when none of its crews has an order of its own left (his shift-queued waypoints all driven).
+func _next_queued(orders: Object) -> void:
+	if queued_tasks.is_empty():
+		return
+	var done := false
+	if task.is_empty():
+		done = true
+		if orders != null:
+			for unit_name in roster:
+				if not (orders.call("current", unit_name) as Dictionary).is_empty():
+					done = false
+					break
+	elif String(task.get("verb", "")) == "move" and arrived:
+		done = true
+	if done:
+		var next: Dictionary = queued_tasks.pop_front()
+		_log("next queued task: %s" % String(next.get("verb", "")))
+		assign(next, true)
+
+
 func stand_down() -> void:
 	_state_stamp += 1
 	assign({"verb": "hold"})
@@ -376,6 +425,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	_state_stamp += 1
 	var before := _snapshot()
 	changed_fields = PackedStringArray()
+	_next_queued(orders)
 	var preempt := preempting(game_match)
 	_preempt = false
 	_prune(game_match)

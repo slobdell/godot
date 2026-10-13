@@ -1,0 +1,108 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (condemned): 4 scouts, 8 tanks, 8 IFVs, 5 artillery, 4 lancers (5140 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 41 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (syndicate): 4 skimmers, 6 limousine gunships, 3 railgun platforms, 3 missile rings (5190 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 16 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=29 rust_squads=5 rust=16
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/tactics/contact_census.gd:29)
+ERROR: Elements.form: 8 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/tactics/contact_census.gd:29)
+SKIRMISH_CAMERA focus=(-61, 78) zoom=0.58 vehicles=5
+DEMO_SEED 21 arena=parade condemned vs syndicate (replay: make showmatch SEED=21)
+CONTROL_GROUPS squads=5 (Battery:5 Eyes:4 Guns:8 Hunters:8 Lances:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T01-17-30-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "21", "arena": "random", "mute": "", "seconds": "180", "screen-standoff": "off" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [warning] Friendly fire: Eyes 1 hit Hunters 3
+Rust_Hunters2_1 destroyed Green_Hunters_4 (score Green 0 : 1 Rust)
+HUD_MESSAGE [warning] Hunters lost an IFV, 7 left
+Green_Guns_3 destroyed Rust_Hunters_2 (score Green 1 : 1 Rust)
+Rust_Guns_2 destroyed Green_Guns_5 (score Green 1 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (15 left)
+HUD_MESSAGE [warning] Friendly fire: Lances 2 hit Hunters 1
+NATIVE_EXEC 19710 native, 289 handed back (dead 0, reflexes 0, yielding 0, face 289, drive 0, other 0), 489 stale pulls, 2647 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Guns lost a Tank, 7 left
+Green_Guns_6 destroyed Rust_Eyes_2 (score Green 2 : 2 Rust)
+Rust_Guns_1 destroyed Green_Hunters_1 (score Green 2 : 3 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 2 takes command
+Rust_Guns_3 destroyed Green_Eyes_2 (score Green 2 : 4 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (14 left)
+HUD_MESSAGE [warning] Hunters lost an IFV, 6 left
+HUD_MESSAGE [warning] Eyes lost a Scout, 3 left
+Green_Guns_8 destroyed Rust_Hunters_4 (score Green 3 : 4 Rust)
+Green_Lances_3 destroyed Rust_Eyes_3 (score Green 4 : 4 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (12 left)
+Rust_Hunters_3 destroyed Green_Hunters_3 (score Green 4 : 5 Rust)
+Rust_Guns_2 destroyed Green_Eyes_3 (score Green 4 : 6 Rust)
+HUD_MESSAGE [warning] The enemy took the depot
+Green_Guns_1 destroyed Rust_Hunters_3 (score Green 5 : 6 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 5 hit Guns 3
+HUD_MESSAGE [warning] Hunters lost an IFV, 5 left
+HUD_MESSAGE [warning] Eyes lost a Scout, 2 left
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (11 left)
+Rust_Guns_1 destroyed Green_Eyes_1 (score Green 5 : 7 Rust)
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 4 takes command
+Green_Guns_7 destroyed Rust_Hunters_5 (score Green 6 : 7 Rust)
+Rust_Guns_3 destroyed Green_Guns_7 (score Green 6 : 8 Rust)
+Green_Guns_8 destroyed Rust_Eyes_4 (score Green 7 : 8 Rust)
+HUD_MESSAGE [warning] Eyes lost a Scout, 1 left
+HUD_MESSAGE [info] Destroyed 2 enemies (9 left)
+HUD_MESSAGE [warning] Guns lost a Tank, 6 left
+Green_Guns_2 destroyed Rust_Eyes_1 (score Green 8 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (8 left)
+Green_Guns_4 destroyed Rust_Hunters2_1 (score Green 9 : 8 Rust)
+Rust_Guns_1 destroyed Green_Guns_8 (score Green 9 : 9 Rust)
+Rust_Guns_3 destroyed Green_Eyes_4 (score Green 9 : 10 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (7 left)
+Green_Lances_3 destroyed Rust_Hunters_1 (score Green 10 : 10 Rust)
+HUD_MESSAGE [warning] Guns lost a Tank, 5 left
+HUD_MESSAGE [error] Eyes destroyed
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (6 left)
+Rust_Guns_2 destroyed Green_Hunters_5 (score Green 10 : 11 Rust)
+HUD_MESSAGE [warning] Hunters lost an IFV, 4 left
+Rust_Guns_1 destroyed Green_Guns_3 (score Green 10 : 12 Rust)
+Green_Battery_5 destroyed Rust_Guns_2 (score Green 11 : 12 Rust)
+HUD_MESSAGE [warning] Guns lost a Tank, 4 left
+HUD_MESSAGE [info] Destroyed an enemy Railgun Platform (5 left)
+NATIVE_EXEC 39607 native, 392 handed back (dead 0, reflexes 0, yielding 0, face 392, drive 0, other 0), 818 stale pulls, 5868 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] The depot is neutral
+Rust_Battery_3 destroyed Green_Guns_2 (score Green 11 : 13 Rust)
+HUD_MESSAGE [warning] Guns lost a Tank, 3 left
+Rust_Guns_1 destroyed Green_Hunters_8 (score Green 11 : 14 Rust)
+HUD_MESSAGE [warning] Hunters lost an IFV, 3 left
+Green_Guns_4 destroyed Rust_Guns_1 (score Green 12 : 14 Rust)
+Green_Guns_6 destroyed Rust_Guns_3 (score Green 13 : 14 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (3 left)
+HUD_MESSAGE [info] We hold the depot
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [info] We hold the far depot
+Rust_Battery_3 destroyed Green_Hunters_6 (score Green 13 : 15 Rust)
+HUD_MESSAGE [warning] Hunters lost an IFV, 2 left
+Green_Lances_3 destroyed Rust_Battery_2 (score Green 14 : 15 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Missile Ring (2 left)
+NATIVE_EXEC 59607 native, 392 handed back (dead 0, reflexes 0, yielding 0, face 392, drive 0, other 0), 940 stale pulls, 7769 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_6 destroyed Rust_Battery_3 (score Green 15 : 15 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Missile Ring (1 left)
+Green_Hunters_7 destroyed Rust_Battery_1 (score Green 16 : 15 Rust)
+HUD_MESSAGE [info] VICTORY
+HUD_MESSAGE [info] Destroyed an enemy Missile Ring (0 left)
+NATIVE_EXEC 79605 native, 394 handed back (dead 0, reflexes 0, yielding 0, face 394, drive 0, other 0), 1053 stale pulls, 8172 part pulls, 0 verified, 0 verify mismatches 
+NATIVE_EXEC 99604 native, 395 handed back (dead 0, reflexes 0, yielding 0, face 395, drive 0, other 0), 1082 stale pulls, 8196 part pulls, 0 verified, 0 verify mismatches 
+CONTACT_CENSUS {"alive":[14,0],"by_option":{"HOLD":1},"by_role":{"scout":1},"contacts":1,"recon_crews":8,"recon_deaths":8,"recon_squad_minutes":0.88,"screen_off":true,"screen_tasks":8,"seed":21,"under_move":0}

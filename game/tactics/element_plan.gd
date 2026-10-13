@@ -1399,7 +1399,8 @@ static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Diction
 	var told: Variant = ElementTask.facing(state.get("task", {}))
 	if told is Vector3:
 		heading = TacticsFormation.flat(told)
-		plan["why"] = "%s; facing the way you drew" % String(plan["why"])
+		var from_waypoint := String((state.get("task", {}) as Dictionary).get("facing_from", "")) == "waypoint"
+		plan["why"] = "%s; %s" % [String(plan["why"]), "facing on from your waypoint" if from_waypoint else "facing the way you drew"]
 	plan["anchor"] = point
 	plan["heading"] = heading
 	var spacing := table.spacing(String(situation["terrain"])) * SCREEN_SPREAD
