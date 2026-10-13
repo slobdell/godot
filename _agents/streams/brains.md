@@ -75,6 +75,61 @@ Nothing: his calls are made.
 
 ## Status
 
+### FINAL REPORT (round 28, 2026-10-13 ~03:30 PDT)
+
+| item | state | where |
+|---|---|---|
+| B1 a drawn flank is carried out | **PARKED** (judged: (a) on side 10/18 v bar 12; (c) fight guard fails) | `lab/brains-r28-flank` `f3a0145d` |
+| B2 artillery shells from the drawn side | **PARKED** (on side 18/18, alive = clicked, first round +23.5 s v cut-off +15) | `lab/brains-r28-battery` `88b6a724` |
+| B3 squads ordered into the enemy | **SHIPPED** (DECLARED): the CPU's recon screens 85 m off the enemy | merged `6efe3450` = `b95a3d6e` |
+| B4 his bridge 106/108 | **BISECTED, fix PARKED** (cause 7baffe24; narrowed fix 106/108 with two new cells) | `lab/brains-r28-reissue` `254fd98f` |
+| B5 his queued screen (top priority, his playtest) | **BUILT**; check re-running on `brains-b5` `2e4d601a` | branch `brains-b5` (B5 alone on game/ == main) |
+| stretch (8 m pictures, wheeled-turret line) | not reached | — |
+
+**What he will notice (once B5 merges):** shift + screen (or support by fire, ambush) after a waypoint drives the
+waypoint(s) first, then lays the line facing on from the last waypoint; the queued screen shows on the map while he plans
+("SCREEN · next", linked from the waypoint); several squads selected each do it behind their own waypoints. The CPU's
+scouts no longer drive into his squads: they screen a spotter's distance off.
+
+**Measurements** (all builder0; details in the sections below): B3 fixed-gun MOVE contacts 36 → 0 (seeds 13–24, n =
+12), all-unit MOVE contacts −75 %, recon deaths 5.00 → 4.58, winners unchanged 12/12; screen re-tasks 4.3 → 7.7 per recon
+squad-minute (the knob if CPU screens look shuffly: `SCREEN_CROWDED_FRACTION`, `SCREEN_REAIM_MIN_M` in
+`element_commander.gd`). B5: through his input path heading 0.0° / 0.1° off point − waypoint, windowed 0.0°, line settled
+in 29.8 / 29.2 s (the artillery battery). B1 judged: see the table under B1. B4: 108 → 106 at 7baffe24 (bisected:
+2e2715e4 passes his cells, 7baffe24 fails), confirmed on today's code (`--reissue-heading=off` 4/4 v 2/4).
+
+**Decisions:** B1's measuring point is the median hit's bearing on the target's hull (round 27's "first crew within 50 m"
+fell inside the arm's own circle, lesson 297); the orchestrator's ruling on (c) (a charging target latches the flank,
+`--approach-latch`); B2's post is the near edge (20°) of the side cone; B3's screen keys on the enemy NEAREST the recon
+squad, not the axis focus; B5 queues only the tasks a crew cannot take (screen, support by fire, ambush) so his shift
+waypoint routes stay today's direct queue.
+
+**Questions for the lead** (the orchestrator puts them on his calls page): (1) artillery and a drawn side: shell from
+where it stands while it drives round to his side, or accept a ~20–25 s wait before the first round on a 90° swing?
+
+**Known issues / round 29:** (1) B1: (a) beats clicked clearly (on side 10 v 0, kills 10 v 4, alive 2.00 v 1.50); (c)'s
+latch should key on the TARGET's reach of a crew; (b) is a wipe either way (balance). (2) B2's three traced fixes
+(named move deploys a mortar; plain move fires at will and deploys it; the column) are on the branch. (3) B4: trace the
+two new cells (rust t5 seed 1, crossed 3/4; rust t16 seed 2, rim) before another attempt. (4) B5: a queued attack-move /
+attack keeps today's direct queue (its automatic facing is not from the waypoint); a shifted MOVE behind a task is still
+direct. (5) Manoeuvre's lead: four gang trucks screening get 6 m slots and one parallel-parks ~1 min (formation geometry,
+mine). (6) Traffic's lead: an element re-seating crews 3/4 for 36 s at a blocked slot (round 27's B2 re-seat).
+
+**What to playtest** (`make native && make skirmish`, after B5 merges): in the planning pause select a squad,
+right-click a waypoint, then shift + E and click beyond it: watch the "SCREEN · next" mark, press Space, and the squad
+drives the waypoint and screens facing on from it; try it with two squads selected. Watch a showmatch
+(`make showmatch SEED=5`): the CPU's scouts hold off at ~85 m instead of driving into the enemy at the centre.
+
+**Tools added:** `make approach-trace`, ApproachStage's hit/fire bearings, `make recon-probe`, `make contact-census`,
+`make queued-screen-shots`.
+
+**Merge notes:** B5 touches `game/control/rts_controls.gd` (the order-queue hunk, `_order_squads`, the queued marks —
+granted), `game/tactics/element.gd` (queue), `element_task.gd` (`facing_from`), `element_plan.gd` (the readout),
+`tests/test_control_queued_task.gd`, `tests/tactics/queued_screen_shots.gd`, `mk/tactics.mk`. No `perception.gd`.
+**Scratch to remove at close:** worktrees `godot-brains-bisect`, `godot-brains-b5` (after B5 merges) and their builder0
+folders. **Kept branches (never merge):** `lab/brains-r28-flank`, `lab/brains-r28-battery`, `lab/brains-r28-reissue`,
+`lab/brains-r28-control`.
+
 **Plan (2026-10-12, in order; start = stream `c6e32d03`, covered by main's green `94b5fc0d`, docs-only since):**
 1. **Instrument first (B1/B2):** an `approach-trace` target, and a measuring point checked against every arm (lesson 297:
    round 27's "first crew within 50 m" fell inside the parked fix's own circle). Add a second, arm-independent reading:
