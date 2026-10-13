@@ -1466,9 +1466,7 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 		var issued: Dictionary = orders.call("current", unit_name)
 		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"], "tick": int(situation["tick"]),
 				"to": desired["to"], "target": String(desired.get("target", "")), "facing": desired.get("facing"),
-				"anchor": anchor, "seat": _seat_index(unit_name), "task": task_seq,
-				# Round 28 (B4): the task's own drawn facing when this was issued (_heading_retold).
-				"task_facing": ElementTask.facing(task)}
+				"anchor": anchor, "seat": _seat_index(unit_name), "task": task_seq}
 
 
 ## Attribute a re-issued goal to the thing that moved it (see `goal_moves`). `before` is what this element had issued
@@ -1512,7 +1510,7 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# times a second for as long as the fight lasted. A standing attack already follows its target, so the same
 		# intention is not re-issued until RE_ISSUE_TICKS have passed or something real changes.
 		var again: bool = not mine.is_empty() and String(mine.get("verb", "")) == String(desired["verb"]) \
-				and String(mine.get("target", "")) == String(desired.get("target", "")) and not _heading_retold(mine, desired)
+				and String(mine.get("target", "")) == String(desired.get("target", "")) and not _heading_changed(mine, desired)
 		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
 			return false
 		# It finished our order to THIS place and stopped short (a brain completes a stalled move up to 12 m out): it got
@@ -1529,7 +1527,7 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# (traced, the CPU's side, start tick 16, main 13de4dc6 + F3': a crew stopped on the east swing bridge's north end
 		# 7 m from a seat that had slid 3.6 m since its one re-send, and three squadmates stood behind it 50 s).
 		# Round 26: the same place, but a heading given, taken away or turned (the squad re-faced where it stands).
-		if not mine.is_empty() and _heading_retold(mine, desired):
+		if not mine.is_empty() and _heading_changed(mine, desired):
 			return true
 		var sent: Variant = _mouth_sent.get(unit_name)
 		var off_seat: bool = MOUTH_REISSUE_ENABLED and desired["to"] is Vector3 \
@@ -1585,7 +1583,7 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	# Round 26 (brains, orders' trace, builder0 ba541b96): the heading is part of the intention. A squad re-given its task
 	# without the heading drawn on the first (or with another) kept the old one on every crew already moving, for as
 	# long as the move lasted (issued_tick 5 for 6 s): verb, place and target matched, so nothing here re-issued.
-	if _heading_retold(mine, desired):
+	if _heading_changed(mine, desired):
 		return true
 	var same_target := String(mine.get("target", "")) == String(desired.get("target", ""))
 	var fight := ["attack", "attack_move"]
@@ -1598,28 +1596,6 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	if desired["to"] is Vector3 and mine["to"] is Vector3:
 		return not _same_place(mine, desired, REISSUE_M)
 	return desired["to"] is Vector3 != mine["to"] is Vector3
-
-
-## Round 28 (B4, DECLARED): a changed heading re-issues only when the TASK's drawn facing changed since the crew's order
-## (given, taken away or turned: round 26's case, a squad re-given its task with another heading or none). His bridge
-## 108 fell to 106 at round 26's merge of the heading rule (bisected: 2e2715e4 108-cells pass, 7baffe24 fail): a crew's
-## plan heading toggling within ONE task (a halt sector given, then taken away as the squad moved on) re-issued its move
-## at the rim, and the tank hesitated there 3.5-6.8 s. `--reissue-heading=plan` is round 26's rule.
-static var HEADING_REISSUE_TASK_ONLY := true
-
-
-func _heading_retold(mine: Dictionary, desired: Dictionary) -> bool:
-	if not _heading_changed(mine, desired):
-		return false
-	if not HEADING_REISSUE_TASK_ONLY:
-		return true
-	var was: Variant = mine.get("task_facing")
-	var now: Variant = ElementTask.facing(task)
-	if (was is Vector3) != (now is Vector3):
-		return true
-	if not now is Vector3:
-		return false
-	return rad_to_deg(TacticsFormation.flat(was).angle_to(TacticsFormation.flat(now))) > HEADING_REISSUE_DEG
 
 
 ## Whether the heading wanted differs from the one last issued: given, taken away, or turned past HEADING_REISSUE_DEG.
