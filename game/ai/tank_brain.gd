@@ -3167,6 +3167,7 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 		request["target_half_width"] = float(target_box[0]) * 0.5
 		request["target_half_length"] = float(target_box[2]) * 0.5
 		request["previous_lay"] = _motion_prev_lay
+		request["spread_weighted"] = aim_point is Vector3
 	var result := CombatMotion.choose(request)
 	_motion_prev_index = int(result.get("index", -1))
 	_motion_prev_reverse = bool(result.get("reverse", false))

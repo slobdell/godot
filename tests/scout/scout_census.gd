@@ -178,8 +178,14 @@ func _run() -> void:
 					var g := Vector3(float(move["x"]), 0.0, float(move["z"])) - scout.global_position
 					goal = "%.0fm@%.0f%s" % [Vector2(g.x, g.z).length(), rad_to_deg((-scout.global_basis.z).signed_angle_to(g, Vector3.UP)),
 							"R" if bool(move.get("reverse", false)) else ""]
-				print("SCOUT_TRACE t=%.2f %s tgt=%s d=%.1f off=%.0f tv=%.1f v=%.1f los=%s move=%s goal=%s why=%s" % [t, name,
-						target_name, Vector2(to.x, to.z).length(),
+				var poff := "-"
+				var spot_t: Variant = brain.get("_suppress_point")
+				if String(choice.get("option", "")) == "SUPPRESS" and spot_t is Vector3:
+					var tp := (spot_t as Vector3) - scout.global_position
+					poff = "%.0f@%.0fm" % [rad_to_deg((-scout.global_basis.z).signed_angle_to(Vector3(tp.x, 0, tp.z), Vector3.UP)),
+							Vector2(tp.x, tp.z).length()]
+				print("SCOUT_TRACE t=%.2f %s opt=%s poff=%s tgt=%s supp=%.2f d=%.1f off=%.0f tv=%.1f v=%.1f los=%s move=%s goal=%s why=%s" % [t, name,
+						String(choice.get("option", "")), poff, target_name, target.suppression, Vector2(to.x, to.z).length(),
 						rad_to_deg((-scout.global_basis.z).signed_angle_to(Vector3(to.x, 0, to.z), Vector3.UP)),
 						target.estimated_velocity.length(), scout.estimated_velocity.dot(-scout.global_basis.z),
 						"y" if reachable else "n", String(move.get("type", "?")), goal, str(brain.get("why"))])

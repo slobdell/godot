@@ -1257,6 +1257,11 @@ static func _plan_lay(request: Dictionary) -> Dictionary:
 	var leash_radius := float(leash.get("radius", 0.0))
 	var leash_center := _flat(leash.get("center", Vector3.ZERO))
 	var previous := int(request.get("previous_lay", -1))
+	# Round 28 (scout S1): under SUPPRESS a step on the point is worth what the round does there — Match.shot_spread
+	# widens with speed (x (1 + MOVING_SPREAD_FACTOR x speed / top)), so a step on it standing counts more than one on
+	# it backing up. Without it the reverse that brought the gun on and the brake tied on every step, and commitment
+	# kept the scout reversing at 6 m/s with the gun on (census seed 5, traced).
+	var spread_weighted := bool(request.get("spread_weighted", false))
 	var steps := int(round(LAY_HORIZON_S / LAY_DT))
 	var steer_step := int(round(LAY_STEER_S / LAY_DT))
 	var scored: Array = []
@@ -1272,7 +1277,7 @@ static func _plan_lay(request: Dictionary) -> Dictionary:
 			var heading := forward
 			var speed := speed_now
 			var first := steps
-			var on := 0
+			var on := 0.0
 			var inside := 0.0
 			var hit_target := false
 			var steer := here
@@ -1293,7 +1298,8 @@ static func _plan_lay(request: Dictionary) -> Dictionary:
 				inside += maxf(0.0, room - gap)
 				# The gate Gunnery fires on, widened by half this step's swing so a crossing between samples counts.
 				if gap <= reach and absf(heading.signed_angle_to(to, Vector3.UP)) <= tolerance + absf(yaw) * LAY_DT * 0.5:
-					on += 1
+					on += 1.0 / (1.0 + Match.MOVING_SPREAD_FACTOR * clampf(absf(speed) / maxf(top, 0.1), 0.0, 1.0)) \
+							if spread_weighted else 1.0
 					first = mini(first, step)
 				if step + 1 == steer_step:
 					steer = at
