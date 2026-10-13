@@ -255,32 +255,14 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 	# The settle radius less a metre for the roll past each leg's end (a scout's minute of facings measured 5.1 m off
 	# its spot against the creep bound's 4.5 with the whole radius).
 	var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
-	# Round 28 (M1): the SLOT the hull last drove to. A crew arriving at the edge of its arrive radius turned with legs
-	# that carried it further off, the brain sent it back, it arrived at the edge again: a law artillery piece
-	# ping-ponged face/move for ~32 s (hull-rest probe, law seed 21, drawn move). A plan may not end further from the
-	# slot than where it starts (+ FACE_SLOT_SLACK_M), and of the two first gears the one ending nearer the slot wins.
-	var slot := mover._goal if face_slot_on() else Vector3.INF
-	if slot != Vector3.INF and _flat(here, slot) > FACE_SLOT_REACH * Movement.settle_radius(tank.unit_id):
-		slot = Vector3.INF  # a face nowhere near the last drive's goal: not a slot to keep
-	var slot_limit := _flat(here, slot) + FACE_SLOT_SLACK_M if slot != Vector3.INF else INF
 	for n in range(1, FACE_LEGS + 1):
 		if absf(error) / n > FACE_LEG_TURN + 0.001:
 			continue
-		var chosen: Array = []
-		var chosen_m := INF
 		for first: int in [1, -1]:
 			var even := _face_even(mover, map, frame, start, others, here, forward, turn, radius, first, n,
 					absf(error) * radius / n, stay, home)
-			if even.is_empty():
-				continue
-			if slot == Vector3.INF:
+			if not even.is_empty():
 				return even
-			var off := _flat((mover._fill_end(here, forward, turn, even)[0] as Vector3), slot)
-			if off <= slot_limit and off < chosen_m:
-				chosen = even
-				chosen_m = off
-		if not chosen.is_empty():
-			return chosen
 	var best: Array = []
 	for first: int in [1, -1]:
 		var plan := _face_legs(mover, map, frame, start, others, here, forward, want, turn, radius, first)
@@ -289,27 +271,10 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 		var end: Array = mover._fill_end(here, forward, turn, plan)
 		if Vector2((end[0] as Vector3).x - home.x, (end[0] as Vector3).z - home.z).length() > stay:
 			continue  # it would end too far from its spot: the creep (bounded by creepbound) instead
-		if _flat(end[0] as Vector3, slot) > slot_limit:
-			continue  # it would leave the slot further behind (see above)
 		if best.is_empty() or plan.size() < best.size() \
 				or (plan.size() == best.size() and Movement._fill_metres(plan) < Movement._fill_metres(best)):
 			best = plan
 	return best
-
-
-## Round 28 (M1): see plan_face. `--nav-off=faceslot` = round 27's plans (no slot anchor).
-const FACE_SLOT_SLACK_M := 0.5
-const FACE_SLOT_REACH := 2.0
-
-
-static func face_slot_on() -> bool:
-	return not Movement.switched_off("faceslot")
-
-
-static func _flat(a: Vector3, b: Vector3) -> float:
-	if b == Vector3.INF:
-		return 0.0
-	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
 ## n legs of `metres` each, alternating gear from `first`, stepped and checked like _face_legs; empty when a step is not
