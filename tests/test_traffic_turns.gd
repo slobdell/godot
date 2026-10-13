@@ -1,0 +1,132 @@
+extends TestCase
+## Round 28 (traffic T1, his call: TAKE TURNS): the friendly rule, pure (Traffic.shape over a table loaded by hand).
+## Forward is -Z and a hull's right is +X when it faces -Z (trip-up 2). Rows: [name, team, x, z, vx, vz, heading_x,
+## heading_z, radius, moving, group].
+
+const R := 3.0
+
+
+func teardown() -> void:
+	Traffic.set_off("turns", false)
+	Traffic.set_off("streetright", false)
+	Traffic.street_override = null
+	super.teardown()
+
+
+## Squad N (two crews) comes south (-Z) to the origin, squad W (two crews) east (+X), at 10 m/s; N's lead `n_lead` m out.
+func _crossing(n_lead: float, w_lead: float) -> void:
+	Traffic.load_rows([
+		["N1", 0, 0.0, n_lead, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["N2", 0, 0.0, n_lead + 10.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["W1", 0, -w_lead, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+		["W2", 0, -w_lead - 10.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+
+
+func test_the_later_squad_yields_as_a_whole_and_the_earlier_holds() -> void:
+	# N's lead is 20 m out (2.0 s), W's 27 m (2.7 s): W is later and yields — every crew of it that meets N's.
+	_crossing(20.0, 27.0)
+	var w1 := Traffic.shape("W1", Vector2(10.0, 0.0))
+	assert_true(w1.length() < 9.5, "W's lead slows: %s" % w1)
+	assert_true(w1.x > 0.0 and absf(w1.y) < 0.001, "and keeps its heading")
+	assert_eq(Traffic.shape("N1", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "N's lead holds its line")
+	assert_eq(Traffic.shape("N2", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "and so does N's second crew")
+
+
+func test_one_verdict_per_squad_pair_even_where_a_crew_pair_says_otherwise() -> void:
+	# W's SECOND crew meets N's second crew earlier than N2 does (W2 20 m out against N2's 30 m), which per crew pair
+	# (round 26's v4) made N2 yield to W2 while W1 yielded to N1. The squad pair's verdict (N first) holds for both.
+	Traffic.load_rows([
+		["N1", 0, 0.0, 12.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["N2", 0, 0.0, 26.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["W1", 0, -16.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+		["W2", 0, -24.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+	Traffic.shape("W1", Vector2(10.0, 0.0))  # the first meeting decides the squad pair
+	assert_eq(Traffic.shape("N2", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "N2 holds: N passes first")
+	assert_true(Traffic.shape("W2", Vector2(10.0, 0.0)).length() < 9.5, "W2 yields with its squad")
+
+
+func test_a_yield_slows_but_never_stops() -> void:
+	# W's lead 12 m out, N's 4 m: W yields; the cap is under the floor, so it keeps the floor.
+	_crossing(4.0, 12.0)
+	var w1 := Traffic.shape("W1", Vector2(10.0, 0.0))
+	assert_near(w1.length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "the floor (%s)" % w1)
+
+
+func test_a_yielding_crew_already_at_the_zone_clears_out() -> void:
+	# W1 is 5 m from the crossing (the zone's edge, clearance 7.5 m, is behind it): it never stops inside N's way.
+	_crossing(2.0, 5.0)
+	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "committed: it drives on")
+
+
+func test_a_tie_gives_priority_to_the_right() -> void:
+	# Both leads 20 m out: N (facing -Z) has W on its left (-X); W (facing +X, its right +Z) has N on its right: W yields.
+	_crossing(20.0, 20.0)
+	assert_eq(Traffic.shape("N1", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "N holds")
+	assert_true(Traffic.shape("W1", Vector2(10.0, 0.0)).length() < 9.5, "W yields")
+
+
+func test_crews_of_one_squad_never_take_turns_with_each_other() -> void:
+	Traffic.load_rows([
+		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
+		["B", 0, -20.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:S"],
+	])
+	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "squadmates: ORCA and the give-way")
+	assert_eq(Traffic.shape("B", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "squadmates: ORCA and the give-way")
+
+
+func test_never_against_an_enemy_or_a_parked_friend() -> void:
+	Traffic.load_rows([
+		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["W1", 1, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "an enemy: unchanged (it may block)")
+	Traffic.load_rows([
+		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, false, "e:N"],
+		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "a parked friend: ORCA and the give-way")
+
+
+func _head_on() -> void:
+	Traffic.load_rows([
+		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
+		["B", 0, 0.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
+	])
+
+
+func test_head_on_in_a_street_both_keep_right() -> void:
+	Traffic.street_override = true
+	_head_on()
+	var a := Traffic.shape("A", Vector2(0.0, -10.0))
+	var b := Traffic.shape("B", Vector2(0.0, 10.0))
+	assert_true(a.x > 0.5 and b.x < -0.5, "each turns to its own right: %s %s" % [a, b])
+	assert_near(a.length(), 10.0, 0.001, "the speed is kept")
+
+
+func test_head_on_on_open_ground_is_left_to_orca() -> void:
+	Traffic.street_override = false
+	_head_on()
+	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "open ground: unchanged")
+
+
+func test_no_keeping_right_into_a_squadmate_abeam() -> void:
+	Traffic.street_override = true
+	Traffic.load_rows([
+		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
+		["C", 0, 6.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
+		["B", 0, 0.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
+	])
+	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "a friend abeam on the right")
+	assert_true(Traffic.shape("B", Vector2(0.0, 10.0)).x < 0.0, "B, with room on its right, keeps right")
+
+
+func test_switched_off_nothing_changes() -> void:
+	Traffic.street_override = true
+	Traffic.set_off("streetright", true)
+	_head_on()
+	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "--traffic-off=streetright")
+	Traffic.set_off("turns", true)
+	_crossing(20.0, 27.0)
+	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "--traffic-off=turns")
