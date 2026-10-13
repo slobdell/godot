@@ -26,6 +26,17 @@ static var nav: Object = ClassDB.instantiate("NavNative") if available else null
 
 
 ## The library's build_info() ("godot-cpp ... | gcc ... | flags | built on <host> | real_t 32 bits"), or why it is off.
+## Round 28 (N7 guard): which native paths were TAKEN, by switch name, while `counting` is on (tests only: one bool
+## check a call otherwise). tests/test_native_live_under_profile.gd runs a match under the tick profile and asserts
+## every switch that is ON took its path: a seam that steps aside for a measurement mode fails loudly.
+static var counting := false
+static var taken := {}
+
+
+static func took(name: String) -> void:
+	taken[name] = int(taken.get(name, 0)) + 1
+
+
 static func describe() -> String:
 	if available:
 		return str(impl.build_info())

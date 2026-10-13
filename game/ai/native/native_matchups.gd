@@ -9,7 +9,10 @@ static var _constants := PackedFloat64Array()
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_matchups
+	var ok := BrainSwitches.native and BrainSwitches.native_matchups
+	if ok and NativeBridge.counting:
+		NativeBridge.took("matchups")
+	return ok
 
 
 static func constants() -> PackedFloat64Array:

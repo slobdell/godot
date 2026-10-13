@@ -165,6 +165,8 @@ func clear_line(a: Vector3, b: Vector3) -> bool:
 	los_queries += 1
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		if NativeBridge.counting:
+			NativeBridge.took("cover")
 		var code: int = _native.clear_line(a, b)  # bit 0 clear, bit 1 computed (not from the memo)
 		if code & 2:
 			los_computed += 1
@@ -204,6 +206,8 @@ func clear_line_coarse(a: Vector3, b: Vector3) -> bool:
 	los_queries += 1
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		if NativeBridge.counting:
+			NativeBridge.took("cover")
 		var code: int = _native.clear_line_coarse(a, b)
 		if code & 2:
 			los_computed += 1
@@ -279,6 +283,8 @@ func segment_hits(index: int, a: Vector2, b: Vector2, grow: float) -> bool:
 ## True if the flat segment a→b (a driving path) crosses any feature grown by `grow` meters.
 func path_blocked(a: Vector2, b: Vector2, grow: float) -> bool:
 	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		if NativeBridge.counting:
+			NativeBridge.took("cover")
 		return _native.path_blocked(a, b, grow)
 	for index in _features_along(a, b):
 		if segment_hits(index, a, b, grow):

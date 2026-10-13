@@ -347,6 +347,8 @@ static func is_still(name: String) -> bool:
 static func solve(me: String, position: Vector2, velocity: Vector2, preferred: Vector2, max_speed: float,
 		radius: float, dt: float, cap: int = MAX_NEIGHBOURS) -> Vector2:
 	if BrainSwitches.native and BrainSwitches.native_avoid:
+		if NativeBridge.counting:
+			NativeBridge.took("avoid")
 		# Round 23 (native, N1): neighbours + ORCA in C++ over this tick's table (native/src/avoidance.cpp), the same
 		# bits; the GDScript below is the reference. The answer rides in x, y; z packs the counters
 		# (neighbours solved against + 16 * oriented pairs) so the probes read the same numbers either way.

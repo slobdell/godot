@@ -1860,6 +1860,7 @@ func incoming_projectiles(unit: Tank) -> Array:
 	var threats: Array = []
 	if unit == null or not unit.is_alive():
 		return threats
+	var lap_started := Time.get_ticks_usec() if OrderController.profile_detail else 0  # N7: the K2 query's own share
 	var here := Vector2(unit.global_position.x, unit.global_position.z)
 	var half := Units.hull_half_extents(Units.stat(unit.unit_id, "hull_size"))
 	var forward := -unit.global_basis.z
@@ -1908,6 +1909,8 @@ func incoming_projectiles(unit: Tank) -> Array:
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]) * falloff, weapon, forward, true)})
 	threats.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a["eta_ticks"]) < int(b["eta_ticks"]) or (int(a["eta_ticks"]) == int(b["eta_ticks"]) and int(a["projectile_id"]) < int(b["projectile_id"])))
+	if OrderController.profile_detail:
+		OrderController.add_part("k2.incoming", Time.get_ticks_usec() - lap_started)
 	return threats
 
 

@@ -248,6 +248,17 @@ native-tp-headless: import ## Every SimProfile section of the in-contact window,
 	done
 	$(PYTHON) tests/native/tick_profile_parts.py $(BUILD_DIR)/native-tph/*.log | tee $(BUILD_DIR)/native-tph/parts.txt
 
+# Round 28 (N7 guard): every native switch in force takes its native path under the tick profile (the instrument every
+# price and the laptop's ruling use). Counts from the profile's install until its window opens (20 s), a fight at 20 a
+# side on foundry, then tests/native/live_guard.py: a switch ON but never taken fails, named. ~1 min on builder0.
+native-live-guard: import ## Every ON native switch is LIVE under the tick profile (a seam that steps aside for a measurement mode fails)
+	@mkdir -p $(BUILD_DIR)/perf-armies && $(PYTHON) tools/perf_armies.py size 20 $(BUILD_DIR)/perf-armies
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
+		--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_20.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_20.json \
+		--budget=100000 --time-limit=24 --seed=92721 --arena=foundry --green-elements --rust-elements \
+		--native-tick-profile=20,22 > $(BUILD_DIR)/native-live-guard.log 2>&1 || true
+	@$(PYTHON) tests/native/live_guard.py $(BUILD_DIR)/native-live-guard.log
+
 # Round 26 (C25.6, orders' showmatch): a skirmish on the LAPTOP preset, headless, every faction against the next, both
 # sides faction armies (the case the cap folds). Fails on any "Elements.form ... refused" line (a squad past five that
 # fought with no element) or when ARMY_CAP_FIELDED does not read four squads of at most 20 a side.

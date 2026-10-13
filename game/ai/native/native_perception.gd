@@ -3,8 +3,9 @@ extends RefCounted
 ## Round 28 (native N6.3, perception only): who sees whom as one batched pass a team (native/src/perception_native.cpp):
 ## Match._update_intel's sight line (the first viewer alive, within its sight_radius, on a clear line, for each enemy)
 ## and its gun-ready sample (a ready viewer with an enemy in range on a clear line). Intel -- the contacts recorded,
-## their fields, seen_tick, forgetting -- stays GDScript (match.gd). BrainSwitches.native_perception. With the detailed
-## profile on (OrderController.profile_detail: the per-ray laps of Perception.has_line_of_sight) the GDScript runs.
+## their fields, seen_tick, forgetting -- stays GDScript (match.gd). BrainSwitches.native_perception. The detailed
+## profile's per-ray laps (los.ray in Perception.has_line_of_sight) are the GDScript's only; natively the rays are
+## counted for SimProfile (intel/los_queries) and not lapped (see NativePathing: the tick profile turns profile_detail on).
 
 static var _configured := false
 static var _ok := false
@@ -13,7 +14,10 @@ static var rays_cast := 0
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_perception and not OrderController.profile_detail and configure()
+	var ok := BrainSwitches.native and BrainSwitches.native_perception and configure()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("perception")
+	return ok
 
 
 static func configure() -> bool:

@@ -459,6 +459,43 @@ for each size with the se of the paired difference, and the commit + machine. Ru
 flightdeck, the bar workload foundry + parade, window 8-20 s, 180 s cooldown); B is `--brains-off=native` alone (every
 `native_*` switch checks `BrainSwitches.native` first). Evidence to `references/round28/native/e6b-<commit>/`.
 
+### The measurement-mode audit (2026-10-13, the orchestrator's order after the N6.3/N6.4 price bug)
+
+**The bug:** `NativePathing.usable()` and `NativePerception.usable()` stepped aside while `OrderController.profile_detail`
+was on, to keep the GDScript's per-call laps; the tick profile (every price and the laptop's ruling use it) turns
+SimProfile on, which turns `profile_detail` on in every controller. So both N6.4's and N6.3's "~0" prices compared
+GDScript with GDScript. Their correctness proofs stand (the tests force the switch; native-proof, the checks and the
+verify-suites run with no profile). Fixed: neither gate reads a measurement flag; natively those laps are not taken.
+
+**Every native gate audited** (`usable()` in `game/ai/native/*.gd`, every seam's call site, every switch the C++ reads):
+the only conditions besides the switches are behaviour-selecting arms (Armor.deck_probe, SwitchingCost's cost arm and
+probe, Movement._off / reverse_log / kturn_log, --nav-off=carrot, the clearance arm, the drive-trace instrument): none of
+them is set by the tick profile, --brains-parts, SimProfile, the census or the A/B. The C++'s own profile clocks
+(`--native-exec-profile`, `--native-drive-profile`) time, they never route.
+
+| switch (ON as shipped) | where it is taken | live under the tick profile |
+|---|---|---|
+| native_exec, native_owned | `OrderController.compute_command` (NativeExec) | yes (never gated) |
+| native_drive, native_cb, native_fire, native_avoid, native_path | inside the native drive (`drive_native.cpp` reads cb / avoid live; fire and the route tail are its own ports) | yes (never gated) |
+| native_tank | `Tank._drive` | yes (the drive-trace instrument only) |
+| native_combat | `Match._land_hit_result`, `Tank.take_hit` | yes (deck_probe only) |
+| native_dodge, native_cover, native_nav, native_tq, native_el, native_situation, native_decide | their seams | yes (never gated) |
+| native_pathing, native_perception | `pathing.gd`, `Match._update_intel` | **no until `<this fix>`, yes after** |
+
+**(a) E6 is NOT affected:** at `6d9fa7a4` (E6's code) neither `NativeExec.usable` nor `NativeDrive.usable` had a
+measurement condition (read from that commit), and the arms differed by -8.6 % / -7.2 % outside 2 se, which they could
+not have if the execute had stepped aside. E6's ruling stands.
+
+**The guard:** `make native-live-guard` (~1 min builder0): a fight at 20 a side on foundry under `--native-tick-profile`;
+the native paths taken are counted (`NativeBridge.took`, a bool check a call otherwise) from 5 s of match time until the
+window opens (not inside it), and `tests/native/live_guard.py` fails naming any switch in force that was never taken.
+Switches carried inside another path are checked through it (cb, fire, avoid, path -> the drive). **Falsified:** with
+the old `profile_detail` condition put back in `NativePathing.usable()` it FAILS naming native_pathing (a first version
+counting from the install let that seam score its one call before profile_detail flipped: hence the 5 s).
+Asked: join CHECK_TARGETS (`mk/core.mk`, the orchestrator's). Measurement tools that sum the per-call laps
+(`tests/native/sizing_table.py`, `p1_table.py`: los.ray, nav.path, nav.is_ready) under-count those engine calls with
+pathing/perception native.
+
 ### Questions for the lead
 
 - **Stage 2 (N4):** do it now, or once the AI's decisions settle? (above; the orchestrator asks him)

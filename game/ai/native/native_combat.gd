@@ -10,7 +10,10 @@ static var _ok := false
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_combat and not Armor.deck_probe and configure()
+	var ok := BrainSwitches.native and BrainSwitches.native_combat and not Armor.deck_probe and configure()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("combat")
+	return ok
 
 
 static func configure() -> bool:
