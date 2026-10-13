@@ -98,4 +98,45 @@ Nothing: his calls are made (artillery: go straight to his side, 2026-10-13).
 
 ## Status
 
-_Not started (round 29 launch, 2026-10-13)._
+### Plan (2026-10-13; start = stream `3cd5596b`, covered by the launch check, main `bcef46a1` green)
+1. **B1** artillery from his side: restore `88b6a724` on main, instrument it first (per-crew counters, lesson 300), trace the
+   tuning seeds 4–6 before tuning, send the bar, judge on fresh seeds 13–15 (10–12 are B2's).
+2. **B2** a drawn flank, the target's reach (from `f3a0145d`; its code is already on the stream, off by default).
+3. **B3** his bridge: trace the two cells `254fd98f` loses before any fix (lesson 302).
+4. **B4** gang trucks' screen slots (formation geometry).
+5. **B5** stretch.
+Why this order: the brief's own order. B1 first because its code also brings back B2's (the parked branch holds both).
+
+### B1 — artillery from his side, his way (DECLARED; bar ACCEPTED 2026-10-13, filed at main `ad56bdea`)
+**Candidate `c2ae6e68`.** Round 28's battery (`88b6a724`) applied on main (game/ diff `3e2f6e13..88b6a724`; B1-flank code
+comes with it, off by default), plus four traced fixes (builder0, seed 4–6 traces, tick-level events in `approach-trace`):
+1. Once round, the battery's line is **the post it drove to** (`battery_post`, 20° in from the side), not the side's
+   centre line: re-laid there, a truck that had set up packed up and drove again (seed 5: set up 0.99 → 0.23 a second
+   after "in").
+2. **Standoff = ARTILLERY_SAFE_DISTANCE + 10 m** (90 m): at exactly 80 m a truck stopping a metre short read "too close"
+   in BOMBARD, backed off and packed up mid set-up (seeds 4–6: 3–5 repacks a run → 1 in 3 runs).
+3. A battery crew sets up and shells only **inside the 30° side cone** (B1-flank's 40° sector let a wing truck set up at
+   37°: a round from off the side, seed 4).
+4. **No notch past the post** (a 0° notch sent it beyond its post to the centre line).
+Tried and reverted: shelling only within 8 m of its place (trucks circled 10–20 m off their slots for 45 s, first round
+74 s, seed 4).
+**Instrument (lesson 300):** ApproachStage now counts, per crew, rounds fired from > 35° off the side, set-ups started off
+the side (after the crew has driven off), repacks (set up, then packed while the target lives), and rounds before the
+element was round; `approach-trace` logs each as an EVENT with the crew's order, brain choice and movement phase.
+**Tuning** (builder0, `c2ae6e68`'s tree, seeds 4–6 t1, n = 3): fired from the side 3/3 (median shooter 28.8°), rounds
+off the side 0, first round 26.8 s median, alive 3.00, killed 3/3; repacks 1.
+**The remaining repack is traffic's give-way** (traced seed 4 at 26 s): a set-up truck (deploy 1.00, order attack,
+move_order stop) is `phase yielding, yield_to` the squadmate driving to its place, and giving way packs it up. Request
+sent (via the orchestrator): a set-up hull does not yield. Reported, not bar.
+**Bar (sent before the numbers, accepted):** fresh seeds 13–15 × {1,3,6,8,11,16}, n = 18 an arm, both arms at `c2ae6e68`:
+side (median shooter ≤ 35°) ≥ 16/18; rounds from a crew > 35° off = 0; alive ≥ clicked − 0.5; first round median ≤
+clicked + 30 s; clicked byte-identical to main `bcef46a1`'s; cost NOT READABLE (runs only for an all-artillery element
+with a drawn approach). CPU line: the CPU never draws an approach (only `rts_controls` sets `task.approach`). C29.2: none
+ported. The one attempt; else it parks.
+**Judged:** running.
+
+### Requests to other streams
+- **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).
+
+### Questions for the lead
+None.
