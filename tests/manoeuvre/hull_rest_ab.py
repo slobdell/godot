@@ -42,6 +42,7 @@ def perm_p(a, b, rounds=4000):
 def main(root: str) -> int:
     crews = {}  # (task, class) -> arm -> [errors]
     settle = {}  # task -> arm -> {(faction, seed): seconds}
+    moving = {}  # task -> arm -> crews not still when judged (every class): round 28's guard, base + 5 a task
     runs = {}
     for path in sorted(pathlib.Path(root).glob("*/*/*/screen.json")):
         arm, faction, case = path.parts[-4], path.parts[-3], path.parts[-2]
@@ -55,6 +56,9 @@ def main(root: str) -> int:
             for squad in row["squads"]:
                 for crew in squad.get("each", []):
                     has_focus = has_focus or crew["class"] == FOCUS
+                    if not crew.get("still", True):
+                        moving.setdefault(task, {}).setdefault(arm, 0)
+                        moving[task][arm] += 1
                     for key in ((task, crew["class"]), (task, "ALL")):
                         crews.setdefault(key, {}).setdefault(arm, []).append(crew["hull_error_deg"])
             if has_focus:
@@ -90,6 +94,10 @@ def main(root: str) -> int:
         print(f"M1_SETTLE {task} | {len(keys)} | {statistics.median([val(new[k]) for k in keys]):.1f} | "
               f"{statistics.median([val(base[k]) for k in keys]):.1f} | {statistics.median(diffs):+.1f} | "
               f"{sum(1 for k in keys if new[k] < 0)}/{sum(1 for k in keys if base[k] < 0)}")
+    print("M1_MOVING task | " + " | ".join(ARMS) + " | new_drawn - base_drawn (guard: <= +5)")
+    for task in sorted(moving):
+        counts = [moving[task].get(arm, 0) for arm in ARMS]
+        print(f"M1_MOVING {task} | " + " | ".join(str(c) for c in counts) + f" | {counts[0] - counts[1]:+d}")
     return 0
 
 

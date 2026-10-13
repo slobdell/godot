@@ -64,7 +64,9 @@ func _drawn(seed_value: int, unit_id: String, verb: String, to: Array, seconds :
 
 
 func test_gang_tanks_screen_turns_the_hulls_to_the_drawn_facing() -> void:
-	await _drawn(61, "gang_tank", "screen", [LANE_X, 0.0])
+	# 40 m east of the lane (as support by fire): at LANE_X the screen's 6 m slots make one 10 m truck parallel-park
+	# between its squadmates for a minute (a formation question, relayed to brains), which is not what this tests.
+	await _drawn(61, "gang_tank", "screen", [LANE_X + 40.0, 0.0])
 
 
 func test_law_tanks_support_by_fire_turns_the_hulls_to_the_drawn_facing() -> void:
