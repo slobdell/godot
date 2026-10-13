@@ -120,6 +120,15 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   target that neither charges nor runs take the same path as `--approach-latch=crews`; bridge-pooled 18/18, arrive
   series unchanged.
 
+- **Manoeuvre M2 bar (pre-registered 2026-10-13 ~16:30, before judged numbers; DECLARED; LAST attempt; no partial):**
+  `7b895eed` (`manoeuvre-m2-r29`): round 28's creep lift re-based (no circle fill) + refusal counters, `--nav-off=creeplift`.
+  Judged once on fresh census seeds 8–13 and sim seeds 6–8, GDScript path both arms: (1) open+static creep episodes −≥ 50 %;
+  (2) > 3-leg episodes not up, static and open ≤ 3-leg shares each not down > 2 pts; (3) Terminus arrivals ≥ base and wall
+  contact-ticks ≤ base + 10 %, mixed and rigs apart; (4) bridge-pooled 18/18; (5) ≤ 0.5 ms; (6) symmetric, check green.
+  **Orchestrator's additions:** (7) friendly creep episodes not up > 10 %; (8) report why rigs' wall contacts moved the
+  other way from round 28's judged run. Tuning disclosed (seeds 1–3): open+static creep 78 → 32, rigs' wall
+  contact-ticks 2566 → 1473. After a pass: native's port, then bridge-pooled + Terminus on the ON path at the pair.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
