@@ -64,6 +64,10 @@ bool controller_configure(ControllerConfig &c, const Dictionary &config) {
 }
 
 void controller_tick(const ControllerConfig &c, Object *self, double delta) {
+	// Every engine call from here crosses the extension boundary, which costs more than the same access inside the
+	// GDScript VM (the first cut, a line-for-line copy, priced +0.75 % of the tick): so each static is read ONCE (nothing
+	// between the reads can change a measurement static: think and execute never write them), _lap's body is inlined,
+	// and the command is not read back (Tank.command has no setter).
 	const CN &k = cn_();
 	Script *oc = c.order_controller.ptr();
 	Script *ab = c.brains_ab.ptr();
@@ -73,19 +77,28 @@ void controller_tick(const ControllerConfig &c, Object *self, double delta) {
 		return;
 	}
 	//   var contact_lap := Time.get_ticks_usec() if profile_detail else 0; movement.observe_contact(); _lap(...)
-	const int64_t contact_lap = (bool)oc->get(k.profile_detail) ? now_usec() : 0;
+	const bool was_detail = oc->get(k.profile_detail);
+	const int64_t contact_lap = was_detail ? now_usec() : 0;
 	Object *movement = self->get(k.movement);
 	movement->call(k.observe_contact);
-	oc->call(k._lap, k.c_wall_contact, contact_lap);
+	if (was_detail) {  // _lap: add_part(part, now - since) only while profile_detail
+		oc->call(k.add_part, k.c_wall_contact, now_usec() - contact_lap);
+	}
 	//   if SimProfile.enabled != _sim_profiled: the three statics follow it
+	bool sim_profiled = oc->get(k._sim_profiled);
+	bool profiling;
 	const bool sim_enabled = c.sim_profile->get(k.enabled);
-	if (sim_enabled != (bool)oc->get(k._sim_profiled)) {
+	if (sim_enabled != sim_profiled) {
+		sim_profiled = sim_enabled;
+		profiling = sim_enabled;
 		oc->set(k._sim_profiled, sim_enabled);
 		oc->set(k.profiling, sim_enabled);
 		oc->set(k.profile_detail, sim_enabled);
+	} else {
+		profiling = oc->get(k.profiling);
 	}
-	const bool profiling = oc->get(k.profiling);
-	const int64_t started = (profiling || (bool)ab->get(k.split_on)) ? now_usec() : 0;
+	const bool split_on = ab->get(k.split_on);
+	const int64_t started = (profiling || split_on) ? now_usec() : 0;
 	const int64_t stride = self->get(k._stride);
 	if (stride > 1 && is_script_or_extends(self, c.tank_brain)) {
 		Object *game_match = self->get(k.game_match);
@@ -98,11 +111,11 @@ void controller_tick(const ControllerConfig &c, Object *self, double delta) {
 					!(bool)self->call(k.wants_to_run) &&
 					(tick + (int64_t)self->get(k.think_offset)) % stride != 0) {
 				tank->set(k.command, last_command);
-				if ((bool)oc->get(k.profiling)) {
+				if (profiling) {
 					oc->set(k.executed_held, (int64_t)oc->get(k.executed_held) + 1);
 					oc->set(k.profile_usec, (int64_t)oc->get(k.profile_usec) + now_usec() - started);
 				}
-				if ((bool)ab->get(k.split_on)) {
+				if (split_on) {
 					ab->call(k.charge_unit, String(Object::cast_to<Node>(tank)->get_name()), now_usec() - started);
 				}
 				if ((bool)c.tank_brain->get(k.census)) {
@@ -121,24 +134,24 @@ void controller_tick(const ControllerConfig &c, Object *self, double delta) {
 			delta *= (double)step;
 		}
 	}
-	if ((bool)oc->get(k.profiling)) {
+	if (profiling) {
 		oc->set(k.executed_full, (int64_t)oc->get(k.executed_full) + 1);
 	}
 	self->call(k.think, delta);
-	if ((bool)oc->get(k._sim_profiled)) {
+	if (sim_profiled) {
 		oc->call(k.add_part, k.think_s, now_usec() - started);
 	}
-	const int64_t executing = (bool)oc->get(k._sim_profiled) ? now_usec() : 0;
+	const int64_t executing = sim_profiled ? now_usec() : 0;
 	const Variant command = self->call(k.compute_command, delta);
 	tank->set(k.command, command);
-	self->set(k._last_command, tank->get(k.command));
-	if ((bool)oc->get(k._sim_profiled)) {
+	self->set(k._last_command, command);
+	if (sim_profiled) {
 		oc->call(k.add_part, k.execute_s, now_usec() - executing);
 	}
-	if ((bool)oc->get(k.profiling)) {
+	if (profiling) {
 		oc->set(k.profile_usec, (int64_t)oc->get(k.profile_usec) + now_usec() - started);
 	}
-	if ((bool)ab->get(k.split_on)) {
+	if (split_on) {
 		ab->call(k.charge_unit, String(Object::cast_to<Node>(tank)->get_name()), now_usec() - started);
 	}
 }
