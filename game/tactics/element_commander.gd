@@ -760,11 +760,13 @@ func _give(element: Element, task: Dictionary) -> void:
 		if element.retarget(task) == "":
 			assigned[element.id] = task
 			assigned_tick[element.id] = game_match.tick
+			_count_screen(element, task)
 		return
 	var error := element.assign(task)
 	if error == "":
 		assigned[element.id] = task
 		assigned_tick[element.id] = game_match.tick
+		_count_screen(element, task)
 
 
 ## Whether a named enemy is alive and known to this team ("" = no target: nothing to lose).
@@ -781,7 +783,6 @@ func _give_screen(element: Element, contacts: Array) -> void:
 	var point := ElementPlan.clamp_to_arena(enemy + away * SCREEN_STANDOFF_M)
 	var task := {"verb": "screen", "to": _xz(point)}
 	var previous: Dictionary = assigned.get(element.id, {})
-	var before: Variant = previous.get("to")
 	if String(previous.get("verb", "")) == "screen" and previous.get("to") is Array:
 		var line := Vector3(float(previous["to"][0]), 0.0, float(previous["to"][1]))
 		var crowding := _nearest_to(contacts, line)
@@ -794,7 +795,11 @@ func _give_screen(element: Element, contacts: Array) -> void:
 				screen_tasks[element.id] = int(screen_tasks.get(element.id, 0)) + 1
 			return
 	_give(element, task)
-	if (assigned.get(element.id, {}) as Dictionary).get("to") != before:
+
+
+## Round 28 (B3, census only): one more screen task given or re-aimed for this element.
+func _count_screen(element: Element, task: Dictionary) -> void:
+	if String(task.get("verb", "")) == "screen":
 		screen_tasks[element.id] = int(screen_tasks.get(element.id, 0)) + 1
 
 
