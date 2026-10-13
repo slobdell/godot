@@ -58,9 +58,6 @@ const STAGES := {
 ## `on_tick` (optional): called every tick after the step with (lab, ticks since the order) — the clip's camera.
 static func run(case: TestCase, seed_value: int, arena: String, kind: String, which: String, seconds: float,
 		side := "green", trace := false, on_tick := Callable()) -> Dictionary:
-	Traffic.verdicts = 0
-	Traffic.crossing_yields = 0
-	Traffic.kept_right = 0
 	var lab := TacticsLab.create(case, seed_value, arena)
 	var game_match := lab.game_match
 	var team := Match.Team.GREEN if side == "green" else Match.Team.RUST
@@ -237,8 +234,10 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 			"friend_stuck_s": _s(friend_ticks), "stuck_s": _s(stuck_ticks), "friend_stuck_by": friend_s,
 			"contacts": contacts, "contacts_fast": contacts_fast, "kturns": kturns, "kturns_friend": kturns_friend,
 			"yields": yields, "route_arms": Movement.route_arms(), "contacts_cross": contacts_cross,
-			"contacts_cross_fast": contacts_cross_fast, "tr_verdicts": Traffic.verdicts,
-			"tr_yield_ticks": Traffic.crossing_yields, "tr_right_ticks": Traffic.kept_right}
+			"contacts_cross_fast": contacts_cross_fast}
+	# Round 28: a rule under test adds its own counters here (branches traffic-t1-v3 / traffic-t1b: tr_verdicts,
+	# tr_yield_ticks, tr_right_ticks). Read them before believing an arm: T1b's first judged run was a null that only the
+	# verdict counter showed (Status).
 	for squad: String in squads:
 		var last := 0
 		for unit_name: String in members[squad]:
