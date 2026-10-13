@@ -16,6 +16,9 @@ const ALPHA := ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]
 const WAYPOINT := Vector3(-35.0, 0.0, 10.0)
 const POINT := Vector3(25.0, 0.0, 0.0)
 const HEADING_DEG := 10.0
+## "Drove the waypoint": the queue starts the screen at the element's own arrival (its centre within ElementPlan.ARRIVE_M
+## of the spot, judged on its update), and the test samples the centre every 10 frames: that, plus a sampling margin.
+const REACHED_M := ElementPlan.ARRIVE_M + 3.0
 
 
 func _alpha() -> Fixture:
@@ -89,7 +92,7 @@ func test_shift_screen_after_a_waypoint_drives_it_then_screens_from_it() -> void
 	var took: Array = await _until_screen(f, element, 60 * 60)
 	print("MEASURE queued_screen waypoint_first frames %d nearest_m %.1f" % [took[0], took[1]])
 	assert_true(int(took[0]) >= 0, "the screen starts once the waypoint is reached")
-	assert_true(float(took[1]) <= 12.0, "the squad drove the waypoint first (centre came within %.1f m)" % float(took[1]))
+	assert_true(float(took[1]) <= REACHED_M, "the squad drove the waypoint first (centre came within %.1f m)" % float(took[1]))
 	await _screen_heading_check(f, element, "move_then_screen")
 
 
@@ -109,7 +112,8 @@ func test_shift_screen_after_shift_waypoints_waits_for_the_route() -> void:
 	var took: Array = await _until_screen(f, element, 60 * 60)
 	print("MEASURE queued_screen route_first frames %d nearest_m %.1f" % [took[0], took[1]])
 	assert_true(int(took[0]) >= 0, "the screen starts once the route is driven")
-	assert_true(float(took[1]) <= 12.0, "the squad drove its last waypoint first (centre came within %.1f m)" % float(took[1]))
+	assert_true(float(took[1]) <= REACHED_M, "the squad drove its last waypoint first (centre came within %.1f m)"
+			% float(took[1]))
 	await _screen_heading_check(f, element, "route_then_screen")
 
 
