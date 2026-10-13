@@ -119,6 +119,24 @@ v1's rows: a crew within 50 m at ~7 s 56° off (a five-wide line rides the 70 m 
 it), "in" at 11–13 s, then the free `attack` fight circles the target. v2 (`cba5e063`): round in a column; once round, a
 firing line on the drawn side (support-by-fire standoff, hold + fire at will); contact drills yield for the whole flank.
 
+**Ruling on (c) (the orchestrator, C28.5, 2026-10-12 ~22:50):** the guard stays on (c); a target charging the squad
+inside the crews' reach latches "in" and the attack fights where it is (`--approach-latch=off`); on-side on (c) is
+reported. Implemented `f6190f57`, fixed `f3a0145d` (the latch decided before the pursuit rule reads the round).
+
+**B1 JUDGED — DOES NOT SHIP** (`f3a0145d`, builder0, fresh seeds 7–9 × {1,3,6,8,11,16}, n = 18 an arm; run from a scratch
+worktree checked out at exactly that commit; rows in `references/round28/brains_b1_judged_*.jsonl`):
+| roster | arm | on side (median hit ≤ 35°) | median hit | killed | alive | side/rear | verdict |
+|---|---|---|---|---|---|---|---|
+| (a) even | B1 | **10/18** | 33.2 | 10 | 2.00 | 0.87 | bar 12/18 FAILS; guard passes |
+| (a) even | clicked | 0/18 | 67.8 | 4 | 1.50 | 0.77 | |
+| (c) moving | B1 | 4/18 | 43.0 | **10** | **2.39** | 0.64 | guard FAILS (kills ≥ 16, alive ≥ 4.39) |
+| (c) moving | clicked | 0/18 | 93.3 | 18 | 4.89 | 0.76 | |
+| (b) Law five | B1 | 0/18 (7 runs hit at all); by reach 14/18 | 45.3 | 0 | 0.00 | — | reported |
+| (b) Law five | clicked | 0/18; by reach 0/18 | 131.2 | 0 | 0.00 | 0.85 | |
+Why (c) fails: the latch needs the target inside the CREWS' reach (35 m × 1.15) but the charging IFV stops at its own
+45–60 m to shoot, so the trucks are shot while going round. Proposed to the orchestrator: one last attempt (latch on the
+target's own reach of a crew), judged on new fresh seeds 10–12; else park on `lab/brains-r28-flank`.
+
 ### Notes from the orchestrator (2026-10-12 evening), for after B1/B2
 - **Screen slots for long wheeled hulls** (manoeuvre's census): four gang trucks told to screen get 6 m slots (TacticsLab
   seed 61) and one parallel-parks for ~1 min, on base and on manoeuvre's change alike. Formation geometry is mine; take
