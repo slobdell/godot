@@ -79,6 +79,22 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   ATTEMPT:** the version traffic declares for judging is the last; a fail is parked with its trace. The C29.3 gates go
   in as one-liners (`_track_progress`, `_update_phase`, the element re-seat clock, `unstick`, `_pressing_escape`, the
   k-turn entry); brains and manoeuvre told.
+- **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
+  `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
+  post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
+  ApproachStage `--live=on --his=artillery` ×3 `--theirs=law_ifv`, 90 s, builder0, FRESH seeds 13–15 × ticks
+  {1,3,6,8,11,16}, n = 18 an arm (tuned on 4–6; 7–9 were round 28's judged seeds; 10–12 reserved for B2); arms drawn
+  (east) v clicked (none), **both at `c2ae6e68`**. All must hold: (1) median shooter bearing ≤ 35° in ≥ 16/18 runs;
+  (2) rounds fired by a crew > 35° off the side = 0 over all 18, and rounds before the element is round are reported;
+  (3) alive ≥ clicked − 0.5 (mean); (4) first-round median ≤ clicked + 30 s; (5) the 18 clicked rows byte-identical to
+  main `bcef46a1`'s; (6) cost NOT READABLE (the code runs only for an all-artillery element with a drawn approach, so
+  none at Sumps 25 a side). Reported, not bar: set-ups off the side, repacks, and the rule firing (runs with in_s > 0).
+  Lesson 295 said up front: the stage is one-sided, so "alive" guards the route, not a fight. **Orchestrator's
+  additions:** the CPU line (C29.1): does the CPU's artillery take this path, reported either way; and whether any of the
+  4 fixes reach native-ported code (`native-verify-scenarios` on ApproachStage, or "none ported" stated). Tuning
+  (builder0, seeds 4–6 t1, n = 3): side 3/3 (median 28.8°), off-side rounds 0, first round 26.8 s, alive 3.00, 1 repack.
+  **Request routed to traffic:** a set-up hull (deploy_ratio > 0) does not yield; the asker goes round (seed 4 t1 at 26 s:
+  a set-up mortar truck yielded to a squadmate and packed up). Traffic's call whether it joins T1.
 
 ## Round 28: five streams (launched 2026-10-12 ~11:45 PDT, CLOSED 2026-10-13; briefs in `streams/archive/round28/`)
 
