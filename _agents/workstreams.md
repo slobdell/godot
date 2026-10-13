@@ -207,6 +207,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   contacts under MOVE ≥ −50 %, recon deaths not up, CPU win rate within noise, thirteen declared; + all-unit MOVE
   contacts and screen re-tasks/min reported (orchestrator).
 
+- **His bridge 106/108 BISECTED (brains B4, builder0):** `47b8527b`, `f193bcb8`, `2e2715e4` pass; **`7baffe24` (round 26's
+  brains merge: any heading given/taken/turned > 20° re-issues a crew's order)** and `090b345d` fail. Fix candidate
+  `e3b6d2a9` (DECLARED): re-issue only when the TASK's drawn facing changed since the crew's order (`--reissue-heading=plan`
+  = round 26's rule). Bar: the 108 = 108/108 (107 with no new failing cell ships with a note); round 26's re-order tests
+  pass; arrive series fresh seeds 17–20 ≥ control − 1, median ≤ +2 %; thirteen declared; **+ the fight tests (pace-p0
+  phase 0, the let-go guard) all pass (orchestrator).**
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
