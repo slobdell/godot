@@ -133,6 +133,15 @@ worktree checked out at exactly that commit; rows in `references/round28/brains_
 | (c) moving | clicked | 0/18 | 93.3 | 18 | 4.89 | 0.76 | |
 | (b) Law five | B1 | 0/18 (7 runs hit at all); by reach 14/18 | 45.3 | 0 | 0.00 | — | reported |
 | (b) Law five | clicked | 0/18; by reach 0/18 | 131.2 | 0 | 0.00 | 0.85 | |
+**PARKED (the orchestrator's ruling, no v8: changing only the latch leaves (a) as judged, and re-judging it on new seeds
+would be seed-shopping).** Branch `lab/brains-r28-flank` = `f3a0145d`. On the stream `8008df0a`: `APPROACH_CARRY` off by
+default (`--approach-carry=on` brings B1's rule back for any element); every element is B0's rule again EXCEPT a battery,
+which carries its approach through `APPROACH_BATTERY` (B2).
+**Round-29 item (what the data says):** (a) beats clicked clearly (on side 10 v 0, kills 10 v 4, alive 2.00 v 1.50) —
+the design is close, short of the bar; (c)'s latch should key on the TARGET's reach of a crew (it stops at 45–60 m to
+shoot), not the crews' own; (b) is a wipe either way (a balance matter more than a flank one: five gun trucks v a Law
+squad of five). Tuning history (v1–v6) is in the table above; what helped: a column on the ring, a wide ring, the side
+sector fight; what didn't: a held line (1 kill in 18), free attacks at any distance, a close ring for a charging target.
 Why (c) fails: the latch needs the target inside the CREWS' reach (35 m × 1.15) but the charging IFV stops at its own
 45–60 m to shoot, so the trucks are shot while going round. Proposed to the orchestrator: one last attempt (latch on the
 target's own reach of a crew), judged on new fresh seeds 10–12; else park on `lab/brains-r28-flank`.
