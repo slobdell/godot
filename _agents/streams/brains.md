@@ -153,6 +153,10 @@ ported. The one attempt; else it parks.
 **Check:** the first `make check` (B2 work-in-progress files in the worktree) gave 24/25 targets. Unit tests 2556/0;
 net-smoke FAILED (one of its two clients saw 1 of 2 tanks); combat-smoke NOT RUN (it depends on net-smoke). A clean check
 on `c2ae6e68` is queued. No green hash yet.
+**Clean check** (scratch worktree at exactly `c2ae6e68`, builder0): `>> remote: make check exited 0`; 24 passed,
+2 NOT JUDGED; unit tests 2556/0; net-smoke and combat-smoke pass (the first failure was a flake); bridge-pooled 18/18.
+The NOT JUDGED pair is perf-judge (refused 3×, the box was busy: 1.60–1.90×) and scenario_perf, which goes with it.
+`perf-judge` is re-running alone on `c2ae6e68`.
 
 ### B2 — a drawn flank, the target's reach (DECLARED; the last attempt; bar ACCEPTED 2026-10-13 by godot-67)
 **The change.** Built from `f3a0145d`'s design (a column on a wide ring, the side-sector fight once round).
