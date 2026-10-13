@@ -81,6 +81,16 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   each of 6 tasks; settle time +≤ 6 s median; clicked within ±5° of base; bridge-pooled, arrive series, thirteen explained;
   partial for line tasks: = hover/turret's error ±5°.
 
+- **Brains B1 bar (pre-registered 2026-10-12 evening, before numbers):** trace (even roster seed 4): B0 rounds at the trucks'
+  own 35 m reach inside the IFV's 60 m, then the TARGET's near-ambush sets off a 30 s assault-through. Design: the element
+  plan owns a drawn approach until on side — ring = max(own range, target squad's reach + 10 m); pursuit only at ≥ 6 m/s
+  for 2 s; no ambush/assault-through/break-contact from the target's own squad while rounding; after "in", the target
+  closing is not an ambush. Measure: MEDIAN HIT bearing on the target's hull within 35° (same for every arm). Judged fresh
+  seeds 7–9 × 6 ticks: (a) even roster ≥ 12/18; (c) moving target ≥ 9/18; (b) Law squad of five reported with losses;
+  side/rear share ≥ clicked; clicked byte-identical. **+ fight guard on (a)/(c): kills ≥ clicked − 2, alive ≥ clicked −
+  0.5 (orchestrator); flank-probe 3 fresh seeds + a before/after flank-clip for him.** Partial: (a) passes, (c) misses but
+  beats clicked by ≥ 5 runs → ships with (c) noted.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
