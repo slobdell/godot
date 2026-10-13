@@ -2258,7 +2258,7 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	var preferred := route_preferred
 	# Round 28 (traffic T1, his call: TAKE TURNS): two friendly squads crossing take turns, and friendlies meeting
 	# head-on in a street keep right; the rule shapes the wish and ORCA keeps everyone clear of it (Traffic.shape).
-	if not (Traffic.off("turns") and Traffic.off("streetright")):
+	if not (Traffic.off("turns") and Traffic.off("streetright") and Traffic.off("streetturns")):
 		Traffic.refresh(ctl.tanks_root)
 		preferred = Traffic.shape(String(tank.name), route_preferred)
 	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),

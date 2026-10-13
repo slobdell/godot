@@ -71,6 +71,16 @@ Nothing: his call is made.
 
 _Updated 2026-10-12 evening (traffic worker). Every number names commit, machine, workload and n._
 
+### T1b: the street head-on rule ALONE (the orchestrator's one new last attempt, 2026-10-12 ~22:00 PDT)
+
+`fc31d0c4`: v3's one-lane bridge for a head-on meeting in a street; the crossing verdicts and keep-right in the tree OFF
+by default (`--traffic-on=turns,streetright`). **Bar (the orchestrator's, set before any T1b number):** judged once,
+fresh seeds {7,8,9}, both arms at one commit, GDScript path, base `--traffic-off=streetturns`: Terminus head-on fast
+friendly contacts down ≥ 25 %, crews ≥ base − 2, all-in median ≤ +20 %; the other three cases not worse beyond noise
+(fast ≤ +10 %, crews ≥ base − 2; the rule should not fire there, reported if it does); friendly-stuck ≤ base × 1.2 + 10;
+the CPU mirror on Terminus head-on reported; bridge-pooled, the arrive series, cost, native-verify-scenarios. No tuning on
+7–9; the last attempt.
+
 ### FINAL VERDICT ON T1 (2026-10-12 ~21:50 PDT): v3 FAILED the pre-registered bar on the judged seeds; nothing ships
 
 Judged run (builder0, `672eb785` both arms, GDScript path, seeds {4,5,6} x start ticks {1,3,6,8,11,16}, n = 18 a case;
