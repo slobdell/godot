@@ -48,8 +48,8 @@ func test_a_holding_crew_is_handed_back_and_nothing_else_moves() -> void:
 	assert_true(NativeHold.holding(held), "the held crew holds")
 	assert_eq(NativeHold.of(held), [spot, 3.5], "the hold reads back as written")
 	for other in movers.slice(1):
-		assert_false(NativeHold.holding(other), "%s does not hold" % other.ctl.tank.name)
-	assert_false(NativeDrive.usable(held), "the native drive steps aside for a holding crew")
+		assert_true(not NativeHold.holding(other), "%s does not hold" % other.ctl.tank.name)
+	assert_true(not NativeDrive.usable(held), "the native drive steps aside for a holding crew")
 	assert_true(NativeDrive.usable(movers[1]), "and only for it")
 
 	# The execute: over several ticks, the held crew is handed back untouched in both views; the others are unchanged by
@@ -112,11 +112,11 @@ func test_a_holding_crew_is_handed_back_and_nothing_else_moves() -> void:
 
 	# Released: back on the native drive. Forgotten with its execute state: the hold goes too.
 	NativeHold.release(held)
-	assert_false(NativeHold.holding(held), "released")
+	assert_true(not NativeHold.holding(held), "released")
 	assert_true(NativeDrive.usable(held), "the native drive takes it again")
 	NativeHold.hold(held, spot, 3.5)
 	NativeBridge.impl.exec_forget(held)
-	assert_false(NativeHold.holding(held), "a crew's exec_forget drops its hold")
+	assert_true(not NativeHold.holding(held), "a crew's exec_forget drops its hold")
 	NativeHold.release_all()
 	assert_eq(NativeBridge.impl.hold_count(), 0, "release_all empties the table")
 	BrainSwitches.native_exec = was_exec

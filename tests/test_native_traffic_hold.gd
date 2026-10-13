@@ -12,6 +12,8 @@ var _saved_native := false
 var _statics: PackedStringArray = []
 ## Traffic's statics are read and written through an instance (MoverState's way).
 var _traffic: Traffic = Traffic.new()
+## Traffic's statics that a tree without T1 lacks are called through the script (this file parses on either tree).
+var _script: Script = Traffic
 
 
 func teardown() -> void:
@@ -100,7 +102,7 @@ func _case(owned: bool) -> void:
 			BrainSwitches.native_drive = false
 			mover.drive(live_cmd, order, delta)
 			BrainSwitches.native_drive = true
-			var held_now := Traffic.holding(name)
+			var held_now: bool = _script.call("holding", name)
 			var live := _capture(movers)
 			_restore(movers, start)
 			for each in movers:
@@ -149,7 +151,7 @@ func _case(owned: bool) -> void:
 				for each in movers:
 					each.native_stale = Movement.STALE_ALL
 				acc["unsticks"] += 1
-				if Traffic.holding(name):
+				if _script.call("holding", name):
 					acc["held_unsticks"] += 1
 				var ud := _diff(arms[0][1], arms[1][1])
 				if arms[0][0] != arms[1][0] or ud != "":
@@ -160,7 +162,7 @@ func _case(owned: bool) -> void:
 	var report := await TrafficStage.run(self, 1, "terminus", "head", "both", 30.0, "green", false, on_tick)
 	print("native traffic hold%s: %d drives compared (%d holding: %d at the spot, %d approaching), %d unsticks (%d holding), %d mismatches; the stage: %s" % [
 			" (owned state)" if owned else "", acc["drives"], acc["held"], acc["at_spot"], acc["approach"], acc["unsticks"],
-			acc["held_unsticks"], acc["mismatches"], Traffic.report()])
+			acc["held_unsticks"], acc["mismatches"], _script.call("report")])
 	assert_eq(int(acc["mismatches"]), 0, "the native drive holds as the GDScript: %s" % acc["first"])
 	assert_true(int(acc["drives"]) >= 2000, "a real sample (%d drives)" % acc["drives"])
 	assert_true(int(acc["at_spot"]) >= 30 and int(acc["approach"]) >= 30, "the hold fired both ways: at the spot %d, approaching %d" % [

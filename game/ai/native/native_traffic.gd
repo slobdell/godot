@@ -26,5 +26,6 @@ static func drive_config() -> Dictionary:
 static func avoid_hold(crew: String, tanks_root: Node) -> Array:
 	if Traffic.off("hold"):
 		return []
-	Traffic.call("refresh", tanks_root)
-	return Traffic.call("hold_of", crew)
+	var script: Script = Traffic
+	script.call("refresh", tanks_root)
+	return script.call("hold_of", crew)

@@ -29,7 +29,7 @@ static func _capture(mover: Movement) -> Dictionary:
 	for name in FIELDS:
 		out["f:" + name] = _copy(mover.contact.get(name))
 	for name in STATICS:
-		out["s:" + name] = _copy(WallContact.get(name))
+		out["s:" + name] = _copy(mover.contact.get(name))
 	for name in RECORDS:
 		out["r:" + name] = _copy(mover.get(name))
 	return out
@@ -40,7 +40,7 @@ static func _restore(mover: Movement, snap: Dictionary) -> void:
 	for name in FIELDS:
 		mover.contact.set(name, _copy(snap["f:" + name]))
 	for name in STATICS:
-		WallContact.set(name, _copy(snap["s:" + name]))
+		mover.contact.set(name, _copy(snap["s:" + name]))
 	for name in RECORDS:
 		var rec: Dictionary = mover.get(name)
 		rec.clear()
