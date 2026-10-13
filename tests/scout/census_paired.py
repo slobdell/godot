@@ -282,6 +282,32 @@ def suppress_breakdown(directory):
         print("%-22s %7.0f %5.1f%% %7.0f%%" % (label, t, 100 * t / total, 100 * o / max(t, 1e-9)))
 
 
+def deaths(directory):
+    """Round 28 (scout S2): where fixed guns die — what they were doing (their last ticked option/motion) and what
+    killed them, pooled over seeds, with per-seed counts."""
+    by_doing, by_killer, by_unit, total = {}, {}, {}, 0
+    for f in sorted(os.listdir(directory), key=lambda n: int(n[:-4]) if n[:-4].isdigit() else 0):
+        if not f.endswith(".log"):
+            continue
+        n = 0
+        for line in open(os.path.join(directory, f), errors="replace"):
+            if not line.startswith("SCOUT_DEATH"):
+                continue
+            m = re.search(r"\((\w+)\) doing=(\S+) killer=\S* \((\w*)\) cause=(\w*)", line)
+            if not m:
+                continue
+            unit, doing, killer, cause = m.groups()
+            n += 1
+            by_doing[doing] = by_doing.get(doing, 0) + 1
+            by_killer[killer or cause] = by_killer.get(killer or cause, 0) + 1
+            by_unit[unit] = by_unit.get(unit, 0) + 1
+        total += n
+    print("DEATHS %s n=%d" % (directory, total))
+    for name, table in (("doing", by_doing), ("killer", by_killer), ("unit", by_unit)):
+        print("  by %s: %s" % (name, ", ".join("%s %d (%.0f%%)" % (k, v, 100.0 * v / max(total, 1))
+              for k, v in sorted(table.items(), key=lambda kv: -kv[1]))))
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "--unit":
         unit_contacts(sys.argv[2], sys.argv[3], sys.argv[4])
@@ -290,6 +316,9 @@ if __name__ == "__main__":
             ranges(d)
     elif sys.argv[1] == "--primary":
         primary(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == "--deaths":
+        for d in sys.argv[2:]:
+            deaths(d)
     elif sys.argv[1] == "--suppress":
         suppress(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "--suppress-breakdown":
