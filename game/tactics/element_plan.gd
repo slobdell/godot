@@ -153,6 +153,15 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# Round 28 (B1): how long the target of a drawn flank still going round has been running (before `pursues` reads it).
 	if APPROACH_CARRY:
 		_track_running(task, state, situation)
+		# The orchestrator's latch, decided before `pursues` reads the round: a target charging into reach drops the flank.
+		if APPROACH_LATCH and String(task.get("verb", "")) == "attack" and task.has("approach") \
+				and not bool((state.get("approach_round", {}) as Dictionary).get("charged", false)):
+			var point: Variant = _task_point(task, situation, state)
+			if point is Vector3 and charging(state, situation, point):
+				var latched: Dictionary = (state.get("approach_round", {}) as Dictionary).duplicate()
+				latched["in"] = true
+				latched["charged"] = true
+				state["approach_round"] = latched
 		# Written back even when the plan below is a pursuit (which does not go round), so the clock can reset.
 		if task.has("approach") and state.has("approach_round"):
 			plan["approach_round"] = state["approach_round"]
@@ -315,12 +324,6 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	var kept: Dictionary = state.get("approach_round", {})
 	if bool(kept.get("charged", false)):
 		plan["approach_round"] = kept
-		return false
-	if APPROACH_CARRY and APPROACH_LATCH and charging(state, situation, target_point):
-		var latched := kept.duplicate()
-		latched["in"] = true
-		latched["charged"] = true
-		plan["approach_round"] = latched
 		return false
 	if bool(kept.get("in", false)):
 		plan["approach_round"] = kept
