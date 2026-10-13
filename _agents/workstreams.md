@@ -161,6 +161,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   bearing within 35°. Fresh seeds 7–9: on side ≥ 15/18; first round ≤ clicked + 10 s; clicked byte-identical. **Partial
   decided in advance: +10–15 s ships with a note; guard: crews alive ≥ clicked − 0.5 (orchestrator).**
 
+- **Traffic T1b FAILED (2026-10-12, `474558f8`, fresh seeds {10,11,12}, the rule fired: 19 verdicts on Terminus head-on):**
+  fast contacts 872 → 440 (−50 %) but crews 173 → 170 (bar ≥ 171), all-in +26 % (bar ≤ +20 %), friendly-stuck 629 → 839
+  (limit 764); other cases unchanged; CPU mirror 763 → 392, crews 170 → 173. Most of the excess is one wedged run (seed 12
+  t16: the waiting squad creeps at 0.2 into the street mouth and the squads lock). Parked `traffic-t1b`. **Round 29: a
+  real waiting spot outside the mouth that the stall clock, asks and unstick honour** (traffic + manoeuvre + brains).
+  Traffic → T3, then stops.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
