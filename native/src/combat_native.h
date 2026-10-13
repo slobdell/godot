@@ -18,6 +18,18 @@ struct CombatConfig {
 	Variant keep_units, keep_armor;
 };
 
+struct CombatTerms {
+	int face_index = 1; // 0 front, 1 side, 2 rear
+	bool weak = false;
+	double through = 1.0, shield_factor = 1.0;
+};
+// The terms both a landing hit and an estimate use (force_side: _damage_estimate's `arcing`).
+CombatTerms combat_terms(const CombatConfig &config, Node3D *victim, const Dictionary &weapon, const Vector3 &direction,
+		bool force_side);
+const String &face_name(int face_index);
+// Match._damage_estimate.
+double combat_damage_estimate(const CombatConfig &config, Node3D *unit, double raw, const Dictionary &weapon,
+		const Vector3 &direction, bool arcing);
 // Match._land_hit_result's terms before take_hit: [face (String), weak (bool), through armor, shield factor].
 Array combat_hit_terms(const CombatConfig &config, Object *victim, const Dictionary &weapon, const Vector3 &direction);
 // Tank.take_hit(raw, shield_multiplier, armor_multiplier) on that tank: {"shield", "hull", "killed"}.

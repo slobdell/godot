@@ -19,6 +19,7 @@
 #include "combat_native.h"
 #include "pathing_native.h"
 #include "perception_native.h"
+#include "incoming_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -175,6 +176,11 @@ public:
 		return ::godot::perception_gun_ready(perception_config, viewers, enemies, perception_rays_cast);
 	}
 	int64_t perception_rays() const { return perception_rays_cast; }
+	// Round 28 (N7.1): Match.incoming_projectiles, K2 (incoming_native.cpp); its damage estimate over combat_config.
+	bool incoming_configure(const Dictionary &config);
+	Array incoming_projectiles(Object *game_match, Object *unit) const {
+		return ::godot::incoming_projectiles(incoming_config, game_match, unit);
+	}
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -265,6 +271,7 @@ private:
 	CombatConfig combat_config;
 	PathingConfig pathing_config;
 	PerceptionConfig perception_config;
+	IncomingConfig incoming_config;
 	int64_t perception_rays_cast = 0;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;

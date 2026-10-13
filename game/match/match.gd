@@ -1857,10 +1857,15 @@ const INCOMING_MARGIN := 1.0
 ## out; lobbed rounds when they will land within their splash of it. Anyone's rounds but the unit's own (friendly
 ## fire is real). Walls are ignored: pure geometry (dot and cross products, no engine queries).
 func incoming_projectiles(unit: Tank) -> Array:
+	var lap_started := Time.get_ticks_usec() if OrderController.profile_detail else 0  # N7: the K2 query's own share
+	if NativeIncoming.usable():  # round 28 (native N7.1): the same threats, soonest first, natively
+		var native: Array = NativeBridge.impl.incoming_projectiles(self, unit)
+		if OrderController.profile_detail:
+			OrderController.add_part("k2.incoming", Time.get_ticks_usec() - lap_started)
+		return native
 	var threats: Array = []
 	if unit == null or not unit.is_alive():
 		return threats
-	var lap_started := Time.get_ticks_usec() if OrderController.profile_detail else 0  # N7: the K2 query's own share
 	var here := Vector2(unit.global_position.x, unit.global_position.z)
 	var half := Units.hull_half_extents(Units.stat(unit.unit_id, "hull_size"))
 	var forward := -unit.global_basis.z
@@ -1907,11 +1912,15 @@ func incoming_projectiles(unit: Tank) -> Array:
 				"eta_ticks": maxi(0, int(flying["land_tick"]) - tick), "projectile_id": int(flying.get("projectile_id", -1)),
 				"weapon": String(flying.get("weapon_id", "")),
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]) * falloff, weapon, forward, true)})
-	threats.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return int(a["eta_ticks"]) < int(b["eta_ticks"]) or (int(a["eta_ticks"]) == int(b["eta_ticks"]) and int(a["projectile_id"]) < int(b["projectile_id"])))
+	threats.sort_custom(_incoming_before)
 	if OrderController.profile_detail:
 		OrderController.add_part("k2.incoming", Time.get_ticks_usec() - lap_started)
 	return threats
+
+
+## K2's order: soonest first, then by projectile id (the native query sorts with this same function).
+static func _incoming_before(a: Dictionary, b: Dictionary) -> bool:
+	return int(a["eta_ticks"]) < int(b["eta_ticks"]) or (int(a["eta_ticks"]) == int(b["eta_ticks"]) and int(a["projectile_id"]) < int(b["projectile_id"]))
 
 
 ## Shield + hull points a hit of `raw` travelling along `direction` would take from `unit` now (no state change).
