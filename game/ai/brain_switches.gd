@@ -70,7 +70,7 @@ static var native_owned := true  # Round 27 (stage 1 E5b): native_exec on the C+
 static var native_motion := false  # Round 28 (N6.1): TankMotion.step_in_place behind its own seam (motion_native.cpp). OFF by its price: the planners roll it many times a think, a crossing a step costs more than the step (50 v 50 band +1.7/+3.5/+2.3 %, builder0 8223ae16 n = 3, hashes equal); the native tank drive calls the same model with no crossing
 static var native_tank := true  # Round 28 (N6.1): Tank._drive as one native call (tank_drive_native.cpp; the motion model with no crossing); ON: native-proof on = tank on his Sumps (+ leaders), foundry, terminus, yard
 static var native_combat := true  # Round 28 (N6.2): combat resolution's rules natively (combat_native.cpp: the hit's terms, Tank.take_hit's arithmetic); ON: test_native_combat 840 terms + 840 take_hits 0 mismatches, native-proof on = combat (price ~0: a few hits a second)
-static var native_pathing := false  # Round 28 (N6.4): Pathing.is_ready / query / find_path natively (pathing_native.cpp); OFF until its proofs
+static var native_pathing := true  # Round 28 (N6.4): Pathing.is_ready / query / find_path natively (pathing_native.cpp); ON: test_native_pathing 300 pairs 0 mismatches, native-proof on = off = pathing (price ~0, within builder0 noise)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",

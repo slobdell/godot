@@ -137,11 +137,15 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-12 evening): stage 1 is ON on main** (merged as `129951d5`, from green `057e3fa0`). Since then, green
-**`39602618`** (builder0 `make check exited 0`, 2520/0, 25 targets ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`):
-N5's small callbacks in C++ and `native-verify-scenarios` judging its own log; handed over. **Waiting:** N3 (traffic's
-and manoeuvre's settled diffs to port), the held N5 ports (`_negotiate`'s body after CP-T; the k-turn planner and
-`_manoeuvre` after CP-M1/M2), and the orchestrator's order on N6 (proposed below).
+**State (2026-10-13, round 28 closing; carries over to round 29):** stage 1 ON on main; **N6.1 + N6.2 on main**
+(merged as `a9c492a7` from `d11f40ce`: builder0 check 2522/0 with one load flake in `remote-guard-test`'s quiet-window
+case, passing alone; `native-verify-suite` exited 0, 2522/0 + 50/0 scenarios, 0 verify mismatches). On stream/native
+since: **N6.4** (the nav wrappers, `native_pathing` ON at its price ~0; its full check + verify-suite pending; see *N6 progress*).
+**Queue for round 29:** (1) finish N6.4 (its full check + verify-suite; if red, switch it back OFF); (2) **N6.3 perception + intel: ASK the
+orchestrator first** (perception.gd is brains'; it is stage 2's first block); (3) N3: no ports waiting (round 28:
+manoeuvre's M1/M2 and traffic's T1/T1b did not ship); the held N5 ports stay held (`_negotiate`'s body / `ask` /
+`_begin_yield` after traffic's CP-T; the k-turn planner and `_manoeuvre` after manoeuvre's CP-M1/M2); (4) stage 2 (N4)
+deferred by the lead until the AI's decisions settle.
 
 | item | state |
 |---|---|
@@ -421,8 +425,8 @@ starts before the orchestrator orders it.
 |---|---|---|---|---|
 | **N6.1a** `TankMotion.step_in_place` | `native/src/motion_native.{h,cpp}`; seam in `game/tank/tank_motion.gd` | `native_motion` **OFF** (by its price) | `test_native_motion` 600 rolls x 40 ticks = 24 000 steps every locomotion, 0 mismatches; native-proof `motion` equal | builder0 50v50: +1.7 / +3.5 / +2.3 % (a crossing per call from GDScript's planners costs more than the step) |
 | **N6.1b** `Tank._drive` as one call (incl. `move_and_slide` from C++) | `native/src/tank_drive_native.{h,cpp}`, `game/ai/native/native_tank.gd`; seam in `game/tank/tank.gd` `_drive` | `native_tank` **ON** | native-proof on = off = tank on sumps `0398922d31f335f8`, leaders `9aad48e924fc7bf4`, foundry `28b7ccfab3c5b916`, terminus `f90c67a55c7ad9e6`, yard `1f15cb10c038b2bd` | builder0 (noisy, normalised to the `match` section, 3 alternated runs an arm): tank/drive ~6.5 % cheaper, ~0.06 ms a tick at 25 a side |
-| **N6.2** combat resolution's rules | `native/src/combat_native.{h,cpp}`, `game/ai/native/native_combat.gd`; seams in `game/match/match.gd` `_land_hit_result`, `game/tank/tank.gd` `take_hit` | `native_combat` **ON** (`d11f40ce`) | `test_native_combat` 840 terms + 840 take_hits, 0 mismatches; native-proof on = off = tank = combat = `0398922d31f335f8` | ~0 (a few hits a second) |
-| **N6.4** the nav wrappers (`Pathing.is_ready` / `query` / `find_path`) | `native/src/pathing_native.{h,cpp}`, `game/ai/native/native_pathing.gd`; seams in `game/ai/pathing.gd` | `native_pathing` OFF until its proofs | `test_native_pathing` (pending) | pending |
+| **N6.2** combat resolution's rules | `native/src/combat_native.{h,cpp}`, `game/ai/native/native_combat.gd`; seams in `game/match/match.gd` `_land_hit_result`, `game/tank/tank.gd` `take_hit` | `native_combat` **ON** (`d11f40ce`; on main `a9c492a7`) | `test_native_combat` 840 terms + 840 take_hits, 0 mismatches; native-proof on = off = tank = combat = `0398922d31f335f8` | ~0 (a few hits a second) |
+| **N6.4** the nav wrappers (`Pathing.is_ready` / `query` / `find_path`) | `native/src/pathing_native.{h,cpp}`, `game/ai/native/native_pathing.gd`; seams in `game/ai/pathing.gd` | `native_pathing` **ON** (pending its full check + verify-suite) | `test_native_pathing` 300 pairs every switch combination (119 reachable, 121 not), 0 mismatches; native-proof on = off = pathing = `0398922d31f335f8` (builder0, `7d95ec03`) | ~0: builder0 noisy (tick 16-21 ms run to run), foundry 25 a side pinned 0-3, 3 alternated runs an arm, normalised to `match`: think 12.12 on v 11.98 off, controllers 18.42 v 18.24 (+~1 %, inside the +-2 % spread) |
 | N6.3 perception + intel | not started: ASK the orchestrator first (perception.gd is brains') | | | |
 
 Lessons: 76b0a881's check failed `test_native_motion` because creepbound (`Movement.switched_off`) had been read once at
