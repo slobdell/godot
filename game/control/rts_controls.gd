@@ -1009,6 +1009,13 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	# is ordered one squad at a time, side by side - never as one heap of vehicles, never as one element.
 	if verb != "stop" and several_squads():
 		return _order_squads(verb, extra, selection_squads())
+	# Round 28 (brains B5, his playtest): shift + a task on a squad that is still driving its waypoints QUEUES behind them.
+	# Only the tasks a crew cannot be given (screen, support by fire, ambush): a shifted move, attack-move or attack keeps
+	# today's direct queue (his waypoint route, which already chains from the last stop).
+	if bool(extra.get("queue", false)) and ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb) and elements != null:
+		var queued: Variant = _queue_task(verb, extra)
+		if queued is String:
+			return queued
 	if _is_task(verb, extra):
 		return assign_task(verb, extra)
 	# Round 11 (the lead, playing: *"I get warning when I try to use screen: Can't 'verb' must be one of move,
@@ -1176,6 +1183,79 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	if error == "":
 		_acknowledge(command)
 	return error
+
+
+## Round 28 (brains B5; the lead, 2026-10-13: *"I expect to be able to shift + screen click on top of an existing
+## waypoint such that my units will go to the first set of waypoints first … then set up the screen from the angle
+## defined by the preceding waypoint. As it stands … it just sets up the screen in a straight line from where the units
+## currently are"*; he reported it in round 26 too and it was read as "armed orders need a facing"). A shifted task on a
+## squad that is still busy — its element has a task, or its crews still drive his own shift-queued waypoints — goes
+## to the element's QUEUE (Element.enqueue) and starts when the work ahead of it is done. Its AUTOMATIC facing is the
+## way in from the last waypoint (point − waypoint); a drawn one wins. Returns
+## "" or a refusal when it queued, null when there is nothing to queue behind (the order goes on as before).
+func _queue_task(verb: String, extra: Dictionary) -> Variant:
+	var element := selected_element()
+	var origin: Variant = null
+	if element != null and not element.task.is_empty():
+		origin = element.last_point()
+	else:
+		var number := selected_group()
+		if number == 0 and element == null:
+			return null
+		origin = _waypoints_end(selection.units)
+		if origin == null:
+			return null  # nothing driving: the order applies now, as before
+		if element == null:
+			element = elements.form(selection.units.duplicate(), groups.label(number))
+			if element == null:
+				return null
+	var task := {"verb": String(ELEMENT_TASKS[verb])}
+	if extra.has("to"):
+		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
+	if extra.has("target"):
+		task["target"] = String(extra["target"])
+	if extra.has("facing"):
+		task["facing"] = extra["facing"]
+	_copy_approach(extra, task)
+	var shape := selected_formation()
+	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
+		task["formation"] = shape
+	if task["verb"] == "move" and not task.has("to"):
+		return _refuse("a move task needs somewhere to go")
+	if verb == "move":
+		task["drills"] = false
+	if origin is Vector3:
+		var from: Vector3 = origin
+		if verb != "move" and task.has("to") and not task.has("facing"):
+			var way := Vector3(float(task["to"][0]) - from.x, 0.0, float(task["to"][1]) - from.z)
+			if way.length() > 1.0:
+				task["facing"] = [way.normalized().x, way.normalized().z]
+	var error := element.enqueue(task)
+	_squads_changed()
+	var command := UnitCommand.make(selection.units, verb, extra)
+	command["task"] = true
+	command_issued.emit(command, error)
+	if error == "":
+		_acknowledge(command)
+	return error
+
+
+## Round 28 (B5): where his crews' own orders (current and shift-queued) end, as the centre of their last goals; null
+## when none of them has one.
+func _waypoints_end(units: Array) -> Variant:
+	if orders == null:
+		return null
+	var total := Vector3.ZERO
+	var count := 0
+	for unit_name: String in units:
+		var chain: Array = [orders.current(unit_name)] + orders.queue(unit_name)
+		for i in range(chain.size() - 1, -1, -1):
+			var goal: Variant = Orders.goal_of(chain[i], game_match) if not (chain[i] as Dictionary).is_empty() else null
+			if goal is Vector3:
+				total += Vector3((goal as Vector3).x, 0.0, (goal as Vector3).z)
+				count += 1
+				break
+	return total / float(count) if count > 0 else null
 
 
 ## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
