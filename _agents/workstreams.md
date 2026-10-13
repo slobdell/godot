@@ -73,6 +73,14 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   (orchestrator's addition; absolute seconds reported)**; outcomes reported. Scenario `scenario_scout_suppress` n = 18 a
   case, all four pass and off fails one; check, native-verify-scenarios, ≤ 0.5 ms, symmetric.
 
+- **Manoeuvre M1 bar + grant (2026-10-12 evening, before probe numbers):** traced: the "hull keeps its arrival heading" rule
+  is `TankBrain._order_move` (round 8: an untold face becomes a stop for a wheeled turreted hull; a squad's drawn facing
+  arrives as the element's sector watch, never "told"). **GRANT: ~3 lines of `_order_move`** (the decline skips a
+  from=="order" face when the element task carries a drawn facing; `--nav-off=turnhull`); brains told. No C++ port (face
+  turns for wheeled hulls run in GDScript). Bar: hull-rest-probe drawn wheels/turret median ≤ 15° and ≥ 70 % within 15° on
+  each of 6 tasks; settle time +≤ 6 s median; clicked within ±5° of base; bridge-pooled, arrive series, thirteen explained;
+  partial for line tasks: = hover/turret's error ±5°.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
