@@ -39,6 +39,15 @@ def main(path: str) -> int:
                   "hit share on side mean %.2f" % (arm, len(hit_runs), len(runs), SIDE_DEG,
                                                    sum(1 for m in meds if m <= SIDE_DEG), len(runs),
                                                    statistics.median(meds), statistics.mean(r["hit_on_side_share"] for r in hit_runs)))
+        shot_runs = [r for r in runs if r.get("shots", 0) > 0]
+        if shot_runs:
+            # Round 28 (B2): where his crews fired from (median shooter bearing per run) and when the first round went.
+            fmeds = sorted(r["fire_off_median_deg"] for r in shot_runs)
+            firsts = sorted(r["first_shot_s"] for r in shot_runs)
+            print("APPROACH_TABLE arm=%s fire: runs that fired %d/%d, fired from the side (median shooter <=%d) %d/%d, "
+                  "median of medians %.1f, first round median %.1f s (worst %.1f)" % (
+                      arm, len(shot_runs), len(runs), SIDE_DEG, sum(1 for m in fmeds if m <= SIDE_DEG), len(runs),
+                      statistics.median(fmeds), statistics.median(firsts), firsts[-1]))
         won = [r for r in runs if r.get("enemy_alive", -1) == 0]
         if any(r.get("enemy_alive", -1) >= 0 for r in runs):
             shares = [r.get("target_flank_share", 0) for r in runs]

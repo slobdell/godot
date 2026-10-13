@@ -96,6 +96,23 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 				var at: Array = event["position"]
 				hit_offs.append(absf(ElementPlan.approach_off_deg(Vector3(at[0], 0.0, at[2]), _flat(enemy.global_position),
 						-side))))
+	# Round 28 (B2): where his crews FIRE from (each round's shooter, degrees off the side drawn, from the target's
+	# position at that tick) and when the first one goes: artillery's arcs land anywhere on the hull, so the side it
+	# shells from is the firing position's.
+	var fire_offs: Array = []
+	var first_shot := [-1]
+	lab.game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		var shooter := String(event.get("shooter", ""))
+		if not names.has(shooter) or not is_instance_valid(enemy) or not enemy.is_alive():
+			return
+		var crew := lab.tank_of(shooter)
+		if crew == null:
+			return
+		if first_shot[0] < 0:
+			first_shot[0] = int(event.get("tick", 0))
+		fire_offs.append(absf(ElementPlan.approach_off_deg(_flat(crew.global_position), _flat(enemy.global_position),
+				-side))))
+	var start_tick := lab.game_match.tick
 	var pursuing_ticks := 0
 	var rounding_pursuing_ticks := 0
 	var target_fastest := 0.0
@@ -168,6 +185,8 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			"closest_m": snappedf(closest, 0.1) if is_finite(closest) else -1.0, "killed_s": _s(killed),
 			"target_hits": faces, "target_flank_share": snappedf(float(faces["side"] + faces["rear"])
 					/ maxf(float(faces["front"] + faces["side"] + faces["rear"]), 1.0), 0.01),
+			"shots": fire_offs.size(), "fire_off_median_deg": _median(fire_offs),
+			"first_shot_s": _s(first_shot[0] - start_tick) if first_shot[0] >= 0 else -1.0,
 			"hits": hit_offs.size(), "hit_off_median_deg": _median(hit_offs),
 			"hit_on_side_share": snappedf(float(hit_offs.filter(func(o: float) -> bool: return o <= SIDE_DEG).size())
 					/ maxf(float(hit_offs.size()), 1.0), 0.01),
