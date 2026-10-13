@@ -389,6 +389,24 @@ the work. Do it now, or once the AI's decisions have settled?"* **Recommendation
 (brains reshapes the thinking every round today: doubling that cost now slows the smarter-AI work he keeps asking for;
 20 a side is close to full speed already). The orchestrator puts it to him.
 
+### N6: the next core components outside the AI's thinking -- PROPOSED, not started (2026-10-12; for the orchestrator to order)
+
+Sized from this stream's rate (stage 1: ~2 days of porting with proofs per ~1 500 lines of drive/gun) and priced from the
+quiet slot's profile (builder0 headless, stage 1 ON, foundry 20 a side, tick's scripts 10.67 ms; `ed6ecaa9`). All are in
+paths **nobody** owns (`game/match/**`, `game/tank/**`, `game/combat/**`): each needs the orchestrator's grant. Each is
+equal-answer (hash-proven) unless declared; none is expected to move his laptop by more than ~1-4 % (the thinking is
+4.8 of the 10.7 ms, the execute ~2.6, elements 1.8).
+
+| # | component | what moves to C++ | today's cost (builder0) | days | why it's core |
+|---|---|---|---|---|---|
+| 1 | **The tank's motion** (`game/tank/tank.gd` drive/TankMotion, the per-tank physics step's script half) | the command -> velocity/yaw integration, the speed/turn limits, the slide bookkeeping (the engine's move_and_slide stays) | `tank` 0.63 ms (`tank/drive` 0.42) | 3-4 | every hull every tick; deterministic core of the sim; the server and the AI both depend on it |
+| 2 | **Combat resolution** (`shell.gd`, `impact.gd`, `armor.gd`, damage in `match.gd`) | shell flight and hit tests, armor facing, damage/shield/kill bookkeeping (signals stay GDScript) | shells 0.014 + engagement 0.013 ms today (cheap: few rounds in flight); grows with bigger fights | 4-6 | the rules of the game; one implementation the server, the replay and the AI's lethality math can share |
+| 3 | **Perception and intel** (`perception.gd`, `match.gd`'s intel refresh, `visibility_field.gd`) | who-sees-whom each intel refresh as one batched pass (the engine's rays stay), the team visibility table the AI reads | intel 0.13 + LOS bookkeeping ~0.08 ms | 2-3 | feeds both brains' thinking (stage 2's inputs) and the fog of war; batched it is stage 2's first block |
+| 4 | **Nav queries' last GDScript** (`pathing.gd` wrappers, `nav.is_ready`/`nav.path` callers on the think side) | the wrappers and memo the think side still calls (the drive's are native since N5) | ~0.1 ms | 1 | small; finishes the nav layer |
+
+**Recommended order:** 3 (it is the bridge to stage 2 when he wants it), then 1, then 2; 4 whenever convenient. None
+starts before the orchestrator orders it.
+
 ### Questions for the lead
 
 - **Stage 2 (N4):** do it now, or once the AI's decisions settle? (above; the orchestrator asks him)
