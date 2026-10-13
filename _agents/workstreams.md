@@ -129,6 +129,16 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   other way from round 28's judged run. Tuning disclosed (seeds 1–3): open+static creep 78 → 32, rigs' wall
   contact-ticks 2566 → 1473. After a pass: native's port, then bridge-pooled + Terminus on the ON path at the pair.
 
+- **Traffic CP-T JUDGED — PASSES (2026-10-13 ~16:40; `3a94f38d` both arms, GDScript, seeds 13–15 × 6, n = 18; green
+  `3a94f38d`: builder0 check exited 0, 2550/0):** Terminus head-on between-squad fast 475 → 91 (−81 %), crews 176 → 177,
+  all-in 60.8 → 59.3 s, no wedge; other cases = base; CPU mirror 475 → 58; bridge-pooled 18/18; live test fires. Native's
+  T2 equal; merged as a PAIR once native is green on a tree with both.
+- **Traffic T1c bar (pre-registered ~16:50; DECLARED; last attempt):** `Movement.ask()` refuses while the asked hull is
+  set up (`deploy_ratio > 0`; `--traffic-off=setup`). traffic-census fresh seeds 4–6: deployed_yields 0 in the arm, > 0 in
+  base (else NULL); friendly-stuck ≤ base × 1.2 + 10; fast contacts ≤ base × 1.1 + 5; artillery fire not down > 2 se.
+  **Orchestrator's additions:** bridge-pooled 18/18 and traffic's four cases with no wedge; brains' ApproachStage drawn
+  artillery (seeds 13–15 × 6) both arms after B1 + CP-T are on main: give-way repacks → 0, B1's lines hold.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
