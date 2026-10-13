@@ -7,6 +7,7 @@
 // The crew's state is either the live GDScript members (ObjectView) or a C++-owned ExecState (StructView: pulled at the
 // start, the changed fields pushed at the end; the callbacks still left sync it in between).
 #include "execute_native.h"
+#include "hold_native.h"
 
 #include "exec_view.h"
 
@@ -229,7 +230,7 @@ ExecState *Exec<StructView>::state_of() {
 struct ExecCounts {
 	int64_t native = 0, handed_back = 0, stale_pulls = 0, verified = 0, verify_mismatches = 0;
 	int64_t part_pulls = 0;
-	int64_t dead = 0, reflexes = 0, yielding = 0, face = 0, drive = 0, other_order = 0;
+	int64_t dead = 0, reflexes = 0, yielding = 0, holding = 0, face = 0, drive = 0, other_order = 0;
 	std::string first_mismatch;
 };
 ExecCounts &exec_counts() {
@@ -244,6 +245,7 @@ void note_hand_back(int reason, const Variant &type) {
 		case 0: c.dead++; break;
 		case 1: c.reflexes++; break;
 		case 2: c.yielding++; break;
+		case 4: c.holding++; break;
 		default: {
 			const String t = type;
 			if (t == String("face")) {
@@ -367,7 +369,8 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 				(double)mover->get(k._wheel_radius_value) <= 0.0;
 		const int reason = !(bool)tank->get(k.alive) ? 0 : (!((Array)ctl->get(k.reflexes)).is_empty() ? 1 :
 				((!String(mover->get(k.yield_to)).is_empty() && !config.drive->yield_ready) ? 2 :
-				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : -1)));
+				(hold_has(mover) ? 4 : // round 29: traffic's street hold, the GDScript's until T1's drive is ported
+				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : -1))));
 		if (reason >= 0) {
 			note_hand_back(reason, type);
 			if (mode != EXEC_LIVE) {
@@ -451,6 +454,7 @@ Dictionary execute_counts(bool reset) {
 	out["dead"] = exec_counts_.dead;
 	out["reflexes"] = exec_counts_.reflexes;
 	out["yielding"] = exec_counts_.yielding;
+	out["holding"] = exec_counts_.holding;
 	out["face"] = exec_counts_.face;
 	out["drive"] = exec_counts_.drive;
 	out["other_order"] = exec_counts_.other_order;

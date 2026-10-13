@@ -26,7 +26,8 @@ static var _owned_drives := 0
 
 static func usable(_mover: Movement) -> bool:
 	var ok := BrainSwitches.native and BrainSwitches.native_drive and BrainSwitches.chord_memo \
-			and Movement._off.is_empty() and not Movement.reverse_log and not Movement.kturn_log and configure()
+			and Movement._off.is_empty() and not Movement.reverse_log and not Movement.kturn_log and configure() \
+			and not NativeHold.holding(_mover)
 	if ok and NativeBridge.counting:
 		NativeBridge.took("drive")
 	return ok

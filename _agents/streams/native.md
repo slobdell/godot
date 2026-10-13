@@ -596,6 +596,20 @@ instead, or run them with `--brains-off=native_pathing,native_perception`.
 0.183 -> 0.088 ms, -52 %). N7.1's lap: the K2 query (`k2.incoming`) 0.098 ms (0.7 % of the tick), half of
 `s.incoming` (0.187); `t.incoming` 0.255 ms (1.8 %) is IncomingFire's own per-tick count over the shell columns.
 
+### Round 29: the street hold's scaffold (the orchestrator's order 2026-10-13 ~12:20 PDT: an OFF-proven stub, no behaviour)
+
+**For traffic's T1 (C29.2).** The hold as a record the native execute reads: `native/src/hold_native.{h,cpp}` (keyed by
+the mover's instance id; spot and start; no godot type stored), `game/ai/native/native_hold.gd`:
+`NativeHold.hold(mover, spot, since)` when a crew starts holding, `NativeHold.release(mover)` when it goes,
+`holding(mover)`, `of(mover)`, `release_all()`; a crew's `exec_forget` (its `_exit_tree`) drops its hold.
+**Until T1's hold is ported into the drive:** the native execute hands a holding crew back to the GDScript (counted
+`holding` in NATIVE_EXEC) and `NativeDrive.usable` steps aside for it (it asks the library only while a hold exists), so
+T1 can ship on the GDScript and play the same with native ON from its first commit. **Traffic's one line each:** call
+`NativeHold.hold` / `release` where `Traffic.holding` turns true / false. Nothing on main writes a hold: play unchanged.
+Proof: `tests/test_native_hold.gd` (a live Sumps fight: the record reads back bit for bit; the held crew handed back
+having written nothing, both views; every other crew's execute identical with the hold written and with the table
+empty; the drive's seam steps aside for it only; release and exec_forget put it back).
+
 ### Questions for the lead
 
 - **Stage 2 (N4):** do it now, or once the AI's decisions settle? (above; the orchestrator asks him)

@@ -67,8 +67,8 @@ static func execute(ctl: OrderController, delta: float) -> Variant:
 	_executes += 1
 	if mode != EXEC_LIVE and _executes % REPORT_EVERY == 0:
 		var c: Dictionary = NativeBridge.impl.execute_counts(false)
-		print("NATIVE_EXEC %d native, %d handed back (dead %d, reflexes %d, yielding %d, face %d, drive %d, other %d), %d stale pulls, %d part pulls, %d verified, %d verify mismatches %s" % [
-				int(c["native"]), int(c["handed_back"]), int(c["dead"]), int(c["reflexes"]), int(c["yielding"]),
+		print("NATIVE_EXEC %d native, %d handed back (dead %d, reflexes %d, yielding %d, holding %d, face %d, drive %d, other %d), %d stale pulls, %d part pulls, %d verified, %d verify mismatches %s" % [
+				int(c["native"]), int(c["handed_back"]), int(c["dead"]), int(c["reflexes"]), int(c["yielding"]), int(c["holding"]),
 				int(c["face"]), int(c["drive"]), int(c["other_order"]), int(c["stale_pulls"]), int(c["part_pulls"]), int(c["verified"]),
 				int(c["verify_mismatches"]), c["first_mismatch"]])
 	return NativeBridge.impl.execute(ctl, delta, mode)
