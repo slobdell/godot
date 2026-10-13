@@ -195,6 +195,18 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   gang contacts −0.31/seed (se 0.24), in-reach on target −0.49 (se 1.71), kills 33 → 28 (inside 2 se, noted). Scout DONE;
   kept `scout-s1-suppresslay`.
 
+- **Brains B2 PARKED (2026-10-13, `lab/brains-r28-battery` = `88b6a724`, tuning seeds 4–6):** fires from the side 18/18
+  (median shooter 28.2°), alive 3.00 = clicked, but first round 25.8 s v clicked 2.3 s (+23.5, past the +15 s cutoff):
+  ~90 m at ~4 m/s on a 90° swing after three traced fixes (a deployed mortar never leaving a named move; a relocating
+  battery holding fire via Element.relocating → ElementFeed → MOVE; the column re-laying its heading). Not judged
+  (would confirm the fail). **For him (round 29): shell from where it stands while driving round, or accept ~20–25 s.**
+- **Brains B3 FOUND: the CPU commander orders squads into the enemy** (seed 5 Parade, `make recon-probe`):
+  ElementCommander re-tasks recon squads to `screen` a point 45 m short of the enemy focus (SCREEN_AHEAD_M), the enemy
+  advances onto it (34 → 1 m by t 17) and the crews keep driving to their places. **Fix GO (DECLARED, CPU only):** stand the
+  screen off at SCOUT_STANDOFF (85 m) and re-aim when an enemy comes within it. Bar: fresh census seeds 13–24, fixed-gun
+  contacts under MOVE ≥ −50 %, recon deaths not up, CPU win rate within noise, thirteen declared; + all-unit MOVE
+  contacts and screen re-tasks/min reported (orchestrator).
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
