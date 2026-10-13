@@ -3772,4 +3772,8 @@ instrument that cannot lie about load — removal within one run — and let eve
    changed and the rest before writing the bar.
 302. **One wedged run can carry a whole table.** (Round 28, traffic T1b.) A single run at seed 12, tick 16 held 4 of the
    missing crews and 305 of the stuck crew-seconds. Read the worst run's trace before reading the median; it is usually
-   the next design item. (Also: killing a local chain leaves its builder0 run alive: stop both.)
+   the next design item. (Also: killing a local chain leaves its builder0 run alive: stop both.)303. **A question about a unit states the unit's constraint before the options.** (Round 29 prep, artillery.) "Shell from
+   where it stands while it drives round, or wait ~20–25 s" read to him as artillery firing on the move, which he knows it
+   cannot ("it needs to be positioned still in order to fire"). Re-asked as "it has to stop and set up before it can fire;
+   go straight to your side, or set up and fire here first, then move", he answered at once. The worker's wording carried
+   its own model ("shell while driving" meant the pre-move deploy); the orchestrator relays the choice in his model.
