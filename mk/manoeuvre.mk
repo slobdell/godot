@@ -60,6 +60,8 @@ manoeuvre-parse: import ## manoeuvre: --check-only on the stream's scripts (MANO
 # Report only -> build/manoeuvre/hull-rest/<arm>/<faction>/<task>-<seed>/screen.json + tests/manoeuvre/hull_rest_ab.py.
 M1_ARMS ?= new_drawn base_drawn new_clicked base_clicked
 M1_DIR ?= $(BUILD_DIR)/manoeuvre/hull-rest
+# Extra flags for every arm (e.g. --turn-states: each crew's state once a second, read by hull_rest_moving.py).
+M1_FLAGS ?=
 .PHONY: manoeuvre-hull-rest
 manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
 	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
@@ -69,10 +71,11 @@ manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class,
 		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=--nav-off=turnhull,faceslot;; esac; \
 		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-			--no-element-cpu $$click $$off --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+			--no-element-cpu $$click $$off $(M1_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
 	$(PYTHON) tests/manoeuvre/hull_rest_ab.py $(M1_DIR)
+	$(PYTHON) tests/manoeuvre/hull_rest_moving.py $(M1_DIR)
 
 # One run of manoeuvre-hull-rest's workload, for a trace: ONE_FACTION, ONE_SEED, ONE_TASK, ONE_CLICK=1 for the clicked
 # arm, NAV_FLAGS (e.g. --turn-trace=<unit> --nav-off=turnhull) -> build/manoeuvre/hull-one/run.log + screen.json.

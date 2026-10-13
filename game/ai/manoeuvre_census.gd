@@ -34,13 +34,20 @@ const KIND_CONE_DEG := 70.0
 ## OFF unless asked for (`--turn-census`, or `--turn-log` for the rows too; a probe may set `on`): it reads every
 ## controller tick of every hull, and the laptop's tick is the budget (perf's).
 static var log_on := OS.get_cmdline_user_args().has("--turn-log")
-static var on := log_on or OS.get_cmdline_user_args().has("--turn-census")
+static var on := log_on or OS.get_cmdline_user_args().has("--turn-census") or _trace_flag() != "" \
+		or OS.get_cmdline_user_args().has("--turn-states")
 ## With the flag, the running tally is printed every PRINT_EVERY_TICKS (`MANOEUVRE_TURNS <json>`: the last line is the
 ## run's), so any harness (a match, the drive test) reports it without a hook at its end; rows print as they close.
 static var prints := on
 ## `--turn-trace=<unit name>`: that hull's driving every TRACE_EVERY ticks (measurement only).
 static var trace_unit := _trace_flag()
 const TRACE_EVERY := 5
+
+
+## `--turn-states`: every crew's state once a second (`MANOEUVRE_STATE`), so a probe's judging moment can be read per
+## crew: what a crew still moving was doing (a face at rest, a drive to its slot, pinned). Measurement only.
+static var states_on := OS.get_cmdline_user_args().has("--turn-states")
+const STATE_EVERY := SimClock.TICK_RATE
 
 
 static func _trace_flag() -> String:
@@ -99,14 +106,14 @@ func observe(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 		_printed_at = tick
 		print("MANOEUVRE_TURNS %s" % JSON.stringify(report()))
 	var speed := tank.speed()
-	if trace_unit != "" and String(tank.name) == trace_unit and tick % TRACE_EVERY == 0:
-		var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
-		print("MANOEUVRE_TRACE f %d at (%.1f, %.1f) nose (%.2f, %.2f) v %.2f cmd %.2f/%.2f order %s goal (%.1f, %.1f) steer %s plan %s left %.1f legs %s circling %s why %s touch %s face %s/%.1f/%d blocked %s retry %d" % [
-				tick, here.x, here.z, nose.x, nose.y, speed, cmd.throttle, cmd.turn, String(order.get("type", "")),
-				float(order.get("x", 0.0)), float(order.get("z", 0.0)), str(mover.steer_to), mover._kturn_plan_kind,
-				mover._kturn_left_m, str(mover._kturn_legs), mover._circling, mover._reverse_why, mover.contact.touching,
-				str(mover._face_legs), mover._face_left_m, mover._face_gear, str(mover._face_blocked != Vector3.ZERO),
-				mover._face_retry])
+	trace(mover, cmd, order)
+	if states_on and tick % STATE_EVERY == 0:
+		print("MANOEUVRE_STATE f %d %s %s order %s from %s v %.2f moved %.2f cmd %.2f/%.2f face %d/%.1f blocked %s retry %d touch %s stuck %.1f pivot %s esc %.1f goal %.1f" % [
+				tick, String(tank.name), tank.unit_id, String(order.get("type", "")), String(order.get("from", "")),
+				Vector2(tank.velocity.x, tank.velocity.z).length(), tank.estimated_velocity.length(), cmd.throttle, cmd.turn,
+				mover._face_legs.size(), mover._face_left_m, str(mover._face_blocked != Vector3.ZERO), mover._face_retry,
+				str(mover.contact.touching), mover._stuck_time, str(mover._unstick_pivot), mover._unstick_left,
+				Vector2(here.x - float(order.get("x", here.x)), here.z - float(order.get("z", here.z))).length()])
 	var gear := 1 if speed > CUSP_DEADBAND else (-1 if speed < -CUSP_DEADBAND else 0)
 	var type := String(order.get("type", ""))
 	var goal := Vector3(float(order.get("x", 0.0)), 0.0, float(order.get("z", 0.0))) if type == "move_to" else Vector3.INF
@@ -240,3 +247,20 @@ func _cause_of(mover: Movement, cmd: TankCommand, order: Dictionary) -> String:
 	if absf(cmd.throttle) < TankMotion.WHEEL_CREEP_THROTTLE * absf(cmd.turn) and mover.wheel_radius() > 0.0:
 		return "creep"
 	return "route_" + String(mover._reverse_why) if mover._reverse_why != "" else "route"
+
+## The traced hull's driving (`--turn-trace=<unit name>`), every TRACE_EVERY ticks, from observe (every order type: a
+## face at rest too). The flag turns the census on, so the trace needs no `--turn-census`. Measurement only.
+static func trace(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
+	var tank := mover.ctl.tank
+	var tick := Engine.get_physics_frames()
+	if trace_unit == "" or tank == null or String(tank.name) != trace_unit or tick % TRACE_EVERY != 0:
+		return
+	var here := tank.global_position
+	var speed := tank.speed()
+	var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
+	print("MANOEUVRE_TRACE f %d at (%.1f, %.1f) nose (%.2f, %.2f) v %.2f cmd %.2f/%.2f order %s goal (%.1f, %.1f) steer %s plan %s left %.1f legs %s circling %s why %s touch %s face %s/%.1f/%d blocked %s retry %d" % [
+			tick, here.x, here.z, nose.x, nose.y, speed, cmd.throttle, cmd.turn, String(order.get("type", "")),
+			float(order.get("x", 0.0)), float(order.get("z", 0.0)), str(mover.steer_to), mover._kturn_plan_kind,
+			mover._kturn_left_m, str(mover._kturn_legs), mover._circling, mover._reverse_why, mover.contact.touching,
+			str(mover._face_legs), mover._face_left_m, mover._face_gear, str(mover._face_blocked != Vector3.ZERO),
+			mover._face_retry])
