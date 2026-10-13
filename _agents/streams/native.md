@@ -432,6 +432,22 @@ Lessons: 76b0a881's check failed `test_native_motion` because creepbound (`Movem
 configure; tests switch `_off` at run time, so it is asked live (fixed in dc466667). Anything the GDScript asks per call
 stays asked per call.
 
+### N7 progress (GO 2026-10-13: (1) then (2); (3)-(5) wait for round 29's split, (6) last)
+
+| port | code | switch | proofs (builder0) | price |
+|---|---|---|---|---|
+| **N7.1a** `Match.incoming_projectiles` (K2) + `_damage_estimate` | `native/src/incoming_native.{h,cpp}`, combat_native's terms factored (`combat_terms`, `combat_damage_estimate`); seam at the top of `incoming_projectiles`; the threats sorted by Godot's sort with `Match._incoming_before` | `native_incoming` **ON** | `test_native_incoming` 1440 queries, 471 threats (shells and lobbed rounds), the hull as disc and box, 0 mismatches; native-proof on = off = incoming = `0398922d31f335f8` | see below |
+| **N7.1b** `IncomingFire._count_in_flight` (the per-tick dodge trigger) | same files; seam in `game/ai/incoming_fire.gd` | `native_incoming` | `test_native_incoming` compares `count_for` both ways (254 counted), 0 mismatches; ai_perf_equivalence, ai_incoming_site pass | |
+| **N7.1c** `Shell._fly` | `native/src/shell_native.{h,cpp}`; seam at the top of `Shell._fly` (each shell still flies from its own tick: the scene's order kept) | `native_shell` **ON** | `test_native_shell` 300 shots, 4810 ticks, 197 hits, 53 burnt out, 0 mismatches; native-proof on = off = shell = `0398922d31f335f8` | see below |
+| `Match._land_rounds` | **kept GDScript**: its body is `_land_hit_result` per victim (signals, stats; the arithmetic native since N6.2), the suppression stamp (N7.2's field), the impact signal and an rpc; what is left is the radius/falloff filter, 0.02 % of the tick | | | |
+
+**N7.1's price (builder0 BUSY, tick 20-36 ms; `382656de`, foundry 25 a side pinned 0-3, 3 alternated runs an arm; shares of
+each run's own tick):** both OFF: K2 0.80 %, s.incoming 1.38 %, t.incoming 1.87 %, shell 0.12 %; native_incoming ON:
+K2 0.74 % (-8 %), s.incoming 1.33 %, t.incoming 1.85 % (unchanged); native_shell ON: shell 0.14 % (+0.02 % of the
+tick, inside the noise of a busy box). **~0 at today's fire**: ~1.2 shells in flight a tick, so the GDScript count
+mostly returned at `xs.is_empty()` and its cost is the call's dispatch, which a native body does not remove. The port
+pays only in heavier fire; it ships ON for the core-in-C++ principle (no speed bar), not for speed.
+
 ### N7: core components outside the thinking AND outside round 29's contested code -- PROPOSED (2026-10-13; nothing started)
 
 Excluded (round 29 rewrites them): the give-way / `_negotiate`, the k-turn planner and face turns, the element's arrival

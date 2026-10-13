@@ -89,6 +89,8 @@ static func _count_in_flight(game_match: Match, unit: Tank) -> int:
 	if not unit.is_alive():
 		return 0
 	var shells := AiTickCache.flight(game_match)
+	if NativeIncoming.usable():  # round 28 (native N7.1): the same count natively over the same columns
+		return NativeBridge.impl.incoming_count(unit, shells)
 	var xs: PackedFloat32Array = shells["x"]
 	if xs.is_empty():
 		return 0

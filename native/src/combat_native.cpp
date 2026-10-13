@@ -85,37 +85,55 @@ Vector2 split_shield(double raw, double shield, double shield_multiplier, double
 
 } // namespace
 
+CombatTerms combat_terms(const CombatConfig &c, Node3D *victim, const Dictionary &weapon, const Vector3 &direction,
+		bool force_side) {
+	const CN &k = cn_();
+	CombatTerms t;
+	//   forward := -victim.global_basis.z; face := FACING_NAMES[Armor.facing(forward, direction)]
+	//   force_side -- weapon["kind"] == ARC (the hit's terms) / `arcing` (_damage_estimate): face = "side", no weak spot
+	//   weak := is_weak_spot_hit(weapon, forward, direction)    (not ARC, not CONE, Armor.is_weak_spot)
+	//   through := weak_spot_multiplier(weapon, unit) if weak else armor_multiplier(weapon, unit, face)
+	//   shield factor := float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face])
+	const Vector3 forward = -victim->get_global_transform().basis.get_column(2);
+	const int64_t kind = weapon.get(k.kind, -1);
+	t.face_index = force_side ? 1 : facing(c, forward, direction);
+	t.weak = !force_side && kind != c.KIND_ARC && kind != c.KIND_CONE && is_weak_spot(c, forward, direction);
+	const String unit = victim->get(k.unit_id);
+	const double penetration = weapon.get(k.penetration, 0.0);
+	if (t.weak) {
+		t.through = penetration_multiplier(c, penetration, (double)c.units->call(k.armor, unit, k.rear) * c.WEAK_SPOT_ARMOR_FRACTION);
+	} else {
+		t.through = penetration_multiplier(c, penetration, c.units->call(k.armor, unit, face_name(t.face_index)));
+	}
+	t.shield_factor = (double)weapon.get(k.shield_multiplier, 1.0) * c.SHIELD_FACING[t.face_index];
+	return t;
+}
+
+const String &face_name(int face_index) {
+	const CN &k = cn_();
+	return face_index == 0 ? k.front : (face_index == 1 ? k.side : k.rear);
+}
+
 Array combat_hit_terms(const CombatConfig &c, Object *victim_object, const Dictionary &weapon, const Vector3 &direction) {
 	Array out;
 	Node3D *victim = Object::cast_to<Node3D>(victim_object);
 	if (!c.ready || victim == nullptr) {
 		return out;
 	}
-	const CN &k = cn_();
-	//   forward := -victim.global_basis.z; face := FACING_NAMES[Armor.facing(forward, direction)]
-	//   if weapon["kind"] == ARC: face = "side"
-	//   weak := is_weak_spot_hit(weapon, forward, direction)    (not ARC, not CONE, Armor.is_weak_spot)
-	//   through := weak_spot_multiplier(weapon, unit) if weak else armor_multiplier(weapon, unit, face)
-	//   shield factor := float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face])
-	const Vector3 forward = -victim->get_global_transform().basis.get_column(2);
-	const int64_t kind = weapon[k.kind];
-	const int face_index = kind == c.KIND_ARC ? 1 : facing(c, forward, direction);
-	const String &face = face_index == 0 ? k.front : (face_index == 1 ? k.side : k.rear);
-	const bool weak = kind != c.KIND_ARC && kind != c.KIND_CONE && is_weak_spot(c, forward, direction);
-	const String unit = victim->get(k.unit_id);
-	const double penetration = weapon.get(k.penetration, 0.0);
-	double through;
-	if (weak) {
-		through = penetration_multiplier(c, penetration, (double)c.units->call(k.armor, unit, k.rear) * c.WEAK_SPOT_ARMOR_FRACTION);
-	} else {
-		through = penetration_multiplier(c, penetration, c.units->call(k.armor, unit, face));
-	}
-	const double shield_factor = (double)weapon.get(k.shield_multiplier, 1.0) * c.SHIELD_FACING[face_index];
-	out.push_back(face);
-	out.push_back(weak);
-	out.push_back(through);
-	out.push_back(shield_factor);
+	const CombatTerms t = combat_terms(c, victim, weapon, direction, (int64_t)weapon[cn_().kind] == c.KIND_ARC);
+	out.push_back(face_name(t.face_index));
+	out.push_back(t.weak);
+	out.push_back(t.through);
+	out.push_back(t.shield_factor);
 	return out;
+}
+
+// Match._damage_estimate(unit, raw, weapon, direction, arcing): shield + hull points, no state change.
+double combat_damage_estimate(const CombatConfig &c, Node3D *unit, double raw, const Dictionary &weapon,
+		const Vector3 &direction, bool arcing) {
+	const CombatTerms t = combat_terms(c, unit, weapon, direction, arcing);
+	const Vector2 split = split_shield(raw, unit->get(cn_().shield), t.shield_factor, t.through);
+	return (double)split.x + (double)split.y;
 }
 
 Dictionary combat_take_hit(const CombatConfig &c, Object *tank, double raw, double shield_multiplier, double armor_multiplier) {

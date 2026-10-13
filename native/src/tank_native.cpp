@@ -55,6 +55,11 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("perception_sight", "viewers", "enemies"), &TankNative::perception_sight);
 	ClassDB::bind_method(D_METHOD("perception_gun_ready", "viewers", "enemies"), &TankNative::perception_gun_ready);
 	ClassDB::bind_method(D_METHOD("perception_rays"), &TankNative::perception_rays);
+	ClassDB::bind_method(D_METHOD("incoming_configure", "config"), &TankNative::incoming_configure);
+	ClassDB::bind_method(D_METHOD("incoming_projectiles", "game_match", "unit"), &TankNative::incoming_projectiles);
+	ClassDB::bind_method(D_METHOD("incoming_count", "unit", "shells"), &TankNative::incoming_count);
+	ClassDB::bind_method(D_METHOD("shell_configure", "config"), &TankNative::shell_configure);
+	ClassDB::bind_method(D_METHOD("shell_fly", "shell", "delta"), &TankNative::shell_fly);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
@@ -787,6 +792,36 @@ bool TankNative::pathing_configure(const Dictionary &config) {
 	c.switches = c.keep_switches.get_validated_object();
 	c.nav = Object::cast_to<NavNative>(c.keep_nav.get_validated_object());
 	c.ready = c.pathing != nullptr && c.switches != nullptr;
+	return c.ready;
+}
+
+bool TankNative::incoming_configure(const Dictionary &config) {
+	IncomingConfig &c = incoming_config;
+	c.ready = false;
+	const char *names[] = { "INCOMING_MARGIN", "ARC_HEIGHT", "TICK_RATE", "SITE", "DEFAULT_WEAPON", "units", "weapons", "shell",
+		"tank", "order" };
+	for (const char *name : names) {
+		if (!config.has(name)) {
+			return false;
+		}
+	}
+	c.INCOMING_MARGIN = config["INCOMING_MARGIN"];
+	c.ARC_HEIGHT = config["ARC_HEIGHT"];
+	c.TICK_RATE = config["TICK_RATE"];
+	c.SITE = config["SITE"];
+	c.DEFAULT_WEAPON = config["DEFAULT_WEAPON"];
+	c.HORIZON_TICKS = config.get("HORIZON_TICKS", c.HORIZON_TICKS);
+	c.DANGER_RADIUS = config.get("DANGER_RADIUS", c.DANGER_RADIUS);
+	c.COUNT_SITE = config.get("COUNT_SITE", c.COUNT_SITE);
+	c.keep_units = config["units"];
+	c.keep_weapons = config["weapons"];
+	c.units = c.keep_units.get_validated_object();
+	c.weapons = c.keep_weapons.get_validated_object();
+	c.shell_script = config["shell"];
+	c.tank_script = config["tank"];
+	c.order = config["order"];
+	c.combat = &combat_config;
+	c.ready = c.units != nullptr && c.weapons != nullptr && c.order.is_valid() && combat_config.ready;
 	return c.ready;
 }
 
