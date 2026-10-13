@@ -15,6 +15,9 @@ import sys
 # native branch (native_avoid: `switches->get("native_avoid")` each drive) and Movement._next_waypoint's route tail
 # (native_path: its own port inside the drive; the switch gates only the GDScript drive's seam, NativeRoute).
 INSIDE = {"native_cb": "drive", "native_fire": "drive", "native_avoid": "drive", "native_path": "drive"}
+# Switches whose path the tick profile's match never runs, each held live by its own test instead (named, printed, never
+# silently skipped): the black box records only skirmishes (MatchRecorder.start), not the profile's headless match.
+ELSEWHERE = {"native_recorder": "tests/test_native_recorder.gd (the tick profile does not record)"}
 
 
 def main(path: str) -> int:
@@ -32,6 +35,9 @@ def main(path: str) -> int:
         return 1
     missing = []
     for switch in on:
+        if switch in ELSEWHERE:
+            print("  %-20s held elsewhere: %s" % (switch, ELSEWHERE[switch]))
+            continue
         name = INSIDE.get(switch, switch[len("native_"):])
         count = int(taken.get(name, 0))
         print("  %-20s %-12s %8d %s" % (switch, name, count, "ok" if count > 0 else "STEPPED ASIDE"))
