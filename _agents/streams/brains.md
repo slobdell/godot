@@ -178,7 +178,10 @@ screen re-tasks, survivors, both arms).
 | winning side | the same in all 12 seeds | |
 | survivors green / rust (sum) | 92 / 89 | 97 / 84 |
 | screen tasks per recon squad-minute | 6.42 | 4.03 (+59 %: one about every 9 s, not every think) |
-Seed 5 (the traced one, tuning): contacts 241 → 7, under MOVE 119 → 1. Check: running.
+Seed 5 (the traced one, tuning): contacts 241 → 7, under MOVE 119 → 1.
+**B3 GREEN, merge here: `b95a3d6e`** (builder0, `make check exited 0`, 2522 passed / 0 failed, 25 targets ALL JUDGED,
+sim-baseline UNMOVED: the baseline armies run no CPU recon screen). Cost line (C28.4): one nearest-contact scan per
+recon element per commander think (1 Hz), not readable at 25 a side.
 
 ### B4 — his bridge 106/108: BISECTED, fix candidate (DECLARED)
 builder0, his two cells (seed 2: green t5, rust t9; `bridge-series BRIDGE_ARMS=on BRIDGE_SEEDS=2 BRIDGE_TICKS="5 9"`):
@@ -189,6 +192,24 @@ drawn facing changed since that crew's order (round 26's case, all its tests kep
 toggling within one task no longer re-issues a move. `--reissue-heading=plan` is round 26's rule. Bar (accepted, + the
 fight tests): 108/108; reorder_heading + fight tests pass; arrive series fresh 17–20 not below control − 1 on the 8 m
 line, median within +2 %; thirteen declared. Running.
+
+### B5 — his queued screen (TOP PRIORITY from his playtest, 2026-10-13; not declared: no fight change)
+His words (`game_design.md` *Round 28, his playtest*): shift + screen after a waypoint should drive the waypoint(s) first,
+then lay the screen as seen from the last one. **Built on its own branch `brains-b5`** (B5 alone on `3e2f6e13`, game/ ==
+main) and cherry-picked onto the stream. Mechanism: a shifted screen / support by fire / ambush on a squad still
+driving — its element's move task, or his crews' own shift-queued route — goes to `Element.queued_tasks`
+(`enqueue`), started when the move has arrived or the route has run out; its automatic facing is point − last
+waypoint (`facing_from: "waypoint"`, read "facing on from your waypoint"); a drawn facing wins; several squads each queue
+behind their own (`_order_squads`); the queued task is drawn while he plans ("SCREEN · next", linked from the
+waypoint). Unshifted orders, and shifted orders on an idle squad, take today's path; shifted moves / attack-moves /
+attacks keep today's direct queue.
+Measured (builder0, `brains-b5`): `test_control_queued_task` 6/0 through his input path — waypoint driven (centre within
+11.3 m) then the line 0.0° off point − waypoint; his shift route then shift+E 0.1°; a drawn facing kept; several
+squads each queue; the queued mark at his point linked from the waypoint; unshifted applies now. `make
+queued-screen-shots` (Foundry, planned in the pause, 1854×1011 and 1200×540): screen starts 6.5 s after unpause at the
+waypoint, every crew within 8 m of its place 29.8 / 29.2 s later (squad 1 here is the slow artillery battery), heading
+0.0°; frames looked at (planned: "SCREEN · next" + dashed link + chevrons; settled: "SCREEN · ARRIVED · dressing 4/5",
+the line across the way in). Check on `brains-b5`: running.
 
 ### Notes from the orchestrator (2026-10-12 evening), for after B1/B2
 - **Screen slots for long wheeled hulls** (manoeuvre's census): four gang trucks told to screen get 6 m slots (TacticsLab
