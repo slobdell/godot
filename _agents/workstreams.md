@@ -91,6 +91,14 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   0.5 (orchestrator); flank-probe 3 fresh seeds + a before/after flank-clip for him.** Partial: (a) passes, (c) misses but
   beats clicked by ≥ 5 runs → ships with (c) noted.
 
+- **Manoeuvre M2 bar (pre-registered 2026-10-12 evening):** (a) CREEP LIFT in drive() (C++ port follows): raise throttle to
+  the creep line only when avoidance's pace is untouched (≥ 0.99) and the full-lock arc lines up and is clear
+  (`--nav-off=creeplift`); (b) CIRCLE FILL in `_planned_reverse` (no port; `--nav-off=circlefill`). Base census 121 creep
+  episodes. Judged on untraced seeds, GDScript path, one commit: creep episodes down ≥ 50 % (30–50 % with a note); > 3-leg
+  episodes not up; Terminus arrivals ≥ base, wall contacts ≤ +10 %; bridge-pooled 18/18; ≤ 0.5 ms; symmetric. **+ after
+  native's port: bridge-pooled and the Terminus drive once on the ON path at the pair's commit (orchestrator).** Candidate
+  to brains: gang trucks screening into 6 m slots, one parallel-parks ~1 min.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
