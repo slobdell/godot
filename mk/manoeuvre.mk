@@ -53,3 +53,34 @@ MANOEUVRE_PARSE ?= game/ai/manoeuvre.gd game/ai/manoeuvre_census.gd game/ai/move
 manoeuvre-parse: import ## manoeuvre: --check-only on the stream's scripts (MANOEUVRE_PARSE), the real messages printed
 	@for f in $(MANOEUVRE_PARSE); do out=$$($(GODOT) --headless --path . --check-only --script res://$$f 2>&1 | grep -E "Parse Error|SCRIPT ERROR|ERROR" | grep -v "depended scripts" || true); \
 		if [ -n "$$out" ]; then echo "== $$f"; echo "$$out" | head -8; else echo "ok $$f"; fi; done
+
+# ---- round 28 (M1): hull facing at rest, the change v its switch on ONE commit -------------------------------------
+# Orders' O3 workload (hull-rest-probe: foundry, quiet arm, HULL_FACTIONS x HULL_SEEDS x the six faced tasks) in four
+# arms: drawn / clicked (--faced-click) x new / base (`--nav-off=turnhull,faceslot`: round 27). Same seeds every arm.
+# Report only -> build/manoeuvre/hull-rest/<arm>/<faction>/<task>-<seed>/screen.json + tests/manoeuvre/hull_rest_ab.py.
+M1_ARMS ?= new_drawn base_drawn new_clicked base_clicked
+M1_DIR ?= $(BUILD_DIR)/manoeuvre/hull-rest
+.PHONY: manoeuvre-hull-rest
+manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
+	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
+	for arm in $(M1_ARMS); do for faction in $(HULL_FACTIONS); do for seed in $(HULL_SEEDS); do for task in $(_FACING_TASKS); do \
+		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
+		d=$(M1_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
+		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=--nav-off=turnhull,faceslot;; esac; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+			--no-element-cpu $$click $$off --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
+		! grep -m1 "SCRIPT ERROR" $$d/run.log'
+	$(PYTHON) tests/manoeuvre/hull_rest_ab.py $(M1_DIR)
+
+# One run of manoeuvre-hull-rest's workload, for a trace: ONE_FACTION, ONE_SEED, ONE_TASK, ONE_CLICK=1 for the clicked
+# arm, NAV_FLAGS (e.g. --turn-trace=<unit> --nav-off=turnhull) -> build/manoeuvre/hull-one/run.log + screen.json.
+.PHONY: manoeuvre-hull-one
+manoeuvre-hull-one: import ## manoeuvre M1: one hull-rest run (ONE_FACTION ONE_SEED ONE_TASK [ONE_CLICK=1] NAV_FLAGS) -> build/manoeuvre/hull-one/
+	@d=$(BUILD_DIR)/manoeuvre/hull-one; rm -rf $$d && mkdir -p $$d; enemy=law; [ "$(ONE_FACTION)" = law ] && enemy=gangs; \
+	timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$(ONE_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
+		--player-faction=$(ONE_FACTION) --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+		--no-element-cpu $(if $(ONE_CLICK),--faced-click) $(NAV_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$(ONE_TASK) \
+		> $$d/run.log 2>&1; grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-one: no SCREEN_DONE"; \
+	grep -c MANOEUVRE_TRACE $$d/run.log || true

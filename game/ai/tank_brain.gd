@@ -3256,6 +3256,17 @@ func _ordered_facing() -> bool:
 	return raw is Dictionary and TankBrain._direction_of((raw as Dictionary).get("facing")) != null
 
 
+## Round 28 (manoeuvre M1): whether the facing this crew holds was DRAWN: its element's task carries one (a task has a
+## `facing` only when he dragged it, or a CPU commander set it), else, detached, its own K1 order does. An element's
+## crews always carry a K1 facing (the automatic one too), so `_ordered_facing()` alone cannot tell a click from a drag.
+func _drawn_facing() -> bool:
+	var mine := ElementFeed.element_of(_element_source, String(tank.name)) if _element_source != null else null
+	if mine != null and "task" in mine:
+		var task: Variant = mine.get("task")
+		return task is Dictionary and TankBrain._direction_of((task as Dictionary).get("facing")) != null
+	return _ordered_facing()
+
+
 ## Round 13 (S6): a hull that can neither pivot nor aim without turning -- wheels and a fixed gun (the scouts).
 static func no_pivot_fixed_gun(unit_id: String) -> bool:
 	if not _fixed_wheels.has(unit_id):
@@ -3437,7 +3448,10 @@ func _order_move(order: Dictionary) -> void:
 	# player's rigs and tankers with an enemy in sight (squad's probe, round 8). A hull whose gun turns on its own has no
 	# reason to: it stops and the turret carries the aim, as a real truck does. A facing the PLAYER gave ("told") is one
 	# turn that settles, and is still honoured; a fixed gun's hull IS its aim, so it still faces.
-	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id):
+	# Round 28 (manoeuvre M1, his call: "turn the whole vehicle"): a facing he DREW (the crew's K1 order carries it) is
+	# turned to by the hull, front armour where he pointed; a clicked order keeps the rule above (the turret takes it).
+	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id) \
+			and not (String(order.get("from", "")) == "order" and OrderController.hull_turn_on() and _drawn_facing()):
 		faces_declined += 1
 		order = {"type": "stop"}
 	# Round 13 (S6): a no-pivot fixed gun with nothing in sight is not asked to turn unless its order says which way.
