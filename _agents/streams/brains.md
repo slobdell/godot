@@ -88,3 +88,26 @@ Nothing: his calls are made.
 6. **B5** stretch pictures.
 Decisions: B1 before B2 because B2 reuses B1's "the plan owns the approach" state; instrument before either because the
 last round's verdict on the live flank was a measuring-point error as much as a behaviour one.
+
+### B1 — in progress (DECLARED; bar accepted by the orchestrator 2026-10-12 ~19:35)
+**Bar (sent before numbers; accepted with a fight guard):** measuring point = per run, the MEDIAN HIT's bearing on the
+target's hull (impact point v the target's centre that tick) within 35° of the drawn side (the same reading for every
+arm; `reach_off_deg` reported beside it, now from the target's real position). Fresh seeds 7–9 × ticks
+{1,3,6,8,11,16}, n = 18 an arm (tuning 4–6): (a) even roster (5 gang_ifv v 1 holding law_ifv) ≥ 12/18; (c) the same
+target under the CPU commander (`--moving=on`) ≥ 9/18; (b) the Law squad of five: reported with losses. Side/rear share
+≥ clicked; clicked byte-identical. Fight guard on (a), (c): kills ≥ clicked − 2, alive ≥ clicked − 0.5 mean. Partial:
+(a) passes and (c) misses but beats clicked by ≥ 5 → ship, (c) partial. Plus `flank-probe` on 3 fresh seeds and a
+`flank-clip` before/after on one seed where B1 comes round (what he judges).
+**Trace (stream `ac3fe5e4`, builder0, even roster seed 4 t1):** B0 rounds at its OWN reach (gun trucks 35 m, inside the
+IFV's 60 m); "in" at 12 s 29° off; then a near ambush by the target itself → 30 s of assault-through past it: killed
+46.7 s, 2 alive v clicked 19.9 s, 4 alive.
+**Tuning, even roster, seeds 4–6 (builder0, n = 18 an arm):**
+| arm | commit | on side (median hit ≤ 35°) | median hit | kills | alive | side/rear share |
+|---|---|---|---|---|---|---|
+| clicked | `ca34bf25` | 0/18 | 68.2 | 10 | 2.33 | 0.81 |
+| B0 (`--approach-carry=off`) | `44accd87` | 1/18 | 89.1 | 14 | 2.78 | 0.76 |
+| B1 v1 (ring wide of the squad's guns, no pursuit < 6 m/s, no near ambush by the target's squad) | `ca34bf25` | 0/18 | 52.1 | 12 | 2.28 | 0.78 |
+v1's rows: a crew within 50 m at ~7 s 56° off (a five-wide line rides the 70 m ring with its inner crews ~28 m inside
+it), "in" at 11–13 s, then the free `attack` fight circles the target. v2 (`cba5e063`): round in a column; once round, a
+firing line on the drawn side (support-by-fire standoff, hold + fire at will); contact drills yield for the whole flank.
+
