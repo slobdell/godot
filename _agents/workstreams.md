@@ -126,6 +126,14 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   at 75 s; a face-turn ping-pong fixed after (`--nav-off=faceslot`). **Ruled: M1's re-judge is its LAST attempt, on 6
   fresh probe seeds, + guard: crews still moving at 75 s ≤ base + 5 per task.**
 
+- **Traffic T1 v3 FAILED (2026-10-12, `672eb785`, judged fresh seeds {4,5,6}, n = 18):** fast friendly contacts Terminus
+  crossing 183 → 199 (+8.7 %; between squads 82 → 58 but squadmates 101 → 141), Terminus head-on 871 → 419 (−52 %), yard
+  crossing 309 → 205 (−34 %), yard head-on 122 → 118: 2 of 4 (bar 3). Crews held, all-in ≤ +19.9 %, friendly-stuck down
+  in all four; CPU mirror Terminus head-on 868 → 431. Parked `traffic-t1-v3`. **Ruled: T1b = the street head-on
+  one-lane-bridge rule ALONE, last attempt, judged once on fresh seeds {7,8,9}:** Terminus head-on fast ≥ −25 %, crews
+  ≥ base − 2, all-in ≤ +20 %; other three cases not worse (fast ≤ +10 %, crews ≥ base − 2); friendly-stuck ≤ base × 1.2 +
+  10; bridge-pooled, arrive series, cost, native-verify-scenarios. The crossing half → round 29.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
