@@ -6,6 +6,9 @@
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/node_path.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
+#include <godot_cpp/variant/packed_float64_array.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector3.hpp>
@@ -25,7 +28,8 @@ struct IN {
 	String hull_size{ "hull_size" }, position{ "position" }, velocity{ "velocity" }, eta_ticks{ "eta_ticks" },
 			k_projectile_id{ "projectile_id" }, k_weapon{ "weapon" }, damage_estimate{ "damage_estimate" }, damage{ "damage" },
 			shooter{ "shooter" }, to{ "to" }, from{ "from" }, splash_radius{ "splash_radius" }, land_tick{ "land_tick" },
-			fire_tick{ "fire_tick" }, k_weapon_id{ "weapon_id" };
+			fire_tick{ "fire_tick" }, k_weapon_id{ "weapon_id" }, x{ "x" }, z{ "z" }, dir_x{ "dir_x" }, dir_z{ "dir_z" },
+			vx{ "vx" }, vz{ "vz" }, reach{ "reach" }, c_shooter{ "shooter" };
 };
 const IN &in_() {
 	static const IN names;
@@ -171,6 +175,68 @@ Array incoming_projectiles(const IncomingConfig &c, Object *match_object, Object
 	}
 	threats.sort_custom(c.order);
 	return threats;
+}
+
+int64_t incoming_count(const IncomingConfig &c, HashMap<String, Vector2> &halves, Object *unit_object, const Dictionary &shells) {
+	const IN &k = in_();
+	Node3D *unit = Object::cast_to<Node3D>(unit_object);
+	//   if not unit.is_alive(): return 0; xs := shells["x"]; if xs.is_empty(): return 0
+	if (!c.ready || unit == nullptr || !(bool)unit->get(k.alive)) {
+		return 0;
+	}
+	const PackedFloat32Array xs = shells[k.x];
+	if (xs.is_empty()) {
+		return 0;
+	}
+	const PackedFloat32Array zs = shells[k.z], dir_x = shells[k.dir_x], dir_z = shells[k.dir_z], vxs = shells[k.vx],
+							 vzs = shells[k.vz];
+	const PackedFloat64Array reach = shells[k.reach];
+	const PackedStringArray shooters = shells[k.c_shooter];
+	const String unit_id = unit->get(k.unit_id);
+	Vector2 half;
+	if (const Vector2 *known = halves.getptr(unit_id)) {
+		half = *known;
+	} else {
+		const Array hull_size = c.units->call(k.stat, unit_id, k.hull_size);
+		half = Vector2((real_t)((double)hull_size[0] * 0.5), (real_t)((double)hull_size[2] * 0.5));
+		halves.insert(unit_id, half);
+	}
+	const bool disc = c.units->call(k.hull_disc_at, c.COUNT_SITE);
+	const Vector3 forward = -unit->get_global_transform().basis.get_column(2);
+	const String name = unit->get_name();
+	const Vector3 position = unit->get_global_position();
+	const double here_x = position.x, here_z = position.z;
+	int64_t count = 0;
+	for (int64_t i = 0; i < xs.size(); i++) {
+		// Match.incoming_projectiles, in Vector2 math on the same float values.
+		const Vector2 offset = Vector2((real_t)here_x, (real_t)here_z) - Vector2(xs[i], zs[i]);
+		const Vector2 direction(dir_x[i], dir_z[i]);
+		const double along = offset.dot(direction);
+		const Vector3 flat_direction(direction.x, 0, direction.y);
+		if (along <= 0.0 || along > reach[i] + hull_reach(disc, half, forward, flat_direction)) {
+			continue;
+		}
+		if (shooters[i] == name || hull_distance(disc, half, forward, position, Vector3(xs[i], 0, zs[i]), flat_direction) >
+										   c.INCOMING_MARGIN) {
+			continue;
+		}
+		// for_unit's own filter, on the round's flat velocity.
+		const Vector3 flat(vxs[i], 0, vzs[i]);
+		const double speed_squared = flat.length_squared();
+		if (speed_squared < 1.0) {
+			continue;
+		}
+		const Vector3 offset3((real_t)(here_x - (double)xs[i]), 0, (real_t)(here_z - (double)zs[i]));
+		const double seconds = (double)offset3.dot(flat) / speed_squared;
+		if (seconds <= 0.0 || seconds * c.TICK_RATE > c.HORIZON_TICKS) {
+			continue;
+		}
+		if ((double)(offset3 - flat * (real_t)seconds).length() > c.DANGER_RADIUS) {
+			continue;
+		}
+		count++;
+	}
+	return count;
 }
 
 } // namespace godot

@@ -4,7 +4,8 @@ extends TestCase
 ## at them, past them, from them, burnt out and stopped, shooters alive and gone, and lobbed rounds in `_lob`'s own
 ## format landing near and far at every point of their flight; every unit asked both ways, with the hull as a disc (the
 ## default) and as a box (`--tune=match.hull_disc=0`). The threats -- positions, velocities, etas, ids, weapons, the
-## damage estimates and their order -- compared bit for bit (var_to_bytes).
+## damage estimates and their order -- compared bit for bit (var_to_bytes); and IncomingFire.count_for (its native
+## count over the tick's shell columns) both ways.
 
 const MATCH := preload("res://game/match/match.tscn")
 const HULLS := 12
@@ -36,6 +37,7 @@ func test_the_incoming_query_is_the_live_gdscript() -> void:
 	var asked := 0
 	var threats := 0
 	var lobbed := 0
+	var counted := 0
 	var mismatches := 0
 	var first := ""
 	var next_id := 1
@@ -82,7 +84,7 @@ func test_the_incoming_query_is_the_live_gdscript() -> void:
 					"projectile_id": next_id if rng.randf() < 0.9 else -1})
 			next_id += 1
 		game_match._rounds = rounds
-		game_match.tick = rng.randi_range(0, 520)
+		game_match.tick = n * 4 + rng.randi_range(0, 3)  # a tick of its own: AiTickCache.flight is cached per tick
 		if n % 2 == 1:
 			Units.tuning["hull_disc"] = 0.0  # the box
 		else:
@@ -92,6 +94,15 @@ func test_the_incoming_query_is_the_live_gdscript() -> void:
 			var live: Array = game_match.incoming_projectiles(tank)
 			BrainSwitches.native_incoming = true
 			var native: Array = game_match.incoming_projectiles(tank)
+			BrainSwitches.native_incoming = false
+			var live_count := IncomingFire.count_for(game_match, tank)
+			BrainSwitches.native_incoming = true
+			var native_count := IncomingFire.count_for(game_match, tank)
+			counted += live_count
+			if live_count != native_count:
+				mismatches += 1
+				if first == "":
+					first = "scene %d %s (%s): count live %d native %d" % [n, tank.name, tank.unit_id, live_count, native_count]
 			asked += 1
 			threats += live.size()
 			if var_to_bytes(live) != var_to_bytes(native):
@@ -104,7 +115,7 @@ func test_the_incoming_query_is_the_live_gdscript() -> void:
 		tank.alive = true
 	Units.tuning = tuning_was
 	BrainSwitches.native_incoming = was
-	print("native incoming: %d queries over %d scenes, %d threats, %d lobbed rounds placed, %d mismatches" % [asked,
-			SCENES, threats, lobbed, mismatches])
+	print("native incoming: %d queries over %d scenes, %d threats, %d lobbed rounds placed, %d counted by count_for, %d mismatches" % [
+			asked, SCENES, threats, lobbed, counted, mismatches])
 	assert_eq(mismatches, 0, "the native K2 query is the live GDScript: %s" % first)
-	assert_true(threats >= 300, "a real sample (%d threats)" % threats)
+	assert_true(threats >= 300 and counted >= 50, "a real sample (%d threats, %d counted)" % [threats, counted])

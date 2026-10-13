@@ -57,6 +57,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("perception_rays"), &TankNative::perception_rays);
 	ClassDB::bind_method(D_METHOD("incoming_configure", "config"), &TankNative::incoming_configure);
 	ClassDB::bind_method(D_METHOD("incoming_projectiles", "game_match", "unit"), &TankNative::incoming_projectiles);
+	ClassDB::bind_method(D_METHOD("incoming_count", "unit", "shells"), &TankNative::incoming_count);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
@@ -807,6 +808,9 @@ bool TankNative::incoming_configure(const Dictionary &config) {
 	c.TICK_RATE = config["TICK_RATE"];
 	c.SITE = config["SITE"];
 	c.DEFAULT_WEAPON = config["DEFAULT_WEAPON"];
+	c.HORIZON_TICKS = config.get("HORIZON_TICKS", c.HORIZON_TICKS);
+	c.DANGER_RADIUS = config.get("DANGER_RADIUS", c.DANGER_RADIUS);
+	c.COUNT_SITE = config.get("COUNT_SITE", c.COUNT_SITE);
 	c.keep_units = config["units"];
 	c.keep_weapons = config["weapons"];
 	c.units = c.keep_units.get_validated_object();
