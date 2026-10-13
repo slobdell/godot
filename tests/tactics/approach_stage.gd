@@ -26,9 +26,9 @@ const SIDE_DEG := 35.0
 ## Round 29 (B1): the clip's frame: every 3 ticks (10 fps of game time), looking at the ground between his start, the
 ## target and the east side from high to the south-east.
 const FILM_EVERY := 3
-const FILM_FOV_DEG := 45.0
-const FILM_FOCUS := Vector3(35.0, 0.0, 10.0)
-const FILM_FROM := Vector3(60.0, 150.0, 110.0)
+const FILM_FOV_DEG := 40.0
+const FILM_FOCUS := Vector3(45.0, 0.0, 10.0)
+const FILM_FROM := Vector3(35.0, 85.0, 75.0)
 
 
 ## `immortal`: the target is healed every tick (orders' flank probe: a target that cannot die shows whether the attack
@@ -168,6 +168,9 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		if camera != null and tick % FILM_EVERY == 0:
+			# The show's airship (no collider) parks over the field and fills the frame (the nav clips hide it too).
+			for node in case.tree.root.find_children("*", "SyndicateAdAirship", true, false):
+				(node as Node3D).visible = false
 			await RenderingServer.frame_post_draw
 			case.tree.root.get_texture().get_image().save_png(film.path_join("frame_%05d.png" % tick))
 		for unit_name: String in names:
