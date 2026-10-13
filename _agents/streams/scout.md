@@ -51,7 +51,44 @@ Nothing.
 
 ## Status
 
-_Round 28 scout worker, started 2026-10-12 afternoon from `c6e32d03` (main green at 94b5fc0d, docs-only after)._
+_Round 28 scout worker, started 2026-10-12 afternoon from `c6e32d03`. **FINAL REPORT 2026-10-13: stopped at the
+orchestrator's word (S3 done; S1's retry cancelled with M2).**_
+
+### Report (the short version)
+- **Merge here: `de45a69f` is green** (builder0, `make check exited 0`, **2521 passed, 0 failed**, 25 targets ALL
+  JUDGED incl. native-verify-scenarios; all thirteen sim lines unmoved; determinism `2875411ff4ec6be7`). Commits after
+  it are this Status only. **S3 (DECLARED) ships** in it.
+- **What he will notice (S3):** a gang scout (the spear-gun car) that ends up nose-to-side against a tank no longer
+  stops dead there for its reload — it backs off and keeps the gun on the tank (his round-27 case: it touched the tank
+  in 9 of 18 runs, now 0). Everywhere it can still turn, it keeps its standing shots exactly as before.
+- **S1 did NOT ship** (scouts laying their hull on the point they suppress): the scenario passed, the blind census did
+  not (+6.3 pts se 5.2; kills 77 → 57). Parked on `scout-s1-suppresslay` for round 29 with manoeuvre's creep-as-legs
+  idea (the remaining time is wheeled hulls coming round in legs).
+- **S2 (for brains):** fixed guns mostly die under ordered MOVEs (23–30 %) and RETREAT (14–17 %), not in the fight
+  motion (SUPPRESS 3–7 %). No scout rule follows.
+- Cost (C28.4): `make scout-cost` at `de45a69f`, builder0, Sumps ~20–25 a side, n = 9: plan_lay **0.032 ms a tick mean,
+  0.101 max**; S3's gate is one distance check per short-halt test.
+- Not done: the brief's before/after showmatch clip of a suppressing scout (S1 did not ship; nothing to show). S3's
+  evidence is the scenario (`make scout-cross SCOUT_UNIT=gang_scout`). No screenshots made this round.
+
+### What to playtest (exact commands)
+- `make scout-cross SCOUT_UNIT=gang_scout` (his case, pooled; `NAV_FLAGS=--scout-off=halt` for main's).
+- `make showmatch SEED=130` (Yard Open, Gangs v Law: gang scout contacts 6 → 3 in the census).
+- `make scout-cross SCOUT_FILTER=scenario_scout_suppress` (S1's spec: behind and crossing PENDING on main).
+
+### Merge notes (shared-file edits)
+- `game/ai/tank_brain.gd`: inside `_combat_move`'s short-halt block only (`halt_ok`, my hunk). `decide` untouched (no
+  native port); no Movement member written (no `native_stale` door).
+- `game/ai/combat_motion.gd`: `halt_gated`, `halt_allowed` (mine). New: `tests/ai_scenarios/scenario_scout_suppress.gd`
+  (+ `.uid`), census tooling in `tests/scout/`. Baseline `ai_scenarios_count.txt` 51,0,3,0 → 53,0,5,0 (`046b4481`,
+  builder0, declared). Kept branches: `scout-s1-suppresslay` (S1 + spread weighting), `scout-s4-halt` (round 27).
+
+### Questions for the lead
+None.
+
+### Requests to other streams
+- **brains** (via the orchestrator, sent): fixed-gun deaths under ordered MOVE / RETREAT (S2 table below); round 27's
+  PURSUE first-think drive-in (2 m arrive) is still where the S1 scenario's first case touched (`right90`, traced).
 
 ### Plan (ordered)
 1. **S1** (CP-S1, DECLARED): census measures SUPPRESS gun-on-point (Gunnery's suppress gate) and SUPPRESS time by move
@@ -103,3 +140,28 @@ off n = 189 / new n = 175: **under an ordered MOVE 23 % / 30 %**, RETREAT 14 % /
 artillery 6–12 %. Reading: the fight motion is not where most scouts die — a quarter to a third die while driving an
 ordered move (round 27's census put most enemy contacts there too) and ~15 % while retreating. Those are brains'
 (orders/retreat), not a scout rule: filed as a request. No S2 rule of mine follows from this.
+
+### S1 blind result: DOES NOT SHIP (census seeds 61–84, builder0, game/ = `c138e589`, new v `--scout-off=suppresslay`)
+PRIMARY gun on point during SUPPRESS **+6.32 pts, se 5.17** (n = 13 paired, 2 se 10.3: inside). Guards held:
+all-fight on target −0.92 se 1.64; fight contacts +0.38 a seed se 2.22; SUPPRESS share of fight +0.46 se 2.33;
+SUPPRESS 958 → 935 s (on point 40.7 → 45.5 % pooled). Outcomes: **kills 77 → 57 (−1.0 a seed, se 0.5)**, damage
+−110 a seed se 108, deaths 331 → 317 (most of the kill drop in two diverged matches: 62 Gorge 21 → 13, 80 Archipelago
+18 → 12). Kept on branch **`scout-s1-suppresslay`**; `game/` reverted on `stream/scout`. The orchestrator allows ONE
+last attempt after manoeuvre's M2 (creep lift: a paced 120° turn 14 gear changes / 7.8 s → 0 / 2.8 s) merges: the
+branch on main + M2, fresh seeds 85–108, the same bar, kills promoted to a guard.
+
+### S3 bar (pre-registered with the orchestrator, accepted before any number)
+Change: a fixed gun on the lay planner short-halts only OUTSIDE its turning room (`CombatMotion.halt_allowed`, no bearing
+condition); `--scout-off=halt` = main. PRIMARY: `scenario_scout_cross` gang_scout his case pooled n = 18, contact runs
+≤ 4 of 18 with the off arm on the same commit ≥ 7. GUARDS: the gang cases CP-S passed still pass; scout 5/5 and
+law_scout 4/5 unchanged. BLIND census 109–132: gang fight contacts, ENGAGE in-reach on target, fixed-gun kills,
+all-fight on target — none worse beyond 2 se; ≥ 12 seeds with gang scouts. Partial: 5–6 of 18 ships with a note.
+
+### S3 result: PASSES (builder0, `de45a69f`)
+- PRIMARY (n = 18, gang_scout his case): **contact runs 9 of 18 (off) → 0 of 18**; his case now passes all its bars
+  (on target 0.64 → 0.63, re-acquire 0.6 → 1.5 s (bar 2.0), backs west 4.9 m). The four crosses byte-identical between
+  arms (cross5 L→R still fails 2.1 s, as at CP-S): gang_scout 3/5 → 4/5. law_scout 4/5 and scout 5/5 identical to
+  round 27's numbers.
+- BLIND (seeds 109–132, n = 24, 13 fielding gang scouts): gang fight contacts −0.31 a seed se 0.24; ENGAGE in-reach on
+  target −0.49 pts se 1.71; all-fight −0.02 se 0.58; fight contacts −0.25 se 0.17; kills 33 → 28 (−0.2 a seed, se 0.2,
+  inside 2 se — noted); damage −33 a seed se 32; deaths 310 → 309. The gate rarely fires in a real fight.
