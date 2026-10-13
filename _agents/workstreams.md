@@ -54,6 +54,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
 - **C27.2's freeze is lifted** and replaced by C28.2 (stage 1 is built; a driving change is written twice from here).
 - C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
+- **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
+  motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
+  (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
+  `game/tank/**`, seams only); (3) perception + intel as one batched pass (2–3 days; brains' file and stage 2's first
+  block: ask the orchestrator first); (4) the nav wrappers (1 day). Each: equal answer, thirteen and determinism unmoved,
+  native-proof on = off, native-verify-suite green, a switch ON once proven, its price reported. N3 diffs pre-empt.
+
 **Checkpoints:** E6 → native's ON commit (if it rules ON) → everyone merges main. CP-T, CP-M1, CP-M2, CP-S1 and brains'
 B1/B2 each merged ALONE as they go green (with native's port where C28.2 applies), queued by the orchestrator.
 
