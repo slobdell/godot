@@ -694,3 +694,16 @@ contact-census: native-for-check import ## Round 28 (B3): enemy hull contacts by
 			--skirmish --demo-match --clean --seed=$$1 --arena=random --mute --seconds=$(CONTACT_SECONDS) $$flag \
 			> $(BUILD_DIR)/contact-census/$$0-$$1.log 2>&1 || true'
 	@$(PYTHON) tools/tactics/contact_table.py $(BUILD_DIR)/contact-census/*.log
+
+# Round 28 (brains B5): his queued screen in a window (FACING_SIZES): planned in the pause (a waypoint, then a shifted
+# screen beyond it), then frames when the screen starts, forming, settled -> build/queued-screen/<size>/*.png + QUEUED_SHOTS.
+QUEUED_SCREEN_SEED ?= 3
+.PHONY: queued-screen-shots
+queued-screen-shots: import ## Round 28 (B5): his waypoint + shift-screen in windows (FACING_SIZES) -> build/queued-screen/<size>/*.png (needs a display)
+	@for size in $(FACING_SIZES); do d=$(BUILD_DIR)/queued-screen/$$size; rm -rf $$d && mkdir -p $$d; \
+		timeout 300 $(GODOT) --path . --resolution $$size --script res://tests/tactics/queued_screen_shots.gd -- --skirmish \
+			--seed=$(QUEUED_SCREEN_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) $(SCREEN_FLAGS) \
+			--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --shots=$(CURDIR)/$$d > $$d/run.log 2>&1 || true; \
+		grep -E "QUEUED_SHOTS|SCRIPT ERROR" $$d/run.log | cut -c1-400; \
+	done
+	@echo "Now LOOK at $(BUILD_DIR)/queued-screen/*/*.png"
