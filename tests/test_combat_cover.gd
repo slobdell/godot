@@ -8,6 +8,8 @@ const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 ## A wall in the default arena (18 x 1.5 m, 3 m tall) and the open ground beside it.
 const WALL_CLEAR := 26.0
+## Half the default wall's 1.5 m thickness.
+const WALL_HALF_THICKNESS := 0.75
 
 
 func _setup() -> Match:
@@ -88,13 +90,22 @@ func test_fire_stopped_by_a_wall_still_suppresses_the_crew_sheltering_behind_it(
 		brain.queue_free()
 	await wait_physics_frames(1)
 	shooter.global_position = middle + across * 12.0
-	covered.global_position = middle - across * 3.0
+	# Side-on and flush behind the wall, so its own hull clears it. Placed 3 m back nose-on, the bus-length `tank`
+	# overlapped the wall and the physics pushed it 2.25 m out of the wall's threat cell in one frame (suppression
+	# 0.00); it passed in file order only because the cell edge happened to fall the other side of where it landed.
+	var hull := ((covered.get_node("Collision") as CollisionShape3D).shape as BoxShape3D).size
+	var side := Vector3(1, 0, 0).rotated(Vector3.UP, float(wall["rotation"]))
+	covered.global_position = middle - across * (WALL_HALF_THICKNESS + hull.x / 2.0 + 0.3)
+	covered.look_at(covered.global_position + side, Vector3.UP)
 	covered.max_health = 100000
 	covered.health = 100000
 	shooter.look_at(covered.global_position, Vector3.UP)
+	var placed := covered.global_position
 	await wait_physics_frames(2)
+	assert_true(covered.global_position.distance_to(placed) < 0.2, "setup: the crew stays where it was put (moved %.2f m)"
+			% covered.global_position.distance_to(placed))
 	await _trade(game_match, shooter, covered, 3.0)
-	print("MEASURE cover_suppression a crew 3 m behind a wall under a machine gun: suppression %.2f (pinned at %.2f)"
+	print("MEASURE cover_suppression a crew flush behind a wall under a machine gun: suppression %.2f (pinned at %.2f)"
 			% [covered.suppression, Tank.PINNED_SUPPRESSION])
 	assert_true(covered.suppression > 0.05, "fire on the far side of its cover still rattles the crew (%.2f)"
 			% covered.suppression)
