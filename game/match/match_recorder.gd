@@ -144,6 +144,9 @@ func _on_destroyed(event: Dictionary) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if NativeRecorder.usable():  # round 28 (native N7.6): the task scan, the census and their rows natively
+		NativeBridge.impl.recorder_tick(self)
+		return
 	if _file == null or game_match == null:
 		return
 	_record_tasks()

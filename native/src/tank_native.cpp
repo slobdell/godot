@@ -66,6 +66,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("threat_stamp_burst", "field", "center", "radius", "weight"), &TankNative::threat_stamp_burst);
 	ClassDB::bind_method(D_METHOD("threat_decay", "field", "ticks"), &TankNative::threat_decay);
 	ClassDB::bind_method(D_METHOD("suppression_update", "fields", "tanks", "stats", "sample_ticks"), &TankNative::suppression_update);
+	ClassDB::bind_method(D_METHOD("recorder_configure", "config"), &TankNative::recorder_configure);
+	ClassDB::bind_method(D_METHOD("recorder_tick", "recorder"), &TankNative::recorder_tick);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);

@@ -440,6 +440,7 @@ stays asked per call.
 | **N7.1b** `IncomingFire._count_in_flight` (the per-tick dodge trigger) | same files; seam in `game/ai/incoming_fire.gd` | `native_incoming` | `test_native_incoming` compares `count_for` both ways (254 counted), 0 mismatches; ai_perf_equivalence, ai_incoming_site pass | |
 | **N7.1c** `Shell._fly` | `native/src/shell_native.{h,cpp}`; seam at the top of `Shell._fly` (each shell still flies from its own tick: the scene's order kept) | `native_shell` **ON** | `test_native_shell` 300 shots, 4810 ticks, 197 hits, 53 burnt out, 0 mismatches; native-proof on = off = shell = `0398922d31f335f8` | see below |
 | **N7.2** the suppression field: `ThreatField` stamp_point / stamp_segment / stamp_burst / decay, `Match._update_suppression` (Tank.settle_suppression, its sight / hull-turn effects, is_pinned, the stats) | `native/src/threat_native.{h,cpp}`, worked in place on the field's own packed arrays (swapped out for the call so writing never copies); seams at the top of each stamp and of decay in `game/combat/threat_field.gd`, and after the decay in `_update_suppression`. `at` / `peak_along` / `mean_along` keep GDScript (a call costs what they do; the drive's reads are native since N4) | `native_threat` **ON** | `test_native_threat` 4000 field operations (626 points, 1780 lanes, 838 bursts, 756 decays; on, across and off the grid) and 200 suppression samples over 12 hulls (388 pinned), 0 mismatches; native-proof on = off = threat = `0398922d31f335f8` | match/suppression 0.36 -> 0.23 % (below) |
+| **N7.6** the black box: `MatchRecorder._physics_process` (the squad-task scan, the once-a-second census with `census_row`, their rows written and flushed) | `native/src/recorder_native.{h,cpp}`; seam at the top of `_physics_process` in `game/match/match_recorder.gd`. The event rows (order, hit, dead, end) stay GDScript signal handlers (a few a second) | `native_recorder` **ON** | `test_native_recorder`: two recorders on one live match, one each way, 240 ticks, 62 task rows + 35 censuses (phases, orders and blocked-by filled), byte for byte, 0 mismatches. No native-proof arm: the profile/proof matches do not record (headless `--match`), so the state hash cannot see it; `native-live-guard` lists it under ELSEWHERE (held by its own test, printed) | -24 % on its own work (below) |
 | `Match._land_rounds` | **kept GDScript**: its body is `_land_hit_result` per victim (signals, stats; the arithmetic native since N6.2), the suppression stamp (N7.2's field), the impact signal and an rpc; what is left is the radius/falloff filter, 0.02 % of the tick | | | |
 
 **N7.1's price (builder0 BUSY, tick 20-36 ms; `382656de`, foundry 25 a side pinned 0-3, 3 alternated runs an arm; shares of
@@ -452,6 +453,11 @@ pays only in heavier fire; it ships ON for the core-in-C++ principle (no speed b
 **N7.2's price (builder0 busy, tick 15-23 ms; `ad1dcf26`, foundry 25 a side pinned 0-3, 3 alternated runs an arm;
 shares of each run's own tick):** OFF match/suppression 0.36 % (0.363 / 0.365 / 0.359); `native_threat` ON 0.23 %
 (0.239 / 0.230 / 0.228): -36 % of the lap, ~0.13 % of the tick. The stamps sit inside the fire laps (a few a tick).
+
+**N7.6's price (builder0, `45040fed`'s tree + the test's timer; in-test, both paths on the same ticks, 3 runs):** 240
+ticks with the census forced 35 times: GDScript 80.3 / 81.7 / 80.0 ms, native 61.4 / 60.3 / 60.8 ms (-24 %). Most of
+what is left is the flush per row (the black box's deliberate durability), the same both ways. In a real skirmish the
+census lands once a second, so the share of a tick is ~0; ON for the C++-core principle.
 
 **Found on the way (not this stream's file, reported):** `test_combat_cover::test_fire_stopped_by_a_wall_still_suppresses_
 the_crew_sheltering_behind_it` fails when run ALONE (suppression 0.00; builder0, `ad1dcf26`'s tree with `native_threat`

@@ -22,6 +22,7 @@
 #include "incoming_native.h"
 #include "shell_native.h"
 #include "threat_native.h"
+#include "recorder_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -208,6 +209,9 @@ public:
 	void suppression_update(const Array &fields, const Array &tanks, const Dictionary &stats, int64_t sample_ticks) const {
 		::godot::suppression_update(threat_config, fields, tanks, stats, sample_ticks);
 	}
+	// Round 28 (N7.6): MatchRecorder's per-tick work (recorder_native.cpp).
+	bool recorder_configure(const Dictionary &config) { return ::godot::recorder_configure(recorder_config, config); }
+	void recorder_tick(Object *recorder) const { ::godot::recorder_tick(recorder_config, recorder); }
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -301,6 +305,7 @@ private:
 	IncomingConfig incoming_config;
 	ShellConfig shell_config;
 	ThreatConfig threat_config;
+	RecorderConfig recorder_config;
 	HashMap<String, Vector2> incoming_halves;
 	int64_t perception_rays_cast = 0;
 	DecideConsts decide_consts;
