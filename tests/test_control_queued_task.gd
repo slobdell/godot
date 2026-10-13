@@ -126,3 +126,43 @@ func test_an_unshifted_screen_applies_now() -> void:
 	assert_true(element != null and String(element.task.get("verb", "")) == "screen", "the screen applies now")
 	assert_true(element != null and element.queued_tasks.is_empty(), "nothing queued")
 	assert_true(element != null and not element.task.has("facing"), "no automatic facing is added to an unshifted task")
+
+
+## He plays with several squads selected: each squad queues the screen behind its own waypoint.
+func test_several_squads_queue_the_screen_each_behind_its_own_waypoint() -> void:
+	var f := Fixture.new(self)
+	await f.build()
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	f.place("Rust_Alpha_1", Vector3(0.0, 0.0, -150.0))
+	var bravo := ["Green_Bravo_1", "Green_Bravo_2"]
+	f.controls.groups.save(1, ALPHA.duplicate())
+	f.controls.groups.save(2, bravo.duplicate())
+	await f.select(ALPHA + bravo)
+	assert_true(f.controls.several_squads(), "setup: two squads selected")
+	await f.right_click(f.ground(WAYPOINT))
+	await f.key(KEY_E, true)
+	await f.click(f.ground(POINT), true)
+	for first: String in [ALPHA[0], bravo[0]]:
+		var element := f.controls.elements.of(first)
+		assert_true(element != null, "%s's squad has a leader" % first)
+		if element == null:
+			continue
+		assert_eq(String(element.task.get("verb", "")), "move", "%s's squad still drives its waypoint" % first)
+		assert_eq(element.queued_tasks.size(), 1, "and has the screen queued behind it (%s)" % [element.queued_tasks])
+
+
+## He plans by looking: the queued screen is drawn at its point, linked from the waypoint before it.
+func test_the_queued_screen_is_marked_from_its_waypoint() -> void:
+	var f := await _alpha()
+	await f.right_click(f.ground(WAYPOINT))
+	await f.key(KEY_E, true)
+	await f.click(f.ground(POINT), true)
+	var marks := f.controls.queued_task_marks()
+	assert_eq(marks.size(), 1, "one mark for the queued screen (%s)" % [marks])
+	if marks.is_empty():
+		return
+	assert_eq(String(marks[0]["verb"]), "screen", "a screen mark")
+	assert_true((marks[0]["point"] as Vector3).distance_to(POINT) < 1.0, "at the point he clicked")
+	assert_true(marks[0].get("from") is Vector3 and (marks[0]["from"] as Vector3).distance_to(WAYPOINT) < 1.0,
+			"linked from his waypoint (%s)" % [marks[0].get("from")])
+	assert_true(_deg(marks[0].get("facing", Vector3.ZERO), POINT - WAYPOINT) < 1.0, "showing the way it will face")

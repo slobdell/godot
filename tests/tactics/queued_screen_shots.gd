@@ -44,6 +44,19 @@ func _centroid(controls: RtsControls, members: Array) -> Vector3:
 	return Vector3(sum.x, 0.0, sum.z) / maxf(1.0, float(count))
 
 
+func _all_in(controls: RtsControls, element: Element, metres: float) -> bool:
+	if element.slots.is_empty():
+		return false
+	for unit_name in element.members():
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(String(unit_name))) as Tank
+		var slot: Variant = element.slots.get(String(unit_name))
+		if tank == null or not tank.is_alive() or not slot is Vector3:
+			continue
+		if Vector2(tank.global_position.x - (slot as Vector3).x, tank.global_position.z - (slot as Vector3).z).length() > metres:
+			return false
+	return true
+
+
 func _run() -> void:
 	_shots = _flag("shots", "")
 	var main: Node = (load("res://game/main.tscn") as PackedScene).instantiate()
@@ -95,7 +108,14 @@ func _run() -> void:
 	await _shot("2_screen_starts")
 	await _seconds(4.0)
 	await _shot("3_forming")
-	await _seconds(8.0)
+	# Settled: every living crew within 8 m of its place on the line (the element's 8 m line), at most 30 s.
+	var settled_s := -1.0
+	for i in 300:
+		if element != null and _all_in(controls, element, 8.0):
+			settled_s = 4.0 + i * 0.1
+			break
+		await _seconds(0.1)
+	await _seconds(1.0)
 	await _shot("4_settled")
 	var wanted := (point - waypoint)
 	var off := -1.0
@@ -103,7 +123,8 @@ func _run() -> void:
 		off = rad_to_deg(Vector3(element.heading.x, 0.0, element.heading.z).normalized().angle_to(Vector3(wanted.x, 0.0,
 				wanted.z).normalized()))
 	print("QUEUED_SHOTS " + JSON.stringify({"paused_when_planned": planned_paused, "move": moved, "queued": queued,
-			"screen_started_s": screen_s, "nearest_to_waypoint_m": snappedf(nearest, 0.1), "heading_off_deg": snappedf(off, 0.1),
+			"screen_started_s": screen_s, "settled_after_screen_s": snappedf(settled_s, 0.1),
+			"panel": controls.element_state().get("reason", "") if controls.has_method("element_state") else "", "nearest_to_waypoint_m": snappedf(nearest, 0.1), "heading_off_deg": snappedf(off, 0.1),
 			"waypoint": [snappedf(waypoint.x, 0.1), snappedf(waypoint.z, 0.1)], "point": [snappedf(point.x, 0.1),
 			snappedf(point.z, 0.1)]}))
 	quit(0)

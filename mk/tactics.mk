@@ -704,6 +704,7 @@ queued-screen-shots: import ## Round 28 (B5): his waypoint + shift-screen in win
 		timeout 300 $(GODOT) --path . --resolution $$size --script res://tests/tactics/queued_screen_shots.gd -- --skirmish \
 			--seed=$(QUEUED_SCREEN_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) $(SCREEN_FLAGS) \
 			--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --shots=$(CURDIR)/$$d > $$d/run.log 2>&1 || true; \
-		grep -E "QUEUED_SHOTS|SCRIPT ERROR" $$d/run.log | cut -c1-400; \
+		grep -E "QUEUED_SHOTS|SCRIPT ERROR" $$d/run.log | cut -c1-600; \
+		grep -q '"settled_after_screen_s":[0-9]' $$d/run.log || { echo "queued-screen-shots: $$size: the line never settled (every crew within 8 m) inside 30 s"; exit 1; }; \
 	done
 	@echo "Now LOOK at $(BUILD_DIR)/queued-screen/*/*.png"
