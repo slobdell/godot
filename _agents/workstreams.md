@@ -190,6 +190,11 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   (a) on new seeds would be seed-shopping. Kept `lab/brains-r28-flank`. Round 29: latch on the TARGET's reach; (a) is
   close. B2 gated to batteries (B1's switch OFF, B2's ON), judged on its own bar.
 
+- **Scout S3 SHIPPED (2026-10-13, merged `de45a69f`, builder0 green 2521/0):** a fixed gun on the lay planner short-halts
+  only outside its turning room. His case (gang_scout) contact runs 9/18 → 0/18, all bars pass; blind seeds 109–132:
+  gang contacts −0.31/seed (se 0.24), in-reach on target −0.49 (se 1.71), kills 33 → 28 (inside 2 se, noted). Scout DONE;
+  kept `scout-s1-suppresslay`.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
