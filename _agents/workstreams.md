@@ -61,6 +61,11 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   geometry both sides, from the navmesh), never toward a squadmate abeam; open ground left to ORCA. + one CPU-side case;
   native-verify-scenarios before the diff goes to native.
 
+- **Grant to scout (2026-10-12 evening):** in `tank_brain.gd`, (a) one new FIRST branch in `_act`'s "SUPPRESS": arm
+  (~2475–2499) for a fixed gun on the lay planner (standoff, gunlay on, `_moves_while_fighting`, not bounding) returning
+  `_combat_move(s, contact, spot)`, every other unit byte-for-byte; (b) `_combat_move` gains an optional `aim_point`.
+  `--scout-off=suppresslay`. No `decide` change (no port). Brains told.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
