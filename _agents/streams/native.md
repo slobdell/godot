@@ -143,7 +143,7 @@ case, passing alone; `native-verify-suite` exited 0, 2522/0 + 50/0 scenarios, 0 
 since: **N6.4** (the nav wrappers, `native_pathing` ON at its price ~0; **green `5033c8b1`**: builder0 `make check exited 0`, 2523/0, thirteen unmoved, det `2875411ff4ec6be7`; `native-verify-suite` exited 0, 2523/0 + 50/0, 0 verify mismatches; handed over).
 **Queue for round 29:** (1) N6.4 is done (merge when the orchestrator says); (2) N6.3 perception ONLY is done, ON, green `a1174911` except the perf gate, which a busy builder0 left NOT JUDGED (re-judge on a quiet box or main's combined check); intel NOT ported: it is the thinking he deferred; (3) N3: no ports waiting (round 28:
 manoeuvre's M1/M2 and traffic's T1/T1b did not ship); the held N5 ports stay held (`_negotiate`'s body / `ask` /
-`_begin_yield` after traffic's CP-T; the k-turn planner and `_manoeuvre` after manoeuvre's CP-M1/M2); (4) stage 2 (N4)
+`_begin_yield` after traffic's CP-T; the k-turn planner and `_manoeuvre` after manoeuvre's CP-M1/M2); (4) N7 proposed (below; nothing started), E6b held for the GO; (5) stage 2 (N4)
 deferred by the lead until the AI's decisions settle.
 
 | item | state |
@@ -431,6 +431,33 @@ starts before the orchestrator orders it.
 Lessons: 76b0a881's check failed `test_native_motion` because creepbound (`Movement.switched_off`) had been read once at
 configure; tests switch `_off` at run time, so it is asked live (fixed in dc466667). Anything the GDScript asks per call
 stays asked per call.
+
+### N7: core components outside the thinking AND outside round 29's contested code -- PROPOSED (2026-10-13; nothing started)
+
+Excluded (round 29 rewrites them): the give-way / `_negotiate`, the k-turn planner and face turns, the element's arrival
+watch. Shares of the tick from the N6.3 price runs' OFF arms (builder0 very loaded, foundry 25 a side, stage 1 + N6 ON,
+`a1174911`'s tree, 3 runs; shares of `tick_ms`, so they are roughly load-independent; an estimate, confidence medium).
+Ranked by how core, then size; all equal-answer (hash-proven) with a switch each, the N6 rules.
+
+| # | component | what moves to C++ | today (share of tick) | days | why core / risk |
+|---|---|---|---|---|---|
+| 1 | **Projectile flight + impact queries** (`game/combat/shell.gd`, `Match._land_rounds`, `Match.incoming_projectiles` (K2) + `_damage_estimate`) | the shells' flight and hit tests as one pass over the shells, the lobbed rounds' landing, the incoming-fire geometry query every brain asks (pure geometry, no engine queries) | shell 0.11 + shell/hit 0.06 + land_rounds 0.02 + engagement 0.12 %; the incoming query inside `t.incoming` 1.78 + `s.incoming` 1.17 % (part of it; to be split by a lap before porting) | 4-5 | the rules of the fight; completes N6.2 (one implementation for the sim, the replay and the AI's lethality); grows with bigger fights. Risk: shells are Nodes (their physics step stays the engine's) |
+| 2 | **The suppression field** (`game/combat/threat_field.gd`: stamp, decay, `at`; `Match._update_suppression`) | the grid's arithmetic and the per-crew settle | match/suppression 0.34 % + the stamps inside fire | 1-2 | a game rule (L2) on a plain grid: deterministic, easy to prove; small |
+| 3 | **The tick's scheduling around the brain** (`OrderController._physics_process`'s dispatch: the per-crew entry, the parts bookkeeping, the controllers segment's loop) | one native loop over the crews calling think (GDScript) and execute (native) in today's order | controllers minus think minus execute: ~3 % (of which wall contact 1.47 %, below) | 3-4 | the seam stage 2 will need; touches `order_controller.gd` (brains-adjacent): needs a freeze window. Risk medium |
+| 4 | **Wall contact's observer** (`game/ai/wall_contact.gd`, nav's) | the per-tick contact read and its bookkeeping (runs before think, outside the execute seam) | c.wall_contact 1.47 % | 2 | physics bookkeeping, not a decision; ASK nav/manoeuvre first that round 29 leaves it alone |
+| 5 | element_feed's per-tick gather (`game/ai/element_feed.gd` normalize) | the context normalising | feed.normalize 2.39 % | 2 | a real cost, but it reads doctrine's shapes and sits beside the arrival watch round 29 rewrites: AFTER round 29 |
+| 6 | the match recorder (`game/match/match_recorder.gd`) | the event rows and the census | ~0 (no section: event-driven, one census a second) | 1 | tooling, not the sim; only for the C++-core principle; last |
+
+**Recommended order:** 1, 2, then 3 when a freeze window on `order_controller.gd` exists; 4 on nav's say-so; 5 after
+round 29; 6 last. None starts before the orchestrator orders it.
+
+### E6b, the laptop's "where it stands now" (HELD until the orchestrator's GO; 2026-10-13)
+
+The rule-D design of E6: his laptop, his preset, ABBA paired, n = 6 a size at 20 and 25 a side; A = the shipped defaults
+(everything native ON), B = `--brains-off=native` plus every `native_*` switch off. Reports game speed and tick scripts
+for each size with the se of the paired difference, and the commit + machine. Run as E6 was (`make native-tick-profile` on
+flightdeck, the bar workload foundry + parade, window 8-20 s, 180 s cooldown); B is `--brains-off=native` alone (every
+`native_*` switch checks `BrainSwitches.native` first). Evidence to `references/round28/native/e6b-<commit>/`.
 
 ### Questions for the lead
 
