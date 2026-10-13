@@ -238,6 +238,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   enemy hull contacts under an ordered MOVE 36 → 0 (per seed 3.00 → 0.00, se 1.50); all fixed-gun contacts 93 → 24; gun on
   target 21.9 → 20.2 %, inside turning room 6.3 → 3.5 %.
 
+- **Native N6.3 (perception ONLY) at `a1174911`** (builder0 check 2524/0, 23 + 2 NOT JUDGED for box load; native-verify-suite
+  0 mismatches): C++ answers WHO SEES WHOM (Match._update_intel's per-enemy first viewer in sight radius on a clear line,
+  the gun-ready sample; rays cast from C++); intel stays GDScript (contact records, seen_tick, forgetting, stats);
+  `native_perception` ON, 240 poses / 7012 lines equal, price ~0 (the rays are the engine's). **N6 complete as granted.**
+  Queued for merge after main's closing check. Next: N7 proposal (core, outside thinking and round 29's contested code);
+  **E6b** (his laptop, everything shipped ON v all native off, rule D) on the orchestrator's GO when he is away.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
