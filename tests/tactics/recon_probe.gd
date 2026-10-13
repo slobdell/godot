@@ -2,11 +2,11 @@ extends SceneTree
 ## Round 28 (brains B3): WHO ORDERS SCOUTS INTO THE ENEMY. Scout's census (`make scout-census`) counted most fixed-gun hull
 ## contacts with an enemy under an ordered MOVE (seed 5, Parade: Rust_Eyes4/5/6 into Green_Sirens round (0, -11)). This
 ## plays the same showmatch headless (main.tscn, the census's flags) and prints, every second, each element whose roster
-## matches --match (default "Eyes": the recon squads): its task, drill, the leader's reason, its centre, the task's point,
+## matches --recon-match (default "Eyes": the recon squads): its task, drill, the leader's reason, its centre, the task's point,
 ## and how far its nearest crew is from the nearest enemy it knows.
 ##
 ##   godot --headless --fixed-fps 60 --path . --script res://tests/tactics/recon_probe.gd -- --skirmish --demo-match
-##         --clean --seed=5 --arena=random --mute [--seconds=60] [--match=Eyes]
+##         --clean --seed=5 --arena=random --mute [--seconds=60] [--recon-match=Eyes]
 ##   RECON t=<s> <element> task=<verb> to=<x,z> drill=<d> centre=<x,z> point_to_enemy=<m> nearest_enemy=<m> why=<reason>
 
 
@@ -26,7 +26,7 @@ func _run() -> void:
 	root.add_child(main)
 	var game_match: Match = main.get("game_match")
 	var seconds := float(_flag("seconds", "60"))
-	var pattern := _flag("match", "Eyes")
+	var pattern := _flag("recon-match", "Eyes")
 	var started := -1
 	var last_tick := -1
 	var frames := 0

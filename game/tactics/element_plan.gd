@@ -445,7 +445,9 @@ static func _plan_battery_round(plan: Dictionary, situation: Dictionary, state: 
 		var notch := maxf(0.0, floorf((remaining - APPROACH_LEAD_DEG) / APPROACH_STEP_DEG)) * APPROACH_STEP_DEG
 		var around := side_angle + deg_to_rad(notch * side)
 		waypoint = clamp_to_arena(target_point + Vector3(cos(around), 0.0, sin(around)) * standoff)
-	var heading := TacticsFormation.flat(waypoint - center)
+	# The column looks from its post at the target, fixed per post: laid along the way from the moving centre, it swung
+	# round the post every update and re-sent every crew (the battery averaged 2.7 m/s of its 6.5).
+	var heading := TacticsFormation.flat(target_point - waypoint)
 	plan["heading"] = heading
 	plan["anchor"] = waypoint
 	plan["arrived"] = false

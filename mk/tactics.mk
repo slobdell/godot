@@ -676,5 +676,5 @@ recon-probe: native-for-check import ## Round 28 (B3): the recon elements' tasks
 	@echo ">> recon-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seed $(RECON_SEED)"
 	@timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/recon_probe.gd -- --skirmish \
 		--demo-match --clean --seed=$(RECON_SEED) --arena=random --mute --seconds=$(RECON_SECONDS) \
-		--match=$(or $(RECON_MATCH),Eyes) $(RECON_FLAGS) 2>&1 | grep -E "^RECON|SCRIPT ERROR|DEMO_SEED" > $(BUILD_DIR)/recon-probe.log || true
+		--recon-match=$(or $(RECON_MATCH),Eyes) $(RECON_FLAGS) 2>&1 | grep -E "^RECON|SCRIPT ERROR|DEMO_SEED" > $(BUILD_DIR)/recon-probe.log || true
 	@grep -c "^RECON " $(BUILD_DIR)/recon-probe.log
