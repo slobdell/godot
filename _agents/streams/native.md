@@ -137,10 +137,11 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-12 ~14:30 PDT): stage 1 is ON.** E6 ruled it (rule D met at 20 and 25 a side); the ON commit with
-the doors audit and the exit-lifetime fix is green at **`057e3fa0`** (builder0 `make check exited 0`, 2520/0, ALL
-JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), handed to the orchestrator to merge. Round 28: N3 (porting the
-behaviour streams' driving diffs) and N4 (stage 2 priced, below) next.
+**State (2026-10-12 evening): stage 1 is ON on main** (merged as `129951d5`, from green `057e3fa0`). Since then, green
+**`39602618`** (builder0 `make check exited 0`, 2520/0, 25 targets ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`):
+N5's small callbacks in C++ and `native-verify-scenarios` judging its own log; handed over. **Waiting:** N3 (traffic's
+and manoeuvre's settled diffs to port), the held N5 ports (`_negotiate`'s body after CP-T; the k-turn planner and
+`_manoeuvre` after CP-M1/M2), and the orchestrator's order on N6 (proposed below).
 
 | item | state |
 |---|---|
