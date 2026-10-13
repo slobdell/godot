@@ -34,9 +34,11 @@ def main(path: str) -> int:
         print("native-live-guard: no native switch in force (the library absent?) -- nothing guarded, FAIL")
         return 1
     missing = []
+    elsewhere = 0
     for switch in on:
         if switch in ELSEWHERE:
             print("  %-20s held elsewhere: %s" % (switch, ELSEWHERE[switch]))
+            elsewhere += 1
             continue
         name = INSIDE.get(switch, switch[len("native_"):])
         count = int(taken.get(name, 0))
@@ -46,7 +48,8 @@ def main(path: str) -> int:
     if missing:
         print("native-live-guard: FAIL -- on but not taken under the tick profile: %s" % ", ".join(missing))
         return 1
-    print("native-live-guard: every native switch in force (%d) took its path under the tick profile" % len(on))
+    print("native-live-guard: every native switch in force (%d) took its path under the tick profile%s" % (
+        len(on) - elsewhere, (", %d held elsewhere by its own test" % elsewhere) if elsewhere else ""))
     return 0
 
 
