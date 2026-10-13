@@ -92,6 +92,21 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   explained, ≤ 0.5 ms. **Clarified ~14:00 (before judged numbers; after tuning seeds showed SCREEN missing the guard, disclosed):** a wheeled-turret guard or at-rest miss on a LINE task = that line task fails → the partial rule (point tasks only), provided line tasks provably take today's path (a test that they never enter turnhull/faceslot/facekeep + one line-task run byte-identical to base); a miss on a POINT task → nothing ships. **wall_contact.gd:** M2 will not edit it → native's N7.4 GO. **M4 added** (after M2): unstick blind
   to a wedged hull (speed 6–12 m/s reported, zero displacement), DECLARED, own A/B, ported.
 
+- **Manoeuvre M1 JUDGED — NOT SHIPPED (2026-10-13 ~15:00; `d7385da2`, builder0, fresh seeds 22–33, 288 runs an arm; table
+  `references/round29/manoeuvre/m1_judged.txt` on stream/manoeuvre):** point tasks at rest move / right-drag / attack-move
+  medians 3.2–3.3°, 80–82 % within 15° (base 41–59°, 14–32 %); line tasks = hover/turret; at-rest share ≥ base − 3.9 pts;
+  settle +0. MISSES: the 75 s guard on attack-move (a POINT task) +8 (98 v 90; wheeled turret +12, se 8.9); support by
+  fire +8; clicked medians outside ±5° of base on 4 tasks (3 of them lower error). Last attempt → parked:
+  `d7385da2`, `manoeuvre-m1-pointonly`. Context (not used to rule): the clicked pair, where M1 never acts, moved the
+  same class +10, so this guard's noise is about ±10 at n = 288. **Round 30 candidates:** a fresh-seed re-judge with the
+  guard set from the probe's measured noise, written before numbers; `face_slot` alone as a declared bug fix (it
+  improves clicked faces too: support by fire −17.8°, p 0.02).
+
+- **Brains B1 JUDGED — PASSES every line (2026-10-13 ~15:00; `c2ae6e68` both arms, builder0, fresh seeds 13–15, n = 18):**
+  from the side 18/18 v 0/18 (median 28.1°); off-cone rounds 0; alive 3.00 v 3.00; first round 27.1 v 2.3 s (+24.8,
+  worst 30.9); clicked rows identical to main `bcef46a1`; killed 18/18 both, 35.7 v 9.3 s. Reported: off-side set-ups 6,
+  repacks 8, 2 rounds before "in" (seed 15 t16, the worst run, traced). Merge on its clean check.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
