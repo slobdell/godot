@@ -665,3 +665,16 @@ approach-trace: import ## Round 28 (B1): one ApproachStage run traced per second
 		--seed=$(or $(APPROACH_SEED),4) --approach=$(or $(APPROACH_ARM),east) --seconds=$(APPROACH_SECONDS) \
 		--lab-start-tick=$(or $(APPROACH_TICK),1) --trace=on $(APPROACH_FLAGS) 2>&1 \
 		| grep -E "APPROACH_TRACE|APPROACH_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/approach-trace.log || true
+
+# Round 28 (brains B3): who orders scouts into the enemy -- the showmatch seed scout's census measured, each recon
+# element's task, drill, reason, its task point's distance to the nearest enemy and its crews' (RECON lines, once a second).
+RECON_SEED ?= 5
+RECON_SECONDS ?= 60
+.PHONY: recon-probe
+recon-probe: native-for-check import ## Round 28 (B3): the recon elements' tasks in showmatch seed RECON_SEED (RECON_MATCH=Eyes, RECON_FLAGS) -> build/recon-probe.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> recon-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seed $(RECON_SEED)"
+	@timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/recon_probe.gd -- --skirmish \
+		--demo-match --clean --seed=$(RECON_SEED) --arena=random --mute --seconds=$(RECON_SECONDS) \
+		--match=$(or $(RECON_MATCH),Eyes) $(RECON_FLAGS) 2>&1 | grep -E "^RECON|SCRIPT ERROR|DEMO_SEED" > $(BUILD_DIR)/recon-probe.log || true
+	@grep -c "^RECON " $(BUILD_DIR)/recon-probe.log

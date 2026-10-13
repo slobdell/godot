@@ -451,8 +451,9 @@ static func _plan_battery_round(plan: Dictionary, situation: Dictionary, state: 
 	plan["arrived"] = false
 	plan["formation"] = "column"
 	plan["why"] = "%s; the battery goes to the side ordered to shell from it" % String(plan["why"])
-	_group(plan, slot_order(situation), "column", waypoint, heading, table.spacing(String(situation["terrain"])), "move",
-			target)
+	# A plain move, NO target: a gun that may fire deploys to fire, and a battery on a named move shelled from where it
+	# stood and never left (traced: centre fixed 14 s, first round at 2.3 s from 90 deg off).
+	_group(plan, slot_order(situation), "column", waypoint, heading, table.spacing(String(situation["terrain"])), "move")
 
 
 ## The flat distance from `point` to the segment a-b. Pure.
@@ -486,7 +487,9 @@ static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dic
 	plan["heading"] = heading
 	plan["arrived"] = false
 	plan["why"] = "%s; on the side ordered: fighting from it" % String(plan["why"])
-	_group(plan, ordered, "line", anchor, heading, table.spacing(String(situation["terrain"])), "move", target, true)
+	# A battery's crews drive to their places with their guns quiet (a mortar that fires deploys and stays: B2's trace).
+	_group(plan, ordered, "line", anchor, heading, table.spacing(String(situation["terrain"])), "move",
+			"" if is_battery(situation) else target, true)
 	# v3: a crew on the side and in reach fights as it would anyway (a free `attack`: gun trucks that held a line at 25 m
 	# lost to one IFV, 1 kill in 18), but only while it stays on that side; one that the fight carries out of the sector
 	# is sent back to its place on the line, gun on the target, shooting on the way.

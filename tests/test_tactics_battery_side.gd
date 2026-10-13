@@ -84,7 +84,7 @@ func test_from_the_south_it_drives_straight_to_the_near_edge_of_the_side() -> vo
 	assert_eq(String(plan["formation"]), "column", "in a column")
 	for unit_name: String in plan["orders"]:
 		assert_eq(String(plan["orders"][unit_name]["verb"]), "move", "%s drives there" % unit_name)
-		assert_eq(String(plan["orders"][unit_name]["target"]), "Rust_1", "%s keeps its gun on the target" % unit_name)
+		assert_eq(String(plan["orders"][unit_name]["target"]), "", "%s drives with its gun quiet (firing deploys it)" % unit_name)
 
 
 func test_from_the_far_side_it_goes_round_at_its_standoff() -> void:
