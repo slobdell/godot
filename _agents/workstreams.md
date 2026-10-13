@@ -65,6 +65,21 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
 - C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
 
+**Bars (round 29, pre-registered before their numbers):**
+
+- **Traffic CP-T bar (pre-registered 2026-10-13, before any T1 number; T0 running on builder0 at `3cd5596b`, GDScript
+  path, seeds {1,2,3}):** judged ONCE, both arms at one commit, GDScript path, fresh seeds {13,14,15} × ticks
+  {1,3,6,8,11,16}, n = 18 a case; base arm `--traffic-off=hold`. **Terminus head-on:** (1) crews in ≥ base − 2;
+  (2) `contacts_cross_fast` (between squads) down ≥ 25 %; (3) `all_in` median ≤ base + 20 %; (4) NO WEDGE: no run with
+  > 1 crew never in where its paired base run had none (the worst run's trace read first). **The other three cases:**
+  fast and all-in medians within 2 se of base, crews ≥ base − 2. **Plus:** the CPU mirror (`--side=rust`) on Terminus
+  head-on reported and no worse on (1)–(4); the bridge pooled 18/18; `test_traffic_hold_live` fires (verdicts, holds and
+  held ticks > 0 in the judged arm, counts in the report); cost ≤ 0.5 ms/tick at Sumps 25 a side GDScript path, or NOT
+  READABLE stated. **No partial gain:** every line passes or nothing ships. Tuned on seeds {1,2,3} only. **LAST
+  ATTEMPT:** the version traffic declares for judging is the last; a fail is parked with its trace. The C29.3 gates go
+  in as one-liners (`_track_progress`, `_update_phase`, the element re-seat clock, `unstick`, `_pressing_escape`, the
+  k-turn entry); brains and manoeuvre told.
+
 ## Round 28: five streams (launched 2026-10-12 ~11:45 PDT, CLOSED 2026-10-13; briefs in `streams/archive/round28/`)
 
 **Goal: his four calls (`game_design.md` *Round 28 direction*): squads crossing take turns; wheeled turret vehicles turn
