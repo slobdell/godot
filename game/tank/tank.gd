@@ -653,6 +653,9 @@ var _placed_settle := false
 
 
 func _drive(cmd: TankCommand, delta: float) -> void:
+	if NativeTank.usable(self):
+		NativeTank.drive(self, cmd, delta)  # round 28 (native N6.1): the same bits, as one native call
+		return
 	if _placed_settle:
 		_placed_settle = false
 		_motion = {}  # rebuilt next tick from the placed transform, not the one it was spawned at

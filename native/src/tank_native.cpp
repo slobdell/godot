@@ -41,6 +41,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_owned_counts", "reset"), &TankNative::drive_owned_counts);
 	ClassDB::bind_method(D_METHOD("gun_configure", "config"), &TankNative::gun_configure);
 	ClassDB::bind_method(D_METHOD("unstick", "mover", "cmd", "order", "delta", "owned"), &TankNative::unstick);
+	ClassDB::bind_method(D_METHOD("motion_configure", "config"), &TankNative::motion_configure);
+	ClassDB::bind_method(D_METHOD("tank_drive_configure", "config"), &TankNative::tank_drive_configure);
+	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
+	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
 	ClassDB::bind_method(D_METHOD("execute_counts", "reset"), &TankNative::execute_counts);
 	ClassDB::bind_method(D_METHOD("execute_profile_on", "on"), &TankNative::execute_profile_on);
@@ -692,6 +696,40 @@ Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iterat
 		return point;
 	}
 	return el_ground.standable_for(index, map, iteration, point, clearance, bake_radius);
+}
+
+bool TankNative::motion_configure(const Dictionary &config) {
+	MotionConfig &c = motion_config;
+	const char *names[] = { "WHEEL_CREEP_THROTTLE", "CREEP_REVERSE_SPEED", "CREEP_DRIFT_M", "WHEELS_SETTLE_RADII",
+		"WHEELS_SETTLE_MAX", "CREEP_LEG_TICKS", "YAW_RAMP_SECONDS", "creepbound_off" };
+	for (const char *name : names) {
+		if (!config.has(name)) {
+			c.ready = false;
+			return false;
+		}
+	}
+	c.WHEEL_CREEP_THROTTLE = config["WHEEL_CREEP_THROTTLE"];
+	c.CREEP_REVERSE_SPEED = config["CREEP_REVERSE_SPEED"];
+	c.CREEP_DRIFT_M = config["CREEP_DRIFT_M"];
+	c.WHEELS_SETTLE_RADII = config["WHEELS_SETTLE_RADII"];
+	c.WHEELS_SETTLE_MAX = config["WHEELS_SETTLE_MAX"];
+	c.CREEP_LEG_TICKS = config["CREEP_LEG_TICKS"];
+	c.creepbound_off = config["creepbound_off"];
+	// The ramp's time is a compile-time constant here: refuse a script that changed it (the port would be stale).
+	c.ready = (double)config["YAW_RAMP_SECONDS"] == MotionConfig::YAW_RAMP_SECONDS;
+	return c.ready;
+}
+
+bool TankNative::tank_drive_configure(const Dictionary &config) {
+	TankDriveConfig &c = tank_drive_config;
+	c.keep_tank_motion = config.get("tank_motion", Variant());
+	c.keep_sim_profile = config.get("sim_profile", Variant());
+	c.tank_motion = c.keep_tank_motion.get_validated_object();
+	c.sim_profile = c.keep_sim_profile.get_validated_object();
+	c.OFF_FLOOR_M = config.get("OFF_FLOOR_M", 0.5);
+	c.motion = &motion_config;
+	c.ready = config.has("OFF_FLOOR_M") && c.tank_motion != nullptr && c.sim_profile != nullptr && motion_config.ready;
+	return c.ready;
 }
 
 int TankNative::exec_pull(Object *mover) {

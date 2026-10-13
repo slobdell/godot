@@ -117,6 +117,9 @@ const CREEP_DRIFT_M := 1.0
 ##     traction to do it, but nothing grips the ground either, so momentum carries exactly as it does on wheels.
 ##     The result is a hull that can face one way and travel another: it strafes, and it drifts through a turn.
 static func step_in_place(state: Dictionary, throttle: float, turn: float, delta: float) -> void:
+	if NativeMotion.usable():
+		NativeMotion.step_in_place(state, throttle, turn, delta)  # round 28 (native N6.1): the same bits, natively
+		return
 	var throttle_c := clampf(throttle, -1.0, 1.0)
 	var turn_c := clampf(turn, -1.0, 1.0)
 	var forward: Vector3 = state["forward"]
