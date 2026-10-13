@@ -199,10 +199,7 @@ func test_once_round_it_fights_from_a_line_on_the_side() -> void:
 	assert_near(ElementPlan.approach_off_deg(anchor, TARGET, approach), 0.0, 0.5, "anchored on the side drawn")
 	assert_near(anchor.distance_to(TARGET), maxf(OWN_BAND * ElementPlan.SBF_STANDOFF, ElementPlan.SBF_MIN_STANDOFF_M),
 			0.5, "at the support-by-fire standoff (%.1f m)" % anchor.distance_to(TARGET))
-	for unit_name: String in plan["orders"]:
-		var order: Dictionary = plan["orders"][unit_name]
-		assert_true(["move", "hold"].has(String(order["verb"])), "%s drives to its place or holds it, no free attack (%s)"
-				% [unit_name, order["verb"]])
+	for unit_name: String in plan["slots"]:
 		var slot: Vector3 = plan["slots"][unit_name]
 		assert_true(absf(ElementPlan.approach_off_deg(slot, TARGET, approach)) < 60.0, "%s's place is on the side (%.0f)"
 				% [unit_name, ElementPlan.approach_off_deg(slot, TARGET, approach)])
@@ -211,3 +208,23 @@ func test_once_round_it_fights_from_a_line_on_the_side() -> void:
 	situation["threat"] = "contact"
 	var drill := Drills.select(situation, _state(_attack(), {"approach_round": {"in": true, "side": 1}}), table)
 	assert_true(not ["react_to_contact", "far_ambush"].has(String(drill["drill"])), "no contact drill (%s)" % drill["drill"])
+
+
+func test_once_round_a_crew_fights_on_the_side_and_is_sent_back_off_it() -> void:
+	var table := _table()
+	var approach := Vector3(0.0, 0.0, -1.0)
+	var situation := _situation(_round(10.0, 40.0))
+	# Green_1 on the side 20 m out (in reach), Green_2 carried round to 90 deg, 20 m out.
+	(situation["members"][0] as Dictionary)["position"] = _round(5.0, 20.0)
+	(situation["members"][1] as Dictionary)["position"] = _round(90.0, 20.0)
+	var plan := ElementPlan.build(situation, _state(_attack(), {"approach_round": {"in": true, "side": 1}}), table)
+	assert_eq(String(plan["orders"]["Green_1"]["verb"]), "attack", "on the side, in reach: it fights")
+	assert_eq(String(plan["orders"]["Green_2"]["verb"]), "move", "carried off the side: back to its place")
+	assert_eq(String(plan["orders"]["Green_2"]["target"]), "Rust_1", "gun on the target on the way")
+	# Already fighting at 50 deg: it keeps fighting (the wider sector); a fresh crew there is sent back.
+	(situation["members"][1] as Dictionary)["position"] = _round(50.0, 20.0)
+	var kept := ElementPlan.build(situation, _state(_attack(), {"approach_round": {"in": true, "side": 1},
+			"attacking": {"Green_2": true}}), table)
+	assert_eq(String(kept["orders"]["Green_2"]["verb"]), "attack", "fighting at 50 deg: keeps at it")
+	var fresh := ElementPlan.build(situation, _state(_attack(), {"approach_round": {"in": true, "side": 1}}), table)
+	assert_eq(String(fresh["orders"]["Green_2"]["verb"]), "move", "not fighting at 50 deg: back to its place")

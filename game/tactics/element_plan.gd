@@ -110,6 +110,10 @@ const APPROACH_RUNNING_S := 2.0
 const APPROACH_STANDOFF_MARGIN_M := 10.0
 const APPROACH_TARGET_SQUAD_M := 40.0
 static var APPROACH_CARRY := true
+## Once round: a crew within this many degrees of the side drawn (and in reach) fights freely; one already fighting keeps
+## at it out to APPROACH_KEEP_SECTOR_DEG; beyond, it is sent back to its place on the side (_plan_flank_line).
+const APPROACH_SECTOR_DEG := 40.0
+const APPROACH_KEEP_SECTOR_DEG := 60.0
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
@@ -355,10 +359,10 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	return true
 
 
-## Round 28 (B1): an attack with a drawn approach that has come round fights FROM THAT SIDE: a firing line across the
+## Round 28 (B1): an attack with a drawn approach that has come round fights FROM THAT SIDE: places on a line across the
 ## approach at its crews' shortest effective reach (the support-by-fire standoff), anchored on the target's side he
-## drew and following the target; each crew drives to its place with its gun on the target and holds there, firing at
-## will. B0's "attack as before" handed every crew a free `attack`, and its fight circled the target (the median hit
+## drew and following the target; a crew on that side and in reach fights freely, one carried off it drives back to its
+## place with its gun on the target. B0's "attack as before" handed every crew a free `attack`, and its fight circled the target (the median hit
 ## 50 deg off the side on the even roster). Pure.
 static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		target_point: Vector3, approach: Vector3) -> void:
@@ -377,11 +381,19 @@ static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dic
 	plan["arrived"] = false
 	plan["why"] = "%s; on the side ordered: fighting from it" % String(plan["why"])
 	_group(plan, ordered, "line", anchor, heading, table.spacing(String(situation["terrain"])), "move", target, true)
+	# v3: a crew on the side and in reach fights as it would anyway (a free `attack`: gun trucks that held a line at 25 m
+	# lost to one IFV, 1 kill in 18), but only while it stays on that side; one that the fight carries out of the sector
+	# is sent back to its place on the line, gun on the target, shooting on the way.
+	var attacking: Dictionary = state.get("attacking", {})
 	for member: Dictionary in ordered:
 		var name := String(member["name"])
-		var spot: Vector3 = plan["slots"][name]
-		if (member["position"] as Vector3).distance_to(spot) <= IN_POSITION_M:
-			_order(plan, name, "hold", spot, "", TacticsFormation.flat(target_point - spot))
+		var position: Vector3 = member["position"]
+		var keeps := attacking.has(name)
+		var sector := APPROACH_KEEP_SECTOR_DEG if keeps else APPROACH_SECTOR_DEG
+		var reach := float(member["range"]) * ENGAGE_RANGE_FACTOR + (PURSUIT_HYSTERESIS_M if keeps else 0.0)
+		if target != "" and absf(approach_off_deg(position, target_point, approach)) <= sector \
+				and position.distance_to(target_point) <= reach:
+			_order(plan, name, "attack", null, target)
 
 
 ## Round 28 (B1): the longest weapon range (m) among the target's squad: every contact within APPROACH_TARGET_SQUAD_M of
