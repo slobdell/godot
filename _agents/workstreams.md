@@ -99,6 +99,12 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   native's port: bridge-pooled and the Terminus drive once on the ON path at the pair's commit (orchestrator).** Candidate
   to brains: gang trucks screening into 6 m slots, one parallel-parks ~1 min.
 
+- **Scout CP-S1 NOT SHIPPED (2026-10-12, blind seeds 61–84, game/ = c138e589):** gun on point in SUPPRESS +6.32 pts, se 5.17
+  (n = 13): inside 2 se; guards held; fixed-gun kills 77 → 57 (−1.0/seed, se 0.5). Trace: ~60 % of SUPPRESS is a wheeled
+  hull coming round in legs at 19–32 % on point. Kept on `scout-s1-suppresslay`. **One last attempt after manoeuvre's M2
+  (the creep lift) merges: fresh seeds 85–108, kills promoted to a guard.** S2 (to brains B3): 23–30 % of fixed-gun deaths
+  under an ordered MOVE, 14–17 % retreating, 3–7 % in SUPPRESS.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
