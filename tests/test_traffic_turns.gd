@@ -9,6 +9,7 @@ const R := 3.0
 func teardown() -> void:
 	Traffic.set_off("turns", false)
 	Traffic.set_off("streetright", false)
+	Traffic.set_off("streetturns", false)
 	Traffic.street_override = null
 	super.teardown()
 
@@ -97,6 +98,7 @@ func _head_on() -> void:
 
 
 func test_head_on_in_a_street_both_keep_right() -> void:
+	Traffic.set_off("streetturns", true)  # v1's keep-right runs only without v2c's turns
 	Traffic.street_override = true
 	_head_on()
 	var a := Traffic.shape("A", Vector2(0.0, -10.0))
@@ -112,6 +114,7 @@ func test_head_on_on_open_ground_is_left_to_orca() -> void:
 
 
 func test_no_keeping_right_into_a_squadmate_abeam() -> void:
+	Traffic.set_off("streetturns", true)
 	Traffic.street_override = true
 	Traffic.load_rows([
 		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
@@ -173,3 +176,44 @@ func test_v2b_crews_deflected_inside_a_head_on_meeting_are_not_a_crossing() -> v
 	var b3 := Traffic.shape("B3", Vector2(0.0, 10.0))
 	assert_true(a3.length() < 9.5 or b3.length() < 9.5, "v1 made one of them yield: %s %s" % [a3, b3])
 	Traffic.set_off("squadheading", false)
+
+
+## Two squads head-on down a street along z: S (south, at z > 0) comes north (-Z), N (north) comes south (+Z), leads
+## `gap` m apart; the street is everything with |z| < `street_half` (outside it, the open).
+func _street_head_on(s_lead_z: float, n_lead_z: float, street_half: float) -> void:
+	Traffic.street_override = func(_x: float, z: float) -> bool: return absf(z) < street_half
+	Traffic.load_rows([
+		["S1", 0, 0.0, s_lead_z, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
+		["S2", 0, 6.0, s_lead_z + 9.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
+		["N1", 0, 1.0, n_lead_z, 0.0, 10.0, 0.0, 1.0, R, true, "e:N"],
+		["N2", 0, -6.0, n_lead_z - 9.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:N"],
+	])
+
+
+func test_v2c_head_on_in_a_street_the_squad_still_in_the_open_waits() -> void:
+	# N's lead is already in the street (z = -20, street |z| < 30); S's is still in the open (z = 45): S waits, N comes on.
+	_street_head_on(45.0, -20.0, 30.0)
+	var s1 := Traffic.shape("S1", Vector2(0.0, -10.0))
+	assert_near(s1.length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "S's lead slows to the floor: %s" % s1)
+	assert_near(Traffic.shape("S2", Vector2(0.0, -10.0)).length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "and its squad")
+	assert_eq(Traffic.shape("N1", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "N comes through the street")
+	assert_eq(Traffic.shape("N2", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "all of it")
+
+
+func test_v2c_head_on_on_open_ground_is_still_orcas() -> void:
+	_street_head_on(30.0, -30.0, 0.0)  # no street anywhere
+	assert_eq(Traffic.shape("S1", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "open ground: unchanged")
+	assert_eq(Traffic.shape("N1", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "open ground: unchanged")
+
+
+func test_v2c_both_in_the_street_the_later_waits_and_switched_off_nothing() -> void:
+	# Both leads in the street; S's lead 40 m from the middle-ish, N's 20 m: by the middle of the pair both are level
+	# (the middle is between them), so by time to the middle... S1 at z 40, N1 at z -20: middle z 10, S 3 s, N 3 s: a tie,
+	# and the greater id ("e:S" > "e:N") waits.
+	_street_head_on(40.0, -20.0, 100.0)
+	assert_true(Traffic.shape("S1", Vector2(0.0, -10.0)).length() < 9.0, "S waits")
+	assert_eq(Traffic.shape("N1", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "N holds")
+	Traffic.set_off("streetturns", true)
+	_street_head_on(40.0, -20.0, 100.0)
+	assert_eq(Traffic.shape("S1", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "--traffic-off=streetturns")
+	Traffic.set_off("streetturns", false)

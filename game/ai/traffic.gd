@@ -16,6 +16,8 @@ extends RefCounted
 ##               crews deflected at an angle inside a head-on meeting.
 ##   wholesquad  T1 v2b: a yielding squad slows AS A WHOLE (every crew of it short of the crossing keeps the share of its
 ##               wish its most-slowed crew keeps), so its rear crews do not run into its own slowed front.
+##   streetturns T1 v2c: two squads meeting HEAD-ON in a street take turns like a one-lane bridge: the squad still in
+##               the open (else the later one) slows to the floor early, the other comes through (_street_meeting).
 ##   streetright Round 28 T1: friendlies meeting head-on keep right, but only in a street (walls both sides); on open
 ##               ground ORCA passes them as before.
 ##
@@ -72,6 +74,11 @@ const YIELD_FLOOR := 0.4
 const COMMITTED_M := 1.0
 ## A squad pair's verdict lives this long after their crews last met (s): long enough for a squad's tail to pass.
 const VERDICT_KEEP_S := 3.0
+## v2c (streetturns): a head-on meeting of two squads in a street is seen this far ahead (s, m), with the other crew
+## up to this far across (m: an 18 m street's whole width), so the waiting squad slows before it is in the street.
+const STREET_HORIZON_S := 8.0
+const STREET_REACH_M := 100.0
+const STREET_LATERAL_M := 14.0
 ## v4: how far to the right (in pair clearances) a friend abeam stops a crew keeping right.
 const RIGHT_ROOM := 1.5
 ## A street: the navmesh ends within this far on BOTH sides of the crew (m; probes every STREET_STEP_M). His Terminus
@@ -111,7 +118,7 @@ static var _shares := {}
 static var _last_point := Vector2.ZERO
 ## name -> [frame read, is a street].
 static var _streets := {}
-## Tests: a street answer for every crew instead of the navmesh (null = read the navmesh).
+## Tests: a street answer instead of the navmesh: a bool for everywhere, or a Callable(x, z) -> bool (null = the navmesh).
 static var street_override: Variant = null
 
 static var _off := {}
@@ -145,7 +152,8 @@ static func set_off(name: String, value: bool) -> void:
 ## another squad is a party to a crossing, and no head-on meeting in a street. Needs the table (refresh, or load_rows).
 static func shape(me: String, preferred: Vector2) -> Vector2:
 	var cross := not off("turns")
-	var keep := not off("streetright")
+	# v2c: a head-on meeting in a street is taken in turns (streetturns); keep-right (v1, measured worse) only without it.
+	var keep := not off("streetright") and (off("streetturns") or not cross)
 	if not (keep or cross):
 		return preferred
 	var speed := preferred.length()
@@ -205,6 +213,8 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 	var lateral_speed := 0.0
 	var cap := INF
 	var reach_sq := REACH_M * REACH_M
+	var street_turns := cross and not off("streetturns")
+	var street_reach_sq := STREET_REACH_M * STREET_REACH_M
 	for j in names.size():
 		if j == i or moving[j] == 0:
 			continue
@@ -212,11 +222,22 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 		var dz := zs[j] - pz
 		var ahead := dx * ux + dz * uz
 		var clearance := my_radius + radii[j] + CLEAR_MARGIN_M
-		if ahead < -clearance or dx * dx + dz * dz > reach_sq:
-			continue  # behind my own line, or out of reach
 		var wx := dxs[j]
 		var wz := dzs[j]
+		var facing := ux * wx + uz * wz
+		var d2 := dx * dx + dz * dz
+		if ahead < -clearance:
+			continue  # behind my own line
+		# v2c: a head-on meeting of two squads in a street is seen further out (the waiting squad must stop short of it).
+		var street_case := street_turns and facing <= HEAD_ON_COS and groups[i] != groups[j] and ahead > 0.0
+		if d2 > (street_reach_sq if street_case else reach_sq):
+			continue  # out of reach
 		var v_it := maxf(speeds[j], MIN_SPEED_MPS)
+		if street_case:
+			var head_cap := _street_meeting(me, frame, i, j, ahead, dx * -uz + dz * ux, v_me, v_it, cols)
+			if head_cap >= 0.0:
+				cap = minf(cap, head_cap)
+				continue
 		# Only a real meeting: the two straight-line motions come within the pair's clearance inside HORIZON_S.
 		var rvx := wx * v_it - ux * v_me
 		var rvz := wz * v_it - uz * v_me
@@ -226,7 +247,6 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 		var mz := dz + rvz * t
 		if mx * mx + mz * mz >= clearance * clearance:
 			continue
-		var facing := ux * wx + uz * wz
 		if facing <= HEAD_ON_COS:
 			if not keep or ahead <= 0.0:
 				continue
@@ -259,6 +279,69 @@ static func _crossing_kind(facing: float, mine: String, theirs: String, cols: Di
 	var headings: Dictionary = cols["gdir"]
 	var g := (headings.get(mine, Vector2.ZERO) as Vector2).dot(headings.get(theirs, Vector2.ZERO) as Vector2)
 	return g < FOLLOW_COS and g > HEAD_ON_COS and facing < FOLLOW_COS
+
+
+## v2c (streetturns): crew i meets crew j of another squad head-on, `ahead` m along my way, `lateral` m to my right.
+## When the two SQUADS meet head-on (mean headings within HEAD_ON_COS of opposite), inside STREET_HORIZON_S, within
+## STREET_LATERAL_M across, and the ground between them is a street, the squad pair takes turns like a one-lane
+## bridge: one verdict, kept; the waiting squad is the one whose lead crew is still in the OPEN (it has room to wait
+## and the other is already committed to the street); if both or neither, the one whose lead reaches the middle later;
+## inside TIE_S, the greater id. Returns 0.0 (slow to the floor) when my squad waits, -1 when it does not (or no case).
+static func _street_meeting(me: String, frame: int, i: int, j: int, ahead: float, lateral: float, v_me: float,
+		v_it: float, cols: Dictionary) -> float:
+	var groups: PackedStringArray = cols["group"]
+	var headings: Dictionary = cols["gdir"]
+	var mine := groups[i]
+	var theirs := groups[j]
+	var g := (headings.get(mine, Vector2.ZERO) as Vector2).dot(headings.get(theirs, Vector2.ZERO) as Vector2)
+	if g > HEAD_ON_COS or absf(lateral) > STREET_LATERAL_M:
+		return -1.0
+	var meet := ahead / (v_me + v_it)
+	if meet > STREET_HORIZON_S:
+		return -1.0
+	var xs: PackedFloat64Array = cols["x"]
+	var zs: PackedFloat64Array = cols["z"]
+	var dxs: PackedFloat64Array = cols["dx"]
+	var dzs: PackedFloat64Array = cols["dz"]
+	var middle := Vector2((xs[i] + xs[j]) * 0.5, (zs[i] + zs[j]) * 0.5)
+	var key := mine + "|" + theirs if mine < theirs else theirs + "|" + mine
+	var kept: Variant = _verdicts.get(key)
+	var waiter: String
+	if kept != null and frame <= int(kept[1]):
+		waiter = kept[0]
+	else:
+		# Is the ground between us a street? Read once, at the middle, along my way (the verdict is then kept).
+		if not _street("@" + key, frame, middle.x, middle.y, dxs[i], dzs[i]):
+			return -1.0
+		waiter = _decide_street(middle, mine, theirs, cols, frame)
+		verdicts += 1
+	_verdicts[key] = [waiter, frame + ceili((meet + VERDICT_KEEP_S) * SimClock.TICK_RATE)]
+	if waiter != mine:
+		return -1.0
+	# The whole waiting squad slows (wholesquad), every crew of it: the point is far down its own way, so none is past it.
+	_note_share(mine, frame, YIELD_FLOOR, middle + Vector2(dxs[i], dzs[i]) * 1000.0)
+	return 0.0
+
+
+## v2c: which squad waits for a head-on meeting in a street at `middle`.
+static func _decide_street(middle: Vector2, a: String, b: String, cols: Dictionary, frame: int) -> String:
+	var first_a := _first_to(middle, a, cols)
+	var first_b := _first_to(middle, b, cols)
+	if first_a.is_empty() or first_b.is_empty():
+		return b if first_a.is_empty() else a
+	var pa: Vector2 = first_a[1]
+	var ua: Vector2 = first_a[2]
+	var pb: Vector2 = first_b[1]
+	var ub: Vector2 = first_b[2]
+	var a_open := not _street("@lead:" + a, frame, pa.x, pa.y, ua.x, ua.y)
+	var b_open := not _street("@lead:" + b, frame, pb.x, pb.y, ub.x, ub.y)
+	if a_open != b_open:
+		return a if a_open else b
+	var ta: float = first_a[0]
+	var tb: float = first_b[0]
+	if absf(ta - tb) > TIE_S:
+		return a if ta > tb else b
+	return a if a > b else b
 
 
 ## wholesquad: record that a crew of `group` keeps `share` of its wish to yield at `point` this frame.
@@ -312,6 +395,8 @@ static func _friend_on_right(i: int, px: float, pz: float, ux: float, uz: float,
 ## Is the crew at (px, pz) going (ux, uz) in a street: the navmesh ends within STREET_SIDE_M on its left AND its right?
 ## Read from facts (the map's walkable ground), never a map name; cached per crew for STREET_TICKS.
 static func _street(me: String, frame: int, px: float, pz: float, ux: float, uz: float) -> bool:
+	if street_override is Callable:
+		return bool((street_override as Callable).call(px, pz))
 	if street_override != null:
 		return bool(street_override)
 	var known: Variant = _streets.get(me)

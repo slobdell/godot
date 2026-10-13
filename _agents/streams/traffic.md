@@ -107,3 +107,24 @@ in roughly 1 run in 4 a crew is still not in when its squad would have finished 
 tuning seeds; the judged run re-bases on fresh seeds {4,5,6}): crews ≥ 174 / 168 / 167 / 177; fast ≤ 220 / 537 /
 208 (−25 %) in three cases and ≤ 124 on yard head-on (+10 %); all-in median ≤ 55.0 / 77.2 / 90.7 / 44.6;
 fstuck ≤ 198 / 597 / 246 / 20.7.
+
+### T1 tuning (seeds {1,2,3} only; the JUDGED run is one run on fresh seeds {4,5,6})
+
+Tuning arms are named v1, v2, v2b, …, and the version sent to the judged run is "the last attempt" the bar names
+(there is exactly one judged run). Every arm: builder0, GDScript path, `TRAFFIC_WHICH=both`, n = 18 a case; the ratio
+uses T0's solo runs. A base arm with every switch off (`--traffic-off=turns,streetright`) reproduced T0 row for row
+(the off path is main's).
+
+| arm (commit) | Terminus cross fast (between) | Terminus head fast (between) | yard cross fast (between) | yard head fast | crews (TC/TH/YC/YH) | all-in med (TC/TH/YC/YH) |
+|---|---|---|---|---|---|---|
+| base (T0) | 294 (116) | 716 (398) | 277 (118) | 113 (60) | 176/170/169/179 | 45.8/64.3/75.6/37.2 |
+| v1 `32a91a71` turns + streetright | 278 | **990** | 241 | 114 | 176/175/**166**/179 | 39.7/66.0/89.5/37.8 |
+| v2 `32a91a71` turns only | 290 (83) | 852 (451) | 244 (57) | 114 (60) | 176/174/165/179 | 39.7/65.8/89.3/37.8 |
+| **v2b** `e85c92cc` + squadheading, wholesquad | **198 (43)** | 699 (370) | **162 (45)** | 113 (60) | 178/171/170/179 | 45.6/64.8/67.6/37.2 |
+
+Read: (1) **keep-right in the street made his head-on case worse** (fast +38 %, friendly-stuck 489 → 844); off from v2.
+(2) Most fast contacts are squadmates: the solo runs alone account for ~110 of Terminus cross's 294. The per-crew
+verdict cut contacts between squads but not the totals. (3) v2b's squad-level reading of the crossing (the squads' mean
+headings, the whole yielding squad slowing together) passes the bar at both crossings with margin, and arrivals are
+no later (yard crossing all-in 75.6 → 67.6 s). (4) **What is left is the head-on meeting in the street** (−2 %), where the
+bar's "3 of 4" needs −25 % (ORCA owns yard head-on, unchanged by design).
