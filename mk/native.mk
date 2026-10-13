@@ -80,6 +80,7 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 			stage1) flags="--brains-on=native_exec,native_cb,native_owned";; \
 			motion) flags="--brains-on=native_motion";; \
 			tank) flags="--brains-on=native_tank";; \
+			combat) flags="--brains-on=native_combat";; \
 			stage1_profile) flags="--brains-on=native_exec,native_cb,native_owned --native-exec-profile --native-drive-profile";; \
 			stage1_ab) flags="--brains-on=native_cb,native_owned --brains-ab-run=native_exec";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \

@@ -43,6 +43,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unstick", "mover", "cmd", "order", "delta", "owned"), &TankNative::unstick);
 	ClassDB::bind_method(D_METHOD("motion_configure", "config"), &TankNative::motion_configure);
 	ClassDB::bind_method(D_METHOD("tank_drive_configure", "config"), &TankNative::tank_drive_configure);
+	ClassDB::bind_method(D_METHOD("combat_configure", "config"), &TankNative::combat_configure);
+	ClassDB::bind_method(D_METHOD("combat_hit_terms", "victim", "weapon", "direction"), &TankNative::combat_hit_terms);
+	ClassDB::bind_method(D_METHOD("combat_take_hit", "tank", "raw", "shield_multiplier", "armor_multiplier"),
+			&TankNative::combat_take_hit);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
@@ -701,7 +705,7 @@ Vector3 TankNative::el_standable_for(Object *nav, const RID &map, int64_t iterat
 bool TankNative::motion_configure(const Dictionary &config) {
 	MotionConfig &c = motion_config;
 	const char *names[] = { "WHEEL_CREEP_THROTTLE", "CREEP_REVERSE_SPEED", "CREEP_DRIFT_M", "WHEELS_SETTLE_RADII",
-		"WHEELS_SETTLE_MAX", "CREEP_LEG_TICKS", "YAW_RAMP_SECONDS", "creepbound_off" };
+		"WHEELS_SETTLE_MAX", "CREEP_LEG_TICKS", "YAW_RAMP_SECONDS", "movement" };
 	for (const char *name : names) {
 		if (!config.has(name)) {
 			c.ready = false;
@@ -714,9 +718,10 @@ bool TankNative::motion_configure(const Dictionary &config) {
 	c.WHEELS_SETTLE_RADII = config["WHEELS_SETTLE_RADII"];
 	c.WHEELS_SETTLE_MAX = config["WHEELS_SETTLE_MAX"];
 	c.CREEP_LEG_TICKS = config["CREEP_LEG_TICKS"];
-	c.creepbound_off = config["creepbound_off"];
+	c.keep_movement = config["movement"];
+	c.movement = c.keep_movement.get_validated_object();
 	// The ramp's time is a compile-time constant here: refuse a script that changed it (the port would be stale).
-	c.ready = (double)config["YAW_RAMP_SECONDS"] == MotionConfig::YAW_RAMP_SECONDS;
+	c.ready = (double)config["YAW_RAMP_SECONDS"] == MotionConfig::YAW_RAMP_SECONDS && c.movement != nullptr;
 	return c.ready;
 }
 
@@ -729,6 +734,34 @@ bool TankNative::tank_drive_configure(const Dictionary &config) {
 	c.OFF_FLOOR_M = config.get("OFF_FLOOR_M", 0.5);
 	c.motion = &motion_config;
 	c.ready = config.has("OFF_FLOOR_M") && c.tank_motion != nullptr && c.sim_profile != nullptr && motion_config.ready;
+	return c.ready;
+}
+
+bool TankNative::combat_configure(const Dictionary &config) {
+	CombatConfig &c = combat_config;
+	const char *names[] = { "ARC_DEG", "WEAK_SPOT_ARC_DEG", "WEAK_SPOT_ARMOR_FRACTION", "PENETRATION_FLOOR",
+		"PENETRATION_CAP", "SHIELD_FRONT", "SHIELD_SIDE", "SHIELD_REAR", "KIND_ARC", "KIND_CONE" };
+	for (const char *name : names) {
+		if (!config.has(name)) {
+			c.ready = false;
+			return false;
+		}
+	}
+	c.ARC_DEG = config["ARC_DEG"];
+	c.WEAK_SPOT_ARC_DEG = config["WEAK_SPOT_ARC_DEG"];
+	c.WEAK_SPOT_ARMOR_FRACTION = config["WEAK_SPOT_ARMOR_FRACTION"];
+	c.PENETRATION_FLOOR = config["PENETRATION_FLOOR"];
+	c.PENETRATION_CAP = config["PENETRATION_CAP"];
+	c.SHIELD_FACING[0] = config["SHIELD_FRONT"];
+	c.SHIELD_FACING[1] = config["SHIELD_SIDE"];
+	c.SHIELD_FACING[2] = config["SHIELD_REAR"];
+	c.KIND_ARC = config["KIND_ARC"];
+	c.KIND_CONE = config["KIND_CONE"];
+	c.keep_units = config.get("units", Variant());
+	c.keep_armor = config.get("armor", Variant());
+	c.units = c.keep_units.get_validated_object();
+	c.armor = c.keep_armor.get_validated_object();
+	c.ready = c.units != nullptr && c.armor != nullptr;
 	return c.ready;
 }
 

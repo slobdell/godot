@@ -16,6 +16,7 @@
 #include "execute_native.h"
 #include "motion_native.h"
 #include "tank_drive_native.h"
+#include "combat_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -146,6 +147,14 @@ public:
 	bool tank_drive(Object *tank, Object *cmd, double delta) const {
 		return tank_drive_native(tank_drive_config, tank, cmd, delta);
 	}
+	// Round 28 (N6.2): combat resolution's rules (combat_native.cpp).
+	bool combat_configure(const Dictionary &config);
+	Array combat_hit_terms(Object *victim, const Dictionary &weapon, const Vector3 &direction) const {
+		return ::godot::combat_hit_terms(combat_config, victim, weapon, direction);
+	}
+	Dictionary combat_take_hit(Object *tank, double raw, double shield_multiplier, double armor_multiplier) const {
+		return ::godot::combat_take_hit(combat_config, tank, raw, shield_multiplier, armor_multiplier);
+	}
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -233,6 +242,7 @@ private:
 	GunConfig gun_config;
 	MotionConfig motion_config;
 	TankDriveConfig tank_drive_config;
+	CombatConfig combat_config;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;
 	ElTerrain el_terrain_table;

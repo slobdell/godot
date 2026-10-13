@@ -22,7 +22,7 @@ static func configure() -> bool:
 		"WHEEL_CREEP_THROTTLE": TankMotion.WHEEL_CREEP_THROTTLE, "CREEP_REVERSE_SPEED": TankMotion.CREEP_REVERSE_SPEED,
 		"CREEP_DRIFT_M": TankMotion.CREEP_DRIFT_M, "WHEELS_SETTLE_RADII": Movement.WHEELS_SETTLE_RADII,
 		"WHEELS_SETTLE_MAX": Movement.WHEELS_SETTLE_MAX, "CREEP_LEG_TICKS": TankMotion.CREEP_LEG_TICKS,
-		"YAW_RAMP_SECONDS": TankMotion.YAW_RAMP_SECONDS, "creepbound_off": Movement.switched_off("creepbound"),
+		"YAW_RAMP_SECONDS": TankMotion.YAW_RAMP_SECONDS, "movement": Movement,
 	})
 	if not _ok:
 		push_error("NativeMotion: the native motion model refused the live constants (YAW_RAMP_SECONDS changed?)")

@@ -1934,15 +1934,25 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 ## _land_hit, returning {"shield", "hull", "killed", "face", "weak_spot"} for K2 events.
 func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
 		weapon_stat: String, counts_as_hit: bool) -> Dictionary:
-	var forward := -victim.global_basis.z
-	var face: String = Armor.FACING_NAMES[Armor.facing(forward, direction)]
-	if weapon["kind"] == Weapons.Kind.ARC:
-		face = "side"  # indirect rounds come down on top: no face is the strong one
-	var weak := is_weak_spot_hit(weapon, forward, direction)
-	if Armor.deck_probe and victim.team != team:
-		_print_deck_row(victim, forward, direction, weak, face, shooter, weapon)
-	var through_armor := weak_spot_multiplier(weapon, victim.unit_id) if weak else armor_multiplier(weapon, victim.unit_id, face)
-	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
+	var result: Dictionary
+	var face: String
+	var weak: bool
+	if NativeCombat.usable():
+		# Round 28 (native N6.2): the same terms natively (face, weak spot, through armor, shield factor).
+		var terms := NativeCombat.hit_terms(victim, weapon, direction)
+		face = terms[0]
+		weak = terms[1]
+		result = victim.take_hit(raw, float(terms[3]), float(terms[2]))
+	else:
+		var forward := -victim.global_basis.z
+		face = Armor.FACING_NAMES[Armor.facing(forward, direction)]
+		if weapon["kind"] == Weapons.Kind.ARC:
+			face = "side"  # indirect rounds come down on top: no face is the strong one
+		weak = is_weak_spot_hit(weapon, forward, direction)
+		if Armor.deck_probe and victim.team != team:
+			_print_deck_row(victim, forward, direction, weak, face, shooter, weapon)
+		var through_armor := weak_spot_multiplier(weapon, victim.unit_id) if weak else armor_multiplier(weapon, victim.unit_id, face)
+		result = victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face
 	result["weak_spot"] = weak
 	# L2: getting HIT HARD rattles a crew beyond the fire density where they sit. Scaled by the fraction of the hull

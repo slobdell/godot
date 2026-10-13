@@ -1,7 +1,9 @@
 // Round 28 (native N6.1): TankMotion.step_in_place in C++ (motion_native.cpp).
 #pragma once
 
+#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 namespace godot {
 
@@ -12,7 +14,8 @@ struct MotionConfig {
 		   WHEELS_SETTLE_MAX = 6.0;
 	int64_t CREEP_LEG_TICKS = 15;
 	static constexpr double YAW_RAMP_SECONDS = 0.25; // checked against the script at configure
-	bool creepbound_off = false; // Movement.switched_off("creepbound"), read at configure (the command line's)
+	Object *movement = nullptr; // the Movement script: switched_off("creepbound") is asked live, as the GDScript does
+	Variant keep_movement;
 };
 
 // TankMotion.step_in_place(state, throttle, turn, delta): `state` updated in place (Dictionaries are shared references).

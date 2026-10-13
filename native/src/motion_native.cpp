@@ -5,6 +5,7 @@
 #include "motion_native.h"
 
 #include <godot_cpp/core/math.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector3.hpp>
@@ -99,7 +100,10 @@ void motion_step(const MotionConfig &c, Dictionary state, double throttle, doubl
 				direction = -direction;
 				leg = 0;
 				const Vector3 anchor = state.get(k.creep_anchor, Vector3(INFINITY, INFINITY, INFINITY));
-				if (anchor != Vector3(INFINITY, INFINITY, INFINITY) && state.has(k.position) && !c.creepbound_off) {
+				// Movement.switched_off("creepbound") asked LIVE, where the GDScript asks it (tests switch Movement._off at
+				// run time; a value read once at configure was stale for them: the full suite's catch).
+				if (anchor != Vector3(INFINITY, INFINITY, INFINITY) && state.has(k.position) &&
+						!(c.movement != nullptr ? (bool)c.movement->call(StringName("switched_off"), String("creepbound")) : false)) {
 					Vector3 back = anchor - (Vector3)state[k.position];
 					back.y = 0;
 					const double allowance = clampd((double)state.get(k.min_turn_radius_m, 0.0) * c.WHEELS_SETTLE_RADII,
