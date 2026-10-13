@@ -19,7 +19,7 @@ const RADIUS := 90.0
 
 
 func teardown() -> void:
-	ElementPlan.APPROACH_CARRY = true
+	ElementPlan.APPROACH_CARRY = false
 	super.teardown()
 
 

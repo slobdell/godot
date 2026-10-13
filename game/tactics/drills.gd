@@ -97,7 +97,7 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	var rounding := rounding_to_approach(state)
 	# Round 28 (B1): a drawn flank being carried out (going round, then fighting from the side) is not stopped by
 	# contact for the whole task: return fire and a far ambush would each send crews in from the wrong side.
-	var carried := carries_flank(state)
+	var carried := carries_flank(state, situation)
 	if (rounding or carried) and PURSUIT_YIELDS.has(current):
 		current = ""
 	# ...and the target it is chasing coming back into sight is not an ambush: out of sight it drops from the element's
@@ -330,10 +330,10 @@ static func nearest_visible(situation: Dictionary) -> Dictionary:
 # ---- Internals ----------------------------------------------------------------------------------------
 
 ## Round 28 (B1): whether this element is carrying out a drawn flank: an attack with an approach that is not a pursuit and
-## whose target has not charged it (ElementPlan.charging; APPROACH_CARRY on). Pure.
-static func carries_flank(state: Dictionary) -> bool:
+## whose target has not charged it (ElementPlan.charging; ElementPlan.carries). Pure.
+static func carries_flank(state: Dictionary, situation: Dictionary) -> bool:
 	var task: Dictionary = state.get("task", {})
-	return ElementPlan.APPROACH_CARRY and String(task.get("verb", "")) == "attack" and task.has("approach") \
+	return ElementPlan.carries(situation) and String(task.get("verb", "")) == "attack" and task.has("approach") \
 			and not bool(state.get("pursuing", false)) \
 			and not bool((state.get("approach_round", {}) as Dictionary).get("charged", false))
 

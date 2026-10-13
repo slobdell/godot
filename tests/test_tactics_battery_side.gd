@@ -11,7 +11,8 @@ const TARGET := Vector3.ZERO
 
 
 func teardown() -> void:
-	ElementPlan.APPROACH_CARRY = true
+	ElementPlan.APPROACH_CARRY = false
+	ElementPlan.APPROACH_BATTERY = true
 	DoctrineTable.clear_cache()
 	super.teardown()
 
@@ -59,6 +60,8 @@ func _round(degrees: float, metres := 100.0) -> Vector3:
 func test_a_battery_is_every_crew_artillery() -> void:
 	assert_true(ElementPlan.is_battery(_situation(_round(90.0))), "three mortar carriers are a battery")
 	assert_true(not ElementPlan.is_battery(_situation(_round(90.0), true)), "a tank among them: not a battery")
+	assert_true(ElementPlan.carries(_situation(_round(90.0))), "a battery carries its approach (B2)")
+	assert_true(not ElementPlan.carries(_situation(_round(90.0), true)), "a mixed element does not (B1 is parked)")
 
 
 func test_its_standoff_is_safe_and_inside_its_band() -> void:
@@ -100,6 +103,6 @@ func test_once_round_its_places_are_at_its_standoff() -> void:
 			"side": 1}}), table)
 	var standoff := ElementPlan.battery_standoff(_situation(_round(15.0, 90.0)), "Rust_1", TARGET)
 	assert_near((plan["anchor"] as Vector3).distance_to(TARGET), standoff, 0.5, "its places at its standoff")
-	ElementPlan.APPROACH_CARRY = false
+	ElementPlan.APPROACH_BATTERY = false
 	var b0 := ElementPlan.build(_situation(_round(170.0)), _state(_attack()), table)
 	assert_near((b0["anchor"] as Vector3).distance_to(TARGET), 160.0, 25.0, "control (B0): round at its 160 m range")

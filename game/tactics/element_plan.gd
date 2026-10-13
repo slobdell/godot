@@ -104,12 +104,17 @@ const APPROACH_LEAD_DEG := 15.0
 ##   - the target's own squad closing on it is the fight it was sent to, not a near ambush (Drills), for the whole task:
 ##     B0's squad came round, then charged THROUGH the target on an "ambush" by the target itself and fought from all
 ##     round it for 30 s.
-## `--approach-carry=off` is B0's rule (the control arm).
+## `--approach-carry=on` turns it on for every element (parked: off); B0 is the rule otherwise.
 const APPROACH_RUNNING_MPS := 6.0
 const APPROACH_RUNNING_S := 2.0
 const APPROACH_STANDOFF_MARGIN_M := 10.0
 const APPROACH_TARGET_SQUAD_M := 40.0
-static var APPROACH_CARRY := true
+## PARKED (round 28: judged at f3a0145d it failed its bar: (a) on side 10/18 v 12, (c) fight guard; `lab/brains-r28-flank`):
+## off by default, `--approach-carry=on` for B1's rule on every element. A battery gets it through APPROACH_BATTERY (B2).
+static var APPROACH_CARRY := false
+## Round 28 (B2): an artillery element (is_battery) carries its drawn approach (its firing position on the side, below)
+## whatever APPROACH_CARRY says. `--approach-battery=off` is B0's rule for it.
+static var APPROACH_BATTERY := true
 ## The orchestrator's ruling on (c) (C28.5, 2026-10-12): a TARGET that charges the squad has left the position the side was
 ## drawn against. When it drives at the element (APPROACH_CLOSING_MPS) and is inside any crew's reach, the flank is
 ## dropped for the task ("charged") and the attack fights where it is, as a clicked one (which kills a lone charging IFV
@@ -158,7 +163,7 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	plan["pitch"] = TacticsFormation.pitch(members, table.spacing(String(situation["terrain"])))
 
 	# Round 28 (B1): how long the target of a drawn flank still going round has been running (before `pursues` reads it).
-	if APPROACH_CARRY:
+	if carries(situation):
 		_track_running(task, state, situation)
 		# The orchestrator's latch, decided before `pursues` reads the round: a target charging into reach drops the flank.
 		if APPROACH_LATCH and String(task.get("verb", "")) == "attack" and task.has("approach") \
@@ -264,7 +269,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		if approach is Vector3 and _plan_approach(plan, situation, state, table, destination, approach, band):
 			return
 		# Round 28 (B1): round on the side he drew, it FIGHTS from there: a firing line across the approach.
-		if approach is Vector3 and APPROACH_CARRY \
+		if approach is Vector3 and carries(situation) \
 				and bool((plan.get("approach_round", {}) as Dictionary).get("in", false)) \
 				and not bool((plan.get("approach_round", {}) as Dictionary).get("charged", false)):
 			_plan_flank_line(plan, situation, state, table, destination, approach)
@@ -350,7 +355,7 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	kept_round["in"] = false
 	kept_round["side"] = side
 	plan["approach_round"] = kept_round
-	if APPROACH_CARRY and is_battery(situation):
+	if APPROACH_BATTERY and is_battery(situation):
 		_plan_battery_round(plan, situation, state, table, target_point, approach, off, side)
 		return true
 	# The angle still to go round, the chosen way (past 180 when the element was carried across the far side).
@@ -364,7 +369,7 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	for member: Dictionary in members_of(situation):
 		radius = maxf(radius, float(member.get("range", 0.0)))
 	# Round 28 (B1): ...and wide of the target squad's guns, where the arena allows (clamp_to_arena below).
-	if APPROACH_CARRY:
+	if carries(situation):
 		var task: Dictionary = state.get("task", {})
 		radius = maxf(radius, target_squad_reach(situation, String(task.get("target", "")), target_point)
 				+ APPROACH_STANDOFF_MARGIN_M)
@@ -380,12 +385,18 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	var spacing := table.spacing(String(situation["terrain"]))
 	# Round 28 (B1): round in a COLUMN, so every crew rides the ring: a line abreast across the way round put its inner
 	# crews 25-30 m inside it, within the target's guns (the even roster: first crew within 50 m at 56 deg off).
-	var shape := "column" if APPROACH_CARRY else String(plan["formation"])
-	if APPROACH_CARRY:
+	var shape := "column" if carries(situation) else String(plan["formation"])
+	if carries(situation):
 		plan["formation"] = shape
 	_group(plan, slot_order(situation), shape, waypoint, heading, spacing, "move",
 			String((state.get("task", {}) as Dictionary).get("target", "")))
 	return true
+
+
+## Round 28: whether this element carries a drawn approach out (B1's rule: going round wide, the plan owning it, fighting
+## from the side): every element under APPROACH_CARRY (parked, off), a battery under APPROACH_BATTERY (B2). Pure.
+static func carries(situation: Dictionary) -> bool:
+	return APPROACH_CARRY or (APPROACH_BATTERY and is_battery(situation))
 
 
 ## Round 28 (B2): whether every crew of this element is artillery (Units.role_of). Pure.
@@ -2262,7 +2273,7 @@ static func pursues(task: Dictionary, state: Dictionary, situation: Dictionary) 
 	# Round 28 (B1): a drawn flank (going round, or fighting from the side) is a pursuit only while its target has been
 	# FLEEING for APPROACH_RUNNING_S (not sticky, and not for being out of sight: it goes round where it was last seen).
 	var kept_round: Dictionary = state.get("approach_round", {})
-	if APPROACH_CARRY and task.has("approach") and not bool(kept_round.get("charged", false)):
+	if carries(situation) and task.has("approach") and not bool(kept_round.get("charged", false)):
 		var since := int(kept_round.get("fast_since", -1))
 		return since >= 0 and float(int(situation.get("tick", 0)) - since) / SimClock.TICK_RATE >= APPROACH_RUNNING_S
 	if bool(state.get("pursuing", false)):

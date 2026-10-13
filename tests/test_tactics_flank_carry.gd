@@ -9,6 +9,8 @@ extends TestCase
 ##   - for the whole task the target's squad closing is not a near ambush; a third party still is one;
 ##   - going round, being outgunned does not break it off;
 ##   - `--approach-carry=off` (APPROACH_CARRY false) is B0's rule, and with no approach nothing changes.
+## PARKED (judged at f3a0145d: fails its bar; lab/brains-r28-flank): APPROACH_CARRY is off by default, so each test turns
+## it on (`_table()`); a battery still gets the rule through APPROACH_BATTERY (test_tactics_battery_side).
 
 const TARGET := Vector3.ZERO
 ## The gun trucks' twin MG: their own reach, and B0's ring.
@@ -17,13 +19,14 @@ const OWN_BAND := 28.0
 
 
 func teardown() -> void:
-	ElementPlan.APPROACH_CARRY = true
+	ElementPlan.APPROACH_CARRY = false
 	ElementPlan.APPROACH_LATCH = true
 	DoctrineTable.clear_cache()  # one test widens the cached standard table's drills
 	super.teardown()
 
 
 func _table() -> DoctrineTable:
+	ElementPlan.APPROACH_CARRY = true  # parked (off by default): these hold B1's rule as built (lab/brains-r28-flank)
 	DoctrineTable.clear_cache()
 	return DoctrineTable.load_table("standard").get("table")
 
@@ -174,10 +177,10 @@ func test_with_no_approach_nothing_changes() -> void:
 	var center := _round(170.0)
 	var track := {"name": "Rust_1", "position": TARGET, "velocity": Vector3(4.0, 0.0, 0.0), "seen_tick": 1000}
 	for extra: Dictionary in [{}, {"pursuit": track}]:
+		ElementPlan.APPROACH_CARRY = true
 		var on := ElementPlan.build(_situation(center), _state(_attack(null), extra.duplicate(true)), table)
 		ElementPlan.APPROACH_CARRY = false
 		var off := ElementPlan.build(_situation(center), _state(_attack(null), extra.duplicate(true)), table)
-		ElementPlan.APPROACH_CARRY = true
 		assert_eq(on, off, "no approach: the plan is B0's (%s)" % str(extra.keys()))
 
 
@@ -258,7 +261,7 @@ func test_a_target_charging_into_reach_drops_the_flank() -> void:
 	var copy := plan.duplicate(true)
 	copy.erase("approach_round")
 	assert_eq(copy, plain, "as a clicked attack")
-	assert_true(not Drills.carries_flank(_state(_attack(), {"approach_round": kept})), "no longer a carried flank")
+	assert_true(not Drills.carries_flank(_state(_attack(), {"approach_round": kept}), _situation(center)), "no longer a carried flank")
 	# Far out (not in reach) it still goes round; and with the latch off it keeps the flank.
 	var far := _round(170.0)
 	var far_track := {"name": "Rust_1", "position": TARGET, "velocity": TacticsFormation.flat(far - TARGET) * 8.0,

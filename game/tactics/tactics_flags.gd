@@ -65,6 +65,12 @@ static func _parse() -> void:
 		# a pursuit, the target's squad can spring a near ambush).
 		if arg == "--approach-carry=off":
 			ElementPlan.APPROACH_CARRY = false
+		# Round 28: B1 is parked (off by default); on = its rule for every element.
+		if arg == "--approach-carry=on":
+			ElementPlan.APPROACH_CARRY = true
+		# Round 28 (B2): B0's rule for a battery too.
+		if arg == "--approach-battery=off":
+			ElementPlan.APPROACH_BATTERY = false
 		# The orchestrator's ruling on (c): a target charging the squad drops the flank; off keeps it.
 		if arg == "--approach-latch=off":
 			ElementPlan.APPROACH_LATCH = false
