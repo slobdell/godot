@@ -81,6 +81,38 @@ friendly contacts down ≥ 25 %, crews ≥ base − 2, all-in median ≤ +20 %; 
 the CPU mirror on Terminus head-on reported; bridge-pooled, the arrive series, cost, native-verify-scenarios. No tuning on
 7–9; the last attempt.
 
+**The {7,8,9} run is VOID** (`fc31d0c4`, builder0, 2026-10-12 21:49–22:38 PDT): the rule never ran: 0 verdicts in every
+case, the arm equal to its base run for run. `Movement._avoid` called Traffic only when `turns` or `streetright` was on,
+both off by default in T1b; the pure tests call `Traffic.shape` directly and passed (lessons 23/35). Fixed at `474558f8`
+(no parameter changed) with a live falsifier, `tests/test_traffic_turns_live.gd` (his Terminus head-on on the GDScript
+path must make a verdict: 0 on the old gate, > 0 on the fix). The orchestrator accepted the re-run on FRESH seeds
+{10,11,12} as the same last attempt, same bar, with the verdict count per case in the report.
+**Lesson for the list:** an A/B whose arm equals its base run for run is a null until the arm's own counter says the
+rule fired; a pure test of the rule cannot see its caller's gate. The probe's verdict counter caught it in one read.
+
+**T1b's VERDICT (2026-10-12 ~23:59 PDT): FAILED — nothing ships.** Judged run: builder0, `474558f8` both arms, GDScript
+path, seeds {10,11,12} x start ticks {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=streetturns`.
+
+| case | fast contacts | crews (≥ base − 2) | all-in median (≤ +20 %) | friendly-stuck (≤ base × 1.2 + 10) | verdicts / crew-ticks slowed |
+|---|---|---|---|---|---|
+| Terminus head-on | 872 → **440 (−50 %)** ✓ | 173 → **170** ✗ | 56.5 → **71.0 (+26 %)** ✗ | 629 → **839** ✗ (limit 764) | 19 / 54 219 |
+| Terminus crossing | 246 → 244 ✓ | 177 → 178 ✓ | 50.2 → 50.2 ✓ | 185 → 170 ✓ | 7 / 63 (fired briefly) |
+| yard_open crossing | 232 → 232 ✓ | 163 → 163 ✓ | identical | identical | 0 |
+| yard_open head-on | 97 → 97 ✓ | 180 → 180 ✓ | identical | identical | 0 |
+| CPU mirror (`--side=rust`) Terminus head-on | 763 → 392 | 170 → 173 | 59.4 → 64.5 | 622 → 678 | 20 / 52 089 |
+
+Why, per run (18 Terminus head-on runs): the take-turns does what it says. The waiting squad, mostly B, gets in 15–30 s
+later while the other often gets in faster. But **one run (seed 12, tick 16) wedged**: the waiting squad still creeps
+toward the meeting at 0.2 of its wish, and the two squads lock at the street mouth: 4 crews never in, 305 crew-s stuck
+(base 20). That run is most of the stuck-time excess and every lost crew. The all-in time rises because one squad waits
+by design; on these seeds that wait is longer than the bar allows (+26 %, against +20 %).
+**In his terms:** *a "wait at the mouth of the street" rule halves the hard bumps when two of your squads meet head-on in
+a street, but the waiting squad waits too long, and now and then the two lock up at the mouth, so it is not in the game.*
+**For round 29:** the one-lane bridge needs a real waiting spot (hold outside the mouth, off the passing squad's line,
+until its tail is past), not a creep toward the meeting. That is a stop, so the stall clock, asks and unstick must
+honour it (manoeuvre's/brains' code: a request). Write the bar on his three things (crews, bumps between squads, the
+last arrival) before any number. The rule lives on branch `traffic-t1b` (= `474558f8` + this write-up), with its live falsifier.
+
 ### FINAL VERDICT ON T1 (2026-10-12 ~21:50 PDT): v3 FAILED the pre-registered bar on the judged seeds; nothing ships
 
 Judged run (builder0, `672eb785` both arms, GDScript path, seeds {4,5,6} x start ticks {1,3,6,8,11,16}, n = 18 a case;

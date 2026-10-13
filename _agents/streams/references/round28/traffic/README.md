@@ -11,3 +11,8 @@
 
 Each line is one run's TRAFFIC_PROBE report (tests/traffic/traffic_stage.gd); pool with `tests/traffic/traffic_table.py`
 (the both-only arms need the base's solo lines appended for the ratio column).
+| t1b-cbase-474558f8-seeds101112.jsonl | 474558f8 | T1b base (`--traffic-off=streetturns`), both + solo | {10,11,12} | fast 246/872/232/97 | T1b's judged base |
+| t1b-ct1b-474558f8-seeds101112.jsonl | 474558f8 | T1b (street head-on rule alone), both | {10,11,12} | TH fast 872 -> 440 but crews 173 -> 170, all-in +26 %, fstuck 629 -> 839: FAILED | run (12,16) wedged at the street mouth: 4 crews never in, 305 crew-s stuck |
+| t1b-crbase / t1b-crt1b-474558f8-seeds101112.jsonl | 474558f8 | the same, `--side=rust`, Terminus head-on | {10,11,12} | fast 763 -> 392, crews 170 -> 173 | reported only |
+
+The {7,8,9} T1b run (fc31d0c4) is VOID and not kept: the rule never ran (0 verdicts; the _avoid gate).
