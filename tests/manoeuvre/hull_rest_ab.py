@@ -44,6 +44,8 @@ def main(root: str) -> int:
     settle = {}  # task -> arm -> {(faction, seed): seconds}
     moving = {}  # task -> arm -> crews not still when judged (every class): round 28's guard, base + 5 a task
     runs = {}
+    rest = {}  # task -> arm -> [at rest, all, at rest within 15 deg, at-rest errors] for FOCUS crews (round 29 bar)
+    by_class = {}  # task -> class -> arm -> {(faction, seed): crews moving at the judge} (round 29 bar, ruling 1)
     for path in sorted(pathlib.Path(root).glob("*/*/*/screen.json")):
         arm, faction, case = path.parts[-4], path.parts[-3], path.parts[-2]
         seed = case.rsplit("-", 1)[-1]
@@ -56,6 +58,16 @@ def main(root: str) -> int:
             for squad in row["squads"]:
                 for crew in squad.get("each", []):
                     has_focus = has_focus or crew["class"] == FOCUS
+                    cell = by_class.setdefault(task, {}).setdefault(crew["class"], {}).setdefault(arm, {})
+                    cell[(faction, seed)] = cell.get((faction, seed), 0) + (0 if crew.get("still", True) else 1)
+                    if crew["class"] == FOCUS:
+                        r = rest.setdefault(task, {}).setdefault(arm, [0, 0, 0, []])
+                        r[1] += 1
+                        if crew.get("still", True):
+                            r[0] += 1
+                            r[3].append(crew["hull_error_deg"])
+                            if crew["hull_error_deg"] <= 15.0:
+                                r[2] += 1
                     if not crew.get("still", True):
                         moving.setdefault(task, {}).setdefault(arm, 0)
                         moving[task][arm] += 1
@@ -98,6 +110,34 @@ def main(root: str) -> int:
     for task in sorted(moving):
         counts = [moving[task].get(arm, 0) for arm in ARMS]
         print(f"M1_MOVING {task} | " + " | ".join(str(c) for c in counts) + f" | {counts[0] - counts[1]:+d}")
+    print(f"M1_REST ({FOCUS}) task | arm | at rest / all | at-rest share | at-rest median | at-rest <= 15 deg "
+          "| share new - base (guard: not below -5 pts)")
+    for task in sorted(rest):
+        for arm in ARMS:
+            r = rest[task].get(arm)
+            if not r or not r[1]:
+                continue
+            share = r[0] / r[1]
+            diff = ""
+            base = rest[task].get(arm.replace("new_", "base_"))
+            if arm.startswith("new_") and base and base[1]:
+                diff = f"{100.0 * (share - base[0] / base[1]):+.1f} pts"
+            med = statistics.median(r[3]) if r[3] else float("nan")
+            within = r[2] / r[0] if r[0] else float("nan")
+            print(f"M1_REST {task} | {arm} | {r[0]}/{r[1]} | {share:.0%} | {med:.1f} | {within:.0%} | {diff}")
+    print("M1_CLASS task | class | runs paired | moving new | moving base | paired diff | se | within 2 se")
+    for task in sorted(by_class):
+        for klass in sorted(by_class[task]):
+            new = by_class[task][klass].get("new_drawn", {})
+            base = by_class[task][klass].get("base_drawn", {})
+            keys = sorted(set(new) & set(base))
+            if len(keys) < 2:
+                continue
+            diffs = [new[k] - base[k] for k in keys]
+            se = statistics.stdev(diffs) * len(diffs) / len(diffs) ** 0.5  # se of the summed paired difference
+            total = sum(diffs)
+            print(f"M1_CLASS {task} | {klass} | {len(keys)} | {sum(new[k] for k in keys)} | {sum(base[k] for k in keys)} | "
+                  f"{total:+d} | {se:.1f} | {'yes' if abs(total) <= 2.0 * se else 'NO'}")
     return 0
 
 
