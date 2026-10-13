@@ -109,6 +109,10 @@ needed (M2 not shipped).
 **Merge notes:** none for this round (nothing to merge). If M1 is taken up: 3 lines in brains' `tank_brain.gd`
 `_order_move` (granted 2026-10-12), `turnhull`/`faceslot` in `Movement.OFF_NAMES`.
 
+**Final check: `cbaa85fe`** (builder0, 2026-10-13 ~00:30 PDT, `make check exited 0`, 2520 passed / 0 failed, 23 targets
+passed + 2 NOT JUDGED for box load: perf-judge (ratios 2.35-2.45x) and scenario_perf's CPU budget (unpinned); thirteen
+sim baselines unmoved, determinism 2875411ff4ec6be7). Commits after it are this report only.
+
 **Cleanup at close:** builder0 `~/tank_squad/godot-manoeuvre`, `-light`, `godot-manoeuvre-m1`, `godot-manoeuvre-m1-light`
 (m2 already removed); local worktree `~/projects/godot-manoeuvre-m1` (branch `manoeuvre-m1` stays). Kept branches:
 `manoeuvre-m1`, `manoeuvre-m2` (never merge as is).
