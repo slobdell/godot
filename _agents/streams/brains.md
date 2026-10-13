@@ -182,6 +182,12 @@ n = 18 per arm per roster. Tuning on seeds 4–6. Measuring point: the median hi
    (unit test `test_the_new_latch_moves_nothing_but_a_charge`).
 3. `bridge-pooled` 18/18; the arrive series unchanged.
 CPU line: the CPU never draws an approach. C29.2: nothing native-ported. A fail parks it on `lab/brains-r29-flank`.
+**Ruling on (c)** (godot-67, after (c)'s tuning, disclosed; it follows C28.5, written before those numbers): (c) is judged
+on the fight guard, side/rear share ≥ clicked, and the latch counter showing the latch fired. On-side for (c) is
+reported. Added line: in (a) (a holding target) the latch fires in 0 of 18 runs. The artillery counter is left out of
+B2's table.
+**Tuning (c)** (builder0, `a97d5aab`, seeds 4–6, n = 18): the latch fired in 18/18 runs (median 3.1 s); on side 0/18 v
+clicked 0/18; killed 18/18 v 18/18; alive 5.00 v 4.83; side/rear share 0.83 v 0.74.
 
 ### B5a — the arrival seating onto `no_path` seats (traced first, lesson 302)
 **Terminus head-on** (traffic's case; seed 1, tick 11; main's behaviour; builder0 `790548fd`, `make reseat-trace`).
