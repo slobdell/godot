@@ -173,8 +173,6 @@ static func _normalize(element: Object, unit_name: String, order_verb := "", sha
 	context["pitch"] = shared["pitch"]
 	context["role"] = _role(mine, state, unit_name, technique, drill, task, order_verb)
 	context["members"] = members
-	# Round 28 (B2): a battery driving to its firing position on a drawn side holds its fire (TankBrain's MOVE).
-	context["relocating"] = bool(state.get("relocating", false))
 	# X3: the speed fraction this unit drives at so the element forms up together (not part of the key: it changes
 	# continuously and is simply read, like the slot).
 	var paces: Variant = state.get("pace")
