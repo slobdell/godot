@@ -154,6 +154,42 @@ ported. The one attempt; else it parks.
 net-smoke FAILED (one of its two clients saw 1 of 2 tanks); combat-smoke NOT RUN (it depends on net-smoke). A clean check
 on `c2ae6e68` is queued. No green hash yet.
 
+### B2 — a drawn flank, the target's reach (DECLARED; the last attempt; bar ACCEPTED 2026-10-13 by godot-67)
+**The change.** Built from `f3a0145d`'s design (a column on a wide ring, the side-sector fight once round).
+- The charge latch keys on the TARGET's reach of a crew: its own weapon range, or the crew's reach × 1.15, whichever is
+  longer. It also remembers a charge for 4 s after the target stops to shoot (`approach_round.closing_tick`).
+- `--approach-latch=crews` is round 28's rule.
+- `APPROACH_CARRY` goes ON by default; `--approach-carry=off` is B0's rule.
+**Bar.** Both arms at one commit, built on B1 (`c2ae6e68`, which merges first). Fresh seeds 10–12 × {1,3,6,8,11,16},
+n = 18 per arm per roster. Tuning on seeds 4–6. Measuring point: the median hit's bearing within 35° of the side.
+- (a) Even roster: ≥ 12/18. Re-judged on the new seeds, declared up front: carry goes on for every element. Round 28's
+  10/18 is reported beside it.
+- (c) Moving target: ≥ 9/18, or the partial rule ((a) passes and (c) beats clicked by ≥ 5).
+- Fight guard on (a) and (c): kills ≥ clicked − 2, alive ≥ clicked − 0.5.
+- Side/rear hit share ≥ clicked.
+- Clicked: byte-identical.
+- (b) Law five: reported.
+- Latch counter (`latched_s`), worst run read first.
+- `flank-probe` on seeds 13–15, and a before/after clip.
+**The orchestrator's additions:**
+1. B1's drawn-artillery arm on 13 t1, 14 t1 and 15 t1 at B2's commit: identical to `c2ae6e68`'s rows, or meeting B1's
+   bar lines.
+2. A clicked attack, and a drawn one on a non-charging target, plan the same as under `--approach-latch=crews`
+   (unit test `test_the_new_latch_moves_nothing_but_a_charge`).
+3. `bridge-pooled` 18/18; the arrive series unchanged.
+CPU line: the CPU never draws an approach. C29.2: nothing native-ported. A fail parks it on `lab/brains-r29-flank`.
+
+### B5a — the arrival seating onto `no_path` seats (traced first, lesson 302)
+**Terminus head-on** (traffic's case; seed 1, tick 11; main's behaviour; builder0 `790548fd`, `make reseat-trace`).
+B_4 never arrives (traffic's own trace matches).
+- The cause is a MAKE-ROOM swap, not a re-seat. At 48.4 s B_5 had been 20 m off its herringbone slot (-58.3, 81.2) for
+  4 s. B_4 was parked on its own slot beside it, so the two traded slots.
+- B_4's route to that slot is 21.6 m for a 12 m gap: it goes west round the south-west block's corner, then back east.
+- B_4 stalls on the last leg ("terrain" for 2 s, then `no_path` at (-75.9, 87.8)) and is still there at the end.
+- At the hand-over the slot did NOT read `no_path` from B_4's spot: the path reached it (0.0 m short). It read
+  `no_path` only once B_4 was stuck west of it.
+- The Sumps cell is traced next.
+
 ### Requests to other streams
 - **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).
 
