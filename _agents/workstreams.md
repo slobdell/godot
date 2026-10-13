@@ -226,6 +226,14 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   `native_perception` ON once proven); **intel (what crews remember/believe) is NOT granted:** it is the AI's thinking he
   deferred. Brains told not to edit perception.gd.
 
+- **Brains B3 judged (`b95a3d6e`, builder0, fresh showmatch seeds 13–24, n = 12 paired):** enemy hull contacts under an
+  ordered MOVE (all units) 9.25 → 2.33/seed (−75 %, se 2.71); all contacts −62 %, no role up; recon deaths 5.00 → 4.58
+  (not up); the same side wins 12/12; screen re-tasks per recon squad-minute 4.27 → 7.65 (≤ 1 a think, never < 10 m: not a
+  thrash; the knob if he sees CPU screens shuffle). Merges once the fixed-gun MOVE line (the bar's exact line) lands.
+- **Brains B4 FAILED (`254fd98f`, builder0, full 108):** 106/108: his two cells pass but two NEW cells fail (rust t5 seed
+  1 crossed 3/4; rust t16 seed 2 a rim crew). Parked `lab/brains-r28-reissue`. Round 29: the cause is pinned (7baffe24's
+  heading re-issue; `--reissue-heading=off` restores his cells); trace the two new cells before narrowing again.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
