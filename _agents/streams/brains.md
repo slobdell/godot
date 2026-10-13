@@ -110,6 +110,8 @@ moves up to after B2 and before B3. Second sighting: traffic's Terminus head-on 
 tuning seeds 1–3): 6 of 9 crews left out are B_5, the rear tank, re-seated beside the block onto `no_path` seats (about
 10 at base). The first sighting was round 28's T3 Sumps cell. The first cut to try: a seat that reads `no_path` is not handed
 to a crew. Trace first (lesson 302). Order now: B1 → B2 → B5a (re-seat) → B3 → B4 → rest of B5.
+Plan accepted (godot-67): B5a is judged on main's behaviour (traffic's CP-T absent) unless CP-T has merged by then. If it
+has, the orchestrator says so, main is merged first, and both arms run with it. Traffic's C29.3 gate line stays untouched.
 Why this order: the brief's own order. B1 first because its code also brings back B2's (the parked branch holds both).
 
 ### B1 — artillery from his side, his way (DECLARED; bar ACCEPTED 2026-10-13, filed at main `ad56bdea`)
