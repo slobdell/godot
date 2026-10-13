@@ -20,6 +20,7 @@
 #include "pathing_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
+#include "shell_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -184,6 +185,13 @@ public:
 	int64_t incoming_count(Object *unit, const Dictionary &shells) {
 		return ::godot::incoming_count(incoming_config, incoming_halves, unit, shells);
 	}
+	// Round 28 (N7.1c): Shell._fly (shell_native.cpp).
+	bool shell_configure(const Dictionary &config) {
+		shell_config.HIT_MASK = (uint32_t)(int64_t)config.get("HIT_MASK", 3);
+		shell_config.ready = config.has("HIT_MASK");
+		return shell_config.ready;
+	}
+	void shell_fly(Object *shell, double delta) const { ::godot::shell_fly(shell_config, shell, delta); }
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -275,6 +283,7 @@ private:
 	PathingConfig pathing_config;
 	PerceptionConfig perception_config;
 	IncomingConfig incoming_config;
+	ShellConfig shell_config;
 	HashMap<String, Vector2> incoming_halves;
 	int64_t perception_rays_cast = 0;
 	DecideConsts decide_consts;

@@ -54,6 +54,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _fly(delta: float) -> void:
+	if NativeShell.usable():  # round 28 (native N7.1c): the same tick of flight natively
+		NativeBridge.impl.shell_fly(self, delta)
+		return
 	var step := direction * speed * delta
 	var from := ray_start if _first_step else global_position
 	_first_step = false

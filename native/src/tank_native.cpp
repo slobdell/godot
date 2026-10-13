@@ -58,6 +58,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("incoming_configure", "config"), &TankNative::incoming_configure);
 	ClassDB::bind_method(D_METHOD("incoming_projectiles", "game_match", "unit"), &TankNative::incoming_projectiles);
 	ClassDB::bind_method(D_METHOD("incoming_count", "unit", "shells"), &TankNative::incoming_count);
+	ClassDB::bind_method(D_METHOD("shell_configure", "config"), &TankNative::shell_configure);
+	ClassDB::bind_method(D_METHOD("shell_fly", "shell", "delta"), &TankNative::shell_fly);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
