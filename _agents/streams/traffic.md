@@ -87,3 +87,23 @@ _Updated 2026-10-12 evening (traffic worker). Every number names commit, machine
 3. **T2**: send native the settled diff after `make native-verify-scenarios` with the rule ON; the pair merges back to
    back.
 4. **T3** (stretch): the census after T1, and a crew pressing a squadmate parked on its leg station.
+
+### T0: the base (builder0, `c6e32d03` = main's green `94b5fc0d` + docs, `make traffic-series TRAFFIC_FLAGS=--brains-off=native`, n = 18 a case = seeds {1,2,3} x start ticks {1,3,6,8,11,16}; 216 runs, 0 missing; 2026-10-12 19:09–19:23 PDT)
+
+His two cases, two friendly squads of five mixed Law hulls. fstuck = friendly-stuck crew-s (total over 18 runs);
+fast = friendly contacts closing > 2 m/s (total); all-in = every crew's last arrival, a never counted at the run's end
+(median / mean, s); ratio = a squad's last arrival over its solo time (median / worst).
+
+| case | all crews in | crews arrived | fstuck | contacts/run | fast | all-in med / mean | ratio | never |
+|---|---|---|---|---|---|---|---|---|
+| Terminus crossing | 15/18 | 176/180 | 156.9 | 32.9 | 294 | 45.8 / 55.2 | 1.11 / 2.52 | 1 |
+| Terminus head-on | 10/18 | 170/180 | 489.1 | 66.3 | 716 | 64.3 / 65.4 | 1.39 / 2.83 | 5 |
+| yard_open crossing | 8/18 | 169/180 | 196.5 | 27.8 | 277 | 75.6 / 72.2 | 1.25 / 2.56 | 4 |
+| yard_open head-on | 17/18 | 179/180 | 8.9 | 11.4 | 113 | 37.2 / 38.1 | 1.04 / 2.45 | 0 |
+
+**What a player sees at main:** on open ground head-on, almost every crew passes cleanly (ORCA). At the crossings and
+in the street there are hard bumps (716 fast contacts in 18 runs head-on in the Terminus street, about 40 a run), and
+in roughly 1 run in 4 a crew is still not in when its squad would have finished alone. **T1's bar against this base** (the
+tuning seeds; the judged run re-bases on fresh seeds {4,5,6}): crews ≥ 174 / 168 / 167 / 177; fast ≤ 220 / 537 /
+208 (−25 %) in three cases and ≤ 124 on yard head-on (+10 %); all-in median ≤ 55.0 / 77.2 / 90.7 / 44.6;
+fstuck ≤ 198 / 597 / 246 / 20.7.

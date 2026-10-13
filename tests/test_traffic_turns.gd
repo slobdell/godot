@@ -130,3 +130,46 @@ func test_switched_off_nothing_changes() -> void:
 	Traffic.set_off("turns", true)
 	_crossing(20.0, 27.0)
 	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "--traffic-off=turns")
+
+
+func test_v2b_the_whole_yielding_squad_slows_not_only_the_crews_that_meet() -> void:
+	# W3 trails W's file 30 m back: it meets nobody inside the horizon, but its squad is yielding, so it slows too.
+	Traffic.load_rows([
+		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["N2", 0, 0.0, 30.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+		["W3", 0, -57.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+	var w1 := Traffic.shape("W1", Vector2(10.0, 0.0))
+	assert_true(w1.length() < 9.5, "W1 yields: %s" % w1)
+	assert_near(Traffic.shape("W3", Vector2(10.0, 0.0)).length(), w1.length(), 0.01, "W3 keeps its squad's share")
+	Traffic.set_off("wholesquad", true)
+	Traffic.load_rows([
+		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+		["W3", 0, -57.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+	Traffic.shape("W1", Vector2(10.0, 0.0))
+	assert_eq(Traffic.shape("W3", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "--traffic-off=wholesquad: only who meets")
+	Traffic.set_off("wholesquad", false)
+
+
+func test_v2b_crews_deflected_inside_a_head_on_meeting_are_not_a_crossing() -> void:
+	# Two squads head-on (mean headings opposite); one crew of each angled 60 deg off its squad's way, meeting the other.
+	Traffic.street_override = false
+	Traffic.load_rows([
+		["A1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
+		["A2", 0, 8.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
+		["A3", 0, -8.0, 20.0, -8.66, -5.0, -0.866, -0.5, R, true, "e:A"],
+		["B1", 0, 0.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
+		["B2", 0, 8.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
+		["B3", 0, -20.0, -1.93, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
+	])
+	assert_eq(Traffic.shape("A3", Vector2(-8.66, -5.0)), Vector2(-8.66, -5.0), "head-on squads: ORCA's")
+	assert_eq(Traffic.shape("B3", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "head-on squads: ORCA's")
+	# The falsifier: per crew direction (v1) A3 and B3 ARE a crossing (they reach (-20, 13) 0.1 s apart).
+	Traffic.set_off("squadheading", true)
+	var a3 := Traffic.shape("A3", Vector2(-8.66, -5.0))
+	var b3 := Traffic.shape("B3", Vector2(0.0, 10.0))
+	assert_true(a3.length() < 9.5 or b3.length() < 9.5, "v1 made one of them yield: %s %s" % [a3, b3])
+	Traffic.set_off("squadheading", false)

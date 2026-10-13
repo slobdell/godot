@@ -77,6 +77,10 @@ def main(path):
             "stuck_mean": round(statistics.mean(r["stuck_s"] for r in g), 1),
             "contacts_mean": round(statistics.mean(r["contacts"] for r in g), 1),
             "fast_total": sum(r["contacts_fast"] for r in g),
+            "xfast_total": sum(r.get("contacts_cross_fast", 0) for r in g),
+            "verdicts": sum(r.get("tr_verdicts", 0) for r in g),
+            "yield_ticks": sum(r.get("tr_yield_ticks", 0) for r in g),
+            "right_ticks": sum(r.get("tr_right_ticks", 0) for r in g),
             "kturns_friend": sum(r["kturns_friend"] for r in g),
             "yields_mean": round(statistics.mean(r["yields"] for r in g), 1),
             "ratio_median": round(statistics.median(ratios), 2) if ratios else None,
@@ -89,6 +93,11 @@ def main(path):
             line["stuck_mean"], line["contacts_mean"], line["fast_total"], line["kturns_friend"], line["yields_mean"],
             line["ratio_median"], line["ratio_worst"], line["allin_median"], line["allin_mean"],
             ("  never %d" % never) if never else ""))
+    print("between squads (fast contacts; the rule's counters: squad-pair verdicts, crew-ticks slowed, crew-ticks kept right):")
+    for key, line in sorted(summary.items()):
+        if key.endswith("/both"):
+            print("  %-22s xfast %4d  verdicts %4d  yield_ticks %6d  right_ticks %6d" % (
+                key, line["xfast_total"], line["verdicts"], line["yield_ticks"], line["right_ticks"]))
     print("TRAFFIC_SUMMARY " + json.dumps(summary, sort_keys=True))
 
 

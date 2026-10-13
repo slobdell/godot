@@ -12,6 +12,10 @@ extends RefCounted
 ##           (Movement._negotiate; counter Movement.parked_refusals).
 ##   turns       Round 28 T1 (his call: TAKE TURNS): two friendly SQUADS crossing take turns: the squad reaching the
 ##               crossing later slows as a whole and passes behind the other (one verdict per squad pair).
+##   squadheading T1 v2b: a crossing is two SQUADS' mean headings crossing (neither following nor head-on), not two
+##               crews deflected at an angle inside a head-on meeting.
+##   wholesquad  T1 v2b: a yielding squad slows AS A WHOLE (every crew of it short of the crossing keeps the share of its
+##               wish its most-slowed crew keeps), so its rear crews do not run into its own slowed front.
 ##   streetright Round 28 T1: friendlies meeting head-on keep right, but only in a street (walls both sides); on open
 ##               ground ORCA passes them as before.
 ##
@@ -101,6 +105,10 @@ static var _teams := {}
 static var _answers := {}
 ## "groupA|groupB" (sorted) -> [the yielding group, the frame the verdict expires].
 static var _verdicts := {}
+## group -> [frame, the least share of its wish a crew of it keeps while yielding, the crossing point] (wholesquad).
+static var _shares := {}
+## The crossing point of the last _crossing call (wholesquad reads it beside the verdict).
+static var _last_point := Vector2.ZERO
 ## name -> [frame read, is a street].
 static var _streets := {}
 ## Tests: a street answer for every crew instead of the navmesh (null = read the navmesh).
@@ -130,6 +138,7 @@ static func set_off(name: String, value: bool) -> void:
 		_off.erase(name)
 	_answers = {}
 	_streets = {}
+	_shares = {}
 
 
 ## T1's preferred velocity for `me` from the route's wish `preferred` (x, z): `preferred` unchanged when no friend of
@@ -156,6 +165,10 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 		var along := preferred / speed
 		out = (along * sqrt(1.0 - side_sin * side_sin) + Vector2(-along.y, along.x) * side_sin) * speed
 	var cap: float = answer[2]
+	if cross and not off("wholesquad"):
+		var share := _squad_share(me, frame)
+		if share < 1.0:
+			cap = minf(cap, share * speed)
 	if cap < speed:
 		crossing_yields += 1
 		out = out / speed * maxf(cap, YIELD_FLOOR * speed)
@@ -229,12 +242,51 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 				continue
 			# I want it on my LEFT by `clearance` (lateral <= -clearance); half of what is missing is mine.
 			lateral_speed = maxf(lateral_speed, (lateral + clearance) * 0.5 / maxf(meet - SETTLE_S, 0.5))
-		elif facing < FOLLOW_COS and cross and groups[i] != groups[j]:
+		elif cross and groups[i] != groups[j] and _crossing_kind(facing, groups[i], groups[j], cols):
 			var verdict := _crossing(Vector2(px, pz), Vector2(ux, uz), v_me, Vector2(xs[j], zs[j]), Vector2(wx, wz), v_it,
 					clearance, groups[i], groups[j], frame, cols)
-			if verdict >= 0.0:
-				cap = minf(cap, verdict)
+			if verdict >= 0.0 and verdict < cap:
+				cap = verdict
+				_note_share(groups[i], frame, maxf(verdict / v_me, YIELD_FLOOR), _last_point)
 	return [frame, lateral_speed, cap]
+
+
+## Is this a crossing the rule decides? With squadheading, the two SQUADS' mean headings must cross (neither within
+## FOLLOW_COS of the same way nor within HEAD_ON_COS of opposite); without it, the two crews' directions (v1).
+static func _crossing_kind(facing: float, mine: String, theirs: String, cols: Dictionary) -> bool:
+	if off("squadheading"):
+		return facing < FOLLOW_COS
+	var headings: Dictionary = cols["gdir"]
+	var g := (headings.get(mine, Vector2.ZERO) as Vector2).dot(headings.get(theirs, Vector2.ZERO) as Vector2)
+	return g < FOLLOW_COS and g > HEAD_ON_COS and facing < FOLLOW_COS
+
+
+## wholesquad: record that a crew of `group` keeps `share` of its wish to yield at `point` this frame.
+static func _note_share(group: String, frame: int, share: float, point: Vector2) -> void:
+	var known: Variant = _shares.get(group)
+	if known == null or frame - int(known[0]) > SOLVE_TICKS or share <= float(known[1]):
+		_shares[group] = [frame, share, point]
+
+
+## wholesquad: the share of its wish crew `me` keeps because its squad is yielding (1.0 = none): the squad's least
+## share while it is fresh, for a crew still short of the crossing point.
+static func _squad_share(me: String, frame: int) -> float:
+	var where: Variant = _where.get(me)
+	if where == null:
+		return 1.0
+	var cols: Dictionary = _teams[where[0]]
+	var i: int = where[1]
+	if (cols["moving"] as PackedByteArray)[i] == 0:
+		return 1.0
+	var known: Variant = _shares.get((cols["group"] as PackedStringArray)[i])
+	if known == null or frame - int(known[0]) > SOLVE_TICKS or frame < int(known[0]):
+		return 1.0
+	var point: Vector2 = known[2]
+	var along := (point.x - (cols["x"] as PackedFloat64Array)[i]) * (cols["dx"] as PackedFloat64Array)[i] \
+			+ (point.y - (cols["z"] as PackedFloat64Array)[i]) * (cols["dz"] as PackedFloat64Array)[i]
+	if along - (cols["radius"] as PackedFloat64Array)[i] - CLEAR_MARGIN_M <= COMMITTED_M:
+		return 1.0  # at or past the crossing: clear out
+	return float(known[1])
 
 
 ## v4: is a friend abeam on this crew's right, close enough that keeping right would close on it? Its centre within
@@ -304,6 +356,7 @@ static func _crossing(p: Vector2, u: Vector2, v_me: float, q: Vector2, w: Vector
 	var occupy := clearance / v_me + clearance / v_it
 	if absf(t_me - t_it) >= occupy:
 		return -1.0  # one clears before the other arrives: no conflict
+	_last_point = p + u * s
 	var key := mine + "|" + theirs if mine < theirs else theirs + "|" + mine
 	var kept: Variant = _verdicts.get(key)
 	var yielder: String
@@ -380,6 +433,7 @@ static func refresh(tanks_root: Node) -> void:
 		_answers = {}
 		_verdicts = {}
 		_streets = {}
+		_shares = {}
 	_root = root
 	_frame = frame
 	var world := (tanks_root as Node3D).get_world_3d() if tanks_root is Node3D else null
@@ -423,6 +477,7 @@ static func load_rows(rows: Array) -> void:
 	_answers = {}
 	_verdicts = {}
 	_streets = {}
+	_shares = {}
 	_load(rows)
 
 
@@ -444,6 +499,7 @@ static func _load(rows: Array) -> void:
 		var radii := PackedFloat64Array()
 		var moving := PackedByteArray()
 		var groups := PackedStringArray()
+		var sums := {}
 		for row: Array in by_team[team]:
 			var velocity := Vector2(float(row[4]), float(row[5]))
 			var speed := velocity.length()
@@ -457,6 +513,13 @@ static func _load(rows: Array) -> void:
 			speeds.append(speed)
 			radii.append(float(row[8]))
 			moving.append(1 if bool(row[9]) else 0)
-			groups.append(String(row[10]) if row.size() > 10 else "u:" + String(row[0]))
+			var group := String(row[10]) if row.size() > 10 else "u:" + String(row[0])
+			groups.append(group)
+			if bool(row[9]):
+				sums[group] = (sums.get(group, Vector2.ZERO) as Vector2) + direction
+		# Each squad's mean heading over its moving crews (squadheading).
+		var gdir := {}
+		for group: String in sums:
+			gdir[group] = (sums[group] as Vector2).normalized()
 		_teams[team] = {"names": names, "x": xs, "z": zs, "dx": dxs, "dz": dzs, "speed": speeds, "radius": radii,
-				"moving": moving, "group": groups}
+				"moving": moving, "group": groups, "gdir": gdir}
