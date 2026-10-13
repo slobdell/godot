@@ -67,11 +67,14 @@ static var native_cb := true  # Round 27 (stage 1 E2): the native drive's GDScri
 static var native_gun := false  # Round 27 (stage 1 E3): Gunnery.apply as one native call per crew (gun_native.cpp; OFF until priced)
 static var native_exec := true  # Round 27 (stage 1 E5): OrderController.compute_command's common path as ONE native call per crew (execute_native.cpp). ON by E6 (his laptop, 19543dae, bar workload, ABBA n = 6 paired, with native_owned: 20 a side tick scripts -8.59 % se 3.90, game speed 0.890 -> 0.930; 25 a side -7.21 % se 0.68, 0.818 -> 0.865)
 static var native_owned := true  # Round 27 (stage 1 E5b): native_exec on the C++-owned state (ON with native_exec by E6; a switch so the laptop's tick-profile arms can name it; --native-exec-owned is the same)
+static var native_motion := false  # Round 28 (N6.1): TankMotion.step_in_place behind its own seam (motion_native.cpp). OFF by its price: the planners roll it many times a think, a crossing a step costs more than the step (50 v 50 band +1.7/+3.5/+2.3 %, builder0 8223ae16 n = 3, hashes equal); the native tank drive calls the same model with no crossing
+static var native_tank := true  # Round 28 (N6.1): Tank._drive as one native call (tank_drive_native.cpp; the motion model with no crossing); ON: native-proof on = tank on his Sumps (+ leaders), foundry, terminus, yard
+static var native_combat := true  # Round 28 (N6.2): combat resolution's rules natively (combat_native.cpp: the hit's terms, Tank.take_hit's arithmetic); ON: test_native_combat 840 terms + 840 take_hits 0 mismatches, native-proof on = combat (price ~0: a few hits a second)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -182,6 +185,12 @@ static func set_named(name: String, on: bool) -> void:
 			native_exec = on
 		"native_owned":
 			native_owned = on
+		"native_motion":
+			native_motion = on
+		"native_tank":
+			native_tank = on
+		"native_combat":
+			native_combat = on
 		"native_n4":
 			native_situation = on
 			native_tq = on

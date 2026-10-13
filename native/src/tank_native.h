@@ -14,6 +14,9 @@
 #include "exec_state.h"
 #include "gun_native.h"
 #include "execute_native.h"
+#include "motion_native.h"
+#include "tank_drive_native.h"
+#include "combat_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -134,6 +137,24 @@ public:
 	Dictionary execute_counts(bool reset) const { return ::godot::execute_counts(reset); }
 	void execute_profile_on(bool on) const { ::godot::execute_profile_on(on); }
 	Dictionary execute_profile(bool reset) const { return ::godot::execute_profile(reset); }
+	// Round 28 (N6.1): TankMotion.step_in_place on the state Dictionary in place (motion_native.cpp).
+	bool motion_configure(const Dictionary &config);
+	void motion_step(Dictionary state, double throttle, double turn, double delta) const {
+		::godot::motion_step(motion_config, state, throttle, turn, delta);
+	}
+	// Round 28 (N6.1): Tank._drive as one call (tank_drive_native.cpp).
+	bool tank_drive_configure(const Dictionary &config);
+	bool tank_drive(Object *tank, Object *cmd, double delta) const {
+		return tank_drive_native(tank_drive_config, tank, cmd, delta);
+	}
+	// Round 28 (N6.2): combat resolution's rules (combat_native.cpp).
+	bool combat_configure(const Dictionary &config);
+	Array combat_hit_terms(Object *victim, const Dictionary &weapon, const Vector3 &direction) const {
+		return ::godot::combat_hit_terms(combat_config, victim, weapon, direction);
+	}
+	Dictionary combat_take_hit(Object *tank, double raw, double shield_multiplier, double armor_multiplier) const {
+		return ::godot::combat_take_hit(combat_config, tank, raw, shield_multiplier, armor_multiplier);
+	}
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -219,6 +240,9 @@ private:
 	int last_scan_rays = 0;
 	DriveConfig drive_config;
 	GunConfig gun_config;
+	MotionConfig motion_config;
+	TankDriveConfig tank_drive_config;
+	CombatConfig combat_config;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;
 	ElTerrain el_terrain_table;

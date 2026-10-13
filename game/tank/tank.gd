@@ -653,6 +653,9 @@ var _placed_settle := false
 
 
 func _drive(cmd: TankCommand, delta: float) -> void:
+	if NativeTank.usable(self):
+		NativeTank.drive(self, cmd, delta)  # round 28 (native N6.1): the same bits, as one native call
+		return
 	if _placed_settle:
 		_placed_settle = false
 		_motion = {}  # rebuilt next tick from the placed transform, not the one it was spawned at
@@ -1040,6 +1043,8 @@ func _process(delta: float) -> void:
 ## Fractions carry over between hits (flames deal a little every tick).
 ## Returns {"shield": float, "hull": int, "killed": bool}.
 func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> Dictionary:
+	if NativeCombat.usable():
+		return NativeCombat.take_hit(self, raw, shield_multiplier, armor_multiplier)  # round 28 (native N6.2): the same bits
 	if not alive or raw <= 0.0 or Armor.no_damage_on():
 		return {"shield": 0.0, "hull": 0, "killed": false}
 	ticks_since_hit = 0
