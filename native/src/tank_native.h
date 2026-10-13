@@ -17,6 +17,7 @@
 #include "motion_native.h"
 #include "tank_drive_native.h"
 #include "combat_native.h"
+#include "pathing_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -155,6 +156,15 @@ public:
 	Dictionary combat_take_hit(Object *tank, double raw, double shield_multiplier, double armor_multiplier) const {
 		return ::godot::combat_take_hit(combat_config, tank, raw, shield_multiplier, armor_multiplier);
 	}
+	// Round 28 (N6.4): Pathing's wrappers (pathing_native.cpp).
+	bool pathing_configure(const Dictionary &config);
+	bool pathing_is_ready(Object *node) const { return ::godot::pathing_is_ready(pathing_config, node); }
+	Dictionary pathing_query(Object *node, const Vector3 &from, const Vector3 &to) const {
+		return ::godot::pathing_query(pathing_config, node, from, to);
+	}
+	PackedVector3Array pathing_find_path(Object *node, const Vector3 &from, const Vector3 &to) const {
+		return ::godot::pathing_find_path(pathing_config, node, from, to);
+	}
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -243,6 +253,7 @@ private:
 	MotionConfig motion_config;
 	TankDriveConfig tank_drive_config;
 	CombatConfig combat_config;
+	PathingConfig pathing_config;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;
 	ElTerrain el_terrain_table;

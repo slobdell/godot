@@ -47,6 +47,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("combat_hit_terms", "victim", "weapon", "direction"), &TankNative::combat_hit_terms);
 	ClassDB::bind_method(D_METHOD("combat_take_hit", "tank", "raw", "shield_multiplier", "armor_multiplier"),
 			&TankNative::combat_take_hit);
+	ClassDB::bind_method(D_METHOD("pathing_configure", "config"), &TankNative::pathing_configure);
+	ClassDB::bind_method(D_METHOD("pathing_is_ready", "node"), &TankNative::pathing_is_ready);
+	ClassDB::bind_method(D_METHOD("pathing_query", "node", "from", "to"), &TankNative::pathing_query);
+	ClassDB::bind_method(D_METHOD("pathing_find_path", "node", "from", "to"), &TankNative::pathing_find_path);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
@@ -762,6 +766,23 @@ bool TankNative::combat_configure(const Dictionary &config) {
 	c.units = c.keep_units.get_validated_object();
 	c.armor = c.keep_armor.get_validated_object();
 	c.ready = c.units != nullptr && c.armor != nullptr;
+	return c.ready;
+}
+
+bool TankNative::pathing_configure(const Dictionary &config) {
+	PathingConfig &c = pathing_config;
+	c.ready = false;
+	if (!config.has("MESH_EPSILON")) {
+		return false;
+	}
+	c.MESH_EPSILON = config["MESH_EPSILON"];
+	c.keep_pathing = config.get("pathing", Variant());
+	c.keep_switches = config.get("switches", Variant());
+	c.keep_nav = config.get("nav", Variant());
+	c.pathing = c.keep_pathing.get_validated_object();
+	c.switches = c.keep_switches.get_validated_object();
+	c.nav = Object::cast_to<NavNative>(c.keep_nav.get_validated_object());
+	c.ready = c.pathing != nullptr && c.switches != nullptr;
 	return c.ready;
 }
 

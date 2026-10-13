@@ -415,6 +415,20 @@ equal-answer (hash-proven) unless declared; none is expected to move his laptop 
 **Recommended order:** 3 (it is the bridge to stage 2 when he wants it), then 1, then 2; 4 whenever convenient. None
 starts before the orchestrator orders it.
 
+### N6 progress (ordered 2026-10-12 evening; each port a switch, its proofs, its price)
+
+| port | code | switch | proofs | price |
+|---|---|---|---|---|
+| **N6.1a** `TankMotion.step_in_place` | `native/src/motion_native.{h,cpp}`; seam in `game/tank/tank_motion.gd` | `native_motion` **OFF** (by its price) | `test_native_motion` 600 rolls x 40 ticks = 24 000 steps every locomotion, 0 mismatches; native-proof `motion` equal | builder0 50v50: +1.7 / +3.5 / +2.3 % (a crossing per call from GDScript's planners costs more than the step) |
+| **N6.1b** `Tank._drive` as one call (incl. `move_and_slide` from C++) | `native/src/tank_drive_native.{h,cpp}`, `game/ai/native/native_tank.gd`; seam in `game/tank/tank.gd` `_drive` | `native_tank` **ON** | native-proof on = off = tank on sumps `0398922d31f335f8`, leaders `9aad48e924fc7bf4`, foundry `28b7ccfab3c5b916`, terminus `f90c67a55c7ad9e6`, yard `1f15cb10c038b2bd` | builder0 (noisy, normalised to the `match` section, 3 alternated runs an arm): tank/drive ~6.5 % cheaper, ~0.06 ms a tick at 25 a side |
+| **N6.2** combat resolution's rules | `native/src/combat_native.{h,cpp}`, `game/ai/native/native_combat.gd`; seams in `game/match/match.gd` `_land_hit_result`, `game/tank/tank.gd` `take_hit` | `native_combat` **ON** (`d11f40ce`) | `test_native_combat` 840 terms + 840 take_hits, 0 mismatches; native-proof on = off = tank = combat = `0398922d31f335f8` | ~0 (a few hits a second) |
+| **N6.4** the nav wrappers (`Pathing.is_ready` / `query` / `find_path`) | `native/src/pathing_native.{h,cpp}`, `game/ai/native/native_pathing.gd`; seams in `game/ai/pathing.gd` | `native_pathing` OFF until its proofs | `test_native_pathing` (pending) | pending |
+| N6.3 perception + intel | not started: ASK the orchestrator first (perception.gd is brains') | | | |
+
+Lessons: 76b0a881's check failed `test_native_motion` because creepbound (`Movement.switched_off`) had been read once at
+configure; tests switch `_off` at run time, so it is asked live (fixed in dc466667). Anything the GDScript asks per call
+stays asked per call.
+
 ### Questions for the lead
 
 - **Stage 2 (N4):** do it now, or once the AI's decisions settle? (above; the orchestrator asks him)
@@ -425,4 +439,7 @@ starts before the orchestrator orders it.
 
 ### Merge notes
 
-- None yet.
+- N6 seam lines in files no stream owns (granted, seams only): `game/tank/tank.gd` (`_drive`, `take_hit`),
+  `game/tank/tank_motion.gd` (`step_in_place`), `game/match/match.gd` (`_land_hit_result`); in nav's `game/ai/pathing.gd`
+  three seam lines (`is_ready`, `query`, `find_path`, N6.4). Switches in `game/ai/brain_switches.gd`: `native_motion`,
+  `native_tank`, `native_combat`, `native_pathing`. New scripts: `game/ai/native/native_{tank,combat,pathing}.gd`.
