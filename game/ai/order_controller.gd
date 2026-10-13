@@ -296,10 +296,6 @@ func set_orders(new_move: Variant, new_weapon: Variant, new_reflexes: Variant = 
 			# different question and has not failed to answer this one yet.
 			_face_heading = Vector3.INF
 			face_stalled = false
-		if String(new_move.get("type", "")) == "move_to":
-			# Round 29 (manoeuvre M1): the slot a face at rest keeps to (Manoeuvre.plan_face). Movement.idle() clears the
-			# mover's own goal every tick a face runs, so round 28's `faceslot` read INF and never anchored anything.
-			face_slot = Vector3(float(new_move.get("x", 0.0)), 0.0, float(new_move.get("z", 0.0)))
 		move_order = new_move
 		_drive_elapsed = 0.0
 		movement.new_order()
@@ -440,8 +436,6 @@ var _face_turned := 0.0
 var _face_left := FACE_STALL_SECONDS
 ## Reported in `state()`: this hull is under a face it cannot execute.
 var face_stalled := false
-## Round 29 (M1): the goal of the last move_to this crew was given (INF = none yet): see set_orders.
-var face_slot := Vector3.INF
 
 
 ## Is `candidate` the same face order the hull is already executing (same spot, within a metre)?
@@ -540,13 +534,6 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 ## `wheel_holds` (ticks a turreted hull held its heading under a face; `wheel_arc_stops` for the fixed ones).
 static var wheel_holds := 0
 static var wheel_arc_stops := 0
-
-
-## Round 28 (manoeuvre M1, his call 2026-10-12 "turn the whole vehicle"): a wheeled TURRETED hull given a DRAWN facing
-## turns its hull to it (M1b's planned turn, `Movement.face_turn`) instead of leaving it to the turret. The brain reads
-## this where it declines untold faces (`TankBrain._order_move`). `--nav-off=turnhull` = round 27's behaviour (the A/B).
-static func hull_turn_on() -> bool:
-	return not Movement.switched_off("turnhull")
 
 
 static func wheel_hold_on() -> bool:

@@ -255,39 +255,14 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 	# The settle radius less a metre for the roll past each leg's end (a scout's minute of facings measured 5.1 m off
 	# its spot against the creep bound's 4.5 with the whole radius).
 	var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
-	# Round 28 (M1): the SLOT the hull last drove to. A crew arriving at the edge of its arrive radius turned with legs
-	# that carried it further off, the brain sent it back, it arrived at the edge again: a law artillery piece
-	# ping-ponged face/move for ~32 s (hull-rest probe, law seed 21, drawn move). A plan may not end further from the
-	# slot than where it starts (+ FACE_SLOT_SLACK_M), and of the two first gears the one ending nearer the slot wins.
-	var slot := mover.ctl.face_slot if face_slot_on() and mover.ctl != null else Vector3.INF
-	if slot != Vector3.INF and _flat(here, slot) > FACE_SLOT_REACH * Movement.settle_radius(tank.unit_id):
-		slot = Vector3.INF  # a face nowhere near the last drive's goal: not a slot to keep
-	var slot_limit := _flat(here, slot) + FACE_SLOT_SLACK_M if slot != Vector3.INF else INF
-	# Round 29 (M1): ...and not on the way either. The end alone was checked: a gang catapult 5 m from its slot planned
-	# two 5.5 m legs, forward then back, whose cusp was 8 m out, past its arrive radius (5.4 m): the brain re-sent the
-	# move mid-plan, the hull drove back, faced again, every second for a minute (hull-rest, gangs seed 1, right-drag).
-	# Every pose stays inside the crew's arrive radius (less FACE_KEEP_MARGIN_M), or no further out than it starts.
-	# `--nav-off=facekeep`.
-	_keep_slot = slot if face_keep_on() else Vector3.INF
-	_keep_m = maxf(maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(tank.unit_id)) - FACE_KEEP_MARGIN_M, _flat(here, slot))
 	for n in range(1, FACE_LEGS + 1):
 		if absf(error) / n > FACE_LEG_TURN + 0.001:
 			continue
-		var chosen: Array = []
-		var chosen_m := INF
 		for first: int in [1, -1]:
 			var even := _face_even(mover, map, frame, start, others, here, forward, turn, radius, first, n,
 					absf(error) * radius / n, stay, home)
-			if even.is_empty():
-				continue
-			if slot == Vector3.INF:
+			if not even.is_empty():
 				return even
-			var off := _flat((mover._fill_end(here, forward, turn, even)[0] as Vector3), slot)
-			if off <= slot_limit and off < chosen_m:
-				chosen = even
-				chosen_m = off
-		if not chosen.is_empty():
-			return chosen
 	var best: Array = []
 	for first: int in [1, -1]:
 		var plan := _face_legs(mover, map, frame, start, others, here, forward, want, turn, radius, first)
@@ -296,38 +271,10 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 		var end: Array = mover._fill_end(here, forward, turn, plan)
 		if Vector2((end[0] as Vector3).x - home.x, (end[0] as Vector3).z - home.z).length() > stay:
 			continue  # it would end too far from its spot: the creep (bounded by creepbound) instead
-		if _flat(end[0] as Vector3, slot) > slot_limit:
-			continue  # it would leave the slot further behind (see above)
 		if best.is_empty() or plan.size() < best.size() \
 				or (plan.size() == best.size() and Movement._fill_metres(plan) < Movement._fill_metres(best)):
 			best = plan
 	return best
-
-
-## Round 28 (M1): see plan_face. `--nav-off=faceslot` = round 27's plans (no slot anchor).
-const FACE_SLOT_SLACK_M := 0.5
-const FACE_SLOT_REACH := 2.0
-
-
-static func face_slot_on() -> bool:
-	return not Movement.switched_off("faceslot")
-
-
-## Round 29 (M1): every pose of a face plan this far inside the arrive radius the brain and the element re-send a move
-## past (TankBrain._order_arrive, Element's parked test: max(ORDER_ARRIVE, settle radius)), or no further out than it starts.
-const FACE_KEEP_MARGIN_M := 0.75
-static var _keep_slot := Vector3.INF
-static var _keep_m := INF
-
-
-static func face_keep_on() -> bool:
-	return not Movement.switched_off("facekeep")
-
-
-static func _flat(a: Vector3, b: Vector3) -> float:
-	if b == Vector3.INF:
-		return 0.0
-	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
 ## n legs of `metres` each, alternating gear from `first`, stepped and checked like _face_legs; empty when a step is not
@@ -343,8 +290,7 @@ static func _face_even(mover: Movement, map: RID, frame: Array, start: PackedFlo
 		while travelled < metres - 0.001:
 			var step := minf(FACE_STEP_M, metres - travelled)
 			var next := Movement._fill_step(at, heading, gear, turn, radius, step)
-			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "" \
-					or _flat(next[0], _keep_slot) > _keep_m:
+			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "":
 				return []
 			at = next[0]
 			heading = next[1]
@@ -379,8 +325,7 @@ static func _face_legs(mover: Movement, map: RID, frame: Array, start: PackedFlo
 			var from_at: Vector3 = at if poses.is_empty() else poses[-1][0]
 			var from_heading: Vector3 = heading if poses.is_empty() else poses[-1][1]
 			var next := Movement._fill_step(from_at, from_heading, gear, turn, radius, step)
-			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "" \
-					or _flat(next[0], _keep_slot) > _keep_m:
+			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "":
 				blocked = true
 				break
 			poses.append(next)
