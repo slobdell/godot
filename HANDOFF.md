@@ -4,10 +4,10 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-12 afternoon — **ROUND 28 IS LAUNCHED (below); stage 1 C++ is ON on main.** Main's green check:
-**`94b5fc0d`, builder0, `make check exited 0`, 2520 passed, 0 failed, 25 targets ALL JUDGED (native-verify-scenarios
-now one of them), thirteen unmoved, determinism 2875411ff4ec6be7.** New streams start from a later docs-only commit: they
-do NOT re-run a baseline check. He pushes `main`._
+_Last updated: 2026-10-12 evening — **ROUND 28 IS RUNNING: all five workers live (traffic, manoeuvre, brains, scout started
+~18:30; native continuing).** Main's green check: **`29cb3945`, builder0, `make check exited 0`, 2520 passed, 0 failed, 25
+targets ALL JUDGED** (stage 1 ON + native N5's small callbacks). Workers started from `c6e32d03` (green-covered by
+`94b5fc0d`). He pushes `main`._
 
 ## 🚀 ROUND 28 IS LAUNCHED (2026-10-12 ~11:45 PDT) — read this first
 
