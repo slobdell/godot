@@ -18,6 +18,11 @@ const BAND := 70.0
 const RADIUS := 90.0
 
 
+func teardown() -> void:
+	ElementPlan.APPROACH_CARRY = false
+	super.teardown()
+
+
 func _table() -> DoctrineTable:
 	DoctrineTable.clear_cache()
 	var loaded := DoctrineTable.load_table("standard")
@@ -92,6 +97,8 @@ func test_the_bearing_off_the_side_it_comes_from() -> void:
 
 
 func test_on_the_side_already_the_attack_is_unchanged() -> void:
+	# B0's rule (round 28's B1 fights from the side once in: test_tactics_flank_carry).
+	ElementPlan.APPROACH_CARRY = false
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	for degrees: float in [0.0, 20.0, -25.0]:
@@ -159,6 +166,8 @@ func test_the_way_round_is_kept() -> void:
 
 
 func test_once_in_it_attacks_as_before() -> void:
+	# B0's rule (round 28's B1 fights from the side once in: test_tactics_flank_carry).
+	ElementPlan.APPROACH_CARRY = false
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	# The fight swung it round to the far side after it went in: it does not drive round again.
@@ -171,6 +180,8 @@ func test_once_in_it_attacks_as_before() -> void:
 
 
 func test_in_reach_on_the_side_it_forms_the_line_as_before() -> void:
+	# B0's rule (round 28's B1 fights from the side once in: test_tactics_flank_carry).
+	ElementPlan.APPROACH_CARRY = false
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	var situation := _situation(_round(approach, 10.0, 60.0))
@@ -185,8 +196,14 @@ func test_a_running_target_is_a_pursuit_and_has_no_side() -> void:
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	var situation := _situation(_round(approach, 170.0))
-	var extra := {"pursuing": true, "pursuit": {"name": "Rust_1", "position": TARGET, "velocity": Vector3(6, 0, 0),
+	# Round 28 (B1): "running" going round is >= 6 m/s held 2 s (ElementPlan.APPROACH_RUNNING_*).
+	var extra := {"pursuing": true, "pursuit": {"name": "Rust_1", "position": TARGET,
+			"velocity": TacticsFormation.flat(TARGET - (situation["center"] as Vector3)) * 7.0,
 			"seen_tick": 1000}}
-	var plan := ElementPlan.build(situation, _state(_attack([approach.x, approach.y]), extra), table)
-	assert_true(not plan.has("approach_round"), "a pursuit does not go round")
-	assert_eq(plan, ElementPlan.build(situation, _state(_attack(), extra), table), "the chase as without an approach")
+	var running := {"approach_round": {"in": false, "side": 1, "fast_since": 1000 - 2 * SimClock.TICK_RATE}}
+	running.merge(extra)
+	var plan := ElementPlan.build(situation, _state(_attack([approach.x, approach.y]), running), table)
+	assert_true(bool(plan["pursuing"]), "a running target is a pursuit")
+	var chase := plan.duplicate(true)
+	chase.erase("approach_round")
+	assert_eq(chase, ElementPlan.build(situation, _state(_attack(), extra), table), "the chase as without an approach")

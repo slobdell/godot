@@ -158,6 +158,9 @@ var ducks := {}
 ## Round 27 (B0, C27.3): an attack with a drawn approach, {"in", "side"}: whether the element has come round to the side
 ## he drew (then it goes in, for the life of the task) and which way round it is going (ElementPlan._plan_approach).
 var approach_round := {}
+## Round 28 (B2): this element is a battery driving to its firing position on a drawn side: its crews drive with their
+## guns quiet (a gun that fires deploys and stays: ElementFeed passes it to TankBrain's MOVE).
+var relocating := false
 var drill_tick := 0
 var drill_point: Variant = null
 var drill_target := ""
@@ -765,12 +768,12 @@ func _feed_view() -> Dictionary:
 	return {"id": id, "leader": leader, "members": members(), "task": task, "formation": formation,
 			"technique": technique, "drill": drill, "slots": slots, "sectors": sectors, "pace": paces,
 			"pitch": [pitch.x, pitch.y], "heading": [heading.x, heading.z], "stations": stations,
-			"transit": _transit_readout()}
+			"transit": _transit_readout(), "relocating": relocating}
 
 
 ## What the HUD reads (L1: read-only).
 func state() -> Dictionary:
-	return {"id": id, "name": element_name, "team": team, "leader": leader, "members": members(),
+	return {"id": id, "name": element_name, "team": team, "leader": leader, "members": members(), "relocating": relocating,
 			"task": task.duplicate(true), "formation": formation, "technique": technique, "drill": drill,
 			"reason": reason, "slots": slots.duplicate(), "slots_asked": slots_asked.duplicate(),
 			"sectors": sectors.duplicate(), "pace": paces.duplicate(),
@@ -1375,6 +1378,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	anchor_by_drill = bool(plan.get("anchor_by_drill", false))
 	ducks = plan.get("ducks", {})
 	approach_round = plan.get("approach_round", approach_round)
+	relocating = bool(plan.get("relocating", false))
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:
 		drill = new_drill
