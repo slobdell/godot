@@ -4,7 +4,13 @@
 #include "exec_view.h"
 #include "nav_native.h"
 
+#include <godot_cpp/classes/navigation_mesh.hpp>
+#include <godot_cpp/classes/navigation_region3d.hpp>
 #include <godot_cpp/classes/navigation_server3d.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/window.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
@@ -136,7 +142,10 @@ struct N {
 			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
 			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" },
 			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" },
-			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" };
+			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" }, ready_memo{ "ready_memo" },
+			_ready_map{ "_ready_map" }, _ready_iteration{ "_ready_iteration" }, _ready_answer{ "_ready_answer" },
+			locomotion{ "locomotion" }, min_turn_radius_m{ "min_turn_radius_m" }, for_unit{ "for_unit" },
+			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" };
 };
 const N &n_() {
 	static const N names;
@@ -276,9 +285,29 @@ struct Drive {
 	bool pathing_ready() {
 		if (!ready_known) {
 			ready_known = true;
-			ready_value = (bool)c.pathing->get(k.enabled) && (bool)gd(c.pathing, k.is_ready, tank);
+			ready_value = (bool)c.pathing->get(k.enabled) && (cb_on ? pathing_is_ready() : (bool)gd(c.pathing, k.is_ready, tank));
 		}
 		return ready_value;
+	}
+
+	// Pathing.is_ready(tank) (round 28, N5), line by line, with its memo in Pathing's statics (ready_memo on: one owner
+	// probe a map iteration; off: every call); the profile_detail laps are measurement only and not kept.
+	bool pathing_is_ready() {
+		NavigationServer3D *server = NavigationServer3D::get_singleton();
+		const RID map = tank->get_world_3d()->get_navigation_map();
+		const int64_t iteration = server->map_get_iteration_id(map);
+		if (iteration <= 0) {
+			return false;
+		}
+		if (!(bool)c.switches->get(k.ready_memo)) {
+			return server->map_get_closest_point_owner(map, Vector3()).is_valid();
+		}
+		if ((RID)c.pathing->get(k._ready_map) != map || (int64_t)c.pathing->get(k._ready_iteration) != iteration) {
+			c.pathing->set(k._ready_map, map);
+			c.pathing->set(k._ready_iteration, iteration);
+			c.pathing->set(k._ready_answer, server->map_get_closest_point_owner(map, Vector3()).is_valid());
+		}
+		return c.pathing->get(k._ready_answer);
 	}
 
 	double wheel_radius() {
@@ -287,7 +316,19 @@ struct Drive {
 		if (String(v._wheel_radius_unit()) == unit) {
 			return v._wheel_radius_value();
 		}
-		return cb(k.wheel_radius);
+		if (!cb_on) {
+			return cb(k.wheel_radius);
+		}
+		// Movement.wheel_radius()'s cache fill (round 28, N5): `_wheel_radius_value = 0.0; if locomotion == "wheels":
+		// maxf(float(min_turn_radius_m), 0.5)` -- Units.stat's answers (GDScript statics, read-only).
+		static const String wheels("wheels"), tracks("tracks");
+		v.set__wheel_radius_unit(unit);
+		double value = 0.0;
+		if (String(c.units->call(k.stat, unit, k.locomotion, tracks)) == wheels) {
+			value = MAX((double)c.units->call(k.stat, unit, k.min_turn_radius_m, 0.0), 0.5);
+		}
+		v.set__wheel_radius_value(value);
+		return value;
 	}
 
 	// Movement._chord_on_mesh (chord_memo on): the memo in the mover's members, as the GDScript keeps it.
@@ -516,9 +557,12 @@ struct Drive {
 	// Movement._chord_slack() with the clearance arm off (the default): max(CHORD_SLACK, bake_radius(tank) -
 	// hull_box(unit)[0] / 2.0 - CHORD_MARGIN), over the memoized bake radius; the GDScript while it is not known yet.
 	double hull_chord_slack() {
-		const double bake = script->get(k._bake_radius);
+		double bake = script->get(k._bake_radius);
 		if (bake < 0.0) {
-			return cb(k._chord_slack);
+			if (!cb_on || c.NAV_AGENT_RADIUS <= 0.0) {
+				return cb(k._chord_slack);
+			}
+			bake = bake_radius();
 		}
 		const String unit = tank->get(k.unit_id);
 		const double *known = c.hull_width_of.getptr(unit);
@@ -1453,6 +1497,71 @@ struct Drive {
 		return (double)to.length_squared() > 0.01 && (double)back.normalized().dot(to.normalized()) >= 0.9;
 	}
 
+	// Movement.bake_radius(tank) (round 28, N5): the navmesh's baked agent radius, from the NavigationRegion3D on THIS hull's
+	// navigation map, memoised in Movement._bake_radius; NAV_AGENT_RADIUS (not memoised) when there is none; an ERROR when
+	// the bake and the constant disagree (the GDScript's own message).
+	double bake_radius() {
+		const double known = script->get(k._bake_radius);
+		if (known >= 0.0) {
+			return known;
+		}
+		double found = -1.0;
+		if (tank->is_inside_tree()) {
+			const RID my_map = tank->get_world_3d()->get_navigation_map();
+			const TypedArray<Node> regions = tank->get_tree()->get_root()->find_children("*", "NavigationRegion3D", true, false);
+			for (int64_t i = 0; i < regions.size(); i++) {
+				NavigationRegion3D *region = Object::cast_to<NavigationRegion3D>(regions[i].get_validated_object());
+				if (region == nullptr || region->get_navigation_mesh().is_null()) {
+					continue;
+				}
+				if (my_map.is_valid() && region->get_navigation_map() != my_map) {
+					continue;
+				}
+				found = region->get_navigation_mesh()->get_agent_radius();
+				break;
+			}
+		}
+		if (found < 0.0) {
+			return c.NAV_AGENT_RADIUS;
+		}
+		if (std::fabs(found - c.NAV_AGENT_RADIUS) > 0.001) {
+			UtilityFunctions::push_error(vformat("the navmesh bakes at agent_radius %.2f but movement.gd expects %.2f. Routing uses the BAKED value; update NAV_AGENT_RADIUS so the cross-check means something again.",
+					found, c.NAV_AGENT_RADIUS));
+		}
+		script->set(k._bake_radius, found);
+		return found;
+	}
+
+	// ---- Movement._repair(goal) (round 28, N5), line by line; repair_on() is true in the native drive's configuration ----
+	//   if _repair_for != INF: return false
+	//   _repair_for = goal; _repair_to = INF; fixed := SlotGround.for_unit(tank, goal, tank.unit_id)
+	//   moved := _flat_distance(fixed, goal); if moved < 0.5 or moved > REPAIR_MAX_M: goal_repairs_refused += 1; false
+	//   route := Pathing.query(tank, tank.global_position, fixed)
+	//   if not ready or not reachable or goal_gap_m > NO_PATH_MARGIN: goal_repairs_refused += 1; false
+	//   _repair_to = fixed; _repath_left = 0.0; goal_repairs += 1; true
+	bool repair(const Vector3 &goal) {
+		if (v._repair_for() != V3_INF) {
+			return false;
+		}
+		v.set__repair_for(goal);
+		v.set__repair_to(V3_INF);
+		const Vector3 fixed = gd(c.slot_ground, k.for_unit, tank, goal, String(tank->get(k.unit_id)));
+		const double moved = flat_distance(fixed, goal);
+		if (moved < 0.5 || moved > c.REPAIR_MAX_M) {
+			sadd(k.goal_repairs_refused, 1);
+			return false;
+		}
+		const Dictionary route = path_query(here, fixed);
+		if (!(bool)route[k.ready] || !(bool)route[k.reachable] || (double)route[k.goal_gap_m] > c.NO_PATH_MARGIN) {
+			sadd(k.goal_repairs_refused, 1);
+			return false;
+		}
+		v.set__repair_to(fixed);
+		v.set__repath_left(0.0);
+		sadd(k.goal_repairs, 1);
+		return true;
+	}
+
 	// ---- Movement._track_goal ----
 	void track_goal(const Vector3 &goal) {
 		const int64_t ticks = (int64_t)v._ticks() + step;
@@ -1694,7 +1803,7 @@ struct Drive {
 		}
 		const PackedVector3Array path = v._path();
 		if (!reachable && !direct && !path.is_empty() && flat_distance(here, path[path.size() - 1]) <= c.UNREACHABLE_AT_END) {
-			if ((bool)cb(k._repair, goal)) {
+			if (cb_on && c.repair_ready ? repair(goal) : (bool)cb(k._repair, goal)) {
 				return;
 			}
 			v.set_phase(blocked);
@@ -1942,7 +2051,13 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 					drive_vector = Vector2((real_t)(double)leg->get(k.throttle), (real_t)(double)leg->get(k.turn));
 				}
 			} else if ((double)v._kturn_left_m() > 0.0) {
-				cb(k._kturn_end, cancelled);
+				// Movement._kturn_end("cancelled"): its looks cleared; the rest writes the diagnosis record, empty in the
+				// native drive's configuration (no kturn_log / reverse_log) (round 28, N5).
+				if (cb_on) {
+					kturn_end();
+				} else {
+					cb(k._kturn_end, cancelled);
+				}
 				v.set__kturn_left_m(0.0);
 				Array legs = v._kturn_legs();
 				legs.clear();

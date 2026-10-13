@@ -92,6 +92,12 @@ struct DriveConfig {
 	// Round 27 (E2): Movement._planned_reverse's look up to its cheap exits natively (kturn_look_ready false: the callback).
 	bool kturn_look_ready = false;
 	double KTURN_MIN_ERROR_DEG = 0.0, KTURN_CIRCLE_SPEED = 0.0;
+	// Round 28 (N5): Movement._repair natively (SlotGround.for_unit called; repair_ready false: the callback).
+	bool repair_ready = false;
+	double REPAIR_MAX_M = 0.0;
+	double NAV_AGENT_RADIUS = 0.0; // Round 28 (N5): Movement.bake_radius natively (0: the callback)
+	Object *slot_ground = nullptr;
+	Variant keep_slot_ground;
 	// Round 27 (E5c): Movement.right_of_way natively (yield_ready false: handed back).
 	bool yield_ready = false;
 	double YIELD_REACHED = 0, YIELD_CLEAR = 0, YIELD_HOLD_SECONDS = 0;

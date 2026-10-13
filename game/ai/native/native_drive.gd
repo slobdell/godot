@@ -82,6 +82,8 @@ static func configure() -> bool:
 		"BLOCKER_AHEAD_COS": Movement.BLOCKER_AHEAD_COS, "MESH_EPSILON": Pathing.MESH_EPSILON,
 		"KTURN_MIN_ERROR_DEG": Movement.KTURN_MIN_ERROR_DEG, "KTURN_CIRCLE_SPEED": Movement.KTURN_CIRCLE_SPEED,
 		"manoeuvre_census": ManoeuvreCensus,
+		# Round 28 (N5): Movement._repair
+		"REPAIR_MAX_M": Movement.REPAIR_MAX_M, "slot_ground": SlotGround, "NAV_AGENT_RADIUS": Movement.NAV_AGENT_RADIUS,
 		# Round 27 (stage 1 E5c): Movement.right_of_way
 		"YIELD_REACHED": Movement.YIELD_REACHED, "YIELD_CLEAR": Movement.YIELD_CLEAR,
 		"YIELD_HOLD_SECONDS": Movement.YIELD_HOLD_SECONDS,

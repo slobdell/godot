@@ -572,6 +572,11 @@ bool TankNative::drive_configure(const Dictionary &config) {
 			*slots[i] = config[names[i]];
 		}
 	}
+	c.keep_slot_ground = config.get("slot_ground", Variant());
+	c.slot_ground = c.keep_slot_ground.get_validated_object();
+	c.REPAIR_MAX_M = config.get("REPAIR_MAX_M", 0.0);
+	c.NAV_AGENT_RADIUS = config.get("NAV_AGENT_RADIUS", 0.0);
+	c.repair_ready = config.has("REPAIR_MAX_M") && c.slot_ground != nullptr;
 	c.yield_ready = config.has("YIELD_REACHED") && config.has("YIELD_CLEAR") && config.has("YIELD_HOLD_SECONDS");
 	c.YIELD_REACHED = config.get("YIELD_REACHED", 0.0);
 	c.YIELD_CLEAR = config.get("YIELD_CLEAR", 0.0);
