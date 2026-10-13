@@ -111,6 +111,29 @@ _Updated 2026-10-12 ~19:30 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
   GDScript path, new v `--nav-off=creeplift,circlefill`.
 - **M3 (stretch) NOT NEEDED:** in the base census tracked hulls (tank, law_ifv) had 9 of 917 episodes, none over 3 legs.
 
+### M1 judged (two attempts; the second is the LAST this round, the orchestrator's ruling)
+
+**Attempt 1** (`748735c9`, O3's seeds 3 5 8 11 13 21): line tasks pass the partial rule (wheels/turret 27.6-27.9 v hover
+28.1-28.7; base 39-103); point tasks medians 6.5-7.5 (base 61-73) but 55-58 % within 15 deg (bar 70 %), crews still
+moving at 75 s up. Trace: a crew arriving at the edge of its arrive radius ping-ponged face/move -> `faceslot` fix.
+(Also: 576 runs outran slot.sh's 90-min cap; the probe now runs one arm per make call.)
+
+**Attempt 2, LAST** (`140275af`, fresh seeds 2 4 7 9 15 19, base `--nav-off=turnhull,faceslot`; table
+`references/round28/manoeuvre/m1_last_attempt_drawn.txt`), wheels/turret drawn, 155 crews a task:
+
+| task | base median / <=15 | change median / <=15 | hover/turret | moving at 75 s (change - base, guard <= +5) |
+|---|---|---|---|---|
+| screen | 40.9 / 24 % | 27.5 / 33 % | 28.5 | +12 FAIL |
+| ambush | 85.4 / 10 % | 26.8 / 33 % | 29.0 | +4 |
+| support by fire | 113.1 / 7 % | 27.6 / 27 % | 28.1 | +8 FAIL |
+| attack-move | 52.2 / 17 % | 5.5 / 70 % | 1.2 | +3 |
+| move | 59.3 / 25 % | 5.2 / 69 % FAIL by 1 pt | 1.5 | +14 FAIL |
+| right-drag | 60.3 / 26 % | 6.1 / 64 % FAIL | 1.6 | +25 FAIL |
+
+**Against the bar: NOT MET** (line tasks pass; point-task medians pass; the 70 % line misses on move and right-drag;
+the moving guard fails on 4 of 6). Sent to the orchestrator for the ruling (ship on the medians with the cost told to
+him, or not shipped); no merge hash named until it rules and check is in.
+
 ### M1 smoke test like a player (2026-10-12 ~22:50, `38064858` = M1's code, builder0 light lane, windowed)
 
 `make facing-shots FACING_ONLY=faced_move,faced_screen` (Gangs, seed 3, quiet enemy), change v `--nav-off=turnhull,faceslot`,
