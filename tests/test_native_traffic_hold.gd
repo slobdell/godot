@@ -136,12 +136,13 @@ func _case(owned: bool) -> void:
 				else:
 					mover._press_time = Movement.PRESS_SECONDS - 0.01
 				var forced := _capture(movers)
+				var turn := rng.randf_range(-1.0, 1.0)
 				var arms := []
 				for arm in 2:
 					_restore(movers, forced)
 					for each in movers:
 						each.native_stale = Movement.STALE_ALL
-					var cmd := TankCommand.new(1.0, rng.randf_range(-1.0, 1.0), Vector3.ZERO)
+					var cmd := TankCommand.new(1.0, turn, Vector3.ZERO)
 					if arm == 0:
 						mover.unstick(cmd, order, delta)
 					else:
