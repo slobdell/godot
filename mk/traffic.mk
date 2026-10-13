@@ -71,7 +71,7 @@ traffic-clip: import ## Round 26 (traffic): his crossing cases at his pose, per 
 	@for case in $(TRAFFIC_CLIP_CASES); do arena=$${case%%,*}; kind=$${case##*,}; dir=$(CURDIR)/$(BUILD_DIR)/traffic-clip/$$arena-$$kind; mkdir -p $$dir; \
 		for arm in $(TRAFFIC_CLIP_ARMS); do tag=$${arm%%:*}; off=$${arm#*:}; flag=$$([ "$$off" = - ] || echo --traffic-off=$$off); \
 		timeout 900 $(GODOT) --path . --resolution 1280x720 --fixed-fps $(SIM_HZ) --script res://tests/traffic/traffic_clip.gd -- \
-			--arena=$$arena --kind=$$kind --seed=$(TRAFFIC_CLIP_SEED) --seconds=$(TRAFFIC_CLIP_SECONDS) --every=3 --tag=$$tag --out=$$dir $$flag \
+			--arena=$$arena --kind=$$kind --seed=$(TRAFFIC_CLIP_SEED) --seconds=$(TRAFFIC_CLIP_SECONDS) --every=3 --tag=$$tag --out=$$dir $$flag $(TRAFFIC_FLAGS) \
 			> $$dir/$$tag.log 2>&1 || echo ">> traffic-clip: $$arena $$kind $$tag exited non-zero"; \
 		grep -o 'TRAFFIC_CLIP {.*' $$dir/$$tag.log | cut -c1-400 || echo ">> traffic-clip: $$arena $$kind $$tag: no TRAFFIC_CLIP line"; \
 		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -c:v libx264 -pix_fmt yuv420p $$dir/$$tag.mp4 || true; \

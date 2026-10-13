@@ -44,12 +44,20 @@ func _run() -> void:
 	focus = TrafficStage.meeting_point(arena, kind)
 	# Side-on to a head-on meeting (both squads cross the frame); from the corner of a crossing.
 	heading = Vector3(1.0, 0.0, 0.0) if kind == "head" else Vector3(1.0, 0.0, -1.0).normalized()
+	var pitch := HIS_PITCH_DEG
+	var distance := HIS_DISTANCE_M
+	if arena == "terminus":
+		# Round 28: his pose from the side puts the camera inside the blocks of an 18 m street (round 26's Terminus clips
+		# showed a roof). Look down the street from above instead: along it for head-on, from the corner for the crossing.
+		heading = Vector3(0.0, 0.0, -1.0) if kind == "head" else Vector3(1.0, 0.0, -1.0).normalized()
+		pitch = 58.0
+		distance = 95.0
 	camera = Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 	camera.fov = HIS_FOV_DEG
 	case.add_to_tree(camera)
-	camera.global_position = focus - heading * HIS_DISTANCE_M * cos(deg_to_rad(HIS_PITCH_DEG)) \
-			+ Vector3.UP * HIS_DISTANCE_M * sin(deg_to_rad(HIS_PITCH_DEG))
+	camera.global_position = focus - heading * distance * cos(deg_to_rad(pitch)) \
+			+ Vector3.UP * distance * sin(deg_to_rad(pitch))
 	camera.look_at(focus, Vector3.UP)
 	camera.current = true
 	var light := DirectionalLight3D.new()

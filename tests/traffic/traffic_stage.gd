@@ -108,6 +108,8 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 	var in_contact := {}
 	var contacts := 0
 	var contacts_fast := 0
+	var contacts_cross := 0  # round 28: contacts between the two squads (the crossing's own), and fast ones
+	var contacts_cross_fast := 0
 	var kturns := 0
 	var kturns_friend := 0
 	var yields := 0
@@ -162,8 +164,13 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 				var touching := box_gap(a, b) <= CONTACT_GAP_M
 				if touching and not in_contact.get(key, false):
 					contacts += 1
-					if closing_speed(a, b) > FAST_CONTACT_MPS:
+					var fast := closing_speed(a, b) > FAST_CONTACT_MPS
+					if fast:
 						contacts_fast += 1
+					if String(a.name).substr(0, String(a.name).rfind("_")) != String(b.name).substr(0, String(b.name).rfind("_")):
+						contacts_cross += 1
+						if fast:
+							contacts_cross_fast += 1
 				in_contact[key] = touching
 		if trace and now % (SimClock.TICK_RATE / 2) == 0:
 			for t: Tank in hulls:
@@ -226,7 +233,11 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 			"arrive_s": arrive_s, "slot_m": slot_m, "end_s": _s(end_tick),
 			"friend_stuck_s": _s(friend_ticks), "stuck_s": _s(stuck_ticks), "friend_stuck_by": friend_s,
 			"contacts": contacts, "contacts_fast": contacts_fast, "kturns": kturns, "kturns_friend": kturns_friend,
-			"yields": yields, "route_arms": Movement.route_arms()}
+			"yields": yields, "route_arms": Movement.route_arms(), "contacts_cross": contacts_cross,
+			"contacts_cross_fast": contacts_cross_fast}
+	# Round 28: a rule under test adds its own counters here (branches traffic-t1-v3 / traffic-t1b: tr_verdicts,
+	# tr_yield_ticks, tr_right_ticks). Read them before believing an arm: T1b's first judged run was a null that only the
+	# verdict counter showed (Status).
 	for squad: String in squads:
 		var last := 0
 		for unit_name: String in members[squad]:
