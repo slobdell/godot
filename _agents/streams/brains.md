@@ -140,7 +140,19 @@ side (median shooter ≤ 35°) ≥ 16/18; rounds from a crew > 35° off = 0; ali
 clicked + 30 s; clicked byte-identical to main `bcef46a1`'s; cost NOT READABLE (runs only for an all-artillery element
 with a drawn approach). CPU line: the CPU never draws an approach (only `rts_controls` sets `task.approach`). C29.2: none
 ported. The one attempt; else it parks.
-**Judged:** running.
+**Judged: PASS, every bar line** (builder0; east and clicked arms at `c2ae6e68`, base run main `bcef46a1`; seeds 13–15 ×
+{1,3,6,8,11,16}, n = 18 per arm, 90 s):
+- From the side: 18/18 (clicked 0/18). Median of run medians 28.1°.
+- Rounds from a crew > 35° off: 0.
+- Alive: 3.00 (clicked 3.00).
+- First round median: 27.1 s, worst 30.9 s (clicked 2.3 s), so +24.8 s.
+- Killed: 18/18 in both arms (median 35.7 s v 9.3 s).
+- Clicked: all 18 rows identical field for field with main's.
+- Reported, not bar: set-ups off the side 6, repacks 8, runs clean 10/18, rounds before the element read "in" 2 (one run).
+**Worst run** (seed 15, tick 16): 2 rounds before "in" (32.8 s), both from inside the cone; 3 repacks. Trace queued.
+**Check:** the first `make check` (B2 work-in-progress files in the worktree) gave 24/25 targets. Unit tests 2556/0;
+net-smoke FAILED (one of its two clients saw 1 of 2 tanks); combat-smoke NOT RUN (it depends on net-smoke). A clean check
+on `c2ae6e68` is queued. No green hash yet.
 
 ### Requests to other streams
 - **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).
