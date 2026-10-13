@@ -69,4 +69,21 @@ Nothing: his call is made.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-12 evening (traffic worker). Every number names commit, machine, workload and n._
+
+### The plan (ordered)
+
+1. **T0**: the base. `make traffic-series` at `c6e32d03` (= main's green `94b5fc0d` + docs), GDScript path
+   (`--brains-off=native`: T1's arm can only run there until T2, so the base runs there too), seeds {1,2,3}, n = 18 a
+   case. The table gained an **all-in s** column: per run, every crew's last arrival, with a crew that never arrived
+   counted at the run's end (median, mean).
+2. **T1**: the rule (`game/ai/traffic.gd`, called from `Movement._avoid` exactly where round 26's v4 was). Switches
+   `--traffic-off=turns,streetright` give the base arm. It is tuned on seeds {1,2,3}. The JUDGED run is both arms on fresh
+   seeds {4,5,6}, plus one CPU-side case (`--side=rust`, the orchestrator's C28.1 note). The bar was sent to the
+   orchestrator before any numbers and accepted (2026-10-12). **v3 is the last attempt, named in advance.**
+   Decided: the verdict is per SQUAD pair, not per crew pair. Round 26's v4 let crews of both squads yield to crews of
+   the other at once, which is the opposite of taking turns. Keep-right applies only where the navmesh ends within
+   16 m on both sides, because round 26 measured it helping in the street and hurting on open ground.
+3. **T2**: send native the settled diff after `make native-verify-scenarios` with the rule ON; the pair merges back to
+   back.
+4. **T3** (stretch): the census after T1, and a crew pressing a squadmate parked on its leg station.
