@@ -89,8 +89,9 @@ Round 29 runs traffic (1), manoeuvre (2), brains (3) beside you. In order:
    (`_negotiate`'s body / `ask` / `_begin_yield` after CP-T; the k-turn planner and `_manoeuvre` after CP-M2).
 2. **N7.3: N7.3a built, equal, priced a LOSS (+0.7 % of the tick), committed OFF for stage 2; N7.3b skipped** (the
    orchestrator's ruling 2026-10-13: glue, not a core component; C29.4's freeze released).
-3. **E6b on his laptop: GRANTED 2026-10-13 ~10:56 PDT** (rule D as written below).
-4. **N7.4 wall contact** only on manoeuvre's word (relayed by the orchestrator) that M2 leaves `wall_contact.gd` alone.
+3. **E6b on his laptop: GRANTED 2026-10-13 ~10:56 PDT** (rule D as written below). **DONE 12:10 PDT** (`b2712987`):
+   20 a side 0.854 -> 0.936, 25 a side 0.672 -> 0.878 (all native off -> as shipped); *E6b* below.
+4. **N7.4 wall contact: GO 2026-10-13 ~13:40** (manoeuvre: M2 does not edit `wall_contact.gd`).
 5. N7.5 (element_feed) waits until after round 29; stage 2 stays deferred (his call).
 
 ## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)
@@ -150,14 +151,12 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-13, round 28 closing; carries over to round 29):** stage 1 ON on main; **N6.1 + N6.2 on main**
-(merged as `a9c492a7` from `d11f40ce`: builder0 check 2522/0 with one load flake in `remote-guard-test`'s quiet-window
-case, passing alone; `native-verify-suite` exited 0, 2522/0 + 50/0 scenarios, 0 verify mismatches). On stream/native
-since: **N6.4** (the nav wrappers, `native_pathing` ON at its price ~0; **green `5033c8b1`**: builder0 `make check exited 0`, 2523/0, thirteen unmoved, det `2875411ff4ec6be7`; `native-verify-suite` exited 0, 2523/0 + 50/0, 0 verify mismatches; handed over).
-**Queue for round 29:** (1) N6.4 is done (merge when the orchestrator says); (2) N6.3 perception ONLY is done, ON, green `a1174911` except the perf gate, which a busy builder0 left NOT JUDGED (re-judge on a quiet box or main's combined check); intel NOT ported: it is the thinking he deferred; (3) N3: no ports waiting (round 28:
-manoeuvre's M1/M2 and traffic's T1/T1b did not ship); the held N5 ports stay held (`_negotiate`'s body / `ask` /
-`_begin_yield` after traffic's CP-T; the k-turn planner and `_manoeuvre` after manoeuvre's CP-M1/M2); (4) N7 proposed (below; nothing started), E6b held for the GO; (5) stage 2 (N4)
-deferred by the lead until the AI's decisions settle.
+**State (2026-10-13 12:15 PDT, round 29):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
+(`native_controller`) OFF by its price, kept for stage 2. **E6b DONE** on his laptop (`b2712987`): everything native
+v nothing native, 20 a side 0.854 -> 0.936 of real time (tick's scripts -20.6 %), 25 a side 0.672 -> 0.878 (-29.2 %).
+**Waiting:** (1) the pairs (C29.2): no diff has arrived from traffic (T1 street hold) or manoeuvre (M1/M2); the held N5
+ports wait for CP-T and CP-M2; (2) N7.4 (wall contact) waits for manoeuvre's word via the orchestrator; (3) N7.5 after
+round 29; stage 2 deferred (his call).
 
 | item | state |
 |---|---|
@@ -454,6 +453,7 @@ stays asked per call.
 | **N7.1c** `Shell._fly` | `native/src/shell_native.{h,cpp}`; seam at the top of `Shell._fly` (each shell still flies from its own tick: the scene's order kept) | `native_shell` **ON** | `test_native_shell` 300 shots, 4810 ticks, 197 hits, 53 burnt out, 0 mismatches; native-proof on = off = shell = `0398922d31f335f8` | see below |
 | **N7.2** the suppression field: `ThreatField` stamp_point / stamp_segment / stamp_burst / decay, `Match._update_suppression` (Tank.settle_suppression, its sight / hull-turn effects, is_pinned, the stats) | `native/src/threat_native.{h,cpp}`, worked in place on the field's own packed arrays (swapped out for the call so writing never copies); seams at the top of each stamp and of decay in `game/combat/threat_field.gd`, and after the decay in `_update_suppression`. `at` / `peak_along` / `mean_along` keep GDScript (a call costs what they do; the drive's reads are native since N4) | `native_threat` **ON** | `test_native_threat` 4000 field operations (626 points, 1780 lanes, 838 bursts, 756 decays; on, across and off the grid) and 200 suppression samples over 12 hulls (388 pinned), 0 mismatches; native-proof on = off = threat = `0398922d31f335f8` | match/suppression 0.36 -> 0.23 % (below) |
 | **N7.6** the black box: `MatchRecorder._physics_process` (the squad-task scan, the once-a-second census with `census_row`, their rows written and flushed) | `native/src/recorder_native.{h,cpp}`; seam at the top of `_physics_process` in `game/match/match_recorder.gd`. The event rows (order, hit, dead, end) stay GDScript signal handlers (a few a second) | `native_recorder` **ON** | `test_native_recorder`: two recorders on one live match, one each way, 240 ticks, 62 task rows + 35 censuses (phases, orders and blocked-by filled), byte for byte, 0 mismatches. No native-proof arm: the profile/proof matches do not record (headless `--match`), so the state hash cannot see it; `native-live-guard` lists it under ELSEWHERE (held by its own test, printed) | -24 % on its own work (below) |
+| **N7.3a** `OrderController._physics_process` (the per-crew tick: the contact observer's call, the stride hold, think then execute, every measurement branch) | `native/src/controller_native.{h,cpp}`; seam at the top of `_physics_process` | `native_controller` **OFF by its price** | `test_native_controller` 600 seeded scenarios on a probe brain (134 holds, 466 runs) 0 mismatches; native-proof on = off = controller = `0398922d31f335f8`, and with `--quiet-stride=3` `620e3564b48e22b2` (the hold on a live match) | **+0.7 % of the tick (a LOSS)**, below |
 | `Match._land_rounds` | **kept GDScript**: its body is `_land_hit_result` per victim (signals, stats; the arithmetic native since N6.2), the suppression stamp (N7.2's field), the impact signal and an rpc; what is left is the radius/falloff filter, 0.02 % of the tick | | | |
 
 **N7.1's price (builder0 BUSY, tick 20-36 ms; `382656de`, foundry 25 a side pinned 0-3, 3 alternated runs an arm; shares of
@@ -471,6 +471,17 @@ shares of each run's own tick):** OFF match/suppression 0.36 % (0.363 / 0.365 / 
 ticks with the census forced 35 times: GDScript 80.3 / 81.7 / 80.0 ms, native 61.4 / 60.3 / 60.8 ms (-24 %). Most of
 what is left is the flush per row (the black box's deliberate durability), the same both ways. In a real skirmish the
 census lands once a second, so the share of a tick is ~0; ON for the C++-core principle.
+
+**N7.3a's price, a loss (builder0, foundry 25 a side pinned 0-3, 3 alternated runs an arm; the controllers segment
+minus think, execute and wall contact, as a share of each run's tick):** `61ef8c30` (line for line): OFF 2.09 / 1.99 /
+1.96 %, ON 2.78 / 2.74 / 2.75 %; `2a3ebe19` (each static read once, `_lap` inlined, the command not read back): OFF
+2.01 / 1.97 / 1.98 %, ON 2.71 / 2.69 / 2.70 %. **+0.7 % of the tick either way.** The body is glue: everything it
+does is a call back into GDScript (think, compute_command's wrapper, the contact observer, wants_to_run) or a static
+read, and each crossing of the extension boundary (the seam's usable(), the bridge call, ~10 gets/sets/calls a crew)
+costs more than the same step inside the GDScript VM. Trimming the static reads moved it 0.05 %, so the cost is the
+crossings themselves, not what is read. N7.3b (one native loop instead of the engine's per-crew dispatch) keeps those
+crossings per crew, so on this evidence it lands at parity at best. **The controllers' tick pays only once think is
+native (stage 2):** then the loop calls C++ from C++. Shipped OFF, the seam and its proofs kept for stage 2.
 
 **Found on the way (not this stream's file, reported):** `test_combat_cover::test_fire_stopped_by_a_wall_still_suppresses_
 the_crew_sheltering_behind_it` fails when run ALONE (suppression 0.00; builder0, `ad1dcf26`'s tree with `native_threat`
@@ -496,13 +507,46 @@ Ranked by how core, then size; all equal-answer (hash-proven) with a switch each
 **Recommended order:** 1, 2, then 3 when a freeze window on `order_controller.gd` exists; 4 on nav's say-so; 5 after
 round 29; 6 last. None starts before the orchestrator orders it.
 
-### E6b, the laptop's "where it stands now" (HELD until the orchestrator's GO; 2026-10-13)
+### E6b, the laptop's "where it stands now" (DONE 2026-10-13 12:10 PDT, `b2712987`)
 
 The rule-D design of E6: his laptop, his preset, ABBA paired, n = 6 a size at 20 and 25 a side; A = the shipped defaults
 (everything native ON), B = `--brains-off=native` plus every `native_*` switch off. Reports game speed and tick scripts
 for each size with the se of the paired difference, and the commit + machine. Run as E6 was (`make native-tick-profile` on
 flightdeck, the bar workload foundry + parade, window 8-20 s, 180 s cooldown); B is `--brains-off=native` alone (every
 `native_*` switch checks `BrainSwitches.native` first). Evidence to `references/round28/native/e6b-<commit>/`.
+
+**GO and run (2026-10-13):** granted ~10:56 PDT; started 11:45 PDT on flightdeck at `b2712987` (main `3cd5596b` merged;
+`native_controller` OFF, so the shipped game), arms `b20@20=--brains-off=native a20@20= b25@25=--brains-off=native a25@25=`.
+Checked first: every `usable()` in `game/ai/native/*.gd` and every seam reads `BrainSwitches.native` before its own switch.
+
+**The prediction (written 11:50 PDT, before any number; reasoning in one line):** round 24's laptop table had all native
+off at +22 % of the shipped tick's scripts (42.7 v 34.9 ms, 25 a side, `26009842`); since then stage 1 (-7 to -9 %, E6)
+and N6/N7 (~-1 to -2 %, builder0) compound, so **A saves 22-32 % of B's tick scripts (central ~27 %) at both sizes**;
+A's game speed ~0.93-0.95 at 20 a side and ~0.86-0.88 at 25 (E6's 0.930 / 0.865 plus N6/N7); B's ~0.72-0.80 at 20 and
+~0.62-0.70 at 25. **Falsifiers:** a saving under 18 % means the earlier ports' laptop share fell (re-take the split);
+over 36 % means B pays something new (find it before telling him).
+
+**The result (flightdeck = his laptop, `b2712987`, his preset, bar workload, 11:48-12:10 PDT, ABBA held in every cell,
+n = 6 paired a size, 0 engine errors, load 1.1-2.6, no other Godot; hulls alive at the window's ends the same in both
+arms; `references/round28/native/e6b-b2712987/`):**
+
+| | tick's scripts (A v B) | game speed in the window (all native off -> as shipped) |
+|---|---|---|
+| 20 a side | **-20.6 %** (se 0.88): 25.3 v 31.9 ms; foundry -20.6, parade -20.7 | **0.854 -> 0.936** (+0.082, se 0.008) |
+| 25 a side | **-29.2 %** (se 0.42): 29.7 v 42.0 ms; foundry -28.5, parade -30.0 | **0.672 -> 0.878** (+0.206, se 0.004) |
+
+- **Against the prediction:** 25 a side inside everything (saving 22-32 %, A 0.86-0.88, B 0.62-0.70). 20 a side: A's
+  0.936 inside 0.93-0.95; the saving -20.6 % just under the 22 % low end (above the 18 % falsifier) and B's 0.854 above
+  0.72-0.80: without native the laptop at 20 a side is not yet at the 3-ticks-a-frame cap (2.77), so it loses less
+  speed than the saturated model said. No falsifier fired.
+- **Priority 0:** unmoved at 20 (-0.01 ms, se 0.04); at 25 -0.19 ms (se 0.03), which is the arm itself, not a void
+  session: unlike E6's arm, B turns off ports that live in priority 0 (perception in `match/intel`, the suppression
+  field, shells, combat, the tank's drive); `match` 1.13 -> 0.93 ms, `tank` unchanged.
+- **Since E6 (same laptop, A arm):** 20 a side 0.930 -> 0.936, 25 a side 0.865 -> 0.878 (N6/N7's ports; different
+  sessions, so read as about +0.01, not a paired number).
+- **For him, in player terms:** *"All the C++ together is worth about a fifth of the game's work at 20 a side and nearly
+  a third at 25. On your laptop the opening clash runs at 0.94 of real time at 20 a side (0.85 without any of it) and
+  0.88 at 25 a side (0.67 without)."*
 
 ### The measurement-mode audit (2026-10-13, the orchestrator's order after the N6.3/N6.4 price bug)
 

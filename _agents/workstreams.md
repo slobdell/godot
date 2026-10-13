@@ -65,6 +65,97 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
 - C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
 
+**Bars (round 29, pre-registered before their numbers):**
+
+- **Traffic CP-T bar (pre-registered 2026-10-13, before any T1 number; T0 running on builder0 at `3cd5596b`, GDScript
+  path, seeds {1,2,3}):** judged ONCE, both arms at one commit, GDScript path, fresh seeds {13,14,15} × ticks
+  {1,3,6,8,11,16}, n = 18 a case; base arm `--traffic-off=hold`. **Terminus head-on:** (1) crews in ≥ base − 2;
+  (2) `contacts_cross_fast` (between squads) down ≥ 25 %; (3) `all_in` median ≤ base + 20 %; (4) NO WEDGE: no run with
+  > 1 crew never in where its paired base run had none (the worst run's trace read first). **The other three cases:**
+  fast and all-in medians within 2 se of base, crews ≥ base − 2. **Plus:** the CPU mirror (`--side=rust`) on Terminus
+  head-on reported and no worse on (1)–(4); the bridge pooled 18/18; `test_traffic_hold_live` fires (verdicts, holds and
+  held ticks > 0 in the judged arm, counts in the report); cost ≤ 0.5 ms/tick at Sumps 25 a side GDScript path, or NOT
+  READABLE stated. **No partial gain:** every line passes or nothing ships. Tuned on seeds {1,2,3} only. **LAST
+  ATTEMPT:** the version traffic declares for judging is the last; a fail is parked with its trace. The C29.3 gates go
+  in as one-liners (`_track_progress`, `_update_phase`, the element re-seat clock, `unstick`, `_pressing_escape`, the
+  k-turn entry); brains and manoeuvre told.
+- **Manoeuvre M1 bar (pre-registered 2026-10-13 ~13:40 PDT, before judged numbers; DECLARED; LAST attempt):** candidate
+  `d7385da2` (`face_slot`: a face at rest keeps the last move_to's slot (round 28's faceslot read `mover._goal`, which
+  `Movement.idle()` wipes, so it never anchored); `facekeep`: every pose of a face plan inside the arrive radius − 0.75 m).
+  Wheels/turret drawn, new v base `--nav-off=turnhull,faceslot,facekeep`, same commit, FRESH seeds 22–33 (12 seeds: round
+  28's M1 re-run on the same seeds moved the 75 s count by up to ±17, so 6 seeds cannot read a +5 guard). Point tasks
+  median ≤ 15° and ≥ 70 % within 15° of crews AT REST; line tasks = hover/turret ±5°; clicked ±5° of base; settle paired
+  median ≤ +6 s; GUARD moving-at-judge, all classes, ≤ base + 5 every task. **Orchestrator's additions:** (a) a guard miss
+  only among classes M1 never commands (tracked, hover, fixed gun) passes only if each such class is within 2 se of base
+  (paired), else nothing ships; (b) the wheeled-turret at-rest share is not down > 5 pts v base on any task. Partial:
+  point tasks pass, line tasks fail → turnhull for point tasks only. bridge-pooled 18/18, arrive series, thirteen
+  explained, ≤ 0.5 ms. **Clarified ~14:00 (before judged numbers; after tuning seeds showed SCREEN missing the guard, disclosed):** a wheeled-turret guard or at-rest miss on a LINE task = that line task fails → the partial rule (point tasks only), provided line tasks provably take today's path (a test that they never enter turnhull/faceslot/facekeep + one line-task run byte-identical to base); a miss on a POINT task → nothing ships. **wall_contact.gd:** M2 will not edit it → native's N7.4 GO. **M4 added** (after M2): unstick blind
+  to a wedged hull (speed 6–12 m/s reported, zero displacement), DECLARED, own A/B, ported.
+
+- **Manoeuvre M1 JUDGED — NOT SHIPPED (2026-10-13 ~15:00; `d7385da2`, builder0, fresh seeds 22–33, 288 runs an arm; table
+  `references/round29/manoeuvre/m1_judged.txt` on stream/manoeuvre):** point tasks at rest move / right-drag / attack-move
+  medians 3.2–3.3°, 80–82 % within 15° (base 41–59°, 14–32 %); line tasks = hover/turret; at-rest share ≥ base − 3.9 pts;
+  settle +0. MISSES: the 75 s guard on attack-move (a POINT task) +8 (98 v 90; wheeled turret +12, se 8.9); support by
+  fire +8; clicked medians outside ±5° of base on 4 tasks (3 of them lower error). Last attempt → parked:
+  `d7385da2`, `manoeuvre-m1-pointonly`. Context (not used to rule): the clicked pair, where M1 never acts, moved the
+  same class +10, so this guard's noise is about ±10 at n = 288. **Round 30 candidates:** a fresh-seed re-judge with the
+  guard set from the probe's measured noise, written before numbers; `face_slot` alone as a declared bug fix (it
+  improves clicked faces too: support by fire −17.8°, p 0.02).
+
+- **Brains B1 JUDGED — PASSES every line (2026-10-13 ~15:00; `c2ae6e68` both arms, builder0, fresh seeds 13–15, n = 18):**
+  from the side 18/18 v 0/18 (median 28.1°); off-cone rounds 0; alive 3.00 v 3.00; first round 27.1 v 2.3 s (+24.8,
+  worst 30.9); clicked rows identical to main `bcef46a1`; killed 18/18 both, 35.7 v 9.3 s. Reported: off-side set-ups 6,
+  repacks 8, 2 rounds before "in" (seed 15 t16, the worst run, traced). Merge on its clean check.
+
+- **Brains B2 bar (pre-registered 2026-10-13 ~15:40, before numbers; DECLARED; LAST attempt → `lab/brains-r29-flank`):**
+  f3a0145d's design + the charge latch on the TARGET's reach of a crew (max(its weapon range, the crew's reach × 1.15),
+  remembered 4 s after it stops to shoot; `--approach-latch=crews` = round 28's, `=off` = the literal flank);
+  `APPROACH_CARRY` ON by default (`--approach-carry=off` = B0). Judged once, both arms one commit, fresh seeds 10–12 ×
+  {1,3,6,8,11,16}, n = 18 an arm a roster; median hit bearing within 35°. (a) even roster ≥ 12/18 (re-judged on new seeds,
+  declared; round 28's 10/18 beside it); (c) CPU-commanded target ≥ 9/18, partial: (a) passes, (c) beats clicked by ≥ 5;
+  fight guard kills ≥ clicked − 2, alive ≥ clicked − 0.5; side/rear ≥ clicked; clicked byte-identical to main; (b)
+  reported; the latch counter per roster; worst run first; flank-probe seeds 13–15 + a before/after clip. CPU unchanged
+  (never draws an approach); nothing native-ported. **Orchestrator's additions:** built on B1 (`c2ae6e68`); B1's drawn
+  artillery on seeds 13/14/15 t1 identical to c2ae6e68's (or meeting B1's lines); a clicked attack and a drawn attack on a
+  target that neither charges nor runs take the same path as `--approach-latch=crews`; bridge-pooled 18/18, arrive
+  series unchanged.
+
+- **Manoeuvre M2 bar (pre-registered 2026-10-13 ~16:30, before judged numbers; DECLARED; LAST attempt; no partial):**
+  `7b895eed` (`manoeuvre-m2-r29`): round 28's creep lift re-based (no circle fill) + refusal counters, `--nav-off=creeplift`.
+  Judged once on fresh census seeds 8–13 and sim seeds 6–8, GDScript path both arms: (1) open+static creep episodes −≥ 50 %;
+  (2) > 3-leg episodes not up, static and open ≤ 3-leg shares each not down > 2 pts; (3) Terminus arrivals ≥ base and wall
+  contact-ticks ≤ base + 10 %, mixed and rigs apart; (4) bridge-pooled 18/18; (5) ≤ 0.5 ms; (6) symmetric, check green.
+  **Orchestrator's additions:** (7) friendly creep episodes not up > 10 %; (8) report why rigs' wall contacts moved the
+  other way from round 28's judged run. Tuning disclosed (seeds 1–3): open+static creep 78 → 32, rigs' wall
+  contact-ticks 2566 → 1473. After a pass: native's port, then bridge-pooled + Terminus on the ON path at the pair.
+
+- **Traffic CP-T JUDGED — PASSES (2026-10-13 ~16:40; `3a94f38d` both arms, GDScript, seeds 13–15 × 6, n = 18; green
+  `3a94f38d`: builder0 check exited 0, 2550/0):** Terminus head-on between-squad fast 475 → 91 (−81 %), crews 176 → 177,
+  all-in 60.8 → 59.3 s, no wedge; other cases = base; CPU mirror 475 → 58; bridge-pooled 18/18; live test fires. Native's
+  T2 equal; merged as a PAIR once native is green on a tree with both.
+- **Traffic T1c bar (pre-registered ~16:50; DECLARED; last attempt):** `Movement.ask()` refuses while the asked hull is
+  set up (`deploy_ratio > 0`; `--traffic-off=setup`). traffic-census fresh seeds 4–6: deployed_yields 0 in the arm, > 0 in
+  base (else NULL); friendly-stuck ≤ base × 1.2 + 10; fast contacts ≤ base × 1.1 + 5; artillery fire not down > 2 se.
+  **Orchestrator's additions:** bridge-pooled 18/18 and traffic's four cases with no wedge; brains' ApproachStage drawn
+  artillery (seeds 13–15 × 6) both arms after B1 + CP-T are on main: give-way repacks → 0, B1's lines hold.
+
+- **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
+  `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
+  post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
+  ApproachStage `--live=on --his=artillery` ×3 `--theirs=law_ifv`, 90 s, builder0, FRESH seeds 13–15 × ticks
+  {1,3,6,8,11,16}, n = 18 an arm (tuned on 4–6; 7–9 were round 28's judged seeds; 10–12 reserved for B2); arms drawn
+  (east) v clicked (none), **both at `c2ae6e68`**. All must hold: (1) median shooter bearing ≤ 35° in ≥ 16/18 runs;
+  (2) rounds fired by a crew > 35° off the side = 0 over all 18, and rounds before the element is round are reported;
+  (3) alive ≥ clicked − 0.5 (mean); (4) first-round median ≤ clicked + 30 s; (5) the 18 clicked rows byte-identical to
+  main `bcef46a1`'s; (6) cost NOT READABLE (the code runs only for an all-artillery element with a drawn approach, so
+  none at Sumps 25 a side). Reported, not bar: set-ups off the side, repacks, and the rule firing (runs with in_s > 0).
+  Lesson 295 said up front: the stage is one-sided, so "alive" guards the route, not a fight. **Orchestrator's
+  additions:** the CPU line (C29.1): does the CPU's artillery take this path, reported either way; and whether any of the
+  4 fixes reach native-ported code (`native-verify-scenarios` on ApproachStage, or "none ported" stated). Tuning
+  (builder0, seeds 4–6 t1, n = 3): side 3/3 (median 28.8°), off-side rounds 0, first round 26.8 s, alive 3.00, 1 repack.
+  **Request routed to traffic:** a set-up hull (deploy_ratio > 0) does not yield; the asker goes round (seed 4 t1 at 26 s:
+  a set-up mortar truck yielded to a squadmate and packed up). Traffic's call whether it joins T1.
+
 ## Round 28: five streams (launched 2026-10-12 ~11:45 PDT, CLOSED 2026-10-13; briefs in `streams/archive/round28/`)
 
 **Goal: his four calls (`game_design.md` *Round 28 direction*): squads crossing take turns; wheeled turret vehicles turn

@@ -1,0 +1,48 @@
+>> native-tick-profile: foundry 92721 arm b20, 20 a side (--brains-off=native)
+>> perf-play seed=92721 arm=uncapped | load 1.06 0.93 0.86 | 2 other godot
+>> native-tick-profile: foundry 92721 arm a20, 20 a side ()
+>> perf-play seed=92721 arm=uncapped | load 2.58 1.38 1.02 | 2 other godot
+>> native-tick-profile: foundry 92721 arm b25, 25 a side (--brains-off=native)
+>> perf-play seed=92721 arm=uncapped | load 2.42 1.53 1.09 | 2 other godot
+>> native-tick-profile: foundry 92721 arm a25, 25 a side ()
+>> perf-play seed=92721 arm=uncapped | load 1.70 1.52 1.12 | 2 other godot
+>> native-tick-profile: foundry 31337 arm a25, 25 a side ()
+>> perf-play seed=31337 arm=uncapped | load 1.51 1.50 1.14 | 2 other godot
+>> native-tick-profile: foundry 31337 arm b25, 25 a side (--brains-off=native)
+>> perf-play seed=31337 arm=uncapped | load 1.98 1.65 1.21 | 2 other godot
+>> native-tick-profile: foundry 31337 arm a20, 20 a side ()
+>> perf-play seed=31337 arm=uncapped | load 2.08 1.76 1.28 | 2 other godot
+>> native-tick-profile: foundry 31337 arm b20, 20 a side (--brains-off=native)
+>> perf-play seed=31337 arm=uncapped | load 2.09 1.84 1.34 | 2 other godot
+>> native-tick-profile: foundry 5988 arm b20, 20 a side (--brains-off=native)
+>> perf-play seed=5988 arm=uncapped | load 1.98 1.88 1.39 | 2 other godot
+>> native-tick-profile: foundry 5988 arm a20, 20 a side ()
+>> perf-play seed=5988 arm=uncapped | load 1.86 1.87 1.41 | 2 other godot
+>> native-tick-profile: foundry 5988 arm b25, 25 a side (--brains-off=native)
+>> perf-play seed=5988 arm=uncapped | load 1.75 1.85 1.44 | 2 other godot
+>> native-tick-profile: foundry 5988 arm a25, 25 a side ()
+>> perf-play seed=5988 arm=uncapped | load 1.68 1.82 1.45 | 2 other godot
+>> native-tick-profile: parade 92721 arm a25, 25 a side ()
+>> perf-play seed=92721 arm=uncapped | load 1.70 1.80 1.47 | 2 other godot
+>> native-tick-profile: parade 92721 arm b25, 25 a side (--brains-off=native)
+>> perf-play seed=92721 arm=uncapped | load 1.76 1.80 1.49 | 2 other godot
+>> native-tick-profile: parade 92721 arm a20, 20 a side ()
+>> perf-play seed=92721 arm=uncapped | load 1.70 1.78 1.50 | 2 other godot
+>> native-tick-profile: parade 92721 arm b20, 20 a side (--brains-off=native)
+>> perf-play seed=92721 arm=uncapped | load 1.73 1.78 1.52 | 2 other godot
+>> native-tick-profile: parade 31337 arm b20, 20 a side (--brains-off=native)
+>> perf-play seed=31337 arm=uncapped | load 1.76 1.77 1.54 | 2 other godot
+>> native-tick-profile: parade 31337 arm a20, 20 a side ()
+>> perf-play seed=31337 arm=uncapped | load 1.89 1.81 1.57 | 2 other godot
+>> native-tick-profile: parade 31337 arm b25, 25 a side (--brains-off=native)
+>> perf-play seed=31337 arm=uncapped | load 1.63 1.75 1.56 | 2 other godot
+>> native-tick-profile: parade 31337 arm a25, 25 a side ()
+>> perf-play seed=31337 arm=uncapped | load 1.56 1.72 1.56 | 2 other godot
+>> native-tick-profile: parade 5988 arm a25, 25 a side ()
+>> perf-play seed=5988 arm=uncapped | load 1.63 1.72 1.57 | 2 other godot
+>> native-tick-profile: parade 5988 arm b25, 25 a side (--brains-off=native)
+>> perf-play seed=5988 arm=uncapped | load 1.65 1.73 1.58 | 2 other godot
+>> native-tick-profile: parade 5988 arm a20, 20 a side ()
+>> perf-play seed=5988 arm=uncapped | load 1.58 1.72 1.59 | 2 other godot
+>> native-tick-profile: parade 5988 arm b20, 20 a side (--brains-off=native)
+>> perf-play seed=5988 arm=uncapped | load 1.73 1.74 1.61 | 2 other godot

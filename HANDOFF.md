@@ -22,6 +22,20 @@ the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `
 | **brains** | `godot-brains` (3) | artillery drives round and shells from his side; a drawn flank is carried out; his bridge 108/108 |
 | **native** | `godot-native` (4, continuing) | nothing in play: E6b on his laptop (granted), then every driving change ported (N7.3 priced a loss, kept OFF) |
 
+**E6b (his laptop, 12:10 PDT, `b2712987`):** all C++ v none: 20 a side 0.854 → 0.936 of real time, 25 a side 0.672 →
+0.878 (`game_design.md` *Round 29: where the laptop stands now*); tell him as measured.
+
+**Merged since launch:** `4488085d` = native `16898e51` (N7.3a, `native_controller` OFF by its price; covered by native's
+check at `16898e51`: builder0 exited 0, 2539/0, 26 ALL JUDGED, thirteen unmoved; main's code tree equals it). Bars
+pre-registered in `workstreams.md` *Round 29*: traffic CP-T, brains B1, manoeuvre M1 (+ its partial-rule clarification).
+Round 28's orchestrator session `godot-29` stood down 13:30 (its two bar commits adopted); workers report to `godot-67`.
+
+**For him (clips kept OUTSIDE `build/`, which a builder0 copy-back replaces):** `~/projects/clips/round29/`:
+`artillery_side_by_side.mp4` (brains B1: clicked v his drawn east side, seed 13, 45 s; the drawn trucks drive round
+"guns quiet", set up ~25 s, the IFV burns ~42 s v ~10 s clicked); `terminus_head_{base,hold}_3a94f38d.mp4` (traffic CP-T,
+his Terminus head-on, seed 1, 45 s: at 15 s base has five hulls nose to nose in the street mouth; with the hold squad A
+waits on both sides of the mouth while B's column comes out between them).
+
 **Launch check: GREEN at `bcef46a1`** (builder0, `make check exited 0`, 2538 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7; the docs commit after it differs by docs only). Workers start from it and do not re-run a baseline.
 
 **The orchestrator's jobs:** collect every DECLARED bar before its numbers (C29.1); merge each declared change ALONE, a

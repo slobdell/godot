@@ -3911,3 +3911,12 @@ the first lands ~25 s after the order. The other option (set up and fire where i
 declined. So a drag means the same thing for artillery as for every unit, and the ~+25 s to the first round is ACCEPTED,
 not a defect (round 28's B2 cut-off of +15 s is retired). **Lesson for the orchestrator: a question about a unit's
 behaviour states the unit's constraint (artillery fires only deployed) before the options.**
+
+### Round 29: where the laptop stands now (E6b, 2026-10-13 11:48–12:10 PDT; for him, as measured)
+
+Native's E6b on his laptop (`b2712987` = main `3cd5596b` + nothing new in play; his preset, bar workload, ABBA, n = 6 paired
+a size): everything in C++ v nothing in C++. **20 a side: 0.854 → 0.936 of real time** (the tick's scripts −20.6 %, se
+0.9); **25 a side: 0.672 → 0.878** (−29.2 %, se 0.4). Inside the prediction written before the run. Since E6 (stage 1
+alone), the later ports added about +0.01 at each size (0.930 → 0.936, 0.865 → 0.878; different sessions). In his terms:
+all the C++ together makes the game about a fifth faster at 20 a side and nearly a third at 25; 20 a side runs at ~94 %
+of real time on his laptop, 25 a side at ~88 %.

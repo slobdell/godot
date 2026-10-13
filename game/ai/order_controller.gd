@@ -214,6 +214,9 @@ func _exit_tree() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if NativeController.usable():  # round 28 (native N7.3a): this whole tick natively, every branch below
+		NativeBridge.impl.controller_tick(self, delta)
+		return
 	if tank == null or not is_instance_valid(tank):
 		return
 	# Round 10: the wall-contact instrument reads the slide the tank made LAST tick, every tick, before the stride
