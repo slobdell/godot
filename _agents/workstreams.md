@@ -175,6 +175,14 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   longer", not a minute of shuffling. Kept `manoeuvre-m1`. **Round 29: give the turn room among squadmates (a spread
   before the face, or legs planned against squadmates' discs), re-judged on fresh seeds.**
 
+- **Native restarted (session `godot-native-34`); N6.1 + N6.2 at `d11f40ce`** (builder0 check 2522/0, 24/25: only
+  remote-guard-test's quiet-window case, a load flake at load ~27, passes alone): `native_motion` OFF by its price (the
+  planners' crossing costs more than the step: +1.7–3.5 %); `native_tank` ON (Tank._drive incl. move_and_slide as one
+  call, ~6.5 % cheaper tank/drive); `native_combat` ON (hit terms + take_hit arithmetic, 0 mismatches over 840). native-proof
+  equal on five maps. Merge after native-verify-suite; N6.4 granted (three seam lines in `pathing.gd`, `native_pathing`
+  OFF until proven). **Load-sensitive tooling:** `tools/test_quiet_window.sh` "records once the window opens" (1 of 2
+  samples in 30 s at load 27) — orchestrator's to harden.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
