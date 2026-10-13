@@ -220,6 +220,12 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   through the player's input (lesson 291), paused planning AND live; armed orders with an automatic facing take it from
   the last queued waypoint; a drawn facing wins; unshifted orders byte-identical.
 
+- **Native N6.4 merged (`37e05351` = native `5033c8b1`+status; builder0 check 2523/0, native-verify-suite 0 mismatches):** the
+  nav wrappers in C++ (`native_pathing` ON, 300 pairs equal, price ~0). **N6.3 GRANTED as PERCEPTION ONLY** (line of sight,
+  sight ranges, contact gathering as one batched pass; seams in `game/ai/perception.gd` + the gathering call site;
+  `native_perception` ON once proven); **intel (what crews remember/believe) is NOT granted:** it is the AI's thinking he
+  deferred. Brains told not to edit perception.gd.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
