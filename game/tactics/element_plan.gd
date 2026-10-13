@@ -120,6 +120,13 @@ const APPROACH_CLOSING_MPS := 2.0
 ## at it out to APPROACH_KEEP_SECTOR_DEG; beyond, it is sent back to its place on the side (_plan_flank_line).
 const APPROACH_SECTOR_DEG := 40.0
 const APPROACH_KEEP_SECTOR_DEG := 60.0
+## Round 28 (B2, his call 3: "a drag means the same thing for every unit"): an ARTILLERY element (every crew's role
+## "artillery") with a drawn approach takes its firing position on that side: the nearest point within
+## APPROACH_ARTILLERY_EDGE_DEG of the side, at its standoff (TankBrain.ARTILLERY_SAFE_DISTANCE, or wider of the target
+## squad's guns, inside the weapon's preferred band), driven to straight when that line stays outside the target squad's
+## reach. Going round at its gun's 160 m range (B0) took half a minute at 6.5 m/s; a battery fires from where it stands
+## once it is on the side.
+const APPROACH_ARTILLERY_EDGE_DEG := 20.0
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
@@ -343,6 +350,9 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	kept_round["in"] = false
 	kept_round["side"] = side
 	plan["approach_round"] = kept_round
+	if APPROACH_CARRY and is_battery(situation):
+		_plan_battery_round(plan, situation, state, table, target_point, approach, off, side)
+		return true
 	# The angle still to go round, the chosen way (past 180 when the element was carried across the far side).
 	var remaining := fposmod(off * side, 360.0)
 	# The notch at least APPROACH_LEAD_DEG further round: a formation never stands exactly on its point (its centre sat
@@ -378,6 +388,68 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	return true
 
 
+## Round 28 (B2): whether every crew of this element is artillery (Units.role_of). Pure.
+static func is_battery(situation: Dictionary) -> bool:
+	var members: Array = situation.get("members", [])
+	if members.is_empty():
+		return false
+	for member: Dictionary in members:
+		if String(member.get("role", "")) != "artillery":
+			return false
+	return true
+
+
+## Round 28 (B2): a battery's standoff from its target: TankBrain.ARTILLERY_SAFE_DISTANCE, or the target squad's reach +
+## APPROACH_STANDOFF_MARGIN_M if wider, kept inside every crew's [min_range + margin, preferred_max]. Pure.
+static func battery_standoff(situation: Dictionary, target: String, target_point: Vector3) -> float:
+	var standoff := maxf(TankBrain.ARTILLERY_SAFE_DISTANCE,
+			target_squad_reach(situation, target, target_point) + APPROACH_STANDOFF_MARGIN_M)
+	var low := 0.0
+	var high := INF
+	for member: Dictionary in situation.get("members", []):
+		var unit := String(member.get("unit", ""))
+		if unit == "" or not Units.exists(unit):
+			continue
+		var weapon := Weapons.profile(String(Units.stat(unit, "weapon", "")))
+		low = maxf(low, float(weapon.get("min_range", 0.0)) + APPROACH_STANDOFF_MARGIN_M)
+		high = minf(high, float(weapon.get("preferred_max", weapon.get("range", INF))))
+	return clampf(standoff, low, maxf(low, high))
+
+
+## Round 28 (B2): a battery going round to the side drawn: its firing position is the nearest point within
+## APPROACH_ARTILLERY_EDGE_DEG of the side, at battery_standoff, straight there when the line keeps outside the target
+## squad's reach, else the next notch round at the standoff (as B0). In a column, guns on the target.
+static func _plan_battery_round(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		target_point: Vector3, approach: Vector3, off: float, side: int) -> void:
+	var center: Vector3 = situation["center"]
+	var target := String((state.get("task", {}) as Dictionary).get("target", ""))
+	var standoff := battery_standoff(situation, target, target_point)
+	var side_angle := atan2(-approach.z, -approach.x)
+	var edge := deg_to_rad(APPROACH_ARTILLERY_EDGE_DEG * signf(off if off != 0.0 else float(side)))
+	var post := clamp_to_arena(target_point + Vector3(cos(side_angle + edge), 0.0, sin(side_angle + edge)) * standoff)
+	var waypoint := post
+	var reach := target_squad_reach(situation, target, target_point)
+	if _segment_distance(target_point, center, post) < reach:
+		var remaining := fposmod(off * side, 360.0)
+		var notch := maxf(0.0, floorf((remaining - APPROACH_LEAD_DEG) / APPROACH_STEP_DEG)) * APPROACH_STEP_DEG
+		var around := side_angle + deg_to_rad(notch * side)
+		waypoint = clamp_to_arena(target_point + Vector3(cos(around), 0.0, sin(around)) * standoff)
+	var heading := TacticsFormation.flat(waypoint - center)
+	plan["heading"] = heading
+	plan["anchor"] = waypoint
+	plan["arrived"] = false
+	plan["formation"] = "column"
+	plan["why"] = "%s; the battery goes to the side ordered to shell from it" % String(plan["why"])
+	_group(plan, slot_order(situation), "column", waypoint, heading, table.spacing(String(situation["terrain"])), "move",
+			target)
+
+
+## The flat distance from `point` to the segment a-b. Pure.
+static func _segment_distance(point: Vector3, a: Vector3, b: Vector3) -> float:
+	var p := Vector2(point.x, point.z)
+	return p.distance_to(Geometry2D.get_closest_point_to_segment(p, Vector2(a.x, a.z), Vector2(b.x, b.z)))
+
+
 ## Round 28 (B1): an attack with a drawn approach that has come round fights FROM THAT SIDE: places on a line across the
 ## approach at its crews' shortest effective reach (the support-by-fire standoff), anchored on the target's side he
 ## drew and following the target; a crew on that side and in reach fights freely, one carried off it drives back to its
@@ -390,6 +462,10 @@ static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dic
 	for member: Dictionary in ordered:
 		reach = minf(reach, float(member.get("effective_range", member.get("range", 60.0))))
 	var standoff := maxf(reach * SBF_STANDOFF, SBF_MIN_STANDOFF_M) if is_finite(reach) else SBF_MIN_STANDOFF_M
+	var target_name := String((state.get("task", {}) as Dictionary).get("target", ""))
+	if is_battery(situation):
+		# B2: a battery's places are at its standoff on the side (its crews shell from wherever they stand on it).
+		standoff = battery_standoff(situation, target_name, target_point)
 	var anchor := clamp_to_arena(target_point - approach * standoff)
 	var heading := TacticsFormation.flat(approach)
 	var target := String((state.get("task", {}) as Dictionary).get("target", ""))
