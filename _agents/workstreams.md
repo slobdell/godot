@@ -105,6 +105,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   (the creep lift) merges: fresh seeds 85–108, kills promoted to a guard.** S2 (to brains B3): 23–30 % of fixed-gun deaths
   under an ordered MOVE, 14–17 % retreating, 3–7 % in SUPPRESS.
 
+- **Traffic T1 v3 frozen at `672eb785` (2026-10-12 evening), single judged run on seeds {4,5,6} + the CPU side on both
+  Terminus cases.** v1–v2d were tuning arms on seeds 1–3; "v3" = the one judged version (= v2d's code). Design: a crossing
+  verdict per squad pair from mean headings (later squad slows as a whole, 0.4 floor); a head-on meeting in a street
+  (navmesh ends within 16 m both sides) is a one-lane bridge (the squad still in the open waits at 0.2); street keep-right
+  DROPPED (tuning: his head-on fast 716 → 990); open ground ORCA. Tuning seeds: fast contacts 294 → 198, 716 → 374,
+  277 → 160, 113 → 113; arrivals no fewer; no case slower. Its port queues behind manoeuvre's M2(a) (native down).
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
