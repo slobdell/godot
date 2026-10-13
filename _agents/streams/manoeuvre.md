@@ -131,5 +131,13 @@ _Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
   condition that line tasks provably take today's path (prepared: branch `manoeuvre-m1-pointonly`,
   `OrderController.line_task_keeps_turret`, `--nav-off=turnlines`, `test_line_tasks_take_the_base_path_exactly`: pose
   for pose against `--nav-off=turnhull,faceslot,facekeep`). A miss on a point task: nothing ships.
-- **Judged run started** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
+- **M1 JUDGED: NOT MET -> nothing ships (the last attempt).** `d7385da2`, builder0, seeds 22-33, 288 runs an arm
+  (`references/round29/manoeuvre/m1_judged.txt`). PASS: point tasks at rest move 3.2 deg / 82 %, right-drag 3.3 / 80 %,
+  attack-move 3.2 / 81 % within 15 (base 41-59 deg / 14-32 %); line tasks 27.6-28.0 v hover/turret 28.1-28.8; at-rest
+  share within -3.9 pts; settle +0; non-M1 classes within 2 se. MISS: the 75 s guard on ATTACK-MOVE (a point task) +8,
+  wheels/turret +12 (se 8.9: face legs +3, face creep +3, dressing +5, driving +4); support by fire +8; clicked medians
+  > +/-5 on 4 tasks (3 lower error, screen +6.3 p 0.32). Context, not a plea: the clicked pair (faces declined both arms)
+  moved the same class +10 on attack-move. Kept: `d7385da2` (face_slot root-cause fix + facekeep) and branch
+  `manoeuvre-m1-pointonly` (line tasks provably on the base path, 6/0 builder0).
+- **Judged run** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
   worktrees, same commit), `M1_FLAGS=--turn-states`.
