@@ -57,6 +57,12 @@ func _until_screen(f: Fixture, element: Element, limit: int) -> Array:
 
 
 func _screen_heading_check(f: Fixture, element: Element, label: String) -> void:
+	# The line's heading, once the squad is on its line (Drills.on_screen_line: the centre within SCREEN_REACHED_M of the
+	# point); on the way there the element heads for it from wherever it is.
+	var waited := 0
+	while waited < 60 * 60 and _centre(f).distance_to(POINT) > Drills.SCREEN_REACHED_M:
+		await wait_physics_frames(10)
+		waited += 10
 	await wait_physics_frames(30)
 	var wanted := POINT - WAYPOINT
 	var from_start := POINT - Vector3(-10.0, 0.0, 40.0)
