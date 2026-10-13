@@ -3763,3 +3763,13 @@ instrument that cannot lie about load — removal within one run — and let eve
    sent to a socket address, never reached native's inbox; native waited "for a slot" until 11:21 and the night's laptop
    window was lost. Send slot grants by the session NAME (`ListAgents`), ask for a one-line ack, and check the ack
    arrived before treating the slot as running.
+300. **An arm that never fires is a null A/B.** (Round 28, traffic T1b.) The judged run on seeds 7–9 matched its base run
+   for run: a wiring gate kept the rule off, and the pure tests passed because they call the rule directly. The arm's
+   own verdict counter caught it. Every judged arm reports how often its rule fired, and a live test plays the player's
+   case and fails at zero.
+301. **A bar that counts every contact mixes in squadmates' noise.** (Round 28, traffic T1.) The crossing rule cut
+   between-squad bumps 29 % but missed its line because same-squad bumps rose; split the count into the effect being
+   changed and the rest before writing the bar.
+302. **One wedged run can carry a whole table.** (Round 28, traffic T1b.) A single run at seed 12, tick 16 held 4 of the
+   missing crews and 305 of the stuck crew-seconds. Read the worst run's trace before reading the median; it is usually
+   the next design item. (Also: killing a local chain leaves its builder0 run alive: stop both.)
