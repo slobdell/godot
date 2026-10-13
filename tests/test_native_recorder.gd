@@ -82,6 +82,7 @@ func test_the_recorder_writes_the_same_bytes_natively() -> void:
 	for child in game_match.tanks.get_children():
 		names.append(String(child.name))
 	var was := BrainSwitches.native_recorder
+	var spent := [0, 0]  # usec, each path over the run (a price, not judged)
 	for t in TICKS:
 		await wait_physics_frames(1)
 		for squad: FakeSquad in squads.list:
@@ -99,9 +100,13 @@ func test_the_recorder_writes_the_same_bytes_natively() -> void:
 			live._next_census = 0.0
 			native._next_census = 0.0
 		BrainSwitches.native_recorder = false
+		var started := Time.get_ticks_usec()
 		live._physics_process(0.0)
+		spent[0] += Time.get_ticks_usec() - started
 		BrainSwitches.native_recorder = true
+		started = Time.get_ticks_usec()
 		native._physics_process(0.0)
+		spent[1] += Time.get_ticks_usec() - started
 		BrainSwitches.native_recorder = was
 	BrainSwitches.native_recorder = was
 	var live_lines := FileAccess.get_file_as_string(live.path).split("\n")
@@ -126,8 +131,8 @@ func test_the_recorder_writes_the_same_bytes_natively() -> void:
 				for key in ["order", "phase", "blocked"]:
 					if String(unit.get(key, "")) != "":
 						filled[key] = int(filled.get(key, 0)) + 1
-	print("native recorder: %d ticks, %d lines %s, census fields filled %s, %d mismatches" % [TICKS, live_lines.size(),
-			kinds, filled, mismatches])
+	print("native recorder: %d ticks, %d lines %s, census fields filled %s, %d mismatches; GDScript %.3f ms, native %.3f ms"
+			% [TICKS, live_lines.size(), kinds, filled, mismatches, spent[0] / 1000.0, spent[1] / 1000.0])
 	assert_eq(mismatches, 0, "the native recorder writes the live GDScript's bytes: %s" % first)
 	assert_true(int(kinds.get("census", 0)) >= 30 and int(kinds.get("task", 0)) >= 20
 			and int(filled.get("order", 0)) > 0 and int(filled.get("phase", 0)) > 0, "a real sample (%s, %s)" % [kinds, filled])
