@@ -390,7 +390,14 @@ the work. Do it now, or once the AI's decisions have settled?"* **Recommendation
 (brains reshapes the thinking every round today: doubling that cost now slows the smarter-AI work he keeps asking for;
 20 a side is close to full speed already). The orchestrator puts it to him.
 
-### N6: the next core components outside the AI's thinking -- PROPOSED, not started (2026-10-12; for the orchestrator to order)
+**N6 ORDERED (the orchestrator, 2026-10-12 evening):** (1) the tank's motion first (grant: `game/tank/**` for that port,
+the seam lines only); (2) combat resolution (grant: the resolution functions in `game/match/**` and `game/tank/**`,
+seams only); (3) perception + intel last of the big ones, and ASK before starting it (perception.gd is brains', and it is
+stage 2's first block); (4) the nav wrappers any time. Rules: equal answer (thirteen and determinism unmoved),
+native-proof on = off, native-verify-suite green, the doors rule for owned state, a switch per port defaulting ON once
+its proof is green (no speed bar; the price reported). N3 diffs pre-empt all of it.
+
+### N6: the next core components outside the AI's thinking -- PROPOSED (2026-10-12; ordered as above)
 
 Sized from this stream's rate (stage 1: ~2 days of porting with proofs per ~1 500 lines of drive/gun) and priced from the
 quiet slot's profile (builder0 headless, stage 1 ON, foundry 20 a side, tick's scripts 10.67 ms; `ed6ecaa9`). All are in
