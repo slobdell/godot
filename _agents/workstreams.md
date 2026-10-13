@@ -143,6 +143,11 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   charging into the squad has left the position the side was drawn against, and circling it gives a 60 m gun free shots
   at 35 m guns. Told to him in player terms; reversible.
 
+- **Traffic T1b's judged run on {7,8,9} VOID (2026-10-12):** the rule never fired (verdict counter 0; `_avoid` gated Traffic
+  on turns/streetright only). Fixed at `474558f8` (gate includes streetturns; no parameter changed) + a live falsifier
+  (`test_traffic_turns_live`: his Terminus head-on must make a verdict). Re-run on fresh {10,11,12}, same bar, still the
+  last attempt; verdict counts per case reported.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
