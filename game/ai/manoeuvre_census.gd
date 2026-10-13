@@ -101,10 +101,12 @@ func observe(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 	var speed := tank.speed()
 	if trace_unit != "" and String(tank.name) == trace_unit and tick % TRACE_EVERY == 0:
 		var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
-		print("MANOEUVRE_TRACE f %d at (%.1f, %.1f) nose (%.2f, %.2f) v %.2f cmd %.2f/%.2f order %s goal (%.1f, %.1f) steer %s plan %s left %.1f legs %s circling %s why %s touch %s" % [
+		print("MANOEUVRE_TRACE f %d at (%.1f, %.1f) nose (%.2f, %.2f) v %.2f cmd %.2f/%.2f order %s goal (%.1f, %.1f) steer %s plan %s left %.1f legs %s circling %s why %s touch %s face %s/%.1f/%d blocked %s retry %d" % [
 				tick, here.x, here.z, nose.x, nose.y, speed, cmd.throttle, cmd.turn, String(order.get("type", "")),
 				float(order.get("x", 0.0)), float(order.get("z", 0.0)), str(mover.steer_to), mover._kturn_plan_kind,
-				mover._kturn_left_m, str(mover._kturn_legs), mover._circling, mover._reverse_why, mover.contact.touching])
+				mover._kturn_left_m, str(mover._kturn_legs), mover._circling, mover._reverse_why, mover.contact.touching,
+				str(mover._face_legs), mover._face_left_m, mover._face_gear, str(mover._face_blocked != Vector3.ZERO),
+				mover._face_retry])
 	var gear := 1 if speed > CUSP_DEADBAND else (-1 if speed < -CUSP_DEADBAND else 0)
 	var type := String(order.get("type", ""))
 	var goal := Vector3(float(order.get("x", 0.0)), 0.0, float(order.get("z", 0.0))) if type == "move_to" else Vector3.INF
