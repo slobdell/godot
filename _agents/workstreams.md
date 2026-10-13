@@ -118,7 +118,10 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   (never draws an approach); nothing native-ported. **Orchestrator's additions:** built on B1 (`c2ae6e68`); B1's drawn
   artillery on seeds 13/14/15 t1 identical to c2ae6e68's (or meeting B1's lines); a clicked attack and a drawn attack on a
   target that neither charges nor runs take the same path as `--approach-latch=crews`; bridge-pooled 18/18, arrive
-  series unchanged.
+  series unchanged. **Ruled ~17:20 (after (c)'s tuning, disclosed; follows C28.5, written before round 28's numbers):** (c) is
+  judged on the fight guard + side/rear ≥ clicked + the latch counter firing; on-side (c) REPORTED (the latch makes a
+  charging target an in-place fight by design; tuning a97d5aab seeds 4–6: latched 18/18 at 3.1 s, killed 18/18 both,
+  alive 5.00 v 4.83). Added: the latch fires in 0/18 of (a) (a holding target).
 
 - **Manoeuvre M2 bar (pre-registered 2026-10-13 ~16:30, before judged numbers; DECLARED; LAST attempt; no partial):**
   `7b895eed` (`manoeuvre-m2-r29`): round 28's creep lift re-based (no circle fill) + refusal counters, `--nav-off=creeplift`.
