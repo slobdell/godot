@@ -107,7 +107,24 @@ IFV's 60 m); "in" at 12 s 29° off; then a near ambush by the target itself → 
 | clicked | `ca34bf25` | 0/18 | 68.2 | 10 | 2.33 | 0.81 |
 | B0 (`--approach-carry=off`) | `44accd87` | 1/18 | 89.1 | 14 | 2.78 | 0.76 |
 | B1 v1 (ring wide of the squad's guns, no pursuit < 6 m/s, no near ambush by the target's squad) | `ca34bf25` | 0/18 | 52.1 | 12 | 2.28 | 0.78 |
+| B1 v2 (column round the ring; once round, HOLD a firing line on the side) | `cba5e063` | 16/18 | 27.3 | **1** | **1.44** | 1.00 |
+| B1 v3 (once round: crews on the side within 40° (60 kept) and in reach attack freely; off it, back to its place) | `896f744c` | 13/18 | 33.9 | 11 | 2.11 | 0.93 |
+| B1 v4 (pursuit only when the target FLEES ≥ 6 m/s away, 2 s, for the whole flank) | `c6cc7b6f` | 13/18 | 33.9 | 11 | 2.11 | 0.93 |
+(c) moving, seeds 4–6: clicked 0/18 (90.2°), killed 18/18, alive 4.83; v3 0/18 (every run a pursuit: the CPU's lone IFV
+drives AT the squad at 10.5 m/s); v4 8/18 (35.4°), killed **12**/18, alive **2.61** (fails the fight guard: three of five
+crews chased line places sliding with the target for ~15 s). (b) Law squad of five, v3: on side by hit 3/18 (10 runs
+hit at all), by reach 14/18; his squad wiped (0.39 alive v clicked 0.33), target killed 1 v 2 — his call accepts it.
+v5 (`4d11c9f4`): once round, every crew on the side attacks whatever its distance.
 v1's rows: a crew within 50 m at ~7 s 56° off (a five-wide line rides the 70 m ring with its inner crews ~28 m inside
 it), "in" at 11–13 s, then the free `attack` fight circles the target. v2 (`cba5e063`): round in a column; once round, a
 firing line on the drawn side (support-by-fire standoff, hold + fire at will); contact drills yield for the whole flank.
+
+### Notes from the orchestrator (2026-10-12 evening), for after B1/B2
+- **Screen slots for long wheeled hulls** (manoeuvre's census): four gang trucks told to screen get 6 m slots (TacticsLab
+  seed 61) and one parallel-parks for ~1 min, on base and on manoeuvre's change alike. Formation geometry is mine; take
+  it after B1/B2 if cheap.
+- **B3 start:** scout's per-death table (stream/scout Status, S2): 23–30 % of fixed-gun scout deaths under an ordered
+  MOVE, 14–17 % retreating, 3–7 % in SUPPRESS. Ask who ordered the MOVE and where to. My first read of the code: the CPU
+  commander re-tasks recon every think with `screen` to a point 45 m from its OWN centre toward the enemy focus
+  (`ElementCommander.think`, SCREEN_AHEAD_M) — a carrot that walks scouts into the enemy. To verify on seed 5.
 
