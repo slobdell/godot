@@ -107,6 +107,19 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   worst 30.9); clicked rows identical to main `bcef46a1`; killed 18/18 both, 35.7 v 9.3 s. Reported: off-side set-ups 6,
   repacks 8, 2 rounds before "in" (seed 15 t16, the worst run, traced). Merge on its clean check.
 
+- **Brains B2 bar (pre-registered 2026-10-13 ~15:40, before numbers; DECLARED; LAST attempt → `lab/brains-r29-flank`):**
+  f3a0145d's design + the charge latch on the TARGET's reach of a crew (max(its weapon range, the crew's reach × 1.15),
+  remembered 4 s after it stops to shoot; `--approach-latch=crews` = round 28's, `=off` = the literal flank);
+  `APPROACH_CARRY` ON by default (`--approach-carry=off` = B0). Judged once, both arms one commit, fresh seeds 10–12 ×
+  {1,3,6,8,11,16}, n = 18 an arm a roster; median hit bearing within 35°. (a) even roster ≥ 12/18 (re-judged on new seeds,
+  declared; round 28's 10/18 beside it); (c) CPU-commanded target ≥ 9/18, partial: (a) passes, (c) beats clicked by ≥ 5;
+  fight guard kills ≥ clicked − 2, alive ≥ clicked − 0.5; side/rear ≥ clicked; clicked byte-identical to main; (b)
+  reported; the latch counter per roster; worst run first; flank-probe seeds 13–15 + a before/after clip. CPU unchanged
+  (never draws an approach); nothing native-ported. **Orchestrator's additions:** built on B1 (`c2ae6e68`); B1's drawn
+  artillery on seeds 13/14/15 t1 identical to c2ae6e68's (or meeting B1's lines); a clicked attack and a drawn attack on a
+  target that neither charges nor runs take the same path as `--approach-latch=crews`; bridge-pooled 18/18, arrive
+  series unchanged.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
