@@ -87,6 +87,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("exec_forget", "mover"), &TankNative::exec_forget);
 	ClassDB::bind_method(D_METHOD("exec_clear"), &TankNative::exec_clear);
 	ClassDB::bind_method(D_METHOD("exec_count"), &TankNative::exec_count);
+	ClassDB::bind_method(D_METHOD("wall_configure", "config"), &TankNative::wall_configure);
+	ClassDB::bind_method(D_METHOD("wall_scan", "tank"), &TankNative::wall_scan);
 	ClassDB::bind_method(D_METHOD("hold_set", "mover", "spot", "since"), &TankNative::hold_set);
 	ClassDB::bind_method(D_METHOD("hold_clear", "mover"), &TankNative::hold_clear);
 	ClassDB::bind_method(D_METHOD("hold_clear_all"), &TankNative::hold_clear_all);

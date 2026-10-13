@@ -25,6 +25,7 @@
 #include "recorder_native.h"
 #include "controller_native.h"
 #include "hold_native.h"
+#include "wall_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -295,6 +296,10 @@ public:
 	void exec_clear() { exec_states().clear(); }
 	int exec_count() const { return exec_states().size(); }
 
+	// Round 29 (N7.4): the wall-contact observer's scan (wall_native.cpp).
+	bool wall_configure(const Dictionary &config) { return ::godot::wall_configure(wall_config, config); }
+	int64_t wall_scan(Object *tank) const { return ::godot::wall_scan(wall_config, tank); }
+
 	// Round 29 (C29.2 scaffold): traffic's street hold as the execute's record (hold_native.h; NativeHold).
 	void hold_set(Object *mover, const Vector3 &spot, double since) { godot::hold_set(mover, spot, since); }
 	void hold_clear(Object *mover) { godot::hold_clear(mover); }
@@ -307,6 +312,7 @@ public:
 	Dictionary record_layout() const;
 
 private:
+	WallConfig wall_config;
 	AvoidanceTable avoidance;
 	TankRecords records;
 	MoverRecord movers;
