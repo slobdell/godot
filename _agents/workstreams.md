@@ -234,6 +234,10 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   1 crossed 3/4; rust t16 seed 2 a rim crew). Parked `lab/brains-r28-reissue`. Round 29: the cause is pinned (7baffe24's
   heading re-issue; `--reissue-heading=off` restores his cells); trace the two new cells before narrowing again.
 
+- **Brains B3 SHIPPED (merged `6efe3450` = `b95a3d6e`):** the bar's exact line, scout-census fixed guns, fresh seeds 13–24:
+  enemy hull contacts under an ordered MOVE 36 → 0 (per seed 3.00 → 0.00, se 1.50); all fixed-gun contacts 93 → 24; gun on
+  target 21.9 → 20.2 %, inside turning room 6.3 → 3.5 %.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
