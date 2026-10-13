@@ -66,6 +66,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   `_combat_move(s, contact, spot)`, every other unit byte-for-byte; (b) `_combat_move` gains an optional `aim_point`.
   `--scout-off=suppresslay`. No `decide` change (no port). Brains told.
 
+- **Scout CP-S1 bar (pre-registered 2026-10-12, before any census number; scenario pools seen first, disclosed):**
+  PRIMARY fresh census seeds 61–84 (85+ if < 12 pair), new v `--scout-off=suppresslay`: fixed-gun gun-on-point during
+  SUPPRESS ≥ +10 pts outside 2 se ships; +5..+10 outside 2 se ships with a note only if the scenario passes all four
+  cases. GUARDS (paired, 2 se): all-fight on target not down, contacts not up, **SUPPRESS share of fight time not down
+  (orchestrator's addition; absolute seconds reported)**; outcomes reported. Scenario `scenario_scout_suppress` n = 18 a
+  case, all four pass and off fails one; check, native-verify-scenarios, ≤ 0.5 ms, symmetric.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
