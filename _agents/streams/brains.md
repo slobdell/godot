@@ -146,6 +146,50 @@ Why (c) fails: the latch needs the target inside the CREWS' reach (35 m × 1.15)
 45–60 m to shoot, so the trucks are shot while going round. Proposed to the orchestrator: one last attempt (latch on the
 target's own reach of a crew), judged on new fresh seeds 10–12; else park on `lab/brains-r28-flank`.
 
+### B2 — PARKED (no judged run, the orchestrator's ruling; `lab/brains-r28-battery` = `88b6a724`)
+Tuning, seeds 4–6, builder0, n = 18 (`--live=on --his=artillery,artillery,artillery --theirs=law_ifv`), v5 `88b6a724`:
+fires from the side 18/18 (median shooter bearing 28.2°), alive 3.00 = clicked 3.00, but the FIRST ROUND at 25.8 s v
+clicked 2.3 s (+23.5; the cut-off was +15). Three traced fixes on the way, all round-29 material: (1) on a named move a
+mortar that may fire deploys and never leaves; (2) a plain move fires at will on contact, which deploys it too (a
+battery relocating now holds fire: `Element.relocating` → ElementFeed → TankBrain MOVE); (3) a column whose heading
+was re-laid from the moving centre swung round its post and re-sent every crew, and forming a column from abreast
+cost ~9 s. What is left is distance: ~90 m at ~4 m/s on a 90° swing. His question (on the calls page, the
+orchestrator's): shell from where it stands while it drives round, or accept a ~20–25 s wait.
+**B1 and B2 game code is OFF the stream** (`3e2f6e13`: game/ == main's); the tooling stays.
+
+### B3 — squads ordered into the enemy: FOUND and FIXED (DECLARED)
+**Who:** the CPU COMMANDER, not the player (`make recon-probe`, seed 5 Parade, stream `7840452b`): at t 7 s
+`ElementCommander.think` re-tasks both Rust recon squads to `screen` a point 45 m short of the enemy focus
+(`_toward(centre, focus, SCREEN_AHEAD_M)`), 34–36 m from the nearest enemy; the point then holds while the enemy
+advances onto it (point-to-enemy 34 → 1 m by t 17) and the crews keep driving to their places on that line (MOVE
+"ordered") into the enemy — the census's contacts at (0, −11).
+**Fix (`ac237a0e` + `b95a3d6e`):** with an enemy known, the recon screen stands `SCREEN_STANDOFF_M` =
+TankBrain.SCOUT_STANDOFF (85 m) off the enemy NEAREST it, on its own side; re-aimed at once when an enemy comes within
+0.6 × that of the line (never to a point within 10 m of the one it holds). `--screen-standoff=off` is the old rule.
+Tools: `make recon-probe`, `make contact-census` (every unit's enemy hull contacts by option and role, recon deaths,
+screen re-tasks, survivors, both arms).
+**Judged** (`b95a3d6e`, builder0, fresh showmatch seeds 13–24, 180 s, n = 12 paired; bar accepted before the numbers):
+| | standoff (new) | old rule |
+|---|---|---|
+| enemy hull contacts, every unit | **129** | 339 (−62 %) |
+| … under an ordered MOVE | **28** | 111 (**−75 %**; bar ≥ 50 %) |
+| by role: scout / ifv / tank / support / suppressor / artillery | 47 / 30 / 31 / 14 / 4 / 3 | 122 / 70 / 69 / 38 / 32 / 8 |
+| recon deaths (of 89 recon crews) | 55 | 60 (not up) |
+| winning side | the same in all 12 seeds | |
+| survivors green / rust (sum) | 92 / 89 | 97 / 84 |
+| screen tasks per recon squad-minute | 6.42 | 4.03 (+59 %: one about every 9 s, not every think) |
+Seed 5 (the traced one, tuning): contacts 241 → 7, under MOVE 119 → 1. Check: running.
+
+### B4 — his bridge 106/108: BISECTED, fix candidate (DECLARED)
+builder0, his two cells (seed 2: green t5, rust t9; `bridge-series BRIDGE_ARMS=on BRIDGE_SEEDS=2 BRIDGE_TICKS="5 9"`):
+47b8527b, f193bcb8, 2e2715e4 PASS 4/4; **7baffe24** (round 26's brains merge: a heading given, taken away or turned
+> 20° re-issues a crew's order) and 090b345d FAIL (rim 4.1 / 6.8 s, all cross). Confirm on today's code (`b95a3d6e`):
+4/4 with `--reissue-heading=off`, 2/4 without. **Fix `254fd98f`:** a heading change re-issues only when the TASK's
+drawn facing changed since that crew's order (round 26's case, all its tests kept); the plan's own per-crew heading
+toggling within one task no longer re-issues a move. `--reissue-heading=plan` is round 26's rule. Bar (accepted, + the
+fight tests): 108/108; reorder_heading + fight tests pass; arrive series fresh 17–20 not below control − 1 on the 8 m
+line, median within +2 %; thirteen declared. Running.
+
 ### Notes from the orchestrator (2026-10-12 evening), for after B1/B2
 - **Screen slots for long wheeled hulls** (manoeuvre's census): four gang trucks told to screen get 6 m slots (TacticsLab
   seed 61) and one parallel-parks for ~1 min, on base and on manoeuvre's change alike. Formation geometry is mine; take
