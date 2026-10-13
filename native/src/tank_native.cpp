@@ -51,6 +51,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pathing_is_ready", "node"), &TankNative::pathing_is_ready);
 	ClassDB::bind_method(D_METHOD("pathing_query", "node", "from", "to"), &TankNative::pathing_query);
 	ClassDB::bind_method(D_METHOD("pathing_find_path", "node", "from", "to"), &TankNative::pathing_find_path);
+	ClassDB::bind_method(D_METHOD("perception_configure", "config"), &TankNative::perception_configure);
+	ClassDB::bind_method(D_METHOD("perception_sight", "viewers", "enemies"), &TankNative::perception_sight);
+	ClassDB::bind_method(D_METHOD("perception_gun_ready", "viewers", "enemies"), &TankNative::perception_gun_ready);
+	ClassDB::bind_method(D_METHOD("perception_rays"), &TankNative::perception_rays);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);
@@ -783,6 +787,16 @@ bool TankNative::pathing_configure(const Dictionary &config) {
 	c.switches = c.keep_switches.get_validated_object();
 	c.nav = Object::cast_to<NavNative>(c.keep_nav.get_validated_object());
 	c.ready = c.pathing != nullptr && c.switches != nullptr;
+	return c.ready;
+}
+
+bool TankNative::perception_configure(const Dictionary &config) {
+	PerceptionConfig &c = perception_config;
+	c.ready = config.has("EYE_HEIGHT") && config.has("WORLD_MASK");
+	if (c.ready) {
+		c.EYE_HEIGHT = config["EYE_HEIGHT"];
+		c.WORLD_MASK = (uint32_t)(int64_t)config["WORLD_MASK"];
+	}
 	return c.ready;
 }
 
