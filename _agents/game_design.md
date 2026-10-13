@@ -3898,3 +3898,16 @@ drives the waypoints in order; the screen (and every armed order with an automat
 preceding waypoint (heading = screen point − that waypoint); a drawn facing still wins; a plain (unshifted) screen is
 today's behaviour. Given to brains as B5, top priority (grant: the order-queue hunk of `game/control/rts_controls.gd`).
 
+
+## Round 29: his artillery call (2026-10-13, in chat; calls page question 6, `artillery-wait`)
+
+The page's question ("shell from where it stands while it drives round, or wait ~20–25 s") confused him, and he was right:
+> I'm confused about the question. I thought artillery generally had the disadvantage that it needs to be positioned still
+> in order to fire. Otherwise your question is confusing and makes no sense to me
+
+Re-asked in his terms ("it has to stop and set up before it can fire; you drag a side ~90 m away"): **GO STRAIGHT TO MY
+SIDE** (recommended): it packs up, drives round, sets up on the side he drew and opens fire; every round from his angle;
+the first lands ~25 s after the order. The other option (set up and fire where it stands first, then move round) was
+declined. So a drag means the same thing for artillery as for every unit, and the ~+25 s to the first round is ACCEPTED,
+not a defect (round 28's B2 cut-off of +15 s is retired). **Lesson for the orchestrator: a question about a unit's
+behaviour states the unit's constraint (artillery fires only deployed) before the options.**

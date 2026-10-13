@@ -4,14 +4,35 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-13 — **ROUND 28 IS CLOSED (below); native (C++) continues in `godot-native`.** **Main's check GREEN at `b4ad1b2c`** (builder0, `make check exited 0`, 2537 passed, 0 failed, 26 targets ALL JUDGED incl.
-native-live-guard, thirteen unmoved, determinism 2875411ff4ec6be7): round 28 + native N6.3 (perception), the profile-gate fix,
-N7.1 (projectiles: incoming_projectiles, IncomingFire._count_in_flight, Shell._fly; native_incoming + native_shell ON),
-N7.2 (the suppression field's stamps/decay + Match._update_suppression's settle; native_threat ON; at/peak/mean stay GDScript),
-and test_combat_cover's order dependence fixed (the sheltering crew overlapped the wall). Native is on N7.6 (the match
-recorder). N7.3 (order_controller's scheduling, 3-4 days) waits for a freeze window the orchestrator names; N7.4/N7.5 after
-round 29's split. E6b (his laptop) held for my GO while he's away. Round 29 is NOT split: `roadmap.md` *Round 29 candidates*.
-He pushes `main`._
+_Last updated: 2026-10-13 — **ROUND 29 IS PREPARED (below): traffic, manoeuvre, brains launch; native continues.** Main =
+`bcef46a1` (native N7.6, the match recorder in C++, merged from green `0f645e8a`); main's launch check: see the round 29
+section. His artillery call is answered (go straight to his side). He pushes `main`._
+
+## 🚀 ROUND 29 IS PREPARED (2026-10-13) — read this first
+
+**From round 28's four parked calls** (`roadmap.md` *Round 29 candidates*) and his artillery answer today
+(`game_design.md` *Round 29: his artillery call*: artillery fires only when set up, so it goes straight to his side and
+the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `workstreams.md` *Round 29*; briefs in
+`streams/`.
+
+| Stream | Folder (offset) | What he will notice |
+|---|---|---|
+| **traffic** | `godot-traffic` (1) | two of his squads meeting in a street: one waits beside the mouth, the other comes through, no lock-up |
+| **manoeuvre** | `godot-manoeuvre` (2) | wheeled turret vehicles nose-on to his drawn facing within seconds; long trucks turn in planned legs in streets |
+| **brains** | `godot-brains` (3) | artillery drives round and shells from his side; a drawn flank is carried out; his bridge 108/108 |
+| **native** | `godot-native` (4, continuing) | nothing in play: E6b on his laptop (granted), then every driving change ported (N7.3 priced a loss, kept OFF) |
+
+**Launch check: GREEN at `bcef46a1`** (builder0, `make check exited 0`, 2538 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7; the docs commit after it differs by docs only). Workers start from it and do not re-run a baseline.
+
+**The orchestrator's jobs:** collect every DECLARED bar before its numbers (C29.1); merge each declared change ALONE, a
+driving change back to back with native's port (C29.2); relay the street hold's grants (C29.3: traffic's gate lines in
+brains' and manoeuvre's functions); carry manoeuvre's word on `wall_contact.gd` to native (N7.4); merge native's N7.3a-OFF green
+hash; tell him E6b's number plainly; take brains' clips (artillery, flank) to him.
+
+**Launch:** `make worktree STREAM=traffic OFFSET=1`, `manoeuvre 2`, `brains 3` (native's worktree exists); kickoff
+prompt: `orchestration.md` *The kickoff prompt* (the same line for every stream). **Close round 28's old worker
+terminals first** (`godot-traffic-86`, `godot-manoeuvre-88`, `godot-brains-cc`, `godot-scout-39`): their worktrees are
+gone, and a new session in the re-created folder must start fresh.
 
 ## ✅ ROUND 28 IS CLOSED (2026-10-13) — read this first
 

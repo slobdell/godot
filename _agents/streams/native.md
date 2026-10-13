@@ -80,6 +80,19 @@ builder0 and must not be the design. The publish's own cost is pre-registered as
 **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
 read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
 
+## Round 29 backlog (the orchestrator, 2026-10-13; contracts C29.2, C29.4, C29.7 in `workstreams.md` *Round 29*)
+
+Round 29 runs traffic (1), manoeuvre (2), brains (3) beside you. In order:
+1. **The pairs (C29.2), pre-empting everything below:** traffic's street hold (T1: the hold as a record field the drive
+   reads; `Traffic.holding`), manoeuvre's creep as legs (M2) and anything from its turn room (M1) that touches the drive or
+   unstick. Equal-answer proof, the pair merged back to back. Also the held N5 ports once their owners' changes ship
+   (`_negotiate`'s body / `ask` / `_begin_yield` after CP-T; the k-turn planner and `_manoeuvre` after CP-M2).
+2. **N7.3: N7.3a built, equal, priced a LOSS (+0.7 % of the tick), committed OFF for stage 2; N7.3b skipped** (the
+   orchestrator's ruling 2026-10-13: glue, not a core component; C29.4's freeze released).
+3. **E6b on his laptop: GRANTED 2026-10-13 ~10:56 PDT** (rule D as written below).
+4. **N7.4 wall contact** only on manoeuvre's word (relayed by the orchestrator) that M2 leaves `wall_contact.gd` alone.
+5. N7.5 (element_feed) waits until after round 29; stage 2 stays deferred (his call).
+
 ## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)
 
 1. **N1 E6 now** (GO'd; running from 11:21:56 PDT on `19543dae`'s code), rule D as pre-registered.

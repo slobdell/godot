@@ -1,9 +1,71 @@
 # Workstreams: the current round
 
-> **ROUND 28 CLOSED (2026-10-13): traffic, manoeuvre, brains, scout done (briefs in `streams/archive/round28/`); native
-> continues (`streams/native.md`, C27.7/C28.2–C28.3).** Round 29 is not yet split (`roadmap.md` *Round 29 candidates*).
+> **ROUND 29 PREPARED (2026-10-13): traffic, manoeuvre, brains launch; native continues (`streams/native.md`).** Round 28's
+> section below is closed (briefs in `streams/archive/round28/`).
 
-## Round 28: five streams (launched 2026-10-12 ~11:45 PDT; native continues from round 27)
+## Round 29: four streams (prepared 2026-10-13; native continues from round 28)
+
+**Goal: round 28's four calls, each parked with a trace, carried home (`roadmap.md` *Round 29 candidates*; his words in
+`game_design.md` *Round 28 direction* and *Round 29: his artillery call*): squads meeting in a street take turns with a
+real place to wait; wheeled turret vehicles turn their whole hull to a drawn facing without a packed squad still turning a
+minute later; artillery drives to his side and shells from there; a drawn flank is carried out. Beside them: his bridge
+back to 108/108, the creep in tight streets planned as legs, and the C++ core continuing (N7.3, the tick's scheduling).**
+
+| Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two of his squads meeting in a street: one waits beside the mouth, the other comes through, nobody locks up | **CP-T** T1, DECLARED, + native's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | wheeled turret vehicles end nose-on to his drawn facing within a few seconds; long trucks in tight streets turn in a few planned legs, not a creeping shuffle | **CP-M1**, **CP-M2**, each DECLARED (+ port for M2) |
+| **brains** | `godot-brains` (3) | [streams/brains.md](streams/brains.md) | artillery drives round and shells from his side; a drawn flank is carried out; his bridge 108/108 again | B1, B2, B3 as they go green |
+| **native** | `godot-native` (4, continuing) | [streams/native.md](streams/native.md) | nothing in play (equal answer); the tick's scheduling in C++; every driving change ported | N7.3 green; each pair |
+
+**Ownership (as round 28's, restated):** each brief's header lists its paths. In `movement.gd`: traffic the give-way block
+(`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`, `_hull_within`; manoeuvre the `drive()`
+body, `_nose_stop`, `unstick`, `_pressing_escape`, `_manoeuvre`, the k-turn / planned-reverse / circle block; native the
+member STORAGE; brains the rest (`_track_progress`, `_update_phase`, …). `order_controller.gd`: manoeuvre the face-at-rest
+path; native its seams (C29.4: N7.3's freeze released); nobody else. `tank_brain.gd`: brains, except native's seams, manoeuvre's `_order_move` grant
+(round 28's three lines) and, only if its stretch opens, scout's round-28 SUPPRESS arm (C29.6). `game/ai/wall_contact.gd`:
+manoeuvre (native's N7.4 waits for manoeuvre's word). **Nobody** (a request): `game/match/**`, `game/tank/**`,
+`game/units/**`, `game/garage/**`, `game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`,
+`game/announcer/**`, `game/theme/**`, `arenas/**`, `game/arena/**`, `game/control/**`, `tests/baselines/**` (except
+declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
+
+**Contracts (round 29):**
+
+- **C29.1 Every change to fights or driving is DECLARED** (C28.1 carried): one commit, merged alone, with its scenario and
+  paired series, the CPU on the same behaviour; **the bar (with a partial-gain rule and the last attempt named) is sent to
+  the orchestrator before its numbers**; tuned on named seeds, judged on fresh ones (lesson 298); the control arm can win
+  and lose (295); the measuring point checked against each arm (297); an arm's own counter shows the rule fired (300);
+  the count is what he sees, split from squadmates' noise (301); the worst run's trace read before the median (302).
+- **C29.2 The C++ follows, and native carries it** (C28.2 carried, stage 1 ON): develop on the GDScript path
+  (`--brains-off=native`); send native each SETTLED diff to the drive, `_avoid`/`Avoidance.solve`, `right_of_way`,
+  unstick, gunnery or the per-crew execute before its commit (SendMessage, orchestrator copied); native ports it with an
+  equal-answer proof; the pair merges back to back and is checked once. Any GDScript write to a `Movement` / `Gunnery` /
+  lay member outside the native execute marks it stale (`movement.native_stale |= Movement.STALE_*`); run
+  `native-verify-scenarios` on your scenarios before the diff goes to native. Pairs pre-empt native's N7 work.
+- **C29.3 The street hold is traffic's, end to end, with one-line grants** (round 29 item 1). Traffic owns
+  `Traffic.holding(crew) -> bool` and the hold itself (`game/ai/traffic*.gd`). Traffic is GRANTED one additive gate line
+  (`if Traffic.holding(...)`, behind `--traffic-off=hold`) at each of: brains' stall clock (`_track_progress`), the
+  "blocked" phase (`_update_phase`), the element's make-room / re-seat clock; manoeuvre's `unstick`, `_pressing_escape`
+  and the k-turn entry. Owners: do not restructure those functions' first lines without telling the orchestrator; the
+  gates merge with traffic's T1. Native ports the hold read from the record (C29.2).
+- **C29.4 N7.3's freeze window: RELEASED** (granted 2026-10-13 morning, released the same hour). N7.3a (`OrderController.
+  _physics_process` in C++, `native_controller`) proved equal but priced a LOSS (builder0, foundry 25 a side, ×3 an arm:
+  the controllers segment 2.0 → 2.7 % of the tick; each extension crossing costs more than the VM step it replaces), so it
+  is committed OFF for stage 2 and N7.3b is skipped. `order_controller.gd` is manoeuvre's face-at-rest path again, plus
+  native's existing seams; nobody else.
+- **C29.5 A behaviour change carries a cost line** (C28.4): its cost a tick at 25 a side on Sumps, GDScript path,
+  ≤ 0.5 ms or NOT READABLE. **A pass line changes only with its reason written down** (C28.5): arrival is `all_in8_s`.
+- **C29.6 Scout's fixed-gun SUPPRESS lay (round 28 S1, `scout-s1-suppresslay`) is manoeuvre's stretch, conditional:**
+  only if CP-M2 (the creep as legs) ships; then the round-28 grant applies (one FIRST branch in `_act`'s "SUPPRESS" arm,
+  `_combat_move`'s optional `aim_point`, `--scout-off=suppresslay`), judged ONCE on fresh census seeds 85–108 with kills
+  as a guard (round 28's pre-registered last attempt). Brains told.
+- **C29.7 builder0 runs every Godot run** (C28.6); the laptop only in a slot the orchestrator grants (E6b after N7.3).
+- **C29.8 Formation geometry is brains'.** A slot spread that manoeuvre's turn room needs, and the 6 m screen slots for
+  10 m gang trucks, are brains' code; manoeuvre asks through the orchestrator.
+- C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
+
+
+## Round 28: five streams (launched 2026-10-12 ~11:45 PDT, CLOSED 2026-10-13; briefs in `streams/archive/round28/`)
 
 **Goal: his four calls (`game_design.md` *Round 28 direction*): squads crossing take turns; wheeled turret vehicles turn
 their whole hull to a drawn facing; artillery shells from a drawn side; a drawn flank is carried out even onto a stronger
