@@ -2481,14 +2481,7 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "suppress", "x": spot.x, "z": spot.z})
 			why = TankBrain._join(why, "suppressing " + String(contact["name"]) if contact["visible"]
 					else "fire on where it went")
-			if _lays_suppressing(s, spot):
-				# Round 28 (scout S1): a fixed gun's hull IS its aim, and a wheeled one cannot turn at rest: the band-and-face
-				# chain below left it creeping round on a `face` order (census: SUPPRESS was 20 % of a fixed gun's fight
-				# time, outside the lay planner). It lays its hull on the point by the same rollout as ENGAGE, turning room
-				# kept, and brakes to a stop once the gun bears (the planner's hold) — standing still is still what makes
-				# the fire effective.
-				_order_move(_combat_move(s, contact, spot))
-			elif distance > float(weapon["preferred_max"]):
+			if distance > float(weapon["preferred_max"]):
 				_order_move(_move_to(contact["position"]))
 			elif distance < float(weapon["preferred_min"]):
 				var back: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0
@@ -3017,22 +3010,7 @@ func _hull_half_length() -> float:
 ## X2: the move order for fighting `contact` on the move: circle it in the weapon's band (CombatMotion), jinking to the
 ## other side now and then (heavy hulls right after firing, while they reload), and for fixed guns runs at its side and
 ## rear that break away when close. Falls back to facing the target when every direction is blocked.
-## Round 28 (scout S1): whether SUPPRESS's motion is the lay planner on `spot` — a fixed gun (standoff) that fights on
-## the move, not bounding with its element (the bound slot comes first), with the point in its gun's reach.
-func _lays_suppressing(s: Dictionary, spot: Vector3) -> bool:
-	if not CombatMotion.suppresslay_on() or not _moves_while_fighting(s):
-		return false
-	var me: Dictionary = s["self"]
-	if TankBrain.motion_style(String(me.get("unit", ""))) != "standoff":
-		return false
-	if BOUND_SUPPRESS_MOVES and _bounding_slot(s) is Vector3:
-		return false
-	return _flat(me["position"]).distance_to(_flat(spot)) <= float((me["weapon"] as Dictionary)["range"]) + MOTION_REACH_MARGIN
-
-
-## `aim_point` (round 28, scout S1): SUPPRESS's laid point — the planner lays the hull on it as a stationary target
-## instead of on the contact, and there is no short halt (the hold is the planner's own, once the gun bears).
-func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null) -> Dictionary:
+func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	var me: Dictionary = s["self"]
 	var my_position: Vector3 = me["position"]
 	var weapon: Dictionary = me["weapon"]
@@ -3078,7 +3056,7 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 	else:
 		_loaded_tick = -1
 	var halt_reload := float(s.get("features", {}).get("short_halt_reload", SHORT_HALT_RELOAD))
-	if style != "run" and aim_point == null and reload_seconds >= halt_reload and distance <= TankBrain.fire_band(weapon):
+	if style != "run" and reload_seconds >= halt_reload and distance <= TankBrain.fire_band(weapon):
 		var ready_in := (1.0 - float(me.get("reload", 1.0))) * reload_seconds
 		var braking := absf(tank.speed()) / maxf(tank.acceleration, 0.1)
 		var incoming: Array = s.get("incoming", [])
@@ -3095,14 +3073,7 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 	# The incoming count is in the key so a new round on its way re-decides. It is also why a unit under sustained fire
 	# re-decides on every shell that enters or leaves its list, which is what A1's tube is aimed at (see TUBE_ENABLED).
 	var motion_key := "%s|%d|%s|%d" % [contact["name"], _strafe_side, _run_phase, (s.get("incoming", []) as Array).size()]
-	# The laid point re-lays every SUPPRESS_REAIM_TICKS (or when the target leaves it): a new point is a new plan.
-	var aim_contact := contact
-	if aim_point is Vector3:
-		motion_key += "|suppress %.1f,%.1f" % [(aim_point as Vector3).x, (aim_point as Vector3).z]
-		aim_contact = contact.duplicate()
-		aim_contact["position"] = aim_point
-		aim_contact["velocity"] = Vector3.ZERO
-	if _hold_motion_plan(motion_key, tick, my_position, aim_contact):
+	if _hold_motion_plan(motion_key, tick, my_position, contact):
 		_redecide_skips += 1
 		why = _motion_cache["why"]
 		return _motion_cache["order"]
@@ -3110,7 +3081,7 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 	var cover_map := CoverMap.of(tank)
 	var request := {"position": my_position, "forward": me["forward"], "speed": tank.max_forward_speed,
 			"reverse_speed": tank.max_reverse_speed, "style": style,
-			"target": {"position": aim_contact["position"], "forward": contact["forward"], "velocity": aim_contact["velocity"]},
+			"target": {"position": contact["position"], "forward": contact["forward"], "velocity": contact["velocity"]},
 			"band": [float(weapon["preferred_min"]), float(weapon["preferred_max"])], "side": _strafe_side,
 			"phase": _run_phase, "map": cover_map,
 			"friends": (s["allies"] as Array).map(func(ally: Dictionary) -> Vector3: return ally["position"]),
@@ -3167,7 +3138,6 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 		request["target_half_width"] = float(target_box[0]) * 0.5
 		request["target_half_length"] = float(target_box[2]) * 0.5
 		request["previous_lay"] = _motion_prev_lay
-		request["spread_weighted"] = aim_point is Vector3
 	var result := CombatMotion.choose(request)
 	_motion_prev_index = int(result.get("index", -1))
 	_motion_prev_reverse = bool(result.get("reverse", false))
@@ -3175,14 +3145,14 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 	if OrderController.profiling:
 		OrderController.add_part("motion", Time.get_ticks_usec() - clock)
 	if result.is_empty():
-		return {"type": "face", "x": aim_contact["position"].x, "z": aim_contact["position"].z}
+		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
 	if result.get("hold", false):
 		# Round 7 (nav): a fixed gun inside its band stops and lays its hull on the target (Gunnery swings a stopped fixed
 		# mount onto what it engages) instead of driving at it — the lead's "scouts are just running directly into their
 		# targets and then they have to turn around to get a fix again".
 		why = TankBrain._join(why, "holding at standoff")
 		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"},
-				"at": my_position, "target_at": aim_contact["position"]}
+				"at": my_position, "target_at": contact["position"]}
 		return _motion_cache["order"]
 	if result.get("dodging", false):
 		why = TankBrain._join(why, "dodging")
@@ -3215,9 +3185,9 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 			wet_hops_cut += 1
 			if _flat(my_position).distance_to(dry) < WET_HOP_MIN_M:
 				why = TankBrain._join(why, "water between: firing across")
-				var hold := {"type": "face", "x": aim_contact["position"].x, "z": aim_contact["position"].z}
+				var hold := {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
 				_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": hold, "at": my_position,
-						"target_at": aim_contact["position"]}
+						"target_at": contact["position"]}
 				return hold
 			hop = Vector3(dry.x, hop.y, dry.z)
 	var nose_on := (me["forward"] as Vector3).dot((Vector3(contact["position"].x, 0.0, contact["position"].z) - _flat(my_position)).normalized()) >= RUN_AIMED_COS
@@ -3225,7 +3195,7 @@ func _combat_move(s: Dictionary, contact: Dictionary, aim_point: Variant = null)
 			and nose_on else 1.0
 	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
 			"order": _move_to(hop, result["reverse"], speed, 1.0, true),
-			"at": my_position, "target_at": aim_contact["position"]}
+			"at": my_position, "target_at": contact["position"]}
 	return _motion_cache["order"]
 
 

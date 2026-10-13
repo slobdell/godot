@@ -66,19 +66,3 @@ func test_the_switch_restores_the_ring() -> void:
 	var result := CombatMotion.choose(request)
 	assert_true(not result.has("lay"), "--scout-off=gunlay: round 7's standoff ring (%s)" % result)
 
-
-## Round 28 (scout S1): SUPPRESS's point is still, and a round lands wider the faster the hull moves (Match.shot_spread).
-## Traced (census seed 5): a scout reversing at ~6 m/s with its gun on the point kept reversing — reverse and brake tied
-## on every step on it, and commitment held the reverse. Spread-weighted, the brake wins.
-func test_suppressing_a_still_point_while_reversing_onto_it_brakes() -> void:
-	var overrides := {"velocity": Vector3(0, 0, 5.8), "previous_lay": 7, "spread_weighted": true}
-	var plan := CombatMotion.plan_lay(_request(Vector3(0, 0, -28), Vector3.ZERO, overrides))
-	assert_true(bool(plan.get("hold", false)), "gun on a still point: stop, the rounds land tighter (%s)" % plan)
-
-
-func test_spread_weighting_leaves_engage_alone() -> void:
-	# Without the flag (ENGAGE) the plan is CP-S's, whatever it is: the weighting is SUPPRESS's only.
-	var request := _request(Vector3(0, 0, -28), Vector3.ZERO, {"velocity": Vector3(0, 0, 5.8), "previous_lay": 7})
-	var plain := CombatMotion.plan_lay(request)
-	request["spread_weighted"] = false
-	assert_eq(CombatMotion.plan_lay(request), plain, "spread_weighted false is the CP-S plan")

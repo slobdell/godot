@@ -21,8 +21,10 @@ extends TestCase
 
 ## The bars (written 2026-10-12 before any measurement): the gun on its point ON_POINT_BAR of the SUPPRESS time, pooled
 ## [it keeps hosing the spot instead of creeping round]; the first time on it within FIRST_BAR seconds, pooled median
-## [it comes round in about a turn, not a shuffle]; no hull contact. Promoted at CP-S1 (pooled n = 18: all four pass; `--scout-off=suppresslay` fails behind and crossing).
-const PENDING := []
+## [it comes round in about a turn, not a shuffle]; no hull contact. With CP-S1 all four passed (pooled n = 18).
+## Round 28: CP-S1 (the lay planner under SUPPRESS) did NOT ship by its census bar (branch `scout-s1-suppresslay`);
+## main's band-and-face chain fails these two (pooled n = 18: behind first-on 3.5 s, crossing on point 0.48).
+const PENDING := ["test_target_behind", "test_target_crossing"]
 const ON_POINT_BAR := 0.5
 const FIRST_BAR := 3.0
 
@@ -151,9 +153,8 @@ func pool(kind: String) -> Dictionary:
 	firsts.sort()
 	var out := {"n": runs.size(), "suppress_s": suppress_s / runs.size(), "on_point": on_s / maxf(suppress_s, 0.001),
 			"first_median": float(firsts[firsts.size() / 2]), "contacts": contacts, "shots": shots / float(runs.size())}
-	print("MEASURE scout_suppress %s n=%d suppress_s=%.1f on_point=%.2f first_median=%.1f contacts=%d shots=%.0f lay=%s" % [
-			kind, out["n"], out["suppress_s"], out["on_point"], out["first_median"], contacts, out["shots"],
-			CombatMotion.suppresslay_on()])
+	print("MEASURE scout_suppress %s n=%d suppress_s=%.1f on_point=%.2f first_median=%.1f contacts=%d shots=%.0f" % [
+			kind, out["n"], out["suppress_s"], out["on_point"], out["first_median"], contacts, out["shots"]])
 	return out
 
 

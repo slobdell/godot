@@ -72,3 +72,34 @@ scenario passes all four; else no ship. < 12 paired seeds → extend 85+. GUARDS
 orchestrator's addition, accepted; absolute SUPPRESS seconds per arm reported); outcomes reported. SCENARIO pooled n = 18 a case: on point ≥ 50 %,
 median first-on ≤ 3.0 s, 0 contacts, all four; off arm fails ≥ 1. And check green, native-verify-scenarios green,
 thirteen lines declared, determinism, cost ≤ 0.5 ms (`make scout-cost`).
+
+### S1: the scenario (builder0, tree on `c6e32d03` + S1, pooled n = 18 a case; seen before the census, disclosed)
+| case | on point off → new | median first-on s | contacts | bars off / new |
+|---|---|---|---|---|
+| left90 (20 m off the left side) | 0.83 → 0.83 | 2.1 → 1.2 | 0 / 0 | pass / pass |
+| behind (20 m astern) | 0.71 → 0.80 | **3.5 → 2.5** | 0 / 0 | FAIL / pass |
+| close (8 m dead ahead) | 1.00 → 1.00 | 0.0 → 0.0 | 0 / 0 | pass / pass |
+| crossing (20 m ahead, W→E) | **0.48 → 0.61** | 1.1 → 0.7 | 0 / 0 | FAIL / pass |
+Two scenario fixes made on one-run probes, before either pooled arm was judged (disclosed): the first `right90` case
+(20 m east) had no sight line at the start, so brains' PURSUE ("ordered, closing in", 2 m arrive) drove the scout to
+6 m before SUPPRESS began — all 33/36 contacts were that approach, both arms; mirrored to `left90`. The setup floor
+(SUPPRESS ≥ 50 % of the run) read 5.6 s on the crossing (the tank leaves reach); now 30 % — a setup check, not a bar.
+
+### S1: the trace (census seeds 1–12, traced, NOT judged; builder0)
+- v1 (`ee9d7583`): on point during SUPPRESS +7.1 pts se 6.2; SUPPRESS 484 → 300 s; 43 % of SUPPRESS reversing.
+  Traced seed 5: with the gun on a still point, the reverse that brought it on and the brake TIED on every step and
+  commitment kept the reverse (2 s at 5.8 m/s, range 28 → 35 m, moving spread). Fix (`c138e589`): under SUPPRESS a
+  step on the point is weighted by Match.shot_spread's moving factor, 1 / (1 + 1.5 × |v| / top). ENGAGE unchanged.
+- v2 (`c138e589`): on point **+5.86 pts se 5.78** (pooled 43.7 % → 56.2 %); SUPPRESS 484 → 338 s; share of fight
+  −7.4 pts se 4.3; all-fight on target +0.7 se 2.9; fight contacts −2.8 a seed se 2.4; kills 9 → 7, damage +35 a
+  seed se 36, deaths 190 → 176. SUPPRESS by motion (new): stop/hold 40 % (88 % on point), reverse/lay 38 % (41 %),
+  forward lay 20 % (26 %): the moving time is wheeled hulls coming round 40–110° in legs.
+- Known and left (brains'): a fixed gun of a squad on `hold` keeps the face chain (`_moves_while_fighting` false); the
+  suppress point re-lays every 1.5 s onto a moving target's lead, so a wheeled hull re-turns each time.
+
+### S2: where fixed guns die (census seeds 1–12, builder0; last ticked option/motion; both arms of the trace)
+off n = 189 / new n = 175: **under an ordered MOVE 23 % / 30 %**, RETREAT 14 % / 17 %, SPOT 14 % / 9 %, ENGAGE
+(hold+lay+ring) 24 % / 26 %, SUPPRESS 7 % / 3 %, TAKE_COVER 5 % / 3 %. Killers: IFVs and tanks ~55 %, lancers ~11 %,
+artillery 6–12 %. Reading: the fight motion is not where most scouts die — a quarter to a third die while driving an
+ordered move (round 27's census put most enemy contacts there too) and ~15 % while retreating. Those are brains'
+(orders/retreat), not a scout rule: filed as a request. No S2 rule of mine follows from this.
