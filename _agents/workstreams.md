@@ -102,7 +102,7 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
 - **Scout CP-S1 NOT SHIPPED (2026-10-12, blind seeds 61–84, game/ = c138e589):** gun on point in SUPPRESS +6.32 pts, se 5.17
   (n = 13): inside 2 se; guards held; fixed-gun kills 77 → 57 (−1.0/seed, se 0.5). Trace: ~60 % of SUPPRESS is a wheeled
   hull coming round in legs at 19–32 % on point. Kept on `scout-s1-suppresslay`. **One last attempt after manoeuvre's M2
-  (the creep lift) merges: fresh seeds 85–108, kills promoted to a guard.** S2 (to brains B3): 23–30 % of fixed-gun deaths
+  (the creep lift) merges (conditional: only if M2(a) ships): fresh seeds 85–108, kills promoted to a guard.** S2 (to brains B3): 23–30 % of fixed-gun deaths
   under an ordered MOVE, 14–17 % retreating, 3–7 % in SUPPRESS.
 
 - **Traffic T1 v3 frozen at `672eb785` (2026-10-12 evening), single judged run on seeds {4,5,6} + the CPU side on both
@@ -117,6 +117,14 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   9/18 → ≤ 4/18 (off arm ≥ 7 on the same commit); guards: gang's passing cases still pass, scout/law byte-identical; blind
   census fresh seeds 109–132: gang contacts, in-reach on target, kills, all-fight on target not worse beyond 2 se.
   Partial 5–6/18 with guards → ships with a note.
+
+- **Manoeuvre M2 FAILED its bar (2026-10-12, `27b56521`, builder0, GDScript path, untraced seeds):** creep episodes 148 →
+  123 (−17 %, bar ≥ 50 %); static ≤ 3-leg share 93 → 88 % (a new 39-leg episode by the circle fill); rigs on Terminus 55
+  → 51/64 arrived, contacts 1797 → 3261 → (b) circle fill OFF as pre-registered; (a) judged alone next (time-boxed); no
+  port needed yet. **M1 first judged run (`748735c9`):** line tasks meet the partial rule (27.6–27.9° v hover 28.1–28.7°;
+  base 39–103°); point tasks medians 6.5–7.5° (base 61–73°) but 55–67 % within 15° (bar 70 %), +15–27 crews still moving
+  at 75 s; a face-turn ping-pong fixed after (`--nav-off=faceslot`). **Ruled: M1's re-judge is its LAST attempt, on 6
+  fresh probe seeds, + guard: crews still moving at 75 s ≤ base + 5 per task.**
 
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);

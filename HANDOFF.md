@@ -10,7 +10,7 @@ targets ALL JUDGED** (stage 1 ON + native N5's small callbacks). Workers started
 `94b5fc0d`). He pushes `main`._
 
 **⚠ 2026-10-12 ~19:40: native's session ENDED** (no process; `godot-native` dirty with uncommitted N6.1 work on top of
-`76b0a881`: tank motion in C++). Needs a restart with the kickoff line. Its FIRST item on restart: manoeuvre's M2(a) port
+`76b0a881`: tank motion in C++). Needs a restart with the kickoff line. Its FIRST item on restart (UPDATE: M2 failed its bar; the port is NOT needed unless M2(a) alone ships): manoeuvre's M2(a) port
 request (`stream/manoeuvre` `1a13c548`, `_creep_lift` as a callback when throttle < the creep line; new members
 `_creep_lift_until`/`_creep_lift_ok` under the doors rule), then the uncommitted N6.1 work (read the diff, prove it or
 park it on a branch), then N3/N6 as in its Status.
