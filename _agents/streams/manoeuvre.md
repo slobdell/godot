@@ -67,4 +67,188 @@ Nothing: his call is made.
 
 ## Status
 
-_Not started._
+_Updated 2026-10-12 ~23:50 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`; base `c6e32d03`)._
+
+### The report (read this first)
+
+**Nothing ships from manoeuvre this round.** `stream/manoeuvre`'s code is main's (`c6e32d03`); its last commits are this
+brief and `references/round28/manoeuvre/`. Its check: see *Final check* at the end of this report.
+
+- **M0 done** (builder0, `c6e32d03`): orders' O3 reproduced (wheels/turret drawn medians 39-94 deg); base turn census
+  (917 episodes; creep 121, mostly short wheeled hulls; tracked hulls 9, none over 3 legs).
+- **M1 (his call: turn the whole vehicle) built, judged twice, NOT SHIPPED** (the orchestrator's ruling on the last
+  attempt). Kept: **`manoeuvre-m1` at `140275af`** (`TankBrain._order_move`'s decline skips a face whose element task
+  carries a DRAWN facing, `--nav-off=turnhull`; `Manoeuvre.plan_face`'s slot anchor, `--nav-off=faceslot`;
+  `tests/test_manoeuvre_turret_hull.gd`; `make manoeuvre-hull-rest` / `manoeuvre-hull-one` and
+  `tests/manoeuvre/hull_rest_ab.py`). What it buys: wheeled turret hulls end ~5 deg off a drawn point facing (base ~55),
+  line tasks at hover/turret's level (27-28 deg v base 41-113). What it costs, and why it did not ship: on move,
+  right-drag, screen and support by fire, 8-25 more crews per task are still turning 75 s after the order (planned
+  face legs among squadmates in a packed formation) against "a few seconds longer"; move/right-drag 64-69 % within 15 deg
+  v the 70 % bar.
+- **M2 (the creep) built, judged, NOT SHIPPED.** Kept: **`manoeuvre-m2`** (`1a13c548`: the creep lift
+  `--nav-off=creeplift`, the circle fill `--nav-off=circlefill`, `tests/test_manoeuvre_creep.gd`, counters + `m2_us`).
+  Creep episodes -17 % (both) / -20 % (lift alone) v the 50 % bar; rigs' wall contacts up (1797 -> 3261 / 4136). The lift
+  fixes the OPEN-ground creep (its long episodes -72 %, the mixed squad's legs 649 -> 388 s, half the wall contacts) but
+  half the creep is the friendly case and long rigs roll into walls.
+- **M3 not needed** (census: tracked hulls never over 3 legs).
+
+**Round 29 (the orchestrator's direction for M1):** attack the moving-crews cost: give the turn room (a spread before the
+face, or the face planned against the squadmates' discs), then re-judge on FRESH seeds (not 2 4 7 9 15 19, not O3's).
+For the creep: a long hull's creep planned as legs in the drive; the friendly creep through traffic's give-way.
+
+**What to playtest:** nothing new from this stream (main's behaviour). To SEE M1: `git checkout manoeuvre-m1 && make
+native && make skirmish`, pick Road Gangs, select the gun trucks, M + drag a facing: they turn nose-on (and some keep
+turning for a while in a packed squad).
+
+**Questions for the lead:** none (his call was made; the orchestrator ruled on the bar).
+
+**Requests to other streams:** brains (relayed by the orchestrator): gang gun trucks (10 m hulls) screening into 6 m
+slots side-on: one parallel-parks a minute (TacticsLab seed 61, screen to `[LANE_X, 0]` facing east). Native: no port
+needed (M2 not shipped).
+
+**Merge notes:** none for this round (nothing to merge). If M1 is taken up: 3 lines in brains' `tank_brain.gd`
+`_order_move` (granted 2026-10-12), `turnhull`/`faceslot` in `Movement.OFF_NAMES`.
+
+**Final check: `cbaa85fe`** (builder0, 2026-10-13 ~00:30 PDT, `make check exited 0`, 2520 passed / 0 failed, 23 targets
+passed + 2 NOT JUDGED for box load: perf-judge (ratios 2.35-2.45x) and scenario_perf's CPU budget (unpinned); thirteen
+sim baselines unmoved, determinism 2875411ff4ec6be7). Commits after it are this report only.
+
+**Cleanup at close:** builder0 `~/tank_squad/godot-manoeuvre`, `-light`, `godot-manoeuvre-m1`, `godot-manoeuvre-m1-light`
+(m2 already removed); local worktree `~/projects/godot-manoeuvre-m1` (branch `manoeuvre-m1` stays). Kept branches:
+`manoeuvre-m1`, `manoeuvre-m2` (never merge as is).
+
+### Plan (ordered, smallest foundation first)
+
+1. **M0** `make hull-rest-probe` at the base (builder0, 4 factions x 6 seeds x 6 tasks x drawn/clicked = O3's
+   workload, n >= 30 per class per task), plus each run's `settled_after_s` for the arrival-to-settled line.
+2. **M1** the rule (traced, below) + `tests/test_manoeuvre_turret_hull.gd` (fails at base, passes after) + the probe
+   re-run on the change, `bridge-pooled`, the arrive series, check; the bar to the orchestrator BEFORE the numbers.
+3. **M2** the creep: census at the base first, then M1b's planner for a wheeled hull whose arc is blocked at pace.
+4. **M3** (stretch) only if the census shows tracked hulls needing it.
+
+### Progress log
+
+- **M1 test** `tests/test_manoeuvre_turret_hull.gd` (builder0 light lane): base 4 failed (drawn hulls 26-107 deg off:
+  gang tank screen 26.3, law tank support by fire 92.7, gang IFV ambush worst 46.8, gang artillery attack-move 107.0);
+  `f27c6f16` 5/0 (resting hulls within 7 deg of their own sector; the clicked screen's faces still declined, 301).
+  First cut keyed on `_ordered_facing()` turned CLICKED screens too (the element's crews always carry a K1 facing):
+  fixed by reading the element task's `facing` (`_drawn_facing`).
+- **M1 bar** sent to the orchestrator before any numbers and ACCEPTED (incl. the partial rule for line tasks: where
+  the line's +/-30 deg sectors decide, wheels/turret = hover/turret's error +/-5 deg). Granted: the 3 lines in
+  `_order_move`.
+- **M1 judged runs** from a frozen worktree `godot-manoeuvre-m1` at `748735c9` (one commit, both arms):
+  `make manoeuvre-hull-rest` (4 arms), `squad-arrive-series` +/- `--nav-off=turnhull`, then `check`.
+- **M2 found while testing M1:** the gang-tank screen (seed 61) leaves one truck shuffling 16 m beside its slot for a
+  minute (base and M1 alike). Trace: it overruns a route corner; the next steering point is 120 deg off its nose inside
+  the turning circle; `_plan_circle`'s back-up on the lock toward it is blocked 3 m behind, so nothing is planned and
+  Steering's circle rule backs/drives reactively while the corner comes back ahead each time (~3 s legs). Not brains'
+  under-hull carrot (the corner is 3-8 m off). M2 candidate: `_plan_circle_fill` (back-and-fill on that lock, the away
+  arc required to line up: `_plan_fill(align=true)`), `--nav-off=circlefill`; test `tests/test_manoeuvre_creep.gd`.
+  All in the `_planned_reverse` callback (the native drive calls it back for every circle case), so no C++ port.
+
+- **M0 done:** `make hull-rest-probe` at `c6e32d03` (builder0) reproduces O3: wheels/turret DRAWN medians screen 39.1,
+  ambush 78.5, attack-move 62.3, move 63.8, right-drag 73.8, support by fire 93.5 deg (168 crews each; table
+  `references/round28/manoeuvre/m0_hull_rest_base.txt`). Turn census at the base tree (builder0 light lane, Terminus
+  seeds 1-3 x mixed/rigs, sim 3-5, Sumps 25 a side 60 s x 3): 917 episodes; static 98 % <= 3 legs, open 79 %,
+  friendly 72 %; cause "creep" 121 episodes (Sumps 53 % <= 3 legs, Terminus 31 %), mostly short wheeled hulls
+  (scout 26, IFV 26, lancer 13); "circle" 216.
+- **M2 candidate `1a13c548`** (two rules, two switches): (a) creep lift (`drive()` body -> native ports it: request
+  relayed via the orchestrator, native's session had ended); (b) circle fill (callback, no port). Bar sent and ACCEPTED
+  before numbers (orchestrator's condition: after the port, bridge-pooled + Terminus drive once on the ON path at the
+  pair's commit). Judged runs from frozen worktree `godot-manoeuvre-m2` at `27b56521`: census seeds 4-7 and bridge-pooled,
+  GDScript path, new v `--nav-off=creeplift,circlefill`.
+- **M3 (stretch) NOT NEEDED:** in the base census tracked hulls (tank, law_ifv) had 9 of 917 episodes, none over 3 legs.
+
+### M1 judged (two attempts; the second is the LAST this round, the orchestrator's ruling)
+
+**Attempt 1** (`748735c9`, O3's seeds 3 5 8 11 13 21): line tasks pass the partial rule (wheels/turret 27.6-27.9 v hover
+28.1-28.7; base 39-103); point tasks medians 6.5-7.5 (base 61-73) but 55-58 % within 15 deg (bar 70 %), crews still
+moving at 75 s up. Trace: a crew arriving at the edge of its arrive radius ping-ponged face/move -> `faceslot` fix.
+(Also: 576 runs outran slot.sh's 90-min cap; the probe now runs one arm per make call.)
+
+**Attempt 2, LAST** (`140275af`, fresh seeds 2 4 7 9 15 19, base `--nav-off=turnhull,faceslot`; table
+`references/round28/manoeuvre/m1_last_attempt_drawn.txt`), wheels/turret drawn, 155 crews a task:
+
+| task | base median / <=15 | change median / <=15 | hover/turret | moving at 75 s (change - base, guard <= +5) |
+|---|---|---|---|---|
+| screen | 40.9 / 24 % | 27.5 / 33 % | 28.5 | +12 FAIL |
+| ambush | 85.4 / 10 % | 26.8 / 33 % | 29.0 | +4 |
+| support by fire | 113.1 / 7 % | 27.6 / 27 % | 28.1 | +8 FAIL |
+| attack-move | 52.2 / 17 % | 5.5 / 70 % | 1.2 | +3 |
+| move | 59.3 / 25 % | 5.2 / 69 % FAIL by 1 pt | 1.5 | +14 FAIL |
+| right-drag | 60.3 / 26 % | 6.1 / 64 % FAIL | 1.6 | +25 FAIL |
+
+**Against the bar: NOT MET** (line tasks pass; point-task medians pass; the 70 % line misses on move and right-drag;
+the moving guard fails on 4 of 6). Sent to the orchestrator for the ruling (ship on the medians with the cost told to
+him, or not shipped); no merge hash named until it rules and check is in.
+
+### M1 smoke test like a player (2026-10-12 ~22:50, `38064858` = M1's code, builder0 light lane, windowed)
+
+`make facing-shots FACING_ONLY=faced_move,faced_screen` (Gangs, seed 3, quiet enemy), change v `--nav-off=turnhull,faceslot`,
+1854x1011 and 1200x540; looked at the drag and settled frames (the drag up-left; the gang artillery trucks end cab
+toward it). Per-crew errors in those runs: **drawn move** change 7 of 10 within 6 deg, 3 still turning at 75 s; base
+settled at 21.5 s with 5 of 8 wheeled turret hulls 65-170 deg off. **Drawn screen** change settled 44.5 s (base 56.5 s),
+hulls within their +/-30 deg sectors but one IFV 130 deg (both arms). Phone layout unaffected.
+
+### M2 judged (2026-10-12 ~21:40, `27b56521`, builder0, GDScript path both arms, census seeds 4-7 + sim 3-5)
+
+Bar (sent and accepted before numbers): (1) creep episodes -50 % (30-50 % with a note, < 30 % no); (2) episodes over
+3 legs not up, static/open <= 3-leg shares not down > 2 pts; (3) Terminus drive arrivals >= base, contacts not up
+> 10 %, mixed and rigs apart; (4) bridge-pooled 18/18; (5) <= 0.5 ms a tick; (6) check, symmetric. (b) failing (3)
+alone ships OFF and (a) is judged alone.
+
+| both rules v `--nav-off=creeplift,circlefill` | base | new |
+|---|---|---|
+| creep episodes (all) | 148 | 123 (-17 %): **(1) FAILS** |
+| creep, open kind / of them > 3 legs | 67 / 36 | 41 / 10 |
+| creep, friendly kind (pace < 1, left alone by design) | 81 | 78 |
+| static <= 3 legs (Terminus) | 93 % (83 %) | 88 % (68 %, a 39-leg episode): **(2) FAILS** |
+| Terminus mixed: arrived of 96, leg time, wall contact-ticks | 89, 649 s, 628 | 87, 388 s, 327 |
+| Terminus rigs: arrived of 64, leg time, wall contact-ticks | 55, 478 s, 1797 | 51, 629 s, 3261: **(b) fails (3) -> OFF** |
+| bridge-pooled (GDScript path) | 18/18 | 18/18 |
+| cost (m2_us, Sumps 25 a side, 1800 ticks) | - | ~0.09 ms a tick |
+
+Read: (b) the circle fill hurts the long hulls it is for (a rig pinned on a barricade 1118 ticks) -> OFF. (a) the
+creep lift does what it was built for (open-ground creep -39 %, its long episodes -72 %, mixed squad faster and half
+the wall contacts) but the census's creep is mostly the FRIENDLY case (avoidance's pace < 1), which (a) leaves alone on
+purpose: round 26 M3 lifted there and drove into squadmates.
+
+**(a) alone** (`--nav-off=circlefill` v `--nav-off=circlefill,creeplift`, same commit and seeds): creep 148 -> 118
+(-20 %: (1) FAILS); episodes over 3 legs 259 -> 213; static <= 3 legs 93.0 -> 90.8 % (-2.2 pts: (2) FAILS by a hair);
+Terminus mixed arrived 89 -> 87 of 96 (leg time 649 -> 388 s, contacts 628 -> 327), rigs 55 -> 58 of 64 but wall
+contact-ticks 1797 -> 4136 ((3) FAILS); bridge 18/18. **M2 is NOT shipped.** The arc check does not save the rigs:
+rolling a 10 m hull's turn at the line in a street still puts it into the walls the creep was nudging round (round 26
+M3 round 2's finding again, now with the clear-arc guard). What would: the creep for a LONG hull planned as legs (M1b's
+face planner applied in the drive), and the friendly creep (52 % of what is left) through traffic's give-way, not a
+throttle rule. Both are next-round items, not a third attempt tonight (time-box, worker contract 9).
+
+**Branches:** `stream/manoeuvre` = M1 (`140275af`) + docs; **`manoeuvre-m2`** (kept, NOT for merge) = everything
+including M2 at `1a13c548` (both rules, their switches, counters, `tests/test_manoeuvre_creep.gd`), for whoever takes
+the creep next. Native's port of (a) is NOT needed.
+
+### Known issues
+
+- **Gang trucks screening into 6 m slots** (TacticsLab seed 61: four gang_tank, screen to `[LANE_X, 0]` facing east from
+  50 m south): one 10 m truck must parallel-park into a slot between squadmates; at base it shuffles a minute, with M2's
+  circle fill it gets round the route corner but still does not settle (and on the GDScript path a second truck joins
+  it). A formation-spacing question (slots laid at hull width for 10 m hulls arriving side-on): relayed to brains by the
+  orchestrator as a candidate.
+
+### Requests to other streams
+
+- **native** (relayed by the orchestrator 2026-10-12 ~21:30): port M2(a), commit `1a13c548`, `_creep_lift` (callback
+  when throttle < line is enough); members `_creep_lift_until`, `_creep_lift_ok`. Flip `tests/test_manoeuvre_creep.gd`'s
+  `BrainSwitches.native = false` pin to the default path in the pair commit.
+
+### M1 trace (2026-10-12, base `c6e32d03`, read in code)
+
+The arrival-heading rule is NOT in `order_controller.gd` (`_wheel_hold` there is opt-in and OFF). It is
+`TankBrain._order_move` (round 8): any `face` order that is not `told` is turned into a `stop` for a wheeled turreted
+hull (`turret_carries_aim`). A squad's drawn facing reaches its crews as the element's SECTOR watch (`HOLD` branch,
+`from: _sector_source()` = "order") and that face is never `told`, so it is declined and the hull keeps its arrival
+heading. Only a detached crew's `_face_intended_or` (told) was turning. **Change:** the decline skips a face whose
+`from` is "order" when the crew's K1 order itself carries a facing (`_ordered_facing()`: drawn); a clicked order has
+none, so it is still declined (the turret takes it). Switch `--nav-off=turnhull` (= base) in
+`OrderController.hull_turn_on()`. **Merge note:** a 3-line edit in brains' `tank_brain.gd` `_order_move` (the rule the
+brief assigned to manoeuvre lives there) and `turnhull` added to `Movement.OFF_NAMES`; no C++ (the think half is
+GDScript; the face is executed by M1b's `face_turn`, already ported).

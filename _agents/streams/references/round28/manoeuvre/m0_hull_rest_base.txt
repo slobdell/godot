@@ -1,0 +1,63 @@
+# make hull-rest-probe at c6e32d03 (main's code), builder0, foundry, gangs/law/syndicate/condemned x seeds 3 5 8 11 13 21, quiet arm; 2026-10-12 19:09-20:12 PDT
+HULL_TABLE runs {'clicked': 144, 'drawn': 144}
+HULL_TABLE task | class | arm | n | median | p90 | worst | <=15 deg | >=100 deg | p(drawn v clicked medians)
+HULL_TABLE faced_ambush | ALL | drawn | 313 | 31.8 | 150.1 | 178.3 | 20% | 24% | 0.021
+HULL_TABLE faced_ambush | ALL | clicked | 313 | 38.2 | 122.4 | 166.6 | 11% | 17% | 
+HULL_TABLE faced_ambush | hover/turret | drawn | 52 | 28.0 | 32.2 | 32.9 | 38% | 0% | 0.000
+HULL_TABLE faced_ambush | hover/turret | clicked | 52 | 34.0 | 74.5 | 112.2 | 4% | 4% | 
+HULL_TABLE faced_ambush | tracks/turret | drawn | 16 | 21.2 | 31.5 | 32.2 | 50% | 0% | 0.096
+HULL_TABLE faced_ambush | tracks/turret | clicked | 16 | 34.5 | 96.6 | 156.3 | 25% | 6% | 
+HULL_TABLE faced_ambush | wheels/fixed | drawn | 77 | 26.2 | 76.7 | 153.0 | 26% | 8% | 0.000
+HULL_TABLE faced_ambush | wheels/fixed | clicked | 77 | 34.2 | 84.4 | 135.5 | 3% | 6% | 
+HULL_TABLE faced_ambush | wheels/turret | drawn | 168 | 78.5 | 160.3 | 178.3 | 8% | 41% | 0.057
+HULL_TABLE faced_ambush | wheels/turret | clicked | 168 | 61.2 | 136.9 | 166.6 | 15% | 27% | 
+HULL_TABLE faced_attack_move | ALL | drawn | 313 | 31.7 | 132.0 | 179.9 | 43% | 16% | 0.000
+HULL_TABLE faced_attack_move | ALL | clicked | 313 | 63.2 | 152.5 | 178.0 | 7% | 32% | 
+HULL_TABLE faced_attack_move | hover/turret | drawn | 52 | 1.4 | 2.3 | 3.0 | 100% | 0% | 0.000
+HULL_TABLE faced_attack_move | hover/turret | clicked | 52 | 41.0 | 79.8 | 161.7 | 6% | 6% | 
+HULL_TABLE faced_attack_move | tracks/turret | drawn | 16 | 2.2 | 76.8 | 132.9 | 75% | 6% | 0.001
+HULL_TABLE faced_attack_move | tracks/turret | clicked | 16 | 68.7 | 160.4 | 166.6 | 0% | 38% | 
+HULL_TABLE faced_attack_move | wheels/fixed | drawn | 77 | 3.2 | 66.7 | 149.0 | 70% | 1% | 0.000
+HULL_TABLE faced_attack_move | wheels/fixed | clicked | 77 | 62.5 | 128.0 | 171.8 | 12% | 31% | 
+HULL_TABLE faced_attack_move | wheels/turret | drawn | 168 | 62.3 | 149.6 | 179.9 | 10% | 29% | 0.018
+HULL_TABLE faced_attack_move | wheels/turret | clicked | 168 | 83.8 | 160.8 | 178.0 | 6% | 40% | 
+HULL_TABLE faced_move | ALL | drawn | 313 | 7.1 | 151.3 | 179.9 | 58% | 20% | 0.000
+HULL_TABLE faced_move | ALL | clicked | 313 | 42.8 | 125.2 | 175.7 | 11% | 15% | 
+HULL_TABLE faced_move | hover/turret | drawn | 52 | 1.6 | 2.3 | 3.4 | 100% | 0% | 0.000
+HULL_TABLE faced_move | hover/turret | clicked | 52 | 39.1 | 78.4 | 129.2 | 8% | 4% | 
+HULL_TABLE faced_move | tracks/turret | drawn | 16 | 1.8 | 3.2 | 3.5 | 100% | 0% | 0.000
+HULL_TABLE faced_move | tracks/turret | clicked | 16 | 45.0 | 106.1 | 112.3 | 12% | 12% | 
+HULL_TABLE faced_move | wheels/fixed | drawn | 77 | 3.7 | 8.0 | 87.2 | 96% | 0% | 0.000
+HULL_TABLE faced_move | wheels/fixed | clicked | 77 | 39.3 | 65.6 | 154.0 | 3% | 4% | 
+HULL_TABLE faced_move | wheels/turret | drawn | 168 | 63.8 | 162.4 | 179.9 | 23% | 38% | 0.896
+HULL_TABLE faced_move | wheels/turret | clicked | 168 | 62.2 | 142.4 | 175.7 | 15% | 24% | 
+HULL_TABLE faced_right | ALL | drawn | 313 | 7.5 | 140.3 | 178.4 | 53% | 23% | 0.000
+HULL_TABLE faced_right | ALL | clicked | 313 | 42.2 | 125.1 | 179.6 | 8% | 16% | 
+HULL_TABLE faced_right | hover/turret | drawn | 52 | 1.4 | 2.4 | 3.6 | 100% | 0% | 0.000
+HULL_TABLE faced_right | hover/turret | clicked | 52 | 39.1 | 79.4 | 128.0 | 8% | 4% | 
+HULL_TABLE faced_right | tracks/turret | drawn | 16 | 1.9 | 2.5 | 2.7 | 100% | 0% | 0.000
+HULL_TABLE faced_right | tracks/turret | clicked | 16 | 24.8 | 97.3 | 111.5 | 6% | 6% | 
+HULL_TABLE faced_right | wheels/fixed | drawn | 77 | 3.0 | 12.9 | 92.3 | 90% | 0% | 0.000
+HULL_TABLE faced_right | wheels/fixed | clicked | 77 | 39.2 | 61.6 | 166.2 | 1% | 4% | 
+HULL_TABLE faced_right | wheels/turret | drawn | 168 | 73.8 | 158.5 | 178.4 | 17% | 43% | 0.046
+HULL_TABLE faced_right | wheels/turret | clicked | 168 | 57.8 | 139.3 | 179.6 | 11% | 27% | 
+HULL_TABLE faced_screen | ALL | drawn | 313 | 30.8 | 99.2 | 179.2 | 25% | 10% | 0.000
+HULL_TABLE faced_screen | ALL | clicked | 313 | 45.5 | 120.4 | 180.0 | 9% | 16% | 
+HULL_TABLE faced_screen | hover/turret | drawn | 52 | 28.8 | 32.3 | 102.4 | 38% | 2% | 0.000
+HULL_TABLE faced_screen | hover/turret | clicked | 52 | 40.5 | 78.7 | 120.4 | 8% | 4% | 
+HULL_TABLE faced_screen | tracks/turret | drawn | 16 | 28.5 | 69.3 | 97.2 | 31% | 0% | 0.441
+HULL_TABLE faced_screen | tracks/turret | clicked | 16 | 33.2 | 87.7 | 128.5 | 38% | 6% | 
+HULL_TABLE faced_screen | wheels/fixed | drawn | 77 | 27.8 | 67.3 | 137.9 | 26% | 3% | 0.000
+HULL_TABLE faced_screen | wheels/fixed | clicked | 77 | 40.6 | 85.9 | 117.9 | 4% | 6% | 
+HULL_TABLE faced_screen | wheels/turret | drawn | 168 | 39.1 | 131.4 | 179.2 | 20% | 17% | 0.008
+HULL_TABLE faced_screen | wheels/turret | clicked | 168 | 59.5 | 140.8 | 180.0 | 8% | 26% | 
+HULL_TABLE faced_support_by_fire | ALL | drawn | 313 | 32.7 | 151.2 | 176.1 | 21% | 27% | 0.120
+HULL_TABLE faced_support_by_fire | ALL | clicked | 313 | 37.4 | 116.3 | 177.7 | 12% | 17% | 
+HULL_TABLE faced_support_by_fire | hover/turret | drawn | 52 | 28.6 | 32.5 | 33.4 | 38% | 0% | 0.139
+HULL_TABLE faced_support_by_fire | hover/turret | clicked | 52 | 31.8 | 72.2 | 112.7 | 15% | 4% | 
+HULL_TABLE faced_support_by_fire | tracks/turret | drawn | 16 | 20.4 | 32.3 | 72.3 | 50% | 0% | 0.431
+HULL_TABLE faced_support_by_fire | tracks/turret | clicked | 16 | 30.4 | 76.6 | 97.8 | 31% | 0% | 
+HULL_TABLE faced_support_by_fire | wheels/fixed | drawn | 77 | 28.0 | 66.6 | 145.5 | 30% | 8% | 0.013
+HULL_TABLE faced_support_by_fire | wheels/fixed | clicked | 77 | 32.6 | 84.6 | 136.9 | 4% | 10% | 
+HULL_TABLE faced_support_by_fire | wheels/turret | drawn | 168 | 93.5 | 159.9 | 176.1 | 10% | 47% | 0.001
+HULL_TABLE faced_support_by_fire | wheels/turret | clicked | 168 | 57.1 | 127.5 | 177.7 | 14% | 26% | 
