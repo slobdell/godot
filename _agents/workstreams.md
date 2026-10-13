@@ -214,6 +214,12 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   pass; arrive series fresh seeds 17–20 ≥ control − 1, median ≤ +2 %; thirteen declared; **+ the fight tests (pace-p0
   phase 0, the let-go guard) all pass (orchestrator).**
 
+- **HIS PLAYTEST (2026-10-13): a queued screen after a waypoint** (`game_design.md` *Round 28, his playtest*) → **brains
+  B5, TOP priority** (after B3/B4's in-flight judged runs, coding now). GRANT: the order-queue hunk of
+  `game/control/rts_controls.gd` (`order_selection`'s element-task branch, the queue, `_copy_*`) and its tests. Probe
+  through the player's input (lesson 291), paused planning AND live; armed orders with an automatic facing take it from
+  the last queued waypoint; a drawn facing wins; unshifted orders byte-identical.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
