@@ -390,9 +390,9 @@ static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dic
 		var position: Vector3 = member["position"]
 		var keeps := attacking.has(name)
 		var sector := APPROACH_KEEP_SECTOR_DEG if keeps else APPROACH_SECTOR_DEG
-		var reach := float(member["range"]) * ENGAGE_RANGE_FACTOR + (PURSUIT_HYSTERESIS_M if keeps else 0.0)
+		var crew_reach := float(member["range"]) * ENGAGE_RANGE_FACTOR + (PURSUIT_HYSTERESIS_M if keeps else 0.0)
 		if target != "" and absf(approach_off_deg(position, target_point, approach)) <= sector \
-				and position.distance_to(target_point) <= reach:
+				and position.distance_to(target_point) <= crew_reach:
 			_order(plan, name, "attack", null, target)
 
 
