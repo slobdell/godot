@@ -23,13 +23,19 @@ const JITTER_M := 2.0
 const REACH_M := 50.0
 ## Round 28 (B1's bar): "on side" is within this many degrees of the side drawn.
 const SIDE_DEG := 35.0
+## Round 29 (B1): the clip's frame: every 3 ticks (10 fps of game time), looking at the ground between his start, the
+## target and the east side from high to the south-east.
+const FILM_EVERY := 3
+const FILM_FOV_DEG := 45.0
+const FILM_FOCUS := Vector3(35.0, 0.0, 10.0)
+const FILM_FROM := Vector3(60.0, 150.0, 110.0)
 
 
 ## `immortal`: the target is healed every tick (orders' flank probe: a target that cannot die shows whether the attack
 ## CLOSES, or parks at its guns' reach trading fire).
 static func run(case: TestCase, seed_value: int, seconds: float, approach: Variant, trace := false, arena := "yard_open",
 		immortal := false, quiet := false, live := false, his: PackedStringArray = [],
-		theirs: PackedStringArray = [], moving := false) -> Dictionary:
+		theirs: PackedStringArray = [], moving := false, film := "") -> Dictionary:
 	var lab := TacticsLab.create(case, seed_value, arena)
 	lab.game_match.set_meta("player_team", Match.Team.GREEN)
 	var jitter := RandomNumberGenerator.new()
@@ -121,6 +127,20 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 		if approach != null and shot_off > SIDE_DEG:
 			off_side_shots[0] += 1)
 	var start_tick := lab.game_match.tick
+	# Round 29 (B1, a clip for him): `film` is a folder; every FILM_EVERY ticks a frame from high to the south-east, the
+	# target, his start and the drawn side all in view (needs a display: make approach-clip).
+	var camera: Camera3D = null
+	if film != "":
+		camera = Camera3D.new()
+		camera.fov = FILM_FOV_DEG
+		camera.far = 800.0
+		case.add_to_tree(camera)
+		camera.current = true
+		var light := DirectionalLight3D.new()
+		light.rotation_degrees = Vector3(-60, 30, 0)
+		case.add_to_tree(light)
+		camera.global_position = FILM_FOCUS + FILM_FROM
+		camera.look_at(FILM_FOCUS, Vector3.UP)
 	var pursuing_ticks := 0
 	var rounding_pursuing_ticks := 0
 	var target_fastest := 0.0
@@ -147,6 +167,9 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			was_set[unit_name] = false
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
+		if camera != null and tick % FILM_EVERY == 0:
+			await RenderingServer.frame_post_draw
+			case.tree.root.get_texture().get_image().save_png(film.path_join("frame_%05d.png" % tick))
 		for unit_name: String in names:
 			var crew := lab.tank_of(unit_name)
 			if crew == null or not crew.is_alive() or crew.deploy_seconds <= 0.0 or not enemy.is_alive():
