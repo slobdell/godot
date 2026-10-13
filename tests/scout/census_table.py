@@ -3,7 +3,7 @@
 import json
 import sys
 
-KEYS = ["fight_s", "on_target_s", "close_s", "reverse_s", "contacts", "contacts_target"]
+KEYS = ["fight_s", "on_target_s", "close_s", "reverse_s", "contacts", "contacts_target", "suppress_s", "suppress_on_s"]
 
 
 def main(paths):
@@ -25,12 +25,14 @@ def main(paths):
               100 * row["close_s"] / fight, 100 * row["reverse_s"] / fight, row["contacts"], row["contacts_target"]))
         scouts += row["scouts"]
         for k in KEYS:
-            pooled[k] += row[k]
+            pooled[k] += row.get(k, 0.0)
     fight = pooled["fight_s"] or 1e-9
     print("SCOUT_CENSUS_POOLED scouts=%d fight_s=%.0f on_target=%.1f%% close=%.1f%% reverse=%.1f%% contacts=%d "
           "contacts_target=%d contacts_per_fight_min=%.2f" % (scouts, pooled["fight_s"],
           100 * pooled["on_target_s"] / fight, 100 * pooled["close_s"] / fight, 100 * pooled["reverse_s"] / fight,
           pooled["contacts"], pooled["contacts_target"], 60 * pooled["contacts"] / fight))
+    print("SCOUT_CENSUS_SUPPRESS suppress_s=%.0f on_point=%.1f%%" % (pooled["suppress_s"],
+          100 * pooled["suppress_on_s"] / max(pooled["suppress_s"], 1e-9)))
 
 
 if __name__ == "__main__":

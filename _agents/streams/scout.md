@@ -51,4 +51,24 @@ Nothing.
 
 ## Status
 
-_Not started._
+_Round 28 scout worker, started 2026-10-12 afternoon from `c6e32d03` (main green at 94b5fc0d, docs-only after)._
+
+### Plan (ordered)
+1. **S1** (CP-S1, DECLARED): census measures SUPPRESS gun-on-point (Gunnery's suppress gate) and SUPPRESS time by move
+   order; `scenario_scout_suppress` (a pinned tank right90 / behind / close 8 m / crossing — a pinned crew is what makes
+   a scout SUPPRESS, found by probe); the change: `_act`'s SUPPRESS arm gets one first branch for a fixed gun on the lay
+   planner (`_lays_suppressing`) → `_combat_move(s, contact, spot)` with the point as a stationary target, no short
+   halt; `--scout-off=suppresslay` the A/B. Hunk granted by the orchestrator (2026-10-12). Bar pre-registered (below).
+   Decided: reuse `_combat_move`/`plan_lay` rather than a second planner — one rollout, one set of tests; the bounding
+   crew keeps brains' bound-slot move (the element's pace outranks a lay).
+2. **S2** outcomes: per seed where fixed guns die and what they were doing (option × motion at death).
+3. **S3** stretch: the halt gate on turning room only, fresh seeds.
+
+### CP-S1 bar (pre-registered with the orchestrator 2026-10-12, before any census number)
+PRIMARY blind: census fresh seeds 61–84, new v `--scout-off=suppresslay`, gun-on-point share during SUPPRESS paired
+per seed (≥ 1 s SUPPRESS both arms): ≥ +10 pts outside 2 se ships; +5..+10 outside 2 se ships with a note only if the
+scenario passes all four; else no ship. < 12 paired seeds → extend 85+. GUARDS: all-fight on target not down beyond
+2 se; fight-option contacts not up beyond 2 se; **SUPPRESS's share of fight time not down beyond 2 se** (the
+orchestrator's addition, accepted; absolute SUPPRESS seconds per arm reported); outcomes reported. SCENARIO pooled n = 18 a case: on point ≥ 50 %,
+median first-on ≤ 3.0 s, 0 contacts, all four; off arm fails ≥ 1. And check green, native-verify-scenarios green,
+thirteen lines declared, determinism, cost ≤ 0.5 ms (`make scout-cost`).

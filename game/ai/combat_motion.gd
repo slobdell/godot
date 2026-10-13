@@ -1186,6 +1186,24 @@ static func gunlay_on() -> bool:
 	return _gunlay_off == 0
 
 
+## Round 28 (scout S1): a fixed gun under SUPPRESS lays its hull on the suppressed point with the same planner (the
+## point is a stationary target). ON by default; `--scout-off=suppresslay` restores SUPPRESS's band-and-face motion (the
+## A/B). Pinned by tests through `suppresslay_pin`.
+static var suppresslay_pin := -1
+static var _suppresslay_off := -1
+
+
+static func suppresslay_on() -> bool:
+	if suppresslay_pin >= 0:
+		return suppresslay_pin == 1
+	if _suppresslay_off < 0:
+		_suppresslay_off = 0
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--scout-off=") and Array(String(arg).trim_prefix("--scout-off=").split(",")).has("suppresslay"):
+				_suppresslay_off = 1
+	return _suppresslay_off == 0 and gunlay_on()
+
+
 ## How close a fixed gun may come to its target and still bring its nose round on it: the diameter of its turning circle
 ## (wheels; 0 for a hull that pivots), its own half length, the target's half width and a margin. A scout on a tank:
 ## 2 x 5 + 1.52 + 1.45 + 1 = 14.0 m.

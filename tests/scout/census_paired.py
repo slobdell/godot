@@ -205,6 +205,83 @@ def unit_contacts(new_dir, off_dir, unit):
           len(diffs), m, se, 2 * se))
 
 
+def suppress(new_dir, off_dir):
+    """Round 28 (scout S1): gun on its suppress point during SUPPRESS (Gunnery's suppress gate: the point in range and
+    within the aim tolerance), paired by seed, new minus off; the guards (all-fight on target, fight-option contacts)
+    and outcomes beside it."""
+    seeds = sorted({f[:-4] for f in os.listdir(new_dir) if f.endswith(".log")}, key=lambda s: int(s))
+    diffs, guard, contacts, sshare = [], [], [], []
+    outcomes = {"kills": [], "damage": [], "deaths": []}
+    secs = {"off": [0.0, 0.0], "new": [0.0, 0.0]}
+    print("%-5s %-12s %-20s | %6s %6s %6s %6s %6s | %6s %6s | %4s %4s" % ("seed", "arena", "factions", "sOFF", "sNEW",
+          "pOFF", "pNEW", "diff", "allOFF", "allNEW", "fcO", "fcN"))
+    for seed in seeds:
+        new = read(os.path.join(new_dir, seed + ".log"))
+        off = read(os.path.join(off_dir, seed + ".log"))
+        if new is None or off is None or new["fight_s"] <= 0 or off["fight_s"] <= 0:
+            print("%-5s missing or no fight" % seed)
+            continue
+        guard.append(100 * (new["on_target_s"] / new["fight_s"] - off["on_target_s"] / off["fight_s"]))
+        contacts.append(new["fight_contacts"] - off["fight_contacts"])
+        for k in outcomes:
+            if k in new and k in off:
+                outcomes[k].append((off[k], new[k]))
+        sn, so = new.get("suppress_s", 0.0), off.get("suppress_s", 0.0)
+        # The orchestrator's guard (CP-S1): SUPPRESS's share of fight time must not fall (a share-of-SUPPRESS metric
+        # can rise by SUPPRESS getting rarer). Every seed with fight time in both arms.
+        sshare.append(100 * (sn / new["fight_s"] - so / off["fight_s"]))
+        pn, po = new.get("suppress_on_s", 0.0), off.get("suppress_on_s", 0.0)
+        a_new, a_off = new["on_target_s"] / new["fight_s"], off["on_target_s"] / off["fight_s"]
+        if sn < 1.0 or so < 1.0:
+            print("%-5s %-12s %-20s | no SUPPRESS in both (off %.0f s, new %.0f s): not paired | %5.1f%% %5.1f%%" % (seed,
+                  new["arena"], "/".join(new["factions"]), so, sn, 100 * a_off, 100 * a_new))
+            continue
+        diffs.append(100 * (pn / sn - po / so))
+        secs["off"][0] += so
+        secs["off"][1] += po
+        secs["new"][0] += sn
+        secs["new"][1] += pn
+        print("%-5s %-12s %-20s | %5.0fs %5.0fs %5.1f%% %5.1f%% %+5.1f | %5.1f%% %5.1f%% | %4d %4d" % (seed, new["arena"],
+              "/".join(new["factions"]), so, sn, 100 * po / so, 100 * pn / sn, diffs[-1], 100 * a_off, 100 * a_new,
+              off["fight_contacts"], new["fight_contacts"]))
+    for k in outcomes:
+        if len(outcomes[k]) > 1:
+            d = [n - o for o, n in outcomes[k]]
+            dm, dse = stats(d)
+            print("OUTCOME n=%d fixed-gun %s off %.0f new %.0f, paired diff mean %+.1f a seed, se %.1f" % (len(d), k,
+                  sum(o for o, _ in outcomes[k]), sum(n for _, n in outcomes[k]), dm, dse))
+    if len(diffs) > 1:
+        m, se = stats(diffs)
+        print("PRIMARY n=%d suppress_on_point diff mean %+.2f pts, se %.2f (2 se %.2f)" % (len(diffs), m, se, 2 * se))
+    if len(guard) > 1:
+        gm, gse = stats(guard)
+        print("GUARD   n=%d all_fight_on_target diff mean %+.2f pts, se %.2f (2 se %.2f)" % (len(guard), gm, gse, 2 * gse))
+        cm, cse = stats(contacts)
+        print("GUARD   n=%d fight_option_contacts diff mean %+.2f a seed, se %.2f (2 se %.2f)" % (len(contacts), cm, cse,
+              2 * cse))
+        sm, sse = stats(sshare)
+        print("GUARD   n=%d suppress_share_of_fight diff mean %+.2f pts, se %.2f (2 se %.2f)" % (len(sshare), sm, sse,
+              2 * sse))
+    for arm in ("off", "new"):
+        t, o = secs[arm]
+        print("SECONDS %s suppress=%.0f on_point=%.0f (%.1f%%)" % (arm, t, o, 100 * o / max(t, 1e-9)))
+
+
+def suppress_breakdown(directory):
+    """SUPPRESS time by move order / motion, pooled: seconds, share, gun on its point."""
+    pooled = {}
+    for f in os.listdir(directory):
+        row = read(os.path.join(directory, f)) if f.endswith(".log") else None
+        for label, cell in (row or {}).get("suppress_by", {}).items():
+            acc = pooled.setdefault(label, [0.0, 0.0])
+            acc[0] += cell[0]
+            acc[1] += cell[1]
+    total = sum(c[0] for c in pooled.values()) or 1e-9
+    print("%-22s %7s %6s %8s" % ("order/motion", "s", "share", "on_point"))
+    for label, (t, o) in sorted(pooled.items(), key=lambda kv: -kv[1][0]):
+        print("%-22s %7.0f %5.1f%% %7.0f%%" % (label, t, 100 * t / total, 100 * o / max(t, 1e-9)))
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "--unit":
         unit_contacts(sys.argv[2], sys.argv[3], sys.argv[4])
@@ -213,6 +290,11 @@ if __name__ == "__main__":
             ranges(d)
     elif sys.argv[1] == "--primary":
         primary(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == "--suppress":
+        suppress(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == "--suppress-breakdown":
+        for d in sys.argv[2:]:
+            suppress_breakdown(d)
     elif sys.argv[1] == "--breakdown":
         breakdown(sys.argv[2])
     else:
