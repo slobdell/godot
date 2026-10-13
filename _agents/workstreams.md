@@ -183,6 +183,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   OFF until proven). **Load-sensitive tooling:** `tools/test_quiet_window.sh` "records once the window opens" (1 of 2
   samples in 30 s at load 27) — orchestrator's to harden.
 
+- **Brains B1 NOT SHIPPED, PARKED (2026-10-12, `f3a0145d`, fresh seeds 7–9):** (a) on side 10/18 (bar 12; tuning read 13)
+  but beats clicked clearly (median hit 33.2° v 67.8°, killed 10 v 4, alive 2.00 v 1.50, side/rear 0.87 v 0.77); (c)
+  4/18 v 0/18, guard FAILS (killed 10 v 18, alive 2.39 v 4.89: the latch keyed on the crews' 35 m reach barely fires, the
+  charging IFV stops at its own 45–60 m); (b) both arms wiped. **v8 refused:** it changes only (c)'s latch, so re-judging
+  (a) on new seeds would be seed-shopping. Kept `lab/brains-r28-flank`. Round 29: latch on the TARGET's reach; (a) is
+  close. B2 gated to batteries (B1's switch OFF, B2's ON), judged on its own bar.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
