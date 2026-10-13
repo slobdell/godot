@@ -18,6 +18,11 @@ const BAND := 70.0
 const RADIUS := 90.0
 
 
+func teardown() -> void:
+	ElementPlan.APPROACH_CARRY = true
+	super.teardown()
+
+
 func _table() -> DoctrineTable:
 	DoctrineTable.clear_cache()
 	var loaded := DoctrineTable.load_table("standard")
@@ -92,6 +97,8 @@ func test_the_bearing_off_the_side_it_comes_from() -> void:
 
 
 func test_on_the_side_already_the_attack_is_unchanged() -> void:
+	# B0's rule (round 28's B1 fights from the side once in: test_tactics_flank_carry).
+	ElementPlan.APPROACH_CARRY = false
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	for degrees: float in [0.0, 20.0, -25.0]:
@@ -159,6 +166,8 @@ func test_the_way_round_is_kept() -> void:
 
 
 func test_once_in_it_attacks_as_before() -> void:
+	# B0's rule (round 28's B1 fights from the side once in: test_tactics_flank_carry).
+	ElementPlan.APPROACH_CARRY = false
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	# The fight swung it round to the far side after it went in: it does not drive round again.
@@ -171,6 +180,8 @@ func test_once_in_it_attacks_as_before() -> void:
 
 
 func test_in_reach_on_the_side_it_forms_the_line_as_before() -> void:
+	# B0's rule (round 28's B1 fights from the side once in: test_tactics_flank_carry).
+	ElementPlan.APPROACH_CARRY = false
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	var situation := _situation(_round(approach, 10.0, 60.0))

@@ -176,3 +176,38 @@ func test_with_no_approach_nothing_changes() -> void:
 		var off := ElementPlan.build(_situation(center), _state(_attack(null), extra.duplicate(true)), table)
 		ElementPlan.APPROACH_CARRY = true
 		assert_eq(on, off, "no approach: the plan is B0's (%s)" % str(extra.keys()))
+
+
+func test_it_goes_round_in_a_column_on_the_ring() -> void:
+	var table := _table()
+	var plan := ElementPlan.build(_situation(_round(170.0)), _state(_attack()), table)
+	assert_eq(String(plan["formation"]), "column", "round in a column")
+	for unit_name: String in plan["slots"]:
+		var slot: Vector3 = plan["slots"][unit_name]
+		assert_true(slot.distance_to(TARGET) > 60.0, "%s rides wide of the IFV's 60 m (%.1f m)" % [unit_name,
+				slot.distance_to(TARGET)])
+
+
+func test_once_round_it_fights_from_a_line_on_the_side() -> void:
+	var table := _table()
+	var approach := Vector3(0.0, 0.0, -1.0)  # in from the south
+	var center := _round(10.0, 40.0)
+	var plan := ElementPlan.build(_situation(center), _state(_attack(), {"approach_round": {"in": true, "side": 1}}),
+			table)
+	assert_eq(String(plan["formation"]), "line", "a firing line")
+	var anchor: Vector3 = plan["anchor"]
+	assert_near(ElementPlan.approach_off_deg(anchor, TARGET, approach), 0.0, 0.5, "anchored on the side drawn")
+	assert_near(anchor.distance_to(TARGET), maxf(OWN_BAND * ElementPlan.SBF_STANDOFF, ElementPlan.SBF_MIN_STANDOFF_M),
+			0.5, "at the support-by-fire standoff (%.1f m)" % anchor.distance_to(TARGET))
+	for unit_name: String in plan["orders"]:
+		var order: Dictionary = plan["orders"][unit_name]
+		assert_true(["move", "hold"].has(String(order["verb"])), "%s drives to its place or holds it, no free attack (%s)"
+				% [unit_name, order["verb"]])
+		var slot: Vector3 = plan["slots"][unit_name]
+		assert_true(absf(ElementPlan.approach_off_deg(slot, TARGET, approach)) < 60.0, "%s's place is on the side (%.0f)"
+				% [unit_name, ElementPlan.approach_off_deg(slot, TARGET, approach)])
+	# Contact does not pull it off the line (return fire would send crews in on free attacks).
+	var situation := _situation(center)
+	situation["threat"] = "contact"
+	var drill := Drills.select(situation, _state(_attack(), {"approach_round": {"in": true, "side": 1}}), table)
+	assert_true(not ["react_to_contact", "far_ambush"].has(String(drill["drill"])), "no contact drill (%s)" % drill["drill"])

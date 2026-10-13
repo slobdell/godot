@@ -237,6 +237,11 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		var approach: Variant = ElementTask.approach(task)
 		if approach is Vector3 and _plan_approach(plan, situation, state, table, destination, approach, band):
 			return
+		# Round 28 (B1): round on the side he drew, it FIGHTS from there: a firing line across the approach.
+		if approach is Vector3 and APPROACH_CARRY \
+				and bool((plan.get("approach_round", {}) as Dictionary).get("in", false)):
+			_plan_flank_line(plan, situation, state, table, destination, approach)
+			return
 		if to_go <= band:
 			plan["formation"] = "line"
 			plan["arrived"] = false
@@ -340,9 +345,43 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	plan["arrived"] = false
 	plan["why"] = "%s; going round to attack from the side ordered" % String(plan["why"])
 	var spacing := table.spacing(String(situation["terrain"]))
-	_group(plan, slot_order(situation), String(plan["formation"]), waypoint, heading, spacing, "move",
+	# Round 28 (B1): round in a COLUMN, so every crew rides the ring: a line abreast across the way round put its inner
+	# crews 25-30 m inside it, within the target's guns (the even roster: first crew within 50 m at 56 deg off).
+	var shape := "column" if APPROACH_CARRY else String(plan["formation"])
+	if APPROACH_CARRY:
+		plan["formation"] = shape
+	_group(plan, slot_order(situation), shape, waypoint, heading, spacing, "move",
 			String((state.get("task", {}) as Dictionary).get("target", "")))
 	return true
+
+
+## Round 28 (B1): an attack with a drawn approach that has come round fights FROM THAT SIDE: a firing line across the
+## approach at its crews' shortest effective reach (the support-by-fire standoff), anchored on the target's side he
+## drew and following the target; each crew drives to its place with its gun on the target and holds there, firing at
+## will. B0's "attack as before" handed every crew a free `attack`, and its fight circled the target (the median hit
+## 50 deg off the side on the even roster). Pure.
+static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		target_point: Vector3, approach: Vector3) -> void:
+	var ordered := slot_order(situation)
+	var reach := INF
+	for member: Dictionary in ordered:
+		reach = minf(reach, float(member.get("effective_range", member.get("range", 60.0))))
+	var standoff := maxf(reach * SBF_STANDOFF, SBF_MIN_STANDOFF_M) if is_finite(reach) else SBF_MIN_STANDOFF_M
+	var anchor := clamp_to_arena(target_point - approach * standoff)
+	var heading := TacticsFormation.flat(approach)
+	var target := String((state.get("task", {}) as Dictionary).get("target", ""))
+	plan["formation"] = "line"
+	plan["technique"] = "traveling"
+	plan["anchor"] = anchor
+	plan["heading"] = heading
+	plan["arrived"] = false
+	plan["why"] = "%s; on the side ordered: fighting from it" % String(plan["why"])
+	_group(plan, ordered, "line", anchor, heading, table.spacing(String(situation["terrain"])), "move", target, true)
+	for member: Dictionary in ordered:
+		var name := String(member["name"])
+		var spot: Vector3 = plan["slots"][name]
+		if (member["position"] as Vector3).distance_to(spot) <= IN_POSITION_M:
+			_order(plan, name, "hold", spot, "", TacticsFormation.flat(target_point - spot))
 
 
 ## Round 28 (B1): the longest weapon range (m) among the target's squad: every contact within APPROACH_TARGET_SQUAD_M of

@@ -95,7 +95,10 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# fire" orders every crew in reach to `attack`, which closes straight at the target from the side he said not to come
 	# from, and a far ambush splits it. They shoot on the move (a named move) until they are round.
 	var rounding := rounding_to_approach(state)
-	if rounding and PURSUIT_YIELDS.has(current):
+	# Round 28 (B1): a drawn flank being carried out (going round, then fighting from the side) is not stopped by
+	# contact for the whole task: return fire and a far ambush would each send crews in from the wrong side.
+	var carried := carries_flank(state)
+	if (rounding or carried) and PURSUIT_YIELDS.has(current):
 		current = ""
 	# ...and the target it is chasing coming back into sight is not an ambush: out of sight it drops from the element's
 	# known contacts, so it reappears "sudden", and near ambush + assault through charged PAST the spot it was seen at
@@ -107,7 +110,6 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# Round 28 (B1, his call 4): a drawn flank is carried out. For the whole task (going round and once in), the target's
 	# own squad is the fight it was sent to: a near ambush by it does not charge the squad through the middle, and one
 	# already running stops. Going round, being outgunned does not break it off either: he chose the flank knowing.
-	var carried := carries_flank(state)
 	if carried and ["near_ambush", "assault_through"].has(current) \
 			and by_target_squad(situation, task, String(state.get("drill_target", ""))):
 		current = ""
@@ -161,12 +163,12 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
 	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
 	# the start of the drill (that flip-flop cost the far-ambush scenario its maneuver, 2026-09-16).
-	if not pursuing and not rounding and table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
+	if not pursuing and not rounding and not carried and table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("react_to_contact", "contact: return fire, take cover, report", nearest_contact(situation))
 	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver (only while engaged; a
 	# contact watched from 100 m is not an ambush).
-	if manoeuvres and not pursuing and not rounding and not obeyed and table.runs_drill("far_ambush") and _has_visible(situation) \
+	if manoeuvres and not pursuing and not rounding and not carried and not obeyed and table.runs_drill("far_ambush") and _has_visible(situation) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
 	# 8. Halted with something out there but not yet in contact: herringbone, all-round security. Its entry must not
