@@ -54,6 +54,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
 - **C27.2's freeze is lifted** and replaced by C28.2 (stage 1 is built; a driving change is written twice from here).
 - C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
+- **Traffic T1 bar (pre-registered 2026-10-12 evening, before T0's numbers):** the brief's bar unchanged; GDScript path
+  both arms, n = 18 a case, start ticks {1,3,6,8,11,16}; tuned on seeds {1,2,3}, **judged on fresh {4,5,6}**; **v3 is the
+  last attempt**. Design: one verdict per SQUAD pair (the later squad yields as a whole, v3's 0.4 floor; a crew at the
+  conflict zone never yields; tie → priority on the right, then element id); keep right head-on only in a street (static
+  geometry both sides, from the navmesh), never toward a squadmate abeam; open ground left to ORCA. + one CPU-side case;
+  native-verify-scenarios before the diff goes to native.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
