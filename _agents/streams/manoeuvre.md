@@ -107,5 +107,29 @@ _Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
   hull counts as moving. Same seed, same commit, different runs give different crews (the screen probe is real
   time): read classes over the arm, not single runs.
 - **`facekeep` candidate** (`Manoeuvre.plan_face`): every pose of a face plan stays inside the crew's arrive radius
-  less 0.75 m (or no further out than it starts), not only its end; `--nav-off=facekeep`. One run: no face legs left
-  moving at the judge.
+  less 0.75 m (or no further out than it starts), not only its end; `--nav-off=facekeep`.
+- **The root cause: round 28's `faceslot` never ran.** `Movement.idle()` clears `mover._goal` every tick a face order
+  runs (`_apply_move` calls it before the face branch), so `plan_face` always read INF and anchored nothing (and
+  `facekeep` with it). Fix: `OrderController.face_slot` = the goal of the last move_to order (set in `set_orders`, the
+  face path). Candidate **`d7385da2`**.
+- **M0 numbers (builder0, tuning seeds 1 6 10 12 14 16, 144 runs an arm, drawn):** base on today's main reproduces
+  O3 (wheels/turret medians 38-77 deg). Moving at the judge, base twice: 26/27, 46/56, 32/26, 34/31, 38/37, 28/24;
+  round 28's M1 twice (once with the no-op facekeep): 27/40, 62/68, 52/35, 38/47, 42/56, 41/40: **a +5 guard on 24
+  runs is inside the probe's own A/A swing** (the screen probe runs in real time). With states, most moving crews in
+  BOTH arms are crews that never reached their slot (wheels/turret 18-28 a task at base), and 51-75 a arm are hulls
+  WEDGED with phantom velocity (reported 6-12 m/s, no displacement; scouts most: unstick reads that velocity and never
+  fires) -> M4.
+- **`d7385da2` on the tuning seeds:** face legs still running at the judge 4-10 -> 0-2 a task; point medians 3.0-3.6 deg
+  at rest (79-85 % within 15); line tasks at hover/turret's level; guard -3/+6/-12/-8/+13/-5; screen's wheels/turret
+  moving +15 (> 2 se) and at-rest share -9 pts (the reason the partial rule matters).
+- **M1 bar sent and ACCEPTED (godot-67)** before the judged run: `d7385da2`, fresh seeds 22-33 (12, for the noise),
+  LAST attempt; point tasks median <= 15 and >= 70 % within 15 of crews AT REST; line tasks = hover/turret +/-5;
+  clicked +/-5 of base; settle <= +6 s; guard <= base + 5 every task (a miss only among hulls M1 never commands passes
+  only if each such class is within 2 se of base, paired); wheels/turret at-rest share not down > 5 pts; bridge-pooled
+  18/18, arrive series, thirteen, <= 0.5 ms. **Partial (ruled, disclosed after tuning showed screen failing):** a
+  wheels/turret guard or at-rest miss on a LINE task = that line task fails -> turnhull ships for POINT tasks only, on
+  condition that line tasks provably take today's path (prepared: branch `manoeuvre-m1-pointonly`,
+  `OrderController.line_task_keeps_turret`, `--nav-off=turnlines`, `test_line_tasks_take_the_base_path_exactly`: pose
+  for pose against `--nav-off=turnhull,faceslot,facekeep`). A miss on a point task: nothing ships.
+- **Judged run started** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
+  worktrees, same commit), `M1_FLAGS=--turn-states`.
