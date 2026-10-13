@@ -561,6 +561,17 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.keep_avoidance = config.get("avoidance", Variant());
 	c.keep_switches = config.get("switches", Variant());
 	c.avoidance_script = c.keep_avoidance.get_validated_object();
+	c.keep_traffic = config.get("traffic", Variant());
+	c.keep_native_traffic = config.get("native_traffic", Variant());
+	c.traffic_script = c.keep_traffic.get_validated_object();
+	c.native_traffic = c.keep_native_traffic.get_validated_object();
+	c.traffic_hold = c.traffic_script != nullptr && c.native_traffic != nullptr && config.has("HOLD_REACHED_M") &&
+			config.has("HOLD_SLOW_M") && config.has("LIVE_TICKS");
+	if (c.traffic_hold) {
+		c.HOLD_REACHED_M = config["HOLD_REACHED_M"];
+		c.HOLD_SLOW_M = config["HOLD_SLOW_M"];
+		c.LIVE_TICKS = config["LIVE_TICKS"];
+	}
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();

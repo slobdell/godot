@@ -71,6 +71,7 @@ struct Timed {
 // Every member and static name drive touches, made once.
 struct N {
 	// Movement members
+	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" };
 	StringName ctl{ "ctl" }, _repair_for{ "_repair_for" }, _repair_to{ "_repair_to" }, _goal{ "_goal" },
 			_order_ticks{ "_order_ticks" }, arc_live{ "arc_live" }, _arrive{ "_arrive" }, _remaining{ "_remaining" },
 			_deflected{ "_deflected" }, _give_way_left{ "_give_way_left" }, _blocked_ticks{ "_blocked_ticks" },
@@ -257,6 +258,35 @@ struct Drive {
 		const Variant answer = m->call(method, args...);
 		v.pull_in();
 		return answer;
+	}
+
+	// Round 29 (traffic T1): Traffic.holding(String(tank.name)), read from its `_live` table natively. Asked once a drive
+	// and kept until _avoid's hold callback (the only place in a drive where this crew's entry can change: hold_of writes
+	// it, refresh's _forget empties the table).
+	int8_t hold_state = -1;
+	bool holding() {
+		if (!c.traffic_hold) {
+			return false;
+		}
+		if (hold_state < 0) {
+			hold_state = traffic_holding() ? 1 : 0;
+		}
+		return hold_state == 1;
+	}
+	bool traffic_holding() {
+		Object *t = c.traffic_script;
+		const Dictionary live = t->get(k._live);
+		if (live.is_empty()) {
+			return false;
+		}
+		const Variant seen = live.get(String(tank->get_name()), Variant());
+		if (seen.get_type() == Variant::NIL) {
+			return false;
+		}
+		// `var frame := Engine.get_physics_frames() if _root != -1 else _frame`
+		const int64_t frame = (int64_t)t->get(k._root) != -1 ? Engine_frames() : (int64_t)t->get(k._frame);
+		const int64_t at = seen;
+		return frame - at <= c.LIVE_TICKS && frame >= at;
 	}
 
 	// The mover's script, controller, hull and this tick's pose; false when one is missing.
@@ -452,7 +482,33 @@ struct Drive {
 	}
 
 	// ---- Movement._avoid (grace, minpace at their defaults; oriented_on() the opt-in arm, off) -> [point, keep] ----
-	void avoid(const Vector3 &waypoint, double speed_factor, double delta, Vector3 &out_point, double &out_keep) {
+	void avoid(const Vector3 &waypoint, double speed_factor, double delta, Vector3 &out_point, double &out_keep,
+			bool held = false) {
+		// Round 29 (traffic T1, his call: TAKE TURNS): a crew of a squad waiting for another to come through a street
+		// drives to its spot beside the mouth and stops there facing its way. NativeTraffic.avoid_hold is
+		// `if not Traffic.off("hold"): Traffic.refresh(ctl.tanks_root); hold = Traffic.hold_of(name)` (the members it
+		// reads pushed first; it writes none).
+		if (!held && c.traffic_hold) {
+			const Array hold = gd(c.native_traffic, k.avoid_hold, String(tank->get_name()), ctl->get(k.tanks_root));
+			hold_state = -1;
+			if (!hold.is_empty()) {
+				const Vector2 face = hold[1];
+				if ((bool)hold[2]) {
+					out_point = Vector3(face.x, 0.0, face.y);
+					out_keep = 0.0;
+					return;
+				}
+				const Vector2 spot = hold[0];
+				const double approach = clampd(((double)Vector2(here.x, here.z).distance_to(spot) - c.HOLD_REACHED_M) /
+								c.HOLD_SLOW_M, 0.15, 1.0);
+				Vector3 toward;
+				double keep;
+				avoid(Vector3(spot.x, 0.0, spot.y), speed_factor * approach, delta, toward, keep, true);
+				out_point = toward;
+				out_keep = MIN(keep, approach);
+				return;
+			}
+		}
 		out_point = waypoint;
 		out_keep = 1.0;
 		const Vector2 to((real_t)((double)waypoint.x - (double)here.x), (real_t)((double)waypoint.z - (double)here.z));
@@ -1272,6 +1328,9 @@ struct Drive {
 	// above writes, so it reads the same state and takes the same early-outs, then decides who gives way.
 	void negotiate(const Vector3 &goal, bool direct, bool still_only) {
 		static const String no_path("no_path"), terrain("terrain"), arrived("arrived");
+		if (holding()) {
+			return; // round 29 (traffic T1): waiting at a street mouth on purpose; nobody to ask
+		}
 		const String name = blocker(goal, direct);
 		if (name.is_empty() || name == no_path || name == terrain) {
 			return;
@@ -1329,6 +1388,9 @@ struct Drive {
 	// drive's configuration): press_on() true, `unstick` not switched off. The rare stuck event's two neighbour questions
 	// (_hull_within, _ask_behind: Avoidance's table) are the live GDScript. ----
 	void unstick(Object *cmd, const Dictionary &order, double delta) {
+		if (holding()) {
+			return; // round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
+		}
 		const double left = v._unstick_left();
 		if (left > 0.0) {
 			const double now_left = left - delta;
@@ -1379,7 +1441,7 @@ struct Drive {
 	}
 
 	bool pressing_escape(Object *cmd, double delta) {
-		if (!v.g_engaged_target().is_empty()) {
+		if (!v.g_engaged_target().is_empty() || holding()) {
 			v.set__press_time(0.0);
 			return false;
 		}
@@ -1778,7 +1840,7 @@ struct Drive {
 
 	// ---- Movement._track_progress ----
 	void track_progress(const Vector3 &goal, const Vector2 &drive_vector, double remaining) {
-		if (flat_distance(goal, v._progress_goal()) > 2.0 || drive_vector == Vector2()) {
+		if (flat_distance(goal, v._progress_goal()) > 2.0 || drive_vector == Vector2() || holding()) {
 			v.set__progress_goal(goal);
 			v.set__progress_best(remaining);
 			v.set_stalled_ticks(0);
@@ -1810,7 +1872,7 @@ struct Drive {
 			v.set_blocked_by(no_path);
 			return;
 		}
-		if ((int64_t)v.stalled_ticks() >= (int64_t)(c.BLOCKED_SECONDS * (double)c.TICK_RATE)) {
+		if ((int64_t)v.stalled_ticks() >= (int64_t)(c.BLOCKED_SECONDS * (double)c.TICK_RATE) && !holding()) {
 			int64_t left = (int64_t)v._blocker_left() - step;
 			v.set__blocker_left(left);
 			if (String(v.phase()) != blocked || left <= 0) {
@@ -2038,6 +2100,8 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 						leg->set(k.throttle, (double)leg_vector.x);
 						leg->set(k.turn, (double)leg_vector.y);
 					}
+				} else if (holding()) {
+					// round 29 (traffic T1, C29.3): no k-turn while waiting at a mouth (before `_kturn_check -= ctl._step`)
 				} else if (check_left > 0) {
 					// _planned_reverse between checks: `_kturn_check -= ctl._step; if _kturn_check > 0: return false`.
 					v.set__kturn_check(check_left);
