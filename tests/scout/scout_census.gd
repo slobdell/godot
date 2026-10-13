@@ -52,6 +52,9 @@ func _run() -> void:
 	# Outcomes (the orchestrator's question: do scouts fight less?): fixed guns' kills, damage dealt and deaths. Rounds
 	# are matched to their shooter by projectile id (weapon_fired names the shooter, projectile_impact the damage).
 	var outcome := {"kills": 0, "damage": 0.0, "deaths": 0}
+	var last_doing := {}
+	var deaths_by := {}
+	var started_at := [0]
 	var shooter_of := {}
 	var fixed_names := {}
 	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
@@ -64,12 +67,24 @@ func _run() -> void:
 		if fixed_names.has(String(event.get("killer", ""))) and String(event.get("cause", "")) == "enemy":
 			outcome["kills"] = int(outcome["kills"]) + 1
 		if String(Units.stat(String(event.get("unit_id", "")), "mount", "turret")) == "fixed":
-			outcome["deaths"] = int(outcome["deaths"]) + 1)
+			outcome["deaths"] = int(outcome["deaths"]) + 1
+			# Round 28 (scout S2): what it was doing when it died (its last ticked option/motion), and who killed it.
+			var victim := String(event.get("unit", ""))
+			var doing := String(last_doing.get(victim, "unseen"))
+			var killer_unit := ""
+			var killer_tank := game_match.tanks.get_node_or_null(String(event.get("killer", ""))) as Tank
+			if killer_tank != null:
+				killer_unit = killer_tank.unit_id
+			deaths_by[doing] = int(deaths_by.get(doing, 0)) + 1
+			print("SCOUT_DEATH t=%.1f %s (%s) doing=%s killer=%s (%s) cause=%s" % [(int(event.get("tick", 0)) - started_at[0]) / float(SimClock.TICK_RATE),
+					victim, String(event.get("unit_id", "")), doing, String(event.get("killer", "")), killer_unit,
+					String(event.get("cause", ""))]))
 	var seconds := float(_flag("seconds", "180"))
 	var trace := _flag("trace", "")  # SCOUT_TRACE every 5 ticks for scouts whose name contains this
 	var dt := 1.0 / SimClock.TICK_RATE
 	var per := {}
 	var breakdown := {}
+	var suppress_by := {}
 	var touching := {}
 	var started := -1
 	var last_tick := -1
@@ -87,6 +102,7 @@ func _run() -> void:
 		last_tick = tick
 		if started < 0:
 			started = tick
+			started_at[0] = tick
 		var t := (tick - started) * dt
 		if t > seconds:
 			break
@@ -110,6 +126,7 @@ func _run() -> void:
 			var brain := game_match.brains.get_node_or_null("Brain_" + name) as TankBrain
 			var choice: Dictionary = brain.get("choice") if brain != null and brain.get("choice") is Dictionary else {}
 			var target_name := String(choice.get("target", ""))
+			last_doing[name] = "%s/%s" % [String(choice.get("option", "")), _motion(str(brain.get("why")) if brain != null else "")]
 			var fighting := FIGHTS.has(String(choice.get("option", ""))) and target_name != ""
 			var was: String = touching.get(name, "")
 			if enemy_touch != "" and enemy_touch != was:
@@ -128,6 +145,25 @@ func _run() -> void:
 			row["fight_s"] = float(row["fight_s"]) + dt
 			var muzzle := scout.turret.global_position
 			var weapon := scout.weapon
+			# Round 28 (scout S1): under SUPPRESS the gun is laid on a POINT (TankBrain._suppression_point), and
+			# Gunnery's suppress gate is that point in range and within the aim tolerance (no line of sight). Seconds
+			# under SUPPRESS, seconds the gun bears on its point, by motion (the move order the brain gave).
+			if String(choice.get("option", "")) == "SUPPRESS":
+				var spot: Variant = brain.get("_suppress_point")
+				var on_point := false
+				if spot is Vector3:
+					var aim_at := Vector3((spot as Vector3).x, muzzle.y, (spot as Vector3).z)
+					on_point = muzzle.distance_to(aim_at) <= float(weapon["range"]) \
+							and Ballistics.aim_error(muzzle, scout.turret_forward(), aim_at) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
+				var order: Dictionary = brain.get("move_order")
+				var kind := String(order.get("type", "?"))
+				if kind == "move_to" and bool(order.get("reverse", false)):
+					kind = "reverse"
+				var cell_s: Array = suppress_by.get_or_add(kind + "/" + _motion(str(brain.get("why"))), [0.0, 0.0])
+				cell_s[0] += dt
+				cell_s[1] += dt if on_point else 0.0
+				row["suppress_s"] = float(row.get("suppress_s", 0.0)) + dt
+				row["suppress_on_s"] = float(row.get("suppress_on_s", 0.0)) + (dt if on_point else 0.0)
 			var reachable := muzzle.distance_to(target.global_position) <= float(weapon["range"]) \
 					and Perception.has_line_of_sight(scout, target)
 			var bearing := reachable and Ballistics.aim_error(muzzle, scout.turret_forward(), target.global_position) \
@@ -142,8 +178,14 @@ func _run() -> void:
 					var g := Vector3(float(move["x"]), 0.0, float(move["z"])) - scout.global_position
 					goal = "%.0fm@%.0f%s" % [Vector2(g.x, g.z).length(), rad_to_deg((-scout.global_basis.z).signed_angle_to(g, Vector3.UP)),
 							"R" if bool(move.get("reverse", false)) else ""]
-				print("SCOUT_TRACE t=%.2f %s tgt=%s d=%.1f off=%.0f tv=%.1f v=%.1f los=%s move=%s goal=%s why=%s" % [t, name,
-						target_name, Vector2(to.x, to.z).length(),
+				var poff := "-"
+				var spot_t: Variant = brain.get("_suppress_point")
+				if String(choice.get("option", "")) == "SUPPRESS" and spot_t is Vector3:
+					var tp := (spot_t as Vector3) - scout.global_position
+					poff = "%.0f@%.0fm" % [rad_to_deg((-scout.global_basis.z).signed_angle_to(Vector3(tp.x, 0, tp.z), Vector3.UP)),
+							Vector2(tp.x, tp.z).length()]
+				print("SCOUT_TRACE t=%.2f %s opt=%s poff=%s tgt=%s supp=%.2f d=%.1f off=%.0f tv=%.1f v=%.1f los=%s move=%s goal=%s why=%s" % [t, name,
+						String(choice.get("option", "")), poff, target_name, target.suppression, Vector2(to.x, to.z).length(),
 						rad_to_deg((-scout.global_basis.z).signed_angle_to(Vector3(to.x, 0, to.z), Vector3.UP)),
 						target.estimated_velocity.length(), scout.estimated_velocity.dot(-scout.global_basis.z),
 						"y" if reachable else "n", String(move.get("type", "?")), goal, str(brain.get("why"))])
@@ -167,14 +209,16 @@ func _run() -> void:
 				row["reverse_s"] = float(row["reverse_s"]) + dt
 		if fixed_alive == 0 and t > 30.0:
 			break
-	var total := {"fight_s": 0.0, "on_target_s": 0.0, "close_s": 0.0, "reverse_s": 0.0, "contacts": 0, "contacts_target": 0}
+	var total := {"fight_s": 0.0, "on_target_s": 0.0, "close_s": 0.0, "reverse_s": 0.0, "contacts": 0, "contacts_target": 0,
+			"suppress_s": 0.0, "suppress_on_s": 0.0}
 	for name: String in per:
 		for key: String in total:
-			total[key] = total[key] + per[name][key]
+			total[key] = total[key] + per[name].get(key, 0.0)
 	var flags := SkirmishMode.demo_flags(LaunchFlags.parse(OS.get_cmdline_user_args())) if OS.get_cmdline_user_args().has("--demo-match") else null
 	var out := {"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [],
-			"scouts": per.size(), "per_scout": per, "breakdown": breakdown}
+			"scouts": per.size(), "per_scout": per, "breakdown": breakdown,
+			"suppress_by": suppress_by, "deaths_by": deaths_by}
 	out.merge(total)
 	out.merge(outcome)
 	print("SCOUT_CENSUS " + JSON.stringify(out))
