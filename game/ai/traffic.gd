@@ -133,11 +133,22 @@ static var _parsed := false
 static func off(name: String) -> bool:
 	if not _parsed:
 		_parsed = true
+		# T1b (round 28): only the street head-on rule ships; the crossing verdicts and keep-right stay in the tree OFF
+		# (v3 failed its judged bar on the crossings: Status). `--traffic-on=turns` measures them.
+		for name_off: String in OFF_BY_DEFAULT:
+			_off[name_off] = true
 		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--traffic-on="):
+				for part in String(arg).trim_prefix("--traffic-on=").split(",", false):
+					_off.erase(part.strip_edges())
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):
 					_off[part.strip_edges()] = true
 	return _off.has(name)
+
+
+## The behaviours in the tree but not in the game (on only with --traffic-on=...).
+const OFF_BY_DEFAULT: Array[String] = ["turns", "streetright"]
 
 
 ## Tests: switch a behaviour off (true) or back on, whatever the command line said.
@@ -156,9 +167,10 @@ static func set_off(name: String, value: bool) -> void:
 ## another squad is a party to a crossing, and no head-on meeting in a street. Needs the table (refresh, or load_rows).
 static func shape(me: String, preferred: Vector2) -> Vector2:
 	var cross := not off("turns")
+	var street := not off("streetturns")
 	# v2c: a head-on meeting in a street is taken in turns (streetturns); keep-right (v1, measured worse) only without it.
-	var keep := not off("streetright") and (off("streetturns") or not cross)
-	if not (keep or cross):
+	var keep := not off("streetright") and not street
+	if not (keep or cross or street):
 		return preferred
 	var speed := preferred.length()
 	if speed < 0.1:
@@ -167,7 +179,7 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 	var frame := Engine.get_physics_frames() if _root != -1 else _frame
 	var answer: Variant = _answers.get(me)
 	if answer == null or frame - int(answer[0]) >= SOLVE_TICKS or (frame + (me.hash() & 0xffff)) % SOLVE_TICKS == 0:
-		answer = _solve(me, frame, keep, cross)
+		answer = _solve(me, frame, keep, cross, street)
 		_answers[me] = answer
 	var out := preferred
 	var lateral_speed: float = answer[1]
@@ -181,7 +193,7 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 	var cap: float = answer[2]
 	if cap < speed:
 		keep_speed = maxf(cap, float(answer[3]) * speed)
-	if cross and not off("wholesquad"):
+	if (cross or street) and not off("wholesquad"):
 		keep_speed = minf(keep_speed, _squad_share(me, frame) * speed)
 	if keep_speed < speed:
 		crossing_yields += 1
@@ -192,7 +204,7 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 
 
 ## [frame, lateral m/s to my right, speed cap] for `me` against every moving friend in reach, from the table.
-static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
+static func _solve(me: String, frame: int, keep: bool, cross: bool, street: bool) -> Array:
 	var none := [frame, 0.0, INF, YIELD_FLOOR]
 	var where: Variant = _where.get(me)
 	if where == null:
@@ -220,7 +232,7 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 	var cap := INF
 	var floor_share := YIELD_FLOOR
 	var reach_sq := REACH_M * REACH_M
-	var street_turns := cross and not off("streetturns")
+	var street_turns := street
 	var street_reach_sq := STREET_REACH_M * STREET_REACH_M
 	for j in names.size():
 		if j == i or moving[j] == 0:

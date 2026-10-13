@@ -6,9 +6,15 @@ extends TestCase
 const R := 3.0
 
 
-func teardown() -> void:
+## v3's configuration (the crossing verdicts on); T1b ships with them off (Traffic.OFF_BY_DEFAULT).
+func _rows(rows: Array) -> void:
 	Traffic.set_off("turns", false)
-	Traffic.set_off("streetright", false)
+	Traffic.load_rows(rows)
+
+
+func teardown() -> void:
+	Traffic.set_off("turns", true)
+	Traffic.set_off("streetright", true)
 	Traffic.set_off("streetturns", false)
 	Traffic.street_override = null
 	super.teardown()
@@ -16,7 +22,7 @@ func teardown() -> void:
 
 ## Squad N (two crews) comes south (-Z) to the origin, squad W (two crews) east (+X), at 10 m/s; N's lead `n_lead` m out.
 func _crossing(n_lead: float, w_lead: float) -> void:
-	Traffic.load_rows([
+	_rows([
 		["N1", 0, 0.0, n_lead, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["N2", 0, 0.0, n_lead + 10.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["W1", 0, -w_lead, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
@@ -37,7 +43,7 @@ func test_the_later_squad_yields_as_a_whole_and_the_earlier_holds() -> void:
 func test_one_verdict_per_squad_pair_even_where_a_crew_pair_says_otherwise() -> void:
 	# W's SECOND crew meets N's second crew earlier than N2 does (W2 20 m out against N2's 30 m), which per crew pair
 	# (round 26's v4) made N2 yield to W2 while W1 yielded to N1. The squad pair's verdict (N first) holds for both.
-	Traffic.load_rows([
+	_rows([
 		["N1", 0, 0.0, 12.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["N2", 0, 0.0, 26.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["W1", 0, -16.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
@@ -69,7 +75,7 @@ func test_a_tie_gives_priority_to_the_right() -> void:
 
 
 func test_crews_of_one_squad_never_take_turns_with_each_other() -> void:
-	Traffic.load_rows([
+	_rows([
 		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
 		["B", 0, -20.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:S"],
 	])
@@ -78,12 +84,12 @@ func test_crews_of_one_squad_never_take_turns_with_each_other() -> void:
 
 
 func test_never_against_an_enemy_or_a_parked_friend() -> void:
-	Traffic.load_rows([
+	_rows([
 		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["W1", 1, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
 	])
 	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "an enemy: unchanged (it may block)")
-	Traffic.load_rows([
+	_rows([
 		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, false, "e:N"],
 		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
 	])
@@ -91,7 +97,7 @@ func test_never_against_an_enemy_or_a_parked_friend() -> void:
 
 
 func _head_on() -> void:
-	Traffic.load_rows([
+	_rows([
 		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
 		["B", 0, 0.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
 	])
@@ -99,6 +105,7 @@ func _head_on() -> void:
 
 func test_head_on_in_a_street_both_keep_right() -> void:
 	Traffic.set_off("streetturns", true)  # v1's keep-right runs only without v2c's turns
+	Traffic.set_off("streetright", false)
 	Traffic.street_override = true
 	_head_on()
 	var a := Traffic.shape("A", Vector2(0.0, -10.0))
@@ -115,8 +122,9 @@ func test_head_on_on_open_ground_is_left_to_orca() -> void:
 
 func test_no_keeping_right_into_a_squadmate_abeam() -> void:
 	Traffic.set_off("streetturns", true)
+	Traffic.set_off("streetright", false)
 	Traffic.street_override = true
-	Traffic.load_rows([
+	_rows([
 		["A", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
 		["C", 0, 6.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
 		["B", 0, 0.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:B"],
@@ -130,14 +138,14 @@ func test_switched_off_nothing_changes() -> void:
 	Traffic.set_off("streetright", true)
 	_head_on()
 	assert_eq(Traffic.shape("A", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "--traffic-off=streetright")
-	Traffic.set_off("turns", true)
 	_crossing(20.0, 27.0)
+	Traffic.set_off("turns", true)  # after _rows, which switches the crossing verdicts on
 	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "--traffic-off=turns")
 
 
 func test_v2b_the_whole_yielding_squad_slows_not_only_the_crews_that_meet() -> void:
 	# W3 trails W's file 30 m back: it meets nobody inside the horizon, but its squad is yielding, so it slows too.
-	Traffic.load_rows([
+	_rows([
 		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["N2", 0, 0.0, 30.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
@@ -147,7 +155,7 @@ func test_v2b_the_whole_yielding_squad_slows_not_only_the_crews_that_meet() -> v
 	assert_true(w1.length() < 9.5, "W1 yields: %s" % w1)
 	assert_near(Traffic.shape("W3", Vector2(10.0, 0.0)).length(), w1.length(), 0.01, "W3 keeps its squad's share")
 	Traffic.set_off("wholesquad", true)
-	Traffic.load_rows([
+	_rows([
 		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
 		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
 		["W3", 0, -57.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
@@ -160,7 +168,7 @@ func test_v2b_the_whole_yielding_squad_slows_not_only_the_crews_that_meet() -> v
 func test_v2b_crews_deflected_inside_a_head_on_meeting_are_not_a_crossing() -> void:
 	# Two squads head-on (mean headings opposite); one crew of each angled 60 deg off its squad's way, meeting the other.
 	Traffic.street_override = false
-	Traffic.load_rows([
+	_rows([
 		["A1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
 		["A2", 0, 8.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:A"],
 		["A3", 0, -8.0, 20.0, -8.66, -5.0, -0.866, -0.5, R, true, "e:A"],
@@ -182,7 +190,7 @@ func test_v2b_crews_deflected_inside_a_head_on_meeting_are_not_a_crossing() -> v
 ## `gap` m apart; the street is everything with |z| < `street_half` (outside it, the open).
 func _street_head_on(s_lead_z: float, n_lead_z: float, street_half: float) -> void:
 	Traffic.street_override = func(_x: float, z: float) -> bool: return absf(z) < street_half
-	Traffic.load_rows([
+	_rows([
 		["S1", 0, 0.0, s_lead_z, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
 		["S2", 0, 6.0, s_lead_z + 9.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
 		["N1", 0, 1.0, n_lead_z, 0.0, 10.0, 0.0, 1.0, R, true, "e:N"],
@@ -221,3 +229,22 @@ func test_v2c_both_in_the_street_the_later_waits_and_switched_off_nothing() -> v
 	_street_head_on(40.0, -20.0, 100.0)
 	assert_eq(Traffic.shape("S1", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "--traffic-off=streetturns")
 	Traffic.set_off("streetturns", false)
+
+
+func test_t1b_ships_the_street_rule_alone() -> void:
+	# The game's defaults (T1b): crossing verdicts and keep-right off, the street head-on rule on.
+	for name: String in Traffic.OFF_BY_DEFAULT:
+		Traffic.set_off(name, true)
+	Traffic.load_rows([
+		["N1", 0, 0.0, 20.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:N"],
+		["W1", 0, -27.0, 0.0, 10.0, 0.0, 1.0, 0.0, R, true, "e:W"],
+	])
+	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "a crossing: unchanged (ORCA's)")
+	Traffic.street_override = func(_x: float, z: float) -> bool: return absf(z) < 30.0
+	Traffic.load_rows([
+		["S1", 0, 0.0, 45.0, 0.0, -10.0, 0.0, -1.0, R, true, "e:S"],
+		["N1", 0, 1.0, -20.0, 0.0, 10.0, 0.0, 1.0, R, true, "e:N"],
+	])
+	assert_near(Traffic.shape("S1", Vector2(0.0, -10.0)).length(), Traffic.STREET_FLOOR * 10.0, 0.001,
+			"a head-on meeting in a street: the squad in the open waits")
+	assert_eq(Traffic.shape("N1", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "the other comes through")
