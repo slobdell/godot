@@ -23,6 +23,7 @@
 #include "shell_native.h"
 #include "threat_native.h"
 #include "recorder_native.h"
+#include "controller_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -212,6 +213,11 @@ public:
 	// Round 28 (N7.6): MatchRecorder's per-tick work (recorder_native.cpp).
 	bool recorder_configure(const Dictionary &config) { return ::godot::recorder_configure(recorder_config, config); }
 	void recorder_tick(Object *recorder) const { ::godot::recorder_tick(recorder_config, recorder); }
+	// Round 28 (N7.3): OrderController._physics_process (controller_native.cpp).
+	bool controller_configure(const Dictionary &config) { return ::godot::controller_configure(controller_config, config); }
+	void controller_tick(Object *controller, double delta) const {
+		::godot::controller_tick(controller_config, controller, delta);
+	}
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -306,6 +312,7 @@ private:
 	ShellConfig shell_config;
 	ThreatConfig threat_config;
 	RecorderConfig recorder_config;
+	ControllerConfig controller_config;
 	HashMap<String, Vector2> incoming_halves;
 	int64_t perception_rays_cast = 0;
 	DecideConsts decide_consts;
