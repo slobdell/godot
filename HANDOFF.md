@@ -30,6 +30,9 @@ check at `16898e51`: builder0 exited 0, 2539/0, 26 ALL JUDGED, thirteen unmoved;
 pre-registered in `workstreams.md` *Round 29*: traffic CP-T, brains B1, manoeuvre M1 (+ its partial-rule clarification).
 Round 28's orchestrator session `godot-29` stood down 13:30 (its two bar commits adopted); workers report to `godot-67`.
 
+**For him:** `build/round29/artillery_side_by_side.mp4` (brains B1: clicked v his drawn east side, seed 13, 45 s; the
+drawn trucks drive round "guns quiet", set up ~25 s, the IFV burns ~42 s v ~10 s clicked).
+
 **Launch check: GREEN at `bcef46a1`** (builder0, `make check exited 0`, 2538 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7; the docs commit after it differs by docs only). Workers start from it and do not re-run a baseline.
 
 **The orchestrator's jobs:** collect every DECLARED bar before its numbers (C29.1); merge each declared change ALONE, a
