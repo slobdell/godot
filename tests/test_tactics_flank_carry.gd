@@ -111,7 +111,9 @@ func test_a_shuffling_target_is_not_a_pursuit_while_it_goes_round() -> void:
 func test_a_running_target_is_a_pursuit_after_two_seconds() -> void:
 	var table := _table()
 	var situation := _situation(_round(170.0))
-	var track := {"name": "Rust_1", "position": TARGET, "velocity": Vector3(7.0, 0.0, 0.0), "seen_tick": 1000}
+	# Fleeing: 7 m/s straight away from the element.
+	var track := {"name": "Rust_1", "position": TARGET, "velocity": TacticsFormation.flat(TARGET - situation["center"]) * 7.0,
+			"seen_tick": 1000}
 	var first := ElementPlan.build(situation, _state(_attack(), {"pursuit": track}), table)
 	assert_true(not bool(first["pursuing"]), "7 m/s, just started: not yet")
 	assert_eq(int((first["approach_round"] as Dictionary).get("fast_since", -2)), 1000, "the clock starts")
@@ -228,3 +230,16 @@ func test_once_round_a_crew_fights_on_the_side_and_is_sent_back_off_it() -> void
 	assert_eq(String(kept["orders"]["Green_2"]["verb"]), "attack", "fighting at 50 deg: keeps at it")
 	var fresh := ElementPlan.build(situation, _state(_attack(), {"approach_round": {"in": true, "side": 1}}), table)
 	assert_eq(String(fresh["orders"]["Green_2"]["verb"]), "move", "not fighting at 50 deg: back to its place")
+
+
+func test_a_target_driving_at_the_squad_is_not_fleeing() -> void:
+	var table := _table()
+	var center := _round(170.0)
+	# The target 100 m off, driving at the element at 10 m/s (its velocity toward `center`).
+	var toward := TacticsFormation.flat(center - TARGET) * 10.0
+	var held := int(ElementPlan.APPROACH_RUNNING_S * SimClock.TICK_RATE)
+	var plan := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": {"name": "Rust_1",
+			"position": TARGET, "velocity": toward, "seen_tick": 1000},
+			"approach_round": {"in": false, "side": 1, "fast_since": 1000 - held}}), table)
+	assert_true(not bool(plan["pursuing"]), "charging at us is not fleeing: still going round")
+	assert_eq(int((plan["approach_round"] as Dictionary).get("fast_since", -2)), -1, "its clock is reset")

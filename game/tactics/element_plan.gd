@@ -98,9 +98,9 @@ const APPROACH_LEAD_DEG := 15.0
 ##   - it goes round wide of the target SQUAD's guns (their longest reach + APPROACH_STANDOFF_MARGIN_M, the squad being
 ##     every contact within APPROACH_TARGET_SQUAD_M of the target), not at its own reach (gun trucks rounded a Law IFV at
 ##     35 m, inside its 60 m autocannon);
-##   - it is a pursuit only when the target is really RUNNING: APPROACH_RUNNING_MPS held APPROACH_RUNNING_S (a CPU squad
-##     shuffling at 2-5 m/s in a fight turned B0's drive round into a chase, which has no side), and out of sight it keeps
-##     going round where the target was last seen, carried forward;
+##   - it is a pursuit only when the target is really FLEEING: APPROACH_RUNNING_MPS away from the element, held
+##     APPROACH_RUNNING_S (a CPU squad shuffling at 2-5 m/s in a fight turned B0's drive round into a chase, which has no
+##     side), and out of sight it keeps going round where the target was last seen, carried forward;
 ##   - the target's own squad closing on it is the fight it was sent to, not a near ambush (Drills), for the whole task:
 ##     B0's squad came round, then charged THROUGH the target on an "ambush" by the target itself and fought from all
 ##     round it for 30 s.
@@ -411,18 +411,22 @@ static func target_squad_reach(situation: Dictionary, target: String, target_poi
 	return reach
 
 
-## Round 28 (B1): keep `state.approach_round.fast_since`, the tick from which the target of a drawn flank still going round
-## has moved at APPROACH_RUNNING_MPS or faster (-1: it is not running). Reads the element's track of it. Pure (on state).
+## Round 28 (B1): keep `state.approach_round.fast_since`, the tick from which the target of a drawn flank has been moving
+## away from the element at APPROACH_RUNNING_MPS or faster (-1: it is not fleeing). Reads the element's track of it. Pure (on state).
 static func _track_running(task: Dictionary, state: Dictionary, situation: Dictionary) -> void:
 	if String(task.get("verb", "")) != "attack" or not task.has("approach"):
 		return
 	var kept_round: Dictionary = (state.get("approach_round", {}) as Dictionary).duplicate()
-	if bool(kept_round.get("in", false)):
-		return
 	var track: Dictionary = state.get("pursuit", {})
 	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	# FLEEING: its speed away from the element (a target driving AT the squad, as a CPU's lone IFV did at 10.5 m/s, is not
+	# running from anything: it is the fight coming to it, and the drawn side still stands).
+	var away := Vector3.ZERO
+	var center: Vector3 = situation.get("center", Vector3.ZERO)
+	if track.get("position") is Vector3:
+		away = TacticsFormation.flat((track["position"] as Vector3) - center)
 	var running := String(track.get("name", "")) == String(task.get("target", "")) \
-			and Vector2(velocity.x, velocity.z).length() >= APPROACH_RUNNING_MPS
+			and Vector3(velocity.x, 0.0, velocity.z).dot(away) >= APPROACH_RUNNING_MPS
 	if not running:
 		kept_round["fast_since"] = -1
 	elif int(kept_round.get("fast_since", -1)) < 0:
@@ -2142,10 +2146,10 @@ static func pursues(task: Dictionary, state: Dictionary, situation: Dictionary) 
 	var track: Dictionary = state.get("pursuit", {})
 	if track.is_empty() or String(track.get("name", "")) != target:
 		return false
-	# Round 28 (B1): a drawn flank still going round is a pursuit only while its target has been RUNNING for
-	# APPROACH_RUNNING_S (not sticky, and not for being out of sight: it goes round where the target was last seen).
+	# Round 28 (B1): a drawn flank (going round, or fighting from the side) is a pursuit only while its target has been
+	# FLEEING for APPROACH_RUNNING_S (not sticky, and not for being out of sight: it goes round where it was last seen).
 	var kept_round: Dictionary = state.get("approach_round", {})
-	if APPROACH_CARRY and task.has("approach") and not bool(kept_round.get("in", false)):
+	if APPROACH_CARRY and task.has("approach"):
 		var since := int(kept_round.get("fast_since", -1))
 		return since >= 0 and float(int(situation.get("tick", 0)) - since) / SimClock.TICK_RATE >= APPROACH_RUNNING_S
 	if bool(state.get("pursuing", false)):
