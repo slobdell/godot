@@ -76,7 +76,73 @@ Nothing: his call is made.
 
 ## Status
 
-_Updated 2026-10-13 (traffic worker, session godot-traffic-e4). Every number names commit, machine, workload and n._
+_Updated 2026-10-13 ~16:40 PDT (traffic worker, session godot-traffic-e4). Every number names commit, machine, workload and n._
+
+### REPORT (traffic, round 29) — read this first
+
+**CP-T: T1 the street hold PASSED its pre-registered bar, judged once. Green: `3a94f38d`** (builder0, `make check exited 0`,
+2550 passed / 0 failed; 24 targets judged + 2 refused by load: `perf-judge` then judged alone, PASS 1.17×;
+`ai-scenarios-check` 52/0, its one refusal is `scenario_perf`'s CPU budget, which by design defers to `perf-judge` when
+unpinned on builder0's hybrid CPU). The commit after it adds only the verdict script, data and this report.
+**Native's T2 port is EQUAL** (native, builder0, proof tree stream/native + `3a94f38d` at `012c9335`:
+`test_native_traffic_hold`, 0 mismatches; stream/native `4b982691` + `a23512ff` + `573ca520`). Merge the pair back to back.
+
+**Judged run** (builder0, `3a94f38d` both arms, GDScript path, fresh seeds {13,14,15} x ticks {1,3,6,8,11,16}, n = 18 a
+case, base `--traffic-off=hold`; `tests/traffic/hold_verdict.py`; data `references/round29/traffic/`):
+
+| case | crews in | between-squad fast | all fast | all-in median s | wedges | the rule's counters |
+|---|---|---|---|---|---|---|
+| **Terminus head-on** | 176 → **177** ✓ | 475 → **91 (−81 %)** ✓ | 881 → 379 | 60.8 → **59.3** ✓ | none ✓ | 18 verdicts, 90 holds, 87 released as the tail passed, 3 at the cap, 0 no-spot |
+| Terminus crossing | 173 → 173 ✓ | 112 → 112 | 236 → 236 ✓ | 45.9 → 45.9 ✓ | – | 1 verdict, 3 holds, 86 crew-ticks (no effect on any number) |
+| yard_open crossing | 166 → 166 ✓ | 111 → 111 | 247 → 247 ✓ | 77.2 → 77.2 ✓ | – | 0 |
+| yard_open head-on | 176 → 176 ✓ | 55 → 55 | 115 → 115 ✓ | 30.9 → 30.9 ✓ | – | 0 |
+| CPU mirror (`--side=rust`) Terminus head-on | 176 → 178 ✓ | 475 → 58 (−88 %) ✓ | 881 → 382 | 60.8 → 59.1 ✓ | none ✓ | 18 / 90 / 85 / 2 |
+
+Worst runs read (lesson 302): s13/t16 is the one run whose between-squad bumps did not fall (24 → 27); three runs lose a
+single crew each, 19–21 m from its seat at the FAR end (B_4/B_5), the destination's seating, not the street (below).
+**Also:** `bridge-pooled` on the GDScript path 18/18 (`BRIDGE_FLAGS=--brains-off=native`, builder0, `3a94f38d`);
+`test_traffic_hold_live` fires on his case (the judged arm's counters above). **Cost (C29.5):** Traffic's own parts
+(`sz.tr.refresh_gd` + `sz.tr.look_gd`) 0.10–0.20 ms a tick at Sumps 4600 (`ai-parts-match`, GDScript path, builder0
+loaded ~20, `3a94f38d`, seeds 92721–3, n = 3): ≤ 0.5 ms. The whole `move.avoid` delta between arms is NOT READABLE under
+that load (−0.86 to +0.26 ms; both arms ran identical ticks and calls, so the CPU fights themselves did not change).
+
+**In his terms:** *When two of your squads meet head-on in a street, the one still outside now pulls over beside the
+street's mouth, mostly to its right, and waits. The other comes straight through, then the first goes. Hard bumps
+between the two squads drop by about four fifths. Nobody locks up, a crew more gets in, and the last one arrives at
+about the same time as before.*
+
+**What to playtest** (after the pair merges; the C++ path carries it then): `make native && make skirmish` on the
+Terminus, two of your squads sent through each other along the west street. Before the merge, on this branch:
+`make skirmish -- --brains-off=native`. **His clip** (seed 1, his case, 45 s, top-down over the street): base
+`build/traffic_clips/terminus_head_base_3a94f38d.mp4` and hold `build/traffic_clips/terminus_head_hold_3a94f38d.mp4`
+(builder0 light lane, `make remote LIGHT=1 T="traffic-clip TRAFFIC_CLIP_CASES=terminus,head TRAFFIC_CLIP_ARMS='base:hold on:-' TRAFFIC_FLAGS=--brains-off=native"`).
+I watched the frames at 12 s and 18 s. With the hold, A waits on both sides of the north mouth (the block corner leaves
+room for three on the right) and B's column comes out between them. In the base at 18 s, crews of both squads are
+tangled inside the street. Question for him: does the waiting squad look like it is waiting on purpose?
+
+**Decisions:** the verdict is T1b's (the squad still in the open waits). Spots come from the navmesh: the mouth on the
+waiting lead's route, then the street's centre line there, then spots 12–22 m right of it, clear of the passing squad's
+run to its destination and of its formation there. The left side is used only when the right has no room. Release
+per crew once the passing squad's tail is past, cap 20 s, then no new verdict for that pair for 30 s. A meeting needs
+both squads travelling. No mouth within 80 m means no hold.
+
+**Questions for the lead:** none blocking (the clip question above).
+
+**Requests to other streams:**
+- **brains:** the far-end seating. In both arms, every crew left out ends 16–25 m from its seat at the destination
+  after the element re-seats it onto a seat beside a block that reads `no_path` (base 10 crews out on the tuning
+  seeds, v4 9). With the hold, the rear crew of the waiting squad (B_5) arrives last into that shuffle, so it carries
+  most of the misses (6 of 9 on the tuning seeds). Traced at seed 1 tick 11 (`make traffic-trace TRAFFIC_ARENA=terminus
+  TRAFFIC_KIND=head TRAFFIC_SEED=1 TRAFFIC_FLAGS='--brains-off=native --lab-start-tick=11'`): B_1 was "arrived" at
+  36 s, re-seated at ~54 s, and blocked `no_path` at (-73.7, 94.9).
+- **native:** done (T2, equal). Tell native before changing `hold_of`'s return shape or `holding()`'s formula.
+
+**Known issues:** in the crossing the rule fired once on the judged seeds (3 holds, 86 crew-ticks) with no change to any
+number; a long squad can find no room on the right at a cramped mouth and splits across both sides (visible in the clip).
+
+**Next:** T1c (brains' request, accepted after CP-T): a hull set up to fire (`deploy_ratio > 0`) refuses a give-way ask
+and the asker goes round (brains' trace: seed 15 t16, a set-up mortar truck gave way 3 times and packed up; 8 repacks in
+B1's 18 judged runs). Then T3 (stretch).
 
 ### The plan (ordered)
 
