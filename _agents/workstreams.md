@@ -245,6 +245,12 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   Queued for merge after main's closing check. Next: N7 proposal (core, outside thinking and round 29's contested code);
   **E6b** (his laptop, everything shipped ON v all native off, rule D) on the orchestrator's GO when he is away.
 
+- **Native N7 (proposed `eaa5d433`, ordered 2026-10-13):** GO (1) projectile flight + impact queries (4–5 days; GRANT: seams in
+  shell.gd flight/hit, Match._land_rounds, Match.incoming_projectiles, _damage_estimate); then (2) the suppression field
+  (1–2 days; GRANT: threat_field.gd stamp/decay/at, Match._update_suppression). WAIT for round 29's split: (3) the tick's
+  scheduling around the brain (~3 %, needs an order_controller.gd freeze window), (4) wall contact's observer (1.47 %, on
+  nav/manoeuvre's say-so), (5) element_feed's gather (2.39 %, after round 29). (6) the match recorder last.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
