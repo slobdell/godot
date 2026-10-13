@@ -121,6 +121,10 @@ static var APPROACH_BATTERY := true
 ## with no losses: 4.83 alive v 2.61 going round it). `--approach-latch=off` keeps the flank.
 static var APPROACH_LATCH := true
 const APPROACH_CLOSING_MPS := 2.0
+## Round 29 (B2): the latch keys on the TARGET's reach of a crew, and remembers a charge this long after the target stops
+## to shoot. `--approach-latch=crews` is round 28's rule (the crews' own reach, while it is driving at them).
+static var APPROACH_LATCH_TARGET_REACH := true
+const APPROACH_CHARGE_MEMORY_S := 4.0
 ## Once round: a crew within this many degrees of the side drawn (and in reach) fights freely; one already fighting keeps
 ## at it out to APPROACH_KEEP_SECTOR_DEG; beyond, it is sent back to its place on the side (_plan_flank_line).
 const APPROACH_SECTOR_DEG := 40.0
@@ -548,9 +552,12 @@ static func target_squad_reach(situation: Dictionary, target: String, target_poi
 	return reach
 
 
-## Round 28 (B1, the orchestrator's ruling on (c)): whether the attack's target is CHARGING the element: driving toward it
-## at APPROACH_CLOSING_MPS or faster (the element's track) and inside some crew's reach (range x ENGAGE_RANGE_FACTOR).
-## Pure.
+## Round 28 (B1, the orchestrator's ruling on (c)); round 29 (B2, the last attempt): whether the attack's target is
+## CHARGING the element: it drove at the element at APPROACH_CLOSING_MPS or faster within the last
+## APPROACH_CHARGE_MEMORY_S (approach_round.closing_tick, kept by _track_running; or now, on the track), and some crew is
+## inside the TARGET's own reach (its weapon's range, `--approach-latch=crews` for round 28's crews' reach). Round 28
+## keyed on the crews' reach (35 m x 1.15): the charging Law IFV stopped at its own 45-60 m to shoot and never came that
+## close, so the trucks were shot going round it. Pure.
 static func charging(state: Dictionary, situation: Dictionary, target_point: Vector3) -> bool:
 	var track: Dictionary = state.get("pursuit", {})
 	var task: Dictionary = state.get("task", {})
@@ -558,12 +565,36 @@ static func charging(state: Dictionary, situation: Dictionary, target_point: Vec
 		return false
 	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
 	var toward := TacticsFormation.flat((situation.get("center", Vector3.ZERO) as Vector3) - (track["position"] as Vector3))
-	if Vector3(velocity.x, 0.0, velocity.z).dot(toward) < APPROACH_CLOSING_MPS:
+	var closing_now := Vector3(velocity.x, 0.0, velocity.z).dot(toward) >= APPROACH_CLOSING_MPS
+	if not APPROACH_LATCH_TARGET_REACH:
+		if not closing_now:
+			return false
+		for member: Dictionary in members_of(situation):
+			if (member["position"] as Vector3).distance_to(target_point) <= float(member.get("range", 0.0)) * ENGAGE_RANGE_FACTOR:
+				return true
 		return false
+	var closed_at := int((state.get("approach_round", {}) as Dictionary).get("closing_tick", -1))
+	var recently := closed_at >= 0 and float(int(situation.get("tick", 0)) - closed_at) / SimClock.TICK_RATE \
+			<= APPROACH_CHARGE_MEMORY_S
+	if not closing_now and not recently:
+		return false
+	var reach := _target_reach(situation, String(task.get("target", "")))
 	for member: Dictionary in members_of(situation):
-		if (member["position"] as Vector3).distance_to(target_point) <= float(member.get("range", 0.0)) * ENGAGE_RANGE_FACTOR:
+		var crew_reach := float(member.get("range", 0.0)) * ENGAGE_RANGE_FACTOR
+		if (member["position"] as Vector3).distance_to(target_point) <= maxf(reach, crew_reach):
 			return true
 	return false
+
+
+## Round 29 (B2): the named contact's weapon range (m) from its unit's catalogue; 0 when unknown. Pure.
+static func _target_reach(situation: Dictionary, target: String) -> float:
+	for contact: Dictionary in situation.get("contacts", []):
+		if String(contact["name"]) != target:
+			continue
+		var unit := String(contact.get("unit", ""))
+		if unit != "" and Units.exists(unit):
+			return float(Weapons.profile(String(Units.stat(unit, "weapon", ""))).get("range", 0.0))
+	return 0.0
 
 
 ## Round 28 (B1): keep `state.approach_round.fast_since`, the tick from which the target of a drawn flank has been moving
@@ -586,6 +617,10 @@ static func _track_running(task: Dictionary, state: Dictionary, situation: Dicti
 		kept_round["fast_since"] = -1
 	elif int(kept_round.get("fast_since", -1)) < 0:
 		kept_round["fast_since"] = int(situation.get("tick", 0))
+	# Round 29 (B2): the last tick the target drove AT the element (charging() remembers it APPROACH_CHARGE_MEMORY_S).
+	if String(track.get("name", "")) == String(task.get("target", "")) \
+			and Vector3(velocity.x, 0.0, velocity.z).dot(-away) >= APPROACH_CLOSING_MPS:
+		kept_round["closing_tick"] = int(situation.get("tick", 0))
 	state["approach_round"] = kept_round
 
 
