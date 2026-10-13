@@ -9,7 +9,10 @@ static var _ok := false
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_motion and configure()
+	var ok := BrainSwitches.native and BrainSwitches.native_motion and configure()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("motion")
+	return ok
 
 
 static func configure() -> bool:

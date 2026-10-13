@@ -9,8 +9,11 @@ static var _configured := false
 
 
 static func usable(map: CoverMap) -> bool:
-	return BrainSwitches.native and BrainSwitches.native_tq and BrainSwitches.native_cover and map != null \
+	var ok := BrainSwitches.native and BrainSwitches.native_tq and BrainSwitches.native_cover and map != null \
 			and map._native != null and configure()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("tq")
+	return ok
 
 
 static func configure() -> bool:

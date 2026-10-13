@@ -9,7 +9,10 @@ static var _configured := false
 
 
 static func usable(_gunnery: Gunnery) -> bool:
-	return BrainSwitches.native and BrainSwitches.native_gun and configure()
+	var ok := BrainSwitches.native and BrainSwitches.native_gun and configure()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("gun")
+	return ok
 
 
 static func configure() -> bool:

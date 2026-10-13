@@ -10,8 +10,11 @@ static var _configured := false
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_decide and not SwitchingCost.cost_arm() \
+	var ok := BrainSwitches.native and BrainSwitches.native_decide and not SwitchingCost.cost_arm() \
 			and not SwitchingCost.probing and configure()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("decide")
+	return ok
 
 
 static func configure() -> bool:

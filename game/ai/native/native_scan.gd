@@ -16,8 +16,11 @@ static var _contacts_match := 0
 
 ## Can this gunner's scan go native this tick? (The library, the switch, a match to read intel from.)
 static func usable(gunnery: Gunnery) -> bool:
-	return BrainSwitches.native and BrainSwitches.native_scan and gunnery.tanks_root != null \
+	var ok := BrainSwitches.native and BrainSwitches.native_scan and gunnery.tanks_root != null \
 			and gunnery.tanks_root.get_parent() is Match
+	if ok and NativeBridge.counting:
+		NativeBridge.took("scan")
+	return ok
 
 
 ## The record and the contacts for this physics frame (each filled once, by whoever asks first).

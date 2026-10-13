@@ -13,7 +13,10 @@ static func usable(tank: Tank) -> bool:
 		return false
 	if not Tank._drive_trace_read:
 		tank._read_drive_trace()
-	return Tank.drive_trace.is_empty()  # the trace instrument is the GDScript's
+	var ok := Tank.drive_trace.is_empty()  # the trace instrument is the GDScript's
+	if ok and NativeBridge.counting:
+		NativeBridge.took("tank")
+	return ok
 
 
 static func configure() -> bool:

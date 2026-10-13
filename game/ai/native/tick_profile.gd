@@ -40,7 +40,10 @@ class Opener:
 
 
 ## Measurement for tests: the last report printed.
+## The guard counts native paths from here (match seconds) until the window opens.
+const COUNT_FROM_S := 5.0
 static var last_report := {}
+var _taken := {}
 
 
 static func window() -> Vector2:
@@ -95,6 +98,12 @@ static func ensure(tanks_root: Node) -> void:
 	game_match.add_child(_installed)
 	game_match.add_child(opener)
 	SimProfile.install(game_match)
+	# Round 28 (N7 guard): which native paths are TAKEN under this instrument, counted from COUNT_FROM_S of match time
+	# (every measurement mode is on by then: profile_detail flips at each controller's first tick after the install,
+	# and a count from the install let a seam that stepped aside score its one call before that) until the window
+	# opens -- not inside it, so the count costs the window nothing.
+	NativeBridge.taken = {}
+	NativeBridge.counting = false
 
 
 func _on_open() -> void:
@@ -107,6 +116,18 @@ func _on_open() -> void:
 func _physics_process(_delta: float) -> void:
 	_closed_usec = Time.get_ticks_usec()
 	_closed_frame = _frames
+
+
+## The native switches in force (BrainSwitches.native and the switch both on): what the guard expects to be taken.
+static func _native_on() -> Array:
+	var on: Array = []
+	if not BrainSwitches.native:
+		return on
+	var switches: Script = BrainSwitches  # the class as a value: its static vars by name
+	for name: String in BrainSwitches.NAMES:
+		if name.begins_with("native_") and bool(switches.get(name)):
+			on.append(name)
+	return on
 
 
 func _alive() -> int:
@@ -124,9 +145,13 @@ func _process(_delta: float) -> void:
 	var seconds := float(_match.tick) / float(SimClock.TICK_RATE)
 	var now := Time.get_ticks_usec()
 	if not _started:
+		if not NativeBridge.counting and seconds >= COUNT_FROM_S and seconds < window().x:
+			NativeBridge.counting = true
 		if seconds >= window().x:
 			_started = true
 			SimProfile.reset()
+			_taken = NativeBridge.taken.duplicate()
+			NativeBridge.counting = false
 			_alive_at_start = _alive()
 			_ticks_at_start = Engine.get_physics_frames()
 			_last_usec = now
@@ -145,6 +170,7 @@ func _process(_delta: float) -> void:
 				"process_ms": snappedf(_process_ms / frames, 0.01),
 				"engine_physics_step_ms": snappedf(_gap_usec / float(maxi(_gaps, 1)) / 1000.0, 0.01), "step_samples": _gaps,
 				"sim": SimProfile.report(), "native": NativeBridge.describe(),
-				"switches": {"native": BrainSwitches.native, "native_drive": BrainSwitches.native_drive}}
+				"switches": {"native": BrainSwitches.native, "native_drive": BrainSwitches.native_drive},
+				"native_on": _native_on(), "native_taken": _taken}
 		last_report = report
 		print("NATIVE_TICK_PROFILE " + JSON.stringify(report))

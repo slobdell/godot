@@ -14,7 +14,10 @@ static var _terrain_size := -1
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_el and NativeBridge.available
+	var ok := BrainSwitches.native and BrainSwitches.native_el and NativeBridge.available
+	if ok and NativeBridge.counting:
+		NativeBridge.took("el")
+	return ok
 
 
 ## The native table holds `data`'s terrain; false when `data` has none (then every water rule is the identity).

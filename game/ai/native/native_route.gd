@@ -10,8 +10,11 @@ extends RefCounted
 
 static func usable(mover: Movement) -> bool:
 	# Not under `--nav-off=carrot` (round 5's follower) or the opt-in clearance arm (its counters count chords).
-	return BrainSwitches.native and BrainSwitches.native_path and BrainSwitches.chord_memo \
+	var ok := BrainSwitches.native and BrainSwitches.native_path and BrainSwitches.chord_memo \
 			and not mover._off.has("carrot") and not Movement.clearance_on()
+	if ok and NativeBridge.counting:
+		NativeBridge.took("path")
+	return ok
 
 
 static func tail(mover: Movement, goal: Vector3) -> Vector3:

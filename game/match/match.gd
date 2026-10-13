@@ -1216,7 +1216,20 @@ func _update_intel() -> void:
 		var viewers := sorted_team_tanks(team)
 		# S2 (round 16): the enemy list once per team per pass (it was rebuilt inside the viewer loop).
 		var enemies := sorted_team_tanks(1 - team)
-		for viewer in (viewers if tick % (INTEL_EVERY_TICKS * GUN_READY_EVERY_INTELS) == 0 else [] as Array[Tank]):
+		# Round 28 (native N6.3): who sees whom as one batched pass a team (NativePerception); intel stays here.
+		var native_sight := NativePerception.usable()
+		var gun_viewers: Array[Tank] = []
+		if tick % (INTEL_EVERY_TICKS * GUN_READY_EVERY_INTELS) == 0:
+			gun_viewers = viewers
+		if native_sight and not gun_viewers.is_empty():
+			var gun_ready := NativePerception.gun_ready(gun_viewers, enemies)
+			for i in gun_viewers.size():
+				if gun_ready[i] != 0:
+					stats["gun_ready_samples"][team] += 1
+					if not gun_viewers[i].command.fire:
+						stats["gun_idle_samples"][team] += 1
+			gun_viewers = []
+		for viewer in gun_viewers:
 			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
 			for enemy in enemies:
@@ -1226,9 +1239,15 @@ func _update_intel() -> void:
 					if not viewer.command.fire:
 						stats["gun_idle_samples"][team] += 1
 					break
-		for enemy in enemies:
+		var sight := NativePerception.sight(viewers, enemies) if native_sight else PackedInt32Array()
+		for e in enemies.size():
+			var enemy := enemies[e]
 			if not enemy.is_alive():
 				known.erase(String(enemy.name))
+				continue
+			if native_sight:
+				if sight[e] >= 0:
+					known[String(enemy.name)] = _contact(enemy)
 				continue
 			for viewer in viewers:
 				if not viewer.is_alive():
@@ -1237,17 +1256,25 @@ func _update_intel() -> void:
 					continue
 				if not line_of_sight(viewer, enemy):
 					continue
-				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
-						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
-						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "unit": enemy.unit_id,
-						# L2: how suppressed a contact is, for brains that pick a target or a moment to flank (ai asked,
-						# 2026-09-16). It is what you can see from outside: a crew with its head down.
-						"suppression": enemy.suppression, "role": Units.role_of(enemy.unit_id), "visible": true,
-						"seen_tick": tick}
+				known[String(enemy.name)] = _contact(enemy)
 				break
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
 				known.erase(contact_name)
+		if native_sight and SimProfile.enabled and NativePerception.rays_cast > 0:
+			SimProfile.count("intel/los_queries", NativePerception.rays_cast)  # the lines the native pass cast
+		NativePerception.rays_cast = 0
+
+
+## What intel records of a contact in sight this pass.
+func _contact(enemy: Tank) -> Dictionary:
+	return {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
+			"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
+			"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "unit": enemy.unit_id,
+			# L2: how suppressed a contact is, for brains that pick a target or a moment to flank (ai asked,
+			# 2026-09-16). It is what you can see from outside: a crew with its head down.
+			"suppression": enemy.suppression, "role": Units.role_of(enemy.unit_id), "visible": true,
+			"seen_tick": tick}
 
 
 ## S2 (round 16): intel's line of sight, counted (`SimProfile` counter intel/los_queries). An exact memo keyed on the
@@ -1833,6 +1860,7 @@ func incoming_projectiles(unit: Tank) -> Array:
 	var threats: Array = []
 	if unit == null or not unit.is_alive():
 		return threats
+	var lap_started := Time.get_ticks_usec() if OrderController.profile_detail else 0  # N7: the K2 query's own share
 	var here := Vector2(unit.global_position.x, unit.global_position.z)
 	var half := Units.hull_half_extents(Units.stat(unit.unit_id, "hull_size"))
 	var forward := -unit.global_basis.z
@@ -1881,6 +1909,8 @@ func incoming_projectiles(unit: Tank) -> Array:
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]) * falloff, weapon, forward, true)})
 	threats.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a["eta_ticks"]) < int(b["eta_ticks"]) or (int(a["eta_ticks"]) == int(b["eta_ticks"]) and int(a["projectile_id"]) < int(b["projectile_id"])))
+	if OrderController.profile_detail:
+		OrderController.add_part("k2.incoming", Time.get_ticks_usec() - lap_started)
 	return threats
 
 

@@ -18,6 +18,7 @@
 #include "tank_drive_native.h"
 #include "combat_native.h"
 #include "pathing_native.h"
+#include "perception_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -165,6 +166,15 @@ public:
 	PackedVector3Array pathing_find_path(Object *node, const Vector3 &from, const Vector3 &to) const {
 		return ::godot::pathing_find_path(pathing_config, node, from, to);
 	}
+	// Round 28 (N6.3): perception's batched pass (perception_native.cpp); the rays it cast, for SimProfile.
+	bool perception_configure(const Dictionary &config);
+	PackedInt32Array perception_sight(const Array &viewers, const Array &enemies) {
+		return ::godot::perception_sight(perception_config, viewers, enemies, perception_rays_cast);
+	}
+	PackedByteArray perception_gun_ready(const Array &viewers, const Array &enemies) {
+		return ::godot::perception_gun_ready(perception_config, viewers, enemies, perception_rays_cast);
+	}
+	int64_t perception_rays() const { return perception_rays_cast; }
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -254,6 +264,8 @@ private:
 	TankDriveConfig tank_drive_config;
 	CombatConfig combat_config;
 	PathingConfig pathing_config;
+	PerceptionConfig perception_config;
+	int64_t perception_rays_cast = 0;
 	DecideConsts decide_consts;
 	TqConsts tq_consts;
 	ElTerrain el_terrain_table;

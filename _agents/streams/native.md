@@ -141,10 +141,9 @@ builder0; the laptop only in a granted slot (C27.6)._
 (merged as `a9c492a7` from `d11f40ce`: builder0 check 2522/0 with one load flake in `remote-guard-test`'s quiet-window
 case, passing alone; `native-verify-suite` exited 0, 2522/0 + 50/0 scenarios, 0 verify mismatches). On stream/native
 since: **N6.4** (the nav wrappers, `native_pathing` ON at its price ~0; **green `5033c8b1`**: builder0 `make check exited 0`, 2523/0, thirteen unmoved, det `2875411ff4ec6be7`; `native-verify-suite` exited 0, 2523/0 + 50/0, 0 verify mismatches; handed over).
-**Queue for round 29:** (1) N6.4 is done (merge when the orchestrator says); (2) **N6.3 perception + intel: ASK the
-orchestrator first** (perception.gd is brains'; it is stage 2's first block); (3) N3: no ports waiting (round 28:
+**Queue for round 29:** (1) N6.4 is done (merge when the orchestrator says); (2) N6.3 perception ONLY is done, ON, green `a1174911` except the perf gate, which a busy builder0 left NOT JUDGED (re-judge on a quiet box or main's combined check); intel NOT ported: it is the thinking he deferred; (3) N3: no ports waiting (round 28:
 manoeuvre's M1/M2 and traffic's T1/T1b did not ship); the held N5 ports stay held (`_negotiate`'s body / `ask` /
-`_begin_yield` after traffic's CP-T; the k-turn planner and `_manoeuvre` after manoeuvre's CP-M1/M2); (4) stage 2 (N4)
+`_begin_yield` after traffic's CP-T; the k-turn planner and `_manoeuvre` after manoeuvre's CP-M1/M2); (4) N7 proposed (below; nothing started), E6b held for the GO; (5) stage 2 (N4)
 deferred by the lead until the AI's decisions settle.
 
 | item | state |
@@ -426,12 +425,86 @@ starts before the orchestrator orders it.
 | **N6.1a** `TankMotion.step_in_place` | `native/src/motion_native.{h,cpp}`; seam in `game/tank/tank_motion.gd` | `native_motion` **OFF** (by its price) | `test_native_motion` 600 rolls x 40 ticks = 24 000 steps every locomotion, 0 mismatches; native-proof `motion` equal | builder0 50v50: +1.7 / +3.5 / +2.3 % (a crossing per call from GDScript's planners costs more than the step) |
 | **N6.1b** `Tank._drive` as one call (incl. `move_and_slide` from C++) | `native/src/tank_drive_native.{h,cpp}`, `game/ai/native/native_tank.gd`; seam in `game/tank/tank.gd` `_drive` | `native_tank` **ON** | native-proof on = off = tank on sumps `0398922d31f335f8`, leaders `9aad48e924fc7bf4`, foundry `28b7ccfab3c5b916`, terminus `f90c67a55c7ad9e6`, yard `1f15cb10c038b2bd` | builder0 (noisy, normalised to the `match` section, 3 alternated runs an arm): tank/drive ~6.5 % cheaper, ~0.06 ms a tick at 25 a side |
 | **N6.2** combat resolution's rules | `native/src/combat_native.{h,cpp}`, `game/ai/native/native_combat.gd`; seams in `game/match/match.gd` `_land_hit_result`, `game/tank/tank.gd` `take_hit` | `native_combat` **ON** (`d11f40ce`; on main `a9c492a7`) | `test_native_combat` 840 terms + 840 take_hits, 0 mismatches; native-proof on = off = tank = combat = `0398922d31f335f8` | ~0 (a few hits a second) |
-| **N6.4** the nav wrappers (`Pathing.is_ready` / `query` / `find_path`) | `native/src/pathing_native.{h,cpp}`, `game/ai/native/native_pathing.gd`; seams in `game/ai/pathing.gd` | `native_pathing` **ON** (`5033c8b1`: check + verify-suite green) | `test_native_pathing` 300 pairs every switch combination (119 reachable, 121 not), 0 mismatches; native-proof on = off = pathing = `0398922d31f335f8` (builder0, `7d95ec03`) | ~0: builder0 noisy (tick 16-21 ms run to run), foundry 25 a side pinned 0-3, 3 alternated runs an arm, normalised to `match`: think 12.12 on v 11.98 off, controllers 18.42 v 18.24 (+~1 %, inside the +-2 % spread) |
-| N6.3 perception + intel | not started: ASK the orchestrator first (perception.gd is brains') | | | |
+| **N6.4** the nav wrappers (`Pathing.is_ready` / `query` / `find_path`) | `native/src/pathing_native.{h,cpp}`, `game/ai/native/native_pathing.gd`; seams in `game/ai/pathing.gd` | `native_pathing` **ON** (`5033c8b1`: check + verify-suite green) | `test_native_pathing` 300 pairs every switch combination (119 reachable, 121 not), 0 mismatches; native-proof on = off = pathing = `0398922d31f335f8` (builder0, `7d95ec03`) | ~~~0~~ INVALID (both arms ran the GDScript: see *the measurement-mode audit*); corrected at `5ed9b332`, builder0 quiet: tick -0.4 % (0.06 ms) |
+| **N6.3** perception ONLY (granted 2026-10-13: who sees whom; **intel stays GDScript**, it is the deferred thinking half) | `native/src/perception_native.{h,cpp}`, `game/ai/native/native_perception.gd`; seam in `game/match/match.gd` `_update_intel` (the sight line and the gun-ready sample; the contact's record factored into `Match._contact`); `perception.gd` unchanged | `native_perception` **ON** (`a1174911`: check exited 0, 2524/0, thirteen unmoved; perf-judge NOT JUDGED (the box 1.5-2.5x busy); verify-suite 0 mismatches) | `test_native_perception`: `Match._update_intel` itself both ways from one snapshot, 240 poses, 7012 lines, 0 mismatches (intel, stats and the ray count bit for bit); native-proof on = off = perception = `0398922d31f335f8` (builder0, `e479c79b`) | ~~~0~~ INVALID (both arms ran the GDScript: see *the measurement-mode audit*); corrected at `5ed9b332`, builder0 quiet: intel 0.183 -> 0.088 ms (-52 %), tick -0.7 % |
 
 Lessons: 76b0a881's check failed `test_native_motion` because creepbound (`Movement.switched_off`) had been read once at
 configure; tests switch `_off` at run time, so it is asked live (fixed in dc466667). Anything the GDScript asks per call
 stays asked per call.
+
+### N7: core components outside the thinking AND outside round 29's contested code -- PROPOSED (2026-10-13; nothing started)
+
+Excluded (round 29 rewrites them): the give-way / `_negotiate`, the k-turn planner and face turns, the element's arrival
+watch. Shares of the tick from the N6.3 price runs' OFF arms (builder0 very loaded, foundry 25 a side, stage 1 + N6 ON,
+`a1174911`'s tree, 3 runs; shares of `tick_ms`, so they are roughly load-independent; an estimate, confidence medium).
+Ranked by how core, then size; all equal-answer (hash-proven) with a switch each, the N6 rules.
+
+| # | component | what moves to C++ | today (share of tick) | days | why core / risk |
+|---|---|---|---|---|---|
+| 1 | **Projectile flight + impact queries** (`game/combat/shell.gd`, `Match._land_rounds`, `Match.incoming_projectiles` (K2) + `_damage_estimate`) | the shells' flight and hit tests as one pass over the shells, the lobbed rounds' landing, the incoming-fire geometry query every brain asks (pure geometry, no engine queries) | shell 0.11 + shell/hit 0.06 + land_rounds 0.02 + engagement 0.12 %; the incoming query inside `t.incoming` 1.78 + `s.incoming` 1.17 % (part of it; to be split by a lap before porting) | 4-5 | the rules of the fight; completes N6.2 (one implementation for the sim, the replay and the AI's lethality); grows with bigger fights. Risk: shells are Nodes (their physics step stays the engine's) |
+| 2 | **The suppression field** (`game/combat/threat_field.gd`: stamp, decay, `at`; `Match._update_suppression`) | the grid's arithmetic and the per-crew settle | match/suppression 0.34 % + the stamps inside fire | 1-2 | a game rule (L2) on a plain grid: deterministic, easy to prove; small |
+| 3 | **The tick's scheduling around the brain** (`OrderController._physics_process`'s dispatch: the per-crew entry, the parts bookkeeping, the controllers segment's loop) | one native loop over the crews calling think (GDScript) and execute (native) in today's order | controllers minus think minus execute: ~3 % (of which wall contact 1.47 %, below) | 3-4 | the seam stage 2 will need; touches `order_controller.gd` (brains-adjacent): needs a freeze window. Risk medium |
+| 4 | **Wall contact's observer** (`game/ai/wall_contact.gd`, nav's) | the per-tick contact read and its bookkeeping (runs before think, outside the execute seam) | c.wall_contact 1.47 % | 2 | physics bookkeeping, not a decision; ASK nav/manoeuvre first that round 29 leaves it alone |
+| 5 | element_feed's per-tick gather (`game/ai/element_feed.gd` normalize) | the context normalising | feed.normalize 2.39 % | 2 | a real cost, but it reads doctrine's shapes and sits beside the arrival watch round 29 rewrites: AFTER round 29 |
+| 6 | the match recorder (`game/match/match_recorder.gd`) | the event rows and the census | ~0 (no section: event-driven, one census a second) | 1 | tooling, not the sim; only for the C++-core principle; last |
+
+**Recommended order:** 1, 2, then 3 when a freeze window on `order_controller.gd` exists; 4 on nav's say-so; 5 after
+round 29; 6 last. None starts before the orchestrator orders it.
+
+### E6b, the laptop's "where it stands now" (HELD until the orchestrator's GO; 2026-10-13)
+
+The rule-D design of E6: his laptop, his preset, ABBA paired, n = 6 a size at 20 and 25 a side; A = the shipped defaults
+(everything native ON), B = `--brains-off=native` plus every `native_*` switch off. Reports game speed and tick scripts
+for each size with the se of the paired difference, and the commit + machine. Run as E6 was (`make native-tick-profile` on
+flightdeck, the bar workload foundry + parade, window 8-20 s, 180 s cooldown); B is `--brains-off=native` alone (every
+`native_*` switch checks `BrainSwitches.native` first). Evidence to `references/round28/native/e6b-<commit>/`.
+
+### The measurement-mode audit (2026-10-13, the orchestrator's order after the N6.3/N6.4 price bug)
+
+**The bug:** `NativePathing.usable()` and `NativePerception.usable()` stepped aside while `OrderController.profile_detail`
+was on, to keep the GDScript's per-call laps; the tick profile (every price and the laptop's ruling use it) turns
+SimProfile on, which turns `profile_detail` on in every controller. So both N6.4's and N6.3's "~0" prices compared
+GDScript with GDScript. Their correctness proofs stand (the tests force the switch; native-proof, the checks and the
+verify-suites run with no profile). Fixed: neither gate reads a measurement flag; natively those laps are not taken.
+
+**Every native gate audited** (`usable()` in `game/ai/native/*.gd`, every seam's call site, every switch the C++ reads):
+the only conditions besides the switches are behaviour-selecting arms (Armor.deck_probe, SwitchingCost's cost arm and
+probe, Movement._off / reverse_log / kturn_log, --nav-off=carrot, the clearance arm, the drive-trace instrument): none of
+them is set by the tick profile, --brains-parts, SimProfile, the census or the A/B. The C++'s own profile clocks
+(`--native-exec-profile`, `--native-drive-profile`) time, they never route.
+
+| switch (ON as shipped) | where it is taken | live under the tick profile |
+|---|---|---|
+| native_exec, native_owned | `OrderController.compute_command` (NativeExec) | yes (never gated) |
+| native_drive, native_cb, native_fire, native_avoid, native_path | inside the native drive (`drive_native.cpp` reads cb / avoid live; fire and the route tail are its own ports) | yes (never gated) |
+| native_tank | `Tank._drive` | yes (the drive-trace instrument only) |
+| native_combat | `Match._land_hit_result`, `Tank.take_hit` | yes (deck_probe only) |
+| native_dodge, native_cover, native_nav, native_tq, native_el, native_situation, native_decide | their seams | yes (never gated) |
+| native_pathing, native_perception | `pathing.gd`, `Match._update_intel` | **no until `5ed9b332`, yes after** |
+
+**(a) E6 is NOT affected:** at `6d9fa7a4` (E6's code) neither `NativeExec.usable` nor `NativeDrive.usable` had a
+measurement condition (read from that commit), and the arms differed by -8.6 % / -7.2 % outside 2 se, which they could
+not have if the execute had stepped aside. E6's ruling stands.
+
+**The guard:** `make native-live-guard` (~1 min builder0): a fight at 20 a side on foundry under `--native-tick-profile`;
+the native paths taken are counted (`NativeBridge.took`, a bool check a call otherwise) from 5 s of match time until the
+window opens (not inside it), and `tests/native/live_guard.py` fails naming any switch in force that was never taken.
+Switches carried inside another path are checked through it (cb, fire, avoid, path -> the drive). **Falsified:** with
+the old `profile_detail` condition put back in `NativePathing.usable()` it FAILS naming native_pathing (a first version
+counting from the install let that seam score its one call before profile_detail flipped: hence the 5 s).
+Joins CHECK_TARGETS with the merge (the orchestrator, `mk/core.mk`).
+
+**Tools that UNDER-COUNT since `5ed9b332`:** `tests/native/sizing_table.py` and `tests/native/p1_table.py` read the
+per-call laps `los.ray`, `nav.path`, `nav.is_ready` as the engine's share of a tick. With native_pathing / native_perception
+ON those laps are no longer taken (the native path does not lap per call), so their engine columns MISS the native
+path's engine calls: a tick split read from them is not complete. Read the sections (`brain/think`, `match/intel`)
+instead, or run them with `--brains-off=native_pathing,native_perception`.
+
+**The corrected prices (builder0 QUIET: tick 14.04-14.18 ms over all nine runs; `5ed9b332`, foundry 25 a side, pinned
+0-3, 3 alternated runs an arm, the native counts confirm each arm's path):** all ON 14.06 ms a tick; native_pathing off
+14.12 (ON saves 0.06 ms, -0.4 %; think 6.72 both); native_perception off 14.17 (ON saves 0.10 ms, -0.7 %: `match/intel`
+0.183 -> 0.088 ms, -52 %). N7.1's lap: the K2 query (`k2.incoming`) 0.098 ms (0.7 % of the tick), half of
+`s.incoming` (0.187); `t.incoming` 0.255 ms (1.8 %) is IncomingFire's own per-tick count over the shell columns.
 
 ### Questions for the lead
 

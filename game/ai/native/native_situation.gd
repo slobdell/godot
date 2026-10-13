@@ -8,7 +8,10 @@ static var _constants := PackedFloat64Array()
 
 
 static func usable() -> bool:
-	return BrainSwitches.native and BrainSwitches.native_situation
+	var ok := BrainSwitches.native and BrainSwitches.native_situation
+	if ok and NativeBridge.counting:
+		NativeBridge.took("situation")
+	return ok
 
 
 ## TankBrain's and Tank's constants the core reads, from the live scripts.
