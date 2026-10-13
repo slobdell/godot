@@ -18,6 +18,7 @@ extends RefCounted
 ##               wish its most-slowed crew keeps), so its rear crews do not run into its own slowed front.
 ##   streetturns T1 v2c: two squads meeting HEAD-ON in a street take turns like a one-lane bridge: the squad still in
 ##               the open (else the later one) slows to the floor early, the other comes through (_street_meeting).
+##   streetfloor T1 v2d: the waiting squad at a street meeting keeps STREET_FLOOR of its wish (v2c: YIELD_FLOOR).
 ##   streetright Round 28 T1: friendlies meeting head-on keep right, but only in a street (walls both sides); on open
 ##               ground ORCA passes them as before.
 ##
@@ -77,6 +78,9 @@ const VERDICT_KEEP_S := 3.0
 ## v2c (streetturns): a head-on meeting of two squads in a street is seen this far ahead (s, m), with the other crew
 ## up to this far across (m: an 18 m street's whole width), so the waiting squad slows before it is in the street.
 const STREET_HORIZON_S := 8.0
+## v2d: the share of its wish the WAITING squad keeps at a street meeting (it waits in the open; at 0.2 a hull still
+## makes ~1.6 m/s, over Movement's stall line of 0.5 m a second, so it never reads as stuck).
+const STREET_FLOOR := 0.2
 const STREET_REACH_M := 100.0
 const STREET_LATERAL_M := 14.0
 ## v4: how far to the right (in pair clearances) a friend abeam stops a crew keeping right.
@@ -172,14 +176,16 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 		var side_sin := minf(lateral_speed / speed, MAX_SIDE_SIN)
 		var along := preferred / speed
 		out = (along * sqrt(1.0 - side_sin * side_sin) + Vector2(-along.y, along.x) * side_sin) * speed
+	# This crew's own cap, never under its floor; then its squad's share (already floored where it was noted).
+	var keep_speed := speed
 	var cap: float = answer[2]
-	if cross and not off("wholesquad"):
-		var share := _squad_share(me, frame)
-		if share < 1.0:
-			cap = minf(cap, share * speed)
 	if cap < speed:
+		keep_speed = maxf(cap, float(answer[3]) * speed)
+	if cross and not off("wholesquad"):
+		keep_speed = minf(keep_speed, _squad_share(me, frame) * speed)
+	if keep_speed < speed:
 		crossing_yields += 1
-		out = out / speed * maxf(cap, YIELD_FLOOR * speed)
+		out = out / speed * keep_speed
 	if OrderController.profiling:
 		OrderController.add_part("sz.tr.shape_gd", Time.get_ticks_usec() - lap)
 	return out
@@ -187,7 +193,7 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 
 ## [frame, lateral m/s to my right, speed cap] for `me` against every moving friend in reach, from the table.
 static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
-	var none := [frame, 0.0, INF]
+	var none := [frame, 0.0, INF, YIELD_FLOOR]
 	var where: Variant = _where.get(me)
 	if where == null:
 		return none
@@ -212,6 +218,7 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 	var my_radius := radii[i]
 	var lateral_speed := 0.0
 	var cap := INF
+	var floor_share := YIELD_FLOOR
 	var reach_sq := REACH_M * REACH_M
 	var street_turns := cross and not off("streetturns")
 	var street_reach_sq := STREET_REACH_M * STREET_REACH_M
@@ -237,6 +244,7 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 			var head_cap := _street_meeting(me, frame, i, j, ahead, dx * -uz + dz * ux, v_me, v_it, cols)
 			if head_cap >= 0.0:
 				cap = minf(cap, head_cap)
+				floor_share = minf(floor_share, _street_floor())
 				continue
 		# Only a real meeting: the two straight-line motions come within the pair's clearance inside HORIZON_S.
 		var rvx := wx * v_it - ux * v_me
@@ -268,7 +276,12 @@ static func _solve(me: String, frame: int, keep: bool, cross: bool) -> Array:
 			if verdict >= 0.0 and verdict < cap:
 				cap = verdict
 				_note_share(groups[i], frame, maxf(verdict / v_me, YIELD_FLOOR), _last_point)
-	return [frame, lateral_speed, cap]
+	return [frame, lateral_speed, cap, floor_share]
+
+
+## v2d: the waiting squad's share at a street meeting (v2c's was YIELD_FLOOR: --traffic-off=streetfloor).
+static func _street_floor() -> float:
+	return YIELD_FLOOR if off("streetfloor") else STREET_FLOOR
 
 
 ## Is this a crossing the rule decides? With squadheading, the two SQUADS' mean headings must cross (neither within
@@ -319,7 +332,7 @@ static func _street_meeting(me: String, frame: int, i: int, j: int, ahead: float
 	if waiter != mine:
 		return -1.0
 	# The whole waiting squad slows (wholesquad), every crew of it: the point is far down its own way, so none is past it.
-	_note_share(mine, frame, YIELD_FLOOR, middle + Vector2(dxs[i], dzs[i]) * 1000.0)
+	_note_share(mine, frame, _street_floor(), middle + Vector2(dxs[i], dzs[i]) * 1000.0)
 	return 0.0
 
 

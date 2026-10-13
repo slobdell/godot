@@ -194,8 +194,12 @@ func test_v2c_head_on_in_a_street_the_squad_still_in_the_open_waits() -> void:
 	# N's lead is already in the street (z = -20, street |z| < 30); S's is still in the open (z = 45): S waits, N comes on.
 	_street_head_on(45.0, -20.0, 30.0)
 	var s1 := Traffic.shape("S1", Vector2(0.0, -10.0))
-	assert_near(s1.length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "S's lead slows to the floor: %s" % s1)
-	assert_near(Traffic.shape("S2", Vector2(0.0, -10.0)).length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "and its squad")
+	assert_near(s1.length(), Traffic.STREET_FLOOR * 10.0, 0.001, "S's lead slows to the street floor: %s" % s1)
+	assert_near(Traffic.shape("S2", Vector2(0.0, -10.0)).length(), Traffic.STREET_FLOOR * 10.0, 0.001, "and its squad")
+	Traffic.set_off("streetfloor", true)
+	_street_head_on(45.0, -20.0, 30.0)
+	assert_near(Traffic.shape("S1", Vector2(0.0, -10.0)).length(), Traffic.YIELD_FLOOR * 10.0, 0.001, "v2c's floor")
+	Traffic.set_off("streetfloor", false)
 	assert_eq(Traffic.shape("N1", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "N comes through the street")
 	assert_eq(Traffic.shape("N2", Vector2(0.0, 10.0)), Vector2(0.0, 10.0), "all of it")
 
