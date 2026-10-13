@@ -94,6 +94,17 @@ read-only gather into ownership one owner at a time (the lay first: 3 fields, on
 
 Merge main (44b6be5c) after E6 is reported, not during.
 
+**Round 28 additions (the orchestrator, 2026-10-12 afternoon; the lead's stage 2 call in `game_design.md` *Round 28: his
+stage 2 call*):** stage 2 (the think half) is **DEFERRED**, an open item. A new principle supersedes "port only what
+pays": *"even if there's not an obvious benefit to moving to C++ … long-term we are better positioned for a good game by
+having the core components in C++."* So, after N3 (which stays first whenever a stream sends a diff):
+
+5. **N5 the rest of the execute in C++**, equal-answer proofs, even where the gain is ~0: the k-turn planner's body, what is
+   left of the re-plan block, the drive's remaining callbacks (`_manoeuvre`'s decision, `_negotiate`'s body with
+   `ask`/`_begin_yield`, `_repair`, the first-use caches). Every port keeps `native-verify-suite` green and the doors rule.
+6. **N6 propose (do not start)** the next core components outside the AI's thinking (perception / line of sight, combat
+   resolution, nav queries), sized in days, for the orchestrator to order.
+
 ## Who changes your frozen files this round (C27.2)
 
 - **Scout** may change `_manoeuvre`'s M1 `reaimed` rule in `movement.gd` and `game/ai/manoeuvre.gd` (still GDScript
@@ -126,10 +137,10 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-12 ~07:00 PDT):** E1-E5 done, equal answer, all OFF; **E6 (the laptop's ruling) waits for a laptop slot**
-(asked of the orchestrator ~05:00 PDT; the lead's laptop: C27.6). Last green: **`19543dae`** (builder0 `make check
-exited 0`, 2520/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), the E6 candidate; main has everything up to
-`8623c224`.
+**State (2026-10-12 ~14:30 PDT): stage 1 is ON.** E6 ruled it (rule D met at 20 and 25 a side); the ON commit with
+the doors audit and the exit-lifetime fix is green at **`057e3fa0`** (builder0 `make check exited 0`, 2520/0, ALL
+JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), handed to the orchestrator to merge. Round 28: N3 (porting the
+behaviour streams' driving diffs) and N4 (stage 2 priced, below) next.
 
 | item | state |
 |---|---|
@@ -137,12 +148,12 @@ exited 0`, 2520/0, ALL JUDGED, thirteen unmoved, det `2875411ff4ec6be7`), the E6
 | E2 the drive's callbacks | DONE for the common callbacks (`native_cb`, OFF by its price, B); left as callbacks: the k-turn planner's body, `_manoeuvre`'s decision, `_negotiate`'s body, `_repair` (rare paths; the planner ~0.5-1 % of a tick) |
 | E3 gunnery | DONE (incl. ARC) |
 | E4 reflexes, unstick, wall contact | unstick DONE; reflexes hand back (brains never set any); the wall-contact observer stays GDScript (it runs before think, outside the seam; ~0.47 ms a tick headless) |
-| E5 the per-crew execute seam | DONE: `native_exec` + `native_owned` (+ `native_cb`) = stage 1; native-proof equal on every arm; builder0 headless -7.6 to -8.8 % of the tick's scripts (C) |
+| E5 the per-crew execute seam | DONE and ON: `native_exec` + `native_owned` + `native_cb`; native-proof equal on every arm; the doors audited (`native-verify-suite`, `native-verify-scenarios`) |
 | E6 the laptop's ruling | DONE: rules ON (20 a side -8.59 %, 0.890 -> 0.930; 25 a side -7.21 %, 0.818 -> 0.865) |
 
-**What to playtest (after E6, if it rules ON):** `make native && make skirmish` with stage 1 on:
-`make skirmish ARGS=--brains-on=native_exec,native_cb,native_owned` (or the switches' defaults flipped in their own
-commit). The same fights as before, at whatever speed the laptop gives; nothing should look different.
+**What to playtest:** `make native && make skirmish` on his laptop: the same fights as before, nothing should look or
+play differently, and the opening clash at 20 a side should run at ~0.93 of real time (0.89 before). `--brains-off=
+native_exec` puts the old execute back for a side-by-side.
 
 **Known issues:** none open in native's code. Wheeled hulls under a `face` order and crews with reflexes still hand back
 (~3.6 % of executes in his Sumps).
@@ -377,6 +388,24 @@ with room to spare), and take about one to two weeks; after that, every change t
 the work. Do it now, or once the AI's decisions have settled?"* **Recommendation: once the AI's decisions settle**
 (brains reshapes the thinking every round today: doubling that cost now slows the smarter-AI work he keeps asking for;
 20 a side is close to full speed already). The orchestrator puts it to him.
+
+### N6: the next core components outside the AI's thinking -- PROPOSED, not started (2026-10-12; for the orchestrator to order)
+
+Sized from this stream's rate (stage 1: ~2 days of porting with proofs per ~1 500 lines of drive/gun) and priced from the
+quiet slot's profile (builder0 headless, stage 1 ON, foundry 20 a side, tick's scripts 10.67 ms; `ed6ecaa9`). All are in
+paths **nobody** owns (`game/match/**`, `game/tank/**`, `game/combat/**`): each needs the orchestrator's grant. Each is
+equal-answer (hash-proven) unless declared; none is expected to move his laptop by more than ~1-4 % (the thinking is
+4.8 of the 10.7 ms, the execute ~2.6, elements 1.8).
+
+| # | component | what moves to C++ | today's cost (builder0) | days | why it's core |
+|---|---|---|---|---|---|
+| 1 | **The tank's motion** (`game/tank/tank.gd` drive/TankMotion, the per-tank physics step's script half) | the command -> velocity/yaw integration, the speed/turn limits, the slide bookkeeping (the engine's move_and_slide stays) | `tank` 0.63 ms (`tank/drive` 0.42) | 3-4 | every hull every tick; deterministic core of the sim; the server and the AI both depend on it |
+| 2 | **Combat resolution** (`shell.gd`, `impact.gd`, `armor.gd`, damage in `match.gd`) | shell flight and hit tests, armor facing, damage/shield/kill bookkeeping (signals stay GDScript) | shells 0.014 + engagement 0.013 ms today (cheap: few rounds in flight); grows with bigger fights | 4-6 | the rules of the game; one implementation the server, the replay and the AI's lethality math can share |
+| 3 | **Perception and intel** (`perception.gd`, `match.gd`'s intel refresh, `visibility_field.gd`) | who-sees-whom each intel refresh as one batched pass (the engine's rays stay), the team visibility table the AI reads | intel 0.13 + LOS bookkeeping ~0.08 ms | 2-3 | feeds both brains' thinking (stage 2's inputs) and the fog of war; batched it is stage 2's first block |
+| 4 | **Nav queries' last GDScript** (`pathing.gd` wrappers, `nav.is_ready`/`nav.path` callers on the think side) | the wrappers and memo the think side still calls (the drive's are native since N5) | ~0.1 ms | 1 | small; finishes the nav layer |
+
+**Recommended order:** 3 (it is the bridge to stage 2 when he wants it), then 1, then 2; 4 whenever convenient. None
+starts before the orchestrator orders it.
 
 ### Questions for the lead
 

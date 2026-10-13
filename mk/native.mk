@@ -107,8 +107,19 @@ native-verify-suite: import ## Stage 1's doors audit: the suite + AI scenarios w
 # The check's guard (round 27: the whole suite under verification takes ~26 min on builder0; the AI scenarios alone ~4):
 # the brain-driven scenarios with every owned execute verified, so a GDScript writer of the owned state that does not
 # mark native_stale fails the check that first reaches it.
+# The scenarios' own output goes to a file and this target judges it, as ai-scenarios-check does (the runner prints two
+# "Unicode parsing error ... NUL" lines on hybrid CPUs, scenario_perf's sysfs read: brains', reported; check's engine
+# gate fails any target whose log shows them): FAIL on a verify mismatch (NativeExec verify), a failing scenario, or a crash.
 native-verify-scenarios: import ## Stage 1's doors guard for check: the AI scenarios with every owned native execute verified (~4 min builder0)
-	TANK_NATIVE_EXEC_VERIFY=1 $(MAKE) --no-print-directory ai-scenarios
+	@mkdir -p $(BUILD_DIR)
+	@s=0; TANK_NATIVE_EXEC_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		> $(BUILD_DIR)/native-verify-scenarios.log 2>&1 || s=$$?; \
+	v=$$(grep -c "NativeExec verify" $(BUILD_DIR)/native-verify-scenarios.log || true); \
+	grep -h "^scenarios: " $(BUILD_DIR)/native-verify-scenarios.log || true; \
+	echo "native-verify-scenarios: runner exited $$s, $$v verify mismatches (build/native-verify-scenarios.log)"; \
+	if [ "$$v" != 0 ]; then grep -m3 "NativeExec verify" $(BUILD_DIR)/native-verify-scenarios.log | cut -c1-300; exit 1; fi; \
+	grep -q "^scenarios: .* 0 failed" $(BUILD_DIR)/native-verify-scenarios.log || { echo "native-verify-scenarios: a scenario failed or the runner did not finish"; exit 1; }; \
+	[ $$s = 0 ] || [ $$s = 1 ] || { echo "native-verify-scenarios: the runner crashed (exit $$s)"; exit 1; }
 
 # The band sized for the lead (round 23, the orchestrator's ask): N a side with leaders both sides (perf's army files),
 # NATIVE_SIZE_RUNS matches each with --brains-parts (the shares: execute v think v engine calls) and with --sim-profile
