@@ -81,7 +81,7 @@ func test_from_the_south_it_drives_straight_to_the_near_edge_of_the_side() -> vo
 	assert_near(anchor.distance_to(TARGET), standoff, 0.5, "at its standoff (%.1f m)" % anchor.distance_to(TARGET))
 	var off := ElementPlan.approach_off_deg(anchor, TARGET, Vector3(-1.0, 0.0, 0.0))
 	assert_near(off, ElementPlan.APPROACH_ARTILLERY_EDGE_DEG, 0.5, "the near edge of the side, its own way (%.1f deg)" % off)
-	assert_eq(String(plan["formation"]), "column", "in a column")
+	assert_eq(String(plan["formation"]), "line", "abreast (filing into a column cost ~9 s)")
 	for unit_name: String in plan["orders"]:
 		assert_eq(String(plan["orders"][unit_name]["verb"]), "move", "%s drives there" % unit_name)
 		assert_eq(String(plan["orders"][unit_name]["target"]), "", "%s drives with its gun quiet (firing deploys it)" % unit_name)

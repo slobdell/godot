@@ -429,7 +429,7 @@ static func battery_standoff(situation: Dictionary, target: String, target_point
 
 ## Round 28 (B2): a battery going round to the side drawn: its firing position is the nearest point within
 ## APPROACH_ARTILLERY_EDGE_DEG of the side, at battery_standoff, straight there when the line keeps outside the target
-## squad's reach, else the next notch round at the standoff (as B0). In a column, guns on the target.
+## squad's reach, else the next notch round at the standoff (as B0). Abreast, guns quiet (plan["relocating"]).
 static func _plan_battery_round(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		target_point: Vector3, approach: Vector3, off: float, side: int) -> void:
 	var center: Vector3 = situation["center"]
@@ -451,12 +451,13 @@ static func _plan_battery_round(plan: Dictionary, situation: Dictionary, state: 
 	plan["heading"] = heading
 	plan["anchor"] = waypoint
 	plan["arrived"] = false
-	plan["formation"] = "column"
+	# Abreast, each truck straight to its own place: filing three trucks that start abreast into a column took ~9 s.
+	plan["formation"] = "line"
 	plan["why"] = "%s; the battery goes to the side ordered to shell from it" % String(plan["why"])
 	plan["relocating"] = true
 	# A plain move, NO target: a gun that may fire deploys to fire, and a battery on a named move shelled from where it
 	# stood and never left (traced: centre fixed 14 s, first round at 2.3 s from 90 deg off).
-	_group(plan, slot_order(situation), "column", waypoint, heading, table.spacing(String(situation["terrain"])), "move")
+	_group(plan, slot_order(situation), "line", waypoint, heading, table.spacing(String(situation["terrain"])), "move")
 
 
 ## The flat distance from `point` to the segment a-b. Pure.
