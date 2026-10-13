@@ -3872,3 +3872,11 @@ long-term even without a measured speed gain; a port that is equal-answer, prove
 execute's remaining GDScript, nav, perception, combat resolution) is worth doing on its own. The think half waits only
 because it is still changing.
 
+### Round 28: decided for him (the orchestrator, 2026-10-12 evening; reversible)
+
+- **A drawn flank against a target that charges your squad:** the squad stops going round and fights where it is once the
+  target is inside its guns' reach. His call 4 ("swing round anyway") stands for a squad that holds its ground; a lone
+  vehicle charging into five of yours is not the position he drew the side against, and circling it only gives it free
+  shots (measured: clicked kills it with no losses, circling costs ~2 vehicles). `--approach-latch=off` restores the
+  literal rule.
+

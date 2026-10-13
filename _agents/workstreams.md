@@ -134,6 +134,15 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   ≥ base − 2, all-in ≤ +20 %; other three cases not worse (fast ≤ +10 %, crews ≥ base − 2); friendly-stuck ≤ base × 1.2 +
   10; bridge-pooled, arrive series, cost, native-verify-scenarios. The crossing half → round 29.
 
+- **C28.5 ruling on brains B1's (c) (2026-10-12 evening, before the judged run; tuning seen, disclosed):** tuning v4
+  (`c6cc7b6f`): (a) even roster on side 13/18 (median hit 33.9°) v clicked 0/18, killed 11 v 10, alive 2.11 v 2.33,
+  side/rear 0.93 v 0.81: passes. (c) under the CPU commander the lone IFV CHARGES the squad (10.5 m/s): v4 on side 8/18,
+  killed 12 v 18/18, alive 2.61 v 4.83: fails the guard. **Ruled: when the target closes inside the crews' reach, latch
+  "in" and fight where it is (`--approach-latch=off`); (c) on-side REPORTED, guard kept (kills ≥ clicked − 2, alive ≥
+  clicked − 0.5).** Reason: his call 4 was a stronger squad holding ground ((b) keeps "swing round anyway"); a target
+  charging into the squad has left the position the side was drawn against, and circling it gives a 60 m gun free shots
+  at 35 m guns. Told to him in player terms; reversible.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
