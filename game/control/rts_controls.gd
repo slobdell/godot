@@ -1241,6 +1241,7 @@ func _queue_task_for(units: Array, element: Element, number: int, verb: String, 
 			var way := Vector3(float(task["to"][0]) - from.x, 0.0, float(task["to"][1]) - from.z)
 			if way.length() > 1.0:
 				task["facing"] = [way.normalized().x, way.normalized().z]
+				task["facing_from"] = "waypoint"
 	var error := element.enqueue(task)
 	_squads_changed()
 	var command := UnitCommand.make(units, verb, extra)

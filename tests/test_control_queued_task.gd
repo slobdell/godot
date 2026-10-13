@@ -85,6 +85,7 @@ func test_shift_screen_after_a_waypoint_drives_it_then_screens_from_it() -> void
 	assert_eq(element.queued_tasks.size(), 1, "it waits behind it (%s)" % [element.queued_tasks])
 	var queued: Dictionary = element.queued_tasks[0] if not element.queued_tasks.is_empty() else {}
 	assert_eq(String(queued.get("verb", "")), "screen", "the queued task is the screen")
+	assert_eq(String(queued.get("facing_from", "")), "waypoint", "its facing is marked as from his waypoint, not drawn")
 	var took: Array = await _until_screen(f, element, 60 * 60)
 	print("MEASURE queued_screen waypoint_first frames %d nearest_m %.1f" % [took[0], took[1]])
 	assert_true(int(took[0]) >= 0, "the screen starts once the waypoint is reached")
