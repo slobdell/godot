@@ -11,7 +11,7 @@ const TARGET := Vector3.ZERO
 
 
 func teardown() -> void:
-	ElementPlan.APPROACH_CARRY = false
+	ElementPlan.APPROACH_CARRY = true
 	ElementPlan.APPROACH_BATTERY = true
 	DoctrineTable.clear_cache()
 	super.teardown()
@@ -61,7 +61,10 @@ func test_a_battery_is_every_crew_artillery() -> void:
 	assert_true(ElementPlan.is_battery(_situation(_round(90.0))), "three mortar carriers are a battery")
 	assert_true(not ElementPlan.is_battery(_situation(_round(90.0), true)), "a tank among them: not a battery")
 	assert_true(ElementPlan.carries(_situation(_round(90.0))), "a battery carries its approach (B2)")
-	assert_true(not ElementPlan.carries(_situation(_round(90.0), true)), "a mixed element does not (B1 is parked)")
+	assert_true(ElementPlan.carries(_situation(_round(90.0), true)), "a mixed element carries it too (round 29's B2: on)")
+	ElementPlan.APPROACH_CARRY = false
+	assert_true(ElementPlan.carries(_situation(_round(90.0))), "--approach-carry=off: a battery still carries it")
+	assert_true(not ElementPlan.carries(_situation(_round(90.0), true)), "...a mixed element does not (B0's rule)")
 
 
 func test_its_standoff_is_safe_and_inside_its_band() -> void:

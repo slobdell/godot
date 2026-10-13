@@ -146,6 +146,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 	var target_fastest := 0.0
 	var speed_at_pursuit := -1.0
 	var in_tick := -1
+	var latched_tick := -1
 	var reach_tick := -1
 	var reach_off := -1.0
 	var closest := INF
@@ -227,6 +228,9 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 					speed_at_pursuit = target_speed
 		if in_tick < 0 and bool(alpha.approach_round.get("in", false)):
 			in_tick = tick
+		# Round 29 (B2, lesson 300): when a charge latched the flank "in" (the squad fights where it is).
+		if latched_tick < 0 and bool(alpha.approach_round.get("charged", false)):
+			latched_tick = tick
 		if killed < 0 and not enemy.is_alive():
 			killed = tick
 		if killed >= 0:
@@ -277,7 +281,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, approach: Varia
 			"target_fastest_mps": snappedf(target_fastest, 0.1), "target_mps_at_first_pursuit": snappedf(speed_at_pursuit, 0.1),
 			"his": ",".join(mine), "theirs": ",".join(law) if live else "",
 			"enemy_alive": lab.alive(law) if live else -1,
-			"in_s": _s(in_tick), "reach_s": _s(reach_tick), "reach_off_deg": snappedf(reach_off, 0.1),
+			"in_s": _s(in_tick), "latched_s": _s(latched_tick), "reach_s": _s(reach_tick), "reach_off_deg": snappedf(reach_off, 0.1),
 			"closest_m": snappedf(closest, 0.1) if is_finite(closest) else -1.0, "killed_s": _s(killed),
 			"target_hits": faces, "target_flank_share": snappedf(float(faces["side"] + faces["rear"])
 					/ maxf(float(faces["front"] + faces["side"] + faces["rear"]), 1.0), 0.01),

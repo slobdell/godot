@@ -109,9 +109,10 @@ const APPROACH_RUNNING_MPS := 6.0
 const APPROACH_RUNNING_S := 2.0
 const APPROACH_STANDOFF_MARGIN_M := 10.0
 const APPROACH_TARGET_SQUAD_M := 40.0
-## PARKED (round 28: judged at f3a0145d it failed its bar: (a) on side 10/18 v 12, (c) fight guard; `lab/brains-r28-flank`):
-## off by default, `--approach-carry=on` for B1's rule on every element. A battery gets it through APPROACH_BATTERY (B2).
-static var APPROACH_CARRY := false
+## Round 28 judged it at f3a0145d and parked it ((a) on side 10/18 v 12, (c) fight guard; `lab/brains-r28-flank`). Round
+## 29 (B2, the last attempt): ON, with the charge latch keyed on the target's reach (charging()). `--approach-carry=off` is
+## round 27's B0 rule for every element but a battery (APPROACH_BATTERY).
+static var APPROACH_CARRY := true
 ## Round 28 (B2): an artillery element (is_battery) carries its drawn approach (its firing position on the side, below)
 ## whatever APPROACH_CARRY says. `--approach-battery=off` is B0's rule for it.
 static var APPROACH_BATTERY := true
@@ -398,7 +399,7 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 
 
 ## Round 28: whether this element carries a drawn approach out (B1's rule: going round wide, the plan owning it, fighting
-## from the side): every element under APPROACH_CARRY (parked, off), a battery under APPROACH_BATTERY (B2). Pure.
+## from the side): every element under APPROACH_CARRY (on since round 29's B2), a battery under APPROACH_BATTERY. Pure.
 static func carries(situation: Dictionary) -> bool:
 	return APPROACH_CARRY or (APPROACH_BATTERY and is_battery(situation))
 

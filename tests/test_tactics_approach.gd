@@ -19,11 +19,13 @@ const RADIUS := 90.0
 
 
 func teardown() -> void:
-	ElementPlan.APPROACH_CARRY = false
+	ElementPlan.APPROACH_CARRY = true
 	super.teardown()
 
 
 func _table() -> DoctrineTable:
+	# Round 29 (B2): APPROACH_CARRY is on by default; these hold round 27's B0 rule (`--approach-carry=off`).
+	ElementPlan.APPROACH_CARRY = false
 	DoctrineTable.clear_cache()
 	var loaded := DoctrineTable.load_table("standard")
 	assert_true(loaded.has("table"), "the standard table loads: %s" % loaded.get("error", ""))
