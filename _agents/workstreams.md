@@ -112,6 +112,12 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   DROPPED (tuning: his head-on fast 716 → 990); open ground ORCA. Tuning seeds: fast contacts 294 → 198, 716 → 374,
   277 → 160, 113 → 113; arrivals no fewer; no case slower. Its port queues behind manoeuvre's M2(a) (native down).
 
+- **Scout S3 bar (pre-registered):** a fixed gun on the lay planner short-halts only OUTSIDE its turning room
+  (`CombatMotion.halt_allowed`, no bearing condition; `--scout-off=halt`). PRIMARY gang_scout his case: runs with contact
+  9/18 → ≤ 4/18 (off arm ≥ 7 on the same commit); guards: gang's passing cases still pass, scout/law byte-identical; blind
+  census fresh seeds 109–132: gang contacts, in-reach on target, kills, all-fight on target not worse beyond 2 se.
+  Partial 5–6/18 with guards → ships with a note.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
