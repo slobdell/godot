@@ -61,6 +61,9 @@ static func _parse() -> void:
 		# Round 20 (brains M1): round 12's stations from the first tick (the control arm of form-up-on-the-move).
 		if arg == "--converge=off":
 			ElementPlan.CONVERGE_ENABLED = false
+		# Round 28 (brains B4, DECLARED): round 26's heading rule (any heading change re-issues, the plan's own included).
+		if arg == "--reissue-heading=plan":
+			Element.HEADING_REISSUE_TASK_ONLY = false
 		# Round 28 (brains B3, DECLARED): the old screen (45 m short of the enemy focus, held while the enemy closes).
 		if arg == "--screen-standoff=off":
 			ElementCommander.SCREEN_STANDOFF_ENABLED = false
