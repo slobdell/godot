@@ -654,3 +654,14 @@ cell-series: import ## Round 27 (B2): one arrive cell (CELL_ARENA/CELL_UNITS, 15
 			|| echo "{\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$at,\"missing\":true}" >> $(BUILD_DIR)/cell-series.jsonl; \
 	done; done; done
 	@$(PYTHON) tools/tactics/cell_table.py $(BUILD_DIR)/cell-series.jsonl
+
+# Round 28 (brains B1): ONE ApproachStage run with its per-second trace (the element's drill, round state, crews' orders and
+# brains) -> build/approach-trace.log. APPROACH_SEED=4 APPROACH_TICK=1 APPROACH_ARM=east|none APPROACH_FLAGS=...
+.PHONY: approach-trace
+approach-trace: import ## Round 28 (B1): one ApproachStage run traced per second (APPROACH_SEED, APPROACH_TICK, APPROACH_ARM, APPROACH_FLAGS) -> build/approach-trace.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> approach-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/approach_probe.gd -- \
+		--seed=$(or $(APPROACH_SEED),4) --approach=$(or $(APPROACH_ARM),east) --seconds=$(APPROACH_SECONDS) \
+		--lab-start-tick=$(or $(APPROACH_TICK),1) --trace=on $(APPROACH_FLAGS) 2>&1 \
+		| grep -E "APPROACH_TRACE|APPROACH_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/approach-trace.log || true
