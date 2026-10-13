@@ -251,6 +251,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   scheduling around the brain (~3 %, needs an order_controller.gd freeze window), (4) wall contact's observer (1.47 %, on
   nav/manoeuvre's say-so), (5) element_feed's gather (2.39 %, after round 29). (6) the match recorder last.
 
+- **CORRECTION (native, 2026-10-13): N6.4's and N6.3's prices were INVALID** — `NativePathing.usable()` /
+  `NativePerception.usable()` stepped aside when `OrderController.profile_detail` was on, and the tick profile sets it:
+  both arms ran GDScript. Correctness proofs stand (proofs, native-proof, checks and verify-suites run without the
+  profile). Fix in test (seams no longer depend on profile_detail); re-pricing. **Asked: audit every seam's gate against
+  every measurement mode; confirm E6 (stage 1 on his laptop) was NOT affected; a guard test asserting each ON switch's
+  native counter > 0 under the tick profile** (lesson 300's cousin).
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
