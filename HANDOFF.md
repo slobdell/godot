@@ -4,10 +4,11 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-13 — **ROUND 28 IS CLOSED (below); native (C++) continues in `godot-native`.** **Main's check GREEN at `4dcd76c4`** (builder0, `make check exited 0`, 2533 passed, 0 failed, 26 targets ALL JUDGED incl.
-the new native-live-guard, thirteen unmoved, determinism 2875411ff4ec6be7): round 28 + native N6.3 (perception) and the
-profile-gate fix. Native continues on N7.1 (projectiles). Round 29 is NOT split: `roadmap.md` *Round 29 candidates*. He pushes
-`main`._
+_Last updated: 2026-10-13 — **ROUND 28 IS CLOSED (below); native (C++) continues in `godot-native`.** **Main's check GREEN at `e086c514`** (builder0, `make check exited 0`, 2535 passed, 0 failed, 26 targets ALL JUDGED incl.
+native-live-guard, thirteen unmoved, determinism 2875411ff4ec6be7): round 28 + native N6.3 (perception), the profile-gate fix, and
+N7.1 (projectiles: incoming_projectiles, IncomingFire._count_in_flight, Shell._fly in C++; native_incoming + native_shell ON;
+_land_rounds stays GDScript). Native continues on N7.2 (suppression field, seams only). E6b (his laptop) held for my GO while he's
+away. Round 29 is NOT split: `roadmap.md` *Round 29 candidates*. He pushes `main`._
 
 ## ✅ ROUND 28 IS CLOSED (2026-10-13) — read this first
 
