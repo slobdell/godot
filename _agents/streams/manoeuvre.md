@@ -83,4 +83,29 @@ Nothing: his call is made.
 
 ## Status
 
-_Not started (round 29 launch, 2026-10-13)._
+_Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, from main `bcef46a1`)._
+
+### Plan (ordered)
+
+1. **M0** re-base M1 (`ef6d430a`: round 28's diff `c6e32d03..140275af` applied cleanly); hull-rest base + round-28 M1
+   on TUNING seeds 1 6 10 12 14 16 (builder0); traces of crews still moving at 75 s; `--turn-states` +
+   `tests/manoeuvre/hull_rest_moving.py` so every moving crew at the judge is classified (face legs, face creep,
+   pinned, dressing, driving), not just two traces.
+2. **M1** fix what the classes show (first find: `facekeep`, below), bar to the orchestrator BEFORE numbers, judged
+   once on fresh seeds 22 23 24 25 26 27 (named now: not round 28's, not O3's, not the tuning seeds).
+3. **M2** the creep as legs for long hulls in streets (census first).
+4. **M3** stretch only if CP-M2 ships.
+
+### Progress log
+
+- **M0 traces (builder0, `76317480` tooling, gangs seed 1, drawn right-drag, M1 on):** of the crews moving at the
+  judge, (a) gang catapults PING-PONG face <-> move every ~1 s: a crew ~5 m from its slot plans two 5.5 m face legs whose
+  cusp is ~8 m out, past its arrive radius (5.4 m); the brain re-sends the move mid-plan, it drives back, faces again.
+  round 28's `faceslot` checked only a plan's END. (b) Battery crews (a 14-crew gang battery) still DRIVING to slots
+  10-15 m away (nosing a squadmate, circling at the slot). (c) a gang IFV at full reverse, pinned 30 s between
+  squadmates (its unstick finds a hull the other way, so it only asks). The probe's "still" is velocity, so a pinned
+  hull counts as moving. Same seed, same commit, different runs give different crews (the screen probe is real
+  time): read classes over the arm, not single runs.
+- **`facekeep` candidate** (`Manoeuvre.plan_face`): every pose of a face plan stays inside the crew's arrive radius
+  less 0.75 m (or no further out than it starts), not only its end; `--nav-off=facekeep`. One run: no face legs left
+  moving at the judge.
