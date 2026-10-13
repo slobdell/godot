@@ -168,6 +168,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   real waiting spot outside the mouth that the stall clock, asks and unstick honour** (traffic + manoeuvre + brains).
   Traffic → T3, then stops.
 
+- **Manoeuvre M1 NOT SHIPPED (2026-10-12, last attempt `140275af`, fresh seeds 2 4 7 9 15 19, 155 crews a task):** line
+  tasks pass the partial rule (screen 27.5°, ambush 26.8°, support by fire 27.6° v hover 28.1–29.0°; base 40.9–113.1°);
+  point tasks medians 5.2–6.1° (base 52–60°) but within-15° 70 / 69 / 64 % (bar 70 %) and **crews still moving at 75 s
+  +14 (move), +25 (right-drag), +12 (screen), +8 (sbf) over base (guard ≤ +5)**. Ruled (a): his price was "a few seconds
+  longer", not a minute of shuffling. Kept `manoeuvre-m1`. **Round 29: give the turn room among squadmates (a spread
+  before the face, or legs planned against squadmates' discs), re-judged on fresh seeds.**
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
