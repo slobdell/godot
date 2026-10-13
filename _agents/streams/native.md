@@ -90,7 +90,7 @@ Round 29 runs traffic (1), manoeuvre (2), brains (3) beside you. In order:
 2. **N7.3: N7.3a built, equal, priced a LOSS (+0.7 % of the tick), committed OFF for stage 2; N7.3b skipped** (the
    orchestrator's ruling 2026-10-13: glue, not a core component; C29.4's freeze released).
 3. **E6b on his laptop: GRANTED 2026-10-13 ~10:56 PDT** (rule D as written below).
-4. **N7.4 wall contact** only on manoeuvre's word (relayed by the orchestrator) that M2 leaves `wall_contact.gd` alone.
+4. **N7.4 wall contact: GO 2026-10-13 ~13:40** (manoeuvre: M2 does not edit `wall_contact.gd`).
 5. N7.5 (element_feed) waits until after round 29; stage 2 stays deferred (his call).
 
 ## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)

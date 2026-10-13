@@ -79,6 +79,19 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   ATTEMPT:** the version traffic declares for judging is the last; a fail is parked with its trace. The C29.3 gates go
   in as one-liners (`_track_progress`, `_update_phase`, the element re-seat clock, `unstick`, `_pressing_escape`, the
   k-turn entry); brains and manoeuvre told.
+- **Manoeuvre M1 bar (pre-registered 2026-10-13 ~13:40 PDT, before judged numbers; DECLARED; LAST attempt):** candidate
+  `d7385da2` (`face_slot`: a face at rest keeps the last move_to's slot (round 28's faceslot read `mover._goal`, which
+  `Movement.idle()` wipes, so it never anchored); `facekeep`: every pose of a face plan inside the arrive radius − 0.75 m).
+  Wheels/turret drawn, new v base `--nav-off=turnhull,faceslot,facekeep`, same commit, FRESH seeds 22–33 (12 seeds: round
+  28's M1 re-run on the same seeds moved the 75 s count by up to ±17, so 6 seeds cannot read a +5 guard). Point tasks
+  median ≤ 15° and ≥ 70 % within 15° of crews AT REST; line tasks = hover/turret ±5°; clicked ±5° of base; settle paired
+  median ≤ +6 s; GUARD moving-at-judge, all classes, ≤ base + 5 every task. **Orchestrator's additions:** (a) a guard miss
+  only among classes M1 never commands (tracked, hover, fixed gun) passes only if each such class is within 2 se of base
+  (paired), else nothing ships; (b) the wheeled-turret at-rest share is not down > 5 pts v base on any task. Partial:
+  point tasks pass, line tasks fail → turnhull for point tasks only. bridge-pooled 18/18, arrive series, thirteen
+  explained, ≤ 0.5 ms. **wall_contact.gd:** M2 will not edit it → native's N7.4 GO. **M4 added** (after M2): unstick blind
+  to a wedged hull (speed 6–12 m/s reported, zero displacement), DECLARED, own A/B, ported.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
