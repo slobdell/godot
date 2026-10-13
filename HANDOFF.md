@@ -4,16 +4,14 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-12 evening — **ROUND 28 IS RUNNING: all five workers live (traffic, manoeuvre, brains, scout started
-~18:30; native continuing).** Main's green check: **`29cb3945`, builder0, `make check exited 0`, 2520 passed, 0 failed, 25
-targets ALL JUDGED** (stage 1 ON + native N5's small callbacks). Workers started from `c6e32d03` (green-covered by
-`94b5fc0d`). He pushes `main`._
-
-**(RESOLVED: restarted as `godot-native-34`, N6.1/N6.2 done)** 2026-10-12 ~19:40: native's session ended (no process; `godot-native` dirty with uncommitted N6.1 work on top of
-`76b0a881`: tank motion in C++). Needs a restart with the kickoff line. Its FIRST item on restart (UPDATE: M2 did not ship; NO port needed; the next port is traffic's T1b if it passes): manoeuvre's M2(a) port
-request (`stream/manoeuvre` `1a13c548`, `_creep_lift` as a callback when throttle < the creep line; new members
-`_creep_lift_until`/`_creep_lift_ok` under the doors rule), then the uncommitted N6.1 work (read the diff, prove it or
-park it on a branch), then N3/N6 as in its Status.
+_Last updated: 2026-10-13 — **ROUND 28 NEARLY DONE: scout, traffic, manoeuvre finished and merged; brains on its last
+two declared changes (B3 the CPU screen stand-off, B4 his bridge's heading re-issue); native continuing (carries over).**
+Main's green check: **`a9c492a7`, builder0, `make check exited 0`, 2523 passed, 0 failed, 25 targets ALL JUDGED,
+thirteen unmoved, determinism 2875411ff4ec6be7** (stage 1 ON, native N5 + N6.1/N6.2, scout S3). Shipped this round:
+stage 1 ON (his laptop 20 a side 0.89 → 0.93, 25 a side 0.82 → 0.865), the tank's drive and combat rules in C++, scout
+S3 (a spear-gun scout no longer rams). NOT shipped (each on a branch with its round-29 write-up): traffic T1/T1b,
+manoeuvre M1/M2, brains B1/B2, scout S1. His calls page: https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (question 6,
+`artillery-wait`, open). He pushes `main`._
 
 ## 🚀 ROUND 28 IS LAUNCHED (2026-10-12 ~11:45 PDT) — read this first
 
