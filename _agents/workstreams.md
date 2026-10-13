@@ -154,6 +154,13 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   traffic's give-way. No port needed. **Scout's conditional S1 retry is cancelled** (`scout-s1-suppresslay` parked).
   M1's last attempt running at `140275af` on fresh seeds 2 4 7 9 15 19.
 
+- **B1's judged run started at `f3a0145d`** (v4 + latch, fresh seeds 7–9, three rosters). **B2 bar (pre-registered):** an
+  artillery element with a drawn approach drives to the nearest point within 20° of the side at its standoff
+  (max(80 m, target squad reach + 10), inside the mortar's band), straight if outside the enemy's reach else notching
+  round in a column. Stage: 3 mortar carriers v a holding Law IFV, attack drawn from the east. Measure: median FIRING
+  bearing within 35°. Fresh seeds 7–9: on side ≥ 15/18; first round ≤ clicked + 10 s; clicked byte-identical. **Partial
+  decided in advance: +10–15 s ships with a note; guard: crews alive ≥ clicked − 0.5 (orchestrator).**
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
