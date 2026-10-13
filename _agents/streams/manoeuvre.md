@@ -67,7 +67,51 @@ Nothing: his call is made.
 
 ## Status
 
-_Updated 2026-10-12 ~19:30 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`; base `c6e32d03`)._
+_Updated 2026-10-12 ~23:50 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`; base `c6e32d03`)._
+
+### The report (read this first)
+
+**Nothing ships from manoeuvre this round.** `stream/manoeuvre`'s code is main's (`c6e32d03`); its last commits are this
+brief and `references/round28/manoeuvre/`. Its check: see *Final check* at the end of this report.
+
+- **M0 done** (builder0, `c6e32d03`): orders' O3 reproduced (wheels/turret drawn medians 39-94 deg); base turn census
+  (917 episodes; creep 121, mostly short wheeled hulls; tracked hulls 9, none over 3 legs).
+- **M1 (his call: turn the whole vehicle) built, judged twice, NOT SHIPPED** (the orchestrator's ruling on the last
+  attempt). Kept: **`manoeuvre-m1` at `140275af`** (`TankBrain._order_move`'s decline skips a face whose element task
+  carries a DRAWN facing, `--nav-off=turnhull`; `Manoeuvre.plan_face`'s slot anchor, `--nav-off=faceslot`;
+  `tests/test_manoeuvre_turret_hull.gd`; `make manoeuvre-hull-rest` / `manoeuvre-hull-one` and
+  `tests/manoeuvre/hull_rest_ab.py`). What it buys: wheeled turret hulls end ~5 deg off a drawn point facing (base ~55),
+  line tasks at hover/turret's level (27-28 deg v base 41-113). What it costs, and why it did not ship: on move,
+  right-drag, screen and support by fire, 8-25 more crews per task are still turning 75 s after the order (planned
+  face legs among squadmates in a packed formation) against "a few seconds longer"; move/right-drag 64-69 % within 15 deg
+  v the 70 % bar.
+- **M2 (the creep) built, judged, NOT SHIPPED.** Kept: **`manoeuvre-m2`** (`1a13c548`: the creep lift
+  `--nav-off=creeplift`, the circle fill `--nav-off=circlefill`, `tests/test_manoeuvre_creep.gd`, counters + `m2_us`).
+  Creep episodes -17 % (both) / -20 % (lift alone) v the 50 % bar; rigs' wall contacts up (1797 -> 3261 / 4136). The lift
+  fixes the OPEN-ground creep (its long episodes -72 %, the mixed squad's legs 649 -> 388 s, half the wall contacts) but
+  half the creep is the friendly case and long rigs roll into walls.
+- **M3 not needed** (census: tracked hulls never over 3 legs).
+
+**Round 29 (the orchestrator's direction for M1):** attack the moving-crews cost: give the turn room (a spread before the
+face, or the face planned against the squadmates' discs), then re-judge on FRESH seeds (not 2 4 7 9 15 19, not O3's).
+For the creep: a long hull's creep planned as legs in the drive; the friendly creep through traffic's give-way.
+
+**What to playtest:** nothing new from this stream (main's behaviour). To SEE M1: `git checkout manoeuvre-m1 && make
+native && make skirmish`, pick Road Gangs, select the gun trucks, M + drag a facing: they turn nose-on (and some keep
+turning for a while in a packed squad).
+
+**Questions for the lead:** none (his call was made; the orchestrator ruled on the bar).
+
+**Requests to other streams:** brains (relayed by the orchestrator): gang gun trucks (10 m hulls) screening into 6 m
+slots side-on: one parallel-parks a minute (TacticsLab seed 61, screen to `[LANE_X, 0]` facing east). Native: no port
+needed (M2 not shipped).
+
+**Merge notes:** none for this round (nothing to merge). If M1 is taken up: 3 lines in brains' `tank_brain.gd`
+`_order_move` (granted 2026-10-12), `turnhull`/`faceslot` in `Movement.OFF_NAMES`.
+
+**Cleanup at close:** builder0 `~/tank_squad/godot-manoeuvre`, `-light`, `godot-manoeuvre-m1`, `godot-manoeuvre-m1-light`
+(m2 already removed); local worktree `~/projects/godot-manoeuvre-m1` (branch `manoeuvre-m1` stays). Kept branches:
+`manoeuvre-m1`, `manoeuvre-m2` (never merge as is).
 
 ### Plan (ordered, smallest foundation first)
 
