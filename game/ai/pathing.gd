@@ -12,6 +12,8 @@ const MESH_EPSILON := 0.05
 ## navigation map isn't ready yet (it syncs on the physics frame after baking).
 ## An unreachable `to` (say, inside a crate) yields a path to the closest reachable point.
 static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3Array:
+	if NativePathing.usable():  # round 28 (native N6.4): the same path natively
+		return NativeBridge.impl.pathing_find_path(node, from, to)
 	if not enabled or not is_ready(node):
 		return PackedVector3Array()
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
@@ -32,6 +34,8 @@ static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3
 ## as-possible; a goal across a destroyed bridge is on the mesh and unreachable. The gaps are reported, not compared
 ## against a caller's tolerance; the two booleans only absorb float noise (MESH_EPSILON).
 static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
+	if NativePathing.usable():  # round 28 (native N6.4): the same reading natively
+		return NativeBridge.impl.pathing_query(node, from, to)
 	var result := {"points": PackedVector3Array(), "ready": false, "reachable": false, "goal_on_mesh": false,
 			"end_gap_m": INF, "goal_gap_m": INF}
 	if not enabled or not is_ready(node):
@@ -68,6 +72,8 @@ static var _ready_answer := false
 
 
 static func is_ready(node: Node3D) -> bool:
+	if NativePathing.usable():  # round 28 (native N6.4): the same answer natively (the memo in these statics)
+		return NativeBridge.impl.pathing_is_ready(node)
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	var map := node.get_world_3d().navigation_map
 	var iteration := NavigationServer3D.map_get_iteration_id(map)
