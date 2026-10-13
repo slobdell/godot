@@ -48,6 +48,17 @@ def main(path: str) -> int:
                   "median of medians %.1f, first round median %.1f s (worst %.1f)" % (
                       arm, len(shot_runs), len(runs), SIDE_DEG, sum(1 for m in fmeds if m <= SIDE_DEG), len(runs),
                       statistics.median(fmeds), statistics.median(firsts), firsts[-1]))
+        if any("shots_off_side" in r for r in runs):
+            # Round 29 (B1): his call, artillery fires only once set up, from his side. Per crew: rounds and set-ups from
+            # more than SIDE_DEG off the side, and repacks (set up, then packed again while the target lives). Each must
+            # read 0 on the drawn arm; rounds before the element came round are reported beside them.
+            clean = [r for r in runs if r.get("shots_off_side", 0) == 0 and r.get("deploys_off_side", 0) == 0
+                     and r.get("repacks", 0) == 0]
+            print("APPROACH_TABLE arm=%s counters: rounds off the side (>%d) %d, set-ups off the side %d, repacks %d, "
+                  "runs clean %d/%d; rounds before the element was round %d" % (
+                      arm, SIDE_DEG, sum(r.get("shots_off_side", 0) for r in runs),
+                      sum(r.get("deploys_off_side", 0) for r in runs), sum(r.get("repacks", 0) for r in runs),
+                      len(clean), len(runs), sum(r.get("shots_before_in", 0) for r in runs)))
         won = [r for r in runs if r.get("enemy_alive", -1) == 0]
         if any(r.get("enemy_alive", -1) >= 0 for r in runs):
             shares = [r.get("target_flank_share", 0) for r in runs]
