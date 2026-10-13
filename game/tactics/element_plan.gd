@@ -93,6 +93,23 @@ const PURSUIT_HYSTERESIS_M := 15.0
 const APPROACH_CONE_DEG := 30.0
 const APPROACH_STEP_DEG := 45.0
 const APPROACH_LEAD_DEG := 15.0
+## Round 28 (B1, his call 4: "you chose the flank; it carries out the order even if it costs crews"): A DRAWN FLANK IS
+## CARRIED OUT. While the element is still going round, its plan owns the approach:
+##   - it goes round wide of the target SQUAD's guns (their longest reach + APPROACH_STANDOFF_MARGIN_M, the squad being
+##     every contact within APPROACH_TARGET_SQUAD_M of the target), not at its own reach (gun trucks rounded a Law IFV at
+##     35 m, inside its 60 m autocannon);
+##   - it is a pursuit only when the target is really RUNNING: APPROACH_RUNNING_MPS held APPROACH_RUNNING_S (a CPU squad
+##     shuffling at 2-5 m/s in a fight turned B0's drive round into a chase, which has no side), and out of sight it keeps
+##     going round where the target was last seen, carried forward;
+##   - the target's own squad closing on it is the fight it was sent to, not a near ambush (Drills), for the whole task:
+##     B0's squad came round, then charged THROUGH the target on an "ambush" by the target itself and fought from all
+##     round it for 30 s.
+## `--approach-carry=off` is B0's rule (the control arm).
+const APPROACH_RUNNING_MPS := 6.0
+const APPROACH_RUNNING_S := 2.0
+const APPROACH_STANDOFF_MARGIN_M := 10.0
+const APPROACH_TARGET_SQUAD_M := 40.0
+static var APPROACH_CARRY := true
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
@@ -123,6 +140,12 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# this stays the element's dispersion rather than whatever the narrowest gap squeezed it to.
 	plan["pitch"] = TacticsFormation.pitch(members, table.spacing(String(situation["terrain"])))
 
+	# Round 28 (B1): how long the target of a drawn flank still going round has been running (before `pursues` reads it).
+	if APPROACH_CARRY:
+		_track_running(task, state, situation)
+		# Written back even when the plan below is a pursuit (which does not go round), so the clock can reset.
+		if task.has("approach") and state.has("approach_round"):
+			plan["approach_round"] = state["approach_round"]
 	# Round 21 (P2): decided before the drills, which give way to a pursuit (Drills.select).
 	state["pursuing"] = pursues(task, state, situation)
 	plan["pursuing"] = state["pursuing"]
@@ -279,13 +302,19 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 		return false
 	var center: Vector3 = situation["center"]
 	var off := approach_off_deg(center, target_point, approach)
+	# Round 28 (B1): the round's own clock (`fast_since`, _track_running) rides along in the same dictionary.
+	var kept_round := kept.duplicate()
 	if absf(off) <= APPROACH_CONE_DEG:
-		plan["approach_round"] = {"in": true, "side": int(kept.get("side", 0))}
+		kept_round["in"] = true
+		kept_round["side"] = int(kept.get("side", 0))
+		plan["approach_round"] = kept_round
 		return false
 	var side := int(kept.get("side", 0))
 	if side == 0:
 		side = 1 if off >= 0.0 else -1
-	plan["approach_round"] = {"in": false, "side": side}
+	kept_round["in"] = false
+	kept_round["side"] = side
+	plan["approach_round"] = kept_round
 	# The angle still to go round, the chosen way (past 180 when the element was carried across the far side).
 	var remaining := fposmod(off * side, 360.0)
 	# The notch at least APPROACH_LEAD_DEG further round: a formation never stands exactly on its point (its centre sat
@@ -296,6 +325,11 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	var radius := band
 	for member: Dictionary in members_of(situation):
 		radius = maxf(radius, float(member.get("range", 0.0)))
+	# Round 28 (B1): ...and wide of the target squad's guns, where the arena allows (clamp_to_arena below).
+	if APPROACH_CARRY:
+		var task: Dictionary = state.get("task", {})
+		radius = maxf(radius, target_squad_reach(situation, String(task.get("target", "")), target_point)
+				+ APPROACH_STANDOFF_MARGIN_M)
 	if not is_finite(radius):
 		radius = 60.0
 	var around := atan2(-approach.z, -approach.x) + deg_to_rad(notch * side)
@@ -309,6 +343,40 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	_group(plan, slot_order(situation), String(plan["formation"]), waypoint, heading, spacing, "move",
 			String((state.get("task", {}) as Dictionary).get("target", "")))
 	return true
+
+
+## Round 28 (B1): the longest weapon range (m) among the target's squad: every contact within APPROACH_TARGET_SQUAD_M of
+## `target_point` (the target included), from its unit's catalogue; 0 when none is known. Pure.
+static func target_squad_reach(situation: Dictionary, target: String, target_point: Vector3) -> float:
+	var reach := 0.0
+	for contact: Dictionary in situation.get("contacts", []):
+		var at: Vector3 = contact["position"]
+		if String(contact["name"]) != target and Vector2(at.x - target_point.x, at.z - target_point.z).length() \
+				> APPROACH_TARGET_SQUAD_M:
+			continue
+		var unit := String(contact.get("unit", ""))
+		if unit != "" and Units.exists(unit):
+			reach = maxf(reach, float(Weapons.profile(String(Units.stat(unit, "weapon", ""))).get("range", 0.0)))
+	return reach
+
+
+## Round 28 (B1): keep `state.approach_round.fast_since`, the tick from which the target of a drawn flank still going round
+## has moved at APPROACH_RUNNING_MPS or faster (-1: it is not running). Reads the element's track of it. Pure (on state).
+static func _track_running(task: Dictionary, state: Dictionary, situation: Dictionary) -> void:
+	if String(task.get("verb", "")) != "attack" or not task.has("approach"):
+		return
+	var kept_round: Dictionary = (state.get("approach_round", {}) as Dictionary).duplicate()
+	if bool(kept_round.get("in", false)):
+		return
+	var track: Dictionary = state.get("pursuit", {})
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	var running := String(track.get("name", "")) == String(task.get("target", "")) \
+			and Vector2(velocity.x, velocity.z).length() >= APPROACH_RUNNING_MPS
+	if not running:
+		kept_round["fast_since"] = -1
+	elif int(kept_round.get("fast_since", -1)) < 0:
+		kept_round["fast_since"] = int(situation.get("tick", 0))
+	state["approach_round"] = kept_round
 
 
 ## Round 27 (B0): how far round the target (signed degrees, -180..180) the element at `center` stands from the side an
@@ -2023,6 +2091,12 @@ static func pursues(task: Dictionary, state: Dictionary, situation: Dictionary) 
 	var track: Dictionary = state.get("pursuit", {})
 	if track.is_empty() or String(track.get("name", "")) != target:
 		return false
+	# Round 28 (B1): a drawn flank still going round is a pursuit only while its target has been RUNNING for
+	# APPROACH_RUNNING_S (not sticky, and not for being out of sight: it goes round where the target was last seen).
+	var kept_round: Dictionary = state.get("approach_round", {})
+	if APPROACH_CARRY and task.has("approach") and not bool(kept_round.get("in", false)):
+		var since := int(kept_round.get("fast_since", -1))
+		return since >= 0 and float(int(situation.get("tick", 0)) - since) / SimClock.TICK_RATE >= APPROACH_RUNNING_S
 	if bool(state.get("pursuing", false)):
 		return true
 	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)

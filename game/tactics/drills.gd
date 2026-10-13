@@ -104,6 +104,15 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	var chased := String(task.get("target", "")) if pursuing or rounding else ""
 	if chased != "" and ["near_ambush", "assault_through"].has(current) and String(state.get("drill_target", "")) == chased:
 		current = ""
+	# Round 28 (B1, his call 4): a drawn flank is carried out. For the whole task (going round and once in), the target's
+	# own squad is the fight it was sent to: a near ambush by it does not charge the squad through the middle, and one
+	# already running stops. Going round, being outgunned does not break it off either: he chose the flank knowing.
+	var carried := carries_flank(state)
+	if carried and ["near_ambush", "assault_through"].has(current) \
+			and by_target_squad(situation, task, String(state.get("drill_target", ""))):
+		current = ""
+	if carried and rounding and current == "break_contact":
+		current = ""
 	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
 	if not ElementTask.runs_drills(state.get("task", {})):
 		return {"drill": "", "why": "", "point": null, "target": ""}
@@ -120,7 +129,8 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 1. Near ambush: close, sudden and deadly. Turn into it and charge; nothing else outranks this.
 	if table.runs_drill("near_ambush") and current != "near_ambush" and current != "assault_through" \
 			and is_near_ambush(situation, table, CONTACT_DRILLS.has(previous)) \
-			and (chased == "" or String(nearest_contact(situation).get("name", "")) != chased):
+			and (chased == "" or String(nearest_contact(situation).get("name", "")) != chased) \
+			and not (carried and by_target_squad(situation, task, String(nearest_contact(situation).get("name", "")))):
 		var ambush := nearest_contact(situation)
 		return _drill("near_ambush", "ambushed at %d m: turn into it and assault through"
 				% int(float(ambush.get("distance", 0.0))), ambush)
@@ -128,7 +138,7 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	if current == "near_ambush" and elapsed >= TURN_TICKS:
 		return _drill("assault_through", "assault through the ambush", _remembered(state, situation))
 	# 3. We are losing and can still get out: break contact by bounds.
-	if table.runs_drill("break_contact") and should_break_contact(situation, state, table):
+	if table.runs_drill("break_contact") and not (carried and rounding) and should_break_contact(situation, state, table):
 		return _drill("break_contact", "outgunned here: break contact and bound back", nearest_contact(situation))
 	var task_verb := String((state.get("task", {}) as Dictionary).get("verb", ""))
 	# 3c. A screen that is on its line fights only what comes to it: no drill takes it forward or round a flank.
@@ -316,6 +326,34 @@ static func nearest_visible(situation: Dictionary) -> Dictionary:
 
 
 # ---- Internals ----------------------------------------------------------------------------------------
+
+## Round 28 (B1): whether this element is carrying out a drawn flank: an attack with an approach that is not a pursuit
+## (ElementPlan.APPROACH_CARRY on). Pure.
+static func carries_flank(state: Dictionary) -> bool:
+	var task: Dictionary = state.get("task", {})
+	return ElementPlan.APPROACH_CARRY and String(task.get("verb", "")) == "attack" and task.has("approach") \
+			and not bool(state.get("pursuing", false))
+
+
+## Round 28 (B1): whether the contact named `contact_name` is the task's target or stands within
+## ElementPlan.APPROACH_TARGET_SQUAD_M of it (its squad). False when either is unknown. Pure.
+static func by_target_squad(situation: Dictionary, task: Dictionary, contact_name: String) -> bool:
+	var target := String(task.get("target", ""))
+	if target == "" or contact_name == "":
+		return false
+	if contact_name == target:
+		return true
+	var target_at: Variant = null
+	var contact_at: Variant = null
+	for contact: Dictionary in situation.get("contacts", []):
+		if String(contact["name"]) == target:
+			target_at = contact["position"]
+		elif String(contact["name"]) == contact_name:
+			contact_at = contact["position"]
+	if target_at == null or contact_at == null:
+		return false
+	return _flat(target_at).distance_to(_flat(contact_at)) <= ElementPlan.APPROACH_TARGET_SQUAD_M
+
 
 ## Round 27 (B0): whether an attack with a drawn approach has yet to come round to its side (ElementPlan._plan_approach
 ## latches "in"). Only a task with an approach is ever rounding, so every other task reads false here. Pure.

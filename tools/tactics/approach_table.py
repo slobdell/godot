@@ -30,6 +30,15 @@ def main(path: str) -> int:
                   statistics.median([r["reach_s"] for r in reached]) if reached else -1,
                   len(kills), len(runs), statistics.median(kills) if kills else -1,
                   statistics.mean(r["alive"] for r in runs)))
+        hit_runs = [r for r in runs if r.get("hits", 0) > 0]
+        if hit_runs:
+            # Round 28 (B1): the arm-independent reading: where on the target's hull the hits landed (degrees off the side
+            # drawn). A run is "on side" when the median hit is within SIDE_DEG.
+            meds = sorted(r["hit_off_median_deg"] for r in hit_runs)
+            print("APPROACH_TABLE arm=%s hits: runs with hits %d/%d, on side by median hit (<=%d) %d/%d, median of medians %.1f, "
+                  "hit share on side mean %.2f" % (arm, len(hit_runs), len(runs), SIDE_DEG,
+                                                   sum(1 for m in meds if m <= SIDE_DEG), len(runs),
+                                                   statistics.median(meds), statistics.mean(r["hit_on_side_share"] for r in hit_runs)))
         won = [r for r in runs if r.get("enemy_alive", -1) == 0]
         if any(r.get("enemy_alive", -1) >= 0 for r in runs):
             shares = [r.get("target_flank_share", 0) for r in runs]

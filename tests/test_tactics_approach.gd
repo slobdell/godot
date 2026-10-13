@@ -185,8 +185,13 @@ func test_a_running_target_is_a_pursuit_and_has_no_side() -> void:
 	var table := _table()
 	var approach := Vector2(0.0, -1.0)
 	var situation := _situation(_round(approach, 170.0))
-	var extra := {"pursuing": true, "pursuit": {"name": "Rust_1", "position": TARGET, "velocity": Vector3(6, 0, 0),
+	# Round 28 (B1): "running" going round is >= 6 m/s held 2 s (ElementPlan.APPROACH_RUNNING_*).
+	var extra := {"pursuing": true, "pursuit": {"name": "Rust_1", "position": TARGET, "velocity": Vector3(7, 0, 0),
 			"seen_tick": 1000}}
-	var plan := ElementPlan.build(situation, _state(_attack([approach.x, approach.y]), extra), table)
-	assert_true(not plan.has("approach_round"), "a pursuit does not go round")
-	assert_eq(plan, ElementPlan.build(situation, _state(_attack(), extra), table), "the chase as without an approach")
+	var running := {"approach_round": {"in": false, "side": 1, "fast_since": 1000 - 2 * SimClock.TICK_RATE}}
+	running.merge(extra)
+	var plan := ElementPlan.build(situation, _state(_attack([approach.x, approach.y]), running), table)
+	assert_true(bool(plan["pursuing"]), "a running target is a pursuit")
+	var chase := plan.duplicate(true)
+	chase.erase("approach_round")
+	assert_eq(chase, ElementPlan.build(situation, _state(_attack(), extra), table), "the chase as without an approach")
