@@ -83,7 +83,7 @@ Nothing: his calls are made.
 | B2 artillery shells from the drawn side | **PARKED** (on side 18/18, alive = clicked, first round +23.5 s v cut-off +15) | `lab/brains-r28-battery` `88b6a724` |
 | B3 squads ordered into the enemy | **SHIPPED** (DECLARED): the CPU's recon screens 85 m off the enemy | merged `6efe3450` = `b95a3d6e` |
 | B4 his bridge 106/108 | **BISECTED, fix PARKED** (cause 7baffe24; narrowed fix 106/108 with two new cells) | `lab/brains-r28-reissue` `254fd98f` |
-| B5 his queued screen (top priority, his playtest) | **BUILT**; check re-running on `brains-b5` `2e4d601a` | branch `brains-b5` (B5 alone on game/ == main) |
+| B5 his queued screen (top priority, his playtest) | **GREEN, merge here: `2e4d601a`** (builder0, check exited 0, 2526/0, 25 ALL JUDGED, sim-baseline unmoved) | branch `brains-b5` (B5 alone on game/ == main) |
 | stretch (8 m pictures, wheeled-turret line) | not reached | — |
 
 **What he will notice (once B5 merges):** shift + screen (or support by fire, ambush) after a waypoint drives the
