@@ -441,6 +441,7 @@ stays asked per call.
 | **N7.1c** `Shell._fly` | `native/src/shell_native.{h,cpp}`; seam at the top of `Shell._fly` (each shell still flies from its own tick: the scene's order kept) | `native_shell` **ON** | `test_native_shell` 300 shots, 4810 ticks, 197 hits, 53 burnt out, 0 mismatches; native-proof on = off = shell = `0398922d31f335f8` | see below |
 | **N7.2** the suppression field: `ThreatField` stamp_point / stamp_segment / stamp_burst / decay, `Match._update_suppression` (Tank.settle_suppression, its sight / hull-turn effects, is_pinned, the stats) | `native/src/threat_native.{h,cpp}`, worked in place on the field's own packed arrays (swapped out for the call so writing never copies); seams at the top of each stamp and of decay in `game/combat/threat_field.gd`, and after the decay in `_update_suppression`. `at` / `peak_along` / `mean_along` keep GDScript (a call costs what they do; the drive's reads are native since N4) | `native_threat` **ON** | `test_native_threat` 4000 field operations (626 points, 1780 lanes, 838 bursts, 756 decays; on, across and off the grid) and 200 suppression samples over 12 hulls (388 pinned), 0 mismatches; native-proof on = off = threat = `0398922d31f335f8` | match/suppression 0.36 -> 0.23 % (below) |
 | **N7.6** the black box: `MatchRecorder._physics_process` (the squad-task scan, the once-a-second census with `census_row`, their rows written and flushed) | `native/src/recorder_native.{h,cpp}`; seam at the top of `_physics_process` in `game/match/match_recorder.gd`. The event rows (order, hit, dead, end) stay GDScript signal handlers (a few a second) | `native_recorder` **ON** | `test_native_recorder`: two recorders on one live match, one each way, 240 ticks, 62 task rows + 35 censuses (phases, orders and blocked-by filled), byte for byte, 0 mismatches. No native-proof arm: the profile/proof matches do not record (headless `--match`), so the state hash cannot see it; `native-live-guard` lists it under ELSEWHERE (held by its own test, printed) | -24 % on its own work (below) |
+| **N7.3a** `OrderController._physics_process` (the per-crew tick: the contact observer's call, the stride hold, think then execute, every measurement branch) | `native/src/controller_native.{h,cpp}`; seam at the top of `_physics_process` | `native_controller` **OFF by its price** | `test_native_controller` 600 seeded scenarios on a probe brain (134 holds, 466 runs) 0 mismatches; native-proof on = off = controller = `0398922d31f335f8`, and with `--quiet-stride=3` `620e3564b48e22b2` (the hold on a live match) | **+0.7 % of the tick (a LOSS)**, below |
 | `Match._land_rounds` | **kept GDScript**: its body is `_land_hit_result` per victim (signals, stats; the arithmetic native since N6.2), the suppression stamp (N7.2's field), the impact signal and an rpc; what is left is the radius/falloff filter, 0.02 % of the tick | | | |
 
 **N7.1's price (builder0 BUSY, tick 20-36 ms; `382656de`, foundry 25 a side pinned 0-3, 3 alternated runs an arm; shares of
@@ -458,6 +459,17 @@ shares of each run's own tick):** OFF match/suppression 0.36 % (0.363 / 0.365 / 
 ticks with the census forced 35 times: GDScript 80.3 / 81.7 / 80.0 ms, native 61.4 / 60.3 / 60.8 ms (-24 %). Most of
 what is left is the flush per row (the black box's deliberate durability), the same both ways. In a real skirmish the
 census lands once a second, so the share of a tick is ~0; ON for the C++-core principle.
+
+**N7.3a's price, a loss (builder0, foundry 25 a side pinned 0-3, 3 alternated runs an arm; the controllers segment
+minus think, execute and wall contact, as a share of each run's tick):** `61ef8c30` (line for line): OFF 2.09 / 1.99 /
+1.96 %, ON 2.78 / 2.74 / 2.75 %; `2a3ebe19` (each static read once, `_lap` inlined, the command not read back): OFF
+2.01 / 1.97 / 1.98 %, ON 2.71 / 2.69 / 2.70 %. **+0.7 % of the tick either way.** The body is glue: everything it
+does is a call back into GDScript (think, compute_command's wrapper, the contact observer, wants_to_run) or a static
+read, and each crossing of the extension boundary (the seam's usable(), the bridge call, ~10 gets/sets/calls a crew)
+costs more than the same step inside the GDScript VM. Trimming the static reads moved it 0.05 %, so the cost is the
+crossings themselves, not what is read. N7.3b (one native loop instead of the engine's per-crew dispatch) keeps those
+crossings per crew, so on this evidence it lands at parity at best. **The controllers' tick pays only once think is
+native (stage 2):** then the loop calls C++ from C++. Shipped OFF, the seam and its proofs kept for stage 2.
 
 **Found on the way (not this stream's file, reported):** `test_combat_cover::test_fire_stopped_by_a_wall_still_suppresses_
 the_crew_sheltering_behind_it` fails when run ALONE (suppression 0.00; builder0, `ad1dcf26`'s tree with `native_threat`
