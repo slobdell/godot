@@ -89,7 +89,7 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   only among classes M1 never commands (tracked, hover, fixed gun) passes only if each such class is within 2 se of base
   (paired), else nothing ships; (b) the wheeled-turret at-rest share is not down > 5 pts v base on any task. Partial:
   point tasks pass, line tasks fail → turnhull for point tasks only. bridge-pooled 18/18, arrive series, thirteen
-  explained, ≤ 0.5 ms. **wall_contact.gd:** M2 will not edit it → native's N7.4 GO. **M4 added** (after M2): unstick blind
+  explained, ≤ 0.5 ms. **Clarified ~14:00 (before judged numbers; after tuning seeds showed SCREEN missing the guard, disclosed):** a wheeled-turret guard or at-rest miss on a LINE task = that line task fails → the partial rule (point tasks only), provided line tasks provably take today's path (a test that they never enter turnhull/faceslot/facekeep + one line-task run byte-identical to base); a miss on a POINT task → nothing ships. **wall_contact.gd:** M2 will not edit it → native's N7.4 GO. **M4 added** (after M2): unstick blind
   to a wedged hull (speed 6–12 m/s reported, zero displacement), DECLARED, own A/B, ported.
 
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
