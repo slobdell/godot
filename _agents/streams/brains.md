@@ -154,4 +154,7 @@ target's own reach of a crew), judged on new fresh seeds 10–12; else park on `
   MOVE, 14–17 % retreating, 3–7 % in SUPPRESS. Ask who ordered the MOVE and where to. My first read of the code: the CPU
   commander re-tasks recon every think with `screen` to a point 45 m from its OWN centre toward the enemy focus
   (`ElementCommander.think`, SCREEN_AHEAD_M) — a carrot that walks scouts into the enemy. To verify on seed 5.
+- **Round-29 candidate (traffic's T3 lead, n = 1, not a result; `streams/traffic.md` on main, *Requests to other
+  streams*):** an element re-seats crews 3 and 4 back and forth for 36 s while the slot at (11.1, −73.4) reads
+  blocked/no_path — round 27's B2 re-seat logic. A quick trace after B2 if time allows.
 
