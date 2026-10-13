@@ -110,6 +110,12 @@ const APPROACH_RUNNING_S := 2.0
 const APPROACH_STANDOFF_MARGIN_M := 10.0
 const APPROACH_TARGET_SQUAD_M := 40.0
 static var APPROACH_CARRY := true
+## The orchestrator's ruling on (c) (C28.5, 2026-10-12): a TARGET that charges the squad has left the position the side was
+## drawn against. When it drives at the element (APPROACH_CLOSING_MPS) and is inside any crew's reach, the flank is
+## dropped for the task ("charged") and the attack fights where it is, as a clicked one (which kills a lone charging IFV
+## with no losses: 4.83 alive v 2.61 going round it). `--approach-latch=off` keeps the flank.
+static var APPROACH_LATCH := true
+const APPROACH_CLOSING_MPS := 2.0
 ## Once round: a crew within this many degrees of the side drawn (and in reach) fights freely; one already fighting keeps
 ## at it out to APPROACH_KEEP_SECTOR_DEG; beyond, it is sent back to its place on the side (_plan_flank_line).
 const APPROACH_SECTOR_DEG := 40.0
@@ -243,7 +249,8 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			return
 		# Round 28 (B1): round on the side he drew, it FIGHTS from there: a firing line across the approach.
 		if approach is Vector3 and APPROACH_CARRY \
-				and bool((plan.get("approach_round", {}) as Dictionary).get("in", false)):
+				and bool((plan.get("approach_round", {}) as Dictionary).get("in", false)) \
+				and not bool((plan.get("approach_round", {}) as Dictionary).get("charged", false)):
 			_plan_flank_line(plan, situation, state, table, destination, approach)
 			return
 		if to_go <= band:
@@ -306,6 +313,15 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		target_point: Vector3, approach: Vector3, band: float) -> bool:
 	var kept: Dictionary = state.get("approach_round", {})
+	if bool(kept.get("charged", false)):
+		plan["approach_round"] = kept
+		return false
+	if APPROACH_CARRY and APPROACH_LATCH and charging(state, situation, target_point):
+		var latched := kept.duplicate()
+		latched["in"] = true
+		latched["charged"] = true
+		plan["approach_round"] = latched
+		return false
 	if bool(kept.get("in", false)):
 		plan["approach_round"] = kept
 		return false
@@ -409,6 +425,24 @@ static func target_squad_reach(situation: Dictionary, target: String, target_poi
 		if unit != "" and Units.exists(unit):
 			reach = maxf(reach, float(Weapons.profile(String(Units.stat(unit, "weapon", ""))).get("range", 0.0)))
 	return reach
+
+
+## Round 28 (B1, the orchestrator's ruling on (c)): whether the attack's target is CHARGING the element: driving toward it
+## at APPROACH_CLOSING_MPS or faster (the element's track) and inside some crew's reach (range x ENGAGE_RANGE_FACTOR).
+## Pure.
+static func charging(state: Dictionary, situation: Dictionary, target_point: Vector3) -> bool:
+	var track: Dictionary = state.get("pursuit", {})
+	var task: Dictionary = state.get("task", {})
+	if String(track.get("name", "")) != String(task.get("target", "")) or not (track.get("position") is Vector3):
+		return false
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	var toward := TacticsFormation.flat((situation.get("center", Vector3.ZERO) as Vector3) - (track["position"] as Vector3))
+	if Vector3(velocity.x, 0.0, velocity.z).dot(toward) < APPROACH_CLOSING_MPS:
+		return false
+	for member: Dictionary in members_of(situation):
+		if (member["position"] as Vector3).distance_to(target_point) <= float(member.get("range", 0.0)) * ENGAGE_RANGE_FACTOR:
+			return true
+	return false
 
 
 ## Round 28 (B1): keep `state.approach_round.fast_since`, the tick from which the target of a drawn flank has been moving
@@ -2149,7 +2183,7 @@ static func pursues(task: Dictionary, state: Dictionary, situation: Dictionary) 
 	# Round 28 (B1): a drawn flank (going round, or fighting from the side) is a pursuit only while its target has been
 	# FLEEING for APPROACH_RUNNING_S (not sticky, and not for being out of sight: it goes round where it was last seen).
 	var kept_round: Dictionary = state.get("approach_round", {})
-	if APPROACH_CARRY and task.has("approach"):
+	if APPROACH_CARRY and task.has("approach") and not bool(kept_round.get("charged", false)):
 		var since := int(kept_round.get("fast_since", -1))
 		return since >= 0 and float(int(situation.get("tick", 0)) - since) / SimClock.TICK_RATE >= APPROACH_RUNNING_S
 	if bool(state.get("pursuing", false)):

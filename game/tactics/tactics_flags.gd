@@ -65,6 +65,9 @@ static func _parse() -> void:
 		# a pursuit, the target's squad can spring a near ambush).
 		if arg == "--approach-carry=off":
 			ElementPlan.APPROACH_CARRY = false
+		# The orchestrator's ruling on (c): a target charging the squad drops the flank; off keeps it.
+		if arg == "--approach-latch=off":
+			ElementPlan.APPROACH_LATCH = false
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))

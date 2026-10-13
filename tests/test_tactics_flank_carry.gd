@@ -18,6 +18,7 @@ const OWN_BAND := 28.0
 
 func teardown() -> void:
 	ElementPlan.APPROACH_CARRY = true
+	ElementPlan.APPROACH_LATCH = true
 	DoctrineTable.clear_cache()  # one test widens the cached standard table's drills
 	super.teardown()
 
@@ -243,3 +244,27 @@ func test_a_target_driving_at_the_squad_is_not_fleeing() -> void:
 			"approach_round": {"in": false, "side": 1, "fast_since": 1000 - held}}), table)
 	assert_true(not bool(plan["pursuing"]), "charging at us is not fleeing: still going round")
 	assert_eq(int((plan["approach_round"] as Dictionary).get("fast_since", -2)), -1, "its clock is reset")
+
+
+func test_a_target_charging_into_reach_drops_the_flank() -> void:
+	var table := _table()
+	var center := _round(170.0, 30.0)
+	var track := {"name": "Rust_1", "position": TARGET, "velocity": TacticsFormation.flat(center - TARGET) * 8.0,
+			"seen_tick": 1000}
+	var plan := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": track}), table)
+	var kept: Dictionary = plan["approach_round"]
+	assert_true(bool(kept.get("charged", false)) and bool(kept.get("in", false)), "latched: it fights where it is")
+	var plain := ElementPlan.build(_situation(center), _state(_attack(null), {"pursuit": track}), table)
+	var copy := plan.duplicate(true)
+	copy.erase("approach_round")
+	assert_eq(copy, plain, "as a clicked attack")
+	assert_true(not Drills.carries_flank(_state(_attack(), {"approach_round": kept})), "no longer a carried flank")
+	# Far out (not in reach) it still goes round; and with the latch off it keeps the flank.
+	var far := _round(170.0)
+	var far_track := {"name": "Rust_1", "position": TARGET, "velocity": TacticsFormation.flat(far - TARGET) * 8.0,
+			"seen_tick": 1000}
+	var going := ElementPlan.build(_situation(far), _state(_attack(), {"pursuit": far_track}), table)
+	assert_true(not bool((going["approach_round"] as Dictionary).get("charged", false)), "out of reach: still going round")
+	ElementPlan.APPROACH_LATCH = false
+	var kept_on := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": track}), table)
+	assert_true(not bool((kept_on["approach_round"] as Dictionary).get("charged", false)), "latch off: the flank is kept")

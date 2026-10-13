@@ -329,12 +329,13 @@ static func nearest_visible(situation: Dictionary) -> Dictionary:
 
 # ---- Internals ----------------------------------------------------------------------------------------
 
-## Round 28 (B1): whether this element is carrying out a drawn flank: an attack with an approach that is not a pursuit
-## (ElementPlan.APPROACH_CARRY on). Pure.
+## Round 28 (B1): whether this element is carrying out a drawn flank: an attack with an approach that is not a pursuit and
+## whose target has not charged it (ElementPlan.charging; APPROACH_CARRY on). Pure.
 static func carries_flank(state: Dictionary) -> bool:
 	var task: Dictionary = state.get("task", {})
 	return ElementPlan.APPROACH_CARRY and String(task.get("verb", "")) == "attack" and task.has("approach") \
-			and not bool(state.get("pursuing", false))
+			and not bool(state.get("pursuing", false)) \
+			and not bool((state.get("approach_round", {}) as Dictionary).get("charged", false))
 
 
 ## Round 28 (B1): whether the contact named `contact_name` is the task's target or stands within
