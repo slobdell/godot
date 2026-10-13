@@ -60,6 +60,12 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("incoming_count", "unit", "shells"), &TankNative::incoming_count);
 	ClassDB::bind_method(D_METHOD("shell_configure", "config"), &TankNative::shell_configure);
 	ClassDB::bind_method(D_METHOD("shell_fly", "shell", "delta"), &TankNative::shell_fly);
+	ClassDB::bind_method(D_METHOD("threat_configure", "config"), &TankNative::threat_configure);
+	ClassDB::bind_method(D_METHOD("threat_stamp_point", "field", "point", "weight"), &TankNative::threat_stamp_point);
+	ClassDB::bind_method(D_METHOD("threat_stamp_segment", "field", "from", "to", "weight"), &TankNative::threat_stamp_segment);
+	ClassDB::bind_method(D_METHOD("threat_stamp_burst", "field", "center", "radius", "weight"), &TankNative::threat_stamp_burst);
+	ClassDB::bind_method(D_METHOD("threat_decay", "field", "ticks"), &TankNative::threat_decay);
+	ClassDB::bind_method(D_METHOD("suppression_update", "fields", "tanks", "stats", "sample_ticks"), &TankNative::suppression_update);
 	ClassDB::bind_method(D_METHOD("tank_drive", "tank", "cmd", "delta"), &TankNative::tank_drive);
 	ClassDB::bind_method(D_METHOD("motion_step", "state", "throttle", "turn", "delta"), &TankNative::motion_step);
 	ClassDB::bind_method(D_METHOD("execute", "ctl", "delta", "mode"), &TankNative::execute);

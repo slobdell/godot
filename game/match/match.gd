@@ -1196,6 +1196,10 @@ func _suppress_area(shooter_team: int, center: Vector3, radius: float, weight: f
 func _update_suppression() -> void:
 	for team in 2:
 		threat_field(team).decay(SUPPRESSION_SAMPLE_TICKS)
+	if NativeThreat.usable():  # round 28 (native N7.2): the settle, the effects and the stats natively
+		NativeBridge.impl.suppression_update([threat_field(0), threat_field(1)], _sorted_tanks(), stats,
+				SUPPRESSION_SAMPLE_TICKS)
+		return
 	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / SimClock.TICK_RATE
 	for tank in _sorted_tanks():
 		if not tank.is_alive():

@@ -85,6 +85,7 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 			perception) flags="--brains-on=native_perception";; \
 			incoming) flags="--brains-on=native_incoming";; \
 			shell) flags="--brains-on=native_shell";; \
+			threat) flags="--brains-on=native_threat";; \
 			stage1_profile) flags="--brains-on=native_exec,native_cb,native_owned --native-exec-profile --native-drive-profile";; \
 			stage1_ab) flags="--brains-on=native_cb,native_owned --brains-ab-run=native_exec";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \

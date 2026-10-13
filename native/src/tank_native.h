@@ -21,6 +21,7 @@
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
+#include "threat_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -192,6 +193,21 @@ public:
 		return shell_config.ready;
 	}
 	void shell_fly(Object *shell, double delta) const { ::godot::shell_fly(shell_config, shell, delta); }
+	// Round 28 (N7.2): the suppression field (threat_native.cpp).
+	bool threat_configure(const Dictionary &config) { return ::godot::threat_configure(threat_config, config); }
+	void threat_stamp_point(Object *field, const Vector3 &point, double weight) const {
+		::godot::threat_stamp_point(threat_config, field, point, weight);
+	}
+	void threat_stamp_segment(Object *field, const Vector3 &from, const Vector3 &to, double weight) const {
+		::godot::threat_stamp_segment(threat_config, field, from, to, weight);
+	}
+	void threat_stamp_burst(Object *field, const Vector3 &center, double radius, double weight) const {
+		::godot::threat_stamp_burst(threat_config, field, center, radius, weight);
+	}
+	void threat_decay(Object *field, int64_t ticks) const { ::godot::threat_decay(threat_config, field, ticks); }
+	void suppression_update(const Array &fields, const Array &tanks, const Dictionary &stats, int64_t sample_ticks) const {
+		::godot::suppression_update(threat_config, fields, tanks, stats, sample_ticks);
+	}
 	bool unstick(Object *mover, Object *cmd, const Dictionary &order, double delta, bool owned) const {
 		return unstick_native(drive_config, mover, cmd, order, delta, owned);
 	}
@@ -284,6 +300,7 @@ private:
 	PerceptionConfig perception_config;
 	IncomingConfig incoming_config;
 	ShellConfig shell_config;
+	ThreatConfig threat_config;
 	HashMap<String, Vector2> incoming_halves;
 	int64_t perception_rays_cast = 0;
 	DecideConsts decide_consts;

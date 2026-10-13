@@ -74,11 +74,12 @@ static var native_pathing := true  # Round 28 (N6.4): Pathing.is_ready / query /
 static var native_perception := true  # Round 28 (N6.3): who sees whom as one batched pass a team (perception_native.cpp: Match._update_intel's sight and gun-ready lines; intel stays GDScript); ON: test_native_perception 240 poses 0 mismatches, native-proof on = off = perception (price ~0)
 static var native_incoming := true  # Round 28 (N7.1): Match.incoming_projectiles (K2) and IncomingFire._count_in_flight natively (incoming_native.cpp; the estimate over combat_native's terms); ON: test_native_incoming 0 mismatches, native-proof equal (price ~0: K2 -8 %, the count unchanged)
 static var native_shell := true  # Round 28 (N7.1c): Shell._fly natively (shell_native.cpp: the swept ray, the hit, the burn-out; called from each shell's own tick); ON: test_native_shell 0 mismatches, native-proof equal (price ~0)
+static var native_threat := true  # Round 28 (N7.2): the suppression field natively (threat_native.cpp: ThreatField's stamps and decay, Match._update_suppression's settle); ON: test_native_threat 0 mismatches, native-proof equal (match/suppression 0.36 -> 0.23 % of the tick)
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat", "native_pathing", "native_perception", "native_incoming", "native_shell"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat", "native_pathing", "native_perception", "native_incoming", "native_shell", "native_threat"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -203,6 +204,8 @@ static func set_named(name: String, on: bool) -> void:
 			native_incoming = on
 		"native_shell":
 			native_shell = on
+		"native_threat":
+			native_threat = on
 		"native_n4":
 			native_situation = on
 			native_tq = on
