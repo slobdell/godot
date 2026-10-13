@@ -71,6 +71,25 @@ Nothing: his call is made.
 
 _Updated 2026-10-12 evening (traffic worker). Every number names commit, machine, workload and n._
 
+### ROUND 29, ITEM 1 (the orchestrator, 2026-10-13): the one-lane bridge with a real waiting spot
+
+His Terminus head-on case is the worst friendly jam measured (base 716–872 fast contacts in 18 runs), and taking turns
+halves it (−48 % / −52 % / −50 % on three seed sets). It failed only on how the waiting squad waits: it creeps toward
+the meeting at 0.2 of its wish, and once in 18 runs the squads lock at the street mouth (seed 12, tick 16: 4 crews never
+in, 305 crew-s stuck). The build:
+1. **Traffic (owner):** when the verdict is "wait", each crew of the waiting squad holds at a SPOT: short of the street
+   mouth, off the passing squad's line (the right side of its own way). It holds until the passing squad's last crew is
+   behind it, with a cap (e.g. 20 s) after which it goes. `Traffic._street_meeting` / `_decide_street` on `traffic-t1b`.
+2. **brains (owner of `_track_progress`, `_update_phase`, the element's make-room clock):** a crew holding for traffic
+   is not stalled: the stall clock and the "blocked" phase pause while it holds (a read of `Traffic.holding(name)`),
+   and the element does not re-seat it.
+3. **manoeuvre (owner of `unstick`, `_pressing_escape`, the k-turn):** no unstick or k-turn while holding for traffic.
+4. **traffic (owner of `_negotiate` / `_blocker`):** no asks while holding.
+5. **native:** the port reads the hold from the record (C28.2's pair).
+Bar (to be set before numbers): his three things on the Terminus head-on case: crews in (≥ base − 2), hard bumps
+BETWEEN squads (the probe's `contacts_cross_fast`, down ≥ 25 %), the last arrival (≤ +20 %); no wedge (no run with more
+than one crew never in where its base had none); the other cases unchanged; fresh seeds.
+
 ### T1b: the street head-on rule ALONE (the orchestrator's one new last attempt, 2026-10-12 ~22:00 PDT)
 
 `fc31d0c4`: v3's one-lane bridge for a head-on meeting in a street; the crossing verdicts and keep-right in the tree OFF
