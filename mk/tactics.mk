@@ -678,3 +678,19 @@ recon-probe: native-for-check import ## Round 28 (B3): the recon elements' tasks
 		--demo-match --clean --seed=$(RECON_SEED) --arena=random --mute --seconds=$(RECON_SECONDS) \
 		--recon-match=$(or $(RECON_MATCH),Eyes) $(RECON_FLAGS) 2>&1 | grep -E "^RECON|SCRIPT ERROR|DEMO_SEED" > $(BUILD_DIR)/recon-probe.log || true
 	@grep -c "^RECON " $(BUILD_DIR)/recon-probe.log
+
+# Round 28 (brains B3, DECLARED): recon at a spotter's distance, measured over every unit (CONTACT_SEEDS showmatch
+# seeds, both arms: the standoff on, and --screen-standoff=off) -> build/contact-census/<arm>-<seed>.log + table.
+CONTACT_SEEDS ?= 13 14 15 16 17 18 19 20 21 22 23 24
+CONTACT_JOBS ?= 4
+CONTACT_SECONDS ?= 180
+.PHONY: contact-census
+contact-census: native-for-check import ## Round 28 (B3): enemy hull contacts by option/role, recon deaths, screen re-tasks, both arms over CONTACT_SEEDS -> build/contact-census/ + table
+	@rm -rf $(BUILD_DIR)/contact-census; mkdir -p $(BUILD_DIR)/contact-census
+	@echo ">> contact-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(CONTACT_SEEDS)"
+	@for seed in $(CONTACT_SEEDS); do for arm in on off; do echo "$$arm $$seed"; done; done | xargs -P $(CONTACT_JOBS) -L 1 sh -c '\
+		flag=""; [ $$0 = off ] && flag=--screen-standoff=off; \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/contact_census.gd -- \
+			--skirmish --demo-match --clean --seed=$$1 --arena=random --mute --seconds=$(CONTACT_SECONDS) $$flag \
+			> $(BUILD_DIR)/contact-census/$$0-$$1.log 2>&1 || true'
+	@$(PYTHON) tools/tactics/contact_table.py $(BUILD_DIR)/contact-census/*.log

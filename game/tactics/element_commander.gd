@@ -22,6 +22,22 @@ const REASSIGN_M := 25.0
 ## caught the commander re-giving attack and support-by-fire every think in a brawl — "the nearest contact" changes
 ## every second when thirty vehicles meet — and every re-assignment reset the element's drill and firing line.
 const KEEP_TASK_TICKS := SimClock.TICK_RATE * 6
+## Round 28 (brains B3, DECLARED): RECON SCREENS AT A SPOTTER'S DISTANCE. The screen was sent to a point SCREEN_AHEAD_M
+## short of the enemy focus (34-36 m from its nearest crew), and the point held while the enemy drove onto it: the
+## crews drove to their places on the line into the enemy (scout's census: 254 of 365 fixed-gun hull contacts under an
+## ordered MOVE; seed 5, Parade, recon_probe: point-to-enemy 34 -> 1 m in 10 s). Now, with an enemy known, the screen
+## stands SCREEN_STANDOFF_M from the enemy NEAREST it, on its own side (TankBrain.SCOUT_STANDOFF, the spotters' own
+## distance), and is re-aimed at once, whatever KEEP_TASK_TICKS says, when a known enemy comes within
+## SCREEN_CROWDED_FRACTION of that of the line. `--screen-standoff=off` is the old rule.
+static var SCREEN_STANDOFF_ENABLED := true
+## Prints BRAINS_SCREEN at exit (the contact census sets it).
+static var SCREEN_CENSUS := false
+const SCREEN_STANDOFF_M := TankBrain.SCOUT_STANDOFF
+const SCREEN_CROWDED_FRACTION := 0.6
+## ...and only to a point this far (m) from the one it holds (no re-task to the same line every think).
+const SCREEN_REAIM_MIN_M := 10.0
+## Census: screen tasks given or re-aimed (per element id), for the re-task rate.
+var screen_tasks := {}
 ## Elements are formed this big when a team has no squads to form them from.
 const ELEMENT_SIZE := 4
 ## How far ahead of the main body the recon element screens, and how far behind the support element trails.
@@ -238,6 +254,9 @@ func think() -> void:
 			_give(element, {"verb": "support_by_fire", "to": _xz(focus["position"])})
 	for element: Element in recon:
 		# Scouts are spotters first (game_design.md): screen ahead of the axis, never charge alone.
+		if SCREEN_STANDOFF_ENABLED and not contacts.is_empty():
+			_give_screen(element, contacts)
+			continue
 		var ahead: Vector3 = (focus["position"] if not focus.is_empty() else objective)
 		_give(element, {"verb": "screen", "to": _xz(_toward(_center(element), ahead, SCREEN_AHEAD_M))})
 	for element: Element in support:
@@ -249,6 +268,11 @@ func think() -> void:
 
 ## Round 18 (census only): what the ambush did this match.
 func _exit_tree() -> void:
+	if TankBrain.census or ElementCommander.SCREEN_CENSUS:
+		var tasks := 0
+		for count: int in screen_tasks.values():
+			tasks += count
+		print("BRAINS_SCREEN team %d screen_tasks %d elements %d" % [team, tasks, screen_tasks.size()])
 	if TankBrain.census:
 		print("BRAINS_AMBUSH team %d taken %d sprung %d hold_s %d refused in_contact %d no_site %d late %d" % [team,
 				ambushes_taken, ambushes_sprung, hold_thinks * THINK_TICKS / SimClock.TICK_RATE,
@@ -555,6 +579,11 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 		_give(element, {"verb": "hold", "to": _xz(post), "facing": _xz(toward), "drills": false})
 	for element: Element in recon:
 		var out := ElementPlan.clamp_to_arena(zone + toward * SCREEN_AHEAD_M)
+		# Round 28 (B3): out from the zone, unless that is inside a known enemy's standoff: then at a spotter's distance.
+		if SCREEN_STANDOFF_ENABLED and _nearest_to(contacts, out).get("position") is Vector3 \
+				and _flat(_nearest_to(contacts, out)["position"]).distance_to(out) < SCREEN_STANDOFF_M:
+			_give_screen(element, contacts)
+			continue
 		_give(element, {"verb": "screen", "to": _xz(out)})
 	# Stretch (a): with an ambush laid, the support element (artillery, Lancers) is REGISTERED on its kill zone: once
 	# there is contact its fire goes where the ambush springs, not at the nearest contact.
@@ -739,6 +768,52 @@ func _give(element: Element, task: Dictionary) -> void:
 
 
 ## Whether a named enemy is alive and known to this team ("" = no target: nothing to lose).
+## Round 28 (B3): a recon element's screen with enemies known: SCREEN_STANDOFF_M from the enemy nearest it, on its side;
+## re-aimed at once when a known enemy is within SCREEN_CROWDED_FRACTION of the standoff of the line it holds, otherwise
+## by _give's rules (REASSIGN_M, KEEP_TASK_TICKS).
+func _give_screen(element: Element, contacts: Array) -> void:
+	var center := _center(element)
+	var nearest := _nearest_to(contacts, center)
+	var enemy := _flat(nearest["position"])
+	var away := TacticsFormation.flat(center - enemy)
+	if away.length_squared() < 1e-6:
+		away = TacticsFormation.flat(Match.spawn_position(team, 0) - enemy)
+	var point := ElementPlan.clamp_to_arena(enemy + away * SCREEN_STANDOFF_M)
+	var task := {"verb": "screen", "to": _xz(point)}
+	var previous: Dictionary = assigned.get(element.id, {})
+	var before: Variant = previous.get("to")
+	if String(previous.get("verb", "")) == "screen" and previous.get("to") is Array:
+		var line := Vector3(float(previous["to"][0]), 0.0, float(previous["to"][1]))
+		var crowding := _nearest_to(contacts, line)
+		if _flat(crowding["position"]).distance_to(line) < SCREEN_STANDOFF_M * SCREEN_CROWDED_FRACTION \
+				and line.distance_to(point) > SCREEN_REAIM_MIN_M:
+			# Crowded: the enemy has come to the line. Re-aim now (retarget keeps the element's state).
+			if element.retarget(task) == "":
+				assigned[element.id] = task
+				assigned_tick[element.id] = game_match.tick
+				screen_tasks[element.id] = int(screen_tasks.get(element.id, 0)) + 1
+			return
+	_give(element, task)
+	if (assigned.get(element.id, {}) as Dictionary).get("to") != before:
+		screen_tasks[element.id] = int(screen_tasks.get(element.id, 0)) + 1
+
+
+## The contact nearest `point` (flat), {} when there is none. Deterministic: contacts come sorted by name on ties.
+static func _nearest_to(contacts: Array, point: Vector3) -> Dictionary:
+	var best := {}
+	var best_d := INF
+	for contact: Dictionary in contacts:
+		var d := _flat(contact["position"]).distance_to(_flat(point))
+		if d < best_d - 0.001:
+			best = contact
+			best_d = d
+	return best
+
+
+static func _flat(v: Vector3) -> Vector3:
+	return Vector3(v.x, 0.0, v.z)
+
+
 func _still_there(target: String) -> bool:
 	if target == "":
 		return true
