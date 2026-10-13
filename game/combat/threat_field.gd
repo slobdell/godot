@@ -66,6 +66,9 @@ func at(point: Vector3) -> float:
 
 ## One cell's worth of fire (a hit, a single impact).
 func stamp_point(point: Vector3, weight: float) -> void:
+	if NativeThreat.usable():  # round 28 (native N7.2): the same stamp natively
+		NativeBridge.impl.threat_stamp_point(self, point, weight)
+		return
 	var index := index_of(point)
 	if index >= 0:
 		density[index] += weight
@@ -74,6 +77,9 @@ func stamp_point(point: Vector3, weight: float) -> void:
 
 ## The beaten zone of one direct-fire round: every cell between the muzzle and where the round stopped.
 func stamp_segment(from: Vector3, to: Vector3, weight: float) -> void:
+	if NativeThreat.usable():  # round 28 (native N7.2)
+		NativeBridge.impl.threat_stamp_segment(self, from, to, weight)
+		return
 	var span := Vector2(to.x - from.x, to.z - from.z)
 	var length := span.length()
 	if length < 0.01:
@@ -94,6 +100,9 @@ func stamp_segment(from: Vector3, to: Vector3, weight: float) -> void:
 
 ## A burst: every cell whose center lies within `radius` of the landing point.
 func stamp_burst(center: Vector3, radius: float, weight: float) -> void:
+	if NativeThreat.usable():  # round 28 (native N7.2)
+		NativeBridge.impl.threat_stamp_burst(self, center, radius, weight)
+		return
 	var min_col := maxi(0, int(floor((center.x - radius - origin.x) / cell_size)))
 	var max_col := mini(cols - 1, int(floor((center.x + radius - origin.x) / cell_size)))
 	var min_row := maxi(0, int(floor((center.z - radius - origin.z) / cell_size)))
@@ -113,6 +122,9 @@ func cell_center(col: int, row: int) -> Vector3:
 ## Fade every cell by `ticks` physics ticks' worth of decay (HALF_LIFE_SECONDS).
 func decay(ticks: int) -> void:
 	if ticks <= 0:
+		return
+	if NativeThreat.usable():  # round 28 (native N7.2)
+		NativeBridge.impl.threat_decay(self, ticks)
 		return
 	var factor := pow(0.5, float(ticks) / SimClock.TICK_RATE / HALF_LIFE_SECONDS)
 	var kept := 0
