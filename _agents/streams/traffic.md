@@ -65,11 +65,68 @@ elements, `tank_brain.gd`; native's `native/**`.
 
 ## Waiting on the lead
 
-Nothing: his call is made.
+Nothing: his call is made. (Both builds of it failed their bars; round 29 item 1 is the next try.)
 
 ## Status
 
 _Updated 2026-10-12 evening (traffic worker). Every number names commit, machine, workload and n._
+
+### FINAL REPORT (round 28, traffic) — read this first
+
+_2026-10-13 ~00:00 PDT. Every number names commit, machine, workload and n._
+
+**Shipped: nothing.** His call was TAKE TURNS. Two versions of it each failed a bar written before their numbers. Both are
+parked on branches, and stream/traffic's `game/` is its round-start state (= main `94b5fc0d`'s).
+- **T1 v3** (`traffic-t1-v3`, judged at `672eb785`, seeds {4,5,6}). Squad-pair crossing verdicts, plus a one-lane bridge for
+  a head-on meeting in a street. Fast friendly contacts fell ≥ 25 % in only 2 of 4 cases (Terminus head-on −52 %, yard
+  crossing −34 %); at the Terminus crossing, bumps between squads fell 29 % but squadmates' bumps rose.
+- **T1b** (`traffic-t1b`, judged at `474558f8`, seeds {10,11,12}; the orchestrator's one new last attempt). The street
+  rule alone. Hard bumps −50 %, but crews 173 → 170, the last arrival +26 % and friendly-stuck +33 % on his Terminus
+  head-on case: one run in 18 wedged at the street mouth. (A first T1b run on {7,8,9} was VOID: the rule never ran.)
+- **T2** (native's port): nothing to port.
+- **T3**: the census after T1 is moot (`game/` unchanged). The "crew pressing a parked squadmate" cell is gone on main.
+  What remains there is the element's seat swap (to brains, below).
+
+**Measured and kept** (`references/round28/traffic/`, README): T0's base on his four cases at main (builder0
+`c6e32d03`, GDScript path, n = 18 a case): fast friendly contacts 294 / 716 / 277 / 113 (Terminus crossing / head-on /
+yard crossing / head-on). In his Terminus head-on case, about 40 hard bumps a run, and 8 runs in 18 leave a crew out.
+
+**Tooling for whoever comes next (on this branch):**
+- The traffic table's **all-in s** column (every crew's last arrival, a never counted at the run's end) and **between
+  squads** line (fast contacts between the two squads, and a rule's counters when the branch has them).
+- `traffic-clip` now sees into Terminus' streets (the old pose put the camera inside a block) and takes `TRAFFIC_FLAGS`
+  (it ran the C++ path before, so a GDScript-only rule never showed).
+
+**In his terms:** *Your squads still bump when they cross or meet in a street. Two "take turns" rules were tried. Both
+halve the hard bumps when two squads meet head-on in a street, because one waits at the mouth while the other comes
+through. But the waiting squad waited too long, and once in 18 tries the two locked up at the mouth, so neither is in the
+game. The next try gives the waiting squad a real place to wait (item 1 below).*
+
+**Questions for the lead:** none blocking.
+
+**Requests to other streams** (through the orchestrator):
+- **brains:** (1) round 29 item 1's hold: the stall clock, the "blocked" phase and the element's make-room clock must
+  pause for a crew holding for traffic. (2) T3's finding: in the Sumps arrive cell (law_scout:law_ifv:law_tank:law_tank,
+  seed 1, `make traffic-settle-trace`, builder0, `b33b6723` GDScript path, n = 1, a lead, not a result), the squad is in
+  at 41 s but the last crew only at 82.6 s. From 48 s to 84 s the element re-seats crews 3 and 4 back and forth (seats
+  2310 ↔ 2301), and whichever holds the slot at (11.1, −73.4) reads `blocked/no_path` toward it.
+- **manoeuvre:** no unstick or k-turn while a crew holds for traffic (item 1).
+
+**What to playtest:** nothing new from traffic. `make skirmish`, two squads through each other on the Terminus street,
+is still the case to watch. To see the parked rule: `git checkout traffic-t1b && make skirmish -- --brains-off=native`
+(the C++ path does not run it).
+
+**Lessons for the list:**
+1. An A/B whose arm equals its base run for run is a null until the arm's own counter says the rule fired. A pure test
+   of a rule cannot see its caller's gate (T1b's void run; the live falsifier `test_traffic_turns_live` on the branch).
+2. A bar on ALL friendly contacts mixes the rule's effect (between squads) with squadmates' noise. Count what he sees.
+3. Killing a local chain leaves its remote run alive on builder0: stop it by the box's cwd-verified PID (lesson 15,
+   again: it blocked this stream's final check for a minute).
+
+**Merge notes:** stream/traffic carries docs, references and traffic tooling only (`tests/traffic/*`, `mk/traffic.mk`).
+`game/` equals the round start. **Green: `b33b6723`** (builder0, `make check exited 0`, 2520 passed / 0 failed, 25
+targets ALL JUDGED, thirteen sim-baselines unmoved, determinism 2875411ff4ec6be7 = main's). The commit after it records
+only this report (docs). Merge there or at the tip. Branches `traffic-t1-v3` and `traffic-t1b` are NOT for main.
 
 ### ROUND 29, ITEM 1 (the orchestrator, 2026-10-13): the one-lane bridge with a real waiting spot
 
