@@ -4,9 +4,9 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-13 — **ROUND 28 IS CLOSED (below); native (C++) continues in `godot-native`.** **Main's closing check GREEN at `4c0f7052`** (builder0, `make check exited 0`, 2532 passed, 0 failed, 25 targets ALL
-JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7); docs only since. Native's N6.3 (perception) waits on its
-profile-gate fix before merging. Round 29 is NOT split: `roadmap.md` *Round 29 candidates*. He pushes
+_Last updated: 2026-10-13 — **ROUND 28 IS CLOSED (below); native (C++) continues in `godot-native`.** **Main's check GREEN at `4dcd76c4`** (builder0, `make check exited 0`, 2533 passed, 0 failed, 26 targets ALL JUDGED incl.
+the new native-live-guard, thirteen unmoved, determinism 2875411ff4ec6be7): round 28 + native N6.3 (perception) and the
+profile-gate fix. Native continues on N7.1 (projectiles). Round 29 is NOT split: `roadmap.md` *Round 29 candidates*. He pushes
 `main`._
 
 ## ✅ ROUND 28 IS CLOSED (2026-10-13) — read this first
