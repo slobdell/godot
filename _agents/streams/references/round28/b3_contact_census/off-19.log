@@ -1,0 +1,111 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (syndicate): 6 skimmers, 3 limousine gunships, 4 railgun platforms, 3 spotter platforms (5060 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 16 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (gangs): 16 rat rods, 7 gun trucks, 14 wrecker catapults, 7 resupply tankers (5180 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 233 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=16 rust_squads=11 rust=44
+ERROR: Elements.form: 6 members is more than one squad (Formations.MAX_MEMBERS = 5): refused (C19.1)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] form (res://game/tactics/elements.gd:103)
+       [1] _start_match (res://game/modes/skirmish_mode.gd:415)
+       [2] start (res://game/modes/skirmish_mode.gd:261)
+       [3] _ready (res://game/main.gd:57)
+       [4] _run (res://tests/tactics/contact_census.gd:29)
+SKIRMISH_CAMERA focus=(-45, 82) zoom=0.58 vehicles=6
+DEMO_SEED 19 arena=yard syndicate vs gangs (replay: make showmatch SEED=19)
+CONTROL_GROUPS squads=4 (Eyes:6 Guns:4 Hunters:3 Lances:3) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-13T01-14-58-random.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "19", "arena": "random", "mute": "", "seconds": "180", "screen-standoff": "off" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Lances_2 destroyed Rust_Spears2_5 (score Green 1 : 0 Rust)
+Green_Guns_1 destroyed Rust_Spears_2 (score Green 2 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (42 left)
+Green_Lances_1 destroyed Rust_Battery2_5 (score Green 3 : 0 Rust)
+Green_Guns_2 destroyed Rust_Hunters2_1 (score Green 4 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (40 left)
+Green_Guns_4 destroyed Rust_Hunters2_2 (score Green 5 : 0 Rust)
+Green_Lances_2 destroyed Rust_Spears_4 (score Green 6 : 0 Rust)
+HUD_MESSAGE [warning] The enemy took the west depot
+NATIVE_EXEC 19903 native, 96 handed back (dead 0, reflexes 0, yielding 0, face 96, drive 0, other 0), 627 stale pulls, 2810 part pulls, 0 verified, 0 verify mismatches 
+Green_Hunters_1 destroyed Rust_Spears3_4 (score Green 7 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (37 left)
+Rust_Battery3_3 destroyed Green_Eyes_2 (score Green 7 : 1 Rust)
+Green_Hunters_1 destroyed Rust_Spears3_3 (score Green 8 : 1 Rust)
+Green_Hunters_3 destroyed Rust_Spears2_4 (score Green 9 : 1 Rust)
+Green_Guns_2 destroyed Rust_Hunters_2 (score Green 10 : 1 Rust)
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 5 left
+HUD_MESSAGE [info] Destroyed 3 enemies (34 left)
+Green_Guns_3 destroyed Rust_Wrenches2_1 (score Green 11 : 1 Rust)
+Green_Hunters_1 destroyed Rust_Spears3_1 (score Green 12 : 1 Rust)
+Green_Guns_4 destroyed Rust_Spears_5 (score Green 13 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (31 left)
+Green_Hunters_3 destroyed Rust_Spears3_5 (score Green 14 : 1 Rust)
+Green_Hunters_1 destroyed Rust_Spears2_1 (score Green 15 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (29 left)
+Rust_Battery_2 destroyed Green_Lances_2 (score Green 15 : 2 Rust)
+Green_Lances_1 destroyed Rust_Spears3_2 (score Green 16 : 2 Rust)
+Green_Guns_2 destroyed Rust_Wrenches2_2 (score Green 17 : 2 Rust)
+Green_Guns_3 destroyed Rust_Spears4_1 (score Green 18 : 2 Rust)
+HUD_MESSAGE [warning] Lances lost a Spotter Platform, 2 left
+HUD_MESSAGE [info] Destroyed 3 enemies (26 left)
+Green_Guns_1 destroyed Rust_Spears_1 (score Green 19 : 2 Rust)
+Green_Guns_4 destroyed Rust_Spears2_3 (score Green 20 : 2 Rust)
+NATIVE_EXEC 39593 native, 406 handed back (dead 0, reflexes 0, yielding 0, face 406, drive 0, other 0), 937 stale pulls, 5581 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed 2 enemies (24 left)
+Rust_Battery_5 destroyed Green_Hunters_3 (score Green 20 : 3 Rust)
+Green_Lances_3 destroyed Rust_Battery2_1 (score Green 21 : 3 Rust)
+Green_Guns_2 destroyed Rust_Spears_3 (score Green 22 : 3 Rust)
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 2 left
+HUD_MESSAGE [info] Destroyed 2 enemies (22 left)
+HUD_MESSAGE [warning] Hunters: shields down
+Green_Guns_4 destroyed Rust_Hunters_1 (score Green 23 : 3 Rust)
+Green_Lances_1 destroyed Rust_Battery2_3 (score Green 24 : 3 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (20 left)
+Green_Guns_2 destroyed Rust_Hunters_3 (score Green 25 : 3 Rust)
+Green_Guns_1 destroyed Rust_Spears2_2 (score Green 26 : 3 Rust)
+Green_Guns_3 destroyed Rust_Wrenches_4 (score Green 27 : 3 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (17 left)
+Green_Guns_2 destroyed Rust_Battery3_2 (score Green 28 : 3 Rust)
+Green_Lances_1 destroyed Rust_Hunters_4 (score Green 29 : 3 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (15 left)
+Green_Guns_3 destroyed Rust_Wrenches_1 (score Green 30 : 3 Rust)
+HUD_MESSAGE [warning] Lances: shields down
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (14 left)
+Rust_Battery2_2 destroyed Green_Lances_3 (score Green 30 : 4 Rust)
+Green_Lances_1 destroyed Rust_Hunters_5 (score Green 31 : 4 Rust)
+HUD_MESSAGE [warning] Lances lost a Spotter Platform, 1 left
+NATIVE_EXEC 59570 native, 429 handed back (dead 0, reflexes 0, yielding 0, face 429, drive 0, other 0), 1051 stale pulls, 7971 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_3 destroyed Rust_Wrenches_5 (score Green 32 : 4 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (12 left)
+Rust_Battery_1 destroyed Green_Lances_1 (score Green 32 : 5 Rust)
+HUD_MESSAGE [error] Lances destroyed
+Green_Hunters_1 destroyed Rust_Battery_4 (score Green 33 : 5 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Wrecker Catapult (11 left)
+NATIVE_EXEC 79566 native, 433 handed back (dead 0, reflexes 0, yielding 0, face 433, drive 0, other 0), 1226 stale pulls, 10929 part pulls, 0 verified, 0 verify mismatches 
+Green_Eyes_1 destroyed Rust_Battery2_4 (score Green 34 : 5 Rust)
+Green_Guns_1 destroyed Rust_Battery_2 (score Green 35 : 5 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (9 left)
+Green_Guns_2 destroyed Rust_Wrenches_3 (score Green 36 : 5 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (8 left)
+Green_Eyes_1 destroyed Rust_Battery3_3 (score Green 37 : 5 Rust)
+Green_Eyes_6 destroyed Rust_Battery3_1 (score Green 38 : 5 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (6 left)
+Green_Eyes_6 destroyed Rust_Battery2_2 (score Green 39 : 5 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Wrecker Catapult (5 left)
+Green_Eyes_1 destroyed Rust_Battery3_4 (score Green 40 : 5 Rust)
+Green_Hunters_1 destroyed Rust_Wrenches_2 (score Green 41 : 5 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (3 left)
+Green_Hunters_2 destroyed Rust_Battery_1 (score Green 42 : 5 Rust)
+Green_Hunters_1 destroyed Rust_Battery_3 (score Green 43 : 5 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (1 left)
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Guns_4 destroyed Rust_Battery_5 (score Green 44 : 5 Rust)
+HUD_MESSAGE [info] VICTORY
+HUD_MESSAGE [info] Destroyed an enemy Wrecker Catapult (0 left)
+NATIVE_EXEC 99547 native, 452 handed back (dead 0, reflexes 0, yielding 0, face 452, drive 0, other 0), 1414 stale pulls, 13189 part pulls, 0 verified, 0 verify mismatches 
+CONTACT_CENSUS {"alive":[11,0],"by_option":{"ENGAGE":3,"MOVE":2},"by_role":{"artillery":2,"scout":3},"contacts":5,"recon_crews":6,"recon_deaths":1,"recon_squad_minutes":3.0,"screen_off":true,"screen_tasks":12,"seed":19,"under_move":2}
