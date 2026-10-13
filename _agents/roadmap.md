@@ -215,7 +215,32 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   of the tick's scripts, 25 a side ~full speed on his laptop, ~1–2 weeks; AI-decision changes ~1.5–2× after. Take it up
   when the tactics settle. His principle: core components in C++ long-term, even without a measured gain.
 
-## Round 28 candidates (collected during round 27, 2026-10-12) — SPLIT 2026-10-12 ~11:45 as traffic + manoeuvre + brains + native + scout (`workstreams.md` *Round 28*); his four calls answered (all recommended)
+## Round 29 candidates (round 28's carry-overs, 2026-10-13) — NOT YET SPLIT; native continues
+
+**His open call:** calls page question 6 (`artillery-wait`): shell from where it stands while driving round, or wait
+~20–25 s (recommended: shell while driving). Each item below is parked on a branch with its trace and write-up in its
+archived brief (`streams/archive/round28/`).
+
+1. **Squads take turns in a street (traffic, his call 1):** a real waiting spot outside the street mouth that the stall
+   clock, asks and unstick honour (traffic + brains + manoeuvre; native ports). T1b cut his head-on bumps −50 % but one
+   wedged run failed it (`traffic-t1b`); the crossing half (`traffic-t1-v3`) needs between-squad and same-squad bumps
+   counted apart (lesson 301).
+2. **Wheeled turret hulls turn to a drawn facing (manoeuvre, his call 2):** medians 5–6° v ~60° (`manoeuvre-m1`), but up to
+   +25 crews still turning at 75 s: give the turn room among squadmates first, re-judge on fresh seeds.
+3. **A drawn flank carried out (brains, his call 4):** (a) even roster 10/18 v bar 12 and beats clicked (`lab/brains-r28-flank`);
+   latch on the TARGET's reach, not the crews'.
+4. **Artillery from his side (brains, his call 3):** 18/18 on side but +23.5 s to first round (`lab/brains-r28-battery`);
+   build per his answer to question 6.
+5. **His bridge 106/108:** pinned to 7baffe24's heading re-issue; the narrow fix (`lab/brains-r28-reissue`) traded two cells
+   for two others: trace the two new cells first.
+6. **The creep in tight streets (manoeuvre):** plan a long hull's creep as legs; friendly creep via traffic's give-way
+   (`manoeuvre-m2` failed).
+7. **Scout aim while suppressing** (`scout-s1-suppresslay`, +6.3 pts inside 2 se): after the creep is planned.
+8. Smaller: gang trucks screening into 6 m slots (one parallel-parks ~1 min); an element re-seating crews 3/4 for 36 s at a
+   blocked slot (n = 1); support by fire's wheeled-turret line; the CPU screen re-task rate (one per ~8 s per squad: the
+   knob if it looks shuffly); `tools/test_quiet_window.sh` load flake.
+
+## Round 28 candidates (collected during round 27, 2026-10-12) — SPLIT 2026-10-12 ~11:45, CLOSED 2026-10-13 as traffic + manoeuvre + brains + native + scout (`workstreams.md` *Round 28*); his four calls answered (all recommended)
 
 **His answers first:** the calls page https://claude.ai/artifact/SJAcU3Rmgo2LSjA9XbWhB6 (`read_db` `decisions/<id>`):
 squads crossing (take turns v push through) → traffic's convention, after stage 1; wheeled turreted hulls at rest

@@ -1,3 +1,4 @@
+> **ARCHIVED (round 28 closed 2026-10-13; native continues).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: brains (artillery shells from the side you drag; a drawn flank is carried out; squads not ordered into the enemy)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 27 direction* and **Round 28

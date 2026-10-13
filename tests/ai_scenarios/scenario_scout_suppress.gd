@@ -1,5 +1,5 @@
 extends TestCase
-## Round 28 (scout S1): a fixed gun under SUPPRESS lays its hull on the point it hoses (`_agents/streams/scout.md`).
+## Round 28 (scout S1): a fixed gun under SUPPRESS lays its hull on the point it hoses (`_agents/streams/archive/round28/scout.md`).
 ##
 ## Round 27's census: 20 % of a fixed gun's fight time is SUPPRESS, outside the lay planner — the band-and-face chain
 ## laid a wheeled hull with a `face` order, and a wheeled hull cannot turn standing. Here a scout ordered onto a tank

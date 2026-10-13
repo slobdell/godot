@@ -1,7 +1,7 @@
 # Workstreams: the current round
 
-> **ROUND 28 IS LAUNCHED (2026-10-12): traffic, manoeuvre, brains, native (continuing), scout; contracts C28.1–C28.6
-> below; briefs in `streams/`.** Round 27's closed briefs are in `streams/archive/round27/`.
+> **ROUND 28 CLOSED (2026-10-13): traffic, manoeuvre, brains, scout done (briefs in `streams/archive/round28/`); native
+> continues (`streams/native.md`, C27.7/C28.2–C28.3).** Round 29 is not yet split (`roadmap.md` *Round 29 candidates*).
 
 ## Round 28: five streams (launched 2026-10-12 ~11:45 PDT; native continues from round 27)
 
@@ -12,11 +12,11 @@ their gun on target while suppressing.**
 
 | Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two of his squads crossing slow and take turns instead of nosing into each other | **CP-T** T1, DECLARED, + native's port |
-| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | wheeled turret vehicles end nose-on to a drawn facing; no creeping shuffle in tight streets | **CP-M1**, **CP-M2**, each DECLARED, + port |
-| **brains** | `godot-brains` (3) | [streams/brains.md](streams/brains.md) | a drawn flank is carried out in a live fight; artillery shells from the drawn side; squads not ordered into the enemy | B1, B2 as they go green |
+| **traffic** | `godot-traffic` (1) | [streams/archive/round28/traffic.md](streams/archive/round28/traffic.md) | two of his squads crossing slow and take turns instead of nosing into each other | **CP-T** T1, DECLARED, + native's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/archive/round28/manoeuvre.md](streams/archive/round28/manoeuvre.md) | wheeled turret vehicles end nose-on to a drawn facing; no creeping shuffle in tight streets | **CP-M1**, **CP-M2**, each DECLARED, + port |
+| **brains** | `godot-brains` (3) | [streams/archive/round28/brains.md](streams/archive/round28/brains.md) | a drawn flank is carried out in a live fight; artillery shells from the drawn side; squads not ordered into the enemy | B1, B2 as they go green |
 | **native** | `godot-native` (4) | [streams/native.md](streams/native.md) | E6 on his laptop rules stage 1 ON or OFF; then every driving change ported; stage 2 priced for him | E6 → the ON commit |
-| **scout** | `godot-scout` (5) | [streams/scout.md](streams/scout.md) | scouts keep the gun on target while suppressing | **CP-S1** DECLARED |
+| **scout** | `godot-scout` (5) | [streams/archive/round28/scout.md](streams/archive/round28/scout.md) | scouts keep the gun on target while suppressing | **CP-S1** DECLARED |
 
 **Ownership:** each brief's header lists its paths. In `movement.gd`: traffic the give-way block, `_avoid`,
 `_around_friends`, `_ask_behind`, `_hull_within`; manoeuvre the `drive()` body, `_nose_stop`, `unstick`,
