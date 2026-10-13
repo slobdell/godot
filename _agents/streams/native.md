@@ -439,6 +439,7 @@ stays asked per call.
 | **N7.1a** `Match.incoming_projectiles` (K2) + `_damage_estimate` | `native/src/incoming_native.{h,cpp}`, combat_native's terms factored (`combat_terms`, `combat_damage_estimate`); seam at the top of `incoming_projectiles`; the threats sorted by Godot's sort with `Match._incoming_before` | `native_incoming` **ON** | `test_native_incoming` 1440 queries, 471 threats (shells and lobbed rounds), the hull as disc and box, 0 mismatches; native-proof on = off = incoming = `0398922d31f335f8` | see below |
 | **N7.1b** `IncomingFire._count_in_flight` (the per-tick dodge trigger) | same files; seam in `game/ai/incoming_fire.gd` | `native_incoming` | `test_native_incoming` compares `count_for` both ways (254 counted), 0 mismatches; ai_perf_equivalence, ai_incoming_site pass | |
 | **N7.1c** `Shell._fly` | `native/src/shell_native.{h,cpp}`; seam at the top of `Shell._fly` (each shell still flies from its own tick: the scene's order kept) | `native_shell` **ON** | `test_native_shell` 300 shots, 4810 ticks, 197 hits, 53 burnt out, 0 mismatches; native-proof on = off = shell = `0398922d31f335f8` | see below |
+| **N7.2** the suppression field: `ThreatField` stamp_point / stamp_segment / stamp_burst / decay, `Match._update_suppression` (Tank.settle_suppression, its sight / hull-turn effects, is_pinned, the stats) | `native/src/threat_native.{h,cpp}`, worked in place on the field's own packed arrays (swapped out for the call so writing never copies); seams at the top of each stamp and of decay in `game/combat/threat_field.gd`, and after the decay in `_update_suppression`. `at` / `peak_along` / `mean_along` keep GDScript (a call costs what they do; the drive's reads are native since N4) | `native_threat` **ON** | `test_native_threat` 4000 field operations (626 points, 1780 lanes, 838 bursts, 756 decays; on, across and off the grid) and 200 suppression samples over 12 hulls (388 pinned), 0 mismatches; native-proof on = off = threat = `0398922d31f335f8` | match/suppression 0.36 -> 0.23 % (below) |
 | `Match._land_rounds` | **kept GDScript**: its body is `_land_hit_result` per victim (signals, stats; the arithmetic native since N6.2), the suppression stamp (N7.2's field), the impact signal and an rpc; what is left is the radius/falloff filter, 0.02 % of the tick | | | |
 
 **N7.1's price (builder0 BUSY, tick 20-36 ms; `382656de`, foundry 25 a side pinned 0-3, 3 alternated runs an arm; shares of
@@ -447,6 +448,15 @@ K2 0.74 % (-8 %), s.incoming 1.33 %, t.incoming 1.85 % (unchanged); native_shell
 tick, inside the noise of a busy box). **~0 at today's fire**: ~1.2 shells in flight a tick, so the GDScript count
 mostly returned at `xs.is_empty()` and its cost is the call's dispatch, which a native body does not remove. The port
 pays only in heavier fire; it ships ON for the core-in-C++ principle (no speed bar), not for speed.
+
+**N7.2's price (builder0 busy, tick 15-23 ms; `ad1dcf26`, foundry 25 a side pinned 0-3, 3 alternated runs an arm;
+shares of each run's own tick):** OFF match/suppression 0.36 % (0.363 / 0.365 / 0.359); `native_threat` ON 0.23 %
+(0.239 / 0.230 / 0.228): -36 % of the lap, ~0.13 % of the tick. The stamps sit inside the fire laps (a few a tick).
+
+**Found on the way (not this stream's file, reported):** `test_combat_cover::test_fire_stopped_by_a_wall_still_suppresses_
+the_crew_sheltering_behind_it` fails when run ALONE (suppression 0.00; builder0, `ad1dcf26`'s tree with `native_threat`
+OFF, and again with `native_shell` OFF) and passes after its file's first test: an order dependence that a FILTER run
+exposes; the full suite runs them in file order and passes.
 
 ### N7: core components outside the thinking AND outside round 29's contested code -- PROPOSED (2026-10-13; nothing started)
 
