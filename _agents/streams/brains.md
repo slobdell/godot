@@ -75,4 +75,16 @@ Nothing: his calls are made.
 
 ## Status
 
-_Not started._
+**Plan (2026-10-12, in order; start = stream `c6e32d03`, covered by main's green `94b5fc0d`, docs-only since):**
+1. **Instrument first (B1/B2):** an `approach-trace` target, and a measuring point checked against every arm (lesson 297:
+   round 27's "first crew within 50 m" fell inside the parked fix's own circle). Add a second, arm-independent reading:
+   the element's bearing off the drawn side over the time its crews actually hit the target (hit-weighted), beside
+   `reach_off_deg`. Trace one live run per arm before designing.
+2. **B1** a drawn flank is carried out (DECLARED; bar to the orchestrator before the numbers; tuning seeds 4–6, judged on
+   fresh seeds).
+3. **B2** artillery shells from the drawn side (its standoff ring on the drawn side; same machinery as B1).
+4. **B3** trace scout's census (who orders the MOVE into the enemy).
+5. **B4** bisect his bridge 108 → 106.
+6. **B5** stretch pictures.
+Decisions: B1 before B2 because B2 reuses B1's "the plan owns the approach" state; instrument before either because the
+last round's verdict on the live flank was a measuring-point error as much as a behaviour one.
