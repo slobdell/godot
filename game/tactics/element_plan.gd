@@ -451,6 +451,7 @@ static func _plan_battery_round(plan: Dictionary, situation: Dictionary, state: 
 	plan["arrived"] = false
 	plan["formation"] = "column"
 	plan["why"] = "%s; the battery goes to the side ordered to shell from it" % String(plan["why"])
+	plan["relocating"] = true
 	# A plain move, NO target: a gun that may fire deploys to fire, and a battery on a named move shelled from where it
 	# stood and never left (traced: centre fixed 14 s, first round at 2.3 s from 90 deg off).
 	_group(plan, slot_order(situation), "column", waypoint, heading, table.spacing(String(situation["terrain"])), "move")
@@ -487,7 +488,10 @@ static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dic
 	plan["heading"] = heading
 	plan["arrived"] = false
 	plan["why"] = "%s; on the side ordered: fighting from it" % String(plan["why"])
-	# A battery's crews drive to their places with their guns quiet (a mortar that fires deploys and stays: B2's trace).
+	# A battery's crews drive to their places with their guns quiet (a mortar that fires deploys and stays: B2's trace);
+	# those on the side shell (their `attack` below is not a move).
+	if is_battery(situation):
+		plan["relocating"] = true
 	_group(plan, ordered, "line", anchor, heading, table.spacing(String(situation["terrain"])), "move",
 			"" if is_battery(situation) else target, true)
 	# v3: a crew on the side and in reach fights as it would anyway (a free `attack`: gun trucks that held a line at 25 m

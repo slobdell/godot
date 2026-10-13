@@ -2427,6 +2427,12 @@ func _act(s: Dictionary) -> void:
 			# that one while it drives, not on whatever is nearest; fire at will when it can't bear.
 			if String(o.get("target", "")) != "":
 				_order_weapon({"type": "target", "name": String(o["target"]), "fallback": true})
+			elif tank.deploy_seconds > 0.0 and bool((s.get("element", {}) if s.get("element") != null else {}).get(
+					"relocating", false)):
+				# Round 28 (B2): a battery driving to its firing position on the side he drew: a gun that fires deploys
+				# and stays where it is (traced: it shelled from 90 deg off and never left), so it holds its fire.
+				why = TankBrain._join(why, "guns quiet, going to the side ordered")
+				_order_weapon({"type": "hold_fire"})
 			else:
 				_order_weapon({"type": "fire_at_will"})
 		"PURSUE":
