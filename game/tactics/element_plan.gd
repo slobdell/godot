@@ -108,6 +108,9 @@ const APPROACH_LEAD_DEG := 15.0
 const APPROACH_RUNNING_MPS := 6.0
 const APPROACH_RUNNING_S := 2.0
 const APPROACH_STANDOFF_MARGIN_M := 10.0
+## A target driving toward the element at least this fast (m/s) brings its guns along: going round, the element keeps to
+## its own reach rather than the wide ring (_plan_approach).
+const APPROACH_CLOSING_MPS := 2.0
 const APPROACH_TARGET_SQUAD_M := 40.0
 static var APPROACH_CARRY := true
 ## Once round: a crew within this many degrees of the side drawn (and in reach) fights freely; one already fighting keeps
@@ -334,8 +337,11 @@ static func _plan_approach(plan: Dictionary, situation: Dictionary, state: Dicti
 	var radius := band
 	for member: Dictionary in members_of(situation):
 		radius = maxf(radius, float(member.get("range", 0.0)))
-	# Round 28 (B1): ...and wide of the target squad's guns, where the arena allows (clamp_to_arena below).
-	if APPROACH_CARRY:
+	# Round 28 (B1): ...and wide of the target squad's guns, where the arena allows (clamp_to_arena below). Not while the
+	# target is driving AT the element: it brings its guns along, and short guns kept wide of it never answer (gun trucks
+	# rounding a charging IFV at 70 m: killed 12 of 18 v a clicked attack's 18, alive 2.6 v 4.8). Then round at its own
+	# reach, shooting on the way.
+	if APPROACH_CARRY and not target_closing(state, situation):
 		var task: Dictionary = state.get("task", {})
 		radius = maxf(radius, target_squad_reach(situation, String(task.get("target", "")), target_point)
 				+ APPROACH_STANDOFF_MARGIN_M)
@@ -409,6 +415,18 @@ static func target_squad_reach(situation: Dictionary, target: String, target_poi
 		if unit != "" and Units.exists(unit):
 			reach = maxf(reach, float(Weapons.profile(String(Units.stat(unit, "weapon", ""))).get("range", 0.0)))
 	return reach
+
+
+## Round 28 (B1): whether the attack's target is driving toward this element at APPROACH_CLOSING_MPS or faster (the
+## element's track of it). Pure.
+static func target_closing(state: Dictionary, situation: Dictionary) -> bool:
+	var track: Dictionary = state.get("pursuit", {})
+	var task: Dictionary = state.get("task", {})
+	if String(track.get("name", "")) != String(task.get("target", "")) or not (track.get("position") is Vector3):
+		return false
+	var velocity: Vector3 = track.get("velocity", Vector3.ZERO)
+	var toward := TacticsFormation.flat((situation.get("center", Vector3.ZERO) as Vector3) - (track["position"] as Vector3))
+	return Vector3(velocity.x, 0.0, velocity.z).dot(toward) >= APPROACH_CLOSING_MPS
 
 
 ## Round 28 (B1): keep `state.approach_round.fast_since`, the tick from which the target of a drawn flank has been moving

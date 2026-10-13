@@ -243,3 +243,13 @@ func test_a_target_driving_at_the_squad_is_not_fleeing() -> void:
 			"approach_round": {"in": false, "side": 1, "fast_since": 1000 - held}}), table)
 	assert_true(not bool(plan["pursuing"]), "charging at us is not fleeing: still going round")
 	assert_eq(int((plan["approach_round"] as Dictionary).get("fast_since", -2)), -1, "its clock is reset")
+
+
+func test_a_target_driving_at_it_is_rounded_at_its_own_reach() -> void:
+	var table := _table()
+	var center := _round(170.0)
+	var toward := TacticsFormation.flat(center - TARGET) * 5.0
+	var plan := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": {"name": "Rust_1",
+			"position": TARGET, "velocity": toward, "seen_tick": 1000}}), table)
+	assert_near((plan["anchor"] as Vector3).distance_to(TARGET), OWN_RANGE, 0.5,
+			"a target coming at it: round at its own reach, shooting (%.1f m)" % (plan["anchor"] as Vector3).distance_to(TARGET))
