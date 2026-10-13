@@ -148,6 +148,12 @@ seams; brains the rest. **Nobody** (a request): `game/match/**`, `game/tank/**`,
   (`test_traffic_turns_live`: his Terminus head-on must make a verdict). Re-run on fresh {10,11,12}, same bar, still the
   last attempt; verdict counts per case reported.
 
+- **Manoeuvre M2 NOT SHIPPED (2026-10-12):** (a) alone also fails (creep −20 %, floor 30 %; rigs' wall contact-ticks 1797 →
+  4136: lifting rolls 10 m rigs into street walls, round 26's M3 again); 52 % of remaining creep is the friendly (pace < 1)
+  case. Kept `manoeuvre-m2`. Round 29: plan a long hull's creep as legs (M1b's planner in the drive); friendly creep via
+  traffic's give-way. No port needed. **Scout's conditional S1 retry is cancelled** (`scout-s1-suppresslay` parked).
+  M1's last attempt running at `140275af` on fresh seeds 2 4 7 9 15 19.
+
 - **Native N6 ordered (2026-10-12, the orchestrator; his principle "core components in C++ long-term"):** (1) the tank's
   motion (tank.gd/TankMotion script half; 0.63 ms builder0; 3–4 days; GRANT: `game/tank/**` for that port, seams only);
   (2) combat resolution (shell/impact/armour/damage; 4–6 days; GRANT: the resolution functions in `game/match/**` and
