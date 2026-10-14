@@ -156,6 +156,11 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   net-smoke, combat-smoke, determinism; the thirteen re-recorded twice with the reason; tracked hulls shown; native's
   port in `tank_drive_native` equal, merged as a pair.
 
+- **Traffic T1c JUDGED — NOT SHIPPED (~18:00; `761bd727`, census fresh seeds 4–6, n = 9 an arm):** set-up give-ways 25 → 9
+  (bar 0); friendly-stuck, fast contacts, artillery shots pass; repacks while giving way 13 → 7. The 9 are give-ways a
+  set-up hull STARTS itself in `_negotiate` with a new move. Parked `traffic-t1c`. Round 30: judge "repacks while still
+  ordered to fire" (a hull with a new move is leaving anyway), not every set-up give-way.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
