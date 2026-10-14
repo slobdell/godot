@@ -220,7 +220,8 @@ long as we can")
 
 builder0 (12 cores, 14 GB) is the round's bottleneck: loaded checks 53–60 min v 41 quiet. Free fixes first (traffic's
 round-29 extension: shard balance, `make quick`, a base-arm cache; the orchestrator's one-check-per-tree rule). Raise the
-machine again when those are in and judged series still queue for hours.
+machine again when those are in and judged series still queue for hours. Round 30: split `test_tactics_scenarios`
+(425 s, the floor of a balanced shard plan at 5–6 shards) into two files (brains').
 
 ## Round 29 candidates (round 28's carry-overs, 2026-10-13) — SPLIT 2026-10-13 as traffic (1) + manoeuvre (2, 6; 7 as its conditional stretch) + brains (3, 4, 5, 8) + native (`workstreams.md` *Round 29*); his question 6 answered: go straight to his side
 
