@@ -219,6 +219,18 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   stated; (b5) the brush speed reported with its se (a first measurement); (b3) a 17/18 read by the cell's trace per the
   McNemar row, not a pass or a fail. Partial rule unchanged: (b1) is the gate. Tuning (seeds 20–22, gangs 40–41) starts
   when the wedge tests are green.
+  **M4b committed `e8bfef2e`** (on main `3f1713a5`; wedge tests builder0 7/0; native has the hash). Tuning disclosed
+  (Terminus 20–22, n = 1 each, GDScript): honest pins base 74 + 67 + 70 crew-s on three of six runs, new 0; rigs wall
+  contact-ticks 1849 → 1370, leg time 346 → 251 s, arrivals 45 → 44 (seed 21: a rig latched "arrived" 16.8 m off a
+  face-order goal, not a pin); mixed arrivals 63 → 64, leg time 566 → 487 s, contacts 420 → 485; brush speed −0.59 m/s
+  (se 0.72, n 6); the stall rule now fires on rigs (0 → 2–4 a run), escapes end by the backoff, 0–2 a run by the cap.
+  **Worst run: mixed seed 21's IFV, pinned 74 s at base, OSCILLATES 73 s under M4b** — stall fires, it backs 1.5 m, the
+  route drives it straight back into the same blocker (a hull, not a wall) every 3 s; a "stuck" row (no 1 m of progress
+  over ≥ 10 s driving) added to `pinned_table.py` so judged (b2) reports the loop beside the pins. **Cause found (a
+  request to traffic, round 31 or traffic's next bar):** `game/ai/avoidance.gd` ~147 fills ORCA's neighbour table from
+  `tank.estimated_velocity`, so a pinned hull is a 12 m/s ghost to every crew steering round it; the honest reading is
+  `tank.real_velocity` once M4b is on main (traffic's line; `Avoidance.solve` has a C++ twin → a pair). The judged chain
+  starts after the tuning hull-rest arms (~14:45 PDT).
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
