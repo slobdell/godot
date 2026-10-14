@@ -23,6 +23,23 @@ in briefs and merges through the same gate; he sets `/model fable` in those thre
 | **sizing** | `godot-sizing` (5) | **Fable** | nothing in play: every bar sized by its probe's measured noise (`_agents/judging.md`, `tools/judge/`), early-stop judging designed on rounds 27–29's rows; NO builder0 series | **CP-N** the n table, early |
 | **planner** | `godot-planner` (6) | **Fable** | nothing in play this round: a local motion planner for long wheeled hulls (problem → design → offline tests → lab clip → hand-over to manoeuvre); isolated in `game/ai/planner/**` | P2 tests; P3 clip |
 
+**Merged: sizing `9730193f`** (= stream/sizing e8c82e1a + Status: builder0 `make check exited 0`, 2585/0, 26 ALL JUDGED;
+main's code = that tree, no re-check): `_agents/judging.md` (CP-N: 55 probe × metric rows; the line forms; early stop:
+round 29 would have run 113 of 174 runs per arm with every verdict the same), `tools/judge/`, `test_judge_tools` in
+`make test`. Every bar since CP-N cites the table (B5c-v4 stood as filed, M4b re-sized once, T3b written against it);
+the early-stop hook is each runner owner's, after this merge. **Round close now has step 5b** (orchestration.md): re-render
+the table with the round's judged pairs. Seen in sizing's check log, not chased: `WEB_PACK FAILED: factions (5 of 999
+bytes)` inside a target that passed (browser build, low priority; look at it at the close).
+
+**Round 30 in flight (12:50 PDT):** brains B5c-v4 judged chain on `19eca15a` (first five lines pass on fresh seeds: yard
+12/12 v 1/12 all in, Sumps 24.5 v 37.5 s, Terminus 10/10 with the near rule firing on B_4's seed; arrive / bridge-pooled
+/ screen-slots / traces / cost running); native's mirror in test, N7.5 (element feed, ON, −17 % on its section) committed
+`f1e4178b`, check riding with the pair; manoeuvre M4b (real_velocity + unstickback, one declared change) tuning then
+judged on 13 Terminus seeds; traffic T3b judged on seeds 31–33 (the crossing clock is the judged line; the brief's
+"30–45 s crawl" was post-crossing seating, relayed to brains), I3 proven, `make quick` 1272 s cold (narrowed lint
+coming); planner P0/P1 at `e63a3099` (three failure modes reproduced, hybrid-A* chosen), P2 in progress. Native's pair
+queue: B5c-v4 → M4b → T3b. Bars filed in `workstreams.md` *Bars (round 30)*.
+
 **Launch check: GREEN at `0d35f215`** (builder0, `make check exited 0`, 2584 passed, 0 failed, 26 targets ALL JUDGED,
 thirteen unmoved, determinism 2875411ff4ec6be7; every commit since is docs). Workers start from it and run no baseline.
 Native's worktree was fast-forwarded to main at launch.

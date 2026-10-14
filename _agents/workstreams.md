@@ -52,7 +52,7 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   the smallest n that decides the effect its bar names, and a variance-aware form for guard lines. The orchestrator
   relays CP-N to traffic, manoeuvre and brains; **a bar pre-registered after CP-N cites the table's row** (or says why
   it departs); a bar pre-registered before CP-N may be re-sized ONCE before its judged run, in writing, before numbers.
-  Sizing never runs a series on builder0: it reads `streams/references/round27..29/` and the judged blocks in this file.
+  Sizing never runs a series on builder0: it reads `streams/references/round27..29/` and the judged blocks in this file. **Delivered and MERGED (`9730193f`): the table and the method are `_agents/judging.md` (*The table*, *How to write a bar*, *Early stop*); `tools/judge/size.py` prints n and the guard for a probe and an effect.**
 - **C30.4 The planner is isolated this round.** No edit outside its paths; nothing it builds is reached in play (no seam
   in `movement.gd`, `manoeuvre*.gd` or `order_controller.gd`). It may read every manoeuvre branch and trace. Its lab
   scene and offline tests run on builder0 as light targets (one slot at a time; no judged series); `make check` must

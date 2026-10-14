@@ -133,6 +133,10 @@ make remote T=check                                     # or make check; fix int
 5a. **Read the `db` of every review page the round published** (`read_db` on each URL, dumped under
    `streams/references/round<N>/`), and apply or file every decision before the brief that made the page is archived
    (lesson 220: the fire engine he approved sat unread in a page's `db` for two days).
+5b. **Re-render the judging table** (round 30, sizing's step 8): add the round's judged pairs to `tools/judge/probes.py`,
+   run `python3 tools/judge/inventory.py` and `python3 tools/judge/table.py`, commit `_agents/judging.md` and the csv under
+   `streams/references/round<N>/sizing/`. The table's sd is the next round's pre-registered noise (a pair whose own sd ran
+   1.5× the table's lifts a guard's false-fail to 15–23 % until this is done).
 6. Update `HANDOFF.md` (current state, open questions, follow-ups) and `roadmap.md`. The lead pushes.
 
 ## The worker contract
