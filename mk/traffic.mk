@@ -4,6 +4,9 @@
 # a time. The table pools them: crews arrived, friendly-stuck crew-seconds, friendly contacts (and fast ones), k-turns
 # with a friendly ahead, and the crossing's last arrival over the same squad's solo time (paired by seed and tick).
 # TRAFFIC_FLAGS adds probe flags (--brains-off=native, --nav-off=...). Run it on builder0: make remote T=traffic-series.
+# Round 29 (I3): each row is cached by (the tree's content hash, its own arguments) in tools/series_cache.sh's shared
+# directory and reused only on an exact key match ("cache hit" per row) when CACHE=on. OFF by default until its proof
+# (a cached base row equal to a fresh one, field for field) is run: owed (traffic Status).
 
 TRAFFIC_CASES ?= yard_open,head yard_open,cross terminus,head terminus,cross
 TRAFFIC_SEEDS ?= 1 2 3
@@ -17,16 +20,20 @@ TRAFFIC_OUT ?= $(BUILD_DIR)/traffic-series.jsonl
 traffic-series: import ## Round 26 (traffic T0): his two crossing cases (TRAFFIC_CASES arena,kind x both/solo x seeds x start ticks) -> build/traffic-series.jsonl + the pooled table (TRAFFIC_FLAGS for an arm)
 	@rm -rf $(BUILD_DIR)/traffic-runs; mkdir -p $(BUILD_DIR)/traffic-runs
 	@echo ">> traffic-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(TRAFFIC_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
-	@for case in $(TRAFFIC_CASES); do for which in $(TRAFFIC_WHICH); do for seed in $(TRAFFIC_SEEDS); do for tick in $(TRAFFIC_TICKS); do \
+	@tree=$$(tools/series_cache.sh tree); echo ">> traffic-series cache: $(if $(filter on,$(CACHE)),ON (exact-key rows reused),OFF (every row runs; CACHE=on to reuse)) | tree $$tree"; \
+	for case in $(TRAFFIC_CASES); do for which in $(TRAFFIC_WHICH); do for seed in $(TRAFFIC_SEEDS); do for tick in $(TRAFFIC_TICKS); do \
 		echo "$$case,$$which,$$seed,$$tick"; done; done; done; done | \
-		xargs -P $(TRAFFIC_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); arena=$$1; kind=$$2; which=$$3; seed=$$4; tick=$$5; \
+		TREE=$$tree xargs -P $(TRAFFIC_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); arena=$$1; kind=$$2; which=$$3; seed=$$4; tick=$$5; \
+		out=$(BUILD_DIR)/traffic-runs/$$arena-$$kind-$$which-$$seed-$$tick.json; \
+		key=$$(tools/series_cache.sh key "$$TREE" traffic-series $$arena $$kind $$which $$seed $$tick $(TRAFFIC_SECONDS) "$(TRAFFIC_FLAGS)"); \
+		if [ "$(CACHE)" = on ] && tools/series_cache.sh get $$key $$out; then echo "  cache hit  $$arena $$kind $$which s$$seed t$$tick ($$key)"; exit 0; fi; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/traffic_probe.gd -- \
 			--arena=$$arena --kind=$$kind --which=$$which --seed=$$seed --seconds=$(TRAFFIC_SECONDS) --lab-start-tick=$$tick \
-			$(TRAFFIC_FLAGS) 2>/dev/null | grep -o "TRAFFIC_PROBE {.*" | sed "s/^TRAFFIC_PROBE {/{\"start_tick\":$$tick,/" \
-			> $(BUILD_DIR)/traffic-runs/$$arena-$$kind-$$which-$$seed-$$tick.json; \
-		[ -s $(BUILD_DIR)/traffic-runs/$$arena-$$kind-$$which-$$seed-$$tick.json ] \
-			|| echo "{\"arena\":\"$$arena\",\"kind\":\"$$kind\",\"which\":\"$$which\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" \
-			> $(BUILD_DIR)/traffic-runs/$$arena-$$kind-$$which-$$seed-$$tick.json'
+			$(TRAFFIC_FLAGS) 2>/dev/null | grep -o "TRAFFIC_PROBE {.*" | sed "s/^TRAFFIC_PROBE {/{\"start_tick\":$$tick,/" > $$out; \
+		[ -s $$out ] \
+			|| echo "{\"arena\":\"$$arena\",\"kind\":\"$$kind\",\"which\":\"$$which\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
+		tools/series_cache.sh put $$key $$out; echo "  ran        $$arena $$kind $$which s$$seed t$$tick"'
+	@echo ">> traffic-series rows: $$(ls $(BUILD_DIR)/traffic-runs/*.json | wc -l)"
 	@cat $(BUILD_DIR)/traffic-runs/*.json > $(TRAFFIC_OUT)
 	@$(PYTHON) tests/traffic/traffic_table.py $(TRAFFIC_OUT)
 

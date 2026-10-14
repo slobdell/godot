@@ -101,10 +101,9 @@ func _run() -> void:
 		if trimmed != "":
 			filter_parts.append(trimmed)
 	var discovered := _discover(TEST_ROOT)
-	# Round 29 (traffic I1): the shards are balanced by each file's MEASURED time (tests/shard_times.txt), not by file
-	# count: the round-robin split left one shard running the last ~16 min of a quiet 41-min check (builder0).
-	# `--shard-plan=rr` keeps round 9's round-robin (the paired timing's control arm).
-	var plan := "time"
+	# Round 29 (traffic I1): `--shard-plan=time` balances the shards by each file's MEASURED time (tests/shard_times.txt)
+	# instead of round 9's round-robin. Built and measured; OFF by default (it did not pay on a loaded builder0).
+	var plan := "rr"  # I1's `time` plan failed its bar on builder0 (mk/core.mk TEST_SHARD_PLAN); --shard-plan=time opts in
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--shard-plan="):
 			plan = arg.trim_prefix("--shard-plan=")

@@ -222,8 +222,11 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 # The `$(if ...)` keeps `?=`'s "leave an existing value alone" while running the shell exactly once per make.
 TEST_SHARDS := $(if $(TEST_SHARDS),$(TEST_SHARDS),$(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 ))))
 # Round 29 (traffic I1, builder0 throughput): `time` balances the shards by each file's measured wall time
-# (tests/shard_times.txt, refreshed by `make test-times`); `rr` is round 9's round-robin by file (the control arm).
-TEST_SHARD_PLAN ?= time
+# (tests/shard_times.txt, refreshed by `make test-times`); `rr` is round 9's round-robin by file. DEFAULT rr: `time`
+# FAILED its bar (builder0, 4 shards, three A/B pairs at 7e39a3f0+, load 1-12: rr 2417/2558/2448 s, time 1965/2409/2614 s,
+# -6 % on the means against a -30 % bar). The shards balanced (longest/mean 1.06-1.15 v 1.41-1.50), but under builder0's
+# load four shards busy for the whole run compete with everything else, while round-robin's short shards finish early.
+TEST_SHARD_PLAN ?= rr
 
 # FILTER reaches the runner INSIDE SINGLE QUOTES. Unquoted, `make test FILTER="a|b"` handed the pipe to a
 # shell and exited 127 without running either suite (it bit combat twice on 2026-09-20). Quoting alone would

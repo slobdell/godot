@@ -61,9 +61,10 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
 
   Selection happens on the laptop, because builder0's copy has no `.git`. `QUICK_FILES="a.gd b.gd"` asks what a change
   to those files would run. **`make check` stays the gate for every hash you name.** A quick pass says only that the
-  code you touched still passes its own tests. `test`'s shards are balanced by each file's measured time
-  (`tests/shard_times.txt`; refresh it with `make test-times` after a quiet full `make remote T="native test"`, round 29
-  I1). A new test file keeps a round-robin shard until then.
+  code you touched still passes its own tests. `test` still shards round-robin. `TEST_SHARD_PLAN=time` balances the
+  shards by each file's measured time (`tests/shard_times.txt`, `make test-times`), but it measured only −6 % on a loaded
+  builder0 against a −30 % bar (round 29 I1, traffic Status), so it is off. Every run prints `test wall: N s` and each
+  shard's seconds.
   **A bare `make test` does not rebuild the native library.** After a merge that changed `native/`, it runs the old
   `.so`, and the native-port tests fail with `Nonexistent function '..._configure' in base 'TankNative'` (round 29,
   traffic's first timing run). `check` and `quick` rebuild it first. For a test-only run, use
