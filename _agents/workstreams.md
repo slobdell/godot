@@ -142,6 +142,14 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   **Orchestrator's additions:** bridge-pooled 18/18 and traffic's four cases with no wedge; brains' ApproachStage drawn
   artillery (seeds 13–15 × 6) both arms after B1 + CP-T are on main: give-way repacks → 0, B1's lines hold.
 
+- **Manoeuvre M2 JUDGED — NOT SHIPPED (~17:30; `7b895eed`, GDScript, census seeds 8–13 + sim 6–8, builder0):** open+static
+  creep 125 → 75 (−40 %, bar −50); > 3 legs 386 → 308; Terminus mixed arrived 133 → 132/144, rigs 82 → 75/96, rigs' wall
+  contact-ticks 3938 → 6494 (still up 1425 → 2259 without each arm's two worst runs: the lift puts rigs into street walls,
+  round 28's finding; today's tuning drop was seed luck). Friendly creep 125 → 113. Kept `manoeuvre-m2-r29`. The long pins
+  traced (terminus rigs seed 9, Green_S0_3): NOT creep but **M4** — 12 m/s reported at throttle 1.00 with zero
+  displacement, so unstick never fires. **M4 GO** (find why the reported speed is non-zero first; a `game/tank/**` edit
+  needs the orchestrator's grant; native ports). Round 30 candidate: the creep lift re-judged on top of M4.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
