@@ -300,6 +300,43 @@ alive, IFV dead 29.1 s, hits 32° off; clicked 1 alive, IFV lives, 89° off).
 Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
 `build/round29/artillery_side_by_side.mp4`.
 
+### B5c — JUDGED at `053beffb`: every bar line PASSES (godot-67); the FLIP pairs with native's mirror
+Builder0, both arms `--brains-off=native`, fresh seeds:
+| line | off | on |
+|---|---|---|
+| Yard crossing (23–24 × {1,3,6,8,11,16}, n = 12): last crew in, median | never (7/12 runs never all in) | **21.95 s** (10/10 every run) |
+| Sumps (seeds 2–13, n = 12): all within 8 m, median | 38.8 s | **36.0 s** (no run > 5 s later) |
+| Sumps guns_on_arc | 0.94 | 0.94 |
+| Terminus (2–4, reported): crews arrived | 10 / 10 / 9 | 10 / 10 / 10 |
+| Arrive series (25–28, n = 100): within 8 m | 89/100 (29.1 s) | **100/100 (24.8 s)** |
+| bridge-pooled, switch on | — | 18/18 |
+Counter > 0 in every on-arm run, 0 in every off-arm run.
+**Worst run** (Terminus seed 3, squad B's last 62.1 → 74.2 s): B_4, 9 m from its east-facing slot, is sent 17.5 m back
+to a gate by the west edge, reaches it (latched) and jams on terrain ~8 s (manoeuvre's escape, round 30). The gate's own
+cost: it pulls a car already near its slot back. **Round-30 refinement recorded:** no gate when the hull is within the
+approach length and the route via the gate is much longer.
+**FLIP:** `brains-b5c-flip` = `ed843d63` (stream `3114a9f1` + `gate_giveup_on()` → `not switched_off("gategiveup")`;
+nothing else in game code). Native's mirror: stream/native `1fabe6a8` (test `e0a80733`), combined with the flip at
+`4a293e8a`; native's proof: 6000 drives + 189 forced stalls, 0 mismatches. The orchestrator's merge conditions: yard and
+Sumps on the default native path equal to the judged on-arm run for run, then check + native-verify-suite on the pair.
+### B5 — queued attack (GRANTED: rts_controls.gd's order-queue hunk + `_order_squads`)
+A shifted attack-move or attack on a squad still driving queues behind its waypoints (`Element.enqueue`); an
+attack-move's automatic facing is from the last waypoint (an attack faces its target: none added). A chain of shift+A
+runs leg by leg from each last point; a shifted plain move goes behind a task already queued; an element's attack is
+done when its target is dead or gone; several squads each queue behind their own. Unshifted, and shift+A on an idle
+squad, as before. `177a7419` + `11dde288`; builder0 31/0 and 24/0 (queued task, element, controls tests). The stream's check at
+`11dde288` fails ONE test, by design of the pair: `test_native_exec_state` wants B5c's four new Movement members in
+`native/src/exec_fields.h` (native's mirror adds them), so the stream cannot be green alone while it carries B5c. B5
+alone: `brains-b5-queued` = main `5b1307b8` + `55d1f566` + `5ab05468`; its check is running.
+### B5 — support by fire, wheeled turret hulls: REPRODUCED, not fixed (round 30)
+`make hull-rest-probe FACING_ONLY=faced_support_by_fire` (`053beffb`, builder0, 4 factions × 6 seeds, 24 runs an arm):
+wheels/turret drawn median 80.5° v clicked 57.1° (n = 168, p 0.019; ≥ 100°: 42 % v 27 %); every other class is as good
+or better drawn. Artillery dominates the tail (gang_artillery 128° v 109°, law_artillery 142° v 47°) and deploys for
+indirect fire. Worse drawn: law_tank 106.8° v 30.6°, gang_ifv 47.6° v 24.8°, burner 71.2° v 46.4°; gang_tank better
+drawn (48.0° v 77.9°). In every law run, BOTH arms, the squad is not arrived when the probe reads it ("settled" ≈ 19 s,
+crews still): it measures hulls stopped on the way, not on the line. Needs a per-crew trace of a drawn SBF (the screen
+test has none) before any fix.
+
 ### Requests to other streams
 - **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).
 
