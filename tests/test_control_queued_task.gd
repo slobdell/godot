@@ -177,3 +177,114 @@ func test_the_queued_screen_is_marked_from_its_waypoint() -> void:
 	assert_true(marks[0].get("from") is Vector3 and (marks[0]["from"] as Vector3).distance_to(WAYPOINT) < 1.0,
 			"linked from his waypoint (%s)" % [marks[0].get("from")])
 	assert_true(_deg(marks[0].get("facing", Vector3.ZERO), POINT - WAYPOINT) < 1.0, "showing the way it will face")
+
+
+# ---- Round 29 (brains B5, granted): shifted attack-moves and attacks queue too ------------------------------------
+## His round-28 words cover every armed order with an automatic facing: laid from the last waypoint. The orchestrator's
+## two conditions: a chain of shift+A runs in order leg by leg, and a shifted plain move after a queued attack-move goes
+## behind it, not before. Unshifted orders, and a shift+A on a squad with nothing to queue behind, are as before.
+const LEG2 := Vector3(-35.0, 0.0, -25.0)
+
+
+func _tos(element: Element) -> Array:
+	var out: Array = []
+	for queued: Dictionary in element.queued_tasks:
+		out.append([String(queued.get("verb", "")), queued.get("to"), queued.get("drills", true)])
+	return out
+
+
+func test_a_chain_of_shift_attack_moves_runs_leg_by_leg_from_each_last_point() -> void:
+	var f := await _alpha()
+	await f.right_click(f.ground(WAYPOINT))
+	for leg: Vector3 in [LEG2, POINT]:
+		await f.key(KEY_A, true)
+		await f.click(f.ground(leg), true)
+	var element := f.controls.elements.of(ALPHA[0])
+	assert_true(element != null and String(element.task.get("verb", "")) == "move", "setup: the waypoint is the squad's move")
+	if element == null:
+		return
+	assert_eq(element.queued_tasks.size(), 2, "both attack-moves wait behind it, in order (%s)" % [_tos(element)])
+	if element.queued_tasks.size() < 2:
+		return
+	var second: Dictionary = element.queued_tasks[0]
+	var third: Dictionary = element.queued_tasks[1]
+	assert_true(Vector3(float(second["to"][0]), 0.0, float(second["to"][1])).distance_to(LEG2) < 1.0, "the first leg first")
+	assert_true(bool(second.get("drills", true)) and bool(third.get("drills", true)), "attack-moves (drills on)")
+	assert_true(_deg(Vector3(float(second["facing"][0]), 0.0, float(second["facing"][1])), LEG2 - WAYPOINT) < 1.0,
+			"each faces the way in from the point before it (leg 2 from the waypoint)")
+	assert_true(_deg(Vector3(float(third["facing"][0]), 0.0, float(third["facing"][1])), POINT - LEG2) < 1.0,
+			"(leg 3 from leg 2)")
+	# Run it: the element takes the legs one after the other, each once the one before is reached.
+	var seen: Array = []
+	var nearest_leg2 := INF
+	var frames := 0
+	while frames <= 60 * 120 and seen.size() < 2:
+		var to: Variant = ElementTask.destination(element.task)
+		if to is Vector3 and String(element.task.get("verb", "")) == "move" and bool(element.task.get("drills", true)) \
+				and (seen.is_empty() or (seen[-1] as Vector3).distance_to(to) > 1.0) and (to as Vector3).distance_to(WAYPOINT) > 1.0:
+			seen.append(to)
+		if seen.size() == 1:
+			nearest_leg2 = minf(nearest_leg2, _centre(f).distance_to(LEG2))
+		await wait_physics_frames(10)
+		frames += 10
+	print("MEASURE queued_attack_move legs %s nearest_leg2_m %.1f frames %d" % [seen, nearest_leg2, frames])
+	assert_eq(seen.size(), 2, "both legs were taken (%s)" % [seen])
+	if seen.size() == 2:
+		assert_true((seen[0] as Vector3).distance_to(LEG2) < 1.0 and (seen[1] as Vector3).distance_to(POINT) < 1.0,
+				"in order: leg 2, then leg 3")
+		assert_true(nearest_leg2 <= REACHED_M, "leg 3 began only after leg 2 was reached (centre came within %.1f m)" % nearest_leg2)
+
+
+func test_a_shifted_move_after_a_queued_attack_move_goes_behind_it() -> void:
+	var f := await _alpha()
+	await f.right_click(f.ground(WAYPOINT))
+	await f.key(KEY_A, true)
+	await f.click(f.ground(LEG2), true)
+	await f.key(KEY_M, true)
+	await f.click(f.ground(POINT), true)
+	var element := f.controls.elements.of(ALPHA[0])
+	assert_true(element != null, "setup: the squad has a leader")
+	if element == null:
+		return
+	assert_eq(String(element.task.get("verb", "")), "move", "the waypoint is still being driven")
+	assert_eq(element.queued_tasks.size(), 2, "the attack-move, then the move (%s)" % [_tos(element)])
+	if element.queued_tasks.size() == 2:
+		assert_true(bool((element.queued_tasks[0] as Dictionary).get("drills", true)), "first the attack-move")
+		assert_true(not bool((element.queued_tasks[1] as Dictionary).get("drills", true)), "then the plain move, behind it")
+		assert_true(not (element.queued_tasks[1] as Dictionary).has("facing"), "a plain move gets no automatic facing")
+
+
+func test_a_shifted_attack_on_an_enemy_after_a_waypoint_queues_behind_it() -> void:
+	var f := await _alpha()
+	await f.right_click(f.ground(WAYPOINT))
+	f.controls.order_selection("attack", {"target": "Rust_Alpha_1", "queue": true})
+	var element := f.controls.elements.of(ALPHA[0])
+	assert_true(element != null and String(element.task.get("verb", "")) == "move", "the waypoint is still being driven")
+	if element == null:
+		return
+	assert_eq(element.queued_tasks.size(), 1, "the attack waits behind it (%s)" % [_tos(element)])
+	if element.queued_tasks.size() == 1:
+		var queued: Dictionary = element.queued_tasks[0]
+		assert_eq([String(queued.get("verb", "")), String(queued.get("target", ""))], ["attack", "Rust_Alpha_1"], "an attack on him")
+		assert_true(not queued.has("facing"), "an attack faces its target: no facing is added")
+
+
+func test_a_shift_attack_move_on_an_idle_squad_applies_as_before() -> void:
+	var f := await _alpha()
+	await f.key(KEY_A, true)
+	await f.click(f.ground(LEG2), true)
+	var element := f.controls.elements.of(ALPHA[0])
+	assert_true(element == null or element.queued_tasks.is_empty(), "nothing to queue behind: nothing queued")
+
+
+func test_an_unshifted_attack_move_after_a_waypoint_applies_now() -> void:
+	var f := await _alpha()
+	await f.right_click(f.ground(WAYPOINT))
+	await f.key(KEY_A)
+	await f.click(f.ground(LEG2))
+	var element := f.controls.elements.of(ALPHA[0])
+	assert_true(element != null and element.queued_tasks.is_empty(), "nothing queued")
+	var to: Variant = ElementTask.destination(element.task) if element != null else null
+	assert_true(to is Vector3 and (to as Vector3).distance_to(LEG2) < 1.0, "the attack-move replaces the move at once (%s)"
+			% [element.task if element != null else {}])
+	assert_true(element != null and not element.task.has("facing"), "no automatic facing is added to an unshifted task")
