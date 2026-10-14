@@ -65,20 +65,10 @@ func _run() -> void:
 			lab.elements.form(Array(squad.roster), String(squad.squad_name))
 		ElementCommander.install(lab.game_match, team, lab.elements)
 	var trails := {}
-	# Round 29 (traffic T1c): a battery packing up (its legs were fully down and start to rise), and those packed up while
-	# giving way; shots by artillery.
-	var deployed := {}
-	var art_shots := [0]
-	lab.game_match.weapon_fired.connect(func(event: Dictionary) -> void:
-		var shooter := lab.tank_of(String(event.get("shooter", "")))
-		if shooter != null and Units.role_of(shooter.unit_id) == "artillery":
-			art_shots[0] += 1)
-	Movement.deployed_yields = 0
-	Movement.setup_refusals = 0
 	var in_contact := {}
 	var was_kturn := {}
 	var counts := {"under_way": 0, "stuck": 0, "friend": 0, "enemy": 0, "static": 0, "contacts": 0, "fast": 0,
-			"kturns": 0, "kturns_friend": 0, "repacks": 0, "repacks_yield": 0}
+			"kturns": 0, "kturns_friend": 0}
 	var ended := -1
 	for tick in int(float(_flag("seconds", "120")) * SimClock.TICK_RATE):
 		await lab.step()
@@ -98,12 +88,6 @@ func _run() -> void:
 				trail.remove_at(0)
 			trails[key] = trail
 			var mover := Movement.of(t)
-			var was_down: bool = deployed.get(key, false)
-			if was_down and t.deploy_ratio < 1.0:
-				counts["repacks"] += 1
-				if mover != null and mover.yield_to != "":
-					counts["repacks_yield"] += 1
-			deployed[key] = t.deploy_ratio >= 1.0
 			if mover == null or not mover.is_under_way():
 				continue
 			counts["under_way"] += 1
@@ -155,8 +139,7 @@ func _run() -> void:
 			"contacts_friend": counts["contacts"], "contacts_friend_fast": counts["fast"], "kturns": counts["kturns"],
 			"kturns_friend": counts["kturns_friend"],
 			"ended_s": snappedf(ended / float(SimClock.TICK_RATE), 0.1) if ended >= 0 else -1.0,
-			"traffic_off": _flag("traffic-off", ""), "repacks": counts["repacks"], "repacks_yield": counts["repacks_yield"],
-			"deployed_yields": Movement.deployed_yields, "setup_refusals": Movement.setup_refusals, "art_shots": art_shots[0]}
+			"traffic_off": _flag("traffic-off", "")}
 	print("TRAFFIC_CENSUS " + JSON.stringify(report))
 	lab.dispose()
 	case.teardown()

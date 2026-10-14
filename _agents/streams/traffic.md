@@ -140,9 +140,24 @@ both squads travelling. No mouth within 80 m means no hold.
 **Known issues:** in the crossing the rule fired once on the judged seeds (3 holds, 86 crew-ticks) with no change to any
 number; a long squad can find no room on the right at a cramped mouth and splits across both sides (visible in the clip).
 
-**Next:** T1c (brains' request, accepted after CP-T): a hull set up to fire (`deploy_ratio > 0`) refuses a give-way ask
-and the asker goes round (brains' trace: seed 15 t16, a set-up mortar truck gave way 3 times and packed up; 8 repacks in
-B1's 18 judged runs). Then T3 (stretch).
+**T1c (brains' request: a hull set up to fire does not give way) FAILED its pre-registered bar; nothing ships.** The
+candidate `761bd727` is parked on branch `traffic-t1c` and reverted off stream/traffic.
+- The rule: `Movement.ask()` refuses while `deploy_ratio > 0`, and the asker treats the hull as parked and goes round.
+  `--traffic-off=setup`, test `test_traffic_setup`.
+- The judged census: builder0, `761bd727` both arms, GDScript path, `make traffic-census` (Sumps 1000, Parade 2000,
+  Foundry 2000), fresh seeds {4,5,6}, n = 9 an arm. Data in `references/round29/traffic/t1c_census_*`.
+- Line (1), set-up give-ways in the arm = 0: **FAIL, 25 → 9.** Line (2), friendly-stuck 299 → 295 crew-s: pass. Line (3),
+  fast contacts 464 → 480 against a limit of 515: pass. Line (4), artillery shots 130 → 120 (paired diff −10, 2 se 26):
+  pass. Repacks during a give-way fell 13 → 7; asks refused: 20.
+- Why line (1) failed: `ask()` refused every ask while a hull was set up, so the 9 left are give-ways the set-up hull
+  started ITSELF. In `_negotiate`, a battery with a new move and its legs still coming up decides it is the one to give way.
+- The chain was stopped after the census (the four cases, `bridge-pooled` and check never ran on the failed candidate).
+  The local wrapper and its builder0 run were stopped by PIDs verified to be in my own folder.
+- For whoever takes it next (the orchestrator decides whether a new attempt is allowed): also skip the self-started
+  give-way in `_negotiate` while `deploy_ratio > 0`. A hull packing to move gives way only once it is packed. Judge it
+  on fresh census seeds, plus brains' ApproachStage drawn-artillery arm (the orchestrator's line 6).
+
+**Next:** T3 (stretch).
 
 ### The plan (ordered)
 
