@@ -87,6 +87,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("exec_forget", "mover"), &TankNative::exec_forget);
 	ClassDB::bind_method(D_METHOD("exec_clear"), &TankNative::exec_clear);
 	ClassDB::bind_method(D_METHOD("exec_count"), &TankNative::exec_count);
+	ClassDB::bind_method(D_METHOD("wall_configure", "config"), &TankNative::wall_configure);
+	ClassDB::bind_method(D_METHOD("wall_scan", "tank"), &TankNative::wall_scan);
 	ClassDB::bind_method(D_METHOD("closest_approach", "here", "velocity", "round_position", "round_velocity", "seconds"),
 			&TankNative::closest_approach);
 	ClassDB::bind_method(D_METHOD("would_be_hit", "here", "now", "planned", "incoming", "turn_seconds", "acceleration",
@@ -553,6 +555,17 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.keep_avoidance = config.get("avoidance", Variant());
 	c.keep_switches = config.get("switches", Variant());
 	c.avoidance_script = c.keep_avoidance.get_validated_object();
+	c.keep_traffic = config.get("traffic", Variant());
+	c.keep_native_traffic = config.get("native_traffic", Variant());
+	c.traffic_script = c.keep_traffic.get_validated_object();
+	c.native_traffic = c.keep_native_traffic.get_validated_object();
+	c.traffic_hold = c.traffic_script != nullptr && c.native_traffic != nullptr && config.has("HOLD_REACHED_M") &&
+			config.has("HOLD_SLOW_M") && config.has("LIVE_TICKS");
+	if (c.traffic_hold) {
+		c.HOLD_REACHED_M = config["HOLD_REACHED_M"];
+		c.HOLD_SLOW_M = config["HOLD_SLOW_M"];
+		c.LIVE_TICKS = config["LIVE_TICKS"];
+	}
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();

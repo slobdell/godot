@@ -141,26 +141,39 @@ func reading() -> Dictionary:
 func observe(mover: Movement) -> void:
 	var tank := mover.ctl.tank
 	touching = false
-	if tank == null or not is_instance_valid(tank) or not tank.is_inside_tree() or not tank.is_alive():
+	if tank == null or not is_instance_valid(tank):
 		return
-	if tank.command == null or tank.is_parked(tank.command):
-		return  # no slide happened: the collision list is the previous slide's
-	observed += 1
 	var wall: KinematicCollision3D = null
-	var hull_hit := false
-	for i in tank.get_slide_collision_count():
-		var hit := tank.get_slide_collision(i)
-		if hit.get_collider() is Tank:
-			hull_hit = true
-			continue
-		if absf(hit.get_normal().y) > WALL_NORMAL_MAX_Y:
-			continue
-		if wall == null or hit.get_depth() > wall.get_depth():
-			wall = hit
-	if hull_hit:
-		hull_ticks += 1
-	if wall == null:
-		return
+	if NativeWall.usable():  # Round 29 (native N7.4): the scan below as one native call (wall_native.cpp)
+		var scan: int = NativeBridge.impl.wall_scan(tank)
+		if scan < 0:
+			return
+		observed += 1
+		if scan & 1:
+			hull_ticks += 1
+		if scan < 2:
+			return
+		wall = tank.get_slide_collision((scan >> 1) - 1)
+	else:
+		if not tank.is_inside_tree() or not tank.is_alive():
+			return
+		if tank.command == null or tank.is_parked(tank.command):
+			return  # no slide happened: the collision list is the previous slide's
+		observed += 1
+		var hull_hit := false
+		for i in tank.get_slide_collision_count():
+			var hit := tank.get_slide_collision(i)
+			if hit.get_collider() is Tank:
+				hull_hit = true
+				continue
+			if absf(hit.get_normal().y) > WALL_NORMAL_MAX_Y:
+				continue
+			if wall == null or hit.get_depth() > wall.get_depth():
+				wall = hit
+		if hull_hit:
+			hull_ticks += 1
+		if wall == null:
+			return
 	touching = true
 	point = wall.get_position()
 	normal = Vector3(wall.get_normal().x, 0.0, wall.get_normal().z).normalized()

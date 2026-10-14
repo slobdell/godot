@@ -62,6 +62,15 @@ struct DriveConfig {
 	// gap in the drive ticks) is called back. BEHIND_GAP_TICKS < 0: this movement.gd has no _manoeuvre (no gate).
 	int64_t BEHIND_GAP_TICKS = -1;
 	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
+	// Round 29 (traffic T1, C29.2): the street hold. traffic_hold is false on a tree without it (Traffic has no hold_of):
+	// then no gate and no callback, the drive as before. With it, _avoid's first lines call NativeTraffic.avoid_hold back
+	// (Traffic.refresh + Traffic.hold_of: the table work stays traffic's GDScript) and the C29.3 gates read
+	// Traffic.holding natively from its `_live` table.
+	bool traffic_hold = false;
+	double HOLD_REACHED_M = 2.5, HOLD_SLOW_M = 16.0;
+	int64_t LIVE_TICKS = 3;
+	Object *traffic_script = nullptr, *native_traffic = nullptr;
+	Variant keep_traffic, keep_native_traffic;
 	Object *tank_command = nullptr;
 	NavNative *nav = nullptr;
 	Variant keep_pathing, keep_levers, keep_tank_command, keep_nav, keep_avoidance, keep_switches; // hold the references
