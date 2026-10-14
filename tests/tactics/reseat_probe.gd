@@ -38,6 +38,9 @@ func _run() -> void:
 	report["gates_shortened"] = Movement.gates_shortened
 	report["gate_refusals"] = Movement.gate_refusals.duplicate()
 	report["gates_aimed"] = Movement.gates_aimed
+	report["gates_turned"] = Movement.gates_turned
+	report["gates_latched_away"] = Movement.gates_latched_away
+	report["gates_near"] = Movement.gates_near
 	print("RESEAT_PROBE " + JSON.stringify(report))
 	case.teardown()
 	quit(0)

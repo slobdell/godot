@@ -444,7 +444,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"formations_moving": formations_seen, "reseats": element.reseats,
 			"reseats_after_arrival": element.reseats_after_arrival,
 			# Round 29 (B5c, lesson 300): arrival gates given up after a stall (process-wide; one run per process).
-			"gates_given_up": Movement.gates_given_up, "gates_reached_latched": Movement.gates_reached_latched, "gates_shortened": Movement.gates_shortened, "gates_aimed": Movement.gates_aimed, "gate_refusals": Movement.gate_refusals.duplicate(),
+			"gates_given_up": Movement.gates_given_up, "gates_reached_latched": Movement.gates_reached_latched, "gates_shortened": Movement.gates_shortened, "gates_aimed": Movement.gates_aimed, "gates_turned": Movement.gates_turned, "gates_latched_away": Movement.gates_latched_away, "gates_near": Movement.gates_near, "gate_refusals": Movement.gate_refusals.duplicate(),
 			# B2 v5: crews sent on from short after arrival, and how many of those still stand more than 8 m off that seat.
 			"resends_short": element.resends_short, "resent_still_off": _still_off(game_match, element.resent_short), "swaps": element.swaps,
 			"element_digest": digest_ctx.finish().hex_encode() if digest_on else "",

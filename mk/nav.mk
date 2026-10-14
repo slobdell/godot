@@ -321,3 +321,39 @@ gate-test: import ## Round 30 (B5c-v4): the facing/gate tests with GATE_ARGS (de
 	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(GATE_FILTER)' $(GATE_ARGS) \
 		> $(BUILD_DIR)/gate-test.log 2>&1; status=$$?; \
 	grep -E "  (PASS|FAIL)  |passed, .* failed|SCRIPT ERROR" $(BUILD_DIR)/gate-test.log | head -60; exit $$status
+
+# Round 30 (brains B5c-v4, DECLARED): the gate's judged cells, both arms on ONE commit, the GDScript drive in both
+# (`--brains-off=native`; off = + `--nav-off=gategiveup`, round 28's gate): the yard crossing (yard_open cross, both
+# squads; reseat_probe = TrafficStage + the gate counters) over GATE_YARD_SEEDS x GATE_TICKS; Terminus head-on over
+# GATE_TERMINUS_SEEDS (tick 11, round 29's cell); the Sumps arrive cell (settle_probe, law_scout:law_ifv:law_tank:law_tank,
+# 150 m, drills on) over GATE_SUMPS_SEEDS x GATE_TICKS. GATE_JOBS at a time -> build/gate-series.jsonl + the paired table.
+GATE_YARD_SEEDS ?= 25 26
+GATE_SUMPS_SEEDS ?= 14 15
+GATE_TERMINUS_SEEDS ?= 2 3 4
+GATE_TICKS ?= 1 3 6 8 11 16
+GATE_ARMS ?= on off
+GATE_JOBS ?= 6
+GATE_CELLS ?= yard sumps terminus
+.PHONY: gate-series
+gate-series: import ## Round 30 (B5c-v4): yard crossing / Sumps cell / Terminus head-on, gate rule on v off (GDScript drive), paired -> build/gate-series.jsonl + table
+	@rm -rf $(BUILD_DIR)/gate-runs; mkdir -p $(BUILD_DIR)/gate-runs
+	@echo ">> gate-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cells '$(GATE_CELLS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for cell in $(GATE_CELLS); do for arm in $(GATE_ARMS); do \
+		case $$cell in yard) for s in $(GATE_YARD_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; \
+		terminus) for s in $(GATE_TERMINUS_SEEDS); do echo "$$cell $$arm $$s 11"; done;; \
+		sumps) for s in $(GATE_SUMPS_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; esac; \
+	done; done | xargs -P $(GATE_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; \
+		flags="--brains-off=native"; [ "$$arm" = off ] && flags="$$flags --nav-off=gategiveup"; \
+		out=$(BUILD_DIR)/gate-runs/$$cell-$$arm-$$seed-$$tick.json; \
+		case $$cell in \
+		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
+			--dir=forward --metres=150 --seed=$$seed --units=law_scout:law_ifv:law_tank:law_tank --seconds=120 --drills=on \
+			--lab-start-tick=$$tick $$flags 2>/dev/null | grep -o "SETTLE_PROBE {.*" | sed "s/^SETTLE_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; \
+		*) arena=yard_open; kind=cross; [ $$cell = terminus ] && arena=terminus && kind=head; \
+			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reseat_probe.gd -- --arena=$$arena \
+			--kind=$$kind --which=both --seed=$$seed --seconds=90 --lab-start-tick=$$tick $$flags 2>/dev/null \
+			| grep -o "RESEAT_PROBE {.*" | sed "s/^RESEAT_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; esac; \
+		[ -s $$out ] || echo "{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
+		echo "  ran $$cell $$arm s$$seed t$$tick"'
+	@cat $(BUILD_DIR)/gate-runs/*.json > $(BUILD_DIR)/gate-series.jsonl
+	@$(PYTHON) tests/nav/gate_table.py $(BUILD_DIR)/gate-series.jsonl
