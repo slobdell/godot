@@ -107,7 +107,53 @@ Nothing: his calls are made.
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
 
-_Updated 2026-10-14 ~10:55 PDT (traffic worker, round 30). Every number names commit, machine, workload and n._
+_Updated 2026-10-14 ~15:15 PDT (traffic worker, round 30). Every number names commit, machine, workload and n._
+
+### REPORT (traffic, round 30) — read this first
+
+- **I3 the series cache's proof: DONE, accepted.** Builder0, `bd05077d`, Terminus crossing, n = 18: a fresh run, then a
+  miss and a hit into an empty cache directory are byte-identical (576 fields, 0 differences). A one-line `game/` change
+  misses. Written into `verification.md`. Note that `CACHE=off` still writes rows, so a proof needs its own
+  `SERIES_CACHE_DIR`. Adoption by other series is the orchestrator's call (C30.7).
+- **I2 `make quick`: DONE, inside 10 min.** Builder0, a one-file `traffic.gd` change: 1272 s cold and 1081 s warm with
+  the full lint (712 s of it); **487 s** with the narrowed lint (`tools/quick_tests.sh --lint`, `make quick-lint`: 13
+  scripts, 24 s). `check` still lints all. Written into `verification.md`.
+- **T3b the crossing: FAILED** one filed line (the yard crossing clock +2.80 s against +1.18 s); everything else passed
+  (between-squad bumps −45 %). Parked on `traffic-t3b`. The trace corrected the brief: the crawl costs ~2–4 s, and the
+  40–75 s last arrivals are a far-end seat trap (35.6, 23.9), relayed to brains. Recorded as his round-31 call.
+- **T1c-b the set-up battery: FAILED** one filed line: artillery shots 318 → 163, one diverged run carrying it. The
+  defect itself passed (repacks while firing 4/9 → 0/9 runs). Parked on `traffic-t1cb-judged`. Row 82's under-sizing
+  (judged 1.645 se 237 v 21.6) goes to sizing.
+- **T4 the ghost (the orchestrator's new item from manoeuvre's M4b trace): tuned, not judged, waiting on M4b's merge.**
+  ORCA's neighbour table reads `estimated_velocity`, so a pinned hull is a 12 m/s ghost. On `lab/traffic-t4` (=
+  stream/traffic + M4b's `77a1603f`; tuning data in `references/round30/traffic/t4_tuning/`):
+  - **v1** (neighbours read `real_velocity`): fixes manoeuvre's oscillating IFV (mixed-21 stuck 74 → 12 s), but exposes a
+    War Rig pinned at full throttle against a friend whose stall clock never fires (rigs 72 → 164 crew-s). M4b keeps the
+    rig's unstick on `estimated_velocity`.
+  - **v2** (its own velocity honest too) is neutral and leaves the IFV oscillating.
+  - The probe's noise (sd ≈ 60 s a run) needs ~24 runs a squad to decide a halving. The bar was proposed to the
+    orchestrator, with a request to manoeuvre about the rig's stall reading. **Next:** when M4b is on main, re-base on
+    main, size the bar and judge v1 (native pair: `avoidance_gather` and the drive's solve).
+- **Stretch (the friendly half of the creep): not started.** The orchestrator's T4 took its place; it overlaps (a
+  pinned hull and its neighbours).
+- **stream/traffic's `game/` equals main's** (`bd05077d`). The branch carries: the crossing clock in the traffic probe and
+  table, `turns_verdict.py` (CP-N's guards), `make quick-lint`, `tools/quick_tests.sh --lint`, `verification.md`'s I2/I3
+  text, and this round's data under `references/round30/traffic/`.
+
+**Merge notes:** no game change. `mk/infra.mk` and `tools/quick_tests.sh` (granted, C30 I2) change `make quick` only.
+`tests/traffic/traffic_stage.gd` adds report fields (`crossed_s`, `cross_*_s`), which changes the series-cache tree hash
+for traffic rows (intended).
+**Kept branches:** `traffic-t3b` (`cf124433`), `traffic-t1cb-judged` (T1c-b plus the census additions and
+`traffic-native-verify`), `lab/traffic-t4` (`b63a90c1` = v2; v1 is `05bb2c22`). `traffic-t1cb` is superseded by
+`traffic-t1cb-judged`. Round 29's `traffic-t3` and `traffic-t1c` are superseded by these two.
+**Questions for the lead:** none blocking. His round-31 calls are recorded by the orchestrator in player terms: the
+crossing ("the yielding squad gets through ~3 s later at a yard crossing and the squads bump half as often") and the
+battery ("no longer packs up for a squadmate passing; whether it then fires less is not decided").
+**What to playtest:** nothing new in play from this stream this round (both judged changes parked).
+**Requests to other streams:**
+- brains: the far-end seat trap (35.6, 23.9) at B's destination on the Terminus crossing, relayed.
+- manoeuvre: a War Rig's stall clock against a friend under T4 v1, relayed.
+- sizing: row 82 (artillery shots), under-sized ×10 on the T1c-b judged pair.
 
 ### T1c-b — a set-up hull on its fire order stays set up: FAILED one judged line (last attempt); parked on `traffic-t1cb-judged`
 
