@@ -65,10 +65,23 @@ func _run() -> void:
 			lab.elements.form(Array(squad.roster), String(squad.squad_name))
 		ElementCommander.install(lab.game_match, team, lab.elements)
 	var trails := {}
+	# Round 30 (traffic T1c-b): a battery packing up (its legs were fully down and start to rise); those packed up while
+	# giving way; and THE DEFECT: packed up while giving way to an ask it got ON ITS FIRE POST (set up, still ordered to
+	# fire, no move of its own: Movement.on_fire_post the tick before the give-way began). Shots by artillery.
+	var deployed := {}
+	var on_post := {}
+	var yield_from_post := {}
+	var was_yielding := {}
+	var art_shots := [0]
+	lab.game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		var shooter := lab.tank_of(String(event.get("shooter", "")))
+		if shooter != null and Units.role_of(shooter.unit_id) == "artillery":
+			art_shots[0] += 1)
+	Movement.setup_refusals = 0
 	var in_contact := {}
 	var was_kturn := {}
 	var counts := {"under_way": 0, "stuck": 0, "friend": 0, "enemy": 0, "static": 0, "contacts": 0, "fast": 0,
-			"kturns": 0, "kturns_friend": 0}
+			"kturns": 0, "kturns_friend": 0, "repacks": 0, "repacks_yield": 0, "repacks_while_firing": 0}
 	var ended := -1
 	for tick in int(float(_flag("seconds", "120")) * SimClock.TICK_RATE):
 		await lab.step()
@@ -88,6 +101,19 @@ func _run() -> void:
 				trail.remove_at(0)
 			trails[key] = trail
 			var mover := Movement.of(t)
+			if mover != null and t.deploy_seconds > 0.0:
+				var yielding := mover.yield_to != ""
+				if yielding and not bool(was_yielding.get(key, false)):
+					yield_from_post[key] = bool(on_post.get(key, false))
+				was_yielding[key] = yielding
+				if bool(deployed.get(key, false)) and t.deploy_ratio < 1.0:
+					counts["repacks"] += 1
+					if yielding:
+						counts["repacks_yield"] += 1
+						if bool(yield_from_post.get(key, false)):
+							counts["repacks_while_firing"] += 1
+				deployed[key] = t.deploy_ratio >= 1.0
+				on_post[key] = not yielding and mover.on_fire_post()
 			if mover == null or not mover.is_under_way():
 				continue
 			counts["under_way"] += 1
@@ -139,7 +165,9 @@ func _run() -> void:
 			"contacts_friend": counts["contacts"], "contacts_friend_fast": counts["fast"], "kturns": counts["kturns"],
 			"kturns_friend": counts["kturns_friend"],
 			"ended_s": snappedf(ended / float(SimClock.TICK_RATE), 0.1) if ended >= 0 else -1.0,
-			"traffic_off": _flag("traffic-off", "")}
+			"traffic_off": _flag("traffic-off", ""), "repacks": counts["repacks"], "repacks_yield": counts["repacks_yield"],
+			"repacks_while_firing": counts["repacks_while_firing"], "setup_refusals": Movement.setup_refusals,
+			"art_shots": art_shots[0]}
 	print("TRAFFIC_CENSUS " + JSON.stringify(report))
 	lab.dispose()
 	case.teardown()

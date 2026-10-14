@@ -312,6 +312,7 @@ static func reset_route_arms() -> void:
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
+	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
 	yield_swaps_shorter = 0
@@ -349,6 +350,8 @@ static var yields_started := 0
 ## Measurement only: ticks the guard found neither the chosen point nor the next corner drivable (_guard_steer).
 static var guard_rescues := 0
 static var asks_refused := 0
+## Round 30 (traffic T1c-b), measurement only: asks refused because the hull was on its fire post.
+static var setup_refusals := 0
 
 ## X6 (N6): station-keeping. A move_to whose goal is itself moving (a formation slot riding its anchor, a follow's
 ## station) and is within STATION_RANGE is regulated by a PID on the along-track gap, on top of the goal's own speed
@@ -1636,12 +1639,27 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	return true
 
 
+## Round 30 (traffic T1c-b): set up to fire (legs down, any part of the way), still ordered to fire (anything but hold
+## fire), and no move of its own under way (its order is not a move, or the move has arrived).
+func on_fire_post() -> bool:
+	return ctl.tank.deploy_ratio > 0.0 and String(ctl.weapon_order.get("type", "")) != "hold_fire" \
+			and (String(ctl.move_order.get("type", "")) != "move_to" or not is_under_way())
+
+
 ## Another unit asks this one to give way: `asker` wants to go along `direction` from `from`. True when this unit
 ## found a validated spot and is giving way; false when it can't (it is already giving way, it just gave way to the
 ## same asker, or there is no room) — and then the asker gives way itself.
 func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bool:
 	native_stale |= STALE_ALL
 	if yield_to != "" or asker == _last_yielded_to:
+		return false
+	# Round 30 (traffic T1c-b, brains' request): a hull SET UP and still on its fire order, with no move of its own, does
+	# not give way: moving packs it up, and a battery that packs up for every squadmate passing never fires (brains'
+	# trace: a mortar truck gave way three times in 7 s and packed up). The asker treats it as parked and goes round
+	# (_negotiate's CP1a2 rule; ORCA). A set-up hull with a NEW move is leaving anyway, so it is asked as before
+	# (round 29's T1c refused every set-up hull and was judged on give-ways it started itself). `--traffic-off=setup`.
+	if on_fire_post() and not Traffic.off("setup"):
+		setup_refusals += 1
 		return false
 	if _begin_yield(asker, from, direction, via):
 		return true
