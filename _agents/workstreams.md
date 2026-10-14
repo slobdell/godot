@@ -115,6 +115,24 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   a one-line `game/` change misses; `CACHE=off` still writes rows, so a proof needs an empty `SERIES_CACHE_DIR`) → goes
   into `verification.md`; adoption by other series after traffic's merge (C30.7). `make quick` measured 1272 s cold /
   1081 s warm (lint 712 s of it): a narrowed quick-lint granted inside traffic's tooling, check's full lint unchanged.
+- **Traffic T3b bar (pre-registered 2026-10-14 ~12:40 PDT, before any judged number; DECLARED; the LAST attempt; no
+  partial; CP-N rows cited):** candidate stream/traffic `7a0701f3` (round 29's v2 + option (b), CRAWL_REACH_M = 20 m).
+  Judged: builder0, both arms one commit, GDScript path, fresh seeds {31,32,33} × {1,3,6,8,11,16}, n = 18 a case, four
+  cases, 90 s; base = no flag (turns DEFAULT_OFF = main), arm `--traffic-on=turns`; read by `tests/traffic/turns_verdict.py`
+  updated before the run; tuned on 1–3 only. (1) between-squad fast pooled over the two crossing cases down ≥ 25 % (row
+  56: n 16 decides −25 %; pooled n 36); neither crossing case up beyond base + 1.645 se (rows 38 +19.1, 44 +12.6);
+  (2) THE CROSSING CLOCK per crossing case: mean paired difference in `cross_clear_s` (never = run end) ≤ 0.10 × base
+  median + 1.645 se, the se the judged run's own paired sd/√18 quoted (tuning: ≈ +2.9 s Terminus, +1.8 s yard);
+  `cross_b_s` / `cross_a_s` reported with se; (3) crews in every case ≥ base − 1.645 se (rows 35/41/47/53: −4, −4, −6,
+  −1); (4) no wedge, the worst run's trace first; (5) same-squad fast per crossing case ≤ base + 1.645 se (rows 40/46);
+  (6) head-on cases within 1.645 se of base on fast, between-squad fast, all-in (rows 32/36, 50/54); (7) all-in median per
+  crossing case REPORTED with se (rows 42/48). Also: CPU mirror on Terminus crossing no worse on (1)(3)(4); bridge-pooled
+  18/18 with turns on; `test_traffic_turns_live` fires, counters reported; cost ≤ 0.5 ms at Sumps 25 a side or NOT
+  READABLE. Merge: default-OFF on its own check, the pair flips it on (native third). **Orchestrator's additions (before
+  numbers):** (a) if the judged run's paired sd on line 2 exceeds the tuning sd by more than 1.5× (sizing's T1b caveat),
+  say so beside the line and the guard still uses the judged se; (b) per run, the crews beyond 20 m that drove at full
+  share (the rule's own counter) reported per arm; (c) after native's port: Terminus crossing + bridge-pooled once on the
+  DEFAULT path at the pair; (d) the thirteen explained if they move.
 - **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
   on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
   (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
