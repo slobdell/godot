@@ -236,6 +236,20 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   ignored), so a runner that hard-codes one and appends another silently loses the second — this round's tuning
   hull-rest BASE arm ran with `unstickback` effectively ON (the Terminus arms were right); round 29's M1 base arm passed a
   single flag and was right. Rule: a base arm's switch list is ONE flag, printed by the run (lesson 300's family).
+- **Manoeuvre M4b JUDGED (first run) — NOT PASSED (2026-10-14 ~14:50 PDT; Terminus 13 fresh seeds 23–35, GDScript,
+  `e8bfef2e`/`1b3e2e56`, builder0):** (b1) arrivals rigs 185 → 181 of 208 (−4; se of the total 3.72: down 1.1 se —
+  "not down beyond 1 se" NOT met, "beyond 2 se" not reached: undecided at 13 seeds); mixed 282 → 288 (+6, se 3.49).
+  **REPORTED, and decisive: rigs' wall contact-ticks 7456 → 17970 (+141 %, +3.1 se paired; two worst dropped 4601 →
+  11966)**, by driver "route" 6067 → 15591 (forward-gear contacts ×2.7), "unstick" 0 → 717; mixed 1403 → 1642 (+17 %,
+  1.7 se) with leg time −14 %. Counters: rigs stall fires 187 (base 0), 185 ended by the backoff, 2 by the cap; press
+  escapes 128 v 29. Brush speed +0.39 m/s (se 0.30) but touching crew-seconds 361 → 706. Reading: the pins are freed and
+  the rigs then grind Terminus' walls twice as much — round 29's (A) regression in a new form; the three tuning seeds
+  (1849 → 1370) pointed the other way, the +127 % MDE the table warned about. **Ruling:** the gate is not passed; nothing
+  ships from this run. The filed bar allows ONE second run on fresh seeds (the last): its bar = the filed lines PLUS rigs'
+  wall contact-ticks ≤ base + 1.645 se paired as a JUDGED line (a +141 % cannot pass as "reported" twice), trace first
+  (seed 31: 566 → 3218 contact-ticks, 15 → 13 arrived), then either a narrow fix DECLARED as the last attempt or M4b
+  parked with the finding. **M1b's and M2b's chains HOLD** until M4b's second attempt is judged or parked (if parked,
+  both re-base on main and M1b runs first). M4b's own chain (bridge, fights, hull-rest) runs on for the record.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` = M4b `e8bfef2e` + the anchor alone (`OrderController.
