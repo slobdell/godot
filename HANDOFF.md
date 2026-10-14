@@ -55,12 +55,16 @@ wall gain — the floor is now `test_native_traffic_hold` 486 s). **Traffic DONE
   byte-identical; else parked for round 31. **Traced: the near rule changes two scouts' OPENING moves at t = 0.1 s on a
   knife-edge pursuit test (seed 3); no honest scoping → PARKED** (`lab/brains-r30-gate` f1a804eb; round-31 lead: measure
   the pursuit test's own margin over seeds, then re-judge). Brains → B7 (test split), B3b (the bridge).
-- **Manoeuvre M4b PASSES EVERY FILED LINE (16:39): ships as the pair on native's check** (honest stall reading + sized
-  escapes for hulls ≤ 10 m; War Rigs bit-for-bit as today; hull-rest pinned crew-seconds 2596 → 658, −75 %, n = 144;
-  fights within 2 se; bridge 18/18). The second and last attempt `77a1603f` PASSED its Terminus gate on 13 fresh seeds (rigs byte-identical; mixed arrivals −2,
-  contact-ticks −8 %); bridge / fights / hull-rest running (~2 h); native porting it now. First attempt failed (rigs'
-  wall contact-ticks +141 %: "the driving after the escapes", the planner's case). M1b (`face_slot`, `37c47851`) and M2b
-  (creep lift + the planner's arc rule, `e94ca27e`) bars filed, chains HELD behind M4b. M5 parked (case 1 closed by v4;
+- **Manoeuvre M4b: the ESCAPES are PARKED for round 31 (~17:05); a READER-ONLY commit ships.** Run 2 (`77a1603f`) passed
+  every filed line (hull-rest pinned crew-seconds −75 % at n = 144; fights within 2 se; War Rigs byte-identical), but the
+  PAIR CHECK found two regressions on stages the series never covered: a wheeled 8×8's 0.9 s reverse-on-lock in single
+  file on the Sumps causeway leaves it 21.5 m from its slot for good (`test_tactics_mixed_legs`), and a tank driven at a
+  wall now backs off (`test_nav_wall_contact` encodes never-backs-off). Both reproduce on the GDScript path; the escape
+  is the cause. Shipping: `lab/manoeuvre-m4b-reader` = `Tank.real_velocity` + the census's `real` column + the pinned
+  probe's honest class, as a native pair, sim-baseline UNMOVED (bar in `workstreams.md`). Round 31 = ONE A/B of the honest
+  reading's consumers: the escapes (ask first, a straight reverse by the outline sweep), the two aim leads, traffic's T4
+  (ORCA's ghost), the rig-against-a-friend stall, brains' re-seat reading. M1b (`face_slot`) and M2b (creep lift + the
+  planner's arc rule) re-base onto the reader commit; chains GO, M1b first. M5 parked (case 1 closed by B5c-v4's rule;
   case 2 = the planner's F4).
 - **Traffic**: T3b NOT SHIPPED (yard crossing clock +2.80 v +1.18 s; bumps −45 %); T1c-b NOT SHIPPED (the defect 11 → 0
   repacks, but artillery shots failed on one diverged run; row 82 under-sized). Both are his round-31 calls in player
