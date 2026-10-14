@@ -189,6 +189,12 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   additions:** (b2) down by > 2 se paired; (b1) also with each arm's two worst runs dropped; after native's port the Terminus
   drive + bridge-pooled on the default path at the pair, the thirteen re-recorded twice in the pair commit; a tracked row.
 
+- **Brains B2 JUDGED — PASSES every line (~19:20; `fa099d5b` = main c0ac69e0 + B2, seeds 10–12, n = 18):** (a) on side
+  14/18 v 0/18 (32.8° v 79.7°), kills 8 v 4, alive 1.78 v 1.11, side/rear 0.88 v 0.82, latch 0/18; (c) kills 18 v 18, alive
+  5.00 v 4.78, latch 18/18 at 3.1 s, on side 0 v 0 (reported); (b) both arms wiped. Clicked 54 rows identical to main; B1's
+  battery rows identical; bridge-pooled 18/18; arrive series 100 rows identical. Worst run (a) seed 12 t16: came round,
+  fought from the side inside the IFV's reach and lost all five (his "swing round anyway"). Merge on its check.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
