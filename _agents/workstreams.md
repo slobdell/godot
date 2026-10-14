@@ -346,6 +346,23 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   byte-identical (Terminus, hull-rest, fights); a fix that moves judged rows = M4b PARKED for round 31; (2) may be a test
   expectation encoding the old behaviour if the ticks are correctly classified (the edit granted in brains' test file if
   so). M1b/M2b chains PAUSED after their test re-runs until this is ruled.
+- **M4b's ESCAPES PARKED for round 31; a READER-ONLY commit ships (ruled 2026-10-14 ~17:05 PDT).** Both failures reproduce
+  on 77a1603f's GDScript path (trace log under references/round30/manoeuvre/): (2) 48 contact ticks = 32 steer + 16 plant
+  (driver unstick, reverse: the 9.7 m tracked tank backs off once the honest reading fires the stall rule) — the
+  classification is correct, the test encodes never-backs-off on a raw `drive`; (1) three of four law_tanks (7.3 m wheeled
+  8×8) seat by 45 s; Green_M_3 takes ONE stall escape at 48 s (a 0.9 s reverse on full lock, nothing to shed) and from 57 s
+  sits 21.5 m from its slot at ORCA's pace (cmd 0.07/−0.03, plant 0.86, real 0.00, touching nothing, behind a seated
+  squadmate, reseats 0: the re-seat's "slow" test reads estimated_velocity 0.86 as driving, and at 0.07 throttle no rule
+  reads it as stuck) — a real regression on a stage the series did not cover, the escape itself the cause; no fix in
+  manoeuvre's paths leaves the judged rows byte-identical. **Ruling:** the escapes park (`lab/manoeuvre-m4b2` 77a1603f,
+  both judged tables, the design note: ask first, a straight reverse by the outline sweep, blocked by name; the re-seat
+  reading `real_velocity` is brains' line — round 31 with T4 and the rig rule as ONE A/B of the honest reading's
+  consumers). **Ships: `lab/manoeuvre-m4b-reader`** = `Tank.real_velocity` (C30.6) + the census's `real` column + the
+  pinned probe's honest class; NOT the two aim leads (a fights change measured only together with the escapes: round 31).
+  Its bar (no series): sim-baseline UNMOVED (nobody in play reads the member), the wedge tests' reader lines (0.00 v the
+  plant's 12.00), `test_nav_wall_contact` + `test_tactics_mixed_legs` green, native's pair equal (the tank.gd line in
+  `tank_drive_native` only), the pair's check green. M1b/M2b re-base onto the reader commit; chains GO when their tests
+  are green, M1b first.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` (re-based onto M4b2 `77a1603f` as `b14bee65`, no code change) = M4b + the anchor alone (`OrderController.
