@@ -103,3 +103,114 @@ Nothing.
 ## Status
 
 _(the worker keeps this current; CP-N announced the moment the table is written; the report at the top)_
+
+### REPORT (sizing, round 30; 2026-10-14) — read this first
+
+**Done: every backlog item and the stretch.** No game code touched; nothing in play. Four paths: `tools/judge/**` (10
+scripts, 64 python tests), `tests/test_judge_tools.gd` (+ `.uid`; runs the python suite inside `make test`),
+`_agents/judging.md` (the method doc: the table, count lines, A/A, the lines, early stop, how to write a bar, the cost
+side), `_agents/streams/references/round30/sizing/` (`inventory.csv|md`, `table.csv`).
+
+| item | where | the number |
+|---|---|---|
+| S1 inventory | `inventory.py` → `references/round30/sizing/inventory.md` | 129 judged lines of rounds 27–29; **42 of 122 judged pass lines inside their probe's noise**; 38 verdicts within 1.645 se of their line |
+| S2 CP-N | `probes.py`, `table.py` → `judging.md` *The table* | 55 probe × metric rows, 48 sized; relayed by the orchestrator 2026-10-14; one row re-derived by hand on both sides (Terminus head-on xfast: sd 16.7, n 57 for −25 %, MDE 44 % at 18) |
+| S3 lines | `size.py`; `judging.md` *The lines* | the variance-aware form per line kind; M1's guard would pass (+8 v +17), T3's two noise-fails flip but its wedge stands, B5c's yard count decides at n = 9 |
+| S4 early stop | `sequential.py`; `judging.md` *Early stop* | round 29's series with rows: **113 of 174 runs per arm (−35 %), every verdict the same**; gain lines' false-pass 3–11 % (median 6 %); the one stop rule |
+| S5 method + tool | `judging.md` *How to write a bar*; `aa.py`; the GDScript wrapper | 8 steps incl. the round-close re-render; the two 11 % lines at α 2.5 % cost n × 1.27 |
+| stretch cost | `judging.md` *The cost side* | round 29: 913 → 698 runs (−24 %, ≈ 8 box-hours of ~32); M1 and M4 were under-lined, not over-run |
+
+**GREEN HASH: `e8c82e1a`** (2026-10-14, builder0: `>> remote: make check exited 0 (build/ copied back)`, `2585 passed, 0
+failed`, `26 targets, all passed, ALL JUDGED`; the wrapper's line `MEASURE judge_tools: 64 python tests, exit 0` is in the
+test shard log, so the python suite ran on builder0 under `make test`). **This commit is green, merge here: `e8c82e1a`.**
+Every commit after it is Status-only. (The log carries a `WEB_PACK FAILED: factions (5 of 999 bytes)` line inside a target
+that passed; not this stream's, noted for the orchestrator.)
+
+**Decisions (one line each):** noise = per-run PAIRED sd pooled over the judged pairs where the treatment acted in ≥ ⅓ of a
+case's runs (an untouched pair is byte-identical: an equality check, not a sample). Defaults α 5 % one-sided, power 80 %;
+guards at k = 1.645 (k = 2 ≈ 2.3 %). stdlib Python only. Truncated SPRT (not group-sequential): it prints a verdict per row,
+which is what a runner can show; truncation decides by the fixed test at α. The untouched-case stop needs the arm's own
+counter (lesson 300) at 0 AND identical rows for one seed. The tests enter `check` via `make test` (the orchestrator's ruling).
+
+**Requests to other streams (through the orchestrator):**
+- traffic / brains / manoeuvre: the runner hook, one line after each row: `python3 tools/judge/sequential.py --base … --arm …
+  --case … --lines <the bar's> --counter <the rule's counter> --quiet | tail -1` (judging.md *Early stop*, "what the
+  runners should print"). Adoption after my check is green, per the orchestrator's ruling; no edit of theirs by me.
+- manoeuvre: keep per-run rows for creep episodes and Terminus contact-ticks (the census prints totals: the paired form
+  cannot be applied, so the inventory reads them as Poisson floors); drop or widen the 75 s settle line (censored); say
+  "+2 se" on the moving-at-judge guard (M1_CLASS prints the se) and use the permutation p on clicked medians.
+- brains: write flank count lines as the comparison v clicked; keep the yard COUNT as the deciding line; alive guard as
+  "≥ clicked − 2 se"; keep the yard / Sumps cells' per-run rows under references/ (today only the summaries are kept).
+- orchestrator: at a round's CLOSE add the judged pairs to `tools/judge/probes.py` and re-run `inventory.py` + `table.py`
+  (judging.md step 8); a pointer to judging.md from `verification.md` and from C30.3's text (both outside my paths).
+
+**Questions for the lead:** none. (For the orchestrator: whether the three in-flight bars re-size once before their judged
+runs is C30.3's "may", theirs to take.)
+
+**Known issues:** the table's noise is only as good as its pairs: T1b's wedged run shows a pair's own sd can run 1.5–1.9×
+the pooled sd, lifting a guard's false-fail to 15–23 % until the table is refreshed. Hull-rest medians / shares and the
+yard / Sumps medians have no per-run rows, so their rows in the table read "owed" with the cost of two base runs.
+Episode counts are Poisson floors. The traffic per-run cost (1.75 box-min) is the brief's figure, not re-measured.
+
+**What to playtest:** nothing (no game change). **Merge notes:** no shared files; new paths only; the `.uid` is committed.
+
+### CP-N DELIVERED (2026-10-14; commit `44a8b95a`, this worktree; no builder0 run, pure python; `check` not yet run on it)
+
+**The table is written: `_agents/judging.md` *The table (CP-N)*: 55 probe × metric rows, 48 sized from the rows under
+`references/round27..29/`, plus the count-line block (Fisher / binomial / McNemar readings) and the A/A block (the same
+traffic arm across seed sets, M1's clicked pair, B5c's yard cells).** Reproduce: `python3 tools/judge/table.py` (rewrites
+the doc's generated blocks and `references/round30/sizing/table.csv`); `python3 tools/judge/inventory.py` (S1).
+Re-derive one row by hand: Terminus head-on `xfast`, per-run paired differences of `contacts_cross_fast` over the acted
+pairs (CP-T, CP-T CPU, T1 v3, T1b, T1 v4 tuning) → pooled sd 16.7 a run, base 22.1 a run; the bar's −25 % = 5.5 a run;
+n = ((1.645 + 0.842) × 16.7 / 5.5)² = 57; MDE at n = 18 = 2.487 × 16.7 / √18 = 9.8 a run = 44 % of base.
+
+**What the three game streams should take from it (C30.3):**
+- traffic: a "between-squad fast down ≥ 25 %" line at n = 18 has 80 % power only for a ~45 % drop; name −50 % or run
+  n ≈ 57 (3 seeds × 6 ticks → ~10 seeds; icc ≈ 0, so ticks are as good as seeds). Every "crews ≥ base − 2" line is inside
+  the noise (se of the sum 2.5–4 crews over 18 runs): write "crews ≥ base − 1.645 se" (base − 4 crossings, − 7 head-on) and
+  quote the se. "all-in median ≤ +20 %" is sound at n = 18 on head-on (se 5.8 s on 59 s) and marginal on crossings
+  (se 7–10 s: a null fails it ~8 %); its MDE is +25–40 %.
+- manoeuvre: the +5 crews-still-moving guard needs ~400 runs with the class; at n = 27 say "≤ base + 2 se" with the
+  M1_CLASS se (≈ +12 wheeled turret, +15 all classes). Clicked medians: the A/A swing is −17.8..+6.3° on wheeled turrets,
+  so "±5°" cannot be judged; use the permutation p the table prints with a 1-in-20 allowance over 24 rows. Settle at the
+  75 s window is censored (both arms at 75.0): drop or widen the window. Terminus wall contact-ticks cannot carry a
+  ±10 % line (MDE +127 % at n = 6); arrivals can (MDE −15 % at 6 seeds, −10 % at 13); the pinned probe's crew-seconds
+  decide a −50 % at n ≈ 90 (not 144). Fights guard: "within 2 se" at 24 fights detects a 5 % kill loss; a 2 % loss needs ~170.
+- brains: a flank count line as a COMPARISON (v clicked, Fisher one-sided) decides 18/18 v 0/18 at n = 3 a side and
+  14/18 v 0/18 at n = 6; the "≥ 12/18" threshold form separates a 50 % rule from an 80 % one only. The alive guard
+  "≥ clicked − 0.5" is inside the noise at n = 18 (se 0.55); state it as "≥ clicked − 2 se". B5c's yard count (12/12 v
+  5/12) decides at n = 9 a side; the median line (≤ off − 5 s) sits at the cell's own ±9 s swing, so keep the count as
+  the deciding line. Arrive series: McNemar over discordant cells; an 11 % one-way gain needs ~70 cells (100 is fine).
+  Census (12 seeds): "−50 %" on contacts under MOVE needs 26 seeds for 80 % power (B3's −75 % passed at the MDE).
+
+**S1 done:** `references/round30/sizing/inventory.md` + `.csv`: 129 lines of rounds 27–29, 77 with a noise estimate;
+**42 of 122 judged pass lines were inside their probe's noise** (x < 1.645 se), 38 verdicts cleared their line by
+less than 1.645 se. M1's six +5 guards: all inside (the two fails missed by 0.3 se); T3's all-in fail by 0.18 se; T1b's
+three fails by 0.17–0.47 se; every "crews ≥ base − 2" line inside.
+
+### Plan (2026-10-14; start = main `bd05077d`, covered by the launch check `0d35f215` + docs-only commits)
+
+Session `godot-sizing-72`, Fable 5.1. Order, smallest foundation first (each a commit; no builder0 run but `check`):
+1. **S0 the stats core** `tools/judge/stats.py` (stdlib only: paired se, bootstrap CI of a median difference, binomial /
+   Fisher / McNemar exact tails, n for a paired test, variance components seed v tick) + `rows.py` (readers for every
+   format in `references/`: traffic-series jsonl, ApproachStage jsonl, census logs, the M4 per-run text) + their unittest.
+2. **S1 inventory** `inventory.py` → `references/round30/sizing/inventory.csv` + `.md` (judged lines of rounds 27–29;
+   noise computed from rows where rows exist, else the table's own se; lines inside the noise marked).
+3. **S2 CP-N** `table.py` → `judging.md` *The table* (one row per probe × metric: σ per run, n_today, the bar's effect,
+   n_needed at 80 % / 5 %, the se to quote; "no A/A" rows say what two base runs cost). **Announce to godot-67.**
+4. **S3** the rules per line form + worked examples (M1 guard, T3 all-in, B5c yard) with `size.py` reproducing each.
+5. **S4** `sequential.py` (truncated SPRT per line in runner order) + its simulation on the rows; the stop rule.
+6. **S5** `judging.md` method; `aa.py`; the GDScript wrapper `tests/test_judge_tools.gd` so the python suite runs in
+   `make test` (hence `check`) without touching `mk/core.mk`; the `judge-test` target proposed to the orchestrator.
+7. Stretch: the cost table (runs × minutes, round 29 as run v as sized).
+
+**Decisions so far (reasons one line each):**
+- Noise is estimated from PAIRED per-run differences (the design every bar uses), pooled over every judged pair of the
+  same probe; a pair where the rule never fired contributes zeros and is excluded from σ (it is an equality check, not
+  a sample: CP-T's three untouched cases, T1b's three, differ by 0.00 in every metric).
+- Default error rates: false-pass 5 % one-sided (a guard and a "down ≥ X %" line are both one-directional), power 80 %
+  at the effect the bar names; "within 2 se" is read as a one-sided guard at k = 2 (≈ 2.3 %).
+- The stats are stdlib Python: builder0's system python has no promise of numpy (mk/audio.mk needs a venv for it).
+- The tests enter `check` through `make test` (a `tests/test_judge_tools.gd` that runs the python suite) because
+  `mk/core.mk` is nobody's this round; the orchestrator may instead add `judge-test` to CHECK_TARGETS (diff in Status).
+
