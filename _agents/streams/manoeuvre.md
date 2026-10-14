@@ -204,3 +204,4 @@ M4 judged (builder0, GDScript tank, base `--tank-off=real_velocity`):
 - **M4 JUDGED: NOT MET -> nothing ships (the last attempt; ruled by godot-67).** See the final report and
   `references/round29/manoeuvre/m4_judged.txt`. Reading, not proven: the honest reading frees hulls pinned in the
   open, but in Terminus's tight rigs every brush on a wall zeroes the wheels' `_speed`, so rigs grind along walls rather than sliding off.
+- **Final check: `make remote T=check` on `eb754864` (builder0): `>> remote: make check exited 0`, 2538 passed, 0 failed, 26 targets.** This commit only adds this line. Extra worktrees (`godot-manoeuvre-trace`, `-dev`) and their builder0 folders are removed.
