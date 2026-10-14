@@ -1,0 +1,44 @@
+Round 29 manoeuvre M4 judged: candidate 9db2a57c (tree 4383e801, real_velocity), builder0, GDScript tank (--brains-off=native).
+base = --tank-off=real_velocity. Last attempt. Verdict: NOT MET (b1 Terminus, b3 bridge).
+
+(b1) Terminus seeds 14-19
+M2_DRIVE base terminus mixed: arrived 137/144, leg time 622 s, wall contact-ticks 720
+M2_DRIVE base terminus rigs: arrived 81/96, leg time 453 s, wall contact-ticks 5337
+M2_DRIVE new terminus mixed: arrived 132/144, leg time 695 s, wall contact-ticks 3486
+M2_DRIVE new terminus rigs: arrived 64/96, leg time 849 s, wall contact-ticks 8542
+per run (arrived, wall contact-ticks):
+  terminus-mixed-14.log base 22/24 84 | new 22/24 260
+  terminus-mixed-15.log base 23/24 34 | new 22/24 161
+  terminus-mixed-16.log base 24/24 140 | new 24/24 474
+  terminus-mixed-17.log base 23/24 207 | new 20/24 2178
+  terminus-mixed-18.log base 22/24 137 | new 23/24 43
+  terminus-mixed-19.log base 23/24 118 | new 21/24 370
+  terminus-rigs-14.log base 13/16 331 | new 12/16 1171
+  terminus-rigs-15.log base 15/16 211 | new 12/16 908
+  terminus-rigs-16.log base 13/16 2345 | new 11/16 646
+  terminus-rigs-17.log base 13/16 1948 | new 7/16 3187
+  terminus-rigs-18.log base 13/16 440 | new 12/16 1473
+  terminus-rigs-19.log base 14/16 62 | new 10/16 1157
+rigs contact-ticks with each arm's two worst runs dropped: base 1044, new 3882 (up)
+
+(b2) hull-rest seeds 34-39 (pinned: move_to, |throttle|>0.3, goal distance change <0.05 m for >=10 s)
+PINNED runs paired 144 (base 144, new 144)
+PINNED all crew-seconds: base 2902 new 1040 diff -1862 se 459.6 DOWN beyond 2 se
+PINNED scouts crew-seconds: base 596 new 243 diff -353 se 236.5 within 2 se
+PINNED crews crew-seconds: base 69 new 33 diff -36 se 10.9 DOWN beyond 2 se
+(crews row = count of pinned crews, not seconds)
+
+(b3) bridge-pooled
+base: BRIDGE_POOLED 18 of 18 runs pass
+new: BRIDGE_POOLED 17 of 18 runs pass; failing: rust tick 15 seed 2: crossed 3 of 4 (0 excused dead); rim_crews 1
+
+(1) fights guard FIGHT_SEEDS 109-132, 180 s
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 1001 new 984 diff -17 se 21.5 within 2 se
+FIGHT_GUARD deaths: base 1010 new 988 diff -22 se 22.2 within 2 se
+FIGHT_GUARD shots: base 27674 new 22807 diff -4867 se 2467.7 within 2 se
+FIGHT_GUARD hits: base 19749 new 16170 diff -3579 se 1773.6 OUTSIDE 2 se
+FIGHT_GUARD touch_shots: base 1633 new 1233 diff -400 se 169.7 OUTSIDE 2 se
+FIGHT_GUARD touch_hits: base 1009 new 696 diff -313 se 153.0 OUTSIDE 2 se
+FIGHT_GUARD hit rate: base 0.717 new 0.714 paired mean diff -0.003 se 0.012 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.654 new 0.630 paired mean diff -0.023 se 0.045 within 2 se (n 24)
