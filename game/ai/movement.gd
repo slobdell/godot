@@ -81,12 +81,6 @@ const STUCK_SECONDS := 1.0
 const UNSTICK_SECONDS := 0.9
 ## ...but only with this much room (beyond both hulls' radii) behind it: the unstick routine never rams a friend.
 const UNSTICK_CLEARANCE := 2.0
-## Round 30 (manoeuvre M4b): the stall escape ends once the hull has REALLY backed this far off where it stuck (the
-## real displacement, not the plant's reading), and its time cap is UNSTICK_SECONDS plus the seconds the plant needs
-## to brake the momentum it still carries against the escape gear: a pinned wheeled hull's `_speed` is the phantom
-## velocity the blocked slide handed back (12 m/s on a gang truck, braking 8 m/s², so 1.5 s before it moves at all),
-## and round 29's fixed 0.9 s reverse never moved one. `--nav-off=unstickback` = the fixed 0.9 s.
-const UNSTICK_BACKOFF_M := 1.5
 ## No progress (0.5 m closer along the route than its best) for this long and the unit reports `blocked` (N1).
 const BLOCKED_SECONDS := 2.0
 ## A hull whose centre is within this of mine (flat metres), ahead of me, is what I'm blocked by.
@@ -197,7 +191,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -274,14 +268,14 @@ static var route_not_ready := 0
 
 
 static func route_arms() -> Dictionary:
-	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes, "press_backed": press_backed, "press_capped": press_capped,
+	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
-			"unstick_fires": unstick_fires, "unstick_backed": unstick_backed, "unstick_capped": unstick_capped, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
+			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
@@ -328,8 +322,6 @@ static func reset_route_arms() -> void:
 	kturn_multi_legs = 0
 	kturn_ticks = 0
 	unstick_fires = 0
-	unstick_backed = 0
-	unstick_capped = 0
 	circle_reverses = 0
 	circle_reverse_ticks = 0
 	goal_repairs = 0
@@ -337,8 +329,6 @@ static func reset_route_arms() -> void:
 	corners_inflated = 0
 	corners_kept = 0
 	press_escapes = 0
-	press_backed = 0
-	press_capped = 0
 	nose_stops = 0
 	driver_ticks = {}
 	yield_spots_refused = 0
@@ -3063,24 +3053,13 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			# clear, until it has put PRESS_BACKOFF_M between itself and where it was pinned. See `_pressing_escape`.
 			cmd.throttle = _escape_gear * PRESS_ESCAPE_THROTTLE
 			cmd.turn = _escape_turn
-			if _flat_distance(ctl.tank.global_position, _press_from) >= PRESS_BACKOFF_M:
-				press_backed += 1  # round 30 (M4b): the escape ended by the real backoff (arm counter, reported)
-				_escape_gear = 0.0
-				_unstick_left = 0.0
-			elif _unstick_left <= 0.0:
-				press_capped += 1  # ...or by its time cap before the backoff: an escape that mostly caps is a finding
+			if _unstick_left <= 0.0 or _flat_distance(ctl.tank.global_position, _press_from) >= PRESS_BACKOFF_M:
 				_escape_gear = 0.0
 				_unstick_left = 0.0
 			return
 		if _unstick_pivot:
 			cmd.throttle = 0.0  # no room behind: tracks swing the nose off whatever it is pressed against instead
 		else:
-			if unstick_back_on() and _blind_escape_ok() and _flat_distance(ctl.tank.global_position, _unstick_from) >= UNSTICK_BACKOFF_M:
-				_unstick_left = 0.0  # round 30 (M4b): really backed off; the route's command stands this tick
-				unstick_backed += 1
-				return
-			if unstick_back_on() and _blind_escape_ok() and _unstick_left <= 0.0:
-				unstick_capped += 1  # the cap ended it before the backoff: reported (an escape that mostly caps is a finding)
 			cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
 		cmd.turn = 1.0
 		return
@@ -3088,14 +3067,7 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# of a duel mid-fight cost `scenario_motion`'s moving duel a shot (5 vs its bar of 6) on 2a2b77c1.
 	if String(order.get("type", "")) == "move_to" and not bool(order.get("direct", false)) and _pressing_escape(cmd, delta):
 		return
-	# Round 30 (M4b, C30.6): progress is the motion the hull really made (`Tank.real_velocity`), not the velocity the
-	# blocked slide handed back: a pinned truck read 12 m/s here and never fired (round 29, terminus rigs seed 9).
-	# M4b's second attempt: for a hull that can back out of a street in one blind reverse (UNSTICK_BLIND_MAX_LEN_M);
-	# the War Rig keeps round 29's reading and escape, bit for bit: the first judged run (13 Terminus seeds) freed its
-	# pins and then left it at an angle to the street wall where the plant's phantom momentum ground it (wall
-	# contact-ticks +141 %); a 14 m hull's way out of a 20 m street is a planned turn (the planner, round 31).
-	var reading := ctl.tank.real_velocity if _blind_escape_ok() else ctl.tank.estimated_velocity
-	if absf(cmd.throttle) > 0.5 and reading.length() < STUCK_SPEED:
+	if absf(cmd.throttle) > 0.5 and ctl.tank.estimated_velocity.length() < STUCK_SPEED:
 		_stuck_time += delta
 		if _stuck_time >= STUCK_SECONDS:
 			_stuck_time = 0.0
@@ -3107,9 +3079,6 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 					UNSTICK_CLEARANCE)
 			if not _unstick_pivot or wheel_radius() <= 0.0:
 				_unstick_left = UNSTICK_SECONDS
-				if unstick_back_on() and not _unstick_pivot and _blind_escape_ok():
-					_unstick_from = ctl.tank.global_position
-					_unstick_left += _momentum_to_shed(backing)
 				unstick_fires += 1
 			else:
 				# A car can't pivot: with a friend right behind it, ask that friend to make room, and back off next time.
@@ -3127,35 +3096,6 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 ## default ON (`--nav-off=notready` restores the old wait) and is the one pre-registered baseline cause.
 static func press_on() -> bool:
 	return not switched_off("press")
-
-
-static func unstick_back_on() -> bool:
-	return not switched_off("unstickback")
-
-
-## Round 30 (M4b, the second attempt): the honest stall reading and the momentum-sized escapes are for hulls that can
-## back out of a street in one blind reverse; a longer hull keeps round 29's rule (see `_unstick`).
-const UNSTICK_BLIND_MAX_LEN_M := 10.0
-
-
-func _blind_escape_ok() -> bool:
-	return float(hull_box(ctl.tank.unit_id)[2]) <= UNSTICK_BLIND_MAX_LEN_M
-
-
-## Round 30 (M4b): where the stall escape started (its UNSTICK_BACKOFF_M is measured from here).
-var _unstick_from := Vector3.ZERO
-## Round 30 (M4b): how the stall escapes ended: by the real backoff, or by the time cap (arm counters, reported).
-static var unstick_backed := 0
-static var unstick_capped := 0
-
-
-## Round 30 (M4b): the seconds the plant needs to brake the speed it reports AGAINST `gear` (+1 forward, -1 reverse)
-## before the hull can move that way at all. A free hull reports what it does and this is ~0; a pinned wheeled hull
-## reports the phantom velocity the blocked slide handed back (design B keeps it in the plant, C30.6), and an escape
-## shorter than this is a no-op: the hull brakes, the velocity asked stays forward and blocked, nothing moves.
-func _momentum_to_shed(gear: float) -> float:
-	var tank := ctl.tank
-	return maxf(0.0, -gear * tank.speed()) / maxf(tank.braking, 0.1)
 
 
 static func inflate_on() -> bool:
@@ -3189,9 +3129,6 @@ const PRESS_ESCAPE_MAX_S := 2.0
 ## covers metres in that time).
 const PRESS_PROGRESS_M := 0.75
 static var press_escapes := 0
-## Round 30 (M4b): how the pressed-wall escapes ended: by the real PRESS_BACKOFF_M, or by the time cap (reported).
-static var press_backed := 0
-static var press_capped := 0
 var _press_time := 0.0
 var _press_from := Vector3.ZERO
 var _escape_gear := 0.0
@@ -3232,7 +3169,7 @@ func _pressing_escape(cmd: TankCommand, delta: float) -> bool:
 	_escape_gear = signf(along) if absf(along) > 0.2 else (-1.0 if forward.dot(r) > 0.0 else 1.0)
 	# The yaw that swings the touching point away from the wall (WallContact.swing_of: positive turn = clockwise).
 	_escape_turn = 1.0 if WallContact.swing_of(tank.global_position, contact.point, 1.0).dot(away) > 0.0 else -1.0
-	_unstick_left = PRESS_ESCAPE_MAX_S + (_momentum_to_shed(_escape_gear) if unstick_back_on() and _blind_escape_ok() else 0.0)  # round 30 (M4b)
+	_unstick_left = PRESS_ESCAPE_MAX_S
 	_press_from = tank.global_position
 	_repath_left = 0.0
 	press_escapes += 1
