@@ -288,3 +288,34 @@ func test_an_unshifted_attack_move_after_a_waypoint_applies_now() -> void:
 	assert_true(to is Vector3 and (to as Vector3).distance_to(LEG2) < 1.0, "the attack-move replaces the move at once (%s)"
 			% [element.task if element != null else {}])
 	assert_true(element != null and not element.task.has("facing"), "no automatic facing is added to an unshifted task")
+
+
+## Several squads selected (grant extended): shift+A queues the attack-move behind each squad's own waypoint, as the
+## queued screen does; a player would otherwise find shift+A works for one squad but not for two.
+func test_several_squads_queue_a_shift_attack_move_each_behind_its_own_waypoint() -> void:
+	var f := Fixture.new(self)
+	await f.build()
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	f.place("Rust_Alpha_1", Vector3(0.0, 0.0, -150.0))
+	var bravo := ["Green_Bravo_1", "Green_Bravo_2"]
+	f.controls.groups.save(1, ALPHA.duplicate())
+	f.controls.groups.save(2, bravo.duplicate())
+	await f.select(ALPHA + bravo)
+	assert_true(f.controls.several_squads(), "setup: two squads selected")
+	await f.right_click(f.ground(WAYPOINT))
+	await f.key(KEY_A, true)
+	await f.click(f.ground(LEG2), true)
+	await f.key(KEY_M, true)
+	await f.click(f.ground(POINT), true)
+	for first: String in [ALPHA[0], bravo[0]]:
+		var element := f.controls.elements.of(first)
+		assert_true(element != null, "%s's squad has a leader" % first)
+		if element == null:
+			continue
+		assert_eq(String(element.task.get("verb", "")), "move", "%s's squad still drives its waypoint" % first)
+		assert_eq(element.queued_tasks.size(), 2, "%s: the attack-move, then the move, behind it (%s)" % [first, _tos(element)])
+		if element.queued_tasks.size() == 2:
+			var attack: Dictionary = element.queued_tasks[0]
+			assert_true(bool(attack.get("drills", true)) and String(attack.get("facing_from", "")) == "waypoint",
+					"%s: first the attack-move, facing from its waypoint" % first)
+			assert_true(not bool((element.queued_tasks[1] as Dictionary).get("drills", true)), "%s: then the plain move" % first)
