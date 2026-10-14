@@ -154,20 +154,21 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-13 19:50 PDT, round 29; the pair merged to main `1113062c`):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
-(`native_controller`) OFF by its price. **E6b DONE** on his laptop (`b2712987`): 20 a side no C++ 0.854 -> shipped
-0.936, 25 a side 0.672 -> shipped 0.878. **The CP-T pair is GREEN at `59c1cc09`** (stream/native + traffic `3a94f38d`;
-builder0: `make check exited 0`, 2554 passed / 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism
-`2875411ff4ec6be7`; `native-verify-suite` scenarios 52/0 + `native-live-guard` 21 switches live, `exited 0`): traffic's
-T1 street hold runs in the native drive, equal, and traffic's judged Terminus head-on on the native path is the GDScript
-arm run for run (below). **N7.4 DONE, OFF by its price** (+0.22 % of the tick). The scaffold (`bde8de0a`) is reverted.
-**Waiting / next:** (1) traffic T3 (`Traffic.shape` in `_avoid`, a callback after the hold block) once judged; T1c
-needs no C++ (confirmed); (2) manoeuvre M4 FAILED its bar (manoeuvre `7b6ff321`, `references/round29/manoeuvre/m4_judged.txt`): no port, `tank_drive_native`'s `estimated_velocity` unchanged; M1/M2 as
-they come; the held N5 ports after CP-M2; (2b) brains' B5c PARKED for round 30 (section below; the work on `lab/native-b5c`; its native
-mirror is `approach_gate` in `drive_native.cpp`, ~line 836, called at ~1993) after T3. Agreed with brains 2026-10-13: both judged arms run the GDScript drive (`--nav-off`
-makes `NativeDrive.usable` step aside anyway); after the verdict brains memoises `_roomy_gate` per hull (goal + facing)
-and splits a "latched" refusal from "stalled", then sends the final diff + hash; native mirrors `_gate_dropped_for` (owned
-state + MoverState), the three counters, (i)-(iii), and merges back to back; (3) N7.5 after round 29; stage 2 deferred (his call).
+**Round 29 report (2026-10-14; the round is closing).** On main: stage 1, N6.1b-N6.4, N7.1, N7.2, **N7.6 (ON)**.
+**N7.3a** (`native_controller`) is equal and **OFF by its price**. **N7.4** (`native_wall`, the wall-contact observer) is equal
+(12000 observes, 0 mismatches) and **OFF by its price** (+0.22 % of the tick, builder0). **E6b DONE** on his laptop
+(`b2712987`): 20 a side, no C++ 0.854 -> shipped 0.936; 25 a side, 0.672 -> shipped 0.878. **The CP-T pair is GREEN at
+`59c1cc09`** and on main (`1267ffb1` + `1113062c`). That is stream/native + traffic `3a94f38d`. builder0: `make check
+exited 0`, 2554 passed / 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism `2875411ff4ec6be7`;
+`native-verify-suite` scenarios 52/0 and `native-live-guard` 21 switches live, both exited 0. Traffic's T1 street hold
+runs in the native drive, equal, and traffic's judged Terminus head-on on the native path matches their GDScript arm run for
+run (section below). The hand-back scaffold (`bde8de0a`) is reverted. **B5c (brains' arrival gate) is PARKED for round
+30.** The mirror was equal, but the flip failed `test_wheeled_arrival`, and brains' fix moved their judged cells. The work
+is kept on `lab/native-b5c`; stream/native was reset to before it (section below). **No other pairs this round:** traffic
+T3 and manoeuvre M1, M2 and M4 all failed their bars, so nothing to port. T1c needed no C++.
+**Next (round 30):** N7.5 after the round's split; B5c from `lab/native-b5c` once brains' flip is judged; the held N5 ports
+(`_negotiate`'s body / ask / `_begin_yield`, the k-turn planner, `_manoeuvre`) when manoeuvre's code settles; stage 2
+deferred (his call).
 
 | item | state |
 |---|---|
