@@ -92,6 +92,30 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   B5c-v4 bar stands as filed (its run started before CP-N); every later bar cites the table (C30.3). Sizing's python suite
   enters `check` through a `tests/test_judge_tools.gd` wrapper under `make test` (no `mk/core.mk` edit).
 
+- **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
+  on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
+  (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
+  plant's momentum (`--nav-off=unstickback`: with the plant's `_speed` kept, a pinned rig carries a phantom 12 m/s that
+  takes 1.5 s of braking before any reverse moves it, so round 29's fixed 0.9 s escape is a no-op for rigs; the escape
+  holds reverse until the hull has REALLY backed 1.5 m, cap = 0.9 s + |speed|/braking). GDScript path both arms, base =
+  `--tank-off=real_velocity --nav-off=unstickback` same commit. Tuned: Terminus 20–22, hull-rest gangs 40–41, fights
+  1–8. Judged fresh: Terminus 23–28, hull-rest 42–47 (4 factions, drawn, `--turn-states`), fights 133–156, bridge-pooled.
+  (b1) Terminus rigs wall contact-ticks DOWN and arrivals ≥ base, with and without each arm's two worst runs; mixed
+  arrivals ≥ base − 2, contact-ticks ≤ base + 10 %; counters (unstick_fires, press_escapes) reported; (b2) pinned
+  crew-seconds DOWN > 2 se paired; (b3) bridge-pooled 18/18; (b4) tracks apart in (b2); (b5) a rig's mean speed while
+  touching a wall within 2 se of base; fights kills / deaths / hit rate within 2 se paired, hit rate on touching targets
+  reported; smokes, determinism, the thirteen re-recorded twice with the reason if they move, ≤ 0.5 ms, a tracked row.
+  Partial: (b1) is the gate; (b2) missed with (b1) met = ship with the miss written; (b1) missed = nothing ships, the
+  worst run's trace to the planner. Tuning disclosed (quick-remote, n = 1): a pinned gang_tank reads 0.00 by
+  real_velocity, 12.00 by the plant; unstick fires 0× with the old reading, once within a second with the new. The
+  stream's own check is red on three native twin tests until the pair; the PAIR's check is the green one (C30.2), the
+  three named at hand-over. **Orchestrator's ruling and additions (before numbers):** CP-N landed minutes before this bar,
+  so manoeuvre takes its ONE re-size now, in writing, before the judged run starts: (b1) decided on Terminus ARRIVALS
+  against the table's se (contact-ticks REPORTED: the table's MDE is +127 % at 6 seeds), (b2) names the effect n = 36
+  decides (or runs the n the table says for −50 %), the fights lines quote the table's se; (f) the escape's end counted
+  per fire (backed 1.5 m v the cap) and reported — an escape ending mostly by the cap is a finding; (g) the two switches
+  are one declared change (the reading without the escape is a no-op for rigs), both named in the merge; (h) mixed
+  arrivals "≥ base − 2" becomes base − 1.645 se from the table if the table has the row, else stated as unsized.
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
