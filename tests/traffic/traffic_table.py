@@ -84,6 +84,8 @@ def main(path):
             "rel_passed": sum(r.get("tr_released_passed", 0) for r in g),
             "rel_cap": sum(r.get("tr_released_cap", 0) for r in g),
             "no_spot": sum(r.get("tr_no_spot", 0) for r in g),
+            "cross_verdicts": sum(r.get("tr_cross_verdicts", 0) for r in g),
+            "cross_slowed": sum(r.get("tr_cross_slowed", 0) for r in g),
             "wedged": sorted("s%s/t%s:%d" % (r["seed"], r.get("start_tick", "?"), r["crews"] - r["arrived"])
                              for r in g if r["crews"] - r["arrived"] > 1),
             "kturns_friend": sum(r["kturns_friend"] for r in g),
@@ -99,12 +101,14 @@ def main(path):
             line["ratio_median"], line["ratio_worst"], line["allin_median"], line["allin_mean"],
             ("  never %d" % never) if never else ""))
     print("between squads (fast contacts between the squads, same-squad fast; the hold's counters: squad-pair verdicts,"
-          " crews sent to a spot, crew-ticks held, released passed / at the cap, no spot; runs with > 1 crew never in):")
+          " crews sent to a spot, crew-ticks held, released passed / at the cap, no spot; the crossing's verdicts and crew-ticks"
+          " slowed; runs with > 1 crew never in):")
     for key, line in sorted(summary.items()):
         if key.endswith("/both"):
-            print("  %-22s xfast %4d  own %4d  verdicts %4d  holds %4d  held %6d  passed %4d  cap %3d  nospot %3d  wedged %s" % (
+            print("  %-22s xfast %4d  own %4d  verdicts %4d  holds %4d  held %6d  passed %4d  cap %3d  nospot %3d  xverd %4d  slowed %6d  wedged %s" % (
                 key, line["xfast_total"], line["fast_total"] - line["xfast_total"], line["verdicts"], line["holds"],
-                line["hold_ticks"], line["rel_passed"], line["rel_cap"], line["no_spot"], " ".join(line["wedged"]) or "-"))
+                line["hold_ticks"], line["rel_passed"], line["rel_cap"], line["no_spot"], line["cross_verdicts"],
+                line["cross_slowed"], " ".join(line["wedged"]) or "-"))
     print("TRAFFIC_SUMMARY " + json.dumps(summary, sort_keys=True))
 
 
