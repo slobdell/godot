@@ -122,3 +122,22 @@ func test_on_the_players_own_team_the_old_rule_is_measured() -> void:
 	Element.HEADING_REISSUE_ENABLED = true
 	print("MEASURE reorder_heading player_team shed_frames off %d" % took)
 	assert_true(true, "measured")
+
+
+## Round 28 (B4, DECLARED): within ONE task the plan's own heading for a crew (a halt sector given, then taken away as the
+## squad moves on) is not a re-order: his bridge drill's rim tank hesitated 3.5-6.8 s on such re-issues (108 -> 106,
+## bisected to round 26's merge of the rule above). The task's drawn facing changing still is one.
+func test_a_plan_heading_toggling_within_one_task_does_not_re_issue() -> void:
+	var element := Element.new()
+	element.task = {"verb": "move", "to": [30.0, 10.0]}
+	var issued := {"verb": "move", "to": Vector3(30, 0, 10), "facing": Vector3(0, 0, -1), "task_facing": null}
+	var plain := {"verb": "move", "to": Vector3(30, 0, 10)}
+	assert_true(Element._heading_changed(issued, plain), "precondition: the heading was taken away")
+	assert_true(not element._heading_retold(issued, plain), "the task's facing did not change: no re-issue")
+	element.task = {"verb": "move", "to": [30.0, 10.0], "facing": [1.0, 0.0]}
+	assert_true(element._heading_retold(issued, {"verb": "move", "to": Vector3(30, 0, 10), "facing": Vector3(1, 0, 0)}),
+			"a facing drawn on the task since: re-issued")
+	Element.HEADING_REISSUE_TASK_ONLY = false
+	element.task = {"verb": "move", "to": [30.0, 10.0]}
+	assert_true(element._heading_retold(issued, plain), "--reissue-heading=plan is round 26's rule")
+	Element.HEADING_REISSUE_TASK_ONLY = true
