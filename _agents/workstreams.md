@@ -139,6 +139,18 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   filed. **I2 DONE:** `make quick` with the narrowed lint 487 s on builder0 (was 1081 s warm; full lint 712 s of it) +
   any slot wait; committed `4248d8ee` with I3's proof in `verification.md`. T1c-b built on `traffic-t1cb` (5/5 unit
   tests); its bar comes after T3b's table.
+- **Planner P2–P4 DONE (2026-10-14 ~13:10 PDT; stream/planner code `8f73e4cd`, docs on top; check queued; C30.4 kept:
+  nothing in play, nothing outside its paths):** hybrid-A* over whole legs on the plant's own arcs, time cost, OBB
+  squadmates, a free-space table per hull class, an expansion budget; 16 offline tests in `check`. Lab (builder0,
+  Terminus, n = 1 each, frames looked at): a War Rig facing back in the west street 15.5 s / 3 gear changes / 0 wall
+  contacts v today 29.8 s / 53 / 14; a scout's 180° slot 9 m ahead 20 m v today's 99 m through the gate; a rig into the
+  ring road facing east on heading at 6.9 s v never in 45 s. Pre-registered lines NOT met and recorded: the wedge and the
+  causeway slot 4 legs not 3; a rig's 20 m in-street turn-round 9 legs not 6 (lattice best 8); an IFV's turn-round in
+  12 m not found within budget (BUDGET, never a false NO_PATH). **Cost is the catch:** 0.06–3 s a plan in GDScript (17 s
+  for the rig's turn-round): in play it needs native's port (~100×) or a resumable slice a tick (round 31). Four executor
+  findings relayed to manoeuvre (brake on the leg's lock with opposite throttle; zero throttle with lock on = the plant's
+  creep; stopping distance v²/2b − v·dt/2; a leg measured by the ARC not the chord: `_flat_distance(here, _kturn_from)` is
+  3 % short on a 10 m leg); the side-gate note (design.md §2.8) relayed to brains.
 - **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
   on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
   (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
