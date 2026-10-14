@@ -1325,11 +1325,74 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 			asked[unit_name] = asked_for
 		slots_in[unit_name] = allowed
 	plan["slots_asked"] = asked
+	# Round 29 (B4): a line's slots kept a hull apart after grounding (see spread_line).
+	var spread := {}
+	var before := slots_in.duplicate()
+	if LINE_SPREAD_ENABLED and String(plan.get("formation", "")) == "line" and plan.get("heading") is Vector3:
+		spread_line(slots_in, plan["heading"], envelopes,
+				func(point: Vector3, unit_name: String) -> Vector3:
+					return SlotGround.standable_from(node, point, float(envelopes.get(unit_name, 0.0)), from))
+		for unit_name: String in slots_in:
+			if slots_in[unit_name] != before[unit_name]:
+				spread[unit_name] = slots_in[unit_name]
+				line_spreads += 1
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
+			if spread.has(unit_name) and (order["to"] as Vector3).distance_to(asked.get(unit_name, before[unit_name])) <= 1.0:
+				order["to"] = spread[unit_name]  # its slot moved along the line: the order goes with it
+				continue
 			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
 			order["to"] = SlotGround.standable_from(node, to, float(envelopes.get(unit_name, 0.0)), from)
+
+
+## Round 29 (B4): after grounding, two crews' slots on a LINE (screen, support by fire, ambush) stand at least their two
+## turning envelopes + LINE_GAP_M apart. Grounding moves each slot on its own, and two slots pushed out of one obstacle
+## can land together: traced (TacticsLab seed 61, four gang trucks, 14 m hulls, screening east, builder0) a 21 m line
+## grounded to a 6.0 m pitch, and one truck tried to park between squadmates for 80 s, blocked, never in. A squeezed slot
+## slides along the line (across the heading), AWAY from the line's middle slot (which stays), in LINE_STEP_M steps up
+## to LINE_SLIDE_M, to the first grounded spot clear of every slot already kept (`ground` grounds a candidate for a
+## crew); none clear: it stays. Deterministic (ties by name). `--line-spread=off` is the control arm. In place.
+const LINE_GAP_M := 1.0
+const LINE_STEP_M := 2.5
+const LINE_SLIDE_M := 20.0
+static var LINE_SPREAD_ENABLED := true
+static var line_spreads := 0
+
+
+static func spread_line(slots_in: Dictionary, heading: Vector3, envelopes: Dictionary, ground: Callable) -> void:
+	var across := Vector3(-heading.z, 0.0, heading.x).normalized()
+	var order: Array = slots_in.keys()
+	order.sort_custom(func(a: String, b: String) -> bool:
+		var pa := (slots_in[a] as Vector3).dot(across)
+		var pb := (slots_in[b] as Vector3).dot(across)
+		return pa < pb if absf(pa - pb) > 0.001 else a < b)
+	var middle := order.size() / 2
+	var kept: Array = [order[middle]]
+	var steps := int(LINE_SLIDE_M / LINE_STEP_M)
+	# Outward from the middle slot, each side its own way: a slot only ever slides AWAY from the line's centre.
+	for side: int in [1, -1]:
+		var i := middle + side
+		while i >= 0 and i < order.size():
+			var unit_name: String = order[i]
+			var slot: Vector3 = slots_in[unit_name]
+			var own := float(envelopes.get(unit_name, 0.0))
+			if not _clear_of(slot, own, kept, slots_in, envelopes):
+				for k in range(1, steps + 1):
+					var candidate: Vector3 = ground.call(slot + across * float(side) * LINE_STEP_M * k, unit_name)
+					if _clear_of(candidate, own, kept, slots_in, envelopes):
+						slots_in[unit_name] = candidate
+						break
+			kept.append(unit_name)
+			i += side
+
+
+static func _clear_of(point: Vector3, own: float, kept: Array, slots_in: Dictionary, envelopes: Dictionary) -> bool:
+	for other: String in kept:
+		var at: Vector3 = slots_in[other]
+		if Vector2(point.x - at.x, point.z - at.z).length() < own + float(envelopes.get(other, 0.0)) + LINE_GAP_M:
+			return false
+	return true
 
 
 ## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,
