@@ -58,6 +58,8 @@ const STAGES := {
 ## `on_tick` (optional): called every tick after the step with (lab, ticks since the order) — the clip's camera.
 static func run(case: TestCase, seed_value: int, arena: String, kind: String, which: String, seconds: float,
 		side := "green", trace := false, on_tick := Callable()) -> Dictionary:
+	Traffic.reset_counters()
+	Traffic.log_waits = trace
 	var lab := TacticsLab.create(case, seed_value, arena)
 	var game_match := lab.game_match
 	var team := Match.Team.GREEN if side == "green" else Match.Team.RUST
@@ -181,7 +183,8 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 						"blocked": r.get("blocked_by"), "yield": r.get("yield_to"), "kturn": Movement.of(t).in_kturn(),
 						"goal": str(r.get("goal")), "steer": str(r.get("steer_to")), "stalled": r.get("stalled_s"),
 						"rem": r.get("remaining_m"), "pace": r.get("pace"), "thr": snappedf(t.command.throttle, 0.01),
-						"turn": snappedf(t.command.turn, 0.01), "ot": Movement.of(t)._order_ticks, "key": str((Movement.of(t).ctl as TankBrain).element.get("key")) if Movement.of(t).ctl is TankBrain else "", "friend": _friend_in_way(t, _way(t, Movement.of(t)), hulls)}))
+						"turn": snappedf(t.command.turn, 0.01), "ot": Movement.of(t)._order_ticks, "key": str((Movement.of(t).ctl as TankBrain).element.get("key")) if Movement.of(t).ctl is TankBrain else "", "friend": _friend_in_way(t, _way(t, Movement.of(t)), hulls),
+						"hold": Traffic.holding(String(t.name))}))
 		var all_arrived := true
 		for squad: String in squads:
 			all_arrived = all_arrived and (elements[squad] as Element).arrived
@@ -235,9 +238,9 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 			"contacts": contacts, "contacts_fast": contacts_fast, "kturns": kturns, "kturns_friend": kturns_friend,
 			"yields": yields, "route_arms": Movement.route_arms(), "contacts_cross": contacts_cross,
 			"contacts_cross_fast": contacts_cross_fast}
-	# Round 28: a rule under test adds its own counters here (branches traffic-t1-v3 / traffic-t1b: tr_verdicts,
-	# tr_yield_ticks, tr_right_ticks). Read them before believing an arm: T1b's first judged run was a null that only the
-	# verdict counter showed (Status).
+	# The rule's own counters (round 29 T1's street hold: tr_verdicts, tr_holds, tr_hold_ticks, releases). Read them before
+	# believing an arm: round 28's T1b first judged run was a null that only the verdict counter showed (lesson 300).
+	report.merge(Traffic.report())
 	for squad: String in squads:
 		var last := 0
 		for unit_name: String in members[squad]:

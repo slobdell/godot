@@ -1581,7 +1581,7 @@ func _update_phase(goal: Vector3, drive_vector: Vector2, direct: bool) -> void:
 		phase = "blocked"
 		blocked_by = "no_path"
 		return
-	if stalled_ticks >= int(BLOCKED_SECONDS * SimClock.TICK_RATE):
+	if stalled_ticks >= int(BLOCKED_SECONDS * SimClock.TICK_RATE) and not Traffic.holding(String(ctl.tank.name)):
 		# The cause is re-read twice a second, not every tick (it walks the neighbours).
 		_blocker_left -= ctl._step
 		if phase != "blocked" or _blocker_left <= 0:
@@ -2041,6 +2041,8 @@ static func _distance_to_ray(point: Vector3, origin: Vector3, direction: Vector2
 func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 	if _off.has("yield"):
 		return
+	if Traffic.holding(String(ctl.tank.name)):
+		return  # round 29 (traffic T1): waiting at a street mouth on purpose; nobody to ask
 	var tank := ctl.tank
 	var name := _hull_ahead(goal, direct)
 	if name == "":
@@ -2242,9 +2244,22 @@ func _around_fire(waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector
 ## (toward `waypoint` at this order's speed, easing off for the end of the route); Avoidance returns the nearest
 ## velocity that keeps clear of every neighbour, sharing the avoiding with movers. A velocity that would take the hull
 ## off the navmesh is refused (static geometry wins): the unit keeps its route and slows to the avoiding speed instead.
-func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
+func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false) -> Array:
 	var tank := ctl.tank
 	var here := tank.global_position
+	# Round 29 (traffic T1, his call: TAKE TURNS): a crew of a squad waiting for another to come through a street drives
+	# to its spot beside the mouth (ORCA as always) and stops there facing its way until the other's tail is past it.
+	if not held and not Traffic.off("hold"):
+		Traffic.refresh(ctl.tanks_root)
+		var hold := Traffic.hold_of(String(tank.name))
+		if not hold.is_empty():
+			var face: Vector2 = hold[1]
+			if hold[2]:
+				return [Vector3(face.x, 0.0, face.y), 0.0]
+			var spot: Vector2 = hold[0]
+			var approach := clampf((Vector2(here.x, here.z).distance_to(spot) - Traffic.HOLD_REACHED_M) / Traffic.HOLD_SLOW_M, 0.15, 1.0)
+			var toward := _avoid(Vector3(spot.x, 0.0, spot.y), speed_factor * approach, delta, true)
+			return [toward[0], minf(float(toward[1]), approach)]
 	var to := Vector2(waypoint.x - here.x, waypoint.z - here.z)
 	var distance := to.length()
 	if distance < 0.5:
@@ -2368,7 +2383,7 @@ func wheel_radius() -> float:
 ## distance the caller already worked out for steering — computing it again here walked the whole path a second time
 ## every tick for every moving unit (X2).
 func _track_progress(goal: Vector3, drive_vector: Vector2, remaining: float) -> void:
-	if _flat_distance(goal, _progress_goal) > 2.0 or drive_vector == Vector2.ZERO:
+	if _flat_distance(goal, _progress_goal) > 2.0 or drive_vector == Vector2.ZERO or Traffic.holding(String(ctl.tank.name)):
 		_progress_goal = goal
 		_progress_best = remaining
 		stalled_ticks = 0
@@ -3018,6 +3033,7 @@ func _remaining_path_distance(goal: Vector3) -> float:
 
 ## Blind unsticking: driving hard but not moving for STUCK_SECONDS → back off for UNSTICK_SECONDS.
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	if Traffic.holding(String(ctl.tank.name)): return  # round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
 	_unstick(cmd, order, delta)
 	if ManoeuvreCensus.on:
 		# Round 26 (manoeuvre M0b): turns counted by legs and by what was in the way; measurement only.
@@ -3124,7 +3140,7 @@ func _pressing_escape(cmd: TankCommand, delta: float) -> bool:
 	# on purpose), and the escape backing a duelling tank off cost scenario_motion's moving duel a shot (5 vs its bar
 	# of 6) on 2a2b77c1 and on bc4873f3. The acceptance test it exists for — a squad driven through the streets — has
 	# no engagement, so nothing it measured is lost.
-	if not press_on() or ctl.gunnery.engaged_target != "":
+	if not press_on() or ctl.gunnery.engaged_target != "" or Traffic.holding(String(ctl.tank.name)):
 		_press_time = 0.0
 		return false
 	var tank := ctl.tank
@@ -3347,6 +3363,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		cmd.turn = _kturn_turn
 		kturn_ticks += ctl._step
 		return true
+	if Traffic.holding(String(tank.name)): return false  # round 29 (traffic T1, C29.3): no k-turn while waiting at a mouth
 	_kturn_check -= ctl._step
 	if _kturn_check > 0:
 		return false

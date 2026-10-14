@@ -76,4 +76,74 @@ Nothing: his call is made.
 
 ## Status
 
-_Not started (round 29 launch, 2026-10-13)._
+_Updated 2026-10-13 (traffic worker, session godot-traffic-e4). Every number names commit, machine, workload and n._
+
+### The plan (ordered)
+
+1. **T0**: the base, builder0, `3cd5596b` (= main's green `bcef46a1` + docs), `make traffic-series
+   TRAFFIC_FLAGS=--brains-off=native`, seeds {1,2,3} x ticks {1,3,6,8,11,16}, n = 18 a case. The table now prints
+   between-squad fast contacts (`xfast`) beside same-squad (`own`), and the runs with more than one crew never in.
+2. **T1**: the street hold (`game/ai/traffic.gd`, a fresh file: T1b's head-on street verdict, none of v3's crossing or
+   keep-right code). Decided: (a) the verdict is T1b's (the squad still in the open waits; that measured −50 % hard bumps);
+   (b) the spots are found once per verdict from the navmesh: the mouth is the first street point on the waiting lead's
+   ROUTE (its nav path, not a straight line), the street's centre line there, then a grid behind the mouth and 12–22 m to
+   the right of the centre line (an 18–20 m street's whole half-width plus a hull), lead first, room for the hull, not on a
+   squadmate's spot or a parked hull, the left only if the right has no room; (c) release per crew, when every crew of the
+   passing squad still under way is behind it, cap 20 s from the verdict, then no new verdict for that pair for 30 s
+   (the anti-wedge: a squad that waited once never waits twice in a row); (d) the hold steers in `Movement._avoid` (traffic's)
+   and returns pace 0 at the spot, so the crew stops facing its way; (e) `Traffic.holding(crew)` is live only while the
+   mover asked for its hold in the last 3 ticks. Gates (C29.3): one line each in `_track_progress`, `_update_phase`'s blocked
+   branch, the element's re-seat loop, `unstick`, `_pressing_escape`, the k-turn entry in `_planned_reverse`, and
+   traffic's own `_negotiate`. Switch: `--traffic-off=hold`. Tests: `test_traffic_hold` (pure), `test_traffic_hold_live`
+   (lesson 300's falsifier on his case). Bar sent to the orchestrator before any T1 number (below).
+3. **T2**: the settled diff to native.
+4. **T3** (stretch): v3's crossing on between-squad bumps; the friendly creep give-way with manoeuvre.
+
+### T0: the base (builder0, `3cd5596b`, `make traffic-series TRAFFIC_FLAGS=--brains-off=native`, seeds {1,2,3} x ticks {1,3,6,8,11,16}, n = 18 a case, 216 runs, 0 missing; 2026-10-13 ~11:40–11:58 PDT)
+
+**Identical, run for run, to round 28's T0 at `c6e32d03`**: the GDScript path did not move with native's ports since.
+Data: `references/round29/traffic/t0_3cd5596b_seeds123.jsonl`.
+
+| case | crews in | fast (between squads / own) | all-in med / mean s | fstuck crew-s | runs with > 1 crew never in |
+|---|---|---|---|---|---|
+| Terminus head-on | 170/180 | 716 (398 / 318) | 64.3 / 65.4 | 489.1 | 0 |
+| Terminus crossing | 176/180 | 294 (116 / 178) | 45.8 / 55.2 | 156.9 | 1 (s2/t3) |
+| yard_open crossing | 169/180 | 277 (118 / 159) | 75.6 / 72.2 | 196.5 | 1 (s3/t11) |
+| yard_open head-on | 179/180 | 113 (60 / 53) | 37.2 / 38.1 | 8.9 | 0 |
+
+### T1 tuning (seeds {1,2,3} only, builder0, GDScript path, `TRAFFIC_WHICH=both`, against T0)
+
+- **v0** (first trace, seed 1, Terminus head-on): the mouth was never found: a crew's nav path ends at its element's
+  next LEG slot, so the march stopped short of the street and the "edge" fallback pulled crews aside on B's way out.
+  Fixed: the march goes on straight along the squad's way past the path's end.
+- **v1**: Terminus head-on xfast 398 → 148 (−63 %), crews 170 → 177, all-in median 64.3 → 68.5 (+6.5 %), no wedge, 18
+  verdicts / 90 holds, 7 waits to the cap. But the rule fired 4 times in the Terminus CROSSING (a squad milling at its
+  goal read as a head-on meeting 60 m from any street) and that case fell 176 → 173 crews (s1/t8 lost 2: chaotic
+  divergence after a 1.7 s hold far from the other squad; still a crew-line fail).
+- **v2**: a meeting needs both squads travelling (≥ 60 % of crews moving, and two), each crew of the pair heading with its
+  squad (cos ≥ 0.7), and a mouth within 80 m of the waiting lead's route (else no hold). The other three cases now equal
+  their base runs exactly (0 verdicts). Terminus head-on unchanged from v1. **Worst run (s2/t1: xfast 10 → 38, the cap):**
+  B waited exactly where A's formation spreads out on ARRIVAL (A goes to B's start), so A drove into B's holders.
+- **v3**: keep spots off the passing squad's way out, from each crew's order goal. A null (v3 = v2 run for run): a crew's
+  order goal is its current leg's slot, which pointed north at the verdict.
+- **v4 (DECLARED for judging; the last attempt)**: from the passing ELEMENT's task destination: spots kept off the run
+  from the mouth's centre to it, and out of a disc round it as wide as its formation's current spread. Terminus head-on:
+  xfast 398 → **71 (−82 %)**, own 318 → 270, all fast 716 → 341; crews 170 → 171; all-in median 64.3 → 61.2; fstuck
+  489 → 393; 18 verdicts, 90 holds, 83 released by the tail passing, 4 waits to the cap, 2 crews with no spot. The other
+  three cases equal their base runs exactly. **The worst run read (s1/t11, 2 crews never in v base 1):** B held 17 s,
+  was released as A's tail passed, came through the street cleanly and was in by ~36 s; then B's own arrival re-seating
+  sent B_1 and B_4 to seats beside the block that read `no_path`. Every crew left out in base and v4 alike ends 16–25 m
+  from its seat at the far end (base 10 crews out, v4 9); v4 concentrates them on B_5 (6 of 9), the rear tank, which now
+  arrives last into the seat shuffle. That is the element's arrival seating (brains, round 28's T3 finding), not the
+  street.
+
+### The bar for CP-T (sent to the orchestrator 2026-10-13 ~11:55 PDT, before any T1 number)
+
+Judged ONCE: both arms at one commit, GDScript path, fresh seeds {13,14,15} x ticks {1,3,6,8,11,16}, n = 18 a case;
+base arm `--traffic-off=hold`. Terminus head-on: crews in ≥ base − 2; `contacts_cross_fast` down ≥ 25 %; all-in median ≤
+base + 20 %; NO WEDGE (no run with > 1 crew never in whose paired base run had none; the worst run's trace read first). The
+other three cases: fast contacts and all-in median within 2 se of base, crews ≥ base − 2. CPU mirror (`--side=rust`) on
+Terminus head-on reported, no worse on those four. `bridge-pooled` 18/18; the live test fires in the judged arm (counts in
+the report); cost ≤ 0.5 ms a tick at Sumps 25 a side (GDScript path) or NOT READABLE. No partial gain. Tuning on {1,2,3}
+only. **Last attempt:** the version declared for judging; a fail parks it with its trace.
+
