@@ -1010,9 +1010,11 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	if verb != "stop" and several_squads():
 		return _order_squads(verb, extra, selection_squads())
 	# Round 28 (brains B5, his playtest): shift + a task on a squad that is still driving its waypoints QUEUES behind them.
-	# Only the tasks a crew cannot be given (screen, support by fire, ambush): a shifted move, attack-move or attack keeps
-	# today's direct queue (his waypoint route, which already chains from the last stop).
-	if bool(extra.get("queue", false)) and ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb) and elements != null:
+	# Round 29 (brains B5, granted): so do a shifted attack-move and attack (his words: every armed order with an
+	# automatic facing is laid from the last waypoint), and a shifted plain MOVE goes behind a task already queued (else
+	# it would join his crews' route and run before it). A shifted move with nothing queued keeps today's direct queue.
+	if bool(extra.get("queue", false)) and ELEMENT_TASKS.has(verb) and elements != null \
+			and (not UnitCommand.VERBS.has(verb) or verb in QUEUED_ARMED or (verb == "move" and _has_queued_task())):
 		var queued: Variant = _queue_task(verb, extra)
 		if queued is String:
 			return queued
@@ -1115,11 +1117,14 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			given["to"] = [at.x, at.z]
 		var error := ""
 		# Round 28 (B5): shift + a task on squads still driving their waypoints: each squad queues behind its own.
+		# Round 29 (B5, grant extended): so do a shifted attack-move / attack, and a shifted move behind a queued task.
 		var queued: Variant = null
-		if queue and element_only and elements != null:
-			var held: Element = squad.get("element")
-			queued = _queue_task_for(squad["units"], held if held != null and is_instance_valid_element(held) else null,
-					int(squad.get("number", 0)), verb, given, squad_formation(squad))
+		var held: Element = squad.get("element")
+		if held != null and not is_instance_valid_element(held):
+			held = null
+		if queue and elements != null and (element_only or verb in QUEUED_ARMED
+				or (verb == "move" and held != null and not held.queued_tasks.is_empty())):
+			queued = _queue_task_for(squad["units"], held, int(squad.get("number", 0)), verb, given, squad_formation(squad))
 		if queued is String:
 			error = queued
 		elif elements != null and ELEMENT_TASKS.has(verb) and (not queue or element_only):
@@ -1201,6 +1206,16 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 ## to the element's QUEUE (Element.enqueue) and starts when the work ahead of it is done. Its AUTOMATIC facing is the
 ## way in from the last waypoint (point − waypoint); a drawn one wins. Returns
 ## "" or a refusal when it queued, null when there is nothing to queue behind (the order goes on as before).
+## Round 29 (B5): the unit verbs a shift queues behind a squad's waypoints as element tasks.
+const QUEUED_ARMED := ["attack_move", "attack"]
+
+
+## Round 29 (B5): whether the selected squad's element has a task queued (a shifted move goes behind it).
+func _has_queued_task() -> bool:
+	var element := selected_element()
+	return element != null and not element.queued_tasks.is_empty()
+
+
 func _queue_task(verb: String, extra: Dictionary) -> Variant:
 	return _queue_task_for(selection.units, selected_element(), selected_group(), verb, extra, selected_formation())
 
@@ -1209,7 +1224,8 @@ func _queue_task(verb: String, extra: Dictionary) -> Variant:
 func _queue_task_for(units: Array, element: Element, number: int, verb: String, extra: Dictionary,
 		shape: String) -> Variant:
 	var origin: Variant = null
-	if element != null and not element.task.is_empty():
+	# Round 29 (B5): behind a queued task too, so a chain of shifted attack-moves runs leg by leg from each last point.
+	if element != null and (not element.task.is_empty() or not element.queued_tasks.is_empty()):
 		origin = element.last_point()
 	else:
 		if number == 0 and element == null:
