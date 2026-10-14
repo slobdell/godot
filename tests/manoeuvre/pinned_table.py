@@ -15,6 +15,7 @@ import sys
 STATE = re.compile(r"MANOEUVRE_STATE f (\d+) (.+?) (\S+) order (\S*) from (\S*) v ([-\d.]+) moved ([-\d.]+) "
                    r"cmd ([-\d.]+)/([-\d.]+) .* goal ([-\d.]+)")
 SCOUTS = {"scout", "law_scout", "gang_scout"}
+RIG = "gang_tank"
 
 
 ## Round 30 (M4b): a second reading, STUCK crew-seconds: on a move_to with |throttle| > 0.3, seconds in a run of >= 10
@@ -32,7 +33,7 @@ def run_pinned(log):
         m = STATE.search(line)
         if m:
             hist.setdefault(m.group(2), []).append((m.group(3), m.group(4), float(m.group(8)), float(m.group(10))))
-    total = {"all": 0, "scouts": 0, "crews": 0, "stuck": 0, "stuck_crews": 0, "tracks": 0}
+    total = {"all": 0, "scouts": 0, "crews": 0, "stuck": 0, "stuck_crews": 0, "tracks": 0, "rigs": 0, "short": 0}
     for unit, rows in hist.items():
         streak, pinned, uid = 0, 0, rows[0][0]
         for a, b in zip(rows, rows[1:]):
@@ -49,6 +50,10 @@ def run_pinned(log):
             total["scouts"] += pinned
         if uid == "tank":
             total["tracks"] += pinned
+        if uid == RIG:
+            total["rigs"] += pinned  # round 30 (M4b run 2): the 14 m hull the fix does not reach, apart
+        else:
+            total["short"] += pinned  # ...and every hull it does (<= 10 m)
         if pinned:
             total["crews"] += 1
         # stuck: no PROGRESS_M of progress toward the goal over a run of driving seconds
@@ -81,7 +86,7 @@ def main(base_dir, new_dir):
     base, new = load(base_dir), load(new_dir)
     keys = sorted(set(base) & set(new))
     print(f"PINNED runs paired {len(keys)} (base {len(base)}, new {len(new)})")
-    for k in ("all", "scouts", "tracks", "crews", "stuck", "stuck_crews"):
+    for k in ("all", "short", "rigs", "scouts", "tracks", "crews", "stuck", "stuck_crews"):
         d = [new[r][k] - base[r][k] for r in keys]
         se = statistics.stdev(d) * len(d) ** 0.5 if len(d) > 1 else float("nan")
         tot = sum(d)
