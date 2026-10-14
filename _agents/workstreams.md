@@ -201,6 +201,13 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   30: release the yielding squad once the other's tail clears the point, or crawl only crews within a squad length. The
   yard far-end misses (both arms) relayed to brains as a B5c sighting.
 
+- **Manoeuvre M4 JUDGED — NOT SHIPPED (~21:00; `9db2a57c`, GDScript tank):** (b2) pinned crew-s 2902 → 1040 (se 460) and the
+  fights guard (kills, deaths, hit rate within 2 se) PASS; (b1) Terminus rigs arrived 81 → 64/96 (all 6 seeds), rig
+  contact-ticks 5337 → 8542 (1044 → 3882 without the two worst), mixed 720 → 3486; (b3) bridge-pooled 17/18. FAIL. Reading:
+  the honest velocity zeroes wheels' `_speed` on every wall brush, so rigs grind along walls instead of sliding off.
+  Parked `manoeuvre-m4-r29`. **Round 30:** keep the plant's `_speed` as today; give the real displacement only to the
+  progress readers (unstick, `_pressing_escape`, the pinned probe) and aim leads.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
