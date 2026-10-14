@@ -139,6 +139,27 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   filed. **I2 DONE:** `make quick` with the narrowed lint 487 s on builder0 (was 1081 s warm; full lint 712 s of it) +
   any slot wait; committed `4248d8ee` with I3's proof in `verification.md`. T1c-b built on `traffic-t1cb` (5/5 unit
   tests); its bar comes after T3b's table.
+- **Traffic T1c-b bar (pre-registered 2026-10-14 ~14:00 PDT, before any judged number; DECLARED; the LAST attempt; no
+  partial):** candidate stream/traffic `88e52c8f`: `Movement.ask()` refuses while the asked hull is on its fire post
+  (`deploy_ratio > 0`, weapon order not hold_fire, own order not a move or the move arrived: `Movement.on_fire_post`);
+  the asker treats it as parked and goes round; a set-up hull with a NEW move is asked as before. `--traffic-off=setup`;
+  counter `Movement.setup_refusals`; `test_traffic_setup` 5/5. Tuning (census seeds 1–3, n = 9): repacks_while_firing
+  13 → 0, runs with any 5/9 → 0/9; repacks while giving way 42 → 27; refusals 0 → 122; artillery shots 275 → 273; fast
+  friendly 468 → 473; friendly-stuck 636 → 602; ApproachStage seeds 4–6 t1 the one give-way repack 1 → 0. Judged: both
+  arms one commit, GDScript; base `--traffic-off=setup`. (A) traffic-census fresh seeds {7,8,9} × 3 arenas, n = 9;
+  (B) ApproachStage drawn artillery seeds 13–15 × 6, drawn and clicked, n = 18. Lines: (1) runs with any
+  repacks_while_firing: arm 0/9 AND one-sided Fisher p ≤ 0.05 v base (needs base ≥ 4/9; base < 4/9 = NULL), arm total 0;
+  (2) friendly-stuck ≤ base + 1.645 se (judged paired sd, ≈ +79); (3) fast friendly ≤ base + 27.1 (row 83); (4) artillery
+  shots not down > 21.6 (row 82); (5) ApproachStage drawn: repacks ≤ base and any arm repack traced as not a give-way;
+  from the side 18/18; first round ≤ clicked + 30 s (row 74); alive ≥ clicked − 0.5 reported with row 73's se;
+  (6) bridge-pooled 18/18 rule on; (7) the four traffic-series cases rule on, seeds 31–33, v T3b's judged base rows:
+  equal row for row, or no wedge and within T3b's guards; (8) no native diff (no C++ twin). **Orchestrator's additions
+  (before numbers):** (a) the asker's side counted: askers refused that never got past the set-up hull within 20 s, per
+  arm, reported (the "goes round" must be shown, not assumed); (b) the CPU side's refusals and repacks in the census
+  reported (symmetric rule); (c) cost ≤ 0.5 ms a tick at Sumps 25 a side or NOT READABLE; (d) `native-verify-scenarios`
+  on the census and ApproachStage scenarios shows the stale rule holds (line 8 proven, not stated); (e) line 7's "equal
+  row for row": if not equal, the first differing run traced before anything else; (f) the thirteen explained if they
+  move.
 - **Traffic T3b JUDGED — NOT SHIPPED (2026-10-14 ~13:35 PDT; `cf124433` both arms, builder0, GDScript, seeds 31–33 × 6,
   n = 18 a case):** FAILED one line: **the yard crossing clock +2.80 s (se 0.22) v a limit of +1.18 s** (the yard's
   yielding squad pays +3.66 s, se 0.23; judged paired sd 0.92 < tuning 1.77, the 1.5× caveat does not apply). Every
