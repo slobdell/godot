@@ -108,3 +108,32 @@ Nothing.
 
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
+
+### Plan (2026-10-14; start = stream `bd05077d`, covered by the launch check, main `0d35f215` green)
+1. **B5c-v4** on `lab/brains-r30-gate` (a C30.2 pair: the stream tip stays mergeable without native's mirror). Base =
+   round 29's gate restored (`0c7a6e72`), `--gate-trace` (measurement only), the v4 rule + `tests/test_nav_gate_v4.gd`;
+   traced side by side first (yard 23 t3, the 180° test); the bar to the orchestrator before any series; the settled diff
+   to native.
+2. **B7** on the stream right after v4's tests: time each scenario test alone (`make scenario-times`), split into two
+   files by those times, one commit, `test wall` before/after.
+3. **B3b** route-aware attack-move seating across a crossing (from `lab/brains-r29-bridge`).
+4. **B6** the SBF per-crew trace; fix the probe first.
+5. Stretch: mixed-class line facing, only if B6 shows a class problem.
+
+### B5c-v4 — traced side by side, the design picked (builder0, GDScript drive `--brains-off=native`)
+Round 29's state (`a8df3dc3` restored at lab `0c7a6e72`) reproduces: yard_open cross seed 23 t3 last crew A_5 **39.9 s**
+(round 29: 39.9). `--gate-trace` per crew:
+- **The 180° test** (`test_wheeled_arrival`, IFV, open ground): reaches its gate 17.5 m beyond the goal facing out (dot
+  −1.00), comes round it (reads `blocked no_path` while circling at speed), reaches it again facing out once, then at
+  dot 0.01, latches, arrives facing back (> 0.85): ~8 s of turning.
+- **Yard A_5** (herringbone seat facing west, gate 20 m east of it): it drove in from the north-west PAST its seat and
+  reached the gate facing east (dot −0.94): **the same geometry as the 180° test.** Coming round it ran south into the
+  containers (`blocked terrain` at (16, −68) 6 s+), was given up, re-aimed after a re-seat, reached it facing away again
+  at 29.8 s, ran north into the containers (19, −40), and latched only at 38.5 s.
+- So "one circuit" (option i) as "the second facing-away reach" would fail the 180° test (it reaches facing out twice
+  before it lines up), and a gate to the side (option ii) is a new geometry with no trace behind it. **Picked:** come
+  round a gate reached facing away only where a turning circle of navmesh fits BESIDE the gate (either side, 12 points
+  at one turning radius from a centre one radius off the axis), and only until stuck (`blocked` on terrain or a hull;
+  `no_path` is the circling) or `GATE_TURN_SECONDS` 12 (≈ 1.5× the open-ground turn); else latch and drive onto the goal
+  (round 29's yard win). Plus **near**: a NEW goal already within the approach length, whose drive via the gate is more
+  than 2× the straight line, gets no gate (B_4), decided once per goal so a car coming round its own gate is never caught.
