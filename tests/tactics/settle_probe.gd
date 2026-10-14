@@ -428,6 +428,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
 			"formations_moving": formations_seen, "reseats": element.reseats,
 			"reseats_after_arrival": element.reseats_after_arrival,
+			# Round 29 (B5a, lesson 300): process-wide; one run per process in the series.
+			"seats_pulled_on_mesh": Element.seats_pulled_on_mesh, "swaps_refused_no_path": Element.swaps_refused_no_path,
 			# B2 v5: crews sent on from short after arrival, and how many of those still stand more than 8 m off that seat.
 			"resends_short": element.resends_short, "resent_still_off": _still_off(game_match, element.resent_short), "swaps": element.swaps,
 			"element_digest": digest_ctx.finish().hex_encode() if digest_on else "",

@@ -59,6 +59,12 @@ func _report(map: RID, node: Node3D, label: String, from: Vector3, to: Vector3) 
 	for i in range(1, points.size()):
 		length += Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).length()
 	var snapped := Pathing.closest_point(map, from, "probe")
+	var goal_server := NavigationServer3D.map_get_closest_point(map, to)
+	var goal_pathing := Pathing.closest_point(map, to, "probe")
+	print("REACH_GOAL %s: server closest (%.2f, %.2f, %.2f) gap %.2f | Pathing.closest_point (%.2f, %.2f, %.2f) gap %.2f | native %s" % [
+			label, goal_server.x, goal_server.y, goal_server.z, Vector2(goal_server.x - to.x, goal_server.z - to.z).length(),
+			goal_pathing.x, goal_pathing.y, goal_pathing.z, Vector2(goal_pathing.x - to.x, goal_pathing.z - to.z).length(),
+			NativePathing.usable()])
 	var end := points[points.size() - 1] if points.size() > 0 else Vector3.INF
 	print("REACH %s: reachable=%s end_gap %.1f goal_gap %.1f start snaps %.1f m | route %.1f m, %d points, ends (%.1f, %.1f)" % [
 			label, route["reachable"], float(route["end_gap_m"]), float(route["goal_gap_m"]),

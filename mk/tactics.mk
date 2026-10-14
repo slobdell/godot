@@ -705,7 +705,7 @@ reseat-trace: import ## Round 29 (B5a): the element's seating traced in traffic'
 .PHONY: reach-probe
 reach-probe: import ## Round 29 (B5a): navmesh reach from the traced no_path spots to their seats (and a ring round each) -> build/reach-probe.log
 	@mkdir -p $(BUILD_DIR)
-	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reach_probe.gd > $(BUILD_DIR)/reach-probe.log 2>&1 || true
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reach_probe.gd -- $(REACH_FLAGS) > $(BUILD_DIR)/reach-probe.log 2>&1 || true
 	@grep -E "^REACH|SCRIPT ERROR" $(BUILD_DIR)/reach-probe.log | cut -c1-260
 
 # Round 28 (brains B3): who orders scouts into the enemy -- the showmatch seed scout's census measured, each recon
