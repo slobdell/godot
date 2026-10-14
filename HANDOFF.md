@@ -44,10 +44,12 @@ check is OWED** for this merge (main = sizing + planner on `0d35f215`'s code; ba
 `workstreams.md` *Bars*). **Sizing DONE** (idle). **Planner DONE** (idle).
 
 **Round 30 in flight (15:05 PDT; every bar and verdict in `workstreams.md` *Bars (round 30)*):**
-- **Brains B5c-v4** PASSED every judged line (`19eca15a`: yard every crew in 12/12 v 1/12, Sumps 24.5 v 37.5 s, arrive
+- **Brains B5c-v4 PARKED for round 31 (~15:30):** it PASSED every judged line (`19eca15a`: yard every crew in 12/12 v 1/12, Sumps 24.5 v 37.5 s, arrive
   99 v 91/100, the 180° test green) but the PAIR CHECK is RED on `test_tactics_pursuit` (five wheeled scouts give up a
   chase at 17 s; v4's GDScript, not the port). Ruling: a scoping fix ships only if every judged on-arm row stays
-  byte-identical; else parked for round 31. Brains tracing.
+  byte-identical; else parked for round 31. **Traced: the near rule changes two scouts' OPENING moves at t = 0.1 s on a
+  knife-edge pursuit test (seed 3); no honest scoping → PARKED** (`lab/brains-r30-gate` f1a804eb; round-31 lead: measure
+  the pursuit test's own margin over seeds, then re-judge). Brains → B7 (test split), B3b (the bridge).
 - **Manoeuvre M4b** (honest stall reading + sized escapes for hulls ≤ 10 m; War Rigs bit-for-bit as today) — the second
   and last attempt `77a1603f` PASSED its Terminus gate on 13 fresh seeds (rigs byte-identical; mixed arrivals −2,
   contact-ticks −8 %); bridge / fights / hull-rest running (~2 h); native porting it now. First attempt failed (rigs'

@@ -398,6 +398,20 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   and screen-slots re-run on the fixed tree must be byte-identical to the judged on-arm (brains' table), and the pursuit
   test + the whole suite green on the pair tree. A fix that moves any judged row = B5c-v4 PARKED for round 31 with this
   finding (as round 29's a8df3dc3 was). Native re-mirrors the fix and re-checks the pair.
+- **B5c-v4 PARKED for round 31 (2026-10-14 ~15:30 PDT; `lab/brains-r30-gate` = `f1a804eb`, judged `19eca15a`, every bar
+  line passed; native's mirror on stream/native `787d3664`):** the pursuit red traced (builder0, `--gate-trace`, the 8 m/s
+  test alone: FAILS, A_3 reversed 133° at 16.5–18.5 s; native's whole-suite run failed it differently — "let go at 17 s" —
+  the outcome depends on process history). The gate answered exactly FIVE times in the run, all at t = 0.1 s while the
+  squad formed its opening vee: A_1/A_3/A_5 aimed (as v3), **A_2 and A_4 `near`** (7.6 m from their vee seats); no chase
+  order carries a facing, so no gate rule runs during the chase. The pursuit diverges downstream of two crews driving
+  straight to their opening seats instead of round a 13.75 m gate; rule OFF, all 9 pursuit tests pass (8 m/s worst
+  reversal 50°; 18 m/s 96°, near the line even there). **No honest scoping:** (a) "near not on a hull that has not driven
+  since spawn" leaves the judged rows identical but guts the near rule's own demonstrations (B_4, the planner's scout both
+  start standing) and is fitted to this guard; (b) "not on an arrived hull" moves judged rows (yard s25 t1's A_4). The bar
+  was the last attempt. **Finding:** "the near rule tips `test_tactics_pursuit` (a knife-edge chase on seed 3) by changing
+  two crews' opening moves; the come-round and latches are not involved." **Round 31 lead:** measure the pursuit test's
+  own margin over seeds first (an A/A on the test; sizing's table), then re-judge v4 — or `near` only on a re-seat / new
+  goal while on a task. Native's B5c re-check stopped. Brains → B7, B3b.
 
 ## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 
