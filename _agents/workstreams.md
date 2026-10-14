@@ -335,6 +335,17 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   reported. **Ruling: M4b SHIPS as the C30.2 pair** (manoeuvre's lab tip, code `77a1603f`, + native `pair/m4b2`
   `366b42bc`) when the pair's check is green; manoeuvre's own check (red on the three twin tests by design) is
   redundant and stopped. **M1b's and M2b's chains: GO, M1b first**, on their re-based branches.
+- **M4b PAIR CHECK RED (2026-10-14 ~16:55 PDT; native `pair/m4b2` `366b42bc`, builder0 load 16–21: `make check exited 2`,
+  2607 passed / 2 failed; 20 gates passed, 3 FAILED, 1 NOT RUN, 2 NOT JUDGED for load):** (1) `test_tactics_mixed_legs::
+  test_four_tanks_attack_moved_across_the_sumps_arrive` — never arrived, 31.6 m to go (tracked hulls are ≤ 10 m: the new
+  escape reaches them); (2) `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` — 16 of
+  48 contact ticks cause=plant driver=unstick (reverse) where the test expects steer/drive (the sized escape firing at a
+  wall); (3) sim-baseline moved on every map — expected for a declared change, the thirteen re-recorded on manoeuvre's tip;
+  (4) net-smoke one client saw 1 of 2 tanks (load flake, rerun). Native re-running (1)(2) with NATIVE=off. **Ruling
+  framework (as B5c-v4's):** manoeuvre traces both on the GDScript path first; a fix ships only if every judged row stays
+  byte-identical (Terminus, hull-rest, fights); a fix that moves judged rows = M4b PARKED for round 31; (2) may be a test
+  expectation encoding the old behaviour if the ticks are correctly classified (the edit granted in brains' test file if
+  so). M1b/M2b chains PAUSED after their test re-runs until this is ruled.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` (re-based onto M4b2 `77a1603f` as `b14bee65`, no code change) = M4b + the anchor alone (`OrderController.
