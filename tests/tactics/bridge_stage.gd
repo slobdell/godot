@@ -118,11 +118,17 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 	var killers := {}
 	game_match.tank_destroyed.connect(func(victim: Tank, killer: String) -> void: killers[String(victim.name)] = killer)
 	var ticks := int(seconds * SimClock.TICK_RATE)
+	var seen_events: Array = []
 	for tick in ticks:
 		await lab.step()
 		var now: int = game_match.tick - given
 		if arrived < 0 and element.arrived:
 			arrived = now
+		# Round 29 (B3): the element's events (re-seats, make room, task) as they happen, traced runs only.
+		if trace:
+			for event: String in TacticsLab.fresh_events(seen_events, element.events):
+				print("BRIDGE_EVENT t=%.1f %s" % [_s(now), event])
+			seen_events = element.events.duplicate()
 		for unit_name: String in names:
 			var t := lab.tank_of(unit_name)
 			if t == null or not t.is_alive():
@@ -206,7 +212,7 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 	var report := {"deck_jam_s": _s(deck_total),"seed": seed_value, "arena": arena, "side": side, "units": ":".join(unit_ids), "guns": gun_names.size(),
 			"gun_id": gun_id, "crews": names.size(), "rim_s": rim_s, "rim_total_s": _s(rim_total), "rim_crews": rim_crews,
 			"wet_hops": wet_hops, "crossed": crossed.size(), "crossed_s": _s(crossed_at) if crossed.size() == names.size() else -1.0,
-			"arrived_s": _s(arrived), "alive": lab.alive(names), "guns_alive": lab.alive(gun_names),
+			"arrived_s": _s(arrived), "mouth_held_resends": int(element.get("mouth_held_resends") if element.get("mouth_held_resends") != null else 0), "alive": lab.alive(names), "guns_alive": lab.alive(gun_names),
 			"dead": dead.values()}
 	lab.dispose()
 	return report

@@ -687,6 +687,18 @@ approach-clip: import ## Round 29 (B1): his artillery, clicked v a drawn side, a
 		-filter_complex "[0:v]drawtext=text='clicked':x=20:y=20:fontsize=28:fontcolor=white[a];[1:v]drawtext=text='drawn side (east)':x=20:y=20:fontsize=28:fontcolor=white[b];[a][b]hstack=shortest=0" \
 		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/approach-clip/approach_both.mp4 && echo "APPROACH_CLIP $(BUILD_DIR)/approach-clip/approach_both.mp4"
 
+# Round 29 (brains B4): the gang trucks' screen slots (manoeuvre's lead: TacticsLab seed 61, four gang_tank screening
+# to [LANE_X, 0] facing east from 50 m south) -> build/screen-slots.log (slot pitch v hull length; every second each
+# crew's distance off its slot, heading, phase; when the last is in). SLOTS_SEED, SLOTS_UNIT, SLOTS_FLAGS.
+.PHONY: screen-slots
+screen-slots: import ## Round 29 (B4): the gang trucks' screen slots traced (SLOTS_SEED=61, SLOTS_UNIT=gang_tank, SLOTS_FLAGS) -> build/screen-slots.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> screen-slots on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/screen_slots_probe.gd -- \
+		--seed=$(or $(SLOTS_SEED),61) --unit=$(or $(SLOTS_UNIT),gang_tank) --seconds=$(or $(SLOTS_SECONDS),90) $(SLOTS_FLAGS) \
+		> $(BUILD_DIR)/screen-slots.log 2>&1 || true
+	@grep -E "SCREEN_SLOTS_PROBE|SCRIPT ERROR" $(BUILD_DIR)/screen-slots.log | cut -c1-600
+
 # Round 29 (brains B5a): the element's arrival seating traced in traffic's crossing case (its TrafficStage): every
 # re-seat / make-room event and each crew's seat, slot and how short of the slot its navmesh path ends (> 3 m reads
 # no_path in Movement). RESEAT_ARENA=terminus RESEAT_KIND=head RESEAT_SEED=1 RESEAT_TICK=11 -> build/reseat-trace.log

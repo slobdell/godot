@@ -42,6 +42,16 @@ static func create(test: TestCase, seed_value := 7, arena_name := "") -> Tactics
 
 
 ## An autonomous vehicle with a brain (it executes K1 orders and does its own micro).
+## Round 29 (brains): the events in `now` that `before` (the same capped ring, read earlier) did not hold yet. A full
+## ring keeps its size as it rolls, so counting its length misses everything after it fills.
+static func fresh_events(before: Array, now: Array) -> Array:
+	for drop in before.size() + 1:
+		var kept := before.slice(drop)
+		if kept.size() <= now.size() and now.slice(0, kept.size()) == kept:
+			return now.slice(kept.size())
+	return now.duplicate()
+
+
 func unit(team: int, unit_name: String, position: Vector3, yaw: float, unit_id := "tank") -> Tank:
 	var tank := game_match.add_brain_tank(team, "Doctrine", unit_id, [], unit_name)
 	tank.global_position = position
