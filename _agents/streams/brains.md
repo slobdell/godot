@@ -132,6 +132,22 @@ numbers; the report at the top)_
 - Next: **B3b** (`lab/brains-r30-bridge`, from `lab/brains-r29-bridge`'s 254fd98f + mouth guard), then traffic's
   Terminus crossing seat trap (s33 t1 under traffic-t3b) and **B6**.
 
+### B3b — JUDGED, NOT SHIPPED, PARKED (`lab/brains-r30-bridge` = `4bc708d7`; accepted by godot-67)
+His bridge, the full 108 (builder0, 4bc708d7, locks × both sides × seeds 1–3 × ticks 1–18, deterministic): **candidate
+107/108** (fails green t18 s3, rim_crews 1); **control** (all three off = main's rules) **106/108** (fails green t5 s2,
+rust t9 s2). The chain was stopped there (bridge-pooled 18, arrive, cost, check moot for shipping; killed by PID, its
+builder0 tree too). Rows: `references/round30/brains/b3b-bridge108-*-4bc708d7.jsonl`, cells `b3b-cells-4bc708d7.txt`.
+Each switch alone on main's two cells (the orchestrator's (a); worst crew at the rim; builder0, n = 1 a run):
+| cell | heading rule alone (254fd98f) | mouth guard alone | route seating alone |
+|---|---|---|---|
+| green t5 s2 | 0.3 s pass | 3.5 s FAIL | 0.3 s pass |
+| rust t9 s2 | 0.5 s pass | 5.1 s FAIL | 1.4 s pass |
+The new cell (green t18 s3): all three on, S_1 3.4 s at the rim (FAIL); route seating off, 0.9 s (pass): **the route
+seating breaks it.** Trace: S_1's seat flips east (−50, −12) at 16 s → west (−73, −12) at 18 s → east again by 24 s, and
+it stalls on terrain at the rim at 20 s; with route seating off its seat holds. The via cost re-matches every plan as the
+crews move. **Round-31 lead:** lay the crossing-order seating ONCE (fixed from its first plan, as transit seating is) and
+re-judge the 108; the mouth guard alone never helps main's cells (it was for 254fd98f's rust t5 s1).
+
 ### B3b — route-aware seating across a crossing (DECLARED; bar ACCEPTED 16:31 by godot-67; v1 = the last attempt)
 Lab `lab/brains-r30-bridge` = `4bc708d7` (`a117cb1a` + the settle probe's counter): stream + 254fd98f (heading re-issue
 only when the TASK's drawn facing changed) + 474cf510 (the mouth guard) + **route seating**: on a drill move whose navmesh
