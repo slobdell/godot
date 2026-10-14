@@ -363,6 +363,11 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   plant's 12.00), `test_nav_wall_contact` + `test_tactics_mixed_legs` green, native's pair equal (the tank.gd line in
   `tank_drive_native` only), the pair's check green. M1b/M2b re-base onto the reader commit; chains GO when their tests
   are green, M1b first.
+  **Reader commit = `lab/manoeuvre-m4b-reader` `8cbdcfad`** (tank.gd: the member and its write after either plant;
+  manoeuvre_census.gd's `real`; hull_rest_moving.py's class; five reader tests in test_manoeuvre_wedge; movement.gd and
+  gunnery.gd = main's exactly). Native: escapes + lead mirrors kept on `lab/native-m4b-escapes` = 366b42bc; stream/native
+  back to f1e4178b; the reduced pair on 8cbdcfad (one tank_drive_native line). NATIVE=off re-run on 366b42bc showed both
+  failures identical with the library off (13 passed / 2 failed both ways): M4b's GDScript, not the port.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` (re-based onto M4b2 `77a1603f` as `b14bee65`, no code change) = M4b + the anchor alone (`OrderController.
