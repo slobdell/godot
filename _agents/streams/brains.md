@@ -98,6 +98,27 @@ Nothing: his calls are made (artillery: go straight to his side, 2026-10-13).
 
 ## Status
 
+### Round 29 FINAL REPORT (2026-10-14; green hash: see the last line of this block)
+**Shipped to main:** B1 artillery from his side (main `c0ac69e0`); B2 drawn flank, the target's reach (`fa099d5b` →
+`23d94eb3`); B5 queued attack (`5ab05468` → `1f5c84e4`).
+**Parked, with branches (round 30):**
+- **B5c** arrival-gate rule: `lab/brains-r29-gate` = `brains-b5c-flip` = `a8df3dc3` (judged attempt `053beffb`, every
+  bar line passed; judged data kept). Native's mirror: `lab/native-b5c` (incl. `b01a8959`, the a8df3dc3 mirror). The flip
+  failed round 8's 180° facing test; the narrow fix moved yard 23 (t1/t3/t6/t8 later, t11 earlier) and Sumps 6. Why,
+  by the counters (not traced per crew): `reached_facing_away` fired in every moved cell (yard 129–220, Sumps 6: 33), so
+  those cars no longer latched at a gate reached facing out and, with the stalled give-up held off while turning, went
+  round it again: yard's 33 s gate-circling (what the v2 latch had fixed) partly returns. Sumps 4 and 7 fired it too
+  (39, 21) and did not move.
+- **B3** his bridge: `lab/brains-r29-bridge` = `474cf510` (fixes rust t5 s1; t16 s2 needs route-aware seating).
+- **B4** gang trucks' screen slots: the cause is the gate (B5c); spacing pass on `lab/brains-r29-linespread` = `3fc0cb01`.
+**Round-30 leads:** route-aware seating (B3 t16 s2: an attack-move seated by straight line across a crossing); the gate
+refinement (keep yard's latch win AND come round for a 180° facing; no gate when the hull is inside the approach length
+and the route via the gate is much longer; the 180° test in the bar from the start); the SBF per-crew trace (wheeled
+turret hulls, drawn worse); splitting `test_tactics_scenarios` (orchestrator's lead).
+**Stream v main:** game/ equals main except a 4-line comment in `game/ai/tank_brain.gd` (B5a's LATENT note at the move
+dedup); the rest is probes, `mk/tactics.mk` and this brief.
+GREEN HASH: pending (check running).
+
 ### Plan (2026-10-13; start = stream `3cd5596b`, covered by the launch check, main `bcef46a1` green)
 1. **B1** artillery from his side: restore `88b6a724` on main, instrument it first (per-crew counters, lesson 300), trace the
    tuning seeds 4–6 before tuning, send the bar, judge on fresh seeds 13–15 (10–12 are B2's).
