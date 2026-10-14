@@ -74,9 +74,6 @@ static func install(p_match: Match, p_orders: Object = null) -> Elements:
 	# Round 27 (B2): a re-seat keeps the parked crews' seats (Element.RESEAT_KEEP_ENABLED); `--reseat-keep=off` is round 26's.
 	if OS.get_cmdline_user_args().has("--reseat-keep=off"):
 		Element.RESEAT_KEEP_ENABLED = false
-	# Round 29 (B5a): no seat more than NO_PATH_MARGIN off the navmesh, no make-room trade of a no_path slot.
-	if OS.get_cmdline_user_args().has("--seat-on-mesh=off"):
-		Element.SEAT_ON_MESH_ENABLED = false
 	if OS.get_cmdline_user_args().has("--watch-arrived=off"):
 		Element.WATCH_ARRIVED_ENABLED = false
 	if OS.get_cmdline_user_args().has("--resend-short=off"):

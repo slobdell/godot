@@ -635,13 +635,6 @@ func _watch_progress(game_match: Match) -> void:
 			# Make room only once a fresh seating has come back UNCHANGED this movement: until then the re-seat may still
 			# help (round 18's 80 runs), and a swap taken early cost a mixed Sumps squad its last re-seat (seed 3).
 			var blocker := _blocker_of(unit_name, by_name) if MAKE_ROOM_ENABLED and _reseat_useless else ""
-			# Round 29 (B5a): a crew that reads `no_path` for its own slot is not stuck behind the squadmate beside it:
-			# the slot is the trouble, and trading it hands the same trouble to a crew that was already in (Sumps,
-			# seed 1: seats 2310 -> 2301 at 61 s, the parked crew then read `no_path` there for 7 s).
-			if blocker != "" and SEAT_ON_MESH_ENABLED and _reads_no_path(game_match, unit_name):
-				swaps_refused_no_path += 1
-				_log("make room: %s reads no_path for its own slot; not trading it to %s" % [unit_name, blocker])
-				blocker = ""
 			if blocker != "" and _swaps_this_move < MAX_SWAPS and seats.get(unit_name) is Array and seats.get(blocker) is Array:
 				_swap = {unit_name: int(seats[unit_name][2]), blocker: int(seats[blocker][2])}
 				swaps += 1
@@ -659,15 +652,6 @@ func _watch_progress(game_match: Match) -> void:
 			_log("re-seat: %s has driven %d s without closing on its slot (%.0f m)" % [unit_name,
 					(game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap])
 			return
-
-
-## Round 29 (B5a): whether `unit_name`'s mover reads blocked/`no_path` (its route cannot end at its slot).
-func _reads_no_path(game_match: Match, unit_name: String) -> bool:
-	var ctl := game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as OrderController
-	if ctl == null:
-		ctl = game_match.brains.get_node_or_null(NodePath("Orders_" + unit_name)) as OrderController
-	return ctl != null and ctl.movement != null and String(ctl.movement.phase) == "blocked" \
-			and String(ctl.movement.blocked_by) == "no_path"
 
 
 ## Round 27 (B2): whether `unit_name` is up against a squadmate PARKED on its own slot (standing still within its
@@ -1337,7 +1321,6 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 		if anchor is Vector3:
 			wanted = SlotGround.on_anchor_side(wanted, anchor)
 		var allowed := SlotGround.standable_from(node, wanted, float(envelopes.get(unit_name, 0.0)), from)
-		allowed = Element.on_mesh(node, allowed)
 		if allowed != asked_for:
 			asked[unit_name] = asked_for
 		slots_in[unit_name] = allowed
@@ -1346,34 +1329,7 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
 			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
-			order["to"] = Element.on_mesh(node, SlotGround.standable_from(node, to, float(envelopes.get(unit_name, 0.0)), from))
-
-
-## Round 29 (brains B5a, DECLARED): no seat is handed out more than Movement.NO_PATH_MARGIN off the navmesh. Traced
-## (traffic's T3 lead, the Sumps arrive cell, builder0): a slot pushed clear of a container stood 3.6 m off the mesh, so
-## every crew sent there read `no_path` (from all 102 start points probed), stuck 13 s, and make-room traded it on to the
-## parked squadmate beside it, which read `no_path` there too. Such a point moves to its nearest point on the mesh.
-## `--seat-on-mesh=off` is the old grounding. Reads the navmesh; otherwise pure.
-static var SEAT_ON_MESH_ENABLED := true
-
-
-static func on_mesh(node: Node3D, point: Vector3) -> Vector3:
-	if not SEAT_ON_MESH_ENABLED or node == null or not node.is_inside_tree() or not Pathing.enabled \
-			or not Pathing.is_ready(node):
-		return point
-	# Asked as Movement asks it (Pathing.query on the order's goal, flat at y = 0): from the slot's own height the closest
-	# point can land on another polygon, and the first tuning run pulled nothing while the crew still read no_path.
-	var nearest := Pathing.closest_point(node.get_world_3d().navigation_map, Vector3(point.x, 0.0, point.z), "seat")
-	if Vector2(nearest.x - point.x, nearest.z - point.z).length() <= Movement.NO_PATH_MARGIN:
-		return point
-	seats_pulled_on_mesh += 1
-	return Vector3(nearest.x, point.y, nearest.z)
-
-
-## Round 29 (B5a, lesson 300): seats moved onto the mesh, and make-room swaps refused because the stuck crew read
-## `no_path` for its own slot (process-wide counters, read by the probes).
-static var seats_pulled_on_mesh := 0
-static var swaps_refused_no_path := 0
+			order["to"] = SlotGround.standable_from(node, to, float(envelopes.get(unit_name, 0.0)), from)
 
 
 ## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,
