@@ -150,6 +150,18 @@ _Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
   traced (terminus rigs seed 9, deterministic, GDScript path) a rig reports 12 m/s at full throttle with zero
   displacement for seconds, in free space and against a wall; unstick reads that velocity and never fires
   (`references/round29/manoeuvre/m2_judged.txt`). wall_contact.gd untouched (told the orchestrator: settled for N7.4).
+- **M4 (the wedged hulls; granted after M2, the orchestrator's GO):** cause found in `game/tank/tank.gd` (nobody's):
+  in floating mode a slide fully blocked by another body hands `velocity` back unchanged; `estimated_velocity =
+  velocity` and the wheels' `_speed` then carried 12 m/s of phantom momentum while the hull moved 0.0000 m a tick
+  (DRIVE_TRACE, terminus rigs seed 9, GDScript tank; the native tank shows the same frozen hulls). Fix (A), a GRANTED
+  minimal edit: `estimated_velocity` = the tick's real flat displacement (`get_real_velocity()`), capped at the slid
+  speed; `--tank-off=real_velocity` = old. Branch `manoeuvre-m4-r29`, candidate `9db2a57c` (judged tree `4383e801`, tests
+  only after it). `tests/test_manoeuvre_wedge.gd` (builder0 3/0): pinned gang truck 12.00 -> 0.00 m/s, free 12 = 12;
+  tracked: estimated 9 -> 0 pinned, plant speed unchanged. Bar ACCEPTED (pinned crew-seconds by command + displacement
+  down > 2 se; rig contacts down, also without each arm's two worst runs; Terminus arrivals >= base; bridge 18/18;
+  fights guard on 24 fresh showmatch seeds 109-132 within 2 se; smokes; native's port + baselines in the pair). New
+  tooling: `make manoeuvre-fights` (`tests/manoeuvre/fight_census.gd`, `fight_table.py`), `pinned_table.py`. Native
+  has the diff (C29.2) and waits for the verdict.
 - **M3 (scout's SUPPRESS lay): not opened** (conditional on CP-M2 shipping, C29.6).
 - **M1 judged run** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
   worktrees, same commit), `M1_FLAGS=--turn-states`.
