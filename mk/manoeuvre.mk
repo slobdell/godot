@@ -87,3 +87,18 @@ manoeuvre-hull-one: import ## manoeuvre M1: one hull-rest run (ONE_FACTION ONE_S
 		--no-element-cpu $(if $(ONE_CLICK),--faced-click) $(NAV_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$(ONE_TASK) \
 		> $$d/run.log 2>&1; grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-one: no SCREEN_DONE"; \
 	grep -c MANOEUVRE_TRACE $$d/run.log || true
+# ---- round 29 (M4): the fights guard -----------------------------------------------------------------------------
+# The showmatch's own match headless per FIGHT_SEEDS (tests/manoeuvre/fight_census.gd: shots, hits, kills, deaths per
+# team; shots at and hits on targets touching something), NAV_FLAGS for an arm -> build/manoeuvre/fights/<seed>.log.
+# Two arms side by side: tests/manoeuvre/fight_table.py BASE_DIR NEW_DIR (paired by seed, within 2 se).
+FIGHT_SEEDS ?= 1 2 3 4 5 6 7 8
+FIGHT_JOBS ?= 4
+FIGHT_SECONDS ?= 180
+.PHONY: manoeuvre-fights
+manoeuvre-fights: import ## manoeuvre M4: the fights guard (showmatch matches, FIGHT_SEEDS, every unit: shots, hits, kills, deaths, hits on touching targets; NAV_FLAGS for an arm) -> build/manoeuvre/fights/
+	@rm -rf $(BUILD_DIR)/manoeuvre/fights; mkdir -p $(BUILD_DIR)/manoeuvre/fights
+	@echo ">> manoeuvre-fights on $$(hostname) | flags '$(NAV_FLAGS)'"
+	@for seed in $(FIGHT_SEEDS); do echo $$seed; done | xargs -P $(FIGHT_JOBS) -I{} sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match --clean --seed={} --arena=random --mute \
+		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/{}.log 2>&1 || true'
+	@grep -h '^FIGHT_CENSUS' $(BUILD_DIR)/manoeuvre/fights/*.log | wc -l | xargs echo "manoeuvre-fights: FIGHT_CENSUS rows"

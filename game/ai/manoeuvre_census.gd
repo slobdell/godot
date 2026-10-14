@@ -108,12 +108,13 @@ func observe(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 	var speed := tank.speed()
 	trace(mover, cmd, order)
 	if states_on and tick % STATE_EVERY == 0:
-		print("MANOEUVRE_STATE f %d %s %s order %s from %s v %.2f moved %.2f cmd %.2f/%.2f face %d/%.1f blocked %s retry %d touch %s stuck %.1f pivot %s esc %.1f goal %.1f" % [
+		print("MANOEUVRE_STATE f %d %s %s order %s from %s v %.2f moved %.2f cmd %.2f/%.2f face %d/%.1f blocked %s retry %d touch %s stuck %.1f pivot %s esc %.1f goal %.1f real %.2f" % [
 				tick, String(tank.name), tank.unit_id, String(order.get("type", "")), String(order.get("from", "")),
 				Vector2(tank.velocity.x, tank.velocity.z).length(), tank.estimated_velocity.length(), cmd.throttle, cmd.turn,
 				mover._face_legs.size(), mover._face_left_m, str(mover._face_blocked != Vector3.ZERO), mover._face_retry,
 				str(mover.contact.touching), mover._stuck_time, str(mover._unstick_pivot), mover._unstick_left,
-				Vector2(here.x - float(order.get("x", here.x)), here.z - float(order.get("z", here.z))).length()])
+				Vector2(here.x - float(order.get("x", here.x)), here.z - float(order.get("z", here.z))).length(),
+				tank.real_velocity.length()])
 	var gear := 1 if speed > CUSP_DEADBAND else (-1 if speed < -CUSP_DEADBAND else 0)
 	var type := String(order.get("type", ""))
 	var goal := Vector3(float(order.get("x", 0.0)), 0.0, float(order.get("z", 0.0))) if type == "move_to" else Vector3.INF
