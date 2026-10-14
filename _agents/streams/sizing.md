@@ -104,6 +104,40 @@ Nothing.
 
 _(the worker keeps this current; CP-N announced the moment the table is written; the report at the top)_
 
+### CP-N DELIVERED (2026-10-14; commit `44a8b95a`, this worktree; no builder0 run, pure python; `check` not yet run on it)
+
+**The table is written: `_agents/judging.md` *The table (CP-N)*: 55 probe × metric rows, 48 sized from the rows under
+`references/round27..29/`, plus the count-line block (Fisher / binomial / McNemar readings) and the A/A block (the same
+traffic arm across seed sets, M1's clicked pair, B5c's yard cells).** Reproduce: `python3 tools/judge/table.py` (rewrites
+the doc's generated blocks and `references/round30/sizing/table.csv`); `python3 tools/judge/inventory.py` (S1).
+Re-derive one row by hand: Terminus head-on `xfast`, per-run paired differences of `contacts_cross_fast` over the acted
+pairs (CP-T, CP-T CPU, T1 v3, T1b, T1 v4 tuning) → pooled sd 16.7 a run, base 22.1 a run; the bar's −25 % = 5.5 a run;
+n = ((1.645 + 0.842) × 16.7 / 5.5)² = 57; MDE at n = 18 = 2.487 × 16.7 / √18 = 9.8 a run = 44 % of base.
+
+**What the three game streams should take from it (C30.3):**
+- traffic: a "between-squad fast down ≥ 25 %" line at n = 18 has 80 % power only for a ~45 % drop; name −50 % or run
+  n ≈ 57 (3 seeds × 6 ticks → ~10 seeds; icc ≈ 0, so ticks are as good as seeds). Every "crews ≥ base − 2" line is inside
+  the noise (se of the sum 2.5–4 crews over 18 runs): write "crews ≥ base − 1.645 se" (base − 4 crossings, − 7 head-on) and
+  quote the se. "all-in median ≤ +20 %" is sound at n = 18 on head-on (se 5.8 s on 59 s) and marginal on crossings
+  (se 7–10 s: a null fails it ~8 %); its MDE is +25–40 %.
+- manoeuvre: the +5 crews-still-moving guard needs ~400 runs with the class; at n = 27 say "≤ base + 2 se" with the
+  M1_CLASS se (≈ +12 wheeled turret, +15 all classes). Clicked medians: the A/A swing is −17.8..+6.3° on wheeled turrets,
+  so "±5°" cannot be judged; use the permutation p the table prints with a 1-in-20 allowance over 24 rows. Settle at the
+  75 s window is censored (both arms at 75.0): drop or widen the window. Terminus wall contact-ticks cannot carry a
+  ±10 % line (MDE +127 % at n = 6); arrivals can (MDE −15 % at 6 seeds, −10 % at 13); the pinned probe's crew-seconds
+  decide a −50 % at n ≈ 90 (not 144). Fights guard: "within 2 se" at 24 fights detects a 5 % kill loss; a 2 % loss needs ~170.
+- brains: a flank count line as a COMPARISON (v clicked, Fisher one-sided) decides 18/18 v 0/18 at n = 3 a side and
+  14/18 v 0/18 at n = 6; the "≥ 12/18" threshold form separates a 50 % rule from an 80 % one only. The alive guard
+  "≥ clicked − 0.5" is inside the noise at n = 18 (se 0.55); state it as "≥ clicked − 2 se". B5c's yard count (12/12 v
+  5/12) decides at n = 9 a side; the median line (≤ off − 5 s) sits at the cell's own ±9 s swing, so keep the count as
+  the deciding line. Arrive series: McNemar over discordant cells; an 11 % one-way gain needs ~70 cells (100 is fine).
+  Census (12 seeds): "−50 %" on contacts under MOVE needs 26 seeds for 80 % power (B3's −75 % passed at the MDE).
+
+**S1 done:** `references/round30/sizing/inventory.md` + `.csv`: 129 lines of rounds 27–29, 77 with a noise estimate;
+**42 of 122 judged pass lines were inside their probe's noise** (x < 1.645 se), 38 verdicts cleared their line by
+less than 1.645 se. M1's six +5 guards: all inside (the two fails missed by 0.3 se); T3's all-in fail by 0.18 se; T1b's
+three fails by 0.17–0.47 se; every "crews ≥ base − 2" line inside.
+
 ### Plan (2026-10-14; start = main `bd05077d`, covered by the launch check `0d35f215` + docs-only commits)
 
 Session `godot-sizing-72`, Fable 5.1. Order, smallest foundation first (each a commit; no builder0 run but `check`):
