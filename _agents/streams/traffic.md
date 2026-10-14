@@ -322,3 +322,43 @@ any test's assertions, `tools/remote.sh` / `tools/slot.sh` (ask), other streams'
   Adopt it in your own `traffic-series` first and show a cached base row equals a fresh one field for field; then write
   how other streams' series adopt it (a request through the orchestrator, not an edit of their mk files).
 - Each item: its own commit, `make check` green, numbers with commit + machine.
+
+
+### REPORT: the builder0 throughput extension (traffic worker, 2026-10-14 ~02:30)
+
+- **I1, shards balanced by measured time: FAILED its bar; shipped OFF.** `tests/run_tests.gd --shard-plan=time` assigns
+  files longest-first to the least-loaded shard from `tests/shard_times.txt` (written by `make test-times` from the
+  `FILE_TIME` lines every run now prints), and `test_shard_plan` covers it. `TEST_SHARD_PLAN` defaults to `rr`, round 9's
+  split, so behaviour is unchanged. Every `make test` now prints `test wall: N s` and each shard's seconds.
+  - Paired on builder0: 4 shards, native rebuilt, same tree, 2578 passed / 0 failed in every run. Round-robin (A) v
+    balanced (B) in run order A1 B1 B2 A2 A3 B3: **2417, 1965, 2409, 2558, 2448, 2614 s**. Means: rr 2474, time 2329,
+    **−6 %** against a −30 % bar. builder0's load drifted between 1 and 12, with 15–18 other Godot processes even at
+    the quietest start.
+  - The plan balances as designed (longest/mean shard 1.06–1.15 against 1.41–1.50), and the measured times predicted
+    −31 % at 4 shards, −27 % at 5 and −21 % at 6 on an idle machine.
+  - Why it did not pay here: on a loaded builder0, four shards that are all busy for the whole run compete with
+    everything else (total shard-seconds rose under `time`), while round-robin's short shards finish early and free the
+    CPU.
+  - The floor at 5–6 shards is one file: `test_tactics_scenarios.gd`, 425 s. Splitting it is a round-30 item for brains,
+    recorded by the orchestrator.
+  - Found on the way: a bare `make test` after merging `native/` changes runs a STALE native library (4 native-port tests
+    failed with "Nonexistent function '..._configure'"). Written into `verification.md`; `check` and `quick` rebuild it
+    first.
+- **I2, `make quick` / `make quick-remote`: built, untimed.** check's native stage, lint, the tests a diff touches
+  (`tools/quick_tests.sh`: changed tests, tests naming a changed script's class or path, narrowed for core classes
+  named by more than 30 test files; `tests/quick_neighbours.txt`), and `combat-smoke`. `quick-remote` selects the tests
+  on the laptop (builder0's copy has no `.git`) and runs `quick` there. `LIGHT_GOALS` gained `quick-remote test-times`
+  (granted). It is documented in `verification.md` as the step for in-between commits; `make check` stays the merge
+  gate. **Owed:** its ≤ 10 min timing on builder0.
+- **I3, the series-row cache: built, OFF, proof owed.** `tools/series_cache.sh` keys a row by a content hash of what a
+  run reads (`game/`, `native/src`, `arenas/`, `doctrines/`, `project.godot`, the stage and lab, the Godot binary and
+  glibc) plus the row's arguments, and stores rows in `~/.cache/tank_squad/series`, outside any worktree. Adopted in
+  `traffic-series` behind `CACHE=on`, with a "cache hit" or "ran" line per row. **Owed:** a cached base row shown equal
+  to a fresh one, field for field; then other streams' series adopt it through the orchestrator.
+- **Check: GREEN at `de08392b`** (builder0, `make check exited 0`, 26 targets ALL JUDGED, 2578 passed / 0 failed; whole
+  check ~36 min, `test` at 6 shards round-robin `test wall: 1531 s`, shards 766–1531 s). One check covers I1 off, I2 and
+  I3 off. The orchestrator records I1's −6 % as "no gain shown" (load drifted 1–12), not as a measured loss. **The lever
+  on a shared builder0 is total load:** I3's cache and right-sized judged series come next.
+- **Merge:** `de08392b`, or the tip, which adds only this report. It contains the runner and `mk/core.mk` changes (the
+  default split unchanged), `mk/infra.mk`, `tools/quick_tests.sh`, `tools/series_cache.sh`, `tests/shard_times.txt`,
+  `tests/quick_neighbours.txt`, `test_shard_plan`, and the root Makefile's `LIGHT_GOALS` line (granted).
