@@ -10,7 +10,7 @@ request 2026-10-14). Round 30 is NOT split: `roadmap.md` *Round 30 candidates*. 
 
 ## ✅ ROUND 29 IS CLOSED (2026-10-14) — read this first
 
-**Main's final check:** `make remote T=check` on `0d35f215` (CLOSE_CHECK_LINE).
+**Main's final check:** **GREEN at `0d35f215`** (builder0, `make check exited 0`, 2584 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7, 2082 s total).
 
 **What he plays now** (`make native && make skirmish`):
 - **Artillery with a drawn side goes straight to his side** (his call: it packs up, drives round "guns quiet", sets up and
