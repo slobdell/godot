@@ -117,7 +117,9 @@ and the route via the gate is much longer; the 180° test in the bar from the st
 turret hulls, drawn worse); splitting `test_tactics_scenarios` (orchestrator's lead).
 **Stream v main:** game/ equals main except a 4-line comment in `game/ai/tank_brain.gd` (B5a's LATENT note at the move
 dedup); the rest is probes, `mk/tactics.mk` and this brief.
-GREEN HASH: pending (check running).
+**GREEN HASH: `6f829c48`** (builder0: `make check exited 0`, 2580 passed / 0 failed, sim-baseline unmoved, native-verify
+0 mismatches; perf-judge NOT JUDGED in the check (box busy, 2.3×), re-run alone: JUDGED PASS, 1.17×; scenario_perf's
+unpinned-cpu refusal is covered by that verdict). Later commits on the stream are Status-only.
 
 ### Plan (2026-10-13; start = stream `3cd5596b`, covered by the launch check, main `bcef46a1` green)
 1. **B1** artillery from his side: restore `88b6a724` on main, instrument it first (per-crew counters, lesson 300), trace the
