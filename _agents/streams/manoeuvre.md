@@ -126,9 +126,10 @@ _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoe
 | item | candidate (branch) | state |
 |---|---|---|
 | M4b run 1 | `e8bfef2e` (`stream/manoeuvre`, judged tree `1b3e2e56`) | NOT PASSED (orchestrator's ruling): rigs arrivals −1.1 se, rigs' wall contact-ticks +141 % |
-| M4b run 2, the last | **`77a1603f`** (`lab/manoeuvre-m4b2`): escapes only for hulls ≤ 10 m | **PASSED every filed line (ruled 16:40 PDT); SHIPS as the C30.2 pair with native's `pair/m4b2` `366b42bc` when the pair's check is green.** Merge tip = `77a1603f` exactly |
-| M1b(1) face_slot | `b14bee65` (`lab/manoeuvre-m1b`, rebased on `77a1603f`) | tests re-running on the rebase, then its judged chain (GO 16:40) |
-| M2b creep lift + kturnarc | `acf29cb2` (`lab/manoeuvre-m2b`, rebased on `77a1603f`) | tests re-running on the rebase, then its judged chain after M1b's (GO 16:40) |
+| M4b run 2, the last | `77a1603f` (`lab/manoeuvre-m4b2`): escapes only for hulls ≤ 10 m | passed every filed line, then its PAIR CHECK went red on two tests (traced: the escape's reverse on lock in single file; a `drive` order's hull backing off): **the ESCAPES are PARKED for round 31** (ruled ~16:45 PDT) with the findings and the design note |
+| **M4b reader (SHIPS)** | **`8cbdcfad`** (`lab/manoeuvre-m4b-reader`): `Tank.real_velocity`, the census `real` column, the probe's honest class; nothing in play reads it | the measurement commit (ruled); native's pair `pair/m4b-reader` (one `tank_drive_native` line) in check; bar: the thirteen byte-identical, the wedge reader tests, wall_contact and mixed_legs green, the pair's check green |
+| M1b(1) face_slot | `55622870` (`lab/manoeuvre-m1b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain (GO) |
+| M2b creep lift + kturnarc | `1f1c9835` (`lab/manoeuvre-m2b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain after M1b's (GO) |
 | M5 the Terminus escape | `34f34ea0` (`lab/manoeuvre-m5`, parked) | PARKED with the finding: case 1 closed by brains' v4, case 2 is the planner's F4 |
 
 **Decisions:** design B kept exactly (C30.6); the escapes sized to the plant's momentum (run 1) and then gated to
@@ -141,10 +142,10 @@ pinned hull yaws through what pins it (Status finding); a freed hull with no way
 (mixed seed 21's IFV, 73 s). **What to playtest (once the pair is on main, `make native && make skirmish`):** send a squad of IFVs or scouts
 through a Terminus street with a parked squadmate in the way, or watch a tight formation seat: a hull pinned nose-on
 to another no longer sits at full throttle, it backs off within ~2 s and goes round (pinned crew-seconds −75 % on the
-hull-rest probe, −100 % of the ≥ 10 s pins on the Terminus drive); gun trucks and War Rigs drive exactly as before. **Merge notes:** M4b run 2 = one commit
-(`77a1603f` carries `e8bfef2e`'s diff + the gate) with native's pair; three native twin tests red on my branch alone
-(`test_native_exec_state`'s table: `_unstick_from`; `test_native_drive`'s unstick compare; `test_native_gun`'s lead);
-then M1b(1), then M2b, each alone, re-based on the merged M4b. Lab worktrees `godot-manoeuvre-{m1,m2,m5,v2}` and their
+hull-rest probe, −100 % of the ≥ 10 s pins on the Terminus drive); gun trucks and War Rigs drive exactly as before. **Merge notes:** the M4b reader `8cbdcfad` with native's `pair/m4b-reader` (no twin test red: Movement and
+Gunnery are main's); then M1b(1) `55622870`, then M2b `1f1c9835`, each alone, both on `8cbdcfad`; the stream branch
+(`stream/manoeuvre`, docs and tooling: Status, judged tables, pinned_table, mk) for the record. Parked, kept:
+`lab/manoeuvre-m4b2` `77a1603f` (the escapes, judged twice), `lab/manoeuvre-m5` `34f34ea0`. Lab worktrees `godot-manoeuvre-{m1,m2,m5,v2}` and their
 builder0 folders to remove at the close.
 
 ### Plan (smallest foundation first)
@@ -377,6 +378,20 @@ arrivals not down, with the planner's F2 the long-run answer. The gate `UNSTICK_
 on lock for a long hull", not "no stall clock".
 
 ### Progress log
+- **M4b run 2's PAIR CHECK (native's `366b42bc`) RED on two tests, both reproduced on `77a1603f`'s GDScript path
+  (builder0 light lane, 16:55 PDT; `references/round30/manoeuvre/m4b_run2_paircheck_traces.log`):**
+  (2) `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it`: 48 contact ticks = 32
+  steer (driver drive, forward) + 16 plant (driver unstick, reverse: sweep 10, drift 6): the 9.7 m tracked tank backs
+  off once the honest reading fires the stall rule after 1 s; the classification is correct, the test's "every tick is
+  steer" encodes the old never-backs-off behaviour on a raw `drive` order. (1) `test_tactics_mixed_legs::
+  test_four_tanks_attack_moved_across_the_sumps_arrive`: three of four 7.3 m wheeled 8×8s seat by 45 s; Green_M_3
+  takes one stall escape at 48 s (v 0.01: a 0.9 s reverse on full lock) and from 57 s to the end sits 21.5 m from its
+  slot at ORCA's pace (`cmd 0.07/−0.03`, plant 0.86, real 0.00, touching nothing) behind a seated squadmate, reseats 0:
+  the escape's reverse on lock in single file put it at a pose the seating never recovers from (the re-seat's "slow"
+  test reads `estimated_velocity`), and at 0.07 throttle no rule reads it as stuck. A real regression on a stage the
+  series did not cover; the escape itself is the cause, so no fix in my paths leaves the judged rows byte-identical.
+  **Recommended to the orchestrator: park the escapes for round 31 (with the design note), ship the READER as the
+  measurement commit (`real_velocity`, the census line, the probe, gunnery's two leads).**
 - **M4b run 2 (`77a1603f`), Terminus 13 fresh seeds 62–74, GDScript path, builder0, read 14:50 PDT — the gate PASSES:**
 
   | | base | new | line |
