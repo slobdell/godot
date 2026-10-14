@@ -98,8 +98,6 @@ static func _parse() -> void:
 			TankBrain.BOUND_SUPPRESS_MOVES = false
 		if arg == "--feed-mouth=off":
 			ElementPlan.FEED_MOUTH_ENABLED = false
-		if arg == "--line-spread=off":
-			Element.LINE_SPREAD_ENABLED = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":
