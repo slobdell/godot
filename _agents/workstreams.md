@@ -1,9 +1,9 @@
 # Workstreams: the current round
 
-> **ROUND 29 PREPARED (2026-10-13): traffic, manoeuvre, brains launch; native continues (`streams/native.md`).** Round 28's
-> section below is closed (briefs in `streams/archive/round28/`).
+> **ROUND 29 CLOSED (2026-10-14): traffic, manoeuvre, brains done (briefs in `streams/archive/round29/`); native continues
+> (`streams/native.md`).** Round 30 is not yet split (`roadmap.md` *AT ROUND 29's CLOSE* and *Round 30 candidates*).
 
-## Round 29: four streams (prepared 2026-10-13; native continues from round 28)
+## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 
 **Goal: round 28's four calls, each parked with a trace, carried home (`roadmap.md` *Round 29 candidates*; his words in
 `game_design.md` *Round 28 direction* and *Round 29: his artillery call*): squads meeting in a street take turns with a
@@ -13,9 +13,9 @@ back to 108/108, the creep in tight streets planned as legs, and the C++ core co
 
 | Stream | Folder (offset) | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | [streams/traffic.md](streams/traffic.md) | two of his squads meeting in a street: one waits beside the mouth, the other comes through, nobody locks up | **CP-T** T1, DECLARED, + native's port |
-| **manoeuvre** | `godot-manoeuvre` (2) | [streams/manoeuvre.md](streams/manoeuvre.md) | wheeled turret vehicles end nose-on to his drawn facing within a few seconds; long trucks in tight streets turn in a few planned legs, not a creeping shuffle | **CP-M1**, **CP-M2**, each DECLARED (+ port for M2) |
-| **brains** | `godot-brains` (3) | [streams/brains.md](streams/brains.md) | artillery drives round and shells from his side; a drawn flank is carried out; his bridge 108/108 again | B1, B2, B3 as they go green |
+| **traffic** | `godot-traffic` (1) | [streams/archive/round29/traffic.md](streams/archive/round29/traffic.md) | two of his squads meeting in a street: one waits beside the mouth, the other comes through, nobody locks up | **CP-T** T1, DECLARED, + native's port |
+| **manoeuvre** | `godot-manoeuvre` (2) | [streams/archive/round29/manoeuvre.md](streams/archive/round29/manoeuvre.md) | wheeled turret vehicles end nose-on to his drawn facing within a few seconds; long trucks in tight streets turn in a few planned legs, not a creeping shuffle | **CP-M1**, **CP-M2**, each DECLARED (+ port for M2) |
+| **brains** | `godot-brains` (3) | [streams/archive/round29/brains.md](streams/archive/round29/brains.md) | artillery drives round and shells from his side; a drawn flank is carried out; his bridge 108/108 again | B1, B2, B3 as they go green |
 | **native** | `godot-native` (4, continuing) | [streams/native.md](streams/native.md) | nothing in play (equal answer); the tick's scheduling in C++; every driving change ported | N7.3 green; each pair |
 
 **Ownership (as round 28's, restated):** each brief's header lists its paths. In `movement.gd`: traffic the give-way block

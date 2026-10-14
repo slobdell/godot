@@ -4,11 +4,41 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-13 — **ROUND 29 IS PREPARED (below): traffic, manoeuvre, brains launch; native continues.** Main =
-`bcef46a1` (native N7.6, the match recorder in C++, merged from green `0f645e8a`); main's launch check: see the round 29
-section. His artillery call is answered (go straight to his side). He pushes `main`._
+_Last updated: 2026-10-14 — **ROUND 29 IS CLOSED (below); native continues in `godot-native`.** Main's final check: see
+the section. **FIRST THING: tell him it is time to launch the Fable agents** (`roadmap.md` *AT ROUND 29's CLOSE*; his
+request 2026-10-14). Round 30 is NOT split: `roadmap.md` *Round 30 candidates*. He pushes `main`._
 
-## 🚀 ROUND 29 IS PREPARED (2026-10-13) — read this first
+## ✅ ROUND 29 IS CLOSED (2026-10-14) — read this first
+
+**Main's final check:** `make remote T=check` on `0d35f215` (CLOSE_CHECK_LINE).
+
+**What he plays now** (`make native && make skirmish`):
+- **Artillery with a drawn side goes straight to his side** (his call: it packs up, drives round "guns quiet", sets up and
+  shells from there; first round ~27 s v 2.3 s clicked; fired from his side 18/18).
+- **Two of his squads meeting head-on in a street take turns:** one waits beside the mouth, the other comes through
+  (between-squad bumps −81 %, no lock-up; the CPU too). C++ and GDScript paths equal.
+- **A drawn flank is carried out** against a squad holding its ground (on side 14/18 v 0/18, kills 8 v 4); a charging
+  target is fought where it stands.
+- **Shift + attack-move / attack queue behind his waypoints** (one squad or several), faced from the last waypoint.
+- Native: the match recorder in C++ (ON); the tick's scheduling and wall contact ported but OFF (each slower).
+- His laptop (E6b, `b2712987`): 20 a side 0.854 → 0.936 of real time with all the C++, 25 a side 0.672 → 0.878.
+
+**Clips for him:** `~/projects/clips/round29/` (artillery side by side; his Terminus head-on base v hold; the flank).
+
+**Not shipped (each judged and parked with its branch; `roadmap.md` *Round 30 candidates*):** turn the whole hull (M1, a
+noise-sized guard missed), the creep (M2), honest velocity for wedged hulls (M4: hurt long rigs), arrival gates (B5c: won
+the yard, broke the 180° arrival), his bridge's last cell (B3), gang trucks' screen slots (B4), a set-up hull refusing a
+give-way (T1c), squads crossing at an angle (T3), time-balanced test shards (I1: no gain on a shared box).
+
+**Process changes this round:** one check per tree (`orchestration.md` §7); `make quick` for iteration commits
+(`verification.md`); the series cache (OFF, proof owed); a second build machine deferred by him (`roadmap.md`). Lessons
+303–305. Round 28's orchestrator session `godot-29` stood down 2026-10-13 (one orchestrator).
+
+**Cleanup:** worktrees `godot-traffic`, `godot-manoeuvre`, `godot-brains` and their builder0 folders removed after the
+check; briefs in `streams/archive/round29/`. Kept branches are listed in each brief's report. **He should close those
+three terminals** (and `godot-29`, `godot-manoeuvre-82`).
+
+## 🚀 ROUND 29 WAS LAUNCHED (2026-10-13) — kept as written
 
 **From round 28's four parked calls** (`roadmap.md` *Round 29 candidates*) and his artillery answer today
 (`game_design.md` *Round 29: his artillery call*: artillery fires only when set up, so it goes straight to his side and

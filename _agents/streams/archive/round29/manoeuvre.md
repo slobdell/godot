@@ -1,3 +1,4 @@
+> **ARCHIVED (round 29 closed 2026-10-14; native continues).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: manoeuvre (wheeled turret vehicles turn nose-on to the facing you draw, without a packed squad still turning a minute later; long trucks in tight streets turn in planned legs)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–303), `_agents/game_design.md` *Round 28 direction*

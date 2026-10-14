@@ -1,3 +1,4 @@
+> **ARCHIVED (round 29 closed 2026-10-14; native continues).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: brains (artillery drives to your side and shells from there; a drawn flank is carried out; your bridge 108/108 again)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–303), `_agents/game_design.md` *Round 28 direction*

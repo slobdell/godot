@@ -1,3 +1,4 @@
+> **ARCHIVED (round 29 closed 2026-10-14; native continues).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: traffic (two of your squads meeting in a street take turns: one waits beside the mouth, nobody locks up)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–303), `_agents/game_design.md` *Round 26 direction*

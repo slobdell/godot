@@ -243,7 +243,26 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
-## Round 29 candidates (round 28's carry-overs, 2026-10-13) — SPLIT 2026-10-13 as traffic (1) + manoeuvre (2, 6; 7 as its conditional stretch) + brains (3, 4, 5, 8) + native (`workstreams.md` *Round 29*); his question 6 answered: go straight to his side
+## Round 30 candidates (round 29's carry-overs, 2026-10-14) — NOT YET SPLIT; first, tell him to launch the Fable agents (above)
+
+Each parked with its trace and judged data (`streams/archive/round29/`, `workstreams.md` *Round 29*):
+1. **Wheeled long hulls in tight space** (the Fable planner task feeds it): M1 turn-hull (`manoeuvre-m1-r29`, re-judge with
+   a noise-sized guard; `face_slot` alone as a bug fix), M2 creep (`manoeuvre-m2-r29`, after M4), M4 real displacement to
+   the PROGRESS readers only (`manoeuvre-m4-r29`), brains' Terminus escape failure (B_4 jammed past its gate).
+2. **Arrival gates** (B5c, `brains-b5c-flip` / `lab/brains-r29-gate`, native `lab/native-b5c`): v2's latch won the yard
+   (never-in 7/12 → 12/12) but broke the 180° arrival; a rule that keeps both (latch facing away only after one circuit, or
+   a side gate for 180°), the 180° test in the bar from the start; no gate for a hull already within the approach length.
+   B4 (gang trucks' screen slots) rides on it.
+3. **Route-aware seating** (his bridge's last cell rust t16 s2, `lab/brains-r29-bridge` with the mouth guard that fixes
+   rust t5 s1); traffic T3's crossing crawl (`traffic-t3`: release the yielding squad once the other's tail clears).
+4. **Traffic T1c** (`traffic-t1c`): judge "repacks while still ordered to fire", not every set-up give-way.
+5. **Support by fire, wheeled turret line** (drawn 80.5° v clicked 57.1°): the probe reads before the law squad arrives;
+   trace per crew first.
+6. **builder0:** I3 the series cache's cached == fresh proof, then adoption by brains/manoeuvre series; `make quick`'s
+   ≤ 10 min timing; split `test_tactics_scenarios` (425 s).
+7. Native: N7.5 (element_feed) after the split; stage 2 deferred (his call).
+
+## Round 29 candidates (round 28's carry-overs, 2026-10-13) — CLOSED 2026-10-14; SPLIT 2026-10-13 as traffic (1) + manoeuvre (2, 6; 7 as its conditional stretch) + brains (3, 4, 5, 8) + native (`workstreams.md` *Round 29*); his question 6 answered: go straight to his side
 
 **His open call:** calls page question 6 (`artillery-wait`): shell from where it stands while driving round, or wait
 ~20–25 s (recommended: shell while driving). Each item below is parked on a branch with its trace and write-up in its
