@@ -83,18 +83,54 @@ Nothing: his call is made.
 
 ## Status
 
-_Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, from main `bcef46a1`)._
+_Updated 2026-10-13 ~21:15 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, from main `bcef46a1`).
+Round 29 FINAL REPORT. Green hash: see "Merge notes"._
 
-### Plan (ordered)
+### Final report
 
-1. **M0** re-base M1 (`ef6d430a`: round 28's diff `c6e32d03..140275af` applied cleanly); hull-rest base + round-28 M1
-   on TUNING seeds 1 6 10 12 14 16 (builder0); traces of crews still moving at 75 s; `--turn-states` +
-   `tests/manoeuvre/hull_rest_moving.py` so every moving crew at the judge is classified (face legs, face creep,
-   pinned, dressing, driving), not just two traces.
-2. **M1** fix what the classes show (first find: `facekeep`, below), bar to the orchestrator BEFORE numbers, judged
-   once on fresh seeds 22 23 24 25 26 27 (named now: not round 28's, not O3's, not the tuning seeds).
-3. **M2** the creep as legs for long hulls in streets (census first).
-4. **M3** stretch only if CP-M2 ships.
+**Done: nothing ships this round (the orchestrator ruled on each judged run; each was the last attempt).**
+
+| item | candidate (kept branch) | verdict | judged table |
+|---|---|---|---|
+| M0 | tooling on the stream | done | (M0 numbers in the log) |
+| M1 face at rest | `d7385da2` (`manoeuvre-m1-r29`, `manoeuvre-m1-pointonly`) | NOT MET: attack-move 75 s guard +8 | `references/round29/manoeuvre/m1_judged.txt` |
+| M2 creep lift | `7b895eed` (`manoeuvre-m2-r29`) | NOT MET: open+static creep -40 % v -50; Terminus rigs | `references/round29/manoeuvre/m2_judged.txt` |
+| M3 scout lay | not opened | conditional on M2 | |
+| M4 wedged hulls | `9db2a57c` (`manoeuvre-m4-r29`, tests at `8ee75677`) | NOT MET: Terminus b1, bridge b3 | `references/round29/manoeuvre/m4_judged.txt` |
+
+M4 judged (builder0, GDScript tank, base `--tank-off=real_velocity`):
+- Terminus seeds 14-19, rigs: arrived 81 -> 64 of 96 (lower on all six seeds). Wall contact-ticks 5337 -> 8542; with each arm's two worst runs dropped, 1044 -> 3882.
+- Terminus mixed: arrived 137 -> 132, contact-ticks 720 -> 3486.
+- Hull-rest seeds 34-39: pinned crew-seconds 2902 -> 1040 (-1862, se 460); pinned crews 69 -> 33.
+- Bridge-pooled 17/18 (base 18/18).
+- Fights seeds 109-132: kills, deaths, hit rate and hit rate on touching targets all within 2 se. Shots are down 18 %.
+- Smokes not run (the bar had already failed).
+
+**Decisions:**
+- The stream's game code equals main's except the census tooling (`game/ai/manoeuvre_census.gd`: `--turn-trace`, `--turn-states`).
+- `wall_contact.gd` was not touched. It is settled for native's N7.4.
+- Native was told not to port M4.
+
+**Questions for the lead:** none.
+
+**Requests and round-30 leads (recorded by the orchestrator):**
+- M4 redesign, which is (B) plus the aim reader, not (A):
+  - Keep the plant's `_speed` on today's reading, so a brush on a wall doesn't zero it.
+  - Give the real displacement only to the readers that judge progress (`unstick`, `_pressing_escape`, the pinned probe) and to aim leads.
+  - The wedge test (`tests/test_manoeuvre_wedge.gd`), `pinned_table.py` and `make manoeuvre-fights` on `manoeuvre-m4-r29` are ready to judge it.
+- M1: `face_slot` alone as its own bug fix. `Movement.idle()` clears `mover._goal`, so round 28's faceslot never anchored anything. Re-judge with a guard sized to the noise (the 75 s guard's A/A swing is +/-17 crews a task).
+- M2: the creep lift rolls long rigs into street walls. Re-judge only after the M4 redesign, because the rig pins confound it.
+
+**Known issues:**
+- Hull-rest: 18-28 wheels/turret crews a task are still DRIVING to their slots at 75 s, even at base. That is formation/traffic, not manoeuvre.
+- The hull-rest screen probe runs in real time, so the same seed gives different crews (read classes over an arm).
+
+**What to playtest:** nothing new (no game change shipped).
+
+**Merge notes:**
+- Merge `stream/manoeuvre` for its tooling and docs only: `manoeuvre_census.gd` states and trace, `mk/manoeuvre.mk` (`M1_FLAGS`, one arm per call), `tests/manoeuvre/hull_rest_moving.py`, `hull_rest_ab.py` readings, and the three judged tables.
+- Kept branches: `manoeuvre-m1-r29`, `manoeuvre-m1-pointonly`, `manoeuvre-m2-r29`, `manoeuvre-m4-r29`.
+- The green check is the `make remote T=check` line recorded at the end of the log.
 
 ### Progress log
 
@@ -165,3 +201,6 @@ _Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 - **M3 (scout's SUPPRESS lay): not opened** (conditional on CP-M2 shipping, C29.6).
 - **M1 judged run** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
   worktrees, same commit), `M1_FLAGS=--turn-states`.
+- **M4 JUDGED: NOT MET -> nothing ships (the last attempt; ruled by godot-67).** See the final report and
+  `references/round29/manoeuvre/m4_judged.txt`. Reading, not proven: the honest reading frees hulls pinned in the
+  open, but in Terminus's tight rigs every brush on a wall zeroes the wheels' `_speed`, so rigs grind along walls rather than sliding off.
