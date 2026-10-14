@@ -139,6 +139,21 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   filed. **I2 DONE:** `make quick` with the narrowed lint 487 s on builder0 (was 1081 s warm; full lint 712 s of it) +
   any slot wait; committed `4248d8ee` with I3's proof in `verification.md`. T1c-b built on `traffic-t1cb` (5/5 unit
   tests); its bar comes after T3b's table.
+- **Traffic T3b JUDGED — NOT SHIPPED (2026-10-14 ~13:35 PDT; `cf124433` both arms, builder0, GDScript, seeds 31–33 × 6,
+  n = 18 a case):** FAILED one line: **the yard crossing clock +2.80 s (se 0.22) v a limit of +1.18 s** (the yard's
+  yielding squad pays +3.66 s, se 0.23; judged paired sd 0.92 < tuning 1.77, the 1.5× caveat does not apply). Every
+  other line passed: between-squad fast pooled over the crossings 176 → 96 (−45 %; Terminus 76 → 50, yard 100 → 46);
+  crews 176 → 176 and 168 → 166, no wedge; same-squad fast 170 → 187 / 140 → 122 (within limits); head-on within
+  1.645 se; Terminus crossing clock −1.17 s (se 1.05). Reported: all-in Terminus 50.8 → 42.8, yard 90 → 90; verdicts
+  18/19; reach-free reads 2041/1332; the rule fires a little in head-on (8/10 verdicts), no line moved. Parked
+  `traffic-t3b` (= `cf124433`); stream/traffic's game/ back to main's (`e84f36e1`). CPU mirror and bridge-pooled not run
+  (chain stopped after the verdict). **Worst Terminus run (s33/t1, all-in 33.7 → 61.4 s, every crew in): B_4 gives way
+  to two squadmates at the far end, then circles its seat (35.6, 23.9) reading no_path/terrain 36–61 s; seated at 30.4 s
+  in the paired base run; the same seat as round 29's s24/t3** (a seat trap at B's destination (45, 30) on the Terminus;
+  relayed to brains). **Ruling:** the last attempt by the filed rule; parked. **Round 31 candidate, his call (in player
+  terms):** at a yard crossing the yielding squad gets through ~3 s later and the two squads bump into each other half as
+  often — the line was set at +10 % by the orchestrator, not from his words ("both squads arrive a little later"); if he
+  accepts ~3 s, T3b re-judges once on fresh seeds with the line he sets.
 - **Planner P2–P4 DONE (2026-10-14 ~13:10 PDT; stream/planner code `8f73e4cd`, docs on top; check queued; C30.4 kept:
   nothing in play, nothing outside its paths):** hybrid-A* over whole legs on the plant's own arcs, time cost, OBB
   squadmates, a free-space table per hull class, an expansion budget; 16 offline tests in `check`. Lab (builder0,
