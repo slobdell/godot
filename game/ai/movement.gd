@@ -2566,6 +2566,13 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var gate := Vector3(goal.x - direction.x * length, 0.0, goal.z - direction.y * length)
 	var tank := ctl.tank
 	var here := tank.global_position
+	# v4 near: judged on the nominal approach (before the roomy rule shortens it), once per new goal.
+	if gate_giveup_on() and _flat_distance(goal, _gate_seen_for) > NEW_GOAL_JUMP:
+		_gate_seen_for = goal
+		var straight := _flat_distance(here, goal)
+		if straight <= length and _flat_distance(here, gate) + length > GATE_NEAR_DETOUR * straight:
+			gates_near += 1
+			return _gate_latch(goal, "near")
 	if gate_giveup_on():
 		# v3: a gate the car can turn onto its line at, before anything is judged against it.
 		var roomy := _roomy_gate_memo(goal, direction, length, radius, tank.get_world_3d().navigation_map)
@@ -2575,12 +2582,6 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 			gates_shortened += 1
 			length = _flat_distance(roomy, goal)
 			gate = roomy
-	if gate_giveup_on() and _flat_distance(goal, _gate_seen_for) > NEW_GOAL_JUMP:
-		_gate_seen_for = goal
-		var straight := _flat_distance(here, goal)
-		if straight <= length and _flat_distance(here, gate) + length > GATE_NEAR_DETOUR * straight:
-			gates_near += 1
-			return _gate_latch(goal, "near")
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 	if _flat_distance(here, gate) <= _arrive_gate():
 		# At the gate: the straight run onto the heading IS the rest of the move.

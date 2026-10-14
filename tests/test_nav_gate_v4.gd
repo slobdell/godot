@@ -12,11 +12,11 @@ const START := Vector3(-100, 0, 40)
 const GOAL := Vector3(-100, 0, 0)
 
 
-func _car(at := START) -> OrderController:
+func _car(at := START, unit_id := "ifv") -> OrderController:
 	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, "ifv")
+	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, unit_id)
 	tank.global_position = at
 	tank.rotation.y = 0.0
 	var orders := OrderController.new()
@@ -96,13 +96,33 @@ func test_coming_round_is_bounded_by_a_stall_on_terrain_and_by_time_but_not_by_c
 
 
 func test_a_hull_already_beside_its_new_goal_gets_no_gate_behind_it() -> void:
-	# B_4's case (9 m from its slot, the gate 17.5 m back the other way). Here the roomy rule shortens the gate behind
-	# this goal to half (8.8 m), so the car starts 6 m off: straight in, not 19 m round by the gate.
-	var orders: OrderController = await _car(GOAL + Vector3(0, 0, 6))
+	# B_4's case: 9 m from its slot, the gate 17.5 m back the other way (judged on the nominal approach, before the
+	# roomy rule shortens it). Straight in, not 37 m round by the gate.
+	var orders: OrderController = await _car(GOAL + Vector3(0, 0, 9))
 	var reading := await _drive(orders, Vector3.RIGHT, 12.0)
 	assert_eq(reading.get("phase"), "arrived", "it gets there (%s)" % reading)
 	assert_true(Movement.gates_near > 0, "the near rule fired (%s)" % Movement.gate_report())
 	assert_eq(Movement.gates_aimed, 0, "and no gate was ever aimed at for that goal (%s)" % Movement.gate_report())
+
+
+func test_a_scout_short_of_its_slot_told_to_face_back_drives_in_not_round_a_far_gate() -> void:
+	# The planner's F4 reproduction (stream/planner e63a3099, main bd05077d, builder0, n = 1, relayed by the
+	# orchestrator): a law_scout 9 m short of its slot, heading at it, told to face back the way it came, drove 102 m
+	# through a gate 13.75 m beyond the slot. The near rule's second sighting, on a scout, not only B_4's rig.
+	var orders: OrderController = await _car(GOAL + Vector3(0, 0, 9), "law_scout")
+	var from := orders.tank.global_position
+	var metres := 0.0
+	var order := {"type": "move_to", "x": GOAL.x, "z": GOAL.z, "facing": [0.0, 1.0]}
+	assert_eq(orders.set_orders(order, {"type": "hold_fire"}), "", "the order is accepted")
+	for frame in int(SimClock.TICK_RATE * 12.0):
+		await tree.physics_frame
+		metres += Movement._flat_distance(from, orders.tank.global_position)
+		from = orders.tank.global_position
+		if Movement.state(orders.tank)["phase"] == "arrived":
+			break
+	assert_eq(Movement.state(orders.tank).get("phase"), "arrived", "it gets there (%s)" % Movement.state(orders.tank))
+	assert_true(Movement.gates_near > 0, "the near rule fired (%s)" % Movement.gate_report())
+	assert_true(metres < 30.0, "a short drive in, not round a far gate (%.1f m)" % metres)
 
 
 func test_the_near_rule_leaves_a_car_far_from_its_goal_its_gate() -> void:
