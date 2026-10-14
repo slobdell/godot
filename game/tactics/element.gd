@@ -394,7 +394,8 @@ func last_point() -> Variant:
 
 ## Round 28 (B5): start the next queued task when the one before is done. A move is done when the element has arrived;
 ## no task is done when none of its crews has an order of its own left (his shift-queued waypoints all driven).
-func _next_queued(orders: Object) -> void:
+## Round 29 (B5): an attack is done when its target is dead or gone (a shifted order queued behind an attack starts then).
+func _next_queued(orders: Object, game_match: Match = null) -> void:
 	if queued_tasks.is_empty():
 		return
 	var done := false
@@ -407,6 +408,9 @@ func _next_queued(orders: Object) -> void:
 					break
 	elif String(task.get("verb", "")) == "move" and arrived:
 		done = true
+	elif String(task.get("verb", "")) == "attack" and game_match != null:
+		var target := AiTickCache.tanks_by_name(game_match).get(String(task.get("target", ""))) as Tank
+		done = target == null or not target.is_alive()
 	if done:
 		var next: Dictionary = queued_tasks.pop_front()
 		_log("next queued task: %s" % String(next.get("verb", "")))
@@ -428,7 +432,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	_state_stamp += 1
 	var before := _snapshot()
 	changed_fields = PackedStringArray()
-	_next_queued(orders)
+	_next_queued(orders, game_match)
 	var preempt := preempting(game_match)
 	_preempt = false
 	_prune(game_match)
