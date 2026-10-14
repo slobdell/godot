@@ -291,3 +291,34 @@ Terminus head-on reported, no worse on those four. `bridge-pooled` 18/18; the li
 the report); cost ≤ 0.5 ms a tick at Sumps 25 a side (GDScript path) or NOT READABLE. No partial gain. Tuning on {1,2,3}
 only. **Last attempt:** the version declared for judging; a fail parks it with its trace.
 
+
+## Round 29 extension: builder0 throughput (the orchestrator, 2026-10-13 ~21:45; the lead's ask)
+
+**His words (2026-10-13, in chat):** *"we are clearly bottlenecked on the builder0's compute … might there be any ways to
+generally speed up our process so as not to be bottlenecked on builder0 all the time?"* and, on more machines: *"I want to
+get more build machines, but I'll defer on that as long as we can."*
+
+**Measured (the orchestrator's check logs, builder0):** a quiet `make check` is 41 min (`bcef46a1`, load 0.1); 24 of 25
+targets are done by minute 25 and **`test` alone runs the last ~16 min** (shards split by file count, not time). Loaded
+checks ran 53–60 min (`c0ac69e0`, `1113062c`: 23–36 other Godot processes, mostly judged series). Every judged A/B
+re-runs main's unchanged base arm per stream, though the sim is deterministic per (commit, seed, tick, flags).
+
+**Grant (this extension only):** `mk/core.mk`'s `test` / `check` recipes, `tests/run_tests.gd`'s shard selection,
+`tools/check_verdict.sh`, a new `tools/series_cache*` + `mk/infra.mk`, and your own `tests/traffic/**`. Not: any game code,
+any test's assertions, `tools/remote.sh` / `tools/slot.sh` (ask), other streams' `mk/*.mk` (offer them the cache; they adopt).
+
+**Backlog (in order):**
+- **I1 Balance the test shards by measured time.** Record each test file's duration (a timings file written by the
+  runner, committed), and assign files to shards greedily by duration (longest first), falling back to today's split for
+  files with no timing. Beware `check_verdict.sh`'s note: a suite once passed at 6 shards and failed at 5 (an order
+  dependence); the shard plan must be deterministic and the full suite must pass at the shard counts check uses (4, 5, 6).
+  **Bar:** the same tests run (count equal), all pass, and `test`'s wall time on a quiet builder0 down ≥ 30 % (paired: old v
+  new split, same commit, back to back); report the check's total.
+- **I2 A quick gate for iteration commits:** `make quick` (lint + `test` FILTERed to the test files a diff touches plus
+  their declared neighbours + one smoke), target ≤ 10 min on builder0; documented in `verification.md` as the step for a
+  worker's in-between commits. `make check` stays the gate for any hash named for merge.
+- **I3 A base-arm cache for judged series:** results keyed by (game/native tree hash, arena, seed, tick, flags, stage
+  version); a series reuses a cached arm only when the key matches exactly; a `CACHE=off` override; a hit is printed per row.
+  Adopt it in your own `traffic-series` first and show a cached base row equals a fresh one field for field; then write
+  how other streams' series adopt it (a request through the orchestrator, not an edit of their mk files).
+- Each item: its own commit, `make check` green, numbers with commit + machine.

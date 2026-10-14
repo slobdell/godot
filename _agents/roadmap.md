@@ -215,6 +215,13 @@ in `streams/references/round17/` and `streams/references/perf/r17-*`; lessons 24
   of the tick's scripts, 25 a side ~full speed on his laptop, ~1–2 weeks; AI-decision changes ~1.5–2× after. Take it up
   when the tactics settle. His principle: core components in C++ long-term, even without a measured gain.
 
+## Open item: a second build machine (the lead, 2026-10-13: "I want to get more build machines, but I'll defer on that as
+long as we can")
+
+builder0 (12 cores, 14 GB) is the round's bottleneck: loaded checks 53–60 min v 41 quiet. Free fixes first (traffic's
+round-29 extension: shard balance, `make quick`, a base-arm cache; the orchestrator's one-check-per-tree rule). Raise the
+machine again when those are in and judged series still queue for hours.
+
 ## Round 29 candidates (round 28's carry-overs, 2026-10-13) — SPLIT 2026-10-13 as traffic (1) + manoeuvre (2, 6; 7 as its conditional stretch) + brains (3, 4, 5, 8) + native (`workstreams.md` *Round 29*); his question 6 answered: go straight to his side
 
 **His open call:** calls page question 6 (`artillery-wait`): shell from where it stands while driving round, or wait

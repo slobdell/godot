@@ -113,6 +113,9 @@ make remote T=check                                     # or make check; fix int
   `build/sim_state_hash.txt` over `tests/baselines/`, and say why in the commit. Hashes are per glibc version.
 - Merging several independent branches back to back and checking once at the end is fine (the lead agreed); each
   merge is its own commit, so a failure can be bisected.
+- **No second check of the same code (round 29, builder0 throughput).** When main's code after a merge equals the tree
+  the worker's green check ran on (`git diff <green> HEAD -- game native tests mk tools Makefile` is empty), that check
+  covers main: record it and run none. Otherwise batch the merges waiting and run ONE main check after the batch.
 - A worker may keep committing after its first merge: check `git log main..stream/<s>` before closing.
 
 ### 8. Close the round
