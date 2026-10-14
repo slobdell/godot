@@ -137,3 +137,28 @@ Round 29's state (`a8df3dc3` restored at lab `0c7a6e72`) reproduces: yard_open c
   `no_path` is the circling) or `GATE_TURN_SECONDS` 12 (≈ 1.5× the open-ground turn); else latch and drive onto the goal
   (round 29's yard win). Plus **near**: a NEW goal already within the approach length, whose drive via the gate is more
   than 2× the straight line, gets no gate (B_4), decided once per goal so a car coming round its own gate is never caught.
+- **Tests first** (lab `ba1…`→`19eca15a`, builder0, `make gate-test`, GDScript drive): `test_nav_gate_v4` (180° comes
+  round with `gates_turned` > 0 and no latch away; 90°; the turn room; the bounds: `no_path` keeps turning, terrain
+  latches `turn_blocked`, 12 s latches `turn_capped`; B_4's near case 9 m off; the planner's scout case: law_scout 9 m
+  short, facing back, drove 102 m on main, now near fires and < 30 m) + `test_wheeled_arrival` (all) +
+  `test_nav_arrival_heading` + `test_nav_gate_hold`: **24 passed, 0 failed**. On the DEFAULT path they need native's
+  mirror (the pair).
+- **The near rule is judged on the NOMINAL approach** (before the roomy shortening): the roomy rule halves some gates
+  (8.8 m on the default layout), and B_4's and the scout's gates were nominal.
+- **Tuning** (round 29's seeds; lab `19eca15a`): yard 23 × 6 ticks last crew median 21.1 s on v never off (all in 6/6 v
+  2/6); Sumps 2 × 6: 24.3 v 24.4 s, arc equal; Terminus 2–4 t11: 10/10 ×3 v 9/10 twice (near fired, seed 3 = B_4's).
+- **Bar** sent 11:1x PDT and ACCEPTED by godot-67 before numbers (filed in workstreams *Bars (round 30)*), with its
+  additions: worst on-arm run of (1) and (2) traced first; each come-round's ending counted per arm (latched / stuck /
+  cap; mostly-cap is a finding); cost ≤ 0.5 ms at Sumps 25 a side or NOT READABLE; thirteen explained if they move;
+  Terminus seed 3 reported only. CP-N landed during the run: the bar stands as filed, reported with the table's se.
+
+### B5c-v4 — JUDGED (lab `19eca15a`, builder0, GDScript drive both arms, `make gate-series`, fresh seeds)
+| line | n | on | off | reading (CP-N) |
+|---|---|---|---|---|
+| (1) yard crossing, runs with every crew in | 12 | **12/12** | 1/12 | Fisher decides at n = 9: the deciding line. PASS |
+| (1) yard, crews on ≥ off every run | 12 | 12 of 12 runs | – | PASS |
+| (1) yard, last-crew median | 12 | 19.0 s | never (11 runs) | ≤ off − 5 s; A/A ±9 s, se ≈ 3 s: reported, not deciding |
+| (2) Sumps all within 8 m, median | 12 | 24.5 s | 37.5 s | PASS; no run > 5 s later (0 of 12) |
+| (2) Sumps guns_on_arc mean | 12 | 0.941 | 0.941 | PASS (≥ off − 0.05) |
+| (3) Terminus seeds 3, 5, 6, 7 t11 (reported) | 4 | 10/10 every run | 10/10 every run | near fired every run; seed 3 (B_4) last 50.1 v 56.8 s |
+| (5) counters | 28 a arm | > 0 every on run | 0 every off run | PASS |
