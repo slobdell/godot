@@ -25,7 +25,11 @@ the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `
 **E6b (his laptop, 12:10 PDT, `b2712987`):** all C++ v none: 20 a side 0.854 → 0.936 of real time, 25 a side 0.672 →
 0.878 (`game_design.md` *Round 29: where the laptop stands now*); tell him as measured.
 
-**Main GREEN at `23d94eb3`** (builder0, `make check exited 0`, 2574 passed, 0 failed, 26 targets ALL JUDGED, thirteen
+**Main GREEN at `1f5c84e4`** (code = brains-b5-queued `5ab05468`: builder0, `make check exited 0`, 2580 passed, 0 failed,
+26 targets ALL JUDGED, thirteen unmoved; covers manoeuvre's final merge, so no check is owed): + B5 queued attack (shift +
+attack-move behind waypoints, one squad or several).
+
+**Earlier: main GREEN at `23d94eb3`** (builder0, `make check exited 0`, 2574 passed, 0 failed, 26 targets ALL JUDGED, thirteen
 unmoved; the perf verdict owed by `1113062c`'s check is now judged): + brains B2 (a drawn flank carried out). Since then
 only docs and traffic's verdict tools (`7811950d`), and manoeuvre's final merge (census tooling in
 `game/ai/manoeuvre_census.gd`, behind `--turn-trace`; its own check green at `eb754864`): **one main check OWED**, batched
