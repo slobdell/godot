@@ -345,6 +345,60 @@ at run 13 of 18: xfast PASS llr 2.83 at run 8, …"). A `CONTINUE` on any line o
 probe with no table row runs its full grid and owes its A/A pair first. The orchestrator's trace rules are untouched by a
 stop: the worst run so far is still read before the median (302), and a wedge is a named run, not a line.*
 
-## How to write a bar (S5)
+## How to write a bar (S5): the method
 
-_(written in S5)_
+1. **Name the probe and the metric, then read its noise from *The table*.** The row gives the per-run paired sd, the base
+   level, icc, and the se at the usual n. No row → the probe owes an **A/A pair before its first bar**: two base runs of
+   the grid (same arm, different seed sets; or the same seeds under a change that is not meant to act, like M1's clicked
+   pair), read with `python3 tools/judge/aa.py A.jsonl B.jsonl`; the cost is in the table's A/A column (two base runs of a
+   traffic case ≈ 63 box-min; of a yard cell ≈ 35; of a hull-rest task ≈ 4 h).
+2. **Name the effect he would notice**, as a share of the base or a per-run amount, never a fixed total ("+5 crews over
+   288" is 0.185 a run and needs 530 runs; "+10 % of crews moving" is a line). `python3 tools/judge/size.py --probe … --metric …
+   --effect-share X` prints the n that decides it at 80 % / 5 % and the MDE at today's n. **If n_needed is beyond what the
+   round can run, write the effect the n CAN see** (the MDE) into the bar, or change the line's form (a count, a comparison).
+3. **Write every line in its variance-aware form** (*The lines*): guards as `base + k·se` with k and the se's source named;
+   gain lines as the point AND "distinguishable from nothing"; counts as the comparison (Fisher) or McNemar; medians with the
+   bootstrap sd; "within 2 se" with its se defined; and say which lines are equality checks (untouched cases), which are
+   deterministic cells (bridge, the 108) and which are reports.
+4. **Spend the runs where the noise is**: icc near 0 means a new start tick is as good as a new seed, so 6 ticks × seeds
+   stays; icc above 0.3 (yard crossing xfast 0.54; arrivals on Terminus head-on 0.12–0.4) means add seeds before ticks.
+5. **Pre-register** (C30.1, C30.3): the lines, their k and se source, the effect and its power, n and its grid, the partial
+   rule, the last attempt, the rule's own counter (lesson 300) and the early-stop lines in `sequential.py`'s form, to the
+   orchestrator before any number. Cite the table row, or say why the bar departs from it.
+6. **Judge, stopping early only by the one rule** (*Early stop*): `sequential.py` with the table's sd prints SERIES PASS /
+   FAIL for every case; record the stop row. Read the worst run's trace before the median (302) whatever the row.
+7. **Report** the verdict with each line's observed value, its se, and the margin in se; a line inside its noise is said to
+   be so (the inventory's column), and a gain decided inside one seed is said to be so.
+8. **At the round's CLOSE, the orchestrator re-renders the table** once the judged pairs are under `references/round<N>/`:
+   add the pair to `tools/judge/probes.py` (TRAFFIC_PAIRS or the probe's reader), run `python3 tools/judge/inventory.py` and
+   `python3 tools/judge/table.py`, commit the doc and csv. The table's sd is the pre-registered noise for the NEXT round's
+   bars, so a pair whose own sd exceeded the table's (T1b's wedged run: 1.5–1.9×) must be in before the next bar is sized.
+
+**The two 11 % lines, and what α brings them under 5 %.** The gain lines whose simulated false-pass exceeded 10 % are
+round 28's *yard crossing fast −25 %* (T1 v3; its pair's sd 9.5 a run against the table's 8.1) and *Terminus head-on fast
+−25 %* (T1b; sd 37 against 28, the wedged run). At α = 2.5 % (A = +3.47) their null pass falls to 5.2 % and 6.6 %, and CP-T's
+xfast from 6.1 % to 2.4 %; the price is n × 1.27 for the same power at the named effect (Terminus head-on xfast −25 %: 57
+→ 72 runs; fast: 44 → 55; yard crossing fast: 25 → 32) and an early stop one or two rows later (CP-T's xfast at run 9
+instead of 8, T1b's at 13 instead of 11). **Recommendation: keep α = 5 % and refresh the table (step 8) rather than pay
+27 % on every series**; use α = 2.5 % only for a bar whose probe's last pair read above the table's sd.
+
+### The cost side (stretch): round 29's judged series as run, against as sized
+
+Runs per arm; "as sized" = the n the table or the early-stop rule gives for the effect each line named (or the effect that
+ran, where that was decided sooner); the minutes are the brief's per-run costs on a loaded builder0 (traffic 1.75,
+hull-rest 2.5, Terminus 4, fights 3.5, pinned 0.42, approach 1.5, cells 1.2–1.5), both arms, an estimate.
+
+| series | runs as run | runs as sized | why |
+|---|---|---|---|
+| CP-T (traffic), 4 cases + CPU mirror | 90 | 43 | the −81 % decided at run 8; untouched cases one seed; the guards clear by 13 |
+| T3 (traffic), 4 cases | 72 | 60 | the pooled gain decided at 8 of 36; guards against +20 % / −5 % run the grid |
+| M1 hull-rest, 6 tasks × 48 | 288 | 288 | the +5 guard needs ~400 a task: not fewer runs, an honest line (+2 se) |
+| M2 Terminus census, 12 | 12 | 12 | contact-ticks ±10 % not affordable at any n; arrivals −10 % would want 13 seeds |
+| M4 Terminus 12 + pinned 144 + fights 24 + bridge 18 | 198 | 146 | pinned −50 % at 90 of 144; fights' 5 % kill guard 28 (24 run); rigs fail at run 4 of 6 |
+| B1 + B2 ApproachStage, 3 rosters × 18 each | 108 | 36 | comparison lines decide at 3–6 a side; the alive guard as −2 se |
+| B5c yard 12 + Sumps 12 + Terminus 3 + arrive 100 + bridge 18 | 145 | 113 | the yard count decides at 9; an 11 % arrive gain needs 71 cells |
+| **round 29** | **913** | **698 (−24 %)** | ≈ **8 box-hours** of ~32 at the costs above; the traffic part alone −3.6 h |
+
+The saving is modest because two of round 29's biggest series (M1's 576 runs, M4's fights) were not over-run but
+UNDER-lined: their lines were inside the noise, and the fix there is the line, not the n. Where the n falls it falls hard:
+a decided gain line stops in one or two seeds, an untouched case in one, a comparison count in three to six runs a side.
