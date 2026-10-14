@@ -334,6 +334,8 @@ GATE_TICKS ?= 1 3 6 8 11 16
 GATE_ARMS ?= on off
 GATE_JOBS ?= 6
 GATE_CELLS ?= yard sumps terminus
+## Extra probe flags on every run (e.g. --gate-trace); each run's whole output stays in build/gate-runs/<run>.log.
+GATE_EXTRA ?=
 .PHONY: gate-series
 gate-series: import ## Round 30 (B5c-v4): yard crossing / Sumps cell / Terminus head-on, gate rule on v off (GDScript drive), paired -> build/gate-series.jsonl + table
 	@rm -rf $(BUILD_DIR)/gate-runs; mkdir -p $(BUILD_DIR)/gate-runs
@@ -343,17 +345,18 @@ gate-series: import ## Round 30 (B5c-v4): yard crossing / Sumps cell / Terminus 
 		terminus) for s in $(GATE_TERMINUS_SEEDS); do echo "$$cell $$arm $$s 11"; done;; \
 		sumps) for s in $(GATE_SUMPS_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; esac; \
 	done; done | xargs -P $(GATE_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; \
-		flags="--brains-off=native"; [ "$$arm" = off ] && flags="$$flags --nav-off=gategiveup"; \
-		out=$(BUILD_DIR)/gate-runs/$$cell-$$arm-$$seed-$$tick.json; \
+		flags="--brains-off=native $(GATE_EXTRA)"; [ "$$arm" = off ] && flags="$$flags --nav-off=gategiveup"; \
+		out=$(BUILD_DIR)/gate-runs/$$cell-$$arm-$$seed-$$tick.json; log=$${out%.json}.log; \
 		case $$cell in \
 		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
 			--dir=forward --metres=150 --seed=$$seed --units=law_scout:law_ifv:law_tank:law_tank --seconds=120 --drills=on \
-			--lab-start-tick=$$tick $$flags 2>/dev/null | grep -o "SETTLE_PROBE {.*" | sed "s/^SETTLE_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; \
+			--lab-start-tick=$$tick $$flags > $$log 2>&1; grep -o "SETTLE_PROBE {.*" $$log | sed "s/^SETTLE_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; \
 		*) arena=yard_open; kind=cross; [ $$cell = terminus ] && arena=terminus && kind=head; \
 			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reseat_probe.gd -- --arena=$$arena \
-			--kind=$$kind --which=both --seed=$$seed --seconds=90 --lab-start-tick=$$tick $$flags 2>/dev/null \
-			| grep -o "RESEAT_PROBE {.*" | sed "s/^RESEAT_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; esac; \
+			--kind=$$kind --which=both --seed=$$seed --seconds=90 --lab-start-tick=$$tick $$flags > $$log 2>&1; \
+			grep -o "RESEAT_PROBE {.*" $$log | sed "s/^RESEAT_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; esac; \
 		[ -s $$out ] || echo "{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
 		echo "  ran $$cell $$arm s$$seed t$$tick"'
 	@cat $(BUILD_DIR)/gate-runs/*.json > $(BUILD_DIR)/gate-series.jsonl
+	@[ -z "$(GATE_EXTRA)" ] || $(PYTHON) tests/nav/gate_endings.py $(BUILD_DIR)/gate-runs/*-on-*.log
 	@$(PYTHON) tests/nav/gate_table.py $(BUILD_DIR)/gate-series.jsonl
