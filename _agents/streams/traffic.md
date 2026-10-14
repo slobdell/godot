@@ -157,7 +157,7 @@ candidate `761bd727` is parked on branch `traffic-t1c` and reverted off stream/t
   give-way in `_negotiate` while `deploy_ratio > 0`. A hull packing to move gives way only once it is packed. Judge it
   on fresh census seeds, plus brains' ApproachStage drawn-artillery arm (the orchestrator's line 6).
 
-**T3 (stretch, the crossing) — in progress.** The bar was sent and accepted before any number (filed at main `bd5bd5a9`):
+**T3 (stretch, the crossing) — FAILED its judged bar, parked (below).** The bar was sent and accepted before any number (filed at main `bd5bd5a9`):
 judged once on fresh seeds {22,23,24}, base `--traffic-off=turns` with the hold on in both arms, read by
 `tests/traffic/turns_verdict.py`. The change is round 28's v3 squad-pair crossing verdict, ported beside the hold
 (`Traffic.shape`, the crossing statics, and the `_avoid` hook shaping ORCA's preferred velocity; no keep-right, no
@@ -170,7 +170,27 @@ street creep). Tests `test_traffic_turns` (pure, v3's crossing tests) and `test_
   end). It FAILED on one line: the crossing rule fired once in every Terminus head-on run (the waiting squad pulling
   aside across the passing squad's way read as a crossing), and s2/t16 lost 2 crews (B_4/B_5, 16–21 m from their seats
   at the far end, the seating pattern again).
-- **v2** (`31360e56`): the crossing rule stands aside for any squad pair under a street wait. Tuning arm running.
+- **v2** (`31360e56`, DECLARED, the last attempt): the crossing rule stands aside for any squad pair under a street
+  wait. Tuning: `turns_verdict` PASS on {1,2,3} (head-on back to base: 5 verdicts, 66 crew-ticks).
+- **VERDICT: T3 FAILED its judged bar; nothing ships.** Judged on builder0, `d9b3339c` (= v2 + docs) both arms, GDScript
+  path, fresh seeds {22,23,24}, n = 18 a case, base `--traffic-off=turns` with the hold on. Data and
+  `t3_verdict_d9b3339c.txt` are in `references/round29/traffic/`.
+  - Between-squad fast at the crossings, pooled: 206 → 95 (−54 %), pass. Terminus crossing 92 → 39, yard crossing
+    114 → 56. Same-squad fast 134 → 145 and 180 → 130, pass. Head-on cases equal base within noise, pass.
+  - FAIL, Terminus crossing all-in median: 39.4 → 48.3 s (+23 %, line +20 %). FAIL, yard crossing crews: 171 → 167 (line
+    169). FAIL, a wedge at yard s22/t6 (2 out where the base had none).
+  - CPU mirror not run (stopped after the verdict: the chain's PIDs were checked in my own folder, locally and on
+    builder0).
+  - **Worst runs read.** The yielding squad pays heavily in some Terminus crossing runs: B's last arrival 22.8 → 69.0,
+    26.5 → 74.7 and 31.0 → 78.2 s while A gets in faster. The whole squad keeps 0.4 of its wish for as long as the
+    verdict stands, which is too long a crawl. The yard crews left out (in both arms) are 16–25 m from far-end seats
+    with almost no friendly-stuck time, mostly B_1's seat behind the containers. The rule only moves which run loses
+    one.
+  - Parked on branch `traffic-t3` (= `d9b3339c`); reverted off stream/traffic. **For round 30:** the crossing's bump
+    cut is real and large (−54 % to −63 % on two seed sets). What it costs is time, in the yielding squad's crawl.
+    Release a yielding crew's squad share as soon as the other squad's tail has cleared the crossing point (not
+    VERDICT_KEEP_S after its crews stop meeting), or let only the crews short of the point within a squad length
+    crawl. Judge on fresh seeds. And the far-end seats that read `no_path` (brains) sit under every case's crew line.
 
 ### The plan (ordered)
 
