@@ -359,6 +359,18 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   still lays the gate BEHIND the slot along the facing when the hull starts outside the approach length (how the 180°
   passes: it comes round it ~8 s); gates_turned fired 10× in the gate cells and 25× in arrive → round 31's side-gate form
   has cases. **Ship = lab tip + native's mirror as a pair; waiting on the PAIR's green hash from native.**
+- **B5c-v4 PAIR CHECK RED (2026-10-14 ~14:45 PDT; native `787d3664` = stream/native + brains' tip f1a804eb; builder0
+  `>> remote: make check exited 2`, 2601 passed / 1 failed, 25 targets passed / 1 FAILED):** `test_tactics_pursuit::
+  test_a_spotter_retreating_at_8_mps_is_chased_down` — "the whole squad let go of the chase (17.0 s, every crew excused)",
+  five wheeled gang scouts on yard_open seed 3; identical with the library removed (`make native-off … test`, same MEASURE
+  line to the decimal), so the cause is v4's GDScript rule, not the port. Everything else green (sim-baseline unmoved,
+  native-verify-scenarios 0 mismatches, 22 switches live, perf-judge PASS). Brains' own lab check passed it only because
+  its default path still ran native's v3 mirror (lesson 305 again: a gate change is checked with the rule ON on the
+  default path, i.e. the PAIR tree). **Ruling:** brains owns the fix. The judged bar was the last attempt, so a fix ships
+  only if it is a SCOPING change that leaves the judged runs untouched: the 24 on-arm gate cells, the arrive series rows
+  and screen-slots re-run on the fixed tree must be byte-identical to the judged on-arm (brains' table), and the pursuit
+  test + the whole suite green on the pair tree. A fix that moves any judged row = B5c-v4 PARKED for round 31 with this
+  finding (as round 29's a8df3dc3 was). Native re-mirrors the fix and re-checks the pair.
 
 ## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 
