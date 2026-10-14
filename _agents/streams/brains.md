@@ -186,6 +186,22 @@ CPU line: the CPU never draws an approach. C29.2: nothing native-ported. A fail 
 on the fight guard, side/rear share ≥ clicked, and the latch counter showing the latch fired. On-side for (c) is
 reported. Added line: in (a) (a holding target) the latch fires in 0 of 18 runs. The artillery counter is left out of
 B2's table.
+**JUDGED at `fa099d5b`** (stream: main `c0ac69e0` + B2; builder0; scratch worktrees at exactly that commit and at main;
+seeds 10–12 × {1,3,6,8,11,16}, n = 18 per arm per roster):
+| roster | arm | on side (median hit ≤ 35°) | killed | alive | side/rear share | latch fired | verdict |
+|---|---|---|---|---|---|---|---|
+| (a) even | B2 | **14/18** (median 32.8°) | 8 | 1.78 | 0.88 | 0/18 | bar 12 PASS; guard PASS; latch 0 PASS |
+| (a) even | clicked | 0/18 (79.7°) | 4 | 1.11 | 0.82 | 0/18 | |
+| (c) moving | B2 | 0/18, reported | 18 | 5.00 | 0.78 | 18/18 (median 3.1 s) | guard PASS; share PASS; latch fired |
+| (c) moving | clicked | 0/18 | 18 | 4.78 | 0.76 | 0/18 | |
+| (b) Law five | B2 | 0/18 by hit (5 runs hit); by reach 9/18 | 0 | 0.00 | — | 0/18 | reported (a wipe either way) |
+| (b) Law five | clicked | 0/18 | 0 | 0.00 | 0.84 | 0/18 | |
+- Clicked: all 54 rows identical to main's.
+- Addition 1: the battery's 13/14/15 t1 rows are identical to `c2ae6e68`'s.
+- Addition 3: bridge-pooled 18/18. The arrive series equality is pending.
+- Round 28's (a), for comparison: 10/18 on seeds 7–9.
+**Worst run** ((a) seed 12, tick 16): all five trucks lost and the IFV survives, against clicked 5 alive and the IFV
+killed. Trace queued.
 **Tuning (c)** (builder0, `a97d5aab`, seeds 4–6, n = 18): the latch fired in 18/18 runs (median 3.1 s); on side 0/18 v
 clicked 0/18; killed 18/18 v 18/18; alive 5.00 v 4.83; side/rear share 0.83 v 0.74.
 
