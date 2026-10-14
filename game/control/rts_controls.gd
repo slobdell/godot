@@ -1117,11 +1117,14 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			given["to"] = [at.x, at.z]
 		var error := ""
 		# Round 28 (B5): shift + a task on squads still driving their waypoints: each squad queues behind its own.
+		# Round 29 (B5, grant extended): so do a shifted attack-move / attack, and a shifted move behind a queued task.
 		var queued: Variant = null
-		if queue and element_only and elements != null:
-			var held: Element = squad.get("element")
-			queued = _queue_task_for(squad["units"], held if held != null and is_instance_valid_element(held) else null,
-					int(squad.get("number", 0)), verb, given, squad_formation(squad))
+		var held: Element = squad.get("element")
+		if held != null and not is_instance_valid_element(held):
+			held = null
+		if queue and elements != null and (element_only or verb in QUEUED_ARMED
+				or (verb == "move" and held != null and not held.queued_tasks.is_empty())):
+			queued = _queue_task_for(squad["units"], held, int(squad.get("number", 0)), verb, given, squad_formation(squad))
 		if queued is String:
 			error = queued
 		elif elements != null and ELEMENT_TASKS.has(verb) and (not queue or element_only):
