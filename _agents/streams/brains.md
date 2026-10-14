@@ -168,6 +168,26 @@ Round 29's state (`a8df3dc3` restored at lab `0c7a6e72`) reproduces: yard_open c
 | (6) bridge-pooled, rule on (GDScript) | 18 | **18/18** | – | PASS |
 | (7) screen-slots seed 61 (gang_tank ×4, screen east) | 1 | A_2 in 22.8 s | A_2 never (18.5 m off) | PASS; A_4 ends 5.4 m off in BOTH arms (not "in"): B4 not wholly fixed |
 
+**The orchestrator's additions (before numbers), answered** (traced re-run with `--gate-trace` at `f1a804eb` = the judged
+rows 28/28 identical; builder0):
+- (a) Worst on-arm runs, traced first. **Yard s25 t1** (B_4 in 26.1 s): it overshot when the squad changed from its
+  travelling wedge to the halt shape (its seat 8 m behind it); the near rule gave no gate; its U-turn ran onto terrain
+  ~8 s (manoeuvre's turn, not the gate). **Sumps s14 t8** (59.5 s, off never): S_3 reached its gate facing away, came
+  round, was stuck 2 s later → `turn_blocked` latched; its seat moved, near sent it straight in.
+- (b) Come-round endings, on arm, every judged cell (`tests/nav/gate_endings.py`): 9 classified, **latched 6, stuck 3,
+  cap 0** (gates_turned counted 10: one start restarted after a reset of the same goal).
+- (c) Cost: `path.gate` **0.081 ms/tick on v 0.115 off** (ai-parts-match, Sumps law v condemned budget 4600, 180 s,
+  GDScript, n = 1 an arm, `f1a804eb`): ≤ 0.5 ms, PASS.
+- (d) the thirteen: on the pair's check. (e) Terminus seed 3 reported only.
+- Traffic's relay (Terminus crossing s24/t3, s22/t6, `f1a804eb`, n = 1 a cell): without traffic-t3's rule, gate off: last
+  in 32.6 / 27.3 s, one no_path track line each, **no far-end circling**; v4 on: 30.2 / 21.7 s, 10/10. The 40–75 s
+  sighting needs `traffic-t3` underneath.
+- The planner's question: v4 still lays the gate BEHIND the slot along the facing when the hull starts outside the
+  approach length (that is how the 180° case passes: it comes round, ~8 s); `gates_turned` 10 in the gate cells, 25 in
+  the arrive series, so the side-gate form (round 31) has real cases.
+- Rows filed: `references/round30/brains/b5c-v4-*-19eca15a.jsonl` (one row per run: seed, tick, last crew / all-in;
+  sizing's request).
+
 Arrive counters: 98 of 100 on-arm runs fired an event counter; the other two show the rule acting or not needed (yard
 law_ifv×2+suppressor+tank seed 32: refused only `cramped` 224 plan ticks, v3's room rule; pit law_scout+ifv+tank×2 seed
 29: only `on_approach`). Totals over the 100: turned 25, latched_away 1, near 148.
