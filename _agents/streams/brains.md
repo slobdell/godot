@@ -208,6 +208,23 @@ in at 83.0 s):
 (ii) After arrival, a crew whose movement has read `no_path` at its slot for N s gets that slot moved to the nearest point
 it can stand on and reach. The bar must name N and the reachable-point rule. Guard: a crew merely pausing (a give-way, or
 traffic's hold) is not re-slotted.
+**Deeper traces** (builder0; `make reach-probe` on an empty map; `reseat-trace`'s NOPATH lines with Movement's route
+reading; native and GDScript paths identical):
+- **Sumps — the seat is the fault.** Slot (11.1, -73.4) sits 3.6 m off the navmesh (NO_PATH_MARGIN 3.0), so every crew
+  driving there reads `no_path`, from every start probed (102 points). `Element.ground` pushes a slot clear of
+  obstacles, but not onto the mesh.
+- **Terminus — the seat is fine.** It is on the mesh; from B_4's stuck spot the route is 18.8 m. Two other causes:
+  1. A stale leash. B_4's move order keeps a leash centred on its OLD slot (14 m). At the swap the brain's element
+     context still held the old slot, and `TankBrain._order_move`'s 2 m dedup drops every later order with the same
+     x/z, leash or not, so the leash never refreshes.
+  2. The arrival gate. B_4 is wheeled and its seat faces east, so Movement sends it to a gate about 17 m west of the slot,
+     across the street by the arena edge. It grinds there, and `_blocker` labels it `no_path` because its route ends at
+     the gate, not the slot.
+**Revised proposal (sent to godot-67, awaiting a reply):**
+- (i) No seat handed out more than NO_PATH_MARGIN off the mesh, plus the make-room `no_path` guard.
+- The leash dedup fix, as a second declared change.
+- The arrival gate goes to manoeuvre.
+- (ii) is dropped: its target was a mislabel.
 Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
 `build/round29/artillery_side_by_side.mp4`.
 
