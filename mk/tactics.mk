@@ -774,3 +774,22 @@ scenario-times: import ## Round 30 (B7): every test in SCENARIO_TIME_FILES timed
 		from=$$(date +%s%N); out=$$($(GODOT) --headless --path . --script res://tests/run_tests.gd -- "--filter=$$stem::$$t" 2>&1 | grep -E '  (PASS|FAIL)  ' | head -1); \
 		echo "$$stem::$$t	$$(( ($$(date +%s%N) - from) / 1000000 ))	$$out" | tee -a $(BUILD_DIR)/scenario-times.txt; done; done
 	@awk -F'\t' '{s += $$2} END {print "total ms", s}' $(BUILD_DIR)/scenario-times.txt
+
+# Round 30 (brains B6): support by fire per crew, drawn v none (tests/tactics/sbf_probe.gd: each crew judged only once
+# it is in, within 8 m of its slot and still), SBF_UNITS x SBF_SEEDS x both arms, SBF_JOBS at a time ->
+# build/sbf-series.jsonl + table (tests/tactics/sbf_table.py). SBF_FLAGS adds probe flags (e.g. --trace=on).
+SBF_UNITS ?= law_tank gang_ifv law_ifv gang_tank
+SBF_SEEDS ?= 1 2 3 4 5 6
+SBF_JOBS ?= 6
+SBF_FLAGS ?=
+.PHONY: sbf-series
+sbf-series: import ## Round 30 (B6): support by fire per crew, drawn v no facing, judged only once each crew is in (SBF_UNITS x SBF_SEEDS) -> build/sbf-series.jsonl + table
+	@rm -rf $(BUILD_DIR)/sbf-runs; mkdir -p $(BUILD_DIR)/sbf-runs
+	@echo ">> sbf-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for unit in $(SBF_UNITS); do for seed in $(SBF_SEEDS); do for arm in drawn none; do echo "$$unit $$seed $$arm"; done; done; done | \
+		xargs -P $(SBF_JOBS) -L 1 sh -c 'out=$(BUILD_DIR)/sbf-runs/$$0-$$1-$$2; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/sbf_probe.gd -- --unit=$$0 --seed=$$1 \
+			--facing=$$2 $(SBF_FLAGS) > $$out.log 2>&1; grep -o "SBF_PROBE {.*" $$out.log | sed "s/^SBF_PROBE //" > $$out.json; \
+		[ -s $$out.json ] || echo "{\"unit\":\"$$0\",\"seed\":$$1,\"facing\":\"$$2\",\"missing\":true}" > $$out.json'
+	@cat $(BUILD_DIR)/sbf-runs/*.json > $(BUILD_DIR)/sbf-series.jsonl
+	@$(PYTHON) tests/tactics/sbf_table.py $(BUILD_DIR)/sbf-series.jsonl
