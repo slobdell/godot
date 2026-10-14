@@ -109,6 +109,29 @@ Nothing.
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
 
+### REPORT so far (2026-10-14 afternoon)
+- **B5c-v4 PARKED for round 31** (the orchestrator's ruling, filed in workstreams.md and HANDOFF): `lab/brains-r30-gate` =
+  `f1a804eb` (judged at `19eca15a`: every bar line passed, below). The PAIR check (native `787d3664` = f1a804eb + its
+  mirror, builder0, 2601/1) failed `test_tactics_pursuit::test_a_spotter_retreating_at_8_mps_is_chased_down`, the same on
+  the GDScript path. **Traced** (builder0, f1a804eb, `--gate-trace`, that test alone): exactly five gate answers in the
+  run, all at t = 0.1 s while the squad forms its opening vee where it spawned: A_1/A_3/A_5 aimed (as v3), **A_2 and A_4
+  `near`** (7.6 m from their seats). No chase order carries a facing, so no gate runs during the chase; it diverges
+  downstream of two crews' opening moves (alone: A_3 reverses 133° at 16.5 s; in the whole suite: "let go at 17 s").
+  The same filtered run with the rule off passes all 9 pursuit tests (8 m/s worst reversal 50°; 18 m/s 96°, near its
+  line). No honest scoping: "near not on a hull that never drove" leaves the judged rows identical but guts the near
+  rule's own cases and is fitted to the guard; "not on an arrived hull" moves judged rows. **Round-31 lead:** the
+  pursuit test's own A/A over seeds (sizing), then re-judge; or near only for a goal that moves onto a hull on a task.
+  Traces: `references/round30/brains/b5c-v4-gate-trace-f1a804eb.txt`, `b5c-v4-pursuit-trace-f1a804eb.txt`; judged rows
+  `b5c-v4-*-19eca15a.jsonl`. Lab-tip check alone (f1a804eb): 2586/10, all ten the pair's (default path = native's old
+  gate; native v GDScript equality; exec_state members).
+- **B7 DONE** on the stream (`6878ef48`, one commit): the twelve tests byte-for-byte in two files (218.7 s + 208.6 s v
+  425.5 s in the full run); **test wall 1901 → 1918 s** (builder0, rr, 5 shards; no gain: the longest shards are many
+  files; the floor is now `test_native_traffic_hold`, 486 s, native's). Check owed on the stream tip.
+- From other streams, answered: manoeuvre (M5) found v4 removes B_4's Terminus s3 jam (all 10 in, B_4 at 41.2 s);
+  yard s25 t1's six-cusp car goes to the planner's F4 (round 31).
+- Next: **B3b** (`lab/brains-r30-bridge`, from `lab/brains-r29-bridge`'s 254fd98f + mouth guard), then traffic's
+  Terminus crossing seat trap (s33 t1 under traffic-t3b) and **B6**.
+
 ### Plan (2026-10-14; start = stream `bd05077d`, covered by the launch check, main `0d35f215` green)
 1. **B5c-v4** on `lab/brains-r30-gate` (a C30.2 pair: the stream tip stays mergeable without native's mirror). Base =
    round 29's gate restored (`0c7a6e72`), `--gate-trace` (measurement only), the v4 rule + `tests/test_nav_gate_v4.gd`;
