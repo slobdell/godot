@@ -55,6 +55,10 @@ wall gain — the floor is now `test_native_traffic_hold` 486 s). **Traffic DONE
   byte-identical; else parked for round 31. **Traced: the near rule changes two scouts' OPENING moves at t = 0.1 s on a
   knife-edge pursuit test (seed 3); no honest scoping → PARKED** (`lab/brains-r30-gate` f1a804eb; round-31 lead: measure
   the pursuit test's own margin over seeds, then re-judge). Brains → B7 (test split), B3b (the bridge).
+- **Brains B3b NOT SHIPPED (~17:20):** his bridge 107/108 v main's 106/108 — route-aware seating + the mouth guard + the
+  narrowed heading rule fix main's two cells (green t5 s2, rust t9 s2) and break one new (green t18 s3, one crew at the
+  rim); parked `lab/brains-r30-bridge` 4bc708d7 with per-switch traces for round 31. Brains → B6 (trace only if the box is
+  busy).
 - **Manoeuvre M4b: the ESCAPES are PARKED for round 31 (~17:05); a READER-ONLY commit ships.** Run 2 (`77a1603f`) passed
   every filed line (hull-rest pinned crew-seconds −75 % at n = 144; fights within 2 se; War Rigs byte-identical), but the
   PAIR CHECK found two regressions on stages the series never covered: a wheeled 8×8's 0.9 s reverse-on-lock in single
