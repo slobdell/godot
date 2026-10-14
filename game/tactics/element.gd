@@ -601,6 +601,7 @@ func _watch_progress(game_match: Match) -> void:
 				or not _pressing_parked(unit_name, tank, by_name)):
 			_closest.erase(unit_name)
 			continue
+		if Traffic.holding(unit_name): _closest.erase(unit_name); continue  # round 29 (traffic T1, C29.3): waiting at a street mouth
 		var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
 		var flat_slot := Vector3((slot as Vector3).x, 0.0, (slot as Vector3).z)
 		var gap := here.distance_to(flat_slot)

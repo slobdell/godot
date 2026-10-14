@@ -87,6 +87,7 @@ native-proof: import ## The equality proof: one match three ways (native on, off
 			shell) flags="--brains-on=native_shell";; \
 			threat) flags="--brains-on=native_threat";; \
 			controller) flags="--brains-on=native_controller";; \
+			wall) flags="--brains-on=native_wall";; \
 			stage1_profile) flags="--brains-on=native_exec,native_cb,native_owned --native-exec-profile --native-drive-profile";; \
 			stage1_ab) flags="--brains-on=native_cb,native_owned --brains-ab-run=native_exec";; *) echo "native-proof: unknown arm $$arm"; exit 2;; esac; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --green-faction=law --rust-faction=condemned \

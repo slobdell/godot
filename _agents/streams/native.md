@@ -90,8 +90,8 @@ Round 29 runs traffic (1), manoeuvre (2), brains (3) beside you. In order:
 2. **N7.3: N7.3a built, equal, priced a LOSS (+0.7 % of the tick), committed OFF for stage 2; N7.3b skipped** (the
    orchestrator's ruling 2026-10-13: glue, not a core component; C29.4's freeze released).
 3. **E6b on his laptop: GRANTED 2026-10-13 ~10:56 PDT** (rule D as written below). **DONE 12:10 PDT** (`b2712987`):
-   20 a side 0.854 -> 0.936, 25 a side 0.672 -> 0.878 (all native off -> as shipped); *E6b* below.
-4. **N7.4 wall contact: GO 2026-10-13 ~13:40** (manoeuvre: M2 does not edit `wall_contact.gd`).
+   20 a side no C++ 0.854 -> shipped 0.936, 25 a side no C++ 0.672 -> shipped 0.878; *E6b* below.
+4. **N7.4 wall contact** only on manoeuvre's word (relayed by the orchestrator) that M2 leaves `wall_contact.gd` alone.
 5. N7.5 (element_feed) waits until after round 29; stage 2 stays deferred (his call).
 
 ## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)
@@ -153,7 +153,8 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 **State (2026-10-13 12:15 PDT, round 29):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
 (`native_controller`) OFF by its price, kept for stage 2. **E6b DONE** on his laptop (`b2712987`): everything native
-v nothing native, 20 a side 0.854 -> 0.936 of real time (tick's scripts -20.6 %), 25 a side 0.672 -> 0.878 (-29.2 %).
+v nothing native, 20 a side no C++ 0.854 -> shipped 0.936 of real time (tick's scripts -20.6 %), 25 a side no C++
+0.672 -> shipped 0.878 (-29.2 %).
 **Waiting:** (1) the pairs (C29.2): no diff has arrived from traffic (T1 street hold) or manoeuvre (M1/M2); the held N5
 ports wait for CP-T and CP-M2; (2) N7.4 (wall contact) waits for manoeuvre's word via the orchestrator; (3) N7.5 after
 round 29; stage 2 deferred (his call).
@@ -530,10 +531,10 @@ over 36 % means B pays something new (find it before telling him).
 n = 6 paired a size, 0 engine errors, load 1.1-2.6, no other Godot; hulls alive at the window's ends the same in both
 arms; `references/round28/native/e6b-b2712987/`):**
 
-| | tick's scripts (A v B) | game speed in the window (all native off -> as shipped) |
+| | tick's scripts (shipped A v no C++ B) | game speed in the window |
 |---|---|---|
-| 20 a side | **-20.6 %** (se 0.88): 25.3 v 31.9 ms; foundry -20.6, parade -20.7 | **0.854 -> 0.936** (+0.082, se 0.008) |
-| 25 a side | **-29.2 %** (se 0.42): 29.7 v 42.0 ms; foundry -28.5, parade -30.0 | **0.672 -> 0.878** (+0.206, se 0.004) |
+| 20 a side | **-20.6 %** (se 0.88): 25.3 v 31.9 ms; foundry -20.6, parade -20.7 | **no C++ 0.854 -> shipped 0.936** (+0.082, se 0.008) |
+| 25 a side | **-29.2 %** (se 0.42): 29.7 v 42.0 ms; foundry -28.5, parade -30.0 | **no C++ 0.672 -> shipped 0.878** (+0.206, se 0.004) |
 
 - **Against the prediction:** 25 a side inside everything (saving 22-32 %, A 0.86-0.88, B 0.62-0.70). 20 a side: A's
   0.936 inside 0.93-0.95; the saving -20.6 % just under the 22 % low end (above the 18 % falsifier) and B's 0.854 above
@@ -542,7 +543,7 @@ arms; `references/round28/native/e6b-b2712987/`):**
 - **Priority 0:** unmoved at 20 (-0.01 ms, se 0.04); at 25 -0.19 ms (se 0.03), which is the arm itself, not a void
   session: unlike E6's arm, B turns off ports that live in priority 0 (perception in `match/intel`, the suppression
   field, shells, combat, the tank's drive); `match` 1.13 -> 0.93 ms, `tank` unchanged.
-- **Since E6 (same laptop, A arm):** 20 a side 0.930 -> 0.936, 25 a side 0.865 -> 0.878 (N6/N7's ports; different
+- **Since E6 (same laptop, the shipped arm):** 20 a side E6 0.930 -> E6b 0.936, 25 a side E6 0.865 -> E6b 0.878 (N6/N7's ports; different
   sessions, so read as about +0.01, not a paired number).
 - **For him, in player terms:** *"All the C++ together is worth about a fifth of the game's work at 20 a side and nearly
   a third at 25. On your laptop the opening clash runs at 0.94 of real time at 20 a side (0.85 without any of it) and
@@ -594,6 +595,20 @@ instead, or run them with `--brains-off=native_pathing,native_perception`.
 14.12 (ON saves 0.06 ms, -0.4 %; think 6.72 both); native_perception off 14.17 (ON saves 0.10 ms, -0.7 %: `match/intel`
 0.183 -> 0.088 ms, -52 %). N7.1's lap: the K2 query (`k2.incoming`) 0.098 ms (0.7 % of the tick), half of
 `s.incoming` (0.187); `t.incoming` 0.255 ms (1.8 %) is IncomingFire's own per-tick count over the shell columns.
+
+### Round 29: the street hold's scaffold (the orchestrator's order 2026-10-13 ~12:20 PDT: an OFF-proven stub, no behaviour)
+
+**For traffic's T1 (C29.2).** The hold as a record the native execute reads: `native/src/hold_native.{h,cpp}` (keyed by
+the mover's instance id; spot and start; no godot type stored), `game/ai/native/native_hold.gd`:
+`NativeHold.hold(mover, spot, since)` when a crew starts holding, `NativeHold.release(mover)` when it goes,
+`holding(mover)`, `of(mover)`, `release_all()`; a crew's `exec_forget` (its `_exit_tree`) drops its hold.
+**Until T1's hold is ported into the drive:** the native execute hands a holding crew back to the GDScript (counted
+`holding` in NATIVE_EXEC) and `NativeDrive.usable` steps aside for it (it asks the library only while a hold exists), so
+T1 can ship on the GDScript and play the same with native ON from its first commit. **Traffic's one line each:** call
+`NativeHold.hold` / `release` where `Traffic.holding` turns true / false. Nothing on main writes a hold: play unchanged.
+Proof: `tests/test_native_hold.gd` (a live Sumps fight: the record reads back bit for bit; the held crew handed back
+having written nothing, both views; every other crew's execute identical with the hold written and with the table
+empty; the drive's seam steps aside for it only; release and exec_forget put it back).
 
 ### Questions for the lead
 

@@ -118,7 +118,10 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   (never draws an approach); nothing native-ported. **Orchestrator's additions:** built on B1 (`c2ae6e68`); B1's drawn
   artillery on seeds 13/14/15 t1 identical to c2ae6e68's (or meeting B1's lines); a clicked attack and a drawn attack on a
   target that neither charges nor runs take the same path as `--approach-latch=crews`; bridge-pooled 18/18, arrive
-  series unchanged.
+  series unchanged. **Ruled ~17:20 (after (c)'s tuning, disclosed; follows C28.5, written before round 28's numbers):** (c) is
+  judged on the fight guard + side/rear ≥ clicked + the latch counter firing; on-side (c) REPORTED (the latch makes a
+  charging target an in-place fight by design; tuning a97d5aab seeds 4–6: latched 18/18 at 3.1 s, killed 18/18 both,
+  alive 5.00 v 4.83). Added: the latch fires in 0/18 of (a) (a holding target).
 
 - **Manoeuvre M2 bar (pre-registered 2026-10-13 ~16:30, before judged numbers; DECLARED; LAST attempt; no partial):**
   `7b895eed` (`manoeuvre-m2-r29`): round 28's creep lift re-based (no circle fill) + refusal counters, `--nav-off=creeplift`.
@@ -138,6 +141,102 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   base (else NULL); friendly-stuck ≤ base × 1.2 + 10; fast contacts ≤ base × 1.1 + 5; artillery fire not down > 2 se.
   **Orchestrator's additions:** bridge-pooled 18/18 and traffic's four cases with no wedge; brains' ApproachStage drawn
   artillery (seeds 13–15 × 6) both arms after B1 + CP-T are on main: give-way repacks → 0, B1's lines hold.
+
+- **Manoeuvre M2 JUDGED — NOT SHIPPED (~17:30; `7b895eed`, GDScript, census seeds 8–13 + sim 6–8, builder0):** open+static
+  creep 125 → 75 (−40 %, bar −50); > 3 legs 386 → 308; Terminus mixed arrived 133 → 132/144, rigs 82 → 75/96, rigs' wall
+  contact-ticks 3938 → 6494 (still up 1425 → 2259 without each arm's two worst runs: the lift puts rigs into street walls,
+  round 28's finding; today's tuning drop was seed luck). Friendly creep 125 → 113. Kept `manoeuvre-m2-r29`. The long pins
+  traced (terminus rigs seed 9, Green_S0_3): NOT creep but **M4** — 12 m/s reported at throttle 1.00 with zero
+  displacement, so unstick never fires. **M4 GO** (find why the reported speed is non-zero first; a `game/tank/**` edit
+  needs the orchestrator's grant; native ports). Round 30 candidate: the creep lift re-judged on top of M4.
+  **M4 cause (traced ~17:50):** `game/tank/tank.gd` ~721 sets `estimated_velocity = velocity` after `move_and_slide`, which
+  returns the wanted velocity unchanged when the slide is fully blocked (moved 0.0000 m, velocity 12 m/s). **GRANT (A):**
+  those lines only + a `real_velocity` switch: estimated_velocity = the real displacement (capped at the wanted planar
+  speed). Bar adds: DECLARED fights guard (kills, deaths, hit rate within 2 se; hit rate on touching targets reported);
+  net-smoke, combat-smoke, determinism; the thirteen re-recorded twice with the reason; tracked hulls shown; native's
+  port in `tank_drive_native` equal, merged as a pair.
+
+- **Traffic T1c JUDGED — NOT SHIPPED (~18:00; `761bd727`, census fresh seeds 4–6, n = 9 an arm):** set-up give-ways 25 → 9
+  (bar 0); friendly-stuck, fast contacts, artillery shots pass; repacks while giving way 13 → 7. The 9 are give-ways a
+  set-up hull STARTS itself in `_negotiate` with a new move. Parked `traffic-t1c`. Round 30: judge "repacks while still
+  ordered to fire" (a hull with a new move is leaving anyway), not every set-up give-way.
+
+- **Brains B5a split (~18:10, traced on builder0, both paths identical):** Sumps: the SEAT is 3.6 m off the navmesh (margin
+  3.0) → B5a = no seat handed out > NO_PATH_MARGIN off the mesh (ground it to the nearest mesh point) + make-room never
+  trades a slot its stuck crew reads no_path for. Terminus: the seat is fine; (B5b) a STALE LEASH: a swapped crew's move
+  keeps the old slot's 14 m leash because the 2 m dedup ignores the leash centre; (B5c) the ARRIVAL GATE
+  (`Movement._approach_gate`, brains') laid ~17 m back across the street for a wheeled hull facing east, which grinds
+  there. Each declared with its own bar; native-ported status stated in each. **B5b DROPPED (~18:20):** the order leash
+  applies only under the opt-in `leash_on()` (off; the native drive the same), and CombatMotion's leash is rebuilt each
+  think, so the stale leash is inert; the latent dedup bug is noted at the dedup. B5a: no native diff; B5c: a C29.2 pair
+  (`drive_native.cpp` mirrors `_approach_gate`). **B5a WITHDRAWN (~19:00):** the Sumps seat is ON the mesh in a live match
+  (the rule fired 0 times; the 3.6 m was a probe on an arena not yet loaded); both sightings are the arrival gate 17–20 m
+  back from the seat (APPROACH_MAX), mislabelled no_path because the route ends at the gate. B5c is the one fix.
+
+- **Traffic T3 bar (pre-registered ~18:30; DECLARED; last attempt; no partial):** v3's squad-pair crossing verdict beside
+  the hold (`--traffic-off=turns`; base = hold ON), fresh seeds 22–24 × 6 ticks, n = 18 a case, GDScript: between-squad
+  fast pooled over the two crossing cases −≥ 25 %, neither up; every case crews ≥ base − 2, all-in ≤ +20 %, no wedge;
+  same-squad fast ≤ base × 1.2 + 10 per crossing case; head-on fast within 2 se; CPU mirror reported; bridge-pooled
+  18/18; live test fires; ≤ 0.5 ms. Native diff (Traffic.shape callback in `_avoid`) before the commit. Merge main first if
+  the CP-T pair lands before the judged run.
+
+- **Manoeuvre M4 bar (pre-registered ~18:40; DECLARED; last attempt; no partial):** `9db2a57c` (`manoeuvre-m4-r29`):
+  estimated_velocity = the real flat displacement, capped at the asked velocity (`--tank-off=real_velocity`); test: a pinned
+  truck 0.00 v 12.00 m/s. GDScript tank both arms, fresh seeds: (b1) Terminus census 14–19 rig wall+hull contact-ticks down,
+  arrivals ≥ base; (b2) pinned crews (≥ 10 s on a move_to, |throttle| > 0.3, goal distance unchanged within 0.05 m) in the
+  hull-rest probe seeds 34–39, down; (b3) bridge-pooled 18/18; (b4) tank segment reported; fights guard (manoeuvre-fights
+  seeds 109–132, 180 s): kills, deaths, hit rate within 2 se, paired; net-smoke, combat-smoke, determinism. **Orchestrator's
+  additions:** (b2) down by > 2 se paired; (b1) also with each arm's two worst runs dropped; after native's port the Terminus
+  drive + bridge-pooled on the default path at the pair, the thirteen re-recorded twice in the pair commit; a tracked row.
+
+- **Brains B2 JUDGED — PASSES every line (~19:20; `fa099d5b` = main c0ac69e0 + B2, seeds 10–12, n = 18):** (a) on side
+  14/18 v 0/18 (32.8° v 79.7°), kills 8 v 4, alive 1.78 v 1.11, side/rear 0.88 v 0.82, latch 0/18; (c) kills 18 v 18, alive
+  5.00 v 4.78, latch 18/18 at 3.1 s, on side 0 v 0 (reported); (b) both arms wiped. Clicked 54 rows identical to main; B1's
+  battery rows identical; bridge-pooled 18/18; arrive series 100 rows identical. Worst run (a) seed 12 t16: came round,
+  fought from the side inside the IFV's reach and lost all five (his "swing round anyway"). Merge on its check.
+
+- **Traffic T3 JUDGED — NOT SHIPPED (~19:45; `d9b3339c`, seeds 22–24, n = 18):** crossings between-squad fast 206 → 95
+  (−54 %) and head-on = base pass, but Terminus crossing all-in 39.4 → 48.3 s (+23 %), yard crossing crews 171 → 167 and one
+  wedge (yard s22/t6) fail. Worst runs: the yielding squad crawls at 0.4 as a whole for 30–45 s. Parked `traffic-t3`. Round
+  30: release the yielding squad once the other's tail clears the point, or crawl only crews within a squad length. The
+  yard far-end misses (both arms) relayed to brains as a B5c sighting.
+
+- **Manoeuvre M4 JUDGED — NOT SHIPPED (~21:00; `9db2a57c`, GDScript tank):** (b2) pinned crew-s 2902 → 1040 (se 460) and the
+  fights guard (kills, deaths, hit rate within 2 se) PASS; (b1) Terminus rigs arrived 81 → 64/96 (all 6 seeds), rig
+  contact-ticks 5337 → 8542 (1044 → 3882 without the two worst), mixed 720 → 3486; (b3) bridge-pooled 17/18. FAIL. Reading:
+  the honest velocity zeroes wheels' `_speed` on every wall brush, so rigs grind along walls instead of sliding off.
+  Parked `manoeuvre-m4-r29`. **Round 30:** keep the plant's `_speed` as today; give the real displacement only to the
+  progress readers (unstick, `_pressing_escape`, the pinned probe) and aim leads.
+
+- **Brains B5c bar (pre-registered ~21:30; DECLARED; last attempt v3 `053beffb`, `--nav-off=gategiveup` inverted):** a
+  wheeled hull with a facing gives its gate up when BLOCKED aiming at it; holds a reached gate done per goal; a gate only
+  where a turning-radius ring of navmesh exists (else a shorter run-in, else none). Judged GDScript path, both arms one
+  commit: yard crossing last-crew median on ≤ off − 5 s, crews ≥ off every run; Sumps cell all-within-8 m median ≤ off, no
+  run > 5 s later, guns_on_arc ≥ off − 0.05; counters fire on, 0 off; arrive series 8 m ≥ control − 1, median ±2 %;
+  heading test. **Orchestrator's changes:** yard and Sumps n = 12 each; Terminus n = 3 REPORTED only (traced as an escape
+  failure: B_4 jammed on terrain past its gate → round 30, manoeuvre); bridge-pooled 18/18 switch on; shipping = the
+  default flip + native's mirror merged as a pair.
+
+- **Brains, ~23:00:** B3 PARKED (time-box; `lab/brains-r29-bridge` 474cf510: cell rust t5 s1 fixed by a mouth guard; cell
+  rust t16 s2 needs route-aware attack-move seating → round 30). B4 PARKED (`lab/brains-r29-linespread`): the stuck truck
+  is freed by B5c's gate rule, not slot pitch → rides on B5c's flip. B5c guards in: arrive 100/100 v 89/100 (median 24.8 v
+  29.1 s), bridge-pooled 18/18 switch on (law_tank is WHEELED). **GRANT (B5, queued attack):** `rts_controls.gd`
+  order_selection's element-task branch, `_queue_task` / `_queue_task_for`, `test_control_queued_task`: a shifted
+  attack-move / attack on a driving squad enqueues behind its waypoints, facing from the last waypoint; a chain of shifted
+  attack-moves still runs in order; a shifted MOVE after a queued attack-move goes behind it; unshifted byte-identical.
+
+- **Brains B5c JUDGED — PASSES every line (~22:40; `053beffb`, GDScript both arms, fresh seeds):** yard crossing last crew
+  in: off never in 7/12 runs v on 21.95 s median, on 10/10 in all 12; Sumps all-within-8 m 38.8 → 36.0 s, no run > 5 s
+  later (seed 3 never → 36.5 s); guns_on_arc 0.94 = 0.94; Terminus (reported) 10/10/9 → 10/10/10; counters on/off as
+  required; arrive series 89 → 100/100; bridge-pooled 18/18. Worst run: a hull 9 m from its slot pulled 17 m back to a gate
+  (round 30: no gate when already within the approach length). **Ship = the default flip + native's mirror as a pair**;
+  native shows yard and Sumps on the ON path equal to the judged on-arm run for run. B5 queued attack grant extended to
+  `_order_squads` (several squads queue like round 28's screen); merged separately.
+
+- **Brains B5c PARKED (2026-10-14 ~01:30):** the default flip failed `test_wheeled_arrival`'s face-the-way-it-came case (dot
+  0.50; the bar's heading test was 90°, this one 180°: lesson 305); the narrow fix `a8df3dc3` moved judged cells (yard 23,
+  Sumps 6), so by the rule set before its proof it parks. Kept: `brains-b5c-flip`, native's `lab/native-b5c` (mirror +
+  the fix's mirror, unrun). Round 30 with route-aware seating.
 
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the

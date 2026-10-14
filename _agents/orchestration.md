@@ -113,6 +113,9 @@ make remote T=check                                     # or make check; fix int
   `build/sim_state_hash.txt` over `tests/baselines/`, and say why in the commit. Hashes are per glibc version.
 - Merging several independent branches back to back and checking once at the end is fine (the lead agreed); each
   merge is its own commit, so a failure can be bisected.
+- **No second check of the same code (round 29, builder0 throughput).** When main's code after a merge equals the tree
+  the worker's green check ran on (`git diff <green> HEAD -- game native tests mk tools Makefile` is empty), that check
+  covers main: record it and run none. Otherwise batch the merges waiting and run ONE main check after the batch.
 - A worker may keep committing after its first merge: check `git log main..stream/<s>` before closing.
 
 ### 8. Close the round
@@ -3777,3 +3780,11 @@ instrument that cannot lie about load — removal within one run — and let eve
    cannot ("it needs to be positioned still in order to fire"). Re-asked as "it has to stop and set up before it can fire;
    go straight to your side, or set up and fire here first, then move", he answered at once. The worker's wording carried
    its own model ("shell while driving" meant the pre-move deploy); the orchestrator relays the choice in his model.
+304. **A probe on an arena that has not finished loading reads geometry wrong.** (Round 29, brains B5a.) A reach probe without
+   `lab.start` read a seat 3.6 m off the navmesh; in the live match it was on it, and the fix written for it fired 0 times.
+   Before designing from a probe's reading, confirm the same reading inside a started match (and that a rule built on it
+   fires, lesson 300).
+305. **A judged bar's guard can test the easy geometry and miss the hard one.** (Round 29, brains B5c.) The bar's heading
+   guard (`test_nav_gate_hold`) ordered a facing 90° off travel and passed; the existing `test_wheeled_arrival` ordered
+   180° (the gate lies past the goal) and failed only when the default was flipped (dot 0.50). Run the WHOLE suite with a
+   candidate's switch ON before judging it, not only its own tests: an inverted switch hides it from `make check`.

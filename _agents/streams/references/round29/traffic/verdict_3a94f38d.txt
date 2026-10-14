@@ -1,0 +1,26 @@
+terminus/cross  n=18  fast 236 -> 236  xfast 112 -> 112  counters {"verdicts": 1, "holds": 3, "hold_ticks": 86, "released_passed": 3, "released_cap": 0, "no_spot": 0}
+   crews >= base - 2                  pass  173 -> 173
+   fast within 2 se                   pass  236 -> 236 (2 se 0.0)
+   all-in median within 2 se          pass  45.9 -> 45.9 (2 se 0.1)
+terminus/head  n=18  fast 881 -> 379  xfast 475 -> 91  counters {"verdicts": 18, "holds": 90, "hold_ticks": 37537, "released_passed": 87, "released_cap": 3, "no_spot": 0}
+   crews >= base - 2                  pass  176 -> 177
+   between-squad fast down >= 25 %    pass  475 -> 91 (-81 %)
+   all-in median <= +20 %             pass  60.8 -> 59.3 (-2.4 %)
+   no wedge                           pass  none
+   the rule fired                     pass  
+yard_open/cross  n=18  fast 247 -> 247  xfast 111 -> 111  counters {"verdicts": 0, "holds": 0, "hold_ticks": 0, "released_passed": 0, "released_cap": 0, "no_spot": 0}
+   crews >= base - 2                  pass  166 -> 166
+   fast within 2 se                   pass  247 -> 247 (2 se 0.0)
+   all-in median within 2 se          pass  77.2 -> 77.2 (2 se 0.0)
+yard_open/head  n=18  fast 115 -> 115  xfast 55 -> 55  counters {"verdicts": 0, "holds": 0, "hold_ticks": 0, "released_passed": 0, "released_cap": 0, "no_spot": 0}
+   crews >= base - 2                  pass  176 -> 176
+   fast within 2 se                   pass  115 -> 115 (2 se 0.0)
+   all-in median within 2 se          pass  30.9 -> 30.9 (2 se 0.0)
+VERDICT PASS
+terminus/head  n=18  fast 881 -> 382  xfast 475 -> 58  counters {"verdicts": 18, "holds": 90, "hold_ticks": 37766, "released_passed": 85, "released_cap": 2, "no_spot": 0}
+   crews >= base - 2                  pass  176 -> 178
+   between-squad fast down >= 25 %    pass  475 -> 58 (-88 %)
+   all-in median <= +20 %             pass  60.8 -> 59.1 (-2.7 %)
+   no wedge                           pass  none
+   the rule fired                     pass  
+VERDICT PASS

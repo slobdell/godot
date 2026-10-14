@@ -25,7 +25,25 @@ the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `
 **E6b (his laptop, 12:10 PDT, `b2712987`):** all C++ v none: 20 a side 0.854 → 0.936 of real time, 25 a side 0.672 →
 0.878 (`game_design.md` *Round 29: where the laptop stands now*); tell him as measured.
 
-**Merged since launch:** `4488085d` = native `16898e51` (N7.3a, `native_controller` OFF by its price; covered by native's
+**Main GREEN at `1f5c84e4`** (code = brains-b5-queued `5ab05468`: builder0, `make check exited 0`, 2580 passed, 0 failed,
+26 targets ALL JUDGED, thirteen unmoved; covers manoeuvre's final merge, so no check is owed): + B5 queued attack (shift +
+attack-move behind waypoints, one squad or several).
+
+**Earlier: main GREEN at `23d94eb3`** (builder0, `make check exited 0`, 2574 passed, 0 failed, 26 targets ALL JUDGED, thirteen
+unmoved; the perf verdict owed by `1113062c`'s check is now judged): + brains B2 (a drawn flank carried out). Since then
+only docs and traffic's verdict tools (`7811950d`), and manoeuvre's final merge (census tooling in
+`game/ai/manoeuvre_census.gd`, behind `--turn-trace`; its own check green at `eb754864`): **one main check OWED**, batched
+with the next merge (orchestration §7, one check per tree).
+
+**Earlier: main at `46863c74`** (code = `1113062c`; builder0, `make check exited 0`, 2572 passed, 0 failed, **24 passed + 2 NOT
+JUDGED for box load** (perf-judge refused 3× at 2.4–2.6×; scenario_perf defers to it), thirteen unmoved, determinism
+2875411ff4ec6be7; the perf verdict is OWED on the next main check): + traffic CP-T (the street hold) and native's port of it
+(`1267ffb1`, `1113062c`), N7.4 OFF.
+
+**Earlier: main GREEN at `c0ac69e0`** (builder0, `make check exited 0`, 2557 passed, 0 failed, 26 targets ALL JUDGED, thirteen
+unmoved): brains B1 (artillery goes straight to his side) + native N7.3a OFF.
+
+**Merged since launch:** `c0ac69e0` = brains `c2ae6e68` (B1, judged: side 18/18, first round +24.8 s). `4488085d` = native `16898e51` (N7.3a, `native_controller` OFF by its price; covered by native's
 check at `16898e51`: builder0 exited 0, 2539/0, 26 ALL JUDGED, thirteen unmoved; main's code tree equals it). Bars
 pre-registered in `workstreams.md` *Round 29*: traffic CP-T, brains B1, manoeuvre M1 (+ its partial-rule clarification).
 Round 28's orchestrator session `godot-29` stood down 13:30 (its two bar commits adopted); workers report to `godot-67`.
@@ -34,9 +52,13 @@ Round 28's orchestrator session `godot-29` stood down 13:30 (its two bar commits
 `artillery_side_by_side.mp4` (brains B1: clicked v his drawn east side, seed 13, 45 s; the drawn trucks drive round
 "guns quiet", set up ~25 s, the IFV burns ~42 s v ~10 s clicked); `terminus_head_{base,hold}_3a94f38d.mp4` (traffic CP-T,
 his Terminus head-on, seed 1, 45 s: at 15 s base has five hulls nose to nose in the street mouth; with the hold squad A
-waits on both sides of the mouth while B's column comes out between them).
+waits on both sides of the mouth while B's column comes out between them); `flank_drawn_vs_clicked_fa099d5b_seed10t3.mp4`
+(brains B2, even roster, seed 10: clicked 1 alive and the IFV lives, drawn 5 alive and the IFV dead at 29 s; the fight is
+small at the top of the frame).
 
 **Launch check: GREEN at `bcef46a1`** (builder0, `make check exited 0`, 2538 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7; the docs commit after it differs by docs only). Workers start from it and do not re-run a baseline.
+
+**AT CLOSE: tell him to launch the Fable agents** (`roadmap.md` *AT ROUND 29's CLOSE*; his request 2026-10-14).
 
 **The orchestrator's jobs:** collect every DECLARED bar before its numbers (C29.1); merge each declared change ALONE, a
 driving change back to back with native's port (C29.2); relay the street hold's grants (C29.3: traffic's gate lines in

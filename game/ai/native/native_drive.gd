@@ -37,7 +37,7 @@ static func configure() -> bool:
 		return true
 	if not NativeBridge.available:
 		return false
-	_configured = NativeBridge.impl.drive_configure({
+	var config := {
 		"NEW_GOAL_JUMP": Movement.NEW_GOAL_JUMP, "WAYPOINT_MIN_M": Movement.WAYPOINT_MIN_M,
 		"GIVE_WAY_PACE": Movement.GIVE_WAY_PACE, "STATION_RANGE": Movement.STATION_RANGE,
 		"STATION_MIN_SPEED": Movement.STATION_MIN_SPEED, "ASK_SECONDS": Movement.ASK_SECONDS,
@@ -98,7 +98,9 @@ static func configure() -> bool:
 		"PRESS_ESCAPE_MAX_S": Movement.PRESS_ESCAPE_MAX_S, "THROTTLE_MIN": WallContact.THROTTLE_MIN,
 		# Round 26 (manoeuvre M1, C26.2): the gate of Movement._manoeuvre natively; absent (-1) before manoeuvre lands.
 		"BEHIND_GAP_TICKS": int((Movement as Script).get_script_constant_map().get("BEHIND_GAP_TICKS", -1)),
-	})
+	}
+	config.merge(NativeTraffic.drive_config())  # round 29 (traffic T1): the street hold, when this tree has it
+	_configured = NativeBridge.impl.drive_configure(config)
 	if Movement.FIRE_DETOUR_STEPS.size() != 3:
 		push_error("NativeDrive: drive_native.cpp scores three sidesteps; movement.gd has %d" % Movement.FIRE_DETOUR_STEPS.size())
 		_configured = false
