@@ -367,6 +367,27 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
   `test_native_traffic_hold`, 486 s). The new floor is native's file: round 31's split candidate.
+- **Brains B3b bar — his bridge 108/108 (pre-registered 2026-10-14 ~16:40 PDT, before numbers; DECLARED; post-CP-N; the
+  LAST attempt; no partial):** candidate `lab/brains-r30-bridge` `a117cb1a` = stream `33d9c310` + round 28's heading rule
+  narrowed to the task's drawn facing (254fd98f) + round 29's mouth guard (474cf510) + NEW route-aware seating: on a drill
+  move whose navmesh route crosses a deck, `TacticsFormation.seat`'s cost is (|crew→entry| + |exit→seat|)², so the crew
+  nearest the crossing takes the seat farthest from it (the crossing found once per task point; static destinations
+  only). Control = all three off (`--route-seat=off --mouth-held=off --reissue-heading=plan` = main's rules). GDScript
+  only (Pathing.find_path already native): no native diff. Trace (rust t16 s2): the wedge across the river was seated by
+  straight line at the drill's end; S_4 (westmost near bank) took the westmost far seat while every route crossed the
+  east bridge; seats crossed; give-ways from 19 s; make-room swap at 23 s; rim 4.2 s. Tuning (that cell, n = 1): rim
+  0.6 s, all across 27.1 v 37.4 s. Lines: (1) the FULL 108 (`bridge-series`, locks × both sides × seeds 1–3 × ticks 1–18,
+  deterministic): on = 108/108 by bridge_verdict, control reported (main 106/108); (2) bridge-pooled 18/18; (3) arrive
+  series FRESH seeds 33–36, n = 100 paired: within 8 m on ≥ control − 1 AND McNemar discordant-against ≤ 1; paired median
+  no slower than +2 %; (4) counters: crossings_found > 0 in the bridge runs; mouth_held_resends > 0 somewhere in the 108
+  (else "not exercised"); route seating fires 0× on arrive maps without decks; (5) cost ≤ 0.5 ms (element part) or NOT
+  READABLE; (6) `test_tactics_reorder_heading`, `_reseat_keep`, `_route_seat`, the drills and pursuit tests + check green
+  on the tip; the thirteen explained if they move. Per-run rows to references for sizing. **Orchestrator's additions
+  (before numbers):** (a) the two cells failing at control named, and which of the three switches each needs (one re-run
+  of those two cells with each switch alone — 6 runs, not 324); (b) any arrive discordant-against run traced before the
+  medians (lesson 302); (c) the yard / Sumps gate cells are NOT in this bar (no deck): say so, and that `route-seat` cannot
+  fire there (the counter at 0 on one Sumps cell, reported); (d) on a pass, the whole suite incl. `test_tactics_pursuit`
+  on the tip (lesson 305, the whole suite with the rules ON) is the merge gate, not the filtered tests.
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
