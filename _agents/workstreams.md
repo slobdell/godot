@@ -176,6 +176,22 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   repacks); whether it then fires less is not decided" — a re-judge with the artillery line sized from this run's sd (the
   judged run's own paired se, as T3b's clock line did) or more census seeds. **Traffic's next: T4** (the ORCA ghost
   velocity), bar written now, run after M4b's `real_velocity` is on main.
+- **Traffic T4 (the ORCA ghost) — tuning read and a PROPOSED bar; not judged this round (2026-10-14 ~15:40 PDT;
+  `lab/traffic-t4` = stream/traffic + M4b2 `77a1603f`; builder0, nav-terminus-drive mixed + rigs, seeds 21–23, GDScript,
+  base `--traffic-off=ghost`):** v1 (`05bb2c22`, ORCA's neighbour table reads `Tank.real_velocity`): mixed stuck 198 → 86
+  crew-s, manoeuvre's mixed-21 IFV 74 → 12 and the oscillation gone; **but rigs 72 → 164**: in rigs-21 a War Rig sits at
+  full throttle 55 s (real 0, estimated 12 m/s, touch false, stall clock 0) — M4b2 keeps the rig's unstick on
+  `estimated_velocity` (over `UNSTICK_BLIND_MAX_LEN_M`), so a rig pressed against a FRIEND never fires its stall. v2
+  (`b63a90c1`, the solving crew's own velocity honest too): mixed 198 → 142, rigs 72 → 77, the IFV still oscillates 50 s.
+  Noise: paired stuck differences −62 to +77 s a run (sd ≈ 60; not in CP-N): a halving needs ~40–50 runs a squad, −30 %
+  ~130. Traffic's pick: v1 (the traced cause); its rig harm is the rig's stall reading, manoeuvre's. **Proposed bar**
+  (re-sized when M4b is on main): Terminus drive mixed, fresh seeds, n = 24 a squad, stuck crew-s down beyond 1.645 se;
+  rigs stuck not up beyond 1.645 se; arrivals ≥ base − 1.645 se (rows 68/70); the four traffic cases within T3b's guards;
+  bridge-pooled 18/18; `test_traffic_ghost`; a native pair (`avoidance_gather` and the drive's solve). **Ruling:** T4 is
+  **round 31's first traffic item**, judged TOGETHER with manoeuvre's answer to "should a War Rig's stall clock read
+  `real_velocity` when pressed against a FRIEND (not a wall)?" — M4b2 is in its last judged attempt and cannot change
+  now; the two land as one declared pair of changes next round, sized from this round's stuck rows (to sizing's probes).
+  Traffic → check on its tip and the report.
 - **Traffic T3b JUDGED — NOT SHIPPED (2026-10-14 ~13:35 PDT; `cf124433` both arms, builder0, GDScript, seeds 31–33 × 6,
   n = 18 a case):** FAILED one line: **the yard crossing clock +2.80 s (se 0.22) v a limit of +1.18 s** (the yard's
   yielding squad pays +3.66 s, se 0.23; judged paired sd 0.92 < tuning 1.77, the 1.5× caveat does not apply). Every
