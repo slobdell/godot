@@ -195,7 +195,75 @@ So a +5 guard on crews-still-moving and a ±5° line on clicked medians were bot
 
 ## The lines (S3): a variance-aware form for every kind of line this project writes
 
-_(written in S3; the rules per form, with M1's guard, T3's all-in line and B5c's yard count re-sized as worked examples)_
+Every rule below has the same shape: **the line is written in units of the probe's own noise, the noise is read from the
+judged pair's rows (never assumed), and the bar states what the line can and cannot see.** `k` is the multiple of the se
+a guard sits at: **k = 1.645** is a 5 % one-sided false-fail rate on a treatment that changes nothing (the default);
+k = 2 is 2.3 % (the "within 2 se" the project already writes). The se is always the PAIRED se over the (seed, tick)
+grid, of the statistic the line compares. `tools/judge/size.py` prints every number in this section.
+
+| form the bar writes | today's wording | the variance-aware form | what to quote beside the verdict |
+|---|---|---|---|
+| **guard** ("not worse than base by more than X") | `<= base + 5`, `<= +20 %`, `>= base − 2` | `<= base + k·se` with se the paired se of the SUM (totals) or of the mean; k stated. If the product names X ("+5 crews is what he would notice"), X must be a SHARE or a per-run amount, and n is sized so that MDE ≤ X: a fixed total gets harder to see as n grows (X/n a run). | se, k, and the MDE (= 2.49 se at 80 % power): the harm the guard can catch |
+| **gain line** ("down ≥ X %") | `−25 %` as a point threshold | two conditions: the point ≥ X % **and** the drop − k·se > 0 (distinguishable from nothing). n from `n_paired(sd, X %·base)`; the bar says the power at X % and the false-pass at null (`size.py` prints both for the point form). | the drop, its se, n, and "a null passes this %" |
+| **count of runs, two arms** ("k/n v j/n") | `on side 14/18 v 0/18` | Fisher exact, one-sided in the arm's direction, p ≤ 0.05 (the comparison is what decides; 18/18 v 0/18 is decided at n = 3 a side, 14/18 v 0/18 at 6, 12/12 v 5/12 at 9; 12/12 v 10/12 is a coin, p 0.24, needs 39) | both counts, the one-sided p |
+| **count threshold, one arm** ("≥ K/n") | `≥ 12/18` | keep only where the minimum RATE is itself the product promise; then say which two true rates it separates (≥ 12/18 passes p = 0.5 twelve times in a hundred and p = 0.8 ninety-five: it separates 0.5 from 0.8, not 0.6 from 0.75). A missed threshold with a decided comparison (B1 r28: 10/18 v 0/18, p 0.0002) is a sizing miss, not a product miss. | the count, the binomial sd of the count (2.1 at 10/18) and the line's distance in sd |
+| **paired cells** (arrive series, bridge cells) | `≥ control − 1`, `lost ≤ 1` | McNemar exact over the discordant cells (a rule that never acts leaves every cell identical, so only the discordants carry information): 11 v 0 p 0.001 decided; 5 v 1 p 0.22 a coin; 0 v 1 p 1.0. "lost ≤ 1" is a direction check on the against-cells and should say so. | b, c, p |
+| **median line** ("median ≤ base + X %") | `all-in median <= +20 %` | `<= base + k·sd_boot` with sd_boot the bootstrap sd of the paired median difference (resample run PAIRS, `stats.bootstrap_median_diff`); report the 90 % interval; MDE = 2.49 sd_boot. On traffic's cases at n = 18 sd_boot is 5.8 s (Terminus head-on), 6–7 s (Terminus crossing), 10 s (yard crossing: the median sits near the 90 s cap), 2.3 s (yard head-on). | base and arm medians, the difference, sd_boot, the interval |
+| **"within 2 se"** | `fast within 2 se` | define it: one-sided (a fall always passes), se = paired se of the sum (or sd_boot for a median) from the judged pair's own rows; where the rule never touches the case the pair is byte-identical and the line is an equality check (print "2 se 0.0: identical arms") | the se and whether the arms differed at all |
+| **episode counts without rows** (creep episodes) | `−50 %` | Poisson sd √(a + b) is a FLOOR on the noise (episodes within a run are not independent): 125 → 75 against a −50 % line is 0.9 sd from the line. Keep per-run rows next time (ask the runner) so the paired form applies. | a, b, √(a+b), and that it is a floor |
+| **deterministic cells** (bridge 18, his 108) | `18/18` | not a sample: a new failing cell is a regression in a named cell, lesson 302 (read the trace), never "17/18 is within noise" | the cell's name |
+| **censored lines** | `settle median <= +6 s` with 17–25 of 27 runs at the 75 s window | measures nothing: both arms read 75.0. Widen the window, or judge the count of runs that never settle (a count line) | say it is censored |
+
+**The partial-gain rule still comes first** (lesson 292): the forms above change how a line is READ, not when it is
+written; every line, its k and its se source are pre-registered before numbers, and a bar written before CP-N may be
+re-sized once, in writing, before its judged run (C30.3).
+
+### Worked example 1: M1's 75 s guard (round 29, `d7385da2`, hull-rest probe, seeds 22–33)
+
+`python3 tools/judge/size.py --class-table _agents/streams/references/round29/manoeuvre/m1_judged.txt --task faced_attack_move --guard 5`
+
+The bar: crews still moving at 75 s, all classes, ≤ base + 5 on every task; attack-move read +8 and support by fire +8,
+so M1 failed and was parked. The M1_CLASS lines carry the noise: on attack-move the four classes' paired se are 0.0,
+2.8, 4.4 and 8.9, so the all-class se of the sum is √(2.8² + 4.4² + 8.9²) = **10.3**. A +5 line against a 10.3 se is
+inside the noise: a treatment that changes nothing fails it **31 %** of the time (28 % on support by fire, se 8.8).
+The variance-aware guard is ≤ base + 1.645 × 10.3 = **+17.0** (k = 2: +20.6); the observed +8 **passes**, as does
+support by fire's +8 against +14.5. Wheeled turrets alone, the class M1 commands: +12 against 1.645 × 8.9 = 14.6,
+passes. What a +5 guard would need: +5 over 27 runs is 0.185 a run against a per-run sd of 1.71, so n ≈ **530 runs with
+the class** a task (today 27); the MDE at 27 runs is +22 crews a task (+24 % of the 90 moving in the base). The clicked
+pair, where M1 never acts, moved the same count by −16..+5 a task (the A/A), which says the same thing.
+**The verdict M1 would have had under this form:** the guard passes on all six tasks. Its other miss, "clicked medians
+within ±5° of base", was also inside the A/A (wheeled-turret clicked medians moved −17.8..+6.3° between two arms that
+differ only in divergence; 1 of 24 class rows has p < 0.05, which is the expected chance count), so M1's point tasks
+would have shipped on the round-29 numbers. This is a retrospective reading of a pre-registered bar, so it does not
+ship M1; it sizes M1b's bar: *guard: all-class moving-at-judge ≤ base + 2 se (M1_CLASS's se, ≈ +20 a task at n = 27),
+wheeled-turret ≤ base + 2 se; clicked: the per-class permutation p ≥ 0.05 in ≥ 23 of 24 rows.*
+
+### Worked example 2: T3's all-in line (round 29, `d9b3339c`, traffic-series, seeds 22–24)
+
+`python3 tools/judge/size.py --base …/t3_judged_base_d9b3339c_seeds222324.jsonl --arm …/t3_judged_arm_d9b3339c_seeds222324.jsonl --case terminus/cross --metric allin --stat median --guard-share 0.2`
+
+The bar: Terminus crossing all-in median ≤ base + 20 %; it read 39.4 → 48.3 s (+23 %) and failed. The paired bootstrap
+sd of the median difference over the 18 run pairs is **6.0 s**, so the +20 % line (7.9 s) is inside the noise (a null
+fails it 9 % of the time); the variance-aware guard is +1.645 × 6.0 = **+9.9 s**, and the observed +8.95 **passes** it,
+with a 90 % interval on the difference of −2.4..+14.5 s (it includes 0: the slowdown is not distinguishable from nothing
+at n = 18; MDE +14.9 s = +38 %). The yard crews line (171 → 167 against ≥ 169): paired sd 0.73 a run, se of the sum 3.1,
+so "−2" is inside the noise (a null fails it 26 % of the time); the variance-aware guard is ≥ base − 5.1 and the −4
+**passes**. The gain line held with room: between-squad fast pooled over the crossings 206 → 95, se 14.5, the drop minus
+1.645 se is still −87 (not inside the noise; a −25 % effect at n = 36 is decided with 80 % power at n = 18).
+**The verdict T3 would have had:** the two noise-fails flip to passes, but the third fail stands: the wedge at yard
+s22/t6 (two crews never in where the base had none) is a named run, not a statistic, and its trace (the yielding squad
+crawling at 0.4 for 30–45 s) is round 30's T3b design. T3 fails on the trace, which is the right reason.
+
+### Worked example 3: B5c's yard count (round 29, `053beffb`, yard crossing seeds 23–24 × 6 ticks)
+
+`python3 tools/judge/size.py --count 12/12 5/12`
+
+The bar: last crew in on every run (12/12) against the off arm's "never in 7 of 12". As a comparison, 12/12 v 5/12 has
+Fisher one-sided p **0.0023**: decided, and decided at **n = 9** a side (the observed rates reach 80 % power there), so
+three cells of the twelve could have been spared. The median line beside it (on ≤ off − 5 s) is weaker than it looks:
+the same yard cells re-run under the narrow fix moved by −3.6..+17.8 s, a cell swing of about ±9 s, so a 5 s margin on a
+median of 12 (se ≈ 3 s) is at the edge; the count is the deciding line and the median the report. A 12/12 v 10/12 cell
+(p 0.24) would not decide anything and would need 39 runs a side.
 
 ## Early stop (S4): deciding a paired series before the grid is run out
 
