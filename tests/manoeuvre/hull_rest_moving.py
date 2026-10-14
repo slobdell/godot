@@ -6,7 +6,8 @@ which carries `MANOEUVRE_STATE` lines when the arm ran with `M1_FLAGS=--turn-sta
 second). For every crew not still at the judge, its last state line before the judge (`SCREEN {`) names what it was doing:
   face_legs    a face at rest, driving a planned leg (Manoeuvre.plan_face)
   face_creep   a face at rest, no plan (none fitted, refused, or retrying): the creep's shuffle
-  pinned       a move whose hull is not getting anywhere (estimated speed < 0.3 m/s under |throttle| > 0.3)
+  pinned       a move whose hull is not getting anywhere (real speed < 0.3 m/s under |throttle| > 0.3; round 30 M4b:
+               Tank.real_velocity from the state line's `real`, the plant's `moved` in older logs)
   dressing     a move within 8 m of its goal
   driving      a move further out
   other        any other order
@@ -19,7 +20,7 @@ import sys
 
 STATE = re.compile(r"MANOEUVRE_STATE f (\d+) (.+?) (\S+) order (\S*) from (\S*) v ([-\d.]+) moved ([-\d.]+) "
                    r"cmd ([-\d.]+)/([-\d.]+) face (\d+)/([-\d.]+) blocked (\S+) retry (-?\d+) touch (\S+) "
-                   r"stuck ([-\d.]+) pivot (\S+) esc ([-\d.]+) goal ([-\d.]+)")
+                   r"stuck ([-\d.]+) pivot (\S+) esc ([-\d.]+) goal ([-\d.]+)(?: real ([-\d.]+))?")
 KINDS = ("face_legs", "face_creep", "pinned", "dressing", "driving", "other", "no_state")
 
 
@@ -30,7 +31,10 @@ def kind_of(m) -> str:
     if order == "face":
         return "face_legs" if int(m.group(10)) > 0 or float(m.group(11)) > 0.0 else "face_creep"
     if order == "move_to":
-        if float(m.group(7)) < 0.3 and abs(float(m.group(8))) > 0.3:
+        # Round 30 (M4b): pinned by the motion the hull really made (`real`, Tank.real_velocity) when the log has it;
+        # older logs carry only the plant's reading (`moved`, estimated_velocity: 12 m/s on a pinned truck).
+        made = float(m.group(19)) if m.group(19) is not None else float(m.group(7))
+        if made < 0.3 and abs(float(m.group(8))) > 0.3:
             return "pinned"
         return "dressing" if float(m.group(18)) <= 8.0 else "driving"
     return "other"

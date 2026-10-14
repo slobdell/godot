@@ -1,0 +1,160 @@
+extends TestCase
+## Round 30, manoeuvre M4b (C30.6): **the readers that judge progress see the motion a hull really made; the plant
+## keeps its own reading.**
+##
+## Traced in round 29 (terminus rigs seed 9, GDScript path, DRIVE_TRACE): a gang truck pressing a squadmate moved
+## 0.0000 m a tick while `move_and_slide` handed its velocity back unchanged (floating mode, the slide fully blocked by
+## another body), so `estimated_velocity` and the wheels' `_speed` stayed at 12 m/s, and `Movement.unstick`
+## (estimated_velocity < STUCK_SPEED) never fired: the hull pressed for seconds to minutes. Round 29's fix (A) made
+## `estimated_velocity` honest for everyone and freed the pinned hulls, but a rig BRUSHING a wall lost its `_speed` on
+## every touch and ground along the wall instead of sliding off (Terminus rigs 81 -> 64 of 96 arrived).
+##
+## M4b: `Tank.real_velocity` = this tick's real flat displacement over dt, capped at the velocity asked (a depenetration
+## shove is not motion), `--tank-off=real_velocity` makes it equal `estimated_velocity`. `estimated_velocity` and
+## `_speed` are untouched (design B). `Movement.unstick` reads it; and because the plant still carries its phantom
+## momentum, the stall escape holds reverse until the hull has REALLY backed off, with its cap sized to the momentum it
+## must shed first (`--nav-off=unstickback` = round 29's 0.9 s escape).
+
+
+## B, `behind` metres south of A and facing it, drives at full throttle for `seconds` (A holds still), the plant alone:
+## no controller writes either command. B's real displacement over the last second, and its readings at the end.
+func _press(unit_id: String, behind: float, seconds: float, real_on: bool, native_plant := false) -> Dictionary:
+	var was_native := BrainSwitches.native
+	var was_real := Tank.real_velocity_on
+	Tank.real_velocity_on = real_on
+	BrainSwitches.native = native_plant and NativeBridge.available
+	var lab := TacticsLab.create(self, 31)
+	var a := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 20), 0.0, unit_id)
+	var b := lab.gun(Match.Team.GREEN, "Green_A_2", Vector3(TacticsScenarios.LANE_X, 0, 20 + behind), 0.0, unit_id)
+	await lab.start()
+	_controller_of(lab, a).set_physics_process(false)
+	_controller_of(lab, b).set_physics_process(false)
+	var mark := Vector3.ZERO
+	var ticks := int(SimClock.TICK_RATE * seconds)
+	for tick in ticks:
+		b.command = TankCommand.new(1.0, 0.0, b.global_position + Vector3(0, 0, -20))
+		a.command = TankCommand.new(0.0, 0.0, a.global_position + Vector3(0, 0, -20))
+		await lab.step()
+		if tick == ticks - SimClock.TICK_RATE:
+			mark = b.global_position
+	var real := Vector2(b.global_position.x - mark.x, b.global_position.z - mark.z).length()
+	var out := {"real": real, "speed": b.speed(), "estimated": Vector2(b.estimated_velocity.x, b.estimated_velocity.z).length(),
+			"reader": Vector2(b.real_velocity.x, b.real_velocity.z).length(),
+			"gap": Vector2(b.global_position.x - a.global_position.x, b.global_position.z - a.global_position.z).length()}
+	lab.dispose()
+	BrainSwitches.native = was_native
+	Tank.real_velocity_on = was_real
+	return out
+
+
+static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
+	for child in lab.game_match.brains.get_children():
+		if child is OrderController and (child as OrderController).tank == tank:
+			return child
+	return null
+
+
+func test_a_pinned_truck_reads_zero_by_the_readers_and_twelve_by_the_plant() -> void:
+	var now := await _press("gang_tank", 12.0, 4.0, true)
+	var base := await _press("gang_tank", 12.0, 4.0, false)
+	print("MEASURE m4b_wedge gang_tank pinned on a parked squadmate: real %.2f m/s, reader %.2f, plant speed %.2f, estimated %.2f (base: real %.2f, reader %.2f, speed %.2f)" % [
+			now["real"], now["reader"], now["speed"], now["estimated"], base["real"], base["reader"], base["speed"]])
+	assert_true(base["real"] < 1.0 and base["speed"] > base["real"] + 3.0,
+			"setup: the plant shows the defect (pinned at %.2f m/s, reporting %.2f)" % [base["real"], base["speed"]])
+	assert_true(absf(base["reader"] - base["estimated"]) < 0.01, "switched off, the reader IS estimated_velocity (%.2f v %.2f)" % [base["reader"], base["estimated"]])
+	assert_true(now["real"] < 1.0, "the truck is still pinned (%.2f m/s)" % now["real"])
+	assert_true(now["reader"] <= now["real"] + 0.5, "real_velocity is the motion it makes (%.2f v %.2f m/s)" % [now["reader"], now["real"]])
+	assert_true(now["speed"] > now["real"] + 3.0, "design B: the plant's speed is untouched (%.2f)" % now["speed"])
+	assert_true(now["estimated"] > now["real"] + 3.0, "design B: estimated_velocity is untouched (%.2f)" % now["estimated"])
+
+
+## The native tank drive (stage 1 ON in check) writes `estimated_velocity` itself; `real_velocity` must be as honest
+## behind it (the GDScript reads it after the native call until native's port carries it, C30.2).
+func test_the_native_plant_reads_the_same_pin() -> void:
+	if not NativeBridge.available:
+		print("MEASURE m4b_wedge_native: no native library here, skipped")
+		return
+	var now := await _press("gang_tank", 12.0, 4.0, true, true)
+	print("MEASURE m4b_wedge_native gang_tank pinned (native plant): real %.2f, reader %.2f, speed %.2f, estimated %.2f" % [
+			now["real"], now["reader"], now["speed"], now["estimated"]])
+	assert_true(now["real"] < 1.0, "the truck is still pinned (%.2f m/s)" % now["real"])
+	assert_true(now["reader"] <= now["real"] + 0.5, "real_velocity is the motion it makes on the native plant (%.2f v %.2f)" % [now["reader"], now["real"]])
+	assert_true(now["speed"] > now["real"] + 3.0, "the native plant's speed is untouched too (%.2f)" % now["speed"])
+
+
+func test_a_free_truck_reads_the_same_either_way() -> void:
+	var now := await _press("gang_tank", 40.0, 2.0, true)
+	var base := await _press("gang_tank", 40.0, 2.0, false)
+	print("MEASURE m4b_free gang_tank driving free: speed %.3f (base %.3f), reader %.2f, estimated %.2f, real %.2f" % [
+			now["speed"], base["speed"], now["reader"], now["estimated"], now["real"]])
+	assert_true(now["real"] > 3.0, "setup: the truck drives free (%.2f m/s)" % now["real"])
+	assert_true(absf(now["speed"] - base["speed"]) < 0.05, "same plant speed both ways (%.3f v %.3f)" % [now["speed"], base["speed"]])
+	assert_true(absf(now["reader"] - now["estimated"]) < 0.3, "free, the reader equals the plant's reading (%.2f v %.2f)" % [now["reader"], now["estimated"]])
+
+
+func test_a_tracked_tank_pinned_reads_its_real_motion_and_drives_the_same() -> void:
+	var now := await _press("tank", 9.0, 4.0, true)
+	var base := await _press("tank", 9.0, 4.0, false)
+	print("MEASURE m4b_tracked tank pinned: real %.2f, reader %.2f, speed %.2f (base reader %.2f, speed %.2f)" % [
+			now["real"], now["reader"], now["speed"], base["reader"], base["speed"]])
+	assert_true(now["reader"] <= now["real"] + 0.5, "real_velocity is the motion it makes (%.2f v %.2f)" % [now["reader"], now["real"]])
+	assert_true(absf(now["speed"] - base["speed"]) < 0.05, "a tracked hull's plant speed is unchanged (%.3f v %.3f)" % [now["speed"], base["speed"]])
+
+
+## A rig driving into a wall at a shallow angle slides along it; its plant speed (the thing round 29's (A) zeroed on
+## every brush) is the same with the reader on or off, pose for pose, and it keeps most of its speed.
+func _brush(real_on: bool) -> Dictionary:
+	var was_native := BrainSwitches.native
+	var was_real := Tank.real_velocity_on
+	Tank.real_velocity_on = real_on
+	BrainSwitches.native = false
+	var lab := TacticsLab.create(self, 31)
+	# A 50 m wall along the lane, its face 6.5 m to the rig's right (a 14 m hull at 20 deg reaches 3.95 m out at its
+	# corner, so the start is clear); the rig starts nosed 20 deg into it and meets it after ~7 m, at speed.
+	var wall := StaticBody3D.new()
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(1.0, 6.0, 50.0)
+	shape.shape = box
+	wall.add_child(shape)
+	add_to_tree(wall)
+	wall.global_position = Vector3(TacticsScenarios.LANE_X + 7.0, 3.0, 5.0)
+	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 30), deg_to_rad(-20.0), "gang_tank")
+	await lab.start()
+	_controller_of(lab, rig).set_physics_process(false)
+	var poses := PackedFloat32Array()
+	var speeds := PackedFloat32Array()
+	var touched := 0
+	for tick in int(SimClock.TICK_RATE * 3.5):
+		rig.command = TankCommand.new(1.0, 0.0, rig.global_position + Vector3(0, 0, -20))
+		await lab.step()
+		if rig.get_slide_collision_count() > 0:
+			touched += 1
+		poses.append(rig.global_position.x)
+		poses.append(rig.global_position.z)
+		speeds.append(rig.speed())
+	var out := {"poses": poses, "speeds": speeds, "touched": touched, "speed": rig.speed(),
+			"reader": Vector2(rig.real_velocity.x, rig.real_velocity.z).length(), "z": rig.global_position.z}
+	lab.dispose()
+	BrainSwitches.native = was_native
+	Tank.real_velocity_on = was_real
+	return out
+
+
+func test_a_rig_brushing_a_wall_keeps_its_plant_speed() -> void:
+	var now := await _brush(true)
+	var base := await _brush(false)
+	print("MEASURE m4b_brush gang_tank along a wall: touched %d ticks, end speed %.2f (base %.2f), reader %.2f, z %.1f" % [
+			now["touched"], now["speed"], base["speed"], now["reader"], now["z"]])
+	assert_true(now["touched"] > 10 and now["touched"] < 90, "setup: the rig meets the wall under way and slides along it (%d of 105 ticks touching)" % now["touched"])
+	assert_true(now["speed"] > 6.0, "it slides along the wall at speed (%.2f m/s)" % now["speed"])
+	# Two lab instances in one process differ by a few cm at spawn (the depenetration of the hull placed over the
+	# floor), so the arms are compared within that, not bit for bit.
+	var worst_pose := 0.0
+	var worst_speed := 0.0
+	for i in now["speeds"].size():
+		worst_speed = maxf(worst_speed, absf(now["speeds"][i] - base["speeds"][i]))
+		worst_pose = maxf(worst_pose, Vector2(now["poses"][2 * i] - base["poses"][2 * i], now["poses"][2 * i + 1] - base["poses"][2 * i + 1]).length())
+	print("MEASURE m4b_brush arms: worst pose gap %.3f m, worst plant speed gap %.3f m/s over %d ticks" % [worst_pose, worst_speed, now["speeds"].size()])
+	assert_true(worst_pose < 0.25, "pose for pose the same with the reader on or off, the plant untouched (worst %.3f m)" % worst_pose)
+	assert_true(worst_speed < 0.25, "and the plant speed every tick (worst %.3f m/s)" % worst_speed)

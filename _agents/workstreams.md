@@ -52,7 +52,7 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   the smallest n that decides the effect its bar names, and a variance-aware form for guard lines. The orchestrator
   relays CP-N to traffic, manoeuvre and brains; **a bar pre-registered after CP-N cites the table's row** (or says why
   it departs); a bar pre-registered before CP-N may be re-sized ONCE before its judged run, in writing, before numbers.
-  Sizing never runs a series on builder0: it reads `streams/references/round27..29/` and the judged blocks in this file.
+  Sizing never runs a series on builder0: it reads `streams/references/round27..29/` and the judged blocks in this file. **Delivered and MERGED (`9730193f`): the table and the method are `_agents/judging.md` (*The table*, *How to write a bar*, *Early stop*); `tools/judge/size.py` prints n and the guard for a probe and an effect.**
 - **C30.4 The planner is isolated this round.** No edit outside its paths; nothing it builds is reached in play (no seam
   in `movement.gd`, `manoeuvre*.gd` or `order_controller.gd`). It may read every manoeuvre branch and trace. Its lab
   scene and offline tests run on builder0 as light targets (one slot at a time; no judged series); `make check` must
@@ -81,7 +81,162 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
 
 **Bars (round 30, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
-- (none yet)
+- **CP-N DELIVERED (sizing, 2026-10-14 ~11:30 PDT; stream/sizing `44a8b95a`, `_agents/judging.md`):** 55 probe × metric
+  rows (48 sized from rounds 27–29's rows): per-run paired sd, base, icc (seed v tick), n today, the se to quote, the
+  effect the bar names, the n that decides it (80 % power, 5 % one-sided), the MDE at n today, the noise-sized guard
+  (base ± 1.645 se); a count-line block (Fisher / binomial / McNemar) and an A/A block. The orchestrator re-derived one
+  row from the raw rows: Terminus head-on between-squad fast, CP-T pair alone paired sd 18.1 a run (sizing's pooled 16.7),
+  base 22.1, −25 % = 5.5 a run → n = 57; MDE at n = 18 = 9.8 a run (44 % of base): reproduces. S1's inventory: 42 of
+  122 judged pass lines of rounds 27–29 were inside their probe's noise (M1's six +5 guards and every "crews ≥ base − 2"
+  among them). Relayed to traffic, manoeuvre, brains with sizing's per-stream headlines (their Status). **Ruling:** brains'
+  B5c-v4 bar stands as filed (its run started before CP-N); every later bar cites the table (C30.3). Sizing's python suite
+  enters `check` through a `tests/test_judge_tools.gd` wrapper under `make test` (no `mk/core.mk` edit).
+
+- **Sizing S4 (early stop) RESULT (2026-10-14 ~12:10 PDT; stream/sizing, `judging.md` *Early stop*):** a truncated Wald
+  SPRT per pre-registered line on the per-run paired differences in the runner's seed-major order, sd from the table, α 5 %
+  / β 20 %, no stop before one full seed; round 29's judged series would have stopped after 113 of 174 runs per arm
+  (−35 %, ~3.6 of traffic's ~10 box-hours) with EVERY verdict unchanged; false-pass on gain lines simulated on the rows'
+  noise 3–11 % (median 6 %). Caveat: on T1b's wedged pair the real sd is 1.5–1.9× the table's (guards' false-fail
+  15–23 %), so the table is re-rendered after every judged pair lands under `references/`; at n = 18 a true −25 % effect
+  fails about half the time. **Ruling:** applies to bars written after sizing's tip is on main; the in-flight series
+  (B5c-v4, M4b) keep their plans; a runner's hook is its owner's, through the orchestrator, after sizing's check.
+- **Traffic T3b: the brief's premise corrected and the bar's line re-ruled (2026-10-14 ~12:30 PDT, before any judged
+  number):** traffic's crossing clock (both squads past the meeting point; builder0 `bd05077d`, GDScript, 72 runs an arm,
+  n = 18 a case, round 29's v2 v base): Terminus crossing median 13.4 → 13.2 s, yard 9.2 → 12.4 s; the yielding squad's
+  own crossing +2.8 / +3.5 s. **The 40–75 s last arrivals in round 29's worst runs (Terminus s24/t3, s22/t6, reproduced run
+  for run) happen AFTER the crossing: a crew circles its far-end seat reading no_path/terrain for 30–40 s** — seating,
+  brains' (relayed); the whole-squad "crawl" ends by ~6.5 s. Design (b) picked (`--traffic-off=reach`: only crews within
+  20 m of the crossing keep the squad's share). **Ruling:** the crossing clock replaces "all-in ≤ +10 %" as the judged
+  line on the crossing cases (paired sd 2.2–4.0 s on tuning pairs; guard base + 1.645 se, n from CP-N's crossing rows);
+  all-in median REPORTED with its se (CP-N row 42: se 7.0 s on 40 s); the rest of round 29's T3 bar stands; the full bar
+  is filed when traffic sends it. T3b is committed default-OFF for the stream's check (the C++ `_avoid` has no
+  `Traffic.shape` yet) and the native pair flips it on — third in native's queue. **I3 PROVEN** (same box/commit,
+  Terminus crossing seeds 1–3 × 6: a fresh row v a miss and a hit are equal on all 576 fields of 18 rows, byte-identical;
+  a one-line `game/` change misses; `CACHE=off` still writes rows, so a proof needs an empty `SERIES_CACHE_DIR`) → goes
+  into `verification.md`; adoption by other series after traffic's merge (C30.7). `make quick` measured 1272 s cold /
+  1081 s warm (lint 712 s of it): a narrowed quick-lint granted inside traffic's tooling, check's full lint unchanged.
+- **Traffic T3b bar (pre-registered 2026-10-14 ~12:40 PDT, before any judged number; DECLARED; the LAST attempt; no
+  partial; CP-N rows cited):** candidate stream/traffic `7a0701f3` (round 29's v2 + option (b), CRAWL_REACH_M = 20 m).
+  Judged: builder0, both arms one commit, GDScript path, fresh seeds {31,32,33} × {1,3,6,8,11,16}, n = 18 a case, four
+  cases, 90 s; base = no flag (turns DEFAULT_OFF = main), arm `--traffic-on=turns`; read by `tests/traffic/turns_verdict.py`
+  updated before the run; tuned on 1–3 only. (1) between-squad fast pooled over the two crossing cases down ≥ 25 % (row
+  56: n 16 decides −25 %; pooled n 36); neither crossing case up beyond base + 1.645 se (rows 38 +19.1, 44 +12.6);
+  (2) THE CROSSING CLOCK per crossing case: mean paired difference in `cross_clear_s` (never = run end) ≤ 0.10 × base
+  median + 1.645 se, the se the judged run's own paired sd/√18 quoted (tuning: ≈ +2.9 s Terminus, +1.8 s yard);
+  `cross_b_s` / `cross_a_s` reported with se; (3) crews in every case ≥ base − 1.645 se (rows 35/41/47/53: −4, −4, −6,
+  −1); (4) no wedge, the worst run's trace first; (5) same-squad fast per crossing case ≤ base + 1.645 se (rows 40/46);
+  (6) head-on cases within 1.645 se of base on fast, between-squad fast, all-in (rows 32/36, 50/54); (7) all-in median per
+  crossing case REPORTED with se (rows 42/48). Also: CPU mirror on Terminus crossing no worse on (1)(3)(4); bridge-pooled
+  18/18 with turns on; `test_traffic_turns_live` fires, counters reported; cost ≤ 0.5 ms at Sumps 25 a side or NOT
+  READABLE. Merge: default-OFF on its own check, the pair flips it on (native third). **Orchestrator's additions (before
+  numbers):** (a) if the judged run's paired sd on line 2 exceeds the tuning sd by more than 1.5× (sizing's T1b caveat),
+  say so beside the line and the guard still uses the judged se; (b) per run, the crews beyond 20 m that drove at full
+  share (the rule's own counter) reported per arm; (c) after native's port: Terminus crossing + bridge-pooled once on the
+  DEFAULT path at the pair; (d) the thirteen explained if they move.
+  **Judged run started ~13:00 PDT at `cf124433`** (game/ = `a63dde6d` = `7a0701f3` + the counter `tr_cross_reach_free`).
+  Disclosed before numbers: on the TUNING seeds the 20 m candidate passes every line except the yard crossing clock,
+  missed by 0.02 s (+1.63 v +1.61 s); 12 m tried on seeds 1–3 and rejected (yard crews 169 → 163, two wedges). Judged as
+  filed. **I2 DONE:** `make quick` with the narrowed lint 487 s on builder0 (was 1081 s warm; full lint 712 s of it) +
+  any slot wait; committed `4248d8ee` with I3's proof in `verification.md`. T1c-b built on `traffic-t1cb` (5/5 unit
+  tests); its bar comes after T3b's table.
+- **Traffic T3b JUDGED — NOT SHIPPED (2026-10-14 ~13:35 PDT; `cf124433` both arms, builder0, GDScript, seeds 31–33 × 6,
+  n = 18 a case):** FAILED one line: **the yard crossing clock +2.80 s (se 0.22) v a limit of +1.18 s** (the yard's
+  yielding squad pays +3.66 s, se 0.23; judged paired sd 0.92 < tuning 1.77, the 1.5× caveat does not apply). Every
+  other line passed: between-squad fast pooled over the crossings 176 → 96 (−45 %; Terminus 76 → 50, yard 100 → 46);
+  crews 176 → 176 and 168 → 166, no wedge; same-squad fast 170 → 187 / 140 → 122 (within limits); head-on within
+  1.645 se; Terminus crossing clock −1.17 s (se 1.05). Reported: all-in Terminus 50.8 → 42.8, yard 90 → 90; verdicts
+  18/19; reach-free reads 2041/1332; the rule fires a little in head-on (8/10 verdicts), no line moved. Parked
+  `traffic-t3b` (= `cf124433`); stream/traffic's game/ back to main's (`e84f36e1`). CPU mirror and bridge-pooled not run
+  (chain stopped after the verdict). **Worst Terminus run (s33/t1, all-in 33.7 → 61.4 s, every crew in): B_4 gives way
+  to two squadmates at the far end, then circles its seat (35.6, 23.9) reading no_path/terrain 36–61 s; seated at 30.4 s
+  in the paired base run; the same seat as round 29's s24/t3** (a seat trap at B's destination (45, 30) on the Terminus;
+  relayed to brains). **Ruling:** the last attempt by the filed rule; parked. **Round 31 candidate, his call (in player
+  terms):** at a yard crossing the yielding squad gets through ~3 s later and the two squads bump into each other half as
+  often — the line was set at +10 % by the orchestrator, not from his words ("both squads arrive a little later"); if he
+  accepts ~3 s, T3b re-judges once on fresh seeds with the line he sets.
+- **Planner P2–P4 DONE (2026-10-14 ~13:10 PDT; stream/planner code `8f73e4cd`, docs on top; check queued; C30.4 kept:
+  nothing in play, nothing outside its paths):** hybrid-A* over whole legs on the plant's own arcs, time cost, OBB
+  squadmates, a free-space table per hull class, an expansion budget; 16 offline tests in `check`. Lab (builder0,
+  Terminus, n = 1 each, frames looked at): a War Rig facing back in the west street 15.5 s / 3 gear changes / 0 wall
+  contacts v today 29.8 s / 53 / 14; a scout's 180° slot 9 m ahead 20 m v today's 99 m through the gate; a rig into the
+  ring road facing east on heading at 6.9 s v never in 45 s. Pre-registered lines NOT met and recorded: the wedge and the
+  causeway slot 4 legs not 3; a rig's 20 m in-street turn-round 9 legs not 6 (lattice best 8); an IFV's turn-round in
+  12 m not found within budget (BUDGET, never a false NO_PATH). **Cost is the catch:** 0.06–3 s a plan in GDScript (17 s
+  for the rig's turn-round): in play it needs native's port (~100×) or a resumable slice a tick (round 31). Four executor
+  findings relayed to manoeuvre (brake on the leg's lock with opposite throttle; zero throttle with lock on = the plant's
+  creep; stopping distance v²/2b − v·dt/2; a leg measured by the ARC not the chord: `_flat_distance(here, _kturn_from)` is
+  3 % short on a 10 m leg); the side-gate note (design.md §2.8) relayed to brains.
+- **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
+  on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
+  (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
+  plant's momentum (`--nav-off=unstickback`: with the plant's `_speed` kept, a pinned rig carries a phantom 12 m/s that
+  takes 1.5 s of braking before any reverse moves it, so round 29's fixed 0.9 s escape is a no-op for rigs; the escape
+  holds reverse until the hull has REALLY backed 1.5 m, cap = 0.9 s + |speed|/braking). GDScript path both arms, base =
+  `--tank-off=real_velocity --nav-off=unstickback` same commit. Tuned: Terminus 20–22, hull-rest gangs 40–41, fights
+  1–8. Judged fresh: Terminus 23–28, hull-rest 42–47 (4 factions, drawn, `--turn-states`), fights 133–156, bridge-pooled.
+  (b1) Terminus rigs wall contact-ticks DOWN and arrivals ≥ base, with and without each arm's two worst runs; mixed
+  arrivals ≥ base − 2, contact-ticks ≤ base + 10 %; counters (unstick_fires, press_escapes) reported; (b2) pinned
+  crew-seconds DOWN > 2 se paired; (b3) bridge-pooled 18/18; (b4) tracks apart in (b2); (b5) a rig's mean speed while
+  touching a wall within 2 se of base; fights kills / deaths / hit rate within 2 se paired, hit rate on touching targets
+  reported; smokes, determinism, the thirteen re-recorded twice with the reason if they move, ≤ 0.5 ms, a tracked row.
+  Partial: (b1) is the gate; (b2) missed with (b1) met = ship with the miss written; (b1) missed = nothing ships, the
+  worst run's trace to the planner. Tuning disclosed (quick-remote, n = 1): a pinned gang_tank reads 0.00 by
+  real_velocity, 12.00 by the plant; unstick fires 0× with the old reading, once within a second with the new. The
+  stream's own check is red on three native twin tests until the pair; the PAIR's check is the green one (C30.2), the
+  three named at hand-over. **Orchestrator's ruling and additions (before numbers):** CP-N landed minutes before this bar,
+  so manoeuvre takes its ONE re-size now, in writing, before the judged run starts: (b1) decided on Terminus ARRIVALS
+  against the table's se (contact-ticks REPORTED: the table's MDE is +127 % at 6 seeds), (b2) names the effect n = 36
+  decides (or runs the n the table says for −50 %), the fights lines quote the table's se; (f) the escape's end counted
+  per fire (backed 1.5 m v the cap) and reported — an escape ending mostly by the cap is a finding; (g) the two switches
+  are one declared change (the reading without the escape is a no-op for rigs), both named in the merge; (h) mixed
+  arrivals "≥ base − 2" becomes base − 1.645 se from the table if the table has the row, else stated as unsized.
+- **Manoeuvre M4b bar RE-SIZED ONCE from CP-N (2026-10-14 ~11:50 PDT, in writing, before any judged run; the stream's
+  Status "Re-sized ONCE from CP-N"; accepted):** (b1) judged on Terminus ARRIVALS over 13 seeds (23–35), rigs and mixed
+  apart, the paired total not down beyond 1 se (down beyond 2 se = the gate missed); wall contact-ticks and the
+  unstick/press counters REPORTED; (b2) pinned crew-seconds DOWN beyond 2 se paired at n = 144 runs (decides about
+  −40 %); fights at 24 seeds: kills/deaths within 2 se decide a 5–6 % loss, the hit-rate guard decides about −3 pts,
+  stated; (b5) the brush speed reported with its se (a first measurement); (b3) a 17/18 read by the cell's trace per the
+  McNemar row, not a pass or a fail. Partial rule unchanged: (b1) is the gate. Tuning (seeds 20–22, gangs 40–41) starts
+  when the wedge tests are green.
+- **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
+  pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
+  `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
+  where a turning circle of navmesh fits beside it, and only until stuck on terrain/a hull or 12 s, else latched; NEAR:
+  no gate for a new goal already within the nominal approach length when via-the-gate > 2× straight). Arms on ONE
+  commit, GDScript drive both (off = `--nav-off=gategiveup` = main's behaviour). Tuned on yard 23, Sumps 2, Terminus
+  2–4; judged on FRESH seeds: (1) yard crossing (`gate-series`, yard_open cross, seeds 25–26 × {1,3,6,8,11,16}, n = 12):
+  last-crew median on ≤ off − 5 s (never = 90 s), crews on ≥ off every run; (2) Sumps cell (seeds 14–15 × six ticks,
+  n = 12): all-within-8 m median on ≤ off, no run > 5 s later, guns_on_arc ≥ off − 0.05; (3) Terminus head-on seeds 5–7
+  t11 + seed 3 (B_4's): crews arrived on ≥ off each; the near counter fires on seed 3; REPORTED; (4) arrive series
+  (`squad-arrive-series`, fresh seeds 29–32, n = 100 an arm): within 8 m on ≥ off − 1, median ±2 %; (5) counters > 0
+  every on run, 0 every off run; (6) bridge-pooled 18/18 rule on; (7) `screen-slots` seed 61 A_2 in (B4); (8) heading:
+  `test_wheeled_arrival` (all), `test_nav_arrival_heading`, `test_nav_gate_hold`, `test_nav_gate_v4` (90° AND 180°, the
+  planner's scout case, B_4's near case) on the GDScript path now (24/0 builder0) and on the DEFAULT path at the pair with
+  native's mirror + `test_native_gate` before shipping. Shipping = lab tip + native's mirror as a C30.2 pair; native shows
+  yard and Sumps on the default path equal to the judged on-arm run for run. Tuning disclosed (n small): yard 21.1 s v
+  never (6/6 v 2/6 all in), Sumps 24.3 v 24.4, Terminus 10/10 ×3 v 9/10 twice. **Orchestrator's additions (before
+  numbers):** (a) the worst on-arm run of (1) and (2) traced before the medians (lesson 302); (b) how each come-round
+  ended (latched / stuck / the 12 s cap) counted per arm and reported — a come-round ending mostly by cap is a finding;
+  (c) cost ≤ 0.5 ms a tick at Sumps 25 a side GDScript path or NOT READABLE stated (C29.5); (d) the thirteen explained if
+  they move; (e) Terminus seed 3 is n = 1: reported, never a pass line.
+- **Brains B5c-v4 JUDGED — PASSES every line (2026-10-14 ~13:20 PDT; `lab/brains-r30-gate` `19eca15a`, builder0, GDScript
+  both arms, fresh seeds; the tree since = + the .uid `bdc21eae` + measurement tooling `f1a804eb`):** (1) yard n = 12:
+  every crew in 12/12 v 1/12 (Fisher, the deciding line), crews on ≥ off every run, median 19.0 s v never (reported);
+  (2) Sumps n = 12: all-within-8 m 24.5 v 37.5 s, no run > 5 s later, guns_on_arc 0.941 = 0.941; (3) Terminus s3/5/6/7
+  t11 reported: 10/10 both arms, last 50.1/56.2/45.6/43.7 v 56.8/82.2/47.0/52.7 s, near fired every run; (4) arrive
+  n = 100 (seeds 29–32): within 8 m 99 v 91 (McNemar 8 v 0), median 24.5 v 29.6 s (−17 %, se 1.6), on slot 89 v 77;
+  (5) counters > 0 every on run, 0 off; (6) bridge-pooled 18/18 rule on; (7) screen-slots s61 A_2 in 22.8 s v never;
+  **A_4 ends 5.4 m off in BOTH arms (B4 not wholly fixed)**; (8) heading tests 24/0 GDScript, native's mirror green on
+  the 5 named + `test_native_gate` 0 mismatches. Additions: (a) worst runs: yard s25 t1 (26.1 s) B_4 overshot when the
+  squad's shape changed, near = no gate, **its U-turn ran onto terrain ~8 s (manoeuvre's M5, a second case)**; Sumps s14 t8
+  (59.5 s; off never) S_3 came round, stuck 2 s later → turn_blocked latched, seat moved, near sent it straight in;
+  (b) come-round endings (28/28 trace rows identical to the judged): latched 6, stuck 3, cap 0; (c) path.gate 0.081 ms
+  on v 0.115 off (≤ 0.5 ms PASS); (d) thirteen at the pair; (e) noted. Traffic's relay reproduced on brains' tree
+  WITHOUT traffic-t3: Terminus crossing s24/t3, s22/t6 last in 32.6/27.3 s, no 30–40 s far-end circling; v4 on
+  30.2/21.7 s — **the 40–75 s sighting needs traffic-t3's rule underneath** (relayed to traffic). Planner's question: v4
+  still lays the gate BEHIND the slot along the facing when the hull starts outside the approach length (how the 180°
+  passes: it comes round it ~8 s); gates_turned fired 10× in the gate cells and 25× in arrive → round 31's side-gate form
+  has cases. **Ship = lab tip + native's mirror as a pair; waiting on the PAIR's green hash from native.**
 
 ## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 

@@ -129,6 +129,16 @@ var ammo := -1
 var heat := 0.0
 ## World-space velocity: exact on the simulating peer, estimated from snapshots on clients.
 var estimated_velocity := Vector3.ZERO
+## Round 30 (manoeuvre M4b, C30.6): **the motion this hull really made this tick**, flat, over dt, never longer than
+## the velocity it asked for (a depenetration shove is not motion). In floating mode a slide fully blocked by another
+## body hands `velocity` back unchanged, so a gang truck pinned on a squadmate reports 12 m/s in `estimated_velocity`
+## while moving 0.0000 m a tick (round 29, terminus rigs seed 9, DRIVE_TRACE); every reader that judges PROGRESS
+## (Movement.unstick, the pinned probe) and the gunnery's aim leads read this instead. `estimated_velocity` and the
+## wheels' `_speed` keep the plant's reading on purpose: round 29's (A) made them honest too, and a rig brushing a wall
+## then lost its speed on every touch and ground along the wall instead of sliding off. `--tank-off=real_velocity`
+## makes this equal `estimated_velocity` (the A/B). Native's pair (C30.2) writes it in `tank_drive_native`.
+var real_velocity := Vector3.ZERO
+static var real_velocity_on := not _tank_off("real_velocity")
 
 ## Replicated state. Written by the simulating peer, read by clients.
 var sync_position := Vector3.ZERO
@@ -387,6 +397,7 @@ func _tick(delta: float) -> void:
 		var snapshot_velocity := (sync_position - _previous_sync_position) / delta
 		_previous_sync_position = sync_position
 		estimated_velocity = estimated_velocity.lerp(snapshot_velocity, 0.2)
+		real_velocity = estimated_velocity
 		return
 	# X5: the designator's paint fades unless it is refreshed. A dead vehicle is not painted.
 	designated_seconds = maxf(0.0, designated_seconds - delta)
@@ -394,6 +405,7 @@ func _tick(delta: float) -> void:
 		designated_seconds = 0.0
 		velocity = Vector3.ZERO
 		estimated_velocity = Vector3.ZERO
+		real_velocity = Vector3.ZERO
 		_publish_state()
 		return
 	var cmd := command.sanitize_into(_sanitized)
@@ -655,6 +667,7 @@ var _placed_settle := false
 func _drive(cmd: TankCommand, delta: float) -> void:
 	if NativeTank.usable(self):
 		NativeTank.drive(self, cmd, delta)  # round 28 (native N6.1): the same bits, as one native call
+		real_velocity = _real_planar_velocity()  # round 30 (M4b): until native's port writes it (C30.2, C30.6)
 		return
 	if _placed_settle:
 		_placed_settle = false
@@ -719,11 +732,34 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 	if traced:
 		_trace_drive(was, planar, cmd, delta)
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
+	real_velocity = _real_planar_velocity()  # round 30 (M4b, C30.6): the progress readers' line; the plant's stays
 	_motion["velocity"] = estimated_velocity
 	if locomotion != "tracks":
 		# Wheels and hover both carry momentum, so the speed the next tick starts from is what the hull is actually
 		# doing after the slide and any wall it just hit, not what the model wanted.
 		_speed = estimated_velocity.dot(forward)
+
+
+## Round 30 (M4b): the real flat displacement this tick over dt (`get_real_velocity()`: the last `move_and_slide`'s),
+## capped at the planar velocity the slide was asked for; `estimated_velocity` itself with `--tank-off=real_velocity`.
+## A parked hull (no slide this tick) asked for nothing, so the cap reads 0 and a stale engine value cannot leak.
+func _real_planar_velocity() -> Vector3:
+	if not real_velocity_on:
+		return estimated_velocity
+	var real := get_real_velocity()
+	var flat := Vector3(real.x, 0.0, real.z)
+	var asked := Vector2(velocity.x, velocity.z).length()
+	var made := flat.length()
+	if made > asked:
+		return flat * (asked / made) if made > 0.0 else Vector3.ZERO
+	return flat
+
+
+static func _tank_off(name: String) -> bool:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--tank-off=") and arg.trim_prefix("--tank-off=").split(",").has(name):
+			return true
+	return false
 
 
 ## Round 9: the largest part of `wanted` this hull actually fits through, or `have` if none of it does.

@@ -1,0 +1,101 @@
+class_name PlanRequest
+extends RefCounted
+## Round 30 (planner P2): one request to the planner: a hull, where it is, where it should end up (a POSE), what is in
+## the way, and how much search it may spend. Built by hand in the tests and the lab; `for_unit` fills the hull from
+## the catalog so a seam needs one call.
+
+var start_x := 0.0
+var start_z := 0.0
+var start_fx := 0.0
+var start_fz := -1.0  # north
+var goal_x := 0.0
+var goal_z := 0.0
+var goal_fx := 0.0
+var goal_fz := -1.0
+## Reached when within this of the goal position and heading.
+var tol_m := 1.0
+var tol_deg := 8.0
+## +1: arrive nose first (the last leg forward), -1: tail first, 0: either.
+var arrive_gear := 0
+## The hull: half extents (m), the minimum turning radius (m), the speeds the legs will be driven at (m/s), the
+## acceleration and braking (m/s^2) for the cusp cost, and the yaw cap (deg/s).
+var half_w := 1.0
+var half_l := 2.0
+var radius := 6.0
+var v_fwd := 6.0
+var v_rev := 2.5
+var accel := 8.0
+var brake := 10.0
+var omega_max_deg := 80.0
+## The throttles the legs will be driven at (the executor reads them from the plan): the k-turn's 0.7, lowered for a
+## hull whose yaw at that speed would exceed its cap on full lock (the plant clamps the yaw and the arc widens).
+var throttle_fwd := 0.7
+var throttle_rev := 0.7
+var unit_id := ""
+var world: PlannerWorld = null
+## The search budget in EXPANSIONS (never milliseconds: a decision that read the clock would differ between machines).
+var budget := 1500
+## The window round the start the search may use (m).
+var horizon_m := 30.0
+## The weighted-A* epsilon (0 = Planner.EPSILON): tests and the lab probe with it; the seam leaves it at 0.
+var epsilon := 0.0
+## On NO_PATH or BUDGET from the coarse lattice, search again on the fine one (the same budget again).
+var fine_retry := true
+
+
+## A request for a catalog unit driven at the executor's throttles (the k-turn's KTURN_THROTTLE 0.7 both gears).
+static func for_unit(id: String, throttle_fwd := 0.7, throttle_rev := 0.7) -> PlanRequest:
+	var r := PlanRequest.new()
+	r.unit_id = id
+	var box: Array = Units.stat(id, "hull_size", [2.4, 1.6, 3.8])
+	r.half_w = float(box[0]) * 0.5
+	r.half_l = float(box[2]) * 0.5
+	r.radius = maxf(float(Units.stat(id, "min_turn_radius_m", 0.0)), 0.5)
+	r.v_fwd = float(Units.stat(id, "max_forward_speed", 9.0)) * throttle_fwd
+	r.v_rev = float(Units.stat(id, "max_reverse_speed", 4.0)) * throttle_rev
+	r.accel = float(Units.stat(id, "acceleration_mps2", 14.0))
+	r.brake = float(Units.stat(id, "braking_mps2", 14.0))
+	r.omega_max_deg = float(Units.stat(id, "hull_turn_rate_deg", 80.0))
+	# The yaw cap: v / R must stay under omega_max on full lock, or the plant turns a wider arc than the plan.
+	var cap_v := deg_to_rad(r.omega_max_deg) * r.radius
+	var top_fwd := float(Units.stat(id, "max_forward_speed", 9.0))
+	var top_rev := float(Units.stat(id, "max_reverse_speed", 4.0))
+	r.throttle_fwd = throttle_fwd
+	r.throttle_rev = throttle_rev
+	if r.v_fwd > cap_v:
+		r.v_fwd = cap_v * 0.98
+		r.throttle_fwd = r.v_fwd / maxf(top_fwd, 0.1)
+	if r.v_rev > cap_v:
+		r.v_rev = cap_v * 0.98
+		r.throttle_rev = r.v_rev / maxf(top_rev, 0.1)
+	return r
+
+
+func at(x: float, z: float, fx: float, fz: float) -> PlanRequest:
+	start_x = x
+	start_z = z
+	var f := Vector2(fx, fz).normalized()
+	start_fx = f.x
+	start_fz = f.y
+	return self
+
+
+func to(x: float, z: float, fx: float, fz: float, p_tol_m := 1.0, p_tol_deg := 8.0) -> PlanRequest:
+	goal_x = x
+	goal_z = z
+	var f := Vector2(fx, fz).normalized()
+	goal_fx = f.x
+	goal_fz = f.y
+	tol_m = p_tol_m
+	tol_deg = p_tol_deg
+	return self
+
+
+func in_world(w: PlannerWorld) -> PlanRequest:
+	world = w
+	return self
+
+
+## The seconds a cusp costs this hull at its leg speeds: brake to rest from the forward speed, spin up again.
+func cusp_seconds() -> float:
+	return v_fwd / maxf(brake, 0.1) + v_fwd / maxf(accel, 0.1)
