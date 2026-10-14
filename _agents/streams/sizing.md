@@ -120,8 +120,11 @@ side), `_agents/streams/references/round30/sizing/` (`inventory.csv|md`, `table.
 | S5 method + tool | `judging.md` *How to write a bar*; `aa.py`; the GDScript wrapper | 8 steps incl. the round-close re-render; the two 11 % lines at α 2.5 % cost n × 1.27 |
 | stretch cost | `judging.md` *The cost side* | round 29: 913 → 698 runs (−24 %, ≈ 8 box-hours of ~32); M1 and M4 were under-lined, not over-run |
 
-**Green hash:** `make remote T=check` launched on **`e8c82e1a`** (2026-10-14, builder0; this worktree's scratch log);
-the result line goes here when it lands. Tip commits after it are Status-only. Local python suite: 64 tests, 13 s, OK.
+**GREEN HASH: `e8c82e1a`** (2026-10-14, builder0: `>> remote: make check exited 0 (build/ copied back)`, `2585 passed, 0
+failed`, `26 targets, all passed, ALL JUDGED`; the wrapper's line `MEASURE judge_tools: 64 python tests, exit 0` is in the
+test shard log, so the python suite ran on builder0 under `make test`). **This commit is green, merge here: `e8c82e1a`.**
+Every commit after it is Status-only. (The log carries a `WEB_PACK FAILED: factions (5 of 999 bytes)` line inside a target
+that passed; not this stream's, noted for the orchestrator.)
 
 **Decisions (one line each):** noise = per-run PAIRED sd pooled over the judged pairs where the treatment acted in ≥ ⅓ of a
 case's runs (an untouched pair is byte-identical: an equality check, not a sample). Defaults α 5 % one-sided, power 80 %;
