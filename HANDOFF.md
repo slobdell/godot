@@ -43,14 +43,23 @@ check is OWED** for this merge (main = sizing + planner on `0d35f215`'s code; ba
 **Traffic T3b NOT SHIPPED** (yard crossing clock +2.80 s v +1.18; bumps −45 %; parked `traffic-t3b`; his round-31 call in
 `workstreams.md` *Bars*). **Sizing DONE** (idle). **Planner DONE** (idle).
 
-**Round 30 in flight (12:50 PDT):** brains B5c-v4 judged chain on `19eca15a` (first five lines pass on fresh seeds: yard
-12/12 v 1/12 all in, Sumps 24.5 v 37.5 s, Terminus 10/10 with the near rule firing on B_4's seed; arrive / bridge-pooled
-/ screen-slots / traces / cost running); native's mirror in test, N7.5 (element feed, ON, −17 % on its section) committed
-`f1e4178b`, check riding with the pair; manoeuvre M4b (real_velocity + unstickback, one declared change) tuning then
-judged on 13 Terminus seeds; traffic T3b judged on seeds 31–33 (the crossing clock is the judged line; the brief's
-"30–45 s crawl" was post-crossing seating, relayed to brains), I3 proven, `make quick` 1272 s cold (narrowed lint
-coming); planner P0/P1 at `e63a3099` (three failure modes reproduced, hybrid-A* chosen), P2 in progress. Native's pair
-queue: B5c-v4 → M4b → T3b. Bars filed in `workstreams.md` *Bars (round 30)*.
+**Round 30 in flight (15:05 PDT; every bar and verdict in `workstreams.md` *Bars (round 30)*):**
+- **Brains B5c-v4** PASSED every judged line (`19eca15a`: yard every crew in 12/12 v 1/12, Sumps 24.5 v 37.5 s, arrive
+  99 v 91/100, the 180° test green) but the PAIR CHECK is RED on `test_tactics_pursuit` (five wheeled scouts give up a
+  chase at 17 s; v4's GDScript, not the port). Ruling: a scoping fix ships only if every judged on-arm row stays
+  byte-identical; else parked for round 31. Brains tracing.
+- **Manoeuvre M4b** (honest stall reading + sized escapes for hulls ≤ 10 m; War Rigs bit-for-bit as today) — the second
+  and last attempt `77a1603f` PASSED its Terminus gate on 13 fresh seeds (rigs byte-identical; mixed arrivals −2,
+  contact-ticks −8 %); bridge / fights / hull-rest running (~2 h); native porting it now. First attempt failed (rigs'
+  wall contact-ticks +141 %: "the driving after the escapes", the planner's case). M1b (`face_slot`, `37c47851`) and M2b
+  (creep lift + the planner's arc rule, `e94ca27e`) bars filed, chains HELD behind M4b. M5 parked (case 1 closed by v4;
+  case 2 = the planner's F4).
+- **Traffic**: T3b NOT SHIPPED (yard crossing clock +2.80 v +1.18 s; bumps −45 %); T1c-b NOT SHIPPED (the defect 11 → 0
+  repacks, but artillery shots failed on one diverged run; row 82 under-sized). Both are his round-31 calls in player
+  terms. I3 proven, `make quick` 487 s. Next: T4 (ORCA steers round a pinned hull as a 12 m/s ghost — `avoidance.gd`
+  reads `estimated_velocity`; needs M4b's `real_velocity` on main).
+- **Native**: N7.5 ON (`f1e4178b`); the B5c-v4 mirror equal (24/24 cells); porting M4b.
+- **Main's check OWED** for sizing + planner (batched with the next game-code merge).
 
 **Launch check: GREEN at `0d35f215`** (builder0, `make check exited 0`, 2584 passed, 0 failed, 26 targets ALL JUDGED,
 thirteen unmoved, determinism 2875411ff4ec6be7; every commit since is docs). Workers start from it and run no baseline.
