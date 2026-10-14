@@ -91,7 +91,10 @@ Round 29 runs traffic (1), manoeuvre (2), brains (3) beside you. In order:
    orchestrator's ruling 2026-10-13: glue, not a core component; C29.4's freeze released).
 3. **E6b on his laptop: GRANTED 2026-10-13 ~10:56 PDT** (rule D as written below). **DONE 12:10 PDT** (`b2712987`):
    20 a side no C++ 0.854 -> shipped 0.936, 25 a side no C++ 0.672 -> shipped 0.878; *E6b* below.
-4. **N7.4 wall contact** only on manoeuvre's word (relayed by the orchestrator) that M2 leaves `wall_contact.gd` alone.
+4. **N7.4 wall contact: DONE, equal, priced a LOSS (+0.22 % of the tick), committed OFF** (`native_wall`; the N7.3a
+   precedent). Manoeuvre's word (M2 leaves `wall_contact.gd` alone) came through the orchestrator.
+1b. **C29.2 pair, traffic T1: DONE and green** (`59c1cc09` = stream/native + traffic `3a94f38d`): the street hold in the
+   native drive, equal; the NativeHold scaffold reverted (*Round 29: traffic's street hold in the native drive* below).
 5. N7.5 (element_feed) waits until after round 29; stage 2 stays deferred (his call).
 
 ## Round 28 backlog (the orchestrator, 2026-10-12 ~11:45 PDT; contracts C28.2, C28.3 in `workstreams.md` *Round 28*)
@@ -151,13 +154,17 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-13 12:15 PDT, round 29):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
-(`native_controller`) OFF by its price, kept for stage 2. **E6b DONE** on his laptop (`b2712987`): everything native
-v nothing native, 20 a side no C++ 0.854 -> shipped 0.936 of real time (tick's scripts -20.6 %), 25 a side no C++
-0.672 -> shipped 0.878 (-29.2 %).
-**Waiting:** (1) the pairs (C29.2): no diff has arrived from traffic (T1 street hold) or manoeuvre (M1/M2); the held N5
-ports wait for CP-T and CP-M2; (2) N7.4 (wall contact) waits for manoeuvre's word via the orchestrator; (3) N7.5 after
-round 29; stage 2 deferred (his call).
+**State (2026-10-13 19:40 PDT, round 29):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
+(`native_controller`) OFF by its price. **E6b DONE** on his laptop (`b2712987`): 20 a side no C++ 0.854 -> shipped
+0.936, 25 a side 0.672 -> shipped 0.878. **The CP-T pair is GREEN at `59c1cc09`** (stream/native + traffic `3a94f38d`;
+builder0: `make check exited 0`, 2554 passed / 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism
+`2875411ff4ec6be7`; `native-verify-suite` scenarios 52/0 + `native-live-guard` 21 switches live, `exited 0`): traffic's
+T1 street hold runs in the native drive, equal, and traffic's judged Terminus head-on on the native path is the GDScript
+arm run for run (below). **N7.4 DONE, OFF by its price** (+0.22 % of the tick). The scaffold (`bde8de0a`) is reverted.
+**Waiting / next:** (1) traffic T3 (`Traffic.shape` in `_avoid`, a callback after the hold block) once judged; T1c
+needs no C++ (confirmed); (2) manoeuvre M4 (`estimated_velocity` = the real planar displacement after the slide,
+capped at the slid speed; `tank_drive_native.cpp:130-139`) once judged, with the thirteen re-recorded twice; M1/M2 as
+they come; the held N5 ports after CP-M2; (3) N7.5 after round 29; stage 2 deferred (his call).
 
 | item | state |
 |---|---|
@@ -455,6 +462,7 @@ stays asked per call.
 | **N7.2** the suppression field: `ThreatField` stamp_point / stamp_segment / stamp_burst / decay, `Match._update_suppression` (Tank.settle_suppression, its sight / hull-turn effects, is_pinned, the stats) | `native/src/threat_native.{h,cpp}`, worked in place on the field's own packed arrays (swapped out for the call so writing never copies); seams at the top of each stamp and of decay in `game/combat/threat_field.gd`, and after the decay in `_update_suppression`. `at` / `peak_along` / `mean_along` keep GDScript (a call costs what they do; the drive's reads are native since N4) | `native_threat` **ON** | `test_native_threat` 4000 field operations (626 points, 1780 lanes, 838 bursts, 756 decays; on, across and off the grid) and 200 suppression samples over 12 hulls (388 pinned), 0 mismatches; native-proof on = off = threat = `0398922d31f335f8` | match/suppression 0.36 -> 0.23 % (below) |
 | **N7.6** the black box: `MatchRecorder._physics_process` (the squad-task scan, the once-a-second census with `census_row`, their rows written and flushed) | `native/src/recorder_native.{h,cpp}`; seam at the top of `_physics_process` in `game/match/match_recorder.gd`. The event rows (order, hit, dead, end) stay GDScript signal handlers (a few a second) | `native_recorder` **ON** | `test_native_recorder`: two recorders on one live match, one each way, 240 ticks, 62 task rows + 35 censuses (phases, orders and blocked-by filled), byte for byte, 0 mismatches. No native-proof arm: the profile/proof matches do not record (headless `--match`), so the state hash cannot see it; `native-live-guard` lists it under ELSEWHERE (held by its own test, printed) | -24 % on its own work (below) |
 | **N7.3a** `OrderController._physics_process` (the per-crew tick: the contact observer's call, the stride hold, think then execute, every measurement branch) | `native/src/controller_native.{h,cpp}`; seam at the top of `_physics_process` | `native_controller` **OFF by its price** | `test_native_controller` 600 seeded scenarios on a probe brain (134 holds, 466 runs) 0 mismatches; native-proof on = off = controller = `0398922d31f335f8`, and with `--quiet-stride=3` `620e3564b48e22b2` (the hold on a live match) | **+0.7 % of the tick (a LOSS)**, below |
+| **N7.4** `WallContact.observe`'s scan (alive / parked, the slide collisions, the deepest wall by script chain and `\|normal.y\| <= WALL_NORMAL_MAX_Y`, a hull touched); a wall tick is still classified by the GDScript (it re-fetches that collision) | `native/src/wall_native.{h,cpp}` (`wall_scan` -> -1 nothing to read, else bit0 = hull, `(code>>1)-1` = the wall's index), `game/ai/native/native_wall.gd`; seam in `game/ai/wall_contact.gd` observe | `native_wall` **OFF by its price** | `test_native_wall` a Sumps fight, 12000 observes (1803 with nothing to read, 543 wall ticks, 495 hull ticks), the observer's fields, statics and the mover's records, 0 mismatches; native-proof on = off = wall = `0398922d31f335f8` (`573ca520`) | **+0.22 % of the tick (a LOSS)**, below |
 | `Match._land_rounds` | **kept GDScript**: its body is `_land_hit_result` per victim (signals, stats; the arithmetic native since N6.2), the suppression stamp (N7.2's field), the impact signal and an rpc; what is left is the radius/falloff filter, 0.02 % of the tick | | | |
 
 **N7.1's price (builder0 BUSY, tick 20-36 ms; `382656de`, foundry 25 a side pinned 0-3, 3 alternated runs an arm; shares of
@@ -483,6 +491,13 @@ costs more than the same step inside the GDScript VM. Trimming the static reads 
 crossings themselves, not what is read. N7.3b (one native loop instead of the engine's per-crew dispatch) keeps those
 crossings per crew, so on this evidence it lands at parity at best. **The controllers' tick pays only once think is
 native (stage 2):** then the loop calls C++ from C++. Shipped OFF, the seam and its proofs kept for stage 2.
+
+**N7.4's price, a loss (builder0, `573ca520`, foundry 25 a side pinned 0-3, seed 92721, 3 alternated runs an arm;
+`brain/c.wall_contact` as a share of each run's tick; the ON arm's profile shows `native_taken.wall` 4500):** OFF 1.56 /
+1.60 / 1.57 %, ON 1.83 / 1.80 / 1.78 %: **+0.22 % of the tick.** The scan was a short loop in GDScript; the native one
+pays the crossings (the call, the tank's gets, a slide-collision object per contact) and the GDScript still re-fetches
+the wall tick's collision to classify it. Shipped OFF, the seam and its proofs kept (it pays once the observer's caller,
+the controller, is native: stage 2).
 
 **Found on the way (not this stream's file, reported):** `test_combat_cover::test_fire_stopped_by_a_wall_still_suppresses_
 the_crew_sheltering_behind_it` fails when run ALONE (suppression 0.00; builder0, `ad1dcf26`'s tree with `native_threat`
@@ -596,19 +611,29 @@ instead, or run them with `--brains-off=native_pathing,native_perception`.
 0.183 -> 0.088 ms, -52 %). N7.1's lap: the K2 query (`k2.incoming`) 0.098 ms (0.7 % of the tick), half of
 `s.incoming` (0.187); `t.incoming` 0.255 ms (1.8 %) is IncomingFire's own per-tick count over the shell columns.
 
-### Round 29: the street hold's scaffold (the orchestrator's order 2026-10-13 ~12:20 PDT: an OFF-proven stub, no behaviour)
+### Round 29: traffic's street hold in the native drive (C29.2 pair; GREEN `59c1cc09`)
 
-**For traffic's T1 (C29.2).** The hold as a record the native execute reads: `native/src/hold_native.{h,cpp}` (keyed by
-the mover's instance id; spot and start; no godot type stored), `game/ai/native/native_hold.gd`:
-`NativeHold.hold(mover, spot, since)` when a crew starts holding, `NativeHold.release(mover)` when it goes,
-`holding(mover)`, `of(mover)`, `release_all()`; a crew's `exec_forget` (its `_exit_tree`) drops its hold.
-**Until T1's hold is ported into the drive:** the native execute hands a holding crew back to the GDScript (counted
-`holding` in NATIVE_EXEC) and `NativeDrive.usable` steps aside for it (it asks the library only while a hold exists), so
-T1 can ship on the GDScript and play the same with native ON from its first commit. **Traffic's one line each:** call
-`NativeHold.hold` / `release` where `Traffic.holding` turns true / false. Nothing on main writes a hold: play unchanged.
-Proof: `tests/test_native_hold.gd` (a live Sumps fight: the record reads back bit for bit; the held crew handed back
-having written nothing, both views; every other crew's execute identical with the hold written and with the table
-empty; the drive's seam steps aside for it only; release and exec_forget put it back).
+**What it is.** Traffic's T1 (`3a94f38d`) puts the hold at the top of `Movement._avoid` and gates six places on
+`Traffic.holding` (C29.3). The native drive (`drive_native.cpp`) does the same: at the top of `avoid` (not when `held`) one
+call back to `NativeTraffic.avoid_hold(crew, tanks_root)` (= `Traffic.refresh` + `Traffic.hold_of`; the table work stays
+traffic's GDScript): at the spot -> face, throttle 0; else the approach clamp((dist - HOLD_REACHED_M) / HOLD_SLOW_M,
+0.15, 1) on the avoid it recurses into with `held`. `holding()` is read natively from Traffic's `_live` table (its
+`_root`, `_frame`, LIVE_TICKS), cached per drive. The gates: negotiate's early return, unstick, pressing_escape,
+track_progress, update_phase's stalled branch, the planned reverse. `NativeTraffic.drive_config()` is `{}` on a tree
+without `Traffic.hold_of` (the drive is as before), so stream/native parses and runs with or without traffic's merge.
+**Proofs (builder0):** `test_native_traffic_hold` on traffic's own stage (TrafficStage, Terminus head-on, seed 1), every
+crew driven both ways each tick from one snapshot of every mover and of Traffic's statics: live members 7461 drives (1975
+holding: 621 at the spot, 1354 approaching) + 1490 unsticks (396 holding); the owned state 7304 drives + 1458 unsticks;
+**0 mismatches**; the stage held 5 crews. **Traffic's judged case on the native path** (`59c1cc09`, `traffic-series`
+terminus/head, seeds 13-15 x ticks 1,3,6,8,11,16, n = 18): crews 177/180, between-squad fast 91, all fast 379, all-in
+median 59.3, no wedge, 18 verdicts / 90 holds / 87 released passed / 3 at the cap / 0 no spot: `hold_verdict.py`
+against traffic's judged base VERDICT PASS, and **every run equal field for field to traffic's judged GDScript hold arm**
+(18/18; only the arm's `brains_off` label differs).
+**The scaffold** (`bde8de0a`: NativeHold, `hold_native`, the execute's "holding" hand-back) is **reverted** (`e4cd396f`):
+T1's hold lives in the drive, so nothing would ever write that record.
+**Next pairs:** T3 (`Traffic.shape` after the hold block: one callback, ORCA on the shaped wish, the early-out on the
+route's wish; refresh is keyed on the frame so the second call is a no-op), M4 (`tank_drive_native`, the real planar
+velocity after the slide, capped at the slid speed, behind `real_velocity`).
 
 ### Questions for the lead
 
@@ -620,6 +645,10 @@ empty; the drive's seam steps aside for it only; release and exec_forget put it 
 
 ### Merge notes
 
+- Round 29: `game/ai/wall_contact.gd` observe's seam (N7.4, `native_wall` OFF); `game/ai/brain_switches.gd` `native_wall`;
+  `mk/native.mk` native-proof arm `wall`. New scripts: `game/ai/native/native_{wall,traffic}.gd`,
+  `tests/test_native_{wall,traffic_hold}.gd`. `native_drive.gd` merges `NativeTraffic.drive_config()` into the drive's
+  configuration. The pair merge carries traffic `3a94f38d` (traffic's files as they are on stream/traffic).
 - N6 seam lines in files no stream owns (granted, seams only): `game/tank/tank.gd` (`_drive`, `take_hit`),
   `game/tank/tank_motion.gd` (`step_in_place`), `game/match/match.gd` (`_land_hit_result`); in nav's `game/ai/pathing.gd`
   three seam lines (`is_ready`, `query`, `find_path`, N6.4). Switches in `game/ai/brain_switches.gd`: `native_motion`,
