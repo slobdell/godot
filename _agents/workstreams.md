@@ -325,6 +325,16 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   n 26), touching crew-seconds 522 v 525. The chain continues (bridge, fights 157–180, hull-rest 54–59 for (b2)), ~2 h;
   M1b/M2b held until the whole run is ruled. Native told to port `77a1603f` now (the pair's proofs run while the chain
   finishes).
+  **Run 2 JUDGED — PASSES every filed line (2026-10-14 16:39 PDT; `77a1603f`, builder0, GDScript):** (b2) hull-rest fresh
+  seeds 54–59, n = 144 paired: pinned crew-seconds 2596 → 658 (−75 %, se 422: beyond 2 se); the hulls the fix reaches
+  (≤ 10 m) 2596 → 556; scouts apart 1179 → 268; tracks 122 → 108 (within 2 se); pinned crews 65 → 14; STUCK (reported)
+  6631 → 4794 (−28 %, se 628); rigs apart 0 → 102 crew-s (se 72, within 2 se: the rig's rule is bit-for-bit unchanged —
+  Terminus proved it — its squadmates now move differently round it: environment); crews still moving at 75 s fewer on
+  every task (screen 43 → 33, support by fire 26 → 21). (b3) bridge-pooled 18/18. Fights 157–180: kills 967 → 971 (se
+  34), deaths 975 = 975, hit rate 0.710 = 0.710, on touching targets 0.645 → 0.670 (+2.5 pts, se 0.036). Terminus as
+  reported. **Ruling: M4b SHIPS as the C30.2 pair** (manoeuvre's lab tip, code `77a1603f`, + native `pair/m4b2`
+  `366b42bc`) when the pair's check is green; manoeuvre's own check (red on the three twin tests by design) is
+  redundant and stopped. **M1b's and M2b's chains: GO, M1b first**, on their re-based branches.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` (re-based onto M4b2 `77a1603f` as `b14bee65`, no code change) = M4b + the anchor alone (`OrderController.
