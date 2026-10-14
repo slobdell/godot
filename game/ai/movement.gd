@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "gategiveup", "grace", "guard", "guardnear", "holdband", "inflate",
 		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
@@ -862,6 +862,9 @@ func reset() -> void:
 	_order_ticks = 0
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
+	_gate_dropped_for = Vector3.INF
+	_gate_turning_for = Vector3.INF
+	_roomy_key = []
 	_circle_away = 0.0
 	if _kturn_left_m > 0.0:
 		_kturn_end("reset")
@@ -2440,6 +2443,34 @@ static func reset_gates() -> void:
 	a4_curved_gates = 0
 	a4_rescued_blocked = 0
 	a4_refused_curvature = 0
+	gates_given_up = 0
+	gates_reached_latched = 0
+	gates_shortened = 0
+
+
+## Round 29 (brains B5c, judged at 053beffb: every bar line passed; ON with native's mirror, C29.2): a wheeled hull that goes BLOCKED while
+## it aims at its arrival gate gives the gate up for that goal and drives onto the goal itself. Traced (traffic's T3 lead,
+## builder0): on Sumps a herringbone seat's gate, 20 m back along its facing, sat 2.7 m from a parked squadmate; the crew
+## shoved at it "wedged" for 8 s, 6.7 m short, and `_blocker` read it as `no_path` because the route ended at the gate,
+## not the goal (make-room then traded the seat on). On Terminus B_4's gate lay ~17 m back across the street by the arena
+## edge; it ground there to the end of the run. `--nav-off=gategiveup` is the control arm (round 29's judged runs used
+## it inverted, as the ON arm, before the flip).
+static func gate_giveup_on() -> bool:
+	return not switched_off("gategiveup")
+
+
+## ...the goal whose gate this hull gave up (INF: none), and how many gates were given up (lesson 300).
+var _gate_dropped_for := Vector3.INF
+## ...and why: "stalled" (given up) or "latched" (reached); later refusals for that goal are counted under it.
+var _gate_dropped_why := "stalled"
+## ...and the goal whose gate this hull reached pointing away from the heading (INF: none): it is turning round the
+## gate, which reads as no progress to the goal, so it is not given up as stalled until it latches or the goal moves.
+var _gate_turning_for := Vector3.INF
+static var gates_given_up := 0
+## v2, the same switch: a gate the hull has REACHED stays done for that goal. Traced (yard_open crossing seed 22 t3,
+## builder0): `reached` is judged afresh every tick, so a car at its gate pointing off the heading drove for the goal,
+## left GATE_REACHED, was sent back to the gate, and circled 4-10 m round it for 33 s. Counted.
+static var gates_reached_latched := 0
 
 
 ## Count a refusal and keep the goal: the route aims at the goal itself, as it did before round 8.
@@ -2454,6 +2485,16 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	if radius <= 0.0 or not order.has("facing"):
 		return goal  # not offered: a tracked or hover hull pivots, and an order with no facing asks for nothing
 	gates_offered += 1
+	# Round 29 (brains B5c): a gate this hull stalled against is given up for this goal; it drives onto the goal itself.
+	if gate_giveup_on():
+		if _gate_dropped_for != Vector3.INF and _flat_distance(goal, _gate_dropped_for) <= NEW_GOAL_JUMP:
+			return _gate_refused(_gate_dropped_why, goal)
+		var turning := _gate_turning_for != Vector3.INF and _flat_distance(goal, _gate_turning_for) <= NEW_GOAL_JUMP
+		if arc_live and phase == "blocked" and not turning:
+			_gate_dropped_for = goal
+			_gate_dropped_why = "stalled"
+			gates_given_up += 1
+			return _gate_refused("stalled", goal)
 	var facing: Variant = order["facing"]
 	if not (facing is Array) or (facing as Array).size() < 2:
 		return _gate_refused("bad_facing", goal)
@@ -2465,10 +2506,29 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var gate := Vector3(goal.x - direction.x * length, 0.0, goal.z - direction.y * length)
 	var tank := ctl.tank
 	var here := tank.global_position
+	if gate_giveup_on():
+		# v3: a gate the car can turn onto its line at, before anything is judged against it.
+		var roomy := _roomy_gate_memo(goal, direction, length, radius, tank.get_world_3d().navigation_map)
+		if roomy == Vector3.INF:
+			return _gate_refused("cramped", goal)
+		if roomy != gate:
+			gates_shortened += 1
+			length = _flat_distance(roomy, goal)
+			gate = roomy
+	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 	if _flat_distance(here, gate) <= _arrive_gate():
 		# At the gate: the straight run onto the heading IS the rest of the move.
+		if gate_giveup_on():
+			if forward.dot(direction) < 0.0:
+				# Not latched while pointing away from the heading: a car sent to face the way it came reaches the gate
+				# beyond the goal still facing out; latched (or given up as it circled back, moving at full speed) it ran
+				# for the goal and arrived 60 degrees off (test_wheeled_arrival, builder0). It comes round the gate first.
+				_gate_turning_for = goal
+				return _gate_refused("reached_facing_away", goal)
+			_gate_dropped_for = goal
+			_gate_dropped_why = "latched"
+			gates_reached_latched += 1
 		return _gate_refused("reached", goal)
-	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 	var to_goal := Vector2(goal.x - here.x, goal.z - here.z)
 	if to_goal.length() <= length and forward.dot(direction) >= APPROACH_ALIGNED_COS:
 		# Already on the approach, pointing the right way: don't drive backwards to a gate behind me.
@@ -2491,6 +2551,46 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 		return _gate_refused("off_mesh", goal)
 	gates_aimed += 1
 	return gate
+
+
+## v3 (B5c, the same switch): a gate a car can turn onto its line at: every point of a ring one turning radius round it
+## is on the navmesh, else the longest shorter run-in that is. Sumps' gate beside a parked squadmate and yard_open's
+## among the containers were the cases. NOT Terminus: there B_4's gate has the room by the navmesh; the car reaches it
+## (the latch fires) and jams on terrain 4.8 m on, "blocked terrain" to the end of the run (an escape, not a gate).
+const GATE_ROOM_POINTS := 8
+static var gates_shortened := 0
+
+
+## The navmesh is static and an order's goal, heading and length hold for many ticks: the last answer is kept per hull,
+## keyed on exactly what it depends on (native's review: 8 to 32 navmesh queries a plan tick otherwise).
+var _roomy_key := []
+var _roomy_value := Vector3.INF
+
+
+func _roomy_gate_memo(goal: Vector3, direction: Vector2, length: float, radius: float, map: RID) -> Vector3:
+	var key := [goal, direction, length, radius]
+	if key != _roomy_key:
+		_roomy_key = key
+		_roomy_value = _roomy_gate(goal, direction, length, radius, map)
+	return _roomy_value
+
+
+## The full gate if it has the room, else the longest shorter run-in (OFF_MESH_PROBES) that does, else INF.
+static func _roomy_gate(goal: Vector3, direction: Vector2, length: float, radius: float, map: RID) -> Vector3:
+	for share: float in [1.0] + OFF_MESH_PROBES:
+		var gate := Vector3(goal.x - direction.x * length * share, 0.0, goal.z - direction.y * length * share)
+		if _gate_has_room(gate, radius, map):
+			return gate
+	return Vector3.INF
+
+
+static func _gate_has_room(gate: Vector3, radius: float, map: RID) -> bool:
+	for k in GATE_ROOM_POINTS:
+		var a := TAU * k / GATE_ROOM_POINTS
+		var point := gate + Vector3(cos(a), 0.0, sin(a)) * radius
+		if _flat_distance(Pathing.closest_point(map, point, "gate"), point) > MESH_GATE_SLACK:
+			return false
+	return true
 
 
 ## DIAGNOSTIC ONLY, no behaviour (round 9, N4 groundwork). `off_mesh` is **70% of all gate refusals** (901 of 1222 on
