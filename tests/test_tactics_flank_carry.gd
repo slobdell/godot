@@ -9,8 +9,8 @@ extends TestCase
 ##   - for the whole task the target's squad closing is not a near ambush; a third party still is one;
 ##   - going round, being outgunned does not break it off;
 ##   - `--approach-carry=off` (APPROACH_CARRY false) is B0's rule, and with no approach nothing changes.
-## PARKED (judged at f3a0145d: fails its bar; lab/brains-r28-flank): APPROACH_CARRY is off by default, so each test turns
-## it on (`_table()`); a battery still gets the rule through APPROACH_BATTERY (test_tactics_battery_side).
+## Round 29 (B2): APPROACH_CARRY is on by default (`_table()` still turns it on, so these hold the rule whatever the
+## default); a battery gets the rule through APPROACH_BATTERY as well (test_tactics_battery_side).
 
 const TARGET := Vector3.ZERO
 ## The gun trucks' twin MG: their own reach, and B0's ring.
@@ -19,14 +19,15 @@ const OWN_BAND := 28.0
 
 
 func teardown() -> void:
-	ElementPlan.APPROACH_CARRY = false
+	ElementPlan.APPROACH_CARRY = true
 	ElementPlan.APPROACH_LATCH = true
+	ElementPlan.APPROACH_LATCH_TARGET_REACH = true
 	DoctrineTable.clear_cache()  # one test widens the cached standard table's drills
 	super.teardown()
 
 
 func _table() -> DoctrineTable:
-	ElementPlan.APPROACH_CARRY = true  # parked (off by default): these hold B1's rule as built (lab/brains-r28-flank)
+	ElementPlan.APPROACH_CARRY = true  # the default since round 29 (B2); set so a test that turned it off cannot leak
 	DoctrineTable.clear_cache()
 	return DoctrineTable.load_table("standard").get("table")
 
@@ -271,3 +272,73 @@ func test_a_target_charging_into_reach_drops_the_flank() -> void:
 	ElementPlan.APPROACH_LATCH = false
 	var kept_on := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": track}), table)
 	assert_true(not bool((kept_on["approach_round"] as Dictionary).get("charged", false)), "latch off: the flank is kept")
+
+
+## Round 29 (B2, the last attempt): the latch keys on the TARGET's reach of a crew. Round 28's (c) failed its fight guard
+## because the latch needed the target inside the CREWS' reach (35 m x 1.15), and the charging Law IFV stopped at its own
+## 45-60 m to shoot: the trucks were shot going round. A target that drove at the squad within the last
+## APPROACH_CHARGE_MEMORY_S and now has a crew inside its own guns' reach latches "in"; one that never closed (a squad
+## holding its ground: his call 4) does not.
+func test_a_target_that_charged_and_stopped_at_its_own_reach_latches() -> void:
+	var table := _table()
+	var center := _round(170.0, 55.0)
+	var target_reach := float(Weapons.profile(String(Units.stat("law_ifv", "weapon", ""))).get("range", 0.0))
+	var nearest := INF
+	for member: Dictionary in _situation(center)["members"]:
+		nearest = minf(nearest, (member["position"] as Vector3).distance_to(TARGET))
+	assert_true(nearest < target_reach and nearest > OWN_RANGE * ElementPlan.ENGAGE_RANGE_FACTOR,
+			"the stage: a crew inside the IFV's %.0f m, outside its own reach (%.1f m)" % [target_reach, nearest])
+	var stopped := {"name": "Rust_1", "position": TARGET, "velocity": Vector3.ZERO, "seen_tick": 1000}
+	var memory := int(ElementPlan.APPROACH_CHARGE_MEMORY_S * SimClock.TICK_RATE)
+	var plan := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": stopped,
+			"approach_round": {"in": false, "side": 1, "closing_tick": 1000 - memory / 2}}), table)
+	var kept: Dictionary = plan["approach_round"]
+	assert_true(bool(kept.get("charged", false)) and bool(kept.get("in", false)),
+			"it charged, then stopped at its own reach to shoot: latched, the squad fights where it is")
+	# Driving at the squad, now, at its own reach: latched too.
+	var driving := {"name": "Rust_1", "position": TARGET, "velocity": TacticsFormation.flat(center - TARGET) * 8.0,
+			"seen_tick": 1000}
+	var now := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": driving}), table)
+	assert_true(bool((now["approach_round"] as Dictionary).get("charged", false)), "charging at its own reach: latched")
+	# A target that never closed, the same distance: his call 4 stands, it goes round.
+	var holding := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": stopped,
+			"approach_round": {"in": false, "side": 1}}), table)
+	assert_true(not bool((holding["approach_round"] as Dictionary).get("charged", false)),
+			"a target holding its ground: still going round")
+	# ...and one that closed long ago.
+	var stale := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": stopped,
+			"approach_round": {"in": false, "side": 1, "closing_tick": 1000 - memory * 3}}), table)
+	assert_true(not bool((stale["approach_round"] as Dictionary).get("charged", false)),
+			"closed long ago, now holding: still going round")
+	# Control (round 28's rule, --approach-latch=crews): the same charge, stopped at its own reach, did not latch.
+	ElementPlan.APPROACH_LATCH_TARGET_REACH = false
+	var crews := ElementPlan.build(_situation(center), _state(_attack(), {"pursuit": stopped,
+			"approach_round": {"in": false, "side": 1, "closing_tick": 1000 - memory / 2}}), table)
+	assert_true(not bool((crews["approach_round"] as Dictionary).get("charged", false)),
+			"control (round 28): outside the crews' own reach, it went round and was shot doing it")
+
+
+## Round 29 (B2; the orchestrator's addition 2): the target's-reach latch changes only a CHARGING target. A clicked attack,
+## and a drawn one on a target that holds or drives away, plan the same under it as under round 28's rule
+## (`--approach-latch=crews`), from far out, inside the target's reach, and once round.
+func test_the_new_latch_moves_nothing_but_a_charge() -> void:
+	var table := _table()
+	var holding := {"name": "Rust_1", "position": TARGET, "velocity": Vector3.ZERO, "seen_tick": 1000}
+	for degrees: float in [170.0, 90.0, 10.0]:
+		for metres: float in [120.0, 55.0]:
+			var center := _round(degrees, metres)
+			var away := {"name": "Rust_1", "position": TARGET, "velocity": TacticsFormation.flat(TARGET - center) * 3.0,
+					"seen_tick": 1000}
+			for task: Dictionary in [_attack(null), _attack()]:
+				for track: Dictionary in [holding, away]:
+					for round_state: Dictionary in [{}, {"approach_round": {"in": true, "side": 1}}]:
+						var extra := {"pursuit": track}
+						extra.merge(round_state)
+						ElementPlan.APPROACH_LATCH_TARGET_REACH = true
+						var now := ElementPlan.build(_situation(center), _state(task.duplicate(true), extra.duplicate(true)), table)
+						ElementPlan.APPROACH_LATCH_TARGET_REACH = false
+						var before := ElementPlan.build(_situation(center), _state(task.duplicate(true), extra.duplicate(true)), table)
+						assert_eq(now, before, "%s at %.0f deg %.0f m, target %s, %s: the same plan" % [
+								"drawn" if task.has("approach") else "clicked", degrees, metres,
+								"holding" if track == holding else "driving away", "round" if not round_state.is_empty() else "going"])
+	ElementPlan.APPROACH_LATCH_TARGET_REACH = true

@@ -77,6 +77,9 @@ static func _parse() -> void:
 		# The orchestrator's ruling on (c): a target charging the squad drops the flank; off keeps it.
 		if arg == "--approach-latch=off":
 			ElementPlan.APPROACH_LATCH = false
+		# Round 29 (B2): round 28's latch (the crews' own reach, while the target drives at them).
+		if arg == "--approach-latch=crews":
+			ElementPlan.APPROACH_LATCH_TARGET_REACH = false
 		# `--converge=lead<M>`: on, with each crew's first station M metres ahead of it (ElementPlan.CONVERGE_LEAD_M).
 		if arg.begins_with("--converge=lead"):
 			ElementPlan.CONVERGE_LEAD_M = float(arg.trim_prefix("--converge=lead"))

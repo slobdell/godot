@@ -98,4 +98,121 @@ Nothing: his calls are made (artillery: go straight to his side, 2026-10-13).
 
 ## Status
 
-_Not started (round 29 launch, 2026-10-13)._
+### Plan (2026-10-13; start = stream `3cd5596b`, covered by the launch check, main `bcef46a1` green)
+1. **B1** artillery from his side: restore `88b6a724` on main, instrument it first (per-crew counters, lesson 300), trace the
+   tuning seeds 4–6 before tuning, send the bar, judge on fresh seeds 13–15 (10–12 are B2's).
+2. **B2** a drawn flank, the target's reach (from `f3a0145d`; its code is already on the stream, off by default).
+3. **B3** his bridge: trace the two cells `254fd98f` loses before any fix (lesson 302).
+4. **B4** gang trucks' screen slots (formation geometry).
+5. **B5** stretch.
+**Re-ordered 2026-10-13 (orchestrator godot-67):** B5's first item, the element's arrival re-seating onto `no_path` seats,
+moves up to after B2 and before B3. Second sighting: traffic's Terminus head-on (stream/traffic `3a94f38d`, builder0,
+tuning seeds 1–3): 6 of 9 crews left out are B_5, the rear tank, re-seated beside the block onto `no_path` seats (about
+10 at base). The first sighting was round 28's T3 Sumps cell. The first cut to try: a seat that reads `no_path` is not handed
+to a crew. Trace first (lesson 302). Order now: B1 → B2 → B5a (re-seat) → B3 → B4 → rest of B5.
+Plan accepted (godot-67): B5a is judged on main's behaviour (traffic's CP-T absent) unless CP-T has merged by then. If it
+has, the orchestrator says so, main is merged first, and both arms run with it. Traffic's C29.3 gate line stays untouched.
+Why this order: the brief's own order. B1 first because its code also brings back B2's (the parked branch holds both).
+
+### B1 — artillery from his side, his way (DECLARED; bar ACCEPTED 2026-10-13, filed at main `ad56bdea`)
+**Candidate `c2ae6e68`.** Round 28's battery (`88b6a724`) applied on main (game/ diff `3e2f6e13..88b6a724`; B1-flank code
+comes with it, off by default), plus four traced fixes (builder0, seed 4–6 traces, tick-level events in `approach-trace`):
+1. Once round, the battery's line is **the post it drove to** (`battery_post`, 20° in from the side), not the side's
+   centre line: re-laid there, a truck that had set up packed up and drove again (seed 5: set up 0.99 → 0.23 a second
+   after "in").
+2. **Standoff = ARTILLERY_SAFE_DISTANCE + 10 m** (90 m): at exactly 80 m a truck stopping a metre short read "too close"
+   in BOMBARD, backed off and packed up mid set-up (seeds 4–6: 3–5 repacks a run → 1 in 3 runs).
+3. A battery crew sets up and shells only **inside the 30° side cone** (B1-flank's 40° sector let a wing truck set up at
+   37°: a round from off the side, seed 4).
+4. **No notch past the post** (a 0° notch sent it beyond its post to the centre line).
+Tried and reverted: shelling only within 8 m of its place (trucks circled 10–20 m off their slots for 45 s, first round
+74 s, seed 4).
+**Instrument (lesson 300):** ApproachStage now counts, per crew, rounds fired from > 35° off the side, set-ups started off
+the side (after the crew has driven off), repacks (set up, then packed while the target lives), and rounds before the
+element was round; `approach-trace` logs each as an EVENT with the crew's order, brain choice and movement phase.
+**Tuning** (builder0, `c2ae6e68`'s tree, seeds 4–6 t1, n = 3): fired from the side 3/3 (median shooter 28.8°), rounds
+off the side 0, first round 26.8 s median, alive 3.00, killed 3/3; repacks 1.
+**The remaining repack is traffic's give-way** (traced seed 4 at 26 s): a set-up truck (deploy 1.00, order attack,
+move_order stop) is `phase yielding, yield_to` the squadmate driving to its place, and giving way packs it up. Request
+sent (via the orchestrator): a set-up hull does not yield. Reported, not bar.
+**Bar (sent before the numbers, accepted):** fresh seeds 13–15 × {1,3,6,8,11,16}, n = 18 an arm, both arms at `c2ae6e68`:
+side (median shooter ≤ 35°) ≥ 16/18; rounds from a crew > 35° off = 0; alive ≥ clicked − 0.5; first round median ≤
+clicked + 30 s; clicked byte-identical to main `bcef46a1`'s; cost NOT READABLE (runs only for an all-artillery element
+with a drawn approach). CPU line: the CPU never draws an approach (only `rts_controls` sets `task.approach`). C29.2: none
+ported. The one attempt; else it parks.
+**Judged: PASS, every bar line** (builder0; east and clicked arms at `c2ae6e68`, base run main `bcef46a1`; seeds 13–15 ×
+{1,3,6,8,11,16}, n = 18 per arm, 90 s):
+- From the side: 18/18 (clicked 0/18). Median of run medians 28.1°.
+- Rounds from a crew > 35° off: 0.
+- Alive: 3.00 (clicked 3.00).
+- First round median: 27.1 s, worst 30.9 s (clicked 2.3 s), so +24.8 s.
+- Killed: 18/18 in both arms (median 35.7 s v 9.3 s).
+- Clicked: all 18 rows identical field for field with main's.
+- Reported, not bar: set-ups off the side 6, repacks 8, runs clean 10/18, rounds before the element read "in" 2 (one run).
+**Worst run** (seed 15, tick 16): 2 rounds before "in" (32.8 s), both from inside the cone; 3 repacks. Trace queued.
+**Check:** the first `make check` (B2 work-in-progress files in the worktree) gave 24/25 targets. Unit tests 2556/0;
+net-smoke FAILED (one of its two clients saw 1 of 2 tanks); combat-smoke NOT RUN (it depends on net-smoke). A clean check
+on `c2ae6e68` is queued. No green hash yet.
+**Clean check** (scratch worktree at exactly `c2ae6e68`, builder0): `>> remote: make check exited 0`; 24 passed,
+2 NOT JUDGED; unit tests 2556/0; net-smoke and combat-smoke pass (the first failure was a flake); bridge-pooled 18/18.
+The NOT JUDGED pair is perf-judge (refused 3×, the box was busy: 1.60–1.90×) and scenario_perf, which goes with it.
+`perf-judge` is re-running alone on `c2ae6e68`.
+
+### B2 — a drawn flank, the target's reach (DECLARED; the last attempt; bar ACCEPTED 2026-10-13 by godot-67)
+**The change.** Built from `f3a0145d`'s design (a column on a wide ring, the side-sector fight once round).
+- The charge latch keys on the TARGET's reach of a crew: its own weapon range, or the crew's reach × 1.15, whichever is
+  longer. It also remembers a charge for 4 s after the target stops to shoot (`approach_round.closing_tick`).
+- `--approach-latch=crews` is round 28's rule.
+- `APPROACH_CARRY` goes ON by default; `--approach-carry=off` is B0's rule.
+**Bar.** Both arms at one commit, built on B1 (`c2ae6e68`, which merges first). Fresh seeds 10–12 × {1,3,6,8,11,16},
+n = 18 per arm per roster. Tuning on seeds 4–6. Measuring point: the median hit's bearing within 35° of the side.
+- (a) Even roster: ≥ 12/18. Re-judged on the new seeds, declared up front: carry goes on for every element. Round 28's
+  10/18 is reported beside it.
+- (c) Moving target: ≥ 9/18, or the partial rule ((a) passes and (c) beats clicked by ≥ 5).
+- Fight guard on (a) and (c): kills ≥ clicked − 2, alive ≥ clicked − 0.5.
+- Side/rear hit share ≥ clicked.
+- Clicked: byte-identical.
+- (b) Law five: reported.
+- Latch counter (`latched_s`), worst run read first.
+- `flank-probe` on seeds 13–15, and a before/after clip.
+**The orchestrator's additions:**
+1. B1's drawn-artillery arm on 13 t1, 14 t1 and 15 t1 at B2's commit: identical to `c2ae6e68`'s rows, or meeting B1's
+   bar lines.
+2. A clicked attack, and a drawn one on a non-charging target, plan the same as under `--approach-latch=crews`
+   (unit test `test_the_new_latch_moves_nothing_but_a_charge`).
+3. `bridge-pooled` 18/18; the arrive series unchanged.
+CPU line: the CPU never draws an approach. C29.2: nothing native-ported. A fail parks it on `lab/brains-r29-flank`.
+**Ruling on (c)** (godot-67, after (c)'s tuning, disclosed; it follows C28.5, written before those numbers): (c) is judged
+on the fight guard, side/rear share ≥ clicked, and the latch counter showing the latch fired. On-side for (c) is
+reported. Added line: in (a) (a holding target) the latch fires in 0 of 18 runs. The artillery counter is left out of
+B2's table.
+**Tuning (c)** (builder0, `a97d5aab`, seeds 4–6, n = 18): the latch fired in 18/18 runs (median 3.1 s); on side 0/18 v
+clicked 0/18; killed 18/18 v 18/18; alive 5.00 v 4.83; side/rear share 0.83 v 0.74.
+
+### B5a — the arrival seating onto `no_path` seats (traced first, lesson 302)
+**Terminus head-on** (traffic's case; seed 1, tick 11; main's behaviour; builder0 `790548fd`, `make reseat-trace`).
+B_4 never arrives (traffic's own trace matches).
+- The cause is a MAKE-ROOM swap, not a re-seat. At 48.4 s B_5 had been 20 m off its herringbone slot (-58.3, 81.2) for
+  4 s. B_4 was parked on its own slot beside it, so the two traded slots.
+- B_4's route to that slot is 21.6 m for a 12 m gap: it goes west round the south-west block's corner, then back east.
+- B_4 stalls on the last leg ("terrain" for 2 s, then `no_path` at (-75.9, 87.8)) and is still there at the end.
+- At the hand-over the slot did NOT read `no_path` from B_4's spot: the path reached it (0.0 m short). It read
+  `no_path` only once B_4 was stuck west of it.
+**Sumps cell** (law_scout:law_ifv:law_tank:law_tank, seed 1; `make traffic-settle-trace TRAFFIC_SETTLE_ARMS=none`; all
+in at 83.0 s):
+- Crew 4's slot (11.1, -73.4) read blocked/`no_path` from 48 s to 61 s.
+- At 61.0 s make-room traded it to crew 3, which was parked beside it (seats 2310 → 2301, round 28's T3 pair).
+- Crew 3 then read `no_path` too, from 64 s to 71 s, and reached the slot at 81 s by a long way round.
+**Plan (accepted in principle by godot-67; bar before numbers, after B2):**
+(i) Make-room never trades away a slot its stuck crew reads `no_path` for.
+(ii) After arrival, a crew whose movement has read `no_path` at its slot for N s gets that slot moved to the nearest point
+it can stand on and reach. The bar must name N and the reachable-point rule. Guard: a crew merely pausing (a give-way, or
+traffic's hold) is not re-slotted.
+Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
+`build/round29/artillery_side_by_side.mp4`.
+
+### Requests to other streams
+- **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).
+
+### Questions for the lead
+None.

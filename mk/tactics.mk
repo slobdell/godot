@@ -666,6 +666,48 @@ approach-trace: import ## Round 28 (B1): one ApproachStage run traced per second
 		--lab-start-tick=$(or $(APPROACH_TICK),1) --trace=on $(APPROACH_FLAGS) 2>&1 \
 		| grep -E "APPROACH_TRACE|APPROACH_PROBE|SCRIPT ERROR|ERROR" | tee $(BUILD_DIR)/approach-trace.log || true
 
+# Round 29 (brains B1): his artillery with a drawn side, as a before/after clip (one ApproachStage run per arm, the same
+# seed: "none" = clicked, "east" = drawn), filmed from high to the south-east, side by side ->
+# build/approach-clip/approach_{none,east,both}.mp4 (needs a display: make remote T=approach-clip).
+APPROACH_CLIP_FLAGS ?= --live=on --his=artillery,artillery,artillery --theirs=law_ifv
+.PHONY: approach-clip
+approach-clip: import ## Round 29 (B1): his artillery, clicked v a drawn side, as a side-by-side clip (APPROACH_SEED, APPROACH_TICK, APPROACH_SECONDS) -> build/approach-clip/approach_both.mp4 (needs a display)
+	@rm -rf $(BUILD_DIR)/approach-clip && mkdir -p $(BUILD_DIR)/approach-clip/none $(BUILD_DIR)/approach-clip/east
+	@echo ">> approach-clip on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@for arm in none east; do \
+		timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/tactics/approach_probe.gd -- \
+			--seed=$(or $(APPROACH_SEED),13) --approach=$$arm --seconds=$(or $(APPROACH_SECONDS),45) \
+			--lab-start-tick=$(or $(APPROACH_TICK),1) --film=$(CURDIR)/$(BUILD_DIR)/approach-clip/$$arm $(APPROACH_CLIP_FLAGS) \
+			> $(BUILD_DIR)/approach-clip/$$arm.log 2>&1 || true; \
+		grep -hE "APPROACH_PROBE|SCRIPT ERROR" $(BUILD_DIR)/approach-clip/$$arm.log | cut -c1-300; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/approach-clip/$$arm/frame_*.png" \
+			-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/approach-clip/approach_$$arm.mp4 || echo ">> approach-clip: ffmpeg failed for $$arm"; \
+	done
+	@ffmpeg -loglevel error -y -i $(BUILD_DIR)/approach-clip/approach_none.mp4 -i $(BUILD_DIR)/approach-clip/approach_east.mp4 \
+		-filter_complex "[0:v]drawtext=text='clicked':x=20:y=20:fontsize=28:fontcolor=white[a];[1:v]drawtext=text='drawn side (east)':x=20:y=20:fontsize=28:fontcolor=white[b];[a][b]hstack=shortest=0" \
+		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/approach-clip/approach_both.mp4 && echo "APPROACH_CLIP $(BUILD_DIR)/approach-clip/approach_both.mp4"
+
+# Round 29 (brains B5a): the element's arrival seating traced in traffic's crossing case (its TrafficStage): every
+# re-seat / make-room event and each crew's seat, slot and how short of the slot its navmesh path ends (> 3 m reads
+# no_path in Movement). RESEAT_ARENA=terminus RESEAT_KIND=head RESEAT_SEED=1 RESEAT_TICK=11 -> build/reseat-trace.log
+.PHONY: reseat-trace
+reseat-trace: import ## Round 29 (B5a): the element's seating traced in traffic's crossing case (RESEAT_ARENA, RESEAT_KIND, RESEAT_SEED, RESEAT_TICK, RESEAT_FLAGS) -> build/reseat-trace.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> reseat-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reseat_probe.gd -- \
+		--arena=$(or $(RESEAT_ARENA),terminus) --kind=$(or $(RESEAT_KIND),head) --seed=$(or $(RESEAT_SEED),1) \
+		--lab-start-tick=$(or $(RESEAT_TICK),11) --seconds=90 $(RESEAT_FLAGS) > $(BUILD_DIR)/reseat-trace.log 2>&1 || true
+	@grep -E "RESEAT_TRACE|SCRIPT ERROR" $(BUILD_DIR)/reseat-trace.log | grep -E "EVENT|NO_PATH|SCRIPT ERROR" | cut -c1-300 | head -60
+	@grep -o "RESEAT_PROBE {.*" $(BUILD_DIR)/reseat-trace.log | cut -c1-400
+
+# Round 29 (brains B5a): the navmesh asked from the traced stuck spots to their seats, and from a ring round each spot:
+# is a no_path seat the seat or where the crew stands? -> build/reach-probe.log (REACH lines)
+.PHONY: reach-probe
+reach-probe: import ## Round 29 (B5a): navmesh reach from the traced no_path spots to their seats (and a ring round each) -> build/reach-probe.log
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reach_probe.gd > $(BUILD_DIR)/reach-probe.log 2>&1 || true
+	@grep -E "^REACH|SCRIPT ERROR" $(BUILD_DIR)/reach-probe.log | cut -c1-260
+
 # Round 28 (brains B3): who orders scouts into the enemy -- the showmatch seed scout's census measured, each recon
 # element's task, drill, reason, its task point's distance to the nearest enemy and its crews' (RECON lines, once a second).
 RECON_SEED ?= 5

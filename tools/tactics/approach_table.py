@@ -59,6 +59,11 @@ def main(path: str) -> int:
                       arm, SIDE_DEG, sum(r.get("shots_off_side", 0) for r in runs),
                       sum(r.get("deploys_off_side", 0) for r in runs), sum(r.get("repacks", 0) for r in runs),
                       len(clean), len(runs), sum(r.get("shots_before_in", 0) for r in runs)))
+        if any("latched_s" in r for r in runs):
+            # Round 29 (B2, lesson 300): runs where a charge latched the flank "in" (the squad fought where it was).
+            latched = sorted(r["latched_s"] for r in runs if r.get("latched_s", -1) >= 0)
+            print("APPROACH_TABLE arm=%s latch: a charge latched %d/%d runs%s" % (
+                arm, len(latched), len(runs), (", at median %.1f s" % statistics.median(latched)) if latched else ""))
         won = [r for r in runs if r.get("enemy_alive", -1) == 0]
         if any(r.get("enemy_alive", -1) >= 0 for r in runs):
             shares = [r.get("target_flank_share", 0) for r in runs]
