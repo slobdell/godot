@@ -231,6 +231,24 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   `tank.estimated_velocity`, so a pinned hull is a 12 m/s ghost to every crew steering round it; the honest reading is
   `tank.real_velocity` once M4b is on main (traffic's line; `Avoidance.solve` has a C++ twin → a pair). The judged chain
   starts after the tuning hull-rest arms (~14:45 PDT).
+- **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
+  FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
+  stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` = M4b `e8bfef2e` + the anchor alone (`OrderController.
+  face_slot` = the last move_to's goal, kept across the face; `plan_face` takes the even split ending nearest the slot and
+  refuses any plan ending further from it than it starts + 0.5 m; counters face_slot_kept/refused; test 2/0). No
+  turn-hull, no facekeep. Base `--nav-off=faceslot` same commit (both arms carry M4b), GDScript. Lines from CP-N: (a)
+  hull-rest fresh seeds 48–53, 4 factions × 6 tasks, drawn AND clicked, `--turn-states`: the at-rest hull-error median
+  per class × task not worse, permutation p < 0.05; (b) crews still moving at 75 s per task ≤ base + 2 se, M1_CLASS's
+  paired se quoted (~+12 wheeled turret, ~+15 all at n = 27); (c) REPORTED: clicked support-by-fire's −17.8° reproduced
+  or not; settle censored; counters > 0 new arm; (d) Terminus rigs + mixed, 13 fresh seeds 36–48: arrivals not down
+  beyond 1 se, `sequential.py arrived:guard:0.10` as the early-stop rule (never before 6 seeds); contact-ticks reported;
+  "a face left the slot" leg misses counted both arms, reported; (e) bridge-pooled 18/18, smokes, determinism, the
+  thirteen re-recorded twice with the reason if they move, ≤ 0.5 ms, `native-verify-scenarios` (plan_face is GDScript on
+  both paths: no port expected). Runs after M4b's judged chain. **Orchestrator's additions (before numbers):** (f) the
+  candidate is judged on top of M4b, so it merges only AFTER M4b's pair (or, if M4b fails its gate, is re-based on main
+  and its hull-rest lines re-run before merging: the Terminus lines could then differ); (g) the first early-stop use in
+  this project: the row where `sequential.py` printed SERIES PASS/FAIL is recorded in this block with the n reached;
+  (h) seed 21's rig (the defect in the wild, 16.8 m off after a face from 8.6 m) re-run on the candidate and reported.
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
