@@ -115,8 +115,9 @@ _Updated 2026-10-14 (evening) by the planner worker (`godot-planner`, `stream/pl
 
 ### The report (read this first)
 
-**Done: P0, P1, P2, P3, P4 (the stretch note is in P4's last section). Nothing in play (C30.4). Green hash: see
-*Merge notes*.** Everything is in `_agents/streams/references/round30/planner/` (`problem.md`, `design.md`,
+**Done: P0, P1, P2, P3, P4 (the stretch note is in P4's last section). Nothing in play (C30.4). Green hash:
+`8f73e4cd` (the code; `06fbbca0` is the same code plus these docs): `make remote T=check` 2598 passed, 0 failed, exit 0,
+builder0, 2026-10-14 evening.** Everything is in `_agents/streams/references/round30/planner/` (`problem.md`, `design.md`,
 `handover.md`), `game/ai/planner/` (6 files, ~1 100 lines, reached by nothing), `tests/test_planner_model.gd` +
 `tests/test_planner_fixtures.gd` (16 tests, in `make check`), `tests/planner/` (fixtures, the lab, the probes),
 `mk/planner.mk` (`planner-repro-*`, `planner-lab`).
@@ -131,7 +132,8 @@ a War Rig told to face back in the west street: **15.5 s, 3 gear changes, 0 wall
 junction 25 m north) against today's **29.8 s, 53 gear changes, 821 creep ticks, 14 wall contacts**; a scout's 180°
 slot 9 m ahead: **20 m** against today's **99 m** through the gate; a rig into the ring road facing east: **on the
 heading at 6.9 s** against today's **never in 45 s**. The clip and frames: `build/light/build/planner-lab/` here
-(`planner-lab.mp4` if ffmpeg made it, else the `.avi`), sent to the orchestrator.
+(`planner-lab.mp4`, 1920×1080, 30 fps, 123 s, 20 MB; the rows reproduced exactly on a second run), sent to the
+orthrator.
 
 **Against the pre-registered pass lines (design.md §3; all audited exactly, no penetration anywhere, every plan
 deterministic):** MET — the kinematic twin (rig 0.6 %, IFV ≤ 1.1 % with the tick quantum, reverse 0.1–0.2 %), the
@@ -170,7 +172,7 @@ feature, but the seam should pass the order's leash as the horizon); re-plans on
 `build/light/build/planner-lab/*.png` (green = the planner's path, orange = today's, the yellow cross = the pose).
 
 **Merge notes:** nothing shared touched; all new files under my five paths. Merge for the tests and docs (the
-planner is inert). The green hash is named in the log's last entry.
+planner is inert). The green hash is `8f73e4cd` (code) / `06fbbca0` (branch tip, docs only on top): see the log's last entry.
 
 ### Plan (ordered, smallest foundation first)
 
@@ -244,3 +246,10 @@ executor's `Vector2(gear, metres)` on one lock: that difference is a P4 finding,
 
   The ms are GDScript on builder0 and include the hull's free-space table (built once a process, ~2.3 s): the
   searches themselves were 7, 36 and 94 expansions.
+- 2026-10-14 evening: **P4 written** (`handover.md`: the seam, the diff, what it replaces, the native port, the cost
+  line, the bar, the risks, the squad-schedule note) at `06fbbca0`; the lab re-run with `MOVIE=` made
+  `build/light/build/planner-lab/planner-lab.mp4` (123 s) with the same three rows as above, so the lab is
+  deterministic. **`make remote T=check` green on commit `8f73e4cd`** (the tree also held the `06fbbca0` docs, which
+  touch no code): 25 targets, **2598 passed, 0 failed, exit 0**, builder0, with the 16 planner tests in; the
+  `TIMING NOT JUDGED` and `WEB_PACK FAILED` lines in that log are the control stream's unjudged timing probes and the
+  browser pack's failure-path test, both on main before this stream. Reported to the orchestrator.
