@@ -217,6 +217,14 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   failure: B_4 jammed on terrain past its gate → round 30, manoeuvre); bridge-pooled 18/18 switch on; shipping = the
   default flip + native's mirror merged as a pair.
 
+- **Brains, ~23:00:** B3 PARKED (time-box; `lab/brains-r29-bridge` 474cf510: cell rust t5 s1 fixed by a mouth guard; cell
+  rust t16 s2 needs route-aware attack-move seating → round 30). B4 PARKED (`lab/brains-r29-linespread`): the stuck truck
+  is freed by B5c's gate rule, not slot pitch → rides on B5c's flip. B5c guards in: arrive 100/100 v 89/100 (median 24.8 v
+  29.1 s), bridge-pooled 18/18 switch on (law_tank is WHEELED). **GRANT (B5, queued attack):** `rts_controls.gd`
+  order_selection's element-task branch, `_queue_task` / `_queue_task_for`, `test_control_queued_task`: a shifted
+  attack-move / attack on a driving squad enqueues behind its waypoints, facing from the last waypoint; a chain of shifted
+  attack-moves still runs in order; a shifted MOVE after a queued attack-move goes behind it; unshifted byte-identical.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
