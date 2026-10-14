@@ -306,6 +306,21 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 				if st is Vector3:
 					track["stations"][unit_name] = [snappedf((st as Vector3).x, 0.1), snappedf((st as Vector3).z, 0.1)]
 			print("SETTLE_TRACK " + JSON.stringify(track))
+		if trace and now % maxi(SimClock.TICK_RATE / 2, 1) == 0:
+			# Round 29 (B5a): a crew reading blocked/no_path: what its Movement planned to and what the route reading said.
+			for unit_name: String in names:
+				var nb := game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as OrderController
+				if nb == null or String(nb.movement.phase) != "blocked" or String(nb.movement.blocked_by) != "no_path":
+					continue
+				var np: PackedVector3Array = nb.movement.get("_path")
+				var nr: Dictionary = nb.movement.get("_route_reading")
+				var nt := nb.tank
+				print("SETTLE_NOPATH t=%.1f %s at (%.1f, %.1f) goal %s path_goal %s path_end %s (%d) reachable=%s end_gap %.2f goal_gap %.2f repair_to %s move %s" % [
+						now / float(SimClock.TICK_RATE), unit_name, nt.global_position.x, nt.global_position.z,
+						str(nb.movement.get("_goal")), str(nb.movement.get("_path_goal")),
+						str(np[np.size() - 1]) if np.size() > 0 else "-", np.size(), nb.movement.get("_reachable"),
+						float(nr.get("end_gap_m", -1.0)), float(nr.get("goal_gap_m", -1.0)), str(nb.movement.get("_repair_to")),
+						JSON.stringify(nb.move_order)])
 		if trace and element.events.size() != events_seen:
 			# Round 29 (B5a): each element event (re-seat, make room) as it happens, with the crews' seats then.
 			for i in range(mini(events_seen, element.events.size()) if element.events.size() >= events_seen else 0,
@@ -329,7 +344,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 					frame = " @%+.0f/%+.0f" % [rel.dot(tangent), rel.dot(Vector3(-tangent.z, 0.0, tangent.x))]
 				frame += " w%.1f,%.1f" % [tank.global_position.x, tank.global_position.z]
 				if slot is Vector3:
-					frame += " s%.1f,%.1f%s" % [(slot as Vector3).x, (slot as Vector3).z,
+					frame += " s%.1f,%.1f,y%.1f%s" % [(slot as Vector3).x, (slot as Vector3).z, (slot as Vector3).y,
 							("" if SlotGround.is_standable(tank, slot) else "!unstandable") + " fit%.1f" % (slot as Vector3).distance_to(
 							SlotGround.standable_for(tank, slot, SlotGround.envelope_of(tank.unit_id)))]
 				# S6: what the crew's own brain is doing (its utility option and the move it handed nav).

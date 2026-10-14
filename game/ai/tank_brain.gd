@@ -3479,6 +3479,10 @@ func _order_move(order: Dictionary) -> void:
 		# Round 12: a SLIDING goal (a station on a travelling formation) reaches the mover on every think, however little it
 		# moved: nav's `_track_goal` estimates the goal's speed from those steps, and a step swallowed here would read as
 		# the station stopping. A near-duplicate of a fixed point is still dropped, as it always was.
+		# LATENT (round 29, brains B5b, dropped): this drop ignores the order's `leash`, so a crew whose slot was swapped
+		# while its element context still held the old one keeps the OLD leash centre for as long as its x/z stays put
+		# (traced: Terminus head-on seed 1 t11, B_4 after make-room). Inert while Movement.leash_on() is opt-in (off);
+		# whoever turns it on must compare the leash centre here too.
 		var near := 0.05 if bool(order.get("sliding", false)) else 2.0
 		if Vector2(float(order["x"]) - float(move_order["x"]), float(order["z"]) - float(move_order["z"])).length() < near:
 			return

@@ -98,6 +98,29 @@ Nothing: his calls are made (artillery: go straight to his side, 2026-10-13).
 
 ## Status
 
+### Round 29 FINAL REPORT (2026-10-14; green hash: see the last line of this block)
+**Shipped to main:** B1 artillery from his side (main `c0ac69e0`); B2 drawn flank, the target's reach (`fa099d5b` →
+`23d94eb3`); B5 queued attack (`5ab05468` → `1f5c84e4`).
+**Parked, with branches (round 30):**
+- **B5c** arrival-gate rule: `lab/brains-r29-gate` = `brains-b5c-flip` = `a8df3dc3` (judged attempt `053beffb`, every
+  bar line passed; judged data kept). Native's mirror: `lab/native-b5c` (incl. `b01a8959`, the a8df3dc3 mirror). The flip
+  failed round 8's 180° facing test; the narrow fix moved yard 23 (t1/t3/t6/t8 later, t11 earlier) and Sumps 6. Why,
+  by the counters (not traced per crew): `reached_facing_away` fired in every moved cell (yard 129–220, Sumps 6: 33), so
+  those cars no longer latched at a gate reached facing out and, with the stalled give-up held off while turning, went
+  round it again: yard's 33 s gate-circling (what the v2 latch had fixed) partly returns. Sumps 4 and 7 fired it too
+  (39, 21) and did not move.
+- **B3** his bridge: `lab/brains-r29-bridge` = `474cf510` (fixes rust t5 s1; t16 s2 needs route-aware seating).
+- **B4** gang trucks' screen slots: the cause is the gate (B5c); spacing pass on `lab/brains-r29-linespread` = `3fc0cb01`.
+**Round-30 leads:** route-aware seating (B3 t16 s2: an attack-move seated by straight line across a crossing); the gate
+refinement (keep yard's latch win AND come round for a 180° facing; no gate when the hull is inside the approach length
+and the route via the gate is much longer; the 180° test in the bar from the start); the SBF per-crew trace (wheeled
+turret hulls, drawn worse); splitting `test_tactics_scenarios` (orchestrator's lead).
+**Stream v main:** game/ equals main except a 4-line comment in `game/ai/tank_brain.gd` (B5a's LATENT note at the move
+dedup); the rest is probes, `mk/tactics.mk` and this brief.
+**GREEN HASH: `6f829c48`** (builder0: `make check exited 0`, 2580 passed / 0 failed, sim-baseline unmoved, native-verify
+0 mismatches; perf-judge NOT JUDGED in the check (box busy, 2.3×), re-run alone: JUDGED PASS, 1.17×; scenario_perf's
+unpinned-cpu refusal is covered by that verdict). Later commits on the stream are Status-only.
+
 ### Plan (2026-10-13; start = stream `3cd5596b`, covered by the launch check, main `bcef46a1` green)
 1. **B1** artillery from his side: restore `88b6a724` on main, instrument it first (per-crew counters, lesson 300), trace the
    tuning seeds 4–6 before tuning, send the bar, judge on fresh seeds 13–15 (10–12 are B2's).
@@ -186,6 +209,22 @@ CPU line: the CPU never draws an approach. C29.2: nothing native-ported. A fail 
 on the fight guard, side/rear share ≥ clicked, and the latch counter showing the latch fired. On-side for (c) is
 reported. Added line: in (a) (a holding target) the latch fires in 0 of 18 runs. The artillery counter is left out of
 B2's table.
+**JUDGED at `fa099d5b`** (stream: main `c0ac69e0` + B2; builder0; scratch worktrees at exactly that commit and at main;
+seeds 10–12 × {1,3,6,8,11,16}, n = 18 per arm per roster):
+| roster | arm | on side (median hit ≤ 35°) | killed | alive | side/rear share | latch fired | verdict |
+|---|---|---|---|---|---|---|---|
+| (a) even | B2 | **14/18** (median 32.8°) | 8 | 1.78 | 0.88 | 0/18 | bar 12 PASS; guard PASS; latch 0 PASS |
+| (a) even | clicked | 0/18 (79.7°) | 4 | 1.11 | 0.82 | 0/18 | |
+| (c) moving | B2 | 0/18, reported | 18 | 5.00 | 0.78 | 18/18 (median 3.1 s) | guard PASS; share PASS; latch fired |
+| (c) moving | clicked | 0/18 | 18 | 4.78 | 0.76 | 0/18 | |
+| (b) Law five | B2 | 0/18 by hit (5 runs hit); by reach 9/18 | 0 | 0.00 | — | 0/18 | reported (a wipe either way) |
+| (b) Law five | clicked | 0/18 | 0 | 0.00 | 0.84 | 0/18 | |
+- Clicked: all 54 rows identical to main's.
+- Addition 1: the battery's 13/14/15 t1 rows are identical to `c2ae6e68`'s.
+- Addition 3: bridge-pooled 18/18. The arrive series equality is pending.
+- Round 28's (a), for comparison: 10/18 on seeds 7–9.
+**Worst run** ((a) seed 12, tick 16): all five trucks lost and the IFV survives, against clicked 5 alive and the IFV
+killed. Trace queued.
 **Tuning (c)** (builder0, `a97d5aab`, seeds 4–6, n = 18): the latch fired in 18/18 runs (median 3.1 s); on side 0/18 v
 clicked 0/18; killed 18/18 v 18/18; alive 5.00 v 4.83; side/rear share 0.83 v 0.74.
 
@@ -208,8 +247,142 @@ in at 83.0 s):
 (ii) After arrival, a crew whose movement has read `no_path` at its slot for N s gets that slot moved to the nearest point
 it can stand on and reach. The bar must name N and the reachable-point rule. Guard: a crew merely pausing (a give-way, or
 traffic's hold) is not re-slotted.
+**Deeper traces** (builder0; `make reach-probe` on an empty map; `reseat-trace`'s NOPATH lines with Movement's route
+reading; native and GDScript paths identical):
+- **Sumps — the seat is the fault.** Slot (11.1, -73.4) sits 3.6 m off the navmesh (NO_PATH_MARGIN 3.0), so every crew
+  driving there reads `no_path`, from every start probed (102 points). `Element.ground` pushes a slot clear of
+  obstacles, but not onto the mesh.
+- **Terminus — the seat is fine.** It is on the mesh; from B_4's stuck spot the route is 18.8 m. Two other causes:
+  1. A stale leash. B_4's move order keeps a leash centred on its OLD slot (14 m). At the swap the brain's element
+     context still held the old slot, and `TankBrain._order_move`'s 2 m dedup drops every later order with the same
+     x/z, leash or not, so the leash never refreshes.
+  2. The arrival gate. B_4 is wheeled and its seat faces east, so Movement sends it to a gate about 17 m west of the slot,
+     across the street by the arena edge. It grinds there, and `_blocker` labels it `no_path` because its route ends at
+     the gate, not the slot.
+**B5a WITHDRAWN (stream `25bc2ad2`, before any bar).** In the live match the Sumps seat sits ON the mesh: the on-mesh rule
+fired 0 times, and the test's own Sumps read it on the mesh too. The reach probe's 3.6 m was read before the arena had
+finished loading (no `lab.start`). Lesson: probe the navmesh only in a started match.
+`SETTLE_NOPATH` (builder0) shows the real cause in both sightings, the arrival gate:
+- Sumps crew 4 drives to path_goal (3.69, -54.82), a gate 20 m back from its slot along the seat's facing (APPROACH_MAX).
+  It stalls about 7 m short.
+- Movement's `_blocker` then labels it `no_path` because its route ends at the gate, not the slot (reachable, goal_gap 0).
+- Terminus B_4 is the same, with a gate about 17 m west of its slot.
+- The make-room guard fired once, on that mislabel.
+B5a's code and test are removed; the probes stay.
+**B5b dropped.** The order's leash is opt-in and off (`Movement.leash_on`; native "off here"). A LATENT note sits at
+`TankBrain._order_move`'s dedup: it ignores the leash, so whoever turns the leash on must compare its centre.
+**B5c — the arrival gate (`Movement._approach_gate`, brains-owned; native mirrors it at drive_native.cpp:779, so it is a
+C29.2 pair with native).** The one fix for traffic's T3 lead. Inverted switch `--nav-off=gategiveup` (ON when given);
+any `--nav-off` hands the drive to GDScript, so both arms run `--brains-off=native`.
+- v1 (`b00b6f96`, give the gate up when BLOCKED aiming at it): fired 3–4 per run, fixed neither case (Sumps: within 8 m
+  24 s sooner but S_3 overshot 7.5 m; Terminus unchanged).
+- Third sighting confirmed (orchestrator's; yard_open crossing, main code, seed 22, builder0): ticks 1/3/6 all arrive by
+  90 s, but B_1 circles 4–10 m round its gate 20 m back of a herringbone slot from 17 s to 50 s (in at 66.8 s v ~10–25 s).
+  Cause: `reached` (GATE_REACHED 2.5 m) is judged afresh every tick, so a car at its gate pointing off the heading heads
+  for the goal, leaves 2.5 m and is sent back.
+- **v3 = the last attempt (`053beffb`; bar ACCEPTED by godot-67 with n = 12, bridge-pooled added, Terminus reported):**
+  (i) give up when blocked; (ii) a REACHED gate stays done for its goal; (iii) a gate only where a ring of navmesh one
+  turning radius round it exists, else the longest shorter run-in (75/50/25 %), else none ("cramped").
+  Tuning n = 1 (builder0): yard t3 last crew in 26.2 s v 71.3 s; Sumps within 8 m 56.5 s v 82.6 s; Terminus unchanged.
+- **Terminus B_4 is not the gate:** its gate has the room by the navmesh; it reaches it (latch fires) and jams on terrain
+  4.8 m on, "blocked terrain" 8 s+ to the end (reseat-trace TRACK lines). An escape failure: to round 30 for manoeuvre.
+- Judged running at `053beffb`: yard seeds 23–24 × {1,3,6,8,11,16}, Sumps seeds 2–13, Terminus 2–4, bridge-pooled on
+  (**18/18**, exited 0; note its four law_tanks are tracked, so the gate never runs there), arrive series 25–28.
+- Follow-up `9926f3bb` (native's review): the roomy gate memoised per hull on exactly (goal, heading, length, radius);
+  latched refusals counted as "latched". No behaviour change; equality vs `053beffb` on the tuning cells queued.
+- Native (godot-native-1b) reviewed the diff: mirrors cleanly. Shipping = the default flip + native's mirror back to back.
+- Follow-up equality (builder0): `9926f3bb` v `053beffb` on the three tuning cells, every trace line and report field
+  identical; only refusal labels move (most former "stalled" were latched arrivals).
+- **Guards so far (053beffb, builder0, both arms `--brains-off=native`):** arrive series seeds 25–28 (5 maps × 5 squads):
+  within 8 m off 89/100 (median 29.1 s) → on **100/100 (24.8 s)**, none lost, 11 gained; latched 151, given up 33,
+  shortened 3126. bridge-pooled with the switch on 18/18 (law_tank is WHEELED, radius 8 m: the gate ran there; an
+  earlier note here said tracked, wrong).
+### B3 — his bridge 108/108: TRACED, time-boxed, PARKED (`lab/brains-r29-bridge` = `474cf510`)
+Both cells `254fd98f` loses (builder0; candidate = stream + 254fd98f re-applied): the candidate equals
+`--reissue-heading=off` in both, round 26's rule (`=plan`) passes both. Not the gate (identical with gategiveup on).
+- **Rust t5 seed 1** (3/4, deck jam 112.9 s): S_2 stops "arrived" in the far mouth of the west swing bridge (far),
+  4.8 m short of its seat; the mouth rule's once-per-seat guard holds it (it was mouth-sent from the deck at 18.5 s to a
+  seat 2.3 m away); S_4 and S_1 jam behind it to the end. Round 26's heading re-issue was the accidental second send.
+  **Fix (parked):** the guard gives way while the crew holds up a squadmate (one blocked by / yielding to it), at most
+  every RE_ISSUE_TICKS (`--mouth-held=off`): 4/4, in 39.3 s, counter 1.
+- **Rust t16 seed 2** (rim 4.2 s): seating. When the drill ends at 12.5 s an attack-move (drills on, so no transit and
+  no route seating) seats by straight line and the seating is fixed (flow joined); both crews then route east round via
+  the bridge and their seats cross; S_2 yields at the rim. Round 26's "stop" at 12 s delays the join and it re-seats
+  right at 17 s. Needs route-aware seating for an attack-move across a crossing: round 30.
+- The full 108 was not run: with cell 2 failing it cannot meet the bar (a new failing cell).
+### B4 — the gang trucks' screen slots: the cause is the ARRIVAL GATE (B5c), not the pitch
+`make screen-slots` (TacticsLab seed 61, four gang_tank, hull 14 m, screen east from 50 m south; builder0, stream):
+grounding lays the line at a 6.0 m pitch (z 25.6 / 5.8 / −12.8 / −18.6) and A_2 is blocked no_path / terrain from
+20 s to the end, 18.5 m off. A spacing pass (pitch → 15.8 m) does NOT free it; B5c's rule does, with or without the
+spacing (A_2 in at 18.3 s / 22.2 s). Six metres between hulls parked side by side facing east is physical (2.9 m wide).
+The spacing pass is parked on `lab/brains-r29-linespread` (`3fc0cb01`, tests 4/0); B4 rode on B5c's flip, so with B5c
+parked B4 is unfixed this round (A_2 still stuck at seed 61); round 30, with B5c.
+**B2 MERGED** alone: `fa099d5b` → main `23d94eb3` (check: exited 0, 2559/0, ALL JUDGED). flank-probe 13–15 (fa099d5b,
+builder0): drawn 6/6 on task, 5/6 reached (median 25 s; the miss, right-13, parks on the ring 0.4° outside 35°), clicked
+1/6. Clip: `~/projects/clips/round29/flank_drawn_vs_clicked_fa099d5b_seed10t3.mp4` (even roster, seed 10 t3: drawn 5
+alive, IFV dead 29.1 s, hits 32° off; clicked 1 alive, IFV lives, 89° off).
 Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
 `build/round29/artillery_side_by_side.mp4`.
+
+### B5c — PARKED for round 30 (`lab/brains-r29-gate` = `a8df3dc3`; reverted on the stream, `785dd103`)
+The pair check went red on round 8's `test_wheeled_arrival` (180° facing). The narrow fix (`a8df3dc3`) passes it, but
+its judged cells MOVED (GDScript path, builder0, rule on): yard 23 last crew in t1 21.7 → 32.8 s, t3 22.1 → 39.9 s,
+t6 20.7 → 24.2, t8 24.8 → 25.6, t11 26.7 → 23.1; Sumps 6 moved (35.47 → 35.17 within 8 m), Sumps 2–5 and 7 identical;
+`reached_facing_away` fires in every yard cell (129–220 refusals). B5c's last attempt was used, so by godot-67's rule it
+parks; the run was stopped there (yard 24, Sumps 8–13, Terminus, bridge and arrive not rerun). Native's mirror is not
+merged. **For round 30:** the yard crossing reaches its gates facing away often, so the latch is what wins yard; a
+round-30 rule needs both a latch that keeps yard's win and a way round for the 180° case (e.g. latch facing away
+only after one circuit, or lay a 180° gate to the side), judged with the 180° test in the bar from the start.
+Record of the judged attempt (`053beffb`), every bar line passed:
+Builder0, both arms `--brains-off=native`, fresh seeds:
+| line | off | on |
+|---|---|---|
+| Yard crossing (23–24 × {1,3,6,8,11,16}, n = 12): last crew in, median | never (7/12 runs never all in) | **21.95 s** (10/10 every run) |
+| Sumps (seeds 2–13, n = 12): all within 8 m, median | 38.8 s | **36.0 s** (no run > 5 s later) |
+| Sumps guns_on_arc | 0.94 | 0.94 |
+| Terminus (2–4, reported): crews arrived | 10 / 10 / 9 | 10 / 10 / 10 |
+| Arrive series (25–28, n = 100): within 8 m | 89/100 (29.1 s) | **100/100 (24.8 s)** |
+| bridge-pooled, switch on | — | 18/18 |
+Counter > 0 in every on-arm run, 0 in every off-arm run.
+**Worst run** (Terminus seed 3, squad B's last 62.1 → 74.2 s): B_4, 9 m from its east-facing slot, is sent 17.5 m back
+to a gate by the west edge, reaches it (latched) and jams on terrain ~8 s (manoeuvre's escape, round 30). The gate's own
+cost: it pulls a car already near its slot back. **Round-30 refinement recorded:** no gate when the hull is within the
+approach length and the route via the gate is much longer.
+**FLIP:** `brains-b5c-flip` = `ed843d63` (stream `3114a9f1` + `gate_giveup_on()` → `not switched_off("gategiveup")`;
+nothing else in game code). Native's mirror: stream/native `1fabe6a8` (test `e0a80733`), combined with the flip at
+`4a293e8a`; native's proof: 6000 drives + 189 forced stalls, 0 mismatches. The orchestrator's merge conditions: yard and
+Sumps on the default native path equal to the judged on-arm run for run, then check + native-verify-suite on the pair.
+**Pair check RED (native, tree `e0a80733`, builder0: 2581/1):** `test_wheeled_arrival::…face_the_way_it_came…` dot 0.50
+(needs > 0.85), the same on the GDScript path, so the cause is the flip. Traced (builder0): the gate lies 17.5 m PAST the
+goal; the car reaches it at 6.0 s still pointing out (dot −0.88 to the heading), the v2 latch marks it done, and it
+loops straight to the goal and arrives 60° off. With the latch narrowed, the stalled give-up then dropped the gate
+mid-turn: circling behind it at 8.3 m/s reads as no progress to the goal ("blocked no_path"). **Fix `a8df3dc3`**
+(`brains-b5c-flip`): a gate reached with forward·heading < 0 is not latched (refusal `reached_facing_away`), and
+`_gate_turning_for` holds off the stalled give-up for that goal until the latch fires or the goal moves. Trace: arrives
+16.9 s, dot 0.98; wheeled_arrival + nav_gate_hold 15/0 (builder0). The orchestrator's rule: the judged cells must be
+identical to the on-arm, else B5c parks. Native mirrors the new member (exec_fields.h + drive_native.cpp).
+**Lesson:** round 8's own test caught a behaviour gap the judged bar missed. The bar's heading line (test_nav_gate_hold)
+ordered a facing 90° off travel, where a car reaches its gate already near the heading. A 180° facing puts the gate
+beyond the goal and the car reaches it facing out. Run a gate change against the existing facing tests on the default
+path BEFORE it is judged, and give a heading bar the 180° case as well as the 90° one.
+### B5 — queued attack (GRANTED: rts_controls.gd's order-queue hunk + `_order_squads`)
+A shifted attack-move or attack on a squad still driving queues behind its waypoints (`Element.enqueue`); an
+attack-move's automatic facing is from the last waypoint (an attack faces its target: none added). A chain of shift+A
+runs leg by leg from each last point; a shifted plain move goes behind a task already queued; an element's attack is
+done when its target is dead or gone; several squads each queue behind their own. Unshifted, and shift+A on an idle
+squad, as before. `177a7419` + `11dde288`; builder0 31/0 and 24/0 (queued task, element, controls tests). The stream's check at
+`11dde288` failed ONE test, by design of the pair: `test_native_exec_state` wanted B5c's four new Movement members in
+`native/src/exec_fields.h`. Resolved by parking B5c (`785dd103`). B5
+alone: `brains-b5-queued` = main `5b1307b8` + `55d1f566` + `5ab05468`: **GREEN at `5ab05468`** (builder0: exited 0, 2580/0,
+26 targets ALL JUDGED, sim-baseline unmoved); **MERGED** `5ab05468` → main `1f5c84e4` (godot-67).
+### B5 — support by fire, wheeled turret hulls: REPRODUCED, not fixed (round 30)
+`make hull-rest-probe FACING_ONLY=faced_support_by_fire` (`053beffb`, builder0, 4 factions × 6 seeds, 24 runs an arm):
+wheels/turret drawn median 80.5° v clicked 57.1° (n = 168, p 0.019; ≥ 100°: 42 % v 27 %); every other class is as good
+or better drawn. Artillery dominates the tail (gang_artillery 128° v 109°, law_artillery 142° v 47°) and deploys for
+indirect fire. Worse drawn: law_tank 106.8° v 30.6°, gang_ifv 47.6° v 24.8°, burner 71.2° v 46.4°; gang_tank better
+drawn (48.0° v 77.9°). In every law run, BOTH arms, the squad is not arrived when the probe reads it ("settled" ≈ 19 s,
+crews still): it measures hulls stopped on the way, not on the line. Needs a per-crew trace of a drawn SBF (the screen
+test has none) before any fix.
 
 ### Requests to other streams
 - **traffic:** a hull that is set up (`deploy_ratio > 0`) does not give way; the asker goes round (B1's last repack).

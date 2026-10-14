@@ -58,12 +58,10 @@ func _watch(lab: TacticsLab, ticks: int) -> void:
 						JSON.stringify(ctl.move_order)])
 	for element: Element in lab.elements.all():
 		var key := element.element_name
-		var seen: int = _seen_events.get(key, 0)
 		# events is a capped ring: print what is new since the last look.
-		var fresh := element.events.size() - seen if element.events.size() >= seen else element.events.size()
-		for i in range(element.events.size() - fresh, element.events.size()):
-			print("RESEAT_TRACE t=%.1f %s EVENT %s" % [t, key, element.events[i]])
-		_seen_events[key] = element.events.size()
+		for event: String in TacticsLab.fresh_events(_seen_events.get(key, []), element.events):
+			print("RESEAT_TRACE t=%.1f %s EVENT %s" % [t, key, event])
+		_seen_events[key] = element.events.duplicate()
 		for unit_name: String in element.slots:
 			var slot: Variant = element.slots[unit_name]
 			var seat: Variant = element.seats.get(unit_name)
