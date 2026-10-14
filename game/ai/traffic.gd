@@ -419,9 +419,13 @@ static func _cross_cap(me: String, frame: int) -> float:
 	var v_me := maxf(speeds[i], MIN_SPEED_MPS)
 	var cap := INF
 	var reach_sq := REACH_M * REACH_M
+	if _waits.has(mine):
+		return INF  # v2: a squad waiting at a street mouth is the hold's (T3 v1 fired once in every head-on run)
 	for j in groups.size():
 		if j == i or moving[j] == 0 or groups[j] == mine:
 			continue
+		if _waits.has(groups[j]):
+			continue  # ...and so is the squad waiting for mine: the street meeting is taken in turns already
 		var dx := xs[j] - px
 		var dz := zs[j] - pz
 		var clearance := radii[i] + radii[j] + CLEAR_MARGIN_M

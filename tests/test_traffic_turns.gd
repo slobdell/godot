@@ -131,3 +131,13 @@ func test_the_counters_show_it_fired() -> void:
 	assert_eq(int(Traffic.report()["tr_cross_verdicts"]), 1, "one squad-pair verdict")
 	assert_true(int(Traffic.report()["tr_cross_slowed"]) > 0, "and a slowed wish")
 
+
+
+func test_a_squad_waiting_at_a_street_mouth_is_left_to_the_hold() -> void:
+	# The hold's squad pair (A waits for B at a street mouth): its crews pulling aside across B's way are not a crossing.
+	_crossing(20.0, 27.0)
+	Traffic._waits["e:W"] = {"passer": "e:N", "key": "e:N|e:W", "since": 0, "dir": Vector2(1.0, 0.0), "spots": {},
+			"released": {}}
+	assert_eq(Traffic.shape("W1", Vector2(10.0, 0.0)), Vector2(10.0, 0.0), "the waiting squad: the hold's, not the crossing's")
+	assert_eq(Traffic.shape("N1", Vector2(0.0, -10.0)), Vector2(0.0, -10.0), "nor the squad it waits for")
+	Traffic._waits.erase("e:W")
