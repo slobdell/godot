@@ -14,6 +14,7 @@ Conventions. Effects, sds and lines are PER RUN unless a name says `total`. alph
 that does nothing is called a gain, or a harm is called none), one-sided by default because every line in rounds 27-29 was
 one-directional ("down >= 25 %", "not worse than base + X"). power is 1 - the false-fail rate at the effect the bar names.
 """
+import functools
 import math
 import random
 import statistics
@@ -232,6 +233,16 @@ def sign_test(diffs):
     return neg, len(nz), (binom_tail(neg, len(nz), 0.5) if nz else 1.0)
 
 
+@functools.lru_cache(maxsize=None)
+def _fisher_upper_crit(n, kb, alpha):
+    """Smallest k_arm (of n) whose one-sided Fisher p against k_base = kb (of n) is <= alpha; n + 1 if none."""
+    for ka in range(kb, n + 1):
+        if ka / n > kb / n and fisher_exact(ka, n - ka, kb, n - kb)[1] <= alpha:
+            return ka
+    return n + 1
+
+
+@functools.lru_cache(maxsize=None)
 def fisher_min_n(p_base, p_arm, alpha=0.05, power=0.8, cap=400):
     """Smallest n PER ARM at which a two-arm count line (k_arm/n v k_base/n, Fisher one-sided) reaches `power`
     when the true rates are p_base and p_arm. Exact enumeration; None if not reached by `cap`."""
@@ -239,38 +250,43 @@ def fisher_min_n(p_base, p_arm, alpha=0.05, power=0.8, cap=400):
         return None
     for n in range(2, cap + 1):
         pw = 0.0
-        for ka in range(n + 1):
-            pa = binom_pmf(ka, n, p_arm)
-            if pa < 1e-12:
+        for kb in range(n + 1):
+            pb = binom_pmf(kb, n, p_base)
+            if pb < 1e-12:
                 continue
-            for kb in range(n + 1):
-                pb = binom_pmf(kb, n, p_base)
-                if pb < 1e-12:
-                    continue
-                if fisher_exact(ka, n - ka, kb, n - kb)[1] <= alpha:
-                    pw += pa * pb
+            crit = _fisher_upper_crit(n, kb, alpha)
+            if crit <= n:
+                pw += pb * binom_tail(crit, n, p_arm)
         if pw >= power:
             return n
     return None
 
 
+@functools.lru_cache(maxsize=None)
+def _mcnemar_crit(m, alpha):
+    """Smallest b (of m discordant) whose exact two-sided McNemar p is <= alpha; m + 1 if none."""
+    for b in range(m, -1, -1):
+        if mcnemar_exact(b, m - b) > alpha:
+            return b + 1
+    return 0
+
+
+@functools.lru_cache(maxsize=None)
 def mcnemar_min_n(q_for, q_against, alpha=0.05, power=0.8, cap=2000):
     """Smallest number of PAIRS at which an exact McNemar test reaches `power`, when a pair is discordant in the
     arm's favour with probability q_for and against it with q_against (the arrive series: cells the arm wins that
-    the base loses). Normal approximation on the discordant count, exact binomial at the end."""
+    the base loses). Exact over the discordant count m ~ Bin(n, q_for + q_against) and B | m ~ Bin(m, share)."""
     if q_for <= q_against:
         return None
+    pd = q_for + q_against
+    share = q_for / pd
     for n in range(4, cap + 1):
-        # power = sum over discordant totals m of P(m) * P(B >= crit_m | m), B ~ Bin(m, q_for / (q_for + q_against))
-        pd = q_for + q_against
-        share = q_for / pd
         pw = 0.0
         for m in range(0, n + 1):
             pm = binom_pmf(m, n, pd)
             if pm < 1e-12:
                 continue
-            # smallest b with two-sided exact p <= alpha
-            crit = next((b for b in range(m, -1, -1) if mcnemar_exact(b, m - b) > alpha), -1) + 1
+            crit = _mcnemar_crit(m, alpha)
             if crit > m:
                 continue
             pw += pm * binom_tail(crit, m, share)

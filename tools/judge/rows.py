@@ -12,6 +12,7 @@ of runs keyed the way the runner wrote them, so the judge tools never re-derive 
 A pair is (key, base_row, arm_row). `diffs(pairs, metric)` turns pairs into per-run paired differences, in the
 RUNNER'S ORDER (seed-major, start tick minor: mk/traffic.mk's loop), which is the order sequential judging walks.
 """
+import functools
 import json
 import os
 import re
@@ -19,9 +20,15 @@ import re
 TRAFFIC_TICKS = (1, 3, 6, 8, 11, 16)
 
 
-def read_jsonl(path):
+@functools.lru_cache(maxsize=256)
+def _read_jsonl_cached(path):
     with open(path) as handle:
-        return [json.loads(line) for line in handle if line.strip()]
+        return tuple(json.loads(line) for line in handle if line.strip())
+
+
+def read_jsonl(path):
+    """Rows of a jsonl file (cached per path: the table reads every judged pair dozens of times; rows are never mutated)."""
+    return list(_read_jsonl_cached(os.path.abspath(path)))
 
 
 def all_in_s(row):

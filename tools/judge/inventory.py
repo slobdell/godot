@@ -262,7 +262,7 @@ def build(root):
 def write_csv(table, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=COLUMNS)
+        writer = csv.DictWriter(handle, fieldnames=COLUMNS, lineterminator="\n")
         writer.writeheader()
         for row in table:
             writer.writerow(row)
