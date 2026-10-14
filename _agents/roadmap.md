@@ -223,6 +223,20 @@ round-29 extension: shard balance, `make quick`, a base-arm cache; the orchestra
 machine again when those are in and judged series still queue for hours. Round 30: split `test_tactics_scenarios`
 (425 s, the floor of a balanced shard plan at 5–6 shards) into two files (brains').
 
+## Round 30: hard problems for Fable agents (the lead, 2026-10-14: "I have my weekly quota restored with now 0% Fable usage. Are there perhaps some deliberate hard tasks we should give to some fable agents in upcoming rounds?")
+
+Recommended (orchestrator), each a round-30 stream launched with `claude --model fable` in its folder, its brief written
+open-ended with round 29's parked branches and traces as the start:
+1. **Wheeled long-hull motion planning in tight space** (manoeuvre): M1 turn-hull, M2 creep (twice), M4 honest velocity all
+   failed on the same physics; a real local planner (forward/reverse legs, walls and squadmates known) instead of rules
+   on the drive. Inputs: `manoeuvre-m1-r29`, `manoeuvre-m2-r29`, `manoeuvre-m4-r29`, the round-30 M4 design (real
+   displacement to progress readers only), brains' Terminus escape failure (B_4 jammed past its gate).
+2. **Route-aware seating and arrival** (brains): which crew to which seat along which route; his bridge's last cell (rust
+   t16 s2), the gate pulling a near hull 17 m back, traffic T3's crossing crawl. `lab/brains-r29-bridge`.
+3. **Variance-aware judging** (infra): pass lines sized from each probe's measured noise, sequential stopping (M1's guard
+   noise ±10 at n = 288 v its +5 line). Optional: quota v builder0 time.
+Not on Fable: stage 2 C++ (deferred by him); native's equal-answer ports.
+
 ## Round 29 candidates (round 28's carry-overs, 2026-10-13) — SPLIT 2026-10-13 as traffic (1) + manoeuvre (2, 6; 7 as its conditional stretch) + brains (3, 4, 5, 8) + native (`workstreams.md` *Round 29*); his question 6 answered: go straight to his side
 
 **His open call:** calls page question 6 (`artillery-wait`): shell from where it stands while driving round, or wait
