@@ -187,7 +187,7 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   findings relayed to manoeuvre (brake on the leg's lock with opposite throttle; zero throttle with lock on = the plant's
   creep; stopping distance v²/2b − v·dt/2; a leg measured by the ARC not the chord: `_flat_distance(here, _kturn_from)` is
   3 % short on a 10 m leg); the side-gate note (design.md §2.8) relayed to brains.
-- **Manoeuvre M5 PARKED with the finding (2026-10-14 ~15:35 PDT; nothing declared; builder0 light, n = 1 each):** (1)
+- **Manoeuvre M5 PARKED with the finding (2026-10-14 ~14:35 PDT; nothing declared; builder0 light, n = 1 each):** (1)
   Terminus head-on s3 t11 under B5c-v4: B_4 does not jam (all 10 arrive, B_4 at 41.2 s; no stall / escape / terrain
   block in 55 state rows) — the 8 s jam belonged to round 29's gate; brains' v4 closes case 1. (2) Yard crossing s25 t1:
   B_4 (a car) re-tasked at 4.9 m/s to a slot 9 m behind it with a nose facing (round 26's reverse refused) drives a
@@ -260,7 +260,7 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   (seed 31: 566 → 3218 contact-ticks, 15 → 13 arrived), then either a narrow fix DECLARED as the last attempt or M4b
   parked with the finding. **M1b's and M2b's chains HOLD** until M4b's second attempt is judged or parked (if parked,
   both re-base on main and M1b runs first). M4b's own chain (bridge, fights, hull-rest) runs on for the record.
-- **Manoeuvre M4b — the SECOND and LAST attempt, bar (pre-registered 2026-10-14 ~15:05 PDT, before numbers; full text in
+- **Manoeuvre M4b — the SECOND and LAST attempt, bar (pre-registered 2026-10-14 ~14:05 PDT, before numbers; full text in
   the stream's Status):** seed 31's trace: the extra contact is the DRIVING AFTER the escapes — Green_S0_2 grinds the west
   street wall 77 s (plant 10.7 m/s, real 0.1–3 m/s jittering, throttle 0.9, goal distance oscillating 25–29 m) in a state
   neither rule reads as stuck (real speed spikes > 0.8 m/s every other second reset the stall timer; the press window
@@ -268,8 +268,9 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   the phantom momentum grinds it. No blind reverse fixes that: the planner's F2/F6 does (round 31). **The narrow fix:
   `UNSTICK_BLIND_MAX_LEN_M = 10 m`** — the honest stall reading and the sized escapes only for hulls that can back out of a
   street in one reverse (scouts, IFVs, lancers, artillery, 8×8s); the War Rig keeps round 29's reading and 0.9 s escape
-  BIT FOR BIT; `real_velocity`, the probe line and the aim leads unchanged for all hulls. Candidate `lab/manoeuvre-m4b2`
-  (hash when tests are green); base as before; fresh seeds Terminus 62–74, hull-rest 54–59 (144 runs), fights 157–180,
+  BIT FOR BIT; `real_velocity`, the probe line and the aim leads unchanged for all hulls. Candidate `lab/manoeuvre-m4b2` **`77a1603f`**
+  (wedge tests builder0 8/0: an IFV pinned on a squadmate fires at 1.90 s and is free at 2.30 s, old reading never; a
+  War Rig pinned the same way fires 0 times either way); judged chain started 14:25 PDT (Terminus 62–74 first); base as before; fresh seeds Terminus 62–74, hull-rest 54–59 (144 runs), fights 157–180,
   bridge. (b1) arrivals rigs AND mixed not down beyond 1.645 se (sequential early stop); **(b1') JUDGED: wall
   contact-ticks rigs AND mixed ≤ base + 1.645 se, with and without two worst** — with the gate exact a rig run replicates
   its base run (diff 0; any non-zero rig diff is a LEAK), so the mixed line carries it (run 1: +17 %, 1.7 se); (b2) pinned
