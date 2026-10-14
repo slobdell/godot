@@ -3777,3 +3777,7 @@ instrument that cannot lie about load — removal within one run — and let eve
    cannot ("it needs to be positioned still in order to fire"). Re-asked as "it has to stop and set up before it can fire;
    go straight to your side, or set up and fire here first, then move", he answered at once. The worker's wording carried
    its own model ("shell while driving" meant the pre-move deploy); the orchestrator relays the choice in his model.
+304. **A probe on an arena that has not finished loading reads geometry wrong.** (Round 29, brains B5a.) A reach probe without
+   `lab.start` read a seat 3.6 m off the navmesh; in the live match it was on it, and the fix written for it fired 0 times.
+   Before designing from a probe's reading, confirm the same reading inside a started match (and that a rule built on it
+   fires, lesson 300).

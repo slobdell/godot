@@ -169,7 +169,9 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   there. Each declared with its own bar; native-ported status stated in each. **B5b DROPPED (~18:20):** the order leash
   applies only under the opt-in `leash_on()` (off; the native drive the same), and CombatMotion's leash is rebuilt each
   think, so the stale leash is inert; the latent dedup bug is noted at the dedup. B5a: no native diff; B5c: a C29.2 pair
-  (`drive_native.cpp` mirrors `_approach_gate`).
+  (`drive_native.cpp` mirrors `_approach_gate`). **B5a WITHDRAWN (~19:00):** the Sumps seat is ON the mesh in a live match
+  (the rule fired 0 times; the 3.6 m was a probe on an arena not yet loaded); both sightings are the arrival gate 17–20 m
+  back from the seat (APPROACH_MAX), mislabelled no_path because the route ends at the gate. B5c is the one fix.
 
 - **Traffic T3 bar (pre-registered ~18:30; DECLARED; last attempt; no partial):** v3's squad-pair crossing verdict beside
   the hold (`--traffic-off=turns`; base = hold ON), fresh seeds 22–24 × 6 ticks, n = 18 a case, GDScript: between-squad
