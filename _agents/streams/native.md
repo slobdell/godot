@@ -162,8 +162,7 @@ builder0: `make check exited 0`, 2554 passed / 0 failed, 26 targets ALL JUDGED, 
 T1 street hold runs in the native drive, equal, and traffic's judged Terminus head-on on the native path is the GDScript
 arm run for run (below). **N7.4 DONE, OFF by its price** (+0.22 % of the tick). The scaffold (`bde8de0a`) is reverted.
 **Waiting / next:** (1) traffic T3 (`Traffic.shape` in `_avoid`, a callback after the hold block) once judged; T1c
-needs no C++ (confirmed); (2) manoeuvre M4 (`estimated_velocity` = the real planar displacement after the slide,
-capped at the slid speed; `tank_drive_native.cpp:130-139`) once judged, with the thirteen re-recorded twice; M1/M2 as
+needs no C++ (confirmed); (2) manoeuvre M4 FAILED its bar (manoeuvre `7b6ff321`, `references/round29/manoeuvre/m4_judged.txt`): no port, `tank_drive_native`'s `estimated_velocity` unchanged; M1/M2 as
 they come; the held N5 ports after CP-M2; (2b) brains' B5c (`Movement._approach_gate`; its native
 mirror is `approach_gate` in `drive_native.cpp`, ~line 836, called at ~1993) after T3 and M4; (3) N7.5 after round 29; stage 2 deferred (his call).
 
@@ -633,8 +632,7 @@ against traffic's judged base VERDICT PASS, and **every run equal field for fiel
 **The scaffold** (`bde8de0a`: NativeHold, `hold_native`, the execute's "holding" hand-back) is **reverted** (`e4cd396f`):
 T1's hold lives in the drive, so nothing would ever write that record.
 **Next pairs:** T3 (`Traffic.shape` after the hold block: one callback, ORCA on the shaped wish, the early-out on the
-route's wish; refresh is keyed on the frame so the second call is a no-op), M4 (`tank_drive_native`, the real planar
-velocity after the slide, capped at the slid speed, behind `real_velocity`).
+route's wish; refresh is keyed on the frame so the second call is a no-op), M4 did not pass its bar (no port).
 
 ### Questions for the lead
 
