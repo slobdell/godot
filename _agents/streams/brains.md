@@ -137,7 +137,7 @@ Round 29's state (`a8df3dc3` restored at lab `0c7a6e72`) reproduces: yard_open c
   `no_path` is the circling) or `GATE_TURN_SECONDS` 12 (≈ 1.5× the open-ground turn); else latch and drive onto the goal
   (round 29's yard win). Plus **near**: a NEW goal already within the approach length, whose drive via the gate is more
   than 2× the straight line, gets no gate (B_4), decided once per goal so a car coming round its own gate is never caught.
-- **Tests first** (lab `ba1…`→`19eca15a`, builder0, `make gate-test`, GDScript drive): `test_nav_gate_v4` (180° comes
+- **Tests first** (lab `19eca15a`, builder0, `make gate-test`, GDScript drive): `test_nav_gate_v4` (180° comes
   round with `gates_turned` > 0 and no latch away; 90°; the turn room; the bounds: `no_path` keeps turning, terrain
   latches `turn_blocked`, 12 s latches `turn_capped`; B_4's near case 9 m off; the planner's scout case: law_scout 9 m
   short, facing back, drove 102 m on main, now near fires and < 30 m) + `test_wheeled_arrival` (all) +
