@@ -164,7 +164,7 @@ func test_a_rig_brushing_a_wall_keeps_its_plant_speed() -> void:
 ## free (the reverse on full lock swings the nose off the hull and it goes round it: freed = 1.5 m from where it was
 ## pinned and under way again); round 29's reading never fires (the defect, reproduced). Movement.unstick is driven
 ## directly on the plant: the controller's own tick is off, so this is the GDScript rule on either native switch.
-func _escape(real_on: bool, backoff_on: bool, seconds: float) -> Dictionary:
+func _escape(real_on: bool, backoff_on: bool, seconds: float, unit_id := "gang_tank", behind := 16.0) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_real := Tank.real_velocity_on
 	var was_off := Movement._off
@@ -172,10 +172,10 @@ func _escape(real_on: bool, backoff_on: bool, seconds: float) -> Dictionary:
 	BrainSwitches.native = false
 	Movement._off = PackedStringArray([]) if backoff_on else PackedStringArray(["unstickback"])
 	var lab := TacticsLab.create(self, 31)
-	var a := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 20), 0.0, "gang_tank")
-	# 16 m apart: two 14 m hulls with a 2 m gap (12 m would overlap at spawn, and the depenetration shove reads as
-	# motion); B reaches A in under a second and is pinned from then on.
-	var b := lab.gun(Match.Team.GREEN, "Green_A_2", Vector3(TacticsScenarios.LANE_X, 0, 36), 0.0, "gang_tank")
+	var a := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 20), 0.0, unit_id)
+	# `behind` = the hulls' length + 2 m: a 2 m gap (an overlap at spawn would read its depenetration shove as motion);
+	# B reaches A in under a second and is pinned from then on.
+	var b := lab.gun(Match.Team.GREEN, "Green_A_2", Vector3(TacticsScenarios.LANE_X, 0, 20 + behind), 0.0, unit_id)
 	await lab.start()
 	var ca := _controller_of(lab, a)
 	var cb := _controller_of(lab, b)
@@ -212,14 +212,24 @@ func _escape(real_on: bool, backoff_on: bool, seconds: float) -> Dictionary:
 	return out
 
 
-func test_the_stall_rule_frees_a_rig_pinned_on_a_squadmate() -> void:
-	var now := await _escape(true, true, 8.0)
-	var base := await _escape(false, true, 8.0)
-	print("MEASURE m4b_escape gang_tank pinned on a squadmate: fires %d at %.2f s, free at %.2f s (escapes ended by backoff %d, by cap %d) | old reading: fires %d" % [
+func test_the_stall_rule_frees_an_ifv_pinned_on_a_squadmate() -> void:
+	var now := await _escape(true, true, 8.0, "ifv", 11.0)
+	var base := await _escape(false, true, 8.0, "ifv", 11.0)
+	print("MEASURE m4b_escape ifv pinned on a squadmate: fires %d at %.2f s, free at %.2f s (escapes ended by backoff %d, by cap %d) | old reading: fires %d" % [
 			now["fires"], now["fired_at"], now["freed_at"], now["backed"], now["capped"], base["fires"]])
-	assert_eq(base["fires"], 0, "the defect: with the old reading the stall rule never fires on a pinned rig")
+	assert_eq(base["fires"], 0, "the defect: with the old reading the stall rule never fires on a pinned IFV")
 	assert_true(now["fires"] >= 1 and now["fired_at"] <= 3.0, "the honest reader fires the stall rule within 3 s (at %.2f s)" % now["fired_at"])
-	assert_true(now["freed_at"] >= 0.0 and now["freed_at"] - now["fired_at"] <= 4.0, "and the rig is free within 4 s of it (at %.2f s)" % now["freed_at"])
+	assert_true(now["freed_at"] >= 0.0 and now["freed_at"] - now["fired_at"] <= 4.0, "and the IFV is free within 4 s of it (at %.2f s)" % now["freed_at"])
+
+
+## The second attempt's gate: a War Rig (14 m) keeps round 29's rule, bit for bit (the first judged run: freed, it
+## ground the street walls); its way out is the planner's (round 31).
+func test_a_war_rig_keeps_todays_rule() -> void:
+	var now := await _escape(true, true, 6.0)
+	var base := await _escape(false, true, 6.0)
+	print("MEASURE m4b_escape_rig gang_tank pinned on a squadmate: fires %d (old reading %d): the rig is the planner's case" % [now["fires"], base["fires"]])
+	assert_eq(now["fires"], 0, "a 14 m hull's stall rule still reads the plant (fires %d)" % now["fires"])
+	assert_eq(base["fires"], 0, "as at base")
 
 
 ## A rig wedged NOSE-ON into a wall (the thing he sees in a Terminus street): the pressed-wall escape (round 10; the
@@ -245,7 +255,7 @@ func _wedge(backoff_on: bool, seconds: float) -> Dictionary:
 	wall.add_child(shape)
 	add_to_tree(wall)
 	wall.global_position = Vector3(TacticsScenarios.LANE_X, 3.0, 20.0)  # its south face at z 20.5
-	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 30), 0.0, "gang_tank")  # nose at z 23
+	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 26.5), 0.0, "ifv")  # a 7.5 m hull, nose at z 22.7
 	await lab.start()
 	var ctl := _controller_of(lab, rig)
 	ctl.set_physics_process(false)
@@ -288,7 +298,7 @@ func _wedge(backoff_on: bool, seconds: float) -> Dictionary:
 func test_the_pressed_wall_escape_frees_a_wedged_rig() -> void:
 	var now := await _wedge(true, 8.0)
 	var short := await _wedge(false, 8.0)
-	print("MEASURE m4b_wedge_wall gang_tank nose-on into a wall: press escapes %d, first at %.2f s, 1.5 m off the pin at %.2f s, max %.2f m, ended by backoff %d / cap %d, y %.2f | round 29's 2 s cap: escapes %d, off at %.2f s, by backoff %d / cap %d" % [
+	print("MEASURE m4b_wedge_wall ifv nose-on into a wall: press escapes %d, first at %.2f s, 1.5 m off the pin at %.2f s, max %.2f m, ended by backoff %d / cap %d, y %.2f | round 29's 2 s cap: escapes %d, off at %.2f s, by backoff %d / cap %d" % [
 			now["presses"], now["fired_at"], now["left_at"], now["max_away"], now["backed"], now["capped"], now["y"],
 			short["presses"], short["left_at"], short["backed"], short["capped"]])
 	assert_true(now["presses"] >= 1 and now["fired_at"] <= 3.0, "the pressed-wall escape fires within 3 s of the pin (at %.2f s)" % now["fired_at"])

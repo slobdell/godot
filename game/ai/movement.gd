@@ -3075,11 +3075,11 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		if _unstick_pivot:
 			cmd.throttle = 0.0  # no room behind: tracks swing the nose off whatever it is pressed against instead
 		else:
-			if unstick_back_on() and _flat_distance(ctl.tank.global_position, _unstick_from) >= UNSTICK_BACKOFF_M:
+			if unstick_back_on() and _blind_escape_ok() and _flat_distance(ctl.tank.global_position, _unstick_from) >= UNSTICK_BACKOFF_M:
 				_unstick_left = 0.0  # round 30 (M4b): really backed off; the route's command stands this tick
 				unstick_backed += 1
 				return
-			if unstick_back_on() and _unstick_left <= 0.0:
+			if unstick_back_on() and _blind_escape_ok() and _unstick_left <= 0.0:
 				unstick_capped += 1  # the cap ended it before the backoff: reported (an escape that mostly caps is a finding)
 			cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
 		cmd.turn = 1.0
@@ -3090,7 +3090,12 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		return
 	# Round 30 (M4b, C30.6): progress is the motion the hull really made (`Tank.real_velocity`), not the velocity the
 	# blocked slide handed back: a pinned truck read 12 m/s here and never fired (round 29, terminus rigs seed 9).
-	if absf(cmd.throttle) > 0.5 and ctl.tank.real_velocity.length() < STUCK_SPEED:
+	# M4b's second attempt: for a hull that can back out of a street in one blind reverse (UNSTICK_BLIND_MAX_LEN_M);
+	# the War Rig keeps round 29's reading and escape, bit for bit: the first judged run (13 Terminus seeds) freed its
+	# pins and then left it at an angle to the street wall where the plant's phantom momentum ground it (wall
+	# contact-ticks +141 %); a 14 m hull's way out of a 20 m street is a planned turn (the planner, round 31).
+	var reading := ctl.tank.real_velocity if _blind_escape_ok() else ctl.tank.estimated_velocity
+	if absf(cmd.throttle) > 0.5 and reading.length() < STUCK_SPEED:
 		_stuck_time += delta
 		if _stuck_time >= STUCK_SECONDS:
 			_stuck_time = 0.0
@@ -3102,7 +3107,7 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 					UNSTICK_CLEARANCE)
 			if not _unstick_pivot or wheel_radius() <= 0.0:
 				_unstick_left = UNSTICK_SECONDS
-				if unstick_back_on() and not _unstick_pivot:
+				if unstick_back_on() and not _unstick_pivot and _blind_escape_ok():
 					_unstick_from = ctl.tank.global_position
 					_unstick_left += _momentum_to_shed(backing)
 				unstick_fires += 1
@@ -3126,6 +3131,15 @@ static func press_on() -> bool:
 
 static func unstick_back_on() -> bool:
 	return not switched_off("unstickback")
+
+
+## Round 30 (M4b, the second attempt): the honest stall reading and the momentum-sized escapes are for hulls that can
+## back out of a street in one blind reverse; a longer hull keeps round 29's rule (see `_unstick`).
+const UNSTICK_BLIND_MAX_LEN_M := 10.0
+
+
+func _blind_escape_ok() -> bool:
+	return float(hull_box(ctl.tank.unit_id)[2]) <= UNSTICK_BLIND_MAX_LEN_M
 
 
 ## Round 30 (M4b): where the stall escape started (its UNSTICK_BACKOFF_M is measured from here).
@@ -3218,7 +3232,7 @@ func _pressing_escape(cmd: TankCommand, delta: float) -> bool:
 	_escape_gear = signf(along) if absf(along) > 0.2 else (-1.0 if forward.dot(r) > 0.0 else 1.0)
 	# The yaw that swings the touching point away from the wall (WallContact.swing_of: positive turn = clockwise).
 	_escape_turn = 1.0 if WallContact.swing_of(tank.global_position, contact.point, 1.0).dot(away) > 0.0 else -1.0
-	_unstick_left = PRESS_ESCAPE_MAX_S + (_momentum_to_shed(_escape_gear) if unstick_back_on() else 0.0)  # round 30 (M4b)
+	_unstick_left = PRESS_ESCAPE_MAX_S + (_momentum_to_shed(_escape_gear) if unstick_back_on() and _blind_escape_ok() else 0.0)  # round 30 (M4b)
 	_press_from = tank.global_position
 	_repath_left = 0.0
 	press_escapes += 1
