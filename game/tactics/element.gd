@@ -1361,7 +1361,9 @@ static func on_mesh(node: Node3D, point: Vector3) -> Vector3:
 	if not SEAT_ON_MESH_ENABLED or node == null or not node.is_inside_tree() or not Pathing.enabled \
 			or not Pathing.is_ready(node):
 		return point
-	var nearest := Pathing.closest_point(node.get_world_3d().navigation_map, point, "seat")
+	# Asked as Movement asks it (Pathing.query on the order's goal, flat at y = 0): from the slot's own height the closest
+	# point can land on another polygon, and the first tuning run pulled nothing while the crew still read no_path.
+	var nearest := Pathing.closest_point(node.get_world_3d().navigation_map, Vector3(point.x, 0.0, point.z), "seat")
 	if Vector2(nearest.x - point.x, nearest.z - point.z).length() <= Movement.NO_PATH_MARGIN:
 		return point
 	seats_pulled_on_mesh += 1

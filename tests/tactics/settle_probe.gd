@@ -329,7 +329,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 					frame = " @%+.0f/%+.0f" % [rel.dot(tangent), rel.dot(Vector3(-tangent.z, 0.0, tangent.x))]
 				frame += " w%.1f,%.1f" % [tank.global_position.x, tank.global_position.z]
 				if slot is Vector3:
-					frame += " s%.1f,%.1f%s" % [(slot as Vector3).x, (slot as Vector3).z,
+					frame += " s%.1f,%.1f,y%.1f%s" % [(slot as Vector3).x, (slot as Vector3).z, (slot as Vector3).y,
 							("" if SlotGround.is_standable(tank, slot) else "!unstandable") + " fit%.1f" % (slot as Vector3).distance_to(
 							SlotGround.standable_for(tank, slot, SlotGround.envelope_of(tank.unit_id)))]
 				# S6: what the crew's own brain is doing (its utility option and the move it handed nav).
