@@ -195,8 +195,9 @@ def binom_cdf(k, n, p):
 
 
 def fisher_exact(a, b, c, d):
-    """2x2 table [[a, b], [c, d]] (rows = arms, columns = success/failure). Returns (two-sided p, one-sided p for
-    row 1 having the higher success rate)."""
+    """2x2 table [[a, b], [c, d]] (rows = arms, columns = success/failure). Returns (two-sided p, one-sided p in the
+    OBSERVED direction: the tail of row 1's success count on the side it fell). A bar's count line is always read in
+    the direction the arm moved, so the one-sided p is the one the line quotes."""
     n = a + b + c + d
     row1 = a + b
     col1 = a + c
@@ -207,7 +208,11 @@ def fisher_exact(a, b, c, d):
     lo, hi = max(0, col1 - (n - row1)), min(row1, col1)
     observed = p_of(a)
     two = sum(p for x in range(lo, hi + 1) for p in [p_of(x)] if p <= observed + 1e-12)
-    one = sum(p_of(x) for x in range(a, hi + 1))
+    expected = row1 * col1 / n
+    if a >= expected:
+        one = sum(p_of(x) for x in range(a, hi + 1))
+    else:
+        one = sum(p_of(x) for x in range(lo, a + 1))
     return min(1.0, two), min(1.0, one)
 
 

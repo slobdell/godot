@@ -115,6 +115,9 @@ class Counts(unittest.TestCase):
         two, one = stats.fisher_exact(3, 1, 1, 3)
         self.assertAlmostEqual(two, 0.4857, places=4)
         self.assertAlmostEqual(one, 0.2429, places=4)
+        # the one-sided tail follows the OBSERVED direction: 0/18 contact runs v 9/18 is the same evidence as 9 v 0
+        self.assertAlmostEqual(stats.fisher_exact(0, 18, 9, 9)[1], stats.fisher_exact(9, 9, 0, 18)[1], places=12)
+        self.assertLess(stats.fisher_exact(0, 18, 9, 9)[1], 0.001)
 
     def test_mcnemar_known_answers(self):
         self.assertAlmostEqual(stats.mcnemar_exact(10, 0), 2.0 / 1024, places=12)

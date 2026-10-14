@@ -159,7 +159,7 @@ def jsonl_pairs(base_path, arm_path, key_fields):
         for r in read_jsonl(path):
             if r.get("missing"):
                 continue
-            out[tuple(r.get(f) for f in key_fields)] = r
+            out[tuple(str(r.get(f)) for f in key_fields)] = r  # str: a list-valued field (t1c's `units`) must still key
         return out
     base, arm = load(base_path), load(arm_path)
     return [(k, base[k], arm[k]) for k in base if k in arm]
