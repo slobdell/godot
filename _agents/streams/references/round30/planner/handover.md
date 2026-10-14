@@ -105,3 +105,19 @@ attempt is the second judged run.
    per order (two), then today's rules.
 6. **The free-space table is per hull class and 2.3 s to build in GDScript:** built on first use, it would stall a
    tick; the seam builds the wheeled classes' tables at match load (or native ships them).
+
+## Stretch: the squad-level version (a design note only)
+
+Four 14 m trucks line abreast at 12 m, each wanting to face east, planned one at a time with the others as boxes:
+the planner finds 3–4 legs for every one (P2's packed line) — but driven at once they box each other, which is M1's
+measured cost (the lab's F3 reproduction: one clean plan of four, 33 gear changes at the boxed end). The squad answer
+is a SCHEDULE, not a better plan:
+1. The element asks the planner for each crew's plan with the others as they STAND (what P2 does), and reads the
+   swept box of each plan (the union of its poses' OBBs, `PackedPlan.poses`).
+2. Crews whose swept boxes do not overlap turn together; crews whose boxes overlap are ordered: the one whose plan
+   is shorter in time goes first, the other waits (a `hold` on its slot) and re-plans when the first is done, with the
+   first's END pose as the obstacle. A line of four at 12 m pitch is two waves (the ends, then the middles).
+3. The schedule is the element's (brains' `element.gd`, where the slots and the facing live), re-made when a crew's
+   plan aborts; the planner stays per hull. A crew that gets NO_PATH in the second wave is re-seated (brains' rule).
+Cost: one plan per crew per wave; two waves for a line of four. What he would notice: a line turns in two beats, not
+four crews grinding on each other.

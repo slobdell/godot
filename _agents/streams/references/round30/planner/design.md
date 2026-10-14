@@ -163,7 +163,10 @@ number recorded with its commit.
   brains (C30.5 keeps the gate theirs); the planner itself needs no gate.
 - **A face at rest:** goal pose = (home, want), `tol = settle_radius − 1 m` (as `plan_face`'s `stay`), `8°`.
 
-## 3. What the tests hold the design to (P2's pass lines, pre-registered here)
+## 3. What the tests hold the design to (P2's pass lines, pre-registered here; the MEASURED results against each
+## line are in `planner.md` Status *The report*: met for the twin, the T-junction, the mouth, the corner, the packed
+## line, the slot's metres and the honest answers; not met for the wedge (4 legs), the causeway slot (4), the rig's
+## 20 m turn-round (9; the lattice's best 8) and the IFV's 12 m turn-round (not found), each recorded)
 
 | fixture | pass line |
 |---|---|

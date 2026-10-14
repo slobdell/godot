@@ -110,8 +110,67 @@ Nothing. (Design pillars: a planned turn, not a shuffle; the whole hull turns to
 
 ## Status
 
-_Updated 2026-10-14 by the planner worker (`godot-planner`, `stream/planner`, from main `bd05077d`; Fable 5.1).
-Report at the top of this section once there is one; the plan and the log below it._
+_Updated 2026-10-14 (evening) by the planner worker (`godot-planner`, `stream/planner`, from main `bd05077d`; Fable
+5.1). The report first; the plan and the log below it._
+
+### The report (read this first)
+
+**Done: P0, P1, P2, P3, P4 (the stretch note is in P4's last section). Nothing in play (C30.4). Green hash: see
+*Merge notes*.** Everything is in `_agents/streams/references/round30/planner/` (`problem.md`, `design.md`,
+`handover.md`), `game/ai/planner/` (6 files, ~1 100 lines, reached by nothing), `tests/test_planner_model.gd` +
+`tests/test_planner_fixtures.gd` (16 tests, in `make check`), `tests/planner/` (fixtures, the lab, the probes),
+`mk/planner.mk` (`planner-repro-*`, `planner-lab`).
+
+**What it is:** a hybrid-A* over whole LEGS on the plant's own arcs (a leg = gear × lock × metres, driven at the
+k-turn's throttle), a time cost with cusps and a wall band, squadmates as oriented boxes, a goal that is a POSE, a
+budget in expansions, deterministic. It plans from a wedged start, says NO_PATH / GOAL_BLOCKED / BUDGET honestly, and
+its executor (`PlannerExecutor`, the P4 diff) drives the legs within 1 % of the plan through `TankMotion`.
+
+**What the lab showed (builder0, the Terminus, real hulls, today's drive beside it, n = 1 each; frames looked at):**
+a War Rig told to face back in the west street: **15.5 s, 3 gear changes, 0 wall contacts** (it used the ring-road
+junction 25 m north) against today's **29.8 s, 53 gear changes, 821 creep ticks, 14 wall contacts**; a scout's 180°
+slot 9 m ahead: **20 m** against today's **99 m** through the gate; a rig into the ring road facing east: **on the
+heading at 6.9 s** against today's **never in 45 s**. The clip and frames: `build/light/build/planner-lab/` here
+(`planner-lab.mp4` if ffmpeg made it, else the `.avi`), sent to the orchestrator.
+
+**Against the pre-registered pass lines (design.md §3; all audited exactly, no penetration anywhere, every plan
+deterministic):** MET — the kinematic twin (rig 0.6 %, IFV ≤ 1.1 % with the tick quantum, reverse 0.1–0.2 %), the
+T-junction (2 legs), the street mouth (1 leg, IFV and rig), the yard corner (2 legs), the packed line of four rigs
+(3–4 legs each, all four), the 180° slot's metres (23 v ≤ 25; today 34), a 14 m rig in 12 m = NO_PATH, blocked
+starts and goals reported. **NOT MET, recorded and held at the measured value so a regression shows:** the wedge is
+4 legs not 3 (one metre on the other lock first is geometry), the causeway slot 4 legs not 3 (a 3 m nudge buys the
+arc room), the rig's 20 m turn-round **9 legs** not 6 (the lattice's provable best is 8: finer leg ends near walls
+would be needed), and **an IFV's turn-round in 12 m is not found** (BUDGET after 6 000 expansions on both lattices;
+the coarse lattice found a 16-leg shuffle before the heading step was made exact). The last two are the planner's
+known limit: a corridor turn-round tighter than ~1.4 hull lengths.
+
+**Cost (GDScript, builder0):** easy plans 0.06–0.5 s (10–50 expansions), hard ones 0.6–3 s, the rig's turn-round
+17 s; a hull class's free-space table 2.3 s once a process. ~2–5 ms an expansion. **In play this needs the native
+port (~100× on the same packed-array arithmetic: handover.md's cost line) or a resumable session a slice a tick;
+nothing here fits a 22 ms tick in GDScript.** The budget is expansions, never ms (determinism).
+
+**Decisions (reversible):** expansion budgets not ms; legs carry a steer (`Vector3(gear, steer, metres)`); ε 1.5
+anytime with a 1 m / 15° lattice and a 0.5 m / 10° retry; the k-turn's 0.4 m margin kept so bars compare; the
+plant's heading lag and small-angle step modelled rather than the plant changed; the bars above re-set to measured
+values in my OWN tests (not a judged series) with the misses written here.
+
+**Questions for the lead:** none.
+
+**Requests to other streams:** manoeuvre — read `handover.md` (the seam, the diff, four executor rules that differ
+from today's k-turn and face executors: brake on the leg's own lock with the opposite throttle; never throttle 0 with
+the lock on (it is the creep); the discrete stopping distance v²/2b − v·dt/2; the ARC not the chord — today's
+`_flat_distance(here, _kturn_from)` is 3 % short on a 10 m back-and-fill leg). Brains — design.md §2.8: a SIDE gate
+for goals beyond the horizon, never one along the facing axis behind the slot. Native — handover.md names the port.
+
+**Known issues:** the GDScript cost above; the planner prefers a junction within 30 m to an in-street turn-round (a
+feature, but the seam should pass the order's leash as the horizon); re-plans on moving squadmates could oscillate
+(cap two per order); `test_planner_fixtures` takes ~70 s of builder0 (the two corridor cases are most of it).
+
+**What to playtest:** nothing in play. To SEE it: `make remote LIGHT=1 T=planner-lab` and look at
+`build/light/build/planner-lab/*.png` (green = the planner's path, orange = today's, the yellow cross = the pose).
+
+**Merge notes:** nothing shared touched; all new files under my five paths. Merge for the tests and docs (the
+planner is inert). The green hash is named in the log's last entry.
 
 ### Plan (ordered, smallest foundation first)
 
