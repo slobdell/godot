@@ -92,7 +92,15 @@ _Updated 2026-10-13 ~16:40 PDT (traffic worker, session godot-traffic-e4). Every
   It needs manoeuvre's agreement through the orchestrator, and the round's time went to judging T1c and T3.
 
 The stream's `game/` equals the shipped `3a94f38d`; only three python tools (verdict scripts, the table) and docs differ.
-**Final check:** on the tip `306d6271` (result below when it lands).
+**Final check: GREEN at `306d6271`** (builder0, `make check exited 0`, 2550 passed / 0 failed, 24 targets judged; 2 NOT
+JUDGED for load: `perf-judge` refused at 1.65–2.29× busy, and `scenario_perf`'s CPU budget defers to it by design).
+The commits after it change only this Status. **Merge notes:** stream/traffic's `game/` equals the shipped `3a94f38d`
+(already on main as `1267ffb1`). Merging the tip brings docs, data (`references/round29/traffic/`) and three python
+tools: `tests/traffic/hold_verdict.py`, `turns_verdict.py` and the table's columns. Main was not merged back into the
+branch. **Kept branches:** `traffic-t1c` (T1c, round 30) and `traffic-t3` (T3, round 30); round 28's `traffic-t1-v3`
+and `traffic-t1b` are superseded by T1 and T3 (delete at close). **What to playtest:** `make native && make skirmish` on
+the Terminus, two of your squads sent through each other along the west street. His clips are in
+`/home/slobdell/projects/clips/traffic_round29/`.
 
 **Lessons for the list:**
 1. A copy-back of `build/` replaces it: anything kept for the lead goes outside the worktree
