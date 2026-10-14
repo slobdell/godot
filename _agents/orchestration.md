@@ -3784,3 +3784,7 @@ instrument that cannot lie about load — removal within one run — and let eve
    `lab.start` read a seat 3.6 m off the navmesh; in the live match it was on it, and the fix written for it fired 0 times.
    Before designing from a probe's reading, confirm the same reading inside a started match (and that a rule built on it
    fires, lesson 300).
+305. **A judged bar's guard can test the easy geometry and miss the hard one.** (Round 29, brains B5c.) The bar's heading
+   guard (`test_nav_gate_hold`) ordered a facing 90° off travel and passed; the existing `test_wheeled_arrival` ordered
+   180° (the gate lies past the goal) and failed only when the default was flipped (dot 0.50). Run the WHOLE suite with a
+   candidate's switch ON before judging it, not only its own tests: an inverted switch hides it from `make check`.
