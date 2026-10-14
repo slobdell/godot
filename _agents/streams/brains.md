@@ -268,6 +268,31 @@ any `--nav-off` hands the drive to GDScript, so both arms run `--brains-off=nati
 - Follow-up `9926f3bb` (native's review): the roomy gate memoised per hull on exactly (goal, heading, length, radius);
   latched refusals counted as "latched". No behaviour change; equality vs `053beffb` on the tuning cells queued.
 - Native (godot-native-1b) reviewed the diff: mirrors cleanly. Shipping = the default flip + native's mirror back to back.
+- Follow-up equality (builder0): `9926f3bb` v `053beffb` on the three tuning cells, every trace line and report field
+  identical; only refusal labels move (most former "stalled" were latched arrivals).
+- **Guards so far (053beffb, builder0, both arms `--brains-off=native`):** arrive series seeds 25–28 (5 maps × 5 squads):
+  within 8 m off 89/100 (median 29.1 s) → on **100/100 (24.8 s)**, none lost, 11 gained; latched 151, given up 33,
+  shortened 3126. bridge-pooled with the switch on 18/18 (law_tank is WHEELED, radius 8 m: the gate ran there; an
+  earlier note here said tracked, wrong).
+### B3 — his bridge 108/108: TRACED, time-boxed, PARKED (`lab/brains-r29-bridge` = `474cf510`)
+Both cells `254fd98f` loses (builder0; candidate = stream + 254fd98f re-applied): the candidate equals
+`--reissue-heading=off` in both, round 26's rule (`=plan`) passes both. Not the gate (identical with gategiveup on).
+- **Rust t5 seed 1** (3/4, deck jam 112.9 s): S_2 stops "arrived" in the far mouth of the west swing bridge (far),
+  4.8 m short of its seat; the mouth rule's once-per-seat guard holds it (it was mouth-sent from the deck at 18.5 s to a
+  seat 2.3 m away); S_4 and S_1 jam behind it to the end. Round 26's heading re-issue was the accidental second send.
+  **Fix (parked):** the guard gives way while the crew holds up a squadmate (one blocked by / yielding to it), at most
+  every RE_ISSUE_TICKS (`--mouth-held=off`): 4/4, in 39.3 s, counter 1.
+- **Rust t16 seed 2** (rim 4.2 s): seating. When the drill ends at 12.5 s an attack-move (drills on, so no transit and
+  no route seating) seats by straight line and the seating is fixed (flow joined); both crews then route east round via
+  the bridge and their seats cross; S_2 yields at the rim. Round 26's "stop" at 12 s delays the join and it re-seats
+  right at 17 s. Needs route-aware seating for an attack-move across a crossing: round 30.
+- The full 108 was not run: with cell 2 failing it cannot meet the bar (a new failing cell).
+### B4 — the gang trucks' screen slots: the cause is the ARRIVAL GATE (B5c), not the pitch
+`make screen-slots` (TacticsLab seed 61, four gang_tank, hull 14 m, screen east from 50 m south; builder0, stream):
+grounding lays the line at a 6.0 m pitch (z 25.6 / 5.8 / −12.8 / −18.6) and A_2 is blocked no_path / terrain from
+20 s to the end, 18.5 m off. A spacing pass (pitch → 15.8 m) does NOT free it; B5c's rule does, with or without the
+spacing (A_2 in at 18.3 s / 22.2 s). Six metres between hulls parked side by side facing east is physical (2.9 m wide).
+The spacing pass is parked on `lab/brains-r29-linespread` (`3fc0cb01`, tests 4/0); B4 rides on B5c's flip.
 **B2 MERGED** alone: `fa099d5b` → main `23d94eb3` (check: exited 0, 2559/0, ALL JUDGED). flank-probe 13–15 (fa099d5b,
 builder0): drawn 6/6 on task, 5/6 reached (median 25 s; the miss, right-13, parks on the ring 0.4° outside 35°), clicked
 1/6. Clip: `~/projects/clips/round29/flank_drawn_vs_clicked_fa099d5b_seed10t3.mp4` (even roster, seed 10 t3: drawn 5
