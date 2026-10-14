@@ -187,6 +187,16 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   findings relayed to manoeuvre (brake on the leg's lock with opposite throttle; zero throttle with lock on = the plant's
   creep; stopping distance v²/2b − v·dt/2; a leg measured by the ARC not the chord: `_flat_distance(here, _kturn_from)` is
   3 % short on a 10 m leg); the side-gate note (design.md §2.8) relayed to brains.
+- **Manoeuvre M5 PARKED with the finding (2026-10-14 ~15:35 PDT; nothing declared; builder0 light, n = 1 each):** (1)
+  Terminus head-on s3 t11 under B5c-v4: B_4 does not jam (all 10 arrive, B_4 at 41.2 s; no stall / escape / terrain
+  block in 55 state rows) — the 8 s jam belonged to round 29's gate; brains' v4 closes case 1. (2) Yard crossing s25 t1:
+  B_4 (a car) re-tasked at 4.9 m/s to a slot 9 m behind it with a nose facing (round 26's reverse refused) drives a
+  full-lock forward loop 15 m out, the slot lands inside its turning circle, Steering's reactive circle rule shuffles it
+  in: six cusps, 11 s, "blocked terrain" throughout though nothing blocks it. The planned circle back-up never runs for
+  a car: `_away_here()` gates planned legs to hulls ≥ 10 m since round 26 (the mixed squad took +14 % contacts with it
+  on) plus a |speed| < 1.5 m/s gate; `circlebrake` (`lab/manoeuvre-m5`) is unreached for cars for that reason, and
+  enabling planned legs for cars re-opens round 26's measured harm. **The answer is the planner's F4 (a goal POSE 9 m
+  away: 2–3 legs, ~15 m), round 31.** For him: a car turning round in six goes is turning badly, not stuck.
 - **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
   on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
   (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
