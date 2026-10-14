@@ -40,15 +40,24 @@ this stream exists for, and the fixtures say the easy cases are the same search 
 
 ### 2.1 State, primitives, lattice
 
-- State `(x, z, θ, gear)`: continuous pose, discretised for the closed set to `(round(x / 0.5), round(z / 0.5),
-  round(θ / 10°), gear)` packed into one integer key (a Dictionary keyed by int; fixed iteration order is never
-  relied on).
-- Primitives from a node: `gear ∈ {+1, −1}` × `steer ∈ {−1, −0.5, 0, +0.5, +1}`, each an arc of `STEP_M = 1.0 m`
-  stepped in `0.25 m` sub-steps with the plant's own `turn_heading(heading, sub · steer / R)` (the identical bits
-  the drive would produce for that leg at any speed below the ω_max clamp; the clamp is checked once per plan: a leg
-  throttle whose speed exceeds `ω_max · R / |steer|` lowers the planner's assumed speed, never the geometry).
-  Ten successors. A `(gear, steer)` pair carried from the parent is a continuation of the same leg; a change is a
-  new leg (a cusp when the gear changes).
+- State `(x, z, θ, gear)`: continuous pose, discretised for the closed set to `(floor(x / 1 m), floor(z / 1 m),
+  floor(θ / 15°), gear)` packed into one integer key (a Dictionary keyed by int; fixed iteration order is never
+  relied on). θ is carried as the SUM of the commanded heading steps (no `atan2` per node; the start and goal
+  headings are the only trig, once per plan).
+- Primitives from a node are whole LEGS: `gear ∈ {+1, −1}` × `steer ∈ {−1, 0, +1}` (full lock either way or
+  straight: the legs the lead asked for), each swept in `0.5 m` sub-steps with the plant's own
+  `turn_heading(heading, sub · steer / R)` up to 16 m, a successor emitted at 1, 2, 3, 5, 8, 12 and 16 m and wherever
+  the sweep meets the goal pose. **Revised in P2 (run 4):** on a one-metre lattice the search decided a cusp per metre
+  and an IFV turned round in fourteen one-metre legs — the lead's N-point shuffle, found by a planner; with legs as
+  primitives a cusp is a per-leg decision and costs what it costs. Six sweeps per expansion, up to 42 successors.
+  The ω_max clamp is applied once per request: `PlanRequest.for_unit` lowers a hull's leg throttle until `v / R`
+  is under its yaw cap on full lock (the Rat Rod: 0.7 → 0.64), and the plan carries the throttle for the executor.
+- **The plant's heading lag (P2 finding, run 1):** `step_in_place` turns the heading by the speed at a tick's START
+  and moves by the speed at its END, so while accelerating the heading lags the arc by `Δv · dt / R`, stays lagged
+  through the cruise, and catches up while braking: a leg driven to rest ends on the arc's heading but its position
+  drifts inside the ideal arc by ~`λ · cruise metres` (a War Rig at 8.4 m/s: λ = 1.3°, 0.3–0.5 m on a 19 m arc). The
+  planner models it as a constant lag of the MOVE direction per gear (`v · dt / R`); the residual over spin-up and
+  braking is under 1 % of a leg for the long hulls (`test_planner_model`), ~4 % for a short arc of the Rat Rod.
 - Horizon: a `30 m` window round the start (the brief's bound); anything outside is NO_PATH's business.
 
 ### 2.2 The world: `PlannerWorld`
@@ -62,11 +71,14 @@ One object the search queries, two sources:
 - **Hulls:** every other living hull as an oriented box `(x, z, heading, half_w, half_l)` plus `HULL_MARGIN 0.5 m`;
   an OBB-vs-OBB separating-axis test (4 axes, no trig). A moving hull's box is extended along its velocity by
   `v · 1.0 s` (where it will be while the first leg is driven); re-plan on the event `obstacle moved > 1 m`.
-- **The footprint test** at a pose: the hull box `(half_w, half_l)` sampled as the k-turn's ten outline points plus
-  one per metre along each side for hulls over 8 m (a 14 m rig: 18 points) — each `clearance ≥ MARGIN_M 0.4` (the
-  k-turn's `KTURN_MARGIN_M`, so bars compare) **or no deeper than that point was at the start** (a nose parked
-  against a face may not get deeper: today's rule, kept, so a wedged start is plannable) — and the OBB clear of
-  every hull box. Checked at every 0.25 m sub-step and at the end of a leg's ROLL (§2.5).
+- **The footprint test** at a pose: each SIDE of the hull box walked from corner to corner by a sphere walk — a
+  sample with clearance `c` covers the side for `c − margin` either way, so the next sample is that far on (one read
+  per corner in the open, every 0.5 m beside a wall), and a block corner cannot slip between fixed samples (it did,
+  between the quarter points of a 14 m side, in run 3) — each sample `clearance ≥ MARGIN_M 0.4` (the k-turn's
+  `KTURN_MARGIN_M`, so bars compare) **or that side no deeper than it was at the start** (a nose parked against a
+  face may not get deeper: today's rule, kept, so a wedged start is plannable) — and the OBB clear of every hull box.
+  Checked every 0.5 m along a sweep and at the end of a leg's ROLL (§2.5). The field's bilinear sample overestimates
+  by ≤ ~0.1 m at a convex corner; `SAMPLE_SLACK_M 0.15` covers it, and the tests audit every plan exactly.
 
 ### 2.3 Cost (seconds)
 
@@ -81,14 +93,17 @@ wall costs as if 55 % slower: the "grinds along walls" penalty, the margin itsel
 `+ SQUAD_S` 1.0 per metre inside a squadmate's box grown by 2 m (space other crews need; soft, so a packed line can
 still turn).
 
-### 2.4 Heuristic, admissible: `h = max(d / v_fwd, R · |Δθ| / v_fwd)`
+### 2.4 Heuristic: `h = max(d, R · |Δθ|) / v_fwd` + the cusps the room allows for
 
 `d` the flat distance to the goal, `|Δθ|` the smallest heading difference. Both are lower bounds on the time of any
 path the plant can drive (length ≥ d; heading change per metre ≤ 1 / R in either gear, so length ≥ R · |Δθ|; the
-fastest metre is a forward one). Weighted A* with `ε = 1.5` (bounded suboptimality, 3–5× fewer expansions; measured
-in P2 and recorded). No trig in `h` beyond one `atan2` per node for Δθ — replaced by the heading's dot/cross against
-the goal heading (`asin`-free: the small-angle bound `|Δθ| ≥ |cross|` is admissible and trig-free; the exact
-`atan2` is used only in the tests' reports).
+fastest metre is a forward one). **Plus (P2, run 2)** the cusps the remaining turn needs in the lateral room the hull
+had at the START of the plan (`c`): one full-lock swing in that room is at most `acos(1 − c/R)` (taken as
+`sqrt(2c/R)`, trig-free), so `ceil(|Δθ| / swing) − 1` cusps at `cusp_s` each. Informed, not admissible (room grows
+along a path) — without it a rig's turn-round in a 20 m street was a 4000-expansion breadth search, because cusps
+cost 2.2 s each and the core heuristic knew nothing of them; read per NODE it rose beside every wall (where a turn's
+cusps are) and misled the search, so it is one number per plan. Weighted A* with `ε = 2.0` (the plan is within
+twice the best the lattice holds). No trig in `h`: Δθ is the wrapped difference of the carried heading sums.
 
 ### 2.5 Goal, legs, and the executor's roll
 
@@ -104,9 +119,16 @@ the goal heading (`asin`-free: the small-angle bound `|Δθ| ≥ |cross|` is adm
   `NO_PATH`, `BUDGET`, `START_BLOCKED`, `GOAL_BLOCKED`, `ALREADY_THERE`), `why` (one line for a trace),
   `expansions`, `cost_s`, `end_pose`, and `ascii()` (the plan drawn on the world, for logs and the lab).
 - **The executor contract** (today's `Vector2(gear, metres)` on ONE lock becomes `Vector3(gear, steer, metres)`):
-  `cmd.throttle = LEG_THROTTLE · gear`, `cmd.turn = steer`, leg done when `driven + stopping ≥ metres`, aborted on a
-  leading-end hit (today's `lead_hit`) or a timeout `metres · KTURN_SECONDS_PER_M + 1 s`; an abort is an EVENT
-  (re-plan from the pose). This is the P3 harness, line for line, so P4 can show the diff against `_planned_reverse`.
+  `cmd.throttle = throttle · gear`, `cmd.turn = steer`; when `driven + stopping ≥ metres` the leg BRAKES ON ITS OWN
+  LOCK with the opposite throttle until all but stopped (0.3 m/s), then the next leg's gear and steer begin, or
+  zero/zero after the last; aborted on a stall (2 s under 0.15 m of progress) or a timeout
+  `metres · KTURN_SECONDS_PER_M + 1 s`; an abort is an EVENT (re-plan from the pose). Three things differ from
+  today's executor (P2 findings, runs 2–4, all in `PlannerExecutor`): (1) today the next leg's throttle starts at
+  once, which is right only because its legs share one lock — with a steer per leg the braking metres would be
+  turned the wrong way; (2) throttle 0 with the lock on is the plant's CREEP (0.5 forward), not a brake — the face
+  plan's last leg today ends on throttle 0 / turn 0 and coasts its stopping distance straight; (3) the discrete
+  plant's stopping distance is `v²/2b − v·dt/2`, so today's `v²/2b` stops a rig at 8.4 m/s 0.14 m short. This is
+  the P3 harness, line for line, so P4 can show the diff against `_planned_reverse`.
 
 ### 2.6 The interface (one seam)
 

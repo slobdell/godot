@@ -146,3 +146,42 @@ executor's `Vector2(gear, metres)` on one lock: that difference is a P4 finding,
   12 m, one clean plan of four, 33 gear changes at the boxed end, every rig 5.5–7.8 m off its spot; a scout 9 m from a
   slot facing back drives 102 m through a gate 13.75 m beyond it). **P1 written** (`design.md`): a lattice / hybrid-A*
   on the plant's own arcs, time cost, OBB squadmates, expansion budget; pre-registered pass lines for P2.
+- 2026-10-14 afternoon: **P2 in progress** (`game/ai/planner/`: `planner_world.gd` the lazy clearance field + OBB
+  hulls, `plan_request.gd`, `packed_plan.gd`, `planner.gd` the search, `planner_executor.gd` the harness,
+  `planner_nav_world.gd` the navmesh world; `tests/test_planner_model.gd`, `tests/test_planner_fixtures.gd`,
+  `tests/planner/planner_fixtures.gd`; `mk/planner.mk`). Test-first, four builder0 light runs so far (`make remote
+  LIGHT=1 T="test FILTER=planner"`); findings each run fixed:
+  1. **The plant turns the heading by the speed at a tick's START and moves at its END**, so a leg's heading lags the
+     arc by Δv·dt/R while accelerating (a rig at 8.4 m/s: 1.3°), catches up while braking, and the position drifts
+     inside the ideal arc by ~λ·cruise metres (0.3–0.5 m on a 19 m arc). Modelled in the planner as a constant lag of
+     the move direction per gear (`v·dt/R`); the twin test now drives a leg the way the executor does (to rest).
+  2. **Zero throttle with the lock on is not a brake: it is the plant's creep** (0.5 throttle forward). A leg must
+     brake with the opposite throttle on its own lock, then zero/zero. `PlannerExecutor` does; the face executor's
+     last leg today (throttle 0, turn 0) coasts its stopping distance straight. P4 finding.
+  3. **The Rat Rod at the k-turn's 0.7 throttle exceeds its yaw cap** (160 °/s on R 4.5 against 150): the plant would
+     widen the arc. `PlanRequest.for_unit` lowers the leg throttle under the cap (0.64) and the plan carries it.
+  4. The wedge fixture had the hull's CORNER inside the wall (the nose was 0.2 m off at 30°); the field's "unset"
+     sentinel did not survive float32 (every cell read blocked); the first search was a breadth search at ε 1.5 with
+     a heuristic blind to cusps (4000 expansions, 1.3 ms each, no plan): now ε 2.0, three locks, a cusp term from the
+     room at the start, a 1 m / 15° lattice, and an adaptive sphere-walk along each hull side instead of fixed points
+     (a block corner slipped between the quarter points of a 14 m side).
+  5. **The chord is not the arc:** the executor measured a leg by the straight distance from where it began (today's
+     `_flat_distance(here, _kturn_from)`), so a 24 m arc on R 12 (115°) ran to a 24 m CHORD = 29 m of arc: the lab's
+     first run over-drove every long leg by 10–13° and ended 6.7 m off. `PlannerExecutor` sums each tick's
+     displacement. (On today's ≤ 10 m back-and-fill legs the chord is 3 % short — small, but it is there.)
+  6. **A cusp per metre is a shuffle:** on a one-metre lattice an IFV turned round in fourteen one-metre legs. The
+     primitives are now whole LEGS (a sweep per gear and lock, successors at 1–6, 8, 10, 12, 16, 20, 24 m and at the
+     goal), and the free-space cost table (`planner_heuristic.gd`, a lattice Dijkstra per hull class, ~2.3 s to build
+     in GDScript on builder0) gives the search the cusps a pose change needs: the packed line went from BUDGET at
+     4000 expansions to 3–4 legs in 13–90.
+- 2026-10-14 evening: **P3 lab run** (`make remote LIGHT=1 T="planner-lab PLANNER_SECONDS=45"`, builder0, tree at
+  `e63a3099`+P2, the Terminus, GDScript path, n = 1 each; frames in `build/light/build/planner-lab/`, looked at):
+
+  | fixture (real hull, real street) | the planner's legs, driven by `PlannerExecutor` | today's drive on the same order |
+  |---|---|---|
+  | War Rig in the west street, face south on its spot (a `face` order today) | 5 legs (it used the ring-road junction 25 m north: F−1 8, F+1 24, R+1 10, F+1 12, F0 16.5), 70.5 m, **on the pose at 15.5 s**, 3 gear changes, 0 wall contacts, 0 creep ticks; plan 7 expansions, 1.3 s | **29.8 s**, **53 gear changes**, 821 creep ticks, 14 wall-contact ticks, 39.8 m, ends 2.9 m / 7° off |
+  | law_scout on the avenue, slot 9 m ahead facing back (B5c's case) | 4 legs (F+1 8, R+1 7, F+1 3, R0 2.5), **20.3 m, on the pose at 4.6 s**; plan 36 expansions, 2.0 s | **98.8 m** (two loops through the gate beyond the slot), on the pose at 10.6 s |
+  | War Rig in the west street, 25 m short of the ring road, wanted on it facing east | 3 legs (F+1 12, F0 12, F+1 7), 30.8 m, **on the pose at 6.9 s**; plan 94 expansions, 1.5 s | **never on the heading in 45 s** (108° v 90°, 2.1 m off), 40.3 m |
+
+  The ms are GDScript on builder0 and include the hull's free-space table (built once a process, ~2.3 s): the
+  searches themselves were 7, 36 and 94 expansions.

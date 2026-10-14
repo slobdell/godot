@@ -42,3 +42,27 @@ planner-repro-face: import ## planner P0: four War Rigs in a line abreast each t
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/planner/boxed_face_probe.gd -- \
 		--case=$(PLANNER_PROBE_CASE) --brains-off=native $(PLANNER_FLAGS) > $(BUILD_DIR)/planner/face.log 2>&1 || true
 	@grep -E "PLANNER_PROBE_DONE|SCRIPT ERROR" $(BUILD_DIR)/planner/face.log | cut -c1-900 || true
+
+# P3: the lab scene (needs a display: builder0's). One real hull on a real arena cut, the planner's legs driven by
+# PlannerExecutor beside the same hull under today's code; frames + PLANNER_LAB rows -> build/planner-lab/.
+# PLANNER_FIXTURES=turnround,slot180,tjunction,yardcorner PLANNER_ARMS=planner,today PLANNER_SECONDS=60
+# MOVIE=path.mp4 records the whole run (renders slower than real time; ffmpeg makes the .mp4 from Godot's .avi).
+PLANNER_LAB_DIR ?= $(BUILD_DIR)/planner-lab
+# Defaults with ?=, not $(or ...): make's `or` splits on the commas and keeps only the first fixture (the first run).
+PLANNER_FIXTURES ?= turnround,slot180,tjunction
+PLANNER_ARMS ?= planner,today
+PLANNER_SECONDS ?= 60
+.PHONY: planner-lab
+planner-lab: import ## planner P3: the planner v today's drive on real arena cuts, frames + rows -> build/planner-lab/ (needs a display: make remote LIGHT=1 T=planner-lab; PLANNER_FIXTURES, PLANNER_ARMS, PLANNER_SECONDS, MOVIE=out.mp4)
+	@rm -rf $(PLANNER_LAB_DIR) && mkdir -p $(PLANNER_LAB_DIR)
+	@echo ">> planner-lab on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@movie="$(MOVIE)"; record=""; avi=""; if [ -n "$$movie" ]; then case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
+		avi="$${movie%.*}.avi"; record="--write-movie $$avi"; fi; \
+	timeout 1500 $(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 $$record --script res://tests/planner/planner_lab.gd -- \
+		--fixtures=$(PLANNER_FIXTURES) --arms=$(PLANNER_ARMS) \
+		--seconds=$(PLANNER_SECONDS) --out=res://$(PLANNER_LAB_DIR) $(if $(MOVIE),--movie=1) --brains-off=native $(PLANNER_FLAGS) \
+		> $(PLANNER_LAB_DIR)/run.log 2>&1 || true; \
+	grep -E "PLANNER_LAB |PLANNER_LAB_PLAN|PLANNER_LAB_SHOT|SCRIPT ERROR" $(PLANNER_LAB_DIR)/run.log | cut -c1-600 || true; \
+	grep -q PLANNER_LAB_DONE $(PLANNER_LAB_DIR)/run.log || echo ">> planner-lab: did not finish"; \
+	if [ -n "$$movie" ] && command -v ffmpeg >/dev/null && [ -f "$$avi" ]; then ffmpeg -loglevel error -y -i "$$avi" -c:v libx264 -preset slow -crf 18 \
+		-pix_fmt yuv420p -movflags +faststart "$$movie" && rm -f "$$avi" && echo "PLANNER_LAB_MOVIE $$movie"; elif [ -n "$$avi" ]; then echo "PLANNER_LAB_MOVIE $$avi"; fi
