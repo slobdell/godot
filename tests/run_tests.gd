@@ -12,6 +12,9 @@ extends SceneTree
 
 const ALLOWLIST := "res://tests/baselines/engine_expected.txt"
 const TEST_ROOT := "res://tests"
+## Round 29 (traffic I1, builder0 throughput): each test file's measured wall time (ms), "path<TAB>ms" a line, from
+## `make test-times` (the FILE_TIME lines a full sharded run prints). `--shard=I/N` balances the shards by it.
+const SHARD_TIMES := "res://tests/shard_times.txt"
 
 
 ## Collects every error the engine logs (script errors, push_error, failed checks).
@@ -98,11 +101,20 @@ func _run() -> void:
 		if trimmed != "":
 			filter_parts.append(trimmed)
 	var discovered := _discover(TEST_ROOT)
+	# Round 29 (traffic I1): the shards are balanced by each file's MEASURED time (tests/shard_times.txt), not by file
+	# count: the round-robin split left one shard running the last ~16 min of a quiet 41-min check (builder0).
+	# `--shard-plan=rr` keeps round 9's round-robin (the paired timing's control arm).
+	var plan := "time"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--shard-plan="):
+			plan = arg.trim_prefix("--shard-plan=")
+	var owner := shard_owners(discovered, shards, _read_times() if plan == "time" else {})
 	var mine := PackedStringArray()
 	for index in discovered.size():
-		if shard < 0 or index % shards == shard:
+		if shard < 0 or int(owner[index]) == shard:
 			mine.append(discovered[index])
 	for path in mine:
+		var file_started := Time.get_ticks_msec()  # I1: measurement only (the runner's wall clock, never a decision)
 		var script: GDScript = load(path)
 		# A file that doesn't compile loads as null, and one whose parse failed has no test methods: both used to be
 		# skipped silently, so a broken test file read as "everything passed" (ai, 2026-09-16).
@@ -183,6 +195,7 @@ func _run() -> void:
 				print("  FAIL  ", label)
 				for failure in case.failures:
 					print("          ", failure)
+		print("FILE_TIME %s\t%d" % [path, Time.get_ticks_msec() - file_started])
 	# Orphan nodes are what the engine reports at exit as "ObjectDB instances leaked" (and, for a Control, the
 	# CanvasItem RIDs and text-shaping RIDs beside them): a node built and never added to a tree, or removed and
 	# never freed. They are named here, per test, because at exit nothing says whose they were.
@@ -264,6 +277,54 @@ static func _matches(label: String, parts: PackedStringArray) -> bool:
 
 ## Engine messages allowed by name, one pattern per line, `#` comments. Absent or empty is not an error:
 ## the allowlist is an exception mechanism, and a project with no exceptions is the goal, not a fault.
+## I1: the shard (0..shards-1) that runs each of `files` (sorted discovery order). Files with a measured time go
+## longest first to the shard with the least time so far (ties: the lower shard), after the files with NO time, which
+## keep round 9's round-robin (index % shards) and count at the median measured time. Deterministic for a given file
+## list and times file, so every shard computes the same plan; `times` empty = round 9's split exactly.
+static func shard_owners(files: PackedStringArray, shards: int, times: Dictionary) -> PackedInt32Array:
+	var owner := PackedInt32Array()
+	owner.resize(files.size())
+	var load_ms := PackedFloat64Array()
+	load_ms.resize(maxi(shards, 1))
+	var known: Array = []
+	var measured: Array = []
+	for path: String in times:
+		measured.append(float(times[path]))
+	measured.sort()
+	var median: float = measured[measured.size() / 2] if not measured.is_empty() else 0.0
+	for index in files.size():
+		if times.has(files[index]):
+			known.append([-float(times[files[index]]), files[index], index])
+		else:
+			owner[index] = index % shards
+			load_ms[index % shards] += median
+	known.sort()  # longest first; equal times by path
+	for entry: Array in known:
+		var best := 0
+		for k in range(1, shards):
+			if load_ms[k] < load_ms[best]:
+				best = k
+		owner[int(entry[2])] = best
+		load_ms[best] += -float(entry[0])
+	return owner
+
+
+## I1: tests/shard_times.txt as {path: ms} ({} when missing).
+static func _read_times() -> Dictionary:
+	var times := {}
+	var file := FileAccess.open(SHARD_TIMES, FileAccess.READ)
+	if file == null:
+		return times
+	while not file.eof_reached():
+		var line := file.get_line().strip_edges()
+		if line == "" or line.begins_with("#"):
+			continue
+		var parts := line.split("\t")
+		if parts.size() == 2:
+			times[parts[0]] = int(parts[1])
+	return times
+
+
 func _read_allowlist() -> PackedStringArray:
 	var patterns: PackedStringArray = []
 	var file := FileAccess.open(ALLOWLIST, FileAccess.READ)
