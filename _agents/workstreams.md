@@ -363,6 +363,10 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   census pair of this run IS the A/A it owes: both arms' per-run rows go to sizing's `probes.py` at the close whatever the
   verdict; (h) the rigs' wall-contact ticks under the lift, with and without each arm's two worst runs, beside (c) — round
   29's M2 failed on exactly that and the bar must show it either way; (i) as M1b(1): merges only after M4b's pair.
+- **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
+  208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
+  5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
+  `test_native_traffic_hold`, 486 s). The new floor is native's file: round 31's split candidate.
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
