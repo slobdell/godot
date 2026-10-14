@@ -55,8 +55,9 @@ wall gain — the floor is now `test_native_traffic_hold` 486 s). **Traffic DONE
   byte-identical; else parked for round 31. **Traced: the near rule changes two scouts' OPENING moves at t = 0.1 s on a
   knife-edge pursuit test (seed 3); no honest scoping → PARKED** (`lab/brains-r30-gate` f1a804eb; round-31 lead: measure
   the pursuit test's own margin over seeds, then re-judge). Brains → B7 (test split), B3b (the bridge).
-- **Manoeuvre M4b** (honest stall reading + sized escapes for hulls ≤ 10 m; War Rigs bit-for-bit as today) — the second
-  and last attempt `77a1603f` PASSED its Terminus gate on 13 fresh seeds (rigs byte-identical; mixed arrivals −2,
+- **Manoeuvre M4b PASSES EVERY FILED LINE (16:39): ships as the pair on native's check** (honest stall reading + sized
+  escapes for hulls ≤ 10 m; War Rigs bit-for-bit as today; hull-rest pinned crew-seconds 2596 → 658, −75 %, n = 144;
+  fights within 2 se; bridge 18/18). The second and last attempt `77a1603f` PASSED its Terminus gate on 13 fresh seeds (rigs byte-identical; mixed arrivals −2,
   contact-ticks −8 %); bridge / fights / hull-rest running (~2 h); native porting it now. First attempt failed (rigs'
   wall contact-ticks +141 %: "the driving after the escapes", the planner's case). M1b (`face_slot`, `37c47851`) and M2b
   (creep lift + the planner's arc rule, `e94ca27e`) bars filed, chains HELD behind M4b. M5 parked (case 1 closed by v4;
