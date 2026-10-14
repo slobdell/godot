@@ -42,7 +42,9 @@ Round 28's orchestrator session `godot-29` stood down 13:30 (its two bar commits
 `artillery_side_by_side.mp4` (brains B1: clicked v his drawn east side, seed 13, 45 s; the drawn trucks drive round
 "guns quiet", set up ~25 s, the IFV burns ~42 s v ~10 s clicked); `terminus_head_{base,hold}_3a94f38d.mp4` (traffic CP-T,
 his Terminus head-on, seed 1, 45 s: at 15 s base has five hulls nose to nose in the street mouth; with the hold squad A
-waits on both sides of the mouth while B's column comes out between them).
+waits on both sides of the mouth while B's column comes out between them); `flank_drawn_vs_clicked_fa099d5b_seed10t3.mp4`
+(brains B2, even roster, seed 10: clicked 1 alive and the IFV lives, drawn 5 alive and the IFV dead at 29 s; the fight is
+small at the top of the frame).
 
 **Launch check: GREEN at `bcef46a1`** (builder0, `make check exited 0`, 2538 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7; the docs commit after it differs by docs only). Workers start from it and do not re-run a baseline.
 
