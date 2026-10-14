@@ -771,6 +771,6 @@ scenario-times: import ## Round 30 (B7): every test in SCENARIO_TIME_FILES timed
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/scenario-times.txt
 	@echo ">> scenario-times on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for f in $(SCENARIO_TIME_FILES); do stem=$$(basename $$f .gd); for t in $$(grep -o '^func test_[a-z0-9_]*' $$f | sed 's/^func //'); do \
-		from=$$(date +%s%3N); out=$$($(GODOT) --headless --path . --script res://tests/run_tests.gd -- "--filter=$$stem::$$t" 2>&1 | grep -E '  (PASS|FAIL)  ' | head -1); \
-		echo "$$stem::$$t	$$(( $$(date +%s%3N) - from ))	$$out" | tee -a $(BUILD_DIR)/scenario-times.txt; done; done
+		from=$$(date +%s%N); out=$$($(GODOT) --headless --path . --script res://tests/run_tests.gd -- "--filter=$$stem::$$t" 2>&1 | grep -E '  (PASS|FAIL)  ' | head -1); \
+		echo "$$stem::$$t	$$(( ($$(date +%s%N) - from) / 1000000 ))	$$out" | tee -a $(BUILD_DIR)/scenario-times.txt; done; done
 	@awk -F'\t' '{s += $$2} END {print "total ms", s}' $(BUILD_DIR)/scenario-times.txt
