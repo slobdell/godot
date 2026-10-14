@@ -368,6 +368,9 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   gunnery.gd = main's exactly). Native: escapes + lead mirrors kept on `lab/native-m4b-escapes` = 366b42bc; stream/native
   back to f1e4178b; the reduced pair on 8cbdcfad (one tank_drive_native line). NATIVE=off re-run on 366b42bc showed both
   failures identical with the library off (13 passed / 2 failed both ways): M4b's GDScript, not the port.
+  Reader 8cbdcfad on builder0: 20 passed / 0 failed (wedge's five reader lines; wall_contact all, no backing off, every tick
+  steer; mixed_legs all, the four 8×8s arrive). Native's `pair/m4b-reader` in its check; its green hash = the merge. M1b
+  re-based = `55622870`, M2b = `1f1c9835` (on the reader base): tests then chains, M1b first.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` (re-based onto M4b2 `77a1603f` as `b14bee65`, no code change) = M4b + the anchor alone (`OrderController.
