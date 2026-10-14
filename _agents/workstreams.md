@@ -434,6 +434,11 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   medians (lesson 302); (c) the yard / Sumps gate cells are NOT in this bar (no deck): say so, and that `route-seat` cannot
   fire there (the counter at 0 on one Sumps cell, reported); (d) on a pass, the whole suite incl. `test_tactics_pursuit`
   on the tip (lesson 305, the whole suite with the rules ON) is the merge gate, not the filtered tests.
+- **Brains B3b JUDGED — NOT SHIPPED (2026-10-14 ~17:20 PDT; `lab/brains-r30-bridge` `4bc708d7`, builder0, the full 108):**
+  candidate **107/108** (failing: green t18 s3, rim_crews 1); control (all three off = main's rules) 106/108 (failing:
+  green t5 s2, rust t9 s2: round 28's two cells). The three switches fix main's two cells and break one new cell. The
+  last attempt by its rule: PARKED. The rest of the chain stopped as moot. Running for the record and round 31: the new
+  cell traced on the candidate and with route-seat off; addition (a): main's two cells with each switch alone (6 runs).
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
