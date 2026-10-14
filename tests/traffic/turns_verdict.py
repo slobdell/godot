@@ -1,13 +1,17 @@
-"""Round 29 (traffic T3): the crossing rule's pre-registered bar, from a judged base arm (--traffic-off=turns) and a
-judged arm (two traffic-series JSONL files, the same seeds and start ticks, TRAFFIC_WHICH=both).
+"""Round 30 (traffic T3b): the crossing's pre-registered bar (sent to the orchestrator before any judged number; sized by
+sizing's CP-N table, `_agents/judging.md`), from a judged base arm (no flag: the crossing is DEFAULT_OFF) and a judged
+arm (--traffic-on=turns): two traffic-series JSONL files, the same seeds and start ticks, TRAFFIC_WHICH=both.
 
   python3 tests/traffic/turns_verdict.py BASE.jsonl ARM.jsonl
 
-(1) between-squad fast contacts pooled over the crossing cases down >= 25 %, and neither crossing case up;
-(2) every case: crews >= base - 2, all-in median <= base + 20 %, no wedge (a run with > 1 crew never in whose paired base
-    run had none);
-(3) same-squad fast (all fast - between) <= base x 1.2 + 10 in each crossing case;
-(4) head-on cases: all fast within 2 se of base (paired per run; a fall always passes).
+(1) between-squad fast pooled over the crossing cases down >= 25 % (row 56), and neither crossing case up beyond
+    base + 1.645 se (rows 38 / 44);
+(2) THE CROSSING CLOCK per crossing case: mean paired cross_clear_s difference <= 0.10 x base median + 1.645 se (se from
+    this run's own paired sd); each squad's own crossing reported;
+(3) crews >= base - 1.645 se (rows 35 / 41 / 47 / 53); no wedge (> 1 crew never in where the paired base run had none);
+(4) same-squad fast <= base + 1.645 se per crossing case (rows 40 / 46);
+(5) head-on cases: fast, between-squad fast and all-in median within 1.645 se of base (rows 32 / 36 / 50 / 54; a fall passes);
+(6) all-in median per crossing case REPORTED with its se (rows 42 / 48), not judged.
 The arm's own counters are printed (lesson 300). Prints VERDICT PASS / FAIL.
 """
 import json
@@ -18,6 +22,15 @@ import sys
 sys.path.insert(0, __import__("os").path.dirname(__file__))
 from traffic_table import all_in_s  # noqa: E402
 
+# CP-N's noise-sized guards at n = 18 (judging.md, stream/sizing 44a8b95a): 1.645 se of the case total.
+CREWS_GUARD = {"terminus/cross": 4.07, "yard_open/cross": 4.77, "terminus/head": 6.81, "yard_open/head": 1.64}
+XFAST_GUARD = {"terminus/cross": 19.1, "yard_open/cross": 12.6}
+OWN_GUARD = {"terminus/cross": 43.7, "yard_open/cross": 52.6}
+HEAD_FAST_GUARD = {"terminus/head": 194.4, "yard_open/head": 8.38}
+HEAD_XFAST_GUARD = {"terminus/head": 116.5, "yard_open/head": 5.81}
+HEAD_ALLIN_GUARD = {"terminus/head": 9.62, "yard_open/head": 3.82}
+ALLIN_SE = {"terminus/cross": 7.01, "yard_open/cross": 10.2}
+
 
 def load(path):
     runs = {}
@@ -27,6 +40,17 @@ def load(path):
             continue
         runs[(r["arena"] + "/" + r["kind"], r["seed"], r["start_tick"])] = r
     return runs
+
+
+def clock(r, field):
+    v = r.get(field, -1.0)
+    return v if v >= 0 else r["end_s"]
+
+
+def paired(b, a, field):
+    d = [clock(ra, field) - clock(rb, field) for rb, ra in zip(b, a)]
+    se = statistics.stdev(d) / math.sqrt(len(d)) if len(d) > 1 else 0.0
+    return statistics.mean(d), se
 
 
 def main(base_path, arm_path):
@@ -44,25 +68,41 @@ def main(base_path, arm_path):
         m_a = statistics.median(all_in_s(r) for r in a)
         wedges = ["s%s/t%s" % (k[1], k[2]) for k in keys
                   if arm[k]["crews"] - arm[k]["arrived"] > 1 and base[k]["crews"] - base[k]["arrived"] == 0]
-        counters = {c: sum(r.get("tr_" + c, 0) for r in a) for c in ("cross_verdicts", "cross_slowed", "verdicts", "holds")}
-        lines = [("crews >= base - 2", crews_a >= crews_b - 2, "%d -> %d" % (crews_b, crews_a)),
-                 ("all-in median <= +20 %", m_a <= 1.2 * m_b, "%.1f -> %.1f" % (m_b, m_a)),
+        counters = {c: sum(r.get("tr_" + c, 0) for r in a) for c in ("cross_verdicts", "cross_slowed", "cross_reach_free", "verdicts", "holds")}
+        g = CREWS_GUARD.get(case, 2.0)
+        lines = [("crews >= base - %.2f (1.645 se)" % g, crews_a >= crews_b - g, "%d -> %d" % (crews_b, crews_a)),
                  ("no wedge", not wedges, " ".join(wedges) or "none")]
         if case.endswith("/cross"):
             cross_b += x_b
             cross_a += x_a
-            lines.append(("between-squad fast not up", x_a <= x_b, "%d -> %d" % (x_b, x_a)))
-            lines.append(("same-squad fast <= base x 1.2 + 10", f_a - x_a <= 1.2 * (f_b - x_b) + 10,
-                          "%d -> %d" % (f_b - x_b, f_a - x_a)))
+            lines.append(("between-squad fast <= base + %.1f" % XFAST_GUARD[case], x_a <= x_b + XFAST_GUARD[case],
+                          "%d -> %d" % (x_b, x_a)))
+            lines.append(("same-squad fast <= base + %.1f" % OWN_GUARD[case], f_a - x_a <= f_b - x_b + OWN_GUARD[case],
+                          "%d -> %d (round 29's x1.2+10: %.0f)" % (f_b - x_b, f_a - x_a, 1.2 * (f_b - x_b) + 10)))
+            clear_b = statistics.median(clock(r, "cross_clear_s") for r in b)
+            diff, se = paired(b, a, "cross_clear_s")
+            limit = 0.10 * clear_b + 1.645 * se
+            lines.append(("crossing clock <= +10 %% + 1.645 se", diff <= limit,
+                          "median %.1f -> %.1f; mean paired %+.2f s (se %.2f, limit %+.2f)" % (
+                              clear_b, statistics.median(clock(r, "cross_clear_s") for r in a), diff, se, limit)))
+            for squad in ("a", "b"):
+                d_s, se_s = paired(b, a, "cross_%s_s" % squad)
+                print("   (reported) squad %s's own crossing: median %.1f -> %.1f, mean paired %+.2f s (se %.2f)" % (
+                    squad.upper(), statistics.median(clock(r, "cross_%s_s" % squad) for r in b),
+                    statistics.median(clock(r, "cross_%s_s" % squad) for r in a), d_s, se_s))
+            print("   (reported) all-in median %.1f -> %.1f (CP-N se %.1f s)" % (m_b, m_a, ALLIN_SE[case]))
         else:
-            d = [ra["contacts_fast"] - rb["contacts_fast"] for rb, ra in zip(b, a)]
-            se = math.sqrt(len(d)) * statistics.stdev(d) if len(d) > 1 else 0.0
-            lines.append(("fast within 2 se", f_a - f_b <= 2.0 * se, "%d -> %d (2 se %.1f)" % (f_b, f_a, 2.0 * se)))
+            lines.append(("fast within 1.645 se", f_a - f_b <= HEAD_FAST_GUARD[case],
+                          "%d -> %d (+%.1f)" % (f_b, f_a, HEAD_FAST_GUARD[case])))
+            lines.append(("between-squad fast within 1.645 se", x_a - x_b <= HEAD_XFAST_GUARD[case],
+                          "%d -> %d (+%.1f)" % (x_b, x_a, HEAD_XFAST_GUARD[case])))
+            lines.append(("all-in median within 1.645 se", m_a - m_b <= HEAD_ALLIN_GUARD[case],
+                          "%.1f -> %.1f (+%.2f)" % (m_b, m_a, HEAD_ALLIN_GUARD[case])))
         print("%s  n=%d  fast %d -> %d  between %d -> %d  counters %s" % (case, len(keys), f_b, f_a, x_b, x_a,
                                                                           json.dumps(counters)))
         for name, passed, detail in lines:
             ok = ok and passed
-            print("   %-36s %s  %s" % (name, "pass" if passed else "FAIL", detail))
+            print("   %-40s %s  %s" % (name, "pass" if passed else "FAIL", detail))
     if cross_b or cross_a:
         passed = cross_a <= 0.75 * cross_b
         ok = ok and passed

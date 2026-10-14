@@ -148,6 +148,8 @@ static var no_spot := 0
 ## The crossing's counters (measurement only): squad-pair verdicts made, crew-ticks a wish was slowed.
 static var cross_verdicts := 0
 static var cross_slowed := 0
+## Round 30 (T3b), measurement only: crew-reads a yielding squad's crew beyond CRAWL_REACH_M drove on at its full wish.
+static var cross_reach_free := 0
 ## Measurement only: print each wait (its mouth, centre line and spots) and each release as it happens.
 static var log_waits := false
 ## Measurement only (round 30, T3b's trace): name -> the share of its wish the crossing left a crew at its last shape
@@ -235,7 +237,7 @@ static func holding(crew: String) -> bool:
 static func report() -> Dictionary:
 	return {"tr_verdicts": verdicts, "tr_holds": holds, "tr_hold_ticks": hold_ticks, "tr_released_passed": released_passed,
 			"tr_released_cap": released_cap, "tr_no_spot": no_spot, "tr_cross_verdicts": cross_verdicts,
-			"tr_cross_slowed": cross_slowed}
+			"tr_cross_slowed": cross_slowed, "tr_cross_reach_free": cross_reach_free}
 
 
 static func reset_counters() -> void:
@@ -247,6 +249,7 @@ static func reset_counters() -> void:
 	no_spot = 0
 	cross_verdicts = 0
 	cross_slowed = 0
+	cross_reach_free = 0
 
 
 ## The hold for crew `me` this tick: [] when it is not holding; else [spot (x, z), face (x, z), at the spot]. Movement's
@@ -568,6 +571,7 @@ static func _squad_share(me: String, frame: int) -> float:
 	if gap <= COMMITTED_M:
 		return 1.0  # at or past the crossing: clear out
 	if gap > CRAWL_REACH_M and not off("reach"):
+		cross_reach_free += 1
 		return 1.0  # T3b (b): far back, it drives on (`--traffic-off=reach`: round 29's whole-squad crawl)
 	return float(known[1])
 
