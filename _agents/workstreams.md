@@ -100,6 +100,21 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   15–23 %), so the table is re-rendered after every judged pair lands under `references/`; at n = 18 a true −25 % effect
   fails about half the time. **Ruling:** applies to bars written after sizing's tip is on main; the in-flight series
   (B5c-v4, M4b) keep their plans; a runner's hook is its owner's, through the orchestrator, after sizing's check.
+- **Traffic T3b: the brief's premise corrected and the bar's line re-ruled (2026-10-14 ~12:30 PDT, before any judged
+  number):** traffic's crossing clock (both squads past the meeting point; builder0 `bd05077d`, GDScript, 72 runs an arm,
+  n = 18 a case, round 29's v2 v base): Terminus crossing median 13.4 → 13.2 s, yard 9.2 → 12.4 s; the yielding squad's
+  own crossing +2.8 / +3.5 s. **The 40–75 s last arrivals in round 29's worst runs (Terminus s24/t3, s22/t6, reproduced run
+  for run) happen AFTER the crossing: a crew circles its far-end seat reading no_path/terrain for 30–40 s** — seating,
+  brains' (relayed); the whole-squad "crawl" ends by ~6.5 s. Design (b) picked (`--traffic-off=reach`: only crews within
+  20 m of the crossing keep the squad's share). **Ruling:** the crossing clock replaces "all-in ≤ +10 %" as the judged
+  line on the crossing cases (paired sd 2.2–4.0 s on tuning pairs; guard base + 1.645 se, n from CP-N's crossing rows);
+  all-in median REPORTED with its se (CP-N row 42: se 7.0 s on 40 s); the rest of round 29's T3 bar stands; the full bar
+  is filed when traffic sends it. T3b is committed default-OFF for the stream's check (the C++ `_avoid` has no
+  `Traffic.shape` yet) and the native pair flips it on — third in native's queue. **I3 PROVEN** (same box/commit,
+  Terminus crossing seeds 1–3 × 6: a fresh row v a miss and a hit are equal on all 576 fields of 18 rows, byte-identical;
+  a one-line `game/` change misses; `CACHE=off` still writes rows, so a proof needs an empty `SERIES_CACHE_DIR`) → goes
+  into `verification.md`; adoption by other series after traffic's merge (C30.7). `make quick` measured 1272 s cold /
+  1081 s warm (lint 712 s of it): a narrowed quick-lint granted inside traffic's tooling, check's full lint unchanged.
 - **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
   on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
   (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
