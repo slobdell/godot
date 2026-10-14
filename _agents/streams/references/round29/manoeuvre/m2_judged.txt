@@ -1,0 +1,12 @@
+# manoeuvre M2 judged (round 29, LAST attempt): 7b895eed (branch manoeuvre-m2-r29), builder0, 2026-10-13 ~16:40-17:00 PDT
+# manoeuvre-census CENSUS_SEEDS=8..13 CENSUS_SIM_SEEDS=6..8, GDScript path both arms; base = --nav-off=creeplift; tests/manoeuvre/m2_compare.py (on the branch)
+M2_ARM base: {"creep": {"enemy": 2, "open": 122, "friendly": 125, "static": 3}, "creep_open_static": 125, "over3": 386, "static_le3": 0.854, "open_le3": 0.751, "episodes": 1555}
+M2_RULE base: lifts 0 unit-ticks, refused {}, m2_us 0
+M2_DRIVE base terminus mixed: arrived 133/144, leg time 648 s, wall contact-ticks 1533
+M2_DRIVE base terminus rigs: arrived 82/96, leg time 509 s, wall contact-ticks 3938
+M2_ARM new: {"creep": {"enemy": 1, "open": 69, "friendly": 113, "static": 6}, "creep_open_static": 75, "over3": 308, "static_le3": 0.869, "open_le3": 0.812, "episodes": 1471}
+M2_RULE new: lifts 10094 unit-ticks, refused {'blocked': 505, 'no_arc': 201, 'slowed': 5014}, m2_us 1552340
+M2_DRIVE new terminus mixed: arrived 132/144, leg time 597 s, wall contact-ticks 959
+M2_DRIVE new terminus rigs: arrived 75/96, leg time 522 s, wall contact-ticks 6494
+
+# bridge-pooled: 18 of 18 both arms
