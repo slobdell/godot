@@ -160,6 +160,22 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   on the census and ApproachStage scenarios shows the stale rule holds (line 8 proven, not stated); (e) line 7's "equal
   row for row": if not equal, the first differing run traced before anything else; (f) the thirteen explained if they
   move.
+- **Traffic T1c-b JUDGED — NOT SHIPPED (2026-10-14 ~15:00 PDT; `16780030` both arms, builder0, GDScript; census seeds
+  7–9 n = 9, ApproachStage 13–15 × 6 n = 18):** PASSED (1) the defect: runs with any repack while firing 4/9 → 0/9 (Fisher
+  p = 0.041), total 11 → 0, repacks while giving way 33 → 4; (2) friendly-stuck 496 → 404; (3) fast friendly 589 → 563;
+  (5) ApproachStage drawn repacks 8 → 2, from the side 18/18 both, first round 27.1 s both, alive 3.00 both;
+  (6) bridge-pooled 18/18; (7) all 72 traffic-series rows equal T3b's base rows field for field. **FAILED (4) artillery
+  shots not down > 21.6 (row 82): 318 → 163**, carried by ONE run: Parade s9 171 → 26, both sides' artillery fell (Rust
+  refused nothing and went 19 → 7 rounds); re-run singly with per-battery counts: Green's batteries set up at similar times
+  but fired 1–5 rounds each v 14–19 — the fight's geometry diverged. Without that run 147 → 137. The judged paired
+  1.645 se is 237, ~10× row 82's 21.6: **row 82 is under-sized** (sizing's table had few artillery rows; re-rendered at
+  the close, step 5b). Verdict stands as filed; parked `traffic-t1cb-judged`; stream/traffic's game/ back to main's
+  (`3129de50`). Additions on the worst run: refused askers went round 7, never got past in 20 s 0, 2 pending at the end;
+  all refusals on Green's side; traffic-native-verify built, not run; cost not measured (three field reads per ask()).
+  **Round 31 candidate, in player terms:** "a set-up mortar truck no longer packs up for a squadmate passing (11 → 0
+  repacks); whether it then fires less is not decided" — a re-judge with the artillery line sized from this run's sd (the
+  judged run's own paired se, as T3b's clock line did) or more census seeds. **Traffic's next: T4** (the ORCA ghost
+  velocity), bar written now, run after M4b's `real_velocity` is on main.
 - **Traffic T3b JUDGED — NOT SHIPPED (2026-10-14 ~13:35 PDT; `cf124433` both arms, builder0, GDScript, seeds 31–33 × 6,
   n = 18 a case):** FAILED one line: **the yard crossing clock +2.80 s (se 0.22) v a limit of +1.18 s** (the yard's
   yielding squad pays +3.66 s, se 0.23; judged paired sd 0.92 < tuning 1.77, the 1.5× caveat does not apply). Every
