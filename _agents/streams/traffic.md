@@ -80,6 +80,28 @@ _Updated 2026-10-13 ~16:40 PDT (traffic worker, session godot-traffic-e4). Every
 
 ### REPORT (traffic, round 29) — read this first
 
+**The round's items:**
+- **T0 done.** It equals round 28's base run for run.
+- **T1 the street hold SHIPPED.** It passed its bar and was merged as a pair with native's port: main `1267ffb1` +
+  `1113062c`.
+- **T2 done** by native: an equal answer.
+- **T1c FAILED** (brains' set-up hull request). Parked on `traffic-t1c`; the orchestrator moved it to round 30 with the
+  question "repacks while still ordered to fire".
+- **T3, the crossing: FAILED** its judged bar on time and crews. Parked on `traffic-t3`, with a round-30 lead.
+- **T3's other half NOT STARTED:** a give-way that lets a creeping long hull through, among squadmates in tight streets.
+  It needs manoeuvre's agreement through the orchestrator, and the round's time went to judging T1c and T3.
+
+The stream's `game/` equals the shipped `3a94f38d`; only three python tools (verdict scripts, the table) and docs differ.
+**Final check:** on the tip `306d6271` (result below when it lands).
+
+**Lessons for the list:**
+1. A copy-back of `build/` replaces it: anything kept for the lead goes outside the worktree
+   (`~/projects/clips/...`). Round 29: the clips the orchestrator came to fetch were gone.
+2. A rule's own gate list is part of its bar's text. T1c's "set-up give-ways = 0" counted give-ways the hull started
+   itself, which the rule (an ask refusal) never touched. Write the counter for the path the rule actually closes, or
+   close every path the counter counts.
+3. Two rules on one table must say which owns a meeting. T3 v1's crossing fired inside every street hold.
+
 **CP-T: T1 the street hold PASSED its pre-registered bar, judged once. Green: `3a94f38d`** (builder0, `make check exited 0`,
 2550 passed / 0 failed; 24 targets judged + 2 refused by load: `perf-judge` then judged alone, PASS 1.17×;
 `ai-scenarios-check` 52/0, its one refusal is `scenario_perf`'s CPU budget, which by design defers to `perf-judge` when
