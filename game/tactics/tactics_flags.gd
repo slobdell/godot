@@ -103,6 +103,9 @@ static func _parse() -> void:
 			ElementPlan.FEED_MOUTH_ENABLED = false
 		if arg == "--mouth-held=off":
 			Element.MOUTH_HELD_ENABLED = false
+		# Round 30 (brains B3b, DECLARED): seats beyond a crossing by straight line, not in crossing order.
+		if arg == "--route-seat=off":
+			Element.ROUTE_SEAT_ENABLED = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

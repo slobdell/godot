@@ -455,6 +455,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	situation["corridor_m"] = _corridor(game_match, situation)
 	_advance_transit(game_match, situation)
+	_find_crossing(game_match, situation)
 	_track_pursuit(game_match)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
@@ -465,7 +466,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
 			"player": team == OrderFeed.player_team(game_match),
 			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking(), "anchor_by_drill": anchor_by_drill,
-			"ducks": ducks, "approach_round": approach_round}
+			"ducks": ducks, "approach_round": approach_round, "crossing": crossing}
 	var reseating := _reseat
 	_reseat = false
 	_reseat_keep = {}
@@ -893,6 +894,57 @@ static func transit_origin(situation: Dictionary, spacing: float) -> Vector3:
 		if String(member["name"]) == leader:
 			return member["position"]
 	return (members[0] as Dictionary)["position"]
+
+
+## Round 30 (brains B3b, DECLARED): the crossing a drill move's route goes through, {"entry", "exit"} ({} = none): the
+## navmesh route from the element's centre to its task point, sampled every CROSSING_STEP_M, entry = the first sample on
+## a deck, exit = the last of that run. Found once per task and point (an impure navmesh query, like the transit's
+## route); ElementPlan seats by it (TacticsFormation.seat's `via`). `--route-seat=off` is the control arm.
+static var ROUTE_SEAT_ENABLED := true
+const CROSSING_STEP_M := 2.0
+var crossing := {}
+var _crossing_key := []
+static var crossings_found := 0
+
+
+func _find_crossing(game_match: Match, situation: Dictionary) -> void:
+	if not ROUTE_SEAT_ENABLED or not ElementTask.runs_drills(task):
+		crossing = {}
+		return
+	var to: Variant = ElementTask.destination(task)  # a place, never a moving target
+	if not to is Vector3:
+		crossing = {}
+		return
+	var key := [task_seq, Vector3(snappedf((to as Vector3).x, 1.0), 0.0, snappedf((to as Vector3).z, 1.0))]
+	if key == _crossing_key:
+		return
+	_crossing_key = key
+	crossing = {}
+	var ground := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	if ground == null:
+		return
+	var center: Vector3 = situation["center"]
+	var route := Element._flat_path(Pathing.find_path(ground, Vector3(center.x, 0.0, center.z), to))
+	var entry := Vector3.INF
+	var exit := Vector3.INF
+	for i in range(1, route.size()):
+		var a: Vector3 = route[i - 1]
+		var b: Vector3 = route[i]
+		var steps := maxi(1, ceili(a.distance_to(b) / CROSSING_STEP_M))
+		for k in steps + 1:
+			var p := a.lerp(b, float(k) / steps)
+			if SlotGround.near_deck(p, 0.0):
+				if entry == Vector3.INF:
+					entry = p
+				exit = p
+			elif entry != Vector3.INF:
+				crossing = {"entry": entry, "exit": exit}
+				crossings_found += 1
+				return
+	if entry != Vector3.INF:
+		crossing = {"entry": entry, "exit": exit}
+		crossings_found += 1
 
 
 func _advance_transit(game_match: Match, situation: Dictionary) -> void:
