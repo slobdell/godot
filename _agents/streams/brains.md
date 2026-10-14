@@ -220,11 +220,21 @@ reading; native and GDScript paths identical):
   2. The arrival gate. B_4 is wheeled and its seat faces east, so Movement sends it to a gate about 17 m west of the slot,
      across the street by the arena edge. It grinds there, and `_blocker` labels it `no_path` because its route ends at
      the gate, not the slot.
-**Revised proposal (sent to godot-67, awaiting a reply):**
-- (i) No seat handed out more than NO_PATH_MARGIN off the mesh, plus the make-room `no_path` guard.
-- The leash dedup fix, as a second declared change.
-- The arrival gate goes to manoeuvre.
-- (ii) is dropped: its target was a mislabel.
+**B5a WITHDRAWN (stream `25bc2ad2`, before any bar).** In the live match the Sumps seat sits ON the mesh: the on-mesh rule
+fired 0 times, and the test's own Sumps read it on the mesh too. The reach probe's 3.6 m was read before the arena had
+finished loading (no `lab.start`). Lesson: probe the navmesh only in a started match.
+`SETTLE_NOPATH` (builder0) shows the real cause in both sightings, the arrival gate:
+- Sumps crew 4 drives to path_goal (3.69, -54.82), a gate 20 m back from its slot along the seat's facing (APPROACH_MAX).
+  It stalls about 7 m short.
+- Movement's `_blocker` then labels it `no_path` because its route ends at the gate, not the slot (reachable, goal_gap 0).
+- Terminus B_4 is the same, with a gate about 17 m west of its slot.
+- The make-room guard fired once, on that mislabel.
+B5a's code and test are removed; the probes stay.
+**B5b dropped.** The order's leash is opt-in and off (`Movement.leash_on`; native "off here"). A LATENT note sits at
+`TankBrain._order_move`'s dedup: it ignores the leash, so whoever turns the leash on must compare its centre.
+**B5c — the arrival gate (`Movement._approach_gate`, brains-owned; native mirrors it at drive_native.cpp:779, so it is a
+C29.2 pair with native).** Now the one fix for traffic's T3 lead. Trace next: why a 17–20 m gate laid back from a seat in
+a street or lane cannot be reached or left.
 Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
 `build/round29/artillery_side_by_side.mp4`.
 
