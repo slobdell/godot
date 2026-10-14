@@ -116,6 +116,14 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   per fire (backed 1.5 m v the cap) and reported — an escape ending mostly by the cap is a finding; (g) the two switches
   are one declared change (the reading without the escape is a no-op for rigs), both named in the merge; (h) mixed
   arrivals "≥ base − 2" becomes base − 1.645 se from the table if the table has the row, else stated as unsized.
+- **Manoeuvre M4b bar RE-SIZED ONCE from CP-N (2026-10-14 ~11:50 PDT, in writing, before any judged run; the stream's
+  Status "Re-sized ONCE from CP-N"; accepted):** (b1) judged on Terminus ARRIVALS over 13 seeds (23–35), rigs and mixed
+  apart, the paired total not down beyond 1 se (down beyond 2 se = the gate missed); wall contact-ticks and the
+  unstick/press counters REPORTED; (b2) pinned crew-seconds DOWN beyond 2 se paired at n = 144 runs (decides about
+  −40 %); fights at 24 seeds: kills/deaths within 2 se decide a 5–6 % loss, the hit-rate guard decides about −3 pts,
+  stated; (b5) the brush speed reported with its se (a first measurement); (b3) a 17/18 read by the cell's trace per the
+  McNemar row, not a pass or a fail. Partial rule unchanged: (b1) is the gate. Tuning (seeds 20–22, gangs 40–41) starts
+  when the wedge tests are green.
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
