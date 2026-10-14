@@ -27,7 +27,9 @@ the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `
 
 **Main GREEN at `23d94eb3`** (builder0, `make check exited 0`, 2574 passed, 0 failed, 26 targets ALL JUDGED, thirteen
 unmoved; the perf verdict owed by `1113062c`'s check is now judged): + brains B2 (a drawn flank carried out). Since then
-only docs and traffic's verdict tools (`7811950d`).
+only docs and traffic's verdict tools (`7811950d`), and manoeuvre's final merge (census tooling in
+`game/ai/manoeuvre_census.gd`, behind `--turn-trace`; its own check green at `eb754864`): **one main check OWED**, batched
+with the next merge (orchestration §7, one check per tree).
 
 **Earlier: main at `46863c74`** (code = `1113062c`; builder0, `make check exited 0`, 2572 passed, 0 failed, **24 passed + 2 NOT
 JUDGED for box load** (perf-judge refused 3× at 2.4–2.6×; scenario_perf defers to it), thirteen unmoved, determinism
