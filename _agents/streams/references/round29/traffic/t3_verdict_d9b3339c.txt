@@ -1,0 +1,24 @@
+terminus/cross  n=18  fast 226 -> 184  between 92 -> 39  counters {"cross_verdicts": 18, "cross_slowed": 12325, "verdicts": 0, "holds": 0}
+   crews >= base - 2                    pass  176 -> 180
+   all-in median <= +20 %               FAIL  39.4 -> 48.3
+   no wedge                             pass  none
+   between-squad fast not up            pass  92 -> 39
+   same-squad fast <= base x 1.2 + 10   pass  134 -> 145
+terminus/head  n=18  fast 322 -> 322  between 54 -> 53  counters {"cross_verdicts": 2, "cross_slowed": 50, "verdicts": 18, "holds": 86}
+   crews >= base - 2                    pass  177 -> 176
+   all-in median <= +20 %               pass  54.7 -> 54.7
+   no wedge                             pass  none
+   fast within 2 se                     pass  322 -> 322 (2 se 0.0)
+yard_open/cross  n=18  fast 294 -> 186  between 114 -> 56  counters {"cross_verdicts": 19, "cross_slowed": 11835, "verdicts": 0, "holds": 0}
+   crews >= base - 2                    FAIL  171 -> 167
+   all-in median <= +20 %               pass  69.2 -> 74.8
+   no wedge                             FAIL  s22/t6
+   between-squad fast not up            pass  114 -> 56
+   same-squad fast <= base x 1.2 + 10   pass  180 -> 130
+yard_open/head  n=18  fast 132 -> 135  between 60 -> 62  counters {"cross_verdicts": 6, "cross_slowed": 186, "verdicts": 0, "holds": 0}
+   crews >= base - 2                    pass  180 -> 179
+   all-in median <= +20 %               pass  34.1 -> 36.9
+   no wedge                             pass  none
+   fast within 2 se                     pass  132 -> 135 (2 se 10.2)
+crossings pooled: between-squad fast 206 -> 95 (-54 %)  pass
+VERDICT FAIL
