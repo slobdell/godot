@@ -328,7 +328,7 @@ squad, as before. `177a7419` + `11dde288`; builder0 31/0 and 24/0 (queued task, 
 `11dde288` fails ONE test, by design of the pair: `test_native_exec_state` wants B5c's four new Movement members in
 `native/src/exec_fields.h` (native's mirror adds them), so the stream cannot be green alone while it carries B5c. B5
 alone: `brains-b5-queued` = main `5b1307b8` + `55d1f566` + `5ab05468`: **GREEN at `5ab05468`** (builder0: exited 0, 2580/0,
-26 targets ALL JUDGED, sim-baseline unmoved); sent to godot-67 to merge on its own.
+26 targets ALL JUDGED, sim-baseline unmoved); **MERGED** `5ab05468` → main `1f5c84e4` (godot-67).
 ### B5 — support by fire, wheeled turret hulls: REPRODUCED, not fixed (round 30)
 `make hull-rest-probe FACING_ONLY=faced_support_by_fire` (`053beffb`, builder0, 4 factions × 6 seeds, 24 runs an arm):
 wheels/turret drawn median 80.5° v clicked 57.1° (n = 168, p 0.019; ≥ 100°: 42 % v 27 %); every other class is as good
