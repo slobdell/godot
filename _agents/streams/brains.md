@@ -319,6 +319,19 @@ approach length and the route via the gate is much longer.
 nothing else in game code). Native's mirror: stream/native `1fabe6a8` (test `e0a80733`), combined with the flip at
 `4a293e8a`; native's proof: 6000 drives + 189 forced stalls, 0 mismatches. The orchestrator's merge conditions: yard and
 Sumps on the default native path equal to the judged on-arm run for run, then check + native-verify-suite on the pair.
+**Pair check RED (native, tree `e0a80733`, builder0: 2581/1):** `test_wheeled_arrival::…face_the_way_it_came…` dot 0.50
+(needs > 0.85), the same on the GDScript path, so the cause is the flip. Traced (builder0): the gate lies 17.5 m PAST the
+goal; the car reaches it at 6.0 s still pointing out (dot −0.88 to the heading), the v2 latch marks it done, and it
+loops straight to the goal and arrives 60° off. With the latch narrowed, the stalled give-up then dropped the gate
+mid-turn: circling behind it at 8.3 m/s reads as no progress to the goal ("blocked no_path"). **Fix `a8df3dc3`**
+(`brains-b5c-flip`): a gate reached with forward·heading < 0 is not latched (refusal `reached_facing_away`), and
+`_gate_turning_for` holds off the stalled give-up for that goal until the latch fires or the goal moves. Trace: arrives
+16.9 s, dot 0.98; wheeled_arrival + nav_gate_hold 15/0 (builder0). The orchestrator's rule: the judged cells must be
+identical to the on-arm, else B5c parks. Native mirrors the new member (exec_fields.h + drive_native.cpp).
+**Lesson:** round 8's own test caught a behaviour gap the judged bar missed. The bar's heading line (test_nav_gate_hold)
+ordered a facing 90° off travel, where a car reaches its gate already near the heading. A 180° facing puts the gate
+beyond the goal and the car reaches it facing out. Run a gate change against the existing facing tests on the default
+path BEFORE it is judged, and give a heading bar the 180° case as well as the 90° one.
 ### B5 — queued attack (GRANTED: rts_controls.gd's order-queue hunk + `_order_squads`)
 A shifted attack-move or attack on a squad still driving queues behind its waypoints (`Element.enqueue`); an
 attack-move's automatic facing is from the last waypoint (an attack faces its target: none added). A chain of shift+A
