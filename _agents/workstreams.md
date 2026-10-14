@@ -149,6 +149,12 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   traced (terminus rigs seed 9, Green_S0_3): NOT creep but **M4** — 12 m/s reported at throttle 1.00 with zero
   displacement, so unstick never fires. **M4 GO** (find why the reported speed is non-zero first; a `game/tank/**` edit
   needs the orchestrator's grant; native ports). Round 30 candidate: the creep lift re-judged on top of M4.
+  **M4 cause (traced ~17:50):** `game/tank/tank.gd` ~721 sets `estimated_velocity = velocity` after `move_and_slide`, which
+  returns the wanted velocity unchanged when the slide is fully blocked (moved 0.0000 m, velocity 12 m/s). **GRANT (A):**
+  those lines only + a `real_velocity` switch: estimated_velocity = the real displacement (capped at the wanted planar
+  speed). Bar adds: DECLARED fights guard (kills, deaths, hit rate within 2 se; hit rate on touching targets reported);
+  net-smoke, combat-smoke, determinism; the thirteen re-recorded twice with the reason; tracked hulls shown; native's
+  port in `tank_drive_native` equal, merged as a pair.
 
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
