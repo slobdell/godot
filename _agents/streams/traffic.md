@@ -157,7 +157,20 @@ candidate `761bd727` is parked on branch `traffic-t1c` and reverted off stream/t
   give-way in `_negotiate` while `deploy_ratio > 0`. A hull packing to move gives way only once it is packed. Judge it
   on fresh census seeds, plus brains' ApproachStage drawn-artillery arm (the orchestrator's line 6).
 
-**Next:** T3 (stretch).
+**T3 (stretch, the crossing) — in progress.** The bar was sent and accepted before any number (filed at main `bd5bd5a9`):
+judged once on fresh seeds {22,23,24}, base `--traffic-off=turns` with the hold on in both arms, read by
+`tests/traffic/turns_verdict.py`. The change is round 28's v3 squad-pair crossing verdict, ported beside the hold
+(`Traffic.shape`, the crossing statics, and the `_avoid` hook shaping ORCA's preferred velocity; no keep-right, no
+street creep). Tests `test_traffic_turns` (pure, v3's crossing tests) and `test_traffic_turns_live`. Native has the diff
+(C29.2) and will port it after the verdict.
+- **v1** (`fcddda26`; builder0, seeds {1,2,3}, n = 18 a case, against base = hold-on): between-squad fast at the
+  crossings pooled 234 → 86 (−63 %): Terminus crossing 116 → 46, yard crossing 118 → 40. Crews 176 → 178 and 169 → 168.
+  Same-squad fast 178 → 170 and 159 → 162. All-in median Terminus crossing 45.8 → 47.6, yard crossing 75.6 → 90.0
+  (+19 %: the yard median sits near the 90 s cap, because in both arms about half the runs leave one crew out at the
+  end). It FAILED on one line: the crossing rule fired once in every Terminus head-on run (the waiting squad pulling
+  aside across the passing squad's way read as a crossing), and s2/t16 lost 2 crews (B_4/B_5, 16–21 m from their seats
+  at the far end, the seating pattern again).
+- **v2** (`31360e56`): the crossing rule stands aside for any squad pair under a street wait. Tuning arm running.
 
 ### The plan (ordered)
 
