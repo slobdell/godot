@@ -94,7 +94,7 @@ LIGHT_GOALS := help doctor bootstrap remote backup backup-status backup-install 
                remote-status remote-guard-test shell-tools-test remote-quiet sim-baseline-adopt round-status \
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \
                assets-generate assets-mock art-concept art-review art-review-status art-decide art-review-page art-apply-decisions art-concept-batch \
-               doctrine-page announcer-generate
+               doctrine-page announcer-generate quick-remote test-times
 _SLOT_GOALS := $(if $(TANK_SQUAD_SLOT),,$(filter-out $(LIGHT_GOALS),$(MAKECMDGOALS)))
 
 ifneq ($(_SLOT_GOALS),)
