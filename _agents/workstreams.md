@@ -195,6 +195,12 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   battery rows identical; bridge-pooled 18/18; arrive series 100 rows identical. Worst run (a) seed 12 t16: came round,
   fought from the side inside the IFV's reach and lost all five (his "swing round anyway"). Merge on its check.
 
+- **Traffic T3 JUDGED — NOT SHIPPED (~19:45; `d9b3339c`, seeds 22–24, n = 18):** crossings between-squad fast 206 → 95
+  (−54 %) and head-on = base pass, but Terminus crossing all-in 39.4 → 48.3 s (+23 %), yard crossing crews 171 → 167 and one
+  wedge (yard s22/t6) fail. Worst runs: the yielding squad crawls at 0.4 as a whole for 30–45 s. Parked `traffic-t3`. Round
+  30: release the yielding squad once the other's tail clears the point, or crawl only crews within a squad length. The
+  yard far-end misses (both arms) relayed to brains as a B5c sighting.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
