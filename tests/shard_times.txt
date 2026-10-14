@@ -371,7 +371,8 @@ res://tests/test_tactics_reorder_heading.gd	3435
 res://tests/test_tactics_reports.gd	25450
 res://tests/test_tactics_reseat_keep.gd	22
 res://tests/test_tactics_routes.gd	13
-res://tests/test_tactics_scenarios.gd	425540
+res://tests/test_tactics_scenarios.gd	218669
+res://tests/test_tactics_scenarios_2.gd	208596
 res://tests/test_tactics_screen_standoff.gd	6637
 res://tests/test_tactics_seat_nearest.gd	42
 res://tests/test_tactics_seat_order.gd	12
