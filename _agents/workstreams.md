@@ -81,7 +81,27 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
 
 **Bars (round 30, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
-- (none yet)
+- **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
+  pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
+  `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
+  where a turning circle of navmesh fits beside it, and only until stuck on terrain/a hull or 12 s, else latched; NEAR:
+  no gate for a new goal already within the nominal approach length when via-the-gate > 2× straight). Arms on ONE
+  commit, GDScript drive both (off = `--nav-off=gategiveup` = main's behaviour). Tuned on yard 23, Sumps 2, Terminus
+  2–4; judged on FRESH seeds: (1) yard crossing (`gate-series`, yard_open cross, seeds 25–26 × {1,3,6,8,11,16}, n = 12):
+  last-crew median on ≤ off − 5 s (never = 90 s), crews on ≥ off every run; (2) Sumps cell (seeds 14–15 × six ticks,
+  n = 12): all-within-8 m median on ≤ off, no run > 5 s later, guns_on_arc ≥ off − 0.05; (3) Terminus head-on seeds 5–7
+  t11 + seed 3 (B_4's): crews arrived on ≥ off each; the near counter fires on seed 3; REPORTED; (4) arrive series
+  (`squad-arrive-series`, fresh seeds 29–32, n = 100 an arm): within 8 m on ≥ off − 1, median ±2 %; (5) counters > 0
+  every on run, 0 every off run; (6) bridge-pooled 18/18 rule on; (7) `screen-slots` seed 61 A_2 in (B4); (8) heading:
+  `test_wheeled_arrival` (all), `test_nav_arrival_heading`, `test_nav_gate_hold`, `test_nav_gate_v4` (90° AND 180°, the
+  planner's scout case, B_4's near case) on the GDScript path now (24/0 builder0) and on the DEFAULT path at the pair with
+  native's mirror + `test_native_gate` before shipping. Shipping = lab tip + native's mirror as a C30.2 pair; native shows
+  yard and Sumps on the default path equal to the judged on-arm run for run. Tuning disclosed (n small): yard 21.1 s v
+  never (6/6 v 2/6 all in), Sumps 24.3 v 24.4, Terminus 10/10 ×3 v 9/10 twice. **Orchestrator's additions (before
+  numbers):** (a) the worst on-arm run of (1) and (2) traced before the medians (lesson 302); (b) how each come-round
+  ended (latched / stuck / the 12 s cap) counted per arm and reported — a come-round ending mostly by cap is a finding;
+  (c) cost ≤ 0.5 ms a tick at Sumps 25 a side GDScript path or NOT READABLE stated (C29.5); (d) the thirteen explained if
+  they move; (e) Terminus seed 3 is n = 1: reported, never a pass line.
 
 ## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 
