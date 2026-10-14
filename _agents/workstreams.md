@@ -208,6 +208,15 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   Parked `manoeuvre-m4-r29`. **Round 30:** keep the plant's `_speed` as today; give the real displacement only to the
   progress readers (unstick, `_pressing_escape`, the pinned probe) and aim leads.
 
+- **Brains B5c bar (pre-registered ~21:30; DECLARED; last attempt v3 `053beffb`, `--nav-off=gategiveup` inverted):** a
+  wheeled hull with a facing gives its gate up when BLOCKED aiming at it; holds a reached gate done per goal; a gate only
+  where a turning-radius ring of navmesh exists (else a shorter run-in, else none). Judged GDScript path, both arms one
+  commit: yard crossing last-crew median on ≤ off − 5 s, crews ≥ off every run; Sumps cell all-within-8 m median ≤ off, no
+  run > 5 s later, guns_on_arc ≥ off − 0.05; counters fire on, 0 off; arrive series 8 m ≥ control − 1, median ±2 %;
+  heading test. **Orchestrator's changes:** yard and Sumps n = 12 each; Terminus n = 3 REPORTED only (traced as an escape
+  failure: B_4 jammed on terrain past its gate → round 30, manoeuvre); bridge-pooled 18/18 switch on; shipping = the
+  default flip + native's mirror merged as a pair.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
