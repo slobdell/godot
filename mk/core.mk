@@ -221,6 +221,12 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 # 67's family, where make evaluates a variable differently from how the author read it.
 # The `$(if ...)` keeps `?=`'s "leave an existing value alone" while running the shell exactly once per make.
 TEST_SHARDS := $(if $(TEST_SHARDS),$(TEST_SHARDS),$(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 ))))
+# Round 29 (traffic I1, builder0 throughput): `time` balances the shards by each file's measured wall time
+# (tests/shard_times.txt, refreshed by `make test-times`); `rr` is round 9's round-robin by file. DEFAULT rr: `time`
+# FAILED its bar (builder0, 4 shards, three A/B pairs at 7e39a3f0+, load 1-12: rr 2417/2558/2448 s, time 1965/2409/2614 s,
+# -6 % on the means against a -30 % bar). The shards balanced (longest/mean 1.06-1.15 v 1.41-1.50), but under builder0's
+# load four shards busy for the whole run compete with everything else, while round-robin's short shards finish early.
+TEST_SHARD_PLAN ?= rr
 
 # FILTER reaches the runner INSIDE SINGLE QUOTES. Unquoted, `make test FILTER="a|b"` handed the pipe to a
 # shell and exited 127 without running either suite (it bit combat twice on 2026-09-20). Quoting alone would
@@ -261,10 +267,14 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 		exit $$?; \
 	fi; \
 	rm -rf $(BUILD_DIR)/test-shards && mkdir -p $(BUILD_DIR)/test-shards; \
+	started=$$(date +%s); \
 	seq 0 $$(( $(TEST_SHARDS) - 1 )) | xargs -P $(TEST_SHARDS) -I{} sh -c \
-		'$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
-			> $(BUILD_DIR)/test-shards/{}.log 2>&1; echo $$? > $(BUILD_DIR)/test-shards/{}.status'; \
-	cat $(BUILD_DIR)/test-shards/*.log; \
+		'from=$$(date +%s); $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
+			--shard-plan=$(TEST_SHARD_PLAN) > $(BUILD_DIR)/test-shards/{}.log 2>&1; echo $$? > $(BUILD_DIR)/test-shards/{}.status; \
+			echo $$(( $$(date +%s) - from )) > $(BUILD_DIR)/test-shards/{}.secs'; \
+	grep -hv '^FILE_TIME ' $(BUILD_DIR)/test-shards/*.log; \
+	grep -h '^FILE_TIME ' $(BUILD_DIR)/test-shards/*.log | sed 's/^FILE_TIME //' | sort > $(BUILD_DIR)/test-times.txt || true; \
+	echo "test wall: $$(( $$(date +%s) - started )) s on $$(hostname), plan $(TEST_SHARD_PLAN), shards (s):$$(for f in $(BUILD_DIR)/test-shards/*.secs; do printf ' %s' $$(cat $$f); done)"; \
 	shards=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | wc -l); \
 	if [ "$$shards" -ne "$(TEST_SHARDS)" ]; then \
 		echo "test FAILED: $$shards of $(TEST_SHARDS) shards reported a summary line. A shard that died without"; \
@@ -291,6 +301,18 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 	done; \
 	[ -z "$$crashed" ] || exit 1; \
 	[ "$$failed" -eq 0 ] || exit 1
+
+# Round 29 (traffic I1): refresh tests/shard_times.txt from the FILE_TIME lines of the last full sharded `make test`
+# (build/test-times.txt). Run it on builder0 after a quiet `make remote T=test` and commit the file; a new test file
+# with no time yet keeps the round-robin slot until then.
+.PHONY: test-times
+test-times: ## Round 29 (I1): write tests/shard_times.txt from the last sharded run's per-file times (build/test-times.txt)
+	@test -s $(BUILD_DIR)/test-times.txt || { echo "test-times: no build/test-times.txt (run a full sharded make test first)"; exit 1; }
+	@{ echo "# Each test file's wall time (ms) in one sharded make test; tests/run_tests.gd balances shards by it."; \
+		echo "# Written by make test-times at $$(git rev-parse --short HEAD 2>/dev/null) from build/test-times.txt (the times are the"; \
+		echo "# machine's that ran that test: see its 'test wall' line; only their PROPORTIONS steer the shard plan)."; \
+		cat $(BUILD_DIR)/test-times.txt; } > tests/shard_times.txt
+	@echo "test-times: $$(grep -vc '^#' tests/shard_times.txt) files -> tests/shard_times.txt"
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
 

@@ -51,6 +51,24 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
   [determinism.md](determinism.md) *Per-map baseline*), `garage-smoke`, `army-loop-smoke`, `announcer-check`, `audio-check`,
   `match-pytest`, `metrics-pytest`, `ai-scenarios-check`, `remote-guard-test`, `tactics-drills`, `tactics-pytest`,
   `web-smoke`, `export-guard`.
+- **`make quick-remote`** (round 29, I2: the step for a worker's IN-BETWEEN commits, never for a hash named for merge):
+  `lint`, the tests the diff touches, and `combat-smoke`, on builder0. The tests come from `tools/quick_tests.sh`, which
+  reads the diff against the merge-base with main and picks:
+  - changed test files;
+  - tests that name a changed script's `class_name` or path (a core class named by more than 30 test files narrows to
+    the tests named for that script);
+  - declared neighbours in `tests/quick_neighbours.txt`.
+
+  Selection happens on the laptop, because builder0's copy has no `.git`. `QUICK_FILES="a.gd b.gd"` asks what a change
+  to those files would run. **`make check` stays the gate for every hash you name.** A quick pass says only that the
+  code you touched still passes its own tests. `test` still shards round-robin. `TEST_SHARD_PLAN=time` balances the
+  shards by each file's measured time (`tests/shard_times.txt`, `make test-times`), but it measured only −6 % on a loaded
+  builder0 against a −30 % bar (round 29 I1, traffic Status), so it is off. Every run prints `test wall: N s` and each
+  shard's seconds.
+  **A bare `make test` does not rebuild the native library.** After a merge that changed `native/`, it runs the old
+  `.so`, and the native-port tests fail with `Nonexistent function '..._configure' in base 'TankNative'` (round 29,
+  traffic's first timing run). `check` and `quick` rebuild it first. For a test-only run, use
+  `make remote T="native test"`.
 - **`make check-all`** = `check` + `relay-drop/latency/rejoin-smoke`, `screenshot`, `web-net/relay/host-smoke`, the
   exported server's boot, `perf-play-measure` (a MEASURE, never a gate), **`garage-tour`** and **`desktop-smoke`**
   (round 17), and sim's **`windowed-elimination-pair`** (two windowed Sumps runs past an elimination: the kill cam's

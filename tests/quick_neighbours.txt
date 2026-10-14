@@ -1,0 +1,8 @@
+# Round 29 (traffic I2): neighbours `make quick` cannot find by name. A line: glob<TAB>test stems (space-separated).
+# A changed path matching the glob adds those tests to the quick run.
+tests/run_tests.gd	test_shard_plan
+mk/core.mk	test_shard_plan
+game/ai/movement.gd	test_traffic_hold test_traffic_hold_live test_native_drive
+game/ai/traffic.gd	test_traffic_hold_live test_native_traffic_hold
+game/ai/tank_brain.gd	test_brain_decide test_ai_orders test_ai_elements test_attack_order_obeyed
+game/tank/tank.gd	test_combat_deploy
