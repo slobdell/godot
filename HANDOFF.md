@@ -40,6 +40,11 @@ offline tests in `check`, `make planner-lab`. **His clip: `~/projects/clips/roun
 port (~100×) or a per-tick slice, then manoeuvre wires the seam (`references/round30/planner/handover.md`). **Main's
 check is OWED** for this merge (main = sizing + planner on `0d35f215`'s code; batched with the B5c-v4 pair, §7).
 
+**Merged: traffic `8e7a93da`** (tip 6f7b131c; game/ = main's: I3's cache proven, `make quick` 487 s, the crossing clock,
+turns_verdict with CP-N guards, per-run rows for sizing; its check exited 2 only on a slot-light load flake, re-run alone
+0; covered by main's batch check). **Merged: brains B7 `d69d73d4`** (the 425 s test file split 6 + 6; green 2585/0; no
+wall gain — the floor is now `test_native_traffic_hold` 486 s). **Traffic DONE** (idle).
+
 **Traffic T3b NOT SHIPPED** (yard crossing clock +2.80 s v +1.18; bumps −45 %; parked `traffic-t3b`; his round-31 call in
 `workstreams.md` *Bars*). **Sizing DONE** (idle). **Planner DONE** (idle).
 
