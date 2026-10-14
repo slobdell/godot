@@ -81,6 +81,17 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
 
 **Bars (round 30, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
+- **CP-N DELIVERED (sizing, 2026-10-14 ~11:30 PDT; stream/sizing `44a8b95a`, `_agents/judging.md`):** 55 probe × metric
+  rows (48 sized from rounds 27–29's rows): per-run paired sd, base, icc (seed v tick), n today, the se to quote, the
+  effect the bar names, the n that decides it (80 % power, 5 % one-sided), the MDE at n today, the noise-sized guard
+  (base ± 1.645 se); a count-line block (Fisher / binomial / McNemar) and an A/A block. The orchestrator re-derived one
+  row from the raw rows: Terminus head-on between-squad fast, CP-T pair alone paired sd 18.1 a run (sizing's pooled 16.7),
+  base 22.1, −25 % = 5.5 a run → n = 57; MDE at n = 18 = 9.8 a run (44 % of base): reproduces. S1's inventory: 42 of
+  122 judged pass lines of rounds 27–29 were inside their probe's noise (M1's six +5 guards and every "crews ≥ base − 2"
+  among them). Relayed to traffic, manoeuvre, brains with sizing's per-stream headlines (their Status). **Ruling:** brains'
+  B5c-v4 bar stands as filed (its run started before CP-N); every later bar cites the table (C30.3). Sizing's python suite
+  enters `check` through a `tests/test_judge_tools.gd` wrapper under `make test` (no `mk/core.mk` edit).
+
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
