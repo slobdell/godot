@@ -109,6 +109,40 @@ numbers; the report at the top)_
 
 _Updated 2026-10-14 ~10:55 PDT (traffic worker, round 30). Every number names commit, machine, workload and n._
 
+### T1c-b — a set-up hull on its fire order stays set up: FAILED one judged line (last attempt); parked on `traffic-t1cb-judged`
+
+**The rule.** `Movement.ask()` refuses while the asked hull is **on its fire post**. That means deploy_ratio > 0, a weapon
+order other than hold_fire, and its own order is not a move or the move has arrived (`Movement.on_fire_post()`). The asker
+treats it as parked and goes round. `--traffic-off=setup`; counter `Movement.setup_refusals`; `test_traffic_setup` 5/5.
+**The census counts the defect:** `repacks_while_firing`, a repack while giving way to an ask received on the post.
+
+**Tuning** (builder0, `88e52c8f`, census seeds 1–3, n = 9 an arm): repacks while firing 13 → 0 (runs 5/9 → 0/9);
+ApproachStage drawn artillery seeds 4–6 t1: the give-way repack 1 → 0, all else equal.
+
+**Judged** (builder0, `16780030` both arms, GDScript path; census fresh seeds 7–9, n = 9; ApproachStage drawn artillery
+seeds 13–15 × six ticks, n = 18; bar filed before numbers; data in `references/round30/traffic/t1cb_*`):
+- **(1) the defect: PASS.** Runs with any repack while firing 4/9 → 0/9 (one-sided Fisher p = 0.041); total 11 → 0.
+  Repacks while giving way 33 → 4; refusals 0 → 65.
+- **(2) friendly-stuck:** 496 → 404 crew-s, pass. **(3) fast friendly contacts:** 589 → 563, pass.
+- **(4) artillery shots, not down by more than 21.6 (row 82): 318 → 163, FAIL.** One run carries it. In parade s9, shots
+  fell 171 → 26, and in that run BOTH sides' artillery fell: Rust's batteries refused nothing and still went from 19 to 7
+  rounds. The run was re-run singly with per-battery counts: Green's batteries were set up for similar times but fired
+  1–5 rounds each, against 14–19. The fight's geometry diverged. Without that run the census reads 147 → 137. The judged
+  paired se (1.645 se = 237) is ~10× CP-N's row 82 (21.6), so this line's noise was under-sized. The verdict stands as filed.
+- **(5) ApproachStage drawn:** repacks 8 → 2, from the side 18/18 both arms, first round median 27.1 s both, alive 3.00
+  both, pass. (The 2 left were not traced: the verdict was already decided.)
+- **(6) bridge-pooled** 18/18, pass. **(7) the four traffic-series cases, seeds 31–33:** all 72 rows equal T3b's base rows
+  field for field (bar T3b-only counters), pass.
+- **The orchestrator's additions, from the worst run only** (parade s9, arm): refused askers went round 7, never past in
+  20 s 0, 2 pending at the end. Every refusal was on Green's side (that side's batteries were the ones set up).
+  `traffic-native-verify` was built (on the branch) but not run, because the verdict was decided.
+- stream/traffic's `game/` is back to main's. The rule, the counters and the native-verify target are on
+  `traffic-t1cb-judged`.
+
+**For whoever takes it next:** the defect line passes cleanly. The open question is whether artillery fire really falls.
+Re-judge on more census seeds, with the artillery line re-sized from this run's paired sd, or with fire counted only for
+batteries that had a target in range.
+
 ### T3b — the crossing, released early: FAILED its judged bar (last attempt); parked on `traffic-t3b` (= `cf124433`)
 
 **What the trace showed first (it corrected the brief).** Round 29's "the yielding squad crawls at 0.4 for 30–45 s" is not
