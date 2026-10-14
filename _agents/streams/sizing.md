@@ -103,3 +103,30 @@ Nothing.
 ## Status
 
 _(the worker keeps this current; CP-N announced the moment the table is written; the report at the top)_
+
+### Plan (2026-10-14; start = main `bd05077d`, covered by the launch check `0d35f215` + docs-only commits)
+
+Session `godot-sizing-72`, Fable 5.1. Order, smallest foundation first (each a commit; no builder0 run but `check`):
+1. **S0 the stats core** `tools/judge/stats.py` (stdlib only: paired se, bootstrap CI of a median difference, binomial /
+   Fisher / McNemar exact tails, n for a paired test, variance components seed v tick) + `rows.py` (readers for every
+   format in `references/`: traffic-series jsonl, ApproachStage jsonl, census logs, the M4 per-run text) + their unittest.
+2. **S1 inventory** `inventory.py` → `references/round30/sizing/inventory.csv` + `.md` (judged lines of rounds 27–29;
+   noise computed from rows where rows exist, else the table's own se; lines inside the noise marked).
+3. **S2 CP-N** `table.py` → `judging.md` *The table* (one row per probe × metric: σ per run, n_today, the bar's effect,
+   n_needed at 80 % / 5 %, the se to quote; "no A/A" rows say what two base runs cost). **Announce to godot-67.**
+4. **S3** the rules per line form + worked examples (M1 guard, T3 all-in, B5c yard) with `size.py` reproducing each.
+5. **S4** `sequential.py` (truncated SPRT per line in runner order) + its simulation on the rows; the stop rule.
+6. **S5** `judging.md` method; `aa.py`; the GDScript wrapper `tests/test_judge_tools.gd` so the python suite runs in
+   `make test` (hence `check`) without touching `mk/core.mk`; the `judge-test` target proposed to the orchestrator.
+7. Stretch: the cost table (runs × minutes, round 29 as run v as sized).
+
+**Decisions so far (reasons one line each):**
+- Noise is estimated from PAIRED per-run differences (the design every bar uses), pooled over every judged pair of the
+  same probe; a pair where the rule never fired contributes zeros and is excluded from σ (it is an equality check, not
+  a sample: CP-T's three untouched cases, T1b's three, differ by 0.00 in every metric).
+- Default error rates: false-pass 5 % one-sided (a guard and a "down ≥ X %" line are both one-directional), power 80 %
+  at the effect the bar names; "within 2 se" is read as a one-sided guard at k = 2 (≈ 2.3 %).
+- The stats are stdlib Python: builder0's system python has no promise of numpy (mk/audio.mk needs a venv for it).
+- The tests enter `check` through `make test` (a `tests/test_judge_tools.gd` that runs the python suite) because
+  `mk/core.mk` is nobody's this round; the orchestrator may instead add `judge-test` to CHECK_TARGETS (diff in Status).
+
