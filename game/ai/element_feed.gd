@@ -128,6 +128,8 @@ static func _normalize_cached(element: Object, unit_name: String, order_verb := 
 
 ## The half of a context every crew of the element shares: {} when the source publishes no state.
 static func _shared(element: Object) -> Dictionary:
+	if NativeFeed.usable():  # Round 30 (N7.5): native/src/feed_native.cpp, line for line with the body below
+		return NativeFeed.shared(element)
 	# Round 24: an Element's lean view (Element.feed_state); a stub or another source keeps state().
 	var raw: Variant = element.call("feed_state") if FEED_CACHE and element.has_method("feed_state") else element.call("state")
 	if typeof(raw) != TYPE_DICTIONARY:
@@ -149,6 +151,8 @@ static func _shared(element: Object) -> Dictionary:
 
 
 static func _normalize(element: Object, unit_name: String, order_verb := "", shared := {}) -> Dictionary:
+	if NativeFeed.usable():  # Round 30 (N7.5): native/src/feed_native.cpp, line for line with the body below
+		return NativeFeed.normalize(element, unit_name, order_verb, shared)
 	if shared.is_empty():
 		shared = _shared(element)
 		if shared.is_empty():

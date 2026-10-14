@@ -89,6 +89,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("exec_count"), &TankNative::exec_count);
 	ClassDB::bind_method(D_METHOD("wall_configure", "config"), &TankNative::wall_configure);
 	ClassDB::bind_method(D_METHOD("wall_scan", "tank"), &TankNative::wall_scan);
+	ClassDB::bind_method(D_METHOD("feed_configure", "config"), &TankNative::feed_configure);
+	ClassDB::bind_method(D_METHOD("feed_shared", "element", "use_feed_state"), &TankNative::feed_shared);
+	ClassDB::bind_method(D_METHOD("feed_normalize", "element", "unit_name", "order_verb", "shared", "use_feed_state",
+			"slide_off"), &TankNative::feed_normalize);
 	ClassDB::bind_method(D_METHOD("closest_approach", "here", "velocity", "round_position", "round_velocity", "seconds"),
 			&TankNative::closest_approach);
 	ClassDB::bind_method(D_METHOD("would_be_hit", "here", "now", "planned", "incoming", "turn_seconds", "acceleration",

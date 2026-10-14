@@ -178,6 +178,28 @@ E6 (the laptop's ruling) needs a laptop slot; he plays the result. **Asked for 2
 _Started 2026-10-11 18:25 PDT from `c37605f0` (main's green check `090b345d` covers it: no baseline re-run). Heavy runs on
 builder0; the laptop only in a granted slot (C27.6)._
 
+### Round 30 (started 2026-10-14 ~10:40 PDT from `bd05077d` = main, covered by the launch check `0d35f215`)
+
+**Plan (in order):** (1) the pairs the moment a settled diff arrives (M4b, B5c-v4, T3b/T1c-b if in ported code), each
+pre-empting what follows; (2) N7.5 the element feed's builders (below); (3) the held N5 ports only when manoeuvre and
+traffic say their code has settled (asked through the orchestrator after their judged runs; likely round 31).
+**Merged main:** not needed at launch (0 behind `bd05077d`).
+
+**N7.5, what the feed costs (measured before porting; builder0 quiet, load 0.2, `bd05077d` + two temporary laps,
+`native-tp-headless` foundry 25 a side pinned 0-3, seeds 92721 31337 5988, window 8-20 s):** `feed.normalize` 0.33-0.36
+ms of a 13.6-13.9 ms tick (2.4-2.6 %), 10.4 calls a tick. **Nearly every call is a BUILD, not a memo hit:** 10.0-10.1
+context builds a tick at ~22 us each (0.22 ms) + 3.2 element-wide builds at ~17 us (0.056 ms); the memo's key
+(`Element.feed_key`) moves on every `Element.update`, and a brain re-reads its context only when it moved. So the port
+is the two builders (`_shared`, `_normalize`), with the memo left in GDScript. **Design:** `native/src/feed_native.cpp`,
+one call per build, dictionaries out with String keys in the GDScript's order; switch `native_feed`; seams at the top of
+`ElementFeed._shared` / `_normalize`.
+**Its price, pre-registered 2026-10-14 ~11:30 PDT before any price number:** builder0, foundry 25 a side pinned 0-3, seed
+92721, 3 alternated runs an arm (default v `--brains-off=native_feed`), `brain/feed.normalize` and `tick_ms`. Expected:
+the section 0.34 -> ~0.10-0.15 ms (a call's crossing ~8 us plus the C++'s building, against ~22 us of GDScript), i.e.
+~1.3-1.7 % of the tick. **Rule:** ON as shipped either way (the C++-core principle, the price stated); if the section
+does not fall by at least a third, the crossings dominate and that is written down as the finding. Falsifier for the
+prediction: a fall of more than 80 % (then the GDScript laps were inflating it).
+
 ### The report (read this first; kept current)
 
 **Round 29 report (2026-10-14; the round is closing).** On main: stage 1, N6.1b-N6.4, N7.1, N7.2, **N7.6 (ON)**.

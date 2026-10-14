@@ -25,6 +25,7 @@
 #include "recorder_native.h"
 #include "controller_native.h"
 #include "wall_native.h"
+#include "feed_native.h"
 #include "mover_record.h"
 #include "tank_record.h"
 
@@ -296,11 +297,22 @@ public:
 	bool wall_configure(const Dictionary &config) { return ::godot::wall_configure(wall_config, config); }
 	int64_t wall_scan(Object *tank) const { return ::godot::wall_scan(wall_config, tank); }
 
+	// Round 30 (N7.5): ElementFeed's two builders (feed_native.cpp).
+	bool feed_configure(const Dictionary &config) { return ::godot::feed_configure(feed_config, config); }
+	Dictionary feed_shared(Object *element, bool use_feed_state) const {
+		return ::godot::feed_shared(feed_config, element, use_feed_state);
+	}
+	Dictionary feed_normalize(Object *element, const String &unit_name, const String &order_verb, const Dictionary &shared,
+			bool use_feed_state, bool slide_off) const {
+		return ::godot::feed_normalize(feed_config, element, unit_name, order_verb, shared, use_feed_state, slide_off);
+	}
+
 	// The column strides, so native_record.gd can assert its constants against the library it talks to.
 	Dictionary record_layout() const;
 
 private:
 	WallConfig wall_config;
+	FeedConfig feed_config;
 	AvoidanceTable avoidance;
 	TankRecords records;
 	MoverRecord movers;
