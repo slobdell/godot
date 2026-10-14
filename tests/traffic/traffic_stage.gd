@@ -198,7 +198,7 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 						"goal": str(r.get("goal")), "steer": str(r.get("steer_to")), "stalled": r.get("stalled_s"),
 						"rem": r.get("remaining_m"), "pace": r.get("pace"), "thr": snappedf(t.command.throttle, 0.01),
 						"turn": snappedf(t.command.turn, 0.01), "ot": Movement.of(t)._order_ticks, "key": str((Movement.of(t).ctl as TankBrain).element.get("key")) if Movement.of(t).ctl is TankBrain else "", "friend": _friend_in_way(t, _way(t, Movement.of(t)), hulls),
-						"hold": Traffic.holding(String(t.name)), "share": Traffic.last_share.get(String(t.name), 1.0)}))
+						"hold": Traffic.holding(String(t.name))}))
 		var all_arrived := true
 		for squad: String in squads:
 			all_arrived = all_arrived and (elements[squad] as Element).arrived

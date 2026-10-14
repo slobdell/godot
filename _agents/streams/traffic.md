@@ -109,6 +109,56 @@ numbers; the report at the top)_
 
 _Updated 2026-10-14 ~10:55 PDT (traffic worker, round 30). Every number names commit, machine, workload and n._
 
+### T3b — the crossing, released early: FAILED its judged bar (last attempt); parked on `traffic-t3b` (= `cf124433`)
+
+**What the trace showed first (it corrected the brief).** Round 29's "the yielding squad crawls at 0.4 for 30–45 s" is not
+what happens. The probe now carries **the crossing's own clock** (`crossed_s`, `cross_a/b/clear_s`: when each crew is
+8 m past the meeting point; `traffic_table.py` prints it). Both squads clear the crossing by 8–25 s. Round 29's 40–75 s
+last arrivals (traced: Terminus s24/t3, s22/t6, reproduced run for run) come AFTER the crossing: a rear crew of the yielding
+squad circles its far-end seat reading `no_path`/`terrain` for 25–40 s. Brains measured that this circling needs the rule
+underneath (main's behaviour: 32.6 / 27.3 s, no circling).
+- **The yard trace (s3/t3) picked option (b), not (a).** Round 29's whole-squad crawl ended by ~6.5 s, before the passing
+  squad's tail was past, so (a) would change nothing there. The cost was the rear crews it left behind: the element's leads
+  stopped at their next slots and waited ~4.5 s for them.
+- **(b):** only crews within `CRAWL_REACH_M` (20 m) of the crossing keep the squad's share (`--traffic-off=reach` = round
+  29's; counter `tr_cross_reach_free`). The crossing shipped DEFAULT-OFF (`Traffic.DEFAULT_OFF`, `--traffic-on=turns`)
+  because the C++ `_avoid` has no `Traffic.shape` yet and the native drive tests compare against the GDScript.
+
+**Tuning** (builder0, seeds 1–3, n = 18 a case, base = turns off; data in `references/round30/traffic/t3b_tuning_*`):
+| case | between-squad fast | yielding squad's crossing (v2 → (b)) | crews |
+|---|---|---|---|
+| Terminus crossing | 116 → 42 | +2.8 → +2.0 s | 176 → 178 |
+| yard crossing | 118 → 48 | +3.5 → +1.9 s | 169 → 169 |
+
+12 m was tried and rejected (yard crews 169 → 163, two wedges).
+
+**The bar** was sent before any judged number and filed by the orchestrator. It was sized by CP-N's rows, with the crossing
+clock in place of round 29's all-in line (`tests/traffic/turns_verdict.py`).
+
+**Judged** (builder0, `cf124433` both arms, GDScript path, fresh seeds 31–33 × six ticks, n = 18 a case; base no flag, arm
+`--traffic-on=turns`; `references/round30/traffic/t3b_judged_*`, `t3b_verdict_cf124433.txt`): **VERDICT FAIL on one line.**
+- Between-squad fast, crossings pooled: 176 → 96 (−45 %), pass. Terminus 76 → 50, yard 100 → 46.
+- Crews: Terminus 176 → 176, yard 168 → 166, pass. No wedge. Same-squad fast 170 → 187 and 140 → 122, pass. Head-on
+  cases within 1.645 se, pass.
+- Crossing clock, Terminus: mean paired −1.17 s (se 1.05, limit +2.92), pass.
+- **Crossing clock, yard: +2.80 s (se 0.22, limit +1.18), FAIL.** The yard's yielding squad pays +3.66 s (se 0.23) to
+  pass behind the other. The judged paired sd (0.92 s) is under the tuning sd (1.77 s), so the 1.5× caveat does not apply.
+- Reported: all-in median Terminus 50.8 → 42.8, yard 90.0 → 90.0 (CP-N se 7.0 / 10.2 s).
+- Counters: verdicts 18 / 19, slowed crew-ticks 11592 / 10771, reach-free crew-reads 2041 / 1332. The rule also fires
+  inside the head-on cases: 8 and 10 verdicts, a few hundred crew-ticks, no line moved.
+- **The worst run read before the medians:** Terminus s33/t1, all-in 33.7 → 61.4 s, every crew in. B_4, the yielding
+  squad's rear crew, gives way to two squadmates at the far end, then circles its seat (35.6, 23.9) reading
+  `no_path`/`terrain` from 36 s to 61 s. Round 29's s24/t3 jammed on the same seat. Its share was 1.0 from 12 s on.
+- The CPU mirror and `bridge-pooled` were not run: the chain was stopped after the verdict, by its own PIDs, and builder0
+  was checked clear.
+- stream/traffic's `game/` is back to main's. The crossing clock and the verdict script stay.
+
+**For whoever takes it next:**
+1. The bump cut is real on three seed sets (−45 % to −63 %).
+2. What it costs is the yielding squad's ~2–4 s wait at the yard, which a +10 % line on a 9 s crossing cannot hold.
+3. Its worst runs are a far-end seat trap that the changed arrival order exposes: (35.6, 23.9) on the Terminus,
+   brains' gate.
+
 ### The plan (ordered; smallest foundation first)
 
 1. **I3 the cache's proof** first: it needs no game change, and its fresh rows are T3b's tuning base (Terminus crossing,
