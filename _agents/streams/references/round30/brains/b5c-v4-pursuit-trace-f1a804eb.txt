@@ -1,0 +1,7 @@
+GATE_TRACE t=0.10 Green_A_1 aimed goal (0.0, 98.6) at (-12.0, 90.0) dot 1.00 gate (0.0, 109.8) 14.8 m to goal, phase arrived
+GATE_TRACE t=0.10 Green_A_2 near goal (-12.5, 90.1) at (-6.0, 94.0) dot 0.71 gate (-12.5, 90.1) 7.6 m to goal, phase arrived
+GATE_TRACE t=0.10 Green_A_3 aimed goal (-23.0, 83.6) at (0.0, 90.0) dot 0.00 gate (-11.8, 83.6) 23.9 m to goal, phase arrived
+GATE_TRACE t=0.10 Green_A_4 near goal (12.5, 90.1) at (6.0, 94.0) dot 0.71 gate (12.5, 90.1) 7.6 m to goal, phase arrived
+GATE_TRACE t=0.10 Green_A_5 aimed goal (23.0, 83.6) at (12.0, 90.0) dot 0.00 gate (11.8, 83.6) 12.7 m to goal, phase arrived
+MEASURE pursuit yard_open seed 3 five gang scouts v a spotter at 8 m/s: { "closing_worst_m": -11.1, "closing_at": "Green_A_4 at 5.0 s (35.6 -> 24.5 m)", "reversal_worst_deg": 133.0, "reversal_at": "Green_A_3 16.5 -> 18.5 s", "lived_s": 30.0, "start_m": { "Green_A_1": 71.0, "Green_A_2": 74.2, "Green_A_3": 70.0, "Green_A_4": 74.2, "Green_A_5": 71.0 }, "end_m": { "Green_A_1": -1.0, "Green_A_2": -1.0, "Green_A_3": -1.0, "Green_A_4": -1.0, "Green_A_5": -1.0 }, "drills": ["react_to_contact"], "why": ["vee, as ordered: halted", "contact: return fire, take cover, report", "vee, as ordered: after it", "after it alone: straight at it"], "arrived_s": 0.0, "forgotten_s": 0.0, "center_to_target_m": -1.0, "killed_by": "", "squad": ["Green_A_1", "Green_A_2", "Green_A_3", "Green_A_4", "Green_A_5"], "let_go_at": "" }
+  FAIL  test_tactics_pursuit::test_a_spotter_retreating_at_8_mps_is_chased_down

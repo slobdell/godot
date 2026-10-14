@@ -762,3 +762,15 @@ queued-screen-shots: import ## Round 28 (B5): his waypoint + shift-screen in win
 		grep -q '"settled_after_screen_s":[0-9]' $$d/run.log || { echo "queued-screen-shots: $$size: the line never settled (every crew within 8 m) inside 30 s"; exit 1; }; \
 	done
 	@echo "Now LOOK at $(BUILD_DIR)/queued-screen/*/*.png"
+
+# Round 30 (brains B7, C30.9): each test in tests/test_tactics_scenarios*.gd timed alone (one process a test, in series),
+# so the file can be split into two of equal time -> build/scenario-times.txt (ms per test, then the total).
+SCENARIO_TIME_FILES ?= tests/test_tactics_scenarios.gd
+.PHONY: scenario-times
+scenario-times: import ## Round 30 (B7): every test in SCENARIO_TIME_FILES timed alone, in series -> build/scenario-times.txt
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/scenario-times.txt
+	@echo ">> scenario-times on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for f in $(SCENARIO_TIME_FILES); do stem=$$(basename $$f .gd); for t in $$(grep -o '^func test_[a-z0-9_]*' $$f | sed 's/^func //'); do \
+		from=$$(date +%s%N); out=$$($(GODOT) --headless --path . --script res://tests/run_tests.gd -- "--filter=$$stem::$$t" 2>&1 | grep -E '  (PASS|FAIL)  ' | head -1); \
+		echo "$$stem::$$t	$$(( ($$(date +%s%N) - from) / 1000000 ))	$$out" | tee -a $(BUILD_DIR)/scenario-times.txt; done; done
+	@awk -F'\t' '{s += $$2} END {print "total ms", s}' $(BUILD_DIR)/scenario-times.txt
