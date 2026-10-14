@@ -59,6 +59,13 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
     the tests named for that script);
   - declared neighbours in `tests/quick_neighbours.txt`.
 
+  **Its lint is narrowed** (round 30): `tools/quick_tests.sh --lint` picks the changed scripts plus every script naming
+  them (class_name or res:// path), and `make quick-lint` parse-checks only those, with lint's self-test and baseline;
+  `make check` still lints all ~960. **Timed (round 30, traffic; builder0, `bd05077d` + the T3b/T1c-b working tree,
+  `QUICK_FILES=game/ai/traffic.gd`, 6 test files):** with the full lint, cold folder (fresh native build) 1272 s, warm
+  1081 s, of which the full lint was 712 s and the tests ~350 s (`test_native_traffic_hold` alone 265 s); with the
+  narrowed lint (13 scripts, 24 s) **487 s**, inside the 10 min target. The wrapper's wall time adds any wait for a
+  builder0 slot (4 min that run, three other streams' heavy runs holding the slots).
   Selection happens on the laptop, because builder0's copy has no `.git`. `QUICK_FILES="a.gd b.gd"` asks what a change
   to those files would run. **`make check` stays the gate for every hash you name.** A quick pass says only that the
   code you touched still passes its own tests. `test` still shards round-robin. `TEST_SHARD_PLAN=time` balances the
@@ -69,6 +76,18 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
   `.so`, and the native-port tests fail with `Nonexistent function '..._configure' in base 'TankNative'` (round 29,
   traffic's first timing run). `check` and `quick` rebuild it first. For a test-only run, use
   `make remote T="native test"`.
+- **The series-row cache** (round 29 I3, `tools/series_cache.sh`; adopted in `traffic-series` behind `CACHE=on`): a judged
+  series row is keyed by a content hash of everything a run reads (`game/`, `native/src`, `arenas/`, `doctrines/`,
+  `tests/support|tactics|traffic`, `project.godot`, the Godot binary, glibc) plus the row's own arguments, and stored in
+  `~/.cache/tank_squad/series` (`SERIES_CACHE_DIR`), outside every worktree. A row is reused only on an exact key match
+  (`cache hit` per row, else `ran`). **`CACHE=off` still WRITES rows** (it warms the cache), so a proof needs its own
+  empty `SERIES_CACHE_DIR`.
+  **Proven (round 30, traffic; builder0, `bd05077d`, `traffic-series TRAFFIC_CASES=terminus,cross TRAFFIC_WHICH=both
+  TRAFFIC_FLAGS=--brains-off=native`, seeds 1–3 × ticks {1,3,6,8,11,16}, n = 18):** a fresh run (`CACHE=off`), then
+  `CACHE=on` twice into an empty cache directory (18 `ran`, then 18 `cache hit`): all three files are byte-identical,
+  576 fields over 18 rows with 0 differences (nested per-crew fields compared whole). A one-line comment added to
+  `game/ai/traffic.gd` moved the tree hash `d27fc48d3755db7c` → `245932b39bd062d0` and both rows asked for ran (a miss).
+  Another stream's series adopts it only through the orchestrator (C30.7).
 - **`make check-all`** = `check` + `relay-drop/latency/rejoin-smoke`, `screenshot`, `web-net/relay/host-smoke`, the
   exported server's boot, `perf-play-measure` (a MEASURE, never a gate), **`garage-tour`** and **`desktop-smoke`**
   (round 17), and sim's **`windowed-elimination-pair`** (two windowed Sumps runs past an elimination: the kill cam's
