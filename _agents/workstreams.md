@@ -92,6 +92,14 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   B5c-v4 bar stands as filed (its run started before CP-N); every later bar cites the table (C30.3). Sizing's python suite
   enters `check` through a `tests/test_judge_tools.gd` wrapper under `make test` (no `mk/core.mk` edit).
 
+- **Sizing S4 (early stop) RESULT (2026-10-14 ~12:10 PDT; stream/sizing, `judging.md` *Early stop*):** a truncated Wald
+  SPRT per pre-registered line on the per-run paired differences in the runner's seed-major order, sd from the table, α 5 %
+  / β 20 %, no stop before one full seed; round 29's judged series would have stopped after 113 of 174 runs per arm
+  (−35 %, ~3.6 of traffic's ~10 box-hours) with EVERY verdict unchanged; false-pass on gain lines simulated on the rows'
+  noise 3–11 % (median 6 %). Caveat: on T1b's wedged pair the real sd is 1.5–1.9× the table's (guards' false-fail
+  15–23 %), so the table is re-rendered after every judged pair lands under `references/`; at n = 18 a true −25 % effect
+  fails about half the time. **Ruling:** applies to bars written after sizing's tip is on main; the in-flight series
+  (B5c-v4, M4b) keep their plans; a runner's hook is its owner's, through the orchestrator, after sizing's check.
 - **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
   on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
   (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
