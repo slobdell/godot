@@ -104,6 +104,53 @@ Nothing.
 
 _(the worker keeps this current; CP-N announced the moment the table is written; the report at the top)_
 
+### REPORT (sizing, round 30; 2026-10-14) — read this first
+
+**Done: every backlog item and the stretch.** No game code touched; nothing in play. Four paths: `tools/judge/**` (10
+scripts, 64 python tests), `tests/test_judge_tools.gd` (+ `.uid`; runs the python suite inside `make test`),
+`_agents/judging.md` (the method doc: the table, count lines, A/A, the lines, early stop, how to write a bar, the cost
+side), `_agents/streams/references/round30/sizing/` (`inventory.csv|md`, `table.csv`).
+
+| item | where | the number |
+|---|---|---|
+| S1 inventory | `inventory.py` → `references/round30/sizing/inventory.md` | 129 judged lines of rounds 27–29; **42 of 122 judged pass lines inside their probe's noise**; 38 verdicts within 1.645 se of their line |
+| S2 CP-N | `probes.py`, `table.py` → `judging.md` *The table* | 55 probe × metric rows, 48 sized; relayed by the orchestrator 2026-10-14; one row re-derived by hand on both sides (Terminus head-on xfast: sd 16.7, n 57 for −25 %, MDE 44 % at 18) |
+| S3 lines | `size.py`; `judging.md` *The lines* | the variance-aware form per line kind; M1's guard would pass (+8 v +17), T3's two noise-fails flip but its wedge stands, B5c's yard count decides at n = 9 |
+| S4 early stop | `sequential.py`; `judging.md` *Early stop* | round 29's series with rows: **113 of 174 runs per arm (−35 %), every verdict the same**; gain lines' false-pass 3–11 % (median 6 %); the one stop rule |
+| S5 method + tool | `judging.md` *How to write a bar*; `aa.py`; the GDScript wrapper | 8 steps incl. the round-close re-render; the two 11 % lines at α 2.5 % cost n × 1.27 |
+| stretch cost | `judging.md` *The cost side* | round 29: 913 → 698 runs (−24 %, ≈ 8 box-hours of ~32); M1 and M4 were under-lined, not over-run |
+
+**Green hash:** `make remote T=check` launched on **`e8c82e1a`** (2026-10-14, builder0; this worktree's scratch log);
+the result line goes here when it lands. Tip commits after it are Status-only. Local python suite: 64 tests, 13 s, OK.
+
+**Decisions (one line each):** noise = per-run PAIRED sd pooled over the judged pairs where the treatment acted in ≥ ⅓ of a
+case's runs (an untouched pair is byte-identical: an equality check, not a sample). Defaults α 5 % one-sided, power 80 %;
+guards at k = 1.645 (k = 2 ≈ 2.3 %). stdlib Python only. Truncated SPRT (not group-sequential): it prints a verdict per row,
+which is what a runner can show; truncation decides by the fixed test at α. The untouched-case stop needs the arm's own
+counter (lesson 300) at 0 AND identical rows for one seed. The tests enter `check` via `make test` (the orchestrator's ruling).
+
+**Requests to other streams (through the orchestrator):**
+- traffic / brains / manoeuvre: the runner hook, one line after each row: `python3 tools/judge/sequential.py --base … --arm …
+  --case … --lines <the bar's> --counter <the rule's counter> --quiet | tail -1` (judging.md *Early stop*, "what the
+  runners should print"). Adoption after my check is green, per the orchestrator's ruling; no edit of theirs by me.
+- manoeuvre: keep per-run rows for creep episodes and Terminus contact-ticks (the census prints totals: the paired form
+  cannot be applied, so the inventory reads them as Poisson floors); drop or widen the 75 s settle line (censored); say
+  "+2 se" on the moving-at-judge guard (M1_CLASS prints the se) and use the permutation p on clicked medians.
+- brains: write flank count lines as the comparison v clicked; keep the yard COUNT as the deciding line; alive guard as
+  "≥ clicked − 2 se"; keep the yard / Sumps cells' per-run rows under references/ (today only the summaries are kept).
+- orchestrator: at a round's CLOSE add the judged pairs to `tools/judge/probes.py` and re-run `inventory.py` + `table.py`
+  (judging.md step 8); a pointer to judging.md from `verification.md` and from C30.3's text (both outside my paths).
+
+**Questions for the lead:** none. (For the orchestrator: whether the three in-flight bars re-size once before their judged
+runs is C30.3's "may", theirs to take.)
+
+**Known issues:** the table's noise is only as good as its pairs: T1b's wedged run shows a pair's own sd can run 1.5–1.9×
+the pooled sd, lifting a guard's false-fail to 15–23 % until the table is refreshed. Hull-rest medians / shares and the
+yard / Sumps medians have no per-run rows, so their rows in the table read "owed" with the cost of two base runs.
+Episode counts are Poisson floors. The traffic per-run cost (1.75 box-min) is the brief's figure, not re-measured.
+
+**What to playtest:** nothing (no game change). **Merge notes:** no shared files; new paths only; the `.uid` is committed.
+
 ### CP-N DELIVERED (2026-10-14; commit `44a8b95a`, this worktree; no builder0 run, pure python; `check` not yet run on it)
 
 **The table is written: `_agents/judging.md` *The table (CP-N)*: 55 probe × metric rows, 48 sized from the rows under
