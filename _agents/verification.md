@@ -195,6 +195,13 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Sizing a judged series: `_agents/judging.md` (round 30, sizing)
+
+Before writing a bar, read the probe's row in `judging.md` *The table* (its paired sd, the n that decides the effect
+you name, the guard as base ± 1.645 se) — `python3 tools/judge/size.py` prints it — and the one early-stop rule in
+*Early stop*. A probe with no row runs its full grid and owes an A/A pair first (`tools/judge/aa.py`). The method's
+eight steps are in *How to write a bar*. 42 of rounds 27–29's 122 judged pass lines were inside their probe's noise.
+
 ## Timing in tests: measure in `make check`, judge elsewhere (policy, 2026-09-19)
 
 **`make check` does not gate on how long something takes.** It is the thing six to nine agents run at once on builder0
