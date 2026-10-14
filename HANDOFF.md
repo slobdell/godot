@@ -4,9 +4,41 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-14 — **ROUND 29 IS CLOSED (below); native continues in `godot-native`.** Main's final check: see
-the section. **FIRST THING: tell him it is time to launch the Fable agents** (`roadmap.md` *AT ROUND 29's CLOSE*; his
-request 2026-10-14). Round 30 is NOT split: `roadmap.md` *Round 30 candidates*. He pushes `main`._
+_Last updated: 2026-10-14 — **ROUND 30 IS LAUNCHED (below): six streams, three on Fable 5.1.** Main GREEN at `0d35f215`
+(the launch check; docs-only commits since). He pushes `main`._
+
+## 🚀 ROUND 30 IS LAUNCHED (2026-10-14) — read this first
+
+**From round 29's parked calls and his Fable ask** (`game_design.md` *Round 30: the launch*; `roadmap.md` *Round 30
+candidates*, *AT ROUND 29's CLOSE*; split and contracts C30.1–C30.10 in `workstreams.md` *Round 30*; briefs in `streams/`).
+**Decided for him (reversible):** the Fable work runs as ordinary worktree streams, not Agent-tool subagents, so it reports
+in briefs and merges through the same gate; he sets `/model fable` in those three terminals.
+
+| Stream | Folder (offset) | Model | What he will notice | Checkpoint |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | crossing squads: the yielding squad goes once the other's tail is past, no 30–45 s crawl; a set-up mortar truck still ordered to fire stays set up; builder0: I3's cache proof, `make quick` timed | T3b, T1c-b DECLARED |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a truck wedged into a wall backs out instead of sitting at full throttle (M4b); `face_slot` as a bug fix then turn-hull with a noise-sized guard (M1b); the creep on an honest base (M2b); the Terminus terrain escape (M5) | **CP-M4b** + native's pair |
+| **brains** | `godot-brains` (3) | Opus | the yard's last crew in every time AND a 180° arrival that still turns round (B5c-v4; B4 rides); `test_tactics_scenarios` split (B7); his bridge 108/108 (B3b); SBF wheeled line traced (B6) | **CP-G** + native's pair |
+| **native** | `godot-native` (4, continuing) | Opus | nothing in play: the M4b and B5c pairs; N7.5 element_feed; the held N5 ports only when manoeuvre/traffic settle | each pair |
+| **sizing** | `godot-sizing` (5) | **Fable** | nothing in play: every bar sized by its probe's measured noise (`_agents/judging.md`, `tools/judge/`), early-stop judging designed on rounds 27–29's rows; NO builder0 series | **CP-N** the n table, early |
+| **planner** | `godot-planner` (6) | **Fable** | nothing in play this round: a local motion planner for long wheeled hulls (problem → design → offline tests → lab clip → hand-over to manoeuvre); isolated in `game/ai/planner/**` | P2 tests; P3 clip |
+
+**Launch check: GREEN at `0d35f215`** (builder0, `make check exited 0`, 2584 passed, 0 failed, 26 targets ALL JUDGED,
+thirteen unmoved, determinism 2875411ff4ec6be7; every commit since is docs). Workers start from it and run no baseline.
+Native's worktree was fast-forwarded to main at launch.
+
+**The orchestrator's jobs:** collect every DECLARED bar before its numbers (C30.1) and, once sizing announces **CP-N**,
+relay the table to traffic, manoeuvre and brains (a bar written before CP-N may be re-sized once, in writing, before its
+run: C30.3); re-derive one CP-N row by hand before relaying; merge each declared change ALONE, a driving change back to
+back with native's port (C30.2: M4b and B5c-v4 are pairs); carry the B_4 Terminus trace both ways between brains (the
+gate) and manoeuvre (the escape) (C30.5); carry the planner's trace requests to manoeuvre and its P0/P1 docs back
+(C30.4); grant nothing in `movement.gd` to the planner this round; adopt traffic's I3 cache for other series only after
+its proof is on main (C30.7); take clips (a wedged truck before/after; the 180° arrival; the planner's lab) to him.
+
+**Launch:** docs committed first, then `make worktree STREAM=traffic OFFSET=1`, `manoeuvre 2`, `brains 3`, `sizing 5`,
+`planner 6` (native's worktree exists, fast-forwarded). Kickoff prompt: `orchestration.md` *The kickoff prompt* (the same
+line for every stream; the stream comes from the folder). **In the manoeuvre, sizing and planner terminals he runs
+`/model fable` first.**
 
 ## ✅ ROUND 29 IS CLOSED (2026-10-14) — read this first
 

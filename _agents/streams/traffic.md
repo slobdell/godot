@@ -1,0 +1,108 @@
+# Stream: traffic (two of your squads crossing at an angle: the yielding squad is released once the other's tail clears; a set-up mortar truck stays set up while it is still ordered to fire)
+
+> Read `_agents/orchestration.md` (the worker contract; lessons 295–305), `_agents/game_design.md` *Round 26 direction*,
+> *Round 28 direction* (his call 1), `_agents/workstreams.md` **Round 30** (C30.1–C30.10), and round 29's traffic report
+> (`streams/archive/round29/traffic.md`: *REPORT*, *T3 judged*, *T1c judged*, *the builder0 throughput extension*).
+> **You own:** `game/ai/avoidance.gd`, `game/ai/steering.gd`, `game/ai/traffic*.gd`, in `game/ai/movement.gd` the give-way
+> block (`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`, `_hull_within`;
+> `tests/test_traffic*.gd`, `tests/traffic/**`, `tests/ai_scenarios/scenario_traffic*.gd`, `tests/test_avoidance.gd`,
+> `mk/traffic.mk`; the builder0 tooling you built in round 29: `tools/series_cache.sh`, `tools/quick_tests.sh`,
+> `mk/infra.mk`, `tests/shard_times.txt`, `tests/quick_neighbours.txt`, `tests/run_tests.gd`'s shard plan. **Granted
+> (C29.3, standing):** your one gate line each at brains' `_track_progress`, `_update_phase`, the element's make-room /
+> re-seat clock, and manoeuvre's `unstick`, `_pressing_escape`, the k-turn entry. **The C++ (C30.2):** `right_of_way`,
+> `_avoid`, `Avoidance.solve` and the hold's read have C++ twins; develop on the GDScript path, send native the settled
+> diff before the commit. **Model:** this stream runs on the usual model (Opus).
+
+## The lead's direction
+
+Round 26: *"if I take 2 squads and have them move in opposing directions such that they have to cross each other … vehicles
+will get stuck bumping into each other … people would just generally each turn to the right in order to deconflict. The
+same case might not be said if we're charging toward an enemy."*
+**Round 28, his call (2026-10-12): TAKE TURNS:** "fewer bumps; both squads arrive a little later." The pass line may
+trade some arrival time for fewer bumps, and never crews that fail to arrive.
+**Round 30 (2026-10-14):** no new words from him on traffic; the street hold shipped in round 29 and he plays it. His
+standing ask for this round is builder0's bottleneck (`roadmap.md` *a second build machine*: free fixes first).
+
+What he will notice: two of his squads crossing at an angle (not head-on): the squad that yields does not crawl along as a
+whole for 30–45 s; it goes as soon as the other squad's tail is past the crossing point. A set-up mortar truck that is still
+ordered to fire does not pack up to let a squadmate by.
+
+## Where things stand (main `0d35f215`, GREEN: builder0 2584/0, 26 ALL JUDGED)
+
+- **T1 the street hold SHIPPED** (round 29, `3a94f38d` + native's port): Terminus head-on between-squad fast contacts
+  475 → 91 (−81 %), crews 176 → 177, all-in 60.8 → 59.3 s, no wedge; CPU mirror 475 → 58. `Traffic.holding(crew)` gates
+  brains' and manoeuvre's clocks. `--traffic-off=hold`.
+- **T3 (the crossing) FAILED its bar — parked `traffic-t3` (`d9b3339c`; judged seeds 22–24 × 6, n = 18):** between-squad
+  fast at the two crossing cases 206 → 95 (−54 %) and head-on = base PASSED; but Terminus crossing all-in 39.4 → 48.3 s
+  (+23 %, bar +20 %), yard crossing crews 171 → 167 and one wedge (yard s22/t6) FAILED. **Worst runs: the yielding squad
+  crawls at 0.4 as a whole for 30–45 s.** Tables: `references/round29/traffic/t3_*`. The yard far-end misses (both arms)
+  were relayed to brains as a B5c sighting (brains has the gate this round).
+- **T1c (a set-up hull does not give way) FAILED — parked `traffic-t1c` (`761bd727`; census seeds 4–6, n = 9):** set-up
+  give-ways 25 → 9 against a bar of 0; friendly-stuck, fast contacts, artillery shots passed; repacks while giving way
+  13 → 7. **The 9 are give-ways a set-up hull STARTS itself in `_negotiate` with a new move** (it is leaving anyway).
+  Tables: `references/round29/traffic/t1c_*`.
+- **builder0 tooling (round 29, on main at `de08392b`):** I1 time-balanced shards OFF by measurement (−6 % v a −30 % bar
+  on a loaded box); I2 `make quick` / `quick-remote` built, its ≤ 10 min timing OWED; I3 `tools/series_cache.sh`
+  (`CACHE=on` in `traffic-series`) built, OFF, its cached == fresh proof OWED. The floor at 5–6 shards is
+  `test_tactics_scenarios.gd` (425 s): brains splits it (C30.9), not you.
+- A fresh `make test` after merging `native/` runs a stale library: `check` and `quick` rebuild first (`verification.md`).
+
+## Backlog (in order)
+
+**T3b — the crossing, released on the tail (DECLARED; round 29's last attempt was used, so this is a NEW design with its
+own last attempt named).** Keep v3's squad-pair crossing verdict (`--traffic-off=turns`; base = hold ON). Change what the
+yielding squad does: (a) release every crew of the yielding squad once the passing squad's LAST crew is past the crossing
+point (plus a short margin), not when each crew's own path is clear; or (b) crawl only the crews within one squad length
+of the crossing point and let the rest drive normally. Trace the round-29 worst runs first (`traffic-t3`, Terminus
+crossing seeds 22–24; yard s22/t6's wedge) and pick (a) or (b) from what the trace shows; write which and why before
+tuning. Tune on seeds {1,2,3} only.
+**Bar (send it before the numbers; name the last attempt; cite sizing's row for each line if CP-N has landed, C30.3):**
+round 29's T3 bar as written (between-squad fast pooled over the two crossing cases −≥ 25 %, neither up; every case crews
+≥ base − 2, all-in ≤ +20 %, no wedge; same-squad fast ≤ base × 1.2 + 10 per crossing case; head-on within 2 se; CPU
+mirror reported; bridge-pooled 18/18; live test fires; ≤ 0.5 ms) **plus** the Terminus crossing all-in median ≤ base +
+10 % (the crawl is the thing being fixed) and the yielding squad's own all-in reported. Fresh seeds (not 1–3, not 22–24).
+No partial. Native diff (Traffic.shape callback in `_avoid`, anything in `right_of_way`) before the commit.
+
+**T1c-b — a set-up hull ordered to fire stays set up (DECLARED).** Re-define what is judged (the orchestrator's round-30
+note): a set-up hull with a NEW move of its own is leaving anyway, so its give-way is not the defect; the defect is a
+**repack while still ordered to fire** (no new move; `deploy_ratio > 0`; a squadmate's ask). `Movement.ask()` refuses
+while the asked hull is set up AND still on its fire order; the asker goes round (`--traffic-off=setup`). Count exactly
+that: `repacks_while_firing` per arm.
+**Bar:** traffic-census fresh seeds (not 4–6): `repacks_while_firing` 0 in the arm, > 0 in base (else NULL: lesson 300);
+friendly-stuck ≤ base × 1.2 + 10; fast contacts ≤ base × 1.1 + 5; artillery fire not down > 2 se; bridge-pooled 18/18;
+your four cases no wedge; **brains' ApproachStage drawn artillery (seeds 13–15 × 6, both arms, B1 on main): give-way
+repacks → 0 and B1's lines hold** (from the side 18/18, first round ≤ clicked + 30 s). No native diff expected; say so.
+
+**I3 — the series cache's proof (OWED).** On builder0: one `traffic-series` base row run fresh, then the same row with
+`CACHE=on` twice (a miss then a hit); show the cached row equal to the fresh one FIELD FOR FIELD (every jsonl field,
+diffed), and that a one-line change to `game/` misses. Write the proof into `verification.md` (where I3 is described)
+and tell the orchestrator; adoption by brains' and manoeuvre's series is the orchestrator's call (C30.7).
+
+**I2 — `make quick`'s timing (OWED).** Measure `make quick` on builder0 for a one-file `game/ai/traffic*.gd` change: the
+whole thing ≤ 10 min, or say what is over and why. Record it in `verification.md` with commit and machine.
+
+**Stretch — the friendly half of the creep.** Manoeuvre's round-28 census: about half of creep episodes are a squadmate in
+the way. A give-way that lets a creeping long hull through (an ask from a hull mid-turn is answered by the squadmate
+backing out of its arc). Only after T3b and T1c-b are judged, and only agreed with manoeuvre (and the planner's design
+if it has landed) through the orchestrator; DECLARED with its own bar.
+
+## How to verify
+
+`make remote T=check` (builder0 only, C30.7); `make traffic-series`, `traffic-trace`, `traffic-census`, `bridge-pooled`,
+`native-verify-scenarios`; a `traffic-clip` of his Terminus crossing case before and after for him (watch it: does the
+yielding squad go as soon as the other's tail is past?). Every number carries its commit, machine, workload and n.
+
+## Don't touch
+
+Manoeuvre's drive body, k-turn block, `manoeuvre*.gd`, `order_controller.gd`; brains' `game/tactics/**`, elements,
+`tank_brain.gd`, `_approach_gate` (except the granted gate lines); native's `native/**`; `game/control/**`;
+`test_tactics_scenarios.gd` (brains splits it, C30.9); the planner's and sizing's paths.
+
+## Waiting on the lead
+
+Nothing: his calls are made.
+
+## Status
+
+_(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
+numbers; the report at the top)_

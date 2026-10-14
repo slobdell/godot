@@ -1,7 +1,87 @@
 # Workstreams: the current round
 
-> **ROUND 29 CLOSED (2026-10-14): traffic, manoeuvre, brains done (briefs in `streams/archive/round29/`); native continues
-> (`streams/native.md`).** Round 30 is not yet split (`roadmap.md` *AT ROUND 29's CLOSE* and *Round 30 candidates*).
+> **ROUND 30 LAUNCHED (2026-10-14): six streams, three of them on Fable 5.1 (manoeuvre, sizing, planner — his restored
+> Fable quota, `roadmap.md` *AT ROUND 29's CLOSE*).** Briefs in `streams/`; native continues (`streams/native.md`).
+
+## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
+
+**Goal: round 29's parked calls carried home, and the two lingering problems he named for Fable attacked head-on
+(`roadmap.md` *AT ROUND 29's CLOSE*, *Round 30 candidates*; his words in `game_design.md` *Round 30: the launch*):
+long wheeled hulls in tight space (three rounds of failed bars: M1, M2, M4) get both a fix stream and a planner designed
+from scratch; builder0's bottleneck gets judged series sized by their measured noise instead of by feel; the arrival gate
+keeps the yard it won without breaking the 180° arrival; his bridge back to 108/108; crossing squads released once the
+other's tail clears; the C++ core continuing.**
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | two of his squads crossing at an angle: the yielding squad no longer crawls as a whole for 30–45 s; a set-up mortar truck stays set up while it is still ordered to fire | T3b DECLARED; T1c-b DECLARED; I3's proof |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a long truck wedged against a wall backs out instead of sitting at full throttle; a drawn facing lands nose-on for wheeled turret vehicles; the creep re-judged on an honest base | **CP-M4b** (+ native's pair), M1b, M2b, M5 |
+| **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | the yard's last crew in every time AND a car that arrives facing the way it came; gang trucks' screen slots filled; his bridge 108/108 | **CP-G** B5c-v4 (+ native's pair), B3b |
+| **native** | `godot-native` (4, continuing) | Opus | [streams/native.md](streams/native.md) | nothing in play (equal answer): the B5c and M4b pairs; N7.5 element_feed | each pair |
+| **sizing** | `godot-sizing` (5) | **Fable** | [streams/sizing.md](streams/sizing.md) | nothing in play: every bar this round is sized by its probe's measured noise; fewer builder0 runs that decide the same thing | **CP-N** the per-probe n table, early |
+| **planner** | `godot-planner` (6) | **Fable** | [streams/planner.md](streams/planner.md) | nothing in play this round: a local motion planner for long wheeled hulls in streets, designed, tested offline and shown in a lab scene; manoeuvre integrates it next round | P2 offline tests; P3 the lab clip |
+
+**Ownership (round 29's, restated, plus the two new isolated streams):** each brief's header lists its paths. In
+`movement.gd`: traffic the give-way block (`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`,
+`_hull_within`; manoeuvre the `drive()` body, `_nose_stop`, `unstick`, `_pressing_escape`, `_manoeuvre`, the k-turn /
+planned-reverse / circle block; native the member STORAGE; brains the rest (`_track_progress`, `_update_phase`,
+`_approach_gate`, …). `order_controller.gd`: manoeuvre the face-at-rest path; native its seams; nobody else.
+`tank_brain.gd`: brains, except native's seams and manoeuvre's `_order_move` grant. `game/ai/wall_contact.gd`: manoeuvre.
+**Planner owns only** `game/ai/planner/**`, `tests/planner/**`, `tests/test_planner*.gd`, `mk/planner.mk`,
+`_agents/streams/references/round30/planner/**`. **Sizing owns only** `tools/judge/**`, `tests/test_judge*.gd`,
+`_agents/judging.md`, `_agents/streams/references/round30/sizing/**`. **Nobody** (a request): `game/match/**`,
+`game/tank/**` (except C30.6's granted lines), `game/units/**`, `game/garage/**`, `game/modes/**`, `game/camera/**`,
+`game/network/**`, `game/audio/**`, `game/announcer/**`, `game/theme/**`, `arenas/**`, `game/arena/**`, `game/control/**`,
+`tests/baselines/**` (except declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
+
+**Contracts (round 30):**
+
+- **C30.1 Every change to fights or driving is DECLARED** (C29.1 carried, every clause): one commit, merged alone, with
+  its scenario and paired series, the CPU on the same behaviour; **the bar (with a partial-gain rule and the last attempt
+  named) is sent to the orchestrator before its numbers**; tuned on named seeds, judged on fresh ones; the control arm can
+  win and lose; the measuring point checked against each arm; an arm's own counter shows the rule fired; the count is what
+  he sees, split from squadmates' noise; the worst run's trace read before the median; a heading bar carries the 180°
+  case as well as the 90° (lesson 305); a probe reads only an arena that has finished loading (304).
+- **C30.2 The C++ follows, and native carries it** (C29.2 carried): develop on the GDScript path (`--brains-off=native`);
+  send native each SETTLED diff to the drive, `_avoid`/`Avoidance.solve`, `right_of_way`, unstick, gunnery, the tank's
+  velocity lines (C30.6) or the per-crew execute before its commit (SendMessage, orchestrator copied); native ports it with
+  an equal-answer proof; the pair merges back to back and is checked once. The stale rule and `native-verify-scenarios`
+  stand. Pairs pre-empt native's N7 work.
+- **C30.3 Bars are sized by sizing's table once CP-N lands; before it, by round 29's sizes.** Sizing delivers, first
+  and early, a per-probe table (`_agents/judging.md` *The table*): each probe's measured noise (paired se, A/A swing),
+  the smallest n that decides the effect its bar names, and a variance-aware form for guard lines. The orchestrator
+  relays CP-N to traffic, manoeuvre and brains; **a bar pre-registered after CP-N cites the table's row** (or says why
+  it departs); a bar pre-registered before CP-N may be re-sized ONCE before its judged run, in writing, before numbers.
+  Sizing never runs a series on builder0: it reads `streams/references/round27..29/` and the judged blocks in this file.
+- **C30.4 The planner is isolated this round.** No edit outside its paths; nothing it builds is reached in play (no seam
+  in `movement.gd`, `manoeuvre*.gd` or `order_controller.gd`). It may read every manoeuvre branch and trace. Its lab
+  scene and offline tests run on builder0 as light targets (one slot at a time; no judged series); `make check` must
+  stay green with its tests in. The hand-over to manoeuvre (P4) names the seam line it wants; the orchestrator grants
+  it, if at all, at round 31's split (or as a late round-30 checkpoint if manoeuvre's backlog is done and asks for it).
+- **C30.5 The Terminus escape is manoeuvre's, the gate is brains'.** Brains' B5c worst run (Terminus seed 3: B_4, 9 m
+  from its slot, sent 17.5 m back to a gate, reaches it and jams on terrain ~8 s): the gate's placement (no gate within the
+  approach length when the route via it is much longer) is brains' B5c-v4; a wheeled hull's escape from terrain it is
+  jammed on is manoeuvre's M5. Each traces the run on its own path first; findings cross through the orchestrator.
+- **C30.6 M4b's `tank.gd` grant:** manoeuvre may add, in `game/tank/tank.gd` beside the `estimated_velocity = velocity`
+  lines (~721), ONE new reading of the real flat displacement a tick (capped at the asked planar speed), stored in its
+  own member (name it `real_velocity`), behind `--tank-off=real_velocity`; `estimated_velocity` and the plant's `_speed`
+  are NOT changed (round 29's M4 showed that zeroes wheels' `_speed` on every wall brush). Readers that judge progress
+  (`unstick`, `_pressing_escape`, the pinned probe) and aim leads read the new member. Native ports the line in
+  `tank_drive_native` as a pair.
+- **C30.7 builder0 runs every Godot run** (C29.7); the laptop only in a slot the orchestrator grants (none planned).
+  Traffic's I3 cache (`CACHE=on`) is adopted by another stream's series only after its cached == fresh proof is on main
+  and the orchestrator says so.
+- **C30.8 Formation geometry is brains'** (C29.8): slot spread and the 6 m screen slots for gang trucks (B4 rides on B5c).
+- **C30.9 `test_tactics_scenarios.gd` is split by brains** (two files balanced by `tests/shard_times.txt`, no behaviour
+  change, one commit, no series); traffic does not touch it.
+- **C30.10 Fable streams report like every stream:** a brief's Status, a bar before numbers, `make remote T=check` green
+  on the hash they hand over. A design doc is not done until its offline tests run in `check` (sizing: `tools/judge`'s
+  tests; planner: `tests/test_planner*.gd`).
+- C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
+
+**Bars (round 30, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
+
+- (none yet)
 
 ## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 

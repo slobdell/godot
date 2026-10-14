@@ -80,6 +80,32 @@ builder0 and must not be the design. The publish's own cost is pre-registered as
 **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
 read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
 
+## Round 30 backlog (the orchestrator, 2026-10-14; contracts C30.2, C30.4–C30.7 in `workstreams.md` *Round 30*)
+
+Round 30 is six streams (`workstreams.md` *Round 30*): traffic, manoeuvre (Fable), brains, you, sizing (Fable, isolated),
+planner (Fable, isolated: `game/ai/planner/**`, nothing in play, no port this round). **First: `git merge main`** (your
+branch is 126 commits behind main at launch; main is GREEN at `0d35f215`). In order:
+
+1. **Pairs pre-empt everything (C30.2).** Expected this round: **M4b** (manoeuvre, C30.6: one new `real_velocity` member in
+   `tank.gd` beside `estimated_velocity`, the progress readers `unstick` / `_pressing_escape` and aim leads read it;
+   port in `tank_drive_native` and the drive, equal answer); **B5c-v4** (brains: the gate rule that keeps yard and the 180°
+   arrival; start from `lab/native-b5c` (`exec_fields` `_gate_dropped_for/_why`, `_gate_turning_for`, `_roomy_key/_value`;
+   `DriveConfig gate_giveup`, `GATE_ROOM_POINTS`; `tests/test_native_gate.gd`), re-mirror whatever brains' v4 changes;
+   round 29's merge condition stands: yard and Sumps on the ON path equal to brains' judged on-arm run for run);
+   **traffic T3b / T1c-b** (a `Traffic.shape` callback in `_avoid`, `right_of_way`, or `ask()`'s set-up refusal, if the
+   diff touches ported code); **brains B3b** (route-aware seating: likely not in ported code; confirm with
+   `native-verify-scenarios`); **M1b / M2b / M5** (manoeuvre: the face-at-rest path, the creep lift, a terrain escape in
+   unstick / the k-turn: each a diff before its commit).
+2. **N7.5 element_feed's per-tick gather** (`game/ai/element_feed.gd` normalize, 2.39 % of the tick): now that round
+   29's arrival-watch rewrite is settled (B5c parked; brains' round-30 changes are in `_approach_gate` and seating, not
+   the feed). The N6 rules: a switch, equal-answer proof, its price on builder0 (3 alternated runs an arm, foundry 25 a
+   side), ON only if it pays or for the C++-core principle with the price stated.
+3. **The held N5 ports** (`_negotiate`'s body / ask / `_begin_yield`, the k-turn planner, `_manoeuvre`): only when
+   manoeuvre AND traffic say their code has settled this round (ask through the orchestrator after their judged runs);
+   likely round 31, given the planner (C30.4) will change the k-turn's executor.
+4. **Stage 2 stays deferred** (his call, `roadmap.md` *Open items*). Nothing on the laptop this round unless the
+   orchestrator grants a slot (C30.7).
+
 ## Round 29 backlog (the orchestrator, 2026-10-13; contracts C29.2, C29.4, C29.7 in `workstreams.md` *Round 29*)
 
 Round 29 runs traffic (1), manoeuvre (2), brains (3) beside you. In order:

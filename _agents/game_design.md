@@ -3920,3 +3920,18 @@ a size): everything in C++ v nothing in C++. **20 a side: 0.854 → 0.936 of rea
 alone), the later ports added about +0.01 at each size (0.930 → 0.936, 0.865 → 0.878; different sessions). In his terms:
 all the C++ together makes the game about a fifth faster at 20 a side and nearly a third at 25; 20 a side runs at ~94 %
 of real time on his laptop, 25 a side at ~88 %.
+
+## Round 30: the launch (2026-10-14, the orchestrator; from his Fable ask, no new playtest words)
+
+He gave no new playtest feedback at round 29's close; round 30 is round 29's parked calls (`roadmap.md` *Round 30
+candidates*) plus his standing ask, verbatim (2026-10-14): *"I have my weekly quota restored with now 0% Fable usage. Are
+there perhaps some deliberate hard tasks we should give to some fable agents"* … *"I'm asking if we have any hard or
+lingering problems that we can throw at Fable to mitigate any bottlenecks in our project"* … *"I want to wait until we can
+close out the current round before we do this."* Decided for him (reversible): the Fable work runs as ordinary
+workstreams in worktrees, not as Agent-tool subagents, so they report in briefs and merge through the same gate as
+everyone; three streams on Fable 5.1: **sizing** (judged series sized by measured noise: builder0's bottleneck),
+**planner** (a local motion planner for long wheeled hulls, isolated this round) and **manoeuvre** (the same problem's
+fixes: M4b, M1b, M2b, M5 — three rounds of failed bars is the definition of lingering). Traffic, brains and native stay
+on the usual model. Nothing new in play comes from sizing or planner this round; everything else that ships is from
+round 29's record and his earlier calls (take turns; turn the whole hull; the bridge 108/108).
+

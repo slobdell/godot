@@ -225,7 +225,7 @@ drifting 1–12; shipped OFF, `--shard-plan=time` kept): builder0's total load i
 cache, owed its cached == fresh proof; the Fable sizing task). Round 30: split `test_tactics_scenarios`
 (425 s, the floor of a balanced shard plan at 5–6 shards) into two files (brains').
 
-## AT ROUND 29's CLOSE: tell him to launch Fable agents (the lead, 2026-10-14)
+## AT ROUND 29's CLOSE: tell him to launch Fable agents (the lead, 2026-10-14) — DONE 2026-10-14: launched as round-30 STREAMS on Fable 5.1 (sizing = item 1, planner = item 2, manoeuvre = the stream item 2 feeds; item 3 is brains' B3b), not Agent-tool subagents: he runs each worker terminal on `/model fable`
 
 His ask: *"I have my weekly quota restored with now 0% Fable usage. Are there perhaps some deliberate hard tasks we should
 give to some fable agents"*, clarified: *"I'm asking if we have any hard or lingering problems that we can throw at Fable to
@@ -243,7 +243,7 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
-## Round 30 candidates (round 29's carry-overs, 2026-10-14) — NOT YET SPLIT; first, tell him to launch the Fable agents (above)
+## Round 30 candidates (round 29's carry-overs, 2026-10-14) — SPLIT 2026-10-14 as traffic (3b, 4, 6) + manoeuvre (1; Fable) + brains (2, 3, 5, the test split of 6) + native (7) + sizing (Fable, the Fable item 1) + planner (Fable, the Fable item 2) (`workstreams.md` *Round 30*)
 
 Each parked with its trace and judged data (`streams/archive/round29/`, `workstreams.md` *Round 29*):
 1. **Wheeled long hulls in tight space** (the Fable planner task feeds it): M1 turn-hull (`manoeuvre-m1-r29`, re-judge with
