@@ -9,6 +9,9 @@ Per (arena, kind), over every seed and start tick:
          arrived counts as its end time, so a stuck crew can only raise it): median and mean over the runs,
   ratio: the crossing's last arrival of each squad over that squad's solo last arrival on the same seed and tick
          (median, worst; 'never' counts squads that did not all arrive in the crossing while they did alone).
+  cross s (round 30, T3b): THE CROSSING'S OWN CLOCK, split from the far end's seating: per run, when both squads'
+         last crew is past the meeting point (a run where one never is counts as its end time): median and mean, and
+         the yielding squad's own (the squad with more crew-ticks slowed is not known per run; each squad's is printed).
 Then the solo runs' own line (the clear-road reference) and the pass line pre-registered in the brief's Status.
 """
 import json
@@ -30,6 +33,14 @@ def all_in_s(r):
     """Every crew's last arrival in this run; a crew that never arrived counts as the run's end."""
     times = [t if t >= 0 else r["end_s"] for t in r["arrive_s"].values()]
     return max(times) if times else r["end_s"]
+
+
+def cross_clear_s(r):
+    """When both squads' last crew is past the meeting point (round 30, T3b); never = the run's end."""
+    c = r.get("cross_clear_s")
+    if c is None:
+        return None
+    return c if c >= 0 else r["end_s"]
 
 
 def main(path):
@@ -94,6 +105,15 @@ def main(path):
             "ratio_worst": round(max(ratios), 2) if ratios else None, "never": never,
             "allin_median": round(statistics.median(allin), 1), "allin_mean": round(statistics.mean(allin), 1),
         }
+        clears = [c for c in (cross_clear_s(r) for r in g) if c is not None]
+        if clears:
+            line["cross_median"] = round(statistics.median(clears), 1)
+            line["cross_mean"] = round(statistics.mean(clears), 1)
+            for squad in ("a", "b"):
+                own = [r["cross_%s_s" % squad] if r["cross_%s_s" % squad] >= 0 else r["end_s"] for r in g
+                       if "cross_%s_s" % squad in r]
+                if own:
+                    line["cross_%s_median" % squad] = round(statistics.median(own), 1)
         summary["%s/%s/%s" % key] = line
         print("%-10s %-5s %-4s %4d %6d %9s %10.1f %8.1f %7.1f %8.1f %5d %6d %7.1f %6s %5s %8.1f %8.1f%s" % (
             arena, kind, arm, line["runs"], all_in, line["crews"], line["fstuck_mean"], line["fstuck_total"],
@@ -109,6 +129,11 @@ def main(path):
                 key, line["xfast_total"], line["fast_total"] - line["xfast_total"], line["verdicts"], line["holds"],
                 line["hold_ticks"], line["rel_passed"], line["rel_cap"], line["no_spot"], line["cross_verdicts"],
                 line["cross_slowed"], " ".join(line["wedged"]) or "-"))
+    print("the crossing's own clock (both squads past the meeting point; median / mean s; each squad's median):")
+    for key, line in sorted(summary.items()):
+        if "cross_median" in line:
+            print("  %-22s cross %5.1f / %5.1f   A %5.1f  B %5.1f" % (key, line["cross_median"], line["cross_mean"],
+                  line.get("cross_a_median", -1), line.get("cross_b_median", -1)))
     print("TRAFFIC_SUMMARY " + json.dumps(summary, sort_keys=True))
 
 
