@@ -140,6 +140,12 @@ _Updated 2026-10-14 ~15:15 PDT (traffic worker, round 30). Every number names co
   table, `turns_verdict.py` (CP-N's guards), `make quick-lint`, `tools/quick_tests.sh --lint`, `verification.md`'s I2/I3
   text, and this round's data under `references/round30/traffic/`.
 
+**Check at `3efc4b84`** (builder0, `make check exited 2`: 25 of 26 targets passed, `test` 2584 passed / 0 failed, perf-judge
+PASS). The one failure is `remote-guard-test`'s `tools/test_slot_light.sh`: its "quiet window" setup could not open
+while other streams held builder0's slots (load ~10). The diff touches neither `tools/slot.sh` nor its tests. **Re-run
+alone at the same tree: `make remote-guard-test exited 0`** (every suite 0 failed; slot-light 6/0). This is a
+load-dependent flake, not this branch's, so the merge hash is `3efc4b84`; the orchestrator decides whether a quiet
+full re-check is wanted. The commits after it change only this Status.
 **Merge notes:** no game change. `mk/infra.mk` and `tools/quick_tests.sh` (granted, C30 I2) change `make quick` only.
 `tests/traffic/traffic_stage.gd` adds report fields (`crossed_s`, `cross_*_s`), which changes the series-cache tree hash
 for traffic rows (intended).
