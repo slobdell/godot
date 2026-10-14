@@ -204,6 +204,24 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   ended (latched / stuck / the 12 s cap) counted per arm and reported — a come-round ending mostly by cap is a finding;
   (c) cost ≤ 0.5 ms a tick at Sumps 25 a side GDScript path or NOT READABLE stated (C29.5); (d) the thirteen explained if
   they move; (e) Terminus seed 3 is n = 1: reported, never a pass line.
+- **Brains B5c-v4 JUDGED — PASSES every line (2026-10-14 ~13:20 PDT; `lab/brains-r30-gate` `19eca15a`, builder0, GDScript
+  both arms, fresh seeds; the tree since = + the .uid `bdc21eae` + measurement tooling `f1a804eb`):** (1) yard n = 12:
+  every crew in 12/12 v 1/12 (Fisher, the deciding line), crews on ≥ off every run, median 19.0 s v never (reported);
+  (2) Sumps n = 12: all-within-8 m 24.5 v 37.5 s, no run > 5 s later, guns_on_arc 0.941 = 0.941; (3) Terminus s3/5/6/7
+  t11 reported: 10/10 both arms, last 50.1/56.2/45.6/43.7 v 56.8/82.2/47.0/52.7 s, near fired every run; (4) arrive
+  n = 100 (seeds 29–32): within 8 m 99 v 91 (McNemar 8 v 0), median 24.5 v 29.6 s (−17 %, se 1.6), on slot 89 v 77;
+  (5) counters > 0 every on run, 0 off; (6) bridge-pooled 18/18 rule on; (7) screen-slots s61 A_2 in 22.8 s v never;
+  **A_4 ends 5.4 m off in BOTH arms (B4 not wholly fixed)**; (8) heading tests 24/0 GDScript, native's mirror green on
+  the 5 named + `test_native_gate` 0 mismatches. Additions: (a) worst runs: yard s25 t1 (26.1 s) B_4 overshot when the
+  squad's shape changed, near = no gate, **its U-turn ran onto terrain ~8 s (manoeuvre's M5, a second case)**; Sumps s14 t8
+  (59.5 s; off never) S_3 came round, stuck 2 s later → turn_blocked latched, seat moved, near sent it straight in;
+  (b) come-round endings (28/28 trace rows identical to the judged): latched 6, stuck 3, cap 0; (c) path.gate 0.081 ms
+  on v 0.115 off (≤ 0.5 ms PASS); (d) thirteen at the pair; (e) noted. Traffic's relay reproduced on brains' tree
+  WITHOUT traffic-t3: Terminus crossing s24/t3, s22/t6 last in 32.6/27.3 s, no 30–40 s far-end circling; v4 on
+  30.2/21.7 s — **the 40–75 s sighting needs traffic-t3's rule underneath** (relayed to traffic). Planner's question: v4
+  still lays the gate BEHIND the slot along the facing when the hull starts outside the approach length (how the 180°
+  passes: it comes round it ~8 s); gates_turned fired 10× in the gate cells and 25× in arrive → round 31's side-gate form
+  has cases. **Ship = lab tip + native's mirror as a pair; waiting on the PAIR's green hash from native.**
 
 ## Round 29: four streams (launched 2026-10-13, CLOSED 2026-10-14; briefs in `streams/archive/round29/`)
 
