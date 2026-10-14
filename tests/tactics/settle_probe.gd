@@ -441,7 +441,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
 			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined,
-			"formations_moving": formations_seen, "reseats": element.reseats,
+			"formations_moving": formations_seen, "reseats": element.reseats, "crossings_found": Element.crossings_found,
 			"reseats_after_arrival": element.reseats_after_arrival,
 			# B2 v5: crews sent on from short after arrival, and how many of those still stand more than 8 m off that seat.
 			"resends_short": element.resends_short, "resent_still_off": _still_off(game_match, element.resent_short), "swaps": element.swaps,
