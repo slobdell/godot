@@ -312,6 +312,8 @@ static func reset_route_arms() -> void:
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
+	deployed_yields = 0
+	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
 	yield_swaps_shorter = 0
@@ -349,6 +351,9 @@ static var yields_started := 0
 ## Measurement only: ticks the guard found neither the chosen point nor the next corner drivable (_guard_steer).
 static var guard_rescues := 0
 static var asks_refused := 0
+## Round 29 (traffic T1c), measurement only: give-ways begun by a hull set up to fire, and asks refused because it was.
+static var deployed_yields := 0
+static var setup_refusals := 0
 
 ## X6 (N6): station-keeping. A move_to whose goal is itself moving (a formation slot riding its anchor, a follow's
 ## station) and is within STATION_RANGE is regulated by a PID on the along-track gap, on top of the goal's own speed
@@ -1643,6 +1648,13 @@ func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bo
 	native_stale |= STALE_ALL
 	if yield_to != "" or asker == _last_yielded_to:
 		return false
+	# Round 29 (traffic T1c, brains' request): a hull SET UP to fire (artillery's legs down, any part of the way) does
+	# not give way: moving packs it up, and a battery that packs up for every squadmate passing never fires (brains'
+	# trace: a mortar truck gave way three times in 7 s and packed up). The asker treats it as parked and goes round
+	# (_negotiate's CP1a2 rule; ORCA). `--traffic-off=setup`.
+	if ctl.tank.deploy_ratio > 0.0 and not Traffic.off("setup"):
+		setup_refusals += 1
+		return false
 	if _begin_yield(asker, from, direction, via):
 		return true
 	asks_refused += 1
@@ -1752,6 +1764,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 
 
 func _start_yield(other: String, point: Vector3, along: Vector2, spot := "", via := "") -> void:
+	if ctl.tank.deploy_ratio > 0.0:
+		deployed_yields += 1  # round 29 (traffic T1c): measurement only
 	if yield_log:
 		_yield_rec = _yield_diagnose(other, point, spot, via)
 		yield_log_rows.append(_yield_rec)

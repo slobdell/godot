@@ -114,7 +114,7 @@ about the same time as before.*
 **What to playtest** (after the pair merges; the C++ path carries it then): `make native && make skirmish` on the
 Terminus, two of your squads sent through each other along the west street. Before the merge, on this branch:
 `make skirmish -- --brains-off=native`. **His clip** (seed 1, his case, 45 s, top-down over the street): base
-`build/traffic_clips/terminus_head_base_3a94f38d.mp4` and hold `build/traffic_clips/terminus_head_hold_3a94f38d.mp4`
+`/home/slobdell/projects/clips/traffic_round29/terminus_head_base_3a94f38d.mp4` and hold `.../terminus_head_hold_3a94f38d.mp4` (outside the worktree: a normal-lane copy-back replaces `build/`)
 (builder0 light lane, `make remote LIGHT=1 T="traffic-clip TRAFFIC_CLIP_CASES=terminus,head TRAFFIC_CLIP_ARMS='base:hold on:-' TRAFFIC_FLAGS=--brains-off=native"`).
 I watched the frames at 12 s and 18 s. With the hold, A waits on both sides of the north mouth (the block corner leaves
 room for three on the right) and B's column comes out between them. In the base at 18 s, crews of both squads are

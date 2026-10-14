@@ -35,6 +35,15 @@ def main(path):
             key, len(g), tot["under_way_s"], tot["stuck_s"], tot["stuck_friend_s"], tot["stuck_enemy_s"],
             tot["stuck_static_s"], share, tot["contacts_friend"], tot["contacts_friend_fast"], tot["kturns"],
             tot["kturns_friend"]))
+    print("set-up hulls (T1c): repacks (all / while giving way), give-ways begun set up, asks refused set up, artillery shots:")
+    for key in sorted(groups):
+        g = groups[key]
+        if g:
+            t1c = {k: sum(r.get(k, 0) for r in g) for k in ("repacks", "repacks_yield", "deployed_yields", "setup_refusals",
+                                                             "art_shots")}
+            out[key].update(t1c)
+            print("  %-16s repacks %4d / %3d  deployed_yields %3d  setup_refusals %4d  art_shots %5d" % (
+                key, t1c["repacks"], t1c["repacks_yield"], t1c["deployed_yields"], t1c["setup_refusals"], t1c["art_shots"]))
     print("TRAFFIC_CENSUS_SUMMARY " + json.dumps(out, sort_keys=True))
 
 
