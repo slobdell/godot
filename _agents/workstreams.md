@@ -166,7 +166,10 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   trades a slot its stuck crew reads no_path for. Terminus: the seat is fine; (B5b) a STALE LEASH: a swapped crew's move
   keeps the old slot's 14 m leash because the 2 m dedup ignores the leash centre; (B5c) the ARRIVAL GATE
   (`Movement._approach_gate`, brains') laid ~17 m back across the street for a wheeled hull facing east, which grinds
-  there. Each declared with its own bar; native-ported status stated in each.
+  there. Each declared with its own bar; native-ported status stated in each. **B5b DROPPED (~18:20):** the order leash
+  applies only under the opt-in `leash_on()` (off; the native drive the same), and CombatMotion's leash is rebuilt each
+  think, so the stale leash is inert; the latent dedup bug is noted at the dedup. B5a: no native diff; B5c: a C29.2 pair
+  (`drive_native.cpp` mirrors `_approach_gate`).
 
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
