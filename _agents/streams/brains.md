@@ -132,6 +132,25 @@ numbers; the report at the top)_
 - Next: **B3b** (`lab/brains-r30-bridge`, from `lab/brains-r29-bridge`'s 254fd98f + mouth guard), then traffic's
   Terminus crossing seat trap (s33 t1 under traffic-t3b) and **B6**.
 
+### B3b — route-aware seating across a crossing (DECLARED; bar ACCEPTED 16:31 by godot-67; v1 = the last attempt)
+Lab `lab/brains-r30-bridge` = `4bc708d7` (`a117cb1a` + the settle probe's counter): stream + 254fd98f (heading re-issue
+only when the TASK's drawn facing changed) + 474cf510 (the mouth guard) + **route seating**: on a drill move whose navmesh
+route crosses a deck, the seat cost is (|crew→entry| + |exit→seat|)² (the crew nearest the crossing takes the seat
+farthest from it); `Element._find_crossing` once per task point (static destinations only). Control = all three off
+(`--route-seat=off --mouth-held=off --reissue-heading=plan`) = main's rules. GDScript only, no native diff.
+- **Trace** (builder0, rust t16 s2, 254fd98f + guard): at the drill's end (13 s) the wedge across the river was seated by
+  straight line; S_4 (westmost on the near bank) took the westmost far seat while every route crossed the east bridge
+  (x ≈ 86); the seats crossed; S_2/S_3 gave way from 19 s; make-room swapped S_3/S_4 at 23 s; rim 4.2 s.
+- **Tuning** (that cell, n = 1, a117cb1a): rim 0.6 s, no crew at the rim, all across 27.1 v 37.4 s, arrived 39.7 v 47.9 s;
+  crossing found once (entry (86, −10.5), exit (86.2, 11.8)). Unit tests 14/0 (route_seat, reorder_heading, reseat_keep).
+- **Bar** (one commit, both arms): (1) the full 108 on = 108/108 (deterministic; control reported, main 106/108); (2)
+  bridge-pooled 18/18; (3) arrive series fresh seeds 33–36, n = 100 an arm: within 8 m ≥ control − 1 and McNemar
+  discordant-against ≤ 1, paired median ≤ +2 %; (4) counters (crossings_found, mouth_held_resends, route seating 0 on
+  maps without decks); (5) cost ≤ 0.5 ms or NOT READABLE; (6) the suite green on the tip, the thirteen explained.
+  Orchestrator's additions: the two control-failing cells named, each re-run with each switch alone (6 runs); any
+  arrive discordant-against traced first; the yard/Sumps gate cells are not in this bar (no deck) with route-seat's
+  counter shown at 0 on a Sumps cell; the merge gate is the WHOLE suite on the tip (pursuit included).
+
 ### Plan (2026-10-14; start = stream `bd05077d`, covered by the launch check, main `0d35f215` green)
 1. **B5c-v4** on `lab/brains-r30-gate` (a C30.2 pair: the stream tip stays mergeable without native's mirror). Base =
    round 29's gate restored (`0c7a6e72`), `--gate-trace` (measurement only), the v4 rule + `tests/test_nav_gate_v4.gd`;
