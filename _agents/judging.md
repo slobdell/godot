@@ -267,7 +267,83 @@ median of 12 (se ≈ 3 s) is at the edge; the count is the deciding line and the
 
 ## Early stop (S4): deciding a paired series before the grid is run out
 
-_(written in S4; the boundary, its simulated error rates on rounds 27–29's rows, and the one rule for when a stream may stop)_
+**The design** (`tools/judge/sequential.py`). A judged series is walked in the runner's own order (seed-major, start tick
+minor: `mk/traffic.mk`'s loop), and after every run each pre-registered line is a Wald SPRT on the per-run paired
+differences d_i = arm − base, with the probe's per-run sd taken from *The table* (pre-registered, not the series' own):
+
+- a **gain line** ("down ≥ X %") tests H0 δ = 0 against H1 δ = −X %·base: PASS when the log-likelihood ratio reaches
+  A = ln((1 − β)/α) = +2.77, FAIL when it falls to B = ln(β/(1 − α)) = −1.56 (α = 5 %: a null passes; β = 20 %: the named
+  effect fails);
+- a **guard** ("not worse by X") tests no-harm against harm = +X %·base (a fall for arrived-type metrics): FAIL at A,
+  PASS at B (α = 5 %: a harmless change fails; β = 20 %: the named harm passes);
+- a **rate line** (on side) is the Bernoulli SPRT of p₁ (the bar's rate) against p₀ (the control's, floored at 0.05);
+- **truncation** at the grid's end decides by the fixed one-sided test at α (a gain passes only if the drop exceeds
+  1.645 se; a guard fails only if the harm exceeds 1.645 se), never by the ratio's sign, which under a null is a coin;
+- **no stop before one full seed** of ticks (`--min-runs 6`), so no verdict rests on one start tick;
+- the **series** FAILS on the row the first line fails (no partial gain), PASSES on the row the last line passes; and a
+  case whose arms are byte-identical AND whose rule counter (lesson 300: `tr_verdicts`, `tr_cross_verdicts`, passed as
+  `--counter`) is 0 in every row of the first seed is **UNTOUCHED** and stops as PASS, an equality check (a guard there
+  guards nothing).
+
+**Its error rates, simulated on rounds 28–29's own rows** (`--simulate`: the null world sign-flips the centred paired
+differences, so it has the probe's real noise shape and no effect; the effect world shifts that null by the named effect;
+the observed world resamples the real differences). Per line, at n = 18, table sd:
+
+| line (series) | a null passes / a harmless change fails | the named effect fails / the named harm passes | observed rows: decision, mean stop |
+|---|---|---|---|
+| Terminus head-on xfast gain −25 % (CP-T) | 6.1 % | 48 % (the series is too short for −25 %, as the table says; −81 % is what ran) | PASS 100 %, run 7.9 |
+| Terminus head-on xfast gain (CP-T CPU) | 3.2 % | 48 % | PASS 100 %, run 7.2 |
+| Terminus head-on arrived guard −5 % (CP-T) | 1.1 % | 27 % | PASS 100 %, run 11.4 |
+| Terminus head-on all-in guard +20 % (CP-T) | 2.1 % | 8 % | PASS 96 %, run 9.6 |
+| crossings pooled xfast gain −25 %, n = 36 (T3) | 4.3 % | 13 % | PASS 100 %, run 6.6 |
+| Terminus crossing all-in guard +20 % (T3) | 3.5 % | 53 % | PASS 80 %, run 16.4 |
+| yard crossing arrived guard −5 % (T3) | 10.1 % | 23 % | PASS 64 %, run 11.4 |
+| Terminus head-on fast gain −25 % (T1 v3, r28) | 5.2 % | 45 % | PASS 100 %, run 10.7 |
+| Terminus crossing fast gain −25 % (T1 v3) | 7.2 % | 43 % | PASS 1 %, run 11.3 |
+| yard crossing fast gain −25 % (T1 v3) | 11.4 % | 32 % | PASS 88 %, run 11.7 |
+| Terminus head-on fast gain −25 % (T1b, r28) | 10.1 % | 43 % | PASS 95 %, run 11.0 |
+| Terminus head-on arrived / fstuck guards (T1b) | 14.9 % / 23 % | 38 % / 62 % | the wedged-run pair: its own sd is 1.5–1.9× the table's |
+| B1 (a) on side, rate 0.67 v 0.05 | 0.3 % | 1.7 % | PASS 92 %, run 6.4 |
+| M4 Terminus rigs arrived guard −10 %, n = 6 | 3.0 % | 50 % | FAIL 99 %, run 4.2 |
+
+**Read:** the false-pass of a gain line sits at **3–11 %** (median 6 %) against the 5 % designed, and the false-fail of a
+guard at 0–6 % except on T1b's pair, whose one wedged run put its real sd 1.5–1.9× above the table's and lifted the
+guards' false-fail to 15–23 %: **the table's sd must be refreshed after every judged run** (`python3 tools/judge/table.py`
+once the pair is under `references/`), and a stream prints the rows' own sd beside the table's (the script does). The
+power column is the table's lesson again: at n = 18 a −25 % effect fails about half the time; the effects that shipped
+(−81 %, −54 %) are decided inside 6–8 runs.
+
+**What round 29 would have done with it** (the judged series whose rows are kept; runs per arm; every verdict the same):
+
+| series | runs run | would have stopped at | why |
+|---|---|---|---|
+| CP-T Terminus head-on | 18 | 13 | xfast PASS at run 8; the arrived guard clears B at 10, all-in at 13 |
+| CP-T CPU mirror | 18 | 12 | |
+| CP-T Terminus crossing, yard crossing | 18 + 18 | 6 + 6 | UNTOUCHED (counter 0, identical arms) after one seed |
+| CP-T yard head-on | 18 | 6 | the guards clear B inside the first seed |
+| T3 crossings pooled xfast | 36 | 8 | the gain decided; the cases' guards below run on |
+| T3 Terminus crossing, yard crossing, Terminus head-on | 18 × 3 | 18 × 3 | guards against +20 % / −5 % harms accrue evidence slowly; head-on's counter is 2, not 0 |
+| T3 yard head-on | 18 | 6 | |
+| M4 Terminus rigs / mixed | 6 + 6 | 4 + 6 | rigs' arrivals fail the guard at run 4 (all four lower) |
+| **round 29 total** | **174** | **113 (−35 %)** | CP-T PASS, T3 FAIL (the wedge, a named run, still stands: lesson 302), M4 FAIL |
+| round 28: T1 v3 (3 cases), T1b, B1 (a) and (c) | 54 + 18 + 36 | 35 + 6 + 31 | T1 v3's crossing fails at run 6 (fast UP); T1b fails at 6 (all-in guard); B1 (a) passes as a comparison |
+
+At the brief's 1.75 box-minutes a traffic run, round 29's traffic series would have cost 125 fewer runs × 2 arms ≈
+**3.6 box-hours** less, out of ~10; the biggest single saving is the untouched cases (one seed instead of three).
+
+**What the runners should print** (a proposal to traffic / brains / manoeuvre through the orchestrator; the scripts are
+theirs): after each row of `traffic-series` (and the census / Terminus / hull-rest loops), call
+`python3 tools/judge/sequential.py --base <base.jsonl> --arm <arm so far.jsonl> --case <case> --lines <the bar's lines>
+--counter <the rule's counter> --quiet | tail -1`, and print its `SERIES CONTINUE | PASS | FAIL at run k of n` beside the
+row (`turns_verdict.py` / `hold_verdict.py` stay the final reading; this is the running one). The lines are the bar's,
+written as `metric:gain:share`, `metric:guard:share` (or `abs=`), `metric:rate:p1:p0`, pre-registered with the bar.
+
+**THE ONE RULE FOR WHEN A STREAM MAY STOP.** *A judged series may stop before its grid only on the row where
+`sequential.py`, with the table's sd (not the rows' own) and the bar's pre-registered lines, prints `SERIES PASS` or
+`SERIES FAIL` for every case the bar names; the stream records that row and the lines' ratios in the bar's block ("stopped
+at run 13 of 18: xfast PASS llr 2.83 at run 8, …"). A `CONTINUE` on any line of any case means the series runs on. A
+probe with no table row runs its full grid and owes its A/A pair first. The orchestrator's trace rules are untouched by a
+stop: the worst run so far is still read before the median (302), and a wedge is a named run, not a line.*
 
 ## How to write a bar (S5)
 
