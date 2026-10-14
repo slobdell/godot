@@ -162,3 +162,12 @@ Round 29's state (`a8df3dc3` restored at lab `0c7a6e72`) reproduces: yard_open c
 | (2) Sumps guns_on_arc mean | 12 | 0.941 | 0.941 | PASS (≥ off − 0.05) |
 | (3) Terminus seeds 3, 5, 6, 7 t11 (reported) | 4 | 10/10 every run | 10/10 every run | near fired every run; seed 3 (B_4) last 50.1 v 56.8 s |
 | (5) counters | 28 a arm | > 0 every on run | 0 every off run | PASS |
+| (4) arrive series, within the element's 8 m (5 maps × 5 squads × seeds 29–32) | 100 | **99** | 91 | McNemar 8 v 0 discordant (decided); PASS (≥ off − 1) |
+| (4) arrive series, every crew on its slot | 100 | 89 | 77 | reported |
+| (4) arrive, paired median within 8 m (91 cells in both) | 91 | 24.5 s | 29.6 s | −17 % (paired diff −8.4 s, se 1.6); PASS (no slower than +2 %) |
+| (6) bridge-pooled, rule on (GDScript) | 18 | **18/18** | – | PASS |
+| (7) screen-slots seed 61 (gang_tank ×4, screen east) | 1 | A_2 in 22.8 s | A_2 never (18.5 m off) | PASS; A_4 ends 5.4 m off in BOTH arms (not "in"): B4 not wholly fixed |
+
+Arrive counters: 98 of 100 on-arm runs fired an event counter; the other two show the rule acting or not needed (yard
+law_ifv×2+suppressor+tank seed 32: refused only `cramped` 224 plan ticks, v3's room rule; pit law_scout+ifv+tank×2 seed
+29: only `on_approach`). Totals over the 100: turned 25, latched_away 1, near 148.
