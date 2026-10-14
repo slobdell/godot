@@ -292,7 +292,8 @@ Both cells `254fd98f` loses (builder0; candidate = stream + 254fd98f re-applied)
 grounding lays the line at a 6.0 m pitch (z 25.6 / 5.8 / −12.8 / −18.6) and A_2 is blocked no_path / terrain from
 20 s to the end, 18.5 m off. A spacing pass (pitch → 15.8 m) does NOT free it; B5c's rule does, with or without the
 spacing (A_2 in at 18.3 s / 22.2 s). Six metres between hulls parked side by side facing east is physical (2.9 m wide).
-The spacing pass is parked on `lab/brains-r29-linespread` (`3fc0cb01`, tests 4/0); B4 rides on B5c's flip.
+The spacing pass is parked on `lab/brains-r29-linespread` (`3fc0cb01`, tests 4/0); B4 rode on B5c's flip, so with B5c
+parked B4 is unfixed this round (A_2 still stuck at seed 61); round 30, with B5c.
 **B2 MERGED** alone: `fa099d5b` → main `23d94eb3` (check: exited 0, 2559/0, ALL JUDGED). flank-probe 13–15 (fa099d5b,
 builder0): drawn 6/6 on task, 5/6 reached (median 25 s; the miss, right-13, parks on the ring 0.4° outside 35°), clicked
 1/6. Clip: `~/projects/clips/round29/flank_drawn_vs_clicked_fa099d5b_seed10t3.mp4` (even roster, seed 10 t3: drawn 5
@@ -300,7 +301,16 @@ alive, IFV dead 29.1 s, hits 32° off; clicked 1 alive, IFV lives, 89° off).
 Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
 `build/round29/artillery_side_by_side.mp4`.
 
-### B5c — JUDGED at `053beffb`: every bar line PASSES (godot-67); the FLIP pairs with native's mirror
+### B5c — PARKED for round 30 (`lab/brains-r29-gate` = `a8df3dc3`; reverted on the stream, `785dd103`)
+The pair check went red on round 8's `test_wheeled_arrival` (180° facing). The narrow fix (`a8df3dc3`) passes it, but
+its judged cells MOVED (GDScript path, builder0, rule on): yard 23 last crew in t1 21.7 → 32.8 s, t3 22.1 → 39.9 s,
+t6 20.7 → 24.2, t8 24.8 → 25.6, t11 26.7 → 23.1; Sumps 6 moved (35.47 → 35.17 within 8 m), Sumps 2–5 and 7 identical;
+`reached_facing_away` fires in every yard cell (129–220 refusals). B5c's last attempt was used, so by godot-67's rule it
+parks; the run was stopped there (yard 24, Sumps 8–13, Terminus, bridge and arrive not rerun). Native's mirror is not
+merged. **For round 30:** the yard crossing reaches its gates facing away often, so the latch is what wins yard; a
+round-30 rule needs both a latch that keeps yard's win and a way round for the 180° case (e.g. latch facing away
+only after one circuit, or lay a 180° gate to the side), judged with the 180° test in the bar from the start.
+Record of the judged attempt (`053beffb`), every bar line passed:
 Builder0, both arms `--brains-off=native`, fresh seeds:
 | line | off | on |
 |---|---|---|
@@ -338,8 +348,8 @@ attack-move's automatic facing is from the last waypoint (an attack faces its ta
 runs leg by leg from each last point; a shifted plain move goes behind a task already queued; an element's attack is
 done when its target is dead or gone; several squads each queue behind their own. Unshifted, and shift+A on an idle
 squad, as before. `177a7419` + `11dde288`; builder0 31/0 and 24/0 (queued task, element, controls tests). The stream's check at
-`11dde288` fails ONE test, by design of the pair: `test_native_exec_state` wants B5c's four new Movement members in
-`native/src/exec_fields.h` (native's mirror adds them), so the stream cannot be green alone while it carries B5c. B5
+`11dde288` failed ONE test, by design of the pair: `test_native_exec_state` wanted B5c's four new Movement members in
+`native/src/exec_fields.h`. Resolved by parking B5c (`785dd103`). B5
 alone: `brains-b5-queued` = main `5b1307b8` + `55d1f566` + `5ab05468`: **GREEN at `5ab05468`** (builder0: exited 0, 2580/0,
 26 targets ALL JUDGED, sim-baseline unmoved); **MERGED** `5ab05468` → main `1f5c84e4` (godot-67).
 ### B5 — support by fire, wheeled turret hulls: REPRODUCED, not fixed (round 30)
