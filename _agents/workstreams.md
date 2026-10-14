@@ -256,7 +256,7 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   (h) seed 21's rig (the defect in the wild, 16.8 m off after a face from 8.6 m) re-run on the candidate and reported.
 - **Manoeuvre M2b bar — the creep lift on M4b + the planner's two executor fixes (pre-registered 2026-10-14 ~14:35 PDT,
   before any judged number; DECLARED; FIRST run, a second on fresh seeds would be the last; full text in the stream's
-  Status):** candidate `lab/manoeuvre-m2b` (hash named when its tests are green) = M4b `e8bfef2e` + round 29's creep lift
+  Status):** candidate `lab/manoeuvre-m2b` `e94ca27e` (tests builder0 3/0: a War Rig's 10 m reverse leg drives 10.03 m by the arc rule v 10.31 by the chord; a paced IFV and a gang catapult roll a 120° open-ground turn with 0 gear changes v 14 and 23) = M4b `e8bfef2e` + round 29's creep lift
   re-based (`--nav-off=creeplift`) + the planner's two executor fixes behind one switch `--nav-off=kturnarc` (a k-turn leg
   measured by the arc driven, Σ real_velocity × dt, not the chord; the discrete stopping distance v²/2b − v·dt/2). Base
   `--nav-off=creeplift,kturnarc` same commit, GDScript; two switches, ONE declared change (the lift's legs end where the
