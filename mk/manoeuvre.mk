@@ -62,13 +62,17 @@ M1_ARMS ?= new_drawn base_drawn new_clicked base_clicked
 M1_DIR ?= $(BUILD_DIR)/manoeuvre/hull-rest
 # Extra flags for every arm (e.g. --turn-states: each crew's state once a second, read by hull_rest_moving.py).
 M1_FLAGS ?=
+# Round 30 (M4b/M1b): the base arms' --nav-off list (the parser honours only the FIRST --nav-off= on the line, and the
+# arm's comes first, so a base switch must be named HERE, not in M1_FLAGS). Round 29's "turnhull,faceslot" named
+# mechanisms main does not have (push_error on every base run).
+M1_BASE_OFF ?= faceslot
 .PHONY: manoeuvre-hull-rest
 manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
 	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
 	for arm in $(M1_ARMS); do for faction in $(HULL_FACTIONS); do for seed in $(HULL_SEEDS); do for task in $(_FACING_TASKS); do \
 		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
 		d=$(M1_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
-		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=--nav-off=turnhull,faceslot;; esac; \
+		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=--nav-off=$(M1_BASE_OFF);; esac; \
 		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
 			--no-element-cpu $$click $$off $(M1_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
