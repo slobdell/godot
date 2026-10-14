@@ -282,6 +282,17 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   pins must be unchanged (they keep today's reading), stated; (k) **M4b's record chain (bridge, fights, hull-rest of the
   failed candidate) is STOPPED now** — a parked candidate's record is not worth 1.5 box-hours on the round's bottleneck;
   the second attempt starts as soon as its tests are green.
+  **Run 2 Terminus GATE PASSES (2026-10-14 ~14:50 PDT; `77a1603f`, 13 fresh seeds 62–74, GDScript, builder0):** rigs
+  arrivals 178 = 178 of 208, wall contact-ticks 13411 = 13411 (two worst dropped 8286 = 8286), leg seconds 1748 = 1748,
+  counters identical (stall 0/0, press 97/97); (i) every rig run line-for-line identical to its base in all drive, leg and
+  per-second state lines — the only differing bytes are the state line's printed `real` column (the reader's VALUE, which
+  differs by construction while the motion does not) and the summary's recorded `off` list: no leak. Mixed: arrivals
+  295 → 293 of 312 (−2; 1.645 se = 4.7, pass), wall contact-ticks 2093 → 1915 (−8 %; 1.645 se = 423, pass; two worst
+  dropped 1314 → 1350), leg seconds 1478 → 1534 (+4 %), stall fires 40 v 11 — **21 ended by the backoff, 19 by the cap:
+  the cap binds for the short hulls (line (f), a finding, not a pass line)**; press 7 v 7; brush speed +0.07 m/s (se 0.09,
+  n 26), touching crew-seconds 522 v 525. The chain continues (bridge, fights 157–180, hull-rest 54–59 for (b2)), ~2 h;
+  M1b/M2b held until the whole run is ruled. Native told to port `77a1603f` now (the pair's proofs run while the chain
+  finishes).
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` = M4b `e8bfef2e` + the anchor alone (`OrderController.
