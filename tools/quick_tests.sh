@@ -10,12 +10,34 @@
 #     search cannot see, e.g. a test that drives the changed code only through a scene).
 # QUICK_FILES="a.gd b.gd" asks what a change to those files would run (no diff read).
 # Prints nothing when the diff touches no test (then `make quick` runs lint and the smoke only, and says so).
+#
+# `--lint` (round 30, I2's timing: a full `make lint` boots Godot once per script, -P6, and was 12 of quick's 21 min on
+# builder0): print instead the scripts quick parse-checks, one a line. `--check-only` on a script loads what it depends
+# on, so a changed script's own errors and its calls into others show from the script itself; what it cannot show is a
+# DEPENDENT broken by the change (a renamed method). So: every changed .gd, plus every .gd naming a changed script's
+# class_name as a word or its res:// path. `make check`'s full lint stays the merge gate.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 base="${QUICK_BASE:-$(git merge-base HEAD main 2>/dev/null || git rev-parse HEAD)}"
 # QUICK_FILES (space-separated paths) replaces the diff: what a change to those files would run.
 if [ -n "${QUICK_FILES:-}" ]; then changed=$(tr ' ' '\n' <<< "$QUICK_FILES" | sort -u)
 else changed=$( { git diff --name-only "$base" HEAD; git diff --name-only HEAD; git ls-files --others --exclude-standard; } | sort -u); fi
+if [ "${1:-}" = --lint ]; then
+	all=$(git ls-files -co --exclude-standard '*.gd')
+	declare -A pick=()
+	while IFS= read -r path; do
+		case "$path" in *.gd) ;; *) continue ;; esac
+		[ -f "$path" ] || continue
+		pick["$path"]=1
+		cls=$(grep -m1 -oP '^class_name\s+\K\w+' "$path" || true)
+		# shellcheck disable=SC2086
+		while IFS= read -r f; do [ -n "$f" ] && pick["$f"]=1; done < <(
+			{ [ -z "$cls" ] || grep -lw -- "$cls" $all; grep -lF -- "res://$path" $all; } 2>/dev/null || true)
+	done <<< "$changed"
+	[ "${#pick[@]}" -gt 0 ] || exit 0
+	printf '%s\n' "${!pick[@]}" | sort
+	exit 0
+fi
 declare -A stems=()
 add() { stems["$1"]=1; }
 tests_list=$(find tests -name 'test_*.gd' | sort)

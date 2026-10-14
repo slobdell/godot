@@ -22,6 +22,9 @@ extends RefCounted
 ##   kturns / kturns_friend   planned reverse legs started (Movement.in_kturn going true), and those started with a
 ##                            friendly hull within WAY_GAP_M ahead of the hull's nose
 ##   yields                   give-ways begun (Movement.yield_to going non-empty)
+##   crossed_s / cross_*_s    round 30 (traffic T3b): THE CROSSING'S OWN CLOCK, split from the far end's seating. Per crew
+##                            the first time it is PAST_M beyond the meeting point along its squad's way (-1 = never);
+##                            cross_a_s / cross_b_s each squad's last, cross_clear_s both squads' (-1 unless every crew)
 
 const STILL_MPS := 0.5
 const WAY_GAP_M := 3.0
@@ -32,6 +35,8 @@ const ARRIVED_M := 4.0
 const SLOT_M := 15.0
 const JITTER_M := 1.0
 const SQUAD_PITCH_M := 9.0
+## Round 30 (T3b): a crew is past the crossing once it is this far beyond the meeting point along its squad's way (m).
+const PAST_M := 8.0
 
 ## The mixed squad: both squads get it (C26.6's "mixed hulls as make skirmish deals": a Law player's squads mix its
 ## wheeled tank, tracked IFV, scout, suppressor and artillery; lengths 5–9 m, two turning circles).
@@ -118,6 +123,13 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 	var was_kturn := {}
 	var was_yield := {}
 	var settled := 0
+	var meet := meeting_point(arena, kind)
+	var crossed := {}  # round 30 (T3b): crew -> the first tick it is PAST_M beyond the meeting point along its squad's way
+	var squad_way := {}
+	for squad: String in squads:
+		var way := (stage[squad][1] as Vector3) - (stage[squad][0] as Vector3)
+		for unit_name: String in members[squad]:
+			squad_way[unit_name] = Vector2(way.x, way.z).normalized()
 	for unit_name: String in everyone:
 		trails[unit_name] = []
 	for tick in int(seconds * SimClock.TICK_RATE):
@@ -135,6 +147,8 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 			var here := Vector3(t.global_position.x, 0.0, t.global_position.z)
 			var trail: Array = trails[unit_name]
 			trail.append(here)
+			if not crossed.has(unit_name) and Vector2(here.x - meet.x, here.z - meet.z).dot(squad_way[unit_name]) > PAST_M:
+				crossed[unit_name] = now
 			var mover := Movement.of(t)
 			var way := _way(t, mover)
 			# Real motion over the last second, never estimated_velocity: a hull pressed nose to nose against another
@@ -241,14 +255,24 @@ static func run(case: TestCase, seed_value: int, arena: String, kind: String, wh
 	# The rule's own counters (round 29 T1's street hold: tr_verdicts, tr_holds, tr_hold_ticks, releases). Read them before
 	# believing an arm: round 28's T1b first judged run was a null that only the verdict counter showed (lesson 300).
 	report.merge(Traffic.report())
+	var crossed_s := {}
+	var clear := 0
 	for squad: String in squads:
 		var last := 0
+		var cross_last := 0
 		for unit_name: String in members[squad]:
+			crossed_s[unit_name] = _s(int(crossed.get(unit_name, -1)))
+			cross_last = -1 if cross_last < 0 or not crossed.has(unit_name) else maxi(cross_last, int(crossed[unit_name]))
 			if int(arrived_ticks[unit_name]) < 0:
 				last = -1
-				break
-			last = maxi(last, int(arrived_ticks[unit_name]))
+				continue
+			if last >= 0:
+				last = maxi(last, int(arrived_ticks[unit_name]))
 		report["last_%s_s" % squad] = _s(last)
+		report["cross_%s_s" % squad] = _s(cross_last)
+		clear = -1 if clear < 0 or cross_last < 0 else maxi(clear, cross_last)
+	report["crossed_s"] = crossed_s
+	report["cross_clear_s"] = _s(clear)
 	lab.dispose()
 	return report
 
