@@ -700,6 +700,14 @@ reseat-trace: import ## Round 29 (B5a): the element's seating traced in traffic'
 	@grep -E "RESEAT_TRACE|SCRIPT ERROR" $(BUILD_DIR)/reseat-trace.log | grep -E "EVENT|NO_PATH|SCRIPT ERROR" | cut -c1-300 | head -60
 	@grep -o "RESEAT_PROBE {.*" $(BUILD_DIR)/reseat-trace.log | cut -c1-400
 
+# Round 29 (brains B5a): the navmesh asked from the traced stuck spots to their seats, and from a ring round each spot:
+# is a no_path seat the seat or where the crew stands? -> build/reach-probe.log (REACH lines)
+.PHONY: reach-probe
+reach-probe: import ## Round 29 (B5a): navmesh reach from the traced no_path spots to their seats (and a ring round each) -> build/reach-probe.log
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reach_probe.gd > $(BUILD_DIR)/reach-probe.log 2>&1 || true
+	@grep -E "^REACH|SCRIPT ERROR" $(BUILD_DIR)/reach-probe.log | cut -c1-260
+
 # Round 28 (brains B3): who orders scouts into the enemy -- the showmatch seed scout's census measured, each recon
 # element's task, drill, reason, its task point's distance to the nearest enemy and its crews' (RECON lines, once a second).
 RECON_SEED ?= 5

@@ -40,6 +40,22 @@ func _run() -> void:
 
 func _watch(lab: TacticsLab, ticks: int) -> void:
 	var t := ticks / float(SimClock.TICK_RATE)
+	# Every half second, a crew reading blocked/no_path: what its Movement planned to and what the route reading said.
+	if ticks % (SimClock.TICK_RATE / 2) == 0:
+		for element: Element in lab.elements.all():
+			for unit_name: String in element.slots:
+				var ctl := lab.game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as OrderController
+				if ctl == null or String(ctl.movement.phase) != "blocked" or String(ctl.movement.blocked_by) != "no_path":
+					continue
+				var path: PackedVector3Array = ctl.movement.get("_path")
+				var reading: Dictionary = ctl.movement.get("_route_reading")
+				var tank := lab.tank_of(unit_name)
+				print("RESEAT_TRACE t=%.1f NOPATH %s at (%.1f, %.1f) path_goal %s path_end %s (%d points) reachable=%s reading end_gap %.1f goal_gap %.1f last_replan %s gate %s move %s" % [
+						t, unit_name, tank.global_position.x, tank.global_position.z, str(ctl.movement.get("_path_goal")),
+						str(path[path.size() - 1]) if path.size() > 0 else "-", path.size(), ctl.movement.get("_reachable"),
+						float(reading.get("end_gap_m", -1.0)), float(reading.get("goal_gap_m", -1.0)),
+						str(ctl.movement.get("last_replan")), str(ctl.movement.get("_gate")) if "_gate" in ctl.movement else "?",
+						JSON.stringify(ctl.move_order)])
 	for element: Element in lab.elements.all():
 		var key := element.element_name
 		var seen: int = _seen_events.get(key, 0)
