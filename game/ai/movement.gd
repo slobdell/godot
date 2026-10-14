@@ -863,6 +863,7 @@ func reset() -> void:
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
 	_gate_dropped_for = Vector3.INF
+	_roomy_key = []
 	_circle_away = 0.0
 	if _kturn_left_m > 0.0:
 		_kturn_end("reset")
@@ -2443,6 +2444,8 @@ static func gate_giveup_on() -> bool:
 
 ## ...the goal whose gate this hull gave up (INF: none), and how many gates were given up (lesson 300).
 var _gate_dropped_for := Vector3.INF
+## ...and why: "stalled" (given up) or "latched" (reached); later refusals for that goal are counted under it.
+var _gate_dropped_why := "stalled"
 static var gates_given_up := 0
 ## v2, the same switch: a gate the hull has REACHED stays done for that goal. Traced (yard_open crossing seed 22 t3,
 ## builder0): `reached` is judged afresh every tick, so a car at its gate pointing off the heading drove for the goal,
@@ -2465,9 +2468,10 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	# Round 29 (brains B5c): a gate this hull stalled against is given up for this goal; it drives onto the goal itself.
 	if gate_giveup_on():
 		if _gate_dropped_for != Vector3.INF and _flat_distance(goal, _gate_dropped_for) <= NEW_GOAL_JUMP:
-			return _gate_refused("stalled", goal)
+			return _gate_refused(_gate_dropped_why, goal)
 		if arc_live and phase == "blocked":
 			_gate_dropped_for = goal
+			_gate_dropped_why = "stalled"
 			gates_given_up += 1
 			return _gate_refused("stalled", goal)
 	var facing: Variant = order["facing"]
@@ -2483,7 +2487,7 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var here := tank.global_position
 	if gate_giveup_on():
 		# v3: a gate the car can turn onto its line at, before anything is judged against it.
-		var roomy := _roomy_gate(goal, direction, length, radius, tank.get_world_3d().navigation_map)
+		var roomy := _roomy_gate_memo(goal, direction, length, radius, tank.get_world_3d().navigation_map)
 		if roomy == Vector3.INF:
 			return _gate_refused("cramped", goal)
 		if roomy != gate:
@@ -2494,6 +2498,7 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 		# At the gate: the straight run onto the heading IS the rest of the move.
 		if gate_giveup_on():
 			_gate_dropped_for = goal
+			_gate_dropped_why = "latched"
 			gates_reached_latched += 1
 		return _gate_refused("reached", goal)
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
@@ -2527,6 +2532,20 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 ## (the latch fires) and jams on terrain 4.8 m on, "blocked terrain" to the end of the run (an escape, not a gate).
 const GATE_ROOM_POINTS := 8
 static var gates_shortened := 0
+
+
+## The navmesh is static and an order's goal, heading and length hold for many ticks: the last answer is kept per hull,
+## keyed on exactly what it depends on (native's review: 8 to 32 navmesh queries a plan tick otherwise).
+var _roomy_key := []
+var _roomy_value := Vector3.INF
+
+
+func _roomy_gate_memo(goal: Vector3, direction: Vector2, length: float, radius: float, map: RID) -> Vector3:
+	var key := [goal, direction, length, radius]
+	if key != _roomy_key:
+		_roomy_key = key
+		_roomy_value = _roomy_gate(goal, direction, length, radius, map)
+	return _roomy_value
 
 
 ## The full gate if it has the room, else the longest shorter run-in (OFF_MESH_PROBES) that does, else INF.
