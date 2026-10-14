@@ -164,7 +164,10 @@ arm run for run (below). **N7.4 DONE, OFF by its price** (+0.22 % of the tick). 
 **Waiting / next:** (1) traffic T3 (`Traffic.shape` in `_avoid`, a callback after the hold block) once judged; T1c
 needs no C++ (confirmed); (2) manoeuvre M4 FAILED its bar (manoeuvre `7b6ff321`, `references/round29/manoeuvre/m4_judged.txt`): no port, `tank_drive_native`'s `estimated_velocity` unchanged; M1/M2 as
 they come; the held N5 ports after CP-M2; (2b) brains' B5c (`Movement._approach_gate`; its native
-mirror is `approach_gate` in `drive_native.cpp`, ~line 836, called at ~1993) after T3 and M4; (3) N7.5 after round 29; stage 2 deferred (his call).
+mirror is `approach_gate` in `drive_native.cpp`, ~line 836, called at ~1993) after T3. Agreed with brains 2026-10-13: both judged arms run the GDScript drive (`--nav-off`
+makes `NativeDrive.usable` step aside anyway); after the verdict brains memoises `_roomy_gate` per hull (goal + facing)
+and splits a "latched" refusal from "stalled", then sends the final diff + hash; native mirrors `_gate_dropped_for` (owned
+state + MoverState), the three counters, (i)-(iii), and merges back to back; (3) N7.5 after round 29; stage 2 deferred (his call).
 
 | item | state |
 |---|---|
