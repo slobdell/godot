@@ -25,7 +25,11 @@ the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `
 **E6b (his laptop, 12:10 PDT, `b2712987`):** all C++ v none: 20 a side 0.854 → 0.936 of real time, 25 a side 0.672 →
 0.878 (`game_design.md` *Round 29: where the laptop stands now*); tell him as measured.
 
-**Main at `46863c74`** (code = `1113062c`; builder0, `make check exited 0`, 2572 passed, 0 failed, **24 passed + 2 NOT
+**Main GREEN at `23d94eb3`** (builder0, `make check exited 0`, 2574 passed, 0 failed, 26 targets ALL JUDGED, thirteen
+unmoved; the perf verdict owed by `1113062c`'s check is now judged): + brains B2 (a drawn flank carried out). Since then
+only docs and traffic's verdict tools (`7811950d`).
+
+**Earlier: main at `46863c74`** (code = `1113062c`; builder0, `make check exited 0`, 2572 passed, 0 failed, **24 passed + 2 NOT
 JUDGED for box load** (perf-judge refused 3× at 2.4–2.6×; scenario_perf defers to it), thirteen unmoved, determinism
 2875411ff4ec6be7; the perf verdict is OWED on the next main check): + traffic CP-T (the street hold) and native's port of it
 (`1267ffb1`, `1113062c`), N7.4 OFF.
