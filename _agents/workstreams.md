@@ -133,6 +133,12 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   say so beside the line and the guard still uses the judged se; (b) per run, the crews beyond 20 m that drove at full
   share (the rule's own counter) reported per arm; (c) after native's port: Terminus crossing + bridge-pooled once on the
   DEFAULT path at the pair; (d) the thirteen explained if they move.
+  **Judged run started ~13:00 PDT at `cf124433`** (game/ = `a63dde6d` = `7a0701f3` + the counter `tr_cross_reach_free`).
+  Disclosed before numbers: on the TUNING seeds the 20 m candidate passes every line except the yard crossing clock,
+  missed by 0.02 s (+1.63 v +1.61 s); 12 m tried on seeds 1–3 and rejected (yard crews 169 → 163, two wedges). Judged as
+  filed. **I2 DONE:** `make quick` with the narrowed lint 487 s on builder0 (was 1081 s warm; full lint 712 s of it) +
+  any slot wait; committed `4248d8ee` with I3's proof in `verification.md`. T1c-b built on `traffic-t1cb` (5/5 unit
+  tests); its bar comes after T3b's table.
 - **Manoeuvre M4b bar (pre-registered 2026-10-14 ~11:40 PDT, before any judged number; DECLARED; the FIRST run, a second
   on fresh seeds would be the last; full text in the brief's Status "M4b bar"):** C30.6's `real_velocity` to the readers
   (unstick's stall test, the pinned probe's state line, gunnery's two leads) PLUS the stall/press escapes sized to the
