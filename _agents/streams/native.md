@@ -163,7 +163,7 @@ T1 street hold runs in the native drive, equal, and traffic's judged Terminus he
 arm run for run (below). **N7.4 DONE, OFF by its price** (+0.22 % of the tick). The scaffold (`bde8de0a`) is reverted.
 **Waiting / next:** (1) traffic T3 (`Traffic.shape` in `_avoid`, a callback after the hold block) once judged; T1c
 needs no C++ (confirmed); (2) manoeuvre M4 FAILED its bar (manoeuvre `7b6ff321`, `references/round29/manoeuvre/m4_judged.txt`): no port, `tank_drive_native`'s `estimated_velocity` unchanged; M1/M2 as
-they come; the held N5 ports after CP-M2; (2b) brains' B5c (`Movement._approach_gate`; its native
+they come; the held N5 ports after CP-M2; (2b) brains' B5c PARKED for round 30 (section below; the work on `lab/native-b5c`; its native
 mirror is `approach_gate` in `drive_native.cpp`, ~line 836, called at ~1993) after T3. Agreed with brains 2026-10-13: both judged arms run the GDScript drive (`--nav-off`
 makes `NativeDrive.usable` step aside anyway); after the verdict brains memoises `_roomy_gate` per hull (goal + facing)
 and splits a "latched" refusal from "stalled", then sends the final diff + hash; native mirrors `_gate_dropped_for` (owned
@@ -636,6 +636,24 @@ against traffic's judged base VERDICT PASS, and **every run equal field for fiel
 T1's hold lives in the drive, so nothing would ever write that record.
 **Next pairs:** T3 (`Traffic.shape` after the hold block: one callback, ORCA on the shaped wish, the early-out on the
 route's wish; refresh is keyed on the frame so the second call is a no-op), M4 did not pass its bar (no port).
+
+### Round 29: brains' B5c arrival-gate rule -- PARKED for round 30 (2026-10-14); the work is on `lab/native-b5c`
+
+**What happened.** Brains' flip `ed843d63` turned `Movement._approach_gate`'s rule on by default: give up the gate when
+stalled aiming at it, latch a reached gate, offer a gate only where there is a turning circle of navmesh (`_roomy_gate`,
+memoised per hull). Native merged it (`4a293e8a`) and mirrored it in C++ (`1fabe6a8`, `e0a80733`). On builder0 at
+`e0a80733`: `test_native_gate` 20/0, 0 mismatches (Sumps 6000 drives + 189 forced stalls; default layout 6000 + 555; live
+and owned). native-proof on = off = ab = owned = `0398922d31f335f8`. 24/24 yard + Sumps cells on the native path equal
+brains' judged on-arm. **But `make check exited 2`** (2581 passed / 1 failed): `test_wheeled_arrival`'s face-the-way-it-came
+car arrived at dot 0.50, and it failed the same way with native OFF, so the cause is the flip's GDScript. Brains' fix
+`a8df3dc3` (a gate reached facing away is not latched, the give-up waits while turning, new member `_gate_turning_for`)
+moved the judged cells on the GDScript path (yard 23 last crew in, e.g. t3 22.1 -> 39.9 s; Sumps 6), so by the
+orchestrator's rule **B5c parks for round 30** and the pair comes off the stream.
+**Where it is.** `stream/native` was reset (never pushed, never on main) to `028fb334`; its code is again the green
+`59c1cc09`'s. `lab/native-b5c` keeps the merge, the mirror, the gate test, the status note, and `b01a8959`, the mirror of
+`a8df3dc3`, which was built locally but never run. For round 30: merge brains' final flip and mirror it from the lab branch
+(exec_fields `_gate_dropped_for/_why`, `_gate_turning_for`, `_roomy_key/_value`; DriveConfig `gate_giveup`,
+`GATE_ROOM_POINTS`; `tests/test_native_gate.gd` + uid). Then run the gate test, native-proof, the 24 cells, and check.
 
 ### Questions for the lead
 
