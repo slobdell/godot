@@ -223,19 +223,23 @@ round-29 extension: shard balance, `make quick`, a base-arm cache; the orchestra
 machine again when those are in and judged series still queue for hours. Round 30: split `test_tactics_scenarios`
 (425 s, the floor of a balanced shard plan at 5–6 shards) into two files (brains').
 
-## Round 30: hard problems for Fable agents (the lead, 2026-10-14: "I have my weekly quota restored with now 0% Fable usage. Are there perhaps some deliberate hard tasks we should give to some fable agents in upcoming rounds?")
+## AT ROUND 29's CLOSE: tell him to launch Fable agents (the lead, 2026-10-14)
 
-Recommended (orchestrator), each a round-30 stream launched with `claude --model fable` in its folder, its brief written
-open-ended with round 29's parked branches and traces as the start:
-1. **Wheeled long-hull motion planning in tight space** (manoeuvre): M1 turn-hull, M2 creep (twice), M4 honest velocity all
-   failed on the same physics; a real local planner (forward/reverse legs, walls and squadmates known) instead of rules
-   on the drive. Inputs: `manoeuvre-m1-r29`, `manoeuvre-m2-r29`, `manoeuvre-m4-r29`, the round-30 M4 design (real
-   displacement to progress readers only), brains' Terminus escape failure (B_4 jammed past its gate).
-2. **Route-aware seating and arrival** (brains): which crew to which seat along which route; his bridge's last cell (rust
-   t16 s2), the gate pulling a near hull 17 m back, traffic T3's crossing crawl. `lab/brains-r29-bridge`.
-3. **Variance-aware judging** (infra): pass lines sized from each probe's measured noise, sequential stopping (M1's guard
-   noise ±10 at n = 288 v its +5 line). Optional: quota v builder0 time.
-Not on Fable: stage 2 C++ (deferred by him); native's equal-answer ports.
+His ask: *"I have my weekly quota restored with now 0% Fable usage. Are there perhaps some deliberate hard tasks we should
+give to some fable agents"*, clarified: *"I'm asking if we have any hard or lingering problems that we can throw at Fable to
+mitigate any bottlenecks in our project"*, then: *"I want to wait until we can close out the current round before we do
+this, but take note so that you can tell me to launch fable agents when the time comes."* **So: when round 29 closes, the
+orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`, launched by the orchestrator on his go):
+1. **Judged-test sizing (builder0's bottleneck; no builder0 time).** From every judged table of rounds 27–29 in
+   `streams/references/`: each probe's measured noise, the smallest n that still decides, variance-aware pass lines and
+   sequential (early-stop) judging. Output: a method doc + per-probe n table used by round 30's bars. Motivation: M1's
+   guard noise ±10 at n = 288 v its +5 line; series sized by feel at n = 18 an arm.
+2. **A local motion planner for long wheeled hulls in tight space (the costliest repeat failure).** Design + offline
+   tests + a lab-scene prototype in an isolated worktree, light builder0 only. Inputs: `manoeuvre-m1-r29`,
+   `manoeuvre-m2-r29`, `manoeuvre-m4-r29`, the M4 round-30 design (real displacement to progress readers only), brains'
+   Terminus escape failure (B_4 jammed past its gate).
+3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
+   near hull back, traffic T3's crossing crawl.
 
 ## Round 29 candidates (round 28's carry-overs, 2026-10-13) — SPLIT 2026-10-13 as traffic (1) + manoeuvre (2, 6; 7 as its conditional stretch) + brains (3, 4, 5, 8) + native (`workstreams.md` *Round 29*); his question 6 answered: go straight to his side
 

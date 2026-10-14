@@ -58,6 +58,8 @@ small at the top of the frame).
 
 **Launch check: GREEN at `bcef46a1`** (builder0, `make check exited 0`, 2538 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7; the docs commit after it differs by docs only). Workers start from it and do not re-run a baseline.
 
+**AT CLOSE: tell him to launch the Fable agents** (`roadmap.md` *AT ROUND 29's CLOSE*; his request 2026-10-14).
+
 **The orchestrator's jobs:** collect every DECLARED bar before its numbers (C29.1); merge each declared change ALONE, a
 driving change back to back with native's port (C29.2); relay the street hold's grants (C29.3: traffic's gate lines in
 brains' and manoeuvre's functions); carry manoeuvre's word on `wall_contact.gd` to native (N7.4); merge native's N7.3a-OFF green
