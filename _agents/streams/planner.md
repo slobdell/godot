@@ -110,4 +110,39 @@ Nothing. (Design pillars: a planned turn, not a shuffle; the whole hull turns to
 
 ## Status
 
-_(the worker keeps this current; P0 and P1 announced when written so manoeuvre can read them; the report at the top)_
+_Updated 2026-10-14 by the planner worker (`godot-planner`, `stream/planner`, from main `bd05077d`; Fable 5.1).
+Report at the top of this section once there is one; the plan and the log below it._
+
+### Plan (ordered, smallest foundation first)
+
+1. **P0 `problem.md`** — the vehicle model as `tank_motion.gd` integrates it, the environments measured from the
+   arena JSON, the squad context, the five failure modes as fixtures, three reproduced on main with exact commands
+   (`make planner-repro-*` in `mk/planner.mk`, builder0 light lane, one at a time): the wedge (Terminus rigs seed 9),
+   the creep (Terminus mixed seed 1 census), the boxed-in face (my own TacticsLab probe: four rigs in a line, face east).
+   The arrival gate and the crossing crawl from brains' and traffic's round-29 traces (their branches, not run here).
+2. **P1 `design.md`** — the candidates weighed on the fixtures; ONE chosen with the reason; the interface, the cost
+   model, the goal poses for a drawn facing and a 180° arrival. Decision recorded here when made.
+3. **P2** — `game/ai/planner/**` + `tests/test_planner_*.gd` (pure, in `make check`): the kinematic twin of the plant
+   (within 1 % of `TankMotion.step_in_place`), then the fixtures, each with a pass line and an ASCII plan in the log.
+4. **P3** — `make planner-lab` (builder0 light): one real hull on a real arena cut, my harness feeding the plan's legs
+   to the plant beside today's code; screenshots and a clip.
+5. **P4 `handover.md`** — the seam, the diff, what it replaces, the native port, the cost line, the pre-registered bar.
+6. Stretch: the squad schedule note.
+
+Decisions so far (one line each, reversible): the planner's budget is an EXPANSION cap, not milliseconds — a decision
+that reads the wall clock breaks `make determinism` (orientation trip-up 28); ms are measured and reported per
+commit and machine, never read. Legs carry their own steer (`Vector3(gear, steer, metres)`), a superset of the
+executor's `Vector2(gear, metres)` on one lock: that difference is a P4 finding, not an edit to `movement.gd`.
+
+### Progress log
+
+- 2026-10-14: oriented (CLAUDE.md, HANDOFF, orchestration, orientation, game_design rounds 26/28/30, workstreams
+  round 30, the brief, rounds 26/28/29 manoeuvre reports, the M4 judged table, the plant, `clothoid.gd`, the k-turn and
+  face executors, `wall_contact.gd`, `pathing.gd`, the arena JSON). Starting P0.
+- 2026-10-14 ~11:20 PDT: **P0 written** (`references/round30/planner/problem.md`) with three reproductions on main
+  `bd05077d`, builder0 light lane, n = 1 each: the wedge (`make remote LIGHT=1 T=planner-repro-wedge`: a rig pinned
+  61.4 s between two squadmates at 6.9 m/s reported, 0.0000 m moved), the creep (`planner-repro-creep`: 16 of 30 turns
+  over 3 legs, the worst 13 legs in open ground), the boxed-in face + the 180° gate (`planner-repro-face`: four rigs at
+  12 m, one clean plan of four, 33 gear changes at the boxed end, every rig 5.5–7.8 m off its spot; a scout 9 m from a
+  slot facing back drives 102 m through a gate 13.75 m beyond it). **P1 written** (`design.md`): a lattice / hybrid-A*
+  on the plant's own arcs, time cost, OBB squadmates, expansion budget; pre-registered pass lines for P2.
