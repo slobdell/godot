@@ -233,6 +233,11 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   native shows yard and Sumps on the ON path equal to the judged on-arm run for run. B5 queued attack grant extended to
   `_order_squads` (several squads queue like round 28's screen); merged separately.
 
+- **Brains B5c PARKED (2026-10-14 ~01:30):** the default flip failed `test_wheeled_arrival`'s face-the-way-it-came case (dot
+  0.50; the bar's heading test was 90°, this one 180°: lesson 305); the narrow fix `a8df3dc3` moved judged cells (yard 23,
+  Sumps 6), so by the rule set before its proof it parks. Kept: `brains-b5c-flip`, native's `lab/native-b5c` (mirror +
+  the fix's mirror, unrun). Round 30 with route-aware seating.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
