@@ -154,7 +154,7 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### The report (read this first; kept current)
 
-**State (2026-10-13 19:40 PDT, round 29):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
+**State (2026-10-13 19:50 PDT, round 29; the pair merged to main `1113062c`):** on main: stage 1, N6.1b-N6.4, N7.1, N7.2, N7.6 (all ON); N7.3a
 (`native_controller`) OFF by its price. **E6b DONE** on his laptop (`b2712987`): 20 a side no C++ 0.854 -> shipped
 0.936, 25 a side 0.672 -> shipped 0.878. **The CP-T pair is GREEN at `59c1cc09`** (stream/native + traffic `3a94f38d`;
 builder0: `make check exited 0`, 2554 passed / 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism
@@ -164,7 +164,8 @@ arm run for run (below). **N7.4 DONE, OFF by its price** (+0.22 % of the tick). 
 **Waiting / next:** (1) traffic T3 (`Traffic.shape` in `_avoid`, a callback after the hold block) once judged; T1c
 needs no C++ (confirmed); (2) manoeuvre M4 (`estimated_velocity` = the real planar displacement after the slide,
 capped at the slid speed; `tank_drive_native.cpp:130-139`) once judged, with the thirteen re-recorded twice; M1/M2 as
-they come; the held N5 ports after CP-M2; (3) N7.5 after round 29; stage 2 deferred (his call).
+they come; the held N5 ports after CP-M2; (2b) brains' B5c (`Movement._approach_gate`; its native
+mirror is `approach_gate` in `drive_native.cpp`, ~line 836, called at ~1993) after T3 and M4; (3) N7.5 after round 29; stage 2 deferred (his call).
 
 | item | state |
 |---|---|
