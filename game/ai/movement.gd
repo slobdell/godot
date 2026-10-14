@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceturn", "gategiveup", "grace", "guard", "guardnear", "holdband", "inflate",
 		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
@@ -862,6 +862,7 @@ func reset() -> void:
 	_order_ticks = 0
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
+	_gate_dropped_for = Vector3.INF
 	_circle_away = 0.0
 	if _kturn_left_m > 0.0:
 		_kturn_end("reset")
@@ -2427,6 +2428,21 @@ static func reset_gates() -> void:
 	a4_refused_curvature = 0
 
 
+## Round 29 (brains B5c, DECLARED; INVERTED switch until native mirrors it, C29.2): a wheeled hull that goes BLOCKED while
+## it aims at its arrival gate gives the gate up for that goal and drives onto the goal itself. Traced (traffic's T3 lead,
+## builder0): on Sumps a herringbone seat's gate, 20 m back along its facing, sat 2.7 m from a parked squadmate; the crew
+## shoved at it "wedged" for 8 s, 6.7 m short, and `_blocker` read it as `no_path` because the route ended at the gate,
+## not the goal (make-room then traded the seat on). On Terminus B_4's gate lay ~17 m back across the street by the arena
+## edge; it ground there to the end of the run. `--nav-off=gategiveup` turns it ON (like `holdband`).
+static func gate_giveup_on() -> bool:
+	return switched_off("gategiveup")
+
+
+## ...the goal whose gate this hull gave up (INF: none), and how many gates were given up (lesson 300).
+var _gate_dropped_for := Vector3.INF
+static var gates_given_up := 0
+
+
 ## Count a refusal and keep the goal: the route aims at the goal itself, as it did before round 8.
 static func _gate_refused(reason: String, goal: Vector3) -> Vector3:
 	gates_refused += 1
@@ -2439,6 +2455,14 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	if radius <= 0.0 or not order.has("facing"):
 		return goal  # not offered: a tracked or hover hull pivots, and an order with no facing asks for nothing
 	gates_offered += 1
+	# Round 29 (brains B5c): a gate this hull stalled against is given up for this goal; it drives onto the goal itself.
+	if gate_giveup_on():
+		if _gate_dropped_for != Vector3.INF and _flat_distance(goal, _gate_dropped_for) <= NEW_GOAL_JUMP:
+			return _gate_refused("stalled", goal)
+		if arc_live and phase == "blocked":
+			_gate_dropped_for = goal
+			gates_given_up += 1
+			return _gate_refused("stalled", goal)
 	var facing: Variant = order["facing"]
 	if not (facing is Array) or (facing as Array).size() < 2:
 		return _gate_refused("bad_facing", goal)
