@@ -254,6 +254,26 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   and its hull-rest lines re-run before merging: the Terminus lines could then differ); (g) the first early-stop use in
   this project: the row where `sequential.py` printed SERIES PASS/FAIL is recorded in this block with the n reached;
   (h) seed 21's rig (the defect in the wild, 16.8 m off after a face from 8.6 m) re-run on the candidate and reported.
+- **Manoeuvre M2b bar — the creep lift on M4b + the planner's two executor fixes (pre-registered 2026-10-14 ~14:35 PDT,
+  before any judged number; DECLARED; FIRST run, a second on fresh seeds would be the last; full text in the stream's
+  Status):** candidate `lab/manoeuvre-m2b` (hash named when its tests are green) = M4b `e8bfef2e` + round 29's creep lift
+  re-based (`--nav-off=creeplift`) + the planner's two executor fixes behind one switch `--nav-off=kturnarc` (a k-turn leg
+  measured by the arc driven, Σ real_velocity × dt, not the chord; the discrete stopping distance v²/2b − v·dt/2). Base
+  `--nav-off=creeplift,kturnarc` same commit, GDScript; two switches, ONE declared change (the lift's legs end where the
+  planner said only with the arc rule). (a) open+static creep episodes DOWN ≥ 50 % over fresh census seeds 14–19 (Terminus
+  mixed + rigs) + sim 9–11, paired per run, se reported (no CP-N row: full grid; the census now prints per-run rows);
+  (b) > 3-leg episodes not up beyond 2 se; friendly creep not up > 10 % (reported); (c) Terminus arrivals, rigs and
+  mixed, 13 fresh seeds 49–61, not down beyond 1 se, `sequential.py arrived:guard:0.10` early stop; contact-ticks reported
+  and the rigs' wall-contact direction explained from the worst trace; (d) kturnarc: driven/planned leg metres reported
+  both arms, kturn_aborted not up; (e) bridge 18/18, ≤ 0.5 ms, symmetric, smokes, determinism, the thirteen, the arm's
+  counters. Partial: (a) missed with (c) met = the finding to the planner, nothing ships; (c) missed = nothing ships;
+  kturnarc cannot ship under this bar alone — if the lift fails it is re-declared alone with (c)(d)(e). Queues after
+  M1b's chain; native gets the diff (`_planned_reverse`, a GDScript callback on both paths; one new Movement member
+  `_kturn_arc_m` for exec_fields). **Orchestrator's additions (before numbers):** (f) the base arm's switch list is ONE
+  `--nav-off=` flag, printed by every run (the parser finding above); (g) (a)'s "≥ 50 %" has no sized row, so the first
+  census pair of this run IS the A/A it owes: both arms' per-run rows go to sizing's `probes.py` at the close whatever the
+  verdict; (h) the rigs' wall-contact ticks under the lift, with and without each arm's two worst runs, beside (c) — round
+  29's M2 failed on exactly that and the bar must show it either way; (i) as M1b(1): merges only after M4b's pair.
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
