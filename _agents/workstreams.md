@@ -231,6 +231,11 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   `tank.estimated_velocity`, so a pinned hull is a 12 m/s ghost to every crew steering round it; the honest reading is
   `tank.real_velocity` once M4b is on main (traffic's line; `Avoidance.solve` has a C++ twin → a pair). The judged chain
   starts after the tuning hull-rest arms (~14:45 PDT).
+  **M4b's judged tree = `1b3e2e56` (code = `e8bfef2e`; tooling: pinned_table's STUCK row, tracks apart, `M1_BASE_OFF`).**
+  Found on the way: the switch parser honours only the FIRST `--nav-off=` on a command line (a second is an error and is
+  ignored), so a runner that hard-codes one and appends another silently loses the second — this round's tuning
+  hull-rest BASE arm ran with `unstickback` effectively ON (the Terminus arms were right); round 29's M1 base arm passed a
+  single flag and was right. Rule: a base arm's switch list is ONE flag, printed by the run (lesson 300's family).
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` = M4b `e8bfef2e` + the anchor alone (`OrderController.
