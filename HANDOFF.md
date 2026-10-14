@@ -25,7 +25,10 @@ the first round ~25 s later is accepted). Split and contracts C29.1–C29.8 in `
 **E6b (his laptop, 12:10 PDT, `b2712987`):** all C++ v none: 20 a side 0.854 → 0.936 of real time, 25 a side 0.672 →
 0.878 (`game_design.md` *Round 29: where the laptop stands now*); tell him as measured.
 
-**Merged since launch:** `4488085d` = native `16898e51` (N7.3a, `native_controller` OFF by its price; covered by native's
+**Main GREEN at `c0ac69e0`** (builder0, `make check exited 0`, 2557 passed, 0 failed, 26 targets ALL JUDGED, thirteen
+unmoved): brains B1 (artillery goes straight to his side) + native N7.3a OFF.
+
+**Merged since launch:** `c0ac69e0` = brains `c2ae6e68` (B1, judged: side 18/18, first round +24.8 s). `4488085d` = native `16898e51` (N7.3a, `native_controller` OFF by its price; covered by native's
 check at `16898e51`: builder0 exited 0, 2539/0, 26 ALL JUDGED, thirteen unmoved; main's code tree equals it). Bars
 pre-registered in `workstreams.md` *Round 29*: traffic CP-T, brains B1, manoeuvre M1 (+ its partial-rule clarification).
 Round 28's orchestrator session `godot-29` stood down 13:30 (its two bar commits adopted); workers report to `godot-67`.
