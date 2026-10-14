@@ -171,6 +171,13 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   think, so the stale leash is inert; the latent dedup bug is noted at the dedup. B5a: no native diff; B5c: a C29.2 pair
   (`drive_native.cpp` mirrors `_approach_gate`).
 
+- **Traffic T3 bar (pre-registered ~18:30; DECLARED; last attempt; no partial):** v3's squad-pair crossing verdict beside
+  the hold (`--traffic-off=turns`; base = hold ON), fresh seeds 22–24 × 6 ticks, n = 18 a case, GDScript: between-squad
+  fast pooled over the two crossing cases −≥ 25 %, neither up; every case crews ≥ base − 2, all-in ≤ +20 %, no wedge;
+  same-squad fast ≤ base × 1.2 + 10 per crossing case; head-on fast within 2 se; CPU mirror reported; bridge-pooled
+  18/18; live test fires; ≤ 0.5 ms. Native diff (Traffic.shape callback in `_avoid`) before the commit. Merge main first if
+  the CP-T pair lands before the judged run.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
