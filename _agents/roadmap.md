@@ -220,7 +220,9 @@ long as we can")
 
 builder0 (12 cores, 14 GB) is the round's bottleneck: loaded checks 53–60 min v 41 quiet. Free fixes first (traffic's
 round-29 extension: shard balance, `make quick`, a base-arm cache; the orchestrator's one-check-per-tree rule). Raise the
-machine again when those are in and judged series still queue for hours. Round 30: split `test_tactics_scenarios`
+machine again when those are in and judged series still queue for hours. Traffic's I1 (shards balanced by time) showed NO GAIN on the shared box (paired ×3, 4 shards: 2474 v 2329 s, load
+drifting 1–12; shipped OFF, `--shard-plan=time` kept): builder0's total load is the limit, so the lever is fewer runs (I3's
+cache, owed its cached == fresh proof; the Fable sizing task). Round 30: split `test_tactics_scenarios`
 (425 s, the floor of a balanced shard plan at 5–6 shards) into two files (brains').
 
 ## AT ROUND 29's CLOSE: tell him to launch Fable agents (the lead, 2026-10-14)
