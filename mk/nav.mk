@@ -309,3 +309,15 @@ nav-scenario-arms: import ## nav: the AI scenarios once per --nav-off arm in SCE
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- $$flags \
 			> $(BUILD_DIR)/nav-scen/$$arm.log 2>&1 || true; \
 		echo ">> nav-scenario-arms: $$arm"; grep -E "FAIL  |passed, .*failed" $(BUILD_DIR)/nav-scen/$$arm.log || true; done
+
+# Round 30 (brains B5c-v4): the facing tests with extra engine args (GATE_ARGS, e.g. "--brains-off=native --gate-trace":
+# the GDScript drive and every hull's gate answer as it changes) -> build/gate-test.log (GATE_FILTER picks the tests).
+GATE_FILTER ?= test_wheeled_arrival|test_nav_arrival_heading|test_nav_gate
+GATE_ARGS ?= --brains-off=native --gate-trace
+.PHONY: gate-test
+gate-test: import ## Round 30 (B5c-v4): the facing/gate tests with GATE_ARGS (default the GDScript drive + --gate-trace) -> build/gate-test.log
+	@mkdir -p $(BUILD_DIR)
+	@echo ">> gate-test on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | args '$(GATE_ARGS)'"
+	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(GATE_FILTER)' $(GATE_ARGS) \
+		> $(BUILD_DIR)/gate-test.log 2>&1; status=$$?; \
+	grep -E "  (PASS|FAIL)  |passed, .* failed|SCRIPT ERROR" $(BUILD_DIR)/gate-test.log | head -60; exit $$status

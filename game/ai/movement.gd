@@ -953,7 +953,11 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	# Round 8: a wheeled hull that was told which way to face arrives ALREADY facing it, by driving the last stretch
 	# along that heading, instead of arriving and then creeping round for ~6 s (measured: an IFV 45 degrees off).
+	_gate_answer = "aimed"
 	var aim := _approach_gate(goal, order)
+	if gate_trace and order.has("facing") and wheel_radius() > 0.0 and order["facing"] is Array \
+			and (order["facing"] as Array).size() >= 2:
+		_trace_gate(_gate_answer, goal, aim, Vector2(float(order["facing"][0]), float(order["facing"][1])).normalized())
 	lap = OrderController._lap("path.gate", lap)
 	# The gate is offset from the goal by at least APPROACH_MIN, so "a gate was aimed" and "the goal came back
 	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
@@ -2477,7 +2481,30 @@ static var gates_reached_latched := 0
 static func _gate_refused(reason: String, goal: Vector3) -> Vector3:
 	gates_refused += 1
 	gate_refusals[reason] = int(gate_refusals.get(reason, 0)) + 1
+	_gate_answer = reason
 	return goal
+
+
+## Round 30 (brains B5c-v4), MEASUREMENT ONLY: `--gate-trace` prints a GATE_TRACE line whenever a hull's gate answer
+## changes (aimed / a refusal's reason), with where it is, its heading's dot with the ordered facing and the goal. Kept
+## per hull name in a static map, so the drive's members (and native's mirror of them) are untouched.
+static var gate_trace := OS.get_cmdline_user_args().has("--gate-trace")
+static var _gate_trace_last := {}
+static var _gate_answer := ""
+
+
+func _trace_gate(answer: String, goal: Vector3, gate: Vector3, direction: Vector2) -> void:
+	var tank := ctl.tank
+	var key := String(tank.name)
+	var line := "%s goal (%.1f, %.1f)" % [answer, goal.x, goal.z]
+	if _gate_trace_last.get(key, "") == line:
+		return
+	_gate_trace_last[key] = line
+	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
+	print("GATE_TRACE t=%.2f %s %s at (%.1f, %.1f) dot %.2f gate (%.1f, %.1f) %.1f m to goal, phase %s" % [
+			Engine.get_physics_frames() / float(SimClock.TICK_RATE), key, line, tank.global_position.x,
+			tank.global_position.z, forward.dot(direction), gate.x, gate.z,
+			_flat_distance(tank.global_position, goal), String(phase)])
 
 
 func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
