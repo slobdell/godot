@@ -96,8 +96,9 @@ func test_coming_round_is_bounded_by_a_stall_on_terrain_and_by_time_but_not_by_c
 
 
 func test_a_hull_already_beside_its_new_goal_gets_no_gate_behind_it() -> void:
-	# B_4's case: 9 m from its slot, the gate 17.5 m back the other way. Straight in, not 37 m round by the gate.
-	var orders: OrderController = await _car(GOAL + Vector3(0, 0, 9))
+	# B_4's case (9 m from its slot, the gate 17.5 m back the other way). Here the roomy rule shortens the gate behind
+	# this goal to half (8.8 m), so the car starts 6 m off: straight in, not 19 m round by the gate.
+	var orders: OrderController = await _car(GOAL + Vector3(0, 0, 6))
 	var reading := await _drive(orders, Vector3.RIGHT, 12.0)
 	assert_eq(reading.get("phase"), "arrived", "it gets there (%s)" % reading)
 	assert_true(Movement.gates_near > 0, "the near rule fired (%s)" % Movement.gate_report())
