@@ -106,3 +106,18 @@ Nothing: his calls are made.
 
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
+
+_Updated 2026-10-14 ~10:55 PDT (traffic worker, round 30). Every number names commit, machine, workload and n._
+
+### The plan (ordered; smallest foundation first)
+
+1. **I3 the cache's proof** first: it needs no game change, and its fresh rows are T3b's tuning base (Terminus crossing,
+   GDScript path, seeds 1–3 × the six ticks). Done below.
+2. **I2 `make quick`'s timing** on the same one-line `traffic.gd` change that shows the cache missing.
+3. **T3b the crossing, released on the tail**: re-apply round 29's v2 (`traffic-t3`), trace the worst runs, pick (a) or
+   (b) in writing, tune on {1,2,3}, send the bar, judge on fresh seeds, native's diff before the commit.
+4. **T1c-b a set-up hull ordered to fire stays set up**: the refusal in `ask()` and the `repacks_while_firing` counter,
+   judged on fresh census seeds and brains' ApproachStage drawn-artillery arm.
+5. Stretch (the friendly half of the creep) only after 3 and 4 are judged, and only once agreed with manoeuvre through the
+   orchestrator.
+
