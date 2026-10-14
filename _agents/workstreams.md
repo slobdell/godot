@@ -178,6 +178,15 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   18/18; live test fires; ≤ 0.5 ms. Native diff (Traffic.shape callback in `_avoid`) before the commit. Merge main first if
   the CP-T pair lands before the judged run.
 
+- **Manoeuvre M4 bar (pre-registered ~18:40; DECLARED; last attempt; no partial):** `9db2a57c` (`manoeuvre-m4-r29`):
+  estimated_velocity = the real flat displacement, capped at the asked velocity (`--tank-off=real_velocity`); test: a pinned
+  truck 0.00 v 12.00 m/s. GDScript tank both arms, fresh seeds: (b1) Terminus census 14–19 rig wall+hull contact-ticks down,
+  arrivals ≥ base; (b2) pinned crews (≥ 10 s on a move_to, |throttle| > 0.3, goal distance unchanged within 0.05 m) in the
+  hull-rest probe seeds 34–39, down; (b3) bridge-pooled 18/18; (b4) tank segment reported; fights guard (manoeuvre-fights
+  seeds 109–132, 180 s): kills, deaths, hit rate within 2 se, paired; net-smoke, combat-smoke, determinism. **Orchestrator's
+  additions:** (b2) down by > 2 se paired; (b1) also with each arm's two worst runs dropped; after native's port the Terminus
+  drive + bridge-pooled on the default path at the pair, the thirteen re-recorded twice in the pair commit; a tracked row.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
