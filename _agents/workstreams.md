@@ -161,6 +161,13 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   set-up hull STARTS itself in `_negotiate` with a new move. Parked `traffic-t1c`. Round 30: judge "repacks while still
   ordered to fire" (a hull with a new move is leaving anyway), not every set-up give-way.
 
+- **Brains B5a split (~18:10, traced on builder0, both paths identical):** Sumps: the SEAT is 3.6 m off the navmesh (margin
+  3.0) → B5a = no seat handed out > NO_PATH_MARGIN off the mesh (ground it to the nearest mesh point) + make-room never
+  trades a slot its stuck crew reads no_path for. Terminus: the seat is fine; (B5b) a STALE LEASH: a swapped crew's move
+  keeps the old slot's 14 m leash because the 2 m dedup ignores the leash centre; (B5c) the ARRIVAL GATE
+  (`Movement._approach_gate`, brains') laid ~17 m back across the street for a wheeled hull facing east, which grinds
+  there. Each declared with its own bar; native-ported status stated in each.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
