@@ -250,6 +250,27 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   (seed 31: 566 → 3218 contact-ticks, 15 → 13 arrived), then either a narrow fix DECLARED as the last attempt or M4b
   parked with the finding. **M1b's and M2b's chains HOLD** until M4b's second attempt is judged or parked (if parked,
   both re-base on main and M1b runs first). M4b's own chain (bridge, fights, hull-rest) runs on for the record.
+- **Manoeuvre M4b — the SECOND and LAST attempt, bar (pre-registered 2026-10-14 ~15:05 PDT, before numbers; full text in
+  the stream's Status):** seed 31's trace: the extra contact is the DRIVING AFTER the escapes — Green_S0_2 grinds the west
+  street wall 77 s (plant 10.7 m/s, real 0.1–3 m/s jittering, throttle 0.9, goal distance oscillating 25–29 m) in a state
+  neither rule reads as stuck (real speed spikes > 0.8 m/s every other second reset the stall timer; the press window
+  sees > 0.75 m sideways); an escape's reverse-on-lock and re-approach leaves a 14 m hull at an angle to the wall where
+  the phantom momentum grinds it. No blind reverse fixes that: the planner's F2/F6 does (round 31). **The narrow fix:
+  `UNSTICK_BLIND_MAX_LEN_M = 10 m`** — the honest stall reading and the sized escapes only for hulls that can back out of a
+  street in one reverse (scouts, IFVs, lancers, artillery, 8×8s); the War Rig keeps round 29's reading and 0.9 s escape
+  BIT FOR BIT; `real_velocity`, the probe line and the aim leads unchanged for all hulls. Candidate `lab/manoeuvre-m4b2`
+  (hash when tests are green); base as before; fresh seeds Terminus 62–74, hull-rest 54–59 (144 runs), fights 157–180,
+  bridge. (b1) arrivals rigs AND mixed not down beyond 1.645 se (sequential early stop); **(b1') JUDGED: wall
+  contact-ticks rigs AND mixed ≤ base + 1.645 se, with and without two worst** — with the gate exact a rig run replicates
+  its base run (diff 0; any non-zero rig diff is a LEAK), so the mixed line carries it (run 1: +17 %, 1.7 se); (b2) pinned
+  DOWN beyond 2 se at n = 144, STUCK and tracks reported; (b3)(b4)(b5)(f)(g)(h) and the fights guard as filed. Partial:
+  (b1)+(b1') are the gate (all four lines); (b2) missed with the gate met = ship with the miss written; a gate miss =
+  parked, `real_velocity`-to-the-probe-only offered as a measurement commit. **Orchestrator's additions (before
+  numbers):** (i) every rig run byte-identical to its paired base run is a PASS LINE (one leak = the gate missed, no
+  "reported as such"); (j) the pinned line (b2) is read on the hulls the fix reaches (≤ 10 m) AND on rigs apart — rigs'
+  pins must be unchanged (they keep today's reading), stated; (k) **M4b's record chain (bridge, fights, hull-rest of the
+  failed candidate) is STOPPED now** — a parked candidate's record is not worth 1.5 box-hours on the round's bottleneck;
+  the second attempt starts as soon as its tests are green.
 - **Manoeuvre M1b(1) bar — `face_slot` alone (pre-registered 2026-10-14 ~14:20 PDT, before any judged number; DECLARED;
   FIRST run, a second on fresh seeds would be the last; a bug fix: any line missed = not shipped; full text in the
   stream's Status):** candidate `lab/manoeuvre-m1b` `37c47851` = M4b `e8bfef2e` + the anchor alone (`OrderController.
