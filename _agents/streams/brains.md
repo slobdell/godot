@@ -249,8 +249,29 @@ B5a's code and test are removed; the probes stay.
 **B5b dropped.** The order's leash is opt-in and off (`Movement.leash_on`; native "off here"). A LATENT note sits at
 `TankBrain._order_move`'s dedup: it ignores the leash, so whoever turns the leash on must compare its centre.
 **B5c — the arrival gate (`Movement._approach_gate`, brains-owned; native mirrors it at drive_native.cpp:779, so it is a
-C29.2 pair with native).** Now the one fix for traffic's T3 lead. Trace next: why a 17–20 m gate laid back from a seat in
-a street or lane cannot be reached or left.
+C29.2 pair with native).** The one fix for traffic's T3 lead. Inverted switch `--nav-off=gategiveup` (ON when given);
+any `--nav-off` hands the drive to GDScript, so both arms run `--brains-off=native`.
+- v1 (`b00b6f96`, give the gate up when BLOCKED aiming at it): fired 3–4 per run, fixed neither case (Sumps: within 8 m
+  24 s sooner but S_3 overshot 7.5 m; Terminus unchanged).
+- Third sighting confirmed (orchestrator's; yard_open crossing, main code, seed 22, builder0): ticks 1/3/6 all arrive by
+  90 s, but B_1 circles 4–10 m round its gate 20 m back of a herringbone slot from 17 s to 50 s (in at 66.8 s v ~10–25 s).
+  Cause: `reached` (GATE_REACHED 2.5 m) is judged afresh every tick, so a car at its gate pointing off the heading heads
+  for the goal, leaves 2.5 m and is sent back.
+- **v3 = the last attempt (`053beffb`; bar ACCEPTED by godot-67 with n = 12, bridge-pooled added, Terminus reported):**
+  (i) give up when blocked; (ii) a REACHED gate stays done for its goal; (iii) a gate only where a ring of navmesh one
+  turning radius round it exists, else the longest shorter run-in (75/50/25 %), else none ("cramped").
+  Tuning n = 1 (builder0): yard t3 last crew in 26.2 s v 71.3 s; Sumps within 8 m 56.5 s v 82.6 s; Terminus unchanged.
+- **Terminus B_4 is not the gate:** its gate has the room by the navmesh; it reaches it (latch fires) and jams on terrain
+  4.8 m on, "blocked terrain" 8 s+ to the end (reseat-trace TRACK lines). An escape failure: to round 30 for manoeuvre.
+- Judged running at `053beffb`: yard seeds 23–24 × {1,3,6,8,11,16}, Sumps seeds 2–13, Terminus 2–4, bridge-pooled on
+  (**18/18**, exited 0; note its four law_tanks are tracked, so the gate never runs there), arrive series 25–28.
+- Follow-up `9926f3bb` (native's review): the roomy gate memoised per hull on exactly (goal, heading, length, radius);
+  latched refusals counted as "latched". No behaviour change; equality vs `053beffb` on the tuning cells queued.
+- Native (godot-native-1b) reviewed the diff: mirrors cleanly. Shipping = the default flip + native's mirror back to back.
+**B2 MERGED** alone: `fa099d5b` → main `23d94eb3` (check: exited 0, 2559/0, ALL JUDGED). flank-probe 13–15 (fa099d5b,
+builder0): drawn 6/6 on task, 5/6 reached (median 25 s; the miss, right-13, parks on the ring 0.4° outside 35°), clicked
+1/6. Clip: `~/projects/clips/round29/flank_drawn_vs_clicked_fa099d5b_seed10t3.mp4` (even roster, seed 10 t3: drawn 5
+alive, IFV dead 29.1 s, hits 32° off; clicked 1 alive, IFV lives, 89° off).
 Clip for him (B1): seed 13 t1, clicked v drawn east, copied by the orchestrator to main's
 `build/round29/artillery_side_by_side.mp4`.
 
