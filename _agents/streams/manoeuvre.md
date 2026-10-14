@@ -139,5 +139,17 @@ _Updated 2026-10-13 ~12:10 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
   > +/-5 on 4 tasks (3 lower error, screen +6.3 p 0.32). Context, not a plea: the clicked pair (faces declined both arms)
   moved the same class +10 on attack-move. Kept: `d7385da2` (face_slot root-cause fix + facekeep) and branch
   `manoeuvre-m1-pointonly` (line tasks provably on the base path, 6/0 builder0).
-- **Judged run** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
+- **M2 (the creep): built, bar ACCEPTED before numbers, JUDGED: NOT MET -> nothing ships (last attempt).** Candidate
+  `7b895eed` (branch `manoeuvre-m2-r29`): round 28's creep lift re-based (`--nav-off=creeplift`), refusal counters,
+  `tests/test_manoeuvre_creep.gd` (paced IFV 14 gear changes / 7.8 s -> 0 / 2.8 s; gang catapult 23 / not round in 12 s
+  -> 0 / 4.4 s; builder0 2/0). Tuning (seeds 1-3): open+static creep 78 -> 32. Judged (census 8-13 + sim 6-8, GDScript
+  path): open+static creep 125 -> 75 (-40 %, bar -50); over-3 386 -> 308; Terminus mixed arrived 133 -> 132/144, rigs
+  82 -> 75/96, rig wall contact-ticks 3938 -> 6494 (mixed 1533 -> 959); bridge 18/18; friendly 125 -> 113; ~0.04 ms.
+  Rigs: one pinned rig a run carries the table (lesson 302), but without each arm's two worst runs still 1425 -> 2259:
+  rolling a long rig's turn puts it into street walls more (round 28 again). The long pins themselves are M4's bug:
+  traced (terminus rigs seed 9, deterministic, GDScript path) a rig reports 12 m/s at full throttle with zero
+  displacement for seconds, in free space and against a wall; unstick reads that velocity and never fires
+  (`references/round29/manoeuvre/m2_judged.txt`). wall_contact.gd untouched (told the orchestrator: settled for N7.4).
+- **M3 (scout's SUPPRESS lay): not opened** (conditional on CP-M2 shipping, C29.6).
+- **M1 judged run** ~13:20 PDT: `manoeuvre-hull-rest` arms new/base x drawn/clicked from `d7385da2` (two
   worktrees, same commit), `M1_FLAGS=--turn-states`.
