@@ -199,6 +199,17 @@ the section 0.34 -> ~0.10-0.15 ms (a call's crossing ~8 us plus the C++'s buildi
 ~1.3-1.7 % of the tick. **Rule:** ON as shipped either way (the C++-core principle, the price stated); if the section
 does not fall by at least a third, the crossings dominate and that is written down as the finding. Falsifier for the
 prediction: a fall of more than 80 % (then the GDScript laps were inflating it).
+**N7.5 DONE (`f1e4178b`; ON):** `test_native_feed` (builder0): live lab elements (bounding + travelling, every crew, six
+verbs, lean view and state()) 11 520 reads, stub sources 2 166 shapes (slots as list / points, sectors as direction /
+degrees / NaN / INF, named halves and roles, missing leader / id / members, no state), **0 mismatches**; native-proof on
+= off = nofeed: Sumps `0398922d31f335f8`, Sumps with elements `4685568bc42b5d8b`. **The price (builder0 became BUSY
+during it: tick 14-28 ms; `f1e4178b`'s code, foundry 25 a side pinned 0-3, seed 92721, 3 alternated runs an arm; the
+section as a share of each run's own tick):** OFF 2.45 / 2.51 / 2.44 %, ON 1.96 / 2.10 / 2.06 %: **-0.43 % of the
+tick, the section -17 %**, under the pre-registered third: the prediction is wrong and the crossings dominate. Each
+build still pays the native call, ~20 Dictionary sets and gets through the extension interface, and the element's
+`feed_state` call. Shipped ON (the C++-core principle, the price stated). It would pay more once the brain that reads the
+context is native (stage 2), or if the memo stopped missing (the key moves on every `Element.update`: brains' to judge,
+not a port).
 
 ### The report (read this first; kept current)
 

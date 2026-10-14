@@ -122,6 +122,9 @@ struct N {
 			_bake_radius{ "_bake_radius" }, split{ "split" },
 			gates_offered{ "gates_offered" }, gates_aimed{ "gates_aimed" }, gates_refused{ "gates_refused" },
 			gate_refusals{ "gate_refusals" }, gate_off_mesh_fit{ "gate_off_mesh_fit" }, gate_site{ "gate" },
+			gates_given_up{ "gates_given_up" }, gates_reached_latched{ "gates_reached_latched" },
+			gates_shortened{ "gates_shortened" }, _gate_answer{ "_gate_answer" }, gates_turned{ "gates_turned" },
+			gates_latched_away{ "gates_latched_away" }, gates_near{ "gates_near" },
 			// the k-turn leg
 			_kturn_rolling{ "_kturn_rolling" }, _kturn_gear{ "_kturn_gear" }, _kturn_from{ "_kturn_from" },
 			_kturn_timeout{ "_kturn_timeout" }, _kturn_turn{ "_kturn_turn" }, _kturn_leg_no{ "_kturn_leg_no" },
@@ -234,6 +237,7 @@ struct Drive {
 	Object *ctl;
 	Node3D *tank;
 	Vector3 here; // tank.global_position (constant for the whole drive)
+	String gate_answer; // Movement._gate_answer for this drive
 	Vector3 basis_z; // tank.global_basis.z
 	int64_t step;
 	int64_t frame = -1;
@@ -826,15 +830,112 @@ struct Drive {
 	}
 
 	// Movement._gate_refused(reason, goal)
-	Vector3 gate_refused(const char *reason, const Vector3 &goal) {
+	Vector3 gate_refused(const char *reason, const Vector3 &goal) { return gate_refused(String(reason), goal); }
+	Vector3 gate_refused(const String &reason, const Vector3 &goal) {
+		gate_answer = reason; // v4's static _gate_answer (written once a drive, below)
 		sadd(k.gates_refused, 1);
-		count_into(k.gate_refusals, String(reason));
+		count_into(k.gate_refusals, reason);
 		return goal;
+	}
+
+	// ---- Movement._gate_has_room / _roomy_gate / _roomy_gate_memo (brains B5c v3): a gate a car can turn onto its line
+	// at (every point of a ring one turning radius round it on the navmesh), else the longest shorter run-in, else INF ----
+	bool gate_has_room(const RID &map, const Vector3 &gate, double radius) { return gate_has_room(map, gate, radius, c.GATE_ROOM_POINTS); }
+	bool gate_has_room(const RID &map, const Vector3 &gate, double radius, int64_t points) {
+		for (int64_t i = 0; i < points; i++) {
+			// var a := TAU * k / points; var point := gate + Vector3(cos(a), 0.0, sin(a)) * radius
+			const double a = 6.2831853071795864769252867666 /* GDScript TAU */ * (double)i / (double)points;
+			const Vector3 point = gate + Vector3((real_t)cos(a), 0, (real_t)sin(a)) * (real_t)radius;
+			if (flat_distance(closest_point(map, point, k.gate_site), point) > c.MESH_GATE_SLACK) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	Vector3 roomy_gate(const RID &map, const Vector3 &goal, const Vector2 &direction, double length, double radius) {
+		double shares[4] = { 1.0, c.OFF_MESH_PROBES[0], c.OFF_MESH_PROBES[1], c.OFF_MESH_PROBES[2] };
+		for (double share : shares) {
+			const Vector3 gate((real_t)((double)goal.x - (double)direction.x * length * share), 0,
+					(real_t)((double)goal.z - (double)direction.y * length * share));
+			if (gate_has_room(map, gate, radius)) {
+				return gate;
+			}
+		}
+		return V3_INF;
+	}
+
+	Vector3 roomy_gate_memo(const RID &map, const Vector3 &goal, const Vector2 &direction, double length, double radius) {
+		Array key;
+		key.push_back(goal);
+		key.push_back(direction);
+		key.push_back(length);
+		key.push_back(radius);
+		if (key != v._roomy_key()) {
+			v.set__roomy_key(key);
+			v.set__roomy_value(roomy_gate(map, goal, direction, length, radius));
+		}
+		return v._roomy_value();
+	}
+
+	// ---- v4: Movement._gate_latch / _turn_room / _turn_room_memo (brains B5c-v4) ----
+	Vector3 gate_latch(const Vector3 &goal, const String &why) {
+		v.set__gate_dropped_for(goal);
+		v.set__gate_dropped_why(why);
+		return gate_refused(why, goal);
+	}
+
+	bool turn_room(const RID &map, const Vector3 &gate, const Vector2 &direction, double radius) {
+		const double sides[2] = { 1.0, -1.0 };
+		for (double side : sides) {
+			// var centre := gate + Vector3(-direction.y, 0.0, direction.x) * radius * side
+			const Vector3 centre = gate + Vector3(-direction.y, 0, direction.x) * (real_t)radius * (real_t)side;
+			if (gate_has_room(map, centre, radius, c.TURN_ROOM_POINTS)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool turn_room_memo(const RID &map, const Vector3 &gate, const Vector2 &direction, double radius) {
+		Array key;
+		key.push_back(gate);
+		key.push_back(direction);
+		key.push_back(radius);
+		if (key != v._turn_room_key()) {
+			v.set__turn_room_key(key);
+			v.set__turn_room_value(turn_room(map, gate, direction, radius));
+		}
+		return v._turn_room_value();
 	}
 
 	// ---- Movement._approach_gate, A4 (the curved gate, opt-in) off: called only with a wheeled hull and a facing ----
 	Vector3 approach_gate(const Vector3 &goal, const Dictionary &order, double radius) {
 		sadd(k.gates_offered, 1);
+		bool turning = false;
+		// Round 29 (brains B5c): a gate this hull stalled against (or reached) is given up for this goal.
+		if (c.gate_giveup) {
+			const Vector3 dropped = v._gate_dropped_for();
+			if (dropped != V3_INF && flat_distance(goal, dropped) <= c.NEW_GOAL_JUMP) {
+				return gate_refused(v._gate_dropped_why(), goal);
+			}
+			static const String blocked("blocked"), stalled("stalled"), no_path("no_path"), turn_blocked("turn_blocked"),
+					turn_capped("turn_capped");
+			const Vector3 turning_for = v._gate_turning_for();
+			turning = turning_for != V3_INF && flat_distance(goal, turning_for) <= c.NEW_GOAL_JUMP;
+			if (turning) {
+				// v4: coming round is bounded: stuck on terrain or a hull (not "no_path": circling), or out of time.
+				const bool stuck = v.phase() == blocked && v.blocked_by() != no_path;
+				if (stuck || v._order_ticks() - v._gate_turning_tick() > (int64_t)(c.GATE_TURN_SECONDS * (double)c.TICK_RATE)) {
+					return gate_latch(goal, stuck ? turn_blocked : turn_capped);
+				}
+			} else if (v.arc_live() && v.phase() == blocked) {
+				v.set__gate_dropped_for(goal);
+				v.set__gate_dropped_why(stalled);
+				sadd(k.gates_given_up, 1);
+				return gate_refused(stalled, goal);
+			}
+		}
 		const Variant facing = order[k.facing];
 		if (facing.get_type() != Variant::ARRAY || ((Array)facing).size() < 2) {
 			return gate_refused("bad_facing", goal);
@@ -845,9 +946,30 @@ struct Drive {
 			return gate_refused("bad_facing", goal);
 		}
 		direction = direction.normalized();
-		const double length = clampd(radius * c.APPROACH_RADII, c.APPROACH_MIN, c.APPROACH_MAX);
-		const Vector3 gate((real_t)((double)goal.x - (double)direction.x * length), 0,
+		double length = clampd(radius * c.APPROACH_RADII, c.APPROACH_MIN, c.APPROACH_MAX);
+		Vector3 gate((real_t)((double)goal.x - (double)direction.x * length), 0,
 				(real_t)((double)goal.z - (double)direction.y * length));
+		if (c.gate_giveup && flat_distance(goal, v._gate_seen_for()) > c.NEW_GOAL_JUMP) {
+			// v4 near: judged on the nominal approach (before the roomy rule shortens it), once per new goal.
+			v.set__gate_seen_for(goal);
+			const double straight = flat_distance(here, goal);
+			if (straight <= length && flat_distance(here, gate) + length > c.GATE_NEAR_DETOUR * straight) {
+				sadd(k.gates_near, 1);
+				static const String near("near");
+				return gate_latch(goal, near);
+			}
+		}
+		if (c.gate_giveup) {
+			const Vector3 roomy = roomy_gate_memo(tank->get_world_3d()->get_navigation_map(), goal, direction, length, radius);
+			if (roomy == V3_INF) {
+				return gate_refused("cramped", goal);
+			}
+			if (roomy != gate) {
+				sadd(k.gates_shortened, 1);
+				length = flat_distance(roomy, goal);
+				gate = roomy;
+			}
+		}
 		// _arrive_gate(): maxf(GATE_REACHED, settle_radius(unit))
 		const String unit = tank->get(k.unit_id);
 		const double *settle_known = c.settle_of.getptr(unit);
@@ -858,10 +980,31 @@ struct Drive {
 			settle = script->call(k.settle_radius, unit);
 			c.settle_of.insert(unit, settle);
 		}
+		const Vector2 forward = Vector2(-basis_z.x, -basis_z.z).normalized();
 		if (flat_distance(here, gate) <= MAX(c.GATE_REACHED, settle)) {
+			if (c.gate_giveup) {
+				if ((double)forward.dot(direction) < 0.0) {
+					// Reached pointing away from the heading: it comes round the gate first, where a turning circle fits
+					// beside it (v4); else latched facing away.
+					if (turning) {
+						return gate_refused("reached_facing_away", goal);
+					}
+					if (turn_room_memo(tank->get_world_3d()->get_navigation_map(), gate, direction, radius)) {
+						v.set__gate_turning_for(goal);
+						v.set__gate_turning_tick(v._order_ticks());
+						sadd(k.gates_turned, 1);
+						return gate_refused("reached_facing_away", goal);
+					}
+					sadd(k.gates_latched_away, 1);
+					static const String latched_away("latched_away");
+					return gate_latch(goal, latched_away);
+				}
+				static const String latched("latched");
+				sadd(k.gates_reached_latched, 1);
+				return gate_latch(goal, latched);
+			}
 			return gate_refused("reached", goal);
 		}
-		const Vector2 forward = Vector2(-basis_z.x, -basis_z.z).normalized();
 		const Vector2 to_goal((real_t)((double)goal.x - (double)here.x), (real_t)((double)goal.z - (double)here.z));
 		if ((double)to_goal.length() <= length && (double)forward.dot(direction) >= c.APPROACH_ALIGNED_COS) {
 			return gate_refused("on_approach", goal);
@@ -1988,10 +2131,15 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 		radius = wheel_radius();
 	}
 	Vector3 aim = goal;
+	// v4 (brains B5c-v4): `_gate_answer = "aimed"` then the gate's refusal reason, if any (Movement's static, which
+	// only --gate-trace reads; the trace itself is the GDScript drive's).
+	static const String aimed("aimed");
+	gate_answer = aimed;
 	if (radius > 0.0 && order.has(k.facing)) {
 		Timed t("~approach_gate");
 		aim = approach_gate(goal, order, radius);
 	}
+	sset(k._gate_answer, gate_answer);
 	v.set_arc_live(aim != goal);
 	Vector3 routed;
 	{

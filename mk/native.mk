@@ -280,3 +280,26 @@ native-cap-probe: import ## Headless skirmishes on --render-preset=laptop, each 
 		echo "$$cap" | grep -q 'squads=4 green_squads=[1-4] green=\([0-9]\|1[0-9]\|20\) rust_squads=[1-4] rust=\([0-9]\|1[0-9]\|20\)$$' || bad=1; \
 		[ "$$refused" = 0 ] || bad=1; \
 	done; [ $$bad = 0 ] && echo ">> native-cap-probe: PASS" || { echo ">> native-cap-probe: FAIL"; exit 1; }
+
+# Round 30 (C30.2, brains' B5c-v4 pair): brains' gate-series cells (mk/nav.mk) with the rule ON on the DEFAULT path (the
+# native drive), so each run can be held field for field against brains' judged on-arm run (its --brains-off=native).
+# NATIVE_GATE_FLAGS adds flags (e.g. --brains-off=native for the GDScript twin). -> build/native-gate.jsonl
+.PHONY: native-gate-cells
+native-gate-cells: import ## Round 30: brains' yard + Sumps gate cells, rule ON, on the default (native) path -> build/native-gate.jsonl
+	@rm -rf $(BUILD_DIR)/native-gate-runs; mkdir -p $(BUILD_DIR)/native-gate-runs
+	@echo ">> native-gate-cells on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(NATIVE_GATE_FLAGS)'"
+	@for cell in yard sumps; do \
+		case $$cell in yard) for s in $(GATE_YARD_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell on $$s $$t"; done; done;; \
+		sumps) for s in $(GATE_SUMPS_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell on $$s $$t"; done; done;; esac; \
+	done | xargs -P $(GATE_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; flags="$(NATIVE_GATE_FLAGS)"; \
+		out=$(BUILD_DIR)/native-gate-runs/$$cell-$$arm-$$seed-$$tick.json; \
+		case $$cell in \
+		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
+			--dir=forward --metres=150 --seed=$$seed --units=law_scout:law_ifv:law_tank:law_tank --seconds=120 --drills=on \
+			--lab-start-tick=$$tick $$flags 2>/dev/null | grep -o "SETTLE_PROBE {.*" | sed "s/^SETTLE_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; \
+		yard) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reseat_probe.gd -- --arena=yard_open \
+			--kind=cross --which=both --seed=$$seed --seconds=90 --lab-start-tick=$$tick $$flags 2>/dev/null \
+			| grep -o "RESEAT_PROBE {.*" | sed "s/^RESEAT_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; esac; \
+		[ -s $$out ] || echo "{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
+		echo "  ran $$cell s$$seed t$$tick"'
+	@cat $(BUILD_DIR)/native-gate-runs/*.json > $(BUILD_DIR)/native-gate.jsonl; wc -l < $(BUILD_DIR)/native-gate.jsonl

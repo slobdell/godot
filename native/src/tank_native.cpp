@@ -570,6 +570,11 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		c.HOLD_SLOW_M = config["HOLD_SLOW_M"];
 		c.LIVE_TICKS = config["LIVE_TICKS"];
 	}
+	c.gate_giveup = (bool)config.get("gate_giveup", false);
+	c.GATE_ROOM_POINTS = config.get("GATE_ROOM_POINTS", 8);
+	c.GATE_TURN_SECONDS = config.get("GATE_TURN_SECONDS", 12.0);
+	c.GATE_NEAR_DETOUR = config.get("GATE_NEAR_DETOUR", 2.0);
+	c.TURN_ROOM_POINTS = config.get("TURN_ROOM_POINTS", 12);
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();
