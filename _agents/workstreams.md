@@ -225,6 +225,14 @@ declared lines), `tools/remote.sh`, `tools/slot.sh`, `mk/core.mk`.
   attack-move / attack on a driving squad enqueues behind its waypoints, facing from the last waypoint; a chain of shifted
   attack-moves still runs in order; a shifted MOVE after a queued attack-move goes behind it; unshifted byte-identical.
 
+- **Brains B5c JUDGED — PASSES every line (~22:40; `053beffb`, GDScript both arms, fresh seeds):** yard crossing last crew
+  in: off never in 7/12 runs v on 21.95 s median, on 10/10 in all 12; Sumps all-within-8 m 38.8 → 36.0 s, no run > 5 s
+  later (seed 3 never → 36.5 s); guns_on_arc 0.94 = 0.94; Terminus (reported) 10/10/9 → 10/10/10; counters on/off as
+  required; arrive series 89 → 100/100; bridge-pooled 18/18. Worst run: a hull 9 m from its slot pulled 17 m back to a gate
+  (round 30: no gate when already within the approach length). **Ship = the default flip + native's mirror as a pair**;
+  native shows yard and Sumps on the ON path equal to the judged on-arm run for run. B5 queued attack grant extended to
+  `_order_squads` (several squads queue like round 28's screen); merged separately.
+
 - **Brains B1 bar (pre-registered 2026-10-13, before numbers; DECLARED; the ONE attempt, a fail parks B1):** candidate
   `stream/brains` `c2ae6e68` (round 28's battery `88b6a724` restored, plus 4 traced fixes: the line once round is the
   post it drove to; standoff = safe 80 m + 10 m; a battery crew shells only inside the 30° cone; no notch past the post).
