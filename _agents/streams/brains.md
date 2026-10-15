@@ -109,6 +109,30 @@ Nothing.
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
 
+### Round 30 FINAL REPORT (2026-10-14 evening; green hash: see the last line of this block)
+**Shipped to main:** B7 the scenario split (stream `33d9c310`, merged by godot-67; no wall gain under rr sharding, the
+file is no longer a floor). No game-code change shipped this round.
+**Parked, with branches (round 31):**
+- **B5c-v4** arrival gate: `lab/brains-r30-gate` = `f1a804eb` (judged `19eca15a`: every bar line passed: yard all-in
+  12/12 v 1/12, Sumps 24.5 v 37.5 s, arrive 99 v 91, bridge 18/18, screen-slots A_2 in). The pair check failed
+  `test_tactics_pursuit` (the near rule on two crews' opening seats tips a knife-edge chase); no honest scoping. Native's
+  mirror on its lab branch. Lead: the pursuit test's A/A over seeds, then re-judge (or near only for a goal that moves
+  onto a hull on a task); the planner's side gate for 180° goals beyond the horizon.
+- **B3b** his bridge: `lab/brains-r30-bridge` = `4bc708d7`: 107/108 v main 106/108 (fixes main's two cells, breaks
+  green t18 s3: the route seating re-matches seats every plan). Lead: lay the crossing-order seating once.
+- **B6** SBF drawn line: `lab/brains-r30-sbf` = `9aa0cd7c`: traced (not an artefact; three causes), the sector fix
+  tuned, the bar ACCEPTED and filed; not run (builder0 loaded at 18:00, load 12–16): **round 31's first brains item.**
+**What he can playtest:** nothing new in play from brains (main's game code is unchanged by this stream).
+**Requests to other streams:** manoeuvre: M1b(2) turn-the-hull for wheeled turret hulls (B6 cause c); yard s25 t1's
+U-turn onto terrain (M5's second case, relayed). Traffic: the Terminus 40–75 s far-end circling needs traffic-t3's rule
+underneath to reproduce (relayed); its seed-33 seat trap under traffic-t3b was NOT traced this round (box time went to
+B3b/B6): round 31.
+**Questions for the lead:** none.
+**Stream v main:** game/ equals main; the stream adds probes (`sbf_probe`, gate/endings tooling on the labs),
+`make scenario-times`, `make sbf-series`, references/round30/brains/ (judged rows and traces), this brief.
+**GREEN HASH: `ed57eace`** (builder0: `make check exited 0`, 2585 passed / 0 failed, sim-baseline unmoved,
+native-verify-scenarios 0 mismatches; perf-judge / scenario_perf NOT JUDGED for box load). Later commits are Status only.
+
 ### B6 — support by fire, wheeled turret line: TRACED, a brains fix DECLARED (bar sent; judged run tonight only if builder0 has a slot)
 **The probe fixed first:** control's hull-rest probe judged a drawn SBF when every hull had been still 3 s, but SBF never
 sets `arrived`, so it read hulls stopped on the way. `tests/tactics/sbf_probe.gd` (`make sbf-series`, mine): four crews
@@ -121,8 +145,11 @@ v 62°. **Not an artefact.** Per-crew trace, three causes:
 - (a) **brains:** with a drawn facing the SBF line still hands each crew its fanned sector (orders (−0.5, −0.87),
   (−0.94, −0.34)… v the drawn (−0.87, −0.5)); the plain move zeroes sectors when he draws one.
 - (b) the arrival gate: law_tank A_1 circles its gate reading no_path from 32 s (round 29's circling; B5c parked).
-- (c) a wheeled hull arriving off-heading is not turned at rest (gang_ifv A_4 parked 168° off after its slot moved):
-  manoeuvre's M1b.
+- (c) a wheeled TURRET hull arriving off-heading is not turned at rest (gang_ifv A_4 parked 168° off after its slot
+  moved): the brain declines a drawn facing for a turret hull (`TankBrain._order_move`: the turret carries the aim) until
+  turn-the-hull ships: M1's turn-hull (his round-28 call; M1b(2), not built this round), NOT face_slot (manoeuvre ran
+  this probe on M1b's candidate: both arms byte-identical, face_slot's counters 0). So gang_ifv's drawn error has that
+  ceiling in BOTH arms of B6's bar; its pooled line is carried by the other three classes (said before numbers).
 **Tuning of (a)** (`lab/brains-r30-sbf`: every crew given the drawn heading when one is drawn; `--sbf-told-sectors=on` =
 control; builder0, n = 1 a unit): drawn err gang_ifv 74 → 44.7°, gang_tank 20 → 11.2°, law_ifv 20 → 1.1°, law_tank
 25 → 47.6° with all four in (was 3); the clicked arm identical. **Bar** (sent to godot-67, before numbers): candidate
