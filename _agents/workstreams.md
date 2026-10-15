@@ -234,6 +234,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   census + drive + fights only, NOT hull-rest. **Consequence, stated before numbers:** if the combined arm fails and a
   consumer is re-declared alone (C31.4's one attempt), its hull-rest arm runs then, on fresh seeds, inside that one
   attempt.
+  **The ONE tree's gate RED (~10:00 PDT):** `68280cce` (main `83341378` + unstickback, kturnarc, realspeed and realslow
+  ON, native default path), builder0 `exited 2`, 2637 passed / 1 failed; sim-baseline moved on all 13 (expected ON).
+  The red: `test_control_queued_task::test_shift_screen_after_shift_waypoints_waits_for_the_route`. The screen starts
+  after the route but faces 80.9° off point − waypoint (needs ≤ 10°). Manoeuvre's three alone with NATIVE=off passed
+  it 12/0, so the cause is realslow, the native path, or both. Native re-runs the file alone; manoeuvre splits realslow
+  v native, and brains reads realslow for a facing effect. **The A/B does not start** until the gate is green (C31.1).
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
