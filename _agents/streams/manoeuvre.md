@@ -121,19 +121,46 @@ Nothing: his calls are made (turn the whole hull; planned turns).
 _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoeuvre`, from main `bd05077d` = code
 `0d35f215`, GREEN). Round 30, Fable 5.1. Report at the top; the progress log below it._
 
-### Report (2026-10-14, 19:40 PDT; final but for kturnarc's ruling and the batch merge)
+### Report (2026-10-14, 19:50 PDT — FINAL; round 30, Fable 5.1)
 
-**Shipped / shipping:** the M4b READER (`8cbdcfad` + native's pair, on main at `48d5aa0d`: `Tank.real_velocity`, the
-census `real` column, the probe's honest class; nothing in play reads it yet); **M1b(1)** `55622870` (ruled SHIPS);
-**kturnarc** `e7a58262` (every line met, ruling pending). **Parked with their tables:** M4b's escapes (`77a1603f`,
-judged twice), M2b's creep lift (`1f1c9835`), M5 (`34f34ea0`). **Kept branches:** `lab/manoeuvre-m4b2`,
-`lab/manoeuvre-m4b-reader`, `lab/manoeuvre-m1b`, `lab/manoeuvre-m2b`, `lab/manoeuvre-kturnarc`, `lab/manoeuvre-m5`,
-`lab/manoeuvre-m1b-sbf` (brains' probe merged, scratch). **Worktrees to remove at the close** (and their builder0
-folders `~/tank_squad/<name>`): `godot-manoeuvre-m1`, `-m2`, `-m5`, `-v2`, `-rd`, `-m1x`. **Green hashes:** the reader
-pair `3bc2c476` (native, check 2606/0); M1b and kturnarc are covered by the batch's one main check (the orchestrator's
-call: no check owed from me). **What he will notice** from this round's merges: a face at rest keeps to its slot
-(M1b: the attack-move drawn median 23 → 16°, a rig no longer carried 8 m off its slot by its face legs); planned
-reverse legs end where planned (kturnarc: rigs' Terminus leg time −18 %); the reader is invisible in play.
+**Shipped (three, each DECLARED, judged on fresh seeds and ruled):**
+1. **The M4b READER** `8cbdcfad` + native's pair `3bc2c476` (on main at `48d5aa0d`, check 2606/0, thirteen unmoved):
+   `Tank.real_velocity` (C30.6), the census state line's `real`, the pinned probe's honest class. Nothing in play reads
+   it yet; it is the member the next consumers (the escapes, the leads, the arc rule) stand on.
+2. **M1b(1) `face_slot`** `55622870`: a face at rest keeps to the slot the crew last drove to (round 28's anchor read a
+   goal `Movement.idle()` clears, so it never held). Drawn attack-move median 23.1 → 15.9°, no task worse (p ≥ 0.38),
+   Terminus arrivals pass both squads, bridge 18/18.
+3. **kturnarc** `e7a58262`: a k-turn leg is measured by the arc driven (not the chord) and ends on the plant's discrete
+   stopping distance (the planner's P4 findings). Terminus arrivals pass both squads, aborted legs not up, rigs' leg
+   time −18 %, bridge 18/18. Native's pair: one owned member `_kturn_arc_m`.
+Native builds ONE tree (main + `55622870` + `e7a58262` + its port) and checks it once; the orchestrator merges M1b
+then the pair. No check owed from this stream.
+
+**Parked, each with its judged table under `references/round30/manoeuvre/`:** M4b's ESCAPES (`lab/manoeuvre-m4b2`
+`77a1603f`: run 1 freed pins and doubled rigs' wall contact; run 2 gated to ≤ 10 m hulls passed every series line and
+then failed the pair check on a single-file reverse and a `drive` order's hull); M2b's CREEP LIFT (`lab/manoeuvre-m2b`
+`1f1c9835`: creep −30 % v −50 %, rigs −9 arrivals); M5 (`lab/manoeuvre-m5` `34f34ea0`: case 1 closed by brains' v4,
+case 2 is a car's reactive 180°); **M1b(2) turn-the-hull: NOT BUILT this round** (his round-28 call stays open; the
+guard is now sized: base + 2 se with M1_CLASS's se, clicked lines by permutation p).
+
+**Round-31 hand-over (the planner, traffic, brains):** (i) seed 31's 77 s grind (a freed rig at an angle to a street
+wall under the plant's phantom momentum; `m4b_run1_rigs31_*.log`); (ii) seed 51's 50 s grind under the lift (F1); (iii)
+the squadmate pin loop (mixed-21's IFV backs 1.5 m and drives straight back in; ORCA reads the blocker's phantom
+velocity: traffic's line); (iv) the six-cusp car (yard s25 B_4: a goal pose 9 m behind, the planner's F4); (v) Green_M_3
+(a blind reverse on lock in single file leaves an 8×8 at a pose seating never recovers; the re-seat reads
+`estimated_velocity`); (vi) the design note below: a long hull against a FRIEND asks first, then a straight reverse by
+the outline sweep, then `blocked` by name; (vii) tooling: export `face_slot_kept/refused` from the hull-rest probe;
+one hull-rest arm per remote call (the 90-min cap); the stall timer should not count while a gun packs.
+
+**Kept branches:** `lab/manoeuvre-m4b-reader`, `lab/manoeuvre-m1b`, `lab/manoeuvre-kturnarc` (the merges);
+`lab/manoeuvre-m4b2`, `lab/manoeuvre-m2b`, `lab/manoeuvre-m5` (parked); `lab/manoeuvre-m1b-sbf` (brains' probe
+merged, scratch). **Worktrees:** scratch ones removed at the close with their builder0 folders (below);
+`godot-manoeuvre` left clean.
+
+**What to playtest (after the batch lands: `make native && make skirmish`):** draw a move for a squad with gun trucks
+or IFVs onto a tight spot and watch the ones that arrive at the edge of their circle: they turn at rest without
+walking off the spot (M1b). Send a column of War Rigs through the Terminus streets: a rig that plans a reverse leg
+now stops where it planned instead of over-running it by a hull's margin (kturnarc). Nothing else changes in play.
 
 | item | candidate (branch) | state |
 |---|---|---|
