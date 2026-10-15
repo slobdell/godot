@@ -73,7 +73,7 @@ struct Timed {
 // Every member and static name drive touches, made once.
 struct N {
 	// Movement members
-	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" }, avoid_shape{ "avoid_shape" };
+	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" }, avoid_shape{ "avoid_shape" }, _crews{ "_crews" };
 	StringName ctl{ "ctl" }, _repair_for{ "_repair_for" }, _repair_to{ "_repair_to" }, _goal{ "_goal" },
 			_order_ticks{ "_order_ticks" }, arc_live{ "arc_live" }, _arrive{ "_arrive" }, _remaining{ "_remaining" },
 			_deflected{ "_deflected" }, _give_way_left{ "_give_way_left" }, _blocked_ticks{ "_blocked_ticks" },
@@ -276,6 +276,15 @@ struct Drive {
 		}
 		return hold_state == 1;
 	}
+	// PlannerSeam.live(name) = on() and _crews.has(name): a Dictionary lookup on the seam's static table.
+	bool seam_live() {
+		if (!c.planner_on) {
+			return false;
+		}
+		const Dictionary crews = c.planner_seam->get(k._crews);
+		return !crews.is_empty() && crews.has(String(tank->get_name()));
+	}
+
 	bool traffic_holding() {
 		Object *t = c.traffic_script;
 		const Dictionary live = t->get(k._live);
@@ -1423,6 +1432,9 @@ struct Drive {
 		if (holding()) {
 			return; // round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
 		}
+		if (seam_live()) {
+			return; // round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
+		}
 		if (c.UNSTICK_BACK && (int64_t)v._esc_stage() != 0) {
 			// Round 31 (manoeuvre H1): an escape under way (_esc_stage only leaves ESC_NONE with `unstickback` on).
 			cb(k._escape_step, cmd, order, delta);
@@ -2182,7 +2194,11 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				Object *leg = leg_ref;
 				bool planned = false;
 				const int64_t check_left = (int64_t)v._kturn_check() - step;
-				if ((double)v._kturn_left_m() > 0.0) {
+				if (seam_live()) {
+					// Round 31 (planner CP-P1): PlannerSeam.hold() opens _planned_reverse for a crew the seam holds.
+					Timed t("planned_reverse");
+					planned = cb(k._planned_reverse, leg_ref, waypoint, delta);
+				} else if ((double)v._kturn_left_m() > 0.0) {
 					Vector2 leg_vector;
 					Timed t("~kturn_leg");
 					if (kturn_leg(delta, leg_vector)) {

@@ -14,16 +14,19 @@ const UNITS: Array[String] = ["tank", "ifv", "scout", "gang_tank", "artillery", 
 const FRAMES := 180
 
 
+## Every mover's state, then (one more entry) the world a drive can change besides them: the planner's seam (round 31).
 func _capture_all(movers: Array[Movement]) -> Array:
 	var states := []
 	for mover in movers:
 		states.append(MoverState.capture(mover))
+	states.append(MoverState.world_capture())
 	return states
 
 
 func _restore_all(movers: Array[Movement], states: Array) -> void:
 	for i in movers.size():
 		MoverState.restore(movers[i], states[i])
+	MoverState.world_restore(states[movers.size()])
 
 
 func _order(rng: RandomNumberGenerator, wheeled: bool) -> Dictionary:
@@ -81,6 +84,8 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 			if differ != "":
 				differ = "mover %d: %s" % [j, differ]
 				break
+		if differ == "":
+			differ = MoverState.world_diff(live[movers.size()], native[movers.size()])
 		if MoverState.command(live_cmd) != MoverState.command(native_cmd) or differ != "":
 			mismatches += 1
 			if first == "":
@@ -146,6 +151,8 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 					if differ != "":
 						differ = "mover %d: %s" % [j, differ]
 						break
+				if differ == "":
+					differ = MoverState.world_diff(arms[0][1][movers.size()], arms[arm][1][movers.size()])
 				if arms[0][0] != arms[arm][0] or differ != "":
 					mismatches += 1
 					if first == "":
@@ -368,6 +375,8 @@ func _drive_case(owned: bool) -> void:
 				if d != "":
 					states_differ = "mover %d: %s" % [j, d]
 					break
+			if states_differ == "":
+				states_differ = MoverState.world_diff(live[movers.size()], native[movers.size()])
 			if not command_same or states_differ != "":
 				mismatches += 1
 				if first == "":
