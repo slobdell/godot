@@ -146,7 +146,7 @@ static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
 			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE,
-			"holds": _hold_stats()}
+			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
