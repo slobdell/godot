@@ -229,6 +229,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   flipped ON. Its plain `make check` is both CP-H's C31.1 gate (the four together have never been checked) and the ship
   check. Manoeuvre runs the A/B on that tree's commit with ALL = `allnoghost`, as filed. Native's chain: T4 OFF (running),
   then that tree; T4's ON gate is dropped.
+  **Slots and scope (~08:00 PDT):** manoeuvre gets a SECOND heavy slot for CP-H while M1b(2) attempt 2's heavy lane
+  runs (traffic holds none now; every other stream keeps one heavy and one light). The ALONE arms (REPORTED) run on
+  census + drive + fights only, NOT hull-rest. **Consequence, stated before numbers:** if the combined arm fails and a
+  consumer is re-declared alone (C31.4's one attempt), its hull-rest arm runs then, on fresh seeds, inside that one
+  attempt.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
