@@ -213,7 +213,8 @@ false, so this is the one flag that puts both arms on the same drive; each arm's
 14.0 m, the only such hull in the catalog; the next is 9.7 m), the plan source of the k-turn block and of the face at
 rest (the back-and-fill, the circle plan, `plan_face`) replaced by the lattice planner's legs driven by `PlannerExecutor`;
 a short hull is never taken (its own test); nothing else. **SLICE 2 expansions a tick, counted never timed; PENDING 90
-ticks; one crew searched at a time.** **Census numbers the bar is sized from (builder0 light lane, Sumps 25 a side,
+ticks of SEARCH from the tick it begins at rest (a rolling hull is braked to rest first; its whole hold is
+`pending_ticks`); one crew searched at a time.** **Census numbers the bar is sized from (builder0 light lane, Sumps 25 a side,
 seeds 92721 / 31337, c158aecf / fd36ecd5 / a6a66f31):** ~0.10-0.12 plan events a tick in the whole fight, bursts to 7;
 the War Rig's in-press face-about ~200 us an expansion warm, median 131 expansions when it fits, a quarter to a half
 refused START_BLOCKED / GOAL_BLOCKED in the press; **the long hulls' share (census-4, b37b9ecb, same seeds): 2 of 50 hulls
@@ -400,6 +401,17 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:10 PDT: **the rolling-face finding traced.** 0914dafd's brake changed nothing (25/0 on it, exit 0,
+  light lane: the same abandoned 1 / pending 114 to the tick), so 77db86eb recorded the abandoned search
+  (`PlannerSeam.last_abandoned`): begun, 92 expansions stepped, start (-70, -14.7) facing north = 8.8 m past the face's
+  home (-70, -5.9; stay 5 m), speed 0. So: the 90-tick clock ran from the ASK and the rig's braking from 8 m/s ate ~45
+  ticks of it, leaving 46 ticks x SLICE 2 = 92 expansions for a search harder than the at-home turnround (7). **faeab49c:
+  the 3 s cap counts the SEARCH from the tick it begins at rest** (the hull's whole hold stays in `pending_ticks`);
+  seam test file running (`planner-test14`). Also 39ba4b0b: the switch in the CP-H form (`PLANNER_DEFAULT` false, `on()
+  = default != switched_off`; native's ask on pair/cpp1 a6c6c804, so the pair tree flips the const and keeps the
+  native drive on). **Native: the CP-P1 ship-ON mirror is built on pair/cpp1 = stream/native + 0914dafd; pair/cpp1-on
+  = 89090b3b, twins running; its full plain check follows in native's heavy queue.** The orchestrator: cleared for the
+  judged series once CP-P0 is merged OFF (planner-check6) and the pair tree's plain check is green with the four tests.
 - 2026-10-15 ~02:55 PDT: **census-3 / census-4** (a6a66f31 / b37b9ecb; the `by_hull` row missed the line at a6a66f31,
   fixed at b37b9ecb): long hulls 2 of 50, 6 / 9 of 174 / 202 manoeuvre starts (3.4 / 4.5 %), zero face orders; the rig's
   fitted plan median 131 expansions; the short hulls' face-about 190-250 us an expansion at a median of 11-113. **The
