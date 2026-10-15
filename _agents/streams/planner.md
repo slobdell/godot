@@ -225,7 +225,7 @@ second) leaves it idle ~85 % of the time; a median plan holds its rig ~65 ticks 
 short hulls' own face-about (never taken) prices the same per expansion (190-250 us) at a median of 11-113.** **First run; a second on fresh seeds
 would be the last.** Lines, each from `judging.md`'s row (the table re-rendered at `3ca70af2`):
 
-- (a) **Terminus census, rigs + mixed, 13 FRESH seeds (61-73), `nav-terminus-drive` both squads:** arrivals not down beyond
+- (a) **Terminus census, rigs + mixed, 13 FRESH seeds (133-145; the draft's 61-73 collided with M4b's 62-74 and T4's 49-61), `nav-terminus-drive` both squads:** arrivals not down beyond
   1.645 se EACH squad (rigs row: se 6.07 of 16 x 13 at n 13, the guard base - 9.98; mixed: se 3.75, base - 6.17);
   `sequential.py arrived:guard:0.10` as the early-stop rule, never before 6 seeds; wall contact-ticks REPORTED per run and
   as the median (the rigs row's MDE is +74 % at n 13: a +-10 % line cannot be carried, lesson 4 of the table), with the
@@ -233,26 +233,31 @@ would be the last.** Lines, each from `judging.md`'s row (the table re-rendered 
   abandoned, rerequested, refused by code, pending-ticks, queue_waits): a run where the seam never fired is an equality
   check, not a sample. **REPORTED, never a pass line: `abandoned`, `queue_waits`, `refused`** (R31.7: a starved seam is a
   finding, and the candidate parks with its traces; there is no second scope).
-- (b) **THE DECIDING LINES, the rig cases (round 30's, each REPORTED with its trace; the mechanisms that produced two of
-  them were not shipped, so the base may not show them):** rigs seed 31 (Green_S0_2's 77 s grind under M4b's escapes)
+- (b) **THE DECIDING LINES, the rig cases.** The n (the orchestrator's (i)): `terminus_drive.gd` has no tick-offset
+  knob and is nav's file (not mine to edit), and a pure order delay in a one-squad deterministic drive would replay the
+  same grind shifted in time (n copies, no se). So the SIZED deciding lines are the RIGS SQUAD'S paired rows over (a)'s
+  13 fresh seeds: wall contact-ticks of the rigs squad <= base + 1.645 se of the paired difference, and the rigs'
+  arrivals (a)'s line; the pin's sized form is hull-rest's pinned crew-seconds row (d: n 144 paired, se ~420); the
+  rig's 180-degree arrival is deterministic (`test_wheeled_arrival`'s rig case green on the pair tree, `planner-lab`
+  slot180 on a rig three legs). The named single-seed cases (round 30's, each REPORTED with its trace at n = 1; the
+  mechanisms that produced two of them were not shipped, so the base may not show them):** rigs seed 31 (Green_S0_2's 77 s grind under M4b's escapes)
   and seed 51 (Green_S0_3's 50 s grind under the lift): contact-ticks of those runs both arms, the rig's grind not
   longer under the seam; the squadmate pin (`planner-repro-wedge`, rigs seed 9: a rig pinned 61.4 s between two
-  squadmates): freed, no backoff-and-re-pin loop (pinned crew-seconds reported; the pinned probe's row, se 441 at n 144,
-  is the sized form if a count line is wanted); the 180-degree arrival where it involves a rig (`test_wheeled_arrival`'s
-  rig case / `planner-lab`'s `slot180` on a rig): three legs, not a gate, arriving within the row's tolerance. **The
+  squadmates): freed, no backoff-and-re-pin loop (pinned crew-seconds reported; sized by (d)'s row); the 180-degree
+  arrival on a rig: three legs, not a gate, arriving within the row's tolerance (deterministic, a pass line). **The
   six-cusp car (yard s25 B_4: a slot 9 m behind with a facing) is a REPORTED line, not a pass line (R31.7):** a car is a
   short hull the scope never takes, so its legs per arm are reported with the expectation that they are EQUAL; a
   difference is a seam leak (the switch reached a short hull) and parks the candidate.
 - (c) **`scenario_cp2` on brains' A/A seeds (C31.6's 12 seeds): a scout's orbit unchanged** (the no-change guard, a pass
   line: the scout is out of scope, so any moved cell is a leak, not a finding). `test_wheeled_arrival`, `test_tactics_pursuit`,
   `test_tactics_mixed_legs`, `test_nav_wall_contact` green on the pair tree with the switch ON (C31.1) BEFORE this series.
-- (d) **Hull-rest (`manoeuvre-hull-rest`, one arm per remote call, lesson 311), 4 factions x 6 tasks, fresh seeds 54-59,
-  drawn AND clicked:** crews still moving at 75 s per task <= base + 2 se (wheeled turret row: sd 1.63 a run, se 6.3 at
+- (d) **Hull-rest (`manoeuvre-hull-rest`, one arm per remote call, lesson 311), 4 factions x 6 tasks, fresh seeds 60-65 (54-59 were M4b's chain),
+  drawn AND clicked:** crews still moving at 75 s per task <= base + 1.645 se (C31.3) (wheeled turret row: sd 1.63 a run, se 6.3 at
   n 15 -> quote M1_CLASS's paired se); the at-rest hull-error median per class x task not worse (permutation p >= 0.05);
   settle time paired median <= +6 s (the row's form); REPORTED: the face plans the seam made v `plan_face`'s, for the rig
   class only (the others are equality).
-- (e) **Bridge-pooled 18/18** (deterministic row). **Fights (`manoeuvre-fights`, 24 seeds):** kills, deaths, hit rate within
-  2 se (rows: se 28.2 / 28.8 / 0.0153 at n 24); hits reported.
+- (e) **Bridge-pooled 18/18** (deterministic row). **Fights (`manoeuvre-fights`, 24 fresh seeds 181-204; 157-180 were M4b's):** kills, deaths, hit rate within
+  1.645 se (C31.3; rows: se 28.2 / 28.8 / 0.0153 at n 24); hits reported.
 - (f) **Cost (C31.5's line, R31.6 / R31.7):** at Sumps 25 a side (`planner-census`'s workload, the candidate's tree, both
   arms, `PLANNER_CENSUS_PROBE=30`): the seam's slice <= 0.5 ms a tick = SLICE (2) x the probe's warm per-expansion median
   for the longest live hull, on builder0 pinned to 4 cpus (`PLANNER_CPUS=0-3`) with the box's load quoted (R31.6: no
@@ -262,9 +267,9 @@ would be the last.** Lines, each from `judging.md`'s row (the table re-rendered 
 - (g) **The clip for him:** the Terminus west-street rig (a face back), before/after (`planner-lab`'s frames plus the
   seam under the real drive: `make remote LIGHT=1 T="planner-lab PLANNER_ARMS=today"` with `PLANNER_FLAGS=--nav-off=planner`
   as the "after"), looked at by me first. The yard car is no longer a clip (out of scope).
-**Partial rule:** (a), (c), (d), (e) met and (b)'s rig lines met = ships ON as a pair; (b)'s car line or (c) moved = a
-leak, parked; (b)'s rig lines missed, or (a)'s `abandoned` says the seam starved = a finding, parked with its traces (CP-P0
-stays merged OFF). **Last attempt named:** the second judged run.
+**Partial rule:** (a) incl. the rigs' contact-ticks line, (c), (d), (e) met and the rig 180 green = ships ON as a pair;
+(b)'s car line or (c) moved = a leak, parked; the rigs' contact-ticks or arrivals missed, or (a)'s `abandoned` says the
+seam starved = a finding, parked with its traces (CP-P0 stays merged OFF); the named n = 1 traces are read, never judged. **Last attempt named:** the second judged run.
 
 #### The draft as sent (kept as written)
 
