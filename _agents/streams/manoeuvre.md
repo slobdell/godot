@@ -181,8 +181,10 @@ arm without it, R31.1). **Arms:** OFF = `--brains-off=native`; ALL = `--nav-off=
 ALONE (unstickback, kturnarc, realspeed, realslow, and ghost when T4 is in), REPORTED on the SAME judged seeds. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
 them):** Terminus census and drive 110–122 (13), hull-rest 84–89 (4 factions × 6 tasks × 6 = 144 runs an arm, one arm per
 remote call, lesson 311), fights **214–237** (24; moved by the orchestrator before numbers: 190–213 overlapped CP-P1's 181–204), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
-- (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each; early stop by
-  `sequential.py arrived:guard:0.10`, never before 6 seeds, the row recorded.
+- (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each. **No early stop
+  on this line (decided 2026-10-15 before any CP-H number):** on M1b(2) attempt 2's census `arrived:guard:0.10` read
+  SERIES PASS at run 6 where the full grid's 1.645 se line failed (the 10 %-of-base harm is ~4x the line's); the census is
+  cheap, so all 13 seeds run and the fixed line decides; the sequential reading (`manoeuvre-census-seq`) is reported.
 - (b) Terminus wall contact-ticks, rigs and mixed apart (rows 74, 76): ≤ base + 1.645 se paired, each, with and without
   each arm's two worst runs.
 - (c) hull-rest pinned crew-seconds (row 67): DOWN beyond 2 se paired at n = 144, ≤ 10 m hulls and rigs APART (rigs:
