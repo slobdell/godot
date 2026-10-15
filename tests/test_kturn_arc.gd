@@ -77,15 +77,22 @@ func test_a_ten_metre_leg_drives_ten_metres_by_the_arc() -> void:
 	assert_true(off["path"] > on["path"], "the chord rule over-runs the arc (%.2f v %.2f)" % [off["path"], on["path"]])
 
 
-## (Round 31: an IFV is a chord hull under H2's scope; the line stays as the identity guard.) A hull under KTURN_BRAKE_HULL_M (an IFV) starts every leg "rolling" (its brake rule is off), and a second leg started
-## while it still rolls must drive its own metres, not end at once on the first leg's arc (native's review of 1f1c9835).
+## Native's review of round 30's kturnarc: a second leg started while the hull still rolls must drive its own metres,
+## not end at once on the first leg's arc (the reset in `_kturn_start_leg`). Round 31: the arc is the braked hulls'
+## (`_arc_here`), so the check is a War Rig's; an IFV (a chord hull) drives the same either way.
 func test_a_second_leg_started_rolling_drives_its_own_metres() -> void:
-	var on := await _leg(8.0, true, "ifv", 2)
-	print("MEASURE m2b_kturn_arc ifv second 8 m leg started rolling: drove %.2f m (%.2f at the leg's end, ended %.2f s, aborted %d)" % [
-			on["path"], on["path_at_end"], on["ended_at"], on["aborted"]])
-	assert_true(on["ended_at"] >= 0.0, "the second leg ended (%.2f s)" % on["ended_at"])
-	assert_true(absf(on["path"] - 8.0) <= 1.0, "it drove its own 8 m within 1 m (%.2f m), not the first leg's arc" % on["path"])
+	var rig := await _leg(8.0, true, "gang_tank", 2)
+	print("MEASURE h2_kturn_arc gang_tank second 8 m leg started rolling: drove %.2f m (%.2f at the leg's end, ended %.2f s, aborted %d)" % [
+			rig["path"], rig["path_at_end"], rig["ended_at"], rig["aborted"]])
+	assert_true(rig["ended_at"] >= 0.0, "the second leg ended (%.2f s)" % rig["ended_at"])
+	assert_true(absf(rig["path"] - 8.0) <= 1.0, "it drove its own 8 m within 1 m (%.2f m), not the first leg's arc" % rig["path"])
 
+
+func test_an_ifv_second_leg_is_the_chord_either_way() -> void:
+	var on := await _leg(8.0, true, "ifv", 2)
+	var off := await _leg(8.0, false, "ifv", 2)
+	print("MEASURE h2_kturn_arc ifv second 8 m leg: switch on %.3f m, off %.3f m" % [on["path"], off["path"]])
+	assert_true(absf(on["path"] - off["path"]) < 0.001, "a short hull's legs are the chord's, bit for bit (%.3f v %.3f)" % [on["path"], off["path"]])
 
 
 ## Round 30's scout orbit (`scenario_cp2`, the trace in `references/round30/manoeuvre/kturnarc_scout_deck_*.log`, and
