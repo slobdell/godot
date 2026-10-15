@@ -54,7 +54,9 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-**✅ MAIN GREEN at `a2ef0b31` (~12:35 PDT):** builder0 `>> remote: make check exited 0`, 2641 passed / 0 failed, ALL
+**✅ MAIN GREEN at `8a23325a` (~14:00 PDT), with B6 ON:** builder0 `>> remote: make check exited 0`, 2641 passed / 0
+failed, ALL JUDGED, sim-baseline unmoved (the CPU never draws a facing). **What he plays now differs from round 30 in one
+way:** support-by-fire crews take his drawn heading. **✅ MAIN GREEN at `a2ef0b31` (~12:35 PDT):** builder0 `>> remote: make check exited 0`, 2641 passed / 0 failed, ALL
 JUDGED, sim-baseline unmoved. It covers pair/t4 and manoeuvre's `f593f487`. **🎯 SHIPPED ON (~12:30 PDT): brains B6 `f22d7dcb` → main `201b792a`. The first round-31 change he will SEE:** when
 he draws a support-by-fire line, every crew of the element takes his drawn heading. The pooled drawn error for the
 four wheeled classes is 10.4° v 29.1° (law_ifv 1.1 v 28.9°, gang_tank 10.2 v 28.3°); clicked orders are identical; crews
