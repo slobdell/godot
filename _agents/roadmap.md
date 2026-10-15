@@ -254,6 +254,14 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   (11 → 0 repacks, p 0.041), but whether it then fires less is not decided (one diverged run carried the artillery line;
   that line's row was under-sized ×10). Recommend: re-judge with the artillery line sized from this run's sd.
 
+**Model classification (his ask, 2026-10-14 evening: round 30's four Fable sessions — three streams + the orchestrator —
+spent 30 % of the week's quota in a day; Fable only for the most challenging problem):** **Fable = item 2, the planner into
+play** (the C++ port of the lattice planner, deterministic under an expansion budget, resumable across ticks, plus the one
+seam into the drive — the only candidate where model capability, not process, is the bottleneck; native reviews). **Opus =
+everything else** (items 1, 3, 4, 5: the designs are written and the risk is stage coverage and process, now lessons
+306–311) **and the orchestrator** (the bar discipline is written down). builder0 items could be Sonnet. ≈ 8 % of quota a
+day instead of 30 %.
+
 **Each parked with its trace, table and bar (`streams/archive/round30/`, `workstreams.md` *Bars (round 30)*):**
 1. **The honest reading's consumers, as ONE A/B** (`Tank.real_velocity` is on main, read by nobody in play): manoeuvre's
    escapes (`lab/manoeuvre-m4b2` 77a1603f: ask first, a STRAIGHT reverse by the outline sweep, blocked by name — never a
