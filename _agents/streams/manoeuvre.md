@@ -121,7 +121,19 @@ Nothing: his calls are made (turn the whole hull; planned turns).
 _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoeuvre`, from main `bd05077d` = code
 `0d35f215`, GREEN). Round 30, Fable 5.1. Report at the top; the progress log below it._
 
-### Report (2026-10-14, running; the final numbers land as each judged chain closes)
+### Report (2026-10-14, 19:40 PDT; final but for kturnarc's ruling and the batch merge)
+
+**Shipped / shipping:** the M4b READER (`8cbdcfad` + native's pair, on main at `48d5aa0d`: `Tank.real_velocity`, the
+census `real` column, the probe's honest class; nothing in play reads it yet); **M1b(1)** `55622870` (ruled SHIPS);
+**kturnarc** `e7a58262` (every line met, ruling pending). **Parked with their tables:** M4b's escapes (`77a1603f`,
+judged twice), M2b's creep lift (`1f1c9835`), M5 (`34f34ea0`). **Kept branches:** `lab/manoeuvre-m4b2`,
+`lab/manoeuvre-m4b-reader`, `lab/manoeuvre-m1b`, `lab/manoeuvre-m2b`, `lab/manoeuvre-kturnarc`, `lab/manoeuvre-m5`,
+`lab/manoeuvre-m1b-sbf` (brains' probe merged, scratch). **Worktrees to remove at the close** (and their builder0
+folders `~/tank_squad/<name>`): `godot-manoeuvre-m1`, `-m2`, `-m5`, `-v2`, `-rd`, `-m1x`. **Green hashes:** the reader
+pair `3bc2c476` (native, check 2606/0); M1b and kturnarc are covered by the batch's one main check (the orchestrator's
+call: no check owed from me). **What he will notice** from this round's merges: a face at rest keeps to its slot
+(M1b: the attack-move drawn median 23 → 16°, a rig no longer carried 8 m off its slot by its face legs); planned
+reverse legs end where planned (kturnarc: rigs' Terminus leg time −18 %); the reader is invisible in play.
 
 | item | candidate (branch) | state |
 |---|---|---|
