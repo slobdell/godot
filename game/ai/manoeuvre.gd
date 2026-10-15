@@ -53,10 +53,47 @@ static func reset() -> void:
 	face_plan_legs = 0
 	face_none = 0
 	face_refused = 0
+	hull_turns = 0
+	face_keep_refused = 0
 
 
 static func report() -> Dictionary:
 	return {"plans": plans.duplicate(), "refused": refused.duplicate()}
+
+
+## Round 31 (manoeuvre H3, C31.4; the two lead lines in `Gunnery` are manoeuvre's grant): **the aim leads on the motion
+## a target really makes** (`Tank.real_velocity`), not the velocity the blocked slide handed back — a hull pinned on a
+## wall reported 12 m/s and was led 12 m/s ahead of where it sat. OPT-IN until CP-H judges it: `--gun-off=realspeed`
+## turns it ON. Gunnery's C++ twin (`native_gun`) does not read this switch until native mirrors it, so an arm with it
+## must run the GDScript path (`--brains-off=native`); the CP-H runner refuses a native arm.
+const GUN_OFF_NAMES: Array[String] = ["realspeed"]
+static var _gun_off := PackedStringArray()
+static var _gun_off_parsed := false
+
+
+static func gun_switched(name: String) -> bool:
+	if not _gun_off_parsed:
+		_gun_off_parsed = true
+		for arg in OS.get_cmdline_user_args():
+			if arg.begins_with("--gun-off="):
+				_gun_off = arg.trim_prefix("--gun-off=").split(",")
+				for each: String in _gun_off:
+					if not GUN_OFF_NAMES.has(each):
+						push_error("--gun-off=%s: no such switch (have %s)" % [each, ", ".join(GUN_OFF_NAMES)])
+				break
+	return _gun_off.has(name)
+
+
+const REAL_SPEED_DEFAULT := false  # OPT-IN until CP-H: `--gun-off=realspeed` flips it
+
+
+static func real_speed_on() -> bool:
+	return REAL_SPEED_DEFAULT != gun_switched("realspeed")
+
+
+## The velocity a gun leads `target` by: its real motion with `realspeed`, else the plant's reading (round 30's).
+static func lead_velocity(target: Tank) -> Vector3:
+	return target.real_velocity if real_speed_on() else target.estimated_velocity
 
 
 static func _note(table: Dictionary, key: String) -> void:
@@ -267,6 +304,14 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 	var slot_limit := _flat(here, slot) + FACE_SLOT_SLACK_M if slot != Vector3.INF else INF
 	if slot != Vector3.INF:
 		face_slot_kept += 1
+	# Round 31 (M1b(2), from round 29's facekeep, under `turnhull`): ...and not on the way either. The end alone was
+	# checked: a gang catapult 5 m from its slot planned two 5.5 m legs, forward then back, whose cusp was 8 m out, past
+	# its arrive radius (5.4 m): the brain re-sent the move mid-plan, the hull drove back, faced again, every second for
+	# a minute (hull-rest, gangs seed 1, right-drag). Every pose stays inside the crew's arrive radius (less
+	# FACE_KEEP_MARGIN_M), or no further out than it starts. Turn-hull asks wheeled turret hulls for far more faces at
+	# the edge of their slot, so the two go together as one switch.
+	_keep_slot = slot if turn_hull_on() else Vector3.INF
+	_keep_m = maxf(maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(tank.unit_id)) - FACE_KEEP_MARGIN_M, _flat(here, slot))
 	for n in range(1, FACE_LEGS + 1):
 		if absf(error) / n > FACE_LEG_TURN + 0.001:
 			continue
@@ -315,6 +360,51 @@ static func face_slot_on() -> bool:
 	return not Movement.switched_off("faceslot")
 
 
+## Round 31 (M1b(2), his round-28 call "TURN THE WHOLE VEHICLE"): a wheeled TURRET hull given a DRAWN facing turns its
+## hull to it (the face planner's legs) instead of leaving it to the turret — `TankBrain._order_move`'s decline is
+## lifted for it (C31.8) — and every pose of a face plan keeps inside the arrive radius (facekeep). ONE switch:
+## `--nav-off=turnhull` flips TURN_HULL_DEFAULT (false = OPT-IN until its bar passes).
+const TURN_HULL_DEFAULT := false
+const FACE_KEEP_MARGIN_M := 0.75
+static var _keep_slot := Vector3.INF
+static var _keep_m := INF
+## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused
+## for leaving the arrive radius.
+static var hull_turns := 0
+static var face_keep_refused := 0
+
+
+static func turn_hull_on() -> bool:
+	return TURN_HULL_DEFAULT != Movement.switched_off("turnhull")
+
+
+## Did the player DRAW this crew's facing (its element task, or its own K1 order, carries one)? Read by the brain's
+## decline (`TankBrain._order_move`) under `turnhull`.
+static func drawn_facing(brain: TankBrain) -> bool:
+	var source: Variant = brain.get("_element_source")
+	if source != null:
+		var mine: Variant = ElementFeed.element_of(source, String(brain.tank.name))
+		if mine != null and "task" in mine:
+			var task: Variant = mine.get("task")
+			return task is Dictionary and TankBrain._direction_of((task as Dictionary).get("facing")) != null
+	return brain._ordered_facing()
+
+
+## The brain's decline is lifted for this order (turn-hull ON, a face from the crew's order, a drawn facing).
+static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
+	if not turn_hull_on() or String(order.get("from", "")) != "order" or not drawn_facing(brain):
+		return false
+	hull_turns += 1
+	return true
+
+
+static func _kept(at: Vector3) -> bool:
+	if _flat(at, _keep_slot) > _keep_m:
+		face_keep_refused += 1
+		return false
+	return true
+
+
 static func _flat(a: Vector3, b: Vector3) -> float:
 	if b == Vector3.INF:
 		return 0.0
@@ -334,7 +424,8 @@ static func _face_even(mover: Movement, map: RID, frame: Array, start: PackedFlo
 		while travelled < metres - 0.001:
 			var step := minf(FACE_STEP_M, metres - travelled)
 			var next := Movement._fill_step(at, heading, gear, turn, radius, step)
-			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "":
+			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "" \
+					or not _kept(next[0]):
 				return []
 			at = next[0]
 			heading = next[1]
@@ -369,7 +460,8 @@ static func _face_legs(mover: Movement, map: RID, frame: Array, start: PackedFlo
 			var from_at: Vector3 = at if poses.is_empty() else poses[-1][0]
 			var from_heading: Vector3 = heading if poses.is_empty() else poses[-1][1]
 			var next := Movement._fill_step(from_at, from_heading, gear, turn, radius, step)
-			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "":
+			if not mover._outline_ok(map, frame, next[0], next[1], start) or _hull_hit(next[0], frame, others, here) != "" \
+					or not _kept(next[0]):
 				blocked = true
 				break
 			poses.append(next)
