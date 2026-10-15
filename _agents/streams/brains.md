@@ -109,6 +109,28 @@ Nothing.
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
 
+### B6 — support by fire, wheeled turret line: TRACED, a brains fix DECLARED (bar sent; judged run tonight only if builder0 has a slot)
+**The probe fixed first:** control's hull-rest probe judged a drawn SBF when every hull had been still 3 s, but SBF never
+sets `arrived`, so it read hulls stopped on the way. `tests/tactics/sbf_probe.gd` (`make sbf-series`, mine): four crews
+given support by fire 100 m ahead, a drawn facing 60° off travel v none, both judged against the drawn heading, each crew
+read ONLY once it is in (≤ 8 m of its slot, still 2 s). (The lab was deterministic across seeds; from `ed57eace` the seed
+jitters the starts ±3 m / ±10°.)
+**Measured** (builder0, stream `f0a0dea6`, n = 1 run of 4 crews a unit and arm), hull error at arrival, drawn v none:
+gang_ifv 74° v 36° (all four ≥ 45°); law_tank 25° v 44° but A_1 never in (15 m off); gang_tank 20° v 48°; law_ifv 20°
+v 62°. **Not an artefact.** Per-crew trace, three causes:
+- (a) **brains:** with a drawn facing the SBF line still hands each crew its fanned sector (orders (−0.5, −0.87),
+  (−0.94, −0.34)… v the drawn (−0.87, −0.5)); the plain move zeroes sectors when he draws one.
+- (b) the arrival gate: law_tank A_1 circles its gate reading no_path from 32 s (round 29's circling; B5c parked).
+- (c) a wheeled hull arriving off-heading is not turned at rest (gang_ifv A_4 parked 168° off after its slot moved):
+  manoeuvre's M1b.
+**Tuning of (a)** (`lab/brains-r30-sbf`: every crew given the drawn heading when one is drawn; `--sbf-told-sectors=on` =
+control; builder0, n = 1 a unit): drawn err gang_ifv 74 → 44.7°, gang_tank 20 → 11.2°, law_ifv 20 → 1.1°, law_tank
+25 → 47.6° with all four in (was 3); the clicked arm identical. **Bar** (sent to godot-67, before numbers): candidate
+`9aa0cd7c`, fresh seeds 7–18 jittered, four wheeled classes + `tank` as a guard: pooled drawn error median on ≤ control
+− 10° and no class worse than 2 se; crews in ≥ control − 1 a class; clicked rows byte-identical; counter
+`sbf_told_replaced` > 0 on every drawn on-run, 0 clicked; the suite green. v1 the last attempt; partial: none.
+Stretch (mixed-class line facing): not started; B6's trace shows a sector rule, not a class problem.
+
 ### REPORT so far (2026-10-14 afternoon)
 - **B5c-v4 PARKED for round 31** (the orchestrator's ruling, filed in workstreams.md and HANDOFF): `lab/brains-r30-gate` =
   `f1a804eb` (judged at `19eca15a`: every bar line passed, below). The PAIR check (native `787d3664` = f1a804eb + its
