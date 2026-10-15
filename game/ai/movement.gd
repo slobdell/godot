@@ -2299,8 +2299,11 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	if not held and not Traffic.off("turns"):
 		Traffic.refresh(ctl.tanks_root)
 		preferred = Traffic.shape(String(tank.name), route_preferred)
+	# Round 31 (traffic T4 v2, tuning only, OPT-IN `ghostself`): the crew's OWN velocity read the way its neighbours read
+	# it under `ghost` (Tank.real_velocity), so ORCA's reciprocal shares are between honest velocities on both sides.
+	var own := tank.real_velocity if not Traffic.off("ghostself") else tank.estimated_velocity
 	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),
-			Vector2(tank.estimated_velocity.x, tank.estimated_velocity.z), preferred, tank.max_forward_speed,
+			Vector2(own.x, own.z), preferred, tank.max_forward_speed,
 			Avoidance.radius_of(tank.unit_id), delta, BrainLevers.orca_neighbours(tank.team, String(tank.name)))
 	OrderController._lap("avoid.solve", lap)
 	if chosen.distance_squared_to(route_preferred) < 0.04:

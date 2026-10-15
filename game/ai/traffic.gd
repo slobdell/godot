@@ -16,6 +16,7 @@ extends RefCounted
 ##           velocity (Tank.real_velocity), not the slide's asked one. OFF by default (main plays the 12 m/s ghost of a
 ##           pinned hull, manoeuvre's M4b trace); NAMING it turns it ON: `--traffic-off=ghost` (C31.4's name, inverted
 ##           like movement's `inflate`) or `--traffic-on=ghost`.
+##   ghostself  Round 31 T4 v2 (tuning, OPT-IN): the solving crew's OWN velocity in _avoid read as real_velocity too.
 ##   turns   Round 29 T3 (round 28's v3, `traffic-t1-v3`): two friendly squads CROSSING take turns: one verdict per squad
 ##           pair; the squad reaching the crossing later slows as a whole and passes behind the other (THE CROSSING).
 ##   reach   Round 30 T3b (option (b)): only the yielding squad's crews within CRAWL_REACH_M of the crossing keep its
@@ -200,7 +201,7 @@ static var _parsed := false
 ## stream/traffic and the pair's merge removes it from this list.
 const DEFAULT_OFF := ["turns"]
 ## Round 31 (R31.1): CP-H's consumers are OPT-IN. Each is off unless NAMED, and naming it in either list turns it ON.
-const OPT_IN := ["ghost"]
+const OPT_IN := ["ghost", "ghostself"]
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; DEFAULT_OFF unless `--traffic-on=`)?
