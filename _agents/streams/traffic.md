@@ -114,8 +114,10 @@ _Updated 2026-10-15 ~06:15 PDT (traffic worker, round 31, Opus). Every number na
   437, guards inside — all REPORTED. Pre-census gate dc8fcbf6: 2630/0, pit alone moved. Question 2 below.
 - **T4 ORCA's ghost (CP-H consumer): v1 delivered OFF, ghostself OUT.** Tuning (builder0, dc8fcbf6, Terminus drive
   s24–29, n 12): v1 v v1+ghostself pinned 126 → 598 (UP beyond 2 se) → v1 alone. Merge branch `traffic-t4` =
-  `357ca38b` (OPT-IN per R31.1); native's pair/t4 0475758f (OFF) and pair/t4-on 93c85531 (gate) QUEUED in native's
-  chain for the 09:00 cutoff — **result: pending** (see *T4 for CP-H*).
+  `357ca38b` (OPT-IN per R31.1). **PARKED for CP-H** (orchestrator, 07:15: the ghost-ON gate would land after the 09:00
+  cutoff; CP-H runs without T4, native drops the ON gate). `0475758f` (= native + 357ca38b, T4 OFF) still merges if
+  green, carrying I4's tooling — **result: pending**. Next round: the ON gate (`pair/t4-on` 93c85531, `check
+  NATIVE=off`) and T4 v1 as its own consumer A/B.
 - **Stretch:** not started (waits on CP-P1). Seam reply sent: `Movement.manoeuvring()` rather than a wider `in_kturn()`.
 - **Green check:** this stream's merge candidate is `traffic-t4` 357ca38b; its check is native's pair/t4 OFF plain
   check (pending). stream/traffic itself is a record branch (parked trees), not a merge candidate.
