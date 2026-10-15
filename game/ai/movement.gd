@@ -3161,7 +3161,7 @@ static var esc_fallback := 0  # no-hull pins whose straight reverse had no room:
 
 ## The default (false = OPT-IN until CP-H: naming `unstickback` in `--nav-off` flips it). Flipping this const is the
 ## whole ship change; tests choose their arm list from it, so they hold in either tree.
-const UNSTICK_BACK_DEFAULT := false
+const UNSTICK_BACK_DEFAULT := true
 
 
 static func unstick_back_on() -> bool:
@@ -4636,7 +4636,7 @@ func _kturn_stopping() -> float:
 var _kturn_arc_m := 0.0
 
 
-const KTURN_ARC_DEFAULT := false  # OPT-IN until CP-H (see UNSTICK_BACK_DEFAULT)
+const KTURN_ARC_DEFAULT := true  # OPT-IN until CP-H (see UNSTICK_BACK_DEFAULT)
 
 
 static func kturn_arc_on() -> bool:
