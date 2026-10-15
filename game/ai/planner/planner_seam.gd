@@ -22,6 +22,9 @@ extends RefCounted
 ##   3. DRIVING: `PlannerExecutor` (the P4 rules: brake on the leg's own lock, never throttle 0 with the lock on, the
 ##      discrete stopping distance, the arc not the chord) drives the legs. A leg aborted (stall / timeout) is an EVENT:
 ##      re-plan from the pose with a fresh snapshot, at most REPLANS_PER_ORDER times, then decline for RETRY_TICKS.
+##      A FACE hands back on its FIRST abort (CP-P1's gate, the wedged semi: the world is the navmesh plus live hulls,
+##      so a plan aborted against something unbaked is a plan the next snapshot repeats; today's give-up must report
+##      the hull unable within a few seconds, and it runs only once the seam lets go).
 ##      Driven to the end: released (the route, or the face's aligned test, takes over next tick; a short decline
 ##      keeps a face from asking twice for the same residual).
 ##   4. NO_PATH / BUDGET / GOAL_BLOCKED / START_BLOCKED: declined for RETRY_TICKS, counted by code (the layer above --
@@ -384,7 +387,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		aborted += 1
 		if ManoeuvreCensus.trace_unit == name:
 			print("PLANNER_SEAM %s %s: aborted (%s), replans %d" % [name, crew.kind, crew.executor.reason, crew.replans])
-		if crew.replans >= REPLANS_PER_ORDER:
+		if crew.replans >= REPLANS_PER_ORDER or crew.kind == "face":
 			_release(name)
 			_retry_until[name] = tick + RETRY_TICKS
 			return false
