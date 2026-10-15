@@ -140,8 +140,13 @@ static func on() -> bool:
 static func live(crew_name: String) -> bool:
 	if not on():
 		return false
-	_sweep(Engine.get_physics_frames())   # a freed hull's crew under this name is not a hold on the hull now named it
-	return _crews.has(crew_name)
+	var crew: Crew = _crews.get(crew_name)
+	if crew == null:
+		return false
+	if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+		_release(crew_name)   # a freed hull's crew under this name is not a hold on the hull now named it
+		return false
+	return true
 
 
 ## Round 31 (manoeuvre's ask through the orchestrator, measurement only): this hull's LAST refusal as
