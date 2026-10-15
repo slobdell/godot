@@ -4,8 +4,9 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-14 — **ROUND 30 IS LAUNCHED (below): six streams, three on Fable 5.1.** Main GREEN at `0d35f215`
-(the launch check; docs-only commits since). He pushes `main`._
+_Last updated: 2026-10-14 evening — **ROUND 30 IS CLOSING (below).** **Main GREEN at `48d5aa0d`** (builder0, `make check
+exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7): sizing + planner +
+B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes `main`._
 
 ## 🚀 ROUND 30 IS LAUNCHED (2026-10-14) — read this first
 
@@ -83,7 +84,7 @@ then M2b), native (the reader pair's check).
   terms. I3 proven, `make quick` 487 s. Next: T4 (ORCA steers round a pinned hull as a 12 m/s ghost — `avoidance.gd`
   reads `estimated_velocity`; needs M4b's `real_velocity` on main).
 - **Native**: N7.5 ON (`f1e4178b`); the B5c-v4 mirror equal (24/24 cells); porting M4b.
-- **Main's check OWED** for sizing + planner (batched with the next game-code merge).
+- **Main's batch check: GREEN at `48d5aa0d`** (above) — covers every merge of the round so far.
 
 **Launch check: GREEN at `0d35f215`** (builder0, `make check exited 0`, 2584 passed, 0 failed, 26 targets ALL JUDGED,
 thirteen unmoved, determinism 2875411ff4ec6be7; every commit since is docs). Workers start from it and run no baseline.
