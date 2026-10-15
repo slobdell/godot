@@ -252,6 +252,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   1.645 se. (6) bridge-pooled 18/18. (7) the four traffic cases s41–43 equal field for field, or within T3b-c's guards,
   no wedge. Early stop: `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'`. Ships ON (his call:
   "ships if the repack count holds at 0").
+  **Gate (~01:20 PDT 10-15):** `dc8fcbf6` (rule ON), read from build/ (wrapper reaped): 2630 passed / 0 failed,
+  native-verify-scenarios 0 mismatches, sim-baseline moved on pit ALONE (e03377ea → a8fe8e14), the declared rule on the
+  map with set-up batteries. make stopped at that red, so `traffic-native-verify` (and any other target not in done/)
+  runs in the judged chain. **Condition (orchestrator): a red in any of them VOIDS the census.** Chain: unit
+  `traffic-t1cb2`, scratch at `33cb2da5` (= `dc8fcbf6` + a make-echo fix only). Merge takes `33cb2da5`'s
+  `mk/traffic.mk` line.
 - **Manoeuvre M1b(2) turn-the-hull bar (filed 2026-10-14 ~23:45 PDT, before any number; DECLARED; this is the FIRST run, a
   second on fresh seeds would be the last):** candidate stream/manoeuvre `44adcbbe` (+ tooling `eea19309`). ONE opt-in
   switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT` false) = (i) `TankBrain._order_move`'s decline lifted for a
