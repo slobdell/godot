@@ -153,7 +153,7 @@ plus round 29's facekeep. Arms (GDScript path both, `M1_GD=1`; one arm a remote 
 `M1_BASE_OFF=`; drawn and clicked. Tuning: hull-rest 40–41 (law). Judged fresh: hull-rest 76–81 (144 runs an arm),
 Terminus 93–105, bridge-pooled's 18. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret
 at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not worse than base (per-class permutation p ≥ 0.05);
-(c) clicked within ±5° of base; (d) crews still moving at 75 s per task, wheeled turret and all classes, ≤ base + 2 se
+(c) clicked within ±5° of base; (d) crews still moving at 75 s per task, wheeled turret and all classes, ≤ base + 1.645 se (the orchestrator's one change before numbers, C31.3; filed at main 9564f1bb)
 (se quoted); (e) settle censored, reported; (f) bridge 18/18; (g) Terminus arrivals rigs and mixed not down beyond
 1.645 se (sequential.py, never before 6 seeds); (h) B6's SBF gang_ifv probe reported; (i) `hull_turns` > 0, 
 `face_keep_refused` reported. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
