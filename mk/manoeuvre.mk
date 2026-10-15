@@ -121,7 +121,7 @@ manoeuvre-fights: import ## manoeuvre M4: the fights guard (showmatch matches, F
 # --brains-off names do NOT leave native's drive/gun, so an arm without --brains-off=native would silently run the OFF
 # behaviour on the native path: every CP-H arm runs the GDScript path, and this runner REFUSES an arm whose flags lack
 # it. CPH_ARM = off | all | allnoghost | unstickback | kturnarc | realspeed | ghost | realslow (each consumer alone, REPORTED).
-# CPH_STAGE = census (Terminus rigs+mixed, CENSUS_SEEDS) | drive (nav-terminus-drive, DRIVE_SEEDS) | fights (FIGHT_SEEDS)
+# CPH_STAGE = census (Terminus rigs+mixed, CENSUS_SEEDS) | sbf (B6's SBF probe, gang_ifv) | drive (nav-terminus-drive, DRIVE_SEEDS) | fights (FIGHT_SEEDS)
 # | hull (hull-rest, drawn, HULL_SEEDS; one arm a call, lesson 311) | bridge (bridge-pooled). The arm's flags are printed
 # first (lesson 309: the run's own printout is the proof of what ran).
 CPH_ARM ?= off
@@ -135,6 +135,8 @@ CPH_FLAGS_kturnarc := --nav-off=kturnarc --brains-off=native
 CPH_FLAGS_realspeed := --gun-off=realspeed --brains-off=native
 CPH_FLAGS_ghost := --traffic-off=ghost --brains-off=native
 CPH_FLAGS_realslow := --brains-off=native,realslow
+# M1b(2)'s judged arms through the same runner (one flag, GDScript path; base = `off`).
+CPH_FLAGS_turnhull := --nav-off=turnhull --brains-off=native
 CPH_FLAGS = $(CPH_FLAGS_$(CPH_ARM))
 # CPH_SEEDS=a-b (make remote's T is word-split, so a range, not a list): the stage's seeds; empty = the stage's default.
 CPH_SEEDS ?=
@@ -151,4 +153,5 @@ manoeuvre-cph: import ## manoeuvre CP-H: one consumer arm (CPH_ARM=off|all|allno
 	fights) $(MAKE) --no-print-directory manoeuvre-fights $(CPH_SEED_VARS) 'NAV_FLAGS=$(CPH_FLAGS)';; \
 	hull) $(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS=cph-$(CPH_ARM)_drawn $(CPH_SEED_VARS) 'M1_FLAGS=--turn-states $(CPH_FLAGS)';; \
 	bridge) $(MAKE) --no-print-directory bridge-pooled $(CPH_SEED_VARS) 'BRIDGE_FLAGS=$(CPH_FLAGS)';; \
+	sbf) $(MAKE) --no-print-directory sbf-series SBF_UNITS=gang_ifv $(if $(CPH_SEEDS),"SBF_SEEDS=$(CPH_SEED_LIST)") 'SBF_FLAGS=$(CPH_FLAGS)';; \
 	*) echo ">> manoeuvre-cph: no such stage '$(CPH_STAGE)'"; exit 2;; esac
