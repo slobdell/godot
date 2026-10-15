@@ -404,6 +404,14 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:30 PDT: **the pair tree named by native:** pair/cpp1 = 24435c3c = stream/native's mirror 12221d04 + the
+  seam tip 3daf47e6 (my own `on()` form; native's scratch a6c6c804 dropped); **pair/cpp1-on = 8909c217** = that +
+  `PLANNER_DEFAULT := true`, the gate hash; its plain `make check` is next in native's heavy queue (unit native-chain),
+  the four named tests inside. Native's twins compare report() (holds inside), crews, queue, retry, last_refusal.
+  0a2a4a48 (the PLANNER_SEAM_REPORT print line, measurement only) is after 3daf47e6: the series' rows name the gate
+  hash 8909c217 AND the tree the series runs on (my tip, 0a2a4a48 or later, its own check green). The orchestrator asked
+  for the clip as an mp4 at `~/projects/clips/round31/planner_terminus_<hash>.mp4` (round 30's form, before/after):
+  both arms rendering in the light lane behind the planner tests (`planner-movies`), joined on the laptop with ffmpeg.
 - 2026-10-15 ~03:20 PDT: **the clip's BEFORE arm** (the same run, no flag, faeab49c, light lane, exited 0): **29.8 s, 54
   legs (gear changes), 14 wall-contact ticks, 822 creep ticks, 39.8 m, end 2.9 m off and 173 deg round**; the end frame
   looked at: the rig canted across the street after a short tangled grind. Both arms' frames and rows are in
