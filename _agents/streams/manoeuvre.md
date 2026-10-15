@@ -120,4 +120,76 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current; bars to the orchestrator before numbers; the report at the top)_
+_Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, Opus), from main `75dbbb7c`._
+
+### Report (running)
+
+| item | commit | state |
+|---|---|---|
+| **H1** escapes (`unstickback`) | `32b08f8c` + `eaf0090a` (consts) | built, OPT-IN; unit stage 5/0 on builder0 (working tree = `32b08f8c`); branch check on `32b08f8c` running; C31.1 pre-series gate (flipped tree `6da94fc2`, `check NATIVE=off`) running |
+| **H2** signed arc (`kturnarc`) | same | built, OPT-IN; `test_kturn_arc` 3/0 on builder0 |
+| **H3** leads (`--gun-off=realspeed`) | same | built, OPT-IN (`Manoeuvre.lead_velocity`, the two granted lines); `test_manoeuvre_lead` in the check |
+| CP-H | — | waits on the orchestrator's call (traffic T4, brains `realslow` on main: realslow merged at `aa205ea5`) |
+| M6, M1b(2) | — | next |
+
+### Plan (smallest foundation first)
+
+1. H1, H2, H3 as three OPT-IN consumers in one commit pair (code + consts), each with its own unit stage; the branch's
+   `make check` (defaults OFF: main plays unchanged, native's default path untouched) and the C31.1 pre-series gate
+   (a scratch tree with the three defaults flipped ON, `make remote T="check NATIVE=off"`: the whole suite on the
+   GDScript path with every consumer ON). Then the diffs to native (C31.2) for the pair tree.
+2. M6 tooling (face_slot counters from the hull-rest probe; the early-stop hook in census / hull-rest; `CACHE=on`)
+   and the CP-H runner (one ARM= per call; refuses an arm without `--brains-off=native` — R31.1 addendum: gun, traffic
+   and brains switches do not leave native's drive).
+3. CP-H when the orchestrator calls it (bar before numbers).
+4. M1b(2) turn-the-hull (`turnhull,facekeep` one flag; the `_order_move` decline lifted under it, C31.8).
+
+### Decisions (one line each, reversible)
+
+- **Switch shape (R31.1):** each consumer's default is ONE const (`Movement.UNSTICK_BACK_DEFAULT`, `KTURN_ARC_DEFAULT`,
+  `Manoeuvre.REAL_SPEED_DEFAULT`, all false); naming the switch flips it. Shipping = flipping the const (+ native's
+  mirror reading it). Tests choose their arm list from the const, so they hold in the flipped tree too.
+- **H1's honest reading is for a routed `move_to` only** (never a raw `drive`, a face, a direct hop): round 30's pair red
+  `test_nav_wall_contact` was a `drive` order. Every other order, and a > 10 m hull against a WALL, keep round 29's
+  reading and escape bit for bit. A > 10 m hull reads it only when a Tank is among its slide colliders and no wall is
+  touched (the design note).
+- **H1's escape:** ask the friend that pins it (`ask(..., "pinned")`), or the one right behind (`_ask_behind`); stand
+  at throttle 0 up to 2 s (done early if the friend moved 1 m off); then a STRAIGHT reverse (turn 0) as far as the
+  outline sweep (`_outline_ok` stepped 0.5 m straight back, ≤ 3 m) and the hulls behind allow — by the hulls' real boxes
+  (`_hull_room`: each hull's half-extent along the line), not avoidance radii, which read an 8×8's tail-mate 9.6 m back
+  as clear (found by the single-file unit stage) — ended by the real backoff less the stopping distance (cap 0.9 s +
+  momentum to shed + 0.5 s/m); under 1 m of room: no reverse, stand 2 s while `_update_phase` reports `blocked` by the
+  blocker's name. Counters: `Movement.escape_arms()` (fires by blocker kind hull/wall, asks, backs, backed, capped,
+  refused), also under `route_arms()["escape"]`.
+- **H2:** round 30's kturnarc (arc + the discrete stopping distance + the arc reset at a leg's start, native's review)
+  with the arc SIGNED by the gear (`real_velocity · nose · gear · dt`). The seam freeze (R31.2) is respected: the plan
+  source and `_kturn_start_leg(Vector2)` are untouched.
+- **H3:** the `--gun-off=` parser lives in `Manoeuvre` (mine); `gunnery.gd` changed in exactly the two granted lines.
+- **Seam (R31.2, my answers):** two call sites (kturn + face) yes; the planner's own executor drives Vector3 legs, mine
+  stays Vector2 (I do not take the two brake rules: they are the planner executor's); the planner adds the one gate line
+  in `unstick()`; after it lands `straight_and_clear` reads `manoeuvring()`, the census keeps `in_kturn()` + a planner column.
+
+### Measurements (each with commit, machine, workload, n)
+
+- H1 unit stage, builder0, working tree = `32b08f8c`, `test_manoeuvre_escape` (n = 1 each, deterministic): IFV on a
+  squadmate — fires at 1.90 s, asks, backs 3.01 m straight (yaw 0.0°), full-throttle-pinned ticks 60 v base 210 (base
+  never fires: the defect). War Rig on a friend — fires 1.80 s, asks, backs 3.06 m, yaw 0.0°. law_tank in single file
+  (a squadmate driving into its tail) — refused 1, backs 0, moved back 0.00 m, yaw 0.0°. Tank under a `drive` order at
+  the foundry wall — no escape, stays pressed (5.60 m both reads).
+- H2, builder0, same tree, `test_kturn_arc`: rig 10 m leg 10.03 m by the arc (chord 10.31); IFV second leg started
+  rolling 8.32 m; scout 3.5 m reverse leg started at 9.6 m/s forward: ends 4.11 m behind the leg's start (rolled out
+  1.94 m first) | chord 3.78 m.
+
+### Questions for the lead
+
+None.
+
+### Requests to other streams
+
+- **native (C31.2):** mirror H1–H3 when I name the settled hash (the drive's escape state machine `_escape_*`,
+  `_straight_room`, `_hull_room`; the signed arc in `_planned_reverse`; the two leads reading `REAL_SPEED_DEFAULT`). The
+  three `*_DEFAULT` consts are the only thing a ship flips. Base for H2: `lab/native-kturnarc` 40b89dd1 + the sign.
+
+### Known issues
+
+- (none yet)
