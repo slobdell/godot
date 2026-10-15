@@ -29,6 +29,13 @@ var _busiest_at := 0
 var _hulls := 0
 var _reported := false
 var _seed := ""
+## `--plan-probe=N`: every N ticks, plan one offline fixture (the T-junction rig, PlannerFixtures) on the native
+## path INSIDE the running fight and keep its microseconds: the price of a plan under a fight's load (C31.5's
+## "foundry 25 a side" number). Measurement only: the plan is thrown away, nothing in the fight reads it.
+var _probe_every := 0
+var _probe_usec: PackedInt64Array = []
+var _probe_expansions := 0
+var _probe_path := ""
 
 
 func _initialize() -> void:
@@ -39,6 +46,7 @@ func _run() -> void:
 	var flags := LaunchFlags.from_environment()
 	_seed = flags.text("seed", "1")
 	_limit_ticks = int(float(flags.text("time-limit", "120")) * SimClock.TICK_RATE) - 10
+	_probe_every = int(flags.text("plan-probe", "0"))
 	var main: Node = load("res://game/main.tscn").instantiate()
 	root.add_child(main)
 	physics_frame.connect(_tick)
@@ -98,6 +106,14 @@ func _tick() -> void:
 			if tank is Tank and (tank as Tank).is_alive():
 				alive += 1
 		_hulls = maxi(_hulls, alive)
+	if _probe_every > 0 and _ticks % _probe_every == 0:
+		var req := PlannerFixtures.t_junction("gang_tank")
+		req.budget = 3000
+		var t0 := Time.get_ticks_usec()
+		var plan := Planner.plan(req)
+		_probe_usec.append(Time.get_ticks_usec() - t0)
+		_probe_expansions = plan.expansions
+		_probe_path = "native" if Planner.native_usable() else "gdscript"
 	if _ticks >= _limit_ticks:
 		_report()
 
@@ -114,5 +130,10 @@ func _report() -> void:
 			"per_tick_mean": snappedf(float(_events) / maxf(float(_ticks), 1.0), 0.0001),
 			"busiest_second": {"tick": _busiest_at, "events": _busiest_second}, "by_kind": _by_kind,
 			"off": Array(Movement._off), "native": BrainSwitches.native}
+	if _probe_usec.size() > 0:
+		var sorted := Array(_probe_usec)
+		sorted.sort()
+		row["plan_probe"] = {"path": _probe_path, "fixture": "T-junction rig", "expansions": _probe_expansions,
+				"plans": sorted.size(), "min_us": sorted[0], "median_us": sorted[sorted.size() / 2], "max_us": sorted[-1]}
 	print("PLANNER_CENSUS " + JSON.stringify(row))
 	quit(0)

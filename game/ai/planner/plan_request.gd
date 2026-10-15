@@ -101,6 +101,15 @@ func cusp_seconds() -> float:
 	return v_fwd / maxf(brake, 0.1) + v_fwd / maxf(accel, 0.1)
 
 
+## A copy (the world shared: it is a snapshot nobody mutates but `refresh_hulls`, which a seam calls before a search).
+func copy() -> PlanRequest:
+	var r := PlanRequest.new()
+	for prop: Dictionary in get_property_list():
+		if (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) != 0:
+			r.set(String(prop["name"]), get(String(prop["name"])))
+	return r
+
+
 ## Round 31 (CP-P0): the request as the C++ planner reads it (PlannerNative.parse_request): every field the search
 ## uses, as the doubles they are here, plus the world's view and the tick (SimClock.TICK_SECONDS, so the plant's lag
 ## model is the same number on both paths). `cusp_s` is computed here once, for both the cost and the table's key.

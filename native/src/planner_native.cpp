@@ -495,6 +495,10 @@ std::vector<float> PlannerNative::build_table(double radius, double v_fwd, doubl
 	return table;
 }
 
+std::unordered_map<std::string, std::vector<float>> PlannerNative::tables;
+int64_t PlannerNative::last_table_build_usec = -1;
+uint64_t PlannerNative::tables_built = 0;
+
 // PlannerHeuristic.table_for: cached by the GDScript's key "%.2f|%.2f|%.2f|%.2f" of (radius, v_fwd, v_rev, cusp_s),
 // built from the request's own (maxf'd) values the first time that key is seen.
 const std::vector<float> &PlannerNative::table_for(const Request &r) {
@@ -881,6 +885,9 @@ bool PlannerNative::step(int64_t slice) {
 	if (!session_live) {
 		return true;
 	}
+	if (slice < 1) {
+		slice = 1; // a zero slice would never finish (native's note 1)
+	}
 	while (true) {
 		if (!search.finished) {
 			if (!run_search(slice)) {
@@ -934,6 +941,13 @@ bool PlannerNative::step(int64_t slice) {
 	return true;
 }
 
+void PlannerNative::cancel() {
+	session_live = false;
+	search = Search();
+	out_code = NONE;
+	out_legs = Array();
+}
+
 Dictionary PlannerNative::result() const {
 	Dictionary d;
 	d["code"] = String(code_name(out_code));
@@ -953,6 +967,14 @@ Dictionary PlannerNative::result() const {
 }
 
 Dictionary PlannerNative::plan(const Dictionary &request) {
+	// A whole plan on an instance whose sliced session is live would clobber that session (native's note 1): the
+	// GDScript keeps whole plans and sessions on separate instances; this guard says so if a caller does not.
+	if (session_live) {
+		Dictionary refused;
+		refused["code"] = String("NONE");
+		refused["why"] = String("a sliced session is live on this instance");
+		return refused;
+	}
 	begin(request);
 	step(std::numeric_limits<int64_t>::max());
 	return result();
@@ -990,6 +1012,7 @@ void PlannerNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("step", "expansions"), &PlannerNative::step);
 	ClassDB::bind_method(D_METHOD("result"), &PlannerNative::result);
 	ClassDB::bind_method(D_METHOD("live"), &PlannerNative::live);
+	ClassDB::bind_method(D_METHOD("cancel"), &PlannerNative::cancel);
 	ClassDB::bind_method(D_METHOD("table", "request"), &PlannerNative::table);
 	ClassDB::bind_method(D_METHOD("table_build_usec"), &PlannerNative::table_build_usec);
 	ClassDB::bind_method(D_METHOD("tables_count"), &PlannerNative::tables_count);

@@ -105,9 +105,11 @@ public:
 	};
 
 private:
-	std::unordered_map<std::string, std::vector<float>> tables;
-	int64_t last_table_build_usec = -1;
-	uint64_t tables_built = 0;
+	// The free-space tables, ONE cache for every instance (native's review of 7c286000, note 1: a seam's session
+	// instance and the whole-plan instance must not each build the catalog's tables); single-threaded, like the engine.
+	static std::unordered_map<std::string, std::vector<float>> tables;
+	static int64_t last_table_build_usec;
+	static uint64_t tables_built;
 
 	// the session
 	bool session_live = false;
@@ -125,7 +127,7 @@ private:
 	double out_cell_m = 1;
 	int64_t out_bins = 24;
 
-	const std::vector<float> &table_for(const Request &r);
+	static const std::vector<float> &table_for(const Request &r);
 	static std::vector<float> build_table(double radius, double v_fwd, double v_rev, double cusp_s);
 	static Request parse_request(const Dictionary &d);
 	static void parse_world(const Dictionary &d, World &w);
@@ -149,6 +151,8 @@ public:
 	bool step(int64_t expansions);
 	Dictionary result() const;
 	bool live() const { return session_live; }
+	// Drop a live session (a crew died, its order changed): nothing is kept.
+	void cancel();
 	// PlannerHeuristic.table_for(req) bit for bit (the cache key is the GDScript's "%.2f|%.2f|%.2f|%.2f").
 	PackedFloat32Array table(const Dictionary &request);
 	int64_t table_build_usec() const { return last_table_build_usec; }

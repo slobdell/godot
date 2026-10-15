@@ -108,7 +108,10 @@ _Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/p
 
 ### The report (read this first)
 
-**In progress: P5 (CP-P0, the C++ port).** Nothing green yet beyond the launch baseline. Green hash: none of mine yet.
+**In progress: P5 (CP-P0) is coded and reviewed by native (7c286000 APPROVED for fidelity, four non-blocking notes,
+note 1 taken), its builder0 twin run is queued behind three checks; P6's slice is in the C++ and proven by the twin
+test's slice case (laptop pre-check); P7's seam is coded OFF (R31.2 as agreed) with its own test, not yet run.**
+Green hash: none of mine yet (the laptop pre-check is not evidence: C31.7).
 
 ### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
 
@@ -245,3 +248,23 @@ commit and name them in the merge notes; native reviews them with the rest.
   layer, exec_fields.h, native.mk / CMakeLists / build.sh, remote_builds). Local toolchain present (cmake, ccache g++,
   godot-cpp 10.0.0 source in .tools); builder0 reachable (load 0.08). The draft seam written (above) at the orchestrator's
   ask; starting P5.
+- 2026-10-14 ~23:05 PDT: **P5 coded**: `native/src/planner_native.{h,cpp}` (1 000 lines: the world with the lazy
+  float32 field and its first-read-double quirk, the OBB test in real_t, the navmesh wall distance, the free-space table,
+  the search as a resumable session with `begin / step(n) / result / cancel`, `plan` = begin + step(all)), `Planner.plan`
+  takes it when `native_usable()`, `PlanRequest.to_native()`, `PlannerWorld.native_view()`; `tests/test_native_planner.gd`
+  (17 offline + 4 lab fixtures both ways: legs, code, cost, expansions, nodes, why, end pose, the lazy field's cells; the
+  table bit for bit; the slice at 50/200/1000); `make planner-twin` (pinned) and `make planner-census` (P6's census +
+  an in-fight plan probe). Laptop PRE-CHECK only (unpinned, killed by its 900 s cap in the yard build): 17/17 offline and
+  3/3 Terminus lab fixtures EQUAL on every observable; native 47-300x the GDScript offline, 6-37x on the navmesh fixtures
+  (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
+  needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
+  static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-14 ~23:40 PDT: the orchestrator's correction taken: every Godot run on builder0 from here (C31.7), the laptop
+  only for parse checks. `make remote T="planner-twin PLANNER_CPUS=0-3"` queued on builder0 (position 6 of 9 behind
+  traffic's and brains' two checks). **P7 coded, OFF**: `game/ai/planner/planner_seam.gd` (`PlannerSeam.take` at the two
+  agreed lines, the FIFO slice, zero/zero pending, the re-request from rest, abort re-plans, the refusal windows,
+  `live()`, `report()`, `capture()/restore()` with a pending session replayed by its expansions); `movement.gd`: `"planner"`
+  in OFF_NAMES, the two `take` lines, `manoeuvring()`, the `unstick()` gate (R31.2's five lines, nothing else);
+  `PlannerExecutor.to_state/from_state`; `Planner.begin_session/step_session/session_result/cancel_session`;
+  `tests/test_planner_seam.gd` (OFF never asks; ON: the Terminus rig's face taken, planned, driven, within 15 deg at 40 s,
+  plan_face not asked; capture/restore round-trips). `SLICE` is 100 expansions a tick until the cost line says otherwise.

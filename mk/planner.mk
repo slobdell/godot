@@ -86,8 +86,12 @@ planner-twin: native import ## planner CP-P0: tests/test_native_planner.gd alone
 PLANNER_CENSUS_N ?= 25
 PLANNER_CENSUS_SEEDS ?= 92721 31337
 PLANNER_CENSUS_TIME ?= 120
+PLANNER_CENSUS_ARENA ?= sumps
+# PLANNER_CENSUS_PROBE=30: every 30 ticks plan one fixture inside the fight and keep its us (the price under load; the
+# fight itself stays on --brains-off=native, so the probe says which path it took: with native off it is the GDScript's).
+PLANNER_CENSUS_PROBE ?= 0
 .PHONY: planner-census
-planner-census: import ## planner P6: plan requests a tick in a Sumps fight at PLANNER_CENSUS_N a side (GDScript drive), PLANNER_CENSUS_SEEDS -> build/planner/census-<seed>.log
+planner-census: import ## planner P6: plan requests a tick in a PLANNER_CENSUS_ARENA fight at PLANNER_CENSUS_N a side, PLANNER_CENSUS_SEEDS, PLANNER_FLAGS=--brains-off=native for the GDScript drive -> build/planner/census-<seed>.log
 	@mkdir -p $(BUILD_DIR)/planner $(BUILD_DIR)/perf-armies
 	@$(PYTHON) tools/perf_armies.py size $(PLANNER_CENSUS_N) $(BUILD_DIR)/perf-armies
 	@for seed in $(PLANNER_CENSUS_SEEDS); do log=$(BUILD_DIR)/planner/census-$$seed.log; \
@@ -95,7 +99,7 @@ planner-census: import ## planner P6: plan requests a tick in a Sumps fight at P
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/planner/plan_census.gd -- --match --elimination --control \
 			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_$(PLANNER_CENSUS_N).json \
 			--rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_$(PLANNER_CENSUS_N).json --budget=100000 \
-			--time-limit=$(PLANNER_CENSUS_TIME) --seed=$$seed --arena=sumps --green-elements --rust-elements \
-			--brains-off=native $(PLANNER_FLAGS) > $$log 2>&1 || true; \
+			--time-limit=$(PLANNER_CENSUS_TIME) --seed=$$seed --arena=$(PLANNER_CENSUS_ARENA) --green-elements --rust-elements \
+			--plan-probe=$(PLANNER_CENSUS_PROBE) $(PLANNER_FLAGS) > $$log 2>&1 || true; \
 		grep -h "^PLANNER_CENSUS" $$log | cut -c1-600 || { echo "   no PLANNER_CENSUS line: see $$log"; tail -3 $$log; }; \
 	done

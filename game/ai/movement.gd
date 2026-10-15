@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -1280,6 +1280,8 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 			cmd.throttle = 0.0
 			cmd.turn = 0.0
 			return true
+		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, before plan_face (`--nav-off=planner`).
+		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "face", _face_home, delta, want): return true
 		if _face_retry > 0:
 			_face_retry -= ctl._step
 			return false
@@ -3033,6 +3035,7 @@ func _remaining_path_distance(goal: Vector3) -> float:
 ## Blind unsticking: driving hard but not moving for STUCK_SECONDS → back off for UNSTICK_SECONDS.
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if Traffic.holding(String(ctl.tank.name)): return  # round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
+	if PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)): return  # round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
 	_unstick(cmd, order, delta)
 	if ManoeuvreCensus.on:
 		# Round 26 (manoeuvre M0b): turns counted by legs and by what was in the way; measurement only.
@@ -3291,6 +3294,13 @@ func in_kturn() -> bool:
 	return _kturn_left_m > 0.0
 
 
+## Round 31 (planner CP-P1, R31.2): is this hull in a planned manoeuvre of either kind -- today's k-turn leg, or held
+## by the lattice planner's seam (a plan pending or being driven; `--nav-off=planner` turns that ON)? Traffic's crossing
+## row and `ask()` and manoeuvre's straight-leg lever read this; `in_kturn()` keeps its own readers. OFF = in_kturn().
+func manoeuvring() -> bool:
+	return in_kturn() or (PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)))
+
+
 ## Round 17 lever (l17t, BrainLevers.far_exec_straight): is this hull on a plain straight leg -- not in a planned leg,
 ## touching nothing, not deflected by avoidance this tick, and pointed within STRAIGHT_LEG_DEG of its carrot? Only
 ## then may a far CPU unit run its controller every other tick (half-rate steering is where the scraping came from).
@@ -3309,6 +3319,8 @@ func straight_and_clear() -> bool:
 ## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
 ## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
 func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
+	# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, before today's plan is made (`--nav-off=planner`).
+	if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 	var tank := ctl.tank
 	if _kturn_left_m > 0.0:
 		if not _kturn_rolling:

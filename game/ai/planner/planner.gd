@@ -65,13 +65,77 @@ static func native_usable() -> bool:
 ## from its numbers with this file's own format strings; the trace (poses, metres, cusps, the end pose) is GDScript's
 ## `trace` over the same legs, as on the GDScript path.
 static func _plan_native(req: PlanRequest) -> PackedPlan:
+	if req.world == null:
+		var out := PackedPlan.new()
+		out.throttle_fwd = req.throttle_fwd
+		out.throttle_rev = req.throttle_rev
+		out.why = "no world"
+		return out
+	return _from_native(req, _impl.plan(req.to_native()))
+
+
+# ---- P6: the per-tick slice (a SESSION on the C++ planner: begin, step N expansions a tick, result) -------------------
+## One session at a time (the library holds one; PlannerSeam's queue is one deep). `begin_session` takes the request's
+## view (`PlanRequest.to_native()`, so a seam can hold and replay it); `step_session(n)` runs at most n expansions and
+## answers true when the plan is final; `session_result(req)` is the PackedPlan. Without the library the whole plan is
+## made at `begin_session` in GDScript (the twin path: correct, slow, for a tree without the .so) and `step_session`
+## answers true at once. Proven in tests/test_native_planner.gd: the sliced plan is the whole plan.
+## The session's own library instance (a whole plan on `_impl` while a session is live would clobber it: native's
+## review note); the free-space tables are one static cache inside the library, shared by both.
+static var _session_impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
+static var _session_req: PlanRequest = null
+static var _session_plan: PackedPlan = null
+static var _session_stepped := 0
+
+
+static func begin_session(req: PlanRequest) -> void:
+	_session_req = req
+	_session_plan = null
+	_session_stepped = 0
+	if native_usable():
+		_session_impl.begin(req.to_native())
+	else:
+		_session_plan = plan(req)
+
+
+static func step_session(expansions: int) -> bool:
+	if _session_plan != null:
+		return true
+	if _session_req == null or _session_impl == null or not _session_impl.live():
+		return true
+	_session_stepped += maxi(expansions, 1)
+	if _session_impl.step(expansions):
+		native_plans += 1
+		_session_plan = _from_native(_session_req, _session_impl.result())
+		return true
+	return false
+
+
+static func session_done() -> bool:
+	return _session_plan != null
+
+
+static func session_result() -> PackedPlan:
+	return _session_plan
+
+
+## The expansions handed to `step_session` so far (a seam's snapshot replays a pending session by stepping this many).
+static func session_stepped() -> int:
+	return _session_stepped
+
+
+static func cancel_session() -> void:
+	_session_req = null
+	_session_plan = null
+	_session_stepped = 0
+	if _session_impl != null and _session_impl.live():
+		_session_impl.cancel()
+
+
+static func _from_native(req: PlanRequest, r: Dictionary) -> PackedPlan:
 	var out := PackedPlan.new()
 	out.throttle_fwd = req.throttle_fwd
 	out.throttle_rev = req.throttle_rev
-	if req.world == null:
-		out.why = "no world"
-		return out
-	var r: Dictionary = _impl.plan(req.to_native())
 	out.code = String(r["code"])
 	out.expansions = int(r["expansions"])
 	if out.code == PackedPlan.OK or out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET:
