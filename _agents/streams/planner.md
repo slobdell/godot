@@ -404,6 +404,12 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~04:15 PDT: **the judged chain's wrappers** (29930949, mk/planner.mk): `planner-judge-hull-rest`,
+  `planner-judge-fights`, `planner-judge-bridge`, `planner-judge-cp2`, each `PLANNER_JUDGE_ARM=base|candidate` (one arm a
+  call, lesson 311), both arms `--brains-off=native_drive` with the C++ planner on, the candidate + `--nav-off=planner`;
+  hull-rest on the fresh seeds 60-65 (M1_NEW_OFF=planner, M1_BASE_OFF empty, `--turn-states`), fights on 181-204 (then
+  fight_table.py base v candidate), bridge-pooled and scenario_cp2 through BRIDGE_FLAGS / AI_SCEN_FLAGS. The chain
+  (after both gates): planner-series (a), then (d) x2, (e) fights x2 + bridge x2, (c) cp2 x2, each heavy, one at a time.
 - 2026-10-15 ~04:05 PDT: **the series tooling PROVEN** (`make remote LIGHT=1 T="planner-series PLANNER_SERIES_SEEDS=1
   PLANNER_SERIES_SQUADS=rigs NAV_JOBS=1"` on 2f7e9442, exited 0; the first try refused on a stale light-lane library
   after the rebase, so the target builds native first now). Seed 1 is a USED tuning seed at n = 1: a tooling proof,
