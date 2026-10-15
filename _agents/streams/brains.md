@@ -99,7 +99,78 @@ Nothing.
 
 _(the worker keeps this current; bars to the orchestrator before numbers; the report at the top)_
 
-### REPORT so far (2026-10-15 ~00:00 PDT)
+### FINAL REPORT (round 31, 2026-10-15 ~12:30 PDT)
+
+**Green hash:** stream/brains `303883c1`: final `make check` on builder0 RUNNING (result below when it lands). Every
+backlog item is done, judged, or parked by its bar. No lead gate is pending; no questions.
+
+**Shipped**
+- **B6, SBF facing:** with a facing drawn, the support-by-fire line takes it, not fanned sectors. **MERGED ON to main as
+  201b792a** (lab `f22d7dcb`; GDScript only, native: none ported). Passes every line of round 30's filed bar (builder0,
+  seeds 7–18, n = 12 runs an arm and class). Pooled drawn hull error at in, four wheeled classes: **10.4 v 29.1°**.
+
+  | class | drawn median, on v control | crews in |
+  |---|---|---|
+  | gang_ifv | 26.0 v 49.9° | 48 v 48 |
+  | gang_tank | 10.2 v 28.3° | 48 v 48 |
+  | law_ifv | 1.1 v 28.9° | 48 v 48 |
+  | law_tank | 24.0 v 29.9° (within 2 se) | 45 v 45 |
+  | tank (guard) | 1.6 v 21.8° | 48 v 48 |
+
+  Clicked rows 60/60 identical. Counter 60/60. Check 2613/0. Cost 0.178 v 0.171 ms. gang_ifv's remaining 26° is
+  turn-hull's ceiling (C31.8: a wheeled hull not turned at rest, manoeuvre's), as is law_tank's 80–90° A_1/A_3 in
+  both arms.
+- **B8, realslow:** on main (aa205ea5), opt-in behind `--brains-off=realslow`. Waits for manoeuvre's CP-H A/B.
+- **R31.3:** test_tactics_pursuit made robust over seeds (a16585bf, 0415da23): on main (aa205ea5). A/A filed in
+  judging.md.
+
+**Parked, each with its table**
+- **B5c-v5, the arrival gate:** FAILS line 3 (Sumps s17 t11 +22.3 s). Rows `b5c-v5-*`. Branch `pair/brains-v5`
+  e675a28a kept.
+
+  | line | on v off | result |
+  |---|---|---|
+  | pursuit | 24/24, 24/24 nudged | PASS |
+  | yard, every crew in | 11/12 v 1/12 | PASS |
+  | Sumps | median 24.8 v 24.9 s; s17 t11 58.3 v 36.0 s | FAIL |
+  | Terminus (reported) | 3/4 v 2/4 | — |
+
+- **B3b-2b, his bridge:** **the bridge is solved by the seating, not shipped this round**. FAILS line 3 (arrivals).
+  Rows `b3b2b-*`. Branch `lab/brains-r31-bridge` 5ed61f91 kept.
+
+  | line | candidate v control (main's rules) | result |
+  |---|---|---|
+  | his bridge, full 108 | **108/108** v 106/108 | PASS |
+  | bridge-pooled | 18/18 | PASS |
+  | arrive, all_in8_s, n = 100 | 90 v 97; 9 against, 2 for | FAIL |
+  | counters | 108/108 bridge runs; 0 of 200 arrive runs | PASS |
+  | cost | 0.116 v 0.194 ms | PASS |
+
+- **B9, the Terminus seat trap:** traced, not a seating bug. It is the arrival gate circling (61.4 s; v4's `near`
+  frees it at 19.4 s).
+
+**Round-32 leads** (all in roadmap.md via the orchestrator)
+1. **His bridge = the crossing seating + mouth guard WITHOUT the heading rule.** TRACE (not evidence):
+   `--reissue-heading=plan` alone frees all 9 against cells at the control's exact times; the mouth guard alone frees
+   none.
+2. **The arrival gate:** key `near` per seat (or hysteresis), or the planner's §2.8 side gate (B5c-v5's Sumps limit
+   cycle, yard s27 t8). The gate can also be pushed off by a new facing (B6 law_tank s17: `no_path` 21 m out).
+3. **Navmesh:** the default arena's Alpha_3 spot (−25.7, 7.3) is 8.2 m off the navmesh (arena owner).
+
+**Requests:** none open. **Known issues:**
+- `tools/test_quiet_window.sh` "records once the window opens" flakes under load (remote-guard-test, seen once on
+  344a772a). It is the orchestrator's to harden.
+- perf-judge NOT JUDGED on a busy box in every check this round.
+
+**Playtest notes (for him):** draw a facing on a support-by-fire order with wheeled squads. The line should now look
+the way he drew (B6). His bridge is unchanged on main (106/108 cells).
+
+**Worktrees:**
+- Removed: godot-brains-b9, godot-brains-pair, and their builder0 folders.
+- Left: godot-brains-bridge (parked lab) and godot-brains-sbf (merged). Both branches are pushed; remove at round
+  close.
+
+### Detail (the round as it went; REPORT so far) (2026-10-15 ~00:00 PDT)
 - **B5c-v5 (1) the A/A — DONE** (`make pursuit-aa`, builder0, stream `3cb76e17` = main's game/, rule off, default path,
   48 runs; rows `references/round31/brains/pursuit-aa-3cb76e17.*`; filed in `judging.md`, ruled R31.3). **The test's
   stage was knife-edge on main:** 8 m/s as written 12/12, every start nudged 0.25 m 9/12 (the nudge alone flipped seeds
