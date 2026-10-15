@@ -58,6 +58,16 @@ func test_a_kept_face_at_rest_ends_no_further_from_its_slot_than_it_starts() -> 
 	assert_true(not kept.poses.is_empty(), "the kept plan carries its poses")
 	# The same request plans the same legs twice (the circle is a pure function of the pose).
 	assert_eq(Planner.plan(kept_req).describe(), kept.describe(), "deterministic")
+	# The end rule BINDING: the test world holds no squadmates, so the free plan here ends inside the law's 5.05 m
+	# (the game's plan, with Green_S0_2 beside it, was one 3.5 m reverse chord to 7.4 m). A circle tighter than the
+	# free plan's end changes the plan and the end obeys it.
+	var tight_m := _from_slot(free.end_x, free.end_z) - 0.5
+	var tight := Planner.plan(_face_request(terminus).keep(SLOT.x, SLOT.y, INF, tight_m))
+	print("PLANNER_KEEP tight (end %.2f m): %s %s | ends %.2f m from the slot, worst pose %.2f | %d expansions | %s" % [
+			tight_m, tight.code, tight.describe(), _from_slot(tight.end_x, tight.end_z), _worst_pose(tight), tight.expansions, tight.why])
+	assert_true(tight.ok(), "a face kept tighter than the free plan's end still plans (%s: %s)" % [tight.code, tight.why])
+	assert_true(_from_slot(tight.end_x, tight.end_z) <= tight_m + 0.05, "...and ends within %.2f m (%.2f)" % [tight_m, _from_slot(tight.end_x, tight.end_z)])
+	assert_true(tight.describe() != free.describe(), "...with different legs from the free plan (%s)" % tight.describe())
 	terminus.free()
 	await drain_navigation()
 
