@@ -520,6 +520,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   fixtures re-read and the extra branching priced. An aim tolerance chosen so one arc satisfies THIS scene is fitting
   and is barred unless justified independently and stated first. **Time-box: if the k-turn row isn't met by 12:00 PDT
   10-15, CP-P1 parks with its traces**, and CP-P0 + the OFF seam on main are the round's planner result.
+  **MET (~08:45 PDT, builder0 light, `1f325b91`, 30/0) — before the time-box.** k-turn ON: arrives 7.0 s, 0 contacts,
+  2.20 m nose clearance, 2 REAL gear segments (R 4.0, F 29.6), one 2-leg plan driven to its end; base 2 segments,
+  5.6 s, 1.64 m. The cost is +1.4 s, REPORTED. It took three trace-read changes, none a tuned number: the aim goal, an
+  aim heuristic owing only the heading change and its cusps (`5ffda2b4`, the unlock), and the order-goal release
+  (`1f325b91`). Half lock was measured and REVERTED (the scene was unchanged and three fixtures broke). The wedged semi
+  is met. Every named fixture holds, and the C++ twin plans identically. **Re-cut base for native's gate: `edb773cf`.**
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
