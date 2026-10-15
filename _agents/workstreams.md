@@ -207,6 +207,21 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   builds it** (it owns the mirrors) and names its hash. **Manoeuvre runs the judged A/B on it** (C31.4: GDScript path, every
   arm `NATIVE=off` or `--brains-off=native`, enforced by its runner). The tree's plain `make check` is the ship check.
   **The orchestrator calls CP-H** when the last consumer is on main. Native confirmed B8 is NONE PORTED (~01:00).
+  **Status ~05:30 PDT 10-15:** manoeuvre's H1–H3 pre-series gate is GREEN (flipped tree `998fe844`, NATIVE=off, test
+  2621/0, ai-scenarios 52/0, with only the structural sim-baseline and native-live-guard reds; both earlier reds gone).
+  H1–H3 are on main OFF at `298e4498`, and the terrain fallback `426e6c6e` follows in manoeuvre's next batch. B8 is on
+  main. **T4 is not**: it is in tuning, with its merge-OFF pair `pair/t4 80fbdbe9` in native's queue. **Cutoff (C31.4):
+  T4 merged OFF with its NATIVE=off gate green by 09:00 PDT 10-15, or CP-H runs WITHOUT T4** (T4 stands down this round,
+  parked with its tuning tables).
+  **T4's merge-OFF branch (~06:15 PDT): `traffic-t4` `357ca38b`**, one commit on main `c6ffb37e`: T4 v1 + ghostself
+  (both OPT-IN, default OFF), the test-only teardown, and ALL of I4's tooling (seq_hook, `mk/traffic.mk` with
+  `33cb2da5`'s echo fix, CACHE=auto, `turns_verdict --allow`). It carries NO T1c-b2 rule and NO T3b. Native pairs it
+  (the ghost mirror is already on main at `298e4498`). **ghostself:** OUT of CP-H unless its tuning arm has run by
+  ~07:00 PDT. It stays in the code OPT-IN and UNMIRRORED as tuning only, and a native-path arm naming it would silently
+  run it OFF, so no judged run names it.
+  **Decided (~06:50 PDT, traffic's tuning on `dc8fcbf6`, nav-terminus-drive s24–29, GDScript, n 12 paired): ghostself
+  is OUT and T4 = v1 alone.** v1 v v1+ghostself: pinned crews 126 → 598 (+472, se 185, UP beyond 2 se), rigs 71 → 311,
+  stuck 324 → 799. Native's `pair/t4-on` (ghostself opt-in, ghost on) is T4's gate tree.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
@@ -291,6 +306,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   *Owed to him*): his round-31 call kept "the Terminus clock within its se". Accepting ~2.6 s there too is his decision.
   If yes, these judged rows pass on his line (+2.61 ≤ 3.0 + 0.90) with no re-run, because the line would then be his,
   set before he sees a re-run. Native `413252ea` stays unmerged until then.
+  **Brains' B9 trace (~05:40 PDT, terminus cross s33 t1, round 30's worst, n = 1, builder0 GDScript):** T3b alone gives
+  all-in 61.4 s; T3b + v4's gate gives 27.5 s, 10/10 (main's base 33.7). The +27.7 s was B_4 circling its arrival gate,
+  which v5 fixes. That concerns the ALL-IN, not the failing crossing clock (traffic: the yielder clears at 16.3 s, long
+  before any seat circling), so the question to him is unchanged. **If T3b is ever re-judged, it pairs T3b on top of v5
+  v v5 alone.**
   **C31.1 gate PASSED (~00:05 PDT 10-15):** pair tree `pair/t3b` = `f5dc4147` (native `413252ea` + traffic `ab3351fb` +
   `DEFAULT_OFF = []`), builder0 `>> remote: make check exited 2`, 2624 passed / 0 failed, 25 of 26 targets passed, the
   sim-baseline alone failed, with all 13 maps moved as a turns-ON tree must (one read each; two reads at adoption).
@@ -314,6 +334,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   runs in the judged chain. **Condition (orchestrator): a red in any of them VOIDS the census.** Chain: unit
   `traffic-t1cb2`, scratch at `33cb2da5` (= `dc8fcbf6` + a make-echo fix only). Merge takes `33cb2da5`'s
   `mk/traffic.mk` line.
+  **Base arm in (~07:10 PDT, builder0, `33cb2da5`, seeds 41–46 × 3, n 18):** runs with any repack while firing =
+  **6/18** (10 repacks), below the filed precondition (base ≥ 8/18). **So line (1) is NULL as filed, and T1c-b2 cannot
+  ship on this run** (lesson 300; not re-read after the fact). Orchestrator: the ARM census runs for the record (its
+  repack count, artillery and guards REPORTED); the approach, cases and traffic-native-verify are STOPPED to free builder0.
+  T1c-b2 parks, and a player-terms question goes to him with the arm's numbers.
 - **Manoeuvre M1b(2) turn-the-hull bar (filed 2026-10-14 ~23:45 PDT, before any number; DECLARED; this is the FIRST run, a
   second on fresh seeds would be the last):** candidate stream/manoeuvre `44adcbbe` (+ tooling `eea19309`). ONE opt-in
   switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT` false) = (i) `TankBrain._order_move`'s decline lifted for a
@@ -338,6 +363,30 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
   **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
   flipped; native's statement covers the pair).
+- **Manoeuvre CP-H bar (filed 2026-10-15 ~06:00 PDT, before any judged number; DECLARED; CP-H's FIRST run, with the
+  alone re-declaration its only second chance; full text in manoeuvre's Status):** tree = R31.4's one tree,
+  native-built; arms are flags on that one commit, all on the GDScript path (`make manoeuvre-cph` refuses any arm
+  without `--brains-off=native`). OFF = `--brains-off=native`. ALL = `--nav-off=unstickback,kturnarc --gun-off=realspeed
+  --traffic-off=ghost --brains-off=native,realslow` if T4 is on main OFF by the 09:00 PDT cutoff, else `allnoghost` (the
+  same list without ghost), with the case named in the bar block when the series starts. Each consumer ALONE
+  (unstickback, kturnarc, realspeed, realslow, plus ghost when in) is REPORTED on the same judged seeds, and every run
+  prints its flags. **Fresh seeds:** Terminus census + drive 110–122 (13); hull-rest 84–89 (4 factions × 6 tasks × 6 =
+  144 an arm, one arm per remote call); **fights 214–237 (24)** (manoeuvre proposed 190–213, which overlaps CP-P1's
+  181–204, so the orchestrator moved them before numbers); bridge-pooled's 18 cells. **Pass lines:** (a) Terminus
+  arrivals, rigs and mixed apart (rows 73, 75): not down beyond 1.645 se paired each; early stop by `sequential.py
+  arrived:guard:0.10`, never before 6 seeds, row recorded. (b) Terminus wall contact-ticks, rigs and mixed apart (rows
+  74, 76): ≤ base + 1.645 se each, with and without each arm's two worst runs. (c) hull-rest pinned crew-seconds (row
+  67): DOWN beyond 2 se paired at n 144 for ≤ 10 m hulls (a gain line, stricter than 1.645 by the owner's choice); rigs
+  reported apart; STUCK row and tracks reported. (d) hull-rest crews still moving at 75 s per task (rows 62–63): ≤ base +
+  1.645 se, se quoted. (e) nav-terminus-drive PINNED and STUCK rows down, per squad. (f) bridge-pooled 18/18 (a 17/18
+  read by its trace). (g) fights at 24 seeds (rows 69–71): kills, deaths and hit rate within **1.645 se** (the
+  orchestrator's correction from 2 se, C31.3); touching-target hit rate REPORTED. (h) scenario_cp2,
+  test_tactics_mixed_legs, `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (R31.5
+  condition 2) and the WHOLE suite green on native's ON pair tree (the ship check). (i) REPORTED per stage and arm:
+  escape fires by kind (hull / wall), asks, backs, backed v capped, refused, FALLBACK (R31.5 condition 1: fallback
+  carrying most of fires_wall on the census is a finding), unstick_fires, press_escapes. A consumer that never fires in
+  its arm is a null (lesson 300). **Partial (C31.4):** the combined ships as one pair if every line passes; if it fails,
+  each consumer that passed ALONE on every line may be re-declared alone, once. Native's ONE pair ships it.
 - **Brains B3b-2 bar (filed 2026-10-15 ~04:45 PDT, before any judged number; DECLARED; the LAST attempt; partial:
   none):** candidate `lab/brains-r31-bridge` `344a772a` = stream `0415da23` + `lab/brains-r30-bridge` `4bc708d7` (route
   seating + mouth guard + heading rule) + the crossing seating matched ONCE per task point (held until the point changes
@@ -422,6 +471,18 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   confirms none of 27–28, 16–17, 8–11 or 37–40 is among them.
   **CONFIRMED (~02:15 PDT, from round 30's judged rows):** yard r29 22–24 / r30 23, 25–26; Sumps r29 2–13 / r30 2,
   14–15; Terminus r29 1–4 / r30 2–7; arrive 1–4, 25–36. No overlap and nothing swapped. Cleared to run.
+  **JUDGED ~06:30 PDT 10-15 — FAIL on line (3) Sumps "no run > 5 s later"; PARKED (the last attempt, partial none).**
+  Pair tree `e675a28a` (= `17e7b08c` + `arrive_pair.py`), builder0, GDScript both arms. The series stopped once the
+  verdict was decided, so arrive, bridge, screen-slots and cost never ran. (1) Pursuit PASS, 24/24 as written and 24/24
+  nudged, the 8 m/s reversal margin +47° on v +69° off. (2) Yard PASS: every crew in 11/12 on v 1/12 off, crews on ≥
+  off every run, last-crew median 21.0 s v never. The worst on-arm run, s27 t8, was traced: A_5 reached its herringbone
+  gate facing away (dot −0.94), the gate was given up 27 m from its slot, and it drove onto terrain by the containers.
+  That's the come-round case for the planner's §2.8 side gate. (3) **Sumps FAIL:** median 24.8 v 24.9 s and
+  guns_on_arc 0.939 v 0.939 both pass, but **s17 t11 runs 58.3 v 36.0 s (+22.3 s)**. Traced: Green_S_3's slot drifts
+  67 times on v 3 off, flipping every ~1 s between seats ~10 m apart, and each flip refires `near` (66 times). That's a
+  limit cycle between v4's per-goal `near` and the element's seating. (4) Terminus (reported): every crew in 3/4 on v
+  2/4 off. Kept as the record: `pair/brains-v5`. **Round 32:** key `near` per SEAT (or with hysteresis), or take the
+  planner's §2.8 side gate (roadmap).
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
