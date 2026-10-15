@@ -180,6 +180,9 @@ arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turn
   reported Terminus 39.5 → 32.9, yard 66.4 → 75.5.
 - Hook (table sd): yard SERIES PASS at run 7, head-ons PASS (6, 18), Terminus SERIES FAIL at 18 (xclear, truncation).
 - Worst run's trace (s43/t1, both arms) queued (`traffic-t3bc-trace`).
+- If he says no, or T3b is ever re-judged: the honest pairing is T3b on top of brains' arrival gate v5 v v5 alone
+  (brains: T3b + v4 frees round 30's s33/t1 seat trap, all-in 61.4 → 27.5 s). v5 PARKED this round (orchestrator), so
+  any re-judge waits for round 32's gate fix.
 
 ### T4 for CP-H (cutoff 09:00 PDT 2026-10-15, the orchestrator's)
 
