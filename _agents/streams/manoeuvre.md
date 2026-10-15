@@ -197,6 +197,11 @@ remote call, lesson 311), fights **214–237** (24; moved by the orchestrator be
 - (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall), asks, backs, backed v capped, refused,
   **fallback** (R31.5 condition 1: fallback carrying most of fires_wall on the census is a finding), unstick_fires,
   press_escapes; an arm whose consumer never fires is a null (lesson 300).
+**CALLED 2026-10-15 ~08:30 PDT, case `allnoghost`** (T4 could not make its gate before 09:00). The A/B starts only when
+native's R31.4 tree reads `make check exited 0` (or exited 2 with sim-baseline its only red, moved as switches ON must).
+**Slots (the orchestrator's ruling A):** a second heavy slot for CP-H while M1b(2) attempt 2's heavy lane runs, back to
+one heavy when it ends. **The ALONE arms run census + drive + fights only** (ruled before numbers); if the combined arm
+fails and a consumer is re-declared alone, its hull-rest arm runs then, on fresh seeds, inside that one attempt.
 **Partial rule (C31.4, pre-registered):** the combined ships as one pair if every line passes; if it fails, each consumer
 that passed ALONE on every line may be re-declared alone (one attempt). **Last attempt:** this is CP-H's first run; the
 alone re-declaration is its only second chance. Native's ONE pair ships it.
