@@ -38,7 +38,8 @@ func _static(name: String) -> Variant:
 
 func teardown() -> void:
 	if _ghost_set:
-		Traffic.set_off("ghost", true)  # back to its default (opt-in: OFF)
+		# back to its default: OFF while "ghost" is opt-in, ON once it ships
+		Traffic.set_off("ghost", ((Traffic as Script).get_script_constant_map()["OPT_IN"] as Array).has("ghost"))
 	_ghost_set = false
 	super.teardown()
 
