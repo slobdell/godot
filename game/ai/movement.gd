@@ -3627,6 +3627,11 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		# leg's opposite throttle brakes the hull to rest AT the planned end rather than ~2 m past it (N1/N3: a rig's
 		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
 		var reached := backed + _kturn_stopping() >= _kturn_left_m
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			# Measurement only (`--turn-trace=<unit>`): round 30's scratch leg print, kept (the arc v the chord, per tick).
+			print("MANOEUVRE_TRACE leg f %d gear %d rolling %s backed %.2f chord %.2f stop %.2f left %.1f v %.2f real %.2f reached %s" % [
+					Engine.get_physics_frames(), _kturn_gear, str(_kturn_rolling), backed, _flat_distance(tank.global_position, _kturn_from),
+					_kturn_stopping(), _kturn_left_m, tank.speed(), tank.real_velocity.length(), str(reached)])
 		_kturn_timeout -= delta
 		# The LEADING end's hit ends the leg: the contact point behind the centre while backing (ahead of it on a
 		# back-and-fill's forward leg). The other end still touching the wall the leg is moving away from is exactly
