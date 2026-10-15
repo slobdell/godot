@@ -261,8 +261,9 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	req.horizon_m = HORIZON_M
 	req.in_world(PlannerNavWorld.for_tank(tank, mover.ctl.tanks_root))
 	# R31.2 (H), manoeuvre's condition: on the tick a hull is first taken, `mover.yield_to_plan()` ends a half-driven
-	# k-turn leg and both escapes and clears the stall and press clocks, so nothing resumes on release. The call lands
-	# here when stream/manoeuvre 9b257348 reaches main (no shim, the orchestrator's ruling): PENDING at this commit.
+	# k-turn leg and both escapes and clears the stall and press clocks, so nothing resumes on release (main 298e4498,
+	# called directly, no shim: the orchestrator's ruling).
+	mover.yield_to_plan()
 	var crew := Crew.new()
 	crew.kind = kind
 	crew.req = req
