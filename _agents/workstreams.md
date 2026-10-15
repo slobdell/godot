@@ -443,6 +443,10 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   **Amended before it runs (accepted):** the judged commit is `lab/manoeuvre-kturnarc` = the reader 8cbdcfad + the arc
   commit only (no lift code: 1f1c9835 carries the lift ON by default and must not merge); base `--nav-off=kturnarc` v new
   (no switch); the judged commit = the merge commit; native mirrors exactly it.
+  Native's review of the diff found a bug before the judged run: the arc accumulator was reset only in the not-rolling
+  branch, so a leg that starts rolling (every leg of a hull under 10 m, whose brake rule is off) inherited the previous
+  leg's arc and ended early; fixed in `_kturn_start_leg` (one line) + a test (an IFV's second leg started rolling drives
+  its own 8 m). **Candidate = `lab/manoeuvre-kturnarc` `e7a58262`** (807e8b8f is not a merge candidate).
 - **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
