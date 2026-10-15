@@ -99,7 +99,9 @@ class Crew:
 	var req: PlanRequest = null
 	var at := Vector3.ZERO          # the pose the session began from
 	var heading := Vector3.ZERO
-	var goal := Vector3.ZERO        # the order's goal / face home, for the new-goal release
+	var goal := Vector3.ZERO        # the plan's target: the k-turn's steering point / the face's home
+	var order_goal := Vector3.INF   # the ORDER's goal (Movement._goal) for a k-turn, the face's home for a face: the
+	                                # new-goal release judges this, never the route's carrot, which slides as the hull moves
 	var replans := 0
 	var rerequests := 0
 	var stepped := 0                # expansions handed to the session (replayed by restore)
@@ -219,11 +221,16 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		return false
 	var tick := Engine.get_physics_frames()
 	var crew: Crew = _crews.get(name)
-	if crew != null and (crew.kind != kind or tick - crew.tick_seen > STALE_TICKS or _flat(target, crew.goal) > NEW_GOAL_JUMP):
+	# A k-turn's "new goal" is the ORDER's goal moving (Movement._goal), not the route's steering carrot, which slides
+	# along the path as the hull moves (CP-P1's gate: the carrot's 3.7 m released a two-leg plan 4 m into its first leg).
+	var moved := 0.0
+	if crew != null:
+		moved = _flat(mover._goal, crew.order_goal) if crew.kind == "kturn" else _flat(target, crew.goal)
+	if crew != null and (crew.kind != kind or tick - crew.tick_seen > STALE_TICKS or moved > NEW_GOAL_JUMP):
 		if ManoeuvreCensus.trace_unit == name:
-			print("PLANNER_SEAM %s %s: released at tick %d (%s; asked %d ticks ago, target moved %.1f m; %s)" % [name, crew.kind, tick,
+			print("PLANNER_SEAM %s %s: released at tick %d (%s; asked %d ticks ago, goal moved %.1f m; %s)" % [name, crew.kind, tick,
 					"another kind" if crew.kind != kind else ("stale" if tick - crew.tick_seen > STALE_TICKS else "new goal"),
-					tick - crew.tick_seen, _flat(target, crew.goal),
+					tick - crew.tick_seen, moved,
 					"pending" if crew.pending else "driving leg %d, %.1f m left" % [crew.executor.leg_index + 1, crew.executor.left_m]])
 		_release(name)  # another kind of order, not asked for a while, or a new goal: whatever was planned is stale
 		crew = null
@@ -279,6 +286,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.kind = kind
 	crew.req = req
 	crew.goal = target
+	crew.order_goal = mover._goal if kind == "kturn" else target
 	crew.asked_tick = tick
 	crew.held_since = tick
 	crew.tick_seen = tick
