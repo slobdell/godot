@@ -99,6 +99,35 @@ Nothing.
 
 _(the worker keeps this current; bars to the orchestrator before numbers; the report at the top)_
 
+### REPORT so far (2026-10-14 ~23:00 PDT)
+- **B5c-v5 (1) the A/A — DONE** (`make pursuit-aa`, builder0, stream `3cb76e17` = main's game/, rule off, default path,
+  48 runs; rows `references/round31/brains/pursuit-aa-3cb76e17.{jsonl,txt}`; filed by the orchestrator in `judging.md`,
+  ruled R31.3). **The test's stage is knife-edge on main:** 8 m/s as written 12/12, every start nudged 0.25 m 9/12 — the
+  nudge alone flipped seeds 3 (the test's own), 5, 9; 18 m/s 10/12 both arms, seeds 1 and 9 fail as written.
+- **The 18 m/s failures traced** (builder0, seed 1): Green_A_1 shot to hp 0.01 at 5.0 s breaks away home (decide's
+  RETREAT, the lead's rule) and failed the per-crew closing/reversal lines, which lacked the let-go line's hurt excuse.
+  Not a physics launch; real_velocity not involved.
+- **R31.3 (a) `a16585bf`** the hurt excuse on those two lines; **(b) `0415da23`** the robust test (seeds {3,4,5,6,7},
+  both visible chases, ≥ 3 of 5). (b) GREEN on builder0 (`make test FILTER=test_tactics_pursuit`, 10 passed / 0 failed:
+  5/5 seeds at 8 and at 18 m/s, rule off). (a) alone queued (scratch tree at a16585bf); then (c) the A/A re-run: its
+  counts replace 22/19 in v5's pursuit line (ON ≥ OFF − 3 on both start sets).
+- **B6** re-based: `lab/brains-r31-sbf` = stream 0415da23 + round 30's three commits + `make sbf-bar` (both arms + the
+  filed bar's lines, `tests/tactics/sbf_bar.py`) = `f22d7dcb`; its pair-tree check queues after the current ones.
+- **B3b-2** built: `lab/brains-r31-bridge` = stream + `lab/brains-r30-bridge` + the crossing seating matched ONCE per
+  task point (held `fixed` until the point changes or a re-seat; `--route-seat-once=off` = round 30's B3b; counter
+  `crossings_held`) = `344a772a`; unit 5/0. Tuning on the three named cells (green t5 s2, rust t9 s2, green t18 s3) ×
+  {on, once-off} queued; then its bar.
+- **B9** queued: scratch tree = stream + traffic-t3b's `traffic.gd` (`a63dde6d`), `reseat-trace` Terminus crossing s33
+  t1 `--traffic-on=turns` (GDScript path: turns has no C++ twin).
+- **B5c-v5 design decision:** v4's rule UNCHANGED is the first candidate — the A/A removed its parking premise (lesson
+  306); `near` is scoped (never the opening seat) only if v4 fails the count line. Pair tree `pair/brains-v5` = stream +
+  `lab/brains-r30-gate` + native's `f508ce89` (merged clean; `17e7b08c`): C31.1's `make check` running before any series.
+- **B8 `80eea6ec`** (+ `922db8b6` the test restores the switch): `realslow` opt-in, GDScript only. Note for native/the orchestrator: the
+  re-seat clock (`Element._watch_progress`) is GDScript on every path and `real_velocity` is filled by the native tank
+  drive too, so the switch acts on the native path as well; series run NATIVE=off anyway (R31.1 addendum). Pre-series
+  gate (scratch tree flipped ON, `check NATIVE=off`): first launch died in builder0's fresh-folder import (segfault in
+  `--import`, before any test); re-launched.
+
 ### Plan (2026-10-14 22:30 PDT; start = main `cff4307e`, covered by the launch check; R31.1 read at main `4233dc7b`)
 1. **B5c-v5 (1) the A/A first** (C31.6): `make pursuit-aa` = the test's OWN `_pursue` (not a look-alike probe) over seeds
    1–12 × 8/18 m/s, two arms with the rule off: nudge 0 (the test as written) v every start moved 0.25 m. Why a nudge arm:
