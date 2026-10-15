@@ -13,6 +13,9 @@ arm (--traffic-on=turns): two traffic-series JSONL files, the same seeds and sta
 (5) head-on cases: fast, between-squad fast and all-in median within 1.645 se of base (rows 32 / 36 / 50 / 54; a fall passes);
 (6) all-in median per crossing case REPORTED with its se (rows 42 / 48), not judged.
 The arm's own counters are printed (lesson 300). Prints VERDICT PASS / FAIL.
+
+Round 31 (T3b-c, his call): `--allow yard_open/cross=3.0` replaces line (2)'s 10 % allowance for that case with his
+absolute one: mean paired cross_clear_s <= +3.0 s + 1.645 se. The Terminus crossing keeps 0.10 x base median.
 """
 import json
 import math
@@ -53,7 +56,8 @@ def paired(b, a, field):
     return statistics.mean(d), se
 
 
-def main(base_path, arm_path):
+def main(base_path, arm_path, allow=None):
+    allow = allow or {}
     base, arm = load(base_path), load(arm_path)
     ok = True
     cross_b = cross_a = 0
@@ -81,8 +85,11 @@ def main(base_path, arm_path):
                           "%d -> %d (round 29's x1.2+10: %.0f)" % (f_b - x_b, f_a - x_a, 1.2 * (f_b - x_b) + 10)))
             clear_b = statistics.median(clock(r, "cross_clear_s") for r in b)
             diff, se = paired(b, a, "cross_clear_s")
-            limit = 0.10 * clear_b + 1.645 * se
-            lines.append(("crossing clock <= +10 %% + 1.645 se", diff <= limit,
+            if case in allow:
+                limit, name = allow[case] + 1.645 * se, "crossing clock <= +%.1f s + 1.645 se (his)" % allow[case]
+            else:
+                limit, name = 0.10 * clear_b + 1.645 * se, "crossing clock <= +10 % + 1.645 se"
+            lines.append((name, diff <= limit,
                           "median %.1f -> %.1f; mean paired %+.2f s (se %.2f, limit %+.2f)" % (
                               clear_b, statistics.median(clock(r, "cross_clear_s") for r in a), diff, se, limit)))
             for squad in ("a", "b"):
@@ -112,4 +119,13 @@ def main(base_path, arm_path):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    args = [a for a in sys.argv[1:] if not a.startswith("--allow")]
+    allows = {}
+    for i, a in enumerate(sys.argv[1:]):
+        if a.startswith("--allow"):
+            spec = a.split("=", 1)[1] if a.startswith("--allow=") else sys.argv[i + 2]
+            case, _, sec = spec.partition("=")
+            allows[case] = float(sec)
+            if not a.startswith("--allow="):
+                args.remove(spec)
+    main(args[0], args[1], allows)
