@@ -3612,7 +3612,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 				_kturn_rolling = true
 			_kturn_from = tank.global_position
 			_kturn_arc_m = 0.0
-		elif kturn_arc_on():
+		elif _arc_here():
 			# Round 31 (manoeuvre H2, `kturnarc`): the ARC driven IN THE LEG'S GEAR — the last tick's real motion along
 			# the nose in the gear, and nothing for motion against it. A short hull still rolling the other way when its
 			# leg starts (a scout at 10 m/s under reverse throttle: `_kturn_rolling` is true from the start for hulls
@@ -3625,7 +3625,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_arc_m += maxf(0.0, tank.real_velocity.dot(nose_now) * float(_kturn_gear)) * delta
 		# Round 30 (the planner's P4 finding): with `kturnarc` a leg is measured by the arc the hull drove, not the
 		# chord from its start (3 % short on a 10 m full-lock leg of a War Rig: the leg over-ran its plan by that).
-		var backed := _kturn_arc_m if kturn_arc_on() else _flat_distance(tank.global_position, _kturn_from)
+		var backed := _kturn_arc_m if _arc_here() else _flat_distance(tank.global_position, _kturn_from)
 		# Round 14 (N3): the leg is done when what is left is within the stopping distance in its gear, so the next
 		# leg's opposite throttle brakes the hull to rest AT the planned end rather than ~2 m past it (N1/N3: a rig's
 		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
@@ -4383,7 +4383,7 @@ func _kturn_end(reason: String) -> void:
 	var tank := ctl.tank
 	var here := tank.global_position
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
-	var driven := _kturn_arc_m if kturn_arc_on() else _flat_distance(here, _kturn_from)
+	var driven := _kturn_arc_m if _arc_here() else _flat_distance(here, _kturn_from)
 	_kturn_rec["end"] = reason
 	_kturn_rec["driven_m"] = snappedf(driven, 0.01)
 	_kturn_rec["ticks"] = Engine.get_physics_frames() - int(_kturn_rec["frame"])
@@ -4568,7 +4568,7 @@ func _kturn_stopping() -> float:
 	var speed := ctl.tank.speed() * float(_kturn_gear)
 	if speed <= 0.0:
 		return 0.0
-	if kturn_arc_on():
+	if _arc_here():
 		# Round 30 (the planner's P4 finding, with `kturnarc`): the plant brakes in discrete ticks (speed stepped by b·dt,
 		# then the tick's travel at the new speed), so the distance it covers is v²/2b − v·dt/2, not the continuous v²/2b.
 		return maxf(speed * speed / (2.0 * _braking()) - speed * 0.5 / float(SimClock.TICK_RATE), 0.0)
@@ -4585,6 +4585,17 @@ const KTURN_ARC_DEFAULT := false  # OPT-IN until CP-H (see UNSTICK_BACK_DEFAULT)
 
 static func kturn_arc_on() -> bool:
 	return KTURN_ARC_DEFAULT != switched_off("kturnarc")
+
+
+## Round 31 (H2, scoped by the C31.1 gate's trace): the arc rule is for the hulls whose legs are planned from where
+## they will come to REST (`kturn_brake_on()`: `_look_stop` looks a stopping distance ahead, `_kturn_rolling` holds the
+## leg's start until the hull moves in its gear) — the War Rig the planner's P4 measured. A shorter hull's leg is
+## planned from its pose while it may still be rolling the other way; its chord ends that stale leg during the
+## roll-out and the next look RE-PLANS from where it really is, which is what keeps `scenario_cp2`'s scout orbit (58 of
+## 83 deck hits). Every arc rule tried on it (round 30's unsigned, the signed, the in-gear) drove the stale leg out
+## from the wrong pose instead (3 of 27, 7 of 8). Short hulls keep round 14's chord, bit for bit.
+func _arc_here() -> bool:
+	return kturn_arc_on() and kturn_brake_on()
 
 
 ## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
