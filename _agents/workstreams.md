@@ -377,6 +377,20 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
   **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
   flipped; native's statement covers the pair).
+  **JUDGED run 1 (~07:30 PDT): NOT MET (line (a)); the SECOND and LAST attempt approved.** builder0, `6efd1ed9`, hull-rest
+  76–81, 144/144 runs an arm, GDScript path; the clicked arms and fights were not taken (stopped to free builder0). (a)
+  Point tasks, wheeled turret at rest: attack-move 4.6° / 78 % PASS; move 4.3° / 68 % and right 6.9° / 55 % MISS the 70 %
+  share (base 32 %, 31 %). (b) Line tasks better: ambush 27.6 v 66.3°, screen 27.4 v 37.0, SBF 28.6 v 73.6 (p < 0.01).
+  (d) Moving at 75 s PASS on every task (ambush margin 0.4). (f) bridge 18/18. (g) Terminus PASS (mixed 292 → 293, rigs
+  175 → 183). (h) SBF gang_ifv drawn 61.0 → 20.9°, ≥ 45° 14 → 0 of 24. **Traced:** artillery 95–99 % within 15°, but
+  gang_ifv 37 % and gang_tank 41 %. A crew in an ELEMENT gets the drawn facing through its element task, and the brain
+  sends it `from: "sector"`, while the lift accepted only `from == "order"`, so the decline still fired (gang_ifv 2195
+  stop rows v 141 face). Facekeep also refuses many gang plans (face_none 105 → 1172, face_keep_refused 9607), which is
+  REPORTED per class beside (a). **Attempt 2 (the last):** the lift accepts `from` ∈ {"order", "sector"} when
+  `drawn_facing(brain)` is true, and nothing else changes. Same bar, every line, gate first (the TURN_HULL_DEFAULT-true
+  plain check). **Fresh seeds:** hull-rest 90–95; **Terminus 146–158** (manoeuvre proposed 123–135, which overlaps
+  CP-P1's 133–145); fights 262–285; bridge's 18; **SBF gang_ifv 25–30** (7–12 were round 30 B6's). A facekeep-caused
+  miss on attempt 2 is a finding with its trace; there is no third attempt.
 - **Manoeuvre CP-H bar (filed 2026-10-15 ~06:00 PDT, before any judged number; DECLARED; CP-H's FIRST run, with the
   alone re-declaration its only second chance; full text in manoeuvre's Status):** tree = R31.4's one tree,
   native-built; arms are flags on that one commit, all on the GDScript path (`make manoeuvre-cph` refuses any arm
