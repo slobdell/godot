@@ -206,6 +206,27 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   1.645 se. (6) bridge-pooled 18/18. (7) the four traffic cases s41–43 equal field for field, or within T3b-c's guards,
   no wedge. Early stop: `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'`. Ships ON (his call:
   "ships if the repack count holds at 0").
+- **Manoeuvre M1b(2) turn-the-hull bar (filed 2026-10-14 ~23:45 PDT, before any number; DECLARED; this is the FIRST run, a
+  second on fresh seeds would be the last):** candidate stream/manoeuvre `44adcbbe` (+ tooling `eea19309`). ONE opt-in
+  switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT` false) = (i) `TankBrain._order_move`'s decline lifted for a
+  wheeled turret hull when the face comes from its order AND the facing was DRAWN (`Manoeuvre.hull_takes_face`; C31.8's
+  grant, the decline line the only tank_brain edit; brains told), and (ii) round 29's facekeep (every pose of a face plan
+  stays inside max(ORDER_ARRIVE, settle radius) − 0.75 m, or no further than it starts). Unit stage (builder0, light):
+  rig 4 m short, 150° face, worst pose 6.76 → 3.93 m (keep 5.25), 19 steps refused over 9 cases. **Gate first (C31.1):**
+  the flipped tree with turnhull ON, `check NATIVE=off`, whole suite green, plus native's "none ported" for the face path
+  (plan_face, the decline) + `native-verify-scenarios`. Arms: both on the GDScript path (`M1_GD=1`), one arm per remote call
+  (lesson 311); new = `M1_NEW_OFF=turnhull`, base = main, drawn AND clicked, same commit. Tuning: hull-rest seeds 40–41.
+  **Judged fresh:** hull-rest seeds 76–81 (4 factions × 6 tasks × 6 = 144 runs an arm), Terminus census 93–105 (13),
+  bridge-pooled's 18 cells. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret at rest:
+  median ≤ 15° AND ≥ 70 % within 15°; (b) drawn line tasks: hull error not worse than base, per-class permutation
+  p ≥ 0.05; (c) clicked arm: median within ±5° of base (the lift is drawn-only); (d) crews still moving at 75 s, per task,
+  wheeled turret AND all classes: ≤ base + **1.645 se** (C31.3's form; manoeuvre proposed 2 se, and the orchestrator
+  tightened it before numbers), se quoted as `M1_CLASS` prints it; (e) settle time censored at 75 s REPORTED; (f)
+  bridge-pooled 18/18; (g) Terminus arrivals, rigs and mixed apart, not down beyond 1.645 se paired
+  (`sequential.py arrived:guard:0.10`, no early stop before 6 seeds); (h) B6's SBF probe for gang_ifv (88.6 / 65.6 /
+  96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
+  **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
+  flipped; native's statement covers the pair).
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
