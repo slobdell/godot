@@ -422,6 +422,21 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 ~07:45 PDT: **the aim goal's result** (`planner-test19/20`, builder0 9d168af8, 30/0, 07:12 PDT): the k-turn
+  plan is 3 legs "R3 F2 R12.5" (2 cusps, 17.5 m, 9 expansions; the first cut f66fddfb still appended a 23.5 m straight
+  because the arrive gear bound the aim too -- 9d168af8 binds it to the position goal only); the twin plans it the
+  same in C++; every named fixture holds (F6a 9, T-junction 2, mouth 1, yard corner 2, slot180 4, wedge 4). But the
+  hull's REAL motion in manoeuvre's scene is still 4 gear segments (R3.0 F1.4 R1.6 F29, 7.1 s, 0 contacts; base R4.5
+  F29.8, 5.6 s): the wiggle sits at the START. The street's geometry under three locks: a 14 m hull in the 22 m street
+  can reverse at full lock ~46 deg before its tail corner meets the back wall's margin, pointing at the waypoint needs
+  ~65-70 deg, and a forward leg at FULL lock from a 26 deg reverse dips the nose under the margin at the block face.
+  The base's own trajectory (`planner-test21`): R4.5 to (40.8, 33.4) at -22 deg, then a forward arc of radius ~13 m
+  swinging 75 deg over 17 m, first within 15 deg of the goal at t138 (25.3, 25.5) -- a GENTLER arc than full lock.
+  **The orchestrator's ruling: half lock** (STEERS -1 -0.5 0 0.5 1 in the search, its heuristic table and the C++
+  twin: 0b5a6d3d; the plant's yaw is linear in `turn`, so a half-lock leg is a double-radius arc), re-read every named
+  fixture, price the branching on the census; NOT an aim tolerance fitted to this street. Time-box: the k-turn row
+  (<= 3 real gear segments, contacts <= base) met on manoeuvre's scene by 12:00 PDT, else CP-P1 parks with its traces
+  and CP-P0 + the OFF seam stay on main. Running: `native test FILTER=planner` on 0b5a6d3d (`planner-test22`).
 - 2026-10-15 ~07:30 PDT: **the k-turn's lever read off the sweep** (`planner-test18`, builder0 d8c2e742, 06:55 PDT,
   exit 0): every variant of the seam's own request (the clipped v the order's point, arrival 1/2.5 m, heading
   free/30/8 deg, cusp cost x1/x2/x4, any arrive gear, a 12 m goal) begins with the same "R3 F2 R12" wiggle, 4-5 legs,
