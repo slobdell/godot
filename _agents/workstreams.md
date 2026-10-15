@@ -142,7 +142,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   live, the drive calls back `_planned_reverse`. `face_turn` needs nothing, because wheeled face orders already go back to
   GDScript (execute_native.cpp:363). `BrainSwitches.native_planner` (default true) is at stream/native `bf8d4a78`; the
   planner reads `BrainSwitches.native and BrainSwitches.native_planner`. The planner makes the register_types.cpp and
-  CMakeLists.txt lines in its CP-P0 commit, and native reviews them.
+  CMakeLists.txt lines in its CP-P0 commit, and native reviews them. (H) **Stale state on take (manoeuvre's review of the seam
+  at `50d380e1`, ~00:20 PDT; placement of all five lines OK):** a hull taken mid k-turn leg keeps `_kturn_left_m` /
+  `_kturn_legs`, so the half-driven leg resumes on release, and a hull taken mid-escape keeps `_unstick_left`,
+  `_escape_gear` and H1's `_esc_stage`. **Fix:** manoeuvre's `Movement.yield_to_plan()` (stream/manoeuvre `9b257348`)
+  ends the leg as "planner", drops its queued legs, ends both escapes and clears the stall and press clocks.
+  `PlannerSeam.take` calls it ONCE, on the tick it first takes a hull. **Order:** `9b257348` reaches main in manoeuvre's
+  merge-OFF candidate, and the planner then calls it directly, with no `has_method` shim; CP-P1 is not judged before it.
+  Noted, no change: planner-held ticks are invisible to ManoeuvreCensus; the planner column counts them.
 
 - **R31.3 The pursuit test is knife-edge on main; B5c-v5's pursuit line goes to a count (2026-10-14 ~23:15 PDT, brains'
   A/A at `3cb76e17`, row in `judging.md` *Rows filed by hand in round 31*):** a 0.25 m start nudge (a null change) flips
