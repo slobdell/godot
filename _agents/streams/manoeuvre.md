@@ -382,6 +382,21 @@ arrivals not down, with the planner's F2 the long-run answer. The gate `UNSTICK_
 on lock for a long hull", not "no stall clock".
 
 ### Progress log
+- **M1b(1) judged, hull-rest (a)(b)(c) and (h), `55622870` on the reader base, builder0, 19:10 PDT (the four arms
+  complete at 144 runs each after the cap re-run):**
+
+  | line | reading |
+  |---|---|
+  | (a) at-rest medians per task, ALL classes, drawn | ambush 33.8 → 33.3° (p 0.87), attack-move 23.1 → 15.9 (0.38), move 8.3 → 7.0 (0.57), right 8.9 → 7.5 (0.46), screen 30.8 → 30.4 (0.74), SBF 33.2 → 32.9 (0.91): none worse, PASS |
+  | (a) clicked | ambush 36.7 → 37.9 (0.57), attack-move 60.9 → 62.7 (0.75), move 42.2 → 41.3 (0.61), right 41.7 → 42.1 (0.80), screen 41.9 → 42.3 (0.83), SBF 35.7 → 35.3 (0.92): none worse, PASS |
+  | (b) crews still moving at 75 s, new − base, drawn, per task | −1, −10, −10, **+5**, −4, −3 (all classes); 18 class × task lines paired: 16 within 2 se, wheels/fixed faced_right −8 (se 2.8, better), **wheels/turret faced_right +15 (11 → 26, se 6.5: 2.3 se, the ONE miss by the letter)**; those 26 crews: 13 pinned + 13 driving, 0 face legs, 0 face creep — crews that never reached their slot, which the anchor cannot touch (the probe's known class; the table's A/A swing ±12–17 a task) |
+  | (c) clicked SBF's −17.8° (round 29, p 0.02) | NOT reproduced: 35.7 → 35.3°, p 0.92 (as sizing predicted: inside the A/A) |
+  | (c) counters | `face_slot_kept` / `_refused` are NOT exported by the hull-rest probe (a tooling gap, noted); the anchor's action shows in the drawn attack-move median (23.1 → 15.9) and the Terminus face-order misses (mixed 14 → 9) |
+  | (h) rigs seed 21, both arms | byte-identical (4/4 every leg, contact-ticks 775 = 775): the wild case was made by M4b run 1's escape, which is parked; on the reader base the rig never leaves its slot |
+  | (d), (e) | Terminus arrivals PASS both squads (early-stop rows above); bridge 18/18 |
+
+  **Verdict asked of the orchestrator:** every line met except (b)'s one class × task line (+15 at 2.3 se on crews the
+  rule does not reach, 1 of 18 lines); by the filed letter "any judged line missed = not shipped".
 - **M2b judged (`1f1c9835` on the reader base, builder0 GDScript path, 18:45 PDT): NOT MET, nothing ships as filed.**
 
   | line | base | new | reading |
