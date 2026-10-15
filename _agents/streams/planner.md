@@ -422,6 +422,15 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 07:49 PDT: **the price on the final tree** (`planner-census9`, builder0 light lane 0b2cf981 = code
+  05ce260b, unpinned on the busy box, exited 0): the seam's own face-about probe on the Sumps navmesh, native, warm
+  us/expansion early/late medians **222/214 (seed 92721, 119 plans) and 159/183 (seed 31337, 94 plans)**; the short
+  hull's probe 169/114; codes OK 80/33, GOAL_BLOCKED 28/35, START_BLOCKED 9/23, BUDGET 2/2, NO_PATH 0/1 -- the same
+  numbers as the cache commits (170-390), so the aim goal and its estimate changed no price, STEERS is three locks,
+  and SLICE 2 stays inside ~0.45 ms a tick per crew (R31.6's bound). Native's light pre-run on 8bb2ad4e: 11/0, the
+  twin held the rig on 344 of 900 compared drives, 0 mismatches, one 2-leg plan driven to its end. Running: the
+  hull-rest judge's BASE arm on the heavy lane (`planner-judge-hull-base`, tree 0b2cf981; base = planner OFF, so it
+  owes the gate nothing), the gate's plain check third in native's chain.
 - 2026-10-15 07:44 PDT: **the outcome assertions ON are green** (`planner-test26`, builder0 edb773cf, 4 passed 0 failed,
   exited 0): k-turn ON 2 segments / 0 contacts / 7.0 s; wedged ON at nav's 8 s window yaw 9.0 deg, 0.67 m over (bar
   1.8), give-up reached. **Native re-cut CP-P1's gate as 8bb2ad4e** (pair/cpp1-on = main 83341378 + edb773cf merged
