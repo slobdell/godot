@@ -673,6 +673,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   267 v 244; arrivals 16/16 v 15/16 (Green_S0_3 completed 9.6 m from its slot with no seam event in that leg). The seed-9
   pin: pinned unit-ticks 491 (16.4 s) v 30 (1.0 s), freed with no re-pin loop. The rig 180°: `test_wheeled_arrival`'s rig
   case is green on the gate. The car's leak check: the mixed line identical both arms.
+  **Line (f) as filed (~15:45 PDT, a1d9e1fc = code f9d2c639, builder0 pinned 0–3):** the warm (late-quarter) per-expansion
+  median for the longest live hull is 263 µs on seed 92721 (load 16.7), so SLICE 2 × 263 = **0.526 ms, a MISS by 0.026
+  ms**; seed 31337 reads 186 µs, 0.372 ms, PASS. Unpinned this morning the same probe read 214 µs (0.43 ms). **Ruling:**
+  (f) is NOT in the filed ship clause ((a), (c), (d), (e) and (b)'s rig lines), so a miss on (f) does not block a ship,
+  and SLICE is NOT changed after the numbers. The record says "(f) MISS on 92721 at load 16.7, an upper bound
+  (R31.6)". **Round 32: SLICE becomes a hardware-preset knob** (his rule: perf cuts ship as presets), e.g. SLICE 1 on the
+  laptop preset. On the laptop (~2.75×) the bound is ~1.45 ms in a tick a rig is planning (rigs plan ~0.06 times a
+  second), and SLICE 1 halves that at the price of twice the hold.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
