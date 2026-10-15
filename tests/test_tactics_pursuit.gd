@@ -36,7 +36,10 @@ const ARENA := "yard_open"
 
 ## {"closing_worst_m", "closing_at", "reversal_worst_deg", "reversal_at", "lived_s", "start_m", "end_m": {crew: m},
 ##  "drills", "why"}
-func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0, pursuer := "gang_scout") -> Dictionary:
+## Round 31 (brains B5c-v5, C31.6): `nudge_m` moves each crew's start by that much in a direction drawn from the seed (0 =
+## the stage as written): the A/A (`make pursuit-aa`) asks how far an inconsequential change to the opening carries.
+func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0, pursuer := "gang_scout",
+		nudge_m := 0.0) -> Dictionary:
 	var lab := TacticsLab.create(self, seed_value, ARENA)
 	var game_match := lab.game_match
 	game_match.set_meta("player_team", Match.Team.GREEN)
@@ -46,8 +49,12 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 	var right := Vector3(-toward.z, 0.0, toward.x)
 	var yaw := atan2(-toward.x, -toward.z)
 	var names: Array = []
+	var nudge := RandomNumberGenerator.new()
+	nudge.seed = seed_value
 	for i in 5:
 		var at := home + right * ((i - 2) * 6.0) - toward * (i % 2) * 4.0
+		if nudge_m > 0.0:
+			at += Vector3.FORWARD.rotated(Vector3.UP, nudge.randf_range(-PI, PI)) * nudge_m
 		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, yaw, pursuer).name))
 	var start := home + toward * start_m
 	var target := lab.gun(Match.Team.RUST, "Rust_Eyes_1", start, yaw, "syn_lancer")
