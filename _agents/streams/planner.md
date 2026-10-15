@@ -161,6 +161,20 @@ drive, C++ planner), 120 s, seeds 92721 / 31337, `build/light/build/planner/cens
 | a refused plan (world build + refusal) | ~118 us | ~93 us |
 | cache at the end: chunks / hits / misses | 21 / 601.8 M / 47 125 | 21 / 193.0 M / 33 726 |
 
+**The second census (fd36ecd5's C++, the tree at 98d3a9c9, same seeds, load ~12):** the same events (the fights are
+deterministic); cache hits 601.8 M -> 0.88 M (the window fill works: one lookup a cell a search); the per-expansion
+price UNMOVED once scaled for load (cold quarter 257 / 292 us, warm 392 / 205 us; the unchanged offline T-junction
+probe ran 45 % slower, 2.74 / 2.37 ms, on the busier box). **So the warm price is compute, not lookups:** the sphere
+walks of a long hull's four sides (the hull tests are distance-culled and cheap; the per-plan fixed cost ~100-200 us).
+**SLICE = 2** (005a3837): 0.4-0.8 ms a tick at that price unpinned, ~0.3 ms pinned; counted, never timed (the tick a
+plan lands must not depend on the machine: the lockstep relay). **The demand arithmetic, stated plainly:** ~3 plan
+events a second x ~130 expansions x ~200 us = ~3 ms a tick if the seam served EVERY event the GDScript drive makes
+today, six times the cost line; at SLICE 2 the seam serves 2 expansions a tick, so in a 25-a-side press most takes
+would run out the 3 s hold (`abandoned`) and fall back to today's code. The Terminus fixtures the brief names (7-94
+expansions) land in 4-47 ticks. The CP-P1 bar therefore judges the seam on the brief's hulls and streets; the SCOPE
+of the seam (which kinds / hulls it takes) is the lever if the judged `abandoned` count says so, and a profile of the
+expansion (where the ~200 us goes) is the stretch.
+
 Read: (1) **one plan event a tick is the normal case** (272 + 249 of 3000 ticks), two in 1 %, a burst of 3-7 in
 0.3 %: the one-deep queue serves it, a burst of 7 queues ~6 plans deep (the seam's `queue_waits` counter shows the
 cost in the judged run). (2) The in-fight price of the seam's own navmesh request was **~170 us an expansion WARM**
@@ -361,6 +375,12 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:40 PDT: **twin GREEN on fd36ecd5** (4/0, exit 0, light lane, load 12); **census-2** (same events; hits
+  601.8 M -> 0.88 M; the per-expansion price unmoved for load: the walks, not lookups). **SLICE = 2** at 005a3837 with
+  the derivation and the demand arithmetic in the report. 98d3a9c9: `PlannerSeam.last_refusal(name)` for manoeuvre's
+  CP-P1 handover counters (`esc_after_refusal`, `refusal_then_free`; they write it once the seam is on main). Light
+  lane: `make remote LIGHT=1 T="test FILTER=planner"` on 005a3837 (`planner-test10`): the seam tests incl. the
+  rolling face and last_refusal, before the full check (the heavy slot is still CP-P0's check).
 - 2026-10-15 ~03:10 PDT: **the census landed** (c158aecf; the table in the report): ~0.1 plan events a tick at Sumps 25 a
   side, bursts to 7; the seam's own navmesh request ~170 us an expansion WARM (hash lookup a cell read, 99.99 % hits).
   fd36ecd5: the window fills from the cache on first read (flat reads inside the search); twin + census-2 running.
