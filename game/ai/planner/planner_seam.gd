@@ -51,7 +51,7 @@ const SCOPE_MIN_HULL_M := 10.0
 const SLICE := 2
 const BUDGET := 1500
 const HORIZON_M := 30.0
-const PENDING_TICKS := 90          # 3 s, the agreed hold
+const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
@@ -310,6 +310,10 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		crew.at = here
 		crew.heading = forward
 		crew.stepped = 0
+		# The 3 s cap (PENDING_TICKS) counts THE SEARCH, from here: a rig braking from 8 m/s spent ~45 of the 90 ticks
+		# stopping and its search got 92 expansions (builder0 77db86eb, the rolling-face trace: start 8.8 m past the
+		# face's home, stay 5 m, abandoned at 92). The hull's whole hold is pending_ticks; the cap bounds the search.
+		crew.asked_tick = tick
 		Planner.begin_session(crew.req)
 		crew.begun = true
 	crew.stepped += SLICE
