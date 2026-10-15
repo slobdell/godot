@@ -61,7 +61,7 @@ manoeuvre-parse: import ## manoeuvre: --check-only on the stream's scripts (MANO
 M1_ARMS ?= new_drawn base_drawn new_clicked base_clicked
 M1_DIR ?= $(BUILD_DIR)/manoeuvre/hull-rest
 # Extra flags for every arm (e.g. --turn-states: each crew's state once a second, read by hull_rest_moving.py).
-M1_FLAGS ?=
+M1_FLAGS ?= --turn-states
 # Round 30 (M4b/M1b): the base arms' --nav-off list (the parser honours only the FIRST --nav-off= on the line, and the
 # arm's comes first, so a base switch must be named HERE, not in M1_FLAGS). Round 29's "turnhull,faceslot" named
 # mechanisms main does not have (push_error on every base run).
@@ -80,6 +80,7 @@ manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class,
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
 	$(PYTHON) tests/manoeuvre/hull_rest_ab.py $(M1_DIR)
 	$(PYTHON) tests/manoeuvre/hull_rest_moving.py $(M1_DIR)
+	$(PYTHON) tests/manoeuvre/hull_rest_counters.py $(M1_DIR)
 
 # One run of manoeuvre-hull-rest's workload, for a trace: ONE_FACTION, ONE_SEED, ONE_TASK, ONE_CLICK=1 for the clicked
 # arm, NAV_FLAGS (e.g. --turn-trace=<unit> --nav-off=turnhull) -> build/manoeuvre/hull-one/run.log + screen.json.
