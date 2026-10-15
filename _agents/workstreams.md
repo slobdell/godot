@@ -462,6 +462,15 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   branch, so a leg that starts rolling (every leg of a hull under 10 m, whose brake rule is off) inherited the previous
   leg's arc and ended early; fixed in `_kturn_start_leg` (one line) + a test (an IFV's second leg started rolling drives
   its own 8 m). **Candidate = `lab/manoeuvre-kturnarc` `e7a58262`** (807e8b8f is not a merge candidate).
+  **kturnarc JUDGED — PASSES every filed line (2026-10-14 ~19:40 PDT; `e7a58262` on the reader, builder0, GDScript,
+  Terminus 13 fresh seeds 75–87, base `--nav-off=kturnarc`):** (c) rigs arrivals 178 → 181 of 208 (+3, se 7.38; SERIES
+  PASS at run 6), mixed 291 → 288 of 312 (−3, se 3.34, 1.645 se = 5.5; SERIES PASS at run 6); contact-ticks rigs 12184 →
+  11755 (−4 %, se 3836), mixed 1861 → 1991 (+7 %, se 437), reported; leg seconds rigs 2120 → 1730 (−18 %), mixed 1839 →
+  1782. (d) kturn_aborted 22 → 21; k-turns 398 → 396; kturn_ticks 42443 → 40311 (−5 %: legs end where the plan said; the
+  driven/planned ratio needs `--reverse-log` records, the tick count stands in, stated). (e) bridge-pooled 18/18. The arc
+  rule reached on every k-turn leg (398 plans an arm). **Ruling: SHIPS as a C30.2 pair** (merge tip e7a58262 exactly;
+  native's mirror on `pair/kturnarc`, its builder0 pair check is the gate); merges in the final batch with M1b, ONE main
+  check. Table `references/round30/manoeuvre/kturnarc_judged.txt`.
 - **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
