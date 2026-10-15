@@ -12,7 +12,7 @@ func _rows(rows: Array) -> void:
 
 
 func teardown() -> void:
-	Traffic.set_off("turns", true)  # round 30: the crossing is OFF by default until native's port (Traffic.DEFAULT_OFF)
+	Traffic.set_off("turns", Traffic.DEFAULT_OFF.has("turns"))  # back to the default, whichever it is (native, round 31)
 	Traffic.set_off("reach", false)
 	super.teardown()
 
