@@ -79,6 +79,7 @@ static var _crews := {}           # name -> Crew
 static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
+static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
 
 
 class Crew:
@@ -275,6 +276,10 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	pending_ticks += 1
 	if tick - crew.asked_tick >= PENDING_TICKS:
 		abandoned += 1
+		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
+				"start": [snappedf(crew.req.start_x, 0.01), snappedf(crew.req.start_z, 0.01), snappedf(crew.req.start_fx, 0.01), snappedf(crew.req.start_fz, 0.01)],
+				"goal": [snappedf(crew.req.goal_x, 0.01), snappedf(crew.req.goal_z, 0.01), snappedf(crew.req.goal_fx, 0.01), snappedf(crew.req.goal_fz, 0.01)],
+				"stay_m": crew.req.tol_m, "speed": snappedf(tank.speed(), 0.01), "here": [snappedf(tank.global_position.x, 0.01), snappedf(tank.global_position.z, 0.01)]}
 		_release(name)
 		_retry_until[name] = tick + RETRY_TICKS
 		return false

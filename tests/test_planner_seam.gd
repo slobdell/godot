@@ -115,8 +115,8 @@ func test_a_face_ordered_while_rolling_is_held_to_rest_then_planned() -> void:
 			if speed_at_plan < 0.0 and PlannerSeam.plans >= 1:
 				speed_at_plan = absf(tank.speed())
 		var err := _heading_error_deg(tank, Vector3(0, 0, 1))
-		print("MEASURE planner_seam rolling face: %s | speed at the first plan %.2f m/s | heading error %.1f deg at %.0f s" % [
-				JSON.stringify(PlannerSeam.report()), speed_at_plan, err, SECONDS])
+		print("MEASURE planner_seam rolling face: %s | speed at the first plan %.2f m/s | heading error %.1f deg at %.0f s | last abandoned %s" % [
+				JSON.stringify(PlannerSeam.report()), speed_at_plan, err, SECONDS, JSON.stringify(PlannerSeam.last_abandoned)])
 		assert_true(PlannerSeam.plans >= 1, "a plan was made (%d; refused %s, abandoned %d)" % [PlannerSeam.plans, str(PlannerSeam.refused), PlannerSeam.abandoned])
 		assert_true(PlannerSeam.rerequested <= 1, "at most one re-request from rest (%d)" % PlannerSeam.rerequested)
 		assert_true(speed_at_plan <= 1.0, "the plan starts from (near) rest: %.2f m/s" % speed_at_plan)
