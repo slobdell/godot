@@ -3935,3 +3935,17 @@ fixes: M4b, M1b, M2b, M5 — three rounds of failed bars is the definition of li
 on the usual model. Nothing new in play comes from sizing or planner this round; everything else that ships is from
 round 29's record and his earlier calls (take turns; turn the whole hull; the bridge 108/108).
 
+## Round 31: his two traffic calls (2026-10-14 ~21:40 PDT, in chat; "let's go with your recommendations for both")
+
+Asked in player terms at round 30's close, one recommendation each; he took both:
+1. **Crossing squads (T3b):** the yielding squad gets through a yard crossing **~3 s later** (+2.80 s, se 0.22) and the two
+   squads bump into each other **about half as often** (between-squad hard contacts 176 → 96, nobody fails to arrive).
+   **ACCEPTED:** ~3 s is the price he pays for half the bumps. Round 30's +10 % line was the orchestrator's number, not
+   his; his round-28 words stand: "fewer bumps; both squads arrive a little later." → T3b re-judges ONCE on fresh seeds
+   with the yard crossing clock line at **base + 3 s** (and the Terminus clock within its se), ships if it holds.
+2. **A set-up mortar truck (T1c-b):** it no longer packs up to let a passing squadmate by (pointless repacks 11 → 0,
+   every run). The artillery-rounds line failed on ONE diverged run (Parade s9, both sides' artillery fell, the enemy's
+   trucks refused nothing) and its row was under-sized ~7×. **ACCEPTED:** he wants the behaviour → T1c-b re-judges with
+   the artillery line sized from its measured noise (about 3× the census runs, or the line REPORTED), ships if the
+   repack count holds at 0.
+

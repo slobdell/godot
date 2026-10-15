@@ -243,16 +243,17 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
-## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — NOT YET SPLIT; his two calls first
+## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — NOT YET SPLIT; his two calls MADE 2026-10-14 ~21:40 (both recommendations accepted: `game_design.md` *Round 31: his two traffic calls*)
 
-**His calls (player terms; ask once, one recommendation each):**
+**His calls — MADE (both recommendations accepted, 2026-10-14 ~21:40; the words in `game_design.md`):**
 - **Crossing squads (traffic T3b, parked `traffic-t3b`):** at a yard crossing the yielding squad gets through ~3 s later
   (+2.80 s, se 0.22) and the two squads bump into each other half as often (−45 %). The bar's +10 % line was the
-  orchestrator's, not his words ("both squads arrive a little later"). Recommend: accept ~3 s → one re-judge on fresh seeds
-  with the line he sets.
+  orchestrator's, not his words ("both squads arrive a little later"). **ACCEPTED → one re-judge on fresh seeds with the yard
+  clock line at base + 3 s.**
 - **A set-up mortar truck (traffic T1c-b, parked `traffic-t1cb-judged`):** it no longer packs up for a squadmate passing
   (11 → 0 repacks, p 0.041), but whether it then fires less is not decided (one diverged run carried the artillery line;
-  that line's row was under-sized ×10). Recommend: re-judge with the artillery line sized from this run's sd.
+  that line's row was under-sized ~7×). **ACCEPTED → re-judge with the artillery line sized from its measured noise
+  (~3× the census runs, or REPORTED); ships if repacks hold at 0.**
 
 **Model classification (his ask, 2026-10-14 evening: round 30's four Fable sessions — three streams + the orchestrator —
 spent 30 % of the week's quota in a day; Fable only for the most challenging problem):** **Fable = item 2, the planner into

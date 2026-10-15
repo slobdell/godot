@@ -4,7 +4,8 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-14 ~21:25 PDT — **ROUND 30 IS CLOSED (below); round 31 launches FRESH (no worktree kept).** Main `9ea4523c`. **Main GREEN at `48d5aa0d`** (builder0, `make check
+_Last updated: 2026-10-14 ~21:40 PDT — **ROUND 30 IS CLOSED (below); round 31 launches FRESH (no worktree kept); his two
+traffic calls are MADE (`game_design.md` *Round 31: his two traffic calls*) — the round-31 split can start.** Main `9ea4523c`. **Main GREEN at `48d5aa0d`** (builder0, `make check
 exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7): sizing + planner +
 B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes `main`._
 
