@@ -53,7 +53,7 @@ traffic-series: import ## Round 26 (traffic T0): his two crossing cases (TRAFFIC
 	@echo ">> traffic-series rows: $$(ls $(BUILD_DIR)/traffic-runs/*.json | wc -l)"
 	@cat $(BUILD_DIR)/traffic-runs/*.json > $(TRAFFIC_OUT)
 	@$(PYTHON) tests/traffic/traffic_table.py $(TRAFFIC_OUT)
-	@$(if $(SEQ_BASE),echo ">> traffic-series early-stop reading, the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py series --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-runs --lines "$(SEQ_LINES)" $(if $(SEQ_COUNTER),--counter $(SEQ_COUNTER)),true)
+	@$(if $(SEQ_BASE),echo ">> traffic-series early-stop reading over the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py series --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-runs --lines "$(SEQ_LINES)" $(if $(SEQ_COUNTER),--counter $(SEQ_COUNTER)),true)
 
 .PHONY: traffic-trace
 traffic-trace: import ## Round 26 (traffic): one traced run of his case (TRAFFIC_ARENA=yard_open TRAFFIC_KIND=head TRAFFIC_SEED=1) -> build/traffic-trace.log (TRAFFIC_TRACK lines every 0.5 s)
@@ -85,7 +85,7 @@ traffic-census: import ## Round 26 (traffic T1): stuck crew-seconds by what is i
 		$(if $(SEQ_BASE),$(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)" | sed "s/^/  /";) true'
 	@cat $(BUILD_DIR)/traffic-census-runs/*.json > $(BUILD_DIR)/traffic-census.jsonl
 	@$(PYTHON) tests/traffic/census_table.py $(BUILD_DIR)/traffic-census.jsonl
-	@$(if $(SEQ_BASE),echo ">> traffic-census early-stop reading, the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)",true)
+	@$(if $(SEQ_BASE),echo ">> traffic-census early-stop reading over the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)",true)
 
 # Round 26 (traffic T0/T2): his case at his pose, before and after (needs a display: make remote T=traffic-clip).
 # TRAFFIC_CLIP_CASES (arena,kind) x TRAFFIC_CLIP_ARMS (tag:--traffic-off list, "-" = none) -> build/traffic-clip/<arena>-<kind>/
