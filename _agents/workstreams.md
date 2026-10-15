@@ -240,6 +240,20 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   candidate stays `a3755e37` (check `planner-check6` pending). The cell cache (`d373af4e`/`17bd1ec8`, C++ changed after
   equality) merges only with its own planner-twin (ALL) green.
 
+- **R31.7 The planner's slice and SCOPE are chosen BEFORE CP-P1's judged run (2026-10-15 ~03:30 PDT; planner `005a3837`,
+  census-2 on `fd36ecd5`, builder0 light, Sumps 25 a side, seeds 92721 / 31337):** SLICE = 2 expansions a tick, COUNTED
+  and never timed (lockstep), ~0.3 ms pinned and 0.4–0.8 ms unpinned. The brief's Terminus fixtures land in 4 / 19 / 47
+  ticks, and PENDING_TICKS 90 caps a search at 180 expansions. The warm price, ~200 µs an expansion among 49 hulls, is
+  compute (a long hull's sphere walks), not lookups. **The arithmetic:** ~3 plan events a second × ~130 expansions (the
+  census's median in-press face-about) × ~200 µs = ~3 ms a tick if every event were served, six times the cost line. At
+  SLICE 2, most in-press takes beyond ~180 expansions run out the hold (`abandoned`) and fall back to today's code.
+  **Ruling:** the planner proposed choosing SCOPE (which kinds and hulls the seam takes) AFTER the judged `abandoned`
+  number. That would fit the candidate to the judged run. **The scope is chosen on the census and tuning seeds (92721,
+  31337 and the brief's named cases) and FILED in CP-P1's bar before any judged number.** The brief's target is the long
+  hull (a War Rig, a long truck in a Terminus street), so a ≥ 10 m-hull scope is the natural first candidate; the
+  planner decides it from the census. `abandoned` / `queue_waits` / `refused` are REPORTED lines. If the judged run then
+  shows the scoped seam starved, that is a finding with its traces, and CP-P1 parks; there is no second scope.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
