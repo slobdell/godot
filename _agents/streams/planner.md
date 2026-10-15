@@ -103,7 +103,7 @@ Nothing (his calls: a planned turn, not a shuffle; the whole hull turns to his f
 
 ## Status
 
-_Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
+_Updated 2026-10-15 ~12:20 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
 5.1). The report first (empty until CP-P0 lands), then the DRAFT SEAM (the orchestrator's early ask), the plan, the log._
 
 ### The report (read this first)
@@ -422,6 +422,23 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 12:20 PDT: **the 3a66f546 gate was RED on a real seam bug of mine; fixed at 216c7c43, tests running.**
+  Native's line (builder0, 12:05 PDT): `make check exited 2`, 2646 passed / 1 failed; 22 passed, 2 FAILED (test,
+  sim-baseline MOVED on 6 maps = expected ON), 2 NOT JUDGED (perf-judge refused 3x on a busy box; scenario_perf
+  unpinned); every test_native_* green (seam twin 900 drives, 344 held, 0 mismatches). The red:
+  test_tactics_army_layout10 (four arenas built and disposed in ONE test, the same hull names in each) logged 8
+  engine errors, "previously freed" at PlannerExecutor.tick:135 and `throttle` on Nil at planner_seam.gd:411.
+  Cause: `PlannerSeam._crews` is keyed by hull NAME; a crew held at `lab.dispose()` outlived its freed hull and the
+  next arena's hull under that name (same kind, fresh tick, goal within NEW_GOAL_JUMP) drove the dead executor.
+  Fix (216c7c43, the seam only): `Crew.tank` names the hull instance at the request; `_serve` releases a crew whose
+  `tank` is not the asking hull; `_sweep(tick)` (once per physics tick from `_serve` and `live()`) releases every
+  crew whose hull is freed or queued for deletion, so a dead head never holds the queue and `live` counts hulls
+  that exist. Test `test_a_crew_never_outlives_its_hull` (tests/test_planner_seam.gd): a rig held, its match
+  disposed, a second match's rig under the same name held in its turn, the crew naming the second hull. Running:
+  `$S/planner-test29.sh` (light lane, `native test FILTER=planner`); on green, native re-cuts and re-gates, then
+  the fresh series. The orchestrator: no lane release needed (this stream's own heavy slot; CP-H runs in
+  manoeuvre's); R31.8 early stop OFF on guard lines: the series recipe never had one (every seed to completion,
+  one read on the fixed 1.645 se line).
 - 2026-10-15 10:00 PDT: **native approved the C++ keep branch and RE-CUT the gate: pair/cpp1-on = 3a66f546** (main
   1fc72e66 + 38e9678d + the mirror + PLANNER_DEFAULT true; 8bb2ad4e kept as pair/cpp1-on-8bb2). Their read: the end
   rule before the tol test binds the aim branch too; the sweep's break after the horizon test; all doubles squared
