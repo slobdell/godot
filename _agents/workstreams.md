@@ -339,6 +339,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   ship on this run** (lesson 300; not re-read after the fact). Orchestrator: the ARM census runs for the record (its
   repack count, artillery and guards REPORTED); the approach, cases and traffic-native-verify are STOPPED to free builder0.
   T1c-b2 parks, and a player-terms question goes to him with the arm's numbers.
+  **Arm REPORTED (~08:00 PDT, n 18 paired, 0 missing):** repacks while firing 6/18 → **0/18** (one-sided Fisher p
+  0.0095), total 10 → 0; artillery 434 → 437 (paired +0.17, se 0.39); friendly-stuck 746 → 787 (inside +225); fast
+  1021 → 997 (inside +47.7); give-way repacks 31 → 26; refusals on post 0 → 45. **PARKED as filed**; the question is in
+  HANDOFF *Owed to him* (2). Sizing note for any re-bar: the pooled base rate is 10/27 ≈ 0.37, so a precondition of
+  base ≥ 5/18 suffices at arm 0/18.
 - **Manoeuvre M1b(2) turn-the-hull bar (filed 2026-10-14 ~23:45 PDT, before any number; DECLARED; this is the FIRST run, a
   second on fresh seeds would be the last):** candidate stream/manoeuvre `44adcbbe` (+ tooling `eea19309`). ONE opt-in
   switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT` false) = (i) `TankBrain._order_move`'s decline lifted for a

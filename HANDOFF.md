@@ -35,7 +35,15 @@ orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 conta
 mid-street. The side-by-side clip is `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (32 s, today left, planner right; at 16 s today's rig is jackknifed on the left wall while the planner's is straight). NOT in
 play until CP-P1 passes.
 
-**Round 31 log (orchestrator):** rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
+2. **The set-up mortar truck (T1c-b2).** "A set-up mortar truck no longer packs up to let a passing squadmate by. On
+   fresh seeds that happened in 6 of 18 fights before and 0 of 18 after, and the trucks fired just as much (434 v 437
+   rounds). It missed only because the bar, written before the run, needed the problem in at least 8 of 18 fights first."
+   (builder0, `33cb2da5`, seeds 41–46 × 3 maps, n 18 paired, one-sided Fisher p 0.0095; friendly-stuck 746 → 787 crew-s
+   and fast contacts 1021 → 997, both inside their guards; squadmates asking past a firing truck are refused 45 times and
+   go round.) **Recommendation (traffic's, the orchestrator agrees): yes, ship it.** You already asked for this behaviour,
+   and every guard held. With his yes, the orchestrator runs its remaining C31.1 pieces on current main
+   (traffic-native-verify + a check with the rule ON, the pit baseline re-recorded), then merges. With his no, it parks.
+ rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
 arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two call lines, PlannerExecutor drives Vector3 legs,
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
