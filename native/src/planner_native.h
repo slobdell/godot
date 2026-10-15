@@ -81,6 +81,9 @@ public:
 			std::unordered_map<int64_t, std::vector<float>> chunks;
 			uint64_t hits = 0, misses = 0;
 		};
+		// ASSUMPTION (native's review of d373af4e, note 1): the iteration id is checked at a SEARCH'S START (prepare),
+		// not every slice; a sliced session that spans a rebake keeps reading pre-bake cells. No arena rebakes in play
+		// today; the GDScript twin's own window would be as stale within one search.
 		static NavCache nav_cache;
 		float cached_cell(int64_t ix, int64_t iz);
 
@@ -189,6 +192,8 @@ public:
 	int64_t wall_reads() const { return (int64_t)world.wall_reads; }
 	// The shared navmesh cache: cells held, hits and misses since the map's iteration (measurement).
 	Dictionary nav_cache_stats() const;
+	// Drop the shared cache (measurement: a cold-start price in a process that has planned before; note 2).
+	void nav_cache_clear();
 	// The last session's lazy field as the GDScript world holds it after its plan (`_field`, `_field_x0`, `_field_z0`,
 	// `_field_n`, the spill's size): the twin test compares the cells bit for bit.
 	Dictionary debug_field() const;

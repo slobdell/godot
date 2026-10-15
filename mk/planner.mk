@@ -91,7 +91,7 @@ PLANNER_CENSUS_ARENA ?= sumps
 # fight itself stays on --brains-off=native, so the probe says which path it took: with native off it is the GDScript's).
 PLANNER_CENSUS_PROBE ?= 0
 .PHONY: planner-census
-planner-census: import ## planner P6: plan requests a tick in a PLANNER_CENSUS_ARENA fight at PLANNER_CENSUS_N a side, PLANNER_CENSUS_SEEDS, PLANNER_FLAGS=--brains-off=native for the GDScript drive -> build/planner/census-<seed>.log
+planner-census: native import ## planner P6: plan requests a tick in a PLANNER_CENSUS_ARENA fight at PLANNER_CENSUS_N a side, PLANNER_CENSUS_SEEDS, PLANNER_FLAGS=--brains-off=native for the GDScript drive -> build/planner/census-<seed>.log
 	@mkdir -p $(BUILD_DIR)/planner $(BUILD_DIR)/perf-armies
 	@$(PYTHON) tools/perf_armies.py size $(PLANNER_CENSUS_N) $(BUILD_DIR)/perf-armies
 	@for seed in $(PLANNER_CENSUS_SEEDS); do log=$(BUILD_DIR)/planner/census-$$seed.log; \

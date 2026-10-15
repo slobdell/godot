@@ -29,13 +29,19 @@ var _busiest_at := 0
 var _hulls := 0
 var _reported := false
 var _seed := ""
-## `--plan-probe=N`: every N ticks, plan one offline fixture (the T-junction rig, PlannerFixtures) on the native
-## path INSIDE the running fight and keep its microseconds: the price of a plan under a fight's load (C31.5's
-## "foundry 25 a side" number). Measurement only: the plan is thrown away, nothing in the fight reads it.
+## `--plan-probe=N`: every N ticks, plan INSIDE the running fight on the native path and keep the microseconds: the
+## price of a plan under a fight's load (C31.5's "foundry 25 a side" number; SLICE is chosen from it). Two probes a
+## turn: the offline T-junction fixture (rectangles: the search's own price) and THE SEAM'S OWN REQUEST for a live hull
+## (a face-about on the arena's navmesh with the fight's hulls, `PlannerSeam.BUDGET` / `HORIZON_M`, as `_request`
+## builds it): the field's cells through the C++ cache, cold on the first plans and warm later, so the row keeps the
+## first-quarter and last-quarter medians apart. Measurement only: the plans are thrown away, nothing in the fight reads them.
 var _probe_every := 0
 var _probe_usec: PackedInt64Array = []
 var _probe_expansions := 0
 var _probe_path := ""
+var _nav_usec: PackedInt64Array = []
+var _nav_expansions: PackedInt64Array = []
+var _nav_codes := {}
 
 
 func _initialize() -> void:
@@ -114,8 +120,58 @@ func _tick() -> void:
 		_probe_usec.append(Time.get_ticks_usec() - t0)
 		_probe_expansions = plan.expansions
 		_probe_path = "native" if Planner.native_usable() else "gdscript"
+		var hull := _a_live_hull(tanks)
+		if hull != null:
+			var nav_req := _face_about(hull, tanks)
+			var t1 := Time.get_ticks_usec()
+			var nav_plan := Planner.plan(nav_req)
+			_nav_usec.append(Time.get_ticks_usec() - t1)
+			_nav_expansions.append(nav_plan.expansions)
+			_nav_codes[nav_plan.code] = int(_nav_codes.get(nav_plan.code, 0)) + 1
 	if _ticks >= _limit_ticks:
 		_report()
+
+
+## The longest live hull (a War Rig when one lives: the seam's customer), else any live hull.
+func _a_live_hull(tanks: Node) -> Tank:
+	if tanks == null:
+		return null
+	var best: Tank = null
+	var best_len := -1.0
+	for node: Node in tanks.get_children():
+		var tank := node as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var box: Array = Movement.hull_box(tank.unit_id)
+		if float(box[2]) > best_len:
+			best_len = float(box[2])
+			best = tank
+	return best
+
+
+## PlannerSeam._request's "face" request, turned about: the seam's own ask for this hull, here, now.
+func _face_about(tank: Tank, tanks: Node) -> PlanRequest:
+	var req := PlanRequest.for_unit(tank.unit_id)
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	req.at(here.x, here.z, forward.x, forward.z)
+	var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
+	req.to(here.x, here.z, -forward.x, -forward.z, stay, PlannerSeam.FACE_TOL_DEG)
+	req.arrive_gear = 0
+	req.budget = PlannerSeam.BUDGET
+	req.horizon_m = PlannerSeam.HORIZON_M
+	req.in_world(PlannerNavWorld.for_tank(tank, tanks))
+	return req
+
+
+static func _quartiles(values: Array) -> Dictionary:
+	var sorted := values.duplicate()
+	sorted.sort()
+	var n := sorted.size()
+	var first := sorted.slice(0, maxi(n / 4, 1))
+	var last := sorted.slice(n - maxi(n / 4, 1), n)
+	return {"n": n, "min": sorted[0], "median": sorted[n / 2], "max": sorted[-1],
+			"first_quarter_median": first[first.size() / 2], "last_quarter_median": last[last.size() / 2]}
 
 
 func _finalize() -> void:
@@ -135,5 +191,21 @@ func _report() -> void:
 		sorted.sort()
 		row["plan_probe"] = {"path": _probe_path, "fixture": "T-junction rig", "expansions": _probe_expansions,
 				"plans": sorted.size(), "min_us": sorted[0], "median_us": sorted[sorted.size() / 2], "max_us": sorted[-1]}
+	if _nav_usec.size() > 0:
+		# In the order planned (cold first): the first and last quarters' medians are the cold and the warm price.
+		var usec := Array(_nav_usec)
+		var exps := Array(_nav_expansions)
+		var q := _nav_usec.size() / 4
+		var per: Array = []
+		for i in usec.size():
+			per.append(float(usec[i]) / maxf(float(exps[i]), 1.0))
+		var early := per.slice(0, maxi(q, 1))
+		var late := per.slice(per.size() - maxi(q, 1), per.size())
+		early.sort()
+		late.sort()
+		row["nav_probe"] = {"path": _probe_path, "fixture": "a live hull's face-about on the arena navmesh (the seam's request)",
+				"plans": usec.size(), "codes": _nav_codes, "usec": _quartiles(usec), "expansions": _quartiles(exps),
+				"us_per_expansion": {"early_median": snappedf(early[early.size() / 2], 0.1), "late_median": snappedf(late[late.size() / 2], 0.1)},
+				"cache": Planner.native_cache_stats()}
 	print("PLANNER_CENSUS " + JSON.stringify(row))
 	quit(0)

@@ -1063,6 +1063,14 @@ Dictionary PlannerNative::nav_cache_stats() const {
 	return d;
 }
 
+void PlannerNative::nav_cache_clear() {
+	World::nav_cache.chunks.clear();
+	World::nav_cache.map_id = 0;
+	World::nav_cache.iteration = 0;
+	World::nav_cache.bake_radius = -1.0;
+	World::nav_cache.hits = World::nav_cache.misses = 0;
+}
+
 Dictionary PlannerNative::debug_field() const {
 	Dictionary d;
 	PackedFloat32Array cells;
@@ -1114,6 +1122,7 @@ void PlannerNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wall_reads"), &PlannerNative::wall_reads);
 	ClassDB::bind_method(D_METHOD("debug_field"), &PlannerNative::debug_field);
 	ClassDB::bind_method(D_METHOD("nav_cache_stats"), &PlannerNative::nav_cache_stats);
+	ClassDB::bind_method(D_METHOD("nav_cache_clear"), &PlannerNative::nav_cache_clear);
 }
 
 } // namespace godot
