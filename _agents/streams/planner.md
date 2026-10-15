@@ -203,48 +203,63 @@ this). (e) Manoeuvre: YES to both call lines, YES to `PlannerExecutor` driving `
 native_planner` (default true) is at stream/native bf8d4a78, read as `BrainSwitches.native and BrainSwitches.native_planner`;
 no `exec_fields.h` rows; my `register_types.cpp` + `CMakeLists.txt` lines reviewed by hash with the rest.
 
-### CP-P1 BAR (DRAFT, pre-registered here before any number; to the orchestrator for `workstreams.md` *Bars (round 31)* once CP-P0 is green)
+### CP-P1 BAR (DRAFT v2, 2026-10-15 ~04:15 PDT, pre-registered before any judged number; to the orchestrator for `workstreams.md` *Bars (round 31)*; v1 of ~01:00 superseded on R31.7)
 
-**Candidate:** the seam ON (`--nav-off=planner`) at the hash the pair-tree check passes, GDScript drive, the C++ planner
-(`native` + `native_planner` on in BOTH arms). **Base:** the same commit, `--brains-off=native_drive` (the GDScript drive
-with no seam; any `--nav-off` flag already makes `NativeDrive.usable()` false, so this is the one flag that puts both arms
-on the same drive; each arm's run prints its own switch list, lesson 309). **Declared change:** for wheeled hulls, the plan
-source of the k-turn block and of the face at rest (the back-and-fill, the circle plan, `plan_face`) replaced by the lattice
-planner's legs driven by `PlannerExecutor`; nothing else. **First run; a second on fresh seeds would be the last.** Lines,
-each from `judging.md`'s row (the table re-rendered at `3ca70af2`):
+**Candidate:** the seam ON (`--nav-off=planner`) at the hash the pair-tree check passes (a073157e or its successor; the
+check names it), GDScript drive, the C++ planner (`native` + `native_planner` on in BOTH arms). **Base:** the same commit,
+`--brains-off=native_drive` (the GDScript drive with no seam; any `--nav-off` flag already makes `NativeDrive.usable()`
+false, so this is the one flag that puts both arms on the same drive; each arm's run prints its own switch list, lesson
+309). **Declared change (R31.2 + R31.7):** for hulls of length >= 10 m (`PlannerSeam.SCOPE_MIN_HULL_M`: the War Rig,
+14.0 m, the only such hull in the catalog; the next is 9.7 m), the plan source of the k-turn block and of the face at
+rest (the back-and-fill, the circle plan, `plan_face`) replaced by the lattice planner's legs driven by `PlannerExecutor`;
+a short hull is never taken (its own test); nothing else. **SLICE 2 expansions a tick, counted never timed; PENDING 90
+ticks; one crew searched at a time.** **Census numbers the bar is sized from (builder0 light lane, Sumps 25 a side,
+seeds 92721 / 31337, c158aecf / fd36ecd5 / a6a66f31):** ~0.10-0.12 plan events a tick in the whole fight, bursts to 7;
+the War Rig's in-press face-about ~200 us an expansion warm, median 131 expansions when it fits, a quarter to a half
+refused START_BLOCKED / GOAL_BLOCKED in the press; **long-hull share of the events and the long hulls' expansion
+median: census-3's `by_hull` row (filled below when it lands, before the series).** **First run; a second on fresh seeds
+would be the last.** Lines, each from `judging.md`'s row (the table re-rendered at `3ca70af2`):
 
-- (a) **Terminus census, rigs + mixed, 13 FRESH seeds (61–73), `nav-terminus-drive` both squads:** arrivals not down beyond
-  1.645 se EACH squad (rigs row: se 6.07 of 16 × 13 at n 13, the guard base − 9.98; mixed: se 3.75, base − 6.17);
+- (a) **Terminus census, rigs + mixed, 13 FRESH seeds (61-73), `nav-terminus-drive` both squads:** arrivals not down beyond
+  1.645 se EACH squad (rigs row: se 6.07 of 16 x 13 at n 13, the guard base - 9.98; mixed: se 3.75, base - 6.17);
   `sequential.py arrived:guard:0.10` as the early-stop rule, never before 6 seeds; wall contact-ticks REPORTED per run and
-  as the median (the rigs row's MDE is +74 % at n 13: a ±10 % line cannot be carried, lesson 4 of the table), with the
+  as the median (the rigs row's MDE is +74 % at n 13: a +-10 % line cannot be carried, lesson 4 of the table), with the
   worst run's trace before the median; `PlannerSeam.report()` printed per run (requests, plans, driven, aborted,
-  abandoned, refused by code, pending-ticks): a run where the seam never fired is an equality check, not a sample.
-- (b) **Round 30's cases as pass lines, each REPORTED with its trace (the mechanisms that produced two of them were not
-  shipped, so the base may not show them):** rigs seed 31 (Green_S0_2's 77 s grind under M4b's escapes) and seed 51
-  (Green_S0_3's 50 s grind under the lift): contact-ticks of those runs both arms; the six-cusp car (yard s25 B_4: a slot
-  9 m behind with a facing): the car's legs ≤ 3 under the seam (gear changes from the drive trace); the squadmate pin
-  (`planner-repro-wedge`, rigs seed 9: a rig pinned 61.4 s between two squadmates): freed, no backoff-and-re-pin loop
-  (pinned crew-seconds reported; the pinned probe's row, se 441 at n 144, is the sized form if a count line is wanted).
-- (c) **`scenario_cp2` on brains' A/A seeds (C31.6's 12 seeds): a scout's orbit unchanged** — the stage that flipped
-  kturnarc; a cell that moves parks the candidate unless its trace shows the seam never held that scout (then it is the
-  pair tree's equality and reported). `test_wheeled_arrival`, `test_tactics_pursuit`, `test_tactics_mixed_legs`,
-  `test_nav_wall_contact` green on the pair tree with the switch ON (C31.1) BEFORE this series.
-- (d) **Hull-rest (`manoeuvre-hull-rest`, one arm per remote call, lesson 311), 4 factions × 6 tasks, fresh seeds 54–59,
-  drawn AND clicked:** crews still moving at 75 s per task ≤ base + 2 se (wheeled turret row: sd 1.63 a run, se 6.3 at
-  n 15 → quote M1_CLASS's paired se); the at-rest hull-error median per class × task not worse (permutation p ≥ 0.05);
-  settle time paired median ≤ +6 s (the row's form); REPORTED: the face plans the seam made v `plan_face`'s.
+  abandoned, rerequested, refused by code, pending-ticks, queue_waits): a run where the seam never fired is an equality
+  check, not a sample. **REPORTED, never a pass line: `abandoned`, `queue_waits`, `refused`** (R31.7: a starved seam is a
+  finding, and the candidate parks with its traces; there is no second scope).
+- (b) **THE DECIDING LINES, the rig cases (round 30's, each REPORTED with its trace; the mechanisms that produced two of
+  them were not shipped, so the base may not show them):** rigs seed 31 (Green_S0_2's 77 s grind under M4b's escapes)
+  and seed 51 (Green_S0_3's 50 s grind under the lift): contact-ticks of those runs both arms, the rig's grind not
+  longer under the seam; the squadmate pin (`planner-repro-wedge`, rigs seed 9: a rig pinned 61.4 s between two
+  squadmates): freed, no backoff-and-re-pin loop (pinned crew-seconds reported; the pinned probe's row, se 441 at n 144,
+  is the sized form if a count line is wanted); the 180-degree arrival where it involves a rig (`test_wheeled_arrival`'s
+  rig case / `planner-lab`'s `slot180` on a rig): three legs, not a gate, arriving within the row's tolerance. **The
+  six-cusp car (yard s25 B_4: a slot 9 m behind with a facing) is a REPORTED line, not a pass line (R31.7):** a car is a
+  short hull the scope never takes, so its legs per arm are reported with the expectation that they are EQUAL; a
+  difference is a seam leak (the switch reached a short hull) and parks the candidate.
+- (c) **`scenario_cp2` on brains' A/A seeds (C31.6's 12 seeds): a scout's orbit unchanged** (the no-change guard, a pass
+  line: the scout is out of scope, so any moved cell is a leak, not a finding). `test_wheeled_arrival`, `test_tactics_pursuit`,
+  `test_tactics_mixed_legs`, `test_nav_wall_contact` green on the pair tree with the switch ON (C31.1) BEFORE this series.
+- (d) **Hull-rest (`manoeuvre-hull-rest`, one arm per remote call, lesson 311), 4 factions x 6 tasks, fresh seeds 54-59,
+  drawn AND clicked:** crews still moving at 75 s per task <= base + 2 se (wheeled turret row: sd 1.63 a run, se 6.3 at
+  n 15 -> quote M1_CLASS's paired se); the at-rest hull-error median per class x task not worse (permutation p >= 0.05);
+  settle time paired median <= +6 s (the row's form); REPORTED: the face plans the seam made v `plan_face`'s, for the rig
+  class only (the others are equality).
 - (e) **Bridge-pooled 18/18** (deterministic row). **Fights (`manoeuvre-fights`, 24 seeds):** kills, deaths, hit rate within
   2 se (rows: se 28.2 / 28.8 / 0.0153 at n 24); hits reported.
-- (f) **Cost:** at Sumps 25 a side with leaders (`planner-census`'s workload, both arms): the planner's share of the tick ≤
-  0.5 ms on builder0 pinned (`--sim-profile`'s band, the seam's slice at `PlannerSeam.SLICE` expansions a tick; the census
-  line says how many crews asked a tick and the busiest second), or the SLICE stated that achieves it; the thirteen
-  sim-baseline lines unmoved (the seam is OFF by default until the pair ships; when ON by default, the thirteen explained
-  if they move).
-- (g) **The clip for him:** the Terminus west-street rig (a face back) and the yard car, before/after (`planner-lab`'s
-  frames plus the seam under the real drive: `make remote LIGHT=1 T="planner-lab PLANNER_ARMS=today"` with
-  `PLANNER_FLAGS=--nav-off=planner` as the "after"), looked at by me first.
-**Partial rule:** (a) and (c)–(e) met and (b) partly = ships ON as a pair with (b)'s misses recorded; (c) or (d) missed =
-parked with its traces (CP-P0 stays merged OFF). **Last attempt named:** the second judged run.
+- (f) **Cost (C31.5's line, R31.6 / R31.7):** at Sumps 25 a side (`planner-census`'s workload, the candidate's tree, both
+  arms, `PLANNER_CENSUS_PROBE=30`): the seam's slice <= 0.5 ms a tick = SLICE (2) x the probe's warm per-expansion median
+  for the longest live hull, on builder0 pinned to 4 cpus (`PLANNER_CPUS=0-3`) with the box's load quoted (R31.6: no
+  quiet window this round; the pinned figure is the upper bound); the per-plan hold REPORTED (pending ticks per plan,
+  the 90-tick cap's `abandoned`); the thirteen sim-baseline lines unmoved (the seam is OFF by default until the pair
+  ships; when ON by default, the thirteen explained if they move).
+- (g) **The clip for him:** the Terminus west-street rig (a face back), before/after (`planner-lab`'s frames plus the
+  seam under the real drive: `make remote LIGHT=1 T="planner-lab PLANNER_ARMS=today"` with `PLANNER_FLAGS=--nav-off=planner`
+  as the "after"), looked at by me first. The yard car is no longer a clip (out of scope).
+**Partial rule:** (a), (c), (d), (e) met and (b)'s rig lines met = ships ON as a pair; (b)'s car line or (c) moved = a
+leak, parked; (b)'s rig lines missed, or (a)'s `abandoned` says the seam starved = a finding, parked with its traces (CP-P0
+stays merged OFF). **Last attempt named:** the second judged run.
 
 #### The draft as sent (kept as written)
 
