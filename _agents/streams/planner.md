@@ -111,9 +111,11 @@ _Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/p
 **CP-P0 candidate a3755e37** (C++ `PlannerNative`, equal to the GDScript planner on 17 offline + 4 Terminus-navmesh
 fixtures on every observable, the three hull tables bit for bit, the slice = the whole plan): **twin GREEN on builder0
 twice** (41212da0 = a3755e37 + docs: `tools/remote.sh --quiet planner-twin PLANNER_CPUS=0-3` exited 0, 4 passed 0 failed,
-pinned to cpus 0-3, load 0.76; and the unpinned light-lane run before it). **Full `make check` on 41212da0 is running**
-(unit `planner-check6`; the first attempt was REFUSED by the wrapper because the price run's own 15 s cleanup was still
-live in the folder -- nothing ran, nothing was lost). Green `make check` hash: none yet.
+pinned to cpus 0-3, load 0.76; and the unpinned light-lane run before it). **Full `make check` GREEN twice on builder0:**
+41212da0 (CP-P0, merged OFF to main 950c7681: exited 0, 2615 passed 0 failed, 24 passed 2 NOT JUDGED) and the rebased
+tip **86e5c646** (main 84e553cd + the seam's `yield_to_plan` hook: `>> remote: make check exited 0`, 2638 passed 0 failed,
+24 passed 2 NOT JUDGED -- perf-judge refused 3x on the busy box, scenario_perf's cpu budget unpinned -- sim-baseline all
+13 maps unmoved, determinism 2875411ff4ec6be7, 05:54 PDT). Green `make check` hashes: 41212da0, 86e5c646.
 
 **The price (CP-P0's cost line), builder0 41212da0, pinned to cpus 0-3, QUIET WINDOW: NOT USABLE** (7 of 7 samples had
 7-8 foreign runs live; load1 0.46-1.17 in `build/quiet-window.tsv`; the box never went quiet in a 65-minute wait, so these
@@ -420,6 +422,12 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 05:54 PDT (wrapper exit): **the rebased tip's full check GREEN** (`planner-check8`, builder0, commit
+  86e5c646): `>> remote: make check exited 0`, 2638 passed 0 failed, `24 passed, 2 NOT JUDGED` (CP-P0's same two:
+  perf-judge refused 3x at 2.31-2.35x, scenario_perf's cpu budget unpinned), sim-baseline 13/13 unmoved, determinism
+  2875411ff4ec6be7. Sent to the orchestrator and native. The judged chain now waits on ONE line: native's pair/cpp1-on
+  check at the gate hash aa0615e4 (native-chain4); on it, `make remote T=planner-series` (line a), then the (c)-(e)
+  wrappers one heavy job at a time, each row naming aa0615e4 and the series tree hash.
 - 2026-10-14 ~22:30 PDT: oriented (CLAUDE.md, HANDOFF round 31/30, orchestration's worker contract + lessons 306-311,
   orientation, workstreams Round 31, the brief, round 30's planner report / handover / design, native.md's hazards and
   flags, the GDScript planner (six files), the k-turn block and face executor in movement.gd, drive_native's callback
