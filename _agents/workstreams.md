@@ -213,6 +213,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   main. **T4 is not**: it is in tuning, with its merge-OFF pair `pair/t4 80fbdbe9` in native's queue. **Cutoff (C31.4):
   T4 merged OFF with its NATIVE=off gate green by 09:00 PDT 10-15, or CP-H runs WITHOUT T4** (T4 stands down this round,
   parked with its tuning tables).
+  **T4's merge-OFF branch (~06:15 PDT): `traffic-t4` `357ca38b`**, one commit on main `c6ffb37e`: T4 v1 + ghostself
+  (both OPT-IN, default OFF), the test-only teardown, and ALL of I4's tooling (seq_hook, `mk/traffic.mk` with
+  `33cb2da5`'s echo fix, CACHE=auto, `turns_verdict --allow`). It carries NO T1c-b2 rule and NO T3b. Native pairs it
+  (the ghost mirror is already on main at `298e4498`). **ghostself:** OUT of CP-H unless its tuning arm has run by
+  ~07:00 PDT. It stays in the code OPT-IN and UNMIRRORED as tuning only, and a native-path arm naming it would silently
+  run it OFF, so no judged run names it.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
