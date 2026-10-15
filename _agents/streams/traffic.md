@@ -169,4 +169,8 @@ None.
 ### Requests to other streams
 
 - native: `Traffic.shape` mirror (sent; `413252ea` in progress).
+- planner / manoeuvre (via the orchestrator, 2026-10-14): do NOT widen `in_kturn()` for a planner-held hull. Instead add
+  a `Movement.manoeuvring()` (in_kturn() or, with the planner ON, `PlannerSeam.live`), owned by the planner. Traffic
+  reads it in the crossing row (traffic.gd:913) and in ask(): a held hull refuses, and the asker goes round. It is
+  identical to today with the planner OFF. Manoeuvre decides its own two readers.
 
