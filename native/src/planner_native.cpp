@@ -973,6 +973,18 @@ Dictionary PlannerNative::plan(const Dictionary &request) {
 		Dictionary refused;
 		refused["code"] = String("NONE");
 		refused["why"] = String("a sliced session is live on this instance");
+		refused["legs"] = Array();
+		refused["cost_s"] = 0.0;
+		refused["expansions"] = (int64_t)0;
+		refused["last_expansions"] = (int64_t)0;
+		refused["nodes"] = (int64_t)0;
+		refused["first_at"] = (int64_t)0;
+		refused["coarse_expansions"] = (int64_t)-1;
+		refused["cell_m"] = 0.0;
+		refused["bins"] = (int64_t)0;
+		refused["budget"] = (int64_t)0;
+		refused["horizon_m"] = 0.0;
+		refused["wall_reads"] = (int64_t)0;
 		return refused;
 	}
 	begin(request);

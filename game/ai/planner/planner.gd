@@ -137,6 +137,10 @@ static func _from_native(req: PlanRequest, r: Dictionary) -> PackedPlan:
 	out.throttle_fwd = req.throttle_fwd
 	out.throttle_rev = req.throttle_rev
 	out.code = String(r["code"])
+	if out.code == "NONE":
+		out.code = PackedPlan.NO_PATH  # the library refused (a session live on that instance): an honest no-plan, said
+		out.why = "the planner library refused: %s" % String(r.get("why", ""))
+		return out
 	out.expansions = int(r["expansions"])
 	if out.code == PackedPlan.OK or out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET:
 		# As `_search` does: the measurement statics move only when a search ran (a blocked request returns before them).
