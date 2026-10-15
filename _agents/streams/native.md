@@ -206,6 +206,25 @@ E6 (the laptop's ruling) needs a laptop slot; he plays the result. **Asked for 2
 _Started 2026-10-11 18:25 PDT from `c37605f0` (main's green check `090b345d` covers it: no baseline re-run). Heavy runs on
 builder0; the laptop only in a granted slot (C27.6)._
 
+### Round 31 (started 2026-10-14 ~22:30 PDT from main `cff4307e` + docs `75dbbb7c`; covered by the launch check)
+
+**Plan (in order):** (1) the pairs as they arrive, T3b first (the round's cheapest ship): mirror `Traffic.shape` in the
+native `_avoid` as a GDScript callback, as round 29's hold is (traffic's call: the crossing's table and verdicts stay
+GDScript), then twin tests, then a scratch pair tree (`pair/t3b` in `../godot-native-pair`: mine + traffic's `e57f93d2` +
+`DEFAULT_OFF = []`) checked before traffic's series (C31.1); then T1c-b ("none ported" + `native-verify-scenarios`), the
+CP-H consumers, B5c-v5 and the rest as their owners send them; (2) the planner's C++ review and build glue (CP-P0) when
+the planner's commits arrive; (3) the `test_native_traffic_hold` split (C31.9), done in the T3b commit: the harness moved
+to `tests/native/traffic_twin.gd` (`TrafficTwin`), one case per file; (4) N5's held ports wait for CP-P1.
+**Orchestrator's ruling R31.1 (received):** every CP-H consumer is opt-in and default OFF on main; each needs my mirror on
+a pair tree checked with plain `make remote T=check` before it merges ON.
+
+**T3b mirror (`413252ea`, WIP):** `NativeTraffic.avoid_shape(crew, tanks_root, route_preferred)` = `off("turns")` →
+`Traffic.refresh` → `Traffic.shape`. It is called from `drive_native.cpp`'s `avoid` once the route's wish is known (not
+when `held`). The early return compares `chosen` with `route_preferred`. `DriveConfig.traffic_shape` is set from
+`NativeTraffic.drive_config()` only when this tree's Traffic has `shape`, so the mirror is inert on main. Tests:
+`test_native_traffic_turns` / `_owned` (his Terminus crossing, every drive twinned, the rule must fire on ≥ 30 compared
+drives).
+
 ### Round 30 (started 2026-10-14 ~10:40 PDT from `bd05077d` = main, covered by the launch check `0d35f215`)
 
 **Plan (in order):** (1) the pairs the moment a settled diff arrives (M4b, B5c-v4, T3b/T1c-b if in ported code), each
