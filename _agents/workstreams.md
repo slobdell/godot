@@ -440,6 +440,9 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   `--nav-off=creeplift`, Terminus 13 fresh seeds 75–87: (c) arrivals not down beyond 1.645 se both squads, contact-ticks
   reported; (d) driven/planned leg metres reported, kturn_aborted not up; (e) bridge 18/18, counters. Runs after M1b's
   last arm. Native pairs it (`_kturn_arc_m` in exec_fields; `_planned_reverse` a GDScript callback on both paths).
+  **Amended before it runs (accepted):** the judged commit is `lab/manoeuvre-kturnarc` = the reader 8cbdcfad + the arc
+  commit only (no lift code: 1f1c9835 carries the lift ON by default and must not merge); base `--nav-off=kturnarc` v new
+  (no switch); the judged commit = the merge commit; native mirrors exactly it.
 - **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
