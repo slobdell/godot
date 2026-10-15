@@ -48,7 +48,12 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-**Merged ~07:30 PDT: manoeuvre `cd47c475` → main `441eabb0`** (H1's terrain fallback R31.5, OFF; its check exited 0,
+**✅ MAIN GREEN at `90ed915a` (~09:05 PDT 10-15):** builder0 `>> remote: make check exited 0`, 2638 passed / 0 failed,
+26 targets ALL JUDGED, sim-baseline 13 unmoved. It covers every round-31 merge so far: brains `0415da23`, pair/cph
+`9e1000d6` (H1–H3, turnhull, yield_to_plan, mirrors), planner CP-P0 `41212da0` + `86e5c646` (the C++ planner and the seam,
+OFF), manoeuvre `cd47c475` (the terrain fallback), native's `.uid` files, and the WEB_PACK rename. relay-smoke, red once
+in the batch before, passed here: its known race. **Everything merged this round is OFF by default; nothing he plays has
+changed yet.** **Merged ~07:30 PDT: manoeuvre `cd47c475` → main `441eabb0`** (H1's terrain fallback R31.5, OFF; its check exited 0,
 2629/0); also `777d2cb8` (native's four missing .uid files). **MAIN GREEN at `298e4498`** (builder0 `>> remote: make check exited 0`, 2629 passed / 0 failed, sim-baseline 13 maps unmoved; remote-guard-test passed, so the pair's red was a load flake). Next,
 `orch-main-check3` chained for the batch `950c7681` + `777d2cb8` + `441eabb0` (log `main-check-batch3.log`). **Since it synced:** planner `86e5c646` merged (OFF; its own check exited 0, 2638/0), so the NEXT main check covers it. **Batch check RESULT (`2abdd144`, ~07:40 PDT):** `exited 2`, 2636 passed / 0 failed, sim-baseline 13 unmoved; the
 only red was relay-smoke (one client saw 4/5 tanks while bots killed each other, the same race HANDOFF records from round
