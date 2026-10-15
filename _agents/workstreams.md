@@ -354,6 +354,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   down; moving at 75 s better on 5 of 6 tasks, ambush +2 (guard +5). Counters: fires_hull 559, fires_wall 43 (7.1 %).
   **Owed before the verdict:** realspeed and realslow each shown firing on some judged stage, or each drops out of the
   ship; and kturnarc's worst rig-contact run traced. Fights and bridge pending.
+  **Fights (g) PASS (~15:25 PDT, 214–237, 24 pairs):** kills 987 → 1001 (+14 v 1.645 se 24.5), deaths 996 → 1013 (+17
+  v 25.3), hit rate 0.677 → 0.689, touching-target 0.598 → 0.622. **kturnarc's rig rise is ONE run:** census seed 114,
+  rig contacts 398 → 3234 and arrivals 15 → 13 (the other 12 seeds +49 in total), a real grind: Green_S0_1 PLANTED on
+  Block_7 for 1927 ticks after the arc changed its path. That is a wall pin of H1's kind, and the same seed with all four
+  ON reads 548, which **favours shipping the four TOGETHER over the arc alone.** realspeed and realslow are nulls on
+  Terminus by construction (realslow is Element's clock, and Terminus has no Element); their firing is read from their
+  alone FIGHTS rows (deterministic: any changed seed means it fired). If either is identical on all 24, it is reported
+  unexercised and drops from the ship.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
