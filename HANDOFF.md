@@ -29,7 +29,7 @@ stable until it is agreed.
 **To show him (round 31):** the planner's Terminus west-street War Rig told to face back, on the REAL drive (`faeab49c`,
 builder0 light): today 29.8 s, 54 gear changes, 14 wall-contact ticks, ending jackknifed across the street (the
 orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 contacts, ending straight nose south in
-mid-street. Frames are in stream/planner `references/round31/planner/clip/` at `5f66ca2b`, with an mp4 requested. NOT in
+mid-street. The side-by-side clip is `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (32 s, today left, planner right; at 16 s today's rig is jackknifed on the left wall while the planner's is straight). NOT in
 play until CP-P1 passes.
 
 **Round 31 log (orchestrator):** rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
