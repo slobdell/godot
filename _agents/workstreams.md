@@ -111,6 +111,28 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (native's default path), the whole suite green. (a) gates the series; only (b) gates a merge ON. Traffic (`ghost`),
   brains (`realslow`) and native are told.
 
+- **R31.2 The planner seam, AGREED in writing before code (2026-10-14 ~23:10 PDT; amends C31.5's "ONE call" and the
+  executor line for planner-held hulls; planner's draft `f2245404` "DRAFT SEAM", manoeuvre's and traffic's replies):**
+  (A) **Two call lines**, both unreached when OFF: the first line of `Movement._planned_reverse`
+  (`if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true`) and `face_turn` right
+  after its `FACE_ALIGNED_DEG` return ("face"). Manoeuvre grants exactly those two lines. (B) **Legs `Vector3(gear, steer,
+  metres)` driven by the planner's `PlannerExecutor`** (planner's path), with no Vector2 adapter. Manoeuvre's executor stays
+  Vector2 on one lock and drives everything the seam declines. Manoeuvre does NOT take the two brake rules; they belong to
+  PlannerExecutor. (C) **Pending:** zero throttle, zero lock, ≤ 3 s (`PLANNER_PENDING_TICKS` 90), then decline 1 s and
+  today's rules run. One hull a tick (a one-deep FIFO). Re-plan only on a leg abort, at most 2 per order. (D) **Readers:**
+  `in_kturn()` is unchanged. The planner owns a new `Movement.manoeuvring()` = `in_kturn() or (PlannerSeam.on() and
+  PlannerSeam.live(name))`, which equals `in_kturn()` when OFF. Traffic reads it in `Traffic.refresh`'s crossing row and in
+  `ask()` (a held hull refuses). Manoeuvre's straight-leg lever reads it. `manoeuvre_census.gd` keeps `in_kturn()` plus a
+  separate planner column. Each owner makes its own reads after the seam lands. (E) **The unstick gate:** `unstick()`
+  returns at once for a planner-held hull, right after traffic's `Traffic.holding` line. **The planner adds that one line
+  in its seam commit** (the orchestrator's ruling, so the seam is one atomic diff for CP-P1), and manoeuvre reviews it.
+  `PlannerSeam.live(name)` is static and false when OFF. (F) **Switch** `--nav-off=planner`, opt-in (R31.1); `planner`
+  goes in `OFF_NAMES`, the planner's one shared-file edit. Any `--nav-off` flag makes `NativeDrive.usable()` false, so the
+  judged arms run the GDScript drive, and native's mirror is exercised only on the default-ON pair tree. (G) **Native, OPEN
+  (answers owed):** no new `exec_fields.h` fields (the seam's state lives in PlannerSeam's own table);
+  `planned_reverse_cheap`'s cheap exits must not answer while the switch is on or a crew is live; a `native_planner`
+  sub-switch in BrainSwitches; and the register_types.cpp / CMakeLists.txt lines for PlannerNative.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
