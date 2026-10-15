@@ -792,10 +792,11 @@ struct Drive {
 			v.set__kturn_arc_m(0.0);
 		} else if (c.KTURN_ARC) {
 			// Round 31 (manoeuvre H2, `kturnarc`): the arc driven in the leg's gear, the last tick's real motion along the
-			// nose SIGNED by the gear (a hull still rolling the other way subtracts its roll-out).
+			// nose in the leg's gear.
 			const Vector3 nose_now = Vector3((real_t)(-basis_z.x), 0.0f, (real_t)(-basis_z.z)).normalized();
 			const Vector3 real_velocity = tank->get(k.real_velocity);
-			v.set__kturn_arc_m((double)v._kturn_arc_m() + (double)real_velocity.dot(nose_now) * (double)gear * delta);
+			// manoeuvre 9013a519: motion against the leg's gear counts nothing (a roll-out is not progress, nor negative)
+			v.set__kturn_arc_m((double)v._kturn_arc_m() + MAX(0.0, (double)real_velocity.dot(nose_now) * (double)gear) * delta);
 		}
 		const double backed = c.KTURN_ARC ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
 		const double left = v._kturn_left_m();
