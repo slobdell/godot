@@ -118,11 +118,11 @@ _Updated 2026-10-15 ~06:15 PDT (traffic worker, round 31, Opus). Every number na
   cutoff; CP-H runs without T4, native drops the ON gate). `0475758f` (= native + 357ca38b, T4 OFF): builder0 `make
   check exited 2`, 2639 passed / 0 failed, sim-baseline unmoved (13), RED on the engine-log gate alone — my
   `test_traffic_ghost` never disposed its TacticsLab (14 ObjectDB / 4 resources leaked). Fixed with native's fafe49ea
-  lines: **traffic-t4 = `aaa7fa8e`**; the closing check = native's re-check on fafe49ea — **pending**. Next round: the ON gate (`pair/t4-on` 93c85531, `check
+  lines: **traffic-t4 = `aaa7fa8e`**; the closing check = native's re-check on fafe49ea — **GREEN** (builder0, 10:55 PDT: `make check exited 0`, 2639/0, 26 targets, ALL JUDGED, sim-baseline unmoved on 13 maps, no leak lines). Next round: the ON gate (`pair/t4-on` 93c85531, `check
   NATIVE=off`) and T4 v1 as its own consumer A/B.
 - **Stretch:** not started (waits on CP-P1). Seam reply sent: `Movement.manoeuvring()` rather than a wider `in_kturn()`.
 - **Green check:** this stream's merge candidate is `traffic-t4` `aaa7fa8e`; its check is native's pair/t4 re-check on
-  fafe49ea (pending; the first, 0475758f, was red on my test's leak alone). stream/traffic itself is a record branch (parked trees), not a merge candidate.
+  **fafe49ea = GREEN** (builder0 10:55 PDT, exited 0, 2639/0, ALL JUDGED, sim-baseline unmoved) — the stream's closing green check (the first, 0475758f, was red on my test's leak alone). stream/traffic itself is a record branch (parked trees), not a merge candidate.
 - **Requests:** native — the two T4 pair checks. Orchestrator — the two questions to him; on yes, the follow-ups in
   *Kept branches*.
 - **What to playtest:** nothing new in play from this stream (all parked or OFF). His clips: `~/projects/clips/round31/`.
