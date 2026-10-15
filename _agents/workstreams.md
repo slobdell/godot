@@ -253,6 +253,13 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   hull (a War Rig, a long truck in a Terminus street), so a ≥ 10 m-hull scope is the natural first candidate; the
   planner decides it from the census. `abandoned` / `queue_waits` / `refused` are REPORTED lines. If the judged run then
   shows the scoped seam starved, that is a finding with its traces, and CP-P1 parks; there is no second scope.
+  **SCOPE CHOSEN before numbers (~03:45 PDT, `a6a66f31`):** LONG hulls only, length ≥ 10 m
+  (`PlannerSeam.SCOPE_MIN_HULL_M`), which in today's catalog is gang_tank, the War Rig at 14.0 m (the next is tank at
+  9.7 m). It takes every kind (face, circle plan, blocked arc), and a short hull is never taken (tested: a law_scout face
+  ON requests 0). **Consequence for C31.5's pass lines, stated before numbers:** "the six-cusp car (yard s25 t1 ≤ 3
+  legs)" and "a scout's orbit unchanged" concern SHORT hulls the seam never takes. The car becomes a REPORTED line (its
+  legs per arm, expected equal), and the scout's orbit stays a pass line as a no-change guard. The deciding lines are the
+  rig cases: seed 31's and 51's Terminus grinds, the squadmate pin, and the 180° arrival where it is a rig.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
