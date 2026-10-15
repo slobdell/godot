@@ -437,6 +437,11 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~04:40 PDT: **native's seam twin GREEN on aa0615e4** (light lane, exited 0, 2/0): 900 drives + 900 unsticks
+  compared, the seam held the rig on 195, 0 mismatches on the live members and the owned state; the seam's own report
+  there: requests 2, plans 1 (5 legs), driving 138 ticks, pending 59, holds median 52, one GOAL_BLOCKED; FILE_TIME
+  64 s. Native keeps the move_to (not the face) on purpose: a wheeled FACE hands back to the GDScript execute, so only
+  the move_to puts the C++ drive against a held crew. The gate's plain check is first in native's heavy chain.
 - 2026-10-15 ~04:30 PDT: **CP-P1's gate hash is native's pair/cpp1-on aa0615e4** (stream/native's mirror + the seam
   86e5c646 + PLANNER_DEFAULT true + native's new test_native_planner_seam: a War Rig in the west street, drive + unstick
   twinned every tick through capture()/restore(), held >= 30 compared drives; it replaces ef38361f, which never got a
