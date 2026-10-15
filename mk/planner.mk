@@ -124,3 +124,38 @@ planner-series: native import ## planner CP-P1: the judged Terminus series, base
 			NAV_FLAGS="$$flags" > $(PLANNER_SERIES_DIR)/$$arm.out 2>&1 || { tail -20 $(PLANNER_SERIES_DIR)/$$arm.out; echo ">> planner-series: arm $$arm REFUSED"; exit 1; }; \
 		mv $(BUILD_DIR)/nav-drive $(PLANNER_SERIES_DIR)/$$arm; done
 	@$(PYTHON) tests/planner/series_verdict.py base=$(PLANNER_SERIES_DIR)/base candidate=$(PLANNER_SERIES_DIR)/candidate | tee $(PLANNER_SERIES_DIR)/verdict.txt
+
+# Round 31 (planner CP-P1, bar lines (c)-(e)): the judged chain's other stages on manoeuvre's / tactics' targets with
+# the bar's two arms, ONE arm a call (lesson 311). PLANNER_JUDGE_ARM = base | candidate: both arms the GDScript drive
+# (--brains-off=native_drive) with the C++ planner on; the candidate adds --nav-off=planner (the seam ON). The seeds
+# are the bar's FRESH ones (hull-rest 60-65, fights 181-204); tuning never touches them. Heavy: make remote T=...
+PLANNER_JUDGE_ARM ?= base
+PLANNER_JUDGE_FLAGS = --brains-off=native_drive$(if $(filter candidate,$(PLANNER_JUDGE_ARM)), --nav-off=planner)
+PLANNER_JUDGE_DIR := $(BUILD_DIR)/planner-judge
+PLANNER_HULL_SEEDS ?= 60 61 62 63 64 65
+PLANNER_FIGHT_SEEDS ?= 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204
+
+.PHONY: planner-judge-hull-rest
+planner-judge-hull-rest: native import ## planner CP-P1 (d): manoeuvre-hull-rest, PLANNER_JUDGE_ARM's two arms (drawn + clicked) on PLANNER_HULL_SEEDS; both arms called = the A/B tables
+	@echo ">> planner-judge-hull-rest on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_JUDGE_ARM)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_JUDGE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
+		M1_BASE_OFF= M1_NEW_OFF=planner M1_FLAGS="--turn-states --brains-off=native_drive" HULL_SEEDS="$(PLANNER_HULL_SEEDS)"
+
+.PHONY: planner-judge-fights
+planner-judge-fights: native import ## planner CP-P1 (e): manoeuvre-fights on PLANNER_FIGHT_SEEDS for PLANNER_JUDGE_ARM -> build/planner-judge/fights-<arm>; both arms present = fight_table.py base v candidate
+	@mkdir -p $(PLANNER_JUDGE_DIR)
+	@echo ">> planner-judge-fights on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
+	@$(MAKE) --no-print-directory manoeuvre-fights FIGHT_SEEDS="$(PLANNER_FIGHT_SEEDS)" NAV_FLAGS="$(PLANNER_JUDGE_FLAGS)"
+	@rm -rf $(PLANNER_JUDGE_DIR)/fights-$(PLANNER_JUDGE_ARM) && mv $(BUILD_DIR)/manoeuvre/fights $(PLANNER_JUDGE_DIR)/fights-$(PLANNER_JUDGE_ARM)
+	@if [ -d $(PLANNER_JUDGE_DIR)/fights-base ] && [ -d $(PLANNER_JUDGE_DIR)/fights-candidate ]; then \
+		$(PYTHON) tests/manoeuvre/fight_table.py $(PLANNER_JUDGE_DIR)/fights-base $(PLANNER_JUDGE_DIR)/fights-candidate | tee $(PLANNER_JUDGE_DIR)/fights-table.txt; fi
+
+.PHONY: planner-judge-bridge
+planner-judge-bridge: native import ## planner CP-P1 (e): bridge-pooled (18 runs, deterministic row) for PLANNER_JUDGE_ARM
+	@echo ">> planner-judge-bridge | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
+	@$(MAKE) --no-print-directory bridge-pooled BRIDGE_FLAGS="$(PLANNER_JUDGE_FLAGS)"
+
+.PHONY: planner-judge-cp2
+planner-judge-cp2: native import ## planner CP-P1 (c): scenario_cp2 (the scout's orbit, a no-change guard) for PLANNER_JUDGE_ARM
+	@echo ">> planner-judge-cp2 | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
+	@$(MAKE) --no-print-directory ai-scenarios FILTER=scenario_cp2 AI_SCEN_FLAGS="$(PLANNER_JUDGE_FLAGS)"
