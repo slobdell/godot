@@ -4,10 +4,47 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-14 ~21:40 PDT — **ROUND 30 IS CLOSED (below); round 31 launches FRESH (no worktree kept); his two
-traffic calls are MADE (`game_design.md` *Round 31: his two traffic calls*) — the round-31 split can start.** Main `9ea4523c`. **Main GREEN at `48d5aa0d`** (builder0, `make check
+_Last updated: 2026-10-14 ~22:10 PDT — **ROUND 31 IS PREPARED (below), not launched: worktrees created, he opens the
+terminals; a NEW Opus orchestrator runs it. ROUND 30 IS CLOSED (further below).** Main `cff4307e` + these docs. Main `9ea4523c`. **Main GREEN at `48d5aa0d`** (builder0, `make check
 exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7): sizing + planner +
 B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes `main`._
+
+## 🚀 ROUND 31 IS PREPARED (2026-10-14 ~22:10 PDT) — NOT LAUNCHED; read this first
+
+**A FRESH start (his word):** no agent or worktree of round 30 carries over. Worktrees are created at the docs commit
+below and launched by him (one terminal each). **Models (his quota rule): planner on `/model fable`; traffic, manoeuvre,
+brains, native AND the orchestrator on Opus** — one Fable session a day (~8 % of the week's quota) instead of round 30's
+four (30 %). **The orchestrator for this round is a NEW Opus session in `~/projects/godot` on `main`:** it reads this
+file, `orchestration.md` (lessons 306–311 are round 30's), `workstreams.md` *Round 31* (C31.1–C31.11), and runs the round
+by the loop (`/loop` the kickoff in `orchestration.md` *The orchestrator's loop*, or the pattern used in round 30: sweep the
+branches, file bars before numbers, merge green hashes, one check per tree).
+
+**From round 30's parked candidates and his two calls** (`game_design.md` *Round 31: his two traffic calls*; `roadmap.md`
+*Round 31 candidates*; split and contracts C31.1–C31.11 in `workstreams.md` *Round 31*; briefs in `streams/`):
+
+| Stream | Folder (offset) | Model | What he will notice | Checkpoint |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | crossing squads: the yielder through ~3 s later, half the bumps (his call); a set-up mortar truck stays set up for a passing squadmate (his call); the early-stop hook in the runners | T3b-c, T1c-b2 early; T4 into CP-H |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a wedged IFV or truck backs out instead of sitting at full throttle; a War Rig pinned on a friend asks then backs straight; wheeled turret vehicles turn their whole hull to his facing | **CP-H** (the honest reading's A/B — manoeuvre runs it); M1b(2) |
+| **brains** | `godot-brains` (3) | Opus | the yard's last crew in every time with the 180° arrival AND a scout's chase intact; his bridge 108/108; support by fire on his drawn facing | B5c-v5 pair; B3b-2; B6; B8 into CP-H |
+| **native** | `godot-native` (4) | Opus | nothing in play: every pair; the planner's C++ reviewed and built; `test_native_traffic_hold` split | each pair; CP-P0 with planner |
+| **planner** | `godot-planner` (6) | **Fable** | a long truck in a Terminus street turns in deliberate legs and never grinds a wall (OFF until its bar passes, then ON as a pair) | **CP-P0** the C++ port equal; **CP-P1** the seam judged |
+
+**The round's method (lesson 307, C31.1):** every candidate's `make check` with its switch ON on the PAIR tree (owner's
+GDScript + native's mirror) BEFORE its judged series — round 30 lost three passing candidates to stages the series never
+covered. Every bar cites `judging.md`'s row; early stop allowed via `sequential.py` rows (C31.3); the series cache ON for
+base rows (C31.7); one hull-rest arm per remote call (lesson 311).
+
+**Launch baseline: main `cff4307e`** = the checked tree `3b3e590d` (2608/0, 25 of 26 gates; the sim-baseline re-recorded
+for face_slot's docks move) + docs. Workers start from it and run no baseline. **The orchestrator's first jobs:** collect
+every bar before its numbers; port traffic's `Traffic.shape` hook first (T3b-c is the cheapest ship); agree the planner ↔
+manoeuvre seam in writing before either codes; call CP-H when the last consumer is on main; relay the planner's seam
+design to manoeuvre and native; take clips to him (his yard crossing; a wedged IFV; the Terminus rig under the planner).
+
+**Launch:** docs committed, then `make worktree STREAM=traffic OFFSET=1`, `manoeuvre 2`, `brains 3`, `native 4`,
+`planner 6` (done at the split; `make worktrees` lists them). Kickoff prompt: `orchestration.md` *The kickoff prompt* (the
+same line for every stream). **In the planner terminal he runs `/model fable` first; every other terminal (and the
+orchestrator) on Opus.** Close every round-30 terminal before starting.
 
 ## ✅ ROUND 30 IS CLOSED (2026-10-14 ~21:25 PDT) — read this first
 

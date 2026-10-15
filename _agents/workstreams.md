@@ -1,7 +1,109 @@
 # Workstreams: the current round
 
-> **ROUND 30 LAUNCHED (2026-10-14): six streams, three of them on Fable 5.1 (manoeuvre, sizing, planner — his restored
-> Fable quota, `roadmap.md` *AT ROUND 29's CLOSE*).** Briefs in `streams/`; native continues (`streams/native.md`).
+> **ROUND 31 PREPARED (2026-10-14 ~22:00 PDT; launched FRESH — no worktree or agent carried over from round 30): five
+> streams, ONE on Fable 5.1 (planner), the rest and the orchestrator on Opus (his quota rule, `roadmap.md` *Round 31
+> candidates*).** Briefs in `streams/`.
+
+## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
+
+**Goal: carry home what round 30 judged and could not ship (`roadmap.md` *Round 31 candidates*; his two calls in
+`game_design.md` *Round 31: his two traffic calls*), and put the planner into play. Round 30's pattern — six candidates
+passed every judged line and failed the pair-tree check on a stage the series never covered (lesson 307) — sets this
+round's method: the whole suite with the switch ON on the pair tree BEFORE a judged series, every bar sized from
+`judging.md`, the scenario stages named as pass lines. Beside it: his two traffic calls re-judged with the lines he set;
+the honest reading (`Tank.real_velocity`, on main, read by nobody) given its consumers as ONE A/B; the arrival gate, his
+bridge and the SBF line re-judged with their round-30 findings; the C++ port of the lattice planner and its seam.**
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | crossing squads: the yielder through ~3 s later, half the bumps (his call); a set-up mortar truck stays set up for a passing squadmate (his call); the early-stop hook in the runners | T3b, T1c-b early (cheap re-judges); T4 into **CP-H** |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a wedged IFV or truck backs out of a wall or a squadmate instead of sitting at full throttle, and a War Rig pinned on a friend asks, then backs straight; wheeled turret vehicles turn their whole hull to his drawn facing | **CP-H** (the honest-reading A/B, manoeuvre runs it); M1b(2) |
+| **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | the yard's last crew in every time with the 180° arrival and a scout's chase intact; his bridge 108/108; support by fire lines up on his drawn facing | **CP-G** B5c-v5 pair; B3b; B6 |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing in play: every pair; the planner's C++ reviewed and built; `test_native_traffic_hold` split | each pair; **CP-P0** with planner |
+| **planner** | `godot-planner` (6) | **Fable** | [streams/planner.md](streams/planner.md) | a long truck in a Terminus street turns in two or three deliberate legs, backs out of a wedge, never grinds a wall (behind `--nav-off=planner` until its bar passes, then ON as a pair) | **CP-P0** C++ port equal to the GDScript planner; **CP-P1** the seam judged |
+
+**Ownership (round 30's, restated, plus the planner's grants):** in `movement.gd`: traffic the give-way block
+(`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`, `_hull_within`; manoeuvre the `drive()`
+body, `_nose_stop`, `unstick`, `_pressing_escape`, the k-turn / planned-reverse / circle block's EXECUTOR (`kturn_on` through
+`_look_stop`, `_kturn_start_leg`, `_planned_reverse`); **planner the PLAN SOURCE of that block** (C31.5: one seam where a
+plan is asked for, behind `--nav-off=planner`); native the member storage; brains the rest (`_track_progress`,
+`_update_phase`, `_approach_gate`, the re-seat's "slow" test …). `order_controller.gd`: manoeuvre the face path; native its
+seams. `tank_brain.gd`: brains, except native's seams and manoeuvre's `_order_move` grant (turn-hull lifts the decline,
+C31.8). `game/ai/gunnery.gd`: brains, except manoeuvre's two lead lines (C31.4). `game/tank/tank.gd`: nobody (the member
+is in). **Planner owns** `game/ai/planner/**`, `native/src/planner_*.{h,cpp}` (NEW; native reviews every commit and owns
+the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tests/planner/**`, `tests/test_planner*.gd`,
+`mk/planner.mk`, `references/round31/planner/**`. **Nobody**: `game/match/**`, `game/units/**`, `game/garage/**`,
+`game/modes/**`, `game/camera/**`, `game/network/**`, `game/audio/**`, `game/announcer/**`, `game/theme/**`, `arenas/**`,
+`game/arena/**`, `game/control/**`, `tests/baselines/**` (except the orchestrator's re-record), `tools/remote.sh`,
+`tools/slot.sh`, `mk/core.mk`, `tools/judge/**` (the orchestrator re-renders at the close).
+
+**Contracts (round 31):**
+
+- **C31.1 Every change to fights or driving is DECLARED (C30.1 carried, every clause) AND checked on the pair tree BEFORE
+  its judged series (lesson 307):** the candidate's switch ON, `make check` on a tree with native's mirror (or native's
+  statement "none ported" + `native-verify-scenarios`), the WHOLE suite green — including `scenario_cp2`'s scout orbit,
+  `test_tactics_mixed_legs` (the Sumps causeway), `test_nav_wall_contact`, `test_tactics_pursuit`, `test_wheeled_arrival`
+  — before any series spends builder0. A red there is a finding; a fix is re-checked the same way. The bar (partial rule,
+  last attempt named) goes to the orchestrator before numbers; tuned on named seeds, judged on fresh ones; the worst
+  run's trace before the median; the count is what he sees.
+- **C31.2 The C++ follows, and native carries it** (C30.2 carried): each settled diff to the drive, `_avoid`,
+  `right_of_way`, unstick, gunnery, the k-turn executor or the per-crew execute goes to native BEFORE its commit; the pair
+  merges back to back and is checked once. Pairs pre-empt native's own work.
+- **C31.3 Bars are sized from `judging.md`** (C30.3 carried; the table re-rendered with round 30's pairs at `3ca70af2`):
+  every line cites its row (sd, n, the guard as base ± 1.645 se or a count form); a probe with no row owes an A/A pair
+  first; **early stop is allowed**: the runner prints `tools/judge/sequential.py`'s CONTINUE / SERIES PASS / FAIL after
+  each row (traffic adds the hook to its runner first; others copy), and a stream may stop on the row the rule names,
+  recording that row in the bar's block; truncation is decided by the fixed test (M2b's lesson). Round-30 judged pairs
+  go under `references/round31/<stream>/` for the close's re-render.
+- **C31.4 CP-H, the honest reading's consumers as ONE A/B** (`Tank.real_velocity` is on main, read by nobody in play).
+  The consumers, each behind its own switch, default OFF, built by its owner: manoeuvre's escapes (`--nav-off=unstickback`:
+  the honest stall reading + the escape redesigned — ask first, a STRAIGHT reverse ≤ 3 m where the k-turn's outline sweep
+  is clear, ended by the real backoff, else "blocked by <name>"; never a blind reverse on lock), the War Rig's stall
+  against a FRIEND (touch false, a Tank collider), kturnarc with the arc SIGNED by gear (`--nav-off=kturnarc`), the two
+  aim leads in `gunnery.gd` (manoeuvre's grant, `--gun-off=realspeed`); traffic's T4 (`--traffic-off=ghost`: ORCA's
+  neighbour table and the solver's own velocity read `real_velocity`); brains' re-seat "slow" test (`--brains-off=
+  realslow`). **Manoeuvre runs the judged A/B** once every consumer is on main behind its switch (the orchestrator calls
+  CP-H when the last lands; traffic and brains deliver theirs by then or stand down for this round): all consumers ON v
+  all OFF, GDScript path, fresh seeds, the stages = Terminus census (rigs + mixed, 13 seeds), hull-rest (one arm per call),
+  bridge-pooled, fights (24 seeds), nav-terminus-drive's pinned/STUCK rows, `scenario_cp2`, `mixed_legs`, the whole suite
+  on the pair tree; PLUS each consumer alone REPORTED (one arm each, fresh seeds). Partial rule (pre-registered here): the
+  combined ships as one pair if every line passes; if the combined fails, each consumer that passed alone on every line
+  may be re-declared alone (one attempt). Native ports every consumer (one pair).
+- **C31.5 The planner into play, two checkpoints.** **CP-P0:** `native/src/planner_native.{h,cpp}` reproduces the GDScript
+  planner's plans EXACTLY on every offline fixture (the 16 tests + the lab fixtures; a twin test `test_native_planner`
+  with 0 mismatches; the expansion budget semantics identical), and prices a plan (µs on builder0, foundry 25 a side):
+  the per-tick slice design (a resumable search with a budget per tick) proven to return the same plan as one call. Native
+  reviews every planner C++ commit before it is pushed to the branch (SendMessage, orchestrator copied) and owns the build
+  glue. **CP-P1:** the seam — ONE call in the k-turn block where today's planner produces a plan (manoeuvre names the line
+  with the planner through the orchestrator; manoeuvre's executor consumes `Vector3(gear, steer, metres)` legs or the
+  planner adapts to `Vector2` — the hand-over's P4 finding — decided in writing before code), behind `--nav-off=planner`
+  DEFAULT OFF; judged as a declared change on the C31.1 stages with the round-30 cases as pass lines: seed 31's and seed
+  51's grinds (Terminus rigs, contact-ticks ≤ base + 1.645 se and arrivals not down), the six-cusp car (yard s25 t1 ≤ 3
+  legs), the squadmate pin, a scout's orbit unchanged (`scenario_cp2`), the 180° arrival; plus the cost line (≤ 0.5 ms a
+  tick at Sumps 25 a side with the slice, or the budget that achieves it). Ships ON as a pair (the C++ plan source is the
+  default path; the GDScript planner stays as the twin). Partial: CP-P0 alone merges OFF (the port and its proofs are
+  worth having); CP-P1 missed = the finding with its traces, parked.
+- **C31.6 Brains' arrival gate B5c-v5:** before any series, the pursuit test's own margin is measured over seeds (an A/A on
+  `test_tactics_pursuit`'s stage: 12 seeds, both arms OFF) and goes to `judging.md`; the candidate scopes `near` to a
+  re-seat / new goal while on a task (never an opening seat), or lays the 180° gate to the SIDE (the planner's §2.8);
+  judged on round 30's cells + arrive + `test_tactics_pursuit` on every seed of its A/A as a pass line (C31.1). The C++
+  mirror starts from `lab/native-b5c-v4` f508ce89.
+- **C31.7 builder0 runs every Godot run** (C30.7); one hull-rest arm per remote call (lesson 311); the series cache is
+  ADOPTED for base rows (`CACHE=on`, proven in round 30) by every series runner — the owner adds it; the laptop only in a
+  slot the orchestrator grants (none planned).
+- **C31.8 Formation geometry is brains'** (carried). **Turn-hull (M1b(2)) lifts the decline in `TankBrain._order_move`
+  for wheeled turret hulls** (manoeuvre's round-28 grant extended: the decline becomes "turn the hull" for a drawn facing
+  when `turnhull` is on; brains told; the gang_ifv SBF ceiling from B6's trace is its first probe).
+- **C31.9 Tooling owners:** the early-stop hook — traffic (its runner first, the pattern for others); the
+  `test_native_traffic_hold` split (486 s, the floor) — native; the face_slot counters exported from the hull-rest probe —
+  manoeuvre; the `WEB_PACK FAILED` line renamed so a passing refusal test does not read as a failure — the orchestrator.
+- **C31.10 Models (his rule):** planner on Fable 5.1; traffic, manoeuvre, brains, native and the orchestrator on Opus.
+- **C31.11 Fresh start:** every worktree was re-created at this split from main `cff4307e`; no agent of round 30 runs.
+- C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
+
+**Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
+
+- (none yet)
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 

@@ -80,6 +80,34 @@ builder0 and must not be the design. The publish's own cost is pre-registered as
 **First item:** E1, starting from `MoverRecord` (configure / gather / row, `test_native_mover_record`) — turn the
 read-only gather into ownership one owner at a time (the lay first: 3 fields, one writer).
 
+## Round 31 backlog (the orchestrator, 2026-10-14 evening; contracts C31.1, C31.2, C31.5, C31.9 in `workstreams.md` *Round 31*)
+
+**Fresh start (his word):** this worktree was re-created at the split from main `cff4307e`; nothing of round 30's session
+carries over but this brief. Round 31 is five streams: traffic, manoeuvre, brains, you (Opus), planner (Fable). **Model:
+Opus.** Your labs from round 30: `lab/native-b5c-v4` f508ce89 (brains' v4 mirror), `lab/native-m4b-escapes` 366b42bc
+(the escapes + the two aim-lead mirrors), `lab/native-kturnarc` 40b89dd1 (the arc sum; takes the gear sign this round).
+Lesson 307 is the round's method: **every candidate's pair-tree check runs BEFORE its judged series** — you build that
+tree (the owner's switch ON + your mirror) and run `make check` on it; a red there is a finding for the owner. In order:
+
+1. **Pairs pre-empt everything (C31.2, C31.1).** Expected: traffic T3b's `Traffic.shape` hook (the round-30 diff you have;
+   port it FIRST — traffic's re-judge is the round's cheapest ship), T1c-b ("none ported" + `native-verify-scenarios`),
+   T4 (`avoidance_gather` + the solve's own velocity read); manoeuvre's CP-H consumers (the escapes redesigned — mirror
+   from `lab/native-m4b-escapes`, the straight reverse by the outline sweep is new; kturnarc gear-signed — from
+   `lab/native-kturnarc`; the two gunnery leads), M1b(2) turn-hull (the face path's seams; `_order_move`'s decline);
+   brains' B5c-v5 (from `lab/native-b5c-v4`), B3b-2 and B6 (likely "none ported": confirm), B8 `realslow` (the element
+   clock's seam). **CP-H is ONE pair** (every consumer mirrored, one check) — manoeuvre runs the A/B.
+2. **The planner's C++ (C31.5): REVIEW and BUILD GLUE, not the port.** The planner stream writes
+   `native/src/planner_native.{h,cpp}` and its twin test; you review every commit before it is pushed (algorithm fidelity:
+   same expansion order, tie-breaks, budget semantics; determinism; no wall clock), own `mk/native.mk`, `exec_fields.h` and
+   the seam's record fields (add them on request), and run CP-P0's proofs with it (0 mismatches on every fixture, the
+   price). At CP-P1 the seam is a C31.2 pair like any drive change. The kturnarc review that caught the arc-reset bug is
+   the model for this.
+3. **Split `test_native_traffic_hold` (486 s, the floor of the shard plan; C31.9):** two files by measured time, no
+   behaviour change, one commit, `make test` green with both; the shard times re-measured.
+4. **N5's held ports** (`_negotiate`'s body / ask / `_begin_yield`, the k-turn planner, `_manoeuvre`) wait for CP-P1: the
+   planner replaces the plan source, so port the executor AFTER the seam is decided (or not this round). **Stage 2
+   deferred** (his call). Nothing on the laptop (C31.7).
+
 ## Round 30 backlog (the orchestrator, 2026-10-14; contracts C30.2, C30.4–C30.7 in `workstreams.md` *Round 30*)
 
 Round 30 is six streams (`workstreams.md` *Round 30*): traffic, manoeuvre (Fable), brains, you, sizing (Fable, isolated),

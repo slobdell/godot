@@ -243,7 +243,7 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
-## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — NOT YET SPLIT; his two calls MADE 2026-10-14 ~21:40 (both recommendations accepted: `game_design.md` *Round 31: his two traffic calls*)
+## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — SPLIT 2026-10-14 ~22:00 as traffic (his two calls, T4, the early-stop hook) + manoeuvre (1 as CP-H, 4) + brains (3, B8) + native (pairs, the planner review, 5's test split) + planner (2; Fable) (`workstreams.md` *Round 31*); his two calls MADE ~21:40
 
 **His calls — MADE (both recommendations accepted, 2026-10-14 ~21:40; the words in `game_design.md`):**
 - **Crossing squads (traffic T3b, parked `traffic-t3b`):** at a yard crossing the yielding squad gets through ~3 s later
