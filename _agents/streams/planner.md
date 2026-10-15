@@ -401,6 +401,10 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:10 PDT: **the rolling face CLOSED at faeab49c** (`make remote LIGHT=1 T="test FILTER=planner_seam"`
+  exited 0, 5 passed 0 failed, builder0 light lane): one request, one plan of 5 legs, driven to its end, abandoned 0,
+  pending 113 ticks (~45 braking from 8 m/s + ~68 of search = 136 expansions), 4.1 deg off south at 40 s. The seam's
+  CODE TIP for the pair tree and CP-P1's candidate: **faeab49c** (ff66116c with Status). Sent to native and the orchestrator.
 - 2026-10-15 ~03:10 PDT: **the rolling-face finding traced.** 0914dafd's brake changed nothing (25/0 on it, exit 0,
   light lane: the same abandoned 1 / pending 114 to the tick), so 77db86eb recorded the abandoned search
   (`PlannerSeam.last_abandoned`): begun, 92 expansions stepped, start (-70, -14.7) facing north = 8.8 m past the face's
