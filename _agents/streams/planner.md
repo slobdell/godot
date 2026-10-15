@@ -428,7 +428,8 @@ commit and name them in the merge notes; native reviews them with the rest.
   pools every event in the arm: `pending per rig event (candidate, pooled) n/median/max ticks` per squad and in
   PLANNER_SERIES_SEAM_TOTAL. Measurement only; the base arm's seam never fires (the reader refuses if it does).
   All five judged recipes dry-run on the laptop: each arm's flags reach the runner's command line (cp2's
-  AI_SCEN_FLAGS forwarding verified). `test FILTER=planner` on the light lane (`planner-test16`); the series launch
+  AI_SCEN_FLAGS forwarding verified). `test FILTER=planner` on the light lane (`planner-test16`): **25 passed 0 failed, exited 0** (builder0, 33d5a158,
+  06:01 PDT; `hold_ticks` lists in the report lines); the series launch
   script is ready (`planner-series.sh`, heavy lane), fired on native's aa0615e4 exited line (still running at 05:56).
 - 2026-10-15 05:54 PDT (wrapper exit): **the rebased tip's full check GREEN** (`planner-check8`, builder0, commit
   86e5c646): `>> remote: make check exited 0`, 2638 passed 0 failed, `24 passed, 2 NOT JUDGED` (CP-P0's same two:
