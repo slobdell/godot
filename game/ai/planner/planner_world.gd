@@ -61,6 +61,20 @@ func add_hull(cx: float, cz: float, fx: float, fz: float, half_w: float, half_l:
 	hulls.append([cx, cz, f.x, f.y, half_w, half_l, hull_name])
 
 
+## Round 31 (CP-P0): the world as the C++ planner takes it: the wall rectangles and the hull boxes flat, as doubles
+## (PackedFloat64Array: the values here arrive unchanged). PlannerNavWorld adds the navigation map and the bake radius.
+func native_view() -> Dictionary:
+	var flat_walls := PackedFloat64Array()
+	for wall: Array in walls:
+		for v: float in wall:
+			flat_walls.append(v)
+	var flat_hulls := PackedFloat64Array()
+	for hull: Array in hulls:
+		for i in 6:
+			flat_hulls.append(float(hull[i]))
+	return {"walls": flat_walls, "hulls": flat_hulls}
+
+
 ## Drop every cached cell (the walls changed).
 func forget() -> void:
 	_field.fill(UNSET)
