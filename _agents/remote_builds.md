@@ -340,6 +340,10 @@ it will take. **And it may not even be quiet:** the planner's window (`41212da0`
 slots and then reported `QUIET WINDOW: NOT USABLE`, with 7 of 7 samples showing 7–8 foreign runs live (series runners,
 checks). Mid-round, price on the in-fight probe or a pinned run, and quote it as an upper bound.
 
+**Under heavy load a full check can outrun the slot's 5400 s timeout (round 31, 2026-10-15):** native's stream check was
+killed at 5400 s with 0 test failures reported while builder0 sat at load 17–24 (checks that day ran 3300–4300 s at load
+~15). A timeout kill is NOT a result. Re-run when the box is lighter, rather than reading the partial log.
+
 **A hung import holds a slot for the full 5400 s timeout.** On 2026-10-14 traffic's check sat 70 min in
 `Godot --import` (5 s of CPU, `futex_do_wait`) with load 1.95, while ten jobs queued. To spot one: `ps -o
 pid,etime,time,pcpu,wchan:20,args` on the slot owner's processes on builder0. A Godot with minutes of elapsed time,

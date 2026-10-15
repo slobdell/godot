@@ -381,6 +381,8 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   `REALSLOW_DEFAULT := true`) with UNSTICK_BACK, KTURN_ARC, REAL_SPEED and REALSLOW defaults true; its plain check is the
   ship check; then the orchestrator merges, records the 13 baselines twice (`sim-baseline-record`, the reason in the
   commit), and runs one main check.
+  **Ship tree cut (~16:45 PDT):** pair/cph-ship `76b7ee46` on main `edc7dec8`, exactly four one-line flips (verified:
+  3 files, 4+/4−: UNSTICK_BACK, KTURN_ARC, REAL_SPEED and REALSLOW defaults true; ghost OFF). Its plain check is running.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
