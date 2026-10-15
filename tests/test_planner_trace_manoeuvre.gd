@@ -13,6 +13,9 @@ const FACE_Z := 20.0
 const GOAL := Vector3(10.0, 0.0, 31.0)
 const CORRIDOR_M := 4.8
 const MOTION_M := 0.01   # metres a tick (0.3 m/s at 30 Hz) below which the hull is standing, not driving a leg
+const KTURN_BASE_CONTACTS := 0   # the base arm's wall-contact ticks on the k-turn scene (measured, builder0 1f325b91)
+const WEDGED_WINDOW_S := 8.0     # nav's test judges the wedged semi at 8 s; the trace runs on to 20 s for the record
+const WEDGED_RESIDUAL_BAR_M := 1.8   # test_nav_face_recovery.RESIDUAL_BAR_M
 
 
 func _with_switch(on: bool, body: Callable) -> void:
@@ -120,9 +123,15 @@ func _kturn(on: bool) -> void:
 			rep["aborted"], JSON.stringify(rep["refused"]), JSON.stringify(rep["holds"]), JSON.stringify(PlannerSeam.last_plans)])
 	print("MEASURE planner_trace kturn seam %s poses: first within %.0f deg of the goal at %s | %s" % ["ON" if on else "OFF",
 			PlannerSeam.KTURN_AIM_DEG, clear_pose, " ".join(poses)])
-	assert_true(arrived >= 0 or on, "the base arm arrives (%d)" % arrived)
+	assert_true(arrived >= 0, "the rig arrives (%d)" % arrived)
 	if on:
+		# THE OUTCOME manoeuvre set for its k-turn row (the orchestrator's ruling, 2026-10-15): the rig arrives, in at
+		# most three gear segments of its ACTUAL motion from the first stop to driving clear, with no wall contact
+		# beyond the base's (the base measured 0 at 1f325b91: 2 segments R4.5 F29.8, 5.6 s). Seam ON at 1f325b91:
+		# 2 segments R4.0 F29.6, 7.0 s, 0 contacts, one plan "R4 F18" driven to its end.
 		assert_true(rep["requests"] > 0, "the seam took the rig (%d requests)" % rep["requests"])
+		assert_true(segs.size() <= 3, "at most three real gear segments (%d: %s)" % [segs.size(), _segments_text(segs)])
+		assert_true(contacts <= KTURN_BASE_CONTACTS, "no wall contact beyond the base's %d (%d)" % [KTURN_BASE_CONTACTS, contacts])
 
 
 func test_kturn_war_rig_with_the_seam_on() -> void:
@@ -177,6 +186,7 @@ func _wedged(on: bool) -> void:
 	var yaw_max := 0.0
 	var timeline: PackedStringArray = []
 	var seen := {"plans": 0, "aborted": 0, "refused": "", "live": false}
+	var at_window := {}
 	var horizon := int(SimClock.TICK_RATE * 20)
 	for frame in horizon:
 		await tree.physics_frame
@@ -197,6 +207,9 @@ func _wedged(on: bool) -> void:
 		var reading := Movement.state(tank)
 		if frame % SimClock.TICK_RATE == 0:
 			timeline.append("t%d:yaw%.1f/path%.2f/phase%s%s" % [frame, yaw, path, reading.get("phase", "-"), "/stalled" if bool(reading.get("face_stalled", false)) else ""])
+		if frame == int(SimClock.TICK_RATE * WEDGED_WINDOW_S) - 1:
+			at_window = {"yaw": yaw, "path": path, "checked": OrderController.face_checked - checked_at, "giveups": OrderController.face_giveups - giveups_at,
+					"over": 14.0 * sin(deg_to_rad(yaw)) + 3.32 * cos(deg_to_rad(yaw)) - CORRIDOR_M}
 	var forward := -tank.global_basis.z
 	var yaw_end := rad_to_deg(absf(atan2(heading0.x * forward.z - heading0.z * forward.x, heading0.x * forward.x + heading0.z * forward.z)))
 	var net := Vector2(tank.global_position.x - at.x, tank.global_position.z - at.z).length()
@@ -210,9 +223,18 @@ func _wedged(on: bool) -> void:
 			OrderController.face_giveups - giveups_at, first_giveup, rep["requests"], rep["plans"], rep["plan_legs"], rep["driven"],
 			rep["aborted"], rep["abandoned"], JSON.stringify(rep["refused"]), JSON.stringify(rep["holds"]), JSON.stringify(PlannerSeam.last_plans),
 			" ".join(timeline)])
+	print("MEASURE planner_trace wedged seam %s at %.0f s (nav's window): yaw %.1f deg, footprint over by %.2f m (bar %.1f), path %.2f m, windows checked %d, giveups %d" % [
+			"ON" if on else "OFF", WEDGED_WINDOW_S, at_window["yaw"], at_window["over"], WEDGED_RESIDUAL_BAR_M, at_window["path"], at_window["checked"], at_window["giveups"]])
 	assert_true(path > 0.0 or yaw_end > 0.0, "the scene ran (path %.2f m, yaw %.1f)" % [path, yaw_end])
 	if on:
+		# THE OUTCOME for nav's wedged row (N1's guarantee for a face, the orchestrator's ruling): within nav's window
+		# the hull never yaws its footprint through the wall (the residual bar, yaw < 20) and is never silent: the
+		# give-up is reached and reports it. Seam ON at 1f325b91: plan touched the slab at 1.7 s and handed back,
+		# give-up at 4.6 s (base 4.5 s), at 8 s yaw 9.0 deg, 0.67 m over.
 		assert_true(rep["requests"] > 0, "the seam took the rig (%d requests)" % rep["requests"])
+		assert_true(float(at_window["over"]) <= WEDGED_RESIDUAL_BAR_M, "the footprint exceeds its corridor by at most %.1f m at %.0f s (%.2f m)" % [WEDGED_RESIDUAL_BAR_M, WEDGED_WINDOW_S, at_window["over"]])
+		assert_true(float(at_window["yaw"]) < 20.0, "the wedged yaw stays under 20 deg at %.0f s (%.1f)" % [WEDGED_WINDOW_S, at_window["yaw"]])
+		assert_true(int(at_window["checked"]) > 0 and int(at_window["giveups"]) > 0, "never silent: the give-up is reached within %.0f s (checked %d, giveups %d)" % [WEDGED_WINDOW_S, at_window["checked"], at_window["giveups"]])
 
 
 func test_wedged_semi_with_the_seam_on() -> void:
