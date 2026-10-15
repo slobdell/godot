@@ -113,14 +113,16 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   `references/round31/brains/pursuit-aa-0415da23.*`, 9e6f17c3): as written **24/24**, nudged **22/24** (8 m/s seeds 3, 9
   let go; 18 m/s 12/12 both). v5's line (1) (main 3b7e7a6c): ON ≥ 21/24 as written AND ≥ 19/24 nudged, no new let-go
   at 18 m/s.
-- **B5c-v5: the pair-tree check GREEN, the bar FILED, the judged series RUNNING.** Candidate = v4's rule unchanged (the
-  A/A removed its parking premise, lesson 306). Pair tree `pair/brains-v5` `17e7b08c` (stream 0415da23 + `lab/brains-
-  r30-gate` f1a804eb + native's `f508ce89`): `make remote T=check` **exited 0**, 2629 / 0, 24 passed + 2 NOT JUDGED (perf-
-  judge and scenario_perf refused on box load), sim-baseline 13 unmoved, native-verify 0 mismatches; pursuit 10/10,
-  wheeled_arrival 11/11, gate_v4 8/8, gate_hold 4/4, native_gate 4/4, mixed_legs 4/4, wall_contact 11/11, cp2 pass.
-  Bar filed at main (Bars round 31); seeds confirmed fresh against rounds 29–30 (yard 27–28, Sumps 16–17, Terminus
-  8–11, arrive 37–40). Series on `e675a28a` (= 17e7b08c + `tests/nav/arrive_pair.py` only), unit `brains-v5-series`,
-  outputs in the session scratchpad `v5/`.
+- **B5c-v5 JUDGED: FAILS its bar on line 3 (Sumps "no run > 5 s later") — the last attempt, partial none → PARKED**
+  (proposed to the orchestrator). Candidate = v4's rule unchanged (pair tree `pair/brains-v5`: check on `17e7b08c`
+  exited 0, 2629 / 0; series on `e675a28a` = + `tests/nav/arrive_pair.py`), builder0, GDScript drive both arms, fresh
+  seeds; rows `references/round31/brains/b5c-v5-*`. (1) pursuit PASS 24/24 + 24/24 nudged (8 m/s reversal margin +47° on
+  v +69° off). (2) yard PASS: every crew in 11/12 v 1/12, crews on ≥ off every run, median 21.0 s v never; endings latched
+  3 / reset 3 / stuck 1 / cap 0; worst on-run s27 t8 = a 180° come-round carried A_5 27 m from its gate onto terrain
+  (the planner's §2.8 side-gate case). (3) Sumps FAIL: median 24.8 v 24.9 s, arc 0.939 = 0.939, but s17 t11 58.3 v
+  36.0 s (+22.3): S_3's slot drifts 67× on v 3× off between two seats ~10 m apart, `near` refires on every flip (a limit
+  cycle between near-per-goal and the seating). (4) Terminus reported: all in 3/4 v 2/4. Stopped there (decided): arrive,
+  bridge, screen-slots, cost never ran. Round 32: key `near` per seat (or hysteresis), or the side gate.
 - **B8 DONE, on main** (`80eea6ec` + `922db8b6`, in aa205ea5): `realslow` opt-in (R31.1), GDScript only (the re-seat
   clock is GDScript on every path; `real_velocity` is filled by the native tank drive too). **Pre-series gate ACCEPTED**
   (scratch `44b32f12` = stream + default ON, `check NATIVE=off`, builder0, 3038 s): 2612 / 0, 25 of 26, sim-baseline 13
