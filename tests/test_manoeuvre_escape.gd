@@ -180,3 +180,25 @@ func test_a_hull_driven_at_a_wall_under_a_drive_order_never_backs_off() -> void:
 	assert_true(furthest_after - nearest < 0.5, "it stays pressed where it was driven (%.2f v %.2f)" % [furthest_after, nearest])
 	BrainSwitches.native = was_native
 	Movement._off = was_off
+
+
+## R31.2 (the planner's seam): a plan that takes a hull ends manoeuvre's executor state, so nothing resumes stale when
+## the plan releases it (a k-turn leg half driven, an escape in its ask or reverse stage, the stall clock).
+func test_a_plan_taking_the_hull_ends_every_executor_state() -> void:
+	var lab := TacticsLab.create(self, 31)
+	var ifv := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0, 30), 0.0, "ifv")
+	await lab.start()
+	var ctl := _controller_of(lab, ifv)
+	ctl.set_physics_process(false)
+	var mover := ctl.movement
+	mover._kturn_turn = 1.0
+	mover._kturn_start_leg(Vector2(-1, 4.0))
+	mover._kturn_legs = [Vector2(1, 3.0)]
+	mover._esc_stage = Movement.ESC_BACK
+	mover._unstick_left = 1.2
+	mover._stuck_time = 0.7
+	mover.yield_to_plan()
+	assert_true(not mover.in_kturn() and mover._kturn_legs.is_empty(), "the k-turn leg and its queued legs are ended")
+	assert_eq(mover._esc_stage, Movement.ESC_NONE, "the escape is ended")
+	assert_true(mover._unstick_left == 0.0 and mover._stuck_time == 0.0, "and the stall timers are cleared")
+	lab.dispose()

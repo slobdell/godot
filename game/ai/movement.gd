@@ -3264,6 +3264,24 @@ func _escape_hold(cmd: TankCommand) -> void:
 	cmd.turn = 0.0
 
 
+## Round 31 (R31.2, for the planner's seam): a plan TAKES this hull. Every executor state of manoeuvre's that would
+## otherwise resume stale when the plan releases it is ended here: a k-turn / back-and-fill leg in progress (ended as
+## "planner", its remaining legs dropped), the stall escape (any stage) and the pressed-wall escape, and the stall clock.
+## PlannerSeam.take calls it on the tick it takes a hull (OFF: never called; nothing changes).
+func yield_to_plan() -> void:
+	native_stale |= STALE_ALL
+	if _kturn_left_m > 0.0:
+		_kturn_end("planner")
+		_kturn_left_m = 0.0
+		_kturn_legs.clear()
+	_esc_stage = ESC_NONE
+	_esc_friend = null
+	_unstick_left = 0.0
+	_escape_gear = 0.0
+	_stuck_time = 0.0
+	_press_time = 0.0
+
+
 ## The gear the hull was trying to go in when it stuck (+1 forward): the straight reverse is the other.
 var _esc_gear := 1.0
 
