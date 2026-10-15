@@ -99,7 +99,7 @@ func _run() -> void:
 	var report := {"unit": unit_id, "seed": seed_value, "facing": "drawn" if drawn else "none",
 			"in_s": in_s, "err_in_deg": err_in, "end": last, "crews_in": in_s.size(), "crews": names.size(),
 			"median_err_in_deg": errs[errs.size() / 2] if not errs.is_empty() else -1.0,
-			"sbf_told_replaced": int(ElementPlan.get("sbf_told_replaced")) if ElementPlan.get("sbf_told_replaced") != null else -1}
+			"sbf_told_replaced": ElementPlan.sbf_told_replaced}
 	print("SBF_PROBE " + JSON.stringify(report))
 	case.teardown()
 	quit(0)
