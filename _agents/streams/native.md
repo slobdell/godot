@@ -224,6 +224,27 @@ when `held`). The early return compares `chosen` with `route_preferred`. `DriveC
 `NativeTraffic.drive_config()` only when this tree's Traffic has `shape`, so the mirror is inert on main. Tests:
 `test_native_traffic_turns` / `_owned` (his Terminus crossing, every drive twinned, the rule must fire on ≥ 30 compared
 drives).
+Pair tree `pair/t3b` = `413252ea` + traffic `ab3351fb` (its teardown fix, from my finding: the turns tests' teardowns forced
+the crossing OFF for every later test in their shard) + `DEFAULT_OFF = []` → `f5dc4147`. Filtered on builder0
+(`make native test FILTER=native_traffic`, exited 0, 4/0): hold 7461 drives / 1975 holding, owned 7304 / 1946; turns 6091
+drives / 640 shaped, owned 6449 / 655 shaped; **0 mismatches** in all four. (The first filtered run passed by SKIPPING
+because `make test` alone does not build the library: run `make native test …`.) The full check is running.
+
+**T1c-b2 (traffic `6d19a3d9`): NONE PORTED** (told the orchestrator). `ask()` is reached only through GDScript callbacks:
+`_negotiate` (drive_native.cpp `cb`) and `_ask_behind`. The refusal writes statics only, and `ask` marks
+`native_stale |= STALE_ALL` first.
+
+**T4 mirror (traffic `f9c765c76`, CP-H consumer, opt-in): `b513502b`, WIP.** `TankNative.avoidance_gather(…, real)` reads
+`real_velocity` when `NativeTraffic.ghost()` (Traffic has `ghost` in OPT_IN and it is not off). The argument is passed from
+`Avoidance._gather_native` (native's seam). The solve's own velocity (T4 v2) is not taken. `test_native_avoid_gather` has a
+ghost case, which needs ≥ 8 compared rows where real ≠ estimated. Its pair tree waits for the T3b check to free the folder.
+
+**Planner seam (C31.5), my answers through the orchestrator:** (1) no `exec_fields` rows, but PlannerSeam's table must
+be capturable (capture/restore) for drive twins; (2) `planned_reverse_cheap`'s cheap exits are gated at the pair (I do it);
+`face_turn` needs nothing: wheeled face orders already hand back to GDScript; (3) confirmed: any `--nav-off` name runs the
+GDScript drive (so does unstickback/kturnarc). Switches under `--traffic-off`/`--brains-off`/`--gun-off` DO run the
+native drive, so their mirrors must read the switch; (4) `BrainSwitches.native_planner` added (`bf8d4a78`); (5) the
+planner makes the register_types/CMake lines and I review them.
 
 ### Round 30 (started 2026-10-14 ~10:40 PDT from `bd05077d` = main, covered by the launch check `0d35f215`)
 
