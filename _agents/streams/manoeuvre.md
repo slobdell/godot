@@ -237,6 +237,12 @@ at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not wors
   that differed. Not turn-hull's mechanism; counted against it by the bar's letter all the same. Counters (new): hull_turns 3809 ticks,
   face_keep_refused 597 steps, face_slot_kept 182 / refused 7. No change made from the tuning seeds.
 
+- **Handover counters for CP-P1 (taken 2026-10-15, the planner's in-fight census: START_BLOCKED 9 of 119 / 23 of 94
+  plans on Sumps 25 a side go to my unstick/H1):** `esc_after_refusal` (an escape within 3 s of the hull's last planner
+  START_BLOCKED) and `refusal_then_free` (a START_BLOCKED hull 1.5 m on within 5 s by any rule). Needs the read-only
+  `PlannerSeam.last_refusal(name) -> [frame, code]` (asked of the planner via the orchestrator); written the day the
+  seam is on main. Measurement only.
+
 ### Questions for the lead
 
 None.
