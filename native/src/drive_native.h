@@ -11,6 +11,8 @@
 #pragma once
 
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/ref.hpp>
+#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
@@ -70,6 +72,13 @@ struct DriveConfig {
 	// Round 31 (traffic T3b, C31.2): the crossing. traffic_shape is false on a tree without Traffic.shape; with it, _avoid
 	// calls NativeTraffic.avoid_shape back once the route's wish is known (the verdicts stay traffic's GDScript).
 	bool traffic_shape = false;
+	// Round 31 (manoeuvre CP-H, C31.4): the consumers' defaults (each switch's ON = its DEFAULT, since the native drive
+	// runs only with `Movement._off` empty). H1 `unstickback`: the honest stall reading and the escape (its event bodies
+	// _escape_begin / _escape_step called back); H2 `kturnarc`: the leg measured by the arc signed by gear. Absent on a
+	// tree without them: false, the drive as before.
+	bool UNSTICK_BACK = false, KTURN_ARC = false;
+	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
+	Ref<Script> tank_script; // Tank: `collider as Tank`
 	double HOLD_REACHED_M = 2.5, HOLD_SLOW_M = 16.0;
 	int64_t LIVE_TICKS = 3;
 	Object *traffic_script = nullptr, *native_traffic = nullptr;

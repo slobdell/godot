@@ -73,7 +73,18 @@ static func report() -> Dictionary:
 	var out := {}
 	for kind: String in by_kind:
 		out[kind] = (by_kind[kind] as Dictionary).duplicate(true)
-	return {"by_kind": out, "by_cause": by_cause.duplicate()}
+	# Round 31 (M6, C31.9): the face and escape counters ride on every MANOEUVRE_TURNS line, so a probe that prints it
+	# (the hull-rest probe under --turn-states) exports them; tests/manoeuvre/hull_rest_counters.py sums them per arm.
+	return {"by_kind": out, "by_cause": by_cause.duplicate(), "counters": counters()}
+
+
+## The run's manoeuvre counters (measurement only): the face planner's, M1b(1)'s face_slot, H1's escape arms.
+static func counters() -> Dictionary:
+	return {"face_plans": Manoeuvre.face_plans, "face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none,
+			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
+			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns,
+			"face_keep_refused": Manoeuvre.face_keep_refused, "escape": Movement.escape_arms(),
+			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes}
 
 
 var _gear := 0

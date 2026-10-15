@@ -501,3 +501,9 @@ cells (n = 1 a seed) and yard last-crew median (censored): reported lines, no no
 trace logs are traces, not rows. **Provenance note:** the seven manoeuvre tables under `references/round30/manoeuvre/` were
 copied at the close from the `stream/manoeuvre` worktree (`godot-manoeuvre`), where the stream filed them; main had no
 `manoeuvre/` folder before this re-render.
+
+## Rows filed by hand in round 31 (folded into the table at the close's re-render)
+
+| probe | metric | form | noise | base | n | the bar's line | filed |
+|---|---|---|---|---|---|---|---|
+| `test_tactics_pursuit` stage (`make pursuit-aa`, brains `3cb76e17`, game/ = main, builder0, default path; rows `streams/references/round31/brains/pursuit-aa-3cb76e17.{jsonl,txt}`) | pass verdict a cell (12 seeds × 8 / 18 m/s) | count | **a 0.25 m start nudge (a null change; the lab is deterministic a seed, so an exact A/A is an equality check) flips 3 of 12 verdicts at 8 m/s (seeds 3, 5, 9; seed 3 is the test's own), 0 of 12 at 18 m/s.** Reversal margin as written +69–70° every seed, nudged min −41°; closing margin ≥ +13.9 m both arms | rule OFF: as written 22/24 (8 m/s 12/12; 18 m/s 10/12, seeds 1 and 9 FAIL on main); nudged 19/24 | 48 runs | a per-seed line fails a null ~97 % of the time (1 − 0.75¹²). B5c-v5: count form ON ≥ OFF − 3 on the 24 cells (R31.3) | 2026-10-14 ~23:15 PDT, orchestrator, from brains' A/A |

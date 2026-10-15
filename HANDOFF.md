@@ -11,6 +11,46 @@ B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes 
 
 ## 🚀 ROUND 31 IS PREPARED (2026-10-14 ~22:10 PDT) — NOT LAUNCHED; read this first
 
+**LAUNCHED 2026-10-14 ~22:30 PDT.** Five workers are running: godot-traffic-05, godot-manoeuvre-33, godot-brains-0b, godot-native-7d
+and godot-planner-6f (Fable). Every stream branch was fast-forwarded to main `75dbbb7c` before launch. The orchestrator is an Opus
+session in `~/projects/godot` on the `/loop` from `orchestration.md`. Main since launch: `2ee27055` (C31.9, `WEB_PACK FAILED` →
+`WEB_PACK REFUSED`; unchecked, it rides the first merge's main check). The planner was asked for a written DRAFT of the seam
+(line, leg shape, pending behaviour, record fields) in its Status, and manoeuvre to hold the plan-source line and leg signature
+stable until it is agreed.
+
+**⚑ Owed to him (round 31; ask in player terms, one recommendation each):**
+1. **Crossing squads at a Terminus street (T3b-c).** "At a Terminus street crossing, the squad that gives way now gets
+   through about 2.6 s later, for about a third fewer bumps there (93 → 61). It's the same rule and about the same price
+   as the yard's ~3 s you accepted." **Recommendation: yes, let your ~3 s cover both crossings**, since it's one rule at
+   one price. With his yes, T3b-c ships on the rows already judged (Terminus +2.61 s ≤ 3.0 + 0.90, yard +3.38 ≤ 3.43,
+   builder0, `f5dc4147`, seeds 41–43, n 18) as the pair with native `413252ea` + the 13 baselines re-recorded. With his
+   no, it parks. Traffic's before/after clip of both crossings goes with the question.
+
+**To show him (round 31):** the planner's Terminus west-street War Rig told to face back, on the REAL drive (`faeab49c`,
+builder0 light): today 29.8 s, 54 gear changes, 14 wall-contact ticks, ending jackknifed across the street (the
+orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 contacts, ending straight nose south in
+mid-street. The side-by-side clip is `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (32 s, today left, planner right; at 16 s today's rig is jackknifed on the left wall while the planner's is straight). NOT in
+play until CP-P1 passes.
+
+**Round 31 log (orchestrator):** rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
+arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two call lines, PlannerExecutor drives Vector3 legs,
+`manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
+v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
+**Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
+**Merged ~05:20 PDT: planner CP-P0 `41212da0` → main `950c7681`** (the C++ lattice planner equal to the GDScript one, and
+the seam behind `--nav-off=planner`, OFF; its check exited 0, 2615/0). The only conflict was OFF_NAMES, resolved as
+the sorted union, so it is UNCHECKED on main until the next main check (queued after `298e4498`'s). **Merged 2026-10-15 ~05:00 PDT: pair/cph `9e1000d6` → main `298e4498`** (manoeuvre `197a65da` + native `2fb03dab`,
+every CP-H default OFF: H1–H3, turnhull, yield_to_plan, the CP-H runner, native's mirrors and exec_fields rows). Its pair
+check was 2624/0 with remote-guard-test red alone, a slot.sh timing test in an isolated dir that went red in a different
+group on re-run at load ~20; the pair touches no tools/. Main check RUNNING (unit `orch-main-check2`, log
+`main-check-298e4498.log`). Before that: **MAIN GREEN at `c6cc7e33`** (= `aa205ea5`'s code + `2ee27055`'s WEB_PACK rename + docs): builder0 `>> remote: make check
+exited 0`, 2613 passed / 0 failed, 26 targets ALL JUDGED, sim-baseline 13 maps unmoved, 3405 s. Main check history: the first launch died unrun (the harness reaped its wrapper); RELAUNCHED ~01:00 PDT 10-15 as
+`systemd-run --user --unit=orch-main-check`, log `main-check-3.log` in the orchestrator's scratchpad. **Tooling lesson
+(remote_builds.md):** the harness reaps backgrounded AND setsid'd `make remote` wrappers at a shell reset. Only
+`systemd-run --user` survives, and every stream has been told. Gates passed so far: T3b-c on pair/t3b `f5dc4147`, with its
+judged series queued; B8 realslow's NATIVE=off gate. CP-P0's planner port is approved by native for fidelity, with builder0's
+twin pending.
+
 **A FRESH start (his word):** no agent or worktree of round 30 carries over. Worktrees are created at the docs commit
 below and launched by him (one terminal each). **Models (his quota rule): planner on `/model fable`; traffic, manoeuvre,
 brains, native AND the orchestrator on Opus** — one Fable session a day (~8 % of the week's quota) instead of round 30's

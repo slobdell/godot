@@ -98,6 +98,11 @@ static func configure() -> bool:
 		"PRESS_ESCAPE_MAX_S": Movement.PRESS_ESCAPE_MAX_S, "THROTTLE_MIN": WallContact.THROTTLE_MIN,
 		# Round 26 (manoeuvre M1, C26.2): the gate of Movement._manoeuvre natively; absent (-1) before manoeuvre lands.
 		"BEHIND_GAP_TICKS": int((Movement as Script).get_script_constant_map().get("BEHIND_GAP_TICKS", -1)),
+		# Round 31 (manoeuvre CP-H, C31.4): H1 unstickback and H2 kturnarc's defaults (absent: false, the drive as before).
+		"UNSTICK_BACK_DEFAULT": bool((Movement as Script).get_script_constant_map().get("UNSTICK_BACK_DEFAULT", false)),
+		"KTURN_ARC_DEFAULT": bool((Movement as Script).get_script_constant_map().get("KTURN_ARC_DEFAULT", false)),
+		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
+		"tank_script": Tank,
 	}
 	config.merge(NativeTraffic.drive_config())  # round 29 (traffic T1): the street hold, when this tree has it
 	_configured = NativeBridge.impl.drive_configure(config)

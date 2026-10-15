@@ -317,6 +317,35 @@ and that coincidence hid it. **Several rounds of "still waiting for a slot, noth
 a missing result is a killed wrapper before concluding builder0 is merely busy: `ps -o pid,etime,args -p <pid>` on the
 wrapper, and `readlink /proc/<pid>/cwd` to confirm whose it is.
 
+**Round 31 (2026-10-14/15): BACKGROUNDING IS NOT ENOUGH, AND NEITHER IS `setsid nohup`. Use `systemd-run --user`.**
+With builder0 queued ten deep, wrappers died before their exited line: the orchestrator's main check, brains' B8 gate (its
+remote half finished but nothing was copied back), manoeuvre's and traffic's checks. `setsid nohup … & disown` did NOT
+save them. Manoeuvre verified the cause: **the harness reaps every process spawned from its shell at a "Shell cwd was
+reset", whatever session or process group it is in**, so two setsid'd wrappers died in the same second as that reset.
+**What survives** (verified across a reset):
+```
+systemd-run --user --unit=<stream>-<what> --working-directory=<worktree> --collect \
+    /bin/bash -lc "make remote T=check > <log> 2>&1"
+systemctl --user is-active <stream>-<what>     # status; the result is the log's `>> remote: … exited <N>` line
+```
+**Every killed wrapper leaves its builder0 half alive and queued** (trip-up 68). A relaunch is then REFUSED with exit 9
+("already has a live run"). Kill the orphan on builder0 by cwd-verified PID first. A result with no exited line is NOT
+a result.
+
+**A quiet window granted mid-round costs about an hour of the whole box, not its own 6 minutes (round 31).** `--quiet`
+claims each slot as it frees and holds it until every in-flight job ends. From 01:03 to ~02:00 PDT on 2026-10-15,
+builder0 ran only the three checks already in flight, while every new heavy AND light job waited, including a 10-minute
+trace for 54 minutes. Grant one when the queue is short, or at a round's natural lull, and tell every stream how long
+it will take. **And it may not even be quiet:** the planner's window (`41212da0`, 2026-10-15) waited 65 min for 12
+slots and then reported `QUIET WINDOW: NOT USABLE`, with 7 of 7 samples showing 7–8 foreign runs live (series runners,
+checks). Mid-round, price on the in-fight probe or a pinned run, and quote it as an upper bound.
+
+**A hung import holds a slot for the full 5400 s timeout.** On 2026-10-14 traffic's check sat 70 min in
+`Godot --import` (5 s of CPU, `futex_do_wait`) with load 1.95, while ten jobs queued. To spot one: `ps -o
+pid,etime,time,pcpu,wchan:20,args` on the slot owner's processes on builder0. A Godot with minutes of elapsed time,
+seconds of CPU and a futex wait is hung. The orchestrator kills it by cwd (`readlink /proc/<pid>/cwd`) and tells the
+owner.
+
 **If you find an orphaned remote run** (local wrapper dead, builder0 side alive), kill the remote side by cwd before
 relaunching, or two runs will `rsync --delete` into the same builder0 folder — lesson 52.
 
