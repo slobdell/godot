@@ -551,6 +551,15 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   before any new number, by 12:00 PDT; then native re-cuts and re-gates, and the series re-runs on **fresh Terminus
   seeds 172–184**, with the other stages then as filed. No other stages run now (builder0 goes to CP-H). If no fix is
   declared by 12:00, CP-P1 parks, with CP-P0 + the OFF seam on main as the round's planner result.
+  **FIX DECLARED (~09:50 PDT, planner Status `8761158f`, before any new number):** of the candidate's 28 misses that
+  arrived with the order complete, 21 sit 7.0–11 m from their slots (base 4), at the same slots seed after seed. Trace
+  (seed 134 Green_S0_4, the plaza): arrived 4.5 m from its slot, then the seam's FACE plan "R+1.0x3.5" reversed it to
+  7.4 m, past the census line. **Cause:** the seam's face request lacked manoeuvre's SLOT LAW (round 30 M1b: a face
+  plan may not end further from `ctl.face_slot` than it starts + 0.5 m). **Fix, nothing else:** `PlanRequest.keep(x, z,
+  all_m, end_m)` in both planners (twin fixture), set by the face request exactly as manoeuvre's plan_face does. The
+  k-turn request, PENDING/RETRY and the hold are unchanged. Also from the traces: the GOAL_BLOCKED and queue_waits cost
+  time, not arrivals, and **a rig pressed at full throttle into a squadmate for 65 s** (13 base / 17 candidate, a wedge
+  in both arms) is H1's target, relayed to manoeuvre for CP-H.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
