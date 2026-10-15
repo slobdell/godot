@@ -404,6 +404,10 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:35 PDT: **the planner test files GREEN on 0a2a4a48** (`make remote LIGHT=1 T="test FILTER=planner"`
+  exited 0, 25 passed 0 failed, builder0 light lane): the seam with the hold record and the PLANNER_SEAM_REPORT line
+  (the rolling face: one event, held 112 ticks = ~45 braking + 67 of search; the War Rig face at rest: 4 ticks).
+  **0a2a4a48 is the seam tip for the series' tree**, pending its own plain check (queued behind CP-P0's in my heavy slot).
 - 2026-10-15 ~03:30 PDT: **the pair tree named by native:** pair/cpp1 = 24435c3c = stream/native's mirror 12221d04 + the
   seam tip 3daf47e6 (my own `on()` form; native's scratch a6c6c804 dropped); **pair/cpp1-on = 8909c217** = that +
   `PLANNER_DEFAULT := true`, the gate hash; its plain `make check` is next in native's heavy queue (unit native-chain),
