@@ -24,7 +24,7 @@ func _leg(metres: float, arc_on: bool, unit_id := "gang_tank", legs := 1) -> Dic
 	var was_native := BrainSwitches.native
 	var was_off := Movement._off
 	BrainSwitches.native = false
-	Movement._off = PackedStringArray(["kturnarc"]) if arc_on else PackedStringArray([])
+	Movement._off = PackedStringArray(["kturnarc"]) if arc_on != Movement.KTURN_ARC_DEFAULT else PackedStringArray([])
 	Movement._off_parsed = true
 	var lab := TacticsLab.create(self, 31)
 	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(LANE_X, 0, 30), 0.0, unit_id)
@@ -96,7 +96,7 @@ func _rolling_leg(arc_on: bool, metres := 3.5) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_off := Movement._off
 	BrainSwitches.native = false
-	Movement._off = PackedStringArray(["kturnarc"]) if arc_on else PackedStringArray([])
+	Movement._off = PackedStringArray(["kturnarc"]) if arc_on != Movement.KTURN_ARC_DEFAULT else PackedStringArray([])
 	Movement._off_parsed = true
 	var lab := TacticsLab.create(self, 31)
 	var scout := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(LANE_X, 0, 60), 0.0, "scout")

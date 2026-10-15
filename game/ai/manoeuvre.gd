@@ -82,8 +82,11 @@ static func gun_switched(name: String) -> bool:
 	return _gun_off.has(name)
 
 
+const REAL_SPEED_DEFAULT := false  # OPT-IN until CP-H: `--gun-off=realspeed` flips it
+
+
 static func real_speed_on() -> bool:
-	return gun_switched("realspeed")
+	return REAL_SPEED_DEFAULT != gun_switched("realspeed")
 
 
 ## The velocity a gun leads `target` by: its real motion with `realspeed`, else the plant's reading (round 30's).

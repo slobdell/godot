@@ -15,7 +15,7 @@ func _pinned_lead(on: bool) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_off := Manoeuvre._gun_off
 	var was_parsed := Manoeuvre._gun_off_parsed
-	Manoeuvre._gun_off = PackedStringArray(["realspeed"]) if on else PackedStringArray()
+	Manoeuvre._gun_off = PackedStringArray(["realspeed"]) if on != Manoeuvre.REAL_SPEED_DEFAULT else PackedStringArray()
 	Manoeuvre._gun_off_parsed = true
 	BrainSwitches.native = false
 	var lab := TacticsLab.create(self, 31)

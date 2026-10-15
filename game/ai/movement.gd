@@ -3119,8 +3119,8 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 #      + ESC_SECONDS_PER_M a metre. Shorter than ESC_BACK_MIN_M of room: no reverse at all.
 #   3. Refused: stand ESC_STAND_SECONDS; `_update_phase` reports `blocked` by the blocker's name (`_blocker`) meanwhile,
 #      so the brain can re-task instead of the hull pressing. Then the route resumes and the rule may fire again.
-# `--nav-off=unstickback` turns it ON (OPT-IN until CP-H judges it; the switch list then leaves native's drive, so
-# the escape runs on the GDScript path). Counters: fires by blocker kind, asks, straight reverses ended by backoff /
+# OPT-IN until CP-H judges it: `--nav-off=unstickback` flips UNSTICK_BACK_DEFAULT (false), and any `--nav-off` list
+# leaves native's drive, so the escape runs on the GDScript path. Counters: fires by blocker kind, asks, straight reverses ended by backoff /
 # cap, sweep refusals.
 const UNSTICK_BLIND_MAX_LEN_M := 10.0
 const ESC_ASK_SECONDS := 2.0
@@ -3149,8 +3149,13 @@ static var esc_capped := 0
 static var esc_refused := 0
 
 
+## The default (false = OPT-IN until CP-H: naming `unstickback` in `--nav-off` flips it). Flipping this const is the
+## whole ship change; tests choose their arm list from it, so they hold in either tree.
+const UNSTICK_BACK_DEFAULT := false
+
+
 static func unstick_back_on() -> bool:
-	return switched_off("unstickback")
+	return UNSTICK_BACK_DEFAULT != switched_off("unstickback")
 
 
 static func escape_arms() -> Dictionary:
@@ -4545,12 +4550,15 @@ func _kturn_stopping() -> float:
 
 
 ## Round 31 (H2): the arc a k-turn leg has driven in its gear since it took hold (see `_planned_reverse`), and its
-## switch: OPT-IN until CP-H judges it (`--nav-off=kturnarc` turns it ON; the list leaves native's drive, GDScript runs).
+## switch: OPT-IN until CP-H judges it (`--nav-off=kturnarc` flips KTURN_ARC_DEFAULT; the list leaves native's drive).
 var _kturn_arc_m := 0.0
 
 
+const KTURN_ARC_DEFAULT := false  # OPT-IN until CP-H (see UNSTICK_BACK_DEFAULT)
+
+
 static func kturn_arc_on() -> bool:
-	return switched_off("kturnarc")
+	return KTURN_ARC_DEFAULT != switched_off("kturnarc")
 
 
 ## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).

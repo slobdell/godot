@@ -34,7 +34,7 @@ static func _yaw_deg(tank: Tank) -> float:
 func _pin(on: bool, unit_id: String, behind: float, seconds: float, tail := 0.0, real_on := true) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_real := Tank.real_velocity_on
-	var was_off := _arms(["unstickback"] if on else [])
+	var was_off := _arms(["unstickback"] if on != Movement.UNSTICK_BACK_DEFAULT else [])
 	Tank.real_velocity_on = real_on
 	BrainSwitches.native = false
 	Movement.reset_escape_arms()
@@ -150,7 +150,7 @@ func test_switched_off_the_escape_never_runs() -> void:
 ## Round 30's other pair-check red (`test_nav_wall_contact`): a hull under a raw `drive` order at a wall must NOT back
 ## off with the switch ON — the honest escape is for a routed goal only.
 func test_a_hull_driven_at_a_wall_under_a_drive_order_never_backs_off() -> void:
-	var was_off := _arms(["unstickback"])
+	var was_off := _arms(["unstickback"] if not Movement.UNSTICK_BACK_DEFAULT else [])
 	var was_native := BrainSwitches.native
 	BrainSwitches.native = false
 	Movement.reset_escape_arms()
