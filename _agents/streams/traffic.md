@@ -135,7 +135,27 @@ yard_open/head=xfast:guard:0.2,arrived:guard:0.05 terminus/head=xfast:guard:0.2,
 `SEQ_COUNTER=tr_cross_verdicts`. Stop only on a row where every case reads SERIES PASS/FAIL; then `turns_verdict.py`
 reads the rows that ran. Ships as a pair with native, the default ON. A clip of his yard crossing before/after.
 
-### Bar: T1c-b2 — drafted, sent when the pair-tree check is green
+### Bar: T1c-b2 (pre-registered before any number; DECLARED; ONE run = the LAST attempt; no partial)
+
+Candidate: round 30's `16780030` game/ (+ `02dc1433`'s measurement additions) re-based = stream/traffic `6d19a3d9`, NO code
+change, the rule ON by default (`--traffic-off=setup` = main). No C++ twin: native states "none ported" and
+`native-verify-scenarios` + `traffic-native-verify` run on the tree (C31.1); the WHOLE suite green on it before the census.
+Judged: builder0, both arms one commit, **fresh census seeds {41,…,46}** × the three census cases (Sumps 1000, Parade
+2000, Foundry 2000), **n = 18**, 150 s; base `--traffic-off=setup` (one flag), arm no flag. Row: `judging.md` *The table*,
+probe "traffic-census (3 arenas x seeds)".
+1. **(deciding) the defect:** runs with any repack while firing: arm 0/18, one-sided Fisher p ≤ 0.05 v base, and base ≥
+   8/18 (the 4/9-equivalent; below it the line is NULL, lesson 300 — say so, do not ship on it).
+2. friendly-stuck s ≤ base + 1.645 se (row: sd 32.2 a run → +225 crew-s total at n 18).
+3. fast friendly contacts ≤ base + 1.645 se (row: sd 6.84 a run → +47.7 total).
+4. **artillery shots REPORTED, not judged** (said before numbers): row sd 34.1 a run, base 24.9 a run; a 10 % loss (2.5 a
+   run) needs ~1150 runs at 80 %/5 % — far beyond ~27 — and at n = 18 the MDE is ~20 a run (~80 % of base). Reported:
+   totals, mean paired with se, per-side per-battery counts, and the worst run traced (both sides' artillery).
+5. brains' ApproachStage drawn artillery, fresh seeds {41,42,43} × six ticks, n = 18 both arms: give-way repacks down,
+   from the side 18/18, first round ≤ clicked + 30 s, alive within 1.645 se.
+6. bridge-pooled 18/18 with the rule on. 7. the four traffic-series cases (seeds 41–43): rows equal field for field
+   (bar T1c-b's own counters), or within T3b-c's guards with no wedge.
+**Early stop (C31.3):** `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'` (table sd; the rate
+line's p0 = round 30's base 4/9); stop only on a row where all read SERIES PASS/FAIL; (1)'s Fisher reads the rows that ran.
 
 ### Questions for the lead
 
