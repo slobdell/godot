@@ -53,7 +53,7 @@ func test_the_gathered_table_is_the_gdscript_build() -> void:
 ## Round 31 (traffic T4, CP-H): with `ghost` ON the rows carry Tank.real_velocity, both ways.
 func test_the_gathered_table_with_the_ghost_on() -> void:
 	var consts := (Traffic as Script).get_script_constant_map()
-	if not (consts.has("OPT_IN") and (consts["OPT_IN"] as Array).has("ghost")):
+	if not consts.has("OPT_IN"):
 		print("native: this tree's Traffic has no `ghost` (traffic T4 not merged): nothing to compare")
 		return
 	Traffic.set_off("ghost", false)
