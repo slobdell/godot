@@ -379,6 +379,18 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 
 
 static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, delta: float) -> bool:
+	# A FACE plan that touches a wall is a plan through something the snapshot did not hold (the navmesh and the live
+	# hulls are all it knows): hand back on the first touch, not after STALL_S of grinding, so today's give-up reports
+	# the hull unable within seconds (CP-P1's gate, the wedged semi). The k-turn kind keeps R31.2's stall/timeout abort.
+	if crew.kind == "face" and mover.contact.touching and crew.executor.legs_driven + 1 <= crew.executor.plan.legs.size():
+		aborted += 1
+		if ManoeuvreCensus.trace_unit == name:
+			print("PLANNER_SEAM %s face: aborted (wall contact on leg %d)" % [name, crew.executor.leg_index + 1])
+		_release(name)
+		_retry_until[name] = tick + RETRY_TICKS
+		cmd.throttle = 0.0
+		cmd.turn = 0.0
+		return false
 	var out := crew.executor.tick(delta)
 	cmd.throttle = out.throttle
 	cmd.turn = out.turn
