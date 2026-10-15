@@ -212,7 +212,7 @@ at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not wors
 (c) clicked within ±5° of base; (d) crews still moving at 75 s per task, wheeled turret and all classes, ≤ base + 1.645 se (the orchestrator's one change before numbers, C31.3; filed at main 9564f1bb)
 (se quoted); (e) settle censored, reported; (f) bridge 18/18; (g) Terminus arrivals rigs and mixed not down beyond
 1.645 se (sequential.py, never before 6 seeds); (h) B6's SBF gang_ifv probe reported — on main WITHOUT brains' B6 (`lab/brains-r31-sbf`) it measures turnhull alone; B6 + turnhull together lift the ceiling, a combined reading is mine to report once both land (brains, relayed); (i) `hull_turns` > 0, 
-`face_keep_refused` reported. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
+`face_keep_refused` reported; **(j) (the orchestrator's addition before numbers: turn-hull changes CPU elements too) fights at 24 FRESH seeds 238–261, kills, deaths, hit rate within 1.645 se (rows 69–71), a GATE line**. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
 (g) gate; a miss parks it with the trace. Last attempt: this is the first run; a second on fresh seeds is the last.
 
 ### Decisions (one line each, reversible)
