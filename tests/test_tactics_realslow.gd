@@ -4,8 +4,12 @@ extends TestCase
 ## Sumps causeway): an 8x8 21.5 m from its slot at plant 0.86 m/s, real 0.00, re-seats 0 for the rest of the run.
 
 
+## The switch as the run had it (a scratch tree flips the default ON): restored after each test, never forced off.
+var _was := BrainSwitches.realslow
+
+
 func teardown() -> void:
-	BrainSwitches.realslow = false
+	BrainSwitches.realslow = _was
 
 
 func test_off_is_the_plant_reading_as_before() -> void:
