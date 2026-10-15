@@ -229,6 +229,13 @@ Waits on the planner's seam (CP-P1) decided and agreed through the orchestrator 
 reply on the seam (a `Movement.manoeuvring()` for a planner-held hull, read by the crossing row and `ask()`) is the
 traffic side's part of it.
 
+### His clips (T3b-c)
+
+`~/projects/clips/round31/t3bc_*` (+ `t3bc_CAPTION.txt`): both crossings, seed 43 tick 1 (the worst Terminus run), pair
+tree f5dc4147, before = rule off / after = rule on. Terminus A 11.0 / B 9.5 s → A 9.5 / B 16.3 s; yard A 8.3 / B 8.2 →
+A 8.6 / B 10.6 s. Looked at: at 10 s the squads are interleaved in the junction before; after, A passes in a column and
+B bunches up behind it, held.
+
 ### Gate results so far
 
 - **T3b-c C31.1 gate PASSED** (native's pair tree `f5dc4147` = native 413252ea + traffic ab3351fb + `DEFAULT_OFF = []`;
