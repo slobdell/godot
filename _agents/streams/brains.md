@@ -134,6 +134,23 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   native-verify 0 mismatches, bridge-pooled 18/18; perf-judge NOT JUDGED (box busy, 2.5–2.6x), ai-scenarios NOT JUDGED.**
   (A first try was stopped at the orchestrator's request: two heavy slots held by one stream.) The bar's run (`make
   sbf-bar`, seeds 7–18 × law_tank gang_ifv law_ifv gang_tank + tank) is running.
+- **B6 JUDGED — PASSES EVERY LINE; ships ON (GDScript only; native: none ported)** (builder0, `lab/brains-r31-sbf`
+  `f22d7dcb`, round 30's filed bar, one tree, on v `--sbf-told-sectors=on`, seeds 7–18): (1) pooled drawn hull error at
+  in, four wheeled: **10.4 v 29.1°** (need ≤ 19.1); per class gang_ifv 26.0 v 49.9, gang_tank 10.2 v 28.3, law_ifv 1.1 v
+  28.9, law_tank 24.0 v 29.9 (paired diff +4.8, se 7.2: within 2 se): none worse > 2 se: PASS. (2) crews in, drawn: 48 v
+  48 for three classes, law_tank 45 v 45: PASS. (3) clicked rows 60/60 identical: PASS. (4) counter fired 60/60 drawn on,
+  0 clicked, 0 control: PASS. (5) the gate on the tip: `make check` exited 0, 2613/0 (tactics scenarios incl. SBF /
+  screen / ambush postures), sim-baseline unmoved, so nothing to explain in the thirteen. Additions: (a) the tracked
+  `tank` guard 1.6 v 21.8° (better, not just within 2 se); (b) the CPU never draws a facing (`told` comes from his task
+  only), so no CPU line; (c) cost `t.poll.element` 0.178 v 0.171 ms on Locks (`ai-parts-match`): ≤ 0.5 ms, PASS (inert
+  for the CPU, so noise); (d) native: the change is 16 lines in `ElementPlan._plan_support_by_fire`, no native mirror of
+  ElementPlan; native-verify-scenarios 0 mismatches: none ported. (e) law_tank read before the median: in most seeds
+  A_1 and A_3 sit ~80–90° off in BOTH arms (cause (c), a wheeled hull not turned at rest: manoeuvre's M1b, outside B6).
+  The worst run, s17 drawn on (2 of 4 in), traced: A_1, given the drawn facing (−0.87, −0.50) instead of its sector
+  (−1, 0), reads `blocked no_path` from 16 s 21 m from its slot and never recovers; A_3 queues behind it. Control: A_1
+  hits `no_path` at 20 s too but recovers, in at 24 s. This is the arrival gate, cause (b) (B5c, parked), reached by
+  the new facing; the crew count is level overall (control loses its 3 in s8, s14, s15). Rows + traces:
+  `references/round31/brains/b6-*`. For the orchestrator to merge `lab/brains-r31-sbf` f22d7dcb.
 - **B3b-2** built: `lab/brains-r31-bridge` `344a772a` (route seating matched ONCE per task point, held `fixed` until the
   point changes or a re-seat; `--route-seat-once=off` = round 30's B3b; counter `crossings_held`); unit 5/0. Tuning on
   the three named cells running: green t5 s2 on = rim 0, 4/4 across, 35.8 s. Tuning (n = 1, builder0): green s2 t5 rim 0
