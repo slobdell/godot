@@ -28,7 +28,7 @@ struct GN {
 			x{ "x" }, z{ "z" }, name{ "name" }, fallback{ "fallback" }, sector{ "sector" }, sector_cos{ "sector_cos" },
 			turret{ "turret" }, projectile_speed_mps{ "projectile_speed_mps" }, game_match{ "game_match" }, tick{ "tick" },
 			slot{ "slot" }, mount{ "mount" }, range{ "range" }, preferred_max{ "preferred_max" },
-			aim_tolerance_deg{ "aim_tolerance_deg" }, long_shot{ "long_shot" }, estimated_velocity{ "estimated_velocity" },
+			aim_tolerance_deg{ "aim_tolerance_deg" }, long_shot{ "long_shot" }, estimated_velocity{ "estimated_velocity" }, real_velocity{ "real_velocity" },
 			alive{ "alive" }, team{ "team" }, aim_point{ "aim_point" }, fire{ "fire" }, turn{ "turn" },
 			ammo_fraction{ "ammo_fraction" }, ready_to_fire{ "ready_to_fire" }, sight_radius{ "sight_radius" },
 			suppression{ "suppression" }, designated_seconds{ "designated_seconds" }, unit_id{ "unit_id" },
@@ -635,7 +635,7 @@ struct Gun {
 		v.set_g_engaged_target(String(target->get_name()));
 		const Vector3 target_at = target->get_global_position();
 		const double flight = (double)here.distance_to(target_at) / (double)weapon[k.flight_speed];
-		const Vector3 velocity = target->get(k.estimated_velocity);
+		const Vector3 velocity = target->get(g.REAL_SPEED ? k.real_velocity : k.estimated_velocity); // Manoeuvre.lead_velocity
 		const Vector3 aim = target_at + velocity * (real_t)flight;
 		cover(aim, cmd);
 		const bool aimed = aim_error(muzzle(), turret_forward(), aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg]);
@@ -695,7 +695,9 @@ struct Gun {
 		Vector3 aim = target_at;
 		if ((int64_t)weapon[k.kind] == g.KIND_PROJECTILE) {
 			const double round_speed = weapon.get(k.projectile_speed_mps, 0.0);
-			aim = lead_point(muzzle_at, target_at, target->get(k.estimated_velocity), round_speed > 0.0 ? round_speed : g.SHELL_SPEED);
+			// Manoeuvre.lead_velocity(target) (round 31, H3)
+			aim = lead_point(muzzle_at, target_at, target->get(g.REAL_SPEED ? k.real_velocity : k.estimated_velocity),
+					round_speed > 0.0 ? round_speed : g.SHELL_SPEED);
 		}
 		if (game_match != nullptr) {
 			aim += aim_offset(wander(tank->get(k.team)), game_match->get(k.tick), tank->get(k.slot), g.WANDER_PERIOD_TICKS);
@@ -755,6 +757,7 @@ bool gun_configure(GunConfig &c, const Dictionary &config) {
 		}
 		*targets[i] = config[doubles[i]];
 	}
+	c.REAL_SPEED = (bool)config.get("REAL_SPEED", false);
 	c.keep_engagement = config.get("engagement", Variant());
 	c.keep_order_controller = config.get("order_controller", Variant());
 	c.keep_difficulty = config.get("difficulty", Variant());

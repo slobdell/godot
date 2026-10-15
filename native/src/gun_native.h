@@ -25,6 +25,9 @@ struct GunConfig {
 	int64_t SCAN_EVERY_TICKS = 3, LANE_RECHECK_TICKS = 1, WANDER_PERIOD_TICKS = 10, KIND_PROJECTILE = 0, KIND_ARC = 3;
 	int64_t WORLD_MASK = 1;
 	double LOW_AMMO_FRACTION = 0.3, HELD_AIM_DISTANCE = 1000.0, SHELL_SPEED = 70.0, EYE_HEIGHT = 1.3;
+	// Round 31 (manoeuvre H3, CP-H, `realspeed`): Manoeuvre.real_speed_on() at configure: the two aim leads read
+	// Tank.real_velocity (Manoeuvre.lead_velocity), else estimated_velocity. False on a tree without it.
+	bool REAL_SPEED = false;
 	// Engagement's constants
 	double ACQUIRE_NEAR_SECONDS = 0, ACQUIRE_FAR_SECONDS = 0, SUPPRESSION_ACQUIRE_PENALTY = 0, DESIGNATED_ACQUIRE_SCALE = 0,
 		   SCOUT_ACQUIRE_SCALE = 0, CROSSING_ACQUIRE_PENALTY = 0, CROSSING_REFERENCE_RATE = 1, CROSSING_ACQUIRE_MAX = 0,
