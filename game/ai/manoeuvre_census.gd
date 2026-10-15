@@ -82,7 +82,8 @@ static func report() -> Dictionary:
 static func counters() -> Dictionary:
 	return {"face_plans": Manoeuvre.face_plans, "face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none,
 			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
-			"face_slot_refused": Manoeuvre.face_slot_refused, "escape": Movement.escape_arms(),
+			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns,
+			"face_keep_refused": Manoeuvre.face_keep_refused, "escape": Movement.escape_arms(),
 			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes}
 
 
