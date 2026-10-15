@@ -478,6 +478,13 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   candidate becomes B3b-2b `5ed61f91`:** re-match the seating once each time another crew passes the exit
   (`--route-seat-across=off` = `344a772a`); tuning, n = 1, rust s2 t8 / green s2 t5 / rust s2 t9 / green s3 t18 all rim 0.
   The same bar and lines apply, gate re-run on `5ed61f91`, then the series on that one heavy slot, and B6 after.
+  **JUDGED ~11:00 PDT: FAIL on line (3); PARKED (the last attempt).** builder0, `5ed61f91`: (1) his bridge, the full
+  108, 108/108 v control 106/108 PASS; (2) bridge-pooled 18/18 PASS; (3) **arrive seeds 41–44, n 100 an arm: every crew
+  within 8 m on 90 v 97, discordant 9 against v 2 for (McNemar p 0.065), FAIL**; (4) crossing counters > 0 in all 108 on
+  and 0 in all 200 arrive runs (the seating never fires there); (5) cost 0.116 v 0.194 ms (busy box, no gain claimed).
+  **Reading:** the arrive loss comes from round 30's other two switches carried in the candidate (the mouth guard and the
+  heading rule), whose arrive line was never read; round 30's chain stopped at the 108. Rows:
+  `references/round31/brains/b3b2b-*`.
 - **Planner CP-P1 bar (filed 2026-10-15 ~04:00 PDT, before any judged number; DECLARED; the LAST attempt = the second
   judged run; full text in planner Status `ea246430` "CP-P1 BAR (DRAFT v2)"):** candidate = the seam ON
   (`--nav-off=planner`) at the hash the pair-tree check passes (`0914dafd` or successor), GDScript drive, C++ planner ON in

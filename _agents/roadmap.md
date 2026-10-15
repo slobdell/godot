@@ -245,6 +245,12 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 
 ## Round 32 candidates (found during round 31)
 
+- **His bridge, 108/108 at last, but the arrive maps paid (brains B3b-2b parked 2026-10-15):** the crossing seating
+  (re-matched as crews pass the exit) gave every crew across his bridge on all 108 cells (control 106/108), but the
+  arrive series fell 97 → 90 within 8 m (seeds 41–44, n 100, McNemar p 0.065). The seating never fires on those maps, so
+  the cost is in round 30's mouth guard or heading rule, carried in the same candidate. Round 32 ships the seating ALONE
+  (its own bar: the 108 + arrive), after attributing the cost by removing each of the other two (brains' 18-run
+  attribution on the 9 losing cells is a trace, since those cells were selected for the loss).
 - **Turn the hull (M1b(2)) parked a second time on arrivals that are really seating (2026-10-15).** With the lift
   accepting element-task facings, the point-task share and line tasks improved (run 1: ambush 66 → 28°, SBF 74 → 29°;
   gang_ifv SBF 61 → 21°) and contact fell, but Terminus mixed arrivals read 293 → 285. The "missing" crews had
