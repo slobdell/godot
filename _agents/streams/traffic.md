@@ -122,7 +122,7 @@ _Updated 2026-10-15 ~06:15 PDT (traffic worker, round 31, Opus). Every number na
   NATIVE=off`) and T4 v1 as its own consumer A/B.
 - **Stretch:** not started (waits on CP-P1). Seam reply sent: `Movement.manoeuvring()` rather than a wider `in_kturn()`.
 - **Green check:** this stream's merge candidate is `traffic-t4` `aaa7fa8e`; its check is native's pair/t4 re-check on
-  **fafe49ea = GREEN** (builder0 10:55 PDT, exited 0, 2639/0, ALL JUDGED, sim-baseline unmoved) — the stream's closing green check (the first, 0475758f, was red on my test's leak alone). stream/traffic itself is a record branch (parked trees), not a merge candidate.
+  **fafe49ea = GREEN** (builder0 10:55 PDT, exited 0, 2639/0, ALL JUDGED, sim-baseline unmoved) — the stream's closing green check, **MERGED to main as `dc9792f9`** (T4 v1 + ghostself opt-in default OFF; I4 tooling + CACHE=auto for every stream). Stream complete apart from the lead's two answers (T3b-c Terminus line, T1c-b2 ship) (the first, 0475758f, was red on my test's leak alone). stream/traffic itself is a record branch (parked trees), not a merge candidate.
 - **Requests:** native — the two T4 pair checks. Orchestrator — the two questions to him; on yes, the follow-ups in
   *Kept branches*.
 - **What to playtest:** nothing new in play from this stream (all parked or OFF). His clips: `~/projects/clips/round31/`.
