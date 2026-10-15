@@ -33,8 +33,16 @@ extends RefCounted
 ## Deterministic: the queue is the order `take` was called (the controllers' order, tanks by name); no clock.
 
 const SWITCH := "planner"
-## Expansions a tick for a pending search (P6: chosen from CP-P0's cost line on builder0 so a slice is <= 0.5 ms).
-const SLICE := 100
+## Expansions a tick for a pending search: C31.5's cost line (<= 0.5 ms a tick at Sumps 25 a side) over the IN-FIGHT
+## price of the seam's own request. planner-census on fd36ecd5's C++ (builder0 light lane, unpinned, load ~12, seeds
+## 92721 / 31337, the probe every 30 ticks): a War Rig's face-about on the Sumps navmesh among 49 hulls cost 205-392 us
+## an expansion warm (the sphere walks of a long hull; the field's cells are cached, the hull tests distance-culled),
+## 257-292 us cold; the Terminus lab fixtures pinned to 4 cpus 100-510 us. SLICE 2 is 0.4-0.8 ms a tick on that box
+## under that load, ~0.3 ms pinned; it is COUNTED, never timed (the tick a plan lands must not depend on the machine:
+## the lockstep relay). What it buys: the Terminus turnround (7 expansions) lands in 4 ticks, the T-junction (94) in
+## 47 (1.6 s), and PENDING_TICKS caps a search at 180 expansions (the census's median in-press face-about is 131; its
+## longest quarter 250-500 would be abandoned at the 3 s hold -- the judged run's `abandoned` counts them).
+const SLICE := 2
 const BUDGET := 1500
 const HORIZON_M := 30.0
 const PENDING_TICKS := 90          # 3 s, the agreed hold
