@@ -378,7 +378,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   round, so it is not pursued.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
-  the 3 s hold.
+  the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
+  SEARCH** (PENDING_TICKS counted from the tick the search begins at rest). The hull's whole hold is in `pending_ticks`.
+  The rolling-face test took one request and one 5-leg plan, abandoned 0, pending 113 ticks (~45 braking + ~68 search)
+  and ended 4.1° off at 40 s (builder0 light, 5/0). **What he could see:** a rig ordered to face while moving fast stands
+  for up to ~3.8 s before its first leg, so CP-P1 REPORTS `pending_ticks` per rig event (median and max). The switch is in
+  CP-H's form at `39ba4b0b` (`PLANNER_DEFAULT := false`), so the ship change is one const.
 - **Brains B5c-v5 bar (filed 2026-10-15 ~02:10 PDT, before any judged number; DECLARED; the LAST attempt; partial:
   none):** candidate = **round 30's v4 rule UNCHANGED** (`lab/brains-r30-gate` `f1a804eb`). It was parked only on the
   single pursuit cell, which R31.3's A/A puts inside a do-nothing nudge's noise, so it gets no re-scoping fitted to it
