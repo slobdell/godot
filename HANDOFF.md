@@ -24,7 +24,7 @@ stable until it is agreed.
    as the yard's ~3 s you accepted." **Recommendation: yes, let your ~3 s cover both crossings**, since it's one rule at
    one price. With his yes, T3b-c ships on the rows already judged (Terminus +2.61 s ≤ 3.0 + 0.90, yard +3.38 ≤ 3.43,
    builder0, `f5dc4147`, seeds 41–43, n 18) as the pair with native `413252ea` + the 13 baselines re-recorded. With his
-   no, it parks. Traffic's before/after clip of both crossings goes with the question.
+   no, it parks. **Clips (sent to him):** `~/projects/clips/round31/t3bc_*` (Terminus and yard, seed 43 tick 1 = the worst Terminus run, before and after, plus a side-by-side at 10 s and `t3bc_CAPTION.txt`).
    **What the worst run shows** (Terminus s43/t1, traced on builder0): the whole yielding squad is held at the crossing's
    share for ~4–6 s while the other squad passes, reaching back to its rear crew, then released at full pace, plus one
    overshoot k-turn. The rule is doing exactly what it intends; nothing is stuck.
