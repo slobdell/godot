@@ -176,8 +176,9 @@ survive.
 **Tree:** R31.4's ONE tree (main with every consumer merged OFF + native's mirrors), built by native; the arms are flags
 on that one commit, both on the **GDScript path** (`--brains-off=native` in every arm; `make manoeuvre-cph` refuses an
 arm without it, R31.1). **Arms:** OFF = `--brains-off=native`; ALL = `--nav-off=unstickback,kturnarc --gun-off=realspeed
---traffic-off=ghost --brains-off=native,realslow`; each consumer ALONE (unstickback, kturnarc, realspeed, ghost,
-realslow), REPORTED. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
+--traffic-off=ghost --brains-off=native,realslow`, or — if T4 stands down (not on main OFF by the orchestrator's 09:00 PDT cutoff) — ALL = `allnoghost`
+(the same list without `--traffic-off=ghost`), the case named in the bar's block when the series starts; each consumer
+ALONE (unstickback, kturnarc, realspeed, realslow, and ghost when T4 is in), REPORTED on the SAME judged seeds. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
 them):** Terminus census and drive 110–122 (13), hull-rest 84–89 (4 factions × 6 tasks × 6 = 144 runs an arm, one arm per
 remote call, lesson 311), fights 190–213 (24), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
 - (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each; early stop by
