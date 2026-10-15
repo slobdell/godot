@@ -166,6 +166,21 @@ probe "traffic-census (3 arenas x seeds)".
 **Early stop (C31.3):** `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'` (table sd; the rate
 line's p0 = round 30's base 4/9); stop only on a row where all read SERIES PASS/FAIL; (1)'s Fisher reads the rows that ran.
 
+### Gate results so far
+
+- **T3b-c C31.1 gate PASSED** (native's pair tree `f5dc4147` = native 413252ea + traffic ab3351fb + `DEFAULT_OFF = []`;
+  builder0 `make check exited 2` on sim-baseline alone, all 13 maps moved as a turns-ON tree must; 2624 passed / 0 failed;
+  native-verify-scenarios 0; twin tests 0). Judged series running there: base arm 72 rows, 0 missing.
+- **T1c-b2 pre-census gate** (`dc8fcbf6`, builder0, read from its build/ because the wrapper was reaped): test 2630 / 0;
+  23 of 25 CHECK_TARGETS in done/; native-verify-scenarios 0 mismatches; sim-baseline red on **pit alone**
+  (e03377eab0ab0389 → a8fe8e14bea01674, the declared rule; twelve maps unmoved). `traffic-native-verify` runs at the END
+  of the judged chain; **the orchestrator's condition: red there = the census VOID.**
+- `ab3351fb`'s own check never produced a verdict: Godot `--import` hung 70 min, wrapper reaped. The tooling rides
+  the T3b pair instead (orchestrator).
+- **Process (round 31):** wrappers launched from the shell are reaped at a shell-cwd reset, even with setsid/nohup.
+  Long runs go under `systemd-run --user --unit=traffic-<what> --collect` (units: traffic-t3bc, traffic-after-check,
+  traffic-t1cb2). Scratch worktrees: `godot-traffic-pair` (f5dc4147), `godot-traffic-t1cb` (33cb2da5).
+
 ### Questions for the lead
 
 None.
