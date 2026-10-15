@@ -48,7 +48,9 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-**Merged ~11:00 PDT: pair/t4 `fafe49ea` → main `dc9792f9`** (traffic T4 v1 + ghostself OPT-IN default OFF, I4's
+**Merged ~11:30 PDT: manoeuvre `f593f487` → main `a2ef0b31`** (H1 amended per R31.5, OFF; turn-hull attempt 2's code,
+inert; its check exited 0, 2636/0). **Main check RUNNING on `a2ef0b31`** (`orch-main-check5`, log `main-check-batch5.log`),
+covering this and pair/t4. Native re-cuts CP-H's ONE tree on `a2ef0b31` after CP-P1's gate. **Merged ~11:00 PDT: pair/t4 `fafe49ea` → main `dc9792f9`** (traffic T4 v1 + ghostself OPT-IN default OFF, I4's
 early-stop tooling + CACHE=auto, native's load/exit live-guard; its check exited 0, 2639/0, ALL JUDGED, 13 unmoved).
 It is traffic's closing merge; traffic's stream is complete apart from his two answers. Unchecked on main until the next
 batch (with manoeuvre's `f593f487`). **✅ MAIN GREEN at `90ed915a` (~09:05 PDT 10-15):** builder0 `>> remote: make check exited 0`, 2638 passed / 0 failed,
