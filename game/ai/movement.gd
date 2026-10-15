@@ -3613,13 +3613,16 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_from = tank.global_position
 			_kturn_arc_m = 0.0
 		elif kturn_arc_on():
-			# Round 31 (manoeuvre H2, `kturnarc`): the ARC driven in the leg's gear — the last tick's real motion along
-			# the nose, SIGNED by the gear, so a short hull still rolling the other way when its leg starts (a scout at
-			# 10 m/s under reverse throttle: `_kturn_rolling` is true from the start for hulls under KTURN_BRAKE_HULL_M)
-			# subtracts its roll-out instead of counting it as progress. Round 30's unsigned arc ended that scout's leg
-			# 2.2 m short with the nose 40 deg off (`scenario_cp2`'s engine-deck orbit: 3 deck hits of 27 v 58 of 83).
+			# Round 31 (manoeuvre H2, `kturnarc`): the ARC driven IN THE LEG'S GEAR — the last tick's real motion along
+			# the nose in the gear, and nothing for motion against it. A short hull still rolling the other way when its
+			# leg starts (a scout at 10 m/s under reverse throttle: `_kturn_rolling` is true from the start for hulls
+			# under KTURN_BRAKE_HULL_M) counts its roll-out as NOTHING: the leg is measured from where the hull begins
+			# to move its way, as round 14's rolling rule does for the braked hulls. Round 30's unsigned arc counted the
+			# roll-out as progress (the leg ended 2.2 m short, nose 40 deg off); the signed arc first tried here
+			# subtracted it (the leg backed ~5.5 m from where the roll-out stopped): both broke `scenario_cp2`'s
+			# engine-deck orbit (3 of 27, 7 of 8 deck hits v 58 of 83).
 			var nose_now := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
-			_kturn_arc_m += tank.real_velocity.dot(nose_now) * float(_kturn_gear) * delta
+			_kturn_arc_m += maxf(0.0, tank.real_velocity.dot(nose_now) * float(_kturn_gear)) * delta
 		# Round 30 (the planner's P4 finding): with `kturnarc` a leg is measured by the arc the hull drove, not the
 		# chord from its start (3 % short on a 10 m full-lock leg of a War Rig: the leg over-ran its plan by that).
 		var backed := _kturn_arc_m if kturn_arc_on() else _flat_distance(tank.global_position, _kturn_from)
