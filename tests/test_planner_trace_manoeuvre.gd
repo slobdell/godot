@@ -75,9 +75,20 @@ func _kturn(on: bool) -> void:
 	var motion: Array = []
 	var previous := tank.global_position
 	var wall_min := INF
+	var poses: PackedStringArray = []   # the base's own trajectory: tick, x, z, heading deg from -z, steer, off-aim deg
+	var clear_pose := ""
 	for frame in SimClock.TICK_RATE * 40:
 		await tree.physics_frame
 		var reading := Movement.state(tank)
+		var head := -tank.global_basis.z
+		var to_goal := Vector3(GOAL.x - tank.global_position.x, 0.0, GOAL.z - tank.global_position.z).normalized()
+		var off := rad_to_deg(absf(Vector2(head.x, head.z).angle_to(Vector2(to_goal.x, to_goal.z))))
+		var heading_deg := rad_to_deg(Vector2(0.0, -1.0).angle_to(Vector2(head.x, head.z)))
+		if frame % 10 == 0 or frame < 4:
+			poses.append("t%d:(%.1f,%.1f)h%.0f/s%.2f/off%.0f" % [frame, tank.global_position.x, tank.global_position.z, heading_deg,
+					float(reading.get("turn", NAN)), off])
+		if clear_pose == "" and off <= PlannerSeam.KTURN_AIM_DEG and frame > 2:
+			clear_pose = "t%d:(%.2f,%.2f)h%.1f" % [frame, tank.global_position.x, tank.global_position.z, heading_deg]
 		if bool(reading.get("wall_contact", false)):
 			contacts += 1
 			if first_contact < 0:
@@ -104,6 +115,8 @@ func _kturn(on: bool) -> void:
 			"ON" if on else "OFF", float(arrived) / SimClock.TICK_RATE if arrived >= 0 else -1.0, contacts, first_contact, wall_min,
 			segs.size(), _segments_text(segs), JSON.stringify(census), rep["requests"], rep["plans"], rep["plan_legs"], rep["driven"],
 			rep["aborted"], JSON.stringify(rep["refused"]), JSON.stringify(rep["holds"]), JSON.stringify(PlannerSeam.last_plans)])
+	print("MEASURE planner_trace kturn seam %s poses: first within %.0f deg of the goal at %s | %s" % ["ON" if on else "OFF",
+			PlannerSeam.KTURN_AIM_DEG, clear_pose, " ".join(poses)])
 	assert_true(arrived >= 0 or on, "the base arm arrives (%d)" % arrived)
 	if on:
 		assert_true(rep["requests"] > 0, "the seam took the rig (%d requests)" % rep["requests"])
