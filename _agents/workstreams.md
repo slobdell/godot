@@ -219,6 +219,9 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (the ghost mirror is already on main at `298e4498`). **ghostself:** OUT of CP-H unless its tuning arm has run by
   ~07:00 PDT. It stays in the code OPT-IN and UNMIRRORED as tuning only, and a native-path arm naming it would silently
   run it OFF, so no judged run names it.
+  **Decided (~06:50 PDT, traffic's tuning on `dc8fcbf6`, nav-terminus-drive s24–29, GDScript, n 12 paired): ghostself
+  is OUT and T4 = v1 alone.** v1 v v1+ghostself: pinned crews 126 → 598 (+472, se 185, UP beyond 2 se), rigs 71 → 311,
+  stuck 324 → 799. Native's `pair/t4-on` (ghostself opt-in, ghost on) is T4's gate tree.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
