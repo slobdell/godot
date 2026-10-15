@@ -310,6 +310,13 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   legs per arm, expected equal), and the scout's orbit stays a pass line as a no-change guard. The deciding lines are the
   rig cases: seed 31's and 51's Terminus grinds, the squadmate pin, and the 180° arrival where it is a rig.
 
+- **R31.8 Early stop is OFF on guard lines (2026-10-15 ~11:40 PDT, manoeuvre's finding, `judging.md`):** on M1b(2)'s
+  Terminus census, `arrived:guard:0.10` read SERIES PASS at run 6 while the fixed 1.645 se line FAILED at 13, because the
+  stop rule's 10 % harm is ~4× the fixed line's. **For every series not yet run (CP-H, CP-P1 attempt 2):** guard lines
+  run to completion and are judged on their fixed line, and early stop applies only to a gain line whose stop effect
+  equals that line's MDE. CP-H's (a) "early stop by `sequential.py arrived:guard:0.10`, never before 6 seeds" and any
+  CP-P1 arrivals stop rule are therefore REMOVED, before numbers.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
