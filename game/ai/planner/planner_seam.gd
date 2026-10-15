@@ -61,6 +61,7 @@ const YAWED_DEG := 5.0
 const FACE_TOL_DEG := 8.0          # Manoeuvre.FACE_ALIGNED_DEG
 const NEW_GOAL_JUMP := 3.0         # Movement.NEW_GOAL_JUMP's intent: a goal that jumps this far is a new order
 const STALE_TICKS := 2             # a crew `take` has not been asked about for this long is released
+const REPORT_LINES := true         # a PLANNER_SEAM_REPORT line at every event's end (measurement; tens a run)
 
 ## Measurement (statics; `report()` for a probe's row).
 static var requests := 0
@@ -410,6 +411,10 @@ static func _release(name: String) -> void:
 		Planner.cancel_session()
 	_crews.erase(name)
 	_queue.erase(name)
+	# The run's report (CP-P1 bar line (a): "PlannerSeam.report() printed per run"): the drive harnesses are nav's
+	# files, so the seam prints its own cumulative line at every event's end; the LAST one in a log is the run's.
+	if REPORT_LINES:
+		print("PLANNER_SEAM_REPORT " + JSON.stringify(report()))
 
 
 static func _flat(a: Vector3, b: Vector3) -> float:
