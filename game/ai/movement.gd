@@ -3212,8 +3212,16 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 	var gear := -1.0 if order.get("reverse", false) else 1.0  # the way it was trying to go
 	var back := Vector2(tank.global_basis.z.x, tank.global_basis.z.z) * gear  # the way it would back off
 	_esc_friend = null
-	# -1 marks a pin with NO hull in it (terrain, a wall): its refused reverse falls back to round 29's escape (below).
 	_esc_gap = -1.0 if friend == null else 0.0
+	if friend == null:
+		# R31.5, made robust (the CP-H gate's variant set): a pin with NO hull in it (terrain, a wall) takes round 29's
+		# escape bit for bit, whatever room there is behind. The straight reverse is the answer for a hull pinned on a
+		# FRIEND; against the ground it never changes the heading, and the route drove Green_Alpha_3 straight back into
+		# the same spot six times (backed 2.0, 1.5, 1.0 m, twice over; test_control_queued_task's route, 68280cce with
+		# realslow off). Only the honest reading (the fire) is H1's for such a pin.
+		esc_fallback += 1
+		_round29_escape(order)
+		return
 	if friend != null and friend.team == tank.team and friend.is_alive():
 		var mover := Movement.of(friend)
 		if mover != null:
@@ -3303,25 +3311,29 @@ func _escape_end() -> void:
 	_stuck_time = 0.0
 
 
+## Round 29's stall escape, bit for bit (the branch `_unstick` runs with the switch off): with a friend right behind, a
+## tracked hull pivots and a car asks that friend for room; otherwise 0.9 s of reverse on full lock. R31.5: every pin
+## with no hull in it.
+func _round29_escape(order: Dictionary) -> void:
+	_escape_end()
+	var tank := ctl.tank
+	var backing := 1.0 if order.get("reverse", false) else -1.0
+	_unstick_pivot = not _off.has("unstick") and _hull_within(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing,
+			UNSTICK_CLEARANCE)
+	if not _unstick_pivot or wheel_radius() <= 0.0:
+		_unstick_left = UNSTICK_SECONDS
+	else:
+		_ask_behind(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing)
+
+
 ## Step 2: back straight as far as the outline sweep and the hulls behind allow (at most ESC_BACK_MAX_M), else stand.
 func _escape_reverse(order: Dictionary) -> void:
 	var tank := ctl.tank
 	_esc_gear = -1.0 if order.get("reverse", false) else 1.0
 	var room := _straight_room(-_esc_gear)
-	if room < ESC_BACK_MIN_M and _esc_gap < 0.0:
-		# Round 31 (the C31.1 gate's trace, test_control_queued_task): a crew held by the GROUND (real 0, plant 0, no
-		# wall contact, no hull) whose straight reverse has no room stood 2 s, nine times over, and never moved again;
-		# round 29's reverse on lock is what freed it. Standing and reporting is the answer for a hull pinned on a
-		# FRIEND (the Sumps 8x8, the rig); with no hull in the pin, round 29's escape, bit for bit.
-		esc_fallback += 1
-		_escape_end()
-		var backing := 1.0 if order.get("reverse", false) else -1.0
-		_unstick_pivot = not _off.has("unstick") and _hull_within(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing,
-				UNSTICK_CLEARANCE)
-		if not _unstick_pivot or wheel_radius() <= 0.0:
-			_unstick_left = UNSTICK_SECONDS
-		else:
-			_ask_behind(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing)
+	if _esc_gap < 0.0:
+		esc_fallback += 1  # (unreached since _escape_begin routes every no-hull pin to round 29's escape; kept as a guard)
+		_round29_escape(order)
 		return
 	if room < ESC_BACK_MIN_M:
 		esc_refused += 1
