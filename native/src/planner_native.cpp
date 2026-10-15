@@ -316,10 +316,11 @@ double PlannerNative::World::wall_distance(double x, double z) {
 
 // PlannerWorld._cell: a cell is the float32 the field stores, on its first read as on every later one (P6). A
 // navmesh world reads the shared per-match cache; a rectangle world (the tests) its own window and spill.
+// The window is the search's own flat array either way; a navmesh world fills a window cell from the shared cache on
+// its FIRST read in this search (one hash lookup a cell a search, not one a read: the census on c158aecf read ~1700
+// cells an expansion, ~170 us, with the cache hit 99.99 %; a flat read is the rectangle worlds' ~40 us). So the window
+// holds exactly the cells this search read, as the GDScript's does, and the twin compares it two-sided.
 double PlannerNative::World::cell(int64_t ix, int64_t iz) {
-	if (nav) {
-		return (double)cached_cell(ix, iz);
-	}
 	const int64_t cx = ix - field_x0;
 	const int64_t cz = iz - field_z0;
 	if (cx >= 0 && cz >= 0 && cx < field_n && cz < field_n) {
@@ -328,8 +329,11 @@ double PlannerNative::World::cell(int64_t ix, int64_t iz) {
 		if ((double)v > UNSET_BELOW) {
 			return (double)v;
 		}
-		field[i] = (float)wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
+		field[i] = nav ? cached_cell(ix, iz) : (float)wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
 		return (double)field[i];
+	}
+	if (nav) {
+		return (double)cached_cell(ix, iz); // outside the window: the cache is the spill
 	}
 	const int64_t key = (ix + 1048576) * 2097152 + (iz + 1048576);
 	auto known = spill.find(key);
@@ -1075,29 +1079,6 @@ Dictionary PlannerNative::debug_field() const {
 	Dictionary d;
 	PackedFloat32Array cells;
 	cells.resize((int64_t)world.field.size());
-	if (world.nav) {
-		for (int64_t cx = 0; cx < world.field_n; cx++) {
-			for (int64_t cz = 0; cz < world.field_n; cz++) {
-				const int64_t ix = cx + world.field_x0;
-				const int64_t iz = cz + world.field_z0;
-				const int64_t kx = ix >= 0 ? ix / World::CHUNK : -((-ix - 1) / World::CHUNK) - 1;
-				const int64_t kz = iz >= 0 ? iz / World::CHUNK : -((-iz - 1) / World::CHUNK) - 1;
-				auto found = World::nav_cache.chunks.find((kx + 1048576) * 2097152 + (kz + 1048576));
-				float v = (float)World::UNSET;
-				if (found != World::nav_cache.chunks.end()) {
-					v = found->second[(size_t)((ix - kx * World::CHUNK) * World::CHUNK + (iz - kz * World::CHUNK))];
-				}
-				cells[cx * world.field_n + cz] = v;
-			}
-		}
-		d["field"] = cells;
-		d["x0"] = world.field_x0;
-		d["z0"] = world.field_z0;
-		d["n"] = world.field_n;
-		d["spill"] = (int64_t)0;
-		d["shared"] = true;
-		return d;
-	}
 	for (size_t i = 0; i < world.field.size(); i++) {
 		cells[(int64_t)i] = world.field[i];
 	}
@@ -1105,7 +1086,8 @@ Dictionary PlannerNative::debug_field() const {
 	d["x0"] = world.field_x0;
 	d["z0"] = world.field_z0;
 	d["n"] = world.field_n;
-	d["spill"] = (int64_t)world.spill.size();
+	d["spill"] = (int64_t)world.spill.size(); // a navmesh world's spill is the shared cache: not counted
+	d["shared"] = world.nav;
 	return d;
 }
 
