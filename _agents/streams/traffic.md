@@ -181,6 +181,16 @@ arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turn
 - Hook (table sd): yard SERIES PASS at run 7, head-ons PASS (6, 18), Terminus SERIES FAIL at 18 (xclear, truncation).
 - Worst run's trace (s43/t1, both arms) queued (`traffic-t3bc-trace`).
 
+### T4 for CP-H (cutoff 09:00 PDT 2026-10-15, the orchestrator's)
+
+- **Merge branch `traffic-t4` = `357ca38b`** (one commit on main c6ffb37e; worktree `godot-traffic-t4`): T4 v1 (`ghost`) +
+  `ghostself`, both OPT-IN via `Traffic.OPT_IN`; `test_traffic_ghost`; and ALL of I4's tooling (its merge path now that
+  T3b's pair does not ship). No T1c-b, no T3b on it. Native builds pair/t4 on it (ghost ON for the gates).
+- Tuning (builder0, `dc8fcbf6`, nav-terminus-drive seeds 24–29, GDScript path, n = 12 paired, `pinned_table.py`): base v
+  v1: stuck 492 → 324 crew-s (se 153), pinned all 212 → 126 (se 110), rigs 81 → 71 (se 10), all within 2 se.
+  Round 30's v1 rig regression (72 → 164) was on M4b's tree and does not appear on main. v2 arm queued; if it has not
+  decided by ~07:00, ghostself is called out of CP-H and v1 merges OFF alone.
+
 ### Gate results so far
 
 - **T3b-c C31.1 gate PASSED** (native's pair tree `f5dc4147` = native 413252ea + traffic ab3351fb + `DEFAULT_OFF = []`;
