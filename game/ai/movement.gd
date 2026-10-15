@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -3264,6 +3264,24 @@ func _escape_hold(cmd: TankCommand) -> void:
 	cmd.turn = 0.0
 
 
+## Round 31 (R31.2, for the planner's seam): a plan TAKES this hull. Every executor state of manoeuvre's that would
+## otherwise resume stale when the plan releases it is ended here: a k-turn / back-and-fill leg in progress (ended as
+## "planner", its remaining legs dropped), the stall escape (any stage) and the pressed-wall escape, and the stall clock.
+## PlannerSeam.take calls it on the tick it takes a hull (OFF: never called; nothing changes).
+func yield_to_plan() -> void:
+	native_stale |= STALE_ALL
+	if _kturn_left_m > 0.0:
+		_kturn_end("planner")
+		_kturn_left_m = 0.0
+		_kturn_legs.clear()
+	_esc_stage = ESC_NONE
+	_esc_friend = null
+	_unstick_left = 0.0
+	_escape_gear = 0.0
+	_stuck_time = 0.0
+	_press_time = 0.0
+
+
 ## The gear the hull was trying to go in when it stuck (+1 forward): the straight reverse is the other.
 var _esc_gear := 1.0
 
@@ -3595,13 +3613,16 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_from = tank.global_position
 			_kturn_arc_m = 0.0
 		elif kturn_arc_on():
-			# Round 31 (manoeuvre H2, `kturnarc`): the ARC driven in the leg's gear — the last tick's real motion along
-			# the nose, SIGNED by the gear, so a short hull still rolling the other way when its leg starts (a scout at
-			# 10 m/s under reverse throttle: `_kturn_rolling` is true from the start for hulls under KTURN_BRAKE_HULL_M)
-			# subtracts its roll-out instead of counting it as progress. Round 30's unsigned arc ended that scout's leg
-			# 2.2 m short with the nose 40 deg off (`scenario_cp2`'s engine-deck orbit: 3 deck hits of 27 v 58 of 83).
+			# Round 31 (manoeuvre H2, `kturnarc`): the ARC driven IN THE LEG'S GEAR — the last tick's real motion along
+			# the nose in the gear, and nothing for motion against it. A short hull still rolling the other way when its
+			# leg starts (a scout at 10 m/s under reverse throttle: `_kturn_rolling` is true from the start for hulls
+			# under KTURN_BRAKE_HULL_M) counts its roll-out as NOTHING: the leg is measured from where the hull begins
+			# to move its way, as round 14's rolling rule does for the braked hulls. Round 30's unsigned arc counted the
+			# roll-out as progress (the leg ended 2.2 m short, nose 40 deg off); the signed arc first tried here
+			# subtracted it (the leg backed ~5.5 m from where the roll-out stopped): both broke `scenario_cp2`'s
+			# engine-deck orbit (3 of 27, 7 of 8 deck hits v 58 of 83).
 			var nose_now := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
-			_kturn_arc_m += tank.real_velocity.dot(nose_now) * float(_kturn_gear) * delta
+			_kturn_arc_m += maxf(0.0, tank.real_velocity.dot(nose_now) * float(_kturn_gear)) * delta
 		# Round 30 (the planner's P4 finding): with `kturnarc` a leg is measured by the arc the hull drove, not the
 		# chord from its start (3 % short on a 10 m full-lock leg of a War Rig: the leg over-ran its plan by that).
 		var backed := _kturn_arc_m if kturn_arc_on() else _flat_distance(tank.global_position, _kturn_from)
@@ -3609,6 +3630,11 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		# leg's opposite throttle brakes the hull to rest AT the planned end rather than ~2 m past it (N1/N3: a rig's
 		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
 		var reached := backed + _kturn_stopping() >= _kturn_left_m
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			# Measurement only (`--turn-trace=<unit>`): round 30's scratch leg print, kept (the arc v the chord, per tick).
+			print("MANOEUVRE_TRACE leg f %d gear %d rolling %s backed %.2f chord %.2f stop %.2f left %.1f v %.2f real %.2f reached %s" % [
+					Engine.get_physics_frames(), _kturn_gear, str(_kturn_rolling), backed, _flat_distance(tank.global_position, _kturn_from),
+					_kturn_stopping(), _kturn_left_m, tank.speed(), tank.real_velocity.length(), str(reached)])
 		_kturn_timeout -= delta
 		# The LEADING end's hit ends the leg: the contact point behind the centre while backing (ahead of it on a
 		# back-and-fill's forward leg). The other end still touching the wall the leg is moving away from is exactly

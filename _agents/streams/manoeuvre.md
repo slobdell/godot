@@ -120,4 +120,111 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current; bars to the orchestrator before numbers; the report at the top)_
+_Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, Opus), from main `75dbbb7c`._
+
+### Report (running)
+
+| item | commit | state |
+|---|---|---|
+| **H1** escapes (`unstickback`) | `32b08f8c` + `eaf0090a` (consts) | built, OPT-IN; unit stage 5/0 on builder0 (working tree = `32b08f8c`); branch check on `32b08f8c` running; C31.1 pre-series gate (flipped tree `6da94fc2`, `check NATIVE=off`) running |
+| **H2** signed arc (`kturnarc`) | same | built, OPT-IN; `test_kturn_arc` 3/0 on builder0 |
+| **H3** leads (`--gun-off=realspeed`) | same | built, OPT-IN (`Manoeuvre.lead_velocity`, the two granted lines); `test_manoeuvre_lead` in the check |
+| CP-H | — | waits on the orchestrator's call (traffic T4, brains `realslow` on main: realslow merged at `aa205ea5`) |
+| **M6** tooling | `9558eee3`, `eea19309` | counters on MANOEUVRE_TURNS + `hull_rest_counters.py` (face_slot_kept/refused, hull_turns, face_keep_refused, escape arms); hull-rest runs `--turn-states`; the CP-H runner `manoeuvre-cph` (refuses an arm without `--brains-off=native`); hull-rest `M1_NEW_OFF`/`M1_GD`/`M1_SEEDS`. Early-stop hook: waits for traffic's runner on main |
+| **M1b(2)** turn-hull (`turnhull`) | `44adcbbe` | built, OPT-IN; unit stage 2/0 on builder0 (light); bar SENT before numbers (below); tuning (hull-rest 40–41 law) running |
+
+### Plan (smallest foundation first)
+
+1. H1, H2, H3 as three OPT-IN consumers in one commit pair (code + consts), each with its own unit stage; the branch's
+   `make check` (defaults OFF: main plays unchanged, native's default path untouched) and the C31.1 pre-series gate
+   (a scratch tree with the three defaults flipped ON, `make remote T="check NATIVE=off"`: the whole suite on the
+   GDScript path with every consumer ON). Then the diffs to native (C31.2) for the pair tree.
+2. M6 tooling (face_slot counters from the hull-rest probe; the early-stop hook in census / hull-rest; `CACHE=on`)
+   and the CP-H runner (one ARM= per call; refuses an arm without `--brains-off=native` — R31.1 addendum: gun, traffic
+   and brains switches do not leave native's drive).
+3. CP-H when the orchestrator calls it (bar before numbers).
+4. M1b(2) turn-the-hull (`turnhull,facekeep` one flag; the `_order_move` decline lifted under it, C31.8).
+
+### M1b(2) bar (sent to the orchestrator 2026-10-14 ~23:50 PDT, before any number)
+
+ONE opt-in switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT`): the decline in `TankBrain._order_move` lifted for
+a wheeled turret hull when the face comes from its order and the facing was DRAWN (`Manoeuvre.hull_takes_face`, C31.8),
+plus round 29's facekeep. Arms (GDScript path both, `M1_GD=1`; one arm a remote call): new `M1_NEW_OFF=turnhull`, base
+`M1_BASE_OFF=`; drawn and clicked. Tuning: hull-rest 40–41 (law). Judged fresh: hull-rest 76–81 (144 runs an arm),
+Terminus 93–105, bridge-pooled's 18. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret
+at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not worse than base (per-class permutation p ≥ 0.05);
+(c) clicked within ±5° of base; (d) crews still moving at 75 s per task, wheeled turret and all classes, ≤ base + 1.645 se (the orchestrator's one change before numbers, C31.3; filed at main 9564f1bb)
+(se quoted); (e) settle censored, reported; (f) bridge 18/18; (g) Terminus arrivals rigs and mixed not down beyond
+1.645 se (sequential.py, never before 6 seeds); (h) B6's SBF gang_ifv probe reported — on main WITHOUT brains' B6 (`lab/brains-r31-sbf`) it measures turnhull alone; B6 + turnhull together lift the ceiling, a combined reading is mine to report once both land (brains, relayed); (i) `hull_turns` > 0, 
+`face_keep_refused` reported. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
+(g) gate; a miss parks it with the trace. Last attempt: this is the first run; a second on fresh seeds is the last.
+
+### Decisions (one line each, reversible)
+
+- **Switch shape (R31.1):** each consumer's default is ONE const (`Movement.UNSTICK_BACK_DEFAULT`, `KTURN_ARC_DEFAULT`,
+  `Manoeuvre.REAL_SPEED_DEFAULT`, all false); naming the switch flips it. Shipping = flipping the const (+ native's
+  mirror reading it). Tests choose their arm list from the const, so they hold in the flipped tree too.
+- **H1's honest reading is for a routed `move_to` only** (never a raw `drive`, a face, a direct hop): round 30's pair red
+  `test_nav_wall_contact` was a `drive` order. Every other order, and a > 10 m hull against a WALL, keep round 29's
+  reading and escape bit for bit. A > 10 m hull reads it only when a Tank is among its slide colliders and no wall is
+  touched (the design note).
+- **H1's escape:** ask the friend that pins it (`ask(..., "pinned")`), or the one right behind (`_ask_behind`); stand
+  at throttle 0 up to 2 s (done early if the friend moved 1 m off); then a STRAIGHT reverse (turn 0) as far as the
+  outline sweep (`_outline_ok` stepped 0.5 m straight back, ≤ 3 m) and the hulls behind allow — by the hulls' real boxes
+  (`_hull_room`: each hull's half-extent along the line), not avoidance radii, which read an 8×8's tail-mate 9.6 m back
+  as clear (found by the single-file unit stage) — ended by the real backoff less the stopping distance (cap 0.9 s +
+  momentum to shed + 0.5 s/m); under 1 m of room: no reverse, stand 2 s while `_update_phase` reports `blocked` by the
+  blocker's name. Counters: `Movement.escape_arms()` (fires by blocker kind hull/wall, asks, backs, backed, capped,
+  refused), also under `route_arms()["escape"]`.
+- **H2:** round 30's kturnarc (arc + the discrete stopping distance + the arc reset at a leg's start, native's review)
+  with the arc SIGNED by the gear (`real_velocity · nose · gear · dt`). The seam freeze (R31.2) is respected: the plan
+  source and `_kturn_start_leg(Vector2)` are untouched.
+- **H3:** the `--gun-off=` parser lives in `Manoeuvre` (mine); `gunnery.gd` changed in exactly the two granted lines.
+- **Seam (R31.2, my answers):** two call sites (kturn + face) yes; the planner's own executor drives Vector3 legs, mine
+  stays Vector2 (I do not take the two brake rules: they are the planner executor's); the planner adds the one gate line
+  in `unstick()`; after it lands `straight_and_clear` reads `manoeuvring()`, the census keeps `in_kturn()` + a planner column.
+
+### Measurements (each with commit, machine, workload, n)
+
+- H1 unit stage, builder0, working tree = `32b08f8c`, `test_manoeuvre_escape` (n = 1 each, deterministic): IFV on a
+  squadmate — fires at 1.90 s, asks, backs 3.01 m straight (yaw 0.0°), full-throttle-pinned ticks 60 v base 210 (base
+  never fires: the defect). War Rig on a friend — fires 1.80 s, asks, backs 3.06 m, yaw 0.0°. law_tank in single file
+  (a squadmate driving into its tail) — refused 1, backs 0, moved back 0.00 m, yaw 0.0°. Tank under a `drive` order at
+  the foundry wall — no escape, stays pressed (5.60 m both reads).
+- H2, builder0, same tree, `test_kturn_arc`: rig 10 m leg 10.03 m by the arc (chord 10.31); IFV second leg started
+  rolling 8.32 m; scout 3.5 m reverse leg started at 9.6 m/s forward: ends 4.11 m behind the leg's start (rolled out
+  1.94 m first) | chord 3.78 m.
+
+- **M1b(2) is ONE switch** (`turnhull` = the decline lifted + facekeep): turn-hull asks wheeled turret hulls for many
+  more faces at the edge of their slot, which is exactly facekeep's case; one flag (lesson 309). The decline's lift is
+  drawn-only (clicked keeps the turret, his round-28 wording).
+- **The CP-H runner runs every arm on the GDScript path** (R31.1 addendum) and takes seeds as a range (`CPH_SEEDS=a-b`)
+  because make remote's T is word-split.
+
+- M1b(2) TUNING (not judged), builder0 light lane, code = `8f2dd764`, hull-rest law seeds 40–41, drawn, both arms
+  GDScript path (`M1_GD=1`), wheeled turret at rest, n = 8 a task: median error new v base — move 1.6 v 31.1°, right
+  1.8 v 18.4°, attack-move 5.2 v 20.6°, SBF 21.4 v 111.5°, ambush 19.8 v 104.8°, screen 23.8 v 32.8°; within 15°: point
+  tasks 100 % v 25–38 %, line tasks 38 % v 0–29 %. Moving at 75 s: −2..+1 a task. Settle: ambush +27.2 s (1 of 2 never
+  settled under new) — TRACED (law seed 41 ambush, new arm): the unsettled crew is Green_Eyes_5, a law SCOUT
+  (wheels/fixed, untouched by the lift), pinned at throttle 1.0 from f 840 to f 2280 with the plant at 16 m/s, real 0,
+  touch false, goal 15.1 m: main's pinned-hull defect (H1's target; `unstickback` off in both arms), reached in a fight
+  that differed. Not turn-hull's mechanism; counted against it by the bar's letter all the same. Counters (new): hull_turns 3809 ticks,
+  face_keep_refused 597 steps, face_slot_kept 182 / refused 7. No change made from the tuning seeds.
+
+### Questions for the lead
+
+None.
+
+### Requests to other streams
+
+- **native (C31.2):** mirror H1–H3 when I name the settled hash (the drive's escape state machine `_escape_*`,
+  `_straight_room`, `_hull_room`; the signed arc in `_planned_reverse`; the two leads reading `REAL_SPEED_DEFAULT`). The
+  three `*_DEFAULT` consts are the only thing a ship flips. Base for H2: `lab/native-kturnarc` 40b89dd1 + the sign.
+
+### Known issues
+
+- **Long `make remote` wrappers die with the agent's shell** (found 2026-10-14 23:43): background jobs AND `setsid nohup`
+  launches were TERMinated together the moment a later Bash call ended ("Shell cwd was reset"), leaving their builder0
+  halves queued with no readable exited line (trip-up 68). What survives: `systemd-run --user --unit=<name>
+  --working-directory=<worktree> --collect /bin/bash -lc "make remote T=check > <log> 2>&1"`. Sent to the orchestrator
+  for `remote_builds.md`. Cost here: two re-queues of the branch check and the gate.
