@@ -115,12 +115,14 @@ _Updated 2026-10-15 ~06:15 PDT (traffic worker, round 31, Opus). Every number na
 - **T4 ORCA's ghost (CP-H consumer): v1 delivered OFF, ghostself OUT.** Tuning (builder0, dc8fcbf6, Terminus drive
   s24–29, n 12): v1 v v1+ghostself pinned 126 → 598 (UP beyond 2 se) → v1 alone. Merge branch `traffic-t4` =
   `357ca38b` (OPT-IN per R31.1). **PARKED for CP-H** (orchestrator, 07:15: the ghost-ON gate would land after the 09:00
-  cutoff; CP-H runs without T4, native drops the ON gate). `0475758f` (= native + 357ca38b, T4 OFF) still merges if
-  green, carrying I4's tooling — **result: pending**. Next round: the ON gate (`pair/t4-on` 93c85531, `check
+  cutoff; CP-H runs without T4, native drops the ON gate). `0475758f` (= native + 357ca38b, T4 OFF): builder0 `make
+  check exited 2`, 2639 passed / 0 failed, sim-baseline unmoved (13), RED on the engine-log gate alone — my
+  `test_traffic_ghost` never disposed its TacticsLab (14 ObjectDB / 4 resources leaked). Fixed with native's fafe49ea
+  lines: **traffic-t4 = `aaa7fa8e`**; the closing check = native's re-check on fafe49ea — **pending**. Next round: the ON gate (`pair/t4-on` 93c85531, `check
   NATIVE=off`) and T4 v1 as its own consumer A/B.
 - **Stretch:** not started (waits on CP-P1). Seam reply sent: `Movement.manoeuvring()` rather than a wider `in_kturn()`.
-- **Green check:** this stream's merge candidate is `traffic-t4` 357ca38b; its check is native's pair/t4 OFF plain
-  check (pending). stream/traffic itself is a record branch (parked trees), not a merge candidate.
+- **Green check:** this stream's merge candidate is `traffic-t4` `aaa7fa8e`; its check is native's pair/t4 re-check on
+  fafe49ea (pending; the first, 0475758f, was red on my test's leak alone). stream/traffic itself is a record branch (parked trees), not a merge candidate.
 - **Requests:** native — the two T4 pair checks. Orchestrator — the two questions to him; on yes, the follow-ups in
   *Kept branches*.
 - **What to playtest:** nothing new in play from this stream (all parked or OFF). His clips: `~/projects/clips/round31/`.
