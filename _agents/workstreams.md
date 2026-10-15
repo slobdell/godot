@@ -240,6 +240,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   after the route but faces 80.9° off point − waypoint (needs ≤ 10°). Manoeuvre's three alone with NATIVE=off passed
   it 12/0, so the cause is realslow, the native path, or both. Native re-runs the file alone; manoeuvre splits realslow
   v native, and brains reads realslow for a facing effect. **The A/B does not start** until the gate is green (C31.1).
+  **Pinned (~10:30 PDT): it's H1's FRAGILITY, not a mirror gap and not realslow.** On 68280cce, GDScript path: realslow
+  ON passes (heading_off 0.1°), and realslow OFF FAILS exactly like the native run (route_first −1, 2.2 m, 80.9°), while
+  main's older 998fe844 passed. The R31.5 terrain fallback doesn't cover every variant of Green_Alpha_3's ground pin, so
+  the outcome flips on tiny upstream differences, the same lesson as R31.3. **The fix's re-check is a VARIANT SET, all
+  green:** that test on 68280cce with {realslow ON, OFF} × {GDScript, native} plus `998fe844`'s tree plus a 0.25 m
+  start nudge (6 light runs). Then the CP-H tree is re-cut and the whole flipped suite re-gated. Native stood down.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
