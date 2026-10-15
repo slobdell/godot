@@ -410,13 +410,13 @@ commit and name them in the merge notes; native reviews them with the rest.
   side, bursts to 7; the seam's own navmesh request ~170 us an expansion WARM (hash lookup a cell read, 99.99 % hits).
   fd36ecd5: the window fills from the cache on first read (flat reads inside the search); twin + census-2 running.
   Native approved 3b5c0b34; its load guard is in check at stream/native 3331f81d (hazard 7: a C++ static holds plain data only).
-- 2026-10-15 ~02:45 PDT: **light twin GREEN on 17bd1ec8** (4/0, exit 0, builder0 light lane, load 10.4, unpinned);
+- 2026-10-15 ~02:15 PDT: **light twin GREEN on 17bd1ec8** (4/0, exit 0, builder0 light lane, load 10.4, unpinned);
   native APPROVED d373af4e + 17bd1ec8 with three notes, taken at 3b5c0b34 (`nav_cache_clear()`; the rebake assumption;
   `planner-census` builds the library first; its probe also plans the seam's own request on the arena navmesh);
   c158aecf the signedness warning. Census launched on c158aecf (`planner-census1`). The orchestrator: price accepted as
   an upper bound (R31.6); CP-P0 = a3755e37 merges OFF on `planner-check6`'s exited 0; the cache merges on its own twin ALL
   green + review.
-- 2026-10-15 ~02:30 PDT: **the price run landed** (41212da0, builder0, pinned cpus 0-3, QUIET WINDOW: NOT USABLE after a
+- 2026-10-15 ~02:10 PDT: **the price run landed** (41212da0, builder0, pinned cpus 0-3, QUIET WINDOW: NOT USABLE after a
   65-minute wait with 7-8 foreign runs live; the table in the report): twin 4/0, exit 0. The follow-on check was REFUSED
   (the price run's cleanup still live: nothing ran); relaunched as `planner-check6` on 41212da0. **d373af4e**: the C++
   navmesh field cache (per match: map id + iteration id + bake radius; 64x64 chunks; `nav_cache_stats()`), the GDScript
