@@ -263,6 +263,20 @@ outline sweep) are called back, as the hold and T3b are. The k-turn leg gets the
 distance under `KTURN_ARC`. Each consumer's ON = its DEFAULT const, because the native drive runs only with
 `Movement._off` empty.
 
+**CP-H mirror, settled (2026-10-15):** manoeuvre's H2 went through three versions (signed arc → in-gear arc →
+**scoped**: `Movement._arc_here()` = kturnarc and `kturn_brake_on()`, so short hulls keep round 14's chord bit for bit,
+which keeps `scenario_cp2`'s scout orbit). Mirrored at `783b3eec` (`arc_here()` in drive_native). `pair/cph-on` =
+`99399aa3` (manoeuvre's tip `197a65da` + my mirror + the three defaults ON). Twins on builder0 light (on the earlier
+signed-arc tree): 84 passed / 2 failed. The 2 were `test_native_drive`'s k-turn plans floor (fixed: 5 → 3, a floor against
+a vacuous run). Every equality line read 0 mismatches. Full check queued (`native-cph-check2`, behind T4's).
+**B8 realslow (brains `80eea6ec`): NONE PORTED** (`Element._watch_progress` has no C++).
+**R31.4 (orchestrator):** CP-H's ONE tree = main after every consumer merged OFF + my mirrors, with ONLY the CP-H switches
+flipped (unstickback, the rig's friend stall, kturnarc, realspeed, ghost, realslow; ghostself only if kept). I build it
+and name the hash; manoeuvre runs the A/B.
+**Tooling (R31.x):** remote runs launch under `systemd-run --user --unit=native-<what>` (the harness reaps
+`setsid nohup` at a "Shell cwd was reset"); one heavy + one light at a time; a reaped wrapper's builder0 half is
+killed by cwd before relaunching.
+
 **Planner reviews:** `7c286000` (CP-P0) approved for fidelity with 4 notes (one shared session; the twin's wall time v the
 shard floor; the `%.2f` cache key; an unbounded cache). The planner took notes 1–2 in `50d380e1`, which is also approved
 with one fix: plan()'s refusal lacks keys `_plan_native` reads. The ship-ON pair (CP-P1) needs from me: unstick's
