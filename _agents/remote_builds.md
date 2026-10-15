@@ -332,6 +332,12 @@ systemctl --user is-active <stream>-<what>     # status; the result is the log's
 ("already has a live run"). Kill the orphan on builder0 by cwd-verified PID first. A result with no exited line is NOT
 a result.
 
+**A quiet window granted mid-round costs about an hour of the whole box, not its own 6 minutes (round 31).** `--quiet`
+claims each slot as it frees and holds it until every in-flight job ends. From 01:03 to ~02:00 PDT on 2026-10-15,
+builder0 ran only the three checks already in flight, while every new heavy AND light job waited, including a 10-minute
+trace for 54 minutes. Grant one when the queue is short, or at a round's natural lull, and tell every stream how long
+it will take.
+
 **A hung import holds a slot for the full 5400 s timeout.** On 2026-10-14 traffic's check sat 70 min in
 `Godot --import` (5 s of CPU, `futex_do_wait`) with load 1.95, while ten jobs queued. To spot one: `ps -o
 pid,etime,time,pcpu,wchan:20,args` on the slot owner's processes on builder0. A Godot with minutes of elapsed time,
