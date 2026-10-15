@@ -132,7 +132,7 @@ _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 | merge-OFF | native's `pair/cph 9e1000d6` (my `197a65da` + native's mirror with the 7 exec_fields rows) | its plain check queued (native reports); my branch ALONE is red only on native's member table (R31.2-style pair rule): `9b257348` check exited 2, 2619/1, `test_native_exec_state::test_the_table_is_the_scripts_members` |
 | CP-H | — | waits on the re-gate green + native's ON pair + traffic T4 / brains realslow |
 | **M6** tooling | `9558eee3`, `eea19309` | done (the early-stop hook waits for traffic's runner on main) |
-| **M1b(2)** turn-hull | `44adcbbe` | bar filed (main `9564f1bb`, (d) at 1.645 se); tuning read; its ship check (TURN_HULL_DEFAULT true, plain check: tree `21343a05`, to re-base) waits on the merge-OFF |
+| **M1b(2)** turn-hull | `44adcbbe` (on main OFF via `298e4498`) | gate/ship check green (`c57188f6`, locks+parade moved, declared); **judged run 1 NOT MET** on line (a) (move 68 %, right 55 % within 15° v the 70 % line; traced: the lift misses element crews whose drawn facing arrives as `from: "sector"`); every other line read passed (b, d, f, g, h); clicked arms and fights not taken (stopped to free builder0). Second and LAST attempt proposed (the lift accepts "sector" when the element task carries his facing), fresh seeds; tables `references/round31/manoeuvre/m1b2_run1_judged.txt`, `m1b2_terminus_judged.txt` |
 
 **The C31.1 gate (flipped tree, `make check NATIVE=off`, builder0) found two consumer defects before any series:**
 1. `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` (`6da94fc2`): 7 deck hits of 8 (needs ≥ 20 hits). Attributed
