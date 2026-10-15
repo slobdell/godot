@@ -207,6 +207,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   builds it** (it owns the mirrors) and names its hash. **Manoeuvre runs the judged A/B on it** (C31.4: GDScript path, every
   arm `NATIVE=off` or `--brains-off=native`, enforced by its runner). The tree's plain `make check` is the ship check.
   **The orchestrator calls CP-H** when the last consumer is on main. Native confirmed B8 is NONE PORTED (~01:00).
+  **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
+  `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
+  (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
+  **Rule:** any commit adding a `Movement` member merges with native's `exec_fields.h` rows, back to back, defaults OFF,
+  checked once. The merge-OFF candidate is therefore native's pair tree on manoeuvre's current tip (`0cf72ba7`: H2
+  scoped to ≥ 10 m hulls, `yield_to_plan`, turnhull), plain `make check`. **CP-H waits** for the flipped suite to be
+  green, including `test_control_queued_task`'s shift-waypoints red under `unstickback` alone (the squad centre stalls
+  2.2 m short; manoeuvre is tracing it).
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
