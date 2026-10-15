@@ -129,14 +129,16 @@ func _both(label: String, req: PlanRequest) -> Array:
 		assert_eq(int(field["x0"]), req.world._field_x0, "%s: the field window's x0" % label)
 		assert_eq(int(field["z0"]), req.world._field_z0, "%s: the field window's z0" % label)
 		assert_eq(int(field["n"]), req.world._field_n, "%s: the field window's size" % label)
-		assert_eq(int(field["spill"]), req.world._spill.size(), "%s: the same spilled cells" % label)
+		var shared: bool = field.get("shared", false)
+		if not shared:
+			assert_eq(int(field["spill"]), req.world._spill.size(), "%s: the same spilled cells" % label)  # a navmesh world's spill is the shared cache
 		var differ := 0
 		var filled := 0
 		for i in mini(cells.size(), req.world._field.size()):
 			if req.world._field[i] > PlannerWorld.UNSET_BELOW:
 				filled += 1
 			if cells[i] != req.world._field[i]:
-				differ += 1
+				differ += 1  # the window holds exactly the cells THIS search read, on both sides, navmesh or rectangles
 		assert_eq(cells.size(), req.world._field.size(), "%s: the same field size" % label)
 		assert_eq(differ, 0, "%s: every field cell equal bit for bit (%d of %d filled, %d differ)" % [label, filled, cells.size(), differ])
 		_rows.append("%s: field %d of %d cells read, %d spilled" % [label, filled, cells.size(), int(field["spill"])])
