@@ -86,10 +86,15 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 	# Round 25 (F1b, C25.3 ruling): per sample, whether the crew may peel off (the lead: "Stay on the chase"; it peels
 	# off only when badly hurt or when the target turns and fights): hull under BADLY_HURT, or the target's gun on it.
 	var excused := {}
+	# Round 31 (R31.3 (a)): per sample, whether the crew is badly hurt (the same BADLY_HURT): the closing and reversal
+	# lines excuse it as the let-go line does. Traced (builder0, main, 18 m/s seed 1): Green_A_1 shot to 1 % at 5.0 s broke
+	# away home (decide's RETREAT, as the lead asked) and failed both lines; seed 9 the same.
+	var hurt_marks := {}
 	for unit_name: String in names:
 		distances[unit_name] = []
 		headings[unit_name] = []
 		excused[unit_name] = []
+		hurt_marks[unit_name] = []
 		starts[unit_name] = lab.tank_of(unit_name).global_position.distance_to(target.global_position)
 	# Round 26 (traffic CP1a, C26.6 ruling): who killed the target, from the match's kill signal (the kill log's
 	# "Green_A_3 destroyed Rust_Eyes_1").
@@ -152,6 +157,7 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 				var to_me := _flat(tank.global_position - target.global_position).normalized()
 				aimed = _flat(target.turret_forward()).normalized().dot(to_me) >= TankBrain.COS_AIMED_AT_ME
 			(excused[unit_name] as Array).append(hurt or aimed)
+			(hurt_marks[unit_name] as Array).append(hurt)
 	var result := {"closing_worst_m": -INF, "closing_at": "", "reversal_worst_deg": 0.0, "reversal_at": "",
 			"lived_s": snappedf(float(lived) / SimClock.TICK_RATE, 0.1), "start_m": {}, "end_m": {},
 			"drills": lab.drills_of(element), "why": whys.keys(),
@@ -172,6 +178,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 		for i in range(first, d.size() - window):
 			if float(d[i]) < FIGHTING_M or float(d[i + window]) < 0.0:
 				continue
+			if _excused(hurt_marks[unit_name], i - EXCUSE_BACK, i + window):
+				continue  # badly hurt: peeling off is what the lead asked for
 			var opened := float(d[i + window]) - float(d[i])
 			if opened > float(result["closing_worst_m"]):
 				result["closing_worst_m"] = snappedf(opened, 0.1)
@@ -182,6 +190,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 			for j in range(i + 1, mini(h.size(), i + turn_window + 1)):
 				if (h[j] as Vector3) == Vector3.ZERO:
 					continue
+				if _excused(hurt_marks[unit_name], i - EXCUSE_BACK, j):
+					continue  # badly hurt: turning for home is the lead's rule, not an orbit
 				var turned := rad_to_deg((h[i] as Vector3).angle_to(h[j]))
 				if turned > float(result["reversal_worst_deg"]):
 					result["reversal_worst_deg"] = snappedf(turned, 1.0)
