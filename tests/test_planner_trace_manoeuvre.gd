@@ -65,6 +65,8 @@ func _kturn(on: bool) -> void:
 	add_to_tree(orders)
 	var census_was := ManoeuvreCensus.on
 	ManoeuvreCensus.on = true
+	var trace_was := ManoeuvreCensus.trace_unit
+	ManoeuvreCensus.trace_unit = "Mover"   # the seam's and the k-turn's own trace lines for this hull
 	var rows_before := ManoeuvreCensus.rows.size()
 	await wait_physics_frames(2)
 	Movement.reset_route_arms()
@@ -109,6 +111,7 @@ func _kturn(on: bool) -> void:
 		if String(row.get("unit", "")) == "Mover":
 			census.append({"legs": row.get("legs"), "kind": row.get("kind"), "cause": row.get("cause"), "end": row.get("end")})
 	ManoeuvreCensus.on = census_was
+	ManoeuvreCensus.trace_unit = trace_was
 	var segs := _segments(motion)
 	var rep := PlannerSeam.report()
 	print("MEASURE planner_trace kturn seam %s: arrived %.1f s, contacts %d (first at tick %d), nose-to-face min %.2f m, motion segments %d [%s], census %s, seam requests %d plans %d legs %d driven %d aborted %d refused %s holds %s, plans %s" % [

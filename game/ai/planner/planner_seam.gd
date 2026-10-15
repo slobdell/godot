@@ -220,6 +220,11 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 	var tick := Engine.get_physics_frames()
 	var crew: Crew = _crews.get(name)
 	if crew != null and (crew.kind != kind or tick - crew.tick_seen > STALE_TICKS or _flat(target, crew.goal) > NEW_GOAL_JUMP):
+		if ManoeuvreCensus.trace_unit == name:
+			print("PLANNER_SEAM %s %s: released at tick %d (%s; asked %d ticks ago, target moved %.1f m; %s)" % [name, crew.kind, tick,
+					"another kind" if crew.kind != kind else ("stale" if tick - crew.tick_seen > STALE_TICKS else "new goal"),
+					tick - crew.tick_seen, _flat(target, crew.goal),
+					"pending" if crew.pending else "driving leg %d, %.1f m left" % [crew.executor.leg_index + 1, crew.executor.left_m]])
 		_release(name)  # another kind of order, not asked for a while, or a new goal: whatever was planned is stale
 		crew = null
 	if crew == null:
