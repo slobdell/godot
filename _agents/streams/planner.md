@@ -404,6 +404,14 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~04:05 PDT: **the series tooling PROVEN** (`make remote LIGHT=1 T="planner-series PLANNER_SERIES_SEEDS=1
+  PLANNER_SERIES_SQUADS=rigs NAV_JOBS=1"` on 2f7e9442, exited 0; the first try refused on a stale light-lane library
+  after the rebase, so the target builds native first now). Seed 1 is a USED tuning seed at n = 1: a tooling proof,
+  never a number for the bar. What it printed, for the shape only: rigs contact-ticks 2176 -> 393, arrivals 13 -> 12
+  of 16; the seam asked 30 times, planned 7 (11 legs), drove 3 to their end, refused 14 (GOAL_BLOCKED 11,
+  START_BLOCKED 3), abandoned 1, queue_waits 109, holds median 20 / max 90 ticks, pending 488 hull-ticks; 4 plans
+  released before their end without an abort (the caller stopped asking: STALE_TICKS -- a reported detail to read in
+  the judged traces). The base arm's seam never fired (the reader's equality check).
 - 2026-10-15 ~03:55 PDT: **CP-P0 MERGED OFF to main** (950c7681 on 41212da0's exited-0 line; HANDOFF 84e553cd; the one
   conflict OFF_NAMES resolved as the sorted union; the seven seam lines intact). **stream/planner rebased onto main
   84e553cd** (33 commits, clean) + **86e5c646: `mover.yield_to_plan()` wired** at the seam's first-take site (R31.2 (H);
