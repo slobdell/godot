@@ -3792,3 +3792,34 @@ instrument that cannot lie about load — removal within one run — and let eve
    guard (`test_nav_gate_hold`) ordered a facing 90° off travel and passed; the existing `test_wheeled_arrival` ordered
    180° (the gate lies past the goal) and failed only when the default was flipped (dot 0.50). Run the WHOLE suite with a
    candidate's switch ON before judging it, not only its own tests: an inverted switch hides it from `make check`.
+
+
+306. **A peer's measured trace can remove a bar's premise; rebuild the bar before numbers, never tune toward the old one.**
+   (Round 30, traffic T3b.) The brief said "the yielding squad crawls 30–45 s"; the crossing's own clock showed the crawl
+   was ~3 s and the 40–75 s arrivals happened AFTER the crossing (a seat trap, brains'). The crossing clock replaced the
+   all-in line before any judged number. Rule: when a trace contradicts the premise, the bar is re-written and re-filed
+   first; a bar is never kept because it was filed.
+307. **The judged series proves the stages it names; the WHOLE suite on the pair tree proves the rest — run it before
+   judging, not after.** (Round 30, brains B5c-v4 and manoeuvre M4b.) Both passed every judged line and failed the pair
+   check: v4's `near` rule tipped a knife-edge pursuit test by changing two crews' opening moves at t = 0.1 s; M4b's escape
+   stranded an 8×8 on the Sumps causeway and made a tank back off a wall. A worker's own check hid both (its default path
+   ran native's OLD mirror). Rule: a declared behaviour change runs `make check` with the rule ON on the pair tree (brains'
+   GDScript + native's mirror) BEFORE its judged series; a red there is a finding, and a fix ships only if the judged rows
+   stay byte-identical (else it parks). Extends 305.
+308. **A guard sized below the probe's noise decides nothing; size every line from the table.** (Round 30, sizing's CP-N.)
+   42 of rounds 27–29's 122 judged pass lines were inside their probe's noise (M1's six +5 guards and every "crews ≥
+   base − 2" among them); a "−25 %" line at n = 18 had 80 % power only for a ~45 % drop. Rule: a bar cites its probe's row
+   in `judging.md` (sd, n, the guard as base ± 1.645 se); a probe with no row owes an A/A pair first; the table is
+   re-rendered at every close (step 5b). The first early-stop record (M1b): SERIES PASS at runs 10 and 6 of 13.
+309. **A base arm's switch list is ONE flag, printed by the run.** (Round 30, manoeuvre.) The parser honours only the first
+   `--nav-off=`; a runner that hard-coded one and appended another silently lost the second, so a tuning base arm ran with
+   a switch effectively ON. The judged arms passed a single flag and were right. Lesson 300's family: the arm's own
+   printout is the proof of what ran.
+310. **Measurement ships apart from behaviour.** (Round 30, M4b.) When the declared change (the sized escapes) failed the
+   pair check, the honest reading it was built on (`Tank.real_velocity`, read by nobody in play) shipped alone as a
+   measurement pair with the sim-baseline unmoved as its bar — and the aim leads, measured only together with the escapes,
+   did NOT ride along (a fights change needs its own A/B). Rule: split a candidate into the reading and its consumers
+   from the start; the reading's bar is "nothing moves", the consumers' is the declared A/B.
+311. **One hull-rest arm per remote call.** (Round 30, M1b.) Four arms (576 real-time runs) in one call hit builder0's
+   90-minute run cap: three complete, one cut at 61, nine files corrupt, and the stale-run guard then refused the reruns.
+   Round 29's note said one arm per call; it is now a rule.
