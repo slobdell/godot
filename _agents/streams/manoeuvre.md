@@ -386,7 +386,14 @@ on lock for a long hull", not "no stall clock".
   so the stop saved nothing this time and the rows are recorded for the rule's first use. Reported: wall contact-ticks
   rigs 8945 → 7662 (−14 %, se 2221), mixed 2475 → 1738 (−30 %, se 481); leg seconds rigs 1884 → 1659, mixed 1809 →
   1945; leg misses under a FACE order ("a face left the slot") rigs 19 → 21, mixed 14 → 9. **(e) bridge-pooled 18 of
-  18.** Hull-rest (four arms, seeds 48–53, 576 real-time runs: hours on a box at load 22) and rigs seed 21 follow.
+  18.** Hull-rest four arms in ONE call hit builder0's 90-minute run cap (make exited 124, 18:30 PDT): `new_drawn`,
+  `base_drawn`, `new_clicked` complete at 144 runs each, `base_clicked` cut at 61; the copy-back flagged 9 files
+  corrupt (the runs the timeout killed mid-write). The seed-21 reruns were then refused by the wrapper's stale-run
+  guard (the timed-out run's marker). Queued behind M2b's chain: `base_clicked` alone (one arm per call, ≤ 90 min;
+  `REMOTE_FORCE=1` once, after a cwd-verified check that nothing of mine was alive in that folder) and the seed-21
+  pair; the four-arm tables are read only once `base_clicked` is complete. Preliminary, drawn arms only (complete,
+  not a verdict): at-rest medians per class × task move within noise (p 0.38–0.93), attack-move ALL 23.1 → 15.9°,
+  wheels/fixed p90 61.1 → 9.2°; the clicked pair's p-values on the partial base arm are not read.
 - **Brains' B6 case run on M1b (reported line):** `sbf-series` gang_ifv, seeds 1–6, drawn/none, on `55622870` +
   `stream/brains` (builder0, both arms, base `--nav-off=faceslot`): the arms' jsonl byte-identical; A_4 at arrival with
   a drawn facing 65.6–96.3° off, not moving, 2.3–3.2 m off its slot, both arms; face_slot's counters 0. A wheeled
