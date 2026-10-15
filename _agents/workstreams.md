@@ -120,7 +120,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
 
 - **R31.2 The planner seam, AGREED in writing before code (2026-10-14 ~23:10 PDT; amends C31.5's "ONE call" and the
   executor line for planner-held hulls; planner's draft `f2245404` "DRAFT SEAM", manoeuvre's and traffic's replies):**
-  (A) **Two call lines**, both unreached when OFF: the first line of `Movement._planned_reverse`
+  **(A) AMENDED ~00:35 PDT (the planner's correction at `9281fc43`, manoeuvre's review OK):** a take on the first line
+  of `_planned_reverse` would ask for a plan every tick of every routed move. The seam is now `PlannerSeam.hold()` at
+  the TOP of `_planned_reverse` and of `face_turn`, which only continues a held crew and never asks, plus
+  `PlannerSeam.take()` at the three points where today's code MAKES a plan. Those are the circle plan (inside
+  `_away_here()`, near rest, inside the circle), the blocked forward arc (after the `KTURN_HIT_WITHIN_M` return and the
+  `KTURN_CHECK_TICKS` throttle), and the face after its aligned test. A hull mid k-turn or face leg is never taken,
+  because both leg blocks return first. `yield_to_plan()` is still called once on first take, for the escapes. The
+  unstick gate and `manoeuvring()` are unchanged. The superseded text: (A) **Two call lines**, both unreached when OFF: the first line of `Movement._planned_reverse`
   (`if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true`) and `face_turn` right
   after its `FACE_ALIGNED_DEG` return ("face"). Manoeuvre grants exactly those two lines. (B) **Legs `Vector3(gear, steer,
   metres)` driven by the planner's `PlannerExecutor`** (planner's path), with no Vector2 adapter. Manoeuvre's executor stays
