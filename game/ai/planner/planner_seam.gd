@@ -33,6 +33,12 @@ extends RefCounted
 ## Deterministic: the queue is the order `take` was called (the controllers' order, tanks by name); no clock.
 
 const SWITCH := "planner"
+## SCOPE (R31.7, chosen from the census BEFORE any judged number): the seam takes LONG hulls only, hull length >=
+## this (the catalog: the War Rig gang_tank at 14.0 m; the next is tank at 9.7 m), every kind (face, circle plan,
+## blocked arc). The brief's target is the long hull in a Terminus street; the census (92721 / 31337) prices the
+## press's demand at ~3 ms a tick if every hull were served (six times the cost line), and the long hulls' share of
+## it is the row `by_hull` in planner-census. A short hull is never taken: today's code drives it unchanged.
+const SCOPE_MIN_HULL_M := 10.0
 ## Expansions a tick for a pending search: C31.5's cost line (<= 0.5 ms a tick at Sumps 25 a side) over the IN-FIGHT
 ## price of the seam's own request. planner-census on fd36ecd5's C++ (builder0 light lane, unpinned, load ~12, seeds
 ## 92721 / 31337, the probe every 30 ticks): a War Rig's face-about on the Sumps navmesh among 49 hulls cost 205-392 us
@@ -158,7 +164,15 @@ static func _release_all() -> void:
 ## holds (a plan pending or being driven), never asks. `target`: the k-turn's steering point, or the face's home;
 ## `want`: the face's wanted heading.
 static func take(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float, want := Vector3.ZERO) -> bool:
+	if not in_scope(mover.ctl.tank.unit_id) and not _crews.has(String(mover.ctl.tank.name)):
+		return false
 	return _serve(mover, cmd, kind, target, delta, want, true)
+
+
+## Is this hull class one the seam takes (SCOPE_MIN_HULL_M)?
+static func in_scope(unit_id: String) -> bool:
+	var box: Array = Movement.hull_box(unit_id)
+	return float(box[2]) >= SCOPE_MIN_HULL_M
 
 
 static func hold(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float) -> bool:

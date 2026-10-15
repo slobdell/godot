@@ -125,6 +125,29 @@ func test_a_face_ordered_while_rolling_is_held_to_rest_then_planned() -> void:
 		lab.dispose())
 
 
+## R31.7 (the scope): a hull under SCOPE_MIN_HULL_M is never taken, ON or OFF; today's face executor turns it.
+func test_a_short_hull_is_never_taken_by_the_seam() -> void:
+	await _with_switch(true, func() -> void:
+		var lab := TacticsLab.create(self, 31, "terminus")
+		var tank := lab.gun(Match.Team.GREEN, "Green_P_1", Vector3(-70.0, 0.0, 0.0), 0.0, "law_scout")
+		await lab.start()
+		var ctl: OrderController = null
+		for child in lab.game_match.brains.get_children():
+			if child is OrderController and (child as OrderController).tank == tank:
+				ctl = child
+		ctl.set_orders({"type": "face", "x": -70.0, "z": 100.0}, {"type": "fire_at_will"})
+		var face_plans_before := Manoeuvre.face_plans
+		for tick in int(SimClock.TICK_RATE * 15.0):
+			await lab.step()
+			assert_true(not PlannerSeam.live("Green_P_1"), "a scout is never live in the seam")
+		assert_true(not PlannerSeam.in_scope("law_scout"), "law_scout (3.8 m) is out of scope")
+		assert_true(PlannerSeam.in_scope("gang_tank"), "gang_tank (14 m) is in scope")
+		assert_eq(PlannerSeam.requests, 0, "no plan was requested for a scout")
+		var err := _heading_error_deg(tank, Vector3(0, 0, 1))
+		print("MEASURE planner_seam scout out of scope: today's face plans %d | heading error %.1f deg at 15 s" % [Manoeuvre.face_plans - face_plans_before, err])
+		lab.dispose())
+
+
 func test_capture_and_restore_round_trip_the_seam_state() -> void:
 	await _with_switch(true, func() -> void:
 		var scene: Dictionary = await _rig_facing_south(31)
