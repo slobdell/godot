@@ -264,7 +264,8 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
    nothing): native's port (~100×: 0.06–17 s a plan in GDScript) or a resumable slice a tick; the seam in `drive()` /
    `_manoeuvre`; its cases from this round: F1 the creep at a corner (M2b's lift failed a third time: seed 51's 50 s
    grind), F2/F6 the grind after an escape (seed 31), F4 a goal POSE (the six-cusp car, yard s25 t1), the squadmate pin.
-   The planner's two executor rules are already in (`kturnarc`).
+   The planner's two executor rules (`kturnarc`, `lab/manoeuvre-kturnarc` e7a58262: every judged line passed, then a
+   scout's engine-deck orbit flipped on the pair tree) re-judge with `scenario_cp2` and a scout-orbit stage in the bar.
 3. **Brains:** B5c-v4 the arrival gate (`lab/brains-r30-gate` f1a804eb: every judged line passed; the `near` rule tips a
    knife-edge pursuit test on seed 3 — measure that test's own margin over seeds first, or `near` only on a re-seat / new
    goal while on a task; the side-gate form for 180°); B3b his bridge (`lab/brains-r30-bridge` 4bc708d7: 107/108 v

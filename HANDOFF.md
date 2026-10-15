@@ -10,19 +10,18 @@ B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes 
 
 ## ✅ ROUND 30 IS CLOSING (2026-10-14 evening) — read this first
 
-**Main's final check: PENDING** — native's one batch tree (main `48d5aa0d` + M1b `55622870` + kturnarc `e7a58262` + its
-port + manoeuvre's tooling tip `d122485c`) is in `make remote T=check` on builder0; on its green line the orchestrator
-merges M1b → the kturnarc pair → `d122485c` and main's code equals the checked tree. **Before that, main is GREEN at
-`48d5aa0d`** (builder0, `make check exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism
-2875411ff4ec6be7).
+**Main's final check: PENDING** — native's one tree (main `3ca70af2` + M1b `55622870` + manoeuvre's tooling tip `d122485c`;
+NO kturnarc) is in `make remote T=check` on builder0; on its green line the orchestrator merges it and main's code equals
+the checked tree. **Before that, main is GREEN at `48d5aa0d`** (builder0, `make check exited 0`, 2606 passed, 0 failed, 26
+targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7); since then only docs and the judge tooling.
 
 **What he plays now** (`make native && make skirmish`), once the final merges land:
 - **A face at rest keeps the slot the crew drove to** (M1b(1) `face_slot`, judged at `55622870`: drawn attack-move at-rest
   error 23.1 → 15.9° ALL classes, no task worse at p < 0.05, crews still moving at 75 s not up on any task; the round-28
   bug that `Movement.idle()` wiped the anchor is fixed). Wheeled TURRET hulls still decline a drawn facing until turn-hull
   ships (M1b(2), round 31).
-- **A k-turn leg is measured by the arc driven, not the chord** (`kturnarc` `e7a58262`, the planner's two executor rules:
-  legs end where the plan said; rigs' leg seconds −18 % on Terminus, arrivals unchanged; native's pair).
+- **NOT shipped after all: `kturnarc`** (the planner's two executor rules) passed every judged line, then flipped
+  `scenario_cp2`'s engine-deck orbit on the pair tree (lesson 307 a third time) — parked `lab/manoeuvre-kturnarc` e7a58262.
 - **Nothing visible:** `Tank.real_velocity` (the motion a hull really made this tick) exists and is read by nobody in play;
   N7.5 element feed in C++ (ON).
 - **Clip for him:** `~/projects/clips/round30/planner_lab_terminus_8f73e4cd.mp4` — a War Rig told to face back in Terminus'
@@ -38,7 +37,7 @@ the planner needs.
 **Not shipped (each judged, parked with its table and bar; `roadmap.md` *Round 31 candidates*):** brains B5c-v4 (every
 judged line passed; the `near` rule tips a knife-edge pursuit test), B3b (107/108 v 106/108), B6 (traced, bar filed, not
 run); manoeuvre M4b's escapes (two regressions the series never covered: an 8×8 stranded on the Sumps causeway, a tank
-backing off a wall), the creep lift (−30 % v −50 %, a third time), M5; traffic T3b (yard clock +2.80 s v +1.18, bumps
+backing off a wall), kturnarc (a scout's orbit), the creep lift (−30 % v −50 %, a third time), M5; traffic T3b (yard clock +2.80 s v +1.18, bumps
 −45 %: **his call**), T1c-b (the defect 11 → 0, the artillery line carried by one diverged run: **his call**), T4 (ORCA's
 ghost, tuned, waits on the honest reading's consumers A/B).
 
