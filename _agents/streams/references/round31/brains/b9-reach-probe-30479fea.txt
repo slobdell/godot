@@ -1,0 +1,429 @@
+REACH_GOAL terminus B_4 at 57 s: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 18.8 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @0: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 16.0 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @45: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 17.8 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @90: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 20.0 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @135: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 21.6 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @180: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 21.6 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @225: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 20.2 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @270: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 18.0 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 3 m @315: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 16.1 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @0: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.3 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @45: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 17.2 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @90: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 21.6 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @135: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 24.4 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @180: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 24.5 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @225: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 22.0 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @270: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 17.6 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 at 57 s ring 6 m @315: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 at 57 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.6 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.3 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @0: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.4 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @45: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.2 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @90: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 9.4 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @135: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.7 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @180: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.0 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @225: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.8 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @270: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.3 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 3 m @315: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.5 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @0: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.2 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @45: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 8.6 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @90: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 6.4 m, 2 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @135: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 9.7 m, 2 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @180: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.2 m, 3 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @225: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 2.1 m | route 16.8 m, 7 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @270: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 18.3 m, 7 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B_4 parked at 48 s ring 6 m @315: server closest (-58.30, 0.50, 81.20) gap 0.00 | Pathing.closest_point (-58.30, 0.50, 81.20) gap 0.00 | native false
+REACH terminus B_4 parked at 48 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 16.8 m, 4 points, ends (-58.3, 81.2)
+REACH_GOAL terminus B9 B_4 at 42 s: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.8 m, 3 points, ends (35.6, 23.9)
+REACH_POINT terminus B9 B_4 at 42 s #0 (31.4, 38.1)
+REACH_POINT terminus B9 B_4 at 42 s #1 (33.7, 30.2)
+REACH_POINT terminus B9 B_4 at 42 s #2 (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.2 m | route 16.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 1.1 m | route 16.6 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.2 m | route 17.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.9 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.6 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.9 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 3 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 2.3 m | route 16.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 4.1 m | route 16.6 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 2.3 m | route 18.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 17.5 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.0 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 9.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 42 s ring 6 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 42 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 9.9 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.5 m, 3 points, ends (35.6, 23.9)
+REACH_POINT terminus B9 B_4 at 48 s #0 (37.7, 35.2)
+REACH_POINT terminus B9 B_4 at 48 s #1 (37.2, 32.6)
+REACH_POINT terminus B9 B_4 at 48 s #2 (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 9.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 8.6 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 3 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.1 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.9 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 16.8 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 1.2 m | route 16.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.7 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.9 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 7.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 5.7 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 48 s ring 6 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 48 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 9.5 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.2 m, 3 points, ends (35.6, 23.9)
+REACH_POINT terminus B9 B_4 at 53 s #0 (36.7, 38.1)
+REACH_POINT terminus B9 B_4 at 53 s #1 (36.2, 31.9)
+REACH_POINT terminus B9 B_4 at 53 s #2 (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.8 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.2 m | route 16.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 1.1 m | route 16.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.2 m | route 16.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 14.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 3 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.5 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.9 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 2.3 m | route 17.0 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 4.1 m | route 16.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 2.3 m | route 16.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.0 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 8.3 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 53 s ring 6 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 53 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.3 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round): server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round): reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.3 m, 3 points, ends (35.6, 23.9)
+REACH_POINT terminus B9 B_4 at 61 s (going round) #0 (28.5, 31.4)
+REACH_POINT terminus B9 B_4 at 61 s (going round) #1 (31.2, 28.5)
+REACH_POINT terminus B9 B_4 at 61 s (going round) #2 (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 8.5 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.8 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.7 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 13.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.6 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 10.7 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 8.4 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 3 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 7.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @0: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 7.6 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @45: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 12.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @90: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.2 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @135: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 16.3 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @180: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 15.1 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @225: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 11.8 m, 3 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @270: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 7.2 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL terminus B9 B_4 at 61 s (going round) ring 6 m @315: server closest (35.58, 0.50, 23.91) gap 0.00 | Pathing.closest_point (35.58, 0.50, 23.91) gap 0.00 | native false
+REACH terminus B9 B_4 at 61 s (going round) ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 0.0 m | route 4.3 m, 2 points, ends (35.6, 23.9)
+REACH_GOAL sumps crew 4 at 58 s: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 14.1 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 13.1 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 15.3 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 16.9 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 15.7 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 13.5 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 11.5 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 3 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 11.3 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 1.6 m | route 12.9 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 17.1 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 19.7 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 19.9 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 17.7 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 13.5 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 9.2 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 58 s ring 6 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 58 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 8.7 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 9.6 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 12.5 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 11.3 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 9.2 m | route 23.3 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 7.1 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 6.8 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 8.6 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 10.9 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 3 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 12.3 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 14.3 m | route 48.2 m, 12 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 10.1 m | route 46.4 m, 12 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 8.3 m | route 42.2 m, 11 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 5.0 m | route 24.3 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 4.3 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 7.0 m | route 15.2 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 11.2 m | route 13.4 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 4 at 48 s ring 6 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 4 at 48 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 15.2 m | route 23.2 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 1.4 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 15.2 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 1.3 m | route 18.1 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 3.4 m | route 17.7 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 4.3 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 4.3 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 3.7 m | route 16.3 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 3 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 3 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 1.7 m | route 13.7 m, 4 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 12.6 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 16.5 m, 6 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 1.3 m | route 19.8 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 5.5 m | route 18.8 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 7.3 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 7.3 m | route 17.0 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 3.8 m | route 13.0 m, 3 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 66 s ring 6 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 66 s ring 6 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 12.7 m, 4 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on): server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on): reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 24.4 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 23.8 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 26.0 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 27.3 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 27.1 m, 10 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 25.5 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 23.2 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 21.6 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 3 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 3 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 21.8 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @0: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @0: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 23.7 m, 8 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @45: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @45: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 27.9 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @90: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @90: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 30.2 m, 10 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @135: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @135: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 29.9 m, 10 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @180: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @180: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 26.8 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @225: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @225: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 22.3 m, 9 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @270: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @270: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 18.8 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL sumps crew 3 at 72 s (drove on) ring 6 m @315: server closest (7.50, 0.50, -73.40) gap 3.60 | Pathing.closest_point (7.50, 0.50, -73.40) gap 3.60 | native false
+REACH sumps crew 3 at 72 s (drove on) ring 6 m @315: reachable=true end_gap 0.0 goal_gap 3.6 start snaps 0.0 m | route 19.4 m, 7 points, ends (7.5, -73.4)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 8.2 m | route 31.0 m, 4 points, ends (-34.8, 22.2)
+REACH_POINT  B9 queued Alpha_3 to waypoint 2 #0 (-17.5, 7.3)
+REACH_POINT  B9 queued Alpha_3 to waypoint 2 #1 (-17.5, 20.5)
+REACH_POINT  B9 queued Alpha_3 to waypoint 2 #2 (-19.5, 22.0)
+REACH_POINT  B9 queued Alpha_3 to waypoint 2 #3 (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @0: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @0: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 5.2 m | route 31.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @45: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @45: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 6.1 m | route 28.9 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @90: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @90: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 8.2 m | route 28.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @135: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @135: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 10.3 m | route 28.9 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @180: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @180: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 11.2 m | route 31.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @225: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @225: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 10.3 m | route 33.1 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @270: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @270: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 8.2 m | route 34.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 3 m @315: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 3 m @315: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 6.1 m | route 33.1 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @0: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @0: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 2.2 m | route 31.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @45: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @45: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 4.0 m | route 26.8 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @90: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @90: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 8.2 m | route 25.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @135: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @135: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 10.6 m | route 5.0 m, 2 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @180: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @180: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 14.2 m | route 31.0 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @225: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @225: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 12.3 m | route 38.8 m, 6 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @270: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @270: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 7.8 m | route 38.8 m, 6 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 2 ring 6 m @315: server closest (-34.82, 0.50, 22.23) gap 12.23 | Pathing.closest_point (-34.82, 0.50, 22.23) gap 12.23 | native false
+REACH  B9 queued Alpha_3 to waypoint 2 ring 6 m @315: reachable=true end_gap 0.0 goal_gap 12.2 start snaps 4.0 m | route 35.3 m, 4 points, ends (-34.8, 22.2)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 8.2 m | route 18.3 m, 4 points, ends (-20.0, 25.0)
+REACH_POINT  B9 queued Alpha_3 to waypoint 1 #0 (-17.5, 7.3)
+REACH_POINT  B9 queued Alpha_3 to waypoint 1 #1 (-17.5, 20.5)
+REACH_POINT  B9 queued Alpha_3 to waypoint 1 #2 (-19.5, 24.1)
+REACH_POINT  B9 queued Alpha_3 to waypoint 1 #3 (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @0: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 5.2 m | route 18.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @45: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 6.1 m | route 16.2 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @90: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 8.2 m | route 15.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @135: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 10.3 m | route 16.2 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @180: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 11.2 m | route 18.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @225: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 10.3 m | route 20.5 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @270: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 8.2 m | route 21.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 3 m @315: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 3 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 6.1 m | route 20.5 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @0: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @0: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 2.2 m | route 18.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @45: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @45: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 4.0 m | route 14.1 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @90: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @90: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 8.2 m | route 12.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @135: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @135: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 10.6 m | route 10.2 m, 3 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @180: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @180: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 14.2 m | route 18.3 m, 4 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @225: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @225: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 12.3 m | route 26.1 m, 6 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @270: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @270: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 7.8 m | route 26.1 m, 6 points, ends (-20.0, 25.0)
+REACH_GOAL  B9 queued Alpha_3 to waypoint 1 ring 6 m @315: server closest (-20.00, 0.50, 25.00) gap 0.00 | Pathing.closest_point (-20.00, 0.50, 25.00) gap 0.00 | native false
+REACH  B9 queued Alpha_3 to waypoint 1 ring 6 m @315: reachable=true end_gap 0.0 goal_gap 0.0 start snaps 4.0 m | route 22.6 m, 4 points, ends (-20.0, 25.0)
+REACH_DONE

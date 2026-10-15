@@ -132,10 +132,17 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
 - **B3b-2** built: `lab/brains-r31-bridge` `344a772a` (route seating matched ONCE per task point, held `fixed` until the
   point changes or a re-seat; `--route-seat-once=off` = round 30's B3b; counter `crossings_held`); unit 5/0. Tuning on
   the three named cells running: green t5 s2 on = rim 0, 4/4 across, 35.8 s.
-- **B9**: the reseat probe (stream + traffic-t3b's `traffic.gd` a63dde6d, Terminus cross s33 t1 `--traffic-on=turns`)
-  did NOT reproduce (B_4 in 30.4 s, all 10 in, all-in 33.7 s = traffic's BASE), nor did `traffic-trace`: T3b also
-  had a hook in `movement.gd` `_avoid` (`Traffic.shape`) that main lacks, so the rule never acted. Scratch tree now +
-  that hook (`68f67d0f`); re-running.
+- **B9 DONE — the Terminus seat trap is the GATE (B5c-v5's case; no seating fix).** Reproduced on a scratch tree =
+  stream + traffic-t3b's `traffic.gd` (a63dde6d) AND its `Traffic.shape` hook in `_avoid` (main lacks it; without it the
+  rule never acts: my first two traces = T3b's base arm). terminus cross s33 t1 `--traffic-on=turns`, builder0 GDScript:
+  B_4 in 61.4 s (= traffic's worst run). 40–61 s it steers between its seat (35.6, 23.9) and (35.3, 40.0) = its arrival
+  gate 16.1 m north: reaches the gate, turns for the seat, loses "reached", is sent back (round 29's per-tick circling);
+  reach-probe: the route to the seat is reachable and near-straight, rays at 0/±0.8/±1.6 m × 0.4/1.0 m hit no static
+  body, no squadmate within 15 m. **With v4's gate on top** (scratch 36630581): B_4 in **19.4 s**, every crew in 27.5 s
+  v 61.4 (`near` fires at 12.2 s, 8.4 m from its seat). Relayed for traffic's T3b question (n = 1). Traces + probe:
+  `references/round31/brains/b9-*`. Side answer (manoeuvre's relay): `test_control_queued_task`'s Alpha_3 spot
+  (-25.7, 7.3) stands 8.2 m off the navmesh (the start snaps to (-17.5, 7.3)): navmesh, not the re-seat (round-32
+  candidate for the arena's owner).
 
 ### B5c-v5 bar (DRAFT; to the orchestrator once the pair-tree check is green; DECLARED; the LAST attempt; no partial)
 Candidate: **v4's rule unchanged** (pair tree above). Arms: default (on) v `--nav-off=gategiveup` (off), one tree,
