@@ -228,6 +228,18 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   regression stage stays a pass line. **Side finding, routed to brains:** a truck 13.5 m short with no contact and
   `no_path` on Green_Alpha_3's spot looks like a terrain or navmesh trap on main; brains owns blocked-phase reporting.
 
+- **R31.6 CP-P0's price is an UPPER BOUND, accepted (2026-10-15 ~02:40 PDT):** `tools/remote.sh --quiet planner-twin
+  PLANNER_CPUS=0-3` on `41212da0` (= `a3755e37` + docs) exited 0, 4/0, but QUIET WINDOW: NOT USABLE (7 of 7 samples with
+  7–8 foreign runs live). Native, cold field, pinned to 4 CPUs with others live: Terminus turnround 7 exp 3.57 ms
+  (510 µs/exp); slot180 37 exp 3.67 ms; tjunction 94 exp 16.2 ms (172 µs/exp); yard BUDGET 12 000 exp 1.30 s; offline
+  F6a 3735 exp 150 ms (40 µs/exp). Unpinned at load 13, the same plans cost 2.7–3× more. **Cap v cost:** at this price the
+  0.5 ms line allows a slice of 3–5 expansions a tick, so a 94-expansion plan takes ~20–30 ticks (~1 s), inside the 3 s
+  pending cap; with the navmesh cell cache warm it is ~10 a tick. **Ruling:** no second quiet window this round, because
+  it cost the whole box ~1 h and still wasn't quiet. CP-P0's price stands as an upper bound. C31.5's cost line (≤ 0.5 ms
+  a tick at Sumps 25 a side) is judged at CP-P1 from planner-census's in-fight probe, which also chooses SLICE. CP-P0's
+  candidate stays `a3755e37` (check `planner-check6` pending). The cell cache (`d373af4e`/`17bd1ec8`, C++ changed after
+  equality) merges only with its own planner-twin (ALL) green.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;

@@ -336,7 +336,9 @@ a result.
 claims each slot as it frees and holds it until every in-flight job ends. From 01:03 to ~02:00 PDT on 2026-10-15,
 builder0 ran only the three checks already in flight, while every new heavy AND light job waited, including a 10-minute
 trace for 54 minutes. Grant one when the queue is short, or at a round's natural lull, and tell every stream how long
-it will take.
+it will take. **And it may not even be quiet:** the planner's window (`41212da0`, 2026-10-15) waited 65 min for 12
+slots and then reported `QUIET WINDOW: NOT USABLE`, with 7 of 7 samples showing 7–8 foreign runs live (series runners,
+checks). Mid-round, price on the in-fight probe or a pinned run, and quote it as an upper bound.
 
 **A hung import holds a slot for the full 5400 s timeout.** On 2026-10-14 traffic's check sat 70 min in
 `Godot --import` (5 s of CPU, `futex_do_wait`) with load 1.95, while ten jobs queued. To spot one: `ps -o
