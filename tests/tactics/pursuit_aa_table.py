@@ -2,6 +2,7 @@
 """Round 31 (brains B5c-v5): the pursuit A/A's table. Per speed: each seed's pass and margins at nudge 0 and the nudged
 arm; the pass count, the margins' min / median, and how often the nudge alone flipped the verdict (the knife-edge rate)."""
 import json
+import math
 import statistics
 import sys
 
@@ -28,9 +29,11 @@ def main(path):
             print(f"{s} | " + " | ".join(cells))
         for n in nudges:
             a = list(arms[n].values())
-            cm = [r["closing_margin_m"] for r in a]
+            # +inf: no crew was still chasing at both ends of any window (the closing line had nothing to judge).
+            cm = [r["closing_margin_m"] for r in a if r["closing_margin_m"] != float("inf")]
             rm = [r["reversal_margin_deg"] for r in a]
-            print(f"nudge {n:g}: {sum(r['pass'] for r in a)}/{len(a)} pass; closing margin min {min(cm):+.1f} median "
+            print(f"nudge {n:g}: {sum(r['pass'] for r in a)}/{len(a)} pass; let go {sum(bool(r['let_go_at']) for r in a)}; "
+                  f"closing margin (finite {len(cm)}) min {min(cm):+.1f} median "
                   f"{statistics.median(cm):+.1f} sd {statistics.pstdev(cm):.1f} m; reversal margin min {min(rm):+.0f} "
                   f"median {statistics.median(rm):+.0f} sd {statistics.pstdev(rm):.0f} deg")
         if len(nudges) == 2:
