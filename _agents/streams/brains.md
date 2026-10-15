@@ -113,9 +113,14 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   `references/round31/brains/pursuit-aa-0415da23.*`, 9e6f17c3): as written **24/24**, nudged **22/24** (8 m/s seeds 3, 9
   let go; 18 m/s 12/12 both). v5's line (1) (main 3b7e7a6c): ON ≥ 21/24 as written AND ≥ 19/24 nudged, no new let-go
   at 18 m/s.
-- **B5c-v5 design decision:** v4's rule UNCHANGED is the candidate — the A/A removed its parking premise (lesson 306).
-  Pair tree `pair/brains-v5` `17e7b08c` = stream + `lab/brains-r30-gate` + native's `f508ce89` (merged clean); C31.1's
-  `make check` running before any series; the bar (below) goes to the orchestrator once it is green.
+- **B5c-v5: the pair-tree check GREEN, the bar FILED, the judged series RUNNING.** Candidate = v4's rule unchanged (the
+  A/A removed its parking premise, lesson 306). Pair tree `pair/brains-v5` `17e7b08c` (stream 0415da23 + `lab/brains-
+  r30-gate` f1a804eb + native's `f508ce89`): `make remote T=check` **exited 0**, 2629 / 0, 24 passed + 2 NOT JUDGED (perf-
+  judge and scenario_perf refused on box load), sim-baseline 13 unmoved, native-verify 0 mismatches; pursuit 10/10,
+  wheeled_arrival 11/11, gate_v4 8/8, gate_hold 4/4, native_gate 4/4, mixed_legs 4/4, wall_contact 11/11, cp2 pass.
+  Bar filed at main (Bars round 31); seeds confirmed fresh against rounds 29–30 (yard 27–28, Sumps 16–17, Terminus
+  8–11, arrive 37–40). Series on `e675a28a` (= 17e7b08c + `tests/nav/arrive_pair.py` only), unit `brains-v5-series`,
+  outputs in the session scratchpad `v5/`.
 - **B8 DONE, on main** (`80eea6ec` + `922db8b6`, in aa205ea5): `realslow` opt-in (R31.1), GDScript only (the re-seat
   clock is GDScript on every path; `real_velocity` is filled by the native tank drive too). **Pre-series gate ACCEPTED**
   (scratch `44b32f12` = stream + default ON, `check NATIVE=off`, builder0, 3038 s): 2612 / 0, 25 of 26, sim-baseline 13
@@ -128,8 +133,9 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   point changes or a re-seat; `--route-seat-once=off` = round 30's B3b; counter `crossings_held`); unit 5/0. Tuning on
   the three named cells running: green t5 s2 on = rim 0, 4/4 across, 35.8 s.
 - **B9**: the reseat probe (stream + traffic-t3b's `traffic.gd` a63dde6d, Terminus cross s33 t1 `--traffic-on=turns`)
-  did NOT reproduce (B_4 in 30.4 s, all 10 in, all-in 33.7 s = traffic's BASE). Re-running on traffic's own probe
-  (`traffic-trace`, the series' stage).
+  did NOT reproduce (B_4 in 30.4 s, all 10 in, all-in 33.7 s = traffic's BASE), nor did `traffic-trace`: T3b also
+  had a hook in `movement.gd` `_avoid` (`Traffic.shape`) that main lacks, so the rule never acted. Scratch tree now +
+  that hook (`68f67d0f`); re-running.
 
 ### B5c-v5 bar (DRAFT; to the orchestrator once the pair-tree check is green; DECLARED; the LAST attempt; no partial)
 Candidate: **v4's rule unchanged** (pair tree above). Arms: default (on) v `--nav-off=gategiveup` (off), one tree,
