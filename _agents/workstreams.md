@@ -216,6 +216,18 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   green, including `test_control_queued_task`'s shift-waypoints red under `unstickback` alone (the squad centre stalls
   2.2 m short; manoeuvre is tracing it).
 
+- **R31.5 C31.4's escape clause amended for TERRAIN pins (2026-10-15 ~02:20 PDT, manoeuvre's queued-task trace on
+  `9b257348` + unstickback ON, builder0 light):** Green_Alpha_3 sat from f 1140 13.5 m from its goal, real 0.00, plant
+  0.00, touch false, phase blocked 'terrain'/'no_path', NOT pinned on a hull. Main's escape fires and reverses 0.9 s on
+  lock, which frees it. H1 classed it a terrain pin, found < 1 m for a straight reverse, REFUSED and stood, nine times in a
+  row (refused 9, backs 0), so the squad held 11.6 m off and the shift-queued screen never began. **Ruling:** C31.4's
+  "never a blind reverse on lock" was written for a hull pinned on a FRIEND (round 30's stranded Sumps 8×8), and that
+  path (ask → straight reverse → stand) is unchanged. For a pin with NO hull involved (`fires_wall`) whose straight
+  reverse is refused, H1 falls back to MAIN's escape bit for bit (round 29's pivot / ask-behind check, then 0.9 s on
+  lock), counted `fallback`. The CP-H A/B reports `fallback` per stage, and round 30's "tank backing off a wall"
+  regression stage stays a pass line. **Side finding, routed to brains:** a truck 13.5 m short with no contact and
+  `no_path` on Green_Alpha_3's spot looks like a terrain or navmesh trap on main; brains owns blocked-phase reporting.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
