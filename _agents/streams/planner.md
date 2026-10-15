@@ -404,6 +404,12 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:40 PDT: **the clip for him rendered:** `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (3840 x
+  1080, 32 s, side by side: TODAY left -- 29.8 s, 53 gear changes, 14 wall contacts; PLANNER SEAM right -- 15.5 s, 3 legs,
+  0 contacts, its last frame held once done), from two `planner-lab PLANNER_ARMS=today PLANNER_FIXTURES=turnround
+  PLANNER_SECONDS=40 MOVIE=...` runs on builder0's light lane (the after arm `PLANNER_FLAGS=--nav-off=planner`), joined
+  with ffmpeg on the laptop; looked at (16 s: the today rig jackknifed against the left wall, the seam's straight nose
+  south). The orchestrator's HANDOFF *To show him* line.
 - 2026-10-15 ~03:35 PDT: **the planner test files GREEN on 0a2a4a48** (`make remote LIGHT=1 T="test FILTER=planner"`
   exited 0, 25 passed 0 failed, builder0 light lane): the seam with the hold record and the PLANNER_SEAM_REPORT line
   (the rolling face: one event, held 112 ticks = ~45 braking + 67 of search; the War Rig face at rest: 4 ticks).
