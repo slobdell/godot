@@ -80,6 +80,13 @@ static func _plan_native(req: PlanRequest) -> PackedPlan:
 ## answers true when the plan is final; `session_result(req)` is the PackedPlan. Without the library the whole plan is
 ## made at `begin_session` in GDScript (the twin path: correct, slow, for a tree without the .so) and `step_session`
 ## answers true at once. Proven in tests/test_native_planner.gd: the sliced plan is the whole plan.
+## The C++ navmesh cell cache's counters (chunks, cells, hits, misses) for measurement; empty without the library.
+static func native_cache_stats() -> Dictionary:
+	if _impl == null or not _impl.has_method("nav_cache_stats"):
+		return {}
+	return _impl.nav_cache_stats()
+
+
 ## The session's own library instance (a whole plan on `_impl` while a session is live would clobber it: native's
 ## review note); the free-space tables are one static cache inside the library, shared by both.
 static var _session_impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null

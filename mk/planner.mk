@@ -91,7 +91,7 @@ PLANNER_CENSUS_ARENA ?= sumps
 # fight itself stays on --brains-off=native, so the probe says which path it took: with native off it is the GDScript's).
 PLANNER_CENSUS_PROBE ?= 0
 .PHONY: planner-census
-planner-census: import ## planner P6: plan requests a tick in a PLANNER_CENSUS_ARENA fight at PLANNER_CENSUS_N a side, PLANNER_CENSUS_SEEDS, PLANNER_FLAGS=--brains-off=native for the GDScript drive -> build/planner/census-<seed>.log
+planner-census: native import ## planner P6: plan requests a tick in a PLANNER_CENSUS_ARENA fight at PLANNER_CENSUS_N a side, PLANNER_CENSUS_SEEDS, PLANNER_FLAGS=--brains-off=native for the GDScript drive -> build/planner/census-<seed>.log
 	@mkdir -p $(BUILD_DIR)/planner $(BUILD_DIR)/perf-armies
 	@$(PYTHON) tools/perf_armies.py size $(PLANNER_CENSUS_N) $(BUILD_DIR)/perf-armies
 	@for seed in $(PLANNER_CENSUS_SEEDS); do log=$(BUILD_DIR)/planner/census-$$seed.log; \
@@ -103,3 +103,24 @@ planner-census: import ## planner P6: plan requests a tick in a PLANNER_CENSUS_A
 			--plan-probe=$(PLANNER_CENSUS_PROBE) $(PLANNER_FLAGS) > $$log 2>&1 || true; \
 		grep -h "^PLANNER_CENSUS" $$log | cut -c1-600 || { echo "   no PLANNER_CENSUS line: see $$log"; tail -3 $$log; }; \
 	done
+
+# Round 31 (planner CP-P1, bar line (a)): the judged Terminus series. nav-terminus-drive over PLANNER_SERIES_SEEDS x
+# PLANNER_SERIES_SQUADS in TWO arms on the GDScript drive: base = `--brains-off=native_drive` (today's drive, the C++
+# planner idle), candidate = the same + `--nav-off=planner` (the seam ON). Both arms one build, the same seeds; read by
+# tests/planner/series_verdict.py as the bar is written (paired arrivals <= 1.645 se, contact-ticks reported, the
+# seam's per-run report). Heavy (NAV_JOBS runs at once): make remote T="planner-series". The seeds are the bar's
+# FRESH ones (133-145); tuning never touches them.
+PLANNER_SERIES_SEEDS ?= 133 134 135 136 137 138 139 140 141 142 143 144 145
+PLANNER_SERIES_SQUADS ?= mixed rigs
+PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
+
+.PHONY: planner-series
+planner-series: import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
+	@rm -rf $(PLANNER_SERIES_DIR) && mkdir -p $(PLANNER_SERIES_DIR)
+	@echo ">> planner-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SERIES_SEEDS) | squads $(PLANNER_SERIES_SQUADS)"
+	@for arm in base candidate; do flags="--brains-off=native_drive"; [ "$$arm" = base ] || flags="$$flags --nav-off=planner"; \
+		echo ">> planner-series: arm $$arm ($$flags)"; \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_SERIES_SQUADS)" DRIVE_SEEDS="$(PLANNER_SERIES_SEEDS)" \
+			NAV_FLAGS="$$flags" > $(PLANNER_SERIES_DIR)/$$arm.out 2>&1 || { tail -20 $(PLANNER_SERIES_DIR)/$$arm.out; echo ">> planner-series: arm $$arm REFUSED"; exit 1; }; \
+		mv $(BUILD_DIR)/nav-drive $(PLANNER_SERIES_DIR)/$$arm; done
+	@$(PYTHON) tests/planner/series_verdict.py base=$(PLANNER_SERIES_DIR)/base candidate=$(PLANNER_SERIES_DIR)/candidate | tee $(PLANNER_SERIES_DIR)/verdict.txt

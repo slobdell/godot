@@ -119,16 +119,18 @@ func _cell(ix: int, iz: int) -> float:
 		var v := _field[i]
 		if v > UNSET_BELOW:
 			return v
-		v = _wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)
-		_field[i] = v
-		return v
+		# Round 31 (P6): stored, then READ BACK, so a cell is the same float32 on its first read as on every later one
+		# (the C++ keeps a navmesh's cells across plans; a value that depended on which read was first could not be
+		# held to the GDScript by the twin test).
+		_field[i] = _wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)
+		return _field[i]
 	var key := (ix + 1048576) * 2097152 + (iz + 1048576)
 	var known: Variant = _spill.get(key)
 	if known != null:
 		return known
-	var d := _wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)
-	_spill[key] = d
-	return d
+	var narrowed := PackedFloat32Array([_wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)])
+	_spill[key] = narrowed[0]  # a float32, as the window's cells are
+	return narrowed[0]
 
 
 ## The exact distance from a point to the nearest wall rectangle's boundary (negative inside). Overridden by a navmesh

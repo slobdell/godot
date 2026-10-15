@@ -245,6 +245,25 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 
 ## Round 32 candidates (found during round 31)
 
+- **His bridge, 108/108 at last, but the arrive maps paid (brains B3b-2b parked 2026-10-15):** the crossing seating
+  (re-matched as crews pass the exit) gave every crew across his bridge on all 108 cells (control 106/108), but the
+  arrive series fell 97 → 90 within 8 m (seeds 41–44, n 100, McNemar p 0.065). The seating never fires on those maps, so
+  the cost is in round 30's mouth guard or heading rule, carried in the same candidate. Round 32 ships the seating ALONE
+  (its own bar: the 108 + arrive), after attributing the cost by removing each of the other two (brains' 18-run
+  attribution on the 9 losing cells is a trace, since those cells were selected for the loss).
+- **Turn the hull (M1b(2)) parked a second time on arrivals that are really seating (2026-10-15).** With the lift
+  accepting element-task facings, the point-task share and line tasks improved (run 1: ambush 66 → 28°, SBF 74 → 29°;
+  gang_ifv SBF 61 → 21°) and contact fell, but Terminus mixed arrivals read 293 → 285. The "missing" crews had
+  completed, 7–14 m from slots the element re-seated once its turret members turned. Round 32 decides, before any
+  number: does an arrivals line count "completed at a re-seated slot" as arrived, and does facekeep (9600 refusals in
+  run 1, per unit in run 2's hull-rest rows) need to change for gang hulls?
+  **Attempt 2's record arms** (builder0, `25ef8f7e`, hull-rest 90–95, drawn, 144 an arm): with the 'sector' lift the
+  hulls DO turn. Point tasks, wheeled turret at rest, base → new: move 46.5 → 2.5° (30 → 86 % within 15°), right
+  56.5 → 3.2° (31 → 78 %), attack-move 45.0 → 3.8° (24 → 91 %); gang_ifv 37 → 62 %, gang_tank 41 → 60 %; SBF gang_ifv
+  49.9 → 17.5°; bridge 18/18. **It cost two lines:** crews still moving at 75 s under attack-move +13 v bound 11.2
+  (se 6.8), and Terminus mixed arrivals (the re-seating). facekeep refusals in the new arm total 11 997 (gang_artillery
+  3098, artillery 1983, gang_tank 1939, gang_ifv 1285, …). Round 32's question is the settle under attack-move and the
+  element's re-seating, not the turn itself.
 - **The arrival gate, a third time (brains B5c-v5 parked 2026-10-15):** v4's rule passed pursuit 24/24, the yard
   (every crew in 11/12 v 1/12) and Terminus, and FAILED one Sumps run (s17 t11 +22.3 s), where a seat flip-flop
   refired `near` 66 times. Two candidates: key `near` per seat index (or with hysteresis), or the planner's §2.8 SIDE

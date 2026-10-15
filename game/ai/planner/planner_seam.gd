@@ -33,18 +33,35 @@ extends RefCounted
 ## Deterministic: the queue is the order `take` was called (the controllers' order, tanks by name); no clock.
 
 const SWITCH := "planner"
-## Expansions a tick for a pending search (P6: chosen from CP-P0's cost line on builder0 so a slice is <= 0.5 ms).
-const SLICE := 100
+## SCOPE (R31.7, chosen from the census BEFORE any judged number): the seam takes LONG hulls only, hull length >=
+## this (the catalog: the War Rig gang_tank at 14.0 m; the next is tank at 9.7 m), every kind (face, circle plan,
+## blocked arc). The brief's target is the long hull in a Terminus street; the census (92721 / 31337) prices the
+## press's demand at ~3 ms a tick if every hull were served (six times the cost line), and the long hulls' share of
+## it is the row `by_hull` in planner-census. A short hull is never taken: today's code drives it unchanged.
+const SCOPE_MIN_HULL_M := 10.0
+## Expansions a tick for a pending search: C31.5's cost line (<= 0.5 ms a tick at Sumps 25 a side) over the IN-FIGHT
+## price of the seam's own request. planner-census on fd36ecd5's C++ (builder0 light lane, unpinned, load ~12, seeds
+## 92721 / 31337, the probe every 30 ticks): a War Rig's face-about on the Sumps navmesh among 49 hulls cost 205-392 us
+## an expansion warm (the sphere walks of a long hull; the field's cells are cached, the hull tests distance-culled),
+## 257-292 us cold; the Terminus lab fixtures pinned to 4 cpus 100-510 us. SLICE 2 is 0.4-0.8 ms a tick on that box
+## under that load, ~0.3 ms pinned; it is COUNTED, never timed (the tick a plan lands must not depend on the machine:
+## the lockstep relay). What it buys: the Terminus turnround (7 expansions) lands in 4 ticks, the T-junction (94) in
+## 47 (1.6 s), and PENDING_TICKS caps a search at 180 expansions (the census's median in-press face-about is 131; its
+## longest quarter 250-500 would be abandoned at the 3 s hold -- the judged run's `abandoned` counts them).
+const SLICE := 2
 const BUDGET := 1500
 const HORIZON_M := 30.0
-const PENDING_TICKS := 90          # 3 s, the agreed hold
+const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
+const REST_MPS := 0.5             # a pending search begins only once the hull has all but stopped
+const BRAKE_THROTTLE := 0.7        # Movement.KTURN_THROTTLE: the brake on a rolling hull while it is pending
 const YAWED_DEG := 5.0
 const FACE_TOL_DEG := 8.0          # Manoeuvre.FACE_ALIGNED_DEG
 const NEW_GOAL_JUMP := 3.0         # Movement.NEW_GOAL_JUMP's intent: a goal that jumps this far is a new order
 const STALE_TICKS := 2             # a crew `take` has not been asked about for this long is released
+const REPORT_LINES := true         # a PLANNER_SEAM_REPORT line at every event's end (measurement; tens a run)
 
 ## Measurement (statics; `report()` for a probe's row).
 static var requests := 0
@@ -62,12 +79,16 @@ static var queue_waits := 0       # hull-ticks waited behind another crew's sear
 static var _crews := {}           # name -> Crew
 static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
+static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
+static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
+static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 
 
 class Crew:
 	var kind := ""
 	var tick_seen := 0
 	var asked_tick := 0
+	var held_since := 0   # the tick the hull was first held (the ask): its hold = plan tick - held_since
 	var pending := true
 	var begun := false
 	var req: PlanRequest = null
@@ -94,8 +115,15 @@ class Crew:
 		return c
 
 
+## The CP-H form (native's ask on the pair tree, a6c6c804): the seam is ON when the flag's state differs from the
+## default. OFF by default, `--nav-off=planner` is the opt-in arm (R31.1); the ship change is this one const flipped
+## to true, after which `--nav-off=planner` is the OFF arm. (A `--nav-off` name takes the whole native drive off, so a
+## tree flipped by the flag could never exercise native's mirror: the const is what the pair-tree gate flips.)
+const PLANNER_DEFAULT := false
+
+
 static func on() -> bool:
-	return Movement.switched_off(SWITCH)
+	return PLANNER_DEFAULT != Movement.switched_off(SWITCH)
 
 
 ## Is this crew held by the seam (a plan pending or being driven)? False when OFF.
@@ -103,10 +131,31 @@ static func live(crew_name: String) -> bool:
 	return on() and _crews.has(crew_name)
 
 
+## Round 31 (manoeuvre's ask through the orchestrator, measurement only): this hull's LAST refusal as
+## [physics frame, code] (`PackedPlan.START_BLOCKED` etc.), or [] when there has been none or the switch is OFF.
+## Manoeuvre counts an escape begun within 3 s of a START_BLOCKED refusal (`esc_after_refusal`) and the hull moving
+## >= 1.5 m within 5 s of one (`refusal_then_free`). Read-only; no Movement member.
+static func last_refusal(crew_name: String) -> Array:
+	if not on():
+		return []
+	var last: Variant = _last_refusal.get(crew_name)
+	return [] if last == null else (last as Array).duplicate()
+
+
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
-			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE}
+			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE,
+			"holds": _hold_stats()}
+
+
+## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
+static func _hold_stats() -> Dictionary:
+	if holds.is_empty():
+		return {"n": 0, "median": 0, "max": 0}
+	var sorted := Array(holds)
+	sorted.sort()
+	return {"n": sorted.size(), "median": sorted[sorted.size() / 2], "max": sorted[-1]}
 
 
 static func reset() -> void:
@@ -121,6 +170,8 @@ static func reset() -> void:
 	pending_ticks = 0
 	driving_ticks = 0
 	queue_waits = 0
+	_last_refusal = {}
+	holds = PackedInt32Array()
 	_release_all()
 
 
@@ -137,7 +188,15 @@ static func _release_all() -> void:
 ## holds (a plan pending or being driven), never asks. `target`: the k-turn's steering point, or the face's home;
 ## `want`: the face's wanted heading.
 static func take(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float, want := Vector3.ZERO) -> bool:
+	if not in_scope(mover.ctl.tank.unit_id) and not _crews.has(String(mover.ctl.tank.name)):
+		return false
 	return _serve(mover, cmd, kind, target, delta, want, true)
+
+
+## Is this hull class one the seam takes (SCOPE_MIN_HULL_M)?
+static func in_scope(unit_id: String) -> bool:
+	var box: Array = Movement.hull_box(unit_id)
+	return float(box[2]) >= SCOPE_MIN_HULL_M
 
 
 static func hold(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float) -> bool:
@@ -202,13 +261,15 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	req.horizon_m = HORIZON_M
 	req.in_world(PlannerNavWorld.for_tank(tank, mover.ctl.tanks_root))
 	# R31.2 (H), manoeuvre's condition: on the tick a hull is first taken, `mover.yield_to_plan()` ends a half-driven
-	# k-turn leg and both escapes and clears the stall and press clocks, so nothing resumes on release. The call lands
-	# here when stream/manoeuvre 9b257348 reaches main (no shim, the orchestrator's ruling): PENDING at this commit.
+	# k-turn leg and both escapes and clears the stall and press clocks, so nothing resumes on release (main 298e4498,
+	# called directly, no shim: the orchestrator's ruling).
+	mover.yield_to_plan()
 	var crew := Crew.new()
 	crew.kind = kind
 	crew.req = req
 	crew.goal = target
 	crew.asked_tick = tick
+	crew.held_since = tick
 	crew.tick_seen = tick
 	crew.at = here
 	crew.heading = forward
@@ -238,6 +299,11 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	pending_ticks += 1
 	if tick - crew.asked_tick >= PENDING_TICKS:
 		abandoned += 1
+		holds.append(tick - crew.held_since)
+		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
+				"start": [snappedf(crew.req.start_x, 0.01), snappedf(crew.req.start_z, 0.01), snappedf(crew.req.start_fx, 0.01), snappedf(crew.req.start_fz, 0.01)],
+				"goal": [snappedf(crew.req.goal_x, 0.01), snappedf(crew.req.goal_z, 0.01), snappedf(crew.req.goal_fx, 0.01), snappedf(crew.req.goal_fz, 0.01)],
+				"stay_m": crew.req.tol_m, "speed": snappedf(tank.speed(), 0.01), "here": [snappedf(tank.global_position.x, 0.01), snappedf(tank.global_position.z, 0.01)]}
 		_release(name)
 		_retry_until[name] = tick + RETRY_TICKS
 		return false
@@ -245,7 +311,15 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		queue_waits += 1
 		return true
 	if not crew.begun:
-		# The head of the queue begins its search from where it NOW rests (fresher than the request tick's pose).
+		# The head of the queue begins its search from where it NOW rests (fresher than the request tick's pose) -- and
+		# only once it rests: a search begun from a rolling pose plans from where the hull is not (builder0 005a3837,
+		# the rolling-face test: the first search ran out the hold, the retry from rest planned in 4 ticks).
+		if absf(tank.speed()) > REST_MPS:
+			# BRAKED to rest, not coasted: zero/zero lets a rig at speed roll on for over the 3 s hold (builder0 a073157e,
+			# the rolling-face test: abandoned 1 before the fix). The opposite throttle on a straight lock, the k-turn's
+			# throttle, as PlannerExecutor brakes a leg.
+			cmd.throttle = -signf(tank.speed()) * BRAKE_THROTTLE
+			return true
 		var here := tank.global_position
 		var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
 		crew.req.at(here.x, here.z, forward.x, forward.z)
@@ -253,6 +327,10 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		crew.at = here
 		crew.heading = forward
 		crew.stepped = 0
+		# The 3 s cap (PENDING_TICKS) counts THE SEARCH, from here: a rig braking from 8 m/s spent ~45 of the 90 ticks
+		# stopping and its search got 92 expansions (builder0 77db86eb, the rolling-face trace: start 8.8 m past the
+		# face's home, stay 5 m, abandoned at 92). The hull's whole hold is pending_ticks; the cap bounds the search.
+		crew.asked_tick = tick
 		Planner.begin_session(crew.req)
 		crew.begun = true
 	crew.stepped += SLICE
@@ -276,11 +354,14 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		return false
 	if plan.code != PackedPlan.OK:
 		refused[plan.code] = int(refused.get(plan.code, 0)) + 1
+		holds.append(tick - crew.held_since)
+		_last_refusal[name] = [tick, plan.code]
 		_release(name)
 		_retry_until[name] = tick + RETRY_TICKS
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
+	holds.append(tick - crew.held_since)
 	crew.pending = false
 	crew.executor = PlannerExecutor.new()
 	crew.executor.start(plan, tank)
@@ -331,6 +412,10 @@ static func _release(name: String) -> void:
 		Planner.cancel_session()
 	_crews.erase(name)
 	_queue.erase(name)
+	# The run's report (CP-P1 bar line (a): "PlannerSeam.report() printed per run"): the drive harnesses are nav's
+	# files, so the seam prints its own cumulative line at every event's end; the LAST one in a log is the run's.
+	if REPORT_LINES:
+		print("PLANNER_SEAM_REPORT " + JSON.stringify(report()))
 
 
 static func _flat(a: Vector3, b: Vector3) -> float:
@@ -345,7 +430,8 @@ static func capture() -> Dictionary:
 	var crews := {}
 	for name: String in _crews:
 		crews[name] = (_crews[name] as Crew).copy()
-	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report()}
+	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
+			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate()}
 
 
 static func restore(snapshot: Dictionary) -> void:
@@ -356,6 +442,8 @@ static func restore(snapshot: Dictionary) -> void:
 		_crews[name] = (snapshot["crews"][name] as Crew).copy()
 	_queue.assign(snapshot["queue"])
 	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
+	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
+	holds = PackedInt32Array(snapshot.get("holds", PackedInt32Array()))
 	var counters: Dictionary = snapshot["counters"]
 	requests = int(counters["requests"])
 	plans = int(counters["plans"])
