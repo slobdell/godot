@@ -15,7 +15,7 @@ var _rows: PackedStringArray = []
 
 ## The machine every number here is quoted with (HOSTNAME is unset in some shells: /etc/hostname then).
 static func _host() -> String:
-	var host := _host()
+	var host := OS.get_environment("HOSTNAME")
 	if host == "" and FileAccess.file_exists("/etc/hostname"):
 		host = FileAccess.get_file_as_string("/etc/hostname").strip_edges()
 	return host if host != "" else "unknown-host"
