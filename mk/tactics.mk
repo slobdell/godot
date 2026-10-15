@@ -814,3 +814,16 @@ pursuit-aa: native-for-check import ## Round 31 (B5c-v5): test_tactics_pursuit's
 			|| echo "{\"speed\":$$0,\"seed\":$$1,\"nudge\":$$2,\"missing\":true}" > $$out.json'
 	@cat $(BUILD_DIR)/pursuit-aa-runs/*.json > $(BUILD_DIR)/pursuit-aa.jsonl
 	@$(PYTHON) tests/tactics/pursuit_aa_table.py $(BUILD_DIR)/pursuit-aa.jsonl
+
+# Round 31 (brains B6): the filed bar, both arms on one tree: sbf-series with the candidate (default) and with the
+# control (--sbf-told-sectors=on) on SBF_BAR_SEEDS x SBF_BAR_UNITS -> build/sbf-bar-{on,control}.jsonl and the bar's
+# lines (tests/tactics/sbf_bar.py).
+SBF_BAR_SEEDS ?= 7 8 9 10 11 12 13 14 15 16 17 18
+SBF_BAR_UNITS ?= law_tank gang_ifv law_ifv gang_tank tank
+.PHONY: sbf-bar
+sbf-bar: import ## Round 31 (B6): the SBF sector bar, candidate v --sbf-told-sectors=on, SBF_BAR_SEEDS x SBF_BAR_UNITS -> build/sbf-bar-*.jsonl + the bar's lines
+	@$(MAKE) --no-print-directory sbf-series SBF_SEEDS="$(SBF_BAR_SEEDS)" SBF_UNITS="$(SBF_BAR_UNITS)" SBF_FLAGS=""
+	@cp $(BUILD_DIR)/sbf-series.jsonl $(BUILD_DIR)/sbf-bar-on.jsonl
+	@$(MAKE) --no-print-directory sbf-series SBF_SEEDS="$(SBF_BAR_SEEDS)" SBF_UNITS="$(SBF_BAR_UNITS)" SBF_FLAGS="--sbf-told-sectors=on"
+	@cp $(BUILD_DIR)/sbf-series.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
+	@$(PYTHON) tests/tactics/sbf_bar.py $(BUILD_DIR)/sbf-bar-on.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
