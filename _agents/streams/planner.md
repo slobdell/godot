@@ -422,6 +422,24 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 06:37-07:00 PDT: **CP-P1's gate on aa0615e4 RED** (native's pair/cpp1-on, builder0: `make check exited 2`,
+  2634 passed 6 failed; the mirror clean, 87/87 test_native_*, the seam twin 195 held drives 0 mismatches). The 6:
+  (a) 4 in `test_planner_seam` -- the test assumed default OFF with `--nav-off=planner` the opt-in; on the ON tree
+  that flag turns the planner OFF. **Fixed 032af15f**: `_with_switch` lists the switch only when the asked state
+  differs from `PLANNER_DEFAULT` and asserts `on()` equals the ask. (b) manoeuvre's `test_kturn_three_point` (War Rig
+  nose-on: 4 legs, 7.2 s, where today drives 2 legs in 5.6 s) and nav's `test_nav_face_recovery` wedged semi (the
+  give-up never reached in 8 s): both the seam taking the rig. The orchestrator's ruling (manoeuvre's outcomes):
+  both FINDINGS, fixed before the series, re-gated on a re-cut. **Traces** (`tests/test_planner_trace_manoeuvre.gd`,
+  the two scenes copied, run ON and OFF, builder0 032af15f 29/0): k-turn ON = real motion R3.0 F1.4 R1.6 F29.0 (4
+  gear segments) from plan "R3 F2 R12 F31.5" to the seam's horizon-clipped point (24 m along, FREE heading, 1 m
+  arrival) -- the 4 is the lattice hitting a 1 m circle from a nose-on start, not a hold counted as a leg; OFF = R4.5
+  F29.8. Wedged ON over 20 s = 3 plans through the unbaked slabs, 3 stall aborts (5.0/8.1/9.3 s), give-up checked
+  first at 14.2 s, footprint over by 1.93 m (bar 1.8); OFF = give-up at 4.5 s, then the base grinds on to 26 deg /
+  4.35 m over by 20 s. **Fixes**: 1e513bcf a face hands back on its FIRST abort; d8c2e742 a face plan hands back on
+  its first WALL TOUCH (`mover.contact.touching`); the k-turn lever is read off a sweep of the seam's own request
+  (`tests/test_planner_kturn_sweep.gd`: goal, tolerances, cusp cost, arrive gear) running now (`planner-test18`).
+  Wrecks are NOT a blind spot: `Tank._set_alive(false)` disables the wreck's collision, so skipping dead hulls in
+  `PlannerNavWorld` is right; unbaked scenery (the test's own corridor) is the one the abort catches.
 - 2026-10-15 ~06:10 PDT: **86e5c646 MERGED OFF to main** (the orchestrator, on its exited-0 line). **33d5a158: the
   orchestrator's reported line** -- the hold per rig event (ask tick to the plan's, refusal's or abandon's tick, zero/zero
   throughout) now travels in the PLANNER_SEAM_REPORT line as the per-event list `hold_ticks`, and series_verdict.py
