@@ -106,6 +106,12 @@
 	F(Vector3, VECTOR3, _chord_to) \
 	F(bool, BOOL, _chord_answer) \
 	F(Variant, OBJECT, _census) \
+	F(int64_t, INT, _esc_stage) \
+	F(double, FLOAT, _esc_gap) \
+	F(Variant, OBJECT, _esc_friend) \
+	F(double, FLOAT, _esc_target_m) \
+	F(Vector3, VECTOR3, _unstick_from) \
+	F(double, FLOAT, _esc_gear) \
 	F(double, FLOAT, _press_time) \
 	F(Vector3, VECTOR3, _press_from) \
 	F(double, FLOAT, _escape_gear) \
@@ -131,6 +137,7 @@
 	F(Vector3, VECTOR3, _circle_last) \
 	F(double, FLOAT, _circle_away) \
 	F(int64_t, INT, _circle_away_ticks) \
+	F(double, FLOAT, _kturn_arc_m) \
 	F(Array, ARRAY, _kturn_looks) \
 	F(int64_t, INT, _ease_ticks) \
 	F(double, FLOAT, _ease_throttle) \
