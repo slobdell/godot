@@ -404,6 +404,13 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:15 PDT: **the clip's AFTER arm under the real drive** (`make remote LIGHT=1 T="planner-lab PLANNER_ARMS=today
+  PLANNER_FIXTURES=turnround PLANNER_FLAGS=--nav-off=planner"` on faeab49c, builder0 light lane, exited 0): the Terminus
+  west-street rig's face back = **15.5 s, 3 legs, 0 wall-contact ticks, 0 hull contacts, 70.5 m, end 1.5 m off and
+  178 deg round** (the lab's planner figure was 15.5 s / 3 / 0; today's drive 29.8 s / 53 / 14). Frames + row in
+  `references/round31/planner/clip/` (turnround_after_*.png, the end frame looked at: the rig mid-street nose south,
+  a smooth three-leg trace clear of both walls). The BEFORE arm (today's drive, no flag) running (`planner-labbefore`).
+  3daf47e6: the hold per event (`holds` n/median/max in report(); the orchestrator's reported line).
 - 2026-10-15 ~03:10 PDT: **the rolling face CLOSED at faeab49c** (`make remote LIGHT=1 T="test FILTER=planner_seam"`
   exited 0, 5 passed 0 failed, builder0 light lane): one request, one plan of 5 legs, driven to its end, abandoned 0,
   pending 113 ticks (~45 braking from 8 m/s + ~68 of search = 136 expansions), 4.1 deg off south at 40 s. The seam's
