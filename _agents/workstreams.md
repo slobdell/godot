@@ -389,6 +389,14 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   and its hull-rest lines re-run before merging: the Terminus lines could then differ); (g) the first early-stop use in
   this project: the row where `sequential.py` printed SERIES PASS/FAIL is recorded in this block with the n reached;
   (h) seed 21's rig (the defect in the wild, 16.8 m off after a face from 8.6 m) re-run on the candidate and reported.
+  **M1b(1) Terminus (d) PASSES (2026-10-14 ~17:45 PDT; `55622870` on the reader base, 13 fresh seeds 36–48, GDScript,
+  builder0):** rigs arrivals 176 → 179 of 208 (+3, se 5.13), mixed 284 → 286 of 312 (+2, se 3.56). **The project's first
+  early-stop record (g):** `sequential.py arrived:guard:0.10` (A +2.77 / B −1.56, α 0.05 β 0.20, min 6 seeds): rigs
+  SERIES PASS at run 10 of 13 (seed 45, llr −1.71), mixed SERIES PASS at run 6 of 13 (seed 41, llr −5.60) — the 13 had
+  already run (the chain is not interactive), so nothing was saved this time; an interactive hook would have saved 10 of
+  26 runs. Reported: contact-ticks rigs 8945 → 7662 (−14 %, se 2221), mixed 2475 → 1738 (−30 %, se 481); "a face left the
+  slot" leg misses rigs 19 → 21, mixed 14 → 9. Bridge, the four-arm hull-rest (seeds 48–53, 576 runs, ~2 h) and rigs seed
+  21 follow; M2b after.
 - **Manoeuvre M2b bar — the creep lift on M4b + the planner's two executor fixes (pre-registered 2026-10-14 ~14:35 PDT,
   before any judged number; DECLARED; FIRST run, a second on fresh seeds would be the last; full text in the stream's
   Status):** candidate `lab/manoeuvre-m2b` `e94ca27e` (re-based onto M4b2 `77a1603f` as `acf29cb2`, no code change) (tests builder0 3/0: a War Rig's 10 m reverse leg drives 10.03 m by the arc rule v 10.31 by the chord; a paced IFV and a gang catapult roll a 120° open-ground turn with 0 gear changes v 14 and 23) = M4b `e8bfef2e` + round 29's creep lift
