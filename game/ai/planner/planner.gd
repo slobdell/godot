@@ -42,12 +42,77 @@ const TRACE_SUB_M := 0.25       # the poses handed back are this far apart
 static var last_expansions := 0
 static var last_nodes := 0
 
+## Round 31 (CP-P0): the SAME search in C++ (native/src/planner_native.cpp, `PlannerNative`), the same bits
+## (tests/test_native_planner.gd holds every fixture to it). Taken when the library is loaded, `BrainSwitches.native`
+## and its `native_planner` sub-switch are on, and `native_on` (this file's own switch: the tests flip it to plan both
+## ways; `--planner-gdscript` on the command line clears it for an A/B of the GDScript search in play).
+static var native_on := not OS.get_cmdline_user_args().has("--planner-gdscript")
+static var _impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
+## Measurement: plans taken by each path.
+static var native_plans := 0
+static var gdscript_plans := 0
+
+
+static func native_usable() -> bool:
+	if _impl == null or not native_on or not BrainSwitches.native:
+		return false
+	# `native_planner` is native's sub-switch (BrainSwitches); read by name so this file parses on a tree without it.
+	var sub: Variant = (BrainSwitches as Script).get("native_planner")
+	return sub == null or bool(sub)
+
+
+## The C++ search's answer as a PackedPlan: the legs, code, cost and counts are the library's; `why` is composed here
+## from its numbers with this file's own format strings; the trace (poses, metres, cusps, the end pose) is GDScript's
+## `trace` over the same legs, as on the GDScript path.
+static func _plan_native(req: PlanRequest) -> PackedPlan:
+	var out := PackedPlan.new()
+	out.throttle_fwd = req.throttle_fwd
+	out.throttle_rev = req.throttle_rev
+	if req.world == null:
+		out.why = "no world"
+		return out
+	var r: Dictionary = _impl.plan(req.to_native())
+	out.code = String(r["code"])
+	out.expansions = int(r["expansions"])
+	if out.code == PackedPlan.OK or out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET:
+		# As `_search` does: the measurement statics move only when a search ran (a blocked request returns before them).
+		last_expansions = int(r["last_expansions"])
+		last_nodes = int(r["nodes"])
+	match out.code:
+		PackedPlan.OK:
+			out.legs.assign(r["legs"])
+			out.cost_s = float(r["cost_s"])
+			out.why = "%d legs, %.1f s, %d expansions (first plan at %d)" % [out.legs.size(), out.cost_s, last_expansions, int(r["first_at"])]
+		PackedPlan.BUDGET:
+			out.why = "budget of %d expansions spent" % req.budget
+		PackedPlan.NO_PATH:
+			out.why = "no pose within %.0f m reaches the goal on the %.1f m / %d-bin lattice (%d expansions, %d nodes)" % [
+					req.horizon_m, float(r["cell_m"]), int(r["bins"]), last_expansions, last_nodes]
+		PackedPlan.START_BLOCKED:
+			out.why = "the start pose overlaps another hull"
+		PackedPlan.GOAL_BLOCKED:
+			out.why = "the goal pose is not clear by %.1f m" % MARGIN_M
+		PackedPlan.ALREADY_THERE:
+			out.end_x = req.start_x
+			out.end_z = req.start_z
+			out.end_fx = req.start_fx
+			out.end_fz = req.start_fz
+	if int(r["coarse_expansions"]) >= 0:
+		out.why += " (after %d coarse expansions)" % int(r["coarse_expansions"])
+	if out.code == PackedPlan.OK:
+		trace(req, out)
+	return out
+
 
 ## The plan: the coarse lattice first (1 m, 15 degrees), and on NO_PATH or BUDGET the fine one (0.5 m, 10 degrees)
 ## with the same budget again — a corridor the coarse cells cannot thread (an IFV turning round in 12 m: the coarse
 ## search exhausted its window and said NO_PATH to a manoeuvre that exists) is found by the fine one at ~4x the cost.
 ## The expansions reported are the sum. `req.fine_retry` false skips it.
 static func plan(req: PlanRequest) -> PackedPlan:
+	if native_usable():
+		native_plans += 1
+		return _plan_native(req)
+	gdscript_plans += 1
 	var out := _search(req, CELL_M, HEADING_BINS)
 	if (out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET) and req.fine_retry:
 		var coarse := out.expansions

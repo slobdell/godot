@@ -99,3 +99,18 @@ func in_world(w: PlannerWorld) -> PlanRequest:
 ## The seconds a cusp costs this hull at its leg speeds: brake to rest from the forward speed, spin up again.
 func cusp_seconds() -> float:
 	return v_fwd / maxf(brake, 0.1) + v_fwd / maxf(accel, 0.1)
+
+
+## Round 31 (CP-P0): the request as the C++ planner reads it (PlannerNative.parse_request): every field the search
+## uses, as the doubles they are here, plus the world's view and the tick (SimClock.TICK_SECONDS, so the plant's lag
+## model is the same number on both paths). `cusp_s` is computed here once, for both the cost and the table's key.
+func to_native() -> Dictionary:
+	return {
+		"start_x": start_x, "start_z": start_z, "start_fx": start_fx, "start_fz": start_fz,
+		"goal_x": goal_x, "goal_z": goal_z, "goal_fx": goal_fx, "goal_fz": goal_fz,
+		"tol_m": tol_m, "tol_deg": tol_deg, "arrive_gear": arrive_gear,
+		"half_w": half_w, "half_l": half_l, "radius": radius, "v_fwd": v_fwd, "v_rev": v_rev,
+		"cusp_s": cusp_seconds(), "budget": budget, "horizon_m": horizon_m, "epsilon": epsilon,
+		"fine_retry": fine_retry, "tick_s": SimClock.TICK_SECONDS,
+		"world": world.native_view() if world != null else {},
+	}

@@ -110,7 +110,24 @@ _Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/p
 
 **In progress: P5 (CP-P0, the C++ port).** Nothing green yet beyond the launch baseline. Green hash: none of mine yet.
 
-### DRAFT SEAM (CP-P1, for manoeuvre and native through the orchestrator; a draft, may change after CP-P0)
+### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
+
+**What the agreement added to the draft below (each a line I own in my seam commit):** (a) `Movement.manoeuvring() ->
+bool` = `in_kturn() or (PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)))`, next to `in_kturn()` (which keeps
+its three readers as they are); traffic reads `manoeuvring()` in the crossing row and in `ask()`, manoeuvre's straight-leg
+lever reads it, `manoeuvre_census` keeps `in_kturn()` and adds a planner column. (b) A gate in `Movement.unstick()`
+right after traffic's `Traffic.holding` line: `if PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)): return`
+(OrderController calls `unstick()` after `_apply_move` regardless; manoeuvre reviews the line). (c) `PlannerSeam.live(name)`
+is static and false when OFF. (d) `PlannerSeam.capture() / restore(snapshot)` for the twin harnesses (MoverState,
+TrafficTwin snapshot statics; the seam's table holds Objects, so the pair's drive twin restores between arms through
+this). (e) Manoeuvre: YES to both call lines, YES to `PlannerExecutor` driving `Vector3` legs; its executor stays
+`Vector2` and does NOT take the two brake rules (mine); accepts 0/0 for <= 3 s then 1 s of declining. (f) Native: gates
+`planned_reverse_cheap`'s cheap exits in C++ at the pair (while `PlannerSeam.on()` or any crew is live it calls back
+`_planned_reverse`); `face_turn` needs nothing (wheeled face orders already return to GDScript); `BrainSwitches.
+native_planner` (default true) is at stream/native bf8d4a78, read as `BrainSwitches.native and BrainSwitches.native_planner`;
+no `exec_fields.h` rows; my `register_types.cpp` + `CMakeLists.txt` lines reviewed by hash with the rest.
+
+#### The draft as sent (kept as written)
 
 Read against `movement.gd` at `cff4307e` and `drive_native.cpp`'s callback layer. Four answers, then the rules.
 
