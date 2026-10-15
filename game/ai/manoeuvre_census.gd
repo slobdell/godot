@@ -83,8 +83,12 @@ static func counters() -> Dictionary:
 	return {"face_plans": Manoeuvre.face_plans, "face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none,
 			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
 			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns,
-			"face_keep_refused": Manoeuvre.face_keep_refused, "escape": Movement.escape_arms(),
-			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes}
+			"face_keep_refused": Manoeuvre.face_keep_refused, "face_keep_by_unit": Manoeuvre.face_keep_by_unit.duplicate(), "escape": Movement.escape_arms(),
+			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes,
+			# Round 31 (R31.2): the planner's column. Planner-held ticks never reach `observe` (the seam's gate in
+			# `unstick` returns first), so the census's turn rows keep meaning today's k-turn (`in_kturn`), and the
+			# planner's own counters ride here: plans, legs, driven, aborted, refused by code, pending and driving ticks.
+			"planner": PlannerSeam.report() if PlannerSeam.on() else {}}
 
 
 var _gear := 0

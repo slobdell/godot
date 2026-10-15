@@ -55,6 +55,7 @@ static func reset() -> void:
 	face_refused = 0
 	hull_turns = 0
 	face_keep_refused = 0
+	face_keep_by_unit = {}
 
 
 static func report() -> Dictionary:
@@ -311,6 +312,7 @@ static func plan_face(mover: Movement, here: Vector3, forward: Vector3, want: Ve
 	# FACE_KEEP_MARGIN_M), or no further out than it starts. Turn-hull asks wheeled turret hulls for far more faces at
 	# the edge of their slot, so the two go together as one switch.
 	_keep_slot = slot if turn_hull_on() else Vector3.INF
+	_keep_unit = tank.unit_id
 	_keep_m = maxf(maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(tank.unit_id)) - FACE_KEEP_MARGIN_M, _flat(here, slot))
 	for n in range(1, FACE_LEGS + 1):
 		if absf(error) / n > FACE_LEG_TURN + 0.001:
@@ -392,7 +394,11 @@ static func drawn_facing(brain: TankBrain) -> bool:
 
 ## The brain's decline is lifted for this order (turn-hull ON, a face from the crew's order, a drawn facing).
 static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
-	if not turn_hull_on() or String(order.get("from", "")) != "order" or not drawn_facing(brain):
+	# "order": the facing on the crew's own K1 order. "sector": a crew in an ELEMENT gets his drawn facing through its
+	# element task, and the brain sends that face as its sector watch (`TankBrain._sector_source`). Judged run 1 lifted
+	# only "order", which missed every gang element crew (gang_ifv 2195 `stop` rows v 141 `face`; at rest within 15 deg
+	# 37 % v artillery's 95 %); `drawn_facing` is what says the facing is his, the label only says which way it came.
+	if not turn_hull_on() or not String(order.get("from", "")) in ["order", "sector"] or not drawn_facing(brain):
 		return false
 	hull_turns += 1
 	return true
@@ -401,8 +407,15 @@ static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
 static func _kept(at: Vector3) -> bool:
 	if _flat(at, _keep_slot) > _keep_m:
 		face_keep_refused += 1
+		face_keep_by_unit[_keep_unit] = int(face_keep_by_unit.get(_keep_unit, 0)) + 1
 		return false
 	return true
+
+
+## Measurement: face_keep_refused per unit id (the orchestrator's ask for attempt 2: is facekeep what stops the
+## newly lifted crews?), and the unit whose plan is being made.
+static var face_keep_by_unit := {}
+static var _keep_unit := ""
 
 
 static func _flat(a: Vector3, b: Vector3) -> float:

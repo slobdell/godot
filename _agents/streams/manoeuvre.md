@@ -132,7 +132,7 @@ _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 | merge-OFF | native's `pair/cph 9e1000d6` (my `197a65da` + native's mirror with the 7 exec_fields rows) | its plain check queued (native reports); my branch ALONE is red only on native's member table (R31.2-style pair rule): `9b257348` check exited 2, 2619/1, `test_native_exec_state::test_the_table_is_the_scripts_members` |
 | CP-H | — | waits on the re-gate green + native's ON pair + traffic T4 / brains realslow |
 | **M6** tooling | `9558eee3`, `eea19309` | done (the early-stop hook waits for traffic's runner on main) |
-| **M1b(2)** turn-hull | `44adcbbe` | bar filed (main `9564f1bb`, (d) at 1.645 se); tuning read; its ship check (TURN_HULL_DEFAULT true, plain check: tree `21343a05`, to re-base) waits on the merge-OFF |
+| **M1b(2)** turn-hull | run 1 `6efd1ed9`, attempt 2 `25ef8f7e` | **PARKED** (the filed rule; recorded at main; a round-32 candidate in roadmap.md). Attempt 2 (the 'sector' lift) MISSED gate line (g): Terminus mixed arrivals 293 → 285 (diff −8, bound −7.5; seeds 146–158); rigs 177 → 179 pass; contact-ticks down both (mixed 2405 → 2089, rigs 15740 → 8810). Trace (seed 153 mixed, west street, 6 → 2): the "misses" COMPLETED at re-seated slots 7–14 m off (the tank and scout included); the element seats differently once its wheeled turret members turn. Turn-hull stays OFF on main. Drawn hull-rest pair finishing for the record; clicked + fights dropped by ruling. Tables: `m1b2_run1_judged.txt`, `m1b2_terminus_judged.txt`, `m1b2_run2_terminus_judged.txt` |
 
 **The C31.1 gate (flipped tree, `make check NATIVE=off`, builder0) found two consumer defects before any series:**
 1. `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` (`6da94fc2`): 7 deck hits of 8 (needs ≥ 20 hits). Attributed
@@ -171,6 +171,41 @@ survive.
 3. CP-H when the orchestrator calls it (bar before numbers).
 4. M1b(2) turn-the-hull (`turnhull,facekeep` one flag; the `_order_move` decline lifted under it, C31.8).
 
+### CP-H bar (C31.4; sent 2026-10-15 ~03:20 PDT before any number; FILED at main with two changes: fights 1.645 se, seeds 214–237)
+
+**Tree:** R31.4's ONE tree (main with every consumer merged OFF + native's mirrors), built by native; the arms are flags
+on that one commit, both on the **GDScript path** (`--brains-off=native` in every arm; `make manoeuvre-cph` refuses an
+arm without it, R31.1). **Arms:** OFF = `--brains-off=native`; ALL = `--nav-off=unstickback,kturnarc --gun-off=realspeed
+--traffic-off=ghost --brains-off=native,realslow`, or — if T4 stands down (not on main OFF by the orchestrator's 09:00 PDT cutoff) — ALL = `allnoghost`
+(the same list without `--traffic-off=ghost`), the case named in the bar's block when the series starts; each consumer
+ALONE (unstickback, kturnarc, realspeed, realslow, and ghost when T4 is in), REPORTED on the SAME judged seeds. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
+them):** Terminus census and drive 110–122 (13), hull-rest 84–89 (4 factions × 6 tasks × 6 = 144 runs an arm, one arm per
+remote call, lesson 311), fights **214–237** (24; moved by the orchestrator before numbers: 190–213 overlapped CP-P1's 181–204), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
+- (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each; early stop by
+  `sequential.py arrived:guard:0.10`, never before 6 seeds, the row recorded.
+- (b) Terminus wall contact-ticks, rigs and mixed apart (rows 74, 76): ≤ base + 1.645 se paired, each, with and without
+  each arm's two worst runs.
+- (c) hull-rest pinned crew-seconds (row 67): DOWN beyond 2 se paired at n = 144, ≤ 10 m hulls and rigs APART (rigs:
+  reported, they read the honest stall only against a hull); the STUCK row and tracks reported.
+- (d) hull-rest crews still moving at 75 s, per task (rows 62–63): ≤ base + 1.645 se, se quoted.
+- (e) nav-terminus-drive's PINNED and STUCK rows (`pinned_table.py`): down (count form), reported per squad.
+- (f) bridge-pooled 18/18 (a 17/18 read by the cell's trace, lesson 302).
+- (g) fights at 24 seeds (rows 69–71): kills, deaths, hit rate within **1.645 se** (the orchestrator's change before numbers, C31.3); hit rate on touching targets REPORTED (H3).
+- (h) `scenario_cp2` (the scout orbit), `test_tactics_mixed_legs` (the Sumps causeway), `test_nav_wall_contact::
+  test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (round 30's wall-backing stage, R31.5's condition 2) and
+  the WHOLE suite green on native's ON pair tree (the ship check).
+- (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall), asks, backs, backed v capped, refused,
+  **fallback** (R31.5 condition 1: fallback carrying most of fires_wall on the census is a finding), unstick_fires,
+  press_escapes; an arm whose consumer never fires is a null (lesson 300).
+**CALLED 2026-10-15 ~08:30 PDT, case `allnoghost`** (T4 could not make its gate before 09:00). The A/B starts only when
+native's R31.4 tree reads `make check exited 0` (or exited 2 with sim-baseline its only red, moved as switches ON must).
+**Slots (the orchestrator's ruling A):** a second heavy slot for CP-H while M1b(2) attempt 2's heavy lane runs, back to
+one heavy when it ends. **The ALONE arms run census + drive + fights only** (ruled before numbers); if the combined arm
+fails and a consumer is re-declared alone, its hull-rest arm runs then, on fresh seeds, inside that one attempt.
+**Partial rule (C31.4, pre-registered):** the combined ships as one pair if every line passes; if it fails, each consumer
+that passed ALONE on every line may be re-declared alone (one attempt). **Last attempt:** this is CP-H's first run; the
+alone re-declaration is its only second chance. Native's ONE pair ships it.
+
 ### M1b(2) bar (sent to the orchestrator 2026-10-14 ~23:50 PDT, before any number)
 
 ONE opt-in switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT`): the decline in `TankBrain._order_move` lifted for
@@ -182,7 +217,7 @@ at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not wors
 (c) clicked within ±5° of base; (d) crews still moving at 75 s per task, wheeled turret and all classes, ≤ base + 1.645 se (the orchestrator's one change before numbers, C31.3; filed at main 9564f1bb)
 (se quoted); (e) settle censored, reported; (f) bridge 18/18; (g) Terminus arrivals rigs and mixed not down beyond
 1.645 se (sequential.py, never before 6 seeds); (h) B6's SBF gang_ifv probe reported — on main WITHOUT brains' B6 (`lab/brains-r31-sbf`) it measures turnhull alone; B6 + turnhull together lift the ceiling, a combined reading is mine to report once both land (brains, relayed); (i) `hull_turns` > 0, 
-`face_keep_refused` reported. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
+`face_keep_refused` reported; **(j) (the orchestrator's addition before numbers: turn-hull changes CPU elements too) fights at 24 FRESH seeds 238–261, kills, deaths, hit rate within 1.645 se (rows 69–71), a GATE line**. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
 (g) gate; a miss parks it with the trace. Last attempt: this is the first run; a second on fresh seeds is the last.
 
 ### Decisions (one line each, reversible)

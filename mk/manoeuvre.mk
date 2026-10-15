@@ -120,26 +120,30 @@ manoeuvre-fights: import ## manoeuvre M4: the fights guard (showmatch matches, F
 # Every consumer is OPT-IN (naming it turns it ON). R31.1's addendum (native): --gun-off, --traffic-off and
 # --brains-off names do NOT leave native's drive/gun, so an arm without --brains-off=native would silently run the OFF
 # behaviour on the native path: every CP-H arm runs the GDScript path, and this runner REFUSES an arm whose flags lack
-# it. CPH_ARM = off | all | unstickback | kturnarc | realspeed | ghost | realslow (each consumer alone, REPORTED).
-# CPH_STAGE = census (Terminus rigs+mixed, CENSUS_SEEDS) | drive (nav-terminus-drive, DRIVE_SEEDS) | fights (FIGHT_SEEDS)
+# it. CPH_ARM = off | all | allnoghost | unstickback | kturnarc | realspeed | ghost | realslow (each consumer alone, REPORTED).
+# CPH_STAGE = census (Terminus rigs+mixed, CENSUS_SEEDS) | sbf (B6's SBF probe, gang_ifv) | drive (nav-terminus-drive, DRIVE_SEEDS) | fights (FIGHT_SEEDS)
 # | hull (hull-rest, drawn, HULL_SEEDS; one arm a call, lesson 311) | bridge (bridge-pooled). The arm's flags are printed
 # first (lesson 309: the run's own printout is the proof of what ran).
 CPH_ARM ?= off
 CPH_STAGE ?= census
 CPH_FLAGS_off := --brains-off=native
 CPH_FLAGS_all := --nav-off=unstickback,kturnarc --gun-off=realspeed --traffic-off=ghost --brains-off=native,realslow
+# CP-H without traffic's T4 (if T4 stands down for this round, the orchestrator's 09:00 PDT cutoff).
+CPH_FLAGS_allnoghost := --nav-off=unstickback,kturnarc --gun-off=realspeed --brains-off=native,realslow
 CPH_FLAGS_unstickback := --nav-off=unstickback --brains-off=native
 CPH_FLAGS_kturnarc := --nav-off=kturnarc --brains-off=native
 CPH_FLAGS_realspeed := --gun-off=realspeed --brains-off=native
 CPH_FLAGS_ghost := --traffic-off=ghost --brains-off=native
 CPH_FLAGS_realslow := --brains-off=native,realslow
+# M1b(2)'s judged arms through the same runner (one flag, GDScript path; base = `off`).
+CPH_FLAGS_turnhull := --nav-off=turnhull --brains-off=native
 CPH_FLAGS = $(CPH_FLAGS_$(CPH_ARM))
 # CPH_SEEDS=a-b (make remote's T is word-split, so a range, not a list): the stage's seeds; empty = the stage's default.
 CPH_SEEDS ?=
 CPH_SEED_LIST = $(if $(CPH_SEEDS),$(shell seq $(subst -, ,$(CPH_SEEDS))))
 CPH_SEED_VARS = $(if $(CPH_SEEDS),"CENSUS_SEEDS=$(CPH_SEED_LIST)" "DRIVE_SEEDS=$(CPH_SEED_LIST)" "FIGHT_SEEDS=$(CPH_SEED_LIST)" "HULL_SEEDS=$(CPH_SEED_LIST)" "BRIDGE_POOLED_SEEDS=$(CPH_SEED_LIST)")
 .PHONY: manoeuvre-cph
-manoeuvre-cph: import ## manoeuvre CP-H: one consumer arm (CPH_ARM=off|all|unstickback|kturnarc|realspeed|ghost|realslow) on one stage (CPH_STAGE=census|drive|fights|hull|bridge), GDScript path enforced
+manoeuvre-cph: import ## manoeuvre CP-H: one consumer arm (CPH_ARM=off|all|allnoghost|unstickback|kturnarc|realspeed|ghost|realslow) on one stage (CPH_STAGE=census|drive|fights|hull|bridge), GDScript path enforced
 	@flags='$(CPH_FLAGS)'; [ -n "$$flags" ] || { echo ">> manoeuvre-cph: no such arm '$(CPH_ARM)'"; exit 2; }; \
 	case "$$flags" in *--brains-off=native*) ;; *) echo ">> manoeuvre-cph: REFUSED arm '$(CPH_ARM)': no --brains-off=native (R31.1: it would run native's OFF path)"; exit 2;; esac; \
 	echo ">> manoeuvre-cph: arm $(CPH_ARM) stage $(CPH_STAGE) on $$(hostname) commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | flags $$flags | seeds $(or $(CPH_SEED_LIST),default)"
@@ -149,4 +153,5 @@ manoeuvre-cph: import ## manoeuvre CP-H: one consumer arm (CPH_ARM=off|all|unsti
 	fights) $(MAKE) --no-print-directory manoeuvre-fights $(CPH_SEED_VARS) 'NAV_FLAGS=$(CPH_FLAGS)';; \
 	hull) $(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS=cph-$(CPH_ARM)_drawn $(CPH_SEED_VARS) 'M1_FLAGS=--turn-states $(CPH_FLAGS)';; \
 	bridge) $(MAKE) --no-print-directory bridge-pooled $(CPH_SEED_VARS) 'BRIDGE_FLAGS=$(CPH_FLAGS)';; \
+	sbf) $(MAKE) --no-print-directory sbf-series SBF_UNITS=gang_ifv $(if $(CPH_SEEDS),"SBF_SEEDS=$(CPH_SEED_LIST)") 'SBF_FLAGS=$(CPH_FLAGS)';; \
 	*) echo ">> manoeuvre-cph: no such stage '$(CPH_STAGE)'"; exit 2;; esac
