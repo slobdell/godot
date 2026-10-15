@@ -47,8 +47,11 @@ of 13); the pair-tree check BEFORE judging (lesson 307); the one-flag switch rul
 
 **Cleanup:** sizing, planner, traffic, brains and manoeuvre worktrees, their scratch worktrees, builder0 folders and merged
 `stream/*` branches are removed; briefs archived to `streams/archive/round30/` (manoeuvre's follows the final merge). Only
-`godot-native` remains (it continues into round 31; its `pair/final` tree is the round's last check). **He should close
-these terminals:** godot-sizing-72, godot-planner-df, godot-traffic-cd, godot-brains-b4, godot-manoeuvre-65. Kept
+`godot-native` remains for the round's last check (`pair/final`); **his word (2026-10-14 ~20:45): no agent of this round
+starts round 31 — native stops after the final merge too, every worktree is re-created at the round-31 split**, so
+remove `godot-native` at the close as well. **He should close
+these terminals:** godot-sizing-72, godot-planner-df, godot-traffic-cd, godot-brains-b4, godot-manoeuvre-65, and
+godot-native-17 after the final merge. Kept
 branches are listed in each archived brief's report (manoeuvre: `lab/manoeuvre-m4b2`, `lab/manoeuvre-kturnarc`,
 `lab/manoeuvre-m1b`, `lab/manoeuvre-m2b`, `lab/manoeuvre-m5`, `lab/manoeuvre-m4b-reader`; native: `lab/native-b5c-v4`,
 `lab/native-m4b-escapes`, `lab/native-kturnarc`).
