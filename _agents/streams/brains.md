@@ -109,6 +109,55 @@ Nothing.
 _(the worker keeps this current: every number names commit, machine, workload and n; bars go to the orchestrator before
 numbers; the report at the top)_
 
+### Round 30 FINAL REPORT (2026-10-14 evening; green hash: see the last line of this block)
+**Shipped to main:** B7 the scenario split (stream `33d9c310`, merged by godot-67; no wall gain under rr sharding, the
+file is no longer a floor). No game-code change shipped this round.
+**Parked, with branches (round 31):**
+- **B5c-v4** arrival gate: `lab/brains-r30-gate` = `f1a804eb` (judged `19eca15a`: every bar line passed: yard all-in
+  12/12 v 1/12, Sumps 24.5 v 37.5 s, arrive 99 v 91, bridge 18/18, screen-slots A_2 in). The pair check failed
+  `test_tactics_pursuit` (the near rule on two crews' opening seats tips a knife-edge chase); no honest scoping. Native's
+  mirror on its lab branch. Lead: the pursuit test's A/A over seeds, then re-judge (or near only for a goal that moves
+  onto a hull on a task); the planner's side gate for 180° goals beyond the horizon.
+- **B3b** his bridge: `lab/brains-r30-bridge` = `4bc708d7`: 107/108 v main 106/108 (fixes main's two cells, breaks
+  green t18 s3: the route seating re-matches seats every plan). Lead: lay the crossing-order seating once.
+- **B6** SBF drawn line: `lab/brains-r30-sbf` = `9aa0cd7c`: traced (not an artefact; three causes), the sector fix
+  tuned, the bar ACCEPTED and filed; not run (builder0 loaded at 18:00, load 12–16): **round 31's first brains item.**
+**What he can playtest:** nothing new in play from brains (main's game code is unchanged by this stream).
+**Requests to other streams:** manoeuvre: M1b(2) turn-the-hull for wheeled turret hulls (B6 cause c); yard s25 t1's
+U-turn onto terrain (M5's second case, relayed). Traffic: the Terminus 40–75 s far-end circling needs traffic-t3's rule
+underneath to reproduce (relayed); its seed-33 seat trap under traffic-t3b was NOT traced this round (box time went to
+B3b/B6): round 31.
+**Questions for the lead:** none.
+**Stream v main:** game/ equals main; the stream adds probes (`sbf_probe`, gate/endings tooling on the labs),
+`make scenario-times`, `make sbf-series`, references/round30/brains/ (judged rows and traces), this brief.
+**GREEN HASH: `ed57eace`** (builder0: `make check exited 0`, 2585 passed / 0 failed, sim-baseline unmoved,
+native-verify-scenarios 0 mismatches; perf-judge / scenario_perf NOT JUDGED for box load). Later commits are Status only.
+
+### B6 — support by fire, wheeled turret line: TRACED, a brains fix DECLARED (bar sent; judged run tonight only if builder0 has a slot)
+**The probe fixed first:** control's hull-rest probe judged a drawn SBF when every hull had been still 3 s, but SBF never
+sets `arrived`, so it read hulls stopped on the way. `tests/tactics/sbf_probe.gd` (`make sbf-series`, mine): four crews
+given support by fire 100 m ahead, a drawn facing 60° off travel v none, both judged against the drawn heading, each crew
+read ONLY once it is in (≤ 8 m of its slot, still 2 s). (The lab was deterministic across seeds; from `ed57eace` the seed
+jitters the starts ±3 m / ±10°.)
+**Measured** (builder0, stream `f0a0dea6`, n = 1 run of 4 crews a unit and arm), hull error at arrival, drawn v none:
+gang_ifv 74° v 36° (all four ≥ 45°); law_tank 25° v 44° but A_1 never in (15 m off); gang_tank 20° v 48°; law_ifv 20°
+v 62°. **Not an artefact.** Per-crew trace, three causes:
+- (a) **brains:** with a drawn facing the SBF line still hands each crew its fanned sector (orders (−0.5, −0.87),
+  (−0.94, −0.34)… v the drawn (−0.87, −0.5)); the plain move zeroes sectors when he draws one.
+- (b) the arrival gate: law_tank A_1 circles its gate reading no_path from 32 s (round 29's circling; B5c parked).
+- (c) a wheeled TURRET hull arriving off-heading is not turned at rest (gang_ifv A_4 parked 168° off after its slot
+  moved): the brain declines a drawn facing for a turret hull (`TankBrain._order_move`: the turret carries the aim) until
+  turn-the-hull ships: M1's turn-hull (his round-28 call; M1b(2), not built this round), NOT face_slot (manoeuvre ran
+  this probe on M1b's candidate: both arms byte-identical, face_slot's counters 0). So gang_ifv's drawn error has that
+  ceiling in BOTH arms of B6's bar; its pooled line is carried by the other three classes (said before numbers).
+**Tuning of (a)** (`lab/brains-r30-sbf`: every crew given the drawn heading when one is drawn; `--sbf-told-sectors=on` =
+control; builder0, n = 1 a unit): drawn err gang_ifv 74 → 44.7°, gang_tank 20 → 11.2°, law_ifv 20 → 1.1°, law_tank
+25 → 47.6° with all four in (was 3); the clicked arm identical. **Bar** (sent to godot-67, before numbers): candidate
+`9aa0cd7c`, fresh seeds 7–18 jittered, four wheeled classes + `tank` as a guard: pooled drawn error median on ≤ control
+− 10° and no class worse than 2 se; crews in ≥ control − 1 a class; clicked rows byte-identical; counter
+`sbf_told_replaced` > 0 on every drawn on-run, 0 clicked; the suite green. v1 the last attempt; partial: none.
+Stretch (mixed-class line facing): not started; B6's trace shows a sector rule, not a class problem.
+
 ### REPORT so far (2026-10-14 afternoon)
 - **B5c-v4 PARKED for round 31** (the orchestrator's ruling, filed in workstreams.md and HANDOFF): `lab/brains-r30-gate` =
   `f1a804eb` (judged at `19eca15a`: every bar line passed, below). The PAIR check (native `787d3664` = f1a804eb + its
@@ -131,6 +180,41 @@ numbers; the report at the top)_
   yard s25 t1's six-cusp car goes to the planner's F4 (round 31).
 - Next: **B3b** (`lab/brains-r30-bridge`, from `lab/brains-r29-bridge`'s 254fd98f + mouth guard), then traffic's
   Terminus crossing seat trap (s33 t1 under traffic-t3b) and **B6**.
+
+### B3b — JUDGED, NOT SHIPPED, PARKED (`lab/brains-r30-bridge` = `4bc708d7`; accepted by godot-67)
+His bridge, the full 108 (builder0, 4bc708d7, locks × both sides × seeds 1–3 × ticks 1–18, deterministic): **candidate
+107/108** (fails green t18 s3, rim_crews 1); **control** (all three off = main's rules) **106/108** (fails green t5 s2,
+rust t9 s2). The chain was stopped there (bridge-pooled 18, arrive, cost, check moot for shipping; killed by PID, its
+builder0 tree too). Rows: `references/round30/brains/b3b-bridge108-*-4bc708d7.jsonl`, cells `b3b-cells-4bc708d7.txt`.
+Each switch alone on main's two cells (the orchestrator's (a); worst crew at the rim; builder0, n = 1 a run):
+| cell | heading rule alone (254fd98f) | mouth guard alone | route seating alone |
+|---|---|---|---|
+| green t5 s2 | 0.3 s pass | 3.5 s FAIL | 0.3 s pass |
+| rust t9 s2 | 0.5 s pass | 5.1 s FAIL | 1.4 s pass |
+The new cell (green t18 s3): all three on, S_1 3.4 s at the rim (FAIL); route seating off, 0.9 s (pass): **the route
+seating breaks it.** Trace: S_1's seat flips east (−50, −12) at 16 s → west (−73, −12) at 18 s → east again by 24 s, and
+it stalls on terrain at the rim at 20 s; with route seating off its seat holds. The via cost re-matches every plan as the
+crews move. **Round-31 lead:** lay the crossing-order seating ONCE (fixed from its first plan, as transit seating is) and
+re-judge the 108; the mouth guard alone never helps main's cells (it was for 254fd98f's rust t5 s1).
+
+### B3b — route-aware seating across a crossing (DECLARED; bar ACCEPTED 16:31 by godot-67; v1 = the last attempt)
+Lab `lab/brains-r30-bridge` = `4bc708d7` (`a117cb1a` + the settle probe's counter): stream + 254fd98f (heading re-issue
+only when the TASK's drawn facing changed) + 474cf510 (the mouth guard) + **route seating**: on a drill move whose navmesh
+route crosses a deck, the seat cost is (|crew→entry| + |exit→seat|)² (the crew nearest the crossing takes the seat
+farthest from it); `Element._find_crossing` once per task point (static destinations only). Control = all three off
+(`--route-seat=off --mouth-held=off --reissue-heading=plan`) = main's rules. GDScript only, no native diff.
+- **Trace** (builder0, rust t16 s2, 254fd98f + guard): at the drill's end (13 s) the wedge across the river was seated by
+  straight line; S_4 (westmost on the near bank) took the westmost far seat while every route crossed the east bridge
+  (x ≈ 86); the seats crossed; S_2/S_3 gave way from 19 s; make-room swapped S_3/S_4 at 23 s; rim 4.2 s.
+- **Tuning** (that cell, n = 1, a117cb1a): rim 0.6 s, no crew at the rim, all across 27.1 v 37.4 s, arrived 39.7 v 47.9 s;
+  crossing found once (entry (86, −10.5), exit (86.2, 11.8)). Unit tests 14/0 (route_seat, reorder_heading, reseat_keep).
+- **Bar** (one commit, both arms): (1) the full 108 on = 108/108 (deterministic; control reported, main 106/108); (2)
+  bridge-pooled 18/18; (3) arrive series fresh seeds 33–36, n = 100 an arm: within 8 m ≥ control − 1 and McNemar
+  discordant-against ≤ 1, paired median ≤ +2 %; (4) counters (crossings_found, mouth_held_resends, route seating 0 on
+  maps without decks); (5) cost ≤ 0.5 ms or NOT READABLE; (6) the suite green on the tip, the thirteen explained.
+  Orchestrator's additions: the two control-failing cells named, each re-run with each switch alone (6 runs); any
+  arrive discordant-against traced first; the yard/Sumps gate cells are not in this bar (no deck) with route-seat's
+  counter shown at 0 on a Sumps cell; the merge gate is the WHOLE suite on the tip (pursuit included).
 
 ### Plan (2026-10-14; start = stream `bd05077d`, covered by the launch check, main `0d35f215` green)
 1. **B5c-v4** on `lab/brains-r30-gate` (a C30.2 pair: the stream tip stays mergeable without native's mirror). Base =
