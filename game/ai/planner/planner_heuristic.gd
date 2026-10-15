@@ -15,7 +15,7 @@ const TABLE_BINS := 12            # 30 degrees
 const TABLE_HALF_M := 32.0
 const TABLE_LEGS: Array[float] = [2.0, 4.0, 8.0, 16.0]
 const TABLE_SUB_M := 2.0
-const STEERS: Array[float] = [-1.0, -0.5, 0.0, 0.5, 1.0]   # Planner.STEERS (round 31: half lock added)
+const STEERS: Array[float] = [-1.0, 0.0, 1.0]
 
 static var _tables := {}
 static var last_build_ms := 0.0
