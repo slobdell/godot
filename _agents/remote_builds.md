@@ -317,12 +317,20 @@ and that coincidence hid it. **Several rounds of "still waiting for a slot, noth
 a missing result is a killed wrapper before concluding builder0 is merely busy: `ps -o pid,etime,args -p <pid>` on the
 wrapper, and `readlink /proc/<pid>/cwd` to confirm whose it is.
 
-**Round 31 (2026-10-14/15): BACKGROUNDING IS NOT ENOUGH. Detach it.** With builder0 queued ten deep, backgrounded
-wrappers (the Bash tool's `run_in_background`) were ALSO killed, at ~25–33 min of slot wait. That happened to the
-orchestrator's main check, brains' B8 gate (its remote half finished, but nothing was copied back and no exited line
-printed) and manoeuvre's two checks (its session's memory guard). **The rule now:**
-`setsid nohup make remote T=check > <log> 2>&1 < /dev/null &`, then read `>> remote: make check exited <N>` from the log.
-A result with no exited line is NOT a result.
+**Round 31 (2026-10-14/15): BACKGROUNDING IS NOT ENOUGH, AND NEITHER IS `setsid nohup`. Use `systemd-run --user`.**
+With builder0 queued ten deep, wrappers died before their exited line: the orchestrator's main check, brains' B8 gate (its
+remote half finished but nothing was copied back), manoeuvre's and traffic's checks. `setsid nohup … & disown` did NOT
+save them. Manoeuvre verified the cause: **the harness reaps every process spawned from its shell at a "Shell cwd was
+reset", whatever session or process group it is in**, so two setsid'd wrappers died in the same second as that reset.
+**What survives** (verified across a reset):
+```
+systemd-run --user --unit=<stream>-<what> --working-directory=<worktree> --collect \
+    /bin/bash -lc "make remote T=check > <log> 2>&1"
+systemctl --user is-active <stream>-<what>     # status; the result is the log's `>> remote: … exited <N>` line
+```
+**Every killed wrapper leaves its builder0 half alive and queued** (trip-up 68). A relaunch is then REFUSED with exit 9
+("already has a live run"). Kill the orphan on builder0 by cwd-verified PID first. A result with no exited line is NOT
+a result.
 
 **A hung import holds a slot for the full 5400 s timeout.** On 2026-10-14 traffic's check sat 70 min in
 `Godot --import` (5 s of CPU, `futex_do_wait`) with load 1.95, while ten jobs queued. To spot one: `ps -o
