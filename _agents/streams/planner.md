@@ -404,6 +404,10 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:20 PDT: **the clip's BEFORE arm** (the same run, no flag, faeab49c, light lane, exited 0): **29.8 s, 54
+  legs (gear changes), 14 wall-contact ticks, 822 creep ticks, 39.8 m, end 2.9 m off and 173 deg round**; the end frame
+  looked at: the rig canted across the street after a short tangled grind. Both arms' frames and rows are in
+  `references/round31/planner/clip/` (bar line (g) under the real drive: before 29.8 s / 54 / 14, after 15.5 s / 3 / 0).
 - 2026-10-15 ~03:15 PDT: **the clip's AFTER arm under the real drive** (`make remote LIGHT=1 T="planner-lab PLANNER_ARMS=today
   PLANNER_FIXTURES=turnround PLANNER_FLAGS=--nav-off=planner"` on faeab49c, builder0 light lane, exited 0): the Terminus
   west-street rig's face back = **15.5 s, 3 legs, 0 wall-contact ticks, 0 hull contacts, 70.5 m, end 1.5 m off and
