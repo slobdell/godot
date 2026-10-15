@@ -511,6 +511,15 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   not have. **No collider snapshot this round.** The fix is a face handing back on its FIRST abort (`1e513bcf`) and on
   its FIRST wall touch (`d8c2e742`, `mover.contact.touching`); k-turn keeps R31.2's abort and two re-plans. (Over 20 s
   both arms breach the semi's footprint bar; the test reads it at 8 s.)
+  **Interim (~08:20 PDT, builder0 light, `9d168af8`, 30/0):** the sweep put the lever at the GOAL. The k-turn goal now
+  AIMS at the waypoint (`PlanRequest.aim`, both planners): a 3-leg plan (R3 F2 R12.5, 9 expansions), the C++ equal, the
+  named fixtures holding (turnround F6a 9, T-junction 2, mouth 1, yard corner 2, slot180 4, wedge 4). **The wedged
+  semi MEETS outcome (b)** (give-up at 4.6 s v base 4.5, yaw 9°, footprint 0.67 m over v bar 1.8). **The k-turn row is
+  still NOT met:** real motion is R3.0 F1.4 R1.6 F29 (4 segments) v base R4.5 F29.8; it is the street's start geometry
+  under three locks. **Rulings:** the next step prefers the half-lock steer (STEERS ±0.5, a general capability), with the
+  fixtures re-read and the extra branching priced. An aim tolerance chosen so one arc satisfies THIS scene is fitting
+  and is barred unless justified independently and stated first. **Time-box: if the k-turn row isn't met by 12:00 PDT
+  10-15, CP-P1 parks with its traces**, and CP-P0 + the OFF seam on main are the round's planner result.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
