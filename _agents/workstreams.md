@@ -404,6 +404,21 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   zero processes), then seed 21; the (a)(b)(c) tables read only when complete. (e) bridge-pooled 18/18. Preliminary (two
   complete drawn arms, not a verdict): at-rest medians within noise (permutation p 0.38–0.93 on the ALL rows), attack-move
   ALL 23.1 → 15.9°, wheels/fixed p90 61.1 → 9.2°.
+  **M1b(1) JUDGED — PASSES by the filed letter (2026-10-14 ~19:30 PDT; `55622870` on the reader base, builder0, GDScript;
+  table `references/round30/manoeuvre/m1b_judged.txt`):** (a) at-rest medians per task, ALL classes, drawn: ambush 33.8 →
+  33.3 (p 0.87), attack-move 23.1 → 15.9 (0.38), move 8.3 → 7.0, right 8.9 → 7.5, screen 30.8 → 30.4, SBF 33.2 → 32.9;
+  clicked 36.7 → 37.9 (0.57), 60.9 → 62.7 (0.75), 42.2 → 41.3, 41.7 → 42.1, 41.9 → 42.3, 35.7 → 35.3: no task worse at
+  p < 0.05 — PASS. (b) crews still moving at 75 s PER TASK (the filed line), drawn: −1, −10, −10, +5, −4, −3 — every task
+  within 2 se — PASS; the 18 class × task lines (reported): 16 within 2 se, wheels/fixed faced_right −8, **one at 2.3 se:
+  wheels/turret faced_right 11 → 26 (+15, se 6.5)** — those 26 are 13 pinned + 13 driving, 0 face legs, 0 face creep:
+  crews that never reached their slot, which the anchor cannot touch (the probe's known class; the A/A swing ±12–17 a
+  task); one of 18 lines at 2.3 se is what chance gives. (c) clicked SBF's −17.8° NOT reproduced (35.7 → 35.3, p 0.92),
+  as sizing predicted; the face_slot counters are not exported by the hull-rest probe (a tooling gap; the anchor's action
+  shows in the drawn attack-move median and Terminus' face-order misses mixed 14 → 9). (d) Terminus PASS both squads;
+  (e) bridge 18/18; (h) rigs seed 21 both arms byte-identical (the wild case was M4b run 1's escape, parked). **Ruling:
+  SHIPS** — the filed (b) is per task and every task passes; the class × task miss is recorded with its reading, not
+  ruled on (it was never a pass line). No port (plan_face is GDScript both paths; native confirms with
+  native-verify-scenarios). Merges with kturnarc's pair as one batch, ONE main check.
 - **Manoeuvre M2b bar — the creep lift on M4b + the planner's two executor fixes (pre-registered 2026-10-14 ~14:35 PDT,
   before any judged number; DECLARED; FIRST run, a second on fresh seeds would be the last; full text in the stream's
   Status):** candidate `lab/manoeuvre-m2b` `e94ca27e` (re-based onto M4b2 `77a1603f` as `acf29cb2`, no code change) (tests builder0 3/0: a War Rig's 10 m reverse leg drives 10.03 m by the arc rule v 10.31 by the chord; a paced IFV and a gang catapult roll a 120° open-ground turn with 0 gear changes v 14 and 23) = M4b `e8bfef2e` + round 29's creep lift
