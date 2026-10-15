@@ -12,6 +12,9 @@ var _saved_native := false
 func teardown() -> void:
 	BrainSwitches.native = _saved_native
 	Traffic.set_off("ghost", Traffic.OPT_IN.has("ghost"))  # back to the default, whichever it is (native, round 31)
+	if _lab != null:
+		_lab.dispose()
+		_lab = null
 	super.teardown()
 
 
