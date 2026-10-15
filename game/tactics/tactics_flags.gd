@@ -109,6 +109,9 @@ static func _parse() -> void:
 		# Round 31 (brains B3b-2): the crossing seating re-matched every plan (round 30's B3b), the control arm.
 		if arg == "--route-seat-once=off":
 			Element.ROUTE_SEAT_ONCE = false
+		# Round 31 (brains B3b-2b): the held seating stands after crews cross (B3b-2 as first built), the control arm.
+		if arg == "--route-seat-across=off":
+			Element.ROUTE_SEAT_REMATCH_ACROSS = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

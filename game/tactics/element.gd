@@ -456,6 +456,12 @@ func update(game_match: Match, orders: Object) -> bool:
 	situation["corridor_m"] = _corridor(game_match, situation)
 	_advance_transit(game_match, situation)
 	_find_crossing(game_match, situation)
+	# Round 31 (B3b-2b): the held seating is matched again, once, each time another crew gets across.
+	if ROUTE_SEAT_ONCE and ROUTE_SEAT_REMATCH_ACROSS and bool(crossing.get("seated", false)):
+		var across := Element.crews_across(situation["members"], crossing)
+		if across != int(crossing.get("across", 0)):
+			crossing["seated"] = false
+			crossings_rematched += 1
 	_track_pursuit(game_match)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
@@ -476,6 +482,7 @@ func update(game_match: Match, orders: Object) -> bool:
 		if bool(crossing.get("seated", false)):
 			crossings_held += 1
 		crossing["seated"] = true
+		crossing["across"] = Element.crews_across(situation["members"], crossing)
 	if reseating and plan.get("seats", {}) == seats:
 		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
@@ -935,6 +942,31 @@ static var crossings_found := 0
 ## the plans that kept it (lesson 300).
 static var ROUTE_SEAT_ONCE := true
 static var crossings_held := 0
+## Round 31 (brains B3b-2b; `--route-seat-across=off` = B3b-2 as first built): held, the seating B3b-2 matched with every
+## crew on the near bank stood after they crossed. Traced (his bridge, rust t8 seed 2, builder0, 344a772a): S_1, first
+## across, kept the westmost far seat (49, 12) on the bank edge, and leaving it for the next point it backed into the rim
+## for 4.1 s (the control, re-matched, sent it to the near seat (79, 12): 0.5 s). So the seating is matched again once
+## each time the count of crews past the exit changes (at most once per crew), and held between.
+## `crossings_rematched` counts those.
+static var ROUTE_SEAT_REMATCH_ACROSS := true
+static var crossings_rematched := 0
+
+
+## How many of `members` are past the crossing's exit (beyond it along entry -> exit). 0 for no crossing.
+static func crews_across(members: Array, the_crossing: Dictionary) -> int:
+	if not (the_crossing.get("entry") is Vector3 and the_crossing.get("exit") is Vector3):
+		return 0
+	var entry: Vector3 = the_crossing["entry"]
+	var exit: Vector3 = the_crossing["exit"]
+	var along := Vector3(exit.x - entry.x, 0.0, exit.z - entry.z)
+	if along.length_squared() < 0.0001:
+		return 0
+	var count := 0
+	for member: Dictionary in members:
+		var p: Vector3 = member["position"]
+		if Vector3(p.x - exit.x, 0.0, p.z - exit.z).dot(along) > 0.0:
+			count += 1
+	return count
 
 
 func _find_crossing(game_match: Match, situation: Dictionary) -> void:

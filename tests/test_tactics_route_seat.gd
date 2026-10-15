@@ -58,3 +58,16 @@ func test_once_matched_the_crossing_seating_is_held_not_re_matched() -> void:
 
 func test_the_once_switch_is_on_by_default() -> void:
 	assert_true(Element.ROUTE_SEAT_ONCE, "on by default (--route-seat-once=off is the control arm)")
+
+
+## Round 31 (B3b-2b): the held seating is matched again each time another crew gets past the exit.
+func test_crews_across_counts_only_those_past_the_exit() -> void:
+	var crossing := {"entry": Vector3(86, 0, -10.5), "exit": Vector3(86, 0, 11.8)}
+	var members := [{"name": "a", "position": Vector3(70, 0, -20)}, {"name": "b", "position": Vector3(86, 0, 0)},
+			{"name": "c", "position": Vector3(49, 0, 12.3)}, {"name": "d", "position": Vector3(80, 0, 14)}]
+	assert_eq(Element.crews_across(members, crossing), 2, "the near bank and the deck are not across; the far bank is")
+	assert_eq(Element.crews_across(members, {}), 0, "no crossing, none across")
+
+
+func test_the_across_switch_is_on_by_default() -> void:
+	assert_true(Element.ROUTE_SEAT_REMATCH_ACROSS, "on by default (--route-seat-across=off is the control arm)")

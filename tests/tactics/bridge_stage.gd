@@ -212,7 +212,7 @@ static func run(case: TestCase, seed_value: int, arena: String, unit_ids: Packed
 	var report := {"deck_jam_s": _s(deck_total),"seed": seed_value, "arena": arena, "side": side, "units": ":".join(unit_ids), "guns": gun_names.size(),
 			"gun_id": gun_id, "crews": names.size(), "rim_s": rim_s, "rim_total_s": _s(rim_total), "rim_crews": rim_crews,
 			"wet_hops": wet_hops, "crossed": crossed.size(), "crossed_s": _s(crossed_at) if crossed.size() == names.size() else -1.0,
-			"arrived_s": _s(arrived), "mouth_held_resends": int(element.get("mouth_held_resends") if element.get("mouth_held_resends") != null else 0), "crossings_found": Element.crossings_found, "crossings_held": Element.crossings_held, "crossing": str(element.crossing), "alive": lab.alive(names), "guns_alive": lab.alive(gun_names),
+			"arrived_s": _s(arrived), "mouth_held_resends": int(element.get("mouth_held_resends") if element.get("mouth_held_resends") != null else 0), "crossings_found": Element.crossings_found, "crossings_held": Element.crossings_held, "crossings_rematched": Element.crossings_rematched, "crossing": str(element.crossing), "alive": lab.alive(names), "guns_alive": lab.alive(gun_names),
 			"dead": dead.values()}
 	lab.dispose()
 	return report
