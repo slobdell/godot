@@ -130,7 +130,8 @@ _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 | **H2** signed arc (`kturnarc`) | same | built, OPT-IN; `test_kturn_arc` 3/0 on builder0 |
 | **H3** leads (`--gun-off=realspeed`) | same | built, OPT-IN (`Manoeuvre.lead_velocity`, the two granted lines); `test_manoeuvre_lead` in the check |
 | CP-H | — | waits on the orchestrator's call (traffic T4, brains `realslow` on main: realslow merged at `aa205ea5`) |
-| M6, M1b(2) | — | next |
+| **M6** tooling | `9558eee3`, `eea19309` | counters on MANOEUVRE_TURNS + `hull_rest_counters.py` (face_slot_kept/refused, hull_turns, face_keep_refused, escape arms); hull-rest runs `--turn-states`; the CP-H runner `manoeuvre-cph` (refuses an arm without `--brains-off=native`); hull-rest `M1_NEW_OFF`/`M1_GD`/`M1_SEEDS`. Early-stop hook: waits for traffic's runner on main |
+| **M1b(2)** turn-hull (`turnhull`) | `44adcbbe` | built, OPT-IN; unit stage 2/0 on builder0 (light); bar SENT before numbers (below); tuning (hull-rest 40–41 law) running |
 
 ### Plan (smallest foundation first)
 
@@ -143,6 +144,20 @@ _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
    and brains switches do not leave native's drive).
 3. CP-H when the orchestrator calls it (bar before numbers).
 4. M1b(2) turn-the-hull (`turnhull,facekeep` one flag; the `_order_move` decline lifted under it, C31.8).
+
+### M1b(2) bar (sent to the orchestrator 2026-10-14 ~23:50 PDT, before any number)
+
+ONE opt-in switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT`): the decline in `TankBrain._order_move` lifted for
+a wheeled turret hull when the face comes from its order and the facing was DRAWN (`Manoeuvre.hull_takes_face`, C31.8),
+plus round 29's facekeep. Arms (GDScript path both, `M1_GD=1`; one arm a remote call): new `M1_NEW_OFF=turnhull`, base
+`M1_BASE_OFF=`; drawn and clicked. Tuning: hull-rest 40–41 (law). Judged fresh: hull-rest 76–81 (144 runs an arm),
+Terminus 93–105, bridge-pooled's 18. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret
+at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not worse than base (per-class permutation p ≥ 0.05);
+(c) clicked within ±5° of base; (d) crews still moving at 75 s per task, wheeled turret and all classes, ≤ base + 2 se
+(se quoted); (e) settle censored, reported; (f) bridge 18/18; (g) Terminus arrivals rigs and mixed not down beyond
+1.645 se (sequential.py, never before 6 seeds); (h) B6's SBF gang_ifv probe reported; (i) `hull_turns` > 0, 
+`face_keep_refused` reported. Gate first: the flipped tree with turnhull ON, `check NATIVE=off`. Partial: (a)–(d), (f),
+(g) gate; a miss parks it with the trace. Last attempt: this is the first run; a second on fresh seeds is the last.
 
 ### Decisions (one line each, reversible)
 
@@ -179,6 +194,12 @@ _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 - H2, builder0, same tree, `test_kturn_arc`: rig 10 m leg 10.03 m by the arc (chord 10.31); IFV second leg started
   rolling 8.32 m; scout 3.5 m reverse leg started at 9.6 m/s forward: ends 4.11 m behind the leg's start (rolled out
   1.94 m first) | chord 3.78 m.
+
+- **M1b(2) is ONE switch** (`turnhull` = the decline lifted + facekeep): turn-hull asks wheeled turret hulls for many
+  more faces at the edge of their slot, which is exactly facekeep's case; one flag (lesson 309). The decline's lift is
+  drawn-only (clicked keeps the turret, his round-28 wording).
+- **The CP-H runner runs every arm on the GDScript path** (R31.1 addendum) and takes seeds as a range (`CPH_SEEDS=a-b`)
+  because make remote's T is word-split.
 
 ### Questions for the lead
 
