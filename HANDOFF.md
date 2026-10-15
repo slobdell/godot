@@ -45,11 +45,13 @@ ghost, tuned, waits on the honest reading's consumers A/B).
 of 13); the pair-tree check BEFORE judging (lesson 307); the one-flag switch rule (309); measurement apart from behaviour
 (310); one hull-rest arm per call (311); close step 5b (the table re-rendered — running). Lessons 306–311.
 
-**Cleanup:** sizing, planner, traffic, brains worktrees and builder0 folders removed, briefs archived to
-`streams/archive/round30/`; manoeuvre's scratch worktrees and builder0 folders removed by it; `godot-manoeuvre`,
-`godot-manoeuvre-m1`, `godot-manoeuvre-m2` and `godot-native` remain until the final merges (then: remove manoeuvre's
-three; native continues). **He should close these terminals:** godot-sizing-72, godot-planner-df, godot-traffic-cd,
-godot-brains-b4 (done); godot-manoeuvre-65 after the final merge. Kept branches are listed in each archived brief's report.
+**Cleanup:** sizing, planner, traffic, brains and manoeuvre worktrees, their scratch worktrees, builder0 folders and merged
+`stream/*` branches are removed; briefs archived to `streams/archive/round30/` (manoeuvre's follows the final merge). Only
+`godot-native` remains (it continues into round 31; its `pair/final` tree is the round's last check). **He should close
+these terminals:** godot-sizing-72, godot-planner-df, godot-traffic-cd, godot-brains-b4, godot-manoeuvre-65. Kept
+branches are listed in each archived brief's report (manoeuvre: `lab/manoeuvre-m4b2`, `lab/manoeuvre-kturnarc`,
+`lab/manoeuvre-m1b`, `lab/manoeuvre-m2b`, `lab/manoeuvre-m5`, `lab/manoeuvre-m4b-reader`; native: `lab/native-b5c-v4`,
+`lab/native-m4b-escapes`, `lab/native-kturnarc`).
 
 ## 🚀 ROUND 30 IS LAUNCHED (2026-10-14) — read this first
 
