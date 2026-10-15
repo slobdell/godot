@@ -34,8 +34,19 @@ func test_on_a_crew_that_waits_or_drives_reads_as_before() -> void:
 	assert_true(Element.reads_slow(Vector3(0.6, 3, 0), Vector3(0.6, 0, 0)), "on: flat speeds only (a hull on a slope)")
 
 
-func test_naming_the_switch_turns_it_on_and_all_never_does() -> void:
-	BrainSwitches.realslow = false
-	assert_true(not BrainSwitches.NAMES.has("realslow"), "not in NAMES: set_all (--brains-off=all, ai-parity's proof) never turns it on")
+func test_naming_the_switch_flips_it_against_its_default_and_all_never_does() -> void:
+	BrainSwitches.realslow = BrainSwitches.REALSLOW_DEFAULT
+	assert_true(not BrainSwitches.NAMES.has("realslow"), "not in NAMES: set_all (--brains-off=all, ai-parity's proof) never touches it")
+	BrainSwitches.apply_args(PackedStringArray(["--brains-off=all"]))
+	assert_eq(BrainSwitches.realslow, BrainSwitches.REALSLOW_DEFAULT, "unnamed (all): it keeps its default")
 	BrainSwitches.apply_args(PackedStringArray(["--brains-off=realslow"]))
-	assert_true(BrainSwitches.realslow, "--brains-off=realslow turns it ON (R31.1)")
+	assert_eq(BrainSwitches.realslow, not BrainSwitches.REALSLOW_DEFAULT, "named: the opposite of its default")
+	BrainSwitches.apply_args(PackedStringArray(["--brains-off=realslow"]))
+	assert_eq(BrainSwitches.realslow, not BrainSwitches.REALSLOW_DEFAULT, "named twice: still the opposite (a flip of the default, not a toggle of the value)")
+
+
+## Both defaults, through the parse's own rule: with the default OFF (main today) naming it turns it ON; with the default
+## flipped ON (CP-H's ship) naming it turns it OFF, so the A/B can still remove it.
+func test_named_flips_either_default() -> void:
+	assert_eq(BrainSwitches.realslow_named(false), true, "default off: named = on")
+	assert_eq(BrainSwitches.realslow_named(true), false, "default on: named = off (the bug: the opt-in parse set it on)")
