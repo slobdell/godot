@@ -55,6 +55,7 @@ const PENDING_TICKS := 90          # 3 s, the agreed hold
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
+const REST_MPS := 0.5             # a pending search begins only once the hull has all but stopped
 const YAWED_DEG := 5.0
 const FACE_TOL_DEG := 8.0          # Manoeuvre.FACE_ALIGNED_DEG
 const NEW_GOAL_JUMP := 3.0         # Movement.NEW_GOAL_JUMP's intent: a goal that jumps this far is a new order
@@ -280,7 +281,11 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		queue_waits += 1
 		return true
 	if not crew.begun:
-		# The head of the queue begins its search from where it NOW rests (fresher than the request tick's pose).
+		# The head of the queue begins its search from where it NOW rests (fresher than the request tick's pose) -- and
+		# only once it rests: a search begun from a rolling pose plans from where the hull is not (builder0 005a3837,
+		# the rolling-face test: the first search ran out the hold, the retry from rest planned in 4 ticks).
+		if absf(tank.speed()) > REST_MPS:
+			return true
 		var here := tank.global_position
 		var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
 		crew.req.at(here.x, here.z, forward.x, forward.z)

@@ -375,6 +375,16 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~04:00 PDT: **the planner test files GREEN on 005a3837** (`make remote LIGHT=1 T="test FILTER=planner"`
+  exited 0, 24 passed 0 failed, builder0 light lane): the seam's War Rig face in the Terminus street at SLICE 2 --
+  pending 4 ticks, one plan of 5 legs, driven to its end at 15.6 s, 2.1 deg off south at 40 s, plan_face never asked;
+  the rolling face -- held to 0.23 m/s before its plan, 1.1 deg at 40 s, BUT the first search (begun while still
+  rolling) ran out the 3 s hold (abandoned 1, pending 114 ticks) and the retry from rest planned: fixed in the next
+  commit (`REST_MPS`: a pending search begins only once the hull has all but stopped). **R31.7 (the orchestrator):**
+  the SCOPE is chosen now from the census, never after a judged number: **long hulls only (>= 10 m: the War Rig)**,
+  every kind, at a6a66f31 (`PlannerSeam.in_scope`, a short hull never taken, test); planner-census now attributes
+  today's plan events by hull class (`by_hull`) and probes the shortest live hull beside the longest; census-3 on
+  a6a66f31 running (`planner-census3`) for the long-hull share and its expansion median, which go in the bar.
 - 2026-10-15 ~03:40 PDT: **twin GREEN on fd36ecd5** (4/0, exit 0, light lane, load 12); **census-2** (same events; hits
   601.8 M -> 0.88 M; the per-expansion price unmoved for load: the walks, not lookups). **SLICE = 2** at 005a3837 with
   the derivation and the demand arithmetic in the report. 98d3a9c9: `PlannerSeam.last_refusal(name)` for manoeuvre's
