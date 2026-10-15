@@ -478,15 +478,17 @@ static func trace(req: PlanRequest, out: PackedPlan) -> void:
 
 static func _at_goal(req: PlanRequest, x: float, z: float, th: float, goal_theta: float, tol_rad: float, gear: int,
 		world: PlannerWorld, start_offs: PackedFloat32Array) -> bool:
-	if req.arrive_gear != 0 and gear != req.arrive_gear:
-		return false
 	var dx := x - req.goal_x
 	var dz := z - req.goal_z
 	var d2 := dx * dx + dz * dz
 	if d2 <= req.tol_m * req.tol_m:
+		if req.arrive_gear != 0 and gear != req.arrive_gear:
+			return false
 		return absf(_wrap(th - goal_theta)) <= tol_rad
 	if not req.aim:
 		return false
+	# (The arrive gear is the pose's, not the aim's: a reverse arc that ends pointing at the waypoint IS the plan; the
+	# route drives forward from there. Asking for a forward last leg appended a 23.5 m straight the hull never needed.)
 	# AIM (round 31, the k-turn's goal): the hull points at the goal within the tolerance and the straight run to it is
 	# clear -- the pursuit law drives from here. A point 24 m off needs ~2 degrees of heading from a lattice of three
 	# locks and twelve leg lengths, so standing ON it costs a wiggle (R3 F2 R12) the hull never needed.

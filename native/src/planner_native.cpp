@@ -625,13 +625,13 @@ void PlannerNative::parse_world(const Dictionary &d, World &w) {
 
 // Planner._at_goal
 bool PlannerNative::at_goal(double x, double z, double th, int64_t gear) {
-	if (req.arrive_gear != 0 && gear != req.arrive_gear) {
-		return false;
-	}
 	const double dx = x - req.goal_x;
 	const double dz = z - req.goal_z;
 	const double d2 = dx * dx + dz * dz;
 	if (d2 <= req.tol_m * req.tol_m) {
+		if (req.arrive_gear != 0 && gear != req.arrive_gear) {
+			return false;
+		}
 		return absd(wrap(th - search.goal_theta)) <= search.tol_rad;
 	}
 	if (!req.aim) {
