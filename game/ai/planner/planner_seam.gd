@@ -56,6 +56,7 @@ const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
 const REST_MPS := 0.5             # a pending search begins only once the hull has all but stopped
+const BRAKE_THROTTLE := 0.7        # Movement.KTURN_THROTTLE: the brake on a rolling hull while it is pending
 const YAWED_DEG := 5.0
 const FACE_TOL_DEG := 8.0          # Manoeuvre.FACE_ALIGNED_DEG
 const NEW_GOAL_JUMP := 3.0         # Movement.NEW_GOAL_JUMP's intent: a goal that jumps this far is a new order
@@ -285,6 +286,10 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		# only once it rests: a search begun from a rolling pose plans from where the hull is not (builder0 005a3837,
 		# the rolling-face test: the first search ran out the hold, the retry from rest planned in 4 ticks).
 		if absf(tank.speed()) > REST_MPS:
+			# BRAKED to rest, not coasted: zero/zero lets a rig at speed roll on for over the 3 s hold (builder0 a073157e,
+			# the rolling-face test: abandoned 1 before the fix). The opposite throttle on a straight lock, the k-turn's
+			# throttle, as PlannerExecutor brakes a leg.
+			cmd.throttle = -signf(tank.speed()) * BRAKE_THROTTLE
 			return true
 		var here := tank.global_position
 		var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
