@@ -378,6 +378,20 @@ arrivals not down, with the planner's F2 the long-run answer. The gate `UNSTICK_
 on lock for a long hull", not "no stall clock".
 
 ### Progress log
+- **M1b(1) judged, Terminus (d), 13 fresh seeds 36–48, GDScript path, `55622870` on the reader base, builder0, 17:30
+  PDT:** rigs arrivals 176 → 179 of 208 (+3, se 5.13, 1.645 se = 8.4: PASS), mixed 284 → 286 of 312 (+2, se 3.56:
+  PASS). **The project's first early stop (line (g)):** `sequential.py --terminus … arrived:guard:0.10`, boundaries
+  A +2.77 / B −1.56 (α 0.05, β 0.20), min 6 runs: rigs SERIES PASS at run 10 of 13 (seed 45, llr −1.71), mixed SERIES
+  PASS at run 6 of 13 (seed 41, llr −5.60); the full 13 had been run before the read (the chain is not interactive),
+  so the stop saved nothing this time and the rows are recorded for the rule's first use. Reported: wall contact-ticks
+  rigs 8945 → 7662 (−14 %, se 2221), mixed 2475 → 1738 (−30 %, se 481); leg seconds rigs 1884 → 1659, mixed 1809 →
+  1945; leg misses under a FACE order ("a face left the slot") rigs 19 → 21, mixed 14 → 9. Bridge, hull-rest (four
+  arms, seeds 48–53) and rigs seed 21 follow in the chain.
+- **Brains' B6 case run on M1b (reported line):** `sbf-series` gang_ifv, seeds 1–6, drawn/none, on `55622870` +
+  `stream/brains` (builder0, both arms, base `--nav-off=faceslot`): the arms' jsonl byte-identical; A_4 at arrival with
+  a drawn facing 65.6–96.3° off, not moving, 2.3–3.2 m off its slot, both arms; face_slot's counters 0. A wheeled
+  turret hull's drawn facing is declined by the brain until turn-hull ships, so no face runs for M1b(1) to anchor: the
+  case is M1b(2)'s (turn-the-hull), not the face_slot fix.
 - **M4b run 2's PAIR CHECK (native's `366b42bc`) RED on two tests, both reproduced on `77a1603f`'s GDScript path
   (builder0 light lane, 16:55 PDT; `references/round30/manoeuvre/m4b_run2_paircheck_traces.log`):**
   (2) `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it`: 48 contact ticks = 32
