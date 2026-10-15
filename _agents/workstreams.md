@@ -368,6 +368,19 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   built for (all four ON, the same seed reads 548 v base 398). **Coupling, filed before the verdict: kturnarc does not
   ship without unstickback.** If the combined arm fails and consumers are re-declared alone (C31.4's partial rule),
   kturnarc may only go together with unstickback.
+  **✅ CP-H VERDICT (~16:30 PDT): every filed line PASSES on the combined arm (allnoghost), so it SHIPS as ONE pair**
+  (C31.4). ON `130a069b`, base and alone on `a2ef0b31`, builder0, GDScript, to completion. (a) arrivals mixed 285 → 286,
+  rigs 181 → 177 (bounds 8.2 / 7.0); (b) contact mixed +179 (bound 356), rigs +2114 (bound 4144); (c) pinned crew-s 3106
+  → 333 (−2773, se 488), rigs 653 → 26, scouts 1497 → 112; (d) moving at 75 s ambush +2 (guard +5), the rest −8 to −14;
+  (e) stuck crew-s 6578 → 3737, stuck crews 203 → 147; (f) bridge 18/18; (g) fights kills +14, deaths +17 (within
+  1.645 se), hit 0.677 → 0.689; (h) native's plain check 2641/0; (i) fires_hull 559, fires_wall 43 (7.1 %). ALONE
+  (reported, lesson 300 by seed divergence): unstickback fires everywhere; kturnarc's fights are bloodier on both sides
+  (kills +42, deaths +46, se 19, outside 2 se), so it stays coupled; realspeed fires on fights (23/24 differ); realslow
+  fires THINLY (2/24 fights differ). It rides with the combined arm that passed, recorded as thin evidence. **The ship:**
+  native re-cuts on CURRENT main (B6 and brains' toggle `c45c9792` landed since `a2ef0b31`; the realslow flip is now
+  `REALSLOW_DEFAULT := true`) with UNSTICK_BACK, KTURN_ARC, REAL_SPEED and REALSLOW defaults true; its plain check is the
+  ship check; then the orchestrator merges, records the 13 baselines twice (`sim-baseline-record`, the reason in the
+  commit), and runs one main check.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
