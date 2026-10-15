@@ -23,7 +23,8 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-main check on it: the first launch died unrun (the harness reaped its wrapper); RELAUNCHED ~01:00 PDT 10-15 as
+**MAIN GREEN at `c6cc7e33`** (= `aa205ea5`'s code + `2ee27055`'s WEB_PACK rename + docs): builder0 `>> remote: make check
+exited 0`, 2613 passed / 0 failed, 26 targets ALL JUDGED, sim-baseline 13 maps unmoved, 3405 s. Main check history: the first launch died unrun (the harness reaped its wrapper); RELAUNCHED ~01:00 PDT 10-15 as
 `systemd-run --user --unit=orch-main-check`, log `main-check-3.log` in the orchestrator's scratchpad. **Tooling lesson
 (remote_builds.md):** the harness reaps backgrounded AND setsid'd `make remote` wrappers at a shell reset. Only
 `systemd-run --user` survives, and every stream has been told. Gates passed so far: T3b-c on pair/t3b `f5dc4147`, with its
