@@ -186,6 +186,39 @@ GOAL_BLOCKED (the turned-about footprint on the same spot clips something): in a
 path (today's code continues) will be exercised often; the judged run's `refused` counts are the measure, and a
 START_BLOCKED hull is exactly manoeuvre's unstick customer, not the planner's.
 
+### Hand-over for round 32: the §2.8 SIDE gate for a wheeled hull under 10 m (the orchestrator's ask, 2026-10-15 ~04:20 PDT)
+
+Brains' B5c-v5 parked on a Sumps limit cycle; its worst yard run (s27 t8, A_5 at its herringbone gate facing away, dot
+-0.94, the gate given up 27 m from the slot, the car onto terrain by the containers) is the case design.md §2.8 names.
+What it needs, honestly split between the planner (nothing new) and the seam (three things), with the cheapest
+deliverable first:
+
+1. **The planner needs nothing per hull length.** `PlanRequest.for_unit` builds the kinematics from the catalog
+   (turn radius, speeds, the yaw cap), the C++ port is hull-agnostic and its tables are per unit (gang_tank, ifv and
+   law_scout proven bit for bit); the lab's six-cusp car (yard s25 B_4, a slot 9 m behind with a facing) plans in
+   <= 3 legs today, and the census's short-hull probe prices a car's face-about at 190-250 us an expansion, median
+   11-113 expansions. What excludes the car is the SEAM: R31.7's scope (>= 10 m) and the seam's two take points (the
+   k-turn block, the face at rest), neither of which is "arrive on a slot with a drawn facing".
+2. **The cheapest deliverable, no seam at all: a side-gate POINT for brains' gate rule.** §2.8's geometry is `slot +
+   perp x R` on the side with room, length R, never along the facing axis behind the slot. The planner's world answers
+   "which side has room" without a search: `PlannerNavWorld.clearance(x, z)` at `slot +- perp x R` (two cell reads
+   through the C++ cache, ~microseconds; the clearance must exceed half the hull's width + MARGIN_M) -- a static
+   `PlannerSeam.side_gate(slot, facing, unit_id) -> Vector3` (or ZERO when neither side has room: today's gate stays).
+   Brains keeps the gate (C30.5); it only asks the planner's world where to put it. A contract line in workstreams.md
+   (brains' gate rule calls one planner static) and brains' own bar.
+3. **The full answer, a third take point: a `"slot"` kind in the seam.** Request: goal pose (slot, facing), tol 1.0 m /
+   8 deg, `arrive_gear` any (a tail-first slot = gear -1 allowed on the last leg), made when the hull is within
+   HORIZON_M (30 m) of a slot with a drawn facing, at the line where brains' gate rule would lay the gate (brains' /
+   manoeuvre's lines: a contract change, R31.2's form). The planner then answers the 180-degree arrival in three legs
+   (F4: drive past, reverse arc, forward onto the slot) and no gate exists inside the horizon; beyond it, (2)'s side
+   gate. The scope opens for THAT kind only (`in_scope(unit_id, kind)`: slot for any wheeled hull, face / kturn for >=
+   10 m), so the k-turn and face demand of 48 short hulls (95 % of a fight's manoeuvre starts, census-4) stays with
+   today's code. Its own bar: the yard s27 t8 trace as a named case, an arrival census (slots reached within tol,
+   gates given up), and the cost line re-priced for the slot demand (one request per order per hull, not per k-turn).
+4. **The refusals the seam already has are the fallbacks:** START_BLOCKED (the hull in contact: manoeuvre's unstick)
+   and GOAL_BLOCKED (the slot's turned footprint clips a squadmate's box: C31.5's re-seat rule, brains') hand the hull
+   back to today's code within a tick, with `last_refusal(name)` for the counters.
+
 ### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
 
 **What the agreement added to the draft below (each a line I own in my seam commit):** (a) `Movement.manoeuvring() ->
