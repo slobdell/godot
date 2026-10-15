@@ -45,6 +45,12 @@ turns_verdict with CP-N guards, per-run rows for sizing; its check exited 2 only
 0; covered by main's batch check). **Merged: brains B7 `d69d73d4`** (the 425 s test file split 6 + 6; green 2585/0; no
 wall gain — the floor is now `test_native_traffic_hold` 486 s). **Traffic DONE** (idle).
 
+**Merged: brains final `3ba1aa94`** (tip e7b1ada5; code = ed57eace green 2585/0; game/ = main's: B6's SBF probe
+`tests/tactics/sbf_probe.gd` + `make sbf-series`; B5c-v4, B3b and B6 PARKED with their bars and traces — each starts round
+31 as a declared candidate: `lab/brains-r30-gate` f1a804eb, `lab/brains-r30-bridge` 4bc708d7, `lab/brains-r30-sbf`
+9aa0cd7c). **Brains DONE** (idle). Streams done: sizing, planner, traffic, brains. Running: manoeuvre (M1b's hull-rest,
+then M2b), native (the reader pair's check).
+
 **Traffic T3b NOT SHIPPED** (yard crossing clock +2.80 s v +1.18; bumps −45 %; parked `traffic-t3b`; his round-31 call in
 `workstreams.md` *Bars*). **Sizing DONE** (idle). **Planner DONE** (idle).
 
