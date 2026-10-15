@@ -200,7 +200,44 @@ the section 0.34 -> ~0.10-0.15 ms (a call's crossing ~8 us plus the C++'s buildi
 does not fall by at least a third, the crossings dominate and that is written down as the finding. Falsifier for the
 prediction: a fall of more than 80 % (then the GDScript laps were inflating it).
 
+**N7.5 DONE, ON (`f1e4178b`).** `native/src/feed_native.{h,cpp}` + `game/ai/native/native_feed.gd`, switch `native_feed`
+(`brain_switches.gd`), seams at the top of `ElementFeed._shared` / `_normalize`; `test_native_feed.gd`: live 11 520 reads +
+2 166 stub shapes, 0 mismatches. native-proof on=off=`nofeed`: Sumps `0398922d31f335f8`, with elements `4685568bc42b5d8b`.
+**Price** (builder0, which went busy mid-slot: tick 14-28 ms, so read as shares of each run's tick; foundry 25 a side,
+seed 92721, 3 alternated runs an arm): OFF 2.45 / 2.51 / 2.44 %, ON 1.96 / 2.10 / 2.06 % -> **-0.43 % of the tick, the
+section -17 %**. That is under the pre-registered third, so **the crossings dominate** (the finding); ON per the C++-core rule.
+
+**B5c-v4 (brains) -- PARKED for round 31 (orchestrator, 2026-10-14 ~15:30).** The v4 mirror is equal (test_native_gate
+0 mismatches; `make native-gate-cells` 24/24 yard+Sumps cells field-for-field equal to brains' judged on-arm series). The
+pair check failed one test, `test_tactics_pursuit::test_a_spotter_retreating_at_8_mps_is_chased_down`, which fails
+identically with NATIVE off (GDScript v4's own near rule). Kept on `lab/native-b5c-v4` = `f508ce89`; its Status text
+predates the park.
+
+**M4b (manoeuvre) -- the escapes PARKED for round 31; the READER pair GREEN at `3bc2c476`.** The full M4b pair (`real_velocity`
++ the honest stall reading + sized escapes + the two aim leads in C++; twin tests and proofs equal) went red at `366b42bc`
+(2607/2): `test_tactics_mixed_legs` four tanks on the Sumps 31.6 m short, and `test_nav_wall_contact` steered-into-wall
+(16 unstick/reverse ticks). Both reproduce with NATIVE off (builder0: 13 passed / 2 failed on either arm), so they are
+GDScript M4b's own. That work is kept on **`lab/native-m4b-escapes` = `366b42bc`** for round 31's A/B (it includes the
+`test_native_drive` floor drop that M4b's fight needed). What ships is manoeuvre's measurement commit `8cbdcfad`
+(`Tank.real_velocity`, nothing in play reads it) + `3bc2c476` (the write in `tank_drive_native`, the marked tank.gd
+line deleted). builder0 `make check exited 0`, **2606 passed / 0 failed, 26 targets ALL JUDGED**, thirteen unmoved,
+determinism `2875411ff4ec6be7`; twin tests 21/0 with 0 mismatches; native-proof unchanged from `f1e4178b` (Sumps
+`0398922d31f335f8`, elements `4685568bc42b5d8b`).
+**Traffic:** T3b failed its bar (no port). T1c-b (`Movement.ask()` / `on_fire_post()`) is GDScript-only; when it is
+judged, check the doors (owned writes have to mark `native_stale`).
+**Queued:** manoeuvre M2b (`lab/manoeuvre-m2b` `e94ca27e`: `_creep_lift`, `--nav-off=kturnarc`, new owned
+`_kturn_arc_m`) and M1b (`37c47851`, `OrderController.face_slot`, likely no port), each only after its judged run;
+the held N5 ports in round 31.
+
 ### The report (read this first; kept current)
+
+**Round 30 report (2026-10-14).** **GREEN at `3bc2c476`** (builder0 check exited 0, 2606/0, ALL JUDGED, thirteen
+unmoved). On the branch: **N7.5 the element feed in C++, ON** (equal; -0.43 % of the tick, crossings dominate) and **the
+M4b reader pair** (`Tank.real_velocity` written natively). **Parked for round 31, both with their work kept:** B5c-v4
+(`lab/native-b5c-v4` `f508ce89`) and the M4b escapes + aim leads (`lab/native-m4b-escapes` `366b42bc`). In both cases the
+red test was GDScript's own: it reproduced with NATIVE off. T3b: no port. **Next:** M2b / M1b pairs once judged;
+the held N5 ports and the parked pairs in round 31; stage 2 deferred.
+
 
 **Round 29 report (2026-10-14; the round is closing).** On main: stage 1, N6.1b-N6.4, N7.1, N7.2, **N7.6 (ON)**.
 **N7.3a** (`native_controller`) is equal and **OFF by its price**. **N7.4** (`native_wall`, the wall-contact observer) is equal
