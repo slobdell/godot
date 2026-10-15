@@ -8,6 +8,50 @@ _Last updated: 2026-10-14 evening — **ROUND 30 IS CLOSING (below).** **Main GR
 exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7): sizing + planner +
 B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes `main`._
 
+## ✅ ROUND 30 IS CLOSING (2026-10-14 evening) — read this first
+
+**Main's final check: PENDING** — native's one batch tree (main `48d5aa0d` + M1b `55622870` + kturnarc `e7a58262` + its
+port + manoeuvre's tooling tip `d122485c`) is in `make remote T=check` on builder0; on its green line the orchestrator
+merges M1b → the kturnarc pair → `d122485c` and main's code equals the checked tree. **Before that, main is GREEN at
+`48d5aa0d`** (builder0, `make check exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism
+2875411ff4ec6be7).
+
+**What he plays now** (`make native && make skirmish`), once the final merges land:
+- **A face at rest keeps the slot the crew drove to** (M1b(1) `face_slot`, judged at `55622870`: drawn attack-move at-rest
+  error 23.1 → 15.9° ALL classes, no task worse at p < 0.05, crews still moving at 75 s not up on any task; the round-28
+  bug that `Movement.idle()` wiped the anchor is fixed). Wheeled TURRET hulls still decline a drawn facing until turn-hull
+  ships (M1b(2), round 31).
+- **A k-turn leg is measured by the arc driven, not the chord** (`kturnarc` `e7a58262`, the planner's two executor rules:
+  legs end where the plan said; rigs' leg seconds −18 % on Terminus, arrivals unchanged; native's pair).
+- **Nothing visible:** `Tank.real_velocity` (the motion a hull really made this tick) exists and is read by nobody in play;
+  N7.5 element feed in C++ (ON).
+- **Clip for him:** `~/projects/clips/round30/planner_lab_terminus_8f73e4cd.mp4` — a War Rig told to face back in Terminus'
+  west street under the planner (15.5 s, 3 gear changes, 0 wall contacts) v today (29.8 s, 53, 14); a scout's 180° slot
+  20 m v 99 m through the gate. Not in play: 0.06–17 s a plan in GDScript → round 31's native port.
+
+**The Fable streams (his ask):** sizing delivered `_agents/judging.md` (55 probe × metric rows; 42 of 122 judged pass lines
+of rounds 27–29 were inside their probe's noise; early stop would have cut round 29's runs 35 % with every verdict
+unchanged) — every bar this round cited it; planner delivered the design, 16 offline tests, the lab clip and the hand-over
+(`references/round30/planner/handover.md`); manoeuvre (Fable) shipped three honest items and parked two with the traces
+the planner needs.
+
+**Not shipped (each judged, parked with its table and bar; `roadmap.md` *Round 31 candidates*):** brains B5c-v4 (every
+judged line passed; the `near` rule tips a knife-edge pursuit test), B3b (107/108 v 106/108), B6 (traced, bar filed, not
+run); manoeuvre M4b's escapes (two regressions the series never covered: an 8×8 stranded on the Sumps causeway, a tank
+backing off a wall), the creep lift (−30 % v −50 %, a third time), M5; traffic T3b (yard clock +2.80 s v +1.18, bumps
+−45 %: **his call**), T1c-b (the defect 11 → 0, the artillery line carried by one diverged run: **his call**), T4 (ORCA's
+ghost, tuned, waits on the honest reading's consumers A/B).
+
+**Process this round:** bars sized from the table (C30.3); the first early-stop record (M1b: SERIES PASS at runs 10 and 6
+of 13); the pair-tree check BEFORE judging (lesson 307); the one-flag switch rule (309); measurement apart from behaviour
+(310); one hull-rest arm per call (311); close step 5b (the table re-rendered — running). Lessons 306–311.
+
+**Cleanup:** sizing, planner, traffic, brains worktrees and builder0 folders removed, briefs archived to
+`streams/archive/round30/`; manoeuvre's scratch worktrees and builder0 folders removed by it; `godot-manoeuvre`,
+`godot-manoeuvre-m1`, `godot-manoeuvre-m2` and `godot-native` remain until the final merges (then: remove manoeuvre's
+three; native continues). **He should close these terminals:** godot-sizing-72, godot-planner-df, godot-traffic-cd,
+godot-brains-b4 (done); godot-manoeuvre-65 after the final merge. Kept branches are listed in each archived brief's report.
+
 ## 🚀 ROUND 30 IS LAUNCHED (2026-10-14) — read this first
 
 **From round 29's parked calls and his Fable ask** (`game_design.md` *Round 30: the launch*; `roadmap.md` *Round 30
