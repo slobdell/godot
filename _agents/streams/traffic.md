@@ -96,7 +96,37 @@ Nothing: both calls are made.
 _(the worker keeps this current: every number names commit, machine, workload, n and its table row; bars go to the
 orchestrator before numbers; the report at the top)_
 
-_Updated 2026-10-14 (traffic worker, round 31, Opus)._
+_Updated 2026-10-15 ~06:15 PDT (traffic worker, round 31, Opus). Every number names commit, machine, workload, n._
+
+### REPORT (traffic, round 31) — read this first
+
+- **I4 the early-stop hook: DONE** (`e1aaabe1`, fix `33cb2da5`; on main via `traffic-t4` 357ca38b). `tests/traffic/seq_hook.py`
+  prints `SEQ <case> k/N … -> SERIES CONTINUE | PASS | FAIL at run j` after every row of `traffic-series` /
+  `traffic-census` (`SEQ_BASE`, `SEQ_LINES`, `SEQ_CENSUS_LINES`, `SEQ_COUNTER`), over the finished prefix in runner
+  order (jobs now seed-major); `allow=X` carries a lead's allowance; `CACHE=auto` reuses BASE rows (C31.7).
+  `make traffic-pytest` 4/0. Documented in `verification.md`. Used live on T3b-c and T1c-b2.
+- **T3b-c the crossing: JUDGED, FAIL on one filed line — NOT shipped, his call owed.** Pair tree f5dc4147 (C31.1 gate
+  green: 2624/0), builder0, GDScript, seeds 41–43 × 6, n 18: between-squad bumps 191 → 117 (−39 %); his yard line
+  +3.38 s v +3.43 pass; **Terminus clock +2.61 s (se 0.55) v +2.07 FAIL**. Worst run traced: the yielder held 4–10 s
+  (the rule as designed), no seat/gate circling. Clips for him in `~/projects/clips/round31/t3bc_*`. Question 1 below.
+- **T1c-b2 the set-up mortar truck: deciding line NULL as filed (base 6/18 < the filed 8/18) — PARKED, his call owed.**
+  Builder0, 33cb2da5, census s41–46, n 18: repacks while firing 6/18 → 0/18 runs (Fisher p 0.0095), artillery 434 →
+  437, guards inside — all REPORTED. Pre-census gate dc8fcbf6: 2630/0, pit alone moved. Question 2 below.
+- **T4 ORCA's ghost (CP-H consumer): v1 delivered OFF, ghostself OUT.** Tuning (builder0, dc8fcbf6, Terminus drive
+  s24–29, n 12): v1 v v1+ghostself pinned 126 → 598 (UP beyond 2 se) → v1 alone. Merge branch `traffic-t4` =
+  `357ca38b` (OPT-IN per R31.1); native's pair/t4 0475758f (OFF) and pair/t4-on 93c85531 (gate) QUEUED in native's
+  chain for the 09:00 cutoff — **result: pending** (see *T4 for CP-H*).
+- **Stretch:** not started (waits on CP-P1). Seam reply sent: `Movement.manoeuvring()` rather than a wider `in_kturn()`.
+- **Green check:** this stream's merge candidate is `traffic-t4` 357ca38b; its check is native's pair/t4 OFF plain
+  check (pending). stream/traffic itself is a record branch (parked trees), not a merge candidate.
+- **Requests:** native — the two T4 pair checks. Orchestrator — the two questions to him; on yes, the follow-ups in
+  *Kept branches*.
+- **What to playtest:** nothing new in play from this stream (all parked or OFF). His clips: `~/projects/clips/round31/`.
+- **Lessons for the doc:** (a) a bar's base-rate precondition must be sized from the pooled base rate, not one run's
+  (8/18 from 4/9 voided a clean 0/18); (b) a crossing line written as "10 % of the median" on a 12 s clock is the
+  same ~1 s guard that failed in round 30 — when the lead sets a price for one crossing, ask whether it covers the
+  other before judging; (c) shell-spawned wrappers die at a cwd reset: `systemd-run --user`.
+
 
 ### The plan (ordered)
 
