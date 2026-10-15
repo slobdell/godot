@@ -303,7 +303,10 @@ Candidate `lab/manoeuvre-m4b2` (hash named when its tests are green); base arm `
   leak = the gate missed); (j) (b2) read on the hulls the fix reaches (≤ 10 m) AND on rigs apart (rigs' pins must be
   unchanged, stated); (k) M4b's record chain stopped at once (done 14:20 PDT: the local chain and its builder0
   processes, cwd-verified `~/tank_squad/godot-manoeuvre`, killed; bridge/fights/hull-rest of run 1 not taken).
-- **For round 31's planner hand-over (the finding):** rigs seed 31, Green_S0_2, ticks 3120–5430: 77 s grinding the
+- **For round 31's planner hand-over (the findings):** (i) under the creep lift, M2b's rigs seed 51, Green_S0_3: 50 s
+  grinding the plaza-crossing wall at throttle 0.8 / lock 0.44, plant speed 9.4, goal 24 m away throughout (the lift
+  rolled an earlier turn and the rig met the wall at an angle: the planner's F1, a corner creep is one forward arc or
+  one back-up chosen by geometry); (ii) under M4b's escapes, rigs seed 31, Green_S0_2, ticks 3120–5430: 77 s grinding the
   west street wall after a freed pin (plant speed 10.7, real 0.1–3 m/s jittering, throttle 0.9, goal 25–29 m away,
   neither the stall rule nor the press escape reads it as stuck); the log is `references/round30/manoeuvre/`'s
   `m4b_run1_rigs31_new.log` (copied at the close).
@@ -396,7 +399,8 @@ on lock for a long hull", not "no stall clock".
   earlier turn instead of creeping it and the rig met the wall at an angle where the plant's phantom momentum grinds
   it: round 29's finding again, and M4b run 1's grind state. Per the filed partial rule the lift's finding goes to the
   planner (F1) and **`kturnarc` is re-declared alone** (base `--nav-off=creeplift,kturnarc` v new
-  `--nav-off=creeplift`, Terminus fresh seeds 75–87, (c)(d)(e)); awaiting the orchestrator's GO. Both arms' per-run
+  `--nav-off=creeplift`, Terminus fresh seeds 75–87, (c)(d)(e)); **GO ruled (18:50 PDT)**, its chain queued behind
+  M1b's last arm; its merge is a pair (native knows `_kturn_arc_m`). Both arms' per-run
   census rows (`census_{base,new}.jsonl`) go to sizing's `probes.py` at the close (line (g)).
 - **M1b(1) judged, Terminus (d), 13 fresh seeds 36–48, GDScript path, `55622870` on the reader base, builder0, 17:30
   PDT:** rigs arrivals 176 → 179 of 208 (+3, se 5.13, 1.645 se = 8.4: PASS), mixed 284 → 286 of 312 (+2, se 3.56:
