@@ -79,6 +79,13 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   tests; planner: `tests/test_planner*.gd`).
 - C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
+**Round 30 outcomes (2026-10-14 close):** SHIPPED — sizing's `judging.md` + `tools/judge` (CP-N, early stop), the
+planner (isolated, `game/ai/planner/**`, nothing in play), traffic's I3 cache proof + `make quick` 487 s, brains' B7 test
+split, native's N7.5, the `real_velocity` reader pair, manoeuvre's M1b(1) `face_slot`. NOT SHIPPED (each judged, parked
+with its table and bar): brains B5c-v4, B3b, B6; manoeuvre M4b's escapes, the creep lift, kturnarc, M5; traffic T3b,
+T1c-b (his calls), T4. Main's final tree: `04aaf1c2` (= native's checked `3b3e590d`: 2608/0, 25 of 26 gates, the
+sim-baseline re-recorded for face_slot's docks move).
+
 **Bars (round 30, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **CP-N DELIVERED (sizing, 2026-10-14 ~11:30 PDT; stream/sizing `44a8b95a`, `_agents/judging.md`):** 55 probe × metric

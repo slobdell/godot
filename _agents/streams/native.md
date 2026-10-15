@@ -231,6 +231,13 @@ the held N5 ports in round 31.
 
 ### The report (read this first; kept current)
 
+**Round 30 close (the orchestrator, 2026-10-14 ~21:10 PDT):** on main: N7.5 (element feed in C++, ON, −17 % on its
+section), the `Tank.real_velocity` reader pair (`48d5aa0d`), brains' B5c-v4 mirror parked with brains (`lab/native-b5c-v4`
+f508ce89), M4b's escapes + lead mirrors parked (`lab/native-m4b-escapes` 366b42bc), kturnarc's mirror parked
+(`lab/native-kturnarc` 40b89dd1; manoeuvre's round-31 gear-signed arc changes the C++ arc sum by that sign); M1b
+(face_slot) shipped with NO port (native-verify 0 mismatches). Three pair-tree checks this round caught regressions the
+judged series missed (lesson 307). **Native STOPS with the round (his word): round 31 re-creates the worktree.**
+
 **Round 30 report (2026-10-14).** **GREEN at `3bc2c476`** (builder0 check exited 0, 2606/0, ALL JUDGED, thirteen
 unmoved). On the branch: **N7.5 the element feed in C++, ON** (equal; -0.43 % of the tick, crossings dominate) and **the
 M4b reader pair** (`Tank.real_velocity` written natively). **Parked for round 31, both with their work kept:** B5c-v4
