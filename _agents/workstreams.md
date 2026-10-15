@@ -303,6 +303,8 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   native's mirror, one pair, with native showing yard and Sumps equal on the ON path. One arm-pair per remote call,
   systemd-run. **Owed before numbers (orchestrator):** brains names round 30's v4 tuning and judged seeds per stage and
   confirms none of 27–28, 16–17, 8–11 or 37–40 is among them.
+  **CONFIRMED (~02:15 PDT, from round 30's judged rows):** yard r29 22–24 / r30 23, 25–26; Sumps r29 2–13 / r30 2,
+  14–15; Terminus r29 1–4 / r30 2–7; arrive 1–4, 25–36. No overlap and nothing swapped. Cleared to run.
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
