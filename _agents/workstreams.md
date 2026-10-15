@@ -193,6 +193,10 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   the old +10 % line FAIL as filed). **Seeds** {41,42,43} × ticks {1,3,6,8,11,16}, n = 18 a case, four cases, 90 s. On
   the pair tree `turns` is default ON, so base = `--traffic-off=turns` and arm = no flag. Early-stop lines are in
   traffic's Status bar block.
+  **C31.1 gate PASSED (~00:05 PDT 10-15):** pair tree `pair/t3b` = `f5dc4147` (native `413252ea` + traffic `ab3351fb` +
+  `DEFAULT_OFF = []`), builder0 `>> remote: make check exited 2`, 2624 passed / 0 failed, 25 of 26 targets passed, the
+  sim-baseline alone failed, with all 13 maps moved as a turns-ON tree must (one read each; two reads at adoption).
+  Determinism 7/0, native-verify-scenarios 0, the four traffic twins 0 mismatches. Judged series cleared to run.
 - **Traffic T1c-b2 bar (filed 2026-10-14 ~23:00 PDT, before any judged number; DECLARED; ONE run = the LAST attempt;
   full text in traffic's Status at `4054e7ca`):** candidate stream/traffic `6d19a3d9` = `16780030`'s game/ + `02dc1433`'s
   measurement additions re-based, no code change; rule ON by default (base `--traffic-off=setup`). No C++ twin: native
