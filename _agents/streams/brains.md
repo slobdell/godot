@@ -130,7 +130,10 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   missing (local `make remote` "Terminated" after the summary though launched setsid'd): accepted on the runner's
   summary as a PRE-series gate only. Waits for CP-H.
 - **B6** re-based: `lab/brains-r31-sbf` = stream 0415da23 + round 30's three commits + `make sbf-bar` (`f22d7dcb`); its
-  pair-tree check next.
+  pair-tree check next. **Gate (C31.1) on f22d7dcb (builder0): `make check` exited 0, 2613/0, sim-baseline unmoved,
+  native-verify 0 mismatches, bridge-pooled 18/18; perf-judge NOT JUDGED (box busy, 2.5–2.6x), ai-scenarios NOT JUDGED.**
+  (A first try was stopped at the orchestrator's request: two heavy slots held by one stream.) The bar's run (`make
+  sbf-bar`, seeds 7–18 × law_tank gang_ifv law_ifv gang_tank + tank) is running.
 - **B3b-2** built: `lab/brains-r31-bridge` `344a772a` (route seating matched ONCE per task point, held `fixed` until the
   point changes or a re-seat; `--route-seat-once=off` = round 30's B3b; counter `crossings_held`); unit 5/0. Tuning on
   the three named cells running: green t5 s2 on = rim 0, 4/4 across, 35.8 s. Tuning (n = 1, builder0): green s2 t5 rim 0
