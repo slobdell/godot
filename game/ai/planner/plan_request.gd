@@ -20,6 +20,14 @@ var arrive_gear := 0
 ## Round 31 (the k-turn's goal): reached also when the hull POINTS at the goal within tol_deg from farther than tol_m
 ## with a clear straight run to it (Planner._at_goal); the pursuit law drives from there.
 var aim := false
+## Round 31 (CP-P1's first judged series, the face's KEEP circle = manoeuvre's slot law, rounds 30 M1b / 31 M1b(2)):
+## every pose the search expands lies within `keep_all_m` of (keep_x, keep_z) and the goal pose within `keep_end_m`;
+## INF = no circle. A rig that arrived 4.5 m from its slot and was then faced on a 3.5 m reverse chord sat 7.4 m from
+## the slot for the rest of the leg (seed 134, the plaza): a face at rest keeps its spot.
+var keep_x := 0.0
+var keep_z := 0.0
+var keep_all_m := INF
+var keep_end_m := INF
 ## The hull: half extents (m), the minimum turning radius (m), the speeds the legs will be driven at (m/s), the
 ## acceleration and braking (m/s^2) for the cusp cost, and the yaw cap (deg/s).
 var half_w := 1.0
@@ -94,6 +102,15 @@ func to(x: float, z: float, fx: float, fz: float, p_tol_m := 1.0, p_tol_deg := 8
 	return self
 
 
+## The KEEP circle (see keep_all_m): every pose within `all_m` of (x, z), the goal pose within `end_m`.
+func keep(x: float, z: float, all_m: float, end_m: float) -> PlanRequest:
+	keep_x = x
+	keep_z = z
+	keep_all_m = all_m
+	keep_end_m = end_m
+	return self
+
+
 func in_world(w: PlannerWorld) -> PlanRequest:
 	world = w
 	return self
@@ -121,6 +138,7 @@ func to_native() -> Dictionary:
 		"start_x": start_x, "start_z": start_z, "start_fx": start_fx, "start_fz": start_fz,
 		"goal_x": goal_x, "goal_z": goal_z, "goal_fx": goal_fx, "goal_fz": goal_fz,
 		"tol_m": tol_m, "tol_deg": tol_deg, "arrive_gear": arrive_gear, "aim": aim,
+		"keep_x": keep_x, "keep_z": keep_z, "keep_all_m": keep_all_m, "keep_end_m": keep_end_m,
 		"half_w": half_w, "half_l": half_l, "radius": radius, "v_fwd": v_fwd, "v_rev": v_rev,
 		"cusp_s": cusp_seconds(), "budget": budget, "horizon_m": horizon_m, "epsilon": epsilon,
 		"fine_retry": fine_retry, "tick_s": SimClock.TICK_SECONDS,

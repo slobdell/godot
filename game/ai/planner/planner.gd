@@ -275,6 +275,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 	var v_fwd := maxf(req.v_fwd, 0.1)
 	var v_rev := maxf(req.v_rev, 0.1)
 	var horizon2 := req.horizon_m * req.horizon_m
+	var keep_all2 := req.keep_all_m * req.keep_all_m   # INF = no circle (INF < INF is false below)
 	var expansions := 0
 	var goal_id := -1
 	var best_cost := INF
@@ -379,6 +380,12 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 					var ddz := z - req.start_z
 					if ddx * ddx + ddz * ddz > horizon2:
 						break
+					if keep_all2 < INF:
+						# The KEEP circle (round 31, the face's slot law): a pose outside it is not a pose of this plan.
+						var kdx := x - req.keep_x
+						var kdz := z - req.keep_z
+						if kdx * kdx + kdz * kdz > keep_all2:
+							break
 					var at_end := next_end < LEG_ENDS_M.size() and swept >= LEG_ENDS_M[next_end] - 0.001
 					if at_end:
 						next_end += 1
@@ -481,6 +488,12 @@ static func _at_goal(req: PlanRequest, x: float, z: float, th: float, goal_theta
 	var dx := x - req.goal_x
 	var dz := z - req.goal_z
 	var d2 := dx * dx + dz * dz
+	if req.keep_end_m < INF:
+		# The KEEP circle's end rule (round 31): the goal pose no further from the slot than `keep_end_m`.
+		var kdx := x - req.keep_x
+		var kdz := z - req.keep_z
+		if kdx * kdx + kdz * kdz > req.keep_end_m * req.keep_end_m:
+			return false
 	if d2 <= req.tol_m * req.tol_m:
 		if req.arrive_gear != 0 and gear != req.arrive_gear:
 			return false

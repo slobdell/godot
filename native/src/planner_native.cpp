@@ -22,6 +22,8 @@ namespace godot {
 namespace {
 
 constexpr double INF = std::numeric_limits<double>::infinity();
+// Request.keep_all_m / keep_end_m at or above this = no KEEP circle (the GDScript's INF arrives as inf).
+constexpr double KEEP_NONE = 1.0e29;
 constexpr float INF_F = std::numeric_limits<float>::infinity();
 constexpr double PI_D = 3.14159265358979323846;
 constexpr double TAU_D = 6.28318530717958647692;
@@ -579,6 +581,10 @@ PlannerNative::Request PlannerNative::parse_request(const Dictionary &d) {
 	r.tol_deg = (double)d.get("tol_deg", 8.0);
 	r.arrive_gear = (int64_t)d.get("arrive_gear", 0);
 	r.aim = (bool)d.get("aim", false);
+	r.keep_x = (double)d.get("keep_x", 0.0);
+	r.keep_z = (double)d.get("keep_z", 0.0);
+	r.keep_all_m = (double)d.get("keep_all_m", 1e30);
+	r.keep_end_m = (double)d.get("keep_end_m", 1e30);
 	r.half_w = (double)d.get("half_w", 1.0);
 	r.half_l = (double)d.get("half_l", 2.0);
 	r.radius = (double)d.get("radius", 6.0);
@@ -628,6 +634,14 @@ bool PlannerNative::at_goal(double x, double z, double th, int64_t gear) {
 	const double dx = x - req.goal_x;
 	const double dz = z - req.goal_z;
 	const double d2 = dx * dx + dz * dz;
+	if (req.keep_end_m < KEEP_NONE) {
+		// The KEEP circle's end rule (Planner._at_goal, round 31): the goal pose no further from the slot than keep_end_m.
+		const double kdx = x - req.keep_x;
+		const double kdz = z - req.keep_z;
+		if (kdx * kdx + kdz * kdz > req.keep_end_m * req.keep_end_m) {
+			return false;
+		}
+	}
 	if (d2 <= req.tol_m * req.tol_m) {
 		if (req.arrive_gear != 0 && gear != req.arrive_gear) {
 			return false;
@@ -900,6 +914,14 @@ bool PlannerNative::run_search(int64_t slice) {
 					const double ddz = z - req.start_z;
 					if (ddx * ddx + ddz * ddz > s.horizon2) {
 						break;
+					}
+					if (req.keep_all_m < KEEP_NONE) {
+						// The KEEP circle (round 31, the face's slot law): a pose outside it is not a pose of this plan.
+						const double kdx = x - req.keep_x;
+						const double kdz = z - req.keep_z;
+						if (kdx * kdx + kdz * kdz > req.keep_all_m * req.keep_all_m) {
+							break;
+						}
 					}
 					const bool at_end = next_end < LEG_ENDS_N && swept >= LEG_ENDS_M[next_end] - 0.001;
 					if (at_end) {

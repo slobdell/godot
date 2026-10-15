@@ -260,6 +260,21 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
 			req.to(target.x, target.z, want.x, want.z, stay, FACE_TOL_DEG)
 			req.arrive_gear = 0
+			# Round 31 (CP-P1's first judged series, seed 134's plaza: a rig arrived 4.5 m from its slot, the face's one
+			# 3.5 m reverse chord left it 7.4 m out for the rest of the leg): manoeuvre's SLOT LAW, read from its own
+			# names so the two cannot drift. (a) The slot = OrderController.face_slot (the last move_to's goal), only
+			# under face_slot_on() and within FACE_SLOT_REACH x settle; (b) the plan may not END further from the slot
+			# than it starts + FACE_SLOT_SLACK_M (round 30 M1b); (c) under turnhull (M1b(2), parked on main) every
+			# pose within max(max(ORDER_ARRIVE, settle) - FACE_KEEP_MARGIN_M, from here) of the slot.
+			var slot: Vector3 = mover.ctl.face_slot if Manoeuvre.face_slot_on() and mover.ctl != null else Vector3.INF
+			if slot != Vector3.INF:
+				var settle := Movement.settle_radius(tank.unit_id)
+				var from_slot := Vector2(here.x - slot.x, here.z - slot.z).length()
+				if from_slot <= Manoeuvre.FACE_SLOT_REACH * settle:
+					var all_m := INF
+					if Manoeuvre.turn_hull_on():
+						all_m = maxf(maxf(TankBrain.ORDER_ARRIVE, settle) - Manoeuvre.FACE_KEEP_MARGIN_M, from_slot)
+					req.keep(slot.x, slot.z, all_m, from_slot + Manoeuvre.FACE_SLOT_SLACK_M)
 		"kturn":
 			var to := Vector3(target.x - here.x, 0.0, target.z - here.z)
 			if to.length() < 0.5:

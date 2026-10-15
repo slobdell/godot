@@ -104,6 +104,9 @@ public:
 		double tol_m = 1, tol_deg = 8;
 		int64_t arrive_gear = 0;
 		bool aim = false; // PlanRequest.aim: pointing at the goal with a clear straight run counts (the k-turn's goal)
+		// PlanRequest.keep (round 31, the face's slot law): every pose within keep_all_m of (keep_x, keep_z), the goal
+		// pose within keep_end_m; KEEP_NONE (the GDScript's INF arrives as inf, which is >= KEEP_NONE) = no circle.
+		double keep_x = 0, keep_z = 0, keep_all_m = 1e30, keep_end_m = 1e30;
 		double half_w = 1, half_l = 2, radius = 6, v_fwd = 6, v_rev = 2.5;
 		double cusp_s = 0; // PlanRequest.cusp_seconds(), computed by the GDScript
 		int64_t budget = 1500;
