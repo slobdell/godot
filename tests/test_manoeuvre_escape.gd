@@ -143,7 +143,7 @@ func test_an_8x8_in_single_file_never_reverses_on_lock_into_its_column() -> void
 ## The switch OFF is round 29's rule bit for bit: the escape's counters stay at zero.
 func test_switched_off_the_escape_never_runs() -> void:
 	var base := await _pin(false, "ifv", 11.0, 4.0)
-	assert_eq(base["arms"], {"fires_hull": 0, "fires_wall": 0, "asks": 0, "backs": 0, "backed": 0, "capped": 0, "refused": 0},
+	assert_eq(base["arms"], {"fires_hull": 0, "fires_wall": 0, "asks": 0, "backs": 0, "backed": 0, "capped": 0, "refused": 0, "fallback": 0},
 			"no escape arm moves with the switch off")
 
 
