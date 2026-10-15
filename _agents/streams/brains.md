@@ -123,6 +123,10 @@ backlog item is done, judged, or parked by its bar. No lead gate is pending; no 
   turn-hull's ceiling (C31.8: a wheeled hull not turned at rest, manoeuvre's), as is law_tank's 80–90° A_1/A_3 in
   both arms.
 - **B8, realslow:** on main (aa205ea5), opt-in behind `--brains-off=realslow`. Waits for manoeuvre's CP-H A/B.
+- **B8 toggle fix (for CP-H's ship):** `--brains-off=realslow` set it TRUE, so once the default flipped ON no arm
+  could turn it off. Fixed in **c45c9792**: it flips against `REALSLOW_DEFAULT` (`BrainSwitches.realslow_named`), as
+  unstickback/kturnarc/realspeed do. Check on builder0 at c45c9792: **exited 0, 2642/0**, sim-baseline unmoved,
+  bridge-pooled 18/18. Sent to the orchestrator for CP-H's ship pair.
 - **R31.3:** test_tactics_pursuit made robust over seeds (a16585bf, 0415da23): on main (aa205ea5). A/A filed in
   judging.md.
 
