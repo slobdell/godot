@@ -681,6 +681,15 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (R31.6)". **Round 32: SLICE becomes a hardware-preset knob** (his rule: perf cuts ship as presets), e.g. SLICE 1 on the
   laptop preset. On the laptop (~2.75×) the bound is ~1.45 ms in a tick a rig is planning (rigs plan ~0.06 times a
   second), and SLICE 1 halves that at the price of twice the hold.
+  **Line (d) RULED PASS as filed (~16:20 PDT; base `0b2cf981`, candidate `35f5df92`, hull-rest seeds 60–65, 144 runs an
+  arm):** the filed text is "crews still moving at 75 s per task ≤ base + se (wheeled turret row … quote M1_CLASS's
+  paired se)", at 1.645 se, so the form is PER TASK on the WHEELED-TURRET row, and it passes on all 12 rows (closest
+  attack_move +8 v 9.05, SBF +8 v 8.39). At-rest error is not worse anywhere (smallest p 0.087), and settle passes. The
+  all-classes per-task reading (3 of 12 over) and wheels/fixed attack_move (+4 v 3.62) are REPORTED, not the filed form.
+  Supporting evidence: the hull-rest harness is NOT deterministic run to run. 92 of the 108 law/syndicate/condemned runs
+  where the seam never fired differ anyway, and those silent runs carry most of each per-task miss. **Round-32 finding:**
+  in a 19-crew gang press the one-session queue starves (23 % drawn / 18 % clicked of asks abandoned at the 90-tick cap,
+  queue_waits 19 179 / 26 578; the series had 2 of 459). Holds n 1141, median 14, max 110 ticks.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
