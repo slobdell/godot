@@ -422,6 +422,22 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 ~07:30 PDT: **the k-turn's lever read off the sweep** (`planner-test18`, builder0 d8c2e742, 06:55 PDT,
+  exit 0): every variant of the seam's own request (the clipped v the order's point, arrival 1/2.5 m, heading
+  free/30/8 deg, cusp cost x1/x2/x4, any arrive gear, a 12 m goal) begins with the same "R3 F2 R12" wiggle, 4-5 legs,
+  3 cusps -- so tolerance, cost and gear are NOT the lever. The cause is the goal itself: standing on a 1 m point 24 m
+  off needs ~2 deg of heading from a lattice of three locks and twelve leg lengths (the lattice dedupes poses at 15
+  deg bins, so the search composes R3-F2+R12 to land the exact heading a straight final leg needs), where today's
+  k-turn reverses 4.5 m and lets the pursuit law correct. **f66fddfb, the ONE thing changed: the k-turn's goal AIMS**
+  (`PlanRequest.aim`, mirrored in `planner_native.cpp`): a pose pointing at the waypoint within `KTURN_AIM_DEG` 15
+  with the straight run to it clear by the margin counts as the goal; the route drives from there. Face requests are
+  untouched (the fixtures turnround/T-junction/mouth/slot180/yard corner/F6a are face/arrival requests). The twin
+  gets an aim fixture (the War Rig nose-on scene on the Terminus navmesh); the sweep's aim rows print its legs. The
+  wedged semi after the two hand-backs (same run, ON over 20 s): the plan touched the slab at 1.7 s and handed back,
+  the give-up fired at 4.6 s (base 4.5 s); at the test's 8 s: yaw 9.0 deg, footprint over by 0.67 m (bar 1.8), path
+  7.6 m -- manoeuvre's outcome (b) met at the test's window; over 20 s BOTH arms grind past the bar (ON 47.6 deg /
+  7.78 m, OFF 26.2 deg / 4.35 m): the base keeps shuffling after its give-up, the ON arm from 2 m nearer the end cap.
+  Running now: `native test FILTER=planner` on the light lane (`planner-test19`, the lib rebuilt).
 - 2026-10-15 06:37-07:00 PDT: **CP-P1's gate on aa0615e4 RED** (native's pair/cpp1-on, builder0: `make check exited 2`,
   2634 passed 6 failed; the mirror clean, 87/87 test_native_*, the seam twin 195 held drives 0 mismatches). The 6:
   (a) 4 in `test_planner_seam` -- the test assumed default OFF with `--nav-off=planner` the opt-in; on the ON tree
