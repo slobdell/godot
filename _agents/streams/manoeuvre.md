@@ -121,20 +121,24 @@ Nothing: his calls are made (turn the whole hull; planned turns).
 _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoeuvre`, from main `bd05077d` = code
 `0d35f215`, GREEN). Round 30, Fable 5.1. Report at the top; the progress log below it._
 
-### Report (2026-10-14, 19:50 PDT — FINAL; round 30, Fable 5.1)
+### Report (2026-10-14, 20:40 PDT — FINAL; round 30, Fable 5.1)
 
-**Shipped (three, each DECLARED, judged on fresh seeds and ruled):**
+**Shipped (two, each DECLARED, judged on fresh seeds and ruled; a third, kturnarc, parked at the batch check):**
 1. **The M4b READER** `8cbdcfad` + native's pair `3bc2c476` (on main at `48d5aa0d`, check 2606/0, thirteen unmoved):
    `Tank.real_velocity` (C30.6), the census state line's `real`, the pinned probe's honest class. Nothing in play reads
    it yet; it is the member the next consumers (the escapes, the leads, the arc rule) stand on.
 2. **M1b(1) `face_slot`** `55622870`: a face at rest keeps to the slot the crew last drove to (round 28's anchor read a
    goal `Movement.idle()` clears, so it never held). Drawn attack-move median 23.1 → 15.9°, no task worse (p ≥ 0.38),
    Terminus arrivals pass both squads, bridge 18/18.
-3. **kturnarc** `e7a58262`: a k-turn leg is measured by the arc driven (not the chord) and ends on the plant's discrete
-   stopping distance (the planner's P4 findings). Terminus arrivals pass both squads, aborted legs not up, rigs' leg
-   time −18 %, bridge 18/18. Native's pair: one owned member `_kturn_arc_m`.
-Native builds ONE tree (main + `55622870` + `e7a58262` + its port) and checks it once; the orchestrator merges M1b
-then the pair. No check owed from this stream.
+3. **kturnarc** `e7a58262` — **PARKED at the batch check (ruled ~20:10 PDT)**: a k-turn leg measured by the arc driven
+   and ended on the plant's discrete stopping distance (the planner's P4). It met every judged line (Terminus arrivals
+   pass both squads, aborted not up, rigs' leg time −18 %, bridge 18/18) and then turned `ai-scenarios` red in native's
+   batch tree `40b89dd1`: `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` (native's attribution on
+   builder0: `--nav-off=kturnarc` passes, `--nav-off=faceslot` still fails; C++ and GDScript agree). Traced below
+   (**the arc rule counts a short hull's forward roll-out as the leg's progress**); a scoping would touch the scouts
+   in the judged mixed squads, so it parks whole for a round-31 A/B. Branch and table kept.
+Native cut main + `55622870` + `d122485c` and runs the round's last check; M1b ships alone. No check owed from this
+stream.
 
 **Parked, each with its judged table under `references/round30/manoeuvre/`:** M4b's ESCAPES (`lab/manoeuvre-m4b2`
 `77a1603f`: run 1 freed pins and doubled rigs' wall contact; run 2 gated to ≤ 10 m hulls passed every series line and
@@ -150,7 +154,30 @@ velocity: traffic's line); (iv) the six-cusp car (yard s25 B_4: a goal pose 9 m 
 (a blind reverse on lock in single file leaves an 8×8 at a pose seating never recovers; the re-seat reads
 `estimated_velocity`); (vi) the design note below: a long hull against a FRIEND asks first, then a straight reverse by
 the outline sweep, then `blocked` by name; (vii) tooling: export `face_slot_kept/refused` from the hull-rest probe;
-one hull-rest arm per remote call (the 90-min cap); the stall timer should not count while a gun packs.
+one hull-rest arm per remote call (the 90-min cap); the stall timer should not count while a gun packs; (viii)
+**kturnarc's scout (the trace, builder0, `e7a58262` + a two-line scratch print, `make remote T=ai-scenarios
+FILTER=engine_deck ORBIT_PROBE=1 DECK_PROBE=1 AI_SCEN_FLAGS="--turn-trace=Green_Scout_1 --leg-print"`; logs
+`references/round30/manoeuvre/kturnarc_scout_deck_{new,base}.log`):** arc on: 3 deck hits of 27 (FAIL, share 0.11);
+`--nav-off=kturnarc`: 58 of 83 (PASS). The scout (hull 3.04 m, radius 5 m, braking 22) orbits the tank and meets
+Wall_15 at 5 m while doing 10 m/s; the planner plans a 3.5 m single reverse leg (frame 195). `kturn_brake_on()` is
+false for a hull under `KTURN_BRAKE_HULL_M`, so `_kturn_start_leg` sets `_kturn_rolling = true` and `_kturn_from` =
+the plan point while the hull is still rolling FORWARD at 10 m/s under reverse throttle, and `_kturn_stopping()` is 0.
+Both arms then count the forward roll-out as the leg: leg 1 ends "done" at frame 206/207 (driven 3.5/3.7 m) with the
+hull still going forward at 8 m/s, and a 3.0 m leg is re-planned from where it is. In that leg the two rules part:
+the CHORD rolls forward to 0.93 m past the plan point, shrinks back through it (0.28 m at frame 229) as the hull
+finally reverses, and reaches 3.0 at frame 247 with the hull 3.1 m behind the plan point — the roll-out cancels itself
+by accident and the leg backs the hull as planned. The ARC (|real_velocity|·dt, unsigned) keeps the 1.2 m of roll-out
+as progress and reaches 3.0 at frame 234 with the hull 0.88 m behind the plan point: 2.2 m short, nose 40° off the
+steering point (under `KTURN_MIN_ERROR_DEG` 45, so no new leg: a circle plan at frame 240 instead), and the orbit
+diverges from there (8 legs in the fight v 3; a different fight, 3 deck hits). **The fix for round 31 (NOT built, by
+the orchestrator's byte-identical rule):** the arc must be SIGNED by the gear (`real_velocity.dot(nose) · gear · dt`:
+motion against the gear subtracts, as the chord does), or the rolling logic (`_kturn_rolling` false until the hull
+moves in gear, `_kturn_from` re-set each tick) must hold for every wheeled hull rather than only the braked long ones.
+Either moves every short wheeled hull's rolling-start leg (the IFVs and scouts in the census's mixed squads: the
+291 → 288 mixed arrivals under kturnarc were most likely these), so it is a fresh A/B on Terminus with a scout-orbit
+line added (this scenario, both arms, in the bar). A second finding for the planner, both arms: leg 1 is a bogus
+measure under BOTH rules (a reverse leg "done" while the hull has only rolled forward), so a short hull's first
+planned leg against a wall at speed is always re-planned once from the roll-out's end.
 
 **Kept branches:** `lab/manoeuvre-m4b-reader`, `lab/manoeuvre-m1b`, `lab/manoeuvre-kturnarc` (the merges);
 `lab/manoeuvre-m4b2`, `lab/manoeuvre-m2b`, `lab/manoeuvre-m5` (parked); `lab/manoeuvre-m1b-sbf` (brains' probe
@@ -160,7 +187,8 @@ merged, scratch). **Worktrees:** scratch ones removed at the close with their bu
 **What to playtest (after the batch lands: `make native && make skirmish`):** draw a move for a squad with gun trucks
 or IFVs onto a tight spot and watch the ones that arrive at the edge of their circle: they turn at rest without
 walking off the spot (M1b). Send a column of War Rigs through the Terminus streets: a rig that plans a reverse leg
-now stops where it planned instead of over-running it by a hull's margin (kturnarc). Nothing else changes in play.
+would have stopped where it planned under kturnarc; that is parked, so rigs drive as in round 29. Nothing else
+changes in play.
 
 | item | candidate (branch) | state |
 |---|---|---|
@@ -169,12 +197,12 @@ now stops where it planned instead of over-running it by a hull's margin (kturna
 | **M4b reader (SHIPS)** | **`8cbdcfad`** (`lab/manoeuvre-m4b-reader`): `Tank.real_velocity`, the census `real` column, the probe's honest class; nothing in play reads it | **the pair is GREEN: native's `3bc2c476` = `8cbdcfad` + the one `tank_drive_native` write; builder0 `make check exited 0`, 2606 passed / 0 failed, ALL JUDGED, the thirteen unmoved, twin tests 0 mismatches (native, ~18:20 PDT). My branch's tests 20/0 (wedge, wall_contact, mixed_legs). Merge `3bc2c476`.** |
 | M1b(1) face_slot | `55622870` (`lab/manoeuvre-m1b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain (GO) |
 | M2b creep lift + kturnarc | `1f1c9835` (`lab/manoeuvre-m2b`, on `8cbdcfad`) | **judged NOT MET** (the creep −30 % v −50 %; rigs arrivals −9): the lift parks, the finding to the planner (F1) |
-| **kturnarc alone** (re-declared per M2b's partial rule) | **`e7a58262`** (`lab/manoeuvre-kturnarc` = the reader + the arc commit, no lift code; + native's review fix: a leg that starts rolling resets its arc) | **judged: every line met** (Terminus arrivals pass both squads, early stop at run 6; aborted 22 → 21; bridge 18/18); awaiting the ruling; native mirrored it (0 mismatches on the laptop) |
+| **kturnarc alone** (re-declared per M2b's partial rule) | **`e7a58262`** (`lab/manoeuvre-kturnarc` = the reader + the arc commit, no lift code; + native's review fix: a leg that starts rolling resets its arc) | judged: every line met (Terminus arrivals pass both squads, early stop at run 6; aborted 22 → 21; bridge 18/18); native mirrored it (0 mismatches); **then PARKED at the batch check**: `scenario_cp2`'s engine-deck scout red (3 deck hits of 27 v 58 of 83), traced to the unsigned arc counting a short hull's forward roll-out (hand-over viii). Round 31: the signed arc, a fresh A/B with a scout-orbit line |
 | M5 the Terminus escape | `34f34ea0` (`lab/manoeuvre-m5`, parked) | PARKED with the finding: case 1 closed by brains' v4, case 2 is the planner's F4 |
 
 **Decisions:** design B kept exactly (C30.6); the escapes sized to the plant's momentum (run 1) and then gated to
 hulls ≤ 10 m (run 2); M1b/M2b stacked on M4b (M2b's arc rule reads `real_velocity`); the planner's four executor
-findings taken (two in M2b behind `kturnarc`, two as M2b's design). **Questions for the lead:** none (his calls are
+findings taken (two in M2b behind `kturnarc`, parked at the batch check; two as M2b's design). **Questions for the lead:** none (his calls are
 made). **Requests to other streams:** traffic: `avoidance.gd` reads neighbours' `estimated_velocity`, a pinned hull is
 a 12 m/s ghost to ORCA (routed by the orchestrator to traffic's next item); brains: nothing (M5 case 1 is theirs and
 done); planner: the seed-31 grind trace and the F4 case. **Known issues:** the plant's yaw fit is OFF by default so a
