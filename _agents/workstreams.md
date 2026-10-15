@@ -439,6 +439,28 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   green t5 s2, rust t9 s2: round 28's two cells). The three switches fix main's two cells and break one new cell. The
   last attempt by its rule: PARKED. The rest of the chain stopped as moot. Running for the record and round 31: the new
   cell traced on the candidate and with route-seat off; addition (a): main's two cells with each switch alone (6 runs).
+- **Brains B6 — support by fire, the wheeled line: TRACED (not an artefact; three causes) and a fix DECLARED (bar
+  pre-registered 2026-10-14 ~17:35 PDT, before numbers; v1 = the last attempt; no partial):** new probe `tests/tactics/
+  sbf_probe.gd`, `make sbf-series` (four crews, SBF 100 m ahead, drawn 60° off travel v none, EACH CREW READ ONLY ONCE IN:
+  ≤ 8 m of its slot, still 2 s; starts jittered by seed). Builder0, n = 1 a unit and arm: hull error at arrival drawn v
+  none gang_ifv 74° v 36°, law_tank 25° v 44° (A_1 never in), gang_tank 20° v 48°, law_ifv 20° v 62°. Causes: (a) BRAINS:
+  with a drawn facing the SBF line still hands each crew its fanned sector (the plain move zeroes sectors when he draws —
+  "his facing is everyone's"); (b) the arrival gate (law_tank A_1 circles its gate reading no_path from 32 s: B5c, parked);
+  (c) a wheeled hull arriving off-heading is not turned at rest (gang_ifv A_4 parked 168° off after its slot moved:
+  manoeuvre's M1b). Tuning of (a) (`lab/brains-r30-sbf`, every crew given the drawn heading; `--sbf-told-sectors=on` =
+  control; n = 1): drawn err gang_ifv 74 → 44.7°, gang_tank 20 → 11.2°, law_ifv 20 → 1.1°, law_tank 25 → 47.6° with all
+  four in (was 3); clicked arm identical. **Bar:** candidate `lab/brains-r30-sbf` `e4b37bae`; arms on v
+  `--sbf-told-sectors=on`, one tree; `make sbf-series SBF_SEEDS=7..18` (fresh) × law_tank gang_ifv law_ifv gang_tank
+  (+ `tank`, tracked, as a guard), n = 12 runs an arm (no CP-N row; rows to sizing): (1) drawn arm, hull error at arrival
+  pooled over the four wheeled classes: median on ≤ control − 10°, no class's median worse than control by > 2 se (paired
+  by seed); (2) crews in, drawn: on ≥ control − 1 over each class's 48; (3) the clicked rows byte-identical between arms;
+  (4) counter: facings replaced > 0 every drawn on-run, 0 clicked; (5) tactics scenario tests (SBF, screen, ambush
+  postures) + the whole suite green on the tip; thirteen explained. **Orchestrator's additions:** (a) the tracked `tank`
+  guard's drawn error within 2 se of control, stated; (b) the CPU never draws a facing — stated, so no CPU line; (c) cost
+  ≤ 0.5 ms or NOT READABLE; (d) whether the sector hand-out reaches ported code (`native-verify-scenarios` on the probe,
+  or "none"); (e) law_tank's 47.6° (worse than its 25° with one crew out) read against the gate cause (b) in the worst
+  run's trace before the median. **Runs tonight only if builder0 has a slot after brains' final check; else round 31's
+  first brains item with this bar.**
 - **Brains B5c-v4 bar (pre-registered 2026-10-14 ~10:40 PDT, before numbers; DECLARED; the LAST attempt; no partial;
   pre-CP-N so round 29's sizes, may be re-sized ONCE in writing before the judged run if CP-N lands first):** candidate
   `lab/brains-r30-gate` `19eca15a` (round 29's gate restored ON + v4: a gate reached facing away is come round only
