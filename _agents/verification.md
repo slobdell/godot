@@ -88,6 +88,27 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
   576 fields over 18 rows with 0 differences (nested per-crew fields compared whole). A one-line comment added to
   `game/ai/traffic.gd` moved the tree hash `d27fc48d3755db7c` → `245932b39bd062d0` and both rows asked for ran (a miss).
   Another stream's series adopts it only through the orchestrator (C30.7).
+  **Round 31 (I4, C31.7): ADOPTED for base rows.** `CACHE=auto` is the default: a run with no `TRAFFIC_FLAGS` (the base
+  arm) reuses rows; a flagged arm runs every row fresh (and still puts them); `CACHE=on|off` forces either. The banner
+  prints which (`>> traffic-series cache: ON … [CACHE=auto]`).
+- **The early-stop hook** (round 31 I4, C31.3; `tests/traffic/seq_hook.py`, tests `make traffic-pytest`): the RUNNING
+  reading of a judged series, printed by the runner beside every row it finishes. `traffic-series` with
+  `SEQ_BASE=<base jsonl> SEQ_LINES='<case>=<line>,<line> <case>=<line>' [SEQ_COUNTER=tr_cross_verdicts]` prints after each
+  `both` row, per case, `SEQ <case> k/N: <line> PASS|FAIL|CONTINUE llr x | … -> SERIES CONTINUE | SERIES PASS at run j |
+  SERIES FAIL at run j`, and the whole grid's reading after the table. `traffic-census` the same with
+  `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 art_shots:guard:0.2'` (metrics `art_shots`, `fast`, `fstuck`, `rwf`,
+  `rwf_any`). Lines are `tools/judge/sequential.py`'s (`metric:gain|guard:share` or `abs=`, `metric:rate:p1:p0`) plus
+  `allow=X`, an allowance the lead set: `xclear:guard:abs=1.0:allow=3.0` walks d − 3 s (his crossing call). The sd is the
+  table's (`references/round30/sizing/table.csv`); a metric with no row says `POST HOC` and no stop may rest on it.
+  The jobs now run **seed-major, start tick minor, every case together**, and the reading walks only the longest
+  FINISHED prefix of the grid in that order, so a row that finishes out of order never moves a verdict. **The runner
+  never stops itself**: the stream stops by `judging.md`'s one rule (every case SERIES PASS/FAIL on the same row, table
+  sd) — kill the run by its own PID — and records the row in the bar's block. Remote: the base jsonl must be inside the
+  tree (`_agents/streams/references/…` or `build/`) so it syncs. Example (T3b-c):
+  `make remote T="traffic-series TRAFFIC_SEEDS='41 42 43' TRAFFIC_FLAGS=--traffic-on=turns SEQ_BASE=build/base.jsonl
+  SEQ_LINES='yard_open/cross=xclear:guard:abs=1.0:allow=3.0 terminus/cross=xfast:gain:0.25' SEQ_COUNTER=tr_cross_verdicts"`.
+  Other streams' runners copy the pattern: a reader for their rows in the hook's shape (`prefix` over the runner's order,
+  `make_line`, `reading`).
 - **`make check-all`** = `check` + `relay-drop/latency/rejoin-smoke`, `screenshot`, `web-net/relay/host-smoke`, the
   exported server's boot, `perf-play-measure` (a MEASURE, never a gate), **`garage-tour`** and **`desktop-smoke`**
   (round 17), and sim's **`windowed-elimination-pair`** (two windowed Sumps runs past an elimination: the kill cam's
