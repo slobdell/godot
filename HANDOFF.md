@@ -18,6 +18,13 @@ session in `~/projects/godot` on the `/loop` from `orchestration.md`. Main since
 (line, leg shape, pending behaviour, record fields) in its Status, and manoeuvre to hold the plan-source line and leg signature
 stable until it is agreed.
 
+**Round 31 log (orchestrator):** rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
+arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two call lines, PlannerExecutor drives Vector3 legs,
+`manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
+v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
+**Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
+main check RUNNING on builder0 (covers `2ee27055`'s WEB_PACK rename too).
+
 **A FRESH start (his word):** no agent or worktree of round 30 carries over. Worktrees are created at the docs commit
 below and launched by him (one terminal each). **Models (his quota rule): planner on `/model fable`; traffic, manoeuvre,
 brains, native AND the orchestrator on Opus** — one Fable session a day (~8 % of the week's quota) instead of round 30's
