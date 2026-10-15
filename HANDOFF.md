@@ -29,6 +29,12 @@ stable until it is agreed.
    share for ~4–6 s while the other squad passes, reaching back to its rear crew, then released at full pace, plus one
    overshoot k-turn. The rule is doing exactly what it intends; nothing is stuck.
 
+**builder0 throughput (R31.9, his OK 2026-10-15 ~13:00; no second build machine for now):** builds are already
+incremental, and a check is ~55 min of TEST time. (1) After every merge run `tools/merge_check_needed.sh <green>`; on
+INHERIT, run no main check. (2) Workers iterate with `make quick-remote` and run full checks only for named hashes. (3)
+The slowest test files get split by their owners: brains and traffic now as stretch, the rest in round 32's briefs
+(native's four twins first).
+
 **To show him (round 31):** the planner's Terminus west-street War Rig told to face back, on the REAL drive (`faeab49c`,
 builder0 light): today 29.8 s, 54 gear changes, 14 wall-contact ticks, ending jackknifed across the street (the
 orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 contacts, ending straight nose south in
