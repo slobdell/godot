@@ -422,6 +422,13 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 09:15 PDT: **the hull-rest judge's BASE arm is in** (`planner-judge-hull-base`, builder0 heavy lane,
+  tree 0b2cf981, `exited 0`, wrapper exit 0 at 09:13): both base arms (drawn + clicked) on seeds 60-65, tables under
+  `build/manoeuvre/hull-rest/` (M1_REST at-rest share per task 69-96 %, the A/B columns empty until the candidate
+  arm lands beside it on builder0; the sync excludes `build/`, so the base arm's rows stay there). The heavy lane
+  idle and native's gate line not a lead gate: **the judged series launched** (`planner-series`, 09:14 PDT, tree
+  0fcdd5dd = code 05ce260b; the reader prints PLANNER_SERIES_SQUAD / _SEAM / _SEAM_TOTAL, verdict in
+  `build/planner-series/verdict.txt`). Next on the lane, in order: hull-rest candidate, fights x2, bridge x2, cp2 x2.
 - 2026-10-15 07:49 PDT: **the price on the final tree** (`planner-census9`, builder0 light lane 0b2cf981 = code
   05ce260b, unpinned on the busy box, exited 0): the seam's own face-about probe on the Sumps navmesh, native, warm
   us/expansion early/late medians **222/214 (seed 92721, 119 plans) and 159/183 (seed 31337, 94 plans)**; the short
