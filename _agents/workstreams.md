@@ -338,6 +338,35 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
   **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
   flipped; native's statement covers the pair).
+- **Planner CP-P1 bar (filed 2026-10-15 ~04:00 PDT, before any judged number; DECLARED; the LAST attempt = the second
+  judged run; full text in planner Status `ea246430` "CP-P1 BAR (DRAFT v2)"):** candidate = the seam ON
+  (`--nav-off=planner`) at the hash the pair-tree check passes (`0914dafd` or successor), GDScript drive, C++ planner ON in
+  both arms; base = the same commit with `--brains-off=native_drive`. Declared change: for hulls ≥ 10 m (the War Rig
+  only), the k-turn block's and the at-rest face's plan source is replaced by the lattice planner's legs, driven by
+  PlannerExecutor. SLICE 2 counted, PENDING 90 ticks, one crew searched at a time. **Demand (census-4 `b37b9ecb`,
+  builder0 light, Sumps 25 a side, seeds 92721 / 31337):** long hulls are 2 of 50 and make 6 of 174 and 9 of 202
+  manoeuvre starts (3.4 % / 4.5 %); the rig's plan median is 131 expansions, giving ~0.05 ms a tick averaged and the seam
+  idle ~85 %. **Lines:** (a) Terminus census rigs + mixed, 13 fresh seeds 61–73, arrivals not down beyond 1.645 se each
+  squad, no early stop before 6; contact-ticks and `PlannerSeam.report()` REPORTED; `abandoned` / `queue_waits` /
+  `refused` REPORTED, never pass lines. (b) **DECIDING, the rig cases:** seed 31's and 51's Terminus grinds
+  (contact-ticks arm ≤ base + 1.645 se, arrivals not down), the squadmate pin (freed, no re-pin loop, pinned
+  crew-seconds reported), and the 180° arrival on a rig (three legs, not a gate). The six-cusp car is REPORTED, legs
+  per arm expected EQUAL, and a difference is a leak and parks. (c) scenario_cp2 on brains' 12 A/A seeds, the scout's
+  orbit unchanged (pass, no-change guard); the four named tests green on the pair tree with the switch ON first
+  (C31.1). (d) hull-rest 4 × 6, seeds 54–59, drawn and clicked: still-moving at 75 s ≤ base + **1.645 se**; at-rest error
+  not worse (p ≥ 0.05); settle paired median ≤ +6 s; the seam's face plans v plan_face's REPORTED for the rig class. (e)
+  bridge-pooled 18/18; fights 24 seeds within **1.645 se**. (f) Cost: SLICE × the probe's warm per-expansion median for
+  the longest live hull ≤ 0.5 ms (builder0 pinned 0–3, load quoted, an upper bound per R31.6); per-plan hold reported;
+  thirteen sim-baseline lines unmoved with the switch OFF. (g) The clip: the Terminus west-street rig before and after.
+  **Partial:** (a), (c), (d), (e) and (b)'s rig lines met = ships ON as a pair; (b)'s car line or (c) moved = a leak,
+  parked; (b)'s rig lines missed or a starved `abandoned` = a finding, parked with traces, and CP-P0 stays merged OFF.
+  **Orchestrator's changes before numbers:** (d) and (e) at 1.645 se, not 2 se (C31.3). **Owed before numbers:** (i)
+  (b)'s rig cases need an n: each named seed × a fixed set of tick offsets (the planner names the set, e.g. 6), so
+  "+ 1.645 se" has an se; (ii) Terminus 61–73 and hull-rest 54–59 confirmed fresh against round 30's planner and
+  manoeuvre tuning and judged seeds, and against M1b(2)'s 76–81 / 93–105 (no overlap seen).
+- **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
+  k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
+  the 3 s hold.
 - **Brains B5c-v5 bar (filed 2026-10-15 ~02:10 PDT, before any judged number; DECLARED; the LAST attempt; partial:
   none):** candidate = **round 30's v4 rule UNCHANGED** (`lab/brains-r30-gate` `f1a804eb`). It was parked only on the
   single pursuit cell, which R31.3's A/A puts inside a do-nothing nudge's noise, so it gets no re-scoping fitted to it
