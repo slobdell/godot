@@ -213,8 +213,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   grant, the decline line the only tank_brain edit; brains told), and (ii) round 29's facekeep (every pose of a face plan
   stays inside max(ORDER_ARRIVE, settle radius) − 0.75 m, or no further than it starts). Unit stage (builder0, light):
   rig 4 m short, 150° face, worst pose 6.76 → 3.93 m (keep 5.25), 19 steps refused over 9 cases. **Gate first (C31.1):**
-  the flipped tree with turnhull ON, `check NATIVE=off`, whole suite green, plus native's "none ported" for the face path
-  (plan_face, the decline) + `native-verify-scenarios`. Arms: both on the GDScript path (`M1_GD=1`), one arm per remote call
+  native confirmed NONE PORTED (~23:55 PDT: no C++ counterpart of plan_face, _face_legs or _order_move; wheeled face
+  orders already go back to GDScript at execute_native.cpp:363, so the only native effect is more hand-backs, a cost
+  line). **The gate is native's proof:** plain `make remote T=check` on a tree with `TURN_HULL_DEFAULT = true` (the
+  native path runs around it; a `--nav-off` arm would not), whole suite green with `native-verify-scenarios` inside it.
+  That one check is both the C31.1 gate and the ship check. Arms: both on the GDScript path (`M1_GD=1`), one arm per remote call
   (lesson 311); new = `M1_NEW_OFF=turnhull`, base = main, drawn AND clicked, same commit. Tuning: hull-rest seeds 40–41.
   **Judged fresh:** hull-rest seeds 76–81 (4 factions × 6 tasks × 6 = 144 runs an arm), Terminus census 93–105 (13),
   bridge-pooled's 18 cells. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret at rest:
