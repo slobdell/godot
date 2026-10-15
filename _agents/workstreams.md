@@ -334,6 +334,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   runs in the judged chain. **Condition (orchestrator): a red in any of them VOIDS the census.** Chain: unit
   `traffic-t1cb2`, scratch at `33cb2da5` (= `dc8fcbf6` + a make-echo fix only). Merge takes `33cb2da5`'s
   `mk/traffic.mk` line.
+  **Base arm in (~07:10 PDT, builder0, `33cb2da5`, seeds 41–46 × 3, n 18):** runs with any repack while firing =
+  **6/18** (10 repacks), below the filed precondition (base ≥ 8/18). **So line (1) is NULL as filed, and T1c-b2 cannot
+  ship on this run** (lesson 300; not re-read after the fact). Orchestrator: the ARM census runs for the record (its
+  repack count, artillery and guards REPORTED); the approach, cases and traffic-native-verify are STOPPED to free builder0.
+  T1c-b2 parks, and a player-terms question goes to him with the arm's numbers.
 - **Manoeuvre M1b(2) turn-the-hull bar (filed 2026-10-14 ~23:45 PDT, before any number; DECLARED; this is the FIRST run, a
   second on fresh seeds would be the last):** candidate stream/manoeuvre `44adcbbe` (+ tooling `eea19309`). ONE opt-in
   switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT` false) = (i) `TankBrain._order_move`'s decline lifted for a
