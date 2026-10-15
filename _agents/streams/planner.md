@@ -144,10 +144,33 @@ written down, memory bounded by the map). **Light twin GREEN on 17bd1ec8** (`mak
 exited 0, 4 passed 0 failed, builder0, unpinned, load 10.4; the same plans, costs, expansions and nodes as a3755e37).
 The orchestrator's ruling (R31.6): the price is accepted as an upper bound, no second quiet window this round; the
 cache merges only with its own planner-twin ALL green + native's review (both held now for 17bd1ec8; c158aecf, the
-signedness fix, and 3b5c0b34 need the next twin). **Running:** `planner-census1` on c158aecf (Sumps 25 a side, seeds
-92721 / 31337, 120 s, `--brains-off=native_drive`, the probe every 30 ticks: the offline T-junction AND the seam's own
-face-about request for the longest live hull on the arena navmesh, cold and warm quarters apart) -- SLICE and the
-cost-line budget come from its `nav_probe` row.
+signedness fix, and 3b5c0b34 need the next twin). **THE CENSUS (P6), builder0 light lane, c158aecf, Sumps 25 a side (50 hulls), `--brains-off=native_drive` (GDScript
+drive, C++ planner), 120 s, seeds 92721 / 31337, `build/light/build/planner/census-<seed>.log`:**
+
+| | seed 92721 | seed 31337 |
+|---|---|---|
+| ticks / plan events | 3590 / 373 | 2823 / 340 |
+| events a tick: mean, max | 0.104, 7 | 0.120, 7 |
+| ticks with 1 / 2 / 3+ events | 272 / 31 / 9 | 249 / 25 / 10 |
+| busiest second | 24 events (tick 34) | 28 events (tick 216) |
+| by kind: kturn / multi / none / face / face_none | 215 / 11 / 35 / 79 / 33 | 202 / 20 / 19 / 83 / 16 |
+| nav probe (the seam's face-about for the longest live hull): plans | 119 | 94 |
+| its codes OK / GOAL_BLOCKED / START_BLOCKED / BUDGET / NO_PATH | 80 / 28 / 9 / 2 / 0 | 33 / 35 / 23 / 2 / 1 |
+| expansions of an answer: median, max | 131, 3000 | 0 (refusals), 3000 |
+| us an expansion, cold quarter / warm quarter | 153 / 389 | 171 / 174 |
+| a refused plan (world build + refusal) | ~118 us | ~93 us |
+| cache at the end: chunks / hits / misses | 21 / 601.8 M / 47 125 | 21 / 193.0 M / 33 726 |
+
+Read: (1) **one plan event a tick is the normal case** (272 + 249 of 3000 ticks), two in 1 %, a burst of 3-7 in
+0.3 %: the one-deep queue serves it, a burst of 7 queues ~6 plans deep (the seam's `queue_waits` counter shows the
+cost in the judged run). (2) The in-fight price of the seam's own navmesh request was **~170 us an expansion WARM**
+with the cache hit 99.99 % of the time: ~1700 cell reads an expansion, each a hash lookup. **fd36ecd5** fills the
+search's window from the cache on a cell's first read (one lookup a cell a search); its twin + a second census are
+running (`planner-twin9`); SLICE is chosen from THAT census. (3) A quarter to a half of the probe's face-abouts are
+refused START_BLOCKED (the hull's own pose is in contact in the planner's world: wedged against a wall or a hull) or
+GOAL_BLOCKED (the turned-about footprint on the same spot clips something): in a 25-a-side press the seam's refusal
+path (today's code continues) will be exercised often; the judged run's `refused` counts are the measure, and a
+START_BLOCKED hull is exactly manoeuvre's unstick customer, not the planner's.
 
 ### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
 
@@ -338,6 +361,10 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:10 PDT: **the census landed** (c158aecf; the table in the report): ~0.1 plan events a tick at Sumps 25 a
+  side, bursts to 7; the seam's own navmesh request ~170 us an expansion WARM (hash lookup a cell read, 99.99 % hits).
+  fd36ecd5: the window fills from the cache on first read (flat reads inside the search); twin + census-2 running.
+  Native approved 3b5c0b34; its load guard is in check at stream/native 3331f81d (hazard 7: a C++ static holds plain data only).
 - 2026-10-15 ~02:45 PDT: **light twin GREEN on 17bd1ec8** (4/0, exit 0, builder0 light lane, load 10.4, unpinned);
   native APPROVED d373af4e + 17bd1ec8 with three notes, taken at 3b5c0b34 (`nav_cache_clear()`; the rebake assumption;
   `planner-census` builds the library first; its probe also plans the seam's own request on the arena navmesh);
