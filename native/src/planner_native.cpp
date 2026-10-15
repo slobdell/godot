@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/math.hpp>
+#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/packed_float64_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -236,6 +237,8 @@ Ref<NavNative> &PlannerNative::World::index() {
 	return nav_index;
 }
 
+PlannerNative::World::NavCache PlannerNative::World::nav_cache;
+
 // PlannerWorld.prepare
 void PlannerNative::World::prepare(double cx, double cz, double half) {
 	field_n = (int64_t)std::ceil(half * 2.0 / CELL_M) + 3;
@@ -243,6 +246,38 @@ void PlannerNative::World::prepare(double cx, double cz, double half) {
 	field_z0 = ifloor((cz - half) / CELL_M) - 1;
 	field.assign((size_t)(field_n * field_n), (float)UNSET);
 	spill.clear();
+	if (nav) {
+		const uint64_t iteration = (uint64_t)NavigationServer3D::get_singleton()->map_get_iteration_id(map);
+		if (nav_cache.map != map || nav_cache.iteration != iteration || nav_cache.bake_radius != bake_radius) {
+			nav_cache.chunks.clear();
+			nav_cache.map = map;
+			nav_cache.iteration = iteration;
+			nav_cache.bake_radius = bake_radius;
+			nav_cache.hits = nav_cache.misses = 0;
+		}
+	}
+}
+
+// A navmesh cell from the shared cache (computed on its first read by any plan of the match).
+float PlannerNative::World::cached_cell(int64_t ix, int64_t iz) {
+	const int64_t cx = ix >= 0 ? ix / CHUNK : -((-ix - 1) / CHUNK) - 1;
+	const int64_t cz = iz >= 0 ? iz / CHUNK : -((-iz - 1) / CHUNK) - 1;
+	const int64_t key = (cx + 1048576) * 2097152 + (cz + 1048576);
+	auto found = nav_cache.chunks.find(key);
+	if (found == nav_cache.chunks.end()) {
+		found = nav_cache.chunks.emplace(key, std::vector<float>((size_t)(CHUNK * CHUNK), (float)UNSET)).first;
+	}
+	std::vector<float> &chunk = found->second;
+	const size_t i = (size_t)((ix - cx * CHUNK) * CHUNK + (iz - cz * CHUNK));
+	float v = chunk[i];
+	if ((double)v > UNSET_BELOW) {
+		nav_cache.hits++;
+		return v;
+	}
+	nav_cache.misses++;
+	v = (float)wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
+	chunk[i] = v;
+	return v;
 }
 
 // PlannerWorld._wall_distance (the rectangles) / PlannerNavWorld._wall_distance (the navmesh).
@@ -279,9 +314,12 @@ double PlannerNative::World::wall_distance(double x, double z) {
 	return best;
 }
 
-// PlannerWorld._cell: a cell inside the window is stored float32 and RETURNED AS THE DOUBLE the first time it is
-// computed (the GDScript returns its local `v`, not the array element); every later read is the float32.
+// PlannerWorld._cell: a cell is the float32 the field stores, on its first read as on every later one (P6). A
+// navmesh world reads the shared per-match cache; a rectangle world (the tests) its own window and spill.
 double PlannerNative::World::cell(int64_t ix, int64_t iz) {
+	if (nav) {
+		return (double)cached_cell(ix, iz);
+	}
 	const int64_t cx = ix - field_x0;
 	const int64_t cz = iz - field_z0;
 	if (cx >= 0 && cz >= 0 && cx < field_n && cz < field_n) {
@@ -290,18 +328,17 @@ double PlannerNative::World::cell(int64_t ix, int64_t iz) {
 		if ((double)v > UNSET_BELOW) {
 			return (double)v;
 		}
-		const double computed = wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
-		field[i] = (float)computed;
-		return computed;
+		field[i] = (float)wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
+		return (double)field[i];
 	}
 	const int64_t key = (ix + 1048576) * 2097152 + (iz + 1048576);
 	auto known = spill.find(key);
 	if (known != spill.end()) {
-		return known->second;
+		return (double)known->second;
 	}
-	const double d = wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
+	const float d = (float)wall_distance(((double)ix + 0.5) * CELL_M, ((double)iz + 0.5) * CELL_M);
 	spill[key] = d;
-	return d;
+	return (double)d;
 }
 
 // PlannerWorld.clearance
@@ -570,6 +607,12 @@ void PlannerNative::parse_world(const Dictionary &d, World &w) {
 		w.nav = true;
 		w.map = (RID)d["map"];
 		w.bake_radius = (double)d.get("bake_radius", 2.0);
+		if (d.has("nav")) {
+			NavNative *shared = Object::cast_to<NavNative>((Object *)d["nav"]);
+			if (shared != nullptr) {
+				w.nav_index = Ref<NavNative>(shared); // the game's one index (NativeBridge.nav): no second build
+			}
+		}
 	}
 }
 
@@ -1010,10 +1053,43 @@ PackedFloat32Array PlannerNative::table(const Dictionary &request) {
 	return out;
 }
 
+Dictionary PlannerNative::nav_cache_stats() const {
+	Dictionary d;
+	d["chunks"] = (int64_t)World::nav_cache.chunks.size();
+	d["cells"] = (int64_t)(World::nav_cache.chunks.size() * (size_t)(World::CHUNK * World::CHUNK));
+	d["hits"] = (int64_t)World::nav_cache.hits;
+	d["misses"] = (int64_t)World::nav_cache.misses;
+	d["bake_radius"] = World::nav_cache.bake_radius;
+	return d;
+}
+
 Dictionary PlannerNative::debug_field() const {
 	Dictionary d;
 	PackedFloat32Array cells;
 	cells.resize((int64_t)world.field.size());
+	if (world.nav) {
+		for (int64_t cx = 0; cx < world.field_n; cx++) {
+			for (int64_t cz = 0; cz < world.field_n; cz++) {
+				const int64_t ix = cx + world.field_x0;
+				const int64_t iz = cz + world.field_z0;
+				const int64_t kx = ix >= 0 ? ix / World::CHUNK : -((-ix - 1) / World::CHUNK) - 1;
+				const int64_t kz = iz >= 0 ? iz / World::CHUNK : -((-iz - 1) / World::CHUNK) - 1;
+				auto found = World::nav_cache.chunks.find((kx + 1048576) * 2097152 + (kz + 1048576));
+				float v = (float)World::UNSET;
+				if (found != World::nav_cache.chunks.end()) {
+					v = found->second[(size_t)((ix - kx * World::CHUNK) * World::CHUNK + (iz - kz * World::CHUNK))];
+				}
+				cells[cx * world.field_n + cz] = v;
+			}
+		}
+		d["field"] = cells;
+		d["x0"] = world.field_x0;
+		d["z0"] = world.field_z0;
+		d["n"] = world.field_n;
+		d["spill"] = (int64_t)0;
+		d["shared"] = true;
+		return d;
+	}
 	for (size_t i = 0; i < world.field.size(); i++) {
 		cells[(int64_t)i] = world.field[i];
 	}
@@ -1037,6 +1113,7 @@ void PlannerNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tables_count"), &PlannerNative::tables_count);
 	ClassDB::bind_method(D_METHOD("wall_reads"), &PlannerNative::wall_reads);
 	ClassDB::bind_method(D_METHOD("debug_field"), &PlannerNative::debug_field);
+	ClassDB::bind_method(D_METHOD("nav_cache_stats"), &PlannerNative::nav_cache_stats);
 }
 
 } // namespace godot

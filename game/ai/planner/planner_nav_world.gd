@@ -33,6 +33,8 @@ func native_view() -> Dictionary:
 	var view := super.native_view()
 	view["map"] = map
 	view["bake_radius"] = bake_radius
+	if NativeBridge.available and NativeBridge.nav != null:
+		view["nav"] = NativeBridge.nav  # the game's one polygon index (native's review): the C++ field reads through it
 	return view
 
 

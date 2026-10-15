@@ -53,8 +53,9 @@ public:
 		bool nav = false; // PlannerNavWorld: the navmesh instead of the rectangles
 		RID map;
 		// The navmesh's closest point through NavNative's polygon index (round 23 N2a: the engine's own per-polygon
-		// code over a grid, equal bit for bit, tests/test_native_navmesh.gd), one index per process; the GDScript world
-		// asks the engine directly and the twin test holds the two to the same plan. A cell read on the engine's
+		// code over a grid, equal bit for bit, tests/test_native_navmesh.gd): the game's own index (NativeBridge.nav,
+		// handed in through the world's view as "nav") when there is one, else this instance's; the GDScript world asks
+		// the engine directly and the twin test holds the two to the same plan. A cell read on the engine's
 		// linear scan cost ~4 ms an expansion on the Terminus (builder0, 0c2d30c4); the index is the fix.
 		// Held PER INSTANCE (a C++ static Ref outlives the engine's ObjectDB and segfaults at exit: builder0, ad1d1f3d).
 		Ref<NavNative> nav_index;
@@ -62,8 +63,24 @@ public:
 		double bake_radius = 2.0;
 		std::vector<float> field; // the lazy window (UNSET until read), cx * n + cz
 		int64_t field_x0 = 0, field_z0 = 0, field_n = 0;
-		std::unordered_map<int64_t, double> spill;
+		std::unordered_map<int64_t, float> spill;
 		uint64_t wall_reads = 0; // measurement: _wall_distance calls (navmesh queries in play)
+		// Round 31 (P6): a NAVMESH's cells outlive one search. The walls do not move within a map's iteration, so a
+		// cell's clearance is one float32 for the whole match: computed once by whichever plan first reads it, read by
+		// every plan and every instance after (the cold-start cost of a plan -- ~1 ms an expansion on the Terminus at
+		// a3755e37 against ~50 us warm -- is paid once per cell per match, not once per plan). Keyed by the map, its
+		// iteration id and the bake radius; dropped when any of them moves. Chunks of CHUNK x CHUNK cells. Plain data
+		// (no godot Ref) so a static is safe. The rectangle worlds of the tests keep the per-search window.
+		static constexpr int64_t CHUNK = 64;
+		struct NavCache {
+			RID map;
+			uint64_t iteration = 0;
+			double bake_radius = -1.0;
+			std::unordered_map<int64_t, std::vector<float>> chunks;
+			uint64_t hits = 0, misses = 0;
+		};
+		static NavCache nav_cache;
+		float cached_cell(int64_t ix, int64_t iz);
 
 		void prepare(double cx, double cz, double half);
 		double wall_distance(double x, double z);
@@ -168,6 +185,8 @@ public:
 	int64_t table_build_usec() const { return last_table_build_usec; }
 	int64_t tables_count() const { return (int64_t)tables_built; }
 	int64_t wall_reads() const { return (int64_t)world.wall_reads; }
+	// The shared navmesh cache: cells held, hits and misses since the map's iteration (measurement).
+	Dictionary nav_cache_stats() const;
 	// The last session's lazy field as the GDScript world holds it after its plan (`_field`, `_field_x0`, `_field_z0`,
 	// `_field_n`, the spill's size): the twin test compares the cells bit for bit.
 	Dictionary debug_field() const;
