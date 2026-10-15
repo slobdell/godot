@@ -62,6 +62,7 @@ static var queue_waits := 0       # hull-ticks waited behind another crew's sear
 static var _crews := {}           # name -> Crew
 static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
+static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 
 
 class Crew:
@@ -103,6 +104,17 @@ static func live(crew_name: String) -> bool:
 	return on() and _crews.has(crew_name)
 
 
+## Round 31 (manoeuvre's ask through the orchestrator, measurement only): this hull's LAST refusal as
+## [physics frame, code] (`PackedPlan.START_BLOCKED` etc.), or [] when there has been none or the switch is OFF.
+## Manoeuvre counts an escape begun within 3 s of a START_BLOCKED refusal (`esc_after_refusal`) and the hull moving
+## >= 1.5 m within 5 s of one (`refusal_then_free`). Read-only; no Movement member.
+static func last_refusal(crew_name: String) -> Array:
+	if not on():
+		return []
+	var last: Variant = _last_refusal.get(crew_name)
+	return [] if last == null else (last as Array).duplicate()
+
+
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
@@ -121,6 +133,7 @@ static func reset() -> void:
 	pending_ticks = 0
 	driving_ticks = 0
 	queue_waits = 0
+	_last_refusal = {}
 	_release_all()
 
 
@@ -276,6 +289,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		return false
 	if plan.code != PackedPlan.OK:
 		refused[plan.code] = int(refused.get(plan.code, 0)) + 1
+		_last_refusal[name] = [tick, plan.code]
 		_release(name)
 		_retry_until[name] = tick + RETRY_TICKS
 		return false
@@ -345,7 +359,8 @@ static func capture() -> Dictionary:
 	var crews := {}
 	for name: String in _crews:
 		crews[name] = (_crews[name] as Crew).copy()
-	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report()}
+	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
+			"last_refusal": _last_refusal.duplicate(true)}
 
 
 static func restore(snapshot: Dictionary) -> void:
@@ -356,6 +371,7 @@ static func restore(snapshot: Dictionary) -> void:
 		_crews[name] = (snapshot["crews"][name] as Crew).copy()
 	_queue.assign(snapshot["queue"])
 	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
+	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
 	var counters: Dictionary = snapshot["counters"]
 	requests = int(counters["requests"])
 	plans = int(counters["plans"])

@@ -48,6 +48,7 @@ func test_the_switch_is_off_by_default_and_the_seam_is_never_asked() -> void:
 			await lab.step()
 		assert_eq(PlannerSeam.requests, 0, "OFF: no plan was requested")
 		assert_true(not PlannerSeam.live("Green_P_1"), "OFF: live() is false")
+		assert_eq(PlannerSeam.last_refusal("Green_P_1"), [], "OFF: last_refusal() is []")
 		lab.dispose())
 
 
@@ -146,6 +147,7 @@ func test_capture_and_restore_round_trip_the_seam_state() -> void:
 		assert_eq(JSON.stringify(after["counters"]), JSON.stringify(snapshot["counters"]), "the counters come back")
 		assert_eq(Array(after["queue"]), Array(snapshot["queue"]), "the queue comes back")
 		assert_eq((after["crews"] as Dictionary).keys(), (snapshot["crews"] as Dictionary).keys(), "the crews come back")
+		assert_eq(JSON.stringify(after["last_refusal"]), JSON.stringify(snapshot["last_refusal"]), "the last refusals come back")
 		for name: String in snapshot["crews"]:
 			var a: PlannerSeam.Crew = snapshot["crews"][name]
 			var b: PlannerSeam.Crew = after["crews"][name]
