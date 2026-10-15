@@ -166,6 +166,21 @@ probe "traffic-census (3 arenas x seeds)".
 **Early stop (C31.3):** `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'` (table sd; the rate
 line's p0 = round 30's base 4/9); stop only on a row where all read SERIES PASS/FAIL; (1)'s Fisher reads the rows that ran.
 
+### T3b-c JUDGED — FAIL on one filed line (the Terminus crossing clock); not shipped (last attempt, no partial)
+
+Builder0, pair tree `f5dc4147` (native 413252ea + traffic ab3351fb, turns ON), GDScript path (`--brains-off=native` both
+arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turns`, full grid (no early stop). Verdict
+`references/round31/traffic/t3bc_verdict_f5dc4147.txt` (`turns_verdict.py --allow yard_open/cross=3.0`):
+- **Terminus crossing clock +2.61 s (se 0.55) v limit +2.07 (0.10 × 11.7 + 1.645 se): FAIL.** A steady shift, not a
+  wedge: 16/18 later; worst s43/t1 +5.3 s (squad B, the yielder, 9.5 → 16.3 s); B's own crossing +4.22 s (se 0.64), A's
+  −1.09. Round 30's seeds 31–33 read −1.17 s here.
+- **Yard crossing clock (his line) +3.38 s (se 0.26) v +3.43: pass** (narrowly).
+- Between-squad fast pooled 191 → 117 (−39 %) pass (Terminus 93 → 61, yard 98 → 56); crews 176→178, 167→168, 176→176,
+  179→179; no wedge in the arm (base had two); same-squad 148→149, 145→148; head-on cases within 1.645 se; all-in median
+  reported Terminus 39.5 → 32.9, yard 66.4 → 75.5.
+- Hook (table sd): yard SERIES PASS at run 7, head-ons PASS (6, 18), Terminus SERIES FAIL at 18 (xclear, truncation).
+- Worst run's trace (s43/t1, both arms) queued (`traffic-t3bc-trace`).
+
 ### Gate results so far
 
 - **T3b-c C31.1 gate PASSED** (native's pair tree `f5dc4147` = native 413252ea + traffic ab3351fb + `DEFAULT_OFF = []`;
@@ -183,7 +198,10 @@ line's p0 = round 30's base 4/9); stop only on a row where all read SERIES PASS/
 
 ### Questions for the lead
 
-None.
+1. **(T3b-c, his call)** "At a Terminus street crossing, the squad that gives way now also gets through about 2.6 s later.
+   It's the same rule and about the same price as the yard's ~3 s you accepted, and the two squads bump about a third
+   less there (93 → 61 hard bumps)." **Recommendation: yes, let his ~3 s cover both crossings.** If he agrees, the rows
+   already judged pass that line (+2.61 ≤ 3.0 + 1.645 × 0.55), and the pair ships as checked (f5dc4147).
 
 ### Requests to other streams
 
