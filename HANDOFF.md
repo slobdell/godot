@@ -41,7 +41,7 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
 **Merged ~07:30 PDT: manoeuvre `cd47c475` → main `441eabb0`** (H1's terrain fallback R31.5, OFF; its check exited 0,
-2629/0); also `777d2cb8` (native's four missing .uid files). Main checks: `298e4498` running (`orch-main-check2`), then
+2629/0); also `777d2cb8` (native's four missing .uid files). **MAIN GREEN at `298e4498`** (builder0 `>> remote: make check exited 0`, 2629 passed / 0 failed, sim-baseline 13 maps unmoved; remote-guard-test passed, so the pair's red was a load flake). Next,
 `orch-main-check3` chained for the batch `950c7681` + `777d2cb8` + `441eabb0` (log `main-check-batch3.log`).
 **Merged ~05:20 PDT: planner CP-P0 `41212da0` → main `950c7681`** (the C++ lattice planner equal to the GDScript one, and
 the seam behind `--nav-off=planner`, OFF; its check exited 0, 2615/0). The only conflict was OFF_NAMES, resolved as
