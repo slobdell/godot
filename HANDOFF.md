@@ -37,7 +37,9 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-**Merged 2026-10-15 ~05:00 PDT: pair/cph `9e1000d6` → main `298e4498`** (manoeuvre `197a65da` + native `2fb03dab`,
+**Merged ~05:20 PDT: planner CP-P0 `41212da0` → main `950c7681`** (the C++ lattice planner equal to the GDScript one, and
+the seam behind `--nav-off=planner`, OFF; its check exited 0, 2615/0). The only conflict was OFF_NAMES, resolved as
+the sorted union, so it is UNCHECKED on main until the next main check (queued after `298e4498`'s). **Merged 2026-10-15 ~05:00 PDT: pair/cph `9e1000d6` → main `298e4498`** (manoeuvre `197a65da` + native `2fb03dab`,
 every CP-H default OFF: H1–H3, turnhull, yield_to_plan, the CP-H runner, native's mirrors and exec_fields rows). Its pair
 check was 2624/0 with remote-guard-test red alone, a slot.sh timing test in an isolated dir that went red in a different
 group on re-run at load ~20; the pair touches no tools/. Main check RUNNING (unit `orch-main-check2`, log
