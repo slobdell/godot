@@ -463,6 +463,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   only the mechanism differs, manoeuvre may pin the test to the planner OFF on condition the planner adds an outcome
   assertion with the seam ON. If it doesn't hold, it's a finding against CP-P1. The judged series stays held until a
   re-cut gate is green.
+  **The outcomes, set by manoeuvre before the traces (~07:00 PDT):** test_kturn_three_point = the rig ARRIVES and
+  turns away in ≤ 3 LEGS (gear segments of its actual motion), wall contact ≤ base (today 2 legs, 5.6 s, 0 contacts);
+  his sentence "a vehicle should be able to do a 3 point turn". **4 real legs is a finding.** test_nav_face_recovery's
+  wedged semi = the footprint never yaws through the wall (RESIDUAL_BAR_M, yaw < 20°) AND it is never silent (it faces,
+  or is reported unable within a few seconds); a planner refusal followed by today's give-up report satisfies it.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
