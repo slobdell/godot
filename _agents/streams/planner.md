@@ -437,6 +437,13 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~04:30 PDT: **CP-P1's gate hash is native's pair/cpp1-on aa0615e4** (stream/native's mirror + the seam
+  86e5c646 + PLANNER_DEFAULT true + native's new test_native_planner_seam: a War Rig in the west street, drive + unstick
+  twinned every tick through capture()/restore(), held >= 30 compared drives; it replaces ef38361f, which never got a
+  slot; the earlier light twin on 0914dafd + the mirror: 90/0, 0 mismatches). Its plain check runs first in native's
+  chain (native-chain4); its exited line clears the series. Told native the proven take is the FACE order (the seam
+  test's rig: taken 4 ticks after the order), and the two k-turn takes' conditions (a point straight behind is never
+  inside the circle; the blocked arc needs the wall within KTURN_HIT_WITHIN_M).
 - 2026-10-15 ~04:15 PDT: **the judged chain's wrappers** (29930949, mk/planner.mk): `planner-judge-hull-rest`,
   `planner-judge-fights`, `planner-judge-bridge`, `planner-judge-cp2`, each `PLANNER_JUDGE_ARM=base|candidate` (one arm a
   call, lesson 311), both arms `--brains-off=native_drive` with the C++ planner on, the candidate + `--nav-off=planner`;
