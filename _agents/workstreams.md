@@ -297,6 +297,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   *Owed to him*): his round-31 call kept "the Terminus clock within its se". Accepting ~2.6 s there too is his decision.
   If yes, these judged rows pass on his line (+2.61 ≤ 3.0 + 0.90) with no re-run, because the line would then be his,
   set before he sees a re-run. Native `413252ea` stays unmerged until then.
+  **Brains' B9 trace (~05:40 PDT, terminus cross s33 t1, round 30's worst, n = 1, builder0 GDScript):** T3b alone gives
+  all-in 61.4 s; T3b + v4's gate gives 27.5 s, 10/10 (main's base 33.7). The +27.7 s was B_4 circling its arrival gate,
+  which v5 fixes. That concerns the ALL-IN, not the failing crossing clock (traffic: the yielder clears at 16.3 s, long
+  before any seat circling), so the question to him is unchanged. **If T3b is ever re-judged, it pairs T3b on top of v5
+  v v5 alone.**
   **C31.1 gate PASSED (~00:05 PDT 10-15):** pair tree `pair/t3b` = `f5dc4147` (native `413252ea` + traffic `ab3351fb` +
   `DEFAULT_OFF = []`), builder0 `>> remote: make check exited 2`, 2624 passed / 0 failed, 25 of 26 targets passed, the
   sim-baseline alone failed, with all 13 maps moved as a turns-ON tree must (one read each; two reads at adoption).
