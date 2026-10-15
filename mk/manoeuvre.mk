@@ -70,16 +70,20 @@ M1_BASE_OFF ?= faceslot
 # and the base arms none (M1_BASE_OFF=). Both arms run the GDScript path when either names a --nav-off (any list
 # leaves native's drive): put --brains-off=native in M1_FLAGS for such a pair.
 M1_NEW_OFF ?=
+# make remote's T is word-split: M1_GD=1 appends --brains-off=native to every arm; M1_SEEDS=a-b replaces HULL_SEEDS.
+M1_GD ?=
+M1_SEEDS ?=
+M1_SEED_LIST = $(if $(M1_SEEDS),$(shell seq $(subst -, ,$(M1_SEEDS))),$(HULL_SEEDS))
 .PHONY: manoeuvre-hull-rest
 manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
 	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
-	for arm in $(M1_ARMS); do for faction in $(HULL_FACTIONS); do for seed in $(HULL_SEEDS); do for task in $(_FACING_TASKS); do \
+	for arm in $(M1_ARMS); do for faction in $(HULL_FACTIONS); do for seed in $(M1_SEED_LIST); do for task in $(_FACING_TASKS); do \
 		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
 		d=$(M1_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
 		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=$(if $(M1_BASE_OFF),--nav-off=$(M1_BASE_OFF));; new_*) off=$(if $(M1_NEW_OFF),--nav-off=$(M1_NEW_OFF));; esac; \
 		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-			--no-element-cpu $$click $$off $(M1_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
 	$(PYTHON) tests/manoeuvre/hull_rest_ab.py $(M1_DIR)
