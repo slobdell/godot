@@ -468,6 +468,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   his sentence "a vehicle should be able to do a 3 point turn". **4 real legs is a finding.** test_nav_face_recovery's
   wedged semi = the footprint never yaws through the wall (RESIDUAL_BAR_M, yaw < 20°) AND it is never silent (it faces,
   or is reported unable within a few seconds); a planner refusal followed by today's give-up report satisfies it.
+  **Read against them (~07:15 PDT, native's log): both are FINDINGS, to be fixed before the series and re-gated.** (1)
+  k-turn ON arrived in 7.2 s with 0 contacts, but its plans are 4 legs each (plan_legs 20 over 5 plans) against today's 2
+  legs / 5.6 s. The fix is in the planner's gear-change cost, re-tuned on the named fixtures (turnround rig 3 legs,
+  six-cusp car ≤ 3). (2) The wedged semi's corridor is a StaticBody3D added after the bake, which the planner's world
+  (navmesh walls + living hulls) cannot see: 2 plans, 2 aborts, 6 s into the slabs, and the give-up never checked in 8 s
+  ("never silent" FAILS; footprint 0.03 m over, yaw 6.3°, holds). **Ruling: unbaked scenery and WRECKS are in CP-P1's
+  scope**, since they occur in every fight. The fix is either static colliders and wrecks in the planner's snapshot, or
+  the face kind handing back after its first abort. No pin of manoeuvre's tests.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
