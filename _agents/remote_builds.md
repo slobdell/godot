@@ -317,6 +317,19 @@ and that coincidence hid it. **Several rounds of "still waiting for a slot, noth
 a missing result is a killed wrapper before concluding builder0 is merely busy: `ps -o pid,etime,args -p <pid>` on the
 wrapper, and `readlink /proc/<pid>/cwd` to confirm whose it is.
 
+**Round 31 (2026-10-14/15): BACKGROUNDING IS NOT ENOUGH. Detach it.** With builder0 queued ten deep, backgrounded
+wrappers (the Bash tool's `run_in_background`) were ALSO killed, at ~25–33 min of slot wait. That happened to the
+orchestrator's main check, brains' B8 gate (its remote half finished, but nothing was copied back and no exited line
+printed) and manoeuvre's two checks (its session's memory guard). **The rule now:**
+`setsid nohup make remote T=check > <log> 2>&1 < /dev/null &`, then read `>> remote: make check exited <N>` from the log.
+A result with no exited line is NOT a result.
+
+**A hung import holds a slot for the full 5400 s timeout.** On 2026-10-14 traffic's check sat 70 min in
+`Godot --import` (5 s of CPU, `futex_do_wait`) with load 1.95, while ten jobs queued. To spot one: `ps -o
+pid,etime,time,pcpu,wchan:20,args` on the slot owner's processes on builder0. A Godot with minutes of elapsed time,
+seconds of CPU and a futex wait is hung. The orchestrator kills it by cwd (`readlink /proc/<pid>/cwd`) and tells the
+owner.
+
 **If you find an orphaned remote run** (local wrapper dead, builder0 side alive), kill the remote side by cwd before
 relaunching, or two runs will `rsync --delete` into the same builder0 folder — lesson 52.
 
