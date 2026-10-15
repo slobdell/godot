@@ -397,6 +397,13 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   26 runs. Reported: contact-ticks rigs 8945 → 7662 (−14 %, se 2221), mixed 2475 → 1738 (−30 %, se 481); "a face left the
   slot" leg misses rigs 19 → 21, mixed 14 → 9. Bridge, the four-arm hull-rest (seeds 48–53, 576 runs, ~2 h) and rigs seed
   21 follow; M2b after.
+  **M1b hull-rest: one remote call with four arms (576 real-time runs) hit builder0's 90-minute run cap** (make exited 124
+  at 18:30): new_drawn, base_drawn, new_clicked complete at 144 each, base_clicked cut at 61, 9 files flagged corrupt by
+  the copy-back (runs killed mid-write); the seed-21 reruns then refused by the wrapper's stale-run guard. Lesson: ONE
+  hull-rest arm per remote call (round 29's note). base_clicked re-runs alone (REMOTE_FORCE=1 once, after a cwd-verified
+  zero processes), then seed 21; the (a)(b)(c) tables read only when complete. (e) bridge-pooled 18/18. Preliminary (two
+  complete drawn arms, not a verdict): at-rest medians within noise (permutation p 0.38–0.93 on the ALL rows), attack-move
+  ALL 23.1 → 15.9°, wheels/fixed p90 61.1 → 9.2°.
 - **Manoeuvre M2b bar — the creep lift on M4b + the planner's two executor fixes (pre-registered 2026-10-14 ~14:35 PDT,
   before any judged number; DECLARED; FIRST run, a second on fresh seeds would be the last; full text in the stream's
   Status):** candidate `lab/manoeuvre-m2b` `e94ca27e` (re-based onto M4b2 `77a1603f` as `acf29cb2`, no code change) (tests builder0 3/0: a War Rig's 10 m reverse leg drives 10.03 m by the arc rule v 10.31 by the chord; a paced IFV and a gang catapult roll a 120° open-ground turn with 0 gear changes v 14 and 23) = M4b `e8bfef2e` + round 29's creep lift
