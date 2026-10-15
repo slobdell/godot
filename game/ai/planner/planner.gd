@@ -24,7 +24,8 @@ const LEG_MAX_M := 24.0
 const HEADING_BINS := 24        # 15 degrees (the coarse lattice; the fine retry uses FINE_BINS)
 const FINE_BINS := 36           # 10 degrees
 const FINE_CELL_M := 0.5
-const STEERS: Array[float] = [-1.0, 0.0, 1.0]  # full lock either way, or straight: the legs the lead asked for
+const STEERS: Array[float] = [-1.0, -0.5, 0.0, 0.5, 1.0]  # full lock, HALF lock (round 31: the pursuit law's gentle arc,
+    # which a 14 m hull needs to leave a 22 m street in a 3-point turn), or straight; the plant's yaw is linear in `turn`
 const MARGIN_M := 0.4           # the k-turn's KTURN_MARGIN_M: outline points this far from a face, so bars compare
 const EPSILON := 1.5            # weighted A*: the first plan is within 1.5x the lattice's best; PlanRequest.epsilon overrides
 ## Anytime: after the first plan the search goes on while the budget lasts and the open list's best UNWEIGHTED
