@@ -71,7 +71,7 @@ struct Timed {
 // Every member and static name drive touches, made once.
 struct N {
 	// Movement members
-	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" };
+	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" }, avoid_shape{ "avoid_shape" };
 	StringName ctl{ "ctl" }, _repair_for{ "_repair_for" }, _repair_to{ "_repair_to" }, _goal{ "_goal" },
 			_order_ticks{ "_order_ticks" }, arc_live{ "arc_live" }, _arrive{ "_arrive" }, _remaining{ "_remaining" },
 			_deflected{ "_deflected" }, _give_way_left{ "_give_way_left" }, _blocked_ticks{ "_blocked_ticks" },
@@ -527,8 +527,15 @@ struct Drive {
 		const double slow = clampd((double)v._remaining() / c.SLOW_RADIUS, 0.35, 1.0);
 		const double max_speed = tank->get(k.max_forward_speed);
 		const double desired = max_speed * speed_factor * slow;
-		const Vector2 preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: scalars narrowed
+		const Vector2 route_preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: narrowed
 		const String name = tank->get_name();
+		// Round 31 (traffic T3b, his call: TAKE TURNS): two friendly squads crossing take turns; Traffic.shape slows the
+		// yielding squad's wish and ORCA keeps everyone clear of it (NativeTraffic.avoid_shape: off("turns"), refresh,
+		// shape).
+		Vector2 preferred = route_preferred;
+		if (!held && c.traffic_shape) {
+			preferred = gd(c.native_traffic, k.avoid_shape, name, ctl->get(k.tanks_root), route_preferred);
+		}
 		const String unit = tank->get(k.unit_id);
 		const double *known = c.radius_of.getptr(unit);
 		double radius;
@@ -567,7 +574,7 @@ struct Drive {
 		} else {
 			chosen = gd(av, k.solve, name, position, velocity, preferred, max_speed, radius, delta, cap);
 		}
-		if ((double)chosen.distance_squared_to(preferred) < 0.04) {
+		if ((double)chosen.distance_squared_to(route_preferred) < 0.04) {
 			return;
 		}
 		const double speed = chosen.length();

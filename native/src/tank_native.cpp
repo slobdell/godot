@@ -570,6 +570,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		c.HOLD_SLOW_M = config["HOLD_SLOW_M"];
 		c.LIVE_TICKS = config["LIVE_TICKS"];
 	}
+	c.traffic_shape = c.traffic_hold && (bool)config.get("traffic_shape", false);
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();

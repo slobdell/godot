@@ -67,6 +67,9 @@ struct DriveConfig {
 	// (Traffic.refresh + Traffic.hold_of: the table work stays traffic's GDScript) and the C29.3 gates read
 	// Traffic.holding natively from its `_live` table.
 	bool traffic_hold = false;
+	// Round 31 (traffic T3b, C31.2): the crossing. traffic_shape is false on a tree without Traffic.shape; with it, _avoid
+	// calls NativeTraffic.avoid_shape back once the route's wish is known (the verdicts stay traffic's GDScript).
+	bool traffic_shape = false;
 	double HOLD_REACHED_M = 2.5, HOLD_SLOW_M = 16.0;
 	int64_t LIVE_TICKS = 3;
 	Object *traffic_script = nullptr, *native_traffic = nullptr;
