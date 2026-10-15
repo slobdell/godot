@@ -302,6 +302,14 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~00:20 PDT: **the seam's request lines RE-PLACED** (a correction to the draft's "first line of
+  `_planned_reverse`", which that function's every-tick cadence would have turned into a plan request for every routed
+  wheeled hull): `PlannerSeam.hold()` at the top of `_planned_reverse` and of `face_turn` only CONTINUES a crew the seam
+  holds (never asks); `PlannerSeam.take()` asks at the three points today's code makes a plan: the circle plan (a hull
+  near rest with the carrot inside its circle), the blocked forward arc (after the `KTURN_HIT_WITHIN_M` test, where the
+  back-and-fill is searched) and the face after its aligned test. So a hull mid k-turn leg is never taken (the leg block
+  returns before the request lines). Manoeuvre's R31.2 (H): `mover.yield_to_plan()` once on the first take (their
+  9b257348) — PENDING until it reaches main; the call site is marked in `_request`.
 - 2026-10-14 ~23:40 PDT: the orchestrator's correction taken: every Godot run on builder0 from here (C31.7), the laptop
   only for parse checks. `make remote T="planner-twin PLANNER_CPUS=0-3"` queued on builder0 (position 6 of 9 behind
   traffic's and brains' two checks). **P7 coded, OFF**: `game/ai/planner/planner_seam.gd` (`PlannerSeam.take` at the two

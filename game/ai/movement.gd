@@ -1262,6 +1262,9 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		# ends within the settle radius of THAT spot, so a minute of facings never walks the hull off its slot.
 		_face_home = here
 	_face_tick = tick
+	# Round 31 (planner CP-P1, R31.2): a face the lattice planner's seam holds is driven by it to its end (the request
+	# is made below, after the aligned test).
+	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "face", _face_home, delta): return true
 	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
 		return false  # a planned leg here could not be driven (a wedge the plant refuses): the creep and its give-up
 	if _face_left_m > 0.0:
@@ -3319,8 +3322,9 @@ func straight_and_clear() -> bool:
 ## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
 ## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
 func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
-	# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, before today's plan is made (`--nav-off=planner`).
-	if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
+	# Round 31 (planner CP-P1, R31.2): a crew the lattice planner's seam holds (a plan pending or being driven) is driven
+	# by it; the seam ASKS only where this function decides a plan is needed (the two `take` lines below).
+	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "kturn", waypoint, delta): return true
 	var tank := ctl.tank
 	if _kturn_left_m > 0.0:
 		if not _kturn_rolling:
@@ -3396,6 +3400,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		print("MANOEUVRE_TRACE planner look f %d v %.2f inside %s err %.0f" % [Engine.get_physics_frames(), tank.speed(),
 				_inside_circle(here, forward, waypoint), rad_to_deg(error)])
 	if circle_plan_on() and _away_here() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
+		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, where the circle plan would be made (`--nav-off=planner`).
+		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 		var lock := -1.0 if error >= 0.0 else 1.0
 		var circle_map := tank.get_world_3d().navigation_map
 		if _plan_circle(cmd, circle_map, _kturn_frame(tank), here, forward, lock, waypoint):
@@ -3435,6 +3441,9 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
 			_ease_for(_kturn_hit_m)
 		return false
+	# Round 31 (planner CP-P1, R31.2): the forward arc is blocked within reach: the lattice planner's seam, where the
+	# back-and-fill would be planned (`--nav-off=planner`).
+	if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 	if lazy:
 		for i in KTURN_OUTLINE.size():
 			_lazy_start_at(i)

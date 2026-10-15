@@ -131,8 +131,22 @@ static func _release_all() -> void:
 	_retry_until.clear()
 
 
-## The seam's one entry. `target`: the k-turn's steering point, or the face's home; `want`: the face's wanted heading.
+## The seam's two entries. `take` is called WHERE today's code decides a plan of legs is needed (the k-turn's blocked
+## arc, the circle rule, a face at rest that is not aligned): it asks for a plan if the crew is free, or continues the
+## one it holds. `hold` is called at the TOP of those functions every tick: it only continues a crew the seam already
+## holds (a plan pending or being driven), never asks. `target`: the k-turn's steering point, or the face's home;
+## `want`: the face's wanted heading.
 static func take(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float, want := Vector3.ZERO) -> bool:
+	return _serve(mover, cmd, kind, target, delta, want, true)
+
+
+static func hold(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float) -> bool:
+	if not _crews.has(String(mover.ctl.tank.name)):
+		return false
+	return _serve(mover, cmd, kind, target, delta, Vector3.ZERO, false)
+
+
+static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vector3, delta: float, want: Vector3, may_ask: bool) -> bool:
 	var tank := mover.ctl.tank
 	var name := String(tank.name)
 	if mover.wheel_radius() <= 0.0 or not tank.is_alive() or Traffic.holding(name):
@@ -144,7 +158,7 @@ static func take(mover: Movement, cmd: TankCommand, kind: String, target: Vector
 		_release(name)  # another kind of order, not asked for a while, or a new goal: whatever was planned is stale
 		crew = null
 	if crew == null:
-		if int(_retry_until.get(name, -1)) > tick:
+		if not may_ask or int(_retry_until.get(name, -1)) > tick:
 			return false
 		crew = _request(mover, kind, target, want, tick)
 		if crew == null:
@@ -187,6 +201,9 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	req.budget = BUDGET
 	req.horizon_m = HORIZON_M
 	req.in_world(PlannerNavWorld.for_tank(tank, mover.ctl.tanks_root))
+	# R31.2 (H), manoeuvre's condition: on the tick a hull is first taken, `mover.yield_to_plan()` ends a half-driven
+	# k-turn leg and both escapes and clears the stall and press clocks, so nothing resumes on release. The call lands
+	# here when stream/manoeuvre 9b257348 reaches main (no shim, the orchestrator's ruling): PENDING at this commit.
 	var crew := Crew.new()
 	crew.kind = kind
 	crew.req = req
