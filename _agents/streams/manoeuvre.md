@@ -171,7 +171,7 @@ survive.
 3. CP-H when the orchestrator calls it (bar before numbers).
 4. M1b(2) turn-the-hull (`turnhull,facekeep` one flag; the `_order_move` decline lifted under it, C31.8).
 
-### CP-H bar (C31.4; sent to the orchestrator 2026-10-15 ~03:20 PDT, before any number)
+### CP-H bar (C31.4; sent 2026-10-15 ~03:20 PDT before any number; FILED at main with two changes: fights 1.645 se, seeds 214–237)
 
 **Tree:** R31.4's ONE tree (main with every consumer merged OFF + native's mirrors), built by native; the arms are flags
 on that one commit, both on the **GDScript path** (`--brains-off=native` in every arm; `make manoeuvre-cph` refuses an
@@ -180,7 +180,7 @@ arm without it, R31.1). **Arms:** OFF = `--brains-off=native`; ALL = `--nav-off=
 (the same list without `--traffic-off=ghost`), the case named in the bar's block when the series starts; each consumer
 ALONE (unstickback, kturnarc, realspeed, realslow, and ghost when T4 is in), REPORTED on the SAME judged seeds. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
 them):** Terminus census and drive 110–122 (13), hull-rest 84–89 (4 factions × 6 tasks × 6 = 144 runs an arm, one arm per
-remote call, lesson 311), fights 190–213 (24), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
+remote call, lesson 311), fights **214–237** (24; moved by the orchestrator before numbers: 190–213 overlapped CP-P1's 181–204), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
 - (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each; early stop by
   `sequential.py arrived:guard:0.10`, never before 6 seeds, the row recorded.
 - (b) Terminus wall contact-ticks, rigs and mixed apart (rows 74, 76): ≤ base + 1.645 se paired, each, with and without
@@ -190,7 +190,7 @@ remote call, lesson 311), fights 190–213 (24), bridge-pooled's 18 cells. **Pas
 - (d) hull-rest crews still moving at 75 s, per task (rows 62–63): ≤ base + 1.645 se, se quoted.
 - (e) nav-terminus-drive's PINNED and STUCK rows (`pinned_table.py`): down (count form), reported per squad.
 - (f) bridge-pooled 18/18 (a 17/18 read by the cell's trace, lesson 302).
-- (g) fights at 24 seeds (rows 69–71): kills, deaths, hit rate within 2 se; hit rate on touching targets REPORTED (H3).
+- (g) fights at 24 seeds (rows 69–71): kills, deaths, hit rate within **1.645 se** (the orchestrator's change before numbers, C31.3); hit rate on touching targets REPORTED (H3).
 - (h) `scenario_cp2` (the scout orbit), `test_tactics_mixed_legs` (the Sumps causeway), `test_nav_wall_contact::
   test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (round 30's wall-backing stage, R31.5's condition 2) and
   the WHOLE suite green on native's ON pair tree (the ship check).
