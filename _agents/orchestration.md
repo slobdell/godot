@@ -113,9 +113,13 @@ make remote T=check                                     # or make check; fix int
   `build/sim_state_hash.txt` over `tests/baselines/`, and say why in the commit. Hashes are per glibc version.
 - Merging several independent branches back to back and checking once at the end is fine (the lead agreed); each
   merge is its own commit, so a failure can be bisected.
-- **No second check of the same code (round 29, builder0 throughput).** When main's code after a merge equals the tree
-  the worker's green check ran on (`git diff <green> HEAD -- game native tests mk tools Makefile` is empty), that check
-  covers main: record it and run none. Otherwise batch the merges waiting and run ONE main check after the batch.
+- **No second check of the same code (round 29; tooled in round 31, when the orchestrator forgot it and re-checked
+  identical trees for most of a day).** After every merge run `tools/merge_check_needed.sh <green-hash>`. `INHERIT`
+  (exit 0) means every file a check can read is identical to the tree the worker's green check ran on: record "main
+  <hash> inherits <green>'s check" in HANDOFF and run NONE. `CHECK` (exit 1) lists the files that differ (usually main
+  moved after the branch was cut): batch the merges waiting and run ONE main check after the batch. The script ignores
+  only what no check reads (HANDOFF, `_agents/**/*.md` except the docs tests read, the reference folders); round 29's
+  pathspec form missed `arenas/`, assets and `project.godot`.
 - A worker may keep committing after its first merge: check `git log main..stream/<s>` before closing.
 
 ### 8. Close the round
@@ -150,7 +154,10 @@ The kickoff prompt is one line; this section is the rest.
    saturated builder0 and delayed every stream's real work); run one only if HANDOFF names no green check for it.
 2. **Plan** the brief's backlog into an ordered list in its Status (smallest foundation first). Where the brief leaves a
    choice, decide like a good game designer/engineer and record a one-line reason.
-3. **Loop per item:** a failing test or scenario first → build → `make remote T=check` → **smoke test like a player**
+3. **Loop per item:** a failing test or scenario first → build → **iterate with `make quick-remote`** (round 31: the
+   tests the diff touches + lint + one smoke, ~8 min v a full check's ~55; `QUICK_BASE=<your last green hash>` narrows it
+   to the fix in hand) → **`make remote T=check` only for a hash you will NAME** (a pre-series gate, a merge candidate,
+   a ship check; C31.1's full suite before every judged series stands) → **smoke test like a player**
    (screenshots at desktop and phone aspect and look at them; scripted input; match series for gameplay) → fix what
    felt wrong → commit to your branch with what and why → update Status.
 4. **Never wait for an answer.** Questions go under *Questions for the lead* in Status; take the most reversible
@@ -222,6 +229,11 @@ What the loop did in round 30, for the record: ~15 bars filed before numbers, 11
 reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
 
 ## Lessons (add to this list every round)
+
+- **Round 31: a rule nobody runs is not a rule.** Round 29 wrote "no second check of the same code" into the integrate
+  checklist, and round 31's orchestrator re-checked identical trees for most of a day anyway, with builder0 the
+  bottleneck. The fix was a script that answers the question (`tools/merge_check_needed.sh`) and a step that calls it.
+  When a checklist line keeps being skipped, make it a command.
 
 **Round 9's one sentence, above the list (feel, 2026-09-20): "accepted with no error" carries no information about
 whether the knob does anything.** An arm assertion reads the state the code CONSULTS, not the instruction that was

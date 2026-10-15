@@ -317,6 +317,16 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   equals that line's MDE. CP-H's (a) "early stop by `sequential.py arrived:guard:0.10`, never before 6 seeds" and any
   CP-P1 arrivals stop rule are therefore REMOVED, before numbers.
 
+- **R31.9 builder0 throughput (2026-10-15 ~13:00 PDT, the lead's question and his OK).** builder0 does not do clean
+  builds: the native .so and Godot's import are incremental. A check is ~55 min of TEST time (the last main check 3278 s,
+  its test suite 2320 s; the 33 heaviest files are 65 % of the suite's ~7200 CPU-s) on a 12-core box held by three
+  checks at once. **(1) No second check of the same code:** the orchestrator runs `tools/merge_check_needed.sh
+  <green>` after every merge (`orchestration.md` §7), and an INHERIT means no main check. **(2) Iterate with `make
+  quick-remote`** (~8 min); a full `make check` only for a hash you will name (a pre-series gate, a merge candidate, a
+  ship check). C31.1's full suite before every judged series is unchanged. **(3) Split the slowest test files**, each by
+  its owning stream, with the same assertions divided across files and the test count shown before and after:
+  traffic and brains now if idle; the rest go in round 32's briefs.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
