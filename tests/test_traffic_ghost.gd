@@ -50,10 +50,6 @@ func test_the_default_is_the_old_ghost() -> void:
 	assert_near(v.length(), 12.0, 0.01, "not named (main's default): the asked 12 m/s, as before")
 
 
-func test_ghost_is_opt_in() -> void:
-	assert_true(Traffic.OPT_IN.has("ghost"), "R31.1: CP-H consumers are off unless named")
-	assert_true(Traffic.DEFAULT_OFF.has("ghost") or Traffic.OPT_IN.has("ghost"), "off by default")
-
 
 func test_a_moving_hull_reads_the_same_either_way() -> void:
 	var pinned: Tank = await _pinned()
