@@ -198,6 +198,16 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   closing min +13.9 m (8 m/s) / +11.6 m (18); reversal min +69° / +20°. The robust test's seeds pass 5/5, 5/5 as
   written and 4/5, 5/5 nudged.
 
+- **R31.4 CP-H's ONE tree (2026-10-15 ~01:00 PDT, native's proposal corrected):** the tree is **main after every
+  consumer has merged OFF** (manoeuvre's H1–H3 tip, traffic's T4, brains' B8 `80eea6ec`, already on main at `aa205ea5`)
+  **+ native's mirrors**, with **ONLY the CP-H consumer switches** flipped ON: `unstickback`, the War Rig's friend stall,
+  `kturnarc`, `realspeed`, `ghost` (and `ghostself` only if traffic's tuning pair keeps it) and `realslow`. It is
+  NOT built from a stream tip carrying another candidate's switch ON, because traffic's `dc8fcbf6` carries T1c-b2's rule
+  ON. T3b and T1c-b2 are whatever main holds when CP-H is called (each ships or parks on its own bar first). **Native
+  builds it** (it owns the mirrors) and names its hash. **Manoeuvre runs the judged A/B on it** (C31.4: GDScript path, every
+  arm `NATIVE=off` or `--brains-off=native`, enforced by its runner). The tree's plain `make check` is the ship check.
+  **The orchestrator calls CP-H** when the last consumer is on main. Native confirmed B8 is NONE PORTED (~01:00).
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
