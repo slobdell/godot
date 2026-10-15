@@ -666,8 +666,7 @@ var _placed_settle := false
 
 func _drive(cmd: TankCommand, delta: float) -> void:
 	if NativeTank.usable(self):
-		NativeTank.drive(self, cmd, delta)  # round 28 (native N6.1): the same bits, as one native call
-		real_velocity = _real_planar_velocity()  # round 30 (M4b): until native's port writes it (C30.2, C30.6)
+		NativeTank.drive(self, cmd, delta)  # round 28 (native N6.1): the same bits, as one native call (real_velocity too: M4b)
 		return
 	if _placed_settle:
 		_placed_settle = false

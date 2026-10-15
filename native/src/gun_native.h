@@ -50,5 +50,7 @@ struct ExecState;
 bool gun_with(const GunConfig &gun, const DriveConfig &drive, Object *gunnery, Object *cmd, double seconds, ExecState *state);
 // From NativeGun.configure's Dictionary (the live constants and scripts); false when any is missing.
 bool gun_configure(GunConfig &gun, const Dictionary &config);
+// OrderFeed.point: a point or a direction as a flat Vector3, or NIL (shared with feed_native.cpp).
+Variant order_feed_point(const Variant &value);
 
 } // namespace godot

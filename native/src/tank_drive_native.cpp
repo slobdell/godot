@@ -10,6 +10,7 @@
 #include "motion_native.h"
 
 #include <godot_cpp/classes/character_body3d.hpp>
+#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/basis.hpp>
@@ -32,7 +33,7 @@ struct TN {
 			locomotion{ "locomotion" }, min_turn_radius{ "min_turn_radius" }, lateral_grip{ "lateral_grip" },
 			_fitting_forward{ "_fitting_forward" }, _yaw_push{ "_yaw_push" }, yaw_refused_ticks{ "yaw_refused_ticks" },
 			_off_floor_said{ "_off_floor_said" }, _note_off_floor{ "_note_off_floor" }, state_for{ "state_for" },
-			enabled{ "enabled" }, add{ "add" };
+			enabled{ "enabled" }, add{ "add" }, real_velocity{ "real_velocity" }, real_velocity_on{ "real_velocity_on" };
 	// the motion state's keys: String, as the GDScript's literals (a key inserted must be the GDScript's type)
 	String position{ "position" }, forward{ "forward" }, speed{ "speed" }, velocity{ "velocity" },
 			m_max_forward_speed{ "max_forward_speed" }, m_max_reverse_speed{ "max_reverse_speed" },
@@ -134,6 +135,23 @@ bool tank_drive_native(const TankDriveConfig &c, Object *tank_object, Object *cm
 	const Vector3 after = tank->get_velocity();
 	const Vector3 estimated(after.x, 0, after.z);
 	tank->set(k.estimated_velocity, estimated);
+	// Round 30 (manoeuvre M4b, C30.6): Tank._real_planar_velocity(): the real flat displacement over dt (the slide's
+	// get_real_velocity), capped at the planar velocity asked; estimated_velocity with --tank-off=real_velocity (the
+	// static is asked per call, as the GDScript does).
+	Vector3 real_velocity = estimated;
+	const Ref<Script> tank_script = tank->get_script();
+	if (tank_script.is_valid() && (bool)tank_script->get(k.real_velocity_on)) {
+		const Vector3 real = tank->get_real_velocity();
+		const Vector3 flat(real.x, 0, real.z);
+		const double asked = (double)Vector2(after.x, after.z).length();
+		const double made = (double)flat.length();
+		if (made > asked) {
+			real_velocity = made > 0.0 ? flat * (real_t)(asked / made) : Vector3();
+		} else {
+			real_velocity = flat;
+		}
+	}
+	tank->set(k.real_velocity, real_velocity);
 	motion[k.velocity] = estimated;
 	if (locomotion != k.tracks) {
 		tank->set(k._speed, (double)estimated.dot(forward));

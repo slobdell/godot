@@ -725,6 +725,10 @@ struct Gun {
 
 } // namespace
 
+Variant order_feed_point(const Variant &value) {
+	return feed_point(value);
+}
+
 bool gun_configure(GunConfig &c, const Dictionary &config) {
 	c.ready = false;
 	const char *ints[] = { "SCAN_EVERY_TICKS", "LANE_RECHECK_TICKS", "WANDER_PERIOD_TICKS", "KIND_PROJECTILE", "KIND_ARC",
