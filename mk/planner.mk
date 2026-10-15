@@ -111,6 +111,9 @@ planner-census: native import ## planner P6: plan requests a tick in a PLANNER_C
 # seam's per-run report). Heavy (NAV_JOBS runs at once): make remote T="planner-series". The seeds are the bar's
 # FRESH ones (133-145); tuning never touches them.
 PLANNER_SERIES_SEEDS ?= 133 134 135 136 137 138 139 140 141 142 143 144 145
+# Round 31 (the orchestrator's ruling on the first judged series, 2026-10-15 ~09:30 PDT): 133-145 became the DIAGNOSIS
+# set; the second (last) judged series runs on these FRESH seeds -- `make planner-series-fresh`.
+PLANNER_SERIES_FRESH_SEEDS ?= 172 173 174 175 176 177 178 179 180 181 182 183 184
 PLANNER_SERIES_SQUADS ?= mixed rigs
 PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
 
@@ -140,6 +143,10 @@ planner-judge-hull-rest: native import ## planner CP-P1 (d): manoeuvre-hull-rest
 	@echo ">> planner-judge-hull-rest on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_JUDGE_ARM)"
 	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_JUDGE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
 		M1_BASE_OFF= M1_NEW_OFF=planner M1_FLAGS="--turn-states --brains-off=native_drive" HULL_SEEDS="$(PLANNER_HULL_SEEDS)"
+
+.PHONY: planner-series-fresh
+planner-series-fresh: ## planner CP-P1: the second judged series on the FRESH seeds (PLANNER_SERIES_FRESH_SEEDS), the first's seeds being the diagnosis set
+	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_SERIES_FRESH_SEEDS)"
 
 .PHONY: planner-judge-fights
 planner-judge-fights: native import ## planner CP-P1 (e): manoeuvre-fights on PLANNER_FIGHT_SEEDS for PLANNER_JUDGE_ARM -> build/planner-judge/fights-<arm>; both arms present = fight_table.py base v candidate
