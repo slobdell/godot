@@ -1,0 +1,105 @@
+Round 30 manoeuvre M2b judged: 1f1c9835 (lab/manoeuvre-m2b on the reader 8cbdcfad), builder0, GDScript path, base --nav-off=creeplift,kturnarc. NOT MET ((a) creep -30 % v -50; (c) rigs arrivals -9, 1.8 se).
+
+CENSUS_RUN {"creep_flips": null, "creep_open_static": 0, "episodes": 7, "friendly": 4, "log": "sim-10", "open_static": 3, "over3": 0, "seed": "10", "wall_contact_ticks": null, "workload": "sim"}
+CENSUS_RUN {"creep_flips": null, "creep_open_static": 0, "episodes": 7, "friendly": 4, "log": "sim-11", "open_static": 3, "over3": 0, "seed": "11", "wall_contact_ticks": null, "workload": "sim"}
+CENSUS_RUN {"creep_flips": null, "creep_open_static": 0, "episodes": 3, "friendly": 2, "log": "sim-9", "open_static": 1, "over3": 0, "seed": "9", "wall_contact_ticks": null, "workload": "sim"}
+CENSUS_RUN {"creep_flips": 250, "creep_open_static": 5, "episodes": 31, "friendly": 11, "log": "terminus-mixed-14", "open_static": 20, "over3": 16, "seed": "14", "wall_contact_ticks": 21036, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 86, "creep_open_static": 6, "episodes": 24, "friendly": 6, "log": "terminus-mixed-15", "open_static": 18, "over3": 12, "seed": "15", "wall_contact_ticks": 22863, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 122, "creep_open_static": 8, "episodes": 28, "friendly": 10, "log": "terminus-mixed-16", "open_static": 18, "over3": 15, "seed": "16", "wall_contact_ticks": 17897, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 141, "creep_open_static": 7, "episodes": 22, "friendly": 5, "log": "terminus-mixed-17", "open_static": 17, "over3": 9, "seed": "17", "wall_contact_ticks": 20042, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 116, "creep_open_static": 8, "episodes": 37, "friendly": 13, "log": "terminus-mixed-18", "open_static": 24, "over3": 14, "seed": "18", "wall_contact_ticks": 19887, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 134, "creep_open_static": 7, "episodes": 24, "friendly": 8, "log": "terminus-mixed-19", "open_static": 16, "over3": 11, "seed": "19", "wall_contact_ticks": 19191, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 97, "creep_open_static": 4, "episodes": 19, "friendly": 7, "log": "terminus-rigs-14", "open_static": 12, "over3": 7, "seed": "14", "wall_contact_ticks": 17193, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 74, "creep_open_static": 2, "episodes": 13, "friendly": 3, "log": "terminus-rigs-15", "open_static": 10, "over3": 4, "seed": "15", "wall_contact_ticks": 11128, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 117, "creep_open_static": 1, "episodes": 7, "friendly": 2, "log": "terminus-rigs-16", "open_static": 5, "over3": 5, "seed": "16", "wall_contact_ticks": 33786, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 145, "creep_open_static": 0, "episodes": 15, "friendly": 6, "log": "terminus-rigs-17", "open_static": 9, "over3": 6, "seed": "17", "wall_contact_ticks": 32789, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 114, "creep_open_static": 3, "episodes": 20, "friendly": 8, "log": "terminus-rigs-18", "open_static": 12, "over3": 9, "seed": "18", "wall_contact_ticks": 14793, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 250, "creep_open_static": 2, "episodes": 10, "friendly": 1, "log": "terminus-rigs-19", "open_static": 9, "over3": 3, "seed": "19", "wall_contact_ticks": 16979, "workload": "terminus"}
+MANOEUVRE_CENSUS rows=350 logs=15
+workload  kind      episodes    <=3  worst  legs histogram
+ALL       friendly        90    0.6    148  {2: 10, 3: 44, 4: 2, 5: 17, 6: 1, 7: 3, 9: 2, 11: 2, 13: 2, 15: 2, 16: 1, 19: 1, 21: 1, 57: 1, 148: 1}
+ALL       open           152  0.559     19  {2: 5, 3: 80, 4: 1, 5: 25, 6: 2, 7: 13, 9: 14, 11: 7, 13: 2, 15: 2, 19: 1}
+ALL       static          25   0.68     13  {3: 17, 5: 7, 13: 1}
+sim       friendly        10    1.0      3  {2: 9, 3: 1}
+sim       open             7    1.0      3  {2: 5, 3: 2}
+terminus  friendly        80   0.55    148  {2: 1, 3: 43, 4: 2, 5: 17, 6: 1, 7: 3, 9: 2, 11: 2, 13: 2, 15: 2, 16: 1, 19: 1, 21: 1, 57: 1, 148: 1}
+terminus  open           145  0.538     19  {3: 78, 4: 1, 5: 25, 6: 2, 7: 13, 9: 14, 11: 7, 13: 2, 15: 2, 19: 1}
+terminus  static          25   0.68     13  {3: 17, 5: 7, 13: 1}
+workload  cause          episodes    <=3  worst
+sim       circle                2    1.0      2
+sim       creep                 1    1.0      3
+sim       kturn_circle          3    1.0      2
+sim       route                 3    1.0      2
+
+CENSUS_RUN {"creep_flips": null, "creep_open_static": 0, "episodes": 7, "friendly": 4, "log": "sim-10", "open_static": 3, "over3": 0, "seed": "10", "wall_contact_ticks": null, "workload": "sim"}
+CENSUS_RUN {"creep_flips": null, "creep_open_static": 0, "episodes": 9, "friendly": 5, "log": "sim-11", "open_static": 4, "over3": 0, "seed": "11", "wall_contact_ticks": null, "workload": "sim"}
+CENSUS_RUN {"creep_flips": null, "creep_open_static": 0, "episodes": 3, "friendly": 2, "log": "sim-9", "open_static": 1, "over3": 0, "seed": "9", "wall_contact_ticks": null, "workload": "sim"}
+CENSUS_RUN {"creep_flips": 110, "creep_open_static": 7, "episodes": 20, "friendly": 5, "log": "terminus-mixed-14", "open_static": 15, "over3": 9, "seed": "14", "wall_contact_ticks": 15596, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 114, "creep_open_static": 8, "episodes": 37, "friendly": 15, "log": "terminus-mixed-15", "open_static": 22, "over3": 18, "seed": "15", "wall_contact_ticks": 20002, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 115, "creep_open_static": 2, "episodes": 17, "friendly": 9, "log": "terminus-mixed-16", "open_static": 8, "over3": 8, "seed": "16", "wall_contact_ticks": 19665, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 65, "creep_open_static": 4, "episodes": 26, "friendly": 12, "log": "terminus-mixed-17", "open_static": 14, "over3": 7, "seed": "17", "wall_contact_ticks": 20641, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 102, "creep_open_static": 3, "episodes": 20, "friendly": 4, "log": "terminus-mixed-18", "open_static": 16, "over3": 3, "seed": "18", "wall_contact_ticks": 16425, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 108, "creep_open_static": 3, "episodes": 21, "friendly": 7, "log": "terminus-mixed-19", "open_static": 14, "over3": 8, "seed": "19", "wall_contact_ticks": 16752, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 115, "creep_open_static": 2, "episodes": 13, "friendly": 3, "log": "terminus-rigs-14", "open_static": 10, "over3": 6, "seed": "14", "wall_contact_ticks": 19630, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 129, "creep_open_static": 0, "episodes": 18, "friendly": 9, "log": "terminus-rigs-15", "open_static": 9, "over3": 4, "seed": "15", "wall_contact_ticks": 37535, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 113, "creep_open_static": 2, "episodes": 17, "friendly": 6, "log": "terminus-rigs-16", "open_static": 11, "over3": 6, "seed": "16", "wall_contact_ticks": 15816, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 143, "creep_open_static": 1, "episodes": 17, "friendly": 7, "log": "terminus-rigs-17", "open_static": 10, "over3": 6, "seed": "17", "wall_contact_ticks": 28780, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 120, "creep_open_static": 2, "episodes": 19, "friendly": 6, "log": "terminus-rigs-18", "open_static": 13, "over3": 9, "seed": "18", "wall_contact_ticks": 13652, "workload": "terminus"}
+CENSUS_RUN {"creep_flips": 127, "creep_open_static": 3, "episodes": 21, "friendly": 6, "log": "terminus-rigs-19", "open_static": 15, "over3": 5, "seed": "19", "wall_contact_ticks": 20200, "workload": "terminus"}
+MANOEUVRE_CENSUS rows=361 logs=15
+workload  kind      episodes    <=3  worst  legs histogram
+ALL       friendly       100   0.68     17  {2: 10, 3: 58, 4: 3, 5: 11, 6: 1, 7: 9, 9: 5, 13: 1, 16: 1, 17: 1}
+ALL       open           136  0.632     27  {2: 9, 3: 77, 5: 22, 6: 1, 7: 8, 9: 9, 11: 5, 13: 2, 17: 1, 19: 1, 27: 1}
+ALL       static          29  0.759     19  {3: 22, 5: 4, 7: 1, 9: 1, 19: 1}
+sim       friendly        11    1.0      3  {2: 10, 3: 1}
+sim       open             8    1.0      3  {2: 6, 3: 2}
+terminus  friendly        89   0.64     17  {3: 57, 4: 3, 5: 11, 6: 1, 7: 9, 9: 5, 13: 1, 16: 1, 17: 1}
+terminus  open           128  0.609     27  {2: 3, 3: 75, 5: 22, 6: 1, 7: 8, 9: 9, 11: 5, 13: 2, 17: 1, 19: 1, 27: 1}
+terminus  static          29  0.759     19  {3: 22, 5: 4, 7: 1, 9: 1, 19: 1}
+workload  cause          episodes    <=3  worst
+sim       circle                2    1.0      2
+sim       creep                 1    1.0      3
+sim       kturn_circle          4    1.0      2
+sim       route                 3    1.0      2
+
+== rigs (13 seeds)
+  (d) arrivals base 181 new 172 of 208: diff -9 se 4.97 1.645se 8.2: MISS
+  contact-ticks (reported) base 10400 new 13953 diff +3553 se 3034; leg s base 1945 new 1827
+  leg misses base 27 new 36; under a FACE order (a face left the slot) base 12 new 26
+  per seed arrived(contacts): 49:12>13(591>388) 50:14>12(432>1592) 51:14>13(489>1848) 52:15>15(315>486) 53:12>11(1952>1767) 54:14>14(1001>1799) 55:11>11(380>1835) 56:16>15(857>1476) 57:15>12(828>744) 58:14>16(797>492) 59:16>14(360>766) 60:14>14(2064>400) 61:14>12(334>360)
+  runs with identical arrivals and contacts: 0 of 13
+== mixed (13 seeds)
+  (d) arrivals base 292 new 293 of 312: diff +1 se 4.28 1.645se 7.0: PASS
+  contact-ticks (reported) base 1442 new 1714 diff +272 se 354; leg s base 1686 new 1588
+  leg misses base 20 new 19; under a FACE order (a face left the slot) base 7 new 6
+  per seed arrived(contacts): 49:21>22(145>137) 50:23>23(31>115) 51:22>23(88>158) 52:22>23(65>204) 53:22>23(89>168) 54:23>22(96>56) 55:23>23(45>106) 56:23>21(85>149) 57:21>22(136>288) 58:24>23(41>42) 59:22>23(274>150) 60:24>22(268>80) 61:22>23(79>61)
+  runs with identical arrivals and contacts: 0 of 13
+
+BRUSH runs paired 24 (base 26, new 26; runs with no touching line dropped)
+BRUSH mixed-49: base v 4.31 over 4 s, real 2.52 | new v 4.29 over 6 s, real 1.00
+BRUSH mixed-50: base v 5.05 over 2 s, real 1.51 | new v 6.32 over 4 s, real 1.43
+BRUSH mixed-51: base v 4.30 over 3 s, real 2.77 | new v 5.28 over 5 s, real 2.09
+BRUSH mixed-52: base v 6.13 over 1 s, real 0.65 | new v 3.93 over 6 s, real 1.43
+BRUSH mixed-53: base v 3.79 over 5 s, real 1.98 | new v 5.55 over 3 s, real 3.08
+BRUSH mixed-54: base v 3.62 over 2 s, real 1.30 | new v 2.40 over 1 s, real 2.37
+BRUSH mixed-55: base v 1.50 over 2 s, real 1.26 | new v 5.63 over 2 s, real 1.62
+BRUSH mixed-57: base v 4.12 over 5 s, real 2.95 | new v 3.48 over 11 s, real 2.35
+BRUSH mixed-59: base v 5.87 over 11 s, real 1.71 | new v 6.49 over 6 s, real 3.34
+BRUSH mixed-60: base v 4.94 over 11 s, real 1.78 | new v 4.87 over 2 s, real 1.29
+BRUSH mixed-61: base v 6.55 over 1 s, real 0.49 | new v 5.79 over 2 s, real 0.73
+BRUSH rigs-49: base v 6.32 over 21 s, real 2.52 | new v 5.00 over 12 s, real 2.61
+BRUSH rigs-50: base v 5.42 over 15 s, real 3.14 | new v 4.26 over 52 s, real 1.12
+BRUSH rigs-51: base v 4.01 over 14 s, real 1.32 | new v 8.96 over 52 s, real 3.13
+BRUSH rigs-52: base v 5.22 over 11 s, real 1.80 | new v 6.59 over 17 s, real 2.79
+BRUSH rigs-53: base v 10.03 over 62 s, real 1.19 | new v 8.88 over 71 s, real 2.97
+BRUSH rigs-54: base v 5.39 over 38 s, real 1.78 | new v 9.32 over 59 s, real 3.01
+BRUSH rigs-55: base v 7.50 over 14 s, real 2.68 | new v 6.58 over 68 s, real 1.68
+BRUSH rigs-56: base v 8.91 over 28 s, real 1.50 | new v 6.10 over 51 s, real 2.79
+BRUSH rigs-57: base v 5.46 over 29 s, real 1.73 | new v 5.50 over 24 s, real 1.62
+BRUSH rigs-58: base v 6.24 over 27 s, real 1.40 | new v 6.45 over 15 s, real 2.21
+BRUSH rigs-59: base v 5.68 over 10 s, real 1.41 | new v 5.28 over 25 s, real 1.61
+BRUSH rigs-60: base v 11.05 over 66 s, real 1.44 | new v 5.12 over 11 s, real 1.87
+BRUSH rigs-61: base v 6.48 over 10 s, real 2.29 | new v 6.69 over 11 s, real 2.49
+BRUSH speed while touching, paired mean diff +0.04 m/s se 0.47 (n 24): within 2 se; base mean 5.74, new 5.78
+BRUSH touching crew-seconds: base 392 new 516
+BRIDGE_POOLED 18 of 18 runs pass

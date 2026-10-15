@@ -378,6 +378,26 @@ arrivals not down, with the planner's F2 the long-run answer. The gate `UNSTICK_
 on lock for a long hull", not "no stall clock".
 
 ### Progress log
+- **M2b judged (`1f1c9835` on the reader base, builder0 GDScript path, 18:45 PDT): NOT MET, nothing ships as filed.**
+
+  | line | base | new | reading |
+  |---|---|---|---|
+  | (a) open+static creep episodes (census 14–19 + sim 9–11, 15 runs) | 53 | 37 | −30 %, se 9.8: within 2 se; the line was −50 % — MISSED |
+  | (b) episodes over 3 legs | 111 | 89 | not up; friendly episodes 90 → 100 (+11 %, se 19); creep flips 1646 → 1361 |
+  | (c) Terminus rigs arrived / 208 (seeds 49–61) | 181 | 172 | −9, se 4.97: 1.8 se down, the 1.645 se line MISSED (the SPRT guard read PASS at the full grid: the two rules disagree at this n) |
+  | (c) Terminus mixed arrived / 312 | 292 | 293 | PASS; SERIES PASS at run 6 of 13 |
+  | rigs wall contact-ticks (reported) | 10400 | 13953 | +34 %, se 3034; rigs' k-turns 165 → 1028, kturn_multi 61 → 144 |
+  | (d) kturn_aborted | 9 | 9 | not up |
+  | (e) bridge-pooled; brush speed | | 18/18; +0.04 m/s se 0.47 | |
+  | the lift's counters (new) | | 14727 lift unit-ticks; refused slowed 4983, no_arc 240, blocked 1765 | fired (lesson 300) |
+
+  (h) the rigs' wall-contact direction, worst run (seed 51, Green_S0_3: 1765 of 1848 contact-ticks, 50 s on the
+  plaza-crossing wall at throttle 0.8 / lock 0.44, plant speed 9.4, goal distance frozen at 24 m): the lift rolled an
+  earlier turn instead of creeping it and the rig met the wall at an angle where the plant's phantom momentum grinds
+  it: round 29's finding again, and M4b run 1's grind state. Per the filed partial rule the lift's finding goes to the
+  planner (F1) and **`kturnarc` is re-declared alone** (base `--nav-off=creeplift,kturnarc` v new
+  `--nav-off=creeplift`, Terminus fresh seeds 75–87, (c)(d)(e)); awaiting the orchestrator's GO. Both arms' per-run
+  census rows (`census_{base,new}.jsonl`) go to sizing's `probes.py` at the close (line (g)).
 - **M1b(1) judged, Terminus (d), 13 fresh seeds 36–48, GDScript path, `55622870` on the reader base, builder0, 17:30
   PDT:** rigs arrivals 176 → 179 of 208 (+3, se 5.13, 1.645 se = 8.4: PASS), mixed 284 → 286 of 312 (+2, se 3.56:
   PASS). **The project's first early stop (line (g)):** `sequential.py --terminus … arrived:guard:0.10`, boundaries
