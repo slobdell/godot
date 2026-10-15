@@ -442,6 +442,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   ≥ control − 1 AND McNemar discordant-against ≤ 1; paired median REPORTED. (4) crossings_found / crossings_held > 0 on
   decked cells and 0 on a Sumps cell; mouth_held_resends REPORTED. (5) Cost ≤ 0.5 ms a tick or NOT READABLE. (6) The
   suite green on the tip, pursuit included. Ships ON (GDScript; native none ported).
+  **C31.1 gate RED, fixed before any judged number (~09:00 PDT):** `344a772a`'s pre-series check `exited 2`, 2619/0,
+  bridge-pooled 17/18 (rust t8 s2 rim_crews 1); remote-guard-test was the known load flake. Traced: with seating held, S_1
+  (first across) kept the westmost far seat on the bank edge, then backed into the rim for 4.1 s (control 0.5 s). **The
+  candidate becomes B3b-2b `5ed61f91`:** re-match the seating once each time another crew passes the exit
+  (`--route-seat-across=off` = `344a772a`); tuning, n = 1, rust s2 t8 / green s2 t5 / rust s2 t9 / green s3 t18 all rim 0.
+  The same bar and lines apply, gate re-run on `5ed61f91`, then the series on that one heavy slot, and B6 after.
 - **Planner CP-P1 bar (filed 2026-10-15 ~04:00 PDT, before any judged number; DECLARED; the LAST attempt = the second
   judged run; full text in planner Status `ea246430` "CP-P1 BAR (DRAFT v2)"):** candidate = the seam ON
   (`--nav-off=planner`) at the hash the pair-tree check passes (`0914dafd` or successor), GDScript drive, C++ planner ON in
