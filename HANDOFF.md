@@ -4,18 +4,20 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-14 evening — **ROUND 30 IS CLOSING (below).** **Main GREEN at `48d5aa0d`** (builder0, `make check
+_Last updated: 2026-10-14 ~21:25 PDT — **ROUND 30 IS CLOSED (below); round 31 launches FRESH (no worktree kept).** Main `9ea4523c`. **Main GREEN at `48d5aa0d`** (builder0, `make check
 exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7): sizing + planner +
 B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes `main`._
 
-## ✅ ROUND 30 IS CLOSING (2026-10-14 evening) — read this first
+## ✅ ROUND 30 IS CLOSED (2026-10-14 ~21:25 PDT) — read this first
 
-**Main's final check: PENDING** — native's one tree (main `3ca70af2` + M1b `55622870` + manoeuvre's tooling tip `d122485c`;
-NO kturnarc) is in `make remote T=check` on builder0; on its green line the orchestrator merges it and main's code equals
-the checked tree. **Before that, main is GREEN at `48d5aa0d`** (builder0, `make check exited 0`, 2606 passed, 0 failed, 26
-targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7); since then only docs and the judge tooling.
+**Main's final state: `9ea4523c`** = native's checked tree `3b3e590d` (builder0, `make check exited 2` on the sim-baseline gate
+ALONE: 2608 passed, 0 failed, 25 of 26 gates passed, native-verify 0 mismatches, twin tests 21/0, determinism
+2875411ff4ec6be7) + the thirteen re-recorded for that one move (docks 259705183b668489 → 672d25ff82d97972 by M1b's
+`face_slot`, read twice on builder0 agreeing; twelve unmoved) + docs. The last fully green check of unchanged code is
+`48d5aa0d` (2606/0, 26 ALL JUDGED); since it only M1b's three files changed in play, judged at `55622870` and checked on
+`3b3e590d`.
 
-**What he plays now** (`make native && make skirmish`), once the final merges land:
+**What he plays now** (`make native && make skirmish`):
 - **A face at rest keeps the slot the crew drove to** (M1b(1) `face_slot`, judged at `55622870`: drawn attack-move at-rest
   error 23.1 → 15.9° ALL classes, no task worse at p < 0.05, crews still moving at 75 s not up on any task; the round-28
   bug that `Movement.idle()` wiped the anchor is fixed). Wheeled TURRET hulls still decline a drawn facing until turn-hull
