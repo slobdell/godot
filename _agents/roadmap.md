@@ -243,6 +243,43 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
+## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — NOT YET SPLIT; his two calls first
+
+**His calls (player terms; ask once, one recommendation each):**
+- **Crossing squads (traffic T3b, parked `traffic-t3b`):** at a yard crossing the yielding squad gets through ~3 s later
+  (+2.80 s, se 0.22) and the two squads bump into each other half as often (−45 %). The bar's +10 % line was the
+  orchestrator's, not his words ("both squads arrive a little later"). Recommend: accept ~3 s → one re-judge on fresh seeds
+  with the line he sets.
+- **A set-up mortar truck (traffic T1c-b, parked `traffic-t1cb-judged`):** it no longer packs up for a squadmate passing
+  (11 → 0 repacks, p 0.041), but whether it then fires less is not decided (one diverged run carried the artillery line;
+  that line's row was under-sized ×10). Recommend: re-judge with the artillery line sized from this run's sd.
+
+**Each parked with its trace, table and bar (`streams/archive/round30/`, `workstreams.md` *Bars (round 30)*):**
+1. **The honest reading's consumers, as ONE A/B** (`Tank.real_velocity` is on main, read by nobody in play): manoeuvre's
+   escapes (`lab/manoeuvre-m4b2` 77a1603f: ask first, a STRAIGHT reverse by the outline sweep, blocked by name — never a
+   blind reverse on lock; the two regressions in its Status), the two aim leads, traffic's T4 (ORCA's neighbour table
+   reads the 12 m/s ghost: `lab/traffic-t4` v1 05bb2c22), the War Rig's stall against a FRIEND, brains' re-seat "slow"
+   test. Sized from round 30's stuck/pinned rows (sizing's table).
+2. **The planner into play** (`references/round30/planner/handover.md`; `game/ai/planner/**` on main, reached by
+   nothing): native's port (~100×: 0.06–17 s a plan in GDScript) or a resumable slice a tick; the seam in `drive()` /
+   `_manoeuvre`; its cases from this round: F1 the creep at a corner (M2b's lift failed a third time: seed 51's 50 s
+   grind), F2/F6 the grind after an escape (seed 31), F4 a goal POSE (the six-cusp car, yard s25 t1), the squadmate pin.
+   The planner's two executor rules are already in (`kturnarc`).
+3. **Brains:** B5c-v4 the arrival gate (`lab/brains-r30-gate` f1a804eb: every judged line passed; the `near` rule tips a
+   knife-edge pursuit test on seed 3 — measure that test's own margin over seeds first, or `near` only on a re-seat / new
+   goal while on a task; the side-gate form for 180°); B3b his bridge (`lab/brains-r30-bridge` 4bc708d7: 107/108 v
+   106/108, green t18 s3's trace and the per-switch cells); B6 the SBF sector hand-out (`lab/brains-r30-sbf` 9aa0cd7c,
+   bar filed, not run); the Terminus seat trap (35.6, 23.9) at B's destination (45, 30) under `traffic-t3b`.
+4. **M1b(2) turn-the-hull** (his round-28 call; not built this round): `manoeuvre-m1-r29`'s turnhull/facekeep on top of
+   `face_slot`, the 75 s guard at base + 2 se from the table, clicked lines by permutation p.
+5. **builder0:** the early-stop hook in the runners (M1b's record: SERIES PASS at runs 10 and 6 of 13 — 10 of 26 runs
+   saved had the chain been interactive); split `test_native_traffic_hold` (486 s, the new floor; native's); export the
+   face_slot counters from the hull-rest probe; one hull-rest arm per remote call (the 90-min cap); re-render the table
+   each close (step 5b).
+6. Native: the planner's port (item 2) is the next core component; N5's held ports after it; stage 2 deferred (his call).
+7. The browser pack: `WEB_PACK FAILED: factions (5 of 999 bytes)` in every check log is the short-download refusal test
+   passing (planner's reading) — rename its line so it does not read as a failure.
+
 ## Round 30 candidates (round 29's carry-overs, 2026-10-14) — SPLIT 2026-10-14 as traffic (3b, 4, 6) + manoeuvre (1; Fable) + brains (2, 3, 5, the test split of 6) + native (7) + sizing (Fable, the Fable item 1) + planner (Fable, the Fable item 2) (`workstreams.md` *Round 30*)
 
 Each parked with its trace and judged data (`streams/archive/round29/`, `workstreams.md` *Round 29*):
