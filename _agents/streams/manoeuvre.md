@@ -121,6 +121,73 @@ Nothing: his calls are made (turn the whole hull; planned turns).
 _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoeuvre`, from main `bd05077d` = code
 `0d35f215`, GREEN). Round 30, Fable 5.1. Report at the top; the progress log below it._
 
+### Report (2026-10-14, 19:50 PDT — FINAL; round 30, Fable 5.1)
+
+**Shipped (three, each DECLARED, judged on fresh seeds and ruled):**
+1. **The M4b READER** `8cbdcfad` + native's pair `3bc2c476` (on main at `48d5aa0d`, check 2606/0, thirteen unmoved):
+   `Tank.real_velocity` (C30.6), the census state line's `real`, the pinned probe's honest class. Nothing in play reads
+   it yet; it is the member the next consumers (the escapes, the leads, the arc rule) stand on.
+2. **M1b(1) `face_slot`** `55622870`: a face at rest keeps to the slot the crew last drove to (round 28's anchor read a
+   goal `Movement.idle()` clears, so it never held). Drawn attack-move median 23.1 → 15.9°, no task worse (p ≥ 0.38),
+   Terminus arrivals pass both squads, bridge 18/18.
+3. **kturnarc** `e7a58262`: a k-turn leg is measured by the arc driven (not the chord) and ends on the plant's discrete
+   stopping distance (the planner's P4 findings). Terminus arrivals pass both squads, aborted legs not up, rigs' leg
+   time −18 %, bridge 18/18. Native's pair: one owned member `_kturn_arc_m`.
+Native builds ONE tree (main + `55622870` + `e7a58262` + its port) and checks it once; the orchestrator merges M1b
+then the pair. No check owed from this stream.
+
+**Parked, each with its judged table under `references/round30/manoeuvre/`:** M4b's ESCAPES (`lab/manoeuvre-m4b2`
+`77a1603f`: run 1 freed pins and doubled rigs' wall contact; run 2 gated to ≤ 10 m hulls passed every series line and
+then failed the pair check on a single-file reverse and a `drive` order's hull); M2b's CREEP LIFT (`lab/manoeuvre-m2b`
+`1f1c9835`: creep −30 % v −50 %, rigs −9 arrivals); M5 (`lab/manoeuvre-m5` `34f34ea0`: case 1 closed by brains' v4,
+case 2 is a car's reactive 180°); **M1b(2) turn-the-hull: NOT BUILT this round** (his round-28 call stays open; the
+guard is now sized: base + 2 se with M1_CLASS's se, clicked lines by permutation p).
+
+**Round-31 hand-over (the planner, traffic, brains):** (i) seed 31's 77 s grind (a freed rig at an angle to a street
+wall under the plant's phantom momentum; `m4b_run1_rigs31_*.log`); (ii) seed 51's 50 s grind under the lift (F1); (iii)
+the squadmate pin loop (mixed-21's IFV backs 1.5 m and drives straight back in; ORCA reads the blocker's phantom
+velocity: traffic's line); (iv) the six-cusp car (yard s25 B_4: a goal pose 9 m behind, the planner's F4); (v) Green_M_3
+(a blind reverse on lock in single file leaves an 8×8 at a pose seating never recovers; the re-seat reads
+`estimated_velocity`); (vi) the design note below: a long hull against a FRIEND asks first, then a straight reverse by
+the outline sweep, then `blocked` by name; (vii) tooling: export `face_slot_kept/refused` from the hull-rest probe;
+one hull-rest arm per remote call (the 90-min cap); the stall timer should not count while a gun packs.
+
+**Kept branches:** `lab/manoeuvre-m4b-reader`, `lab/manoeuvre-m1b`, `lab/manoeuvre-kturnarc` (the merges);
+`lab/manoeuvre-m4b2`, `lab/manoeuvre-m2b`, `lab/manoeuvre-m5` (parked); `lab/manoeuvre-m1b-sbf` (brains' probe
+merged, scratch). **Worktrees:** scratch ones removed at the close with their builder0 folders (below);
+`godot-manoeuvre` left clean.
+
+**What to playtest (after the batch lands: `make native && make skirmish`):** draw a move for a squad with gun trucks
+or IFVs onto a tight spot and watch the ones that arrive at the edge of their circle: they turn at rest without
+walking off the spot (M1b). Send a column of War Rigs through the Terminus streets: a rig that plans a reverse leg
+now stops where it planned instead of over-running it by a hull's margin (kturnarc). Nothing else changes in play.
+
+| item | candidate (branch) | state |
+|---|---|---|
+| M4b run 1 | `e8bfef2e` (`stream/manoeuvre`, judged tree `1b3e2e56`) | NOT PASSED (orchestrator's ruling): rigs arrivals −1.1 se, rigs' wall contact-ticks +141 % |
+| M4b run 2, the last | `77a1603f` (`lab/manoeuvre-m4b2`): escapes only for hulls ≤ 10 m | passed every filed line, then its PAIR CHECK went red on two tests (traced: the escape's reverse on lock in single file; a `drive` order's hull backing off): **the ESCAPES are PARKED for round 31** (ruled ~16:45 PDT) with the findings and the design note |
+| **M4b reader (SHIPS)** | **`8cbdcfad`** (`lab/manoeuvre-m4b-reader`): `Tank.real_velocity`, the census `real` column, the probe's honest class; nothing in play reads it | **the pair is GREEN: native's `3bc2c476` = `8cbdcfad` + the one `tank_drive_native` write; builder0 `make check exited 0`, 2606 passed / 0 failed, ALL JUDGED, the thirteen unmoved, twin tests 0 mismatches (native, ~18:20 PDT). My branch's tests 20/0 (wedge, wall_contact, mixed_legs). Merge `3bc2c476`.** |
+| M1b(1) face_slot | `55622870` (`lab/manoeuvre-m1b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain (GO) |
+| M2b creep lift + kturnarc | `1f1c9835` (`lab/manoeuvre-m2b`, on `8cbdcfad`) | **judged NOT MET** (the creep −30 % v −50 %; rigs arrivals −9): the lift parks, the finding to the planner (F1) |
+| **kturnarc alone** (re-declared per M2b's partial rule) | **`e7a58262`** (`lab/manoeuvre-kturnarc` = the reader + the arc commit, no lift code; + native's review fix: a leg that starts rolling resets its arc) | **judged: every line met** (Terminus arrivals pass both squads, early stop at run 6; aborted 22 → 21; bridge 18/18); awaiting the ruling; native mirrored it (0 mismatches on the laptop) |
+| M5 the Terminus escape | `34f34ea0` (`lab/manoeuvre-m5`, parked) | PARKED with the finding: case 1 closed by brains' v4, case 2 is the planner's F4 |
+
+**Decisions:** design B kept exactly (C30.6); the escapes sized to the plant's momentum (run 1) and then gated to
+hulls ≤ 10 m (run 2); M1b/M2b stacked on M4b (M2b's arc rule reads `real_velocity`); the planner's four executor
+findings taken (two in M2b behind `kturnarc`, two as M2b's design). **Questions for the lead:** none (his calls are
+made). **Requests to other streams:** traffic: `avoidance.gd` reads neighbours' `estimated_velocity`, a pinned hull is
+a 12 m/s ghost to ORCA (routed by the orchestrator to traffic's next item); brains: nothing (M5 case 1 is theirs and
+done); planner: the seed-31 grind trace and the F4 case. **Known issues:** the plant's yaw fit is OFF by default so a
+pinned hull yaws through what pins it (Status finding); a freed hull with no way round loops back into its blocker
+(mixed seed 21's IFV, 73 s). **What to playtest (once the pair is on main, `make native && make skirmish`):** send a squad of IFVs or scouts
+through a Terminus street with a parked squadmate in the way, or watch a tight formation seat: a hull pinned nose-on
+to another no longer sits at full throttle, it backs off within ~2 s and goes round (pinned crew-seconds −75 % on the
+hull-rest probe, −100 % of the ≥ 10 s pins on the Terminus drive); gun trucks and War Rigs drive exactly as before. **Merge notes:** the M4b reader `8cbdcfad` with native's `pair/m4b-reader` (no twin test red: Movement and
+Gunnery are main's); then M1b(1) `55622870`, then M2b `1f1c9835`, each alone, both on `8cbdcfad`; the stream branch
+(`stream/manoeuvre`, docs and tooling: Status, judged tables, pinned_table, mk) for the record. Parked, kept:
+`lab/manoeuvre-m4b2` `77a1603f` (the escapes, judged twice), `lab/manoeuvre-m5` `34f34ea0`. Lab worktrees `godot-manoeuvre-{m1,m2,m5,v2}` and their
+builder0 folders to remove at the close.
+
 ### Plan (smallest foundation first)
 
 1. **M4b** — `real_velocity` (C30.6) + the readers (`unstick`, the pinned probe's state line, gunnery's two lead lines)
@@ -213,6 +280,77 @@ where it has a row (the Terminus arrivals guard); the hull-rest probe runs its f
   where `sequential.py` printed SERIES PASS/FAIL and the n reached go in this Status; (h) rigs seed 21 (the defect in
   the wild) re-run on the candidate and reported.
 
+### M2b bar (DECLARED; the creep lift on top of M4b + the executor's arc and stopping fixes; before any judged number)
+
+Candidate `lab/manoeuvre-m2b` (hash named when its tests are green; = M4b + `creeplift` re-based + `kturnarc`); base
+arm `--nav-off=creeplift,kturnarc` on the same commit (both arms carry M4b); GDScript path. Two switches, ONE declared
+change (the lift's legs end where the planner said only with the arc rule). **First run; a second on fresh seeds
+would be the last.** Sized from CP-N where it has a row; the turn census has none ("Poisson floors"): it runs its
+full grid and owes the A/A, with per-run rows (`census_table.py --jsonl`, sizing's request) so the next table can
+size it.
+- (a) open+static creep episodes (the turn census, `MANOEUVRE_TURN` kind open/static, cause creep) DOWN ≥ 50 % over
+  fresh census seeds **14–19** (Terminus mixed+rigs, `--turn-log`) + sim **9–11**, paired per run; the paired se
+  reported (round 29: 125 → 75, −40 %).
+- (b) episodes over 3 legs not UP beyond 2 se paired; the friendly-kind creep not up > 10 % (reported with se).
+- (c) Terminus census arrivals, rigs and mixed, **13 fresh seeds 49–61**: not down beyond 1 se (sequential.py
+  `arrived:guard:0.10`, stop on SERIES PASS/FAIL, never before 6 seeds); wall contact-ticks REPORTED, and the rigs'
+  wall-contact direction explained from the worst run's trace (round 29: the lift rolled rigs into street walls).
+- (d) `kturnarc`: legs' driven ÷ planned metres reported both arms (1.03 → 1.00 expected), `kturn_aborted` not up.
+- (e) bridge-pooled 18/18; ≤ 0.5 ms a tick (`m2_us` per tick + `sim-profile`); symmetric (the CPU drives the same
+  code); net-smoke, combat-smoke, determinism; the thirteen re-recorded twice with the reason if they move; the arm's
+  counters (`creep_lifts`, `creep_lift_why`) in the new arm.
+- Partial rule: (a) missed with (c) met = the finding (the lift rolls long rigs into walls or does not) goes to the
+  planner (C30.4) and nothing ships; (c) missed = nothing ships. `kturnarc` alone cannot ship under this bar (it is
+  judged with the lift); if the lift fails, `kturnarc` is re-declared alone with (c), (d), (e).
+- **Accepted by the orchestrator with:** (f) the base arm's switch list is ONE `--nav-off=` flag, printed by every run
+  (the chain's `>> remote: make … NAV_FLAGS=…` line); (g) (a) has no sized row, so this census pair IS its A/A: both
+  arms' per-run rows go to sizing's `probes.py` at the close whatever the verdict; (h) the rigs' wall contact-ticks
+  under the lift, with and without each arm's two worst runs, beside (c) (round 29's M2 failed on exactly that);
+  (i) merges only after M4b's pair, as M1b(1). **Process gate: if M4b's (b1) fails, stop before M1b's chain runs**
+  (M1b/M2b re-base on main in that case).
+
+### M4b, the SECOND and LAST attempt (DECLARED; to the orchestrator before any judged number)
+
+**The orchestrator's ruling on run 1 (2026-10-14 ~14:15 PDT):** NOT PASSED: (b1) rigs −1.1 se, and the reported rigs'
+contact-ticks +141 % are round 29's regression in a new form. One second run allowed, the last; its bar = the filed
+lines PLUS the contact-ticks JUDGED; M1b/M2b held behind it; native's port waits.
+
+**The narrow fix:** `UNSTICK_BLIND_MAX_LEN_M` = 10 m in `Movement._unstick` (`_blind_escape_ok()`, by
+`hull_box(unit_id)[2]`): the honest stall reading and the momentum-sized escapes apply to hulls that can back out of
+a street in one blind reverse (scouts, IFVs, lancers, artillery, the 8×8s); the War Rig (14 m) keeps round 29's
+reading and 0.9 s escape BIT FOR BIT (its way out of a 20 m street is a planned turn: the planner's F2/F6, round 31).
+`real_velocity` itself, the census line, the pinned probe and gunnery's leads are unchanged (all hulls).
+Candidate `lab/manoeuvre-m4b2` (hash named when its tests are green); base arm `--tank-off=real_velocity
+--nav-off=unstickback` on the same commit, GDScript path. **Fresh seeds:** Terminus **62–74** (13), hull-rest
+**54–59** (4 factions × 6 tasks, drawn, 144 runs), fights **157–180** (24), bridge-pooled.
+- (b1) Terminus arrivals, rigs and mixed apart: not down beyond 1.645 se paired (sequential.py `arrived:guard:0.10`
+  as the early-stop rule, never before 6 seeds).
+- (b1') JUDGED now: wall contact-ticks, rigs AND mixed apart, ≤ base + 1.645 se paired, with and without each arm's
+  two worst runs. With the gate exact, a rig run is a deterministic replica of its base run (diff 0, se 0): any
+  non-zero rig difference is a leak of the change into rigs and is reported as such; the mixed line carries the
+  judgment (run 1: +17 %, 1.7 se).
+- (b2) pinned crew-seconds (hull-rest, by command and real displacement) DOWN beyond 2 se paired at n = 144 (the
+  table: decides −50 % at 90); the STUCK row and tracks apart REPORTED.
+- (b3) bridge-pooled 18/18 (a 17/18 read by the cell's trace). (b4) tracks apart. (b5) brush speed reported with se.
+- (f) escape ends counted (backed v capped) per arm; (g) ONE declared change (`real_velocity`, `unstickback`, the
+  gate); (h) as filed. Fights guard at 24 seeds: kills, deaths within 2 se (decides a 5–6 % loss), hit rate within
+  2 se (decides ~−3 pts), hit rate on touching targets reported. Smokes, determinism, the thirteen re-recorded twice
+  with the reason if they move, ≤ 0.5 ms, a tracked row.
+- Partial rule: (b1) and (b1') are the gate (rigs and mixed, all four lines); (b2) missed with the gate met = ship
+  with the miss written down; any gate line missed = M4b parked with the finding, and `real_velocity` to the pinned
+  PROBE only (no behaviour change) offered as a measurement commit.
+- **Accepted by the orchestrator with:** (i) every rig run byte-identical to its paired base run is a PASS LINE (one
+  leak = the gate missed); (j) (b2) read on the hulls the fix reaches (≤ 10 m) AND on rigs apart (rigs' pins must be
+  unchanged, stated); (k) M4b's record chain stopped at once (done 14:20 PDT: the local chain and its builder0
+  processes, cwd-verified `~/tank_squad/godot-manoeuvre`, killed; bridge/fights/hull-rest of run 1 not taken).
+- **For round 31's planner hand-over (the findings):** (i) under the creep lift, M2b's rigs seed 51, Green_S0_3: 50 s
+  grinding the plaza-crossing wall at throttle 0.8 / lock 0.44, plant speed 9.4, goal 24 m away throughout (the lift
+  rolled an earlier turn and the rig met the wall at an angle: the planner's F1, a corner creep is one forward arc or
+  one back-up chosen by geometry); (ii) under M4b's escapes, rigs seed 31, Green_S0_2, ticks 3120–5430: 77 s grinding the
+  west street wall after a freed pin (plant speed 10.7, real 0.1–3 m/s jittering, throttle 0.9, goal 25–29 m away,
+  neither the stall rule nor the press escape reads it as stuck); the log is `references/round30/manoeuvre/`'s
+  `m4b_run1_rigs31_new.log` (copied at the close).
+
 ### The planner's P1, read (C30.4; `stream/planner` `e63a3099`, `references/round30/planner/{problem,design}.md`)
 
 **What I would wire first, and where:** the wedge-between-hulls escape, at the stall rule's firing point in `_unstick`
@@ -245,7 +383,200 @@ squad's shape changed (seat 8 m behind it), no gate, its U-turn ran onto terrain
 `gate-series` on `lab/brains-r30-gate` (yard_open cross, seed 25, tick 1, rule on) when M5 opens; the Terminus s3
 B_4 case stands first.
 
+### M5 — PARKED with the finding (2026-10-14 ~14:24 PDT; `lab/manoeuvre-m5` keeps the trace tooling and the candidate)
+
+Both of brains' cases reproduced on my path (lab worktree = `lab/brains-r30-gate` merged with the stream, builder0 light
+lane, n = 1 each, `reseat-trace`): (1) **Terminus head-on seed 3 tick 11, B_4: no jam under B5c-v4** (all 10 arrive, B_4
+at 41.2 s, no stall, no escape, no terrain block in 55 state rows; the 8 s jam was round 29's gate). (2) **Yard crossing
+seed 25 tick 1, B_4 (a car): a 180° onto a slot 9 m behind it, re-tasked at 4.9 m/s with a facing that wants the nose**
+(so round 26's reverse is refused, `facing_nose`): the pursuit law drives a full-lock forward loop 15 m out, the slot
+lands inside the turning circle, and Steering's reactive circle rule shuffles it in: six cusps, 11 s (ticks 435–780),
+`phase blocked terrain` the whole time though nothing blocks it. The planned circle (`_plan_circle`, one back-up then
+the away arc) never runs for it: `_away_here()` gates every planned leg to hulls ≥ 10 m since round 26 (the mixed
+squad took 14 % more contacts with it on), and it is gated to |speed| < 1.5 m/s besides. The candidate built
+(`circlebrake`: a moving hull with its point inside its circle brakes on the lock with the opposite throttle, then plans
+the one back-up; `tests/test_manoeuvre_circle_brake.gd`) is therefore unreached for cars, and enabling the planned
+circle for cars re-opens round 26's measured harm. **The answer is the planner's F4 (a goal POSE 9 m away: 2–3 legs,
+~15 m), round 31; not a rule in the k-turn block.** Nothing declared; nothing merges. For the lead: the car he would
+see turning round in six goes is not stuck, it is turning badly.
+
+### Design note for round 31 (traffic's T4 question, relayed by the orchestrator): a War Rig pressed against a FRIEND
+
+Traffic's finding (T4 tuning on `77a1603f`, Terminus 21–23): with ORCA reading `real_velocity`, mixed stuck 198 → 86
+crew-s and the mixed-21 IFV's loop gone, but a rig pressed against a squadmate sits 55 s (real 0, estimated 12,
+`touch false`, stall clock 0) because M4b run 2 keeps a > 10 m hull's stall clock on `estimated_velocity`.
+**Answer: yes, read `real_velocity` for the rig's stall clock when the blocker is a HULL (`touch false` with a slide
+collision whose collider is a Tank: the planner's "colliders are Tanks" case), keep today's reading against walls —
+but what fires must not be run 1's escape.** Run 1 punished a 14 m hull's blind reverse ON LOCK (turn 1.0) in a 20 m
+street: it swung the tail across the street and re-approached the wall at an angle, then ground there. For a rig
+against a friend the escape is: (1) ASK first (`_ask_behind` / traffic's give-way: the friend has the short hull and
+the room; this is the planner's reading too, "an honest NO_PATH the layer above can act on"); (2) if the friend does
+not clear within ~2 s, a STRAIGHT reverse (turn 0, no lock) of at most 3 m, only when the k-turn's outline sweep
+(`_outline_ok` stepped along the straight reverse, the hull's own ten points) is clear for those 3 m, ended by the real
+backoff; a straight reverse keeps a long hull parallel to the street and cannot produce run 1's angle; (3) if the
+sweep refuses, report `blocked` by the friend's name (`_blocker`) so the brain re-tasks rather than press. Counters:
+rig stall fires by blocker kind (hull/wall), asks, straight reverses, sweep refusals. Judged with T4 next round on the
+same Terminus census: rigs' wall contact-ticks ≤ base + 1.645 se (run 2's line), rigs' pinned/stuck crew-seconds down,
+arrivals not down, with the planner's F2 the long-run answer. The gate `UNSTICK_BLIND_MAX_LEN_M` then means "no reverse
+on lock for a long hull", not "no stall clock".
+
 ### Progress log
+- **kturnarc alone judged (`e7a58262`, Terminus 13 fresh seeds 75–87, GDScript path, builder0, 19:35 PDT): every
+  line met.** (c) rigs arrivals 178 → 181 of 208 (+3, se 7.38: PASS; SERIES PASS at run 6 of 13), mixed 291 → 288 of
+  312 (−3, se 3.34, 1.645 se = 5.5: PASS; SERIES PASS at run 6); wall contact-ticks rigs 12184 → 11755 (−4 %, se
+  3836), mixed 1861 → 1991 (+7 %, se 437); leg seconds rigs 2120 → 1730 (−18 %), mixed 1839 → 1782. (d)
+  `kturn_aborted` 22 → 21 (not up); k-turns 398 → 396, `kturn_ticks` 42443 → 40311 (−5 %: legs end where the plan
+  said; the driven ÷ planned ratio needs the leg records, which the drive prints only under `--reverse-log`, so the
+  tick count stands in). (e) bridge-pooled 18 of 18. Table: `references/round30/manoeuvre/kturnarc_judged.txt`.
+- **M1b(1) judged, hull-rest (a)(b)(c) and (h), `55622870` on the reader base, builder0, 19:10 PDT (the four arms
+  complete at 144 runs each after the cap re-run):**
+
+  | line | reading |
+  |---|---|
+  | (a) at-rest medians per task, ALL classes, drawn | ambush 33.8 → 33.3° (p 0.87), attack-move 23.1 → 15.9 (0.38), move 8.3 → 7.0 (0.57), right 8.9 → 7.5 (0.46), screen 30.8 → 30.4 (0.74), SBF 33.2 → 32.9 (0.91): none worse, PASS |
+  | (a) clicked | ambush 36.7 → 37.9 (0.57), attack-move 60.9 → 62.7 (0.75), move 42.2 → 41.3 (0.61), right 41.7 → 42.1 (0.80), screen 41.9 → 42.3 (0.83), SBF 35.7 → 35.3 (0.92): none worse, PASS |
+  | (b) crews still moving at 75 s, new − base, drawn, per task | −1, −10, −10, **+5**, −4, −3 (all classes); 18 class × task lines paired: 16 within 2 se, wheels/fixed faced_right −8 (se 2.8, better), **wheels/turret faced_right +15 (11 → 26, se 6.5: 2.3 se, the ONE miss by the letter)**; those 26 crews: 13 pinned + 13 driving, 0 face legs, 0 face creep — crews that never reached their slot, which the anchor cannot touch (the probe's known class; the table's A/A swing ±12–17 a task) |
+  | (c) clicked SBF's −17.8° (round 29, p 0.02) | NOT reproduced: 35.7 → 35.3°, p 0.92 (as sizing predicted: inside the A/A) |
+  | (c) counters | `face_slot_kept` / `_refused` are NOT exported by the hull-rest probe (a tooling gap, noted); the anchor's action shows in the drawn attack-move median (23.1 → 15.9) and the Terminus face-order misses (mixed 14 → 9) |
+  | (h) rigs seed 21, both arms | byte-identical (4/4 every leg, contact-ticks 775 = 775): the wild case was made by M4b run 1's escape, which is parked; on the reader base the rig never leaves its slot |
+  | (d), (e) | Terminus arrivals PASS both squads (early-stop rows above); bridge 18/18 |
+
+  **Ruling (the orchestrator, 19:20 PDT): SHIPS.** The filed (b) line is PER TASK and every task passes; the 18 class ×
+  task lines were the se's source, not pass lines, so the one at 2.3 se is recorded with the reading above, not ruled
+  on. Tooling for next round: export `face_slot_kept` / `face_slot_refused` from the hull-rest probe.
+- **M2b judged (`1f1c9835` on the reader base, builder0 GDScript path, 18:45 PDT): NOT MET, nothing ships as filed.**
+
+  | line | base | new | reading |
+  |---|---|---|---|
+  | (a) open+static creep episodes (census 14–19 + sim 9–11, 15 runs) | 53 | 37 | −30 %, se 9.8: within 2 se; the line was −50 % — MISSED |
+  | (b) episodes over 3 legs | 111 | 89 | not up; friendly episodes 90 → 100 (+11 %, se 19); creep flips 1646 → 1361 |
+  | (c) Terminus rigs arrived / 208 (seeds 49–61) | 181 | 172 | −9, se 4.97: 1.8 se down, the 1.645 se line MISSED (the SPRT guard read PASS at the full grid: the two rules disagree at this n) |
+  | (c) Terminus mixed arrived / 312 | 292 | 293 | PASS; SERIES PASS at run 6 of 13 |
+  | rigs wall contact-ticks (reported) | 10400 | 13953 | +34 %, se 3034; rigs' k-turns 165 → 1028, kturn_multi 61 → 144 |
+  | (d) kturn_aborted | 9 | 9 | not up |
+  | (e) bridge-pooled; brush speed | | 18/18; +0.04 m/s se 0.47 | |
+  | the lift's counters (new) | | 14727 lift unit-ticks; refused slowed 4983, no_arc 240, blocked 1765 | fired (lesson 300) |
+
+  (h) the rigs' wall-contact direction, worst run (seed 51, Green_S0_3: 1765 of 1848 contact-ticks, 50 s on the
+  plaza-crossing wall at throttle 0.8 / lock 0.44, plant speed 9.4, goal distance frozen at 24 m): the lift rolled an
+  earlier turn instead of creeping it and the rig met the wall at an angle where the plant's phantom momentum grinds
+  it: round 29's finding again, and M4b run 1's grind state. Per the filed partial rule the lift's finding goes to the
+  planner (F1) and **`kturnarc` is re-declared alone** (base `--nav-off=creeplift,kturnarc` v new
+  `--nav-off=creeplift`, Terminus fresh seeds 75–87, (c)(d)(e)); **GO ruled (18:50 PDT)**, its chain queued behind
+  M1b's last arm; its merge is a pair (native knows `_kturn_arc_m`). Both arms' per-run
+  census rows (`census_{base,new}.jsonl`) go to sizing's `probes.py` at the close (line (g)).
+- **M1b(1) judged, Terminus (d), 13 fresh seeds 36–48, GDScript path, `55622870` on the reader base, builder0, 17:30
+  PDT:** rigs arrivals 176 → 179 of 208 (+3, se 5.13, 1.645 se = 8.4: PASS), mixed 284 → 286 of 312 (+2, se 3.56:
+  PASS). **The project's first early stop (line (g)):** `sequential.py --terminus … arrived:guard:0.10`, boundaries
+  A +2.77 / B −1.56 (α 0.05, β 0.20), min 6 runs: rigs SERIES PASS at run 10 of 13 (seed 45, llr −1.71), mixed SERIES
+  PASS at run 6 of 13 (seed 41, llr −5.60); the full 13 had been run before the read (the chain is not interactive),
+  so the stop saved nothing this time and the rows are recorded for the rule's first use. Reported: wall contact-ticks
+  rigs 8945 → 7662 (−14 %, se 2221), mixed 2475 → 1738 (−30 %, se 481); leg seconds rigs 1884 → 1659, mixed 1809 →
+  1945; leg misses under a FACE order ("a face left the slot") rigs 19 → 21, mixed 14 → 9. **(e) bridge-pooled 18 of
+  18.** Hull-rest four arms in ONE call hit builder0's 90-minute run cap (make exited 124, 18:30 PDT): `new_drawn`,
+  `base_drawn`, `new_clicked` complete at 144 runs each, `base_clicked` cut at 61; the copy-back flagged 9 files
+  corrupt (the runs the timeout killed mid-write). The seed-21 reruns were then refused by the wrapper's stale-run
+  guard (the timed-out run's marker). Queued behind M2b's chain: `base_clicked` alone (one arm per call, ≤ 90 min;
+  `REMOTE_FORCE=1` once, after a cwd-verified check that nothing of mine was alive in that folder) and the seed-21
+  pair; the four-arm tables are read only once `base_clicked` is complete. Preliminary, drawn arms only (complete,
+  not a verdict): at-rest medians per class × task move within noise (p 0.38–0.93), attack-move ALL 23.1 → 15.9°,
+  wheels/fixed p90 61.1 → 9.2°; the clicked pair's p-values on the partial base arm are not read.
+- **Brains' B6 case run on M1b (reported line):** `sbf-series` gang_ifv, seeds 1–6, drawn/none, on `55622870` +
+  `stream/brains` (builder0, both arms, base `--nav-off=faceslot`): the arms' jsonl byte-identical; A_4 at arrival with
+  a drawn facing 65.6–96.3° off, not moving, 2.3–3.2 m off its slot, both arms; face_slot's counters 0. A wheeled
+  turret hull's drawn facing is declined by the brain until turn-hull ships, so no face runs for M1b(1) to anchor: the
+  case is M1b(2)'s (turn-the-hull), not the face_slot fix.
+- **M4b run 2's PAIR CHECK (native's `366b42bc`) RED on two tests, both reproduced on `77a1603f`'s GDScript path
+  (builder0 light lane, 16:55 PDT; `references/round30/manoeuvre/m4b_run2_paircheck_traces.log`):**
+  (2) `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it`: 48 contact ticks = 32
+  steer (driver drive, forward) + 16 plant (driver unstick, reverse: sweep 10, drift 6): the 9.7 m tracked tank backs
+  off once the honest reading fires the stall rule after 1 s; the classification is correct, the test's "every tick is
+  steer" encodes the old never-backs-off behaviour on a raw `drive` order. (1) `test_tactics_mixed_legs::
+  test_four_tanks_attack_moved_across_the_sumps_arrive`: three of four 7.3 m wheeled 8×8s seat by 45 s; Green_M_3
+  takes one stall escape at 48 s (v 0.01: a 0.9 s reverse on full lock) and from 57 s to the end sits 21.5 m from its
+  slot at ORCA's pace (`cmd 0.07/−0.03`, plant 0.86, real 0.00, touching nothing) behind a seated squadmate, reseats 0:
+  the escape's reverse on lock in single file put it at a pose the seating never recovers from (the re-seat's "slow"
+  test reads `estimated_velocity`), and at 0.07 throttle no rule reads it as stuck. A real regression on a stage the
+  series did not cover; the escape itself is the cause, so no fix in my paths leaves the judged rows byte-identical.
+  **Recommended to the orchestrator: park the escapes for round 31 (with the design note), ship the READER as the
+  measurement commit (`real_velocity`, the census line, the probe, gunnery's two leads).**
+- **M4b run 2 (`77a1603f`), Terminus 13 fresh seeds 62–74, GDScript path, builder0, read 14:50 PDT — the gate PASSES:**
+
+  | | base | new | line |
+  |---|---|---|---|
+  | rigs arrived / 208 | 178 | 178 | identical |
+  | rigs wall contact-ticks | 13411 | 13411 | identical (two worst dropped 8286 = 8286) |
+  | (i) rig runs line-for-line identical to base | | 13 of 13 | the state line's printed `real` and the summary's `off` list aside: no leak |
+  | mixed arrived / 312 | 295 | 293 | −2, 1.645 se = 4.7: pass |
+  | mixed wall contact-ticks | 2093 | 1915 | −8 %, 1.645 se = 423: pass (two worst dropped 1314 → 1350) |
+  | mixed leg seconds | 1478 | 1534 | +4 % (reported) |
+  | mixed stall fires (backed / capped), press | 11, 7 | 40 (21 / 19), 7 (6 / 1) | the cap binds for short hulls (f) |
+  | brush speed while touching (n 26) | 5.37 | 5.43 | +0.07 se 0.09; touching crew-seconds 522 → 525 |
+
+  (b3) bridge-pooled **18 of 18** on the new arm (builder0). **Fights guard (24 fresh seeds 157–180, 180 s, paired):**
+  kills 967 → 971 (se 33.6), deaths 975 = 975, shots 30204 → 30252, hits 21442 → 21753 (se 1443), hit rate 0.710 =
+  0.710 (se 0.018), hit rate on touching targets 0.645 → 0.670 (+2.5 pts, se 0.036: the honest lead, within 2 se); all
+  within 2 se. **(b2) hull-rest fresh seeds 54–59, 4 factions × 6 tasks, drawn, n = 144 paired (16:39 PDT):**
+
+  | pinned crew-seconds | base | new | |
+  |---|---|---|---|
+  | all | 2596 | 658 | −1938, se 422: DOWN beyond 2 se (−75 %) |
+  | the hulls the fix reaches (≤ 10 m) | 2596 | 556 | DOWN beyond 2 se |
+  | rigs apart | 0 | 102 | se 72, within 2 se: the rig's rule is unchanged (Terminus: identical); its squadmates now move differently round it |
+  | scouts apart | 1179 | 268 | DOWN beyond 2 se |
+  | tracks apart | 122 | 108 | within 2 se |
+  | pinned crews | 65 | 14 | DOWN beyond 2 se |
+  | STUCK (no 1 m of progress ≥ 10 s; reported) | 6631 | 4794 | −28 %, se 628 |
+
+  Crews still moving at 75 s fewer on every task (screen 43 → 33, support by fire 26 → 21, move 28 → 22). **Every
+  judged line of the filed bar is met.** `make check` on `77a1603f` running (the three native twin tests expected red).
+- **Line (f), the cap-ended escapes traced (mixed, new arm, 13 seeds):** stall escapes by hull and ending: artillery
+  3 backed / 11 capped, IFV 10 / 8, tank 2 / 0, lancer 1 / 0, scout 1 / 0. The artillery's capped ones are a FALSE
+  POSITIVE of the stall rule, harmless in motion: a battery PACKING UP reads throttle 0.85 with zero motion (`Tank.
+  _deploy_step` swallows the drive while the legs come up), the stall timer fills in 1 s, the escape fires (−1.0 / 1.0)
+  and is swallowed the same way, the 0.9 s cap ends it (speed 0, nothing to shed), and the gun drives off normally
+  once packed (mixed seed 62, Green_S0_5, ticks 810–870: `v 0.00 real 0.00 cmd 0.85/−0.61` → `cmd −1.00/1.00 esc 0.1`
+  → 2.20 m/s and away at 870). A later refinement, not this run: the stall timer should not count while
+  `deploy_ratio` > 0 (a gun packing or setting up is not stuck). The IFV's 8 capped escapes are the backoff-and-re-pin loop against a
+  HULL (mixed seed 64, Green_S0_6, ticks 1080–1590: pinned at real 0.03 under throttle 0.8, `touch false`, the escape
+  backs a little, the route drives it straight back in, again every ~7 s, goal 21–25 m away throughout): the planner's
+  F2 pose, and traffic's avoidance reader (a pinned blocker is a 12 m/s ghost to ORCA), not a re-task.
+- **M4b second attempt committed `lab/manoeuvre-m4b2` `77a1603f`** (wedge tests builder0 8/0); its judged chain
+  started 14:25 PDT (Terminus 62–74 both arms, bridge, fights 157–180, hull-rest 54–59). Native holds its port.
+- **M4b JUDGED, Terminus (b1), 13 fresh seeds 23–35, GDScript path, `e8bfef2e` (tree `1b3e2e56`), builder0, 2026-10-14
+  ~14:12 PDT — the gate is NOT met; M1b's and M2b's chains held per the orchestrator's rule:**
+
+  | | base | new | reading |
+  |---|---|---|---|
+  | rigs arrived / 208 | 185 | 181 | −4, se 3.72 (per-seed sd 1.03): down 1.1 se, UNDECIDED |
+  | mixed arrived / 312 | 282 | 288 | +6, se 3.49 |
+  | rigs wall contact-ticks (reported) | 7456 | 17970 | **+141 %, +3.1 se**; two worst dropped 4601 → 11966 |
+  | rigs contacts by driver | route 6067, press 314, kturn 639 | route 15591, press 575, unstick 717 | forward-gear contacts ×2.7 |
+  | mixed wall contact-ticks | 1403 | 1642 | +17 %, 1.7 se; leg time 1913 → 1646 s |
+  | rigs stall fires / press escapes | 0 / 29 | 187 (185 backed, 2 capped) / 128 (127 backed) | |
+  | brush speed while touching (b5) | 5.23 m/s | 5.62 | +0.39 se 0.30, within 2 se; touching crew-seconds 361 → 706 |
+
+  Worst run (rigs seed 31: contacts 566 → 3218, arrived 15 → 13): Green_S0_2 GRINDS the west street wall for 77 s
+  (ticks 3120–5430): plant speed 10.7, real 0.1–3 m/s jittering, throttle 0.9, goal distance oscillating 25–29 m,
+  `touch true` throughout; the stall rule never fires (the real speed spikes above 0.8 m/s every other second and reset
+  its 1 s timer) and the press escape fires every ~15 s (its 1 s window sees > 0.75 m of sideways motion). At base the
+  same rig touched 10 s. Reading: the honest reader + sized escapes free PINS (the tuning held: 211 → 0 pinned
+  crew-seconds), but an escape's reverse on lock and re-approach leaves a long hull at an angle to a street wall where
+  the plant's phantom momentum GRINDS it (the plant's yaw fit is off: it yaws into the wall and slides), a state neither
+  rule reads as stuck. Round 29's (A) regression in a new form; the three tuning seeds (contacts 1849 → 1370) were the
+  +127 % MDE the table warned about. Mixed hulls (scouts, IFVs, lancers: short, fast braking) gain: arrivals +6, leg
+  time −14 %.
+- **M5, first reading (lab worktree `godot-manoeuvre-m5` = `lab/brains-r30-gate` merged with the stream, `15aa3f74`;
+  builder0 light lane, n = 1):** brains' first case, Terminus head-on seed 3 tick 11 with the round-30 gate rule
+  (`reseat-trace`, `--turn-states --turn-trace=Green_B_4`): all 10 crews arrive, B_4 at 41.2 s, no stall, no escape,
+  no terrain block in its 55 state rows (it seats at 17 s, is re-tasked twice, drives its last 26 m at 0.16–0.83
+  throttle on full lock, arrives at 43 s). The 8 s terrain jam was on round 29's gate (`lab/brains-r29-gate`, v3):
+  B5c-v4's "no gate within the approach length" removes the gate that sent it there. Brains' second case (yard
+  crossing seed 25 tick 1, the U-turn onto terrain) is being reproduced next; M5's escape is designed from that trace.
+- **Candidates and the queue (2026-10-14 ~14:05 PDT, superseded by run 1's ruling below):** M4b `e8bfef2e` (judged tree `1b3e2e56`, tooling on top),
+  M1b(1) `lab/manoeuvre-m1b` `37c47851` (+ `ec92bad0` tooling), M2b `lab/manoeuvre-m2b` `e94ca27e`. Judged chains on
+  builder0 one at a time: M4b (running) → M1b → M2b, under the orchestrator's gate (M4b's (b1) failing stops the
+  queue). Lab worktrees `godot-manoeuvre-m1`, `godot-manoeuvre-m2` (removed at the close with their builder0 folders).
 - **M4b committed `e8bfef2e`** (on main `3f1713a5`, sizing merged; `tests/test_manoeuvre_wedge.gd` builder0 7/0); native has
   the hash and the final constants. **Tuning (Terminus seeds 20–22, n = 1 each, GDScript path, builder0, `e8bfef2e`):**
 
