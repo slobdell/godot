@@ -130,6 +130,19 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   the old +10 % line FAIL as filed). **Seeds** {41,42,43} × ticks {1,3,6,8,11,16}, n = 18 a case, four cases, 90 s. On
   the pair tree `turns` is default ON, so base = `--traffic-off=turns` and arm = no flag. Early-stop lines are in
   traffic's Status bar block.
+- **Traffic T1c-b2 bar (filed 2026-10-14 ~23:00 PDT, before any judged number; DECLARED; ONE run = the LAST attempt;
+  full text in traffic's Status at `4054e7ca`):** candidate stream/traffic `6d19a3d9` = `16780030`'s game/ + `02dc1433`'s
+  measurement additions re-based, no code change; rule ON by default (base `--traffic-off=setup`). No C++ twin: native
+  states "none ported"; `native-verify-scenarios` + `traffic-native-verify` on the tree; whole suite green first (C31.1).
+  Census fresh seeds {41..46} × Sumps 1000 / Parade 2000 / Foundry 2000, n = 18, 150 s. **(1) DECIDING:** runs with any
+  repack while firing, arm 0/18, Fisher p ≤ 0.05 v base, base ≥ 8/18 (else NULL, lesson 300). (2) friendly-stuck total ≤
+  base + 1.645 se (row sd 32.2 → +225). (3) fast friendly ≤ base + 1.645 se (sd 6.84 → +47.7). **(4) artillery shots
+  REPORTED, not judged** (said before numbers, per the brief): row sd 34.1, base 24.9 a run, a 10 % loss needs ~1150 runs,
+  MDE at n 18 ≈ 20 a run; totals, paired mean ± se, per-battery counts, worst run traced. (5) ApproachStage drawn
+  artillery s41–43 × 6 ticks: give-way repacks down, from the side 18/18, first round ≤ clicked + 30 s, alive within
+  1.645 se. (6) bridge-pooled 18/18. (7) the four traffic cases s41–43 equal field for field, or within T3b-c's guards,
+  no wedge. Early stop: `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'`. Ships ON (his call:
+  "ships if the repack count holds at 0").
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
