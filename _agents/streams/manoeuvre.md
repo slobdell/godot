@@ -122,16 +122,42 @@ Nothing.
 
 _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, Opus), from main `75dbbb7c`._
 
-### Report (running)
+### Report (running; updated 2026-10-15 ~02:30 PDT)
 
 | item | commit | state |
 |---|---|---|
-| **H1** escapes (`unstickback`) | `32b08f8c` + `eaf0090a` (consts) | built, OPT-IN; unit stage 5/0 on builder0 (working tree = `32b08f8c`); branch check on `32b08f8c` running; C31.1 pre-series gate (flipped tree `6da94fc2`, `check NATIVE=off`) running |
-| **H2** signed arc (`kturnarc`) | same | built, OPT-IN; `test_kturn_arc` 3/0 on builder0 |
-| **H3** leads (`--gun-off=realspeed`) | same | built, OPT-IN (`Manoeuvre.lead_velocity`, the two granted lines); `test_manoeuvre_lead` in the check |
-| CP-H | — | waits on the orchestrator's call (traffic T4, brains `realslow` on main: realslow merged at `aa205ea5`) |
-| **M6** tooling | `9558eee3`, `eea19309` | counters on MANOEUVRE_TURNS + `hull_rest_counters.py` (face_slot_kept/refused, hull_turns, face_keep_refused, escape arms); hull-rest runs `--turn-states`; the CP-H runner `manoeuvre-cph` (refuses an arm without `--brains-off=native`); hull-rest `M1_NEW_OFF`/`M1_GD`/`M1_SEEDS`. Early-stop hook: waits for traffic's runner on main |
-| **M1b(2)** turn-hull (`turnhull`) | `44adcbbe` | built, OPT-IN; unit stage 2/0 on builder0 (light); bar SENT before numbers (below); tuning (hull-rest 40–41 law) running |
+| **H1** escapes (`unstickback`) | `32b08f8c` → `426e6c6e` | OPT-IN; the C31.1 gate found a terrain-pin stall (below) → R31.5 fallback; re-gate on `998fe844` running |
+| **H2** arc (`kturnarc`) | `32b08f8c` → `0cf72ba7` | OPT-IN; the C31.1 gate's scout orbit red → SCOPED to the braked hulls (≥ 10 m); `scenario_cp2` green on the flipped tree |
+| **H3** leads (`--gun-off=realspeed`) | `32b08f8c` | OPT-IN; clear on every gate stage |
+| merge-OFF | native's `pair/cph 9e1000d6` (my `197a65da` + native's mirror with the 7 exec_fields rows) | its plain check queued (native reports); my branch ALONE is red only on native's member table (R31.2-style pair rule): `9b257348` check exited 2, 2619/1, `test_native_exec_state::test_the_table_is_the_scripts_members` |
+| CP-H | — | waits on the re-gate green + native's ON pair + traffic T4 / brains realslow |
+| **M6** tooling | `9558eee3`, `eea19309` | done (the early-stop hook waits for traffic's runner on main) |
+| **M1b(2)** turn-hull | `44adcbbe` | bar filed (main `9564f1bb`, (d) at 1.645 se); tuning read; its ship check (TURN_HULL_DEFAULT true, plain check: tree `21343a05`, to re-base) waits on the merge-OFF |
+
+**The C31.1 gate (flipped tree, `make check NATIVE=off`, builder0) found two consumer defects before any series:**
+1. `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` (`6da94fc2`): 7 deck hits of 8 (needs ≥ 20 hits). Attributed
+   one arm each (light, GDScript): all ON fail; kturnarc OFF 58/83 PASS (= base); unstickback OFF fail; realspeed OFF fail.
+   Trace (`--turn-trace=Green_Scout_1`, the leg print `37db0169`): a scout's leg is planned from its POSE (`_look_stop` is
+   0 under 10 m) while it rolls forward at 10 m/s; the chord ends that stale leg in the roll-out (f 207) and the next look
+   re-plans from where it is (f 209) — that keeps the orbit. Every arc rule drives the stale leg from the wrong pose:
+   unsigned (round 30) 3/27, signed 7/8, in-gear (= PlannerExecutor's rule) 3/27. **Fix:** `_arc_here()` = kturnarc AND
+   `kturn_brake_on()`: the arc (and the discrete stopping distance) for the hulls planned from rest (the War Rig the
+   planner's P4 measured); short hulls keep the chord bit for bit. `scenario_cp2` 5/0 (deck 58/83) on `ac1e1a39`.
+2. `test_control_queued_task::test_shift_screen_after_shift_waypoints_waits_for_the_route` (`6da94fc2`; fails with
+   unstickback ALONE on). Trace: Green_Alpha_3 held by the GROUND at (-25.7, 7.3), real 0, plant 0, no contact, no hull;
+   round 29's rule fires and its lock reverse frees it; H1 fired it as a terrain pin, its straight reverse found < 1 m and
+   it stood 2 s nine times (refused 9): the squad never arrived, the queued screen never started. **Fix (R31.5):** a pin
+   with NO hull whose straight reverse has no room falls back to round 29's escape bit for bit (counter `fallback`,
+   reported per CP-H stage; round 30's wall-backing stage stays a pass line:
+   `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it`). The spot went to brains as a
+   possible trap on main.
+Also red on that gate and expected: `sim-baseline` (behaviour ON), `native-verify-scenarios` / `native-live-guard` (no
+native library under NATIVE=off); `test_nav_kturn_brake::test_a_scouts_back_up_at_speed_stays_a_tap_by_default` was the
+unscoped H2 (re-checked on `998fe844`).
+
+**Launch lesson (sent to the orchestrator, now in `remote_builds.md` main `a26b5c6a`):** `make remote` wrappers started
+from the agent's shell — background or `setsid nohup` — are reaped when a later Bash call ends; `systemd-run --user` units
+survive.
 
 ### Plan (smallest foundation first)
 
