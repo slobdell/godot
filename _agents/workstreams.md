@@ -476,6 +476,15 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   ("never silent" FAILS; footprint 0.03 m over, yaw 6.3°, holds). **Ruling: unbaked scenery and WRECKS are in CP-P1's
   scope**, since they occur in every fight. The fix is either static colliders and wrecks in the planner's snapshot, or
   the face kind handing back after its first abort. No pin of manoeuvre's tests.
+  **Traced (~07:30 PDT, builder0 light, `032af15f`, 29/0) and the wreck ruling CORRECTED:** (1) k-turn ON drives 4 real
+  gear segments (R 3.0, F 1.4, R 1.6, F 29.0 m) v OFF's 2 (R 4.5, F 29.8), so it is a finding. The planner is sweeping
+  the seam's own request one variable at a time (goal clipping, arrival radius, heading, cusp cost, arrive gear) on that
+  scene plus the named fixtures, to find the lever before changing it. (2) **Wrecks do NOT block:**
+  `Tank._set_alive(false)` disables a wreck's collision, so PlannerNavWorld skipping dead hulls is right, and the
+  orchestrator's ruling was wrong. The remaining blind spot is scenery added after the bake, which today's content does
+  not have. **No collider snapshot this round.** The fix is a face handing back on its FIRST abort (`1e513bcf`) and on
+  its FIRST wall touch (`d8c2e742`, `mover.contact.touching`); k-turn keeps R31.2's abort and two re-plans. (Over 20 s
+  both arms breach the semi's footprint bar; the test reads it at 8 s.)
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
