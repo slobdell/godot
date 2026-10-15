@@ -452,7 +452,7 @@ static func capture() -> Dictionary:
 	for name: String in _crews:
 		crews[name] = (_crews[name] as Crew).copy()
 	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
-			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate()}
+			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true)}
 
 
 static func restore(snapshot: Dictionary) -> void:
@@ -465,6 +465,7 @@ static func restore(snapshot: Dictionary) -> void:
 	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
 	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
 	holds = PackedInt32Array(snapshot.get("holds", PackedInt32Array()))
+	last_plans = (snapshot.get("last_plans", []) as Array).duplicate(true)   # native's note: else a twin appends twice a tick
 	var counters: Dictionary = snapshot["counters"]
 	requests = int(counters["requests"])
 	plans = int(counters["plans"])
