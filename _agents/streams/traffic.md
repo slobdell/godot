@@ -106,8 +106,13 @@ _Updated 2026-10-14 (traffic worker, round 31, Opus)._
    (`ab3351fb`). Native's mirror `413252ea` (stream/native); pair tree = both + `DEFAULT_OFF = []`; `make remote T=check`
    on it BEFORE the series (C31.1). Then the judged series with the hook.
 3. **T1c-b2**: re-base `traffic-t1cb-judged`, pair-tree check (no C++ twin: native states "none ported" +
-   `native-verify-scenarios`), the bar below, the census.
+   `native-verify-scenarios`), the bar below, the census. Re-based at `6d19a3d9` (no code change; the rule ON by default;
+   the census hook's metrics `rwf_any`, `art_shots`). Bar FILED by the orchestrator (main f1863f9b6).
 4. **T4** behind `--traffic-off=ghost`, OPT-IN per the orchestrator's R31.1 (default OFF; naming it turns it ON).
+   v1 re-based at `f9c765c76` (`Traffic.OPT_IN = ["ghost"]`: named in `--traffic-off=` or `--traffic-on=` → ON;
+   `test_traffic_ghost` 4 tests). Diff sent to native for `avoidance_gather`. Next: the v1 v v1+v2 tuning pair
+   (nav-terminus-drive seeds 21–23) decides whether the solver's own velocity rides along; R31.1's pre-series gate
+   (`check NATIVE=off` with ghost flipped ON in a scratch tree).
 5. Stretch only after CP-P1.
 
 ### Bar: T3b-c (pre-registered, sent to the orchestrator before any number; DECLARED; ONE run = the LAST attempt; no partial)
