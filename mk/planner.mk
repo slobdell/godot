@@ -159,3 +159,21 @@ planner-judge-bridge: native import ## planner CP-P1 (e): bridge-pooled (18 runs
 planner-judge-cp2: native import ## planner CP-P1 (c): scenario_cp2 (the scout's orbit, a no-change guard) for PLANNER_JUDGE_ARM
 	@echo ">> planner-judge-cp2 | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
 	@$(MAKE) --no-print-directory ai-scenarios FILTER=scenario_cp2 AI_SCEN_FLAGS="$(PLANNER_JUDGE_FLAGS)"
+
+# Round 31 (CP-P1's diagnosis set, the orchestrator's ruling on the first judged series): ONE Terminus drive run of the
+# series' recipe with one hull traced -- the drive script's `--trace=<unit>` (its driving twice a second) and the
+# census's `--turn-trace=<unit>` (the seam's own lines: taken, planned, released, aborted). Light lane.
+PLANNER_TRACE_SEED ?= 134
+PLANNER_TRACE_SQUAD ?= rigs
+PLANNER_TRACE_UNIT ?= Green_S0_4
+PLANNER_TRACE_ARM ?= candidate
+PLANNER_TRACE_DIR := $(BUILD_DIR)/planner-trace
+.PHONY: planner-trace-drive
+planner-trace-drive: native import ## planner CP-P1 diagnosis: the series' drive, one seed, one hull traced (PLANNER_TRACE_SEED/SQUAD/UNIT/ARM) -> build/planner-trace/<arm>-<squad>-<seed>.log
+	@mkdir -p $(PLANNER_TRACE_DIR)
+	@echo ">> planner-trace-drive on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $(PLANNER_TRACE_ARM) $(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED) trace $(PLANNER_TRACE_UNIT)"
+	@flags="--brains-off=native_drive --trace=$(PLANNER_TRACE_UNIT) --turn-trace=$(PLANNER_TRACE_UNIT)"; \
+		[ "$(PLANNER_TRACE_ARM)" = base ] || flags="$$flags --nav-off=planner"; \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_TRACE_SQUAD)" DRIVE_SEEDS="$(PLANNER_TRACE_SEED)" NAV_FLAGS="$$flags" NAV_JOBS=1
+	@cp $(BUILD_DIR)/nav-drive/$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log $(PLANNER_TRACE_DIR)/$(PLANNER_TRACE_ARM)-$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log
+	@grep -cE "^NAV_DRIVE_TRACE |^PLANNER_SEAM " $(PLANNER_TRACE_DIR)/$(PLANNER_TRACE_ARM)-$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log | sed 's/^/>> planner-trace-drive: trace lines /'

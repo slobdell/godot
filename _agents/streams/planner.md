@@ -422,6 +422,43 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 09:50 PDT: **THE DECLARED FIX (the orchestrator's ruling on the first judged series: diagnose 133/134/138/140,
+  declare before any new number).** The series (builder0 0fcdd5dd = code 05ce260b, gate 8bb2ad4e, `make planner-series
+  exited 0`, 09:27): rigs arrivals base 178 candidate 159 of 208, paired -1.462/seed se 0.595 = MISS of (a); mixed
+  identical (the seam silent 13/13). Per seed: 133 -4, 134 -5, 135 +2, 136 +1, 137 +1, 138 -4, 139 -2, 140 -3,
+  141 -1, 142 -1, 143 0, 144 -1, 145 -2. The MISS CLASSES over the 13 rig runs (`references/round31/planner/
+  series1-diagnosis/misses-by-arm.txt`): "arrived, order complete, not touching" base 13 -> candidate 24 (+ 4 touching);
+  "blocked by a squadmate, touching" 13 -> 17. **Of the candidate's 28 arrived-short misses, 13 sit at gaps 7.0-8.5 m
+  (base 1) and 8 more at 8.5-11 m (base 3): the whole -19 is hulls that ARRIVED and were then carried just past
+  the census's ARRIVED_M 7.0 line**, at the same slots seed after seed (plaza (-3,19.6) in 133/134/138/143/144,
+  (10.9,5) in 134/138/141/144, west street (-69,21) in 135/141/143/145).
+  **Trace A (`planner-trace-drive`, light lane 9fe29f54, seed 134 Green_S0_4, plaza leg):** t 19.5 s arrived
+  4.5 m from its slot (phase arrived, the order complete); t 19.5 the seam's FACE plan "R+1.0x3.5" (1 leg, 5
+  expansions) reversed it 3.4 m on full lock to (-10.1,20.2): 7.4 m from the slot, where it sat to the leg's end =
+  a miss. **The cause:** the seam's face request carries manoeuvre's `stay` (settle - 1 = 5 m round where the hull
+  stands) but NOT manoeuvre's slot law -- round 30 M1b (a face plan may not END further from the last move's slot
+  (`ctl.face_slot`, within 2 x settle) than it starts + FACE_SLOT_SLACK_M 0.5) and round 31 M1b(2) under turnhull
+  (EVERY pose within max(ORDER_ARRIVE 3.5, settle) - FACE_KEEP_MARGIN_M 0.75 of the slot, or no further out than it
+  starts). Base's `plan_face` obeys both, so its hulls face inside the arrive circle; the seam's planner is free to
+  end anywhere in its 5 m stay circle, and a rig's one-leg face is a 3.5 m chord outward.
+  **THE FIX (declared, nothing else changes):** `PlanRequest.keep(x, z, all_m, end_m)` -- a KEEP circle: every pose
+  the search expands lies within `all_m` of the slot and the goal pose within `end_m`; both planners (GDScript +
+  C++ mirror, the twin fixture), and the seam's FACE request sets it exactly as manoeuvre does: slot =
+  `ctl.face_slot` when within FACE_SLOT_REACH x settle, `end_m` = dist(here, slot) + 0.5, `all_m` = max(max(3.5,
+  settle) - 0.75, dist(here, slot)) under `turn_hull_on()` else unbounded; no slot in reach = no circle (as today).
+  The k-turn request, PENDING/RETRY, the hold: unchanged.
+  **Trace B (seed 134 Green_S0_3, ring road, the -1 "blocked by Green_S0_1" at 23.8 m):** the seam's one k-turn
+  ("R+1.0x9.5", t 6-10 s) was driven to its end and released; the route then drove the rig into Green_S0_1 at
+  t 25 s and it sat pressed at full throttle (plant speed 10 m/s, no motion) for 65 s with NO seam event in the
+  rest of the leg (the per-event report lines: none between t 26 s of leg 0 and leg 2). That class (13 base, 17
+  candidate) is nav's wedge on a squadmate, in both arms; the seam changed when the rig reached the corner, not
+  the wedge. **The hold hypothesis, answered from the numbers:** pending 7226 hull-ticks over 13 runs = 2.3 s per
+  hull per run; refusals (GOAL_BLOCKED 174 / START_BLOCKED 121) decline for 1 s and the mover drives on; neither
+  appears in the two traces as a mechanism of a miss. Leg-seconds 2041 -> 2283 (+12 %) are the 90 s timeouts of
+  the misses above. **Verification before the re-cut:** a seam test on trace A's geometry (a rig 4.5 m from its
+  slot, a 180-degree face: no pose of the plan outside 6.5 m of the slot), the twin fixture, `test FILTER=planner`
+  on the light lane, the trace test's wedged row (a kept face that cannot be planned hands back = the give-up
+  still reached). Then native re-cuts and re-gates; the series on FRESH seeds 172-184 as ruled.
 - 2026-10-15 09:15 PDT: **the hull-rest judge's BASE arm is in** (`planner-judge-hull-base`, builder0 heavy lane,
   tree 0b2cf981, `exited 0`, wrapper exit 0 at 09:13): both base arms (drawn + clicked) on seeds 60-65, tables under
   `build/manoeuvre/hull-rest/` (M1_REST at-rest share per task 69-96 %, the A/B columns empty until the candidate
