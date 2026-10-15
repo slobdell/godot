@@ -126,7 +126,7 @@ _Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 
 | item | commit | state |
 |---|---|---|
-| **H1** escapes (`unstickback`) | `32b08f8c` → `426e6c6e` | OPT-IN; the C31.1 gate found a terrain-pin stall (below) → R31.5 fallback; re-gate on `998fe844` running |
+| **H1** escapes (`unstickback`) | `32b08f8c` → `426e6c6e` → **`f593f487`** | OPT-IN. **R31.5 amended (at main): the redesign covers HULL pins only (ask → straight reverse ≤ 3 m by the sweep → stand and report); every pin with no hull (terrain, wall) takes round 29's escape bit for bit (`_round29_escape`)**. Why: CP-H's tree `68280cce` reddened the queued-task route test on some variants (realslow OFF, native); the trace showed a ground-pinned crew WITH room behind backed straight six times and the route drove it back in. Variant set 6/6 green (GDScript and native, realslow ON/OFF, a 0.25 m nudge, `998fe844`); native: no C++ change. OFF check of `f593f487` running (the merge candidate) |
 | **H2** arc (`kturnarc`) | `32b08f8c` → `0cf72ba7` | OPT-IN; the C31.1 gate's scout orbit red → SCOPED to the braked hulls (≥ 10 m); `scenario_cp2` green on the flipped tree |
 | **H3** leads (`--gun-off=realspeed`) | `32b08f8c` | OPT-IN; clear on every gate stage |
 | merge-OFF | native's `pair/cph 9e1000d6` (my `197a65da` + native's mirror with the 7 exec_fields rows) | its plain check queued (native reports); my branch ALONE is red only on native's member table (R31.2-style pair rule): `9b257348` check exited 2, 2619/1, `test_native_exec_state::test_the_table_is_the_scripts_members` |
@@ -194,8 +194,8 @@ remote call, lesson 311), fights **214–237** (24; moved by the orchestrator be
 - (h) `scenario_cp2` (the scout orbit), `test_tactics_mixed_legs` (the Sumps causeway), `test_nav_wall_contact::
   test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (round 30's wall-backing stage, R31.5's condition 2) and
   the WHOLE suite green on native's ON pair tree (the ship check).
-- (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall), asks, backs, backed v capped, refused,
-  **fallback** (R31.5 condition 1: fallback carrying most of fires_wall on the census is a finding), unstick_fires,
+- (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall; fires_wall's SHARE of all fires — R31.5
+  amended: fallback = fires_wall by construction, condition 1 retired), asks, backs, backed v capped, refused, unstick_fires,
   press_escapes; an arm whose consumer never fires is a null (lesson 300).
 **CALLED 2026-10-15 ~08:30 PDT, case `allnoghost`** (T4 could not make its gate before 09:00). The A/B starts only when
 native's R31.4 tree reads `make check exited 0` (or exited 2 with sim-baseline its only red, moved as switches ON must).
