@@ -130,7 +130,7 @@ _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoe
 | **M4b reader (SHIPS)** | **`8cbdcfad`** (`lab/manoeuvre-m4b-reader`): `Tank.real_velocity`, the census `real` column, the probe's honest class; nothing in play reads it | **the pair is GREEN: native's `3bc2c476` = `8cbdcfad` + the one `tank_drive_native` write; builder0 `make check exited 0`, 2606 passed / 0 failed, ALL JUDGED, the thirteen unmoved, twin tests 0 mismatches (native, ~18:20 PDT). My branch's tests 20/0 (wedge, wall_contact, mixed_legs). Merge `3bc2c476`.** |
 | M1b(1) face_slot | `55622870` (`lab/manoeuvre-m1b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain (GO) |
 | M2b creep lift + kturnarc | `1f1c9835` (`lab/manoeuvre-m2b`, on `8cbdcfad`) | **judged NOT MET** (the creep −30 % v −50 %; rigs arrivals −9): the lift parks, the finding to the planner (F1) |
-| **kturnarc alone** (re-declared per M2b's partial rule) | **`e7a58262`** (`lab/manoeuvre-kturnarc` = the reader + the arc commit, no lift code; + native's review fix: a leg that starts rolling resets its arc) | tests running; judged Terminus 75–87 (base `--nav-off=kturnarc`) + bridge after M1b's last arm; GO ruled |
+| **kturnarc alone** (re-declared per M2b's partial rule) | **`e7a58262`** (`lab/manoeuvre-kturnarc` = the reader + the arc commit, no lift code; + native's review fix: a leg that starts rolling resets its arc) | **judged: every line met** (Terminus arrivals pass both squads, early stop at run 6; aborted 22 → 21; bridge 18/18); awaiting the ruling; native mirrored it (0 mismatches on the laptop) |
 | M5 the Terminus escape | `34f34ea0` (`lab/manoeuvre-m5`, parked) | PARKED with the finding: case 1 closed by brains' v4, case 2 is the planner's F4 |
 
 **Decisions:** design B kept exactly (C30.6); the escapes sized to the plant's momentum (run 1) and then gated to
@@ -382,6 +382,13 @@ arrivals not down, with the planner's F2 the long-run answer. The gate `UNSTICK_
 on lock for a long hull", not "no stall clock".
 
 ### Progress log
+- **kturnarc alone judged (`e7a58262`, Terminus 13 fresh seeds 75–87, GDScript path, builder0, 19:35 PDT): every
+  line met.** (c) rigs arrivals 178 → 181 of 208 (+3, se 7.38: PASS; SERIES PASS at run 6 of 13), mixed 291 → 288 of
+  312 (−3, se 3.34, 1.645 se = 5.5: PASS; SERIES PASS at run 6); wall contact-ticks rigs 12184 → 11755 (−4 %, se
+  3836), mixed 1861 → 1991 (+7 %, se 437); leg seconds rigs 2120 → 1730 (−18 %), mixed 1839 → 1782. (d)
+  `kturn_aborted` 22 → 21 (not up); k-turns 398 → 396, `kturn_ticks` 42443 → 40311 (−5 %: legs end where the plan
+  said; the driven ÷ planned ratio needs the leg records, which the drive prints only under `--reverse-log`, so the
+  tick count stands in). (e) bridge-pooled 18 of 18. Table: `references/round30/manoeuvre/kturnarc_judged.txt`.
 - **M1b(1) judged, hull-rest (a)(b)(c) and (h), `55622870` on the reader base, builder0, 19:10 PDT (the four arms
   complete at 144 runs each after the cap re-run):**
 
