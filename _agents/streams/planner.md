@@ -422,6 +422,14 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 07:41 PDT: **THE K-TURN ROW MET on manoeuvre's scene** (`planner-test25`, builder0 1f325b91, 30 passed 0
+  failed): seam ON = arrived 7.0 s, 0 wall contacts, nose clearance 2.20 m, TWO real gear segments (R 4.0 m ticks 3-54,
+  F 29.6 m ticks 57-209), 1 request, 1 plan "R4 F18" at lock driven to its end, held 2 ticks; base = 2 segments (R4.5
+  F29.8), 5.6 s, 0 contacts, 1.64 m. The one cost: 1.4 s (the reverse at 0.7 throttle, the brake to rest at the
+  cusp), REPORTED. Outcome assertions ON added to the trace file (edb773cf: k-turn arrives, <= 3 segments, contacts
+  <= the base's 0; wedged at nav's 8 s window: footprint <= 1.8 m over, yaw < 20, the give-up reached). **Re-cut hash
+  for native: edb773cf** (code 1f325b91; the C++ planner changed: `aim` in Request, `at_goal`'s aim branch +
+  `straight_clear`, `heuristic`'s aim branch). Sent to the orchestrator and native ~07:50.
 - 2026-10-15 ~08:00 PDT: **half lock measured and REVERTED** (0b5a6d3d -> b0bdbd89; `planner-test22` exited 2, 07:25):
   manoeuvre's scene unchanged (the identical "R3 F2 R12.5", 9 expansions, 4 real segments) and three named fixtures
   broke (packed-line rigs 1-2 BUDGET at 800 -- the fixtures test FAILED; the lab turnround 3 -> 5 legs; packed rig 0 a
