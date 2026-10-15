@@ -239,6 +239,35 @@ because `make test` alone does not build the library: run `make native test …`
 `Avoidance._gather_native` (native's seam). The solve's own velocity (T4 v2) is not taken. `test_native_avoid_gather` has a
 ghost case, which needs ≥ 8 compared rows where real ≠ estimated. Its pair tree waits for the T3b check to free the folder.
 
+**T3b pair-tree check (C31.1): GREEN but for sim-baseline at `f5dc4147`.** builder0 `make check exited 2`, 2624 passed /
+0 failed, `25 passed, 1 FAILED` = sim-baseline only (all 13 maps moved: the crossing ON), determinism 7/0,
+native-verify-scenarios 0 mismatches, native-live-guard 22 live. Sent to the orchestrator and traffic, and traffic's
+T3b-c series runs on that tree. Two more findings from building the pair trees: the turns tests' teardowns and later the
+ghost tests' teardowns forced their switch OFF, so with the switch ON by default every later test in the shard ran it
+OFF. Traffic took both fixes.
+
+**T4 pair:** `pair/t4` = `80fbdbe9` (stream/native + traffic `dc8fcbf6`, ghost ON, ghostself opt-in). Queued on builder0:
+`check NATIVE=off`, then `check` (traffic's ask: both on one tree). ghostself is NOT mirrored: its arms run
+`--brains-off=native` until traffic says it rides.
+
+**M1b(2) (manoeuvre `44adcbbe`, turnhull): NONE PORTED.** The face path has no C++ counterpart, and wheeled face orders
+hand back. Proof: the default-flipped tree's check with native-verify-scenarios green.
+
+**CP-H (manoeuvre H1–H3, `eaf0090a`), the mirror:** H3 on stream/native `bd0e5d6d` (`GunConfig.REAL_SPEED` from
+`Manoeuvre.real_speed_on()` at configure: the two aim leads read `real_velocity`; inert on main). H1+H2 on
+`pair/cph` (`../godot-native-cph` = stream/native + manoeuvre `eaf0090a`): new `exec_fields` rows (`_esc_stage`,
+`_esc_gap`, `_esc_friend`, `_esc_target_m`, `_unstick_from`, `_esc_gear`, `_kturn_arc_m`, in declaration order). The
+native unstick gets the `_esc_stage` gate, `_honest_blocker` natively (the slide's Tank colliders, `hull_box` length,
+`contact.touching`) and the honest reading. The escape's bodies (`_escape_begin` / `_escape_step`: ask, the give-way, the
+outline sweep) are called back, as the hold and T3b are. The k-turn leg gets the signed arc plus the discrete stopping
+distance under `KTURN_ARC`. Each consumer's ON = its DEFAULT const, because the native drive runs only with
+`Movement._off` empty.
+
+**Planner reviews:** `7c286000` (CP-P0) approved for fidelity with 4 notes (one shared session; the twin's wall time v the
+shard floor; the `%.2f` cache key; an unbounded cache). The planner took notes 1–2 in `50d380e1`, which is also approved
+with one fix: plan()'s refusal lacks keys `_plan_native` reads. The ship-ON pair (CP-P1) needs from me: unstick's
+`PlannerSeam.live` gate and `planned_reverse_cheap` gated.
+
 **Planner seam (C31.5), my answers through the orchestrator:** (1) no `exec_fields` rows, but PlannerSeam's table must
 be capturable (capture/restore) for drive twins; (2) `planned_reverse_cheap`'s cheap exits are gated at the pair (I do it);
 `face_turn` needs nothing: wheeled face orders already hand back to GDScript; (3) confirmed: any `--nav-off` name runs the
