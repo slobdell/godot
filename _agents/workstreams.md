@@ -637,6 +637,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   have no War Rig; remote-guard-test failed only its box-state groups (slot-light, watch at load 24.5); the seam twin
   held 344 of 900 drives with 0 mismatches. **The second judged series (`planner-series-fresh`, Terminus 172–184) runs
   on `85911f0b`.**
+  **SECOND judged series: line (a) PASSES (~14:45 PDT).** builder0, series tree `35f5df92` (code `f9d2c639`), gate
+  `85911f0b`, Terminus 172–184, n 13, to completion: rig arrivals base 180 v candidate 172 of 208, paired mean −0.615 (se
+  0.500) v pass line −0.823, PASS (per seed −1 +1 −1 +2 −1 0 +2 −2 −3 −3 −3 0 +1). The mixed squad is identical both arms
+  (289/289, the seam silent 13/13). Rig contact-ticks REPORTED: median 855 v 533, paired −282.2 (se 211.2). Seam totals
+  over 13 rig runs: requests 459, plans 137, driven 106, aborted 5, abandoned 2; refused GOAL_BLOCKED 203 / START_BLOCKED
+  83 / NO_PATH 23; queue_waits 486 (series 1: 1141); pending per rig event n 448, median 11, max 104 ticks. Rows:
+  `references/round31/planner/series2-fresh/` (`f8f91846`). **The other stages run to completion:** hull-rest, fights,
+  bridge, cp2.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
