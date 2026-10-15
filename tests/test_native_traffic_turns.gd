@@ -26,7 +26,7 @@ func test_the_crossing_drives_as_the_gdscript() -> void:
 		return
 	_saved_native = BrainSwitches.native
 	Traffic.set_off("turns", false)
-	var acc: Dictionary = await TrafficTwin.run(self, false, "terminus", "cross", 30.0)
+	var acc: Dictionary = await TrafficTwin.run(self, false, "terminus", "cross", 20.0)  # the squads meet in the first ~15 s; 20 s keeps the test off the shard floor (C31.9)
 	var report: Dictionary = acc["report"]
 	print("native traffic turns: %d drives compared (%d shaped), %d unsticks, %d mismatches; the stage: %s" % [
 			acc["drives"], acc["shaped"], acc["unsticks"], acc["mismatches"], report])
