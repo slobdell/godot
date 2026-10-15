@@ -1,3 +1,4 @@
+> **ARCHIVED (round 30 closing 2026-10-14; this stream is DONE and merged).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: brains (the yard's last crew in every time AND a car that arrives facing the way it came; gang trucks' screen slots filled; your bridge 108/108)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–305, **305 is yours**), `_agents/game_design.md`

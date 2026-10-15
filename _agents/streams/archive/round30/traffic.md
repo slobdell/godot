@@ -1,3 +1,4 @@
+> **ARCHIVED (round 30 closing 2026-10-14; this stream is DONE and merged).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: traffic (two of your squads crossing at an angle: the yielding squad is released once the other's tail clears; a set-up mortar truck stays set up while it is still ordered to fire)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–305), `_agents/game_design.md` *Round 26 direction*,

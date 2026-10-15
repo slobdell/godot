@@ -1,3 +1,4 @@
+> **ARCHIVED (round 30 closing 2026-10-14; this stream is DONE and merged).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: sizing (every judged bar sized by its probe's measured noise: the smallest n that decides, variance-aware pass lines, early stopping; nothing in play)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 292, 295–305), `_agents/verification.md` (*Timing in

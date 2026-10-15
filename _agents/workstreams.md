@@ -14,12 +14,12 @@ other's tail clears; the C++ core continuing.**
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | two of his squads crossing at an angle: the yielding squad no longer crawls as a whole for 30–45 s; a set-up mortar truck stays set up while it is still ordered to fire | T3b DECLARED; T1c-b DECLARED; I3's proof |
+| **traffic** | `godot-traffic` (1) | Opus | [streams/archive/round30/traffic.md](streams/archive/round30/traffic.md) | two of his squads crossing at an angle: the yielding squad no longer crawls as a whole for 30–45 s; a set-up mortar truck stays set up while it is still ordered to fire | T3b DECLARED; T1c-b DECLARED; I3's proof |
 | **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a long truck wedged against a wall backs out instead of sitting at full throttle; a drawn facing lands nose-on for wheeled turret vehicles; the creep re-judged on an honest base | **CP-M4b** (+ native's pair), M1b, M2b, M5 |
-| **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | the yard's last crew in every time AND a car that arrives facing the way it came; gang trucks' screen slots filled; his bridge 108/108 | **CP-G** B5c-v4 (+ native's pair), B3b |
+| **brains** | `godot-brains` (3) | Opus | [streams/archive/round30/brains.md](streams/archive/round30/brains.md) | the yard's last crew in every time AND a car that arrives facing the way it came; gang trucks' screen slots filled; his bridge 108/108 | **CP-G** B5c-v4 (+ native's pair), B3b |
 | **native** | `godot-native` (4, continuing) | Opus | [streams/native.md](streams/native.md) | nothing in play (equal answer): the B5c and M4b pairs; N7.5 element_feed | each pair |
-| **sizing** | `godot-sizing` (5) | **Fable** | [streams/sizing.md](streams/sizing.md) | nothing in play: every bar this round is sized by its probe's measured noise; fewer builder0 runs that decide the same thing | **CP-N** the per-probe n table, early |
-| **planner** | `godot-planner` (6) | **Fable** | [streams/planner.md](streams/planner.md) | nothing in play this round: a local motion planner for long wheeled hulls in streets, designed, tested offline and shown in a lab scene; manoeuvre integrates it next round | P2 offline tests; P3 the lab clip |
+| **sizing** | `godot-sizing` (5) | **Fable** | [streams/archive/round30/sizing.md](streams/archive/round30/sizing.md) | nothing in play: every bar this round is sized by its probe's measured noise; fewer builder0 runs that decide the same thing | **CP-N** the per-probe n table, early |
+| **planner** | `godot-planner` (6) | **Fable** | [streams/archive/round30/planner.md](streams/archive/round30/planner.md) | nothing in play this round: a local motion planner for long wheeled hulls in streets, designed, tested offline and shown in a lab scene; manoeuvre integrates it next round | P2 offline tests; P3 the lab clip |
 
 **Ownership (round 29's, restated, plus the two new isolated streams):** each brief's header lists its paths. In
 `movement.gd`: traffic the give-way block (`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`,

@@ -1,3 +1,4 @@
+> **ARCHIVED (round 30 closing 2026-10-14; this stream is DONE and merged).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: planner (a local motion planner for long wheeled hulls in tight space: designed, tested offline, shown in a lab scene; nothing in play this round)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–305), `_agents/game_design.md` *Round 26 direction*
