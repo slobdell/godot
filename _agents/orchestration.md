@@ -205,6 +205,22 @@ The kickoff prompt is one line; this section is the rest.
 > is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
 > Status holds your report.
 
+## The orchestrator's loop (round 30; copy/paste once the workers are launched)
+
+The orchestrator runs the round as a self-paced loop so the lead can walk away: `/loop` with no interval, the prompt
+below. Worker messages (bars, green hashes, requests) wake it at once; the scheduled wakeup is the fallback sweep
+(20–30 min). It stops itself at the close (after the push notification to the lead).
+
+> /loop Orchestrate round <N> (the lead is away; never ask him). Each tick: ReadNotifications; for each stream read
+> `git -C ../godot-<s> log --oneline main..HEAD` and `git show stream/<s>:_agents/streams/<s>.md` Status for new bars,
+> declared hashes, requests, checkpoints; relay findings between workers with SendMessage (what was measured, not a
+> summary); record each bar in workstreams.md *Bars (round <N>)* before its numbers; when a worker names a green hash for
+> a declared item, merge it alone (pairs back to back with native), one `make remote T=check` per batch on main, read the
+> result from the wrapper's `>> remote: make check exited <N>` line; keep HANDOFF.md current.
+
+What the loop did in round 30, for the record: ~15 bars filed before numbers, 11 merges, 3 main checks, 3 pair-tree
+reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
+
 ## Lessons (add to this list every round)
 
 **Round 9's one sentence, above the list (feel, 2026-09-20): "accepted with no error" carries no information about
