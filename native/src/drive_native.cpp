@@ -751,11 +751,17 @@ struct Drive {
 		if (speed <= 0.0) {
 			return 0.0;
 		}
-		if (c.KTURN_ARC) {
+		if (arc_here()) {
 			// Round 30/31 (manoeuvre kturnarc, H2): the plant brakes in discrete ticks: v^2/2b - v*dt/2.
 			return MAX(speed * speed / (2.0 * braking()) - speed * 0.5 / (double)c.TICK_RATE, 0.0);
 		}
 		return speed * speed / (2.0 * braking());
+	}
+
+	// Movement._arc_here() (manoeuvre 0cf72ba7): the arc rule only for the braked hulls (kturn_brake_on: >= KTURN_BRAKE_HULL_M
+	// or kturnbrakeall); a short hull keeps round 14's chord bit for bit.
+	bool arc_here() {
+		return c.KTURN_ARC && kturn_brake_on();
 	}
 
 	void kturn_end() {
@@ -790,7 +796,7 @@ struct Drive {
 			}
 			v.set__kturn_from(here);
 			v.set__kturn_arc_m(0.0);
-		} else if (c.KTURN_ARC) {
+		} else if (arc_here()) {
 			// Round 31 (manoeuvre H2, `kturnarc`): the arc driven in the leg's gear, the last tick's real motion along the
 			// nose in the leg's gear.
 			const Vector3 nose_now = Vector3((real_t)(-basis_z.x), 0.0f, (real_t)(-basis_z.z)).normalized();
@@ -798,7 +804,7 @@ struct Drive {
 			// manoeuvre 9013a519: motion against the leg's gear counts nothing (a roll-out is not progress, nor negative)
 			v.set__kturn_arc_m((double)v._kturn_arc_m() + MAX(0.0, (double)real_velocity.dot(nose_now) * (double)gear) * delta);
 		}
-		const double backed = c.KTURN_ARC ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
+		const double backed = arc_here() ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
 		const double left = v._kturn_left_m();
 		const bool reached = backed + kturn_stopping() >= left;
 		const double timeout = (double)v._kturn_timeout() - delta;
