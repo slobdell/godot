@@ -162,7 +162,12 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   `t.poll.element` 0.116 v 0.194 ms on Locks (`ai-parts-match`, box busy, act 0.80 v 1.33: no gain claimed): PASS.
   **So the arrive loss is not the seating** (inert there): it is round 30's other two switches (mouth guard, heading
   rule) that ride in the candidate, never judged on the arrive line before (round 30's chain stopped at the 108). Rows:
-  `references/round31/brains/b3b2b-*`. Attribution (each switch alone on the 9 against cells) queued after B6's check.
+  `references/round31/brains/b3b2b-*`. **Attribution, a TRACE not evidence** (the orchestrator's label: the 9 cells
+  were picked because they lost; builder0 light lane, 5ed61f91, n = 1 a cell and switch): as is, 0 of 9 in within 8 m
+  (reproduced: deterministic); `--mouth-held=off` alone 0 of 9; **`--reissue-heading=plan` alone 9 of 9, each at the
+  control's exact all_in8_s** (35.57, 47.7, 39.93, 54.87, 47.37, 72.7, 108.3, 39.23, 105.83). A round-32 LEAD: round
+  28's heading rule narrowed to the drawn facing (254fd98f) is what costs these arrivals; the seating and the mouth
+  guard do not. The 2 "for" cells not re-run. Rows: `b3b2b-attr-trace-5ed61f91.jsonl`.
 - **B9 DONE — the Terminus seat trap is the GATE (B5c-v5's case; no seating fix).** Reproduced on a scratch tree =
   stream + traffic-t3b's `traffic.gd` (a63dde6d) AND its `Traffic.shape` hook in `_avoid` (main lacks it; without it the
   rule never acts: my first two traces = T3b's base arm). terminus cross s33 t1 `--traffic-on=turns`, builder0 GDScript:
