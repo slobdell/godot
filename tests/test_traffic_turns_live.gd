@@ -8,7 +8,7 @@ var _saved_native := false
 
 func teardown() -> void:
 	BrainSwitches.native = _saved_native
-	Traffic.set_off("turns", true)  # round 30: OFF by default until native's port (Traffic.DEFAULT_OFF)
+	Traffic.set_off("turns", Traffic.DEFAULT_OFF.has("turns"))  # back to the default, whichever it is (native, round 31)
 	super.teardown()
 
 
