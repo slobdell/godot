@@ -30,8 +30,11 @@ static func _heading_error_deg(tank: Tank, want: Vector3) -> float:
 func _with_switch(on: bool, body: Callable) -> void:
 	var was_off := Movement._off.duplicate()
 	var was_parsed := Movement._off_parsed
-	Movement._off = PackedStringArray(["planner"]) if on else PackedStringArray()
+	# `--nav-off=planner` flips the DEFAULT (PlannerSeam.on()): the switch is listed only when the asked state differs
+	# from PLANNER_DEFAULT, so the test reads the same on either polarity (CP-H's ON tree, CP-P1's OFF main).
+	Movement._off = PackedStringArray(["planner"]) if on != PlannerSeam.PLANNER_DEFAULT else PackedStringArray()
 	Movement._off_parsed = true
+	assert_eq(PlannerSeam.on(), on, "the seam reads the asked switch state (PLANNER_DEFAULT %s)" % PlannerSeam.PLANNER_DEFAULT)
 	PlannerSeam.reset()
 	await body.call()
 	PlannerSeam.reset()
@@ -39,9 +42,9 @@ func _with_switch(on: bool, body: Callable) -> void:
 	Movement._off_parsed = was_parsed
 
 
-func test_the_switch_is_off_by_default_and_the_seam_is_never_asked() -> void:
+func test_with_the_planner_switched_off_the_seam_is_never_asked() -> void:
 	await _with_switch(false, func() -> void:
-		assert_true(not PlannerSeam.on(), "planner is OFF without --nav-off=planner")
+		assert_true(not PlannerSeam.on(), "planner is OFF (the switch set against PLANNER_DEFAULT)")
 		var scene: Dictionary = await _rig_facing_south(31)
 		var lab: TacticsLab = scene["lab"]
 		for i in int(SimClock.TICK_RATE * 5.0):
@@ -54,7 +57,7 @@ func test_the_switch_is_off_by_default_and_the_seam_is_never_asked() -> void:
 
 func test_a_war_rig_told_to_face_back_in_a_terminus_street_is_taken_by_the_seam() -> void:
 	await _with_switch(true, func() -> void:
-		assert_true(PlannerSeam.on(), "planner is ON with --nav-off=planner")
+		assert_true(PlannerSeam.on(), "planner is ON (the switch set for it)")
 		var scene: Dictionary = await _rig_facing_south(31)
 		var lab: TacticsLab = scene["lab"]
 		var tank: Tank = scene["tank"]

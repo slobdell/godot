@@ -81,6 +81,7 @@ static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
+static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 
 
@@ -172,6 +173,7 @@ static func reset() -> void:
 	queue_waits = 0
 	_last_refusal = {}
 	holds = PackedInt32Array()
+	last_plans = []
 	_release_all()
 
 
@@ -361,6 +363,9 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
+	last_plans.append({"tick": tick, "name": name, "kind": crew.kind, "legs": plan.describe(), "n_legs": plan.legs.size(),
+			"expansions": plan.expansions, "metres": plan.metres, "cusps": plan.cusps,
+			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(crew.goal.x, 0.01), snappedf(crew.goal.z, 0.01)]})
 	holds.append(tick - crew.held_since)
 	crew.pending = false
 	crew.executor = PlannerExecutor.new()
