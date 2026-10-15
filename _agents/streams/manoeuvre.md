@@ -223,4 +223,8 @@ None.
 
 ### Known issues
 
-- (none yet)
+- **Long `make remote` wrappers die with the agent's shell** (found 2026-10-14 23:43): background jobs AND `setsid nohup`
+  launches were TERMinated together the moment a later Bash call ended ("Shell cwd was reset"), leaving their builder0
+  halves queued with no readable exited line (trip-up 68). What survives: `systemd-run --user --unit=<name>
+  --working-directory=<worktree> --collect /bin/bash -lc "make remote T=check > <log> 2>&1"`. Sent to the orchestrator
+  for `remote_builds.md`. Cost here: two re-queues of the branch check and the gate.
