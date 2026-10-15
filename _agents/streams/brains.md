@@ -142,7 +142,12 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   reversed into the rim and stood blocked 4.1 s; control (re-matched) sent it to the near seat (79, 12), 0.5 s. Series
   NOT run (line 2 already failed). **B3b-2b** `5ed61f91`: the held seating is matched again once each time the count of
   crews past the exit changes (`Element.crews_across`; `--route-seat-across=off` = 344a772a; counter
-  `crossings_rematched`); unit 7/0 (laptop). Tuning the four cells.
+  `crossings_rematched`); unit 7/0 (laptop). Tuning (n = 1, builder0, 5ed61f91): rust s2 t8 rim 0 29.5 s, green s2 t5
+  rim 0 34.2 s, rust s2 t9 rim 0 43.8 s, green s3 t18 rim 0 40.5 s (S_1 2.1 s at the rim, under the 3 s line). The
+  orchestrator accepted B3b-2b as the candidate under the same bar (a gate red fixed before any judged number, C31.1).
+  **Gate on 5ed61f91 (builder0): `make check` exited 0, 2621/0, bridge-pooled 18/18 (= bar line 2), sim-baseline
+  unmoved, native-verify 0 mismatches; perf-judge NOT JUDGED (box busy, ratios 1.57–2.30x), ai-scenarios NOT JUDGED.**
+  Series running (unit `brains-b3b2-series`): 108 on/control, arrive seeds 41–44 n = 100/arm, cost. B6's check after it.
 - **B9 DONE — the Terminus seat trap is the GATE (B5c-v5's case; no seating fix).** Reproduced on a scratch tree =
   stream + traffic-t3b's `traffic.gd` (a63dde6d) AND its `Traffic.shape` hook in `_avoid` (main lacks it; without it the
   rule never acts: my first two traces = T3b's base arm). terminus cross s33 t1 `--traffic-on=turns`, builder0 GDScript:
