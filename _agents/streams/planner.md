@@ -422,6 +422,18 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 ~08:00 PDT: **half lock measured and REVERTED** (0b5a6d3d -> b0bdbd89; `planner-test22` exited 2, 07:25):
+  manoeuvre's scene unchanged (the identical "R3 F2 R12.5", 9 expansions, 4 real segments) and three named fixtures
+  broke (packed-line rigs 1-2 BUDGET at 800 -- the fixtures test FAILED; the lab turnround 3 -> 5 legs; packed rig 0 a
+  78 m loop). The real cause: with an aim goal the HEURISTIC still priced the goal POINT 24 m off (distance + the
+  table's pose cost), so the anytime bound stopped at 9 expansions behind the 10.8 s wiggle. **5ffda2b4: an aim
+  request's estimate owes only the heading change to point at the goal (R per radian) plus its cusps in the start's
+  room** (both planners). Result (`planner-test23`, 30/0, 07:32): the plan is **2 legs "R4 F18" at lock, 6.8 s, 5
+  expansions**, the twin equal, every fixture back on its bar (packed lines 4 legs, turnround 7 expansions as in the
+  price run). Real motion STILL 4 segments (R3.3 F2.5 R2.1 F28.1): the plan was RELEASED 4 m into leg 1 -- the
+  release trace (5c677280, `planner-test24`): "new goal; goal moved 3.7 m" = the route's steering CARROT slid along
+  the path as the hull moved; the order's goal never moved. **1f325b91: a k-turn crew's new-goal release judges
+  `Movement._goal` (the order's goal), not the carrot.** Running: `test FILTER=planner` (`planner-test25`).
 - 2026-10-15 ~07:45 PDT: **the aim goal's result** (`planner-test19/20`, builder0 9d168af8, 30/0, 07:12 PDT): the k-turn
   plan is 3 legs "R3 F2 R12.5" (2 cusps, 17.5 m, 9 expansions; the first cut f66fddfb still appended a 23.5 m straight
   because the arrive gear bound the aim too -- 9d168af8 binds it to the position goal only); the twin plans it the
