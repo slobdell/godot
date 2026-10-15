@@ -230,7 +230,8 @@ func _report() -> void:
 			"hulls": _hulls, "events": _events, "ticks_with": _histogram, "max_per_tick": _max, "max_at_tick": _max_at,
 			"per_tick_mean": snappedf(float(_events) / maxf(float(_ticks), 1.0), 0.0001),
 			"busiest_second": {"tick": _busiest_at, "events": _busiest_second}, "by_kind": _by_kind,
-			"off": Array(Movement._off), "native": BrainSwitches.native}
+			"off": Array(Movement._off), "native": BrainSwitches.native, "by_hull": _by_hull,
+			"scope_min_hull_m": PlannerSeam.SCOPE_MIN_HULL_M}
 	if _probe_usec.size() > 0:
 		var sorted := Array(_probe_usec)
 		sorted.sort()
