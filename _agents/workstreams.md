@@ -117,6 +117,10 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   OFF behaviour. **Rule:** every pre-series gate AND every judged series of those three runs with `NATIVE=off` (C31.4's
   GDScript path) until native's mirror is in, and the A/B's runner must refuse a native arm for them. The pair tree
   (mirror in, default ON, plain check) is the only place their native path counts.
+  **Under `NATIVE=off`, `native-live-guard` fails BY CONSTRUCTION** ("no native switch in force … nothing guarded,
+  FAIL"). In a `NATIVE=off` gate that one red is structural, not a finding (brains' B8 gate `44b32f12`: 2612/0,
+  25 of 26, sim-baseline unmoved, accepted as the series gate). A pre-series gate may be read from the runner's printed
+  summary. A merge or ship check needs the wrapper's `>> remote: … exited` line.
 
 - **R31.2 The planner seam, AGREED in writing before code (2026-10-14 ~23:10 PDT; amends C31.5's "ONE call" and the
   executor line for planner-held hulls; planner's draft `f2245404` "DRAFT SEAM", manoeuvre's and traffic's replies):**
@@ -187,6 +191,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   on builder0; (c) `make pursuit-aa` RE-RUN on main's code with (a) and (b) in, rule OFF, because (a) changes the OFF
   counts. Line (1)'s OFF counts (22 as written, 19 nudged) are REPLACED by (c)'s before v5 runs, with the same "− 3".
   Both (a) and (b) green on main with the rule OFF.
+  **(c) DONE (~00:50 PDT 10-15, brains `0415da23` = main `aa205ea5`'s code, rule OFF, builder0, default path, 48 runs;
+  rows `references/round31/brains/pursuit-aa-0415da23.*`):** OFF **24/24 as written, 22/24 nudged** (8 m/s nudged 10/12:
+  seeds 3 and 9 fail the let-go line; 18 m/s 12/12 both sets, seeds 1 and 9 now pass under (a)). **B5c-v5's line (1)
+  is therefore: ON ≥ 21/24 as written AND ON ≥ 19/24 nudged, with no new let-go at 18 m/s.** Margins as written:
+  closing min +13.9 m (8 m/s) / +11.6 m (18); reversal min +69° / +20°. The robust test's seeds pass 5/5, 5/5 as
+  written and 4/5, 5/5 nudged.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
