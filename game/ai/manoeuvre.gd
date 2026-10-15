@@ -59,6 +59,41 @@ static func report() -> Dictionary:
 	return {"plans": plans.duplicate(), "refused": refused.duplicate()}
 
 
+## Round 31 (manoeuvre H3, C31.4; the two lead lines in `Gunnery` are manoeuvre's grant): **the aim leads on the motion
+## a target really makes** (`Tank.real_velocity`), not the velocity the blocked slide handed back — a hull pinned on a
+## wall reported 12 m/s and was led 12 m/s ahead of where it sat. OPT-IN until CP-H judges it: `--gun-off=realspeed`
+## turns it ON. Gunnery's C++ twin (`native_gun`) does not read this switch until native mirrors it, so an arm with it
+## must run the GDScript path (`--brains-off=native`); the CP-H runner refuses a native arm.
+const GUN_OFF_NAMES: Array[String] = ["realspeed"]
+static var _gun_off := PackedStringArray()
+static var _gun_off_parsed := false
+
+
+static func gun_switched(name: String) -> bool:
+	if not _gun_off_parsed:
+		_gun_off_parsed = true
+		for arg in OS.get_cmdline_user_args():
+			if arg.begins_with("--gun-off="):
+				_gun_off = arg.trim_prefix("--gun-off=").split(",")
+				for each: String in _gun_off:
+					if not GUN_OFF_NAMES.has(each):
+						push_error("--gun-off=%s: no such switch (have %s)" % [each, ", ".join(GUN_OFF_NAMES)])
+				break
+	return _gun_off.has(name)
+
+
+const REAL_SPEED_DEFAULT := false  # OPT-IN until CP-H: `--gun-off=realspeed` flips it
+
+
+static func real_speed_on() -> bool:
+	return REAL_SPEED_DEFAULT != gun_switched("realspeed")
+
+
+## The velocity a gun leads `target` by: its real motion with `realspeed`, else the plant's reading (round 30's).
+static func lead_velocity(target: Tank) -> Vector3:
+	return target.real_velocity if real_speed_on() else target.estimated_velocity
+
+
 static func _note(table: Dictionary, key: String) -> void:
 	table[key] = int(table.get(key, 0)) + 1
 
