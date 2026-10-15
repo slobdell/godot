@@ -449,7 +449,7 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   (c) a wheeled hull arriving off-heading is not turned at rest (gang_ifv A_4 parked 168° off after its slot moved:
   manoeuvre's M1b). Tuning of (a) (`lab/brains-r30-sbf`, every crew given the drawn heading; `--sbf-told-sectors=on` =
   control; n = 1): drawn err gang_ifv 74 → 44.7°, gang_tank 20 → 11.2°, law_ifv 20 → 1.1°, law_tank 25 → 47.6° with all
-  four in (was 3); clicked arm identical. **Bar:** candidate `lab/brains-r30-sbf` `e4b37bae`; arms on v
+  four in (was 3); clicked arm identical. **Bar:** candidate `lab/brains-r30-sbf` `9aa0cd7c` (= e4b37bae + the line-(4) counter in the probe's report, measurement only); arms on v
   `--sbf-told-sectors=on`, one tree; `make sbf-series SBF_SEEDS=7..18` (fresh) × law_tank gang_ifv law_ifv gang_tank
   (+ `tank`, tracked, as a guard), n = 12 runs an arm (no CP-N row; rows to sizing): (1) drawn arm, hull error at arrival
   pooled over the four wheeled classes: median on ≤ control − 10°, no class's median worse than control by > 2 se (paired
