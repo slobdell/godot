@@ -79,6 +79,10 @@ static var native_recorder := true  # Round 28 (N7.6): MatchRecorder's per-tick 
 static var native_wall := false  # Round 29 (N7.4): WallContact.observe's scan natively (wall_native.cpp: alive/parked, the slide collisions, the deepest wall, a hull touched); a wall tick still classified by the GDScript. OFF until its check
 static var native_feed := true  # Round 30 (N7.5): ElementFeed's builders natively (feed_native.cpp: _shared, _normalize; the memo stays GDScript); ON once test_native_feed and native-proof feed are equal
 static var native_controller := false  # Round 28 (N7.3a): OrderController._physics_process natively (controller_native.cpp: the stride hold, think then execute, the measurement bookkeeping); OFF until its check
+## Round 31 (brains B8, a CP-H consumer, C31.4; R31.1: OPT-IN): the element's re-seat / make-room clock reads the honest
+## speed (`Element.reads_slow`). Default OFF on main; NAMING it (`--brains-off=realslow`) turns it ON, like `--nav-off=inflate`.
+## Not in NAMES, so `--brains-off=all` (ai-parity's proof) and set_all never touch it.
+static var realslow := false
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
@@ -115,6 +119,8 @@ static func apply_args(args: PackedStringArray) -> void:
 			for name: String in arg.trim_prefix("--brains-off=").split(","):
 				if name == "all":
 					set_all(false)
+				elif name == "realslow":
+					realslow = true  # opt-in (R31.1): naming it turns it ON
 				elif NAMES.has(name) or GROUPS.has(name):
 					set_named(name, false)
 				else:
