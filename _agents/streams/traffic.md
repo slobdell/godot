@@ -216,6 +216,19 @@ Sumps 1000 / Parade 2000 / Foundry 2000, n = 18 paired, 0 missing; base `--traff
   rigs 71 → 311 (se 168), stuck 324 → 799 (se 264); base v v2 pinned 212 → 598 UP. ghostself stays opt-in, tuning only,
   unmirrored. Tables and logs: `references/round31/traffic/t4_tuning_dc8fcbf6/`.
 
+### Kept branches (round 31)
+
+`traffic-t3bc-judged` = f5dc4147 (T3b-c's judged pair tree: native 413252ea + traffic ab3351fb, turns ON) — ships as is on
+his yes to the Terminus line; `traffic-t1cb2` = 33cb2da5 (T1c-b2's judged tree, the rule ON) — on his yes: on then-current
+main, traffic-native-verify + a check with the rule ON + the pit baseline re-recorded, then merge; `traffic-t4` = 357ca38b
+(T4 merge-OFF + I4's tooling; native's pair/t4 0475758f, pair/t4-on 93c85531).
+
+### Stretch (the friendly half of the creep)
+
+Waits on the planner's seam (CP-P1) decided and agreed through the orchestrator (brief). Not started this round; my
+reply on the seam (a `Movement.manoeuvring()` for a planner-held hull, read by the crossing row and `ask()`) is the
+traffic side's part of it.
+
 ### Gate results so far
 
 - **T3b-c C31.1 gate PASSED** (native's pair tree `f5dc4147` = native 413252ea + traffic ab3351fb + `DEFAULT_OFF = []`;
