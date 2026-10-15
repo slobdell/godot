@@ -1,3 +1,4 @@
+> **ARCHIVED (round 30 closed 2026-10-14; this stream is DONE: the real_velocity reader and face_slot shipped; M4b's escapes, the creep lift, kturnarc, M5 parked with tables).** Kept as the stream left it; current state is in `HANDOFF.md`.
 # Stream: manoeuvre (a long truck wedged against a wall backs out instead of sitting at full throttle; wheeled turret vehicles end nose-on to the facing you draw; the creep judged on an honest base)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 295–305), `_agents/game_design.md` *Round 28 direction*
