@@ -127,7 +127,7 @@ _Updated 2026-10-14 by the manoeuvre worker (`godot-manoeuvre-65`, `stream/manoe
 |---|---|---|
 | M4b run 1 | `e8bfef2e` (`stream/manoeuvre`, judged tree `1b3e2e56`) | NOT PASSED (orchestrator's ruling): rigs arrivals −1.1 se, rigs' wall contact-ticks +141 % |
 | M4b run 2, the last | `77a1603f` (`lab/manoeuvre-m4b2`): escapes only for hulls ≤ 10 m | passed every filed line, then its PAIR CHECK went red on two tests (traced: the escape's reverse on lock in single file; a `drive` order's hull backing off): **the ESCAPES are PARKED for round 31** (ruled ~16:45 PDT) with the findings and the design note |
-| **M4b reader (SHIPS)** | **`8cbdcfad`** (`lab/manoeuvre-m4b-reader`): `Tank.real_velocity`, the census `real` column, the probe's honest class; nothing in play reads it | the measurement commit (ruled); native's pair `pair/m4b-reader` (one `tank_drive_native` line) in check; bar: the thirteen byte-identical, the wedge reader tests, wall_contact and mixed_legs green, the pair's check green |
+| **M4b reader (SHIPS)** | **`8cbdcfad`** (`lab/manoeuvre-m4b-reader`): `Tank.real_velocity`, the census `real` column, the probe's honest class; nothing in play reads it | **the pair is GREEN: native's `3bc2c476` = `8cbdcfad` + the one `tank_drive_native` write; builder0 `make check exited 0`, 2606 passed / 0 failed, ALL JUDGED, the thirteen unmoved, twin tests 0 mismatches (native, ~18:20 PDT). My branch's tests 20/0 (wedge, wall_contact, mixed_legs). Merge `3bc2c476`.** |
 | M1b(1) face_slot | `55622870` (`lab/manoeuvre-m1b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain (GO) |
 | M2b creep lift + kturnarc | `1f1c9835` (`lab/manoeuvre-m2b`, on `8cbdcfad`) | tests re-running on the rebase, then its judged chain after M1b's (GO) |
 | M5 the Terminus escape | `34f34ea0` (`lab/manoeuvre-m5`, parked) | PARKED with the finding: case 1 closed by brains' v4, case 2 is the planner's F4 |
@@ -385,8 +385,8 @@ on lock for a long hull", not "no stall clock".
   PASS at run 6 of 13 (seed 41, llr −5.60); the full 13 had been run before the read (the chain is not interactive),
   so the stop saved nothing this time and the rows are recorded for the rule's first use. Reported: wall contact-ticks
   rigs 8945 → 7662 (−14 %, se 2221), mixed 2475 → 1738 (−30 %, se 481); leg seconds rigs 1884 → 1659, mixed 1809 →
-  1945; leg misses under a FACE order ("a face left the slot") rigs 19 → 21, mixed 14 → 9. Bridge, hull-rest (four
-  arms, seeds 48–53) and rigs seed 21 follow in the chain.
+  1945; leg misses under a FACE order ("a face left the slot") rigs 19 → 21, mixed 14 → 9. **(e) bridge-pooled 18 of
+  18.** Hull-rest (four arms, seeds 48–53, 576 real-time runs: hours on a box at load 22) and rigs seed 21 follow.
 - **Brains' B6 case run on M1b (reported line):** `sbf-series` gang_ifv, seeds 1–6, drawn/none, on `55622870` +
   `stream/brains` (builder0, both arms, base `--nav-off=faceslot`): the arms' jsonl byte-identical; A_4 at arrival with
   a drawn facing 65.6–96.3° off, not moving, 2.3–3.2 m off its slot, both arms; face_slot's counters 0. A wheeled
