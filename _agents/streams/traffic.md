@@ -179,7 +179,10 @@ arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turn
   179→179; no wedge in the arm (base had two); same-squad 148→149, 145→148; head-on cases within 1.645 se; all-in median
   reported Terminus 39.5 → 32.9, yard 66.4 → 75.5.
 - Hook (table sd): yard SERIES PASS at run 7, head-ons PASS (6, 18), Terminus SERIES FAIL at 18 (xclear, truncation).
-- Worst run's trace (s43/t1, both arms) queued (`traffic-t3bc-trace`).
+- **Worst run's trace (s43/t1, both arms; `references/round31/traffic/t3bc_trace_s43t1/`): the yielder simply waits.**
+  All five B crews held at the share (pace 0.30–0.40) from 4 s to ~8–10 s, the rear crew B_2 at 0.05 by 8 s (x −19 v
+  base +11.7); all released by 10 s at pace 1.0. One extra event: B_5 overshoots north, k-turns at 12 s, blocked at
+  14 s, arrives 18 s (base 12 s). No seat circling, no arrival-gate flip (brains' trap is absent here).
 - If he says no, or T3b is ever re-judged: the honest pairing is T3b on top of brains' arrival gate v5 v v5 alone
   (brains: T3b + v4 frees round 30's s33/t1 seat trap, all-in 61.4 → 27.5 s). v5 PARKED this round (orchestrator), so
   any re-judge waits for round 32's gate fix.
@@ -191,8 +194,10 @@ arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turn
   T3b's pair does not ship). No T1c-b, no T3b on it. Native builds pair/t4 on it (ghost ON for the gates).
 - Tuning (builder0, `dc8fcbf6`, nav-terminus-drive seeds 24–29, GDScript path, n = 12 paired, `pinned_table.py`): base v
   v1: stuck 492 → 324 crew-s (se 153), pinned all 212 → 126 (se 110), rigs 81 → 71 (se 10), all within 2 se.
-  Round 30's v1 rig regression (72 → 164) was on M4b's tree and does not appear on main. v2 arm queued; if it has not
-  decided by ~07:00, ghostself is called out of CP-H and v1 merges OFF alone.
+  Round 30's v1 rig regression (72 → 164) was on M4b's tree and does not appear on main.
+  **DECIDED: v1 alone; ghostself OUT of CP-H.** v1 v v1+ghostself: pinned all 126 → 598 (+472, se 185, UP beyond 2 se),
+  rigs 71 → 311 (se 168), stuck 324 → 799 (se 264); base v v2 pinned 212 → 598 UP. ghostself stays opt-in, tuning only,
+  unmirrored. Tables and logs: `references/round31/traffic/t4_tuning_dc8fcbf6/`.
 
 ### Gate results so far
 

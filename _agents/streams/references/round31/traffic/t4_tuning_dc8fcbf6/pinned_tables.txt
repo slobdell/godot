@@ -1,0 +1,31 @@
+=== pinned base v v1
+PINNED runs paired 12 (base 12, new 12)
+PINNED all crew-seconds: base 212 new 126 diff -86 se 110.0 within 2 se
+PINNED short crew-seconds: base 131 new 55 diff -76 se 110.2 within 2 se
+PINNED rigs crew-seconds: base 81 new 71 diff -10 se 10.0 within 2 se
+PINNED scouts crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED tracks crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED crews crew-seconds: base 3 new 2 diff -1 se 1.8 within 2 se
+PINNED stuck crew-seconds: base 492 new 324 diff -168 se 152.9 within 2 se
+PINNED stuck_crews crew-seconds: base 14 new 12 diff -2 se 3.9 within 2 se
+=== pinned base v v2
+PINNED runs paired 12 (base 12, new 12)
+PINNED all crew-seconds: base 212 new 598 diff +386 se 182.8 UP beyond 2 se
+PINNED short crew-seconds: base 131 new 287 diff +156 se 105.5 within 2 se
+PINNED rigs crew-seconds: base 81 new 311 diff +230 se 169.7 within 2 se
+PINNED scouts crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED tracks crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED crews crew-seconds: base 3 new 9 diff +6 se 2.8 UP beyond 2 se
+PINNED stuck crew-seconds: base 492 new 799 diff +307 se 285.6 within 2 se
+PINNED stuck_crews crew-seconds: base 14 new 18 diff +4 se 3.7 within 2 se
+=== pinned v1 v v2
+PINNED runs paired 12 (base 12, new 12)
+PINNED all crew-seconds: base 126 new 598 diff +472 se 185.4 UP beyond 2 se
+PINNED short crew-seconds: base 55 new 287 diff +232 se 128.0 within 2 se
+PINNED rigs crew-seconds: base 71 new 311 diff +240 se 167.7 within 2 se
+PINNED scouts crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED tracks crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED crews crew-seconds: base 2 new 9 diff +7 se 2.7 UP beyond 2 se
+PINNED stuck crew-seconds: base 324 new 799 diff +475 se 263.5 within 2 se
+PINNED stuck_crews crew-seconds: base 12 new 18 diff +6 se 3.5 within 2 se
+=== DONE
