@@ -201,6 +201,13 @@ at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not wors
 - **The CP-H runner runs every arm on the GDScript path** (R31.1 addendum) and takes seeds as a range (`CPH_SEEDS=a-b`)
   because make remote's T is word-split.
 
+- M1b(2) TUNING (not judged), builder0 light lane, code = `8f2dd764`, hull-rest law seeds 40–41, drawn, both arms
+  GDScript path (`M1_GD=1`), wheeled turret at rest, n = 8 a task: median error new v base — move 1.6 v 31.1°, right
+  1.8 v 18.4°, attack-move 5.2 v 20.6°, SBF 21.4 v 111.5°, ambush 19.8 v 104.8°, screen 23.8 v 32.8°; within 15°: point
+  tasks 100 % v 25–38 %, line tasks 38 % v 0–29 %. Moving at 75 s: −2..+1 a task. Settle: ambush +27.2 s (1 of 2 never
+  settled under new) — the worst run to trace if the judged series shows it. Counters (new): hull_turns 3809 ticks,
+  face_keep_refused 597 steps, face_slot_kept 182 / refused 7. No change made from the tuning seeds.
+
 ### Questions for the lead
 
 None.
