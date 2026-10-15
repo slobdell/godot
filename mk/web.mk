@@ -17,7 +17,7 @@ export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web 
 
 # Round 17 (ship W2): the factions' art as a second pack beside the page (the "Web Factions" preset, a PATCH against
 # build/web/index.pck: only what the main pack lacks) and packs/packs.json (file, bytes, md5) for WebPacks.
-# WEB_PACKS=0 writes an EMPTY packs.json (`{}`): the game then logs `WEB_PACK FAILED: factions is not in packs.json`
+# WEB_PACKS=0 writes an EMPTY packs.json (`{}`): the game then logs `WEB_PACK REFUSED: factions is not in packs.json`
 # instead of a 404, which every web smoke fails as a console error (round 17: it hid web-host-smoke's real failure).
 export-web-packs: import $(TEMPLATES_OK) ## The browser's second pack: build/web/packs/factions.pck (+ packs.json); needs export-web first
 	mkdir -p $(BUILD_DIR)/web/packs
