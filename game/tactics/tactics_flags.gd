@@ -61,6 +61,9 @@ static func _parse() -> void:
 		# Round 20 (brains M1): round 12's stations from the first tick (the control arm of form-up-on-the-move).
 		if arg == "--converge=off":
 			ElementPlan.CONVERGE_ENABLED = false
+		# Round 28 (brains B4, DECLARED): round 26's heading rule (any heading change re-issues, the plan's own included).
+		if arg == "--reissue-heading=plan":
+			Element.HEADING_REISSUE_TASK_ONLY = false
 		# Round 28 (brains B3, DECLARED): the old screen (45 m short of the enemy focus, held while the enemy closes).
 		if arg == "--screen-standoff=off":
 			ElementCommander.SCREEN_STANDOFF_ENABLED = false
@@ -98,6 +101,11 @@ static func _parse() -> void:
 			TankBrain.BOUND_SUPPRESS_MOVES = false
 		if arg == "--feed-mouth=off":
 			ElementPlan.FEED_MOUTH_ENABLED = false
+		if arg == "--mouth-held=off":
+			Element.MOUTH_HELD_ENABLED = false
+		# Round 30 (brains B3b, DECLARED): seats beyond a crossing by straight line, not in crossing order.
+		if arg == "--route-seat=off":
+			Element.ROUTE_SEAT_ENABLED = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

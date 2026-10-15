@@ -516,7 +516,7 @@ bridge-trace: import ## Round 24: one traced run of his bridge case (BRIDGE_AREN
 	@mkdir -p $(BUILD_DIR)
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/bridge_probe.gd -- \
 		--arena=$(or $(BRIDGE_ARENA),locks) --side=$(or $(BRIDGE_SIDE),green) --guns=$(or $(BRIDGE_GUNS),3) --seed=$(or $(BRIDGE_SEED),1) \
-		--units=$(BRIDGE_UNITS) --seconds=$(or $(BRIDGE_SECONDS),90) --trace=on --wet-ground=$(or $(BRIDGE_ARM),on) $(BRIDGE_FLAGS) > $(BUILD_DIR)/bridge-trace.log 2>&1 || true
+		--units=$(BRIDGE_UNITS) --seconds=$(or $(BRIDGE_SECONDS),90) --trace=on --wet-ground=$(or $(BRIDGE_ARM),on) $(if $(BRIDGE_TICK),--lab-start-tick=$(BRIDGE_TICK)) $(BRIDGE_FLAGS) > $(BUILD_DIR)/bridge-trace.log 2>&1 || true
 	@grep -o 'BRIDGE_PROBE {.*' $(BUILD_DIR)/bridge-trace.log || (echo "bridge-trace: no BRIDGE_PROBE line" && tail -30 $(BUILD_DIR)/bridge-trace.log && exit 1)
 
 .PHONY: tactics-script
