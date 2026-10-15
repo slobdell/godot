@@ -3622,7 +3622,8 @@ func manoeuvring() -> bool:
 ## then may a far CPU unit run its controller every other tick (half-rate steering is where the scraping came from).
 const STRAIGHT_LEG_DEG := 12.0
 func straight_and_clear() -> bool:
-	if in_kturn() or contact.touching or _deflected or steer_to == Vector3.INF:
+	# Round 31 (R31.2): manoeuvring() = a k-turn leg OR a crew the planner's seam holds; neither is a plain straight leg.
+	if manoeuvring() or contact.touching or _deflected or steer_to == Vector3.INF:
 		return false
 	var tank := ctl.tank
 	var to := Vector2(steer_to.x - tank.global_position.x, steer_to.z - tank.global_position.z)
