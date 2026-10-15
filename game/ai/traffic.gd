@@ -12,6 +12,10 @@ extends RefCounted
 ##           (Movement._negotiate; counter Movement.parked_refusals).
 ##   hold    Round 29 T1 (his call, round 28: TAKE TURNS): two friendly squads meeting HEAD-ON in a street take turns
 ##           like a one-lane bridge, and the waiting squad waits at a real spot beside the street's mouth (below).
+##   ghost   Round 31 T4 (CP-H consumer, OPT-IN by R31.1): ORCA's neighbour table (Avoidance.refresh) reads a hull's REAL
+##           velocity (Tank.real_velocity), not the slide's asked one. OFF by default (main plays the 12 m/s ghost of a
+##           pinned hull, manoeuvre's M4b trace); NAMING it turns it ON: `--traffic-off=ghost` (C31.4's name, inverted
+##           like movement's `inflate`) or `--traffic-on=ghost`.
 ##   turns   Round 29 T3 (round 28's v3, `traffic-t1-v3`): two friendly squads CROSSING take turns: one verdict per squad
 ##           pair; the squad reaching the crossing later slows as a whole and passes behind the other (THE CROSSING).
 ##   reach   Round 30 T3b (option (b)): only the yielding squad's crews within CRAWL_REACH_M of the crossing keep its
@@ -195,13 +199,15 @@ static var _parsed := false
 ## native's port (C30.2), and the native drive's equal-answer tests compare against the GDScript; it ships OFF on
 ## stream/traffic and the pair's merge removes it from this list.
 const DEFAULT_OFF := ["turns"]
+## Round 31 (R31.1): CP-H's consumers are OPT-IN. Each is off unless NAMED, and naming it in either list turns it ON.
+const OPT_IN := ["ghost"]
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; DEFAULT_OFF unless `--traffic-on=`)?
 static func off(name: String) -> bool:
 	if not _parsed:
 		_parsed = true
-		for part: String in DEFAULT_OFF:
+		for part: String in DEFAULT_OFF + OPT_IN:
 			_off[part] = true
 		for arg in OS.get_cmdline_user_args():
 			if String(arg).begins_with("--traffic-on="):
@@ -210,7 +216,10 @@ static func off(name: String) -> bool:
 		for arg in OS.get_cmdline_user_args():
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):
-					_off[part.strip_edges()] = true
+					if OPT_IN.has(part.strip_edges()):
+						_off.erase(part.strip_edges())
+					else:
+						_off[part.strip_edges()] = true
 	return _off.has(name)
 
 
