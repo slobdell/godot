@@ -277,6 +277,27 @@ and name the hash; manoeuvre runs the A/B.
 `setsid nohup` at a "Shell cwd was reset"); one heavy + one light at a time; a reaped wrapper's builder0 half is
 killed by cwd before relaunching.
 
+**CP-P1 ship-ON mirror (designed, not built; the seam lines are still moving):** the planner's newest `_planned_reverse`
+opens with `PlannerSeam.hold(...)` (continues a held crew) and calls `take()` only where today's code makes a plan. In
+drive_native's planned-reverse block (around `planned_reverse_cheap`): when the seam is on AND `PlannerSeam._crews`
+has the crew, always `cb(_planned_reverse)` (skip the native leg, the check countdown and the cheap exits). A crew the
+seam doesn't hold keeps the cheap exits, which answer only where no plan is made, so `take()` is never skipped. Native
+`unstick`: return early when the seam holds the crew. The seam's ON is a default const like CP-H's (the native drive
+runs only with `_off` empty). Built at CP-P1 on the final seam.
+**Swap (orchestrator):** the CP-H merge-OFF check (`pair/cph` `9e1000d6`) runs first, then T4's two checks.
+
+**2026-10-15 morning: merged, then re-cut on main.** The CP-H merge-OFF pair `9e1000d6` (builder0 `make check exited 2`,
+2624/0, failed only `remote-guard-test`'s quiet-window, a load flake at load 21; sim-baseline unmoved,
+native-verify-scenarios 0, live-guard 22) was merged by the orchestrator as `298e4498`; CP-P0 OFF as `950c7681`.
+stream/native merged main `84e553cd` (`436c504f`). The light re-run of remote-guard-test read exited 2 on a DIFFERENT
+box-state test (slot-exclusive 13 fails; quiet-window passed), reported as such. CP-P1's mirror is built (`4c08e86d` on
+pair/cpp1: the seam gates in the planned-reverse block and the unstick; DriveConfig.planner_on; the drive, execute and
+traffic twins snapshot and compare PlannerSeam's world via `MoverState.world_capture/restore/diff`). The planner
+adopted the default-const switch form (`PLANNER_DEFAULT`, 39ba4b0b). New: `native-live-guard` starts and quits Godot
+through the library first (`3331f81d`, verified on builder0), and that is hazard 7 in native.md.
+**Running (unit native-chain2, heavy one at a time):** CP-P1 `ef38361f` (pair/cpp1-on) → T4 `8ac371a9` NATIVE=off then
+check → CP-H ON `9fb6c0cd` (manoeuvre's H1–H3 flipped).
+
 **Planner reviews:** `7c286000` (CP-P0) approved for fidelity with 4 notes (one shared session; the twin's wall time v the
 shard floor; the `%.2f` cache key; an unbounded cache). The planner took notes 1–2 in `50d380e1`, which is also approved
 with one fix: plan()'s refusal lacks keys `_plan_native` reads. The ship-ON pair (CP-P1) needs from me: unstick's
