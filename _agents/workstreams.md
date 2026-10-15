@@ -596,6 +596,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   k-turn request, PENDING/RETRY and the hold are unchanged. Also from the traces: the GOAL_BLOCKED and queue_waits cost
   time, not arrivals, and **a rig pressed at full throttle into a squadmate for 65 s** (13 base / 17 candidate, a wedge
   in both arms) is H1's target, relayed to manoeuvre for CP-H.
+  **Attempt 2's gate RED (~12:05 PDT, native `3a66f546`):** `exited 2`, 2646 passed / 1 failed; sim-baseline moved on 6
+  (expected ON); the native mirror is clean (seam twin 344/900 held, 0 mismatches). The red is a REAL planner bug:
+  `test_tactics_army_layout10` hits 8 engine errors when `PlannerExecutor.tick` reads `global_position` on a freed tank
+  (`planner_executor.gd:135`, then `planner_seam.gd:411` on Nil). A seam crew outlives its hull. The planner fixes it
+  (release on a dead or freed tank), native re-cuts, and the gate re-runs; the series waits.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
