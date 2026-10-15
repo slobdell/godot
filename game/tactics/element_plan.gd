@@ -1772,11 +1772,14 @@ static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state
 			var order: Dictionary = plan["orders"][name]
 			if order.has("facing"):
 				order["facing"] = heading
+				sbf_told_replaced += 1
 
 
 ## Put `members` on a line at `anchor` facing `heading`, each on its sector: far from its place it moves there, on it
 ## it holds (a holding crew fires at will and drives back onto the spot if pushed off it).
 static var SBF_TOLD_ALL := true
+## ...and how many crew orders it gave the drawn heading (lesson 300; measurement only, per plan update).
+static var sbf_told_replaced := 0
 
 
 static func _line_positions(plan: Dictionary, situation: Dictionary, members: Array, anchor: Vector3,
