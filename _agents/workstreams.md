@@ -631,6 +631,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   `test_tactics_army_layout10` hits 8 engine errors when `PlannerExecutor.tick` reads `global_position` on a freed tank
   (`planner_executor.gd:135`, then `planner_seam.gd:411` on Nil). A seam crew outlives its hull. The planner fixes it
   (release on a dead or freed tank), native re-cuts, and the gate re-runs; the series waits.
+  **Re-cut gate GREEN under R31.10 (~14:10 PDT):** `85911f0b` (main `a2ef0b31` + planner `f9d2c639`'s crew-hull fix +
+  native's mirror `14f4de82`, PLANNER_DEFAULT true), builder0 `exited 2`, tests 2652 passed / 0 failed. sim-baseline
+  moved on foundry, pit, crossing, sumps, gorge and archipelago (planner ON) and held on the seven maps whose scenarios
+  have no War Rig; remote-guard-test failed only its box-state groups (slot-light, watch at load 24.5); the seam twin
+  held 344 of 900 drives with 0 mismatches. **The second judged series (`planner-series-fresh`, Terminus 172–184) runs
+  on `85911f0b`.**
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
