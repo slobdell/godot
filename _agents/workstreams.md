@@ -364,6 +364,18 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (b)'s rig cases need an n: each named seed × a fixed set of tick offsets (the planner names the set, e.g. 6), so
   "+ 1.645 se" has an se; (ii) Terminus 61–73 and hull-rest 54–59 confirmed fresh against round 30's planner and
   manoeuvre tuning and judged seeds, and against M1b(2)'s 76–81 / 93–105 (no overlap seen).
+  **RESOLVED (~04:15 PDT, planner Status `e5ea1260`):** (ii) the draft's seeds were NOT fresh: Terminus 61–73 collides
+  with M4b run 2's 62–74 and T4's 49–61, and hull-rest 54–59 were M4b's chain. They are **replaced by Terminus 133–145
+  (13), hull-rest 60–65 (6) and fights 181–204 (24)**, unused anywhere in `_agents/` or `references/round30/` (the
+  orchestrator's own check had missed M4b's). (i) No honest tick-offset multiplier exists: `terminus_drive.gd` takes only
+  `--seed`, and a pure order delay in a deterministic one-squad drive replays the same grind shifted in time, giving n
+  copies with zero se. **So C31.5's named rig cases change form:** the SIZED deciding lines are the RIGS SQUAD's paired
+  rows over (a)'s 13 fresh seeds (rig wall contact-ticks ≤ base + 1.645 se of the paired difference, and rig arrivals
+  per (a)). The pin is sized from hull-rest's pinned crew-seconds row ((d), n 144 paired, se ~420), and the rig 180° is
+  deterministic (`test_wheeled_arrival`'s rig case green on the pair tree, plus planner-lab slot180 on a rig in three
+  legs). Seed 31's and 51's grinds and the seed-9 pin are REPORTED traces at n = 1, never judged. The partial rule
+  follows. A true offset series would need a per-squad start jitter in `terminus_drive.gd`, which no stream owns this
+  round, so it is not pursued.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold.
