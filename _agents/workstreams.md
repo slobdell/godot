@@ -338,6 +338,21 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
   **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
   flipped; native's statement covers the pair).
+- **Brains B3b-2 bar (filed 2026-10-15 ~04:45 PDT, before any judged number; DECLARED; the LAST attempt; partial:
+  none):** candidate `lab/brains-r31-bridge` `344a772a` = stream `0415da23` + `lab/brains-r30-bridge` `4bc708d7` (route
+  seating + mouth guard + heading rule) + the crossing seating matched ONCE per task point (held until the point changes
+  or a re-seat). Control = main's rules (`--route-seat=off --mouth-held=off --reissue-heading=plan`); round 30's B3b is
+  `--route-seat-once=off`. Tuning (builder0, n = 1 a cell): green s2 t5 rim 0 / 35.8 s (B3b rim 0 / 31.8); rust s2 t9 rim
+  0 / 38.0 s, deck 0.4 s (B3b 49.3 s, deck 7.1); green s3 t18 rim 0 / 36.4 s (B3b **rim 1, FAIL**). crossings_held
+  231–293 on, 0 off. **Gate first (C31.1):** `make check` on the lab tip with every switch ON, plus native's "none ported"
+  (the seating is GDScript: Element / TacticsFormation) and native-verify-scenarios. Lines: (1) **his bridge, the FULL
+  108** (locks × both sides × seeds 1–3 × ticks 1–18, deterministic) on = 108/108, control reported (main 106/108).
+  **Orchestrator's note:** the tuning cells lie INSIDE the 108. That is accepted because the 108 is his own
+  full-coverage definition and deterministic, a coverage requirement rather than a sample; (3) is the generalisation
+  check. (2) bridge-pooled 18/18. (3) Arrive series, FRESH seeds 41–44 (5 maps × 5 squads, n 100 an arm): within 8 m on
+  ≥ control − 1 AND McNemar discordant-against ≤ 1; paired median REPORTED. (4) crossings_found / crossings_held > 0 on
+  decked cells and 0 on a Sumps cell; mouth_held_resends REPORTED. (5) Cost ≤ 0.5 ms a tick or NOT READABLE. (6) The
+  suite green on the tip, pursuit included. Ships ON (GDScript; native none ported).
 - **Planner CP-P1 bar (filed 2026-10-15 ~04:00 PDT, before any judged number; DECLARED; the LAST attempt = the second
   judged run; full text in planner Status `ea246430` "CP-P1 BAR (DRAFT v2)"):** candidate = the seam ON
   (`--nav-off=planner`) at the hash the pair-tree check passes (`0914dafd` or successor), GDScript drive, C++ planner ON in
