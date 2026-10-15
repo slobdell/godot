@@ -95,3 +95,53 @@ Nothing: both calls are made.
 
 _(the worker keeps this current: every number names commit, machine, workload, n and its table row; bars go to the
 orchestrator before numbers; the report at the top)_
+
+_Updated 2026-10-14 (traffic worker, round 31, Opus)._
+
+### The plan (ordered)
+
+1. **I4 the early-stop hook** first (tooling, every stream copies it): `tests/traffic/seq_hook.py`, wired into
+   `traffic-series` / `traffic-census`, `CACHE=auto` for base rows. Committed `e1aaabe1`; check on `ab3351fb` running.
+2. **T3b-c**: candidate re-based (`e57f93d2`, cf124433's game/ + tests, NO code change); native's teardown finding taken
+   (`ab3351fb`). Native's mirror `413252ea` (stream/native); pair tree = both + `DEFAULT_OFF = []`; `make remote T=check`
+   on it BEFORE the series (C31.1). Then the judged series with the hook.
+3. **T1c-b2**: re-base `traffic-t1cb-judged`, pair-tree check (no C++ twin: native states "none ported" +
+   `native-verify-scenarios`), the bar below, the census.
+4. **T4** behind `--traffic-off=ghost`, OPT-IN per the orchestrator's R31.1 (default OFF; naming it turns it ON).
+5. Stretch only after CP-P1.
+
+### Bar: T3b-c (pre-registered, sent to the orchestrator before any number; DECLARED; ONE run = the LAST attempt; no partial)
+
+Candidate: round 30's `cf124433` game/ re-based on main = stream/traffic `ab3351fb` (no code change; the tests' teardown
+restores the default), paired with native's `Traffic.shape` mirror, `Traffic.DEFAULT_OFF = []` (turns ON). Judged on the
+PAIR tree once its `make check` is green (C31.1), builder0, both arms one commit, GDScript path (`--brains-off=native` is
+not used: the pair is the default path; the series runs the default path), **fresh seeds {41, 42, 43} × ticks
+{1,3,6,8,11,16}**, n = 18 a case, the four cases, 90 s. **Base `--traffic-off=turns`** (one flag, lesson 309), arm no
+flag. Read by `tests/traffic/turns_verdict.py --allow yard_open/cross=3.0` (round 30's filed lines, `cf124433` + this one
+change). Lines, rows of `judging.md` *The table* (`references/round30/sizing/table.csv`):
+1. between-squad fast pooled over the two crossing cases down ≥ 25 % (row: traffic-series xfast, n 16 decides −25 %;
+   pooled n 36); neither crossing case up beyond base + 1.645 se (+19.1 Terminus, +12.6 yard).
+2. **the crossing clock**: yard crossing mean paired `cross_clear_s` ≤ **+3.0 s + 1.645 se (HIS line)**; Terminus crossing
+   ≤ 0.10 × base median + 1.645 se (row: xclear sd 4.44 Terminus, 0.92 yard; se the run's own paired sd/√18, quoted).
+3. crews every case ≥ base − 1.645 se (−4.07, −4.77, −6.81, −1.64). 4. no wedge (> 1 crew never in where the base had
+   none); the worst run's trace read before the medians. 5. same-squad fast per crossing case ≤ base + 1.645 se (+43.7,
+   +52.6). 6. head-on cases within 1.645 se on fast, between-squad fast, all-in (+194.4/+116.5/+9.62 Terminus,
+   +8.38/+5.81/+3.82 yard). 7. all-in medians REPORTED with se. Also: bridge-pooled 18/18 (pair tree);
+   `test_traffic_turns_live` fires, counters reported (`tr_cross_verdicts`, `tr_cross_slowed`, `tr_cross_reach_free`);
+   CPU mirror on the Terminus crossing reported (no worse on 1/3/4).
+**Early stop (C31.3)** — the hook's lines, table sd: `yard_open/cross=xfast:gain:0.25,xclear:guard:abs=1.0:allow=3.0,
+arrived:guard:0.05 terminus/cross=xfast:gain:0.25,xclear:guard:0.10,arrived:guard:0.05
+yard_open/head=xfast:guard:0.2,arrived:guard:0.05 terminus/head=xfast:guard:0.2,arrived:guard:0.05`,
+`SEQ_COUNTER=tr_cross_verdicts`. Stop only on a row where every case reads SERIES PASS/FAIL; then `turns_verdict.py`
+reads the rows that ran. Ships as a pair with native, the default ON. A clip of his yard crossing before/after.
+
+### Bar: T1c-b2 — drafted, sent when the pair-tree check is green
+
+### Questions for the lead
+
+None.
+
+### Requests to other streams
+
+- native: `Traffic.shape` mirror (sent; `413252ea` in progress).
+
