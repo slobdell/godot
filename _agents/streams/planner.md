@@ -302,6 +302,17 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~00:50 PDT: **builder0's equality twin GREEN on 0c2d30c4** (`make remote LIGHT=1 T="planner-twin
+  NATIVE_JOBS=2"`: runner exited 0, 4 passed 0 failed, builder0 light lane, load ~10, unpinned): 17 offline + 4 lab
+  navmesh fixtures equal both ways on every observable; the three hull classes' tables equal in all 24 576 cells; the
+  slice at 50/200/1000 a step = the whole plan on six fixtures. Native's review of 50d380e1: APPROVED, one fix (the
+  refusal's keys) taken at 0c2d30c4. UNPINNED prices (not the cost line): offline 14-63x (F6a 199 ms v 10.9 s; 30-55 us
+  an expansion warm); Terminus navmesh fixtures only 2-16x (28-65 ms for 7-94 expansions: each lazy-field cell is an
+  engine closest-point scan, ~4 ms an expansion cold). The yard lab fixture is BUDGET after 12 000 expansions (129 s of
+  GDScript, 2.26 s native; FILE_TIME 165 s): gated out of `check` behind PLANNER_TWIN_ALL (set by `planner-twin`). The
+  C++ field now reads the navmesh through NavNative's polygon index (bit-equal to the engine by its own twin) — re-proved
+  by the next light twin run. The full check on 0c2d30c4 runs as `systemd-run --user --unit=planner-check` (the tooling
+  rule: backgrounded wrappers were being reaped).
 - 2026-10-15 ~00:20 PDT: **the seam's request lines RE-PLACED** (a correction to the draft's "first line of
   `_planned_reverse`", which that function's every-tick cadence would have turned into a plan request for every routed
   wheeled hull): `PlannerSeam.hold()` at the top of `_planned_reverse` and of `face_turn` only CONTINUES a crew the seam

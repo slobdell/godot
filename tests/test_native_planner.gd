@@ -176,6 +176,12 @@ func test_the_lab_fixtures_on_the_navmesh_plan_the_same_both_ways() -> void:
 	_both("lab tjunction (Terminus rig onto the ring road)", _nav_request(terminus, "gang_tank", [-70.0, 50.0, 0.0], [-48.0, 30.0, 90.0], 1.5))
 	terminus.free()
 	await drain_navigation()
+	# The yard corner is a BUDGET answer after 12 000 expansions (6 000 coarse + 6 000 fine): 129 s of GDScript on
+	# builder0 for one row, which would make this file the suite's shard floor (C31.9). It runs under `make planner-twin`
+	# (PLANNER_TWIN_ALL=1) and stays out of `check`; the equality it proves is the same search on a second navmesh.
+	if OS.get_environment("PLANNER_TWIN_ALL") == "":
+		print("native_planner: the yard lab fixture is skipped in check (PLANNER_TWIN_ALL=1 runs it: 129 s of GDScript for a BUDGET row)")
+		return
 	var yard := await ArenaFixture.build(self, "yard")
 	_both("lab yardcorner (yard rig)", _nav_request(yard, "gang_tank", [-34.0, 60.0, 0.0], [-8.0, 38.0, 90.0], 1.5))
 	yard.free()

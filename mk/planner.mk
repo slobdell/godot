@@ -75,7 +75,7 @@ PLANNER_CPUS ?=
 planner-twin: native import ## planner CP-P0: tests/test_native_planner.gd alone (every fixture both ways, the table, the slice; us a plan each way), pinned with PLANNER_CPUS=0-3
 	@mkdir -p $(BUILD_DIR)/planner
 	@echo ">> planner-twin on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cpus $(or $(PLANNER_CPUS),any) | load $$(cut -d' ' -f1 /proc/loadavg)"
-	@$(if $(PLANNER_CPUS),taskset -c $(PLANNER_CPUS)) $(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=native_planner' \
+	@PLANNER_TWIN_ALL=1 $(if $(PLANNER_CPUS),taskset -c $(PLANNER_CPUS)) $(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=native_planner' \
 		> $(BUILD_DIR)/planner/twin.log 2>&1; s=$$?; \
 	grep -E "NATIVE_PLANNER |NATIVE_PLANNER_SLICE|MEASURE|PASS|FAIL|passed|SCRIPT ERROR" $(BUILD_DIR)/planner/twin.log | cut -c1-300; \
 	echo ">> planner-twin: runner exited $$s (build/planner/twin.log)"; exit $$s

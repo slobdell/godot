@@ -12,6 +12,9 @@
 // Nothing here reads the clock; a budget is a count of expansions (orientation trip-up 28).
 #pragma once
 
+#include "nav_native.h"
+
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
@@ -49,6 +52,12 @@ public:
 		std::vector<Hull> hulls;
 		bool nav = false; // PlannerNavWorld: the navmesh instead of the rectangles
 		RID map;
+		// The navmesh's closest point through NavNative's polygon index (round 23 N2a: the engine's own per-polygon
+		// code over a grid, equal bit for bit, tests/test_native_navmesh.gd), one index per process; the GDScript world
+		// asks the engine directly and the twin test holds the two to the same plan. A cell read on the engine's
+		// linear scan cost ~4 ms an expansion on the Terminus (builder0, 0c2d30c4); the index is the fix.
+		static Ref<NavNative> nav_index;
+		static Ref<NavNative> &index();
 		double bake_radius = 2.0;
 		std::vector<float> field; // the lazy window (UNSET until read), cx * n + cz
 		int64_t field_x0 = 0, field_z0 = 0, field_n = 0;

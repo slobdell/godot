@@ -229,6 +229,15 @@ const char *code_name(PlannerNative::Code c) {
 
 // ============================================================ the world ============================================
 
+Ref<NavNative> PlannerNative::World::nav_index;
+
+Ref<NavNative> &PlannerNative::World::index() {
+	if (nav_index.is_null()) {
+		nav_index.instantiate();
+	}
+	return nav_index;
+}
+
 // PlannerWorld.prepare
 void PlannerNative::World::prepare(double cx, double cz, double half) {
 	field_n = (int64_t)std::ceil(half * 2.0 / CELL_M) + 3;
@@ -245,7 +254,7 @@ double PlannerNative::World::wall_distance(double x, double z) {
 		// var at := Vector3(x, 0.0, z)  (float32); closest = map_get_closest_point(map, at)
 		// return bake_radius - Vector2(closest.x - x, closest.z - z).length()
 		const Vector3 at((real_t)x, 0.0f, (real_t)z);
-		const Vector3 closest = NavigationServer3D::get_singleton()->map_get_closest_point(map, at);
+		const Vector3 closest = index()->closest_point(map, at); // = map_get_closest_point(map, at), bit for bit
 		const Vector2 off((real_t)((double)closest.x - x), (real_t)((double)closest.z - z));
 		return bake_radius - (double)off.length();
 	}
