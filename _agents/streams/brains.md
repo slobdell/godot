@@ -101,7 +101,9 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
 
 ### FINAL REPORT (round 31, 2026-10-15 ~12:30 PDT)
 
-**Green hash:** stream/brains `303883c1`: final `make check` on builder0 RUNNING (result below when it lands). Every
+**Green hash:** stream/brains `303883c1`: `make check` on builder0 **exited 0, 2613/0**, sim-baseline unmoved,
+bridge-pooled 18/18, native-verify 0 mismatches, ai-scenarios NOT JUDGED (the usual refusal). The commits after it are
+Status/references only. Every
 backlog item is done, judged, or parked by its bar. No lead gate is pending; no questions.
 
 **Shipped**
