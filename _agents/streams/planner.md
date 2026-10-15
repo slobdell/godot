@@ -422,6 +422,13 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 07:44 PDT: **the outcome assertions ON are green** (`planner-test26`, builder0 edb773cf, 4 passed 0 failed,
+  exited 0): k-turn ON 2 segments / 0 contacts / 7.0 s; wedged ON at nav's 8 s window yaw 9.0 deg, 0.67 m over (bar
+  1.8), give-up reached. **Native re-cut CP-P1's gate as 8bb2ad4e** (pair/cpp1-on = main 83341378 + edb773cf merged
+  clean + the mirror + PLANNER_DEFAULT true; nothing needed in the mirror); its plain check is third in native's
+  heavy chain (~2.5 h). 05ce260b: `last_plans` captured/restored (native's note; measurement only, after the re-cut,
+  so the series tree is 05ce260b+ and the gate 8bb2ad4e -- rows name both). While the gate queues: the census price
+  on the final tree (`planner-census9`, light lane).
 - 2026-10-15 07:41 PDT: **THE K-TURN ROW MET on manoeuvre's scene** (`planner-test25`, builder0 1f325b91, 30 passed 0
   failed): seam ON = arrived 7.0 s, 0 wall contacts, nose clearance 2.20 m, TWO real gear segments (R 4.0 m ticks 3-54,
   F 29.6 m ticks 57-209), 1 request, 1 plan "R4 F18" at lock driven to its end, held 2 ticks; base = 2 segments (R4.5
