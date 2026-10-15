@@ -147,7 +147,19 @@ _(the worker keeps this current; bars to the orchestrator before numbers; the re
   orchestrator accepted B3b-2b as the candidate under the same bar (a gate red fixed before any judged number, C31.1).
   **Gate on 5ed61f91 (builder0): `make check` exited 0, 2621/0, bridge-pooled 18/18 (= bar line 2), sim-baseline
   unmoved, native-verify 0 mismatches; perf-judge NOT JUDGED (box busy, ratios 1.57–2.30x), ai-scenarios NOT JUDGED.**
-  Series running (unit `brains-b3b2-series`): 108 on/control, arrive seeds 41–44 n = 100/arm, cost. B6's check after it.
+  **B3b-2b JUDGED — FAILED on line 3, NOT SHIPPED; the last attempt as filed: PARKED** (builder0, `5ed61f91`,
+  2026-10-15 08:23–10:29 PDT): (1) his bridge, the FULL 108: **on 108/108**; control (main's rules) 106/108 (green t5 s2,
+  rust t9 s2 rim_crews 1, round 28's two cells): PASS. (2) bridge-pooled 18/18 (the gate): PASS. (3) arrive, fresh seeds
+  41–44, n = 100 an arm: all_in8_s **on 90 v control 97**, discordant 2 for v **9 against** (McNemar p 0.065; needs ≥ 96
+  and ≤ 1 against): **FAIL**. Paired median over the 88 complete in both 28.1 v 28.9 s (−2.6 %, paired diff +0.0).
+  Against: pit ifv/ifv/supp/tank s42, pit tank×4 s43, sumps tank×4 s44, yard ifv/ifv/supp/tank s41, yard
+  scout/ifv/tank/tank s43, yard scout/scout/ifv/tank s42 + s43, yard tank×4 s41 + s44; for: sumps tank×4 s42, yard tank×4
+  s42. (4) counters: crossings_found / held / rematched > 0 in 108/108 bridge runs on, 0 on control; 0 in all 200 arrive
+  runs (no deck on those maps: the seating never fires there); mouth_held_resends > 0 in 2 of the 108. (5) cost:
+  `t.poll.element` 0.116 v 0.194 ms on Locks (`ai-parts-match`, box busy, act 0.80 v 1.33: no gain claimed): PASS.
+  **So the arrive loss is not the seating** (inert there): it is round 30's other two switches (mouth guard, heading
+  rule) that ride in the candidate, never judged on the arrive line before (round 30's chain stopped at the 108). Rows:
+  `references/round31/brains/b3b2b-*`. Attribution (each switch alone on the 9 against cells) queued after B6's check.
 - **B9 DONE — the Terminus seat trap is the GATE (B5c-v5's case; no seating fix).** Reproduced on a scratch tree =
   stream + traffic-t3b's `traffic.gd` (a63dde6d) AND its `Traffic.shape` hook in `_avoid` (main lacks it; without it the
   rule never acts: my first two traces = T3b's base arm). terminus cross s33 t1 `--traffic-on=turns`, builder0 GDScript:
