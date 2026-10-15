@@ -171,6 +171,35 @@ survive.
 3. CP-H when the orchestrator calls it (bar before numbers).
 4. M1b(2) turn-the-hull (`turnhull,facekeep` one flag; the `_order_move` decline lifted under it, C31.8).
 
+### CP-H bar (C31.4; sent to the orchestrator 2026-10-15 ~03:20 PDT, before any number)
+
+**Tree:** R31.4's ONE tree (main with every consumer merged OFF + native's mirrors), built by native; the arms are flags
+on that one commit, both on the **GDScript path** (`--brains-off=native` in every arm; `make manoeuvre-cph` refuses an
+arm without it, R31.1). **Arms:** OFF = `--brains-off=native`; ALL = `--nav-off=unstickback,kturnarc --gun-off=realspeed
+--traffic-off=ghost --brains-off=native,realslow`; each consumer ALONE (unstickback, kturnarc, realspeed, ghost,
+realslow), REPORTED. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
+them):** Terminus census and drive 110–122 (13), hull-rest 84–89 (4 factions × 6 tasks × 6 = 144 runs an arm, one arm per
+remote call, lesson 311), fights 190–213 (24), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
+- (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each; early stop by
+  `sequential.py arrived:guard:0.10`, never before 6 seeds, the row recorded.
+- (b) Terminus wall contact-ticks, rigs and mixed apart (rows 74, 76): ≤ base + 1.645 se paired, each, with and without
+  each arm's two worst runs.
+- (c) hull-rest pinned crew-seconds (row 67): DOWN beyond 2 se paired at n = 144, ≤ 10 m hulls and rigs APART (rigs:
+  reported, they read the honest stall only against a hull); the STUCK row and tracks reported.
+- (d) hull-rest crews still moving at 75 s, per task (rows 62–63): ≤ base + 1.645 se, se quoted.
+- (e) nav-terminus-drive's PINNED and STUCK rows (`pinned_table.py`): down (count form), reported per squad.
+- (f) bridge-pooled 18/18 (a 17/18 read by the cell's trace, lesson 302).
+- (g) fights at 24 seeds (rows 69–71): kills, deaths, hit rate within 2 se; hit rate on touching targets REPORTED (H3).
+- (h) `scenario_cp2` (the scout orbit), `test_tactics_mixed_legs` (the Sumps causeway), `test_nav_wall_contact::
+  test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (round 30's wall-backing stage, R31.5's condition 2) and
+  the WHOLE suite green on native's ON pair tree (the ship check).
+- (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall), asks, backs, backed v capped, refused,
+  **fallback** (R31.5 condition 1: fallback carrying most of fires_wall on the census is a finding), unstick_fires,
+  press_escapes; an arm whose consumer never fires is a null (lesson 300).
+**Partial rule (C31.4, pre-registered):** the combined ships as one pair if every line passes; if it fails, each consumer
+that passed ALONE on every line may be re-declared alone (one attempt). **Last attempt:** this is CP-H's first run; the
+alone re-declaration is its only second chance. Native's ONE pair ships it.
+
 ### M1b(2) bar (sent to the orchestrator 2026-10-14 ~23:50 PDT, before any number)
 
 ONE opt-in switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT`): the decline in `TankBrain._order_move` lifted for
