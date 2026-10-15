@@ -302,6 +302,14 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~01:00 PDT: **CP-P0 candidate a3755e37** = 0c2d30c4 + the field through NavNative's index (ad1d1f3d; native:
+  APPROVED, two nits for the seam-ON commit: the header comment, and passing `NativeBridge.nav` in so one index serves
+  the game) + the index held per instance (a3755e37: a C++ static Ref outlived the ObjectDB and segfaulted at exit after
+  a green run). **Twin (ALL fixtures, the yard included) GREEN on a3755e37**: `make remote LIGHT=1 T="planner-twin
+  NATIVE_JOBS=2"` exited 0, 4 passed 0 failed, builder0 light lane, load 13, unpinned; the Terminus fixtures 9.7 / 11.1 /
+  47.9 ms a plan (7 / 37 / 94 expansions) against 28 / 24 / 65 ms before the index; the yard BUDGET row 3.8 s for 12 000
+  expansions (~320 us an expansion warm on a navmesh). FILE_TIME with ALL 333 s (the yard's GDScript 239 s of it); in
+  check (no yard) ~95 s. Its full check follows the 0c2d30c4 baseline check in my heavy slot.
 - 2026-10-15 ~00:50 PDT: **builder0's equality twin GREEN on 0c2d30c4** (`make remote LIGHT=1 T="planner-twin
   NATIVE_JOBS=2"`: runner exited 0, 4 passed 0 failed, builder0 light lane, load ~10, unpinned): 17 offline + 4 lab
   navmesh fixtures equal both ways on every observable; the three hull classes' tables equal in all 24 576 cells; the
