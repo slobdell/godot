@@ -480,6 +480,15 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   `lab/manoeuvre-kturnarc` e7a58262 + table; native's `lab/native-kturnarc` 40b89dd1. Manoeuvre traces the orbit for the
   round-31 note. **M1b ships alone**: native cuts main (`3ca70af2`, with the re-render) + 55622870 + d122485c and runs the
   round's LAST check.
+  **The orbit traced (manoeuvre, builder0, e7a58262 GDScript; stream/manoeuvre `b994a987`, logs under references):** arc
+  on 3 deck hits of 27 (FAIL) v `--nav-off=kturnarc` 58 of 83 (PASS), native's numbers exactly. Cause: a scout (hull 3.04 m)
+  is under `KTURN_BRAKE_HULL_M`, so `kturn_brake_on()` is false and `_kturn_start_leg` sets `_kturn_rolling` with the hull
+  still rolling FORWARD at 10 m/s under reverse throttle; both rules count the roll-out as leg 1, then part on the
+  re-planned 3.0 m leg: the chord shrinks back through the plan point as the hull reverses (the roll-out cancels by
+  accident); the UNSIGNED arc keeps the 1.2 m roll-out as progress and ends 2.2 m short, nose 40° off (under the 45°
+  re-plan floor → a circle plan), and the orbit diverges (8 legs v 3). **Round-31 fix named, not built:** the arc signed by
+  gear (`real_velocity.dot(nose)·gear·dt`), or the rolling logic for every wheeled hull — either moves the short wheeled
+  hulls in the judged mixed squads (likely the 291 → 288), so a fresh A/B with `scenario_cp2` as a bar line.
 - **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
