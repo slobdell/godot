@@ -108,10 +108,39 @@ _Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/p
 
 ### The report (read this first)
 
-**In progress: P5 (CP-P0) is coded and reviewed by native (7c286000 APPROVED for fidelity, four non-blocking notes,
-note 1 taken), its builder0 twin run is queued behind three checks; P6's slice is in the C++ and proven by the twin
-test's slice case (laptop pre-check); P7's seam is coded OFF (R31.2 as agreed) with its own test, not yet run.**
-Green hash: none of mine yet (the laptop pre-check is not evidence: C31.7).
+**CP-P0 candidate a3755e37** (C++ `PlannerNative`, equal to the GDScript planner on 17 offline + 4 Terminus-navmesh
+fixtures on every observable, the three hull tables bit for bit, the slice = the whole plan): **twin GREEN on builder0
+twice** (41212da0 = a3755e37 + docs: `tools/remote.sh --quiet planner-twin PLANNER_CPUS=0-3` exited 0, 4 passed 0 failed,
+pinned to cpus 0-3, load 0.76; and the unpinned light-lane run before it). **Full `make check` on 41212da0 is running**
+(unit `planner-check6`; the first attempt was REFUSED by the wrapper because the price run's own 15 s cleanup was still
+live in the folder -- nothing ran, nothing was lost). Green `make check` hash: none yet.
+
+**The price (CP-P0's cost line), builder0 41212da0, pinned to cpus 0-3, QUIET WINDOW: NOT USABLE** (7 of 7 samples had
+7-8 foreign runs live; load1 0.46-1.17 in `build/quiet-window.tsv`; the box never went quiet in a 65-minute wait, so these
+are the best numbers the night allows, an UPPER bound, not a quiet-window figure):
+
+| fixture (native, cold field each plan) | expansions | a plan | an expansion |
+|---|---|---|---|
+| Terminus turnround (rig face south) | 7 | 3.57 ms | 510 us |
+| Terminus slot180 (scout) | 37 | 3.67 ms | 99 us |
+| Terminus tjunction (rig onto the ring road) | 94 | 16.2 ms | 172 us |
+| yard corner, BUDGET | 12 000 | 1.30 s | 108 us |
+| offline F6a rig turn-round 20 m (rectangles) | 3735 | 150 ms | 40 us |
+| offline mouth IFV (rectangles) | 47 | 2.66 ms | 57 us |
+
+Against the unpinned load-13 run the same plans cost 2.7-3x more (9.7 / 47.9 ms / 3.8 s), so load, not the code, set
+the earlier numbers. The per-expansion price on the navmesh is the LAZY FIELD'S first read of each cell (~1 ms a cold
+expansion at the start of a plan, ~50 us once its cells are read): the commit after the candidate (d373af4e, fixed
+17bd1ec8) keeps a navmesh's cells across plans and instances for the match, so a hull's plan in a fight pays the cold
+price only where no plan has looked before. **The cap v the cost line:** at the pinned cold price SLICE at the 0.5 ms
+line is 3-5 expansions a tick, a 94-expansion plan ~20-30 ticks (~1 s), inside PENDING_TICKS 90 (3 s); with the cells
+warm (~50 us) the slice is ~10 a tick and the same plan ~10 ticks. SLICE is chosen from `planner-census`'s in-fight probe
+on 17bd1ec8 (the next run), not from this table.
+
+**Review state:** native APPROVED 7c286000, 50d380e1 (one fix taken), ad1d1f3d + a3755e37 (two nits, taken at
+d373af4e). d373af4e / 17bd1ec8 (the navmesh cell cache, the game's index handed in as `"nav"`, the rolling-face seam test)
+go to native for review once the light twin is green on 17bd1ec8 (the first attempt d373af4e segfaulted builder0's
+`--import`: a static `RID` in the cache; keyed by `RID::get_id()` now).
 
 ### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
 
@@ -302,6 +331,15 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~02:30 PDT: **the price run landed** (41212da0, builder0, pinned cpus 0-3, QUIET WINDOW: NOT USABLE after a
+  65-minute wait with 7-8 foreign runs live; the table in the report): twin 4/0, exit 0. The follow-on check was REFUSED
+  (the price run's cleanup still live: nothing ran); relaunched as `planner-check6` on 41212da0. **d373af4e**: the C++
+  navmesh field cache (per match: map id + iteration id + bake radius; 64x64 chunks; `nav_cache_stats()`), the GDScript
+  `_cell` stores-then-reads so a cell is one float32 on every read (the first-read-returns-double quirk gone from both),
+  `"nav"` = `NativeBridge.nav` through the world dict, native's header nit, and the seam test
+  `test_a_face_ordered_while_rolling_is_held_to_rest_then_planned`. Its light twin segfaulted at `--import` (signal 11
+  before any test): the static cache held a godot-cpp `RID`, whose constructor calls a binding not yet set at library
+  load. **17bd1ec8** keys by `RID::get_id()`; light twin relaunched (`planner-twin8`).
 - 2026-10-15 ~01:00 PDT: **CP-P0 candidate a3755e37** = 0c2d30c4 + the field through NavNative's index (ad1d1f3d; native:
   APPROVED, two nits for the seam-ON commit: the header comment, and passing `NativeBridge.nav` in so one index serves
   the game) + the index held per instance (a3755e37: a C++ static Ref outlived the ObjectDB and segfaulted at exit after
