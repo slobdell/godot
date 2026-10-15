@@ -101,6 +101,16 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
 - **C31.11 Fresh start:** every worktree was re-created at this split from main `cff4307e`; no agent of round 30 runs.
 - C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
+**Rulings (round 31, the orchestrator's, as they arise):**
+
+- **R31.1 CP-H switches are OPT-IN (2026-10-14, manoeuvre's proposal, adopted for every consumer):** each consumer's
+  switch is default OFF on main, and naming it turns it ON (like `inflate`). Main and native's default path play unchanged
+  until CP-H ships. **Two checks, not one:** (a) the PRE-SERIES gate for a GDScript-only consumer is a scratch tree with
+  the default flipped ON, `make remote T="check NATIVE=off"` (the whole suite on the GDScript path with the switch on).
+  (b) The SHIP check is still C31.1's pair tree: native's mirror in, the default flipped ON, plain `make remote T=check`
+  (native's default path), the whole suite green. (a) gates the series; only (b) gates a merge ON. Traffic (`ghost`),
+  brains (`realslow`) and native are told.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - (none yet)
