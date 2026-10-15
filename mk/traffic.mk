@@ -148,3 +148,25 @@ traffic-census-one: import ## Round 26 (traffic): one census run with its whole 
 .PHONY: traffic-pytest
 traffic-pytest: ## Round 31 (traffic I4): the early-stop hook's Python tests (tests/traffic/test_*.py)
 	$(PYTHON) -m unittest discover -s tests/traffic -p 'test_*.py'
+
+# Round 30 (traffic T1c-b, the orchestrator's addition (d)): "no native diff" proven, not stated. The census and brains'
+# ApproachStage drawn-artillery runs on the NATIVE path with every owned native execute verified against the GDScript
+# (TANK_NATIVE_EXEC_VERIFY=1, as native-verify-scenarios does): a refusal in Movement.ask() marks the execute stale, and
+# a mismatch would print "NativeExec verify". TRAFFIC_VERIFY_CENSUS ("arena green rust credits army seed" ;-separated),
+# TRAFFIC_VERIFY_APPROACH_SEEDS -> build/traffic-native-verify/*.log; fails on any mismatch or a run with no probe line.
+TRAFFIC_VERIFY_CENSUS ?= sumps law gangs 1000 opponent 7;parade gangs law 2000 opponent 8
+TRAFFIC_VERIFY_APPROACH_SEEDS ?= 13 14
+.PHONY: traffic-native-verify
+traffic-native-verify: native import ## Round 30 (T1c-b): census + ApproachStage drawn artillery on the native path with the execute verified (TANK_NATIVE_EXEC_VERIFY=1) -> mismatches (0 = equal)
+	@rm -rf $(BUILD_DIR)/traffic-native-verify; mkdir -p $(BUILD_DIR)/traffic-native-verify; d=$(BUILD_DIR)/traffic-native-verify; bad=0; \
+	IFS=';'; for c in $(TRAFFIC_VERIFY_CENSUS); do IFS=' '; set -- $$c; log=$$d/census-$$1-$$6.log; \
+		TANK_NATIVE_EXEC_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
+			--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(TRAFFIC_CENSUS_SECONDS) > $$log 2>&1 || true; \
+		v=$$(grep -c "NativeExec verify" $$log || true); p=$$(grep -o '"setup_refusals":[0-9]*' $$log | head -1); \
+		echo "  census $$1 s$$6: $$v mismatches, $${p:-NO PROBE LINE}"; [ "$$v" = 0 ] && [ -n "$$p" ] || bad=1; IFS=';'; done; IFS=' '; \
+	for seed in $(TRAFFIC_VERIFY_APPROACH_SEEDS); do log=$$d/approach-$$seed.log; \
+		TANK_NATIVE_EXEC_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/approach_probe.gd -- \
+			--seed=$$seed --approach=east --seconds=90 --lab-start-tick=1 --live=on --his=artillery,artillery,artillery --theirs=law_ifv > $$log 2>&1 || true; \
+		v=$$(grep -c "NativeExec verify" $$log || true); p=$$(grep -o '"repacks":[0-9]*' $$log | head -1); \
+		echo "  approach s$$seed: $$v mismatches, $${p:-NO PROBE LINE}"; [ "$$v" = 0 ] && [ -n "$$p" ] || bad=1; done; \
+	[ $$bad = 0 ] && echo "traffic-native-verify: 0 mismatches" || { echo "traffic-native-verify FAILED (build/traffic-native-verify/)"; exit 1; }
