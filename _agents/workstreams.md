@@ -403,6 +403,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   plain check). **Fresh seeds:** hull-rest 90–95; **Terminus 146–158** (manoeuvre proposed 123–135, which overlaps
   CP-P1's 133–145); fights 262–285; bridge's 18; **SBF gang_ifv 25–30** (7–12 were round 30 B6's). A facekeep-caused
   miss on attempt 2 is a finding with its trace; there is no third attempt.
+  **Attempt 2 JUDGED (~09:30 PDT): MISSES line (g), mixed squad; PARKED (the last attempt).** builder0, `25ef8f7e`,
+  Terminus 146–158, n 13 paired, GDScript: mixed arrivals 293 → 285 of 312 (diff −8, se 4.55, bound −7.5, FAIL; without
+  each arm's two worst runs −5, se 2.6, still FAIL); rigs 177 → 179 PASS; contact-ticks fall (mixed 2405 → 2089, rigs
+  15740 → 8810). Traced, worst seed 153 mixed, the west-street leg 6 → 2 arrived: the four "misses" are NOT stuck. Each
+  is `completed: true`, phase arrived, 7–14 m from its slot, including a tracked tank and a fixed-gun scout the lift never
+  touches. The element seats differently once its wheeled turret members turn at their slots, and the arrivals line
+  counts a changed seating as a miss. Kept for round 32: the drawn hull-rest arms (lines (a) and (d), facekeep per
+  unit) finish; the clicked arms and fights are DROPPED to free builder0 for CP-H.
 - **Manoeuvre CP-H bar (filed 2026-10-15 ~06:00 PDT, before any judged number; DECLARED; CP-H's FIRST run, with the
   alone re-declaration its only second chance; full text in manoeuvre's Status):** tree = R31.4's one tree,
   native-built; arms are flags on that one commit, all on the GDScript path (`make manoeuvre-cph` refuses any arm

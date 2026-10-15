@@ -245,6 +245,12 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 
 ## Round 32 candidates (found during round 31)
 
+- **Turn the hull (M1b(2)) parked a second time on arrivals that are really seating (2026-10-15).** With the lift
+  accepting element-task facings, the point-task share and line tasks improved (run 1: ambush 66 → 28°, SBF 74 → 29°;
+  gang_ifv SBF 61 → 21°) and contact fell, but Terminus mixed arrivals read 293 → 285. The "missing" crews had
+  completed, 7–14 m from slots the element re-seated once its turret members turned. Round 32 decides, before any
+  number: does an arrivals line count "completed at a re-seated slot" as arrived, and does facekeep (9600 refusals in
+  run 1, per unit in run 2's hull-rest rows) need to change for gang hulls?
 - **The arrival gate, a third time (brains B5c-v5 parked 2026-10-15):** v4's rule passed pursuit 24/24, the yard
   (every crew in 11/12 v 1/12) and Terminus, and FAILED one Sumps run (s17 t11 +22.3 s), where a seat flip-flop
   refired `near` 66 times. Two candidates: key `near` per seat index (or with hysteresis), or the planner's §2.8 SIDE
