@@ -67,6 +67,42 @@ class Inventory(unittest.TestCase):
         self.assertAlmostEqual(float(r["noise_se"]), 2.71 * 12, delta=0.2)  # the quoted se 2.71 is of the per-seed mean
         self.assertEqual(r["line_inside_noise"], "N")
 
+    def test_round_30_lines_reproduce_the_bars_block(self):
+        clock = self.by_line[(30, "T3b", "yard crossing clock: mean paired cross_clear_s <= 0.10 x base median + 1.645 se (judged se)")]
+        self.assertEqual(clock["verdict"], "FAIL")
+        self.assertAlmostEqual(float(clock["noise_se"]), 0.22, places=2)
+        self.assertAlmostEqual(float(clock["line_x"]), 1.18, places=2)  # 0.10 x 8.2 + 1.645 x 0.22: the verdict's limit
+        self.assertEqual(clock["line_inside_noise"], "N")
+        self.assertLess(float(clock["verdict_margin_se"]), -7.0)
+        art = self.by_line[(30, "T1c-b", "artillery shots not down > 21.6 (row 82; one Parade run 171 -> 26 carried it)")]
+        self.assertIn("rows: 318 -> 163", art["reproduced"])
+        self.assertEqual(art["line_inside_noise"], "Y")  # the judged se is ~144: row 82's 21.6 was under-sized
+        creep = self.by_line[(30, "M2b", "(a) open+static creep episodes down >= 50 % (census 14-19 + sim 9-11, paired per run)")]
+        self.assertIn("rows: 53 -> 37", creep["reproduced"])
+        self.assertAlmostEqual(float(creep["noise_se"]), 9.76, places=1)
+        rigs = self.by_line[(30, "M2b", "(c) Terminus rigs arrivals not down beyond 1.645 se (the SPRT at the full grid read PASS; truncation decides by the fixed test)")]
+        self.assertEqual(rigs["verdict"], "FAIL")
+        self.assertAlmostEqual(float(rigs["noise_se"]), 4.97, places=2)
+        pinned = self.by_line[(30, "M4b run 2", "(b2) pinned crew-seconds DOWN beyond 2 se (paired, n = 144)")]
+        self.assertIn("2596 -> 658", pinned["reproduced"])
+        self.assertGreater(float(pinned["verdict_margin_se"]), 2.5)
+        identical = self.by_line[(30, "M4b run 2", "(b1) Terminus rigs arrivals not down beyond 1.645 se")]
+        self.assertTrue(identical["noise_how"].startswith("identical arms"))
+        guard = self.by_line[(30, "M1b", "faced_right: crews still moving at 75 s (all classes, drawn) <= base + 2 se (M1_CLASS's se)")]
+        self.assertAlmostEqual(float(guard["noise_se"]), (2.8 ** 2 + 6.5 ** 2) ** 0.5, places=1)
+        self.assertEqual(guard["line_inside_noise"], "N")  # a + 2 se line is sized by construction
+        one_se = self.by_line[(30, "M1b", "(d) Terminus rigs arrivals not down beyond 1 se (sequential.py arrived:guard:0.10: SERIES PASS at run 10 of 13)")]
+        self.assertEqual(one_se["line_inside_noise"], "Y")  # a 1 se line: a null fails it 16 % of the time
+        yard = self.by_line[(30, "B5c-v4", "yard crossing: every crew in, on v off (the deciding line)")]
+        self.assertLess(float(yard["exact_p"]), 1e-4)
+        sumps = self.by_line[(30, "B5c-v4", "Sumps cell: all-within-8 m median on <= off (never = 90 s)")]
+        self.assertIn("median 37.5 -> 24.5", sumps["reproduced"])
+        arrive = self.by_line[(30, "B5c-v4", "arrive series: all-within-8 m median no slower than +2 % (over the cells complete in both arms)")]
+        self.assertIn("median 29.6 -> 24.5 (n 91)", arrive["reproduced"])
+        bridge = self.by_line[(30, "B3b", "his bridge 108/108 (the full 108, deterministic; control = main's rules reported)")]
+        self.assertEqual(bridge["reproduced"], "rows: 106/108 -> 107/108")
+        self.assertEqual(bridge["exact_p"], "1.0000")
+
     def test_writes_csv_and_markdown(self):
         tmp = tempfile.mkdtemp()
         csv_path, md_path = os.path.join(tmp, "inv.csv"), os.path.join(tmp, "inv.md")

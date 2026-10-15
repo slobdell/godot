@@ -1,0 +1,67 @@
+Round 30 manoeuvre M4b RUN 2 (the last) judged: candidate 77a1603f (lab/manoeuvre-m4b2), builder0, GDScript path, base = --tank-off=real_velocity --nav-off=unstickback. Fresh seeds: Terminus 62-74, hull-rest 54-59, fights 157-180. Every filed line met (see the brief's Status).
+
+  == rigs (13 seeds)
+    (b1) arrivals base 178 new 178 diff +0 se 0.00 1.645se 0.0: PASS
+    (b1') contact-ticks base 13411 new 13411 diff +0 se 0 1.645se 0: PASS; two worst dropped base 8286 new 8286
+    leg seconds base 1748 new 1748
+    per seed arrived(contacts): 62:15>15(507>507) 63:14>14(174>174) 64:10>10(574>574) 65:14>14(671>671) 66:13>13(504>504) 67:11>11(1970>1970) 68:13>13(2667>2667) 69:16>16(191>191) 70:14>14(566>566) 71:14>14(2458>2458) 72:15>15(493>493) 73:16>16(268>268) 74:13>13(2368>2368)
+    (i) rig runs byte-identical to base (drive, leg and state lines): 0 of 13: MISS: rigs-62, rigs-63, rigs-64, rigs-65, rigs-66, rigs-67, rigs-68, rigs-69, rigs-70, rigs-71, rigs-72, rigs-73, rigs-74
+    new counters: stall fires 0 (backed 0, capped 0), press 97 (backed 97, capped 0); base stall 0, press 97
+  == mixed (13 seeds)
+    (b1) arrivals base 295 new 293 diff -2 se 2.89 1.645se 4.7: PASS
+    (b1') contact-ticks base 2093 new 1915 diff -178 se 257 1.645se 423: PASS; two worst dropped base 1314 new 1350
+    leg seconds base 1478 new 1534
+    per seed arrived(contacts): 62:22>21(453>306) 63:23>23(88>120) 64:22>22(66>58) 65:23>23(64>64) 66:24>24(122>122) 67:23>23(174>165) 68:22>23(95>139) 69:22>22(202>252) 70:22>23(318>259) 71:23>22(31>28) 72:23>23(81>164) 73:23>21(326>165) 74:23>23(73>73)
+    new counters: stall fires 40 (backed 21, capped 19), press 7 (backed 6, capped 1); base stall 11, press 7
+
+BRUSH runs paired 26 (base 26, new 26; runs with no touching line dropped)
+BRUSH mixed-62: base v 2.50 over 15 s, real 2.50 | new v 3.14 over 11 s, real 0.99
+BRUSH mixed-63: base v 3.42 over 2 s, real 3.42 | new v 4.75 over 3 s, real 1.47
+BRUSH mixed-64: base v 3.51 over 3 s, real 3.51 | new v 4.94 over 2 s, real 2.86
+BRUSH mixed-65: base v 5.26 over 3 s, real 5.26 | new v 5.26 over 3 s, real 2.80
+BRUSH mixed-66: base v 5.41 over 4 s, real 5.41 | new v 5.41 over 4 s, real 1.71
+BRUSH mixed-67: base v 3.17 over 6 s, real 3.17 | new v 3.17 over 6 s, real 2.52
+BRUSH mixed-68: base v 5.98 over 2 s, real 5.98 | new v 5.12 over 5 s, real 2.12
+BRUSH mixed-69: base v 4.35 over 7 s, real 4.35 | new v 3.79 over 9 s, real 1.85
+BRUSH mixed-70: base v 2.79 over 8 s, real 2.79 | new v 3.02 over 8 s, real 1.98
+BRUSH mixed-71: base v 4.36 over 2 s, real 4.36 | new v 4.36 over 2 s, real 1.77
+BRUSH mixed-72: base v 7.29 over 3 s, real 7.29 | new v 6.79 over 5 s, real 2.16
+BRUSH mixed-73: base v 2.63 over 6 s, real 2.63 | new v 2.65 over 6 s, real 1.60
+BRUSH mixed-74: base v 4.47 over 4 s, real 4.47 | new v 4.47 over 4 s, real 2.41
+BRUSH rigs-62: base v 5.79 over 18 s, real 5.79 | new v 5.79 over 18 s, real 2.41
+BRUSH rigs-63: base v 5.66 over 8 s, real 5.66 | new v 5.66 over 8 s, real 2.24
+BRUSH rigs-64: base v 5.62 over 18 s, real 5.62 | new v 5.62 over 18 s, real 1.19
+BRUSH rigs-65: base v 5.77 over 22 s, real 5.77 | new v 5.77 over 22 s, real 1.57
+BRUSH rigs-66: base v 5.99 over 15 s, real 5.99 | new v 5.99 over 15 s, real 2.14
+BRUSH rigs-67: base v 9.92 over 79 s, real 9.92 | new v 9.92 over 79 s, real 3.84
+BRUSH rigs-68: base v 9.81 over 92 s, real 9.81 | new v 9.81 over 92 s, real 1.68
+BRUSH rigs-69: base v 4.27 over 6 s, real 4.27 | new v 4.27 over 6 s, real 1.61
+BRUSH rigs-70: base v 8.76 over 15 s, real 8.76 | new v 8.76 over 15 s, real 1.07
+BRUSH rigs-71: base v 9.73 over 80 s, real 9.73 | new v 9.73 over 80 s, real 1.34
+BRUSH rigs-72: base v 6.01 over 15 s, real 6.01 | new v 6.01 over 15 s, real 1.77
+BRUSH rigs-73: base v 6.07 over 10 s, real 6.07 | new v 6.07 over 10 s, real 2.78
+BRUSH rigs-74: base v 1.01 over 79 s, real 1.01 | new v 1.01 over 79 s, real 0.19
+BRUSH speed while touching, paired mean diff +0.07 m/s se 0.09 (n 26): within 2 se; base mean 5.37, new 5.43
+BRUSH touching crew-seconds: base 522 new 525
+
+BRIDGE_POOLED 18 of 18 runs pass
+
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 967 new 971 diff +4 se 33.6 within 2 se
+FIGHT_GUARD deaths: base 975 new 975 diff +0 se 34.1 within 2 se
+FIGHT_GUARD shots: base 30204 new 30252 diff +48 se 2075.4 within 2 se
+FIGHT_GUARD hits: base 21442 new 21753 diff +311 se 1442.5 within 2 se
+FIGHT_GUARD touch_shots: base 2086 new 2128 diff +42 se 390.5 within 2 se
+FIGHT_GUARD touch_hits: base 1233 new 1453 diff +220 se 263.8 within 2 se
+FIGHT_GUARD hit rate: base 0.710 new 0.710 paired mean diff +0.001 se 0.018 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.645 new 0.670 paired mean diff +0.025 se 0.036 within 2 se (n 24)
+
+PINNED runs paired 144 (base 144, new 144)
+PINNED all crew-seconds: base 2596 new 658 diff -1938 se 422.1 DOWN beyond 2 se
+PINNED short crew-seconds: base 2596 new 556 diff -2040 se 412.5 DOWN beyond 2 se
+PINNED rigs crew-seconds: base 0 new 102 diff +102 se 72.4 within 2 se
+PINNED scouts crew-seconds: base 1179 new 268 diff -911 se 315.4 DOWN beyond 2 se
+PINNED tracks crew-seconds: base 122 new 108 diff -14 se 94.2 within 2 se
+PINNED crews crew-seconds: base 65 new 14 diff -51 se 10.2 DOWN beyond 2 se
+PINNED stuck crew-seconds: base 6631 new 4794 diff -1837 se 628.2 DOWN beyond 2 se
+PINNED stuck_crews crew-seconds: base 190 new 164 diff -26 se 16.3 within 2 se

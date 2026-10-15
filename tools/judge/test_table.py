@@ -39,11 +39,34 @@ class Table(unittest.TestCase):
             self.assertGreater(r["guard_today"], 2.0, case)  # the noise-sized guard is wider than "- 2"
             self.assertGreater(r["n_needed"], 100, case)
 
-    def test_hull_rest_guard_row_matches_the_m1_class_table(self):
+    def test_hull_rest_guard_row_pools_the_m1_and_m1b_class_tables(self):
         r = self.by[("hull-rest probe (a task)", "crews still moving at 75 s, wheeled turret")]
-        self.assertAlmostEqual(r["sd_run"], 1.46, delta=0.05)
-        self.assertTrue(300 <= r["n_needed"] <= 450, r["n_needed"])
-        self.assertAlmostEqual(r["guard_today"], 12.5, delta=0.5)
+        self.assertAlmostEqual(r["sd_run"], 1.63, delta=0.05)  # M1 alone read 1.46 (round 29's table); M1b's n = 15 lines lift it
+        self.assertTrue(400 <= r["n_needed"] <= 560, r["n_needed"])
+        self.assertEqual(r["n_today"], 15)
+        self.assertAlmostEqual(r["guard_today"], 10.4, delta=0.5)
+        self.assertIn("M1b 55622870", r["pairs"])
+
+    def test_round_30_pairs_are_pooled(self):
+        rigs = self.by[("Terminus census, rigs (a seed)", "arrived (of 16)")]
+        self.assertEqual(rigs["n_today"], 13)
+        self.assertEqual(len(rigs["pairs"].split(";")), 4)  # M4, M1b, M2b, kturnarc; M4b run 2's rigs are byte-identical and out
+        self.assertNotIn("M4b run 2", rigs["pairs"])
+        mixed = self.by[("Terminus census, mixed (a seed)", "arrived (of 24)")]
+        self.assertEqual(len(mixed["pairs"].split(";")), 5)
+        kills = self.by[("manoeuvre-fights (180 s)", "kills")]
+        self.assertEqual(len(kills["pairs"].split(";")), 2)
+        self.assertAlmostEqual(kills["sd_run"], 5.76, delta=0.05)  # pooled from se 21.5 and 33.6 at n = 24
+        art = self.by[("traffic-census (3 arenas x seeds)", "artillery shots")]
+        self.assertGreater(art["sd_run"], 30.0)  # T1c-b's one Parade run: the T1b-style caveat
+        clock = self.by[("traffic-series yard_open/cross", "xclear (crossing clock, s)")]
+        self.assertAlmostEqual(clock["sd_run"], 0.92, delta=0.02)
+        self.assertAlmostEqual(clock["se_today"], 0.217, delta=0.005)  # T3b quoted se 0.22
+        sumps = self.by[("Sumps cell (seeds x 6 ticks, a run)", "all-within-8 m s (never = 90 s)")]
+        self.assertAlmostEqual(sumps["base_run"], 37.53, delta=0.05)  # the base median B5c-v4 quoted as 37.5
+        self.assertIn("sd_run", sumps)
+        xfast = self.by[("traffic-series terminus/head", "xfast")]
+        self.assertNotIn("T3b", xfast["pairs"])  # the turns rule fired in 2 of 18 head-on runs: untouched, not pooled
 
     def test_terminus_contact_ticks_cannot_carry_a_ten_percent_line(self):
         r = self.by[("Terminus census, rigs (a seed)", "wall contact-ticks")]
@@ -69,6 +92,9 @@ class Table(unittest.TestCase):
         self.assertEqual(text.count("<!-- judge:table:begin -->"), 1)
         self.assertIn("| traffic-series terminus/head | xfast |", text)
         self.assertIn("18/18 v 0/18", text)
+        self.assertIn("12/12 v 1/12 (B5c-v4 yard r30", text)
+        self.assertIn("hold ON (4 seed sets)", text)
+        self.assertIn("the clicked pair at `55622870`", text)
         with open(csv_path) as handle:
             back = list(csv.DictReader(handle))
         self.assertEqual(len(back), len(self.rows))

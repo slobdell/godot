@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""Readers for every judged-row format kept under `_agents/streams/references/` (rounds 27-29), each returning PAIRS
+"""Readers for every judged-row format kept under `_agents/streams/references/` (rounds 27-30), each returning PAIRS
 of runs keyed the way the runner wrote them, so the judge tools never re-derive a format.
 
   traffic_pairs(base, arm)      traffic-series jsonl (tests/traffic/traffic_probe.gd rows; `which == both`), per case
   approach_pairs(path)          ApproachStage jsonl (brains B1/B2): one file, arms = `approach` east v none
   census_pairs(off_dir, on_dir, tag)   one Godot log per seed, the `TAG {json}` summary line (CONTACT_CENSUS, SCOUT_CENSUS)
-  terminus_rows(path)           the M4 judged text: `terminus-<squad>-<seed>.log base a/n c | new a/n c` lines
+  terminus_rows(path)           a Terminus judged text, both formats: round 29's `terminus-<squad>-<seed>.log base a/n c |
+                                new a/n c` lines and round 30's `== <squad> (13 seeds)` + `per seed arrived(contacts):
+                                <seed>:<a>><a>(<c>><c>) ...` lines (m1b / m2b / m4b run 2 / kturnarc)
   class_lines(path)             the hull-rest table's `M1_CLASS task | class | n | new | base | diff | se | ...` lines
-  jsonl_pairs(base, arm, key)   any two jsonl files paired on `key` fields
+  guard_lines(path, tag)        `FIGHT_GUARD <name>: base B new N diff D se S ...` / `PINNED <name> crew-seconds: ...` lines
+  cell_pairs(path, cell)        brains' gate-series jsonl (`cell`, `arm` columns): off v on per (seed, start_tick)
+  arrive_pairs(off, on)         brains' arrive-series jsonl pair, a cell = (arena, seed, units)
+  bridge_cells(path)            his bridge 108 jsonl: {(side, seed, start_tick): passed} by tools/tactics/bridge_verdict's rule
+  jsonl_pairs(base, arm, key)   any two jsonl files paired on `key` fields (optional `where` filter)
 
 A pair is (key, base_row, arm_row). `diffs(pairs, metric)` turns pairs into per-run paired differences, in the
 RUNNER'S ORDER (seed-major, start tick minor: mk/traffic.mk's loop), which is the order sequential judging walks.
@@ -37,6 +43,15 @@ def all_in_s(row):
     return max(times) if times else row["end_s"]
 
 
+def cross_clear_s(row):
+    """Round 30's crossing clock (both squads past the meeting point; tests/traffic/turns_verdict.py `clock`): never (-1)
+    reads as the run's end. None on rows older than the clock (rounds 28-29), so a pooled reader can skip them."""
+    v = row.get("cross_clear_s")
+    if v is None:
+        return None
+    return v if v >= 0 else row["end_s"]
+
+
 # Per-run metrics of a traffic-series row, by the name a bar uses.
 TRAFFIC_METRICS = {
     "fast": lambda r: r["contacts_fast"],
@@ -47,6 +62,7 @@ TRAFFIC_METRICS = {
     "allin": all_in_s,
     "fstuck": lambda r: r["friend_stuck_s"],
     "stuck": lambda r: r["stuck_s"],
+    "xclear": cross_clear_s,
 }
 
 
@@ -99,16 +115,99 @@ def census_pairs(off_dir, on_dir, tag, pattern=r"(?:off-|on-)?(\d+)\.log$"):
 
 
 def terminus_rows(path):
-    """{squad: [(seed, {'arrived': a, 'crews': n, 'contacts': c}, {...new})]} from the M4 judged text's per-run lines."""
+    """{squad: [(seed, {'arrived': a, 'crews': n, 'contacts': c}, {...new})]} from a Terminus judged text.
+
+    Round 29's M4 table writes one line a run (`terminus-rigs-14.log base 13/16 1204 | new 11/16 2345`); round 30's
+    tables (m1b, m2b, m4b run 2, kturnarc) write a `== rigs (13 seeds)` header, an `arrivals base A new B of N` line
+    (crews a run = N / seeds) and one `per seed arrived(contacts): 36:16>15(134>270) ...` line a squad."""
     out = {}
+    squad, crews = None, None
     with open(path) as handle:
         for line in handle:
             m = re.search(r"terminus-(\w+)-(\d+)\.log base (\d+)/(\d+) (\d+) \| new (\d+)/(\d+) (\d+)", line)
             if m:
-                squad, seed = m.group(1), int(m.group(2))
+                sq, seed = m.group(1), int(m.group(2))
                 base = {"arrived": int(m.group(3)), "crews": int(m.group(4)), "contacts": int(m.group(5))}
                 new = {"arrived": int(m.group(6)), "crews": int(m.group(7)), "contacts": int(m.group(8))}
-                out.setdefault(squad, []).append((seed, base, new))
+                out.setdefault(sq, []).append((seed, base, new))
+                continue
+            m = re.match(r"\s*== (\w+) \((\d+) seeds\)", line)
+            if m:
+                squad, crews = m.group(1), None
+                continue
+            m = re.search(r"arrivals base (\d+) new (\d+) of (\d+)", line)
+            if m and squad:
+                crews = int(m.group(3))
+                continue
+            m = re.search(r"per seed arrived\(contacts\): (.*)", line)
+            if m and squad:
+                cells = re.findall(r"(\d+):(\d+)>(\d+)\((\d+)>(\d+)\)", m.group(1))
+                n_run = crews // len(cells) if crews and cells else 0
+                for seed, ba, na, bc, nc in cells:
+                    out.setdefault(squad, []).append((int(seed), {"arrived": int(ba), "crews": n_run, "contacts": int(bc)},
+                                                      {"arrived": int(na), "crews": n_run, "contacts": int(nc)}))
+    return out
+
+
+def guard_lines(path, tag):
+    """{name: {base, new, diff, se, n}} from a judged table's paired-sum lines: `FIGHT_GUARD kills: base 1001 new 984 diff
+    -17 se 21.5 within 2 se`, `PINNED all crew-seconds: base 2902 new 1040 diff -1862 se 459.6 DOWN beyond 2 se`, and the
+    paired-mean form `FIGHT_GUARD hit rate: base 0.717 new 0.714 paired mean diff -0.003 se 0.012 within 2 se (n 24)`.
+    `n` is the `runs paired N` line's count (the sum's n) and the `(n 24)` of a mean line."""
+    out = {}
+    runs = None
+    num = r"([-+]?\d+(?:\.\d+)?)"
+    with open(path) as handle:
+        for line in handle:
+            if not line.startswith(tag + " "):
+                continue
+            m = re.search(r"runs paired (\d+)", line)
+            if m:
+                runs = int(m.group(1))
+                continue
+            m = re.match(re.escape(tag) + r" (.+?): base " + num + " new " + num + r" (paired mean )?diff " + num + " se " + num + r"(.*)$", line)
+            if not m:
+                continue
+            name = m.group(1).replace(" crew-seconds", "")
+            n_mean = re.search(r"\(n (\d+)\)", m.group(7))
+            out[name] = {"base": float(m.group(2)), "new": float(m.group(3)), "diff": float(m.group(5)), "se": float(m.group(6)),
+                         "n": int(n_mean.group(1)) if n_mean else runs, "mean": bool(m.group(4))}
+    return out
+
+
+def cell_pairs(path, cell, off="off", on="on"):
+    """[((seed, start_tick), off_row, on_row)] for one cell of brains' gate-series jsonl (B5c-v4: `cell` and `arm` columns)."""
+    by = {}
+    for r in read_jsonl(path):
+        if r.get("cell") != cell:
+            continue
+        by.setdefault((r["seed"], r["start_tick"]), {})[r["arm"]] = r
+    return [(k, v[off], v[on]) for k, v in sorted(by.items()) if off in v and on in v]
+
+
+def arrive_pairs(off_path, on_path, key_fields=("arena", "seed", "units")):
+    """[(cell, off_row, on_row)] for brains' arrive series (squad-arrive-series: 5 arenas x seeds x 5 rosters = 100 cells)."""
+    def load(path):
+        return {tuple(str(r.get(f)) for f in key_fields): r for r in read_jsonl(path)}
+    off, on = load(off_path), load(on_path)
+    return [(k, off[k], on[k]) for k in off if k in on]
+
+
+def all_in8_or_end(row, end=90.0):
+    """A cell's all-within-8 m time, a cell that never got there read as the run's end (cell_table.py prints 'never';
+    B5c-v4's Sumps medians 37.5 v 24.5 are this reading)."""
+    v = row.get("all_in8_s")
+    return end if v is None else v
+
+
+def bridge_cells(path):
+    """{(side, seed, start_tick): passed} for his bridge 108 (BRIDGE_PROBE rows), by tools/tactics/bridge_verdict.py's rule:
+    every surviving crew across (a dead crew excused if it was not stuck first) and no crew pressed at the rim."""
+    out = {}
+    for r in read_jsonl(path):
+        uncrossed_dead = sum(1 for d in r.get("dead", []) if not d.get("crossed"))
+        passed = int(r["crossed"]) + uncrossed_dead >= int(r["crews"]) and int(r.get("rim_crews", 1)) == 0
+        out[(r["side"], int(r["seed"]), int(r["start_tick"]))] = passed
     return out
 
 
@@ -159,12 +258,15 @@ def hull_medians(path, tag):
     return out
 
 
-def jsonl_pairs(base_path, arm_path, key_fields):
-    """[(key, base_row, arm_row)] pairing two jsonl files on a tuple of fields, in the base file's order."""
+def jsonl_pairs(base_path, arm_path, key_fields, where=None):
+    """[(key, base_row, arm_row)] pairing two jsonl files on a tuple of fields, in the base file's order; `where`
+    ({field: value}) keeps only the rows matching it (t1c-b's ApproachStage drawn rows: {"approach": "east"})."""
     def load(path):
         out = {}
         for r in read_jsonl(path):
             if r.get("missing"):
+                continue
+            if where and any(r.get(f) != v for f, v in where.items()):
                 continue
             out[tuple(str(r.get(f)) for f in key_fields)] = r  # str: a list-valued field (t1c's `units`) must still key
         return out

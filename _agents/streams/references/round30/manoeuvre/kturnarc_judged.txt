@@ -1,0 +1,15 @@
+Round 30 manoeuvre kturnarc (alone) judged: e7a58262 (lab/manoeuvre-kturnarc on the reader 8cbdcfad), builder0, GDScript path, base --nav-off=kturnarc. Terminus fresh seeds 75-87, bridge-pooled.
+
+== rigs (13 seeds)
+  (d) arrivals base 178 new 181 of 208: diff +3 se 7.38 1.645se 12.1: PASS
+  contact-ticks (reported) base 12184 new 11755 diff -429 se 3836; leg s base 2120 new 1730
+  leg misses base 30 new 27; under a FACE order (a face left the slot) base 16 new 18
+  per seed arrived(contacts): 75:12>14(1727>200) 76:14>11(2921>2581) 77:14>14(423>739) 78:14>16(459>304) 79:14>14(428>784) 80:13>13(896>738) 81:14>14(599>432) 82:15>15(482>940) 83:16>16(186>449) 84:13>14(373>500) 85:15>11(480>2785) 86:12>13(434>788) 87:12>16(2776>515)
+  runs with identical arrivals and contacts: 0 of 13
+== mixed (13 seeds)
+  (d) arrivals base 291 new 288 of 312: diff -3 se 3.34 1.645se 5.5: PASS
+  contact-ticks (reported) base 1861 new 1991 diff +130 se 437; leg s base 1839 new 1782
+  leg misses base 21 new 24; under a FACE order (a face left the slot) base 8 new 8
+  per seed arrived(contacts): 75:22>22(247>211) 76:23>23(64>150) 77:23>22(260>104) 78:23>23(58>89) 79:21>22(168>97) 80:22>21(115>211) 81:21>22(127>105) 82:23>23(180>468) 83:24>22(149>97) 84:23>24(56>156) 85:22>22(101>150) 86:22>21(226>51) 87:22>21(110>102)
+  runs with identical arrivals and contacts: 0 of 13
+

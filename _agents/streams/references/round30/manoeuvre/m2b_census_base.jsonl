@@ -1,0 +1,15 @@
+{"creep_flips": null, "creep_open_static": 0, "episodes": 7, "friendly": 4, "log": "sim-10", "open_static": 3, "over3": 0, "seed": "10", "wall_contact_ticks": null, "workload": "sim"}
+{"creep_flips": null, "creep_open_static": 0, "episodes": 7, "friendly": 4, "log": "sim-11", "open_static": 3, "over3": 0, "seed": "11", "wall_contact_ticks": null, "workload": "sim"}
+{"creep_flips": null, "creep_open_static": 0, "episodes": 3, "friendly": 2, "log": "sim-9", "open_static": 1, "over3": 0, "seed": "9", "wall_contact_ticks": null, "workload": "sim"}
+{"creep_flips": 250, "creep_open_static": 5, "episodes": 31, "friendly": 11, "log": "terminus-mixed-14", "open_static": 20, "over3": 16, "seed": "14", "wall_contact_ticks": 21036, "workload": "terminus"}
+{"creep_flips": 86, "creep_open_static": 6, "episodes": 24, "friendly": 6, "log": "terminus-mixed-15", "open_static": 18, "over3": 12, "seed": "15", "wall_contact_ticks": 22863, "workload": "terminus"}
+{"creep_flips": 122, "creep_open_static": 8, "episodes": 28, "friendly": 10, "log": "terminus-mixed-16", "open_static": 18, "over3": 15, "seed": "16", "wall_contact_ticks": 17897, "workload": "terminus"}
+{"creep_flips": 141, "creep_open_static": 7, "episodes": 22, "friendly": 5, "log": "terminus-mixed-17", "open_static": 17, "over3": 9, "seed": "17", "wall_contact_ticks": 20042, "workload": "terminus"}
+{"creep_flips": 116, "creep_open_static": 8, "episodes": 37, "friendly": 13, "log": "terminus-mixed-18", "open_static": 24, "over3": 14, "seed": "18", "wall_contact_ticks": 19887, "workload": "terminus"}
+{"creep_flips": 134, "creep_open_static": 7, "episodes": 24, "friendly": 8, "log": "terminus-mixed-19", "open_static": 16, "over3": 11, "seed": "19", "wall_contact_ticks": 19191, "workload": "terminus"}
+{"creep_flips": 97, "creep_open_static": 4, "episodes": 19, "friendly": 7, "log": "terminus-rigs-14", "open_static": 12, "over3": 7, "seed": "14", "wall_contact_ticks": 17193, "workload": "terminus"}
+{"creep_flips": 74, "creep_open_static": 2, "episodes": 13, "friendly": 3, "log": "terminus-rigs-15", "open_static": 10, "over3": 4, "seed": "15", "wall_contact_ticks": 11128, "workload": "terminus"}
+{"creep_flips": 117, "creep_open_static": 1, "episodes": 7, "friendly": 2, "log": "terminus-rigs-16", "open_static": 5, "over3": 5, "seed": "16", "wall_contact_ticks": 33786, "workload": "terminus"}
+{"creep_flips": 145, "creep_open_static": 0, "episodes": 15, "friendly": 6, "log": "terminus-rigs-17", "open_static": 9, "over3": 6, "seed": "17", "wall_contact_ticks": 32789, "workload": "terminus"}
+{"creep_flips": 114, "creep_open_static": 3, "episodes": 20, "friendly": 8, "log": "terminus-rigs-18", "open_static": 12, "over3": 9, "seed": "18", "wall_contact_ticks": 14793, "workload": "terminus"}
+{"creep_flips": 250, "creep_open_static": 2, "episodes": 10, "friendly": 1, "log": "terminus-rigs-19", "open_static": 9, "over3": 3, "seed": "19", "wall_contact_ticks": 16979, "workload": "terminus"}

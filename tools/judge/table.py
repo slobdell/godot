@@ -92,7 +92,8 @@ def render_counts():
     out = ["**Two arms' run counts (Fisher exact, one-sided 5 %), the n a side at which the OBSERVED rates reach 80 % power:**\n",
            "| observed (arm v control) | one-sided p at the n run | n a side that decides it |", "|---|---|---|"]
     for a, n1, c, n2, label in ((18, 18, 0, 18, "B1 r29 on side"), (14, 18, 0, 18, "B2 (a) r29"), (10, 18, 0, 18, "B1 (a) r28, failed its 12/18 threshold"),
-                                (4, 18, 0, 18, "B1 (c) r28"), (12, 12, 5, 12, "B5c yard, every crew in"), (9, 18, 0, 18, "S3 / S4 contact runs (read as 0 v 9)"),
+                                (4, 18, 0, 18, "B1 (c) r28"), (12, 12, 5, 12, "B5c yard, every crew in"), (12, 12, 1, 12, "B5c-v4 yard r30, every crew in"),
+                                (9, 18, 0, 18, "S3 / S4 contact runs (read as 0 v 9)"), (0, 9, 4, 9, "T1c-b r30 runs with a repack while firing (read as 0 v 4 of 9)"),
                                 (21, 24, 14, 24, "B2 v4 Sumps cell"), (12, 12, 10, 12, "a 12/12 v 10/12 cell")):
         two, one = stats.fisher_exact(a, n1 - a, c, n2 - c)
         n = stats.fisher_min_n(c / n2, a / n1) if a / n1 > c / n2 else stats.fisher_min_n(1 - c / n2, 1 - a / n1)
@@ -111,8 +112,9 @@ def render_counts():
                "cells carry the whole test (McNemar exact):**\n")
     out.append("| discordant cells (for v against) | exact p | reading |")
     out.append("|---|---|---|")
-    for b, c, label in ((11, 0, "B5c arrive 100/100 v 89/100"), (8, 1, "B2 v5 95 v 88"), (5, 1, "B3 make-room 97 v 93"), (7, 4, "B2 v3 89 v 86"),
-                        (4, 2, "B2 v4 85 v 83"), (0, 1, "M4 bridge 17/18 v 18/18"), (1, 0, "one cell gained")):
+    for b, c, label in ((11, 0, "B5c arrive 100/100 v 89/100"), (8, 0, "B5c-v4 arrive 99 v 91 (r30)"), (8, 1, "B2 v5 95 v 88"), (5, 1, "B3 make-room 97 v 93"),
+                        (7, 4, "B2 v3 89 v 86"), (4, 2, "B2 v4 85 v 83"), (2, 1, "B3b bridge 108: 107 v control 106 (r30)"), (0, 1, "M4 bridge 17/18 v 18/18"),
+                        (1, 0, "one cell gained")):
         out.append("| %d v %d (%s) | %.4f | %s |" % (b, c, label, stats.mcnemar_exact(b, c), "decided" if stats.mcnemar_exact(b, c) <= 0.05 else "not decided: a coin"))
     out.append("\nCells needed for a one-way gain (the arm wins cells the base loses, never the reverse) at 80 %% power: a %d %% gain needs %s cells, "
                "5 %% needs %s, 2 %% needs %s. A line \"lost ≤ 1\" is a direction check on the against-cells alone; \"≥ control − 1\" fails on one "
@@ -124,7 +126,8 @@ def render_counts():
 def render_aa(root):
     out = ["**traffic-series, the same arm on different seed sets (and commits): the swing of a case total at n = 18.** A null's "
            "swing between seed sets is what a 'within 2 se' or '≥ base − 2' line must clear.\n",
-           "| case | metric | hold ON (3 seed sets) | swing | hold OFF (4 seed sets) | swing |", "|---|---|---|---|---|---|"]
+           "| case | metric | hold ON (%d seed sets) | swing | hold OFF (%d seed sets) | swing |" % (len(probes.TRAFFIC_AA["hold ON"]), len(probes.TRAFFIC_AA["hold OFF"])),
+           "|---|---|---|---|---|---|"]
     for case in probes.TRAFFIC_CASES:
         for metric, stat in (("fast", "total"), ("xfast", "total"), ("arrived", "total"), ("allin", "median"), ("fstuck", "total")):
             aa = probes.traffic_aa(root, case, metric, stat)
@@ -138,19 +141,25 @@ def render_aa(root):
                 cells.append("±%.0f %%" % (50.0 * swing))
             out.append("| %s | %s | %s | %s | %s | %s |" % (case, metric, *cells))
     out.append("\nThe hold-OFF sets span three rounds of other merges, so part of that swing is code, not seeds; the hold-ON sets are "
-               "two commits a day apart. Read the swing as the A/A ceiling a bar's guard must sit above when it compares totals across "
-               "seed sets; within one seed set, a case the rule never touches swings 0 (the sim is deterministic per flags).\n")
-    med = rows.hull_medians(os.path.join(root, probes.R29 + "manoeuvre/m1_judged.txt"), "M1_HULL")
-    mov = rows.moving_lines(os.path.join(root, probes.R29 + "manoeuvre/m1_judged.txt"))
-    out.append("**hull-rest probe, the clicked pair at `d7385da2` (M1 never acts on a clicked order, so new_clicked v base_clicked is an A/A at "
-               "n = 48 runs a task, 27 with wheeled turrets):**\n")
-    out.append("| task | crews still moving: clicked new − base | hull-error median, ALL (651 crews) | wheels/turret (310 crews) |")
-    out.append("|---|---|---|---|")
-    for m in mov:
-        t = m["task"]
-        out.append("| %s | %+d | %+.1f° | %+.1f° |" % (t, m["new_clicked"] - m["base_clicked"], med[(t, "ALL", "new_clicked")] - med[(t, "ALL", "base_clicked")],
-                                                       med[(t, "wheels/turret", "new_clicked")] - med[(t, "wheels/turret", "base_clicked")]))
-    out.append("\nSo a +5 guard on crews-still-moving and a ±5° line on clicked medians were both inside this probe's A/A at the n M1 used.\n")
+               "three commits over two days (the fourth, `cf124433`, is T3b's base at round 30's close). Read the swing as the A/A ceiling a "
+               "bar's guard must sit above when it compares totals across seed sets; within one seed set, a case the rule never touches "
+               "swings 0 (the sim is deterministic per flags).\n")
+    for commit, path, words in (("d7385da2", probes.R29 + "manoeuvre/m1_judged.txt",
+                                 "M1 never acts on a clicked order, so new_clicked v base_clicked is an A/A at n = 48 runs a task, 27 with wheeled turrets"),
+                                ("55622870", probes.R30 + "manoeuvre/m1b_judged.txt",
+                                 "M1b's face_slot anchor, the same A/A at n = 24 runs a task, 15 with wheeled turrets; 303 crews a task, 165 wheeled turret")):
+        med = rows.hull_medians(os.path.join(root, path), "M1_HULL")
+        mov = rows.moving_lines(os.path.join(root, path))
+        out.append("**hull-rest probe, the clicked pair at `%s` (%s):**\n" % (commit, words))
+        out.append("| task | crews still moving: clicked new − base | hull-error median, ALL | wheels/turret |")
+        out.append("|---|---|---|---|")
+        for m in mov:
+            t = m["task"]
+            out.append("| %s | %+d | %+.1f° | %+.1f° |" % (t, m["new_clicked"] - m["base_clicked"], med[(t, "ALL", "new_clicked")] - med[(t, "ALL", "base_clicked")],
+                                                           med[(t, "wheels/turret", "new_clicked")] - med[(t, "wheels/turret", "base_clicked")]))
+        out.append("")
+    out.append("So a +5 guard on crews-still-moving and a ±5° line on clicked medians were both inside this probe's A/A at the n M1 used; "
+               "M1b's clicked pair says the same at n = 15 (wheeled-turret medians −6.2..+8.4°, moving −3..+11 a task).\n")
     out.append("**yard crossing cells (B5c):** two near-identical rules (`053beffb` judged, `a8df3dc3` the narrow fix) on the same yard-23 cells "
                "moved last-crew-in by −3.6, +0.8, +3.5, +11.1, +17.8 s (t11, t8, t6, t1, t3) and Sumps 6 by −0.3 s: a cell's own swing is "
                "about ±9 s, so a 'median ≤ off − 5 s' line over 12 cells (se ≈ 3 s) is at the edge; the count line (every crew in, 12/12 v 5/12) "

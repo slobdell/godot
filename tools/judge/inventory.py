@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sizing S1: the inventory of every judged bar line of rounds 27-29 with its measured noise.
+"""Sizing S1: the inventory of every judged bar line of rounds 27-30 with its measured noise.
 
     python3 tools/judge/inventory.py [--csv OUT.csv] [--md OUT.md] [--root REPO]
 
@@ -54,16 +54,25 @@ def read_pairs_total(diffs, base_vals, arm_vals, spec):
     if not live:
         out.update(se=0.0, how="identical arms: an equality check, not a sample", x=spec.get("x") or 0.0, inside="n/a", clear_se=None)
         return out
-    x = spec.get("x")
-    if x is None and spec.get("x_share") is not None:
-        x = spec["x_share"] * base_t
-    if x is None and spec.get("x_se") is not None:
-        x = spec["x_se"] * se
+    x = line_x(spec, base_t, se)
     thr, sign = threshold(base_t, x, spec["pass_dir"])
     clear = sign * (arm_t - thr)
     out.update(se=se, how="paired se of the sum over %d runs (sd %.2f a run)" % (len(diffs), stats.paired_sd(diffs)) + zero_note(x), x=x,
                inside="Y" if x < Z * se else "N", clear_se=clear / se if se else None, threshold=thr)
     return out
+
+
+def line_x(spec, base, se, base_median=None):
+    """The line's margin from 'no change': a fixed `x`, or `x_share` of the base (of the base MEDIAN when `x_base` is
+    'median': T3b's crossing clock) plus `x_se` se (a `<= base + 1.645 se` guard; the two add for `0.10 x base + 1.645 se`)."""
+    if spec.get("x") is not None:
+        return spec["x"]
+    x = 0.0
+    if spec.get("x_share") is not None:
+        x += spec["x_share"] * (base_median if spec.get("x_base") == "median" and base_median is not None else base)
+    if spec.get("x_se") is not None:
+        x += spec["x_se"] * se
+    return x
 
 
 def zero_note(x):
@@ -80,9 +89,7 @@ def read_pairs_mean(diffs, base_vals, arm_vals, spec):
     if not live:
         out.update(se=0.0, how="identical arms", x=spec.get("x") or 0.0, inside="n/a", clear_se=None)
         return out
-    x = spec.get("x")
-    if x is None and spec.get("x_share") is not None:
-        x = spec["x_share"] * base_m
+    x = line_x(spec, base_m, se, statistics.median(base_vals))
     thr, sign = threshold(base_m, x, spec["pass_dir"])
     out.update(se=se, how="paired se of the mean over %d runs (sd %.2f a run)" % (n, stats.paired_sd(diffs)), x=x,
                inside="Y" if x < Z * se else "N", clear_se=sign * (arm_m - thr) / se if se else None, threshold=thr)
@@ -98,9 +105,7 @@ def read_pairs_median(base_vals, arm_vals, spec):
         out.update(se=0.0, how="identical arms", x=0.0, inside="n/a", clear_se=None)
         return out
     point, lo, hi, sd = stats.bootstrap_median_diff(base_vals, arm_vals)
-    x = spec.get("x")
-    if x is None and spec.get("x_share") is not None:
-        x = spec["x_share"] * base_m
+    x = line_x(spec, base_m, sd)
     thr, sign = threshold(base_m, x, spec["pass_dir"])
     out.update(se=sd, how="bootstrap sd of the paired median difference (90 %% interval %+.1f..%+.1f)" % (lo, hi), x=x,
                inside="Y" if x < Z * sd else "N", clear_se=sign * (arm_m - thr) / sd if sd else None, threshold=thr)
@@ -171,10 +176,48 @@ def noise_of(line, root):
             out.update(read_pairs_median(b, a, spec))
         return out
     if kind == "jsonl":
-        pairs = rows.jsonl_pairs(path(spec["base"]), path(spec["arm"]), spec["key"])
+        pairs = rows.jsonl_pairs(path(spec["base"]), path(spec["arm"]), spec["key"], where=spec.get("where"))
         d = rows.diffs(pairs, spec["metric"])
         b, a = rows.values(pairs, spec["metric"], "base"), rows.values(pairs, spec["metric"], "arm")
         out.update(read_pairs_total(d, b, a, spec))
+        return out
+    if kind == "cells":
+        pairs = rows.cell_pairs(path(spec["path"]), spec["cell"])
+        metric = rows.all_in8_or_end if spec["metric"] == "all_in8_or_end" else spec["metric"]
+        d = rows.diffs(pairs, metric)
+        b, a = rows.values(pairs, metric, "base"), rows.values(pairs, metric, "arm")
+        if spec["stat"] == "median":
+            out.update(read_pairs_median(b, a, spec))
+        elif spec["stat"] == "mean":
+            out.update(read_pairs_mean(d, b, a, spec))
+        else:
+            out.update(read_pairs_total(d, b, a, spec))
+        return out
+    if kind == "arrive":
+        pairs = [(k, o, n) for k, o, n in rows.arrive_pairs(path(spec["off"]), path(spec["on"]))
+                 if o.get(spec["metric"]) is not None and n.get(spec["metric"]) is not None]
+        d = rows.diffs(pairs, spec["metric"])
+        b, a = rows.values(pairs, spec["metric"], "base"), rows.values(pairs, spec["metric"], "arm")
+        out.update(read_pairs_median(b, a, spec) if spec["stat"] == "median" else read_pairs_mean(d, b, a, spec))
+        out["reproduced"] += " over the %d cells complete in both arms" % len(pairs)
+        return out
+    if kind == "bridge108":
+        control, on = rows.bridge_cells(path(spec["control"])), rows.bridge_cells(path(spec["on"]))
+        b = sum(1 for k in control if on[k] and not control[k])
+        c = sum(1 for k in control if control[k] and not on[k])
+        p = stats.mcnemar_exact(b, c)
+        out.update(p=p, how="his bridge 108 by bridge_verdict's rule: on %d/%d v control %d/%d; McNemar over %d discordant cells (%d for, %d against): p %.4f; "
+                   "the lost cell is a regression by name, not a statistic" % (sum(on.values()), len(on), sum(control.values()), len(control), b + c, b, c, p),
+                   inside="n/a", reproduced="rows: %d/%d -> %d/%d" % (sum(control.values()), len(control), sum(on.values()), len(on)))
+        return out
+    if kind == "guard_line":
+        line = rows.guard_lines(path(spec["path"]), spec["tag"])[spec["name"]]
+        se = line["se"]
+        x = line_x(spec, line["base"], se)
+        thr, sign = threshold(line["base"], x, spec["pass_dir"])
+        out.update(se=se, how="the table's printed paired se (%s %s, n %d)%s" % (spec["tag"], spec["name"], line["n"], zero_note(x)), x=x,
+                   inside=("Y" if x < Z * se else "N") if se else "n/a", clear_se=sign * (line["new"] - thr) / se if se else None,
+                   reproduced="%s: %s -> %s (diff %+g, se %g)" % (spec["tag"], fmt(line["base"]), fmt(line["new"]), line["diff"], se))
         return out
     if kind == "census":
         off = rows.census_pairs(path(spec["off"]), path(spec["off"]), spec["tag"], pattern=spec["off_pattern"])
@@ -204,9 +247,11 @@ def noise_of(line, root):
         cls = [c for c in rows.class_lines(path(spec["path"])) if c["task"] == spec["task"]]
         se_all = math.sqrt(sum(c["se"] ** 2 for c in cls))
         wt = [c for c in cls if c["klass"] == "wheels/turret"]
+        x = line_x(spec, 0.0, se_all)  # a fixed x (M1's +5) or x_se se (M1b's + 2 se)
+        clear = spec["clear"] if "clear" in spec else x - spec["diff"]
         out.update(se=se_all, how="all classes: sqrt(sum of M1_CLASS se^2) = %.1f; wheels/turret alone se %.1f (diff %+d)" % (
-            se_all, wt[0]["se"] if wt else float("nan"), wt[0]["diff"] if wt else 0), x=spec["x"],
-            inside="Y" if spec["x"] < Z * se_all else "N", clear_se=spec["clear"] / se_all if se_all else None,
+            se_all, wt[0]["se"] if wt else float("nan"), wt[0]["diff"] if wt else 0), x=x,
+            inside="Y" if x < Z * se_all else "N", clear_se=clear / se_all if se_all else None,
             reproduced="M1_CLASS sum of diffs %+d" % sum(c["diff"] for c in cls))
         return out
     if kind == "m1_clicked":
@@ -278,9 +323,9 @@ def write_md(table, path, csv_name):
             r["base"], r["arm"] = r["reproduced"].replace("rows: ", ""), r["arm"].replace("(rows; ", "(").replace("(rows)", "")
     with_noise = [r for r in table if r["line_inside_noise"] in ("Y", "N")]
     out = []
-    out.append("# The inventory: every judged bar line of rounds 27–29, with its noise (sizing S1)\n")
+    out.append("# The inventory: every judged bar line of rounds 27–30, with its noise (sizing S1)\n")
     out.append("Generated by `python3 tools/judge/inventory.py` from `tools/judge/lines.py` (the lines as the streams quoted them in "
-               "`_agents/workstreams.md` *Bars* and the tables under `references/round27..29/`) and the rows kept there; the csv beside "
+               "`_agents/workstreams.md` *Bars* and the tables under `references/round27..30/`) and the rows kept there; the csv beside "
                "this file (`%s`) is the full table, this page is its reading. Every number is the streams' own (builder0 unless the "
                "line says otherwise, the commit in its column); the noise columns are computed here from the rows.\n" % csv_name)
     out.append("**Columns.** *noise se*: the se of the line's statistic (a paired sum, mean or bootstrap median difference over the "
