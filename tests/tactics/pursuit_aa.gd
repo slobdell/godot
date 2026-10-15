@@ -5,6 +5,7 @@ extends SceneTree
 ## B5c-v4's `near` changed two crews' opening seats). Both arms run with every brains switch as the tree has it.
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/tactics/pursuit_aa.gd -- --speed=8 --seed=1 --nudge=0
+##   [--crew=Green_A_1] the test's CREW trace lines for those crews
 ##   PURSUIT_AA {"speed", "seed", "nudge", "pass", "closing_worst_m", "closing_margin_m", "reversal_worst_deg",
 ##               "reversal_margin_deg", "let_go_at", "lived_s", "killed_by", "closing_at", "reversal_at"}
 
@@ -29,6 +30,9 @@ func _run() -> void:
 	var speed := float(_flag("speed", "8"))
 	var seed_value := int(_flag("seed", "3"))
 	var nudge := float(_flag("nudge", "0"))
+	# `--crew=Green_A_1,...`: the test's own per-crew trace (CREW lines every 0.2 s), as PURSUIT_CREW sets it.
+	if _flag("crew", "") != "":
+		OS.set_environment("PURSUIT_CREW", _flag("crew", ""))
 	# The test's own durations: 30 s at 8 m/s, 25 s at 18 m/s.
 	var seconds := 30.0 if speed < 12.0 else 25.0
 	var result: Dictionary = await test._pursue(speed, seconds, seed_value, 70.0, "gang_scout", nudge)
