@@ -115,7 +115,7 @@ PLANNER_SERIES_SQUADS ?= mixed rigs
 PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
 
 .PHONY: planner-series
-planner-series: import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
+planner-series: native import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
 	@rm -rf $(PLANNER_SERIES_DIR) && mkdir -p $(PLANNER_SERIES_DIR)
 	@echo ">> planner-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SERIES_SEEDS) | squads $(PLANNER_SERIES_SQUADS)"
 	@for arm in base candidate; do flags="--brains-off=native_drive"; [ "$$arm" = base ] || flags="$$flags --nav-off=planner"; \
