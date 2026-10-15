@@ -157,7 +157,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if weapon["kind"] == Weapons.Kind.PROJECTILE:
 		# K2 weapon profile v3: each weapon's own round speed (a 25 mm round flies far faster than a tank shell).
 		var round_speed := float(weapon.get("projectile_speed_mps", 0.0))
-		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity,
+		aim = Ballistics.lead_point(muzzle, target.global_position, Manoeuvre.lead_velocity(target),  # round 31 (H3, `realspeed`)
 				round_speed if round_speed > 0.0 else Shell.SPEED)
 	var brain := ctl as TankBrain
 	if brain != null and brain.game_match != null:
@@ -337,7 +337,7 @@ func _apply_indirect(cmd: TankCommand) -> void:
 		return
 	engaged_target = target.name
 	var flight := tank.global_position.distance_to(target.global_position) / float(weapon["flight_speed"])
-	var aim := target.global_position + target.estimated_velocity * flight
+	var aim := target.global_position + Manoeuvre.lead_velocity(target) * flight  # round 31 (H3, `realspeed`)
 	_cover(aim, cmd)
 	var aimed: bool = Ballistics.aim_error(tank.turret.global_position, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
 	cmd.fire = _clear_to_fire(aimed and tank.ready_to_fire(), aim)
