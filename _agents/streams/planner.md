@@ -422,6 +422,15 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 10:00 PDT: **native approved the C++ keep branch and RE-CUT the gate: pair/cpp1-on = 3a66f546** (main
+  1fc72e66 + 38e9678d + the mirror + PLANNER_DEFAULT true; 8bb2ad4e kept as pair/cpp1-on-8bb2). Their read: the end
+  rule before the tol test binds the aim branch too; the sweep's break after the horizon test; all doubles squared
+  against squared; KEEP_NONE 1e29 v the GDScript's `< INF` differ only for a finite radius >= 1e29 (never bound);
+  the seam's slot-law inputs are GDScript-only and wheeled faces hand back to GDScript, so the drive mirror needs
+  nothing. Their light pre-run (native_planner|planner_seam|planner_keep) is going; the plain check queues as
+  native-chain7 behind CP-H's 68280cce and T4's fafe49ea. On its green line: `make planner-series-fresh`
+  (f142f241: seeds 172-184; `$S/planner-series-2.sh`, heavy lane when the orchestrator frees it from CP-H), then
+  hull-rest candidate, fights x2, bridge x2, cp2 x2 as filed; rows name gate 3a66f546 + the series tree.
 - 2026-10-15 09:55 PDT: **THE KEEP CIRCLE IS IN AND GREEN; native has the re-cut hash 38e9678d.** The orchestrator
   ACCEPTED the declared fix as written (the keep circle carrying manoeuvre's slot law, nothing else) and sent the law
   bit for bit: (a) the slot counts only under `face_slot_on()` and within FACE_SLOT_REACH (2.0) x settle; (b) the end
