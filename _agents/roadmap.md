@@ -251,6 +251,10 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   the cost is in round 30's mouth guard or heading rule, carried in the same candidate. Round 32 ships the seating ALONE
   (its own bar: the 108 + arrive), after attributing the cost by removing each of the other two (brains' 18-run
   attribution on the 9 losing cells is a trace, since those cells were selected for the loss).
+  **The attribution trace (builder0 light, `5ed61f91`, n 1 per cell and switch):** as is, 0/9 get every crew within
+  8 m; `--mouth-held=off` alone 0/9; **`--reissue-heading=plan` alone 9/9, each at the control's exact all_in8_s.** The
+  lead: round 28's heading rule (narrowed to the drawn facing, `254fd98f`) costs those arrivals, and the seating and
+  mouth guard do not. Round 32's candidate is therefore the seating + mouth guard, with the heading rule left off.
 - **Turn the hull (M1b(2)) parked a second time on arrivals that are really seating (2026-10-15).** With the lift
   accepting element-task facings, the point-task share and line tasks improved (run 1: ambush 66 → 28°, SBF 74 → 29°;
   gang_ifv SBF 61 → 21°) and contact fell, but Terminus mixed arrivals read 293 → 285. The "missing" crews had
