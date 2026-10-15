@@ -56,8 +56,9 @@ public:
 		// code over a grid, equal bit for bit, tests/test_native_navmesh.gd), one index per process; the GDScript world
 		// asks the engine directly and the twin test holds the two to the same plan. A cell read on the engine's
 		// linear scan cost ~4 ms an expansion on the Terminus (builder0, 0c2d30c4); the index is the fix.
-		static Ref<NavNative> nav_index;
-		static Ref<NavNative> &index();
+		// Held PER INSTANCE (a C++ static Ref outlives the engine's ObjectDB and segfaults at exit: builder0, ad1d1f3d).
+		Ref<NavNative> nav_index;
+		Ref<NavNative> &index();
 		double bake_radius = 2.0;
 		std::vector<float> field; // the lazy window (UNSET until read), cx * n + cz
 		int64_t field_x0 = 0, field_z0 = 0, field_n = 0;

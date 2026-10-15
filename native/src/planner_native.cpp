@@ -229,8 +229,6 @@ const char *code_name(PlannerNative::Code c) {
 
 // ============================================================ the world ============================================
 
-Ref<NavNative> PlannerNative::World::nav_index;
-
 Ref<NavNative> &PlannerNative::World::index() {
 	if (nav_index.is_null()) {
 		nav_index.instantiate();
