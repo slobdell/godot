@@ -471,6 +471,15 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   rule reached on every k-turn leg (398 plans an arm). **Ruling: SHIPS as a C30.2 pair** (merge tip e7a58262 exactly;
   native's mirror on `pair/kturnarc`, its builder0 pair check is the gate); merges in the final batch with M1b, ONE main
   check. Table `references/round30/manoeuvre/kturnarc_judged.txt`.
+  **kturnarc PARKED for round 31 (2026-10-14 ~20:20 PDT):** the final batch check on native's `40b89dd1` (main + M1b +
+  kturnarc + port + d122485c) was RED beyond the expected sim-baseline move: `ai-scenarios-check` 51/1 —
+  `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck`; native-verify 0 mismatches (C++ = GDScript); attributed
+  four ways on builder0 (n = 1, deterministic headless): native-off FAIL, native on FAIL, `--nav-off=kturnarc` PASS,
+  `--nav-off=faceslot` FAIL → kturnarc's own GDScript, M1b clean. Lesson 307 a third time: a stage the series never
+  covered (a scout's orbit) and any scoping would touch the scouts in the judged mixed squads. Kept:
+  `lab/manoeuvre-kturnarc` e7a58262 + table; native's `lab/native-kturnarc` 40b89dd1. Manoeuvre traces the orbit for the
+  round-31 note. **M1b ships alone**: native cuts main (`3ca70af2`, with the re-render) + 55622870 + d122485c and runs the
+  round's LAST check.
 - **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
