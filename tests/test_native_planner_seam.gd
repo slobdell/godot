@@ -27,6 +27,64 @@ func test_a_held_rig_on_the_owned_state() -> void:
 	await _case(true)
 
 
+## The planner's f9d2c639: a crew under the rig's NAME whose hull is queued for deletion (a disposed match's) is no hold;
+## PlannerSeam.live releases it. The native gates must read it the same (drive and unstick twinned with the seam's world).
+func test_a_crew_of_a_freed_hull_is_no_hold() -> void:
+	if not NativeBridge.available:
+		print("native: absent, the freed-hull gate is not exercised in this run")
+		return
+	if not ResourceLoader.exists(PLANNER_SEAM) or not bool(load(PLANNER_SEAM).call("on")):
+		print("native: the planner's seam is OFF on this tree (PLANNER_DEFAULT): nothing to compare")
+		return
+	var seam: Script = load(PLANNER_SEAM)
+	seam.call("reset")
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants (with the seam's switch)")
+	var lab := TacticsLab.create(self, 31, "terminus")
+	var rig := lab.gun(Match.Team.GREEN, "Green_P_1", Vector3(-70.0, 0.0, 0.0), 0.0, "gang_tank")
+	var gone := lab.gun(Match.Team.GREEN, "Green_P_2", Vector3(-70.0, 0.0, -30.0), 0.0, "law_tank")
+	await lab.start()
+	var ctl: OrderController = null
+	for child in lab.game_match.brains.get_children():
+		if child is OrderController and (child as OrderController).tank == rig:
+			ctl = child
+	ctl.set_orders({"type": "move_to", "x": -70.0, "z": 40.0}, {"type": "hold_fire"})
+	await lab.step()
+	var delta := 1.0 / float(SimClock.TICK_RATE)
+	var mover := ctl.movement
+	var order: Dictionary = ctl.move_order
+	var movers: Array[Movement] = []
+	for node in lab.game_match.tanks.get_children():
+		var m := Movement.of(node)
+		if m != null and m.ctl != null:
+			movers.append(m)
+	gone.queue_free()  # queued for deletion this frame: the stale crew's hull
+	var compared := 0
+	for owned in [false, true]:
+		seam.call("reset")
+		var crew: Object = (seam.get_script_constant_map()["Crew"] as GDScript).new()
+		crew.set("kind", "kturn")
+		crew.set("tank", gone)
+		var crews: Dictionary = seam.get("_crews")
+		crews["Green_P_1"] = crew
+		var start := _capture_all(movers)
+		var live_cmd := TankCommand.new(1.0, 0.0, Vector3.ZERO)
+		BrainSwitches.native_drive = false
+		mover.unstick(live_cmd, order, delta)
+		BrainSwitches.native_drive = true
+		var live := _capture_all(movers)
+		_restore_all(movers, start)
+		var native_cmd := TankCommand.new(1.0, 0.0, Vector3.ZERO)
+		NativeBridge.impl.unstick(mover, native_cmd, order, delta, owned)
+		var native := _capture_all(movers)
+		assert_eq(MoverState.command(native_cmd), MoverState.command(live_cmd), "unstick's command (owned %s)" % owned)
+		assert_eq(_diff(movers, live, native), "", "unstick's movers and seam (owned %s)" % owned)
+		assert_true(not (seam.get("_crews") as Dictionary).has("Green_P_1"), "the freed hull's crew is released (owned %s)" % owned)
+		compared += 1
+	assert_eq(compared, 2, "both arms compared")
+	seam.call("reset")
+	lab.dispose()
+
+
 func _capture_all(movers: Array[Movement]) -> Array:
 	var states := []
 	for mover in movers:

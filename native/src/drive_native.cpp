@@ -73,7 +73,7 @@ struct Timed {
 // Every member and static name drive touches, made once.
 struct N {
 	// Movement members
-	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" }, avoid_shape{ "avoid_shape" }, _crews{ "_crews" };
+	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" }, avoid_shape{ "avoid_shape" }, _crews{ "_crews" }, live{ "live" };
 	StringName ctl{ "ctl" }, _repair_for{ "_repair_for" }, _repair_to{ "_repair_to" }, _goal{ "_goal" },
 			_order_ticks{ "_order_ticks" }, arc_live{ "arc_live" }, _arrive{ "_arrive" }, _remaining{ "_remaining" },
 			_deflected{ "_deflected" }, _give_way_left{ "_give_way_left" }, _blocked_ticks{ "_blocked_ticks" },
@@ -282,7 +282,21 @@ struct Drive {
 			return false;
 		}
 		const Dictionary crews = c.planner_seam->get(k._crews);
-		return !crews.is_empty() && crews.has(String(tank->get_name()));
+		if (crews.is_empty()) {
+			return false;
+		}
+		const String name = String(tank->get_name());
+		Object *crew = crews.get(name, Variant()).get_validated_object();
+		if (crew == nullptr) {
+			return false;
+		}
+		// PlannerSeam.live: a crew whose hull is freed (or queued for it) is released and is no hold. That rare case
+		// (a disposed match's hull, its name reused) is called back, so the release is the GDScript's own.
+		Node *hull = Object::cast_to<Node>(crew->get(k.tank).get_validated_object());
+		if (hull == nullptr || hull->is_queued_for_deletion()) {
+			return (bool)c.planner_seam->call(k.live, name);
+		}
+		return true;
 	}
 
 	bool traffic_holding() {
