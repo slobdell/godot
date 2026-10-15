@@ -77,21 +77,29 @@ func test_a_ten_metre_leg_drives_ten_metres_by_the_arc() -> void:
 	assert_true(off["path"] > on["path"], "the chord rule over-runs the arc (%.2f v %.2f)" % [off["path"], on["path"]])
 
 
-## A hull under KTURN_BRAKE_HULL_M (an IFV) starts every leg "rolling" (its brake rule is off), and a second leg started
-## while it still rolls must drive its own metres, not end at once on the first leg's arc (native's review of 1f1c9835).
+## Native's review of round 30's kturnarc: a second leg started while the hull still rolls must drive its own metres,
+## not end at once on the first leg's arc (the reset in `_kturn_start_leg`). Round 31: the arc is the braked hulls'
+## (`_arc_here`), so the check is a War Rig's; an IFV (a chord hull) drives the same either way.
 func test_a_second_leg_started_rolling_drives_its_own_metres() -> void:
+	var rig := await _leg(8.0, true, "gang_tank", 2)
+	print("MEASURE h2_kturn_arc gang_tank second 8 m leg started rolling: drove %.2f m (%.2f at the leg's end, ended %.2f s, aborted %d)" % [
+			rig["path"], rig["path_at_end"], rig["ended_at"], rig["aborted"]])
+	assert_true(rig["ended_at"] >= 0.0, "the second leg ended (%.2f s)" % rig["ended_at"])
+	assert_true(absf(rig["path"] - 8.0) <= 1.0, "it drove its own 8 m within 1 m (%.2f m), not the first leg's arc" % rig["path"])
+
+
+func test_an_ifv_second_leg_is_the_chord_either_way() -> void:
 	var on := await _leg(8.0, true, "ifv", 2)
-	print("MEASURE m2b_kturn_arc ifv second 8 m leg started rolling: drove %.2f m (%.2f at the leg's end, ended %.2f s, aborted %d)" % [
-			on["path"], on["path_at_end"], on["ended_at"], on["aborted"]])
-	assert_true(on["ended_at"] >= 0.0, "the second leg ended (%.2f s)" % on["ended_at"])
-	assert_true(absf(on["path"] - 8.0) <= 1.0, "it drove its own 8 m within 1 m (%.2f m), not the first leg's arc" % on["path"])
+	var off := await _leg(8.0, false, "ifv", 2)
+	print("MEASURE h2_kturn_arc ifv second 8 m leg: switch on %.3f m, off %.3f m" % [on["path"], off["path"]])
+	assert_true(absf(on["path"] - off["path"]) < 0.001, "a short hull's legs are the chord's, bit for bit (%.3f v %.3f)" % [on["path"], off["path"]])
 
 
-
-## Round 30's scout orbit (`scenario_cp2`, the trace in `references/round30/manoeuvre/kturnarc_scout_deck_*.log`): a
-## scout (under KTURN_BRAKE_HULL_M, so its leg is "rolling" from the first tick) is planned a 3.5 m reverse leg while
-## still doing ~10 m/s FORWARD. The signed arc subtracts the roll-out: the leg ends with the hull backed its 3.5 m
-## behind where the leg began (within the stopping slack), not 2.2 m short as the unsigned arc left it.
+## Round 30's scout orbit (`scenario_cp2`, the trace in `references/round30/manoeuvre/kturnarc_scout_deck_*.log`, and
+## round 31's C31.1 gate): a scout (under KTURN_BRAKE_HULL_M) is planned a 3.5 m reverse leg while still doing ~10 m/s
+## FORWARD, from its pose, not its rest point. The chord ends that stale leg in the roll-out and the next look re-plans
+## from where it really is; every arc rule drove the stale leg from the wrong pose and broke the orbit. H2 is scoped to
+## the braked hulls (`Movement._arc_here`): a scout's leg ends exactly as at base, switch on or off.
 func _rolling_leg(arc_on: bool, metres := 3.5) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_off := Movement._off
@@ -132,12 +140,13 @@ func _rolling_leg(arc_on: bool, metres := 3.5) -> Dictionary:
 	return out
 
 
-func test_a_scout_rolling_forward_backs_its_planned_leg() -> void:
+func test_a_short_hull_rolling_forward_keeps_the_chord_rule() -> void:
 	var on := await _rolling_leg(true)
 	var off := await _rolling_leg(false)
-	print("MEASURE h2_kturn_arc scout 3.5 m reverse leg started at %.1f m/s forward: signed arc ended %.2f m behind the leg's start (rolled out %.2f m) | chord ended %.2f m behind (rolled %.2f)" % [
+	print("MEASURE h2_kturn_arc scout 3.5 m reverse leg started at %.1f m/s forward: switch on ended %.3f m behind the leg's start (rolled out %.2f m) | off %.3f m (rolled %.2f)" % [
 			on["speed"], on["behind"], on["rolled"], off["behind"], off["rolled"]])
 	assert_true(on["speed"] >= 8.0, "setup: the leg starts with the scout rolling forward at speed (%.1f m/s)" % on["speed"])
-	assert_true(on["rolled"] >= 0.5, "setup: it rolls out forward before reversing (%.2f m)" % on["rolled"])
-	assert_true(on["ended"], "the leg ended")
-	assert_true(on["behind"] >= 3.5 - 1.0, "the signed arc ends the leg with the hull backed its 3.5 m (%.2f m behind the start)" % on["behind"])
+	assert_true(on["rolled"] >= 0.5, "setup: it rolls out forward (%.2f m)" % on["rolled"])
+	assert_true(on["ended"] and off["ended"], "the leg ended in both arms")
+	assert_true(absf(on["behind"] - off["behind"]) < 0.001 and absf(on["rolled"] - off["rolled"]) < 0.001,
+			"a short hull's leg is the chord's, bit for bit (%.3f v %.3f)" % [on["behind"], off["behind"]])
