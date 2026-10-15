@@ -216,8 +216,13 @@ a short hull is never taken (its own test); nothing else. **SLICE 2 expansions a
 ticks; one crew searched at a time.** **Census numbers the bar is sized from (builder0 light lane, Sumps 25 a side,
 seeds 92721 / 31337, c158aecf / fd36ecd5 / a6a66f31):** ~0.10-0.12 plan events a tick in the whole fight, bursts to 7;
 the War Rig's in-press face-about ~200 us an expansion warm, median 131 expansions when it fits, a quarter to a half
-refused START_BLOCKED / GOAL_BLOCKED in the press; **long-hull share of the events and the long hulls' expansion
-median: census-3's `by_hull` row (filled below when it lands, before the series).** **First run; a second on fresh seeds
+refused START_BLOCKED / GOAL_BLOCKED in the press; **the long hulls' share (census-4, b37b9ecb, same seeds): 2 of 50 hulls
+(the perf armies' War Rigs), 6 of 174 and 9 of 202 manoeuvre starts (`in_kturn` / face-leg edges per controller:
+3.4 % / 4.5 %), no face orders at all in a bot fight; their fitted plan's expansion median 131 (seed 92721's rig
+probe; seed 31337's fitted quarter 257); so the seam's in-scope demand is ~0.06 plans a second x ~131 expansions x
+~200 us = ~1.6 ms a SECOND (~0.05 ms a tick averaged), a thirtieth of the whole fight's, and SLICE 2 (60 expansions a
+second) leaves it idle ~85 % of the time; a median plan holds its rig ~65 ticks (2.2 s), inside the 3 s cap. The
+short hulls' own face-about (never taken) prices the same per expansion (190-250 us) at a median of 11-113.** **First run; a second on fresh seeds
 would be the last.** Lines, each from `judging.md`'s row (the table re-rendered at `3ca70af2`):
 
 - (a) **Terminus census, rigs + mixed, 13 FRESH seeds (61-73), `nav-terminus-drive` both squads:** arrivals not down beyond
@@ -390,6 +395,13 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~02:55 PDT: **census-3 / census-4** (a6a66f31 / b37b9ecb; the `by_hull` row missed the line at a6a66f31,
+  fixed at b37b9ecb): long hulls 2 of 50, 6 / 9 of 174 / 202 manoeuvre starts (3.4 / 4.5 %), zero face orders; the rig's
+  fitted plan median 131 expansions; the short hulls' face-about 190-250 us an expansion at a median of 11-113. **The
+  planner test files GREEN on b37b9ecb** (25/0, exit 0, light lane) -- but the rolling face STILL abandoned its first
+  request: zero/zero lets a rig at 8 m/s coast past the 3 s hold before it is under 0.5 m/s. **0914dafd: a pending
+  rolling hull is BRAKED to rest** (the opposite throttle at 0.7 on a straight lock, as PlannerExecutor brakes a leg);
+  its planner tests running (`planner-test12`). **CP-P1 BAR DRAFT v2 filled and sent** (below).
 - 2026-10-15 ~02:40 PDT: **the planner test files GREEN on 005a3837** (`make remote LIGHT=1 T="test FILTER=planner"`
   exited 0, 24 passed 0 failed, builder0 light lane): the seam's War Rig face in the Terminus street at SLICE 2 --
   pending 4 ticks, one plan of 5 legs, driven to its end at 15.6 s, 2.1 deg off south at 40 s, plan_face never asked;
