@@ -339,6 +339,11 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (expected; adopted at the ship); remote-guard-test quiet-window 27/1 at load 22 (R31.10); the queued-task route test
   passes (route_first 1370, 2.1 m, 0.1°); native-verify-scenarios 0; perf-judge judged 5/0. **The CP-H A/B starts on
   `130a069b`.**
+  **The A/B STARTED 13:23 PDT, with one accepted deviation:** on `130a069b` `realslow` cannot be turned OFF
+  (brain_switches.gd: naming it SETS it true, not a toggle), so the ON arm = `130a069b` with nothing named, and the base
+  and each consumer alone = its parent `a2ef0b31` with the opt-in names. `git diff a2ef0b31 130a069b -- game` is exactly
+  the four default lines, so the arms differ in the consumers only. **A ship blocker:** brains makes `realslow` a toggle
+  (`not REALSLOW_DEFAULT`, with a unit test) before any CP-H ship, or once flipped it could never be removed.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
