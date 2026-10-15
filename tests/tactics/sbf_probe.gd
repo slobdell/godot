@@ -48,9 +48,13 @@ func _run() -> void:
 	var trace := _flag("trace", "off") == "on"
 	var lab := TacticsLab.create(case, seed_value)
 	var names: Array = []
+	# The seed jitters each crew's start (±3 m, ±10 degrees), so seeds are different runs (the lab alone is deterministic).
+	var jitter := RandomNumberGenerator.new()
+	jitter.seed = seed_value
 	for i in 4:
-		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
-				Vector3(LANE_X, 0.0, 40.0 + i * 14.0), 0.0, unit_id).name))
+		var at := Vector3(LANE_X + jitter.randf_range(-3.0, 3.0), 0.0, 40.0 + i * 14.0 + jitter.randf_range(-3.0, 3.0))
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at,
+				deg_to_rad(jitter.randf_range(-10.0, 10.0)), unit_id).name))
 	var point := Vector3(LANE_X, 0.0, -60.0)
 	var travel := Vector3(0, 0, -1)
 	var facing := travel.rotated(Vector3.UP, deg_to_rad(FACED_OFF_TRAVEL_DEG)).normalized()
