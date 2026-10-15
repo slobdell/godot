@@ -282,6 +282,27 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
   **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
   flipped; native's statement covers the pair).
+- **Brains B5c-v5 bar (filed 2026-10-15 ~02:10 PDT, before any judged number; DECLARED; the LAST attempt; partial:
+  none):** candidate = **round 30's v4 rule UNCHANGED** (`lab/brains-r30-gate` `f1a804eb`). It was parked only on the
+  single pursuit cell, which R31.3's A/A puts inside a do-nothing nudge's noise, so it gets no re-scoping fitted to it
+  (lesson 306). **C31.1 gate PASSED:** pair tree `pair/brains-v5` `17e7b08c` (stream `0415da23` + `f1a804eb` ON + native
+  `f508ce89`), builder0 `>> remote: make check exited 0`, 2629 passed / 0 failed, 24 passed + 2 NOT JUDGED (perf-judge
+  and scenario_perf, refused on a busy box), sim-baseline 13 unmoved, native-verify-scenarios 0. Named stages on the
+  native path: pursuit 10/10, wheeled_arrival 11/11, nav_gate_v4 8/8, gate_hold 4/4, native_gate 4/4, mixed_legs 4/4,
+  wall_contact 11/11, scenario_cp2 pass. Arms: default ON v `--nav-off=gategiveup`, one tree, GDScript drive both
+  arms, fresh seeds. (1) **Pursuit** (R31.3): `make pursuit-aa` rule ON, ≥ 21/24 as written AND ≥ 19/24 nudged, no
+  new let-go at 18 m/s. (2) **Yard crossing** (seeds 27 28 × ticks 1 3 6 8 11 16, n 12; *yard crossing cell*,
+  count-runs): DECIDING, runs with every crew in on ≥ off AND crews on ≥ off in every run; last-crew median ≤ off − 5 s
+  REPORTED (A/A ±9 s). (3) **Sumps cell** (seeds 16 17 × 6, n 12; se 6.61 s): all-within-8 m median on ≤ off with no
+  run > 5 s later; guns_on_arc ≥ off − 0.05. (4) Terminus head-on (seeds 8–11, t11) REPORTED. (5) **Arrive series**
+  (5 maps × 5 squads × seeds 37–40, n 100): within 8 m on ≥ off − 1 AND McNemar discordant-against ≤ 1; paired median
+  of cells complete in both ≤ +2 % REPORTED (needs n > 1000). (6) Counters gates_turned / latched_away / near /
+  given_up > 0 on every acting on-run, 0 on every off-run; come-round endings counted, and mostly-cap is a finding. (7)
+  bridge-pooled 18/18 on; `make screen-slots` seed 61 A_2 in. (8) Cost: path.gate ≤ 0.5 ms a tick at Sumps 25 a side,
+  or NOT READABLE. (9) The worst on-arm run of (2) and (3) traced before the medians. Ships as the default flip +
+  native's mirror, one pair, with native showing yard and Sumps equal on the ON path. One arm-pair per remote call,
+  systemd-run. **Owed before numbers (orchestrator):** brains names round 30's v4 tuning and judged seeds per stage and
+  confirms none of 27–28, 16–17, 8–11 or 37–40 is among them.
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
