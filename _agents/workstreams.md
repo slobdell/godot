@@ -160,6 +160,19 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   main as written** (Green_A_1 66 → 194 m in 5 s, faster than the car drives, with a 180° turn at 3.5–6.5 s). Brains
   traces ONE of them (worst run first) before v5, because a physics launch on main would also poison CP-H's
   `real_velocity` readers. If it is a launch, it goes to manoeuvre (the drive) and native.
+  **Resolved (brains' trace, ~23:25 PDT, builder0, game/ = main):** NOT a launch. At 18 m/s seed 1, Green_A_1 is hit
+  to hp 0.01 at 5.0 s, picks RETREAT ("breaking away") and drives home at full speed while the target runs the other way,
+  so the range opens at ~26 m/s combined. Seed 9 is the same hit. The drive, real_velocity and native are not implicated.
+  It is a test gap: the let-go line excuses a badly hurt crew (C25.3, hp < 0.15), but the per-crew closing and reversal
+  lines do not. **Approved, in this order, each its own commit before any v5 number:** (a) the closing and reversal lines
+  skip samples where that crew is excused as hurt (hp < BADLY_HURT), the same excuse the let-go line already uses, and
+  nothing else changes; (b) the robust test: seeds {3,4,5,6,7} (the test's seed plus the next four in order, not picked
+  by outcome), both visible chases (8 and 18 m/s) on those seeds with the three asserts and thresholds unchanged per run,
+  each asserting passes ≥ 3 of 5. On the A/A rows for exactly these seeds, rule OFF: as written 5/5 and 5/5, nudged 3/5
+  and 5/5, so 3 is the null's own floor. The out-of-sight law_tank test stays single-seed (not measured), at about +60 s
+  on builder0; (c) `make pursuit-aa` RE-RUN on main's code with (a) and (b) in, rule OFF, because (a) changes the OFF
+  counts. Line (1)'s OFF counts (22 as written, 19 nudged) are REPLACED by (c)'s before v5 runs, with the same "− 3".
+  Both (a) and (b) green on main with the rule OFF.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
