@@ -36,7 +36,33 @@ func _static(name: String) -> Variant:
 	return null
 
 
+func teardown() -> void:
+	if _ghost_set:
+		Traffic.set_off("ghost", true)  # back to its default (opt-in: OFF)
+	_ghost_set = false
+	super.teardown()
+
+
+var _ghost_set := false
+
+
 func test_the_gathered_table_is_the_gdscript_build() -> void:
+	await _case(false)
+
+
+## Round 31 (traffic T4, CP-H): with `ghost` ON the rows carry Tank.real_velocity, both ways.
+func test_the_gathered_table_with_the_ghost_on() -> void:
+	var consts := (Traffic as Script).get_script_constant_map()
+	if not (consts.has("OPT_IN") and (consts["OPT_IN"] as Array).has("ghost")):
+		print("native: this tree's Traffic has no `ghost` (traffic T4 not merged): nothing to compare")
+		return
+	Traffic.set_off("ghost", false)
+	_ghost_set = true
+	assert_true(NativeTraffic.ghost(), "ghost ON reaches the native gather's argument")
+	await _case(true)
+
+
+func _case(ghost: bool) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the gathered table is not exercised in this run")
 		return
@@ -59,6 +85,7 @@ func test_the_gathered_table_is_the_gdscript_build() -> void:
 	var compared := 0
 	var mismatches: Array[String] = []
 	var stills := 0
+	var differs := 0  # rows whose real velocity is not the estimated one (the ghost case must see some)
 	for frame in 40:
 		await wait_physics_frames(1)
 		if frame % 4 != 3:
@@ -76,11 +103,18 @@ func test_the_gathered_table_is_the_gdscript_build() -> void:
 		compared += 1
 		for still: bool in gdscript["_still"]:
 			stills += 1 if still else 0
+		for child in game_match.tanks.get_children():
+			var hull := child as Tank
+			if hull != null and hull.is_alive() and hull.real_velocity.distance_to(hull.estimated_velocity) > 0.01:
+				differs += 1
 		for name in COLUMNS:
 			if typeof(gdscript[name]) != typeof(gathered[name]) or gdscript[name] != gathered[name]:
 				mismatches.append("frame %d %s: gdscript %s, native %s" % [frame, name, var_to_str(gdscript[name]).left(200),
 						var_to_str(gathered[name]).left(200)])
 	Avoidance._table_frame = -1
-	print("native avoid gather: %d ticks compared, %d still rows, %d mismatches" % [compared, stills, mismatches.size()])
+	print("native avoid gather%s: %d ticks compared, %d still rows, %d rows real != estimated, %d mismatches" % [
+			" (ghost)" if ghost else "", compared, stills, differs, mismatches.size()])
 	assert_true(mismatches.is_empty(), "the gathered table is the GDScript build: %s" % "; ".join(mismatches.slice(0, 3)))
 	assert_true(compared >= 8 and stills >= 8, "ticks compared with still rows in them (%d, %d)" % [compared, stills])
+	if ghost:
+		assert_true(differs >= 8, "the ghost case compared rows whose real velocity differs (%d)" % differs)

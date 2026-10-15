@@ -99,7 +99,8 @@ void TankNative::_bind_methods() {
 			"tick_rate"), &TankNative::would_be_hit);
 	ClassDB::bind_method(D_METHOD("avoidance_load", "names", "xs", "zs", "vxs", "vzs", "radii", "half_w", "half_l", "fxs",
 			"fzs", "still"), &TankNative::avoidance_load);
-	ClassDB::bind_method(D_METHOD("avoidance_gather", "tanks_root", "registry", "units"), &TankNative::avoidance_gather);
+	ClassDB::bind_method(D_METHOD("avoidance_gather", "tanks_root", "registry", "units", "real"), &TankNative::avoidance_gather,
+			DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("avoidance_columns"), &TankNative::avoidance_columns);
 	ClassDB::bind_method(D_METHOD("avoidance_solve", "me", "position", "velocity", "preferred", "max_speed", "radius", "dt",
 			"cap", "oriented"), &TankNative::avoidance_solve);
@@ -246,8 +247,10 @@ Vector3 TankNative::avoidance_solve(const String &me, const Vector2 &position, c
 //   names, xs/zs (global_position, float32), vxs/vzs (estimated_velocity), radii (radius_of: a double stored float32),
 //   half_w/half_l (the hull's halves), fxs/fzs (Vector2(-basis.z.x, -basis.z.z).normalized()), still (no mover, or
 //   its phase is "arrived": not is_under_way()); the grid and the index are AvoidanceTable::load's.
-PackedStringArray TankNative::avoidance_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &units) {
-	static const StringName alive("alive"), estimated_velocity("estimated_velocity"), unit_id("unit_id"), ctl("ctl"),
+PackedStringArray TankNative::avoidance_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &units,
+		bool real) {
+	static const StringName alive("alive"), estimated_velocity("estimated_velocity"), real_velocity("real_velocity"),
+			unit_id("unit_id"), ctl("ctl"),
 			tank_name("tank"), phase("phase");
 	static const String arrived("arrived");
 	PackedStringArray missing;
@@ -278,7 +281,8 @@ PackedStringArray TankNative::avoidance_gather(Node *tanks_root, const Dictionar
 		}
 		const PackedFloat64Array hull = row;
 		const Transform3D xform = tank->get_global_transform();
-		const Vector3 velocity = tank->get(estimated_velocity);
+		// `tank.estimated_velocity if Traffic.off("ghost") else tank.real_velocity` (round 31, traffic T4)
+		const Vector3 velocity = tank->get(real ? real_velocity : estimated_velocity);
 		const Vector3 z = xform.basis.get_column(2);
 		const Vector2 heading = Vector2(-z.x, -z.z).normalized();
 		names.push_back(tank->get_name());

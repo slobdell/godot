@@ -78,7 +78,10 @@ public:
 	// Round 24: Avoidance.refresh's table gathered by the C++ (the same hulls, order and widths as the GDScript build):
 	// `units` {unit_id: PackedFloat64Array[radius_of, half_w, half_l]}; returns the unit ids missing from it (the caller
 	// adds them and gathers again). `avoidance_columns` hands the columns back for the GDScript readers.
-	PackedStringArray avoidance_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &units);
+	// Round 31 (traffic T4, CP-H): `real` = the neighbour rows carry Tank.real_velocity (Traffic's `ghost` ON), else
+	// estimated_velocity (main's default).
+	PackedStringArray avoidance_gather(Node *tanks_root, const Dictionary &registry, const Dictionary &units,
+			bool real = false);
 	Dictionary avoidance_columns() const;
 	Vector3 avoidance_solve(const String &me, const Vector2 &position, const Vector2 &velocity, const Vector2 &preferred,
 			double max_speed, double radius, double dt, int cap, bool oriented) const;

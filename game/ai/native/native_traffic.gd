@@ -41,3 +41,16 @@ static func avoid_shape(crew: String, tanks_root: Node, route_preferred: Vector2
 	var script: Script = Traffic
 	script.call("refresh", tanks_root)
 	return script.call("shape", crew, route_preferred)
+
+
+## Round 31 (traffic T4, CP-H consumer, opt-in by R31.1): Avoidance.refresh's rows read Tank.real_velocity when `ghost` is
+## ON (`not Traffic.off("ghost")` on a tree whose Traffic has it in OPT_IN; never on a tree without it, where off() of an
+## unknown name is false). The native gather (Avoidance._gather_native) takes this as its `real` argument.
+static var _has_ghost := -1
+
+
+static func ghost() -> bool:
+	if _has_ghost < 0:
+		var consts := (Traffic as Script).get_script_constant_map()
+		_has_ghost = 1 if consts.has("OPT_IN") and (consts["OPT_IN"] as Array).has("ghost") else 0
+	return _has_ghost == 1 and not Traffic.off("ghost")
