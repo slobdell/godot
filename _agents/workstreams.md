@@ -355,7 +355,16 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   orders already go back to GDScript at execute_native.cpp:363, so the only native effect is more hand-backs, a cost
   line). **The gate is native's proof:** plain `make remote T=check` on a tree with `TURN_HULL_DEFAULT = true` (the
   native path runs around it; a `--nav-off` arm would not), whole suite green with `native-verify-scenarios` inside it.
-  That one check is both the C31.1 gate and the ship check. Arms: both on the GDScript path (`M1_GD=1`), one arm per remote call
+  That one check is both the C31.1 gate and the ship check. **Gate RESULT (~08:15 PDT):** tree `c57188f6` (main `298e4498` + the fallback +
+  `TURN_HULL_DEFAULT true`), builder0 `>> remote: make check exited 2`, 2629 passed / 0 failed, 25 of 26, sim-baseline
+  alone red: locks 2e02a926 → 76156304 and parade fc52b48b → 7c13a1a6, eleven unmoved, native-verify-scenarios passing.
+  **Declared cause:** `drawn_facing()` reads the element TASK's facing, so a CPU element's task facing also lifts the
+  decline for its wheeled turret hulls. That is symmetric with the player under his "smart AI on both sides" rule.
+  **Orchestrator's addition before numbers:** because turn-hull now changes CPU behaviour in fights, the bar gains
+  **(j) fights at 24 FRESH seeds 238–261: kills, deaths and hit rate within 1.645 se** (rows 69–71), as a GATE line. The
+  judged series runs on `6987bd12` (= main `441eabb0` + the two R31.2 reads, OFF-identical), and the **ship check is
+  re-run on the merge tree** (main + turnhull flipped) before the merge, with locks and parade re-recorded twice on
+  builder0. Arms: both on the GDScript path (`M1_GD=1`), one arm per remote call
   (lesson 311); new = `M1_NEW_OFF=turnhull`, base = main, drawn AND clicked, same commit. Tuning: hull-rest seeds 40–41.
   **Judged fresh:** hull-rest seeds 76–81 (4 factions × 6 tasks × 6 = 144 runs an arm), Terminus census 93–105 (13),
   bridge-pooled's 18 cells. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret at rest:
