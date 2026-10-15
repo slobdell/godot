@@ -110,6 +110,13 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (b) The SHIP check is still C31.1's pair tree: native's mirror in, the default flipped ON, plain `make remote T=check`
   (native's default path), the whole suite green. (a) gates the series; only (b) gates a merge ON. Traffic (`ghost`),
   brains (`realslow`) and native are told.
+  **Addendum (native, 2026-10-14 ~23:20 PDT): which arms run native.** Any `--nav-off=` name makes
+  `NativeDrive.usable()` false, so the arm runs the GDScript drive (manoeuvre's `unstickback`, `kturnarc`, the planner).
+  **Traffic's `ghost` (`Traffic._off`), brains' `realslow` (`--brains-off`) and the gun's `realspeed` (`--gun-off`) do
+  NOT:** their arms run the NATIVE drive, which ignores the switch until its mirror lands, so an "ON" arm silently runs the
+  OFF behaviour. **Rule:** every pre-series gate AND every judged series of those three runs with `NATIVE=off` (C31.4's
+  GDScript path) until native's mirror is in, and the A/B's runner must refuse a native arm for them. The pair tree
+  (mirror in, default ON, plain check) is the only place their native path counts.
 
 - **R31.2 The planner seam, AGREED in writing before code (2026-10-14 ~23:10 PDT; amends C31.5's "ONE call" and the
   executor line for planner-held hulls; planner's draft `f2245404` "DRAFT SEAM", manoeuvre's and traffic's replies):**
@@ -128,10 +135,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   in its seam commit** (the orchestrator's ruling, so the seam is one atomic diff for CP-P1), and manoeuvre reviews it.
   `PlannerSeam.live(name)` is static and false when OFF. (F) **Switch** `--nav-off=planner`, opt-in (R31.1); `planner`
   goes in `OFF_NAMES`, the planner's one shared-file edit. Any `--nav-off` flag makes `NativeDrive.usable()` false, so the
-  judged arms run the GDScript drive, and native's mirror is exercised only on the default-ON pair tree. (G) **Native, OPEN
-  (answers owed):** no new `exec_fields.h` fields (the seam's state lives in PlannerSeam's own table);
-  `planned_reverse_cheap`'s cheap exits must not answer while the switch is on or a crew is live; a `native_planner`
-  sub-switch in BrainSwitches; and the register_types.cpp / CMakeLists.txt lines for PlannerNative.
+  judged arms run the GDScript drive, and native's mirror is exercised only on the default-ON pair tree. (G) **Native, CLOSED (native's answers 2026-10-14 ~23:20 PDT):** no
+  `exec_fields.h` rows, on one condition: `PlannerSeam`'s table must be capturable by the twin harnesses (MoverState,
+  TrafficTwin), so the planner gives it a `capture()`/`restore()` pair (its executor and session are Objects).
+  `planned_reverse_cheap`'s cheap exits are gated in native's C++ at the pair: while `PlannerSeam.on()` or any crew is
+  live, the drive calls back `_planned_reverse`. `face_turn` needs nothing, because wheeled face orders already go back to
+  GDScript (execute_native.cpp:363). `BrainSwitches.native_planner` (default true) is at stream/native `bf8d4a78`; the
+  planner reads `BrainSwitches.native and BrainSwitches.native_planner`. The planner makes the register_types.cpp and
+  CMakeLists.txt lines in its CP-P0 commit, and native reviews them.
 
 - **R31.3 The pursuit test is knife-edge on main; B5c-v5's pursuit line goes to a count (2026-10-14 ~23:15 PDT, brains'
   A/A at `3cb76e17`, row in `judging.md` *Rows filed by hand in round 31*):** a 0.25 m start nudge (a null change) flips
