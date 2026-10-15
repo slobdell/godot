@@ -73,8 +73,10 @@ then M2b), native (the reader pair's check).
   is the cause. Shipping: `lab/manoeuvre-m4b-reader` = `Tank.real_velocity` + the census's `real` column + the pinned
   probe's honest class, as a native pair, sim-baseline UNMOVED (bar in `workstreams.md`). Round 31 = ONE A/B of the honest
   reading's consumers: the escapes (ask first, a straight reverse by the outline sweep), the two aim leads, traffic's T4
-  (ORCA's ghost), the rig-against-a-friend stall, brains' re-seat reading. M1b (`face_slot`) and M2b (creep lift + the
-  planner's arc rule) re-base onto the reader commit; chains GO, M1b first. M5 parked (case 1 closed by B5c-v4's rule;
+  (ORCA's ghost), the rig-against-a-friend stall, brains' re-seat reading. **M2b's creep lift NOT MET (18:45; −30 % v
+  −50 %, rigs −9 arrivals, +34 % wall contact: the lift rolls a rig's turn into a wall — round 29's finding a third time;
+  to the planner's F1).** `kturnarc` (the planner's arc rule) re-declared alone, running after M1b; M1b (`face_slot`)
+  judged on hull-rest tonight (Terminus lines passed; the project's first early-stop record). M5 parked (case 1 closed by B5c-v4's rule;
   case 2 = the planner's F4).
 - **Traffic**: T3b NOT SHIPPED (yard crossing clock +2.80 v +1.18 s; bumps −45 %); T1c-b NOT SHIPPED (the defect 11 → 0
   repacks, but artillery shots failed on one diverged run; row 82 under-sized). Both are his round-31 calls in player
