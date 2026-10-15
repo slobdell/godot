@@ -123,7 +123,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 					continue
 				var brain := game_match.brains.get_node_or_null("Brain_" + crew)
 				var order: Dictionary = lab.orders.call("current", crew)
-				print("CREW t=%.1f %s pos=%s v=%s d=%.1f order=%s/%s to=%s brain=%s slot=%s" % [float(tick) / SimClock.TICK_RATE, crew,
+				print("CREW t=%.1f %s hp=%.2f pos=%s v=%s d=%.1f order=%s/%s to=%s brain=%s slot=%s" % [float(tick) / SimClock.TICK_RATE, crew,
+						float(t.health) / float(t.max_health),
 						_flat(t.global_position).round(), _flat(t.estimated_velocity).round(),
 						_flat(t.global_position).distance_to(_flat(target.global_position)), order.get("verb", "-"),
 						order.get("target", ""), order.get("to", "-"), "-" if brain == null else "%s %s" % [brain.get("choice").get("option", ""), brain.get("why")],
