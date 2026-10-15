@@ -344,6 +344,8 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   and each consumer alone = its parent `a2ef0b31` with the opt-in names. `git diff a2ef0b31 130a069b -- game` is exactly
   the four default lines, so the arms differ in the consumers only. **A ship blocker:** brains makes `realslow` a toggle
   (`not REALSLOW_DEFAULT`, with a unit test) before any CP-H ship, or once flipped it could never be removed.
+  **Fixed (~13:50 PDT):** stream/brains `c45c9792` (merged at `d0aafb70`): `REALSLOW_DEFAULT` const, naming it sets
+  `not REALSLOW_DEFAULT`, test_tactics_realslow 5 cases; its full check is pending, and it joins CP-H's ship pair.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
