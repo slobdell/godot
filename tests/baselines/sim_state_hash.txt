@@ -20,7 +20,7 @@ glibc-2.43 gorge db23bc6501520ae2
 glibc-2.43 archipelago af872a431ab3483b
 # glibc-2.43 cut: recorded on builder0 at 90413868, twice, agreeing (2026-10-11)
 glibc-2.43 cut 488cc65111fba1d2
-# glibc-2.43 docks: recorded on builder0 at 90413868, twice, agreeing (2026-10-11)
-glibc-2.43 docks 259705183b668489
+# glibc-2.43 docks: recorded on builder0 at 04aaf1c2, twice, agreeing (2026-10-14)
+glibc-2.43 docks 672d25ff82d97972
 # glibc-2.43 yard_open: recorded on builder0 at 90413868, twice, agreeing (2026-10-11)
 glibc-2.43 yard_open 7f4b43526c147cdd
