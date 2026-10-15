@@ -404,6 +404,21 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~03:55 PDT: **CP-P0 MERGED OFF to main** (950c7681 on 41212da0's exited-0 line; HANDOFF 84e553cd; the one
+  conflict OFF_NAMES resolved as the sorted union; the seven seam lines intact). **stream/planner rebased onto main
+  84e553cd** (33 commits, clean) + **86e5c646: `mover.yield_to_plan()` wired** at the seam's first-take site (R31.2 (H);
+  manoeuvre's, main 298e4498; no shim). The pre-rebase check (c1b15323) withdrawn before it ran a target; the rebased
+  tip's full check queued (`planner-check8`, behind three worktrees' slots). Native rebases pair/cpp1 onto main +
+  86e5c646 for the gate hash. The series tooling's dry run (seed 1, rigs, light lane, `planner-seriesdry`) proves
+  series_verdict.py before the judged run.
+- 2026-10-15 ~03:45 PDT: **CP-P0's check GREEN:** `make remote T=check` on 41212da0 (a3755e37's code + docs), builder0:
+  `>> remote: make check exited 0`, 2615 passed 0 failed, `24 passed, 2 NOT JUDGED` (both the busy box's perf lines:
+  perf-judge refused 3x at 2.3-2.7x, scenario_perf's cpu budget unpinned); sim-baseline 53/0, every map unmoved;
+  scenarios 52/0. **The series tooling** (ad2e02f1 after the rebase): `make planner-series` (nav-terminus-drive over
+  the bar's fresh seeds 133-145 x mixed/rigs in two arms, base `--brains-off=native_drive` v candidate +
+  `--nav-off=planner`) and `tests/planner/series_verdict.py` (paired arrivals v 1.645 se per squad, contact-ticks
+  reported with the worst run, the seam's last PLANNER_SEAM_REPORT per run and the totals; refuses a base arm whose
+  seam fired).
 - 2026-10-15 ~03:40 PDT: **the clip for him rendered:** `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (3840 x
   1080, 32 s, side by side: TODAY left -- 29.8 s, 53 gear changes, 14 wall contacts; PLANNER SEAM right -- 15.5 s, 3 legs,
   0 contacts, its last frame held once done), from two `planner-lab PLANNER_ARMS=today PLANNER_FIXTURES=turnround
