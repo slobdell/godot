@@ -327,6 +327,19 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   its owning stream, with the same assertions divided across files and the test count shown before and after:
   traffic and brains now if idle; the rest go in round 32's briefs.
 
+- **R31.10 remote-guard-test's box-state groups don't block a gate (2026-10-15 ~13:25 PDT).** Its quiet-window and
+  slot-exclusive groups test `tools/slot.sh`'s windows against the live box. Under load they fail in a different group
+  each time (`9e1000d6` slot-exclusive 13/18; CP-H's `130a069b` quiet-window 27/1 at load 22), and they pass on a quiet
+  box (main `298e4498`). A light-lane re-run cannot open an exclusive window over the heavy slots, so it cannot clear
+  them. **Rule:** when remote-guard-test's box-state groups are the only red besides an expected sim-baseline move, and
+  the change touches nothing in `tools/slot.sh`, `tools/remote.sh` or `tools/quiet_window.sh`, the gate reads GREEN,
+  with the flake named in the record. A red in its other groups (remote-guard, check-verdict …) still blocks.
+- **CP-H's gate: GREEN under R31.10 (~13:20 PDT).** The ONE tree `130a069b` (main `a2ef0b31` + unstickback, kturnarc,
+  realspeed and realslow ON), builder0 `exited 2`, tests 2641 passed / 0 failed; sim-baseline moved on all 13
+  (expected; adopted at the ship); remote-guard-test quiet-window 27/1 at load 22 (R31.10); the queued-task route test
+  passes (route_first 1370, 2.1 m, 0.1°); native-verify-scenarios 0; perf-judge judged 5/0. **The CP-H A/B starts on
+  `130a069b`.**
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
