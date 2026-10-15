@@ -176,6 +176,13 @@ func test_the_lab_fixtures_on_the_navmesh_plan_the_same_both_ways() -> void:
 	_both("lab turnround (Terminus rig, face south)", _nav_request(terminus, "gang_tank", [-70.0, 0.0, 0.0], [-70.0, 0.0, 180.0], 2.0))
 	_both("lab slot180 (Terminus scout)", _nav_request(terminus, "law_scout", [0.0, 60.0, 0.0], [0.0, 51.0, 180.0], 1.0))
 	_both("lab tjunction (Terminus rig onto the ring road)", _nav_request(terminus, "gang_tank", [-70.0, 50.0, 0.0], [-48.0, 30.0, 90.0], 1.5))
+	# Round 31: the seam's k-turn goal AIMS (manoeuvre's War Rig nose-on to the (40, 0) block, the waypoint 24 m along).
+	var aim := _nav_request(terminus, "gang_tank", [40.0, 29.0, 0.0], [16.05, 30.6, -93.8], 1.0)
+	aim.aim = true
+	aim.tol_deg = PlannerSeam.KTURN_AIM_DEG
+	aim.arrive_gear = 1
+	aim.budget = PlannerSeam.BUDGET
+	_both("k-turn AIM (Terminus rig nose-on, the waypoint 24 m behind and aside)", aim)
 	terminus.free()
 	await drain_navigation()
 	# The yard corner is a BUDGET answer after 12 000 expansions (6 000 coarse + 6 000 fine): 129 s of GDScript on

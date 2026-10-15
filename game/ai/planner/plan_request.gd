@@ -17,6 +17,9 @@ var tol_m := 1.0
 var tol_deg := 8.0
 ## +1: arrive nose first (the last leg forward), -1: tail first, 0: either.
 var arrive_gear := 0
+## Round 31 (the k-turn's goal): reached also when the hull POINTS at the goal within tol_deg from farther than tol_m
+## with a clear straight run to it (Planner._at_goal); the pursuit law drives from there.
+var aim := false
 ## The hull: half extents (m), the minimum turning radius (m), the speeds the legs will be driven at (m/s), the
 ## acceleration and braking (m/s^2) for the cusp cost, and the yaw cap (deg/s).
 var half_w := 1.0
@@ -117,7 +120,7 @@ func to_native() -> Dictionary:
 	return {
 		"start_x": start_x, "start_z": start_z, "start_fx": start_fx, "start_fz": start_fz,
 		"goal_x": goal_x, "goal_z": goal_z, "goal_fx": goal_fx, "goal_fz": goal_fz,
-		"tol_m": tol_m, "tol_deg": tol_deg, "arrive_gear": arrive_gear,
+		"tol_m": tol_m, "tol_deg": tol_deg, "arrive_gear": arrive_gear, "aim": aim,
 		"half_w": half_w, "half_l": half_l, "radius": radius, "v_fwd": v_fwd, "v_rev": v_rev,
 		"cusp_s": cusp_seconds(), "budget": budget, "horizon_m": horizon_m, "epsilon": epsilon,
 		"fine_retry": fine_retry, "tick_s": SimClock.TICK_SECONDS,

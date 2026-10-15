@@ -578,6 +578,7 @@ PlannerNative::Request PlannerNative::parse_request(const Dictionary &d) {
 	r.tol_m = (double)d.get("tol_m", 1.0);
 	r.tol_deg = (double)d.get("tol_deg", 8.0);
 	r.arrive_gear = (int64_t)d.get("arrive_gear", 0);
+	r.aim = (bool)d.get("aim", false);
 	r.half_w = (double)d.get("half_w", 1.0);
 	r.half_l = (double)d.get("half_l", 2.0);
 	r.radius = (double)d.get("radius", 6.0);
@@ -623,16 +624,37 @@ void PlannerNative::parse_world(const Dictionary &d, World &w) {
 // ============================================================ the search ===========================================
 
 // Planner._at_goal
-bool PlannerNative::at_goal(double x, double z, double th, int64_t gear) const {
+bool PlannerNative::at_goal(double x, double z, double th, int64_t gear) {
 	if (req.arrive_gear != 0 && gear != req.arrive_gear) {
 		return false;
 	}
 	const double dx = x - req.goal_x;
 	const double dz = z - req.goal_z;
-	if (dx * dx + dz * dz > req.tol_m * req.tol_m) {
+	const double d2 = dx * dx + dz * dz;
+	if (d2 <= req.tol_m * req.tol_m) {
+		return absd(wrap(th - search.goal_theta)) <= search.tol_rad;
+	}
+	if (!req.aim) {
 		return false;
 	}
-	return absd(wrap(th - search.goal_theta)) <= search.tol_rad;
+	// AIM (Planner._at_goal, round 31): pointing at the goal within the tolerance with a clear straight run to it.
+	if (absd(wrap(th - std::atan2(-dz, -dx))) > search.tol_rad) {
+		return false;
+	}
+	return straight_clear(x, z, std::cos(th), std::sin(th), std::sqrt(d2));
+}
+
+// Planner._straight_clear
+bool PlannerNative::straight_clear(double x, double z, double fx, double fz, double dist) {
+	const Search &s = search;
+	double swept = 0.0;
+	while (swept < dist - 0.001) {
+		swept += SUB_M;
+		if (world.footprint(x + fx * swept, z + fz * swept, fx, fz, s.half_w, s.half_l, MARGIN_M, s.start_offs) < 0.0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 // Planner._heuristic

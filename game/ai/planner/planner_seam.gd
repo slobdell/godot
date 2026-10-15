@@ -62,6 +62,7 @@ const REST_MPS := 0.5             # a pending search begins only once the hull h
 const BRAKE_THROTTLE := 0.7        # Movement.KTURN_THROTTLE: the brake on a rolling hull while it is pending
 const YAWED_DEG := 5.0
 const FACE_TOL_DEG := 8.0          # Manoeuvre.FACE_ALIGNED_DEG
+const KTURN_AIM_DEG := 15.0        # the k-turn's goal: pointing at the waypoint within this, the straight run clear
 const NEW_GOAL_JUMP := 3.0         # Movement.NEW_GOAL_JUMP's intent: a goal that jumps this far is a new order
 const STALE_TICKS := 2             # a crew `take` has not been asked about for this long is released
 const REPORT_LINES := true         # a PLANNER_SEAM_REPORT line at every event's end (measurement; tens a run)
@@ -254,11 +255,11 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			var goal := target
 			if to.length() > HORIZON_M:
 				goal = here + to.normalized() * (HORIZON_M * 0.8)
-			var heading := _route_heading_at(mover, target)
-			if heading == Vector3.ZERO:
-				req.to(goal.x, goal.z, to.x, to.z, maxf(mover._arrive, 1.0), 180.0)  # a free heading: any pose at the point
-			else:
-				req.to(goal.x, goal.z, heading.x, heading.z, maxf(mover._arrive, 1.0), FACE_TOL_DEG)
+			# The k-turn's goal is AIM (CP-P1's gate, manoeuvre's War Rig nose-on: 4 legs where today drives 2): a pose
+			# that points at the waypoint within KTURN_AIM_DEG with a clear straight run to it, from which the route's
+			# pursuit law drives; standing ON a point 24 m off asked the lattice for ~2 degrees of heading, a wiggle.
+			req.to(goal.x, goal.z, to.x, to.z, maxf(mover._arrive, 1.0), KTURN_AIM_DEG)
+			req.aim = true
 			req.arrive_gear = 1
 		_:
 			return null
@@ -282,19 +283,6 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	_queue.append(name)
 	requests += 1
 	return crew
-
-
-## The heading the route continues with past `target` (the vertex after the one `target` is), or ZERO for none.
-static func _route_heading_at(mover: Movement, target: Vector3) -> Vector3:
-	var path := mover._path
-	for i in range(mover._path_index, path.size() - 1):
-		if _flat(path[i], target) <= 1.0:
-			var next := path[i + 1]
-			var d := Vector3(next.x - target.x, 0.0, next.z - target.z)
-			if d.length() > 0.5:
-				return d.normalized()
-			return Vector3.ZERO
-	return Vector3.ZERO
 
 
 static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float) -> bool:

@@ -41,10 +41,15 @@ func test_the_war_rig_k_turn_request_swept() -> void:
 		["clipped, tol 1 m, free heading, any arrive gear", clipped, 1.0, 180.0, along, 1.0, 0],
 		["clipped, tol 2.5 m, heading within 30 deg, cusp x2", clipped, 2.5, 30.0, along, 2.0, 1],
 		["halfway (12 m), tol 1.5 m, free heading", START + to.normalized() * 12.0, 1.5, 180.0, along, 1.0, 1],
+		["AIM clipped within 15 deg (the seam now)", clipped, 1.0, 15.0, along, 1.0, 1, true],
+		["AIM clipped within 8 deg", clipped, 1.0, 8.0, along, 1.0, 1, true],
+		["AIM clipped within 30 deg", clipped, 1.0, 30.0, along, 1.0, 1, true],
+		["AIM order's goal within 15 deg", GOAL, 1.0, 15.0, along, 1.0, 1, true],
 	]
 	var worst := 0
 	for row: Array in rows:
 		var req := _req(world, row[1], float(row[2]), float(row[3]), row[4], float(row[5]), int(row[6]))
+		req.aim = row.size() > 7 and bool(row[7])
 		var t0 := Time.get_ticks_usec()
 		var out: PackedPlan = Planner.plan(req)
 		var ms := (Time.get_ticks_usec() - t0) / 1000.0

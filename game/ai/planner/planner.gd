@@ -233,7 +233,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 		out.code = PackedPlan.GOAL_BLOCKED
 		out.why = "the goal pose is not clear by %.1f m" % MARGIN_M
 		return out
-	if _at_goal(req, req.start_x, req.start_z, theta0, goal_theta, tol_rad, 0):
+	if _at_goal(req, req.start_x, req.start_z, theta0, goal_theta, tol_rad, 0, world, start_offs):
 		out.code = PackedPlan.ALREADY_THERE
 		out.end_x = req.start_x
 		out.end_z = req.start_z
@@ -299,7 +299,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 				out.why = "budget of %d expansions spent" % req.budget
 			break
 		expansions += 1
-		if _at_goal(req, nx[cur], nz[cur], nth[cur], goal_theta, tol_rad, ngear[cur]):
+		if _at_goal(req, nx[cur], nz[cur], nth[cur], goal_theta, tol_rad, ngear[cur], world, start_offs):
 			# The last leg's roll past its end must be clear too.
 			if _roll_clear(world, req, start_offs, nx[cur], nz[cur], nfx[cur], nfz[cur], ngear[cur], nsteer[cur], radius, lag_fwd, lag_rev):
 				if ng[cur] < best_cost:
@@ -382,7 +382,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 					var at_end := next_end < LEG_ENDS_M.size() and swept >= LEG_ENDS_M[next_end] - 0.001
 					if at_end:
 						next_end += 1
-					if not at_end and (swept < 1.0 - 0.001 or not _at_goal(req, x, z, th, goal_theta, tol_rad, gear)):
+					if not at_end and (swept < 1.0 - 0.001 or not _at_goal(req, x, z, th, goal_theta, tol_rad, gear, world, start_offs)):
 						continue
 					var g := g_leg + swept / v + band
 					var key := _key(x, z, th, gear, cell_m, bins)
@@ -476,14 +476,34 @@ static func trace(req: PlanRequest, out: PackedPlan) -> void:
 	out.end_fz = fz
 
 
-static func _at_goal(req: PlanRequest, x: float, z: float, th: float, goal_theta: float, tol_rad: float, gear: int) -> bool:
+static func _at_goal(req: PlanRequest, x: float, z: float, th: float, goal_theta: float, tol_rad: float, gear: int,
+		world: PlannerWorld, start_offs: PackedFloat32Array) -> bool:
 	if req.arrive_gear != 0 and gear != req.arrive_gear:
 		return false
 	var dx := x - req.goal_x
 	var dz := z - req.goal_z
-	if dx * dx + dz * dz > req.tol_m * req.tol_m:
+	var d2 := dx * dx + dz * dz
+	if d2 <= req.tol_m * req.tol_m:
+		return absf(_wrap(th - goal_theta)) <= tol_rad
+	if not req.aim:
 		return false
-	return absf(_wrap(th - goal_theta)) <= tol_rad
+	# AIM (round 31, the k-turn's goal): the hull points at the goal within the tolerance and the straight run to it is
+	# clear -- the pursuit law drives from here. A point 24 m off needs ~2 degrees of heading from a lattice of three
+	# locks and twelve leg lengths, so standing ON it costs a wiggle (R3 F2 R12) the hull never needed.
+	if absf(_wrap(th - atan2(-dz, -dx))) > tol_rad:
+		return false
+	return _straight_clear(world, req, start_offs, x, z, cos(th), sin(th), sqrt(d2))
+
+
+## The footprint swept straight along the heading for `dist` metres at SUB_M, every step clear by the margin.
+static func _straight_clear(world: PlannerWorld, req: PlanRequest, start_offs: PackedFloat32Array,
+		x: float, z: float, fx: float, fz: float, dist: float) -> bool:
+	var swept := 0.0
+	while swept < dist - 0.001:
+		swept += SUB_M
+		if world.footprint(x + fx * swept, z + fz * swept, fx, fz, req.half_w, req.half_l, MARGIN_M, start_offs) < 0.0:
+			return false
+	return true
 
 
 ## The estimate that orders the search. Its admissible core: the fastest metre is a forward one, and any drivable
