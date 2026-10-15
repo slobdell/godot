@@ -395,8 +395,9 @@ on lock for a long hull", not "no stall clock".
   | (h) rigs seed 21, both arms | byte-identical (4/4 every leg, contact-ticks 775 = 775): the wild case was made by M4b run 1's escape, which is parked; on the reader base the rig never leaves its slot |
   | (d), (e) | Terminus arrivals PASS both squads (early-stop rows above); bridge 18/18 |
 
-  **Verdict asked of the orchestrator:** every line met except (b)'s one class × task line (+15 at 2.3 se on crews the
-  rule does not reach, 1 of 18 lines); by the filed letter "any judged line missed = not shipped".
+  **Ruling (the orchestrator, 19:20 PDT): SHIPS.** The filed (b) line is PER TASK and every task passes; the 18 class ×
+  task lines were the se's source, not pass lines, so the one at 2.3 se is recorded with the reading above, not ruled
+  on. Tooling for next round: export `face_slot_kept` / `face_slot_refused` from the hull-rest probe.
 - **M2b judged (`1f1c9835` on the reader base, builder0 GDScript path, 18:45 PDT): NOT MET, nothing ships as filed.**
 
   | line | base | new | reading |
