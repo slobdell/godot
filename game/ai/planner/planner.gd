@@ -521,6 +521,18 @@ static func _heuristic(req: PlanRequest, x: float, z: float, th: float, goal_the
 	var dx := x - req.goal_x
 	var dz := z - req.goal_z
 	var d := sqrt(dx * dx + dz * dz)
+	if req.aim and d > req.tol_m:
+		# AIM (round 31): the goal is reached pointing at the point from wherever the hull is, so the point's own cost
+		# (the distance, the table's cost to its pose) is not owed: only the heading change to point at it, at R per
+		# radian, plus the cusps that change needs in the start's room. The point estimate made a 4.9 s answer
+		# invisible behind a 10.8 s one (the anytime bound stopped at 9 expansions).
+		var turn_aim := absf(_wrap(th - atan2(-dz, -dx)))
+		var h_aim := radius * turn_aim / maxf(req.v_fwd, 0.1)
+		if turn_aim > 0.3 and swing < PI:
+			var legs_aim := ceilf(turn_aim / swing)
+			if legs_aim > 1.0:
+				h_aim += cusp_s * (legs_aim - 1.0)
+		return h_aim
 	var turn := absf(_wrap(th - goal_theta))
 	var h := maxf(d, radius * turn) / maxf(req.v_fwd, 0.1)
 	# The goal's frame: along = d . goal_forward, across = d . goal_right; the heading relative to the goal's.

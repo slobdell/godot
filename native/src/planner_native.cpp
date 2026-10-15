@@ -663,6 +663,18 @@ double PlannerNative::heuristic(double x, double z, double th, int64_t gear) con
 	const double dx = x - req.goal_x;
 	const double dz = z - req.goal_z;
 	const double d = std::sqrt(dx * dx + dz * dz);
+	if (req.aim && d > req.tol_m) {
+		// AIM (Planner._heuristic, round 31): only the heading change to point at the goal, plus its cusps in the start's room.
+		const double turn_aim = absd(wrap(th - std::atan2(-dz, -dx)));
+		double h_aim = s.radius * turn_aim / maxd(req.v_fwd, 0.1);
+		if (turn_aim > 0.3 && s.swing < PI_D) {
+			const double legs_aim = std::ceil(turn_aim / s.swing);
+			if (legs_aim > 1.0) {
+				h_aim += s.cusp_s * (legs_aim - 1.0);
+			}
+		}
+		return h_aim;
+	}
 	const double turn = absd(wrap(th - s.goal_theta));
 	double h = maxd(d, s.radius * turn) / maxd(req.v_fwd, 0.1);
 	const double along = dx * s.gfx + dz * s.gfz;
