@@ -233,7 +233,10 @@ would be the last.** Lines, each from `judging.md`'s row (the table re-rendered 
   worst run's trace before the median; `PlannerSeam.report()` printed per run (requests, plans, driven, aborted,
   abandoned, rerequested, refused by code, pending-ticks, queue_waits): a run where the seam never fired is an equality
   check, not a sample. **REPORTED, never a pass line: `abandoned`, `queue_waits`, `refused`** (R31.7: a starved seam is a
-  finding, and the candidate parks with its traces; there is no second scope).
+  finding, and the candidate parks with its traces; there is no second scope), **and the HOLD per rig event
+  (`holds`: n, median, max hull-ticks from the ask to the plan, the refusal or the abandonment; the orchestrator's
+  addition ~03:15: a rig told to face while moving fast stands up to ~3.8 s before its first leg -- ~45 ticks braking
+  + up to 90 of search -- and he would see that), the worst one in the clip if it is long.**
 - (b) **THE DECIDING LINES, the rig cases.** The n (the orchestrator's (i)): `terminus_drive.gd` has no tick-offset
   knob and is nav's file (not mine to edit), and a pure order delay in a one-squad deterministic drive would replay the
   same grind shifted in time (n copies, no se). So the SIZED deciding lines are the RIGS SQUAD'S paired rows over (a)'s

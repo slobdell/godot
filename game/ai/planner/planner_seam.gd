@@ -80,12 +80,14 @@ static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
+static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 
 
 class Crew:
 	var kind := ""
 	var tick_seen := 0
 	var asked_tick := 0
+	var held_since := 0   # the tick the hull was first held (the ask): its hold = plan tick - held_since
 	var pending := true
 	var begun := false
 	var req: PlanRequest = null
@@ -142,7 +144,17 @@ static func last_refusal(crew_name: String) -> Array:
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
-			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE}
+			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE,
+			"holds": _hold_stats()}
+
+
+## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
+static func _hold_stats() -> Dictionary:
+	if holds.is_empty():
+		return {"n": 0, "median": 0, "max": 0}
+	var sorted := Array(holds)
+	sorted.sort()
+	return {"n": sorted.size(), "median": sorted[sorted.size() / 2], "max": sorted[-1]}
 
 
 static func reset() -> void:
@@ -158,6 +170,7 @@ static func reset() -> void:
 	driving_ticks = 0
 	queue_waits = 0
 	_last_refusal = {}
+	holds = PackedInt32Array()
 	_release_all()
 
 
@@ -254,6 +267,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.req = req
 	crew.goal = target
 	crew.asked_tick = tick
+	crew.held_since = tick
 	crew.tick_seen = tick
 	crew.at = here
 	crew.heading = forward
@@ -283,6 +297,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	pending_ticks += 1
 	if tick - crew.asked_tick >= PENDING_TICKS:
 		abandoned += 1
+		holds.append(tick - crew.held_since)
 		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
 				"start": [snappedf(crew.req.start_x, 0.01), snappedf(crew.req.start_z, 0.01), snappedf(crew.req.start_fx, 0.01), snappedf(crew.req.start_fz, 0.01)],
 				"goal": [snappedf(crew.req.goal_x, 0.01), snappedf(crew.req.goal_z, 0.01), snappedf(crew.req.goal_fx, 0.01), snappedf(crew.req.goal_fz, 0.01)],
@@ -337,12 +352,14 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		return false
 	if plan.code != PackedPlan.OK:
 		refused[plan.code] = int(refused.get(plan.code, 0)) + 1
+		holds.append(tick - crew.held_since)
 		_last_refusal[name] = [tick, plan.code]
 		_release(name)
 		_retry_until[name] = tick + RETRY_TICKS
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
+	holds.append(tick - crew.held_since)
 	crew.pending = false
 	crew.executor = PlannerExecutor.new()
 	crew.executor.start(plan, tank)
@@ -408,7 +425,7 @@ static func capture() -> Dictionary:
 	for name: String in _crews:
 		crews[name] = (_crews[name] as Crew).copy()
 	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
-			"last_refusal": _last_refusal.duplicate(true)}
+			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate()}
 
 
 static func restore(snapshot: Dictionary) -> void:
@@ -420,6 +437,7 @@ static func restore(snapshot: Dictionary) -> void:
 	_queue.assign(snapshot["queue"])
 	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
 	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
+	holds = PackedInt32Array(snapshot.get("holds", PackedInt32Array()))
 	var counters: Dictionary = snapshot["counters"]
 	requests = int(counters["requests"])
 	plans = int(counters["plans"])
