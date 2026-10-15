@@ -124,6 +124,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   22–24 or 31–33 (traffic names the set before the run). Every row cites `judging.md`; early stop by `sequential.py`'s
   rows (C31.3, `e1aaabe1`'s hook), the stopping row recorded here. Ships as a pair with native, the default flipped ON
   (`Traffic.DEFAULT_OFF` loses `turns`); a before/after clip of his yard crossing for him.
+  **Clarified before numbers (~22:55 PDT):** the yard line (2) reads **mean paired diff ≤ 3.0 s + 1.645 se**, the se
+  the judged run's own paired sd/√18. That is C31.3's guard form with his 3 s in place of 0.10 × median, and it is
+  what `turns_verdict.py --allow yard_open/cross=3.0` (`64dc8ef2`) computes (round 30's rows: +2.80 v limit +3.36 PASS;
+  the old +10 % line FAIL as filed). **Seeds** {41,42,43} × ticks {1,3,6,8,11,16}, n = 18 a case, four cases, 90 s. On
+  the pair tree `turns` is default ON, so base = `--traffic-off=turns` and arm = no flag. Early-stop lines are in
+  traffic's Status bar block.
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
