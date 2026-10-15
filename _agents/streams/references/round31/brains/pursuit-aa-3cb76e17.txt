@@ -1,0 +1,36 @@
+
+== 8 m/s ==
+seed | nudge 0: pass  closing_margin_m  reversal_margin_deg  let_go | nudge 0.25: pass  closing_margin_m  reversal_margin_deg  let_go
+1 | PASS +14.1 +70 - | PASS +14.2 +68 -
+2 | PASS +17.0 +70 - | PASS +20.0 +75 -
+3 | PASS +14.0 +70 - | FAIL +14.0 +67 15.0 s (every crew excused, none within 35 m or closing)
+4 | PASS +13.9 +70 - | PASS +24.1 +75 -
+5 | PASS +14.0 +70 - | FAIL +15.7 -41 -
+6 | PASS +16.9 +70 - | PASS +24.3 +76 -
+7 | PASS +16.9 +70 - | PASS +16.6 +68 -
+8 | PASS +17.0 +70 - | PASS +inf +67 -
+9 | PASS +16.6 +69 - | FAIL +15.5 +72 18.0 s (every crew excused, none within 35 m or closing)
+10 | PASS +inf +69 - | PASS +inf +78 -
+11 | PASS +inf +70 - | PASS +15.7 +67 -
+12 | PASS +16.9 +70 - | PASS +16.9 +67 -
+nudge 0: 12/12 pass; let go 0; closing margin (finite 10) min +13.9 median +16.8 sd 1.4 m; reversal margin min +69 median +70 sd 0 deg
+nudge 0.25: 9/12 pass; let go 2; closing margin (finite 10) min +14.0 median +16.1 sd 3.6 m; reversal margin min -41 median +68 sd 31 deg
+paired: 3/12 verdicts flipped by the nudge alone (seeds [3, 5, 9]); 0/12 runs identical in both measures
+
+== 18 m/s ==
+seed | nudge 0: pass  closing_margin_m  reversal_margin_deg  let_go | nudge 0.25: pass  closing_margin_m  reversal_margin_deg  let_go
+1 | FAIL -125.6 -60 - | FAIL -125.7 -60 -
+2 | PASS +13.1 +24 - | PASS +13.0 +30 -
+3 | PASS +13.4 +24 - | PASS +8.0 +46 -
+4 | PASS +12.8 +60 - | PASS +7.8 +28 -
+5 | PASS +12.8 +33 - | PASS +11.8 +24 -
+6 | PASS +12.8 +60 - | PASS +7.8 +29 -
+7 | PASS +11.8 +55 - | PASS +12.4 +26 -
+8 | PASS +11.6 +55 - | PASS +9.6 +26 -
+9 | FAIL -125.6 -60 - | FAIL -125.5 -60 -
+10 | PASS +13.1 +24 - | PASS +13.0 +28 -
+11 | PASS +16.9 +24 - | PASS +6.9 +47 -
+12 | PASS +11.8 +55 - | PASS +12.4 +26 -
+nudge 0: 10/12 pass; let go 0; closing margin (finite 12) min -125.6 median +12.8 sd 51.7 m; reversal margin min -60 median +28 sd 40 deg
+nudge 0.25: 10/12 pass; let go 0; closing margin (finite 12) min -125.7 median +8.8 sd 50.7 m; reversal margin min -60 median +27 sd 35 deg
+paired: 0/12 verdicts flipped by the nudge alone (seeds []); 0/12 runs identical in both measures

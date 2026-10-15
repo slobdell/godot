@@ -609,7 +609,7 @@ func _watch_progress(game_match: Match) -> void:
 		# A new leg or a re-seat moves the slot: progress is measured toward the slot the crew has NOW.
 		if (best[2] as Vector3).distance_to(flat_slot) > STUCK_GAIN_M:
 			best = [INF, game_match.tick, flat_slot, game_match.tick]
-		var slow := tank.estimated_velocity.length() < STUCK_MPS
+		var slow := reads_slow(tank.estimated_velocity, tank.real_velocity)
 		var last: int = int(best[3]) if best.size() > 3 else game_match.tick
 		if not slow:
 			_closest[unit_name] = [best[0], best[1], best[2], game_match.tick]
@@ -657,6 +657,23 @@ func _watch_progress(game_match: Match) -> void:
 			_log("re-seat: %s has driven %d s without closing on its slot (%.0f m)" % [unit_name,
 					(game_match.tick - int(best[1])) / SimClock.TICK_RATE, gap])
 			return
+
+
+## Round 31 (brains B8, a CP-H consumer, C31.4; `--brains-off=realslow` OPT-IN, R31.1): whether the stuck clock reads this
+## crew as SLOW (waiting: its clock resets, or pauses while it presses a parked squadmate) rather than DRIVING without
+## closing (its clock runs to a re-seat / make-room). Off (main): the plant's speed under STUCK_MPS, as since round 18.
+## On: slow only if the hull really moves under STUCK_MPS AND the plant is not driving it STALL_GAP_MPS faster than it
+## really goes. Traced (manoeuvre's pair check, round 30, `test_tactics_mixed_legs`, Sumps causeway): an 8x8 sat 21.5 m
+## from its slot from 57 s to the end at plant 0.86 m/s, real 0.00, behind a seated squadmate, re-seats 0: read slow, its
+## clock never ran. A hull the plant drives and that goes nowhere is stuck, not waiting. Pure.
+const STALL_GAP_MPS := 0.5
+
+
+static func reads_slow(plant: Vector3, real: Vector3) -> bool:
+	if not BrainSwitches.realslow:
+		return plant.length() < STUCK_MPS
+	var honest := Vector2(real.x, real.z).length()
+	return honest < STUCK_MPS and Vector2(plant.x, plant.z).length() - honest < STALL_GAP_MPS
 
 
 ## Round 27 (B2): whether `unit_name` is up against a squadmate PARKED on its own slot (standing still within its
