@@ -645,6 +645,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   83 / NO_PATH 23; queue_waits 486 (series 1: 1141); pending per rig event n 448, median 11, max 104 ticks. Rows:
   `references/round31/planner/series2-fresh/` (`f8f91846`). **The other stages run to completion:** hull-rest, fights,
   bridge, cp2.
+  **Line (b)'s named rig cases (REPORTED at n = 1, `fe5f8a9e`, traces `references/round31/planner/cases-b/`):** seed 31,
+  the rig 1930 base v 2198 candidate contact-ticks. It is a different grind of the same length: the candidate's is a
+  squadmate wedge in the west street with NO seam event (CP-H's H1 class, relayed). Arrivals 13 v 13. Seed 51: the rig
+  267 v 244; arrivals 16/16 v 15/16 (Green_S0_3 completed 9.6 m from its slot with no seam event in that leg). The seed-9
+  pin: pinned unit-ticks 491 (16.4 s) v 30 (1.0 s), freed with no re-pin loop. The rig 180°: `test_wheeled_arrival`'s rig
+  case is green on the gate. The car's leak check: the mixed line identical both arms.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
