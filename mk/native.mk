@@ -257,7 +257,19 @@ native-tp-headless: import ## Every SimProfile section of the in-contact window,
 # Round 28 (N7 guard): every native switch in force takes its native path under the tick profile (the instrument every
 # price and the laptop's ruling use). Counts from the profile's install until its window opens (20 s), a fight at 20 a
 # side on foundry, then tests/native/live_guard.py: a switch ON but never taken fails, named. ~1 min on builder0.
+# Round 31 (the planner's two segfaults): a C++ STATIC holding a godot builtin (RID, String, ...) crashes at LIBRARY LOAD
+# (its constructor calls a binding the extension's init has not set yet: d373af4e died inside --import), and a static
+# godot Ref crashes at EXIT (it outlives the ObjectDB: ad1d1f3d). Either is invisible to a test that passed, so first: one
+# headless start and quit through the library, exit 0 and no crash line, or the guard fails. A few seconds.
 native-live-guard: import ## Every ON native switch is LIVE under the tick profile (a seam that steps aside for a measurement mode fails)
+	@if [ -e $(NATIVE_GDEXT) ]; then \
+		$(GODOT) --headless --path . --quit > $(BUILD_DIR)/native-load-guard.log 2>&1; code=$$?; \
+		if [ $$code -ne 0 ] || grep -q 'handle_crash\|Program crashed\|signal 11' $(BUILD_DIR)/native-load-guard.log; then \
+			echo "native-load-guard: the library's load or exit CRASHED (exit $$code; build/native-load-guard.log): a C++ static holding a godot Ref or builtin?"; \
+			tail -20 $(BUILD_DIR)/native-load-guard.log; exit 1; \
+		fi; \
+		echo "native-load-guard: the library loads and unloads cleanly (exit 0)"; \
+	fi
 	@mkdir -p $(BUILD_DIR)/perf-armies && $(PYTHON) tools/perf_armies.py size 20 $(BUILD_DIR)/perf-armies
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
 		--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_20.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_20.json \
