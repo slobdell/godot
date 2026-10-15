@@ -540,6 +540,17 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   aim heuristic owing only the heading change and its cusps (`5ffda2b4`, the unlock), and the order-goal release
   (`1f325b91`). Half lock was measured and REVERTED (the scene was unchanged and three fixtures broke). The wedged semi
   is met. Every named fixture holds, and the C++ twin plans identically. **Re-cut base for native's gate: `edb773cf`.**
+- **CP-P1 JUDGED run 1 (~09:30 PDT): MISSES line (a), the rigs squad.** builder0 heavy, series tree `0fcdd5dd` (code
+  `05ce260b`), gate `8bb2ad4e`, Terminus seeds 133–145, n 13: rig arrivals base 178 v candidate 159 of 208, paired mean
+  −1.462 a seed, se 0.595 v pass line −0.979, FAIL. Per seed: −4 −5 +2 +1 +1 −4 −2 −3 −1 −1 0 −1 −2. Contact-ticks
+  REPORTED: median 563 v 564, paired +294.8 (se 190.5), worst 139 at 2469 (base 541). The mixed squad is identical in
+  both arms (291/291; the seam never fired, so the equality holds). Seam totals over 13 rig runs: requests 461, plans
+  129, driven 96, aborted 4, abandoned 4; refused GOAL_BLOCKED 174, START_BLOCKED 121, NO_PATH 16; **queue_waits 1141**;
+  pending per rig event n 444, median 12, max 120 ticks. The other stages were not launched. **Ruling: the SECOND and
+  LAST attempt is allowed** (the bar names it): the planner diagnoses on seeds 133–145 (now tuning) and DECLARES its fix
+  before any new number, by 12:00 PDT; then native re-cuts and re-gates, and the series re-runs on **fresh Terminus
+  seeds 172–184**, with the other stages then as filed. No other stages run now (builder0 goes to CP-H). If no fix is
+  declared by 12:00, CP-P1 parks, with CP-P0 + the OFF seam on main as the round's planner result.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
