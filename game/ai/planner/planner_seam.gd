@@ -81,6 +81,7 @@ static var driving_ticks := 0
 static var queue_waits := 0       # hull-ticks waited behind another crew's search
 
 static var _crews := {}           # name -> Crew
+static var _swept_tick := -1      # the last physics tick the crews were swept for freed hulls
 static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
@@ -105,6 +106,8 @@ class Crew:
 	var replans := 0
 	var rerequests := 0
 	var stepped := 0                # expansions handed to the session (replayed by restore)
+	var tank: Tank = null           # THE hull this crew serves (crews are keyed by name; a disposed match's hull is
+	                                # freed and the next match names one the same: native's gate on 3a66f546)
 	var executor: PlannerExecutor = null
 
 	func copy() -> Crew:
@@ -135,7 +138,10 @@ static func on() -> bool:
 
 ## Is this crew held by the seam (a plan pending or being driven)? False when OFF.
 static func live(crew_name: String) -> bool:
-	return on() and _crews.has(crew_name)
+	if not on():
+		return false
+	_sweep(Engine.get_physics_frames())   # a freed hull's crew under this name is not a hold on the hull now named it
+	return _crews.has(crew_name)
 
 
 ## Round 31 (manoeuvre's ask through the orchestrator, measurement only): this hull's LAST refusal as
@@ -183,6 +189,19 @@ static func reset() -> void:
 	_release_all()
 
 
+## Once a tick: a crew whose hull is freed (or queued for it) is released, so a dead head never holds the queue and
+## `live` counts hulls that exist. The named-hull release in _serve covers a hull under the same name; this covers one
+## that never ticks again.
+static func _sweep(tick: int) -> void:
+	if tick == _swept_tick:
+		return
+	_swept_tick = tick
+	for name: String in _crews.keys():
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+			_release(name)
+
+
 static func _release_all() -> void:
 	for name: String in _crews.keys():
 		_release(name)
@@ -220,7 +239,13 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		_release(name)
 		return false
 	var tick := Engine.get_physics_frames()
+	_sweep(tick)
 	var crew: Crew = _crews.get(name)
+	if crew != null and crew.tank != tank:
+		# Another hull under this name (test_tactics_army_layout10 on the pair tree 3a66f546: four arenas built and
+		# disposed in one test, the same names in each; the next arena's Green_S0_1 drove the freed one's executor).
+		_release(name)
+		crew = null
 	# A k-turn's "new goal" is the ORDER's goal moving (Movement._goal), not the route's steering carrot, which slides
 	# along the path as the hull moves (CP-P1's gate: the carrot's 3.7 m released a two-leg plan 4 m into its first leg).
 	var moved := 0.0
@@ -307,6 +332,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.tick_seen = tick
 	crew.at = here
 	crew.heading = forward
+	crew.tank = tank
 	_crews[name] = crew
 	_queue.append(name)
 	requests += 1

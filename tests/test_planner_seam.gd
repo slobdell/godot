@@ -184,3 +184,38 @@ func test_capture_and_restore_round_trip_the_seam_state() -> void:
 			if a.executor != null:
 				assert_eq(JSON.stringify(b.executor.to_state().duplicate()).length(), JSON.stringify(a.executor.to_state().duplicate()).length(), "%s: the executor's state" % name)
 		lab.dispose())
+
+
+## Native's gate on the pair tree 3a66f546 (test_tactics_army_layout10: four arenas built and disposed in ONE test, the
+## same hull names in each): crews are keyed by hull name, so a crew whose hull was freed with its match met the next
+## match's hull under that name and drove the freed one's executor ("previously freed" at PlannerExecutor.tick, 8
+## engine errors). A crew serves ONE hull instance: the hull now named it releases the old crew on its first ask, and a
+## crew whose hull is gone is swept at the next tick, never left as the queue's head.
+func test_a_crew_never_outlives_its_hull() -> void:
+	await _with_switch(true, func() -> void:
+		var scene: Dictionary = await _rig_facing_south(31)
+		var lab: TacticsLab = scene["lab"]
+		var first: Tank = scene["tank"]
+		for i in int(SimClock.TICK_RATE * 8.0):
+			await lab.step()
+			if PlannerSeam.live("Green_P_1"):
+				break
+		assert_true(PlannerSeam.live("Green_P_1"), "the first match's rig is held by the seam (requests %d, refused %s)" % [PlannerSeam.requests, str(PlannerSeam.refused)])
+		assert_true((PlannerSeam._crews["Green_P_1"] as PlannerSeam.Crew).tank == first, "the crew names the first hull")
+		lab.dispose()   # the match freed with its crew still held, as the layout test's lab.dispose() frees each arena
+		assert_true(not is_instance_valid(first), "the first hull is freed")
+		assert_true(not PlannerSeam.live("Green_P_1"), "live() swept the freed hull's crew")
+		assert_true(PlannerSeam._queue.is_empty(), "the freed hull is not the queue's head")
+		var again: Dictionary = await _rig_facing_south(32)
+		var lab2: TacticsLab = again["lab"]
+		var second: Tank = again["tank"]
+		assert_true(String(second.name) == "Green_P_1", "the second match's rig carries the same name")
+		for i in int(SimClock.TICK_RATE * 8.0):
+			await lab2.step()
+			if PlannerSeam.live("Green_P_1"):
+				break
+		assert_true(PlannerSeam.live("Green_P_1"), "the second match's rig is held in its turn (requests %d, refused %s)" % [PlannerSeam.requests, str(PlannerSeam.refused)])
+		assert_true((PlannerSeam._crews["Green_P_1"] as PlannerSeam.Crew).tank == second, "the crew names the second hull, not the freed one")
+		for i in int(SimClock.TICK_RATE * 2.0):
+			await lab2.step()   # driven or pending, on the live hull: no engine error (the runner fails the test on one)
+		lab2.dispose())
