@@ -346,6 +346,14 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   (`not REALSLOW_DEFAULT`, with a unit test) before any CP-H ship, or once flipped it could never be removed.
   **Fixed (~13:50 PDT):** stream/brains `c45c9792` (merged at `d0aafb70`): `REALSLOW_DEFAULT` const, naming it sets
   `not REALSLOW_DEFAULT`, test_tactics_realslow 5 cases; its full check is pending, and it joins CP-H's ship pair.
+  **Interim (~15:05 PDT; base `a2ef0b31` → ON `130a069b`):** census + drive 110–122: mixed arrivals 285 → 286 PASS,
+  contact 1979 → 2158 PASS; rigs arrivals 181 → 177 (−4, bound 7.0) PASS, contact 6800 → 8914 (+2114, bound 4144)
+  PASS, though without each arm's two worst runs +999 v ~1041; alone, kturnarc's rig contact is 6800 → 9685, and
+  realspeed and realslow are IDENTICAL to base on every seed (nulls on this stage, lesson 300). Hull-rest 84–89 (144
+  paired): **pinned crew-s 3106 → 333 (−2773, se 488), DOWN beyond 2 se, line (c) PASSES**; stuck 6578 → 3737, also
+  down; moving at 75 s better on 5 of 6 tasks, ambush +2 (guard +5). Counters: fires_hull 559, fires_wall 43 (7.1 %).
+  **Owed before the verdict:** realspeed and realslow each shown firing on some judged stage, or each drops out of the
+  ship; and kturnarc's worst rig-contact run traced. Fights and bridge pending.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
