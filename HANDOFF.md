@@ -26,6 +26,12 @@ stable until it is agreed.
    builder0, `f5dc4147`, seeds 41–43, n 18) as the pair with native `413252ea` + the 13 baselines re-recorded. With his
    no, it parks. Traffic's before/after clip of both crossings goes with the question.
 
+**To show him (round 31):** the planner's Terminus west-street War Rig told to face back, on the REAL drive (`faeab49c`,
+builder0 light): today 29.8 s, 54 gear changes, 14 wall-contact ticks, ending jackknifed across the street (the
+orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 contacts, ending straight nose south in
+mid-street. Frames are in stream/planner `references/round31/planner/clip/` at `5f66ca2b`, with an mp4 requested. NOT in
+play until CP-P1 passes.
+
 **Round 31 log (orchestrator):** rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
 arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two call lines, PlannerExecutor drives Vector3 legs,
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
