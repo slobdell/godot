@@ -454,6 +454,15 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   legs). Seed 31's and 51's grinds and the seed-9 pin are REPORTED traces at n = 1, never judged. The partial rule
   follows. A true offset series would need a per-squad start jitter in `terminus_drive.gd`, which no stream owns this
   round, so it is not pursued.
+- **CP-P1's C31.1 gate RED (~06:40 PDT, native `aa0615e4` = pair/cpp1-on, PLANNER_DEFAULT true, builder0):**
+  `make check exited 2`, 2634 passed / 6 failed; the native mirror is clean (87/87 test_native_*, the seam twin held
+  the rig on 195/900 drives with 0 mismatches). The six: 4 in test_planner_seam (it assumes default OFF; the planner
+  fixes its own test); `test_nav_face_recovery` (the wedged-semi recovery is never reached) and `test_kturn_three_point`
+  (the rig takes 4 legs, 0 k-turns), both the seam taking the rig. **Ruling:** those two are manoeuvre's tests. The
+  planner traces each with the seam ON and reports the OUTCOME against what the test protects. If the outcome holds and
+  only the mechanism differs, manoeuvre may pin the test to the planner OFF on condition the planner adds an outcome
+  assertion with the seam ON. If it doesn't hold, it's a finding against CP-P1. The judged series stays held until a
+  re-cut gate is green.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
