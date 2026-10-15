@@ -251,29 +251,61 @@ static func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)
 
 
-func _assert_pursuit(result: Dictionary, label: String) -> void:
-	# Round 26 (brains, the orchestrator's ruling): the squad as a whole never lets go (the lead: "Stay on the chase").
-	# Round 25's line, without its excuses on the two lines above and below (those came with the unpin, which does
-	# not ship): pinned seating passes it, nearest seating let go at 7.5 s (builder0 fe45a510), so it guards his answer.
-	assert_true(float(result["closing_worst_m"]) <= CLOSING_SLACK_M,
-			"%s: a crew opened the range over 5 s after the first leg (worst +%.1f m: %s)"
-			% [label, float(result["closing_worst_m"]), result["closing_at"]])
-	assert_eq(String(result["let_go_at"]), "", "%s: the whole squad let go of the chase" % label)
-	assert_true(float(result["reversal_worst_deg"]) <= REVERSAL_DEG,
-			"%s: a crew reversed its heading (worst %.0f deg: %s)" % [label, float(result["reversal_worst_deg"]),
-			result["reversal_at"]])
+## Round 31 (brains B5c-v5, the orchestrator's R31.3): ONE seed decided nothing. The A/A (`make pursuit-aa`, builder0,
+## 3cb76e17, rule off, rows in references/round31/brains/) moved every crew's start 0.25 m and flipped 3 of 12 seeds'
+## verdicts at 8 m/s, seed 3 among them. So each visible chase runs on PURSUIT_SEEDS (the test's seed and the next four,
+## not chosen by outcome) with the same three lines per run, and passes when at least PURSUIT_PASSES do: on these seeds
+## main passes 5/5 at both speeds and the nudged starts 3/5 (8 m/s) and 5/5 (18 m/s), the do-nothing floor.
+const PURSUIT_SEEDS := [3, 4, 5, 6, 7]
+const PURSUIT_PASSES := 3
+
+
+## The three lines as one verdict per run, and why it failed ("" when it passed). Round 26 (brains, the orchestrator's
+## ruling): the squad as a whole never lets go (the lead: "Stay on the chase"). Round 25's line, without its excuses on
+## the closing and reversal lines (those came with the unpin, which does not ship): pinned seating passes it, nearest
+## seating let go at 7.5 s (builder0 fe45a510), so it guards his answer.
+static func pursuit_fails(result: Dictionary) -> String:
+	var why: Array = []
+	if float(result["closing_worst_m"]) > CLOSING_SLACK_M:
+		why.append("a crew opened the range over 5 s (worst +%.1f m: %s)" % [float(result["closing_worst_m"]), result["closing_at"]])
+	if String(result["let_go_at"]) != "":
+		why.append("the whole squad let go at %s" % result["let_go_at"])
+	if float(result["reversal_worst_deg"]) > REVERSAL_DEG:
+		why.append("a crew reversed its heading (worst %.0f deg: %s)" % [float(result["reversal_worst_deg"]), result["reversal_at"]])
+	return "; ".join(why)
+
+
+func _assert_pursuit_seeds(speed_mps: float, seconds: float) -> void:
+	var passes := 0
+	var failed: Array = []
+	for seed_value: int in PURSUIT_SEEDS:
+		var result: Dictionary = await _pursue(speed_mps, seconds, seed_value)
+		var why := pursuit_fails(result)
+		print("MEASURE pursuit %s seed %d five gang scouts v a spotter at %.0f m/s: %s %s" % [ARENA, seed_value, speed_mps,
+				"PASS" if why == "" else "FAIL (%s)" % why, result])
+		if why == "":
+			passes += 1
+		else:
+			failed.append("seed %d: %s" % [seed_value, why])
+	assert_true(passes >= PURSUIT_PASSES, "%.0f m/s: %d of %d seeds chased it down (need %d): %s"
+			% [speed_mps, passes, PURSUIT_SEEDS.size(), PURSUIT_PASSES, failed])
 
 
 func test_a_spotter_retreating_at_8_mps_is_chased_down() -> void:
-	var result: Dictionary = await _pursue(8.0, 30.0)
-	print("MEASURE pursuit %s seed 3 five gang scouts v a spotter at 8 m/s: %s" % [ARENA, result])
-	_assert_pursuit(result, "8 m/s")
+	await _assert_pursuit_seeds(8.0, 30.0)
 
 
 func test_a_target_they_cannot_catch_is_still_chased_not_orbited() -> void:
-	var result: Dictionary = await _pursue(18.0, 25.0)
-	print("MEASURE pursuit %s seed 3 five gang scouts v a spotter at 18 m/s: %s" % [ARENA, result])
-	_assert_pursuit(result, "18 m/s")
+	await _assert_pursuit_seeds(18.0, 25.0)
+
+
+func test_one_failed_line_fails_the_run() -> void:
+	var good := {"closing_worst_m": -12.0, "closing_at": "", "let_go_at": "", "reversal_worst_deg": 50.0, "reversal_at": ""}
+	assert_eq(pursuit_fails(good), "", "every line held: a pass")
+	for bad: Dictionary in [{"closing_worst_m": 2.1}, {"let_go_at": "15.0 s"}, {"reversal_worst_deg": 121.0}]:
+		var run := good.duplicate()
+		run.merge(bad, true)
+		assert_true(pursuit_fails(run) != "", "%s alone fails the run" % bad)
 
 
 ## The recording's case (the orchestrator's question): a target that leaves the squad's sight ENTIRELY, long enough
