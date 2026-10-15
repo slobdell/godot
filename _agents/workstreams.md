@@ -207,6 +207,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   builds it** (it owns the mirrors) and names its hash. **Manoeuvre runs the judged A/B on it** (C31.4: GDScript path, every
   arm `NATIVE=off` or `--brains-off=native`, enforced by its runner). The tree's plain `make check` is the ship check.
   **The orchestrator calls CP-H** when the last consumer is on main. Native confirmed B8 is NONE PORTED (~01:00).
+  **Status ~05:30 PDT 10-15:** manoeuvre's H1–H3 pre-series gate is GREEN (flipped tree `998fe844`, NATIVE=off, test
+  2621/0, ai-scenarios 52/0, with only the structural sim-baseline and native-live-guard reds; both earlier reds gone).
+  H1–H3 are on main OFF at `298e4498`, and the terrain fallback `426e6c6e` follows in manoeuvre's next batch. B8 is on
+  main. **T4 is not**: it is in tuning, with its merge-OFF pair `pair/t4 80fbdbe9` in native's queue. **Cutoff (C31.4):
+  T4 merged OFF with its NATIVE=off gate green by 09:00 PDT 10-15, or CP-H runs WITHOUT T4** (T4 stands down this round,
+  parked with its tuning tables).
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
