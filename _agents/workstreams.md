@@ -463,6 +463,18 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   confirms none of 27–28, 16–17, 8–11 or 37–40 is among them.
   **CONFIRMED (~02:15 PDT, from round 30's judged rows):** yard r29 22–24 / r30 23, 25–26; Sumps r29 2–13 / r30 2,
   14–15; Terminus r29 1–4 / r30 2–7; arrive 1–4, 25–36. No overlap and nothing swapped. Cleared to run.
+  **JUDGED ~06:30 PDT 10-15 — FAIL on line (3) Sumps "no run > 5 s later"; PARKED (the last attempt, partial none).**
+  Pair tree `e675a28a` (= `17e7b08c` + `arrive_pair.py`), builder0, GDScript both arms. The series stopped once the
+  verdict was decided, so arrive, bridge, screen-slots and cost never ran. (1) Pursuit PASS, 24/24 as written and 24/24
+  nudged, the 8 m/s reversal margin +47° on v +69° off. (2) Yard PASS: every crew in 11/12 on v 1/12 off, crews on ≥
+  off every run, last-crew median 21.0 s v never. The worst on-arm run, s27 t8, was traced: A_5 reached its herringbone
+  gate facing away (dot −0.94), the gate was given up 27 m from its slot, and it drove onto terrain by the containers.
+  That's the come-round case for the planner's §2.8 side gate. (3) **Sumps FAIL:** median 24.8 v 24.9 s and
+  guns_on_arc 0.939 v 0.939 both pass, but **s17 t11 runs 58.3 v 36.0 s (+22.3 s)**. Traced: Green_S_3's slot drifts
+  67 times on v 3 off, flipping every ~1 s between seats ~10 m apart, and each flip refires `near` (66 times). That's a
+  limit cycle between v4's per-goal `near` and the element's seating. (4) Terminus (reported): every crew in 3/4 on v
+  2/4 off. Kept as the record: `pair/brains-v5`. **Round 32:** key `near` per SEAT (or with hysteresis), or take the
+  planner's §2.8 side gate (roadmap).
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 

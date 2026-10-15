@@ -245,6 +245,12 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 
 ## Round 32 candidates (found during round 31)
 
+- **The arrival gate, a third time (brains B5c-v5 parked 2026-10-15):** v4's rule passed pursuit 24/24, the yard
+  (every crew in 11/12 v 1/12) and Terminus, and FAILED one Sumps run (s17 t11 +22.3 s), where a seat flip-flop
+  refired `near` 66 times. Two candidates: key `near` per seat index (or with hysteresis), or the planner's §2.8 SIDE
+  gate, which also removes the yard come-round case (s27 t8, a car given up 27 m from its slot). Brains' B9 trace shows
+  the same `near` frees Terminus s33 t1 under T3b (all-in 61.4 → 27.5 s), so T3b's re-judge pairs on top of whichever
+  ships.
 - **A navmesh gap in the default arena around x −25…−18, z 7** (brains' reach-probe, 2026-10-15): at (-25.7, 7.3),
   where test_control_queued_task's Green_Alpha_3 stops, the navmesh start snaps 8.2 m to (-17.5, 7.3), so the hull
   stands 8 m off walkable mesh and pathing answers `no_path`. It is not established whether that is a bake hole (ground
