@@ -155,3 +155,16 @@ manoeuvre-cph: import ## manoeuvre CP-H: one consumer arm (CPH_ARM=off|all|allno
 	bridge) $(MAKE) --no-print-directory bridge-pooled $(CPH_SEED_VARS) 'BRIDGE_FLAGS=$(CPH_FLAGS)';; \
 	sbf) $(MAKE) --no-print-directory sbf-series SBF_UNITS=gang_ifv $(if $(CPH_SEEDS),"SBF_SEEDS=$(CPH_SEED_LIST)") 'SBF_FLAGS=$(CPH_FLAGS)';; \
 	*) echo ">> manoeuvre-cph: no such stage '$(CPH_STAGE)'"; exit 2;; esac
+
+# ---- round 31 (M6, C31.3/C31.9): the census's early-stop reading (traffic's hook, the Terminus form) ---------------
+# Two census folders (base, new) -> tests/manoeuvre/terminus_ab.py's paired table -> tools/judge/sequential.py's walk
+# per squad over the runs that exist (CONTINUE / SERIES PASS at run j / SERIES FAIL at run j). It never stops a run: the
+# stream decides by judging.md's one rule and records the row. SEQ_TERMINUS_LINES = the bar's lines in sequential's form.
+SEQ_TERMINUS_LINES ?= arrived:guard:0.10
+.PHONY: manoeuvre-census-seq
+manoeuvre-census-seq: ## manoeuvre: the early-stop reading of a Terminus census A/B (SEQ_BASE_DIR, SEQ_NEW_DIR: two census folders) per squad
+	@[ -d "$(SEQ_BASE_DIR)" ] && [ -d "$(SEQ_NEW_DIR)" ] || { echo ">> manoeuvre-census-seq: SEQ_BASE_DIR and SEQ_NEW_DIR must be census folders"; exit 2; }
+	@mkdir -p $(BUILD_DIR)/manoeuvre && $(PYTHON) tests/manoeuvre/terminus_ab.py $(SEQ_BASE_DIR) $(SEQ_NEW_DIR) > $(BUILD_DIR)/manoeuvre/census_ab.txt
+	@cat $(BUILD_DIR)/manoeuvre/census_ab.txt
+	@for squad in mixed rigs; do echo ">> early-stop reading, $$squad:"; \
+		$(PYTHON) tools/judge/sequential.py --terminus $(BUILD_DIR)/manoeuvre/census_ab.txt --squad $$squad --lines $(SEQ_TERMINUS_LINES) | sed 's/^/  /' || true; done
