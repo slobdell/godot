@@ -424,6 +424,22 @@ planned-reverse / circle block; native the member STORAGE; brains the rest (`_tr
   census pair of this run IS the A/A it owes: both arms' per-run rows go to sizing's `probes.py` at the close whatever the
   verdict; (h) the rigs' wall-contact ticks under the lift, with and without each arm's two worst runs, beside (c) — round
   29's M2 failed on exactly that and the bar must show it either way; (i) as M1b(1): merges only after M4b's pair.
+  **M2b JUDGED — NOT MET (2026-10-14 18:45 PDT; `1f1c9835` on the reader base, builder0, GDScript):** (a) open+static creep
+  episodes (census 14–19 + sim 9–11, 15 runs paired) 53 → 37 (−30 %, se 9.8; the line was −50 %); > 3-leg 111 → 89;
+  friendly 90 → 100 (+11 %, se 19); the lift fired 14727 unit-ticks (refused: slowed 4983, no_arc 240, blocked 1765);
+  per-run rows written for sizing (g). (c) Terminus 13 fresh seeds 49–61: rigs arrivals 181 → 172 of 208 (−9, se 4.97:
+  1.8 se down — the 1.645 se line MISSED; the SPRT at the full grid read PASS, the two rules disagree at this n, the miss
+  is reported as the ruling says: truncation is decided by the fixed test); mixed 292 → 293 (SERIES PASS at run 6); rigs'
+  wall contact-ticks 10400 → 13953 (+34 %, se 3034); rigs' k-turns 165 → 1028, kturn_multi 61 → 144. (h) worst run seed 51
+  Green_S0_3: 1765 of the run's 1848 contact-ticks, 50 s touching the plaza-crossing wall at throttle 0.8 / lock 0.44,
+  plant 9.4 m/s, goal distance frozen at 24 m — the lift rolled an earlier turn instead of creeping it and the rig met the
+  wall at an angle where the phantom momentum grinds it: round 29's finding and M4b run 1's grind state again; the lift's
+  gain is on short hulls in the open. (d) kturn_aborted 9 = 9; (e) bridge 18/18, brush +0.04 m/s (se 0.47). **Ruling (the
+  filed partial rule):** the lift FAILS → the finding to the planner (F1: the creep at a corner is the planner's one forward
+  arc or back-up); **`kturnarc` RE-DECLARED ALONE — GO:** same commit, base `--nav-off=creeplift,kturnarc` v new
+  `--nav-off=creeplift`, Terminus 13 fresh seeds 75–87: (c) arrivals not down beyond 1.645 se both squads, contact-ticks
+  reported; (d) driven/planned leg metres reported, kturn_aborted not up; (e) bridge 18/18, counters. Runs after M1b's
+  last arm. Native pairs it (`_kturn_arc_m` in exec_fields; `_planned_reverse` a GDScript callback on both paths).
 - **Brains B7 DONE and MERGED (`d69d73d4`; C30.9):** `test_tactics_scenarios.gd` split 6 + 6 by measured time (218.7 +
   208.6 s v 425.5 s); `make test` on builder0 green 2585/0 with both files. **No wall gain:** test wall 1901 → 1918 s at
   5 shards round-robin (the longest shards are many files; the file is no longer a floor — the floor is now
