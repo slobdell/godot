@@ -243,6 +243,15 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
+## Round 32 candidates (found during round 31)
+
+- **A navmesh gap in the default arena around x −25…−18, z 7** (brains' reach-probe, 2026-10-15): at (-25.7, 7.3),
+  where test_control_queued_task's Green_Alpha_3 stops, the navmesh start snaps 8.2 m to (-17.5, 7.3), so the hull
+  stands 8 m off walkable mesh and pathing answers `no_path`. It is not established whether that is a bake hole (ground
+  a hull can stand on that the bake left out) or an obstacle footprint the hull was pushed onto. It belongs to the
+  arena's owner (`arenas/**`, no stream this round). Today main's lock-reverse escape frees the hull, and R31.5 keeps
+  that for terrain pins.
+
 ## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — SPLIT 2026-10-14 ~22:00 as traffic (his two calls, T4, the early-stop hook) + manoeuvre (1 as CP-H, 4) + brains (3, B8) + native (pairs, the planner review, 5's test split) + planner (2; Fable) (`workstreams.md` *Round 31*); his two calls MADE ~21:40
 
 **His calls — MADE (both recommendations accepted, 2026-10-14 ~21:40; the words in `game_design.md`):**

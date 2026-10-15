@@ -98,3 +98,16 @@ Nothing.
 ## Status
 
 _(the worker keeps this current; bars to the orchestrator before numbers; the report at the top)_
+
+### Plan (2026-10-14 22:30 PDT; start = main `cff4307e`, covered by the launch check; R31.1 read at main `4233dc7b`)
+1. **B5c-v5 (1) the A/A first** (C31.6): `make pursuit-aa` = the test's OWN `_pursue` (not a look-alike probe) over seeds
+   1–12 × 8/18 m/s, two arms with the rule off: nudge 0 (the test as written) v every start moved 0.25 m. Why a nudge arm:
+   the TacticsLab is deterministic per seed (an A/A of two identical arms is an equality check, not a margin), and v4 failed
+   by changing two crews' OPENING moves; a do-nothing change to the opening is the honest null for "knife-edge". Rows →
+   `references/round31/brains/`, numbers → the orchestrator for `judging.md`.
+2. **B5c-v5 (2)–(4):** the design from the v4 trace + the A/A; tests on the default path; the pair-tree check (C31.1) with
+   native's mirror from `lab/native-b5c-v4` BEFORE any series; the bar to the orchestrator before numbers.
+3. **B8** (`realslow`, opt-in per R31.1) — small, GDScript-only on brains' side: build it while B5c-v5's pair waits on native.
+4. **B6** the SBF sector hand-out (bar filed; re-base 9aa0cd7c on main; pair-tree check; `make sbf-series`).
+5. **B3b-2** his bridge 108/108 (route seating laid once per task point).
+6. **B9** the Terminus seat trap trace (scratch tree with `traffic-t3b`'s game files).

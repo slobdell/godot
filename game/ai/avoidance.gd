@@ -179,12 +179,13 @@ static var _unit_rows := {}
 
 
 static func _gather_native(tanks_root: Node) -> bool:
-	var missing: PackedStringArray = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows)
+	var ghost := NativeTraffic.ghost()  # round 31 (traffic T4): the rows at Tank.real_velocity
+	var missing: PackedStringArray = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows, ghost)
 	if not missing.is_empty():
 		for unit_id in missing:
 			var halves: Vector2 = _halves_of(unit_id)
 			_unit_rows[unit_id] = PackedFloat64Array([radius_of(unit_id), halves.x, halves.y])
-		missing = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows)
+		missing = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows, ghost)
 	_gd_stale = missing.is_empty()
 	return _gd_stale
 

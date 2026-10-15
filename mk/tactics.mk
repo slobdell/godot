@@ -793,3 +793,24 @@ sbf-series: import ## Round 30 (B6): support by fire per crew, drawn v no facing
 		[ -s $$out.json ] || echo "{\"unit\":\"$$0\",\"seed\":$$1,\"facing\":\"$$2\",\"missing\":true}" > $$out.json'
 	@cat $(BUILD_DIR)/sbf-runs/*.json > $(BUILD_DIR)/sbf-series.jsonl
 	@$(PYTHON) tests/tactics/sbf_table.py $(BUILD_DIR)/sbf-series.jsonl
+
+# Round 31 (brains B5c-v5, C31.6): test_tactics_pursuit's OWN margin over seeds, BEFORE the gate is judged against it.
+# The test's stage (its _pursue) at AA_SPEEDS x AA_SEEDS, two arms with the brains rules as the tree has them: nudge 0
+# (the test as written) and AA_NUDGE metres (every crew's start moved, a do-nothing change to the opening) ->
+# build/pursuit-aa.jsonl + table (tests/tactics/pursuit_aa_table.py). AA_EXTRA adds engine user args (e.g. --brains-off=native).
+AA_SPEEDS ?= 8 18
+AA_SEEDS ?= 1 2 3 4 5 6 7 8 9 10 11 12
+AA_NUDGE ?= 0.25
+AA_JOBS ?= 3
+AA_EXTRA ?=
+.PHONY: pursuit-aa
+pursuit-aa: native-for-check import ## Round 31 (B5c-v5): test_tactics_pursuit's stage over AA_SEEDS x AA_SPEEDS, nudge 0 v AA_NUDGE m (both rule-off) -> build/pursuit-aa.jsonl + margins table
+	@rm -rf $(BUILD_DIR)/pursuit-aa-runs; mkdir -p $(BUILD_DIR)/pursuit-aa-runs
+	@echo ">> pursuit-aa on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | extra '$(AA_EXTRA)'"
+	@for sp in $(AA_SPEEDS); do for s in $(AA_SEEDS); do for n in 0 $(AA_NUDGE); do echo $$sp $$s $$n; done; done; done | \
+		xargs -P $(AA_JOBS) -L 1 sh -c 'out=$(BUILD_DIR)/pursuit-aa-runs/$$0-$$1-$$2; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/pursuit_aa.gd -- --speed=$$0 --seed=$$1 \
+			--nudge=$$2 $(AA_EXTRA) > $$out.log 2>&1; grep -o "PURSUIT_AA {.*" $$out.log | sed "s/^PURSUIT_AA //" > $$out.json \
+			|| echo "{\"speed\":$$0,\"seed\":$$1,\"nudge\":$$2,\"missing\":true}" > $$out.json'
+	@cat $(BUILD_DIR)/pursuit-aa-runs/*.json > $(BUILD_DIR)/pursuit-aa.jsonl
+	@$(PYTHON) tests/tactics/pursuit_aa_table.py $(BUILD_DIR)/pursuit-aa.jsonl

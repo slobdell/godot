@@ -36,7 +36,10 @@ const ARENA := "yard_open"
 
 ## {"closing_worst_m", "closing_at", "reversal_worst_deg", "reversal_at", "lived_s", "start_m", "end_m": {crew: m},
 ##  "drills", "why"}
-func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0, pursuer := "gang_scout") -> Dictionary:
+## Round 31 (brains B5c-v5, C31.6): `nudge_m` moves each crew's start by that much in a direction drawn from the seed (0 =
+## the stage as written): the A/A (`make pursuit-aa`) asks how far an inconsequential change to the opening carries.
+func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0, pursuer := "gang_scout",
+		nudge_m := 0.0) -> Dictionary:
 	var lab := TacticsLab.create(self, seed_value, ARENA)
 	var game_match := lab.game_match
 	game_match.set_meta("player_team", Match.Team.GREEN)
@@ -46,8 +49,12 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 	var right := Vector3(-toward.z, 0.0, toward.x)
 	var yaw := atan2(-toward.x, -toward.z)
 	var names: Array = []
+	var nudge := RandomNumberGenerator.new()
+	nudge.seed = seed_value
 	for i in 5:
 		var at := home + right * ((i - 2) * 6.0) - toward * (i % 2) * 4.0
+		if nudge_m > 0.0:
+			at += Vector3.FORWARD.rotated(Vector3.UP, nudge.randf_range(-PI, PI)) * nudge_m
 		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), at, yaw, pursuer).name))
 	var start := home + toward * start_m
 	var target := lab.gun(Match.Team.RUST, "Rust_Eyes_1", start, yaw, "syn_lancer")
@@ -79,10 +86,15 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 	# Round 25 (F1b, C25.3 ruling): per sample, whether the crew may peel off (the lead: "Stay on the chase"; it peels
 	# off only when badly hurt or when the target turns and fights): hull under BADLY_HURT, or the target's gun on it.
 	var excused := {}
+	# Round 31 (R31.3 (a)): per sample, whether the crew is badly hurt (the same BADLY_HURT): the closing and reversal
+	# lines excuse it as the let-go line does. Traced (builder0, main, 18 m/s seed 1): Green_A_1 shot to 1 % at 5.0 s broke
+	# away home (decide's RETREAT, as the lead asked) and failed both lines; seed 9 the same.
+	var hurt_marks := {}
 	for unit_name: String in names:
 		distances[unit_name] = []
 		headings[unit_name] = []
 		excused[unit_name] = []
+		hurt_marks[unit_name] = []
 		starts[unit_name] = lab.tank_of(unit_name).global_position.distance_to(target.global_position)
 	# Round 26 (traffic CP1a, C26.6 ruling): who killed the target, from the match's kill signal (the kill log's
 	# "Green_A_3 destroyed Rust_Eyes_1").
@@ -116,7 +128,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 					continue
 				var brain := game_match.brains.get_node_or_null("Brain_" + crew)
 				var order: Dictionary = lab.orders.call("current", crew)
-				print("CREW t=%.1f %s pos=%s v=%s d=%.1f order=%s/%s to=%s brain=%s slot=%s" % [float(tick) / SimClock.TICK_RATE, crew,
+				print("CREW t=%.1f %s hp=%.2f pos=%s v=%s d=%.1f order=%s/%s to=%s brain=%s slot=%s" % [float(tick) / SimClock.TICK_RATE, crew,
+						float(t.health) / float(t.max_health),
 						_flat(t.global_position).round(), _flat(t.estimated_velocity).round(),
 						_flat(t.global_position).distance_to(_flat(target.global_position)), order.get("verb", "-"),
 						order.get("target", ""), order.get("to", "-"), "-" if brain == null else "%s %s" % [brain.get("choice").get("option", ""), brain.get("why")],
@@ -144,6 +157,7 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 				var to_me := _flat(tank.global_position - target.global_position).normalized()
 				aimed = _flat(target.turret_forward()).normalized().dot(to_me) >= TankBrain.COS_AIMED_AT_ME
 			(excused[unit_name] as Array).append(hurt or aimed)
+			(hurt_marks[unit_name] as Array).append(hurt)
 	var result := {"closing_worst_m": -INF, "closing_at": "", "reversal_worst_deg": 0.0, "reversal_at": "",
 			"lived_s": snappedf(float(lived) / SimClock.TICK_RATE, 0.1), "start_m": {}, "end_m": {},
 			"drills": lab.drills_of(element), "why": whys.keys(),
@@ -164,6 +178,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 		for i in range(first, d.size() - window):
 			if float(d[i]) < FIGHTING_M or float(d[i + window]) < 0.0:
 				continue
+			if _excused(hurt_marks[unit_name], i - EXCUSE_BACK, i + window):
+				continue  # badly hurt: peeling off is what the lead asked for
 			var opened := float(d[i + window]) - float(d[i])
 			if opened > float(result["closing_worst_m"]):
 				result["closing_worst_m"] = snappedf(opened, 0.1)
@@ -174,6 +190,8 @@ func _pursue(speed_mps: float, seconds: float, seed_value := 3, start_m := 70.0,
 			for j in range(i + 1, mini(h.size(), i + turn_window + 1)):
 				if (h[j] as Vector3) == Vector3.ZERO:
 					continue
+				if _excused(hurt_marks[unit_name], i - EXCUSE_BACK, j):
+					continue  # badly hurt: turning for home is the lead's rule, not an orbit
 				var turned := rad_to_deg((h[i] as Vector3).angle_to(h[j]))
 				if turned > float(result["reversal_worst_deg"]):
 					result["reversal_worst_deg"] = snappedf(turned, 1.0)
@@ -233,29 +251,61 @@ static func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)
 
 
-func _assert_pursuit(result: Dictionary, label: String) -> void:
-	# Round 26 (brains, the orchestrator's ruling): the squad as a whole never lets go (the lead: "Stay on the chase").
-	# Round 25's line, without its excuses on the two lines above and below (those came with the unpin, which does
-	# not ship): pinned seating passes it, nearest seating let go at 7.5 s (builder0 fe45a510), so it guards his answer.
-	assert_true(float(result["closing_worst_m"]) <= CLOSING_SLACK_M,
-			"%s: a crew opened the range over 5 s after the first leg (worst +%.1f m: %s)"
-			% [label, float(result["closing_worst_m"]), result["closing_at"]])
-	assert_eq(String(result["let_go_at"]), "", "%s: the whole squad let go of the chase" % label)
-	assert_true(float(result["reversal_worst_deg"]) <= REVERSAL_DEG,
-			"%s: a crew reversed its heading (worst %.0f deg: %s)" % [label, float(result["reversal_worst_deg"]),
-			result["reversal_at"]])
+## Round 31 (brains B5c-v5, the orchestrator's R31.3): ONE seed decided nothing. The A/A (`make pursuit-aa`, builder0,
+## 3cb76e17, rule off, rows in references/round31/brains/) moved every crew's start 0.25 m and flipped 3 of 12 seeds'
+## verdicts at 8 m/s, seed 3 among them. So each visible chase runs on PURSUIT_SEEDS (the test's seed and the next four,
+## not chosen by outcome) with the same three lines per run, and passes when at least PURSUIT_PASSES do: on these seeds
+## main passes 5/5 at both speeds and the nudged starts 3/5 (8 m/s) and 5/5 (18 m/s), the do-nothing floor.
+const PURSUIT_SEEDS := [3, 4, 5, 6, 7]
+const PURSUIT_PASSES := 3
+
+
+## The three lines as one verdict per run, and why it failed ("" when it passed). Round 26 (brains, the orchestrator's
+## ruling): the squad as a whole never lets go (the lead: "Stay on the chase"). Round 25's line, without its excuses on
+## the closing and reversal lines (those came with the unpin, which does not ship): pinned seating passes it, nearest
+## seating let go at 7.5 s (builder0 fe45a510), so it guards his answer.
+static func pursuit_fails(result: Dictionary) -> String:
+	var why: Array = []
+	if float(result["closing_worst_m"]) > CLOSING_SLACK_M:
+		why.append("a crew opened the range over 5 s (worst +%.1f m: %s)" % [float(result["closing_worst_m"]), result["closing_at"]])
+	if String(result["let_go_at"]) != "":
+		why.append("the whole squad let go at %s" % result["let_go_at"])
+	if float(result["reversal_worst_deg"]) > REVERSAL_DEG:
+		why.append("a crew reversed its heading (worst %.0f deg: %s)" % [float(result["reversal_worst_deg"]), result["reversal_at"]])
+	return "; ".join(why)
+
+
+func _assert_pursuit_seeds(speed_mps: float, seconds: float) -> void:
+	var passes := 0
+	var failed: Array = []
+	for seed_value: int in PURSUIT_SEEDS:
+		var result: Dictionary = await _pursue(speed_mps, seconds, seed_value)
+		var why := pursuit_fails(result)
+		print("MEASURE pursuit %s seed %d five gang scouts v a spotter at %.0f m/s: %s %s" % [ARENA, seed_value, speed_mps,
+				"PASS" if why == "" else "FAIL (%s)" % why, result])
+		if why == "":
+			passes += 1
+		else:
+			failed.append("seed %d: %s" % [seed_value, why])
+	assert_true(passes >= PURSUIT_PASSES, "%.0f m/s: %d of %d seeds chased it down (need %d): %s"
+			% [speed_mps, passes, PURSUIT_SEEDS.size(), PURSUIT_PASSES, failed])
 
 
 func test_a_spotter_retreating_at_8_mps_is_chased_down() -> void:
-	var result: Dictionary = await _pursue(8.0, 30.0)
-	print("MEASURE pursuit %s seed 3 five gang scouts v a spotter at 8 m/s: %s" % [ARENA, result])
-	_assert_pursuit(result, "8 m/s")
+	await _assert_pursuit_seeds(8.0, 30.0)
 
 
 func test_a_target_they_cannot_catch_is_still_chased_not_orbited() -> void:
-	var result: Dictionary = await _pursue(18.0, 25.0)
-	print("MEASURE pursuit %s seed 3 five gang scouts v a spotter at 18 m/s: %s" % [ARENA, result])
-	_assert_pursuit(result, "18 m/s")
+	await _assert_pursuit_seeds(18.0, 25.0)
+
+
+func test_one_failed_line_fails_the_run() -> void:
+	var good := {"closing_worst_m": -12.0, "closing_at": "", "let_go_at": "", "reversal_worst_deg": 50.0, "reversal_at": ""}
+	assert_eq(pursuit_fails(good), "", "every line held: a pass")
+	for bad: Dictionary in [{"closing_worst_m": 2.1}, {"let_go_at": "15.0 s"}, {"reversal_worst_deg": 121.0}]:
+		var run := good.duplicate()
+		run.merge(bad, true)
+		assert_true(pursuit_fails(run) != "", "%s alone fails the run" % bad)
 
 
 ## The recording's case (the orchestrator's question): a target that leaves the squad's sight ENTIRELY, long enough

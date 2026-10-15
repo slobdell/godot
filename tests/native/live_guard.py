@@ -17,7 +17,9 @@ import sys
 INSIDE = {"native_cb": "drive", "native_fire": "drive", "native_avoid": "drive", "native_path": "drive"}
 # Switches whose path the tick profile's match never runs, each held live by its own test instead (named, printed, never
 # silently skipped): the black box records only skirmishes (MatchRecorder.start), not the profile's headless match.
-ELSEWHERE = {"native_recorder": "tests/test_native_recorder.gd (the tick profile does not record)"}
+ELSEWHERE = {"native_recorder": "tests/test_native_recorder.gd (the tick profile does not record)",
+             # Round 31 (C31.5): the planner plans only behind --nav-off=planner (CP-P1), never in the profile's match.
+             "native_planner": "tests/test_native_planner.gd (the planner's twin test; nothing in the profile plans)"}
 
 
 def main(path: str) -> int:

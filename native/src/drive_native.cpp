@@ -4,6 +4,8 @@
 #include "exec_view.h"
 #include "nav_native.h"
 
+#include <godot_cpp/classes/character_body3d.hpp>
+#include <godot_cpp/classes/kinematic_collision3d.hpp>
 #include <godot_cpp/classes/navigation_mesh.hpp>
 #include <godot_cpp/classes/navigation_region3d.hpp>
 #include <godot_cpp/classes/navigation_server3d.hpp>
@@ -71,7 +73,7 @@ struct Timed {
 // Every member and static name drive touches, made once.
 struct N {
 	// Movement members
-	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" };
+	StringName _live{ "_live" }, _root{ "_root" }, _frame{ "_frame" }, avoid_hold{ "avoid_hold" }, avoid_shape{ "avoid_shape" };
 	StringName ctl{ "ctl" }, _repair_for{ "_repair_for" }, _repair_to{ "_repair_to" }, _goal{ "_goal" },
 			_order_ticks{ "_order_ticks" }, arc_live{ "arc_live" }, _arrive{ "_arrive" }, _remaining{ "_remaining" },
 			_deflected{ "_deflected" }, _give_way_left{ "_give_way_left" }, _blocked_ticks{ "_blocked_ticks" },
@@ -123,7 +125,8 @@ struct N {
 			gates_offered{ "gates_offered" }, gates_aimed{ "gates_aimed" }, gates_refused{ "gates_refused" },
 			gate_refusals{ "gate_refusals" }, gate_off_mesh_fit{ "gate_off_mesh_fit" }, gate_site{ "gate" },
 			// the k-turn leg
-			_kturn_rolling{ "_kturn_rolling" }, _kturn_gear{ "_kturn_gear" }, _kturn_from{ "_kturn_from" },
+			_kturn_rolling{ "_kturn_rolling" }, _kturn_gear{ "_kturn_gear" }, _kturn_from{ "_kturn_from" }, real_velocity{ "real_velocity" },
+			_escape_step{ "_escape_step" }, _escape_begin{ "_escape_begin" },
 			_kturn_timeout{ "_kturn_timeout" }, _kturn_turn{ "_kturn_turn" }, _kturn_leg_no{ "_kturn_leg_no" },
 			_kturn_plan_pose{ "_kturn_plan_pose" }, _kturn_looks{ "_kturn_looks" }, contact{ "contact" },
 			touching{ "touching" }, decided{ "decided" }, point{ "point" }, normal{ "normal" },
@@ -527,8 +530,15 @@ struct Drive {
 		const double slow = clampd((double)v._remaining() / c.SLOW_RADIUS, 0.35, 1.0);
 		const double max_speed = tank->get(k.max_forward_speed);
 		const double desired = max_speed * speed_factor * slow;
-		const Vector2 preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: scalars narrowed
+		const Vector2 route_preferred = to / (real_t)distance * (real_t)desired; // Vector2 / float, * float: narrowed
 		const String name = tank->get_name();
+		// Round 31 (traffic T3b, his call: TAKE TURNS): two friendly squads crossing take turns; Traffic.shape slows the
+		// yielding squad's wish and ORCA keeps everyone clear of it (NativeTraffic.avoid_shape: off("turns"), refresh,
+		// shape).
+		Vector2 preferred = route_preferred;
+		if (!held && c.traffic_shape) {
+			preferred = gd(c.native_traffic, k.avoid_shape, name, ctl->get(k.tanks_root), route_preferred);
+		}
 		const String unit = tank->get(k.unit_id);
 		const double *known = c.radius_of.getptr(unit);
 		double radius;
@@ -567,7 +577,7 @@ struct Drive {
 		} else {
 			chosen = gd(av, k.solve, name, position, velocity, preferred, max_speed, radius, delta, cap);
 		}
-		if ((double)chosen.distance_squared_to(preferred) < 0.04) {
+		if ((double)chosen.distance_squared_to(route_preferred) < 0.04) {
 			return;
 		}
 		const double speed = chosen.length();
@@ -738,7 +748,20 @@ struct Drive {
 			return 0.0;
 		}
 		const double speed = (double)tank->get(k._speed) * (double)(int64_t)v._kturn_gear();
-		return speed > 0.0 ? speed * speed / (2.0 * braking()) : 0.0;
+		if (speed <= 0.0) {
+			return 0.0;
+		}
+		if (arc_here()) {
+			// Round 30/31 (manoeuvre kturnarc, H2): the plant brakes in discrete ticks: v^2/2b - v*dt/2.
+			return MAX(speed * speed / (2.0 * braking()) - speed * 0.5 / (double)c.TICK_RATE, 0.0);
+		}
+		return speed * speed / (2.0 * braking());
+	}
+
+	// Movement._arc_here() (manoeuvre 0cf72ba7): the arc rule only for the braked hulls (kturn_brake_on: >= KTURN_BRAKE_HULL_M
+	// or kturnbrakeall); a short hull keeps round 14's chord bit for bit.
+	bool arc_here() {
+		return c.KTURN_ARC && kturn_brake_on();
 	}
 
 	void kturn_end() {
@@ -750,6 +773,7 @@ struct Drive {
 		v.set__kturn_gear((int64_t)leg.x);
 		v.set__kturn_left_m((double)leg.y);
 		v.set__kturn_from(here);
+		v.set__kturn_arc_m(0.0); // a leg must not inherit the last leg's arc (round 30's review)
 		double timeout = (double)leg.y * c.KTURN_SECONDS_PER_M + 1.0;
 		const double speed = tank->get(k._speed);
 		const bool rolling = !kturn_brake_on() || speed * (double)leg.x > -c.KTURN_ROLLING_SPEED;
@@ -771,8 +795,16 @@ struct Drive {
 				v.set__kturn_rolling(true);
 			}
 			v.set__kturn_from(here);
+			v.set__kturn_arc_m(0.0);
+		} else if (arc_here()) {
+			// Round 31 (manoeuvre H2, `kturnarc`): the arc driven in the leg's gear, the last tick's real motion along the
+			// nose in the leg's gear.
+			const Vector3 nose_now = Vector3((real_t)(-basis_z.x), 0.0f, (real_t)(-basis_z.z)).normalized();
+			const Vector3 real_velocity = tank->get(k.real_velocity);
+			// manoeuvre 9013a519: motion against the leg's gear counts nothing (a roll-out is not progress, nor negative)
+			v.set__kturn_arc_m((double)v._kturn_arc_m() + MAX(0.0, (double)real_velocity.dot(nose_now) * (double)gear) * delta);
 		}
-		const double backed = flat_distance(here, v._kturn_from());
+		const double backed = arc_here() ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
 		const double left = v._kturn_left_m();
 		const bool reached = backed + kturn_stopping() >= left;
 		const double timeout = (double)v._kturn_timeout() - delta;
@@ -1391,6 +1423,11 @@ struct Drive {
 		if (holding()) {
 			return; // round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
 		}
+		if (c.UNSTICK_BACK && (int64_t)v._esc_stage() != 0) {
+			// Round 31 (manoeuvre H1): an escape under way (_esc_stage only leaves ESC_NONE with `unstickback` on).
+			cb(k._escape_step, cmd, order, delta);
+			return;
+		}
 		const double left = v._unstick_left();
 		if (left > 0.0) {
 			const double now_left = left - delta;
@@ -1417,11 +1454,21 @@ struct Drive {
 		if (String(order.get(k.type, String())) == move_to && !(bool)order.get(k.direct, false) && pressing_escape(cmd, delta)) {
 			return;
 		}
+		// Round 31 (manoeuvre H1, `unstickback`): under a routed goal the stall is read from Tank.real_velocity when
+		// _honest_blocker names what pins the hull, and the escape is _escape_begin's (called back: ask, the give-way
+		// and the outline sweep are GDScript).
+		Object *pinned_on = c.UNSTICK_BACK ? honest_blocker(order) : nullptr;
+		const bool honest = pinned_on != nullptr;
 		const double throttle = cmd->get(k.throttle);
-		const Vector3 velocity = tank->get(k.estimated_velocity);
+		const Vector3 velocity = tank->get(honest ? k.real_velocity : k.estimated_velocity);
 		if (std::fabs(throttle) > 0.5 && (double)velocity.length() < c.STUCK_SPEED) {
 			const double stuck = v._stuck_time() + delta;
 			v.set__stuck_time(stuck);
+			if (stuck >= c.STUCK_SECONDS && honest) {
+				v.set__stuck_time(0.0);
+				cb(k._escape_begin, cmd, order, pinned_on);
+				return;
+			}
 			if (stuck >= c.STUCK_SECONDS) {
 				v.set__stuck_time(0.0);
 				const double backing = (bool)order.get(k.reverse, false) ? 1.0 : -1.0;
@@ -1438,6 +1485,49 @@ struct Drive {
 		} else {
 			v.set__stuck_time(0.0);
 		}
+	}
+
+	// Movement._honest_blocker(order): what pins the hull (a Tank, or the hull itself for "terrain"), or null for round
+	// 29's rule. Only a routed `move_to`; a hull longer than UNSTICK_BLIND_MAX_LEN_M only on a HULL with no wall touched.
+	Object *honest_blocker(const Dictionary &order) {
+		static const String move_to("move_to");
+		if (String(order.get(k.type, String())) != move_to || (bool)order.get(k.direct, false)) {
+			return nullptr;
+		}
+		CharacterBody3D *body = Object::cast_to<CharacterBody3D>(tank);
+		Object *hull = nullptr;
+		if (body != nullptr) {
+			const int n = body->get_slide_collision_count();
+			for (int i = 0; i < n; i++) {
+				// `hull = get_slide_collision(i).get_collider() as Tank; if hull != null: break`
+				Ref<KinematicCollision3D> hit = body->get_slide_collision(i);
+				Object *collider = hit->get_collider();
+				if (is_tank(collider)) {
+					hull = collider;
+					break;
+				}
+			}
+		}
+		if (hull_length(String(tank->get(k.unit_id))) <= c.UNSTICK_BLIND_MAX_LEN_M) {
+			return hull != nullptr ? hull : (Object *)tank;
+		}
+		Object *wall = v.contact().get_validated_object();
+		const bool touching = wall != nullptr && (bool)wall->get(k.touching);
+		return hull != nullptr && !touching ? hull : nullptr;
+	}
+
+	bool is_tank(Object *o) const {
+		if (o == nullptr) {
+			return false;
+		}
+		Ref<Script> s = o->get_script();
+		while (s.is_valid()) {
+			if (s == c.tank_script) {
+				return true;
+			}
+			s = s->get_base_script();
+		}
+		return false;
 	}
 
 	bool pressing_escape(Object *cmd, double delta) {
