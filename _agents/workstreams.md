@@ -133,6 +133,23 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   `planned_reverse_cheap`'s cheap exits must not answer while the switch is on or a crew is live; a `native_planner`
   sub-switch in BrainSwitches; and the register_types.cpp / CMakeLists.txt lines for PlannerNative.
 
+- **R31.3 The pursuit test is knife-edge on main; B5c-v5's pursuit line goes to a count (2026-10-14 ~23:15 PDT, brains'
+  A/A at `3cb76e17`, row in `judging.md` *Rows filed by hand in round 31*):** a 0.25 m start nudge (a null change) flips
+  3 of 12 verdicts at 8 m/s, including seed 3, the test's own seed. So round 30's v4 red on seed 3 sat inside this noise.
+  **Rulings:** (1) **B5c-v5's pursuit pass line** is brains' count form: on the 24 cells (12 seeds × 8/18 m/s), the
+  number passing with v5 ON is ≥ the OFF count − 3 (OFF = 22, so ON ≥ 19), with no new let-go at 18 m/s. The
+  orchestrator adds that the same line is ALSO run on the nudged starts (OFF nudged = 19, so ON ≥ 16), because one
+  start set is one draw. The seed-3 cell is REPORTED, not deciding. (2) **The in-suite test becomes robust FIRST, as its
+  own commit, on main before any v5 number:** the same three asserts (unchanged thresholds), seeds 3 + 4 more (brains
+  proposes them from the A/A rows, rule OFF, and the orchestrator approves the set BEFORE v5 runs), asserting the
+  count. It must be green on main with the rule OFF. A test changed after the candidate's numbers would be fitted to
+  them, so the ORDER is the guard. (3) **The C31.1 question:** if v5 reddens only the old single-seed cell, that is noise
+  by the A/A. It is NOT a finding, but it is ALSO not mergeable: main stays green, so only the robust test on main can
+  clear it. A red on the robust test's count, or on any other stage, IS a finding. (4) **18 m/s seeds 1 and 9 fail on
+  main as written** (Green_A_1 66 → 194 m in 5 s, faster than the car drives, with a 180° turn at 3.5–6.5 s). Brains
+  traces ONE of them (worst run first) before v5, because a physics launch on main would also poison CP-H's
+  `real_velocity` readers. If it is a launch, it goes to manoeuvre (the drive) and native.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
