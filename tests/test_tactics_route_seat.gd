@@ -43,3 +43,18 @@ func test_without_a_crossing_the_seating_is_unchanged() -> void:
 
 func test_the_control_switch_turns_it_off() -> void:
 	assert_true(Element.ROUTE_SEAT_ENABLED, "on by default (--route-seat=off is the control arm)")
+
+
+## Round 31 (B3b-2): matched ONCE per task point. A later plan holds the crossing seating (`fixed`) however the crews
+## have moved; without `fixed` it re-matches (round 30's B3b, which flipped green t18 s3's S_1 east-west-east).
+func test_once_matched_the_crossing_seating_is_held_not_re_matched() -> void:
+	var via := [Vector3(88, 0, -8), Vector3(88, 0, 4)]
+	var straight := {"W": 3, "M1": 2, "M2": 1, "E": 0}  # a seating it had that is not the crossing's
+	var held := _seats({"via": via, "previous": straight, "fixed": true})
+	assert_eq(held, straight, "held: the seating it had stands")
+	var fresh := _seats({"via": via})
+	assert_true(fresh != straight, "a fresh match by the crossing differs from it (%s), so holding is what kept it" % fresh)
+
+
+func test_the_once_switch_is_on_by_default() -> void:
+	assert_true(Element.ROUTE_SEAT_ONCE, "on by default (--route-seat-once=off is the control arm)")

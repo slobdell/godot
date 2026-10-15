@@ -106,6 +106,9 @@ static func _parse() -> void:
 		# Round 30 (brains B3b, DECLARED): seats beyond a crossing by straight line, not in crossing order.
 		if arg == "--route-seat=off":
 			Element.ROUTE_SEAT_ENABLED = false
+		# Round 31 (brains B3b-2): the crossing seating re-matched every plan (round 30's B3b), the control arm.
+		if arg == "--route-seat-once=off":
+			Element.ROUTE_SEAT_ONCE = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

@@ -471,6 +471,11 @@ func update(game_match: Match, orders: Object) -> bool:
 	_reseat = false
 	_reseat_keep = {}
 	var plan := ElementPlan.build(situation, state, _doctrine())
+	# Round 31 (B3b-2): the crossing's first route seating stands for this task point (ElementPlan holds it `fixed`).
+	if ROUTE_SEAT_ONCE and not crossing.is_empty() and not (plan.get("seats", {}) as Dictionary).is_empty():
+		if bool(crossing.get("seated", false)):
+			crossings_held += 1
+		crossing["seated"] = true
 	if reseating and plan.get("seats", {}) == seats:
 		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
@@ -922,6 +927,14 @@ const CROSSING_STEP_M := 2.0
 var crossing := {}
 var _crossing_key := []
 static var crossings_found := 0
+## Round 31 (brains B3b-2, DECLARED; `--route-seat-once=off` is the control arm = round 30's B3b): the seating by a
+## crossing is matched ONCE per task point (the first plan that has the crossing), then held as a plain move standing on
+## its spot holds its seats (`fixed`), until the task point changes or the element re-seats. Traced (his bridge, green
+## t18 seed 3, builder0, 4bc708d7): re-matched every plan as the crews moved, S_1's seat flipped east (-50, -12) at 16 s,
+## west (-73, -12) at 18 s, east again by 24 s, and it stalled on terrain at the rim at 20 s. `crossings_held` counts
+## the plans that kept it (lesson 300).
+static var ROUTE_SEAT_ONCE := true
+static var crossings_held := 0
 
 
 func _find_crossing(game_match: Match, situation: Dictionary) -> void:
