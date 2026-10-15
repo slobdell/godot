@@ -138,9 +138,16 @@ warm (~50 us) the slice is ~10 a tick and the same plan ~10 ticks. SLICE is chos
 on 17bd1ec8 (the next run), not from this table.
 
 **Review state:** native APPROVED 7c286000, 50d380e1 (one fix taken), ad1d1f3d + a3755e37 (two nits, taken at
-d373af4e). d373af4e / 17bd1ec8 (the navmesh cell cache, the game's index handed in as `"nav"`, the rolling-face seam test)
-go to native for review once the light twin is green on 17bd1ec8 (the first attempt d373af4e segfaulted builder0's
-`--import`: a static `RID` in the cache; keyed by `RID::get_id()` now).
+d373af4e), **d373af4e + 17bd1ec8 APPROVED** (the navmesh cell cache, the game's index handed in as `"nav"`, the
+rolling-face seam test; three notes taken at 3b5c0b34: `nav_cache_clear()`, the rebake-within-a-session assumption
+written down, memory bounded by the map). **Light twin GREEN on 17bd1ec8** (`make remote LIGHT=1 T=planner-twin`,
+exited 0, 4 passed 0 failed, builder0, unpinned, load 10.4; the same plans, costs, expansions and nodes as a3755e37).
+The orchestrator's ruling (R31.6): the price is accepted as an upper bound, no second quiet window this round; the
+cache merges only with its own planner-twin ALL green + native's review (both held now for 17bd1ec8; c158aecf, the
+signedness fix, and 3b5c0b34 need the next twin). **Running:** `planner-census1` on c158aecf (Sumps 25 a side, seeds
+92721 / 31337, 120 s, `--brains-off=native_drive`, the probe every 30 ticks: the offline T-junction AND the seam's own
+face-about request for the longest live hull on the arena navmesh, cold and warm quarters apart) -- SLICE and the
+cost-line budget come from its `nav_probe` row.
 
 ### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
 
@@ -331,6 +338,12 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~02:45 PDT: **light twin GREEN on 17bd1ec8** (4/0, exit 0, builder0 light lane, load 10.4, unpinned);
+  native APPROVED d373af4e + 17bd1ec8 with three notes, taken at 3b5c0b34 (`nav_cache_clear()`; the rebake assumption;
+  `planner-census` builds the library first; its probe also plans the seam's own request on the arena navmesh);
+  c158aecf the signedness warning. Census launched on c158aecf (`planner-census1`). The orchestrator: price accepted as
+  an upper bound (R31.6); CP-P0 = a3755e37 merges OFF on `planner-check6`'s exited 0; the cache merges on its own twin ALL
+  green + review.
 - 2026-10-15 ~02:30 PDT: **the price run landed** (41212da0, builder0, pinned cpus 0-3, QUIET WINDOW: NOT USABLE after a
   65-minute wait with 7-8 foreign runs live; the table in the report): twin 4/0, exit 0. The follow-on check was REFUSED
   (the price run's cleanup still live: nothing ran); relaunched as `planner-check6` on 41212da0. **d373af4e**: the C++
