@@ -100,6 +100,14 @@ static func configure() -> bool:
 		"BEHIND_GAP_TICKS": int((Movement as Script).get_script_constant_map().get("BEHIND_GAP_TICKS", -1)),
 	}
 	config.merge(NativeTraffic.drive_config())  # round 29 (traffic T1): the street hold, when this tree has it
+	# Round 29 (brains B5c): the arrival gate given up / latched / roomy (ON unless --nav-off=gategiveup, and the native
+	# drive runs only with no --nav-off: the value here is the one in force).
+	config["gate_giveup"] = Movement.gate_giveup_on()
+	config["GATE_ROOM_POINTS"] = Movement.GATE_ROOM_POINTS
+	# Round 30 (brains B5c-v4): the come-round's cap, the near rule's detour, the turn-room ring.
+	config["GATE_TURN_SECONDS"] = Movement.GATE_TURN_SECONDS
+	config["GATE_NEAR_DETOUR"] = Movement.GATE_NEAR_DETOUR
+	config["TURN_ROOM_POINTS"] = Movement.TURN_ROOM_POINTS
 	_configured = NativeBridge.impl.drive_configure(config)
 	if Movement.FIRE_DETOUR_STEPS.size() != 3:
 		push_error("NativeDrive: drive_native.cpp scores three sidesteps; movement.gd has %d" % Movement.FIRE_DETOUR_STEPS.size())

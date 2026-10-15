@@ -67,6 +67,13 @@ struct DriveConfig {
 	// (Traffic.refresh + Traffic.hold_of: the table work stays traffic's GDScript) and the C29.3 gates read
 	// Traffic.holding natively from its `_live` table.
 	bool traffic_hold = false;
+	// Round 29 (brains B5c, C29.2): Movement.gate_giveup_on() (ON by default since brains' flip; the native drive runs only
+	// with no --nav-off, so the configure-time value is the one in force). False on a tree without it.
+	bool gate_giveup = false;
+	int64_t GATE_ROOM_POINTS = 8;
+	// Round 30 (brains B5c-v4): the bounded come-round, the near rule, the turn-room ring.
+	double GATE_TURN_SECONDS = 12.0, GATE_NEAR_DETOUR = 2.0;
+	int64_t TURN_ROOM_POINTS = 12;
 	double HOLD_REACHED_M = 2.5, HOLD_SLOW_M = 16.0;
 	int64_t LIVE_TICKS = 3;
 	Object *traffic_script = nullptr, *native_traffic = nullptr;

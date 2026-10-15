@@ -95,6 +95,15 @@
 	F(Vector3, VECTOR3, _yield_from) \
 	F(double, FLOAT, _yield_stop_m) \
 	F(bool, BOOL, _yield_unfit_last) \
+	F(Vector3, VECTOR3, _gate_dropped_for) \
+	F(String, STRING, _gate_dropped_why) \
+	F(Vector3, VECTOR3, _gate_turning_for) \
+	F(int64_t, INT, _gate_turning_tick) \
+	F(Vector3, VECTOR3, _gate_seen_for) \
+	F(Array, ARRAY, _roomy_key) \
+	F(Vector3, VECTOR3, _roomy_value) \
+	F(Array, ARRAY, _turn_room_key) \
+	F(bool, BOOL, _turn_room_value) \
 	F(Array, ARRAY, _deflect_window) \
 	F(Array, ARRAY, _wedge_trail) \
 	F(bool, BOOL, wedged) \

@@ -227,6 +227,39 @@ the section 0.34 -> ~0.10-0.15 ms (a call's crossing ~8 us plus the C++'s buildi
 ~1.3-1.7 % of the tick. **Rule:** ON as shipped either way (the C++-core principle, the price stated); if the section
 does not fall by at least a third, the crossings dominate and that is written down as the finding. Falsifier for the
 prediction: a fall of more than 80 % (then the GDScript laps were inflating it).
+**N7.5 DONE (`f1e4178b`; ON):** `test_native_feed` (builder0): live lab elements (bounding + travelling, every crew, six
+verbs, lean view and state()) 11 520 reads, stub sources 2 166 shapes (slots as list / points, sectors as direction /
+degrees / NaN / INF, named halves and roles, missing leader / id / members, no state), **0 mismatches**; native-proof on
+= off = nofeed: Sumps `0398922d31f335f8`, Sumps with elements `4685568bc42b5d8b`. **The price (builder0 became BUSY
+during it: tick 14-28 ms; `f1e4178b`'s code, foundry 25 a side pinned 0-3, seed 92721, 3 alternated runs an arm; the
+section as a share of each run's own tick):** OFF 2.45 / 2.51 / 2.44 %, ON 1.96 / 2.10 / 2.06 %: **-0.43 % of the
+tick, the section -17 %**, under the pre-registered third: the prediction is wrong and the crossings dominate. Each
+build still pays the native call, ~20 Dictionary sets and gets through the extension interface, and the element's
+`feed_state` call. Shipped ON (the C++-core principle, the price stated). It would pay more once the brain that reads the
+context is native (stage 2), or if the memo stopped missing (the key moves on every `Element.update`: brains' to judge,
+not a port).
+
+**Pair B5c-v4 (C30.2; brains' `19eca15a`, judged; their tip `f1a804eb`):** round 29's lab mirror re-applied, v4
+mirrored in `drive_native.cpp` (`4b335e67`): the near rule once per new goal, the bounded come-round (stuck: blocked
+not no_path; capped: GATE_TURN_SECONDS), the turn-room ring memoised per hull, `_gate_latch`, the static `_gate_answer`
+written once a drive; owned fields `_gate_turning_tick`, `_gate_seen_for`, `_turn_room_key`, `_turn_room_value`.
+builder0: `test_native_gate` 4/0 (0 mismatches; Sumps 6000 drives + 189 forced stalls; foundry 6000 + 529 + 766
+turning crews forced capped / stuck; near, turned, latched_away, turn_blocked fire on foundry); `make native-gate-cells`
+(new: brains' yard 25-26 and Sumps 14-15 x 6 ticks on the DEFAULT path) **24/24 equal field for field to brains' judged
+on-arm rows** (sha256 `a67056aa...`). **The pair check on `787d3664` (+ brains' tip) is RED, exit 2, 2601/1:**
+`test_tactics_pursuit::test_a_spotter_retreating_at_8_mps_is_chased_down` (five gang scouts let go of the chase). It
+fails identically with the library removed (NATIVE OFF, GDScript only), so it is v4's own behaviour; brains' lab check
+passed it only because its default path ran the v3 mirror. Sent to brains and the orchestrator 2026-10-14 ~15:00 PDT;
+waiting on brains' fix to re-mirror. Everything else in that check green (sim-baseline unmoved, native-verify-scenarios
+0 mismatches, native-live-guard 22 live, perf-judge PASS).
+**Pair M4b (manoeuvre `e8bfef2e`): ported on `pair/m4b` (WIP commit, unverified), HELD** by the orchestrator: its first
+judged run failed; its last attempt (`lab/manoeuvre-m4b2` `77a1603f`: the same diff gated on hull length <= 10 m) is
+judging. Port written: `real_velocity` in `tank_drive_native` (as the GDScript's `_drive` end, the marked line after
+the native call deleted), the stall test on `real_velocity`, `_unstick_from` (owned), the backoff / cap ends and their
+counters, `_momentum_to_shed` in both escapes, the two aim leads in `gun_native`. To add on the verdict: the
+`_blind_escape_ok()` gate.
+**Traffic T3b: failed its bar, no port.** T1c-b (`ask()` / `on_fire_post()`): GDScript only; check its doors (owned writes
+mark native_stale) when judged. **M2b / M1b:** after M4b; M2b adds `_kturn_arc_m` (owned) in `_planned_reverse` (a callback).
 
 **N7.5 DONE, ON (`f1e4178b`).** `native/src/feed_native.{h,cpp}` + `game/ai/native/native_feed.gd`, switch `native_feed`
 (`brain_switches.gd`), seams at the top of `ElementFeed._shared` / `_normalize`; `test_native_feed.gd`: live 11 520 reads +
