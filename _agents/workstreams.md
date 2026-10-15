@@ -259,6 +259,17 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   the old +10 % line FAIL as filed). **Seeds** {41,42,43} × ticks {1,3,6,8,11,16}, n = 18 a case, four cases, 90 s. On
   the pair tree `turns` is default ON, so base = `--traffic-off=turns` and arm = no flag. Early-stop lines are in
   traffic's Status bar block.
+  **JUDGED ~02:45 PDT 10-15 — FAIL on line (2) Terminus; NOT SHIPPED (the last attempt, no partial).** builder0, pair
+  tree `f5dc4147`, GDScript path both arms, seeds 41–43 × 6, n 18 a case, full grid with no early stop; rows at
+  stream/traffic `99cbd53d` `references/round31/traffic/t3bc_*`. (2) Terminus crossing clock mean paired **+2.61 s**
+  (se 0.55) v limit 0.10 × 11.7 + 1.645 se = **+2.07, FAIL**: a steady shift, not a wedge (16/18 runs later, worst s43/t1
+  +5.3 s, squad B the yielder +4.22 s, A −1.09; round 30's seeds 31–33 read −1.17 here). (2) Yard, his line: **+3.38 s**
+  (se 0.26) v +3.43, pass narrowly. (1) between-squad fast pooled 191 → 117 (−39 %) pass; Terminus 93 → 61, yard 98 → 56.
+  (3) crews pass; (4) no wedge in the arm (the base had two); (5) and (6) pass; (7) all-in Terminus 39.5 → 32.9, yard
+  66.4 → 75.5 reported. Hook: yard SERIES PASS at run 7, Terminus SERIES FAIL at 18. **A LEAD CALL is owed** (HANDOFF
+  *Owed to him*): his round-31 call kept "the Terminus clock within its se". Accepting ~2.6 s there too is his decision.
+  If yes, these judged rows pass on his line (+2.61 ≤ 3.0 + 0.90) with no re-run, because the line would then be his,
+  set before he sees a re-run. Native `413252ea` stays unmerged until then.
   **C31.1 gate PASSED (~00:05 PDT 10-15):** pair tree `pair/t3b` = `f5dc4147` (native `413252ea` + traffic `ab3351fb` +
   `DEFAULT_OFF = []`), builder0 `>> remote: make check exited 2`, 2624 passed / 0 failed, 25 of 26 targets passed, the
   sim-baseline alone failed, with all 13 maps moved as a turns-ON tree must (one read each; two reads at adoption).
