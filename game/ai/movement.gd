@@ -3147,6 +3147,7 @@ static var esc_backs := 0
 static var esc_backed := 0
 static var esc_capped := 0
 static var esc_refused := 0
+static var esc_fallback := 0  # no-hull pins whose straight reverse had no room: round 29's escape
 
 
 ## The default (false = OPT-IN until CP-H: naming `unstickback` in `--nav-off` flips it). Flipping this const is the
@@ -3160,7 +3161,7 @@ static func unstick_back_on() -> bool:
 
 static func escape_arms() -> Dictionary:
 	return {"fires_hull": esc_fires_hull, "fires_wall": esc_fires_wall, "asks": esc_asks, "backs": esc_backs,
-			"backed": esc_backed, "capped": esc_capped, "refused": esc_refused}
+			"backed": esc_backed, "capped": esc_capped, "refused": esc_refused, "fallback": esc_fallback}
 
 
 static func reset_escape_arms() -> void:
@@ -3171,6 +3172,7 @@ static func reset_escape_arms() -> void:
 	esc_backed = 0
 	esc_capped = 0
 	esc_refused = 0
+	esc_fallback = 0
 
 
 ## The hull's escape is the honest one under this order: returns what pins it (a Tank, or the hull itself standing for
@@ -3204,6 +3206,8 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 	var gear := -1.0 if order.get("reverse", false) else 1.0  # the way it was trying to go
 	var back := Vector2(tank.global_basis.z.x, tank.global_basis.z.z) * gear  # the way it would back off
 	_esc_friend = null
+	# -1 marks a pin with NO hull in it (terrain, a wall): its refused reverse falls back to round 29's escape (below).
+	_esc_gap = -1.0 if friend == null else 0.0
 	if friend != null and friend.team == tank.team and friend.is_alive():
 		var mover := Movement.of(friend)
 		if mover != null:
@@ -3298,6 +3302,21 @@ func _escape_reverse(order: Dictionary) -> void:
 	var tank := ctl.tank
 	_esc_gear = -1.0 if order.get("reverse", false) else 1.0
 	var room := _straight_room(-_esc_gear)
+	if room < ESC_BACK_MIN_M and _esc_gap < 0.0:
+		# Round 31 (the C31.1 gate's trace, test_control_queued_task): a crew held by the GROUND (real 0, plant 0, no
+		# wall contact, no hull) whose straight reverse has no room stood 2 s, nine times over, and never moved again;
+		# round 29's reverse on lock is what freed it. Standing and reporting is the answer for a hull pinned on a
+		# FRIEND (the Sumps 8x8, the rig); with no hull in the pin, round 29's escape, bit for bit.
+		esc_fallback += 1
+		_escape_end()
+		var backing := 1.0 if order.get("reverse", false) else -1.0
+		_unstick_pivot = not _off.has("unstick") and _hull_within(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing,
+				UNSTICK_CLEARANCE)
+		if not _unstick_pivot or wheel_radius() <= 0.0:
+			_unstick_left = UNSTICK_SECONDS
+		else:
+			_ask_behind(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing)
+		return
 	if room < ESC_BACK_MIN_M:
 		esc_refused += 1
 		_esc_stage = ESC_STAND
