@@ -47,16 +47,14 @@ ghost, tuned, waits on the honest reading's consumers A/B).
 of 13); the pair-tree check BEFORE judging (lesson 307); the one-flag switch rule (309); measurement apart from behaviour
 (310); one hull-rest arm per call (311); close step 5b (the table re-rendered — running). Lessons 306–311.
 
-**Cleanup:** sizing, planner, traffic, brains and manoeuvre worktrees, their scratch worktrees, builder0 folders and merged
-`stream/*` branches are removed; briefs archived to `streams/archive/round30/` (manoeuvre's follows the final merge). Only
-`godot-native` remains for the round's last check (`pair/final`); **his word (2026-10-14 ~20:45): no agent of this round
-starts round 31 — native stops after the final merge too, every worktree is re-created at the round-31 split**, so
-remove `godot-native` at the close as well. **He should close
-these terminals:** godot-sizing-72, godot-planner-df, godot-traffic-cd, godot-brains-b4, godot-manoeuvre-65, and
-godot-native-17 after the final merge. Kept
-branches are listed in each archived brief's report (manoeuvre: `lab/manoeuvre-m4b2`, `lab/manoeuvre-kturnarc`,
-`lab/manoeuvre-m1b`, `lab/manoeuvre-m2b`, `lab/manoeuvre-m5`, `lab/manoeuvre-m4b-reader`; native: `lab/native-b5c-v4`,
-`lab/native-m4b-escapes`, `lab/native-kturnarc`).
+**Cleanup (complete):** every worktree (`godot-sizing`, `-planner`, `-traffic`, `-brains`, `-manoeuvre` and its scratch
+trees, `-native`) and every builder0 folder removed; merged `stream/*` and `pair/*` branches deleted; all six briefs in
+`streams/archive/round30/` (native's kept live at `streams/native.md` for its standing N-plan, but **native stops too — his
+word: round 31 launches FRESH, every worktree re-created at the split**). **He should close every round-30 terminal:**
+godot-sizing-72, godot-planner-df, godot-traffic-cd, godot-brains-b4, godot-manoeuvre-65, godot-native-17. Kept lab
+branches (never merge; each archived brief lists its own): manoeuvre `lab/manoeuvre-m4b2`, `-kturnarc`, `-m1b`, `-m2b`,
+`-m5`, `-m4b-reader`; native `lab/native-b5c-v4`, `-m4b-escapes`, `-kturnarc`; brains `lab/brains-r30-gate`, `-bridge`,
+`-sbf`; traffic `traffic-t3b`, `traffic-t1cb-judged`, `lab/traffic-t4`.
 
 ## 🚀 ROUND 30 IS LAUNCHED (2026-10-14) — read this first
 
