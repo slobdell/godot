@@ -11,6 +11,13 @@ B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes 
 
 ## 🚀 ROUND 31 IS PREPARED (2026-10-14 ~22:10 PDT) — NOT LAUNCHED; read this first
 
+**LAUNCHED 2026-10-14 ~22:30 PDT.** Five workers are running: godot-traffic-05, godot-manoeuvre-33, godot-brains-0b, godot-native-7d
+and godot-planner-6f (Fable). Every stream branch was fast-forwarded to main `75dbbb7c` before launch. The orchestrator is an Opus
+session in `~/projects/godot` on the `/loop` from `orchestration.md`. Main since launch: `2ee27055` (C31.9, `WEB_PACK FAILED` →
+`WEB_PACK REFUSED`; unchecked, it rides the first merge's main check). The planner was asked for a written DRAFT of the seam
+(line, leg shape, pending behaviour, record fields) in its Status, and manoeuvre to hold the plan-source line and leg signature
+stable until it is agreed.
+
 **A FRESH start (his word):** no agent or worktree of round 30 carries over. Worktrees are created at the docs commit
 below and launched by him (one terminal each). **Models (his quota rule): planner on `/model fable`; traffic, manoeuvre,
 brains, native AND the orchestrator on Opus** — one Fable session a day (~8 % of the week's quota) instead of round 30's
