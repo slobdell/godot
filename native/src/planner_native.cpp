@@ -248,9 +248,9 @@ void PlannerNative::World::prepare(double cx, double cz, double half) {
 	spill.clear();
 	if (nav) {
 		const uint64_t iteration = (uint64_t)NavigationServer3D::get_singleton()->map_get_iteration_id(map);
-		if (nav_cache.map != map || nav_cache.iteration != iteration || nav_cache.bake_radius != bake_radius) {
+		if (nav_cache.map_id != map.get_id() || nav_cache.iteration != iteration || nav_cache.bake_radius != bake_radius) {
 			nav_cache.chunks.clear();
-			nav_cache.map = map;
+			nav_cache.map_id = map.get_id();
 			nav_cache.iteration = iteration;
 			nav_cache.bake_radius = bake_radius;
 			nav_cache.hits = nav_cache.misses = 0;

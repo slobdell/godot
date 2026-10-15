@@ -70,10 +70,12 @@ public:
 		// every plan and every instance after (the cold-start cost of a plan -- ~1 ms an expansion on the Terminus at
 		// a3755e37 against ~50 us warm -- is paid once per cell per match, not once per plan). Keyed by the map, its
 		// iteration id and the bake radius; dropped when any of them moves. Chunks of CHUNK x CHUNK cells. Plain data
-		// (no godot Ref) so a static is safe. The rectangle worlds of the tests keep the per-search window.
+		// (no godot Ref, no godot builtin: a static RID's constructor calls a binding not yet set when the library's
+		// statics are built at load -- builder0 segfaulted at --import on d373af4e) so a static is safe. The rectangle
+		// worlds of the tests keep the per-search window.
 		static constexpr int64_t CHUNK = 64;
 		struct NavCache {
-			RID map;
+			uint64_t map_id = 0; // RID::get_id()
 			uint64_t iteration = 0;
 			double bake_radius = -1.0;
 			std::unordered_map<int64_t, std::vector<float>> chunks;
