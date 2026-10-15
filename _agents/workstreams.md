@@ -113,7 +113,17 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
-- (none yet)
+- **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
+  DECLARED; ONE run = the LAST attempt):** candidate stream/traffic `e57f93d2` = `traffic-t3b` cf124433's game/ + tests
+  re-based on main, no code change (+ `ab3351fb`'s teardown fix, test-only). **Gate first (C31.1 / R31.1):** the whole
+  suite with `turns` ON on the pair tree `pair/t3b` (native `413252ea`'s `Traffic.shape` mirror + traffic), plain
+  `make remote T=check`, green, before any series. **Bar = round 30's filed T3b bar (below, *Bars (round 30)*, lines
+  (1)–(7) and the orchestrator's additions (a)–(d)) UNCHANGED EXCEPT line (2) at the YARD:** the crossing clock's mean
+  paired difference in `cross_clear_s` ≤ **base + 3.0 s** (his call, `game_design.md` *Round 31: his two traffic calls*);
+  Terminus' line (2) stays ≤ 0.10 × base median + 1.645 se, the judged run's own paired sd/√n. Fresh seeds: NOT 1–3,
+  22–24 or 31–33 (traffic names the set before the run). Every row cites `judging.md`; early stop by `sequential.py`'s
+  rows (C31.3, `e1aaabe1`'s hook), the stopping row recorded here. Ships as a pair with native, the default flipped ON
+  (`Traffic.DEFAULT_OFF` loses `turns`); a before/after clip of his yard crossing for him.
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 
