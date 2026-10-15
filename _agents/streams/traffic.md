@@ -187,6 +187,23 @@ arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turn
   (brains: T3b + v4 frees round 30's s33/t1 seat trap, all-in 61.4 → 27.5 s). v5 PARKED this round (orchestrator), so
   any re-judge waits for round 32's gate fix.
 
+### T1c-b2 — deciding line NULL as filed (base 6/18 < 8/18); PARKED, the rest REPORTED (orchestrator's ruling)
+
+Builder0, `33cb2da5` (= dc8fcbf6 + an echo fix; the rule ON), GDScript path (`--brains-off=native`), census seeds 41–46 ×
+Sumps 1000 / Parade 2000 / Foundry 2000, n = 18 paired, 0 missing; base `--traffic-off=setup`. Rows
+`references/round31/traffic/t1cb2_judged_census_*_33cb2da5_seeds41-46.jsonl`.
+- **(1) runs with a repack while firing: base 6/18 → arm 0/18** (one-sided Fisher p 0.0095); total 10 → 0. **The filed
+  precondition (base ≥ 8/18) fails → the line is NULL as filed; not shipped on this run** (the bar is not re-read).
+- REPORTED: artillery shots 434 → 437 (mean paired +0.17, se 0.39 a run: no diverged run this time); friendly-stuck
+  746 → 787 crew-s (+2.28 a run, se 1.12; guard +225 total: inside); fast friendly contacts 1021 → 997 (guard +47.7:
+  inside); give-way repacks 31 → 26; refusals on the post 0 → 45.
+- Hook (table sd): `rwf_any` PASS, fstuck PASS, fast PASS → SERIES PASS at run 18 (the rate line's PASS is the arm's own
+  0/18 v p0 0.44; the bar's precondition is a base count, outside the hook).
+- Not run (orchestrator: cannot change a parked verdict; builder0 for CP-H/CP-P1): ApproachStage, the four cases,
+  `traffic-native-verify`. The chain was stopped by its unit after the census arm (nothing left on builder0).
+- For sizing: base rates now 4/9 (round 30, s7–9) and 6/18 (s41–46): pooled 10/27 ≈ 0.37 a run; a 4/9 line
+  over-states it. Next bar: precondition from the pooled rate (≥ 5/18 for p ≤ 0.05 at arm 0/18), or n = 27.
+
 ### T4 for CP-H (cutoff 09:00 PDT 2026-10-15, the orchestrator's)
 
 - **Merge branch `traffic-t4` = `357ca38b`** (one commit on main c6ffb37e; worktree `godot-traffic-t4`): T4 v1 (`ghost`) +
@@ -220,6 +237,10 @@ arms), seeds 41–43 × {1,3,6,8,11,16}, n = 18 a case, base `--traffic-off=turn
    It's the same rule and about the same price as the yard's ~3 s you accepted, and the two squads bump about a third
    less there (93 → 61 hard bumps)." **Recommendation: yes, let his ~3 s cover both crossings.** If he agrees, the rows
    already judged pass that line (+2.61 ≤ 3.0 + 1.645 × 0.55), and the pair ships as checked (f5dc4147).
+2. **(T1c-b2, his call)** "A set-up mortar truck no longer packs up to let a passing squadmate by: on fresh seeds it
+   happened in 6 of 18 fights before and 0 of 18 after, and the trucks fired just as much (434 v 437 rounds). It missed
+   only because I'd written the bar to need the problem in at least 8 of 18 fights first." **Recommendation: ship it**
+   (his round-31 call already wanted the behaviour; every guard held, and artillery fire did not fall).
 
 ### Requests to other streams
 
