@@ -203,7 +203,7 @@ this). (e) Manoeuvre: YES to both call lines, YES to `PlannerExecutor` driving `
 native_planner` (default true) is at stream/native bf8d4a78, read as `BrainSwitches.native and BrainSwitches.native_planner`;
 no `exec_fields.h` rows; my `register_types.cpp` + `CMakeLists.txt` lines reviewed by hash with the rest.
 
-### CP-P1 BAR (DRAFT v2, 2026-10-15 ~04:15 PDT, pre-registered before any judged number; to the orchestrator for `workstreams.md` *Bars (round 31)*; v1 of ~01:00 superseded on R31.7)
+### CP-P1 BAR (DRAFT v2, 2026-10-15 ~02:45 PDT, pre-registered before any judged number; to the orchestrator for `workstreams.md` *Bars (round 31)*; v1 of ~01:00 superseded on R31.7)
 
 **Candidate:** the seam ON (`--nav-off=planner`) at the hash the pair-tree check passes (a073157e or its successor; the
 check names it), GDScript drive, the C++ planner (`native` + `native_planner` on in BOTH arms). **Base:** the same commit,
@@ -390,7 +390,7 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
-- 2026-10-15 ~04:00 PDT: **the planner test files GREEN on 005a3837** (`make remote LIGHT=1 T="test FILTER=planner"`
+- 2026-10-15 ~02:40 PDT: **the planner test files GREEN on 005a3837** (`make remote LIGHT=1 T="test FILTER=planner"`
   exited 0, 24 passed 0 failed, builder0 light lane): the seam's War Rig face in the Terminus street at SLICE 2 --
   pending 4 ticks, one plan of 5 legs, driven to its end at 15.6 s, 2.1 deg off south at 40 s, plan_face never asked;
   the rolling face -- held to 0.23 m/s before its plan, 1.1 deg at 40 s, BUT the first search (begun while still
@@ -400,13 +400,13 @@ commit and name them in the merge notes; native reviews them with the rest.
   every kind, at a6a66f31 (`PlannerSeam.in_scope`, a short hull never taken, test); planner-census now attributes
   today's plan events by hull class (`by_hull`) and probes the shortest live hull beside the longest; census-3 on
   a6a66f31 running (`planner-census3`) for the long-hull share and its expansion median, which go in the bar.
-- 2026-10-15 ~03:40 PDT: **twin GREEN on fd36ecd5** (4/0, exit 0, light lane, load 12); **census-2** (same events; hits
+- 2026-10-15 ~02:35 PDT: **twin GREEN on fd36ecd5** (4/0, exit 0, light lane, load 12); **census-2** (same events; hits
   601.8 M -> 0.88 M; the per-expansion price unmoved for load: the walks, not lookups). **SLICE = 2** at 005a3837 with
   the derivation and the demand arithmetic in the report. 98d3a9c9: `PlannerSeam.last_refusal(name)` for manoeuvre's
   CP-P1 handover counters (`esc_after_refusal`, `refusal_then_free`; they write it once the seam is on main). Light
   lane: `make remote LIGHT=1 T="test FILTER=planner"` on 005a3837 (`planner-test10`): the seam tests incl. the
   rolling face and last_refusal, before the full check (the heavy slot is still CP-P0's check).
-- 2026-10-15 ~03:10 PDT: **the census landed** (c158aecf; the table in the report): ~0.1 plan events a tick at Sumps 25 a
+- 2026-10-15 ~02:20 PDT: **the census landed** (c158aecf; the table in the report): ~0.1 plan events a tick at Sumps 25 a
   side, bursts to 7; the seam's own navmesh request ~170 us an expansion WARM (hash lookup a cell read, 99.99 % hits).
   fd36ecd5: the window fills from the cache on first read (flat reads inside the search); twin + census-2 running.
   Native approved 3b5c0b34; its load guard is in check at stream/native 3331f81d (hazard 7: a C++ static holds plain data only).
