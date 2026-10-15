@@ -222,6 +222,13 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   **Decided (~06:50 PDT, traffic's tuning on `dc8fcbf6`, nav-terminus-drive s24–29, GDScript, n 12 paired): ghostself
   is OUT and T4 = v1 alone.** v1 v v1+ghostself: pinned crews 126 → 598 (+472, se 185, UP beyond 2 se), rigs 71 → 311,
   stuck 324 → 799. Native's `pair/t4-on` (ghostself opt-in, ghost on) is T4's gate tree.
+  **CP-H CALLED ~07:45 PDT 10-15, WITHOUT T4 (case `allnoghost`).** T4's ghost-ON gate cannot land before the 09:00
+  cutoff (traffic's forecast: the OFF check is ~13/25 at load 27, and a gate takes 70–90 min), so T4 stands down this
+  round and parks with its tuning tables. Its OFF pair `0475758f` still merges if green (I4's tooling + T4 OFF). **The ONE
+  tree (R31.4):** native builds current main + its mirrors with `unstickback`, `kturnarc`, `realspeed` and `realslow`
+  flipped ON. Its plain `make check` is both CP-H's C31.1 gate (the four together have never been checked) and the ship
+  check. Manoeuvre runs the A/B on that tree's commit with ALL = `allnoghost`, as filed. Native's chain: T4 OFF (running),
+  then that tree; T4's ON gate is dropped.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
