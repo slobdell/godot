@@ -103,5 +103,128 @@ Nothing (his calls: a planned turn, not a shuffle; the whole hull turns to his f
 
 ## Status
 
-_(the worker keeps this current; the seam design announced when written so manoeuvre and native can read it; bars to the
-orchestrator before numbers; the report at the top)_
+_Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
+5.1). The report first (empty until CP-P0 lands), then the DRAFT SEAM (the orchestrator's early ask), the plan, the log._
+
+### The report (read this first)
+
+**In progress: P5 (CP-P0, the C++ port).** Nothing green yet beyond the launch baseline. Green hash: none of mine yet.
+
+### DRAFT SEAM (CP-P1, for manoeuvre and native through the orchestrator; a draft, may change after CP-P0)
+
+Read against `movement.gd` at `cff4307e` and `drive_native.cpp`'s callback layer. Four answers, then the rules.
+
+**(1) The line(s) where a plan is asked for.** Today TWO places make a plan of legs for a wheeled hull, and both are
+"the k-turn block" in the sense of C31.5 (one executor rule set, `Vector2(gear, metres)` legs on one lock):
+- `Movement._planned_reverse` (line 3311): on a routed forward move, when the forward arc toward `waypoint` meets a wall
+  within `KTURN_HIT_WITHIN_M + stop`, `_best_fill` / `_circle_leg` make `_kturn_legs` and `_kturn_start_leg` drives them.
+- `Movement.face_turn` (line 1244): a face at rest, `Manoeuvre.plan_face` makes `_face_legs` and `_face_start_leg` drives them.
+  (The War Rig he will notice is a FACE order: the lab's `turnround` fixture is `{"type": "face"}`.)
+
+The seam is ONE function of mine, `PlannerSeam.take(mover, cmd, kind, delta) -> bool` (`game/ai/planner/planner_seam.gd`,
+my path), called at ONE line in each of those two functions, BEFORE today's plan is made, and only when the switch is on:
+```
+# _planned_reverse, first line of the body (before `if _kturn_left_m > 0.0`):
+if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
+# face_turn, right after the `FACE_ALIGNED_DEG` early return (the hull is not aligned, no plan is live):
+if PlannerSeam.on() and PlannerSeam.take(self, cmd, "face", _face_home, delta, want): return true
+```
+`take` returns true while it owns the hull (a plan pending or being driven) and has written `cmd`; false = the seam
+declined (not a planner case, NO_PATH/BUDGET/GOAL_BLOCKED, the retry window, or the hull is not wheeled) and today's code
+runs unchanged from that line. OFF: the two lines are never reached (byte-identical today).
+
+**The switch:** `--nav-off=planner` turns it ON (`PlannerSeam.on() = Movement.switched_off("planner")`, the opt-in form of
+`leash` / `nosestop`; `"planner"` added to `OFF_NAMES` in the same commit, my one shared-file edit). Note for every arm:
+ANY `--nav-off=` flag makes `NativeDrive.usable()` false (`native_drive.gd` line 29), so an arm with the planner ON runs the
+GDScript drive for every hull; the judged A/B runs both arms on the GDScript path (as C31.4's does), and the pair-tree
+check with the switch defaulted ON is where native's mirror is exercised.
+
+**(2) The leg shape: `Vector3(gear, steer, metres)`, driven by `PlannerExecutor`'s rule (my file), NOT adapted to
+`Vector2` on one lock.** Why: an adapter to one lock is not honest, it would restrict the search to one lock per plan
+(the lab's rig plan was F-1 8, F+1 24, R+1 10, F+1 12, F0 16.5: three locks), i.e. a different and worse planner. Driving
+multi-lock legs needs the two executor rules manoeuvre has NOT taken (brake ON THE LEG'S OWN LOCK with the opposite throttle
+until all but stopped, then the next leg's gear and lock; never throttle 0 with the lock on, which is the plant's creep):
+without them a rig's next leg brakes 3-4 m on the WRONG lock and every plan misses. The two rules manoeuvre DID take
+(`kturnarc`: arc-not-chord signed by gear; the discrete stopping distance) are in `PlannerExecutor` too. So: the planner's
+legs are driven by `PlannerExecutor` (148 lines, proven in the lab within 1 % of the plan), held by the seam, for the hulls
+and events the seam takes; today's k-turn and face executors are untouched and drive everything the seam declines.
+**Alternative, if manoeuvre would rather consume the legs itself:** `_kturn_legs` of `Vector3`, `_kturn_start_leg` reading
+`leg.y` as the leg's lock (`_kturn_turn = leg.y`, metres `leg.z`), and a `_kturn_braking` state in `kturn_leg` (own-lock
+braking for `_kturn_plan_kind == "planner"` only, so every existing plan drives as today); `face_turn` routed through the
+same executor for planner plans. ~25 lines of manoeuvre's + native's `kturn_start_leg`/`kturn_leg` mirror. I recommend the
+first (nothing of manoeuvre's changes; CP-H's executor edits and this cannot collide), and will build it unless manoeuvre
+asks for the second by the time CP-P0 is green.
+
+**The request** (`PlanRequest.for_unit(tank.unit_id)`: the catalog hull, the k-turn's 0.7 throttles lowered under the yaw
+cap): `kind == "face"`: goal = (`_face_home`, `want`), `tol_m = max(settle_radius - 1, 1.5)` (plan_face's `stay`), 8 deg,
+`arrive_gear` 0; `kind == "kturn"`: goal position = the `waypoint` if within `horizon_m`, else the point 0.8 x horizon along
+here -> waypoint; goal heading = toward the NEXT route vertex when `_path` has one past `_path_index`, else free (`tol_deg`
+180); `tol_m` = `_arrive`; `arrive_gear` +1 (the route continues forward). World = `PlannerNavWorld.for_tank(tank,
+tanks_root)` (the navmesh at the bake radius, every other living hull as a box, a snapshot at the request). Horizon 30 m
+(the order's leash radius when smaller). Budget 1500 expansions coarse + the fine retry (3000 at most), `epsilon` default.
+
+**(3) While a plan is PENDING under the per-tick slice.** The request is made from the pose at the request tick and the
+search runs `PLANNER_SLICE` expansions a tick (the number chosen from CP-P0's cost line so the slice is <= 0.5 ms; one hull
+a tick: a one-deep FIFO in `PlannerSeam`, the others wait their turn). Pending, the hull commands **zero/zero** (brake
+straight, the lock off: not the creep, which needs the lock on) -- honest because every event here is a hull at or near
+rest (the k-turn's arc-blocked case, the circle rule at <= 1.5 m/s, a face at rest). When the plan arrives: if the hull
+moved > 0.5 m or yawed > 5 deg from the request pose (it was still rolling), ONE re-request from the rest pose; else the
+legs start. Pending cap `PLANNER_PENDING_TICKS` (90 = 3 s): over it, the plan is abandoned as BUDGET, the seam declines for
+`KTURN_RETRY_TICKS` (1 s) and today's rules run (counted: `planner_abandoned`). Re-plan EVENTS (never per tick): a leg
+aborted (stall 2 s / timeout `metres x 1.5 s + 1 s`) -> re-plan from the pose with a fresh snapshot, at most 2 per order,
+then decline for 1 s; a plan driven to its end -> done, the seam releases the hull (the route / the face's aligned test
+take over); NO_PATH / GOAL_BLOCKED / START_BLOCKED -> decline for 1 s, counted by code (brains' re-seat and traffic's ask
+are the layer that should act on them; nothing does this round, same as today's `kturn_none`). No "obstacle moved" event
+this round (it could oscillate; an abort covers it). A new goal (`_goal` jump > `NEW_GOAL_JUMP`), a non-wheeled hull, a
+dead tank or `Traffic.holding` release the seam's state.
+
+**What the planner REPLACES when ON, for the hulls and events it takes:** the back-and-fill (`_best_fill`) and the circle
+plan (`_circle_leg`) in `_planned_reverse`, and `plan_face`'s even/greedy legs in `face_turn`. Not replaced: the route,
+the carrot, `_approach_gate` (brains'), unstick / `_pressing_escape` (manoeuvre's CP-H; they run for a hull the seam
+declined or released), the creep lift (gone already). A hull in a planner plan is `in_kturn()`-like for traffic: I will
+expose `PlannerSeam.live(name)` and ask traffic/manoeuvre whether `in_kturn()` should read it (today `_kturn_left_m > 0`).
+
+**(4) Record fields native has to add to `exec_fields.h`: NONE in this design.** The seam's per-crew state (the executor,
+the pending session, the request pose, the retry/pending/replan counters) lives in `PlannerSeam`'s own table keyed by the
+crew's name (`PlannerSeam._crews: Dictionary`, cleared on death / release; read by key only, so determinism holds), not in
+`Movement` members, so `test_native_exec_state`'s table is untouched and the C++-owned state never sees it. What native
+DOES need for the ship-ON pair (C31.2): the C++ drive's `planned_reverse_cheap` (drive_native.cpp line 675) must NOT answer
+from its cheap exits while the planner switch is on or a crew is live in `PlannerSeam` -- it calls back `_planned_reverse`
+(already a callback) so the seam line runs; the same for whichever C++ path reaches `face_turn`. The search itself is C++
+on both paths (`PlannerNative`, CP-P0), so the plan bits are the same whichever drive asked. If native prefers the state in
+the record, the alternative is eight members on `Movement` (`_plan_exec` OBJECT, `_plan_session` OBJECT, `_plan_kind`
+STRING, `_plan_retry` INT, `_plan_pending` INT, `_plan_replans` INT, `_plan_at` VECTOR3, `_plan_heading` VECTOR3) and their
+eight rows; say which.
+
+**Native's other ask (CP-P0):** a `native_planner` sub-switch in `BrainSwitches` (default true) so `Planner.plan` takes the
+C++ search when `native and native_planner`, the GDScript search otherwise (the twin); until it exists `Planner` reads
+`NativeBridge.available and BrainSwitches.native` and its own `Planner.native_on`. And `register_types.cpp` +
+`CMakeLists.txt` each gain one line (`PlannerNative`, `src/planner_native.cpp`): I will make those two edits in my CP-P0
+commit and name them in the merge notes; native reviews them with the rest.
+
+### Plan (ordered, smallest foundation first)
+
+1. **P5 / CP-P0** -- `native/src/planner_native.{h,cpp}`: `PlannerNative` (a RefCounted, its own GDREGISTER_CLASS like
+   `NavNative`): the world (rectangles OR the navmesh map + bake radius; the hull boxes; the lazy float32 field with the
+   GDScript's window/spill semantics and its first-read-returns-double quirk), the heuristic table (`PlannerHeuristic._build`,
+   float32 nodes), the search (`Planner._search`, float32 node columns and heap, double sweeps, the same keys and
+   tie-breaks), the coarse->fine retry, `trace` left in GDScript (cheap, and poses are for tests and the lab).
+   `tests/test_native_planner.gd`: every `PlannerFixtures` request + the lab's four nav-world fixtures planned both ways:
+   legs, code, cost, expansions, nodes, first_at, why all equal; the table bit for bit; priced (us a plan, builder0, pinned).
+   Decision: the C++ takes the request as a Dictionary and the world as flat packed arrays (walls, hulls) or (map, radius);
+   returns a Dictionary; `Planner.plan` is the one GDScript entry and chooses the path.
+2. **P6** -- the slice: `PlannerNative.begin(req) / step(n) -> {done, ...} / result()`; the twin test plans each fixture
+   sliced at 50 / 200 / 1000 a tick against the whole plan (equal by construction: the loop breaks only at the top of an
+   iteration); the Sumps census of plan events a tick (GDScript counters over a 25-a-side fight); the slice chosen.
+3. **P7 / CP-P1** -- the seam above once agreed, behind `--nav-off=planner`; the pair-tree check with it ON; the bar to the
+   orchestrator; the judged series; the clip.
+4. Stretch: the squad schedule note (handover.md already holds a first version).
+
+### Progress log
+
+- 2026-10-14 ~22:30 PDT: oriented (CLAUDE.md, HANDOFF round 31/30, orchestration's worker contract + lessons 306-311,
+  orientation, workstreams Round 31, the brief, round 30's planner report / handover / design, native.md's hazards and
+  flags, the GDScript planner (six files), the k-turn block and face executor in movement.gd, drive_native's callback
+  layer, exec_fields.h, native.mk / CMakeLists / build.sh, remote_builds). Local toolchain present (cmake, ccache g++,
+  godot-cpp 10.0.0 source in .tools); builder0 reachable (load 0.08). The draft seam written (above) at the orchestrator's
+  ask; starting P5.
