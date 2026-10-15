@@ -362,6 +362,12 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   Terminus by construction (realslow is Element's clock, and Terminus has no Element); their firing is read from their
   alone FIGHTS rows (deterministic: any changed seed means it fired). If either is identical on all 24, it is reported
   unexercised and drops from the ship.
+  **kturnarc's rise traced (~15:15 PDT, kturnarc-alone drive arm on `a2ef0b31`, rigs seed 114, `--turn-states`):**
+  Green_S0_1 on move_to, touch true throughout, PLANT v 9–12 m/s against REAL 0.05–0.7 m/s; round 29's escape fires
+  (esc 2.0 at f 5430) and doesn't free it. A real grind on Block_7, the plant/real lie unstickback's honest reading is
+  built for (all four ON, the same seed reads 548 v base 398). **Coupling, filed before the verdict: kturnarc does not
+  ship without unstickback.** If the combined arm fails and consumers are re-declared alone (C31.4's partial rule),
+  kturnarc may only go together with unstickback.
 
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
