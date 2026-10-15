@@ -246,6 +246,16 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   the outcome flips on tiny upstream differences, the same lesson as R31.3. **The fix's re-check is a VARIANT SET, all
   green:** that test on 68280cce with {realslow ON, OFF} × {GDScript, native} plus `998fe844`'s tree plus a 0.25 m
   start nudge (6 light runs). Then the CP-H tree is re-cut and the whole flipped suite re-gated. Native stood down.
+  **H1 fix PASSES the variant set 6/6 (~10:50 PDT, stream/manoeuvre `f593f487`, default OFF).** Traced cause: the pin
+  HAD room, so H1 backed STRAIGHT (2.0, 1.5, 1.0 m, twice) and the route drove it back into the same spot, since a
+  straight reverse never changes the heading. **The fix:** every pin with NO hull in it takes round 29's escape (main's)
+  bit for bit, whatever room is behind; hull pins are unchanged (ask → straight reverse → stand). The test went 12/0 in
+  every variant (realslow ON/OFF × GDScript/native, a 0.25 m nudge, and `998fe844` + fix); test_manoeuvre_escape 6/0,
+  with the hull-pin measurements unchanged. **R31.5 amended:** H1's redesign now applies to HULL pins only, and wall or
+  terrain pins keep main's escape, so round 30's "tank backing off a wall" regression is out of reach by construction.
+  Condition 1 is retired (`fallback` = `fires_wall` by construction); CP-H reports fires_wall's share of all fires.
+  **Next:** `f593f487`'s OFF check (the merge candidate) → merge → native re-cuts R31.4's tree (main + the four ON) →
+  the whole-suite gate → the CP-H A/B. Native confirms no C++ change.
   **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
   `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
   (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
