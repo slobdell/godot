@@ -7,6 +7,13 @@
 # Round 29 (I3): each row is cached by (the tree's content hash, its own arguments) in tools/series_cache.sh's shared
 # directory and reused only on an exact key match ("cache hit" per row) when CACHE=on. OFF by default until its proof
 # (a cached base row equal to a fresh one, field for field) is run: owed (traffic Status).
+# Round 31 (I4, C31.7): the cache is ADOPTED for BASE rows: CACHE=auto (the default) reuses rows when TRAFFIC_FLAGS is
+# empty (the base arm) and runs every row of a flagged arm fresh; CACHE=on / CACHE=off force it. Every row is still put.
+# Round 31 (I4, C31.3): the early-stop hook. SEQ_BASE=<base jsonl> SEQ_LINES='<case>=<line>,<line> <case>=...' (the bar's
+# pre-registered lines, tools/judge/sequential.py's form + `allow=`, tests/traffic/seq_hook.py) [SEQ_COUNTER=tr_cross_verdicts]
+# prints `SEQ <case> k/N: ... -> SERIES CONTINUE | PASS | FAIL at run j` after every finished row, over the longest finished
+# prefix of the grid in the runner's order. The jobs run seed-major, start tick minor, every case together, so all cases
+# advance as one. The runner never stops itself: the stream stops by judging.md's one rule and records the row.
 
 TRAFFIC_CASES ?= yard_open,head yard_open,cross terminus,head terminus,cross
 TRAFFIC_SEEDS ?= 1 2 3
@@ -15,27 +22,38 @@ TRAFFIC_WHICH ?= both solo_a solo_b
 TRAFFIC_JOBS ?= 6
 TRAFFIC_SECONDS ?= 90
 TRAFFIC_OUT ?= $(BUILD_DIR)/traffic-series.jsonl
+CACHE ?= auto
+SEQ_BASE ?=
+SEQ_LINES ?=
+SEQ_COUNTER ?=
+SEQ_CENSUS_LINES ?=
+# on for a base arm (no flags) under auto
+TRAFFIC_CACHE_ON = $(if $(filter on,$(CACHE)),on,$(if $(filter auto,$(CACHE)),$(if $(strip $(TRAFFIC_FLAGS)),off,on),off))
 
 .PHONY: traffic-series
 traffic-series: import ## Round 26 (traffic T0): his two crossing cases (TRAFFIC_CASES arena,kind x both/solo x seeds x start ticks) -> build/traffic-series.jsonl + the pooled table (TRAFFIC_FLAGS for an arm)
 	@rm -rf $(BUILD_DIR)/traffic-runs; mkdir -p $(BUILD_DIR)/traffic-runs
 	@echo ">> traffic-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(TRAFFIC_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
-	@tree=$$(tools/series_cache.sh tree); echo ">> traffic-series cache: $(if $(filter on,$(CACHE)),ON (exact-key rows reused),OFF (every row runs; CACHE=on to reuse)) | tree $$tree"; \
-	for case in $(TRAFFIC_CASES); do for which in $(TRAFFIC_WHICH); do for seed in $(TRAFFIC_SEEDS); do for tick in $(TRAFFIC_TICKS); do \
+	@tree=$$(tools/series_cache.sh tree); echo ">> traffic-series cache: $(if $(filter on,$(TRAFFIC_CACHE_ON)),ON (exact-key rows reused),OFF (every row runs)) [CACHE=$(CACHE)] | tree $$tree"; \
+	$(if $(SEQ_BASE),echo ">> traffic-series early-stop hook: base $(SEQ_BASE) | lines '$(SEQ_LINES)' | counter '$(SEQ_COUNTER)'";) \
+	for seed in $(TRAFFIC_SEEDS); do for tick in $(TRAFFIC_TICKS); do for case in $(TRAFFIC_CASES); do for which in $(TRAFFIC_WHICH); do \
 		echo "$$case,$$which,$$seed,$$tick"; done; done; done; done | \
 		TREE=$$tree xargs -P $(TRAFFIC_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); arena=$$1; kind=$$2; which=$$3; seed=$$4; tick=$$5; \
 		out=$(BUILD_DIR)/traffic-runs/$$arena-$$kind-$$which-$$seed-$$tick.json; \
 		key=$$(tools/series_cache.sh key "$$TREE" traffic-series $$arena $$kind $$which $$seed $$tick $(TRAFFIC_SECONDS) "$(TRAFFIC_FLAGS)"); \
-		if [ "$(CACHE)" = on ] && tools/series_cache.sh get $$key $$out; then echo "  cache hit  $$arena $$kind $$which s$$seed t$$tick ($$key)"; exit 0; fi; \
+		if [ "$(TRAFFIC_CACHE_ON)" = on ] && tools/series_cache.sh get $$key $$out; then echo "  cache hit  $$arena $$kind $$which s$$seed t$$tick ($$key)"; \
+		else \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/traffic_probe.gd -- \
 			--arena=$$arena --kind=$$kind --which=$$which --seed=$$seed --seconds=$(TRAFFIC_SECONDS) --lab-start-tick=$$tick \
 			$(TRAFFIC_FLAGS) 2>/dev/null | grep -o "TRAFFIC_PROBE {.*" | sed "s/^TRAFFIC_PROBE {/{\"start_tick\":$$tick,/" > $$out; \
 		[ -s $$out ] \
 			|| echo "{\"arena\":\"$$arena\",\"kind\":\"$$kind\",\"which\":\"$$which\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
-		tools/series_cache.sh put $$key $$out; echo "  ran        $$arena $$kind $$which s$$seed t$$tick"'
+		tools/series_cache.sh put $$key $$out; echo "  ran        $$arena $$kind $$which s$$seed t$$tick"; fi; \
+		$(if $(SEQ_BASE),[ "$$which" = both ] && $(PYTHON) tests/traffic/seq_hook.py series --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-runs --lines "$(SEQ_LINES)" $(if $(SEQ_COUNTER),--counter $(SEQ_COUNTER)) | sed "s/^/  /";) true'
 	@echo ">> traffic-series rows: $$(ls $(BUILD_DIR)/traffic-runs/*.json | wc -l)"
 	@cat $(BUILD_DIR)/traffic-runs/*.json > $(TRAFFIC_OUT)
 	@$(PYTHON) tests/traffic/traffic_table.py $(TRAFFIC_OUT)
+	@$(if $(SEQ_BASE),echo ">> traffic-series early-stop reading over the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py series --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-runs --lines "$(SEQ_LINES)" $(if $(SEQ_COUNTER),--counter $(SEQ_COUNTER)),true)
 
 .PHONY: traffic-trace
 traffic-trace: import ## Round 26 (traffic): one traced run of his case (TRAFFIC_ARENA=yard_open TRAFFIC_KIND=head TRAFFIC_SEED=1) -> build/traffic-trace.log (TRAFFIC_TRACK lines every 0.5 s)
@@ -56,14 +74,18 @@ TRAFFIC_CENSUS_SECONDS ?= 150
 traffic-census: import ## Round 26 (traffic T1): stuck crew-seconds by what is in the way (friendly/enemy/static) in CPU v CPU fights, TRAFFIC_CENSUS_CASES x TRAFFIC_CENSUS_SEEDS -> build/traffic-census.jsonl + table (TRAFFIC_FLAGS for an arm)
 	@rm -rf $(BUILD_DIR)/traffic-census-runs; mkdir -p $(BUILD_DIR)/traffic-census-runs
 	@echo ">> traffic-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(TRAFFIC_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
-	@for case in $(TRAFFIC_CENSUS_CASES); do for seed in $(TRAFFIC_CENSUS_SEEDS); do echo "$$case,$$seed"; done; done | \
+	@$(if $(SEQ_BASE),echo ">> traffic-census early-stop hook: base $(SEQ_BASE) | lines '$(SEQ_CENSUS_LINES)'";) \
+	for seed in $(TRAFFIC_CENSUS_SEEDS); do for case in $(TRAFFIC_CENSUS_CASES); do echo "$$case,$$seed"; done; done | \
 		xargs -P $(TRAFFIC_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); out=$(BUILD_DIR)/traffic-census-runs/$$1-$$2-$$3-$$4-$$6.json; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
 			--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(TRAFFIC_CENSUS_SECONDS) $(TRAFFIC_FLAGS) \
 			2>/dev/null | grep -o "TRAFFIC_CENSUS {.*" | sed "s/^TRAFFIC_CENSUS //" > $$out; \
-		[ -s $$out ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"credits\":$$4,\"missing\":true}" > $$out'
+		[ -s $$out ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"credits\":$$4,\"missing\":true}" > $$out; \
+		echo "  ran        census $$1 s$$6"; \
+		$(if $(SEQ_BASE),$(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)" | sed "s/^/  /";) true'
 	@cat $(BUILD_DIR)/traffic-census-runs/*.json > $(BUILD_DIR)/traffic-census.jsonl
 	@$(PYTHON) tests/traffic/census_table.py $(BUILD_DIR)/traffic-census.jsonl
+	@$(if $(SEQ_BASE),echo ">> traffic-census early-stop reading over the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)",true)
 
 # Round 26 (traffic T0/T2): his case at his pose, before and after (needs a display: make remote T=traffic-clip).
 # TRAFFIC_CLIP_CASES (arena,kind) x TRAFFIC_CLIP_ARMS (tag:--traffic-off list, "-" = none) -> build/traffic-clip/<arena>-<kind>/
@@ -122,3 +144,8 @@ traffic-census-one: import ## Round 26 (traffic): one census run with its whole 
 		--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(or $(TRAFFIC_CENSUS_SECONDS),20) $(TRAFFIC_FLAGS) \
 		> $(BUILD_DIR)/traffic-census-one.log 2>&1 || true; \
 	grep -E "TRAFFIC_CENSUS|SCRIPT ERROR|ERROR|error" $(BUILD_DIR)/traffic-census-one.log | head -20
+
+.PHONY: traffic-pytest
+traffic-pytest: ## Round 31 (traffic I4): the early-stop hook's Python tests (tests/traffic/test_*.py)
+	$(PYTHON) -m unittest discover -s tests/traffic -p 'test_*.py'
+

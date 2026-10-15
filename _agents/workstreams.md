@@ -101,9 +101,577 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
 - **C31.11 Fresh start:** every worktree was re-created at this split from main `cff4307e`; no agent of round 30 runs.
 - C28.2's stale rule, C26.4–C26.10's rulings, C25.6, C24.6–C24.8 and the older standing contracts stand.
 
+**Rulings (round 31, the orchestrator's, as they arise):**
+
+- **R31.1 CP-H switches are OPT-IN (2026-10-14, manoeuvre's proposal, adopted for every consumer):** each consumer's
+  switch is default OFF on main, and naming it turns it ON (like `inflate`). Main and native's default path play unchanged
+  until CP-H ships. **Two checks, not one:** (a) the PRE-SERIES gate for a GDScript-only consumer is a scratch tree with
+  the default flipped ON, `make remote T="check NATIVE=off"` (the whole suite on the GDScript path with the switch on).
+  (b) The SHIP check is still C31.1's pair tree: native's mirror in, the default flipped ON, plain `make remote T=check`
+  (native's default path), the whole suite green. (a) gates the series; only (b) gates a merge ON. Traffic (`ghost`),
+  brains (`realslow`) and native are told.
+  **Addendum (native, 2026-10-14 ~23:20 PDT): which arms run native.** Any `--nav-off=` name makes
+  `NativeDrive.usable()` false, so the arm runs the GDScript drive (manoeuvre's `unstickback`, `kturnarc`, the planner).
+  **Traffic's `ghost` (`Traffic._off`), brains' `realslow` (`--brains-off`) and the gun's `realspeed` (`--gun-off`) do
+  NOT:** their arms run the NATIVE drive, which ignores the switch until its mirror lands, so an "ON" arm silently runs the
+  OFF behaviour. **Rule:** every pre-series gate AND every judged series of those three runs with `NATIVE=off` (C31.4's
+  GDScript path) until native's mirror is in, and the A/B's runner must refuse a native arm for them. The pair tree
+  (mirror in, default ON, plain check) is the only place their native path counts.
+  **Under `NATIVE=off`, `native-live-guard` fails BY CONSTRUCTION** ("no native switch in force … nothing guarded,
+  FAIL"). In a `NATIVE=off` gate that one red is structural, not a finding (brains' B8 gate `44b32f12`: 2612/0,
+  25 of 26, sim-baseline unmoved, accepted as the series gate). A pre-series gate may be read from the runner's printed
+  summary. A merge or ship check needs the wrapper's `>> remote: … exited` line.
+
+- **R31.2 The planner seam, AGREED in writing before code (2026-10-14 ~23:10 PDT; amends C31.5's "ONE call" and the
+  executor line for planner-held hulls; planner's draft `f2245404` "DRAFT SEAM", manoeuvre's and traffic's replies):**
+  **(A) AMENDED ~00:35 PDT (the planner's correction at `9281fc43`, manoeuvre's review OK):** a take on the first line
+  of `_planned_reverse` would ask for a plan every tick of every routed move. The seam is now `PlannerSeam.hold()` at
+  the TOP of `_planned_reverse` and of `face_turn`, which only continues a held crew and never asks, plus
+  `PlannerSeam.take()` at the three points where today's code MAKES a plan. Those are the circle plan (inside
+  `_away_here()`, near rest, inside the circle), the blocked forward arc (after the `KTURN_HIT_WITHIN_M` return and the
+  `KTURN_CHECK_TICKS` throttle), and the face after its aligned test. A hull mid k-turn or face leg is never taken,
+  because both leg blocks return first. `yield_to_plan()` is still called once on first take, for the escapes. The
+  unstick gate and `manoeuvring()` are unchanged. The superseded text: (A) **Two call lines**, both unreached when OFF: the first line of `Movement._planned_reverse`
+  (`if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true`) and `face_turn` right
+  after its `FACE_ALIGNED_DEG` return ("face"). Manoeuvre grants exactly those two lines. (B) **Legs `Vector3(gear, steer,
+  metres)` driven by the planner's `PlannerExecutor`** (planner's path), with no Vector2 adapter. Manoeuvre's executor stays
+  Vector2 on one lock and drives everything the seam declines. Manoeuvre does NOT take the two brake rules; they belong to
+  PlannerExecutor. (C) **Pending:** zero throttle, zero lock, ≤ 3 s (`PLANNER_PENDING_TICKS` 90), then decline 1 s and
+  today's rules run. One hull a tick (a one-deep FIFO). Re-plan only on a leg abort, at most 2 per order. (D) **Readers:**
+  `in_kturn()` is unchanged. The planner owns a new `Movement.manoeuvring()` = `in_kturn() or (PlannerSeam.on() and
+  PlannerSeam.live(name))`, which equals `in_kturn()` when OFF. Traffic reads it in `Traffic.refresh`'s crossing row and in
+  `ask()` (a held hull refuses). Manoeuvre's straight-leg lever reads it. `manoeuvre_census.gd` keeps `in_kturn()` plus a
+  separate planner column. Each owner makes its own reads after the seam lands. (E) **The unstick gate:** `unstick()`
+  returns at once for a planner-held hull, right after traffic's `Traffic.holding` line. **The planner adds that one line
+  in its seam commit** (the orchestrator's ruling, so the seam is one atomic diff for CP-P1), and manoeuvre reviews it.
+  `PlannerSeam.live(name)` is static and false when OFF. (F) **Switch** `--nav-off=planner`, opt-in (R31.1); `planner`
+  goes in `OFF_NAMES`, the planner's one shared-file edit. Any `--nav-off` flag makes `NativeDrive.usable()` false, so the
+  judged arms run the GDScript drive, and native's mirror is exercised only on the default-ON pair tree. (G) **Native, CLOSED (native's answers 2026-10-14 ~23:20 PDT):** no
+  `exec_fields.h` rows, on one condition: `PlannerSeam`'s table must be capturable by the twin harnesses (MoverState,
+  TrafficTwin), so the planner gives it a `capture()`/`restore()` pair (its executor and session are Objects).
+  `planned_reverse_cheap`'s cheap exits are gated in native's C++ at the pair: while `PlannerSeam.on()` or any crew is
+  live, the drive calls back `_planned_reverse`. `face_turn` needs nothing, because wheeled face orders already go back to
+  GDScript (execute_native.cpp:363). `BrainSwitches.native_planner` (default true) is at stream/native `bf8d4a78`; the
+  planner reads `BrainSwitches.native and BrainSwitches.native_planner`. The planner makes the register_types.cpp and
+  CMakeLists.txt lines in its CP-P0 commit, and native reviews them. (H) **Stale state on take (manoeuvre's review of the seam
+  at `50d380e1`, ~00:20 PDT; placement of all five lines OK):** a hull taken mid k-turn leg keeps `_kturn_left_m` /
+  `_kturn_legs`, so the half-driven leg resumes on release, and a hull taken mid-escape keeps `_unstick_left`,
+  `_escape_gear` and H1's `_esc_stage`. **Fix:** manoeuvre's `Movement.yield_to_plan()` (stream/manoeuvre `9b257348`)
+  ends the leg as "planner", drops its queued legs, ends both escapes and clears the stall and press clocks.
+  `PlannerSeam.take` calls it ONCE, on the tick it first takes a hull. **Order:** `9b257348` reaches main in manoeuvre's
+  merge-OFF candidate, and the planner then calls it directly, with no `has_method` shim; CP-P1 is not judged before it.
+  Noted, no change: planner-held ticks are invisible to ManoeuvreCensus; the planner column counts them.
+
+- **R31.3 The pursuit test is knife-edge on main; B5c-v5's pursuit line goes to a count (2026-10-14 ~23:15 PDT, brains'
+  A/A at `3cb76e17`, row in `judging.md` *Rows filed by hand in round 31*):** a 0.25 m start nudge (a null change) flips
+  3 of 12 verdicts at 8 m/s, including seed 3, the test's own seed. So round 30's v4 red on seed 3 sat inside this noise.
+  **Rulings:** (1) **B5c-v5's pursuit pass line** is brains' count form: on the 24 cells (12 seeds × 8/18 m/s), the
+  number passing with v5 ON is ≥ the OFF count − 3 (OFF = 22, so ON ≥ 19), with no new let-go at 18 m/s. The
+  orchestrator adds that the same line is ALSO run on the nudged starts (OFF nudged = 19, so ON ≥ 16), because one
+  start set is one draw. The seed-3 cell is REPORTED, not deciding. (2) **The in-suite test becomes robust FIRST, as its
+  own commit, on main before any v5 number:** the same three asserts (unchanged thresholds), seeds 3 + 4 more (brains
+  proposes them from the A/A rows, rule OFF, and the orchestrator approves the set BEFORE v5 runs), asserting the
+  count. It must be green on main with the rule OFF. A test changed after the candidate's numbers would be fitted to
+  them, so the ORDER is the guard. (3) **The C31.1 question:** if v5 reddens only the old single-seed cell, that is noise
+  by the A/A. It is NOT a finding, but it is ALSO not mergeable: main stays green, so only the robust test on main can
+  clear it. A red on the robust test's count, or on any other stage, IS a finding. (4) **18 m/s seeds 1 and 9 fail on
+  main as written** (Green_A_1 66 → 194 m in 5 s, faster than the car drives, with a 180° turn at 3.5–6.5 s). Brains
+  traces ONE of them (worst run first) before v5, because a physics launch on main would also poison CP-H's
+  `real_velocity` readers. If it is a launch, it goes to manoeuvre (the drive) and native.
+  **Resolved (brains' trace, ~23:25 PDT, builder0, game/ = main):** NOT a launch. At 18 m/s seed 1, Green_A_1 is hit
+  to hp 0.01 at 5.0 s, picks RETREAT ("breaking away") and drives home at full speed while the target runs the other way,
+  so the range opens at ~26 m/s combined. Seed 9 is the same hit. The drive, real_velocity and native are not implicated.
+  It is a test gap: the let-go line excuses a badly hurt crew (C25.3, hp < 0.15), but the per-crew closing and reversal
+  lines do not. **Approved, in this order, each its own commit before any v5 number:** (a) the closing and reversal lines
+  skip samples where that crew is excused as hurt (hp < BADLY_HURT), the same excuse the let-go line already uses, and
+  nothing else changes; (b) the robust test: seeds {3,4,5,6,7} (the test's seed plus the next four in order, not picked
+  by outcome), both visible chases (8 and 18 m/s) on those seeds with the three asserts and thresholds unchanged per run,
+  each asserting passes ≥ 3 of 5. On the A/A rows for exactly these seeds, rule OFF: as written 5/5 and 5/5, nudged 3/5
+  and 5/5, so 3 is the null's own floor. The out-of-sight law_tank test stays single-seed (not measured), at about +60 s
+  on builder0; (c) `make pursuit-aa` RE-RUN on main's code with (a) and (b) in, rule OFF, because (a) changes the OFF
+  counts. Line (1)'s OFF counts (22 as written, 19 nudged) are REPLACED by (c)'s before v5 runs, with the same "− 3".
+  Both (a) and (b) green on main with the rule OFF.
+  **(c) DONE (~00:50 PDT 10-15, brains `0415da23` = main `aa205ea5`'s code, rule OFF, builder0, default path, 48 runs;
+  rows `references/round31/brains/pursuit-aa-0415da23.*`):** OFF **24/24 as written, 22/24 nudged** (8 m/s nudged 10/12:
+  seeds 3 and 9 fail the let-go line; 18 m/s 12/12 both sets, seeds 1 and 9 now pass under (a)). **B5c-v5's line (1)
+  is therefore: ON ≥ 21/24 as written AND ON ≥ 19/24 nudged, with no new let-go at 18 m/s.** Margins as written:
+  closing min +13.9 m (8 m/s) / +11.6 m (18); reversal min +69° / +20°. The robust test's seeds pass 5/5, 5/5 as
+  written and 4/5, 5/5 nudged.
+
+- **R31.4 CP-H's ONE tree (2026-10-15 ~01:00 PDT, native's proposal corrected):** the tree is **main after every
+  consumer has merged OFF** (manoeuvre's H1–H3 tip, traffic's T4, brains' B8 `80eea6ec`, already on main at `aa205ea5`)
+  **+ native's mirrors**, with **ONLY the CP-H consumer switches** flipped ON: `unstickback`, the War Rig's friend stall,
+  `kturnarc`, `realspeed`, `ghost` (and `ghostself` only if traffic's tuning pair keeps it) and `realslow`. It is
+  NOT built from a stream tip carrying another candidate's switch ON, because traffic's `dc8fcbf6` carries T1c-b2's rule
+  ON. T3b and T1c-b2 are whatever main holds when CP-H is called (each ships or parks on its own bar first). **Native
+  builds it** (it owns the mirrors) and names its hash. **Manoeuvre runs the judged A/B on it** (C31.4: GDScript path, every
+  arm `NATIVE=off` or `--brains-off=native`, enforced by its runner). The tree's plain `make check` is the ship check.
+  **The orchestrator calls CP-H** when the last consumer is on main. Native confirmed B8 is NONE PORTED (~01:00).
+  **Status ~05:30 PDT 10-15:** manoeuvre's H1–H3 pre-series gate is GREEN (flipped tree `998fe844`, NATIVE=off, test
+  2621/0, ai-scenarios 52/0, with only the structural sim-baseline and native-live-guard reds; both earlier reds gone).
+  H1–H3 are on main OFF at `298e4498`, and the terrain fallback `426e6c6e` follows in manoeuvre's next batch. B8 is on
+  main. **T4 is not**: it is in tuning, with its merge-OFF pair `pair/t4 80fbdbe9` in native's queue. **Cutoff (C31.4):
+  T4 merged OFF with its NATIVE=off gate green by 09:00 PDT 10-15, or CP-H runs WITHOUT T4** (T4 stands down this round,
+  parked with its tuning tables).
+  **T4's merge-OFF branch (~06:15 PDT): `traffic-t4` `357ca38b`**, one commit on main `c6ffb37e`: T4 v1 + ghostself
+  (both OPT-IN, default OFF), the test-only teardown, and ALL of I4's tooling (seq_hook, `mk/traffic.mk` with
+  `33cb2da5`'s echo fix, CACHE=auto, `turns_verdict --allow`). It carries NO T1c-b2 rule and NO T3b. Native pairs it
+  (the ghost mirror is already on main at `298e4498`). **ghostself:** OUT of CP-H unless its tuning arm has run by
+  ~07:00 PDT. It stays in the code OPT-IN and UNMIRRORED as tuning only, and a native-path arm naming it would silently
+  run it OFF, so no judged run names it.
+  **Decided (~06:50 PDT, traffic's tuning on `dc8fcbf6`, nav-terminus-drive s24–29, GDScript, n 12 paired): ghostself
+  is OUT and T4 = v1 alone.** v1 v v1+ghostself: pinned crews 126 → 598 (+472, se 185, UP beyond 2 se), rigs 71 → 311,
+  stuck 324 → 799. Native's `pair/t4-on` (ghostself opt-in, ghost on) is T4's gate tree.
+  **CP-H CALLED ~07:45 PDT 10-15, WITHOUT T4 (case `allnoghost`).** T4's ghost-ON gate cannot land before the 09:00
+  cutoff (traffic's forecast: the OFF check is ~13/25 at load 27, and a gate takes 70–90 min), so T4 stands down this
+  round and parks with its tuning tables. Its OFF pair `0475758f` still merges if green (I4's tooling + T4 OFF). **The ONE
+  tree (R31.4):** native builds current main + its mirrors with `unstickback`, `kturnarc`, `realspeed` and `realslow`
+  flipped ON. Its plain `make check` is both CP-H's C31.1 gate (the four together have never been checked) and the ship
+  check. Manoeuvre runs the A/B on that tree's commit with ALL = `allnoghost`, as filed. Native's chain: T4 OFF (running),
+  then that tree; T4's ON gate is dropped.
+  **Slots and scope (~08:00 PDT):** manoeuvre gets a SECOND heavy slot for CP-H while M1b(2) attempt 2's heavy lane
+  runs (traffic holds none now; every other stream keeps one heavy and one light). The ALONE arms (REPORTED) run on
+  census + drive + fights only, NOT hull-rest. **Consequence, stated before numbers:** if the combined arm fails and a
+  consumer is re-declared alone (C31.4's one attempt), its hull-rest arm runs then, on fresh seeds, inside that one
+  attempt.
+  **The ONE tree's gate RED (~10:00 PDT):** `68280cce` (main `83341378` + unstickback, kturnarc, realspeed and realslow
+  ON, native default path), builder0 `exited 2`, 2637 passed / 1 failed; sim-baseline moved on all 13 (expected ON).
+  The red: `test_control_queued_task::test_shift_screen_after_shift_waypoints_waits_for_the_route`. The screen starts
+  after the route but faces 80.9° off point − waypoint (needs ≤ 10°). Manoeuvre's three alone with NATIVE=off passed
+  it 12/0, so the cause is realslow, the native path, or both. Native re-runs the file alone; manoeuvre splits realslow
+  v native, and brains reads realslow for a facing effect. **The A/B does not start** until the gate is green (C31.1).
+  **Pinned (~10:30 PDT): it's H1's FRAGILITY, not a mirror gap and not realslow.** On 68280cce, GDScript path: realslow
+  ON passes (heading_off 0.1°), and realslow OFF FAILS exactly like the native run (route_first −1, 2.2 m, 80.9°), while
+  main's older 998fe844 passed. The R31.5 terrain fallback doesn't cover every variant of Green_Alpha_3's ground pin, so
+  the outcome flips on tiny upstream differences, the same lesson as R31.3. **The fix's re-check is a VARIANT SET, all
+  green:** that test on 68280cce with {realslow ON, OFF} × {GDScript, native} plus `998fe844`'s tree plus a 0.25 m
+  start nudge (6 light runs). Then the CP-H tree is re-cut and the whole flipped suite re-gated. Native stood down.
+  **H1 fix PASSES the variant set 6/6 (~10:50 PDT, stream/manoeuvre `f593f487`, default OFF).** Traced cause: the pin
+  HAD room, so H1 backed STRAIGHT (2.0, 1.5, 1.0 m, twice) and the route drove it back into the same spot, since a
+  straight reverse never changes the heading. **The fix:** every pin with NO hull in it takes round 29's escape (main's)
+  bit for bit, whatever room is behind; hull pins are unchanged (ask → straight reverse → stand). The test went 12/0 in
+  every variant (realslow ON/OFF × GDScript/native, a 0.25 m nudge, and `998fe844` + fix); test_manoeuvre_escape 6/0,
+  with the hull-pin measurements unchanged. **R31.5 amended:** H1's redesign now applies to HULL pins only, and wall or
+  terrain pins keep main's escape, so round 30's "tank backing off a wall" regression is out of reach by construction.
+  Condition 1 is retired (`fallback` = `fires_wall` by construction); CP-H reports fires_wall's share of all fires.
+  **Next:** `f593f487`'s OFF check (the merge candidate) → merge → native re-cuts R31.4's tree (main + the four ON) →
+  the whole-suite gate → the CP-H A/B. Native confirms no C++ change.
+  **A new Movement member makes even an OFF merge a PAIR (~01:20 PDT):** manoeuvre's merge-OFF tip `9b257348` checked
+  `exited 2`, 2619 passed / 1 failed, the one red being `test_native_exec_state::test_the_table_is_the_scripts_members`
+  (H1/H2's 7 new members are not in `exec_fields.h`, 151 v 144). sim-baseline passed, so OFF really is unchanged.
+  **Rule:** any commit adding a `Movement` member merges with native's `exec_fields.h` rows, back to back, defaults OFF,
+  checked once. The merge-OFF candidate is therefore native's pair tree on manoeuvre's current tip (`0cf72ba7`: H2
+  scoped to ≥ 10 m hulls, `yield_to_plan`, turnhull), plain `make check`. **CP-H waits** for the flipped suite to be
+  green, including `test_control_queued_task`'s shift-waypoints red under `unstickback` alone (the squad centre stalls
+  2.2 m short; manoeuvre is tracing it).
+
+- **R31.5 C31.4's escape clause amended for TERRAIN pins (2026-10-15 ~02:20 PDT, manoeuvre's queued-task trace on
+  `9b257348` + unstickback ON, builder0 light):** Green_Alpha_3 sat from f 1140 13.5 m from its goal, real 0.00, plant
+  0.00, touch false, phase blocked 'terrain'/'no_path', NOT pinned on a hull. Main's escape fires and reverses 0.9 s on
+  lock, which frees it. H1 classed it a terrain pin, found < 1 m for a straight reverse, REFUSED and stood, nine times in a
+  row (refused 9, backs 0), so the squad held 11.6 m off and the shift-queued screen never began. **Ruling:** C31.4's
+  "never a blind reverse on lock" was written for a hull pinned on a FRIEND (round 30's stranded Sumps 8×8), and that
+  path (ask → straight reverse → stand) is unchanged. For a pin with NO hull involved (`fires_wall`) whose straight
+  reverse is refused, H1 falls back to MAIN's escape bit for bit (round 29's pivot / ask-behind check, then 0.9 s on
+  lock), counted `fallback`. The CP-H A/B reports `fallback` per stage, and round 30's "tank backing off a wall"
+  regression stage stays a pass line. **Side finding, routed to brains:** a truck 13.5 m short with no contact and
+  `no_path` on Green_Alpha_3's spot looks like a terrain or navmesh trap on main; brains owns blocked-phase reporting.
+
+- **R31.6 CP-P0's price is an UPPER BOUND, accepted (2026-10-15 ~02:40 PDT):** `tools/remote.sh --quiet planner-twin
+  PLANNER_CPUS=0-3` on `41212da0` (= `a3755e37` + docs) exited 0, 4/0, but QUIET WINDOW: NOT USABLE (7 of 7 samples with
+  7–8 foreign runs live). Native, cold field, pinned to 4 CPUs with others live: Terminus turnround 7 exp 3.57 ms
+  (510 µs/exp); slot180 37 exp 3.67 ms; tjunction 94 exp 16.2 ms (172 µs/exp); yard BUDGET 12 000 exp 1.30 s; offline
+  F6a 3735 exp 150 ms (40 µs/exp). Unpinned at load 13, the same plans cost 2.7–3× more. **Cap v cost:** at this price the
+  0.5 ms line allows a slice of 3–5 expansions a tick, so a 94-expansion plan takes ~20–30 ticks (~1 s), inside the 3 s
+  pending cap; with the navmesh cell cache warm it is ~10 a tick. **Ruling:** no second quiet window this round, because
+  it cost the whole box ~1 h and still wasn't quiet. CP-P0's price stands as an upper bound. C31.5's cost line (≤ 0.5 ms
+  a tick at Sumps 25 a side) is judged at CP-P1 from planner-census's in-fight probe, which also chooses SLICE. CP-P0's
+  candidate stays `a3755e37` (check `planner-check6` pending). The cell cache (`d373af4e`/`17bd1ec8`, C++ changed after
+  equality) merges only with its own planner-twin (ALL) green.
+
+- **R31.7 The planner's slice and SCOPE are chosen BEFORE CP-P1's judged run (2026-10-15 ~03:30 PDT; planner `005a3837`,
+  census-2 on `fd36ecd5`, builder0 light, Sumps 25 a side, seeds 92721 / 31337):** SLICE = 2 expansions a tick, COUNTED
+  and never timed (lockstep), ~0.3 ms pinned and 0.4–0.8 ms unpinned. The brief's Terminus fixtures land in 4 / 19 / 47
+  ticks, and PENDING_TICKS 90 caps a search at 180 expansions. The warm price, ~200 µs an expansion among 49 hulls, is
+  compute (a long hull's sphere walks), not lookups. **The arithmetic:** ~3 plan events a second × ~130 expansions (the
+  census's median in-press face-about) × ~200 µs = ~3 ms a tick if every event were served, six times the cost line. At
+  SLICE 2, most in-press takes beyond ~180 expansions run out the hold (`abandoned`) and fall back to today's code.
+  **Ruling:** the planner proposed choosing SCOPE (which kinds and hulls the seam takes) AFTER the judged `abandoned`
+  number. That would fit the candidate to the judged run. **The scope is chosen on the census and tuning seeds (92721,
+  31337 and the brief's named cases) and FILED in CP-P1's bar before any judged number.** The brief's target is the long
+  hull (a War Rig, a long truck in a Terminus street), so a ≥ 10 m-hull scope is the natural first candidate; the
+  planner decides it from the census. `abandoned` / `queue_waits` / `refused` are REPORTED lines. If the judged run then
+  shows the scoped seam starved, that is a finding with its traces, and CP-P1 parks; there is no second scope.
+  **SCOPE CHOSEN before numbers (~03:45 PDT, `a6a66f31`):** LONG hulls only, length ≥ 10 m
+  (`PlannerSeam.SCOPE_MIN_HULL_M`), which in today's catalog is gang_tank, the War Rig at 14.0 m (the next is tank at
+  9.7 m). It takes every kind (face, circle plan, blocked arc), and a short hull is never taken (tested: a law_scout face
+  ON requests 0). **Consequence for C31.5's pass lines, stated before numbers:** "the six-cusp car (yard s25 t1 ≤ 3
+  legs)" and "a scout's orbit unchanged" concern SHORT hulls the seam never takes. The car becomes a REPORTED line (its
+  legs per arm, expected equal), and the scout's orbit stays a pass line as a no-change guard. The deciding lines are the
+  rig cases: seed 31's and 51's Terminus grinds, the squadmate pin, and the 180° arrival where it is a rig.
+
+- **R31.8 Early stop is OFF on guard lines (2026-10-15 ~11:40 PDT, manoeuvre's finding, `judging.md`):** on M1b(2)'s
+  Terminus census, `arrived:guard:0.10` read SERIES PASS at run 6 while the fixed 1.645 se line FAILED at 13, because the
+  stop rule's 10 % harm is ~4× the fixed line's. **For every series not yet run (CP-H, CP-P1 attempt 2):** guard lines
+  run to completion and are judged on their fixed line, and early stop applies only to a gain line whose stop effect
+  equals that line's MDE. CP-H's (a) "early stop by `sequential.py arrived:guard:0.10`, never before 6 seeds" and any
+  CP-P1 arrivals stop rule are therefore REMOVED, before numbers.
+
+- **R31.9 builder0 throughput (2026-10-15 ~13:00 PDT, the lead's question and his OK).** builder0 does not do clean
+  builds: the native .so and Godot's import are incremental. A check is ~55 min of TEST time (the last main check 3278 s,
+  its test suite 2320 s; the 33 heaviest files are 65 % of the suite's ~7200 CPU-s) on a 12-core box held by three
+  checks at once. **(1) No second check of the same code:** the orchestrator runs `tools/merge_check_needed.sh
+  <green>` after every merge (`orchestration.md` §7), and an INHERIT means no main check. **(2) Iterate with `make
+  quick-remote`** (~8 min); a full `make check` only for a hash you will name (a pre-series gate, a merge candidate, a
+  ship check). C31.1's full suite before every judged series is unchanged. **(3) Split the slowest test files**, each by
+  its owning stream, with the same assertions divided across files and the test count shown before and after:
+  traffic and brains now if idle; the rest go in round 32's briefs.
+
+- **R31.10 remote-guard-test's box-state groups don't block a gate (2026-10-15 ~13:25 PDT).** Its quiet-window and
+  slot-exclusive groups test `tools/slot.sh`'s windows against the live box. Under load they fail in a different group
+  each time (`9e1000d6` slot-exclusive 13/18; CP-H's `130a069b` quiet-window 27/1 at load 22), and they pass on a quiet
+  box (main `298e4498`). A light-lane re-run cannot open an exclusive window over the heavy slots, so it cannot clear
+  them. **Rule:** when remote-guard-test's box-state groups are the only red besides an expected sim-baseline move, and
+  the change touches nothing in `tools/slot.sh`, `tools/remote.sh` or `tools/quiet_window.sh`, the gate reads GREEN,
+  with the flake named in the record. A red in its other groups (remote-guard, check-verdict …) still blocks.
+- **CP-H's gate: GREEN under R31.10 (~13:20 PDT).** The ONE tree `130a069b` (main `a2ef0b31` + unstickback, kturnarc,
+  realspeed and realslow ON), builder0 `exited 2`, tests 2641 passed / 0 failed; sim-baseline moved on all 13
+  (expected; adopted at the ship); remote-guard-test quiet-window 27/1 at load 22 (R31.10); the queued-task route test
+  passes (route_first 1370, 2.1 m, 0.1°); native-verify-scenarios 0; perf-judge judged 5/0. **The CP-H A/B starts on
+  `130a069b`.**
+  **The A/B STARTED 13:23 PDT, with one accepted deviation:** on `130a069b` `realslow` cannot be turned OFF
+  (brain_switches.gd: naming it SETS it true, not a toggle), so the ON arm = `130a069b` with nothing named, and the base
+  and each consumer alone = its parent `a2ef0b31` with the opt-in names. `git diff a2ef0b31 130a069b -- game` is exactly
+  the four default lines, so the arms differ in the consumers only. **A ship blocker:** brains makes `realslow` a toggle
+  (`not REALSLOW_DEFAULT`, with a unit test) before any CP-H ship, or once flipped it could never be removed.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
-- (none yet)
+- **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
+  DECLARED; ONE run = the LAST attempt):** candidate stream/traffic `e57f93d2` = `traffic-t3b` cf124433's game/ + tests
+  re-based on main, no code change (+ `ab3351fb`'s teardown fix, test-only). **Gate first (C31.1 / R31.1):** the whole
+  suite with `turns` ON on the pair tree `pair/t3b` (native `413252ea`'s `Traffic.shape` mirror + traffic), plain
+  `make remote T=check`, green, before any series. **Bar = round 30's filed T3b bar (below, *Bars (round 30)*, lines
+  (1)–(7) and the orchestrator's additions (a)–(d)) UNCHANGED EXCEPT line (2) at the YARD:** the crossing clock's mean
+  paired difference in `cross_clear_s` ≤ **base + 3.0 s** (his call, `game_design.md` *Round 31: his two traffic calls*);
+  Terminus' line (2) stays ≤ 0.10 × base median + 1.645 se, the judged run's own paired sd/√n. Fresh seeds: NOT 1–3,
+  22–24 or 31–33 (traffic names the set before the run). Every row cites `judging.md`; early stop by `sequential.py`'s
+  rows (C31.3, `e1aaabe1`'s hook), the stopping row recorded here. Ships as a pair with native, the default flipped ON
+  (`Traffic.DEFAULT_OFF` loses `turns`); a before/after clip of his yard crossing for him.
+  **Clarified before numbers (~22:55 PDT):** the yard line (2) reads **mean paired diff ≤ 3.0 s + 1.645 se**, the se
+  the judged run's own paired sd/√18. That is C31.3's guard form with his 3 s in place of 0.10 × median, and it is
+  what `turns_verdict.py --allow yard_open/cross=3.0` (`64dc8ef2`) computes (round 30's rows: +2.80 v limit +3.36 PASS;
+  the old +10 % line FAIL as filed). **Seeds** {41,42,43} × ticks {1,3,6,8,11,16}, n = 18 a case, four cases, 90 s. On
+  the pair tree `turns` is default ON, so base = `--traffic-off=turns` and arm = no flag. Early-stop lines are in
+  traffic's Status bar block.
+  **JUDGED ~02:45 PDT 10-15 — FAIL on line (2) Terminus; NOT SHIPPED (the last attempt, no partial).** builder0, pair
+  tree `f5dc4147`, GDScript path both arms, seeds 41–43 × 6, n 18 a case, full grid with no early stop; rows at
+  stream/traffic `99cbd53d` `references/round31/traffic/t3bc_*`. (2) Terminus crossing clock mean paired **+2.61 s**
+  (se 0.55) v limit 0.10 × 11.7 + 1.645 se = **+2.07, FAIL**: a steady shift, not a wedge (16/18 runs later, worst s43/t1
+  +5.3 s, squad B the yielder +4.22 s, A −1.09; round 30's seeds 31–33 read −1.17 here). (2) Yard, his line: **+3.38 s**
+  (se 0.26) v +3.43, pass narrowly. (1) between-squad fast pooled 191 → 117 (−39 %) pass; Terminus 93 → 61, yard 98 → 56.
+  (3) crews pass; (4) no wedge in the arm (the base had two); (5) and (6) pass; (7) all-in Terminus 39.5 → 32.9, yard
+  66.4 → 75.5 reported. Hook: yard SERIES PASS at run 7, Terminus SERIES FAIL at 18. **A LEAD CALL is owed** (HANDOFF
+  *Owed to him*): his round-31 call kept "the Terminus clock within its se". Accepting ~2.6 s there too is his decision.
+  If yes, these judged rows pass on his line (+2.61 ≤ 3.0 + 0.90) with no re-run, because the line would then be his,
+  set before he sees a re-run. Native `413252ea` stays unmerged until then.
+  **Brains' B9 trace (~05:40 PDT, terminus cross s33 t1, round 30's worst, n = 1, builder0 GDScript):** T3b alone gives
+  all-in 61.4 s; T3b + v4's gate gives 27.5 s, 10/10 (main's base 33.7). The +27.7 s was B_4 circling its arrival gate,
+  which v5 fixes. That concerns the ALL-IN, not the failing crossing clock (traffic: the yielder clears at 16.3 s, long
+  before any seat circling), so the question to him is unchanged. **If T3b is ever re-judged, it pairs T3b on top of v5
+  v v5 alone.**
+  **C31.1 gate PASSED (~00:05 PDT 10-15):** pair tree `pair/t3b` = `f5dc4147` (native `413252ea` + traffic `ab3351fb` +
+  `DEFAULT_OFF = []`), builder0 `>> remote: make check exited 2`, 2624 passed / 0 failed, 25 of 26 targets passed, the
+  sim-baseline alone failed, with all 13 maps moved as a turns-ON tree must (one read each; two reads at adoption).
+  Determinism 7/0, native-verify-scenarios 0, the four traffic twins 0 mismatches. Judged series cleared to run.
+- **Traffic T1c-b2 bar (filed 2026-10-14 ~23:00 PDT, before any judged number; DECLARED; ONE run = the LAST attempt;
+  full text in traffic's Status at `4054e7ca`):** candidate stream/traffic `6d19a3d9` = `16780030`'s game/ + `02dc1433`'s
+  measurement additions re-based, no code change; rule ON by default (base `--traffic-off=setup`). No C++ twin: native
+  states "none ported"; `native-verify-scenarios` + `traffic-native-verify` on the tree; whole suite green first (C31.1).
+  Census fresh seeds {41..46} × Sumps 1000 / Parade 2000 / Foundry 2000, n = 18, 150 s. **(1) DECIDING:** runs with any
+  repack while firing, arm 0/18, Fisher p ≤ 0.05 v base, base ≥ 8/18 (else NULL, lesson 300). (2) friendly-stuck total ≤
+  base + 1.645 se (row sd 32.2 → +225). (3) fast friendly ≤ base + 1.645 se (sd 6.84 → +47.7). **(4) artillery shots
+  REPORTED, not judged** (said before numbers, per the brief): row sd 34.1, base 24.9 a run, a 10 % loss needs ~1150 runs,
+  MDE at n 18 ≈ 20 a run; totals, paired mean ± se, per-battery counts, worst run traced. (5) ApproachStage drawn
+  artillery s41–43 × 6 ticks: give-way repacks down, from the side 18/18, first round ≤ clicked + 30 s, alive within
+  1.645 se. (6) bridge-pooled 18/18. (7) the four traffic cases s41–43 equal field for field, or within T3b-c's guards,
+  no wedge. Early stop: `SEQ_CENSUS_LINES='rwf_any:rate:0.02:0.44 fstuck:guard:0.2 fast:guard:0.1'`. Ships ON (his call:
+  "ships if the repack count holds at 0").
+  **Gate (~01:20 PDT 10-15):** `dc8fcbf6` (rule ON), read from build/ (wrapper reaped): 2630 passed / 0 failed,
+  native-verify-scenarios 0 mismatches, sim-baseline moved on pit ALONE (e03377ea → a8fe8e14), the declared rule on the
+  map with set-up batteries. make stopped at that red, so `traffic-native-verify` (and any other target not in done/)
+  runs in the judged chain. **Condition (orchestrator): a red in any of them VOIDS the census.** Chain: unit
+  `traffic-t1cb2`, scratch at `33cb2da5` (= `dc8fcbf6` + a make-echo fix only). Merge takes `33cb2da5`'s
+  `mk/traffic.mk` line.
+  **Base arm in (~07:10 PDT, builder0, `33cb2da5`, seeds 41–46 × 3, n 18):** runs with any repack while firing =
+  **6/18** (10 repacks), below the filed precondition (base ≥ 8/18). **So line (1) is NULL as filed, and T1c-b2 cannot
+  ship on this run** (lesson 300; not re-read after the fact). Orchestrator: the ARM census runs for the record (its
+  repack count, artillery and guards REPORTED); the approach, cases and traffic-native-verify are STOPPED to free builder0.
+  T1c-b2 parks, and a player-terms question goes to him with the arm's numbers.
+  **Arm REPORTED (~08:00 PDT, n 18 paired, 0 missing):** repacks while firing 6/18 → **0/18** (one-sided Fisher p
+  0.0095), total 10 → 0; artillery 434 → 437 (paired +0.17, se 0.39); friendly-stuck 746 → 787 (inside +225); fast
+  1021 → 997 (inside +47.7); give-way repacks 31 → 26; refusals on post 0 → 45. **PARKED as filed**; the question is in
+  HANDOFF *Owed to him* (2). Sizing note for any re-bar: the pooled base rate is 10/27 ≈ 0.37, so a precondition of
+  base ≥ 5/18 suffices at arm 0/18.
+- **Manoeuvre M1b(2) turn-the-hull bar (filed 2026-10-14 ~23:45 PDT, before any number; DECLARED; this is the FIRST run, a
+  second on fresh seeds would be the last):** candidate stream/manoeuvre `44adcbbe` (+ tooling `eea19309`). ONE opt-in
+  switch `--nav-off=turnhull` (`Manoeuvre.TURN_HULL_DEFAULT` false) = (i) `TankBrain._order_move`'s decline lifted for a
+  wheeled turret hull when the face comes from its order AND the facing was DRAWN (`Manoeuvre.hull_takes_face`; C31.8's
+  grant, the decline line the only tank_brain edit; brains told), and (ii) round 29's facekeep (every pose of a face plan
+  stays inside max(ORDER_ARRIVE, settle radius) − 0.75 m, or no further than it starts). Unit stage (builder0, light):
+  rig 4 m short, 150° face, worst pose 6.76 → 3.93 m (keep 5.25), 19 steps refused over 9 cases. **Gate first (C31.1):**
+  native confirmed NONE PORTED (~23:55 PDT: no C++ counterpart of plan_face, _face_legs or _order_move; wheeled face
+  orders already go back to GDScript at execute_native.cpp:363, so the only native effect is more hand-backs, a cost
+  line). **The gate is native's proof:** plain `make remote T=check` on a tree with `TURN_HULL_DEFAULT = true` (the
+  native path runs around it; a `--nav-off` arm would not), whole suite green with `native-verify-scenarios` inside it.
+  That one check is both the C31.1 gate and the ship check. **Gate RESULT (~08:15 PDT):** tree `c57188f6` (main `298e4498` + the fallback +
+  `TURN_HULL_DEFAULT true`), builder0 `>> remote: make check exited 2`, 2629 passed / 0 failed, 25 of 26, sim-baseline
+  alone red: locks 2e02a926 → 76156304 and parade fc52b48b → 7c13a1a6, eleven unmoved, native-verify-scenarios passing.
+  **Declared cause:** `drawn_facing()` reads the element TASK's facing, so a CPU element's task facing also lifts the
+  decline for its wheeled turret hulls. That is symmetric with the player under his "smart AI on both sides" rule.
+  **Orchestrator's addition before numbers:** because turn-hull now changes CPU behaviour in fights, the bar gains
+  **(j) fights at 24 FRESH seeds 238–261: kills, deaths and hit rate within 1.645 se** (rows 69–71), as a GATE line. The
+  judged series runs on `6987bd12` (= main `441eabb0` + the two R31.2 reads, OFF-identical), and the **ship check is
+  re-run on the merge tree** (main + turnhull flipped) before the merge, with locks and parade re-recorded twice on
+  builder0. Arms: both on the GDScript path (`M1_GD=1`), one arm per remote call
+  (lesson 311); new = `M1_NEW_OFF=turnhull`, base = main, drawn AND clicked, same commit. Tuning: hull-rest seeds 40–41.
+  **Judged fresh:** hull-rest seeds 76–81 (4 factions × 6 tasks × 6 = 144 runs an arm), Terminus census 93–105 (13),
+  bridge-pooled's 18 cells. Lines (`judging.md` rows 62–66, 73, 75, 96): (a) drawn point tasks, wheeled turret at rest:
+  median ≤ 15° AND ≥ 70 % within 15°; (b) drawn line tasks: hull error not worse than base, per-class permutation
+  p ≥ 0.05; (c) clicked arm: median within ±5° of base (the lift is drawn-only); (d) crews still moving at 75 s, per task,
+  wheeled turret AND all classes: ≤ base + **1.645 se** (C31.3's form; manoeuvre proposed 2 se, and the orchestrator
+  tightened it before numbers), se quoted as `M1_CLASS` prints it; (e) settle time censored at 75 s REPORTED; (f)
+  bridge-pooled 18/18; (g) Terminus arrivals, rigs and mixed apart, not down beyond 1.645 se paired
+  (`sequential.py arrived:guard:0.10`, no early stop before 6 seeds); (h) B6's SBF probe for gang_ifv (88.6 / 65.6 /
+  96.3° today) REPORTED; (i) counters: `hull_turns` > 0 in the new arm (lesson 300), `face_keep_refused` REPORTED.
+  **Partial:** (a)–(d), (f) and (g) are the gate; any missed = parked with the trace. Ships ON if it holds (the default
+  flipped; native's statement covers the pair).
+  **JUDGED run 1 (~07:30 PDT): NOT MET (line (a)); the SECOND and LAST attempt approved.** builder0, `6efd1ed9`, hull-rest
+  76–81, 144/144 runs an arm, GDScript path; the clicked arms and fights were not taken (stopped to free builder0). (a)
+  Point tasks, wheeled turret at rest: attack-move 4.6° / 78 % PASS; move 4.3° / 68 % and right 6.9° / 55 % MISS the 70 %
+  share (base 32 %, 31 %). (b) Line tasks better: ambush 27.6 v 66.3°, screen 27.4 v 37.0, SBF 28.6 v 73.6 (p < 0.01).
+  (d) Moving at 75 s PASS on every task (ambush margin 0.4). (f) bridge 18/18. (g) Terminus PASS (mixed 292 → 293, rigs
+  175 → 183). (h) SBF gang_ifv drawn 61.0 → 20.9°, ≥ 45° 14 → 0 of 24. **Traced:** artillery 95–99 % within 15°, but
+  gang_ifv 37 % and gang_tank 41 %. A crew in an ELEMENT gets the drawn facing through its element task, and the brain
+  sends it `from: "sector"`, while the lift accepted only `from == "order"`, so the decline still fired (gang_ifv 2195
+  stop rows v 141 face). Facekeep also refuses many gang plans (face_none 105 → 1172, face_keep_refused 9607), which is
+  REPORTED per class beside (a). **Attempt 2 (the last):** the lift accepts `from` ∈ {"order", "sector"} when
+  `drawn_facing(brain)` is true, and nothing else changes. Same bar, every line, gate first (the TURN_HULL_DEFAULT-true
+  plain check). **Fresh seeds:** hull-rest 90–95; **Terminus 146–158** (manoeuvre proposed 123–135, which overlaps
+  CP-P1's 133–145); fights 262–285; bridge's 18; **SBF gang_ifv 25–30** (7–12 were round 30 B6's). A facekeep-caused
+  miss on attempt 2 is a finding with its trace; there is no third attempt.
+  **Attempt 2 JUDGED (~09:30 PDT): MISSES line (g), mixed squad; PARKED (the last attempt).** builder0, `25ef8f7e`,
+  Terminus 146–158, n 13 paired, GDScript: mixed arrivals 293 → 285 of 312 (diff −8, se 4.55, bound −7.5, FAIL; without
+  each arm's two worst runs −5, se 2.6, still FAIL); rigs 177 → 179 PASS; contact-ticks fall (mixed 2405 → 2089, rigs
+  15740 → 8810). Traced, worst seed 153 mixed, the west-street leg 6 → 2 arrived: the four "misses" are NOT stuck. Each
+  is `completed: true`, phase arrived, 7–14 m from its slot, including a tracked tank and a fixed-gun scout the lift never
+  touches. The element seats differently once its wheeled turret members turn at their slots, and the arrivals line
+  counts a changed seating as a miss. Kept for round 32: the drawn hull-rest arms (lines (a) and (d), facekeep per
+  unit) finish; the clicked arms and fights are DROPPED to free builder0 for CP-H.
+- **Manoeuvre CP-H bar (filed 2026-10-15 ~06:00 PDT, before any judged number; DECLARED; CP-H's FIRST run, with the
+  alone re-declaration its only second chance; full text in manoeuvre's Status):** tree = R31.4's one tree,
+  native-built; arms are flags on that one commit, all on the GDScript path (`make manoeuvre-cph` refuses any arm
+  without `--brains-off=native`). OFF = `--brains-off=native`. ALL = `--nav-off=unstickback,kturnarc --gun-off=realspeed
+  --traffic-off=ghost --brains-off=native,realslow` if T4 is on main OFF by the 09:00 PDT cutoff, else `allnoghost` (the
+  same list without ghost), with the case named in the bar block when the series starts. Each consumer ALONE
+  (unstickback, kturnarc, realspeed, realslow, plus ghost when in) is REPORTED on the same judged seeds, and every run
+  prints its flags. **Fresh seeds:** Terminus census + drive 110–122 (13); hull-rest 84–89 (4 factions × 6 tasks × 6 =
+  144 an arm, one arm per remote call); **fights 214–237 (24)** (manoeuvre proposed 190–213, which overlaps CP-P1's
+  181–204, so the orchestrator moved them before numbers); bridge-pooled's 18 cells. **Pass lines:** (a) Terminus
+  arrivals, rigs and mixed apart (rows 73, 75): not down beyond 1.645 se paired each; early stop by `sequential.py
+  arrived:guard:0.10`, never before 6 seeds, row recorded. (b) Terminus wall contact-ticks, rigs and mixed apart (rows
+  74, 76): ≤ base + 1.645 se each, with and without each arm's two worst runs. (c) hull-rest pinned crew-seconds (row
+  67): DOWN beyond 2 se paired at n 144 for ≤ 10 m hulls (a gain line, stricter than 1.645 by the owner's choice); rigs
+  reported apart; STUCK row and tracks reported. (d) hull-rest crews still moving at 75 s per task (rows 62–63): ≤ base +
+  1.645 se, se quoted. (e) nav-terminus-drive PINNED and STUCK rows down, per squad. (f) bridge-pooled 18/18 (a 17/18
+  read by its trace). (g) fights at 24 seeds (rows 69–71): kills, deaths and hit rate within **1.645 se** (the
+  orchestrator's correction from 2 se, C31.3); touching-target hit rate REPORTED. (h) scenario_cp2,
+  test_tactics_mixed_legs, `test_nav_wall_contact::test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (R31.5
+  condition 2) and the WHOLE suite green on native's ON pair tree (the ship check). (i) REPORTED per stage and arm:
+  escape fires by kind (hull / wall), asks, backs, backed v capped, refused, FALLBACK (R31.5 condition 1: fallback
+  carrying most of fires_wall on the census is a finding), unstick_fires, press_escapes. A consumer that never fires in
+  its arm is a null (lesson 300). **Partial (C31.4):** the combined ships as one pair if every line passes; if it fails,
+  each consumer that passed ALONE on every line may be re-declared alone, once. Native's ONE pair ships it.
+- **Brains B3b-2 bar (filed 2026-10-15 ~04:45 PDT, before any judged number; DECLARED; the LAST attempt; partial:
+  none):** candidate `lab/brains-r31-bridge` `344a772a` = stream `0415da23` + `lab/brains-r30-bridge` `4bc708d7` (route
+  seating + mouth guard + heading rule) + the crossing seating matched ONCE per task point (held until the point changes
+  or a re-seat). Control = main's rules (`--route-seat=off --mouth-held=off --reissue-heading=plan`); round 30's B3b is
+  `--route-seat-once=off`. Tuning (builder0, n = 1 a cell): green s2 t5 rim 0 / 35.8 s (B3b rim 0 / 31.8); rust s2 t9 rim
+  0 / 38.0 s, deck 0.4 s (B3b 49.3 s, deck 7.1); green s3 t18 rim 0 / 36.4 s (B3b **rim 1, FAIL**). crossings_held
+  231–293 on, 0 off. **Gate first (C31.1):** `make check` on the lab tip with every switch ON, plus native's "none ported"
+  (the seating is GDScript: Element / TacticsFormation) and native-verify-scenarios. Lines: (1) **his bridge, the FULL
+  108** (locks × both sides × seeds 1–3 × ticks 1–18, deterministic) on = 108/108, control reported (main 106/108).
+  **Orchestrator's note:** the tuning cells lie INSIDE the 108. That is accepted because the 108 is his own
+  full-coverage definition and deterministic, a coverage requirement rather than a sample; (3) is the generalisation
+  check. (2) bridge-pooled 18/18. (3) Arrive series, FRESH seeds 41–44 (5 maps × 5 squads, n 100 an arm): within 8 m on
+  ≥ control − 1 AND McNemar discordant-against ≤ 1; paired median REPORTED. (4) crossings_found / crossings_held > 0 on
+  decked cells and 0 on a Sumps cell; mouth_held_resends REPORTED. (5) Cost ≤ 0.5 ms a tick or NOT READABLE. (6) The
+  suite green on the tip, pursuit included. Ships ON (GDScript; native none ported).
+  **C31.1 gate RED, fixed before any judged number (~09:00 PDT):** `344a772a`'s pre-series check `exited 2`, 2619/0,
+  bridge-pooled 17/18 (rust t8 s2 rim_crews 1); remote-guard-test was the known load flake. Traced: with seating held, S_1
+  (first across) kept the westmost far seat on the bank edge, then backed into the rim for 4.1 s (control 0.5 s). **The
+  candidate becomes B3b-2b `5ed61f91`:** re-match the seating once each time another crew passes the exit
+  (`--route-seat-across=off` = `344a772a`); tuning, n = 1, rust s2 t8 / green s2 t5 / rust s2 t9 / green s3 t18 all rim 0.
+  The same bar and lines apply, gate re-run on `5ed61f91`, then the series on that one heavy slot, and B6 after.
+  **JUDGED ~11:00 PDT: FAIL on line (3); PARKED (the last attempt).** builder0, `5ed61f91`: (1) his bridge, the full
+  108, 108/108 v control 106/108 PASS; (2) bridge-pooled 18/18 PASS; (3) **arrive seeds 41–44, n 100 an arm: every crew
+  within 8 m on 90 v 97, discordant 9 against v 2 for (McNemar p 0.065), FAIL**; (4) crossing counters > 0 in all 108 on
+  and 0 in all 200 arrive runs (the seating never fires there); (5) cost 0.116 v 0.194 ms (busy box, no gain claimed).
+  **Reading:** the arrive loss comes from round 30's other two switches carried in the candidate (the mouth guard and the
+  heading rule), whose arrive line was never read; round 30's chain stopped at the 108. Rows:
+  `references/round31/brains/b3b2b-*`.
+- **Planner CP-P1 bar (filed 2026-10-15 ~04:00 PDT, before any judged number; DECLARED; the LAST attempt = the second
+  judged run; full text in planner Status `ea246430` "CP-P1 BAR (DRAFT v2)"):** candidate = the seam ON
+  (`--nav-off=planner`) at the hash the pair-tree check passes (`0914dafd` or successor), GDScript drive, C++ planner ON in
+  both arms; base = the same commit with `--brains-off=native_drive`. Declared change: for hulls ≥ 10 m (the War Rig
+  only), the k-turn block's and the at-rest face's plan source is replaced by the lattice planner's legs, driven by
+  PlannerExecutor. SLICE 2 counted, PENDING 90 ticks, one crew searched at a time. **Demand (census-4 `b37b9ecb`,
+  builder0 light, Sumps 25 a side, seeds 92721 / 31337):** long hulls are 2 of 50 and make 6 of 174 and 9 of 202
+  manoeuvre starts (3.4 % / 4.5 %); the rig's plan median is 131 expansions, giving ~0.05 ms a tick averaged and the seam
+  idle ~85 %. **Lines:** (a) Terminus census rigs + mixed, 13 fresh seeds 61–73, arrivals not down beyond 1.645 se each
+  squad, no early stop before 6; contact-ticks and `PlannerSeam.report()` REPORTED; `abandoned` / `queue_waits` /
+  `refused` REPORTED, never pass lines. (b) **DECIDING, the rig cases:** seed 31's and 51's Terminus grinds
+  (contact-ticks arm ≤ base + 1.645 se, arrivals not down), the squadmate pin (freed, no re-pin loop, pinned
+  crew-seconds reported), and the 180° arrival on a rig (three legs, not a gate). The six-cusp car is REPORTED, legs
+  per arm expected EQUAL, and a difference is a leak and parks. (c) scenario_cp2 on brains' 12 A/A seeds, the scout's
+  orbit unchanged (pass, no-change guard); the four named tests green on the pair tree with the switch ON first
+  (C31.1). (d) hull-rest 4 × 6, seeds 54–59, drawn and clicked: still-moving at 75 s ≤ base + **1.645 se**; at-rest error
+  not worse (p ≥ 0.05); settle paired median ≤ +6 s; the seam's face plans v plan_face's REPORTED for the rig class. (e)
+  bridge-pooled 18/18; fights 24 seeds within **1.645 se**. (f) Cost: SLICE × the probe's warm per-expansion median for
+  the longest live hull ≤ 0.5 ms (builder0 pinned 0–3, load quoted, an upper bound per R31.6); per-plan hold reported;
+  thirteen sim-baseline lines unmoved with the switch OFF. (g) The clip: the Terminus west-street rig before and after.
+  **Partial:** (a), (c), (d), (e) and (b)'s rig lines met = ships ON as a pair; (b)'s car line or (c) moved = a leak,
+  parked; (b)'s rig lines missed or a starved `abandoned` = a finding, parked with traces, and CP-P0 stays merged OFF.
+  **Orchestrator's changes before numbers:** (d) and (e) at 1.645 se, not 2 se (C31.3). **Owed before numbers:** (i)
+  (b)'s rig cases need an n: each named seed × a fixed set of tick offsets (the planner names the set, e.g. 6), so
+  "+ 1.645 se" has an se; (ii) Terminus 61–73 and hull-rest 54–59 confirmed fresh against round 30's planner and
+  manoeuvre tuning and judged seeds, and against M1b(2)'s 76–81 / 93–105 (no overlap seen).
+  **RESOLVED (~04:15 PDT, planner Status `e5ea1260`):** (ii) the draft's seeds were NOT fresh: Terminus 61–73 collides
+  with M4b run 2's 62–74 and T4's 49–61, and hull-rest 54–59 were M4b's chain. They are **replaced by Terminus 133–145
+  (13), hull-rest 60–65 (6) and fights 181–204 (24)**, unused anywhere in `_agents/` or `references/round30/` (the
+  orchestrator's own check had missed M4b's). (i) No honest tick-offset multiplier exists: `terminus_drive.gd` takes only
+  `--seed`, and a pure order delay in a deterministic one-squad drive replays the same grind shifted in time, giving n
+  copies with zero se. **So C31.5's named rig cases change form:** the SIZED deciding lines are the RIGS SQUAD's paired
+  rows over (a)'s 13 fresh seeds (rig wall contact-ticks ≤ base + 1.645 se of the paired difference, and rig arrivals
+  per (a)). The pin is sized from hull-rest's pinned crew-seconds row ((d), n 144 paired, se ~420), and the rig 180° is
+  deterministic (`test_wheeled_arrival`'s rig case green on the pair tree, plus planner-lab slot180 on a rig in three
+  legs). Seed 31's and 51's grinds and the seed-9 pin are REPORTED traces at n = 1, never judged. The partial rule
+  follows. A true offset series would need a per-squad start jitter in `terminus_drive.gd`, which no stream owns this
+  round, so it is not pursued.
+- **CP-P1's C31.1 gate RED (~06:40 PDT, native `aa0615e4` = pair/cpp1-on, PLANNER_DEFAULT true, builder0):**
+  `make check exited 2`, 2634 passed / 6 failed; the native mirror is clean (87/87 test_native_*, the seam twin held
+  the rig on 195/900 drives with 0 mismatches). The six: 4 in test_planner_seam (it assumes default OFF; the planner
+  fixes its own test); `test_nav_face_recovery` (the wedged-semi recovery is never reached) and `test_kturn_three_point`
+  (the rig takes 4 legs, 0 k-turns), both the seam taking the rig. **Ruling:** those two are manoeuvre's tests. The
+  planner traces each with the seam ON and reports the OUTCOME against what the test protects. If the outcome holds and
+  only the mechanism differs, manoeuvre may pin the test to the planner OFF on condition the planner adds an outcome
+  assertion with the seam ON. If it doesn't hold, it's a finding against CP-P1. The judged series stays held until a
+  re-cut gate is green.
+  **The outcomes, set by manoeuvre before the traces (~07:00 PDT):** test_kturn_three_point = the rig ARRIVES and
+  turns away in ≤ 3 LEGS (gear segments of its actual motion), wall contact ≤ base (today 2 legs, 5.6 s, 0 contacts);
+  his sentence "a vehicle should be able to do a 3 point turn". **4 real legs is a finding.** test_nav_face_recovery's
+  wedged semi = the footprint never yaws through the wall (RESIDUAL_BAR_M, yaw < 20°) AND it is never silent (it faces,
+  or is reported unable within a few seconds); a planner refusal followed by today's give-up report satisfies it.
+  **Read against them (~07:15 PDT, native's log): both are FINDINGS, to be fixed before the series and re-gated.** (1)
+  k-turn ON arrived in 7.2 s with 0 contacts, but its plans are 4 legs each (plan_legs 20 over 5 plans) against today's 2
+  legs / 5.6 s. The fix is in the planner's gear-change cost, re-tuned on the named fixtures (turnround rig 3 legs,
+  six-cusp car ≤ 3). (2) The wedged semi's corridor is a StaticBody3D added after the bake, which the planner's world
+  (navmesh walls + living hulls) cannot see: 2 plans, 2 aborts, 6 s into the slabs, and the give-up never checked in 8 s
+  ("never silent" FAILS; footprint 0.03 m over, yaw 6.3°, holds). **Ruling: unbaked scenery and WRECKS are in CP-P1's
+  scope**, since they occur in every fight. The fix is either static colliders and wrecks in the planner's snapshot, or
+  the face kind handing back after its first abort. No pin of manoeuvre's tests.
+  **Traced (~07:30 PDT, builder0 light, `032af15f`, 29/0) and the wreck ruling CORRECTED:** (1) k-turn ON drives 4 real
+  gear segments (R 3.0, F 1.4, R 1.6, F 29.0 m) v OFF's 2 (R 4.5, F 29.8), so it is a finding. The planner is sweeping
+  the seam's own request one variable at a time (goal clipping, arrival radius, heading, cusp cost, arrive gear) on that
+  scene plus the named fixtures, to find the lever before changing it. (2) **Wrecks do NOT block:**
+  `Tank._set_alive(false)` disables a wreck's collision, so PlannerNavWorld skipping dead hulls is right, and the
+  orchestrator's ruling was wrong. The remaining blind spot is scenery added after the bake, which today's content does
+  not have. **No collider snapshot this round.** The fix is a face handing back on its FIRST abort (`1e513bcf`) and on
+  its FIRST wall touch (`d8c2e742`, `mover.contact.touching`); k-turn keeps R31.2's abort and two re-plans. (Over 20 s
+  both arms breach the semi's footprint bar; the test reads it at 8 s.)
+  **Interim (~08:20 PDT, builder0 light, `9d168af8`, 30/0):** the sweep put the lever at the GOAL. The k-turn goal now
+  AIMS at the waypoint (`PlanRequest.aim`, both planners): a 3-leg plan (R3 F2 R12.5, 9 expansions), the C++ equal, the
+  named fixtures holding (turnround F6a 9, T-junction 2, mouth 1, yard corner 2, slot180 4, wedge 4). **The wedged
+  semi MEETS outcome (b)** (give-up at 4.6 s v base 4.5, yaw 9°, footprint 0.67 m over v bar 1.8). **The k-turn row is
+  still NOT met:** real motion is R3.0 F1.4 R1.6 F29 (4 segments) v base R4.5 F29.8; it is the street's start geometry
+  under three locks. **Rulings:** the next step prefers the half-lock steer (STEERS ±0.5, a general capability), with the
+  fixtures re-read and the extra branching priced. An aim tolerance chosen so one arc satisfies THIS scene is fitting
+  and is barred unless justified independently and stated first. **Time-box: if the k-turn row isn't met by 12:00 PDT
+  10-15, CP-P1 parks with its traces**, and CP-P0 + the OFF seam on main are the round's planner result.
+  **MET (~08:45 PDT, builder0 light, `1f325b91`, 30/0) — before the time-box.** k-turn ON: arrives 7.0 s, 0 contacts,
+  2.20 m nose clearance, 2 REAL gear segments (R 4.0, F 29.6), one 2-leg plan driven to its end; base 2 segments,
+  5.6 s, 1.64 m. The cost is +1.4 s, REPORTED. It took three trace-read changes, none a tuned number: the aim goal, an
+  aim heuristic owing only the heading change and its cusps (`5ffda2b4`, the unlock), and the order-goal release
+  (`1f325b91`). Half lock was measured and REVERTED (the scene was unchanged and three fixtures broke). The wedged semi
+  is met. Every named fixture holds, and the C++ twin plans identically. **Re-cut base for native's gate: `edb773cf`.**
+- **CP-P1 JUDGED run 1 (~09:30 PDT): MISSES line (a), the rigs squad.** builder0 heavy, series tree `0fcdd5dd` (code
+  `05ce260b`), gate `8bb2ad4e`, Terminus seeds 133–145, n 13: rig arrivals base 178 v candidate 159 of 208, paired mean
+  −1.462 a seed, se 0.595 v pass line −0.979, FAIL. Per seed: −4 −5 +2 +1 +1 −4 −2 −3 −1 −1 0 −1 −2. Contact-ticks
+  REPORTED: median 563 v 564, paired +294.8 (se 190.5), worst 139 at 2469 (base 541). The mixed squad is identical in
+  both arms (291/291; the seam never fired, so the equality holds). Seam totals over 13 rig runs: requests 461, plans
+  129, driven 96, aborted 4, abandoned 4; refused GOAL_BLOCKED 174, START_BLOCKED 121, NO_PATH 16; **queue_waits 1141**;
+  pending per rig event n 444, median 12, max 120 ticks. The other stages were not launched. **Ruling: the SECOND and
+  LAST attempt is allowed** (the bar names it): the planner diagnoses on seeds 133–145 (now tuning) and DECLARES its fix
+  before any new number, by 12:00 PDT; then native re-cuts and re-gates, and the series re-runs on **fresh Terminus
+  seeds 172–184**, with the other stages then as filed. No other stages run now (builder0 goes to CP-H). If no fix is
+  declared by 12:00, CP-P1 parks, with CP-P0 + the OFF seam on main as the round's planner result.
+  **FIX DECLARED (~09:50 PDT, planner Status `8761158f`, before any new number):** of the candidate's 28 misses that
+  arrived with the order complete, 21 sit 7.0–11 m from their slots (base 4), at the same slots seed after seed. Trace
+  (seed 134 Green_S0_4, the plaza): arrived 4.5 m from its slot, then the seam's FACE plan "R+1.0x3.5" reversed it to
+  7.4 m, past the census line. **Cause:** the seam's face request lacked manoeuvre's SLOT LAW (round 30 M1b: a face
+  plan may not end further from `ctl.face_slot` than it starts + 0.5 m). **Fix, nothing else:** `PlanRequest.keep(x, z,
+  all_m, end_m)` in both planners (twin fixture), set by the face request exactly as manoeuvre's plan_face does. The
+  k-turn request, PENDING/RETRY and the hold are unchanged. Also from the traces: the GOAL_BLOCKED and queue_waits cost
+  time, not arrivals, and **a rig pressed at full throttle into a squadmate for 65 s** (13 base / 17 candidate, a wedge
+  in both arms) is H1's target, relayed to manoeuvre for CP-H.
+  **Attempt 2's gate RED (~12:05 PDT, native `3a66f546`):** `exited 2`, 2646 passed / 1 failed; sim-baseline moved on 6
+  (expected ON); the native mirror is clean (seam twin 344/900 held, 0 mismatches). The red is a REAL planner bug:
+  `test_tactics_army_layout10` hits 8 engine errors when `PlannerExecutor.tick` reads `global_position` on a freed tank
+  (`planner_executor.gd:135`, then `planner_seam.gd:411` on Nil). A seam crew outlives its hull. The planner fixes it
+  (release on a dead or freed tank), native re-cuts, and the gate re-runs; the series waits.
+- **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
+  k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
+  the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
+  SEARCH** (PENDING_TICKS counted from the tick the search begins at rest). The hull's whole hold is in `pending_ticks`.
+  The rolling-face test took one request and one 5-leg plan, abandoned 0, pending 113 ticks (~45 braking + ~68 search)
+  and ended 4.1° off at 40 s (builder0 light, 5/0). **What he could see:** a rig ordered to face while moving fast stands
+  for up to ~3.8 s before its first leg, so CP-P1 REPORTS `pending_ticks` per rig event (median and max). The switch is in
+  CP-H's form at `39ba4b0b` (`PLANNER_DEFAULT := false`), so the ship change is one const.
+- **Brains B5c-v5 bar (filed 2026-10-15 ~02:10 PDT, before any judged number; DECLARED; the LAST attempt; partial:
+  none):** candidate = **round 30's v4 rule UNCHANGED** (`lab/brains-r30-gate` `f1a804eb`). It was parked only on the
+  single pursuit cell, which R31.3's A/A puts inside a do-nothing nudge's noise, so it gets no re-scoping fitted to it
+  (lesson 306). **C31.1 gate PASSED:** pair tree `pair/brains-v5` `17e7b08c` (stream `0415da23` + `f1a804eb` ON + native
+  `f508ce89`), builder0 `>> remote: make check exited 0`, 2629 passed / 0 failed, 24 passed + 2 NOT JUDGED (perf-judge
+  and scenario_perf, refused on a busy box), sim-baseline 13 unmoved, native-verify-scenarios 0. Named stages on the
+  native path: pursuit 10/10, wheeled_arrival 11/11, nav_gate_v4 8/8, gate_hold 4/4, native_gate 4/4, mixed_legs 4/4,
+  wall_contact 11/11, scenario_cp2 pass. Arms: default ON v `--nav-off=gategiveup`, one tree, GDScript drive both
+  arms, fresh seeds. (1) **Pursuit** (R31.3): `make pursuit-aa` rule ON, ≥ 21/24 as written AND ≥ 19/24 nudged, no
+  new let-go at 18 m/s. (2) **Yard crossing** (seeds 27 28 × ticks 1 3 6 8 11 16, n 12; *yard crossing cell*,
+  count-runs): DECIDING, runs with every crew in on ≥ off AND crews on ≥ off in every run; last-crew median ≤ off − 5 s
+  REPORTED (A/A ±9 s). (3) **Sumps cell** (seeds 16 17 × 6, n 12; se 6.61 s): all-within-8 m median on ≤ off with no
+  run > 5 s later; guns_on_arc ≥ off − 0.05. (4) Terminus head-on (seeds 8–11, t11) REPORTED. (5) **Arrive series**
+  (5 maps × 5 squads × seeds 37–40, n 100): within 8 m on ≥ off − 1 AND McNemar discordant-against ≤ 1; paired median
+  of cells complete in both ≤ +2 % REPORTED (needs n > 1000). (6) Counters gates_turned / latched_away / near /
+  given_up > 0 on every acting on-run, 0 on every off-run; come-round endings counted, and mostly-cap is a finding. (7)
+  bridge-pooled 18/18 on; `make screen-slots` seed 61 A_2 in. (8) Cost: path.gate ≤ 0.5 ms a tick at Sumps 25 a side,
+  or NOT READABLE. (9) The worst on-arm run of (2) and (3) traced before the medians. Ships as the default flip +
+  native's mirror, one pair, with native showing yard and Sumps equal on the ON path. One arm-pair per remote call,
+  systemd-run. **Owed before numbers (orchestrator):** brains names round 30's v4 tuning and judged seeds per stage and
+  confirms none of 27–28, 16–17, 8–11 or 37–40 is among them.
+  **CONFIRMED (~02:15 PDT, from round 30's judged rows):** yard r29 22–24 / r30 23, 25–26; Sumps r29 2–13 / r30 2,
+  14–15; Terminus r29 1–4 / r30 2–7; arrive 1–4, 25–36. No overlap and nothing swapped. Cleared to run.
+  **JUDGED ~06:30 PDT 10-15 — FAIL on line (3) Sumps "no run > 5 s later"; PARKED (the last attempt, partial none).**
+  Pair tree `e675a28a` (= `17e7b08c` + `arrive_pair.py`), builder0, GDScript both arms. The series stopped once the
+  verdict was decided, so arrive, bridge, screen-slots and cost never ran. (1) Pursuit PASS, 24/24 as written and 24/24
+  nudged, the 8 m/s reversal margin +47° on v +69° off. (2) Yard PASS: every crew in 11/12 on v 1/12 off, crews on ≥
+  off every run, last-crew median 21.0 s v never. The worst on-arm run, s27 t8, was traced: A_5 reached its herringbone
+  gate facing away (dot −0.94), the gate was given up 27 m from its slot, and it drove onto terrain by the containers.
+  That's the come-round case for the planner's §2.8 side gate. (3) **Sumps FAIL:** median 24.8 v 24.9 s and
+  guns_on_arc 0.939 v 0.939 both pass, but **s17 t11 runs 58.3 v 36.0 s (+22.3 s)**. Traced: Green_S_3's slot drifts
+  67 times on v 3 off, flipping every ~1 s between seats ~10 m apart, and each flip refires `near` (66 times). That's a
+  limit cycle between v4's per-goal `near` and the element's seating. (4) Terminus (reported): every crew in 3/4 on v
+  2/4 off. Kept as the record: `pair/brains-v5`. **Round 32:** key `near` per SEAT (or with hysteresis), or take the
+  planner's §2.8 side gate (roadmap).
 
 ## Round 30: six streams (launched 2026-10-14; briefs in `streams/`)
 

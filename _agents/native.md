@@ -131,6 +131,14 @@ rounds and nowhere else:
 6. **If a piece cannot be made bit-exact, it is a DECLARED change** (C22.2, C23.1): one commit, alone, lines adopted and
    named, the paired series showing equal outcomes; second choice, said in advance.
 
+7. **A C++ static holds plain data only: no godot `Ref`, no godot builtin** (round 31, the planner's two segfaults on
+   builder0). A static `RID` / `String` / `Dictionary` is constructed when the library is LOADED, before the extension's
+   init sets the bindings its constructor calls: Godot dies inside `--import` (signal 11, a libc-only backtrace) before any
+   test (d373af4e). A static `Ref<T>` is released after the ObjectDB is gone: the process dies at EXIT, after a green run
+   (ad1d1f3d). Hold ids (`RID::get_id()`), numbers and std containers in statics; hold godot objects per instance (or in
+   the uninitialize hook's care, as `exec_states` is). `make native-live-guard` (in `check`) starts and quits Godot through
+   the library once and fails on a crash line or a non-zero exit.
+
 ## The proof (every port, every commit)
 
 | what | command | passes when |

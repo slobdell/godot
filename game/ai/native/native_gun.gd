@@ -35,9 +35,19 @@ static func configure() -> bool:
 		"RETURN_FIRE_SUPPRESSION": Engagement.RETURN_FIRE_SUPPRESSION,
 		"engagement": Engagement, "order_controller": OrderController, "difficulty": Difficulty,
 		"ai_tick_cache": AiTickCache, "fire_lanes": FireLanes, "units": Units, "switches": BrainSwitches,
-		"perception": Perception, "match_script": Match,
+		"perception": Perception, "match_script": Match, "REAL_SPEED": real_speed(),
 	})
 	return _configured
+
+
+## Round 31 (manoeuvre H3, CP-H): Manoeuvre.real_speed_on() (`--gun-off=realspeed` against REAL_SPEED_DEFAULT), read
+## once at configure (a test that flips it sets `_configured = false`); false on a tree without it (called by name).
+static func real_speed() -> bool:
+	var script: Script = Manoeuvre
+	for method: Dictionary in script.get_script_method_list():
+		if String(method["name"]) == "real_speed_on":
+			return bool(script.call("real_speed_on"))
+	return false
 
 
 static func apply(gunnery: Gunnery, cmd: TankCommand, seconds: float) -> void:

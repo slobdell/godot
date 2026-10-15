@@ -3443,7 +3443,10 @@ func _order_move(order: Dictionary) -> void:
 	# player's rigs and tankers with an enemy in sight (squad's probe, round 8). A hull whose gun turns on its own has no
 	# reason to: it stops and the turret carries the aim, as a real truck does. A facing the PLAYER gave ("told") is one
 	# turn that settles, and is still honoured; a fixed gun's hull IS its aim, so it still faces.
-	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id):
+	# Round 31 (manoeuvre M1b(2), his round-28 call "turn the whole vehicle", C31.8 grant): under `turnhull` a facing he
+	# DREW is turned to by the hull, front armour where he pointed; a clicked order keeps the rule above (the turret).
+	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id) \
+			and not Manoeuvre.hull_takes_face(self, order):
 		faces_declined += 1
 		order = {"type": "stop"}
 	# Round 13 (S6): a no-pivot fixed gun with nothing in sight is not asked to turn unless its order says which way.

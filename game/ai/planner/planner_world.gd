@@ -61,6 +61,20 @@ func add_hull(cx: float, cz: float, fx: float, fz: float, half_w: float, half_l:
 	hulls.append([cx, cz, f.x, f.y, half_w, half_l, hull_name])
 
 
+## Round 31 (CP-P0): the world as the C++ planner takes it: the wall rectangles and the hull boxes flat, as doubles
+## (PackedFloat64Array: the values here arrive unchanged). PlannerNavWorld adds the navigation map and the bake radius.
+func native_view() -> Dictionary:
+	var flat_walls := PackedFloat64Array()
+	for wall: Array in walls:
+		for v: float in wall:
+			flat_walls.append(v)
+	var flat_hulls := PackedFloat64Array()
+	for hull: Array in hulls:
+		for i in 6:
+			flat_hulls.append(float(hull[i]))
+	return {"walls": flat_walls, "hulls": flat_hulls}
+
+
 ## Drop every cached cell (the walls changed).
 func forget() -> void:
 	_field.fill(UNSET)
@@ -105,16 +119,18 @@ func _cell(ix: int, iz: int) -> float:
 		var v := _field[i]
 		if v > UNSET_BELOW:
 			return v
-		v = _wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)
-		_field[i] = v
-		return v
+		# Round 31 (P6): stored, then READ BACK, so a cell is the same float32 on its first read as on every later one
+		# (the C++ keeps a navmesh's cells across plans; a value that depended on which read was first could not be
+		# held to the GDScript by the twin test).
+		_field[i] = _wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)
+		return _field[i]
 	var key := (ix + 1048576) * 2097152 + (iz + 1048576)
 	var known: Variant = _spill.get(key)
 	if known != null:
 		return known
-	var d := _wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)
-	_spill[key] = d
-	return d
+	var narrowed := PackedFloat32Array([_wall_distance((float(ix) + 0.5) * CELL_M, (float(iz) + 0.5) * CELL_M)])
+	_spill[key] = narrowed[0]  # a float32, as the window's cells are
+	return narrowed[0]
 
 
 ## The exact distance from a point to the nearest wall rectangle's boundary (negative inside). Overridden by a navmesh

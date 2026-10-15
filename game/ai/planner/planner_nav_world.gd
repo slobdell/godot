@@ -29,6 +29,15 @@ func refresh_hulls(me: Tank, tanks_root: Node) -> void:
 		add_hull(other.global_position.x, other.global_position.z, f.x, f.z, float(box[0]) * 0.5, float(box[2]) * 0.5, String(other.name))
 
 
+func native_view() -> Dictionary:
+	var view := super.native_view()
+	view["map"] = map
+	view["bake_radius"] = bake_radius
+	if NativeBridge.available and NativeBridge.nav != null:
+		view["nav"] = NativeBridge.nav  # the game's one polygon index (native's review): the C++ field reads through it
+	return view
+
+
 func _wall_distance(x: float, z: float) -> float:
 	var at := Vector3(x, 0.0, z)
 	var closest := NavigationServer3D.map_get_closest_point(map, at)

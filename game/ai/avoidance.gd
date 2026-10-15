@@ -144,8 +144,13 @@ static func refresh(tanks_root: Node) -> void:
 		_names.append(String(tank.name))
 		_xs.append(p.x)
 		_zs.append(p.z)
-		_vxs.append(tank.estimated_velocity.x)
-		_vzs.append(tank.estimated_velocity.z)
+		# Round 31 (traffic T4, CP-H consumer, manoeuvre's M4b trace): with `ghost` named, every crew steering round a hull
+		# reads it at its REAL velocity (Tank.real_velocity: the flat displacement a tick). estimated_velocity is the
+		# slide's ASKED velocity, so a hull pinned nose-on into a friend is a 12 m/s ghost here, and a crew that backed
+		# off it was steered straight back in (Terminus mixed seed 21: an IFV oscillating 73 s). OPT-IN (R31.1).
+		var seen := tank.estimated_velocity if Traffic.off("ghost") else tank.real_velocity
+		_vxs.append(seen.x)
+		_vzs.append(seen.z)
 		_radii.append(radius_of(tank.unit_id))
 		if BrainSwitches.avoid_halves:
 			var halves: Vector2 = _halves_of(tank.unit_id)
@@ -179,12 +184,13 @@ static var _unit_rows := {}
 
 
 static func _gather_native(tanks_root: Node) -> bool:
-	var missing: PackedStringArray = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows)
+	var ghost := NativeTraffic.ghost()  # round 31 (traffic T4): the rows at Tank.real_velocity
+	var missing: PackedStringArray = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows, ghost)
 	if not missing.is_empty():
 		for unit_id in missing:
 			var halves: Vector2 = _halves_of(unit_id)
 			_unit_rows[unit_id] = PackedFloat64Array([radius_of(unit_id), halves.x, halves.y])
-		missing = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows)
+		missing = NativeBridge.impl.avoidance_gather(tanks_root, Movement._registry, _unit_rows, ghost)
 	_gd_stale = missing.is_empty()
 	return _gd_stale
 

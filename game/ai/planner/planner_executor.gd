@@ -51,6 +51,28 @@ var seconds := 0.0
 var braking := false
 
 
+## Round 31 (CP-P1): the executor's state as a Dictionary and back (PlannerSeam.capture / restore for the twin
+## harnesses: an executor copied this way drives on exactly as the original would). The plan is shared (never mutated).
+const STATE_KEYS: Array[String] = ["brake", "accel", "leg_index", "gear", "steer", "left_m", "from", "driven", "last", "rolling",
+		"timeout", "stall", "stall_from", "done", "aborted", "reason", "legs_driven", "cusps", "seconds", "braking"]
+
+
+func to_state() -> Dictionary:
+	var state := {"plan": plan, "tank": tank}
+	for key in STATE_KEYS:
+		state[key] = get(key)
+	return state
+
+
+static func from_state(state: Dictionary) -> PlannerExecutor:
+	var e := PlannerExecutor.new()
+	e.plan = state["plan"]
+	e.tank = state["tank"]
+	for key in STATE_KEYS:
+		e.set(key, state[key])
+	return e
+
+
 func start(p_plan: PackedPlan, p_tank: Tank) -> void:
 	plan = p_plan
 	tank = p_tank

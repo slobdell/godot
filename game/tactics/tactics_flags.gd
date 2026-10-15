@@ -98,6 +98,9 @@ static func _parse() -> void:
 			TankBrain.BOUND_SUPPRESS_MOVES = false
 		if arg == "--feed-mouth=off":
 			ElementPlan.FEED_MOUTH_ENABLED = false
+		# Round 30 (brains B6, tuning): a drawn SBF line's fanned sectors (round 29's rule), the control arm.
+		if arg == "--sbf-told-sectors=on":
+			ElementPlan.SBF_TOLD_ALL = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

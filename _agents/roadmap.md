@@ -243,6 +243,52 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 3. (round 30 stream, not urgent) route-aware seating: his bridge's last cell (`lab/brains-r29-bridge`), the gate pulling a
    near hull back, traffic T3's crossing crawl.
 
+## Round 32 candidates (found during round 31)
+
+- **His bridge, 108/108 at last, but the arrive maps paid (brains B3b-2b parked 2026-10-15):** the crossing seating
+  (re-matched as crews pass the exit) gave every crew across his bridge on all 108 cells (control 106/108), but the
+  arrive series fell 97 → 90 within 8 m (seeds 41–44, n 100, McNemar p 0.065). The seating never fires on those maps, so
+  the cost is in round 30's mouth guard or heading rule, carried in the same candidate. Round 32 ships the seating ALONE
+  (its own bar: the 108 + arrive), after attributing the cost by removing each of the other two (brains' 18-run
+  attribution on the 9 losing cells is a trace, since those cells were selected for the loss).
+  **The attribution trace (builder0 light, `5ed61f91`, n 1 per cell and switch):** as is, 0/9 get every crew within
+  8 m; `--mouth-held=off` alone 0/9; **`--reissue-heading=plan` alone 9/9, each at the control's exact all_in8_s.** The
+  lead: round 28's heading rule (narrowed to the drawn facing, `254fd98f`) costs those arrivals, and the seating and
+  mouth guard do not. Round 32's candidate is therefore the seating + mouth guard, with the heading rule left off.
+- **Turn the hull (M1b(2)) parked a second time on arrivals that are really seating (2026-10-15).** With the lift
+  accepting element-task facings, the point-task share and line tasks improved (run 1: ambush 66 → 28°, SBF 74 → 29°;
+  gang_ifv SBF 61 → 21°) and contact fell, but Terminus mixed arrivals read 293 → 285. The "missing" crews had
+  completed, 7–14 m from slots the element re-seated once its turret members turned. Round 32 decides, before any
+  number: does an arrivals line count "completed at a re-seated slot" as arrived, and does facekeep (9600 refusals in
+  run 1, per unit in run 2's hull-rest rows) need to change for gang hulls?
+  **Attempt 2's record arms** (builder0, `25ef8f7e`, hull-rest 90–95, drawn, 144 an arm): with the 'sector' lift the
+  hulls DO turn. Point tasks, wheeled turret at rest, base → new: move 46.5 → 2.5° (30 → 86 % within 15°), right
+  56.5 → 3.2° (31 → 78 %), attack-move 45.0 → 3.8° (24 → 91 %); gang_ifv 37 → 62 %, gang_tank 41 → 60 %; SBF gang_ifv
+  49.9 → 17.5°; bridge 18/18. **It cost two lines:** crews still moving at 75 s under attack-move +13 v bound 11.2
+  (se 6.8), and Terminus mixed arrivals (the re-seating). facekeep refusals in the new arm total 11 997 (gang_artillery
+  3098, artillery 1983, gang_tank 1939, gang_ifv 1285, …). Round 32's question is the settle under attack-move and the
+  element's re-seating, not the turn itself.
+- **The arrival gate, a third time (brains B5c-v5 parked 2026-10-15):** v4's rule passed pursuit 24/24, the yard
+  (every crew in 11/12 v 1/12) and Terminus, and FAILED one Sumps run (s17 t11 +22.3 s), where a seat flip-flop
+  refired `near` 66 times. Two candidates: key `near` per seat index (or with hysteresis), or the planner's §2.8 SIDE
+  gate, which also removes the yard come-round case (s27 t8, a car given up 27 m from its slot). Brains' B9 trace shows
+  the same `near` frees Terminus s33 t1 under T3b (all-in 61.4 → 27.5 s), so T3b's re-judge pairs on top of whichever
+  ships.
+  **The planner's hand-over for it** (stream/planner Status "Hand-over for round 32", `d8300843`): the planner itself is
+  hull-agnostic (the six-cusp car plans in ≤ 3 legs; a car's face-about costs 190–250 µs an expansion, median 11–113).
+  What excludes short hulls is the SEAM's scope. **Cheapest:** a static `PlannerSeam.side_gate(slot, facing, unit_id)`
+  that returns §2.8's `slot + perp × R` on the side with room, using two clearance reads through the C++ cache with no
+  search; brains keeps the gate (C30.5), one contract line, brains' bar. **Full:** a third take point, a "slot" kind
+  (goal = slot + facing, 1.0 m / 8°), with the scope opened for THAT kind only (`in_scope(unit_id, kind)`), so the short
+  hulls' k-turn and face demand (95 % of manoeuvre starts) stays with today's code. Its own bar would name yard s27 t8,
+  add an arrival census, and re-price the cost line.
+- **A navmesh gap in the default arena around x −25…−18, z 7** (brains' reach-probe, 2026-10-15): at (-25.7, 7.3),
+  where test_control_queued_task's Green_Alpha_3 stops, the navmesh start snaps 8.2 m to (-17.5, 7.3), so the hull
+  stands 8 m off walkable mesh and pathing answers `no_path`. It is not established whether that is a bake hole (ground
+  a hull can stand on that the bake left out) or an obstacle footprint the hull was pushed onto. It belongs to the
+  arena's owner (`arenas/**`, no stream this round). Today main's lock-reverse escape frees the hull, and R31.5 keeps
+  that for terrain pins.
+
 ## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — SPLIT 2026-10-14 ~22:00 as traffic (his two calls, T4, the early-stop hook) + manoeuvre (1 as CP-H, 4) + brains (3, B8) + native (pairs, the planner review, 5's test split) + planner (2; Fable) (`workstreams.md` *Round 31*); his two calls MADE ~21:40
 
 **His calls — MADE (both recommendations accepted, 2026-10-14 ~21:40; the words in `game_design.md`):**

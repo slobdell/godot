@@ -66,3 +66,61 @@ planner-lab: import ## planner P3: the planner v today's drive on real arena cut
 	grep -q PLANNER_LAB_DONE $(PLANNER_LAB_DIR)/run.log || echo ">> planner-lab: did not finish"; \
 	if [ -n "$$movie" ] && command -v ffmpeg >/dev/null && [ -f "$$avi" ]; then ffmpeg -loglevel error -y -i "$$avi" -c:v libx264 -preset slow -crf 18 \
 		-pix_fmt yuv420p -movflags +faststart "$$movie" && rm -f "$$avi" && echo "PLANNER_LAB_MOVIE $$movie"; elif [ -n "$$avi" ]; then echo "PLANNER_LAB_MOVIE $$avi"; fi
+
+# ---- round 31 (CP-P0 / P6): the C++ twin and the plan-event census ----------------------------------------------------
+# The twin test alone, the library built first, pinned when asked (PLANNER_CPUS=0-3 on builder0: the price line is a
+# builder0 number, _agents/remote_builds.md "builder0 is two machines"). `make remote T="planner-twin PLANNER_CPUS=0-3"`.
+PLANNER_CPUS ?=
+.PHONY: planner-twin
+planner-twin: native import ## planner CP-P0: tests/test_native_planner.gd alone (every fixture both ways, the table, the slice; us a plan each way), pinned with PLANNER_CPUS=0-3
+	@mkdir -p $(BUILD_DIR)/planner
+	@echo ">> planner-twin on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cpus $(or $(PLANNER_CPUS),any) | load $$(cut -d' ' -f1 /proc/loadavg)"
+	@PLANNER_TWIN_ALL=1 $(if $(PLANNER_CPUS),taskset -c $(PLANNER_CPUS)) $(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=native_planner' \
+		> $(BUILD_DIR)/planner/twin.log 2>&1; s=$$?; \
+	grep -E "NATIVE_PLANNER |NATIVE_PLANNER_SLICE|MEASURE|PASS|FAIL|passed|SCRIPT ERROR" $(BUILD_DIR)/planner/twin.log | cut -c1-300; \
+	echo ">> planner-twin: runner exited $$s (build/planner/twin.log)"; exit $$s
+
+# P6's census: plan REQUESTS a tick in a real fight on the GDScript drive (tests/planner/plan_census.gd): his Sumps at
+# PLANNER_CENSUS_N a side with leaders (perf_armies), PLANNER_CENSUS_SEEDS, PLANNER_CENSUS_TIME s each; one
+# PLANNER_CENSUS line per run -> build/planner/census-<seed>.log. One process at a time (the light lane fits).
+PLANNER_CENSUS_N ?= 25
+PLANNER_CENSUS_SEEDS ?= 92721 31337
+PLANNER_CENSUS_TIME ?= 120
+PLANNER_CENSUS_ARENA ?= sumps
+# PLANNER_CENSUS_PROBE=30: every 30 ticks plan one fixture inside the fight and keep its us (the price under load; the
+# fight itself stays on --brains-off=native, so the probe says which path it took: with native off it is the GDScript's).
+PLANNER_CENSUS_PROBE ?= 0
+.PHONY: planner-census
+planner-census: native import ## planner P6: plan requests a tick in a PLANNER_CENSUS_ARENA fight at PLANNER_CENSUS_N a side, PLANNER_CENSUS_SEEDS, PLANNER_FLAGS=--brains-off=native for the GDScript drive -> build/planner/census-<seed>.log
+	@mkdir -p $(BUILD_DIR)/planner $(BUILD_DIR)/perf-armies
+	@$(PYTHON) tools/perf_armies.py size $(PLANNER_CENSUS_N) $(BUILD_DIR)/perf-armies
+	@for seed in $(PLANNER_CENSUS_SEEDS); do log=$(BUILD_DIR)/planner/census-$$seed.log; \
+		echo ">> planner-census: $(PLANNER_CENSUS_N) a side, seed $$seed on $$(hostname) at $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?})"; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/planner/plan_census.gd -- --match --elimination --control \
+			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_$(PLANNER_CENSUS_N).json \
+			--rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_$(PLANNER_CENSUS_N).json --budget=100000 \
+			--time-limit=$(PLANNER_CENSUS_TIME) --seed=$$seed --arena=$(PLANNER_CENSUS_ARENA) --green-elements --rust-elements \
+			--plan-probe=$(PLANNER_CENSUS_PROBE) $(PLANNER_FLAGS) > $$log 2>&1 || true; \
+		grep -h "^PLANNER_CENSUS" $$log | cut -c1-600 || { echo "   no PLANNER_CENSUS line: see $$log"; tail -3 $$log; }; \
+	done
+
+# Round 31 (planner CP-P1, bar line (a)): the judged Terminus series. nav-terminus-drive over PLANNER_SERIES_SEEDS x
+# PLANNER_SERIES_SQUADS in TWO arms on the GDScript drive: base = `--brains-off=native_drive` (today's drive, the C++
+# planner idle), candidate = the same + `--nav-off=planner` (the seam ON). Both arms one build, the same seeds; read by
+# tests/planner/series_verdict.py as the bar is written (paired arrivals <= 1.645 se, contact-ticks reported, the
+# seam's per-run report). Heavy (NAV_JOBS runs at once): make remote T="planner-series". The seeds are the bar's
+# FRESH ones (133-145); tuning never touches them.
+PLANNER_SERIES_SEEDS ?= 133 134 135 136 137 138 139 140 141 142 143 144 145
+PLANNER_SERIES_SQUADS ?= mixed rigs
+PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
+
+.PHONY: planner-series
+planner-series: import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
+	@rm -rf $(PLANNER_SERIES_DIR) && mkdir -p $(PLANNER_SERIES_DIR)
+	@echo ">> planner-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SERIES_SEEDS) | squads $(PLANNER_SERIES_SQUADS)"
+	@for arm in base candidate; do flags="--brains-off=native_drive"; [ "$$arm" = base ] || flags="$$flags --nav-off=planner"; \
+		echo ">> planner-series: arm $$arm ($$flags)"; \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_SERIES_SQUADS)" DRIVE_SEEDS="$(PLANNER_SERIES_SEEDS)" \
+			NAV_FLAGS="$$flags" > $(PLANNER_SERIES_DIR)/$$arm.out 2>&1 || { tail -20 $(PLANNER_SERIES_DIR)/$$arm.out; echo ">> planner-series: arm $$arm REFUSED"; exit 1; }; \
+		mv $(BUILD_DIR)/nav-drive $(PLANNER_SERIES_DIR)/$$arm; done
+	@$(PYTHON) tests/planner/series_verdict.py base=$(PLANNER_SERIES_DIR)/base candidate=$(PLANNER_SERIES_DIR)/candidate | tee $(PLANNER_SERIES_DIR)/verdict.txt

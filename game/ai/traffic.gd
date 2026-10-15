@@ -12,6 +12,11 @@ extends RefCounted
 ##           (Movement._negotiate; counter Movement.parked_refusals).
 ##   hold    Round 29 T1 (his call, round 28: TAKE TURNS): two friendly squads meeting HEAD-ON in a street take turns
 ##           like a one-lane bridge, and the waiting squad waits at a real spot beside the street's mouth (below).
+##   ghost   Round 31 T4 (CP-H consumer, OPT-IN by R31.1): ORCA's neighbour table (Avoidance.refresh) reads a hull's REAL
+##           velocity (Tank.real_velocity), not the slide's asked one. OFF by default (main plays the 12 m/s ghost of a
+##           pinned hull, manoeuvre's M4b trace); NAMING it turns it ON: `--traffic-off=ghost` (C31.4's name, inverted
+##           like movement's `inflate`) or `--traffic-on=ghost`.
+##   ghostself  Round 31 T4 v2 (tuning, OPT-IN): the solving crew's OWN velocity in _avoid read as real_velocity too.
 ##
 ## THE STREET HOLD (round 29 T1; round 28's T1b `traffic-t1b` is the ancestor: its verdict, a creep instead of a spot).
 ## Between FRIENDLY squads (an element; a crew outside one is its own squad), both moving. Every crew works from the
@@ -145,16 +150,28 @@ static var destinations := {}
 
 static var _off := {}
 static var _parsed := false
+## Round 31 (R31.1): CP-H's consumers are OPT-IN. Each is off unless NAMED, and naming it (`--traffic-off=` or
+## `--traffic-on=`) turns it ON. Native's mirror keys on this const: keep it (empty is fine) when one ships ON.
+const OPT_IN := ["ghost", "ghostself"]
 
 
-## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`)?
+## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN names are off unless named)?
 static func off(name: String) -> bool:
 	if not _parsed:
 		_parsed = true
+		for part: String in OPT_IN:
+			_off[part] = true
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--traffic-on="):
+				for part in String(arg).trim_prefix("--traffic-on=").split(",", false):
+					_off.erase(part.strip_edges())
 		for arg in OS.get_cmdline_user_args():
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):
-					_off[part.strip_edges()] = true
+					if OPT_IN.has(part.strip_edges()):
+						_off.erase(part.strip_edges())
+					else:
+						_off[part.strip_edges()] = true
 	return _off.has(name)
 
 

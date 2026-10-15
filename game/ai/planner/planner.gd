@@ -42,12 +42,152 @@ const TRACE_SUB_M := 0.25       # the poses handed back are this far apart
 static var last_expansions := 0
 static var last_nodes := 0
 
+## Round 31 (CP-P0): the SAME search in C++ (native/src/planner_native.cpp, `PlannerNative`), the same bits
+## (tests/test_native_planner.gd holds every fixture to it). Taken when the library is loaded, `BrainSwitches.native`
+## and its `native_planner` sub-switch are on, and `native_on` (this file's own switch: the tests flip it to plan both
+## ways; `--planner-gdscript` on the command line clears it for an A/B of the GDScript search in play).
+static var native_on := not OS.get_cmdline_user_args().has("--planner-gdscript")
+static var _impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
+## Measurement: plans taken by each path.
+static var native_plans := 0
+static var gdscript_plans := 0
+
+
+static func native_usable() -> bool:
+	if _impl == null or not native_on or not BrainSwitches.native:
+		return false
+	# `native_planner` is native's sub-switch (BrainSwitches); read by name so this file parses on a tree without it.
+	var sub: Variant = (BrainSwitches as Script).get("native_planner")
+	return sub == null or bool(sub)
+
+
+## The C++ search's answer as a PackedPlan: the legs, code, cost and counts are the library's; `why` is composed here
+## from its numbers with this file's own format strings; the trace (poses, metres, cusps, the end pose) is GDScript's
+## `trace` over the same legs, as on the GDScript path.
+static func _plan_native(req: PlanRequest) -> PackedPlan:
+	if req.world == null:
+		var out := PackedPlan.new()
+		out.throttle_fwd = req.throttle_fwd
+		out.throttle_rev = req.throttle_rev
+		out.why = "no world"
+		return out
+	return _from_native(req, _impl.plan(req.to_native()))
+
+
+# ---- P6: the per-tick slice (a SESSION on the C++ planner: begin, step N expansions a tick, result) -------------------
+## One session at a time (the library holds one; PlannerSeam's queue is one deep). `begin_session` takes the request's
+## view (`PlanRequest.to_native()`, so a seam can hold and replay it); `step_session(n)` runs at most n expansions and
+## answers true when the plan is final; `session_result(req)` is the PackedPlan. Without the library the whole plan is
+## made at `begin_session` in GDScript (the twin path: correct, slow, for a tree without the .so) and `step_session`
+## answers true at once. Proven in tests/test_native_planner.gd: the sliced plan is the whole plan.
+## The C++ navmesh cell cache's counters (chunks, cells, hits, misses) for measurement; empty without the library.
+static func native_cache_stats() -> Dictionary:
+	if _impl == null or not _impl.has_method("nav_cache_stats"):
+		return {}
+	return _impl.nav_cache_stats()
+
+
+## The session's own library instance (a whole plan on `_impl` while a session is live would clobber it: native's
+## review note); the free-space tables are one static cache inside the library, shared by both.
+static var _session_impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
+static var _session_req: PlanRequest = null
+static var _session_plan: PackedPlan = null
+static var _session_stepped := 0
+
+
+static func begin_session(req: PlanRequest) -> void:
+	_session_req = req
+	_session_plan = null
+	_session_stepped = 0
+	if native_usable():
+		_session_impl.begin(req.to_native())
+	else:
+		_session_plan = plan(req)
+
+
+static func step_session(expansions: int) -> bool:
+	if _session_plan != null:
+		return true
+	if _session_req == null or _session_impl == null or not _session_impl.live():
+		return true
+	_session_stepped += maxi(expansions, 1)
+	if _session_impl.step(expansions):
+		native_plans += 1
+		_session_plan = _from_native(_session_req, _session_impl.result())
+		return true
+	return false
+
+
+static func session_done() -> bool:
+	return _session_plan != null
+
+
+static func session_result() -> PackedPlan:
+	return _session_plan
+
+
+## The expansions handed to `step_session` so far (a seam's snapshot replays a pending session by stepping this many).
+static func session_stepped() -> int:
+	return _session_stepped
+
+
+static func cancel_session() -> void:
+	_session_req = null
+	_session_plan = null
+	_session_stepped = 0
+	if _session_impl != null and _session_impl.live():
+		_session_impl.cancel()
+
+
+static func _from_native(req: PlanRequest, r: Dictionary) -> PackedPlan:
+	var out := PackedPlan.new()
+	out.throttle_fwd = req.throttle_fwd
+	out.throttle_rev = req.throttle_rev
+	out.code = String(r["code"])
+	if out.code == "NONE":
+		out.code = PackedPlan.NO_PATH  # the library refused (a session live on that instance): an honest no-plan, said
+		out.why = "the planner library refused: %s" % String(r.get("why", ""))
+		return out
+	out.expansions = int(r["expansions"])
+	if out.code == PackedPlan.OK or out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET:
+		# As `_search` does: the measurement statics move only when a search ran (a blocked request returns before them).
+		last_expansions = int(r["last_expansions"])
+		last_nodes = int(r["nodes"])
+	match out.code:
+		PackedPlan.OK:
+			out.legs.assign(r["legs"])
+			out.cost_s = float(r["cost_s"])
+			out.why = "%d legs, %.1f s, %d expansions (first plan at %d)" % [out.legs.size(), out.cost_s, last_expansions, int(r["first_at"])]
+		PackedPlan.BUDGET:
+			out.why = "budget of %d expansions spent" % req.budget
+		PackedPlan.NO_PATH:
+			out.why = "no pose within %.0f m reaches the goal on the %.1f m / %d-bin lattice (%d expansions, %d nodes)" % [
+					req.horizon_m, float(r["cell_m"]), int(r["bins"]), last_expansions, last_nodes]
+		PackedPlan.START_BLOCKED:
+			out.why = "the start pose overlaps another hull"
+		PackedPlan.GOAL_BLOCKED:
+			out.why = "the goal pose is not clear by %.1f m" % MARGIN_M
+		PackedPlan.ALREADY_THERE:
+			out.end_x = req.start_x
+			out.end_z = req.start_z
+			out.end_fx = req.start_fx
+			out.end_fz = req.start_fz
+	if int(r["coarse_expansions"]) >= 0:
+		out.why += " (after %d coarse expansions)" % int(r["coarse_expansions"])
+	if out.code == PackedPlan.OK:
+		trace(req, out)
+	return out
+
 
 ## The plan: the coarse lattice first (1 m, 15 degrees), and on NO_PATH or BUDGET the fine one (0.5 m, 10 degrees)
 ## with the same budget again — a corridor the coarse cells cannot thread (an IFV turning round in 12 m: the coarse
 ## search exhausted its window and said NO_PATH to a manoeuvre that exists) is found by the fine one at ~4x the cost.
 ## The expansions reported are the sum. `req.fine_retry` false skips it.
 static func plan(req: PlanRequest) -> PackedPlan:
+	if native_usable():
+		native_plans += 1
+		return _plan_native(req)
+	gdscript_plans += 1
 	var out := _search(req, CELL_M, HEADING_BINS)
 	if (out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET) and req.fine_retry:
 		var coarse := out.expansions

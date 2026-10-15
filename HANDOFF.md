@@ -11,6 +11,85 @@ B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes 
 
 ## 🚀 ROUND 31 IS PREPARED (2026-10-14 ~22:10 PDT) — NOT LAUNCHED; read this first
 
+**LAUNCHED 2026-10-14 ~22:30 PDT.** Five workers are running: godot-traffic-05, godot-manoeuvre-33, godot-brains-0b, godot-native-7d
+and godot-planner-6f (Fable). Every stream branch was fast-forwarded to main `75dbbb7c` before launch. The orchestrator is an Opus
+session in `~/projects/godot` on the `/loop` from `orchestration.md`. Main since launch: `2ee27055` (C31.9, `WEB_PACK FAILED` →
+`WEB_PACK REFUSED`; unchecked, it rides the first merge's main check). The planner was asked for a written DRAFT of the seam
+(line, leg shape, pending behaviour, record fields) in its Status, and manoeuvre to hold the plan-source line and leg signature
+stable until it is agreed.
+
+**⚑ Owed to him (round 31; ask in player terms, one recommendation each):**
+1. **Crossing squads at a Terminus street (T3b-c).** "At a Terminus street crossing, the squad that gives way now gets
+   through about 2.6 s later, for about a third fewer bumps there (93 → 61). It's the same rule and about the same price
+   as the yard's ~3 s you accepted." **Recommendation: yes, let your ~3 s cover both crossings**, since it's one rule at
+   one price. With his yes, T3b-c ships on the rows already judged (Terminus +2.61 s ≤ 3.0 + 0.90, yard +3.38 ≤ 3.43,
+   builder0, `f5dc4147`, seeds 41–43, n 18) as the pair with native `413252ea` + the 13 baselines re-recorded. With his
+   no, it parks. **Clips (sent to him):** `~/projects/clips/round31/t3bc_*` (Terminus and yard, seed 43 tick 1 = the worst Terminus run, before and after, plus a side-by-side at 10 s and `t3bc_CAPTION.txt`).
+   **What the worst run shows** (Terminus s43/t1, traced on builder0): the whole yielding squad is held at the crossing's
+   share for ~4–6 s while the other squad passes, reaching back to its rear crew, then released at full pace, plus one
+   overshoot k-turn. The rule is doing exactly what it intends; nothing is stuck.
+
+**builder0 throughput (R31.9, his OK 2026-10-15 ~13:00; no second build machine for now):** builds are already
+incremental, and a check is ~55 min of TEST time. (1) After every merge run `tools/merge_check_needed.sh <green>`; on
+INHERIT, run no main check. (2) Workers iterate with `make quick-remote` and run full checks only for named hashes. (3)
+The slowest test files get split by their owners: brains and traffic now as stretch, the rest in round 32's briefs
+(native's four twins first).
+
+**To show him (round 31):** the planner's Terminus west-street War Rig told to face back, on the REAL drive (`faeab49c`,
+builder0 light): today 29.8 s, 54 gear changes, 14 wall-contact ticks, ending jackknifed across the street (the
+orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 contacts, ending straight nose south in
+mid-street. The side-by-side clip is `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (32 s, today left, planner right; at 16 s today's rig is jackknifed on the left wall while the planner's is straight). NOT in
+play until CP-P1 passes.
+
+2. **The set-up mortar truck (T1c-b2).** "A set-up mortar truck no longer packs up to let a passing squadmate by. On
+   fresh seeds that happened in 6 of 18 fights before and 0 of 18 after, and the trucks fired just as much (434 v 437
+   rounds). It missed only because the bar, written before the run, needed the problem in at least 8 of 18 fights first."
+   (builder0, `33cb2da5`, seeds 41–46 × 3 maps, n 18 paired, one-sided Fisher p 0.0095; friendly-stuck 746 → 787 crew-s
+   and fast contacts 1021 → 997, both inside their guards; squadmates asking past a firing truck are refused 45 times and
+   go round.) **Recommendation (traffic's, the orchestrator agrees): yes, ship it.** You already asked for this behaviour,
+   and every guard held. With his yes, the orchestrator runs its remaining C31.1 pieces on current main
+   (traffic-native-verify + a check with the rule ON, the pit baseline re-recorded), then merges. With his no, it parks.
+ rulings R31.1 (opt-in CP-H switches, two checks; addendum: `ghost`, `realslow` and `realspeed`
+arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two call lines, PlannerExecutor drives Vector3 legs,
+`manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
+v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
+**Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
+**✅ MAIN GREEN at `a2ef0b31` (~12:35 PDT):** builder0 `>> remote: make check exited 0`, 2641 passed / 0 failed, ALL
+JUDGED, sim-baseline unmoved. It covers pair/t4 and manoeuvre's `f593f487`. **🎯 SHIPPED ON (~12:30 PDT): brains B6 `f22d7dcb` → main `201b792a`. The first round-31 change he will SEE:** when
+he draws a support-by-fire line, every crew of the element takes his drawn heading. The pooled drawn error for the
+four wheeled classes is 10.4° v 29.1° (law_ifv 1.1 v 28.9°, gang_tank 10.2 v 28.3°); clicked orders are identical; crews
+in are equal. It is GDScript only, so there is no native pair. Its check exited 0, 2613/0. Unchecked on main until the
+next batch. **Merged ~11:30 PDT: manoeuvre `f593f487` → main `a2ef0b31`** (H1 amended per R31.5, OFF; turn-hull attempt 2's code,
+inert; its check exited 0, 2636/0). **Main check RUNNING on `a2ef0b31`** (`orch-main-check5`, log `main-check-batch5.log`),
+covering this and pair/t4. Native re-cuts CP-H's ONE tree on `a2ef0b31` after CP-P1's gate. **Merged ~11:00 PDT: pair/t4 `fafe49ea` → main `dc9792f9`** (traffic T4 v1 + ghostself OPT-IN default OFF, I4's
+early-stop tooling + CACHE=auto, native's load/exit live-guard; its check exited 0, 2639/0, ALL JUDGED, 13 unmoved).
+It is traffic's closing merge; traffic's stream is complete apart from his two answers. Unchecked on main until the next
+batch (with manoeuvre's `f593f487`). **✅ MAIN GREEN at `90ed915a` (~09:05 PDT 10-15):** builder0 `>> remote: make check exited 0`, 2638 passed / 0 failed,
+26 targets ALL JUDGED, sim-baseline 13 unmoved. It covers every round-31 merge so far: brains `0415da23`, pair/cph
+`9e1000d6` (H1–H3, turnhull, yield_to_plan, mirrors), planner CP-P0 `41212da0` + `86e5c646` (the C++ planner and the seam,
+OFF), manoeuvre `cd47c475` (the terrain fallback), native's `.uid` files, and the WEB_PACK rename. relay-smoke, red once
+in the batch before, passed here: its known race. **Everything merged this round is OFF by default; nothing he plays has
+changed yet.** **Merged ~07:30 PDT: manoeuvre `cd47c475` → main `441eabb0`** (H1's terrain fallback R31.5, OFF; its check exited 0,
+2629/0); also `777d2cb8` (native's four missing .uid files). **MAIN GREEN at `298e4498`** (builder0 `>> remote: make check exited 0`, 2629 passed / 0 failed, sim-baseline 13 maps unmoved; remote-guard-test passed, so the pair's red was a load flake). Next,
+`orch-main-check3` chained for the batch `950c7681` + `777d2cb8` + `441eabb0` (log `main-check-batch3.log`). **Since it synced:** planner `86e5c646` merged (OFF; its own check exited 0, 2638/0), so the NEXT main check covers it. **Batch check RESULT (`2abdd144`, ~07:40 PDT):** `exited 2`, 2636 passed / 0 failed, sim-baseline 13 unmoved; the
+only red was relay-smoke (one client saw 4/5 tanks while bots killed each other, the same race HANDOFF records from round
+13: it failed once under concurrent starts and passed alone), so lobby-smoke never ran behind it. Nothing in the batch
+touches network. **Next main check RUNNING** (`orch-main-check4`, log `main-check-batch4.log`): it covers `c2be76ed` and
+re-runs both smokes. A second relay-smoke red gets traced, not waved through.
+**Merged ~05:20 PDT: planner CP-P0 `41212da0` → main `950c7681`** (the C++ lattice planner equal to the GDScript one, and
+the seam behind `--nav-off=planner`, OFF; its check exited 0, 2615/0). The only conflict was OFF_NAMES, resolved as
+the sorted union, so it is UNCHECKED on main until the next main check (queued after `298e4498`'s). **Merged 2026-10-15 ~05:00 PDT: pair/cph `9e1000d6` → main `298e4498`** (manoeuvre `197a65da` + native `2fb03dab`,
+every CP-H default OFF: H1–H3, turnhull, yield_to_plan, the CP-H runner, native's mirrors and exec_fields rows). Its pair
+check was 2624/0 with remote-guard-test red alone, a slot.sh timing test in an isolated dir that went red in a different
+group on re-run at load ~20; the pair touches no tools/. Main check RUNNING (unit `orch-main-check2`, log
+`main-check-298e4498.log`). Before that: **MAIN GREEN at `c6cc7e33`** (= `aa205ea5`'s code + `2ee27055`'s WEB_PACK rename + docs): builder0 `>> remote: make check
+exited 0`, 2613 passed / 0 failed, 26 targets ALL JUDGED, sim-baseline 13 maps unmoved, 3405 s. Main check history: the first launch died unrun (the harness reaped its wrapper); RELAUNCHED ~01:00 PDT 10-15 as
+`systemd-run --user --unit=orch-main-check`, log `main-check-3.log` in the orchestrator's scratchpad. **Tooling lesson
+(remote_builds.md):** the harness reaps backgrounded AND setsid'd `make remote` wrappers at a shell reset. Only
+`systemd-run --user` survives, and every stream has been told. Gates passed so far: T3b-c on pair/t3b `f5dc4147`, with its
+judged series queued; B8 realslow's NATIVE=off gate. CP-P0's planner port is approved by native for fidelity, with builder0's
+twin pending.
+
 **A FRESH start (his word):** no agent or worktree of round 30 carries over. Worktrees are created at the docs commit
 below and launched by him (one terminal each). **Models (his quota rule): planner on `/model fable`; traffic, manoeuvre,
 brains, native AND the orchestrator on Opus** — one Fable session a day (~8 % of the week's quota) instead of round 30's

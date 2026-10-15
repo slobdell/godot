@@ -61,25 +61,34 @@ manoeuvre-parse: import ## manoeuvre: --check-only on the stream's scripts (MANO
 M1_ARMS ?= new_drawn base_drawn new_clicked base_clicked
 M1_DIR ?= $(BUILD_DIR)/manoeuvre/hull-rest
 # Extra flags for every arm (e.g. --turn-states: each crew's state once a second, read by hull_rest_moving.py).
-M1_FLAGS ?=
+M1_FLAGS ?= --turn-states
 # Round 30 (M4b/M1b): the base arms' --nav-off list (the parser honours only the FIRST --nav-off= on the line, and the
 # arm's comes first, so a base switch must be named HERE, not in M1_FLAGS). Round 29's "turnhull,faceslot" named
 # mechanisms main does not have (push_error on every base run).
 M1_BASE_OFF ?= faceslot
+# Round 31 (R31.1): an OPT-IN candidate is turned ON by naming it, so the NEW arms carry the list (M1b(2): turnhull)
+# and the base arms none (M1_BASE_OFF=). Both arms run the GDScript path when either names a --nav-off (any list
+# leaves native's drive): put --brains-off=native in M1_FLAGS for such a pair.
+M1_NEW_OFF ?=
+# make remote's T is word-split: M1_GD=1 appends --brains-off=native to every arm; M1_SEEDS=a-b replaces HULL_SEEDS.
+M1_GD ?=
+M1_SEEDS ?=
+M1_SEED_LIST = $(if $(M1_SEEDS),$(shell seq $(subst -, ,$(M1_SEEDS))),$(HULL_SEEDS))
 .PHONY: manoeuvre-hull-rest
 manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
 	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
-	for arm in $(M1_ARMS); do for faction in $(HULL_FACTIONS); do for seed in $(HULL_SEEDS); do for task in $(_FACING_TASKS); do \
+	for arm in $(M1_ARMS); do for faction in $(HULL_FACTIONS); do for seed in $(M1_SEED_LIST); do for task in $(_FACING_TASKS); do \
 		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
 		d=$(M1_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
-		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=--nav-off=$(M1_BASE_OFF);; esac; \
+		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=$(if $(M1_BASE_OFF),--nav-off=$(M1_BASE_OFF));; new_*) off=$(if $(M1_NEW_OFF),--nav-off=$(M1_NEW_OFF));; esac; \
 		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-			--no-element-cpu $$click $$off $(M1_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
 	$(PYTHON) tests/manoeuvre/hull_rest_ab.py $(M1_DIR)
 	$(PYTHON) tests/manoeuvre/hull_rest_moving.py $(M1_DIR)
+	$(PYTHON) tests/manoeuvre/hull_rest_counters.py $(M1_DIR)
 
 # One run of manoeuvre-hull-rest's workload, for a trace: ONE_FACTION, ONE_SEED, ONE_TASK, ONE_CLICK=1 for the clicked
 # arm, NAV_FLAGS (e.g. --turn-trace=<unit> --nav-off=turnhull) -> build/manoeuvre/hull-one/run.log + screen.json.
@@ -106,3 +115,43 @@ manoeuvre-fights: import ## manoeuvre M4: the fights guard (showmatch matches, F
 		--script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match --clean --seed={} --arena=random --mute \
 		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/{}.log 2>&1 || true'
 	@grep -h '^FIGHT_CENSUS' $(BUILD_DIR)/manoeuvre/fights/*.log | wc -l | xargs echo "manoeuvre-fights: FIGHT_CENSUS rows"
+
+# ---- round 31 (CP-H, C31.4, R31.1): the honest reading's consumers, ONE arm x ONE stage a call ---------------------
+# Every consumer is OPT-IN (naming it turns it ON). R31.1's addendum (native): --gun-off, --traffic-off and
+# --brains-off names do NOT leave native's drive/gun, so an arm without --brains-off=native would silently run the OFF
+# behaviour on the native path: every CP-H arm runs the GDScript path, and this runner REFUSES an arm whose flags lack
+# it. CPH_ARM = off | all | allnoghost | unstickback | kturnarc | realspeed | ghost | realslow (each consumer alone, REPORTED).
+# CPH_STAGE = census (Terminus rigs+mixed, CENSUS_SEEDS) | sbf (B6's SBF probe, gang_ifv) | drive (nav-terminus-drive, DRIVE_SEEDS) | fights (FIGHT_SEEDS)
+# | hull (hull-rest, drawn, HULL_SEEDS; one arm a call, lesson 311) | bridge (bridge-pooled). The arm's flags are printed
+# first (lesson 309: the run's own printout is the proof of what ran).
+CPH_ARM ?= off
+CPH_STAGE ?= census
+CPH_FLAGS_off := --brains-off=native
+CPH_FLAGS_all := --nav-off=unstickback,kturnarc --gun-off=realspeed --traffic-off=ghost --brains-off=native,realslow
+# CP-H without traffic's T4 (if T4 stands down for this round, the orchestrator's 09:00 PDT cutoff).
+CPH_FLAGS_allnoghost := --nav-off=unstickback,kturnarc --gun-off=realspeed --brains-off=native,realslow
+CPH_FLAGS_unstickback := --nav-off=unstickback --brains-off=native
+CPH_FLAGS_kturnarc := --nav-off=kturnarc --brains-off=native
+CPH_FLAGS_realspeed := --gun-off=realspeed --brains-off=native
+CPH_FLAGS_ghost := --traffic-off=ghost --brains-off=native
+CPH_FLAGS_realslow := --brains-off=native,realslow
+# M1b(2)'s judged arms through the same runner (one flag, GDScript path; base = `off`).
+CPH_FLAGS_turnhull := --nav-off=turnhull --brains-off=native
+CPH_FLAGS = $(CPH_FLAGS_$(CPH_ARM))
+# CPH_SEEDS=a-b (make remote's T is word-split, so a range, not a list): the stage's seeds; empty = the stage's default.
+CPH_SEEDS ?=
+CPH_SEED_LIST = $(if $(CPH_SEEDS),$(shell seq $(subst -, ,$(CPH_SEEDS))))
+CPH_SEED_VARS = $(if $(CPH_SEEDS),"CENSUS_SEEDS=$(CPH_SEED_LIST)" "DRIVE_SEEDS=$(CPH_SEED_LIST)" "FIGHT_SEEDS=$(CPH_SEED_LIST)" "HULL_SEEDS=$(CPH_SEED_LIST)" "BRIDGE_POOLED_SEEDS=$(CPH_SEED_LIST)")
+.PHONY: manoeuvre-cph
+manoeuvre-cph: import ## manoeuvre CP-H: one consumer arm (CPH_ARM=off|all|allnoghost|unstickback|kturnarc|realspeed|ghost|realslow) on one stage (CPH_STAGE=census|drive|fights|hull|bridge), GDScript path enforced
+	@flags='$(CPH_FLAGS)'; [ -n "$$flags" ] || { echo ">> manoeuvre-cph: no such arm '$(CPH_ARM)'"; exit 2; }; \
+	case "$$flags" in *--brains-off=native*) ;; *) echo ">> manoeuvre-cph: REFUSED arm '$(CPH_ARM)': no --brains-off=native (R31.1: it would run native's OFF path)"; exit 2;; esac; \
+	echo ">> manoeuvre-cph: arm $(CPH_ARM) stage $(CPH_STAGE) on $$(hostname) commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | flags $$flags | seeds $(or $(CPH_SEED_LIST),default)"
+	@case "$(CPH_STAGE)" in \
+	census) $(MAKE) --no-print-directory manoeuvre-census CENSUS_WORKLOADS=terminus $(CPH_SEED_VARS) 'NAV_FLAGS=$(CPH_FLAGS)';; \
+	drive) $(MAKE) --no-print-directory nav-terminus-drive $(CPH_SEED_VARS) 'NAV_FLAGS=$(CPH_FLAGS) --turn-states';; \
+	fights) $(MAKE) --no-print-directory manoeuvre-fights $(CPH_SEED_VARS) 'NAV_FLAGS=$(CPH_FLAGS)';; \
+	hull) $(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS=cph-$(CPH_ARM)_drawn $(CPH_SEED_VARS) 'M1_FLAGS=--turn-states $(CPH_FLAGS)';; \
+	bridge) $(MAKE) --no-print-directory bridge-pooled $(CPH_SEED_VARS) 'BRIDGE_FLAGS=$(CPH_FLAGS)';; \
+	sbf) $(MAKE) --no-print-directory sbf-series SBF_UNITS=gang_ifv $(if $(CPH_SEEDS),"SBF_SEEDS=$(CPH_SEED_LIST)") 'SBF_FLAGS=$(CPH_FLAGS)';; \
+	*) echo ">> manoeuvre-cph: no such stage '$(CPH_STAGE)'"; exit 2;; esac

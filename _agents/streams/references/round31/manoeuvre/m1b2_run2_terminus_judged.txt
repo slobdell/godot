@@ -1,0 +1,13 @@
+TERMINUS_AB M1b(2) attempt 2 line (g), builder0, 25ef8f7e, seeds 146-158 base no flag | new --nav-off=turnhull (both arms --brains-off=native)
+== mixed (13 seeds)
+  arrivals base 293 new 285 of 312: diff -8 se 4.55 1.645se 7.5: FAIL
+  contact-ticks base 2405 new 2089: diff -316 se 400.6 1.645se 658.9: PASS
+  arrived without each arm's two worst runs (9 pairs): diff -5 se 2.6: FAIL
+  contacts without each arm's two worst runs (10 pairs): diff +30 se 250.2: PASS
+  per seed arrived(contacts): 146:24>22(349>174) 147:23>21(87>141) 148:23>23(179>64) 149:23>23(175>150) 150:22>22(63>55) 151:23>23(199>278) 152:23>21(66>130) 153:23>20(481>231) 154:22>22(77>216) 155:23>22(175>174) 156:21>22(288>167) 157:21>22(143>182) 158:22>22(123>127)
+== rigs (13 seeds)
+  arrivals base 177 new 179 of 208: diff +2 se 4.62 1.645se 7.6: PASS
+  contact-ticks base 15740 new 8810: diff -6930 se 2978.6 1.645se 4899.8: PASS
+  arrived without each arm's two worst runs (9 pairs): diff +0 se 1.5: PASS
+  contacts without each arm's two worst runs (10 pairs): diff -3615 se 2376.3: PASS
+  per seed arrived(contacts): 146:14>14(670>670) 147:15>15(548>548) 148:13>13(1905>1905) 149:13>12(2563>915) 150:15>15(190>190) 151:14>15(288>301) 152:15>15(312>312) 153:14>14(382>466) 154:11>13(2996>1329) 155:13>13(2166>450) 156:14>12(2410>562) 157:15>14(404>404) 158:11>14(906>758)

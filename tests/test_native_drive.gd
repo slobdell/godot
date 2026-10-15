@@ -242,7 +242,9 @@ func _k_turn_case(owned: bool) -> void:
 		assert_eq(unstick_mismatches, 0, "the native unstick is the live GDScript unstick: %s" % unstick_first)
 		assert_true(unstick_compared >= 1000 and int(unstick_branches.get("1:fired", 0)) >= 20,
 				"every branch asked (%s)" % unstick_branches)
-	assert_true(int(kturn_after[0]) - int(kturn_before[0]) >= 5 and int(kturn_after[1]) - int(kturn_before[1]) >= 60,
+	# Floors against a vacuous run, not targets: kturnarc (a leg ends by the arc driven; round 31's H2 signed by gear)
+	# leaves this fight 4 plans (builder0, pair/cph-on), against >= 5 before (round 30's lab measured the same).
+	assert_true(int(kturn_after[0]) - int(kturn_before[0]) >= 3 and int(kturn_after[1]) - int(kturn_before[1]) >= 60,
 			"k-turns planned and driven (%s -> %s)" % [kturn_before, kturn_after])
 
 

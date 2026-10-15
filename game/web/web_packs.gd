@@ -67,7 +67,7 @@ func start() -> void:
 func _on_index(bytes: PackedByteArray, ok: bool) -> void:
 	var index: Variant = JSON.parse_string(bytes.get_string_from_utf8()) if ok else null
 	if not index is Dictionary:
-		print("WEB_PACK FAILED: no packs.json at %s" % _url("packs.json"))
+		print("WEB_PACK REFUSED: no packs.json at %s" % _url("packs.json"))
 		for pack in wanted:
 			pack_loaded.emit(pack, false)
 		return
@@ -78,7 +78,7 @@ func _on_index(bytes: PackedByteArray, ok: bool) -> void:
 			continue
 		var entry: Variant = (index as Dictionary).get(pack)
 		if not entry is Dictionary:
-			print("WEB_PACK FAILED: %s is not in packs.json" % pack)
+			print("WEB_PACK REFUSED: %s is not in packs.json" % pack)
 			pack_loaded.emit(pack, false)
 			continue
 		var cached := cache_dir.path_join("%s-%s.pck" % [pack, str(entry.get("md5", "x"))])
@@ -88,7 +88,7 @@ func _on_index(bytes: PackedByteArray, ok: bool) -> void:
 		var started := Time.get_ticks_msec()
 		fetch_bytes.call(_url(str(entry["file"])), func(pack_bytes: PackedByteArray, fetched: bool) -> void:
 			if not fetched or pack_bytes.size() != int(entry.get("bytes", pack_bytes.size())) or not _write(cached, pack_bytes):
-				print("WEB_PACK FAILED: %s (%d of %d bytes)" % [pack, pack_bytes.size(), int(entry.get("bytes", 0))])
+				print("WEB_PACK REFUSED: %s (%d of %d bytes)" % [pack, pack_bytes.size(), int(entry.get("bytes", 0))])
 				pack_loaded.emit(pack, false)
 				return
 			_load(pack, cached, Time.get_ticks_msec() - started, false))

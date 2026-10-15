@@ -4,6 +4,7 @@
 #include "cover_native.h"
 #include "exec_state.h"
 #include "nav_native.h"
+#include "planner_native.h"
 #include "tank_native.h"
 
 #include <gdextension_interface.h>
@@ -19,6 +20,7 @@ void initialize_tank_native_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(TankNative);
 	GDREGISTER_CLASS(CoverNative);
 	GDREGISTER_CLASS(NavNative);
+	GDREGISTER_CLASS(PlannerNative); // round 31 (planner CP-P0): the lattice planner; its own class, like NavNative
 }
 
 void uninitialize_tank_native_module(ModuleInitializationLevel p_level) {

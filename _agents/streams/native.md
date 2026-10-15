@@ -206,6 +206,110 @@ E6 (the laptop's ruling) needs a laptop slot; he plays the result. **Asked for 2
 _Started 2026-10-11 18:25 PDT from `c37605f0` (main's green check `090b345d` covers it: no baseline re-run). Heavy runs on
 builder0; the laptop only in a granted slot (C27.6)._
 
+### Round 31 (started 2026-10-14 ~22:30 PDT from main `cff4307e` + docs `75dbbb7c`; covered by the launch check)
+
+**Plan (in order):** (1) the pairs as they arrive, T3b first (the round's cheapest ship): mirror `Traffic.shape` in the
+native `_avoid` as a GDScript callback, as round 29's hold is (traffic's call: the crossing's table and verdicts stay
+GDScript), then twin tests, then a scratch pair tree (`pair/t3b` in `../godot-native-pair`: mine + traffic's `e57f93d2` +
+`DEFAULT_OFF = []`) checked before traffic's series (C31.1); then T1c-b ("none ported" + `native-verify-scenarios`), the
+CP-H consumers, B5c-v5 and the rest as their owners send them; (2) the planner's C++ review and build glue (CP-P0) when
+the planner's commits arrive; (3) the `test_native_traffic_hold` split (C31.9), done in the T3b commit: the harness moved
+to `tests/native/traffic_twin.gd` (`TrafficTwin`), one case per file; (4) N5's held ports wait for CP-P1.
+**Orchestrator's ruling R31.1 (received):** every CP-H consumer is opt-in and default OFF on main; each needs my mirror on
+a pair tree checked with plain `make remote T=check` before it merges ON.
+
+**T3b mirror (`413252ea`, WIP):** `NativeTraffic.avoid_shape(crew, tanks_root, route_preferred)` = `off("turns")` →
+`Traffic.refresh` → `Traffic.shape`. It is called from `drive_native.cpp`'s `avoid` once the route's wish is known (not
+when `held`). The early return compares `chosen` with `route_preferred`. `DriveConfig.traffic_shape` is set from
+`NativeTraffic.drive_config()` only when this tree's Traffic has `shape`, so the mirror is inert on main. Tests:
+`test_native_traffic_turns` / `_owned` (his Terminus crossing, every drive twinned, the rule must fire on ≥ 30 compared
+drives).
+Pair tree `pair/t3b` = `413252ea` + traffic `ab3351fb` (its teardown fix, from my finding: the turns tests' teardowns forced
+the crossing OFF for every later test in their shard) + `DEFAULT_OFF = []` → `f5dc4147`. Filtered on builder0
+(`make native test FILTER=native_traffic`, exited 0, 4/0): hold 7461 drives / 1975 holding, owned 7304 / 1946; turns 6091
+drives / 640 shaped, owned 6449 / 655 shaped; **0 mismatches** in all four. (The first filtered run passed by SKIPPING
+because `make test` alone does not build the library: run `make native test …`.) The full check is running.
+
+**T1c-b2 (traffic `6d19a3d9`): NONE PORTED** (told the orchestrator). `ask()` is reached only through GDScript callbacks:
+`_negotiate` (drive_native.cpp `cb`) and `_ask_behind`. The refusal writes statics only, and `ask` marks
+`native_stale |= STALE_ALL` first.
+
+**T4 mirror (traffic `f9c765c76`, CP-H consumer, opt-in): `b513502b`, WIP.** `TankNative.avoidance_gather(…, real)` reads
+`real_velocity` when `NativeTraffic.ghost()` (Traffic has `ghost` in OPT_IN and it is not off). The argument is passed from
+`Avoidance._gather_native` (native's seam). The solve's own velocity (T4 v2) is not taken. `test_native_avoid_gather` has a
+ghost case, which needs ≥ 8 compared rows where real ≠ estimated. Its pair tree waits for the T3b check to free the folder.
+
+**T3b pair-tree check (C31.1): GREEN but for sim-baseline at `f5dc4147`.** builder0 `make check exited 2`, 2624 passed /
+0 failed, `25 passed, 1 FAILED` = sim-baseline only (all 13 maps moved: the crossing ON), determinism 7/0,
+native-verify-scenarios 0 mismatches, native-live-guard 22 live. Sent to the orchestrator and traffic, and traffic's
+T3b-c series runs on that tree. Two more findings from building the pair trees: the turns tests' teardowns and later the
+ghost tests' teardowns forced their switch OFF, so with the switch ON by default every later test in the shard ran it
+OFF. Traffic took both fixes.
+
+**T4 pair:** `pair/t4` = `80fbdbe9` (stream/native + traffic `dc8fcbf6`, ghost ON, ghostself opt-in). Queued on builder0:
+`check NATIVE=off`, then `check` (traffic's ask: both on one tree). ghostself is NOT mirrored: its arms run
+`--brains-off=native` until traffic says it rides.
+
+**M1b(2) (manoeuvre `44adcbbe`, turnhull): NONE PORTED.** The face path has no C++ counterpart, and wheeled face orders
+hand back. Proof: the default-flipped tree's check with native-verify-scenarios green.
+
+**CP-H (manoeuvre H1–H3, `eaf0090a`), the mirror:** H3 on stream/native `bd0e5d6d` (`GunConfig.REAL_SPEED` from
+`Manoeuvre.real_speed_on()` at configure: the two aim leads read `real_velocity`; inert on main). H1+H2 on
+`pair/cph` (`../godot-native-cph` = stream/native + manoeuvre `eaf0090a`): new `exec_fields` rows (`_esc_stage`,
+`_esc_gap`, `_esc_friend`, `_esc_target_m`, `_unstick_from`, `_esc_gear`, `_kturn_arc_m`, in declaration order). The
+native unstick gets the `_esc_stage` gate, `_honest_blocker` natively (the slide's Tank colliders, `hull_box` length,
+`contact.touching`) and the honest reading. The escape's bodies (`_escape_begin` / `_escape_step`: ask, the give-way, the
+outline sweep) are called back, as the hold and T3b are. The k-turn leg gets the signed arc plus the discrete stopping
+distance under `KTURN_ARC`. Each consumer's ON = its DEFAULT const, because the native drive runs only with
+`Movement._off` empty.
+
+**CP-H mirror, settled (2026-10-15):** manoeuvre's H2 went through three versions (signed arc → in-gear arc →
+**scoped**: `Movement._arc_here()` = kturnarc and `kturn_brake_on()`, so short hulls keep round 14's chord bit for bit,
+which keeps `scenario_cp2`'s scout orbit). Mirrored at `783b3eec` (`arc_here()` in drive_native). `pair/cph-on` =
+`99399aa3` (manoeuvre's tip `197a65da` + my mirror + the three defaults ON). Twins on builder0 light (on the earlier
+signed-arc tree): 84 passed / 2 failed. The 2 were `test_native_drive`'s k-turn plans floor (fixed: 5 → 3, a floor against
+a vacuous run). Every equality line read 0 mismatches. Full check queued (`native-cph-check2`, behind T4's).
+**B8 realslow (brains `80eea6ec`): NONE PORTED** (`Element._watch_progress` has no C++).
+**R31.4 (orchestrator):** CP-H's ONE tree = main after every consumer merged OFF + my mirrors, with ONLY the CP-H switches
+flipped (unstickback, the rig's friend stall, kturnarc, realspeed, ghost, realslow; ghostself only if kept). I build it
+and name the hash; manoeuvre runs the A/B.
+**Tooling (R31.x):** remote runs launch under `systemd-run --user --unit=native-<what>` (the harness reaps
+`setsid nohup` at a "Shell cwd was reset"); one heavy + one light at a time; a reaped wrapper's builder0 half is
+killed by cwd before relaunching.
+
+**CP-P1 ship-ON mirror (designed, not built; the seam lines are still moving):** the planner's newest `_planned_reverse`
+opens with `PlannerSeam.hold(...)` (continues a held crew) and calls `take()` only where today's code makes a plan. In
+drive_native's planned-reverse block (around `planned_reverse_cheap`): when the seam is on AND `PlannerSeam._crews`
+has the crew, always `cb(_planned_reverse)` (skip the native leg, the check countdown and the cheap exits). A crew the
+seam doesn't hold keeps the cheap exits, which answer only where no plan is made, so `take()` is never skipped. Native
+`unstick`: return early when the seam holds the crew. The seam's ON is a default const like CP-H's (the native drive
+runs only with `_off` empty). Built at CP-P1 on the final seam.
+**Swap (orchestrator):** the CP-H merge-OFF check (`pair/cph` `9e1000d6`) runs first, then T4's two checks.
+
+**2026-10-15 morning: merged, then re-cut on main.** The CP-H merge-OFF pair `9e1000d6` (builder0 `make check exited 2`,
+2624/0, failed only `remote-guard-test`'s quiet-window, a load flake at load 21; sim-baseline unmoved,
+native-verify-scenarios 0, live-guard 22) was merged by the orchestrator as `298e4498`; CP-P0 OFF as `950c7681`.
+stream/native merged main `84e553cd` (`436c504f`). The light re-run of remote-guard-test read exited 2 on a DIFFERENT
+box-state test (slot-exclusive 13 fails; quiet-window passed), reported as such. CP-P1's mirror is built (`4c08e86d` on
+pair/cpp1: the seam gates in the planned-reverse block and the unstick; DriveConfig.planner_on; the drive, execute and
+traffic twins snapshot and compare PlannerSeam's world via `MoverState.world_capture/restore/diff`). The planner
+adopted the default-const switch form (`PLANNER_DEFAULT`, 39ba4b0b). New: `native-live-guard` starts and quits Godot
+through the library first (`3331f81d`, verified on builder0), and that is hazard 7 in native.md.
+**Running (unit native-chain2, heavy one at a time):** CP-P1 `ef38361f` (pair/cpp1-on) → T4 `8ac371a9` NATIVE=off then
+check → CP-H ON `9fb6c0cd` (manoeuvre's H1–H3 flipped).
+
+**Planner reviews:** `7c286000` (CP-P0) approved for fidelity with 4 notes (one shared session; the twin's wall time v the
+shard floor; the `%.2f` cache key; an unbounded cache). The planner took notes 1–2 in `50d380e1`, which is also approved
+with one fix: plan()'s refusal lacks keys `_plan_native` reads. The ship-ON pair (CP-P1) needs from me: unstick's
+`PlannerSeam.live` gate and `planned_reverse_cheap` gated.
+
+**Planner seam (C31.5), my answers through the orchestrator:** (1) no `exec_fields` rows, but PlannerSeam's table must
+be capturable (capture/restore) for drive twins; (2) `planned_reverse_cheap`'s cheap exits are gated at the pair (I do it);
+`face_turn` needs nothing: wheeled face orders already hand back to GDScript; (3) confirmed: any `--nav-off` name runs the
+GDScript drive (so does unstickback/kturnarc). Switches under `--traffic-off`/`--brains-off`/`--gun-off` DO run the
+native drive, so their mirrors must read the switch; (4) `BrainSwitches.native_planner` added (`bf8d4a78`); (5) the
+planner makes the register_types/CMake lines and I review them.
+
 ### Round 30 (started 2026-10-14 ~10:40 PDT from `bd05077d` = main, covered by the launch check `0d35f215`)
 
 **Plan (in order):** (1) the pairs the moment a settled diff arrives (M4b, B5c-v4, T3b/T1c-b if in ported code), each

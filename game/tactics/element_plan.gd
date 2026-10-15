@@ -1762,10 +1762,26 @@ static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state
 		heading = TacticsFormation.flat(told)
 	plan["heading"] = heading
 	_line_positions(plan, situation, ordered, anchor, heading, spacing)
+	# Round 30 (brains B6, tuning; `--sbf-told-sectors=on` is the control): a facing the player DREW is every crew's
+	# facing on the line, not the line's fanned sectors (the plain move's rule, _plan_form_up). Traced (sbf_probe, gang
+	# IFVs, builder0): with a drawn heading the crews' orders carried sectors 20-30 degrees either side of it.
+	if told is Vector3 and SBF_TOLD_ALL:
+		for name: String in plan["sectors"]:
+			plan["sectors"][name] = 0.0
+		for name: String in plan["orders"]:
+			var order: Dictionary = plan["orders"][name]
+			if order.has("facing"):
+				order["facing"] = heading
+				sbf_told_replaced += 1
 
 
 ## Put `members` on a line at `anchor` facing `heading`, each on its sector: far from its place it moves there, on it
 ## it holds (a holding crew fires at will and drives back onto the spot if pushed off it).
+static var SBF_TOLD_ALL := true
+## ...and how many crew orders it gave the drawn heading (lesson 300; measurement only, per plan update).
+static var sbf_told_replaced := 0
+
+
 static func _line_positions(plan: Dictionary, situation: Dictionary, members: Array, anchor: Vector3,
 		heading: Vector3, spacing: float) -> void:
 	_group(plan, members, "line", anchor, heading, spacing, "move", "", true)

@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -274,7 +274,7 @@ static func route_arms() -> Dictionary:
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
-			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
+			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
@@ -321,6 +321,7 @@ static func reset_route_arms() -> void:
 	kturn_multi_legs = 0
 	kturn_ticks = 0
 	unstick_fires = 0
+	reset_escape_arms()
 	circle_reverses = 0
 	circle_reverse_ticks = 0
 	goal_repairs = 0
@@ -853,6 +854,8 @@ func reset() -> void:
 	_stuck_time = 0.0
 	_press_time = 0.0
 	_escape_gear = 0.0
+	_esc_stage = ESC_NONE
+	_esc_friend = null
 	_nose_goal = Vector3.INF
 	_repath_left = 0.0
 	stalled_ticks = 0
@@ -1262,6 +1265,9 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		# ends within the settle radius of THAT spot, so a minute of facings never walks the hull off its slot.
 		_face_home = here
 	_face_tick = tick
+	# Round 31 (planner CP-P1, R31.2): a face the lattice planner's seam holds is driven by it to its end (the request
+	# is made below, after the aligned test).
+	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "face", _face_home, delta): return true
 	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
 		return false  # a planned leg here could not be driven (a wedge the plant refuses): the creep and its give-up
 	if _face_left_m > 0.0:
@@ -1280,6 +1286,8 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 			cmd.throttle = 0.0
 			cmd.turn = 0.0
 			return true
+		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, before plan_face (`--nav-off=planner`).
+		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "face", _face_home, delta, want): return true
 		if _face_retry > 0:
 			_face_retry -= ctl._step
 			return false
@@ -2269,8 +2277,11 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	var slow := clampf(_remaining / Steering.SLOW_RADIUS, 0.35, 1.0)
 	var desired := tank.max_forward_speed * speed_factor * slow
 	var preferred := to / distance * desired
+	# Round 31 (traffic T4 v2, tuning only, OPT-IN `ghostself`): the crew's OWN velocity read the way its neighbours read
+	# it under `ghost` (Tank.real_velocity), so ORCA's reciprocal shares are between honest velocities on both sides.
+	var own := tank.real_velocity if not Traffic.off("ghostself") else tank.estimated_velocity
 	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),
-			Vector2(tank.estimated_velocity.x, tank.estimated_velocity.z), preferred, tank.max_forward_speed,
+			Vector2(own.x, own.z), preferred, tank.max_forward_speed,
 			Avoidance.radius_of(tank.unit_id), delta, BrainLevers.orca_neighbours(tank.team, String(tank.name)))
 	OrderController._lap("avoid.solve", lap)
 	if chosen.distance_squared_to(preferred) < 0.04:
@@ -3033,6 +3044,7 @@ func _remaining_path_distance(goal: Vector3) -> float:
 ## Blind unsticking: driving hard but not moving for STUCK_SECONDS → back off for UNSTICK_SECONDS.
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if Traffic.holding(String(ctl.tank.name)): return  # round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
+	if PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)): return  # round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
 	_unstick(cmd, order, delta)
 	if ManoeuvreCensus.on:
 		# Round 26 (manoeuvre M0b): turns counted by legs and by what was in the way; measurement only.
@@ -3045,6 +3057,9 @@ var _census: ManoeuvreCensus = null
 
 
 func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	if _esc_stage != ESC_NONE:
+		_escape_step(cmd, order, delta)
+		return
 	if _unstick_left > 0.0:
 		_unstick_left -= delta
 		if _escape_gear != 0.0:
@@ -3066,8 +3081,20 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# of a duel mid-fight cost `scenario_motion`'s moving duel a shot (5 vs its bar of 6) on 2a2b77c1.
 	if String(order.get("type", "")) == "move_to" and not bool(order.get("direct", false)) and _pressing_escape(cmd, delta):
 		return
-	if absf(cmd.throttle) > 0.5 and ctl.tank.estimated_velocity.length() < STUCK_SPEED:
+	# Round 31 (manoeuvre H1, `unstickback`, OPT-IN): under a routed goal the stall is read from the motion the hull
+	# really made (`Tank.real_velocity`) — for a hull <= UNSTICK_BLIND_MAX_LEN_M always, for a longer one only when what
+	# holds it is a HULL (no wall contact, a Tank among the slide's colliders) — and the escape is `_escape_begin`'s.
+	# Every other order (a raw `drive`, a face, a direct hop) and a long hull against a wall keep round 29's reading and
+	# escape bit for bit: round 30's pair check backed a tank driven at a wall off it under a `drive` order.
+	var pinned_on := _honest_blocker(order) if unstick_back_on() else null
+	var honest := pinned_on != null
+	var reading := ctl.tank.real_velocity if honest else ctl.tank.estimated_velocity
+	if absf(cmd.throttle) > 0.5 and reading.length() < STUCK_SPEED:
 		_stuck_time += delta
+		if _stuck_time >= STUCK_SECONDS and honest:
+			_stuck_time = 0.0
+			_escape_begin(cmd, order, pinned_on)
+			return
 		if _stuck_time >= STUCK_SECONDS:
 			_stuck_time = 0.0
 			# Not blind any more: backing off is only done when there is room to back into. A friend right behind
@@ -3084,6 +3111,313 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 				_ask_behind(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing)
 	else:
 		_stuck_time = 0.0
+
+
+# ---- Round 31 (manoeuvre H1, C31.4): the stall escape redesigned, a consumer of the honest reading ----------------
+#
+# Round 30's M4b escapes (the honest reading + a reverse ON FULL LOCK sized to the plant's momentum) freed pins and
+# failed twice in ways a driver never would: a 14 m rig swung its tail across a 20 m street and ground the far wall
+# (run 1, contact-ticks +141 %), and an 8x8 in single file on the Sumps causeway took one 0.9 s reverse on lock and sat
+# 21.5 m from its slot for good (run 2's pair check). The design note (round 30) is built here:
+#   1. ASK: pinned on a friend, ask it to give way (`ask`, traffic's give-way: the short hull usually has the room);
+#      with a friend right behind, ask THAT one for room (`_ask_behind`). Then stand still (throttle 0: never sit at
+#      full throttle against a hull) for up to ESC_ASK_SECONDS, done early if the friend moves off.
+#   2. Not cleared: a STRAIGHT reverse (no lock: a long hull stays parallel to its street) of at most ESC_BACK_MAX_M,
+#      only as far as the k-turn's outline sweep (`_outline_ok`, the hull's ten points, stepped straight back) and the
+#      hulls behind allow, ended by the REAL backoff (`_unstick_from`), its cap UNSTICK_SECONDS + the momentum to shed
+#      + ESC_SECONDS_PER_M a metre. Shorter than ESC_BACK_MIN_M of room: no reverse at all.
+#   3. Refused: stand ESC_STAND_SECONDS; `_update_phase` reports `blocked` by the blocker's name (`_blocker`) meanwhile,
+#      so the brain can re-task instead of the hull pressing. Then the route resumes and the rule may fire again.
+# OPT-IN until CP-H judges it: `--nav-off=unstickback` flips UNSTICK_BACK_DEFAULT (false), and any `--nav-off` list
+# leaves native's drive, so the escape runs on the GDScript path. Counters: fires by blocker kind, asks, straight reverses ended by backoff /
+# cap, sweep refusals.
+const UNSTICK_BLIND_MAX_LEN_M := 10.0
+const ESC_ASK_SECONDS := 2.0
+const ESC_BACK_MAX_M := 3.0
+const ESC_BACK_MIN_M := 1.0
+const ESC_BACK_STEP_M := 0.5
+const ESC_SECONDS_PER_M := 0.5
+const ESC_STAND_SECONDS := 2.0
+## The friend asked has moved this much further off (flat metres, centre to centre) since the ask: cleared.
+const ESC_CLEARED_M := 1.0
+const ESC_NONE := 0
+const ESC_ASK := 1
+const ESC_BACK := 2
+const ESC_STAND := 3
+var _esc_stage := ESC_NONE
+var _esc_gap := 0.0
+var _esc_friend: Tank = null
+var _esc_target_m := 0.0
+var _unstick_from := Vector3.ZERO
+static var esc_fires_hull := 0
+static var esc_fires_wall := 0
+static var esc_asks := 0
+static var esc_backs := 0
+static var esc_backed := 0
+static var esc_capped := 0
+static var esc_refused := 0
+static var esc_fallback := 0  # no-hull pins whose straight reverse had no room: round 29's escape
+
+
+## The default (false = OPT-IN until CP-H: naming `unstickback` in `--nav-off` flips it). Flipping this const is the
+## whole ship change; tests choose their arm list from it, so they hold in either tree.
+const UNSTICK_BACK_DEFAULT := false
+
+
+static func unstick_back_on() -> bool:
+	return UNSTICK_BACK_DEFAULT != switched_off("unstickback")
+
+
+static func escape_arms() -> Dictionary:
+	return {"fires_hull": esc_fires_hull, "fires_wall": esc_fires_wall, "asks": esc_asks, "backs": esc_backs,
+			"backed": esc_backed, "capped": esc_capped, "refused": esc_refused, "fallback": esc_fallback}
+
+
+static func reset_escape_arms() -> void:
+	esc_fires_hull = 0
+	esc_fires_wall = 0
+	esc_asks = 0
+	esc_backs = 0
+	esc_backed = 0
+	esc_capped = 0
+	esc_refused = 0
+	esc_fallback = 0
+
+
+## The hull's escape is the honest one under this order: returns what pins it (a Tank, or the hull itself standing for
+## "terrain"), or null for round 29's rule. Only a routed `move_to` (a goal; never a raw `drive`, a face or a direct hop).
+func _honest_blocker(order: Dictionary) -> Object:
+	if String(order.get("type", "")) != "move_to" or bool(order.get("direct", false)):
+		return null
+	var tank := ctl.tank
+	var hull: Tank = null
+	for i in tank.get_slide_collision_count():
+		hull = tank.get_slide_collision(i).get_collider() as Tank
+		if hull != null:
+			break
+	if float(hull_box(tank.unit_id)[2]) <= UNSTICK_BLIND_MAX_LEN_M:
+		return hull if hull != null else tank
+	# A long hull: only when the pin is a HULL and no wall is touched (round 30's design note: against walls the
+	# planner's legs are its way out, not a reverse).
+	return hull if hull != null and not contact.touching else null
+
+
+func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> void:
+	var tank := ctl.tank
+	var friend := pinned_on as Tank
+	if friend == tank:
+		friend = null
+	if friend != null:
+		esc_fires_hull += 1
+	else:
+		esc_fires_wall += 1
+	unstick_fires += 1
+	var gear := -1.0 if order.get("reverse", false) else 1.0  # the way it was trying to go
+	var back := Vector2(tank.global_basis.z.x, tank.global_basis.z.z) * gear  # the way it would back off
+	_esc_friend = null
+	_esc_gap = -1.0 if friend == null else 0.0
+	if friend == null:
+		# R31.5, made robust (the CP-H gate's variant set): a pin with NO hull in it (terrain, a wall) takes round 29's
+		# escape bit for bit, whatever room there is behind. The straight reverse is the answer for a hull pinned on a
+		# FRIEND; against the ground it never changes the heading, and the route drove Green_Alpha_3 straight back into
+		# the same spot six times (backed 2.0, 1.5, 1.0 m, twice over; test_control_queued_task's route, 68280cce with
+		# realslow off). Only the honest reading (the fire) is H1's for such a pin.
+		esc_fallback += 1
+		_round29_escape(order)
+		return
+	if friend != null and friend.team == tank.team and friend.is_alive():
+		var mover := Movement.of(friend)
+		if mover != null:
+			var ahead := Vector2(friend.global_position.x - tank.global_position.x, friend.global_position.z - tank.global_position.z)
+			mover.ask(String(tank.name), tank.global_position, ahead.normalized() if ahead.length_squared() > 0.01 else -back, "pinned")
+			esc_asks += 1
+			_esc_friend = friend
+			_esc_gap = ahead.length()
+	var asked_behind := false
+	if _esc_friend == null and _hull_within(back, UNSTICK_CLEARANCE):
+		_ask_behind(back)  # a friend right behind: make room, then the reverse below can be had
+		esc_asks += 1
+		asked_behind = true
+	if _esc_friend != null or asked_behind:
+		_esc_stage = ESC_ASK
+		_unstick_left = ESC_ASK_SECONDS
+	else:
+		_escape_reverse(order)
+	_escape_hold(cmd)
+
+
+## Stand, or back straight: this tick's command for the escape under way.
+func _escape_step(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	_unstick_left -= delta
+	var tank := ctl.tank
+	match _esc_stage:
+		ESC_ASK:
+			if _esc_friend != null and is_instance_valid(_esc_friend):
+				var gap := _flat_distance(_esc_friend.global_position, tank.global_position)
+				if gap >= _esc_gap + ESC_CLEARED_M:
+					_escape_end()  # the friend made room: the route's command stands this tick
+					return
+			if _unstick_left <= 0.0:
+				_escape_reverse(order)
+		ESC_BACK:
+			# Ended a stopping distance early (the plant's v²/2b in this gear), so the hull comes to rest inside the room.
+			var v := maxf(0.0, -_esc_gear * tank.speed())
+			if _flat_distance(tank.global_position, _unstick_from) >= _esc_target_m - v * v / (2.0 * maxf(tank.braking, 0.1)):
+				esc_backed += 1
+				_escape_end()
+				return
+			if _unstick_left <= 0.0:
+				esc_capped += 1
+				_escape_end()
+				return
+		ESC_STAND:
+			if _unstick_left <= 0.0:
+				_escape_end()
+				return
+	_escape_hold(cmd)
+
+
+func _escape_hold(cmd: TankCommand) -> void:
+	if _esc_stage == ESC_BACK:
+		cmd.throttle = -_esc_gear
+	else:
+		cmd.throttle = 0.0
+	cmd.turn = 0.0
+
+
+## Round 31 (R31.2, for the planner's seam): a plan TAKES this hull. Every executor state of manoeuvre's that would
+## otherwise resume stale when the plan releases it is ended here: a k-turn / back-and-fill leg in progress (ended as
+## "planner", its remaining legs dropped), the stall escape (any stage) and the pressed-wall escape, and the stall clock.
+## PlannerSeam.take calls it on the tick it takes a hull (OFF: never called; nothing changes).
+func yield_to_plan() -> void:
+	native_stale |= STALE_ALL
+	if _kturn_left_m > 0.0:
+		_kturn_end("planner")
+		_kturn_left_m = 0.0
+		_kturn_legs.clear()
+	_esc_stage = ESC_NONE
+	_esc_friend = null
+	_unstick_left = 0.0
+	_escape_gear = 0.0
+	_stuck_time = 0.0
+	_press_time = 0.0
+
+
+## The gear the hull was trying to go in when it stuck (+1 forward): the straight reverse is the other.
+var _esc_gear := 1.0
+
+
+func _escape_end() -> void:
+	_esc_stage = ESC_NONE
+	_esc_friend = null
+	_unstick_left = 0.0
+	_stuck_time = 0.0
+
+
+## Round 29's stall escape, bit for bit (the branch `_unstick` runs with the switch off): with a friend right behind, a
+## tracked hull pivots and a car asks that friend for room; otherwise 0.9 s of reverse on full lock. R31.5: every pin
+## with no hull in it.
+func _round29_escape(order: Dictionary) -> void:
+	_escape_end()
+	var tank := ctl.tank
+	var backing := 1.0 if order.get("reverse", false) else -1.0
+	_unstick_pivot = not _off.has("unstick") and _hull_within(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing,
+			UNSTICK_CLEARANCE)
+	if not _unstick_pivot or wheel_radius() <= 0.0:
+		_unstick_left = UNSTICK_SECONDS
+	else:
+		_ask_behind(Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z) * backing)
+
+
+## Step 2: back straight as far as the outline sweep and the hulls behind allow (at most ESC_BACK_MAX_M), else stand.
+func _escape_reverse(order: Dictionary) -> void:
+	var tank := ctl.tank
+	_esc_gear = -1.0 if order.get("reverse", false) else 1.0
+	var room := _straight_room(-_esc_gear)
+	if _esc_gap < 0.0:
+		esc_fallback += 1  # (unreached since _escape_begin routes every no-hull pin to round 29's escape; kept as a guard)
+		_round29_escape(order)
+		return
+	if room < ESC_BACK_MIN_M:
+		esc_refused += 1
+		_esc_stage = ESC_STAND
+		_unstick_left = ESC_STAND_SECONDS
+		return
+	esc_backs += 1
+	_esc_stage = ESC_BACK
+	_esc_target_m = room
+	_unstick_from = tank.global_position
+	_unstick_left = UNSTICK_SECONDS + _momentum_to_shed(-_esc_gear) + room * ESC_SECONDS_PER_M
+
+
+## How far (metres, a multiple of ESC_BACK_STEP_M up to ESC_BACK_MAX_M) the hull can drive straight in `gear` with its
+## whole outline clear of the navmesh edge (the k-turn's `_outline_ok`) and no hull within UNSTICK_CLEARANCE of where
+## it would end. No navmesh yet: the hulls alone decide (round 29's escape consulted nothing).
+func _straight_room(gear: float) -> float:
+	var tank := ctl.tank
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var step_dir := Vector2(forward.x, forward.z) * gear
+	var map := tank.get_world_3d().navigation_map
+	var mesh := Pathing.enabled and Pathing.is_ready(tank)
+	var frame := _kturn_frame(tank)
+	var start := _outline_offs(map, frame, here, forward) if mesh else PackedFloat32Array()
+	var room := 0.0
+	var free := _hull_room(step_dir) - UNSTICK_CLEARANCE * 0.5
+	var at := ESC_BACK_STEP_M
+	while at <= ESC_BACK_MAX_M + 0.001:
+		if at > free:
+			break
+		if mesh and not _outline_ok(map, frame, here + forward * (at * gear), forward, start):
+			break
+		room = at
+		at += ESC_BACK_STEP_M
+	return room
+
+
+## The free run (metres) from this hull's end to the nearest other hull along `direction` (flat, unit), by the hulls'
+## real boxes: each hull's half-extent ALONG the line (an end-on 8x8 is 3.65 m, abeam 1.3 m), not the avoidance radius
+## (round 31: an 8x8 in single file read its tail-mate 9.6 m back as clear by radii and backed into it). Only hulls
+## whose centres lie within the swept strip of this hull's width (plus theirs) count. INF when none.
+func _hull_room(direction: Vector2) -> float:
+	if ctl.tanks_root == null:
+		return INF
+	var tank := ctl.tank
+	var here := Vector2(tank.global_position.x, tank.global_position.z)
+	var mine: Array = hull_box(tank.unit_id)
+	var my_fwd := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
+	var my_along := _half_extent(mine, my_fwd, direction)
+	var my_across := _half_extent(mine, my_fwd, direction.orthogonal())
+	var best := INF
+	for child in ctl.tanks_root.get_children():
+		var other := child as Tank
+		if other == null or other == tank or not other.is_alive():
+			continue
+		var offset := Vector2(other.global_position.x, other.global_position.z) - here
+		var along := offset.dot(direction)
+		if along <= 0.0:
+			continue
+		var box: Array = hull_box(other.unit_id)
+		var fwd := Vector2(-other.global_basis.z.x, -other.global_basis.z.z).normalized()
+		if absf(offset.dot(direction.orthogonal())) > my_across + _half_extent(box, fwd, direction.orthogonal()):
+			continue
+		best = minf(best, along - my_along - _half_extent(box, fwd, direction))
+	return best
+
+
+## A hull box's half-extent along `axis` (flat, unit) for a hull pointing `forward`.
+static func _half_extent(box: Array, forward: Vector2, axis: Vector2) -> float:
+	var c := absf(forward.dot(axis))
+	var s := absf(forward.orthogonal().dot(axis))
+	return 0.5 * (float(box[2]) * c + float(box[0]) * s)
+
+
+## Round 30 (M4b): the seconds the plant needs to brake the speed it reports AGAINST `gear` (+1 forward, -1 reverse)
+## before the hull can move that way at all (a pinned wheeled hull reports the phantom velocity the blocked slide
+## handed back; design B keeps it in the plant, C30.6).
+func _momentum_to_shed(gear: float) -> float:
+	var tank := ctl.tank
+	return maxf(0.0, -gear * tank.speed()) / maxf(tank.braking, 0.1)
 
 
 ## Round 10 item 3's rows. **`press` is DEFAULT ON** (`--nav-off=press` restores the old stall rule alone): on the
@@ -3291,12 +3625,20 @@ func in_kturn() -> bool:
 	return _kturn_left_m > 0.0
 
 
+## Round 31 (planner CP-P1, R31.2): is this hull in a planned manoeuvre of either kind -- today's k-turn leg, or held
+## by the lattice planner's seam (a plan pending or being driven; `--nav-off=planner` turns that ON)? Traffic's crossing
+## row and `ask()` and manoeuvre's straight-leg lever read this; `in_kturn()` keeps its own readers. OFF = in_kturn().
+func manoeuvring() -> bool:
+	return in_kturn() or (PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)))
+
+
 ## Round 17 lever (l17t, BrainLevers.far_exec_straight): is this hull on a plain straight leg -- not in a planned leg,
 ## touching nothing, not deflected by avoidance this tick, and pointed within STRAIGHT_LEG_DEG of its carrot? Only
 ## then may a far CPU unit run its controller every other tick (half-rate steering is where the scraping came from).
 const STRAIGHT_LEG_DEG := 12.0
 func straight_and_clear() -> bool:
-	if in_kturn() or contact.touching or _deflected or steer_to == Vector3.INF:
+	# Round 31 (R31.2): manoeuvring() = a k-turn leg OR a crew the planner's seam holds; neither is a plain straight leg.
+	if manoeuvring() or contact.touching or _deflected or steer_to == Vector3.INF:
 		return false
 	var tank := ctl.tank
 	var to := Vector2(steer_to.x - tank.global_position.x, steer_to.z - tank.global_position.z)
@@ -3309,6 +3651,9 @@ func straight_and_clear() -> bool:
 ## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
 ## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
 func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
+	# Round 31 (planner CP-P1, R31.2): a crew the lattice planner's seam holds (a plan pending or being driven) is driven
+	# by it; the seam ASKS only where this function decides a plan is needed (the two `take` lines below).
+	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "kturn", waypoint, delta): return true
 	var tank := ctl.tank
 	if _kturn_left_m > 0.0:
 		if not _kturn_rolling:
@@ -3317,11 +3662,30 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			if tank.speed() * _kturn_gear > KTURN_ROLLING_SPEED:
 				_kturn_rolling = true
 			_kturn_from = tank.global_position
-		var backed := _flat_distance(tank.global_position, _kturn_from)
+			_kturn_arc_m = 0.0
+		elif _arc_here():
+			# Round 31 (manoeuvre H2, `kturnarc`): the ARC driven IN THE LEG'S GEAR — the last tick's real motion along
+			# the nose in the gear, and nothing for motion against it. A short hull still rolling the other way when its
+			# leg starts (a scout at 10 m/s under reverse throttle: `_kturn_rolling` is true from the start for hulls
+			# under KTURN_BRAKE_HULL_M) counts its roll-out as NOTHING: the leg is measured from where the hull begins
+			# to move its way, as round 14's rolling rule does for the braked hulls. Round 30's unsigned arc counted the
+			# roll-out as progress (the leg ended 2.2 m short, nose 40 deg off); the signed arc first tried here
+			# subtracted it (the leg backed ~5.5 m from where the roll-out stopped): both broke `scenario_cp2`'s
+			# engine-deck orbit (3 of 27, 7 of 8 deck hits v 58 of 83).
+			var nose_now := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+			_kturn_arc_m += maxf(0.0, tank.real_velocity.dot(nose_now) * float(_kturn_gear)) * delta
+		# Round 30 (the planner's P4 finding): with `kturnarc` a leg is measured by the arc the hull drove, not the
+		# chord from its start (3 % short on a 10 m full-lock leg of a War Rig: the leg over-ran its plan by that).
+		var backed := _kturn_arc_m if _arc_here() else _flat_distance(tank.global_position, _kturn_from)
 		# Round 14 (N3): the leg is done when what is left is within the stopping distance in its gear, so the next
 		# leg's opposite throttle brakes the hull to rest AT the planned end rather than ~2 m past it (N1/N3: a rig's
 		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
 		var reached := backed + _kturn_stopping() >= _kturn_left_m
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			# Measurement only (`--turn-trace=<unit>`): round 30's scratch leg print, kept (the arc v the chord, per tick).
+			print("MANOEUVRE_TRACE leg f %d gear %d rolling %s backed %.2f chord %.2f stop %.2f left %.1f v %.2f real %.2f reached %s" % [
+					Engine.get_physics_frames(), _kturn_gear, str(_kturn_rolling), backed, _flat_distance(tank.global_position, _kturn_from),
+					_kturn_stopping(), _kturn_left_m, tank.speed(), tank.real_velocity.length(), str(reached)])
 		_kturn_timeout -= delta
 		# The LEADING end's hit ends the leg: the contact point behind the centre while backing (ahead of it on a
 		# back-and-fill's forward leg). The other end still touching the wall the leg is moving away from is exactly
@@ -3384,6 +3748,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		print("MANOEUVRE_TRACE planner look f %d v %.2f inside %s err %.0f" % [Engine.get_physics_frames(), tank.speed(),
 				_inside_circle(here, forward, waypoint), rad_to_deg(error)])
 	if circle_plan_on() and _away_here() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
+		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, where the circle plan would be made (`--nav-off=planner`).
+		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 		var lock := -1.0 if error >= 0.0 else 1.0
 		var circle_map := tank.get_world_3d().navigation_map
 		if _plan_circle(cmd, circle_map, _kturn_frame(tank), here, forward, lock, waypoint):
@@ -3423,6 +3789,9 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
 			_ease_for(_kturn_hit_m)
 		return false
+	# Round 31 (planner CP-P1, R31.2): the forward arc is blocked within reach: the lattice planner's seam, where the
+	# back-and-fill would be planned (`--nav-off=planner`).
+	if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 	if lazy:
 		for i in KTURN_OUTLINE.size():
 			_lazy_start_at(i)
@@ -3763,6 +4132,7 @@ func _kturn_start_leg(leg: Vector2) -> void:
 	_kturn_gear = int(leg.x)
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position
+	_kturn_arc_m = 0.0  # round 30 (kturnarc; native's review): a leg must not inherit the last leg's arc
 	_kturn_timeout = leg.y * KTURN_SECONDS_PER_M + 1.0
 	# Round 14 (N3): rolling the other way at the start (the last leg's momentum): the distance counts from where the
 	# hull starts moving in this leg's gear, and the timeout allows the braking.
@@ -4069,7 +4439,7 @@ func _kturn_end(reason: String) -> void:
 	var tank := ctl.tank
 	var here := tank.global_position
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
-	var driven := _flat_distance(here, _kturn_from)
+	var driven := _kturn_arc_m if _arc_here() else _flat_distance(here, _kturn_from)
 	_kturn_rec["end"] = reason
 	_kturn_rec["driven_m"] = snappedf(driven, 0.01)
 	_kturn_rec["ticks"] = Engine.get_physics_frames() - int(_kturn_rec["frame"])
@@ -4252,7 +4622,36 @@ func _kturn_stopping() -> float:
 	if not kturn_brake_on():
 		return 0.0
 	var speed := ctl.tank.speed() * float(_kturn_gear)
-	return speed * speed / (2.0 * _braking()) if speed > 0.0 else 0.0
+	if speed <= 0.0:
+		return 0.0
+	if _arc_here():
+		# Round 30 (the planner's P4 finding, with `kturnarc`): the plant brakes in discrete ticks (speed stepped by b·dt,
+		# then the tick's travel at the new speed), so the distance it covers is v²/2b − v·dt/2, not the continuous v²/2b.
+		return maxf(speed * speed / (2.0 * _braking()) - speed * 0.5 / float(SimClock.TICK_RATE), 0.0)
+	return speed * speed / (2.0 * _braking())
+
+
+## Round 31 (H2): the arc a k-turn leg has driven in its gear since it took hold (see `_planned_reverse`), and its
+## switch: OPT-IN until CP-H judges it (`--nav-off=kturnarc` flips KTURN_ARC_DEFAULT; the list leaves native's drive).
+var _kturn_arc_m := 0.0
+
+
+const KTURN_ARC_DEFAULT := false  # OPT-IN until CP-H (see UNSTICK_BACK_DEFAULT)
+
+
+static func kturn_arc_on() -> bool:
+	return KTURN_ARC_DEFAULT != switched_off("kturnarc")
+
+
+## Round 31 (H2, scoped by the C31.1 gate's trace): the arc rule is for the hulls whose legs are planned from where
+## they will come to REST (`kturn_brake_on()`: `_look_stop` looks a stopping distance ahead, `_kturn_rolling` holds the
+## leg's start until the hull moves in its gear) — the War Rig the planner's P4 measured. A shorter hull's leg is
+## planned from its pose while it may still be rolling the other way; its chord ends that stale leg during the
+## roll-out and the next look RE-PLANS from where it really is, which is what keeps `scenario_cp2`'s scout orbit (58 of
+## 83 deck hits). Every arc rule tried on it (round 30's unsigned, the signed, the in-gear) drove the stale leg out
+## from the wrong pose instead (3 of 27, 7 of 8). Short hulls keep round 14's chord, bit for bit.
+func _arc_here() -> bool:
+	return kturn_arc_on() and kturn_brake_on()
 
 
 ## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
