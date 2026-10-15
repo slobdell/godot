@@ -81,9 +81,12 @@ static var native_feed := true  # Round 30 (N7.5): ElementFeed's builders native
 static var native_planner := true  # Round 31 (C31.5, CP-P0): Planner.plan takes the C++ search (PlannerNative) when native and this; the GDScript search is the twin
 static var native_controller := false  # Round 28 (N7.3a): OrderController._physics_process natively (controller_native.cpp: the stride hold, think then execute, the measurement bookkeeping); OFF until its check
 ## Round 31 (brains B8, a CP-H consumer, C31.4; R31.1: OPT-IN): the element's re-seat / make-room clock reads the honest
-## speed (`Element.reads_slow`). Default OFF on main; NAMING it (`--brains-off=realslow`) turns it ON, like `--nav-off=inflate`.
-## Not in NAMES, so `--brains-off=all` (ai-parity's proof) and set_all never touch it.
-static var realslow := false
+## speed (`Element.reads_slow`). NAMING it (`--brains-off=realslow`) flips it against REALSLOW_DEFAULT, as manoeuvre's
+## `unstickback` / `kturnarc` / `realspeed` do: OPT-IN while the default is false, and the A/B's off arm once CP-H ships it
+## (flipping the const is the whole ship change). Not in NAMES, so `--brains-off=all` (ai-parity's proof) and set_all
+## never touch it.
+const REALSLOW_DEFAULT := false
+static var realslow := REALSLOW_DEFAULT
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
@@ -105,6 +108,12 @@ static func ensure_parsed() -> void:
 	apply_args(OS.get_cmdline_user_args())
 
 
+## `realslow` once `--brains-off` names it: the opposite of its default, never forced one way (round 31: the opt-in parse
+## set it true, so with the default flipped ON no arm could turn it off). Pure, so a test can read both defaults.
+static func realslow_named(default_value: bool) -> bool:
+	return not default_value
+
+
 ## The command line's switches: `--brains-on=a,b` first (round 24: switches that ship OFF, for an arm that measures one
 ## on another workload), then `--brains-off=a,b|all`. Tests call it with their own arguments.
 static func apply_args(args: PackedStringArray) -> void:
@@ -121,7 +130,7 @@ static func apply_args(args: PackedStringArray) -> void:
 				if name == "all":
 					set_all(false)
 				elif name == "realslow":
-					realslow = true  # opt-in (R31.1): naming it turns it ON
+					realslow = realslow_named(REALSLOW_DEFAULT)
 				elif NAMES.has(name) or GROUPS.has(name):
 					set_named(name, false)
 				else:
