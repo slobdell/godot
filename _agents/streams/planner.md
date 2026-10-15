@@ -422,6 +422,26 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 09:55 PDT: **THE KEEP CIRCLE IS IN AND GREEN; native has the re-cut hash 38e9678d.** The orchestrator
+  ACCEPTED the declared fix as written (the keep circle carrying manoeuvre's slot law, nothing else) and sent the law
+  bit for bit: (a) the slot counts only under `face_slot_on()` and within FACE_SLOT_REACH (2.0) x settle; (b) the end
+  no further than the start + FACE_SLOT_SLACK_M (0.5); (c) the inner radius max(max(ORDER_ARRIVE 3.5, settle) -
+  FACE_KEEP_MARGIN_M 0.75, from here) only under turnhull (OFF on main: the series tree applies (a)+(b)); read from
+  Manoeuvre's own names, never copied values. Coded (1bec314d, 38e9678d): `PlanRequest.keep(x, z, all_m, end_m)`
+  (INF = no circle, `to_native` keep_x/keep_z/keep_all_m/keep_end_m); planner.gd's sweep breaks on a pose outside
+  all_m (after the horizon test), `_at_goal` refuses an end outside end_m (before the tol test, so the aim branch is
+  bound too); the C++ mirror the same two checks (KEEP_NONE 1e29: the GDScript's INF arrives as inf); the seam's
+  face request sets the circle only when the slot is in reach. New `tests/test_planner_keep.gd` on seed 134's plaza
+  geometry (rig at (-7.2,20.3) heading 82, slot (-2.7,19.6) 4.55 m off, an 18-degree face) and two twin rows.
+  **builder0 light lane, 38e9678d: `make native test FILTER=planner exited 0`, 32 passed 0 failed (09:53 PDT).**
+  The rows: free plan "R+1.0x2.0 F+1.0x2.5" ends 4.17 m from the slot, worst pose 6.55 (the test world holds no
+  squadmates, so the game's one 3.5 m chord to 7.4 m did not reproduce there -- the re-run series is the proof);
+  kept at the law's 5.05 m: the same plan; a circle at 3.67 m (tighter than the free end) changes it to "F+1.0x2.5"
+  ending 2.09 m, 32 expansions = the end rule binds; turnhull's inner radius 5.25: "F+1.0x2.5", worst pose 4.55, 8
+  expansions. Twin rows equal both ways (end rule 3 expansions / 92 nodes, native 4.5 ms; inner radius 8 / 64,
+  1.0 ms). Next: native reviews the C++ keep branch, re-cuts and re-gates (the plain check); then the series on
+  FRESH seeds 172-184 (133-145 are the diagnosis set), the other stages as filed; the heavy lane is CP-H's.
+  Trace B (the rig pressed into a squadmate for 65 s with no seam event) is relayed to manoeuvre for CP-H.
 - 2026-10-15 09:50 PDT: **THE DECLARED FIX (the orchestrator's ruling on the first judged series: diagnose 133/134/138/140,
   declare before any new number).** The series (builder0 0fcdd5dd = code 05ce260b, gate 8bb2ad4e, `make planner-series
   exited 0`, 09:27): rigs arrivals base 178 candidate 159 of 208, paired -1.462/seed se 0.595 = MISS of (a); mixed
