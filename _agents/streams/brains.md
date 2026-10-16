@@ -85,7 +85,23 @@ the orchestrator before numbers; green hashes named)_
   round 28's two cells green t5 s2 (rim 0, 4/4, arrived 34.8 s) and rust t9 s2 (rim 0, 4/4, 41.6 s), B3b-2's traced
   cells green t18 s3 (rim 0, 41.3 s) and rust t8 s2 (rim 0, 28.8 s): the narrowing is not needed for them. Quick gate
   on `5ca8269d` (builder0): 296 passed, 0 failed, exited 0 (1739 s). Bar FILED and accepted by the orchestrator.
-  **Pair-tree check RUNNING on `5f0ed865`** (launched 01:09 PDT), then the series.
+  **Pair-tree check on `5f0ed865` (builder0): `make check exited 2`, 2666 passed / 0 failed, 25 of 26 targets;** the one
+  red is web-smoke's web-match-smoke "first sound 30.6 s after READY (bound 30 s)" at load 21.96 (WEB SMOKE itself
+  PASSED); sim-baseline 13 unmoved, bridge-pooled 18/18, native 0 mismatches, ai-scenarios refused scenario_perf (usual).
+  R32.4 (the orchestrator): the series may run on that red; web-smoke re-run ALONE must pass before the merge.
+  **Series RUNNING** (light lane, from 02:24 PDT, `cbddb940` = `5f0ed865`'s game code; later commits test/docs only).
+- **C32.5 answered** (via the orchestrator, 02:00 PDT): (a) yes, arrived = within 7 m of the slot the element holds for
+  the crew at completion, re-seats reported and capped (base + 1.645 se); (b) facekeep unchanged for gang hulls; (c) the
+  seating MATCH reads positions only, but an attack-move arriving with no drawn facing lays its halt along the members'
+  averaged hull forward (ElementSituation.build → ElementPlan.build's default heading → `_halt`), read once at arrival,
+  kept after, replaced by a drawn facing. Pinned: `tests/test_tactics_reseat_heading.gd` (`cbddb940`, 3/3 laptop).
+- **Item 4, shard times + splits (C32.8):** `tests/shard_times.txt` rewritten from `5f0ed865`'s check (`89a33339`,
+  builder0 busy: proportions only). Splits, test-only, bodies verbatim: `test_tactics_pursuit` 317 s → case + `_8`
+  (8 m/s seeds) + `_18` (18 m/s seeds) + the rest, 10 tests before and after (`0eea7f32`; `pursuit_aa` preloads the
+  case); `test_tactics_mixed_legs` 114 s → + `_terminus`, 4 tests (`386f8725`); `test_tactics_scenarios_4` 147 s →
+  + `_6`; `test_ai_player_orders` 97 s → + `_contact` (`3484e358`). NOT split: `test_tactics_cpu_ambush` (183 s) and
+  `test_tactics_cpu_hold` (131 s) are ONE test each (one stage run); `test_combat_suppression_bite` (292 s) is combat's
+  file (not in brains' paths). The new files run in the next builder0 gate.
 - **Traffic's request (C32.6), DONE `5f0ed865`:** `reach_probe` reads the arena it names (drains the previous lab's
   regions, waits for `TacticsLab.navigation_is_this_arenas`, `REACH_ARENA_NOT_READY` otherwise). Default arena (-25.7,
   7.3): start snaps 0.0 m, both waypoints reachable (builder0 light; rows
