@@ -76,6 +76,12 @@ orchestrator's `make sim-baseline-adopt` on main.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
 
+- **R32.1 CP-T's native half is already on main (2026-10-16, native's finding, verified):** `413252ea` (the T3b-c mirror,
+  `NativeTraffic.avoid_shape`) is an ancestor of main, inert until Traffic has `shape`. So C32.1's pair is traffic's carried
+  T3b-c alone on main; native builds the pair tree from traffic's carried hash, runs plain `make remote T=check` with the
+  switch ON and names the hash; traffic runs the re-judge on that same tree. `traffic-t3bc-judged` conflicts with main in
+  traffic's files only (movement.gd, traffic.gd, mk/traffic.mk): traffic resolves them.
+
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 ## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
