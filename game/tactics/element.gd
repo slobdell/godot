@@ -1451,7 +1451,9 @@ static func _envelopes(situation: Dictionary) -> Dictionary:
 ## that has ARRIVED latches (both traced cases): on the move its slots slide every plan and are grounded afresh as on
 ## main (B10's first cut latched there too and froze sub-0.5 m slides: traffic's test_traffic_feed control arm, whose
 ## order clock is meant to restart on every slide, outlived its grace; builder0 check on ddd1cc56).
-static var GROUND_LATCH := true
+## PARKED (B10, judged 2026-10-16: Sumps s19 t8 +19.9 s, the held seat in the squad's path): OFF by default; `--ground-latch=on`
+## turns it on. B10b re-judges it once with C32.10's seat swap ON (the orchestrator's ruling).
+static var GROUND_LATCH := false
 const GROUND_LATCH_M := 0.5
 var _grounded := {}
 

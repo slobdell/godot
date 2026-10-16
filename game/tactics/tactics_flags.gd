@@ -121,6 +121,8 @@ static func _parse() -> void:
 		# Round 32 (brains B10): a seat's grounding re-chosen every plan (the element centre's 5 m cell), the control arm.
 		if arg == "--ground-latch=off":
 			Element.GROUND_LATCH = false
+		if arg == "--ground-latch=on":
+			Element.GROUND_LATCH = true
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

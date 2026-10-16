@@ -829,7 +829,7 @@ sbf-bar: import ## Round 31 (B6): the SBF sector bar, candidate v --sbf-told-sec
 	@$(PYTHON) tests/tactics/sbf_bar.py $(BUILD_DIR)/sbf-bar-on.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
 
 # Round 32 (brains B10, DECLARED): the grounding latch's drift census. The gate-series cells on the DEFAULT path (native
-# where it runs), latch on (default) v `--ground-latch=off` (main's rules), paired: the Sumps arrive cell (settle_probe),
+# where it runs), latch on (`--ground-latch=on`; parked OFF by default) v `--ground-latch=off` (main's rules), paired: the Sumps arrive cell (settle_probe),
 # the yard crossing and Terminus head-on (reseat_probe), each run's Element.drift_census + its arrival reading ->
 # build/ground-series.jsonl + tests/tactics/ground_census.py's table.
 GROUND_YARD_SEEDS ?= 29 30
@@ -849,7 +849,7 @@ ground-series: native-for-check import ## Round 32 (B10): drift census, groundin
 		terminus) for s in $(GROUND_TERMINUS_SEEDS); do echo "$$cell $$arm $$s 11"; done;; \
 		sumps) for s in $(GROUND_SUMPS_SEEDS); do for t in $(GROUND_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; esac; \
 	done; done | xargs -P $(GROUND_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; \
-		flags="$(GROUND_EXTRA)"; [ "$$arm" = off ] && flags="$$flags --ground-latch=off"; \
+		flags="$(GROUND_EXTRA) --ground-latch=on"; [ "$$arm" = off ] && flags="$(GROUND_EXTRA) --ground-latch=off"; \
 		out=$(BUILD_DIR)/ground-runs/$$cell-$$arm-$$seed-$$tick.json; log=$${out%.json}.log; \
 		case $$cell in \
 		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
