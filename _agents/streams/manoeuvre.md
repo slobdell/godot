@@ -247,6 +247,13 @@ escape holds in ESC_SWAP until my goal jumps (cap 0.5 s); refused → H1b as bef
 method exists; `Movement.swap_seam_override` plays the seam in `tests/test_manoeuvre_h1b_swap.gd` (hook off / refused /
 taken). Kept off `stream/manoeuvre` so H1b's checked tree stays H1b only.
 
+**A named case for the swap's bar (the orchestrator, from brains' B10 trace):** Sumps s19 t8 with brains' grounding
+latch ON (`8e43cc5c`). S_2 parks at (-2.5, -51.9) in the passage S_3 and S_4 need to reach their west seat: ~40 s of
+`no_path` / blocked-by-each-other, two make-room trades, +19.9 s. **To check first:** do those crews' stalls reach H1b at
+all? H1b's count only runs on an escape FIRE (a throttle-held stall with a Tank in the slide); a crew reading `no_path`
+may be standing, not pressing, and so never fire. If they don't fire, the swap's trigger needs a second door (a
+`blocked_by` same-squad parked friend for N s) before this case can be one of its pass lines.
+
 **H1b bar line (1), amended on main before numbers:** on the named hunt seeds (Terminus mixed 4, 5, 6, 7, 9, 10, 11,
 13, 14, 16; rigs 1, 2, 3, 4, 6, 9, 10, 14, 15, 16; fights 4, 6) AND on the fresh Terminus seeds 300–312: H1b-arm
 loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
