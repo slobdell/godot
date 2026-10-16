@@ -149,6 +149,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   where_it_was_put` red at load 12+, 18/18 alone on the same build. Merged; the next main check re-reads it, and a second red
   there gets traced (owner: nobody this round, so the orchestrator).
 
+- **R32.6 `test_tactics_body::test_his_three_squads_keep_together` is red ON MAIN, order-dependent (2026-10-16 ~08:20 PDT,
+  planner's A/B):** alone on main's code (254973bb, builder0 light) it FAILS deterministically (squad-seconds alone off 33.5 /
+  on 24.5, army off 16.9 / on 29.1 s); it PASSED in main's full check at 6fcfbe46 and failed with other numbers in 8904c9c4's
+  full check. Its outcome depends on what ran before it (a static carried between tests, or between matches in one
+  session, which a player would hit too). **Brains owns it, priority over B10's remaining series reading**; until fixed it
+  does not block a merge whose changes do not touch tactics/elements, and every check that reds on it alone names it.
+
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **B3b-2c (brains, C32.3; filed 2026-10-16 ~00:50 PDT before any number; DECLARED; partial: none; the full text is
