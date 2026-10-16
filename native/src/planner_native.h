@@ -189,6 +189,13 @@ public:
 	bool step(int64_t expansions);
 	Dictionary result() const;
 	bool live() const { return session_live; }
+	// Round 32 (the queue's refuse-early): did `begin` already answer -- the start or the goal blocked, or already there
+	// (Planner._search's three checks before its first pop)? Read without stepping; the next step(n) returns it with
+	// no expansion.
+	bool refused_at_begin() const {
+		return session_live && search.finished && phase == 0 &&
+				(search.code == START_BLOCKED || search.code == GOAL_BLOCKED || search.code == ALREADY_THERE);
+	}
 	// Drop a live session (a crew died, its order changed): nothing is kept.
 	void cancel();
 	// PlannerHeuristic.table_for(req) bit for bit (the cache key is the GDScript's "%.2f|%.2f|%.2f|%.2f").

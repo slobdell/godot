@@ -1176,6 +1176,7 @@ void PlannerNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_field"), &PlannerNative::debug_field);
 	ClassDB::bind_method(D_METHOD("nav_cache_stats"), &PlannerNative::nav_cache_stats);
 	ClassDB::bind_method(D_METHOD("nav_cache_clear"), &PlannerNative::nav_cache_clear);
+	ClassDB::bind_method(D_METHOD("refused_at_begin"), &PlannerNative::refused_at_begin);
 	ClassDB::bind_method(D_METHOD("clearances", "world", "xz", "cx", "cz", "half"), &PlannerNative::clearances);
 }
 
