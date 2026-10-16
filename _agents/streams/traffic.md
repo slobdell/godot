@@ -103,6 +103,9 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   176→179 v 176→178. These fights are short-hull squads crossing, where CP-P1 (≥ 10 m hulls) and CP-H's pinned-hull
   consumers barely act. Worst runs (the same as round 31's): Terminus s43/t1 +5.3 s, yard s42/t8 +6.0 s. Their traces
   are below once read.
+- **MERGED (orchestrator): `b5882c9c` → main `86917d5a`**; the 13 baselines are being re-adopted. T1c-b2's check on
+  `d1c375b3` was stopped (its base was stale; builder0 processes killed by cwd), and it is re-carried onto the
+  post-adoption main so that its check reads only the pit moving.
 
 **Plan (in order):** (1) CP-T T3b-c: carry the judged tree onto main, quick-remote, native builds/checks the pair tree
 (R32.1: native's mirror `413252ea` is already on main, inert until Traffic has `shape`), then ONE re-judge on it; (2) T1c-b2
