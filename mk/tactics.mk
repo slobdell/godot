@@ -827,3 +827,40 @@ sbf-bar: import ## Round 31 (B6): the SBF sector bar, candidate v --sbf-told-sec
 	@$(MAKE) --no-print-directory sbf-series SBF_SEEDS="$(SBF_BAR_SEEDS)" SBF_UNITS="$(SBF_BAR_UNITS)" SBF_FLAGS="--sbf-told-sectors=on"
 	@cp $(BUILD_DIR)/sbf-series.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
 	@$(PYTHON) tests/tactics/sbf_bar.py $(BUILD_DIR)/sbf-bar-on.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
+
+# Round 32 (brains B10, DECLARED): the grounding latch's drift census. The gate-series cells on the DEFAULT path (native
+# where it runs), latch on (default) v `--ground-latch=off` (main's rules), paired: the Sumps arrive cell (settle_probe),
+# the yard crossing and Terminus head-on (reseat_probe), each run's Element.drift_census + its arrival reading ->
+# build/ground-series.jsonl + tests/tactics/ground_census.py's table.
+GROUND_YARD_SEEDS ?= 29 30
+GROUND_SUMPS_SEEDS ?= 18 19
+GROUND_TERMINUS_SEEDS ?= 12 13 14 15
+GROUND_TICKS ?= 1 3 6 8 11 16
+GROUND_ARMS ?= on off
+GROUND_CELLS ?= sumps yard terminus
+GROUND_JOBS ?= 6
+GROUND_EXTRA ?=
+.PHONY: ground-series
+ground-series: native-for-check import ## Round 32 (B10): drift census, grounding latch on v --ground-latch=off, Sumps/yard/Terminus cells -> build/ground-series.jsonl + table
+	@rm -rf $(BUILD_DIR)/ground-runs; mkdir -p $(BUILD_DIR)/ground-runs
+	@echo ">> ground-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cells '$(GROUND_CELLS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for cell in $(GROUND_CELLS); do for arm in $(GROUND_ARMS); do \
+		case $$cell in yard) for s in $(GROUND_YARD_SEEDS); do for t in $(GROUND_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; \
+		terminus) for s in $(GROUND_TERMINUS_SEEDS); do echo "$$cell $$arm $$s 11"; done;; \
+		sumps) for s in $(GROUND_SUMPS_SEEDS); do for t in $(GROUND_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; esac; \
+	done; done | xargs -P $(GROUND_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; \
+		flags="$(GROUND_EXTRA)"; [ "$$arm" = off ] && flags="$$flags --ground-latch=off"; \
+		out=$(BUILD_DIR)/ground-runs/$$cell-$$arm-$$seed-$$tick.json; log=$${out%.json}.log; \
+		case $$cell in \
+		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
+			--dir=forward --metres=150 --seed=$$seed --units=law_scout:law_ifv:law_tank:law_tank --seconds=120 --drills=on \
+			--lab-start-tick=$$tick $$flags > $$log 2>&1; grep -o "SETTLE_PROBE {.*" $$log | sed "s/^SETTLE_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; \
+		*) arena=yard_open; kind=cross; [ $$cell = terminus ] && arena=terminus && kind=head; \
+			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reseat_probe.gd -- --arena=$$arena \
+			--kind=$$kind --which=both --seed=$$seed --seconds=90 --lab-start-tick=$$tick $$flags > $$log 2>&1; \
+			grep -o "RESEAT_PROBE {.*" $$log | sed "s/^RESEAT_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; esac; \
+		[ -s $$out ] || echo "{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
+		echo "  ran $$cell $$arm s$$seed t$$tick"'
+	@cat $(BUILD_DIR)/ground-runs/*.json > $(BUILD_DIR)/ground-series.jsonl
+	@$(PYTHON) tests/tactics/ground_census.py $(BUILD_DIR)/ground-series.jsonl
+

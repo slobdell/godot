@@ -80,6 +80,25 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### B10 bar (the grounding latch ALONE; the orchestrator's cut; FILED before any number; DECLARED; partial: none)
+Candidate: stream/brains at the hash its check goes green on (main `33321516`+ merged: T3b-c ON, B3b-2c ON). Arms, one
+tree, builder0, the DEFAULT path (native where it runs): **on** = default (latch); **off** = `--ground-latch=off`
+(main's rules). Fresh seeds. GDScript only (Element.ground), so no native half.
+1. **Drift census** (`make ground-series`: Sumps cell seeds 18 19 × ticks 1 3 6 8 11 16, n 12; yard crossing seeds 29 30
+   × the same ticks, n 12; Terminus head-on seeds 12–15 t11, n 4): pooled runs with a flipping crew (> 10 drift moves)
+   on ≤ off AND pooled drift moves on < off; plus the named main-side case Sumps s16 t8 (off: 22 flips, never in) with
+   no flipping crew on.
+2. **Arrivals not down, same series:** Sumps all-within-8 m median on ≤ off and no run > 5 s later (v5's line, judging.md
+   *Sumps cell*); yard runs with every crew in on ≥ off and crews in on ≥ off every run; Terminus reported.
+3. **Arrive series, FRESH seeds 49–52, n 100:** all_in8_s on ≥ off − 1 AND discordant against ≤ 1; paired median +2 %
+   reported.
+4. **sim-baseline:** the latch acts in CPU elements too, so maps may move: every moved map listed with its reason
+   (a CPU seat whose grounding was pushed), adoption by the orchestrator; unmoved is also acceptable.
+5. **The whole suite on the tree** (the check, latch ON), bridge-pooled 18/18.
+6. Cost: `t.poll.element` on Locks ≤ 0.5 ms (the latch removes `standable_from` calls; reported).
+7. The worst on-arm run of (1)–(3) traced before medians are read.
+Ships ON as one commit.
+
 ### B3b-2c JUDGED: PASSES EVERY LINE; ships ON (2026-10-16 04:30 PDT). **Merge here: `5f0ed865`**
 Its check (builder0): 2666 passed / 0 failed, 25 of 26; the one red was web-match-smoke's first sound (30.6 v 30 s at
 load 22), and **web-smoke re-run ALONE exited 0** (R32.4). Series: builder0 light lane, tree `cbddb940` = `5f0ed865`'s
