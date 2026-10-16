@@ -127,13 +127,13 @@ backlog item is done, judged, or parked by its bar. No lead gate is pending; no 
   could turn it off. Fixed in **c45c9792**: it flips against `REALSLOW_DEFAULT` (`BrainSwitches.realslow_named`), as
   unstickback/kturnarc/realspeed do. Check on builder0 at c45c9792: **exited 0, 2642/0**, sim-baseline unmoved,
   bridge-pooled 18/18. MERGED to main as 40eda0cf (INHERIT, no second check).
-- **R31.9 split (stretch, test-only), PENDING ITS CHECK:** `lab/brains-r31-split` **293f9d62** (worktree godot-brains-sbf).
-  The six slowest brains test files are now fifteen, with shared stages in base files that hold no tests. 33 tests before and after, bodies byte-identical.
-  quick-remote on builder0: 33/0. Slowest file 264 s -> 126 s (tactics_scenarios_4).
-  First full check: killed by slot.sh's 5400 s cap on a saturated box (32 godots), test 2641/0, killed during
-  determinism. The rerun was stopped at the orchestrator's request to keep builder0 free for the CP-H/CP-P1 ship checks.
-  **Next: rerun `make remote T=check` in godot-brains-sbf when the orchestrator says the ships are in, then send the
-  hash for merge at the close.** Then remove worktrees godot-brains-sbf and godot-brains-bridge.
+- **R31.9 split (stretch, test-only), GREEN:** `lab/brains-r31-split` **5a30b037** (split 293f9d62 + main 04620f67).
+  The six slowest brains test files are now fifteen, with shared stages in base files that hold no tests. 33 tests before and after, bodies
+  byte-identical. Slowest file 264 s -> 126 s (tactics_scenarios_4, builder0 light lane). Check on builder0 at 5a30b037:
+  **exited 0, 2653/0**, sim-baseline unmoved, bridge-pooled 18/18, native-verify 0 mismatches. Handed to the orchestrator
+  for merge. Earlier runs: 293f9d62 killed by the 5400 s cap on a saturated box. 1a7c950f red on sim-baseline only
+  (main's 71538a8d baselines were adopted on a stale native lib, corrected at 4973a482). f18eaea0 stopped (main's
+  test_native_drive red, reverted at 04620f67). tests/shard_times.txt has no rows for the new files yet.
 - **R31.3:** test_tactics_pursuit made robust over seeds (a16585bf, 0415da23): on main (aa205ea5). A/A filed in
   judging.md.
 
