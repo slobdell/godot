@@ -149,8 +149,9 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   commit). builder0 light `test_tactics_body|native_h1b|native_exec_state|manoeuvre_h1b`: exited 0, 15/0. Merge it
   once manoeuvre's series passes. **PARKED by manoeuvre:** the gain line failed on fights 400-423 (builder0: far loops
   6 v 6, swaps taken 0, all 24 fights bit-identical). `pair/swap-on` and `pair/swap-ship` do NOT merge; the
-  `_h1b_swap_goal` row stays off main. **Question for the lead (recorded, not waited on):** with the swap parked, do
-  N5's held ports (item 6) start next round, or does C32.10's traffic half still move `_negotiate` / `ask`?
+  `_h1b_swap_goal` row stays off main. **Answered (orchestrator):** N5's held ports stay HELD into round 33: its
+  first far-loop candidate (a cross-element give-way / make-room, traffic's block) will likely change exactly
+  `_negotiate` / `ask` / `_begin_yield`; port them once that design settles.
   N5's held ports (item 6) stay held until the swap ships (it is their moving target).
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
