@@ -316,6 +316,12 @@ orchestrator's `make sim-baseline-adopt` on main.
   1.645 se; (7) the whole suite on native's pair tree with the default flipped ON, before the series. STUCK =
   `pinned_table.py` at `f5bf085f` (a run ending in progress is not counted, as always). REPORTED: swaps asked / taken /
   refused by reason; far rows by blocker kind; Sumps s19 t8 latch ON.
+  **B11 JUDGED ~16:00 PDT: FAILS lines (2) and (3) → PARKED** (OFF, `--hold-return=faced`; stream/brains `32e21917`; check
+  `c029cf70` 2700/0; series on `ffba7f77`, builder0, n 144 an arm): (1) crews > 90° off 377 v 391 PASS; **(2) s66 Green_Guns_5
+  on 104.5 / 125.8 / 122.4° FAIL** (the return completes inside the 6 m settle radius still turned, and nothing faces a
+  wheeled turret hull at rest); **(3) wheels/fixed worse** (faced_move median 7.5 v 3.0°, p 0.000; never settled 85 v 73)
+  FAIL, while **wheels/turret (his rigs) gains a lot** (faced_move 17.3 v 48.4°, p 0.004; faced_right 21.0 v 43.6°).
+  **Round 33:** B11b limited to `mount == "turret"`, paired with M1b's face at rest.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
