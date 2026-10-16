@@ -129,7 +129,7 @@ class Crew:
 ## default. OFF by default, `--nav-off=planner` is the opt-in arm (R31.1); the ship change is this one const flipped
 ## to true, after which `--nav-off=planner` is the OFF arm. (A `--nav-off` name takes the whole native drive off, so a
 ## tree flipped by the flag could never exercise native's mirror: the const is what the pair-tree gate flips.)
-const PLANNER_DEFAULT := false
+const PLANNER_DEFAULT := true
 
 
 static func on() -> bool:
