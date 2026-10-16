@@ -9,7 +9,11 @@ extends TestCase
 ## The pinned hull's whole execute step runs (`compute_command`: the route, avoidance, the stall rule) on the GDScript
 ## path; the friend's controller is off, so it is a squadmate that never moves.
 
-const SECONDS := 70.0
+## Base fires about every 5.3 s and H1b settles by ~14 s (builder0, 373de208): 40 s holds both, and the last 20 s
+## are the "sits still" window.
+const SECONDS := 40.0
+## One run per (arm, hull, geometry): the base arms are shared between tests (deterministic, so identical).
+static var _runs := {}
 
 
 static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
@@ -29,6 +33,13 @@ static func _arms(names: Array) -> PackedStringArray:
 ## A parked at its slot facing north; B `behind` metres south of it, facing north, sent to a goal `past` metres north
 ## of A's centre (inside or just beyond A's hull: the slot A sits on). Returns what B did over SECONDS.
 func _parked(on: bool, unit_id: String, behind: float, past: float) -> Dictionary:
+	var key := "%s/%s/%.1f/%.1f" % [on, unit_id, behind, past]
+	if not _runs.has(key):
+		_runs[key] = await _run_parked(on, unit_id, behind, past)
+	return _runs[key]
+
+
+func _run_parked(on: bool, unit_id: String, behind: float, past: float) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_off := _arms(["unstickback"] if not Movement.UNSTICK_BACK_DEFAULT else [])
 	if on != Movement.H1B_DEFAULT:
@@ -124,6 +135,7 @@ func test_switched_off_h1b_never_acts_and_counts_the_loops() -> void:
 	var base := await _parked(false, "gang_tank", 18.0, -3.0)
 	var counts: Dictionary = base["h1b"]
 	assert_eq(int(counts["settles"]) + int(counts["far"]), 0, "H1b never acts with the switch off (%s)" % counts)
-	assert_eq(int(counts["loops"]), int(base["fires"]) - Movement.H1B_ASKS - 1,
-			"every fire after the second failed ask is a loop (%s, fires %d)" % [counts, base["fires"]])
+	# Fire 1 starts the count, fires 2 and 3 are the two failed asks; from fire 3 on (where H1b would settle) each is a loop.
+	assert_eq(int(counts["loops"]), int(base["fires"]) - Movement.H1B_ASKS,
+			"every fire from the second failed ask on is a loop (%s, fires %d)" % [counts, base["fires"]])
 	assert_true(not base["repaired"], "nothing re-grounded the goal")

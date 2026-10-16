@@ -92,7 +92,8 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   Both arms on the GDScript path (`--brains-off=native`; the CP-H runner's refusal rule), every run printing its flags.
 - **Pre-registered:** N = `H1B_ASKS` = 2; "failed" = the escape fires again on the same friend for the same goal
   (within NEW_GOAL_JUMP) with that friend's flat position moved < `H1B_MOVED_M` 0.5 m (net) since the previous fire. A
-  **loop** = a fire after the second failed ask that H1b did not break (`ManoeuvreCensus.h1b_loops`, counted in BOTH
+  **loop** = a fire that records the second (or a later) failed ask and that H1b did not break (the third fire on on
+  an unmoved friend onward; base loops = fires − 2) (`ManoeuvreCensus.h1b_loops`, counted in BOTH
   arms). Settle short only with route left <= 12 m and a goal not sliding; farther loops are counted (`far`), not acted on.
 - **Fresh seeds (proposed; unclaimed in workstreams.md as of main `3fdcc1ea`):** Terminus drive + census 300–312 (13),
   hull-rest 313–318 (4 factions × 6 tasks × 6 = 144 an arm, one arm per remote call), fights 320–343 (24).
@@ -112,6 +113,34 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   arms. Native: H1b's state (`_h1b_*`) and the repair write mirrored in the pair (R32.2).
 - **Partial:** none; one cut. If a line misses: the worst run traced, H1b parked with the trace, no re-tuning on these
   seeds.
+
+### Measurements (each with commit, machine, workload, n)
+
+- H1b unit stage, builder0, working tree just before `373de208` (without the loop count), `test_manoeuvre_h1b`
+  (deterministic, n = 1 an arm): War Rig sent to a slot a parked squadmate sits on (18 m behind, goal 3 m inside its
+  hull). Base: 13 fires in 70 s (every ~5.3 s), ends `blocked`, 279 full-throttle ticks in the last 20 s. H1b: fires 3
+  (2.1, 7.4, 12.6 s), settles at 13.7 s 11.0 m short, 0.00 m moved and 0 pressing ticks after. IFV 11 m behind a
+  parked squadmate: 0 fires in both arms (avoidance holds it at `blocked`), so that case is a no-op guard.
+- **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
+  folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
+  `test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` failed (drift 25.3 m, legs 2). It passed in
+  `e66b41f1`'s check. Use `quick-remote` / `check` (they build native first) for any run that touches hulls ≥ 10 m.
+
+### M1b(3): C32.5 RULED as R32.3 (2026-10-16, main workstreams.md)
+
+- (a) "Arrived" = completed within ARRIVED_M of the crew's element seat AT COMPLETION (`Element.seats`, what
+  settle_probe's `off_slot_m` reads), not a stale `to`. Every arm also reports arrivals against the original slot,
+  `reseats` and `reseats_after_arrival`. Re-seats > base + 1.645 se is a FAIL line.
+- (b) facekeep unchanged for gang hulls.
+- (c) Brains' answer on heading: the re-seat reads it through the SHAPE. An attack-move with no drawn facing lays its
+  halt along the element's heading, which is the members' averaged hull forward (`ElementSituation.build` ~70–76 →
+  `ElementPlan.build` default heading :146 → `_halt` ~1669). That heading is read once, on the arrival plan; a drawn
+  facing replaces it (~668–672). Also element_plan.gd ~678 (a plain move forming up within 2 m) and drills.gd ~387. So
+  a wheeled hull turning BEFORE the element arrives moves every seat, and none after arrival. Pinned by brains'
+  `tests/test_tactics_reseat_heading.gd` (stream/brains `cbddb940`).
+- **Working hypothesis to TRACE before designing:** attempt 2's hulls turned mid-approach, swung the halt and re-seated
+  the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
+  numbers, after H1b.
 
 ### Plan (ordered)
 
@@ -137,6 +166,11 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
 - **R32.2 (the orchestrator's ruling, 2026-10-16):** H1b's hook may write `_repair_for` / `_repair_to`, with no edit to
   brains' functions or the fields' meaning. The native mirror of that write rides in H1b's pair, and every settled H1b
   diff goes to native before its commit (C31.2).
+- **Native on H1b (2026-10-16): NO C++ mirror needed.** The native unstick reaches the escape only through the
+  `_escape_begin` callback, so the early return behaves the same in both arms. What H1b reads and writes (`_goal`,
+  `_remaining`, `_goal_velocity`, `_repair_for`, `_repair_to`) is synced around every callback, and `_h1b_*` stay GDScript.
+  Native's two conditions: keep `native_stale |= STALE_ALL` in `_h1b_settle`, and tell native FIRST if `_h1b_gives_up`
+  ever moves out of `_escape_begin`. Native adds `test_native_h1b` on `_parked(true, "gang_tank", 18.0, -3.0)`.
 - **Counters on `ManoeuvreCensus`** (`h1b_report()`), not Movement statics; `escape_arms()` unchanged (its off test
   compares the whole dict).
 
