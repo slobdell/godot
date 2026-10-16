@@ -108,7 +108,7 @@ terminus/cross=3.0`. Reason: the question is whether CP-H/CP-P1 moved what was j
   Native confirms none ported. `native-verify-scenarios` on `4849bfdc`: builder0 exited 0, 52 passed, 0 verify mismatches.
   **`traffic-native-verify` was broken since round 31:** the `;` in `TRAFFIC_VERIFY_CENSUS` reached the recipe's `for`
   list as a command separator (a bash syntax error at `parade`), which is why round 31 never ran it. Fixed at
-  `d1c375b3` and re-running. The chain (worktree `../godot-traffic-t1cb2`) then runs the full check with the rule ON and
+  `d1c375b3`; re-run there: builder0 exited 0, 0 mismatches (census Sumps s7 and Parade s8, approach s13 and s14). Caveat: those census runs read `setup_refusals` 0, so the refusal itself is covered by native's structural reading (ask() is GDScript on both arms), not by these runs. The chain (worktree `../godot-traffic-t1cb2`) then runs the full check with the rule ON and
   the census on round 31's seeds 41–46 × Sumps 1000 / Parade 2000 / Foundry 2000, n 18, 150 s, `--brains-off=native`,
   base `--traffic-off=setup`. As the brief says, the deciding line is read as arm 0/18 repacks while firing (the base's
   ≥ 8/18 precondition is not re-applied), with the guards as filed.
