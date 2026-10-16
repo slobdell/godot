@@ -3311,6 +3311,7 @@ func _h1b_gives_up(friend: Tank) -> bool:
 		_h1b_settle()
 		return true
 	ManoeuvreCensus.h1b_far += 1
+	ManoeuvreCensus.note_h1b_far(self, friend)
 	return false
 
 

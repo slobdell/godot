@@ -7,4 +7,6 @@ extends "res://tests/nav/terminus_drive.gd"
 func _report() -> void:
 	print("H1B_DRIVE %s" % JSON.stringify({"seed": int(_flag("seed", "1")), "squad": squad_kind, "h1b_on": Movement.h1b_on(),
 			"h1b": ManoeuvreCensus.h1b_report(), "escape": Movement.escape_arms()}))
+	for row: Dictionary in ManoeuvreCensus.h1b_far_rows:
+		print("H1B_FAR %s" % JSON.stringify(row))
 	super()

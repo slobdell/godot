@@ -92,7 +92,28 @@ static var h1b_short_m := 0.0
 static var h1b_far := 0
 
 
+## The first H1B_FAR_ROWS far loops, each with why it was not settled (route left, the goal's slide speed) and what the
+## blocker was doing (measurement only: H1b's re-path question).
+const H1B_FAR_ROWS := 200
+static var h1b_far_rows: Array = []
+
+
+static func note_h1b_far(mover: Movement, friend: Tank) -> void:
+	if h1b_far_rows.size() >= H1B_FAR_ROWS:
+		return
+	var tank := mover.ctl.tank
+	var other := Movement.of(friend)
+	h1b_far_rows.append({"f": Engine.get_physics_frames(), "unit": String(tank.name), "id": tank.unit_id,
+			"blocker": String(friend.name), "blocker_id": friend.unit_id, "remaining_m": snappedf(mover._remaining, 0.1),
+			"goal_v": snappedf(mover._goal_velocity.length(), 0.01),
+			"gap_m": snappedf(Vector2(friend.global_position.x - tank.global_position.x, friend.global_position.z - tank.global_position.z).length(), 0.1),
+			"blocker_under_way": other.is_under_way() if other != null else false,
+			"blocker_phase": other.phase if other != null else "?", "blocker_blocked_by": other.blocked_by if other != null else "",
+			"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
+
+
 static func reset_h1b() -> void:
+	h1b_far_rows = []
 	h1b_failed_asks = 0
 	h1b_settles = 0
 	h1b_short_m = 0.0
