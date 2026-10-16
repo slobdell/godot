@@ -29,6 +29,12 @@ stable until it is agreed.
    share for ~4–6 s while the other squad passes, reaching back to its rear crew, then released at full pace, plus one
    overshoot k-turn. The rule is doing exactly what it intends; nothing is stuck.
 
+**builder0 throughput (R31.9, his OK 2026-10-15 ~13:00; no second build machine for now):** builds are already
+incremental, and a check is ~55 min of TEST time. (1) After every merge run `tools/merge_check_needed.sh <green>`; on
+INHERIT, run no main check. (2) Workers iterate with `make quick-remote` and run full checks only for named hashes. (3)
+The slowest test files get split by their owners: brains and traffic now as stretch, the rest in round 32's briefs
+(native's four twins first).
+
 **To show him (round 31):** the planner's Terminus west-street War Rig told to face back, on the REAL drive (`faeab49c`,
 builder0 light): today 29.8 s, 54 gear changes, 14 wall-contact ticks, ending jackknifed across the street (the
 orchestrator looked at the end frame); under the planner 15.5 s, 3 legs, 0 contacts, ending straight nose south in
@@ -48,7 +54,22 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-**Merged ~11:30 PDT: manoeuvre `f593f487` → main `a2ef0b31`** (H1 amended per R31.5, OFF; turn-hull attempt 2's code,
+**🎯 CP-H SHIPPED ON (~17:55 PDT): pair/cph-ship `76b7ee46` → main `b352fa2a`.** The four consumers of the honest reading
+(unstickback, kturnarc, realspeed, realslow) are default ON. What he'll notice: a vehicle pinned on a squadmate asks it to
+move, then backs straight out instead of grinding at full throttle (pinned crew-s at rest 3106 → 333, stuck 6578 → 3737).
+Wall and terrain pins keep the old escape. The ship check was 2642/0, with sim-baseline the only red (13 maps moved). The
+**13 baselines are being re-recorded** (`orch-adopt-cph`, `make sim-baseline-adopt`, two reads), then one main check.
+CP-P1's ship cut starts on `b352fa2a` in parallel.
+**✅ MAIN `40eda0cf` INHERITS `c45c9792`'s green check (~15:10 PDT, R31.9's first use):** `tools/merge_check_needed.sh
+c45c9792` gave INHERIT (only docs differ). That check was builder0 `exited 0`, 2642/0, sim-baseline unmoved. The merge
+is brains' realslow toggle fix, default OFF. No main check was run. **✅ MAIN GREEN at `8a23325a` (~14:00 PDT), with B6 ON:** builder0 `>> remote: make check exited 0`, 2641 passed / 0
+failed, ALL JUDGED, sim-baseline unmoved (the CPU never draws a facing). **What he plays now differs from round 30 in one
+way:** support-by-fire crews take his drawn heading. **✅ MAIN GREEN at `a2ef0b31` (~12:35 PDT):** builder0 `>> remote: make check exited 0`, 2641 passed / 0 failed, ALL
+JUDGED, sim-baseline unmoved. It covers pair/t4 and manoeuvre's `f593f487`. **🎯 SHIPPED ON (~12:30 PDT): brains B6 `f22d7dcb` → main `201b792a`. The first round-31 change he will SEE:** when
+he draws a support-by-fire line, every crew of the element takes his drawn heading. The pooled drawn error for the
+four wheeled classes is 10.4° v 29.1° (law_ifv 1.1 v 28.9°, gang_tank 10.2 v 28.3°); clicked orders are identical; crews
+in are equal. It is GDScript only, so there is no native pair. Its check exited 0, 2613/0. Unchecked on main until the
+next batch. **Merged ~11:30 PDT: manoeuvre `f593f487` → main `a2ef0b31`** (H1 amended per R31.5, OFF; turn-hull attempt 2's code,
 inert; its check exited 0, 2636/0). **Main check RUNNING on `a2ef0b31`** (`orch-main-check5`, log `main-check-batch5.log`),
 covering this and pair/t4. Native re-cuts CP-H's ONE tree on `a2ef0b31` after CP-P1's gate. **Merged ~11:00 PDT: pair/t4 `fafe49ea` → main `dc9792f9`** (traffic T4 v1 + ghostself OPT-IN default OFF, I4's
 early-stop tooling + CACHE=auto, native's load/exit live-guard; its check exited 0, 2639/0, ALL JUDGED, 13 unmoved).

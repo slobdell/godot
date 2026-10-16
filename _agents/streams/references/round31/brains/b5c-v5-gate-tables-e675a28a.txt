@@ -1,0 +1,44 @@
+TOTAL {'latched': 3, 'unfinished': 0, 'reset': 3, 'stuck': 1}
+== yard (n = 12 pairs): last crew in (s)
+  s27  t1   on    15.8  off   never crews 10/10 v 9/10  fired on 84 off 0  (turned 1 latched_away 0 near 4)
+  s27  t3   on    22.0  off    89.7 crews 10/10 v 10/10  fired on 83 off 0  (turned 1 latched_away 0 near 5)
+  s27  t6   on    23.1  off   never crews 10/10 v 9/10  fired on 89 off 0  (turned 1 latched_away 0 near 5)
+  s27  t8   on   never  off   never crews 9/10 v 9/10  fired on 85 off 0  (turned 1 latched_away 0 near 5)
+  s27  t11  on    16.4  off   never crews 10/10 v 9/10  fired on 82 off 0  (turned 1 latched_away 0 near 4)
+  s27  t16  on    16.1  off   never crews 10/10 v 9/10  fired on 85 off 0  (turned 1 latched_away 0 near 4)
+  s28  t1   on    17.9  off   never crews 10/10 v 9/10  fired on 88 off 0  (turned 0 latched_away 0 near 3)
+  s28  t3   on    38.3  off   never crews 10/10 v 9/10  fired on 138 off 0  (turned 1 latched_away 1 near 4)
+  s28  t6   on    20.7  off   never crews 10/10 v 9/10  fired on 85 off 0  (turned 0 latched_away 0 near 4)
+  s28  t8   on    21.3  off   never crews 10/10 v 9/10  fired on 144 off 0  (turned 0 latched_away 1 near 4)
+  s28  t11  on    16.5  off   never crews 10/10 v 9/10  fired on 82 off 0  (turned 0 latched_away 0 near 4)
+  s28  t16  on    21.7  off   never crews 10/10 v 9/10  fired on 85 off 0  (turned 0 latched_away 0 near 4)
+  median on 21.0 v off never; on never 1, off never 11
+  runs with fewer crews in on: 0 []
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 0
+>> remote: make gate-series GATE_CELLS=yard GATE_YARD_SEEDS=27 28 GATE_EXTRA=--gate-trace exited 0 (build/ copied back)
+TOTAL {'unfinished': 0, 'latched': 4, 'stuck': 1}
+== sumps (n = 12 pairs): all within 8 m (s)
+  s16  t1   on    49.3  off    57.8 arc 0.89 v 0.89  fired on 197 off 0  (turned 1 latched_away 0 near 3)
+  s16  t3   on    24.7  off    24.7 arc 0.96 v 0.96  fired on 41 off 0  (turned 0 latched_away 0 near 2)
+  s16  t6   on    22.9  off    23.2 arc 0.97 v 0.97  fired on 48 off 0  (turned 0 latched_away 0 near 2)
+  s16  t8   on    42.1  off   never arc 0.92 v 0.92  fired on 79 off 0  (turned 1 latched_away 0 near 2)
+  s16  t11  on    22.7  off    22.9 arc 0.97 v 0.97  fired on 50 off 0  (turned 0 latched_away 0 near 2)
+  s16  t16  on    22.8  off    23.0 arc 0.96 v 0.96  fired on 45 off 0  (turned 0 latched_away 0 near 2)
+  s17  t1   on    23.9  off    23.9 arc 0.94 v 0.94  fired on 3 off 0  (turned 0 latched_away 0 near 2)
+  s17  t3   on    24.9  off    25.2 arc 0.95 v 0.95  fired on 51 off 0  (turned 0 latched_away 0 near 2)
+  s17  t6   on    30.8  off    67.9 arc 0.91 v 0.91  fired on 47 off 0  (turned 0 latched_away 0 near 1)
+  s17  t8   on    36.6  off    49.2 arc 0.92 v 0.92  fired on 37 off 0  (turned 0 latched_away 0 near 1)
+  s17  t11  on    58.3  off    36.0 arc 0.92 v 0.92  fired on 129 off 0  (turned 0 latched_away 0 near 75)
+  s17  t16  on    22.7  off    22.7 arc 0.96 v 0.96  fired on 42 off 0  (turned 0 latched_away 0 near 2)
+  median on 24.8 v off 24.9; on never 0, off never 1
+  runs > 5 s later on: 1 [('sumps', 17, 11)]; guns_on_arc mean on 0.939 v off 0.939
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 0
+== terminus (n = 4 pairs): last crew in (s)
+  s8   t11  on    43.2  off   never crews 10/10 v 9/10  fired on 9 off 0  (turned 1 latched_away 0 near 6)
+  s9   t11  on    41.8  off    72.4 crews 10/10 v 10/10  fired on 122 off 0  (turned 0 latched_away 0 near 4)
+  s10  t11  on   never  off   never crews 9/10 v 9/10  fired on 4 off 0  (turned 1 latched_away 0 near 1)
+  s11  t11  on    48.5  off    60.3 crews 10/10 v 10/10  fired on 9 off 0  (turned 1 latched_away 0 near 6)
+  median on 45.9 v off never; on never 1, off never 2
+  runs with fewer crews in on: 0 []
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 0
+>> remote: make gate-series GATE_CELLS=sumps terminus GATE_SUMPS_SEEDS=16 17 GATE_TERMINUS_SEEDS=8 9 10 11 GATE_EXTRA=--gate-trace exited 0 (build/ copied back)

@@ -507,3 +507,12 @@ copied at the close from the `stream/manoeuvre` worktree (`godot-manoeuvre`), wh
 | probe | metric | form | noise | base | n | the bar's line | filed |
 |---|---|---|---|---|---|---|---|
 | `test_tactics_pursuit` stage (`make pursuit-aa`, brains `3cb76e17`, game/ = main, builder0, default path; rows `streams/references/round31/brains/pursuit-aa-3cb76e17.{jsonl,txt}`) | pass verdict a cell (12 seeds × 8 / 18 m/s) | count | **a 0.25 m start nudge (a null change; the lab is deterministic a seed, so an exact A/A is an equality check) flips 3 of 12 verdicts at 8 m/s (seeds 3, 5, 9; seed 3 is the test's own), 0 of 12 at 18 m/s.** Reversal margin as written +69–70° every seed, nudged min −41°; closing margin ≥ +13.9 m both arms | rule OFF: as written 22/24 (8 m/s 12/12; 18 m/s 10/12, seeds 1 and 9 FAIL on main); nudged 19/24 | 48 runs | a per-seed line fails a null ~97 % of the time (1 − 0.75¹²). B5c-v5: count form ON ≥ OFF − 3 on the 24 cells (R31.3) | 2026-10-14 ~23:15 PDT, orchestrator, from brains' A/A |
+
+**Round 31 process finding (manoeuvre, 2026-10-15; filed by the orchestrator): a guard line's early stop must be sized
+to the harm its FIXED line detects, or be OFF.** On M1b(2) attempt 2's Terminus census (seeds 146–158, n 13), the bar
+named both "not down beyond 1.645 se paired" and `sequential.py arrived:guard:0.10` as its early-stop rule. Sequential
+read SERIES PASS at run 6 for BOTH squads (mixed llr −5.74), while the fixed line FAILED mixed at 13 (−8 v −7.5). A
+10 %-of-base harm guard (~2.2 crews a run of 22) passes what the 1.645 se line fails (~0.6 a run, 2.7 %). The run went
+to completion per C31.3 and was judged on the fixed line. **Rule from here (R31.8):** on a GUARD line, early stop is
+OFF and the series runs to completion, judged on its fixed line. A GAIN line may stop early only on a rule whose effect
+is the fixed line's own MDE.
