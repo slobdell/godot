@@ -101,6 +101,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   NOT a refusal** (the orchestrator's ruling: every seat of a faced shape carries his heading and SBF sectors trade with
   the seats). GDScript only; no native mirror. Counters: swaps, swaps_asked (brains); swaps asked / granted / refused by
   reason (manoeuvre's census). Tests: one per refusal + the accepted case + the plan-keeps-it case.
+- **C32.11 B10, the grounding latch, ships ALONE before B5c-v6 (2026-10-16 ~04:35 PDT, brains' finding):** a seating bug ON
+  MAIN: `Element.ground` → `SlotGround.standable_from` picks the side a pushed (unstandable) slot lands on, memoised by the
+  element CENTRE's 5 m cell, so a squad jostling on its spot moves the centre across a cell edge and a seat jumps ~10 m (Sumps
+  s16 t8, main's rules, no gate: Green_S_2's seat 3 flips 22 times, 43–120 s, never all in; v5's `near` made it 67 flips on
+  s17 t11). Fix: latch each seat's grounding while its asked-for point holds within 0.5 m (`--ground-latch=off` = control);
+  GDScript, every element (sim-baseline expected to move). Its own bar; then v6 (v5's gate + the side gate for yard s27 t8)
+  is judged on a base with the latch ON. Order for brains: B3b-2c verdict → B10 → C32.10's swap → v6.
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
