@@ -51,7 +51,10 @@ B3b-2c. **What he plays now:** the Terminus crossing give-way, every crew across
 **T1c-b2 re-judged PASS (traffic, builder0, `cf81aedc`, census s41–46 × 3 maps, n 18, GDScript):** runs with a repack
 while firing 5/18 → 0/18 (Fisher p 0.023); friendly-stuck 789 → 696 crew-s, fast contacts 934 → 946, both inside guards;
 artillery 451 → 456; no baseline moves. **Its price, to tell him:** 6 squadmates (all Green, in the 4 runs where the truck
-used to pack up) never got past a set-up truck within 20 s. Waits on the capture fix, then one check, then ships.
+used to pack up) never got past a set-up truck within 20 s. **In his words:** "on Parade a mortar truck heading for its firing spot waited
+about 19 s behind a set-up squadmate, never got by, and set up 19 m short." Of the six (traced, `8ce39559`): 2 got by late
+(25–32 s), 2 set up 10–19 m short, 2 were freed when the set-up truck died. All are mortar trucks queued behind ANOTHER
+set-up mortar truck. A follow-up candidate (not this round's): C32.10's seat swap for two artillery crews of one battery. Waits on the capture fix, then one check, then ships.
 **Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
 traffic re-checks T1c-b2 on it.
 
