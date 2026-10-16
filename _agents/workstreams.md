@@ -316,6 +316,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   1.645 se; (7) the whole suite on native's pair tree with the default flipped ON, before the series. STUCK =
   `pinned_table.py` at `f5bf085f` (a run ending in progress is not counted, as always). REPORTED: swaps asked / taken /
   refused by reason; far rows by blocker kind; Sumps s19 t8 latch ON.
+  **AMENDED ~16:30 PDT before any series number (manoeuvre's finding):** the Terminus drive forms NO elements (Orders +
+  OrderExecutor; `Elements.install` runs only in skirmish-based stages), so the seam answers `no_element` there and G cannot
+  pass on 380–392; the far-loop trace's 50/62 were drive orders, not element seats. **Ruling: (a) + (b).** G moves to fights
+  400–423: swap-arm far loops ≤ 50 % of the h1b arm's, summed over the 24 seeds, AND swaps taken ≥ 1; hull-rest 393–398's far
+  loops reported beside it. Terminus 380–392 stays as GUARDS only (lines (1), (3), (4), (6): the hook does no harm when it
+  cannot swap). Noted for round 33: in his skirmish every squad is an element, so the swap reaches play; the Terminus drive
+  harness does not resemble play here (no elements) and its far loops may not be his.
   **B11 JUDGED ~16:00 PDT: FAILS lines (2) and (3) → PARKED** (OFF, `--hold-return=faced`; stream/brains `32e21917`; check
   `c029cf70` 2700/0; series on `ffba7f77`, builder0, n 144 an arm): (1) crews > 90° off 377 v 391 PASS; **(2) s66 Green_Guns_5
   on 104.5 / 125.8 / 122.4° FAIL** (the return completes inside the 6 m settle radius still turned, and nothing faces a
