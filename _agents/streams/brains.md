@@ -80,6 +80,18 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### NOW (2026-10-16 04:45 PDT)
+- **B3b-2c SHIPPED:** merged as main `33321516` (from `5f0ed865`). His bridge 108/108.
+- **B10 (the grounding latch alone; the orchestrator's cut from v6):** stream `72e405f4`, main merged `fb303a7f`,
+  tooling `ddd1cc56`; bar filed (below). **Check on `ddd1cc56` RUNNING** (04:28 PDT); then `make ground-series` + the
+  arrive series (seeds 49–52) + cost in the light lane.
+- **C32.10 (seat swap for manoeuvre's H1b), BUILT:** `lab/brains-r32-swap` `f2cc956d`, worktree `godot-brains-swap`
+  (offset 9). `Elements.swap_seats(asker, parked) -> String`; tests 4/4 (laptop). Inert until H1b calls it.
+- **B5c-v6:** `lab/brains-r32-gate` (worktree `godot-brains-gate`, offset 5) = v5 + main + side gate (+ the latch,
+  which now ships as B10). Native mirrored the side gate (`pair/brains-v6-carry` 33db0ac1 + ba8d18d9). Judged on a
+  latch-ON base after B10. Tuning run queued on builder0.
+- **Worktrees of mine:** godot-brains (stream), godot-brains-gate, godot-brains-swap. Remove at round close.
+
 ### B10 bar (the grounding latch ALONE; the orchestrator's cut; FILED before any number; DECLARED; partial: none)
 Candidate: stream/brains at the hash its check goes green on (main `33321516`+ merged: T3b-c ON, B3b-2c ON). Arms, one
 tree, builder0, the DEFAULT path (native where it runs): **on** = default (latch); **off** = `--ground-latch=off`
