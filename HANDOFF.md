@@ -39,6 +39,12 @@ Rulings R32.1 (native half already on main), R32.2 (H1b writes the repair fields
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
 
+**🎯 T3b-c SHIPPED ON (~03:10 PDT): pair/t3bc-r32 `b5882c9c` → main `86917d5a`.** What he'll notice: at a Terminus street
+crossing the squad that gives way waits ~2.6 s, and the squads bump about a third less (his yes). Re-judge on b5882c9c
+(builder0, seeds 41–43 × 6, n 18, GDScript): VERDICT PASS, Terminus +2.61 s (se 0.55) v +3.90, yard +3.38 v +3.43, bumps
+191 → 117; CP-H/CP-P1 did not move it. Baselines being re-adopted (`orch-adopt-t3bc`, log in the orchestrator's scratchpad
+`adopt-t3bc.log`), then ONE main check.
+
 **MERGED ~03:00 PDT: planner `530e85cf` → main `3a85d092`** (CP-S `side_gate` OFF-path; SLICE per render preset: laptop 1,
 else 2, latched per match, `--planner-slice=N` wins; the shared queue behind `--planner-queue=shared`, OFF). Its check:
 builder0 exited 0, 2670/0, ALL JUDGED, sim-baseline 13 unmoved. merge_check_needed: CHECK (mk/play.mk only, `19df5cc0`);
