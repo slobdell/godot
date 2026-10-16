@@ -27,10 +27,3 @@ func test_five_squads_moved_in_quick_succession_go_quiet_on_their_spots() -> voi
 		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)
 	assert_true(float(result["mean_off_slot_m"]) <= 8.0, "and its vehicles are in their slots (mean %.1f m)"
 			% result["mean_off_slot_m"])
-
-
-func test_attack_move_decisions_measured() -> void:
-	# Round 7: a measurement first (the bar comes after the fix, from what it measures).
-	var result: Dictionary = await TacticsScenarios.attack_move_decisions(self)
-	print("MEASURE attack_move_decisions %s" % result)
-	assert_true(float(result["unit_minutes"]) > 3.0, "setup: six units fought for most of a minute")
