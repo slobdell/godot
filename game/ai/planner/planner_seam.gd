@@ -113,7 +113,7 @@ static var queue_waits := 0       # hull-ticks waited behind another crew's sear
 static var _crews := {}           # name -> Crew
 static var _swept_tick := -1      # the last physics tick the crews were swept for freed hulls
 static var _queue: Array[String] = []
-static var _retry_until := {}     # name -> tick
+static var _retry_until := {}     # name -> [tick, the hull's instance id]: a decline is the HULL's, never its name's
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
 static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
@@ -277,7 +277,7 @@ static func last_refusal(crew_name: String) -> Array:
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
-			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "queue": "shared" if queue_on() else "fifo", "live": _crews.size(), "slice": _slice,
+			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
 			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
@@ -383,7 +383,7 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		_release(name)  # another kind of order, not asked for a while, or a new goal: whatever was planned is stale
 		crew = null
 	if crew == null:
-		if not may_ask or int(_retry_until.get(name, -1)) > tick:
+		if not may_ask or _declined(name, tank, tick):
 			return false
 		crew = _request(mover, kind, target, want, tick)
 		if crew == null:
@@ -475,7 +475,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 				"goal": [snappedf(crew.req.goal_x, 0.01), snappedf(crew.req.goal_z, 0.01), snappedf(crew.req.goal_fx, 0.01), snappedf(crew.req.goal_fz, 0.01)],
 				"stay_m": crew.req.tol_m, "speed": snappedf(tank.speed(), 0.01), "here": [snappedf(tank.global_position.x, 0.01), snappedf(tank.global_position.z, 0.01)]}
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS
+		_decline(name, mover.ctl.tank, tick)
 		return false
 	if queue_on():
 		return _pend_shared(mover, cmd, crew, name, tick, _delta)
@@ -621,7 +621,7 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 		holds.append(tick - crew.held_since)
 		_last_refusal[name] = [tick, plan.code]
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS
+		_decline(name, mover.ctl.tank, tick)
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
@@ -646,7 +646,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		if ManoeuvreCensus.trace_unit == name:
 			print("PLANNER_SEAM %s face: aborted (wall contact on leg %d)" % [name, crew.executor.leg_index + 1])
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS
+		_decline(name, mover.ctl.tank, tick)
 		cmd.throttle = 0.0
 		cmd.turn = 0.0
 		return false
@@ -660,7 +660,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 			print("PLANNER_SEAM %s %s: aborted (%s), replans %d" % [name, crew.kind, crew.executor.reason, crew.replans])
 		if crew.replans >= REPLANS_PER_ORDER or crew.kind == "face":
 			_release(name)
-			_retry_until[name] = tick + RETRY_TICKS
+			_decline(name, mover.ctl.tank, tick)
 			return false
 		var kind := crew.kind
 		var goal := crew.goal
@@ -669,7 +669,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		_release(name)
 		var again := _request(mover, kind, goal, want, tick)
 		if again == null:
-			_retry_until[name] = tick + RETRY_TICKS
+			_decline(name, mover.ctl.tank, tick)
 			return false
 		again.replans = replans
 		cmd.throttle = 0.0
@@ -678,12 +678,12 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 	if crew.executor.done:
 		driven += 1
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS  # the route or the face's aligned test takes it from here
+		_decline(name, mover.ctl.tank, tick)  # the route or the face's aligned test takes it from here
 		return true
 	return true
 
 
-static func _release(name: String) -> void:
+static func _release(name: String, quiet := false) -> void:
 	var crew: Crew = _crews.get(name)
 	if crew == null:
 		return
@@ -695,8 +695,25 @@ static func _release(name: String) -> void:
 	_queue.erase(name)
 	# The run's report (CP-P1 bar line (a): "PlannerSeam.report() printed per run"): the drive harnesses are nav's
 	# files, so the seam prints its own cumulative line at every event's end; the LAST one in a log is the run's.
-	if REPORT_LINES:
+	if REPORT_LINES and not quiet:
 		print("PLANNER_SEAM_REPORT " + JSON.stringify(report()))
+
+
+## A match is ending (`Match._exit_tree`; round 32, the orchestrator's belt and braces after the second-arena carry-over):
+## release every crew whose hull is in that match (or already freed) and drop their decline windows, so nothing of a dead
+## match reaches the next one even for a frame. The counters stay (the run's PLANNER_SEAM_REPORT and the tests read them
+## after a match is disposed) and nothing is printed. Harmless when the seam was never used (no crews: nothing to do) or
+## OFF, and without the library (no session is begun unless a crew is held).
+static func end_match(tanks_root: Node) -> void:
+	for name: String in _crews.keys():
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion() \
+				or (tanks_root != null and tanks_root.is_ancestor_of(crew.tank)):
+			_release(name, true)
+	for name: String in _retry_until.keys():
+		var hull: Object = instance_from_id(int((_retry_until[name] as Array)[1]))
+		if hull == null or not is_instance_valid(hull) or (tanks_root != null and hull is Node and tanks_root.is_ancestor_of(hull as Node)):
+			_retry_until.erase(name)
 
 
 # ---- CP-S (round 32, C32.4): the SIDE gate for brains' arrival gate rule ------------------------------------------------
@@ -755,6 +772,35 @@ static func side_gate_in(world: PlannerWorld, slot: Vector3, facing: Vector3, un
 	return Vector3(lx, slot.y, lz) if take_left else Vector3(rx, slot.y, rz)
 
 
+## Decline asks from THIS hull for RETRY_TICKS. Keyed by name, carrying the hull's instance: a later match's hull under
+## the same name is not declined (round 32: the War Rig face-behind played twice in one process skipped its first plan
+## in the second match, play 1's window still open on "Rig"; the round-31 rule for any static keyed by name).
+static func _decline(name: String, tank: Tank, tick: int) -> void:
+	_retry_until[name] = [tick + RETRY_TICKS, tank.get_instance_id() if is_instance_valid(tank) else 0]
+
+
+static func _declined(name: String, tank: Tank, tick: int) -> bool:
+	var window: Variant = _retry_until.get(name)
+	if window == null:
+		return false
+	var held := window as Array
+	if int(held[1]) != tank.get_instance_id():
+		_retry_until.erase(name)   # another hull's window under this name
+		return false
+	return int(held[0]) > tick
+
+
+## The crews held for hulls that still exist (a freed hull's crew waits for `_sweep`; the orchestrator's note: the twin
+## harness read `live` 1 in one arm and 0 in the other at frame 0 for an earlier test file's crew).
+static func _live_count() -> int:
+	var n := 0
+	for name: String in _crews:
+		var crew: Crew = _crews[name]
+		if is_instance_valid(crew.tank) and not crew.tank.is_queued_for_deletion():
+			n += 1
+	return n
+
+
 static func _flat(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
 
@@ -778,7 +824,7 @@ static func capture() -> Dictionary:
 	for name: String in _queue:
 		if crews.has(name):
 			queue.append(name)
-	return {"crews": crews, "queue": queue, "retry": _retry_until.duplicate(), "counters": report(),
+	return {"crews": crews, "queue": queue, "retry": _retry_until.duplicate(true), "counters": report(),
 			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true),
 			"alloc_tick": _alloc_tick, "alloc": _alloc.duplicate()}
 
@@ -796,7 +842,7 @@ static func restore(snapshot: Dictionary) -> void:
 	for name: String in snapshot["crews"]:
 		_crews[name] = (snapshot["crews"][name] as Crew).copy()
 	_queue.assign(snapshot["queue"])
-	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
+	_retry_until = (snapshot["retry"] as Dictionary).duplicate(true)
 	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
 	holds = PackedInt32Array(snapshot.get("holds", PackedInt32Array()))
 	last_plans = (snapshot.get("last_plans", []) as Array).duplicate(true)   # native's note: else a twin appends twice a tick

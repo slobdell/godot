@@ -18,6 +18,9 @@ var code := NO_PATH
 var legs: Array[Vector3] = []
 var why := ""
 var expansions := 0
+## Round 32: each search's [expansions, how it ended] ("pop" / "empty"; empty for an answer at begin): the no-library
+## session answers on the call the C++ session would (Planner.emulate_step).
+var search_ends: Array = []
 var cost_s := 0.0
 ## The throttles the legs are planned for (PlanRequest's; the executor drives them).
 var throttle_fwd := 0.7

@@ -77,7 +77,11 @@ _Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, fr
 
 ### The report (read this first)
 
-_2026-10-16 ~09:00 PDT. Every number builder0 unless named; commit, workload and n beside it._
+_2026-10-16 ~11:30 PDT. Every number builder0 unless named; commit, workload and n beside it._
+
+**THE BRANCH IS GREEN, MERGE HERE: `d98656ab`** (builder0 `>> remote: make check exited 0`, 2670 passed, 0 failed,
+24 passed + 2 NOT JUDGED on a busy box (perf-judge, scenario_perf), **sim-baseline 13 maps unmoved**). Later commits
+are this Status only. Every backlog item is done, judged, or handed over below.
 
 | item | state | evidence |
 |---|---|---|
@@ -87,6 +91,17 @@ _2026-10-16 ~09:00 PDT. Every number builder0 unless named; commit, workload and
 | 4. **Test splits** (C32.8) | DONE | `d586292a`, `15f0a60c` |
 | — **main bug** (`capture()` copied a freed hull's crew) | **ON MAIN** (`fix/planner-capture-freed` `8904c9c4`, the orchestrator merged it; R32.6) | red without / green with; native APPROVED |
 | 5. stretch "slot" take point | not asked by brains | — |
+
+**After the merge: the face-behind divergence (the orchestrator's ask, moved off manoeuvre's item 0b).**
+`test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` failed under NATIVE=off (legs 2, drift 25.3 m)
+and passed native. Not the drive, not the search (offline both planners give the same 5-leg, 189-expansion plan):
+the NO-LIBRARY SESSION planned whole at begin and answered on the first `step_session`, so the seam's 180-expansion
+cap never applied: native abandons that face at 90 ticks (today's executor turns the rig), NATIVE=off drove the 25 m
+plan. Fix `c74f5943`: each search records how it ended; `Planner.emulate_step` replays the C++ `step(n)`.
+`test_planner_session_steps` holds call, code, legs and expansions equal on 7 fixtures + the face-behind at slices
+1/2/3/50 and a mixed replay sequence; laptop: test_manoeuvre_behind 6/0 with `--planner-gdscript` and without; every
+planner test file 49/0. Round-33 note (recorded by the orchestrator): the seam never serves a War Rig's open-ground
+face-behind (189 > 180 expansions). Native's test_native_face_behind compared nothing (928 handed back).
 
 **CP-S.** `PlannerSeam.side_gate(slot, facing, unit_id, map: RID, from := Vector3.INF) -> Vector3`, the signature agreed
 with brains: `slot + perp × R` (R = the unit's turning radius) on the side with room, ZERO when neither side has
@@ -124,8 +139,11 @@ to be the queue's. (2) **Terminus seed 207 (deterministic): the real cost.** Ref
 at once (GOAL_BLOCKED), so today's code keeps its 7–9 m/s and pins it on Block_7 for 2043 ticks. Under the FIFO the
 same refusal comes only after the hold has braked the hull to rest: **the FIFO's hold was an implicit brake.**
 
-**Next (round 33 hand-over):** (a) refuse early ONLY at rest (brake a rolling ask to rest as the FIFO does, then
-probe), round-robin unchanged; (b) the hull-rest gang arm A/A (fifo v fifo, seeds 66–71) to size line (3)'s noise
+**Next (round 33 hand-over):** (a) **BUILT, not judged (`d98656ab`, the orchestrator's ask):** refuse early ONLY at
+rest under `--planner-queue=shared` (a rolling ask braked to rest first, as the FIFO holds it), round-robin unchanged;
+the first cut kept as `--planner-queue=shared-rolling` for the record. Stage `make planner-stage-s207` (Terminus rigs
+seed 207, deterministic, builder0 light): shared-rolling pins Green_S0_4 on Block_7 2043 ticks (reproduces), shared 0
+(all rigs 4007 → 2223; the FIFO's run 2444). Stopped before any series; (b) the hull-rest gang arm A/A (fifo v fifo, seeds 66–71) to size line (3)'s noise
 (the orchestrator: light lane only after H1b/B10, else round 33); (c) re-judge CP-Q on fresh seeds with (b)'s bar.
 Targets ready: `planner-judge-queue`, `planner-series-queue`, `planner-trace-hull-rest`, `planner-trace-drive-queue`.
 
