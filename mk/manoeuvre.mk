@@ -200,3 +200,22 @@ manoeuvre-pin-clip: import ## manoeuvre: a Terminus drive filmed today v shipped
 	ffmpeg -loglevel error -y -ss $(CLIP_FROM) -i $$out/today.avi -ss $(CLIP_FROM) -i $$out/shipped.avi \
 		-filter_complex "[0:v][1:v]hstack=inputs=2,scale=1920:-2,setpts=PTS/$(CLIP_SPEED)[v]" -map "[v]" -c:v libx264 -preset slow -crf 20 \
 		-pix_fmt yuv420p -movflags +faststart "$$movie" && echo "PIN_CLIP_MOVIE $$movie"
+
+# ---- round 32 (H1b, C32.2): the ask that never frees, on the Terminus drive ----------------------------------------
+# Both arms on the GDScript path (R31.1): base `--brains-off=native`, H1b `--nav-off=h1b --brains-off=native`, per
+# H1B_SQUADS x H1B_SEEDS, each run its own process -> build/manoeuvre/h1b-drive/<arm>-<squad>-<seed>.log; prints each
+# run's NAV_DRIVE_LEG rows and its H1B_DRIVE line (H1b's counters and the escape's arms).
+H1B_SQUADS ?= rigs
+H1B_SEEDS ?= 31
+H1B_JOBS ?= 4
+.PHONY: manoeuvre-h1b-drive
+manoeuvre-h1b-drive: import ## manoeuvre H1b: the Terminus drive base v H1b on the GDScript path (H1B_SQUADS, H1B_SEEDS) -> build/manoeuvre/h1b-drive/
+	@out=$(BUILD_DIR)/manoeuvre/h1b-drive; rm -rf $$out && mkdir -p $$out; \
+	echo ">> manoeuvre-h1b-drive on $$(hostname) commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | $(H1B_SQUADS) | seeds $(H1B_SEEDS)"; \
+	for arm in base h1b; do for squad in $(H1B_SQUADS); do for seed in $(H1B_SEEDS); do echo $$arm-$$squad-$$seed; done; done; done | \
+	xargs -P $(H1B_JOBS) -I{} sh -c 'run={}; arm=$${run%%-*}; rest=$${run#*-}; \
+		if [ $$arm = h1b ]; then flags="--nav-off=h1b --brains-off=native"; else flags="--brains-off=native"; fi; \
+		timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/h1b_drive.gd -- \
+			--squad=$${rest%-*} --seed=$${rest##*-} --arena=terminus --leg-time=$(or $(DRIVE_LEG_TIME),90) $$flags $(NAV_FLAGS) \
+			> '$$out'/{}.log 2>&1; echo ">> manoeuvre-h1b-drive: {} done"'
+	@for f in $(BUILD_DIR)/manoeuvre/h1b-drive/*.log; do echo "== $$f"; grep -E "^NAV_DRIVE_LEG|^H1B_DRIVE|SCRIPT ERROR|control FAILED" $$f | cut -c1-900 || true; done

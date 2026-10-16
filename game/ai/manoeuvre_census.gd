@@ -79,6 +79,29 @@ static func reset_refusals() -> void:
 	esc_after_refusal = 0
 	refusal_then_free = 0
 	_refusal_watch = {}
+	reset_h1b()
+
+
+## Round 32 (H1b, `Movement._h1b_gives_up`): failed asks (a fire on the same friend, unmoved), settles short and the
+## metres of route they left, loops H1b saw with too much route left to settle (the re-path case), and LOOPS: fires on
+## a friend after H1B_ASKS failed asks that nothing broke (both arms; the bar's "seed 31 loops 0").
+static var h1b_failed_asks := 0
+static var h1b_loops := 0
+static var h1b_settles := 0
+static var h1b_short_m := 0.0
+static var h1b_far := 0
+
+
+static func reset_h1b() -> void:
+	h1b_failed_asks = 0
+	h1b_settles = 0
+	h1b_short_m = 0.0
+	h1b_far = 0
+	h1b_loops = 0
+
+
+static func h1b_report() -> Dictionary:
+	return {"failed_asks": h1b_failed_asks, "settles": h1b_settles, "short_m": snappedf(h1b_short_m, 0.1), "far": h1b_far, "loops": h1b_loops}
 
 
 ## Was this crew's last planner refusal `code`, within REFUSAL_ESC_S of physics frame `now`? Always false with the planner OFF.
