@@ -11,6 +11,9 @@ var _lab: TacticsLab
 
 func teardown() -> void:
 	Traffic.set_off("setup", false)
+	if _lab != null:
+		_lab.dispose()  # each case's lab (undisposed, the shard leaked 20 ObjectDB instances at exit: engine-log-gate)
+		_lab = null
 	super.teardown()
 
 
