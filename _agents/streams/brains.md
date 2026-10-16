@@ -98,6 +98,10 @@ the orchestrator before numbers; green hashes named)_
   yard head-on spot the LAST hull in (usually Green_A_5) reverses and circles its slot for 15–20 s under ORCA reading
   real velocity. Main has no B5c gate rules (v4/v5 never shipped), so that is round 8's approach gate coming round: a
   case for v6's side gate and its judged yard cells.
+- **B10b's premise checked by manoeuvre** (builder0, main + swap + the latch, `--ground-latch=on`, s19 t8 reproduced at
+  89.27 s, native = GDScript): S_3 and S_4 never fire H1b's escape (1 hull fire all run, 0 failed asks, 0 swap asks);
+  they three-point at full lock reading no_path/terrain/each other, and S_2 is never their blocked_by. So the swap
+  cannot reach this case: S_2's seat in the passage is the element's knowledge (the seat choice), not a pressed pin.
 - **B10 PARKED** (the orchestrator's ruling; latch OFF by default, `--ground-latch=on`); **B10b** = re-judged once with
   C32.10's swap ON, s19 t8 its case; v6 waits behind it.
 - **B11 (C32.12 (2)):** built `e440bcd9`, bar filed (seeds 350–355); **check on `03aa0c5d` RUNNING** (09:58 PDT), then
