@@ -52,9 +52,24 @@ const SCOPE_MIN_HULL_M := 10.0
 ## 47 (1.6 s), and PENDING_TICKS caps a search at 180 expansions (the census's median in-press face-about is 131; its
 ## longest quarter 250-500 would be abandoned at the 3 s hold -- the judged run's `abandoned` counts them).
 const SLICE := 2
+## Round 32 (C32.7, the lead's rule: perf cuts ship as hardware presets): the LAPTOP preset's slice. CP-P1's cost line
+## (f) missed at SLICE 2 on seed 92721 (0.526 ms v 0.5, builder0); the laptop is ~2.75x builder0, so it plans one
+## expansion a tick and holds the hull twice as long for the same search (`pending_cap()`). Every other machine keeps
+## SLICE. Which one a match uses is `slice()`: read ONCE per match (`_latch`), from the run's `--planner-slice=N` (the
+## HOST's value: a networked or replayed match carries it as a launch flag, as it carries `--seed`) > the render
+## preset (`RenderLevers.preset()`: "laptop" -> SLICE_LAPTOP) > SLICE. A headless run is always the desktop preset, so
+## baselines, checks and every judged series read SLICE 2 and PENDING_TICKS 90: today's bits.
+## Why the seam reads the render preset rather than FxQuality carrying a field (the grant's either-or, decided here):
+## FxQuality's tier is not the laptop/desktop split (his laptop runs FX tier HIGH), and a render choice can change
+## mid-match from the HUD; the sim takes it once, at the match's first plan, and never again that match.
+const SLICE_LAPTOP := 1
 const BUDGET := 1500
 const HORIZON_M := 30.0
-const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold
+const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold AT SLICE
+## The expansions a crew's search may have before it is abandoned (PENDING_TICKS x SLICE = 180): held at every slice,
+## so a slower slice holds the hull longer, never searches less (`pending_cap()`: 90 ticks at 2, 180 at 1).
+const EXPANSIONS_PER_HOLD := PENDING_TICKS * SLICE
+const SLICE_FLAG := "planner-slice"
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
@@ -88,6 +103,12 @@ static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's C
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
 static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
+## The slice this match plans at (`slice()`), latched once per match; where it came from ("flag", "preset", "default").
+static var _slice := SLICE
+static var _slice_match := 0
+static var slice_source := "default"
+## Tests only: the slice every match latches while this is > 0 (as `--planner-slice` would; 0 = resolve).
+static var slice_override := 0
 
 
 class Crew:
@@ -136,6 +157,53 @@ static func on() -> bool:
 	return PLANNER_DEFAULT != Movement.switched_off(SWITCH)
 
 
+## The expansions a pending search gets a tick, for this match (SLICE, or SLICE_LAPTOP under the laptop preset).
+static func slice() -> int:
+	return _slice
+
+
+## The ticks a crew's search may run before it is abandoned: EXPANSIONS_PER_HOLD at this match's slice.
+static func pending_cap() -> int:
+	return EXPANSIONS_PER_HOLD / _slice
+
+
+## The slice for a run: an explicit `--planner-slice=N` (N >= 1; the host's value) wins, else the render preset.
+## Pure, so a test holds every path without a launch: [slice, source].
+static func resolve_slice(flag_text: String, preset: String) -> Array:
+	if flag_text.is_valid_int() and flag_text.to_int() >= 1:
+		return [flag_text.to_int(), "flag"]
+	if preset == "laptop":
+		return [SLICE_LAPTOP, "preset"]
+	return [SLICE, "default"]
+
+
+## Read the slice ONCE per match (the first time the seam is consulted in it), keyed by the match's instance, so a
+## preset toggled mid-match never changes the tick a plan lands. Another match (a new instance) reads again.
+static func _latch(ctl: Node) -> void:
+	var key := 0
+	if ctl != null:
+		var held: Variant = ctl.get("game_match")
+		if not (held is Object and is_instance_valid(held)):
+			held = ctl.get("tanks_root")   # a lab without a Match: its tanks' root is the match's
+		if held is Object and is_instance_valid(held):
+			key = (held as Object).get_instance_id()
+	if key == _slice_match and key != 0:
+		return
+	_slice_match = key
+	var got := resolve_slice(LaunchFlags.from_environment().text(SLICE_FLAG), RenderLevers.preset())
+	if slice_override > 0:
+		got = [slice_override, "test"]
+	set_slice(int(got[0]), String(got[1]))
+
+
+## Set the slice (`_latch`; a test sets `slice_override` instead, which the next match's latch reads). A live search keeps stepping at the new slice; nothing else is touched.
+static func set_slice(value: int, source := "test") -> void:
+	_slice = maxi(1, value)
+	slice_source = source
+	if source != "default" or value != SLICE:
+		print("PLANNER_SLICE %d (%s): pending cap %d ticks" % [_slice, source, pending_cap()])
+
+
 ## Is this crew held by the seam (a plan pending or being driven)? False when OFF.
 static func live(crew_name: String) -> bool:
 	if not on():
@@ -163,7 +231,7 @@ static func last_refusal(crew_name: String) -> Array:
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
-			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE,
+			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": _slice,
 			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
@@ -245,6 +313,7 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		return false
 	var tick := Engine.get_physics_frames()
 	_sweep(tick)
+	_latch(mover.ctl)
 	var crew: Crew = _crews.get(name)
 	if crew != null and crew.tank != tank:
 		# Another hull under this name (test_tactics_army_layout10 on the pair tree 3a66f546: four arenas built and
@@ -349,7 +418,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	cmd.throttle = 0.0
 	cmd.turn = 0.0
 	pending_ticks += 1
-	if tick - crew.asked_tick >= PENDING_TICKS:
+	if tick - crew.asked_tick >= pending_cap():
 		abandoned += 1
 		holds.append(tick - crew.held_since)
 		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
@@ -385,8 +454,8 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		crew.asked_tick = tick
 		Planner.begin_session(crew.req)
 		crew.begun = true
-	crew.stepped += SLICE
-	if not Planner.step_session(SLICE):
+	crew.stepped += _slice
+	if not Planner.step_session(_slice):
 		return true
 	var plan := Planner.session_result()
 	Planner.cancel_session()
@@ -483,6 +552,62 @@ static func _release(name: String) -> void:
 	# files, so the seam prints its own cumulative line at every event's end; the LAST one in a log is the run's.
 	if REPORT_LINES:
 		print("PLANNER_SEAM_REPORT " + JSON.stringify(report()))
+
+
+# ---- CP-S (round 32, C32.4): the SIDE gate for brains' arrival gate rule ------------------------------------------------
+## design.md §2.8: where a wheeled hull must arrive on a slot with a drawn facing and the planner does not take it,
+## brains' gate may sit to the SIDE of the slot, `slot + perp x R` (R the hull's turning radius: the centre of the
+## circle tangent to the facing at the slot), never along the facing axis behind it. This answers WHICH side has room
+## with two clearance reads (`Planner.clearances`: the C++ cell cache when the library is usable), no search, no state.
+## Returns the gate, or Vector3.ZERO when neither side has room (or the hull is not on wheels, or the facing is null):
+## brains' gate stays as it is. Both sides with room: the side nearer `from` (the hull's position: the side it comes
+## from), else the one with more clearance, a tie to the LEFT of the facing. Signature agreed with brains 2026-10-16.
+## Nobody calls it on main yet (merged OFF-path); brains' gate rule decides when to use it (C30.5 keeps the gate theirs).
+## Room: the clearance at the gate >= half the hull's width + Planner.MARGIN_M, capped at what the navmesh can promise
+## (a point on the mesh reads the bake radius less the field's slack; a wider bus or IFV would otherwise never fit).
+const SIDE_ROOM_CAP_SLACK_M := 0.05
+
+
+static func side_gate(slot: Vector3, facing: Vector3, unit_id: String, map: RID, from := Vector3.INF) -> Vector3:
+	var world := PlannerNavWorld.new()
+	world.map = map
+	world.bake_radius = Movement.bake_radius(null)   # the cached bake radius (NAV_AGENT_RADIUS before any arena read it)
+	return side_gate_in(world, slot, facing, unit_id, from)
+
+
+## The same answer in any planner world (the tests' rectangles, or a navmesh). `native` false forces the GDScript read.
+static func side_gate_in(world: PlannerWorld, slot: Vector3, facing: Vector3, unit_id: String, from := Vector3.INF,
+		native := true) -> Vector3:
+	var f := Vector2(facing.x, facing.z)
+	if f.length_squared() < 0.0001 or not Units.PROFILES.has(unit_id) \
+			or String(Units.stat(unit_id, "locomotion", "tracks")) != "wheels":
+		return Vector3.ZERO
+	f = f.normalized()
+	var radius := maxf(float(Units.stat(unit_id, "min_turn_radius_m", 0.0)), 0.5)   # Movement.wheel_radius()
+	var left := Vector2(f.y, -f.x)    # PlannerWorld's right is (-fz, fx); left the other way
+	var lx := slot.x + left.x * radius
+	var lz := slot.z + left.y * radius
+	var rx := slot.x - left.x * radius
+	var rz := slot.z - left.y * radius
+	var reads := Planner.clearances(world, PackedFloat64Array([lx, lz, rx, rz]), native)
+	var need := float(Movement.hull_box(unit_id)[0]) * 0.5 + Planner.MARGIN_M
+	var nav := world as PlannerNavWorld
+	if nav != null:
+		need = minf(need, nav.bake_radius - PlannerWorld.SAMPLE_SLACK_M - SIDE_ROOM_CAP_SLACK_M)
+	var left_ok := reads[0] >= need
+	var right_ok := reads[1] >= need
+	var take_left := left_ok
+	if left_ok and right_ok:
+		var by_from := 0.0
+		if from != Vector3.INF:
+			by_from = Vector2(from.x - rx, from.z - rz).length() - Vector2(from.x - lx, from.z - lz).length()
+		if by_from != 0.0:
+			take_left = by_from > 0.0
+		else:
+			take_left = reads[0] >= reads[1]
+	elif not left_ok and not right_ok:
+		return Vector3.ZERO
+	return Vector3(lx, slot.y, lz) if take_left else Vector3(rx, slot.y, rz)
 
 
 static func _flat(a: Vector3, b: Vector3) -> float:

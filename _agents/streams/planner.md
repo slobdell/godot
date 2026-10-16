@@ -71,3 +71,48 @@ Nothing. A laptop pricing slot goes through the orchestrator.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
+
+_Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, from main `6efdf42b`, which inherits
+`e66b41f1`'s green check: no baseline check run; Opus)._
+
+### The report (read this first)
+
+_In progress._ CP-S built and under test; SLICE per preset built, tests written.
+
+### Plan (ordered, smallest foundation first)
+
+1. **CP-S side gate** — `PlannerSeam.side_gate(slot, facing, unit_id, map: RID, from := Vector3.INF) -> Vector3`
+   (signature AGREED with brains 2026-10-16, one message: `map` added because the read needs the navmesh; `from` the
+   hull's position). `Planner.clearances(world, xz)` reads through C++ `PlannerNative.clearances` (a world of its own,
+   the shared navmesh cell cache) or the GDScript field. Tests: `tests/test_planner_side_gate.gd` (each side, no room,
+   tie-breaks, tracked hull / null facing, both reads equal on rectangles + yard_open s27 t8 + Terminus, µs printed).
+2. **SLICE per preset (C32.7)** — `PlannerSeam.slice()` latched once per match: `--planner-slice=N` > the render
+   preset (`RenderLevers.preset()` "laptop" → 1) > 2; `pending_cap()` = 180 expansions / slice. Tests:
+   `tests/test_planner_slice.gd`.
+3. **The queue** — refuse early, then a round-robin per-tick budget over a session per crew (one `PlannerNative`
+   instance per crew: the library's session is per instance, the cell cache and tables static, so possibly no C++
+   change; native asked to review). Bar to the orchestrator BEFORE numbers.
+4. **Test splits (C32.8)** — read my files' times from the named check's `build/test-times.txt`.
+5. Stretch (only if brains asks): the "slot" take point.
+
+### Decisions
+
+- **SLICE reads the render preset, not an FxQuality field** (the grant's either-or): FxQuality's tier is not the
+  laptop/desktop split (his laptop runs FX tier HIGH: `platform_default()` is HIGH on desktop), and the HUD can flip the
+  render preset mid-match; the sim reads it once per match (keyed by the Match instance) and a launch flag
+  (`--planner-slice`) carries the host's value. Headless is always "desktop" → SLICE 2 / 90 ticks: today's bits.
+  `game/theme/**` untouched.
+- **Side gate room test** = clearance at the gate ≥ min(half width + `Planner.MARGIN_M`, bake radius − field slack −
+  0.05): the navmesh field reads at most the bake radius on the mesh, so without the cap no hull wider than ~3 m (the
+  IFV bus) could ever get a gate.
+- **Networked play:** player-hosted matches run the AI on the host only (clients get state), so the host's preset is
+  the match's; for replays / lockstep the value is a launch flag beside `--seed`.
+
+### Questions for the lead
+
+None.
+
+### Requests to other streams
+
+- native: review the C++ `PlannerNative::clearances` (CP-S) before I push; later, the queue's session-per-crew.
+

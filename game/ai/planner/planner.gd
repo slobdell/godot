@@ -87,6 +87,31 @@ static func native_cache_stats() -> Dictionary:
 	return _impl.nav_cache_stats()
 
 
+## Round 32 (CP-S): the wall clearance at each (x, z) of `xz` (pairs), as `PlannerWorld.clearance` reads it, through
+## the C++ field when the library is usable (a navmesh world reads the match's shared cell cache) and the GDScript
+## world otherwise; the same float32 cells both ways (tests/test_planner_side_gate.gd). No search, no session: the
+## library reads a world of its own, so a live session is untouched. `native` false forces the GDScript read (twin).
+static func clearances(world: PlannerWorld, xz: PackedFloat64Array, native := true) -> PackedFloat64Array:
+	var cx := 0.0
+	var cz := 0.0
+	var n := xz.size() / 2
+	for i in n:
+		cx += xz[i * 2] / float(n)
+		cz += xz[i * 2 + 1] / float(n)
+	var half := 0.0
+	for i in n:
+		half = maxf(half, maxf(absf(xz[i * 2] - cx), absf(xz[i * 2 + 1] - cz)))
+	half += 2.0
+	if native and native_usable() and _impl.has_method("clearances"):
+		return _impl.clearances(world.native_view(), xz, cx, cz, half)
+	world.prepare(cx, cz, half)
+	var out := PackedFloat64Array()
+	out.resize(n)
+	for i in n:
+		out[i] = world.clearance(xz[i * 2], xz[i * 2 + 1])
+	return out
+
+
 ## The session's own library instance (a whole plan on `_impl` while a session is live would clobber it: native's
 ## review note); the free-space tables are one static cache inside the library, shared by both.
 static var _session_impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
