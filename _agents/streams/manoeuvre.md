@@ -195,6 +195,12 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   holds within 0.5 m (`--ground-latch=off` = control). **For M1b(3): one `--drift-trace` run on the attack-move 75-s
   movers before any design** (are they chasing a jumping seat?); the flag is in brains' lab tree, so ask brains
   (godot-brains-38) when M1b(3) starts. H1b's far-loop trace comes first.
+- **Planner's CP-Q verdict (relayed 2026-10-16; stream/planner `722ba183`,
+  `references/round32/planner/cpq-65cc43dd/VERDICT.txt`):** the shared queue FAILED on settle and facing (builder0,
+  hull-rest gangs seeds 66–71, n 36 an arm: faced_move settle paired median +14.5 s, moving at 75 s faced_move +5 /
+  faced_screen +3, SBF drawn at-rest error 106.8° v 74.3°). Planner's reading: today's FIFO starves ~20 % of face asks
+  in a press, and served by the seam's face plans those crews settle WORSE. **So in M1b(3)'s drift-trace run, split the
+  75-s movers by plan source (planner-served v today's face code)** beside brains' seat-drift reading.
 - **Working hypothesis to TRACE before designing (now doubtful, see above):** attempt 2's hulls turned mid-approach, swung the halt and re-seated
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
