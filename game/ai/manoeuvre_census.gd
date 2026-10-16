@@ -79,6 +79,72 @@ static func reset_refusals() -> void:
 	esc_after_refusal = 0
 	refusal_then_free = 0
 	_refusal_watch = {}
+	reset_h1b()
+
+
+## Round 32 (H1b, `Movement._h1b_gives_up`): failed asks (a fire on the same friend, unmoved), settles short and the
+## metres of route they left, loops H1b saw with too much route left to settle (the re-path case), and LOOPS: fires on
+## a friend after H1B_ASKS failed asks that nothing broke (both arms; the bar's "seed 31 loops 0").
+static var h1b_failed_asks := 0
+static var h1b_loops := 0
+static var h1b_settles := 0
+static var h1b_short_m := 0.0
+static var h1b_far := 0
+
+
+## The first H1B_FAR_ROWS far loops, each with why it was not settled (route left, the goal's slide speed) and what the
+## blocker was doing (measurement only: H1b's re-path question).
+const H1B_FAR_ROWS := 200
+static var h1b_far_rows: Array = []
+
+
+static func note_h1b_far(mover: Movement, friend: Tank) -> void:
+	if h1b_far_rows.size() >= H1B_FAR_ROWS:
+		return
+	var tank := mover.ctl.tank
+	var other := Movement.of(friend)
+	h1b_far_rows.append({"f": Engine.get_physics_frames(), "unit": String(tank.name), "id": tank.unit_id,
+			"blocker": String(friend.name), "blocker_id": friend.unit_id, "remaining_m": snappedf(mover._remaining, 0.1),
+			"goal_v": snappedf(mover._goal_velocity.length(), 0.01),
+			"gap_m": snappedf(Vector2(friend.global_position.x - tank.global_position.x, friend.global_position.z - tank.global_position.z).length(), 0.1),
+			"blocker_under_way": other.is_under_way() if other != null else false,
+			"blocker_remaining_m": snappedf(other._remaining, 0.1) if other != null else -1.0,
+			# The give-way's own priority read (_negotiate): with both under way, the one with LESS route left gives way.
+			"negotiate_i_give_way": _negotiate_says(mover, other, String(tank.name), String(friend.name)),
+			"last_ask_answer": mover._h1b_last_answer, "my_yield_to": mover.yield_to,
+			# Traffic's contract question (C32.10 draft): refused in BOTH directions, and is one hull's way back clear?
+			"blocker_escaping_on_me": other._h1b_blocker == String(tank.name) if other != null else false,
+			"blocker_last_ask_answer": other._h1b_last_answer if other != null else false,
+			"my_room_back_m": mover._straight_room(-1.0),
+			"blocker_room_back_m": other._straight_room(-1.0) if other != null else -1.0,
+			"my_last_yielded_to": mover._last_yielded_to,
+			"blocker_yield_to": other.yield_to if other != null else "",
+			"blocker_last_yielded_to": other._last_yielded_to if other != null else "",
+			"blocker_phase": other.phase if other != null else "?", "blocker_blocked_by": other.blocked_by if other != null else "",
+			"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
+
+
+## Traffic's priority rule as `_negotiate` reads it (a copy for the record, never a decision): true when THIS hull would
+## be the one to give way to the other.
+static func _negotiate_says(mover: Movement, other: Movement, me: String, them: String) -> bool:
+	if other == null or not other.is_under_way():
+		return false
+	var difference := mover._remaining - other._remaining
+	return difference < -Movement.PRIORITY_MARGIN or (absf(difference) <= Movement.PRIORITY_MARGIN and me < them) \
+			or other._last_yielded_to == me
+
+
+static func reset_h1b() -> void:
+	h1b_far_rows = []
+	h1b_failed_asks = 0
+	h1b_settles = 0
+	h1b_short_m = 0.0
+	h1b_far = 0
+	h1b_loops = 0
+
+
+static func h1b_report() -> Dictionary:
+	return {"failed_asks": h1b_failed_asks, "settles": h1b_settles, "short_m": snappedf(h1b_short_m, 0.1), "far": h1b_far, "loops": h1b_loops}
 
 
 ## Was this crew's last planner refusal `code`, within REFUSAL_ESC_S of physics frame `now`? Always false with the planner OFF.
@@ -126,7 +192,7 @@ static func counters() -> Dictionary:
 			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
 			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns,
 			"face_keep_refused": Manoeuvre.face_keep_refused, "face_keep_by_unit": Manoeuvre.face_keep_by_unit.duplicate(), "escape": Movement.escape_arms(),
-			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes,
+			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes, "h1b": h1b_report(),
 			# Round 31 (R31.2): the planner's column. Planner-held ticks never reach `observe` (the seam's gate in
 			# `unstick` returns first), so the census's turn rows keep meaning today's k-turn (`in_kturn`), and the
 			# planner's own counters ride here: plans, legs, driven, aborted, refused by code, pending and driving ticks.
