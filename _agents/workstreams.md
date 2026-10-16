@@ -174,6 +174,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   full check. Its outcome depends on what ran before it (a static carried between tests, or between matches in one
   session, which a player would hit too). **Brains owns it, priority over B10's remaining series reading**; until fixed it
   does not block a merge whose changes do not touch tactics/elements, and every check that reds on it alone names it.
+  **FOUND (brains, ~10:10 PDT, stream `03aa0c5d`):** not a script static. The test stage's spawn jitter put two hulls 3.8 m
+  apart, overlapping; on the first frame of the FIRST match in a process, physics shoves overlapping bodies ~2 m apart, in
+  later matches it does not (engine-side first-physics-space recovery). Fix (test stage only): `BodyStage.spawns()` pushes
+  spawns apart; `test_the_stage_spawns_no_two_hulls_overlapping` (mutation-checked). Line still right on today's main: off
+  41.0, on 15.0–16.0 (needs ≤ 20.5). Open: whether the GAME's spawns can overlap (asked of brains).
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
