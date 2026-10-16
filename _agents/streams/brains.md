@@ -94,6 +94,10 @@ the orchestrator before numbers; green hashes named)_
   identical, off 41.0/37.0/41.0, on after off 15.0 (builder0, body-twice). The residual off wobble starts at tick 56 by
   0.1 m (contact-level physics), time-boxed; the line holds in every order seen (on/off ≤ 0.42 v 0.5). law + syndicate
   added to test_spawn_grid's deploy check (granted, `90a38609`). Check on `c029cf70` RUNNING (13:08 PDT).
+- **For v6 (traffic's relay, T4 parked, stream/traffic 82a56293 references/round32/traffic/t4_r32/):** in a crowded
+  yard head-on spot the LAST hull in (usually Green_A_5) reverses and circles its slot for 15–20 s under ORCA reading
+  real velocity. Main has no B5c gate rules (v4/v5 never shipped), so that is round 8's approach gate coming round: a
+  case for v6's side gate and its judged yard cells.
 - **B10 PARKED** (the orchestrator's ruling; latch OFF by default, `--ground-latch=on`); **B10b** = re-judged once with
   C32.10's swap ON, s19 t8 its case; v6 waits behind it.
 - **B11 (C32.12 (2)):** built `e440bcd9`, bar filed (seeds 350–355); **check on `03aa0c5d` RUNNING** (09:58 PDT), then
