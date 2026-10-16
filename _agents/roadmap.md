@@ -245,6 +245,11 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 
 ## Round 32 candidates (found during round 31)
 
+- **H1's ask loops when the blocker never moves (manoeuvre's trace, shipped CP-H, Terminus seed 31's last leg):**
+  Green_S0_4 ends 9.1 m short, touching Green_S0_2, and H1 asks, backs ~2–3 m, stands, then drives into it again, about
+  every 21 s (asks 29, backs 29, all hull pins, refused 0). It is never silent, but it never frees a squadmate wedge whose
+  blocker stays put: the friend's "pinned" ask doesn't move Green_S0_2. **He may see it.** Round 32: after N failed asks
+  on the same blocker, re-path around it or settle (complete short) instead of re-driving into it.
 - **His bridge, 108/108 at last, but the arrive maps paid (brains B3b-2b parked 2026-10-15):** the crossing seating
   (re-matched as crews pass the exit) gave every crew across his bridge on all 108 cells (control 106/108), but the
   arrive series fell 97 → 90 within 8 m (seeds 41–44, n 100, McNemar p 0.065). The seating never fires on those maps, so

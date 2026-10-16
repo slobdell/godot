@@ -60,6 +60,10 @@ move, then backs straight out instead of grinding at full throttle (pinned crew-
 Wall and terrain pins keep the old escape. The ship check was 2642/0, with sim-baseline the only red (13 maps moved). The
 **13 baselines are being re-recorded** (`orch-adopt-cph`, `make sim-baseline-adopt`, two reads), then one main check.
 CP-P1's ship cut starts on `b352fa2a` in parallel.
+**Known issue in what shipped (tell him):** when a squadmate that is in the way never moves, the pinned vehicle loops,
+asking, backing 2–3 m and driving back into it about every 21 s, rather than going round (Terminus seed 31; round 32's
+roadmap). **Clip:** `~/projects/clips/round31/manoeuvre_rig_wedge_today_v_shipped_seed31_25c7421b.mp4`: today a rig
+grinds a floodlight for 66 s reading 10.5 m/s while barely moving; shipped, no touch over 2 s.
 **✅ MAIN `40eda0cf` INHERITS `c45c9792`'s green check (~15:10 PDT, R31.9's first use):** `tools/merge_check_needed.sh
 c45c9792` gave INHERIT (only docs differ). That check was builder0 `exited 0`, 2642/0, sim-baseline unmoved. The merge
 is brains' realslow toggle fix, default OFF. No main check was run. **✅ MAIN GREEN at `8a23325a` (~14:00 PDT), with B6 ON:** builder0 `>> remote: make check exited 0`, 2641 passed / 0
