@@ -128,7 +128,7 @@ _Updated 2026-10-15 ~18:00 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 CP-H (every filed line passes; main `b352fa2a`). M6 tooling done. M1b(2) turn-hull PARKED (the filed rule; a round-32
 candidate). Handover counters (`esc_after_refusal`, `refusal_then_free`) landed on the planner's `last_refusal`. A clip for
 the lead: `~/projects/clips/round31/manoeuvre_rig_wedge_today_v_shipped_seed31_25c7421b.mp4` (`make manoeuvre-pin-clip`).
-Green hash: see *Merge notes*. Questions for the lead: none.
+**Green hash: `57f42af5`** (builder0 `make check exited 0`, 2645/0). Questions for the lead: none.
 
 | item | commit | state |
 |---|---|---|
@@ -314,7 +314,9 @@ None.
   `make manoeuvre-pin-clip` + `tests/manoeuvre/pin_clip.gd`, the CP-H tables and traces under
   `references/round31/manoeuvre/`. Nothing behavioural: the counters are measurement only and read 0 with the planner
   OFF. No native mirror needed (statics keyed by crew name, not mover members; the watch runs before the native branch).
-- The green hash is named in the commit after the final check (*Measurements*).
+- **Green: `57f42af5`** (main `e0dc981e` merged in; builder0, 2026-10-15 ~21:00 PDT: `make check exited 0`, tests 2645 passed /
+  0 failed, 24 targets passed, 2 not judged). The commit before it, `9c2afb8e`, was red only on `sim-baseline` (main's
+  re-recorded baselines not yet merged); tests 2645/0 there too. Commits after `57f42af5` touch this brief only.
 
 ### Known issues
 
