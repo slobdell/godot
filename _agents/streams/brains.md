@@ -80,6 +80,25 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### B3b-2c bar (C32.3; FILED to the orchestrator before any number; DECLARED; partial: none)
+Candidate: stream/brains at the hash its pair-tree check goes green on (B3b-2b's seating + mouth guard, round 28's
+heading narrowing OFF). Arms, one tree, builder0, GDScript and native as the default path runs them: **on** = default;
+**control** = `--route-seat=off --mouth-held=off` (main's rules: no crossing seating, no mouth guard, round 26's heading
+rule, which both arms share). Native: none ported (Element / ElementPlan / TacticsFormation are GDScript on every path;
+native-verify in the check shows it).
+1. **His bridge, the full 108** (`bridge-series`, locks green,3 + rust,3 × seeds 1–3 × ticks 1–18, `bridge_verdict`'s
+   rule): on **108/108**, or ≥ the control's count (deterministic cells: any cell the control passes and on fails is a
+   named regression, traced before anything else).
+2. **bridge-pooled 18/18** on (in the check).
+3. **Arrive series, FRESH seeds 45–48** (5 maps × 5 squads, n 100 an arm; judging.md *arrive series*): all_in8_s on ≥
+   control − 1 AND McNemar discordant against ≤ 1 (C32.3's "not below base − 1.645 se" read as the count row's form);
+   the paired median over cells complete in both no slower than +2 % (reported; the row says n > 1000 to decide).
+4. Counters: crossings_found > 0 on every on-run of the 108, 0 on every control run; 0 on all arrive runs (no deck).
+5. Cost: `t.poll.element` on Locks (`ai-parts-match`) ≤ 0.5 ms a tick, or NOT READABLE on a busy box.
+6. The worst on-arm cell of (1) and of (3) traced before the medians are read.
+Ships ON as one commit (no native half). Expected and stated in advance: the arrive arms may be byte-identical (the
+seating needs a deck; the mouth guard needs a deck's mouth), which is the point of this cut.
+
 ### Plan (2026-10-16 00:40 PDT; start = main `6efdf42b`, inherits `e66b41f1`'s green check, no baseline check run)
 1. **B3b-2c:** merged `lab/brains-r31-bridge` (`5ed61f91`) into stream (`0fae50a2`, one conflict in `tactics_flags.gd`,
    both sides kept), then `5ca8269d`: `Element.HEADING_REISSUE_TASK_ONLY` default **false** (round 26's rule = main's),
