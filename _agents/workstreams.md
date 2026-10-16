@@ -98,6 +98,10 @@ orchestrator's `make sim-baseline-adopt` on main.
   the arrival plan; a drawn facing replaces it (~668–672). Also `element_plan.gd` ~678 (a plain move forming up within
   2 m) and `drills.gd` ~387 (assault_through's "past" test). So a wheeled hull turning BEFORE the element arrives moves
   every seat; after arrival, none. Pinned by `tests/test_tactics_reseat_heading.gd` (stream/brains `cbddb940`).
+- **R32.4 web-match-smoke's first-sound bound is a load timing line (2026-10-16 ~02:35 PDT, brains' B3b-2c check):** on
+  `5f0ed865` (builder0, load ~22) the only red of 26 was "first sound 30.6 s after READY (bound 30 s)". A change that does not
+  touch `game/audio/**`, the web export or the boot path may proceed to its series on that red, provided web-smoke re-run
+  ALONE passes before the hash merges. A second miss on a quiet box gets traced, not waved through.
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
