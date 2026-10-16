@@ -128,8 +128,9 @@ orchestrator's `make sim-baseline-adopt` on main.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
-  friend for the same goal and that friend's net flat move since the previous fire is < 0.5 m; a loop = a fire after the 2nd
-  failed ask that H1b did not break (counted in both arms). Settle short only with ≤ 12 m of route left and a goal not
+  friend for the same goal and that friend's net flat move since the previous fire is < 0.5 m; a loop = a fire that records the
+  second (or a later) failed ask and that H1b did not break (counted in both arms; wording amended 02:30 PDT before any series
+  number, manoeuvre's off-by-one in its own test, intent unchanged). Settle short only with ≤ 12 m of route left and a goal not
   sliding; loops farther out are counted (`far`), not acted on. **Fresh seeds (confirmed unclaimed by the orchestrator):**
   Terminus 300–312, hull-rest 313–318 (n 144 an arm), fights 320–343. Lines, guards to completion, each read once on 1.645 se:
   (1) seed 31 rigs: loops 0, Green_S0_4 ends still; (2) hull-rest pinned and stuck crew-s (row 67) ≤ base + 1.645 se;
