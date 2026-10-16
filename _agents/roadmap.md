@@ -296,6 +296,9 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   (goal = slot + facing, 1.0 m / 8°), with the scope opened for THAT kind only (`in_scope(unit_id, kind)`), so the short
   hulls' k-turn and face demand (95 % of manoeuvre starts) stays with today's code. Its own bar would name yard s27 t8,
   add an arrival census, and re-price the cost line.
+- **RESOLVED 2026-10-16 (traffic, C32.6): NOT a gap.** On foundry's own bake (-25.7, 7.3) is 0.00 m from the mesh; the 8.2 m
+  snap was Terminus's mesh read by reach_probe's later lab (ArenaFixture's round-6 trap). `tests/test_traffic_navgap.gd`
+  (stream/traffic `b71fb9b0`). The original note follows.
 - **A navmesh gap in the default arena around x −25…−18, z 7** (brains' reach-probe, 2026-10-15): at (-25.7, 7.3),
   where test_control_queued_task's Green_Alpha_3 stops, the navmesh start snaps 8.2 m to (-17.5, 7.3), so the hull
   stands 8 m off walkable mesh and pathing answers `no_path`. It is not established whether that is a bake hole (ground

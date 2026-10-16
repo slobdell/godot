@@ -1123,6 +1123,21 @@ Dictionary PlannerNative::nav_cache_stats() const {
 	return d;
 }
 
+// Round 32 (CP-S): PlannerWorld.clearance at each (x, z) pair, in a world of its own (never the session's), its window
+// prepared at (cx, cz, half) as the GDScript's Planner.clearances prepares it. A navmesh world reads the shared cache.
+PackedFloat64Array PlannerNative::clearances(const Dictionary &world_view, const PackedFloat64Array &xz, double cx, double cz, double half) {
+	World w;
+	parse_world(world_view, w);
+	w.prepare(cx, cz, half);
+	PackedFloat64Array out;
+	const int64_t n = xz.size() / 2;
+	out.resize(n);
+	for (int64_t i = 0; i < n; i++) {
+		out.set(i, w.clearance(xz[i * 2], xz[i * 2 + 1]));
+	}
+	return out;
+}
+
 void PlannerNative::nav_cache_clear() {
 	World::nav_cache.chunks.clear();
 	World::nav_cache.map_id = 0;
@@ -1161,6 +1176,8 @@ void PlannerNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_field"), &PlannerNative::debug_field);
 	ClassDB::bind_method(D_METHOD("nav_cache_stats"), &PlannerNative::nav_cache_stats);
 	ClassDB::bind_method(D_METHOD("nav_cache_clear"), &PlannerNative::nav_cache_clear);
+	ClassDB::bind_method(D_METHOD("refused_at_begin"), &PlannerNative::refused_at_begin);
+	ClassDB::bind_method(D_METHOD("clearances", "world", "xz", "cx", "cz", "half"), &PlannerNative::clearances);
 }
 
 } // namespace godot
