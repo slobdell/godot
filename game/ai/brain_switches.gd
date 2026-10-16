@@ -85,7 +85,7 @@ static var native_controller := false  # Round 28 (N7.3a): OrderController._phys
 ## `unstickback` / `kturnarc` / `realspeed` do: OPT-IN while the default is false, and the A/B's off arm once CP-H ships it
 ## (flipping the const is the whole ship change). Not in NAMES, so `--brains-off=all` (ai-parity's proof) and set_all
 ## never touch it.
-const REALSLOW_DEFAULT := false
+const REALSLOW_DEFAULT := true
 static var realslow := REALSLOW_DEFAULT
 static var native_move := false  # Movement's geometry: _chord_compute's samples, _outline_ok, _arc_hit as one native call each (N2b; OFF by ruling: ~1 % of the band, see _agents/native.md)
 
