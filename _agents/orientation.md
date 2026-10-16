@@ -276,9 +276,11 @@ build/   (gitignored)    exports and screenshots
     (spawning and the arena build are long and swamp the sample), read shares and calls, not ms, and feed it stdin
     from `/dev/null`: on a script error `-d` stops at a `debug>` prompt. It found round 16's top function
     (`Pathing.closest_point`, 13.8 % of all script time) in one run, after hours of hand-placed laps (brains, 2026-10-03).
-82. **A lab stage that spawns hulls overlapping is not repeatable within one process.** Physics separates overlapping
-    bodies on the first frame of the FIRST match a process runs, and not in later ones. `test_tactics_body` read alone_s
-    12.0 run first and 24.5 after any other match, so it passed or failed by its shard's order. No script static carried
-    it: twelve caches cleared and native off changed nothing. `make body-twice` (the stage N times in one process) and
-    `--body-trace` found it at tick 0, in the spawn. Set spawns apart (`BodyStage.spawns`) and test that they never
+82. **A lab stage whose hulls spawn overlapping or touching is not repeatable within one process.** Physics separates
+    OVERLAPPING bodies on the first frame of a process's first match and not in later ones, and moves TOUCHING bodies by
+    a few centimetres differently from match to match. `test_tactics_body` read alone_s 12.0 run first and 24.5 after any
+    other match, and its off arm drifted 41.0, 37.0, 28.5 over three matches in one process, so it passed or failed by
+    its shard's order. No script static carried it: twelve caches cleared and native off changed nothing. `make body-twice`
+    (the stage N times in one process) and `--body-trace` found both at tick 0. So lab stages set spawns apart
+    (`BodyStage.spawns`), snap each hull's INTENDED spawn after `start()` with zero velocity, and test that spawns never
     overlap (brains, round 32, R32.6).
