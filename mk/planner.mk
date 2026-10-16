@@ -193,7 +193,8 @@ planner-trace-drive: native import ## planner CP-P1 diagnosis: the series' drive
 # ---- round 32 (hand-over (3)): the gang-press queue, FIFO v --planner-queue=shared --------------------------------------
 # One arm a call (PLANNER_QUEUE_ARM=base|candidate): manoeuvre-hull-rest's drawn + clicked arms on the gangs (the only
 # faction with a hull the seam takes: the War Rig), the native drive both arms (the shipped default), the candidate
-# with --planner-queue=shared. Then tests/planner/queue_table.py over what is there (both arms called = the A/B).
+# with --planner-queue=shared, the base with --planner-queue=fifo (explicit: the arms read the same on either
+# QUEUE_DEFAULT, so the series runs on the pair tree). Then tests/planner/queue_table.py over what is there (both arms called = the A/B).
 PLANNER_QUEUE_SEEDS ?= 66 67 68 69 70 71
 PLANNER_QUEUE_ARM ?= base
 PLANNER_QUEUE_FACTIONS ?= gangs
@@ -201,7 +202,7 @@ PLANNER_QUEUE_FACTIONS ?= gangs
 planner-judge-queue: native import ## planner round 32: hull-rest's gang arm, PLANNER_QUEUE_ARM=base (FIFO) | candidate (--planner-queue=shared) on PLANNER_QUEUE_SEEDS -> the queue table
 	@echo ">> planner-judge-queue on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_QUEUE_ARM) | seeds $(PLANNER_QUEUE_SEEDS)"
 	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_QUEUE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
-		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states $(if $(filter candidate,$(PLANNER_QUEUE_ARM)),--planner-queue=shared)" \
+		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states $(if $(filter candidate,$(PLANNER_QUEUE_ARM)),--planner-queue=shared,--planner-queue=fifo)" \
 		HULL_SEEDS="$(PLANNER_QUEUE_SEEDS)" HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)"
 	@$(PYTHON) tests/planner/queue_table.py $(BUILD_DIR)/manoeuvre/hull-rest
 
@@ -210,4 +211,4 @@ PLANNER_QUEUE_SERIES_SEEDS ?= 205 206 207 208 209 210 211 212 213 214 215 216 21
 .PHONY: planner-series-queue
 planner-series-queue: ## planner round 32: planner-series with base = the FIFO, candidate = --planner-queue=shared, on PLANNER_QUEUE_SERIES_SEEDS
 	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_QUEUE_SERIES_SEEDS)" \
-		PLANNER_SERIES_BASE_FLAGS= PLANNER_SERIES_CAND_FLAGS=--planner-queue=shared
+		PLANNER_SERIES_BASE_FLAGS=--planner-queue=fifo PLANNER_SERIES_CAND_FLAGS=--planner-queue=shared
