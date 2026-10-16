@@ -64,7 +64,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Round 32 (started 2026-10-16 ~00:40 PDT from main `6efdf42b`; covered by `e66b41f1`'s inherited green check)
+### Round 32 (started 2026-10-16 ~00:40 PDT from main `6efdf42b`) — CLOSED by the orchestrator
+**Final:** green hash `17ab77b9` (builder0 `make check exited 0`, 2703/0), merged to main; later commits are this brief only.
+Shipped: T3b-c pair, twin splits, H1b pair (`273654e6`, its exec rows ride with H1b), wall split by frame (`cb408505`),
+the seam reset (`45b52d04`), test_native_face_behind. Parked, NOT to merge, kept as record: `pair/swap-on` `d14de5c7`,
+`pair/swap-ship` `80300909` (the C32.10 swap missed its gain line). Held for next round: B5c-v6 (C32.11), N5's ports.
 
 **Report (kept current).**
 - **1. T3b-c pair (CP-T, R32.1):** my mirror `413252ea` is already an ancestor of main (round 31; inert until Traffic has
