@@ -84,3 +84,17 @@ Nothing: both answers are in. A failed re-judge goes back to him through the orc
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
+
+**2026-10-16 (traffic worker, round 32).**
+
+**Plan (in order):** (1) CP-T T3b-c: carry the judged tree onto main, quick-remote, native builds/checks the pair tree
+(R32.1: native's mirror `413252ea` is already on main, inert until Traffic has `shape`), then ONE re-judge on it; (2) T1c-b2
+carried after T3b-c lands; (3) navmesh gap diagnosis; (4) test splits if any traffic file > ~60 s; (5) stretch T4.
+
+**CP-T, T3b-c carried:** `b5882c9c` on stream/traffic = main `6efdf42b` + `e57f93d2` (as `ac15ac0b`) + `ab3351fb` (as
+`67aa9c76`) + `DEFAULT_OFF := []` (turns ON). The one conflict of substance, `Movement._avoid`: main's T4 `ghostself`
+read (OPT-IN, off) and T3b-c's `Traffic.shape` combined, shape first, the 0.04 early return against `route_preferred`
+(the native drive's order, `drive_native.cpp` 556–603). `traffic.gd`: `OPT_IN` and `DEFAULT_OFF` both kept and parsed.
+Re-judge configuration (decided): as round 31's judged run, `--brains-off=native` both arms (GDScript path), base
+`--traffic-off=turns`, seeds 41–43 × {1,3,6,8,11,16}, n 18, `turns_verdict.py --allow yard_open/cross=3.0 --allow
+terminus/cross=3.0`. Reason: the question is whether CP-H/CP-P1 moved what was judged, so the arms match the judged run.
