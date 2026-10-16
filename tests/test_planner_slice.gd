@@ -85,7 +85,7 @@ func test_the_laptop_slice_plans_the_same_legs_later_and_deterministically() -> 
 	var one_again := await _run(1)
 	print("MEASURE planner_slice: slice 2 holds %s plans %d | slice 1 holds %s plans %d | host %s" % [
 			str(two["holds"]), (two["plans"] as Array).size(), str(one["holds"]), (one["plans"] as Array).size(),
-			OS.get_environment("HOSTNAME")])
+			_host()])
 	assert_eq(two["slice"], 2, "the first match latched 2")
 	assert_eq(one["slice"], 1, "the second latched 1")
 	assert_eq(one["after"], 1, "a mid-match change is not read: the match keeps its slice")
@@ -97,3 +97,11 @@ func test_the_laptop_slice_plans_the_same_legs_later_and_deterministically() -> 
 	assert_true(int((one["holds"] as Array)[0]) >= int((two["holds"] as Array)[0]), "the laptop's hold is no shorter")
 	assert_eq(one["abandoned"], 0, "nothing abandoned at 1 (the hold re-sized)")
 	assert_eq(one_again, one, "two runs at the laptop slice are identical (deterministic: counted, never timed)")
+
+
+## The machine every number here is quoted with (HOSTNAME is unset in some shells: /etc/hostname then).
+static func _host() -> String:
+	var host := OS.get_environment("HOSTNAME")
+	if host == "" and FileAccess.file_exists("/etc/hostname"):
+		host = FileAccess.get_file_as_string("/etc/hostname").strip_edges()
+	return host if host != "" else "unknown-host"

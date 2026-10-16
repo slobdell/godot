@@ -34,11 +34,13 @@ func _run(shared: bool, snap_at := -1) -> Dictionary:
 	var scene: Dictionary = await _street(31)
 	var lab: TacticsLab = scene["lab"]
 	var asked := Engine.get_physics_frames()
+	var refusal: Array = []   # P_2's FIRST refusal (it asks again after RETRY_TICKS and is refused again)
 	for tick in int(SimClock.TICK_RATE * SECONDS):
 		if tick == snap_at:
 			PlannerSeam.restore(PlannerSeam.capture())
 		await lab.step()
-	var refusal := PlannerSeam.last_refusal("Green_P_2")
+		if refusal.is_empty():
+			refusal = PlannerSeam.last_refusal("Green_P_2")
 	var plans := PlannerSeam.last_plans.duplicate(true)
 	for plan: Dictionary in plans:
 		plan.erase("tick")
@@ -65,6 +67,9 @@ func test_a_blocked_ask_is_answered_at_once_under_the_shared_queue() -> void:
 	assert_true(int((shared["report"] as Dictionary)["refused_early"]) >= 1, "shared: counted as refused early")
 	assert_eq(fifo["p2_code"], shared["p2_code"], "the same refusal either way")
 	assert_true(int(fifo["p2_refused_after"]) >= int(shared["p2_refused_after"]), "the FIFO answers it no sooner")
+	var fifo_holds: Dictionary = (fifo["report"] as Dictionary)["holds"]
+	var shared_holds: Dictionary = (shared["report"] as Dictionary)["holds"]
+	assert_true(int(shared_holds["max"]) <= int(fifo_holds["max"]), "the longest hold no longer (%d v %d)" % [shared_holds["max"], fifo_holds["max"]])
 	assert_eq((shared["plans"] as Array).size() >= 1, (fifo["plans"] as Array).size() >= 1, "P_1 plans in both or neither")
 	if not (fifo["plans"] as Array).is_empty() and not (shared["plans"] as Array).is_empty():
 		assert_eq((shared["plans"] as Array)[0]["legs"], (fifo["plans"] as Array)[0]["legs"], "P_1's plan is the same legs")

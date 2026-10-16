@@ -112,7 +112,7 @@ func _both(label: String, world: PlannerWorld, slot: Vector3, facing: Vector3, u
 	var reads_cpp := Planner.clearances(world, probe, true)
 	assert_eq(reads_cpp, reads_gd, "%s %s: the two clearance reads equal bit for bit" % [label, unit_id])
 	print("SIDE_GATE %s %s: %s (left %.3f right %.3f) | gdscript %d us, C++ cold %d us, warm %d us | host %s" % [
-			label, unit_id, gd, reads_gd[0], reads_gd[1], t1 - t0, t2 - t1, t3 - t2, OS.get_environment("HOSTNAME")])
+			label, unit_id, gd, reads_gd[0], reads_gd[1], t1 - t0, t2 - t1, t3 - t2, _host()])
 	return gd
 
 
@@ -159,3 +159,11 @@ func test_the_navmesh_fixtures_read_the_same_both_ways() -> void:
 	_both("terminus west street", world, Vector3(-70.0, 0.0, 0.0), Vector3(0.0, 0.0, 1.0), "gang_ifv", Vector3.INF)
 	_both("terminus west street ifv", world, Vector3(-70.0, 0.0, 0.0), Vector3(1.0, 0.0, 0.0), "ifv", Vector3(-70.0, 0.0, 20.0))
 	terminus.free()
+
+
+## The machine every number here is quoted with (HOSTNAME is unset in some shells: /etc/hostname then).
+static func _host() -> String:
+	var host := OS.get_environment("HOSTNAME")
+	if host == "" and FileAccess.file_exists("/etc/hostname"):
+		host = FileAccess.get_file_as_string("/etc/hostname").strip_edges()
+	return host if host != "" else "unknown-host"
