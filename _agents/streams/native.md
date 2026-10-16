@@ -107,9 +107,19 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   Off main as `fix/wall-split` `cb408505` (builder0 light: 2/0, halves 241 / 318 wall ticks) for the orchestrator to
   merge ahead of H1b (the crew split is on main already). Re-cut `pair/h1b-on` `273654e6` (+ `2d35b1ec` + `e9fc7864`):
   builder0 light `native_wall|native_exec_state|native_h1b` 7/0 (table 156/156; wall halves 319 / 242; h1b 1200
-  executes, 1 settle, 0 mismatches). Full re-check RUNNING (unit `native-h1b-check3`).
+  executes, 1 settle, 0 mismatches). **GREEN: `pair/h1b-on` `273654e6`**, builder0 plain check `make check exited 0`,
+  2703 passed / 0 failed, all 13 maps unmoved. Named to manoeuvre and the orchestrator for the series.
   Coming (manoeuvre's labs, not in this pair): `lab/manoeuvre-swap` adds `_h1b_swap_goal` and ESC_SWAP (escape stage 4:
   the native unstick must hand back or mirror it, plus a row); `lab/manoeuvre-m1b3`'s `_arr_*` are census-only.
+- **Face-behind twin (orchestrator's question, `NATIVE=off` red on test_manoeuvre_behind's War Rig planned turn):**
+  `test_native_face_behind` (`1ca9988f`). A wheeled hull's face turn (`Movement.face_turn`, M1b's planned legs) is
+  handed back BY DESIGN (execute_native.cpp `simple_face`: a face order natively only on a tracked hull's plain facing),
+  so the War Rig case asserts the hand-back (0 native, 928 handed back that wrote nothing; GDScript-played legs 3, drift
+  1.5 m) and a tracked tank on the same stage the native face (142 native executes, 0 mismatches, the whole 2.4 s turn).
+  builder0 light, `89c68660`. The divergence was the PLANNER's no-library session (planner fixed it, c74f5943); a
+  C++-v-GDScript session case was declined: two plays in one test process are not clean (my scratch never freed the
+  first Rig, so later plays were pinned; sent to planner with that caveat). Porting `face_turn` belongs with the held
+  k-turn / `_manoeuvre` port (item 6).
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
