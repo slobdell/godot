@@ -267,7 +267,11 @@ never counted (`best, run = r[3], 0`). The R32.7 fix counts a run the next goal 
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
 
-### C32.10 SWAP bar (DRAFT for the orchestrator, filed before any number)
+**The swap candidate is GREEN on quick-remote:** `lab/manoeuvre-swap2` `d21b5d56` (builder0, `>> remote: make quick …
+exited 0`, 389 passed / 0 failed, QUICK_BASE=main, lint of 238 scripts + combat-smoke). Native is cutting the ON pair
+tree (+ the `_h1b_swap_goal` row, H1B_SWAP_DEFAULT true). The series waits for its check (C31.1).
+
+### C32.10 SWAP bar (FILED on main as written, 2026-10-16, before any number)
 
 - **Candidate:** `lab/manoeuvre-swap2` (main `5cc02947` + brains' seam `f2cc956d` + my hook + the stage tests; native's one
   exec_fields row `_h1b_swap_goal` rides in the pair), the switch `h1bswap` OPT-IN (`--nav-off=h1bswap` turns it ON).
