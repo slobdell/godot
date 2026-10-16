@@ -874,6 +874,6 @@ body-twice: import ## Round 32 (R32.6): the body stage run twice in one process 
 	@echo ">> body-twice on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
 	@for case in $(BODY_TWICE_CASES); do arms=$${case%%:*}; clears=$${case#*:}; [ "$$clears" = - ] && clears=""; \
 		echo "== $$case"; $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_twice_probe.gd -- \
-			--arms=$$arms --clear=$$clears $(BODY_TWICE_EXTRA) 2>&1 | grep -oE 'BODY_TWICE .*|SCRIPT ERROR.*' | python3 -c "import sys,json; [print(l.strip()[:60] if not l.startswith('BODY_TWICE') else '  run %(run)s %(arm)s cleared=[%(cleared)s] alone_s %(alone_s)s arrived_s %(arrived_s)s' % json.loads(l[11:])) for l in sys.stdin]"; \
+			--arms=$$arms --clear=$$clears $(BODY_TWICE_EXTRA) > $(BUILD_DIR)/body-twice-$$arms.log 2>&1; grep -oE 'BODY_TWICE .*|SCRIPT ERROR.*' $(BUILD_DIR)/body-twice-$$arms.log | python3 -c "import sys,json; [print(l.strip()[:60] if not l.startswith('BODY_TWICE') else '  run %(run)s %(arm)s cleared=[%(cleared)s] alone_s %(alone_s)s arrived_s %(arrived_s)s' % json.loads(l[11:])) for l in sys.stdin]"; \
 	done
 

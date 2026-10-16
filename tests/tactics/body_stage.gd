@@ -26,6 +26,80 @@ const SPLIT := [
 const JITTER_M := 2.0
 
 
+## Round 32 (R32.6): spawns are set apart before the match starts. The jitter put Sirens 2 and 3 3.8 m apart, their hulls
+## overlapping, and the physics separated them on the first frame of the FIRST match in a process only (traced, builder0:
+## no brain moved them, order stop, velocity 0; ~2 m each), so the same stage read alone_s 12.0 run first and 24.5 run after
+## any other match, and test_tactics_body passed or failed by the order of the shard. `apart`: each spawn pushed straight
+## away from any earlier one until their turning envelopes (SlotGround.envelope_of) no longer meet.
+static var SPAWN_APART := true
+
+
+## Every crew's [spawn point, envelope], in spec order: the spec plus the seeded jitter, set apart (SPAWN_APART). Pure.
+static func spawns(seed_value: int, specs: Array = SQUADS, mirror := false) -> Array:
+	var flip := -1.0 if mirror else 1.0
+	var jitter := RandomNumberGenerator.new()
+	jitter.seed = seed_value
+	var placed: Array = []
+	for squad: Dictionary in specs:
+		var envelope := SlotGround.envelope_of(String(squad["unit"]))
+		for p: Array in squad["at"]:
+			var at := Vector3(p[0] + jitter.randf_range(-JITTER_M, JITTER_M), 0.0, p[1] + jitter.randf_range(-JITTER_M, JITTER_M)) * flip
+			if SPAWN_APART:
+				at = BodyStage.apart(at, envelope, placed)
+			placed.append([at, envelope])
+	return placed
+
+
+static func apart(at: Vector3, envelope: float, placed: Array) -> Vector3:
+	for _pass in 16:  # pushing off one may land on another: until none meets (bounded)
+		var moved := false
+		for spot: Array in placed:
+			var other: Vector3 = spot[0]
+			var need := envelope + float(spot[1])
+			var away := Vector3(at.x - other.x, 0.0, at.z - other.z)
+			if away.length() >= need - 0.001:
+				continue
+			var direction := away.normalized() if away.length() > 0.01 else Vector3.RIGHT
+			at = Vector3(other.x, at.y, other.z) + direction * need
+			moved = true
+		if not moved:
+			break
+	return at
+
+
+## Round 32 (R32.6), MEASUREMENT ONLY: every crew's position, brain option and order every 0.25 s (BODY_TICK lines), to
+## find where two runs of the same stage part.
+static var TRACE := OS.get_cmdline_user_args().has("--body-trace")
+
+
+static func _trace_bare(game_match: Match, squads: Array, tick: int) -> void:
+	var parts: Array = []
+	for squad: Dictionary in squads:
+		for unit_name: String in squad["names"]:
+			var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if t != null:
+				parts.append("%s(%.2f,%.2f)" % [unit_name, t.global_position.x, t.global_position.z])
+	print("BODY_TICK %d %s" % [tick, " ".join(parts)])
+
+
+static func _trace(game_match: Match, squads: Array, tick: int) -> void:
+	var parts: Array = []
+	for squad: Dictionary in squads:
+		var element: Element = squad["element"]
+		parts.append("%s[%s %s]" % [squad["name"], element.formation, element.arrived])
+		for unit_name: String in squad["names"]:
+			var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if t == null:
+				continue
+			var option := ""
+			var mover := Movement.of(t)
+			if mover != null and mover.ctl is TankBrain:
+				option = String((mover.ctl as TankBrain).choice.get("option", ""))
+			parts.append("%s(%.1f,%.1f %s)" % [unit_name.substr(unit_name.length() - 2), t.global_position.x,
+					t.global_position.z, option])
+	print("BODY_TICK %d %s" % [tick, " ".join(parts)])
+
+
 ## `cpu`: the squads are the COMPUTER's (his team is the other one) and their task runs drills, as a CPU commander's
 ## grouped move does (ElementPlan._route_step weighs the body's route then).
 static func run(case: TestCase, seed_value: int, seconds: float, mirror := false, cpu := false, specs: Array = SQUADS) -> Dictionary:
@@ -34,27 +108,47 @@ static func run(case: TestCase, seed_value: int, seconds: float, mirror := false
 	var team := Match.Team.RUST if mirror else Match.Team.GREEN
 	var flip := -1.0 if mirror else 1.0
 	game_match.set_meta("player_team", (Match.Team.GREEN if mirror else Match.Team.RUST) if cpu else team)
-	var jitter := RandomNumberGenerator.new()
-	jitter.seed = seed_value
+	var points := BodyStage.spawns(seed_value, specs, mirror)
 	var squads: Array = []
+	var n := 0
 	for squad: Dictionary in specs:
 		var names: Array = []
 		var to := Vector3(float(squad["to"][0]), 0.0, float(squad["to"][1])) * flip
 		for i in (squad["at"] as Array).size():
-			var p: Array = squad["at"][i]
-			var at := Vector3(p[0] + jitter.randf_range(-JITTER_M, JITTER_M), 0.0, p[1] + jitter.randf_range(-JITTER_M, JITTER_M)) * flip
+			var at: Vector3 = (points[n] as Array)[0]
+			n += 1
 			var face := (to - at).normalized()
-			names.append(String(lab.unit(team, "%s_%s_%d" % ["Rust" if mirror else "Green", squad["name"], i + 1], at,
-					atan2(-face.x, -face.z), String(squad["unit"])).name))
+			var made := lab.unit(team, "%s_%s_%d" % ["Rust" if mirror else "Green", squad["name"], i + 1], at,
+					atan2(-face.x, -face.z), String(squad["unit"]))
+			if TRACE:
+				print("BODY_SPAWN %s asked (%.2f, %.2f) set (%.2f, %.2f)" % [made.name, at.x, at.z, made.global_position.x,
+						made.global_position.z])
+			names.append(String(made.name))
 		squads.append({"name": squad["name"], "names": names, "to": to})
 	await lab.start()
+	if TRACE:
+		print("BODY_START waited %d frames for the navmesh, match tick %d" % [lab.waited_frames, game_match.tick])
+		for squad: Dictionary in squads:
+			for unit_name: String in squad["names"]:
+				var t := lab.tank_of(unit_name)
+				var mover := Movement.of(t)
+				var brain := mover.ctl as TankBrain if mover != null else null
+				print("BODY_START %s at (%.2f, %.2f) velocity (%.2f, %.2f) option %s move %s" % [unit_name, t.global_position.x,
+						t.global_position.z, t.velocity.x, t.velocity.z, brain.choice.get("option", "") if brain != null else "-",
+						brain.move_order if brain != null else "-"])
 	for squad: Dictionary in squads:
 		for unit_name: String in squad["names"]:
 			var t := lab.tank_of(unit_name)
+			if TRACE:
+				print("BODY_PLACE %s spawned (%.2f, %.2f)" % [unit_name, t.global_position.x, t.global_position.z])
 			var at := SlotGround.for_unit(t, t.global_position, String(t.unit_id))
 			t.global_position = Vector3(at.x, 0.0, at.z)
+			if TRACE:
+				print("BODY_PLACE %s snapped (%.2f, %.2f)" % [unit_name, at.x, at.z])
 	for i in 3:
 		await lab.step()
+		if TRACE:
+			_trace_bare(game_match, squads, -1 - i)
 	var probe := CoherenceProbe.attach(game_match)
 	for squad: Dictionary in squads:
 		squad["element"] = lab.elements.form(squad["names"], String(squad["name"]))
@@ -68,6 +162,8 @@ static func run(case: TestCase, seed_value: int, seconds: float, mirror := false
 	var arrived := {}
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
+		if TRACE and tick % (SimClock.TICK_RATE / 4) == 0:
+			_trace(game_match, squads, tick)
 		for squad: Dictionary in squads:
 			var element: Element = squad["element"]
 			if element.arrived and not arrived.has(squad["name"]):
