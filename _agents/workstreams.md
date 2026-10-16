@@ -113,6 +113,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   s17 t11). Fix: latch each seat's grounding while its asked-for point holds within 0.5 m (`--ground-latch=off` = control);
   GDScript, every element (sim-baseline expected to move). Its own bar; then v6 (v5's gate + the side gate for yard s27 t8)
   is judged on a base with the latch ON. Order for brains: B3b-2c verdict → B10 → C32.10's swap → v6.
+- **C32.12 HOLD's return backs a faced War Rig onto its post TAIL-FIRST (manoeuvre's trace, 2026-10-16 ~09:10 PDT; brains
+  owns the fix):** hull-rest faced_move s66 Green_Guns_5 (laptop `fab0d82e`, GDScript, 153–160° off in 3 runs): it arrives at
+  8–11 m/s, completes inside the 6 m settle radius, overshoots ~10 m; HOLD's "pushed off the spot" (`tank_brain.gd` ~2814)
+  sends {move_to, reverse: true, NO facing}, and a wheeled turret hull's face is declined (turnhull off). **Fix (brains):**
+  the return honours the post's drawn facing (reverse only within ~60° of the nose, else nose-first, or carry `facing`); its
+  own bar, s66 Green_Guns_5 the pass case; after R32.6 and B10, before v6. **Manoeuvre** measures the overshoot itself
+  (faced arrivals ending past settle + 1 m) as M1b(3)'s first input.
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
