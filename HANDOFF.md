@@ -39,6 +39,12 @@ Rulings R32.1 (native half already on main), R32.2 (H1b writes the repair fields
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
 
+**MERGED ~03:00 PDT: planner `530e85cf` → main `3a85d092`** (CP-S `side_gate` OFF-path; SLICE per render preset: laptop 1,
+else 2, latched per match, `--planner-slice=N` wins; the shared queue behind `--planner-queue=shared`, OFF). Its check:
+builder0 exited 0, 2670/0, ALL JUDGED, sim-baseline 13 unmoved. merge_check_needed: CHECK (mk/play.mk only, `19df5cc0`);
+it rides the next batch's main check (with CP-T). **What he'll notice:** on the laptop preset the planner searches 1
+expansion a tick (half the cost, twice the hold); nothing else changes.
+
 **The orchestrator's first jobs:** get CP-T on main (merge the T3b-c pair back to back, `make sim-baseline-adopt` with each
 moved line's reason, then T1c-b2); file every bar in `workstreams.md` *Bars (round 32)* before its numbers; relay CP-S to
 brains when it lands; record the manoeuvre ↔ brains re-seat agreement (C32.5) as a ruling; run `tools/merge_check_needed.sh`
