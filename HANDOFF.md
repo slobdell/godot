@@ -43,6 +43,10 @@ question, traffic's block; a joint contract to follow). **He will see this.**
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
 
+**Main check on `0e49fb3e` (~04:25 PDT): NOT green, NOT red** (builder0 `exited 2`, 24 of 25 targets passed; `test` killed
+by slot.sh's 5400 s cap under load, 0 failures seen; sim-baseline 13 UNMOVED against the adopted lines; determinism
+9d66d3a0c59a7936). **Re-run: full check on `6fcfbe46`** (`orch-main-check-r32b`, covers B3b-2c too).
+
 **🎯 B3b-2c SHIPPED ON (~04:45 PDT): brains `5f0ed865` → main `33321516`.** What he'll notice: every crew of every squad gets
 across his bridge (108/108 v 107/108), and arrivals elsewhere are exactly as before (fresh seeds 45–48, 90 v 90, all 100 cells
 identical). Its check 2666/0 (web first-sound red at load 22, re-run alone green, R32.4); sim-baseline 13 unmoved; no

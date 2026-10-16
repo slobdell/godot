@@ -165,6 +165,15 @@ orchestrator's `make sim-baseline-adopt` on main.
   on native's pair tree with the default flipped ON (C31.1), before the series. REPORTED only: refused_early, queue_waits,
   plans, driven, refused by code, hold max. Ships ON as a pair (QUEUE_DEFAULT true + native's review of `refused_at_begin`).
   If (1) misses: the abandoned searches' expansions reported, stop; no re-tuning on these seeds.
+- **B10, the grounding latch (brains, C32.11; filed 2026-10-16 ~04:50 PDT before any number; full text stream/brains
+  `ddd1cc56` Status *B10 bar*).** Candidate: the latch alone on main `33321516` (T3b-c and B3b-2c ON). On = default; off =
+  `--ground-latch=off` (main's rules); builder0, default path, fresh seeds. (1) Drift census (`make ground-series`: Sumps 18 19
+  × 6 ticks, yard 29 30 × 6, Terminus 12–15 t11): pooled flipping-crew runs (> 10 drift moves) on ≤ off AND pooled drift on
+  < off, plus the named main-side case Sumps s16 t8 with no flipping crew on; (2) arrivals not down: Sumps median on ≤ off,
+  no run > 5 s later; yard every-crew-in and crews in on ≥ off every run; Terminus reported; (3) arrive FRESH seeds 49–52, n
+  100: on ≥ off − 1, discordant against ≤ 1; (4) sim-baseline moves listed with reasons (CPU elements latch too); (5) the
+  whole suite + bridge-pooled; (6) cost; (7) worst runs traced first. `ground_census.py` must reproduce v5's table from its
+  rows (a check on the tool).
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
