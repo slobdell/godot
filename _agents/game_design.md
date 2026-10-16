@@ -3961,3 +3961,8 @@ Asked at round 31's close, in player terms, each with the orchestrator's recomme
    (packed up for a passer in 6/18 fights → 0/18, rounds fired 434 v 437; builder0, `33cb2da5`, seeds 41–46, n 18).
 
 Both ship ON in round 32, as its first items (`roadmap.md` *Round 32 candidates*).
+
+## Round 32 models (2026-10-16, in chat)
+
+"we should go back to using Opus agents across the board to conserve fable quota" — every round-32 stream and the
+orchestrator run on Opus; no Fable session this round (`workstreams.md` *Round 32*, C32.9).

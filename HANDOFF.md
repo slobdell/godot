@@ -4,7 +4,29 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-16 ~00:00 PDT — **ROUND 31 IS CLOSED (below).** Main **GREEN at `e66b41f1`** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved). He pushes `main`. Round 32 is not prepared yet: the next orchestrator listens to him first._
+_Last updated: 2026-10-16 — **ROUND 32 PREPARED (below).** Main inherits **`e66b41f1`'s green check** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved); the round-32 commits are docs only. Five Opus workers, launched by him one terminal each._
+
+## 🚀 ROUND 32 PREPARED (2026-10-16) — read this first
+
+**Five streams, ALL Opus (his rule: "we should go back to using Opus agents across the board to conserve fable quota"),
+the orchestrator on Opus too.** Split, ownership and contracts C32.1–C32.9 in `workstreams.md` *Round 32*; briefs in
+`_agents/streams/`. **Launch baseline:** main at this docs commit, which inherits `e66b41f1`'s green check
+(`tools/merge_check_needed.sh` INHERIT): workers run no baseline check. Round 31's `stream/*` branches were renamed
+`round31/<stream>` (kept, not merged) so the worktrees start fresh from main; `origin` still holds old `stream/*`
+branches, so workers don't push.
+
+| Stream | Folder (offset) | What he will notice | First item |
+|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | his two yeses: the Terminus crossing give-way, the set-up mortar truck; then the default arena's navmesh gap | **CP-T**: T3b-c pair ships ON, then T1c-b2 |
+| **manoeuvre** | `godot-manoeuvre` (2) | a vehicle pinned on a squadmate that never moves goes round or settles instead of looping every 21 s; wheeled hulls turn to his facing and settle | H1b (seed 31) |
+| **brains** | `godot-brains` (3) | every crew across his bridge without the arrive maps paying; the yard's last crew in, Sumps included | B3b-2c (seating, heading rule off) |
+| **native** | `godot-native` (4) | nothing alone: every pair (T3b-c first); the four slow twin files split | the T3b-c pair |
+| **planner** | `godot-planner` (6) | the War Rig's planned turns on the laptop without the tick cost (SLICE per preset); the side gate for brains | CP-S side gate |
+
+**The orchestrator's first jobs:** get CP-T on main (merge the T3b-c pair back to back, `make sim-baseline-adopt` with each
+moved line's reason, then T1c-b2); file every bar in `workstreams.md` *Bars (round 32)* before its numbers; relay CP-S to
+brains when it lands; record the manoeuvre ↔ brains re-seat agreement (C32.5) as a ruling; run `tools/merge_check_needed.sh`
+after every merge. Kickoff prompt: `orchestration.md` *The kickoff prompt* (the same line for every stream).
 
 ## 🏁 ROUND 31 IS CLOSED (2026-10-16 ~00:00 PDT) — read this first
 

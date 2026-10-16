@@ -4,6 +4,80 @@
 > streams, ONE on Fable 5.1 (planner), the rest and the orchestrator on Opus (his quota rule, `roadmap.md` *Round 31
 > candidates*).** Briefs in `streams/`.
 
+## Round 32: five streams, all Opus (prepared 2026-10-16; briefs in `streams/`)
+
+**Goal: ship his two yeses first (T3b-c, T1c-b2; `game_design.md` *Round 31 close: his two answers*), then carry home
+round 31's parked candidates (`roadmap.md` *Round 32 candidates*): the H1 ask loop he may see, his bridge's seating
+without the heading rule, the arrival gate a third time (now with the planner's side gate), turn-the-hull's settle and
+re-seating question, the planner's SLICE as a hardware preset, and the default arena's navmesh gap. Method unchanged
+from round 31 (C31.1–C31.3, R31.1–R31.10 stand): the whole suite with the switch ON on the pair tree before a judged
+series, bars sized from `judging.md`, `make quick-remote` to iterate and a full check only for a named hash (R31.9).**
+
+**Models (his rule, 2026-10-16: "we should go back to using Opus agents across the board to conserve fable quota"):
+every stream AND the orchestrator on Opus. No Fable session this round.**
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | at a Terminus street crossing the squad that gives way waits ~2.6 s and the squads bump a third less; a set-up mortar truck stays set up while squadmates go round (both his yeses); later, a hull no longer stranded off the navmesh in the default arena | **CP-T** both ships ON, first |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a vehicle pinned on a squadmate that never moves goes round it or settles short instead of asking and backing every 21 s; wheeled turret vehicles turn their hull to his facing and settle | H1b; M1b(3) |
+| **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | every crew across his bridge (108/108) without the arrive maps paying; the yard's last crew in every time, Sumps included | B3b-2c; B5c-v6 |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing in play: every pair (T3b-c first), the four twin test files split | each pair |
+| **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | the laptop preset keeps the planner's War Rig turns without the tick cost (SLICE per preset); the side gate brains' arrival needs | CP-S side_gate; SLICE preset |
+
+**Ownership:** round 31's table stands (traffic the give-way block, `_avoid`, `_around_friends`, `_ask_behind`,
+`_hull_within`; manoeuvre the `drive()` body, `_nose_stop`, `unstick`, `_pressing_escape`, the k-turn executor, H1's ask
+(`unstickback`); planner the plan source, `game/ai/planner/**`, `native/src/planner_*`, `tests/planner/**`,
+`tests/test_planner*.gd`, `mk/planner.mk`; native the member storage, `mk/native.mk`, `exec_fields.h`, the twins; brains the
+rest of `movement.gd`, `tank_brain.gd`, `gunnery.gd` except manoeuvre's lead lines). **New grants:** traffic gets
+`arenas/**` and `game/arena/**` for the navmesh gap ONLY (C32.6); planner gets the hardware preset's SLICE knob in
+`game/theme/fx/fx_quality.gd` (`FxQuality`, the existing preset; one additive field, merge note), or a sim-side preset
+read it designs if a render preset must not steer the sim (its call, one reason recorded). **Nobody:** as round 31. `tests/baselines/**` only by the
+orchestrator's `make sim-baseline-adopt` on main.
+
+**Contracts (round 32):**
+
+- **C32.1 His two yeses ship first (CP-T).** Traffic carries `traffic-t3bc-judged` (`f5dc4147`) onto current main, native
+  carries `413252ea` beside it; the PAIR tree, switch ON by default, plain `make remote T=check` (C31.1's ship check). A
+  red on sim-baseline ALONE, with the moved maps listed, is expected: the orchestrator merges the pair back to back and
+  re-records with `make sim-baseline-adopt` (two reads agreeing), giving each moved line its reason. Then T1c-b2
+  (`traffic-t1cb2` `33cb2da5`): traffic-native-verify (native states "none ported" or carries the mirror), a check with
+  the rule ON, the pit baseline re-recorded the same way. **If carrying either forward moves what was judged** (CP-H and
+  CP-P1 landed after the judging), the owner re-runs that judged series ONCE on the new tree against its round-31 bar
+  before naming a ship hash: his yes covered the behaviour, not a change to it.
+- **C32.2 H1b, the ask that never frees (manoeuvre).** Terminus seed 31's last leg is the pass case: after N failed asks on
+  the SAME blocker (N and the "failed" test pre-registered in the bar), re-path around it or complete short (settle);
+  never re-drive into it. Pass lines: seed 31 loops 0; CP-H's pinned/stuck rows not worse (base + 1.645 se); arrivals not
+  down; wall and terrain pins keep R31.5's escape. Behind `--nav-off=h1b` default OFF until judged; ships ON as a pair.
+- **C32.3 Brains' bridge seating ALONE (B3b-2c):** the crossing seating + mouth guard with round 28's heading rule left
+  OFF (the attribution trace: `--reissue-heading=plan` alone recovered 9/9). Its own bar: his bridge 108/108 (or ≥ the
+  control) AND the arrive series within 8 m not below base − 1.645 se. Fresh seeds.
+- **C32.4 The arrival gate, a third time (B5c-v6) with the planner's side gate (CP-S).** Planner delivers
+  `PlannerSeam.side_gate(slot, facing, unit_id) -> Vector3` (§2.8's `slot + perp × R` on the side with room, two clearance
+  reads through the C++ cache, no search; GDScript + C++ equal on fixtures) as CP-S, merged OFF-path (nobody calls it).
+  Brains keeps the gate (C30.5) and chooses between the side gate and `near` keyed per seat (or with hysteresis), with one
+  reason recorded; the bar names Sumps s17 t11 and yard s27 t8 as pass cases, pursuit as R31.3's count, Terminus and the
+  yard as v5's lines. The full "slot" take point (`in_scope(unit_id, kind)`) is planner's stretch, only if brains asks.
+- **C32.5 Turn the hull, M1b(3) (manoeuvre, with brains on re-seating):** before any number, manoeuvre and brains agree in
+  writing (via the orchestrator) whether an arrivals line counts "completed at a re-seated slot" as arrived, and whether
+  facekeep changes for gang hulls; the orchestrator records it as a ruling. Then the attack-move settle (moving-at-75-s
+  line) is the problem to solve, not the turn (attempt 2's turn rows stand as evidence).
+- **C32.6 The default arena's navmesh gap (traffic, after CP-T):** at (-25.7, 7.3) the start snaps 8.2 m to (-17.5, 7.3).
+  First establish bake hole v obstacle footprint (a screenshot of the navmesh and the footprint, and the bake's inputs);
+  a bake fix re-bakes only the default arena, and its sim-baseline move goes to the orchestrator with the reason.
+- **C32.7 SLICE per hardware preset (planner):** CP-P1's (f) miss is solved as a preset knob (his rule: perf cuts ship as
+  presets), not by changing SLICE on the default path: laptop preset SLICE 1, others 2, read once at match start, the same
+  for both sides and deterministic across peers (a networked match uses the host's value). Priced on builder0 and, in a
+  slot the orchestrator grants, the laptop.
+- **C32.8 Test splits (R31.9 (3)):** native's four twin files first, then each stream's own slowest files, same assertions
+  divided, test count shown before and after, bodies byte-identical where possible.
+- **C32.9 Fresh start:** every round-31 `stream/*` branch was renamed `round31/<stream>` (kept, not merged) and every
+  worktree re-created from this docs commit. No agent of round 31 runs.
+- C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
+
+**Rulings (round 32, the orchestrator's, as they arise):**
+
+**Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
+
 ## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
 
 **Goal: carry home what round 30 judged and could not ship (`roadmap.md` *Round 31 candidates*; his two calls in
