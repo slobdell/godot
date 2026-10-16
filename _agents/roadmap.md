@@ -315,6 +315,8 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   test_army_layout); law and syndicate armies get a deploy-overlap loop entry this round (brains, granted).
 - **CP-Q's refuse-at-rest candidate** (planner, `d98656ab`, OFF): the hull-rest A/A (fifo v fifo) sizes line (3) first, then
   judge on fresh seeds. **The seam never serves a War Rig's open-ground face-behind** (189 > 180 expansions).
+- **T4-ON** (traffic, `0adc6deb`): mixed stuck −48 % but unproven at n 24; the yard head-on's last hull circles its slot
+  15–20 s with the ghost on. Trace one circle loop, then n ≈ 48.
 - **B10b** (the grounding latch on a tree with C32.10's swap ON) and **B5c-v6** behind it, if round 32 doesn't reach them.
 
 ## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — SPLIT 2026-10-14 ~22:00 as traffic (his two calls, T4, the early-stop hook) + manoeuvre (1 as CP-H, 4) + brains (3, B8) + native (pairs, the planner review, 5's test split) + planner (2; Fable) (`workstreams.md` *Round 31*); his two calls MADE ~21:40

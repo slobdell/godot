@@ -292,6 +292,12 @@ orchestrator's `make sim-baseline-adopt` on main.
   hull-rest 60–65 and CP-Q's 66–71). (1) DECIDING crews > 90° off pooled, on < off (Fisher reported); (2) s66 Green_Guns_5
   ≤ 90° in ≥ 2 of 3 on-repeats (a named case; the harness is not run-to-run deterministic); (3) no class's median worse (p <
   0.05), never-settled on ≤ off + 2, settle median ≤ +2 s; (4) the whole suite, sim-baseline moves named; (5) worst traced.
+  **T4-ON JUDGED ~13:40 PDT: NOT SHIPPED** (builder0, `0adc6deb`, native path; `references/round32/traffic/t4_r32/`):
+  (1) DECIDING mixed stuck 607 → 313 crew-s (−48 %), se 211, needed beyond −347: FAIL (direction right, size unproven at
+  n 24); (2) rigs stuck 627 → 459 pass (manoeuvre's `_honest_blocker` removed round 31's rig harm); (3) pinned mixed 316 → 17
+  pass; (4) arrivals pass; (5) yard head-on FAILS two guards (between-squad fast 53 → 59 v +5.8; all-in median 33.8 → 38.0 s
+  v +3.82): the late hull (usually Green_A_5) reverses and circles round its slot 15–20 s (reversing turns 8 → 138, 15 →
+  112, 20 → 47; friend-stuck ≈ 0). Round 33: trace one circle loop, re-judge mixed stuck at n ≈ 48.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
