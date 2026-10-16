@@ -182,6 +182,12 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   arrival watch (lab `492cf7a1`, measurement only) found 0 of 7 driven arrivals rolling past settle + 1 m on that run.
   The trigger is an early completion (element arrival or the repaired path: brains'). For M1b(3), count "move orders
   completed with the hull > settle + 1 m off, by completion path" instead of overshoot.
+  **Brains' answer (C32.12 (1), `--order-trace`, builder0 light):** G5's move never COMPLETES. When its ELEMENT arrives
+  (centre within ARRIVE_M), the halt gives every crew a faced `hold` at its seat, and a faced hold replaces a move AT
+  ONCE (`Element._should_issue`, round 10's rule), wherever the crew is. Squadmates completed at 4.3–6.0 m; none
+  repaired. Brains' fix is B11 (HOLD's return drives nose-first, carrying the facing, when the facing is > 60° off the
+  nose). **M1b(3)'s metric is therefore:** move orders ENDED (completed OR replaced by an element hold) with the hull
+  > settle + 1 m off, by path.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b (later shown to be a real GDScript v native divergence, plan item 0b):**
   `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
