@@ -98,6 +98,13 @@ read (OPT-IN, off) and T3b-c's `Traffic.shape` combined, shape first, the 0.04 e
 Re-judge configuration (decided): as round 31's judged run, `--brains-off=native` both arms (GDScript path), base
 `--traffic-off=turns`, seeds 41–43 × {1,3,6,8,11,16}, n 18, `turns_verdict.py --allow yard_open/cross=3.0 --allow
 terminus/cross=3.0`. Reason: the question is whether CP-H/CP-P1 moved what was judged, so the arms match the judged run.
+- **quick-remote on `b5882c9c`: GREEN** (builder0, 68 passed / 0 failed, `>> remote: make quick … exited 0`; it included
+  test_native_traffic_turns(+_owned) and test_native_avoid_gather). Native's plain ON check on `pair/t3bc-r32` =
+  `b5882c9c` is running (native names the hash). The re-judge chain is ready: base `--brains-off=native
+  --traffic-off=turns`, arm `--brains-off=native`, both `TRAFFIC_WHICH=both`, with the hook lines (Terminus's xclear now
+  `abs=1.0:allow=3.0`, his ~3 s), then `turns_verdict.py`. It runs on stream/traffic, whose game/ equals `b5882c9c`.
+- **T1c-b2 carried:** `traffic-t1cb2-r32` `4849bfdc` = stream/traffic + `6d19a3d9` (one conflict, the end of
+  `mk/traffic.mk`; `Movement.ask()`'s fire-post refusal applied clean). quick-remote is running on it.
 
 **C32.6, the navmesh gap: DIAGNOSED, no bake fix. It is a probe artifact, not a bake hole or a footprint** (`b71fb9b0`,
 laptop, headless Godot 4.7.2; geometry facts, so they don't depend on the machine).
