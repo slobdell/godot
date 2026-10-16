@@ -749,10 +749,21 @@ static func _flat(a: Vector3, b: Vector3) -> float:
 ## counters. A pending session is not copied: `restore` begins it again from the crew's request and steps it the same
 ## number of expansions, which the slice proof (tests/test_native_planner.gd) makes the same search.
 static func capture() -> Dictionary:
+	# A crew whose hull is freed (or queued for it) is not state: the next tick's `_sweep` releases it, and copying it
+	# hands a freed hull to `PlannerExecutor.from_state` (round 32, traffic's check on cf81aedc: a twin harness captured
+	# after a previous test's match was disposed with a crew held, before any seam tick swept it). Read-only: the live
+	# table is left to `_sweep`; the snapshot carries neither the crew nor its place in the queue.
 	var crews := {}
 	for name: String in _crews:
-		crews[name] = (_crews[name] as Crew).copy()
-	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+			continue
+		crews[name] = crew.copy()
+	var queue: Array[String] = []
+	for name: String in _queue:
+		if crews.has(name):
+			queue.append(name)
+	return {"crews": crews, "queue": queue, "retry": _retry_until.duplicate(), "counters": report(),
 			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true),
 			"alloc_tick": _alloc_tick, "alloc": _alloc.duplicate()}
 
