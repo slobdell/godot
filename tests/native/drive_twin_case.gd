@@ -169,6 +169,7 @@ func _k_turn_case(owned: bool) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	NativeDrive.owned = owned
 	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
 	await ArenaFixture.build(self, "sumps")
@@ -253,6 +254,7 @@ func _drive_case(owned: bool) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the drive equality is not exercised in this run")
 		return
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	NativeDrive.owned = owned
 	NativeBridge.impl.drive_owned_counts(true)
 	assert_true(Movement._off.is_empty(), "the default configuration (no --nav-off switch)")
