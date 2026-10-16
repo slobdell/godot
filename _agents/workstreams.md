@@ -227,6 +227,15 @@ orchestrator's `make sim-baseline-adopt` on main.
   at rest; refuse-early answers from the ROLLING pose, so today's code keeps 7–9 m/s and drives into the block (series-wide
   258 refused early; GOAL_BLOCKED 197 v 138). **Round 33:** refuse early only AT REST (brake a rolling ask as the FIFO does,
   then probe), round-robin unchanged; the hull-rest A/A (fifo v fifo) sizes line (3) first; re-judge on fresh seeds.
+  **B10 JUDGED 2026-10-16 ~09:45 PDT: FAIL on line (2) → PARKED as filed** (check `8e43cc5c` 2699/0 ALL JUDGED; series
+  builder0): (1) flipping-crew runs 0 v 2, drift 107 v 138 PASS; **(2) Sumps median 42.75 v 49.86 s but s19 t8 89.3 v 69.4 s
+  (+19.9) breaks "no run > 5 s later" FAIL**; yard identical; (3) arrive 93 v 93 PASS; sim-baseline unmoved; cost 0.149 v
+  0.164 ms. **The losing run, traced:** the latch holds S_2's near seat, so S_2 PARKS at (-2.5,-51.9) in the passage S_3 and S_4
+  need to their west seat (~40 s of no_path / blocked-by-each-other, two make-room trades); off, the bug's flipping moved
+  S_2 out of the way by accident. **Ruling:** parked as filed (the bar is not changed after its numbers). It is C32.10's
+  situation (a parked squadmate in the way): **B10b = the same latch re-judged ONCE on fresh seeds on a tree with C32.10's
+  swap ON**, no code change, its own bar (the s19 t8 case named); B5c-v6 waits behind B10b (its s17 t11 pass case needs the
+  latch: 35.8 v 34.8 s with it, v5 58.3 without).
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
