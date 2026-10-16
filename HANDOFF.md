@@ -4,12 +4,52 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-14 ~22:10 PDT — **ROUND 31 IS PREPARED (below), not launched: worktrees created, he opens the
-terminals; a NEW Opus orchestrator runs it. ROUND 30 IS CLOSED (further below).** Main `cff4307e` + these docs. Main `9ea4523c`. **Main GREEN at `48d5aa0d`** (builder0, `make check
-exited 0`, 2606 passed, 0 failed, 26 targets ALL JUDGED, thirteen unmoved, determinism 2875411ff4ec6be7): sizing + planner +
-B7 + traffic/brains tooling + N7.5 + the `real_velocity` reader pair. He pushes `main`._
+_Last updated: 2026-10-16 ~00:00 PDT — **ROUND 31 IS CLOSED (below).** Main **GREEN at `e66b41f1`** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved). He pushes `main`. Round 32 is not prepared yet: the next orchestrator listens to him first._
 
-## 🚀 ROUND 31 IS PREPARED (2026-10-14 ~22:10 PDT) — NOT LAUNCHED; read this first
+## 🏁 ROUND 31 IS CLOSED (2026-10-16 ~00:30 PDT) — read this first
+
+**Main `e66b41f1` is round 31's verified main and what he plays.** **MAIN GREEN at `e66b41f1`** (builder0, 23:54 PDT: `>> remote: make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved). It is `04620f67` plus manoeuvre's counters off Movement and brains' test split. Later commits are docs only and inherit it (`tools/merge_check_needed.sh` INHERIT). He pushes `main`.
+
+**What he will notice in play (three ships, all default ON):**
+1. **Support-by-fire takes his drawn heading** (brains B6). Pooled error for the four wheeled classes is 10.4° v 29.1°.
+2. **A pinned vehicle backs out instead of grinding** (CP-H: unstickback, kturnarc, realspeed, realslow). Pinned crew-s at
+   rest fell 3106 → 333 and stuck crew-s 6578 → 3737. Wall and terrain pins keep the old escape.
+3. **A War Rig turning round in a tight street does it in a few deliberate legs** (CP-P1, the C++ planner for hulls of
+   10 m and longer). Rig arrivals read −0.615 v a line of −0.823, and median contact fell 855 → 533.
+
+**Known issue in what shipped (tell him):** when the squadmate in the way never moves, the pinned vehicle loops
+(ask, back 2–3 m, drive back in, about every 21 s) instead of going round. Terminus seed 31. It is a round-32 candidate.
+
+**⚑ Owed to him (two questions, both still unanswered; full wording in the round-31 section below):**
+1. **Terminus crossing (T3b-c):** does his ~3 s yard price also cover a Terminus street crossing (+2.6 s, bumps 93 → 61)?
+   Recommendation: yes. On yes, ship `f5dc4147` (branch `traffic-t3bc-judged`) as a pair with native `413252ea`, with the
+   13 baselines re-recorded.
+2. **Set-up mortar truck (T1c-b2):** should a set-up mortar truck stay set up and let squadmates go round (6/18 fights
+   → 0/18, same fire)? Recommendation: yes. On yes, run C31.1 on current main with branch `traffic-t1cb2` (`33cb2da5`),
+   re-record the pit baseline, and merge.
+
+**Clips for him:** `~/projects/clips/round31/`. They cover the T3b-c crossings with a caption, the planner's Terminus
+rig (`planner_terminus_0a2a4a48.mp4`, `planner_terminus_f9d2c639.mp4`), and the rig wedge today v shipped.
+
+**Parked (round 32 candidates, in `_agents/roadmap.md` *Round 32 candidates*):**
+- **B5c-v5** failed on a Sumps limit cycle (`pair/brains-v5`).
+- **B3b-2b** reached 108/108 on his bridge but cost arrivals; the heading rule is the cause (`lab/brains-r31-bridge`).
+- **M1b(2)** missed on mixed arrivals and the moving-at-75-s line.
+- **CP-P1 line (f)** was a narrow miss outside the ship clause, so the planner's SLICE becomes a round-32 preset.
+- **T4** was merged OFF and was not in CP-H.
+- **The navmesh gap** in the default arena, and the **H1 ask loop** above.
+
+**Process carried into round 32 (R31.9, his OK; no second build machine):** after every merge run
+`tools/merge_check_needed.sh <green>`, and on INHERIT run no main check. Workers iterate with `make quick-remote` and run a
+full check only for a hash they will name. The slowest test files get split by their owners; native's four twins go first
+in round 32's briefs. Both baseline-reading targets now build the native library first (`686ce0a8`).
+
+**State at close:** every worktree and its builder0 folder is removed; builder0 holds only `godot` and `godot-light`.
+Briefs are archived in `_agents/streams/archive/round31/`. Branches are kept: every `stream/*`, `pair/*` and `lab/brains-r31-*`,
+plus `traffic-t1cb2`, `traffic-t3bc-judged` and `traffic-t4`. The bars, rulings R31.1–R31.10 and verdicts are in
+`_agents/workstreams.md`.
+
+## ROUND 31 (2026-10-14 → 16) — the running log, kept for its detail
 
 **LAUNCHED 2026-10-14 ~22:30 PDT.** Five workers are running: godot-traffic-05, godot-manoeuvre-33, godot-brains-0b, godot-native-7d
 and godot-planner-6f (Fable). Every stream branch was fast-forwarded to main `75dbbb7c` before launch. The orchestrator is an Opus
