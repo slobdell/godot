@@ -705,6 +705,16 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   where the seam never fired differ anyway, and those silent runs carry most of each per-task miss. **Round-32 finding:**
   in a 19-crew gang press the one-session queue starves (23 % drawn / 18 % clicked of asks abandoned at the 90-tick cap,
   queue_waits 19 179 / 26 578; the series had 2 of 459). Holds n 1141, median 14, max 110 ticks.
+  **✅ CP-P1 VERDICT (~17:30 PDT): the ship clause is MET on every stage, so it SHIPS** (series `35f5df92` = code
+  `f9d2c639`, gate `85911f0b`, builder0, every line read once at completion). (a) rig arrivals −0.615 v −0.823 PASS;
+  mixed identical. (b) rig contact median 855 → 533, paired −282.2, PASS. (c) scenario_cp2 identical both arms, PASS.
+  (d) hull-rest PASS as ruled. (e) fights kills −4 (se 4.5), deaths −4 (se 3.4), hit +0.012, PASS; bridge 18/18 identical.
+  The rig 180° PASS. (f) cost MISS on one seed (0.526 ms), not in the ship clause. Clip:
+  `~/projects/clips/round31/planner_terminus_f9d2c639.mp4`. **Ship order:** CP-H's ship (`76b7ee46`, check running)
+  merges FIRST, with its 13 baselines recorded twice. Then native re-cuts CP-P1 on THAT main (planner `f9d2c639` + its
+  mirror + `PLANNER_DEFAULT true`). Its plain check is CP-P1's ship check, and the FIRST check with the planner and CP-H's
+  four all ON together (C31.1's whole-suite test of the pair). Then merge, record its moved baselines twice, and run one
+  main check.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
