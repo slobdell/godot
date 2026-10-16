@@ -159,7 +159,7 @@ TRAFFIC_VERIFY_APPROACH_SEEDS ?= 13 14
 .PHONY: traffic-native-verify
 traffic-native-verify: native import ## Round 30 (T1c-b): census + ApproachStage drawn artillery on the native path with the execute verified (TANK_NATIVE_EXEC_VERIFY=1) -> mismatches (0 = equal)
 	@rm -rf $(BUILD_DIR)/traffic-native-verify; mkdir -p $(BUILD_DIR)/traffic-native-verify; d=$(BUILD_DIR)/traffic-native-verify; bad=0; \
-	IFS=';'; for c in $(TRAFFIC_VERIFY_CENSUS); do IFS=' '; set -- $$c; log=$$d/census-$$1-$$6.log; \
+	cases='$(TRAFFIC_VERIFY_CENSUS)'; IFS=';'; for c in $$cases; do IFS=' '; set -- $$c; log=$$d/census-$$1-$$6.log; \
 		TANK_NATIVE_EXEC_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
 			--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(TRAFFIC_CENSUS_SECONDS) > $$log 2>&1 || true; \
 		v=$$(grep -c "NativeExec verify" $$log || true); p=$$(grep -o '"setup_refusals":[0-9]*' $$log | head -1); \
