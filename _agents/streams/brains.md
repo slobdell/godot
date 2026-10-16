@@ -118,7 +118,7 @@ v6's case.
 **Questions for the lead:** none. **Requests open:** none.
 **Worktrees of mine:** godot-brains-gate (lab/brains-r32-gate), godot-brains-swap (lab/brains-r32-r326, after the swap
 lab); builder0 folders godot-brains-gate, godot-brains-swap (+ -light). Remove at round close; branches kept.
-**What to playtest:** his bridge on the Locks (`make skirmish --arena=locks`, three squads attack-moved across): every
+**What to playtest:** his bridge on the Locks (`make skirmish ARENA=locks`: select three squads and attack-move them across): every
 crew crosses.
 
 ### B11 JUDGED: FAILS lines 2 and 3; PARKED (OFF by default, `--hold-return=faced`) (2026-10-16 ~16:30 PDT)
