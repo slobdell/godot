@@ -282,6 +282,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   situation (a parked squadmate in the way): **B10b = the same latch re-judged ONCE on fresh seeds on a tree with C32.10's
   swap ON**, no code change, its own bar (the s19 t8 case named); B5c-v6 waits behind B10b (its s17 t11 pass case needs the
   latch: 35.8 v 34.8 s with it, v5 58.3 without).
+  **AMENDED ~14:10 PDT (manoeuvre's diagnostic, builder0 light, `519001d5` = main + swap + latch, reproduces 89.27 s):** the
+  swap CANNOT reach s19 t8 (escape fires 1, failed asks 0, swaps asked 0): S_3 and S_4 three-point in a passage they read as
+  `no_path`; S_2, parked on its latched seat, is never their blocked_by name. So **B10b is a seat-choice change in brains'
+  element** (the latch / grounding avoids a seat lying in a squadmate's passage), its own bar with s19 t8 named; the swap's
+  bar reports s19 t8 instead of naming it. Not this round unless brains has room after B11.
 - **B11, HOLD's return honours his drawn facing (brains, C32.12 (2); filed 2026-10-16 ~09:30 PDT before any number; full
   text stream/brains `e440bcd9` Status *C32.12*).** C32.12 (1) answered: the faced move is not completed far off, it is
   REPLACED: when the element arrives (centre within ARRIVE_M) the halt gives every crew a `hold` at its seat carrying his
