@@ -22,6 +22,9 @@ backwards (brains' B11 fix in its check).
 built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
 **Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
 
+**MERGED ~14:55 PDT: brains' R32.6 fixes alone `87fa3858` → main `0faa485b`** (test/stage only; builder0 light 9/0), clearing
+main's R32.6 red. B11 itself waits for its series (started 14:43).
+
 **Main check on `981457cf` (~14:20 PDT): GREEN but for two known reds** (builder0 `exited 2`: test 2710 passed / 1 failed,
 the one `test_tactics_body::test_his_three_squads_keep_together` = R32.6, its test-stage fix on stream/brains `c029cf70` not
 yet on main; remote-guard-test's quiet-window group = R31.10; sim-baseline 13 UNMOVED; perf NOT JUDGED, busy box). It covers
