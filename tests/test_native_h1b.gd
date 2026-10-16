@@ -49,18 +49,19 @@ func test_the_pinned_hull_settles_as_the_gdscript() -> void:
 	var settles := 0
 	var native_settles := 0
 	var fires := 0
+	var census: Object = ManoeuvreCensus.new()  # H1b's statics by name: this file parses on a tree without them
 	for tick in int(SimClock.TICK_RATE * SECONDS):
 		ctl.movement.observe_contact()
 		var start := _capture(movers, ctl)
-		var asks_before := ManoeuvreCensus.h1b_failed_asks
-		var settles_before := ManoeuvreCensus.h1b_settles
+		var asks_before := int(census.get("h1b_failed_asks"))
+		var settles_before := int(census.get("h1b_settles"))
 		var fires_before := Movement.esc_fires_hull
 		BrainSwitches.native_drive = false  # the live arm all GDScript (drive's own dispatch too)
 		var live_cmd: TankCommand = ctl.compute_command(delta)
 		BrainSwitches.native_drive = true
 		var live := _capture(movers, ctl)
-		var settled := ManoeuvreCensus.h1b_settles > settles_before
-		failed_asks += ManoeuvreCensus.h1b_failed_asks - asks_before
+		var settled := int(census.get("h1b_settles")) > settles_before
+		failed_asks += int(census.get("h1b_failed_asks")) - asks_before
 		settles += 1 if settled else 0
 		fires += Movement.esc_fires_hull - fires_before
 		for owned in [false, true]:
@@ -93,7 +94,7 @@ func test_the_pinned_hull_settles_as_the_gdscript() -> void:
 		a.command = TankCommand.new(0.0, 0.0, a.global_position + Vector3(0, 0, -20))
 		await lab.step()
 	BrainSwitches.native_exec = was_exec
-	var on: bool = Movement.h1b_on()
+	var on: bool = ctl.movement.call("h1b_on")
 	print("native h1b (H1b %s): %d executes native (both views), %d handed back, %d escape fires, %d failed asks, %d settles (%d compared natively), phase %s, %d mismatches" % [
 			"ON" if on else "OFF", native, handed_back, fires, failed_asks, settles, native_settles, ctl.movement.phase,
 			mismatches])
