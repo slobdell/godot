@@ -164,7 +164,10 @@ orchestrator's `make sim-baseline-adopt` on main.
   number, manoeuvre's off-by-one in its own test, intent unchanged). Settle short only with ≤ 12 m of route left and a goal not
   sliding; loops farther out are counted (`far`), not acted on. **Fresh seeds (confirmed unclaimed by the orchestrator):**
   Terminus 300–312, hull-rest 313–318 (n 144 an arm), fights 320–343. Lines, guards to completion, each read once on 1.645 se:
-  (1) seed 31 rigs: loops 0, Green_S0_4 ends still; (2) hull-rest pinned and stuck crew-s (row 67) ≤ base + 1.645 se;
+  (1) **AMENDED 04:25 PDT before any series number (seed 31 no longer loops on today's main; C32.10 hands far loops to the
+  swap):** on every named hunt seed (builder0 `48657f07`, n 1: Terminus drive mixed 4 5 6 7 9 10 11 13 14 16; rigs 1 2 3 4 6 9
+  10 14 15 16; fights 4 Terminus, 6 Sumps) AND on the fresh Terminus seeds 300–312, H1b-arm loops − far = 0 (every near-goal
+  loop broken) and far ≤ base loops (H1b never makes a loop); far reported per seed as C32.10's base; (2) hull-rest pinned and stuck crew-s (row 67) ≤ base + 1.645 se;
   (3) nav-terminus-drive PINNED/STUCK per squad ≤ base + 1.645 se; (4) Terminus arrivals, rigs and mixed apart, ≥ base −
   1.645 se; (5) fights kills, deaths, hit rate within 1.645 se; (6) R31.5's terrain pins unchanged: `test_nav_wall_contact`,
   `test_control_queued_task`, `test_manoeuvre_escape` green; (7) the whole suite green on native's pair tree with the switch
