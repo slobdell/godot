@@ -92,6 +92,17 @@ are this Status only. Every backlog item is done, judged, or handed over below.
 | — **main bug** (`capture()` copied a freed hull's crew) | **ON MAIN** (`fix/planner-capture-freed` `8904c9c4`, the orchestrator merged it; R32.6) | red without / green with; native APPROVED |
 | 5. stretch "slot" take point | not asked by brains | — |
 
+**After the merge: the face-behind divergence (the orchestrator's ask, moved off manoeuvre's item 0b).**
+`test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` failed under NATIVE=off (legs 2, drift 25.3 m)
+and passed native. Not the drive, not the search (offline both planners give the same 5-leg, 189-expansion plan):
+the NO-LIBRARY SESSION planned whole at begin and answered on the first `step_session`, so the seam's 180-expansion
+cap never applied: native abandons that face at 90 ticks (today's executor turns the rig), NATIVE=off drove the 25 m
+plan. Fix `c74f5943`: each search records how it ended; `Planner.emulate_step` replays the C++ `step(n)`.
+`test_planner_session_steps` holds call, code, legs and expansions equal on 7 fixtures + the face-behind at slices
+1/2/3/50 and a mixed replay sequence; laptop: test_manoeuvre_behind 6/0 with `--planner-gdscript` and without; every
+planner test file 49/0. Round-33 note (recorded by the orchestrator): the seam never serves a War Rig's open-ground
+face-behind (189 > 180 expansions). Native's test_native_face_behind compared nothing (928 handed back).
+
 **CP-S.** `PlannerSeam.side_gate(slot, facing, unit_id, map: RID, from := Vector3.INF) -> Vector3`, the signature agreed
 with brains: `slot + perp × R` (R = the unit's turning radius) on the side with room, ZERO when neither side has
 room, the side the hull comes from when both do (then more clearance, then the left). Room = clearance ≥ min(half
