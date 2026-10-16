@@ -53,16 +53,18 @@ const SCOPE_MIN_HULL_M := 10.0
 ## longest quarter 250-500 would be abandoned at the 3 s hold -- the judged run's `abandoned` counts them).
 const SLICE := 2
 ## Round 32 (C32.7, the lead's rule: perf cuts ship as hardware presets): the LAPTOP preset's slice. CP-P1's cost line
-## (f) missed at SLICE 2 on seed 92721 (0.526 ms v 0.5, builder0); the laptop is ~2.75x builder0, so it plans one
-## expansion a tick and holds the hull twice as long for the same search (`pending_cap()`). Every other machine keeps
-## SLICE. Which one a match uses is `slice()`: read ONCE per match (`_latch`), from the run's `--planner-slice=N` (the
+## (f) missed at SLICE 2 on seed 92721 (0.526 ms v 0.5, builder0 at load 16.7, an upper bound). PRICED on the laptop
+## itself (flightdeck, i5-8365U, 65cc43dd, pinned 0-3, Sumps 25 a side, an upper bound at load <= 2.7): 89 / 79 us an
+## expansion warm, so SLICE 2 is ~0.18-0.24 ms a tick there, under the line: the orchestrator's ruling (C32.7 resolved)
+## is SLICE 2 on EVERY preset, the knob kept so a weaker device can take 1 later (`--planner-slice=1`; SLICE 1 would
+## only double the hold: 7 ticks v 3 on the Terminus face-about). Which one a match uses is `slice()`: read ONCE per match (`_latch`), from the run's `--planner-slice=N` (the
 ## HOST's value: a networked or replayed match carries it as a launch flag, as it carries `--seed`) > the render
 ## preset (`RenderLevers.preset()`: "laptop" -> SLICE_LAPTOP) > SLICE. A headless run is always the desktop preset, so
 ## baselines, checks and every judged series read SLICE 2 and PENDING_TICKS 90: today's bits.
 ## Why the seam reads the render preset rather than FxQuality carrying a field (the grant's either-or, decided here):
 ## FxQuality's tier is not the laptop/desktop split (his laptop runs FX tier HIGH), and a render choice can change
 ## mid-match from the HUD; the sim takes it once, at the match's first plan, and never again that match.
-const SLICE_LAPTOP := 1
+const SLICE_LAPTOP := 2           # = SLICE (C32.7 resolved); a weaker preset may set 1
 const BUDGET := 1500
 const HORIZON_M := 30.0
 const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold AT SLICE
@@ -71,8 +73,9 @@ const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at r
 const EXPANSIONS_PER_HOLD := PENDING_TICKS * SLICE
 const SLICE_FLAG := "planner-slice"
 ## Round 32 (hand-over (3), the gang-press queue that starves): `--planner-queue=shared` (opt-in until judged; ships ON
-## as a pair) replaces the one-search FIFO with (a) REFUSE EARLY: a request whose start or goal is blocked is answered
-## at the ask (from the ask's own pose when the hull is still rolling), never held, never queued; (b) the per-tick
+## as a pair) replaces the one-search FIFO with (a) REFUSE EARLY, AT REST: a request whose start or goal is blocked is
+## answered the tick its hull is at rest (braked to rest first, as the FIFO holds it), never queued behind another
+## crew's search; (b) the per-tick
 ## budget (`slice()` expansions, the same cost line) goes to the first crew in the queue whose search has begun, each
 ## crew on a session of its own (`Planner.Session`), and a search that has had QUANTUM expansions without an answer
 ## goes to the BACK (round-robin with a quantum): searches shorter than the quantum land exactly as the FIFO lands
@@ -146,7 +149,6 @@ class Crew:
 	var rerequests := 0
 	var stepped := 0                # expansions handed to the session (replayed by restore)
 	var session: Planner.Session = null   # the shared queue's own session (null under the FIFO); never copied
-	var probed := false             # the shared queue's refuse-early probe ran (from the ask's pose)
 	var quantum := 0                # the shared queue: expansions since this search's turn began
 	var tank: Tank = null           # THE hull this crew serves (crews are keyed by name; a disposed match's hull is
 	                                # freed and the next match names one the same: native's gate on 3a66f546)
@@ -182,12 +184,23 @@ static func on() -> bool:
 
 ## Is the shared queue on (QUEUE_FLAG, read once a process; `queue_override` for tests)?
 static func queue_on() -> bool:
+	return _mode() >= 1
+
+
+## The first cut's refuse-early from a ROLLING pose, kept reachable for the record and the s207 stage only
+## (`--planner-queue=shared-rolling`): the mechanism CP-Q's park traced. Never a default.
+static func probe_rolling() -> bool:
+	return _mode() == 2
+
+
+## 0 fifo, 1 shared, 2 shared-rolling (read once a process; `queue_override` for tests, the same values).
+static func _mode() -> int:
 	if queue_override >= 0:
-		return queue_override == 1
+		return queue_override
 	if _queue_mode < 0:
 		var text := LaunchFlags.from_environment().text(QUEUE_FLAG)
-		_queue_mode = 1 if text == "shared" else (0 if text == "fifo" else (1 if QUEUE_DEFAULT else 0))
-	return _queue_mode == 1
+		_queue_mode = {"fifo": 0, "shared": 1, "shared-rolling": 2}.get(text, 1 if QUEUE_DEFAULT else 0)
+	return _queue_mode
 
 
 ## The expansions a pending search gets a tick, for this match (SLICE, or SLICE_LAPTOP under the laptop preset).
@@ -504,14 +517,17 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 
 ## The shared queue's pending tick (QUEUE_FLAG shared): the hull held at zero/zero (braked to rest first, as the FIFO),
 ## its search begun from rest on its own session, a refusal answered the tick it is known, and this tick's share of the
-## budget stepped. Refuse early: a hull still rolling at the ask is probed from the ask's own pose; a blocked start or
-## goal is answered there and the hull is never held.
+## budget stepped. Refuse early ONLY AT REST (CP-Q's park, Terminus seed 207, a deterministic run): the first cut
+## probed a still-rolling hull from the ask's pose and answered a refusal at once, so today's code kept the rig's
+## 7-9 m/s and pinned it on Block_7 for 2043 ticks; under the FIFO the same refusal comes after the hold has braked the
+## hull to rest. So a rolling ask is braked to rest first, exactly as the FIFO holds it; its search begins (and a
+## blocked start or goal is answered) from rest, never behind another crew's search.
 static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float) -> bool:
 	var tank := mover.ctl.tank
 	if not crew.begun:
 		if absf(tank.speed()) > REST_MPS:
-			if not crew.probed:
-				crew.probed = true
+			if probe_rolling() and crew.asked_tick == tick:
+				# The first cut (kept for the record): answer a blocked ask from the rolling pose, unbraked.
 				var probe := Planner.Session.new()
 				probe.begin(crew.req)
 				if probe.refused():
@@ -538,7 +554,6 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 			crew.session = Planner.Session.new()
 		crew.session.begin(crew.req)
 		crew.begun = true
-		crew.probed = true
 		if crew.session.refused():
 			crew.session.step(1)
 			var refusal := crew.session.result()
@@ -749,10 +764,21 @@ static func _flat(a: Vector3, b: Vector3) -> float:
 ## counters. A pending session is not copied: `restore` begins it again from the crew's request and steps it the same
 ## number of expansions, which the slice proof (tests/test_native_planner.gd) makes the same search.
 static func capture() -> Dictionary:
+	# A crew whose hull is freed (or queued for it) is not state: the next tick's `_sweep` releases it, and copying it
+	# hands a freed hull to `PlannerExecutor.from_state` (round 32, traffic's check on cf81aedc: a twin harness captured
+	# after a previous test's match was disposed with a crew held, before any seam tick swept it). Read-only: the live
+	# table is left to `_sweep`; the snapshot carries neither the crew nor its place in the queue.
 	var crews := {}
 	for name: String in _crews:
-		crews[name] = (_crews[name] as Crew).copy()
-	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+			continue
+		crews[name] = crew.copy()
+	var queue: Array[String] = []
+	for name: String in _queue:
+		if crews.has(name):
+			queue.append(name)
+	return {"crews": crews, "queue": queue, "retry": _retry_until.duplicate(), "counters": report(),
 			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true),
 			"alloc_tick": _alloc_tick, "alloc": _alloc.duplicate()}
 

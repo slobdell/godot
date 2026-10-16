@@ -116,6 +116,17 @@ static func _seam() -> Script:
 	return load(PLANNER_SEAM) if ResourceLoader.exists(PLANNER_SEAM) else null
 
 
+## A twin case's first act: the seam emptied (its `reset`: counters, crews, queue). Round 32 (traffic's check on c9fa64a4,
+## test_native_execute_odd, 2 mismatches at frame 0): a crew an EARLIER test file left held, its hull freed since, sat in
+## the table; `capture` skips such a crew (the next `_sweep` releases it) but its counters still say `live` 1, so the live
+## arm (the table untouched) read live 1 and the native arm (after `restore`, the table without it) live 0, until the
+## seam's first tick swept it. Order-dependent: it shows only when the shard runs a file that leaks a held crew first.
+static func world_reset() -> void:
+	var seam := _seam()
+	if seam != null:
+		seam.call("reset")
+
+
 ## The seam's snapshot ("@snap", restorable) and its comparable form ("cmp"), or {} without a seam or with it OFF.
 static func world_capture() -> Dictionary:
 	var seam := _seam()

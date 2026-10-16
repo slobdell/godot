@@ -1,0 +1,196 @@
+M1_HULL runs {'base_clicked': 36, 'base_drawn': 36, 'new_clicked': 36, 'new_drawn': 36}
+M1_HULL task | class | arm | n | median | p90 | <=15 deg | >=100 deg | p(new v base medians)
+M1_HULL faced_ambush | ALL | new_drawn | 115 | 51.0 | 145.6 | 20% | 30% | 0.905
+M1_HULL faced_ambush | ALL | base_drawn | 115 | 52.3 | 148.5 | 29% | 30% | 
+M1_HULL faced_ambush | ALL | new_clicked | 115 | 65.0 | 143.5 | 11% | 31% | 1.000
+M1_HULL faced_ambush | ALL | base_clicked | 115 | 64.7 | 145.3 | 12% | 35% | 
+M1_HULL faced_ambush | wheels/turret | new_drawn | 115 | 51.0 | 145.6 | 20% | 30% | 0.905
+M1_HULL faced_ambush | wheels/turret | base_drawn | 115 | 52.3 | 148.5 | 29% | 30% | 
+M1_HULL faced_ambush | wheels/turret | new_clicked | 115 | 65.0 | 143.5 | 11% | 31% | 1.000
+M1_HULL faced_ambush | wheels/turret | base_clicked | 115 | 64.7 | 145.3 | 12% | 35% | 
+M1_HULL faced_attack_move | ALL | new_drawn | 115 | 59.7 | 157.3 | 16% | 27% | 0.215
+M1_HULL faced_attack_move | ALL | base_drawn | 115 | 71.5 | 153.1 | 12% | 35% | 
+M1_HULL faced_attack_move | ALL | new_clicked | 115 | 104.6 | 162.2 | 5% | 52% | 0.274
+M1_HULL faced_attack_move | ALL | base_clicked | 115 | 96.3 | 150.2 | 3% | 45% | 
+M1_HULL faced_attack_move | wheels/turret | new_drawn | 115 | 59.7 | 157.3 | 16% | 27% | 0.215
+M1_HULL faced_attack_move | wheels/turret | base_drawn | 115 | 71.5 | 153.1 | 12% | 35% | 
+M1_HULL faced_attack_move | wheels/turret | new_clicked | 115 | 104.6 | 162.2 | 5% | 52% | 0.274
+M1_HULL faced_attack_move | wheels/turret | base_clicked | 115 | 96.3 | 150.2 | 3% | 45% | 
+M1_HULL faced_move | ALL | new_drawn | 115 | 35.2 | 152.7 | 34% | 29% | 0.812
+M1_HULL faced_move | ALL | base_drawn | 115 | 39.1 | 147.6 | 32% | 27% | 
+M1_HULL faced_move | ALL | new_clicked | 115 | 67.8 | 158.7 | 20% | 34% | 0.848
+M1_HULL faced_move | ALL | base_clicked | 115 | 59.7 | 147.0 | 16% | 37% | 
+M1_HULL faced_move | wheels/turret | new_drawn | 115 | 35.2 | 152.7 | 34% | 29% | 0.812
+M1_HULL faced_move | wheels/turret | base_drawn | 115 | 39.1 | 147.6 | 32% | 27% | 
+M1_HULL faced_move | wheels/turret | new_clicked | 115 | 67.8 | 158.7 | 20% | 34% | 0.848
+M1_HULL faced_move | wheels/turret | base_clicked | 115 | 59.7 | 147.0 | 16% | 37% | 
+M1_HULL faced_right | ALL | new_drawn | 115 | 44.1 | 153.8 | 33% | 30% | 0.781
+M1_HULL faced_right | ALL | base_drawn | 115 | 51.2 | 153.8 | 36% | 31% | 
+M1_HULL faced_right | ALL | new_clicked | 115 | 85.9 | 162.9 | 16% | 37% | 0.441
+M1_HULL faced_right | ALL | base_clicked | 115 | 73.7 | 135.3 | 16% | 37% | 
+M1_HULL faced_right | wheels/turret | new_drawn | 115 | 44.1 | 153.8 | 33% | 30% | 0.781
+M1_HULL faced_right | wheels/turret | base_drawn | 115 | 51.2 | 153.8 | 36% | 31% | 
+M1_HULL faced_right | wheels/turret | new_clicked | 115 | 85.9 | 162.9 | 16% | 37% | 0.441
+M1_HULL faced_right | wheels/turret | base_clicked | 115 | 73.7 | 135.3 | 16% | 37% | 
+M1_HULL faced_screen | ALL | new_drawn | 115 | 39.5 | 150.5 | 23% | 21% | 0.682
+M1_HULL faced_screen | ALL | base_drawn | 115 | 45.1 | 147.3 | 19% | 19% | 
+M1_HULL faced_screen | ALL | new_clicked | 115 | 70.9 | 147.3 | 6% | 28% | 0.676
+M1_HULL faced_screen | ALL | base_clicked | 115 | 66.8 | 153.1 | 12% | 35% | 
+M1_HULL faced_screen | wheels/turret | new_drawn | 115 | 39.5 | 150.5 | 23% | 21% | 0.682
+M1_HULL faced_screen | wheels/turret | base_drawn | 115 | 45.1 | 147.3 | 19% | 19% | 
+M1_HULL faced_screen | wheels/turret | new_clicked | 115 | 70.9 | 147.3 | 6% | 28% | 0.676
+M1_HULL faced_screen | wheels/turret | base_clicked | 115 | 66.8 | 153.1 | 12% | 35% | 
+M1_HULL faced_support_by_fire | ALL | new_drawn | 115 | 106.8 | 156.2 | 20% | 50% | 0.035
+M1_HULL faced_support_by_fire | ALL | base_drawn | 115 | 74.3 | 150.5 | 22% | 39% | 
+M1_HULL faced_support_by_fire | ALL | new_clicked | 115 | 73.2 | 146.7 | 14% | 33% | 0.907
+M1_HULL faced_support_by_fire | ALL | base_clicked | 115 | 74.6 | 143.4 | 13% | 31% | 
+M1_HULL faced_support_by_fire | wheels/turret | new_drawn | 115 | 106.8 | 156.2 | 20% | 50% | 0.035
+M1_HULL faced_support_by_fire | wheels/turret | base_drawn | 115 | 74.3 | 150.5 | 22% | 39% | 
+M1_HULL faced_support_by_fire | wheels/turret | new_clicked | 115 | 73.2 | 146.7 | 14% | 33% | 0.907
+M1_HULL faced_support_by_fire | wheels/turret | base_clicked | 115 | 74.6 | 143.4 | 13% | 31% | 
+M1_SETTLE task | runs paired | new_drawn median s | base_drawn median s | median paired diff s | never new/base
+M1_SETTLE faced_ambush | 6 | 75.0 | 75.0 | +0.0 | 5/5
+M1_SETTLE faced_attack_move | 6 | 75.0 | 75.0 | +0.0 | 5/6
+M1_SETTLE faced_move | 6 | 75.0 | 60.5 | +14.5 | 6/3
+M1_SETTLE faced_right | 6 | 75.0 | 75.0 | +0.0 | 5/5
+M1_SETTLE faced_screen | 6 | 75.0 | 75.0 | +0.0 | 5/4
+M1_SETTLE faced_support_by_fire | 6 | 75.0 | 75.0 | +0.0 | 5/5
+M1_MOVING task | new_drawn | base_drawn | new_clicked | base_clicked | new_drawn - base_drawn (guard: <= +5)
+M1_MOVING faced_ambush | 12 | 13 | 8 | 7 | -1
+M1_MOVING faced_attack_move | 38 | 36 | 16 | 15 | +2
+M1_MOVING faced_move | 12 | 7 | 0 | 1 | +5
+M1_MOVING faced_right | 10 | 8 | 0 | 1 | +2
+M1_MOVING faced_screen | 13 | 10 | 5 | 6 | +3
+M1_MOVING faced_support_by_fire | 14 | 13 | 7 | 5 | +1
+M1_REST (wheels/turret) task | arm | at rest / all | at-rest share | at-rest median | at-rest <= 15 deg | share new - base (guard: not below -5 pts)
+M1_REST faced_ambush | new_drawn | 103/115 | 90% | 48.9 | 22% | +0.9 pts
+M1_REST faced_ambush | base_drawn | 102/115 | 89% | 47.0 | 31% | 
+M1_REST faced_ambush | new_clicked | 107/115 | 93% | 65.0 | 12% | -0.9 pts
+M1_REST faced_ambush | base_clicked | 108/115 | 94% | 65.5 | 13% | 
+M1_REST faced_attack_move | new_drawn | 77/115 | 67% | 52.8 | 22% | -1.7 pts
+M1_REST faced_attack_move | base_drawn | 79/115 | 69% | 62.5 | 14% | 
+M1_REST faced_attack_move | new_clicked | 99/115 | 86% | 104.6 | 5% | -0.9 pts
+M1_REST faced_attack_move | base_clicked | 100/115 | 87% | 97.1 | 3% | 
+M1_REST faced_move | new_drawn | 103/115 | 90% | 29.0 | 37% | -4.3 pts
+M1_REST faced_move | base_drawn | 108/115 | 94% | 37.1 | 34% | 
+M1_REST faced_move | new_clicked | 115/115 | 100% | 67.8 | 20% | +0.9 pts
+M1_REST faced_move | base_clicked | 114/115 | 99% | 59.0 | 16% | 
+M1_REST faced_right | new_drawn | 105/115 | 91% | 33.8 | 36% | -1.7 pts
+M1_REST faced_right | base_drawn | 107/115 | 93% | 39.7 | 38% | 
+M1_REST faced_right | new_clicked | 115/115 | 100% | 85.9 | 16% | +0.9 pts
+M1_REST faced_right | base_clicked | 114/115 | 99% | 73.4 | 16% | 
+M1_REST faced_screen | new_drawn | 102/115 | 89% | 33.6 | 25% | -2.6 pts
+M1_REST faced_screen | base_drawn | 105/115 | 91% | 37.6 | 21% | 
+M1_REST faced_screen | new_clicked | 110/115 | 96% | 70.4 | 6% | +0.9 pts
+M1_REST faced_screen | base_clicked | 109/115 | 95% | 66.8 | 12% | 
+M1_REST faced_support_by_fire | new_drawn | 101/115 | 88% | 89.9 | 23% | -0.9 pts
+M1_REST faced_support_by_fire | base_drawn | 102/115 | 89% | 57.0 | 25% | 
+M1_REST faced_support_by_fire | new_clicked | 108/115 | 94% | 71.1 | 14% | -1.7 pts
+M1_REST faced_support_by_fire | base_clicked | 110/115 | 96% | 73.4 | 13% | 
+M1_CLASS task | class | runs paired | moving new | moving base | paired diff | se | within 2 se
+M1_CLASS faced_ambush | wheels/turret | 6 | 12 | 13 | -1 | 3.3 | yes
+M1_CLASS faced_attack_move | wheels/turret | 6 | 38 | 36 | +2 | 8.0 | yes
+M1_CLASS faced_move | wheels/turret | 6 | 12 | 7 | +5 | 1.8 | NO
+M1_CLASS faced_right | wheels/turret | 6 | 10 | 8 | +2 | 2.0 | yes
+M1_CLASS faced_screen | wheels/turret | 6 | 13 | 10 | +3 | 1.3 | NO
+M1_CLASS faced_support_by_fire | wheels/turret | 6 | 14 | 13 | +1 | 3.9 | yes
+MOVING_KIND task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND faced_ambush | base_clicked | 0 | 0 | 0 | 0 | 7 | 0 | 0 | 7
+MOVING_KIND faced_ambush | base_drawn | 0 | 0 | 4 | 0 | 9 | 0 | 0 | 13
+MOVING_KIND faced_ambush | new_clicked | 0 | 0 | 0 | 0 | 7 | 1 | 0 | 8
+MOVING_KIND faced_ambush | new_drawn | 0 | 0 | 2 | 0 | 10 | 0 | 0 | 12
+MOVING_KIND faced_attack_move | base_clicked | 0 | 0 | 4 | 2 | 9 | 0 | 0 | 15
+MOVING_KIND faced_attack_move | base_drawn | 0 | 0 | 1 | 3 | 32 | 0 | 0 | 36
+MOVING_KIND faced_attack_move | new_clicked | 0 | 2 | 0 | 1 | 13 | 0 | 0 | 16
+MOVING_KIND faced_attack_move | new_drawn | 0 | 0 | 0 | 2 | 31 | 5 | 0 | 38
+MOVING_KIND faced_move | base_clicked | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1
+MOVING_KIND faced_move | base_drawn | 0 | 0 | 1 | 0 | 6 | 0 | 0 | 7
+MOVING_KIND faced_move | new_drawn | 0 | 0 | 4 | 0 | 8 | 0 | 0 | 12
+MOVING_KIND faced_right | base_clicked | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1
+MOVING_KIND faced_right | base_drawn | 0 | 0 | 1 | 0 | 7 | 0 | 0 | 8
+MOVING_KIND faced_right | new_drawn | 0 | 0 | 4 | 0 | 6 | 0 | 0 | 10
+MOVING_KIND faced_screen | base_clicked | 0 | 0 | 0 | 0 | 5 | 1 | 0 | 6
+MOVING_KIND faced_screen | base_drawn | 0 | 0 | 0 | 0 | 10 | 0 | 0 | 10
+MOVING_KIND faced_screen | new_clicked | 0 | 0 | 2 | 0 | 3 | 0 | 0 | 5
+MOVING_KIND faced_screen | new_drawn | 0 | 0 | 2 | 0 | 11 | 0 | 0 | 13
+MOVING_KIND faced_support_by_fire | base_clicked | 0 | 0 | 1 | 0 | 4 | 0 | 0 | 5
+MOVING_KIND faced_support_by_fire | base_drawn | 0 | 0 | 4 | 0 | 8 | 1 | 0 | 13
+MOVING_KIND faced_support_by_fire | new_clicked | 0 | 0 | 0 | 0 | 6 | 1 | 0 | 7
+MOVING_KIND faced_support_by_fire | new_drawn | 0 | 0 | 5 | 0 | 9 | 0 | 0 | 14
+MOVING_KIND_WT (wheels/turret only) task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND_WT faced_ambush | base_clicked | 0 | 0 | 0 | 0 | 7 | 0 | 0 | 7
+MOVING_KIND_WT faced_ambush | base_drawn | 0 | 0 | 4 | 0 | 9 | 0 | 0 | 13
+MOVING_KIND_WT faced_ambush | new_clicked | 0 | 0 | 0 | 0 | 7 | 1 | 0 | 8
+MOVING_KIND_WT faced_ambush | new_drawn | 0 | 0 | 2 | 0 | 10 | 0 | 0 | 12
+MOVING_KIND_WT faced_attack_move | base_clicked | 0 | 0 | 4 | 2 | 9 | 0 | 0 | 15
+MOVING_KIND_WT faced_attack_move | base_drawn | 0 | 0 | 1 | 3 | 32 | 0 | 0 | 36
+MOVING_KIND_WT faced_attack_move | new_clicked | 0 | 2 | 0 | 1 | 13 | 0 | 0 | 16
+MOVING_KIND_WT faced_attack_move | new_drawn | 0 | 0 | 0 | 2 | 31 | 5 | 0 | 38
+MOVING_KIND_WT faced_move | base_clicked | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1
+MOVING_KIND_WT faced_move | base_drawn | 0 | 0 | 1 | 0 | 6 | 0 | 0 | 7
+MOVING_KIND_WT faced_move | new_drawn | 0 | 0 | 4 | 0 | 8 | 0 | 0 | 12
+MOVING_KIND_WT faced_right | base_clicked | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1
+MOVING_KIND_WT faced_right | base_drawn | 0 | 0 | 1 | 0 | 7 | 0 | 0 | 8
+MOVING_KIND_WT faced_right | new_drawn | 0 | 0 | 4 | 0 | 6 | 0 | 0 | 10
+MOVING_KIND_WT faced_screen | base_clicked | 0 | 0 | 0 | 0 | 5 | 1 | 0 | 6
+MOVING_KIND_WT faced_screen | base_drawn | 0 | 0 | 0 | 0 | 10 | 0 | 0 | 10
+MOVING_KIND_WT faced_screen | new_clicked | 0 | 0 | 2 | 0 | 3 | 0 | 0 | 5
+MOVING_KIND_WT faced_screen | new_drawn | 0 | 0 | 2 | 0 | 11 | 0 | 0 | 13
+MOVING_KIND_WT faced_support_by_fire | base_clicked | 0 | 0 | 1 | 0 | 4 | 0 | 0 | 5
+MOVING_KIND_WT faced_support_by_fire | base_drawn | 0 | 0 | 4 | 0 | 8 | 1 | 0 | 13
+MOVING_KIND_WT faced_support_by_fire | new_clicked | 0 | 0 | 0 | 0 | 6 | 1 | 0 | 7
+MOVING_KIND_WT faced_support_by_fire | new_drawn | 0 | 0 | 5 | 0 | 9 | 0 | 0 | 14
+MOVING_WORST base_clicked: 6 moving in build/manoeuvre/hull-rest/base_clicked/gangs/faced_attack_move-69
+MOVING_WORST   Green_Guns_1 (gang_tank) 86.5 deg driving: f 2040 Green_Guns_1 gang_tank order move_to from  v 3.57 moved 3.57 cmd -0.89/0.43 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 34.4 real 3.57
+MOVING_WORST   Green_Guns_2 (gang_tank) 57.2 deg driving: f 2040 Green_Guns_2 gang_tank order move_to from  v 2.40 moved 2.40 cmd 0.75/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 36.5 real 2.40
+MOVING_WORST   Green_Guns II_1 (gang_tank) 72.6 deg pinned: f 2040 Green_Guns II_1 gang_tank order move_to from  v 0.27 moved 0.27 cmd 0.38/-0.95 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 22.1 real 0.27
+MOVING_WORST   Green_Guns II_4 (gang_tank) 17.8 deg driving: f 2040 Green_Guns II_4 gang_tank order move_to from  v 6.34 moved 6.34 cmd 0.75/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 24.9 real 5.21
+MOVING_WORST   Green_Guns_5 (gang_tank) 38.6 deg driving: f 2040 Green_Guns_5 gang_tank order move_to from  v 8.10 moved 8.10 cmd 0.68/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 20.5 real 8.10
+MOVING_WORST   Green_Guns_6 (gang_tank) 5.4 deg driving: f 2040 Green_Guns_6 gang_tank order move_to from  v 2.04 moved 2.04 cmd -0.51/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 17.9 real 2.04
+MOVING_WORST base_drawn: 15 moving in build/manoeuvre/hull-rest/base_drawn/gangs/faced_attack_move-67
+MOVING_WORST   Green_Guns_1 (gang_tank) 44.2 deg driving: f 1740 Green_Guns_1 gang_tank order move_to from  v 8.09 moved 8.09 cmd 0.75/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 50.5 real 8.09
+MOVING_WORST   Green_Guns_4 (gang_tank) 106.7 deg driving: f 1740 Green_Guns_4 gang_tank order move_to from  v 1.19 moved 1.19 cmd 0.49/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 32.5 real 1.19
+MOVING_WORST   Green_Guns_6 (gang_tank) 133.0 deg driving: f 1740 Green_Guns_6 gang_tank order move_to from  v 2.00 moved 2.00 cmd -0.21/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 19.5 real 2.00
+MOVING_WORST   Green_Guns_3 (gang_tank) 141.5 deg driving: f 1230 Green_Guns_3 gang_tank order move_to from  v 4.96 moved 4.96 cmd -0.54/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 9.3 real 4.96
+MOVING_WORST   Green_Hunters_1 (gang_ifv) 47.1 deg driving: f 1740 Green_Hunters_1 gang_ifv order move_to from  v 0.05 moved 0.05 cmd 0.15/1.00 face 2/5.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 28.9 real 0.05
+MOVING_WORST   Green_Hunters_10 (gang_ifv) 150.7 deg driving: f 1740 Green_Hunters_10 gang_ifv order move_to from  v 0.51 moved 0.51 cmd 0.34/-1.00 face 1/2.6 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 12.6 real 0.51
+MOVING_WORST   Green_Hunters_12 (gang_ifv) 5.7 deg driving: f 1740 Green_Hunters_12 gang_ifv order move_to from  v 5.69 moved 5.69 cmd -0.31/-1.00 face 1/3.3 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 12.7 real 5.69
+MOVING_WORST   Green_Hunters_2 (gang_ifv) 88.7 deg driving: f 1740 Green_Hunters_2 gang_ifv order move_to from  v 5.63 moved 5.63 cmd -0.45/1.00 face 2/3.2 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 21.5 real 5.63
+MOVING_WORST   Green_Hunters_7 (gang_ifv) 168.3 deg driving: f 1740 Green_Hunters_7 gang_ifv order move_to from  v 6.50 moved 6.50 cmd -0.14/1.00 face 2/6.6 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.5 real 6.50
+MOVING_WORST   Green_Hunters_11 (gang_ifv) 17.8 deg driving: f 1740 Green_Hunters_11 gang_ifv order move_to from  v 6.37 moved 6.37 cmd 0.29/-0.99 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 13.1 real 6.37
+MOVING_WORST   Green_Hunters_13 (gang_ifv) 119.8 deg driving: f 1740 Green_Hunters_13 gang_ifv order move_to from  v 12.09 moved 12.09 cmd 0.92/-0.33 face 2/4.3 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 12.1 real 12.09
+MOVING_WORST   Green_Hunters_3 (gang_ifv) 95.5 deg driving: f 1740 Green_Hunters_3 gang_ifv order move_to from  v 1.00 moved 1.00 cmd -0.48/-1.00 face 2/6.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 14.6 real 1.00
+MOVING_WORST   Green_Hunters_9 (gang_ifv) 9.4 deg driving: f 1740 Green_Hunters_9 gang_ifv order move_to from  v 4.20 moved 4.20 cmd -0.70/-1.00 face 2/5.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 10.1 real 4.20
+MOVING_WORST   Green_Hunters_4 (gang_ifv) 160.7 deg driving: f 1740 Green_Hunters_4 gang_ifv order move_to from  v 5.91 moved 5.91 cmd -0.99/0.06 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 28.2 real 5.91
+MOVING_WORST   Green_Hunters_6 (gang_ifv) 117.6 deg driving: f 1740 Green_Hunters_6 gang_ifv order move_to from  v 0.37 moved 0.37 cmd 0.07/-0.75 face 2/5.8 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 44.2 real 0.37
+MOVING_WORST new_clicked: 5 moving in build/manoeuvre/hull-rest/new_clicked/gangs/faced_attack_move-69
+MOVING_WORST   Green_Guns_2 (gang_tank) 159.7 deg driving: f 2190 Green_Guns_2 gang_tank order move_to from  v 5.39 moved 5.39 cmd 0.97/0.13 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 34.5 real 5.39
+MOVING_WORST   Green_Guns_4 (gang_tank) 33.7 deg driving: f 2190 Green_Guns_4 gang_tank order move_to from  v 3.21 moved 3.21 cmd -0.89/-0.44 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 36.0 real 3.21
+MOVING_WORST   Green_Guns II_1 (gang_tank) 34.9 deg driving: f 2190 Green_Guns II_1 gang_tank order move_to from  v 9.23 moved 9.23 cmd -0.60/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 15.0 real 9.23
+MOVING_WORST   Green_Guns II_4 (gang_tank) 84.0 deg driving: f 2190 Green_Guns II_4 gang_tank order move_to from  v 2.80 moved 2.80 cmd -0.70/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 15.3 real 2.17
+MOVING_WORST   Green_Guns II_6 (gang_tank) 75.7 deg dressing: f 2190 Green_Guns II_6 gang_tank order move_to from  v 2.33 moved 2.33 cmd -0.70/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 6.3 real 2.33
+MOVING_WORST new_drawn: 16 moving in build/manoeuvre/hull-rest/new_drawn/gangs/faced_attack_move-66
+MOVING_WORST   Green_Guns_5 (gang_tank) 144.7 deg driving: f 2100 Green_Guns_5 gang_tank order move_to from  v 2.80 moved 2.80 cmd -0.70/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 9.2 real 2.80
+MOVING_WORST   Green_Guns_2 (gang_tank) 131.1 deg driving: f 2100 Green_Guns_2 gang_tank order move_to from  v 1.60 moved 1.60 cmd 0.95/0.01 face 2/8.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 25.8 real 1.60
+MOVING_WORST   Green_Guns_3 (gang_tank) 58.4 deg driving: f 2100 Green_Guns_3 gang_tank order move_to from  v 1.25 moved 1.25 cmd 0.77/-0.37 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 23.6 real 1.25
+MOVING_WORST   Green_Guns_4 (gang_tank) 55.8 deg driving: f 2100 Green_Guns_4 gang_tank order move_to from  v 1.15 moved 1.15 cmd 0.79/-0.07 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 20.8 real 1.15
+MOVING_WORST   Green_Guns_6 (gang_tank) 176.9 deg driving: f 2100 Green_Guns_6 gang_tank order move_to from  v 1.17 moved 1.17 cmd 0.87/-0.50 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 13.7 real 1.17
+MOVING_WORST   Green_Hunters_1 (gang_ifv) 91.9 deg driving: f 2100 Green_Hunters_1 gang_ifv order move_to from  v 6.50 moved 6.50 cmd 0.49/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 17.8 real 6.50
+MOVING_WORST   Green_Hunters_10 (gang_ifv) 4.5 deg other: f 2100 Green_Hunters_10 gang_ifv order stop from  v 0.00 moved 0.00 cmd 0.00/0.00 face 2/6.3 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 0.0 real 0.00
+MOVING_WORST   Green_Hunters_11 (gang_ifv) 103.6 deg driving: f 2100 Green_Hunters_11 gang_ifv order move_to from  v 0.45 moved 0.45 cmd 0.38/1.00 face 2/5.9 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 17.5 real 0.45
+MOVING_WORST   Green_Hunters_3 (gang_ifv) 61.0 deg other: f 2100 Green_Hunters_3 gang_ifv order stop from  v 0.00 moved 0.00 cmd 0.00/0.00 face 2/6.7 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 0.0 real 0.00
+MOVING_WORST   Green_Hunters_9 (gang_ifv) 113.9 deg driving: f 2100 Green_Hunters_9 gang_ifv order move_to from  v 6.83 moved 6.83 cmd 0.53/1.00 face 2/4.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 14.7 real 6.83
+MOVING_WORST   Green_Hunters_12 (gang_ifv) 96.7 deg driving: f 2100 Green_Hunters_12 gang_ifv order move_to from  v 7.90 moved 7.90 cmd 0.63/-0.30 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 28.1 real 7.81
+MOVING_WORST   Green_Hunters_2 (gang_ifv) 130.7 deg other: f 2100 Green_Hunters_2 gang_ifv order stop from  v 0.98 moved 0.98 cmd 0.00/0.00 face 1/1.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 0.0 real 0.92
+MOVING_WORST   Green_Hunters_8 (gang_ifv) 70.7 deg dressing: f 2100 Green_Hunters_8 gang_ifv order move_to from  v 0.80 moved 0.80 cmd 0.07/1.00 face 2/4.2 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 5.2 real 0.80
+MOVING_WORST   Green_Hunters_13 (gang_ifv) 79.1 deg driving: f 2100 Green_Hunters_13 gang_ifv order move_to from  v 2.31 moved 2.31 cmd -0.13/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 22.2 real 2.31
+MOVING_WORST   Green_Hunters_4 (gang_ifv) 28.9 deg driving: f 2100 Green_Hunters_4 gang_ifv order move_to from  v 1.87 moved 1.87 cmd -0.60/-1.00 face 1/1.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 23.5 real 1.87
+MOVING_WORST   Green_Hunters_7 (gang_ifv) 156.0 deg driving: f 2100 Green_Hunters_7 gang_ifv order move_to from  v 8.44 moved 8.44 cmd 0.65/0.51 face 2/6.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.6 real 8.44
+QUEUE base_clicked runs  36 (no line 18) | asks   564 plans   65 driven   17 abandoned   82 (14.5 %) refused {'GOAL_BLOCKED': 60, 'START_BLOCKED': 27, 'NO_PATH': 6} early 0 | queue_waits 12424 pending 14039 | hold n 240 median 9.5 max 98
+QUEUE base_drawn   runs  36 (no line 18) | asks   370 plans   67 driven   20 abandoned   69 (18.6 %) refused {'GOAL_BLOCKED': 115, 'START_BLOCKED': 29, 'NO_PATH': 5} early 0 | queue_waits 7862 pending 9918 | hold n 285 median 4 max 125
+QUEUE new_clicked  runs  36 (no line 18) | asks   428 plans  144 driven   36 abandoned   16 (3.7 %) refused {'GOAL_BLOCKED': 130, 'NO_PATH': 11, 'START_BLOCKED': 37} early 162 | queue_waits 885 pending 4174 | hold n 338 median 1.0 max 111
+QUEUE new_drawn    runs  36 (no line 18) | asks   415 plans  100 driven   38 abandoned    4 (1.0 %) refused {'GOAL_BLOCKED': 212, 'START_BLOCKED': 41, 'NO_PATH': 8} early 251 | queue_waits 426 pending 2128 | hold n 365 median 0 max 118
+PLANNER_QUEUE {"abandoned": 82, "abandoned_share": 0.1454, "aborted": 9, "arm": "base_clicked", "driven": 17, "holds": {"max": 98, "median": 9.5, "n": 240}, "pending_ticks": 14039, "plans": 65, "queue_waits": 12424, "refused": {"GOAL_BLOCKED": 60, "NO_PATH": 6, "START_BLOCKED": 27}, "refused_early": 0, "requests": 564, "rerequested": 0, "runs": 36, "silent": 18}
+PLANNER_QUEUE {"abandoned": 69, "abandoned_share": 0.1865, "aborted": 7, "arm": "base_drawn", "driven": 20, "holds": {"max": 125, "median": 4, "n": 285}, "pending_ticks": 9918, "plans": 67, "queue_waits": 7862, "refused": {"GOAL_BLOCKED": 115, "NO_PATH": 5, "START_BLOCKED": 29}, "refused_early": 0, "requests": 370, "rerequested": 0, "runs": 36, "silent": 18}
+PLANNER_QUEUE {"abandoned": 16, "abandoned_share": 0.0374, "aborted": 8, "arm": "new_clicked", "driven": 36, "holds": {"max": 111, "median": 1.0, "n": 338}, "pending_ticks": 4174, "plans": 144, "queue_waits": 885, "refused": {"GOAL_BLOCKED": 130, "NO_PATH": 11, "START_BLOCKED": 37}, "refused_early": 162, "requests": 428, "rerequested": 0, "runs": 36, "silent": 18}
+PLANNER_QUEUE {"abandoned": 4, "abandoned_share": 0.0096, "aborted": 12, "arm": "new_drawn", "driven": 38, "holds": {"max": 118, "median": 0, "n": 365}, "pending_ticks": 2128, "plans": 100, "queue_waits": 426, "refused": {"GOAL_BLOCKED": 212, "NO_PATH": 8, "START_BLOCKED": 41}, "refused_early": 251, "requests": 415, "rerequested": 0, "runs": 36, "silent": 18}

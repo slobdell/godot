@@ -1,0 +1,66 @@
+CP-Q (the gang-press queue, hand-over (3)) -- JUDGED 2026-10-16, read once at completion: FAIL on line (3). PARKED.
+Tree: pair/planner-queue 65cc43dd (stream 3876d601 + QUEUE_DEFAULT true). builder0. C31.1: make test exited 0,
+2670 passed 0 failed (the check before it killed at slot.sh's 5400 s cap at load 23 with 0 failures; sim-baseline
+moved on the 7 War-Rig maps, expected; R31.10's remote-guard flake).
+Arms: base --planner-queue=fifo (today), candidate --planner-queue=shared (refuse early + round-robin, QUANTUM 20).
+
+(1) hull-rest gang arm, seeds 66-71, n 36 runs an arm: abandoned share of asks
+    candidate drawn 4/415 = 1.0 %, clicked 16/428 = 3.7 %  (line <= 5 % each)          PASS
+    (base drawn 69/370 = 18.6 %, clicked 82/564 = 14.5 %)
+(2a) hold per event, pooled median, hull-rest: candidate drawn 0 / clicked 1.0 v base 4 / 9.5   PASS
+(2b) hold per rig event, Terminus rigs, seeds 205-217, n 13: candidate 0 (n 432) v base 19 (n 342), max 99 both   PASS
+(3) round 31's (d) lines on the hull-rest runs                                          FAIL
+    (3a) at-rest hull error p(new v base medians) >= 0.05 every task x class:
+         faced_support_by_fire drawn p 0.035 (new 106.8 v base 74.3 deg)               MISS
+    (3b) settle time paired median <= +6 s: faced_move +14.5 s (never settled 6/6 v 3/6) MISS
+    (3c) crews moving at 75 s <= base + 1.645 se (wheels/turret, drawn):
+         faced_move +5 (line 2.96), faced_screen +3 (line 2.14)                         MISS
+(4) Terminus rig arrivals: 187 v 180 of 208, paired +0.538 se 0.462                    PASS (mixed identical)
+(5) the whole suite on the pair tree (C31.1)                                            PASS
+REPORTED: refused early 251 drawn / 162 clicked; queue_waits 426 v 7862 drawn, 885 v 12424 clicked; plans 100 v 67
+drawn, 144 v 65 clicked; driven 38 v 20, 36 v 17. Terminus rig contact-ticks median 522 v 321 (paired +336.3,
+se 173.2; worst seed 207: 4168 v 2444).
+Reading: the queue does what it was built to do (the starvation is gone: abandons 18.6/14.5 % -> 1.0/3.7 %, the hold
+collapses), but serving ~1.5-2x the face plans in a 19-crew press makes the drawn facing worse on support-by-fire,
+keeps faced_move hulls moving to 75 s, and the Terminus rigs touch walls more. The FIFO's starvation was hiding the
+cost of the seam's face plans in a press. Not tuned on these seeds. Files: hull-rest-tables.txt (M1_*, QUEUE),
+hull-rest-base-queue.txt, terminus-series.txt (PLANNER_SERIES_*; series_verdict.py refused only on its round-31
+"base must be seam-silent" guard: both arms run the seam here), base.out / candidate.out.
+
+TRACE (the orchestrator's ask, the round-33 hand-over; builder0 light, tree 722ba183 = 65cc43dd's code + docs/tooling,
+`make planner-trace-hull-rest`, one run each arm, traces in traces/):
+- The worst rig pairs in the judged runs (tests: rig_pairs over the arm dirs): paired over every War Rig, drawn n 156
+  mean +7.7 deg / median +0.3; clicked n 156 mean +5.9 / median +0.4. The tail is ~10 rigs ending 150-175 deg off in
+  the shared arm where the FIFO arm ended within ~30 deg.
+- faced_move s66 Green_Guns_5 (judged 149.8 shared v 0.6 fifo): re-run, BOTH arms end backwards (fifo 143.9, shared
+  156.4) and the seam never acted for this hull in either (0 PLANNER_SEAM lines): the rig drives its move_to, arrives
+  nose south, the order becomes `stop` with no face step. The judged FIFO run's 0.6 was the harness's run-to-run
+  variation (a different arrival), not the queue.
+- faced_support_by_fire s67 Green_Guns_6 (judged 155.7 shared v 24.6 fifo): re-run, shared 0.3 v fifo 12.8 (reversed).
+  The seam acted in BOTH arms with KTURN plans (not face): the same first plan (5 legs, 13-14 expansions), the shared
+  arm one extra 3-leg k-turn.
+Reading: neither traced regression reproduces; the per-rig tail is dominated by the hull-rest harness's run-to-run
+variation (round 31's lesson), and the seam's served plans in these two cases are k-turns that end no worse. So
+line (3)'s misses at n = 6 seeds are NOT shown to be the queue's cost. Round 33, before CP-Q is judged again: an A/A of
+the hull-rest gang arm (fifo v fifo, the same seeds) to size its (d) lines' noise (judging.md), then a bar sized from
+it on fresh seeds. The Terminus contact-ticks rise (522 v 321) is a separate, deterministic-harness signal to trace
+first (worst seed 207: 4168 v 2444).
+
+TRACE 2 -- the Terminus contact rise (the orchestrator's first ask; a DETERMINISTIC harness, so this is the real one).
+builder0 light, stream 9ddcafee (= the series' code), `make planner-trace-drive-queue PLANNER_TQ_SEED=207
+PLANNER_TQ_UNIT=Green_S0_4`, traces/terminus-207/. The rerun reproduces the judged run exactly (S0_4 pinned on
+Block_7 at (10.0, -42.0) from f 5026 for 2043 ticks, route throttle 0.88).
+- Both arms plan the same first face (2 legs, 6 expansions). Then the shared arm's next face is a different plan
+  (R+1x6.0 F+0x3.5, 13 expansions), RELEASED at f 4555 6 m into its reverse leg ("another kind": the next leg's
+  move_to); the FIFO arm got a k-turn plan there instead.
+- From f 4810 the rig is on TODAY's circle / single k-turn at 7-9 m/s; the seam's cumulative report over f 4815-5165
+  shows every ask REFUSED EARLY, GOAL_BLOCKED (early 24 -> 28, GOAL_BLOCKED 14 -> 18; the report is global, so the
+  attribution to S0_4 is by timing) and the rig pins at f 5026.
+- MECHANISM: under the FIFO a request is HELD (zero/zero, braked to rest by `_pend`) until its search answers, so a
+  refusal hands today's code a hull AT REST; refuse-early answers at the ask from the ROLLING pose, so today's code
+  keeps the rig's 7-9 m/s and drives it into the block. The FIFO's hold was an implicit brake; refuse-early removed it.
+  Across the rig series: refused early 258, GOAL_BLOCKED 197 v 138, START_BLOCKED 76 v 58 (more asks, more refusals:
+  a released rig asks again sooner).
+ROUND 33 (the cheapest fix to judge first): refuse early ONLY at rest (a rolling ask is braked to rest as the FIFO
+does, then probed), or keep refuse-early but brake to rest on a rolling refusal; then the queue's round-robin
+unchanged. Bar from CP-Q's lines on fresh seeds, after the hull-rest A/A sizes line (3).
