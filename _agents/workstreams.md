@@ -89,16 +89,18 @@ orchestrator's `make sim-baseline-adopt` on main.
   bar (Terminus seeds where base loops, named before the series; arrivals; swaps counted; the whole suite on the pair
   tree). Native mirrors only if the swap reaches the drive. **Why swap, not give way forward or back:** one decision, no
   geometry, and what a player expects of a crew stuck behind a squadmate who is already where he was told to be.
-  **The seam, AGREED (2026-10-16 ~04:20 PDT):** `Elements.swap_seats(game_match: Match, asker: String, parked: String) ->
-  String` ("" = taken, else the refusal reason), static and deterministic. It is round 19's make-room swap with a new
-  trigger: it sets the element's `_swap`, re-applied every plan while the seating keeps those two seats (`Element.apply_swap`:
-  slots, sectors, seats and orders trade together) until the movement ends. Both crews get new goals from the element's
-  NEXT update (≤ one element think, ~0.1–0.25 s); manoeuvre does NOT write Movement goals, and its hook holds (no reverse,
-  no re-fire) for that interval. Refusals in order: no_element, unseated, leader, kept, role (halted only), deck (within
-  MOUTH_REACH_M), budget (MAX_SWAPS 2 a movement, shared with make-room), standing. **A drawn facing is NOT a refusal**
-  (the orchestrator's ruling: every seat of a faced shape carries his heading, and SBF sectors trade with the seats, so a
-  swap keeps what he drew). GDScript only; no native mirror. Counters: swaps, swaps_asked (brains), swaps asked / granted /
-  refused by reason (manoeuvre's census).
+  **The seam, AGREED (2026-10-16 ~04:30 PDT, brains' settlement of manoeuvre's half):**
+  `Elements.of_match(m).swap_seats(asker: String, parked: String) -> String` ("" = taken, else the refusal reason; String,
+  no bool variant). It trades the two crews' last-issued orders (`Element._issued[name]`: to, facing, verb) and sends both
+  through Elements.orders INSIDE the call, so both goals change THE SAME TICK; it also sets the element's `_swap` (round
+  19's make-room mechanism: each plan, if the seating returns the original indices, `Element.apply_swap` trades slots,
+  sectors, seats and orders back; `assign` clears it), so the next plans keep the swap until the movement ends.
+  Refusals: not_same_element, unseated, leader (slot 0 of a drill move), kept (a re-seat's keep), task_role (the task is
+  not a move/attack-move: SBF line, screen, overwatch/ambush post, hold), drill (a drill running), role (roles differ AND
+  halted), deck (within MOUTH_REACH_M), budget (MAX_SWAPS 2 a movement, shared with make-room), standing. **A drawn facing is
+  NOT a refusal** (the orchestrator's ruling: every seat of a faced shape carries his heading and SBF sectors trade with
+  the seats). GDScript only; no native mirror. Counters: swaps, swaps_asked (brains); swaps asked / granted / refused by
+  reason (manoeuvre's census). Tests: one per refusal + the accepted case + the plan-keeps-it case.
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
