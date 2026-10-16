@@ -23,8 +23,9 @@ built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after th
 **Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
 
 **🎯 T1c-b2 SHIPPED ON (~12:45 PDT): traffic `c9fa64a4` → main `36a531b4`. CP-T IS DONE (both his yeses on main).** Its check
-2708/0, sim-baseline unmoved. **Main check RUNNING** on the batch since `6fcfbe46` (native splits + wall fix + seam reset,
-planner capture fix + d98656ab, T1c-b2): `orch-main-check-r32c`.
+2708/0, sim-baseline unmoved. **MERGED ~12:50 PDT: planner `e4d87edc` → main `981457cf`** (conflict in capture() resolved: main's 8904c9c4 + the branch's
+`_retry_until.duplicate(true)`; planner confirmed it). **Main check RUNNING on `981457cf`** (`orch-main-check-r32e`), the batch
+since `6fcfbe46`: native splits + wall fix + seam reset, planner capture fix + d98656ab + e4d87edc, T1c-b2.
 
 ## 🚀 ROUND 32 PREPARED (2026-10-16) — read this first
 
