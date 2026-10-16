@@ -23,6 +23,35 @@ branches, so workers don't push.
 | **native** | `godot-native` (4) | nothing alone: every pair (T3b-c first); the four slow twin files split | the T3b-c pair |
 | **planner** | `godot-planner` (6) | the War Rig's planned turns on the laptop without the tick cost (SLICE per preset); the side gate for brains | CP-S side gate |
 
+**His laptop's native library was stale (2026-10-16 ~00:40 PDT, fixed at `19df5cc0`):** built 10-13, so round 31's
+`avoidance_gather` call errored every tick and his game went choppy. Rebuilt; `make run/skirmish/demo` now rebuild a stale
+library first (`native-fresh`). `19df5cc0` (mk/play.mk + three planner .uid files) is unchecked: it rides the next main check.
+
+**CP-T progress (2026-10-16 ~02:00 PDT):** T3b-c's pair tree `b5882c9c` (pair/t3bc-r32) CHECKED on builder0: `make check
+exited 2`, 2671 passed / 0 failed, 25 targets passed, sim-baseline alone red (13 maps moved, as C32.1 expects), turns twins
+0 mismatches, determinism passed. Traffic's one re-judge on it is running; on a pass, merge `b5882c9c` and `make
+sim-baseline-adopt` (reason: the crossing ON). Bars filed: B3b-2c, CP-Q, H1b (`workstreams.md` *Bars (round 32)*).
+Rulings R32.1 (native half already on main), R32.2 (H1b writes the repair fields). C32.6 closed: no navmesh gap.
+
+**Round 31's "known issue" may be gone (manoeuvre, ~02:45 PDT):** seed 31's ask loop does NOT reproduce on today's main
+(builder0, `7a9b17e4` = main + H1b OFF, Terminus rigs s31, n 1 an arm: byte-identical, 16/16 arrive, loops 0). It was on
+`130a069b`, before CP-P1; the rigs now take planner legs. The defect still shows in H1b's unit stage (13 loops in 70 s at
+base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
+Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
+
+**🎯 T3b-c SHIPPED ON (~03:10 PDT): pair/t3bc-r32 `b5882c9c` → main `86917d5a`.** What he'll notice: at a Terminus street
+crossing the squad that gives way waits ~2.6 s, and the squads bump about a third less (his yes). Re-judge on b5882c9c
+(builder0, seeds 41–43 × 6, n 18, GDScript): VERDICT PASS, Terminus +2.61 s (se 0.55) v +3.90, yard +3.38 v +3.43, bumps
+191 → 117; CP-H/CP-P1 did not move it. Baselines ADOPTED at `0e49fb3e` (all 13 moved, read twice on builder0, agreeing).
+**Main check RUNNING on `0e49fb3e`** (`orch-main-check-r32a`, log `main-check-0e49fb3e.log` in the orchestrator's
+scratchpad): it covers planner `530e85cf`, T3b-c and `19df5cc0`'s play guard.
+
+**MERGED ~03:00 PDT: planner `530e85cf` → main `3a85d092`** (CP-S `side_gate` OFF-path; SLICE per render preset: laptop 1,
+else 2, latched per match, `--planner-slice=N` wins; the shared queue behind `--planner-queue=shared`, OFF). Its check:
+builder0 exited 0, 2670/0, ALL JUDGED, sim-baseline 13 unmoved. merge_check_needed: CHECK (mk/play.mk only, `19df5cc0`);
+it rides the next batch's main check (with CP-T). **What he'll notice:** on the laptop preset the planner searches 1
+expansion a tick (half the cost, twice the hold); nothing else changes.
+
 **The orchestrator's first jobs:** get CP-T on main (merge the T3b-c pair back to back, `make sim-baseline-adopt` with each
 moved line's reason, then T1c-b2); file every bar in `workstreams.md` *Bars (round 32)* before its numbers; relay CP-S to
 brains when it lands; record the manoeuvre ↔ brains re-seat agreement (C32.5) as a ruling; run `tools/merge_check_needed.sh`

@@ -87,6 +87,32 @@ static func native_cache_stats() -> Dictionary:
 	return _impl.nav_cache_stats()
 
 
+## Round 32 (CP-S): the wall clearance at each (x, z) of `xz` (pairs), as `PlannerWorld.clearance` reads it, through
+## the C++ field when the library is usable (a navmesh world reads the match's shared cell cache) and the GDScript
+## world otherwise; the same float32 cells both ways (tests/test_planner_side_gate.gd). No search, no session: the
+## library reads a world of its own, so a live session is untouched. `native` false forces the GDScript read (twin).
+## The GDScript arm re-windows `world` (prepare): never hand it a live search's world (native's review of df45fac3).
+static func clearances(world: PlannerWorld, xz: PackedFloat64Array, native := true) -> PackedFloat64Array:
+	var cx := 0.0
+	var cz := 0.0
+	var n := xz.size() / 2
+	for i in n:
+		cx += xz[i * 2] / float(n)
+		cz += xz[i * 2 + 1] / float(n)
+	var half := 0.0
+	for i in n:
+		half = maxf(half, maxf(absf(xz[i * 2] - cx), absf(xz[i * 2 + 1] - cz)))
+	half += 2.0
+	if native and native_usable() and _impl.has_method("clearances"):
+		return _impl.clearances(world.native_view(), xz, cx, cz, half)
+	world.prepare(cx, cz, half)
+	var out := PackedFloat64Array()
+	out.resize(n)
+	for i in n:
+		out[i] = world.clearance(xz[i * 2], xz[i * 2 + 1])
+	return out
+
+
 ## The session's own library instance (a whole plan on `_impl` while a session is live would clobber it: native's
 ## review note); the free-space tables are one static cache inside the library, shared by both.
 static var _session_impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
@@ -129,6 +155,58 @@ static func session_result() -> PackedPlan:
 ## The expansions handed to `step_session` so far (a seam's snapshot replays a pending session by stepping this many).
 static func session_stepped() -> int:
 	return _session_stepped
+
+
+## Round 32 (the queue, hand-over (3)): a session of its OWN, so several crews' searches are live at once (PlannerSeam
+## hands each pending crew its share of a per-tick budget). One library instance per session: the library's session is
+## per instance, its navmesh cell cache and free-space tables static (shared). Same contract as the static session
+## above (begin / step(n) / result / cancel; the GDScript path plans whole at begin), plus `refused()`: `begin`
+## already answered START_BLOCKED / GOAL_BLOCKED / ALREADY_THERE, read without an expansion.
+class Session:
+	var impl: Object = null
+	var req: PlanRequest = null
+	var plan: PackedPlan = null
+	var stepped := 0
+
+	func begin(r: PlanRequest) -> void:
+		req = r
+		plan = null
+		stepped = 0
+		if Planner.native_usable():
+			if impl == null:
+				impl = ClassDB.instantiate("PlannerNative")
+			impl.begin(r.to_native())
+		else:
+			plan = Planner.plan(r)
+
+	## Did begin already answer with a refusal (or "already there")? The next step(n) returns it, expanding nothing.
+	func refused() -> bool:
+		if plan != null:
+			return plan.code == PackedPlan.START_BLOCKED or plan.code == PackedPlan.GOAL_BLOCKED \
+					or plan.code == PackedPlan.ALREADY_THERE
+		return impl != null and impl.live() and bool(impl.refused_at_begin())
+
+	func step(expansions: int) -> bool:
+		if plan != null:
+			return true
+		if req == null or impl == null or not impl.live():
+			return true
+		stepped += maxi(expansions, 1)
+		if impl.step(expansions):
+			Planner.native_plans += 1
+			plan = Planner._from_native(req, impl.result())
+			return true
+		return false
+
+	func result() -> PackedPlan:
+		return plan
+
+	func cancel() -> void:
+		req = null
+		plan = null
+		stepped = 0
+		if impl != null and impl.live():
+			impl.cancel()
 
 
 static func cancel_session() -> void:

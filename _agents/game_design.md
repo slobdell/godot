@@ -3966,3 +3966,16 @@ Both ship ON in round 32, as its first items (`roadmap.md` *Round 32 candidates*
 
 "we should go back to using Opus agents across the board to conserve fable quota" — every round-32 stream and the
 orchestrator run on Opus; no Fable session this round (`workstreams.md` *Round 32*, C32.9).
+
+## Round 32: his playtest note (2026-10-16 ~00:30 PDT, in chat, before bed)
+
+"ok I'm going to bed, you're in charge, don't ask me any questions, if there are any decision points just go with what you
+would recommend. Otherwise, quick feedback as I go: I just played the game and it got extremely choppy. That might be
+because there was other work happening on this machine, but the console log showed a ton of this output, which I assume is
+slowing down the game" (the output: `SCRIPT ERROR: Invalid call to function 'avoidance_gather' in base 'TankNative'.
+Expected 3 argument(s).` at `avoidance.gd:188`, every tick).
+**Cause and fix (orchestrator, main `19df5cc0`):** his laptop's native library was built 2026-10-13, before round 31;
+T4 added a 4th argument to `avoidance_gather`, so every tank errored every tick. Rebuilt (`make native`); `make
+run/skirmish/demo` now rebuild a stale library first (`native-fresh`). A headless skirmish prints 0 SCRIPT ERROR. He also
+played round 31 WITHOUT its C++ (the planner's legs ran only where GDScript took over), so his next play is the first of
+round 31 as shipped.

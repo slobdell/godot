@@ -257,6 +257,11 @@ local: remote runs don't forward API keys.
 
 ## Troubleshooting
 
+**A fresh builder0 folder has no native library (manoeuvre, round 32).** `native/bin` is git-ignored, so a new worktree's
+builder0 folder has none until a `quick` or `check` builds it; a plain `make remote T=test` there skips or fails every test
+that needs the library (the rig planner tests). Run `make remote T="native test …"` (or a quick/check first). The lead's
+laptop had the same trap the other way round: a library older than `native/src` (play targets now rebuild it, `native-fresh`).
+
 - **"cannot reach builder0":** check `ssh -o BatchMode=yes slobdell@builder0 true`. Fall back to local `make`.
 - **The link drops intermittently; retry before concluding anything.** On 2026-09-17 builder0 became unreachable twice
   (about half an hour around 13:30, and again at 15:40), each time with the machine itself fine — `uptime` showed 72
