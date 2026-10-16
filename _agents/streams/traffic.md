@@ -87,6 +87,23 @@ the orchestrator before numbers; green hashes named)_
 
 **2026-10-16 (traffic worker, round 32).**
 
+**🎯 CP-T T3b-c: RE-JUDGED, VERDICT PASS. Ship hash `b5882c9c`** (the pair tree; native's mirror `413252ea` is already on
+main). Builder0, `b5882c9c`, GDScript path (`--brains-off=native` on both arms, as round 31's judged run), seeds 41–43 ×
+ticks {1,3,6,8,11,16}, n 18 a case, 90 s, base `--traffic-off=turns`, the full grid of 144 rows (0 cache hits, 0 missing),
+`turns_verdict.py --allow yard_open/cross=3.0 --allow terminus/cross=3.0` (round 31's bar; his ~3 s now covers both
+crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.txt`, `*_base/arm_b5882c9c.jsonl.gz`.
+- **Terminus crossing clock: +2.61 s (se 0.55) v his +3.0 + 1.645 se = +3.90: pass.** 16/18 later. The yielding squad B
+  is +4.22 s (se 0.64) and A is −1.09 s.
+- **Yard crossing clock: +3.38 s (se 0.26) v +3.43: pass** (narrowly, as in round 31). 18/18 later.
+- Between-squad fast contacts pooled over the two crossings: 191 → 117 (−39 %), pass (Terminus 93 → 61, yard 98 → 56).
+  Crews: 176 → 179, 169 → 167, 173 → 175, 179 → 179, all pass. No wedge. Same-squad contacts 144 → 139 and 150 → 149.
+  Head-on cases are within 1.645 se. All-in medians reported: Terminus 39.5 → 34.7, yard 33.3 → 33.8.
+- Hook (table sd): yard crossing SERIES PASS at run 7, head-ons PASS (at 6 and 18), Terminus crossing PASS at 18.
+- **Did CP-H/CP-P1 move what was judged? No.** Every judged line reads as round 31's `f5dc4147` did, apart from crews
+  176→179 v 176→178. These fights are short-hull squads crossing, where CP-P1 (≥ 10 m hulls) and CP-H's pinned-hull
+  consumers barely act. Worst runs (the same as round 31's): Terminus s43/t1 +5.3 s, yard s42/t8 +6.0 s. Their traces
+  are below once read.
+
 **Plan (in order):** (1) CP-T T3b-c: carry the judged tree onto main, quick-remote, native builds/checks the pair tree
 (R32.1: native's mirror `413252ea` is already on main, inert until Traffic has `shape`), then ONE re-judge on it; (2) T1c-b2
 carried after T3b-c lands; (3) navmesh gap diagnosis; (4) test splits if any traffic file > ~60 s; (5) stretch T4.
