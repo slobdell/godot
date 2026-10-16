@@ -171,6 +171,11 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   "pushed off the spot" sends `{move_to, reverse: true, arrive 6.0, no facing}` (f 259). (4) It backs on tail first, and a
   wheeled turret hull's face is declined with turnhull off. Fixes: brains' HOLD return honours the facing (reverse only
   within FACING_KEEP_DEG of the nose); mine, the arrival overshoot, measured first in M1b(3).
+  **CORRECTED the same day:** it is NOT a roll-past. On its wide arrival curve G5 never came within 11.5 m of the goal,
+  yet its order had COMPLETED (option HOLD at f 259) while it was 11–15 m off; the HOLD return then backed it on. An
+  arrival watch (lab `492cf7a1`, measurement only) found 0 of 7 driven arrivals rolling past settle + 1 m on that run.
+  The trigger is an early completion (element arrival or the repaired path: brains'). For M1b(3), count "move orders
+  completed with the hull > settle + 1 m off, by completion path" instead of overshoot.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
