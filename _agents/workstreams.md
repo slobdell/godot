@@ -303,6 +303,19 @@ orchestrator's `make sim-baseline-adopt` on main.
   pass; (4) arrivals pass; (5) yard head-on FAILS two guards (between-squad fast 53 → 59 v +5.8; all-in median 33.8 → 38.0 s
   v +3.82): the late hull (usually Green_A_5) reverses and circles round its slot 15–20 s (reversing turns 8 → 138, 15 →
   112, 20 → 47; friend-stuck ≈ 0). Round 33: trace one circle loop, re-judge mixed stuck at n ≈ 48.
+- **C32.10's seat swap (manoeuvre + brains; filed 2026-10-16 ~14:20 PDT before any number; DECLARED; partial: none; full
+  text stream/manoeuvre `c8a75e91` Status).** Candidate `lab/manoeuvre-swap2` = main `5cc02947` + brains' seam `f2cc956d` +
+  manoeuvre's hook, switch `h1bswap` OPT-IN (native's `_h1b_swap_goal` row rides in the pair). Base: the same tree without it
+  (H1b ON). GDScript path, one tree. The swap is asked only at H1b's 2nd failed ask on a PARKED friend whose goal is nearer
+  than the asker's route left; a far loop = H1b's `far` count. **Fresh seeds (orchestrator confirmed unclaimed):** Terminus
+  380–392 rigs + mixed, hull-rest 393–398 (n 144 an arm), fights 400–423; named cases the trace's six pairs (hunt rigs 3, 4,
+  6; mixed 4, 5). **GAIN:** on 380–392 swap-arm far loops ≤ 50 % of base, rigs and mixed apart. **Guards** (1.645 se, once):
+  (1) loops − far = 0 both arms, far ≤ base on every named hunt seed; (2) hull-rest PINNED ≤ 10 m and STUCK ≤ base + 1.645 se;
+  (3) Terminus PINNED and STUCK per squad ≤ base + 1.645 se; (4) arrivals paired ≥ base − 1.645 se, rigs and mixed apart;
+  (5) fights kills, deaths, hit rate within 1.645 se; (6) element RE-SEATS (R32.3's fail line; swaps not counted) ≤ base +
+  1.645 se; (7) the whole suite on native's pair tree with the default flipped ON, before the series. STUCK =
+  `pinned_table.py` at `f5bf085f` (a run ending in progress is not counted, as always). REPORTED: swaps asked / taken /
+  refused by reason; far rows by blocker kind; Sumps s19 t8 latch ON.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
