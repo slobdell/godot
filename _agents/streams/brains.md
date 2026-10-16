@@ -126,7 +126,14 @@ backlog item is done, judged, or parked by its bar. No lead gate is pending; no 
 - **B8 toggle fix (for CP-H's ship):** `--brains-off=realslow` set it TRUE, so once the default flipped ON no arm
   could turn it off. Fixed in **c45c9792**: it flips against `REALSLOW_DEFAULT` (`BrainSwitches.realslow_named`), as
   unstickback/kturnarc/realspeed do. Check on builder0 at c45c9792: **exited 0, 2642/0**, sim-baseline unmoved,
-  bridge-pooled 18/18. Sent to the orchestrator for CP-H's ship pair.
+  bridge-pooled 18/18. MERGED to main as 40eda0cf (INHERIT, no second check).
+- **R31.9 split (stretch, test-only), PENDING ITS CHECK:** `lab/brains-r31-split` **293f9d62** (worktree godot-brains-sbf).
+  The six slowest brains test files are now fifteen, with shared stages in base files that hold no tests. 33 tests before and after, bodies byte-identical.
+  quick-remote on builder0: 33/0. Slowest file 264 s -> 126 s (tactics_scenarios_4).
+  First full check: killed by slot.sh's 5400 s cap on a saturated box (32 godots), test 2641/0, killed during
+  determinism. The rerun was stopped at the orchestrator's request to keep builder0 free for the CP-H/CP-P1 ship checks.
+  **Next: rerun `make remote T=check` in godot-brains-sbf when the orchestrator says the ships are in, then send the
+  hash for merge at the close.** Then remove worktrees godot-brains-sbf and godot-brains-bridge.
 - **R31.3:** test_tactics_pursuit made robust over seeds (a16585bf, 0415da23): on main (aa205ea5). A/A filed in
   judging.md.
 
