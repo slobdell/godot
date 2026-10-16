@@ -759,6 +759,8 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
 	var keep: Dictionary = opts.get("keep", {})
+	# Round 30 (brains B3b): `via` = [entry, exit] of a crossing every crew's route goes through (a bridge deck).
+	var via: Array = opts.get("via", []) if nearest and not halted else []
 	var along_route := nearest and not halted and SQUARED_ALONG_ROUTE and opts.has("at")
 	var placed_at: Array = opts.get("at", [])
 	var world: Array[Vector3] = []
@@ -778,7 +780,18 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			if member.has("position"):
 				var at: Vector3 = member["position"]
 				value = Vector2(at.x - world[j].x, at.z - world[j].z).length()
-				if along_route:
+				if via.size() == 2:
+					# Round 30 (B3b, DECLARED): seats beyond a crossing are reached BY the crossing, so each crew's cost is
+					# its drive to the crossing's entry plus the drive from its exit to the seat, squared. Squared, the sum
+					# pairs the crew nearest the crossing with the seat farthest from it (the rearrangement inequality): the
+					# seat order follows the crossing order, as transit seating does. Traced (his bridge, rust t16 seed 2,
+					# builder0): seated by straight line, the westmost crew on the near bank took the westmost far seat
+					# while every route crossed the east bridge, so the seats crossed and two crews gave way to it at 19 s.
+					var entry: Vector3 = via[0]
+					var exit: Vector3 = via[1]
+					value = Vector2(at.x - entry.x, at.z - entry.z).length() + Vector2(exit.x - world[j].x, exit.z - world[j].z).length()
+					value = value * value / maxf(spacing, 1.0)
+				elif along_route:
 					# Round 25 (F1): seats laid along a route (`at`, a plain move's travelling shape) are AHEAD of the
 					# crews, and when every crew stands behind every seat the total distance is the same for every order
 					# (each leg is its seat's distance ahead plus a little for its offset to the side), so the plain sum

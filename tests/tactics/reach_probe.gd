@@ -40,12 +40,22 @@ func _run() -> void:
 	for entry: Array in CASES:
 		by_arena.get_or_add(entry[0], []).append(entry)
 	for arena: String in by_arena:
+		# Round 32 (traffic's C32.6 finding): wait for THIS arena's own regions, the previous lab's drained first. Waiting
+		# on Pathing.is_ready() alone read Terminus's mesh in the default arena's probe (the "8.2 m gap" at (-25.7, 7.3)).
+		await ArenaFixture._drain_regions(case, 5.0)
 		var lab := TacticsLab.create(case, 1, arena)
 		var tank := lab.unit(Match.Team.GREEN, "Green_P_1", Vector3(0.0, 0.0, 0.0), 0.0, "tank")
+		var ready := false
 		for frame in 300:
-			if Pathing.is_ready(tank):
+			if TacticsLab.navigation_is_this_arenas(lab.arena):
+				ready = true
 				break
 			await physics_frame
+		if not ready:
+			push_error("reach_probe: %s's own navmesh never held the map alone in 300 frames; its rows are not this arena's" % arena)
+			print("REACH_ARENA_NOT_READY %s" % arena)
+			continue
+		print("REACH_ARENA_READY %s" % arena)
 		var map := tank.get_world_3d().navigation_map
 		for entry: Array in by_arena[arena]:
 			var from := Vector3(entry[2].x, 0.0, entry[2].y)

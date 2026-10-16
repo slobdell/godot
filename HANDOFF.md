@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-16 — **ROUND 32 PREPARED (below).** Main inherits **`e66b41f1`'s green check** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved); the round-32 commits are docs only. Five Opus workers, launched by him one terminal each._
+_Last updated: 2026-10-16 ~06:30 PDT — **ROUND 32 RUNNING.** **MAIN GREEN at `6fcfbe46`** (builder0, 2693 passed / 0 failed, 23 targets passed; the one red remote-guard-test's quiet-window group, R31.10; sim-baseline 13 unmoved against the T3b-c lines). It carries planner 530e85cf, T3b-c ON, B3b-2c ON. Since: native's test splits (`6b3c9195`, test-only, unchecked). He pushes `main`._
 
 ## 🚀 ROUND 32 PREPARED (2026-10-16) — read this first
 
@@ -33,11 +33,41 @@ exited 2`, 2671 passed / 0 failed, 25 targets passed, sim-baseline alone red (13
 sim-baseline-adopt` (reason: the crossing ON). Bars filed: B3b-2c, CP-Q, H1b (`workstreams.md` *Bars (round 32)*).
 Rulings R32.1 (native half already on main), R32.2 (H1b writes the repair fields). C32.6 closed: no navmesh gap.
 
+**UPDATE ~03:40 PDT: the ask loop is COMMON, just not on seed 31** (manoeuvre's hunt, builder0 `48657f07`, GDScript,
+Terminus drive seeds 1–16, n 1 a seed): base loops mixed 105 (12/16 seeds), rigs 114 (11/16). H1b's settle fixes ~30 %;
+the rest are `far` (> 12 m of route left). Being traced: two hulls pinned on each other mid-route (a give-way priority
+question, traffic's block; a joint contract to follow). **He will see this.**
 **Round 31's "known issue" may be gone (manoeuvre, ~02:45 PDT):** seed 31's ask loop does NOT reproduce on today's main
 (builder0, `7a9b17e4` = main + H1b OFF, Terminus rigs s31, n 1 an arm: byte-identical, 16/16 arrive, loops 0). It was on
 `130a069b`, before CP-P1; the rigs now take planner legs. The defect still shows in H1b's unit stage (13 loops in 70 s at
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
+
+**✅ MAIN GREEN at `6fcfbe46` (~06:25 PDT)** (builder0 `make check exited 2` on remote-guard-test ALONE: "watch: records once
+the window opens", R31.10's box-state group, which doesn't block; test 2693 passed / 0 failed in four shards; sim-baseline
+13 unmoved; perf-judge and scenario_perf NOT JUDGED, a busy box). It covers planner `530e85cf`, T3b-c (adopted lines) and
+B3b-2c. **What he plays now:** the Terminus crossing give-way, every crew across his bridge, the laptop planner preset
+(back to SLICE 2 with CP-Q's ship, C32.7). **Merged since:** native's splits `981e336b` → `6b3c9195` (test-only, R32.5).
+**T1c-b2 re-judged PASS (traffic, builder0, `cf81aedc`, census s41–46 × 3 maps, n 18, GDScript):** runs with a repack
+while firing 5/18 → 0/18 (Fisher p 0.023); friendly-stuck 789 → 696 crew-s, fast contacts 934 → 946, both inside guards;
+artillery 451 → 456; no baseline moves. **Its price, to tell him:** 6 squadmates (all Green, in the 4 runs where the truck
+used to pack up) never got past a set-up truck within 20 s. **In his words:** "on Parade a mortar truck heading for its firing spot waited
+about 19 s behind a set-up squadmate, never got by, and set up 19 m short." Of the six (traced, `8ce39559`): 2 got by late
+(25–32 s), 2 set up 10–19 m short, 2 were freed when the set-up truck died. Five are mortar trucks queued behind ANOTHER
+set-up mortar truck (the sixth, a Hunters hull re-ordered 78 m away). A follow-up candidate (not this round's): C32.10's seat swap for two artillery crews of one battery. Waits on the capture fix, then one check, then ships.
+**Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
+traffic re-checks T1c-b2 on it.
+
+**Main check on `0e49fb3e` (~04:25 PDT): NOT green, NOT red** (builder0 `exited 2`, 24 of 25 targets passed; `test` killed
+by slot.sh's 5400 s cap under load, 0 failures seen; sim-baseline 13 UNMOVED against the adopted lines; determinism
+9d66d3a0c59a7936). **Re-run: full check on `6fcfbe46`** (`orch-main-check-r32b`, covers B3b-2c too).
+
+**🎯 B3b-2c SHIPPED ON (~04:45 PDT): brains `5f0ed865` → main `33321516`.** What he'll notice: every crew of every squad gets
+across his bridge (108/108 v 107/108), and arrivals elsewhere are exactly as before (fresh seeds 45–48, 90 v 90, all 100 cells
+identical). Its check 2666/0 (web first-sound red at load 22, re-run alone green, R32.4); sim-baseline 13 unmoved; no
+native half. CHECK needed on main (batched after `0e49fb3e`'s running check).
+**Brains' finding (C32.11):** a seating bug ON MAIN (seats jump ~10 m when a squad's centre crosses a 5 m grounding cell);
+the latch ships alone as B10 next.
 
 **🎯 T3b-c SHIPPED ON (~03:10 PDT): pair/t3bc-r32 `b5882c9c` → main `86917d5a`.** What he'll notice: at a Terminus street
 crossing the squad that gives way waits ~2.6 s, and the squads bump about a third less (his yes). Re-judge on b5882c9c
