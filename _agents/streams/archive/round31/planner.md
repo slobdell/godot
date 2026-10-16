@@ -1,3 +1,5 @@
+> **ARCHIVED at round 31's close (2026-10-15/16).** This is the brief as its worker left it on `stream/planner` at `216367bf`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: planner (the lattice planner into play: its C++ port equal to the GDScript, a per-tick slice, the one seam into the drive; a long truck in a Terminus street turns in deliberate legs and never grinds a wall)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 306–311), `_agents/judging.md`, `_agents/workstreams.md`
@@ -103,10 +105,66 @@ Nothing (his calls: a planned turn, not a shuffle; the whole hull turns to his f
 
 ## Status
 
-_Updated 2026-10-15 ~12:20 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
+_Updated 2026-10-15 ~17:55 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
 5.1). The report first (empty until CP-P0 lands), then the DRAFT SEAM (the orchestrator's early ask), the plan, the log._
 
 ### The report (read this first)
+
+**CP-P1 SHIPPED ON: merged to main as e175e660 (2026-10-15 ~17:55 PDT, the orchestrator; native's ship tree
+166f7f1e, 2653 passed 0 failed, 0 seam-twin mismatches). Its baselines re-recorded next, then one main check (the
+orchestrator's). stream/planner stays as the record.**
+
+**CP-P1 VERDICT (every stage to completion, 2026-10-15 17:20 PDT): the pre-registered bar's ship clause is MET.**
+Candidate = the seam ON (`--nav-off=planner` on the GDScript drive, `PLANNER_DEFAULT` false) at **series tree 35f5df92
+= code f9d2c639** (the keep circle 1bec314d/38e9678d + the crew-per-hull fix f9d2c639); **gate = native's pair
+85911f0b** (main a2ef0b31 + f9d2c639 + the C++ mirror + their seam_live fix + PLANNER_DEFAULT true: tests 2652 passed
+0 failed; `make check exited 2` on sim-baseline MOVED on 6 of 13 maps -- foundry, pit, crossing, sumps, gorge,
+archipelago, the expected ON move -- and remote-guard-test, box-state, non-blocking under R31.10). Every row below:
+builder0, series tree 35f5df92, gate 85911f0b, unless named otherwise; every line read once at completion on the
+fixed 1.645 se line (R31.8, no early stop).
+
+| line | what | base | candidate | paired / line | verdict |
+|---|---|---|---|---|---|
+| (a) rigs arrivals, Terminus seeds 172-184, n 13 | of 208 | 180 | 172 | mean -0.615, se 0.500, line -0.823 | **PASS** |
+| (a) mixed arrivals, the same seeds | of 312 | 289 | 289 | identical both arms, seam silent 13/13 | equality holds |
+| (b) rigs contact-ticks (the sized deciding line) | median | 855 | 533 | mean -282.2, se 211.2 (candidate lower) | **PASS** |
+| (c) scenario_cp2, the scout's orbit | 6 MEASURE cells | | | identical both arms; verdicts identical | **PASS** (no leak) |
+| (d) hull-rest at-rest hull error, class x task | permutation p | | | smallest p 0.087; all >= 0.05 | **PASS** |
+| (d) hull-rest settle time, paired median | s | | | +0.0 / +2.5 / -5.0 / +0.0 / +0.0 / +0.0 | **PASS** (<= +6) |
+| (d) hull-rest crews still moving at 75 s, wheeled-turret row (the filed form) | 12 task x arm rows | | | all <= base + 1.645 se (closest +8 v 9.05, +8 v 8.39) | **PASS** (ruled as filed) |
+| (e) fights, 24 seeds 181-204: kills / deaths / hit rate | | 1018 / 1024 / 0.702 | 1014 / 1020 / 0.714 | -4 se 4.5; -4 se 3.4; +0.012 se 0.009 | **PASS** |
+| (e) bridge-pooled | runs | 18/18 | 18/18 | every row identical | **PASS** |
+| the rig 180 (deterministic) | test_wheeled_arrival's rig case | | green on the gate | | **PASS** |
+| (f) cost, Sumps 25 a side, pinned 0-3, load 16.7 / 16.5 (a1d9e1fc) | SLICE 2 x warm us/expansion, longest live hull | | 263 (seed 92721) / 186 (31337) | 0.526 ms / 0.372 ms v 0.5 | **MISS on 92721, PASS on 31337** (ruled: not in the ship clause; SLICE stays 2; round 32 makes it a hardware preset) |
+
+**REPORTED (never pass lines).** Seam over the 13 rig runs of (a): requests 459, plans 137, driven 106, aborted 5,
+abandoned 2, rerequested 0, refused GOAL_BLOCKED 203 / START_BLOCKED 83 / NO_PATH 23, queue_waits 486, **the hold per rig
+event pooled n 448, median 11, max 104 ticks (3.5 s)**, pending_ticks 6573. Worst runs: contact-ticks base seed 180
+(2561), candidate seed 182 (2141); per seed base/candidate 172 119/1014, 173 2083/471, 174 406/264, 175 424/393,
+176 682/848, 177 221/302, 178 2410/1931, 179 855/297, 180 2561/2020, 181 555/533, 182 1860/2141, 183 2191/296,
+184 1793/1982. (d) read per task over all classes: 3 of 12 task x arm lines over (drawn faced_attack_move +12 v 9.5,
+drawn faced_support_by_fire +10 v 9.1, clicked faced_screen +15 v 12.6), carried mostly by the 108 runs where the
+seam never fired (92 of them differ between arms: the hull-rest screen harness is not run-to-run deterministic);
+wheels/fixed faced_attack_move drawn +4 v 3.62 over. The seam in hull-rest's gang army: drawn 784 requests / 170
+plans / 57 driven / 177 abandoned, clicked 1176 / 115 / 45 / 209 (**a round-32 finding: the one-session queue starves
+in a 19-crew press**); manoeuvre's face_plans drawn 893 v 970, clicked 1867 v 2130. (e) hits 19277 / 19172 (-105, se
+472). (b)'s named n = 1 cases (`references/round31/planner/cases-b/`): seed 31 Green_S0_2 1930 -> 2198 contact-ticks,
+a DIFFERENT grind of the same length (the west street, planted on a container behind Green_S0_1, no seam event in that
+leg: nav's squadmate wedge, CP-H's); seed 51 Green_S0_3 267 -> 244, the candidate's one missed arrival 9.6 m short with
+no seam event in that leg; the seed 9 pin: pinned unit-ticks 491 (16.4 s) -> 30 (1.0 s), freed, no re-pin loop; the
+six-cusp car: a short hull, the mixed line identical is the leak check. Series 1 on the diagnosis seeds 133-145
+(before the keep circle): rigs -1.462 se 0.595 MISS; the traces that found the fix in
+`references/round31/planner/series1-diagnosis/`.
+
+**(g) The clip for him:** `~/projects/clips/round31/planner_terminus_f9d2c639.mp4` (32 s, side by side, the final tree):
+today's drive 29.8 s with the rig jackknifed at the wall v the seam 15.5 s, 3 legs, 0 contacts. **Ships as:** native's
+SHIP TREE **166f7f1e** (main b352fa2a with CP-H + f9d2c639 + the mirror + PLANNER_DEFAULT true; builder0: tests 2653
+passed 0 failed, sim-baseline the only red target, the expected move, 0 seam-twin mismatches; native's cut 3cd68da5
+before it had a test_native_drive coverage floor at 12 under the required 20 station-keeping drives, fixed test-only
+in 166f7f1e, none of my code changed) + the six moved baselines re-recorded (the orchestrator's). 85911f0b stays the
+gate every judged row above names. Files: the verdict
+`references/round31/planner/series2-fresh/`, hull-rest tables, fights table, bridge rows, cp2 measures, all under
+`references/round31/planner/`.
 
 **CP-P0 candidate a3755e37** (C++ `PlannerNative`, equal to the GDScript planner on 17 offline + 4 Terminus-navmesh
 fixtures on every observable, the three hull tables bit for bit, the slice = the whole plan): **twin GREEN on builder0
@@ -188,7 +246,48 @@ GOAL_BLOCKED (the turned-about footprint on the same spot clips something): in a
 path (today's code continues) will be exercised often; the judged run's `refused` counts are the measure, and a
 START_BLOCKED hull is exactly manoeuvre's unstick customer, not the planner's.
 
-### Hand-over for round 32: the §2.8 SIDE gate for a wheeled hull under 10 m (the orchestrator's ask, 2026-10-15 ~04:20 PDT)
+### Hand-over for round 32 (1): SLICE as a hardware-preset knob (the orchestrator's ruling on line (f), 2026-10-15 15:35 PDT)
+
+Line (f) read as filed on the final tree: seed 92721 MISS (SLICE 2 x the warm 263 us = 0.526 ms at builder0 load
+16.7, pinned 0-3, an upper bound per R31.6), seed 31337 PASS (0.372 ms); not in the ship clause, so it blocks no ship,
+and SLICE stays 2 for round 31 (changing it after the numbers would change the judged candidate). **Round 32:**
+`PlannerSeam.SLICE` becomes a hardware-preset knob (the lead's rule: perf cuts ship as presets), e.g. SLICE 1 on the
+laptop preset, sized from a LAPTOP-CLASS price (`make planner-census PLANNER_CENSUS_PROBE=30 PLANNER_CPUS=0-3` on the
+laptop, ~2.75x builder0; the hold per plan roughly doubles at SLICE 1: the series' hold per rig event was median 11 /
+max 104 ticks at SLICE 2, so quote the laptop's hold beside its price).
+
+### Hand-over for round 32 (3): the gang-press queue starves (the hull-rest finding, 2026-10-15 16:40 PDT)
+
+**What the data says.** The seam serves ONE search at a time (`_queue`, the head's session stepped SLICE expansions a
+tick; the others wait at zero/zero, `queue_waits`), capped at PENDING_TICKS 90 from the ask. In the Terminus rig
+squad (4 rigs) that is fine: the series' 13 runs abandoned 2 of 459 asks, hold median 11 / max 104 ticks. In
+hull-rest's gang army (19 crews, several War Rigs told to face at once in a press): **drawn 177 of 784 asks abandoned
+(23 %), queue_waits 19179, pending_ticks 23402; clicked 209 of 1176 (18 %), 26578, 31283** -- the hull stands up to
+3 s, gets nothing, and today's code takes over after the RETRY_TICKS decline. Refusals are the other half of the
+demand: GOAL_BLOCKED 161 / 145 (the turned footprint clips a squadmate: C31.5's re-seat rule, brains'), START_BLOCKED
+54 / 80. Every number from builder0 35f5df92, `references/round31/planner/hull-rest-d-reading.txt`.
+
+**What to do, cheapest first.** (1) **Price before design:** the pinned census says ~230-260 us an expansion warm on
+the longest hull, so SLICE 2 is ~0.5 ms a tick for ONE crew; N crews at once cost N x that -- the queue exists because
+the cost line is per tick, not per crew. (2) **A per-tick BUDGET shared round-robin** (`PlannerSeam.BUDGET_PER_TICK`
+expansions, handed to the queue's heads in turn, 1 expansion each) instead of one head: the same 0.5 ms, every pending
+crew progresses, the worst hold falls from (queue length x its search) to (queue length x 1 expansion); the twin
+harness (`capture`/`restore`, native's mirror) must carry the heads' sessions -- native's `Planner` holds one
+session today, so this is a C++ change too (a session per crew, or a session stack). (3) **Refuse early:** the ask
+already prices GOAL_BLOCKED / START_BLOCKED before the search (`parse_request`); a crew whose request would refuse
+should never enter the queue (today it does, and holds the hull for the refusal's tick). (4) **The cap as a preset
+with SLICE** (hand-over (1)): PENDING_TICKS x SLICE is the expansions a crew can get; a laptop preset at SLICE 1 needs
+the cap re-sized or the abandonment doubles. The bar for (2): hull-rest's gang arm re-run, `abandoned` <= 5 % of asks,
+the hold per rig event median not up, the at-rest and moving lines as round 31's (d). **Not a round-31 bar line:**
+(d) was ruled PASS as filed; this is a REPORTED finding.
+
+**Two lessons for whoever touches the seam next.** A crew is keyed by hull NAME; `Crew.tank` names the instance and
+`_sweep` releases freed hulls (f9d2c639: a disposed match's crew drove a freed hull's executor in the next match under
+the same name -- the pair gate caught it; any new static keyed by name needs the same). And the hull-rest screen
+harness is NOT run-to-run deterministic (92 of the 108 seam-silent runs differed between arms): pair everything on
+(faction, seed) and quote the se; never read a single hull-rest run as a signal.
+
+### Hand-over for round 32 (2): the §2.8 SIDE gate for a wheeled hull under 10 m (the orchestrator's ask, 2026-10-15 ~04:20 PDT)
 
 Brains' B5c-v5 parked on a Sumps limit cycle; its worst yard run (s27 t8, A_5 at its herringbone gate facing away, dot
 -0.94, the gate given up 27 m from the slot, the car onto terrain by the containers) is the case design.md §2.8 names.
@@ -217,6 +316,11 @@ deliverable first:
    10 m), so the k-turn and face demand of 48 short hulls (95 % of a fight's manoeuvre starts, census-4) stays with
    today's code. Its own bar: the yard s27 t8 trace as a named case, an arrival census (slots reached within tol,
    gates given up), and the cost line re-priced for the slot demand (one request per order per hull, not per k-turn).
+   **Round 31's evidence for this kind:** the first judged series' whole loss was rigs "arrived, order complete"
+   7-11 m from the census slot after the seam's FACE plan carried them off the slot (the keep circle, 1bec314d, is
+   the face's version of manoeuvre's slot law and closed it: series 2 PASS); a `"slot"` kind makes the slot the GOAL
+   instead of a circle the face may not leave, so the keep circle becomes a special case of it. The k-turn kind has
+   no slot law today (its goal is the route's waypoint, `crew.order_goal` the order's goal for the new-goal release).
 4. **The refusals the seam already has are the fallbacks:** START_BLOCKED (the hull in contact: manoeuvre's unstick)
    and GOAL_BLOCKED (the slot's turned footprint clips a squadmate's box: C31.5's re-seat rule, brains') hand the hull
    back to today's code within a tick, with `last_refusal(name)` for the counters.
@@ -422,6 +526,147 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 17:55 PDT: **MERGED: CP-P1 ON at main e175e660** (the orchestrator; native's 166f7f1e). Baselines
+  re-recorded next and one main check, the orchestrator's. This stream's work for round 31 is complete; the branch
+  stays as the record.
+- 2026-10-15 17:50 PDT: **the SHIP CHECK is green: native's ship tree 166f7f1e** (main b352fa2a, which has CP-H,
+  + f9d2c639 + the mirror + PLANNER_DEFAULT true): tests 2653 passed 0 failed on builder0, sim-baseline the only red
+  target (the expected move), 0 seam-twin mismatches. Native's earlier cut 3cd68da5 had one test_native_drive
+  coverage floor at 12 under the required 20 station-keeping drives; fixed test-only in 166f7f1e, nothing of mine
+  changed. With the orchestrator to merge. Nothing left on this stream for round 31.
+- 2026-10-15 17:35 PDT: **CP-P1 SHIPS (the orchestrator): the ship clause met on every stage, the verdict filed at
+  main.** The order: CP-H's ship tree merges first with its baselines; native re-cuts CP-P1 on that main (f9d2c639 +
+  the mirror + PLANNER_DEFAULT true) and its plain check is the ship check, the first with the planner and CP-H's four
+  ON together; then the orchestrator merges and records the moved baselines. No rebase from me; stream/planner stays
+  as it is. The round-32 hand-over is complete above: (1) SLICE as a hardware preset, (2) the §2.8 side gate and the
+  `"slot"` kind (with round 31's evidence for it), (3) the gang-press queue (the data, a design, its bar, two lessons).
+- 2026-10-15 17:20 PDT: **line (c) cp2 PASS, the last stage: the six MEASURE cells and the six verdict lines identical
+  both arms** (`planner-judge-cp2`, builder0 heavy lane at 35f5df92; base exited 0 17:14 PDT, candidate exited 0
+  17:15 PDT; `references/round31/planner/cp2-{base,candidate}-measures.txt`). **The full CP-P1 verdict is written at
+  the top of The report.** Nothing running.
+- 2026-10-15 17:15 PDT: **line (e) bridge PASS: 18/18 both arms, the rows bit for bit equal** (`planner-judge-bridge`,
+  builder0 heavy lane at 35f5df92 = code f9d2c639; base exited 0 17:09 PDT, candidate exited 0 17:13 PDT;
+  `BRIDGE_POOLED 18 of 18 runs pass` in each; every BRIDGE row (crossed, alive, rim, deck jam, arrival time) identical
+  between the arms: no bridge crew is a long hull, the seam never fired, the deterministic row's equality check holds;
+  rows filed `references/round31/planner/bridge-{base,candidate}-rows.txt`). Running: cp2 base (heavy,
+  `planner-judge-cp2-base`, 17:13 PDT), then cp2 candidate: the last stage.
+- 2026-10-15 17:10 PDT: **line (e) fights PASS** (`planner-judge-fights`, both arms on builder0's heavy lane at
+  35f5df92 = code f9d2c639, base exited 0 16:47 PDT, candidate exited 0 17:05 PDT; `manoeuvre-fights` on the 24
+  fresh seeds 181-204, `fight_table.py` base v candidate, filed `references/round31/planner/fights-table-35f5df92.txt`):
+  kills base 1018 / candidate 1014, diff -4, se 4.5 (line 1.645 se = 7.4); deaths 1024 / 1020, -4, se 3.4 (5.6);
+  hit rate 0.702 / 0.714, paired mean +0.012, se 0.009 (0.015); all within. REPORTED: hits 19277 / 19172 (-105,
+  se 472), shots 27848 / 27084, touch hits 785 / 757, hit rate on touching targets 0.621 / 0.626 (+0.006, se 0.013).
+  Running: bridge base (heavy, `planner-judge-bridge-base`, 17:05 PDT); then bridge candidate, cp2 x2.
+- 2026-10-15 16:40 PDT: **line (d), hull-rest, both arms in (`planner-judge-hull-rest`: base at 0b2cf981 09:13 PDT,
+  candidate at 35f5df92 = code f9d2c639, `exited 0` 16:12 PDT, builder0 heavy lane; 4 factions x 6 tasks x seeds
+  60-65, drawn + clicked, 144 runs an arm; tables `references/round31/planner/hull-rest-tables-35f5df92.txt`, my
+  reading `hull-rest-d-reading.txt`). **RULED PASS as filed (the orchestrator, 16:50 PDT): the filed form is per
+  task on the wheeled-turret row, M1_CLASS's paired se, 12/12; the all-classes per-task reading and the wheels/fixed
+  row are REPORTED; the harness's non-determinism (92 of 108 silent runs differ) supports the reading on the merits;
+  the gang-press queue starvation is a round-32 finding, filed.**
+  - *At-rest hull-error median per class x task not worse (permutation p >= 0.05):* **PASS everywhere**; the smallest
+    p 0.087 (wheels/fixed faced_attack_move drawn, 3.6 v 2.7 deg), next 0.109, 0.149 (both better).
+  - *Settle time paired median <= +6 s:* **PASS**: +0.0 / +2.5 / -5.0 / +0.0 / +0.0 / +0.0 s.
+  - *Crews still moving at 75 s per task <= base + 1.645 se, the sized form the bar names (M1_CLASS's paired se,
+    wheels/turret row):* **PASS on all 12 task x class rows of wheels/turret** (closest: faced_attack_move +8 v
+    9.05, faced_support_by_fire +8 v 8.39); wheels/fixed faced_attack_move drawn +4 v 3.62 is OVER; hover/turret
+    all <= 0.
+  - *The same line read per TASK over all classes (n 24 paired on faction x seed):* **3 of 12 MISS**: drawn
+    faced_attack_move +12 (line +9.5), drawn faced_support_by_fire +10 (+9.1), clicked faced_screen +15 (+12.6);
+    the other nine pass (drawn faced_move -10, faced_right -14). **But the seam fired only in the gangs runs (36/35
+    of 144); the 108 law/syndicate/condemned runs have requests 0, the candidate's code path identical to the base,
+    and 92 of them still differ in their moving count: the hull-rest harness is not run-to-run deterministic
+    (its screen judge), unlike the headless series (mixed 289/289 identical).** Split of the three misses, fired /
+    silent: +5 / +7, +4 / +6, +2 / +13: the silent runs carry most of each.
+  - *REPORTED, the seam in a gang army (the rig class):* drawn requests 784, plans 170, driven 57, aborted 24,
+    **abandoned 177**, refused GOAL_BLOCKED 161 / START_BLOCKED 54 / NO_PATH 5, queue_waits 19179, pending_ticks 23402;
+    clicked 1176 / 115 / 45 / 18 / **209** / GOAL_BLOCKED 145, START_BLOCKED 80, NO_PATH 25 / 26578 / 31283; holds
+    pooled n 1141 median 14 max 110 ticks. Manoeuvre's face counters: face_plans drawn 893 v base 970, clicked 1867
+    v 2130 (all classes). **A finding: in a 19-crew gang press the one-session queue starves (23 % / 18 % of asks
+    abandoned at the 90-tick cap; the series had 2 of 459).** Not a bar line in (d); for the record and round 32.
+  Running: fights base (heavy, `planner-judge-fights-base`, 16:12 PDT); then fights candidate, bridge x2, cp2 x2.
+- 2026-10-15 15:20 PDT: **line (g), the clip on the final tree:** `~/projects/clips/round31/planner_terminus_f9d2c639.mp4`
+  (3840 x 1080, 32 s, side by side: TODAY left, PLANNER SEAM right, the seam's last good frame held; joined with
+  ffmpeg on the laptop from two `planner-lab PLANNER_ARMS=today PLANNER_FIXTURES=turnround PLANNER_SECONDS=40
+  MOVIE=...` runs on builder0's light lane at 0620e36e = code f9d2c639, the after arm `PLANNER_FLAGS=--nav-off=planner`,
+  both exited 0, 15:10 / 15:12 PDT). Rows: today 29.8 s, creep 821 ticks, end 2.9 m off, heading -173; the seam
+  15.5 s, 3 legs, creep 0, 0 hull contacts, end 1.5 m off, heading -178: the same figures as the 03:40 clip on
+  0a2a4a48. Looked at (16 s: the today rig jackknifed at the left wall, the seam rig straight, nose south; 31 s:
+  both round, the today rig askew by the wall, the seam rig mid-street). Frames and rows in
+  `references/round31/planner/clip/final_f9d2c639_*`. The after arm's own last frame is blank (the lab's scene gone
+  before the recorder stopped), so the join holds its 17.4 s frame. Still running: the hull-rest candidate arm.
+- 2026-10-15 15:10 PDT: **line (f), the price on the final tree, PINNED (`planner-census-11`, builder0 light lane
+  a1d9e1fc = code f9d2c639 + the recipe's taskset, exited 0, 15:05 PDT; `PLANNER_CPUS=0-3`, box load 16.7 / 16.5 with
+  native's CP-H gate and my hull-rest arm sharing it):** the seam's own face-about probe, native, warm us/expansion
+  early/late medians **229/263 (seed 92721, 119 plans) and 227/186 (seed 31337, 94 plans)**; codes OK 80/33,
+  GOAL_BLOCKED 28/35, START_BLOCKED 9/23, BUDGET 2/2, NO_PATH 0/1 (the same as every earlier read: the keep circle
+  and the crew fix changed no probe plan); the short hull's probe 187/143. **As filed ("SLICE x the probe's WARM
+  per-expansion median for the longest live hull <= 0.5 ms", warm = the LATE median): seed 92721 2 x 263 = 0.526 ms, a
+  MISS by 0.026 ms at load 16.7; seed 31337 2 x 186 = 0.372 ms, PASS.** The 07:49 read on a quieter box (222/214,
+  unpinned, load not quoted) sat at 0.43 ms on seed 92721, so a lighter box reads inside, but the filed form
+  decides: the upper bound per R31.6 is 0.526 ms. The lever, if the orchestrator wants it, is SLICE 1 (0.263 ms) at
+  roughly twice the hold per plan; nothing changed. (f) is not in the partial rule's ship clause; the orchestrator
+  told 15:30 PDT. The unpinned re-read at 14:54 (`planner-census-10`, fe5f8a9e,
+  load not quoted) was 253/391 and 284/210: load-inflated, not the cost line. `planner-census` now pins with
+  PLANNER_CPUS and quotes the load (a1d9e1fc). Running: the hull-rest candidate arm (heavy); the clip's two arms on
+  the final tree (`planner-movies-2`, light: before = today's drive, after = `--nav-off=planner`, turnround 40 s).
+- 2026-10-15 15:05 PDT: **bar line (b)'s named rig cases, REPORTED (n = 1, read never judged):** `make
+  planner-judge-cases` (fe5f8a9e, builder0 light lane, exited 0, 14:52 PDT; both arms, the candidate = `--nav-off=planner`
+  on the GDScript drive). Logs: `references/round31/planner/cases-b/`.
+  - **Seed 31 (Green_S0_2's round-30 grind):** run contact-ticks base 2143 / candidate 2687; Green_S0_2 base 1930
+    (the plaza leg, steer against Floodlight_31 for 1790 ticks = the grind as filed) / candidate 2198 (the WEST
+    STREET leg, planted on Container40_8 for 1987 ticks, "blocked by Green_S0_1", a squadmate wedge with NO seam event
+    in that leg: the seam's two plans for it, a 2-leg face and a 1-leg face, were elsewhere and driven). The grind
+    is NOT shorter under the seam: a different grind of the same length, nav's squadmate wedge (trace B's class,
+    relayed to manoeuvre for CP-H). Arrivals 3/3/4/3 candidate v 3/4/2/4 base (13 v 13 of 16).
+  - **Seed 51 (Green_S0_3's grind under the lift):** run contact-ticks base 374 / candidate 347; Green_S0_3 267 /
+    244; the base arrives every leg (16/16), the candidate 15/16: Green_S0_3 on the far ring road "arrived, order
+    complete, not touching" 9.6 m from the slot with NO seam event in that leg (its seam plans, a 2-leg face in the
+    west street and a 10-leg k-turn in the plaza, were driven in earlier legs). Not a plan carrying the rig off.
+  - **The squadmate pin (seed 9, both arms):** base pinned unit-ticks 491 (16.4 s; 8 pins, the longest 3.7 s:
+    round 30's 61.4 s pin is not in today's base, as the bar foresaw) / candidate 30 (1.0 s, one pin). Freed, no
+    backoff-and-re-pin loop.
+  - The rig 180 (deterministic): `test_wheeled_arrival`'s rig case green on the gate 85911f0b. The six-cusp car: a
+    short hull, the seam's `in_scope` test; the series' mixed line identical both arms (289/289) is the leak check.
+  Running: the hull-rest candidate arm (heavy, `planner-judge-hull-cand`), the price on the final tree (light,
+  `planner-census-10`, fe5f8a9e, line (f) re-read for the record).
+- 2026-10-15 14:50 PDT: **THE SECOND JUDGED SERIES PASSES BAR LINE (a).** `make planner-series-fresh exited 0`,
+  builder0, 14:45 PDT, series tree 35f5df92 (code f9d2c639), gate 85911f0b, Terminus seeds 172-184, n 13, every
+  seed to completion, read once on the fixed line (R31.8). **Rigs arrivals: base 180, candidate 172 of 208, paired
+  mean -0.615 se 0.500, pass line -0.823 -> PASS** (per seed 172 -1, 173 +1, 174 -1, 175 +2, 176 -1, 177 0, 178 +2,
+  179 -2, 180 -3, 181 -3, 182 -3, 183 0, 184 +1). Mixed: 289/289 of 312, identical both arms (seam silent 13/13).
+  Rigs contact-ticks (REPORTED): median base 855, candidate 533; paired mean -282.2 se 211.2; worst base seed 180
+  (2561), worst candidate seed 182 (2141); per seed base/candidate 172 119/1014, 173 2083/471, 174 406/264, 175
+  424/393, 176 682/848, 177 221/302, 178 2410/1931, 179 855/297, 180 2561/2020, 181 555/533, 182 1860/2141, 183
+  2191/296, 184 1793/1982. Seam totals (13 rig runs): requests 459, plans 137, driven 106, aborted 5, abandoned 2,
+  rerequested 0, refused GOAL_BLOCKED 203 / START_BLOCKED 83 / NO_PATH 23, queue_waits 486, pending per rig event
+  pooled n 448 median 11 max 104 ticks, pending_ticks 6573. Series 1 (diagnosis seeds 133-145, before the keep
+  circle) read -1.462 se 0.595 MISS. Saved: `references/round31/planner/series2-fresh/`. Next on the heavy lane:
+  hull-rest candidate (unit planner-judge-hull-cand, launched 14:50), then fights x2, bridge x2, cp2 x2.
+- 2026-10-15 14:35 PDT: **the 85911f0b gate landed; the FRESH SERIES is running (unit planner-series-2, launched
+  14:31 PDT, tree 35f5df92 = code f9d2c639 + Status).** Native's gate line (builder0): tests 2652 passed / 0 failed;
+  `>> remote: make check exited 2` on "check: 24 passed, 2 FAILED, 0 NOT RUN": sim-baseline MOVED on 6 of 13 maps
+  (foundry, pit, crossing, sumps, gorge, archipelago; the expected ON move, adoption the orchestrator's call) and
+  remote-guard-test (box-state: slot-light's quiet-window asserts while godot-nav ran; R31.10 non-blocking). NOT
+  JUDGED: the 3 TIMING lines. Seam twin 900/344/0; the army_layout10 red gone. Read as the re-gate green on the
+  tests; the orchestrator told (they may rule the two targets block). R31.9 noted: iterate on the light lane
+  (`make quick-remote` / filtered tests), the full check only for a named hash; CP-P1's gate stays native's plain
+  check. Result: `$S/remote-series-2.log`, `build/planner-series/verdict.txt` on builder0; rows name gate 85911f0b.
+- 2026-10-15 12:45 PDT: **native's RE-CUT: pair/cpp1-on = 85911f0b** (main a2ef0b31 + f9d2c639 + the mirror
+  dc9ac341/7f46591f + their seam_live fix 14f4de82 + PLANNER_DEFAULT true; 3a66f546 kept as pair/cpp1-on-3a66).
+  Their review of f9d2c639 found the C++ `seam_live` (the unstick gate and the planned-reverse block) read only
+  `_crews.has(name)`: on a reused name it would have held where live() now releases; fixed on the pair (a null,
+  freed or queued hull calls back PlannerSeam.live, so the release is mine) with a twin case (a crew injected
+  under the rig's name, its hull queued for deletion: unstick's command, the movers and the seam world equal).
+  builder0 light lane on 85911f0b: native_planner|planner_seam|planner_keep exited 0, 15 passed / 0 failed; seam
+  twin 344/900 held, 0 mismatches; my two-match test passes. The plain check (the gate) is unit native-chain9,
+  right after the CP-H gate 130a069b. On its green line: `$S/planner-series-2.sh`; rows name gate 85911f0b.
+- 2026-10-15 12:25 PDT: **the seam fix is GREEN at f9d2c639; native asked to re-cut and re-gate.** builder0 light
+  lane, `make native test FILTER=planner exited 0`, 33 passed / 0 failed, 12:19 PDT. 216c7c43 read 32/1: the new
+  test's own two asserts (it called `live()` inside the physics tick the sweep had already run in, and the
+  once-a-tick guard skipped the freed crew); `live()` now reads its own crew's hull and releases a freed one
+  (f9d2c639). The gate's path (the second match's rig under the same name held in its turn, no engine error) was
+  clean at 216c7c43 already. Next: native's pair hash + gate line, then `$S/planner-series-2.sh` on its green.
 - 2026-10-15 12:20 PDT: **the 3a66f546 gate was RED on a real seam bug of mine; fixed at 216c7c43, tests running.**
   Native's line (builder0, 12:05 PDT): `make check exited 2`, 2646 passed / 1 failed; 22 passed, 2 FAILED (test,
   sim-baseline MOVED on 6 maps = expected ON), 2 NOT JUDGED (perf-judge refused 3x on a busy box; scenario_perf

@@ -1,3 +1,5 @@
+> **ARCHIVED at round 31's close (2026-10-15/16).** This is the brief as its worker left it on `stream/native` at `17433a19`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: native (stage 1: the driving and shooting half of the brain in C++, equal answer)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/native.md` (*N7: what a port must look like to pay*,
@@ -208,6 +210,27 @@ builder0; the laptop only in a granted slot (C27.6)._
 
 ### Round 31 (started 2026-10-14 ~22:30 PDT from main `cff4307e` + docs `75dbbb7c`; covered by the launch check)
 
+**ROUND 31 REPORT (close, 2026-10-15).** Done = every item shipped or carried by the orchestrator's ruling.
+- **Shipped pairs** (each mirror at 0 mismatches in its twins): T3b and T4 (traffic; T4's ghost-test leak fixed in
+  `fafe49ea`), **CP-H** (`76b7ee46`: unstickback, kturnarc, realspeed and realslow default ON; builder0 2642/0; main
+  `b352fa2a`), **CP-P1** (`166f7f1e`: planner f9d2c639 + the seam mirror + PLANNER_DEFAULT true; builder0 2653/0; main
+  `e175e660`, baselines `71538a8d`). Every red ship-tree check was traced to its owner: planner (army_layout10's freed
+  hull), manoeuvre (H1's queued-task route), and mine (the ghost leak, the station coverage floor).
+- **Planner C++ (C31.5):** every planner commit reviewed for fidelity before push; CP-P0 proofs at 0 mismatches; the
+  seam mirror (`dc9ac341`, `7f46591f`, `14f4de82`: _planned_reverse callback, unstick, seam_live).
+- **C31.9 split:** test_native_traffic_hold split (harness `tests/native/traffic_twin.gd`), .uids committed.
+- **Final check: GREEN by inheritance.** stream/native = main `04620f67` + this brief; `tools/merge_check_needed.sh
+  04620f67 HEAD` says INHERIT (docs only). Main `04620f67` on builder0: `>> remote: make check exited 0`, 2653 passed /
+  0 failed, 26 targets ALL JUDGED, sim-baseline 13 unmoved, every test_native_* in it. (`71538a8d`'s check was red on
+  manoeuvre's `_refusal_watch` static, written in Movement.drive above the dispatch so only the twin's live arm wrote
+  it: 232 test_native_drive mismatches, a harness artifact. The orchestrator reverted it; manoeuvre re-lands the
+  counters on ManoeuvreCensus (`83e9a7d2`) with a guard that none is a Movement static.) **Lesson for the twin:** a
+  Movement static written before `drive()`'s dispatch is invisible to the native arm; keep such counters off Movement.
+- **Carried to round 32:** N5's held ports and the four test_native_* splits (see the end of this section).
+- **For the next agent:** run light-lane work as `make native test ...` (plain `test` has no library there); call
+  `tools/remote.sh --light native test 'FILTER=a|b'` directly when FILTER has `|`; when a waiter greps the log, match
+  `>> remote: make.* exited`, never `>> remote: make` (the wrapper's opening line matches that too).
+
 **Plan (in order):** (1) the pairs as they arrive, T3b first (the round's cheapest ship): mirror `Traffic.shape` in the
 native `_avoid` as a GDScript callback, as round 29's hold is (traffic's call: the crossing's table and verdicts stay
 GDScript), then twin tests, then a scratch pair tree (`pair/t3b` in `../godot-native-pair`: mine + traffic's `e57f93d2` +
@@ -295,8 +318,65 @@ pair/cpp1: the seam gates in the planned-reverse block and the unstick; DriveCon
 traffic twins snapshot and compare PlannerSeam's world via `MoverState.world_capture/restore/diff`). The planner
 adopted the default-const switch form (`PLANNER_DEFAULT`, 39ba4b0b). New: `native-live-guard` starts and quits Godot
 through the library first (`3331f81d`, verified on builder0), and that is hazard 7 in native.md.
-**Running (unit native-chain2, heavy one at a time):** CP-P1 `ef38361f` (pair/cpp1-on) → T4 `8ac371a9` NATIVE=off then
-check → CP-H ON `9fb6c0cd` (manoeuvre's H1–H3 flipped).
+**Re-cut, then chain4 (06:37 PDT):** CP-P1 pair/cpp1-on became `aa0615e4` (planner `86e5c646` + mirror + PLANNER_DEFAULT
+true). New `tests/test_native_planner_seam.gd`: a War Rig on a move_to in Terminus, held 195 of 900 compared drives,
+0 mismatches live and owned (light lane, then again in the full check). **The CP-P1 gate check is RED, on the planner's
+side:** builder0 `make check exited 2`, 2634 passed / 6 failed. 4 test_planner_seam failures (the test still assumes
+default OFF with `--nav-off=planner` as the opt-in; that polarity is inverted at PLANNER_DEFAULT true), plus
+test_nav_face_recovery (the wedged-semi recovery was never reached) and test_kturn_three_point (4 legs, 0 k-turns).
+sim-baseline moved on 7 maps (expected ON). Every test_native_* passed (87/87). Sent to planner and orchestrator. I re-cut
+when the planner sends a fixed commit. T4 was re-cut on traffic's clean `357ca38b`: pair/t4 `0475758f` (OFF, merge
+evidence) and pair/t4-on `93c85531` (ghost ON). **Running (unit native-chain4):** `0475758f` check → `93c85531`
+check NATIVE=off → CP-H ON `9fb6c0cd` check. My uid miss in the C31.9 split is fixed at `d5e1d5a3` (main `777d2cb8`).
+**Late morning (2026-10-15).** CP-H was called without T4 (allnoghost). **R31.4's ONE tree = `68280cce`** (pair/cph-on,
+worktree godot-native-cph): main `83341378` + one commit flipping UNSTICK_BACK_DEFAULT, KTURN_ARC_DEFAULT,
+REAL_SPEED_DEFAULT and `BrainSwitches.realslow` to true (ghost OFF). Its plain check on builder0 (09:57 PDT): `make check
+exited 2`, 2637/1. sim-baseline moved on all 13 maps (expected ON). The one red test is test_control_queued_task's route
+case (screen never starts, 80.9° off). The light lane on 68280cce: native ON 11/1, the same red; `NATIVE=off` 12/0.
+Manoeuvre's GDScript arm with realslow OFF fails identically, so it is H1's own fragility on a ground pin, not a mirror gap
+(orchestrator: stand down). Manoeuvre traces it, and the CP-H tree is re-cut on their fix. The old CP-H ON is kept as
+pair/cph-on-9fb6; T4-on is dropped (pair/t4-on-dropped). **T4 OFF:** `0475758f` was red on engine-log-gate only
+(2639/0, sim-baseline unmoved). The cause is test_traffic_ghost never disposing its TacticsLab (14 ObjectDB / 4
+resources at exit, reproduced alone). The fix is `fafe49ea` (traffic took it as traffic-t4 `aaa7fa8e`), and its full
+re-check runs as native-chain6. **CP-P1:** re-cut twice. `8bb2ad4e` (planner edb773cf) passed the light lane at 11/0
+(the seam held 344/900, 0 mismatches) and was dropped for attempt 2. **Gate = `3a66f546`** (main `1fc72e66` + planner
+`38e9678d`, the keep circle, C++ reviewed and approved + mirror + PLANNER_DEFAULT true): light lane 13/0, its plain check
+queued as native-chain7 after T4. Note for the next agent: run light-lane work as `make native test ...` (plain `test`
+has no library there), and call `tools/remote.sh` directly when FILTER contains `|`.
+**Midday.** T4 OFF re-check `fafe49ea` GREEN (builder0 10:55, 2639/0, 26 targets ALL JUDGED), merged to main as
+`dc9792f9`. CP-P1 `3a66f546` was red on one planner bug (test_tactics_army_layout10: a seam crew outlived its freed
+hull). The planner fixed it in `f9d2c639`, and that needed one mirror change: `seam_live` releases a crew with a
+freed or queued hull through `PlannerSeam.live` (`14f4de82` + a twin case). **CP-P1 gate = `85911f0b`** (main
+`a2ef0b31` + f9d2c639 + mirror; light lane 15/0). **CP-H gate = `130a069b`** (main `a2ef0b31`, H1 amended `f593f487`,
+plus the four flips; light lane 27/0 incl. the queued-task route). Both full checks run in that order (chain8, chain9).
+R31.9: iterate with `make quick-remote`; full checks only for named hashes. Round 32 will ask for splits of
+test_native_traffic_hold / execute / drive / wall in the C31.9 pattern.
+CP-H gate `130a069b`: builder0 13:20, tests 2641/0. sim-baseline moved on all 13 maps (expected ON), and
+remote-guard-test's quiet-window failed at load 22 (box state). The orchestrator ruled it GREEN (R31.10), and manoeuvre's
+A/B runs on it. Caveat: on that tree `--brains-off=realslow` cannot turn realslow OFF (the static var was flipped; B8 has
+no default const). Manoeuvre runs its OFF arms on the parent `a2ef0b31`. The ship form (REAL_SLOW_DEFAULT, on = default !=
+named) is brains'.
+CP-P1 gate `85911f0b`: builder0, tests 2652/0. The seam twin compared 900 drives (344 held) with 0 mismatches, live and
+owned. sim-baseline moved on 6 of 13 maps (foundry, pit, crossing, sumps, gorge, archipelago), which is expected with
+planner ON. remote-guard-test failed only on box state (slot-light quiet window, load 24.5), so it can't block (R31.10).
+The only NOT JUDGED lines are the 3 TIMING ones. Reported to the planner (planner-series-fresh, seeds 172-184) and the
+orchestrator, who ruled it GREEN (R31.10). Old CP-P1 trees: pair/cpp1-on-aa06, -8bb2, -3a66.
+If the planner's second series passes, CP-P1 ships as that pair plus the orchestrator's adoption of the six moved
+baselines. Brains' realslow toggle fix `c45c9792` (REALSLOW_DEFAULT, joins the CP-H ship) is GDScript-only: no C++ reads
+realslow, so it needs no mirror.
+**Evening: both pairs ship.** CP-H SHIP tree `76b7ee46` (main edc7dec8 + UNSTICK_BACK, KTURN_ARC, REAL_SPEED and
+REALSLOW _DEFAULT := true): builder0, tests 2642/0, only sim-baseline red (all 13 moved, expected); merged as main `b352fa2a`.
+CP-P1 SHIP: `3cd68da5` (b352fa2a + f9d2c639 + the mirror + PLANNER_DEFAULT true) was 2651/2. test_native_drive's coverage
+floor read "station keeping runs (12)" against >= 20, with 0 mismatches in 2160 drives: the scenario's three followers
+stationed 44 (planner alone), 20 (CP-H alone) and 12 (both). The fix `166f7f1e` is test-only and keeps the floor: five
+followers of front-row leaders, each starting ON its slot. Stationed on builder0's light lane: neither 249, planner alone
+199, CP-H alone 210, both 121, all 0 mismatches. CP-P1 SHIP `166f7f1e`: builder0, tests 2653/0, only sim-baseline red
+(expected), seam twin 0 mismatches. Handed to the orchestrator to merge. Scratch branches scen/{neither,planner-alone,cph-alone}
+hold the fix on the other three trees.
+CP-P1 merged as main `e175e660`. **Carried to round 32 (orchestrator's ruling):** (a) N5's held ports (`_negotiate`'s
+body / ask / `_begin_yield`, the k-turn planner, `_manoeuvre`), unblocked by e175e660 (the seam is decided); each is a
+pair with its own checks. (b) Split test_native_traffic_hold, test_native_execute, test_native_drive and test_native_wall
+(the slowest native files in round 31's shard plan) in the C31.9 pattern; measure each on builder0 first.
 
 **Planner reviews:** `7c286000` (CP-P0) approved for fidelity with 4 notes (one shared session; the twin's wall time v the
 shard floor; the `%.2f` cache key; an unbounded cache). The planner took notes 1–2 in `50d380e1`, which is also approved

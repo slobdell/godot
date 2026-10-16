@@ -1,3 +1,5 @@
+> **ARCHIVED at round 31's close (2026-10-15/16).** This is the brief as its worker left it on `stream/brains` at `6226e9e6`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: brains (the yard's last crew in every time with the 180° arrival and a scout's chase intact; his bridge 108/108; support by fire lines up on his drawn facing; the re-seat reads the honest speed)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 306–311 — **307 is yours twice**), `_agents/judging.md`,
@@ -123,6 +125,20 @@ backlog item is done, judged, or parked by its bar. No lead gate is pending; no 
   turn-hull's ceiling (C31.8: a wheeled hull not turned at rest, manoeuvre's), as is law_tank's 80–90° A_1/A_3 in
   both arms.
 - **B8, realslow:** on main (aa205ea5), opt-in behind `--brains-off=realslow`. Waits for manoeuvre's CP-H A/B.
+- **B8 toggle fix (for CP-H's ship):** `--brains-off=realslow` set it TRUE, so once the default flipped ON no arm
+  could turn it off. Fixed in **c45c9792**: it flips against `REALSLOW_DEFAULT` (`BrainSwitches.realslow_named`), as
+  unstickback/kturnarc/realspeed do. Check on builder0 at c45c9792: **exited 0, 2642/0**, sim-baseline unmoved,
+  bridge-pooled 18/18. MERGED to main as 40eda0cf (INHERIT, no second check).
+- **R31.9 split (stretch, test-only), GREEN:** `lab/brains-r31-split` **5a30b037** (split 293f9d62 + main 04620f67).
+  The six slowest brains test files are now fifteen, with shared stages in base files that hold no tests. 33 tests before and after, bodies
+  byte-identical. Slowest file 264 s -> 126 s (tactics_scenarios_4, builder0 light lane). Check on builder0 at 5a30b037:
+  **exited 0, 2653/0**, sim-baseline unmoved, bridge-pooled 18/18, native-verify 0 mismatches. Handed to the orchestrator
+  MERGED to main as e66b41f1 (the round's final main check covers it). Earlier runs: 293f9d62 killed by the 5400 s cap on a saturated box. 1a7c950f red on sim-baseline only
+  (main's 71538a8d baselines were adopted on a stale native lib, corrected at 4973a482). f18eaea0 stopped (main's
+  test_native_drive red, reverted at 04620f67). tests/shard_times.txt has no rows for the new files yet.
+- **Cleanup done:** worktrees godot-brains-sbf and godot-brains-bridge removed, plus their builder0 folders (cwd-checked idle).
+  Branches kept: lab/brains-r31-bridge, lab/brains-r31-split, pair/brains-v5, stream/brains. Round 32: `make test-times` to give
+  the 9 new test files their shard times. **Stream done for round 31.**
 - **R31.3:** test_tactics_pursuit made robust over seeds (a16585bf, 0415da23): on main (aa205ea5). A/A filed in
   judging.md.
 

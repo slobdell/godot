@@ -1,3 +1,5 @@
+> **ARCHIVED at round 31's close (2026-10-15/16).** This is the brief as its worker left it on `stream/manoeuvre` at `c60cc46d`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: manoeuvre (the honest reading's consumers: a wedged IFV or truck backs out instead of sitting at full throttle, a War Rig pinned on a friend asks then backs straight; k-turn legs measured by a gear-signed arc; wheeled turret vehicles turn their whole hull to his drawn facing)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 306–311 — **307, 309, 310, 311 are yours**),
@@ -128,7 +130,7 @@ _Updated 2026-10-15 ~18:00 PDT by the manoeuvre worker (`godot-manoeuvre`, `stre
 CP-H (every filed line passes; main `b352fa2a`). M6 tooling done. M1b(2) turn-hull PARKED (the filed rule; a round-32
 candidate). Handover counters (`esc_after_refusal`, `refusal_then_free`) landed on the planner's `last_refusal`. A clip for
 the lead: `~/projects/clips/round31/manoeuvre_rig_wedge_today_v_shipped_seed31_25c7421b.mp4` (`make manoeuvre-pin-clip`).
-Green hash: see *Merge notes*. Questions for the lead: none.
+**Green hash: `83e9a7d2`** (builder0 `make check exited 0`, 2657/0, 24 passed, 2 not judged; on main `04620f67`, planner ON). Re-land: main `1a39dc87` went red on native's twin (`test_native_drive`, 232 mismatches: `_refusal_watch` filled only on the GDScript arm) and was reverted at `04620f67`; `83e9a7d2` moves the three counters and their helpers to ManoeuvreCensus (the twin compares every Movement `static var`), `Movement.escape_arms()` still reports them, and a guard test keeps them off `MoverState.static_names()`. Questions for the lead: none.
 
 | item | commit | state |
 |---|---|---|
