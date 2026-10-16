@@ -33,6 +33,10 @@ exited 2`, 2671 passed / 0 failed, 25 targets passed, sim-baseline alone red (13
 sim-baseline-adopt` (reason: the crossing ON). Bars filed: B3b-2c, CP-Q, H1b (`workstreams.md` *Bars (round 32)*).
 Rulings R32.1 (native half already on main), R32.2 (H1b writes the repair fields). C32.6 closed: no navmesh gap.
 
+**UPDATE ~03:40 PDT: the ask loop is COMMON, just not on seed 31** (manoeuvre's hunt, builder0 `48657f07`, GDScript,
+Terminus drive seeds 1–16, n 1 a seed): base loops mixed 105 (12/16 seeds), rigs 114 (11/16). H1b's settle fixes ~30 %;
+the rest are `far` (> 12 m of route left). Being traced: two hulls pinned on each other mid-route (a give-way priority
+question, traffic's block; a joint contract to follow). **He will see this.**
 **Round 31's "known issue" may be gone (manoeuvre, ~02:45 PDT):** seed 31's ask loop does NOT reproduce on today's main
 (builder0, `7a9b17e4` = main + H1b OFF, Terminus rigs s31, n 1 an arm: byte-identical, 16/16 arrive, loops 0). It was on
 `130a069b`, before CP-P1; the rigs now take planner legs. The defect still shows in H1b's unit stage (13 loops in 70 s at
