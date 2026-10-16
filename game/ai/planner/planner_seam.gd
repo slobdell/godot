@@ -543,6 +543,7 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 			crew.session.step(1)
 			var refusal := crew.session.result()
 			crew.session.cancel()
+			crew.session = null   # its library instance (and the World's field vectors) freed now (native's note)
 			crew.begun = false
 			if refusal.code != PackedPlan.ALREADY_THERE and tick == crew.held_since:
 				refused_early += 1   # answered on the ask's own tick: never held
@@ -563,6 +564,7 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 		return true
 	var plan := crew.session.result()
 	crew.session.cancel()
+	crew.session = null
 	crew.begun = false
 	_queue.erase(name)
 	return _answer(mover, cmd, crew, name, tick, _delta, plan)
