@@ -30,7 +30,7 @@ static func _capture(traffic: Traffic, movers: Array[Movement]) -> Array:
 	for name in _traffic_statics():
 		var value: Variant = traffic.get(name)
 		values[name] = value.duplicate(true) if value is Array or value is Dictionary else value
-	return [states, values]
+	return [states, values, MoverState.world_capture()]
 
 
 static func _restore(traffic: Traffic, movers: Array[Movement], snap: Array) -> void:
@@ -39,6 +39,7 @@ static func _restore(traffic: Traffic, movers: Array[Movement], snap: Array) -> 
 	for name: String in snap[1]:
 		var value: Variant = snap[1][name]
 		traffic.set(name, value.duplicate(true) if value is Array or value is Dictionary else value)
+	MoverState.world_restore(snap[2])
 	for each in movers:
 		each.native_stale = Movement.STALE_ALL
 
@@ -51,7 +52,7 @@ static func _diff(a: Array, b: Array) -> String:
 	for name: String in a[1]:
 		if typeof(a[1][name]) != typeof(b[1][name]) or a[1][name] != b[1][name]:
 			return "Traffic.%s: %s v %s" % [name, var_to_str(a[1][name]).left(200), var_to_str(b[1][name]).left(200)]
-	return ""
+	return MoverState.world_diff(a[2], b[2])
 
 
 ## Runs the stage (`arena`, `kind`: "head" or "cross") for `seconds` with the twin compare on every tick; `owned` = the

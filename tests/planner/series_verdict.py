@@ -38,6 +38,19 @@ def seam_reports(directory):
     return out
 
 
+def pooled_holds(reports, squad=None):
+    """The hold per rig event POOLED over the arm's runs (the orchestrator's reported line: pending ticks per rig event,
+    median and max per arm): n, median, max hull-ticks; `squad` keeps the runs named <squad>-<seed>."""
+    ticks = []
+    for run, rep in reports.items():
+        if rep is None or (squad is not None and run.rsplit("-", 1)[0] != squad):
+            continue
+        ticks.extend(int(t) for t in rep.get("hold_ticks", []))
+    if not ticks:
+        return {"n": 0, "median": 0, "max": 0}
+    return {"n": len(ticks), "median": statistics.median(ticks), "max": max(ticks)}
+
+
 def paired(base, cand, keys, field):
     diffs = [cand[k][field] - base[k][field] for k in keys]
     n = len(diffs)
@@ -89,15 +102,18 @@ def main(argv):
                          "worst_base": max(keys, key=lambda k: base[k]["contacts"])[1],
                          "worst_candidate": max(keys, key=lambda k: cand[k]["contacts"])[1],
                          "line": "REPORTED (the rigs row's MDE is +74 % at n 13)"},
+            "pending_per_event": pooled_holds(reports, squad),
         }
         verdict["squads"][squad] = row
         print("PLANNER_SERIES_SQUAD %s: n %d | arrivals base %d candidate %d of %d, paired mean %+.3f se %.3f -> %s | "
-              "contact-ticks median base %s candidate %s, paired mean %+.1f se %.1f, worst base seed %s (%d) candidate seed %s (%d)" % (
+              "contact-ticks median base %s candidate %s, paired mean %+.1f se %.1f, worst base seed %s (%d) candidate seed %s (%d) | "
+              "pending per rig event (candidate, pooled) n %d median %s max %s ticks" % (
                   squad, n, row["arrived"]["base"], row["arrived"]["candidate"], units, arr["mean"], arr["se"],
                   "PASS" if arr_pass else ("NOT JUDGED (n < 6)" if n < 6 else "MISS"),
                   row["contacts"]["base_median"], row["contacts"]["candidate_median"], con["mean"], con["se"],
                   row["contacts"]["worst_base"], base[(squad, row["contacts"]["worst_base"])]["contacts"],
-                  row["contacts"]["worst_candidate"], cand[(squad, row["contacts"]["worst_candidate"])]["contacts"]))
+                  row["contacts"]["worst_candidate"], cand[(squad, row["contacts"]["worst_candidate"])]["contacts"],
+                  row["pending_per_event"]["n"], row["pending_per_event"]["median"], row["pending_per_event"]["max"]))
     # The seam, per candidate run and summed.
     totals = {"requests": 0, "plans": 0, "driven": 0, "aborted": 0, "abandoned": 0, "rerequested": 0, "queue_waits": 0,
               "pending_ticks": 0, "refused": {}, "runs_fired": 0, "runs_silent": 0, "holds_max": 0, "holds_medians": []}
@@ -123,6 +139,7 @@ def main(argv):
         return 2
     totals["holds_median_of_medians"] = statistics.median(totals["holds_medians"]) if totals["holds_medians"] else 0
     del totals["holds_medians"]
+    totals["pending_per_event"] = pooled_holds(reports)   # every event in the arm, pooled: n / median / max hull-ticks
     verdict["seam"] = totals
     print("PLANNER_SERIES_SEAM_TOTAL %s" % json.dumps(totals, sort_keys=True))
     print("PLANNER_SERIES %s" % json.dumps(verdict, sort_keys=True))

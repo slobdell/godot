@@ -233,7 +233,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 		out.code = PackedPlan.GOAL_BLOCKED
 		out.why = "the goal pose is not clear by %.1f m" % MARGIN_M
 		return out
-	if _at_goal(req, req.start_x, req.start_z, theta0, goal_theta, tol_rad, 0):
+	if _at_goal(req, req.start_x, req.start_z, theta0, goal_theta, tol_rad, 0, world, start_offs):
 		out.code = PackedPlan.ALREADY_THERE
 		out.end_x = req.start_x
 		out.end_z = req.start_z
@@ -275,6 +275,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 	var v_fwd := maxf(req.v_fwd, 0.1)
 	var v_rev := maxf(req.v_rev, 0.1)
 	var horizon2 := req.horizon_m * req.horizon_m
+	var keep_all2 := req.keep_all_m * req.keep_all_m   # INF = no circle (INF < INF is false below)
 	var expansions := 0
 	var goal_id := -1
 	var best_cost := INF
@@ -299,7 +300,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 				out.why = "budget of %d expansions spent" % req.budget
 			break
 		expansions += 1
-		if _at_goal(req, nx[cur], nz[cur], nth[cur], goal_theta, tol_rad, ngear[cur]):
+		if _at_goal(req, nx[cur], nz[cur], nth[cur], goal_theta, tol_rad, ngear[cur], world, start_offs):
 			# The last leg's roll past its end must be clear too.
 			if _roll_clear(world, req, start_offs, nx[cur], nz[cur], nfx[cur], nfz[cur], ngear[cur], nsteer[cur], radius, lag_fwd, lag_rev):
 				if ng[cur] < best_cost:
@@ -379,10 +380,16 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 					var ddz := z - req.start_z
 					if ddx * ddx + ddz * ddz > horizon2:
 						break
+					if keep_all2 < INF:
+						# The KEEP circle (round 31, the face's slot law): a pose outside it is not a pose of this plan.
+						var kdx := x - req.keep_x
+						var kdz := z - req.keep_z
+						if kdx * kdx + kdz * kdz > keep_all2:
+							break
 					var at_end := next_end < LEG_ENDS_M.size() and swept >= LEG_ENDS_M[next_end] - 0.001
 					if at_end:
 						next_end += 1
-					if not at_end and (swept < 1.0 - 0.001 or not _at_goal(req, x, z, th, goal_theta, tol_rad, gear)):
+					if not at_end and (swept < 1.0 - 0.001 or not _at_goal(req, x, z, th, goal_theta, tol_rad, gear, world, start_offs)):
 						continue
 					var g := g_leg + swept / v + band
 					var key := _key(x, z, th, gear, cell_m, bins)
@@ -476,14 +483,42 @@ static func trace(req: PlanRequest, out: PackedPlan) -> void:
 	out.end_fz = fz
 
 
-static func _at_goal(req: PlanRequest, x: float, z: float, th: float, goal_theta: float, tol_rad: float, gear: int) -> bool:
-	if req.arrive_gear != 0 and gear != req.arrive_gear:
-		return false
+static func _at_goal(req: PlanRequest, x: float, z: float, th: float, goal_theta: float, tol_rad: float, gear: int,
+		world: PlannerWorld, start_offs: PackedFloat32Array) -> bool:
 	var dx := x - req.goal_x
 	var dz := z - req.goal_z
-	if dx * dx + dz * dz > req.tol_m * req.tol_m:
+	var d2 := dx * dx + dz * dz
+	if req.keep_end_m < INF:
+		# The KEEP circle's end rule (round 31): the goal pose no further from the slot than `keep_end_m`.
+		var kdx := x - req.keep_x
+		var kdz := z - req.keep_z
+		if kdx * kdx + kdz * kdz > req.keep_end_m * req.keep_end_m:
+			return false
+	if d2 <= req.tol_m * req.tol_m:
+		if req.arrive_gear != 0 and gear != req.arrive_gear:
+			return false
+		return absf(_wrap(th - goal_theta)) <= tol_rad
+	if not req.aim:
 		return false
-	return absf(_wrap(th - goal_theta)) <= tol_rad
+	# (The arrive gear is the pose's, not the aim's: a reverse arc that ends pointing at the waypoint IS the plan; the
+	# route drives forward from there. Asking for a forward last leg appended a 23.5 m straight the hull never needed.)
+	# AIM (round 31, the k-turn's goal): the hull points at the goal within the tolerance and the straight run to it is
+	# clear -- the pursuit law drives from here. A point 24 m off needs ~2 degrees of heading from a lattice of three
+	# locks and twelve leg lengths, so standing ON it costs a wiggle (R3 F2 R12) the hull never needed.
+	if absf(_wrap(th - atan2(-dz, -dx))) > tol_rad:
+		return false
+	return _straight_clear(world, req, start_offs, x, z, cos(th), sin(th), sqrt(d2))
+
+
+## The footprint swept straight along the heading for `dist` metres at SUB_M, every step clear by the margin.
+static func _straight_clear(world: PlannerWorld, req: PlanRequest, start_offs: PackedFloat32Array,
+		x: float, z: float, fx: float, fz: float, dist: float) -> bool:
+	var swept := 0.0
+	while swept < dist - 0.001:
+		swept += SUB_M
+		if world.footprint(x + fx * swept, z + fz * swept, fx, fz, req.half_w, req.half_l, MARGIN_M, start_offs) < 0.0:
+			return false
+	return true
 
 
 ## The estimate that orders the search. Its admissible core: the fastest metre is a forward one, and any drivable
@@ -499,6 +534,18 @@ static func _heuristic(req: PlanRequest, x: float, z: float, th: float, goal_the
 	var dx := x - req.goal_x
 	var dz := z - req.goal_z
 	var d := sqrt(dx * dx + dz * dz)
+	if req.aim and d > req.tol_m:
+		# AIM (round 31): the goal is reached pointing at the point from wherever the hull is, so the point's own cost
+		# (the distance, the table's cost to its pose) is not owed: only the heading change to point at it, at R per
+		# radian, plus the cusps that change needs in the start's room. The point estimate made a 4.9 s answer
+		# invisible behind a 10.8 s one (the anytime bound stopped at 9 expansions).
+		var turn_aim := absf(_wrap(th - atan2(-dz, -dx)))
+		var h_aim := radius * turn_aim / maxf(req.v_fwd, 0.1)
+		if turn_aim > 0.3 and swing < PI:
+			var legs_aim := ceilf(turn_aim / swing)
+			if legs_aim > 1.0:
+				h_aim += cusp_s * (legs_aim - 1.0)
+		return h_aim
 	var turn := absf(_wrap(th - goal_theta))
 	var h := maxf(d, radius * turn) / maxf(req.v_fwd, 0.1)
 	# The goal's frame: along = d . goal_forward, across = d . goal_right; the heading relative to the goal's.

@@ -579,6 +579,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
 	c.tank_script = config.get("tank_script", Variant());
+	c.keep_planner_seam = config.get("planner_seam", Variant());
+	c.planner_seam = c.keep_planner_seam.get_validated_object();
+	c.planner_on = c.planner_seam != nullptr && (bool)config.get("PLANNER_ON", false);
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();

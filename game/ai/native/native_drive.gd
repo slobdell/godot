@@ -32,6 +32,9 @@ static func usable(_mover: Movement) -> bool:
 	return ok
 
 
+const PLANNER_SEAM := "res://game/ai/planner/planner_seam.gd"
+
+
 static func configure() -> bool:
 	if _configured:
 		return true
@@ -104,7 +107,14 @@ static func configure() -> bool:
 		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
 		"tank_script": Tank,
 	}
-	config.merge(NativeTraffic.drive_config())  # round 29 (traffic T1): the street hold, when this tree has it
+	# Round 31 (planner CP-P1): the seam's switch and its table, when this tree has the seam (loaded by path: the file
+	# parses on a tree without it).
+	if ResourceLoader.exists(PLANNER_SEAM):
+		var seam: Script = load(PLANNER_SEAM)
+		config["planner_seam"] = seam
+		config["PLANNER_ON"] = bool(seam.call("on"))
+	config.merge(NativeTraffic.drive_config())
+  # round 29 (traffic T1): the street hold, when this tree has it
 	_configured = NativeBridge.impl.drive_configure(config)
 	if Movement.FIRE_DETOUR_STEPS.size() != 3:
 		push_error("NativeDrive: drive_native.cpp scores three sidesteps; movement.gd has %d" % Movement.FIRE_DETOUR_STEPS.size())
