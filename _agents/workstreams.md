@@ -179,6 +179,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   on FRESH Terminus seeds 360–372 with the fixed reader, filed before numbers, both arms, as the filed bound form. The other
   lines of stage 1 stand as read. The as-filed and offline numbers are reported beside it. CP-H's round-31 STUCK rows may be
   overstated the same way: noted for the close, not re-judged.
+  **Its bar sentence, filed ~10:50 PDT before any number (manoeuvre):** "H1b line (3) STUCK, run once: Terminus drive seeds
+  360–372, rigs and mixed, base `--brains-off=native` v H1b `--nav-off=h1b --brains-off=native` (GDScript), STUCK crew-seconds
+  read by `tests/manoeuvre/pinned_table.py` as fixed on its own commit (a goal-distance jump > 3 m = NEW_GOAL_JUMP restarts
+  the run; the s303 Green_S0_4 case held by a test), per squad: H1b ≤ base + 1.645 se (seed-paired), read once at completion;
+  the as-filed 300–312 reading (257 → 380) and the offline one (192 → 121) reported, not judged." Runs after stage (6).
 
 - **R32.6 `test_tactics_body::test_his_three_squads_keep_together` is red ON MAIN, order-dependent (2026-10-16 ~08:20 PDT,
   planner's A/B):** alone on main's code (254973bb, builder0 light) it FAILS deterministically (squad-seconds alone off 33.5 /
