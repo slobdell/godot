@@ -150,6 +150,8 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   11 / 16 / 20 m of reverse, while the straight room back is ≤ 3 m (met 0/62). **Proposed to the orchestrator:** (A) a
   parked same-squad friend gives way FORWARD, or (B) SWAP SEATS (my lean). Either is not my code; my part is the
   detection hook. H1b's settle stands for the near-goal case, judged as filed with `far` reported.
+- **quick-remote GREEN at `e8e20ca9`** (builder0, `>> remote: make quick … exited 0`, 59 passed 0 failed, 11 test files the
+  diff selects + lint of 138 scripts + combat-smoke). `test_manoeuvre_h1b` 60.3 s, `test_manoeuvre_h1b_guard` 40.2 s.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
@@ -184,6 +186,28 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
 - **Working hypothesis to TRACE before designing (now doubtful, see above):** attempt 2's hulls turned mid-approach, swung the halt and re-seated
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
+
+### C32.10 (ruled 2026-10-16): SWAP SEATS for the far loop
+
+The owner is BRAINS: the element's seats and the two Movement goals, behind one seam (shape `Element.swap_seats(a, b) -> bool`,
+refused when a seat is pinned by a drawn facing or a task role). Player squads are elements too. **Mine:** the detection
+hook (H1b's failed-ask count on a PARKED same-squad friend whose slot is nearer than mine) calling the seam, plus the
+stage test. The signature is agreed with brains through the orchestrator. Its own bar comes after H1b. The 12
+third-hull rig cases are reported, not designed for. **H1b is judged as filed (`far` reported) and ships if it passes.**
+
+**The seam as recorded on main (brains' final version):** `Elements.of_match(m).swap_seats(asker, parked) -> String`
+("" = taken, else the reason). It trades both crews' last-issued orders inside the call (the same tick) and sets
+`_swap` so later plans keep it. Refusals: not_same_element, unseated, leader, kept, task_role, drill, role, deck,
+budget, standing. A drawn facing is NOT a refusal. Brains codes it after B3b-2c's verdict.
+**My hook is built on `lab/manoeuvre-swap` `367ab66c` (not run yet):** `--nav-off=h1bswap` OPT-IN. It sits inside H1b's ON
+path at the second failed ask, asked only of a PARKED friend whose own goal is nearer me than my route left. Taken → the
+escape holds in ESC_SWAP until my goal jumps (cap 0.5 s); refused → H1b as before. A stub ("no_seam") until the
+method exists; `Movement.swap_seam_override` plays the seam in `tests/test_manoeuvre_h1b_swap.gd` (hook off / refused /
+taken). Kept off `stream/manoeuvre` so H1b's checked tree stays H1b only.
+
+**H1b bar line (1), amended on main before numbers:** on the named hunt seeds (Terminus mixed 4, 5, 6, 7, 9, 10, 11,
+13, 14, 16; rigs 1, 2, 3, 4, 6, 9, 10, 14, 15, 16; fights 4, 6) AND on the fresh Terminus seeds 300–312: H1b-arm
+loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
 
 ### Plan (ordered)
 
