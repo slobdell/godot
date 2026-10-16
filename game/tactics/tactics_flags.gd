@@ -61,6 +61,12 @@ static func _parse() -> void:
 		# Round 20 (brains M1): round 12's stations from the first tick (the control arm of form-up-on-the-move).
 		if arg == "--converge=off":
 			ElementPlan.CONVERGE_ENABLED = false
+		# Round 28 (brains B4, DECLARED): round 26's heading rule (any heading change re-issues, the plan's own included).
+		if arg == "--reissue-heading=plan":
+			Element.HEADING_REISSUE_TASK_ONLY = false
+		# Round 32 (brains B3b-2c): round 28's narrowing ON (off by default since B3b-2c), the round-31 candidate's arm.
+		if arg == "--reissue-heading=task":
+			Element.HEADING_REISSUE_TASK_ONLY = true
 		# Round 28 (brains B3, DECLARED): the old screen (45 m short of the enemy focus, held while the enemy closes).
 		if arg == "--screen-standoff=off":
 			ElementCommander.SCREEN_STANDOFF_ENABLED = false
@@ -101,6 +107,17 @@ static func _parse() -> void:
 		# Round 30 (brains B6, tuning): a drawn SBF line's fanned sectors (round 29's rule), the control arm.
 		if arg == "--sbf-told-sectors=on":
 			ElementPlan.SBF_TOLD_ALL = false
+		if arg == "--mouth-held=off":
+			Element.MOUTH_HELD_ENABLED = false
+		# Round 30 (brains B3b, DECLARED): seats beyond a crossing by straight line, not in crossing order.
+		if arg == "--route-seat=off":
+			Element.ROUTE_SEAT_ENABLED = false
+		# Round 31 (brains B3b-2): the crossing seating re-matched every plan (round 30's B3b), the control arm.
+		if arg == "--route-seat-once=off":
+			Element.ROUTE_SEAT_ONCE = false
+		# Round 31 (brains B3b-2b): the held seating stands after crews cross (B3b-2 as first built), the control arm.
+		if arg == "--route-seat-across=off":
+			Element.ROUTE_SEAT_REMATCH_ACROSS = false
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":
