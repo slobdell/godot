@@ -1,6 +1,7 @@
 extends TestCase
-## Round 32 (planner, C32.7): **SLICE per hardware preset.** The laptop preset plans SLICE_LAPTOP (1) expansions a tick,
-## every other machine SLICE (2); the hold is re-sized so a crew's expansion allowance is unchanged (PENDING_TICKS x
+## Round 32 (planner, C32.7): **SLICE per hardware preset.** The laptop preset plans SLICE_LAPTOP expansions a tick
+## (2 since C32.7 was resolved on the laptop's own price; the knob kept), every other machine SLICE (2), and
+## `--planner-slice=1` the slower slice; the hold is re-sized so a crew's expansion allowance is unchanged (PENDING_TICKS x
 ## SLICE = 180 expansions either way); the slice is read ONCE per match; a run's `--planner-slice=N` (the host's value,
 ## carried as a launch flag as `--seed` is) wins over the local preset, so two peers with different GPUs plan alike; a
 ## headless run (every check, baseline and judged series) is the desktop preset: SLICE 2, 90 ticks, today's bits. In a
@@ -26,7 +27,7 @@ func test_the_hold_keeps_the_expansions_a_crew_gets() -> void:
 	assert_eq(PlannerSeam.EXPANSIONS_PER_HOLD, PlannerSeam.PENDING_TICKS * PlannerSeam.SLICE, "180 = 90 x 2")
 	PlannerSeam.set_slice(PlannerSeam.SLICE, "default")
 	assert_eq(PlannerSeam.pending_cap(), PlannerSeam.PENDING_TICKS, "SLICE 2: today's 90 ticks")
-	PlannerSeam.set_slice(PlannerSeam.SLICE_LAPTOP, "test")
+	PlannerSeam.set_slice(1, "test")
 	assert_eq(PlannerSeam.pending_cap(), PlannerSeam.PENDING_TICKS * 2, "SLICE 1: 180 ticks")
 	assert_eq(PlannerSeam.pending_cap() * PlannerSeam.slice(), PlannerSeam.EXPANSIONS_PER_HOLD, "the same expansions")
 	PlannerSeam.set_slice(was, "default")
