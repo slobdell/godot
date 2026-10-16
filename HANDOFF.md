@@ -54,12 +54,17 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
-**🎯 CP-H SHIPPED ON (~17:55 PDT): pair/cph-ship `76b7ee46` → main `b352fa2a`.** The four consumers of the honest reading
+**✅ MAIN GREEN at `b7c0adbc` (~18:50 PDT), with CP-H ON and its 13 baselines re-recorded:** builder0 `>> remote: make
+check exited 0`, 2642 passed / 0 failed, 26 targets ALL JUDGED, sim-baseline 13 unmoved against the new lines. **🎯 CP-H SHIPPED ON (~17:55 PDT): pair/cph-ship `76b7ee46` → main `b352fa2a`.** The four consumers of the honest reading
 (unstickback, kturnarc, realspeed, realslow) are default ON. What he'll notice: a vehicle pinned on a squadmate asks it to
 move, then backs straight out instead of grinding at full throttle (pinned crew-s at rest 3106 → 333, stuck 6578 → 3737).
 Wall and terrain pins keep the old escape. The ship check was 2642/0, with sim-baseline the only red (13 maps moved). The
 **13 baselines are being re-recorded** (`orch-adopt-cph`, `make sim-baseline-adopt`, two reads), then one main check.
 CP-P1's ship cut starts on `b352fa2a` in parallel.
+**Known issue in what shipped (tell him):** when a squadmate that is in the way never moves, the pinned vehicle loops,
+asking, backing 2–3 m and driving back into it about every 21 s, rather than going round (Terminus seed 31; round 32's
+roadmap). **Clip:** `~/projects/clips/round31/manoeuvre_rig_wedge_today_v_shipped_seed31_25c7421b.mp4`: today a rig
+grinds a floodlight for 66 s reading 10.5 m/s while barely moving; shipped, no touch over 2 s.
 **✅ MAIN `40eda0cf` INHERITS `c45c9792`'s green check (~15:10 PDT, R31.9's first use):** `tools/merge_check_needed.sh
 c45c9792` gave INHERIT (only docs differ). That check was builder0 `exited 0`, 2642/0, sim-baseline unmoved. The merge
 is brains' realslow toggle fix, default OFF. No main check was run. **✅ MAIN GREEN at `8a23325a` (~14:00 PDT), with B6 ON:** builder0 `>> remote: make check exited 0`, 2641 passed / 0

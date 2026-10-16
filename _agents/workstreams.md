@@ -715,6 +715,13 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   mirror + `PLANNER_DEFAULT true`). Its plain check is CP-P1's ship check, and the FIRST check with the planner and CP-H's
   four all ON together (C31.1's whole-suite test of the pair). Then merge, record its moved baselines twice, and run one
   main check.
+  **Ship check on `3cd68da5` (~18:30 PDT): `exited 2`, 2651 passed / 2 failed, a COVERAGE gate, not a mismatch.**
+  test_native_drive's live and owned twins assert ≥ 20 station-keeping drives and saw 12 (planner alone 44, CP-H alone
+  20, both 12); twin fidelity 2160 drives, 0 mismatches. Native fixes the SCENARIO (test-only) with the ≥ 20 floor kept,
+  reaching ≥ 20 on all four trees (neither, planner, CP-H, both), then the light lane and the plain check.
+  **Fixed (~19:00 PDT, `166f7f1e`, test-only, floor kept):** five followers with front-row leaders, each starting on its
+  slot. Stationed counts (live = owned): neither 249, planner 199, CP-H 210, both 121 (before: ? / 44 / 20 / 12); 2160
+  drives with 0 mismatches on each tree. CP-P1's plain ship check on `166f7f1e` is running.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of
