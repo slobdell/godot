@@ -68,6 +68,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   presets), not by changing SLICE on the default path: laptop preset SLICE 1, others 2, read once at match start, the same
   for both sides and deterministic across peers (a networked match uses the host's value). Priced on builder0 and, in a
   slot the orchestrator grants, the laptop.
+  **RESOLVED 2026-10-16 ~05:35 PDT (the laptop's price):** laptop (flightdeck, i5-8365U), `65cc43dd` at `--planner-slice=1`,
+  `planner-census` probe 30, Sumps 25 a side, seeds 92721 / 31337, pinned 0–3, load 2.66 → 1.55 (an UPPER BOUND, R31.6):
+  **89 / 79 µs an expansion warm** (early 122 / 121), so SLICE 2 costs ~0.18–0.24 ms a tick on his laptop, under the 0.5 ms
+  line; round 31's builder0 263 µs was the box's load. SLICE 1 only doubled the hold (7 v 3 ticks, slice test, n 1). **The
+  laptop preset goes back to SLICE 2** (the knob and `--planner-slice` stay for a weaker device); no SLICE 1 v 2 series.
 - **C32.8 Test splits (R31.9 (3)):** native's four twin files first, then each stream's own slowest files, same assertions
   divided, test count shown before and after, bodies byte-identical where possible.
 - **C32.9 Fresh start:** every round-31 `stream/*` branch was renamed `round31/<stream>` (kept, not merged) and every
