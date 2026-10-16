@@ -3236,7 +3236,7 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 		var mover := Movement.of(friend)
 		if mover != null:
 			var ahead := Vector2(friend.global_position.x - tank.global_position.x, friend.global_position.z - tank.global_position.z)
-			mover.ask(String(tank.name), tank.global_position, ahead.normalized() if ahead.length_squared() > 0.01 else -back, "pinned")
+			_h1b_last_answer = mover.ask(String(tank.name), tank.global_position, ahead.normalized() if ahead.length_squared() > 0.01 else -back, "pinned")
 			esc_asks += 1
 			_esc_friend = friend
 			_esc_gap = ahead.length()
@@ -3279,6 +3279,8 @@ var _h1b_blocker := ""
 var _h1b_goal := Vector3.INF
 var _h1b_at := Vector3.INF
 var _h1b_failed := 0
+## What the friend answered this hull's last "pinned" ask (true = it began to give way). Measurement only (H1B_FAR rows).
+var _h1b_last_answer := false
 
 
 static func h1b_on() -> bool:

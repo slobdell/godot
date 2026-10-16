@@ -108,8 +108,25 @@ static func note_h1b_far(mover: Movement, friend: Tank) -> void:
 			"goal_v": snappedf(mover._goal_velocity.length(), 0.01),
 			"gap_m": snappedf(Vector2(friend.global_position.x - tank.global_position.x, friend.global_position.z - tank.global_position.z).length(), 0.1),
 			"blocker_under_way": other.is_under_way() if other != null else false,
+			"blocker_remaining_m": snappedf(other._remaining, 0.1) if other != null else -1.0,
+			# The give-way's own priority read (_negotiate): with both under way, the one with LESS route left gives way.
+			"negotiate_i_give_way": _negotiate_says(mover, other, String(tank.name), String(friend.name)),
+			"last_ask_answer": mover._h1b_last_answer, "my_yield_to": mover.yield_to,
+			"my_last_yielded_to": mover._last_yielded_to,
+			"blocker_yield_to": other.yield_to if other != null else "",
+			"blocker_last_yielded_to": other._last_yielded_to if other != null else "",
 			"blocker_phase": other.phase if other != null else "?", "blocker_blocked_by": other.blocked_by if other != null else "",
 			"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
+
+
+## Traffic's priority rule as `_negotiate` reads it (a copy for the record, never a decision): true when THIS hull would
+## be the one to give way to the other.
+static func _negotiate_says(mover: Movement, other: Movement, me: String, them: String) -> bool:
+	if other == null or not other.is_under_way():
+		return false
+	var difference := mover._remaining - other._remaining
+	return difference < -Movement.PRIORITY_MARGIN or (absf(difference) <= Movement.PRIORITY_MARGIN and me < them) \
+			or other._last_yielded_to == me
 
 
 static func reset_h1b() -> void:
