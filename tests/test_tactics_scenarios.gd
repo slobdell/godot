@@ -5,6 +5,8 @@ extends TestCase
 ## Round 30 (brains B7, C30.9): split in two by each test's measured time (builder0, 5272d612, `make scenario-times`:
 ## 574 s alone, the floor of any shard plan at 5-6 shards); the tests are the same, byte for byte. Its other half:
 ## tests/test_tactics_scenarios_2.gd.
+## Round 31 (C31.9 / R31.9): split again by each test's measured time (builder0 light lane, `make scenario-times`): its
+## other parts are tests/test_tactics_scenarios_3.gd and _5.gd.
 
 
 func test_a_halted_element_watches_both_flanks() -> void:
@@ -54,44 +56,3 @@ func test_a_screen_stands_on_a_line_across_the_point() -> void:
 	assert_true(float(result["frontage_m"]) >= 36.0, "a wide one (%.0f m)" % result["frontage_m"])
 	assert_true(float(result["depth_m"]) <= 14.0, "across the point, not along it (%.0f m deep)" % result["depth_m"])
 	assert_true(float(result["center_to_point_m"]) <= 10.0, "centred on it (%.0f m off)" % result["center_to_point_m"])
-
-
-func test_an_ambush_holds_its_fire_until_the_kill_zone_is_full() -> void:
-	# The lead: "We want to be able to set up ambushes, do flanking maneuvers."
-	var result: Dictionary = await TacticsScenarios.ambush(self)
-	print("MEASURE ambush %s" % result)
-	assert_true(int(result["entered_tick"]) > 0, "setup: the enemy drove into the kill zone")
-	assert_eq(int(result["shots_before"]), 0, "not one shot before it was in the kill zone")
-	assert_true(int(result["sprung_tick"]) >= int(result["entered_tick"]), "sprung when it arrived, not before")
-	assert_true(int(result["shots_after"]) > 0, "and then every gun fired")
-	# The lead: facing matters "for trying to emplace units in an ambush".
-	assert_true(int(result["facing_zone"]) >= 3, "the ambush points at its kill zone (%d of 4 facing it)" % result["facing_zone"])
-
-
-func test_a_cpu_army_under_the_same_orders_is_not_re_ordered_for_fighting_from_its_slots() -> void:
-	# Its idle units fight from within their slot's leash (round 4 X1); before round 6's fix the leaders re-sent every
-	# one that stopped short, over and over: 43 orders in the last 10 s of this scenario.
-	var result: Dictionary = await TacticsScenarios.five_squads(self, false)
-	print("MEASURE five_squads cpu %s" % result)
-	assert_true(int(result["idle_orders"]) <= 2, "the leaders leave them to it (%d orders in the last 10 s)" % result["idle_orders"])
-	for off: float in result["anchor_off_m"]:
-		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)
-
-
-func test_an_element_travels_in_formation_on_the_way() -> void:
-	# The lead: "a formula to form up" — the visible half is holding the shape while travelling, not only at the end.
-	# RE-SPECIFIED (round 12). The lead, playing 2026-09-26: *"they all split apart and navigated their own way to the
-	# destination"*. Round 10 had made that true: its least-driving seating rarely puts the leader at the front, and
-	# the round-7 flow only ran when it did, so a plain move had NO shape in transit. The travelling anchor (ElementPlan's
-	# TRANSIT block) replaces the flow on this path. The measure is unchanged — each member's distance from its place
-	# around the leader while the squad is on the way — and the control arm is round 10's shipped path, transit off.
-	var travelling: Dictionary = await TacticsScenarios.element_transit(self, true)
-	var snapping: Dictionary = await TacticsScenarios.element_transit(self, true, 40.0, false, false)
-	print("MEASURE element_transit travelling %s; round-10 path %s" % [travelling, snapping])
-	assert_true(float(travelling["transit_gap_m"]) < float(snapping["transit_gap_m"]),
-			"on the way, members hold their places around the leader tighter than when each drove its own route (%.1f m vs %.1f m)"
-			% [travelling["transit_gap_m"], snapping["transit_gap_m"]])
-	assert_true(int(travelling["samples"]) > 0, "setup: the squad was measured while travelling")
-	assert_true(float(travelling["arrived_s"]) > 0.0, "and it still gets there (%.1f s)" % travelling["arrived_s"])
-	assert_true(float(travelling["worst_off_slot_m"]) <= 8.0, "formed up on the spot (worst %.1f m)" % travelling["worst_off_slot_m"])
-	assert_true(int(travelling["orders_last_10s"]) <= 2, "and quiet after (%d orders in the last 10 s)" % travelling["orders_last_10s"])
