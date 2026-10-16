@@ -141,6 +141,9 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   worktree `../godot-native-h1b`). builder0 plain check: `make check exited 2`, 2723 passed / 1 failed. The one red is
   R32.6 (test_tactics_body three squads; brains' fix c029cf70 not on main), not the swap. All 13 maps unmoved, exec
   table 157/157. Reported to manoeuvre and the orchestrator.
+  **Ship tree:** `pair/swap-ship` `80300909` (main a32d603d, which has R32.6's fix, + `d21b5d56` + the row/default
+  commit). builder0 light `test_tactics_body|native_h1b|native_exec_state|manoeuvre_h1b`: exited 0, 15/0. Merge it
+  once manoeuvre's series passes. After it ships, N5's held ports (item 6) unblock.
   N5's held ports (item 6) stay held until the swap ships (it is their moving target).
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
