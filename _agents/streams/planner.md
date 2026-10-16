@@ -80,10 +80,23 @@ _Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, fr
 **CP-S and SLICE per preset are ON MAIN: `530e85cf` → main `3a85d092` (the orchestrator, 2026-10-16).** Green check
 on `530e85cf`: builder0 `>> remote: make check exited 0`, 2670 passed, 0 failed, 26 targets ALL JUDGED,
 **sim-baseline 13 maps unmoved** (the default path bit for bit). Brains told side_gate is on main.
-**CP-Q** (the queue): bar FILED; pair tree `pair/planner-queue` `65cc43dd` (= stream `3876d601` + QUEUE_DEFAULT true)
-check RUNNING (C31.1) before the series. **SLICE's pricing** (C32.7's "priced on builder0"): queued after it (the
-census probe and a Terminus rig series at `--planner-slice=1` v 2 for the hold per rig event); the laptop price waits
-for a slot the orchestrator grants.
+**C32.7 RESOLVED (the orchestrator's ruling, 2026-10-16 ~05:30):** the laptop's own price (flightdeck, i5-8365U,
+`65cc43dd`, pinned 0–3, Sumps 25 a side, seeds 92721 / 31337, n 112 / 116 plans; load 2.66 → 1.55, an upper bound)
+is **89 / 79 µs an expansion warm**, so SLICE 2 costs ~0.18–0.24 ms a tick there, under the 0.5 ms line: SLICE 2 on
+every preset, the knob and `--planner-slice` kept (`92d7a80b`, rides CP-Q's ship or merges alone). Record:
+`references/round32/planner/laptop-census-65cc43dd/`. The SLICE 1 v 2 rig series is dropped (ruling).
+
+**Main bug fixed (the orchestrator's priority):** `PlannerSeam.capture()` copied a crew whose hull a previous test's
+match had freed (traffic's check on cf81aedc: `test_native_traffic_turns_owned`, "previously freed" at
+`planner_executor.gd:70`). Branch `fix/planner-capture-freed` `8904c9c4` (off main `254973bb`, alone): capture()
+skips such a crew and its queue place. `test_planner_capture_freed` RED without the fix, GREEN with it (builder0
+light). Native APPROVED. Full check RUNNING.
+
+**CP-Q** (the queue): bar FILED. C31.1 DONE on pair tree `pair/planner-queue` `65cc43dd`: `make test` exited 0,
+2670 / 0 (the check before it was killed at slot.sh's 5400 s cap at load 23 with 0 failures; its other targets green
+bar sim-baseline: 7 War-Rig maps moved, the expected ON move, and R31.10's flake). Series RUNNING on `65cc43dd`:
+hull-rest gangs base DONE (FIFO: abandoned 69 / 370 asks drawn 18.6 %, 82 / 564 clicked 14.5 %; builder0, seeds
+66–71, n 36 runs an arm), candidate running, then the Terminus series 205–217. Verdict read once at completion.
 
 _In progress (2026-10-16 ~01:30 PDT)._ Nothing verified on builder0 yet: builder0 had 3 heavy runs ahead of me for 25+
 min; the first quick was replaced by one covering the whole diff (`make quick-remote QUICK_BASE=6efdf42b` on
