@@ -72,11 +72,115 @@ orchestrator's `make sim-baseline-adopt` on main.
   divided, test count shown before and after, bodies byte-identical where possible.
 - **C32.9 Fresh start:** every round-31 `stream/*` branch was renamed `round31/<stream>` (kept, not merged) and every
   worktree re-created from this docs commit. No agent of round 31 runs.
+- **C32.10 The parked squadmate in the way: SWAP SEATS (decided 2026-10-16 ~04:00 PDT on manoeuvre's far-loop trace; replaces
+  a draft back-off).** Manoeuvre's hunt (builder0 `48657f07`, Terminus drive seeds 1–16, n 1 a seed): base loops 105 mixed /
+  114 rigs, ~70 % `far` (> 12 m of route left), out of H1b's settle. The far-loop trace (laptop, `08e6d44c`, H1b arm, Terminus
+  seeds 3–6 rigs + mixed, counts matching builder0): 62 far loops from 6 pairs; in **50/62 the blocker is PARKED at its own
+  slot** (route left 0), the other 12 (rigs) a blocker itself blocked by a third hull; mutual refused-both-ways **0/62**; the
+  pinned hull is the SAME squad, 22 / 29 / 37 m of route left (p10/50/90), 6–14 m behind; every pinned ask refused (62/62);
+  `_negotiate` designates the parked one in 50/62 but it has no validated spot. Traffic's proposed back-off (the designated
+  yielder reverses along its own route) would need 11 / 16 / 20 m of reverse and straight room met it 0/62: dropped.
+  **Rule:** when H1b's failed-ask count trips on a PARKED same-squad friend and the asker's slot lies beyond it, the two
+  crews SWAP SEATS: the parked crew takes the asker's farther slot and drives on with nothing ahead of it; the asker takes
+  the near slot. Nobody reverses; both end at a slot. **Owners:** brains owns the swap (the element's seats + both Movement
+  goals behind one seam, e.g. `Element.swap_seats(a, b) -> bool`, refusing when a seat is pinned by a drawn facing or a
+  task role; player squads are elements too); manoeuvre owns the detection hook (H1b's count) and keeps H1b's settle for
+  the near-goal case. Signature agreed through the orchestrator before code. The 12 third-hull cases are REPORTED. Its own
+  bar (Terminus seeds where base loops, named before the series; arrivals; swaps counted; the whole suite on the pair
+  tree). Native mirrors only if the swap reaches the drive. **Why swap, not give way forward or back:** one decision, no
+  geometry, and what a player expects of a crew stuck behind a squadmate who is already where he was told to be.
+  **The seam, AGREED (2026-10-16 ~04:30 PDT, brains' settlement of manoeuvre's half):**
+  `Elements.of_match(m).swap_seats(asker: String, parked: String) -> String` ("" = taken, else the refusal reason; String,
+  no bool variant). It trades the two crews' last-issued orders (`Element._issued[name]`: to, facing, verb) and sends both
+  through Elements.orders INSIDE the call, so both goals change THE SAME TICK; it also sets the element's `_swap` (round
+  19's make-room mechanism: each plan, if the seating returns the original indices, `Element.apply_swap` trades slots,
+  sectors, seats and orders back; `assign` clears it), so the next plans keep the swap until the movement ends.
+  Refusals: not_same_element, unseated, leader (slot 0 of a drill move), kept (a re-seat's keep), task_role (the task is
+  not a move/attack-move: SBF line, screen, overwatch/ambush post, hold), drill (a drill running), role (roles differ AND
+  halted), deck (within MOUTH_REACH_M), budget (MAX_SWAPS 2 a movement, shared with make-room), standing. **A drawn facing is
+  NOT a refusal** (the orchestrator's ruling: every seat of a faced shape carries his heading and SBF sectors trade with
+  the seats). GDScript only; no native mirror. Counters: swaps, swaps_asked (brains); swaps asked / granted / refused by
+  reason (manoeuvre's census). Tests: one per refusal + the accepted case + the plan-keeps-it case.
+- **C32.11 B10, the grounding latch, ships ALONE before B5c-v6 (2026-10-16 ~04:35 PDT, brains' finding):** a seating bug ON
+  MAIN: `Element.ground` → `SlotGround.standable_from` picks the side a pushed (unstandable) slot lands on, memoised by the
+  element CENTRE's 5 m cell, so a squad jostling on its spot moves the centre across a cell edge and a seat jumps ~10 m (Sumps
+  s16 t8, main's rules, no gate: Green_S_2's seat 3 flips 22 times, 43–120 s, never all in; v5's `near` made it 67 flips on
+  s17 t11). Fix: latch each seat's grounding while its asked-for point holds within 0.5 m (`--ground-latch=off` = control);
+  GDScript, every element (sim-baseline expected to move). Its own bar; then v6 (v5's gate + the side gate for yard s27 t8)
+  is judged on a base with the latch ON. Order for brains: B3b-2c verdict → B10 → C32.10's swap → v6.
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
 
+- **R32.1 CP-T's native half is already on main (2026-10-16, native's finding, verified):** `413252ea` (the T3b-c mirror,
+  `NativeTraffic.avoid_shape`) is an ancestor of main, inert until Traffic has `shape`. So C32.1's pair is traffic's carried
+  T3b-c alone on main; native builds the pair tree from traffic's carried hash, runs plain `make remote T=check` with the
+  switch ON and names the hash; traffic runs the re-judge on that same tree. `traffic-t3bc-judged` conflicts with main in
+  traffic's files only (movement.gd, traffic.gd, mk/traffic.mk): traffic resolves them.
+- **R32.2 H1b may WRITE brains' repair fields (2026-10-16, manoeuvre's flag):** H1b's settle-short sets the mover's existing
+  `_repair_for` / `_repair_to` so the brain completes the order through `Movement.repaired_arrival`, as it already does.
+  Granted: writes from H1b's hook only, no edit to any brains function or to what those fields mean; brains is told and
+  owns the fields' meaning. The native drive's copy of those fields is part of H1b's pair (native mirrors the write).
+- **R32.3 C32.5's two answers for M1b(3), agreed by manoeuvre and brains (2026-10-16 ~02:15 PDT):** (a) **YES**: an arrivals
+  line counts a crew as arrived when it completes within ARRIVED_M (7 m) of the element's seat for that crew AT COMPLETION
+  (`Element.seats`, what settle_probe's `off_slot_m` reads), not a stale `to`; a re-seat is the leader's correction, not a
+  miss. Guards: each arm reports arrivals against the ORIGINAL slot, `reseats` and `reseats_after_arrival`; re-seats >
+  base + 1.645 se is a FAIL line, so a hull that turns badly can't win by being re-seated. (b) **facekeep unchanged** for
+  gang hulls (its refusals are the sector rule keeping a crew's arc, on the CPU's hulls; changing it moves sim-baseline and
+  CPU fights for a problem it does not cause); attempt 2's 'sector' lift stays. The problem is the attack-move settle (crews
+  moving at 75 s). (c) **The re-seat reads heading through the SHAPE, not the matching** (brains): `TacticsFormation.seat`
+  matches by positions only, but an attack-move arriving with no drawn facing lays its halt along the element's heading
+  = the members' averaged hull forward (`element_situation.gd` ~70–76 → `element_plan.gd:146` → `_halt` ~1669), read once on
+  the arrival plan; a drawn facing replaces it (~668–672). Also `element_plan.gd` ~678 (a plain move forming up within
+  2 m) and `drills.gd` ~387 (assault_through's "past" test). So a wheeled hull turning BEFORE the element arrives moves
+  every seat; after arrival, none. Pinned by `tests/test_tactics_reseat_heading.gd` (stream/brains `cbddb940`).
+- **R32.4 web-match-smoke's first-sound bound is a load timing line (2026-10-16 ~02:35 PDT, brains' B3b-2c check):** on
+  `5f0ed865` (builder0, load ~22) the only red of 26 was "first sound 30.6 s after READY (bound 30 s)". A change that does not
+  touch `game/audio/**`, the web export or the boot path may proceed to its series on that red, provided web-smoke re-run
+  ALONE passes before the hash merges. A second miss on a quiet box gets traced, not waved through.
+
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
+
+- **B3b-2c (brains, C32.3; filed 2026-10-16 ~00:50 PDT before any number; DECLARED; partial: none; the full text is
+  stream/brains `c13ad95f` Status *B3b-2c bar*).** Candidate: B3b-2b's seating + mouth guard (lab `5ed61f91` merged in),
+  with round 28's heading narrowing OFF by default (`5ca8269d`: `HEADING_REISSUE_TASK_ONLY` false, i.e. main's round-26
+  rule; `--reissue-heading=task` turns it on). Control = `--route-seat=off --mouth-held=off` (= main's rules; the
+  orchestrator checked that the narrowing was never on main). Lines: (1) his bridge, the full 108: on 108/108 or ≥ the
+  control (any cell control passes and on fails is a named regression, traced first); (2) bridge-pooled 18/18; (3) the arrive
+  series on FRESH seeds 45–48, n 100 an arm: all_in8_s on ≥ control − 1 AND McNemar discordant against ≤ 1 (C32.3's
+  1.645 se read as the count row's form), the paired median ≤ +2 % REPORTED; (4) counters: crossings_found > 0 on every
+  on-run of the 108, 0 on control and on every arrive run; (5) `t.poll.element` on Locks ≤ 0.5 ms a tick or NOT READABLE on
+  a busy box; (6) the worst on-arm cell of (1) and of (3) traced before the medians. Native: none ported (GDScript on every
+  path). Ships ON as one commit. Stated in advance: the arrive arms may be byte-identical, which is the point of this cut.
+- **CP-Q, the planner's queue (planner, hand-over (3); filed 2026-10-16 ~01:10 PDT before any number; DECLARED).**
+  Candidate `--planner-queue=shared`: refuse early (a blocked start/goal answered at the ask, never queued), round-robin
+  with a QUANTUM of 20 expansions over a session per crew, the same slice a tick. Base: the same tree without the flag
+  (today's FIFO). Both arms the native drive. Series tree = the hash planner's full check goes green on (code from
+  stream/planner `0b9e96bc`). Every line read once at completion on the 1.645 se line, (faction, seed)-paired:
+  (1) hull-rest gang arm (`make planner-judge-queue`, gangs, drawn + clicked, FRESH seeds 66–71): abandoned ≤ 5 % of asks in
+  EACH of drawn and clicked (round 31: 23 % / 18 %); (2) hold per event, pooled median per arm, NOT UP: (2a) those hull-rest
+  runs, (2b) the Terminus rig series (`make planner-series-queue`, rigs + mixed, fresh seeds 205–217); (3) round 31's (d)
+  lines as filed: at-rest hull error permutation p ≥ 0.05 every class × task, settle paired median ≤ +6 s, crews moving at
+  75 s each task × arm ≤ base + 1.645 se; (4) Terminus rig arrivals (2b) mean paired ≥ −1.645 se; (5) the whole suite green
+  on native's pair tree with the default flipped ON (C31.1), before the series. REPORTED only: refused_early, queue_waits,
+  plans, driven, refused by code, hold max. Ships ON as a pair (QUEUE_DEFAULT true + native's review of `refused_at_begin`).
+  If (1) misses: the abandoned searches' expansions reported, stop; no re-tuning on these seeds.
+- **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
+  partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
+  tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
+  friend for the same goal and that friend's net flat move since the previous fire is < 0.5 m; a loop = a fire that records the
+  second (or a later) failed ask and that H1b did not break (counted in both arms; wording amended 02:30 PDT before any series
+  number, manoeuvre's off-by-one in its own test, intent unchanged). Settle short only with ≤ 12 m of route left and a goal not
+  sliding; loops farther out are counted (`far`), not acted on. **Fresh seeds (confirmed unclaimed by the orchestrator):**
+  Terminus 300–312, hull-rest 313–318 (n 144 an arm), fights 320–343. Lines, guards to completion, each read once on 1.645 se:
+  (1) **AMENDED 04:25 PDT before any series number (seed 31 no longer loops on today's main; C32.10 hands far loops to the
+  swap):** on every named hunt seed (builder0 `48657f07`, n 1: Terminus drive mixed 4 5 6 7 9 10 11 13 14 16; rigs 1 2 3 4 6 9
+  10 14 15 16; fights 4 Terminus, 6 Sumps) AND on the fresh Terminus seeds 300–312, H1b-arm loops − far = 0 (every near-goal
+  loop broken) and far ≤ base loops (H1b never makes a loop); far reported per seed as C32.10's base; (2) hull-rest pinned and stuck crew-s (row 67) ≤ base + 1.645 se;
+  (3) nav-terminus-drive PINNED/STUCK per squad ≤ base + 1.645 se; (4) Terminus arrivals, rigs and mixed apart, ≥ base −
+  1.645 se; (5) fights kills, deaths, hit rate within 1.645 se; (6) R31.5's terrain pins unchanged: `test_nav_wall_contact`,
+  `test_control_queued_task`, `test_manoeuvre_escape` green; (7) the whole suite green on native's pair tree with the switch
+  flipped ON, before the series. REPORTED: settles, metres short, `far`, loops in both arms. A miss parks H1b with its trace.
 
 ## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
 
