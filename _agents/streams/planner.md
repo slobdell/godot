@@ -77,54 +77,64 @@ _Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, fr
 
 ### The report (read this first)
 
-**CP-S and SLICE per preset are ON MAIN: `530e85cf` → main `3a85d092` (the orchestrator, 2026-10-16).** Green check
-on `530e85cf`: builder0 `>> remote: make check exited 0`, 2670 passed, 0 failed, 26 targets ALL JUDGED,
-**sim-baseline 13 maps unmoved** (the default path bit for bit). Brains told side_gate is on main.
-**C32.7 RESOLVED (the orchestrator's ruling, 2026-10-16 ~05:30):** the laptop's own price (flightdeck, i5-8365U,
-`65cc43dd`, pinned 0–3, Sumps 25 a side, seeds 92721 / 31337, n 112 / 116 plans; load 2.66 → 1.55, an upper bound)
-is **89 / 79 µs an expansion warm**, so SLICE 2 costs ~0.18–0.24 ms a tick there, under the 0.5 ms line: SLICE 2 on
-every preset, the knob and `--planner-slice` kept (`92d7a80b`, rides CP-Q's ship or merges alone). Record:
-`references/round32/planner/laptop-census-65cc43dd/`. The SLICE 1 v 2 rig series is dropped (ruling).
+_2026-10-16 ~09:00 PDT. Every number builder0 unless named; commit, workload and n beside it._
 
-**Main bug fixed (the orchestrator's priority):** `PlannerSeam.capture()` copied a crew whose hull a previous test's
-match had freed (traffic's check on cf81aedc: `test_native_traffic_turns_owned`, "previously freed" at
-`planner_executor.gd:70`). Branch `fix/planner-capture-freed` `8904c9c4` (off main `254973bb`, alone): capture()
-skips such a crew and its queue place. `test_planner_capture_freed` RED without the fix, GREEN with it (builder0
-light). Native APPROVED. Full check RUNNING.
+| item | state | evidence |
+|---|---|---|
+| 1. **CP-S side gate** (C32.4) | **ON MAIN** (`530e85cf` → `3a85d092`), OFF-path; brains told | check `530e85cf`: exited 0, 2670/0, 26 ALL JUDGED, sim-baseline 13 unmoved; native APPROVED the C++ |
+| 2. **SLICE per preset** (C32.7) | **ON MAIN**; then **RESOLVED** on the laptop's own price: SLICE 2 on every preset (`92d7a80b`, merge note below) | same check; laptop census (see below) |
+| 3. **The queue** (CP-Q) | **JUDGED: FAIL on line (3), PARKED** (`pair/planner-queue` `65cc43dd`; the code stays OFF behind `--planner-queue=shared`) | `references/round32/planner/cpq-65cc43dd/VERDICT.txt` |
+| 4. **Test splits** (C32.8) | DONE | `d586292a`, `15f0a60c` |
+| — **main bug** (`capture()` copied a freed hull's crew) | **ON MAIN** (`fix/planner-capture-freed` `8904c9c4`, the orchestrator merged it; R32.6) | red without / green with; native APPROVED |
+| 5. stretch "slot" take point | not asked by brains | — |
 
-**CP-Q** (the queue): bar FILED. C31.1 DONE on pair tree `pair/planner-queue` `65cc43dd`: `make test` exited 0,
-2670 / 0 (the check before it was killed at slot.sh's 5400 s cap at load 23 with 0 failures; its other targets green
-bar sim-baseline: 7 War-Rig maps moved, the expected ON move, and R31.10's flake). Series RUNNING on `65cc43dd`:
-hull-rest gangs base DONE (FIFO: abandoned 69 / 370 asks drawn 18.6 %, 82 / 564 clicked 14.5 %; builder0, seeds
-66–71, n 36 runs an arm), candidate running, then the Terminus series 205–217. Verdict read once at completion.
+**CP-S.** `PlannerSeam.side_gate(slot, facing, unit_id, map: RID, from := Vector3.INF) -> Vector3`, the signature agreed
+with brains: `slot + perp × R` (R = the unit's turning radius) on the side with room, ZERO when neither side has
+room, the side the hull comes from when both do (then more clearance, then the left). Room = clearance ≥ min(half
+width + 0.4 m, bake radius − slack − 0.05). Two reads through `Planner.clearances` (C++ `PlannerNative.clearances`,
+the shared navmesh cell cache). Equal both ways bit for bit on 4 rectangle + 6 navmesh fixtures
+(`test_planner_side_gate.gd`). **Price** (quick on `b204a489`, unpinned, busy box, 1 call a fixture): C++ warm
+10–59 µs a call, cold first read 1.9–2.7 ms (the polygon index), GDScript 102–253 µs. **Yard s27 t8** (brains'
+fixture): both sides have room; the scout's gate is (−12.96, −41.97), R 5.5 m to the side it comes from.
 
-_In progress (2026-10-16 ~01:30 PDT)._ Nothing verified on builder0 yet: builder0 had 3 heavy runs ahead of me for 25+
-min; the first quick was replaced by one covering the whole diff (`make quick-remote QUICK_BASE=6efdf42b` on
-`b204a489`, 12 test files + lint + smoke).
+**SLICE.** `PlannerSeam.slice()` latched once per match: `--planner-slice=N` (the host's value; player-hosted matches
+simulate on the host only, `client_mode.gd` `simulate = false`) > the render preset ("laptop") > 2;
+`pending_cap()` keeps 180 expansions per hold. `test_planner_slice.gd` proves the flag wins on a peer of either preset,
+the latch, the same legs at 1 and 2, two runs at 1 identical. **The laptop price** (flightdeck, i5-8365U, `65cc43dd`
+at `--planner-slice=1 --planner-queue=fifo`, `taskset -c 0-3`, Sumps 25 a side, seeds 92721 / 31337, n 112 / 116
+plans; load 2.66 → 1.55, an upper bound): **89 / 79 µs an expansion warm**, so SLICE 2 is ~0.2 ms a tick there, under
+the 0.5 ms line. The orchestrator's ruling: SLICE 2 on every preset, the knob kept (`92d7a80b`). Record:
+`references/round32/planner/laptop-census-65cc43dd/`.
 
-- **CP-S** (`df45fac3`): built, native APPROVED the C++ (`clearances`). Merges OFF-path on its own green hash.
-  **Quick on builder0 `b204a489` (unpinned, the box busy with 3 other streams' runs): 56 passed, 1 failed** (the one
-  failure my queue test's own read, fixed at `530e85cf`). Every side-gate fixture equal both ways, the two reads bit
-  for bit. **The price, a whole `side_gate` call (two reads + the choice):** navmesh, C++ warm 10–59 µs, C++ cold
-  (the process's first read: the polygon index) 1.9–2.7 ms, GDScript 102–253 µs; rectangles 22 µs warm. n = 1 call
-  per fixture × 9 fixtures. **Yard s27 t8** (brains' fixture: slot (−13.016, −47.469) facing west, from (2.5, −46.1)):
-  both sides read 1.85 m (room); the gate goes to the side the car comes from, law_scout (−12.96, −41.97) = R 5.5 m
-  south of the slot (gang_ifv R 6.5, ifv R 7.0 likewise).
-- **SLICE** (same quick): the War Rig's Terminus face-about plans the same legs and expansions at 1 and 2; hold 7 ticks
-  at SLICE 1 v 3 at 2 (n = 1 each, 7 expansions), nothing abandoned, two runs at 1 identical.
-- **Test splits (C32.8)** from that quick's FILE_TIME (builder0 `b204a489`): `test_planner_seam.gd` 113 s → 3 + 3
-  (`test_planner_seam_hold.gd`, `d586292a`); `test_planner_trace_manoeuvre.gd` 63 s → 2 + 2 by scene
-  (`test_planner_trace_wedged.gd`, `15f0a60c`); bodies byte-identical, test counts 6 = 6 and 4 = 4. Under 60 s:
-  slice 38 s, queue 37 s, keep 3 s, fixtures 3 s, side gate 2 s. (`test_native_planner*.gd`, 72 / 64 s, are the twin
-  files: native's, not split by me.)
-- **SLICE per preset** (`df45fac3`): built; tests `test_planner_slice.gd` (flag > preset > default, the host's flag
-  wins on a peer of either preset, the hold keeps 180 expansions, headless = SLICE 2, the same legs at 1 and 2,
-  latched per match, two runs at 1 identical). The named check must read sim-baseline UNMOVED (the orchestrator's
-  reminder).
-- **The queue** (`0b9e96bc`, `a46c2bf3`): built behind `--planner-queue=shared` (default OFF); native APPROVED the C++
-  getter `refused_at_begin` and the instance-per-crew design. Bar **CP-Q FILED** by the orchestrator (workstreams.md
-  *Bars (round 32)*). Targets `planner-judge-queue` (hull-rest gangs, seeds 66–71) and `planner-series-queue` (Terminus,
-  seeds 205–217), reader `tests/planner/queue_table.py` (`867a4b38`).
+**CP-Q, the verdict** (pre-registered bar, read once at completion, `65cc43dd`, base `--planner-queue=fifo` v
+candidate `--planner-queue=shared`): (1) abandoned 1.0 % drawn / 3.7 % clicked v base 18.6 / 14.5 % (hull-rest
+gangs, seeds 66–71, n 36 runs an arm): PASS. (2a) hold median 0 / 1 v 4 / 9.5 ticks: PASS. (2b) Terminus rig hold
+median 0 v 19 (seeds 205–217, n 13): PASS. (4) rig arrivals 187 v 180 of 208: PASS. (5) C31.1 suite 2670/0: PASS.
+**(3) FAIL:** at-rest error faced_support_by_fire drawn p 0.035 (106.8 v 74.3°); faced_move settle +14.5 s;
+moving at 75 s faced_move +5 (line 2.96), faced_screen +3 (line 2.14). Reported: Terminus rig contact-ticks median
+522 v 321 (paired +336, se 173). **What it means:** the queue does what it was built for (the starvation is gone),
+but serving 1.5–2× the face plans in a 19-crew press costs drawn facing, settling and wall contact: the FIFO's
+starvation was HIDING the cost of the seam's face plans in a press. Not tuned on these seeds.
+
+**Next (round 33 candidates, mine):** (a) before any queue: why a served face plan in a press ends worse than
+today's code (trace faced_move s66–71's never-settled hulls and the faced_support_by_fire drawn crews on both arms;
+the seam's face kind with squadmates as boxes is the suspect: a plan through a gap a moving squadmate closes, then
+aborted on contact); (b) a press-aware scope (the seam declines a face when ≥ N squadmates are within R) as the
+cheapest lever, its own bar; (c) only then the queue again, unchanged code, on fresh seeds.
+
+**Merge notes.** Main has CP-S + SLICE + the queue (OFF) + the capture fix. Still on `stream/planner` only:
+`92d7a80b` (SLICE_LAPTOP 2: `game/ai/planner/planner_seam.gd` one const + its doc, `tests/test_planner_slice.gd`),
+the C32.8 splits (two new test files + `.uid`s), `mk/planner.mk` (planner-series per-arm flags,
+`planner-judge-queue`, `planner-series-queue`), `tests/planner/queue_table.py`, references. Its named green hash is
+below when the check reads green. `game/theme/**` untouched (the preset is read from `RenderLevers.preset()`).
+
+**Known issues.** `tests/planner/series_verdict.py` refuses a series whose base arm runs the seam (round 31's guard);
+the queue's per-squad lines print before the refusal and are what the verdict read. `test_tactics_body::
+test_his_three_squads_keep_together` fails ALONE on main's code (builder0 light, off 33.5 / on 24.5 s, identical with
+or without my fix): brains' (R32.6).
+
+**To playtest:** nothing new he will see: the side gate waits on brains' B5c-v6, SLICE is unchanged on his laptop
+(2), the queue is OFF.
 
 ### Plan (ordered, smallest foundation first)
 

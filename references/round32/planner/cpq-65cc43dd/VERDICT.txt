@@ -1,0 +1,28 @@
+CP-Q (the gang-press queue, hand-over (3)) -- JUDGED 2026-10-16, read once at completion: FAIL on line (3). PARKED.
+Tree: pair/planner-queue 65cc43dd (stream 3876d601 + QUEUE_DEFAULT true). builder0. C31.1: make test exited 0,
+2670 passed 0 failed (the check before it killed at slot.sh's 5400 s cap at load 23 with 0 failures; sim-baseline
+moved on the 7 War-Rig maps, expected; R31.10's remote-guard flake).
+Arms: base --planner-queue=fifo (today), candidate --planner-queue=shared (refuse early + round-robin, QUANTUM 20).
+
+(1) hull-rest gang arm, seeds 66-71, n 36 runs an arm: abandoned share of asks
+    candidate drawn 4/415 = 1.0 %, clicked 16/428 = 3.7 %  (line <= 5 % each)          PASS
+    (base drawn 69/370 = 18.6 %, clicked 82/564 = 14.5 %)
+(2a) hold per event, pooled median, hull-rest: candidate drawn 0 / clicked 1.0 v base 4 / 9.5   PASS
+(2b) hold per rig event, Terminus rigs, seeds 205-217, n 13: candidate 0 (n 432) v base 19 (n 342), max 99 both   PASS
+(3) round 31's (d) lines on the hull-rest runs                                          FAIL
+    (3a) at-rest hull error p(new v base medians) >= 0.05 every task x class:
+         faced_support_by_fire drawn p 0.035 (new 106.8 v base 74.3 deg)               MISS
+    (3b) settle time paired median <= +6 s: faced_move +14.5 s (never settled 6/6 v 3/6) MISS
+    (3c) crews moving at 75 s <= base + 1.645 se (wheels/turret, drawn):
+         faced_move +5 (line 2.96), faced_screen +3 (line 2.14)                         MISS
+(4) Terminus rig arrivals: 187 v 180 of 208, paired +0.538 se 0.462                    PASS (mixed identical)
+(5) the whole suite on the pair tree (C31.1)                                            PASS
+REPORTED: refused early 251 drawn / 162 clicked; queue_waits 426 v 7862 drawn, 885 v 12424 clicked; plans 100 v 67
+drawn, 144 v 65 clicked; driven 38 v 20, 36 v 17. Terminus rig contact-ticks median 522 v 321 (paired +336.3,
+se 173.2; worst seed 207: 4168 v 2444).
+Reading: the queue does what it was built to do (the starvation is gone: abandons 18.6/14.5 % -> 1.0/3.7 %, the hold
+collapses), but serving ~1.5-2x the face plans in a 19-crew press makes the drawn facing worse on support-by-fire,
+keeps faced_move hulls moving to 75 s, and the Terminus rigs touch walls more. The FIFO's starvation was hiding the
+cost of the seam's face plans in a press. Not tuned on these seeds. Files: hull-rest-tables.txt (M1_*, QUEUE),
+hull-rest-base-queue.txt, terminus-series.txt (PLANNER_SERIES_*; series_verdict.py refused only on its round-31
+"base must be seam-silent" guard: both arms run the seam here), base.out / candidate.out.
