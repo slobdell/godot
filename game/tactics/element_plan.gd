@@ -326,7 +326,16 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 					"attack_move")
 		_:
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
-			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
+			# Round 30 (B3b): seats beyond a crossing every route goes through are taken in crossing order.
+			var via := {}
+			var crossing: Dictionary = state.get("crossing", {})
+			if crossing.get("entry") is Vector3 and crossing.get("exit") is Vector3:
+				via = {"via": [crossing["entry"], crossing["exit"]]}
+				# Round 31 (B3b-2): matched once per task point; a re-seat still re-matches.
+				if bool(crossing.get("seated", false)) and not bool(state.get("reseat", false)):
+					via["fixed"] = true
+			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb, "", false, false,
+					null, true, "exposure", via)
 
 
 

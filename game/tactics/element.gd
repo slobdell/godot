@@ -48,6 +48,8 @@ const MOUTH_REACH_M := 8.0
 ## squadmates queued behind it on the deck.
 const MOUTH_SETTLED_M := 2.0
 static var MOUTH_REISSUE_ENABLED := true
+## Round 29 (B3): `--mouth-held=off` is the control arm.
+static var MOUTH_HELD_ENABLED := true
 const MAX_EVENTS := 12
 
 var id := 0
@@ -130,6 +132,9 @@ var arrived_tick := -1
 var halt_seated := false
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
 var _mouth_sent := {}
+## Round 29 (B3): when each crew was last sent on for holding up a squadmate in a mouth, and how often (lesson 300).
+var _mouth_held_tick := {}
+var mouth_held_resends := 0
 ## Round 25 (brains F3'): {unit: the tick it was first held at a deck's mouth (-1 = released for this task)}.
 var _feed_since := {}
 ## The longest a crew is held at a mouth (ticks).
@@ -319,6 +324,7 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	arrived_tick = -1
 	halt_seated = false
 	_mouth_sent = {}
+	_mouth_held_tick = {}
 	_feed_since = {}
 	_closest = {}
 	_unpinned = false
@@ -449,6 +455,13 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	situation["corridor_m"] = _corridor(game_match, situation)
 	_advance_transit(game_match, situation)
+	_find_crossing(game_match, situation)
+	# Round 31 (B3b-2b): the held seating is matched again, once, each time another crew gets across.
+	if ROUTE_SEAT_ONCE and ROUTE_SEAT_REMATCH_ACROSS and bool(crossing.get("seated", false)):
+		var across := Element.crews_across(situation["members"], crossing)
+		if across != int(crossing.get("across", 0)):
+			crossing["seated"] = false
+			crossings_rematched += 1
 	_track_pursuit(game_match)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
@@ -459,11 +472,17 @@ func update(game_match: Match, orders: Object) -> bool:
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
 			"player": team == OrderFeed.player_team(game_match),
 			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking(), "anchor_by_drill": anchor_by_drill,
-			"ducks": ducks, "approach_round": approach_round}
+			"ducks": ducks, "approach_round": approach_round, "crossing": crossing}
 	var reseating := _reseat
 	_reseat = false
 	_reseat_keep = {}
 	var plan := ElementPlan.build(situation, state, _doctrine())
+	# Round 31 (B3b-2): the crossing's first route seating stands for this task point (ElementPlan holds it `fixed`).
+	if ROUTE_SEAT_ONCE and not crossing.is_empty() and not (plan.get("seats", {}) as Dictionary).is_empty():
+		if bool(crossing.get("seated", false)):
+			crossings_held += 1
+		crossing["seated"] = true
+		crossing["across"] = Element.crews_across(situation["members"], crossing)
 	if reseating and plan.get("seats", {}) == seats:
 		_reseat_useless = true
 	Element.apply_swap(plan, _swap)
@@ -738,6 +757,19 @@ func _blocker_of(unit_name: String, by_name: Dictionary) -> String:
 	return best
 
 
+## Round 29 (B3): whether a squadmate's movement reads blocked by, or giving way to, `unit_name`.
+func _holds_up_a_squadmate(unit_name: String, game_match: Match) -> bool:
+	if game_match == null or game_match.tanks == null:
+		return false
+	for other: String in slots:
+		if other == unit_name:
+			continue
+		var mover := Movement.of(game_match.tanks.get_node_or_null(NodePath(other)))
+		if mover != null and (String(mover.blocked_by) == unit_name or String(mover.yield_to) == unit_name):
+			return true
+	return false
+
+
 ## Round 19 (B4): re-apply the make-room swap to this update's plan while the seating still gives the pair the seats
 ## they had when it was made (once the seating itself keeps them swapped, nothing to do).
 static func apply_swap(plan: Dictionary, swap: Dictionary) -> void:
@@ -891,6 +923,90 @@ static func transit_origin(situation: Dictionary, spacing: float) -> Vector3:
 		if String(member["name"]) == leader:
 			return member["position"]
 	return (members[0] as Dictionary)["position"]
+
+
+## Round 30 (brains B3b, DECLARED): the crossing a drill move's route goes through, {"entry", "exit"} ({} = none): the
+## navmesh route from the element's centre to its task point, sampled every CROSSING_STEP_M, entry = the first sample on
+## a deck, exit = the last of that run. Found once per task and point (an impure navmesh query, like the transit's
+## route); ElementPlan seats by it (TacticsFormation.seat's `via`). `--route-seat=off` is the control arm.
+static var ROUTE_SEAT_ENABLED := true
+const CROSSING_STEP_M := 2.0
+var crossing := {}
+var _crossing_key := []
+static var crossings_found := 0
+## Round 31 (brains B3b-2, DECLARED; `--route-seat-once=off` is the control arm = round 30's B3b): the seating by a
+## crossing is matched ONCE per task point (the first plan that has the crossing), then held as a plain move standing on
+## its spot holds its seats (`fixed`), until the task point changes or the element re-seats. Traced (his bridge, green
+## t18 seed 3, builder0, 4bc708d7): re-matched every plan as the crews moved, S_1's seat flipped east (-50, -12) at 16 s,
+## west (-73, -12) at 18 s, east again by 24 s, and it stalled on terrain at the rim at 20 s. `crossings_held` counts
+## the plans that kept it (lesson 300).
+static var ROUTE_SEAT_ONCE := true
+static var crossings_held := 0
+## Round 31 (brains B3b-2b; `--route-seat-across=off` = B3b-2 as first built): held, the seating B3b-2 matched with every
+## crew on the near bank stood after they crossed. Traced (his bridge, rust t8 seed 2, builder0, 344a772a): S_1, first
+## across, kept the westmost far seat (49, 12) on the bank edge, and leaving it for the next point it backed into the rim
+## for 4.1 s (the control, re-matched, sent it to the near seat (79, 12): 0.5 s). So the seating is matched again once
+## each time the count of crews past the exit changes (at most once per crew), and held between.
+## `crossings_rematched` counts those.
+static var ROUTE_SEAT_REMATCH_ACROSS := true
+static var crossings_rematched := 0
+
+
+## How many of `members` are past the crossing's exit (beyond it along entry -> exit). 0 for no crossing.
+static func crews_across(members: Array, the_crossing: Dictionary) -> int:
+	if not (the_crossing.get("entry") is Vector3 and the_crossing.get("exit") is Vector3):
+		return 0
+	var entry: Vector3 = the_crossing["entry"]
+	var exit: Vector3 = the_crossing["exit"]
+	var along := Vector3(exit.x - entry.x, 0.0, exit.z - entry.z)
+	if along.length_squared() < 0.0001:
+		return 0
+	var count := 0
+	for member: Dictionary in members:
+		var p: Vector3 = member["position"]
+		if Vector3(p.x - exit.x, 0.0, p.z - exit.z).dot(along) > 0.0:
+			count += 1
+	return count
+
+
+func _find_crossing(game_match: Match, situation: Dictionary) -> void:
+	if not ROUTE_SEAT_ENABLED or not ElementTask.runs_drills(task):
+		crossing = {}
+		return
+	var to: Variant = ElementTask.destination(task)  # a place, never a moving target
+	if not to is Vector3:
+		crossing = {}
+		return
+	var key := [task_seq, Vector3(snappedf((to as Vector3).x, 1.0), 0.0, snappedf((to as Vector3).z, 1.0))]
+	if key == _crossing_key:
+		return
+	_crossing_key = key
+	crossing = {}
+	var ground := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	if ground == null:
+		return
+	var center: Vector3 = situation["center"]
+	var route := Element._flat_path(Pathing.find_path(ground, Vector3(center.x, 0.0, center.z), to))
+	var entry := Vector3.INF
+	var exit := Vector3.INF
+	for i in range(1, route.size()):
+		var a: Vector3 = route[i - 1]
+		var b: Vector3 = route[i]
+		var steps := maxi(1, ceili(a.distance_to(b) / CROSSING_STEP_M))
+		for k in steps + 1:
+			var p := a.lerp(b, float(k) / steps)
+			if SlotGround.near_deck(p, 0.0):
+				if entry == Vector3.INF:
+					entry = p
+				exit = p
+			elif entry != Vector3.INF:
+				crossing = {"entry": entry, "exit": exit}
+				crossings_found += 1
+				return
+	if entry != Vector3.INF:
+		crossing = {"entry": entry, "exit": exit}
+		crossings_found += 1
 
 
 func _advance_transit(game_match: Match, situation: Dictionary) -> void:
@@ -1457,7 +1573,7 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 			skip = true
 		elif team == player_team and task.is_empty():
 			skip = true
-		elif not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO), int(situation["tick"])):
+		elif not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO), int(situation["tick"]), game_match):
 			skip = true
 		if skip and not force:
 			continue
@@ -1492,7 +1608,9 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 		var issued: Dictionary = orders.call("current", unit_name)
 		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"], "tick": int(situation["tick"]),
 				"to": desired["to"], "target": String(desired.get("target", "")), "facing": desired.get("facing"),
-				"anchor": anchor, "seat": _seat_index(unit_name), "task": task_seq}
+				"anchor": anchor, "seat": _seat_index(unit_name), "task": task_seq,
+				# Round 28 (B4): the task's own drawn facing when this was issued (_heading_retold).
+				"task_facing": ElementTask.facing(task)}
 
 
 ## Attribute a re-issued goal to the thing that moved it (see `goal_moves`). `before` is what this element had issued
@@ -1528,7 +1646,8 @@ func _seat_index(unit_name: String) -> int:
 	return int(seat[2]) if seat is Array and (seat as Array).size() > 2 else -1
 
 
-func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, position: Vector3, tick: int) -> bool:
+func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, position: Vector3, tick: int,
+		game_match: Match = null) -> bool:
 	var mine: Dictionary = _issued.get(unit_name, {})
 	if current.is_empty():
 		# Idle, having just finished what we gave it. The trap (round 5): a fight order's destination is a MOVING enemy,
@@ -1536,7 +1655,7 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# times a second for as long as the fight lasted. A standing attack already follows its target, so the same
 		# intention is not re-issued until RE_ISSUE_TICKS have passed or something real changes.
 		var again: bool = not mine.is_empty() and String(mine.get("verb", "")) == String(desired["verb"]) \
-				and String(mine.get("target", "")) == String(desired.get("target", "")) and not _heading_changed(mine, desired)
+				and String(mine.get("target", "")) == String(desired.get("target", "")) and not _heading_retold(mine, desired)
 		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
 			return false
 		# It finished our order to THIS place and stopped short (a brain completes a stalled move up to 12 m out): it got
@@ -1553,14 +1672,23 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		# (traced, the CPU's side, start tick 16, main 13de4dc6 + F3': a crew stopped on the east swing bridge's north end
 		# 7 m from a seat that had slid 3.6 m since its one re-send, and three squadmates stood behind it 50 s).
 		# Round 26: the same place, but a heading given, taken away or turned (the squad re-faced where it stands).
-		if not mine.is_empty() and _heading_changed(mine, desired):
+		if not mine.is_empty() and _heading_retold(mine, desired):
 			return true
 		var sent: Variant = _mouth_sent.get(unit_name)
 		var off_seat: bool = MOUTH_REISSUE_ENABLED and desired["to"] is Vector3 \
 				and position.distance_to(desired["to"]) > MOUTH_SETTLED_M
 		var on_deck: bool = off_seat and SlotGround.near_deck(position, 0.0)
-		var mouth: bool = on_deck or (off_seat and SlotGround.near_deck(position, MOUTH_REACH_M) \
-				and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M))
+		var in_mouth: bool = off_seat and SlotGround.near_deck(position, MOUTH_REACH_M)
+		var mouth: bool = on_deck or (in_mouth and not (sent is Vector3 and (sent as Vector3).distance_to(desired["to"]) <= REISSUE_M))
+		# Round 29 (B3): the once-per-seat guard gives way while the crew HOLDS UP a squadmate there (one is blocked by it
+		# or giving way to it), at most every RE_ISSUE_TICKS. Traced (his bridge, rust t5 seed 1, builder0): a crew sent on
+		# from the deck stopped 4.8 m short of its seat in the far mouth, its one re-send spent, and two squadmates stood
+		# behind it to the end of the run; round 26's heading re-issue had been re-sending it by accident.
+		if MOUTH_HELD_ENABLED and in_mouth and not mouth and _holds_up_a_squadmate(unit_name, game_match) \
+				and tick - int(_mouth_held_tick.get(unit_name, -RE_ISSUE_TICKS)) >= RE_ISSUE_TICKS:
+			mouth = true
+			_mouth_held_tick[unit_name] = tick
+			mouth_held_resends += 1
 		# Round 27 (B2 v5): after the element has arrived, a crew that finished our order SHORT and stands idle beyond the
 		# element's own tolerance (REISSUE_M) from its seat is sent on once per seat, the mouth rule's once. Traced (Sumps,
 		# seed 1, start tick 1): the scout yielded to two squadmates, its move completed 11.4 m short, and it stood idle
@@ -1609,7 +1737,7 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	# Round 26 (brains, orders' trace, builder0 ba541b96): the heading is part of the intention. A squad re-given its task
 	# without the heading drawn on the first (or with another) kept the old one on every crew already moving, for as
 	# long as the move lasted (issued_tick 5 for 6 s): verb, place and target matched, so nothing here re-issued.
-	if _heading_changed(mine, desired):
+	if _heading_retold(mine, desired):
 		return true
 	var same_target := String(mine.get("target", "")) == String(desired.get("target", ""))
 	var fight := ["attack", "attack_move"]
@@ -1622,6 +1750,28 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	if desired["to"] is Vector3 and mine["to"] is Vector3:
 		return not _same_place(mine, desired, REISSUE_M)
 	return desired["to"] is Vector3 != mine["to"] is Vector3
+
+
+## Round 28 (B4, DECLARED): a changed heading re-issues only when the TASK's drawn facing changed since the crew's order
+## (given, taken away or turned: round 26's case, a squad re-given its task with another heading or none). His bridge
+## 108 fell to 106 at round 26's merge of the heading rule (bisected: 2e2715e4 108-cells pass, 7baffe24 fail): a crew's
+## plan heading toggling within ONE task (a halt sector given, then taken away as the squad moved on) re-issued its move
+## at the rim, and the tank hesitated there 3.5-6.8 s. `--reissue-heading=plan` is round 26's rule.
+static var HEADING_REISSUE_TASK_ONLY := true
+
+
+func _heading_retold(mine: Dictionary, desired: Dictionary) -> bool:
+	if not _heading_changed(mine, desired):
+		return false
+	if not HEADING_REISSUE_TASK_ONLY:
+		return true
+	var was: Variant = mine.get("task_facing")
+	var now: Variant = ElementTask.facing(task)
+	if (was is Vector3) != (now is Vector3):
+		return true
+	if not now is Vector3:
+		return false
+	return rad_to_deg(TacticsFormation.flat(was).angle_to(TacticsFormation.flat(now))) > HEADING_REISSUE_DEG
 
 
 ## Whether the heading wanted differs from the one last issued: given, taken away, or turned past HEADING_REISSUE_DEG.
