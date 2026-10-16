@@ -172,7 +172,11 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   sim-baseline maps unmoved. The one red was the exit-leak gate: 20 ObjectDB / 4 resources. **The cause was my
   `tests/test_traffic_setup.gd`**: its teardown never disposed its TacticsLab (round 31's `test_traffic_ghost` bug). On the
   laptop the old file alone prints exactly those two lines at exit and the fixed one prints neither (5/0). Fixed at
-  **`c9fa64a4`**; its check is running.
+  **`c9fa64a4`**.
+- **🎯 T1c-b2 SHIP HASH `c9fa64a4`:** builder0 `make check exited 0`, 2708 passed / 0 failed, 24 targets passed. Two NOT
+  JUDGED: perf-judge (box busy, ratios 1.67–2.21×) and scenario_perf (unpinned). sim-baseline: all 13 unmoved. Its first
+  check on the same hash went red on native's `test_native_execute_odd`, which was order-dependent:
+  `test_native_drive_owned` left a crew held in the planner seam. Native's test-only fix is on main at `45b52d04`.
 
 **C32.8, test splits: none needed.** Builder0's shard times: no traffic-owned file is near 60 s.
 `test_traffic_hold_live` 30.9 s, `test_traffic_turns_live` 31.0 s, `test_traffic_feed` 13.2 s. The slow files are native's
