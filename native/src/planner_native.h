@@ -19,6 +19,7 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
+#include <godot_cpp/variant/packed_float64_array.hpp>
 #include <godot_cpp/variant/rid.hpp>
 
 #include <cstdint>
@@ -188,6 +189,13 @@ public:
 	bool step(int64_t expansions);
 	Dictionary result() const;
 	bool live() const { return session_live; }
+	// Round 32 (the queue's refuse-early): did `begin` already answer -- the start or the goal blocked, or already there
+	// (Planner._search's three checks before its first pop)? Read without stepping; the next step(n) returns it with
+	// no expansion.
+	bool refused_at_begin() const {
+		return session_live && search.finished && phase == 0 &&
+				(search.code == START_BLOCKED || search.code == GOAL_BLOCKED || search.code == ALREADY_THERE);
+	}
 	// Drop a live session (a crew died, its order changed): nothing is kept.
 	void cancel();
 	// PlannerHeuristic.table_for(req) bit for bit (the cache key is the GDScript's "%.2f|%.2f|%.2f|%.2f").
@@ -199,6 +207,8 @@ public:
 	Dictionary nav_cache_stats() const;
 	// Drop the shared cache (measurement: a cold-start price in a process that has planned before; note 2).
 	void nav_cache_clear();
+	// Round 32 (CP-S): the wall clearance at each (x, z) pair (Planner.clearances: PlannerSeam.side_gate's two reads).
+	PackedFloat64Array clearances(const Dictionary &world_view, const PackedFloat64Array &xz, double cx, double cz, double half);
 	// The last session's lazy field as the GDScript world holds it after its plan (`_field`, `_field_x0`, `_field_z0`,
 	// `_field_n`, the spill's size): the twin test compares the cells bit for bit.
 	Dictionary debug_field() const;
