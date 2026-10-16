@@ -81,6 +81,7 @@ func _execute_case(part: int, parts: int) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the execute equality is not exercised in this run")
 		return
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	assert_true(NativeGun.configure() and NativeDrive.configure(), "the native drive and gun take the live constants")
 	await ArenaFixture.build(self, "sumps")
 	var game_match: Match = MATCH.instantiate()

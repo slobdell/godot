@@ -61,6 +61,7 @@ static func _diff(a: Array, b: Array) -> String:
 ## unsticks, held_unsticks, mismatches, first (the first mismatch), and the stage's report. Round 32 (C32.8): only the
 ## crews at `part` mod `parts` in each tick's mover list are compared (the hold's files split by crew); the rest play on.
 static func run(case: TestCase, owned: bool, arena: String, kind: String, seconds: float, part := 0, parts := 1) -> Dictionary:
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	var traffic: Traffic = Traffic.new()
 	var script: Script = Traffic
 	case.assert_true(NativeDrive.configure(), "the native drive takes the live constants (with traffic's)")

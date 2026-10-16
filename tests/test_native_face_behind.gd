@@ -36,6 +36,7 @@ func _face_case(unit: String) -> Dictionary:
 	if not NativeBridge.available:
 		print("native: absent, the face-behind equality is not exercised in this run")
 		return {}
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	assert_true(Movement._off.is_empty(), "the default configuration (no --nav-off switch): the native drive runs")
 	assert_true(NativeGun.configure() and NativeDrive.configure(), "the native drive and gun take the live constants")
 	await ArenaFixture.build(self, "yard_open")
