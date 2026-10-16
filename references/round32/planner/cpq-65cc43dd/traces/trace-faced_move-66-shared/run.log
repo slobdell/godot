@@ -1,0 +1,358 @@
+MANOEUVRE_TRACE f 5 at (-60.0, 73.0) nose (-0.00, -1.00) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (inf, inf, inf) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 10 at (-60.0, 73.0) nose (-0.00, -1.00) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (inf, inf, inf) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 15 at (-60.0, 73.0) nose (-0.00, -1.00) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (inf, inf, inf) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 20 at (-60.0, 73.0) nose (-0.00, -1.00) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (inf, inf, inf) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 25 at (-60.0, 73.0) nose (-0.00, -1.00) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (inf, inf, inf) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 30 at (-60.0, 73.0) nose (-0.00, -1.00) v 0.00 cmd 0.00/0.00 order move_to goal (-60.0, 73.0) steer (-59.99998, 0.0, 73.00002) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 32 v 0.00 inside false err -153
+MANOEUVRE_TRACE f 35 at (-60.0, 73.0) nose (0.00, -1.00) v 0.70 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 38 v 1.40 inside false err -152
+MANOEUVRE_TRACE f 40 at (-60.0, 72.7) nose (0.02, -1.00) v 1.87 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 44 v 2.80 inside false err 2
+MANOEUVRE_TRACE f 45 at (-60.0, 72.3) nose (0.02, -1.00) v 3.03 cmd 0.99/-0.06 order move_to goal (-33.8, 87.3) steer (-60.17963, 0.0, 57.89366) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 50 v 4.20 inside false err 3
+MANOEUVRE_TRACE f 50 at (-60.0, 71.7) nose (0.02, -1.00) v 4.20 cmd 0.98/-0.08 order move_to goal (-33.8, 87.3) steer (-60.43505, 0.0, 57.27764) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 55 at (-60.0, 70.9) nose (0.01, -1.00) v 5.37 cmd 0.97/-0.12 order move_to goal (-33.8, 87.3) steer (-60.80072, 0.0, 56.47813) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 56 v 5.60 inside false err 4
+MANOEUVRE_TRACE f 60 at (-60.0, 69.8) nose (0.00, -1.00) v 6.53 cmd 0.96/-0.15 order move_to goal (-33.8, 87.3) steer (-61.27069, 0.0, 55.50274) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 62 v 7.00 inside false err 6
+MANOEUVRE_TRACE f 65 at (-60.0, 68.6) nose (-0.02, -1.00) v 7.70 cmd 0.95/-0.20 order move_to goal (-33.8, 87.3) steer (-61.91336, 0.0, 54.36942) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 68 v 8.40 inside false err 7
+MANOEUVRE_TRACE f 70 at (-60.0, 67.2) nose (-0.04, -1.00) v 8.87 cmd 0.95/-0.21 order move_to goal (-33.8, 87.3) steer (-62.41491, 0.0, 53.04058) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 74 v 9.80 inside false err 5
+MANOEUVRE_TRACE f 75 at (-60.1, 65.6) nose (-0.06, -1.00) v 10.03 cmd 0.97/-0.13 order move_to goal (-33.8, 87.3) steer (-62.13018, 0.0, 51.3907) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 80 v 11.20 inside false err -4
+MANOEUVRE_TRACE f 80 at (-60.2, 63.9) nose (-0.07, -1.00) v 11.20 cmd 0.97/0.11 order move_to goal (-33.8, 87.3) steer (-60.30329, 0.0, 49.46217) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 85 at (-60.3, 62.0) nose (-0.03, -1.00) v 10.84 cmd 0.89/0.45 order move_to goal (-33.8, 87.3) steer (-56.8609, 0.0, 48.0179) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 86 v 10.65 inside false err -14
+MANOEUVRE_TRACE f 90 at (-60.4, 60.3) nose (-0.04, -1.00) v 9.58 cmd 0.36/0.11 order move_to goal (-33.8, 87.3) steer (-59.96991, 0.0, 45.91739) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 92 v 9.04 inside false err -8
+MANOEUVRE_TRACE f 95 at (-60.4, 58.9) nose (-0.01, -1.00) v 8.24 cmd 0.23/0.54 order move_to goal (-33.8, 87.3) steer (-55.90429, 0.0, 45.16821) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 98 v 7.44 inside false err -35
+MANOEUVRE_TRACE f 100 at (-60.4, 57.6) nose (0.07, -1.00) v 6.90 cmd 0.15/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 104 v 6.00 inside false err -153
+MANOEUVRE_TRACE f 105 at (-60.2, 56.6) nose (0.16, -0.99) v 6.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 110 v 7.16 inside false err -147
+MANOEUVRE_TRACE f 110 at (-60.0, 55.5) nose (0.25, -0.97) v 7.16 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 115 at (-59.6, 54.2) nose (0.35, -0.94) v 8.32 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 116 v 8.55 inside false err -141
+MANOEUVRE_TRACE f 120 at (-59.0, 52.9) nose (0.46, -0.89) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 122 v 9.00 inside false err -134
+MANOEUVRE_TRACE f 125 at (-58.2, 51.6) nose (0.57, -0.82) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 128 v 9.00 inside false err -127
+MANOEUVRE_TRACE f 130 at (-57.2, 50.5) nose (0.67, -0.75) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 134 v 9.00 inside false err -120
+MANOEUVRE_TRACE f 135 at (-56.1, 49.4) nose (0.75, -0.66) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 140 v 9.00 inside false err -113
+MANOEUVRE_TRACE f 140 at (-54.9, 48.5) nose (0.83, -0.56) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 145 at (-53.6, 47.8) nose (0.89, -0.45) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 146 v 9.00 inside false err -106
+MANOEUVRE_TRACE f 150 at (-52.3, 47.2) nose (0.94, -0.33) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 152 v 9.00 inside false err -99
+MANOEUVRE_TRACE f 155 at (-50.8, 46.8) nose (0.98, -0.21) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 158 v 9.00 inside false err -92
+MANOEUVRE_TRACE f 160 at (-49.3, 46.6) nose (1.00, -0.09) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 164 v 8.73 inside false err -15
+MANOEUVRE_TRACE f 165 at (-47.8, 46.6) nose (1.00, 0.00) v 8.59 cmd 0.70/0.45 order move_to goal (-33.8, 87.3) steer (-34.00465, 0.0, 50.55205) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 170 v 8.05 inside false err -22
+MANOEUVRE_TRACE f 170 at (-46.5, 46.6) nose (1.00, 0.06) v 8.05 cmd 0.66/0.63 order move_to goal (-33.8, 87.3) steer (-33.52603, 0.0, 52.93707) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 175 at (-45.2, 46.8) nose (0.99, 0.14) v 7.70 cmd 0.64/0.90 order move_to goal (-33.8, 87.3) steer (-34.32231, 0.0, 56.23607) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 176 v 7.67 inside false err -36
+MANOEUVRE_TRACE f 180 at (-43.9, 47.0) nose (0.97, 0.25) v 8.15 cmd 0.70/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 182 v 8.59 inside false err -74
+MANOEUVRE_TRACE f 185 at (-42.5, 47.5) nose (0.93, 0.36) v 8.99 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 188 v 9.00 inside false err -67
+MANOEUVRE_TRACE f 190 at (-41.2, 48.1) nose (0.88, 0.47) v 9.00 cmd 0.75/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan  left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 194 v 9.00 inside false err -60
+MANOEUVRE_TRACE f 195 at (-39.9, 48.9) nose (0.82, 0.58) v 8.73 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 200 at (-38.9, 49.8) nose (0.74, 0.67) v 7.39 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 205 at (-38.1, 50.6) nose (0.68, 0.74) v 6.05 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 210 at (-37.5, 51.2) nose (0.62, 0.79) v 4.71 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 215 at (-37.2, 51.7) nose (0.57, 0.82) v 3.38 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.16959, 0.0, 60.13319) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 220 at (-36.9, 52.1) nose (0.54, 0.84) v 2.04 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-38.38845, 0.0, 56.00205) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 225 at (-36.8, 52.3) nose (0.52, 0.85) v 0.71 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-38.38845, 0.0, 56.00205) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 230 at (-36.8, 52.3) nose (0.52, 0.86) v -0.56 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-38.38845, 0.0, 56.00205) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 235 at (-36.9, 52.1) nose (0.51, 0.86) v -1.73 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-38.38845, 0.0, 56.00205) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 240 at (-37.1, 51.7) nose (0.48, 0.88) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.16793, 0.0, 60.11726) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 245 at (-37.3, 51.3) nose (0.44, 0.90) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.74863, 0.0, 65.70979) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 250 at (-37.5, 50.9) nose (0.41, 0.91) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.74863, 0.0, 65.70979) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 255 at (-37.7, 50.5) nose (0.37, 0.93) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.74863, 0.0, 65.70979) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 260 at (-37.9, 50.0) nose (0.34, 0.94) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.74863, 0.0, 65.70979) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 265 at (-38.0, 49.6) nose (0.30, 0.95) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.74863, 0.0, 65.70979) plan single left 3.5 legs [(1.0, 5.0)] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 266 v -2.80 inside false err -23
+MANOEUVRE_TRACE f 270 at (-38.1, 49.2) nose (0.28, 0.96) v -1.73 cmd 0.13/0.60 order move_to goal (-33.8, 87.3) steer (-39.55279, 0.0, 63.82369) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 272 v -1.20 inside false err -21
+MANOEUVRE_TRACE f 275 at (-38.2, 49.1) nose (0.27, 0.96) v -0.40 cmd 0.19/0.58 order move_to goal (-33.8, 87.3) steer (-39.55279, 0.0, 63.82369) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 278 v 0.37 inside true err -20
+MANOEUVRE_TRACE f 280 at (-38.2, 49.1) nose (0.26, 0.96) v 0.83 cmd -0.23/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 284 v 0.27 inside true err -20
+MANOEUVRE_TRACE f 285 at (-38.1, 49.2) nose (0.25, 0.97) v 0.00 cmd -0.17/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 290 v -1.11 inside false err -20
+MANOEUVRE_TRACE f 290 at (-38.2, 49.1) nose (0.25, 0.97) v -1.11 cmd 0.14/0.55 order move_to goal (-33.8, 87.3) steer (-39.55279, 0.0, 63.82369) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 295 at (-38.2, 48.9) nose (0.24, 0.97) v -1.06 cmd 0.15/0.53 order move_to goal (-33.8, 87.3) steer (-39.55279, 0.0, 63.82369) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 296 v -1.05 inside false err -19
+MANOEUVRE_TRACE f 300 at (-38.2, 48.8) nose (0.24, 0.97) v 0.01 cmd -0.16/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 302 v 0.48 inside true err -18
+MANOEUVRE_TRACE f 305 at (-38.2, 49.0) nose (0.23, 0.97) v 1.18 cmd -0.24/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 308 v 1.88 inside true err -17
+MANOEUVRE_TRACE f 310 at (-38.1, 49.3) nose (0.21, 0.98) v 2.35 cmd -0.35/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 314 v 1.78 inside true err -16
+MANOEUVRE_TRACE f 315 at (-38.1, 49.6) nose (0.18, 0.98) v 1.51 cmd -0.25/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 320 v 0.68 inside false err -16
+MANOEUVRE_TRACE f 320 at (-38.1, 49.8) nose (0.16, 0.99) v 0.68 cmd 0.26/0.45 order move_to goal (-33.8, 87.3) steer (-39.57861, 0.0, 64.0723) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 325 at (-38.0, 49.9) nose (0.16, 0.99) v 0.85 cmd -0.17/1.00 order move_to goal (-33.8, 87.3) steer (-38.71452, 0.0, 55.76769) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 326 v 0.58 inside false err -15
+MANOEUVRE_TRACE f 330 at (-38.0, 50.0) nose (0.15, 0.99) v 1.01 cmd -0.29/1.00 order move_to goal (-33.8, 87.3) steer (-38.69082, 0.0, 55.78472) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 332 v 0.48 inside true err -15
+MANOEUVRE_TRACE f 335 at (-38.0, 50.0) nose (0.14, 0.99) v -0.29 cmd -0.41/1.00 order move_to goal (-33.8, 87.3) steer (-38.69082, 0.0, 55.78472) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 338 v -0.99 inside true err -15
+MANOEUVRE_TRACE f 340 at (-38.0, 49.9) nose (0.13, 0.99) v -1.45 cmd 0.69/-0.52 order move_to goal (-33.8, 87.3) steer (-31.72449, 0.0, 62.82376) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 344 v -0.39 inside false err -8
+MANOEUVRE_TRACE f 345 at (-38.0, 49.8) nose (0.14, 0.99) v -0.12 cmd 0.90/0.40 order move_to goal (-33.8, 87.3) steer (-39.59613, 0.0, 64.2411) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 350 v 1.08 inside false err -14
+MANOEUVRE_TRACE f 350 at (-38.0, 49.9) nose (0.13, 0.99) v 1.08 cmd 0.90/0.40 order move_to goal (-33.8, 87.3) steer (-39.59613, 0.0, 64.2411) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 355 at (-38.0, 50.2) nose (0.13, 0.99) v 2.25 cmd 0.90/0.40 order move_to goal (-33.8, 87.3) steer (-39.62009, 0.0, 64.47182) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 356 v 2.48 inside false err -14
+MANOEUVRE_TRACE f 360 at (-37.9, 50.7) nose (0.11, 0.99) v 3.41 cmd 0.90/0.38 order move_to goal (-33.8, 87.3) steer (-39.66945, 0.0, 64.94717) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 362 v 3.88 inside false err -13
+MANOEUVRE_TRACE f 365 at (-37.9, 51.3) nose (0.09, 1.00) v 4.58 cmd 0.91/0.37 order move_to goal (-33.8, 87.3) steer (-39.73864, 0.0, 65.61348) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 368 v 5.28 inside false err -12
+MANOEUVRE_TRACE f 370 at (-37.8, 52.2) nose (0.07, 1.00) v 5.75 cmd 0.91/0.34 order move_to goal (-33.8, 87.3) steer (-39.82787, 0.0, 66.47284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 374 v 6.68 inside false err -11
+MANOEUVRE_TRACE f 375 at (-37.8, 52.3) nose (0.04, 1.00) v 6.91 cmd 0.93/0.30 order move_to goal (-33.8, 87.3) steer (-39.83453, 0.0, 66.53696) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 380 v 8.08 inside false err -9
+MANOEUVRE_TRACE f 380 at (-37.8, 52.3) nose (0.01, 1.00) v 8.08 cmd 0.94/0.25 order move_to goal (-33.8, 87.3) steer (-39.83259, 0.0, 66.51833) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 385 at (-37.8, 52.2) nose (-0.02, 1.00) v 9.24 cmd 0.95/0.21 order move_to goal (-33.8, 87.3) steer (-39.82896, 0.0, 66.48332) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 386 v 9.48 inside false err -7
+MANOEUVRE_TRACE f 390 at (-37.8, 52.2) nose (-0.04, 1.00) v 10.41 cmd 0.96/0.16 order move_to goal (-33.8, 87.3) steer (-39.82528, 0.0, 66.44794) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 392 v 10.88 inside false err -5
+MANOEUVRE_TRACE f 395 at (-37.8, 52.2) nose (-0.07, 1.00) v 11.58 cmd 0.97/0.13 order move_to goal (-33.8, 87.3) steer (-39.82245, 0.0, 66.42069) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 398 v 11.66 inside false err -4
+MANOEUVRE_TRACE f 400 at (-37.8, 52.1) nose (-0.08, 1.00) v 11.70 cmd 0.98/0.10 order move_to goal (-33.8, 87.3) steer (-39.8204, 0.0, 66.40091) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 404 v 10.90 inside false err -9
+MANOEUVRE_TRACE f 405 at (-37.8, 52.3) nose (0.04, 1.00) v 10.63 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.83258, 0.0, 66.51824) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 410 v 9.27 inside false err -18
+MANOEUVRE_TRACE f 410 at (-37.8, 52.3) nose (0.18, 0.98) v 9.27 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.83376, 0.0, 66.52959) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 415 at (-37.8, 52.2) nose (0.29, 0.96) v 7.93 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.82452, 0.0, 66.44056) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 416 v 7.66 inside false err -26
+MANOEUVRE_TRACE f 420 at (-37.2, 52.2) nose (0.39, 0.92) v 6.58 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.22696, 0.0, 60.68565) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 422 v 6.05 inside true err -41
+MANOEUVRE_TRACE f 425 at (-36.3, 52.3) nose (0.47, 0.88) v 5.25 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-38.50918, 0.0, 55.91528) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 428 v 4.44 inside true err -65
+MANOEUVRE_TRACE f 445 at (-34.7, 52.3) nose (0.48, 0.88) v -0.09 cmd -0.53/1.00 order move_to goal (-33.8, 87.3) steer (-36.24127, 0.0, 53.25098) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 448 v -0.79 inside true err -85
+MANOEUVRE_TRACE f 450 at (-34.8, 52.2) nose (0.47, 0.88) v -1.26 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-36.24127, 0.0, 53.25098) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 455 at (-35.0, 51.9) nose (0.45, 0.89) v -2.42 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-36.24127, 0.0, 53.25098) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 460 at (-35.2, 51.5) nose (0.42, 0.91) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.1721, 0.0, 60.1574) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 465 at (-35.3, 51.1) nose (0.38, 0.92) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.1721, 0.0, 60.1574) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 470 at (-35.5, 50.6) nose (0.35, 0.94) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.1721, 0.0, 60.1574) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 475 at (-35.7, 50.2) nose (0.31, 0.95) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.1721, 0.0, 60.1574) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 480 at (-35.8, 49.7) nose (0.27, 0.96) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.76699, 0.0, 65.8866) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 485 at (-35.9, 49.3) nose (0.23, 0.97) v -2.80 cmd -0.70/1.00 order move_to goal (-33.8, 87.3) steer (-39.76699, 0.0, 65.8866) plan single left 4.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 490 v -2.53 inside false err -25
+MANOEUVRE_TRACE f 490 at (-36.0, 48.8) nose (0.20, 0.98) v -2.53 cmd 0.12/0.72 order move_to goal (-33.8, 87.3) steer (-39.44341, 0.0, 62.77021) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 495 at (-36.1, 48.6) nose (0.18, 0.98) v -1.20 cmd 0.13/0.66 order move_to goal (-33.8, 87.3) steer (-39.44341, 0.0, 62.77021) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 496 v -0.93 inside false err -24
+MANOEUVRE_TRACE f 500 at (-36.1, 48.5) nose (0.17, 0.99) v 0.13 cmd 0.16/0.67 order move_to goal (-33.8, 87.3) steer (-39.49272, 0.0, 62.4853) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 502 v 0.60 inside false err -18
+MANOEUVRE_TRACE f 505 at (-36.0, 48.6) nose (0.17, 0.99) v 1.30 cmd 0.22/0.29 order move_to goal (-33.8, 87.3) steer (-36.12713, 0.0, 63.03489) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 508 v 2.00 inside false err -3
+MANOEUVRE_TRACE f 510 at (-36.0, 49.0) nose (0.17, 0.99) v 2.47 cmd 0.31/-0.04 order move_to goal (-33.8, 87.3) steer (-33.24448, 0.0, 63.09968) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 514 v 3.40 inside false err 9
+MANOEUVRE_TRACE f 515 at (-35.9, 49.5) nose (0.17, 0.99) v 3.63 cmd 0.42/-0.29 order move_to goal (-33.8, 87.3) steer (-31.01836, 0.0, 63.03096) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 520 v 4.80 inside false err 9
+MANOEUVRE_TRACE f 520 at (-35.8, 50.2) nose (0.19, 0.98) v 4.80 cmd 0.65/-0.25 order move_to goal (-33.8, 87.3) steer (-30.96782, 0.0, 63.77) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 525 at (-35.6, 51.0) nose (0.15, 0.99) v 4.47 cmd -0.41/1.00 order move_to goal (-33.8, 87.3) steer (-38.25441, 0.0, 56.0984) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 526 v 4.20 inside true err -36
+MANOEUVRE_TRACE f 530 at (-35.6, 51.6) nose (0.10, 1.00) v 3.13 cmd -0.20/1.00 order move_to goal (-33.8, 87.3) steer (-38.25441, 0.0, 56.0984) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 532 v 2.60 inside true err -37
+MANOEUVRE_TRACE f 535 at (-35.5, 52.0) nose (0.06, 1.00) v 1.80 cmd -0.12/1.00 order move_to goal (-33.8, 87.3) steer (-38.25441, 0.0, 56.0984) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 538 v 1.50 inside true err -38
+MANOEUVRE_TRACE f 540 at (-35.5, 52.2) nose (0.04, 1.00) v 1.96 cmd -0.12/1.00 order move_to goal (-33.8, 87.3) steer (-38.25441, 0.0, 56.0984) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 544 v 2.90 inside true err -36
+MANOEUVRE_TRACE f 545 at (-35.5, 52.2) nose (0.01, 1.00) v 3.13 cmd -0.40/1.00 order move_to goal (-33.8, 87.3) steer (-38.25441, 0.0, 56.0984) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 550 v 4.30 inside true err -26
+MANOEUVRE_TRACE f 550 at (-35.5, 52.2) nose (-0.04, 1.00) v 4.30 cmd -0.44/1.00 order move_to goal (-33.8, 87.3) steer (-36.32914, 0.0, 53.68516) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 555 at (-35.5, 52.1) nose (-0.10, 0.99) v 3.96 cmd -0.22/1.00 order move_to goal (-33.8, 87.3) steer (-36.32914, 0.0, 53.68516) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 556 v 3.69 inside true err -21
+MANOEUVRE_TRACE f 560 at (-35.5, 52.1) nose (-0.15, 0.99) v 2.63 cmd 0.26/0.64 order move_to goal (-33.8, 87.3) steer (-42.9381, 0.0, 64.42268) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 562 v 2.09 inside false err -24
+MANOEUVRE_TRACE f 565 at (-35.5, 52.1) nose (-0.17, 0.99) v 1.29 cmd 0.22/0.73 order move_to goal (-33.8, 87.3) steer (-43.91063, 0.0, 63.77313) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 568 v 0.99 inside false err -25
+MANOEUVRE_TRACE f 570 at (-35.5, 52.1) nose (-0.17, 0.99) v 0.96 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-43.66396, 0.0, 63.94225) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 574 v -0.11 inside false err -16
+MANOEUVRE_TRACE f 575 at (-35.5, 52.1) nose (-0.16, 0.99) v -0.34 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 580 v -1.51 inside false err -16
+MANOEUVRE_TRACE f 580 at (-35.5, 51.9) nose (-0.15, 0.99) v -1.51 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 585 at (-35.4, 51.5) nose (-0.13, 0.99) v -2.40 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 586 v -2.40 inside false err -17
+MANOEUVRE_TRACE f 590 at (-35.4, 51.1) nose (-0.09, 1.00) v -2.40 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 592 v -2.40 inside false err -18
+MANOEUVRE_TRACE f 595 at (-35.4, 50.7) nose (-0.06, 1.00) v -2.40 cmd -0.60/-1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 598 v -2.40 inside false err -20
+MANOEUVRE_TRACE f 600 at (-35.3, 50.4) nose (-0.05, 1.00) v -2.00 cmd -0.15/1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 604 v -2.00 inside false err -17
+MANOEUVRE_TRACE f 605 at (-35.3, 50.0) nose (-0.08, 1.00) v -2.00 cmd -0.31/1.00 order move_to goal (-33.8, 87.3) steer (-39.13705, 0.0, 59.81981) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 610 v -0.93 inside false err -12
+MANOEUVRE_TRACE f 610 at (-35.3, 49.8) nose (-0.09, 1.00) v -0.93 cmd 0.68/0.35 order move_to goal (-33.8, 87.3) steer (-39.51247, 0.0, 63.43538) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 615 at (-35.3, 49.8) nose (-0.09, 1.00) v 0.37 cmd 0.13/0.34 order move_to goal (-33.8, 87.3) steer (-39.51247, 0.0, 63.43538) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 616 v 0.60 inside false err -12
+MANOEUVRE_TRACE f 620 at (-35.1, 49.8) nose (-0.09, 1.00) v 1.53 cmd 0.13/-0.76 order move_to goal (-33.8, 87.3) steer (-29.79857, 0.0, 63.20007) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 622 v 2.00 inside false err 24
+MANOEUVRE_TRACE f 625 at (-34.9, 50.1) nose (-0.07, 1.00) v 2.70 cmd 0.30/-0.54 order move_to goal (-33.8, 87.3) steer (-31.32328, 0.0, 64.00102) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 628 v 3.40 inside true err -24
+MANOEUVRE_TRACE f 630 at (-34.9, 50.5) nose (-0.08, 1.00) v 2.87 cmd 0.43/-0.75 order move_to goal (-33.8, 87.3) steer (-29.50085, 0.0, 63.88564) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 634 v 2.80 inside true err -26
+MANOEUVRE_TRACE f 635 at (-34.9, 51.0) nose (-0.09, 1.00) v 2.53 cmd -0.31/1.00 order move_to goal (-33.8, 87.3) steer (-38.04123, 0.0, 56.25162) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 640 v 2.20 inside false err -3
+MANOEUVRE_TRACE f 640 at (-34.8, 51.3) nose (-0.11, 0.99) v 2.20 cmd 0.51/0.07 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 645 at (-34.5, 51.5) nose (-0.13, 0.99) v 2.37 cmd -0.53/1.00 order move_to goal (-33.8, 87.3) steer (-38.04123, 0.0, 56.25162) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 646 v 2.10 inside true err -29
+MANOEUVRE_TRACE f 650 at (-34.3, 51.5) nose (-0.15, 0.99) v 1.03 cmd 0.47/0.03 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 652 v 1.00 inside false err -1
+MANOEUVRE_TRACE f 655 at (-34.1, 51.6) nose (-0.16, 0.99) v 1.20 cmd -0.55/1.00 order move_to goal (-33.8, 87.3) steer (-35.77119, 0.0, 50.92825) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 658 v 0.40 inside true err -25
+MANOEUVRE_TRACE f 660 at (-34.1, 51.7) nose (-0.17, 0.99) v -0.13 cmd -0.38/1.00 order move_to goal (-33.8, 87.3) steer (-39.04485, 0.0, 58.93192) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 664 v -1.07 inside true err -24
+MANOEUVRE_TRACE f 665 at (-34.0, 51.6) nose (-0.18, 0.98) v -1.30 cmd -0.39/1.00 order move_to goal (-33.8, 87.3) steer (-39.0422, 0.0, 58.90638) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 670 v -2.00 inside true err -24
+MANOEUVRE_TRACE f 670 at (-33.9, 51.4) nose (-0.20, 0.98) v -2.00 cmd -0.34/1.00 order move_to goal (-33.8, 87.3) steer (-38.96095, 0.0, 58.44611) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 675 at (-33.7, 51.3) nose (-0.22, 0.97) v -1.20 cmd -0.11/1.00 order move_to goal (-33.8, 87.3) steer (-38.96095, 0.0, 58.44611) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 676 v -0.93 inside true err -23
+MANOEUVRE_TRACE f 680 at (-33.6, 51.2) nose (-0.23, 0.97) v 0.13 cmd -0.07/1.00 order move_to goal (-33.8, 87.3) steer (-38.96095, 0.0, 58.44611) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 682 v 0.60 inside true err -23
+MANOEUVRE_TRACE f 685 at (-33.7, 51.4) nose (-0.24, 0.97) v 1.30 cmd -0.14/1.00 order move_to goal (-33.8, 87.3) steer (-36.64614, 0.0, 55.25153) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 688 v 1.50 inside true err -24
+MANOEUVRE_TRACE f 690 at (-33.7, 51.6) nose (-0.26, 0.97) v 0.97 cmd -0.12/1.00 order move_to goal (-33.8, 87.3) steer (-36.64614, 0.0, 55.25153) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 694 v -0.10 inside false err -21
+MANOEUVRE_TRACE f 695 at (-33.7, 51.6) nose (-0.27, 0.96) v -0.33 cmd 0.16/0.65 order move_to goal (-33.8, 87.3) steer (-42.71604, 0.0, 62.89239) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 700 v -1.50 inside false err -33
+MANOEUVRE_TRACE f 700 at (-33.7, 51.5) nose (-0.28, 0.96) v -1.50 cmd -0.10/1.00 order move_to goal (-33.8, 87.3) steer (-44.6409, 0.0, 60.81928) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 705 at (-33.6, 51.2) nose (-0.30, 0.95) v -1.17 cmd 0.16/0.67 order move_to goal (-33.8, 87.3) steer (-43.08072, 0.0, 62.06345) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 706 v -0.90 inside false err -21
+MANOEUVRE_TRACE f 710 at (-33.6, 51.2) nose (-0.30, 0.95) v 0.17 cmd 0.23/0.39 order move_to goal (-33.8, 87.3) steer (-41.04931, 0.0, 63.4758) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 712 v 0.63 inside true err -19
+MANOEUVRE_TRACE f 715 at (-33.6, 51.2) nose (-0.31, 0.95) v 0.33 cmd 0.24/0.35 order move_to goal (-33.8, 87.3) steer (-40.85468, 0.0, 63.67943) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 718 v 0.53 inside true err -19
+MANOEUVRE_TRACE f 720 at (-33.6, 51.3) nose (-0.31, 0.95) v 0.50 cmd -0.16/1.00 order move_to goal (-33.8, 87.3) steer (-36.64614, 0.0, 55.25153) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 724 v 0.43 inside true err -19
+MANOEUVRE_TRACE f 725 at (-33.7, 51.3) nose (-0.32, 0.95) v 0.17 cmd 0.23/0.36 order move_to goal (-33.8, 87.3) steer (-41.03506, 0.0, 63.71178) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 730 v 0.33 inside true err -18
+MANOEUVRE_TRACE f 730 at (-33.7, 51.4) nose (-0.32, 0.95) v 0.33 cmd -0.16/1.00 order move_to goal (-33.8, 87.3) steer (-36.67556, 0.0, 55.39691) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 735 at (-33.7, 51.4) nose (-0.32, 0.95) v 0.00 cmd 0.22/0.37 order move_to goal (-33.8, 87.3) steer (-41.19365, 0.0, 63.69196) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 736 v 0.23 inside true err -18
+MANOEUVRE_TRACE f 740 at (-33.7, 51.4) nose (-0.32, 0.95) v 0.23 cmd -0.15/1.00 order move_to goal (-33.8, 87.3) steer (-36.67556, 0.0, 55.39691) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 742 v 0.23 inside true err -18
+MANOEUVRE_TRACE f 745 at (-33.7, 51.4) nose (-0.32, 0.95) v -0.03 cmd 0.22/0.36 order move_to goal (-33.8, 87.3) steer (-41.19247, 0.0, 63.73084) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 748 v 0.23 inside true err -18
+MANOEUVRE_TRACE f 750 at (-33.7, 51.5) nose (-0.32, 0.95) v 0.23 cmd -0.15/1.00 order move_to goal (-33.8, 87.3) steer (-36.67556, 0.0, 55.39691) plan single left 0.0 legs [] circling true why circle touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 754 v 0.23 inside true err -18
+MANOEUVRE_TRACE f 755 at (-33.7, 51.5) nose (-0.33, 0.95) v -0.03 cmd 0.22/0.35 order move_to goal (-33.8, 87.3) steer (-41.17419, 0.0, 63.78012) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 760 v 0.70 inside false err -18
+MANOEUVRE_TRACE f 760 at (-33.7, 51.5) nose (-0.33, 0.94) v 0.70 cmd 0.79/0.86 order move_to goal (-33.8, 87.3) steer (-38.93283, 0.0, 58.41034) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 765 at (-33.8, 51.7) nose (-0.34, 0.94) v 1.87 cmd 0.79/0.82 order move_to goal (-33.8, 87.3) steer (-39.01146, 0.0, 58.61033) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 766 v 2.10 inside false err -17
+MANOEUVRE_TRACE f 770 at (-33.9, 52.1) nose (-0.37, 0.93) v 3.03 cmd 0.82/0.73 order move_to goal (-33.8, 87.3) steer (-39.05375, 0.0, 59.01762) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 772 v 3.50 inside true err -16
+MANOEUVRE_TRACE f 775 at (-34.4, 52.2) nose (-0.40, 0.92) v 2.70 cmd -0.23/1.00 order move_to goal (-33.8, 87.3) steer (-36.67556, 0.0, 55.39691) plan single left 0.0 legs [] circling true why circle touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 778 v 1.90 inside false err -8
+MANOEUVRE_TRACE f 780 at (-34.7, 52.2) nose (-0.43, 0.90) v 1.37 cmd 0.27/0.70 order move_to goal (-33.8, 87.3) steer (-36.67556, 0.0, 55.39691) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 784 v 1.30 inside false err -4
+MANOEUVRE_TRACE f 785 at (-34.9, 52.2) nose (-0.43, 0.90) v 1.53 cmd 0.95/0.19 order move_to goal (-33.8, 87.3) steer (-39.12162, 0.0, 59.67119) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 790 v 2.70 inside false err -1
+MANOEUVRE_TRACE f 790 at (-35.3, 52.2) nose (-0.44, 0.90) v 2.70 cmd 0.99/0.05 order move_to goal (-33.8, 87.3) steer (-39.14053, 0.0, 59.85339) plan single left 0.0 legs [] circling false why  touch true face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 795 at (-35.6, 52.6) nose (-0.44, 0.90) v 3.87 cmd 0.49/-0.16 order move_to goal (-33.8, 87.3) steer (-36.4568, 0.0, 54.31594) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 796 v 4.10 inside false err 1
+MANOEUVRE_TRACE f 800 at (-36.0, 53.3) nose (-0.44, 0.90) v 5.03 cmd 0.71/0.36 order move_to goal (-33.8, 87.3) steer (-37.75737, 0.0, 56.45564) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 802 v 5.50 inside false err -3
+MANOEUVRE_TRACE f 805 at (-36.4, 54.1) nose (-0.46, 0.89) v 6.20 cmd 0.83/0.36 order move_to goal (-33.8, 87.3) steer (-37.75737, 0.0, 56.45564) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 808 v 6.90 inside false err -2
+MANOEUVRE_TRACE f 810 at (-37.0, 55.1) nose (-0.49, 0.87) v 7.36 cmd 0.86/-0.49 order move_to goal (-33.8, 87.3) steer (-40.07965, 0.0, 68.89767) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 814 v 8.30 inside false err 16
+MANOEUVRE_TRACE f 815 at (-37.3, 55.8) nose (-0.45, 0.89) v 8.53 cmd 0.86/-0.44 order move_to goal (-33.8, 87.3) steer (-40.16119, 0.0, 69.68297) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 820 v 9.69 inside false err 12
+MANOEUVRE_TRACE f 820 at (-37.4, 56.1) nose (-0.40, 0.92) v 9.69 cmd 0.87/-0.36 order move_to goal (-33.8, 87.3) steer (-40.19595, 0.0, 70.01772) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 825 at (-37.8, 56.9) nose (-0.36, 0.93) v 10.62 cmd 0.87/-0.32 order move_to goal (-33.8, 87.3) steer (-40.27714, 0.0, 70.79958) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 826 v 10.48 inside false err 11
+MANOEUVRE_TRACE f 830 at (-38.4, 58.3) nose (-0.32, 0.95) v 9.47 cmd 0.91/-0.30 order move_to goal (-33.8, 87.3) steer (-40.43787, 0.0, 72.34751) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 832 v 9.93 inside false err 10
+MANOEUVRE_TRACE f 835 at (-38.9, 59.9) nose (-0.28, 0.96) v 10.63 cmd 0.93/-0.27 order move_to goal (-33.8, 87.3) steer (-40.63139, 0.0, 74.21125) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 838 v 11.22 inside false err 9
+MANOEUVRE_TRACE f 840 at (-39.4, 61.7) nose (-0.24, 0.97) v 11.27 cmd 0.94/-0.23 order move_to goal (-33.8, 87.3) steer (-40.81824, 0.0, 76.01068) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 844 v 11.08 inside false err 32
+MANOEUVRE_TRACE f 845 at (-39.3, 63.3) nose (-0.16, 0.99) v 10.81 cmd 0.98/-0.07 order move_to goal (-33.8, 87.3) steer (-43.79134, 0.0, 104.6433) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 850 v 11.78 inside false err 2
+MANOEUVRE_TRACE f 850 at (-39.6, 65.1) nose (-0.15, 0.99) v 11.78 cmd 0.98/-0.07 order move_to goal (-33.8, 87.3) steer (-41.1742, 0.0, 79.43885) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 855 at (-39.9, 67.1) nose (-0.14, 0.99) v 11.81 cmd 0.98/-0.06 order move_to goal (-33.8, 87.3) steer (-41.37713, 0.0, 81.39314) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 856 v 11.81 inside false err 2
+MANOEUVRE_TRACE f 860 at (-40.2, 69.0) nose (-0.13, 0.99) v 11.84 cmd 0.99/-0.05 order move_to goal (-33.8, 87.3) steer (-41.58059, 0.0, 83.35253) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 862 v 11.85 inside false err 2
+MANOEUVRE_TRACE f 865 at (-40.4, 71.0) nose (-0.12, 0.99) v 11.86 cmd 0.99/-0.04 order move_to goal (-33.8, 87.3) steer (-41.78453, 0.0, 85.31669) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 868 v 11.88 inside false err 1
+MANOEUVRE_TRACE f 870 at (-40.6, 72.9) nose (-0.12, 0.99) v 11.89 cmd 0.99/-0.04 order move_to goal (-33.8, 87.3) steer (-41.98894, 0.0, 87.28519) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 874 v 11.90 inside false err 1
+MANOEUVRE_TRACE f 875 at (-40.9, 74.9) nose (-0.11, 0.99) v 11.91 cmd 0.99/-0.03 order move_to goal (-33.8, 87.3) steer (-42.19374, 0.0, 89.25762) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 880 v 11.93 inside false err 1
+MANOEUVRE_TRACE f 880 at (-41.1, 76.9) nose (-0.11, 0.99) v 11.93 cmd 0.99/-0.02 order move_to goal (-33.8, 87.3) steer (-42.39891, 0.0, 91.23354) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 885 at (-41.3, 78.9) nose (-0.10, 0.99) v 11.94 cmd 1.00/-0.02 order move_to goal (-33.8, 87.3) steer (-42.6044, 0.0, 93.21249) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 886 v 11.95 inside false err 1
+MANOEUVRE_TRACE f 890 at (-41.5, 80.9) nose (-0.10, 0.99) v 11.96 cmd 1.00/-0.01 order move_to goal (-33.8, 87.3) steer (-42.81017, 0.0, 95.19409) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 892 v 11.96 inside false err 0
+MANOEUVRE_TRACE f 895 at (-41.7, 82.8) nose (-0.10, 1.00) v 11.97 cmd 1.00/-0.01 order move_to goal (-33.8, 87.3) steer (-43.01616, 0.0, 97.17793) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 898 v 11.98 inside false err 0
+MANOEUVRE_TRACE f 900 at (-41.9, 84.8) nose (-0.10, 1.00) v 11.98 cmd 1.00/-0.01 order move_to goal (-33.8, 87.3) steer (-43.22234, 0.0, 99.16363) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 904 v 11.99 inside false err 0
+MANOEUVRE_TRACE f 905 at (-42.1, 86.8) nose (-0.10, 1.00) v 11.99 cmd 1.00/-0.00 order move_to goal (-33.8, 87.3) steer (-43.42869, 0.0, 101.1508) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE planner look f 910 v 12.00 inside false err -0
+MANOEUVRE_TRACE f 910 at (-42.3, 88.8) nose (-0.10, 1.00) v 12.00 cmd 1.00/0.00 order move_to goal (-33.8, 87.3) steer (-43.64541, 0.0, 103.1379) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 915 at (-42.6, 90.7) nose (-0.22, 0.98) v 10.91 cmd 0.60/1.00 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 920 at (-43.1, 92.3) nose (-0.36, 0.93) v 9.55 cmd 0.60/1.00 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 925 at (-43.7, 93.6) nose (-0.47, 0.88) v 8.20 cmd 0.60/1.00 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 930 at (-44.3, 94.7) nose (-0.56, 0.83) v 6.93 cmd -0.83/0.68 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 935 at (-44.9, 95.5) nose (-0.60, 0.80) v 5.60 cmd -0.87/0.50 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 940 at (-45.4, 96.1) nose (-0.63, 0.78) v 4.26 cmd -0.90/0.40 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 945 at (-45.8, 96.6) nose (-0.64, 0.77) v 2.93 cmd -0.91/0.34 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 950 at (-46.0, 96.8) nose (-0.65, 0.76) v 1.60 cmd -0.92/0.31 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 955 at (-46.1, 96.9) nose (-0.65, 0.76) v 0.26 cmd -0.93/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 960 at (-46.1, 96.9) nose (-0.66, 0.76) v -0.94 cmd -0.93/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 965 at (-45.9, 96.7) nose (-0.66, 0.75) v -2.10 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 970 at (-45.6, 96.3) nose (-0.67, 0.74) v -3.27 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 975 at (-45.2, 95.9) nose (-0.68, 0.73) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 980 at (-44.7, 95.4) nose (-0.69, 0.72) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 985 at (-44.3, 95.0) nose (-0.70, 0.71) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 990 at (-43.9, 94.5) nose (-0.71, 0.70) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 995 at (-43.4, 94.1) nose (-0.72, 0.69) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1000 at (-43.0, 93.7) nose (-0.73, 0.68) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1005 at (-42.5, 93.3) nose (-0.74, 0.67) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1010 at (-42.1, 92.9) nose (-0.75, 0.66) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1015 at (-41.6, 92.5) nose (-0.76, 0.64) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1020 at (-41.1, 92.1) nose (-0.77, 0.63) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1025 at (-40.6, 91.7) nose (-0.78, 0.62) v -3.70 cmd -0.92/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1030 at (-40.2, 91.3) nose (-0.79, 0.61) v -3.53 cmd -0.87/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1035 at (-39.7, 91.0) nose (-0.80, 0.60) v -3.27 cmd -0.81/0.30 order move_to goal (-33.8, 87.3) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why order touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1040 at (-39.3, 90.7) nose (-0.81, 0.59) v -2.37 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1045 at (-39.1, 90.5) nose (-0.81, 0.59) v -1.04 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1050 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1055 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1060 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1065 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1070 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1075 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1080 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1085 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1090 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1095 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1100 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1105 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1110 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1115 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1120 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1125 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+SCREEN {"armed":"move","arrived":true,"at":[19.5,81.5],"clicked":false,"drag_px":168.9,"drawn":[0.5,-0.866],"enemies_seen":1,"faced_ok":false,"gesture_error_deg":0.0,"given":{"move":[0.499999910593033,-0.866025447845459]},"members":20,"nearest_enemy_at_press_m":163.0,"nearest_enemy_m":75.7,"scenario":"faced_move","settled_after_s":36.0,"squads":[{"arrived":true,"crews":3,"crews_told":3,"each":[{"class":"wheels/turret","hull_error_deg":20.1,"id":"gang_tank","still":true,"unit":"Green_Guns_1"},{"class":"wheels/turret","hull_error_deg":156.4,"id":"gang_tank","still":true,"unit":"Green_Guns_5"},{"class":"wheels/turret","hull_error_deg":20.2,"id":"gang_tank","still":true,"unit":"Green_Guns_7"}],"gun_error_deg":18.4,"hull_error_deg":16.6,"moving":0,"ok":false,"squad":"Guns"},{"arrived":false,"crews":4,"crews_told":4,"each":[{"class":"wheels/turret","hull_error_deg":101.0,"id":"gang_tank","still":true,"unit":"Green_Guns_2"},{"class":"wheels/turret","hull_error_deg":115.6,"id":"gang_tank","still":true,"unit":"Green_Guns_3"},{"class":"wheels/turret","hull_error_deg":68.3,"id":"gang_tank","still":true,"unit":"Green_Guns_4"},{"class":"wheels/turret","hull_error_deg":23.7,"id":"gang_tank","still":true,"unit":"Green_Guns_6"}],"gun_error_deg":23.9,"hull_error_deg":42.6,"moving":0,"ok":false,"squad":"Guns"},{"arrived":true,"crews":5,"crews_told":5,"each":[{"class":"wheels/turret","hull_error_deg":76.3,"id":"gang_ifv","still":true,"unit":"Green_Hunters_1"},{"class":"wheels/turret","hull_error_deg":86.3,"id":"gang_ifv","still":true,"unit":"Green_Hunters_10"},{"class":"wheels/turret","hull_error_deg":82.2,"id":"gang_ifv","still":true,"unit":"Green_Hunters_11"},{"class":"wheels/turret","hull_error_deg":4.1,"id":"gang_ifv","still":true,"unit":"Green_Hunters_3"},{"class":"wheels/turret","hull_error_deg":29.6,"id":"gang_ifv","still":true,"unit":"Green_Hunters_9"}],"gun_error_deg":24.9,"hull_error_deg":9.8,"moving":0,"ok":true,"squad":"Hunters"},{"arrived":true,"crews":4,"crews_told":4,"each":[{"class":"wheels/turret","hull_error_deg":89.0,"id":"gang_ifv","still":true,"unit":"Green_Hunters_12"},{"class":"wheels/turret","hull_error_deg":25.6,"id":"gang_ifv","still":true,"unit":"Green_Hunters_2"},{"class":"wheels/turret","hull_error_deg":18.5,"id":"gang_ifv","still":true,"unit":"Green_Hunters_6"},{"class":"wheels/turret","hull_error_deg":0.2,"id":"gang_ifv","still":true,"unit":"Green_Hunters_8"}],"gun_error_deg":56.5,"hull_error_deg":4.9,"moving":0,"ok":true,"squad":"Hunters"},{"arrived":true,"crews":4,"crews_told":4,"each":[{"class":"wheels/turret","hull_error_deg":176.9,"id":"gang_ifv","still":true,"unit":"Green_Hunters_13"},{"class":"wheels/turret","hull_error_deg":8.2,"id":"gang_ifv","still":true,"unit":"Green_Hunters_4"},{"class":"wheels/turret","hull_error_deg":75.5,"id":"gang_ifv","still":true,"unit":"Green_Hunters_5"},{"class":"wheels/turret","hull_error_deg":174.7,"id":"gang_ifv","still":true,"unit":"Green_Hunters_7"}],"gun_error_deg":43.2,"hull_error_deg":125.1,"moving":0,"ok":false,"squad":"Hunters"}]}
+MANOEUVRE_TRACE f 1130 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1135 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1140 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1145 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1150 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+MANOEUVRE_TRACE f 1155 at (-39.1, 90.5) nose (-0.81, 0.59) v 0.00 cmd 0.00/0.00 order stop goal (0.0, 0.0) steer (-33.79134, 0.0, 87.32284) plan single left 0.0 legs [] circling false why  touch false face []/0.0/0 blocked false retry 0
+SCREEN_DONE scenarios=1 nobody_moved= ignored_facing=faced_move

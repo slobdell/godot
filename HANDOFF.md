@@ -4,7 +4,42 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-16 — **ROUND 32 PREPARED (below).** Main inherits **`e66b41f1`'s green check** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved); the round-32 commits are docs only. Five Opus workers, launched by him one terminal each._
+_Last updated: 2026-10-16 ~06:30 PDT — **ROUND 32 RUNNING.** **MAIN GREEN at `6fcfbe46`** (builder0, 2693 passed / 0 failed, 23 targets passed; the one red remote-guard-test's quiet-window group, R31.10; sim-baseline 13 unmoved against the T3b-c lines). It carries planner 530e85cf, T3b-c ON, B3b-2c ON. Since: native's test splits (`6b3c9195`, test-only, unchecked). He pushes `main`._
+
+## 👋 FOR HIM WHEN HE WAKES (round 32, as of ~11:30 PDT 10-16)
+
+**Your choppy game:** your laptop's C++ library was from 10-13 (before round 31), so every tank errored every tick. Rebuilt;
+`make skirmish` now rebuilds a stale library itself. Your next game is the first of round 31 AS SHIPPED (planned War Rig turns).
+**On main now (what you'll notice):** at a Terminus street crossing the squad giving way waits ~2.6 s and bumps drop a third
+(your yes); every crew gets across your bridge (108/108); everything else arrives as before.
+**Coming today if their checks pass:** a set-up mortar truck stays set up (your yes; price: in 6 of 18 fights a squadmate
+waited ~20 s behind it, two set up 10–19 m short); a vehicle stuck behind a squadmate that never moves stops short
+instead of looping (judged series running).
+**Known issues he may see:** (1) the stuck-behind-a-squadmate loop is COMMON (~100 per 16 Terminus runs); the fix for the
+near-goal case is being judged and a seat swap for the rest is built (C32.10); (2) a War Rig on a faced move can end ~150°
+backwards (brains' B11 fix in its check).
+**Parked tonight (honest misses):** the planner's queue (fixed starvation, cost settle; mechanism found, round 33 candidate
+built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
+**Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
+
+**MERGED ~14:55 PDT: brains' R32.6 fixes alone `87fa3858` → main `0faa485b`** (test/stage only; builder0 light 9/0), clearing
+main's R32.6 red. B11 itself waits for its series (started 14:43).
+
+**Main check on `981457cf` (~14:20 PDT): GREEN but for two known reds** (builder0 `exited 2`: test 2710 passed / 1 failed,
+the one `test_tactics_body::test_his_three_squads_keep_together` = R32.6, its test-stage fix on stream/brains `c029cf70` not
+yet on main; remote-guard-test's quiet-window group = R31.10; sim-baseline 13 UNMOVED; perf NOT JUDGED, busy box). It covers
+native's test fixes, planner's three commits, T1c-b2. **Not yet covered: H1b `5cc02947`** (its own pair check was 2703/0);
+the next main check rides brains' R32.6 fix + B11.
+
+**🎯 H1b SHIPPED ON (~14:00 PDT): pair/h1b-on `273654e6` → main `5cc02947`.** What he'll notice: a vehicle stuck behind a squadmate
+that never moves, near its goal, stops short instead of nudging back and forth. Every filed line passed (R32.7's STUCK
+re-measured on fresh seeds with the fixed reader). The far loops (~70 % of them) wait for C32.10's seat swap, manoeuvre's next.
+Unchecked on main with the running batch: one more main check after `981457cf`'s.
+
+**🎯 T1c-b2 SHIPPED ON (~12:45 PDT): traffic `c9fa64a4` → main `36a531b4`. CP-T IS DONE (both his yeses on main).** Its check
+2708/0, sim-baseline unmoved. **MERGED ~12:50 PDT: planner `e4d87edc` → main `981457cf`** (conflict in capture() resolved: main's 8904c9c4 + the branch's
+`_retry_until.duplicate(true)`; planner confirmed it). **Main check RUNNING on `981457cf`** (`orch-main-check-r32e`), the batch
+since `6fcfbe46`: native splits + wall fix + seam reset, planner capture fix + d98656ab + e4d87edc, T1c-b2.
 
 ## 🚀 ROUND 32 PREPARED (2026-10-16) — read this first
 
@@ -42,6 +77,34 @@ question, traffic's block; a joint contract to follow). **He will see this.**
 `130a069b`, before CP-P1; the rigs now take planner legs. The defect still shows in H1b's unit stage (13 loops in 70 s at
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
+
+**✅ MAIN GREEN at `6fcfbe46` (~06:25 PDT)** (builder0 `make check exited 2` on remote-guard-test ALONE: "watch: records once
+the window opens", R31.10's box-state group, which doesn't block; test 2693 passed / 0 failed in four shards; sim-baseline
+13 unmoved; perf-judge and scenario_perf NOT JUDGED, a busy box). It covers planner `530e85cf`, T3b-c (adopted lines) and
+B3b-2c. **What he plays now:** the Terminus crossing give-way, every crew across his bridge, the laptop planner preset
+(back to SLICE 2 with CP-Q's ship, C32.7). **Merged since:** native's splits `981e336b` → `6b3c9195` (test-only, R32.5).
+**MERGED ~09:40 PDT: planner `d98656ab` → main `f12cda8e`** (check exited 0, 2670/0, sim-baseline unmoved): SLICE_LAPTOP back to 2
+(the laptop prices SLICE 2 at ~0.2 ms, an upper bound), the refuse-at-rest queue candidate OFF for round 33, CP-Q's verdict
+(PARKED) and traces. Also merged: native's wall-split fix `cb408505` (test-only). **Planner's backlog is done**; it now
+traces the War Rig face-behind GDScript-v-native divergence (laptop only). **Main has had no full check since `6fcfbe46`**:
+the next one runs after T1c-b2 merges.
+**T1c-b2 re-judged PASS (traffic, builder0, `cf81aedc`, census s41–46 × 3 maps, n 18, GDScript):** runs with a repack
+while firing 5/18 → 0/18 (Fisher p 0.023); friendly-stuck 789 → 696 crew-s, fast contacts 934 → 946, both inside guards;
+artillery 451 → 456; no baseline moves. **Its price, to tell him:** 6 squadmates (all Green, in the 4 runs where the truck
+used to pack up) never got past a set-up truck within 20 s. **In his words:** "on Parade a mortar truck heading for its firing spot waited
+about 19 s behind a set-up squadmate, never got by, and set up 19 m short." Of the six (traced, `8ce39559`): 2 got by late
+(25–32 s), 2 set up 10–19 m short, 2 were freed when the set-up truck died. Five are mortar trucks queued behind ANOTHER
+set-up mortar truck (the sixth, a Hunters hull re-ordered 78 m away). A follow-up candidate (not this round's): C32.10's seat swap for two artillery crews of one battery. Waits on the capture fix, then one check, then ships.
+**MERGED ~08:20 PDT: planner's capture() fix `8904c9c4` → main `7a5cb5e5`** (twin teardown only; its check 2693/1, the red
+being R32.6's). **⚠ R32.6: `test_tactics_body::test_his_three_squads_keep_together` is RED ON MAIN, order-dependent** (fails
+alone on main's code; passed in 6fcfbe46's full check by luck of order): a static carried between tests, so possibly between
+matches in one play session. Brains owns it. Traffic re-checks T1c-b2 on the new main.
+**(was) Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
+traffic re-checks T1c-b2 on it.
+
+**Main check on `0e49fb3e` (~04:25 PDT): NOT green, NOT red** (builder0 `exited 2`, 24 of 25 targets passed; `test` killed
+by slot.sh's 5400 s cap under load, 0 failures seen; sim-baseline 13 UNMOVED against the adopted lines; determinism
+9d66d3a0c59a7936). **Re-run: full check on `6fcfbe46`** (`orch-main-check-r32b`, covers B3b-2c too).
 
 **🎯 B3b-2c SHIPPED ON (~04:45 PDT): brains `5f0ed865` → main `33321516`.** What he'll notice: every crew of every squad gets
 across his bridge (108/108 v 107/108), and arrivals elsewhere are exactly as before (fresh seeds 45–48, 90 v 90, all 100 cells

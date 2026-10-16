@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -311,6 +311,7 @@ static func reset_route_arms() -> void:
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
+	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
 	yield_swaps_shorter = 0
@@ -349,6 +350,12 @@ static var yields_started := 0
 ## Measurement only: ticks the guard found neither the chosen point nor the next corner drivable (_guard_steer).
 static var guard_rescues := 0
 static var asks_refused := 0
+## Round 30 (traffic T1c-b), measurement only: asks refused because the hull was on its fire post.
+static var setup_refusals := 0
+## Round 30 (traffic T1c-b), measurement only: [asker, refusing hull, physics frame] per refusal while setup_log is on (the
+## census reads whether each asker really went round).
+static var setup_log := false
+static var setup_log_rows: Array = []
 
 ## X6 (N6): station-keeping. A move_to whose goal is itself moving (a formation slot riding its anchor, a follow's
 ## station) and is within STATION_RANGE is regulated by a PID on the along-track gap, on top of the goal's own speed
@@ -1644,12 +1651,29 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	return true
 
 
+## Round 30 (traffic T1c-b): set up to fire (legs down, any part of the way), still ordered to fire (anything but hold
+## fire), and no move of its own under way (its order is not a move, or the move has arrived).
+func on_fire_post() -> bool:
+	return ctl.tank.deploy_ratio > 0.0 and String(ctl.weapon_order.get("type", "")) != "hold_fire" \
+			and (String(ctl.move_order.get("type", "")) != "move_to" or not is_under_way())
+
+
 ## Another unit asks this one to give way: `asker` wants to go along `direction` from `from`. True when this unit
 ## found a validated spot and is giving way; false when it can't (it is already giving way, it just gave way to the
 ## same asker, or there is no room) — and then the asker gives way itself.
 func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bool:
 	native_stale |= STALE_ALL
 	if yield_to != "" or asker == _last_yielded_to:
+		return false
+	# Round 30 (traffic T1c-b, brains' request): a hull SET UP and still on its fire order, with no move of its own, does
+	# not give way: moving packs it up, and a battery that packs up for every squadmate passing never fires (brains'
+	# trace: a mortar truck gave way three times in 7 s and packed up). The asker treats it as parked and goes round
+	# (_negotiate's CP1a2 rule; ORCA). A set-up hull with a NEW move is leaving anyway, so it is asked as before
+	# (round 29's T1c refused every set-up hull and was judged on give-ways it started itself). `--traffic-off=setup`.
+	if on_fire_post() and not Traffic.off("setup"):
+		setup_refusals += 1
+		if setup_log:
+			setup_log_rows.append([asker, String(ctl.tank.name), Engine.get_physics_frames()])
 		return false
 	if _begin_yield(asker, from, direction, via):
 		return true
@@ -3223,6 +3247,8 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 	else:
 		esc_fires_wall += 1
 	unstick_fires += 1
+	if friend != null and _h1b_gives_up(friend):
+		return
 	var gear := -1.0 if order.get("reverse", false) else 1.0  # the way it was trying to go
 	var back := Vector2(tank.global_basis.z.x, tank.global_basis.z.z) * gear  # the way it would back off
 	_esc_friend = null
@@ -3240,7 +3266,7 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 		var mover := Movement.of(friend)
 		if mover != null:
 			var ahead := Vector2(friend.global_position.x - tank.global_position.x, friend.global_position.z - tank.global_position.z)
-			mover.ask(String(tank.name), tank.global_position, ahead.normalized() if ahead.length_squared() > 0.01 else -back, "pinned")
+			_h1b_last_answer = mover.ask(String(tank.name), tank.global_position, ahead.normalized() if ahead.length_squared() > 0.01 else -back, "pinned")
 			esc_asks += 1
 			_esc_friend = friend
 			_esc_gap = ahead.length()
@@ -3255,6 +3281,83 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 	else:
 		_escape_reverse(order)
 	_escape_hold(cmd)
+
+
+# ---- Round 32 (manoeuvre H1b, C32.2, `--nav-off=h1b`, OPT-IN until judged): the ask that never frees ----------------
+#
+# H1 asks the friend that pins it, backs off and drives the route again. A squadmate parked at its own slot never
+# moves for a "pinned" ask, so the pinned hull looped: ask, back 2-3 m, drive back in, about every 21 s (Terminus rigs
+# seed 31, Green_S0_4 on Green_S0_2: asks 29, backs 29). H1b counts the asks on ONE blocker for ONE goal: an ask has
+# FAILED when the escape fires on the same friend again and that friend's flat position moved less than H1B_MOVED_M
+# since the last fire. After H1B_ASKS failed asks the hull stops re-driving into it:
+#   - SETTLE SHORT when the goal is within H1B_SETTLE_MAX_M of route (the friend is sitting on or beside where this
+#     hull was sent: there is nowhere to go round to). The goal is re-grounded to where the hull stands through the
+#     repair channel the brain already honours (`_repair_for` / `_repair_to`, `Movement.repaired_arrival`): the mover
+#     says the goal moved, the brain completes the order there. Never for a sliding goal (a station riding its anchor).
+#   - Farther out: (re-path round it; see `_h1b_round`).
+# Counters on ManoeuvreCensus (round 31: a counter on a Movement static broke the native twin). The failed-ask
+# bookkeeping runs with the switch off too (measurement only: `h1b_loops` is the base arm's loop count).
+## Failed asks on the same blocker before H1b acts (the escape's third fire on a friend that has not moved).
+const H1B_ASKS := 2
+## The friend moved less than this (flat metres, net) between two fires on it: that ask failed.
+const H1B_MOVED_M := 0.5
+## Settle short only when the route has at most this left (the repair's own ceiling: a mover never quietly re-grounds a
+## goal further than this).
+const H1B_SETTLE_MAX_M := REPAIR_MAX_M
+const H1B_DEFAULT := true
+var _h1b_blocker := ""
+var _h1b_goal := Vector3.INF
+var _h1b_at := Vector3.INF
+var _h1b_failed := 0
+## What the friend answered this hull's last "pinned" ask (true = it began to give way). Measurement only (H1B_FAR rows).
+var _h1b_last_answer := false
+
+
+static func h1b_on() -> bool:
+	return H1B_DEFAULT != switched_off("h1b")
+
+
+## A fire on `friend`: true when H1b took the hull out of the loop (settled short) and the escape must not run.
+func _h1b_gives_up(friend: Tank) -> bool:
+	var key := String(friend.name)
+	var at := friend.global_position
+	if _h1b_blocker != key or _h1b_goal == Vector3.INF or _flat_distance(_goal, _h1b_goal) > NEW_GOAL_JUMP:
+		_h1b_blocker = key
+		_h1b_goal = _goal
+		_h1b_failed = 0
+	elif _flat_distance(at, _h1b_at) < H1B_MOVED_M:
+		_h1b_failed += 1
+		ManoeuvreCensus.h1b_failed_asks += 1
+	else:
+		_h1b_failed = 0
+	_h1b_at = at
+	if _h1b_failed < H1B_ASKS:
+		return false
+	# A LOOP: the escape re-driving into a friend its asks have not moved. Counted in both arms (the bookkeeping above
+	# is measurement only and changes nothing with the switch off); only H1b acts on it.
+	ManoeuvreCensus.h1b_loops += 1
+	if not h1b_on():
+		return false
+	if _remaining <= H1B_SETTLE_MAX_M and _goal_velocity.length() < STATION_MIN_SPEED:
+		ManoeuvreCensus.h1b_loops -= 1  # broken here: the hull settles instead
+		_h1b_settle()
+		return true
+	ManoeuvreCensus.h1b_far += 1
+	ManoeuvreCensus.note_h1b_far(self, friend)
+	return false
+
+
+## Re-ground the goal to where the hull stands (the repair channel): it arrives here, and the brain completes the order.
+func _h1b_settle() -> void:
+	native_stale |= STALE_ALL
+	var tank := ctl.tank
+	if _repair_for == Vector3.INF:
+		_repair_for = _goal
+	_repair_to = Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	ManoeuvreCensus.h1b_settles += 1
+	ManoeuvreCensus.h1b_short_m += _remaining
+	_h1b_failed = 0
+	_escape_end()
 
 
 ## Stand, or back straight: this tick's command for the escape under way.

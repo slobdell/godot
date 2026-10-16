@@ -58,8 +58,10 @@ static func _diff(a: Array, b: Array) -> String:
 ## Runs the stage (`arena`, `kind`: "head" or "cross") for `seconds` with the twin compare on every tick; `owned` = the
 ## native arm on the C++-owned state. Returns the counts: drives, held (holding after the live drive), at_spot /
 ## approach (held with zero / non-zero throttle), shaped (drives whose live arm slowed a wish at the crossing),
-## unsticks, held_unsticks, mismatches, first (the first mismatch), and the stage's report.
-static func run(case: TestCase, owned: bool, arena: String, kind: String, seconds: float) -> Dictionary:
+## unsticks, held_unsticks, mismatches, first (the first mismatch), and the stage's report. Round 32 (C32.8): only the
+## crews at `part` mod `parts` in each tick's mover list are compared (the hold's files split by crew); the rest play on.
+static func run(case: TestCase, owned: bool, arena: String, kind: String, seconds: float, part := 0, parts := 1) -> Dictionary:
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	var traffic: Traffic = Traffic.new()
 	var script: Script = Traffic
 	case.assert_true(NativeDrive.configure(), "the native drive takes the live constants (with traffic's)")
@@ -77,6 +79,8 @@ static func run(case: TestCase, owned: bool, arena: String, kind: String, second
 			if m != null and m.ctl != null and m.ctl.tank.is_alive():
 				movers.append(m)
 		for mover in movers:
+			if movers.find(mover) % parts != part:
+				continue
 			var order: Dictionary = mover.ctl.move_order
 			if String(order.get("type", "")) != "move_to":
 				continue

@@ -1,0 +1,4 @@
+SEQ yard_open/cross 18/18: xfast:gain:0.25 PASS llr +12.92 | xclear:guard:abs=1.0:allow=3.0 PASS llr -2.48 | arrived:guard:0.05 PASS llr -2.40 -> SERIES PASS at run 7
+SEQ terminus/cross 18/18: xfast:gain:0.25 PASS llr +3.64 | xclear:guard:abs=1.0:allow=3.0 PASS llr -0.81 | arrived:guard:0.05 PASS llr -10.52 -> SERIES PASS at run 18
+SEQ yard_open/head 18/18: xfast:guard:0.2 PASS llr -8.02 | arrived:guard:0.05 PASS llr -27.78 -> SERIES PASS at run 6
+SEQ terminus/head 18/18: xfast:guard:0.2 PASS llr -0.02 | arrived:guard:0.05 PASS llr -3.19 -> SERIES PASS at run 18

@@ -1,0 +1,2 @@
+QUEUE base_clicked runs  36 (no line 18) | asks   564 plans   65 driven   17 abandoned   82 (14.5 %) refused {'GOAL_BLOCKED': 60, 'START_BLOCKED': 27, 'NO_PATH': 6} early 0 | queue_waits 12424 pending 14039 | hold n 240 median 9.5 max 98
+QUEUE base_drawn   runs  36 (no line 18) | asks   370 plans   67 driven   20 abandoned   69 (18.6 %) refused {'GOAL_BLOCKED': 115, 'START_BLOCKED': 29, 'NO_PATH': 5} early 0 | queue_waits 7862 pending 9918 | hold n 285 median 4 max 125
