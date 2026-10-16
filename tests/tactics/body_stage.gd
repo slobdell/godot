@@ -109,6 +109,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, mirror := false
 	var flip := -1.0 if mirror else 1.0
 	game_match.set_meta("player_team", (Match.Team.GREEN if mirror else Match.Team.RUST) if cpu else team)
 	var points := BodyStage.spawns(seed_value, specs, mirror)
+	var spawned := {}
 	var squads: Array = []
 	var n := 0
 	for squad: Dictionary in specs:
@@ -118,6 +119,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, mirror := false
 			var at: Vector3 = (points[n] as Array)[0]
 			n += 1
 			var face := (to - at).normalized()
+			spawned["%s_%s_%d" % ["Rust" if mirror else "Green", squad["name"], i + 1]] = at
 			var made := lab.unit(team, "%s_%s_%d" % ["Rust" if mirror else "Green", squad["name"], i + 1], at,
 					atan2(-face.x, -face.z), String(squad["unit"]))
 			if TRACE:
@@ -141,8 +143,14 @@ static func run(case: TestCase, seed_value: int, seconds: float, mirror := false
 			var t := lab.tank_of(unit_name)
 			if TRACE:
 				print("BODY_PLACE %s spawned (%.2f, %.2f)" % [unit_name, t.global_position.x, t.global_position.z])
-			var at := SlotGround.for_unit(t, t.global_position, String(t.unit_id))
+			# Round 32 (R32.6): snap the INTENDED spawn, not where the first frame left the hull. A hull touching anything at
+			# spawn is moved by the physics on the first frame of a process's first match only (off arm: 41.0, 37.0, 28.5 on
+			# three matches in one process, builder0; Hunters2_1 already 7 cm apart at start), so the stage started each
+			# match from a different spot.
+			var intended: Vector3 = spawned[unit_name]
+			var at := SlotGround.for_unit(t, intended, String(t.unit_id))
 			t.global_position = Vector3(at.x, 0.0, at.z)
+			t.velocity = Vector3.ZERO
 			if TRACE:
 				print("BODY_PLACE %s snapped (%.2f, %.2f)" % [unit_name, at.x, at.z])
 	for i in 3:
