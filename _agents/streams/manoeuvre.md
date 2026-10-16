@@ -156,6 +156,12 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   twin needs ExecuteTwinCase from stream/native's split, and only the one file had been copied. The re-cut is
   `pair/h1b-on fa2d9e31` (= 5d6d7414 + stream/native `981e336b`, tests and brief only), H1B_DEFAULT true; its plain check is
   running on builder0. The series waits for it (C31.1).
+  **fa2d9e31's check** (builder0, plain): `>> remote: make check exited 2`, 2701 passed / 2 failed (23 targets passed,
+  1 FAILED: test). **sim-baseline: all 13 maps UNMOVED** (determinism `9d66d3a0c59a7936`), so H1b ON moves no dealt map.
+  Both reds are native's twin tests: (1) `test_native_exec_state` wants exec_fields rows for my five H1b members (added
+  on the pair branch at `2d35b1ec`; **they must ship WITH H1b**, two-way checked); (2) `test_native_wall`'s per-crew split
+  fell below its floor because H1b changed which crews meet walls (8 wall ticks in one half v 554, 0 mismatches), fixed
+  on stream/native `e9fc7864`. Re-cut `pair/h1b-on 273654e6`; native's twins, then a full re-check, are running.
 - **The swap stage's first two runs proved nothing** (lab `367ab66c`, `ab3b18a0`: 0 fires): a sign bug put the rig's
   goal BEHIND it. It was not "drives round on open ground" as first read. Fixed at lab `5c6d17ea`.
 - **C32.10 swap stage GREEN on the laptop** (lab `98a29c57` = brains' seam f2cc956d + my hook; `test_manoeuvre_h1b_swap`
