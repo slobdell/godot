@@ -98,7 +98,20 @@ main yet must name the new members by string (`get`/`call`), or the file fails l
 whole (merge the named hash), never one file: `test_native_h1b` extends `ExecuteTwinCase`, and the first H1b pair cut
 (`5d6d7414`) lost a check to lint on that.
 - **H1b pair tree:** `pair/h1b-on` `fa2d9e31` (main `2fc43a47` + manoeuvre `e8e20ca9` + stream/native `981e336b` +
-  H1B_DEFAULT true; worktree `../godot-native-h1b`). Plain check RUNNING (unit `native-h1b-check2`).
+  H1B_DEFAULT true; worktree `../godot-native-h1b`). Its check (builder0): `make check exited 2`, 2701 passed / 2
+  failed, sim-baseline ALL 13 maps UNMOVED (H1b ON moves no map; determinism 9d66d3a0c59a7936). Both reds native-side:
+  (a) test_native_exec_state wanted exec_fields rows for H1b's five members (`_h1b_blocker`, `_goal`, `_at`, `_failed`,
+  `_last_answer`): pair commit `2d35b1ec`; the table is two-way checked, so those rows SHIP WITH H1b, never main first.
+  (b) test_native_wall's crew split: with H1b ON one half met 8 wall ticks (the other 554) and failed the branch floor
+  at 0 mismatches. Fixed `e9fc7864`: split by staggered frame (`(frame + index) % parts`), so each half sees every crew.
+  Off main as `fix/wall-split` `cb408505` (builder0 light: 2/0, halves 241 / 318 wall ticks) for the orchestrator to
+  merge ahead of H1b (the crew split is on main already). Re-cut `pair/h1b-on` `273654e6` (+ `2d35b1ec` + `e9fc7864`):
+  builder0 light `native_wall|native_exec_state|native_h1b` 7/0 (table 156/156; wall halves 319 / 242; h1b 1200
+  executes, 1 settle, 0 mismatches). Full re-check RUNNING (unit `native-h1b-check3`).
+  Coming (manoeuvre's labs, not in this pair): `lab/manoeuvre-swap` adds `_h1b_swap_goal` and ESC_SWAP (escape stage 4:
+  the native unstick must hand back or mirror it, plus a row); `lab/manoeuvre-m1b3`'s `_arr_*` are census-only.
+**Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
+by frame, or a behaviour change elsewhere starves one half.
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
   serial `make native test FILTER=…`, n 1, while a heavy check ran beside it): test_native_execute 472 s,
   test_native_drive 330 s, test_native_traffic_hold 253 s (+ `_owned` 193 s, round 31's split), test_native_wall 193 s;
