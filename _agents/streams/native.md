@@ -124,6 +124,11 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   `0b9e96bc` (`refused_at_begin`, header only) APPROVED: consistent with `step()` (those three codes never start the fine
   retry). Per-crew `PlannerNative` instances for the shared queue: agreed (no C++ change; free an instance with its crew).
 
+- **6. N5's held ports: HELD this round (decision, reason).** `_negotiate`'s body / `ask` / `_begin_yield` are being
+  changed in round 32 by traffic and manoeuvre (C32.10's mutual pin: traffic's designation + manoeuvre's reverse; H1b
+  in the escape beside them), and the brief puts pairs first. Porting them now means porting a moving target twice. They
+  start once C32.10 ships; the k-turn planner's body and `_manoeuvre` follow manoeuvre's M1b(3).
+
 **Plan (in order):** (1) the T3b-c pair check, named hash; (2) T1c-b2's verify runs on traffic's tree; (3) the four twin
 splits, test-only, their own hash; (4) pairs as they arrive (H1b, B3b-2c, B5c-v6, the planner's side gate and SLICE: CP-S
 needs no mirror, being C++ already reviewed); (5) N5's held ports only when no pair waits.
