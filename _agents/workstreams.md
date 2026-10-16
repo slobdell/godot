@@ -184,6 +184,16 @@ orchestrator's `make sim-baseline-adopt` on main.
   100: on ≥ off − 1, discordant against ≤ 1; (4) sim-baseline moves listed with reasons (CPU elements latch too); (5) the
   whole suite + bridge-pooled; (6) cost; (7) worst runs traced first. `ground_census.py` must reproduce v5's table from its
   rows (a check on the tool).
+- **T4-ON, ORCA reads the honest velocity (traffic stretch; filed 2026-10-16 ~07:50 PDT before any number; DECLARED).** Tree
+  `traffic-t4-on-r32` `0adc6deb` = main `2dce8a8c` + ghost out of OPT_IN (ghostself stays opt-in, unmirrored, named by no
+  judged arm). Arms on the NATIVE default path (native mirrors the gather, `test_native_avoid_gather` 0 mismatches ghost
+  on); base `--traffic-off=ghost`. `make nav-terminus-drive`, mixed + rigs, FRESH seeds 41–64, n 24 a squad, paired,
+  `pinned_table.py`. Lines: (1) DECIDING mixed stuck crew-s down beyond 1.645 se; (2) rigs stuck crew-s not up beyond 1.645
+  se; (3) pinned crews each squad not up beyond 1.645 se; (4) arrivals ≥ base − 1.645 se each squad (rows 68/70); (5) the
+  four traffic-series cases (seeds 41–43 × six ticks, n 18) within T3b-c's guards; (6) bridge-pooled 18/18; (7)
+  `test_traffic_ghost` and `traffic-native-verify` ghost-on at 0 mismatches; C31.1's ON gate before the series. A stretch
+  item: it runs behind H1b's, B10's and CP-Q's series on builder0; if H1b ships first, T4's tree takes main before its
+  series.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
