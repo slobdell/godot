@@ -202,6 +202,10 @@ orchestrator's `make sim-baseline-adopt` on main.
   later matches it does not (engine-side first-physics-space recovery). Fix (test stage only): `BodyStage.spawns()` pushes
   spawns apart; `test_the_stage_spawns_no_two_hulls_overlapping` (mutation-checked). Line still right on today's main: off
   41.0, on 15.0–16.0 (needs ≤ 20.5). Open: whether the GAME's spawns can overlap (asked of brains).
+  **REOPENED ~11:40 PDT (brains, check on `03aa0c5d` 2699/1):** the spawn fix stabilised ON (15–16 in any position), but OFF
+  drifts with successive matches in one process (41.0 → 37.0 → 28.5): a second, cumulative effect (each squad on its own
+  route). Treated as a possible play bug (a session's third skirmish v its first); script caches, then NavigationServer
+  regions from earlier arenas, are the suspects. The line is not loosened; B11 waits on it.
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
