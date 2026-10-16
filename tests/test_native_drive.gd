@@ -303,12 +303,16 @@ func _drive_case(owned: bool) -> void:
 	for orders in controllers:
 		movers.append(Movement.of(orders.tank))
 		orders.set_orders(_order(rng, movers[-1].wheel_radius() > 0.0), null)
-	# Three followers keep station on a slot that slides with a leader (the formation case: _track_goal's velocity,
-	# then _keep_station's PID), re-placed every tick the way an element re-issues a slot, without a new order.
-	var followers := {2: 1, 6: 0, 9: 3}
+	# Five followers keep station on a slot that slides with a leader (the formation case: _track_goal's velocity,
+	# then _keep_station's PID), re-placed every tick the way an element re-issues a slot, without a new order. Each
+	# starts ON its slot, so station keeping runs whenever its leader moves, not only once it has caught up (round 31:
+	# three followers from the grid stationed 44 / 20 / 12 times as the planner and CP-H turned on; the floor is 20).
+	var followers := {2: 1, 6: 0, 9: 3, 10: 4, 11: 5}  # leaders from the front row, so the slots (z - 6) form a row of their own
 	for f: int in followers:
 		var leader: Tank = controllers[followers[f]].tank
-		controllers[f].set_orders({"type": "move_to", "x": leader.global_position.x + 4.0, "z": leader.global_position.z - 6.0}, null)
+		var slot := Vector3(leader.global_position.x + 4.0, leader.global_position.y, leader.global_position.z - 6.0)
+		controllers[f].tank.global_position = slot
+		controllers[f].set_orders({"type": "move_to", "x": slot.x, "z": slot.z}, null)
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var asked := 0
 	var mismatches := 0
