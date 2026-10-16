@@ -103,6 +103,15 @@ plan. Fix `c74f5943`: each search records how it ended; `Planner.emulate_step` r
 planner test file 49/0. Round-33 note (recorded by the orchestrator): the seam never serves a War Rig's open-ground
 face-behind (189 > 180 expansions). Native's test_native_face_behind compared nothing (928 handed back).
 
+**After the merge: the second-arena question (the orchestrator's priority).** Native's "legs 0 on a second yard_open
+arena" was its scratch's artifact (the old Rig never freed, the new one spawned on it). But
+`test_planner_second_arena` (the face-behind played 3× in one process, everything freed between) found a REAL
+carry-over: `_retry_until` keyed by hull NAME, so match 1's decline window on "Rig" skipped match 2's first plan (1
+request, aligned 12.43 s v 2 and 15.43 s). Fix `e4d87edc`: a decline carries the hull's instance id; `Match._exit_tree`
+→ `PlannerSeam.end_match(tanks)` (granted hook; counters kept, nothing printed, harmless without seam use; NOT
+`reset()`, which would zero every run's last PLANNER_SEAM_REPORT line); `report()`'s `live` counts existing hulls only.
+Red before, green after (3 identical plays). One check names `c74f5943` + this: RUNNING on `e4d87edc`.
+
 **CP-S.** `PlannerSeam.side_gate(slot, facing, unit_id, map: RID, from := Vector3.INF) -> Vector3`, the signature agreed
 with brains: `slot + perp × R` (R = the unit's turning radius) on the side with room, ZERO when neither side has
 room, the side the hull comes from when both do (then more clearance, then the left). Room = clearance ≥ min(half
