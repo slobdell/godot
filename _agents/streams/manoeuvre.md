@@ -183,7 +183,8 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   The trigger is an early completion (element arrival or the repaired path: brains'). For M1b(3), count "move orders
   completed with the hull > settle + 1 m off, by completion path" instead of overshoot.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
-- **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
+- **Environment finding, not H1b (later shown to be a real GDScript v native divergence, plan item 0b):**
+  `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
   `test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` failed (drift 25.3 m, legs 2). It passed in
   `e66b41f1`'s check. Use `quick-remote` / `check` (they build native first) for any run that touches hulls ≥ 10 m.
@@ -260,6 +261,12 @@ loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
 
 ### Plan (ordered)
 
+0b. (Inserted 2026-10-16, low priority, after H1b's series is running) **The War Rig's planned turn diverges GDScript
+   v native:** `test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` FAILS with no native library
+   (drift 25.3 m, legs 2, aligned 9.67 s: traffic's `check NATIVE=off` at 0adc6deb, the laptop, and MY fresh-builder0
+   run at 373de208 with the identical numbers) and passes native ON. A GDScript planner exists
+   (`game/ai/planner/planner.gd`), so this is the GDScript twin or my executor, not a native-only test. GDScript is
+   every twin's reference. Native and planner are told.
 0. ~~Trace hull-rest faced_move s66 Green_Guns_5~~ **DONE** (see Measurements): brains' HOLD return reverses onto the
    post without the facing, after an arrival overshoot. Sent to the orchestrator; the overshoot measurement is mine,
    in M1b(3).
