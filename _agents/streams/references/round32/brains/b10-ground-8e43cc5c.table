@@ -1,0 +1,12 @@
+== sumps
+  on  n 12 | runs with a flipping crew 0 | drift moves 35 | worst crew 1 | complete 12 | all_in8 median 42.75 s
+  off n 12 | runs with a flipping crew 2 | drift moves 66 | worst crew 15 | complete 12 | all_in8 median 49.86 s
+  on worse than off: ['s19 t8 89.3 v 69.4 s']
+== terminus
+  on  n 4 | runs with a flipping crew 0 | drift moves 33 | worst crew 5 | complete 3 | crews in 39
+  off n 4 | runs with a flipping crew 0 | drift moves 33 | worst crew 5 | complete 3 | crews in 39
+  on worse than off: none
+== yard
+  on  n 12 | runs with a flipping crew 0 | drift moves 39 | worst crew 2 | complete 5 | crews in 113
+  off n 12 | runs with a flipping crew 0 | drift moves 39 | worst crew 2 | complete 5 | crews in 113
+  on worse than off: none

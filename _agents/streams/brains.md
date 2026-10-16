@@ -80,6 +80,29 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### B10 JUDGED: FAILS line 2 (one Sumps run 19.9 s later); every other line passes. Not shipped; the orchestrator rules (2026-10-16 08:35 PDT)
+Check on `8e43cc5c` (builder0): exited 0, 2699/0, ALL JUDGED, sim-baseline 13 unmoved (latch ON), bridge-pooled 18/18.
+Series on `8e43cc5c`, builder0, default path, on v `--ground-latch=off`; rows `references/round32/brains/b10-*-8e43cc5c.*`.
+
+| line | on v off | result |
+|---|---|---|
+| (1) drift census, fresh seeds (Sumps 18 19 × 6 ticks, yard 29 30 × 6, Terminus 12–15 t11) | runs with a flipping crew **0 v 2**; drift moves 107 v 138 (Sumps 35 v 66, worst crew 1 v 15; yard and Terminus identical) | PASS |
+| (2) arrivals: Sumps median ≤ off, no run > 5 s later; yard ≥ off | Sumps median **42.75 v 49.86 s**, but **s19 t8 89.3 v 69.4 s (+19.9)**; yard 5/12 v 5/12, crews 113 v 113, identical | **FAIL** |
+| (3) arrive, fresh seeds 49–52, n 100 | 93 v 93, discordant 0/0, median 31.0 v 31.0 s | PASS |
+| (4) sim-baseline | 13 unmoved | PASS |
+| (5) suite | 2699/0 | PASS |
+| (6) cost `t.poll.element`, Locks | 0.149 v 0.164 ms | PASS |
+| (7) worst run traced first | below | done |
+
+**The losing run, traced** (s19 t8, both arms, `--trace=on --drift-trace`, builder0, `8e43cc5c`; logs
+`references/round32/brains/b10-trace/`): identical to 36.6 s. Off: Green_S_2's seat 3 then flips between (0.0, -50.8)
+and (-1.9, -41.1) 11 times (the bug). On: the latch holds it at the near grounding (0.0, -50.8), and S_2 parks at
+(-2.5, -51.9) from 42 s. S_3 and S_4 must reach the west seat (-9.8, -61.8) from the east; with S_2 parked there, each
+reads `no_path`/blocked by the other for ~40 s (two make-room trades), all in at 89.3 s. In the off arm, S_2's flips
+kept moving it out to (-1.9, -41.1), which happened to clear that passage. **So the latch does what it is meant to (no
+flip), and the loss is a held seat standing in the squad's path, which the bug's dithering cleared by accident.** It is
+one run of 12; the median is 7.1 s better.
+
 ### NOW (2026-10-16 04:45 PDT)
 - **B3b-2c SHIPPED:** merged as main `33321516` (from `5f0ed865`). His bridge 108/108.
 - **B10 (the grounding latch alone; the orchestrator's cut from v6):** stream `72e405f4`, main merged `fb303a7f`,

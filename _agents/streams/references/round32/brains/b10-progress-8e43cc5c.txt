@@ -1,0 +1,11 @@
+2026-10-16 07:26:40 PDT START arrive-on (8e43cc5c)
+2026-10-16 07:26:40 PDT START ground (8e43cc5c)
+2026-10-16 07:43:49 PDT END ground: >> remote: make ground-series GROUND_JOBS=4 exited 0 (build/ copied back)
+2026-10-16 07:43:49 PDT GROUND DONE
+2026-10-16 07:55:33 PDT END arrive-on: >> remote: make squad-arrive-series ARRIVE_ARMS=on ARRIVE_SEEDS=49 50 51 52 WEB_PORT=8590 NET_PORT=9610 SMOKE_PORT=8591 SMOKE_NET_PORT=9711 AGENT_PORT=9295 exited 0 (light lane, build/light/build/ copied back)
+2026-10-16 07:55:33 PDT START arrive-off (8e43cc5c)
+2026-10-16 08:23:25 PDT END arrive-off: >> remote: make squad-arrive-series ARRIVE_ARMS=on ARRIVE_SEEDS=49 50 51 52 ARRIVE_FLAGS=--ground-latch=off WEB_PORT=8590 NET_PORT=9610 SMOKE_PORT=8591 SMOKE_NET_PORT=9711 AGENT_PORT=9295 exited 0 (light lane, build/light/build/ copied back)
+2026-10-16 08:23:25 PDT START cost-on (8e43cc5c)
+2026-10-16 08:26:18 PDT END cost-on: >> remote: make ai-parts-match PROF_ARENA=locks WEB_PORT=8590 NET_PORT=9610 SMOKE_PORT=8591 SMOKE_NET_PORT=9711 AGENT_PORT=9295 exited 0 (light lane, build/light/build/ copied back)
+2026-10-16 08:26:18 PDT START cost-off (8e43cc5c)
+2026-10-16 08:29:27 PDT END cost-off: >> remote: make ai-parts-match PROF_ARENA=locks PARTS_FLAGS=--ground-latch=off WEB_PORT=8590 NET_PORT=9610 SMOKE_PORT=8591 SMOKE_NET_PORT=9711 AGENT_PORT=9295 exited 0 (light lane, build/light/build/ copied back)
