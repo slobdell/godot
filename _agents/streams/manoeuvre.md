@@ -121,6 +121,27 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   hull). Base: 13 fires in 70 s (every ~5.3 s), ends `blocked`, 279 full-throttle ticks in the last 20 s. H1b: fires 3
   (2.1, 7.4, 12.6 s), settles at 13.7 s 11.0 m short, 0.00 m moved and 0 pressing ticks after. IFV 11 m behind a
   parked squadmate: 0 fires in both arms (avoidance holds it at `blocked`), so that case is a no-op guard.
+- **Seed 31 does NOT loop on today's tree** (builder0, `7a9b17e4`, Terminus rigs seed 31, GDScript path, n = 1 an arm,
+  `make manoeuvre-h1b-drive`): base and H1b byte-identical, 16/16 arrive, 1 hull fire, 1 ask, 0 backs, loops 0. Round
+  31's loop (asks 29) was measured on `130a069b`, before CP-P1's planner legs; the rigs take planner legs now
+  (`refusal_then_free` 9). Bar line (1) has no case on this seed: sent to the orchestrator with a proposal, and a hunt
+  on diagnostic seeds 1–16 (rigs + mixed) is running.
+- **The loop hunt (the orchestrator agreed both branches, 2026-10-16):** diagnostic seeds only (never 300–343). Base
+  arm first, then the H1b arm only where base loops. Workloads: the Terminus drive seeds 1–16 rigs + mixed
+  (`manoeuvre-h1b-drive`); fights seeds 1–8 (`manoeuvre-cph CPH_ARM=off CPH_STAGE=fights`, light lane); hull-rest
+  seeds 1–4 (`CPH_STAGE=hull`, its squadmate-pin rows). Then the named seeds go to the orchestrator, who amends line
+  (1) to "loops 0 in the H1b arm on every named hunt seed where base loops". If no seed loops anywhere, H1b ships
+  as a guard only if every guard line passes.
+- **Hunt, fights** (builder0 light lane, `48657f07`, showmatch 180 s, GDScript path, n = 1 a seed): with H1b off, loops
+  on seed 4 (Terminus, 1 loop, 5 failed asks) and seed 6 (Sumps, 3 loops); seeds 1–3 and 5–8 have 0. With H1b on
+  (seeds 4–6): seed 6 loops 3 → 0, 1 settle 7.7 m short; seed 4 loops 1 → 1, and it is a `far` (route left > 12 m or
+  a sliding goal: the re-path case); seed 5 unchanged. Kills/deaths identical in each pair (49/49, 44/45, 46/46).
+- **Hunt, Terminus drive** (builder0, `48657f07`, seeds 1–16 a squad, GDScript path, n = 1 a seed; `h1b_table.py`):
+  base loops mixed 105 (12 of 16 seeds, ≤ 18 a run), rigs 114 (11 of 16, ≤ 27). H1b: settles 3 + 3, and each settled
+  seed reads 0 loops (mixed 7, 13; rigs 9, 10, 16); but 76 + 70 loops are `far` and unchanged. Arrivals mixed 353 → 355,
+  rigs 211 → 212 of 384 / 256. **So the settle reaches ~30 % of today's loops; the far loops are the problem.** Tracing
+  them (`H1B_FAR` rows: route left, goal slide, gap, the blocker's phase) on seeds 3–6 at `9a00f57e`.
+- `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
   `test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` failed (drift 25.3 m, legs 2). It passed in
@@ -138,7 +159,20 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   facing replaces it (~668–672). Also element_plan.gd ~678 (a plain move forming up within 2 m) and drills.gd ~387. So
   a wheeled hull turning BEFORE the element arrives moves every seat, and none after arrival. Pinned by brains'
   `tests/test_tactics_reseat_heading.gd` (stream/brains `cbddb940`).
-- **Working hypothesis to TRACE before designing:** attempt 2's hulls turned mid-approach, swung the halt and re-seated
+- **Relayed from brains (2026-10-16):** seats DRIFT with no gate involved (v5's rows, Sumps s16 t8: goal_moves drift 22 in
+  the off arm, never all in). Drift means the same anchor and seat index with the seat moved > 1 m, so the formation
+  SHAPE is turning or re-laying on its anchor (the plan heading or the arrived flag flipping). Brains' `--drift-trace` is
+  running on builder0. **Hold M1b(3)'s design until the orchestrator relays it**: one fix (the halt heading latched per
+  arrival) may serve both streams, and if that fix lands in brains' code, M1b(3) shrinks to consuming it.
+- **Brains' drift trace (relayed 2026-10-16) REFUTES the halt-heading idea for Sumps s17 t11:** across Green_S_3's 67
+  drift lines the heading, arrived flag, formation, anchor and seat index stay CONSTANT; only the seat's POINT flips
+  between (-0.2, -51.1) and (1.7, -40.9). Cause: `Element.ground` → `SlotGround.standable_from` picks the side a pushed
+  (unstandable) slot lands on, memoised by the element CENTRE's 5 m cell, so jostling moves the centre across a cell
+  edge and the seat jumps 10 m. Brains' fix (lab `20ec9c31`): latch each seat's grounding while its asked-for point
+  holds within 0.5 m (`--ground-latch=off` = control). **For M1b(3): one `--drift-trace` run on the attack-move 75-s
+  movers before any design** (are they chasing a jumping seat?); the flag is in brains' lab tree, so ask brains
+  (godot-brains-38) when M1b(3) starts. H1b's far-loop trace comes first.
+- **Working hypothesis to TRACE before designing (now doubtful, see above):** attempt 2's hulls turned mid-approach, swung the halt and re-seated
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
 
@@ -171,6 +205,11 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   `_remaining`, `_goal_velocity`, `_repair_for`, `_repair_to`) is synced around every callback, and `_h1b_*` stay GDScript.
   Native's two conditions: keep `native_stale |= STALE_ALL` in `_h1b_settle`, and tell native FIRST if `_h1b_gives_up`
   ever moves out of `_escape_begin`. Native adds `test_native_h1b` on `_parked(true, "gang_tank", 18.0, -3.0)`.
+- **Native's pair proof is GREEN, with no C++ change** (scratch/h1b-on `f29e3c87` = stream/native `233cbde4` + `373de208` +
+  H1B_DEFAULT true; builder0 light lane, `make native test FILTER=native_h1b` exited 0). `test_native_h1b` on the
+  parked-squadmate stage twins the whole execute step, GDScript v native live v native owned: 1200 native executes,
+  0 handed back, 3 fires, 2 failed asks, 1 settle, 0 mismatches. Native cuts the ON pair tree for C31.1 when I name a
+  green hash.
 - **Counters on `ManoeuvreCensus`** (`h1b_report()`), not Movement statics; `escape_arms()` unchanged (its off test
   compares the whole dict).
 
