@@ -33,6 +33,7 @@ func _run() -> void:
 	var report := await TrafficStage.run(case, int(_flag("seed", "1")), _flag("arena", "terminus"),
 			_flag("kind", "head"), _flag("which", "both"), float(_flag("seconds", "90")), _flag("side", "green"),
 			false, _watch)
+	report.merge(Element.drift_census())  # round 32 (B10): the seats that drifted on their anchor
 	print("RESEAT_PROBE " + JSON.stringify(report))
 	case.teardown()
 	quit(0)
