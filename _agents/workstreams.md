@@ -144,6 +144,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   touch `game/audio/**`, the web export or the boot path may proceed to its series on that red, provided web-smoke re-run
   ALONE passes before the hash merges. A second miss on a quiet box gets traced, not waved through.
 
+- **R32.5 A load-timing red in a file the branch doesn't touch, green re-run alone, doesn't block a TEST-ONLY merge
+  (2026-10-16 ~06:00 PDT, native's split check `981e336b`):** `test_control_vision_camera::test_a_teleported_vehicle_is_drawn_
+  where_it_was_put` red at load 12+, 18/18 alone on the same build. Merged; the next main check re-reads it, and a second red
+  there gets traced (owner: nobody this round, so the orchestrator).
+
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **B3b-2c (brains, C32.3; filed 2026-10-16 ~00:50 PDT before any number; DECLARED; partial: none; the full text is
