@@ -164,6 +164,13 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   identical to hook off. Taken at 12.6 s: 3 fires, **0 loops**; B ends 4.3 m from A's seat, A 1.0 m from B's old goal.
   Stage lessons: the friend's mover must be bound, and on open ground the friend takes the yield ('yielding', not
   parked), so the stage makes it refuse as all 62 did in the trace.
+- **hull-rest faced_move s66 Green_Guns_5 TRACED** (laptop, `fab0d82e`, gangs seed 66, GDScript path; 153–160° off in
+  3 runs; squadmate rigs 0.4–13°; two temporary prints, not committed). Not a lost face step. (1) Its one behind
+  decision (f 41) was `route` with the facing on the order (goal 29.7 m, past MAX_M). (2) The order completes inside the
+  6 m settle radius at 8–11 m/s, and momentum carries it ~10 m past, to (−46, 96). (3) Option HOLD; tank_brain.gd ~2814
+  "pushed off the spot" sends `{move_to, reverse: true, arrive 6.0, no facing}` (f 259). (4) It backs on tail first, and a
+  wheeled turret hull's face is declined with turnhull off. Fixes: brains' HOLD return honours the facing (reverse only
+  within FACING_KEEP_DEG of the nose); mine, the arrival overshoot, measured first in M1b(3).
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
@@ -235,8 +242,9 @@ loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
 
 ### Plan (ordered)
 
-0. (Inserted 2026-10-16) **Trace hull-rest faced_move s66 Green_Guns_5's missing face step** as soon as H1b's series is
-   running (it may be part of M1b(3)'s settle problem).
+0. ~~Trace hull-rest faced_move s66 Green_Guns_5~~ **DONE** (see Measurements): brains' HOLD return reverses onto the
+   post without the facing, after an arrival overshoot. Sent to the orchestrator; the overshoot measurement is mine,
+   in M1b(3).
 
 1. **H1b** (C32.2): unit test first (`tests/test_manoeuvre_h1b.gd`: a rig / IFV sent to a slot a parked squadmate sits
    on; base loops, H1b settles), then seed 31's last leg as the pass case, then the bar to the orchestrator, then the
