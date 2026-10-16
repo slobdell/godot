@@ -155,6 +155,19 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   - The red above stands until planner's fix is on main. Then main merges into `traffic-t1cb2-r32` and the check re-runs.
     That green hash is the ship hash.
 
+**T4 stretch (the ORCA ghost ON): bar FILED** (workstreams *Bars (round 32)*, `8597a5fa`).
+- Tree: `traffic-t4-on-r32` `0adc6deb` = main `2dce8a8c` + ghost out of OPT_IN (worktree `../godot-traffic-judge`).
+- Arms: native path, base `--traffic-off=ghost`.
+- Workload: nav-terminus-drive mixed + rigs, seeds 41–64 (n 24 a squad, paired), `pinned_table.py`, plus the four series
+  cases (41–43 × 6 ticks).
+- Conditions: it queues behind H1b, B10 and CP-Q on builder0, one remote run at a time. If H1b ships first, main merges
+  into the T4 tree before the series.
+- The ON gate `check NATIVE=off` is running.
+- Manoeuvre's rig stall-clock answer (via the orchestrator): it is on main. `_honest_blocker` (movement.gd ~3198) reads
+  `real_velocity` for a > 10 m hull pressed on a friend with no wall touched, on a routed move_to with unstickback ON.
+  So round 31's rig 72 → 164 predates it, and line 2 tests it fresh.
+- Script: `$S/t4_series.sh` (scratchpad).
+
 **C32.8, test splits: none needed.** Builder0's shard times: no traffic-owned file is near 60 s.
 `test_traffic_hold_live` 30.9 s, `test_traffic_turns_live` 31.0 s, `test_traffic_feed` 13.2 s. The slow files are native's
 twins.
