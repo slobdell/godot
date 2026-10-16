@@ -354,7 +354,10 @@ loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
    on; base loops, H1b settles), then seed 31's last leg as the pass case, then the bar to the orchestrator, then the
    series, then native's twin and a ship pair.
 2. **M1b(3)** (C32.5): the written agreement with brains through the orchestrator first; then the attack-move settle.
-3. **Test splits** (C32.8): `make test-times`, then my files over ~60 s.
+3. **Test splits** (C32.8): **DONE for my files.** `test_manoeuvre_h1b` 162 s → 60 s + `_guard` 40 s (`08e6d44c`);
+   `test_manoeuvre_behind` 69 s → 4 + 2 tests in `test_manoeuvre_behind` + `test_manoeuvre_face_behind` (`566564aa`, bodies
+   byte-identical, laptop 18.6 s + 54.3 s). Still to do: re-record `tests/shard_times.txt` (`make test-times` after the next
+   full sharded check).
 4. Stretch: the seed-31 clip before/after H1b.
 
 ### Decisions (one line each, reversible)
