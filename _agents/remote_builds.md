@@ -257,6 +257,11 @@ local: remote runs don't forward API keys.
 
 ## Troubleshooting
 
+**A full check on a saturated builder0 can hit `slot.sh`'s 5400 s cap (planner, round 32):** at load ~23 (33 other Godot
+processes) planner's check on `65cc43dd` was killed mid test shard with 0 failures so far, which reads `exited 2` but is
+NOT a red. Read the log for `slot.sh: killed after 5400s` before calling a check red; re-run the unfinished target
+(`make remote T=test`) on the same tree. Five streams' series plus checks at once saturate the 12-core box.
+
 **A fresh builder0 folder has no native library (manoeuvre, round 32).** `native/bin` is git-ignored, so a new worktree's
 builder0 folder has none until a `quick` or `check` builds it; a plain `make remote T=test` there skips or fails every test
 that needs the library (the rig planner tests). Run `make remote T="native test …"` (or a quick/check first). The lead's
