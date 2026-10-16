@@ -132,6 +132,12 @@ orchestrator's `make sim-baseline-adopt` on main.
   session reports done only once the expansions handed out reach the plan's (C++'s arithmetic); native's path untouched.
   **Round-33 note:** the seam never serves a War Rig's open-ground face-behind with the library (189 > 180); today's executor
   does. Native's `test_native_face_behind` compared 0 native executes (vacuous): native adds a floor.
+  **The second-arena question (planner, ~11:00 PDT, laptop, `test_planner_second_arena.gd`, 3 plays in one process, freed
+  between):** native's "legs 0" was its scratch's artifact (the old hull never freed, the new one spawned on it). A REAL
+  smaller carry-over found: `PlannerSeam._retry_until` keyed by hull NAME, so a second match's War Rig reusing a name within
+  ~1 s of the first's last decline lost its first plan (play 1: 2 requests, aligned 15.43 s; plays 2–3: 1 request, 12.43 s).
+  Fixed: declines carry the hull's instance id; report()'s `live` counts only existing hulls. Granted: one line in match.gd's
+  teardown calling `PlannerSeam.reset()` (game/match/** unowned this round).
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
