@@ -137,6 +137,10 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   GDScript; `_h1b_swap` runs inside `_escape_begin` (a callback, like H1b). The pair needs ONE exec_fields row,
   `F(Vector3, VECTOR3, _h1b_swap_goal)` after `_h1b_last_answer` (declaration order), shipped with the swap;
   `swap_seam_override` is a static Callable (MoverState's statics carry it; not an exec row). Then the plain check.
+  **Pair cut:** `pair/swap-on` `d14de5c7` (main eae90160 + manoeuvre `d21b5d56` + the row + H1B_SWAP_DEFAULT true;
+  worktree `../godot-native-h1b`). builder0 plain check: `make check exited 2`, 2723 passed / 1 failed. The one red is
+  R32.6 (test_tactics_body three squads; brains' fix c029cf70 not on main), not the swap. All 13 maps unmoved, exec
+  table 157/157. Reported to manoeuvre and the orchestrator.
   N5's held ports (item 6) stay held until the swap ships (it is their moving target).
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
