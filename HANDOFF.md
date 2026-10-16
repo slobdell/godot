@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-16 — **ROUND 32 PREPARED (below).** Main inherits **`e66b41f1`'s green check** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved); the round-32 commits are docs only. Five Opus workers, launched by him one terminal each._
+_Last updated: 2026-10-16 ~06:30 PDT — **ROUND 32 RUNNING.** **MAIN GREEN at `6fcfbe46`** (builder0, 2693 passed / 0 failed, 23 targets passed; the one red remote-guard-test's quiet-window group, R31.10; sim-baseline 13 unmoved against the T3b-c lines). It carries planner 530e85cf, T3b-c ON, B3b-2c ON. Since: native's test splits (`6b3c9195`, test-only, unchecked). He pushes `main`._
 
 ## 🚀 ROUND 32 PREPARED (2026-10-16) — read this first
 
@@ -42,6 +42,14 @@ question, traffic's block; a joint contract to follow). **He will see this.**
 `130a069b`, before CP-P1; the rigs now take planner legs. The defect still shows in H1b's unit stage (13 loops in 70 s at
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
+
+**✅ MAIN GREEN at `6fcfbe46` (~06:25 PDT)** (builder0 `make check exited 2` on remote-guard-test ALONE: "watch: records once
+the window opens", R31.10's box-state group, which doesn't block; test 2693 passed / 0 failed in four shards; sim-baseline
+13 unmoved; perf-judge and scenario_perf NOT JUDGED, a busy box). It covers planner `530e85cf`, T3b-c (adopted lines) and
+B3b-2c. **What he plays now:** the Terminus crossing give-way, every crew across his bridge, the laptop planner preset
+(back to SLICE 2 with CP-Q's ship, C32.7). **Merged since:** native's splits `981e336b` → `6b3c9195` (test-only, R32.5).
+**Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
+traffic re-checks T1c-b2 on it.
 
 **Main check on `0e49fb3e` (~04:25 PDT): NOT green, NOT red** (builder0 `exited 2`, 24 of 25 targets passed; `test` killed
 by slot.sh's 5400 s cap under load, 0 failures seen; sim-baseline 13 UNMOVED against the adopted lines; determinism
