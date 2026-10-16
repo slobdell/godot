@@ -329,6 +329,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   wheeled turret hull at rest); **(3) wheels/fixed worse** (faced_move median 7.5 v 3.0°, p 0.000; never settled 85 v 73)
   FAIL, while **wheels/turret (his rigs) gains a lot** (faced_move 17.3 v 48.4°, p 0.004; faced_right 21.0 v 43.6°).
   **Round 33:** B11b limited to `mount == "turret"`, paired with M1b's face at rest.
+  **SWAP JUDGED ~17:05 PDT: G FAILS → PARKED** (no partial; `pair/swap-ship 80300909` NOT merged). Fights 400–423, builder0:
+  far loops h1b 6 v swap 6 (G needed ≤ 3), swaps asked 0; all 24 fights bit-identical. Blocker kind (swap arm): 5 rows a
+  parked crew of ANOTHER element, 1 row same element but under way, 0 rows the swap's case. **Reading:** in skirmish a crew's
+  far loops are against a parked crew of another element, which a seat swap cannot trade; the Terminus drive's 50/62 came
+  from a harness with no elements. **Round 33:** an element-level make-room or a cross-element give-way (traffic/brains).
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
