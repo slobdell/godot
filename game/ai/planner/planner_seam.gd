@@ -52,9 +52,39 @@ const SCOPE_MIN_HULL_M := 10.0
 ## 47 (1.6 s), and PENDING_TICKS caps a search at 180 expansions (the census's median in-press face-about is 131; its
 ## longest quarter 250-500 would be abandoned at the 3 s hold -- the judged run's `abandoned` counts them).
 const SLICE := 2
+## Round 32 (C32.7, the lead's rule: perf cuts ship as hardware presets): the LAPTOP preset's slice. CP-P1's cost line
+## (f) missed at SLICE 2 on seed 92721 (0.526 ms v 0.5, builder0 at load 16.7, an upper bound). PRICED on the laptop
+## itself (flightdeck, i5-8365U, 65cc43dd, pinned 0-3, Sumps 25 a side, an upper bound at load <= 2.7): 89 / 79 us an
+## expansion warm, so SLICE 2 is ~0.18-0.24 ms a tick there, under the line: the orchestrator's ruling (C32.7 resolved)
+## is SLICE 2 on EVERY preset, the knob kept so a weaker device can take 1 later (`--planner-slice=1`; SLICE 1 would
+## only double the hold: 7 ticks v 3 on the Terminus face-about). Which one a match uses is `slice()`: read ONCE per match (`_latch`), from the run's `--planner-slice=N` (the
+## HOST's value: a networked or replayed match carries it as a launch flag, as it carries `--seed`) > the render
+## preset (`RenderLevers.preset()`: "laptop" -> SLICE_LAPTOP) > SLICE. A headless run is always the desktop preset, so
+## baselines, checks and every judged series read SLICE 2 and PENDING_TICKS 90: today's bits.
+## Why the seam reads the render preset rather than FxQuality carrying a field (the grant's either-or, decided here):
+## FxQuality's tier is not the laptop/desktop split (his laptop runs FX tier HIGH), and a render choice can change
+## mid-match from the HUD; the sim takes it once, at the match's first plan, and never again that match.
+const SLICE_LAPTOP := 2           # = SLICE (C32.7 resolved); a weaker preset may set 1
 const BUDGET := 1500
 const HORIZON_M := 30.0
-const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold
+const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold AT SLICE
+## The expansions a crew's search may have before it is abandoned (PENDING_TICKS x SLICE = 180): held at every slice,
+## so a slower slice holds the hull longer, never searches less (`pending_cap()`: 90 ticks at 2, 180 at 1).
+const EXPANSIONS_PER_HOLD := PENDING_TICKS * SLICE
+const SLICE_FLAG := "planner-slice"
+## Round 32 (hand-over (3), the gang-press queue that starves): `--planner-queue=shared` (opt-in until judged; ships ON
+## as a pair) replaces the one-search FIFO with (a) REFUSE EARLY, AT REST: a request whose start or goal is blocked is
+## answered the tick its hull is at rest (braked to rest first, as the FIFO holds it), never queued behind another
+## crew's search; (b) the per-tick
+## budget (`slice()` expansions, the same cost line) goes to the first crew in the queue whose search has begun, each
+## crew on a session of its own (`Planner.Session`), and a search that has had QUANTUM expansions without an answer
+## goes to the BACK (round-robin with a quantum): searches shorter than the quantum land exactly as the FIFO lands
+## them, and a 7-expansion turn-round no longer waits out a 3000-expansion one. Pure round-robin (one expansion each)
+## was rejected before any number: N equal short searches would all land N times later, the median hold up.
+## The hold cap unchanged (pending_cap() ticks from the search's begin).
+const QUEUE_FLAG := "planner-queue"
+const QUEUE_DEFAULT := false
+const QUANTUM := 20                # expansions a search runs before the next begun crew's turn (10 ticks at SLICE 2)
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
@@ -83,11 +113,23 @@ static var queue_waits := 0       # hull-ticks waited behind another crew's sear
 static var _crews := {}           # name -> Crew
 static var _swept_tick := -1      # the last physics tick the crews were swept for freed hulls
 static var _queue: Array[String] = []
-static var _retry_until := {}     # name -> tick
+static var _retry_until := {}     # name -> [tick, the hull's instance id]: a decline is the HULL's, never its name's
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
 static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
+## The slice this match plans at (`slice()`), latched once per match; where it came from ("flag", "preset", "default").
+static var _slice := SLICE
+static var _slice_match := 0
+static var slice_source := "default"
+## Tests only: the slice every match latches while this is > 0 (as `--planner-slice` would; 0 = resolve).
+static var slice_override := 0
+## The shared queue: -1 unread, 0 off, 1 on (read once a process from QUEUE_FLAG; tests set `queue_override`).
+static var _queue_mode := -1
+static var queue_override := -1
+static var refused_early := 0     # requests answered at the ask (never held, never queued): part of `refused`
+static var _alloc_tick := -1
+static var _alloc := {}           # name -> expansions this tick (the round-robin's hand-out)
 
 
 class Crew:
@@ -106,6 +148,8 @@ class Crew:
 	var replans := 0
 	var rerequests := 0
 	var stepped := 0                # expansions handed to the session (replayed by restore)
+	var session: Planner.Session = null   # the shared queue's own session (null under the FIFO); never copied
+	var quantum := 0                # the shared queue: expansions since this search's turn began
 	var tank: Tank = null           # THE hull this crew serves (crews are keyed by name; a disposed match's hull is
 	                                # freed and the next match names one the same: native's gate on 3a66f546)
 	var executor: PlannerExecutor = null
@@ -118,6 +162,8 @@ class Crew:
 			var key := String(prop["name"])
 			if key == "executor":
 				c.executor = PlannerExecutor.from_state(executor.to_state()) if executor != null else null
+			elif key == "session":
+				c.session = null   # restore() begins it again and replays `stepped`
 			elif key == "req":
 				c.req = req.copy() if req != null else null
 			else:
@@ -134,6 +180,74 @@ const PLANNER_DEFAULT := true
 
 static func on() -> bool:
 	return PLANNER_DEFAULT != Movement.switched_off(SWITCH)
+
+
+## Is the shared queue on (QUEUE_FLAG, read once a process; `queue_override` for tests)?
+static func queue_on() -> bool:
+	return _mode() >= 1
+
+
+## The first cut's refuse-early from a ROLLING pose, kept reachable for the record and the s207 stage only
+## (`--planner-queue=shared-rolling`): the mechanism CP-Q's park traced. Never a default.
+static func probe_rolling() -> bool:
+	return _mode() == 2
+
+
+## 0 fifo, 1 shared, 2 shared-rolling (read once a process; `queue_override` for tests, the same values).
+static func _mode() -> int:
+	if queue_override >= 0:
+		return queue_override
+	if _queue_mode < 0:
+		var text := LaunchFlags.from_environment().text(QUEUE_FLAG)
+		_queue_mode = {"fifo": 0, "shared": 1, "shared-rolling": 2}.get(text, 1 if QUEUE_DEFAULT else 0)
+	return _queue_mode
+
+
+## The expansions a pending search gets a tick, for this match (SLICE, or SLICE_LAPTOP under the laptop preset).
+static func slice() -> int:
+	return _slice
+
+
+## The ticks a crew's search may run before it is abandoned: EXPANSIONS_PER_HOLD at this match's slice.
+static func pending_cap() -> int:
+	return EXPANSIONS_PER_HOLD / _slice
+
+
+## The slice for a run: an explicit `--planner-slice=N` (N >= 1; the host's value) wins, else the render preset.
+## Pure, so a test holds every path without a launch: [slice, source].
+static func resolve_slice(flag_text: String, preset: String) -> Array:
+	if flag_text.is_valid_int() and flag_text.to_int() >= 1:
+		return [flag_text.to_int(), "flag"]
+	if preset == "laptop":
+		return [SLICE_LAPTOP, "preset"]
+	return [SLICE, "default"]
+
+
+## Read the slice ONCE per match (the first time the seam is consulted in it), keyed by the match's instance, so a
+## preset toggled mid-match never changes the tick a plan lands. Another match (a new instance) reads again.
+static func _latch(ctl: Node) -> void:
+	var key := 0
+	if ctl != null:
+		var held: Variant = ctl.get("game_match")
+		if not (held is Object and is_instance_valid(held)):
+			held = ctl.get("tanks_root")   # a lab without a Match: its tanks' root is the match's
+		if held is Object and is_instance_valid(held):
+			key = (held as Object).get_instance_id()
+	if key == _slice_match and key != 0:
+		return
+	_slice_match = key
+	var got := resolve_slice(LaunchFlags.from_environment().text(SLICE_FLAG), RenderLevers.preset())
+	if slice_override > 0:
+		got = [slice_override, "test"]
+	set_slice(int(got[0]), String(got[1]))
+
+
+## Set the slice (`_latch`; a test sets `slice_override` instead, which the next match's latch reads). A live search keeps stepping at the new slice; nothing else is touched.
+static func set_slice(value: int, source := "test") -> void:
+	_slice = maxi(1, value)
+	slice_source = source
+	if source != "default" or value != SLICE:
+		print("PLANNER_SLICE %d (%s): pending cap %d ticks" % [_slice, source, pending_cap()])
 
 
 ## Is this crew held by the seam (a plan pending or being driven)? False when OFF.
@@ -163,7 +277,7 @@ static func last_refusal(crew_name: String) -> Array:
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
-			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE,
+			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
 			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
@@ -188,6 +302,9 @@ static func reset() -> void:
 	pending_ticks = 0
 	driving_ticks = 0
 	queue_waits = 0
+	refused_early = 0
+	_alloc_tick = -1
+	_alloc = {}
 	_last_refusal = {}
 	holds = PackedInt32Array()
 	last_plans = []
@@ -245,6 +362,7 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		return false
 	var tick := Engine.get_physics_frames()
 	_sweep(tick)
+	_latch(mover.ctl)
 	var crew: Crew = _crews.get(name)
 	if crew != null and crew.tank != tank:
 		# Another hull under this name (test_tactics_army_layout10 on the pair tree 3a66f546: four arenas built and
@@ -265,7 +383,7 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		_release(name)  # another kind of order, not asked for a while, or a new goal: whatever was planned is stale
 		crew = null
 	if crew == null:
-		if not may_ask or int(_retry_until.get(name, -1)) > tick:
+		if not may_ask or _declined(name, tank, tick):
 			return false
 		crew = _request(mover, kind, target, want, tick)
 		if crew == null:
@@ -349,7 +467,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	cmd.throttle = 0.0
 	cmd.turn = 0.0
 	pending_ticks += 1
-	if tick - crew.asked_tick >= PENDING_TICKS:
+	if tick - crew.asked_tick >= pending_cap():
 		abandoned += 1
 		holds.append(tick - crew.held_since)
 		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
@@ -357,8 +475,10 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 				"goal": [snappedf(crew.req.goal_x, 0.01), snappedf(crew.req.goal_z, 0.01), snappedf(crew.req.goal_fx, 0.01), snappedf(crew.req.goal_fz, 0.01)],
 				"stay_m": crew.req.tol_m, "speed": snappedf(tank.speed(), 0.01), "here": [snappedf(tank.global_position.x, 0.01), snappedf(tank.global_position.z, 0.01)]}
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS
+		_decline(name, mover.ctl.tank, tick)
 		return false
+	if queue_on():
+		return _pend_shared(mover, cmd, crew, name, tick, _delta)
 	if _queue.is_empty() or _queue[0] != name:
 		queue_waits += 1
 		return true
@@ -385,13 +505,105 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		crew.asked_tick = tick
 		Planner.begin_session(crew.req)
 		crew.begun = true
-	crew.stepped += SLICE
-	if not Planner.step_session(SLICE):
+	crew.stepped += _slice
+	if not Planner.step_session(_slice):
 		return true
 	var plan := Planner.session_result()
 	Planner.cancel_session()
 	_queue.pop_front()
 	crew.begun = false
+	return _answer(mover, cmd, crew, name, tick, _delta, plan)
+
+
+## The shared queue's pending tick (QUEUE_FLAG shared): the hull held at zero/zero (braked to rest first, as the FIFO),
+## its search begun from rest on its own session, a refusal answered the tick it is known, and this tick's share of the
+## budget stepped. Refuse early ONLY AT REST (CP-Q's park, Terminus seed 207, a deterministic run): the first cut
+## probed a still-rolling hull from the ask's pose and answered a refusal at once, so today's code kept the rig's
+## 7-9 m/s and pinned it on Block_7 for 2043 ticks; under the FIFO the same refusal comes after the hold has braked the
+## hull to rest. So a rolling ask is braked to rest first, exactly as the FIFO holds it; its search begins (and a
+## blocked start or goal is answered) from rest, never behind another crew's search.
+static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float) -> bool:
+	var tank := mover.ctl.tank
+	if not crew.begun:
+		if absf(tank.speed()) > REST_MPS:
+			if probe_rolling() and crew.asked_tick == tick:
+				# The first cut (kept for the record): answer a blocked ask from the rolling pose, unbraked.
+				var probe := Planner.Session.new()
+				probe.begin(crew.req)
+				if probe.refused():
+					probe.step(1)
+					var early := probe.result()
+					probe.cancel()
+					if early.code != PackedPlan.ALREADY_THERE:
+						refused_early += 1
+					_queue.erase(name)
+					return _answer(mover, cmd, crew, name, tick, _delta, early)
+				probe.cancel()
+			cmd.throttle = -signf(tank.speed()) * BRAKE_THROTTLE
+			return true
+		var here := tank.global_position
+		var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+		crew.req.at(here.x, here.z, forward.x, forward.z)
+		crew.req.world.refresh_hulls(tank, mover.ctl.tanks_root)
+		crew.at = here
+		crew.heading = forward
+		crew.stepped = 0
+		crew.quantum = 0
+		crew.asked_tick = tick
+		if crew.session == null:
+			crew.session = Planner.Session.new()
+		crew.session.begin(crew.req)
+		crew.begun = true
+		if crew.session.refused():
+			crew.session.step(1)
+			var refusal := crew.session.result()
+			crew.session.cancel()
+			crew.session = null   # its library instance (and the World's field vectors) freed now (native's note)
+			crew.begun = false
+			if refusal.code != PackedPlan.ALREADY_THERE and tick == crew.held_since:
+				refused_early += 1   # answered on the ask's own tick: never held
+			_queue.erase(name)
+			return _answer(mover, cmd, crew, name, tick, _delta, refusal)
+	_allocate(tick)
+	var share := int(_alloc.get(name, 0))
+	if share <= 0:
+		queue_waits += 1
+		return true
+	crew.stepped += share
+	crew.quantum += share
+	if not crew.session.step(share):
+		if crew.quantum >= QUANTUM:
+			crew.quantum = 0
+			_queue.erase(name)
+			_queue.append(name)   # its turn is over: the next begun crew's search runs
+		return true
+	var plan := crew.session.result()
+	crew.session.cancel()
+	crew.session = null
+	crew.begun = false
+	_queue.erase(name)
+	return _answer(mover, cmd, crew, name, tick, _delta, plan)
+
+
+## The hand-out, once a tick: the whole `slice()` to the FIRST crew in the queue whose search has begun (the queue's
+## order: the order `take` first asked, a search whose quantum ran out moved to the back). A crew that begins later
+## this tick is served from the next. Deterministic: names in queue order, integer counts, no clock.
+static func _allocate(tick: int) -> void:
+	if tick == _alloc_tick:
+		return
+	_alloc_tick = tick
+	_alloc.clear()
+	for name: String in _queue:
+		var crew: Crew = _crews.get(name)
+		if crew != null and crew.pending and crew.begun and crew.session != null:
+			_alloc[name] = _slice
+			return
+
+
+## A search's answer (the FIFO's head or a shared-queue crew; it has left the queue): re-request once if the hull
+## moved while it was pending, else release / refuse / drive.
+static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float, plan: PackedPlan) -> bool:
+	var tank := mover.ctl.tank
 	var here := tank.global_position
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
 	if plan.code == PackedPlan.OK and crew.rerequests < 1 \
@@ -409,7 +621,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		holds.append(tick - crew.held_since)
 		_last_refusal[name] = [tick, plan.code]
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS
+		_decline(name, mover.ctl.tank, tick)
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
@@ -434,7 +646,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		if ManoeuvreCensus.trace_unit == name:
 			print("PLANNER_SEAM %s face: aborted (wall contact on leg %d)" % [name, crew.executor.leg_index + 1])
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS
+		_decline(name, mover.ctl.tank, tick)
 		cmd.throttle = 0.0
 		cmd.turn = 0.0
 		return false
@@ -448,7 +660,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 			print("PLANNER_SEAM %s %s: aborted (%s), replans %d" % [name, crew.kind, crew.executor.reason, crew.replans])
 		if crew.replans >= REPLANS_PER_ORDER or crew.kind == "face":
 			_release(name)
-			_retry_until[name] = tick + RETRY_TICKS
+			_decline(name, mover.ctl.tank, tick)
 			return false
 		var kind := crew.kind
 		var goal := crew.goal
@@ -457,7 +669,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		_release(name)
 		var again := _request(mover, kind, goal, want, tick)
 		if again == null:
-			_retry_until[name] = tick + RETRY_TICKS
+			_decline(name, mover.ctl.tank, tick)
 			return false
 		again.replans = replans
 		cmd.throttle = 0.0
@@ -466,23 +678,127 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 	if crew.executor.done:
 		driven += 1
 		_release(name)
-		_retry_until[name] = tick + RETRY_TICKS  # the route or the face's aligned test takes it from here
+		_decline(name, mover.ctl.tank, tick)  # the route or the face's aligned test takes it from here
 		return true
 	return true
 
 
-static func _release(name: String) -> void:
+static func _release(name: String, quiet := false) -> void:
 	var crew: Crew = _crews.get(name)
 	if crew == null:
 		return
-	if crew.begun and not _queue.is_empty() and _queue[0] == name:
+	if crew.session != null:
+		crew.session.cancel()
+	elif crew.begun and not _queue.is_empty() and _queue[0] == name:
 		Planner.cancel_session()
 	_crews.erase(name)
 	_queue.erase(name)
 	# The run's report (CP-P1 bar line (a): "PlannerSeam.report() printed per run"): the drive harnesses are nav's
 	# files, so the seam prints its own cumulative line at every event's end; the LAST one in a log is the run's.
-	if REPORT_LINES:
+	if REPORT_LINES and not quiet:
 		print("PLANNER_SEAM_REPORT " + JSON.stringify(report()))
+
+
+## A match is ending (`Match._exit_tree`; round 32, the orchestrator's belt and braces after the second-arena carry-over):
+## release every crew whose hull is in that match (or already freed) and drop their decline windows, so nothing of a dead
+## match reaches the next one even for a frame. The counters stay (the run's PLANNER_SEAM_REPORT and the tests read them
+## after a match is disposed) and nothing is printed. Harmless when the seam was never used (no crews: nothing to do) or
+## OFF, and without the library (no session is begun unless a crew is held).
+static func end_match(tanks_root: Node) -> void:
+	for name: String in _crews.keys():
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion() \
+				or (tanks_root != null and tanks_root.is_ancestor_of(crew.tank)):
+			_release(name, true)
+	for name: String in _retry_until.keys():
+		var hull: Object = instance_from_id(int((_retry_until[name] as Array)[1]))
+		if hull == null or not is_instance_valid(hull) or (tanks_root != null and hull is Node and tanks_root.is_ancestor_of(hull as Node)):
+			_retry_until.erase(name)
+
+
+# ---- CP-S (round 32, C32.4): the SIDE gate for brains' arrival gate rule ------------------------------------------------
+## design.md §2.8: where a wheeled hull must arrive on a slot with a drawn facing and the planner does not take it,
+## brains' gate may sit to the SIDE of the slot, `slot + perp x R` (R the hull's turning radius: the centre of the
+## circle tangent to the facing at the slot), never along the facing axis behind it. This answers WHICH side has room
+## with two clearance reads (`Planner.clearances`: the C++ cell cache when the library is usable), no search, no state.
+## Returns the gate, or Vector3.ZERO when neither side has room (or the hull is not on wheels, or the facing is null):
+## brains' gate stays as it is. Both sides with room: the side nearer `from` (the hull's position: the side it comes
+## from), else the one with more clearance, a tie to the LEFT of the facing. Signature agreed with brains 2026-10-16.
+## Nobody calls it on main yet (merged OFF-path); brains' gate rule decides when to use it (C30.5 keeps the gate theirs).
+## Room: the clearance at the gate >= half the hull's width + Planner.MARGIN_M, capped at what the navmesh can promise
+## (a point on the mesh reads the bake radius less the field's slack; a wider bus or IFV would otherwise never fit).
+const SIDE_ROOM_CAP_SLACK_M := 0.05
+
+
+static func side_gate(slot: Vector3, facing: Vector3, unit_id: String, map: RID, from := Vector3.INF) -> Vector3:
+	var world := PlannerNavWorld.new()
+	world.map = map
+	world.bake_radius = Movement.bake_radius(null)   # the cached bake radius (NAV_AGENT_RADIUS before any arena read it)
+	return side_gate_in(world, slot, facing, unit_id, from)
+
+
+## The same answer in any planner world (the tests' rectangles, or a navmesh). `native` false forces the GDScript read.
+static func side_gate_in(world: PlannerWorld, slot: Vector3, facing: Vector3, unit_id: String, from := Vector3.INF,
+		native := true) -> Vector3:
+	var f := Vector2(facing.x, facing.z)
+	if f.length_squared() < 0.0001 or not Units.PROFILES.has(unit_id) \
+			or String(Units.stat(unit_id, "locomotion", "tracks")) != "wheels":
+		return Vector3.ZERO
+	f = f.normalized()
+	var radius := maxf(float(Units.stat(unit_id, "min_turn_radius_m", 0.0)), 0.5)   # Movement.wheel_radius()
+	var left := Vector2(f.y, -f.x)    # PlannerWorld's right is (-fz, fx); left the other way
+	var lx := slot.x + left.x * radius
+	var lz := slot.z + left.y * radius
+	var rx := slot.x - left.x * radius
+	var rz := slot.z - left.y * radius
+	var reads := Planner.clearances(world, PackedFloat64Array([lx, lz, rx, rz]), native)
+	var need := float(Movement.hull_box(unit_id)[0]) * 0.5 + Planner.MARGIN_M
+	var nav := world as PlannerNavWorld
+	if nav != null:
+		need = minf(need, nav.bake_radius - PlannerWorld.SAMPLE_SLACK_M - SIDE_ROOM_CAP_SLACK_M)
+	var left_ok := reads[0] >= need
+	var right_ok := reads[1] >= need
+	var take_left := left_ok
+	if left_ok and right_ok:
+		var by_from := 0.0
+		if from != Vector3.INF:
+			by_from = Vector2(from.x - rx, from.z - rz).length() - Vector2(from.x - lx, from.z - lz).length()
+		if by_from != 0.0:
+			take_left = by_from > 0.0
+		else:
+			take_left = reads[0] >= reads[1]
+	elif not left_ok and not right_ok:
+		return Vector3.ZERO
+	return Vector3(lx, slot.y, lz) if take_left else Vector3(rx, slot.y, rz)
+
+
+## Decline asks from THIS hull for RETRY_TICKS. Keyed by name, carrying the hull's instance: a later match's hull under
+## the same name is not declined (round 32: the War Rig face-behind played twice in one process skipped its first plan
+## in the second match, play 1's window still open on "Rig"; the round-31 rule for any static keyed by name).
+static func _decline(name: String, tank: Tank, tick: int) -> void:
+	_retry_until[name] = [tick + RETRY_TICKS, tank.get_instance_id() if is_instance_valid(tank) else 0]
+
+
+static func _declined(name: String, tank: Tank, tick: int) -> bool:
+	var window: Variant = _retry_until.get(name)
+	if window == null:
+		return false
+	var held := window as Array
+	if int(held[1]) != tank.get_instance_id():
+		_retry_until.erase(name)   # another hull's window under this name
+		return false
+	return int(held[0]) > tick
+
+
+## The crews held for hulls that still exist (a freed hull's crew waits for `_sweep`; the orchestrator's note: the twin
+## harness read `live` 1 in one arm and 0 in the other at frame 0 for an earlier test file's crew).
+static func _live_count() -> int:
+	var n := 0
+	for name: String in _crews:
+		var crew: Crew = _crews[name]
+		if is_instance_valid(crew.tank) and not crew.tank.is_queued_for_deletion():
+			n += 1
+	return n
 
 
 static func _flat(a: Vector3, b: Vector3) -> float:
@@ -494,21 +810,39 @@ static func _flat(a: Vector3, b: Vector3) -> float:
 ## counters. A pending session is not copied: `restore` begins it again from the crew's request and steps it the same
 ## number of expansions, which the slice proof (tests/test_native_planner.gd) makes the same search.
 static func capture() -> Dictionary:
+	# A crew whose hull is freed (or queued for it) is not state: the next tick's `_sweep` releases it, and copying it
+	# hands a freed hull to `PlannerExecutor.from_state` (round 32, traffic's check on cf81aedc: a twin harness captured
+	# after a previous test's match was disposed with a crew held, before any seam tick swept it). Read-only: the live
+	# table is left to `_sweep`; the snapshot carries neither the crew nor its place in the queue.
 	var crews := {}
 	for name: String in _crews:
-		crews[name] = (_crews[name] as Crew).copy()
-	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
-			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true)}
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+			continue
+		crews[name] = crew.copy()
+	var queue: Array[String] = []
+	for name: String in _queue:
+		if crews.has(name):
+			queue.append(name)
+	return {"crews": crews, "queue": queue, "retry": _retry_until.duplicate(true), "counters": report(),
+			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true),
+			"alloc_tick": _alloc_tick, "alloc": _alloc.duplicate()}
 
 
 static func restore(snapshot: Dictionary) -> void:
 	if not _queue.is_empty():
 		Planner.cancel_session()
+	for name: String in _crews:
+		var live_crew: Crew = _crews[name]
+		if live_crew.session != null:
+			live_crew.session.cancel()
 	_crews.clear()
+	_alloc_tick = int(snapshot.get("alloc_tick", -1))
+	_alloc = (snapshot.get("alloc", {}) as Dictionary).duplicate()
 	for name: String in snapshot["crews"]:
 		_crews[name] = (snapshot["crews"][name] as Crew).copy()
 	_queue.assign(snapshot["queue"])
-	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
+	_retry_until = (snapshot["retry"] as Dictionary).duplicate(true)
 	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
 	holds = PackedInt32Array(snapshot.get("holds", PackedInt32Array()))
 	last_plans = (snapshot.get("last_plans", []) as Array).duplicate(true)   # native's note: else a twin appends twice a tick
@@ -524,7 +858,17 @@ static func restore(snapshot: Dictionary) -> void:
 	pending_ticks = int(counters["pending_ticks"])
 	driving_ticks = int(counters["driving_ticks"])
 	queue_waits = int(counters["queue_waits"])
-	if not _queue.is_empty():
+	refused_early = int(counters.get("refused_early", 0))
+	if queue_on():
+		# The shared queue: every begun crew's own session begun again from its request and stepped as far.
+		for name: String in _crews:
+			var crew: Crew = _crews[name]
+			if crew.pending and crew.begun:
+				crew.session = Planner.Session.new()
+				crew.session.begin(crew.req)
+				if crew.stepped > 0:
+					crew.session.step(crew.stepped)
+	elif not _queue.is_empty():
 		var head: Crew = _crews.get(_queue[0])
 		if head != null and head.begun:
 			Planner.begin_session(head.req)

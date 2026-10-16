@@ -116,12 +116,17 @@ PLANNER_SERIES_SEEDS ?= 133 134 135 136 137 138 139 140 141 142 143 144 145
 PLANNER_SERIES_FRESH_SEEDS ?= 172 173 174 175 176 177 178 179 180 181 182 183 184
 PLANNER_SERIES_SQUADS ?= mixed rigs
 PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
+# Each arm's flags (round 31's: the GDScript drive, the candidate with the seam switched -- note PLANNER_DEFAULT is true
+# since CP-P1 shipped, so on today's tree that flag turns the seam OFF). Round 32's queue series: base "" (FIFO, the
+# native drive) v candidate "--planner-queue=shared" (`make planner-series-queue`).
+PLANNER_SERIES_BASE_FLAGS ?= --brains-off=native_drive
+PLANNER_SERIES_CAND_FLAGS ?= --brains-off=native_drive --nav-off=planner
 
 .PHONY: planner-series
 planner-series: native import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
 	@rm -rf $(PLANNER_SERIES_DIR) && mkdir -p $(PLANNER_SERIES_DIR)
 	@echo ">> planner-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SERIES_SEEDS) | squads $(PLANNER_SERIES_SQUADS)"
-	@for arm in base candidate; do flags="--brains-off=native_drive"; [ "$$arm" = base ] || flags="$$flags --nav-off=planner"; \
+	@for arm in base candidate; do flags="$(PLANNER_SERIES_BASE_FLAGS)"; [ "$$arm" = base ] || flags="$(PLANNER_SERIES_CAND_FLAGS)"; \
 		echo ">> planner-series: arm $$arm ($$flags)"; \
 		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_SERIES_SQUADS)" DRIVE_SEEDS="$(PLANNER_SERIES_SEEDS)" \
 			NAV_FLAGS="$$flags" > $(PLANNER_SERIES_DIR)/$$arm.out 2>&1 || { tail -20 $(PLANNER_SERIES_DIR)/$$arm.out; echo ">> planner-series: arm $$arm REFUSED"; exit 1; }; \
@@ -184,3 +189,74 @@ planner-trace-drive: native import ## planner CP-P1 diagnosis: the series' drive
 		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_TRACE_SQUAD)" DRIVE_SEEDS="$(PLANNER_TRACE_SEED)" NAV_FLAGS="$$flags" NAV_JOBS=1
 	@cp $(BUILD_DIR)/nav-drive/$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log $(PLANNER_TRACE_DIR)/$(PLANNER_TRACE_ARM)-$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log
 	@grep -cE "^NAV_DRIVE_TRACE |^PLANNER_SEAM " $(PLANNER_TRACE_DIR)/$(PLANNER_TRACE_ARM)-$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log | sed 's/^/>> planner-trace-drive: trace lines /'
+
+# ---- round 32 (hand-over (3)): the gang-press queue, FIFO v --planner-queue=shared --------------------------------------
+# One arm a call (PLANNER_QUEUE_ARM=base|candidate): manoeuvre-hull-rest's drawn + clicked arms on the gangs (the only
+# faction with a hull the seam takes: the War Rig), the native drive both arms (the shipped default), the candidate
+# with --planner-queue=shared, the base with --planner-queue=fifo (explicit: the arms read the same on either
+# QUEUE_DEFAULT, so the series runs on the pair tree). Then tests/planner/queue_table.py over what is there (both arms called = the A/B).
+PLANNER_QUEUE_SEEDS ?= 66 67 68 69 70 71
+PLANNER_QUEUE_ARM ?= base
+PLANNER_QUEUE_FACTIONS ?= gangs
+.PHONY: planner-judge-queue
+planner-judge-queue: native import ## planner round 32: hull-rest's gang arm, PLANNER_QUEUE_ARM=base (FIFO) | candidate (--planner-queue=shared) on PLANNER_QUEUE_SEEDS -> the queue table
+	@echo ">> planner-judge-queue on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_QUEUE_ARM) | seeds $(PLANNER_QUEUE_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_QUEUE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
+		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states $(if $(filter candidate,$(PLANNER_QUEUE_ARM)),--planner-queue=shared,--planner-queue=fifo)" \
+		HULL_SEEDS="$(PLANNER_QUEUE_SEEDS)" HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)"
+	@$(PYTHON) tests/planner/queue_table.py $(BUILD_DIR)/manoeuvre/hull-rest
+
+# The queue's Terminus rig series (the hold per rig event line): FIFO v shared on fresh seeds, the native drive both arms.
+PLANNER_QUEUE_SERIES_SEEDS ?= 205 206 207 208 209 210 211 212 213 214 215 216 217
+.PHONY: planner-series-queue
+planner-series-queue: ## planner round 32: planner-series with base = the FIFO, candidate = --planner-queue=shared, on PLANNER_QUEUE_SERIES_SEEDS
+	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_QUEUE_SERIES_SEEDS)" \
+		PLANNER_SERIES_BASE_FLAGS=--planner-queue=fifo PLANNER_SERIES_CAND_FLAGS=--planner-queue=shared
+
+# Round 32 (CP-Q's park, the round-33 hand-over): ONE hull-rest run on both queue arms with the per-unit trace
+# (--turn-trace: MANOEUVRE_TRACE rows + the seam's PLANNER_SEAM lines for that hull). Light lane:
+# make remote LIGHT=1 T="planner-trace-hull-rest PLANNER_HR_TASK=faced_move PLANNER_HR_SEED=66 PLANNER_HR_UNIT=Green_Guns_5"
+# PLANNER_HR_CLICK=1 for the clicked arm. -> build/planner/trace-<task>-<seed>-<arm>.log (+ the screen's json).
+PLANNER_HR_TASK ?= faced_move
+PLANNER_HR_SEED ?= 66
+PLANNER_HR_UNIT ?= Green_Guns_5
+PLANNER_HR_CLICK ?=
+.PHONY: planner-trace-hull-rest
+planner-trace-hull-rest: native import ## planner round 32: one hull-rest run (PLANNER_HR_TASK/SEED, gangs) on fifo and shared with --turn-trace=PLANNER_HR_UNIT -> build/planner/trace-*
+	@mkdir -p $(BUILD_DIR)/planner
+	@for arm in fifo shared; do d=$(BUILD_DIR)/planner/trace-$(PLANNER_HR_TASK)-$(PLANNER_HR_SEED)-$$arm; rm -rf $$d; mkdir -p $$d; \
+		echo ">> planner-trace-hull-rest on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $$arm | $(PLANNER_HR_TASK) seed $(PLANNER_HR_SEED) | $(PLANNER_HR_UNIT)"; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$(PLANNER_HR_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			--player-faction=gangs --enemy-faction=law --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu \
+			$(if $(PLANNER_HR_CLICK),--faced-click) --turn-states --planner-queue=$$arm "--turn-trace=$(PLANNER_HR_UNIT)" \
+			--screen-test=$(CURDIR)/$$d --screen-only=$(PLANNER_HR_TASK) > $$d/run.log 2>&1; \
+		grep -c "^MANOEUVRE_TRACE" $$d/run.log | sed "s/^/   trace rows: /"; grep -E "^PLANNER_SEAM $(PLANNER_HR_UNIT) " $$d/run.log | cut -c1-300 || true; done
+
+# Round 32 (CP-Q's park: the Terminus rig contact rise, a deterministic harness): ONE Terminus drive run on both queue
+# arms (the native drive, the shipped default) with one hull traced (the drive's --trace and the census's --turn-trace).
+# make remote LIGHT=1 T="planner-trace-drive-queue PLANNER_TQ_SEED=207 PLANNER_TQ_UNIT=Green_S0_4" -> build/planner-trace/{fifo,shared}-rigs-<seed>.log
+PLANNER_TQ_SEED ?= 207
+PLANNER_TQ_SQUAD ?= rigs
+PLANNER_TQ_UNIT ?= Green_S0_4
+.PHONY: planner-trace-drive-queue
+planner-trace-drive-queue: native import ## planner round 32: the Terminus drive, one seed, both queue arms, one hull traced (PLANNER_TQ_SEED/SQUAD/UNIT) -> build/planner-trace/
+	@mkdir -p $(PLANNER_TRACE_DIR)
+	@for arm in fifo shared; do \
+		echo ">> planner-trace-drive-queue on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $$arm $(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED) trace $(PLANNER_TQ_UNIT)"; \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_TQ_SQUAD)" DRIVE_SEEDS="$(PLANNER_TQ_SEED)" \
+			NAV_FLAGS="--planner-queue=$$arm --trace=$(PLANNER_TQ_UNIT) --turn-trace=$(PLANNER_TQ_UNIT)" NAV_JOBS=1 > /dev/null 2>&1 || true; \
+		cp $(BUILD_DIR)/nav-drive/$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log; \
+		grep -E "^PLANNER_SEAM $(PLANNER_TQ_UNIT) " $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log | cut -c1-260 || true; done
+
+# Round 32 (the round-33 candidate, "refuse early only at rest"): Terminus rigs seed 207 on --planner-queue=shared-rolling
+# (the first cut: must reproduce Green_S0_4's pin on Block_7) and on shared (must not). Deterministic: one run an arm.
+# make remote LIGHT=1 T=planner-stage-s207 -> build/planner-stage/{shared-rolling,shared}-rigs-207.log + STAGE_S207
+PLANNER_STAGE_DIR := $(BUILD_DIR)/planner-stage
+.PHONY: planner-stage-s207
+planner-stage-s207: native import ## planner round 32: the s207 stage, refuse early from a rolling pose (pins) v only at rest (must not) -> STAGE_S207
+	@rm -rf $(PLANNER_STAGE_DIR) && mkdir -p $(PLANNER_STAGE_DIR)
+	@echo ">> planner-stage-s207 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@for arm in shared-rolling shared; do \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS=rigs DRIVE_SEEDS=207 NAV_FLAGS="--planner-queue=$$arm" NAV_JOBS=1 > /dev/null 2>&1 || true; \
+		cp $(BUILD_DIR)/nav-drive/rigs-207.log $(PLANNER_STAGE_DIR)/$$arm-rigs-207.log; done
+	@$(PYTHON) tests/planner/stage_s207.py rolling=$(PLANNER_STAGE_DIR)/shared-rolling-rigs-207.log shared=$(PLANNER_STAGE_DIR)/shared-rigs-207.log

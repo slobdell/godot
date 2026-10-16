@@ -1,0 +1,2 @@
+start 05:25:40 load 2.66 0.96 0.59 commit 65cc43dd godot procs 0
+end 05:28:11 load 1.55 1.16 0.73

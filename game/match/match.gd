@@ -367,6 +367,11 @@ var _next_bot_id := 1
 @onready var shell_spawner: MultiplayerSpawner = $ShellSpawner
 
 
+## Round 32 (planner, the orchestrator's grant: this one hook): a match's planner crews and decline windows end with it.
+func _exit_tree() -> void:
+	PlannerSeam.end_match(tanks)
+
+
 func _ready() -> void:
 	# Must be assigned on every peer before the server's first spawn message arrives.
 	tank_spawner.spawn_function = _build_tank

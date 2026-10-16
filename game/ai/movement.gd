@@ -311,6 +311,7 @@ static func reset_route_arms() -> void:
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
+	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
 	yield_swaps_shorter = 0
@@ -349,6 +350,12 @@ static var yields_started := 0
 ## Measurement only: ticks the guard found neither the chosen point nor the next corner drivable (_guard_steer).
 static var guard_rescues := 0
 static var asks_refused := 0
+## Round 30 (traffic T1c-b), measurement only: asks refused because the hull was on its fire post.
+static var setup_refusals := 0
+## Round 30 (traffic T1c-b), measurement only: [asker, refusing hull, physics frame] per refusal while setup_log is on (the
+## census reads whether each asker really went round).
+static var setup_log := false
+static var setup_log_rows: Array = []
 
 ## X6 (N6): station-keeping. A move_to whose goal is itself moving (a formation slot riding its anchor, a follow's
 ## station) and is within STATION_RANGE is regulated by a PID on the along-track gap, on top of the goal's own speed
@@ -1644,12 +1651,29 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	return true
 
 
+## Round 30 (traffic T1c-b): set up to fire (legs down, any part of the way), still ordered to fire (anything but hold
+## fire), and no move of its own under way (its order is not a move, or the move has arrived).
+func on_fire_post() -> bool:
+	return ctl.tank.deploy_ratio > 0.0 and String(ctl.weapon_order.get("type", "")) != "hold_fire" \
+			and (String(ctl.move_order.get("type", "")) != "move_to" or not is_under_way())
+
+
 ## Another unit asks this one to give way: `asker` wants to go along `direction` from `from`. True when this unit
 ## found a validated spot and is giving way; false when it can't (it is already giving way, it just gave way to the
 ## same asker, or there is no room) — and then the asker gives way itself.
 func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bool:
 	native_stale |= STALE_ALL
 	if yield_to != "" or asker == _last_yielded_to:
+		return false
+	# Round 30 (traffic T1c-b, brains' request): a hull SET UP and still on its fire order, with no move of its own, does
+	# not give way: moving packs it up, and a battery that packs up for every squadmate passing never fires (brains'
+	# trace: a mortar truck gave way three times in 7 s and packed up). The asker treats it as parked and goes round
+	# (_negotiate's CP1a2 rule; ORCA). A set-up hull with a NEW move is leaving anyway, so it is asked as before
+	# (round 29's T1c refused every set-up hull and was judged on give-ways it started itself). `--traffic-off=setup`.
+	if on_fire_post() and not Traffic.off("setup"):
+		setup_refusals += 1
+		if setup_log:
+			setup_log_rows.append([asker, String(ctl.tank.name), Engine.get_physics_frames()])
 		return false
 	if _begin_yield(asker, from, direction, via):
 		return true
@@ -2277,7 +2301,13 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	lap = OrderController._lap("avoid.refresh", lap)
 	var slow := clampf(_remaining / Steering.SLOW_RADIUS, 0.35, 1.0)
 	var desired := tank.max_forward_speed * speed_factor * slow
-	var preferred := to / distance * desired
+	var route_preferred := to / distance * desired
+	var preferred := route_preferred
+	# Round 29 (traffic T3, his call: TAKE TURNS): two friendly squads crossing take turns; the rule shapes the wish (the
+	# later squad slows to pass behind) and ORCA keeps everyone clear of it (Traffic.shape).
+	if not held and not Traffic.off("turns"):
+		Traffic.refresh(ctl.tanks_root)
+		preferred = Traffic.shape(String(tank.name), route_preferred)
 	# Round 31 (traffic T4 v2, tuning only, OPT-IN `ghostself`): the crew's OWN velocity read the way its neighbours read
 	# it under `ghost` (Tank.real_velocity), so ORCA's reciprocal shares are between honest velocities on both sides.
 	var own := tank.real_velocity if not Traffic.off("ghostself") else tank.estimated_velocity
@@ -2285,7 +2315,7 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 			Vector2(own.x, own.z), preferred, tank.max_forward_speed,
 			Avoidance.radius_of(tank.unit_id), delta, BrainLevers.orca_neighbours(tank.team, String(tank.name)))
 	OrderController._lap("avoid.solve", lap)
-	if chosen.distance_squared_to(preferred) < 0.04:
+	if chosen.distance_squared_to(route_preferred) < 0.04:
 		return [waypoint, 1.0]
 	var speed := chosen.length()
 	var keep := clampf(speed / maxf(desired, 0.1), 0.0, 1.0)
@@ -3274,7 +3304,7 @@ const H1B_MOVED_M := 0.5
 ## Settle short only when the route has at most this left (the repair's own ceiling: a mover never quietly re-grounds a
 ## goal further than this).
 const H1B_SETTLE_MAX_M := REPAIR_MAX_M
-const H1B_DEFAULT := false
+const H1B_DEFAULT := true
 var _h1b_blocker := ""
 var _h1b_goal := Vector3.INF
 var _h1b_at := Vector3.INF

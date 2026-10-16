@@ -84,3 +84,80 @@ Nothing: both answers are in. A failed re-judge goes back to him through the orc
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
+
+**2026-10-16 (traffic worker, round 32).**
+
+**🎯 CP-T T3b-c: RE-JUDGED, VERDICT PASS. Ship hash `b5882c9c`** (the pair tree; native's mirror `413252ea` is already on
+main). Builder0, `b5882c9c`, GDScript path (`--brains-off=native` on both arms, as round 31's judged run), seeds 41–43 ×
+ticks {1,3,6,8,11,16}, n 18 a case, 90 s, base `--traffic-off=turns`, the full grid of 144 rows (0 cache hits, 0 missing),
+`turns_verdict.py --allow yard_open/cross=3.0 --allow terminus/cross=3.0` (round 31's bar; his ~3 s now covers both
+crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.txt`, `*_base/arm_b5882c9c.jsonl.gz`.
+- **Terminus crossing clock: +2.61 s (se 0.55) v his +3.0 + 1.645 se = +3.90: pass.** 16/18 later. The yielding squad B
+  is +4.22 s (se 0.64) and A is −1.09 s.
+- **Yard crossing clock: +3.38 s (se 0.26) v +3.43: pass** (narrowly, as in round 31). 18/18 later.
+- Between-squad fast contacts pooled over the two crossings: 191 → 117 (−39 %), pass (Terminus 93 → 61, yard 98 → 56).
+  Crews: 176 → 179, 169 → 167, 173 → 175, 179 → 179, all pass. No wedge. Same-squad contacts 144 → 139 and 150 → 149.
+  Head-on cases are within 1.645 se. All-in medians reported: Terminus 39.5 → 34.7, yard 33.3 → 33.8.
+- Hook (table sd): yard crossing SERIES PASS at run 7, head-ons PASS (at 6 and 18), Terminus crossing PASS at 18.
+- **Did CP-H/CP-P1 move what was judged? No.** Every judged line reads as round 31's `f5dc4147` did, apart from crews
+  176→179 v 176→178. These fights are short-hull squads crossing, where CP-P1 (≥ 10 m hulls) and CP-H's pinned-hull
+  consumers barely act. Worst runs (the same as round 31's): Terminus s43/t1 +5.3 s, yard s42/t8 +6.0 s. Their traces
+  are below once read.
+- **MERGED (orchestrator): `b5882c9c` → main `86917d5a`**; the 13 baselines are being re-adopted. T1c-b2's check on
+  `d1c375b3` was stopped (its base was stale; builder0 processes killed by cwd), and it is re-carried onto the
+  post-adoption main so that its check reads only the pit moving.
+
+**Plan (in order):** (1) CP-T T3b-c: carry the judged tree onto main, quick-remote, native builds/checks the pair tree
+(R32.1: native's mirror `413252ea` is already on main, inert until Traffic has `shape`), then ONE re-judge on it; (2) T1c-b2
+carried after T3b-c lands; (3) navmesh gap diagnosis; (4) test splits if any traffic file > ~60 s; (5) stretch T4.
+
+**CP-T, T3b-c carried:** `b5882c9c` on stream/traffic = main `6efdf42b` + `e57f93d2` (as `ac15ac0b`) + `ab3351fb` (as
+`67aa9c76`) + `DEFAULT_OFF := []` (turns ON). The one conflict of substance, `Movement._avoid`: main's T4 `ghostself`
+read (OPT-IN, off) and T3b-c's `Traffic.shape` combined, shape first, the 0.04 early return against `route_preferred`
+(the native drive's order, `drive_native.cpp` 556–603). `traffic.gd`: `OPT_IN` and `DEFAULT_OFF` both kept and parsed.
+Re-judge configuration (decided): as round 31's judged run, `--brains-off=native` both arms (GDScript path), base
+`--traffic-off=turns`, seeds 41–43 × {1,3,6,8,11,16}, n 18, `turns_verdict.py --allow yard_open/cross=3.0 --allow
+terminus/cross=3.0`. Reason: the question is whether CP-H/CP-P1 moved what was judged, so the arms match the judged run.
+- **quick-remote on `b5882c9c`: GREEN** (builder0, 68 passed / 0 failed, `>> remote: make quick … exited 0`; it included
+  test_native_traffic_turns(+_owned) and test_native_avoid_gather). Native's plain ON check on `pair/t3bc-r32` =
+  `b5882c9c` is running (native names the hash). The re-judge chain is ready: base `--brains-off=native
+  --traffic-off=turns`, arm `--brains-off=native`, both `TRAFFIC_WHICH=both`, with the hook lines (Terminus's xclear now
+  `abs=1.0:allow=3.0`, his ~3 s), then `turns_verdict.py`. It runs on stream/traffic, whose game/ equals `b5882c9c`.
+- **T1c-b2 carried:** `traffic-t1cb2-r32` `4849bfdc` = stream/traffic + `6d19a3d9` (one conflict, the end of
+  `mk/traffic.mk`; `Movement.ask()`'s fire-post refusal applied clean). quick-remote GREEN (builder0, 42/0, exited 0).
+  Native confirms none ported. `native-verify-scenarios` on `4849bfdc`: builder0 exited 0, 52 passed, 0 verify mismatches.
+  **`traffic-native-verify` was broken since round 31:** the `;` in `TRAFFIC_VERIFY_CENSUS` reached the recipe's `for`
+  list as a command separator (a bash syntax error at `parade`), which is why round 31 never ran it. Fixed at
+  `d1c375b3`; re-run there: builder0 exited 0, 0 mismatches (census Sumps s7 and Parade s8, approach s13 and s14). Caveat: those census runs read `setup_refusals` 0, so the refusal itself is covered by native's structural reading (ask() is GDScript on both arms), not by these runs. The chain (worktree `../godot-traffic-t1cb2`) then runs the full check with the rule ON and
+  the census on round 31's seeds 41–46 × Sumps 1000 / Parade 2000 / Foundry 2000, n 18, 150 s, `--brains-off=native`,
+  base `--traffic-off=setup`. As the brief says, the deciding line is read as arm 0/18 repacks while firing (the base's
+  ≥ 8/18 precondition is not re-applied), with the guards as filed.
+- **CP-T gate PASSED (native):** `b5882c9c`, builder0 `make check exited 2`, 2671 passed / 0 failed, 25 targets passed
+  and 1 FAILED = sim-baseline alone (all 13 maps moved), turns twins 0 mismatches. **The re-judge is running** from
+  worktree `../godot-traffic-judge` at exactly `b5882c9c` (unit `traffic-rejudge-t3bc`, 01:56 PDT).
+
+**C32.6, the navmesh gap: DIAGNOSED, no bake fix. It is a probe artifact, not a bake hole or a footprint** (`b71fb9b0`,
+laptop, headless Godot 4.7.2; geometry facts, so they don't depend on the machine).
+- **The default arena's own bake covers the spot.** On `foundry`, the default layout, `map_get_closest_point(-25.7, 7.3)`
+  is 0.00 m away. The spot sits 0.45 m north of Crate_7's carved edge (a 4.5 m crate at (-24, 12) plus the 2 m agent
+  radius). Routes from it reach both of the test's shift-waypoints.
+- **The 8.2 m was Terminus's navmesh.** On `terminus`, the same spot snaps 8.2 m to (-17.5, 7.3), because a city block
+  stands there. The round-31 reach probe (`tests/tactics/reach_probe.gd`) runs its labs in one process, and its later
+  labs ask before the map holds the new arena's regions. `Pathing.is_ready` answers true from the previous map: this is
+  `ArenaFixture`'s documented round-6 trap. I reproduced it: in a copy run default arena first, then Terminus, the
+  Terminus lab read 0.0 m, which is the default arena's answer.
+- **Bake inputs:** cell 0.5 m, cell height 0.25, agent radius 2.0 m, height 1.75, climb 0.25, slope 45°, collision
+  shapes (layer 1) in the group `navigation_source`. The south half is baked (filter AABB z ≥ −2.5, border 2.5) plus a
+  180° mirror region.
+- **Evidence:** `references/round32/traffic/navgap_default_arena.png` (the fresh bake, footprints and their 2 m carve) and
+  `navgap_terminus_same_spot.png`. Probe: `tests/traffic/navgap_probe.gd` (`--arena=`, `--after=<layout>` replays the
+  stale-map case) and `navgap_plot.py`. Pinned by `tests/test_traffic_navgap.gd` (2/0 on the laptop): within 1 m on the
+  default arena, and the 8.2 m reading on Terminus.
+- **Side finding, not fixed (reported):** the bake leaves a small navmesh island on top of each 3 m crate. The 1.75 m
+  agent height lets the top count as standable, and the 0.25 m climb keeps it disconnected. A goal point inside a crate
+  could snap to that roof and become unreachable. It is harmless today, and fixing it would move every arena's bake (so
+  the sim baselines), so I'm only reporting it.
+- **Requests:** to **brains**: the reach probe should build its labs through `ArenaFixture` (or wait for its own
+  regions), or its later cases read the previous arena. To **manoeuvre**: Alpha_3's round-31 "held by the ground, no
+  contact" at (-25.7, 7.3) is on the mesh, right at Crate_7's carve, so it is your escape's case, not the navmesh's.
+  R31.5's fallback already frees it on main.

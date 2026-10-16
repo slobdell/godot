@@ -111,6 +111,11 @@
 	F(Variant, OBJECT, _esc_friend) \
 	F(double, FLOAT, _esc_target_m) \
 	F(Vector3, VECTOR3, _unstick_from) \
+	F(String, STRING, _h1b_blocker) \
+	F(Vector3, VECTOR3, _h1b_goal) \
+	F(Vector3, VECTOR3, _h1b_at) \
+	F(int64_t, INT, _h1b_failed) \
+	F(bool, BOOL, _h1b_last_answer) \
 	F(double, FLOAT, _esc_gear) \
 	F(double, FLOAT, _press_time) \
 	F(Vector3, VECTOR3, _press_from) \

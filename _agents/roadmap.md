@@ -296,12 +296,28 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   (goal = slot + facing, 1.0 m / 8°), with the scope opened for THAT kind only (`in_scope(unit_id, kind)`), so the short
   hulls' k-turn and face demand (95 % of manoeuvre starts) stays with today's code. Its own bar would name yard s27 t8,
   add an arrival census, and re-price the cost line.
+- **RESOLVED 2026-10-16 (traffic, C32.6): NOT a gap.** On foundry's own bake (-25.7, 7.3) is 0.00 m from the mesh; the 8.2 m
+  snap was Terminus's mesh read by reach_probe's later lab (ArenaFixture's round-6 trap). `tests/test_traffic_navgap.gd`
+  (stream/traffic `b71fb9b0`). The original note follows.
 - **A navmesh gap in the default arena around x −25…−18, z 7** (brains' reach-probe, 2026-10-15): at (-25.7, 7.3),
   where test_control_queued_task's Green_Alpha_3 stops, the navmesh start snaps 8.2 m to (-17.5, 7.3), so the hull
   stands 8 m off walkable mesh and pathing answers `no_path`. It is not established whether that is a bake hole (ground
   a hull can stand on that the bake left out) or an obstacle footprint the hull was pushed onto. It belongs to the
   arena's owner (`arenas/**`, no stream this round). Today main's lock-reverse escape frees the hull, and R31.5 keeps
   that for terrain pins.
+
+## Round 33 candidates (found during round 32)
+
+- **Respawns can overlap a standing hull (brains, R32.6's play-side check, 2026-10-16):** `match.gd` ~2123 respawns at
+  `_jittered(spawn_position(...))` with no check against hulls already standing near the slot, so a big hull respawning beside
+  a parked one can overlap mid-match (physics' recovery from an overlap differs between a process's first match and later
+  ones: `orientation.md` trip-up 82). `game/match/**` has no owner this round. Deployment is guarded (test_spawn_grid,
+  test_army_layout); law and syndicate armies get a deploy-overlap loop entry this round (brains, granted).
+- **CP-Q's refuse-at-rest candidate** (planner, `d98656ab`, OFF): the hull-rest A/A (fifo v fifo) sizes line (3) first, then
+  judge on fresh seeds. **The seam never serves a War Rig's open-ground face-behind** (189 > 180 expansions).
+- **T4-ON** (traffic, `0adc6deb`): mixed stuck −48 % but unproven at n 24; the yard head-on's last hull circles its slot
+  15–20 s with the ghost on. Trace one circle loop, then n ≈ 48.
+- **B10b** (the grounding latch on a tree with C32.10's swap ON) and **B5c-v6** behind it, if round 32 doesn't reach them.
 
 ## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — SPLIT 2026-10-14 ~22:00 as traffic (his two calls, T4, the early-stop hook) + manoeuvre (1 as CP-H, 4) + brains (3, B8) + native (pairs, the planner review, 5's test split) + planner (2; Fable) (`workstreams.md` *Round 31*); his two calls MADE ~21:40
 

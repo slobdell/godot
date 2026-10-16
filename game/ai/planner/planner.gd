@@ -87,26 +87,87 @@ static func native_cache_stats() -> Dictionary:
 	return _impl.nav_cache_stats()
 
 
+## Round 32 (CP-S): the wall clearance at each (x, z) of `xz` (pairs), as `PlannerWorld.clearance` reads it, through
+## the C++ field when the library is usable (a navmesh world reads the match's shared cell cache) and the GDScript
+## world otherwise; the same float32 cells both ways (tests/test_planner_side_gate.gd). No search, no session: the
+## library reads a world of its own, so a live session is untouched. `native` false forces the GDScript read (twin).
+## The GDScript arm re-windows `world` (prepare): never hand it a live search's world (native's review of df45fac3).
+static func clearances(world: PlannerWorld, xz: PackedFloat64Array, native := true) -> PackedFloat64Array:
+	var cx := 0.0
+	var cz := 0.0
+	var n := xz.size() / 2
+	for i in n:
+		cx += xz[i * 2] / float(n)
+		cz += xz[i * 2 + 1] / float(n)
+	var half := 0.0
+	for i in n:
+		half = maxf(half, maxf(absf(xz[i * 2] - cx), absf(xz[i * 2 + 1] - cz)))
+	half += 2.0
+	if native and native_usable() and _impl.has_method("clearances"):
+		return _impl.clearances(world.native_view(), xz, cx, cz, half)
+	world.prepare(cx, cz, half)
+	var out := PackedFloat64Array()
+	out.resize(n)
+	for i in n:
+		out[i] = world.clearance(xz[i * 2], xz[i * 2 + 1])
+	return out
+
+
 ## The session's own library instance (a whole plan on `_impl` while a session is live would clobber it: native's
 ## review note); the free-space tables are one static cache inside the library, shared by both.
 static var _session_impl: Object = ClassDB.instantiate("PlannerNative") if ClassDB.class_exists("PlannerNative") else null
 static var _session_req: PlanRequest = null
 static var _session_plan: PackedPlan = null
 static var _session_stepped := 0
+static var _session_gd := false     # no library: the whole plan made at begin, answered on the C++ session's call
+static var _session_gd_progress: Array = [0, 0]   # [search, expansions consumed] (emulate_step)
 
 
 static func begin_session(req: PlanRequest) -> void:
 	_session_req = req
 	_session_plan = null
 	_session_stepped = 0
+	_session_gd = false
+	_session_gd_progress = [0, 0]
 	if native_usable():
 		_session_impl.begin(req.to_native())
 	else:
 		_session_plan = plan(req)
+		_session_gd = true
+
+
+## The C++ session's `step(n)` (`PlannerNative::step` / `run_search`) replayed on a plan made whole, so a session
+## without the library answers on the same call with the same expansions handed (round 32: test_manoeuvre_behind's War
+## Rig face-behind, 189 expansions, landed at once under NATIVE=off and was abandoned at the seam's 180-expansion cap
+## under native: two different games). `progress` is [search index, expansions consumed in it]; `p.search_ends` each
+## search's [expansions, "pop" | "empty"]. A search ending on a pop that expands nothing (the anytime bound, the budget)
+## finishes in a call with at least one expansion of the slice left over; one whose open list runs out finishes when
+## its last expansion fits the slice; the fine retry begins inside the call that ended the coarse search with a fresh
+## slice. An answer at begin (no searches) answers on the first call. tests/test_planner_session_steps.gd holds this to
+## the library, step by step and replayed.
+static func emulate_step(p: PackedPlan, progress: Array, n: int) -> bool:
+	n = maxi(n, 1)
+	while progress[0] < p.search_ends.size():
+		var end: Array = p.search_ends[progress[0]]
+		var left: int = int(end[0]) - int(progress[1])
+		var finishes: bool = left <= n - 1 if String(end[1]) == "pop" else left <= n
+		if not finishes:
+			progress[1] += n
+			return false
+		progress[0] += 1
+		progress[1] = 0
+	return true
 
 
 static func step_session(expansions: int) -> bool:
 	if _session_plan != null:
+		if _session_gd:
+			# No library: the plan was made whole at begin; it is ANSWERED on the call the C++ session would answer it
+			# (`emulate_step`), so the seam's hold, cap and abandon are the same with and without the library
+			# (round 32: test_manoeuvre_behind's War Rig face-behind, 189 expansions, landed at once under NATIVE=off and
+			# was abandoned at the 180-expansion cap under native: two different games).
+			_session_stepped += maxi(expansions, 1)
+			return emulate_step(_session_plan, _session_gd_progress, expansions)
 		return true
 	if _session_req == null or _session_impl == null or not _session_impl.live():
 		return true
@@ -131,10 +192,72 @@ static func session_stepped() -> int:
 	return _session_stepped
 
 
+## Round 32 (the queue, hand-over (3)): a session of its OWN, so several crews' searches are live at once (PlannerSeam
+## hands each pending crew its share of a per-tick budget). One library instance per session: the library's session is
+## per instance, its navmesh cell cache and free-space tables static (shared). Same contract as the static session
+## above (begin / step(n) / result / cancel; the GDScript path plans whole at begin), plus `refused()`: `begin`
+## already answered START_BLOCKED / GOAL_BLOCKED / ALREADY_THERE, read without an expansion.
+class Session:
+	var impl: Object = null
+	var req: PlanRequest = null
+	var plan: PackedPlan = null
+	var stepped := 0
+	var gd := false          # no library: answered on the C++ session's call (Planner.emulate_step)
+	var gd_progress: Array = [0, 0]
+
+	func begin(r: PlanRequest) -> void:
+		req = r
+		plan = null
+		stepped = 0
+		gd = false
+		gd_progress = [0, 0]
+		if Planner.native_usable():
+			if impl == null:
+				impl = ClassDB.instantiate("PlannerNative")
+			impl.begin(r.to_native())
+		else:
+			plan = Planner.plan(r)
+			gd = true
+
+	## Did begin already answer with a refusal (or "already there")? The next step(n) returns it, expanding nothing.
+	func refused() -> bool:
+		if plan != null:
+			return plan.code == PackedPlan.START_BLOCKED or plan.code == PackedPlan.GOAL_BLOCKED \
+					or plan.code == PackedPlan.ALREADY_THERE
+		return impl != null and impl.live() and bool(impl.refused_at_begin())
+
+	func step(expansions: int) -> bool:
+		if plan != null:
+			if gd:
+				stepped += maxi(expansions, 1)
+				return Planner.emulate_step(plan, gd_progress, expansions)
+			return true
+		if req == null or impl == null or not impl.live():
+			return true
+		stepped += maxi(expansions, 1)
+		if impl.step(expansions):
+			Planner.native_plans += 1
+			plan = Planner._from_native(req, impl.result())
+			return true
+		return false
+
+	func result() -> PackedPlan:
+		return plan
+
+	func cancel() -> void:
+		req = null
+		plan = null
+		stepped = 0
+		if impl != null and impl.live():
+			impl.cancel()
+
+
 static func cancel_session() -> void:
 	_session_req = null
 	_session_plan = null
 	_session_stepped = 0
+	_session_gd = false
+	_session_gd_progress = [0, 0]
 	if _session_impl != null and _session_impl.live():
 		_session_impl.cancel()
 
@@ -191,7 +314,9 @@ static func plan(req: PlanRequest) -> PackedPlan:
 	var out := _search(req, CELL_M, HEADING_BINS)
 	if (out.code == PackedPlan.NO_PATH or out.code == PackedPlan.BUDGET) and req.fine_retry:
 		var coarse := out.expansions
+		var coarse_ends := out.search_ends
 		out = _search(req, FINE_CELL_M, FINE_BINS)
+		out.search_ends = coarse_ends + out.search_ends
 		out.expansions += coarse
 		out.why += " (after %d coarse expansions)" % coarse
 	return out
@@ -282,9 +407,11 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 	var first_at := 0
 	var gears: Array[int] = [1, -1]
 	var heap_f_last := 0.0
+	var trailing := 0   # pops since the last expansion: > 0 at the end = the search ended on a pop that expanded nothing
 	while heap_f.size() > 0:
 		heap_f_last = heap_f[0]
 		var cur := _heap_pop(heap_f, heap_id)
+		trailing += 1
 		if goal_id >= 0:
 			# Anytime: the popped f is weighted; its unweighted bound is g + (f - g) / epsilon. Stop when no cheaper plan can follow.
 			var bound := ng[cur] + (heap_f_last - ng[cur]) / epsilon
@@ -300,6 +427,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 				out.why = "budget of %d expansions spent" % req.budget
 			break
 		expansions += 1
+		trailing = 0
 		if _at_goal(req, nx[cur], nz[cur], nth[cur], goal_theta, tol_rad, ngear[cur], world, start_offs):
 			# The last leg's roll past its end must be clear too.
 			if _roll_clear(world, req, start_offs, nx[cur], nz[cur], nfx[cur], nfz[cur], ngear[cur], nsteer[cur], radius, lag_fwd, lag_rev):
@@ -405,6 +533,7 @@ static func _search(req: PlanRequest, cell_m: float, bins: int) -> PackedPlan:
 					_heap_push(heap_f, heap_id, g + epsilon * _heuristic(req, x, z, th, goal_theta, radius, cusp_s, swing, table, gfx, gfz, gear), id)
 	last_expansions = expansions
 	last_nodes = nx.size()
+	out.search_ends = [[expansions, "pop" if trailing > 0 else "empty"]]   # the C++ slice's arithmetic (emulate_step)
 	out.expansions = expansions
 	if goal_id < 0:
 		if out.code != PackedPlan.BUDGET:
