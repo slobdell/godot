@@ -267,6 +267,37 @@ never counted (`best, run = r[3], 0`). The R32.7 fix counts a run the next goal 
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
 
+### C32.10 SWAP bar (DRAFT for the orchestrator, filed before any number)
+
+- **Candidate:** `lab/manoeuvre-swap2` (main `5cc02947` + brains' seam `f2cc956d` + my hook + the stage tests; native's one
+  exec_fields row `_h1b_swap_goal` rides in the pair), the switch `h1bswap` OPT-IN (`--nav-off=h1bswap` turns it ON).
+  **Base:** the same tree without it, i.e. main's behaviour, H1b ON. Arms by BEHAVIOUR (the runner derives the names
+  from movement.gd's defaults): `h1b` v `swap`, both on the GDScript path. One tree, every run printing its flags.
+- **Pre-registered:** the swap is asked only at H1b's second failed ask on a PARKED friend (`not is_under_way()`) whose
+  goal is nearer this hull than its route left. A **far loop** = H1b's `far` count: a loop H1b could not settle (more
+  than 12 m of route left, or a sliding goal).
+- **Fresh seeds (unclaimed on main `71c061b4`):** Terminus drive 380–392 (13, rigs + mixed), hull-rest 393–398
+  (n 144 an arm, one arm per call), fights 400–423 (24). Named cases: the far-loop trace's six pairs (Terminus hunt
+  seeds rigs 3, 4, 6 and mixed 4, 5).
+- **Gain line (G):** on 380–392, far loops in the swap arm ≤ 50 % of the base arm's, rigs and mixed apart, read once
+  at completion. The trace found 50 of 62 far loops were the parked-friend case; 50 % leaves room for refusals.
+- **Guard lines, each run to completion and read once on its fixed 1.645 se line (R31.8):**
+  (1) loops − far = 0 in both arms (no NEW near-goal loop); far ≤ base far, every named hunt seed;
+  (2) hull-rest PINNED (≤ 10 m hulls) and STUCK ≤ base + 1.645 se, paired, n 144;
+  (3) Terminus PINNED and STUCK, per squad, ≤ base + 1.645 se (paired sum, se of the seed-paired differences);
+  (4) Terminus arrivals, rigs and mixed apart: paired mean ≥ base − 1.645 se;
+  (5) fights 400–423: kills, deaths, hit rate within 1.645 se;
+  (6) RE-SEATS (R32.3's fail line, element `reseats`, not counting swaps): ≤ base + 1.645 se; swaps reported apart;
+  (7) the whole suite green on native's pair tree with H1B_SWAP_DEFAULT flipped ON (C31.1), before the series.
+- **STUCK definition (the reader subtlety, stated before numbers):** `tests/manoeuvre/pinned_table.py` as at
+  `f5bf085f`: a crew on a move_to with |throttle| > 0.3, in a run of ≥ 10 one-second state lines with no line 1 m closer
+  to its goal than the run's best; a goal-distance jump > 3 m (a new goal) closes and restarts the run. **A run that ENDS
+  IN PROGRESS is not counted** (both readers have always done this). So STUCK counts pressing that is never relieved
+  within the run, not pressing that eventually gets through.
+- **REPORTED:** swaps asked / taken / refused by brains' reason; far rows by blocker kind (PARKED / MOVING / MUTUAL);
+  Sumps s19 t8 with the latch ON (R32 B10 amended: reported, NOT a pass case, since its crews never fire the escape).
+- **Partial:** none. A miss parks the swap with the trace; no re-tuning on these seeds.
+
 ### C32.10 (ruled 2026-10-16): SWAP SEATS for the far loop
 
 The owner is BRAINS: the element's seats and the two Movement goals, behind one seam (shape `Element.swap_seats(a, b) -> bool`,
