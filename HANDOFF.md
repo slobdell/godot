@@ -6,7 +6,7 @@
 
 _Last updated: 2026-10-16 ~00:00 PDT — **ROUND 31 IS CLOSED (below).** Main **GREEN at `e66b41f1`** (builder0, `make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved). He pushes `main`. Round 32 is not prepared yet: the next orchestrator listens to him first._
 
-## 🏁 ROUND 31 IS CLOSED (2026-10-16 ~00:30 PDT) — read this first
+## 🏁 ROUND 31 IS CLOSED (2026-10-16 ~00:00 PDT) — read this first
 
 **Main `e66b41f1` is round 31's verified main and what he plays.** **MAIN GREEN at `e66b41f1`** (builder0, 23:54 PDT: `>> remote: make check exited 0`, 2657 passed, 0 failed, 26 targets ALL JUDGED, sim-baseline unmoved). It is `04620f67` plus manoeuvre's counters off Movement and brains' test split. Later commits are docs only and inherit it (`tools/merge_check_needed.sh` INHERIT). He pushes `main`.
 
