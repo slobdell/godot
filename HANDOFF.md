@@ -22,6 +22,10 @@ backwards (brains' B11 fix in its check).
 built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
 **Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
 
+**Round state ~16:40 PDT:** traffic DONE (closing merged `5795eeff`); planner DONE; brains' B11 PARKED (turret lead for round
+33), its closing check running (`f0af2f15`); manoeuvre's swap series RUNNING (G on fights 400–423 after the Terminus-has-no-
+elements amendment), ship tree ready (`pair/swap-ship 80300909`); native idle. **Close tonight** with or without the swap.
+
 **MERGED ~14:55 PDT: brains' R32.6 fixes alone `87fa3858` → main `0faa485b`** (test/stage only; builder0 light 9/0), clearing
 main's R32.6 red. B11 itself waits for its series (started 14:43).
 
