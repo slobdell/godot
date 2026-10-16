@@ -22,6 +22,11 @@ backwards (brains' B11 fix in its check).
 built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
 **Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
 
+**🎯 H1b SHIPPED ON (~14:00 PDT): pair/h1b-on `273654e6` → main `5cc02947`.** What he'll notice: a vehicle stuck behind a squadmate
+that never moves, near its goal, stops short instead of nudging back and forth. Every filed line passed (R32.7's STUCK
+re-measured on fresh seeds with the fixed reader). The far loops (~70 % of them) wait for C32.10's seat swap, manoeuvre's next.
+Unchecked on main with the running batch: one more main check after `981457cf`'s.
+
 **🎯 T1c-b2 SHIPPED ON (~12:45 PDT): traffic `c9fa64a4` → main `36a531b4`. CP-T IS DONE (both his yeses on main).** Its check
 2708/0, sim-baseline unmoved. **MERGED ~12:50 PDT: planner `e4d87edc` → main `981457cf`** (conflict in capture() resolved: main's 8904c9c4 + the branch's
 `_retry_until.duplicate(true)`; planner confirmed it). **Main check RUNNING on `981457cf`** (`orch-main-check-r32e`), the batch
