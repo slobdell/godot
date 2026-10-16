@@ -201,6 +201,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   `test_traffic_ghost` and `traffic-native-verify` ghost-on at 0 mismatches; C31.1's ON gate before the series. A stretch
   item: it runs behind H1b's, B10's and CP-Q's series on builder0; if H1b ships first, T4's tree takes main before its
   series.
+  **CP-Q JUDGED 2026-10-16 ~08:30 PDT: FAIL on line (3) → PARKED** (`pair/planner-queue` 65cc43dd kept; OFF on main). builder0:
+  (1) abandoned drawn 1.0 %, clicked 3.7 % (base 18.6 / 14.5 %) PASS; (2) hold medians down (hull-rest 0 / 1 v 4 / 9.5 ticks;
+  Terminus rigs 0 v 19) PASS; **(3) FAIL**: faced SBF drawn at-rest error p 0.035 (106.8° v 74.3°), faced_move settle +14.5 s
+  (never settled 6/6 v 3/6), moving at 75 s faced_move +5 (line 2.96), faced_screen +3 (line 2.14); (4) rig arrivals 187 v
+  180 PASS; (5) PASS. Reported: Terminus rig contact-ticks median 522 v 321. **Reading:** serving 1.5–2× the face plans in a
+  19-crew press costs drawn facing, settling and wall contact; the FIFO's starvation was hiding the cost of the seam's face
+  plans in a press. Round 33: trace why a served face in a press ends worse, a press-aware scope, then the queue again.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
