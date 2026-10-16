@@ -143,8 +143,7 @@ func test_an_8x8_in_single_file_never_reverses_on_lock_into_its_column() -> void
 ## The switch OFF is round 29's rule bit for bit: the escape's counters stay at zero.
 func test_switched_off_the_escape_never_runs() -> void:
 	var base := await _pin(false, "ifv", 11.0, 4.0)
-	assert_eq(base["arms"], {"fires_hull": 0, "fires_wall": 0, "asks": 0, "backs": 0, "backed": 0, "capped": 0, "refused": 0, "fallback": 0,
-			"esc_after_refusal": 0, "refusal_then_free": 0},
+	assert_eq(base["arms"], {"fires_hull": 0, "fires_wall": 0, "asks": 0, "backs": 0, "backed": 0, "capped": 0, "refused": 0, "fallback": 0},
 			"no escape arm moves with the switch off")
 
 
@@ -203,55 +202,3 @@ func test_a_plan_taking_the_hull_ends_every_executor_state() -> void:
 	assert_eq(mover._esc_stage, Movement.ESC_NONE, "the escape is ended")
 	assert_true(mover._unstick_left == 0.0 and mover._stuck_time == 0.0, "and the stall timers are cleared")
 	lab.dispose()
-
-
-## The CP-P1 handover counters (measurement only; the planner's `PlannerSeam.last_refusal`): an escape begun within
-## REFUSAL_ESC_S of a START_BLOCKED refusal is `esc_after_refusal`; the hull moving REFUSAL_FREE_M within REFUSAL_FREE_S
-## of a refusal is `refusal_then_free`. Read with the planner ON (its switch named when its default is OFF).
-func _with_refusal(code: String, at_frame: int) -> PackedStringArray:
-	var was := _arms([PlannerSeam.SWITCH] if not PlannerSeam.PLANNER_DEFAULT else [])
-	Movement.reset_escape_arms()
-	PlannerSeam._last_refusal["Green_R_1"] = [at_frame, code]
-	return was
-
-
-func test_an_escape_soon_after_a_blocked_start_refusal_is_counted() -> void:
-	var rate := Engine.physics_ticks_per_second
-	var was := _with_refusal(PackedPlan.START_BLOCKED, 1000)
-	assert_true(Movement.refusal_recent("Green_R_1", 1000 + rate * 2, PackedPlan.START_BLOCKED), "2 s after: recent")
-	assert_true(not Movement.refusal_recent("Green_R_1", 1000 + rate * 4, PackedPlan.START_BLOCKED), "4 s after: not")
-	assert_true(not Movement.refusal_recent("Green_R_2", 1000 + rate, PackedPlan.START_BLOCKED), "another crew: not")
-	PlannerSeam._last_refusal["Green_R_1"] = [1000, "NO_ROOM"]
-	assert_true(not Movement.refusal_recent("Green_R_1", 1000 + rate, PackedPlan.START_BLOCKED), "another code: not")
-	PlannerSeam._last_refusal.erase("Green_R_1")
-	Movement._off = was
-
-
-func test_a_hull_that_moves_soon_after_a_refusal_is_counted_once() -> void:
-	var rate := Engine.physics_ticks_per_second
-	var was := _with_refusal(PackedPlan.START_BLOCKED, 2000)
-	Movement.watch_refusal("Green_R_1", Vector3(0, 0, 0), 2000)
-	Movement.watch_refusal("Green_R_1", Vector3(1.0, 0, 0), 2000 + rate)
-	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 0, "1 m: not yet free")
-	Movement.watch_refusal("Green_R_1", Vector3(1.6, 0, 0), 2000 + rate * 2)
-	Movement.watch_refusal("Green_R_1", Vector3(3.0, 0, 0), 2000 + rate * 3)
-	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 1, "1.6 m inside 5 s: free, counted once")
-	PlannerSeam._last_refusal["Green_R_1"] = [9000, PackedPlan.START_BLOCKED]
-	Movement.watch_refusal("Green_R_1", Vector3(0, 0, 0), 9000)
-	Movement.watch_refusal("Green_R_1", Vector3(2.0, 0, 0), 9000 + rate * 6)
-	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 1, "moved only after 5 s: not counted")
-	PlannerSeam._last_refusal.erase("Green_R_1")
-	Movement.reset_escape_arms()
-	Movement._off = was
-
-
-func test_with_the_planner_off_the_handover_counters_stay_zero() -> void:
-	var was := _arms([PlannerSeam.SWITCH] if PlannerSeam.PLANNER_DEFAULT else [])
-	Movement.reset_escape_arms()
-	PlannerSeam._last_refusal["Green_R_1"] = [100, PackedPlan.START_BLOCKED]
-	Movement.watch_refusal("Green_R_1", Vector3.ZERO, 100)
-	Movement.watch_refusal("Green_R_1", Vector3(5, 0, 0), 110)
-	assert_true(not Movement.refusal_recent("Green_R_1", 110, PackedPlan.START_BLOCKED), "off: never recent")
-	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 0, "off: never counted")
-	PlannerSeam._last_refusal.erase("Green_R_1")
-	Movement._off = was
