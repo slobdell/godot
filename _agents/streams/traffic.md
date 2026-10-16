@@ -129,7 +129,20 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   On the laptop the file passes alone and with `test_native_route|tick_profile` before it, on both `86590075` and
   `cf81aedc` (1/0 and 5/0). The fix is planner/native's (skip crews whose tank is not `is_instance_valid` in `capture`).
   Orchestrator: planner lands the fix alone on main first; then main merges into this branch and the check re-runs.
-- The census (seeds 41–46, 150 s, base `--traffic-off=setup`, builder0) is running.
+- **Census: VERDICT PASS against round 31's bar** (builder0, `cf81aedc`, GDScript `--brains-off=native` both arms, base
+  `--traffic-off=setup`, seeds 41–46 × Sumps@1000 / Parade@2000 / Foundry@2000, n 18, 150 s, 0 missing;
+  `references/round32/traffic/t1cb2_r32_census_{base,arm}_{cf81aedc.jsonl.gz,table_cf81aedc.txt}`).
+  - **Deciding line: runs with a repack while firing 5/18 → 0/18** (one-sided Fisher p 0.023). Events 7 → 0. Repacks
+    while giving way 50 → 42.
+  - Friendly-stuck 789 → 696 crew-s (−93; limit +225): pass. Fast friendly contacts 934 → 946 (+12; limit +47.7): pass.
+  - Reported: artillery shots 451 → 456. Under way 23155 → 22894 crew-s. Refusals on the post 0 → 59 (Green 52, Rust 7,
+    so the rule is symmetric).
+  - **The asker's side (orchestrator's addition a):** of the refused askers, 10 went round (Green 7, Rust 3) and
+    6 never got past within 20 s (Green, all in the four runs where the base repacked: Foundry s45/s46 1 each, Parade
+    s42/s43 2 each). Nothing was pending at the end. This is his yes as specified: the truck stays set up, so a squadmate
+    behind it waits or goes round instead of moving it. Friendly-stuck time went down, not up.
+  - The red above stands until planner's fix is on main. Then main merges into `traffic-t1cb2-r32` and the check re-runs.
+    That green hash is the ship hash.
 
 **C32.8, test splits: none needed.** Builder0's shard times: no traffic-owned file is near 60 s.
 `test_traffic_hold_live` 30.9 s, `test_traffic_turns_live` 31.0 s, `test_traffic_feed` 13.2 s. The slow files are native's
