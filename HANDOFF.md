@@ -43,6 +43,13 @@ question, traffic's block; a joint contract to follow). **He will see this.**
 base). Manoeuvre is hunting today's loops (diagnostic seeds 1–16, hull-rest pins, fights) before H1b's series.
 Ruling R32.3 (M1b(3)'s arrivals) and R32.4 (web-smoke's first-sound bound) are filed.
 
+**🎯 B3b-2c SHIPPED ON (~04:45 PDT): brains `5f0ed865` → main `33321516`.** What he'll notice: every crew of every squad gets
+across his bridge (108/108 v 107/108), and arrivals elsewhere are exactly as before (fresh seeds 45–48, 90 v 90, all 100 cells
+identical). Its check 2666/0 (web first-sound red at load 22, re-run alone green, R32.4); sim-baseline 13 unmoved; no
+native half. CHECK needed on main (batched after `0e49fb3e`'s running check).
+**Brains' finding (C32.11):** a seating bug ON MAIN (seats jump ~10 m when a squad's centre crosses a 5 m grounding cell);
+the latch ships alone as B10 next.
+
 **🎯 T3b-c SHIPPED ON (~03:10 PDT): pair/t3bc-r32 `b5882c9c` → main `86917d5a`.** What he'll notice: at a Terminus street
 crossing the squad that gives way waits ~2.6 s, and the squads bump about a third less (his yes). Re-judge on b5882c9c
 (builder0, seeds 41–43 × 6, n 18, GDScript): VERDICT PASS, Terminus +2.61 s (se 0.55) v +3.90, yard +3.38 v +3.43, bumps
