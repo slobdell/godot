@@ -110,7 +110,7 @@ carry-over: `_retry_until` keyed by hull NAME, so match 1's decline window on "R
 request, aligned 12.43 s v 2 and 15.43 s). Fix `e4d87edc`: a decline carries the hull's instance id; `Match._exit_tree`
 → `PlannerSeam.end_match(tanks)` (granted hook; counters kept, nothing printed, harmless without seam use; NOT
 `reset()`, which would zero every run's last PLANNER_SEAM_REPORT line); `report()`'s `live` counts existing hulls only.
-Red before, green after (3 identical plays). **GREEN, merge here: `e4d87edc`** (builder0 exited 0, 2673 passed 0 failed, 24 + 2 NOT JUDGED on a busy box, sim-baseline 13 unmoved), naming `c74f5943` too.
+Red before, green after (3 identical plays). **GREEN and MERGED to main: `e4d87edc`** (builder0 exited 0, 2673 passed 0 failed, 24 + 2 NOT JUDGED on a busy box, sim-baseline 13 unmoved), naming `c74f5943` too.
 
 **CP-S.** `PlannerSeam.side_gate(slot, facing, unit_id, map: RID, from := Vector3.INF) -> Vector3`, the signature agreed
 with brains: `slot + perp × R` (R = the unit's turning radius) on the side with room, ZERO when neither side has
