@@ -120,6 +120,13 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   C++-v-GDScript session case was declined: two plays in one test process are not clean (my scratch never freed the
   first Rig, so later plays were pinned; sent to planner with that caveat). Porting `face_turn` belongs with the held
   k-turn / `_manoeuvre` port (item 6).
+- **Order-dependent twin red (traffic's check on c9fa64a4, test_native_execute_odd 2 mismatches at frame 0):** a crew
+  test_native_drive_owned leaves held in PlannerSeam (hull freed since) is skipped by `capture()` but counted in
+  `report()`'s `live`, so the live arm read 1 and the restored native arm 0 until the first `_sweep`. Fix `f686f155`:
+  `MoverState.world_reset()` (the seam's `reset`) first in every twin case that captures the seam. Reproduced
+  (builder0 light, `native_drive_owned|native_execute_odd` serial): main 99afc1f8 1/1, f686f155 2/0. Off main as
+  `fix/seam-reset` `45b52d04` (3/0 with h1b). **Lesson:** a twin case owns its world: empty every static table it
+  captures at its start, or it inherits the shard's history.
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
