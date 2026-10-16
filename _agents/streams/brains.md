@@ -92,7 +92,7 @@ Manoeuvre.FACING_KEEP_DEG (60°) of the nose, else drive on nose-first carrying 
 control. GDScript only (`_act` is GDScript on every path). Tuning, n 1 each, free clock (the harness is not
 deterministic: off read Guns_5 161.9° then 149.9°): s66 Guns_5 100.5° on v 149.9° off; crews > 90° off 4 v 6 of 20.
 **B11 bar** (arms on v `--hold-return=old`, one tree, builder0, default path; `manoeuvre-hull-rest` drawn, all four
-factions × FRESH seeds 61 62 63 64 65 67 × the six faced tasks, n 144 runs an arm):
+factions × FRESH seeds 350–355 (the orchestrator: 60–65 and 66–71 are taken) × the six faced tasks, n 144 runs an arm):
 1. Crews ending > 90° from his drawn heading, pooled over all crews: on < off (deciding), one-sided Fisher p reported.
 2. Pass case gangs s66 faced_move: Green_Guns_5 ≤ 90° in ≥ 2 of 3 on-repeats (off's 3 reported).
 3. Not worse: no hull class's median error worse with permutation p < 0.05 (hull_rest_ab); runs never settled on ≤ off
