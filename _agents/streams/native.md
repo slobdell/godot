@@ -84,16 +84,50 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   `_repair_to`) are exec_fields rows synced round callbacks and honoured by the native drive; `_h1b_*` are GDScript-only
   members the twins capture. Proof: `test_native_h1b` (`233cbde4`), manoeuvre's parked-squadmate stage with the pinned
   hull's execute step twinned (GDScript / native live / native owned); skips without H1b; on an ON tree it needs a settle
-  compared natively. Scratch ON tree: `scratch/h1b-on` `f29e3c87` (`../godot-native-h1b`) for its first run.
+  compared natively. **Green on the scratch ON tree** `scratch/h1b-on` `f29e3c87` (`233cbde4` + manoeuvre `373de208` +
+  H1B_DEFAULT true; builder0 light, exited 0): 1200 native executes, 3 escape fires, 2 failed asks, 1 settle (compared in
+  both views), phase arrived, 0 mismatches. The pair tree waits for manoeuvre's green hash.
+- **5. B5c-v6 (brains):** v5's mirror (`4b335e67`, v4 rule; v5's gate GDScript equals v4's) carried onto main:
+  `pair/brains-v6-carry` `09c85f67` (`../godot-native-v6`) = lab `6c3e6c71` + main `b418225c` + a harness fix:
+  `test_native_gate` predates CP-P1 and lacked the planner seam's world capture (read `_kturn_check` 6 v 1). builder0
+  light: gate 4/4 at 0 mismatches (Sumps 6000 + 174/186 forced; Foundry 6000 + 513/515 forced), turns and drive twins 0.
+  No `near` cooldown row (dropped by brains: a GDScript grounding latch instead). Waiting for brains' tested diff.
+**Lesson (twins):** every twin whose drive can reach `_planned_reverse` must snapshot `MoverState.world_capture()` (the
+planner seam), or a crew the live arm hands the seam is inherited by the native arm. And a twin for code that is not on
+main yet must name the new members by string (`get`/`call`), or the file fails lint on main. A pair tree takes stream/native's TESTS
+whole (merge the named hash), never one file: `test_native_h1b` extends `ExecuteTwinCase`, and the first H1b pair cut
+(`5d6d7414`) lost a check to lint on that.
+- **H1b pair tree:** `pair/h1b-on` `fa2d9e31` (main `2fc43a47` + manoeuvre `e8e20ca9` + stream/native `981e336b` +
+  H1B_DEFAULT true; worktree `../godot-native-h1b`). Plain check RUNNING (unit `native-h1b-check2`).
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
   serial `make native test FILTER=…`, n 1, while a heavy check ran beside it): test_native_execute 472 s,
   test_native_drive 330 s, test_native_traffic_hold 253 s (+ `_owned` 193 s, round 31's split), test_native_wall 193 s;
   every one 0 mismatches (execute 11880 native executes; drive 2160 drives a view, k-turns 1440; hold 7244 / owned 7304
-  drives; wall 12000 observes). AFTER: timing run on `d98f4400` RUNNING (unit `native-times2`).
+  drives; wall 12000 observes). The FAIR before is a full sharded check's per-file times: `b5882c9c`'s (builder0, load
+  ~12, plan rr): drive 457 s, execute 455, traffic_hold 334, wall 315, hold_owned 234, and, now T3b-c is ON on main,
+  traffic_turns_owned 215 and traffic_turns 159 (split too at `08b452ee`, TrafficTurnsCase). A serial light-lane run of all
+  the split files was killed at the 90-min slot cap (load 10), so it is not evidence. The first full check on `233cbde4`
+  failed LINT on my own `test_native_h1b` (it named H1b's statics, so it did not parse without H1b; fixed `981e336b`).
+  AFTER, full check on `981e336b` (builder0): `make check exited 2`, 2663 passed / 1 failed, the one being
+  test_control_vision_camera's teleport case (not a native file; re-run alone below). Its per-file times are NOT evidence
+  either way: under contention (load 12-16) a file's wall time moved ±40 % between checks. **Measured instead as CPU
+  seconds** (user+sys, one Godot process per file, `/usr/bin/time`, builder0 light slot, serial, n 1; the base folder =
+  `6efdf42b`, the split = `981e336b`; scratchpad script `cpu_times.sh`): test_native_execute 614 → 262 + 289 (the slower
+  half 47 %); test_native_wall 138 → 91 + 95 (69 %: the uncompared fight is a larger share); test_native_drive 493 →
+  106 + 98 (owned) + 178 (kturn) + 23 (kturn owned) (36 %); test_native_traffic_hold 384 → 87 + 88; `_owned` 346 → 168 +
+  161 (49 %). The suite's slowest native file falls from 614 CPU-s (execute) to 289 (execute_odd). Every split file 0
+  mismatches. The turns twins (split at `08b452ee`) skip on this tree (no T3b-c until stream/native takes main).
+  test_control_vision_camera re-run alone on the same build: 18/18 (a load flake at load 12+). **Green hash for the
+  splits: `981e336b`** (its check: 2663/1, the one red that flake; later commits are this brief only).
 - **Planner review:** `df45fac3` (CP-S `PlannerNative::clearances`) APPROVED, one note (the GDScript arm prepares the
   caller's world; the native arm doesn't).
   `0b9e96bc` (`refused_at_begin`, header only) APPROVED: consistent with `step()` (those three codes never start the fine
   retry). Per-crew `PlannerNative` instances for the shared queue: agreed (no C++ change; free an instance with its crew).
+
+- **6. N5's held ports: HELD this round (decision, reason).** `_negotiate`'s body / `ask` / `_begin_yield` are being
+  changed in round 32 by traffic and manoeuvre (C32.10's mutual pin: traffic's designation + manoeuvre's reverse; H1b
+  in the escape beside them), and the brief puts pairs first. Porting them now means porting a moving target twice. They
+  start once C32.10 ships; the k-turn planner's body and `_manoeuvre` follow manoeuvre's M1b(3).
 
 **Plan (in order):** (1) the T3b-c pair check, named hash; (2) T1c-b2's verify runs on traffic's tree; (3) the four twin
 splits, test-only, their own hash; (4) pairs as they arrive (H1b, B3b-2c, B5c-v6, the planner's side gate and SLICE: CP-S

@@ -5,9 +5,11 @@ extends TestCase
 ## after every physics frame, each crew's observe runs twice from one snapshot of the observer (its fields, every static
 ## counter, the episode table and log, the give-way / k-turn / circle records it writes): the GDScript, then the
 ## native scan. Everything it wrote must be equal; then the snapshot goes back (the game's own observe already ran).
-## Round 32 (native, C32.8): split by crew into test_native_wall (the even crews) and test_native_wall_odd: each file
-## plays the whole fight and compares every `parts`-th crew; this base holds the case, its body unchanged but for that
-## and the sample floor divided by `parts`.
+## Round 32 (native, C32.8): split into test_native_wall and test_native_wall_odd: each file plays the whole fight and
+## compares every crew on every `parts`-th frame, staggered by crew (`(frame + index) % parts`); this base holds the case,
+## its body unchanged but for that and the sample floor divided by `parts`. Not by crew: which crews meet walls is the
+## fight's to decide, and with manoeuvre's H1b ON the even crews met 8 wall ticks where the odd met 554 (the branch floor
+## failed on a fight that matched). Wall contacts last many frames, so alternate frames split every branch evenly.
 
 const MATCH := preload("res://game/match/match.tscn")
 const FIELDS: Array[String] = ["touching", "cause", "driver", "collider", "lane", "count", "mine_by_cause", "point",
@@ -59,7 +61,7 @@ static func _diff(a: Dictionary, b: Dictionary) -> String:
 	return ""
 
 
-## Compares the crews whose node index is `part` mod `parts`; the others play as the game does, uncompared.
+## Compares each crew on the frames where `frame + its node index` is `part` mod `parts`; the rest play uncompared.
 func _scan_case(part: int, parts: int) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the wall scan equality is not exercised in this run")
@@ -82,7 +84,7 @@ func _scan_case(part: int, parts: int) -> void:
 		await wait_physics_frames(1)
 		for node in game_match.tanks.get_children():
 			var mover := Movement.of(node)
-			if mover == null or mover.ctl == null or node.get_index() % parts != part:
+			if mover == null or mover.ctl == null or (frame + node.get_index()) % parts != part:
 				continue
 			var start := _capture(mover)
 			BrainSwitches.native_wall = false
