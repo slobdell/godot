@@ -3949,3 +3949,15 @@ Asked in player terms at round 30's close, one recommendation each; he took both
    the artillery line sized from its measured noise (about 3× the census runs, or the line REPORTED), ships if the
    repack count holds at 0.
 
+
+## Round 31 close: his two answers (2026-10-16, in chat; "For the two decisions you gave me, yes to both")
+
+Asked at round 31's close, in player terms, each with the orchestrator's recommendation of yes:
+
+1. **Terminus street crossings (T3b-c): YES.** His ~3 s price for the squad that gives way covers a Terminus street
+   crossing as well as the yard. The judged rows are Terminus +2.61 s and yard +3.38 s, with bumps at Terminus 93 → 61
+   (builder0, `f5dc4147`, seeds 41–43, n 18).
+2. **Set-up mortar truck (T1c-b2): YES.** A set-up mortar truck stays set up and firing, and squadmates go round it
+   (packed up for a passer in 6/18 fights → 0/18, rounds fired 434 v 437; builder0, `33cb2da5`, seeds 41–46, n 18).
+
+Both ship ON in round 32, as its first items (`roadmap.md` *Round 32 candidates*).

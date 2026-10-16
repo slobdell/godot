@@ -245,6 +245,15 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
 
 ## Round 32 candidates (found during round 31)
 
+- **⚑ FIRST: ship his two yeses (2026-10-16, `game_design.md` *Round 31 close: his two answers*). Neither needs a new
+  bar; both were judged in round 31.** Each still has to be carried onto current main (CP-H and CP-P1 have landed since
+  they were judged) and pass C31.1 there.
+  - **T3b-c (Terminus crossing give-way):** branch `traffic-t3bc-judged` (`f5dc4147`), a pair with native `413252ea`.
+    Re-record the 13 baselines with `make sim-baseline-adopt`, giving each moved line its reason.
+  - **T1c-b2 (set-up mortar stays set up):** branch `traffic-t1cb2` (`33cb2da5`). Run traffic-native-verify and a
+    check with the rule ON, then re-record the pit baseline.
+  - If carrying either one forward changes what was judged (for example, its numbers move under CP-H), re-run its
+    judged series once on the new tree before shipping. His yes covered the behaviour, not any change to it.
 - **H1's ask loops when the blocker never moves (manoeuvre's trace, shipped CP-H, Terminus seed 31's last leg):**
   Green_S0_4 ends 9.1 m short, touching Green_S0_2, and H1 asks, backs ~2–3 m, stands, then drives into it again, about
   every 21 s (asks 29, backs 29, all hull pins, refused 0). It is never silent, but it never frees a squadmate wedge whose

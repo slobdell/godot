@@ -20,13 +20,11 @@ _Last updated: 2026-10-16 ~00:00 PDT — **ROUND 31 IS CLOSED (below).** Main **
 **Known issue in what shipped (tell him):** when the squadmate in the way never moves, the pinned vehicle loops
 (ask, back 2–3 m, drive back in, about every 21 s) instead of going round. Terminus seed 31. It is a round-32 candidate.
 
-**⚑ Owed to him (two questions, both still unanswered; full wording in the round-31 section below):**
-1. **Terminus crossing (T3b-c):** does his ~3 s yard price also cover a Terminus street crossing (+2.6 s, bumps 93 → 61)?
-   Recommendation: yes. On yes, ship `f5dc4147` (branch `traffic-t3bc-judged`) as a pair with native `413252ea`, with the
-   13 baselines re-recorded.
-2. **Set-up mortar truck (T1c-b2):** should a set-up mortar truck stay set up and let squadmates go round (6/18 fights
-   → 0/18, same fire)? Recommendation: yes. On yes, run C31.1 on current main with branch `traffic-t1cb2` (`33cb2da5`),
-   re-record the pit baseline, and merge.
+**✅ His two answers (2026-10-16): YES to both.** Both ship ON as round 32's first items: the Terminus crossing give-way
+(T3b-c, branch `traffic-t3bc-judged` `f5dc4147` + native `413252ea`) and the set-up mortar truck staying set up
+(T1c-b2, branch `traffic-t1cb2` `33cb2da5`). Each must be carried onto current main and pass C31.1 first. The steps are in
+`_agents/roadmap.md` *Round 32 candidates* and his words in `game_design.md` *Round 31 close: his two answers*.
+Nothing is owed to him now.
 
 **Clips for him:** `~/projects/clips/round31/`. They cover the T3b-c crossings with a caption, the planner's Terminus
 rig (`planner_terminus_0a2a4a48.mp4`, `planner_terminus_f9d2c639.mp4`), and the rig wedge today v shipped.
