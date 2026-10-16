@@ -77,7 +77,11 @@ _Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, fr
 
 ### The report (read this first)
 
-_2026-10-16 ~09:00 PDT. Every number builder0 unless named; commit, workload and n beside it._
+_2026-10-16 ~11:30 PDT. Every number builder0 unless named; commit, workload and n beside it._
+
+**THE BRANCH IS GREEN, MERGE HERE: `d98656ab`** (builder0 `>> remote: make check exited 0`, 2670 passed, 0 failed,
+24 passed + 2 NOT JUDGED on a busy box (perf-judge, scenario_perf), **sim-baseline 13 maps unmoved**). Later commits
+are this Status only. Every backlog item is done, judged, or handed over below.
 
 | item | state | evidence |
 |---|---|---|
