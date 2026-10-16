@@ -199,10 +199,9 @@ static var _parsed := false
 ## Round 31 (R31.1): CP-H's consumers are OPT-IN. Each is off unless NAMED, and naming it (`--traffic-off=` or
 ## `--traffic-on=`) turns it ON. Native's mirror keys on this const: keep it (empty is fine) when one ships ON.
 const OPT_IN := ["ghost", "ghostself"]
-## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 30: the crossing (`turns`) has no C++ twin until
-## native's port (C30.2), and the native drive's equal-answer tests compare against the GDScript; it ships OFF on
-## stream/traffic and the pair's merge removes it from this list.
-const DEFAULT_OFF := ["turns"]
+## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
+## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
+const DEFAULT_OFF := []
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
