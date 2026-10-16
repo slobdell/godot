@@ -1,0 +1,52 @@
+# CP-H fights 214-237 (24 pairs), builder0. base a2ef0b31; ON 130a069b; alone arms a2ef0b31. 2026-10-15.
+== on (seeds differing from base: 24/24)
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 987 new 1001 diff +14 se 14.9 within 2 se
+FIGHT_GUARD deaths: base 996 new 1013 diff +17 se 15.4 within 2 se
+FIGHT_GUARD shots: base 29854 new 28402 diff -1452 se 2601.6 within 2 se
+FIGHT_GUARD hits: base 19776 new 18821 diff -955 se 1667.6 within 2 se
+FIGHT_GUARD touch_shots: base 1835 new 1709 diff -126 se 181.3 within 2 se
+FIGHT_GUARD touch_hits: base 1127 new 1010 diff -117 se 141.6 within 2 se
+FIGHT_GUARD hit rate: base 0.677 new 0.689 paired mean diff +0.012 se 0.019 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.598 new 0.622 paired mean diff +0.024 se 0.037 within 2 se (n 24)
+== unstickback (seeds differing from base: 24/24)
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 987 new 1006 diff +19 se 28.2 within 2 se
+FIGHT_GUARD deaths: base 996 new 1014 diff +18 se 28.9 within 2 se
+FIGHT_GUARD shots: base 29854 new 28463 diff -1391 se 1865.1 within 2 se
+FIGHT_GUARD hits: base 19776 new 19401 diff -375 se 1438.3 within 2 se
+FIGHT_GUARD touch_shots: base 1835 new 1547 diff -288 se 208.2 within 2 se
+FIGHT_GUARD touch_hits: base 1127 new 1043 diff -84 se 187.2 within 2 se
+FIGHT_GUARD hit rate: base 0.677 new 0.688 paired mean diff +0.011 se 0.014 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.598 new 0.622 paired mean diff +0.024 se 0.053 within 2 se (n 24)
+== kturnarc (seeds differing from base: 10/24)
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 987 new 1029 diff +42 se 19.0 OUTSIDE 2 se
+FIGHT_GUARD deaths: base 996 new 1042 diff +46 se 19.1 OUTSIDE 2 se
+FIGHT_GUARD shots: base 29854 new 30372 diff +518 se 2625.4 within 2 se
+FIGHT_GUARD hits: base 19776 new 19815 diff +39 se 1824.0 within 2 se
+FIGHT_GUARD touch_shots: base 1835 new 2327 diff +492 se 371.8 within 2 se
+FIGHT_GUARD touch_hits: base 1127 new 1434 diff +307 se 292.4 within 2 se
+FIGHT_GUARD hit rate: base 0.677 new 0.670 paired mean diff -0.007 se 0.010 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.598 new 0.610 paired mean diff +0.012 se 0.037 within 2 se (n 24)
+== realspeed (seeds differing from base: 23/24)
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 987 new 1015 diff +28 se 28.1 within 2 se
+FIGHT_GUARD deaths: base 996 new 1023 diff +27 se 28.9 within 2 se
+FIGHT_GUARD shots: base 29854 new 28448 diff -1406 se 2084.9 within 2 se
+FIGHT_GUARD hits: base 19776 new 19325 diff -451 se 1518.8 within 2 se
+FIGHT_GUARD touch_shots: base 1835 new 1755 diff -80 se 197.8 within 2 se
+FIGHT_GUARD touch_hits: base 1127 new 1040 diff -87 se 138.2 within 2 se
+FIGHT_GUARD hit rate: base 0.677 new 0.689 paired mean diff +0.012 se 0.013 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.598 new 0.611 paired mean diff +0.013 se 0.044 within 2 se (n 24)
+== realslow (seeds differing from base: 2/24)
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 987 new 1006 diff +19 se 15.4 within 2 se
+FIGHT_GUARD deaths: base 996 new 1016 diff +20 se 15.6 within 2 se
+FIGHT_GUARD shots: base 29854 new 30419 diff +565 se 530.6 within 2 se
+FIGHT_GUARD hits: base 19776 new 19985 diff +209 se 288.1 within 2 se
+FIGHT_GUARD touch_shots: base 1835 new 2042 diff +207 se 143.4 within 2 se
+FIGHT_GUARD touch_hits: base 1127 new 1199 diff +72 se 69.9 within 2 se
+FIGHT_GUARD hit rate: base 0.677 new 0.671 paired mean diff -0.006 se 0.004 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.598 new 0.589 paired mean diff -0.009 se 0.011 within 2 se (n 24)
+== bridge: ON 130a069b 18/18, base a2ef0b31 18/18 (BRIDGE_POOLED)

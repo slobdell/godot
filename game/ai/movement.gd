@@ -922,6 +922,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Round 24 (native N3c): the whole drive as one native call (native/src/drive_native.cpp) on this mover's own
 	# members; the GDScript below is the reference. Every check drives each mover both ways from one snapshot
 	# (tests/test_native_drive.gd): edit this function and the port fails there until it follows.
+	ManoeuvreCensus.watch_refusal(String(ctl.tank.name), ctl.tank.global_position, Engine.get_physics_frames())  # measurement only
 	if NativeDrive.usable(self):
 		var native_lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		NativeDrive.drive(self, cmd, order, delta)
@@ -3170,7 +3171,8 @@ static func unstick_back_on() -> bool:
 
 static func escape_arms() -> Dictionary:
 	return {"fires_hull": esc_fires_hull, "fires_wall": esc_fires_wall, "asks": esc_asks, "backs": esc_backs,
-			"backed": esc_backed, "capped": esc_capped, "refused": esc_refused, "fallback": esc_fallback}
+			"backed": esc_backed, "capped": esc_capped, "refused": esc_refused, "fallback": esc_fallback,
+			"esc_after_refusal": ManoeuvreCensus.esc_after_refusal, "refusal_then_free": ManoeuvreCensus.refusal_then_free}
 
 
 static func reset_escape_arms() -> void:
@@ -3182,6 +3184,7 @@ static func reset_escape_arms() -> void:
 	esc_capped = 0
 	esc_refused = 0
 	esc_fallback = 0
+	ManoeuvreCensus.reset_refusals()
 
 
 ## The hull's escape is the honest one under this order: returns what pins it (a Tank, or the hull itself standing for
@@ -3207,6 +3210,8 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 	var friend := pinned_on as Tank
 	if friend == tank:
 		friend = null
+	if ManoeuvreCensus.refusal_recent(String(tank.name), Engine.get_physics_frames(), PackedPlan.START_BLOCKED):
+		ManoeuvreCensus.esc_after_refusal += 1
 	if friend != null:
 		esc_fires_hull += 1
 	else:
