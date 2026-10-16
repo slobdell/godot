@@ -22,6 +22,9 @@ extends RefCounted
 ##   3. DRIVING: `PlannerExecutor` (the P4 rules: brake on the leg's own lock, never throttle 0 with the lock on, the
 ##      discrete stopping distance, the arc not the chord) drives the legs. A leg aborted (stall / timeout) is an EVENT:
 ##      re-plan from the pose with a fresh snapshot, at most REPLANS_PER_ORDER times, then decline for RETRY_TICKS.
+##      A FACE hands back on its FIRST abort (CP-P1's gate, the wedged semi: the world is the navmesh plus live hulls,
+##      so a plan aborted against something unbaked is a plan the next snapshot repeats; today's give-up must report
+##      the hull unable within a few seconds, and it runs only once the seam lets go).
 ##      Driven to the end: released (the route, or the face's aligned test, takes over next tick; a short decline
 ##      keeps a face from asking twice for the same residual).
 ##   4. NO_PATH / BUDGET / GOAL_BLOCKED / START_BLOCKED: declined for RETRY_TICKS, counted by code (the layer above --
@@ -59,6 +62,7 @@ const REST_MPS := 0.5             # a pending search begins only once the hull h
 const BRAKE_THROTTLE := 0.7        # Movement.KTURN_THROTTLE: the brake on a rolling hull while it is pending
 const YAWED_DEG := 5.0
 const FACE_TOL_DEG := 8.0          # Manoeuvre.FACE_ALIGNED_DEG
+const KTURN_AIM_DEG := 15.0        # the k-turn's goal: pointing at the waypoint within this, the straight run clear
 const NEW_GOAL_JUMP := 3.0         # Movement.NEW_GOAL_JUMP's intent: a goal that jumps this far is a new order
 const STALE_TICKS := 2             # a crew `take` has not been asked about for this long is released
 const REPORT_LINES := true         # a PLANNER_SEAM_REPORT line at every event's end (measurement; tens a run)
@@ -77,10 +81,12 @@ static var driving_ticks := 0
 static var queue_waits := 0       # hull-ticks waited behind another crew's search
 
 static var _crews := {}           # name -> Crew
+static var _swept_tick := -1      # the last physics tick the crews were swept for freed hulls
 static var _queue: Array[String] = []
 static var _retry_until := {}     # name -> tick
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
+static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 
 
@@ -94,10 +100,14 @@ class Crew:
 	var req: PlanRequest = null
 	var at := Vector3.ZERO          # the pose the session began from
 	var heading := Vector3.ZERO
-	var goal := Vector3.ZERO        # the order's goal / face home, for the new-goal release
+	var goal := Vector3.ZERO        # the plan's target: the k-turn's steering point / the face's home
+	var order_goal := Vector3.INF   # the ORDER's goal (Movement._goal) for a k-turn, the face's home for a face: the
+	                                # new-goal release judges this, never the route's carrot, which slides as the hull moves
 	var replans := 0
 	var rerequests := 0
 	var stepped := 0                # expansions handed to the session (replayed by restore)
+	var tank: Tank = null           # THE hull this crew serves (crews are keyed by name; a disposed match's hull is
+	                                # freed and the next match names one the same: native's gate on 3a66f546)
 	var executor: PlannerExecutor = null
 
 	func copy() -> Crew:
@@ -128,7 +138,15 @@ static func on() -> bool:
 
 ## Is this crew held by the seam (a plan pending or being driven)? False when OFF.
 static func live(crew_name: String) -> bool:
-	return on() and _crews.has(crew_name)
+	if not on():
+		return false
+	var crew: Crew = _crews.get(crew_name)
+	if crew == null:
+		return false
+	if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+		_release(crew_name)   # a freed hull's crew under this name is not a hold on the hull now named it
+		return false
+	return true
 
 
 ## Round 31 (manoeuvre's ask through the orchestrator, measurement only): this hull's LAST refusal as
@@ -146,7 +164,7 @@ static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
 			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "live": _crews.size(), "slice": SLICE,
-			"holds": _hold_stats()}
+			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
@@ -172,7 +190,21 @@ static func reset() -> void:
 	queue_waits = 0
 	_last_refusal = {}
 	holds = PackedInt32Array()
+	last_plans = []
 	_release_all()
+
+
+## Once a tick: a crew whose hull is freed (or queued for it) is released, so a dead head never holds the queue and
+## `live` counts hulls that exist. The named-hull release in _serve covers a hull under the same name; this covers one
+## that never ticks again.
+static func _sweep(tick: int) -> void:
+	if tick == _swept_tick:
+		return
+	_swept_tick = tick
+	for name: String in _crews.keys():
+		var crew: Crew = _crews[name]
+		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+			_release(name)
 
 
 static func _release_all() -> void:
@@ -212,8 +244,24 @@ static func _serve(mover: Movement, cmd: TankCommand, kind: String, target: Vect
 		_release(name)
 		return false
 	var tick := Engine.get_physics_frames()
+	_sweep(tick)
 	var crew: Crew = _crews.get(name)
-	if crew != null and (crew.kind != kind or tick - crew.tick_seen > STALE_TICKS or _flat(target, crew.goal) > NEW_GOAL_JUMP):
+	if crew != null and crew.tank != tank:
+		# Another hull under this name (test_tactics_army_layout10 on the pair tree 3a66f546: four arenas built and
+		# disposed in one test, the same names in each; the next arena's Green_S0_1 drove the freed one's executor).
+		_release(name)
+		crew = null
+	# A k-turn's "new goal" is the ORDER's goal moving (Movement._goal), not the route's steering carrot, which slides
+	# along the path as the hull moves (CP-P1's gate: the carrot's 3.7 m released a two-leg plan 4 m into its first leg).
+	var moved := 0.0
+	if crew != null:
+		moved = _flat(mover._goal, crew.order_goal) if crew.kind == "kturn" else _flat(target, crew.goal)
+	if crew != null and (crew.kind != kind or tick - crew.tick_seen > STALE_TICKS or moved > NEW_GOAL_JUMP):
+		if ManoeuvreCensus.trace_unit == name:
+			print("PLANNER_SEAM %s %s: released at tick %d (%s; asked %d ticks ago, goal moved %.1f m; %s)" % [name, crew.kind, tick,
+					"another kind" if crew.kind != kind else ("stale" if tick - crew.tick_seen > STALE_TICKS else "new goal"),
+					tick - crew.tick_seen, moved,
+					"pending" if crew.pending else "driving leg %d, %.1f m left" % [crew.executor.leg_index + 1, crew.executor.left_m]])
 		_release(name)  # another kind of order, not asked for a while, or a new goal: whatever was planned is stale
 		crew = null
 	if crew == null:
@@ -242,6 +290,21 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
 			req.to(target.x, target.z, want.x, want.z, stay, FACE_TOL_DEG)
 			req.arrive_gear = 0
+			# Round 31 (CP-P1's first judged series, seed 134's plaza: a rig arrived 4.5 m from its slot, the face's one
+			# 3.5 m reverse chord left it 7.4 m out for the rest of the leg): manoeuvre's SLOT LAW, read from its own
+			# names so the two cannot drift. (a) The slot = OrderController.face_slot (the last move_to's goal), only
+			# under face_slot_on() and within FACE_SLOT_REACH x settle; (b) the plan may not END further from the slot
+			# than it starts + FACE_SLOT_SLACK_M (round 30 M1b); (c) under turnhull (M1b(2), parked on main) every
+			# pose within max(max(ORDER_ARRIVE, settle) - FACE_KEEP_MARGIN_M, from here) of the slot.
+			var slot: Vector3 = mover.ctl.face_slot if Manoeuvre.face_slot_on() and mover.ctl != null else Vector3.INF
+			if slot != Vector3.INF:
+				var settle := Movement.settle_radius(tank.unit_id)
+				var from_slot := Vector2(here.x - slot.x, here.z - slot.z).length()
+				if from_slot <= Manoeuvre.FACE_SLOT_REACH * settle:
+					var all_m := INF
+					if Manoeuvre.turn_hull_on():
+						all_m = maxf(maxf(TankBrain.ORDER_ARRIVE, settle) - Manoeuvre.FACE_KEEP_MARGIN_M, from_slot)
+					req.keep(slot.x, slot.z, all_m, from_slot + Manoeuvre.FACE_SLOT_SLACK_M)
 		"kturn":
 			var to := Vector3(target.x - here.x, 0.0, target.z - here.z)
 			if to.length() < 0.5:
@@ -249,11 +312,11 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			var goal := target
 			if to.length() > HORIZON_M:
 				goal = here + to.normalized() * (HORIZON_M * 0.8)
-			var heading := _route_heading_at(mover, target)
-			if heading == Vector3.ZERO:
-				req.to(goal.x, goal.z, to.x, to.z, maxf(mover._arrive, 1.0), 180.0)  # a free heading: any pose at the point
-			else:
-				req.to(goal.x, goal.z, heading.x, heading.z, maxf(mover._arrive, 1.0), FACE_TOL_DEG)
+			# The k-turn's goal is AIM (CP-P1's gate, manoeuvre's War Rig nose-on: 4 legs where today drives 2): a pose
+			# that points at the waypoint within KTURN_AIM_DEG with a clear straight run to it, from which the route's
+			# pursuit law drives; standing ON a point 24 m off asked the lattice for ~2 degrees of heading, a wiggle.
+			req.to(goal.x, goal.z, to.x, to.z, maxf(mover._arrive, 1.0), KTURN_AIM_DEG)
+			req.aim = true
 			req.arrive_gear = 1
 		_:
 			return null
@@ -268,28 +331,17 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.kind = kind
 	crew.req = req
 	crew.goal = target
+	crew.order_goal = mover._goal if kind == "kturn" else target
 	crew.asked_tick = tick
 	crew.held_since = tick
 	crew.tick_seen = tick
 	crew.at = here
 	crew.heading = forward
+	crew.tank = tank
 	_crews[name] = crew
 	_queue.append(name)
 	requests += 1
 	return crew
-
-
-## The heading the route continues with past `target` (the vertex after the one `target` is), or ZERO for none.
-static func _route_heading_at(mover: Movement, target: Vector3) -> Vector3:
-	var path := mover._path
-	for i in range(mover._path_index, path.size() - 1):
-		if _flat(path[i], target) <= 1.0:
-			var next := path[i + 1]
-			var d := Vector3(next.x - target.x, 0.0, next.z - target.z)
-			if d.length() > 0.5:
-				return d.normalized()
-			return Vector3.ZERO
-	return Vector3.ZERO
 
 
 static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float) -> bool:
@@ -361,6 +413,9 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
+	last_plans.append({"tick": tick, "name": name, "kind": crew.kind, "legs": plan.describe(), "n_legs": plan.legs.size(),
+			"expansions": plan.expansions, "metres": plan.metres, "cusps": plan.cusps,
+			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(crew.goal.x, 0.01), snappedf(crew.goal.z, 0.01)]})
 	holds.append(tick - crew.held_since)
 	crew.pending = false
 	crew.executor = PlannerExecutor.new()
@@ -371,6 +426,18 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 
 
 static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, delta: float) -> bool:
+	# A FACE plan that touches a wall is a plan through something the snapshot did not hold (the navmesh and the live
+	# hulls are all it knows): hand back on the first touch, not after STALL_S of grinding, so today's give-up reports
+	# the hull unable within seconds (CP-P1's gate, the wedged semi). The k-turn kind keeps R31.2's stall/timeout abort.
+	if crew.kind == "face" and mover.contact.touching and crew.executor.legs_driven + 1 <= crew.executor.plan.legs.size():
+		aborted += 1
+		if ManoeuvreCensus.trace_unit == name:
+			print("PLANNER_SEAM %s face: aborted (wall contact on leg %d)" % [name, crew.executor.leg_index + 1])
+		_release(name)
+		_retry_until[name] = tick + RETRY_TICKS
+		cmd.throttle = 0.0
+		cmd.turn = 0.0
+		return false
 	var out := crew.executor.tick(delta)
 	cmd.throttle = out.throttle
 	cmd.turn = out.turn
@@ -379,7 +446,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		aborted += 1
 		if ManoeuvreCensus.trace_unit == name:
 			print("PLANNER_SEAM %s %s: aborted (%s), replans %d" % [name, crew.kind, crew.executor.reason, crew.replans])
-		if crew.replans >= REPLANS_PER_ORDER:
+		if crew.replans >= REPLANS_PER_ORDER or crew.kind == "face":
 			_release(name)
 			_retry_until[name] = tick + RETRY_TICKS
 			return false
@@ -431,7 +498,7 @@ static func capture() -> Dictionary:
 	for name: String in _crews:
 		crews[name] = (_crews[name] as Crew).copy()
 	return {"crews": crews, "queue": _queue.duplicate(), "retry": _retry_until.duplicate(), "counters": report(),
-			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate()}
+			"last_refusal": _last_refusal.duplicate(true), "holds": holds.duplicate(), "last_plans": last_plans.duplicate(true)}
 
 
 static func restore(snapshot: Dictionary) -> void:
@@ -444,6 +511,7 @@ static func restore(snapshot: Dictionary) -> void:
 	_retry_until = (snapshot["retry"] as Dictionary).duplicate()
 	_last_refusal = (snapshot.get("last_refusal", {}) as Dictionary).duplicate(true)
 	holds = PackedInt32Array(snapshot.get("holds", PackedInt32Array()))
+	last_plans = (snapshot.get("last_plans", []) as Array).duplicate(true)   # native's note: else a twin appends twice a tick
 	var counters: Dictionary = snapshot["counters"]
 	requests = int(counters["requests"])
 	plans = int(counters["plans"])

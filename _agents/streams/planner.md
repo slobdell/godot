@@ -103,7 +103,7 @@ Nothing (his calls: a planned turn, not a shuffle; the whole hull turns to his f
 
 ## Status
 
-_Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
+_Updated 2026-10-15 ~12:20 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `cff4307e`; Fable
 5.1). The report first (empty until CP-P0 lands), then the DRAFT SEAM (the orchestrator's early ask), the plan, the log._
 
 ### The report (read this first)
@@ -111,9 +111,11 @@ _Updated 2026-10-14 ~22:45 PDT by the planner worker (`godot-planner`, `stream/p
 **CP-P0 candidate a3755e37** (C++ `PlannerNative`, equal to the GDScript planner on 17 offline + 4 Terminus-navmesh
 fixtures on every observable, the three hull tables bit for bit, the slice = the whole plan): **twin GREEN on builder0
 twice** (41212da0 = a3755e37 + docs: `tools/remote.sh --quiet planner-twin PLANNER_CPUS=0-3` exited 0, 4 passed 0 failed,
-pinned to cpus 0-3, load 0.76; and the unpinned light-lane run before it). **Full `make check` on 41212da0 is running**
-(unit `planner-check6`; the first attempt was REFUSED by the wrapper because the price run's own 15 s cleanup was still
-live in the folder -- nothing ran, nothing was lost). Green `make check` hash: none yet.
+pinned to cpus 0-3, load 0.76; and the unpinned light-lane run before it). **Full `make check` GREEN twice on builder0:**
+41212da0 (CP-P0, merged OFF to main 950c7681: exited 0, 2615 passed 0 failed, 24 passed 2 NOT JUDGED) and the rebased
+tip **86e5c646** (main 84e553cd + the seam's `yield_to_plan` hook: `>> remote: make check exited 0`, 2638 passed 0 failed,
+24 passed 2 NOT JUDGED -- perf-judge refused 3x on the busy box, scenario_perf's cpu budget unpinned -- sim-baseline all
+13 maps unmoved, determinism 2875411ff4ec6be7, 05:54 PDT). Green `make check` hashes: 41212da0, 86e5c646.
 
 **The price (CP-P0's cost line), builder0 41212da0, pinned to cpus 0-3, QUIET WINDOW: NOT USABLE** (7 of 7 samples had
 7-8 foreign runs live; load1 0.46-1.17 in `build/quiet-window.tsv`; the box never went quiet in a 65-minute wait, so these
@@ -185,6 +187,39 @@ refused START_BLOCKED (the hull's own pose is in contact in the planner's world:
 GOAL_BLOCKED (the turned-about footprint on the same spot clips something): in a 25-a-side press the seam's refusal
 path (today's code continues) will be exercised often; the judged run's `refused` counts are the measure, and a
 START_BLOCKED hull is exactly manoeuvre's unstick customer, not the planner's.
+
+### Hand-over for round 32: the §2.8 SIDE gate for a wheeled hull under 10 m (the orchestrator's ask, 2026-10-15 ~04:20 PDT)
+
+Brains' B5c-v5 parked on a Sumps limit cycle; its worst yard run (s27 t8, A_5 at its herringbone gate facing away, dot
+-0.94, the gate given up 27 m from the slot, the car onto terrain by the containers) is the case design.md §2.8 names.
+What it needs, honestly split between the planner (nothing new) and the seam (three things), with the cheapest
+deliverable first:
+
+1. **The planner needs nothing per hull length.** `PlanRequest.for_unit` builds the kinematics from the catalog
+   (turn radius, speeds, the yaw cap), the C++ port is hull-agnostic and its tables are per unit (gang_tank, ifv and
+   law_scout proven bit for bit); the lab's six-cusp car (yard s25 B_4, a slot 9 m behind with a facing) plans in
+   <= 3 legs today, and the census's short-hull probe prices a car's face-about at 190-250 us an expansion, median
+   11-113 expansions. What excludes the car is the SEAM: R31.7's scope (>= 10 m) and the seam's two take points (the
+   k-turn block, the face at rest), neither of which is "arrive on a slot with a drawn facing".
+2. **The cheapest deliverable, no seam at all: a side-gate POINT for brains' gate rule.** §2.8's geometry is `slot +
+   perp x R` on the side with room, length R, never along the facing axis behind the slot. The planner's world answers
+   "which side has room" without a search: `PlannerNavWorld.clearance(x, z)` at `slot +- perp x R` (two cell reads
+   through the C++ cache, ~microseconds; the clearance must exceed half the hull's width + MARGIN_M) -- a static
+   `PlannerSeam.side_gate(slot, facing, unit_id) -> Vector3` (or ZERO when neither side has room: today's gate stays).
+   Brains keeps the gate (C30.5); it only asks the planner's world where to put it. A contract line in workstreams.md
+   (brains' gate rule calls one planner static) and brains' own bar.
+3. **The full answer, a third take point: a `"slot"` kind in the seam.** Request: goal pose (slot, facing), tol 1.0 m /
+   8 deg, `arrive_gear` any (a tail-first slot = gear -1 allowed on the last leg), made when the hull is within
+   HORIZON_M (30 m) of a slot with a drawn facing, at the line where brains' gate rule would lay the gate (brains' /
+   manoeuvre's lines: a contract change, R31.2's form). The planner then answers the 180-degree arrival in three legs
+   (F4: drive past, reverse arc, forward onto the slot) and no gate exists inside the horizon; beyond it, (2)'s side
+   gate. The scope opens for THAT kind only (`in_scope(unit_id, kind)`: slot for any wheeled hull, face / kturn for >=
+   10 m), so the k-turn and face demand of 48 short hulls (95 % of a fight's manoeuvre starts, census-4) stays with
+   today's code. Its own bar: the yard s27 t8 trace as a named case, an arrival census (slots reached within tol,
+   gates given up), and the cost line re-priced for the slot demand (one request per order per hull, not per k-turn).
+4. **The refusals the seam already has are the fallbacks:** START_BLOCKED (the hull in contact: manoeuvre's unstick)
+   and GOAL_BLOCKED (the slot's turned footprint clips a squadmate's box: C31.5's re-seat rule, brains') hand the hull
+   back to today's code within a tick, with `last_refusal(name)` for the counters.
 
 ### THE SEAM (CP-P1) — AGREED as R31.2 in `workstreams.md` (main 47be4134; drafted here 2026-10-14 ~22:45, agreed ~23:00)
 
@@ -387,6 +422,196 @@ commit and name them in the merge notes; native reviews them with the rest.
 
 ### Progress log
 
+- 2026-10-15 12:20 PDT: **the 3a66f546 gate was RED on a real seam bug of mine; fixed at 216c7c43, tests running.**
+  Native's line (builder0, 12:05 PDT): `make check exited 2`, 2646 passed / 1 failed; 22 passed, 2 FAILED (test,
+  sim-baseline MOVED on 6 maps = expected ON), 2 NOT JUDGED (perf-judge refused 3x on a busy box; scenario_perf
+  unpinned); every test_native_* green (seam twin 900 drives, 344 held, 0 mismatches). The red:
+  test_tactics_army_layout10 (four arenas built and disposed in ONE test, the same hull names in each) logged 8
+  engine errors, "previously freed" at PlannerExecutor.tick:135 and `throttle` on Nil at planner_seam.gd:411.
+  Cause: `PlannerSeam._crews` is keyed by hull NAME; a crew held at `lab.dispose()` outlived its freed hull and the
+  next arena's hull under that name (same kind, fresh tick, goal within NEW_GOAL_JUMP) drove the dead executor.
+  Fix (216c7c43, the seam only): `Crew.tank` names the hull instance at the request; `_serve` releases a crew whose
+  `tank` is not the asking hull; `_sweep(tick)` (once per physics tick from `_serve` and `live()`) releases every
+  crew whose hull is freed or queued for deletion, so a dead head never holds the queue and `live` counts hulls
+  that exist. Test `test_a_crew_never_outlives_its_hull` (tests/test_planner_seam.gd): a rig held, its match
+  disposed, a second match's rig under the same name held in its turn, the crew naming the second hull. Running:
+  `$S/planner-test29.sh` (light lane, `native test FILTER=planner`); on green, native re-cuts and re-gates, then
+  the fresh series. The orchestrator: no lane release needed (this stream's own heavy slot; CP-H runs in
+  manoeuvre's); R31.8 early stop OFF on guard lines: the series recipe never had one (every seed to completion,
+  one read on the fixed 1.645 se line).
+- 2026-10-15 10:00 PDT: **native approved the C++ keep branch and RE-CUT the gate: pair/cpp1-on = 3a66f546** (main
+  1fc72e66 + 38e9678d + the mirror + PLANNER_DEFAULT true; 8bb2ad4e kept as pair/cpp1-on-8bb2). Their read: the end
+  rule before the tol test binds the aim branch too; the sweep's break after the horizon test; all doubles squared
+  against squared; KEEP_NONE 1e29 v the GDScript's `< INF` differ only for a finite radius >= 1e29 (never bound);
+  the seam's slot-law inputs are GDScript-only and wheeled faces hand back to GDScript, so the drive mirror needs
+  nothing. Their light pre-run (native_planner|planner_seam|planner_keep) is going; the plain check queues as
+  native-chain7 behind CP-H's 68280cce and T4's fafe49ea. On its green line: `make planner-series-fresh`
+  (f142f241: seeds 172-184; `$S/planner-series-2.sh`, heavy lane when the orchestrator frees it from CP-H), then
+  hull-rest candidate, fights x2, bridge x2, cp2 x2 as filed; rows name gate 3a66f546 + the series tree.
+- 2026-10-15 09:55 PDT: **THE KEEP CIRCLE IS IN AND GREEN; native has the re-cut hash 38e9678d.** The orchestrator
+  ACCEPTED the declared fix as written (the keep circle carrying manoeuvre's slot law, nothing else) and sent the law
+  bit for bit: (a) the slot counts only under `face_slot_on()` and within FACE_SLOT_REACH (2.0) x settle; (b) the end
+  no further than the start + FACE_SLOT_SLACK_M (0.5); (c) the inner radius max(max(ORDER_ARRIVE 3.5, settle) -
+  FACE_KEEP_MARGIN_M 0.75, from here) only under turnhull (OFF on main: the series tree applies (a)+(b)); read from
+  Manoeuvre's own names, never copied values. Coded (1bec314d, 38e9678d): `PlanRequest.keep(x, z, all_m, end_m)`
+  (INF = no circle, `to_native` keep_x/keep_z/keep_all_m/keep_end_m); planner.gd's sweep breaks on a pose outside
+  all_m (after the horizon test), `_at_goal` refuses an end outside end_m (before the tol test, so the aim branch is
+  bound too); the C++ mirror the same two checks (KEEP_NONE 1e29: the GDScript's INF arrives as inf); the seam's
+  face request sets the circle only when the slot is in reach. New `tests/test_planner_keep.gd` on seed 134's plaza
+  geometry (rig at (-7.2,20.3) heading 82, slot (-2.7,19.6) 4.55 m off, an 18-degree face) and two twin rows.
+  **builder0 light lane, 38e9678d: `make native test FILTER=planner exited 0`, 32 passed 0 failed (09:53 PDT).**
+  The rows: free plan "R+1.0x2.0 F+1.0x2.5" ends 4.17 m from the slot, worst pose 6.55 (the test world holds no
+  squadmates, so the game's one 3.5 m chord to 7.4 m did not reproduce there -- the re-run series is the proof);
+  kept at the law's 5.05 m: the same plan; a circle at 3.67 m (tighter than the free end) changes it to "F+1.0x2.5"
+  ending 2.09 m, 32 expansions = the end rule binds; turnhull's inner radius 5.25: "F+1.0x2.5", worst pose 4.55, 8
+  expansions. Twin rows equal both ways (end rule 3 expansions / 92 nodes, native 4.5 ms; inner radius 8 / 64,
+  1.0 ms). Next: native reviews the C++ keep branch, re-cuts and re-gates (the plain check); then the series on
+  FRESH seeds 172-184 (133-145 are the diagnosis set), the other stages as filed; the heavy lane is CP-H's.
+  Trace B (the rig pressed into a squadmate for 65 s with no seam event) is relayed to manoeuvre for CP-H.
+- 2026-10-15 09:50 PDT: **THE DECLARED FIX (the orchestrator's ruling on the first judged series: diagnose 133/134/138/140,
+  declare before any new number).** The series (builder0 0fcdd5dd = code 05ce260b, gate 8bb2ad4e, `make planner-series
+  exited 0`, 09:27): rigs arrivals base 178 candidate 159 of 208, paired -1.462/seed se 0.595 = MISS of (a); mixed
+  identical (the seam silent 13/13). Per seed: 133 -4, 134 -5, 135 +2, 136 +1, 137 +1, 138 -4, 139 -2, 140 -3,
+  141 -1, 142 -1, 143 0, 144 -1, 145 -2. The MISS CLASSES over the 13 rig runs (`references/round31/planner/
+  series1-diagnosis/misses-by-arm.txt`): "arrived, order complete, not touching" base 13 -> candidate 24 (+ 4 touching);
+  "blocked by a squadmate, touching" 13 -> 17. **Of the candidate's 28 arrived-short misses, 13 sit at gaps 7.0-8.5 m
+  (base 1) and 8 more at 8.5-11 m (base 3): the whole -19 is hulls that ARRIVED and were then carried just past
+  the census's ARRIVED_M 7.0 line**, at the same slots seed after seed (plaza (-3,19.6) in 133/134/138/143/144,
+  (10.9,5) in 134/138/141/144, west street (-69,21) in 135/141/143/145).
+  **Trace A (`planner-trace-drive`, light lane 9fe29f54, seed 134 Green_S0_4, plaza leg):** t 19.5 s arrived
+  4.5 m from its slot (phase arrived, the order complete); t 19.5 the seam's FACE plan "R+1.0x3.5" (1 leg, 5
+  expansions) reversed it 3.4 m on full lock to (-10.1,20.2): 7.4 m from the slot, where it sat to the leg's end =
+  a miss. **The cause:** the seam's face request carries manoeuvre's `stay` (settle - 1 = 5 m round where the hull
+  stands) but NOT manoeuvre's slot law -- round 30 M1b (a face plan may not END further from the last move's slot
+  (`ctl.face_slot`, within 2 x settle) than it starts + FACE_SLOT_SLACK_M 0.5) and round 31 M1b(2) under turnhull
+  (EVERY pose within max(ORDER_ARRIVE 3.5, settle) - FACE_KEEP_MARGIN_M 0.75 of the slot, or no further out than it
+  starts). Base's `plan_face` obeys both, so its hulls face inside the arrive circle; the seam's planner is free to
+  end anywhere in its 5 m stay circle, and a rig's one-leg face is a 3.5 m chord outward.
+  **THE FIX (declared, nothing else changes):** `PlanRequest.keep(x, z, all_m, end_m)` -- a KEEP circle: every pose
+  the search expands lies within `all_m` of the slot and the goal pose within `end_m`; both planners (GDScript +
+  C++ mirror, the twin fixture), and the seam's FACE request sets it exactly as manoeuvre does: slot =
+  `ctl.face_slot` when within FACE_SLOT_REACH x settle, `end_m` = dist(here, slot) + 0.5, `all_m` = max(max(3.5,
+  settle) - 0.75, dist(here, slot)) under `turn_hull_on()` else unbounded; no slot in reach = no circle (as today).
+  The k-turn request, PENDING/RETRY, the hold: unchanged.
+  **Trace B (seed 134 Green_S0_3, ring road, the -1 "blocked by Green_S0_1" at 23.8 m):** the seam's one k-turn
+  ("R+1.0x9.5", t 6-10 s) was driven to its end and released; the route then drove the rig into Green_S0_1 at
+  t 25 s and it sat pressed at full throttle (plant speed 10 m/s, no motion) for 65 s with NO seam event in the
+  rest of the leg (the per-event report lines: none between t 26 s of leg 0 and leg 2). That class (13 base, 17
+  candidate) is nav's wedge on a squadmate, in both arms; the seam changed when the rig reached the corner, not
+  the wedge. **The hold hypothesis, answered from the numbers:** pending 7226 hull-ticks over 13 runs = 2.3 s per
+  hull per run; refusals (GOAL_BLOCKED 174 / START_BLOCKED 121) decline for 1 s and the mover drives on; neither
+  appears in the two traces as a mechanism of a miss. Leg-seconds 2041 -> 2283 (+12 %) are the 90 s timeouts of
+  the misses above. **Verification before the re-cut:** a seam test on trace A's geometry (a rig 4.5 m from its
+  slot, a 180-degree face: no pose of the plan outside 6.5 m of the slot), the twin fixture, `test FILTER=planner`
+  on the light lane, the trace test's wedged row (a kept face that cannot be planned hands back = the give-up
+  still reached). Then native re-cuts and re-gates; the series on FRESH seeds 172-184 as ruled.
+- 2026-10-15 09:15 PDT: **the hull-rest judge's BASE arm is in** (`planner-judge-hull-base`, builder0 heavy lane,
+  tree 0b2cf981, `exited 0`, wrapper exit 0 at 09:13): both base arms (drawn + clicked) on seeds 60-65, tables under
+  `build/manoeuvre/hull-rest/` (M1_REST at-rest share per task 69-96 %, the A/B columns empty until the candidate
+  arm lands beside it on builder0; the sync excludes `build/`, so the base arm's rows stay there). The heavy lane
+  idle and native's gate line not a lead gate: **the judged series launched** (`planner-series`, 09:14 PDT, tree
+  0fcdd5dd = code 05ce260b; the reader prints PLANNER_SERIES_SQUAD / _SEAM / _SEAM_TOTAL, verdict in
+  `build/planner-series/verdict.txt`). Next on the lane, in order: hull-rest candidate, fights x2, bridge x2, cp2 x2.
+- 2026-10-15 07:49 PDT: **the price on the final tree** (`planner-census9`, builder0 light lane 0b2cf981 = code
+  05ce260b, unpinned on the busy box, exited 0): the seam's own face-about probe on the Sumps navmesh, native, warm
+  us/expansion early/late medians **222/214 (seed 92721, 119 plans) and 159/183 (seed 31337, 94 plans)**; the short
+  hull's probe 169/114; codes OK 80/33, GOAL_BLOCKED 28/35, START_BLOCKED 9/23, BUDGET 2/2, NO_PATH 0/1 -- the same
+  numbers as the cache commits (170-390), so the aim goal and its estimate changed no price, STEERS is three locks,
+  and SLICE 2 stays inside ~0.45 ms a tick per crew (R31.6's bound). Native's light pre-run on 8bb2ad4e: 11/0, the
+  twin held the rig on 344 of 900 compared drives, 0 mismatches, one 2-leg plan driven to its end. Running: the
+  hull-rest judge's BASE arm on the heavy lane (`planner-judge-hull-base`, tree 0b2cf981; base = planner OFF, so it
+  owes the gate nothing), the gate's plain check third in native's chain.
+- 2026-10-15 07:44 PDT: **the outcome assertions ON are green** (`planner-test26`, builder0 edb773cf, 4 passed 0 failed,
+  exited 0): k-turn ON 2 segments / 0 contacts / 7.0 s; wedged ON at nav's 8 s window yaw 9.0 deg, 0.67 m over (bar
+  1.8), give-up reached. **Native re-cut CP-P1's gate as 8bb2ad4e** (pair/cpp1-on = main 83341378 + edb773cf merged
+  clean + the mirror + PLANNER_DEFAULT true; nothing needed in the mirror); its plain check is third in native's
+  heavy chain (~2.5 h). 05ce260b: `last_plans` captured/restored (native's note; measurement only, after the re-cut,
+  so the series tree is 05ce260b+ and the gate 8bb2ad4e -- rows name both). While the gate queues: the census price
+  on the final tree (`planner-census9`, light lane).
+- 2026-10-15 07:41 PDT: **THE K-TURN ROW MET on manoeuvre's scene** (`planner-test25`, builder0 1f325b91, 30 passed 0
+  failed): seam ON = arrived 7.0 s, 0 wall contacts, nose clearance 2.20 m, TWO real gear segments (R 4.0 m ticks 3-54,
+  F 29.6 m ticks 57-209), 1 request, 1 plan "R4 F18" at lock driven to its end, held 2 ticks; base = 2 segments (R4.5
+  F29.8), 5.6 s, 0 contacts, 1.64 m. The one cost: 1.4 s (the reverse at 0.7 throttle, the brake to rest at the
+  cusp), REPORTED. Outcome assertions ON added to the trace file (edb773cf: k-turn arrives, <= 3 segments, contacts
+  <= the base's 0; wedged at nav's 8 s window: footprint <= 1.8 m over, yaw < 20, the give-up reached). **Re-cut hash
+  for native: edb773cf** (code 1f325b91; the C++ planner changed: `aim` in Request, `at_goal`'s aim branch +
+  `straight_clear`, `heuristic`'s aim branch). Sent to the orchestrator and native ~07:50.
+- 2026-10-15 ~08:00 PDT: **half lock measured and REVERTED** (0b5a6d3d -> b0bdbd89; `planner-test22` exited 2, 07:25):
+  manoeuvre's scene unchanged (the identical "R3 F2 R12.5", 9 expansions, 4 real segments) and three named fixtures
+  broke (packed-line rigs 1-2 BUDGET at 800 -- the fixtures test FAILED; the lab turnround 3 -> 5 legs; packed rig 0 a
+  78 m loop). The real cause: with an aim goal the HEURISTIC still priced the goal POINT 24 m off (distance + the
+  table's pose cost), so the anytime bound stopped at 9 expansions behind the 10.8 s wiggle. **5ffda2b4: an aim
+  request's estimate owes only the heading change to point at the goal (R per radian) plus its cusps in the start's
+  room** (both planners). Result (`planner-test23`, 30/0, 07:32): the plan is **2 legs "R4 F18" at lock, 6.8 s, 5
+  expansions**, the twin equal, every fixture back on its bar (packed lines 4 legs, turnround 7 expansions as in the
+  price run). Real motion STILL 4 segments (R3.3 F2.5 R2.1 F28.1): the plan was RELEASED 4 m into leg 1 -- the
+  release trace (5c677280, `planner-test24`): "new goal; goal moved 3.7 m" = the route's steering CARROT slid along
+  the path as the hull moved; the order's goal never moved. **1f325b91: a k-turn crew's new-goal release judges
+  `Movement._goal` (the order's goal), not the carrot.** Running: `test FILTER=planner` (`planner-test25`).
+- 2026-10-15 ~07:45 PDT: **the aim goal's result** (`planner-test19/20`, builder0 9d168af8, 30/0, 07:12 PDT): the k-turn
+  plan is 3 legs "R3 F2 R12.5" (2 cusps, 17.5 m, 9 expansions; the first cut f66fddfb still appended a 23.5 m straight
+  because the arrive gear bound the aim too -- 9d168af8 binds it to the position goal only); the twin plans it the
+  same in C++; every named fixture holds (F6a 9, T-junction 2, mouth 1, yard corner 2, slot180 4, wedge 4). But the
+  hull's REAL motion in manoeuvre's scene is still 4 gear segments (R3.0 F1.4 R1.6 F29, 7.1 s, 0 contacts; base R4.5
+  F29.8, 5.6 s): the wiggle sits at the START. The street's geometry under three locks: a 14 m hull in the 22 m street
+  can reverse at full lock ~46 deg before its tail corner meets the back wall's margin, pointing at the waypoint needs
+  ~65-70 deg, and a forward leg at FULL lock from a 26 deg reverse dips the nose under the margin at the block face.
+  The base's own trajectory (`planner-test21`): R4.5 to (40.8, 33.4) at -22 deg, then a forward arc of radius ~13 m
+  swinging 75 deg over 17 m, first within 15 deg of the goal at t138 (25.3, 25.5) -- a GENTLER arc than full lock.
+  **The orchestrator's ruling: half lock** (STEERS -1 -0.5 0 0.5 1 in the search, its heuristic table and the C++
+  twin: 0b5a6d3d; the plant's yaw is linear in `turn`, so a half-lock leg is a double-radius arc), re-read every named
+  fixture, price the branching on the census; NOT an aim tolerance fitted to this street. Time-box: the k-turn row
+  (<= 3 real gear segments, contacts <= base) met on manoeuvre's scene by 12:00 PDT, else CP-P1 parks with its traces
+  and CP-P0 + the OFF seam stay on main. Running: `native test FILTER=planner` on 0b5a6d3d (`planner-test22`).
+- 2026-10-15 ~07:30 PDT: **the k-turn's lever read off the sweep** (`planner-test18`, builder0 d8c2e742, 06:55 PDT,
+  exit 0): every variant of the seam's own request (the clipped v the order's point, arrival 1/2.5 m, heading
+  free/30/8 deg, cusp cost x1/x2/x4, any arrive gear, a 12 m goal) begins with the same "R3 F2 R12" wiggle, 4-5 legs,
+  3 cusps -- so tolerance, cost and gear are NOT the lever. The cause is the goal itself: standing on a 1 m point 24 m
+  off needs ~2 deg of heading from a lattice of three locks and twelve leg lengths (the lattice dedupes poses at 15
+  deg bins, so the search composes R3-F2+R12 to land the exact heading a straight final leg needs), where today's
+  k-turn reverses 4.5 m and lets the pursuit law correct. **f66fddfb, the ONE thing changed: the k-turn's goal AIMS**
+  (`PlanRequest.aim`, mirrored in `planner_native.cpp`): a pose pointing at the waypoint within `KTURN_AIM_DEG` 15
+  with the straight run to it clear by the margin counts as the goal; the route drives from there. Face requests are
+  untouched (the fixtures turnround/T-junction/mouth/slot180/yard corner/F6a are face/arrival requests). The twin
+  gets an aim fixture (the War Rig nose-on scene on the Terminus navmesh); the sweep's aim rows print its legs. The
+  wedged semi after the two hand-backs (same run, ON over 20 s): the plan touched the slab at 1.7 s and handed back,
+  the give-up fired at 4.6 s (base 4.5 s); at the test's 8 s: yaw 9.0 deg, footprint over by 0.67 m (bar 1.8), path
+  7.6 m -- manoeuvre's outcome (b) met at the test's window; over 20 s BOTH arms grind past the bar (ON 47.6 deg /
+  7.78 m, OFF 26.2 deg / 4.35 m): the base keeps shuffling after its give-up, the ON arm from 2 m nearer the end cap.
+  Running now: `native test FILTER=planner` on the light lane (`planner-test19`, the lib rebuilt).
+- 2026-10-15 06:37-07:00 PDT: **CP-P1's gate on aa0615e4 RED** (native's pair/cpp1-on, builder0: `make check exited 2`,
+  2634 passed 6 failed; the mirror clean, 87/87 test_native_*, the seam twin 195 held drives 0 mismatches). The 6:
+  (a) 4 in `test_planner_seam` -- the test assumed default OFF with `--nav-off=planner` the opt-in; on the ON tree
+  that flag turns the planner OFF. **Fixed 032af15f**: `_with_switch` lists the switch only when the asked state
+  differs from `PLANNER_DEFAULT` and asserts `on()` equals the ask. (b) manoeuvre's `test_kturn_three_point` (War Rig
+  nose-on: 4 legs, 7.2 s, where today drives 2 legs in 5.6 s) and nav's `test_nav_face_recovery` wedged semi (the
+  give-up never reached in 8 s): both the seam taking the rig. The orchestrator's ruling (manoeuvre's outcomes):
+  both FINDINGS, fixed before the series, re-gated on a re-cut. **Traces** (`tests/test_planner_trace_manoeuvre.gd`,
+  the two scenes copied, run ON and OFF, builder0 032af15f 29/0): k-turn ON = real motion R3.0 F1.4 R1.6 F29.0 (4
+  gear segments) from plan "R3 F2 R12 F31.5" to the seam's horizon-clipped point (24 m along, FREE heading, 1 m
+  arrival) -- the 4 is the lattice hitting a 1 m circle from a nose-on start, not a hold counted as a leg; OFF = R4.5
+  F29.8. Wedged ON over 20 s = 3 plans through the unbaked slabs, 3 stall aborts (5.0/8.1/9.3 s), give-up checked
+  first at 14.2 s, footprint over by 1.93 m (bar 1.8); OFF = give-up at 4.5 s, then the base grinds on to 26 deg /
+  4.35 m over by 20 s. **Fixes**: 1e513bcf a face hands back on its FIRST abort; d8c2e742 a face plan hands back on
+  its first WALL TOUCH (`mover.contact.touching`); the k-turn lever is read off a sweep of the seam's own request
+  (`tests/test_planner_kturn_sweep.gd`: goal, tolerances, cusp cost, arrive gear) running now (`planner-test18`).
+  Wrecks are NOT a blind spot: `Tank._set_alive(false)` disables the wreck's collision, so skipping dead hulls in
+  `PlannerNavWorld` is right; unbaked scenery (the test's own corridor) is the one the abort catches.
+- 2026-10-15 ~06:10 PDT: **86e5c646 MERGED OFF to main** (the orchestrator, on its exited-0 line). **33d5a158: the
+  orchestrator's reported line** -- the hold per rig event (ask tick to the plan's, refusal's or abandon's tick, zero/zero
+  throughout) now travels in the PLANNER_SEAM_REPORT line as the per-event list `hold_ticks`, and series_verdict.py
+  pools every event in the arm: `pending per rig event (candidate, pooled) n/median/max ticks` per squad and in
+  PLANNER_SERIES_SEAM_TOTAL. Measurement only; the base arm's seam never fires (the reader refuses if it does).
+  All five judged recipes dry-run on the laptop: each arm's flags reach the runner's command line (cp2's
+  AI_SCEN_FLAGS forwarding verified). `test FILTER=planner` on the light lane (`planner-test16`): **25 passed 0 failed, exited 0** (builder0, 33d5a158,
+  06:01 PDT; `hold_ticks` lists in the report lines); the series launch
+  script is ready (`planner-series.sh`, heavy lane), fired on native's aa0615e4 exited line (still running at 05:56).
+- 2026-10-15 05:54 PDT (wrapper exit): **the rebased tip's full check GREEN** (`planner-check8`, builder0, commit
+  86e5c646): `>> remote: make check exited 0`, 2638 passed 0 failed, `24 passed, 2 NOT JUDGED` (CP-P0's same two:
+  perf-judge refused 3x at 2.31-2.35x, scenario_perf's cpu budget unpinned), sim-baseline 13/13 unmoved, determinism
+  2875411ff4ec6be7. Sent to the orchestrator and native. The judged chain now waits on ONE line: native's pair/cpp1-on
+  check at the gate hash aa0615e4 (native-chain4); on it, `make remote T=planner-series` (line a), then the (c)-(e)
+  wrappers one heavy job at a time, each row naming aa0615e4 and the series tree hash.
 - 2026-10-14 ~22:30 PDT: oriented (CLAUDE.md, HANDOFF round 31/30, orchestration's worker contract + lessons 306-311,
   orientation, workstreams Round 31, the brief, round 30's planner report / handover / design, native.md's hazards and
   flags, the GDScript planner (six files), the k-turn block and face executor in movement.gd, drive_native's callback
@@ -404,6 +629,47 @@ commit and name them in the merge notes; native reviews them with the rest.
   (the field's `map_get_closest_point` reads dominate there: NavNative's index is the next speed-up if the cost line
   needs it). Committed as 7c286000; sent to native (reviewed: APPROVED, notes 1-4; note 1 = one shared C++ session, taken:
   static table cache, the seam's own session instance, `plan()` refuses on a live session, `step(n<1)` clamps, `cancel()`).
+- 2026-10-15 ~04:40 PDT: **native's seam twin GREEN on aa0615e4** (light lane, exited 0, 2/0): 900 drives + 900 unsticks
+  compared, the seam held the rig on 195, 0 mismatches on the live members and the owned state; the seam's own report
+  there: requests 2, plans 1 (5 legs), driving 138 ticks, pending 59, holds median 52, one GOAL_BLOCKED; FILE_TIME
+  64 s. Native keeps the move_to (not the face) on purpose: a wheeled FACE hands back to the GDScript execute, so only
+  the move_to puts the C++ drive against a held crew. The gate's plain check is first in native's heavy chain.
+- 2026-10-15 ~04:30 PDT: **CP-P1's gate hash is native's pair/cpp1-on aa0615e4** (stream/native's mirror + the seam
+  86e5c646 + PLANNER_DEFAULT true + native's new test_native_planner_seam: a War Rig in the west street, drive + unstick
+  twinned every tick through capture()/restore(), held >= 30 compared drives; it replaces ef38361f, which never got a
+  slot; the earlier light twin on 0914dafd + the mirror: 90/0, 0 mismatches). Its plain check runs first in native's
+  chain (native-chain4); its exited line clears the series. Told native the proven take is the FACE order (the seam
+  test's rig: taken 4 ticks after the order), and the two k-turn takes' conditions (a point straight behind is never
+  inside the circle; the blocked arc needs the wall within KTURN_HIT_WITHIN_M).
+- 2026-10-15 ~04:15 PDT: **the judged chain's wrappers** (29930949, mk/planner.mk): `planner-judge-hull-rest`,
+  `planner-judge-fights`, `planner-judge-bridge`, `planner-judge-cp2`, each `PLANNER_JUDGE_ARM=base|candidate` (one arm a
+  call, lesson 311), both arms `--brains-off=native_drive` with the C++ planner on, the candidate + `--nav-off=planner`;
+  hull-rest on the fresh seeds 60-65 (M1_NEW_OFF=planner, M1_BASE_OFF empty, `--turn-states`), fights on 181-204 (then
+  fight_table.py base v candidate), bridge-pooled and scenario_cp2 through BRIDGE_FLAGS / AI_SCEN_FLAGS. The chain
+  (after both gates): planner-series (a), then (d) x2, (e) fights x2 + bridge x2, (c) cp2 x2, each heavy, one at a time.
+- 2026-10-15 ~04:05 PDT: **the series tooling PROVEN** (`make remote LIGHT=1 T="planner-series PLANNER_SERIES_SEEDS=1
+  PLANNER_SERIES_SQUADS=rigs NAV_JOBS=1"` on 2f7e9442, exited 0; the first try refused on a stale light-lane library
+  after the rebase, so the target builds native first now). Seed 1 is a USED tuning seed at n = 1: a tooling proof,
+  never a number for the bar. What it printed, for the shape only: rigs contact-ticks 2176 -> 393, arrivals 13 -> 12
+  of 16; the seam asked 30 times, planned 7 (11 legs), drove 3 to their end, refused 14 (GOAL_BLOCKED 11,
+  START_BLOCKED 3), abandoned 1, queue_waits 109, holds median 20 / max 90 ticks, pending 488 hull-ticks; 4 plans
+  released before their end without an abort (the caller stopped asking: STALE_TICKS -- a reported detail to read in
+  the judged traces). The base arm's seam never fired (the reader's equality check).
+- 2026-10-15 ~03:55 PDT: **CP-P0 MERGED OFF to main** (950c7681 on 41212da0's exited-0 line; HANDOFF 84e553cd; the one
+  conflict OFF_NAMES resolved as the sorted union; the seven seam lines intact). **stream/planner rebased onto main
+  84e553cd** (33 commits, clean) + **86e5c646: `mover.yield_to_plan()` wired** at the seam's first-take site (R31.2 (H);
+  manoeuvre's, main 298e4498; no shim). The pre-rebase check (c1b15323) withdrawn before it ran a target; the rebased
+  tip's full check queued (`planner-check8`, behind three worktrees' slots). Native rebases pair/cpp1 onto main +
+  86e5c646 for the gate hash. The series tooling's dry run (seed 1, rigs, light lane, `planner-seriesdry`) proves
+  series_verdict.py before the judged run.
+- 2026-10-15 ~03:45 PDT: **CP-P0's check GREEN:** `make remote T=check` on 41212da0 (a3755e37's code + docs), builder0:
+  `>> remote: make check exited 0`, 2615 passed 0 failed, `24 passed, 2 NOT JUDGED` (both the busy box's perf lines:
+  perf-judge refused 3x at 2.3-2.7x, scenario_perf's cpu budget unpinned); sim-baseline 53/0, every map unmoved;
+  scenarios 52/0. **The series tooling** (ad2e02f1 after the rebase): `make planner-series` (nav-terminus-drive over
+  the bar's fresh seeds 133-145 x mixed/rigs in two arms, base `--brains-off=native_drive` v candidate +
+  `--nav-off=planner`) and `tests/planner/series_verdict.py` (paired arrivals v 1.645 se per squad, contact-ticks
+  reported with the worst run, the seam's last PLANNER_SEAM_REPORT per run and the totals; refuses a base arm whose
+  seam fired).
 - 2026-10-15 ~03:40 PDT: **the clip for him rendered:** `~/projects/clips/round31/planner_terminus_0a2a4a48.mp4` (3840 x
   1080, 32 s, side by side: TODAY left -- 29.8 s, 53 gear changes, 14 wall contacts; PLANNER SEAM right -- 15.5 s, 3 legs,
   0 contacts, its last frame held once done), from two `planner-lab PLANNER_ARMS=today PLANNER_FIXTURES=turnround
