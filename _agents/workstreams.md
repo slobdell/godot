@@ -70,17 +70,25 @@ orchestrator's `make sim-baseline-adopt` on main.
   slot the orchestrator grants, the laptop.
 - **C32.8 Test splits (R31.9 (3)):** native's four twin files first, then each stream's own slowest files, same assertions
   divided, test count shown before and after, bodies byte-identical where possible.
-- **C32.10 (DRAFT, awaiting manoeuvre's far-loop trace, 2026-10-16 ~03:50 PDT): the mutual pin.** Manoeuvre's hunt
-  (builder0 `48657f07`, Terminus drive seeds 1–16, n 1 a seed): base loops 105 mixed / 114 rigs, ~70 % `far` (> 12 m of
-  route left), out of H1b's settle. Traffic's reading of its block (fa088c38): `_negotiate` designates ONE yielder
-  symmetrically (less route left; name tie-break; alternation), but a yield needs a validated spot (`_begin_yield`), and
-  mid-street both asks (and R13's swap) are refused, so neither yields; H1's pinned ask bypasses the designation, so both
-  hulls back 2–3 m and re-drive (the 21 s loop, mirrored). **Proposed:** when the designated yielder has no validated spot,
-  it backs ALONG ITS OWN ROUTE until the gap ≥ the other's hull length + clearance (no spot validation) while the other
-  holds its ask and drives through; H1's pinned ask defers to the same designation. Traffic owns the designation and the
-  ask (right_of_way / ask / `_negotiate`); manoeuvre owns the reverse and H1's deferral; one pair with native; one bar.
- every round-31 `stream/*` branch was renamed `round31/<stream>` (kept, not merged) and every
+- **C32.9 Fresh start:** every round-31 `stream/*` branch was renamed `round31/<stream>` (kept, not merged) and every
   worktree re-created from this docs commit. No agent of round 31 runs.
+- **C32.10 The parked squadmate in the way: SWAP SEATS (decided 2026-10-16 ~04:00 PDT on manoeuvre's far-loop trace; replaces
+  a draft back-off).** Manoeuvre's hunt (builder0 `48657f07`, Terminus drive seeds 1–16, n 1 a seed): base loops 105 mixed /
+  114 rigs, ~70 % `far` (> 12 m of route left), out of H1b's settle. The far-loop trace (laptop, `08e6d44c`, H1b arm, Terminus
+  seeds 3–6 rigs + mixed, counts matching builder0): 62 far loops from 6 pairs; in **50/62 the blocker is PARKED at its own
+  slot** (route left 0), the other 12 (rigs) a blocker itself blocked by a third hull; mutual refused-both-ways **0/62**; the
+  pinned hull is the SAME squad, 22 / 29 / 37 m of route left (p10/50/90), 6–14 m behind; every pinned ask refused (62/62);
+  `_negotiate` designates the parked one in 50/62 but it has no validated spot. Traffic's proposed back-off (the designated
+  yielder reverses along its own route) would need 11 / 16 / 20 m of reverse and straight room met it 0/62: dropped.
+  **Rule:** when H1b's failed-ask count trips on a PARKED same-squad friend and the asker's slot lies beyond it, the two
+  crews SWAP SEATS: the parked crew takes the asker's farther slot and drives on with nothing ahead of it; the asker takes
+  the near slot. Nobody reverses; both end at a slot. **Owners:** brains owns the swap (the element's seats + both Movement
+  goals behind one seam, e.g. `Element.swap_seats(a, b) -> bool`, refusing when a seat is pinned by a drawn facing or a
+  task role; player squads are elements too); manoeuvre owns the detection hook (H1b's count) and keeps H1b's settle for
+  the near-goal case. Signature agreed through the orchestrator before code. The 12 third-hull cases are REPORTED. Its own
+  bar (Terminus seeds where base loops, named before the series; arrivals; swaps counted; the whole suite on the pair
+  tree). Native mirrors only if the swap reaches the drive. **Why swap, not give way forward or back:** one decision, no
+  geometry, and what a player expects of a crew stuck behind a squadmate who is already where he was told to be.
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
