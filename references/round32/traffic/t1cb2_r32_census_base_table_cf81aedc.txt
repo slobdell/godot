@@ -1,0 +1,6 @@
+TRAFFIC_CENSUS_TABLE /tmp/claude-1000/-home-slobdell-projects-godot-traffic/0a0d01f2-a959-4fa8-b9b9-3c618001743a/scratchpad/t1cb2_r32/census_base.jsonl (18 runs, 0 missing)
+case             runs  underway    stuck   friend    enemy   static f_share contact  fast  kturn  kt_fr
+ALL                18     23155     3761      789       12     2960   0.210    1556   934    613     83
+foundry@2000        6      6755     1320      256        0     1063   0.194     418   220     97     14
+parade@2000         6     10284     1630      394        8     1228   0.242     770   468    185     32
+sumps@1000          6      6116      811      139        3      668   0.172     368   246    331     37

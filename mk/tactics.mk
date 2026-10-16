@@ -827,3 +827,16 @@ sbf-bar: import ## Round 31 (B6): the SBF sector bar, candidate v --sbf-told-sec
 	@$(MAKE) --no-print-directory sbf-series SBF_SEEDS="$(SBF_BAR_SEEDS)" SBF_UNITS="$(SBF_BAR_UNITS)" SBF_FLAGS="--sbf-told-sectors=on"
 	@cp $(BUILD_DIR)/sbf-series.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
 	@$(PYTHON) tests/tactics/sbf_bar.py $(BUILD_DIR)/sbf-bar-on.jsonl $(BUILD_DIR)/sbf-bar-control.jsonl
+
+# Round 32 (R32.6, measurement only): test_tactics_body's stage several times in ONE process (tests/tactics/
+# body_twice_probe.gd), each case "arms:clears" (clears "-" = none), to find the static one match leaves the next.
+BODY_TWICE_EXTRA ?=
+BODY_TWICE_CASES ?= on,on:- off,on:- off,on:slot,pathing,avoid,perception,tick,squad,cover,unanswered,feed,incoming,body,traffic
+.PHONY: body-twice
+body-twice: import ## Round 32 (R32.6): the body stage run twice in one process per BODY_TWICE_CASES ("arms:clears") -> BODY_TWICE lines
+	@echo ">> body-twice on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@for case in $(BODY_TWICE_CASES); do arms=$${case%%:*}; clears=$${case#*:}; [ "$$clears" = - ] && clears=""; \
+		echo "== $$case"; $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_twice_probe.gd -- \
+			--arms=$$arms --clear=$$clears $(BODY_TWICE_EXTRA) > $(BUILD_DIR)/body-twice-$$arms.log 2>&1; grep -oE 'BODY_TWICE .*|SCRIPT ERROR.*' $(BUILD_DIR)/body-twice-$$arms.log | python3 -c "import sys,json; [print(l.strip()[:60] if not l.startswith('BODY_TWICE') else '  run %(run)s %(arm)s cleared=[%(cleared)s] alone_s %(alone_s)s arrived_s %(arrived_s)s' % json.loads(l[11:])) for l in sys.stdin]"; \
+	done
+

@@ -22,6 +22,21 @@ backwards (brains' B11 fix in its check).
 built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
 **Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
 
+**~17:05 PDT: the seat swap PARKED** (fights: far loops 6 v 6, swaps 0; in skirmish the far loops are against another
+element's parked crew, not the swap's case). Round 33 candidate recorded.
+**Round state ~16:40 PDT:** traffic DONE (closing merged `5795eeff`); planner DONE; brains' B11 PARKED (turret lead for round
+33), its closing check running (`f0af2f15`); manoeuvre's swap series RUNNING (G on fights 400–423 after the Terminus-has-no-
+elements amendment), ship tree ready (`pair/swap-ship 80300909`); native idle. **Close tonight** with or without the swap.
+
+**MERGED ~14:55 PDT: brains' R32.6 fixes alone `87fa3858` → main `0faa485b`** (test/stage only; builder0 light 9/0), clearing
+main's R32.6 red. B11 itself waits for its series (started 14:43).
+
+**Main check on `981457cf` (~14:20 PDT): GREEN but for two known reds** (builder0 `exited 2`: test 2710 passed / 1 failed,
+the one `test_tactics_body::test_his_three_squads_keep_together` = R32.6, its test-stage fix on stream/brains `c029cf70` not
+yet on main; remote-guard-test's quiet-window group = R31.10; sim-baseline 13 UNMOVED; perf NOT JUDGED, busy box). It covers
+native's test fixes, planner's three commits, T1c-b2. **Not yet covered: H1b `5cc02947`** (its own pair check was 2703/0);
+the next main check rides brains' R32.6 fix + B11.
+
 **🎯 H1b SHIPPED ON (~14:00 PDT): pair/h1b-on `273654e6` → main `5cc02947`.** What he'll notice: a vehicle stuck behind a squadmate
 that never moves, near its goal, stops short instead of nudging back and forth. Every filed line passed (R32.7's STUCK
 re-measured on fresh seeds with the fixed reader). The far loops (~70 % of them) wait for C32.10's seat swap, manoeuvre's next.
