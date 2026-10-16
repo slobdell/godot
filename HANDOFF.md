@@ -22,6 +22,12 @@ backwards (brains' B11 fix in its check).
 built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
 **Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
 
+**Main check on `981457cf` (~14:20 PDT): GREEN but for two known reds** (builder0 `exited 2`: test 2710 passed / 1 failed,
+the one `test_tactics_body::test_his_three_squads_keep_together` = R32.6, its test-stage fix on stream/brains `c029cf70` not
+yet on main; remote-guard-test's quiet-window group = R31.10; sim-baseline 13 UNMOVED; perf NOT JUDGED, busy box). It covers
+native's test fixes, planner's three commits, T1c-b2. **Not yet covered: H1b `5cc02947`** (its own pair check was 2703/0);
+the next main check rides brains' R32.6 fix + B11.
+
 **🎯 H1b SHIPPED ON (~14:00 PDT): pair/h1b-on `273654e6` → main `5cc02947`.** What he'll notice: a vehicle stuck behind a squadmate
 that never moves, near its goal, stops short instead of nudging back and forth. Every filed line passed (R32.7's STUCK
 re-measured on fresh seeds with the fixed reader). The far loops (~70 % of them) wait for C32.10's seat swap, manoeuvre's next.
