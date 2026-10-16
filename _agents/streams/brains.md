@@ -80,6 +80,18 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### NOW (2026-10-16 ~10:10 PDT): the order is B11's check + series, then B10b once C32.10's swap ships, then v6
+- **R32.6 DONE (`03aa0c5d`):** test_tactics_body's run-order dependence was an overlapping spawn in its stage, separated
+  by physics only in a process's first match (no script static: 12 caches cleared and native off changed nothing;
+  `make body-twice` + `--body-trace`, builder0). The stage now sets spawns apart; the new test
+  `test_the_stage_spawns_no_two_hulls_overlapping` fails without it. The line holds on today's main: off 41.0, on
+  15.0–16.0 whatever ran before (≤ 20.5 needed); 4/4 alone (builder0). Trip-up 82 in orientation.md. Play side: the
+  deploy is guarded (test_spawn_grid); gaps relayed (law/syndicate not in that test; respawns not checked).
+- **B10 PARKED** (the orchestrator's ruling; latch OFF by default, `--ground-latch=on`); **B10b** = re-judged once with
+  C32.10's swap ON, s19 t8 its case; v6 waits behind it.
+- **B11 (C32.12 (2)):** built `e440bcd9`, bar filed (seeds 350–355); **check on `03aa0c5d` RUNNING** (09:58 PDT), then
+  `brains-b11-series.sh` (hull-rest on v old + s66 × 3 a arm).
+
 ### C32.12 (1) ANSWERED, (2) = B11; B11 bar FILED before numbers (2026-10-16 ~09:40 PDT)
 **(1) Why a faced move "completes" 11–15 m off: it doesn't complete; it is REPLACED.** `--order-trace` (gangs s66
 faced_move, builder0 light, stream tree): Green_Guns_5's move never passes `_update_order_progress` (no ORDER_TRACE line
