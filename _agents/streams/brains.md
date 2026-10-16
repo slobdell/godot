@@ -80,6 +80,47 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### FINAL REPORT (round 32, 2026-10-16 ~16:00 PDT)
+
+**Green hash: CHECK RUNNING on `f0af2f15`** (stream + main merged; launched 15:47 PDT). Every brains change beyond
+main on it is default-OFF, a test, tooling, measurement or docs.
+
+**Shipped**
+- **B3b-2c, his bridge 108/108 (C32.3):** MERGED ON (main `33321516` from `5f0ed865`). His bridge 108/108 v 107/108,
+  the arrive series identical (90 v 90, 100 cells identical), sim-baseline unmoved. What he'll notice: every crew of
+  every squad gets across his bridge; elsewhere arrivals are exactly as before.
+- **R32.6, test_tactics_body's order dependence:** MERGED (fallback cut `87fa3858` → main `0faa485b`). Overlapping and
+  touching spawns are moved by physics differently in a process's first and later matches. No script static carried it.
+  The stage sets spawns apart and snaps the intended spawn after start(); the regression test fails without it; trip-up
+  82; test_spawn_grid covers all four factions.
+
+**Judged and parked (each with its table above)**
+- **B10, the grounding latch** (the seat-flip bug on main: Sumps s16 t8, 22 flips, never in): FAILS line 2 (Sumps s19 t8
+  +19.9 s; the held seat stands in two squadmates' passage). Flips 0 v 2 runs, median 42.75 v 49.86 s. OFF,
+  `--ground-latch=on`. The swap can't reach its case (manoeuvre's check), so B10b is a seat-choice change, round 33.
+- **B11, HOLD's faced return** (C32.12 (2)): FAILS lines 2 and 3 (wheels/fixed worse; s66 Guns_5 still > 100°);
+  wheels/turret faced_move 17.3 v 48.4°. OFF, `--hold-return=faced`. Round 33, with manoeuvre's face at rest.
+
+**Delivered to others**
+- **C32.5 answers** (R32.3): arrived = the held seat at completion, re-seats guarded; facekeep unchanged; the heading
+  reaches the seating through the arrival halt's shape (pinned: test_tactics_reseat_heading).
+- **C32.10 seat swap** built: `lab/brains-r32-swap` `f2cc956d` (`Elements.swap_seats -> String`), riding manoeuvre's
+  candidate.
+- **C32.12 (1):** a faced move isn't completed 11–15 m off; the element's faced hold replaces it on arrival.
+- **CP-S signature** agreed with planner; the yard s27 t8 fixture sent. **C32.6:** reach_probe reads the arena it names.
+- **C32.8:** shard times rewritten; pursuit, mixed_legs, scenarios_4 and ai_player_orders split (bodies verbatim).
+
+**Not reached (round 33):** B5c-v6 (lab `lab/brains-r32-gate` `b8a34c4f`: v5 + side gate + the latch; native's
+side-gate mirror on `pair/brains-v6-carry` 33db0ac1 + ba8d18d9; tuning n 1: Sumps s17 t11 35.8 v 34.8 s, yard s27 t8
+10/10 v 9/10), behind B10b by ruling. Traffic's T4 note (the last hull circling its slot in a crowded yard head-on) is
+v6's case.
+
+**Questions for the lead:** none. **Requests open:** none.
+**Worktrees of mine:** godot-brains-gate (lab/brains-r32-gate), godot-brains-swap (lab/brains-r32-r326, after the swap
+lab); builder0 folders godot-brains-gate, godot-brains-swap (+ -light). Remove at round close; branches kept.
+**What to playtest:** his bridge on the Locks (`make skirmish --arena=locks`, three squads attack-moved across): every
+crew crosses.
+
 ### B11 JUDGED: FAILS lines 2 and 3; PARKED (OFF by default, `--hold-return=faced`) (2026-10-16 ~16:30 PDT)
 Check on `c029cf70` (builder0): exited 0, 2700/0 (B11 ON), sim-baseline unmoved. Series on `ffba7f77` (= `c029cf70` +
 docs), builder0, hull-rest drawn, 4 factions × seeds 350–355 × 6 faced tasks, n 144 runs an arm, on v
