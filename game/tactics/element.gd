@@ -489,7 +489,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	Element.apply_swap(plan, _swap)
 	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null
-	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if GROUND_LATCH else null)
+	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if GROUND_LATCH and arrived else null)
 	if ElementPlan.PACE_ENABLED and plan.has("shape_along"):
 		# Round 23 (B1): the pacing rules measure against each seat where the hull can actually stand (the brain drives
 		# to its station grounded the same way); a seat laid inside a container would otherwise hold the anchor for
@@ -1447,7 +1447,10 @@ static func _envelopes(situation: Dictionary) -> Dictionary:
 ## times in 25 s; the crew stood between the two, its order re-issued every 0.1-0.2 s, and the squad was all in 22 s late.
 ## On main's rules too (no gate rule, the same cell's seed 16 tick 8): Green_S_2's seat 3 flipped between (-0.2, -50.8)
 ## and (-2.0, -41.2) 22 times from 43 s to the end of the run, and the squad was never all in.
-## `latch` ({key: [asked, allowed]}) is the element's own memo; null = no latching (a caller without one).
+## `latch` ({key: [asked, allowed]}) is the element's own memo; null = no latching (a caller without one). Only an element
+## that has ARRIVED latches (both traced cases): on the move its slots slide every plan and are grounded afresh as on
+## main (B10's first cut latched there too and froze sub-0.5 m slides: traffic's test_traffic_feed control arm, whose
+## order clock is meant to restart on every slide, outlived its grace; builder0 check on ddd1cc56).
 static var GROUND_LATCH := true
 const GROUND_LATCH_M := 0.5
 var _grounded := {}
