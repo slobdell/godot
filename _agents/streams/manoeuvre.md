@@ -201,6 +201,12 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   faced_screen +3, SBF drawn at-rest error 106.8° v 74.3°). Planner's reading: today's FIFO starves ~20 % of face asks
   in a press, and served by the seam's face plans those crews settle WORSE. **So in M1b(3)'s drift-trace run, split the
   75-s movers by plan source (planner-served v today's face code)** beside brains' seat-drift reading.
+  **CORRECTED (planner's traces, stream/planner `9ddcafee`):** neither CP-Q regression reproduces. Hull-rest's run-to-run
+  variation dominates the tail (rigs paired median +0.3° / +0.4°). The split is still worth doing; expect little from it.
+- **A likely bug in MY face path, to trace once H1b's series is running:** hull-rest faced_move s66 Green_Guns_5 (War Rig)
+  ends ~144–156° off in BOTH arms. The planner's seam never acts for it. It drives its move_to, arrives nose south, and
+  its order becomes `stop` with NO face step, so the faced move never turns to face at rest (order_controller's
+  face-at-rest path). It may feed M1b(3)'s "moving / not settled" lines too.
 - **Working hypothesis to TRACE before designing (now doubtful, see above):** attempt 2's hulls turned mid-approach, swung the halt and re-seated
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
@@ -228,6 +234,9 @@ taken). Kept off `stream/manoeuvre` so H1b's checked tree stays H1b only.
 loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
 
 ### Plan (ordered)
+
+0. (Inserted 2026-10-16) **Trace hull-rest faced_move s66 Green_Guns_5's missing face step** as soon as H1b's series is
+   running (it may be part of M1b(3)'s settle problem).
 
 1. **H1b** (C32.2): unit test first (`tests/test_manoeuvre_h1b.gd`: a rig / IFV sent to a slot a parked squadmate sits
    on; base loops, H1b settles), then seed 31's last leg as the pass case, then the bar to the orchestrator, then the
