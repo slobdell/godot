@@ -77,7 +77,19 @@ _Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, fr
 
 ### The report (read this first)
 
-_In progress._ CP-S built and under test; SLICE per preset built, tests written.
+_In progress (2026-10-16 ~01:30 PDT)._ Nothing verified on builder0 yet: builder0 had 3 heavy runs ahead of me for 25+
+min; the first quick was replaced by one covering the whole diff (`make quick-remote QUICK_BASE=6efdf42b` on
+`b204a489`, 12 test files + lint + smoke).
+
+- **CP-S** (`df45fac3`): built, native APPROVED the C++ (`clearances`). Merges OFF-path on its own green hash.
+- **SLICE per preset** (`df45fac3`): built; tests `test_planner_slice.gd` (flag > preset > default, the host's flag
+  wins on a peer of either preset, the hold keeps 180 expansions, headless = SLICE 2, the same legs at 1 and 2,
+  latched per match, two runs at 1 identical). The named check must read sim-baseline UNMOVED (the orchestrator's
+  reminder).
+- **The queue** (`0b9e96bc`, `a46c2bf3`): built behind `--planner-queue=shared` (default OFF); native APPROVED the C++
+  getter `refused_at_begin` and the instance-per-crew design. Bar **CP-Q FILED** by the orchestrator (workstreams.md
+  *Bars (round 32)*). Targets `planner-judge-queue` (hull-rest gangs, seeds 66–71) and `planner-series-queue` (Terminus,
+  seeds 205–217), reader `tests/planner/queue_table.py` (`867a4b38`).
 
 ### Plan (ordered, smallest foundation first)
 
@@ -114,5 +126,6 @@ None.
 
 ### Requests to other streams
 
-- native: review the C++ `PlannerNative::clearances` (CP-S) before I push; later, the queue's session-per-crew.
+- native: reviewed and APPROVED `clearances` (df45fac3) and `refused_at_begin` (0b9e96bc); the queue ships ON as a pair
+  with native once CP-Q passes.
 
