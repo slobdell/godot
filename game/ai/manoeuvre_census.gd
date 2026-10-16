@@ -112,6 +112,11 @@ static func note_h1b_far(mover: Movement, friend: Tank) -> void:
 			# The give-way's own priority read (_negotiate): with both under way, the one with LESS route left gives way.
 			"negotiate_i_give_way": _negotiate_says(mover, other, String(tank.name), String(friend.name)),
 			"last_ask_answer": mover._h1b_last_answer, "my_yield_to": mover.yield_to,
+			# Traffic's contract question (C32.10 draft): refused in BOTH directions, and is one hull's way back clear?
+			"blocker_escaping_on_me": other._h1b_blocker == String(tank.name) if other != null else false,
+			"blocker_last_ask_answer": other._h1b_last_answer if other != null else false,
+			"my_room_back_m": mover._straight_room(-1.0),
+			"blocker_room_back_m": other._straight_room(-1.0) if other != null else -1.0,
 			"my_last_yielded_to": mover._last_yielded_to,
 			"blocker_yield_to": other.yield_to if other != null else "",
 			"blocker_last_yielded_to": other._last_yielded_to if other != null else "",
