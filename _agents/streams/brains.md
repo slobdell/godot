@@ -79,3 +79,15 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
+
+### Plan (2026-10-16 00:40 PDT; start = main `6efdf42b`, inherits `e66b41f1`'s green check, no baseline check run)
+1. **B3b-2c:** merged `lab/brains-r31-bridge` (`5ed61f91`) into stream (`0fae50a2`, one conflict in `tactics_flags.gd`,
+   both sides kept), then `5ca8269d`: `Element.HEADING_REISSUE_TASK_ONLY` default **false** (round 26's rule = main's),
+   `--reissue-heading=task` = round 31's candidate arm. Reason: the attribution trace put all 9 lost arrive cells on the
+   narrowing; seating + mouth guard are inert on the arrive maps. Native: none ported (Element/ElementPlan/TacticsFormation
+   are GDScript on every path). Tuning first on round 28's two cells + B3b-2's two traced cells (n 1, light lane), then
+   the pair-tree check, then the bar, then the series (108 + arrive on fresh seeds 45–48).
+2. **B5c-v6** once CP-S is on main (planner's signature agreed 00:45: `side_gate(slot, facing, unit_id, map, from)`; yard
+   s27 t8 fixture sent).
+3. **C32.5** when manoeuvre asks. 4. **`make test-times`** + splits. 5. Stretch: reach-probe to traffic on request.
+
