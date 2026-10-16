@@ -63,3 +63,44 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Round 32 (started 2026-10-16 ~00:40 PDT from main `6efdf42b`; covered by `e66b41f1`'s inherited green check)
+
+**Report (kept current).**
+- **1. T3b-c pair (CP-T, R32.1):** my mirror `413252ea` is already an ancestor of main (round 31; inert until Traffic has
+  `shape`), so native re-carries nothing. Traffic's carried T3b-c is `b5882c9c` (main `6efdf42b` + `ac15ac0b` + teardowns
+  `67aa9c76` + `DEFAULT_OFF := []`), and that commit IS the pair tree: branch `pair/t3bc-r32`, worktree
+  `../godot-native-pair`. **Ship check read on `b5882c9c`:** builder0 `>> remote: make check exited 2`, tests 2671 passed /
+  0 failed, engine 0 errors, `25 passed, 1 FAILED, 0 NOT RUN`: sim-baseline alone, all 13 maps moved (expected ON,
+  C32.1). Twins: test_native_traffic_turns 5147 drives (655 shaped) / `_owned` 4758 (643 shaped), 0 mismatches; hold 7856,
+  0. Named to the orchestrator (recorded) and traffic, whose one re-judge on that tree gates the merge.
+- **2. T1c-b2:** NONE PORTED still holds on main `2572cbec`: the rule (`on_fire_post` and the refusal) is inside
+  `Movement.ask()`, reached from the native drive only through the GDScript `_negotiate` / `_ask_behind` callbacks.
+  Re-confirmed on traffic's tree `traffic-t1cb2-r32` `4849bfdc` (its game/ diff v `b5882c9c` is only `on_fire_post`, the
+  refusal in `ask()` and three Movement statics written in that callback); traffic runs `traffic-native-verify` +
+  `native-verify-scenarios` on it.
+- **4. H1b (manoeuvre `373de208`): NONE PORTED.** The native unstick reaches `_escape_begin` only as a callback followed by
+  `return`, as the GDScript does; H1b's reads (`_goal`, `_remaining`, `_goal_velocity`) and writes (`_repair_for`,
+  `_repair_to`) are exec_fields rows synced round callbacks and honoured by the native drive; `_h1b_*` are GDScript-only
+  members the twins capture. Proof: `test_native_h1b` (`233cbde4`), manoeuvre's parked-squadmate stage with the pinned
+  hull's execute step twinned (GDScript / native live / native owned); skips without H1b; on an ON tree it needs a settle
+  compared natively. Scratch ON tree: `scratch/h1b-on` `f29e3c87` (`../godot-native-h1b`) for its first run.
+- **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
+  serial `make native test FILTER=…`, n 1, while a heavy check ran beside it): test_native_execute 472 s,
+  test_native_drive 330 s, test_native_traffic_hold 253 s (+ `_owned` 193 s, round 31's split), test_native_wall 193 s;
+  every one 0 mismatches (execute 11880 native executes; drive 2160 drives a view, k-turns 1440; hold 7244 / owned 7304
+  drives; wall 12000 observes). AFTER: timing run on `d98f4400` RUNNING (unit `native-times2`).
+- **Planner review:** `df45fac3` (CP-S `PlannerNative::clearances`) APPROVED, one note (the GDScript arm prepares the
+  caller's world; the native arm doesn't).
+  `0b9e96bc` (`refused_at_begin`, header only) APPROVED: consistent with `step()` (those three codes never start the fine
+  retry). Per-crew `PlannerNative` instances for the shared queue: agreed (no C++ change; free an instance with its crew).
+
+**Plan (in order):** (1) the T3b-c pair check, named hash; (2) T1c-b2's verify runs on traffic's tree; (3) the four twin
+splits, test-only, their own hash; (4) pairs as they arrive (H1b, B3b-2c, B5c-v6, the planner's side gate and SLICE: CP-S
+needs no mirror, being C++ already reviewed); (5) N5's held ports only when no pair waits.
+**Split design (one reason each):** drive has five cases, so each case goes to its own file over a shared base
+(`DriveTwinCase`, bodies byte-identical). Execute, wall and the traffic hold are ONE case over one fight, so each file plays
+the whole fight and compares half the crews (even / `_odd`): every frame's union is still every crew, and the branch floors
+(the hold firing, wall / hull ticks) see the whole fight, which a frame-window split would not guarantee. Only the sample
+floor is divided. A live v owned split would keep most of the cost: the GDScript capture of every mover dominates both
+arms.
