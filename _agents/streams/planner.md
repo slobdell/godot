@@ -82,6 +82,20 @@ min; the first quick was replaced by one covering the whole diff (`make quick-re
 `b204a489`, 12 test files + lint + smoke).
 
 - **CP-S** (`df45fac3`): built, native APPROVED the C++ (`clearances`). Merges OFF-path on its own green hash.
+  **Quick on builder0 `b204a489` (unpinned, the box busy with 3 other streams' runs): 56 passed, 1 failed** (the one
+  failure my queue test's own read, fixed at `530e85cf`). Every side-gate fixture equal both ways, the two reads bit
+  for bit. **The price, a whole `side_gate` call (two reads + the choice):** navmesh, C++ warm 10–59 µs, C++ cold
+  (the process's first read: the polygon index) 1.9–2.7 ms, GDScript 102–253 µs; rectangles 22 µs warm. n = 1 call
+  per fixture × 9 fixtures. **Yard s27 t8** (brains' fixture: slot (−13.016, −47.469) facing west, from (2.5, −46.1)):
+  both sides read 1.85 m (room); the gate goes to the side the car comes from, law_scout (−12.96, −41.97) = R 5.5 m
+  south of the slot (gang_ifv R 6.5, ifv R 7.0 likewise).
+- **SLICE** (same quick): the War Rig's Terminus face-about plans the same legs and expansions at 1 and 2; hold 7 ticks
+  at SLICE 1 v 3 at 2 (n = 1 each, 7 expansions), nothing abandoned, two runs at 1 identical.
+- **Test splits (C32.8)** from that quick's FILE_TIME (builder0 `b204a489`): `test_planner_seam.gd` 113 s → 3 + 3
+  (`test_planner_seam_hold.gd`, `d586292a`); `test_planner_trace_manoeuvre.gd` 63 s → 2 + 2 by scene
+  (`test_planner_trace_wedged.gd`, `15f0a60c`); bodies byte-identical, test counts 6 = 6 and 4 = 4. Under 60 s:
+  slice 38 s, queue 37 s, keep 3 s, fixtures 3 s, side gate 2 s. (`test_native_planner*.gd`, 72 / 64 s, are the twin
+  files: native's, not split by me.)
 - **SLICE per preset** (`df45fac3`): built; tests `test_planner_slice.gd` (flag > preset > default, the host's flag
   wins on a peer of either preset, the hold keeps 180 expansions, headless = SLICE 2, the same legs at 1 and 2,
   latched per match, two runs at 1 identical). The named check must read sim-baseline UNMOVED (the orchestrator's
