@@ -125,6 +125,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   the order completed far from the spot (the element's "arrived" completing every crew's order, or the repaired-arrival
   path), then makes HOLD's return honour the facing. True roll-pasts are rare (0/7). Manoeuvre's M1b(3) input becomes
   "move orders completed with the hull > settle + 1 m from its goal, by completion path".
+- **C32.13 The War Rig face-behind GDScript-v-native divergence (planner's trace, 2026-10-16 ~10:00 PDT):** not the drive and not
+  the search (the seam's exact request plans the same 5 legs both ways, 189 expansions). The planner's NO-LIBRARY session plans
+  whole at `begin_session` and answers "done" at once, so PENDING_TICKS × SLICE (180 expansions) never applies; with the library
+  the 189-expansion face is ABANDONED at 90 ticks and today's face executor turns the rig. Fix (planner): the no-library
+  session reports done only once the expansions handed out reach the plan's (C++'s arithmetic); native's path untouched.
+  **Round-33 note:** the seam never serves a War Rig's open-ground face-behind with the library (189 > 180); today's executor
+  does. Native's `test_native_face_behind` compared 0 native executes (vacuous): native adds a floor.
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
