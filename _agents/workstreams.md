@@ -112,6 +112,18 @@ orchestrator's `make sim-baseline-adopt` on main.
   on native's pair tree with the default flipped ON (C31.1), before the series. REPORTED only: refused_early, queue_waits,
   plans, driven, refused by code, hold max. Ships ON as a pair (QUEUE_DEFAULT true + native's review of `refused_at_begin`).
   If (1) misses: the abandoned searches' expansions reported, stop; no re-tuning on these seeds.
+- **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
+  partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
+  tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
+  friend for the same goal and that friend's net flat move since the previous fire is < 0.5 m; a loop = a fire after the 2nd
+  failed ask that H1b did not break (counted in both arms). Settle short only with ≤ 12 m of route left and a goal not
+  sliding; loops farther out are counted (`far`), not acted on. **Fresh seeds (confirmed unclaimed by the orchestrator):**
+  Terminus 300–312, hull-rest 313–318 (n 144 an arm), fights 320–343. Lines, guards to completion, each read once on 1.645 se:
+  (1) seed 31 rigs: loops 0, Green_S0_4 ends still; (2) hull-rest pinned and stuck crew-s (row 67) ≤ base + 1.645 se;
+  (3) nav-terminus-drive PINNED/STUCK per squad ≤ base + 1.645 se; (4) Terminus arrivals, rigs and mixed apart, ≥ base −
+  1.645 se; (5) fights kills, deaths, hit rate within 1.645 se; (6) R31.5's terrain pins unchanged: `test_nav_wall_contact`,
+  `test_control_queued_task`, `test_manoeuvre_escape` green; (7) the whole suite green on native's pair tree with the switch
+  flipped ON, before the series. REPORTED: settles, metres short, `far`, loops in both arms. A miss parks H1b with its trace.
 
 ## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
 
