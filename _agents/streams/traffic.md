@@ -123,7 +123,7 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   maps unmoved, the pit included** (the baseline runs never set a truck up beside a passer, so there is nothing to
   re-record). The one red is `test_native_traffic_turns_owned::test_the_crossing_on_the_owned_state` (twin 5147 drives,
   0 mismatches). It failed on 2 script errors, "'tank' … previously freed" at `planner_executor.gd:70` ← `planner_seam.gd`
-  `Crew.copy` ← `capture` ← `tests/native/mover_state.gd:124`, and the exit-leak gate (20 ObjectDB) went with it.
+  `Crew.copy` ← `capture` ← `tests/native/mover_state.gd:124`, and the exit-leak gate (20 ObjectDB) was red too. **Correction:** that leak was MINE (below), not the planner test's.
   **Diagnosis: latent on main, order-dependent, not the rule.** `PlannerSeam._crews` keeps a crew whose hull an earlier
   test's match freed, and `capture()` copies it. Adding `tests/test_traffic_setup.gd` shifted the rr shard plan.
   On the laptop the file passes alone and with `test_native_route|tick_profile` before it, on both `86590075` and
@@ -167,6 +167,12 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   `real_velocity` for a > 10 m hull pressed on a friend with no wall touched, on a routed move_to with unstickback ON.
   So round 31's rig 72 → 164 predates it, and line 2 tests it fresh.
 - Script: `$S/t4_series.sh` (scratchpad).
+
+- **After planner's fix (main `7a5cb5e5`, merged at `b99857bb`):** builder0 `make check exited 2`, tests 2708 / 0, all 13
+  sim-baseline maps unmoved. The one red was the exit-leak gate: 20 ObjectDB / 4 resources. **The cause was my
+  `tests/test_traffic_setup.gd`**: its teardown never disposed its TacticsLab (round 31's `test_traffic_ghost` bug). On the
+  laptop the old file alone prints exactly those two lines at exit and the fixed one prints neither (5/0). Fixed at
+  **`c9fa64a4`**; its check is running.
 
 **C32.8, test splits: none needed.** Builder0's shard times: no traffic-owned file is near 60 s.
 `test_traffic_hold_live` 30.9 s, `test_traffic_turns_live` 31.0 s, `test_traffic_feed` 13.2 s. The slow files are native's
