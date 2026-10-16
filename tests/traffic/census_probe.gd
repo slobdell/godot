@@ -15,6 +15,9 @@ extends SceneTree
 
 const STILL_MPS := 0.5
 const NEAR_M := 18.0
+## Round 30 (T1c-b, the orchestrator's addition (a)): a refused asker that is not past the set-up hull this long after the
+## refusal (s) never went round.
+const GO_ROUND_S := 20.0
 
 var case: TestCase
 
@@ -65,10 +68,39 @@ func _run() -> void:
 			lab.elements.form(Array(squad.roster), String(squad.squad_name))
 		ElementCommander.install(lab.game_match, team, lab.elements)
 	var trails := {}
+	# Round 30 (traffic T1c-b): a battery packing up (its legs were fully down and start to rise); those packed up while
+	# giving way; and THE DEFECT: packed up while giving way to an ask it got ON ITS FIRE POST (set up, still ordered to
+	# fire, no move of its own: Movement.on_fire_post the tick before the give-way began). Shots by artillery.
+	var deployed := {}
+	var on_post := {}
+	var yield_from_post := {}
+	var was_yielding := {}
+	var art_shots := [0]
+	var art_by := {}  # T1c-b's worst-run read: shots per battery; refusals per battery; seconds set up per battery
+	var refused_by := {}
+	var set_up_ticks := {}
+	lab.game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		var shooter := lab.tank_of(String(event.get("shooter", "")))
+		if shooter != null and Units.role_of(shooter.unit_id) == "artillery":
+			art_shots[0] += 1
+			art_by[String(shooter.name)] = int(art_by.get(String(shooter.name), 0)) + 1)
+	Movement.setup_refusals = 0
+	# The orchestrator's additions: (a) does a refused asker GO ROUND? An episode per (asker, hull): resolved when the asker
+	# is past the hull along the way it was going, or no longer under way; stuck when neither within GO_ROUND_S. (b) per side.
+	Movement.setup_log = true
+	Movement.setup_log_rows = []
+	var episodes := {}  # "asker|hull" -> [frame, the asker's way (Vector2), the asker's goal then]
+	# Round 32 (orchestrator, measurement only): a never-past asker is watched on to the end of the run, so its line says
+	# how long it waited, whether it got past at all, and what it was trying to reach (TRAFFIC_ASKER, not in the row).
+	var waiters := {}  # "asker|hull" -> the episode, still watched after GO_ROUND_S
+	# ep[3]: ticks the asker sat (< 1 m/s) within 20 m of the hull since the refusal; ep[4]: the frame its goal first moved
+	# > 5 m from the one it had when refused (-1: never).
+	var side_counts := [{"repacks_while_firing": 0, "setup_refusals": 0, "went_round": 0, "never_past": 0},
+			{"repacks_while_firing": 0, "setup_refusals": 0, "went_round": 0, "never_past": 0}]
 	var in_contact := {}
 	var was_kturn := {}
 	var counts := {"under_way": 0, "stuck": 0, "friend": 0, "enemy": 0, "static": 0, "contacts": 0, "fast": 0,
-			"kturns": 0, "kturns_friend": 0}
+			"kturns": 0, "kturns_friend": 0, "repacks": 0, "repacks_yield": 0, "repacks_while_firing": 0}
 	var ended := -1
 	for tick in int(float(_flag("seconds", "120")) * SimClock.TICK_RATE):
 		await lab.step()
@@ -79,6 +111,48 @@ func _run() -> void:
 			if t != null and t.is_alive():
 				hulls.append(t)
 				alive[t.team] += 1
+		for row: Array in Movement.setup_log_rows:
+			var asker := lab.tank_of(String(row[0]))
+			var hull := lab.tank_of(String(row[1]))
+			if asker == null or hull == null:
+				continue
+			side_counts[hull.team]["setup_refusals"] += 1
+			refused_by[String(row[1])] = int(refused_by.get(String(row[1]), 0)) + 1
+			var pair := "%s|%s" % [row[0], row[1]]
+			if not episodes.has(pair):
+				var way := Vector2(hull.global_position.x - asker.global_position.x, hull.global_position.z - asker.global_position.z)
+				var mover_q := Movement.of(asker)
+				episodes[pair] = [int(row[2]), way.normalized(), mover_q._goal if mover_q != null else Vector3.INF, 0, -1]
+		Movement.setup_log_rows = []
+		for pair: String in episodes.keys():
+			var names := pair.split("|")
+			var asker := lab.tank_of(names[0])
+			var hull := lab.tank_of(names[1])
+			var ep: Array = episodes[pair]
+			if asker == null or hull == null or not asker.is_alive():
+				episodes.erase(pair)
+				continue
+			var mover_a := Movement.of(asker)
+			_asker_tick(asker, hull, ep, mover_a)
+			var past := Vector2(asker.global_position.x - hull.global_position.x,
+					asker.global_position.z - hull.global_position.z).dot(ep[1]) > 0.0
+			if past or mover_a == null or not mover_a.is_under_way():
+				side_counts[asker.team]["went_round"] += 1
+				episodes.erase(pair)
+			elif Engine.get_physics_frames() - int(ep[0]) > GO_ROUND_S * SimClock.TICK_RATE:
+				side_counts[asker.team]["never_past"] += 1
+				waiters[pair] = ep
+				episodes.erase(pair)
+		for pair: String in waiters.keys():
+			var names_w := pair.split("|")
+			var asker_w := lab.tank_of(names_w[0])
+			var hull_w := lab.tank_of(names_w[1])
+			if asker_w != null and hull_w != null:
+				_asker_tick(asker_w, hull_w, waiters[pair], Movement.of(asker_w))
+			var outcome := _asker_outcome(lab, pair, waiters[pair])
+			if outcome != "":
+				_print_asker(lab, pair, waiters[pair], outcome)
+				waiters.erase(pair)
 		for t: Tank in hulls:
 			var key := String(t.name)
 			var trail: PackedVector3Array = trails.get(key, PackedVector3Array())
@@ -88,6 +162,22 @@ func _run() -> void:
 				trail.remove_at(0)
 			trails[key] = trail
 			var mover := Movement.of(t)
+			if mover != null and t.deploy_seconds > 0.0:
+				var yielding := mover.yield_to != ""
+				if yielding and not bool(was_yielding.get(key, false)):
+					yield_from_post[key] = bool(on_post.get(key, false))
+				was_yielding[key] = yielding
+				if bool(deployed.get(key, false)) and t.deploy_ratio < 1.0:
+					counts["repacks"] += 1
+					if yielding:
+						counts["repacks_yield"] += 1
+						if bool(yield_from_post.get(key, false)):
+							counts["repacks_while_firing"] += 1
+							side_counts[t.team]["repacks_while_firing"] += 1
+				deployed[key] = t.deploy_ratio >= 1.0
+				if t.deploy_ratio >= 1.0:
+					set_up_ticks[key] = int(set_up_ticks.get(key, 0)) + 1
+				on_post[key] = not yielding and mover.on_fire_post()
 			if mover == null or not mover.is_under_way():
 				continue
 			counts["under_way"] += 1
@@ -139,11 +229,61 @@ func _run() -> void:
 			"contacts_friend": counts["contacts"], "contacts_friend_fast": counts["fast"], "kturns": counts["kturns"],
 			"kturns_friend": counts["kturns_friend"],
 			"ended_s": snappedf(ended / float(SimClock.TICK_RATE), 0.1) if ended >= 0 else -1.0,
-			"traffic_off": _flag("traffic-off", "")}
+			"traffic_off": _flag("traffic-off", ""), "repacks": counts["repacks"], "repacks_yield": counts["repacks_yield"],
+			"repacks_while_firing": counts["repacks_while_firing"], "setup_refusals": Movement.setup_refusals,
+			"art_shots": art_shots[0], "by_side": side_counts, "go_round_pending": episodes.size(),
+			"art_by": art_by, "refused_by": refused_by, "set_up_s": set_up_ticks.keys().map(
+				func(k: String) -> Array: return [k, snappedf(set_up_ticks[k] / float(SimClock.TICK_RATE), 0.1)])}
 	print("TRAFFIC_CENSUS " + JSON.stringify(report))
+	for pair: String in waiters.keys():
+		_print_asker(lab, pair, waiters[pair], "still waiting at the end")
 	lab.dispose()
 	case.teardown()
 	quit(0)
+
+
+## A watched never-past asker: "" while it still waits behind the hull, else how it ended.
+func _asker_outcome(lab, pair: String, ep: Array) -> String:
+	var names := pair.split("|")
+	var asker: Tank = lab.tank_of(names[0])
+	var hull: Tank = lab.tank_of(names[1])
+	if asker == null or not asker.is_alive():
+		return "asker died"
+	if hull == null or not hull.is_alive():
+		return "the set-up hull died"
+	var way: Vector2 = ep[1]
+	if Vector2(asker.global_position.x - hull.global_position.x, asker.global_position.z - hull.global_position.z).dot(way) > 0.0:
+		return "got past"
+	var mover := Movement.of(asker)
+	if mover == null or not mover.is_under_way():
+		return "stopped (no longer under way)"
+	return ""
+
+
+func _asker_tick(asker: Tank, hull: Tank, ep: Array, mover: Movement) -> void:
+	if asker.real_velocity.length() < 1.0 and asker.global_position.distance_to(hull.global_position) < 20.0:
+		ep[3] = int(ep[3]) + 1
+	if int(ep[4]) < 0 and mover != null and ep[2] != Vector3.INF and mover._goal.distance_to(ep[2]) > 5.0:
+		ep[4] = Engine.get_physics_frames()
+
+
+func _print_asker(lab, pair: String, ep: Array, outcome: String) -> void:
+	var names := pair.split("|")
+	var asker: Tank = lab.tank_of(names[0])
+	var hull: Tank = lab.tank_of(names[1])
+	var goal: Vector3 = ep[2]
+	var row := {"asker": names[0], "hull": names[1], "refused_s": snappedf(int(ep[0]) / float(SimClock.TICK_RATE), 0.1),
+			"outcome": outcome, "after_s": snappedf((Engine.get_physics_frames() - int(ep[0])) / float(SimClock.TICK_RATE), 0.1),
+			"goal": [snappedf(goal.x, 0.1), snappedf(goal.z, 0.1)] if goal != Vector3.INF else null,
+			"sat_near_s": snappedf(int(ep[3]) / float(SimClock.TICK_RATE), 0.1),
+			"goal_moved_after_s": snappedf((int(ep[4]) - int(ep[0])) / float(SimClock.TICK_RATE), 0.1) if int(ep[4]) >= 0 else -1.0}
+	if asker != null:
+		row["asker_at"] = [snappedf(asker.global_position.x, 0.1), snappedf(asker.global_position.z, 0.1)]
+		if goal != Vector3.INF:
+			row["goal_m"] = snappedf(Vector2(goal.x - asker.global_position.x, goal.z - asker.global_position.z).length(), 0.1)
+		if hull != null:
+			row["hull_m"] = snappedf(asker.global_position.distance_to(hull.global_position), 0.1)
+	print("TRAFFIC_ASKER " + JSON.stringify(row))
 
 
 ## The nearest hull (any team) whose box is within WAY_GAP_M of this one's and whose centre lies ahead along `way`.
