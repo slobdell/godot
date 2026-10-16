@@ -23,6 +23,10 @@ branches, so workers don't push.
 | **native** | `godot-native` (4) | nothing alone: every pair (T3b-c first); the four slow twin files split | the T3b-c pair |
 | **planner** | `godot-planner` (6) | the War Rig's planned turns on the laptop without the tick cost (SLICE per preset); the side gate for brains | CP-S side gate |
 
+**His laptop's native library was stale (2026-10-16 ~00:40 PDT, fixed at `19df5cc0`):** built 10-13, so round 31's
+`avoidance_gather` call errored every tick and his game went choppy. Rebuilt; `make run/skirmish/demo` now rebuild a stale
+library first (`native-fresh`). `19df5cc0` (mk/play.mk + three planner .uid files) is unchecked: it rides the next main check.
+
 **The orchestrator's first jobs:** get CP-T on main (merge the T3b-c pair back to back, `make sim-baseline-adopt` with each
 moved line's reason, then T1c-b2); file every bar in `workstreams.md` *Bars (round 32)* before its numbers; relay CP-S to
 brains when it lands; record the manoeuvre ↔ brains re-seat agreement (C32.5) as a ruling; run `tools/merge_check_needed.sh`
