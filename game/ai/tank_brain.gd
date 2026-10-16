@@ -184,7 +184,8 @@ const TRANSIT_LEAD_MAX_M := 20.0
 ## builder0) it backed onto its post and ended 153-162 degrees from his heading, a wheeled turret hull nothing turns at
 ## rest. Now with a drawn facing it backs on only while that facing is within Manoeuvre.FACING_KEEP_DEG of its nose (so
 ## backing in ends near it), else it drives on nose-first carrying the facing, as the move it replaced did.
-static var HOLD_RETURN_FACED := not OS.get_cmdline_user_args().has("--hold-return=old")
+## PARKED (B11 judged 2026-10-16: wheels/fixed worse, s66 Guns_5 still > 100 deg): OFF; `--hold-return=faced` turns it on.
+static var HOLD_RETURN_FACED := OS.get_cmdline_user_args().has("--hold-return=faced")
 
 
 func _hold_return(spot: Vector3, here: Vector3, forward: Vector3) -> Dictionary:

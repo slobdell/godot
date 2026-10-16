@@ -1,0 +1,235 @@
+[
+  {
+    "armed": "screen",
+    "arrived": true,
+    "at": [
+      20.3,
+      95.1
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": false,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "screen": [
+        0.499999910593033,
+        -0.866025447845459
+      ]
+    },
+    "members": 19,
+    "nearest_enemy_at_press_m": 178.3,
+    "nearest_enemy_m": 83.8,
+    "scenario": "faced_screen",
+    "settled_after_s": 34.5,
+    "squads": [
+      {
+        "arrived": true,
+        "crews": 3,
+        "crews_told": 1,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 109.1,
+            "id": "gang_tank",
+            "still": true,
+            "unit": "Green_Guns_1"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 54.6,
+            "id": "gang_tank",
+            "still": true,
+            "unit": "Green_Guns_4"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 31.6,
+            "id": "gang_tank",
+            "still": true,
+            "unit": "Green_Guns_6"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 64.2,
+        "line_error_deg": 6.1,
+        "line_spread_m": 38.9,
+        "moving": 0,
+        "ok": false,
+        "squad": "Guns"
+      },
+      {
+        "arrived": true,
+        "crews": 3,
+        "crews_told": 1,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 116.0,
+            "id": "gang_tank",
+            "still": true,
+            "unit": "Green_Guns_2"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 4.1,
+            "id": "gang_tank",
+            "still": true,
+            "unit": "Green_Guns_3"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 103.7,
+            "id": "gang_tank",
+            "still": true,
+            "unit": "Green_Guns_5"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 80.6,
+        "line_error_deg": 16.0,
+        "line_spread_m": 45.0,
+        "moving": 0,
+        "ok": false,
+        "squad": "Guns"
+      },
+      {
+        "arrived": true,
+        "crews": 5,
+        "crews_told": 1,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 26.7,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_1"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 46.8,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_10"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 15.1,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_12"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 0.7,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_2"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 100.2,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_7"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 16.8,
+        "line_error_deg": 0.1,
+        "line_spread_m": 67.3,
+        "moving": 0,
+        "ok": false,
+        "squad": "Hunters"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 43.6,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_11"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 48.4,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_13"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 19.4,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_3"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 9.7,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_9"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 25.8,
+        "line_error_deg": 0.0,
+        "line_spread_m": 61.8,
+        "moving": 0,
+        "ok": false,
+        "squad": "Hunters"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 38.7,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_4"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 94.9,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_5"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 27.6,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_6"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 147.2,
+            "id": "gang_ifv",
+            "still": true,
+            "unit": "Green_Hunters_8"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 61.7,
+        "line_error_deg": 6.5,
+        "line_spread_m": 75.5,
+        "moving": 0,
+        "ok": false,
+        "squad": "Hunters"
+      }
+    ]
+  }
+]

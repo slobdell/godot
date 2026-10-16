@@ -1,0 +1,109 @@
+[
+  {
+    "armed": "screen",
+    "arrived": true,
+    "at": [
+      32.1,
+      95.7
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": false,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "screen": [
+        0.499999940395355,
+        -0.866025447845459
+      ]
+    },
+    "members": 7,
+    "nearest_enemy_at_press_m": 180.1,
+    "nearest_enemy_m": 157.1,
+    "scenario": "faced_screen",
+    "settled_after_s": -1.0,
+    "squads": [
+      {
+        "arrived": true,
+        "crews": 3,
+        "crews_told": 1,
+        "each": [
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 28.8,
+            "id": "syn_artillery",
+            "still": true,
+            "unit": "Green_Battery_1"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 1.8,
+            "id": "syn_artillery",
+            "still": true,
+            "unit": "Green_Battery_2"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 23.3,
+            "id": "syn_artillery",
+            "still": false,
+            "unit": "Green_Battery_3"
+          }
+        ],
+        "gun_error_deg": 30.0,
+        "hull_error_deg": 18.0,
+        "line_error_deg": 1.3,
+        "line_spread_m": 38.5,
+        "moving": 1,
+        "ok": false,
+        "squad": "Battery"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 31.3,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_1"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 15.7,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_2"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 32.8,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_3"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 9.7,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_4"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 1.3,
+        "line_error_deg": 5.6,
+        "line_spread_m": 70.5,
+        "moving": 0,
+        "ok": true,
+        "squad": "Eyes"
+      }
+    ]
+  }
+]

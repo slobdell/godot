@@ -1,0 +1,144 @@
+[
+  {
+    "armed": "support_by_fire",
+    "arrived": false,
+    "at": [
+      27.8,
+      94.9
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": true,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "support_by_fire": [
+        0.50000011920929,
+        -0.866025328636169
+      ]
+    },
+    "members": 10,
+    "nearest_enemy_at_press_m": 180.1,
+    "nearest_enemy_m": 178.1,
+    "scenario": "faced_support_by_fire",
+    "settled_after_s": 15.0,
+    "squads": [
+      {
+        "arrived": false,
+        "crews": 3,
+        "crews_told": 3,
+        "each": [
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 1.3,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_1"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 0.4,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_3"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 0.4,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_6"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 0.7,
+        "line_error_deg": 2.8,
+        "line_spread_m": 27.9,
+        "moving": 0,
+        "ok": true,
+        "squad": "Eyes"
+      },
+      {
+        "arrived": false,
+        "crews": 3,
+        "crews_told": 3,
+        "each": [
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 0.6,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_2"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 0.9,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_5"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 1.6,
+            "id": "syn_tank",
+            "still": true,
+            "unit": "Green_Guns_1"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 0.1,
+        "line_error_deg": 6.2,
+        "line_spread_m": 32.9,
+        "moving": 0,
+        "ok": true,
+        "squad": "Eyes"
+      },
+      {
+        "arrived": false,
+        "crews": 4,
+        "crews_told": 4,
+        "each": [
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 2.1,
+            "id": "syn_scout",
+            "still": true,
+            "unit": "Green_Eyes_4"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 0.8,
+            "id": "syn_tank",
+            "still": true,
+            "unit": "Green_Guns_2"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 1.8,
+            "id": "syn_tank",
+            "still": true,
+            "unit": "Green_Guns_3"
+          },
+          {
+            "class": "hover/turret",
+            "hull_error_deg": 0.5,
+            "id": "syn_tank",
+            "still": true,
+            "unit": "Green_Guns_4"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 1.3,
+        "line_error_deg": 11.9,
+        "line_spread_m": 46.1,
+        "moving": 0,
+        "ok": true,
+        "squad": "Guns"
+      }
+    ]
+  }
+]

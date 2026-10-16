@@ -1,0 +1,8 @@
+B11 paired runs: 144 (on 144, off 144)
+crews > 90 deg off: on 377/1896 v off 391/1896; one-sided Fisher p (on fewer) 0.2997
+  hover/turret     on 1/306 v off 8/306
+  tracks/turret    on 2/78 v off 2/78
+  wheels/fixed     on 75/498 v off 38/498
+  wheels/turret    on 299/1014 v off 343/1014
+runs never settled: on 85 v off 73; paired settled_after_s median diff +0.0 s over 44
+worst on-arm crew: (179.8, ('gangs', 'faced_support_by_fire-355'), 'Green_Battery_4')

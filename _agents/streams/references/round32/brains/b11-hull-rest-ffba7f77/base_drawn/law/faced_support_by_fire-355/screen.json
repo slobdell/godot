@@ -1,0 +1,116 @@
+[
+  {
+    "armed": "support_by_fire",
+    "arrived": false,
+    "at": [
+      17.4,
+      96.1
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": false,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "support_by_fire": [
+        0.499999910593033,
+        -0.866025447845459
+      ]
+    },
+    "members": 8,
+    "nearest_enemy_at_press_m": 179.9,
+    "nearest_enemy_m": 189.4,
+    "scenario": "faced_support_by_fire",
+    "settled_after_s": -1.0,
+    "squads": [
+      {
+        "arrived": false,
+        "crews": 4,
+        "crews_told": 4,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 157.4,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_1"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 37.5,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_2"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 36.7,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_3"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 172.1,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_4"
+          }
+        ],
+        "gun_error_deg": 30.0,
+        "hull_error_deg": 108.4,
+        "line_error_deg": 10.8,
+        "line_spread_m": 36.7,
+        "moving": 0,
+        "ok": false,
+        "squad": "Battery"
+      },
+      {
+        "arrived": false,
+        "crews": 4,
+        "crews_told": 4,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 106.1,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_1"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 76.5,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_2"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 122.5,
+            "id": "law_scout",
+            "still": false,
+            "unit": "Green_Eyes_3"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 2.4,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_4"
+          }
+        ],
+        "gun_error_deg": 72.2,
+        "hull_error_deg": 81.6,
+        "line_error_deg": 6.6,
+        "line_spread_m": 49.0,
+        "moving": 1,
+        "ok": false,
+        "squad": "Eyes"
+      }
+    ]
+  }
+]

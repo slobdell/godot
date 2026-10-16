@@ -80,6 +80,25 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### B11 JUDGED: FAILS lines 2 and 3; PARKED (OFF by default, `--hold-return=faced`) (2026-10-16 ~16:30 PDT)
+Check on `c029cf70` (builder0): exited 0, 2700/0 (B11 ON), sim-baseline unmoved. Series on `ffba7f77` (= `c029cf70` +
+docs), builder0, hull-rest drawn, 4 factions × seeds 350–355 × 6 faced tasks, n 144 runs an arm, on v
+`--hold-return=old`; rows `references/round32/brains/b11-*-ffba7f77.*` (screen.json per run, the two tables).
+
+| line | on v off | result |
+|---|---|---|
+| (1) crews > 90° from his heading, pooled | 377 v 391 of 1896 (Fisher one-sided p 0.30); wheels/turret 299 v 343, hover 1 v 8, tracks 2 v 2, **wheels/fixed 75 v 38** | PASS (on < off) |
+| (2) s66 Green_Guns_5 ≤ 90° in ≥ 2 of 3 on | on 104.5 / 125.8 / 122.4°; off 126.1 / 128.5 / 108.2° | **FAIL** |
+| (3) no class median worse at p < 0.05; never settled ≤ off + 2; settle ≤ +2 s | **wheels/fixed faced_move 7.5 v 3.0° (p 0.000), faced_right 5.4 v 3.7° (p 0.042)**; wheels/turret faced_move **17.3 v 48.4°** (p 0.004), faced_right **21.0 v 43.6°** (p 0.006); never settled **85 v 73** (faced_move 12 v 5); settle paired median +0.0 s | **FAIL** |
+| (4) suite / sim-baseline | 2700/0 / unmoved | PASS |
+| (5) worst on-arm crew | 179.8°, gangs faced_support_by_fire s355 Green_Battery_4 (not traced: the bar already failed) | — |
+
+**Reading:** for turreted wheeled hulls (his rigs) the faced return is a large gain on the two tasks it touches
+(medians halved), but (a) fixed-gun wheeled hulls lose (they backed in aligned before; nose-first they end off), and
+(b) the named case still ends > 100°: the return completes inside the 6 m settle radius still turned, and nothing faces
+a wheeled turret hull at rest (manoeuvre's turn-the-hull, M1b). A B11b limited to `mount == "turret"` keeps (1)'s gain
+and drops (a), but would still miss (2): the pass case needs the face at rest. Round-33 candidate, best paired with M1b.
+
 ### NOW (2026-10-16 ~10:10 PDT): the order is B11's check + series, then B10b once C32.10's swap ships, then v6
 - **R32.6 DONE (`03aa0c5d`):** test_tactics_body's run-order dependence was an overlapping spawn in its stage, separated
   by physics only in a process's first match (no script static: 12 caches cleared and native off changed nothing;

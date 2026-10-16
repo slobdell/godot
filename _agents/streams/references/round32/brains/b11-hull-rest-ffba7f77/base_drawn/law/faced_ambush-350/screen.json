@@ -1,0 +1,158 @@
+[
+  {
+    "armed": "ambush",
+    "arrived": false,
+    "at": [
+      17.7,
+      93.4
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": false,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "ambush": [
+        0.499999761581421,
+        -0.866025567054749
+      ]
+    },
+    "members": 12,
+    "nearest_enemy_at_press_m": 179.9,
+    "nearest_enemy_m": 188.4,
+    "scenario": "faced_ambush",
+    "settled_after_s": -1.0,
+    "squads": [
+      {
+        "arrived": false,
+        "crews": 5,
+        "crews_told": 5,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 138.1,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_1"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 178.9,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_2"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 103.8,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_3"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 111.1,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_4"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 105.9,
+            "id": "law_artillery",
+            "still": true,
+            "unit": "Green_Battery_5"
+          }
+        ],
+        "gun_error_deg": 0.2,
+        "hull_error_deg": 174.8,
+        "line_error_deg": 4.2,
+        "line_spread_m": 46.3,
+        "moving": 0,
+        "ok": false,
+        "squad": "Battery"
+      },
+      {
+        "arrived": false,
+        "crews": 4,
+        "crews_told": 4,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 8.3,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_1"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 2.3,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_2"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 5.4,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_3"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 115.8,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_5"
+          }
+        ],
+        "gun_error_deg": 19.6,
+        "hull_error_deg": 15.4,
+        "line_error_deg": 1.3,
+        "line_spread_m": 35.0,
+        "moving": 0,
+        "ok": false,
+        "squad": "Eyes"
+      },
+      {
+        "arrived": false,
+        "crews": 3,
+        "crews_told": 3,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 0.3,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_4"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 6.6,
+            "id": "law_scout",
+            "still": true,
+            "unit": "Green_Eyes_6"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 83.4,
+            "id": "law_scout",
+            "still": false,
+            "unit": "Green_Eyes_7"
+          }
+        ],
+        "gun_error_deg": 22.6,
+        "hull_error_deg": 27.8,
+        "line_error_deg": 20.5,
+        "line_spread_m": 60.6,
+        "moving": 1,
+        "ok": false,
+        "squad": "Eyes"
+      }
+    ]
+  }
+]
