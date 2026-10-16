@@ -141,6 +141,17 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
     6 never got past within 20 s (Green, all in the four runs where the base repacked: Foundry s45/s46 1 each, Parade
     s42/s43 2 each). Nothing was pending at the end. This is his yes as specified: the truck stays set up, so a squadmate
     behind it waits or goes round instead of moving it. Friendly-stuck time went down, not up.
+  - **The six, traced** (builder0, `8ce39559` = `cf81aedc` + a measurement-only TRAFFIC_ASKER line; the four runs re-run
+    reproduce the census, Foundry 15 refusals / 2 never-past, Parade 35 / 4;
+    `references/round32/traffic/t1cb2_r32_askers_8ce39559.jsonl`). Each asker was watched from its refusal to the end:
+    - got past late: Foundry s46 Battery_5 sat 26 s within 20 m of the set-up Battery_2 and got past 32 s after
+      the refusal; Parade s43 Battery_2 sat 20 s behind Battery_1 and got past at 25 s.
+    - settled short of its spot: Parade s43 Battery_3 sat 19 s behind Battery_4, then stopped 36 s on, 19 m short of
+      its spot; Foundry s45 Battery_2 sat 20 s behind Battery_1 and stopped 26 s on, 10 m short.
+    - ended by the fight: Parade s42 Battery_3 (12 s sat) and Hunters_1 (3.5 s sat; it had been re-ordered 78 m away)
+      were freed when the set-up hull died.
+    - **Worst, in player terms:** Parade s43, a mortar truck heading for its firing spot waited about 19 s behind a set-up
+      squadmate, never got by, and set up 19 m short of where it was sent.
   - The red above stands until planner's fix is on main. Then main merges into `traffic-t1cb2-r32` and the check re-runs.
     That green hash is the ship hash.
 
