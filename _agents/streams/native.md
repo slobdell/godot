@@ -94,7 +94,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   No `near` cooldown row (dropped by brains: a GDScript grounding latch instead). Waiting for brains' tested diff.
 **Lesson (twins):** every twin whose drive can reach `_planned_reverse` must snapshot `MoverState.world_capture()` (the
 planner seam), or a crew the live arm hands the seam is inherited by the native arm. And a twin for code that is not on
-main yet must name the new members by string (`get`/`call`), or the file fails lint on main.
+main yet must name the new members by string (`get`/`call`), or the file fails lint on main. A pair tree takes stream/native's TESTS
+whole (merge the named hash), never one file: `test_native_h1b` extends `ExecuteTwinCase`, and the first H1b pair cut
+(`5d6d7414`) lost a check to lint on that.
+- **H1b pair tree:** `pair/h1b-on` `fa2d9e31` (main `2fc43a47` + manoeuvre `e8e20ca9` + stream/native `981e336b` +
+  H1B_DEFAULT true; worktree `../godot-native-h1b`). Plain check RUNNING (unit `native-h1b-check2`).
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
   serial `make native test FILTER=…`, n 1, while a heavy check ran beside it): test_native_execute 472 s,
   test_native_drive 330 s, test_native_traffic_hold 253 s (+ `_owned` 193 s, round 31's split), test_native_wall 193 s;
