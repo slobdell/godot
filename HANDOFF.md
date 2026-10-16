@@ -55,7 +55,11 @@ used to pack up) never got past a set-up truck within 20 s. **In his words:** "o
 about 19 s behind a set-up squadmate, never got by, and set up 19 m short." Of the six (traced, `8ce39559`): 2 got by late
 (25–32 s), 2 set up 10–19 m short, 2 were freed when the set-up truck died. Five are mortar trucks queued behind ANOTHER
 set-up mortar truck (the sixth, a Hunters hull re-ordered 78 m away). A follow-up candidate (not this round's): C32.10's seat swap for two artillery crews of one battery. Waits on the capture fix, then one check, then ships.
-**Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
+**MERGED ~08:20 PDT: planner's capture() fix `8904c9c4` → main `7a5cb5e5`** (twin teardown only; its check 2693/1, the red
+being R32.6's). **⚠ R32.6: `test_tactics_body::test_his_three_squads_keep_together` is RED ON MAIN, order-dependent** (fails
+alone on main's code; passed in 6fcfbe46's full check by luck of order): a static carried between tests, so possibly between
+matches in one play session. Brains owns it. Traffic re-checks T1c-b2 on the new main.
+**(was) Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
 traffic re-checks T1c-b2 on it.
 
 **Main check on `0e49fb3e` (~04:25 PDT): NOT green, NOT red** (builder0 `exited 2`, 24 of 25 targets passed; `test` killed
