@@ -137,6 +137,8 @@ CPH_FLAGS_ghost := --traffic-off=ghost --brains-off=native
 CPH_FLAGS_realslow := --brains-off=native,realslow
 # M1b(2)'s judged arms through the same runner (one flag, GDScript path; base = `off`).
 CPH_FLAGS_turnhull := --nav-off=turnhull --brains-off=native
+# Round 32: H1b's judged arm through the same runner (base = `off`; H1b's counters ride on MANOEUVRE_TURNS and FIGHT_CENSUS).
+CPH_FLAGS_h1b := --nav-off=h1b --brains-off=native
 CPH_FLAGS = $(CPH_FLAGS_$(CPH_ARM))
 # CPH_SEEDS=a-b (make remote's T is word-split, so a range, not a list): the stage's seeds; empty = the stage's default.
 CPH_SEEDS ?=
