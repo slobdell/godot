@@ -206,6 +206,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   drifts with successive matches in one process (41.0 → 37.0 → 28.5): a second, cumulative effect (each squad on its own
   route). Treated as a possible play bug (a session's third skirmish v its first); script caches, then NavigationServer
   regions from earlier arenas, are the suspects. The line is not loosened; B11 waits on it.
+  **CLOSED ~13:15 PDT (brains, stream `c029cf70`, test stage only):** clearing all twelve caches changed nothing (not script
+  state); a hull touching something at spawn is moved on the first frame differently between a process's matches (7 cm),
+  and the stage snapped wherever physics left it. Fix: after start(), snap each hull's INTENDED spawn, zero velocity. One
+  process (builder0): on 15.5, 15.5, 15.5; off 41.0, 37.0, 41.0 (a residual off wobble from contact-level physics at ~1.9 s,
+  time-boxed); the line holds in every order (on/off ≤ 0.42 v 0.5). **Play side, the orchestrator's reading:** a determinism
+  note, not a bug he'd feel (deployments are clear of each other in all four factions; a skirmish is a fresh scene; a
+  host-simulated match does not need cross-process lockstep). Recorded in orientation's trip-ups (brains' line 82).
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
