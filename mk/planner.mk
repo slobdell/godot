@@ -111,11 +111,14 @@ planner-census: native import ## planner P6: plan requests a tick in a PLANNER_C
 # seam's per-run report). Heavy (NAV_JOBS runs at once): make remote T="planner-series". The seeds are the bar's
 # FRESH ones (133-145); tuning never touches them.
 PLANNER_SERIES_SEEDS ?= 133 134 135 136 137 138 139 140 141 142 143 144 145
+# Round 31 (the orchestrator's ruling on the first judged series, 2026-10-15 ~09:30 PDT): 133-145 became the DIAGNOSIS
+# set; the second (last) judged series runs on these FRESH seeds -- `make planner-series-fresh`.
+PLANNER_SERIES_FRESH_SEEDS ?= 172 173 174 175 176 177 178 179 180 181 182 183 184
 PLANNER_SERIES_SQUADS ?= mixed rigs
 PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
 
 .PHONY: planner-series
-planner-series: import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
+planner-series: native import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
 	@rm -rf $(PLANNER_SERIES_DIR) && mkdir -p $(PLANNER_SERIES_DIR)
 	@echo ">> planner-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SERIES_SEEDS) | squads $(PLANNER_SERIES_SQUADS)"
 	@for arm in base candidate; do flags="--brains-off=native_drive"; [ "$$arm" = base ] || flags="$$flags --nav-off=planner"; \
@@ -124,3 +127,60 @@ planner-series: import ## planner CP-P1: the judged Terminus series, base v the 
 			NAV_FLAGS="$$flags" > $(PLANNER_SERIES_DIR)/$$arm.out 2>&1 || { tail -20 $(PLANNER_SERIES_DIR)/$$arm.out; echo ">> planner-series: arm $$arm REFUSED"; exit 1; }; \
 		mv $(BUILD_DIR)/nav-drive $(PLANNER_SERIES_DIR)/$$arm; done
 	@$(PYTHON) tests/planner/series_verdict.py base=$(PLANNER_SERIES_DIR)/base candidate=$(PLANNER_SERIES_DIR)/candidate | tee $(PLANNER_SERIES_DIR)/verdict.txt
+
+# Round 31 (planner CP-P1, bar lines (c)-(e)): the judged chain's other stages on manoeuvre's / tactics' targets with
+# the bar's two arms, ONE arm a call (lesson 311). PLANNER_JUDGE_ARM = base | candidate: both arms the GDScript drive
+# (--brains-off=native_drive) with the C++ planner on; the candidate adds --nav-off=planner (the seam ON). The seeds
+# are the bar's FRESH ones (hull-rest 60-65, fights 181-204); tuning never touches them. Heavy: make remote T=...
+PLANNER_JUDGE_ARM ?= base
+PLANNER_JUDGE_FLAGS = --brains-off=native_drive$(if $(filter candidate,$(PLANNER_JUDGE_ARM)), --nav-off=planner)
+PLANNER_JUDGE_DIR := $(BUILD_DIR)/planner-judge
+PLANNER_HULL_SEEDS ?= 60 61 62 63 64 65
+PLANNER_FIGHT_SEEDS ?= 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204
+
+.PHONY: planner-judge-hull-rest
+planner-judge-hull-rest: native import ## planner CP-P1 (d): manoeuvre-hull-rest, PLANNER_JUDGE_ARM's two arms (drawn + clicked) on PLANNER_HULL_SEEDS; both arms called = the A/B tables
+	@echo ">> planner-judge-hull-rest on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_JUDGE_ARM)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_JUDGE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
+		M1_BASE_OFF= M1_NEW_OFF=planner M1_FLAGS="--turn-states --brains-off=native_drive" HULL_SEEDS="$(PLANNER_HULL_SEEDS)"
+
+.PHONY: planner-series-fresh
+planner-series-fresh: ## planner CP-P1: the second judged series on the FRESH seeds (PLANNER_SERIES_FRESH_SEEDS), the first's seeds being the diagnosis set
+	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_SERIES_FRESH_SEEDS)"
+
+.PHONY: planner-judge-fights
+planner-judge-fights: native import ## planner CP-P1 (e): manoeuvre-fights on PLANNER_FIGHT_SEEDS for PLANNER_JUDGE_ARM -> build/planner-judge/fights-<arm>; both arms present = fight_table.py base v candidate
+	@mkdir -p $(PLANNER_JUDGE_DIR)
+	@echo ">> planner-judge-fights on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
+	@$(MAKE) --no-print-directory manoeuvre-fights FIGHT_SEEDS="$(PLANNER_FIGHT_SEEDS)" NAV_FLAGS="$(PLANNER_JUDGE_FLAGS)"
+	@rm -rf $(PLANNER_JUDGE_DIR)/fights-$(PLANNER_JUDGE_ARM) && mv $(BUILD_DIR)/manoeuvre/fights $(PLANNER_JUDGE_DIR)/fights-$(PLANNER_JUDGE_ARM)
+	@if [ -d $(PLANNER_JUDGE_DIR)/fights-base ] && [ -d $(PLANNER_JUDGE_DIR)/fights-candidate ]; then \
+		$(PYTHON) tests/manoeuvre/fight_table.py $(PLANNER_JUDGE_DIR)/fights-base $(PLANNER_JUDGE_DIR)/fights-candidate | tee $(PLANNER_JUDGE_DIR)/fights-table.txt; fi
+
+.PHONY: planner-judge-bridge
+planner-judge-bridge: native import ## planner CP-P1 (e): bridge-pooled (18 runs, deterministic row) for PLANNER_JUDGE_ARM
+	@echo ">> planner-judge-bridge | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
+	@$(MAKE) --no-print-directory bridge-pooled BRIDGE_FLAGS="$(PLANNER_JUDGE_FLAGS)"
+
+.PHONY: planner-judge-cp2
+planner-judge-cp2: native import ## planner CP-P1 (c): scenario_cp2 (the scout's orbit, a no-change guard) for PLANNER_JUDGE_ARM
+	@echo ">> planner-judge-cp2 | arm $(PLANNER_JUDGE_ARM) ($(PLANNER_JUDGE_FLAGS))"
+	@$(MAKE) --no-print-directory ai-scenarios FILTER=scenario_cp2 AI_SCEN_FLAGS="$(PLANNER_JUDGE_FLAGS)"
+
+# Round 31 (CP-P1's diagnosis set, the orchestrator's ruling on the first judged series): ONE Terminus drive run of the
+# series' recipe with one hull traced -- the drive script's `--trace=<unit>` (its driving twice a second) and the
+# census's `--turn-trace=<unit>` (the seam's own lines: taken, planned, released, aborted). Light lane.
+PLANNER_TRACE_SEED ?= 134
+PLANNER_TRACE_SQUAD ?= rigs
+PLANNER_TRACE_UNIT ?= Green_S0_4
+PLANNER_TRACE_ARM ?= candidate
+PLANNER_TRACE_DIR := $(BUILD_DIR)/planner-trace
+.PHONY: planner-trace-drive
+planner-trace-drive: native import ## planner CP-P1 diagnosis: the series' drive, one seed, one hull traced (PLANNER_TRACE_SEED/SQUAD/UNIT/ARM) -> build/planner-trace/<arm>-<squad>-<seed>.log
+	@mkdir -p $(PLANNER_TRACE_DIR)
+	@echo ">> planner-trace-drive on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $(PLANNER_TRACE_ARM) $(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED) trace $(PLANNER_TRACE_UNIT)"
+	@flags="--brains-off=native_drive --trace=$(PLANNER_TRACE_UNIT) --turn-trace=$(PLANNER_TRACE_UNIT)"; \
+		[ "$(PLANNER_TRACE_ARM)" = base ] || flags="$$flags --nav-off=planner"; \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_TRACE_SQUAD)" DRIVE_SEEDS="$(PLANNER_TRACE_SEED)" NAV_FLAGS="$$flags" NAV_JOBS=1
+	@cp $(BUILD_DIR)/nav-drive/$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log $(PLANNER_TRACE_DIR)/$(PLANNER_TRACE_ARM)-$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log
+	@grep -cE "^NAV_DRIVE_TRACE |^PLANNER_SEAM " $(PLANNER_TRACE_DIR)/$(PLANNER_TRACE_ARM)-$(PLANNER_TRACE_SQUAD)-$(PLANNER_TRACE_SEED).log | sed 's/^/>> planner-trace-drive: trace lines /'

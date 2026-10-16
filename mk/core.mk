@@ -729,7 +729,7 @@ sim-variants: import ## Candidate baseline lines on every dealt map -> build/sim
 sim-baseline-layouts: import ## Which maps the sim baseline covers (dealt) and which it leaves out (candidates), read from the game
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py layouts
 
-sim-baseline-record: import ## Read every dealt map TWICE on THIS machine -> build/sim-baseline/sim_baseline_adopt.json (adopting is make sim-baseline-adopt)
+sim-baseline-record: import native-for-check ## Read every dealt map TWICE on THIS machine -> build/sim-baseline/sim_baseline_adopt.json (adopting is make sim-baseline-adopt)
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py read $(BUILD_DIR)/sim-baseline
 	@echo "  to adopt, use 'make sim-baseline-adopt': it reads on builder0 (the canonical machine) and merges every line"
 
@@ -738,7 +738,7 @@ sim-baseline-record: import ## Read every dealt map TWICE on THIS machine -> bui
 # builder0 and a disagreement on ANY map refuses the whole adoption. The merge keeps every other machine's lines,
 # adds a dealt map's missing line, drops a line for a map no longer dealt, and prints ONE commit message that lists
 # each map before and after (Invariant 2: a moved baseline with no named cause is a regression nobody noticed).
-sim-baseline-adopt-read: import ## (on the build box) read every dealt map's sim hash TWICE and refuse if any two disagree
+sim-baseline-adopt-read: import native-for-check ## (on the build box) read every dealt map's sim hash TWICE and refuse if any two disagree
 	@$(SIM_BASELINE_ENV) $(PYTHON) tools/sim_baseline.py read $(BUILD_DIR)/sim-baseline
 
 sim-baseline-adopt: ## Read every dealt map's sim hash TWICE on builder0, refuse a disagreement, adopt the moved lines here, print the commit message (WHY='...' WHY_UNMOVED='...' fill it in)

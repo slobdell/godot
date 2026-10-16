@@ -103,3 +103,80 @@ static func own(state: Dictionary) -> Dictionary:
 
 static func command(cmd: TankCommand) -> Array:
 	return [cmd.throttle, cmd.turn, cmd.aim_point, cmd.fire]
+
+
+# ---- Round 31 (planner CP-P1): the world a drive can change besides the movers -- the lattice planner's seam -------
+# PlannerSeam's static table (crews, queue, retries, counters, the live search session) changes when a held crew's
+# drive runs; a twin must start both arms from the same seam and compare what each left. Loaded by path (absent on a
+# tree without the planner: {} and no compare).
+const PLANNER_SEAM := "res://game/ai/planner/planner_seam.gd"
+
+
+static func _seam() -> Script:
+	return load(PLANNER_SEAM) if ResourceLoader.exists(PLANNER_SEAM) else null
+
+
+## The seam's snapshot ("@snap", restorable) and its comparable form ("cmp"), or {} without a seam or with it OFF.
+static func world_capture() -> Dictionary:
+	var seam := _seam()
+	if seam == null or not bool(seam.call("on")):
+		return {}
+	var snap: Dictionary = seam.call("capture")
+	var crews := {}
+	for name: String in snap["crews"]:
+		var crew: Object = snap["crews"][name]
+		var row := {}
+		for prop: Dictionary in crew.get_property_list():
+			if (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) == 0:
+				continue
+			var key := String(prop["name"])
+			var value: Variant = crew.get(key)
+			if key == "executor":
+				row[key] = _executor_row(value)
+			elif key == "req":
+				row[key] = _req_row(value)
+			else:
+				row[key] = _copy(value)
+		crews[name] = row
+	return {"@snap": snap, "cmp": {"crews": crews, "queue": snap["queue"], "retry": snap["retry"],
+			"counters": snap["counters"], "last_refusal": snap["last_refusal"]}}
+
+
+static func _executor_row(executor: Object) -> Variant:
+	if executor == null:
+		return null
+	var state: Dictionary = executor.call("to_state")
+	var row := {}
+	for key: String in state:
+		if key == "tank":
+			continue  # the hull itself (one object both arms)
+		var value: Variant = state[key]
+		row[key] = (value as Object).get("legs") if key == "plan" and value != null else _copy(value)
+	return row
+
+
+static func _req_row(req: Object) -> Variant:
+	if req == null:
+		return null
+	var row: Dictionary = req.call("to_native")
+	var world: Dictionary = (row.get("world", {}) as Dictionary).duplicate()
+	world.erase("nav")  # NativeBridge.nav: one object both arms
+	row["world"] = world
+	return row
+
+
+static func world_restore(world: Dictionary) -> void:
+	if world.is_empty():
+		return
+	_seam().call("restore", world["@snap"])
+
+
+static func world_diff(a: Dictionary, b: Dictionary) -> String:
+	if a.is_empty() and b.is_empty():
+		return ""
+	var ca: Dictionary = a.get("cmp", {})
+	var cb: Dictionary = b.get("cmp", {})
+	for key: String in ca:
+		if not cb.has(key) or typeof(ca[key]) != typeof(cb[key]) or ca[key] != cb[key]:
+			return "PlannerSeam.%s: %s v %s" % [key, var_to_str(ca[key]).left(200), var_to_str(cb.get(key)).left(200)]
+	return "" if ca.size() == cb.size() else "PlannerSeam: %s v %s" % [ca.keys(), cb.keys()]

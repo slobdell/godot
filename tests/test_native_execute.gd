@@ -33,7 +33,7 @@ static func _capture(movers: Array[Movement], ctl: OrderController) -> Array:
 	gun["s:friends"] = OrderController.held_for_friends
 	gun["c:visible"] = ctl.visible_enemy_names
 	gun["c:decided"] = ctl.movement.contact.decided.duplicate(true)
-	return [all, gun]
+	return [all, gun, MoverState.world_capture()]
 
 
 static func _restore(movers: Array[Movement], ctl: OrderController, state: Array) -> void:
@@ -52,6 +52,7 @@ static func _restore(movers: Array[Movement], ctl: OrderController, state: Array
 	OrderController.held_for_friends = gun["s:friends"]
 	ctl.visible_enemy_names = gun["c:visible"]
 	ctl.movement.contact.decided = (gun["c:decided"] as Dictionary).duplicate(true)
+	MoverState.world_restore(state[2])
 
 
 static func _diff(a: Array, b: Array) -> String:
@@ -64,7 +65,7 @@ static func _diff(a: Array, b: Array) -> String:
 		var y: Variant = b[1][key]
 		if typeof(x) != typeof(y) or (x is Object and not is_same(x, y)) or (not x is Object and x != y):
 			return "%s: %s v %s" % [key, x, y]
-	return ""
+	return MoverState.world_diff(a[2], b[2])
 
 
 static func _command(cmd: TankCommand) -> Array:

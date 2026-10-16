@@ -79,6 +79,12 @@ struct DriveConfig {
 	bool UNSTICK_BACK = false, KTURN_ARC = false;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
+	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs
+	// only with `Movement._off` empty). A crew the seam holds (PlannerSeam._crews has it) always takes the
+	// _planned_reverse callback, and the native unstick returns for it. False on a tree without the seam.
+	bool planner_on = false;
+	Object *planner_seam = nullptr;
+	Variant keep_planner_seam;
 	double HOLD_REACHED_M = 2.5, HOLD_SLOW_M = 16.0;
 	int64_t LIVE_TICKS = 3;
 	Object *traffic_script = nullptr, *native_traffic = nullptr;

@@ -120,27 +120,19 @@ Nothing.
 
 ## Status
 
-_Updated 2026-10-15 ~18:00 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, Opus), from main `e38fbce5` (CP-H shipped ON at `b352fa2a`)._
+_Updated 2026-10-14 ~23:20 PDT by the manoeuvre worker (`godot-manoeuvre`, `stream/manoeuvre`, Opus), from main `75dbbb7c`._
 
-### Report (FINAL, 2026-10-15 ~18:00 PDT)
-
-**Done.** H1 (`unstickback`), H2 (`kturnarc`), H3 (`realspeed`) built, gated and SHIPPED ON with brains' realslow through
-CP-H (every filed line passes; main `b352fa2a`). M6 tooling done. M1b(2) turn-hull PARKED (the filed rule; a round-32
-candidate). Handover counters (`esc_after_refusal`, `refusal_then_free`) landed on the planner's `last_refusal`. A clip for
-the lead: `~/projects/clips/round31/manoeuvre_rig_wedge_today_v_shipped_seed31_25c7421b.mp4` (`make manoeuvre-pin-clip`).
-**Green hash: `57f42af5`** (builder0 `make check exited 0`, 2645/0). Questions for the lead: none.
+### Report (running; updated 2026-10-15 ~02:30 PDT)
 
 | item | commit | state |
 |---|---|---|
-| **H1** escapes (`unstickback`) | `32b08f8c` → `426e6c6e` → **`f593f487`** | **SHIPPED ON** (main `b352fa2a`, CP-H). **R31.5 amended (at main): the redesign covers HULL pins only (ask → straight reverse ≤ 3 m by the sweep → stand and report); every pin with no hull (terrain, wall) takes round 29's escape bit for bit (`_round29_escape`)**. Why: CP-H's tree `68280cce` reddened the queued-task route test on some variants (realslow OFF, native); the trace showed a ground-pinned crew WITH room behind backed straight six times and the route drove it back in. Variant set 6/6 green (GDScript and native, realslow ON/OFF, a 0.25 m nudge, `998fe844`); native: no C++ change. OFF check of `f593f487` running (the merge candidate) |
-| **H2** arc (`kturnarc`) | `32b08f8c` → `0cf72ba7` | **SHIPPED ON** (coupled to unstickback); the C31.1 gate's scout orbit red → SCOPED to the braked hulls (≥ 10 m); `scenario_cp2` green on the flipped tree |
-| **H3** leads (`--gun-off=realspeed`) | `32b08f8c` | **SHIPPED ON**; fires in fights (23/24 seeds change), null on Terminus by construction |
-| merge-OFF | native's `pair/cph 9e1000d6` → main `298e4498` | done (merged OFF, then H1's fix `a2ef0b31`; CP-H's ON tree `130a069b`, ship `b352fa2a`) |
-| CP-H | ON `130a069b` / base+alone `a2ef0b31` | **ALL JUDGED LINES PASS** (2026-10-15, builder0; tables `references/round31/manoeuvre/cph_{terminus,hull_rest,fights}.txt`). (a) arrivals mixed 285→286, rigs 181→177 (bounds 8.2/7.0); (b) contacts mixed 1979→2158, rigs 6800→8914 (bound 4144); (c) pinned 3106→333 crew-s (−2773, se 488); (d) moving-at-75 s ≤ +2; (e) stuck 6578→3737; (f) bridge 18/18 both; (g) fights kills +14, deaths +17 (within 1.645 se); (i) fires_wall 43 of 602 (7.1%) = fallback. Alone arms (lesson 300, seeds differing on deterministic stages): unstickback fires everywhere; kturnarc fights 10/24 differ, kills +42/deaths +46 outside 2 se (symmetric), rigs contacts all from seed 114 = a plant/real grind (plant 9–12 m/s v real 0.05–0.7, round 29's escape at f 5430 doesn't free it) → coupling filed at main: kturnarc never ships without unstickback; realspeed fires in fights (23/24); realslow fires in fights only 2/24 (null on Terminus by construction). Deviation (accepted): 130a069b can't switch realslow OFF (brains to fix). Reported traces seeds 31/134 pending |
+| **H1** escapes (`unstickback`) | `32b08f8c` → `426e6c6e` | OPT-IN; the C31.1 gate found a terrain-pin stall (below) → R31.5 fallback; re-gate on `998fe844` running |
+| **H2** arc (`kturnarc`) | `32b08f8c` → `0cf72ba7` | OPT-IN; the C31.1 gate's scout orbit red → SCOPED to the braked hulls (≥ 10 m); `scenario_cp2` green on the flipped tree |
+| **H3** leads (`--gun-off=realspeed`) | `32b08f8c` | OPT-IN; clear on every gate stage |
+| merge-OFF | native's `pair/cph 9e1000d6` (my `197a65da` + native's mirror with the 7 exec_fields rows) | its plain check queued (native reports); my branch ALONE is red only on native's member table (R31.2-style pair rule): `9b257348` check exited 2, 2619/1, `test_native_exec_state::test_the_table_is_the_scripts_members` |
+| CP-H | — | waits on the re-gate green + native's ON pair + traffic T4 / brains realslow |
 | **M6** tooling | `9558eee3`, `eea19309` | done (the early-stop hook waits for traffic's runner on main) |
-| handover counters | this branch, after main `e38fbce5` | done: `esc_after_refusal`, `refusal_then_free` in `Movement.escape_arms()` (read 0 while the planner is OFF; CP-P1 shipped the planner ON at main `e175e660`, so they read live data from there: round 32's squadmate-loop work starts from them) |
-| pin clip | `87753fc7` | `make manoeuvre-pin-clip`; the lead's clip in `~/projects/clips/round31/` |
-| **M1b(2)** turn-hull | run 1 `6efd1ed9`, attempt 2 `25ef8f7e` | **PARKED** (the filed rule; recorded at main; a round-32 candidate in roadmap.md). Attempt 2 (the 'sector' lift) MISSED gate line (g): Terminus mixed arrivals 293 → 285 (diff −8, bound −7.5; seeds 146–158); rigs 177 → 179 pass; contact-ticks down both (mixed 2405 → 2089, rigs 15740 → 8810). Trace (seed 153 mixed, west street, 6 → 2): the "misses" COMPLETED at re-seated slots 7–14 m off (the tank and scout included); the element seats differently once its wheeled turret members turn. Turn-hull stays OFF on main. **Attempt 2's drawn hull-rest pair, for the record** (builder0, `25ef8f7e`, seeds 90–95, wheeled turret at rest, base → new): (a) now PASSES every point task — move 46.5 → 2.5° / 30 → 86 % within 15°, right 56.5 → 3.2° / 31 → 78 %, attack-move 45.0 → 3.8° / 24 → 91 % (the 'sector' lift reached the gang hulls: gang_ifv 37 → 62 %, gang_tank 41 → 60 % within 15° on the point tasks) — but (d) MISSES on attack-move: crews still moving at 75 s +13 v bound 11.2 (se 6.8); other tasks −6..+5. So attempt 2 misses TWO gate lines, (d) and (g). facekeep refusals by unit (new arm): gang_artillery 3098, artillery 1983, gang_tank 1939, gang_ifv 1285, scout 1247, law_scout 1033, law_tank 737, law_artillery 675 (11997 in all; face_none 1721). SBF gang_ifv drawn (seeds 25–30): 49.9 → 17.5° median, ≥ 45° 13 → 0. Bridge 18/18 both arms. Clicked + fights dropped by ruling. Round-32 reading: the hull turns are right once lifted; what costs is the crews that keep moving (attack-move) and the element's re-seating (Terminus mixed). Tables: `m1b2_run1_judged.txt`, `m1b2_terminus_judged.txt`, `m1b2_run2_terminus_judged.txt` |
+| **M1b(2)** turn-hull | run 1 `6efd1ed9`, attempt 2 `25ef8f7e` | **PARKED** (the filed rule; recorded at main; a round-32 candidate in roadmap.md). Attempt 2 (the 'sector' lift) MISSED gate line (g): Terminus mixed arrivals 293 → 285 (diff −8, bound −7.5; seeds 146–158); rigs 177 → 179 pass; contact-ticks down both (mixed 2405 → 2089, rigs 15740 → 8810). Trace (seed 153 mixed, west street, 6 → 2): the "misses" COMPLETED at re-seated slots 7–14 m off (the tank and scout included); the element seats differently once its wheeled turret members turn. Turn-hull stays OFF on main. Drawn hull-rest pair finishing for the record; clicked + fights dropped by ruling. Tables: `m1b2_run1_judged.txt`, `m1b2_terminus_judged.txt`, `m1b2_run2_terminus_judged.txt` |
 
 **The C31.1 gate (flipped tree, `make check NATIVE=off`, builder0) found two consumer defects before any series:**
 1. `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` (`6da94fc2`): 7 deck hits of 8 (needs ≥ 20 hits). Attributed
@@ -189,10 +181,8 @@ arm without it, R31.1). **Arms:** OFF = `--brains-off=native`; ALL = `--nav-off=
 ALONE (unstickback, kturnarc, realspeed, realslow, and ghost when T4 is in), REPORTED on the SAME judged seeds. Every run prints its flags (lesson 309). **Fresh seeds (no judged run of this stream has used
 them):** Terminus census and drive 110–122 (13), hull-rest 84–89 (4 factions × 6 tasks × 6 = 144 runs an arm, one arm per
 remote call, lesson 311), fights **214–237** (24; moved by the orchestrator before numbers: 190–213 overlapped CP-P1's 181–204), bridge-pooled's 18 cells. **Pass lines** (`judging.md` rows cited):
-- (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each. **No early stop
-  on this line (decided 2026-10-15 before any CP-H number):** on M1b(2) attempt 2's census `arrived:guard:0.10` read
-  SERIES PASS at run 6 where the full grid's 1.645 se line failed (the 10 %-of-base harm is ~4x the line's); the census is
-  cheap, so all 13 seeds run and the fixed line decides; the sequential reading (`manoeuvre-census-seq`) is reported.
+- (a) Terminus census, rigs and mixed apart (rows 73, 75): arrivals not down beyond 1.645 se paired, each; early stop by
+  `sequential.py arrived:guard:0.10`, never before 6 seeds, the row recorded.
 - (b) Terminus wall contact-ticks, rigs and mixed apart (rows 74, 76): ≤ base + 1.645 se paired, each, with and without
   each arm's two worst runs.
 - (c) hull-rest pinned crew-seconds (row 67): DOWN beyond 2 se paired at n = 144, ≤ 10 m hulls and rigs APART (rigs:
@@ -204,8 +194,8 @@ remote call, lesson 311), fights **214–237** (24; moved by the orchestrator be
 - (h) `scenario_cp2` (the scout orbit), `test_tactics_mixed_legs` (the Sumps causeway), `test_nav_wall_contact::
   test_a_hull_driven_at_a_wall_is_counted_as_steered_into_it` (round 30's wall-backing stage, R31.5's condition 2) and
   the WHOLE suite green on native's ON pair tree (the ship check).
-- (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall; fires_wall's SHARE of all fires — R31.5
-  amended: fallback = fires_wall by construction, condition 1 retired), asks, backs, backed v capped, refused, unstick_fires,
+- (i) Counters per stage and arm, REPORTED: escape fires by kind (hull/wall), asks, backs, backed v capped, refused,
+  **fallback** (R31.5 condition 1: fallback carrying most of fires_wall on the census is a finding), unstick_fires,
   press_escapes; an arm whose consumer never fires is a null (lesson 300).
 **CALLED 2026-10-15 ~08:30 PDT, case `allnoghost`** (T4 could not make its gate before 09:00). The A/B starts only when
 native's R31.4 tree reads `make check exited 0` (or exited 2 with sim-baseline its only red, moved as switches ON must).
@@ -286,7 +276,7 @@ at rest: median ≤ 15° and ≥ 70 % within 15°; (b) drawn line tasks not wors
   plans on Sumps 25 a side go to my unstick/H1):** `esc_after_refusal` (an escape within 3 s of the hull's last planner
   START_BLOCKED) and `refusal_then_free` (a START_BLOCKED hull 1.5 m on within 5 s by any rule). Needs the read-only
   `PlannerSeam.last_refusal(name) -> [frame, code]` (asked of the planner via the orchestrator); written the day the
-  seam is on main. Measurement only. **Landed** after main `e38fbce5` (tests: test_manoeuvre_escape +3).
+  seam is on main. Measurement only.
 
 ### Questions for the lead
 
@@ -294,43 +284,11 @@ None.
 
 ### Requests to other streams
 
-- **brains:** make `realslow` a toggle (`REAL_SLOW_DEFAULT`, on = default != named) so `--brains-off=realslow` can switch
-  it OFF now its default is ON (found on CP-H's tree `130a069b`; the orchestrator routed it).
-- **planner (round 32):** H1's squadmate loop (Known issues) is the next wedge to hand the planner's legs.
-
-### Playtest (what he would notice)
-
-- A War Rig or IFV that noses into a squadmate on a street no longer grinds there for a minute: it asks the friend to
-  move, backs up straight a few metres, and tries again (the clip: today's rig wedged at a floodlight 66 s, shipped
-  never more than 2 s). Pinned crew-seconds in the hull-rest probe 3106 → 333.
-- Rigs' k-turns follow the arc they really drive (no overshoot on the long hulls); gunners lead what a target really
-  does, not what its plant reports.
-- Still there (known issue below): a rig behind a squadmate that will NOT move can back-and-retry every ~20 s at the
-  end of a leg.
-
-### Merge notes
-
-- My branch after main `e38fbce5`: the handover counters (movement.gd statics, test_manoeuvre_escape +3 tests),
-  `make manoeuvre-pin-clip` + `tests/manoeuvre/pin_clip.gd`, the CP-H tables and traces under
-  `references/round31/manoeuvre/`. Nothing behavioural: the counters are measurement only and read 0 with the planner
-  OFF. No native mirror needed (statics keyed by crew name, not mover members; the watch runs before the native branch).
-- **Green: `57f42af5`** (main `e0dc981e` merged in; builder0, 2026-10-15 ~21:00 PDT: `make check exited 0`, tests 2645 passed /
-  0 failed, 24 targets passed, 2 not judged). The commit before it, `9c2afb8e`, was red only on `sim-baseline` (main's
-  re-recorded baselines not yet merged); tests 2645/0 there too. Commits after `57f42af5` touch this brief only.
+- **native (C31.2):** mirror H1–H3 when I name the settled hash (the drive's escape state machine `_escape_*`,
+  `_straight_room`, `_hull_room`; the signed arc in `_planned_reverse`; the two leads reading `REAL_SPEED_DEFAULT`). The
+  three `*_DEFAULT` consts are the only thing a ship flips. Base for H2: `lab/native-kturnarc` 40b89dd1 + the sign.
 
 ### Known issues
-
-- **H1 loops on a squadmate that won't move** (Terminus rigs seed 31, ON `130a069b`, builder0, n = 1): Green_S0_4 ends the
-  far-ring-road leg 9.1 m short touching Green_S0_2; ask, back 2–3 m, stand, drive into it again about every 21 s
-  (asks 29, backs 29, refused 0). Never silent, never freed: the 'pinned' ask does not move a squadmate parked at its
-  own slot. Round 32 (with the planner's legs, or a make-room ask that re-seats the blocker).
-- **kturnarc never ships without unstickback** (filed at main): alone it moved rigs' contact-ticks 6800 → 9685, all from
-  census seed 114, a plant/real grind on Block_7 (plant 9–12 m/s v real 0.05–0.7, round 29's escape at f 5430 does not free
-  it); its solo fights were bloodier on both sides (kills +42, deaths +46, outside 2 se).
-- **realslow is thin evidence**: it changed 2 of 24 fights and nothing on Terminus (no Element there). Its switch can't
-  be named OFF once its default is ON (brain_switches.gd; brains fix it, the orchestrator's note).
-- The planner's two named cases (Terminus 31 Green_S0_2 on Container40_8; 134's 65 s rig) do NOT reproduce on
-  `a2ef0b31`: both were measured on other commits.
 
 - **Long `make remote` wrappers die with the agent's shell** (found 2026-10-14 23:43): background jobs AND `setsid nohup`
   launches were TERMinated together the moment a later Bash call ended ("Shell cwd was reset"), leaving their builder0
