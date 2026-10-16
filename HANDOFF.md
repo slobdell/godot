@@ -48,6 +48,10 @@ the window opens", R31.10's box-state group, which doesn't block; test 2693 pass
 13 unmoved; perf-judge and scenario_perf NOT JUDGED, a busy box). It covers planner `530e85cf`, T3b-c (adopted lines) and
 B3b-2c. **What he plays now:** the Terminus crossing give-way, every crew across his bridge, the laptop planner preset
 (back to SLICE 2 with CP-Q's ship, C32.7). **Merged since:** native's splits `981e336b` → `6b3c9195` (test-only, R32.5).
+**T1c-b2 re-judged PASS (traffic, builder0, `cf81aedc`, census s41–46 × 3 maps, n 18, GDScript):** runs with a repack
+while firing 5/18 → 0/18 (Fisher p 0.023); friendly-stuck 789 → 696 crew-s, fast contacts 934 → 946, both inside guards;
+artillery 451 → 456; no baseline moves. **Its price, to tell him:** 6 squadmates (all Green, in the 4 runs where the truck
+used to pack up) never got past a set-up truck within 20 s. Waits on the capture fix, then one check, then ships.
 **Waiting:** planner's capture() fix `8904c9c4` (a latent main bug in test teardown) merges FIRST when green, then
 traffic re-checks T1c-b2 on it.
 
