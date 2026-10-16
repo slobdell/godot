@@ -218,11 +218,11 @@ func _with_refusal(code: String, at_frame: int) -> PackedStringArray:
 func test_an_escape_soon_after_a_blocked_start_refusal_is_counted() -> void:
 	var rate := Engine.physics_ticks_per_second
 	var was := _with_refusal(PackedPlan.START_BLOCKED, 1000)
-	assert_true(Movement.refusal_recent("Green_R_1", 1000 + rate * 2, PackedPlan.START_BLOCKED), "2 s after: recent")
-	assert_true(not Movement.refusal_recent("Green_R_1", 1000 + rate * 4, PackedPlan.START_BLOCKED), "4 s after: not")
-	assert_true(not Movement.refusal_recent("Green_R_2", 1000 + rate, PackedPlan.START_BLOCKED), "another crew: not")
+	assert_true(ManoeuvreCensus.refusal_recent("Green_R_1", 1000 + rate * 2, PackedPlan.START_BLOCKED), "2 s after: recent")
+	assert_true(not ManoeuvreCensus.refusal_recent("Green_R_1", 1000 + rate * 4, PackedPlan.START_BLOCKED), "4 s after: not")
+	assert_true(not ManoeuvreCensus.refusal_recent("Green_R_2", 1000 + rate, PackedPlan.START_BLOCKED), "another crew: not")
 	PlannerSeam._last_refusal["Green_R_1"] = [1000, "NO_ROOM"]
-	assert_true(not Movement.refusal_recent("Green_R_1", 1000 + rate, PackedPlan.START_BLOCKED), "another code: not")
+	assert_true(not ManoeuvreCensus.refusal_recent("Green_R_1", 1000 + rate, PackedPlan.START_BLOCKED), "another code: not")
 	PlannerSeam._last_refusal.erase("Green_R_1")
 	Movement._off = was
 
@@ -230,15 +230,15 @@ func test_an_escape_soon_after_a_blocked_start_refusal_is_counted() -> void:
 func test_a_hull_that_moves_soon_after_a_refusal_is_counted_once() -> void:
 	var rate := Engine.physics_ticks_per_second
 	var was := _with_refusal(PackedPlan.START_BLOCKED, 2000)
-	Movement.watch_refusal("Green_R_1", Vector3(0, 0, 0), 2000)
-	Movement.watch_refusal("Green_R_1", Vector3(1.0, 0, 0), 2000 + rate)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(0, 0, 0), 2000)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(1.0, 0, 0), 2000 + rate)
 	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 0, "1 m: not yet free")
-	Movement.watch_refusal("Green_R_1", Vector3(1.6, 0, 0), 2000 + rate * 2)
-	Movement.watch_refusal("Green_R_1", Vector3(3.0, 0, 0), 2000 + rate * 3)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(1.6, 0, 0), 2000 + rate * 2)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(3.0, 0, 0), 2000 + rate * 3)
 	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 1, "1.6 m inside 5 s: free, counted once")
 	PlannerSeam._last_refusal["Green_R_1"] = [9000, PackedPlan.START_BLOCKED]
-	Movement.watch_refusal("Green_R_1", Vector3(0, 0, 0), 9000)
-	Movement.watch_refusal("Green_R_1", Vector3(2.0, 0, 0), 9000 + rate * 6)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(0, 0, 0), 9000)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(2.0, 0, 0), 9000 + rate * 6)
 	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 1, "moved only after 5 s: not counted")
 	PlannerSeam._last_refusal.erase("Green_R_1")
 	Movement.reset_escape_arms()
@@ -249,9 +249,16 @@ func test_with_the_planner_off_the_handover_counters_stay_zero() -> void:
 	var was := _arms([PlannerSeam.SWITCH] if PlannerSeam.PLANNER_DEFAULT else [])
 	Movement.reset_escape_arms()
 	PlannerSeam._last_refusal["Green_R_1"] = [100, PackedPlan.START_BLOCKED]
-	Movement.watch_refusal("Green_R_1", Vector3.ZERO, 100)
-	Movement.watch_refusal("Green_R_1", Vector3(5, 0, 0), 110)
-	assert_true(not Movement.refusal_recent("Green_R_1", 110, PackedPlan.START_BLOCKED), "off: never recent")
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3.ZERO, 100)
+	ManoeuvreCensus.watch_refusal("Green_R_1", Vector3(5, 0, 0), 110)
+	assert_true(not ManoeuvreCensus.refusal_recent("Green_R_1", 110, PackedPlan.START_BLOCKED), "off: never recent")
 	assert_eq(int(Movement.escape_arms()["refusal_then_free"]), 0, "off: never counted")
 	PlannerSeam._last_refusal.erase("Green_R_1")
 	Movement._off = was
+
+
+## The handover counters are not Movement statics: native's twin (tests/native/mover_state.gd) compares every one, and
+## the native drive never runs Movement.drive's GDScript watch, so a counter kept there fails the twin (main 4973a482).
+func test_the_handover_counters_are_not_movement_statics() -> void:
+	for name in ["esc_after_refusal", "refusal_then_free", "_refusal_watch"]:
+		assert_true(not MoverState.static_names().has(name), "%s is not a Movement static" % name)

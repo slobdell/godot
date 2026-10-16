@@ -922,7 +922,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Round 24 (native N3c): the whole drive as one native call (native/src/drive_native.cpp) on this mover's own
 	# members; the GDScript below is the reference. Every check drives each mover both ways from one snapshot
 	# (tests/test_native_drive.gd): edit this function and the port fails there until it follows.
-	watch_refusal(String(ctl.tank.name), ctl.tank.global_position, Engine.get_physics_frames())  # measurement only, both paths
+	ManoeuvreCensus.watch_refusal(String(ctl.tank.name), ctl.tank.global_position, Engine.get_physics_frames())  # measurement only
 	if NativeDrive.usable(self):
 		var native_lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
 		NativeDrive.drive(self, cmd, order, delta)
@@ -3158,15 +3158,6 @@ static var esc_backed := 0
 static var esc_capped := 0
 static var esc_refused := 0
 static var esc_fallback := 0  # no-hull pins whose straight reverse had no room: round 29's escape
-# Round 31 (CP-P1's handover counters, measurement only; the planner's `PlannerSeam.last_refusal`): an escape begun within
-# REFUSAL_ESC_S of a START_BLOCKED refusal, and a hull that moved REFUSAL_FREE_M within REFUSAL_FREE_S of a refusal (once
-# per refusal). Kept in statics keyed by crew name, not mover members (native's member table mirrors every member).
-static var esc_after_refusal := 0
-static var refusal_then_free := 0
-static var _refusal_watch := {}  # crew name -> [refusal frame, position first seen after it, counted]
-const REFUSAL_ESC_S := 3.0
-const REFUSAL_FREE_S := 5.0
-const REFUSAL_FREE_M := 1.5
 
 
 ## The default (false = OPT-IN until CP-H: naming `unstickback` in `--nav-off` flips it). Flipping this const is the
@@ -3181,7 +3172,7 @@ static func unstick_back_on() -> bool:
 static func escape_arms() -> Dictionary:
 	return {"fires_hull": esc_fires_hull, "fires_wall": esc_fires_wall, "asks": esc_asks, "backs": esc_backs,
 			"backed": esc_backed, "capped": esc_capped, "refused": esc_refused, "fallback": esc_fallback,
-			"esc_after_refusal": esc_after_refusal, "refusal_then_free": refusal_then_free}
+			"esc_after_refusal": ManoeuvreCensus.esc_after_refusal, "refusal_then_free": ManoeuvreCensus.refusal_then_free}
 
 
 static func reset_escape_arms() -> void:
@@ -3193,33 +3184,7 @@ static func reset_escape_arms() -> void:
 	esc_capped = 0
 	esc_refused = 0
 	esc_fallback = 0
-	esc_after_refusal = 0
-	refusal_then_free = 0
-	_refusal_watch = {}
-
-
-## Was this crew's last planner refusal `code`, within REFUSAL_ESC_S of physics frame `now`? Always false with the planner OFF.
-static func refusal_recent(crew_name: String, now: int, code: String) -> bool:
-	var last := PlannerSeam.last_refusal(crew_name)
-	return not last.is_empty() and String(last[1]) == code \
-			and now - int(last[0]) <= int(REFUSAL_ESC_S * Engine.physics_ticks_per_second)
-
-
-## Every drive tick (both paths): counts `refusal_then_free` once per refusal when the hull has moved REFUSAL_FREE_M from
-## where it was first seen after the refusal, within REFUSAL_FREE_S of it.
-static func watch_refusal(crew_name: String, at: Vector3, now: int) -> void:
-	var last := PlannerSeam.last_refusal(crew_name)
-	if last.is_empty():
-		return
-	var watch: Variant = _refusal_watch.get(crew_name)
-	if watch == null or int(watch[0]) != int(last[0]):
-		watch = [int(last[0]), at, false]
-		_refusal_watch[crew_name] = watch
-	if bool(watch[2]) or now - int(watch[0]) > int(REFUSAL_FREE_S * Engine.physics_ticks_per_second):
-		return
-	if _flat_distance(at, watch[1]) >= REFUSAL_FREE_M:
-		watch[2] = true
-		refusal_then_free += 1
+	ManoeuvreCensus.reset_refusals()
 
 
 ## The hull's escape is the honest one under this order: returns what pins it (a Tank, or the hull itself standing for
@@ -3245,8 +3210,8 @@ func _escape_begin(cmd: TankCommand, order: Dictionary, pinned_on: Object) -> vo
 	var friend := pinned_on as Tank
 	if friend == tank:
 		friend = null
-	if refusal_recent(String(tank.name), Engine.get_physics_frames(), PackedPlan.START_BLOCKED):
-		esc_after_refusal += 1
+	if ManoeuvreCensus.refusal_recent(String(tank.name), Engine.get_physics_frames(), PackedPlan.START_BLOCKED):
+		ManoeuvreCensus.esc_after_refusal += 1
 	if friend != null:
 		esc_fires_hull += 1
 	else:

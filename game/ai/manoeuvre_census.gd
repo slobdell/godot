@@ -63,6 +63,48 @@ static var by_kind := {}
 static var by_cause := {}
 
 
+# Round 31 (CP-P1's handover counters, measurement only; the planner's `PlannerSeam.last_refusal`): an escape begun within
+# REFUSAL_ESC_S of a START_BLOCKED refusal, and a hull that moved REFUSAL_FREE_M within REFUSAL_FREE_S of a refusal (once
+# per refusal). Here, not on Movement: native's twin (tests/native/mover_state.gd) compares every Movement static, and the
+# native drive never runs Movement.drive's GDScript, so a Movement static filled there reads as a port mismatch.
+static var esc_after_refusal := 0
+static var refusal_then_free := 0
+static var _refusal_watch := {}  # crew name -> [refusal frame, position first seen after it, counted]
+const REFUSAL_ESC_S := 3.0
+const REFUSAL_FREE_S := 5.0
+const REFUSAL_FREE_M := 1.5
+
+
+static func reset_refusals() -> void:
+	esc_after_refusal = 0
+	refusal_then_free = 0
+	_refusal_watch = {}
+
+
+## Was this crew's last planner refusal `code`, within REFUSAL_ESC_S of physics frame `now`? Always false with the planner OFF.
+static func refusal_recent(crew_name: String, now: int, code: String) -> bool:
+	var last := PlannerSeam.last_refusal(crew_name)
+	return not last.is_empty() and String(last[1]) == code \
+			and now - int(last[0]) <= int(REFUSAL_ESC_S * Engine.physics_ticks_per_second)
+
+
+## Every drive tick (both paths): counts `refusal_then_free` once per refusal when the hull has moved REFUSAL_FREE_M from
+## where it was first seen after the refusal, within REFUSAL_FREE_S of it.
+static func watch_refusal(crew_name: String, at: Vector3, now: int) -> void:
+	var last := PlannerSeam.last_refusal(crew_name)
+	if last.is_empty():
+		return
+	var watch: Variant = _refusal_watch.get(crew_name)
+	if watch == null or int(watch[0]) != int(last[0]):
+		watch = [int(last[0]), at, false]
+		_refusal_watch[crew_name] = watch
+	if bool(watch[2]) or now - int(watch[0]) > int(REFUSAL_FREE_S * Engine.physics_ticks_per_second):
+		return
+	if Vector2(at.x - watch[1].x, at.z - watch[1].z).length() >= REFUSAL_FREE_M:
+		watch[2] = true
+		refusal_then_free += 1
+
+
 static func reset() -> void:
 	rows.clear()
 	by_kind = {}
