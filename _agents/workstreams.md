@@ -120,6 +120,11 @@ orchestrator's `make sim-baseline-adopt` on main.
   the return honours the post's drawn facing (reverse only within ~60° of the nose, else nose-first, or carry `facing`); its
   own bar, s66 Green_Guns_5 the pass case; after R32.6 and B10, before v6. **Manoeuvre** measures the overshoot itself
   (faced arrivals ending past settle + 1 m) as M1b(3)'s first input.
+  **CORRECTED ~09:30 PDT (manoeuvre's arrival watch):** it did NOT overshoot. It came no closer than 11.5 m and swung to
+  15 m, never inside its 6 m settle radius, yet its faced move COMPLETED by f 259 (11–15 m off). So brains first traces WHY
+  the order completed far from the spot (the element's "arrived" completing every crew's order, or the repaired-arrival
+  path), then makes HOLD's return honour the facing. True roll-pasts are rare (0/7). Manoeuvre's M1b(3) input becomes
+  "move orders completed with the hull > settle + 1 m from its goal, by completion path".
 - C31.1–C31.11 (except C31.10's Fable line) and rulings R31.1–R31.10 stand.
 
 **Rulings (round 32, the orchestrator's, as they arise):**
