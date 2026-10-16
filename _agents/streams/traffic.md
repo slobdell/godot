@@ -98,3 +98,29 @@ read (OPT-IN, off) and T3b-c's `Traffic.shape` combined, shape first, the 0.04 e
 Re-judge configuration (decided): as round 31's judged run, `--brains-off=native` both arms (GDScript path), base
 `--traffic-off=turns`, seeds 41–43 × {1,3,6,8,11,16}, n 18, `turns_verdict.py --allow yard_open/cross=3.0 --allow
 terminus/cross=3.0`. Reason: the question is whether CP-H/CP-P1 moved what was judged, so the arms match the judged run.
+
+**C32.6, the navmesh gap: DIAGNOSED, no bake fix. It is a probe artifact, not a bake hole or a footprint** (`b71fb9b0`,
+laptop, headless Godot 4.7.2; geometry facts, so they don't depend on the machine).
+- **The default arena's own bake covers the spot.** On `foundry`, the default layout, `map_get_closest_point(-25.7, 7.3)`
+  is 0.00 m away. The spot sits 0.45 m north of Crate_7's carved edge (a 4.5 m crate at (-24, 12) plus the 2 m agent
+  radius). Routes from it reach both of the test's shift-waypoints.
+- **The 8.2 m was Terminus's navmesh.** On `terminus`, the same spot snaps 8.2 m to (-17.5, 7.3), because a city block
+  stands there. The round-31 reach probe (`tests/tactics/reach_probe.gd`) runs its labs in one process, and its later
+  labs ask before the map holds the new arena's regions. `Pathing.is_ready` answers true from the previous map: this is
+  `ArenaFixture`'s documented round-6 trap. I reproduced it: in a copy run default arena first, then Terminus, the
+  Terminus lab read 0.0 m, which is the default arena's answer.
+- **Bake inputs:** cell 0.5 m, cell height 0.25, agent radius 2.0 m, height 1.75, climb 0.25, slope 45°, collision
+  shapes (layer 1) in the group `navigation_source`. The south half is baked (filter AABB z ≥ −2.5, border 2.5) plus a
+  180° mirror region.
+- **Evidence:** `references/round32/traffic/navgap_default_arena.png` (the fresh bake, footprints and their 2 m carve) and
+  `navgap_terminus_same_spot.png`. Probe: `tests/traffic/navgap_probe.gd` (`--arena=`, `--after=<layout>` replays the
+  stale-map case) and `navgap_plot.py`. Pinned by `tests/test_traffic_navgap.gd` (2/0 on the laptop): within 1 m on the
+  default arena, and the 8.2 m reading on Terminus.
+- **Side finding, not fixed (reported):** the bake leaves a small navmesh island on top of each 3 m crate. The 1.75 m
+  agent height lets the top count as standable, and the 0.25 m climb keeps it disconnected. A goal point inside a crate
+  could snap to that roof and become unreachable. It is harmless today, and fixing it would move every arena's bake (so
+  the sim baselines), so I'm only reporting it.
+- **Requests:** to **brains**: the reach probe should build its labs through `ArenaFixture` (or wait for its own
+  regions), or its later cases read the previous arena. To **manoeuvre**: Alpha_3's round-31 "held by the ground, no
+  contact" at (-25.7, 7.3) is on the mesh, right at Crate_7's carve, so it is your escape's case, not the navmesh's.
+  R31.5's fallback already frees it on main.
