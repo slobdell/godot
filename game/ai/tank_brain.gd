@@ -177,6 +177,8 @@ const TRANSIT_LEAD_MAX_M := 20.0
 ## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
 ## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
 ## ...and for wheeled units within Movement.settle_radius (see _order_arrive).
+## Round 32 (C32.12), MEASUREMENT ONLY: `--order-trace` prints how each move order completed (ORDER_TRACE).
+static var ORDER_TRACE := OS.get_cmdline_user_args().has("--order-trace")
 ## A stop order is done once the unit is slower than this (m/s).
 const STOPPED_SPEED := 0.5
 ## ...no sooner than this many ticks after it was issued.
@@ -836,6 +838,12 @@ func _update_order_progress() -> void:
 				repaired = not to_station and float(reading.get("repaired_m", 0.0)) > 0.0 \
 						and String(reading.get("phase", "")) == "arrived"
 			if not fighting and (distance <= arrive or repaired):
+				if ORDER_TRACE:
+					var mover := Movement.of(tank)
+					print("ORDER_TRACE t=%.2f %s %s done at %.1f m of goal (%.1f, %.1f), arrive %.1f, repaired %s (repair_to %s, %.1f m from goal), facing %s, station %s" % [
+							game_match.tick / float(SimClock.TICK_RATE), tank.name, order["verb"], distance, goal.x, goal.z,
+							arrive, repaired, mover._repair_to if mover != null else "-", _flat(mover._repair_to).distance_to(goal)
+							if mover != null and mover._repair_to != Vector3.INF else 0.0, order.get("facing"), to_station])
 				_finish_order(goal)
 		"stop":
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
