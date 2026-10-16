@@ -80,6 +80,21 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### REPORT so far (2026-10-16 01:10 PDT)
+- **B3b-2c** built (`5ca8269d`). Tuning, NOT evidence (builder0 light, `5ca8269d`, n 1 a cell, bridge-series on arm):
+  round 28's two cells green t5 s2 (rim 0, 4/4, arrived 34.8 s) and rust t9 s2 (rim 0, 4/4, 41.6 s), B3b-2's traced
+  cells green t18 s3 (rim 0, 41.3 s) and rust t8 s2 (rim 0, 28.8 s): the narrowing is not needed for them. Quick gate
+  on `5ca8269d` (builder0): 296 passed, 0 failed, exited 0 (1739 s). Bar FILED and accepted by the orchestrator.
+  **Pair-tree check RUNNING on `5f0ed865`** (launched 01:09 PDT), then the series.
+- **Traffic's request (C32.6), DONE `5f0ed865`:** `reach_probe` reads the arena it names (drains the previous lab's
+  regions, waits for `TacticsLab.navigation_is_this_arenas`, `REACH_ARENA_NOT_READY` otherwise). Default arena (-25.7,
+  7.3): start snaps 0.0 m, both waypoints reachable (builder0 light; rows
+  `references/round32/brains/reach-probe-fixture.log`). Round 31's "8.2 m gap" was Terminus's mesh read by mistake.
+- **Planner (CP-S):** signature agreed as proposed (`side_gate(slot, facing, unit_id, map, from)`), yard s27 t8 fixture
+  sent: goal (-13.016, -47.469), facing (-1, 0.01), from (2.5, -46.1).
+- **R32.2 noted:** manoeuvre's H1b settle-short writes `_repair_for`/`_repair_to`; tell manoeuvre if B5c-v6 changes how
+  `Movement.repaired_arrival` is read.
+
 ### B3b-2c bar (C32.3; FILED to the orchestrator before any number; DECLARED; partial: none)
 Candidate: stream/brains at the hash its pair-tree check goes green on (B3b-2b's seating + mouth guard, round 28's
 heading narrowing OFF). Arms, one tree, builder0, GDScript and native as the default path runs them: **on** = default;
