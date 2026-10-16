@@ -26,3 +26,22 @@ keeps faced_move hulls moving to 75 s, and the Terminus rigs touch walls more. T
 cost of the seam's face plans in a press. Not tuned on these seeds. Files: hull-rest-tables.txt (M1_*, QUEUE),
 hull-rest-base-queue.txt, terminus-series.txt (PLANNER_SERIES_*; series_verdict.py refused only on its round-31
 "base must be seam-silent" guard: both arms run the seam here), base.out / candidate.out.
+
+TRACE (the orchestrator's ask, the round-33 hand-over; builder0 light, tree 722ba183 = 65cc43dd's code + docs/tooling,
+`make planner-trace-hull-rest`, one run each arm, traces in traces/):
+- The worst rig pairs in the judged runs (tests: rig_pairs over the arm dirs): paired over every War Rig, drawn n 156
+  mean +7.7 deg / median +0.3; clicked n 156 mean +5.9 / median +0.4. The tail is ~10 rigs ending 150-175 deg off in
+  the shared arm where the FIFO arm ended within ~30 deg.
+- faced_move s66 Green_Guns_5 (judged 149.8 shared v 0.6 fifo): re-run, BOTH arms end backwards (fifo 143.9, shared
+  156.4) and the seam never acted for this hull in either (0 PLANNER_SEAM lines): the rig drives its move_to, arrives
+  nose south, the order becomes `stop` with no face step. The judged FIFO run's 0.6 was the harness's run-to-run
+  variation (a different arrival), not the queue.
+- faced_support_by_fire s67 Green_Guns_6 (judged 155.7 shared v 24.6 fifo): re-run, shared 0.3 v fifo 12.8 (reversed).
+  The seam acted in BOTH arms with KTURN plans (not face): the same first plan (5 legs, 13-14 expansions), the shared
+  arm one extra 3-leg k-turn.
+Reading: neither traced regression reproduces; the per-rig tail is dominated by the hull-rest harness's run-to-run
+variation (round 31's lesson), and the seam's served plans in these two cases are k-turns that end no worse. So
+line (3)'s misses at n = 6 seeds are NOT shown to be the queue's cost. Round 33, before CP-Q is judged again: an A/A of
+the hull-rest gang arm (fifo v fifo, the same seeds) to size its (d) lines' noise (judging.md), then a bar sized from
+it on fresh seeds. The Terminus contact-ticks rise (522 v 321) is a separate, deterministic-harness signal to trace
+first (worst seed 207: 4168 v 2444).

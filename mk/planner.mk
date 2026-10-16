@@ -212,3 +212,22 @@ PLANNER_QUEUE_SERIES_SEEDS ?= 205 206 207 208 209 210 211 212 213 214 215 216 21
 planner-series-queue: ## planner round 32: planner-series with base = the FIFO, candidate = --planner-queue=shared, on PLANNER_QUEUE_SERIES_SEEDS
 	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_QUEUE_SERIES_SEEDS)" \
 		PLANNER_SERIES_BASE_FLAGS=--planner-queue=fifo PLANNER_SERIES_CAND_FLAGS=--planner-queue=shared
+
+# Round 32 (CP-Q's park, the round-33 hand-over): ONE hull-rest run on both queue arms with the per-unit trace
+# (--turn-trace: MANOEUVRE_TRACE rows + the seam's PLANNER_SEAM lines for that hull). Light lane:
+# make remote LIGHT=1 T="planner-trace-hull-rest PLANNER_HR_TASK=faced_move PLANNER_HR_SEED=66 PLANNER_HR_UNIT=Green_Guns_5"
+# PLANNER_HR_CLICK=1 for the clicked arm. -> build/planner/trace-<task>-<seed>-<arm>.log (+ the screen's json).
+PLANNER_HR_TASK ?= faced_move
+PLANNER_HR_SEED ?= 66
+PLANNER_HR_UNIT ?= Green_Guns_5
+PLANNER_HR_CLICK ?=
+.PHONY: planner-trace-hull-rest
+planner-trace-hull-rest: native import ## planner round 32: one hull-rest run (PLANNER_HR_TASK/SEED, gangs) on fifo and shared with --turn-trace=PLANNER_HR_UNIT -> build/planner/trace-*
+	@mkdir -p $(BUILD_DIR)/planner
+	@for arm in fifo shared; do d=$(BUILD_DIR)/planner/trace-$(PLANNER_HR_TASK)-$(PLANNER_HR_SEED)-$$arm; rm -rf $$d; mkdir -p $$d; \
+		echo ">> planner-trace-hull-rest on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $$arm | $(PLANNER_HR_TASK) seed $(PLANNER_HR_SEED) | $(PLANNER_HR_UNIT)"; \
+		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$(PLANNER_HR_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			--player-faction=gangs --enemy-faction=law --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu \
+			$(if $(PLANNER_HR_CLICK),--faced-click) --turn-states --planner-queue=$$arm "--turn-trace=$(PLANNER_HR_UNIT)" \
+			--screen-test=$(CURDIR)/$$d --screen-only=$(PLANNER_HR_TASK) > $$d/run.log 2>&1; \
+		grep -c "^MANOEUVRE_TRACE" $$d/run.log | sed "s/^/   trace rows: /"; grep -E "^PLANNER_SEAM $(PLANNER_HR_UNIT) " $$d/run.log | cut -c1-300 || true; done
