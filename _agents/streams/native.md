@@ -104,7 +104,17 @@ main yet must name the new members by string (`get`/`call`), or the file fails l
   traffic_turns_owned 215 and traffic_turns 159 (split too at `08b452ee`, TrafficTurnsCase). A serial light-lane run of all
   the split files was killed at the 90-min slot cap (load 10), so it is not evidence. The first full check on `233cbde4`
   failed LINT on my own `test_native_h1b` (it named H1b's statics, so it did not parse without H1b; fixed `981e336b`).
-  AFTER: the full check on `981e336b` RUNNING (unit `native-split-check2`).
+  AFTER, full check on `981e336b` (builder0): `make check exited 2`, 2663 passed / 1 failed, the one being
+  test_control_vision_camera's teleport case (not a native file; re-run alone below). Its per-file times are NOT evidence
+  either way: under contention (load 12-16) a file's wall time moved ±40 % between checks. **Measured instead as CPU
+  seconds** (user+sys, one Godot process per file, `/usr/bin/time`, builder0 light slot, serial, n 1; the base folder =
+  `6efdf42b`, the split = `981e336b`; scratchpad script `cpu_times.sh`): test_native_execute 614 → 262 + 289 (the slower
+  half 47 %); test_native_wall 138 → 91 + 95 (69 %: the uncompared fight is a larger share); test_native_drive 493 →
+  106 + 98 (owned) + 178 (kturn) + 23 (kturn owned) (36 %); test_native_traffic_hold 384 → 87 + 88; `_owned` 346 → 168 +
+  161 (49 %). The suite's slowest native file falls from 614 CPU-s (execute) to 289 (execute_odd). Every split file 0
+  mismatches. The turns twins (split at `08b452ee`) skip on this tree (no T3b-c until stream/native takes main).
+  test_control_vision_camera re-run alone on the same build: 18/18 (a load flake at load 12+). **Green hash for the
+  splits: `981e336b`** (its check: 2663/1, the one red that flake; later commits are this brief only).
 - **Planner review:** `df45fac3` (CP-S `PlannerNative::clearances`) APPROVED, one note (the GDScript arm prepares the
   caller's world; the native arm doesn't).
   `0b9e96bc` (`refused_at_begin`, header only) APPROVED: consistent with `step()` (those three codes never start the fine
