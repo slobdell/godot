@@ -168,6 +168,18 @@ orchestrator's `make sim-baseline-adopt` on main.
   where_it_was_put` red at load 12+, 18/18 alone on the same build. Merged; the next main check re-reads it, and a second red
   there gets traced (owner: nobody this round, so the orchestrator).
 
+- **R32.7 A pass line whose READER is shown mechanically defective after its number is NOT READABLE, then re-measured on
+  FRESH seeds with the fixed reader filed first (2026-10-16 ~10:40 PDT, H1b's line (3)):** H1b stage 1 (Terminus drive
+  300–312, builder0, `9c46002a`, n 13 a squad): rigs STUCK 257 → 380 v bound 370.2, the whole +123 on the 3 seeds where H1b
+  settled. Manoeuvre showed `pinned_table.py`'s STUCK keeps `best` across an ORDER CHANGE (s303 Green_S0_4: a new leg's goal
+  6.6 → 69.8 m read as "never 1 m closer"), and that an offline re-read with a goal jump > 3 m restarting the run reproduces
+  the filed numbers without the change and reads rigs 192 → 121 with it (mixed's 204 v 204 both artifact). **Ruling:**
+  neither (A) park on a defective ruler nor (B) swap the ruler after the number. Line (3)'s STUCK is NOT READABLE on
+  300–312; the reader is fixed on its own commit (its test: the s303 case), then line (3) STUCK (rigs and mixed) is run ONCE
+  on FRESH Terminus seeds 360–372 with the fixed reader, filed before numbers, both arms, as the filed bound form. The other
+  lines of stage 1 stand as read. The as-filed and offline numbers are reported beside it. CP-H's round-31 STUCK rows may be
+  overstated the same way: noted for the close, not re-judged.
+
 - **R32.6 `test_tactics_body::test_his_three_squads_keep_together` is red ON MAIN, order-dependent (2026-10-16 ~08:20 PDT,
   planner's A/B):** alone on main's code (254973bb, builder0 light) it FAILS deterministically (squad-seconds alone off 33.5 /
   on 24.5, army off 16.9 / on 29.1 s); it PASSED in main's full check at 6fcfbe46 and failed with other numbers in 8904c9c4's
