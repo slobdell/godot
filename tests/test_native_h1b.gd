@@ -26,6 +26,7 @@ func test_the_pinned_hull_settles_as_the_gdscript() -> void:
 	if not (Movement as Script).get_script_constant_map().has("H1B_DEFAULT"):
 		print("native: this tree's Movement has no H1b (manoeuvre's C32.2 not merged): nothing to compare")
 		return
+	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	assert_true(Movement._off.is_empty(), "the default configuration (no --nav-off switch): the native drive runs")
 	assert_true(NativeGun.configure() and NativeDrive.configure(), "the native drive and gun take the live constants")
 	var lab := TacticsLab.create(self, 32)
