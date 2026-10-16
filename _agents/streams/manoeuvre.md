@@ -267,7 +267,9 @@ loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
 
 ### Plan (ordered)
 
-0b. (Inserted 2026-10-16, low priority, after H1b's series is running) **The War Rig's planned turn diverges GDScript
+0b. **MOVED TO PLANNER by the orchestrator (2026-10-16)**: planner owns the GDScript planner twin, and it comes back
+   to me only if the trace lands in my executor (with the leg). Native added `test_native_face_behind`.
+   (Was: inserted 2026-10-16, low priority) **The War Rig's planned turn diverges GDScript
    v native:** `test_manoeuvre_behind::test_the_war_rig_faces_behind_in_a_planned_turn` FAILS with no native library
    (drift 25.3 m, legs 2, aligned 9.67 s: traffic's `check NATIVE=off` at 0adc6deb, the laptop, and MY fresh-builder0
    run at 373de208 with the identical numbers) and passes native ON. A GDScript planner exists
