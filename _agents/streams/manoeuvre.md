@@ -81,7 +81,56 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
-### Report (2026-10-16 ~14:00 PDT)
+### Round 32 close (2026-10-16 ~17:00 PDT)
+
+| Item | State |
+|---|---|
+| H1b (C32.2) | **SHIPPED** (pair/h1b-on `273654e6`, merged as main `5cc02947`); its table is below |
+| C32.10 swap seats (stretch of H1b) | **PARKED**: G failed on fights 400–423 (far 6 v 6, swaps 0). Section below. Not merged; lab branches `lab/manoeuvre-swap2` `87498b22` and pair/swap-ship `80300909` stay as records |
+| M1b(3) (C32.5) | **CARRIED to round 33**, NOT started: the orchestrator pairs it with brains' B11b (turret-only HOLD return); B11 parked (relay below) |
+| Test splits (C32.8) | **DONE** for my files (`08e6d44c`, `566564aa`); `tests/shard_times.txt` re-record waits for the next full sharded check |
+| R32.7 STUCK reader | **DONE** (`f5bf085f`, python tests in `make test` through `test_manoeuvre_tables.gd`) |
+| Stretch: C++ parity | Nothing to port: native ruled no C++ mirror for H1b; the swap is parked |
+| Stretch: seed-31 clip | **NOT DONE**: seed 31 no longer loops on today's tree. Round 33 should pick a looping SKIRMISH case (not Terminus, lesson below) |
+
+**Closing commit** (this one): main merged in, plus measurement only. `blocker_kind` is added on H1B_FAR rows and
+`ManoeuvreCensus.print_new_far_rows()` (fight_census and MANOEUVRE_TURNS probes print them), and h1b_drive prints
+H1B_SEATS (elements formed, re-seats, make-room swaps). No behaviour change. Check result: see the next Status line.
+
+**Round-33 lessons:**
+1. **The Terminus drive harness forms no elements**, so its loops may not be what the lead plays. Build any fix aimed at
+   squads on a skirmish stage (fights / hull-rest), and check the harness forms what the fix needs before filing a bar.
+2. **A seam the stage test plays through an override is unexercised.** Run one real end-to-end case of the seam (with
+   an element formed) before the series.
+3. **Skirmish far loops are a crew pinned by a PARKED crew of ANOTHER element** (5 of 6 on fights 400–423). That is an
+   element-level make-room or cross-element give-way (traffic / brains), the orchestrator's round-33 item.
+
+### C32.10 swap: PARKED (G failed on fights, 2026-10-16)
+
+- **Amendment (orchestrator ruling, filed before numbers):** Terminus drive forms NO elements (tests/nav/terminus_drive.gd
+  drives through Orders + OrderExecutor; Elements.install only in skirmish_mode, tactics_flags, element_commander,
+  fight_probe, element_feed), so the seam answers "no_element" there and G could not pass on 380–392. G moved to fights
+  400–423 (swap far ≤ 50 % of h1b far, summed, AND swaps taken ≥ 1); hull-rest 393–398 far REPORTED; Terminus guards
+  only. Far rows carry `blocker_kind` (same_element / other_element / unseated / no_elements), swap arm only (the h1b
+  fights arm ran on 6171a5d4 before the field existed; `far` is the same field in both arms).
+- **Reading (builder0; h1b arm 6171a5d4, swap arm a13a9399, both measurement-only over d21b5d56; `>> remote: make
+  manoeuvre-cph CPH_ARM=h1b|swap CPH_STAGE=fights CPH_SEEDS=400-423 exited 0`):** far 6 v 6 (seed 403: 4, 409: 2);
+  swaps asked 0, taken 0; all 24 fights bit-identical (teams and far per seed). **G FAILS** on both clauses. Parked per
+  the bar; pair/swap-ship 80300909 and pair/swap-on d14de5c7 not merged; native's `_h1b_swap_goal` row stays off main.
+- **Blocker kind (swap arm, 6 rows):** 5 other_element + parked (4 x Green_Guns_4 behind Green_Eyes II_3, 54 m of
+  route left, gap 6 m; 1 x Rust_Battery2_1 behind Rust_Battery_5, 19 m left); 1 same_element but under way
+  (Green_Battery_1 behind _2, blocked, 14.6 m). None is the swap's case (same element AND parked).
+- **Round-33 LESSON:** the Terminus drive harness has no elements, so its loops may not be what the lead plays. The far
+  trace's 50/62 parked-same-squad cases came from it, and the stage tests played brains' seam through an override,
+  so nothing exercised the real seam end to end before the series. In skirmish the far loops are a crew pinned by a
+  PARKED crew of ANOTHER element: an element-level make-room or cross-element give-way (traffic / brains), not a seat swap.
+- **Not run:** Terminus 380–392 guards (moot once G failed; the orchestrator agreed) and hull-rest 393–398 (the h1b arm
+  was stopped two minutes in, on both ends, at the orchestrator's word: the round closes tonight). So hull-rest far
+  kinds were never read.
+- The lab branch keeps the hook (switch `h1bswap`, OFF) at 87498b22 for the record; nothing of it is on stream/manoeuvre
+  except the census fields, which land with the closing commit.
+
+### H1b report (2026-10-16 ~14:00 PDT)
 
 **H1b PASSES every line of its bar. Ship hash: `pair/h1b-on 273654e6`** (main 2fc43a47 + `e8e20ca9` + native's twin and
 exec_fields rows `2d35b1ec` + H1B_DEFAULT true; builder0 plain check `>> remote: make check exited 0`, 2703 passed,
@@ -359,7 +408,8 @@ loops − far = 0 and far ≤ base loops; far reported per seed on both sets.
 1. **H1b** (C32.2): unit test first (`tests/test_manoeuvre_h1b.gd`: a rig / IFV sent to a slot a parked squadmate sits
    on; base loops, H1b settles), then seed 31's last leg as the pass case, then the bar to the orchestrator, then the
    series, then native's twin and a ship pair.
-2. **M1b(3)** (C32.5): the written agreement with brains through the orchestrator first; then the attack-move settle.
+2. **M1b(3)** (C32.5): **carried to round 33** (paired with brains' B11b). The written agreement with brains through
+   the orchestrator first; then the attack-move settle and the face at rest for a wheeled turret hull (s66 Green_Guns_5).
 3. **Test splits** (C32.8): **DONE for my files.** `test_manoeuvre_h1b` 162 s → 60 s + `_guard` 40 s (`08e6d44c`);
    `test_manoeuvre_behind` 69 s → 4 + 2 tests in `test_manoeuvre_behind` + `test_manoeuvre_face_behind` (`566564aa`, bodies
    byte-identical, laptop 18.6 s + 54.3 s). Still to do: re-record `tests/shard_times.txt` (`make test-times` after the next

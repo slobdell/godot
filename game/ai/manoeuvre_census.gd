@@ -96,6 +96,8 @@ static var h1b_far := 0
 ## blocker was doing (measurement only: H1b's re-path question).
 const H1B_FAR_ROWS := 200
 static var h1b_far_rows: Array = []
+## How many of h1b_far_rows print_new_far_rows has printed (a probe that prints MANOEUVRE_TURNS gets its H1B_FAR rows too).
+static var _far_rows_printed := 0
 
 
 static func note_h1b_far(mover: Movement, friend: Tank) -> void:
@@ -121,7 +123,30 @@ static func note_h1b_far(mover: Movement, friend: Tank) -> void:
 			"blocker_yield_to": other.yield_to if other != null else "",
 			"blocker_last_yielded_to": other._last_yielded_to if other != null else "",
 			"blocker_phase": other.phase if other != null else "?", "blocker_blocked_by": other.blocked_by if other != null else "",
+			# C32.10 amendment (the orchestrator): is the blocker in MY element (the swap's case) or not / no elements at all?
+			"blocker_kind": _blocker_kind(mover, String(tank.name), String(friend.name)),
 			"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
+
+
+## "same_element" (both crews seated in one element: the case brains' swap_seats can trade), "other_element",
+## "unseated" (one of them in no element) or "no_elements" (the harness formed none, e.g. the Terminus drive).
+static func _blocker_kind(mover: Movement, me: String, them: String) -> String:
+	var brain := mover.ctl as TankBrain
+	var elements := Elements.of_match(brain.game_match) if brain != null else null
+	if elements == null:
+		return "no_elements"
+	var mine := elements.of(me)
+	var theirs := elements.of(them)
+	if mine == null or theirs == null:
+		return "unseated"
+	return "same_element" if mine == theirs else "other_element"
+
+
+## Print the far rows not yet printed (`H1B_FAR <json>`), once each.
+static func print_new_far_rows() -> void:
+	while _far_rows_printed < h1b_far_rows.size():
+		print("H1B_FAR %s" % JSON.stringify(h1b_far_rows[_far_rows_printed]))
+		_far_rows_printed += 1
 
 
 ## Traffic's priority rule as `_negotiate` reads it (a copy for the record, never a decision): true when THIS hull would
@@ -136,6 +161,7 @@ static func _negotiate_says(mover: Movement, other: Movement, me: String, them: 
 
 static func reset_h1b() -> void:
 	h1b_far_rows = []
+	_far_rows_printed = 0
 	h1b_failed_asks = 0
 	h1b_settles = 0
 	h1b_short_m = 0.0
@@ -228,6 +254,7 @@ func observe(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 	if prints and tick - _printed_at >= PRINT_EVERY_TICKS:
 		_printed_at = tick
 		print("MANOEUVRE_TURNS %s" % JSON.stringify(report()))
+		print_new_far_rows()
 	var speed := tank.speed()
 	trace(mover, cmd, order)
 	if states_on and tick % STATE_EVERY == 0:
