@@ -74,7 +74,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **2. T1c-b2:** NONE PORTED still holds on main `2572cbec`: the rule (`on_fire_post` and the refusal) is inside
   `Movement.ask()`, reached from the native drive only through the GDScript `_negotiate` / `_ask_behind` callbacks.
   `native-verify-scenarios` + `traffic-native-verify` wait for traffic's T1c-b2 tree.
-- **3. Twin splits (C32.8):** WIP in this worktree, measured first (light lane, `6efdf42b`).
+- **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
+  serial `make native test FILTER=…`, n 1, while a heavy check ran beside it): test_native_execute 472 s,
+  test_native_drive 330 s, test_native_traffic_hold 253 s (+ `_owned` 193 s, round 31's split), test_native_wall 193 s;
+  every one 0 mismatches (execute 11880 native executes; drive 2160 drives a view, k-turns 1440; hold 7244 / owned 7304
+  drives; wall 12000 observes). AFTER: timing run on `d98f4400` RUNNING (unit `native-times2`).
 - **Planner review:** `df45fac3` (CP-S `PlannerNative::clearances`) APPROVED, one note (the GDScript arm prepares the
   caller's world; the native arm doesn't).
 
@@ -82,7 +86,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 splits, test-only, their own hash; (4) pairs as they arrive (H1b, B3b-2c, B5c-v6, the planner's side gate and SLICE: CP-S
 needs no mirror, being C++ already reviewed); (5) N5's held ports only when no pair waits.
 **Split design (one reason each):** drive has five cases, so each case goes to its own file over a shared base
-(`DriveTwinCase`, bodies byte-identical). Wall and execute are ONE case over one fight, so each splits by frame window
-(the first file compares the first half; `_late` plays the first half uncompared and compares the rest), with the sample
-floor divided by the window. A live v owned split would keep most of the cost: the GDScript capture of every mover dominates
-both arms.
+(`DriveTwinCase`, bodies byte-identical). Execute, wall and the traffic hold are ONE case over one fight, so each file plays
+the whole fight and compares half the crews (even / `_odd`): every frame's union is still every crew, and the branch floors
+(the hold firing, wall / hull ticks) see the whole fight, which a frame-window split would not guarantee. Only the sample
+floor is divided. A live v owned split would keep most of the cost: the GDScript capture of every mover dominates both
+arms.
