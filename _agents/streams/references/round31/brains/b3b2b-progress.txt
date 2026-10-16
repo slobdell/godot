@@ -1,0 +1,13 @@
+2026-10-15 08:23:13 PDT START b108-on
+2026-10-15 09:21:15 PDT END b108-on: >> remote: make bridge-series BRIDGE_ARMS=on BRIDGE_CASES=locks,green,3 locks,rust,3 BRIDGE_SEEDS=1 2 3 BRIDGE_TICKS=1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 exited 0
+2026-10-15 09:21:15 PDT START b108-ctrl
+2026-10-15 09:49:19 PDT END b108-ctrl: >> remote: make bridge-series BRIDGE_ARMS=on BRIDGE_CASES=locks,green,3 locks,rust,3 BRIDGE_SEEDS=1 2 3 BRIDGE_TICKS=1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 BRIDGE_FLAGS=--route-seat=off --mouth-held=off --reissue-heading=plan exited 0
+2026-10-15 09:49:19 PDT START arrive-on
+2026-10-15 10:09:48 PDT END arrive-on: >> remote: make squad-arrive-series ARRIVE_ARMS=on ARRIVE_SEEDS=41 42 43 44 exited 0
+2026-10-15 10:09:48 PDT START arrive-ctrl
+2026-10-15 10:25:13 PDT END arrive-ctrl: >> remote: make squad-arrive-series ARRIVE_ARMS=on ARRIVE_SEEDS=41 42 43 44 ARRIVE_FLAGS=--route-seat=off --mouth-held=off --reissue-heading=plan exited 0
+2026-10-15 10:25:13 PDT START cost-on
+2026-10-15 10:26:35 PDT END cost-on: >> remote: make ai-parts-match PROF_ARENA=locks exited 0
+2026-10-15 10:26:35 PDT START cost-ctrl
+2026-10-15 10:28:45 PDT END cost-ctrl: >> remote: make ai-parts-match PROF_ARENA=locks PARTS_FLAGS=--route-seat=off --mouth-held=off --reissue-heading=plan exited 0
+2026-10-15 10:28:45 PDT ALL DONE

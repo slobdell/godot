@@ -176,6 +176,30 @@ func test_the_lab_fixtures_on_the_navmesh_plan_the_same_both_ways() -> void:
 	_both("lab turnround (Terminus rig, face south)", _nav_request(terminus, "gang_tank", [-70.0, 0.0, 0.0], [-70.0, 0.0, 180.0], 2.0))
 	_both("lab slot180 (Terminus scout)", _nav_request(terminus, "law_scout", [0.0, 60.0, 0.0], [0.0, 51.0, 180.0], 1.0))
 	_both("lab tjunction (Terminus rig onto the ring road)", _nav_request(terminus, "gang_tank", [-70.0, 50.0, 0.0], [-48.0, 30.0, 90.0], 1.5))
+	# Round 31: the seam's k-turn goal AIMS (manoeuvre's War Rig nose-on to the (40, 0) block, the waypoint 24 m along).
+	var aim := _nav_request(terminus, "gang_tank", [40.0, 29.0, 0.0], [16.05, 30.6, -93.8], 1.0)
+	aim.aim = true
+	aim.tol_deg = PlannerSeam.KTURN_AIM_DEG
+	aim.arrive_gear = 1
+	aim.budget = PlannerSeam.BUDGET
+	_both("k-turn AIM (Terminus rig nose-on, the waypoint 24 m behind and aside)", aim)
+	# Round 31 (the first judged series): the face's KEEP circle (seed 134's plaza: a rig 4.5 m from its slot, faced
+	# 18 degrees; its free plan was one 3.5 m reverse chord ending 7.4 m out). The end rule alone (main's turnhull
+	# OFF), then the inner radius too (M1b(2)).
+	var slot := Vector2(-2.7, 19.6)
+	var from_slot := Vector2(-7.2 - slot.x, 20.3 - slot.y).length()
+	var stay := maxf(Movement.settle_radius("gang_tank") - 1.0, 1.5)
+	var kept := _nav_request(terminus, "gang_tank", [-7.2, 20.3, 82.0], [-7.2, 20.3, 100.0], stay)
+	kept.tol_deg = PlannerSeam.FACE_TOL_DEG
+	kept.budget = PlannerSeam.BUDGET
+	kept.keep(slot.x, slot.y, INF, from_slot + Manoeuvre.FACE_SLOT_SLACK_M)
+	_both("face KEEP end rule (Terminus rig at its plaza slot)", kept)
+	var inner := _nav_request(terminus, "gang_tank", [-7.2, 20.3, 82.0], [-7.2, 20.3, 100.0], stay)
+	inner.tol_deg = PlannerSeam.FACE_TOL_DEG
+	inner.budget = PlannerSeam.BUDGET
+	inner.keep(slot.x, slot.y, maxf(maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius("gang_tank")) - Manoeuvre.FACE_KEEP_MARGIN_M, from_slot),
+			from_slot + Manoeuvre.FACE_SLOT_SLACK_M)
+	_both("face KEEP inner radius (the same, under turnhull's law)", inner)
 	terminus.free()
 	await drain_navigation()
 	# The yard corner is a BUDGET answer after 12 000 expansions (6 000 coarse + 6 000 fine): 129 s of GDScript on

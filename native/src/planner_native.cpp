@@ -22,6 +22,8 @@ namespace godot {
 namespace {
 
 constexpr double INF = std::numeric_limits<double>::infinity();
+// Request.keep_all_m / keep_end_m at or above this = no KEEP circle (the GDScript's INF arrives as inf).
+constexpr double KEEP_NONE = 1.0e29;
 constexpr float INF_F = std::numeric_limits<float>::infinity();
 constexpr double PI_D = 3.14159265358979323846;
 constexpr double TAU_D = 6.28318530717958647692;
@@ -578,6 +580,11 @@ PlannerNative::Request PlannerNative::parse_request(const Dictionary &d) {
 	r.tol_m = (double)d.get("tol_m", 1.0);
 	r.tol_deg = (double)d.get("tol_deg", 8.0);
 	r.arrive_gear = (int64_t)d.get("arrive_gear", 0);
+	r.aim = (bool)d.get("aim", false);
+	r.keep_x = (double)d.get("keep_x", 0.0);
+	r.keep_z = (double)d.get("keep_z", 0.0);
+	r.keep_all_m = (double)d.get("keep_all_m", 1e30);
+	r.keep_end_m = (double)d.get("keep_end_m", 1e30);
 	r.half_w = (double)d.get("half_w", 1.0);
 	r.half_l = (double)d.get("half_l", 2.0);
 	r.radius = (double)d.get("radius", 6.0);
@@ -623,16 +630,45 @@ void PlannerNative::parse_world(const Dictionary &d, World &w) {
 // ============================================================ the search ===========================================
 
 // Planner._at_goal
-bool PlannerNative::at_goal(double x, double z, double th, int64_t gear) const {
-	if (req.arrive_gear != 0 && gear != req.arrive_gear) {
-		return false;
-	}
+bool PlannerNative::at_goal(double x, double z, double th, int64_t gear) {
 	const double dx = x - req.goal_x;
 	const double dz = z - req.goal_z;
-	if (dx * dx + dz * dz > req.tol_m * req.tol_m) {
+	const double d2 = dx * dx + dz * dz;
+	if (req.keep_end_m < KEEP_NONE) {
+		// The KEEP circle's end rule (Planner._at_goal, round 31): the goal pose no further from the slot than keep_end_m.
+		const double kdx = x - req.keep_x;
+		const double kdz = z - req.keep_z;
+		if (kdx * kdx + kdz * kdz > req.keep_end_m * req.keep_end_m) {
+			return false;
+		}
+	}
+	if (d2 <= req.tol_m * req.tol_m) {
+		if (req.arrive_gear != 0 && gear != req.arrive_gear) {
+			return false;
+		}
+		return absd(wrap(th - search.goal_theta)) <= search.tol_rad;
+	}
+	if (!req.aim) {
 		return false;
 	}
-	return absd(wrap(th - search.goal_theta)) <= search.tol_rad;
+	// AIM (Planner._at_goal, round 31): pointing at the goal within the tolerance with a clear straight run to it.
+	if (absd(wrap(th - std::atan2(-dz, -dx))) > search.tol_rad) {
+		return false;
+	}
+	return straight_clear(x, z, std::cos(th), std::sin(th), std::sqrt(d2));
+}
+
+// Planner._straight_clear
+bool PlannerNative::straight_clear(double x, double z, double fx, double fz, double dist) {
+	const Search &s = search;
+	double swept = 0.0;
+	while (swept < dist - 0.001) {
+		swept += SUB_M;
+		if (world.footprint(x + fx * swept, z + fz * swept, fx, fz, s.half_w, s.half_l, MARGIN_M, s.start_offs) < 0.0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 // Planner._heuristic
@@ -641,6 +677,18 @@ double PlannerNative::heuristic(double x, double z, double th, int64_t gear) con
 	const double dx = x - req.goal_x;
 	const double dz = z - req.goal_z;
 	const double d = std::sqrt(dx * dx + dz * dz);
+	if (req.aim && d > req.tol_m) {
+		// AIM (Planner._heuristic, round 31): only the heading change to point at the goal, plus its cusps in the start's room.
+		const double turn_aim = absd(wrap(th - std::atan2(-dz, -dx)));
+		double h_aim = s.radius * turn_aim / maxd(req.v_fwd, 0.1);
+		if (turn_aim > 0.3 && s.swing < PI_D) {
+			const double legs_aim = std::ceil(turn_aim / s.swing);
+			if (legs_aim > 1.0) {
+				h_aim += s.cusp_s * (legs_aim - 1.0);
+			}
+		}
+		return h_aim;
+	}
 	const double turn = absd(wrap(th - s.goal_theta));
 	double h = maxd(d, s.radius * turn) / maxd(req.v_fwd, 0.1);
 	const double along = dx * s.gfx + dz * s.gfz;
@@ -866,6 +914,14 @@ bool PlannerNative::run_search(int64_t slice) {
 					const double ddz = z - req.start_z;
 					if (ddx * ddx + ddz * ddz > s.horizon2) {
 						break;
+					}
+					if (req.keep_all_m < KEEP_NONE) {
+						// The KEEP circle (round 31, the face's slot law): a pose outside it is not a pose of this plan.
+						const double kdx = x - req.keep_x;
+						const double kdz = z - req.keep_z;
+						if (kdx * kdx + kdz * kdz > req.keep_all_m * req.keep_all_m) {
+							break;
+						}
 					}
 					const bool at_end = next_end < LEG_ENDS_N && swept >= LEG_ENDS_M[next_end] - 0.001;
 					if (at_end) {

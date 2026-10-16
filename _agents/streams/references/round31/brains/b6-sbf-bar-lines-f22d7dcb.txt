@@ -1,0 +1,9 @@
+(1) pooled drawn hull error at in, four wheeled: on 10.4 v control 29.1 deg (n crews 189 v 189): need <= 19.1: PASS
+    gang_ifv   drawn median  26.0 v  49.9 deg, paired run-median diff mean -21.5 se 6.1 (n 12): ok | (2) crews in 48 v 48 of 48: PASS 
+    gang_tank  drawn median  10.2 v  28.3 deg, paired run-median diff mean -14.5 se 2.4 (n 12): ok | (2) crews in 48 v 48 of 48: PASS 
+    law_ifv    drawn median   1.1 v  28.9 deg, paired run-median diff mean -20.4 se 1.0 (n 12): ok | (2) crews in 48 v 48 of 48: PASS 
+    law_tank   drawn median  24.0 v  29.9 deg, paired run-median diff mean +4.8 se 7.2 (n 12): ok | (2) crews in 45 v 45 of 48: PASS 
+    tank       drawn median   1.6 v  21.8 deg, paired run-median diff mean -18.4 se 0.3 (n 12): ok | (2) crews in 48 v 48 of 48: PASS guard (tracked, stated)
+(3) clicked rows identical between arms: 60/60: PASS []
+(4) counter: drawn on-runs fired 60/60, clicked on-runs 0, control runs 0: PASS
+SBF BAR (lines 1-4): PASS

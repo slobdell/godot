@@ -327,6 +327,63 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   its owning stream, with the same assertions divided across files and the test count shown before and after:
   traffic and brains now if idle; the rest go in round 32's briefs.
 
+- **R31.10 remote-guard-test's box-state groups don't block a gate (2026-10-15 ~13:25 PDT).** Its quiet-window and
+  slot-exclusive groups test `tools/slot.sh`'s windows against the live box. Under load they fail in a different group
+  each time (`9e1000d6` slot-exclusive 13/18; CP-H's `130a069b` quiet-window 27/1 at load 22), and they pass on a quiet
+  box (main `298e4498`). A light-lane re-run cannot open an exclusive window over the heavy slots, so it cannot clear
+  them. **Rule:** when remote-guard-test's box-state groups are the only red besides an expected sim-baseline move, and
+  the change touches nothing in `tools/slot.sh`, `tools/remote.sh` or `tools/quiet_window.sh`, the gate reads GREEN,
+  with the flake named in the record. A red in its other groups (remote-guard, check-verdict …) still blocks.
+- **CP-H's gate: GREEN under R31.10 (~13:20 PDT).** The ONE tree `130a069b` (main `a2ef0b31` + unstickback, kturnarc,
+  realspeed and realslow ON), builder0 `exited 2`, tests 2641 passed / 0 failed; sim-baseline moved on all 13
+  (expected; adopted at the ship); remote-guard-test quiet-window 27/1 at load 22 (R31.10); the queued-task route test
+  passes (route_first 1370, 2.1 m, 0.1°); native-verify-scenarios 0; perf-judge judged 5/0. **The CP-H A/B starts on
+  `130a069b`.**
+  **The A/B STARTED 13:23 PDT, with one accepted deviation:** on `130a069b` `realslow` cannot be turned OFF
+  (brain_switches.gd: naming it SETS it true, not a toggle), so the ON arm = `130a069b` with nothing named, and the base
+  and each consumer alone = its parent `a2ef0b31` with the opt-in names. `git diff a2ef0b31 130a069b -- game` is exactly
+  the four default lines, so the arms differ in the consumers only. **A ship blocker:** brains makes `realslow` a toggle
+  (`not REALSLOW_DEFAULT`, with a unit test) before any CP-H ship, or once flipped it could never be removed.
+  **Fixed (~13:50 PDT):** stream/brains `c45c9792` (merged at `d0aafb70`): `REALSLOW_DEFAULT` const, naming it sets
+  `not REALSLOW_DEFAULT`, test_tactics_realslow 5 cases; its full check is pending, and it joins CP-H's ship pair.
+  **Interim (~15:05 PDT; base `a2ef0b31` → ON `130a069b`):** census + drive 110–122: mixed arrivals 285 → 286 PASS,
+  contact 1979 → 2158 PASS; rigs arrivals 181 → 177 (−4, bound 7.0) PASS, contact 6800 → 8914 (+2114, bound 4144)
+  PASS, though without each arm's two worst runs +999 v ~1041; alone, kturnarc's rig contact is 6800 → 9685, and
+  realspeed and realslow are IDENTICAL to base on every seed (nulls on this stage, lesson 300). Hull-rest 84–89 (144
+  paired): **pinned crew-s 3106 → 333 (−2773, se 488), DOWN beyond 2 se, line (c) PASSES**; stuck 6578 → 3737, also
+  down; moving at 75 s better on 5 of 6 tasks, ambush +2 (guard +5). Counters: fires_hull 559, fires_wall 43 (7.1 %).
+  **Owed before the verdict:** realspeed and realslow each shown firing on some judged stage, or each drops out of the
+  ship; and kturnarc's worst rig-contact run traced. Fights and bridge pending.
+  **Fights (g) PASS (~15:25 PDT, 214–237, 24 pairs):** kills 987 → 1001 (+14 v 1.645 se 24.5), deaths 996 → 1013 (+17
+  v 25.3), hit rate 0.677 → 0.689, touching-target 0.598 → 0.622. **kturnarc's rig rise is ONE run:** census seed 114,
+  rig contacts 398 → 3234 and arrivals 15 → 13 (the other 12 seeds +49 in total), a real grind: Green_S0_1 PLANTED on
+  Block_7 for 1927 ticks after the arc changed its path. That is a wall pin of H1's kind, and the same seed with all four
+  ON reads 548, which **favours shipping the four TOGETHER over the arc alone.** realspeed and realslow are nulls on
+  Terminus by construction (realslow is Element's clock, and Terminus has no Element); their firing is read from their
+  alone FIGHTS rows (deterministic: any changed seed means it fired). If either is identical on all 24, it is reported
+  unexercised and drops from the ship.
+  **kturnarc's rise traced (~15:15 PDT, kturnarc-alone drive arm on `a2ef0b31`, rigs seed 114, `--turn-states`):**
+  Green_S0_1 on move_to, touch true throughout, PLANT v 9–12 m/s against REAL 0.05–0.7 m/s; round 29's escape fires
+  (esc 2.0 at f 5430) and doesn't free it. A real grind on Block_7, the plant/real lie unstickback's honest reading is
+  built for (all four ON, the same seed reads 548 v base 398). **Coupling, filed before the verdict: kturnarc does not
+  ship without unstickback.** If the combined arm fails and consumers are re-declared alone (C31.4's partial rule),
+  kturnarc may only go together with unstickback.
+  **✅ CP-H VERDICT (~16:30 PDT): every filed line PASSES on the combined arm (allnoghost), so it SHIPS as ONE pair**
+  (C31.4). ON `130a069b`, base and alone on `a2ef0b31`, builder0, GDScript, to completion. (a) arrivals mixed 285 → 286,
+  rigs 181 → 177 (bounds 8.2 / 7.0); (b) contact mixed +179 (bound 356), rigs +2114 (bound 4144); (c) pinned crew-s 3106
+  → 333 (−2773, se 488), rigs 653 → 26, scouts 1497 → 112; (d) moving at 75 s ambush +2 (guard +5), the rest −8 to −14;
+  (e) stuck crew-s 6578 → 3737, stuck crews 203 → 147; (f) bridge 18/18; (g) fights kills +14, deaths +17 (within
+  1.645 se), hit 0.677 → 0.689; (h) native's plain check 2641/0; (i) fires_hull 559, fires_wall 43 (7.1 %). ALONE
+  (reported, lesson 300 by seed divergence): unstickback fires everywhere; kturnarc's fights are bloodier on both sides
+  (kills +42, deaths +46, se 19, outside 2 se), so it stays coupled; realspeed fires on fights (23/24 differ); realslow
+  fires THINLY (2/24 fights differ). It rides with the combined arm that passed, recorded as thin evidence. **The ship:**
+  native re-cuts on CURRENT main (B6 and brains' toggle `c45c9792` landed since `a2ef0b31`; the realslow flip is now
+  `REALSLOW_DEFAULT := true`) with UNSTICK_BACK, KTURN_ARC, REAL_SPEED and REALSLOW defaults true; its plain check is the
+  ship check; then the orchestrator merges, records the 13 baselines twice (`sim-baseline-record`, the reason in the
+  commit), and runs one main check.
+  **Ship tree cut (~16:45 PDT):** pair/cph-ship `76b7ee46` on main `edc7dec8`, exactly four one-line flips (verified:
+  3 files, 4+/4−: UNSTICK_BACK, KTURN_ARC, REAL_SPEED and REALSLOW defaults true; ghost OFF). Its plain check is running.
+
 **Bars (round 31, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
 - **Traffic T3b-c bar (filed by the orchestrator 2026-10-14 ~22:45 PDT from the brief, before any judged number;
@@ -611,6 +668,60 @@ the build glue: `mk/native.mk`, `exec_fields.h`, the seam's record fields), `tes
   `test_tactics_army_layout10` hits 8 engine errors when `PlannerExecutor.tick` reads `global_position` on a freed tank
   (`planner_executor.gd:135`, then `planner_seam.gd:411` on Nil). A seam crew outlives its hull. The planner fixes it
   (release on a dead or freed tank), native re-cuts, and the gate re-runs; the series waits.
+  **Re-cut gate GREEN under R31.10 (~14:10 PDT):** `85911f0b` (main `a2ef0b31` + planner `f9d2c639`'s crew-hull fix +
+  native's mirror `14f4de82`, PLANNER_DEFAULT true), builder0 `exited 2`, tests 2652 passed / 0 failed. sim-baseline
+  moved on foundry, pit, crossing, sumps, gorge and archipelago (planner ON) and held on the seven maps whose scenarios
+  have no War Rig; remote-guard-test failed only its box-state groups (slot-light, watch at load 24.5); the seam twin
+  held 344 of 900 drives with 0 mismatches. **The second judged series (`planner-series-fresh`, Terminus 172–184) runs
+  on `85911f0b`.**
+  **SECOND judged series: line (a) PASSES (~14:45 PDT).** builder0, series tree `35f5df92` (code `f9d2c639`), gate
+  `85911f0b`, Terminus 172–184, n 13, to completion: rig arrivals base 180 v candidate 172 of 208, paired mean −0.615 (se
+  0.500) v pass line −0.823, PASS (per seed −1 +1 −1 +2 −1 0 +2 −2 −3 −3 −3 0 +1). The mixed squad is identical both arms
+  (289/289, the seam silent 13/13). Rig contact-ticks REPORTED: median 855 v 533, paired −282.2 (se 211.2). Seam totals
+  over 13 rig runs: requests 459, plans 137, driven 106, aborted 5, abandoned 2; refused GOAL_BLOCKED 203 / START_BLOCKED
+  83 / NO_PATH 23; queue_waits 486 (series 1: 1141); pending per rig event n 448, median 11, max 104 ticks. Rows:
+  `references/round31/planner/series2-fresh/` (`f8f91846`). **The other stages run to completion:** hull-rest, fights,
+  bridge, cp2.
+  **Line (b)'s named rig cases (REPORTED at n = 1, `fe5f8a9e`, traces `references/round31/planner/cases-b/`):** seed 31,
+  the rig 1930 base v 2198 candidate contact-ticks. It is a different grind of the same length: the candidate's is a
+  squadmate wedge in the west street with NO seam event (CP-H's H1 class, relayed). Arrivals 13 v 13. Seed 51: the rig
+  267 v 244; arrivals 16/16 v 15/16 (Green_S0_3 completed 9.6 m from its slot with no seam event in that leg). The seed-9
+  pin: pinned unit-ticks 491 (16.4 s) v 30 (1.0 s), freed with no re-pin loop. The rig 180°: `test_wheeled_arrival`'s rig
+  case is green on the gate. The car's leak check: the mixed line identical both arms.
+  **Line (f) as filed (~15:45 PDT, a1d9e1fc = code f9d2c639, builder0 pinned 0–3):** the warm (late-quarter) per-expansion
+  median for the longest live hull is 263 µs on seed 92721 (load 16.7), so SLICE 2 × 263 = **0.526 ms, a MISS by 0.026
+  ms**; seed 31337 reads 186 µs, 0.372 ms, PASS. Unpinned this morning the same probe read 214 µs (0.43 ms). **Ruling:**
+  (f) is NOT in the filed ship clause ((a), (c), (d), (e) and (b)'s rig lines), so a miss on (f) does not block a ship,
+  and SLICE is NOT changed after the numbers. The record says "(f) MISS on 92721 at load 16.7, an upper bound
+  (R31.6)". **Round 32: SLICE becomes a hardware-preset knob** (his rule: perf cuts ship as presets), e.g. SLICE 1 on the
+  laptop preset. On the laptop (~2.75×) the bound is ~1.45 ms in a tick a rig is planning (rigs plan ~0.06 times a
+  second), and SLICE 1 halves that at the price of twice the hold.
+  **Line (d) RULED PASS as filed (~16:20 PDT; base `0b2cf981`, candidate `35f5df92`, hull-rest seeds 60–65, 144 runs an
+  arm):** the filed text is "crews still moving at 75 s per task ≤ base + se (wheeled turret row … quote M1_CLASS's
+  paired se)", at 1.645 se, so the form is PER TASK on the WHEELED-TURRET row, and it passes on all 12 rows (closest
+  attack_move +8 v 9.05, SBF +8 v 8.39). At-rest error is not worse anywhere (smallest p 0.087), and settle passes. The
+  all-classes per-task reading (3 of 12 over) and wheels/fixed attack_move (+4 v 3.62) are REPORTED, not the filed form.
+  Supporting evidence: the hull-rest harness is NOT deterministic run to run. 92 of the 108 law/syndicate/condemned runs
+  where the seam never fired differ anyway, and those silent runs carry most of each per-task miss. **Round-32 finding:**
+  in a 19-crew gang press the one-session queue starves (23 % drawn / 18 % clicked of asks abandoned at the 90-tick cap,
+  queue_waits 19 179 / 26 578; the series had 2 of 459). Holds n 1141, median 14, max 110 ticks.
+  **✅ CP-P1 VERDICT (~17:30 PDT): the ship clause is MET on every stage, so it SHIPS** (series `35f5df92` = code
+  `f9d2c639`, gate `85911f0b`, builder0, every line read once at completion). (a) rig arrivals −0.615 v −0.823 PASS;
+  mixed identical. (b) rig contact median 855 → 533, paired −282.2, PASS. (c) scenario_cp2 identical both arms, PASS.
+  (d) hull-rest PASS as ruled. (e) fights kills −4 (se 4.5), deaths −4 (se 3.4), hit +0.012, PASS; bridge 18/18 identical.
+  The rig 180° PASS. (f) cost MISS on one seed (0.526 ms), not in the ship clause. Clip:
+  `~/projects/clips/round31/planner_terminus_f9d2c639.mp4`. **Ship order:** CP-H's ship (`76b7ee46`, check running)
+  merges FIRST, with its 13 baselines recorded twice. Then native re-cuts CP-P1 on THAT main (planner `f9d2c639` + its
+  mirror + `PLANNER_DEFAULT true`). Its plain check is CP-P1's ship check, and the FIRST check with the planner and CP-H's
+  four all ON together (C31.1's whole-suite test of the pair). Then merge, record its moved baselines twice, and run one
+  main check.
+  **Ship check on `3cd68da5` (~18:30 PDT): `exited 2`, 2651 passed / 2 failed, a COVERAGE gate, not a mismatch.**
+  test_native_drive's live and owned twins assert ≥ 20 station-keeping drives and saw 12 (planner alone 44, CP-H alone
+  20, both 12); twin fidelity 2160 drives, 0 mismatches. Native fixes the SCENARIO (test-only) with the ≥ 20 floor kept,
+  reaching ≥ 20 on all four trees (neither, planner, CP-H, both), then the light lane and the plain check.
+  **Fixed (~19:00 PDT, `166f7f1e`, test-only, floor kept):** five followers with front-row leaders, each starting on its
+  slot. Stationed counts (live = owned): neither 249, planner 199, CP-H 210, both 121 (before: ? / 44 / 20 / 12); 2160
+  drives with 0 mismatches on each tree. CP-P1's plain ship check on `166f7f1e` is running.
 - **R31.2 (C) wording amended (planner, `0914dafd`):** a pending hull that is still rolling is **braked to rest (the
   k-turn's 0.7 opposite throttle, straight lock), then held at zero/zero.** Zero/zero alone let a rolling rig coast past
   the 3 s hold. **Amended again (~04:30 PDT, `faeab49c`):** braked to rest, then held at zero/zero for **at most 3 s of

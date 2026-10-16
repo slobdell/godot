@@ -85,7 +85,7 @@ static func gun_switched(name: String) -> bool:
 	return _gun_off.has(name)
 
 
-const REAL_SPEED_DEFAULT := false  # OPT-IN until CP-H: `--gun-off=realspeed` flips it
+const REAL_SPEED_DEFAULT := true  # OPT-IN until CP-H: `--gun-off=realspeed` flips it
 
 
 static func real_speed_on() -> bool:

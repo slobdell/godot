@@ -14,16 +14,19 @@ const UNITS: Array[String] = ["tank", "ifv", "scout", "gang_tank", "artillery", 
 const FRAMES := 180
 
 
+## Every mover's state, then (one more entry) the world a drive can change besides them: the planner's seam (round 31).
 func _capture_all(movers: Array[Movement]) -> Array:
 	var states := []
 	for mover in movers:
 		states.append(MoverState.capture(mover))
+	states.append(MoverState.world_capture())
 	return states
 
 
 func _restore_all(movers: Array[Movement], states: Array) -> void:
 	for i in movers.size():
 		MoverState.restore(movers[i], states[i])
+	MoverState.world_restore(states[movers.size()])
 
 
 func _order(rng: RandomNumberGenerator, wheeled: bool) -> Dictionary:
@@ -81,6 +84,8 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 			if differ != "":
 				differ = "mover %d: %s" % [j, differ]
 				break
+		if differ == "":
+			differ = MoverState.world_diff(live[movers.size()], native[movers.size()])
 		if MoverState.command(live_cmd) != MoverState.command(native_cmd) or differ != "":
 			mismatches += 1
 			if first == "":
@@ -146,6 +151,8 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 					if differ != "":
 						differ = "mover %d: %s" % [j, differ]
 						break
+				if differ == "":
+					differ = MoverState.world_diff(arms[0][1][movers.size()], arms[arm][1][movers.size()])
 				if arms[0][0] != arms[arm][0] or differ != "":
 					mismatches += 1
 					if first == "":
@@ -296,12 +303,16 @@ func _drive_case(owned: bool) -> void:
 	for orders in controllers:
 		movers.append(Movement.of(orders.tank))
 		orders.set_orders(_order(rng, movers[-1].wheel_radius() > 0.0), null)
-	# Three followers keep station on a slot that slides with a leader (the formation case: _track_goal's velocity,
-	# then _keep_station's PID), re-placed every tick the way an element re-issues a slot, without a new order.
-	var followers := {2: 1, 6: 0, 9: 3}
+	# Five followers keep station on a slot that slides with a leader (the formation case: _track_goal's velocity,
+	# then _keep_station's PID), re-placed every tick the way an element re-issues a slot, without a new order. Each
+	# starts ON its slot, so station keeping runs whenever its leader moves, not only once it has caught up (round 31:
+	# three followers from the grid stationed 44 / 20 / 12 times as the planner and CP-H turned on; the floor is 20).
+	var followers := {2: 1, 6: 0, 9: 3, 10: 4, 11: 5}  # leaders from the front row, so the slots (z - 6) form a row of their own
 	for f: int in followers:
 		var leader: Tank = controllers[followers[f]].tank
-		controllers[f].set_orders({"type": "move_to", "x": leader.global_position.x + 4.0, "z": leader.global_position.z - 6.0}, null)
+		var slot := Vector3(leader.global_position.x + 4.0, leader.global_position.y, leader.global_position.z - 6.0)
+		controllers[f].tank.global_position = slot
+		controllers[f].set_orders({"type": "move_to", "x": slot.x, "z": slot.z}, null)
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var asked := 0
 	var mismatches := 0
@@ -368,6 +379,8 @@ func _drive_case(owned: bool) -> void:
 				if d != "":
 					states_differ = "mover %d: %s" % [j, d]
 					break
+			if states_differ == "":
+				states_differ = MoverState.world_diff(live[movers.size()], native[movers.size()])
 			if not command_same or states_differ != "":
 				mismatches += 1
 				if first == "":
