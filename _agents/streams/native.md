@@ -127,6 +127,12 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   (builder0 light, `native_drive_owned|native_execute_odd` serial): main 99afc1f8 1/1, f686f155 2/0. Off main as
   `fix/seam-reset` `45b52d04` (3/0 with h1b). **Lesson:** a twin case owns its world: empty every static table it
   captures at its start, or it inherits the shard's history.
+- **stream/native green: `17ab77b9`** (main 99afc1f8 merged + face twin + seam reset): builder0 `make check exited 0`,
+  2703 passed / 0 failed, 24 passed, all maps unmoved. (`1ca9988f`'s check had 2702/1: the face twin's War Rig case at
+  tick 0, the same seam carry-over, before `f686f155` gave it `world_reset`.) Later commits are this brief only.
+- **Still open:** B5c-v6 pair (waiting for brains' hash; when it comes, the v6 carry's `test_native_gate` needs
+  `MoverState.world_reset()` at its start like every other seam-capturing twin); manoeuvre's swap lab (ESC_SWAP, a new
+  escape stage the native unstick must hand back or mirror) when it pairs; N5's held ports (item 6).
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
