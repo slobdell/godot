@@ -236,6 +236,16 @@ orchestrator's `make sim-baseline-adopt` on main.
   situation (a parked squadmate in the way): **B10b = the same latch re-judged ONCE on fresh seeds on a tree with C32.10's
   swap ON**, no code change, its own bar (the s19 t8 case named); B5c-v6 waits behind B10b (its s17 t11 pass case needs the
   latch: 35.8 v 34.8 s with it, v5 58.3 without).
+- **B11, HOLD's return honours his drawn facing (brains, C32.12 (2); filed 2026-10-16 ~09:30 PDT before any number; full
+  text stream/brains `e440bcd9` Status *C32.12*).** C32.12 (1) answered: the faced move is not completed far off, it is
+  REPLACED: when the element arrives (centre within ARRIVE_M) the halt gives every crew a `hold` at its seat carrying his
+  facing, and a faced hold replaces a move at once (`Element._should_issue`, round 10's rule) wherever the crew is. Candidate:
+  HOLD's return backs on only while his facing is within FACING_KEEP_DEG (60°) of the nose, else drives nose-first carrying
+  the facing; `--hold-return=old` = control; GDScript. Hull-rest drawn, 4 factions × 6 FRESH seeds × 6 faced tasks, on v old.
+  **Seeds amended by the orchestrator before numbers: 350–355** (brains proposed 61–65, 67, which overlap round 31's judged
+  hull-rest 60–65 and CP-Q's 66–71). (1) DECIDING crews > 90° off pooled, on < off (Fisher reported); (2) s66 Green_Guns_5
+  ≤ 90° in ≥ 2 of 3 on-repeats (a named case; the harness is not run-to-run deterministic); (3) no class's median worse (p <
+  0.05), never-settled on ≤ off + 2, settle median ≤ +2 s; (4) the whole suite, sim-baseline moves named; (5) worst traced.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
