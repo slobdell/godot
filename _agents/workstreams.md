@@ -208,6 +208,13 @@ orchestrator's `make sim-baseline-adopt` on main.
   180 PASS; (5) PASS. Reported: Terminus rig contact-ticks median 522 v 321. **Reading:** serving 1.5–2× the face plans in a
   19-crew press costs drawn facing, settling and wall contact; the FIFO's starvation was hiding the cost of the seam's face
   plans in a press. Round 33: trace why a served face in a press ends worse, a press-aware scope, then the queue again.
+  **Traces (planner, builder0 light, ~09:00 PDT):** hull-rest's worst pairs do NOT reproduce (the harness's run-to-run
+  variation dominates the tail; one is a faced-move War Rig left ~150° off after a plain stop in BOTH arms, relayed to
+  manoeuvre as a possible face-path bug on main). **Terminus s207's contact rise IS the queue's, mechanism found:** under the
+  FIFO a request is HELD (`_pend` brakes the hull to rest) until its search answers, so a refusal hands today's code a hull
+  at rest; refuse-early answers from the ROLLING pose, so today's code keeps 7–9 m/s and drives into the block (series-wide
+  258 refused early; GOAL_BLOCKED 197 v 138). **Round 33:** refuse early only AT REST (brake a rolling ask as the FIFO does,
+  then probe), round-robin unchanged; the hull-rest A/A (fifo v fifo) sizes line (3) first; re-judge on fresh seeds.
 - **H1b, the ask that never frees (manoeuvre, C32.2; filed 2026-10-16 ~01:25 PDT before any series number; DECLARED;
   partial: none; full text stream/manoeuvre Status *H1b bar*).** Arms: candidate `--nav-off=h1b` (opt-in, R31.1) v the same
   tree without it, both GDScript (`--brains-off=native`). N = 2 failed asks; "failed" = the escape fires again on the same
