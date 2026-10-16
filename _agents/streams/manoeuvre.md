@@ -141,6 +141,15 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   seed reads 0 loops (mixed 7, 13; rigs 9, 10, 16); but 76 + 70 loops are `far` and unchanged. Arrivals mixed 353 → 355,
   rigs 211 → 212 of 384 / 256. **So the settle reaches ~30 % of today's loops; the far loops are the problem.** Tracing
   them (`H1B_FAR` rows: route left, goal slide, gap, the blocker's phase) on seeds 3–6 at `9a00f57e`.
+- **The far-loop trace** (LAPTOP, `08e6d44c`, H1b arm, Terminus seeds 3–6 rigs + mixed, n = 1 a seed,
+  `tests/manoeuvre/h1b_far.py`). Loop counts agree with builder0's hunt on the same seeds (mixed 5: 13 v 13; rigs 3: 26
+  v 27). Result: 62 far loops from 6 pairs. 50 have a PARKED blocker (arrived, its route left 0) and 12 (rigs) a blocker
+  itself blocked by a third. MUTUAL (refused both ways): 0. Yielding at the fire: 0. The pinned hull has 22 / 29 / 37 m
+  of route left (p10/50/90), 6–14 m centre to centre behind a SAME-SQUAD crew parked at its own slot. Asks refused 62/62,
+  and _negotiate names the parked one in 50/62, but it has no validated yield spot. Traffic's back-off draft would need
+  11 / 16 / 20 m of reverse, while the straight room back is ≤ 3 m (met 0/62). **Proposed to the orchestrator:** (A) a
+  parked same-squad friend gives way FORWARD, or (B) SWAP SEATS (my lean). Either is not my code; my part is the
+  detection hook. H1b's settle stands for the near-goal case, judged as filed with `far` reported.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
