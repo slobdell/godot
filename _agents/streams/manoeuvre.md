@@ -81,15 +81,40 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
-### Report (2026-10-16, in progress)
+### Report (2026-10-16 ~14:00 PDT)
 
-**H1b's judged series is RUNNING** (started 10:01 PDT). Tree: `stream/manoeuvre` `9c46002a` (H1b code = `e8e20ca9`;
-after it only docs and the runner's PINNED/STUCK rows). Arms are flags as filed: base `--brains-off=native`, H1b
-`--nav-off=h1b --brains-off=native`. **C31.1 gate GREEN:** `pair/h1b-on 273654e6` (builder0 plain check, exited 0,
-2703/0, sim-baseline 13 maps unmoved), which is the ship hash if every line passes; the five exec_fields rows
-(`2d35b1ec`) ship with it. Stages run in sequence on the heavy lane (runner: the scratchpad's `series/run.sh`): drive
-300–312, drive hunt 1–16, hull-rest 313–318 base then H1b, fights 320–343 base then H1b. Plus the named fights 4–6 base
-and H1b on the light lane, same commit. Each guard is read once at completion.
+**H1b PASSES every line of its bar. Ship hash: `pair/h1b-on 273654e6`** (main 2fc43a47 + `e8e20ca9` + native's twin and
+exec_fields rows `2d35b1ec` + H1B_DEFAULT true; builder0 plain check `>> remote: make check exited 0`, 2703 passed,
+0 failed, sim-baseline all 13 maps unmoved). The five exec_fields rows ship WITH it. The series ran on
+`stream/manoeuvre` with the arms as flags (base `--brains-off=native`, H1b `--nav-off=h1b --brains-off=native`), stage
+labels `9c46002a` / `5736bb83` / `f5bf085f`: all carry H1b code `e8e20ca9`, plus only docs, the runner's PINNED/STUCK rows
+and R32.7's reader fix. Builder0, GDScript path, every guard read once at completion.
+
+| Line | Set | Reading | Verdict |
+|---|---|---|---|
+| (1) loops − far = 0, far ≤ base | fresh Terminus 300–312 | mixed 12−12, rigs 101−101; 12 ≤ 12, 101 ≤ 137 | PASS |
+| (1) | 20 named Terminus hunt seeds | 0 on every seed; settles mixed 7, 13, 16 and rigs 9, 10, 16 | PASS |
+| (1) | named fights 4 / 6 (+5) | s4 1→1 (far 1), s6 3→0 (1 settle), s5 0→0 | PASS |
+| (2) hull-rest PINNED ≤ 10 m | 313–318, n 144 | 545 → 366 (−179, se 213.3) | PASS |
+| (2) hull-rest STUCK (all hulls) | 313–318 | as filed 3766 → 4206 (+440, se 478.9, bound 4554); fixed reader 2598 → 3233 (+635, se 427.0, bound 3300) | PASS on both |
+| (3) Terminus PINNED | 300–312 | rigs 59 → 47, mixed 0 v 0 | PASS |
+| (3) Terminus STUCK | 300–312 | NOT READABLE (R32.7): as filed 257 → 380, offline 192 → 121 | — |
+| (3) Terminus STUCK, R32.7 re-run | fresh 360–372, fixed reader | rigs 323 v 323, mixed 64 v 64 (diff 0, se 0) | PASS |
+| (4) arrivals, paired | 300–312 | mixed 294 v 294; rigs 177 → 179 (mean +0.15, se 0.19) | PASS |
+| (4) | 360–372 (reported) | mixed 289 → 290, rigs 164 → 165 | — |
+| (5) fights | 320–343, 23 paired (333 timed out in both) | kills 914 v 914, deaths 918 v 918, hit rate 0.717 v 0.717 | PASS |
+| (6) R31.5 terrain fallback | pair check | test_nav_wall_contact, test_control_queued_task, test_manoeuvre_escape green | PASS |
+| (7) whole suite, switch ON | `273654e6` | exited 0, 2703/0 | PASS |
+
+**Reported:** `far` (the swap's base): Terminus 300–312 mixed 12 / rigs 101; hunt 1–16 mixed 76 / rigs 70; fights 20.
+H1b settles 3–4 crews a 13-seed set, 6–11 m short. Hull-rest stuck CREWS rose 76 → 100 with the fixed reader (UP beyond
+2 se). In 3 of the 5 worst runs H1b never acted, so it reads as hull-rest's run-to-run variation (no `--fixed-fps`).
+**What he will notice:** a vehicle sent to a slot a parked squadmate sits on (or right beside it) stops a few metres
+short after two tries, instead of nudging back and forth every ~21 s. The far loops (most of today's: a crew pinned
+behind a squadmate parked in the street) are next, as C32.10's seat swap.
+**A reader subtlety found on 360–372 (flag, not changed):** in BOTH readers a long no-progress run that ENDS IN PROGRESS is
+never counted (`best, run = r[3], 0`). The R32.7 fix counts a run the next goal interrupts, as on rigs 363 Green_S0_1
+(68 s, counted in both arms). Whether "pressed 30 s, then got through" is stuck is a definition question for the next bar.
 
 ### H1b bar (DRAFT for the orchestrator, filed before any series number; seeds proposed, the orchestrator confirms)
 
@@ -266,6 +291,11 @@ latch ON (`8e43cc5c`). S_2 parks at (-2.5, -51.9) in the passage S_3 and S_4 nee
 all? H1b's count only runs on an escape FIRE (a throttle-held stall with a Tank in the slide); a crew reading `no_path`
 may be standing, not pressing, and so never fire. If they don't fire, the swap's trigger needs a second door (a
 `blocked_by` same-squad parked friend for N s) before this case can be one of its pass lines.
+
+**Native on the swap (lab `98a29c57`): NONE PORTED.** The native drive calls `_escape_step` back for any `_esc_stage != 0`,
+so ESC_SWAP runs as GDScript, and `_h1b_swap` runs inside `_escape_begin` (a callback). The pair needs ONE exec_fields row
+from native, `F(Vector3, VECTOR3, _h1b_swap_goal)` placed after `_h1b_last_answer`, and it ships with the swap.
+`swap_seam_override` is a static, so it needs no row. Native cuts the pair tree on the candidate hash.
 
 **H1b bar line (1), amended on main before numbers:** on the named hunt seeds (Terminus mixed 4, 5, 6, 7, 9, 10, 11,
 13, 14, 16; rigs 1, 2, 3, 4, 6, 9, 10, 14, 15, 16; fights 4, 6) AND on the fresh Terminus seeds 300–312: H1b-arm
