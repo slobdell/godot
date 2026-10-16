@@ -73,8 +73,9 @@ const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at r
 const EXPANSIONS_PER_HOLD := PENDING_TICKS * SLICE
 const SLICE_FLAG := "planner-slice"
 ## Round 32 (hand-over (3), the gang-press queue that starves): `--planner-queue=shared` (opt-in until judged; ships ON
-## as a pair) replaces the one-search FIFO with (a) REFUSE EARLY: a request whose start or goal is blocked is answered
-## at the ask (from the ask's own pose when the hull is still rolling), never held, never queued; (b) the per-tick
+## as a pair) replaces the one-search FIFO with (a) REFUSE EARLY, AT REST: a request whose start or goal is blocked is
+## answered the tick its hull is at rest (braked to rest first, as the FIFO holds it), never queued behind another
+## crew's search; (b) the per-tick
 ## budget (`slice()` expansions, the same cost line) goes to the first crew in the queue whose search has begun, each
 ## crew on a session of its own (`Planner.Session`), and a search that has had QUANTUM expansions without an answer
 ## goes to the BACK (round-robin with a quantum): searches shorter than the quantum land exactly as the FIFO lands
@@ -148,7 +149,6 @@ class Crew:
 	var rerequests := 0
 	var stepped := 0                # expansions handed to the session (replayed by restore)
 	var session: Planner.Session = null   # the shared queue's own session (null under the FIFO); never copied
-	var probed := false             # the shared queue's refuse-early probe ran (from the ask's pose)
 	var quantum := 0                # the shared queue: expansions since this search's turn began
 	var tank: Tank = null           # THE hull this crew serves (crews are keyed by name; a disposed match's hull is
 	                                # freed and the next match names one the same: native's gate on 3a66f546)
@@ -184,12 +184,23 @@ static func on() -> bool:
 
 ## Is the shared queue on (QUEUE_FLAG, read once a process; `queue_override` for tests)?
 static func queue_on() -> bool:
+	return _mode() >= 1
+
+
+## The first cut's refuse-early from a ROLLING pose, kept reachable for the record and the s207 stage only
+## (`--planner-queue=shared-rolling`): the mechanism CP-Q's park traced. Never a default.
+static func probe_rolling() -> bool:
+	return _mode() == 2
+
+
+## 0 fifo, 1 shared, 2 shared-rolling (read once a process; `queue_override` for tests, the same values).
+static func _mode() -> int:
 	if queue_override >= 0:
-		return queue_override == 1
+		return queue_override
 	if _queue_mode < 0:
 		var text := LaunchFlags.from_environment().text(QUEUE_FLAG)
-		_queue_mode = 1 if text == "shared" else (0 if text == "fifo" else (1 if QUEUE_DEFAULT else 0))
-	return _queue_mode == 1
+		_queue_mode = {"fifo": 0, "shared": 1, "shared-rolling": 2}.get(text, 1 if QUEUE_DEFAULT else 0)
+	return _queue_mode
 
 
 ## The expansions a pending search gets a tick, for this match (SLICE, or SLICE_LAPTOP under the laptop preset).
@@ -506,14 +517,17 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 
 ## The shared queue's pending tick (QUEUE_FLAG shared): the hull held at zero/zero (braked to rest first, as the FIFO),
 ## its search begun from rest on its own session, a refusal answered the tick it is known, and this tick's share of the
-## budget stepped. Refuse early: a hull still rolling at the ask is probed from the ask's own pose; a blocked start or
-## goal is answered there and the hull is never held.
+## budget stepped. Refuse early ONLY AT REST (CP-Q's park, Terminus seed 207, a deterministic run): the first cut
+## probed a still-rolling hull from the ask's pose and answered a refusal at once, so today's code kept the rig's
+## 7-9 m/s and pinned it on Block_7 for 2043 ticks; under the FIFO the same refusal comes after the hold has braked the
+## hull to rest. So a rolling ask is braked to rest first, exactly as the FIFO holds it; its search begins (and a
+## blocked start or goal is answered) from rest, never behind another crew's search.
 static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float) -> bool:
 	var tank := mover.ctl.tank
 	if not crew.begun:
 		if absf(tank.speed()) > REST_MPS:
-			if not crew.probed:
-				crew.probed = true
+			if probe_rolling() and crew.asked_tick == tick:
+				# The first cut (kept for the record): answer a blocked ask from the rolling pose, unbraked.
 				var probe := Planner.Session.new()
 				probe.begin(crew.req)
 				if probe.refused():
@@ -540,7 +554,6 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 			crew.session = Planner.Session.new()
 		crew.session.begin(crew.req)
 		crew.begun = true
-		crew.probed = true
 		if crew.session.refused():
 			crew.session.step(1)
 			var refusal := crew.session.result()

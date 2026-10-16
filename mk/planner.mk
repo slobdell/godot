@@ -247,3 +247,16 @@ planner-trace-drive-queue: native import ## planner round 32: the Terminus drive
 			NAV_FLAGS="--planner-queue=$$arm --trace=$(PLANNER_TQ_UNIT) --turn-trace=$(PLANNER_TQ_UNIT)" NAV_JOBS=1 > /dev/null 2>&1 || true; \
 		cp $(BUILD_DIR)/nav-drive/$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log; \
 		grep -E "^PLANNER_SEAM $(PLANNER_TQ_UNIT) " $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log | cut -c1-260 || true; done
+
+# Round 32 (the round-33 candidate, "refuse early only at rest"): Terminus rigs seed 207 on --planner-queue=shared-rolling
+# (the first cut: must reproduce Green_S0_4's pin on Block_7) and on shared (must not). Deterministic: one run an arm.
+# make remote LIGHT=1 T=planner-stage-s207 -> build/planner-stage/{shared-rolling,shared}-rigs-207.log + STAGE_S207
+PLANNER_STAGE_DIR := $(BUILD_DIR)/planner-stage
+.PHONY: planner-stage-s207
+planner-stage-s207: native import ## planner round 32: the s207 stage, refuse early from a rolling pose (pins) v only at rest (must not) -> STAGE_S207
+	@rm -rf $(PLANNER_STAGE_DIR) && mkdir -p $(PLANNER_STAGE_DIR)
+	@echo ">> planner-stage-s207 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
+	@for arm in shared-rolling shared; do \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS=rigs DRIVE_SEEDS=207 NAV_FLAGS="--planner-queue=$$arm" NAV_JOBS=1 > /dev/null 2>&1 || true; \
+		cp $(BUILD_DIR)/nav-drive/rigs-207.log $(PLANNER_STAGE_DIR)/$$arm-rigs-207.log; done
+	@$(PYTHON) tests/planner/stage_s207.py rolling=$(PLANNER_STAGE_DIR)/shared-rolling-rigs-207.log shared=$(PLANNER_STAGE_DIR)/shared-rigs-207.log
