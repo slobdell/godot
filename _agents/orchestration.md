@@ -230,6 +230,11 @@ reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
 
 ## Lessons (add to this list every round)
 
+- **Round 31: never `git commit -a` while a tool may be writing into the tree.** `make sim-baseline-adopt` rewrote
+  `tests/baselines/sim_state_hash.txt` while the orchestrator committed a HANDOFF note with `-a`, so the 13-map baseline
+  move landed under a message about a clip (`edfcbaee`); `b7c0adbc` carries the reason after the fact. Stage docs by name
+  (`git add HANDOFF.md _agents/...`) whenever a background job is running.
+
 - **Round 31: a rule nobody runs is not a rule.** Round 29 wrote "no second check of the same code" into the integrate
   checklist, and round 31's orchestrator re-checked identical trees for most of a day anyway, with builder0 the
   bottleneck. The fix was a script that answers the question (`tools/merge_check_needed.sh`) and a step that calls it.
