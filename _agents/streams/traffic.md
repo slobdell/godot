@@ -102,7 +102,16 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
 - **Did CP-H/CP-P1 move what was judged? No.** Every judged line reads as round 31's `f5dc4147` did, apart from crews
   176→179 v 176→178. These fights are short-hull squads crossing, where CP-P1 (≥ 10 m hulls) and CP-H's pinned-hull
   consumers barely act. Worst runs (the same as round 31's): Terminus s43/t1 +5.3 s, yard s42/t8 +6.0 s. Their traces
-  are below once read.
+  are below.
+- **Worst runs traced** (builder0 light, `b5882c9c`, both arms; `references/round32/traffic/t3bc_traces/`, read with
+  `tests/traffic/squad_pace_table.py`). The traces reproduce the series rows exactly: Terminus 11.0 → 16.3 s, yard 8.1 → 14.1 s.
+  - **Terminus s43/t1 (+5.3 s): the yielder simply waits, as in round 31.** All of squad B is held at the 0.40 floor from
+    3–4 s to about 8 s, and released at full pace by 9–10 s. Then one extra event: B_5 k-turns at 12–14 s, is blocked by
+    terrain for 2 s, and arrives at 17.6 s (base 11.0). Squad A is untouched (9.5 v 11.0 s). Arrivals: B_3 15.2 v 44.9 s
+    (the base's B_3 yielded to B_4 and was blocked), B_4 31.1 v 24.1.
+  - **Yard s42/t8 (+6.0 s):** squad B is held at the share 2–6 s, and its rear crew B_4 until about 9 s. Then a give-way
+    inside the squad (B_2 yields to B_4, 9–11 s) holds B_4's arrival to 15.5 s (base 8.1) and B_2's to 18.6 s (10.9). B_1
+    never arrives in either arm (the same k-turn and path block in base and arm), so it is not a wedge. Nothing is stuck.
 - **MERGED (orchestrator): `b5882c9c` → main `86917d5a`**; the 13 baselines are being re-adopted. T1c-b2's check on
   `d1c375b3` was stopped (its base was stale; builder0 processes killed by cwd), and it is re-carried onto the
   post-adoption main so that its check reads only the pit moving.
