@@ -152,6 +152,12 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   detection hook. H1b's settle stands for the near-goal case, judged as filed with `far` reported.
 - **quick-remote GREEN at `e8e20ca9`** (builder0, `>> remote: make quick … exited 0`, 59 passed 0 failed, 11 test files the
   diff selects + lint of 138 scripts + combat-smoke). `test_manoeuvre_h1b` 60.3 s, `test_manoeuvre_h1b_guard` 40.2 s.
+- **H1b's ON pair tree (native):** the first cut `pair/h1b-on 5d6d7414` failed LINT (`make check exited 2`): native's
+  twin needs ExecuteTwinCase from stream/native's split, and only the one file had been copied. The re-cut is
+  `pair/h1b-on fa2d9e31` (= 5d6d7414 + stream/native `981e336b`, tests and brief only), H1B_DEFAULT true; its plain check is
+  running on builder0. The series waits for it (C31.1).
+- **The swap stage's first two runs proved nothing** (lab `367ab66c`, `ab3b18a0`: 0 fires): a sign bug put the rig's
+  goal BEHIND it. It was not "drives round on open ground" as first read. Fixed at lab `5c6d17ea`.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
