@@ -230,6 +230,11 @@ reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
 
 ## Lessons (add to this list every round)
 
+- **Round 31: a systemd job wakes nobody when it ends.** The orchestrator chained a baseline re-adoption behind a check,
+  then slept on a 25-min wakeup; the adoption finished in ~10 min and builder0 sat idle until the lead asked "builder0 looks
+  idle". When a step needs the orchestrator after it (a commit, a merge, the next check), either chain that step into the
+  same unit, or set the wakeup to the job's expected end, not to a default.
+
 - **Round 31: never `git commit -a` while a tool may be writing into the tree.** `make sim-baseline-adopt` rewrote
   `tests/baselines/sim_state_hash.txt` while the orchestrator committed a HANDOFF note with `-a`, so the 13-map baseline
   move landed under a message about a clip (`edfcbaee`); `b7c0adbc` carries the reason after the fact. Stage docs by name
