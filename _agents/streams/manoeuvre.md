@@ -263,6 +263,12 @@ never counted (`best, run = r[3], 0`). The R32.7 fix counts a run the next goal 
   ends ~144–156° off in BOTH arms. The planner's seam never acts for it. It drives its move_to, arrives nose south, and
   its order becomes `stop` with NO face step, so the faced move never turns to face at rest (order_controller's
   face-at-rest path). It may feed M1b(3)'s "moving / not settled" lines too.
+- **B11 PARKED (orchestrator relay, 2026-10-16; builder0, ffba7f77, hull-rest seeds 350–355, n 144 an arm):** HOLD's
+  return nose-first with the facing. It has a strong lead on wheels/turret: faced_move median 17.3 v 48.4° (p 0.004),
+  faced_right 21.0 v 43.6°. It failed because wheels/fixed got worse, and s66 Green_Guns_5 still ends > 100° off.
+  The cause: the return completes inside the 6 m settle radius still turned, and nothing faces a wheeled turret hull at
+  rest. That is M1b(3)'s turn-the-hull. **Round 33 pairs B11b (turret only) with M1b's face at rest**, so design the
+  face at rest to stack on B11b's return. Green_Guns_5 is the named case.
 - **Working hypothesis to TRACE before designing (now doubtful, see above):** attempt 2's hulls turned mid-approach, swung the halt and re-seated
   the element (Terminus mixed misses), and perhaps kept the attack-move crews moving at 75 s. The bar is filed before
   numbers, after H1b.
