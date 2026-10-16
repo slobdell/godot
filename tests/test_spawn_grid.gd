@@ -113,7 +113,7 @@ func test_every_spawn_slot_is_somewhere_a_unit_can_be() -> void:
 ## defers `deploy()` by a frame, a resized roster piles 45 vehicles into a grid sized for one 8.6 m hull and
 ## nothing says so. This spawns a real faction army and looks at where the vehicles actually are.
 func test_a_doctrine_army_is_never_left_standing_on_the_grid() -> void:
-	for faction: String in ["gangs", "condemned"]:
+	for faction: String in ["gangs", "condemned", "law", "syndicate"]:  # round 32 (R32.6): every faction
 		var game_match: Match = (load("res://game/match/match.tscn") as PackedScene).instantiate()
 		add_to_tree(game_match)
 		await wait_physics_frames(1)
