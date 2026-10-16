@@ -80,6 +80,27 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### B3b-2c JUDGED: PASSES EVERY LINE; ships ON (2026-10-16 04:30 PDT). **Merge here: `5f0ed865`**
+Its check (builder0): 2666 passed / 0 failed, 25 of 26; the one red was web-match-smoke's first sound (30.6 v 30 s at
+load 22), and **web-smoke re-run ALONE exited 0** (R32.4). Series: builder0 light lane, tree `cbddb940` = `5f0ed865`'s
+game code (+ a test file + docs), 02:24–04:26 PDT; on = default, control = `--route-seat=off --mouth-held=off` (main's
+rules). Rows: `references/round32/brains/b3b2c-*-cbddb940.*`.
+
+| line | on v control | result |
+|---|---|---|
+| (1) his bridge, the full 108 (locks green/rust × seeds 1–3 × ticks 1–18) | **108/108** v 107/108 (control fails green t5 s2, rim 1: round 28's cell) | PASS |
+| (2) bridge-pooled (the check) | 18/18 | PASS |
+| (3) arrive, FRESH seeds 45–48, n 100 an arm | all_in8_s **90 v 90**, discordant 0 for / 0 against; paired median 29.9 v 29.9 s (+0.0 %) | PASS |
+| (4) counters | crossings_found > 0 in 108/108 on, 0/108 control; 0 in all 200 arrive runs; mouth_held_resends > 0 in 2 of 108 | PASS |
+| (5) cost, `t.poll.element` on Locks (`ai-parts-match`) | 0.083 v 0.097 ms (identical call counts; box busy) | PASS (≤ 0.5) |
+| (6) worst cells | on-arm 108: no failing cell; the most rim time is green s3 t11 (2.2 s, all 4 across, in 50.4 s), the slowest rust s2 t16 (55.0 s, rim 0.6 s); arrive: every cell's all_in8_s is identical in both arms (100/100), so there is no losing cell to trace | — |
+
+As predicted in the bar, the arrive arms are byte-identical: the seating needs a deck, the mouth guard a deck's mouth,
+and with round 28's narrowing OFF both arms share round 26's heading rule. sim-baseline 13 unmoved in the check.
+**What he'll notice:** every crew of every squad gets across his bridge (round 28's last cell now crosses), and
+squads ordered elsewhere arrive exactly as before. Native: none ported (GDScript only). The commits after `5f0ed865` on
+the stream are test splits, shard times, a test and docs; they ride the next check (B10's).
+
 ### REPORT so far (2026-10-16 01:10 PDT)
 - **B3b-2c** built (`5ca8269d`). Tuning, NOT evidence (builder0 light, `5ca8269d`, n 1 a cell, bridge-series on arm):
   round 28's two cells green t5 s2 (rim 0, 4/4, arrived 34.8 s) and rust t9 s2 (rim 0, 4/4, 41.6 s), B3b-2's traced
