@@ -178,6 +178,31 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   check on the same hash went red on native's `test_native_execute_odd`, which was order-dependent:
   `test_native_drive_owned` left a crew held in the planner seam. Native's test-only fix is on main at `45b52d04`.
 
+**T4 stretch JUDGED: NOT SHIPPED** (builder0, `0adc6deb` = main `2dce8a8c` + the ghost ON, native path, base
+`--traffic-off=ghost`; `references/round32/traffic/t4_r32/`).
+- **ON gate (`check NATIVE=off`): no red from T4.** 2699 / 1. sim-baseline all 13 moved (expected), native-live-guard is
+  structural under NATIVE=off, and `test_manoeuvre_behind::…war_rig_faces_behind_in_a_planned_turn` (drift 25.3 m) is
+  identical with `--traffic-off=ghost` on the laptop (GDScript), so it is main's GDScript path (manoeuvre's).
+- **Terminus drive, seeds 41–64, n 24 a squad paired, 48/48 runs:**
+  - (1) **Deciding line FAILED:** mixed stuck 607 → 313 crew-s (−294, −48 %), se 211, needs beyond −347. The
+    direction is right but not proven at n 24.
+  - (2) Rigs stuck 627 → 459 (−168, se 185): pass. Manoeuvre's `_honest_blocker` is on main, so round 31's rig harm is
+    gone.
+  - (3) Pinned: mixed 316 → 17 crew-s (se 153), crews 5 → 1; rigs 0 → 0: pass.
+  - (4) Arrivals: mixed 543 → 541 (limit −12.3), rigs 332 → 331 (−14.5): pass.
+- **(5) Series (41–43 × 6 ticks, n 18 a case, 144 rows):** the crossings, Terminus head-on and every no-wedge/crews line
+  pass. Terminus cross clock +0.31 s, yard +0.44 s. Same-squad fast contacts 139 → 116 and 149 → 120.
+  **Yard head-on FAILED two guards:** between-squad fast 53 → 59 (limit +5.8) and all-in median 33.8 → 38.0 (+3.82).
+  (`turns_verdict`'s pooled −25 % line is T3b-c's gain line, not T4's; not read.)
+  - Traced from the rows: one pair (s43/t6, +27 s) is an extra arrival (A_5 never arrived in base). Over crews in both
+    arms the last arrival is +3.6 s (se 2.3), carried by four pairs at +15–22 s (s41/t11, s42/t3, s41/t6, s42/t11).
+  - In each of those, the late hull (Green_A_5 three times) reverses and circles round its slot: circle reverses
+    20 → 47, 8 → 138, 15 → 112. There are more k-turns and one unstick fire, and friend-stuck is ≈ 0.
+  - **Reading:** with the ghost on, the last hull into a packed head-on slot loops (reverse / circle) instead of
+    settling. It is a slot-approach cost, not a wedge.
+- **Next, if it is taken up:** trace one of those four (circle_reverse with the ghost's neighbour velocities) and
+  re-judge mixed stuck at n ≈ 48 (−48 % at se 211/√2 ≈ 150 would decide).
+
 **C32.8, test splits: none needed.** Builder0's shard times: no traffic-owned file is near 60 s.
 `test_traffic_hold_live` 30.9 s, `test_traffic_turns_live` 31.0 s, `test_traffic_feed` 13.2 s. The slow files are native's
 twins.

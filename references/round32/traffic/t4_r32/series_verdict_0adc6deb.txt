@@ -1,0 +1,32 @@
+   (reported) squad A's own crossing: median 10.5 -> 10.8, mean paired +0.43 s (se 0.48)
+   (reported) squad B's own crossing: median 13.8 -> 13.8, mean paired +0.28 s (se 0.57)
+   (reported) all-in median 34.7 -> 34.3 (CP-N se 7.0 s)
+terminus/cross  n=18  fast 200 -> 185  between 61 -> 69  counters {"cross_verdicts": 18, "cross_slowed": 13242, "cross_reach_free": 2457, "verdicts": 0, "holds": 0}
+   crews >= base - 4.07 (1.645 se)          pass  179 -> 179
+   no wedge                                 pass  none
+   between-squad fast <= base + 19.1        pass  61 -> 69
+   same-squad fast <= base + 43.7           pass  139 -> 116 (round 29's x1.2+10: 177)
+   crossing clock <= +3.0 s + 1.645 se (his) pass  median 14.3 -> 14.7; mean paired +0.31 s (se 0.60, limit +3.98)
+terminus/head  n=18  fast 363 -> 356  between 73 -> 105  counters {"cross_verdicts": 11, "cross_slowed": 196, "cross_reach_free": 43, "verdicts": 18, "holds": 90}
+   crews >= base - 6.81 (1.645 se)          pass  175 -> 176
+   no wedge                                 pass  none
+   fast within 1.645 se                     pass  363 -> 356 (+194.4)
+   between-squad fast within 1.645 se       pass  73 -> 105 (+116.5)
+   all-in median within 1.645 se            pass  59.2 -> 60.0 (+9.62)
+   (reported) squad A's own crossing: median 8.2 -> 8.5, mean paired +0.20 s (se 0.10)
+   (reported) squad B's own crossing: median 11.2 -> 11.4, mean paired +0.44 s (se 0.48)
+   (reported) all-in median 81.3 -> 78.1 (CP-N se 10.2 s)
+yard_open/cross  n=18  fast 205 -> 179  between 56 -> 59  counters {"cross_verdicts": 18, "cross_slowed": 10777, "cross_reach_free": 1607, "verdicts": 0, "holds": 0}
+   crews >= base - 4.77 (1.645 se)          pass  167 -> 170
+   no wedge                                 pass  none
+   between-squad fast <= base + 12.6        pass  56 -> 59
+   same-squad fast <= base + 52.6           pass  149 -> 120 (round 29's x1.2+10: 189)
+   crossing clock <= +3.0 s + 1.645 se (his) pass  median 11.2 -> 11.4; mean paired +0.44 s (se 0.48, limit +3.79)
+yard_open/head  n=18  fast 125 -> 130  between 53 -> 59  counters {"cross_verdicts": 1, "cross_slowed": 6, "cross_reach_free": 33, "verdicts": 0, "holds": 0}
+   crews >= base - 1.64 (1.645 se)          pass  179 -> 180
+   no wedge                                 pass  none
+   fast within 1.645 se                     pass  125 -> 130 (+8.4)
+   between-squad fast within 1.645 se       FAIL  53 -> 59 (+5.8)
+   all-in median within 1.645 se            FAIL  33.8 -> 38.0 (+3.82)
+crossings pooled: between-squad fast 117 -> 128 (+9 %)  FAIL (needs <= -25 %)
+VERDICT FAIL

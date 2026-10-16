@@ -1,0 +1,20 @@
+== mixed
+PINNED runs paired 24 (base 24, new 24)
+PINNED all crew-seconds: base 316 new 17 diff -299 se 152.7 within 2 se
+PINNED short crew-seconds: base 316 new 17 diff -299 se 152.7 within 2 se
+PINNED rigs crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED scouts crew-seconds: base 79 new 0 diff -79 se 79.0 within 2 se
+PINNED tracks crew-seconds: base 51 new 0 diff -51 se 51.0 within 2 se
+PINNED crews crew-seconds: base 5 new 1 diff -4 se 2.8 within 2 se
+PINNED stuck crew-seconds: base 607 new 313 diff -294 se 211.0 within 2 se
+PINNED stuck_crews crew-seconds: base 23 new 21 diff -2 se 6.3 within 2 se
+== rigs
+PINNED runs paired 24 (base 24, new 24)
+PINNED all crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED short crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED rigs crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED scouts crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED tracks crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED crews crew-seconds: base 0 new 0 diff +0 se 0.0 within 2 se
+PINNED stuck crew-seconds: base 627 new 459 diff -168 se 185.3 within 2 se
+PINNED stuck_crews crew-seconds: base 28 new 22 diff -6 se 6.2 within 2 se
