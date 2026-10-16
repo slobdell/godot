@@ -81,6 +81,10 @@ orchestrator's `make sim-baseline-adopt` on main.
   T3b-c alone on main; native builds the pair tree from traffic's carried hash, runs plain `make remote T=check` with the
   switch ON and names the hash; traffic runs the re-judge on that same tree. `traffic-t3bc-judged` conflicts with main in
   traffic's files only (movement.gd, traffic.gd, mk/traffic.mk): traffic resolves them.
+- **R32.2 H1b may WRITE brains' repair fields (2026-10-16, manoeuvre's flag):** H1b's settle-short sets the mover's existing
+  `_repair_for` / `_repair_to` so the brain completes the order through `Movement.repaired_arrival`, as it already does.
+  Granted: writes from H1b's hook only, no edit to any brains function or to what those fields mean; brains is told and
+  owns the fields' meaning. The native drive's copy of those fields is part of H1b's pair (native mirrors the write).
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
