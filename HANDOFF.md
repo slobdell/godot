@@ -6,6 +6,22 @@
 
 _Last updated: 2026-10-16 ~06:30 PDT — **ROUND 32 RUNNING.** **MAIN GREEN at `6fcfbe46`** (builder0, 2693 passed / 0 failed, 23 targets passed; the one red remote-guard-test's quiet-window group, R31.10; sim-baseline 13 unmoved against the T3b-c lines). It carries planner 530e85cf, T3b-c ON, B3b-2c ON. Since: native's test splits (`6b3c9195`, test-only, unchecked). He pushes `main`._
 
+## 👋 FOR HIM WHEN HE WAKES (round 32, as of ~11:30 PDT 10-16)
+
+**Your choppy game:** your laptop's C++ library was from 10-13 (before round 31), so every tank errored every tick. Rebuilt;
+`make skirmish` now rebuilds a stale library itself. Your next game is the first of round 31 AS SHIPPED (planned War Rig turns).
+**On main now (what you'll notice):** at a Terminus street crossing the squad giving way waits ~2.6 s and bumps drop a third
+(your yes); every crew gets across your bridge (108/108); everything else arrives as before.
+**Coming today if their checks pass:** a set-up mortar truck stays set up (your yes; price: in 6 of 18 fights a squadmate
+waited ~20 s behind it, two set up 10–19 m short); a vehicle stuck behind a squadmate that never moves stops short
+instead of looping (judged series running).
+**Known issues he may see:** (1) the stuck-behind-a-squadmate loop is COMMON (~100 per 16 Terminus runs); the fix for the
+near-goal case is being judged and a seat swap for the rest is built (C32.10); (2) a War Rig on a faced move can end ~150°
+backwards (brains' B11 fix in its check).
+**Parked tonight (honest misses):** the planner's queue (fixed starvation, cost settle; mechanism found, round 33 candidate
+built); brains' seat-jump fix B10 (one Sumps run 20 s slower; re-judged after the seat swap).
+**Nothing is owed to you.** Every decision was made by recommendation and recorded (R32.1–R32.7, C32.10–C32.13).
+
 ## 🚀 ROUND 32 PREPARED (2026-10-16) — read this first
 
 **Five streams, ALL Opus (his rule: "we should go back to using Opus agents across the board to conserve fable quota"),
