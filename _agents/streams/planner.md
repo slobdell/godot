@@ -116,11 +116,18 @@ moving at 75 s faced_move +5 (line 2.96), faced_screen +3 (line 2.14). Reported:
 but serving 1.5–2× the face plans in a 19-crew press costs drawn facing, settling and wall contact: the FIFO's
 starvation was HIDING the cost of the seam's face plans in a press. Not tuned on these seeds.
 
-**Next (round 33 candidates, mine):** (a) before any queue: why a served face plan in a press ends worse than
-today's code (trace faced_move s66–71's never-settled hulls and the faced_support_by_fire drawn crews on both arms;
-the seam's face kind with squadmates as boxes is the suspect: a plan through a gap a moving squadmate closes, then
-aborted on contact); (b) a press-aware scope (the seam declines a face when ≥ N squadmates are within R) as the
-cheapest lever, its own bar; (c) only then the queue again, unchanged code, on fresh seeds.
+**The traces (after the verdict; reading, not a re-judge; `VERDICT.txt` TRACE 1 and 2).** (1) Hull-rest: neither
+worst rig pair reproduces on rerun (faced_move s66: both arms end ~150° off and the seam never acted, a `stop` with
+no face step after the move, relayed to manoeuvre as a likely main bug; faced_support_by_fire s67: reversed, shared
+0.3° v fifo 12.8°). Paired over every rig the medians are +0.3° / +0.4°: line (3)'s misses at n 6 seeds are not shown
+to be the queue's. (2) **Terminus seed 207 (deterministic): the real cost.** Refuse-early answers a ROLLING rig's ask
+at once (GOAL_BLOCKED), so today's code keeps its 7–9 m/s and pins it on Block_7 for 2043 ticks. Under the FIFO the
+same refusal comes only after the hold has braked the hull to rest: **the FIFO's hold was an implicit brake.**
+
+**Next (round 33 hand-over):** (a) refuse early ONLY at rest (brake a rolling ask to rest as the FIFO does, then
+probe), round-robin unchanged; (b) the hull-rest gang arm A/A (fifo v fifo, seeds 66–71) to size line (3)'s noise
+(the orchestrator: light lane only after H1b/B10, else round 33); (c) re-judge CP-Q on fresh seeds with (b)'s bar.
+Targets ready: `planner-judge-queue`, `planner-series-queue`, `planner-trace-hull-rest`, `planner-trace-drive-queue`.
 
 **Merge notes.** Main has CP-S + SLICE + the queue (OFF) + the capture fix. Still on `stream/planner` only:
 `92d7a80b` (SLICE_LAPTOP 2: `game/ai/planner/planner_seam.gd` one const + its doc, `tests/test_planner_slice.gd`),
