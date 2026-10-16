@@ -168,3 +168,35 @@ manoeuvre-census-seq: ## manoeuvre: the early-stop reading of a Terminus census 
 	@cat $(BUILD_DIR)/manoeuvre/census_ab.txt
 	@for squad in mixed rigs; do echo ">> early-stop reading, $$squad:"; \
 		$(PYTHON) tools/judge/sequential.py --terminus $(BUILD_DIR)/manoeuvre/census_ab.txt --squad $$squad --lines $(SEQ_TERMINUS_LINES) | sed 's/^/  /' || true; done
+
+# Round 31 (CP-H's clip for the lead): one Terminus drive filmed twice on the same seed, today (every consumer OFF) and
+# shipped (the four CP-H consumers ON by name, = the ship tree's defaults), side by side -> MOVIE (default
+# build/manoeuvre/pin_clip.mp4). The drive is the measured one (tests/manoeuvre/pin_clip.gd adds only a camera and a
+# caption). Needs a display: make remote LIGHT=1 T="manoeuvre-pin-clip CLIP_SEED=134 CLIP_FOLLOW=Green_S0_3".
+# CLIP_FROM/CLIP_TO: the window in sim seconds; CLIP_FOLLOW2 frames the squadmate too.
+CLIP_SQUAD ?= rigs
+CLIP_SEED ?= 134
+CLIP_FOLLOW ?= Green_S0_3
+CLIP_FOLLOW2 ?=
+CLIP_FROM ?= 0
+CLIP_TO ?= 120
+# CLIP_SPEED: playback speed-up of the stacked clip (2 = twice real time).
+CLIP_SPEED ?= 1
+CLIP_SHIPPED_FLAGS := --nav-off=unstickback,kturnarc --gun-off=realspeed --brains-off=native,realslow
+.PHONY: manoeuvre-pin-clip
+manoeuvre-pin-clip: import ## manoeuvre: a Terminus drive filmed today v shipped (CP-H's consumers), side by side -> MOVIE (needs a display; CLIP_SEED, CLIP_SQUAD, CLIP_FOLLOW, CLIP_FOLLOW2, CLIP_FROM, CLIP_TO, CLIP_SPEED)
+	@out=$(BUILD_DIR)/manoeuvre/pin-clip; rm -rf $$out && mkdir -p $$out; \
+	movie="$(or $(MOVIE),$(CURDIR)/$(BUILD_DIR)/manoeuvre/pin_clip.mp4)"; case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
+	commit=$$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}); \
+	echo ">> manoeuvre-pin-clip on $$(hostname) commit $$commit | $(CLIP_SQUAD) seed $(CLIP_SEED) | $(CLIP_FOLLOW) $(CLIP_FOLLOW2) | $(CLIP_FROM)-$(CLIP_TO) s"; \
+	for arm in today shipped; do \
+		if [ $$arm = today ]; then flags="--brains-off=native"; cap="TODAY"; else flags="$(CLIP_SHIPPED_FLAGS)"; cap="SHIPPED"; fi; \
+		timeout 1800 $(GODOT) --path . --fixed-fps $(DEMO_FPS) --resolution 960x540 --write-movie $(CURDIR)/$$out/$$arm.avi \
+			--script res://tests/manoeuvre/pin_clip.gd -- --squad=$(CLIP_SQUAD) --seed=$(CLIP_SEED) --follow=$(CLIP_FOLLOW) \
+			--follow2=$(CLIP_FOLLOW2) --clip-to=$(CLIP_TO) "--caption=$$cap ($$commit)" $$flags > $$out/$$arm.log 2>&1 || true; \
+		grep -E "PIN_CLIP_DONE|SCRIPT ERROR|NAV_DRIVE_CONTROL" $$out/$$arm.log | cut -c1-300 || true; \
+	done; \
+	command -v ffmpeg >/dev/null || { echo ">> manoeuvre-pin-clip: no ffmpeg; the AVIs are in $$out"; exit 0; }; \
+	ffmpeg -loglevel error -y -ss $(CLIP_FROM) -i $$out/today.avi -ss $(CLIP_FROM) -i $$out/shipped.avi \
+		-filter_complex "[0:v][1:v]hstack=inputs=2,scale=1920:-2,setpts=PTS/$(CLIP_SPEED)[v]" -map "[v]" -c:v libx264 -preset slow -crf 20 \
+		-pix_fmt yuv420p -movflags +faststart "$$movie" && echo "PIN_CLIP_MOVIE $$movie"
