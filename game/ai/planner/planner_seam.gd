@@ -53,16 +53,18 @@ const SCOPE_MIN_HULL_M := 10.0
 ## longest quarter 250-500 would be abandoned at the 3 s hold -- the judged run's `abandoned` counts them).
 const SLICE := 2
 ## Round 32 (C32.7, the lead's rule: perf cuts ship as hardware presets): the LAPTOP preset's slice. CP-P1's cost line
-## (f) missed at SLICE 2 on seed 92721 (0.526 ms v 0.5, builder0); the laptop is ~2.75x builder0, so it plans one
-## expansion a tick and holds the hull twice as long for the same search (`pending_cap()`). Every other machine keeps
-## SLICE. Which one a match uses is `slice()`: read ONCE per match (`_latch`), from the run's `--planner-slice=N` (the
+## (f) missed at SLICE 2 on seed 92721 (0.526 ms v 0.5, builder0 at load 16.7, an upper bound). PRICED on the laptop
+## itself (flightdeck, i5-8365U, 65cc43dd, pinned 0-3, Sumps 25 a side, an upper bound at load <= 2.7): 89 / 79 us an
+## expansion warm, so SLICE 2 is ~0.18-0.24 ms a tick there, under the line: the orchestrator's ruling (C32.7 resolved)
+## is SLICE 2 on EVERY preset, the knob kept so a weaker device can take 1 later (`--planner-slice=1`; SLICE 1 would
+## only double the hold: 7 ticks v 3 on the Terminus face-about). Which one a match uses is `slice()`: read ONCE per match (`_latch`), from the run's `--planner-slice=N` (the
 ## HOST's value: a networked or replayed match carries it as a launch flag, as it carries `--seed`) > the render
 ## preset (`RenderLevers.preset()`: "laptop" -> SLICE_LAPTOP) > SLICE. A headless run is always the desktop preset, so
 ## baselines, checks and every judged series read SLICE 2 and PENDING_TICKS 90: today's bits.
 ## Why the seam reads the render preset rather than FxQuality carrying a field (the grant's either-or, decided here):
 ## FxQuality's tier is not the laptop/desktop split (his laptop runs FX tier HIGH), and a render choice can change
 ## mid-match from the HUD; the sim takes it once, at the match's first plan, and never again that match.
-const SLICE_LAPTOP := 1
+const SLICE_LAPTOP := 2           # = SLICE (C32.7 resolved); a weaker preset may set 1
 const BUDGET := 1500
 const HORIZON_M := 30.0
 const PENDING_TICKS := 90          # 3 s of SEARCH (from the tick it begins at rest), the agreed hold AT SLICE
