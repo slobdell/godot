@@ -131,9 +131,12 @@ backlog item is done, judged, or parked by its bar. No lead gate is pending; no 
   The six slowest brains test files are now fifteen, with shared stages in base files that hold no tests. 33 tests before and after, bodies
   byte-identical. Slowest file 264 s -> 126 s (tactics_scenarios_4, builder0 light lane). Check on builder0 at 5a30b037:
   **exited 0, 2653/0**, sim-baseline unmoved, bridge-pooled 18/18, native-verify 0 mismatches. Handed to the orchestrator
-  for merge. Earlier runs: 293f9d62 killed by the 5400 s cap on a saturated box. 1a7c950f red on sim-baseline only
+  MERGED to main as e66b41f1 (the round's final main check covers it). Earlier runs: 293f9d62 killed by the 5400 s cap on a saturated box. 1a7c950f red on sim-baseline only
   (main's 71538a8d baselines were adopted on a stale native lib, corrected at 4973a482). f18eaea0 stopped (main's
   test_native_drive red, reverted at 04620f67). tests/shard_times.txt has no rows for the new files yet.
+- **Cleanup done:** worktrees godot-brains-sbf and godot-brains-bridge removed, plus their builder0 folders (cwd-checked idle).
+  Branches kept: lab/brains-r31-bridge, lab/brains-r31-split, pair/brains-v5, stream/brains. Round 32: `make test-times` to give
+  the 9 new test files their shard times. **Stream done for round 31.**
 - **R31.3:** test_tactics_pursuit made robust over seeds (a16585bf, 0415da23): on main (aa205ea5). A/A filed in
   judging.md.
 
