@@ -1,0 +1,165 @@
+[
+  {
+    "armed": "screen",
+    "arrived": true,
+    "at": [
+      19.4,
+      91.9
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": true,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "screen": [
+        0.499999791383743,
+        -0.866025507450104
+      ]
+    },
+    "members": 13,
+    "nearest_enemy_at_press_m": 173.9,
+    "nearest_enemy_m": 135.1,
+    "scenario": "faced_screen",
+    "settled_after_s": 31.0,
+    "squads": [
+      {
+        "arrived": true,
+        "crews": 5,
+        "crews_told": 3,
+        "each": [
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 28.3,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns_1"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 27.6,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns_2"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 13.9,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns_3"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 13.3,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns_4"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 60.2,
+            "id": "tank",
+            "still": false,
+            "unit": "Green_Guns_5"
+          }
+        ],
+        "gun_error_deg": 0.8,
+        "hull_error_deg": 11.4,
+        "line_error_deg": 4.9,
+        "line_spread_m": 57.5,
+        "moving": 1,
+        "ok": true,
+        "squad": "Guns"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 27.6,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_1"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 11.3,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_4"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 27.7,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_6"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 8.1,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_8"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 0.9,
+        "line_error_deg": 1.1,
+        "line_spread_m": 50.9,
+        "moving": 0,
+        "ok": true,
+        "squad": "Guns II"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 32.4,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_2"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 8.4,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_3"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 11.4,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_5"
+          },
+          {
+            "class": "tracks/turret",
+            "hull_error_deg": 32.2,
+            "id": "tank",
+            "still": true,
+            "unit": "Green_Guns II_7"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 0.8,
+        "line_error_deg": 13.6,
+        "line_spread_m": 46.3,
+        "moving": 0,
+        "ok": true,
+        "squad": "Guns II"
+      }
+    ]
+  }
+]

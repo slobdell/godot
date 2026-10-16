@@ -1,0 +1,3 @@
+BRIDGE_EXCUSED green tick 15 seed 1: Green_S_1 killed by Rust_G_2 at 14.5 s, not stuck (0.5 s held in the last 10 s); speeds [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.0, 0.1]
+BRIDGE_EXCUSED rust tick 15 seed 1: Rust_S_1 killed by Green_G_2 at 14.5 s, not stuck (0.4 s held in the last 10 s); speeds [0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.1]
+BRIDGE_POOLED 107 of 108 runs pass; failing: green tick 5 seed 2: rim_crews 1

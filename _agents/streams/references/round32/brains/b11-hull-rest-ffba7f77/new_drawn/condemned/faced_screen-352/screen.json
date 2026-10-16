@@ -1,0 +1,207 @@
+[
+  {
+    "armed": "screen",
+    "arrived": true,
+    "at": [
+      16.3,
+      96.0
+    ],
+    "clicked": false,
+    "drag_px": 176.2,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": false,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "screen": [
+        0.499999821186066,
+        -0.866025447845459
+      ]
+    },
+    "members": 17,
+    "nearest_enemy_at_press_m": 180.1,
+    "nearest_enemy_m": 127.9,
+    "scenario": "faced_screen",
+    "settled_after_s": -1.0,
+    "squads": [
+      {
+        "arrived": true,
+        "crews": 5,
+        "crews_told": 1,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 31.4,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_1"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 5.3,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_2"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 15.1,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_3"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 93.1,
+            "id": "scout",
+            "still": false,
+            "unit": "Green_Eyes_6"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 17.3,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_9"
+          }
+        ],
+        "gun_error_deg": 21.1,
+        "hull_error_deg": 20.5,
+        "line_error_deg": 10.7,
+        "line_spread_m": 47.1,
+        "moving": 1,
+        "ok": false,
+        "squad": "Eyes"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 93.9,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_4"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 9.5,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_5"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 27.8,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_7"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 23.9,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_8"
+          }
+        ],
+        "gun_error_deg": 16.5,
+        "hull_error_deg": 18.2,
+        "line_error_deg": 8.8,
+        "line_spread_m": 41.6,
+        "moving": 0,
+        "ok": false,
+        "squad": "Eyes"
+      },
+      {
+        "arrived": true,
+        "crews": 4,
+        "crews_told": 2,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 30.2,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_8"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 27.4,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_1"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 171.8,
+            "id": "scout",
+            "still": false,
+            "unit": "Green_Eyes II_2"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 11.9,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_4"
+          }
+        ],
+        "gun_error_deg": 3.4,
+        "hull_error_deg": 0.7,
+        "line_error_deg": 5.6,
+        "line_spread_m": 46.8,
+        "moving": 1,
+        "ok": true,
+        "squad": "Eyes II"
+      },
+      {
+        "arrived": false,
+        "crews": 4,
+        "crews_told": 0,
+        "each": [
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 74.7,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_3"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 106.8,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_5"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 33.0,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_6"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 44.3,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes II_7"
+          }
+        ],
+        "gun_error_deg": 67.0,
+        "hull_error_deg": 64.2,
+        "line_error_deg": 14.5,
+        "line_spread_m": 36.8,
+        "moving": 0,
+        "ok": false,
+        "squad": "Eyes II"
+      }
+    ]
+  }
+]

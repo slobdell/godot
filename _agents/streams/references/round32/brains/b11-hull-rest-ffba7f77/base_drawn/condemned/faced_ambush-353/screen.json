@@ -1,0 +1,179 @@
+[
+  {
+    "armed": "ambush",
+    "arrived": false,
+    "at": [
+      15.4,
+      93.0
+    ],
+    "clicked": false,
+    "drag_px": 168.9,
+    "drawn": [
+      0.5,
+      -0.866
+    ],
+    "enemies_seen": 0,
+    "faced_ok": false,
+    "gesture_error_deg": 0.0,
+    "given": {
+      "ambush": [
+        0.499999910593033,
+        -0.866025447845459
+      ]
+    },
+    "members": 15,
+    "nearest_enemy_at_press_m": 176.8,
+    "nearest_enemy_m": 178.0,
+    "scenario": "faced_ambush",
+    "settled_after_s": -1.0,
+    "squads": [
+      {
+        "arrived": false,
+        "crews": 5,
+        "crews_told": 5,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 126.5,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_1"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 176.3,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_10"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 153.9,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_2"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 159.7,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_3"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 32.7,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_6"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 170.8,
+        "line_error_deg": 12.0,
+        "line_spread_m": 45.2,
+        "moving": 0,
+        "ok": false,
+        "squad": "Battery"
+      },
+      {
+        "arrived": false,
+        "crews": 5,
+        "crews_told": 5,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 68.4,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_4"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 150.5,
+            "id": "artillery",
+            "still": false,
+            "unit": "Green_Battery_5"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 75.2,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_7"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 0.7,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_2"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 5.0,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_3"
+          }
+        ],
+        "gun_error_deg": 0.1,
+        "hull_error_deg": 54.6,
+        "line_error_deg": 11.6,
+        "line_spread_m": 86.1,
+        "moving": 1,
+        "ok": false,
+        "squad": "Eyes"
+      },
+      {
+        "arrived": false,
+        "crews": 5,
+        "crews_told": 4,
+        "each": [
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 59.0,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_8"
+          },
+          {
+            "class": "wheels/turret",
+            "hull_error_deg": 91.5,
+            "id": "artillery",
+            "still": true,
+            "unit": "Green_Battery_9"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 6.6,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_1"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 3.7,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_4"
+          },
+          {
+            "class": "wheels/fixed",
+            "hull_error_deg": 2.4,
+            "id": "scout",
+            "still": true,
+            "unit": "Green_Eyes_5"
+          }
+        ],
+        "gun_error_deg": 0.0,
+        "hull_error_deg": 26.3,
+        "line_error_deg": 3.5,
+        "line_spread_m": 44.9,
+        "moving": 0,
+        "ok": false,
+        "squad": "Battery"
+      }
+    ]
+  }
+]

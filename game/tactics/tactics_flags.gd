@@ -118,6 +118,11 @@ static func _parse() -> void:
 		# Round 31 (brains B3b-2b): the held seating stands after crews cross (B3b-2 as first built), the control arm.
 		if arg == "--route-seat-across=off":
 			Element.ROUTE_SEAT_REMATCH_ACROSS = false
+		# Round 32 (brains B10): a seat's grounding re-chosen every plan (the element centre's 5 m cell), the control arm.
+		if arg == "--ground-latch=off":
+			Element.GROUND_LATCH = false
+		if arg == "--ground-latch=on":
+			Element.GROUND_LATCH = true
 		if arg == "--mouth-reissue=off":
 			Element.MOUTH_REISSUE_ENABLED = false
 		if arg == "--short-swap=on":

@@ -326,6 +326,7 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	_mouth_sent = {}
 	_mouth_held_tick = {}
 	_feed_since = {}
+	_grounded = {}
 	_closest = {}
 	_unpinned = false
 	_reseats_this_move = 0
@@ -488,7 +489,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	Element.apply_swap(plan, _swap)
 	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null
-	Element.ground(plan, ground_node, _envelopes(situation), situation["center"])
+	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if GROUND_LATCH and arrived else null)
 	if ElementPlan.PACE_ENABLED and plan.has("shape_along"):
 		# Round 23 (B1): the pacing rules measure against each seat where the hull can actually stand (the brain drives
 		# to its station grounded the same way); a seat laid inside a container would otherwise hold the anchor for
@@ -1438,7 +1439,38 @@ static func _envelopes(situation: Dictionary) -> Dictionary:
 
 ## `from` (round 21, stretch d): where the element is, so a slot pushed out of an obstacle lands on the side it is
 ## reached from (SlotGround.standable_from), not the far side.
-static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, from: Variant = null) -> void:
+## Round 32 (brains B10, cut from B5c-v6 by the orchestrator; `--ground-latch=off` is the control arm): a seat's grounding is LATCHED while the point
+## its shape asks for holds (within GROUND_LATCH_M). `standable_from` picks the side a pushed slot lands on by the
+## element's centre, memoised per 5 m cell, so a squad jostling on its spot moved that centre across a cell edge and the
+## seat with it. Traced (B5c-v5's worst Sumps run, s17 t11, builder0, --drift-trace): Green_S_3's seat 3 of the same
+## herringbone, same anchor (0.0, -59.2), same heading (-0.39, -0.92), jumped between (-0.2, -51.1) and (1.7, -40.9) 67
+## times in 25 s; the crew stood between the two, its order re-issued every 0.1-0.2 s, and the squad was all in 22 s late.
+## On main's rules too (no gate rule, the same cell's seed 16 tick 8): Green_S_2's seat 3 flipped between (-0.2, -50.8)
+## and (-2.0, -41.2) 22 times from 43 s to the end of the run, and the squad was never all in.
+## `latch` ({key: [asked, allowed]}) is the element's own memo; null = no latching (a caller without one). Only an element
+## that has ARRIVED latches (both traced cases): on the move its slots slide every plan and are grounded afresh as on
+## main (B10's first cut latched there too and froze sub-0.5 m slides: traffic's test_traffic_feed control arm, whose
+## order clock is meant to restart on every slide, outlived its grace; builder0 check on ddd1cc56).
+## PARKED (B10, judged 2026-10-16: Sumps s19 t8 +19.9 s, the held seat in the squad's path): OFF by default; `--ground-latch=on`
+## turns it on. B10b re-judges it once with C32.10's seat swap ON (the orchestrator's ruling).
+static var GROUND_LATCH := false
+const GROUND_LATCH_M := 0.5
+var _grounded := {}
+
+
+static func _latched(latch: Variant, key: String, asked: Vector3, compute: Callable) -> Vector3:
+	if not latch is Dictionary:
+		return compute.call()
+	var kept: Variant = (latch as Dictionary).get(key)
+	if kept is Array and ((kept as Array)[0] as Vector3).distance_to(asked) <= GROUND_LATCH_M:
+		return (kept as Array)[1]
+	var allowed: Vector3 = compute.call()
+	(latch as Dictionary)[key] = [asked, allowed]
+	return allowed
+
+
+static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, from: Variant = null,
+		latch: Variant = null) -> void:
 	if node == null:
 		return
 	var slots_in: Dictionary = plan["slots"]
@@ -1458,7 +1490,9 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 		var asked_for := wanted
 		if anchor is Vector3:
 			wanted = SlotGround.on_anchor_side(wanted, anchor)
-		var allowed := SlotGround.standable_from(node, wanted, float(envelopes.get(unit_name, 0.0)), from)
+		var clearance := float(envelopes.get(unit_name, 0.0))
+		var allowed := _latched(latch, "slot:" + unit_name, wanted,
+				func() -> Vector3: return SlotGround.standable_from(node, wanted, clearance, from))
 		if allowed != asked_for:
 			asked[unit_name] = asked_for
 		slots_in[unit_name] = allowed
@@ -1467,7 +1501,9 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
 			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
-			order["to"] = SlotGround.standable_from(node, to, float(envelopes.get(unit_name, 0.0)), from)
+			var clearance := float(envelopes.get(unit_name, 0.0))
+			order["to"] = _latched(latch, "order:" + unit_name, to,
+					func() -> Vector3: return SlotGround.standable_from(node, to, clearance, from))
 
 
 ## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,
@@ -1628,6 +1664,36 @@ func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary
 	elif int(before.get("seat", -1)) != _seat_index(unit_name):
 		key = "reseat"
 	goal_moves[key] = int(goal_moves[key]) + 1
+	if key == "drift":
+		drift_moves += 1
+		var who := "%d:%s" % [id, unit_name]
+		_drift_by[who] = int(_drift_by.get(who, 0)) + 1
+	if DRIFT_TRACE and key == "drift":
+		var was: Vector3 = before["to"]
+		var now: Vector3 = desired["to"]
+		print("DRIFT_TRACE t=%.2f %s seat %d (%.1f, %.1f) -> (%.1f, %.1f) heading (%.2f, %.2f) arrived %s formation %s anchor %s" % [
+				Engine.get_physics_frames() / float(SimClock.TICK_RATE), unit_name, _seat_index(unit_name), was.x, was.z,
+				now.x, now.z, heading.x, heading.z, arrived, formation, anchor])
+
+
+## Round 32 (brains B10), MEASUREMENT ONLY: `--drift-trace` prints each goal move counted as "drift" (the same seat
+## of the same anchor, moved more than a metre) with the element's heading, arrived flag and formation at that plan.
+static var DRIFT_TRACE := OS.get_cmdline_user_args().has("--drift-trace")
+## ...and the census B10's bar reads (measurement only, every element of the process): drift moves in all, and per crew.
+## A crew whose seat drifts more than DRIFT_FLIPPING times in one run is flipping (the traced cases: 22 and 67).
+static var drift_moves := 0
+static var _drift_by := {}
+const DRIFT_FLIPPING := 10
+
+
+static func drift_census() -> Dictionary:
+	var worst := 0
+	var flipping := 0
+	for who: String in _drift_by:
+		worst = maxi(worst, int(_drift_by[who]))
+		if int(_drift_by[who]) > DRIFT_FLIPPING:
+			flipping += 1
+	return {"drift_moves": drift_moves, "drift_worst_crew": worst, "drift_flipping_crews": flipping}
 
 
 ## R2's adapter: control's Orders accepts a `task` key on a command (its `_same_order` then keys on it). Until it

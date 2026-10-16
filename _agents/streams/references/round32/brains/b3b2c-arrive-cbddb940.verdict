@@ -1,0 +1,4 @@
+all_in8_s: on 90 v off 90 of 100; discordant for 0 v against 0 (McNemar p 1.0000); against: []
+paired all_in8_s over 90 cells complete in both: median on 29.9 v off 29.9 s (+0.0 %); paired diff median +0.0 s
+counters on: {'gates_turned': 0, 'gates_latched_away': 0, 'gates_near': 0, 'gates_given_up': 0, 'gates_reached_latched': 0, 'crossings_found': 0, 'crossings_held': 0}; runs with any counter > 0: 0/100
+counters off: {'gates_turned': 0, 'gates_latched_away': 0, 'gates_near': 0, 'gates_given_up': 0, 'gates_reached_latched': 0, 'crossings_found': 0, 'crossings_held': 0}; runs with any counter > 0: 0/100
