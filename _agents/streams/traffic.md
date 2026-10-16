@@ -87,6 +87,47 @@ the orchestrator before numbers; green hashes named)_
 
 **2026-10-16 (traffic worker, round 32).**
 
+**🏁 CLOSING REPORT (round 32).** Every backlog item is done.
+- **Done:**
+  1. **CP-T T3b-c (the crossing give-way) SHIPPED ON.** `b5882c9c` → main `86917d5a`; baselines adopted `0e49fb3e`.
+     Re-judge PASS: Terminus clock +2.61 s v +3.90, yard +3.38 v +3.43, between-squad bumps −39 %.
+  2. **T1c-b2 (the set-up mortar truck stays set up) SHIPPED ON.** `c9fa64a4` → main `36a531b4`, builder0 check exited 0,
+     2708/0. Census PASS: repack while firing 5/18 → 0/18 (p 0.023), guards pass. The six askers that never got past are
+     traced. The worst waited ~19 s and set up 19 m short.
+  3. **C32.6, the navmesh gap: diagnosed, closed.** A probe artifact (a stale map in the reach probe), not a bake hole.
+     Pinned by `test_traffic_navgap`.
+  4. **C32.8, test splits: none needed.** No traffic file is near 60 s.
+  5. **Stretch T4 (the ghost ON): judged, NOT SHIPPED** (below). Branch `traffic-t4-on-r32` `0adc6deb` kept, not
+     merged.
+- **Decisions:**
+  - Re-judges ran on the GDScript path when the judged run did (T3b-c, T1c-b2), and T4 on the native path, the path that ships.
+  - turns_verdict's pooled −25 % line is not read for T4, because it is T3b-c's gain line.
+- **Questions for the lead:** none.
+- **Requests to other streams:**
+  - brains: the reach probe should build labs through ArenaFixture. Done, `5f0ed865`.
+  - manoeuvre: Alpha_3 at (-25.7, 7.3) is an escape case.
+  - manoeuvre: `test_manoeuvre_behind`'s war-rig planned turn is red on the GDScript path (NATIVE=off), identical with
+    the ghost off.
+  - planner and native fixed two order-dependent twin reds this round (`8904c9c4`, `45b52d04`).
+- **Known issues:**
+  - The navmesh islands on 3 m crate roofs (reported, not fixed).
+  - T4's yard head-on slot loop.
+- **Lesson (for orientation's trip-ups): a test that builds a `TacticsLab` must `dispose()` it in `teardown()`.**
+  Otherwise the shard leaks ObjectDB instances at exit, and the engine-log gate turns the whole check red with no failing test
+  named.
+  - This happened twice: `test_traffic_ghost` in round 31 (14 ObjectDB) and `test_traffic_setup` in round 32 (20 ObjectDB / 4
+    resources). I misread the second as another test's at first.
+  - To find the owner: run the suspect file alone and look for the "leaked at exit" line.
+- **Playtest:**
+  - T3b-c: `make traffic-clip` (his crossing cases at his pose, per arm, needs a display).
+  - T1c-b2: `make traffic-census-one CENSUS_ONE="parade gangs law 2000 opponent 43"` (the worst asker's run; TRAFFIC_ASKER
+    lines in the log). Or in a match: set up a mortar truck, order it to fire, and drive a squadmate past it.
+- **Next steps:** T4 comes back only with one circle loop traced and mixed stuck re-judged at n ≈ 48 (roadmap round 33).
+- **🎯 Final check GREEN: stream/traffic `82a56293`** (main `bacfd7b5` merged), builder0 `make check exited 0`, 2708
+  passed / 0 failed, 26 targets all passed, ALL JUDGED, sim-baseline all 13 unmoved. The commit after it is this report (docs only).
+- Worktrees `../godot-traffic-judge` and `../godot-traffic-t1cb2` are removed. Branches `traffic-t1cb2-r32` (merged) and
+  `traffic-t4-on-r32` (not shipped) are kept locally and not pushed.
+
 **🎯 CP-T T3b-c: RE-JUDGED, VERDICT PASS. Ship hash `b5882c9c`** (the pair tree; native's mirror `413252ea` is already on
 main). Builder0, `b5882c9c`, GDScript path (`--brains-off=native` on both arms, as round 31's judged run), seeds 41–43 ×
 ticks {1,3,6,8,11,16}, n 18 a case, 90 s, base `--traffic-off=turns`, the full grid of 144 rows (0 cache hits, 0 missing),
