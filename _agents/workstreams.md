@@ -99,6 +99,19 @@ orchestrator's `make sim-baseline-adopt` on main.
   on-run of the 108, 0 on control and on every arrive run; (5) `t.poll.element` on Locks ≤ 0.5 ms a tick or NOT READABLE on
   a busy box; (6) the worst on-arm cell of (1) and of (3) traced before the medians. Native: none ported (GDScript on every
   path). Ships ON as one commit. Stated in advance: the arrive arms may be byte-identical, which is the point of this cut.
+- **CP-Q, the planner's queue (planner, hand-over (3); filed 2026-10-16 ~01:10 PDT before any number; DECLARED).**
+  Candidate `--planner-queue=shared`: refuse early (a blocked start/goal answered at the ask, never queued), round-robin
+  with a QUANTUM of 20 expansions over a session per crew, the same slice a tick. Base: the same tree without the flag
+  (today's FIFO). Both arms the native drive. Series tree = the hash planner's full check goes green on (code from
+  stream/planner `0b9e96bc`). Every line read once at completion on the 1.645 se line, (faction, seed)-paired:
+  (1) hull-rest gang arm (`make planner-judge-queue`, gangs, drawn + clicked, FRESH seeds 66–71): abandoned ≤ 5 % of asks in
+  EACH of drawn and clicked (round 31: 23 % / 18 %); (2) hold per event, pooled median per arm, NOT UP: (2a) those hull-rest
+  runs, (2b) the Terminus rig series (`make planner-series-queue`, rigs + mixed, fresh seeds 205–217); (3) round 31's (d)
+  lines as filed: at-rest hull error permutation p ≥ 0.05 every class × task, settle paired median ≤ +6 s, crews moving at
+  75 s each task × arm ≤ base + 1.645 se; (4) Terminus rig arrivals (2b) mean paired ≥ −1.645 se; (5) the whole suite green
+  on native's pair tree with the default flipped ON (C31.1), before the series. REPORTED only: refused_early, queue_waits,
+  plans, driven, refused by code, hold max. Ships ON as a pair (QUEUE_DEFAULT true + native's review of `refused_at_begin`).
+  If (1) misses: the abandoned searches' expansions reported, stop; no re-tuning on these seeds.
 
 ## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
 
