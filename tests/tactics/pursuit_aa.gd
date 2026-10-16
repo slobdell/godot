@@ -9,7 +9,7 @@ extends SceneTree
 ##   PURSUIT_AA {"speed", "seed", "nudge", "pass", "closing_worst_m", "closing_margin_m", "reversal_worst_deg",
 ##               "reversal_margin_deg", "let_go_at", "lived_s", "killed_by", "closing_at", "reversal_at"}
 
-const PURSUIT := preload("res://tests/test_tactics_pursuit.gd")
+const PURSUIT := preload("res://tests/tactics/pursuit_case.gd")  # round 32: the stage moved there (C32.8)
 
 
 func _initialize() -> void:
