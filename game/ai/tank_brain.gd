@@ -177,6 +177,36 @@ const TRANSIT_LEAD_MAX_M := 20.0
 ## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
 ## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
 ## ...and for wheeled units within Movement.settle_radius (see _order_arrive).
+## Round 32 (brains B11, C32.12; `--hold-return=old` is the control arm): HOLD's way back onto its spot honours a facing
+## his order drew. A crew 11-15 m from its seat when its element arrived is handed the halt's `hold` with his facing
+## (Element._should_issue: a faced hold replaces a move at once), and the return drove it on tail-first with no facing
+## whenever the spot lay behind it: traced (manoeuvre, gangs seed 66 hull-rest faced_move, Green_Guns_5; reproduced on
+## builder0) it backed onto its post and ended 153-162 degrees from his heading, a wheeled turret hull nothing turns at
+## rest. Now with a drawn facing it backs on only while that facing is within Manoeuvre.FACING_KEEP_DEG of its nose (so
+## backing in ends near it), else it drives on nose-first carrying the facing, as the move it replaced did.
+static var HOLD_RETURN_FACED := not OS.get_cmdline_user_args().has("--hold-return=old")
+
+
+func _hold_return(spot: Vector3, here: Vector3, forward: Vector3) -> Dictionary:
+	var behind := (spot - here).dot(forward) < 0.0
+	var arrive := maxf(1.5, Movement.settle_radius(tank.unit_id))
+	var told: Variant = null
+	if HOLD_RETURN_FACED and _order_source != null and _order_source.has_method("current"):
+		var raw: Variant = _order_source.call("current", String(tank.name))
+		if raw is Dictionary:
+			told = TankBrain._direction_of((raw as Dictionary).get("facing"))
+	if not told is Vector3:
+		return _move_to(spot, behind, 1.0, arrive)
+	var nose := Vector2(forward.x, forward.z)
+	var want := Vector2((told as Vector3).x, (told as Vector3).z)
+	var keeps := nose.length_squared() > 0.0001 and absf(nose.angle_to(want)) <= deg_to_rad(Manoeuvre.FACING_KEEP_DEG)
+	if behind and keeps:
+		return _move_to(spot, true, 1.0, arrive)
+	var order := _move_to(spot, false, 1.0, arrive)
+	order["facing"] = [(told as Vector3).x, (told as Vector3).z]
+	return order
+
+
 ## Round 32 (C32.12), MEASUREMENT ONLY: `--order-trace` prints how each move order completed (ORDER_TRACE).
 static var ORDER_TRACE := OS.get_cmdline_user_args().has("--order-trace")
 ## A stop order is done once the unit is slower than this (m/s).
@@ -2824,7 +2854,7 @@ func _act(s: Dictionary) -> void:
 			# Pushed off the spot (or ordered to hold somewhere else): back onto it, front toward trouble.
 			var spot: Vector3 = s["order"]["goal"]
 			why = TankBrain._join(why, "holding")
-			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, maxf(1.5, Movement.settle_radius(tank.unit_id))))
+			_order_move(_hold_return(spot, my_position, me["forward"]))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD":
 			var nearest_visible: Variant = null

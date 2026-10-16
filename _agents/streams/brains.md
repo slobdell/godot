@@ -80,6 +80,27 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n and its row; bars to
 the orchestrator before numbers; green hashes named)_
 
+### C32.12 (1) ANSWERED, (2) = B11; B11 bar FILED before numbers (2026-10-16 ~09:40 PDT)
+**(1) Why a faced move "completes" 11–15 m off: it doesn't complete; it is REPLACED.** `--order-trace` (gangs s66
+faced_move, builder0 light, stream tree): Green_Guns_5's move never passes `_update_order_progress` (no ORDER_TRACE line
+for it; its squadmates complete at 4.3–6.0 m, not repaired). Once its element ARRIVES (centre within ARRIVE_M), the
+halt hands every crew a `hold` at its seat carrying his drawn facing, and a faced hold replaces a move at once
+(Element._should_issue, round 10's rule for wheeled crews circling their slots), wherever the crew is. Repaired-arrival
+is not involved (repair_to INF). The hold is the right standing order; what was wrong is (2).
+**B11 (2):** `TankBrain._hold_return`: with a drawn facing on the order, back on only while that facing is within
+Manoeuvre.FACING_KEEP_DEG (60°) of the nose, else drive on nose-first carrying the facing. `--hold-return=old` = the
+control. GDScript only (`_act` is GDScript on every path). Tuning, n 1 each, free clock (the harness is not
+deterministic: off read Guns_5 161.9° then 149.9°): s66 Guns_5 100.5° on v 149.9° off; crews > 90° off 4 v 6 of 20.
+**B11 bar** (arms on v `--hold-return=old`, one tree, builder0, default path; `manoeuvre-hull-rest` drawn, all four
+factions × FRESH seeds 61 62 63 64 65 67 × the six faced tasks, n 144 runs an arm):
+1. Crews ending > 90° from his drawn heading, pooled over all crews: on < off (deciding), one-sided Fisher p reported.
+2. Pass case gangs s66 faced_move: Green_Guns_5 ≤ 90° in ≥ 2 of 3 on-repeats (off's 3 reported).
+3. Not worse: no hull class's median error worse with permutation p < 0.05 (hull_rest_ab); runs never settled on ≤ off
+   + 2; paired settled_after_s median not more than 2 s later.
+4. The whole suite on the tree; sim-baseline moves (a CPU halt's hold carries its sector facing too) listed with reasons.
+5. The worst on-arm run traced before medians.
+Ships ON as one commit.
+
 ### B10 JUDGED: FAILS line 2 (one Sumps run 19.9 s later); every other line passes. Not shipped; the orchestrator rules (2026-10-16 08:35 PDT)
 Check on `8e43cc5c` (builder0): exited 0, 2699/0, ALL JUDGED, sim-baseline 13 unmoved (latch ON), bridge-pooled 18/18.
 Series on `8e43cc5c`, builder0, default path, on v `--ground-latch=off`; rows `references/round32/brains/b10-*-8e43cc5c.*`.
