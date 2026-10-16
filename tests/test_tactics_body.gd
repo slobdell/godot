@@ -25,6 +25,22 @@ func test_his_three_squads_keep_together() -> void:
 			"and the army is not much later for it: off %s s, on %s s" % [off["arrived_s"], on["arrived_s"]])
 
 
+## Round 32 (R32.6): the stage's hulls never spawn overlapping. They did (Sirens 2 and 3, 3.8 m apart, seed 1), and the
+## physics separated them on the first frame of the FIRST match in a process only, so the test above read alone_s 12.0 run
+## first and 24.5 run after any other match (builder0): it passed or failed by the order of its shard.
+func test_the_stage_spawns_no_two_hulls_overlapping() -> void:
+	for seed_value: int in [1, 2, 3]:
+		for specs: Array in [BodyStage.SQUADS, BodyStage.SPLIT]:
+			var points: Array = BodyStage.spawns(seed_value, specs)
+			for i in points.size():
+				for j in range(i + 1, points.size()):
+					var a: Array = points[i]
+					var b: Array = points[j]
+					var gap := Vector2((a[0] as Vector3).x - (b[0] as Vector3).x, (a[0] as Vector3).z - (b[0] as Vector3).z).length()
+					assert_true(gap >= float(a[1]) + float(b[1]) - 0.01,
+							"seed %d: spawns %d and %d are %.1f m apart, envelopes %.1f + %.1f" % [seed_value, i, j, gap, a[1], b[1]])
+
+
 func test_a_split_that_saves_real_driving_still_happens() -> void:
 	var report: Dictionary = await BodyStage.run(self, 1, SECONDS, false, false, BodyStage.SPLIT)
 	print("MEASURE body split seed 1: %s" % report)

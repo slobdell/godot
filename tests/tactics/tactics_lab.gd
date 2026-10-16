@@ -97,9 +97,15 @@ static func table_of(formation: String, technique: String, overrides: Dictionary
 const START_TICK := 1
 
 
+## Round 32 (R32.6), measurement: physics frames start() waited for this arena's navmesh (the first arena of a process
+## waits longer than later ones, and the hulls stand in the physics world meanwhile).
+var waited_frames := 0
+
+
 func start() -> void:
 	for i in 30:
 		await case.tree.physics_frame
+		waited_frames = i + 1
 		if TacticsLab.navigation_is_this_arenas(arena):
 			break
 	var at := START_TICK
