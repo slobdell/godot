@@ -79,11 +79,13 @@ traffic-census: import ## Round 26 (traffic T1): stuck crew-seconds by what is i
 		xargs -P $(TRAFFIC_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); out=$(BUILD_DIR)/traffic-census-runs/$$1-$$2-$$3-$$4-$$6.json; \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
 			--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(TRAFFIC_CENSUS_SECONDS) $(TRAFFIC_FLAGS) \
-			2>/dev/null | grep -o "TRAFFIC_CENSUS {.*" | sed "s/^TRAFFIC_CENSUS //" > $$out; \
+			2>/dev/null > $$out.log; grep -o "TRAFFIC_CENSUS {.*" $$out.log | sed "s/^TRAFFIC_CENSUS //" > $$out; \
+		grep -o "TRAFFIC_ASKER {.*" $$out.log | sed "s/^TRAFFIC_ASKER //;s/^{/{\"arena\":\"$$1\",\"seed\":$$6,/" > $$out.askers; rm -f $$out.log; \
 		[ -s $$out ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"credits\":$$4,\"missing\":true}" > $$out; \
 		echo "  ran        census $$1 s$$6"; \
 		$(if $(SEQ_BASE),$(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)" | sed "s/^/  /";) true'
 	@cat $(BUILD_DIR)/traffic-census-runs/*.json > $(BUILD_DIR)/traffic-census.jsonl
+	@cat $(BUILD_DIR)/traffic-census-runs/*.askers > $(BUILD_DIR)/traffic-census-askers.jsonl 2>/dev/null || true
 	@$(PYTHON) tests/traffic/census_table.py $(BUILD_DIR)/traffic-census.jsonl
 	@$(if $(SEQ_BASE),echo ">> traffic-census early-stop reading over the whole grid:"; $(PYTHON) tests/traffic/seq_hook.py census --base $(SEQ_BASE) --runs $(BUILD_DIR)/traffic-census-runs --lines "$(SEQ_CENSUS_LINES)",true)
 
