@@ -231,3 +231,19 @@ planner-trace-hull-rest: native import ## planner round 32: one hull-rest run (P
 			$(if $(PLANNER_HR_CLICK),--faced-click) --turn-states --planner-queue=$$arm "--turn-trace=$(PLANNER_HR_UNIT)" \
 			--screen-test=$(CURDIR)/$$d --screen-only=$(PLANNER_HR_TASK) > $$d/run.log 2>&1; \
 		grep -c "^MANOEUVRE_TRACE" $$d/run.log | sed "s/^/   trace rows: /"; grep -E "^PLANNER_SEAM $(PLANNER_HR_UNIT) " $$d/run.log | cut -c1-300 || true; done
+
+# Round 32 (CP-Q's park: the Terminus rig contact rise, a deterministic harness): ONE Terminus drive run on both queue
+# arms (the native drive, the shipped default) with one hull traced (the drive's --trace and the census's --turn-trace).
+# make remote LIGHT=1 T="planner-trace-drive-queue PLANNER_TQ_SEED=207 PLANNER_TQ_UNIT=Green_S0_4" -> build/planner-trace/{fifo,shared}-rigs-<seed>.log
+PLANNER_TQ_SEED ?= 207
+PLANNER_TQ_SQUAD ?= rigs
+PLANNER_TQ_UNIT ?= Green_S0_4
+.PHONY: planner-trace-drive-queue
+planner-trace-drive-queue: native import ## planner round 32: the Terminus drive, one seed, both queue arms, one hull traced (PLANNER_TQ_SEED/SQUAD/UNIT) -> build/planner-trace/
+	@mkdir -p $(PLANNER_TRACE_DIR)
+	@for arm in fifo shared; do \
+		echo ">> planner-trace-drive-queue on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $$arm $(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED) trace $(PLANNER_TQ_UNIT)"; \
+		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_TQ_SQUAD)" DRIVE_SEEDS="$(PLANNER_TQ_SEED)" \
+			NAV_FLAGS="--planner-queue=$$arm --trace=$(PLANNER_TQ_UNIT) --turn-trace=$(PLANNER_TQ_UNIT)" NAV_JOBS=1 > /dev/null 2>&1 || true; \
+		cp $(BUILD_DIR)/nav-drive/$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log; \
+		grep -E "^PLANNER_SEAM $(PLANNER_TQ_UNIT) " $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log | cut -c1-260 || true; done

@@ -45,3 +45,22 @@ line (3)'s misses at n = 6 seeds are NOT shown to be the queue's cost. Round 33,
 the hull-rest gang arm (fifo v fifo, the same seeds) to size its (d) lines' noise (judging.md), then a bar sized from
 it on fresh seeds. The Terminus contact-ticks rise (522 v 321) is a separate, deterministic-harness signal to trace
 first (worst seed 207: 4168 v 2444).
+
+TRACE 2 -- the Terminus contact rise (the orchestrator's first ask; a DETERMINISTIC harness, so this is the real one).
+builder0 light, stream 9ddcafee (= the series' code), `make planner-trace-drive-queue PLANNER_TQ_SEED=207
+PLANNER_TQ_UNIT=Green_S0_4`, traces/terminus-207/. The rerun reproduces the judged run exactly (S0_4 pinned on
+Block_7 at (10.0, -42.0) from f 5026 for 2043 ticks, route throttle 0.88).
+- Both arms plan the same first face (2 legs, 6 expansions). Then the shared arm's next face is a different plan
+  (R+1x6.0 F+0x3.5, 13 expansions), RELEASED at f 4555 6 m into its reverse leg ("another kind": the next leg's
+  move_to); the FIFO arm got a k-turn plan there instead.
+- From f 4810 the rig is on TODAY's circle / single k-turn at 7-9 m/s; the seam's cumulative report over f 4815-5165
+  shows every ask REFUSED EARLY, GOAL_BLOCKED (early 24 -> 28, GOAL_BLOCKED 14 -> 18; the report is global, so the
+  attribution to S0_4 is by timing) and the rig pins at f 5026.
+- MECHANISM: under the FIFO a request is HELD (zero/zero, braked to rest by `_pend`) until its search answers, so a
+  refusal hands today's code a hull AT REST; refuse-early answers at the ask from the ROLLING pose, so today's code
+  keeps the rig's 7-9 m/s and drives it into the block. The FIFO's hold was an implicit brake; refuse-early removed it.
+  Across the rig series: refused early 258, GOAL_BLOCKED 197 v 138, START_BLOCKED 76 v 58 (more asks, more refusals:
+  a released rig asks again sooner).
+ROUND 33 (the cheapest fix to judge first): refuse early ONLY at rest (a rolling ask is braked to rest as the FIFO
+does, then probed), or keep refuse-early but brake to rest on a rolling refusal; then the queue's round-robin
+unchanged. Bar from CP-Q's lines on fresh seeds, after the hull-rest A/A sizes line (3).
