@@ -116,6 +116,25 @@ crossings). Files: `references/round32/traffic/t3bc_r32_{verdict,hook}_b5882c9c.
   `d1c375b3` was stopped (its base was stale; builder0 processes killed by cwd), and it is re-carried onto the
   post-adoption main so that its check reads only the pit moving.
 
+**T1c-b2 on the post-adoption main: `traffic-t1cb2-r32` `cf81aedc`** = stream/traffic `fa088c38` (main `0e49fb3e` merged)
++ the rule + the `traffic-native-verify` fix.
+- `traffic-native-verify` on `cf81aedc`: builder0 exited 0, 0 mismatches.
+- **`make remote T=check` on `cf81aedc`:** builder0 `make check exited 2`, 2690 passed / 1 failed. **sim-baseline: all 13
+  maps unmoved, the pit included** (the baseline runs never set a truck up beside a passer, so there is nothing to
+  re-record). The one red is `test_native_traffic_turns_owned::test_the_crossing_on_the_owned_state` (twin 5147 drives,
+  0 mismatches). It failed on 2 script errors, "'tank' … previously freed" at `planner_executor.gd:70` ← `planner_seam.gd`
+  `Crew.copy` ← `capture` ← `tests/native/mover_state.gd:124`, and the exit-leak gate (20 ObjectDB) went with it.
+  **Diagnosis: latent on main, order-dependent, not the rule.** `PlannerSeam._crews` keeps a crew whose hull an earlier
+  test's match freed, and `capture()` copies it. Adding `tests/test_traffic_setup.gd` shifted the rr shard plan.
+  On the laptop the file passes alone and with `test_native_route|tick_profile` before it, on both `86590075` and
+  `cf81aedc` (1/0 and 5/0). The fix is planner/native's (skip crews whose tank is not `is_instance_valid` in `capture`).
+  Orchestrator: planner lands the fix alone on main first; then main merges into this branch and the check re-runs.
+- The census (seeds 41–46, 150 s, base `--traffic-off=setup`, builder0) is running.
+
+**C32.8, test splits: none needed.** Builder0's shard times: no traffic-owned file is near 60 s.
+`test_traffic_hold_live` 30.9 s, `test_traffic_turns_live` 31.0 s, `test_traffic_feed` 13.2 s. The slow files are native's
+twins.
+
 **Plan (in order):** (1) CP-T T3b-c: carry the judged tree onto main, quick-remote, native builds/checks the pair tree
 (R32.1: native's mirror `413252ea` is already on main, inert until Traffic has `shape`), then ONE re-judge on it; (2) T1c-b2
 carried after T3b-c lands; (3) navmesh gap diagnosis; (4) test splits if any traffic file > ~60 s; (5) stretch T4.
