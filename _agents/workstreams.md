@@ -84,6 +84,18 @@ orchestrator's `make sim-baseline-adopt` on main.
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
+- **B3b-2c (brains, C32.3; filed 2026-10-16 ~00:50 PDT before any number; DECLARED; partial: none; the full text is
+  stream/brains `c13ad95f` Status *B3b-2c bar*).** Candidate: B3b-2b's seating + mouth guard (lab `5ed61f91` merged in),
+  with round 28's heading narrowing OFF by default (`5ca8269d`: `HEADING_REISSUE_TASK_ONLY` false, i.e. main's round-26
+  rule; `--reissue-heading=task` turns it on). Control = `--route-seat=off --mouth-held=off` (= main's rules; the
+  orchestrator checked that the narrowing was never on main). Lines: (1) his bridge, the full 108: on 108/108 or ≥ the
+  control (any cell control passes and on fails is a named regression, traced first); (2) bridge-pooled 18/18; (3) the arrive
+  series on FRESH seeds 45–48, n 100 an arm: all_in8_s on ≥ control − 1 AND McNemar discordant against ≤ 1 (C32.3's
+  1.645 se read as the count row's form), the paired median ≤ +2 % REPORTED; (4) counters: crossings_found > 0 on every
+  on-run of the 108, 0 on control and on every arrive run; (5) `t.poll.element` on Locks ≤ 0.5 ms a tick or NOT READABLE on
+  a busy box; (6) the worst on-arm cell of (1) and of (3) traced before the medians. Native: none ported (GDScript on every
+  path). Ships ON as one commit. Stated in advance: the arrive arms may be byte-identical, which is the point of this cut.
+
 ## Round 31: five streams (prepared 2026-10-14 evening; briefs in `streams/`)
 
 **Goal: carry home what round 30 judged and could not ship (`roadmap.md` *Round 31 candidates*; his two calls in
