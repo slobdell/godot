@@ -1,0 +1,22 @@
+# CP-H REPORTED traces (never judged): Terminus rigs, the drive stage with --turn-states, builder0 light, 2026-10-15.
+# base = a2ef0b31 (nothing named), ON = 130a069b (nothing named; the four consumers ON). n = 1 per arm per seed.
+
+## Seed 31 (the planner's Green_S0_2 west-street wedge on fe5f8a9e: 1987 ticks on Container40_8, blocked by Green_S0_1)
+On a2ef0b31 the west-street leg is clean in base (4/4 arrive in 15.3 s), so that exact wedge does NOT reproduce on
+this commit. The squadmate wedge class does show up on other legs:
+- base: plaza leg, Green_S0_2 blocked_by Green_S0_3, touching Floodlight_31, 2/4 arrive; Green_S0_2 touches from
+  132 s to 198 s (66 s); its run total is 1930 of 2113 contact-ticks (steer 1790). Arrivals over the 4 legs: 3+4+2+4 = 13.
+- ON: Green_S0_2's contacts 1930 -> 190, with no touch longer than 2 s. Arrivals 3+3+4+3 = 13 (unchanged).
+  NEW on ON: far-ring-road leg, Green_S0_4 blocked_by Green_S0_2 and touching it, 9.1 m short at the end. H1 loops:
+  ask, back up about 2-3 m, stand, drive forward into Green_S0_2 again, about every 21 s (escape: asks 29, backs 29,
+  backed 28, all fires_hull, refused 0). The run's plant reads 11.7 m/s against real 0.00 at the contact.
+  The escape is never silent, but it does not free a squadmate wedge whose blocker stays put. Known issue, round 32.
+
+## Seed 134 (the planner's 65 s Green_S0_3 rig pin)
+On a2ef0b31 it does NOT reproduce: both arms arrive 4/4 on every leg (16/16). Contacts base 364, ON 432 (Green_S0_3
+151 -> 251, steer on the plaza leg). ON escape fires once (asks 1).
+
+## The trace for the report (kturnarc alone, census seed 114, a2ef0b31)
+Green_S0_1 (gang_tank) on move_to, goal ~41 m, touching Block_7 from f 4980 to the end: plant 9-12 m/s against real
+0.05-0.7 m/s (f 5430: plant 11.99, real 0.05). Round 29's escape fires (esc 2.0 at f 5430) and does not free it. ON
+reads 548 contact-ticks on that seed (base 398).
