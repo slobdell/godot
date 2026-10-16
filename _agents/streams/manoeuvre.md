@@ -158,6 +158,12 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   running on builder0. The series waits for it (C31.1).
 - **The swap stage's first two runs proved nothing** (lab `367ab66c`, `ab3b18a0`: 0 fires): a sign bug put the rig's
   goal BEHIND it. It was not "drives round on open ground" as first read. Fixed at lab `5c6d17ea`.
+- **C32.10 swap stage GREEN on the laptop** (lab `98a29c57` = brains' seam f2cc956d + my hook; `test_manoeuvre_h1b_swap`
+  3/3, deterministic n = 1; the seam played by the test). A rig 18 m behind a parked squadmate in a row of three
+  (2.0 m gaps), goal 30 m beyond it. Hook off: 6 fires, 4 far loops. Refused: 4 asks all `test_refused`, fire times
+  identical to hook off. Taken at 12.6 s: 3 fires, **0 loops**; B ends 4.3 m from A's seat, A 1.0 m from B's old goal.
+  Stage lessons: the friend's mover must be bound, and on open ground the friend takes the yield ('yielding', not
+  parked), so the stage makes it refuse as all 62 did in the trace.
 - `test_manoeuvre_h1b` at `373de208` took 351 s on builder0; at `7a9b17e4` 162 s (40 s runs, base arms shared).
 - **Environment finding, not H1b:** `make remote T='test FILTER=test_manoeuvre_'` in this worktree's FRESH builder0
   folder ran with no `native/bin` (plain `test` does not build it), so the C++ planner was absent and
