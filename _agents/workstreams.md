@@ -85,6 +85,19 @@ orchestrator's `make sim-baseline-adopt` on main.
   `_repair_for` / `_repair_to` so the brain completes the order through `Movement.repaired_arrival`, as it already does.
   Granted: writes from H1b's hook only, no edit to any brains function or to what those fields mean; brains is told and
   owns the fields' meaning. The native drive's copy of those fields is part of H1b's pair (native mirrors the write).
+- **R32.3 C32.5's two answers for M1b(3), agreed by manoeuvre and brains (2026-10-16 ~02:15 PDT):** (a) **YES**: an arrivals
+  line counts a crew as arrived when it completes within ARRIVED_M (7 m) of the element's seat for that crew AT COMPLETION
+  (`Element.seats`, what settle_probe's `off_slot_m` reads), not a stale `to`; a re-seat is the leader's correction, not a
+  miss. Guards: each arm reports arrivals against the ORIGINAL slot, `reseats` and `reseats_after_arrival`; re-seats >
+  base + 1.645 se is a FAIL line, so a hull that turns badly can't win by being re-seated. (b) **facekeep unchanged** for
+  gang hulls (its refusals are the sector rule keeping a crew's arc, on the CPU's hulls; changing it moves sim-baseline and
+  CPU fights for a problem it does not cause); attempt 2's 'sector' lift stays. The problem is the attack-move settle (crews
+  moving at 75 s). (c) **The re-seat reads heading through the SHAPE, not the matching** (brains): `TacticsFormation.seat`
+  matches by positions only, but an attack-move arriving with no drawn facing lays its halt along the element's heading
+  = the members' averaged hull forward (`element_situation.gd` ~70–76 → `element_plan.gd:146` → `_halt` ~1669), read once on
+  the arrival plan; a drawn facing replaces it (~668–672). Also `element_plan.gd` ~678 (a plain move forming up within
+  2 m) and `drills.gd` ~387 (assault_through's "past" test). So a wheeled hull turning BEFORE the element arrives moves
+  every seat; after arrival, none. Pinned by `tests/test_tactics_reseat_heading.gd` (stream/brains `cbddb940`).
 
 **Bars (round 32, pre-registered before their numbers; the orchestrator appends each here as it arrives):**
 
