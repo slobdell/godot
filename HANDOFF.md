@@ -27,6 +27,12 @@ branches, so workers don't push.
 `avoidance_gather` call errored every tick and his game went choppy. Rebuilt; `make run/skirmish/demo` now rebuild a stale
 library first (`native-fresh`). `19df5cc0` (mk/play.mk + three planner .uid files) is unchecked: it rides the next main check.
 
+**CP-T progress (2026-10-16 ~02:00 PDT):** T3b-c's pair tree `b5882c9c` (pair/t3bc-r32) CHECKED on builder0: `make check
+exited 2`, 2671 passed / 0 failed, 25 targets passed, sim-baseline alone red (13 maps moved, as C32.1 expects), turns twins
+0 mismatches, determinism passed. Traffic's one re-judge on it is running; on a pass, merge `b5882c9c` and `make
+sim-baseline-adopt` (reason: the crossing ON). Bars filed: B3b-2c, CP-Q, H1b (`workstreams.md` *Bars (round 32)*).
+Rulings R32.1 (native half already on main), R32.2 (H1b writes the repair fields). C32.6 closed: no navmesh gap.
+
 **The orchestrator's first jobs:** get CP-T on main (merge the T3b-c pair back to back, `make sim-baseline-adopt` with each
 moved line's reason, then T1c-b2); file every bar in `workstreams.md` *Bars (round 32)* before its numbers; relay CP-S to
 brains when it lands; record the manoeuvre ↔ brains re-seat agreement (C32.5) as a ruling; run `tools/merge_check_needed.sh`
