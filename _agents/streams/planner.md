@@ -77,6 +77,14 @@ _Updated 2026-10-16 by the planner worker (`godot-planner`, `stream/planner`, fr
 
 ### The report (read this first)
 
+**CP-S and SLICE per preset are ON MAIN: `530e85cf` → main `3a85d092` (the orchestrator, 2026-10-16).** Green check
+on `530e85cf`: builder0 `>> remote: make check exited 0`, 2670 passed, 0 failed, 26 targets ALL JUDGED,
+**sim-baseline 13 maps unmoved** (the default path bit for bit). Brains told side_gate is on main.
+**CP-Q** (the queue): bar FILED; pair tree `pair/planner-queue` `65cc43dd` (= stream `3876d601` + QUEUE_DEFAULT true)
+check RUNNING (C31.1) before the series. **SLICE's pricing** (C32.7's "priced on builder0"): queued after it (the
+census probe and a Terminus rig series at `--planner-slice=1` v 2 for the hold per rig event); the laptop price waits
+for a slot the orchestrator grants.
+
 _In progress (2026-10-16 ~01:30 PDT)._ Nothing verified on builder0 yet: builder0 had 3 heavy runs ahead of me for 25+
 min; the first quick was replaced by one covering the whole diff (`make quick-remote QUICK_BASE=6efdf42b` on
 `b204a489`, 12 test files + lint + smoke).
