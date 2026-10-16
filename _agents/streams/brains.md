@@ -87,6 +87,13 @@ the orchestrator before numbers; green hashes named)_
   `test_the_stage_spawns_no_two_hulls_overlapping` fails without it. The line holds on today's main: off 41.0, on
   15.0–16.0 whatever ran before (≤ 20.5 needed); 4/4 alone (builder0). Trip-up 82 in orientation.md. Play side: the
   deploy is guarded (test_spawn_grid); gaps relayed (law/syndicate not in that test; respawns not checked).
+  **Reopened and closed again (`c029cf70`):** the check on `03aa0c5d` read off 28.5 / on 15.0 (2699/1): the OFF arm
+  drifted over successive matches in one process (41.0, 37.0, 28.5; twelve caches cleared: no change). Again the start
+  position: a hull touching something at spawn is moved on the first frame differently match to match, and the stage
+  snapped wherever physics left it. Now it snaps each hull's INTENDED spawn after start() with zero velocity: on 15.5 ×3
+  identical, off 41.0/37.0/41.0, on after off 15.0 (builder0, body-twice). The residual off wobble starts at tick 56 by
+  0.1 m (contact-level physics), time-boxed; the line holds in every order seen (on/off ≤ 0.42 v 0.5). law + syndicate
+  added to test_spawn_grid's deploy check (granted, `90a38609`). Check on `c029cf70` RUNNING (13:08 PDT).
 - **B10 PARKED** (the orchestrator's ruling; latch OFF by default, `--ground-latch=on`); **B10b** = re-judged once with
   C32.10's swap ON, s19 t8 its case; v6 waits behind it.
 - **B11 (C32.12 (2)):** built `e440bcd9`, bar filed (seeds 350–355); **check on `03aa0c5d` RUNNING** (09:58 PDT), then
