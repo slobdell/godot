@@ -82,8 +82,9 @@ the orchestrator before numbers; green hashes named)_
 
 ### FINAL REPORT (round 32, 2026-10-16 ~16:00 PDT)
 
-**Green hash: CHECK RUNNING on `f0af2f15`** (stream + main merged; launched 15:47 PDT). Every brains change beyond
-main on it is default-OFF, a test, tooling, measurement or docs.
+**Green hash: `f0af2f15`. Merge here.** `make check` on builder0 **exited 0, 2723 passed / 0 failed, 26 targets ALL
+JUDGED, sim-baseline 13 unmoved** (stream + main merged). Every brains change beyond main on it is default-OFF, a test,
+tooling, measurement or docs. The commits after it are Status only.
 
 **Shipped**
 - **B3b-2c, his bridge 108/108 (C32.3):** MERGED ON (main `33321516` from `5f0ed865`). His bridge 108/108 v 107/108,
