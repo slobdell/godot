@@ -104,7 +104,17 @@ terminus/cross=3.0`. Reason: the question is whether CP-H/CP-P1 moved what was j
   --traffic-off=turns`, arm `--brains-off=native`, both `TRAFFIC_WHICH=both`, with the hook lines (Terminus's xclear now
   `abs=1.0:allow=3.0`, his ~3 s), then `turns_verdict.py`. It runs on stream/traffic, whose game/ equals `b5882c9c`.
 - **T1c-b2 carried:** `traffic-t1cb2-r32` `4849bfdc` = stream/traffic + `6d19a3d9` (one conflict, the end of
-  `mk/traffic.mk`; `Movement.ask()`'s fire-post refusal applied clean). quick-remote is running on it.
+  `mk/traffic.mk`; `Movement.ask()`'s fire-post refusal applied clean). quick-remote GREEN (builder0, 42/0, exited 0).
+  Native confirms none ported. `native-verify-scenarios` on `4849bfdc`: builder0 exited 0, 52 passed, 0 verify mismatches.
+  **`traffic-native-verify` was broken since round 31:** the `;` in `TRAFFIC_VERIFY_CENSUS` reached the recipe's `for`
+  list as a command separator (a bash syntax error at `parade`), which is why round 31 never ran it. Fixed at
+  `d1c375b3` and re-running. The chain (worktree `../godot-traffic-t1cb2`) then runs the full check with the rule ON and
+  the census on round 31's seeds 41–46 × Sumps 1000 / Parade 2000 / Foundry 2000, n 18, 150 s, `--brains-off=native`,
+  base `--traffic-off=setup`. As the brief says, the deciding line is read as arm 0/18 repacks while firing (the base's
+  ≥ 8/18 precondition is not re-applied), with the guards as filed.
+- **CP-T gate PASSED (native):** `b5882c9c`, builder0 `make check exited 2`, 2671 passed / 0 failed, 25 targets passed
+  and 1 FAILED = sim-baseline alone (all 13 maps moved), turns twins 0 mismatches. **The re-judge is running** from
+  worktree `../godot-traffic-judge` at exactly `b5882c9c` (unit `traffic-rejudge-t3bc`, 01:56 PDT).
 
 **C32.6, the navmesh gap: DIAGNOSED, no bake fix. It is a probe artifact, not a bake hole or a footprint** (`b71fb9b0`,
 laptop, headless Godot 4.7.2; geometry facts, so they don't depend on the machine).
