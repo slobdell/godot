@@ -3280,7 +3280,7 @@ const H1B_MOVED_M := 0.5
 ## Settle short only when the route has at most this left (the repair's own ceiling: a mover never quietly re-grounds a
 ## goal further than this).
 const H1B_SETTLE_MAX_M := REPAIR_MAX_M
-const H1B_DEFAULT := false
+const H1B_DEFAULT := true
 var _h1b_blocker := ""
 var _h1b_goal := Vector3.INF
 var _h1b_at := Vector3.INF
