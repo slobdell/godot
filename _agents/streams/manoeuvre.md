@@ -83,7 +83,13 @@ the orchestrator before numbers; green hashes named)_
 
 ### Report (2026-10-16, in progress)
 
-Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this branch.
+**H1b's judged series is RUNNING** (started 10:01 PDT). Tree: `stream/manoeuvre` `9c46002a` (H1b code = `e8e20ca9`;
+after it only docs and the runner's PINNED/STUCK rows). Arms are flags as filed: base `--brains-off=native`, H1b
+`--nav-off=h1b --brains-off=native`. **C31.1 gate GREEN:** `pair/h1b-on 273654e6` (builder0 plain check, exited 0,
+2703/0, sim-baseline 13 maps unmoved), which is the ship hash if every line passes; the five exec_fields rows
+(`2d35b1ec`) ship with it. Stages run in sequence on the heavy lane (runner: the scratchpad's `series/run.sh`): drive
+300–312, drive hunt 1–16, hull-rest 313–318 base then H1b, fights 320–343 base then H1b. Plus the named fights 4–6 base
+and H1b on the light lane, same commit. Each guard is read once at completion.
 
 ### H1b bar (DRAFT for the orchestrator, filed before any series number; seeds proposed, the orchestrator confirms)
 
