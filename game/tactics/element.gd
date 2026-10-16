@@ -1757,7 +1757,11 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 ## 108 fell to 106 at round 26's merge of the heading rule (bisected: 2e2715e4 108-cells pass, 7baffe24 fail): a crew's
 ## plan heading toggling within ONE task (a halt sector given, then taken away as the squad moved on) re-issued its move
 ## at the rim, and the tank hesitated there 3.5-6.8 s. `--reissue-heading=plan` is round 26's rule.
-static var HEADING_REISSUE_TASK_ONLY := true
+## Round 32 (B3b-2c, C32.3): OFF by default; round 26's rule stands. B3b-2b's arrive series lost 9 cells to it (97 -> 90
+## within 8 m, seeds 41-44, n 100, builder0, 5ed61f91) and `--reissue-heading=plan` alone recovered all 9 at the
+## control's exact times (a trace, n 1 a cell); the crossing seating is what gives his bridge 108. `--reissue-heading=task`
+## turns the narrowing on (the round-31 candidate's arm).
+static var HEADING_REISSUE_TASK_ONLY := false
 
 
 func _heading_retold(mine: Dictionary, desired: Dictionary) -> bool:

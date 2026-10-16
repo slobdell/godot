@@ -128,6 +128,7 @@ func test_on_the_players_own_team_the_old_rule_is_measured() -> void:
 ## squad moves on) is not a re-order: his bridge drill's rim tank hesitated 3.5-6.8 s on such re-issues (108 -> 106,
 ## bisected to round 26's merge of the rule above). The task's drawn facing changing still is one.
 func test_a_plan_heading_toggling_within_one_task_does_not_re_issue() -> void:
+	Element.HEADING_REISSUE_TASK_ONLY = true  # round 32 (B3b-2c): off by default, `--reissue-heading=task`
 	var element := Element.new()
 	element.task = {"verb": "move", "to": [30.0, 10.0]}
 	var issued := {"verb": "move", "to": Vector3(30, 0, 10), "facing": Vector3(0, 0, -1), "task_facing": null}
@@ -140,4 +141,14 @@ func test_a_plan_heading_toggling_within_one_task_does_not_re_issue() -> void:
 	Element.HEADING_REISSUE_TASK_ONLY = false
 	element.task = {"verb": "move", "to": [30.0, 10.0]}
 	assert_true(element._heading_retold(issued, plain), "--reissue-heading=plan is round 26's rule")
-	Element.HEADING_REISSUE_TASK_ONLY = true
+
+
+## Round 32 (B3b-2c, C32.3): the default is round 26's rule (the round-28 narrowing cost B3b-2b nine arrive cells): within
+## one task, the plan's own heading taken away re-issues the crew's move.
+func test_by_default_a_plan_heading_change_re_issues() -> void:
+	assert_true(not Element.HEADING_REISSUE_TASK_ONLY, "round 28's narrowing is off by default")
+	var element := Element.new()
+	element.task = {"verb": "move", "to": [30.0, 10.0]}
+	var issued := {"verb": "move", "to": Vector3(30, 0, 10), "facing": Vector3(0, 0, -1), "task_facing": null}
+	assert_true(element._heading_retold(issued, {"verb": "move", "to": Vector3(30, 0, 10)}),
+			"the plan's heading taken away re-issues (round 26's rule)")
