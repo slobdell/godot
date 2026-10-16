@@ -54,6 +54,10 @@ arms run NATIVE unless forced `NATIVE=off`), R31.2 (the planner seam AGREED: two
 `manoeuvring()`, the unstick gate in the seam commit, capture/restore for the twins) and R31.3 (the pursuit test is knife-edge;
 v5's line is a count; the 18 m/s fail is a hurt crew retreating, not a launch) are in `workstreams.md`. Bars filed: T3b-c, T1c-b2.
 **Merged:** brains `0415da23` → main `aa205ea5` (R31.3 (a)+(b) test-only, the A/A tooling, B8 realslow default OFF);
+**🎯 CP-P1 SHIPPED ON (~19:45 PDT): pair/cpp1-ship `166f7f1e` → main `e175e660`; baselines `71538a8d` (10 moved).**
+What he'll notice: a War Rig told to turn round in a tight street turns in a few deliberate legs (the planner's C++ search)
+instead of grinding the walls. Shorter hulls are unchanged. Main check on `71538a8d` RUNNING (`orch-main-check8`). Then
+manoeuvre's close-out `57f42af5` merged as `1a39dc87` (measurement only; CHECK needed), batched with brains' split.
 **✅ MAIN GREEN at `b7c0adbc` (~18:50 PDT), with CP-H ON and its 13 baselines re-recorded:** builder0 `>> remote: make
 check exited 0`, 2642 passed / 0 failed, 26 targets ALL JUDGED, sim-baseline 13 unmoved against the new lines. **🎯 CP-H SHIPPED ON (~17:55 PDT): pair/cph-ship `76b7ee46` → main `b352fa2a`.** The four consumers of the honest reading
 (unstickback, kturnarc, realspeed, realslow) are default ON. What he'll notice: a vehicle pinned on a squadmate asks it to
