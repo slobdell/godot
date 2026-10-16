@@ -124,8 +124,11 @@ to be the queue's. (2) **Terminus seed 207 (deterministic): the real cost.** Ref
 at once (GOAL_BLOCKED), so today's code keeps its 7–9 m/s and pins it on Block_7 for 2043 ticks. Under the FIFO the
 same refusal comes only after the hold has braked the hull to rest: **the FIFO's hold was an implicit brake.**
 
-**Next (round 33 hand-over):** (a) refuse early ONLY at rest (brake a rolling ask to rest as the FIFO does, then
-probe), round-robin unchanged; (b) the hull-rest gang arm A/A (fifo v fifo, seeds 66–71) to size line (3)'s noise
+**Next (round 33 hand-over):** (a) **BUILT, not judged (`d98656ab`, the orchestrator's ask):** refuse early ONLY at
+rest under `--planner-queue=shared` (a rolling ask braked to rest first, as the FIFO holds it), round-robin unchanged;
+the first cut kept as `--planner-queue=shared-rolling` for the record. Stage `make planner-stage-s207` (Terminus rigs
+seed 207, deterministic, builder0 light): shared-rolling pins Green_S0_4 on Block_7 2043 ticks (reproduces), shared 0
+(all rigs 4007 → 2223; the FIFO's run 2444). Stopped before any series; (b) the hull-rest gang arm A/A (fifo v fifo, seeds 66–71) to size line (3)'s noise
 (the orchestrator: light lane only after H1b/B10, else round 33); (c) re-judge CP-Q on fresh seeds with (b)'s bar.
 Targets ready: `planner-judge-queue`, `planner-series-queue`, `planner-trace-hull-rest`, `planner-trace-drive-queue`.
 
