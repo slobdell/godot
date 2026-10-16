@@ -92,7 +92,7 @@ Working on item 1 (H1b). Nothing judged yet; no hash named green yet on this bra
   Both arms on the GDScript path (`--brains-off=native`; the CP-H runner's refusal rule), every run printing its flags.
 - **Pre-registered:** N = `H1B_ASKS` = 2; "failed" = the escape fires again on the same friend for the same goal
   (within NEW_GOAL_JUMP) with that friend's flat position moved < `H1B_MOVED_M` 0.5 m (net) since the previous fire. A
-  **loop** = a fire that records the second (or a later) failed ask and that H1b did not break (the third fire on on
+  **loop** = a fire that records the second (or a later) failed ask and that H1b did not break (the third fire on
   an unmoved friend onward; base loops = fires − 2) (`ManoeuvreCensus.h1b_loops`, counted in BOTH
   arms). Settle short only with route left <= 12 m and a goal not sliding; farther loops are counted (`far`), not acted on.
 - **Fresh seeds (proposed; unclaimed in workstreams.md as of main `3fdcc1ea`):** Terminus drive + census 300–312 (13),

@@ -207,15 +207,20 @@ manoeuvre-pin-clip: import ## manoeuvre: a Terminus drive filmed today v shipped
 # run's NAV_DRIVE_LEG rows and its H1B_DRIVE line (H1b's counters and the escape's arms).
 H1B_SQUADS ?= rigs
 H1B_SEEDS ?= 31
+# H1B_SEEDS=a-b is a range (make remote's T is word-split, so a list cannot be passed through it).
+H1B_SEED_LIST = $(if $(findstring -,$(H1B_SEEDS)),$(shell seq $(subst -, ,$(H1B_SEEDS))),$(H1B_SEEDS))
+# H1B_SQUADS=both runs rigs and mixed (the same word-split reason).
+H1B_SQUAD_LIST = $(if $(filter both,$(H1B_SQUADS)),rigs mixed,$(H1B_SQUADS))
 H1B_JOBS ?= 4
 .PHONY: manoeuvre-h1b-drive
 manoeuvre-h1b-drive: import ## manoeuvre H1b: the Terminus drive base v H1b on the GDScript path (H1B_SQUADS, H1B_SEEDS) -> build/manoeuvre/h1b-drive/
 	@out=$(BUILD_DIR)/manoeuvre/h1b-drive; rm -rf $$out && mkdir -p $$out; \
-	echo ">> manoeuvre-h1b-drive on $$(hostname) commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | $(H1B_SQUADS) | seeds $(H1B_SEEDS)"; \
-	for arm in base h1b; do for squad in $(H1B_SQUADS); do for seed in $(H1B_SEEDS); do echo $$arm-$$squad-$$seed; done; done; done | \
+	echo ">> manoeuvre-h1b-drive on $$(hostname) commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | $(H1B_SQUAD_LIST) | seeds $(H1B_SEED_LIST)"; \
+	for arm in base h1b; do for squad in $(H1B_SQUAD_LIST); do for seed in $(H1B_SEED_LIST); do echo $$arm-$$squad-$$seed; done; done; done | \
 	xargs -P $(H1B_JOBS) -I{} sh -c 'run={}; arm=$${run%%-*}; rest=$${run#*-}; \
 		if [ $$arm = h1b ]; then flags="--nav-off=h1b --brains-off=native"; else flags="--brains-off=native"; fi; \
 		timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/h1b_drive.gd -- \
 			--squad=$${rest%-*} --seed=$${rest##*-} --arena=terminus --leg-time=$(or $(DRIVE_LEG_TIME),90) $$flags $(NAV_FLAGS) \
 			> '$$out'/{}.log 2>&1; echo ">> manoeuvre-h1b-drive: {} done"'
 	@for f in $(BUILD_DIR)/manoeuvre/h1b-drive/*.log; do echo "== $$f"; grep -E "^NAV_DRIVE_LEG|^H1B_DRIVE|SCRIPT ERROR|control FAILED" $$f | cut -c1-900 || true; done
+	@$(PYTHON) tests/manoeuvre/h1b_table.py $(BUILD_DIR)/manoeuvre/h1b-drive/*.log
