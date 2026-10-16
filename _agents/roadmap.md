@@ -322,7 +322,8 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   faced.
 - **The far ask loop in skirmish (C32.10's swap PARKED):** the case is a parked crew of ANOTHER element sitting on my route
   (fights 400–423: 5 of 6 far rows). An element-level make-room or a cross-element give-way (traffic + brains), judged on
-  skirmish-based stages: the Terminus drive forms no elements, so its loops may not be his.
+  skirmish-based stages: the Terminus drive forms no elements, so its loops may not be his. Native's N5 ports
+  (`_negotiate` / ask / `_begin_yield`) stay held until that design settles.
 - **B10b** (the grounding latch on a tree with C32.10's swap ON) and **B5c-v6** behind it, if round 32 doesn't reach them.
 
 ## Round 31 candidates (round 30's carry-overs, 2026-10-14 evening) — SPLIT 2026-10-14 ~22:00 as traffic (his two calls, T4, the early-stop hook) + manoeuvre (1 as CP-H, 4) + brains (3, B8) + native (pairs, the planner review, 5's test split) + planner (2; Fable) (`workstreams.md` *Round 31*); his two calls MADE ~21:40
