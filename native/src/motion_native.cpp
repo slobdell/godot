@@ -77,6 +77,11 @@ double ramped_yaw(Dictionary &state, double wanted, double max_rate, double delt
 
 } // namespace
 
+// Round 33 (N5.Y): TankMotion.turn_heading for the give-way's sweep (drive_native.cpp yield_run_ok).
+Vector3 motion_turn_heading(const Vector3 &forward, double radians) {
+	return turn_heading(forward, radians);
+}
+
 void motion_step(const MotionConfig &c, Dictionary state, double throttle, double turn, double delta) {
 	static const String wheels("wheels"), hover("hover");
 	const MN &k = mn_();

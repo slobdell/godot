@@ -51,6 +51,10 @@ bool profiling_ = false;
 struct ManoeuvreCounts {
 	int64_t native = 0, called_back = 0;
 } manoeuvre_counts_;
+// Round 33 (N5.Y), measurement only (drive_owned_counts): _negotiate bodies the native drive ran, and called back.
+struct NegotiateCounts {
+	int64_t native = 0, called_back = 0;
+} negotiate_counts_;
 struct Timed {
 	const char *name;
 	std::chrono::steady_clock::time_point t0;
@@ -129,6 +133,13 @@ struct N {
 			braking_mps2{ "braking_mps2" }, lateral_grip{ "lateral_grip" }, position{ "position" }, forward{ "forward" },
 			velocity{ "velocity" }, max_reverse_speed{ "max_reverse_speed" }, hull_turn_rate{ "hull_turn_rate" },
 			hull_turn_rate_deg{ "hull_turn_rate_deg" }, _motion{ "_motion" }, yaw_rate{ "yaw_rate" },
+			// Round 33 (N5.Y)
+			native_yield{ "native_yield" }, deploy_ratio{ "deploy_ratio" }, weapon_order{ "weapon_order" },
+			move_order{ "move_order" }, asks_refused{ "asks_refused" }, setup_refusals{ "setup_refusals" },
+			parked_refusals{ "parked_refusals" }, yields_started{ "yields_started" }, yield_swaps{ "yield_swaps" },
+			yield_swaps_shorter{ "yield_swaps_shorter" }, yield_spots_unfit{ "yield_spots_unfit" },
+			yield_spots_shortened{ "yield_spots_shortened" }, yield_holds{ "yield_holds" }, neighbours{ "neighbours" },
+			off{ "off" }, yield_log{ "yield_log" }, setup_log{ "setup_log" }, yield_site{ "yield" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
@@ -1418,7 +1429,14 @@ struct Drive {
 		if (still_only && String(mover->get(k.phase)) != arrived) {
 			return;
 		}
-		cb(k._negotiate, goal, direct, still_only);
+		// Round 33 (N5.Y): past the early-outs (nothing above writes), the body natively; else the GDScript from the top.
+		if (!yield_native_on()) {
+			negotiate_counts_.called_back++;
+			cb(k._negotiate, goal, direct, still_only);
+			return;
+		}
+		negotiate_counts_.native++;
+		negotiate_body(goal, direct, Object::cast_to<Node3D>(other), mover);
 	}
 
 	// ---- Pathing.query(tank, from, to) (round 27, stage 1 E2), line by line; `is_ready` is the drive's own answer (asked
@@ -2048,6 +2066,21 @@ struct Drive {
 	void man_note(const StringName &table, const String &key);
 	double hull_width_of(const String &unit);
 	double settle_of(const String &unit);
+	// ---- Round 33 (N5.Y): _negotiate's body, ask, _begin_yield and the give-way's spot tests, line by line ----
+	bool yield_native_on();
+	void negotiate_body(const Vector3 &goal, bool direct, Node3D *other, Object *mover);
+	bool ask(const String &asker, const Vector3 &from, const Vector2 &direction, const String &via);
+	bool begin_yield(const String &other, const Vector3 &from, const Vector2 &direction, const String &via);
+	void start_yield(const String &other, const Vector3 &point, const Vector2 &along, const String &spot);
+	bool free_spot(const Vector3 &point, const String &me, const String &other);
+	bool yield_fits(const Vector3 &point);
+	bool yield_run_ok(const RID &map, const Vector3 &point, LocalVector<Vector3> &poses);
+	Vector3 yield_shorten(const Vector3 &point);
+	Vector2 travel_direction(const Vector3 &goal, bool direct);
+	bool on_fire_post();
+	bool traffic_off(const String &name);
+	double avoid_radius(const String &unit);
+	void refresh_avoidance();
 };
 
 } // namespace
@@ -2104,6 +2137,397 @@ Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 	reversed[k.reverse] = true;
 	reversed.erase(k.facing);
 	return reversed;
+}
+
+// Round 33 (N5.Y): _negotiate's body natively while BrainSwitches.native_yield and native_cb are on, the arms the port
+// mirrors are the ones in force (yield_clear's turning-room probe is not ported: opt-in, called back), the measurement
+// logs are off (yield_log, setup_log: rows the GDScript writes), and the sweep asks the same geometry (native_nav: N2a's
+// closest points; kturn_cap: the outline rule).
+template <class V>
+bool Drive<V>::yield_native_on() {
+	return c.yield_port_ready && cb_on && !c.yield_clear && c.traffic_script != nullptr &&
+			(bool)c.switches->get(k.native_yield) && (bool)c.switches->get(k.native_nav) &&
+			(bool)c.switches->get(k.kturn_cap) && !(bool)sget(k.yield_log) && !(bool)sget(k.setup_log);
+}
+
+// Traffic.off(name): asked live, as the GDScript does (a static of traffic's: its command line, parsed once).
+template <class V>
+bool Drive<V>::traffic_off(const String &name) {
+	return c.traffic_script->call(k.off, name);
+}
+
+// Avoidance.radius_of(unit): a pure function of the unit, memoised in DriveConfig (as _avoid's).
+template <class V>
+double Drive<V>::avoid_radius(const String &unit) {
+	const double *known = c.radius_of.getptr(unit);
+	if (known != nullptr) {
+		return *known;
+	}
+	const double radius = c.avoidance_script->call(k.radius_of, unit);
+	c.radius_of.insert(unit, radius);
+	return radius;
+}
+
+// Avoidance.refresh(ctl.tanks_root): a no-op when this tick's table is built; otherwise the live GDScript builds it.
+template <class V>
+void Drive<V>::refresh_avoidance() {
+	Object *tanks_root = ctl->get(k.tanks_root).get_validated_object();
+	Object *av = c.avoidance_script;
+	if ((int64_t)av->get(k._table_root) != (int64_t)tanks_root->get_instance_id() ||
+			(int64_t)av->get(k._table_frame) != Engine_frames()) {
+		gd(av, k.refresh, tanks_root);
+	}
+}
+
+// Movement._negotiate below its early-outs (the caller's `negotiate`: the same reads, nothing written above):
+//   my_way := _travel_direction(goal, direct); i_give_way := false
+//   mover.is_under_way(): difference := _remaining - mover._remaining
+//       i_give_way = difference < -PRIORITY_MARGIN or (|difference| <= PRIORITY_MARGIN and String(tank.name) < name)
+//   mover._last_yielded_to == String(tank.name): i_give_way = true
+//   not i_give_way and mover.ask(me, here, my_way): return
+//   not mover.is_under_way() and not Traffic.off("parked"): parked_refusals += 1; return
+//   _last_yielded_to == name: return
+//   its_way := mover._travel_direction(mover._goal, false) if mover.is_under_way() else ZERO; ZERO: here - other
+//   _begin_yield(name, other.global_position, its_way): return
+//   i_give_way and yield_fit_on() and _yield_unfit_last and mover.ask(me, here, my_way, "swap"):
+//       yield_swaps += 1; hull_box(other)[2] < hull_box(tank)[2]: yield_swaps_shorter += 1
+// The asked mover is driven through its own view of its live members (another Drive over an ObjectView): `ask` marks it
+// native_stale first, as the GDScript does, so its next owned drive pulls what was written.
+template <class V>
+void Drive<V>::negotiate_body(const Vector3 &goal, bool direct, Node3D *other, Object *mover) {
+	static const String arrived("arrived"), asked("asked"), self("self"), swap("swap"), parked("parked");
+	// The callback pushed this crew's state before the GDScript ran (Avoidance.refresh reads every mover's phase): so here.
+	v.push_out();
+	const String me = tank->get_name();
+	const String name = other->get_name();
+	Drive<ObjectView> them(c, mover, ObjectView(mover));
+	them.cb_on = cb_on;
+	if (!them.bind()) {
+		return;
+	}
+	const Vector2 my_way = travel_direction(goal, direct);
+	bool i_give_way = false;
+	if (String(them.v.phase()) != arrived) {
+		const double difference = (double)v._remaining() - (double)them.v._remaining();
+		i_give_way = difference < -c.PRIORITY_MARGIN || (std::fabs(difference) <= c.PRIORITY_MARGIN && me < name);
+	}
+	if (String(them.v._last_yielded_to()) == me) {
+		i_give_way = true;
+	}
+	if (!i_give_way && them.ask(me, here, my_way, asked)) {
+		return;
+	}
+	if (String(them.v.phase()) == arrived && !traffic_off(parked)) {
+		sadd(k.parked_refusals, 1);
+		return;
+	}
+	if (String(v._last_yielded_to()) == name) {
+		return;
+	}
+	const Vector3 there = other->get_global_position();
+	Vector2 its_way = String(them.v.phase()) != arrived ? them.travel_direction(them.v._goal(), false) : Vector2();
+	if (its_way == Vector2()) {
+		its_way = Vector2((real_t)((double)here.x - (double)there.x), (real_t)((double)here.z - (double)there.z));
+	}
+	if (begin_yield(name, there, its_way, self)) {
+		return;
+	}
+	if (i_give_way && c.yield_fit && v._yield_unfit_last() && them.ask(me, here, my_way, swap)) {
+		sadd(k.yield_swaps, 1);
+		if (hull_length(String(other->get(k.unit_id))) < hull_length(String(tank->get(k.unit_id)))) {
+			sadd(k.yield_swaps_shorter, 1);
+		}
+	}
+}
+
+// Movement._travel_direction(goal, direct)
+template <class V>
+Vector2 Drive<V>::travel_direction(const Vector3 &goal, bool direct) {
+	const PackedVector3Array path = v._path();
+	const int64_t index = v._path_index();
+	const Vector3 toward = index < path.size() && !direct ? path[index] : goal;
+	if (toward == V3_INF) {
+		return Vector2();
+	}
+	const Vector2 flat((real_t)((double)toward.x - (double)here.x), (real_t)((double)toward.z - (double)here.z));
+	return (double)flat.length_squared() > 0.0001 ? flat.normalized() : Vector2();
+}
+
+// Movement.on_fire_post(): deploy_ratio > 0, a weapon order that is not hold_fire, and no move of its own under way.
+template <class V>
+bool Drive<V>::on_fire_post() {
+	static const String type("type"), hold_fire("hold_fire"), move_to("move_to"), arrived("arrived");
+	if (!((double)tank->get(k.deploy_ratio) > 0.0)) {
+		return false;
+	}
+	const Dictionary weapon = ctl->get(k.weapon_order);
+	if (String(weapon.get(type, String())) == hold_fire) {
+		return false;
+	}
+	const Dictionary move = ctl->get(k.move_order);
+	return String(move.get(type, String())) != move_to || String(v.phase()) == arrived;
+}
+
+// Movement.ask(asker, from, direction, via): native_stale |= STALE_ALL; already giving way, or the same asker as last
+// time: false; set up on a fire post (not --traffic-off=setup): setup_refusals += 1, false; _begin_yield, else
+// asks_refused += 1.
+template <class V>
+bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &direction, const String &via) {
+	static const String setup("setup");
+	v.set_native_stale(v.native_stale() | 1); // Movement.STALE_ALL
+	if (!String(v.yield_to()).is_empty() || asker == String(v._last_yielded_to())) {
+		return false;
+	}
+	if (on_fire_post() && !traffic_off(setup)) {
+		sadd(k.setup_refusals, 1);
+		return false;
+	}
+	if (begin_yield(asker, from, direction, via)) {
+		return true;
+	}
+	sadd(k.asks_refused, 1);
+	return false;
+}
+
+namespace {
+inline double distance_to_ray(const Vector3 &point, const Vector3 &origin, const Vector2 &direction) {
+	// Movement._distance_to_ray: the offset narrowed, t = max(offset . direction, 0), |offset - direction * t|.
+	const Vector2 offset((real_t)((double)point.x - (double)origin.x), (real_t)((double)point.z - (double)origin.z));
+	const double t = MAX((double)offset.dot(direction), 0.0);
+	return (offset - direction * (real_t)t).length();
+}
+
+inline String spot_label(const char *kind, int64_t a, int64_t b) {
+	return String(kind) + "(" + String::num_int64(a) + "," + String::num_int64(b) + ")";
+}
+} // namespace
+
+// Movement._begin_yield(other, from, direction, via), line by line (`_off.has("backup")` is never true here: the native
+// drive runs only with no --nav-off).
+template <class V>
+bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vector2 &direction, const String &via) {
+	static const String hold("hold");
+	Vector2 along;
+	if ((double)direction.length_squared() > 0.0001) {
+		along = direction.normalized();
+	} else {
+		along = Vector2((real_t)((double)here.x - (double)from.x), (real_t)((double)here.z - (double)from.z)).normalized();
+	}
+	if (along == Vector2()) {
+		return false;
+	}
+	const Vector2 across(-along.y, along.x);
+	v.set__yield_unfit_last(false);
+	Vector3 short_best = V3_INF;
+	Vector3 short_target = V3_INF;
+	String short_label;
+	const Vector2 from_me((real_t)((double)here.x - (double)from.x), (real_t)((double)here.z - (double)from.z));
+	const double side = (double)across.dot(from_me) >= 0.0 ? 1.0 : -1.0;
+	Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	Node *other_tank = root != nullptr ? root->get_node_or_null(NodePath(other)) : nullptr;
+	if (other_tank != nullptr && Object::cast_to<Object>(other_tank)->get(k.unit_id).get_type() != Variant::STRING) {
+		other_tank = nullptr; // `as Tank`: not a hull
+	}
+	const double other_radius = other_tank != nullptr ? avoid_radius(String(other_tank->get(k.unit_id))) : 1.8;
+	const double line_clear = avoid_radius(String(tank->get(k.unit_id))) + other_radius + c.YIELD_LINE_MARGIN;
+	refresh_avoidance();
+	(void)via; // the yield log's (measurement; off here)
+	const String me = tank->get_name();
+	const double from_here = flat_distance(here, from);
+	for (int64_t s = 0; s < c.YIELD_SPOTS.size(); s++) {
+		const Vector2 spot = c.YIELD_SPOTS[s];
+		const double flips[2] = { side, -side };
+		const int n_flips = (double)spot.y != 0.0 ? 2 : 1;
+		for (int f = 0; f < n_flips; f++) {
+			const double flip = flips[f];
+			const Vector2 offset = along * spot.x + across * (real_t)((double)spot.y * flip);
+			const Vector3 point((real_t)((double)here.x + (double)offset.x), 0, (real_t)((double)here.z + (double)offset.y));
+			if ((double)spot.y != 0.0 && distance_to_ray(point, from, along) < line_clear) {
+				continue;
+			}
+			if (flat_distance(point, from) < from_here) {
+				continue;
+			}
+			if (wheel_radius() > 0.0 && !ahead_of_wheels(point, wheel_radius()) && !straight_behind(point)) {
+				continue;
+			}
+			if (!free_spot(point, me, other)) {
+				continue;
+			}
+			const String label = spot_label("spot", (int64_t)(double)spot.x, (int64_t)((double)spot.y * flip));
+			if (!yield_fits(point)) {
+				const Vector3 shorter = c.yield_short ? yield_shorten(point) : V3_INF;
+				if (shorter != V3_INF && (short_best == V3_INF || flat_distance(shorter, here) > flat_distance(short_best, here)) &&
+						((double)spot.y == 0.0 || distance_to_ray(shorter, from, along) >= line_clear) &&
+						flat_distance(shorter, from) >= from_here && free_spot(shorter, me, other)) {
+					short_best = shorter;
+					short_target = point;
+					short_label = String("short:") + label;
+				}
+				continue;
+			}
+			start_yield(other, point, along, label);
+			return true;
+		}
+	}
+	// Last resort: back straight up along my own hull, as long as that isn't toward the unit being let past.
+	const Vector2 back = Vector2(basis_z.x, basis_z.z).normalized();
+	for (int64_t i = 0; i < c.YIELD_BACK_UP.size(); i++) {
+		const double distance = c.YIELD_BACK_UP[i];
+		const Vector3 point((real_t)((double)here.x + (double)back.x * distance), 0,
+				(real_t)((double)here.z + (double)back.y * distance));
+		if (flat_distance(point, from) < from_here) {
+			continue;
+		}
+		if (!free_spot(point, me, other)) {
+			continue;
+		}
+		const String label = String("back(") + String::num_int64((int64_t)distance) + ")";
+		if (yield_fits(point)) {
+			start_yield(other, point, along, label);
+			return true;
+		}
+		const Vector3 shorter = c.yield_short ? yield_shorten(point) : V3_INF;
+		if (shorter != V3_INF && (short_best == V3_INF || flat_distance(shorter, here) > flat_distance(short_best, here)) &&
+				flat_distance(shorter, from) >= from_here && free_spot(shorter, me, other)) {
+			short_best = shorter;
+			short_target = point;
+			short_label = String("short:") + label;
+		}
+	}
+	if (short_best != V3_INF) {
+		sadd(k.yield_spots_shortened, 1);
+		start_yield(other, short_target, along, short_label);
+		v.set__yield_stop_m(flat_distance(short_best, here));
+		return true;
+	}
+	if (v._yield_unfit_last() && c.yield_fit && c.yield_hold) {
+		sadd(k.yield_holds, 1);
+		start_yield(other, here, along, hold);
+		return true;
+	}
+	return false;
+}
+
+// Movement._start_yield (yield_log off: the gate)
+template <class V>
+void Drive<V>::start_yield(const String &other, const Vector3 &point, const Vector2 &along, const String &spot) {
+	static const String yielding("yielding");
+	v.set_yield_to(other);
+	v.set_yield_spot(spot);
+	v.set__yield_point(point);
+	v.set__yield_from(here);
+	v.set__yield_stop_m(0.0);
+	v.set__yield_dir(along);
+	v.set__yield_left((int64_t)(c.YIELD_MAX_SECONDS * (double)c.TICK_RATE));
+	v.set__yield_held(0);
+	v.set_phase(yielding);
+	v.set_blocked_by(other);
+	sadd(k.yields_started, 1);
+}
+
+// Movement._free_spot(point, me, other) (yield_clear off: the gate)
+template <class V>
+bool Drive<V>::free_spot(const Vector3 &point, const String &me, const String &other) {
+	if (pathing_ready()) {
+		const Vector3 on_mesh = closest_point(tank->get_world_3d()->get_navigation_map(), point, k.yield_site);
+		if (flat_distance(on_mesh, point) > c.YIELD_MESH_SLACK) {
+			return false;
+		}
+	}
+	const Array rows = gd(c.avoidance_script, k.neighbours, me, (double)point.x, (double)point.z);
+	for (int64_t i = 0; i < rows.size(); i++) {
+		const Array row = rows[i];
+		if (String(row[1]) != other && std::sqrt((double)row[0]) < c.YIELD_SPOT_CLEARANCE) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// Movement._yield_fits(point) (yield_log off: the gate)
+template <class V>
+bool Drive<V>::yield_fits(const Vector3 &point) {
+	if (!c.yield_fit || !pathing_ready()) {
+		return true;
+	}
+	LocalVector<Vector3> poses;
+	if (yield_run_ok(tank->get_world_3d()->get_navigation_map(), point, poses)) {
+		return true;
+	}
+	sadd(k.yield_spots_unfit, 1);
+	v.set__yield_unfit_last(true);
+	return false;
+}
+
+// Movement._yield_run_ok(map, point, poses): the drive right_of_way() makes to `point`, stepped, the whole outline swept
+// at every pose (_outline_offs / _outline_ok: N2a's points, the kturn_cap rule, as N5.M's simulation).
+template <class V>
+bool Drive<V>::yield_run_ok(const RID &map, const Vector3 &point, LocalVector<Vector3> &poses) {
+	const String unit = tank->get(k.unit_id);
+	const double half_w = hull_width_of(unit) * 0.5;
+	const double half_l = hull_length(unit) * 0.5;
+	const double clear = bake_radius() - c.KTURN_MARGIN_M;
+	Vector3 at(here.x, 0, here.z);
+	Vector3 heading = Vector3(-basis_z.x, 0, -basis_z.z).normalized();
+	const PackedFloat32Array start = c.nav->outline_offs(map, half_w, half_l, at, heading);
+	const bool behind = straight_behind(point);
+	const double radius = wheel_radius();
+	const double reach = c.YIELD_REACHED * 0.5;
+	const Vector3 target(point.x, 0, point.z);
+	const int64_t steps = c.YIELD_FIT_MIN_STEPS + (int64_t)((double)at.distance_to(target) * (double)c.YIELD_FIT_STEPS_PER_M);
+	double rolling = 0.0;
+	for (int64_t i = 0; i < steps; i++) {
+		if ((double)Vector2((real_t)((double)target.x - (double)at.x), (real_t)((double)target.z - (double)at.z)).length() <= reach) {
+			return true;
+		}
+		Vector2 drive;
+		if (radius > 0.0) {
+			drive = wheels(c, at, heading, target, reach, radius, rolling, -1.0, behind ? -1.0 : 1.0);
+		} else {
+			drive = drive_toward(c, at, heading, target, reach, -1.0, behind);
+		}
+		if (drive == Vector2()) {
+			return true;
+		}
+		const double gear = (double)drive.x > 0.0 ? 1.0 : ((double)drive.x < 0.0 ? -1.0 : 0.0);
+		if (gear == 0.0) {
+			const double turn_sign = (double)drive.y > 0.0 ? 1.0 : ((double)drive.y < 0.0 ? -1.0 : 0.0);
+			heading = heading.rotated(Vector3(0, 1, 0), (real_t)(-turn_sign * deg_to_rad(c.YIELD_FIT_PIVOT_DEG)));
+		} else {
+			const double yaw = radius > 0.0 ? c.YIELD_FIT_STEP_M * (double)drive.y / radius
+											: (double)drive.y * deg_to_rad(c.YIELD_FIT_PIVOT_DEG);
+			heading = motion_turn_heading(heading, yaw);
+			at += heading * (real_t)c.YIELD_FIT_STEP_M * (real_t)gear;
+		}
+		rolling = gear;
+		if (!c.nav->outline_ok(map, half_w, half_l, clear, at, heading, start, Vector3(), Vector3())) {
+			return false;
+		}
+		poses.push_back(at);
+	}
+	return false;
+}
+
+// Movement._yield_shorten(point)
+template <class V>
+Vector3 Drive<V>::yield_shorten(const Vector3 &point) {
+	if (!pathing_ready()) {
+		return V3_INF;
+	}
+	LocalVector<Vector3> poses;
+	yield_run_ok(tank->get_world_3d()->get_navigation_map(), point, poses);
+	if (poses.is_empty()) {
+		return V3_INF;
+	}
+	const double furthest = flat_distance(poses[poses.size() - 1], here);
+	for (int64_t i = (int64_t)poses.size() - 1; i >= 0; i--) {
+		const Vector3 pose = poses[i];
+		if (flat_distance(pose, here) <= furthest - c.YIELD_SHORT_MARGIN_M) {
+			return flat_distance(pose, here) >= c.YIELD_SHORT_MIN_M ? pose : V3_INF;
+		}
+	}
+	return V3_INF;
 }
 
 // Round 33 (N5.M): the decision natively while BrainSwitches.native_manoeuvre and native_cb are on and the GDScript arm
@@ -2840,9 +3264,12 @@ Dictionary drive_owned_counts(bool reset) {
 	out["start_pull_usec"] = owned_counts_.start_pull_usec;
 	out["manoeuvre_native"] = manoeuvre_counts_.native;
 	out["manoeuvre_called_back"] = manoeuvre_counts_.called_back;
+	out["negotiate_native"] = negotiate_counts_.native;
+	out["negotiate_called_back"] = negotiate_counts_.called_back;
 	if (reset) {
 		owned_counts_ = OwnedCounts();
 		manoeuvre_counts_ = ManoeuvreCounts();
+		negotiate_counts_ = NegotiateCounts();
 	}
 	return out;
 }

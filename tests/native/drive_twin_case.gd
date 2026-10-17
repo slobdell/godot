@@ -22,6 +22,13 @@ const FRAMES := 180
 var man_native := 0
 var man_called_back := 0
 var man_tally := {}
+## Round 33 (N5.Y): `_negotiate` bodies in the COMPARED native arm, run natively and called back, and what they did
+## (Movement's give-way counters and the spot kinds taken, read from the native arm's capture).
+var yield_native := 0
+var yield_called_back := 0
+var yield_tally := {}
+const YIELD_COUNTERS: Array[String] = ["yields_started", "asks_refused", "setup_refusals", "parked_refusals",
+		"yield_swaps", "yield_swaps_shorter", "yield_spots_unfit", "yield_spots_shortened", "yield_holds"]
 ## `_compare_tick`'s clocks (measurement): microseconds in the live GDScript drive and the native drive, and drives.
 var tick_live_usec := 0
 var tick_native_usec := 0
@@ -45,9 +52,45 @@ func _man_check(stage: String, floors := {"": 1}) -> void:
 		assert_true(have >= int(floors[key]), "%s: %s %d >= %d" % [stage, key if key != "" else "decisions", have, floors[key]])
 
 
+func _yield_reset() -> void:
+	yield_native = 0
+	yield_called_back = 0
+	yield_tally = {}
+
+
+## Every negotiation in the compared native arm run natively (N5.Y), and floors: "" the bodies, else a tally key.
+func _yield_check(stage: String, floors := {"": 1}) -> void:
+	print("native yield (%s): %d negotiations native, %d called back, %s" % [stage, yield_native, yield_called_back,
+			yield_tally])
+	assert_eq(yield_called_back, 0, "the native drive runs _negotiate's body itself (%s)" % stage)
+	for key: String in floors:
+		var have := yield_native if key == "" else int(yield_tally.get(key, 0))
+		assert_true(have >= int(floors[key]), "%s: %s %d >= %d" % [stage, key if key != "" else "negotiations", have,
+				floors[key]])
+
+
+## Adds the native arm's negotiation counts since `before`, its give-way counter deltas, and the kind of every spot a
+## give-way began at (`start`, `after`: every mover's capture).
+func _yield_add(before: Array, start: Array, after: Array, count: int) -> void:
+	var now := _man_counts()
+	yield_native += now[2] - int(before[2])
+	yield_called_back += now[3] - int(before[3])
+	for name: String in YIELD_COUNTERS:
+		var moved := int(after[0].get("static:" + name, 0)) - int(start[0].get("static:" + name, 0))
+		if moved != 0:
+			yield_tally[name] = int(yield_tally.get(name, 0)) + moved
+	for j in count:
+		var to := String(after[j].get("yield_to", ""))
+		if to != "" and to != String(start[j].get("yield_to", "")):
+			var spot := String(after[j].get("yield_spot", ""))
+			var kind := "spot:" + spot.get_slice("(", 0)
+			yield_tally[kind] = int(yield_tally.get(kind, 0)) + 1
+
+
 func _man_counts() -> Array:
 	var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
-	return [int(c.get("manoeuvre_native", 0)), int(c.get("manoeuvre_called_back", 0))]
+	return [int(c.get("manoeuvre_native", 0)), int(c.get("manoeuvre_called_back", 0)), int(c.get("negotiate_native", 0)),
+			int(c.get("negotiate_called_back", 0))]
 
 
 ## Adds the native arm's decision counts since `before` and its plan / refusal deltas (`start`, `after`: one mover's capture).
@@ -106,12 +149,14 @@ func _order(rng: RandomNumberGenerator, wheeled: bool) -> Dictionary:
 
 
 ## Drive every driving mover both ways from one snapshot of all of them; returns [drives, mismatches, first].
-func _compare_tick(movers: Array[Movement], controllers: Array[OrderController], frame: int) -> Array:
+func _compare_tick(movers: Array[Movement], controllers: Array[OrderController], frame: int, only := -1) -> Array:
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var drives := 0
 	var mismatches := 0
 	var first := ""
 	for i in movers.size():
+		if only >= 0 and i != only:
+			continue  # round 33 (N5.Y): one mover's drive only
 		var mover := movers[i]
 		var order: Dictionary = controllers[i].move_order
 		if String(order.get("type", "")) != "move_to" or not mover.ctl.tank.is_alive():
@@ -132,6 +177,7 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 		tick_native_usec += Time.get_ticks_usec() - t0
 		var native := _capture_all(movers)
 		_man_add(man_before, start[i], native[i])
+		_yield_add(man_before, start, native, movers.size())
 		_restore_all(movers, start)
 		drives += 1
 		var differ := ""
