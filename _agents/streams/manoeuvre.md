@@ -106,6 +106,33 @@ orchestrator ruled it R33.3 and will name the hash when it merges. No guard in `
 planner owns HOW only while `PlannerSeam.take()` holds the hull (rigs ≥ 10 m). CP-F's at-rest face goes through
 `face_turn`, so the seam may take it.
 
+### F1: what attempt 2's attack-move line was (tuning, not judged; 2026-10-17)
+
+builder0, code = main `ae3dad71` (census coordinates added for the second table), GDScript (`M1_GD=1`), drawn
+faced_attack_move, seeds **40–45** (tuning; the judged seeds will be fresh), one arm per call.
+
+| reading | base | turnhull ON |
+|---|---|---|
+| crews still moving at the judge, 4 factions (n 24 runs an arm) | 27 | 44 (wheels/turret 22 v 39) |
+| of which gangs (n 6 / 5 runs: turnhull's gangs s45 wrote no row) | 22 | 36 |
+| wheels/turret median hull error, gangs runs | 42–76° | 4–6° (s41 114°) |
+| moves re-sent to a crew that had faced, 4 factions | 43 | 129 |
+| gangs re-run with coordinates (n 6 an arm): moving / re-sends | 25 / 15 | 39 / 155 |
+| ...re-sends whose SEAT moved > 2 m | 10 | 106 (median 10.0 m) |
+| ...the hull's drift during its face, median | 7.1 m | 1.8 m |
+
+**Reading:** the turn keeps the hull where it stood (facekeep works); what keeps the crews moving is that their SEATS
+move after they have faced, several crews of one squad on the same frame (Battery: 4 crews 15–49 m at once, repeatedly).
+**Candidate mechanism (being traced):** a faced attack-move lays its seats by the drawn facing only while
+`center.distance_to(destination) <= ARRIVE_M` (12 m, `element_plan.gd` ~289, no hysteresis); the members' face legs
+move the centre, and if it crosses 12 m every seat switches between the arrival shape and the travelling one. The
+orchestrator's alternative (R32.3 (c), the averaged-heading halt) needs no drawn facing, which this task has.
+
+**Native (2026-10-17):** N5.M (stream/native `145ada3a`) ports `_manoeuvre`'s decision: C26.2 now covers
+`Manoeuvre.choose / behind / simulate / _others / _hull_hit / _note`, `TankMotion.state_of`, `_outline_offs` and the
+constants MAX_M, BEHIND_DEG, FACING_KEEP_DEG, SIM_*, CHECK_EVERY, HULL_MARGIN_M, REAIM_TICKS, KTURN_MARGIN_M,
+CUSP_DEADBAND (values are handed over live). `plan_face` / `face_turn` / facekeep stay GDScript.
+
 ### Plan (ordered)
 
 1. F0 trace (done above).
