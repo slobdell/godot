@@ -244,6 +244,19 @@ not traced, a filming quirk, not CP-F). Headless on the same commit and flags (n
 seed 8's first Guns squad, told 5/5, hulls **82-151 deg BEFORE v 1-8 deg AFTER**; seeds 3, 11, 13 agree on every squad
 that arrives (before: most crews 100-180 deg off; after: most under 10, a few 105-149 off).
 
+### CP-F judged series: the plan (2026-10-17; starts when the orchestrator says main's check has read)
+
+Tree: **pair/cpf-on `b6c2a974`** = 887ac6d2 + main e420b524 (R33.9 merged as 9396e795): `merge_check_needed.sh` INHERIT
+from 887ac6d2's green check (docs only). The (r) clip commits are left out (default runs byte-unchanged; they ride the
+ship merge's own check). One builder0 call at a time, one arm a call, in this order. Fights FIRST, because R33.6 is
+unmerged (n).
+GDScript arms through `manoeuvre-cph` / `manoeuvre-hull-rest M1_GD=1`: NEW = the tree's default (switch ON), BASE =
+`--nav-off=turnhull` (flips it OFF). Fights 470-493 (i), hull-rest 440-445 drawn and clicked (a)-(f) and (j), Terminus
+census 450-462 (g), SBF gang_ifv 500-505 (l), bridge-pooled 18 cells (h). **(m), native path:** hull-rest drawn
+440-445 run flagless on pair/cpf-on (NEW) v **pair/cpf-off `e5b767da`** (= b6c2a974 with TURN_HULL_DEFAULT false, BASE),
+agreeing in sign with the GDScript series on (a) and (d). (k) gangs s66 faced_move x3 on the light lane, REPORTED.
+Driver: a scratchpad script; the per-arm data is filed under references/round33/manoeuvre/cpf-series/ when read.
+
 ### Plan (ordered)
 
 1. F0 trace (done above).
