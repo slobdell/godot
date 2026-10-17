@@ -27,6 +27,38 @@ worktrees start fresh; `origin` holds old `stream/*` branches, so workers don't 
 ports, and brains' seam only if traffic picks an element make-room; traffic's T4 circle trace → brains' v6; planner P3 and
 manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars (round 33)* before its numbers.
 
+**Merges (round 33):**
+- **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
+  JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
+  whose planned turn was cut off by a new order can back out when stuck again (it was frozen out of unstick all match).
+  **Its size, shown by removal (planner, laptop, R33.13):** turn requests abandoned 21.3 % without it v 1.2 % with it (FIFO,
+  gangs hull-rest, 18 runs an arm, p 6e-34): the problem CP-Q was built for is solved by R33.3.
+
+- **R1 → main `07b8e99a`** (brains `2fd9f420`, covered by lab/brains-r339 `429ebc4b`'s check per R33.10: builder0 `make check
+  exited 0`, 2731/0, sim-baseline 13 unmoved, determinism passed). What he'd notice: a respawning vehicle never appears inside
+  one standing at its slot. **Main `07b8e99a` = R33.3 + R1, each checked alone, not together** (disjoint files:
+  `planner_seam.gd` v `match.gd`): ONE main check after the next batch (N5.M, R33.9 if it passes), per R33.10's load rules.
+
+- **R33.9 → main `9396e795`** (brains `429ebc4b`: builder0 `make check exited 0`, 2731/0, sim-baseline 13 unmoved; bar passed
+  on 97ec141f = 429ebc4b + 14 lines of measurement, kept in lab/brains-r339). Gangs s40 Battery arrive-flips 0 v 39, re-seats
+  6 v 302; arrivals unchanged (all within 8 m 93 v 93 of 100). What he'd notice: a gang squad that has reached its spot stops
+  shuffling seats. **Main check of R33.3 + R1 + R33.9 together: GREEN** (main `9396e795`, builder0 `make check exited 0`, 2732/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved).
+
+- **N5.M → main `199d1587`** (native `c70be402`; R33.15). `_manoeuvre`'s decision runs in C++, default ON. Check on
+  `025d5631`: builder0 exited 0, 2727/0, ALL JUDGED, sim-baseline unmoved. NATIVE=off: tests 2727/0, sim-baseline unmoved,
+  perf-judge 1.47x over budget (main's own all-GDScript path; known). native-proof EQUAL. What he'd notice: nothing, the same
+  game, decided in C++. **Main check of 199d1587 running** (`build/r33-main-check-199d1587.log`).
+
+**Parked (round 33):**
+- **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
+  failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
+  7.0 with the front), and the ghost arm was steady at 12.5, but it failed as filed. Terminus was not re-judged. Round 34
+  needs an order-free body stage first.
+- **parkedroom (traffic X3) PARKED, R33.12** (builder0, tree `d90fbdb7`, n 72 paired: L1 parked far loops 22 → 25 FAIL, L6
+  only 10 % return to the post FAIL). The targeted "gave way in place, then refused" loops went 11 → 0. A crew paused between
+  orders is treated as parked, makes room, and then drifts about 19 m. Stays DEFAULT_OFF. A v2 (rule only for a crew AT a
+  post) needs a fresh bar on fresh fights, and comes after T4 and islands.
+
 **To launch (the lead):** the five worktrees are created. In each folder start a CLI on Opus with the kickoff prompt from
 `_agents/orchestration.md` *The kickoff prompt* (the same text for every stream), then the orchestrator runs the loop prompt
 from *The orchestrator's loop* with N = 33.
