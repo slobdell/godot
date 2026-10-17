@@ -226,6 +226,10 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   29 s (OFF: pinned 23–52 s, 4 far loops); scout back on post ~33 s. 51 room give-ways in that fight (both sides). **Added
   before numbers (orchestrator), REPORTED only:** room give-ways per fight ON v all give-ways OFF, median and worst, in L1's
   fights; a clip of the busiest neck ON for him if it ships (does it look like milling).
+  **Series tree and an L3 amendment (traffic, before numbers):** stream/traffic `23cad95c` = pair tree `cf17abd6`'s game code
+  exactly (DEFAULT_OFF = ["parkedroom"]: base default, arm `--traffic-on=parkedroom`) + measurement-only changes
+  (`tests/traffic/**`, `mk/traffic.mk`); its check is `cf17abd6`'s. L3 reads kills / deaths / hit rate from L1's own
+  random-arena fights 700–723 (the manoeuvre-fights command line) instead of a second stage. Accepted.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
