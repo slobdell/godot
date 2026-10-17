@@ -135,6 +135,11 @@ decisions native, 0 mismatches. Price (same run, load ~18, n 1): a decision tick
 `145ada3a` found 4 War Rig goals and 6 Lancer goals among 1604 that reverse clear but don't arrive. The stage asks the
 War Rig's four. builder0 light: 940 decisions native, 0 mismatches both views, `refused:no_arrival` 4, floor 1.
 Re-verification of `1a1182bb`: `T=check`, then `T="check NATIVE=off"`, then `native-proof`, running.
+**Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
+its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
+wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:
+`make remote T="check NATIVE=off"` (T is word-split into the arguments) and `tools/remote.sh check NATIVE=off`
+(`"$@"` reaches the remote make). Check the `>> remote: make … on` line names the variable.
 **CP-F pair (manoeuvre `136c3828`), assessed: NO C++ CHANGE.** `_order_move`'s decline is not in C++; N5.M reads none of
 `TURN_HULL_DEFAULT`, `_keep_slot` / `_keep_m` or facekeep, and the diff touches none of the mirrored functions; no new
 Movement members (exec rows unaffected). `turret_carries_aim` is wheels + turret only, so every `drawn_face` order is a
