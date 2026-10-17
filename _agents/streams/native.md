@@ -76,7 +76,7 @@ FILTER=native_face_behind`, n 1: `exited 0`, 2 passed / 0 failed; tank 142 nativ
 (`drive_native.cpp:280` `seam_live()`: reads `_crews`, calls `live()` back only for a freed hull; gates the native unstick
 ~1449 and the `_planned_reverse` open ~2211; `manoeuvring()` is not ported). A release from `_crews` where the cutting
 order lands needs no mirror (recommended to planner); a check inside `live()` needs one in `seam_live()`. Sent to the
-orchestrator and planner; confirm with the twins on planner's commit. **Orchestrator (main `00ebe1af`, R33.3 amended):**
+orchestrator and planner; confirm with the twins on planner's commit. **Orchestrator (main `b80fb7a0`, R33.3 amended):**
 planner releases the stale crew from `_crews` where the order is replaced, `live()` stays a lookup, no C++ change expected;
 native confirms with the k-turn / execute twins on planner's pair tree when it names the hash.
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
