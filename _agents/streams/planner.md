@@ -73,7 +73,7 @@ inherits `0c124cf7`'s green check: no baseline check run; Opus). Every number bu
 | **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **FIXED, check RUNNING** on `fix/planner-live-stale` `03d1a50c` (main `86975667` + 1 commit; cherry-picked here as `48a694b0`). Native APPROVED, no C++ change | `test_planner_seam_stale`: red without (laptop: still live 2 s after `stop`), green with (released 2 ticks after) |
 | **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, `make remote exited 0`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
 | **P2** CP-Q re-judged | bar SENT to the orchestrator (below), before any number; the pair tree waits on R33.3's check | — |
-| **P3** open-ground face-behind | candidate BUILT, OFF (`3feacd6d`): a FACE request's search weight (`--planner-face-epsilon`, default 0 = today's bits) + the `--planner-face-shadow` measurement | laptop, GDScript search: the same 5-leg 17.5 s plan at 124 expansions at 2.0 (189 at 1.5 > the 180 hold) |
+| **P3** open-ground face-behind | candidate = the **FACE KEEP circle** (`--planner-face-keep=1`, OFF, `45390507`); bar SENT before numbers (below). The weight (ε 2.0) is DROPPED: it serves the wrong plan | builder0 light `7ff19c2f`: ε 2.0 serves the face-behind 25.3 m off its spot; keep 1 (laptop stage): served, aligned 9.8 s, drift 1.0 m v today 15.4 s / 1.5 m |
 
 **R33.3, the orchestrator's three questions (evidence from the code at `03d1a50c`):**
 1. **"Asked about"** = `PlannerSeam.take()` or `hold()` reached for that hull: `_serve` writes `crew.tick_seen` and nothing
@@ -139,6 +139,26 @@ A/A's figure in brackets is what n was sized on). No tuning on these seeds; this
 5. **(deterministic cell) s207 stage:** under `shared`, Green_S0_4 pinned on Block_7 0 ticks (`make planner-stage-s207`).
 6. **C31.1:** the whole suite on the pair tree, green.
 Pass = every line. Partial (1)-(2) pass, a guard fails: PARKED with the worst pair's trace (lesson 302), not tuned.
+
+### P3: the finding, the census, the bar
+
+**Finding.** The face-behind's 189-expansion plan is the WRONG plan: F-1x24 R-1x15 F-1x4 F+0x17 F+1x5.5 (17.5 s) swings
+the rig 25.3 m off its spot (served at ε 2.0 on builder0 light `7ff19c2f`; round 32's NATIVE=off failure). With every
+pose kept within one hull length (14 m) of home the lattice finds F-1x12 R-1x12 F-1x12.5, a three-point turn, **11.7 s,
+4 expansions**: cheaper, so the search MISSED it unconstrained (the heuristic overestimates near a turn in place and the
+anytime stop ends first). The keep circle is a request field native already reads: no C++ change, the per-tick price
+is the slice on every preset (laptop and desktop alike).
+**Census** (`make planner-face-shadow`, builder0 light, hull-rest gangs drawn, seeds 66-71 = diagnosis, never judged):
+run 1 `9259321d` 31 face searches, 24 under the slot law's END circle, furthest from home max 19.7 m; run 2 `a6368824`
+58 searches: today max 29.0 m, **kept (s1.0) max 14.2 m**, median 4.7 v 4.4, the same cost on all 21 both found, inside
+the hold 20 v 20. ε 2.0 / 3.0: +1 inside the hold, max 29.8 / 30.4 m. Run-to-run the count of face searches swings 31 v
+58 (hull-rest is not deterministic).
+**Bar (sent ~09:55 PDT, before numbers):** tree = main after R33.3 + P3 with FACE_KEEP_DEFAULT 1, whole suite first.
+(1) deterministic cell, the face-behind stage NATIVE on and off: served, abandoned 0, drift <= 8 m, aligned no later
+than today's, legs <= 3; (2) hull-rest gangs FRESH 84-95, drawn + clicked, n 72 paired a mode: (2a) P2's pooled guards;
+(2b) face asks abandoned not up beyond 1.645 se; (2c) DRIFT: served face plans' furthest-from-home (`face_far`),
+candidate median <= base + 1.645 se (bootstrap) and p90 <= base p90, max reported; (3) Terminus rigs FRESH 231-243:
+arrivals not down beyond 1.645 se. Early stop OFF. After P2 (R33.10).
 
 ### Plan (ordered)
 
