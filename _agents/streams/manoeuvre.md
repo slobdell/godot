@@ -79,7 +79,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 | F0 the missing face step | **DONE: not a main bug** (no fix commit). A real main bug found on the way, in planner's file: stale `PlannerSeam.live()` (sent to planner + orchestrator) |
 | F1 CP-F | IN PROGRESS: traced (attack-move's movers = element `arrived` limit cycle on main, brokered as R33.9 to brains); drawn_face fix + test committed 136c3828; bar filed with (m)-(o). pair tree 887ac6d2 GREEN (C31.1: builder0 2735/0, sim-baseline unmoved; native twins 0 mismatches). **Waiting on R33.9's verdict** to start the judged series (the day's last heavy builder0 job, R33.10). Planner's stale-live fix merged (main b122cf60) |
 | F2 help B11b | waiting on CP-F |
-| Stretch clip | DONE as far as filming goes (CP-F (r)): `build/manoeuvre/face_clip_s8.mp4` (+ `face_clip.mp4`, seed 5) on the laptop, commit 77348a53; for his eye, not evidence. The War Rigs jam in the windowed run (see below) |
+| Stretch clip | DONE (CP-F (r)): **`build/manoeuvre/face_clip_rigs.mp4`** (War Rigs, squad 1 alone, laptop, commit 8fc224fa) + the IFV clips; for his eye, not evidence |
 
 ### F0: s66 faced_move traced on main (2026-10-17)
 
@@ -211,6 +211,19 @@ light lane, `make native test FILTER=native_drive|native_execute|native_face_beh
 everywhere; War Rig face_behind 928 handed back, tank 142 native / 2 handed back; no C++ change (stations' `drawn` is
 never read natively). The orchestrator: these settle bar line (m). **The series waits for R33.9's verdict:** if it passes,
 the base matches main; if it PARKS, rebuild the pair tree on main without it and the orchestrator rules on (d).
+
+### Stretch: the War Rig clip (laptop flightdeck, commit 8fc224fa, 2026-10-17; for his eye, NOT evidence)
+
+`make manoeuvre-face-clip FACE_CLIP_SEED=8 FACE_CLIP_SQUADS=1` (`--faced-squads`, granted under (r), default 1,2
+unchanged, tested) -> **`build/manoeuvre/face_clip_rigs.mp4`**, 30 s at 2x: squad 1 alone (five War Rigs), his right-drag
+180 deg off the travel. Windowed, n 1 per arm: BEFORE all 5 told, hulls [0, 8, 170, 179, 10] deg off his heading (settled
+37.5 s); **AFTER [0, 7, 6, 1, 4]** (settled 54.5 s). Headless on the laptop preset the same probe ends AFTER [141, 4, 2, 7,
+162] still moving at the 75 s cap: a War Rig's turn behind is slow and n 1 says only that.
+**Corrections to the entry below:** (1) the War Rigs did NOT jam: their MANOEUVRE_STATE rows are never `blocked`, all
+five do 9-12 m/s by ~8 s; the YIELDING/BLOCKED labels on screen are other units at the start. They stop 20-45 m from the
+spot and Guns_4 drives on to ~52 s, so the squad never read `arrived`. (2) `--seed` DOES reach the windowed run; seeds 5
+and 8 are identical because of the LAPTOP render preset (headless `--render-preset=laptop`: identical too; desktop:
+they differ): the capped faction army is the same and nothing in this probe then depends on the seed.
 
 ### Stretch: the face-behind clip (laptop flightdeck, commit 77348a53, 2026-10-17; for his eye, NOT evidence)
 
