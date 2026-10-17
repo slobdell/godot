@@ -134,7 +134,18 @@ decisions native, 0 mismatches. Price (same run, load ~18, n 1): a decision tick
 **no_arrival reached: `1a1182bb`** (cherry-pick of lab `5a0d002e`, test-only). A sweep of Manoeuvre.simulate at
 `145ada3a` found 4 War Rig goals and 6 Lancer goals among 1604 that reverse clear but don't arrive. The stage asks the
 War Rig's four. builder0 light: 940 decisions native, 0 mismatches both views, `refused:no_arrival` 4, floor 1.
-Re-verification of `1a1182bb`: `T=check`, then `T="check NATIVE=off"`, then `native-proof`, running.
+**N5.M GREEN and MERGED: main `199d1587` (= `c70be402`), R33.15 (main `27d34fe0`).** builder0, n 1 each, one heavy
+job, run in sequence:
+- `make check` on `025d5631`: `exited 0`, "26 targets, all passed, ALL JUDGED". Tests 2727 / 0; sim-baseline 13 maps
+  unmoved; determinism `9d66d3a0c59a7936`; native-live-guard 23 taken, 2 held elsewhere.
+- `check NATIVE=off` on `c70be402` (the brief-only diff from `025d5631`): `exited 2`. Tests 2727 / 0; sim-baseline
+  unmoved. FAIL native-live-guard, by construction. FAIL perf-judge, judged on attempt 2: ratio 1.47x, ai 20050
+  usec/tick, load 9.01. The orchestrator ruled that main's own budget for the all-GDScript AI, not N5.M's (the off path
+  changes only under NativeBridge.counting).
+- `native-proof` on `c70be402`: `exited 0`, EQUAL `10c328a0f978ea49`.
+Round close, if builder0 is free: file one `NATIVE=off` perf-judge reading on main as a known item.
+**R33.12 (main `402b3803`):** parkedroom is parked and stays DEFAULT_OFF, so the ask / `_begin_yield` port is
+RELEASED. It is ported from main's body after R4's twins, with twins at 0.
 **Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
 its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
 wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:

@@ -868,6 +868,10 @@ once per goal).
 **Proof as built (lab `536f773c`, builder0 light):** `test_native_manoeuvre` (new; five hulls on yard_open sent astern
 at rest and rolling, the decision twinned on its tick, live and owned): 920 decisions native, 0 called back, 0
 mismatches; plans route 613 / reverse 307; refusals facing_nose 225, static 84, route_faster 66, friendly 6, enemy 2
-(a parked Rust hull). Not reached: `no_arrival`. The drive twins: 165 / 179 decisions native, 0 called back, 0
+(a parked Rust hull). `no_arrival` is reached from `1a1182bb`: a sweep of Manoeuvre.simulate found 4 War Rig and 6 Lancer
+goals, of 1604 astern, that reverse clear but do not arrive inside SIM_HORIZON_S. The stage asks the War Rig's four:
+940 decisions, 0 mismatches both views, `refused:no_arrival` 4 (floor 1). The live guard counts the decision as
+`taken["manoeuvre"]` from the drive's own count (`607fca1a`); in the tick profile's 20-a-side foundry match it took 227,
+none called back. Merged as main `199d1587` (R33.15). The drive twins: 165 / 179 decisions native, 0 called back, 0
 mismatches (route only: the Sumps refuses its reverses). The k-turn fight compares none (an order lands before the fight's
 own drive decides it), so it asks no floor.
