@@ -215,6 +215,8 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   a post, and its bar is filed fresh before any number: new fights (not 700–723), L1 on hold-post far loops plus all
   parked far loops not up, L6 kept. Narrowing L1 after seeing these numbers counts only on fresh seeds. The random-705
   fire-post loop (20 loops, one fight) is REPORTED to the round's close as a separate problem; no stream owns it this round.
+  What he'd notice ON (traffic, same tree): crews shuffle aside about 42 extra times a fight (median; worst 111). They are
+  crews paused between orders that never needed to move, so a busy neck could look like milling. The fights look the same.
 
 **Bars (round 33):** filed here before any number.
 
