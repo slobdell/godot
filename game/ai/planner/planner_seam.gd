@@ -85,6 +85,19 @@ const SLICE_FLAG := "planner-slice"
 const QUEUE_FLAG := "planner-queue"
 const QUEUE_DEFAULT := false
 const QUANTUM := 20                # expansions a search runs before the next begun crew's turn (10 ticks at SLICE 2)
+## Round 33 (P3, C33.6 (c): the War Rig's open-ground face-behind is never served: its first plan lands at expansion 189,
+## past the hold's 180, so the seam abandons it and today's face executor turns the rig). A FACE's search weight: the
+## same 5-leg plan (17.5 s) lands at 124 expansions at epsilon 2.0 (offline, yard_open, the GDScript search). The
+## per-tick price is unchanged on every preset (the slice is the cost; a face only searches less), and the weight
+## rides in the request, so peers agree. `--planner-face-epsilon=X` (X > 0) sets it for a run; 0 = Planner.EPSILON,
+## today's bits. FACE_EPSILON_DEFAULT is what ships (0 until judged).
+const FACE_EPSILON_FLAG := "planner-face-epsilon"
+const FACE_EPSILON_DEFAULT := 0.0
+## Measurement only (`--planner-face-shadow`): at every face search's begin, the same request planned WHOLE (uncapped,
+## separate instance) at each SHADOW_EPSILONS, one PLANNER_FACE_SHADOW line: which ones land inside the hold, and at
+## what cost. Changes nothing the hull does.
+const FACE_SHADOW_FLAG := "planner-face-shadow"
+const SHADOW_EPSILONS: Array[float] = [1.5, 2.0, 3.0]
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
@@ -127,6 +140,9 @@ static var slice_override := 0
 ## The shared queue: -1 unread, 0 off, 1 on (read once a process from QUEUE_FLAG; tests set `queue_override`).
 static var _queue_mode := -1
 static var queue_override := -1
+static var _face_epsilon := -1.0  # read once a process (FACE_EPSILON_FLAG); tests set `face_epsilon_override`
+static var face_epsilon_override := -1.0
+static var _face_shadow := -1
 static var refused_early := 0     # requests answered at the ask (never held, never queued): part of `refused`
 static var _alloc_tick := -1
 static var _alloc := {}           # name -> expansions this tick (the round-robin's hand-out)
@@ -201,6 +217,37 @@ static func _mode() -> int:
 		var text := LaunchFlags.from_environment().text(QUEUE_FLAG)
 		_queue_mode = {"fifo": 0, "shared": 1, "shared-rolling": 2}.get(text, 1 if QUEUE_DEFAULT else 0)
 	return _queue_mode
+
+
+## The search weight a FACE request carries (0 = Planner.EPSILON): FACE_EPSILON_FLAG, read once a process.
+static func face_epsilon() -> float:
+	if face_epsilon_override >= 0.0:
+		return face_epsilon_override
+	if _face_epsilon < 0.0:
+		var text := LaunchFlags.from_environment().text(FACE_EPSILON_FLAG)
+		_face_epsilon = text.to_float() if text.is_valid_float() and text.to_float() > 0.0 else FACE_EPSILON_DEFAULT
+	return _face_epsilon
+
+
+## The shadow (measurement): every face search's request planned whole at SHADOW_EPSILONS, printed.
+static func _shadow_face(crew: Crew, name: String, tick: int) -> void:
+	if _face_shadow < 0:
+		_face_shadow = 1 if LaunchFlags.from_environment().has(FACE_SHADOW_FLAG) else 0
+	if _face_shadow == 0 or crew.kind != "face":
+		return
+	var row := {"tick": tick, "name": name, "cap": EXPANSIONS_PER_HOLD, "keep": crew.req.keep_all_m < INF or crew.req.keep_end_m < INF}
+	for e: float in SHADOW_EPSILONS:
+		var req := crew.req.copy()
+		req.epsilon = e
+		var p := Planner.plan(req)
+		row["e%.1f" % e] = {"code": p.code, "exp": p.expansions, "first": _first_at(p), "cost": snappedf(p.cost_s, 0.01),
+				"legs": p.legs.size(), "plan": p.describe()}
+	print("PLANNER_FACE_SHADOW " + JSON.stringify(row))
+
+
+static func _first_at(p: PackedPlan) -> int:
+	var at := p.why.find("first plan at ")
+	return p.why.substr(at + 14).to_int() if at >= 0 else -1
 
 
 ## The expansions a pending search gets a tick, for this match (SLICE, or SLICE_LAPTOP under the laptop preset).
@@ -408,6 +455,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			var stay := maxf(Movement.settle_radius(tank.unit_id) - 1.0, 1.5)
 			req.to(target.x, target.z, want.x, want.z, stay, FACE_TOL_DEG)
 			req.arrive_gear = 0
+			req.epsilon = face_epsilon()
 			# Round 31 (CP-P1's first judged series, seed 134's plaza: a rig arrived 4.5 m from its slot, the face's one
 			# 3.5 m reverse chord left it 7.4 m out for the rest of the leg): manoeuvre's SLOT LAW, read from its own
 			# names so the two cannot drift. (a) The slot = OrderController.face_slot (the last move_to's goal), only
@@ -503,6 +551,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		# stopping and its search got 92 expansions (builder0 77db86eb, the rolling-face trace: start 8.8 m past the
 		# face's home, stay 5 m, abandoned at 92). The hull's whole hold is pending_ticks; the cap bounds the search.
 		crew.asked_tick = tick
+		_shadow_face(crew, name, tick)
 		Planner.begin_session(crew.req)
 		crew.begun = true
 	crew.stepped += _slice
@@ -550,6 +599,7 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 		crew.stepped = 0
 		crew.quantum = 0
 		crew.asked_tick = tick
+		_shadow_face(crew, name, tick)
 		if crew.session == null:
 			crew.session = Planner.Session.new()
 		crew.session.begin(crew.req)
