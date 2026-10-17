@@ -133,6 +133,12 @@ Tuning only on 40–45 (and s66 for the trace).
 | (j) | counters in the new arm | `hull_turns` > 0 and `hull_holds` > 0 (lesson 300); `face_keep_refused` by unit REPORTED |
 | (k) | the named case hull-rest gangs s66 faced_move Green_Guns_5, 3 runs | REPORTED (B11b's pass case judges on CP-F + B11b) |
 | (l) | SBF gang_ifv drawn 500–505 | REPORTED |
+**FILED on main with the orchestrator's amendments (2026-10-17):** (m) the DEFAULT path: native mirrors whatever CP-F
+reaches in the drive, twins at 0 as a gate, and the arms run on the default (native) path; if only a GDScript series is
+affordable, one hull-rest drawn seed set on the native path must agree with it in sign on (a) and (d). (n) Fights 470–493
+run wholly before R33.6 merges, or with it in both arms. (o) In (b) a lone p < 0.05 in a class CP-F does not touch
+(tracks, hover) is traced before it fails the series and reported either way; wheels (fixed or turret) fail as written.
+Base = the R33.9 main (hash from the orchestrator).
 **Partial:** (a)–(j) are the gate; any miss = parked with the trace. Ships ON as a pair if it holds; brains is told the
 merge hash the day it lands (B11b).
 
