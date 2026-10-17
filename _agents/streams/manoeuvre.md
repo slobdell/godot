@@ -77,7 +77,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 | Item | State |
 |---|---|
 | F0 the missing face step | **DONE: not a main bug** (no fix commit). A real main bug found on the way, in planner's file: stale `PlannerSeam.live()` (sent to planner + orchestrator) |
-| F1 CP-F | IN PROGRESS: tracing attack-move's moving-at-75-s (attempt 2's failed line) |
+| F1 CP-F | IN PROGRESS: traced (attack-move's movers = element `arrived` limit cycle on main, brokered as R33.9 to brains); drawn_face fix + test committed 136c3828; bar filed with (m)-(o). **Waiting on** R33.9's main hash (and planner's stale-live fix 03d1a50c) to build the pair tree; then C31.1 check, then the judged series as the day's LAST heavy builder0 job (R33.10) |
 | F2 help B11b | waiting on CP-F |
 | Stretch clip | not started |
 
@@ -187,6 +187,10 @@ CUSP_DEADBAND (values are handed over live). `plan_face` / `face_turn` / facekee
    contact decline cutting a hull turn mid-plan and the sector face restarting it (churn). Fix under the one switch, test
    first; then the bar to the orchestrator before numbers; C31.1 suite with TURN_HULL_DEFAULT true on the pair tree; the
    judged series on fresh seeds; ship ON as a pair; tell brains the hash.
+   - R33.10 (orchestrator): one heavy builder0 job per stream at a time; priority merge-hash checks > judged series >
+     tuning (light lane or laptop). CP-F's series runs after parkedroom's and R33.9's.
+   - R33.11 (orchestrator, main 54edea83): traffic may edit the setup lines of tests/test_nav_yield_fit.gd's two
+     fixed-set give-way tests (pins parkedroom OFF). Nothing for manoeuvre to do; don't revert those lines.
 3. F2: answer B11b.
 4. Stretch: the War Rig face-behind clip.
 
