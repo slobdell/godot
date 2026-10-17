@@ -158,7 +158,9 @@ the hold 20 v 20. ε 2.0 / 3.0: +1 inside the hold, max 29.8 / 30.4 m. Run-to-ru
 than today's, legs <= 3; (2) hull-rest gangs FRESH 84-95, drawn + clicked, n 72 paired a mode: (2a) P2's pooled guards;
 (2b) face asks abandoned not up beyond 1.645 se; (2c) DRIFT: served face plans' furthest-from-home (`face_far`),
 candidate median <= base + 1.645 se (bootstrap) and p90 <= base p90, max reported; (3) Terminus rigs FRESH 231-243:
-arrivals not down beyond 1.645 se. Early stop OFF. After P2 (R33.10).
+arrivals not down beyond 1.645 se. Early stop OFF. After P2 (R33.10). **Filed on main `8681d2aa`** with the orchestrator's
+amendment (before numbers): both arms run on the queue main has when the series starts (`shared` if P2 shipped, else
+FIFO; the verdict names it), and on a tree with manoeuvre's CP-F if it has merged (else the verdict says which tree).
 
 ### Plan (ordered)
 
