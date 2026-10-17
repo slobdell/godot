@@ -74,7 +74,7 @@ rsyncs the working tree); this Status is committed from a scratch worktree._
 | **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **MERGED** (main `b122cf60` merges `1b5c69df`: builder0 `make check exited 0`, 2725/0, sim-baseline unmoved). **Shown by removal** to be why the FIFO's abandonment fell (R33.13, below) | `test_planner_seam_stale`; laptop removal test |
 | **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
 | **P2** CP-Q re-judged | **FAIL, does not ship (R33.13, main `64d0f952`)**: line (1) fails both modes (the FIFO base is already ~1 % abandoned on main), (2) fails on the Terminus rigs, (3a) drawn fails. Pair tree `c75f20a6` (main `624cc957` + QUEUE_DEFAULT true), its whole suite green (builder0 exited 0, 2725/0) | P2's verdict below |
-| **P3** open-ground face-behind | candidate = the **FACE KEEP circle**, bar filed (main `8681d2aa` + amendment). Pair tree **`6f89ecc1`** (main `b800a6aa` + P3, FACE_KEEP_DEFAULT 1, FIFO, no CP-F: not merged) whole suite **queued 14:40 PDT**; then the series (`planner-p3-series.sh`: the NATIVE=off cell, hull-rest 84-95 two arms, Terminus 231-243) | `1eb4e709` superseded before its check ran: `--planner-face-keep=0` fell back to the default 1 (no base arm possible); fixed in `6f89ecc1` / stream `8449be6d` |
+| **P3** open-ground face-behind | **REVISED** (amendment filed main `e8383ce6`): `6f89ecc1` (keep 1 alone) was RED, builder0 2733/4: a Terminus street face-back has no kept plan inside the hold (abandoned 8x, 42 deg off at 40 s). Candidate now **kept first, today's search after**: pair tree **`bca4eaca`** (stream `c6def5b3`), its whole suite sent 16:16 PDT; then `planner-p3-series.sh` | probe table and the revision below |
 | **Stretch** early GOAL_BLOCKED / START_BLOCKED refusals | **NOT TAKEN**: P2 shows they cost nothing he would see | refused asks end in short holds (<= 4 ticks, ~1.5 each, 10-16 % of hold ticks); shared's 369 early refusals cut queue_waits 2679 -> 264 and moved no player line |
 
 **R33.3, the orchestrator's three questions (evidence from the code at `03d1a50c`):**
@@ -192,14 +192,40 @@ arrivals not down beyond 1.645 se. Early stop OFF. After P2 (R33.10). **Filed on
 amendment (before numbers): both arms run on the queue main has when the series starts (`shared` if P2 shipped, else
 FIFO; the verdict names it), and on a tree with manoeuvre's CP-F if it has merged (else the verdict says which tree).
 
+### P3 revised: the street failure, the probe, the fallback
+
+`6f89ecc1` (main `b800a6aa` + P3, FACE_KEEP_DEFAULT 1) failed C31.1 on builder0 (`make check exited 2`, 2733 passed, 4
+failed, sim-baseline unmoved): test_planner_seam's Terminus street face-back (s31, the rig at (-70, 0, 0) told to face
+south), test_planner_capture_freed and test_planner_slice (the same scene) and test_planner_queue's blocked ask. Probe
+(laptop, GDScript search, the seam's own request planned whole, budget 20000; test scenes only):
+
+| keep | yard_open face-behind: exp / cost / furthest | Terminus street face-back: exp / cost / furthest |
+|---|---|---|
+| 0 (today) | 189 (past 180) / 17.5 s / 25.3 m | 7 / 16.9 s / 28.9 m |
+| 1.0 | **4 / 11.7 s / 11.5 m** | 10091 / 41.7 s (16 legs) / 13.9 m |
+| 1.5 | 197 / 18.8 s / 20.5 m | 125 / 25.8 s / 20.6 m |
+| 2.0 | 188 / 17.5 s / 25.3 m | 23 / 16.2 s / 27.6 m |
+| 3.0 | 189 / 17.5 s / 25.3 m | 7 / 16.9 s / 28.9 m |
+
+No single keep serves both. **Candidate (`bca4eaca`):** the kept search gets the first quarter of the hold
+(`FACE_KEPT_SHARE` 45 expansions); a refusal or no plan by then and today's search runs from the same pose inside the
+same pending cap (no budget raised; the split lives in the GDScript seam, native sees two ordinary requests: no twin).
+Census `a6368824` (diagnosis seeds 66-71): at 45, today's 20 in-hold faces all served, 19 by the kept plan, none lost.
+**Also fixed:** the keep was applied BEFORE the slot law, whose `req.keep` replaced it, so slotted faces went unkept on
+`6f89ecc1`; it now applies after (the verdict credits that to the ordering, not the fallback). Laptop: the street served
+in a 26-tick hold by today's plan after the fallback; the yard stage by the kept plan, no fallback (aligned 9.8 v 15.4 s).
+Bar lines added (main `e8383ce6`): (0) the yard stage served by the KEPT plan NATIVE on and off, and >= 50 % of the
+candidate's hull-rest face plans from the kept search; (0b) the street cell served; (2d) face holds reported.
+
 ### Plan (ordered)
 
 1. R33.3: MERGED. 2. P1: DONE. 3. P2: FAIL (R33.13). 4. Stretch: not taken (above).
-5. **P3 (now):** `6f89ecc1`'s whole suite (queued) -> `planner-p3-series.sh` on the same tree, one job at a time:
+5. **P3 (now):** `bca4eaca`'s whole suite (sent 16:16) -> `planner-p3-series.sh` on the same tree, one job at a time:
    (1) `make test FILTER=test_planner_face_epsilon|test_manoeuvre_face_behind|test_manoeuvre_behind NATIVE=off` (native
    on = the whole suite's run); (2) `make planner-judge-face PLANNER_FACE_ARM=base|candidate` (seeds 84-95, keep 0 v 1,
    FIFO) -> `hull_aa.py --verdict` (2a), `face_keep_table.py` (2b, 2c); (3) `make planner-series-face` (231-243; its
-   series_verdict exits 2 on guard (a): read the PLANNER_SERIES_SQUAD lines). Read once against the filed bar.
+   series_verdict exits 2 on guard (a): read the PLANNER_SERIES_SQUAD lines); lines (0)/(2d) by the scratchpad's
+   `p3_kept_share.py` (the tree unchanged). Read once against the filed bar (main `e8383ce6`).
 
 ### Decisions
 
