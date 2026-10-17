@@ -46,7 +46,7 @@ func test_the_weight_lands_the_face_behind_inside_the_hold() -> void:
 func _stage(weight: float) -> Dictionary:
 	PlannerSeam.face_epsilon_override = weight
 	PlannerSeam.reset()
-	await ArenaFixture.build(self, "yard_open")
+	var arena := await ArenaFixture.build(self, "yard_open")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	game_match.seed_spawns(1, 0.0)
@@ -69,6 +69,12 @@ func _stage(weight: float) -> Dictionary:
 			"aligned_s": float(aligned) / SimClock.TICK_RATE if aligned >= 0 else -1.0,
 			"drift_m": Vector2(tank.global_position.x - START.x, tank.global_position.z - START.z).length()}
 	PlannerSeam.face_epsilon_override = -1.0
+	# Disposed (trip-up 83): a second stage's "Rig" beside an undisposed first one shares its name in the seam's table,
+	# and each controller released the other's crew every tick (builder0, the first run of this file).
+	controller.free()
+	game_match.free()
+	arena.free()
+	await drain_navigation()
 	PlannerSeam.reset()
 	return r
 
