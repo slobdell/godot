@@ -88,7 +88,23 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   stay held until CP-X's design is written (it will likely change exactly those); then port them. `test_native_face_behind`
   compared 0 native executes in round 32 (vacuous): give it a floor if round 32 did not.
 
-**Rulings (round 33, the orchestrator's, as they arise):** none yet.
+**Rulings (round 33, the orchestrator's, as they arise):**
+
+- **R33.1 F0 closes with no fix; CP-F is the change (2026-10-17, manoeuvre's trace):** builder0, main `ae3dad71`, hull-rest
+  gangs s66 faced_move, native path, n 1: Green_Guns_5 ends 109.1° off, at rest. Its element's faced hold replaces its move
+  ~12 m out; every face after that (order/sector sources, and contact) is declined to `stop` by round 8's
+  turret-carries-aim rule because turnhull is OFF, so no face reaches the mover and the seam never acts. Not a main bug.
+  Manoeuvre's F1 lead: under turnhull ON a contact face is declined to `stop` mid-plan, so the hull stops partway through
+  its turn (the attack-move moving-at-75-s line).
+- **R33.2 A faced finish (C33.3 / C33.6 (c), agreed by manoeuvre and planner):** manoeuvre owns WHEN a faced finish runs
+  and its residual; planner owns HOW while `take()` holds.
+- **R33.3 `PlannerSeam.live()` has no staleness check: a MAIN BUG, planner's first item (pre-empts P1):** a crew whose seam
+  face or k-turn is cut off by another order stays live until the match ends (`planner_seam.gd:254` checks only that the
+  crew and hull exist), so `Movement.unstick` is skipped for that hull (`movement.gd:3078`) and the census is blind to it
+  (s66 Green_Guns_5: live from ~f 500 to ~f 2300 under order `stop`). Fix alone on its own commit with a test that fails
+  without it (a seam hold released when the order that started it is replaced), a check, a named hash; a sim-baseline move
+  goes to the orchestrator with the reason. Native says whether the C++ drive reads the hold through the same callback
+  (no mirror) or needs one.
 
 **Bars (round 33):** filed here before any number.
 
