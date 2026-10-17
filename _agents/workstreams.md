@@ -204,6 +204,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   **Done:** pins restore in teardown() (stream/traffic `aff64e2b`). Pair hash for the check: `pair/parkedroom-on` `6ea486ef`
   (= `ea550faf` + that; ea550faf's check stopped, no verdict). Series tree: stream/traffic `aff64e2b`.
 
+- **R33.12 parkedroom PARKED (2026-10-17; series FAIL, stream/traffic `b4b78825`,
+  `_agents/streams/references/round33/traffic/x3_series_verdict.md`).** builder0, tree `d90fbdb7` (code `aff64e2b`), fights
+  700–723 × terminus/locks/random, 180 s, n 72 paired: L1 parked far loops 22 → 25 (paired se of the sum 20.3) FAIL; L2 all
+  far loops 36 → 44 PASS; L3 PASS; L6 return 212/2175 back within 3 m FAIL; L4/L5 not run. It stays DEFAULT_OFF and
+  `pair/parkedroom-on` does not merge. Findings: the targeted hold-post "just gave way" loops went 11 → 0, but L1's remaining
+  loops are T1c-b2 fire-post refusals (20 of 23 in random-705), which the rule leaves alone. L6 is a real defect: "parked" =
+  "not under way", so a crew paused between orders makes room and its element then sends it on (median 19.1 m from the
+  "post" at 30 s). **Ruling:** no v2 this round ahead of T4 and islands. If traffic reaches it, v2 gates the rule on a crew AT
+  a post, and its bar is filed fresh before any number: new fights (not 700–723), L1 on hold-post far loops plus all
+  parked far loops not up, L6 kept. Narrowing L1 after seeing these numbers counts only on fresh seeds. The random-705
+  fire-post loop (20 loops, one fight) is REPORTED to the round's close as a separate problem; no stream owns it this round.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
