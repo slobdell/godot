@@ -296,6 +296,10 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   native path must agree with it in sign on (a) and (d). (n) fights 470–493 run wholly before R33.6 merges, or with it in
   both arms. (o) (b)'s many cells are a guard against harm: a single cell at p < 0.05 in a class the change does not touch
   (e.g. tracks) is traced before it fails the series, and the trace is reported either way.
+  **(m) resolved (native + manoeuvre, on `136c3828`):** nothing to mirror. The decline is in `TankBrain._order_move` (the
+  think, GDScript on every path); `drawn_face` only rewrites the ORDER to a face `from: drawn`; `turret_carries_aim` is
+  wheels + turret only, and execute_native hands wheeled faces back to GDScript by design (~365). N5.M's functions and the
+  exec rows are untouched. So CP-F's arms run on the default native path; native reads the twins on its pair tree.
 - **R33.9, the arrival latch (brains; filed 2026-10-17 before any number).** Candidate lab/brains-r339 `429ebc4b` (R1 +
   R33.9): arrived until the centre is ARRIVE_M + 6 m out (half the arrive radius: above a five-crew swarm's centre swing on
   a re-seat, far below a real departure), cleared per task by `Element.assign`; both read sites (`element_plan.gd:290`,
