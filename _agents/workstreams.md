@@ -148,6 +148,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   its own check; sim-baseline moves listed with the reason (showmatch maps). **Every running series stays on its own tree:**
   traffic's parkedroom and manoeuvre's fights stages use showmatch fights, whose Green side this changes.
 
+- **R33.7 N5.M, `_manoeuvre`'s decision in C++ (native, 2026-10-17):** stream/native `04ee782e` + `145ada3a`, switch
+  `BrainSwitches.native_manoeuvre` default ON (off = round 26's callback); design in `native.md` *N5.M*. Proof (builder0
+  light): `test_native_manoeuvre` 920 decisions, 0 mismatches, 0 called back (reverse 307, route 613, every refusal but
+  no_arrival). Price: a decision tick's drive 1762 → 719 µs (loaded box, n 1), nothing per tick. Merges ALONE when green
+  with sim-baseline 13 UNMOVED (the port's own proof), NATIVE=off and native-proof read, no_arrival covered or shown
+  unreachable. **From its merge, `Manoeuvre.choose / simulate / behind / _others` are twinned (C26.2):** manoeuvre's edits
+  there become pairs with native.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
