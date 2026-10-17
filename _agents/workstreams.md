@@ -251,6 +251,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   ghost OFF v ON on one tree. Median alone_s ghost ON ≤ ghost OFF + 3.0 s; in every ghost-ON cell, body-ON alone_s < 0.5 × that cell's
   body-OFF alone_s (the test's own halving line); and the Sirens choose "body" in every ghost-ON cell. Fail = T4 parks with the worst cell traced. Brains' hardening must not hide this:
   the hardened test has to fail on a stage that really loses cohesion, so it is shown failing on one such case.
+  **Read and ruled (traffic `cea5cb56`, builder0 light, tree `95f85afc` = game code `bbb4d2db`, n 9 a side): (1) PASS
+  (median 15.0 v 15.0). (2) and (3) FAIL, all at seed 2, and the ghost-OFF arm fails the same cells.** At seed 2 the Sirens
+  choose "own", identically in both arms and before anything drives (own 103.0 m with 24.6 m alone v body 123.6 m with 22.4 m
+  alone), which is the right choice. Ghost-OFF's body-OFF baseline there never arrives (alone 56.5 s). **R33.16, a bar
+  defect, shown by the control arm:** (2) and (3) were written as absolute lines, but the guard's filed purpose is a ghost
+  COST. They are re-read in the guard's own relative form: (2') every cell's body-ON alone_s ghost ON ≤ ghost OFF + 3.0 s;
+  (3') the Sirens' choice is the same, ghost ON v OFF, in every cell. Amended after the numbers were seen, so the reason is
+  recorded here. Dropping seed 2 was rejected. The earlier suite-order signal (12.0 v 18.5) did not reproduce in the guard
+  at --fixed-fps 60 (13.5 v 12.5). Traffic reports both. Also: tactics.mk's BODY_SEEDS shadowed traffic's variable, now
+  renamed BGUARD_*.
 
 - **R33.15 N5.M merges; the NATIVE=off perf budget is not N5.M's (2026-10-17).** native: `025d5631` builder0 `make check
   exited 0`, 2727/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved, determinism 9d66d3a0c59a7936. `c70be402` (diff:
