@@ -260,3 +260,20 @@ planner-stage-s207: native import ## planner round 32: the s207 stage, refuse ea
 		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS=rigs DRIVE_SEEDS=207 NAV_FLAGS="--planner-queue=$$arm" NAV_JOBS=1 > /dev/null 2>&1 || true; \
 		cp $(BUILD_DIR)/nav-drive/rigs-207.log $(PLANNER_STAGE_DIR)/$$arm-rigs-207.log; done
 	@$(PYTHON) tests/planner/stage_s207.py rolling=$(PLANNER_STAGE_DIR)/shared-rolling-rigs-207.log shared=$(PLANNER_STAGE_DIR)/shared-rigs-207.log
+
+# ---- round 33 (P1, C33.6 (a)): line (3)'s noise, the hull-rest gang arm A/A -------------------------------------------
+# The FIFO both arms: base_* and new_* run the SAME flags (--planner-queue=fifo, the native drive) on the SAME seeds, so
+# every difference is the probe's run-to-run noise (hull-rest is not deterministic). Read by tests/planner/hull_aa.py
+# (per-class sd a run, round 32's lines read on the null) -> build/planner/hull-aa.txt + hull-aa-rows.jsonl. Heavy:
+# make remote T=planner-aa-queue (144 runs at the default seeds).
+PLANNER_AA_SEEDS ?= 66 67 68 69 70 71
+.PHONY: planner-aa-queue
+planner-aa-queue: native import ## planner round 33 P1: hull-rest's gang arm fifo v fifo (A/A) on PLANNER_AA_SEEDS -> build/planner/hull-aa.txt
+	@mkdir -p $(BUILD_DIR)/planner
+	@echo ">> planner-aa-queue on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_AA_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="base_drawn base_clicked new_drawn new_clicked" \
+		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states --planner-queue=fifo" \
+		HULL_SEEDS="$(PLANNER_AA_SEEDS)" HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)" > $(BUILD_DIR)/planner/hull-aa-runs.txt 2>&1 || true
+	@grep -E "no SCREEN_DONE|SCRIPT ERROR" $(BUILD_DIR)/planner/hull-aa-runs.txt | head -5 || true
+	@$(PYTHON) tests/planner/queue_table.py $(BUILD_DIR)/manoeuvre/hull-rest | tee $(BUILD_DIR)/planner/hull-aa.txt
+	@$(PYTHON) tests/planner/hull_aa.py $(BUILD_DIR)/manoeuvre/hull-rest --rows $(BUILD_DIR)/planner/hull-aa-rows.jsonl | tee -a $(BUILD_DIR)/planner/hull-aa.txt
