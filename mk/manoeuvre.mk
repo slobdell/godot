@@ -222,7 +222,12 @@ manoeuvre-h1b-drive: import ## manoeuvre H1b: the Terminus drive base v H1b on t
 	xargs -P $(H1B_JOBS) -I{} sh -c 'run={}; arm=$${run%%-*}; rest=$${run#*-}; \
 		if [ $$arm = h1b ]; then flags="--nav-off=h1b --brains-off=native"; else flags="--brains-off=native"; fi; \
 		timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/h1b_drive.gd -- \
-			--squad=$${rest%-*} --seed=$${rest##*-} --arena=terminus --leg-time=$(or $(DRIVE_LEG_TIME),90) $$flags $(NAV_FLAGS) \
+			--squad=$${rest%-*} --seed=$${rest##*-} --arena=terminus --leg-time=$(or $(DRIVE_LEG_TIME),90) --turn-states $$flags $(NAV_FLAGS) \
 			> '$$out'/{}.log 2>&1; echo ">> manoeuvre-h1b-drive: {} done"'
 	@for f in $(BUILD_DIR)/manoeuvre/h1b-drive/*.log; do echo "== $$f"; grep -E "^NAV_DRIVE_LEG|^H1B_DRIVE|SCRIPT ERROR|control FAILED" $$f | cut -c1-900 || true; done
 	@$(PYTHON) tests/manoeuvre/h1b_table.py $(BUILD_DIR)/manoeuvre/h1b-drive/*.log
+	@# PINNED / STUCK per squad (pinned_table.py pairs <root>/<seed>/drive/run.log across the two arms).
+	@out=$(BUILD_DIR)/manoeuvre/h1b-drive; for f in $$out/*.log; do b=$$(basename $$f .log); arm=$${b%%-*}; rest=$${b#*-}; \
+		d=$$out/pinned/$$arm-$${rest%-*}/$${rest##*-}/drive; mkdir -p $$d; ln -sf $(CURDIR)/$$f $$d/run.log; done; \
+	for squad in $(H1B_SQUAD_LIST); do echo "== pinned $$squad (base v h1b)"; \
+		$(PYTHON) tests/manoeuvre/pinned_table.py $$out/pinned/base-$$squad $$out/pinned/h1b-$$squad || true; done

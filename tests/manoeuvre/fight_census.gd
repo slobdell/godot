@@ -100,4 +100,5 @@ func _run() -> void:
 	print("FIGHT_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [], "teams": teams,
 			"h1b": ManoeuvreCensus.h1b_report(), "h1b_on": Movement.h1b_on()}))  # round 32: H1b's counters (measurement only)
+	ManoeuvreCensus.print_new_far_rows()  # C32.10 amendment: each far loop with its blocker kind
 	quit(0)

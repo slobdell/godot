@@ -23,6 +23,8 @@ RIG = "gang_tank"
 ## stuck; so is one that backs off 1.5 m and drives straight back into the same blocker every 3 s (the tuning seeds'
 ## mixed-21 IFV: 73 s of that under M4b, which the pinned count above cannot see because its goal distance moves).
 PROGRESS_M = 1.0
+# Movement.NEW_GOAL_JUMP: a goal distance that grows by more than this between two state lines is a new goal.
+NEW_GOAL_M = 3.0
 
 
 def run_pinned(log):
@@ -57,9 +59,18 @@ def run_pinned(log):
         if pinned:
             total["crews"] += 1
         # stuck: no PROGRESS_M of progress toward the goal over a run of driving seconds
-        stuck, run, best = 0, 0, None
+        stuck, run, best, last = 0, 0, None, None
         for r in rows:
             driving = r[1] == "move_to" and abs(r[2]) > 0.3
+            if last is not None and r[3] > last + NEW_GOAL_M:
+                # Round 32 (R32.7): a NEW goal (the distance jumps by more than Movement.NEW_GOAL_JUMP: the next leg's
+                # order) starts a new approach. Before, `best` was carried from the OLD goal, so a crew that arrived
+                # driving and rolled straight down the next street read as stuck (Terminus rigs s303 Green_S0_4, f 1770:
+                # 6.6 -> 69.8 m and then real progress to 7.0 m, counted 13 s stuck).
+                if run >= 10:
+                    stuck += run
+                run, best = 0, None
+            last = r[3]
             if driving and best is not None and r[3] <= best - PROGRESS_M:
                 best, run = r[3], 0  # progress: the run restarts here
             elif driving:
