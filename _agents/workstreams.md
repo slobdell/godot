@@ -252,6 +252,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   body-OFF alone_s (the test's own halving line); and the Sirens choose "body" in every ghost-ON cell. Fail = T4 parks with the worst cell traced. Brains' hardening must not hide this:
   the hardened test has to fail on a stage that really loses cohesion, so it is shown failing on one such case.
 
+- **R33.15 N5.M merges; the NATIVE=off perf budget is not N5.M's (2026-10-17).** native: `025d5631` builder0 `make check
+  exited 0`, 2727/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved, determinism 9d66d3a0c59a7936. `c70be402` (diff:
+  _agents/streams/native.md only) `make check NATIVE=off exited 2`: 2727/0, sim-baseline unmoved with the same hashes. The
+  two FAILs: native-live-guard (fails by construction with no library) and perf-judge 1.47x (ai_usec_per_tick 20050,
+  load 9.01) on the all-GDScript AI. native-proof EQUAL 10c328a0f978ea49. no_arrival reached in `1a1182bb` (940 decisions,
+  0 mismatches). **Ruling:** merged (main `199d1587`). N5.M's GDScript diff touches the off path only under
+  `NativeBridge.counting` plus a new switch, read by the orchestrator, so the off-path perf is main's own. **Known, not
+  this round:** the all-GDScript AI (the no-library path: browser, or a missing .so) is over perf-judge's CPU budget at
+  about 1.5x on builder0, n 1. Native files a NATIVE=off perf reading on main at round close if the box is free.
+  Merge notes: brain_switches.gd (native_manoeuvre), native_drive.gd and native_exec.gd (counting only), and
+  tests/native/mover_state.gd. C26.2 now reaches Manoeuvre.choose / behind / simulate / _others / _hull_hit / _note, so a
+  CP-F or F1 edit there becomes a pair with native.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
