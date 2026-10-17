@@ -135,6 +135,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (`element_commander.gd:180`): unseated crews and up to ~470 ERROR lines a fight. A play bug (log spam each tick, crews
   never seated): trace, fix alone with a test, its own check.
 
+- **R33.6 R33.5's cause and fix: SPLIT a > 5-hull CPU-played squad into elements (brains, 2026-10-17):** only on a side
+  folded with `SquadConsolidation.for_player` but played by the CPU (showmatch / `--player=cpu`; never his opponent).
+  for_player splits only past SPLIT_OVER 8, so that side has squads of 6–8; `skirmish_mode.gd:415` forms one element per
+  squad and C19.1 refuses each big one; `element_commander.gd:180` re-forms only when the team has NO element, so those
+  crews stay unseated all match, and once the formed ones die the refusal repeats every THINK_TICKS (~470 ERRORs).
+  **Ruling: build the split** (his rule: symmetric AI improvements ship without asking; it is the existing doctrine): a
+  squad of n > MAX_MEMBERS becomes ceil(n / 5) balanced blocks ("<squad>", "<squad> II", …), the same count and balance as
+  his own `SelectionSquads.split` deals a big group into; the commander also re-forms when any living squad member of its
+  team has no element. Grant: brains edits `game/modes/skirmish_mode.gd:415` (one line: `form_squad` for `form`; merge
+  note). A test that fails without it (0 ERRORs, every crew seated, on a showmatch side with a 6- and an 8-hull squad);
+  its own check; sim-baseline moves listed with the reason (showmatch maps). **Every running series stays on its own tree:**
+  traffic's parkedroom and manoeuvre's fights stages use showmatch fights, whose Green side this changes.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
