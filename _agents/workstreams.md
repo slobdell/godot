@@ -4,7 +4,7 @@
 > streams, ONE on Fable 5.1 (planner), the rest and the orchestrator on Opus (his quota rule, `roadmap.md` *Round 31
 > candidates*).** Briefs in `streams/`.
 
-## Round 32: five streams, all Opus (prepared 2026-10-16; briefs in `streams/`)
+## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
 **Goal: ship his two yeses first (T3b-c, T1c-b2; `game_design.md` *Round 31 close: his two answers*), then carry home
 round 31's parked candidates (`roadmap.md` *Round 32 candidates*): the H1 ask loop he may see, his bridge's seating

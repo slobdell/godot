@@ -4,7 +4,39 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-16 ~06:30 PDT — **ROUND 32 RUNNING.** **MAIN GREEN at `6fcfbe46`** (builder0, 2693 passed / 0 failed, 23 targets passed; the one red remote-guard-test's quiet-window group, R31.10; sim-baseline 13 unmoved against the T3b-c lines). It carries planner 530e85cf, T3b-c ON, B3b-2c ON. Since: native's test splits (`6b3c9195`, test-only, unchecked). He pushes `main`._
+_Last updated: 2026-10-16 ~19:00 PDT — **ROUND 32 IS CLOSED (below).** **MAIN GREEN at `0c124cf7`** (builder0, `make check exited 0`, 2724 passed, 0 failed, sim-baseline 13 unmoved; perf/timing NOT JUDGED as usual). Later commits are docs plus one comment line in `mk/planner.mk`. He pushes `main`. Round 33 is not prepared yet: the next orchestrator listens to him first._
+
+## 🏁 ROUND 32 IS CLOSED (2026-10-16 ~19:00 PDT) — read this first
+
+**Main `0c124cf7` is round 32's verified main and what he plays** (builder0, `make check exited 0`, 2724/0, sim-baseline 13
+unmoved). Five Opus streams, all closed and merged; worktrees and builder0 folders removed (builder0 holds `godot`,
+`godot-light`); every `stream/*`, `lab/*`, `pair/*` and `traffic-*` branch kept, nothing pushed.
+
+**What he will notice in play:**
+1. **His two yeses:** at a Terminus street crossing the squad giving way waits ~2.6 s and the squads bump about a third less
+   (T3b-c); a set-up mortar truck stays set up and firing (T1c-b2; its price: in 6 of 18 fights a squadmate waited ~20 s
+   behind it, two set up 10–19 m short).
+2. **Every crew across his bridge** (B3b-2c, 108/108), arrivals elsewhere unchanged.
+3. **A vehicle stuck behind a squadmate that never moves, near its goal, stops short** instead of nudging back and forth (H1b).
+4. **His laptop:** the stale native library (the choppy game) is rebuilt, and `make skirmish` now rebuilds it when stale;
+   the planner runs its full speed on the laptop preset (priced ~0.2 ms a tick there).
+
+**Known issues he may see:** (1) the ask loop far from the goal: in skirmish it is a crew behind a parked crew of ANOTHER
+element (the seat swap could not reach it, parked); (2) a War Rig on a faced move can end ~150° backwards (B11 parked; its
+turret-only cut halves the error and is round 33's, with turn-the-hull at rest).
+
+**Parked (honest misses, each traced; round 33 in `roadmap.md` *Round 33 candidates*):** the planner's shared queue CP-Q
+(mechanism found: refuse-early dropped the FIFO's implicit brake; the refuse-at-rest candidate is built, OFF); B10 the
+grounding latch (one Sumps run held a seat in a squadmate's passage); B11 the faced return (fixed-gun hulls worse); the
+C32.10 seat swap (0 swaps in skirmish); T4-ON (mixed stuck −48 % but unproven at n 24; a yard circling).
+
+**Also found and fixed:** a latent main bug in the planner's capture (twin teardown); a decline keyed by hull name that
+cost a second match's War Rig its first plan; the GDScript planner skipping the abandon cap; three order-dependent test
+reds traced to their causes (R32.6 and its physics trap, the seam carry-over, an undisposed lab). Rulings R32.1–R32.7,
+contracts C32.10–C32.13, lessons 312–316 (`orchestration.md`), trip-ups 82–83 (`orientation.md`). Briefs archived in
+`_agents/streams/archive/round32/`. The learned-commander idea is shelved by him (`roadmap.md` *Shelved ideas*).
+
+**Nothing is owed to him.**
 
 ## 👋 FOR HIM WHEN HE WAKES (round 32, as of ~11:30 PDT 10-16)
 
