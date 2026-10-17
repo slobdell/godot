@@ -63,4 +63,106 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+_Updated 2026-10-17 ~08:10 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `ae3dad71`, which
+inherits `0c124cf7`'s green check: no baseline check run; Opus). Every number builder0 unless named._
+
+### The report (read this first)
+
+| item | state | evidence |
+|---|---|---|
+| **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **FIXED, check RUNNING** on `fix/planner-live-stale` `03d1a50c` (main `86975667` + 1 commit; cherry-picked here as `48a694b0`). Native APPROVED, no C++ change | `test_planner_seam_stale`: red without (laptop: still live 2 s after `stop`), green with (released 2 ticks after) |
+| **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, `make remote exited 0`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
+| **P2** CP-Q re-judged | bar SENT to the orchestrator (below), before any number; the pair tree waits on R33.3's check | — |
+| **P3** open-ground face-behind | candidate BUILT, OFF (`3feacd6d`): a FACE request's search weight (`--planner-face-epsilon`, default 0 = today's bits) + the `--planner-face-shadow` measurement | laptop, GDScript search: the same 5-leg 17.5 s plan at 124 expansions at 2.0 (189 at 1.5 > the 180 hold) |
+
+**R33.3, the orchestrator's three questions (evidence from the code at `03d1a50c`):**
+1. **"Asked about"** = `PlannerSeam.take()` or `hold()` reached for that hull: `_serve` writes `crew.tick_seen` and nothing
+   else does (`grep tick_seen`: lines in `_serve` and `_request` only). `live()` writes nothing (unchanged: a lookup and the
+   freed-hull release). `hold()` is the FIRST line of `Movement.face_turn` (movement.gd:1278) and of `_planned_reverse`
+   (:3770), so a crew being driven or pending is asked about every tick it is executed.
+2. **The native path refreshes the same way.** A wheeled hull's face is HANDED BACK to the GDScript executor
+   (`execute_native.cpp:363-376`: `simple_face` only for a hull with no wheels, and the seam takes only wheeled hulls), so
+   `face_turn` -> `hold()` runs every tick. The k-turn: the C++ drive calls back `_planned_reverse` for a seam-live crew
+   every tick it drives (`drive_native.cpp:2211-2214`), which calls `hold()`. Native's review agrees (tick_seen is written
+   only in take/hold, both reached on both arms through the same GDScript callbacks). Twins: native is running
+   native_drive* (k-turn), native_execute*, test_native_face_behind and test_planner_seam_stale on `03d1a50c` (counts to
+   come). Stride: a controller that skips ticks (`_stride`) would leave a crew unasked, but the default runs every tick
+   (L1's QUIET_STRIDE = L1_STRIDE 1.0, off; the far stride needs an EMPTY order, and a held crew is executing one).
+3. **STALE_TICKS = 2**, the rule `_serve` already applied (since round 31): a crew unasked for > 2 ticks was released at
+   its NEXT call ("stale"). The fix applies the same test once a tick instead of waiting for a call that never comes, so a
+   crew released here is one `_serve` would have released anyway the moment its hull asked again; PENDING_TICKS (90) and a
+   long leg are untouched because both are asked about every tick (pending: `hold`; a leg: `hold`). **Peers:** the release
+   reads only `Engine.get_physics_frames()` and `tick_seen` (written from the same counter) and runs from
+   `SceneTree.physics_frame`, which the engine emits at the start of each physics step before any node's
+   `_physics_process`: a fixed point in the tick on every peer, no clock, no node order. (Only the host simulates the AI in
+   player-hosted play.) The connection is static and never disconnected: a no-op while `_crews` is empty (native's note).
+
+**P1: the hull-rest gang arm's A/A** (`4bbe8322`, builder0 at load ~23, seeds 66-71, 6 tasks, drawn and clicked, both
+arms `--planner-queue=fifo`, n 36 paired runs a mode; per-run rows `hull-aa-rows.jsonl`). Gangs field one class
+(wheels/turret = ALL). The row for `tools/judge/probes.py` (judging.md S5 step 8, the orchestrator at the close):
+
+| probe | metric (a run) | form | sd a run (paired) | base level | n |
+|---|---|---|---|---|---|
+| hull-rest gang arm (queue) | at-rest hull error, median of the run, drawn | mean of paired diffs | **21.7 deg** | task medians 34-67 deg | 36 |
+| same | the same, clicked | mean | **17.5 deg** | 61-91 deg | 36 |
+| same | crews moving at the 75 s judge, drawn | total | **1.54** | 0.5-4.5 a run | 36 |
+| same | the same, clicked | total | **2.04** | 0-2.5 | 36 |
+| same | settle s (75 = never), drawn | mean | **16.1 s** | mostly censored at 75 | 36 |
+| same | the same, clicked | mean | **13.9 s** | 28-75 | 36 |
+| same | abandoned share of asks | share | drawn 25.2 v 26.3 %, clicked 15.5 v 12.5 % (the null's swing) | — | 36 |
+
+**What it says about round 32's line (3):** on the null, (3a)'s crew-pooled p failed 0 of 24 cells, but medians swung up to
+13.6 deg (drawn faced_attack_move 70.4 v 56.8); (3b) settle swung -10 s (faced_move: round 32's miss was +14.5); (3c)
+moving swung **+8** on faced_ambush (its own se 4.0) against round 32's lines of +2.96 / +2.14 (its misses +5 / +3). So
+round 32's (3b) and (3c) misses sit inside this probe's run-to-run noise, and the per-task lines at 6 runs cannot see a
+harm smaller than ~2.5 x their se. P2's bar therefore pools the six tasks and runs 12 fresh seeds.
+
+### P2's bar (pre-registered, sent to the orchestrator before any number)
+
+Arms: base `--planner-queue=fifo`, candidate `--planner-queue=shared` (refuse early only at rest, `d98656ab`), both the
+native drive, ONE tree: the pair tree (`QUEUE_DEFAULT` true) on top of R33.3's fix, after its whole suite is green (C31.1).
+Hull-rest gangs, FRESH seeds **72-83** (12) x 6 tasks, drawn and clicked: **n 72 paired runs a mode**. Terminus rigs FRESH
+seeds **218-230** (13). Early stop OFF on every line (R31.8: guards). The se on each guard is the PAIR's own paired se (the
+A/A's figure in brackets is what n was sized on). No tuning on these seeds; this is CP-Q's last attempt this round.
+1. **(gain) abandoned share of asks <= 5 % in each mode, AND below base (Fisher one-sided p <= 0.05).** (Round 32: 1.0 /
+   3.7 % v 18.6 / 14.5 %; A/A base 25 / 13-16 %.)
+2. **(gain) the hold per event, pooled median, candidate <= base** in each mode; and on the Terminus rigs.
+3. **(guards, pooled over the six tasks, paired on (task, seed)):**
+   (a) at-rest hull error: mean paired per-run median diff <= **+1.645 se** in each mode [A/A: se 2.56 deg drawn -> line
+   +4.2 deg, MDE 6.4; clicked se 2.06 -> +3.4, MDE 5.1];
+   (b) settle (drawn): mean paired diff <= +1.645 se [A/A se 1.9 s -> +3.1 s]; never-settled runs reported (censored);
+   (c) crews moving at 75 s: summed paired diff <= +1.645 se of the sum in each mode [A/A: drawn se 13.1 -> +21.5 crews
+   over 72 runs, ~0.3 a run; clicked se 17.3 -> +28.5].
+   Per-task numbers REPORTED (each is inside the A/A swing at n 12).
+4. **(guard) Terminus rig arrivals:** paired not down beyond 1.645 se (judging.md's Terminus rigs row: sd 1.68 a seed);
+   wall contact-ticks REPORTED (not affordable: the row's n > 700).
+5. **(deterministic cell) s207 stage:** under `shared`, Green_S0_4 pinned on Block_7 0 ticks (`make planner-stage-s207`).
+6. **C31.1:** the whole suite on the pair tree, green.
+Pass = every line. Partial (1)-(2) pass, a guard fails: PARKED with the worst pair's trace (lesson 302), not tuned.
+
+### Plan (ordered)
+
+1. R33.3 (ruling): fix + test + check (`03d1a50c`), native twins. **← check running**
+2. P1 A/A: DONE.
+3. P2: verdict tooling (pooled paired lines, `hull_aa.py` on base v candidate), the pair tree (QUEUE_DEFAULT true) on
+   the fix, its full check, then hull-rest 72-83 (one arm a call) + Terminus 218-230 + s207, read once.
+4. P3: the face-shadow census on hull-rest drawn + Terminus rigs (which face requests land inside the hold at 1.5 / 2.0 /
+   3.0, at what cost), then its own bar to the orchestrator; judged on test_manoeuvre_face_behind + the hull-rest rigs.
+   Decision (why a weight, not a longer hold): the per-tick price is the slice on every preset, so a weight costs nothing
+   per tick on the laptop or desktop (a face only searches LESS); a longer hold would keep the rig standing longer.
+5. Stretch: early refusals of GOAL_BLOCKED / START_BLOCKED, if P2 shows they cost.
+
+### Decisions
+
+- **R33.2 (agreed with manoeuvre, the orchestrator's ruling):** manoeuvre owns WHEN a faced finish runs and its residual;
+  planner owns HOW while `take()` holds the hull.
+- **R33.3 as a release, not a check in `live()`** (the orchestrator's amendment on native's assessment): `live()` stays a
+  lookup, so the C++ inline mirror `seam_live` needs no change.
+
+### Questions for the lead
+
+None.
+
+### Requests to other streams
+
+- native: twins on `03d1a50c` (running); later the pair for CP-Q (QUEUE_DEFAULT) if it passes.

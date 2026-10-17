@@ -1,0 +1,139 @@
+QUEUE base_clicked runs  36 (no line 18) | asks   471 plans  110 driven   17 abandoned   73 (15.5 %) refused {'GOAL_BLOCKED': 87, 'START_BLOCKED': 32, 'NO_PATH': 5} early 0 | queue_waits 8731 pending 10931 | hold n 307 median 8 max 90
+QUEUE base_drawn   runs  36 (no line 18) | asks   436 plans   55 driven   17 abandoned  110 (25.2 %) refused {'GOAL_BLOCKED': 110, 'START_BLOCKED': 22} early 0 | queue_waits 12480 pending 14224 | hold n 297 median 15 max 111
+QUEUE new_clicked  runs  36 (no line 18) | asks   512 plans  134 driven   34 abandoned   64 (12.5 %) refused {'GOAL_BLOCKED': 73, 'START_BLOCKED': 40, 'NO_PATH': 7} early 0 | queue_waits 8417 pending 10591 | hold n 318 median 5.0 max 90
+QUEUE new_drawn    runs  36 (no line 18) | asks   426 plans   67 driven   31 abandoned  112 (26.3 %) refused {'GOAL_BLOCKED': 110, 'START_BLOCKED': 23, 'NO_PATH': 2} early 0 | queue_waits 12479 pending 15464 | hold n 314 median 22.0 max 111
+PLANNER_QUEUE {"abandoned": 73, "abandoned_share": 0.155, "aborted": 20, "arm": "base_clicked", "driven": 17, "holds": {"max": 90, "median": 8, "n": 307}, "pending_ticks": 10931, "plans": 110, "queue_waits": 8731, "refused": {"GOAL_BLOCKED": 87, "NO_PATH": 5, "START_BLOCKED": 32}, "refused_early": 0, "requests": 471, "rerequested": 0, "runs": 36, "silent": 18}
+PLANNER_QUEUE {"abandoned": 110, "abandoned_share": 0.2523, "aborted": 9, "arm": "base_drawn", "driven": 17, "holds": {"max": 111, "median": 15, "n": 297}, "pending_ticks": 14224, "plans": 55, "queue_waits": 12480, "refused": {"GOAL_BLOCKED": 110, "START_BLOCKED": 22}, "refused_early": 0, "requests": 436, "rerequested": 0, "runs": 36, "silent": 18}
+PLANNER_QUEUE {"abandoned": 64, "abandoned_share": 0.125, "aborted": 16, "arm": "new_clicked", "driven": 34, "holds": {"max": 90, "median": 5.0, "n": 318}, "pending_ticks": 10591, "plans": 134, "queue_waits": 8417, "refused": {"GOAL_BLOCKED": 73, "NO_PATH": 7, "START_BLOCKED": 40}, "refused_early": 0, "requests": 512, "rerequested": 0, "runs": 36, "silent": 18}
+PLANNER_QUEUE {"abandoned": 112, "abandoned_share": 0.2629, "aborted": 7, "arm": "new_drawn", "driven": 31, "holds": {"max": 111, "median": 22.0, "n": 314}, "pending_ticks": 15464, "plans": 67, "queue_waits": 12479, "refused": {"GOAL_BLOCKED": 110, "NO_PATH": 2, "START_BLOCKED": 23}, "refused_early": 0, "requests": 426, "rerequested": 0, "runs": 36, "silent": 18}
+HULL_AA paired runs 72 (base 72, new 72) under build/manoeuvre/hull-rest
+HULL_AA_CELL mode task class metric | n | base new (median) | mean diff | sd a run | se sum | sd_boot med diff
+HULL_AA_CELL drawn faced_ambush ALL moving | 6 | 0.5 2.0 | +1.33 | 1.63 | 4.0 | 0.94
+HULL_AA_CELL drawn faced_ambush ALL rest_med | 6 | 58.2 50.0 | -7.07 | 13.77 | 33.7 | 6.09
+HULL_AA_CELL drawn faced_ambush ALL settle | 6 | 70.2 75.0 | +3.67 | 17.12 | 41.9 | 6.38
+HULL_AA_CELL drawn faced_ambush wheels/turret moving | 6 | 0.5 2.0 | +1.33 | 1.63 | 4.0 | 0.94
+HULL_AA_CELL drawn faced_ambush wheels/turret rest_med | 6 | 58.2 50.0 | -7.07 | 13.77 | 33.7 | 6.09
+HULL_AA_CELL drawn faced_attack_move ALL moving | 6 | 4.5 4.0 | +0.00 | 2.19 | 5.4 | 0.95
+HULL_AA_CELL drawn faced_attack_move ALL rest_med | 6 | 51.7 57.7 | +13.53 | 10.27 | 25.2 | 7.05
+HULL_AA_CELL drawn faced_attack_move ALL settle | 6 | 75.0 75.0 | +0.00 | 0.00 | 0.0 | 0.00
+HULL_AA_CELL drawn faced_attack_move wheels/turret moving | 6 | 4.5 4.0 | +0.00 | 2.19 | 5.4 | 0.95
+HULL_AA_CELL drawn faced_attack_move wheels/turret rest_med | 6 | 51.7 57.7 | +13.53 | 10.27 | 25.2 | 7.05
+HULL_AA_CELL drawn faced_move ALL moving | 6 | 1.0 0.5 | +0.00 | 1.10 | 2.7 | 0.48
+HULL_AA_CELL drawn faced_move ALL rest_med | 6 | 48.0 46.5 | -1.78 | 27.23 | 66.7 | 15.95
+HULL_AA_CELL drawn faced_move ALL settle | 6 | 75.0 52.8 | -10.33 | 20.66 | 50.6 | 11.88
+HULL_AA_CELL drawn faced_move wheels/turret moving | 6 | 1.0 0.5 | +0.00 | 1.10 | 2.7 | 0.48
+HULL_AA_CELL drawn faced_move wheels/turret rest_med | 6 | 48.0 46.5 | -1.78 | 27.23 | 66.7 | 15.95
+HULL_AA_CELL drawn faced_right ALL moving | 6 | 1.0 1.0 | -0.17 | 1.72 | 4.2 | 0.71
+HULL_AA_CELL drawn faced_right ALL rest_med | 6 | 45.4 42.2 | +2.38 | 28.59 | 70.0 | 16.42
+HULL_AA_CELL drawn faced_right ALL settle | 6 | 75.0 71.0 | -1.67 | 14.01 | 34.3 | 4.99
+HULL_AA_CELL drawn faced_right wheels/turret moving | 6 | 1.0 1.0 | -0.17 | 1.72 | 4.2 | 0.71
+HULL_AA_CELL drawn faced_right wheels/turret rest_med | 6 | 45.4 42.2 | +2.38 | 28.59 | 70.0 | 16.42
+HULL_AA_CELL drawn faced_screen ALL moving | 6 | 3.0 2.5 | +0.00 | 1.41 | 3.5 | 0.67
+HULL_AA_CELL drawn faced_screen ALL rest_med | 6 | 33.6 42.1 | +13.50 | 11.02 | 27.0 | 6.48
+HULL_AA_CELL drawn faced_screen ALL settle | 6 | 75.0 75.0 | -0.42 | 18.19 | 44.6 | 5.87
+HULL_AA_CELL drawn faced_screen wheels/turret moving | 6 | 3.0 2.5 | +0.00 | 1.41 | 3.5 | 0.67
+HULL_AA_CELL drawn faced_screen wheels/turret rest_med | 6 | 33.6 42.1 | +13.50 | 11.02 | 27.0 | 6.48
+HULL_AA_CELL drawn faced_support_by_fire ALL moving | 6 | 2.5 2.5 | +0.33 | 0.82 | 2.0 | 0.48
+HULL_AA_CELL drawn faced_support_by_fire ALL rest_med | 6 | 67.0 69.6 | -6.72 | 29.28 | 71.7 | 13.76
+HULL_AA_CELL drawn faced_support_by_fire ALL settle | 6 | 75.0 75.0 | +8.42 | 17.41 | 42.7 | 6.29
+HULL_AA_CELL drawn faced_support_by_fire wheels/turret moving | 6 | 2.5 2.5 | +0.33 | 0.82 | 2.0 | 0.48
+HULL_AA_CELL drawn faced_support_by_fire wheels/turret rest_med | 6 | 67.0 69.6 | -6.72 | 29.28 | 71.7 | 13.76
+HULL_AA_CELL clicked faced_ambush ALL moving | 6 | 0.5 1.5 | +0.33 | 1.03 | 2.5 | 0.46
+HULL_AA_CELL clicked faced_ambush ALL rest_med | 6 | 61.1 67.8 | -2.27 | 21.55 | 52.8 | 11.05
+HULL_AA_CELL clicked faced_ambush ALL settle | 6 | 69.5 75.0 | +5.33 | 8.23 | 20.2 | 3.69
+HULL_AA_CELL clicked faced_ambush wheels/turret moving | 6 | 0.5 1.5 | +0.33 | 1.03 | 2.5 | 0.46
+HULL_AA_CELL clicked faced_ambush wheels/turret rest_med | 6 | 61.1 67.8 | -2.27 | 21.55 | 52.8 | 11.05
+HULL_AA_CELL clicked faced_attack_move ALL moving | 6 | 2.5 5.0 | +2.50 | 4.51 | 11.0 | 2.58
+HULL_AA_CELL clicked faced_attack_move ALL rest_med | 6 | 91.1 97.0 | -1.02 | 23.90 | 58.5 | 13.66
+HULL_AA_CELL clicked faced_attack_move ALL settle | 6 | 75.0 75.0 | +5.42 | 8.46 | 20.7 | 5.13
+HULL_AA_CELL clicked faced_attack_move wheels/turret moving | 6 | 2.5 5.0 | +2.50 | 4.51 | 11.0 | 2.58
+HULL_AA_CELL clicked faced_attack_move wheels/turret rest_med | 6 | 91.1 97.0 | -1.02 | 23.90 | 58.5 | 13.66
+HULL_AA_CELL clicked faced_move ALL moving | 6 | 0.0 0.0 | +0.00 | 0.00 | 0.0 | 0.00
+HULL_AA_CELL clicked faced_move ALL rest_med | 6 | 72.0 69.2 | +1.37 | 20.68 | 50.7 | 9.15
+HULL_AA_CELL clicked faced_move ALL settle | 6 | 32.0 28.8 | -2.00 | 11.17 | 27.4 | 5.51
+HULL_AA_CELL clicked faced_move wheels/turret moving | 6 | 0.0 0.0 | +0.00 | 0.00 | 0.0 | 0.00
+HULL_AA_CELL clicked faced_move wheels/turret rest_med | 6 | 72.0 69.2 | +1.37 | 20.68 | 50.7 | 9.15
+HULL_AA_CELL clicked faced_right ALL moving | 6 | 0.0 0.0 | +0.17 | 0.41 | 1.0 | 0.15
+HULL_AA_CELL clicked faced_right ALL rest_med | 6 | 62.4 59.8 | +2.22 | 9.02 | 22.1 | 3.56
+HULL_AA_CELL clicked faced_right ALL settle | 6 | 28.2 35.5 | +15.75 | 17.41 | 42.6 | 8.24
+HULL_AA_CELL clicked faced_right wheels/turret moving | 6 | 0.0 0.0 | +0.17 | 0.41 | 1.0 | 0.15
+HULL_AA_CELL clicked faced_right wheels/turret rest_med | 6 | 62.4 59.8 | +2.22 | 9.02 | 22.1 | 3.56
+HULL_AA_CELL clicked faced_screen ALL moving | 6 | 1.0 1.0 | -0.17 | 1.72 | 4.2 | 0.78
+HULL_AA_CELL clicked faced_screen ALL rest_med | 6 | 64.6 71.0 | +4.36 | 6.15 | 15.1 | 2.90
+HULL_AA_CELL clicked faced_screen ALL settle | 6 | 75.0 75.0 | +5.08 | 22.46 | 55.0 | 7.23
+HULL_AA_CELL clicked faced_screen wheels/turret moving | 6 | 1.0 1.0 | -0.17 | 1.72 | 4.2 | 0.78
+HULL_AA_CELL clicked faced_screen wheels/turret rest_med | 6 | 64.6 71.0 | +4.36 | 6.15 | 15.1 | 2.90
+HULL_AA_CELL clicked faced_support_by_fire ALL moving | 6 | 1.5 1.0 | -0.17 | 0.75 | 1.8 | 0.39
+HULL_AA_CELL clicked faced_support_by_fire ALL rest_med | 6 | 65.3 68.6 | -1.83 | 15.79 | 38.7 | 7.19
+HULL_AA_CELL clicked faced_support_by_fire ALL settle | 6 | 75.0 75.0 | +1.33 | 9.40 | 23.0 | 3.24
+HULL_AA_CELL clicked faced_support_by_fire wheels/turret moving | 6 | 1.5 1.0 | -0.17 | 0.75 | 1.8 | 0.39
+HULL_AA_CELL clicked faced_support_by_fire wheels/turret rest_med | 6 | 65.3 68.6 | -1.83 | 15.79 | 38.7 | 7.19
+HULL_AA_POOLED mode class metric | pooled sd a run | runs | se of a task's sum at 6 runs | MDE (2.49 se) at 6
+HULL_AA_POOLED clicked ALL moving | 2.04 | 36 | 5.0 | 12.5
+HULL_AA_ROW {"base_task_median": 0.75, "class": "ALL", "metric": "moving", "mode": "clicked", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 2.044, "tasks": 6}
+HULL_AA_POOLED clicked ALL rest_med | 17.47 | 36 | 42.8 | 106.6
+HULL_AA_ROW {"base_task_median": 64.975, "class": "ALL", "metric": "rest_med", "mode": "clicked", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 17.473, "tasks": 6}
+HULL_AA_POOLED clicked ALL settle | 13.90 | 36 | 34.1 | 84.8
+HULL_AA_ROW {"base_task_median": 72.25, "class": "ALL", "metric": "settle", "mode": "clicked", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 13.904, "tasks": 6}
+HULL_AA_POOLED clicked wheels/turret moving | 2.04 | 36 | 5.0 | 12.5
+HULL_AA_ROW {"base_task_median": 0.75, "class": "wheels/turret", "metric": "moving", "mode": "clicked", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 2.044, "tasks": 6}
+HULL_AA_POOLED clicked wheels/turret rest_med | 17.47 | 36 | 42.8 | 106.6
+HULL_AA_ROW {"base_task_median": 64.975, "class": "wheels/turret", "metric": "rest_med", "mode": "clicked", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 17.473, "tasks": 6}
+HULL_AA_POOLED drawn ALL moving | 1.54 | 36 | 3.8 | 9.4
+HULL_AA_ROW {"base_task_median": 1.75, "class": "ALL", "metric": "moving", "mode": "drawn", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 1.544, "tasks": 6}
+HULL_AA_POOLED drawn ALL rest_med | 21.73 | 36 | 53.2 | 132.5
+HULL_AA_ROW {"base_task_median": 49.8375, "class": "ALL", "metric": "rest_med", "mode": "drawn", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 21.726, "tasks": 6}
+HULL_AA_POOLED drawn ALL settle | 16.08 | 36 | 39.4 | 98.0
+HULL_AA_ROW {"base_task_median": 75.0, "class": "ALL", "metric": "settle", "mode": "drawn", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 16.076, "tasks": 6}
+HULL_AA_POOLED drawn wheels/turret moving | 1.54 | 36 | 3.8 | 9.4
+HULL_AA_ROW {"base_task_median": 1.75, "class": "wheels/turret", "metric": "moving", "mode": "drawn", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 1.544, "tasks": 6}
+HULL_AA_POOLED drawn wheels/turret rest_med | 21.73 | 36 | 53.2 | 132.5
+HULL_AA_ROW {"base_task_median": 49.8375, "class": "wheels/turret", "metric": "rest_med", "mode": "drawn", "probe": "hull-rest gang arm (queue A/A)", "runs": 36, "sd_run": 21.726, "tasks": 6}
+HULL_AA_NULL (3a) crew-pooled permutation p, new v base, per mode x task x class (p < 0.05 = a null fails the line)
+HULL_AA_NULL 3a drawn faced_ambush ALL | n 115/115 | medians 64.8 v 60.0 | p 0.949
+HULL_AA_NULL 3a drawn faced_ambush wheels/turret | n 115/115 | medians 64.8 v 60.0 | p 0.949
+HULL_AA_NULL 3a drawn faced_attack_move ALL | n 115/115 | medians 70.4 v 56.8 | p 0.161
+HULL_AA_NULL 3a drawn faced_attack_move wheels/turret | n 115/115 | medians 70.4 v 56.8 | p 0.161
+HULL_AA_NULL 3a drawn faced_move ALL | n 115/115 | medians 52.2 v 39.8 | p 0.288
+HULL_AA_NULL 3a drawn faced_move wheels/turret | n 115/115 | medians 52.2 v 39.8 | p 0.288
+HULL_AA_NULL 3a drawn faced_right ALL | n 115/115 | medians 46.7 v 56.2 | p 0.675
+HULL_AA_NULL 3a drawn faced_right wheels/turret | n 115/115 | medians 46.7 v 56.2 | p 0.675
+HULL_AA_NULL 3a drawn faced_screen ALL | n 115/115 | medians 48.6 v 37.0 | p 0.106
+HULL_AA_NULL 3a drawn faced_screen wheels/turret | n 115/115 | medians 48.6 v 37.0 | p 0.106
+HULL_AA_NULL 3a drawn faced_support_by_fire ALL | n 115/115 | medians 91.1 v 80.3 | p 0.612
+HULL_AA_NULL 3a drawn faced_support_by_fire wheels/turret | n 115/115 | medians 91.1 v 80.3 | p 0.612
+HULL_AA_NULL 3a clicked faced_ambush ALL | n 115/115 | medians 61.1 v 64.0 | p 0.831
+HULL_AA_NULL 3a clicked faced_ambush wheels/turret | n 115/115 | medians 61.1 v 64.0 | p 0.831
+HULL_AA_NULL 3a clicked faced_attack_move ALL | n 115/115 | medians 100.9 v 95.2 | p 0.450
+HULL_AA_NULL 3a clicked faced_attack_move wheels/turret | n 115/115 | medians 100.9 v 95.2 | p 0.450
+HULL_AA_NULL 3a clicked faced_move ALL | n 115/115 | medians 71.3 v 73.8 | p 0.843
+HULL_AA_NULL 3a clicked faced_move wheels/turret | n 115/115 | medians 71.3 v 73.8 | p 0.843
+HULL_AA_NULL 3a clicked faced_right ALL | n 115/115 | medians 62.9 v 62.4 | p 0.953
+HULL_AA_NULL 3a clicked faced_right wheels/turret | n 115/115 | medians 62.9 v 62.4 | p 0.953
+HULL_AA_NULL 3a clicked faced_screen ALL | n 115/115 | medians 68.1 v 67.2 | p 1.000
+HULL_AA_NULL 3a clicked faced_screen wheels/turret | n 115/115 | medians 68.1 v 67.2 | p 1.000
+HULL_AA_NULL 3a clicked faced_support_by_fire ALL | n 115/115 | medians 73.6 v 67.5 | p 0.658
+HULL_AA_NULL 3a clicked faced_support_by_fire wheels/turret | n 115/115 | medians 73.6 v 67.5 | p 0.658
+HULL_AA_NULL 3a cells failing at p < 0.05: 0 of 24
+HULL_AA_NULL 3b settle faced_ambush | n 6 | median paired diff +0.0 s
+HULL_AA_NULL 3c moving faced_ambush ALL | new 13 v base 5 | diff +8 | own se 4.0
+HULL_AA_NULL 3c moving faced_ambush wheels/turret | new 13 v base 5 | diff +8 | own se 4.0
+HULL_AA_NULL 3b settle faced_attack_move | n 6 | median paired diff +0.0 s
+HULL_AA_NULL 3c moving faced_attack_move ALL | new 38 v base 38 | diff +0 | own se 5.4
+HULL_AA_NULL 3c moving faced_attack_move wheels/turret | new 38 v base 38 | diff +0 | own se 5.4
+HULL_AA_NULL 3b settle faced_move | n 6 | median paired diff -10.0 s
+HULL_AA_NULL 3c moving faced_move ALL | new 5 v base 5 | diff +0 | own se 2.7
+HULL_AA_NULL 3c moving faced_move wheels/turret | new 5 v base 5 | diff +0 | own se 2.7
+HULL_AA_NULL 3b settle faced_right | n 6 | median paired diff +0.0 s
+HULL_AA_NULL 3c moving faced_right ALL | new 8 v base 9 | diff -1 | own se 4.2
+HULL_AA_NULL 3c moving faced_right wheels/turret | new 8 v base 9 | diff -1 | own se 4.2
+HULL_AA_NULL 3b settle faced_screen | n 6 | median paired diff +0.0 s
+HULL_AA_NULL 3c moving faced_screen ALL | new 14 v base 14 | diff +0 | own se 3.5
+HULL_AA_NULL 3c moving faced_screen wheels/turret | new 14 v base 14 | diff +0 | own se 3.5
+HULL_AA_NULL 3b settle faced_support_by_fire | n 6 | median paired diff +0.0 s
+HULL_AA_NULL 3c moving faced_support_by_fire ALL | new 15 v base 13 | diff +2 | own se 2.0
+HULL_AA_NULL 3c moving faced_support_by_fire wheels/turret | new 15 v base 13 | diff +2 | own se 2.0
+HULL_AA_NULL 1 abandoned drawn base | 110/436 = 25.2 %
+HULL_AA_NULL 1 abandoned drawn new | 112/426 = 26.3 %
+HULL_AA_NULL 1 abandoned clicked base | 73/471 = 15.5 %
+HULL_AA_NULL 1 abandoned clicked new | 64/512 = 12.5 %
