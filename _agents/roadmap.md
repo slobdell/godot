@@ -306,7 +306,7 @@ orchestrator TELLS HIM it is time to launch these** (Agent tool, `model: fable`,
   arena's owner (`arenas/**`, no stream this round). Today main's lock-reverse escape frees the hull, and R31.5 keeps
   that for terrain pins.
 
-## Round 33 candidates (found during round 32)
+## Round 33 candidates (found during round 32) — SPLIT 2026-10-17 as traffic (the far loop as CP-X, T4-ON, crate roofs) + manoeuvre (CP-F, the face at rest) + brains (respawn overlap, B10b, B11b, B5c-v6) + native (pairs, N5 after CP-X) + planner (CP-Q, the face-behind budget) (`workstreams.md` *Round 33*)
 
 - **Respawns can overlap a standing hull (brains, R32.6's play-side check, 2026-10-16):** `match.gd` ~2123 respawns at
   `_jittered(spawn_position(...))` with no check against hulls already standing near the slot, so a big hull respawning beside

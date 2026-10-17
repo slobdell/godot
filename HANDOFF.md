@@ -4,7 +4,32 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-16 ~19:00 PDT — **ROUND 32 IS CLOSED (below).** **MAIN GREEN at `0c124cf7`** (builder0, `make check exited 0`, 2724 passed, 0 failed, sim-baseline 13 unmoved; perf/timing NOT JUDGED as usual). Later commits are docs plus one comment line in `mk/planner.mk`. He pushes `main`. Round 33 is not prepared yet: the next orchestrator listens to him first._
+_Last updated: 2026-10-17 ~07:30 PDT — **ROUND 33 IS PREPARED (below).** Main inherits `0c124cf7`'s green check (builder0, `make check exited 0`, 2724/0, sim-baseline 13 unmoved; later commits are docs plus one comment line in `mk/planner.mk`). He pushes `main`._
+
+## 🚀 ROUND 33 IS PREPARED (2026-10-17) — read this first
+
+**Five streams, ALL Opus (his round-32 rule), the orchestrator on Opus too.** No new playtest words from him ("prepare the
+workspaces for our next round"): round 33 is round 32's parked candidates. Split, ownership and contracts C33.1–C33.8 in
+`workstreams.md` *Round 33*; briefs in `_agents/streams/`. **Launch baseline:** main at this docs commit inherits
+`0c124cf7`'s green check (`tools/merge_check_needed.sh 0c124cf7` lists only `mk/planner.mk`, a one-line comment diff):
+workers run no baseline check. Round 32's `stream/*` branches were renamed `round32/<stream>` (all merged; kept) so the
+worktrees start fresh; `origin` holds old `stream/*` branches, so workers don't push.
+
+| Stream | Folder (offset) | What he will notice | First item |
+|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | a crew pinned behind a parked crew of ANOTHER squad gets by (the far ask loop, his known issue); the yard's last hull stops circling (T4) | **CP-X**: the far-loop census on skirmish stages, then the design |
+| **manoeuvre** | `godot-manoeuvre` (2) | a wheeled turret vehicle told to face a direction ends facing it at rest (his other known issue: a War Rig ~150° backwards) | F0: the missing face step at s66, then **CP-F** |
+| **brains** | `godot-brains` (3) | respawns never inside a standing hull; a pushed-off rig returns facing his way (B11b on CP-F); seats stop jumping (B10b); the yard's last crew in (v6) | R1 the respawn fix |
+| **native** | `godot-native` (4) | nothing alone: every pair; N5's held ports after CP-X's design | the face_behind floor, then pairs |
+| **planner** | `godot-planner` (6) | every long truck in a gang press gets its planned turn (CP-Q); the War Rig's open-ground face-behind planned on the C++ path | P1: size line (3) |
+
+**Dependencies the orchestrator carries:** CP-F (manoeuvre) → B11b (brains); CP-X's written design (traffic) → native's N5
+ports, and brains' seam only if traffic picks an element make-room; traffic's T4 circle trace → brains' v6; planner P3 and
+manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars (round 33)* before its numbers.
+
+**To launch (the lead):** the five worktrees are created. In each folder start a CLI on Opus with the kickoff prompt from
+`_agents/orchestration.md` *The kickoff prompt* (the same text for every stream), then the orchestrator runs the loop prompt
+from *The orchestrator's loop* with N = 33.
 
 ## 🏁 ROUND 32 IS CLOSED (2026-10-16 ~19:00 PDT) — read this first
 

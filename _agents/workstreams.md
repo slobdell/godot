@@ -1,8 +1,96 @@
 # Workstreams: the current round
 
-> **ROUND 31 PREPARED (2026-10-14 ~22:00 PDT; launched FRESH — no worktree or agent carried over from round 30): five
-> streams, ONE on Fable 5.1 (planner), the rest and the orchestrator on Opus (his quota rule, `roadmap.md` *Round 31
-> candidates*).** Briefs in `streams/`.
+> **ROUND 33 PREPARED (2026-10-17; launched FRESH from the docs commit — no worktree or agent carried over from round
+> 32): five streams, all on Opus (his rule).** Briefs in `streams/`.
+
+## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
+
+**Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
+happens the way he plays it.** No new playtest words from him at preparation (2026-10-17 ~07:00 PDT, "prepare the
+workspaces for our next round"); his words, if any arrive before launch, go into the briefs first. What he should notice
+when it ships: a crew stuck behind a parked crew of ANOTHER squad gets by instead of nudging back and forth; a War Rig or
+other wheeled turret vehicle told to face a direction ends facing it, including after it is pushed off its post; a crew's
+seat stops jumping while its squad jostles, without parking it in a squadmate's way; respawns never land inside a
+standing hull; the planner's shared queue (no starvation) and the War Rig's open-ground face-behind planned on the
+library path. Method unchanged (C31.1–C31.3, R31.1–R31.10, R32.1–R32.7 stand): the whole suite with the switch ON on the
+pair tree before a judged series, bars sized from `judging.md` and filed in *Bars (round 33)* before any number, `make
+quick-remote` to iterate, a full check only for a named hash.
+
+**Models (his last rule, 2026-10-16: "we should go back to using Opus agents across the board to conserve fable quota"):
+every stream AND the orchestrator on Opus.** If he wants one Fable stream this round (memory: at most one, for the single
+hardest problem), it is traffic (the far loop, lingering since round 31).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
+|---|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew pinned behind a parked crew of another squad gets by (the far ask loop in skirmish); the crowded yard's last hull stops circling its slot (T4) | **CP-X** the far-loop census + design |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a wheeled turret vehicle given a facing turns its hull there AT REST and sits still (M1b(3)) | **CP-F** face at rest |
+| **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | respawns never overlap a standing hull; a pushed-off rig returns to its post facing his way (B11b on CP-F); seats stop jumping (B10b); the yard's last crew in (B5c-v6) | respawn fix; B11b |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; N5's held ports once CP-X's design settles | each pair |
+| **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | the planner's shared queue (no gang-press starvation) and the War Rig's open-ground face-behind served on the library path | CP-Q |
+
+**Launch baseline:** main `bb4fad59` (+ this docs commit) inherits `0c124cf7`'s green check (builder0 `make check exited
+0`, 2724/0, sim-baseline 13 unmoved): `tools/merge_check_needed.sh 0c124cf7` lists only `mk/planner.mk`, whose diff is one
+comment line (a brief's archive path). Workers run no baseline check.
+
+**Ownership:** round 32's table stands (traffic the give-way block, `_avoid`, `_around_friends`, `_ask_behind`,
+`_hull_within`, `_negotiate`, ask, `_begin_yield`; manoeuvre the `drive()` body, `_nose_stop`, `unstick`, `_pressing_escape`,
+the k-turn executor, H1/H1b, the face-at-rest path in `order_controller.gd`, the `_order_move` decline for wheeled turret
+hulls; planner `game/ai/planner/**`, `native/src/planner_*`, `tests/planner/**`, `tests/test_planner*.gd`, `mk/planner.mk`;
+native `native/**` outside planner_*, `mk/native.mk`, `exec_fields.h`, the twins; brains the rest of `game/ai/**`,
+`game/tactics/**`, elements, `tank_brain.gd`, `gunnery.gd` except manoeuvre's lead lines). **New grants:** brains gets the
+respawn spot in `game/match/match.gd` (the `tank.respawn(_jittered(spawn_position(...)))` call ~2128 and one helper beside it; merge
+note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-roof navmesh islands (stretch). **Nobody:**
+`tests/baselines/**` except the orchestrator's `make sim-baseline-adopt` on main; `tools/judge/**` (the orchestrator).
+
+**Contracts (round 33):**
+
+- **C33.1 Fresh start.** Round 32's `stream/*` branches are renamed `round32/<stream>` (kept, all merged); every worktree is
+  created from this docs commit. No agent of round 32 runs. `origin` holds old `stream/*` branches: workers don't push.
+- **C33.2 The far ask loop in skirmish (CP-X; traffic leads, brains provides any element seam).** Round 32's evidence
+  (manoeuvre, builder0, fights 400–423, n 24, `a13a9399`): far rows 6, of which 5 are a crew pinned by a PARKED crew of
+  ANOTHER element (4 × Green_Guns_4 behind Green_Eyes II_3, 54 m of route left, gap 6 m; 1 × Rust_Battery2_1 behind
+  Rust_Battery_5, 19 m left) and 1 same-element under way. **n 6 is too few to design on.** (1) **Census first:** far rows by
+  `blocker_kind` (manoeuvre's field, on main) over a wider skirmish sample (fights, hull-rest, and two real skirmish maps
+  he plays, Terminus and the Locks; harness must form elements: lesson 1 of manoeuvre's round-32 close), filed as a
+  REPORTED table with the frequency per match. If the case is rarer than ~1 per match, say so and the orchestrator decides
+  whether to build. (2) **Design**, written before code and agreed through the orchestrator: a cross-element give-way (the
+  parked crew yields by traffic's `_begin_yield`, since it has no route of its own) or an element-level make-room
+  (brains: the parked crew's element shifts that seat). Swapping seats is out (C32.10, parked: different elements share
+  no seats). If brains' seam is needed, its signature is agreed before either side writes code (as C32.10's). (3) Its own
+  bar on the skirmish stages, filed before numbers; the whole suite on the pair tree with the switch ON first; native
+  mirrors only if the rule reaches the drive or `_negotiate`.
+- **C33.3 Face at rest (CP-F; manoeuvre), then B11b (brains).** Manoeuvre first traces planner's round-32 finding
+  (hull-rest faced_move s66: both arms end ~150° off and the seam never acted, a `stop` with no face step after the move;
+  a likely main bug) and fixes it on its own commit if it is one. Then M1b(3): a wheeled turret hull that completes a
+  faced order turns its HULL to the facing at rest (turn-the-hull, his round-28 call 2) and settles; R32.3 (a)–(c) stand
+  (arrived = the held seat at completion; re-seats guarded; facekeep unchanged). CP-F merges ON when judged. **Then** brains'
+  B11b: HOLD's return honours the post's facing for `mount == "turret"` wheeled hulls ONLY (B11's gain kept: wheels/turret
+  faced_move 48.4 → 17.3°; fixed-gun wheeled hulls untouched by construction), judged on a base with CP-F ON; the pass
+  case s66 Green_Guns_5 ≤ 90° in ≥ 2 of 3; no class worse at p < 0.05.
+- **C33.4 B10b, the grounding latch as a seat choice (brains).** B10 fixed the flips (Sumps s16 t8: 22 → 0) but failed Sumps
+  s19 t8 (+19.9 s: the latched seat stood in two squadmates' passage). B10b keeps the latch only while the latched point is
+  not in a squadmate's route corridor (or re-grounds once, with hysteresis); its bar names s16 t8 (flips) and s19 t8
+  (time) as pass cases. Then B5c-v6 (lab `lab/brains-r32-gate` `b8a34c4f`; native's side-gate mirror on
+  `pair/brains-v6-carry`) on a base with B10b ON if it ships, else on main.
+- **C33.5 Respawns never overlap a standing hull (brains, the grant above).** A respawn takes the nearest clear spot
+  (hull footprint v standing hulls), deterministic; a test that fails without it (a big hull respawning beside a parked
+  one). Sim-baseline may move: the orchestrator adopts with the reason.
+- **C33.6 CP-Q, the planner's shared queue, and the open-ground face-behind (planner).** (a) The hull-rest gang arm A/A
+  (fifo v fifo, seeds 66–71) sizes line (3)'s noise; (b) re-judge `--planner-queue=shared` (refuse early only at rest,
+  `d98656ab`) on FRESH seeds with that bar; ships ON as a pair if it passes. (c) The seam never serves a War Rig's
+  open-ground face-behind with the library (189 expansions > PENDING_TICKS × SLICE = 180): a budget or heuristic change so
+  it does, priced per preset (his rule: perf cuts ship as presets), judged on test_manoeuvre_face_behind's cases and the
+  hull-rest rigs. Manoeuvre's CP-F is the executor side: agree with manoeuvre which owns a faced finish.
+- **C33.7 T4-ON (traffic, after CP-X's census).** Trace ONE circle loop (the yard head-on's last hull circling its slot
+  15–20 s with the ghost on; also B5c-v6's case: tell brains what you find), then mixed stuck re-judged at n ≈ 48 on fresh
+  seeds, bar filed first.
+- **C33.8 Native.** Pairs pre-empt its own work (C31.2). N5's held ports (`_negotiate` / ask / `_begin_yield`, `_manoeuvre`)
+  stay held until CP-X's design is written (it will likely change exactly those); then port them. `test_native_face_behind`
+  compared 0 native executes in round 32 (vacuous): give it a floor if round 32 did not.
+
+**Rulings (round 33, the orchestrator's, as they arise):** none yet.
+
+**Bars (round 33):** filed here before any number.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 

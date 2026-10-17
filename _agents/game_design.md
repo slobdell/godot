@@ -3979,3 +3979,12 @@ T4 added a 4th argument to `avoidance_gather`, so every tank errored every tick.
 run/skirmish/demo` now rebuild a stale library first (`native-fresh`). A headless skirmish prints 0 SCRIPT ERROR. He also
 played round 31 WITHOUT its C++ (the planner's legs ran only where GDScript took over), so his next play is the first of
 round 31 as shipped.
+
+## Round 33: the preparation (2026-10-17, the orchestrator; no new playtest words)
+
+His words: "prepare the workspaces for our next round." No playtest feedback since round 32 closed, so round 33 is round
+32's parked candidates (`roadmap.md` *Round 33 candidates*), all Opus (his round-32 rule), split in `workstreams.md` *Round
+33*. What he should notice when it ships: a crew stuck behind a parked crew of another squad gets by; a wheeled turret
+vehicle told to face a direction ends facing it, including after being pushed off its post; respawns never land inside a
+standing hull; seats stop jumping without blocking a squadmate. Any playtest words he gives before or during the round go
+here verbatim first, then into the briefs.
