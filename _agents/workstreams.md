@@ -185,6 +185,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   merges on it (its own partial check read 2640 passed / 0 failed, sim-baseline unmoved, 23 other targets passed);
   `429ebc4b` itself merges only when R33.9's bar passes.
 
+- **R33.11 parkedroom's pair check `cf17abd6` (builder0 `make check exited 2`: test 2724 passed / 3 failed, sim-baseline red as
+  expected, native traffic twins 0 mismatches):** the three reds are tests of the old fixed-set give-way
+  (`test_movement::test_asked_to_give_way_it_steps_off_the_line_and_resumes`, brains';
+  `test_nav_yield_fit::test_a_rig_accepts_only_a_spot_it_fits_and_gives_way_without_the_wall` and
+  `::test_the_refusing_build_declines_when_nothing_fits`, manoeuvre's). **Granted:** traffic pins parkedroom OFF in those
+  three functions' setup only (they judge the fixed-set rules, which remain), and adds ON counterparts to
+  `test_traffic_neck` (merge note). **Before the series:** the first test's ON yield point (-100, 0, 2) is on the lane and
+  behind the asker's start, so traffic shows the parked crew's path, minimum gap to the asker and contacts ON; a head-on
+  means the room search excludes spots whose path crosses the asker's corridor, fixed before the series.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
