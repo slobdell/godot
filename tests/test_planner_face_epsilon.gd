@@ -27,6 +27,14 @@ func test_the_default_weight_is_todays() -> void:
 	assert_eq(PlannerSeam.FACE_EPSILON_DEFAULT, 0.0, "nothing ships until judged: a face's weight is Planner.EPSILON")
 
 
+## The base arm of P3's series names today's bits with --planner-face-keep=0 on a tree whose default is ON.
+func test_a_keep_of_zero_turns_the_circle_off() -> void:
+	assert_eq(PlannerSeam.keep_lengths("0"), 0.0, "0 is OFF, not the default")
+	assert_eq(PlannerSeam.keep_lengths("1.5"), 1.5, "a number is taken")
+	assert_eq(PlannerSeam.keep_lengths(""), PlannerSeam.FACE_KEEP_DEFAULT, "unset: the default")
+	assert_eq(PlannerSeam.keep_lengths("-1"), PlannerSeam.FACE_KEEP_DEFAULT, "negative: the default")
+
+
 func test_the_weight_lands_the_face_behind_inside_the_hold() -> void:
 	var arena := await ArenaFixture.build(self, "yard_open")
 	var req := _face_request(arena)

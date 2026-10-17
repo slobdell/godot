@@ -291,3 +291,25 @@ planner-face-shadow: native import ## planner round 33 P3: which face searches l
 		M1_FLAGS="--turn-states --planner-queue=fifo --planner-face-shadow" HULL_SEEDS="$(PLANNER_SHADOW_SEEDS)" \
 		HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)" > $(BUILD_DIR)/planner/face-shadow-runs.txt 2>&1 || true
 	@$(PYTHON) tests/planner/face_shadow_table.py $(BUILD_DIR)/manoeuvre/hull-rest/base_drawn | tee $(BUILD_DIR)/planner/face-shadow.txt
+
+# ---- round 33 (P3, C33.6 (c)): the face keep circle's judged series ----------------------------------------------------
+# One arm a call (PLANNER_FACE_ARM=base|candidate) on the pair tree (FACE_KEEP_DEFAULT 1): hull-rest's gang arm drawn +
+# clicked, the native drive, the FIFO both arms (main's queue, R33.13), the keep EXPLICIT on each arm (base
+# --planner-face-keep=0, candidate =1). Both arms called = the A/B: hull_aa.py --verdict (P2's pooled guards, line (2a))
+# and face_keep_table.py (lines (2b) the FACE asks' abandoned share, (2c) the drift line).
+PLANNER_FACE_SEEDS ?= 84 85 86 87 88 89 90 91 92 93 94 95
+PLANNER_FACE_ARM ?= base
+.PHONY: planner-judge-face
+planner-judge-face: native import ## planner round 33 P3: hull-rest's gang arm, PLANNER_FACE_ARM=base (keep 0) | candidate (keep 1) on PLANNER_FACE_SEEDS
+	@echo ">> planner-judge-face on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_FACE_ARM) | seeds $(PLANNER_FACE_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_FACE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
+		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states --planner-queue=fifo --planner-face-keep=$(if $(filter candidate,$(PLANNER_FACE_ARM)),1,0)" \
+		HULL_SEEDS="$(PLANNER_FACE_SEEDS)" HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)"
+	@$(PYTHON) tests/planner/face_keep_table.py $(BUILD_DIR)/manoeuvre/hull-rest --seeds "$(PLANNER_FACE_SEEDS)"
+
+# The keep's Terminus rig series (line (3), arrivals): keep 0 v keep 1 on fresh seeds, the FIFO both arms.
+PLANNER_FACE_SERIES_SEEDS ?= 231 232 233 234 235 236 237 238 239 240 241 242 243
+.PHONY: planner-series-face
+planner-series-face: ## planner round 33 P3: planner-series with base = --planner-face-keep=0, candidate = 1 (FIFO both), on PLANNER_FACE_SERIES_SEEDS
+	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_FACE_SERIES_SEEDS)" \
+		PLANNER_SERIES_BASE_FLAGS="--planner-queue=fifo --planner-face-keep=0" PLANNER_SERIES_CAND_FLAGS="--planner-queue=fifo --planner-face-keep=1"

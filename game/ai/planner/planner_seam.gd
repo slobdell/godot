@@ -141,6 +141,9 @@ static var last_abandoned := {}   # measurement: the last search that ran out th
 static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
 ## Round 33 (P3's drift line): for every FACE plan served, the furthest its poses take the hull from the face's home (m).
 static var face_far: PackedFloat32Array = []
+## Round 33 (P3's line (2b)): asks and abandoned searches by kind (face, kturn, ...), the FACE asks' abandoned share.
+static var asks_by_kind := {}
+static var abandoned_by_kind := {}
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 ## The slice this match plans at (`slice()`), latched once per match; where it came from ("flag", "preset", "default").
 static var _slice := SLICE
@@ -248,8 +251,14 @@ static func face_keep() -> float:
 		return face_keep_override
 	if _face_keep < 0.0:
 		var text := LaunchFlags.from_environment().text(FACE_KEEP_FLAG)
-		_face_keep = text.to_float() if text.is_valid_float() and text.to_float() > 0.0 else FACE_KEEP_DEFAULT
+		_face_keep = keep_lengths(text)
 	return _face_keep
+
+
+## FACE_KEEP_FLAG's text as hull lengths: a number >= 0 (0 turns the circle OFF, so a judged base arm can name
+## today's bits on a tree whose default is ON), else FACE_KEEP_DEFAULT.
+static func keep_lengths(text: String) -> float:
+	return text.to_float() if text.is_valid_float() and text.to_float() >= 0.0 else FACE_KEEP_DEFAULT
 
 
 ## A face request with no KEEP circle of its own (the slot law's) keeps every pose within `lengths` hull lengths of
@@ -373,7 +382,8 @@ static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
 			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "stale_released": stale_released, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
-			"holds": _hold_stats(), "hold_ticks": Array(holds), "face_far": Array(face_far)}   # hold_ticks: the per-event list (the series pools it per arm)
+			"holds": _hold_stats(), "hold_ticks": Array(holds), "face_far": Array(face_far),
+			"asks_by_kind": asks_by_kind.duplicate(), "abandoned_by_kind": abandoned_by_kind.duplicate()}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
@@ -404,6 +414,8 @@ static func reset() -> void:
 	_last_refusal = {}
 	holds = PackedInt32Array()
 	face_far = PackedFloat32Array()
+	asks_by_kind = {}
+	abandoned_by_kind = {}
 	last_plans = []
 	_release_all()
 
@@ -587,6 +599,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	_hook()
 	_queue.append(name)
 	requests += 1
+	asks_by_kind[kind] = int(asks_by_kind.get(kind, 0)) + 1
 	return crew
 
 
@@ -597,6 +610,7 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	pending_ticks += 1
 	if tick - crew.asked_tick >= pending_cap():
 		abandoned += 1
+		abandoned_by_kind[crew.kind] = int(abandoned_by_kind.get(crew.kind, 0)) + 1
 		holds.append(tick - crew.held_since)
 		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
 				"start": [snappedf(crew.req.start_x, 0.01), snappedf(crew.req.start_z, 0.01), snappedf(crew.req.start_fx, 0.01), snappedf(crew.req.start_fz, 0.01)],
@@ -996,6 +1010,8 @@ static func restore(snapshot: Dictionary) -> void:
 	refused_early = int(counters.get("refused_early", 0))
 	stale_released = int(counters.get("stale_released", 0))
 	face_far = PackedFloat32Array(counters.get("face_far", []))
+	asks_by_kind = (counters.get("asks_by_kind", {}) as Dictionary).duplicate()
+	abandoned_by_kind = (counters.get("abandoned_by_kind", {}) as Dictionary).duplicate()
 	if queue_on():
 		# The shared queue: every begun crew's own session begun again from its request and stepped as far.
 		for name: String in _crews:
