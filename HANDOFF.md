@@ -37,6 +37,14 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   one standing at its slot. **Main `07b8e99a` = R33.3 + R1, each checked alone, not together** (disjoint files:
   `planner_seam.gd` v `match.gd`): ONE main check after the next batch (N5.M, R33.9 if it passes), per R33.10's load rules.
 
+**Parked (round 33):**
+- **parkedroom (traffic X3) PARKED, R33.12** (builder0, tree `d90fbdb7`, n 72 paired: L1 parked far loops 22 → 25 FAIL, L6
+  only 10 % return to the post FAIL). The targeted "gave way in place, then refused" loops went 11 → 0. A crew paused between
+  orders is treated as parked, makes room, and then drifts about 19 m. Stays DEFAULT_OFF. A v2 (rule only for a crew AT a
+  post) needs a fresh bar on fresh fights, and comes after T4 and islands.
+- **N5.M not green yet:** 145ada3a was killed at the 5400 s cap. native-live-guard false FAIL fixed in `607fca1a`. The chain is
+  re-running on `025d5631`/`c70be402` (brief-only diff; merge `c70be402` if all three steps are green).
+
 **To launch (the lead):** the five worktrees are created. In each folder start a CLI on Opus with the kickoff prompt from
 `_agents/orchestration.md` *The kickoff prompt* (the same text for every stream), then the orchestrator runs the loop prompt
 from *The orchestrator's loop* with N = 33.
