@@ -163,6 +163,20 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   brains' fix, inside B5c-v6 (R4): yard s42 t3 A_5 joins v6's bar as a named pass case (ghost ON and OFF). T4's mixed-stuck
   re-judge (n ≈ 48) runs after parkedroom's series, with the yard head-on's settle time REPORTED (not judged) until v6 lands.
 
+- **R33.9 An element's `arrived` flips with no hysteresis: a MAIN bug, brains' next item after R1 (manoeuvre's F1 trace,
+  2026-10-17; `references/round33/manoeuvre/f1-arrived-flip/`):** builder0 light, `97bcd952` + a goal print, gangs hull-rest
+  faced_attack_move s40, GDScript, n 1 an arm: the Battery element (14 crews, swarm) flips `arrived` every 0.5–3 s from
+  t ≈ 15 s to the end on ONE anchor; arrived lays the seats on his drawn heading, not-arrived ~150° the other way, so every
+  seat jumps 19–27 m a flip. Base (turnhull OFF) as bad: Battery 67 flips v 59, Hunters 17 v 5, re-seats 286 v 234. Cause:
+  `element_plan.gd:290` `plan["arrived"] = to_go <= ARRIVE_M` (12 m, the centre) — the arrival layout pulls the centre past
+  12 m, the travelling layout pulls it back (the pattern line 781's `facing_sent` already guards for the facing). Turnhull
+  only catches more crews mid-turn at the judge. **What he would see:** a gang battery that never settles after an
+  attack-move, crews shuttling ~20 m back and forth. **Ruling:** brains latches arrival per task (arrived stays true for the
+  task until the centre leaves ARRIVE_M + a margin; line 686's twin read too), alone, a test on a 14-crew swarm
+  attack-move that fails without it, its own bar (s40 Battery flips 0; arrivals not down; re-seats down), its own check;
+  sim-baseline moves adopted with the reason; native states whether element_plan has a twin. **Order for brains:** R1 →
+  R33.9 → R33.6 → B10b (its series on a tree with R33.9). **Manoeuvre's CP-F bar judges on a tree with R33.9.**
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
