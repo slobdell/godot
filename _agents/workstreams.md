@@ -148,6 +148,12 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   its own check; sim-baseline moves listed with the reason (showmatch maps). **Every running series stays on its own tree:**
   traffic's parkedroom and manoeuvre's fights stages use showmatch fights, whose Green side this changes.
 
+  **Side effect accepted (orchestrator, on brains' `71f80a70` read):** in RESPAWN (non-elimination) matches, a crew that
+  respawns is now re-formed on the next think into a new element named after its squad, usually 1 crew. Main left it
+  unseated (its brain alone) until its team had no element. It is a symmetric AI change and ships with R33.6: a respawned
+  crew rejoins doctrine. Two elements can share a squad name on the CPU side (cosmetic). Elimination matches are unchanged.
+  A sim-baseline move from this is listed with its reason at merge. Round 34 candidate: rejoin the squad's living element
+  when it has room.
 - **R33.7 N5.M, `_manoeuvre`'s decision in C++ (native, 2026-10-17):** stream/native `04ee782e` + `145ada3a`, switch
   `BrainSwitches.native_manoeuvre` default ON (off = round 26's callback); design in `native.md` *N5.M*. Proof (builder0
   light): `test_native_manoeuvre` 920 decisions, 0 mismatches, 0 called back (reverse 307, route 613, every refusal but
