@@ -17,6 +17,52 @@ const UNITS: Array[String] = ["tank", "ifv", "scout", "gang_tank", "artillery", 
 		"gang_tank", "scout", "tank"]
 const FRAMES := 180
 
+## Round 33 (N5.M): `_manoeuvre`'s decisions in the COMPARED native arm (not the fight's own drives): made natively, called
+## back, and the plans / refusals they counted (Manoeuvre's tables, read from the native arm's capture).
+var man_native := 0
+var man_called_back := 0
+var man_tally := {}
+## `_compare_tick`'s clocks (measurement): microseconds in the live GDScript drive and the native drive, and drives.
+var tick_live_usec := 0
+var tick_native_usec := 0
+
+
+func _man_reset() -> void:
+	man_native = 0
+	man_called_back = 0
+	man_tally = {}
+	tick_live_usec = 0
+	tick_native_usec = 0
+
+
+## Every decision in the compared native arm made natively (N5.M), and floors: "" the decisions, else a tally key.
+func _man_check(stage: String, floors := {"": 1}) -> void:
+	print("native manoeuvre (%s): %d decisions native, %d called back, plans / refusals %s" % [stage, man_native,
+			man_called_back, man_tally])
+	assert_eq(man_called_back, 0, "the native drive decides _manoeuvre itself (%s)" % stage)
+	for key: String in floors:
+		var have := man_native if key == "" else int(man_tally.get(key, 0))
+		assert_true(have >= int(floors[key]), "%s: %s %d >= %d" % [stage, key if key != "" else "decisions", have, floors[key]])
+
+
+func _man_counts() -> Array:
+	var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
+	return [int(c.get("manoeuvre_native", 0)), int(c.get("manoeuvre_called_back", 0))]
+
+
+## Adds the native arm's decision counts since `before` and its plan / refusal deltas (`start`, `after`: one mover's capture).
+func _man_add(before: Array, start: Dictionary, after: Dictionary) -> void:
+	var now := _man_counts()
+	man_native += now[0] - int(before[0])
+	man_called_back += now[1] - int(before[1])
+	for table: String in ["plans", "refused"]:
+		var was: Dictionary = start.get("static:Manoeuvre." + table, {})
+		var is_now: Dictionary = after.get("static:Manoeuvre." + table, {})
+		for key: String in is_now:
+			var moved := int(is_now[key]) - int(was.get(key, 0))
+			if moved != 0:
+				man_tally["%s:%s" % [table, key]] = int(man_tally.get("%s:%s" % [table, key], 0)) + moved
+
 
 ## Every mover's state, then (one more entry) the world a drive can change besides them: the planner's seam (round 31).
 func _capture_all(movers: Array[Movement]) -> Array:
@@ -73,13 +119,19 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 		var start := _capture_all(movers)
 		var live_cmd := TankCommand.new()
 		BrainSwitches.native_drive = false
+		var t0 := Time.get_ticks_usec()
 		mover.drive(live_cmd, order, delta)
+		tick_live_usec += Time.get_ticks_usec() - t0
 		BrainSwitches.native_drive = true
 		var live := _capture_all(movers)
 		_restore_all(movers, start)
 		var native_cmd := TankCommand.new()
+		var man_before := _man_counts()
+		t0 = Time.get_ticks_usec()
 		NativeDrive.drive(mover, native_cmd, order, delta)
+		tick_native_usec += Time.get_ticks_usec() - t0
 		var native := _capture_all(movers)
+		_man_add(man_before, start[i], native[i])
 		_restore_all(movers, start)
 		drives += 1
 		var differ := ""
@@ -192,6 +244,7 @@ func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
+	_man_reset()
 	NativeDrive.owned = owned
 	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
 	await ArenaFixture.build(self, "sumps")
@@ -260,6 +313,8 @@ func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 	print("native drive k-turns%s: %d drives, plans / leg ticks / aborted %s -> %s, %d mismatches" % [
 			" (owned state)" if owned else "", drives, kturn_before, kturn_after, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive through k-turns: %s" % first)
+	# (No _man_check here: an order lands between frames and the fight's own drive makes its decision before the compare;
+	# test_native_manoeuvre compares decisions on their tick. The comparison above still covers every gate tick.)
 	if not owned:
 		print("native unstick (part %d of %d): %d compared (by variant:fired %s), %d mismatches" % [part, parts,
 				unstick_compared, unstick_branches, unstick_mismatches])
@@ -277,6 +332,7 @@ func _drive_case(owned: bool) -> void:
 		print("native: absent, the drive equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
+	_man_reset()
 	NativeDrive.owned = owned
 	NativeBridge.impl.drive_owned_counts(true)
 	assert_true(Movement._off.is_empty(), "the default configuration (no --nav-off switch)")
@@ -354,10 +410,12 @@ func _drive_case(owned: bool) -> void:
 			var live_replanned := Movement.a1_replans != replans_before
 			_restore_all(movers, start)
 			var native_cmd := TankCommand.new()
+			var man_before := _man_counts()
 			t0 = Time.get_ticks_usec()
 			NativeDrive.drive(mover, native_cmd, order, delta)
 			native_usec += Time.get_ticks_usec() - t0
 			var native := _capture_all(movers)
+			_man_add(man_before, start[i], native[i])
 			native_replans += 1 if Movement.a1_replans != replans_before else 0
 			_restore_all(movers, start)
 			asked += 1
@@ -408,6 +466,7 @@ func _drive_case(owned: bool) -> void:
 		assert_true(int(counts["drives"]) >= asked, "every native drive ran on the owned state (%d >= %d)" % [
 				int(counts["drives"]), asked])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)
+	_man_check("drive")
 	assert_true(asked >= 1000 and wheeled >= 200, "a real sample (%d drives, %d wheeled)" % [asked, wheeled])
 	assert_true(replans >= 20 and native_replans == replans, "re-plans happen, and the native arm counts them through the statics (%d, %d)" % [replans, native_replans])
 	assert_true(avoided >= 20, "avoidance shapes some drives (%d)" % avoided)

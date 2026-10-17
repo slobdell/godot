@@ -106,6 +106,14 @@ static func configure() -> bool:
 		"KTURN_ARC_DEFAULT": bool((Movement as Script).get_script_constant_map().get("KTURN_ARC_DEFAULT", false)),
 		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
 		"tank_script": Tank,
+		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
+		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).
+		"manoeuvre": Manoeuvre, "MAN_MAX_M": Manoeuvre.MAX_M, "MAN_BEHIND_DEG": Manoeuvre.BEHIND_DEG,
+		"MAN_FACING_KEEP_DEG": Manoeuvre.FACING_KEEP_DEG, "MAN_SIM_DT": Manoeuvre.SIM_DT,
+		"MAN_SIM_HORIZON_S": Manoeuvre.SIM_HORIZON_S, "MAN_CHECK_EVERY": Manoeuvre.CHECK_EVERY,
+		"MAN_HULL_MARGIN_M": Manoeuvre.HULL_MARGIN_M, "REAIM_TICKS": Movement.REAIM_TICKS,
+		"KTURN_MARGIN_M": Movement.KTURN_MARGIN_M, "CUSP_DEADBAND": ManoeuvreCensus.CUSP_DEADBAND,
+		"motion_ok": NativeMotion.configure(),
 	}
 	# Round 31 (planner CP-P1): the seam's switch and its table, when this tree has the seam (loaded by path: the file
 	# parses on a tree without it).
