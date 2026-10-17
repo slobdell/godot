@@ -261,6 +261,11 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   recorded here. Dropping seed 2 was rejected. The earlier suite-order signal (12.0 v 18.5) did not reproduce in the guard
   at --fixed-fps 60 (13.5 v 12.5). Traffic reports both. Also: tactics.mk's BODY_SEEDS shadowed traffic's variable, now
   renamed BGUARD_*.
+  **Re-read, then T4 PARKED (R33.17; traffic `787fb8ae`, same tree, seeds 1–3 × 3 fronts):** (3') PASSES in all 9 cells.
+  (2') passes in 8 and FAILS at rts_camera s3: ghost OFF 7.0 v ON 12.5, against a line of 10.0. Traced: the ghost arm reads
+  12.5 at seed 3 behind every front. The CONTROL arm swung 17.0 → 7.0 with the front, because Hunters2 was late and the army
+  came in at 23.1 s (body_stage.gd:31's known order swing). It still fails as filed, so T4 stays OPT_IN and the Terminus
+  re-judge is not run. Next time (round 34): a T4 guard on this stage needs brains' hardened, order-free stage, or many fronts.
 
 - **R33.15 N5.M merges; the NATIVE=off perf budget is not N5.M's (2026-10-17).** native: `025d5631` builder0 `make check
   exited 0`, 2727/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved, determinism 9d66d3a0c59a7936. `c70be402` (diff:

@@ -50,6 +50,10 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   game, decided in C++. **Main check of 199d1587 running** (`build/r33-main-check-199d1587.log`).
 
 **Parked (round 33):**
+- **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
+  failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
+  7.0 with the front), and the ghost arm was steady at 12.5, but it failed as filed. Terminus was not re-judged. Round 34
+  needs an order-free body stage first.
 - **parkedroom (traffic X3) PARKED, R33.12** (builder0, tree `d90fbdb7`, n 72 paired: L1 parked far loops 22 → 25 FAIL, L6
   only 10 % return to the post FAIL). The targeted "gave way in place, then refused" loops went 11 → 0. A crew paused between
   orders is treated as parked, makes room, and then drifts about 19 m. Stays DEFAULT_OFF. A v2 (rule only for a crew AT a

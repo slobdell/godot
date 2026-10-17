@@ -1282,3 +1282,6 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   drawn facing (laptop, manoeuvre `8fc224fa`, n 1). Four stopped 20–45 m out and one drove on to about 52 s. Arrival is the
   five-crew centre within 12 m, so the squad never read arrived and the drawn facing never reached the crews. Candidate rule:
   arrived when 4 of 5 are in their slots and the rest are stalled. Brains' read is code-only; manoeuvre is checking the slots.
+- **T4 ghost ON, a third try (traffic + brains):** blocked by the body stage's order swing (body_stage.gd:31), which moved
+  the control arm 17.0 → 7.0 s alone (R33.17). First brains' order-free body stage, then T4's cohesion guard on it, then
+  Terminus.
