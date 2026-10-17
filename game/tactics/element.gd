@@ -1821,6 +1821,10 @@ func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary
 	elif int(before.get("seat", -1)) != _seat_index(unit_name):
 		key = "reseat"
 	goal_moves[key] = int(goal_moves[key]) + 1
+	if ARRIVE_TRACE:
+		print("ARRIVE_GOAL t=%.2f team %d element %s %s key %s %.1f m arrived %s" % [
+				Engine.get_physics_frames() / float(SimClock.TICK_RATE), team, element_name, unit_name, key,
+				(before["to"] as Vector3).distance_to(desired["to"]), arrived])
 	if key == "drift":
 		drift_moves += 1
 		var who := "%d:%s" % [id, unit_name]
