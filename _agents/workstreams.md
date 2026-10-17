@@ -201,6 +201,8 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   `cf17abd6` + the fix + the pins, builder0 light): spot 8.3 m off the lane, MIN GAP 7.1 m, contacts 0; traffic_neck 7/0,
   test_movement 9/0, nav_yield_fit 4/0. **The series tree moves to `ad347548`'s code; its full check (`ea550faf`) first.**
   The pins must restore in a teardown/after_each, not a last line (a failing assert would leak the pin into later tests).
+  **Done:** pins restore in teardown() (stream/traffic `aff64e2b`). Pair hash for the check: `pair/parkedroom-on` `6ea486ef`
+  (= `ea550faf` + that; ea550faf's check stopped, no verdict). Series tree: stream/traffic `aff64e2b`.
 
 **Bars (round 33):** filed here before any number.
 
