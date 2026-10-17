@@ -42,7 +42,7 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
 - **R33.9 → main `9396e795`** (brains `429ebc4b`: builder0 `make check exited 0`, 2731/0, sim-baseline 13 unmoved; bar passed
   on 97ec141f = 429ebc4b + 14 lines of measurement, kept in lab/brains-r339). Gangs s40 Battery arrive-flips 0 v 39, re-seats
   6 v 302; arrivals unchanged (all within 8 m 93 v 93 of 100). What he'd notice: a gang squad that has reached its spot stops
-  shuffling seats. **Main check of R33.3 + R1 + R33.9 together is running** (`build/r33-main-check-9396e795.log`).
+  shuffling seats. **Main check of R33.3 + R1 + R33.9 together: GREEN** (main `9396e795`, builder0 `make check exited 0`, 2732/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved).
 
 **Parked (round 33):**
 - **parkedroom (traffic X3) PARKED, R33.12** (builder0, tree `d90fbdb7`, n 72 paired: L1 parked far loops 22 → 25 FAIL, L6
