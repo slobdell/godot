@@ -190,6 +190,10 @@ var _facings_issued := 0
 ## EVERY TICK by design (round 7's flow), which nav sees as continuous goal movement and which is not a re-issue at
 ## all. A number here of n means n of this element's members have a deliberately moving goal.
 var goal_moves := {"task": 0, "leg": 0, "reseat": 0, "drift": 0}
+## Round 33 (R33.9, measurement): times this element went from arrived back to not arrived within a task, and
+## `--arrive-trace` prints each (ARRIVE_FLIP).
+var arrive_flips := 0
+static var ARRIVE_TRACE := OS.get_cmdline_user_args().has("--arrive-trace")
 var following := 0
 ## Bumped whenever anything the HUD shows changes.
 var revision := 0
@@ -1670,7 +1674,13 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	anchor = plan["anchor"]
 	heading = plan["heading"]
 	bounding = int(plan["bounding"])
+	var was_arrived := arrived
 	arrived = bool(plan["arrived"])
+	if was_arrived and not arrived:
+		arrive_flips += 1
+		if ARRIVE_TRACE:
+			print("ARRIVE_FLIP t=%.2f team %d element %s flips %d anchor %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE,
+					team, element_name, arrive_flips, anchor])
 	if not arrived:
 		arrived_tick = -1
 	elif arrived_tick < 0:
