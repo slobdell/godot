@@ -1262,3 +1262,12 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 - **Spectate AI vs AI** as a mode (great for learning counters, and for the lead's son).
 - **Terrain height** for hull-down positions once the cover AI is solid.
 - **Colorblind-safe team accents** and a readability pass for small phone screens.
+
+## Shelved ideas (the lead's, 2026-10-16)
+
+- **A learned CPU commander (his question: 2× Nvidia L4 on GCP, a TFLite model trained by CPU-v-CPU self-play). SHELVED by
+  him ("we'll shelve that idea for now").** The orchestrator's view if it returns: not end to end; a small policy for the
+  commander layer only (which squad goes where, when to attack or fall back) on top of the scripted brains, imitation of the
+  current commander first, then league self-play; the bottleneck is headless match throughput (CPU cores), not the GPUs;
+  inference through the native extension (LiteRT or ONNX Runtime); judged by the fights series like any change; fog-fair
+  inputs; his pillars (smart AI both sides, die-hard squad tactics) and the GCP spend are his calls.
