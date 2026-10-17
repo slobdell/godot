@@ -3860,4 +3860,18 @@ instrument that cannot lie about load — removal within one run — and let eve
    from the start; the reading's bar is "nothing moves", the consumers' is the declared A/B.
 311. **One hull-rest arm per remote call.** (Round 30, M1b.) Four arms (576 real-time runs) in one call hit builder0's
    90-minute run cap: three complete, one cut at 61, nine files corrupt, and the stale-run guard then refused the reruns.
-   Round 29's note said one arm per call; it is now a rule.
+   Round 29's note said one arm per call; it is now a rule.312. **The orchestrator never spawns subagents, not even to draft briefs.** (Round 32, the lead.) He starts a Claude CLI in
+     each worktree himself; the orchestrator writes every brief, creates the worktrees, gives the directories and the kickoff.
+313. **The harness a bar is judged on must resemble play.** (Round 32, C32.10.) The seat swap was designed on 62 far loops
+     traced in the Terminus drive, which forms NO elements; in skirmish (where every squad is an element) the far loops are
+     against another element's parked crew, and the swap never fired. Before filing a gain line, check the stage builds the
+     structures the change acts on (elements, orders, the seam).
+314. **A ruler shown defective after its number is NOT READABLE; re-measure on fresh seeds with the fix filed first** (R32.7).
+     Neither park on a broken reader nor swap readers after seeing the number.
+315. **Order-dependent reds are bugs until proven otherwise.** (Round 32: three of them.) A twin test reading a planner crew a
+     previous file left held; an exit leak from an undisposed lab; a body stage spawning touching hulls (physics separates
+     them differently in a process's first match). Each was found by asking what the earlier test leaves behind, never by
+     calling it a flake.
+316. **A player's laptop runs whatever native library it last built.** (Round 32.) His game went choppy on round 31's code
+     because his `.so` predated it; builder0's checks always rebuild, so no check could see it. Play targets now rebuild a
+     stale library (`native-fresh`).
