@@ -88,14 +88,17 @@ the orchestrator before numbers; green hashes named)_
 | H1b (C32.2) | **SHIPPED** (pair/h1b-on `273654e6`, merged as main `5cc02947`); its table is below |
 | C32.10 swap seats (stretch of H1b) | **PARKED**: G failed on fights 400–423 (far 6 v 6, swaps 0). Section below. Not merged; lab branches `lab/manoeuvre-swap2` `87498b22` and pair/swap-ship `80300909` stay as records |
 | M1b(3) (C32.5) | **CARRIED to round 33**, NOT started: the orchestrator pairs it with brains' B11b (turret-only HOLD return); B11 parked (relay below) |
-| Test splits (C32.8) | **DONE** for my files (`08e6d44c`, `566564aa`); `tests/shard_times.txt` re-record waits for the next full sharded check |
+| Test splits (C32.8) | **DONE** for my files (`08e6d44c`, `566564aa`); `tests/shard_times.txt` re-recorded (`f3714d3b`; builder0: h1b 60.6 s, h1b_guard 40.6 s, behind 19.4 s, face_behind 54.7 s) |
 | R32.7 STUCK reader | **DONE** (`f5bf085f`, python tests in `make test` through `test_manoeuvre_tables.gd`) |
 | Stretch: C++ parity | Nothing to port: native ruled no C++ mirror for H1b; the swap is parked |
 | Stretch: seed-31 clip | **NOT DONE**: seed 31 no longer loops on today's tree. Round 33 should pick a looping SKIRMISH case (not Terminus, lesson below) |
 
 **Closing commit** (this one): main merged in, plus measurement only. `blocker_kind` is added on H1B_FAR rows and
 `ManoeuvreCensus.print_new_far_rows()` (fight_census and MANOEUVRE_TURNS probes print them), and h1b_drive prints
-H1B_SEATS (elements formed, re-seats, make-room swaps). No behaviour change. Check result: see the next Status line.
+H1B_SEATS (elements formed, re-seats, make-room swaps). No behaviour change. **Green:** `4c174c4e` builder0
+`>> remote: make check exited 0`, 2718 passed, 0 failed (test wall 1763 s); then `tests/shard_times.txt` re-recorded from
+that run as `f3714d3b`, builder0 `>> remote: make check exited 0`, 2718/0 (test wall 1732 s). **Hand-over hash:
+`f3714d3b`** (the commits after it are this Status text only).
 
 **Round-33 lessons:**
 1. **The Terminus drive harness forms no elements**, so its loops may not be what the lead plays. Build any fix aimed at
