@@ -109,6 +109,7 @@ static var refused := {}          # code -> count (NO_PATH, BUDGET, GOAL_BLOCKED
 static var pending_ticks := 0     # hull-ticks held at zero/zero
 static var driving_ticks := 0
 static var queue_waits := 0       # hull-ticks waited behind another crew's search
+static var stale_released := 0   # crews released because their order was replaced (R33.3)
 
 static var _crews := {}           # name -> Crew
 static var _swept_tick := -1      # the last physics tick the crews were swept for freed hulls
@@ -277,7 +278,7 @@ static func last_refusal(crew_name: String) -> Array:
 static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
-			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
+			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "stale_released": stale_released, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
 			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
@@ -302,6 +303,7 @@ static func reset() -> void:
 	pending_ticks = 0
 	driving_ticks = 0
 	queue_waits = 0
+	stale_released = 0
 	refused_early = 0
 	_alloc_tick = -1
 	_alloc = {}
@@ -321,6 +323,34 @@ static func _sweep(tick: int) -> void:
 	for name: String in _crews.keys():
 		var crew: Crew = _crews[name]
 		if not is_instance_valid(crew.tank) or crew.tank.is_queued_for_deletion():
+			_release(name)
+
+
+## Round 33 (R33.3, manoeuvre's finding: a main bug). A crew is stale once `take` / `hold` has not been asked about it
+## for STALE_TICKS: its order was REPLACED (a face cut off by `stop` when a contact face is declined, a reverse move_to
+## from HOLD), so neither entry is reached again for that hull. `_serve` released it only on the hull's NEXT call, which
+## never came: `live()` read true to the match's end (hull-rest gangs s66 Green_Guns_5, f ~500 to 2300+), so
+## Movement.unstick skipped the hull, manoeuvring() read true, and the census lost it. Released here, ONCE A TICK, before
+## any controller runs (SceneTree.physics_frame, hooked when the seam first holds a crew): `live()` stays a lookup, and
+## the C++ drive's inline mirror of it (drive_native.cpp `seam_live`, reading `_crews`) sees the same release with no
+## C++ change (the orchestrator's ruling on native's assessment). The same rule `_serve` applies, earlier.
+static func _hook() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null and not tree.physics_frame.is_connected(_release_stale):
+		tree.physics_frame.connect(_release_stale)
+
+
+static func _release_stale() -> void:
+	if _crews.is_empty():
+		return
+	var tick := Engine.get_physics_frames()
+	for name: String in _crews.keys():
+		var crew: Crew = _crews[name]
+		if tick - crew.tick_seen > STALE_TICKS:
+			if ManoeuvreCensus.trace_unit == name:
+				print("PLANNER_SEAM %s %s: released at tick %d (stale: not asked for %d ticks, the order replaced)" % [
+						name, crew.kind, tick, tick - crew.tick_seen])
+			stale_released += 1
 			_release(name)
 
 
@@ -457,6 +487,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.heading = forward
 	crew.tank = tank
 	_crews[name] = crew
+	_hook()
 	_queue.append(name)
 	requests += 1
 	return crew
@@ -859,6 +890,7 @@ static func restore(snapshot: Dictionary) -> void:
 	driving_ticks = int(counters["driving_ticks"])
 	queue_waits = int(counters["queue_waits"])
 	refused_early = int(counters.get("refused_early", 0))
+	stale_released = int(counters.get("stale_released", 0))
 	if queue_on():
 		# The shared queue: every begun crew's own session begun again from its request and stepped as far.
 		for name: String in _crews:
