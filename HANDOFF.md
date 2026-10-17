@@ -32,6 +32,11 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
   whose planned turn was cut off by a new order can back out when stuck again (it was frozen out of unstick all match).
 
+- **R1 → main `07b8e99a`** (brains `2fd9f420`, covered by lab/brains-r339 `429ebc4b`'s check per R33.10: builder0 `make check
+  exited 0`, 2731/0, sim-baseline 13 unmoved, determinism passed). What he'd notice: a respawning vehicle never appears inside
+  one standing at its slot. **Main `07b8e99a` = R33.3 + R1, each checked alone, not together** (disjoint files:
+  `planner_seam.gd` v `match.gd`): ONE main check after the next batch (N5.M, R33.9 if it passes), per R33.10's load rules.
+
 **To launch (the lead):** the five worktrees are created. In each folder start a CLI on Opus with the kickoff prompt from
 `_agents/orchestration.md` *The kickoff prompt* (the same text for every stream), then the orchestrator runs the loop prompt
 from *The orchestrator's loop* with N = 33.
