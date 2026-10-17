@@ -218,6 +218,15 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   What he'd notice ON (traffic, same tree): crews shuffle aside about 42 extra times a fight (median; worst 111). They are
   crews paused between orders that never needed to move, so a busy neck could look like milling. The fights look the same.
 
+- **R33.13 CP-Q (planner P2) does not ship (2026-10-17; builder0, pair `c75f20a6`, hull-rest gangs fresh seeds 72–83, n 72
+  paired a mode).** Line (1), abandoned share, FAILS in both modes: drawn 0.9 % v FIFO 1.0 % (p 0.44), clicked 0.9 % v 1.6 %
+  (p 0.06). Both are under 5 %, and neither is significantly below base. The FIFO base was 13–25 % in round 32 and P1's A/A;
+  on main today, with R33.3's stale release, it is 1.0–1.6 %. R33.3 is the likely cause; it has not been shown by removal.
+  (2) PASS. (3a) drawn at-rest hull error +5.43° against a +4.50 line FAILS (attack_move +13.2, move +15.2). (3b) and (3c)
+  PASS. Terminus and s207 are reported in full (early stop off). **Main keeps FIFO; P3's series tree = main + FACE_KEEP on
+  FIFO.** The stretch item (refuse GOAL_BLOCKED / START_BLOCKED before queueing) is planner's call, and only if a cheap read
+  shows those refusals cost hold time. Native gets nothing from P2.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
