@@ -118,6 +118,23 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   exited 0, 10/0, every twin 0 mismatches; answer (a), no C++ change. Planner's full check is the ship gate.
   Native's face_behind floor was already on main (builder0 `ae3dad71`: 142 native executes, 0 mismatches).
 
+- **R33.4 CP-X: BUILD, kind-agnostic, as traffic's own give-way (2026-10-17, on traffic's X1 census):** builder0, tree
+  `dc6723ed` (main + probe), showmatch fights 500–523 on Terminus / Locks / random, 180 s, n 69: far loops 0.54 a match
+  (9/69 matches); the brief's case (parked crew of ANOTHER element) 3 episodes / 9 loops (~1 in 23 matches); behind ANY
+  parked crew ~10 episodes / 30 loops (~1 in 7). Mechanism (s403): no spot in `_begin_yield`'s fixed set fits a parked
+  crew in a neck, so it gives way IN PLACE (moves nothing), then refuses that asker for good ("just gave way to you": 20
+  of 30 loops); the other 10 are set-up batteries (T1c-b2, his yes). **Ruling:** build X2 option (a), kind-agnostic: a
+  parked crew never yields in place, is never refused for "just gave way" after an in-place yield, searches wider for a
+  spot off the asker's ROUTE, then returns. Switch `parkedroom`, DEFAULT_OFF; stage `test_traffic_neck`. No brains seam.
+  **The bar must carry T1c-b2's line** (a set-up mortar truck ordered to fire never repacks for a passer: 0, as shipped)
+  and the parked crew's return (it ends back at its slot / post within a filed time). Native: ask / `_begin_yield` run in
+  GDScript on both paths, so no mirror for parkedroom; **N5's ports of those functions wait for parkedroom's verdict**
+  (it changes `_begin_yield`'s body).
+- **R33.5 CPU squads of > 5 hulls are refused an element every think tick (traffic's side finding; brains owns it, next
+  after R1):** C19.1 refuses an element at start and again every think tick once a team's elements are gone
+  (`element_commander.gd:180`): unseated crews and up to ~470 ERROR lines a fight. A play bug (log spam each tick, crews
+  never seated): trace, fix alone with a test, its own check.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
