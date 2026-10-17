@@ -325,6 +325,11 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   function (`"drawn": order.has("facing")` on the station; merge note), read by `drawn_face` under the same `turnhull`
   switch, with a test of that case; it rides CP-F (no separate series). (q) REPORTED: turret shots in the first 20 s of a
   contact while the hull turns (manoeuvre's test: ON 1 v OFF 5 shots, n 1); the fights' hit-rate line (i) judges it.
+  **(r) granted (orchestrator, for the stretch clip only):** `game/control/screen_playtest.gd` (nobody's this round), one
+  additive read `--faced-off-deg=<deg>` replacing the const's use in the faced_right right-drag (default 60 =
+  `FACED_OFF_TRAVEL_DEG`, so every existing run and the hull-rest workload are byte-unchanged), plus a `manoeuvre-face-clip`
+  target in `mk/manoeuvre.mk`. Filmed on the laptop, windowed, `--write-movie`, switch OFF v ON; no builder0. Merge note;
+  it rides CP-F's merge, and the clip is not evidence for any CP-F line.
 - **R33.9, the arrival latch (brains; filed 2026-10-17 before any number).** Candidate lab/brains-r339 `429ebc4b` (R1 +
   R33.9): arrived until the centre is ARRIVE_M + 6 m out (half the arrive radius: above a five-crew swarm's centre swing on
   a re-seat, far below a real departure), cleared per task by `Element.assign`; both read sites (`element_plan.gd:290`,
