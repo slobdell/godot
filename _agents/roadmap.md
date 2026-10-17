@@ -1271,3 +1271,14 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   current commander first, then league self-play; the bottleneck is headless match throughput (CPU cores), not the GPUs;
   inference through the native extension (LiteRT or ONNX Runtime); judged by the fights series like any change; fog-fair
   inputs; his pillars (smart AI both sides, die-hard squad tactics) and the GCP spend are his calls.
+
+## Round 34 candidates (found during round 33)
+
+- **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
+  room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.
+- **The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
+  one fight (random-705, builder0, `d90fbdb7`).
+- **An element that never arrives because one crew is still driving (brains):** foundry s8, five War Rigs given a move with a
+  drawn facing (laptop, manoeuvre `8fc224fa`, n 1). Four stopped 20–45 m out and one drove on to about 52 s. Arrival is the
+  five-crew centre within 12 m, so the squad never read arrived and the drawn facing never reached the crews. Candidate rule:
+  arrived when 4 of 5 are in their slots and the rest are stalled. Brains' read is code-only; manoeuvre is checking the slots.
