@@ -71,3 +71,50 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (2026-10-17, in progress)
+
+| Item | State |
+|---|---|
+| F0 the missing face step | **DONE: not a main bug** (no fix commit). A real main bug found on the way, in planner's file: stale `PlannerSeam.live()` (sent to planner + orchestrator) |
+| F1 CP-F | IN PROGRESS: tracing attack-move's moving-at-75-s (attempt 2's failed line) |
+| F2 help B11b | waiting on CP-F |
+| Stretch clip | not started |
+
+### F0: s66 faced_move traced on main (2026-10-17)
+
+builder0, main `ae3dad71` (round-33 docs commit), `manoeuvre-hull-one` gangs seed 66 faced_move, n 1 a run, temporary prints
+(not committed). **Native path, turnhull OFF (today's game):** Green_Guns_5 ends **109.1°** off, still (squadmates 0.2–172°).
+Its move becomes `stop` at f≈360 with 12 m left and stays `stop`: the element's faced hold replaces its move (brains',
+round 10's rule), and every face the brain sends it after that (`from` order / sector, and contact when the quiet enemy is
+seen) is declined to `stop` by round 8's turret-carries-aim rule (`TankBrain._order_move` ~3487), because turnhull is OFF.
+No face reaches the mover, so the seam never acts. **That is the design CP-F changes, not a lost step.** GDScript path the
+same (104.9°).
+
+**With turnhull ON** (`--nav-off=turnhull --brains-off=native`, 4 runs; hull-rest is not repeatable run to run): 176 hull
+turns, but G5 still ends 44–126° off. Traced: (1) the seam plans G5's face (4–5 legs) and the legs start, then a face
+`from: "contact"` (the quiet enemy seen at ~74 m) is declined to `stop` (turnhull lifts only order/sector), so the hull
+STOPS MID-PLAN; when the contact drops it gets a new face and a new plan; (2) **stale seam crew (main bug, planner's
+file):** once the order leaves face/kturn, `take`/`hold` are never called again, so the Crew is never released and
+`PlannerSeam.live()` (no staleness check) reads true to the match end (G5 f≈500 → 2300+). While it does,
+`Movement.unstick` returns early for that hull (movement.gd ~3080), `manoeuvring()` reads true, and the census is blind.
+Proposed to planner: `live()` false past STALE_TICKS since `tick_seen`, with a test.
+
+**Agreed with planner (C33.6 (c), 2026-10-17):** manoeuvre owns WHEN a faced finish turns the hull and the residual;
+planner owns HOW only while `PlannerSeam.take()` holds the hull (rigs ≥ 10 m). CP-F's at-rest face goes through
+`face_turn`, so the seam may take it.
+
+### Plan (ordered)
+
+1. F0 trace (done above).
+2. F1: on tuning seeds (not judged ones), trace turnhull's attack-move crews still moving at 75 s; first suspect: the
+   contact decline cutting a hull turn mid-plan and the sector face restarting it (churn). Fix under the one switch, test
+   first; then the bar to the orchestrator before numbers; C31.1 suite with TURN_HULL_DEFAULT true on the pair tree; the
+   judged series on fresh seeds; ship ON as a pair; tell brains the hash.
+3. F2: answer B11b.
+4. Stretch: the War Rig face-behind clip.
+
+### Decisions
+
+- F0 gets no fix commit: the decline is round 8's deliberate rule, and the brief's "if it is a bug" is answered no.
+
