@@ -1,0 +1,10 @@
+on: tree c75f20a6 laptop 14:22:09
+ARM on make exited 0 at 14:31:31
+off: tree 02934dec laptop 14:31:31
+ARM off make exited 0 at 14:39:41
+== on
+QUEUE base_drawn   runs  18 (no line 0) | asks   594 plans  128 driven   52 abandoned    7 (1.2 %) refused {'GOAL_BLOCKED': 222, 'START_BLOCKED': 96, 'NO_PATH': 11} early 0 | queue_waits 1298 pending 5040 | hold n 464 median 2.0 max 124
+== off
+QUEUE base_drawn   runs  18 (no line 0) | asks   667 plans   86 driven   32 abandoned  142 (21.3 %) refused {'GOAL_BLOCKED': 219, 'START_BLOCKED': 47, 'NO_PATH': 20} early 0 | queue_waits 15767 pending 18666 | hold n 514 median 4.0 max 111
+R33X on abandoned 7 asks 594 share 1.2% stale_released 109
+R33X off abandoned 142 asks 667 share 21.3% stale_released 0
