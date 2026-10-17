@@ -452,6 +452,15 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   Counters gates_side and gates_inside > 0 on the acting ON runs and 0 on every OFF run.
   (8) The check green on the candidate, sim-baseline moves listed with the reason.
   (9) The worst ON run of (3) and (4) traced before the medians are read.
+  Ships ON as one pair with native's mirror if (1)–(4) and (6)–(8) pass. (This line, from a579b245's text, was dropped when
+  the bar was first copied here; restored.)
+  **test_native_gate's floors, re-filed before any change (native, pair/brains-v6-r4 `560e09e8`, builder0 light, n 1,
+  twins 0 mismatches on sumps and foundry):** the narrowed side gate and inside_circle make two vacuous-run floors fail on
+  foundry. Side gates went 1/1, because the rear gate has turning room there now. The live latch went 0, because
+  inside_circle latches first. **Granted:** side gates ≥ 5 on sumps only (6/6 seen); on foundry, gates_inside ≥ 1 (3/1
+  seen); and the latch floor becomes latched + latched_away + inside > 0 (inside_circle is a `_gate_latch`). Everything
+  else is unchanged (near, turned/forced_turning, shortened, cramped on sumps, drives ≥ 3000). These are guards that the
+  paths ran, not targets.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
