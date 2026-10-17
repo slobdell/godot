@@ -277,3 +277,17 @@ planner-aa-queue: native import ## planner round 33 P1: hull-rest's gang arm fif
 	@grep -E "no SCREEN_DONE|SCRIPT ERROR" $(BUILD_DIR)/planner/hull-aa-runs.txt | head -5 || true
 	@$(PYTHON) tests/planner/queue_table.py $(BUILD_DIR)/manoeuvre/hull-rest | tee $(BUILD_DIR)/planner/hull-aa.txt
 	@$(PYTHON) tests/planner/hull_aa.py $(BUILD_DIR)/manoeuvre/hull-rest --rows $(BUILD_DIR)/planner/hull-aa-rows.jsonl | tee -a $(BUILD_DIR)/planner/hull-aa.txt
+
+# ---- round 33 (P3, C33.6 (c)): the face searches' census at each weight ------------------------------------------------
+# hull-rest's gang arm, drawn only, the FIFO (today), with --planner-face-shadow: every face search the seam begins is
+# also planned whole at 1.5 / 2.0 / 3.0 (measurement; the hull drives today's). The DIAGNOSIS seeds (66-71: P1's A/A
+# set), never P2's or P3's judged ones. -> build/planner/face-shadow.txt
+PLANNER_SHADOW_SEEDS ?= 66 67 68 69 70 71
+.PHONY: planner-face-shadow
+planner-face-shadow: native import ## planner round 33 P3: which face searches land inside the hold at each weight (hull-rest gangs drawn, PLANNER_SHADOW_SEEDS) -> build/planner/face-shadow.txt
+	@mkdir -p $(BUILD_DIR)/planner
+	@echo ">> planner-face-shadow on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SHADOW_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF= \
+		M1_FLAGS="--turn-states --planner-queue=fifo --planner-face-shadow" HULL_SEEDS="$(PLANNER_SHADOW_SEEDS)" \
+		HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)" > $(BUILD_DIR)/planner/face-shadow-runs.txt 2>&1 || true
+	@$(PYTHON) tests/planner/face_shadow_table.py $(BUILD_DIR)/manoeuvre/hull-rest/base_drawn | tee $(BUILD_DIR)/planner/face-shadow.txt

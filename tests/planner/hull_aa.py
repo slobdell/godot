@@ -17,6 +17,9 @@ Paired on (mode, faction, task, seed) where mode = drawn | clicked. Prints:
                  cells a do-nothing change fails at p < 0.05), (3b)'s settle median paired diff v +6 s, (3c)'s moving
                  diff v round 32's base + 1.645 se, (1)'s abandoned share v 5 %
   HULL_AA_ROW {json} one per pooled row, for the orchestrator's tools/judge/probes.py at the close
+  HULL_PAIR  (with --verdict) round 33 P2's pooled guard lines: per mode, the paired diff over every (task, seed) of
+             rest_med (mean), settle (mean, drawn) and moving (sum), its own se, the line at +K se and PASS / FAIL;
+             the abandoned share per mode with a one-sided Fisher p (candidate below base) and the <= 5 % line.
 Optional --rows OUT.jsonl writes every per-run row. Usage: hull_aa.py DIR [--base base] [--new new] [--rows OUT]
 Report only: exits 0 whenever it read something.
 """
@@ -123,6 +126,8 @@ def main(argv=None):
     ap.add_argument("--base", default="base")
     ap.add_argument("--new", default="new")
     ap.add_argument("--rows")
+    ap.add_argument("--verdict", action="store_true", help="print P2's pooled lines (HULL_PAIR)")
+    ap.add_argument("--k", type=float, default=1.645)
     args = ap.parse_args(argv)
     base, base_crews = read_arm(args.root, args.base)
     new, new_crews = read_arm(args.root, args.new)
@@ -212,7 +217,61 @@ def main(argv=None):
             asks = sum(recs[k]["asks"] for k in keys if k[0] == mode)
             ab = sum(recs[k]["abandoned"] for k in keys if k[0] == mode)
             print(f"HULL_AA_NULL 1 abandoned {mode} {arm} | {ab}/{asks} = {100.0 * ab / asks if asks else 0:.1f} %")
+    if args.verdict:
+        verdict(base, new, keys, args.k)
     return 0
+
+
+def fisher_less(a_hit, a_n, b_hit, b_n):
+    """One-sided Fisher exact p that the first arm's rate is below the second's (hypergeometric lower tail)."""
+    total, hits = a_n + b_n, a_hit + b_hit
+    def pmf(k):
+        return math.comb(hits, k) * math.comb(total - hits, a_n - k) / math.comb(total, a_n)
+    lo = max(0, a_n - (total - hits))
+    return min(1.0, sum(pmf(k) for k in range(lo, a_hit + 1)))
+
+
+def verdict(base, new, keys, k):
+    print(f"HULL_PAIR the pooled lines (round 33 P2's bar), k {k}: candidate = new, base = base")
+    ok = True
+    for mode in ("drawn", "clicked"):
+        mk = [x for x in keys if x[0] == mode]
+        for name, form in (("rest_med", "mean"), ("settle", "mean"), ("moving", "sum")):
+            if name == "settle" and mode != "drawn":
+                continue
+            diffs = []
+            for x in mk:
+                a, b = metric(base[x], "ALL", name), metric(new[x], "ALL", name)
+                if a is not None and b is not None:
+                    diffs.append(b - a)
+            if len(diffs) < 2:
+                print(f"HULL_PAIR {mode} {name}: too few pairs ({len(diffs)})")
+                ok = False
+                continue
+            sd = statistics.stdev(diffs)
+            if form == "sum":
+                stat, se = sum(diffs), sd * math.sqrt(len(diffs))
+            else:
+                stat, se = statistics.mean(diffs), sd / math.sqrt(len(diffs))
+            line = k * se
+            passed = stat <= line
+            ok = ok and passed
+            extra = ""
+            if name == "settle":
+                extra = f" | never settled new {sum(1 for x in mk if new[x]['settle'] == WINDOW_S)} v base {sum(1 for x in mk if base[x]['settle'] == WINDOW_S)}"
+            print(f"HULL_PAIR {mode} {name} ({form}) | n {len(diffs)} | diff {stat:+.2f} | se {se:.2f} | line <= {line:+.2f} | "
+                  f"MDE {2.49 * se:.2f} | {'PASS' if passed else 'FAIL'}{extra}")
+        ab_n = sum(new[x]["asks"] for x in mk)
+        ab = sum(new[x]["abandoned"] for x in mk)
+        bb_n = sum(base[x]["asks"] for x in mk)
+        bb = sum(base[x]["abandoned"] for x in mk)
+        share = ab / ab_n if ab_n else 0.0
+        p = fisher_less(ab, ab_n, bb, bb_n) if ab_n and bb_n else float("nan")
+        passed = share <= 0.05 and p <= 0.05
+        ok = ok and passed
+        print(f"HULL_PAIR {mode} abandoned | new {ab}/{ab_n} = {100 * share:.1f} % v base {bb}/{bb_n} = "
+              f"{100 * bb / bb_n if bb_n else 0:.1f} % | Fisher one-sided p {p:.4f} | line <= 5 % and p <= 0.05 | {'PASS' if passed else 'FAIL'}")
+    print(f"HULL_PAIR lines (1) and (3): {'ALL PASS' if ok else 'NOT ALL PASS'} (line (2), the hold, is queue_table.py's)")
 
 
 if __name__ == "__main__":
