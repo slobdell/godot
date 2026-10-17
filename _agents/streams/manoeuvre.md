@@ -225,6 +225,12 @@ spot and Guns_4 drives on to ~52 s, so the squad never read `arrived`. (2) `--se
 and 8 are identical because of the LAPTOP render preset (headless `--render-preset=laptop`: identical too; desktop:
 they differ): the capped faction army is the same and nothing in this probe then depends on the seed.
 
+**Handed to brains (round-34 candidate, not manoeuvre's):** why the War Rig squad never reads `arrived` (laptop,
+windowed, 86447a3e, foundry s8, both squads, n 1). The element's anchor = its task "to" (28.2, 116), 22.6 m off his drawn
+spot (orders' share of a 2-squad order). The swarm laid 5 seats as a file through it at z=116; 3 were grounded 6 m (in
+`slots_asked`), and 2 were pushed 28 m and 56-68 m south with NO `slots_asked` entry, so the centre can never come within
+12 m. Read with a temporary print in element.gd, reverted. Details are in the messages to brains.
+
 ### Stretch: the face-behind clip (laptop flightdeck, commit 77348a53, 2026-10-17; for his eye, NOT evidence)
 
 `make manoeuvre-face-clip` (CP-F (r), granted: `--faced-off-deg` in screen_playtest.gd, default 60 unchanged, test
