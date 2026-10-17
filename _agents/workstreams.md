@@ -268,6 +268,26 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   guard: showmatch fights on the random arena, FRESH seeds 900–923 (n 24, the manoeuvre-fights command line), kills,
   deaths, hit rate and far loops each within base ± 1.645 se of the pair's own se; (7) C31.1: the whole suite on the pair
   tree with the ghost ON, green, before the series.
+- **CP-F, turn the hull at rest (manoeuvre, C33.3; filed 2026-10-17 before any number, manoeuvre's brief Status).** Candidate:
+  ONE switch `turnhull` = M1b(2) attempt 2 (the decline lifted for a DRAWN face from order/sector, + facekeep) PLUS
+  round 33's `Manoeuvre.drawn_face`: a face still declined under turnhull (a contact the turret takes) keeps the hull on
+  his drawn heading instead of `stop` (counter `hull_holds`; test
+  `test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading`). Base: main with R33.9, same tree, switch at
+  default. Gate: C31.1 check on the pair tree (TURN_HULL_DEFAULT true) + native-verify-scenarios; sim-baselines may move
+  (CPU element task facings lift the decline too, symmetric). FRESH seeds: hull-rest 440–445 (144 runs an arm, drawn and
+  clicked), Terminus 450–462, fights 470–493, SBF gang_ifv 500–505, the bridge's 18. Lines: (a) drawn point tasks,
+  wheels/turret median ≤ 15° AND ≥ 70 % within 15° per task; (b) no class worse than base at p < 0.05 on any task,
+  fixed-gun wheels included; (c) clicked arm within ±5° of base; (d) moving at the judge ≤ base + 1.645 se per task,
+  wheels/turret and all classes; (e) never-settled ≤ base + 1.645 se, settle time REPORTED; (f) R32.3 arrivals at the held
+  seat, re-seats ≤ base + 1.645 se (FAIL); (g) Terminus arrivals, rigs and mixed apart, not down beyond 1.645 se paired;
+  (h) bridge 18/18; (i) fights kills, deaths, hit rate within 1.645 se; (j) hull_turns > 0 and hull_holds > 0; (k) s66 G5
+  REPORTED; (l) SBF REPORTED. (a)–(j) gate.
+  **Amended before numbers (orchestrator):** (m) **the default path:** the arms run the path he plays (native, stage 1 ON),
+  not GDScript only; native mirrors what reaches the drive first (R33.7: `Manoeuvre.*` twinned once N5.M merges), twins
+  at 0 mismatches as a gate; if a GDScript-only series is the only one affordable, one hull-rest drawn seed set on the
+  native path must agree with it in sign on (a) and (d). (n) fights 470–493 run wholly before R33.6 merges, or with it in
+  both arms. (o) (b)'s many cells are a guard against harm: a single cell at p < 0.05 in a class the change does not touch
+  (e.g. tracks) is traced before it fails the series, and the trace is reported either way.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
