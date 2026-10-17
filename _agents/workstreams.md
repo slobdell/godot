@@ -105,6 +105,12 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   without it (a seam hold released when the order that started it is replaced), a check, a named hash; a sim-baseline move
   goes to the orchestrator with the reason. Native says whether the C++ drive reads the hold through the same callback
   (no mirror) or needs one.
+  **Amended (native's pre-assessment, same day):** the C++ drive does NOT call live(); `drive_native.cpp:280` `seam_live()`
+  mirrors it inline from `PlannerSeam._crews` (read by the unstick gate :1449 and the `_planned_reverse` open :2211; it
+  calls live() back only for a freed hull). **Ruling: the fix RELEASES the stale crew from `_crews` where the order is
+  replaced (the seam's sweep / step / order hand-off), and live() stays a pure lookup**, so the C++ needs no change and the
+  tick stays cheap. A check inside live() would mismatch the twin. Native confirms on the pair tree (kturn / execute twins).
+  Native's face_behind floor was already on main (builder0 `ae3dad71`: 142 native executes, 0 mismatches).
 
 **Bars (round 33):** filed here before any number.
 
