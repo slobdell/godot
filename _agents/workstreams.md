@@ -308,6 +308,23 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   `arrive_flips` beside `goal_moves`, measurement only); (b) arrivals not down: that cell's settled crews on ≥ off, and
   squad-arrive-series FRESH seeds 57–60 (n 100) all-within-8 m on ≥ off − 1.645 se; (c) the check; sim-baseline moves
   listed with reasons.
+- **P3, the face keep circle (planner, C33.6 (c); filed 2026-10-17 before any judged number).** Candidate
+  `--planner-face-keep=1` (stream/planner `45390507`, OFF): every pose of a face plan stays within one hull length of the
+  face's home (a slot-law face: its end circle + one hull length); `keep` is a request field native already reads (no C++
+  change; per-tick price the slice on every preset). Diagnosis only: builder0 light census seeds 66–71 (31 and 58 searches)
+  furthest-from-home max 29.0 → 14.2 m at identical cost; the ε 2.0 weight DROPPED (it served the 25 m plan). Tree: main after
+  R33.3 + P3 with FACE_KEEP_DEFAULT 1, whole suite green first (C31.1). Arms: base today v keep 1, native drive. Runs after
+  P2's series. (1) Deterministic cell, test_manoeuvre_face_behind's stage, NATIVE on and off: served (abandoned 0), drift
+  ≤ 8 m, aligned no later than today's abandon-then-executor arm (15.4 s, laptop), legs ≤ 3; test_manoeuvre_face_behind and
+  test_manoeuvre_behind pass on the pair tree. (2) Hull-rest gangs FRESH seeds 84–95, drawn + clicked, n 72 paired a mode:
+  (2a) P2's pooled guards at + 1.645 of the pair's own se (at-rest error, settle, moving at 75 s); (2b) abandoned share of
+  FACE asks not up beyond 1.645 se (two-proportion); (2c) drift: served face plans' furthest-from-home (`face_far`),
+  candidate median ≤ base median + 1.645 se (bootstrap over plans) and p90 ≤ base p90, max reported. (3) Terminus rigs FRESH
+  seeds 231–243: arrivals not down beyond 1.645 se; contact-ticks reported. Pass = every line; early stop OFF; (1) passes
+  and a guard fails → PARKED with the worst pair's trace.
+  **Amended before numbers (orchestrator):** both arms run on the queue main has when P3's series starts (`shared` if P2
+  shipped, FIFO if not), named in the verdict; and if CP-F has merged by then, on a tree with it (R33.2: the faced finish's
+  when is manoeuvre's), else REPORTED which.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
