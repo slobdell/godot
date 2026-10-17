@@ -178,6 +178,36 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   5. **(deterministic cell) s207 stage:** under `shared`, Green_S0_4 pinned on Block_7 0 ticks (`make planner-stage-s207`).
   6. **C31.1:** the whole suite on the pair tree, green.
   Pass = every line. Partial (1)-(2) pass, a guard fails: PARKED with the worst pair's trace (lesson 302), not tuned.
+- **parkedroom (traffic X3, C33.2 / R33.4), filed 2026-10-17 before any number.** Arms on ONE pair tree: base = default
+  (`parkedroom` in DEFAULT_OFF), arm = `--traffic-on=parkedroom` (the ship flips DEFAULT_OFF to []). Native: none (`ask` /
+  `_begin_yield` run in GDScript on both paths; R33.4). Pre-series gates: `test_traffic_neck` (fights s403's neck, both crews
+  in their own elements: OFF never through in 40 s, ON through and the scout back on its post) green, the whole suite on the
+  pair tree with the switch ON (C31.1), and one real fight episode with elements formed traced ON end to end
+  (`traffic-far-one`, s403 crossing). Stages and lines (k = 1.645, se = paired se of the SUM from the pair's own rows,
+  `tests/traffic/far_ab.py` prints them):
+  1. **L1 gain (the product line):** far loops behind a PARKED blocker (any kind), FRESH showmatch fights 700–723 ×
+     {terminus, locks, random} (n 72 paired, 180 s, `make traffic-far-census FAR_RANGE=700-723 FAR_AT=terminus,locks,random`):
+     arm ≤ 50 % of base AND (base − arm) − k·se > 0. No table row exists for this probe (it is new): X1's base read 30 parked
+     loops in 69 fights, ~10 fights with any, so the line is decided by the ~10–15 fights where it acts. **Partial rule:** if
+     the point passes and the distinguishable clause fails, ONE extension to fights 724–747 (n 144), then judged; nothing else.
+  2. **L2 guard:** all far loops, same fights: arm ≤ base + k·se.
+  3. **L3 fights guard** (manoeuvre-fights, `NAV_FLAGS=--traffic-on=parkedroom` v none, FIGHT_SEEDS 700–723, random arena):
+     kills, deaths, hit rate each within base ± k·se (the pair's own se; the table's manoeuvre-fights rows for reference:
+     kills se 28.2 at n 24).
+  4. **L4 arrivals not down:** traffic-series his four crossing cases (seeds 1–3 × six ticks, n 18 a case, `TRAFFIC_FLAGS`
+     for the arm): crews in ≥ base − k·se per case (table rows: se 1.2–4.1); the hull-rest rigs (drawn) arrived ≥ base − k·se
+     REPORTED if the box allows.
+  5. **L5 T1c-b2 as shipped (deciding, deterministic in the rule):** traffic-census with the arm: runs with a repack while
+     firing 0 (a set-up mortar truck ordered to fire never repacks for a passer); setup refusals reported both arms. By
+     construction `on_fire_post()` refuses before parkedroom is read.
+  6. **L6 the parked crew's return:** of the arm's room give-ways in L1's fights, read 30 s after each began
+     (`FAR_ROOM back_m`): ≥ 90 % of those whose crew is alive are within 3 m of the post they left (the element may have
+     moved the post meanwhile: those are listed, not excused). Plus the stage: the scout back within 3 m of its post 20 s
+     after the tank is through.
+  7. **sim-baseline:** OFF (default) the pair tree is behaviour-identical to main by construction (sim-baseline unmoved on
+     the pair check is the equality check); the ship tree (ON) may move maps: listed with the reason for the orchestrator.
+  Verdict: ships ON as a pair (a docs/DEFAULT_OFF flip) only if L1, L2, L3, L4, L5, L6 pass; a fail is traced (the worst
+  fight's episode read before any total) and written up.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
