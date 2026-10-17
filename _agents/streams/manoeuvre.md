@@ -79,7 +79,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 | F0 the missing face step | **DONE: not a main bug** (no fix commit). A real main bug found on the way, in planner's file: stale `PlannerSeam.live()` (sent to planner + orchestrator) |
 | F1 CP-F | IN PROGRESS: traced (attack-move's movers = element `arrived` limit cycle on main, brokered as R33.9 to brains); drawn_face fix + test committed 136c3828; bar filed with (m)-(o). pair tree 887ac6d2 GREEN (C31.1: builder0 2735/0, sim-baseline unmoved; native twins 0 mismatches). **Waiting on R33.9's verdict** to start the judged series (the day's last heavy builder0 job, R33.10). Planner's stale-live fix merged (main b122cf60) |
 | F2 help B11b | waiting on CP-F |
-| Stretch clip | not started |
+| Stretch clip | DONE as far as filming goes (CP-F (r)): `build/manoeuvre/face_clip_s8.mp4` (+ `face_clip.mp4`, seed 5) on the laptop, commit 77348a53; for his eye, not evidence. The War Rigs jam in the windowed run (see below) |
 
 ### F0: s66 faced_move traced on main (2026-10-17)
 
@@ -211,6 +211,19 @@ light lane, `make native test FILTER=native_drive|native_execute|native_face_beh
 everywhere; War Rig face_behind 928 handed back, tank 142 native / 2 handed back; no C++ change (stations' `drawn` is
 never read natively). The orchestrator: these settle bar line (m). **The series waits for R33.9's verdict:** if it passes,
 the base matches main; if it PARKS, rebuild the pair tree on main without it and the orchestrator rules on (d).
+
+### Stretch: the face-behind clip (laptop flightdeck, commit 77348a53, 2026-10-17; for his eye, NOT evidence)
+
+`make manoeuvre-face-clip` (CP-F (r), granted: `--faced-off-deg` in screen_playtest.gd, default 60 unchanged, test
+`test_manoeuvre_face_clip`, laptop 1/0) films his faced right-drag drawn 180 deg off the travel on gangs, BEFORE (today)
+v AFTER (`--nav-off=turnhull`), both GDScript, side by side at 2x: `build/manoeuvre/face_clip_s8.mp4` (FACE_CLIP_SEED=8)
+and `build/manoeuvre/face_clip.mp4` (seed 5), 27 s each. **What it shows:** the five gang_ifv (wheeled turret) crews
+arrive and stand 99-156 deg off his heading BEFORE (one 16), **2-3 deg AFTER**. **What it does not show:** the War Rigs
+(Guns): in the WINDOWED run they jam at the start (YIELDING / BLOCKED labels) in both arms and never reach the spot inside
+the probe's window (crews_told 0), and the windowed runs come out identical on seeds 5 and 8 (the flags carry the seed;
+not traced, a filming quirk, not CP-F). Headless on the same commit and flags (n 1 per arm) the War Rigs do arrive:
+seed 8's first Guns squad, told 5/5, hulls **82-151 deg BEFORE v 1-8 deg AFTER**; seeds 3, 11, 13 agree on every squad
+that arrives (before: most crews 100-180 deg off; after: most under 10, a few 105-149 off).
 
 ### Plan (ordered)
 
