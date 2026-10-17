@@ -3484,10 +3484,12 @@ func _order_move(order: Dictionary) -> void:
 	# turn that settles, and is still honoured; a fixed gun's hull IS its aim, so it still faces.
 	# Round 31 (manoeuvre M1b(2), his round-28 call "turn the whole vehicle", C31.8 grant): under `turnhull` a facing he
 	# DREW is turned to by the hull, front armour where he pointed; a clicked order keeps the rule above (the turret).
+	# Round 33 (CP-F): under it a face that IS declined (a contact the turret takes) keeps the hull on his drawn heading.
 	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id) \
 			and not Manoeuvre.hull_takes_face(self, order):
 		faces_declined += 1
-		order = {"type": "stop"}
+		var drawn := Manoeuvre.drawn_face(self)
+		order = drawn if not drawn.is_empty() else {"type": "stop"}
 	# Round 13 (S6): a no-pivot fixed gun with nothing in sight is not asked to turn unless its order says which way.
 	if String(order.get("type", "")) == "face" and not _enemy_in_sight:
 		var source := String(order.get("from", "other"))

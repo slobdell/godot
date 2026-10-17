@@ -383,13 +383,20 @@ static func turn_hull_on() -> bool:
 ## Did the player DRAW this crew's facing (its element task, or its own K1 order, carries one)? Read by the brain's
 ## decline (`TankBrain._order_move`) under `turnhull`.
 static func drawn_facing(brain: TankBrain) -> bool:
+	return drawn_direction(brain) != null
+
+
+## The facing he DREW for this crew as a flat unit direction (its element task's, else its own K1 order's), or null.
+static func drawn_direction(brain: TankBrain) -> Variant:
 	var source: Variant = brain.get("_element_source")
 	if source != null:
 		var mine: Variant = ElementFeed.element_of(source, String(brain.tank.name))
 		if mine != null and "task" in mine:
 			var task: Variant = mine.get("task")
-			return task is Dictionary and TankBrain._direction_of((task as Dictionary).get("facing")) != null
-	return brain._ordered_facing()
+			return TankBrain._direction_of((task as Dictionary).get("facing")) if task is Dictionary else null
+	if not brain._ordered_facing():
+		return null
+	return brain.intended_facing()
 
 
 ## The brain's decline is lifted for this order (turn-hull ON, a face from the crew's order, a drawn facing).
@@ -402,6 +409,27 @@ static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
 		return false
 	hull_turns += 1
 	return true
+
+
+## Round 33 (CP-F, F1): ...and a face the brain DECLINES under turnhull (round 8: a contact the turret takes) keeps the
+## HULL on his drawn heading instead of becoming `stop`. Traced (builder0, hull-rest gangs s66 faced_move, turnhull ON):
+## the War Rig's planned face was cut to `stop` mid-leg each time the quiet enemy came into sight at ~74 m, and it ended
+## 44-126 deg off. The turret still fights the contact (gunnery picks its own target); the front armour stays where he
+## pointed. {} when off, or nothing was drawn (the round-8 decline stands).
+static func drawn_face(brain: TankBrain) -> Dictionary:
+	if not turn_hull_on():
+		return {}
+	var direction: Variant = drawn_direction(brain)
+	if direction == null:
+		return {}
+	var here := brain.tank.global_position
+	var look: Vector3 = Vector3(here.x, 0.0, here.z) + (direction as Vector3) * 20.0
+	hull_holds += 1
+	return {"type": "face", "x": look.x, "z": look.z, "from": "drawn"}
+
+
+## Arm counter: declined faces that kept the hull on his drawn heading instead (drawn_face).
+static var hull_holds := 0
 
 
 static func _kept(at: Vector3) -> bool:

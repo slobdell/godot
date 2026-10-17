@@ -106,6 +106,36 @@ orchestrator ruled it R33.3 and will name the hash when it merges. No guard in `
 planner owns HOW only while `PlannerSeam.take()` holds the hull (rigs ≥ 10 m). CP-F's at-rest face goes through
 `face_turn`, so the seam may take it.
 
+### CP-F bar (DRAFT 2026-10-17, sent to the orchestrator before any number; base = main with R33.9's arrival latch)
+
+**Candidate:** ONE switch `turnhull` (`Manoeuvre.TURN_HULL_DEFAULT`), as M1b(2) attempt 2 (the decline lifted for a
+DRAWN face from `order` / `sector`; facekeep), **plus** round 33's `Manoeuvre.drawn_face`: a face still declined under it
+(a contact the turret takes) keeps the hull on his drawn heading instead of `stop` (`hull_holds`). Both arms on the
+GDScript path (`M1_GD=1`), one arm per remote call (lesson 311), base = the same tree with the switch at its default.
+**Gate first (C31.1):** `make remote T=check` on the pair tree (= the R33.9 main + CP-F + `TURN_HULL_DEFAULT = true`),
+whole suite green with `native-verify-scenarios` inside it; native states its pair (wheeled face orders go back to
+GDScript, execute_native.cpp ~363). Sim-baselines may move (CPU elements' drawn task facings lift the decline too,
+symmetric by his rule): the orchestrator adopts with that reason.
+**Fresh seeds** (unused in rounds 28–33): hull-rest **440–445** (4 factions × 6 tasks × 6 = 144 runs an arm, drawn and
+clicked), Terminus census **450–462** (13), fights **470–493** (24), SBF gang_ifv **500–505**, bridge-pooled's 18 cells.
+Tuning only on 40–45 (and s66 for the trace).
+| line | reads | rule |
+|---|---|---|
+| (a) | drawn POINT tasks (move, right, attack-move), wheels/turret at rest | per task median ≤ 15° AND ≥ 70 % within 15° |
+| (b) | drawn LINE tasks (screen, ambush, SBF) and every hull class on every task, fixed-gun wheels included | no class median worse than base at permutation p < 0.05 |
+| (c) | clicked arm, wheels/turret | median within ±5° of base (the lift is drawn-only) |
+| (d) | crews still moving at the judge, per task, wheels/turret AND all classes | ≤ base + 1.645 se (C31.3's form) — **attempt 2's failed line** |
+| (e) | never settled (75 s), per task | ≤ base + 1.645 se; settle time paired median REPORTED |
+| (f) | R32.3 (a): arrived = within ARRIVED_M 7 m of the held seat at completion; re-seats | arrivals not down beyond 1.645 se paired; re-seats ≤ base + 1.645 se (FAIL line) |
+| (g) | Terminus arrivals, rigs and mixed apart | not down beyond 1.645 se paired (`sequential.py arrived:guard:0.10`, no early stop before 6 seeds) — attempt 2's other failed line |
+| (h) | bridge-pooled | 18/18 |
+| (i) | fights 470–493: kills, deaths, hit rate per team | within 1.645 se (GATE, R31's (j)) |
+| (j) | counters in the new arm | `hull_turns` > 0 and `hull_holds` > 0 (lesson 300); `face_keep_refused` by unit REPORTED |
+| (k) | the named case hull-rest gangs s66 faced_move Green_Guns_5, 3 runs | REPORTED (B11b's pass case judges on CP-F + B11b) |
+| (l) | SBF gang_ifv drawn 500–505 | REPORTED |
+**Partial:** (a)–(j) are the gate; any miss = parked with the trace. Ships ON as a pair if it holds; brains is told the
+merge hash the day it lands (B11b).
+
 ### F1: what attempt 2's attack-move line was (tuning, not judged; 2026-10-17)
 
 builder0, code = main `ae3dad71` (census coordinates added for the second table), GDScript (`M1_GD=1`), drawn

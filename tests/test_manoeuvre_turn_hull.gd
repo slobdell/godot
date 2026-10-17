@@ -82,3 +82,55 @@ func test_switched_off_the_brain_still_declines() -> void:
 	Movement._off_parsed = true
 	assert_true(not Manoeuvre.turn_hull_on(), "the switch reads off")
 	Movement._off = was_off
+
+
+## Round 33 (CP-F, F1): round 8's stage (tests/test_wheeled_face.gd: a held turreted truck, an enemy 30 m north in
+## sight) with a facing he DREW, east. The brain's face toward the contact is declined (the turret takes it); under
+## turnhull the hull keeps his drawn heading instead of `stop`. Traced at hull-rest gangs s66: a War Rig's planned face
+## was cut to `stop` mid-leg whenever the quiet enemy came into sight, and it ended 44-126 deg off.
+func _contact_stage(on: bool) -> Dictionary:
+	var was_off := Movement._off
+	Movement._off = PackedStringArray(["turnhull"]) if on != Manoeuvre.TURN_HULL_DEFAULT else PackedStringArray([])
+	Movement._off_parsed = true
+	var s := AiScenario.create(self, 4)
+	s.game_match.set_meta("player_team", Match.Team.GREEN)
+	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(-100, 0, 40), PI + 0.7, {}, "gang_tank")
+	AiScenario.make_durable(me)
+	var target := s.dummy(Match.Team.RUST, "Rust_A_1", Vector3(-100, 0, 10), 0.0)
+	AiScenario.make_durable(target)
+	var brain := s.brain_of(me)
+	var drawn := Vector3(1, 0, 0)
+	await s.start()
+	s.orders().issue({"units": ["Green_A_1"], "verb": "move", "to": [-100.0, 40.0], "facing": [drawn.x, drawn.z]})
+	var drawn_faces := 0
+	var stops := 0
+	var holds_before := Manoeuvre.hull_holds
+	for tick in SimClock.TICK_RATE * 20:
+		await s.step()
+		var order: Dictionary = brain.move_order
+		if String(order.get("type", "")) == "face":
+			var to := Vector3(float(order["x"]) - me.global_position.x, 0.0, float(order["z"]) - me.global_position.z)
+			if to.length() > 1.0 and to.normalized().dot(drawn) > 0.98:
+				drawn_faces += 1
+		elif String(order.get("type", "")) == "stop":
+			stops += 1
+	var forward := Vector3(-me.global_basis.z.x, 0.0, -me.global_basis.z.z).normalized()
+	var result := {"drawn_faces": drawn_faces, "stops": stops, "declined": brain.faces_declined,
+			"holds": Manoeuvre.hull_holds - holds_before, "error_deg": rad_to_deg(forward.angle_to(drawn)),
+			"shots": s.shots_by(me)}
+	s.dispose()
+	Movement._off = was_off
+	return result
+
+
+func test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading() -> void:
+	var on := await _contact_stage(true)
+	var off := await _contact_stage(false)
+	print("MEASURE cpf_contact_face on %s | off %s" % [on, off])
+	assert_true(int(on["declined"]) > 0, "setup: the contact face is declined in both arms (on %d)" % on["declined"])
+	assert_true(int(off["declined"]) > 0, "setup: ...off %d" % off["declined"])
+	assert_true(int(on["holds"]) > 0 and int(on["drawn_faces"]) > 0,
+			"on: the declined face keeps the hull on his drawn heading (%d holds, %d ticks)" % [on["holds"], on["drawn_faces"]])
+	assert_eq(int(off["drawn_faces"]), 0, "off: round 8's decline stands (the hull is never sent to his heading)")
+	assert_true(float(on["error_deg"]) < 20.0, "on: the hull ends on his drawn heading (%.1f deg off)" % on["error_deg"])
+	assert_true(int(on["shots"]) > 0, "on: and the turret still fights the contact (%d shots)" % on["shots"])
