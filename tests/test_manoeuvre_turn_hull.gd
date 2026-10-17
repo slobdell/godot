@@ -100,8 +100,13 @@ func _contact_stage(on: bool) -> Dictionary:
 	AiScenario.make_durable(target)
 	var brain := s.brain_of(me)
 	var drawn := Vector3(1, 0, 0)
+	var elements := Elements.install(s.game_match, s.orders())
 	await s.start()
-	s.orders().issue({"units": ["Green_A_1"], "verb": "move", "to": [-100.0, 40.0], "facing": [drawn.x, drawn.z]})
+	# The player's right-drag is an element TASK with a facing (the F1 case); its crew settles on it and keeps it for as
+	# long as the task stands. (A plain K1 move onto its own spot completes at once and leaves nothing drawn.)
+	var task := {"verb": "move", "to": [-100.0, 40.0], "facing": [drawn.x, drawn.z], "drills": false}
+	assert_eq(ElementTask.validate(task), "", "setup: a move task may name a facing")
+	elements.form(["Green_A_1"], "Alpha").assign(task)
 	var drawn_faces := 0
 	var stops := 0
 	var holds_before := Manoeuvre.hull_holds

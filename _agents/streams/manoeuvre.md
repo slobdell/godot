@@ -180,6 +180,21 @@ only past ARRIVE_M + a margin), a test on a 14-crew swarm attack-move; CP-F's ba
 constants MAX_M, BEHIND_DEG, FACING_KEEP_DEG, SIM_*, CHECK_EVERY, HULL_MARGIN_M, REAIM_TICKS, KTURN_MARGIN_M,
 CUSP_DEADBAND (values are handed over live). `plan_face` / `face_turn` / facekeep stay GDScript.
 
+### CP-F's contact-face test (light lane, builder0, branch tip after 129e4c48 on main ae3dad71, GDScript, n 1 per arm)
+
+`test_manoeuvre_turn_hull::test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading`: a gang_tank in a
+one-crew real `Elements` element, task `move` with drawn facing (1,0), starting about 130 deg off, a durable contact
+30 m north. ON: 133 declined faces, all 133 held on his heading, 600/600 drawn-face ticks, ends **4.6 deg** off, 1
+shot. OFF (round 8): 134 declined to stop, ends **49.9 deg** off, 5 shots. The turret still fights ON but fires less
+during the 20 s while the hull comes round (1 v 5, n 1, unjudged); the fights rows of the series will say if that costs.
+The first two stagings were wrong (a K1 move/attack-move onto its own spot completes at once, leaving nothing
+drawn: ON == OFF); quick-remote at 136c3828 showed that as 76 passed, 1 failed.
+
+**Known gap, not CP-F's:** after a plain K1 move with a drawn facing COMPLETES, `current()` is empty and the station's
+heading cannot be told from "the way it was pointing" (`Orders._remember_station`, game/control, not mine), so a
+declined contact face there is round 8's stop in both arms. No worse than main; a `drawn` flag on the station would
+close it (control's call). Recorded for the lead/orchestrator, not pursued.
+
 ### Plan (ordered)
 
 1. F0 trace (done above).
