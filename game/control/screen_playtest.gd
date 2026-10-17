@@ -173,9 +173,19 @@ static func faced_off_deg(flags: LaunchFlags) -> float:
 	return float(given) if given.is_valid_float() else FACED_OFF_TRAVEL_DEG
 
 
+## Round 33 (manoeuvre CP-F (r), granted): which squads the faced drag selects, `--faced-squads=1` (the War Rig clip
+## films squad 1 alone), else squads 1 and 2: every other run is unchanged.
+static func faced_squads(flags: LaunchFlags) -> Array[int]:
+	var picked: Array[int] = []
+	for piece in flags.text("faced-squads", "").split(",", false):
+		if piece.is_valid_int():
+			picked.append(int(piece))
+	return picked if not picked.is_empty() else [1, 2] as Array[int]
+
+
 func _faced(scenario: String) -> void:
 	var members: Array[String] = []
-	for number in [1, 2]:
+	for number in faced_squads(LaunchFlags.from_environment()):
 		for unit_name: String in controls.groups.members(number):
 			if _alive(unit_name):
 				members.append(unit_name)
