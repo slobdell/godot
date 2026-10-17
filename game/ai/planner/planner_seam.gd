@@ -85,17 +85,23 @@ const SLICE_FLAG := "planner-slice"
 const QUEUE_FLAG := "planner-queue"
 const QUEUE_DEFAULT := false
 const QUANTUM := 20                # expansions a search runs before the next begun crew's turn (10 ticks at SLICE 2)
-## Round 33 (P3, C33.6 (c): the War Rig's open-ground face-behind is never served: its first plan lands at expansion 189,
-## past the hold's 180, so the seam abandons it and today's face executor turns the rig). A FACE's search weight: the
-## same 5-leg plan (17.5 s) lands at 124 expansions at epsilon 2.0 (offline, yard_open, the GDScript search). The
-## per-tick price is unchanged on every preset (the slice is the cost; a face only searches less), and the weight
-## rides in the request, so peers agree. `--planner-face-epsilon=X` (X > 0) sets it for a run; 0 = Planner.EPSILON,
-## today's bits. FACE_EPSILON_DEFAULT is what ships (0 until judged).
+## Round 33 (P3, C33.6 (c)): the War Rig's open-ground face-behind is never served: at Planner.EPSILON its first plan lands
+## at expansion 189, past the hold's 180, so the seam abandons it and today's face executor turns the rig. And the plan
+## it would serve is the wrong one: F-1x24 R-1x15 F-1x4 F+0x17 F+1x5.5 (17.5 s) swings the rig 25.3 m off its spot (round
+## 32's NATIVE=off failure; builder0 light, 7ff19c2f, test_planner_face_epsilon at weight 2.0: served, drift 25.3 m).
+## Two candidates, OFF until judged:
+##   FACE KEEP (`--planner-face-keep=K`, K hull lengths): a face with no slot of its own (no KEEP circle from the slot law)
+##   keeps every pose of its plan within K x the hull's length of its home: a face is a turn AT a spot. At K 1 the rig's
+##   face-behind is F-1x12 R-1x12 F-1x12.5, a three-point turn, 11.7 s (CHEAPER than the 17.5 s plan: the lattice's
+##   heuristic overestimates near a turn in place and the anytime stop ends before that plan pops), in 4 expansions,
+##   11.5 m out at most (offline, laptop, the GDScript search, yard_open).
+##   FACE WEIGHT (`--planner-face-epsilon=X`): the same 17.5 s plan at 124 expansions at 2.0 (58 at 3.0, 17.1 s).
+## Both ride in the request (keep and epsilon are request fields native already reads), so peers agree and the per-tick
+## price is the slice on every preset: a candidate only changes which plan the same expansions find.
 const FACE_EPSILON_FLAG := "planner-face-epsilon"
 const FACE_EPSILON_DEFAULT := 0.0
-## Measurement only (`--planner-face-shadow`): at every face search's begin, the same request planned WHOLE (uncapped,
-## separate instance) at each SHADOW_EPSILONS, one PLANNER_FACE_SHADOW line: which ones land inside the hold, and at
-## what cost. Changes nothing the hull does.
+const FACE_KEEP_FLAG := "planner-face-keep"
+const FACE_KEEP_DEFAULT := 0.0     # hull lengths; 0 = off (today's bits)
 const FACE_SHADOW_FLAG := "planner-face-shadow"
 const SHADOW_EPSILONS: Array[float] = [1.5, 2.0, 3.0]
 const RETRY_TICKS := SimClock.TICK_RATE
@@ -143,6 +149,8 @@ static var _queue_mode := -1
 static var queue_override := -1
 static var _face_epsilon := -1.0  # read once a process (FACE_EPSILON_FLAG); tests set `face_epsilon_override`
 static var face_epsilon_override := -1.0
+static var _face_keep := -1.0     # read once a process (FACE_KEEP_FLAG); tests set `face_keep_override`
+static var face_keep_override := -1.0
 static var _face_shadow := -1
 static var refused_early := 0     # requests answered at the ask (never held, never queued): part of `refused`
 static var _alloc_tick := -1
@@ -230,6 +238,24 @@ static func face_epsilon() -> float:
 	return _face_epsilon
 
 
+## The face KEEP circle in hull lengths (0 = off): FACE_KEEP_FLAG, read once a process.
+static func face_keep() -> float:
+	if face_keep_override >= 0.0:
+		return face_keep_override
+	if _face_keep < 0.0:
+		var text := LaunchFlags.from_environment().text(FACE_KEEP_FLAG)
+		_face_keep = text.to_float() if text.is_valid_float() and text.to_float() > 0.0 else FACE_KEEP_DEFAULT
+	return _face_keep
+
+
+## A face request with no KEEP circle of its own (the slot law's) keeps every pose within `lengths` hull lengths of
+## its home; a request that has one is left as it is.
+static func keep_face(req: PlanRequest, lengths: float) -> void:
+	if lengths <= 0.0 or req.keep_all_m < INF or req.keep_end_m < INF:
+		return
+	req.keep(req.goal_x, req.goal_z, lengths * 2.0 * req.half_l, req.tol_m)
+
+
 ## The shadow (measurement): every face search's request planned whole at SHADOW_EPSILONS, printed.
 static func _shadow_face(crew: Crew, name: String, tick: int) -> void:
 	if _face_shadow < 0:
@@ -237,11 +263,20 @@ static func _shadow_face(crew: Crew, name: String, tick: int) -> void:
 	if _face_shadow == 0 or crew.kind != "face":
 		return
 	var row := {"tick": tick, "name": name, "cap": EXPANSIONS_PER_HOLD, "keep": crew.req.keep_all_m < INF or crew.req.keep_end_m < INF}
+	var variants := {}
 	for e: float in SHADOW_EPSILONS:
+		variants["e%.1f" % e] = [e, 0.0]
+	variants["k1.0"] = [Planner.EPSILON, 1.0]
+	variants["k1.0e2.0"] = [2.0, 1.0]
+	for label: String in variants:
 		var req := crew.req.copy()
-		req.epsilon = e
+		req.epsilon = variants[label][0]
+		keep_face(req, variants[label][1])
 		var p := Planner.plan(req)
-		row["e%.1f" % e] = {"code": p.code, "exp": p.expansions, "first": _first_at(p), "cost": snappedf(p.cost_s, 0.01),
+		var far := 0.0
+		for pose: Array in p.poses:
+			far = maxf(far, Vector2(float(pose[0]) - req.goal_x, float(pose[1]) - req.goal_z).length())
+		row[label] = {"far": snappedf(far, 0.1), "code": p.code, "exp": p.expansions, "first": _first_at(p), "cost": snappedf(p.cost_s, 0.01),
 				"legs": p.legs.size(), "plan": p.describe()}
 	print("PLANNER_FACE_SHADOW " + JSON.stringify(row))
 
@@ -486,6 +521,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			req.to(target.x, target.z, want.x, want.z, stay, FACE_TOL_DEG)
 			req.arrive_gear = 0
 			req.epsilon = face_epsilon()
+			keep_face(req, face_keep())
 			# Round 31 (CP-P1's first judged series, seed 134's plaza: a rig arrived 4.5 m from its slot, the face's one
 			# 3.5 m reverse chord left it 7.4 m out for the rest of the leg): manoeuvre's SLOT LAW, read from its own
 			# names so the two cannot drift. (a) The slot = OrderController.face_slot (the last move_to's goal), only

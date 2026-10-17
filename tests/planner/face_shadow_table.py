@@ -24,7 +24,7 @@ def main(root):
     if not rows:
         print(f"FACE_SHADOW no lines under {root}")
         return 1
-    weights = sorted(k for k in rows[0] if k.startswith("e"))
+    weights = [k for k in rows[0] if k.startswith(("e", "k"))]
     cap = rows[0]["cap"]
     print(f"FACE_SHADOW searches {len(rows)} (keep circle on {sum(1 for r in rows if r.get('keep'))}), hold cap {cap} expansions")
     for w in weights:
@@ -38,6 +38,9 @@ def main(root):
         line = f"FACE_SHADOW {w} | inside the hold {inside} | OK past it {past} | refused {codes}"
         if exps:
             line += f" | expansions median {statistics.median(exps)} max {max(exps)}"
+        fars = [r[w].get("far", 0.0) for r in rows if r[w]["code"] == "OK"]
+        if fars:
+            line += f" | furthest from home median {statistics.median(fars):.1f} max {max(fars):.1f} m"
         if w != "e1.5":
             both = [r for r in rows if r[w]["code"] == "OK" and r["e1.5"]["code"] == "OK" and r["e1.5"]["cost"] > 0]
             if both:

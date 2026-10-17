@@ -43,8 +43,9 @@ func test_the_weight_lands_the_face_behind_inside_the_hold() -> void:
 
 
 ## The stage (test_manoeuvre_face_behind's): the seam's counters over the face.
-func _stage(weight: float) -> Dictionary:
+func _stage(weight: float, keep := 0.0) -> Dictionary:
 	PlannerSeam.face_epsilon_override = weight
+	PlannerSeam.face_keep_override = keep
 	PlannerSeam.reset()
 	var arena := await ArenaFixture.build(self, "yard_open")
 	var game_match: Match = MATCH.instantiate()
@@ -69,6 +70,7 @@ func _stage(weight: float) -> Dictionary:
 			"aligned_s": float(aligned) / SimClock.TICK_RATE if aligned >= 0 else -1.0,
 			"drift_m": Vector2(tank.global_position.x - START.x, tank.global_position.z - START.z).length()}
 	PlannerSeam.face_epsilon_override = -1.0
+	PlannerSeam.face_keep_override = -1.0
 	# Disposed (trip-up 83): a second stage's "Rig" beside an undisposed first one shares its name in the seam's table,
 	# and each controller released the other's crew every tick (builder0, the first run of this file).
 	controller.free()
@@ -79,11 +81,21 @@ func _stage(weight: float) -> Dictionary:
 	return r
 
 
-func test_the_seam_serves_the_face_behind() -> void:
+## The weight alone serves the WRONG plan (builder0 light, 7ff19c2f: plans 1, drift 25.3 m, aligned 11.7 s mid-plan; the
+## default: abandoned, today's executor turns it, drift 1.5 m, aligned 15.4 s). Reported, not asserted: it is why the
+## keep circle is the candidate.
+func test_the_weight_alone_swings_the_rig_out() -> void:
+	var r := await _stage(CANDIDATE)
+	print("FACE_EPSILON stage weighted alone %s" % r)
+	assert_true(int(r["plans"]) >= 1, "the weight lands a plan (%s)" % r)
+
+
+func test_the_seam_serves_the_face_behind_at_its_spot() -> void:
 	var base := await _stage(0.0)
-	var cand := await _stage(CANDIDATE)
-	print("FACE_EPSILON stage: default %s | weighted %s" % [base, cand])
-	assert_true(int(base["abandoned"]) >= 1 and int(base["plans"]) == 0, "control: at today's weight the seam abandons it (%s)" % base)
-	assert_true(int(cand["plans"]) >= 1 and int(cand["abandoned"]) == 0, "weighted: the seam plans it (%s)" % cand)
-	assert_true(float(cand["aligned_s"]) >= 0.0 and float(cand["aligned_s"]) <= 25.0, "and the rig comes round (%s)" % cand)
+	var cand := await _stage(0.0, 1.0)
+	print("FACE_EPSILON stage: default %s | keep 1 hull length %s" % [base, cand])
+	assert_true(int(base["abandoned"]) >= 1, "control: at today's settings the seam abandons it (%s)" % base)
+	assert_true(int(cand["plans"]) >= 1 and int(cand["abandoned"]) == 0, "kept: the seam plans it (%s)" % cand)
+	assert_true(float(cand["aligned_s"]) >= 0.0 and float(cand["aligned_s"]) <= float(base["aligned_s"]),
+			"and the rig comes round no later than today's executor turns it (%s v %s)" % [cand, base])
 	assert_true(float(cand["drift_m"]) <= 8.0, "at its spot (%s)" % cand)
