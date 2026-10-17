@@ -90,8 +90,10 @@ const QUANTUM := 20                # expansions a search runs before the next be
 ## it would serve is the wrong one: F-1x24 R-1x15 F-1x4 F+0x17 F+1x5.5 (17.5 s) swings the rig 25.3 m off its spot (round
 ## 32's NATIVE=off failure; builder0 light, 7ff19c2f, test_planner_face_epsilon at weight 2.0: served, drift 25.3 m).
 ## Two candidates, OFF until judged:
-##   FACE KEEP (`--planner-face-keep=K`, K hull lengths): a face with no slot of its own (no KEEP circle from the slot law)
-##   keeps every pose of its plan within K x the hull's length of its home: a face is a turn AT a spot. At K 1 the rig's
+##   FACE KEEP (`--planner-face-keep=K`, K hull lengths): every pose of a face plan within K hull lengths of its home, or,
+##   for a face under the slot law (whose circle bounds only the END), within the end circle + K hull lengths: a face is
+##   a turn AT a spot. The hull-rest census (builder0 light, a6368824, gangs drawn seeds 66-71, 58 face searches): the
+##   furthest a plan goes from home, max 29.0 m today v 14.2 m kept, the same cost on all 21 both found. At K 1 the rig's
 ##   face-behind is F-1x12 R-1x12 F-1x12.5, a three-point turn, 11.7 s (CHEAPER than the 17.5 s plan: the lattice's
 ##   heuristic overestimates near a turn in place and the anytime stop ends before that plan pops), in 4 expansions,
 ##   11.5 m out at most (offline, laptop, the GDScript search, yard_open).
@@ -137,6 +139,8 @@ static var _retry_until := {}     # name -> [tick, the hull's instance id]: a de
 static var _last_refusal := {}    # name -> [physics frame, code]: manoeuvre's CP-P1 handover counters read it
 static var last_abandoned := {}   # measurement: the last search that ran out the hold (kind, stepped, start, goal, stay, at rest)
 static var last_plans: Array = []  # measurement: every plan that landed this reset (tick, name, kind, legs, expansions, start, goal)
+## Round 33 (P3's drift line): for every FACE plan served, the furthest its poses take the hull from the face's home (m).
+static var face_far: PackedFloat32Array = []
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 ## The slice this match plans at (`slice()`), latched once per match; where it came from ("flag", "preset", "default").
 static var _slice := SLICE
@@ -369,7 +373,7 @@ static func report() -> Dictionary:
 	return {"requests": requests, "plans": plans, "plan_legs": plan_legs, "driven": driven, "aborted": aborted,
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
 			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "stale_released": stale_released, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
-			"holds": _hold_stats(), "hold_ticks": Array(holds)}   # hold_ticks: the per-event list (the series pools it per arm)
+			"holds": _hold_stats(), "hold_ticks": Array(holds), "face_far": Array(face_far)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
@@ -399,6 +403,7 @@ static func reset() -> void:
 	_alloc = {}
 	_last_refusal = {}
 	holds = PackedInt32Array()
+	face_far = PackedFloat32Array()
 	last_plans = []
 	_release_all()
 
@@ -529,7 +534,7 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			req.to(target.x, target.z, want.x, want.z, stay, FACE_TOL_DEG)
 			req.arrive_gear = 0
 			req.epsilon = face_epsilon()
-			keep_face(req, face_keep())
+			keep_face(req, face_keep(), true)
 			# Round 31 (CP-P1's first judged series, seed 134's plaza: a rig arrived 4.5 m from its slot, the face's one
 			# 3.5 m reverse chord left it 7.4 m out for the rest of the leg): manoeuvre's SLOT LAW, read from its own
 			# names so the two cannot drift. (a) The slot = OrderController.face_slot (the last move_to's goal), only
@@ -754,6 +759,11 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 			"expansions": plan.expansions, "metres": plan.metres, "cusps": plan.cusps,
 			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(crew.goal.x, 0.01), snappedf(crew.goal.z, 0.01)]})
 	holds.append(tick - crew.held_since)
+	if crew.kind == "face":
+		var far := 0.0
+		for pose: Array in plan.poses:
+			far = maxf(far, Vector2(float(pose[0]) - crew.goal.x, float(pose[1]) - crew.goal.z).length())
+		face_far.append(snappedf(far, 0.1))
 	crew.pending = false
 	crew.executor = PlannerExecutor.new()
 	crew.executor.start(plan, tank)
@@ -985,6 +995,7 @@ static func restore(snapshot: Dictionary) -> void:
 	queue_waits = int(counters["queue_waits"])
 	refused_early = int(counters.get("refused_early", 0))
 	stale_released = int(counters.get("stale_released", 0))
+	face_far = PackedFloat32Array(counters.get("face_far", []))
 	if queue_on():
 		# The shared queue: every begun crew's own session begun again from its request and stepped as far.
 		for name: String in _crews:
