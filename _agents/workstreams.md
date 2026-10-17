@@ -177,6 +177,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   sim-baseline moves adopted with the reason; native states whether element_plan has a twin. **Order for brains:** R1 →
   R33.9 → R33.6 → B10b (its series on a tree with R33.9). **Manoeuvre's CP-F bar judges on a tree with R33.9.**
 
+- **R33.10 builder0 is the bottleneck (2026-10-17):** two full checks (planner `03d1a50c`, brains `2fd9f420`) were killed at
+  slot.sh's 5400 s cap at load ~23 with shard 3 unfinished (both 0 failed in what ran, sim-baseline 13 unmoved): no verdict.
+  **Rules for the rest of the round:** each stream runs ONE heavy builder0 job at a time; priority is (1) the full check of a
+  hash named for merge, (2) a filed judged series, (3) tuning / traces (light lane or the laptop where the number is not
+  judged). **R1 merges on R33.9's check:** if lab/brains-r339 `429ebc4b` (= R1 `2fd9f420` + R33.9) is green, `2fd9f420`
+  merges on it (its own partial check read 2640 passed / 0 failed, sim-baseline unmoved, 23 other targets passed);
+  `429ebc4b` itself merges only when R33.9's bar passes.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
@@ -288,6 +296,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   native path must agree with it in sign on (a) and (d). (n) fights 470–493 run wholly before R33.6 merges, or with it in
   both arms. (o) (b)'s many cells are a guard against harm: a single cell at p < 0.05 in a class the change does not touch
   (e.g. tracks) is traced before it fails the series, and the trace is reported either way.
+- **R33.9, the arrival latch (brains; filed 2026-10-17 before any number).** Candidate lab/brains-r339 `429ebc4b` (R1 +
+  R33.9): arrived until the centre is ARRIVE_M + 6 m out (half the arrive radius: above a five-crew swarm's centre swing on
+  a re-seat, far below a real departure), cleared per task by `Element.assign`; both read sites (`element_plan.gd:290`,
+  `:686`); `--arrive-latch=off` = main's rule. ElementPlan has no C++ twin (no mirror). Lines: (a) gangs hull-rest
+  faced_attack_move s40 (GDScript, as traced): Battery arrive-flips 0 on (off reported), re-seats on < off (counter
+  `arrive_flips` beside `goal_moves`, measurement only); (b) arrivals not down: that cell's settled crews on ≥ off, and
+  squad-arrive-series FRESH seeds 57–60 (n 100) all-within-8 m on ≥ off − 1.645 se; (c) the check; sim-baseline moves
+  listed with reasons.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
