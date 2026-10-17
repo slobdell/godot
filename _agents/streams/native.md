@@ -86,7 +86,21 @@ same `_crews`. Twins on `03d1a50c` (worktree `../godot-native-pair`, branch `pai
 `make native test FILTER=native_drive|native_execute|native_face_behind|planner_seam_stale`, n 1: `exited 0`, 10 passed /
 0 failed, every twin 0 mismatches (drive 2160 a view, live and owned; k-turn 1440 drives / 5 plans, unstick 7200; execute
 5880 + 6000 native; face_behind tank 142 native, rig 928 hand-backs; seam_stale released 2 ticks after `stop`). Sent to
-planner and the orchestrator; planner's full check is the ship gate.
+planner and the orchestrator; planner's full check is the ship gate. **Planner's ship hash `1b5c69df`** (`03d1a50c` plus
+its test disposing the match; seam code identical): planner reports builder0 `make check exited 0`, 2725 / 0,
+sim-baseline unmoved. Nothing for native to re-run (the seam code the twins read is unchanged). Planner's CP-Q pair
+(QUEUE_DEFAULT true) comes to native for C++ review after that merge. Merged as main `b122cf60` (orchestrator). Main moved
+while N5.M's check ran on `145ada3a`; the orchestrator runs `tools/merge_check_needed.sh` on the verdict to rule whether
+it inherits.
+**CP-F pair `887ac6d2` (manoeuvre `pair/cpf-on`: main 227d0bb6 + R33.9 429ebc4b + manoeuvre e5c66718 + TURN_HULL_DEFAULT
+true), twins GREEN, no C++ change.** The diff adds Manoeuvre.drawn_direction's station fallback and Orders._remember_station's
+`drawn` field; the C++ reads neither (feed_native takes a station as a point only). builder0 light, worktree
+`../godot-native-pair` detached at 887ac6d2, `make native test FILTER=native_drive|native_execute|native_face_behind
+exited 0`, 9 / 0, n 1. Every twin had 0 mismatches:
+- drive 2160 a view (live and owned); k-turn 1440 + 1440; unstick 7200;
+- execute 5880 + 120 handed back, and 6000;
+- face_behind: War Rig 928 handed back; tank 142 native / 2 handed back.
+Sent to manoeuvre and the orchestrator.
 **Stretch: the k-turn twin split, `26a35318` (test-only).** `_unstick_compare` compares a mover on frames where
 `(frame + mover) % 2 == part`; test_native_drive_kturn = drive compare + part 0, test_native_drive_kturn_odd = part 1 (no
 drive compare). Draws are made for every pair in their old order (rng also places the k-turns), so the fight is unchanged.
@@ -104,5 +118,27 @@ same code): new `test_native_manoeuvre` (five hulls on yard_open sent astern at 
 on its tick, live and owned): 920 decisions native, 0 called back, 0 mismatches; route 613 / reverse 307; refusals
 facing_nose 225, static 84, route_faster 66, friendly 6, enemy 2; `no_arrival` not reached. Drive twins 165 / 179
 decisions native, 0 mismatches. Price (same run, load ~18, n 1): a decision tick's drive 1762 usec with the callback,
-719 usec native, 1728 all GDScript. Full `check`, `check NATIVE=off` and `native-proof` on `145ada3a`: running.
+719 usec native, 1728 all GDScript.
+**Verification on `145ada3a` (builder0, sequential, one heavy job):**
+- First full check: killed by slot.sh after 5400 s (`make check exited 2`). Lint took 28 min on a busy box and test
+  never finished: a timeout, not a red test.
+- Second run: meant to be `check NATIVE=off`, but `make remote T=check NATIVE=off` does NOT forward NATIVE (the T must
+  carry it: `T="check NATIVE=off"`), so it was a second native-ON full check. It read `make check exited 2`: 2727
+  passed / 0 failed; sim-baseline all 13 unmoved; perf-judge and ai-scenarios NOT JUDGED (the box was busy); FAIL
+  native-live-guard, "on but not taken under the tick profile: native_manoeuvre".
+- The cause: the decision runs inside the C++ drive with no GDScript seam to call `took`. Fixed in `607fca1a`:
+  `taken["manoeuvre"]` comes from the drive's own count while the guard counts, hooked in NativeExec's execute and
+  NativeDrive.drive. builder0 light, `make native native-live-guard exited 0`: native_manoeuvre 227 decisions native,
+  0 called back, in the profile's 20-a-side foundry match (N5.M runs in a real match).
+- `native-proof` on `145ada3a`: `exited 0`, EQUAL `10c328a0f978ea49`.
+**no_arrival reached: `1a1182bb`** (cherry-pick of lab `5a0d002e`, test-only). A sweep of Manoeuvre.simulate at
+`145ada3a` found 4 War Rig goals and 6 Lancer goals among 1604 that reverse clear but don't arrive. The stage asks the
+War Rig's four. builder0 light: 940 decisions native, 0 mismatches both views, `refused:no_arrival` 4, floor 1.
+Re-verification of `1a1182bb`: `T=check`, then `T="check NATIVE=off"`, then `native-proof`, running.
+**CP-F pair (manoeuvre `136c3828`), assessed: NO C++ CHANGE.** `_order_move`'s decline is not in C++; N5.M reads none of
+`TURN_HULL_DEFAULT`, `_keep_slot` / `_keep_m` or facekeep, and the diff touches none of the mirrored functions; no new
+Movement members (exec rows unaffected). `turret_carries_aim` is wheels + turret only, so every `drawn_face` order is a
+wheeled face, handed back by execute_native (`simple_face` false on wheels); the twins assert those hand-backs write
+nothing. (My first answer wrongly said tracked tanks could reach it; retracted within minutes, manoeuvre agreed.)
+Read the twins on manoeuvre's pair hash when it names one.
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
