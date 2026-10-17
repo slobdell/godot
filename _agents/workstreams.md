@@ -319,6 +319,12 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   think, GDScript on every path); `drawn_face` only rewrites the ORDER to a face `from: drawn`; `turret_carries_aim` is
   wheels + turret only, and execute_native hands wheeled faces back to GDScript by design (~365). N5.M's functions and the
   exec rows are untouched. So CP-F's arms run on the default native path; native reads the twins on its pair tree.
+  **(p) added before numbers (orchestrator, on manoeuvre's `b09eee0b` note):** his plainest case is a K1 move with a drawn
+  facing, then a contact; `Orders._remember_station` (`game/control/orders.gd:489`) keeps the heading but not that it was
+  drawn, so there the declined face stays round 8's `stop` in both arms. **Granted to manoeuvre:** one additive field in that
+  function (`"drawn": order.has("facing")` on the station; merge note), read by `drawn_face` under the same `turnhull`
+  switch, with a test of that case; it rides CP-F (no separate series). (q) REPORTED: turret shots in the first 20 s of a
+  contact while the hull turns (manoeuvre's test: ON 1 v OFF 5 shots, n 1); the fights' hit-rate line (i) judges it.
 - **R33.9, the arrival latch (brains; filed 2026-10-17 before any number).** Candidate lab/brains-r339 `429ebc4b` (R1 +
   R33.9): arrived until the centre is ARRIVE_M + 6 m out (half the arrive radius: above a five-crew swarm's centre swing on
   a re-seat, far below a real departure), cleared per task by `Element.assign`; both read sites (`element_plan.gd:290`,
