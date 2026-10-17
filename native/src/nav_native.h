@@ -73,6 +73,9 @@ public:
 	// than at the start pose (`start`, or the lazy start pose when `start` is empty).
 	bool outline_ok(const RID &map, double half_w, double half_l, double clear, const Vector3 &at, const Vector3 &heading,
 			const PackedFloat32Array &start, const Vector3 &lazy_at, const Vector3 &lazy_heading);
+	// Movement._outline_offs(map, frame, at, heading): how far off the mesh each outline point is (round 33, N5.M: the
+	// start pose of Manoeuvre.simulate), `outline_off` per point, stored as float32 as the GDScript's packed array does.
+	PackedFloat32Array outline_offs(const RID &map, double half_w, double half_l, const Vector3 &at, const Vector3 &heading);
 	// Movement._arc_hit: the full-lock arc from (at, heading) swept KTURN_STEP_M at a time until the hull points at
 	// `target`; metres to the first pose whose outline is not clear, INF for none (or past `cap`).
 	double arc_hit(const RID &map, double half_w, double half_l, double clear, const Vector3 &at, const Vector3 &heading,

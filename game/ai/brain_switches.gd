@@ -79,6 +79,7 @@ static var native_recorder := true  # Round 28 (N7.6): MatchRecorder's per-tick 
 static var native_wall := false  # Round 29 (N7.4): WallContact.observe's scan natively (wall_native.cpp: alive/parked, the slide collisions, the deepest wall, a hull touched); a wall tick still classified by the GDScript. OFF until its check
 static var native_feed := true  # Round 30 (N7.5): ElementFeed's builders natively (feed_native.cpp: _shared, _normalize; the memo stays GDScript); ON once test_native_feed and native-proof feed are equal
 static var native_planner := true  # Round 31 (C31.5, CP-P0): Planner.plan takes the C++ search (PlannerNative) when native and this; the GDScript search is the twin
+static var native_manoeuvre := true  # Round 33 (N5.M): the native drive decides Movement._manoeuvre's new goal itself (Manoeuvre.choose and its simulation, drive_native.cpp); off: the decision is called back, as rounds 26-32
 static var native_controller := false  # Round 28 (N7.3a): OrderController._physics_process natively (controller_native.cpp: the stride hold, think then execute, the measurement bookkeeping); OFF until its check
 ## Round 31 (brains B8, a CP-H consumer, C31.4; R31.1: OPT-IN): the element's re-seat / make-room clock reads the honest
 ## speed (`Element.reads_slow`). NAMING it (`--brains-off=realslow`) flips it against REALSLOW_DEFAULT, as manoeuvre's
@@ -91,7 +92,7 @@ static var native_move := false  # Movement's geometry: _chord_compute's samples
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat", "native_pathing", "native_perception", "native_incoming", "native_shell", "native_threat", "native_recorder", "native_controller", "native_wall", "native_feed", "native_planner"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat", "native_pathing", "native_perception", "native_incoming", "native_shell", "native_threat", "native_recorder", "native_controller", "native_wall", "native_feed", "native_planner", "native_manoeuvre"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -236,6 +237,8 @@ static func set_named(name: String, on: bool) -> void:
 			native_feed = on
 		"native_planner":
 			native_planner = on
+		"native_manoeuvre":
+			native_manoeuvre = on
 		"native_n4":
 			native_situation = on
 			native_tq = on

@@ -419,6 +419,18 @@ float NavNative::outline_off(int i, double half_w, double half_l, const Vector3 
 	return Vector2((real_t)((double)closest.x - (double)point.x), (real_t)((double)closest.z - (double)point.z)).length();
 }
 
+// `_outline_offs`: for each KTURN_OUTLINE sample, point := at + heading * (x * frame[1]) + right * (y * frame[0]);
+// offs.append(Vector2(closest.x - point.x, closest.z - point.z).length()) -- `outline_off`'s arithmetic, point by point.
+PackedFloat32Array NavNative::outline_offs(const RID &map, double half_w, double half_l, const Vector3 &at, const Vector3 &heading) {
+	refresh(map);
+	PackedFloat32Array offs;
+	offs.resize(10);
+	for (int i = 0; i < 10; i++) {
+		offs.set(i, outline_off(i, half_w, half_l, at, heading));
+	}
+	return offs;
+}
+
 // `_outline_ok` with BrainSwitches.kturn_cap: per point, off > clear AND off > from_start + 0.05 -> not ok; from_start
 // is start[i] (float32), or the lazy start pose's own outline point (computed and stored as float32 there, so rounded
 // to float32 here too) when `start` is empty.

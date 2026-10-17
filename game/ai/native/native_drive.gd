@@ -106,6 +106,14 @@ static func configure() -> bool:
 		"KTURN_ARC_DEFAULT": bool((Movement as Script).get_script_constant_map().get("KTURN_ARC_DEFAULT", false)),
 		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
 		"tank_script": Tank,
+		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
+		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).
+		"manoeuvre": Manoeuvre, "MAN_MAX_M": Manoeuvre.MAX_M, "MAN_BEHIND_DEG": Manoeuvre.BEHIND_DEG,
+		"MAN_FACING_KEEP_DEG": Manoeuvre.FACING_KEEP_DEG, "MAN_SIM_DT": Manoeuvre.SIM_DT,
+		"MAN_SIM_HORIZON_S": Manoeuvre.SIM_HORIZON_S, "MAN_CHECK_EVERY": Manoeuvre.CHECK_EVERY,
+		"MAN_HULL_MARGIN_M": Manoeuvre.HULL_MARGIN_M, "REAIM_TICKS": Movement.REAIM_TICKS,
+		"KTURN_MARGIN_M": Movement.KTURN_MARGIN_M, "CUSP_DEADBAND": ManoeuvreCensus.CUSP_DEADBAND,
+		"motion_ok": NativeMotion.configure(),
 	}
 	# Round 31 (planner CP-P1): the seam's switch and its table, when this tree has the seam (loaded by path: the file
 	# parses on a tree without it).
@@ -140,6 +148,8 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 					float(c["pulls"]) / n, float(c["pushes"]) / n])
 	else:
 		NativeBridge.impl.drive(mover, cmd, order, delta)
+	if NativeBridge.counting:
+		_count_manoeuvre()
 	if profile:
 		_drives += 1
 		if _drives % PROFILE_EVERY == 0:
@@ -149,6 +159,20 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 				if key != "drives":
 					parts.append("%s %.1f" % [key, float(clocks[key]) / maxi(int(clocks["drives"]), 1)])
 			print("NATIVE_DRIVE_PROFILE %d drives, usec a drive: %s" % [int(clocks["drives"]), ", ".join(parts)])
+
+
+## Round 33 (N5.M, the live guard): `_manoeuvre`'s decision runs INSIDE the C++ drive with no GDScript seam to call
+## `took`, so while the guard counts, `taken["manoeuvre"]` is the drive's own count of native decisions since counting began.
+static var _manoeuvre_base := -1
+
+
+static func _count_manoeuvre() -> void:
+	var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
+	var native := int(c.get("manoeuvre_native", 0))
+	if _manoeuvre_base < 0:
+		_manoeuvre_base = native
+	NativeBridge.taken["manoeuvre"] = native - _manoeuvre_base
+	NativeBridge.taken["manoeuvre_called_back"] = int(c.get("manoeuvre_called_back", 0))
 
 
 ## N4 (tests): Movement._around_fire natively on this mover, from its state now (the proof asks it beside the GDScript).

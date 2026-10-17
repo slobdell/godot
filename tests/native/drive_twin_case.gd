@@ -17,6 +17,52 @@ const UNITS: Array[String] = ["tank", "ifv", "scout", "gang_tank", "artillery", 
 		"gang_tank", "scout", "tank"]
 const FRAMES := 180
 
+## Round 33 (N5.M): `_manoeuvre`'s decisions in the COMPARED native arm (not the fight's own drives): made natively, called
+## back, and the plans / refusals they counted (Manoeuvre's tables, read from the native arm's capture).
+var man_native := 0
+var man_called_back := 0
+var man_tally := {}
+## `_compare_tick`'s clocks (measurement): microseconds in the live GDScript drive and the native drive, and drives.
+var tick_live_usec := 0
+var tick_native_usec := 0
+
+
+func _man_reset() -> void:
+	man_native = 0
+	man_called_back = 0
+	man_tally = {}
+	tick_live_usec = 0
+	tick_native_usec = 0
+
+
+## Every decision in the compared native arm made natively (N5.M), and floors: "" the decisions, else a tally key.
+func _man_check(stage: String, floors := {"": 1}) -> void:
+	print("native manoeuvre (%s): %d decisions native, %d called back, plans / refusals %s" % [stage, man_native,
+			man_called_back, man_tally])
+	assert_eq(man_called_back, 0, "the native drive decides _manoeuvre itself (%s)" % stage)
+	for key: String in floors:
+		var have := man_native if key == "" else int(man_tally.get(key, 0))
+		assert_true(have >= int(floors[key]), "%s: %s %d >= %d" % [stage, key if key != "" else "decisions", have, floors[key]])
+
+
+func _man_counts() -> Array:
+	var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
+	return [int(c.get("manoeuvre_native", 0)), int(c.get("manoeuvre_called_back", 0))]
+
+
+## Adds the native arm's decision counts since `before` and its plan / refusal deltas (`start`, `after`: one mover's capture).
+func _man_add(before: Array, start: Dictionary, after: Dictionary) -> void:
+	var now := _man_counts()
+	man_native += now[0] - int(before[0])
+	man_called_back += now[1] - int(before[1])
+	for table: String in ["plans", "refused"]:
+		var was: Dictionary = start.get("static:Manoeuvre." + table, {})
+		var is_now: Dictionary = after.get("static:Manoeuvre." + table, {})
+		for key: String in is_now:
+			var moved := int(is_now[key]) - int(was.get(key, 0))
+			if moved != 0:
+				man_tally["%s:%s" % [table, key]] = int(man_tally.get("%s:%s" % [table, key], 0)) + moved
+
 
 ## Every mover's state, then (one more entry) the world a drive can change besides them: the planner's seam (round 31).
 func _capture_all(movers: Array[Movement]) -> Array:
@@ -73,13 +119,19 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 		var start := _capture_all(movers)
 		var live_cmd := TankCommand.new()
 		BrainSwitches.native_drive = false
+		var t0 := Time.get_ticks_usec()
 		mover.drive(live_cmd, order, delta)
+		tick_live_usec += Time.get_ticks_usec() - t0
 		BrainSwitches.native_drive = true
 		var live := _capture_all(movers)
 		_restore_all(movers, start)
 		var native_cmd := TankCommand.new()
+		var man_before := _man_counts()
+		t0 = Time.get_ticks_usec()
 		NativeDrive.drive(mover, native_cmd, order, delta)
+		tick_native_usec += Time.get_ticks_usec() - t0
 		var native := _capture_all(movers)
+		_man_add(man_before, start[i], native[i])
 		_restore_all(movers, start)
 		drives += 1
 		var differ := ""
@@ -102,8 +154,11 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 ## every mover with a move order, from one snapshot of all movers: the game's own state, then forced states that reach
 ## each branch (about to fire the stall rule, backing off, escaping a pressed wall, about to call a press). Returns
 ## [compared, mismatches, first, branches].
+## `part` of `parts` (round 33): a mover is compared on the frames where `(frame + i) % parts == part`, so every half
+## sees every crew (a branch floor splits by frame). The draws are made for every pair either way: `rng` also places the
+## k-turns, and the fight must be the same in every half.
 func _unstick_compare(movers: Array[Movement], controllers: Array[OrderController], rng: RandomNumberGenerator,
-		frame: int) -> Array:
+		frame: int, part := 0, parts := 1) -> Array:
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var compared := 0
 	var mismatches := 0
@@ -114,7 +169,26 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 		var order: Dictionary = controllers[i].move_order
 		if String(order.get("type", "")) != "move_to" or not mover.ctl.tank.is_alive():
 			continue
+		var mine := (frame + i) % parts == part
 		for variant in 5:
+			# The draws first, in the order the forcing below reads them.
+			var pivot := false
+			var left := 0.0
+			var gear := 0.0
+			var esc_turn := 0.0
+			var press := 0.0
+			match variant:
+				2:
+					pivot = rng.randf() < 0.5
+				3:
+					left = rng.randf_range(0.01, 0.5)
+					gear = 1.0 if rng.randf() < 0.5 else -1.0
+					esc_turn = 1.0 if rng.randf() < 0.5 else -1.0
+					press = rng.randf_range(-2.0, 2.0)
+			var throttle := 1.0 if variant == 1 else rng.randf_range(-1.0, 1.0)
+			var turn := rng.randf_range(-1.0, 1.0)
+			if not mine:
+				continue
 			var start := _capture_all(movers)
 			match variant:
 				1:
@@ -123,18 +197,16 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 				2:
 					mover._unstick_left = 0.5
 					mover._escape_gear = 0.0
-					mover._unstick_pivot = rng.randf() < 0.5
+					mover._unstick_pivot = pivot
 				3:
-					mover._unstick_left = rng.randf_range(0.01, 0.5)
-					mover._escape_gear = 1.0 if rng.randf() < 0.5 else -1.0
-					mover._escape_turn = 1.0 if rng.randf() < 0.5 else -1.0
-					mover._press_from = mover.ctl.tank.global_position + Vector3(rng.randf_range(-2.0, 2.0), 0.0, 0.5)
+					mover._unstick_left = left
+					mover._escape_gear = gear
+					mover._escape_turn = esc_turn
+					mover._press_from = mover.ctl.tank.global_position + Vector3(press, 0.0, 0.5)
 				4:
 					mover._unstick_left = 0.0
 					mover._press_time = Movement.PRESS_SECONDS - 0.01
 			var forced := _capture_all(movers)
-			var throttle := 1.0 if variant == 1 else rng.randf_range(-1.0, 1.0)
-			var turn := rng.randf_range(-1.0, 1.0)
 			var arms := []
 			for arm in 3:
 				_restore_all(movers, forced)
@@ -165,11 +237,14 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 	return [compared, mismatches, first, branches]
 
 
-func _k_turn_case(owned: bool) -> void:
+## `parts` > 1 (round 33): the unstick compare's `part` of the frames (see `_unstick_compare`); `drive` false leaves the
+## drive compare to the file that has it (the fight is the same either way: the compares restore what they touch).
+func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
+	_man_reset()
 	NativeDrive.owned = owned
 	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
 	await ArenaFixture.build(self, "sumps")
@@ -221,12 +296,12 @@ func _k_turn_case(owned: bool) -> void:
 					controllers[i].set_orders({"type": "move_to", "x": behind.x, "z": behind.z}, null)
 					break
 		await wait_physics_frames(1)
-		var result := _compare_tick(movers, controllers, frame)
+		var result := _compare_tick(movers, controllers, frame) if drive else [0, 0, ""]
 		drives += result[0]
 		mismatches += result[1]
 		if first == "" and result[2] != "":
 			first = result[2]
-		var stuck := _unstick_compare(movers, controllers, rng, frame) if not owned else [0, 0, "", {}]
+		var stuck := _unstick_compare(movers, controllers, rng, frame, part, parts) if not owned else [0, 0, "", {}]
 		unstick_compared += stuck[0]
 		unstick_mismatches += stuck[1]
 		if unstick_first == "" and stuck[2] != "":
@@ -238,11 +313,13 @@ func _k_turn_case(owned: bool) -> void:
 	print("native drive k-turns%s: %d drives, plans / leg ticks / aborted %s -> %s, %d mismatches" % [
 			" (owned state)" if owned else "", drives, kturn_before, kturn_after, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive through k-turns: %s" % first)
+	# (No _man_check here: an order lands between frames and the fight's own drive makes its decision before the compare;
+	# test_native_manoeuvre compares decisions on their tick. The comparison above still covers every gate tick.)
 	if not owned:
-		print("native unstick: %d compared (by variant:fired %s), %d mismatches" % [unstick_compared, unstick_branches,
-				unstick_mismatches])
+		print("native unstick (part %d of %d): %d compared (by variant:fired %s), %d mismatches" % [part, parts,
+				unstick_compared, unstick_branches, unstick_mismatches])
 		assert_eq(unstick_mismatches, 0, "the native unstick is the live GDScript unstick: %s" % unstick_first)
-		assert_true(unstick_compared >= 1000 and int(unstick_branches.get("1:fired", 0)) >= 20,
+		assert_true(unstick_compared >= 1000 / parts and int(unstick_branches.get("1:fired", 0)) >= 20 / parts,
 				"every branch asked (%s)" % unstick_branches)
 	# Floors against a vacuous run, not targets: kturnarc (a leg ends by the arc driven; round 31's H2 signed by gear)
 	# leaves this fight 4 plans (builder0, pair/cph-on), against >= 5 before (round 30's lab measured the same).
@@ -255,6 +332,7 @@ func _drive_case(owned: bool) -> void:
 		print("native: absent, the drive equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
+	_man_reset()
 	NativeDrive.owned = owned
 	NativeBridge.impl.drive_owned_counts(true)
 	assert_true(Movement._off.is_empty(), "the default configuration (no --nav-off switch)")
@@ -332,10 +410,12 @@ func _drive_case(owned: bool) -> void:
 			var live_replanned := Movement.a1_replans != replans_before
 			_restore_all(movers, start)
 			var native_cmd := TankCommand.new()
+			var man_before := _man_counts()
 			t0 = Time.get_ticks_usec()
 			NativeDrive.drive(mover, native_cmd, order, delta)
 			native_usec += Time.get_ticks_usec() - t0
 			var native := _capture_all(movers)
+			_man_add(man_before, start[i], native[i])
 			native_replans += 1 if Movement.a1_replans != replans_before else 0
 			_restore_all(movers, start)
 			asked += 1
@@ -386,6 +466,7 @@ func _drive_case(owned: bool) -> void:
 		assert_true(int(counts["drives"]) >= asked, "every native drive ran on the owned state (%d >= %d)" % [
 				int(counts["drives"]), asked])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive: %s" % first)
+	_man_check("drive")
 	assert_true(asked >= 1000 and wheeled >= 200, "a real sample (%d drives, %d wheeled)" % [asked, wheeled])
 	assert_true(replans >= 20 and native_replans == replans, "re-plans happen, and the native arm counts them through the statics (%d, %d)" % [replans, native_replans])
 	assert_true(avoided >= 20, "avoidance shapes some drives (%d)" % avoided)
