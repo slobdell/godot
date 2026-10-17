@@ -156,6 +156,13 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   unreachable. **From its merge, `Manoeuvre.choose / simulate / behind / _others` are twinned (C26.2):** manoeuvre's edits
   there become pairs with native.
 
+- **R33.8 T4's circling hull is the approach gate's (traffic's X4 trace, 2026-10-17; `references/round33/traffic/x4_t4_circle.md`):**
+  builder0 light, yard head-on s42 t3, native path: ghost ON A_5 settles 44.6 s v base 25.2 s (round 32's case reproduces).
+  A faced wheeled hull interrupted ~5 m from its approach gate, pointing the wrong way, re-aims the gate from inside its
+  turning circle and the circle rule loops 16 s; the ghost only changes where the hull ends up near the gate. **Ruling:**
+  brains' fix, inside B5c-v6 (R4): yard s42 t3 A_5 joins v6's bar as a named pass case (ghost ON and OFF). T4's mixed-stuck
+  re-judge (n ≈ 48) runs after parkedroom's series, with the yard head-on's settle time REPORTED (not judged) until v6 lands.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
