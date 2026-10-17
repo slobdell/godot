@@ -70,7 +70,7 @@ inherits `0c124cf7`'s green check: no baseline check run; Opus). Every number bu
 
 | item | state | evidence |
 |---|---|---|
-| **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **FIXED, check RUNNING** on `fix/planner-live-stale` `03d1a50c` (main `86975667` + 1 commit; cherry-picked here as `48a694b0`). Native APPROVED, no C++ change | `test_planner_seam_stale`: red without (laptop: still live 2 s after `stop`), green with (released 2 ticks after) |
+| **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **GREEN, MERGE HERE: `1b5c69df`** (`fix/planner-live-stale`, main `86975667` + the fix `03d1a50c` + its test's dispose; builder0 `make check exited 0`, 2725 passed 0 failed, sim-baseline 13 UNMOVED, 2 NOT JUDGED on a busy box). Native APPROVED, twins 10/0, 0 mismatches; no C++ change. On this branch as `48a694b0` + `0120be71` | `test_planner_seam_stale`: red without (laptop: still live 2 s after `stop`), green with (released 2 ticks after) |
 | **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, `make remote exited 0`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
 | **P2** CP-Q re-judged | bar SENT to the orchestrator (below), before any number; the pair tree waits on R33.3's check | — |
 | **P3** open-ground face-behind | candidate = the **FACE KEEP circle** (`--planner-face-keep=1`, OFF, `45390507`); bar SENT before numbers (below). The weight (ε 2.0) is DROPPED: it serves the wrong plan | builder0 light `7ff19c2f`: ε 2.0 serves the face-behind 25.3 m off its spot; keep 1 (laptop stage): served, aligned 9.8 s, drift 1.0 m v today 15.4 s / 1.5 m |
