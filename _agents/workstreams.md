@@ -259,6 +259,15 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   exactly (DEFAULT_OFF = ["parkedroom"]: base default, arm `--traffic-on=parkedroom`) + measurement-only changes
   (`tests/traffic/**`, `mk/traffic.mk`); its check is `cf17abd6`'s. L3 reads kills / deaths / hit rate from L1's own
   random-arena fights 700–723 (the manoeuvre-fights command line) instead of a second stage. Accepted.
+- **T4-ON re-judged (traffic, C33.7; filed 2026-10-17 before any number, stream/traffic `9b4e5ab7`).** Native path, arm
+  `--traffic-on=ghost` v none, FRESH Terminus drive seeds 801–848 (n 48 a squad, paired). (1) deciding: mixed friend-stuck
+  arm < base AND drop − 1.645 se > 0; (2) rigs stuck ≤ base + 1.645 se; (3) pinned mixed / rigs ≤ base + 1.645 se;
+  (4) arrivals mixed / rigs ≥ base − 1.645 se; (5) REPORTED until v6 (R33.8): yard head-on all-in median, last arrival,
+  between-squad fast (traffic-series 41–43 × 6 ticks). No partial rule. Runs after parkedroom's series.
+  **Added before numbers (orchestrator):** (6) the Terminus drive forms no elements (round 32's lesson), so a skirmish
+  guard: showmatch fights on the random arena, FRESH seeds 900–923 (n 24, the manoeuvre-fights command line), kills,
+  deaths, hit rate and far loops each within base ± 1.645 se of the pair's own se; (7) C31.1: the whole suite on the pair
+  tree with the ghost ON, green, before the series.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
