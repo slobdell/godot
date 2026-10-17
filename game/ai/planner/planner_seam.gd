@@ -106,6 +106,12 @@ const FACE_KEEP_FLAG := "planner-face-keep"
 const FACE_KEEP_DEFAULT := 0.0     # hull lengths; 0 = off (today's bits)
 const FACE_SHADOW_FLAG := "planner-face-shadow"
 const SHADOW_EPSILONS: Array[float] = [1.5, 2.0, 3.0]
+## P3 revised (C31.1 on 6f89ecc1: a Terminus street face-back has NO kept plan inside the hold -- keep 1 found a 16-leg
+## 41.7 s shuffle at 10091 expansions where today's search finds 16.9 s at 7): the kept search gets the first quarter of
+## the hold; a refusal or no plan by then and TODAY's search runs from the same pose in what is left, inside the same
+## pending cap (no budget raised: the price per tick is the slice on every preset). Census a6368824 (seeds 66-71,
+## diagnosis): 20 faces served inside the hold either way, 19 of them by the kept plan.
+const FACE_KEPT_SHARE := EXPANSIONS_PER_HOLD / 4
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
@@ -144,6 +150,8 @@ static var face_far: PackedFloat32Array = []
 ## Round 33 (P3's line (2b)): asks and abandoned searches by kind (face, kturn, ...), the FACE asks' abandoned share.
 static var asks_by_kind := {}
 static var abandoned_by_kind := {}
+static var face_kept_served := 0      # face plans served by the KEPT search (P3's open-ground gain line)
+static var face_kept_fallbacks := 0   # kept searches that gave way to today's
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 ## The slice this match plans at (`slice()`), latched once per match; where it came from ("flag", "preset", "default").
 static var _slice := SLICE
@@ -185,6 +193,9 @@ class Crew:
 	var tank: Tank = null           # THE hull this crew serves (crews are keyed by name; a disposed match's hull is
 	                                # freed and the next match names one the same: native's gate on 3a66f546)
 	var executor: PlannerExecutor = null
+	var kept := false               # P3: the search is the KEPT face (FACE_KEPT_SHARE expansions, then today's)
+	var free_keep := PackedFloat64Array()   # the request's own keep (x, z, all, end) before the face keep: today's search
+	var fell_back := false          # the kept search gave way to today's within this hold
 
 	func copy() -> Crew:
 		var c := Crew.new()
@@ -383,7 +394,8 @@ static func report() -> Dictionary:
 			"abandoned": abandoned, "rerequested": rerequested, "refused": refused.duplicate(), "pending_ticks": pending_ticks,
 			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "stale_released": stale_released, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
 			"holds": _hold_stats(), "hold_ticks": Array(holds), "face_far": Array(face_far),
-			"asks_by_kind": asks_by_kind.duplicate(), "abandoned_by_kind": abandoned_by_kind.duplicate()}   # hold_ticks: the per-event list (the series pools it per arm)
+			"asks_by_kind": asks_by_kind.duplicate(), "abandoned_by_kind": abandoned_by_kind.duplicate(),
+			"face_kept_served": face_kept_served, "face_kept_fallbacks": face_kept_fallbacks}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
@@ -416,6 +428,8 @@ static func reset() -> void:
 	face_far = PackedFloat32Array()
 	asks_by_kind = {}
 	abandoned_by_kind = {}
+	face_kept_served = 0
+	face_kept_fallbacks = 0
 	last_plans = []
 	_release_all()
 
@@ -538,6 +552,8 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	var here := tank.global_position
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
 	req.at(here.x, here.z, forward.x, forward.z)
+	var kept := false
+	var free_keep := PackedFloat64Array()
 	match kind:
 		"face":
 			if want.length_squared() < 0.01:
@@ -546,7 +562,6 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 			req.to(target.x, target.z, want.x, want.z, stay, FACE_TOL_DEG)
 			req.arrive_gear = 0
 			req.epsilon = face_epsilon()
-			keep_face(req, face_keep(), true)
 			# Round 31 (CP-P1's first judged series, seed 134's plaza: a rig arrived 4.5 m from its slot, the face's one
 			# 3.5 m reverse chord left it 7.4 m out for the rest of the leg): manoeuvre's SLOT LAW, read from its own
 			# names so the two cannot drift. (a) The slot = OrderController.face_slot (the last move_to's goal), only
@@ -562,6 +577,10 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 					if Manoeuvre.turn_hull_on():
 						all_m = maxf(maxf(TankBrain.ORDER_ARRIVE, settle) - Manoeuvre.FACE_KEEP_MARGIN_M, from_slot)
 					req.keep(slot.x, slot.z, all_m, from_slot + Manoeuvre.FACE_SLOT_SLACK_M)
+			# P3: the face KEEP circle, AFTER the slot law (whose req.keep would otherwise replace it): the census's s1.0.
+			free_keep = PackedFloat64Array([req.keep_x, req.keep_z, req.keep_all_m, req.keep_end_m])
+			keep_face(req, face_keep(), true)
+			kept = req.keep_all_m != free_keep[2]
 		"kturn":
 			var to := Vector3(target.x - here.x, 0.0, target.z - here.z)
 			if to.length() < 0.5:
@@ -595,6 +614,8 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.at = here
 	crew.heading = forward
 	crew.tank = tank
+	crew.kept = kept
+	crew.free_keep = free_keep
 	_crews[name] = crew
 	_hook()
 	_queue.append(name)
@@ -644,12 +665,18 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 		# The 3 s cap (PENDING_TICKS) counts THE SEARCH, from here: a rig braking from 8 m/s spent ~45 of the 90 ticks
 		# stopping and its search got 92 expansions (builder0 77db86eb, the rolling-face trace: start 8.8 m past the
 		# face's home, stay 5 m, abandoned at 92). The hull's whole hold is pending_ticks; the cap bounds the search.
-		crew.asked_tick = tick
-		_shadow_face(crew, name, tick)
+		if not crew.fell_back:
+			crew.asked_tick = tick
+			_shadow_face(crew, name, tick)
 		Planner.begin_session(crew.req)
 		crew.begun = true
 	crew.stepped += _slice
-	if not Planner.step_session(_slice):
+	var done := Planner.step_session(_slice)
+	if crew.kept and (not _kept_found(Planner.session_result()) if done else crew.stepped >= FACE_KEPT_SHARE):
+		Planner.cancel_session()
+		_fall_back(crew, name)
+		return true
+	if not done:
 		return true
 	var plan := Planner.session_result()
 	Planner.cancel_session()
@@ -692,12 +719,21 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 		crew.heading = forward
 		crew.stepped = 0
 		crew.quantum = 0
-		crew.asked_tick = tick
-		_shadow_face(crew, name, tick)
+		if not crew.fell_back:
+			crew.asked_tick = tick
+			_shadow_face(crew, name, tick)
 		if crew.session == null:
 			crew.session = Planner.Session.new()
 		crew.session.begin(crew.req)
 		crew.begun = true
+		if crew.kept and crew.session.refused():
+			# A kept search refused at begin: today's search begun on the same tick, so its refusal (if any) is answered
+			# as early as today's would be.
+			crew.session.cancel()
+			_fall_back(crew, name)
+			crew.session = Planner.Session.new()
+			crew.session.begin(crew.req)
+			crew.begun = true
 		if crew.session.refused():
 			crew.session.step(1)
 			var refusal := crew.session.result()
@@ -715,7 +751,13 @@ static func _pend_shared(mover: Movement, cmd: TankCommand, crew: Crew, name: St
 		return true
 	crew.stepped += share
 	crew.quantum += share
-	if not crew.session.step(share):
+	var answered := crew.session.step(share)
+	if crew.kept and (not _kept_found(crew.session.result()) if answered else crew.stepped >= FACE_KEPT_SHARE):
+		crew.session.cancel()
+		crew.session = null
+		_fall_back(crew, name)
+		return true
+	if not answered:
 		if crew.quantum >= QUANTUM:
 			crew.quantum = 0
 			_queue.erase(name)
@@ -744,6 +786,25 @@ static func _allocate(tick: int) -> void:
 			return
 
 
+## A kept search's answer that ends the hold's search: a plan, or already there (both stand; a refusal falls back).
+static func _kept_found(plan: PackedPlan) -> bool:
+	return plan.code == PackedPlan.OK or plan.code == PackedPlan.ALREADY_THERE
+
+
+## The kept face gives way to TODAY's search: the request's own keep restored, begun again from the same pose next
+## (the FIFO's head stays the head), the hold's clock (asked_tick) running on. `req` is always the search stepped, so
+## restore() replays it as it is.
+static func _fall_back(crew: Crew, name: String) -> void:
+	crew.req.keep(crew.free_keep[0], crew.free_keep[1], crew.free_keep[2], crew.free_keep[3])
+	crew.kept = false
+	crew.fell_back = true
+	crew.begun = false
+	crew.stepped = 0
+	face_kept_fallbacks += 1
+	if ManoeuvreCensus.trace_unit == name:
+		print("PLANNER_SEAM %s face: the kept search gave way to today's" % name)
+
+
 ## A search's answer (the FIFO's head or a shared-queue crew; it has left the queue): re-request once if the hull
 ## moved while it was pending, else release / refuse / drive.
 static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String, tick: int, _delta: float, plan: PackedPlan) -> bool:
@@ -755,6 +816,7 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 		# It was still rolling when the search began: the plan starts where the hull is not. Once more, from rest.
 		crew.rerequests += 1
 		rerequested += 1
+		crew.fell_back = false   # a fresh search from rest: its own hold
 		_queue.append(name)
 		return true
 	if plan.code == PackedPlan.ALREADY_THERE:
@@ -774,6 +836,8 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(crew.goal.x, 0.01), snappedf(crew.goal.z, 0.01)]})
 	holds.append(tick - crew.held_since)
 	if crew.kind == "face":
+		if crew.kept:
+			face_kept_served += 1
 		var far := 0.0
 		for pose: Array in plan.poses:
 			far = maxf(far, Vector2(float(pose[0]) - crew.goal.x, float(pose[1]) - crew.goal.z).length())
@@ -1012,6 +1076,8 @@ static func restore(snapshot: Dictionary) -> void:
 	face_far = PackedFloat32Array(counters.get("face_far", []))
 	asks_by_kind = (counters.get("asks_by_kind", {}) as Dictionary).duplicate()
 	abandoned_by_kind = (counters.get("abandoned_by_kind", {}) as Dictionary).duplicate()
+	face_kept_served = int(counters.get("face_kept_served", 0))
+	face_kept_fallbacks = int(counters.get("face_kept_fallbacks", 0))
 	if queue_on():
 		# The shared queue: every begun crew's own session begun again from its request and stepped as far.
 		for name: String in _crews:

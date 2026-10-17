@@ -75,6 +75,7 @@ func _stage(weight: float, keep := 0.0) -> Dictionary:
 			aligned = frame
 			break
 	var r := {"plans": PlannerSeam.plans, "abandoned": PlannerSeam.abandoned, "driven": PlannerSeam.driven,
+			"kept_served": PlannerSeam.face_kept_served, "fallbacks": PlannerSeam.face_kept_fallbacks,
 			"aligned_s": float(aligned) / SimClock.TICK_RATE if aligned >= 0 else -1.0,
 			"drift_m": Vector2(tank.global_position.x - START.x, tank.global_position.z - START.z).length()}
 	PlannerSeam.face_epsilon_override = -1.0
@@ -107,3 +108,30 @@ func test_the_seam_serves_the_face_behind_at_its_spot() -> void:
 	assert_true(float(cand["aligned_s"]) >= 0.0 and float(cand["aligned_s"]) <= float(base["aligned_s"]),
 			"and the rig comes round no later than today's executor turns it (%s v %s)" % [cand, base])
 	assert_true(float(cand["drift_m"]) <= 8.0, "at its spot (%s)" % cand)
+	assert_true(int(cand["kept_served"]) >= 1 and int(cand["fallbacks"]) == 0,
+			"served by the KEPT search, no fallback: the open-ground gain is the keep's, not today's search (%s)" % cand)
+
+
+## P3 revised (C31.1 on 6f89ecc1): a Terminus street face-back has no kept plan inside the hold (keep 1: 10091
+## expansions, a 16-leg 41.7 s shuffle; today's search: 7 expansions, 16.9 s). Kept first, then today's search inside
+## the same hold: the rig is served, by today's plan.
+func test_a_street_face_back_falls_back_to_todays_search_inside_the_hold() -> void:
+	PlannerSeam.reset()
+	PlannerSeam.face_keep_override = 1.0
+	var lab := TacticsLab.create(self, 31, "terminus")
+	var tank := lab.gun(Match.Team.GREEN, "Green_P_1", Vector3(-70.0, 0.0, 0.0), 0.0, "gang_tank")
+	await lab.start()
+	for child in lab.game_match.brains.get_children():
+		if child is OrderController and (child as OrderController).tank == tank:
+			(child as OrderController).set_orders({"type": "face", "x": -70.0, "z": 100.0}, {"type": "fire_at_will"})
+	for tick in int(SimClock.TICK_RATE * 8.0):
+		await lab.step()
+		if PlannerSeam.plans >= 1:
+			break
+	var r := PlannerSeam.report()
+	print("FACE_KEEP street: %s" % JSON.stringify(r))
+	assert_true(PlannerSeam.plans >= 1 and PlannerSeam.abandoned == 0, "served inside the hold (%s)" % r)
+	assert_true(PlannerSeam.face_kept_fallbacks >= 1 and PlannerSeam.face_kept_served == 0, "by today's search, after the kept one gave way (%s)" % r)
+	PlannerSeam.face_keep_override = -1.0
+	lab.dispose()
+	PlannerSeam.reset()
