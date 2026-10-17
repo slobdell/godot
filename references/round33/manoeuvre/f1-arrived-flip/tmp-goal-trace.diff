@@ -1,0 +1,13 @@
+diff --git a/game/tactics/element.gd b/game/tactics/element.gd
+index 5d002418..b1575a8b 100644
+--- a/game/tactics/element.gd
++++ b/game/tactics/element.gd
+@@ -1664,6 +1664,8 @@ func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary
+ 	elif int(before.get("seat", -1)) != _seat_index(unit_name):
+ 		key = "reseat"
+ 	goal_moves[key] = int(goal_moves[key]) + 1
++	if OS.get_cmdline_user_args().has("--tmp-goal-trace") and unit_name.begins_with("Green"):
++		print("TMPGOAL t=%.2f %s key %s %.1f m seat %d arrived %s formation %s anchor %s heading %s" % [Engine.get_physics_frames() / float(SimClock.TICK_RATE), unit_name, key, (before["to"] as Vector3).distance_to(desired["to"]), _seat_index(unit_name), arrived, formation, anchor, heading])
+ 	if key == "drift":
+ 		drift_moves += 1
+ 		var who := "%d:%s" % [id, unit_name]

@@ -127,6 +127,14 @@ move after they have faced, several crews of one squad on the same frame (Batter
 `center.distance_to(destination) <= ARRIVE_M` (12 m, `element_plan.gd` ~289, no hysteresis); the members' face legs
 move the centre, and if it crosses 12 m every seat switches between the arrival shape and the travelling one. The
 orchestrator's alternative (R32.3 (c), the averaged-heading halt) needs no drawn facing, which this task has.
+**CONFIRMED, and it is a MAIN bug (brains' file), not turnhull's** (builder0 light, `97bcd952` + a temporary goal print,
+gangs s40, GDScript, n 1 an arm; rows + diff in `references/round33/manoeuvre/f1-arrived-flip/`): the Battery element
+(14 crews, swarm) flips `arrived` every 0.5–3 s from t≈15 s to the end on the SAME anchor; arrived lays the seats on his
+drawn heading (0.50, −0.87), not-arrived on ≈(0.2, 0.97); each seat jumps 19–27 m per flip. Flips base 67 v turnhull 59
+(Hunters 17 v 5); reseat goal moves 286 v 234. So turnhull does not cause the attack-move movers: it catches more crews
+mid-turn at the judge. (My "re-sent after a face" count above is biased: base declines wheeled turret faces to `stop`, so
+its crews rarely "face" before a re-send.) Sent to the orchestrator to broker with brains: latch arrival per task (leave
+only past ARRIVE_M + a margin), a test on a 14-crew swarm attack-move; CP-F's bar then judges on a tree with it.
 
 **Native (2026-10-17):** N5.M (stream/native `145ada3a`) ports `_manoeuvre`'s decision: C26.2 now covers
 `Manoeuvre.choose / behind / simulate / _others / _hull_hit / _note`, `TankMotion.state_of`, `_outline_offs` and the
