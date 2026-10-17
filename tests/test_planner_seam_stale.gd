@@ -12,7 +12,7 @@ const START := Vector3(0.0, 0.0, 15.0)
 
 func test_a_held_face_is_released_when_its_order_is_replaced() -> void:
 	PlannerSeam.reset()
-	await ArenaFixture.build(self, "yard_open")
+	var arena := await ArenaFixture.build(self, "yard_open")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	game_match.seed_spawns(1, 0.0)
@@ -43,4 +43,8 @@ func test_a_held_face_is_released_when_its_order_is_replaced() -> void:
 			"the hold ends within %d ticks of the order being replaced (released %d; -1 = still live 2 s later)" % [
 			PlannerSeam.STALE_TICKS + 2, released])
 	assert_eq(PlannerSeam.stale_released, 1, "released as stale, once")
+	controller.free()   # disposed (trip-up 83)
+	game_match.free()
+	arena.free()
+	await drain_navigation()
 	PlannerSeam.reset()
