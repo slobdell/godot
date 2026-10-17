@@ -138,6 +138,12 @@ reaches in the drive, twins at 0 as a gate, and the arms run on the default (nat
 affordable, one hull-rest drawn seed set on the native path must agree with it in sign on (a) and (d). (n) Fights 470–493
 run wholly before R33.6 merges, or with it in both arms. (o) In (b) a lone p < 0.05 in a class CP-F does not touch
 (tracks, hover) is traced before it fails the series and reported either way; wheels (fixed or turret) fail as written.
+(p) The station gap is closed INSIDE CP-F (orchestrator, main 76656f29): GRANTED one additive field in
+`game/control/orders.gd::_remember_station`, `"drawn"` (the order named a facing AND its source is "player"; an
+element's sector facing is not his), read by `Manoeuvre.drawn_direction` under the same switch, only when no order is
+current. **Merge note: control's file, one field, additive.** It rides CP-F's series, no separate bar. (q) REPORTED:
+turret shots in the first 20 s of a contact while the hull turns (test: ON 1 v OFF 5, n 1). Line (i)'s hit rate judges
+it; fights showing the turn costing fire is a reason to FAIL, not to tune.
 Base = the R33.9 main (hash from the orchestrator). **Native's statement (2026-10-17, read on `136c3828`): no C++ change.**
 `_order_move` and its decline are not in C++; N5.M reads none of TURN_HULL_DEFAULT / facekeep; no Movement members added.
 Every face CP-F creates is a WHEELED one (`turret_carries_aim` is wheels + turret only), handed back to GDScript by
@@ -190,10 +196,11 @@ during the 20 s while the hull comes round (1 v 5, n 1, unjudged); the fights ro
 The first two stagings were wrong (a K1 move/attack-move onto its own spot completes at once, leaving nothing
 drawn: ON == OFF); quick-remote at 136c3828 showed that as 76 passed, 1 failed.
 
-**Known gap, not CP-F's:** after a plain K1 move with a drawn facing COMPLETES, `current()` is empty and the station's
-heading cannot be told from "the way it was pointing" (`Orders._remember_station`, game/control, not mine), so a
-declined contact face there is round 8's stop in both arms. No worse than main; a `drawn` flag on the station would
-close it (control's call). Recorded for the lead/orchestrator, not pursued.
+**The K1-completed gap** (a plain move with a drawn facing completes; then a contact) is now CP-F's: amendment (p). Its test,
+`test_after_a_plain_move_with_a_drawn_facing_completes_a_contact_keeps_the_hull_on_it` (light lane, builder0, on main
+ae3dad71, GDScript, n 1 per arm): the move completes and its station is `drawn`; ON 117/117 declined faces held, ends
+**4.2 deg** off, 1 shot; OFF 598/600 stop ticks, ends **49.9 deg** off, 5 shots. `test_an_elements_own_facing_is_not_a_drawn_station`
+pins the player-only rule. quick (light lane) on turn_hull + control_orders + wheeled_face: 18 passed, 0 failed.
 
 ### Plan (ordered)
 

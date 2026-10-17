@@ -88,7 +88,7 @@ func test_switched_off_the_brain_still_declines() -> void:
 ## sight) with a facing he DREW, east. The brain's face toward the contact is declined (the turret takes it); under
 ## turnhull the hull keeps his drawn heading instead of `stop`. Traced at hull-rest gangs s66: a War Rig's planned face
 ## was cut to `stop` mid-leg whenever the quiet enemy came into sight, and it ended 44-126 deg off.
-func _contact_stage(on: bool) -> Dictionary:
+func _contact_stage(on: bool, element_task := true) -> Dictionary:
 	var was_off := Movement._off
 	Movement._off = PackedStringArray(["turnhull"]) if on != Manoeuvre.TURN_HULL_DEFAULT else PackedStringArray([])
 	Movement._off_parsed = true
@@ -102,11 +102,17 @@ func _contact_stage(on: bool) -> Dictionary:
 	var drawn := Vector3(1, 0, 0)
 	var elements := Elements.install(s.game_match, s.orders())
 	await s.start()
-	# The player's right-drag is an element TASK with a facing (the F1 case); its crew settles on it and keeps it for as
-	# long as the task stands. (A plain K1 move onto its own spot completes at once and leaves nothing drawn.)
-	var task := {"verb": "move", "to": [-100.0, 40.0], "facing": [drawn.x, drawn.z], "drills": false}
-	assert_eq(ElementTask.validate(task), "", "setup: a move task may name a facing")
-	elements.form(["Green_A_1"], "Alpha").assign(task)
+	if element_task:
+		# The player's right-drag is an element TASK with a facing (the F1 case); its crew settles on it and keeps it for
+		# as long as the task stands.
+		var task := {"verb": "move", "to": [-100.0, 40.0], "facing": [drawn.x, drawn.z], "drills": false}
+		assert_eq(ElementTask.validate(task), "", "setup: a move task may name a facing")
+		elements.form(["Green_A_1"], "Alpha").assign(task)
+	else:
+		# His commonest case: a plain K1 move with a drawn facing COMPLETES on arrival (here at once), and only the
+		# station it leaves remembers that the heading was his.
+		assert_eq(s.orders().issue({"units": ["Green_A_1"], "verb": "move", "to": [-100.0, 40.0],
+				"facing": [drawn.x, drawn.z], "source": "player"}), "", "setup: the move is accepted")
 	var drawn_faces := 0
 	var stops := 0
 	var holds_before := Manoeuvre.hull_holds
@@ -120,7 +126,8 @@ func _contact_stage(on: bool) -> Dictionary:
 		elif String(order.get("type", "")) == "stop":
 			stops += 1
 	var forward := Vector3(-me.global_basis.z.x, 0.0, -me.global_basis.z.z).normalized()
-	var result := {"drawn_faces": drawn_faces, "stops": stops, "declined": brain.faces_declined,
+	var result := {"completed": s.orders().current("Green_A_1").is_empty(),
+			"station_drawn": bool((s.orders().station("Green_A_1") as Dictionary).get("drawn", false)), "drawn_faces": drawn_faces, "stops": stops, "declined": brain.faces_declined,
 			"holds": Manoeuvre.hull_holds - holds_before, "error_deg": rad_to_deg(forward.angle_to(drawn)),
 			"shots": s.shots_by(me)}
 	s.dispose()
@@ -139,3 +146,34 @@ func test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading() -> void:
 	assert_eq(int(off["drawn_faces"]), 0, "off: round 8's decline stands (the hull is never sent to his heading)")
 	assert_true(float(on["error_deg"]) < 20.0, "on: the hull ends on his drawn heading (%.1f deg off)" % on["error_deg"])
 	assert_true(int(on["shots"]) > 0, "on: and the turret still fights the contact (%d shots)" % on["shots"])
+
+
+func test_after_a_plain_move_with_a_drawn_facing_completes_a_contact_keeps_the_hull_on_it() -> void:
+	# The orchestrator's case (round 33): his round-28 call is exactly this -- move, draw the facing, then a contact.
+	var on := await _contact_stage(true, false)
+	var off := await _contact_stage(false, false)
+	print("MEASURE cpf_completed_move_face on %s | off %s" % [on, off])
+	assert_true(bool(on["completed"]) and bool(off["completed"]), "setup: the plain move completed in both arms")
+	assert_true(bool(on["station_drawn"]) and bool(off["station_drawn"]), "setup: its station remembers the heading was drawn")
+	assert_true(int(on["declined"]) > 0 and int(off["declined"]) > 0, "setup: the contact face is declined in both arms")
+	assert_true(int(on["holds"]) > 0, "on: the declined face keeps the hull on his drawn heading (%d holds)" % on["holds"])
+	assert_true(float(on["error_deg"]) < 20.0, "on: the hull ends on his drawn heading (%.1f deg off)" % on["error_deg"])
+	# (OFF's first tick or two face his heading as the ORDER's own told face, before the move completes.)
+	assert_eq(int(off["holds"]), 0, "off: round 8's decline stands (stop), never held on his heading")
+	assert_true(int(off["stops"]) > 500, "off: the hull stops where it is (%d stop ticks)" % off["stops"])
+	assert_true(int(on["shots"]) > 0, "on: and the turret still fights the contact (%d shots)" % on["shots"])
+
+
+func test_an_elements_own_facing_is_not_a_drawn_station() -> void:
+	# The station's `drawn` is the PLAYER's: an element's sector facing on its K1 orders must not turn the hull under it.
+	var s := AiScenario.create(self, 4)
+	s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(-100, 0, 40), 0.0, {}, "gang_tank")
+	await s.start()
+	assert_eq(s.orders().issue({"units": ["Green_A_1"], "verb": "move", "to": [-100.0, 40.0], "facing": [1.0, 0.0],
+			"source": "element"}), "", "setup: the element's move is accepted")
+	for tick in 10:
+		await s.step()
+	var post: Dictionary = s.orders().station("Green_A_1")
+	assert_true(not post.is_empty(), "setup: the move completed and left a station")
+	assert_true(not bool(post.get("drawn", true)), "an element's facing is not his drawn heading")
+	s.dispose()

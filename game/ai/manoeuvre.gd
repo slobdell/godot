@@ -386,7 +386,8 @@ static func drawn_facing(brain: TankBrain) -> bool:
 	return drawn_direction(brain) != null
 
 
-## The facing he DREW for this crew as a flat unit direction (its element task's, else its own K1 order's), or null.
+## The facing he DREW for this crew as a flat unit direction (its element task's, else its own K1 order's, else -- with
+## no order current -- the station its last order left it at when that order named a facing), or null.
 static func drawn_direction(brain: TankBrain) -> Variant:
 	var source: Variant = brain.get("_element_source")
 	if source != null:
@@ -394,9 +395,17 @@ static func drawn_direction(brain: TankBrain) -> Variant:
 		if mine != null and "task" in mine:
 			var task: Variant = mine.get("task")
 			return TankBrain._direction_of((task as Dictionary).get("facing")) if task is Dictionary else null
-	if not brain._ordered_facing():
+	if brain._ordered_facing():
+		return brain.intended_facing()
+	# Round 33 (CP-F, the orchestrator's call): a plain move with a drawn facing COMPLETES on arrival, and the contact that follows is the
+	# commonest case of all; the station keeps whether its heading was drawn (`Orders._remember_station`).
+	var orders: Variant = brain._order_source
+	if orders == null or not orders.has_method("station") or not OrderFeed.current(orders, String(brain.tank.name)).is_empty():
 		return null
-	return brain.intended_facing()
+	var post: Variant = orders.call("station", String(brain.tank.name))
+	if not post is Dictionary or not bool((post as Dictionary).get("drawn", false)):
+		return null
+	return TankBrain._direction_of((post as Dictionary).get("heading"))
 
 
 ## The brain's decline is lifted for this order (turn-hull ON, a face from the crew's order, a drawn facing).
