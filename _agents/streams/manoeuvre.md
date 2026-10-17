@@ -98,7 +98,9 @@ STOPS MID-PLAN; when the contact drops it gets a new face and a new plan; (2) **
 file):** once the order leaves face/kturn, `take`/`hold` are never called again, so the Crew is never released and
 `PlannerSeam.live()` (no staleness check) reads true to the match end (G5 f≈500 → 2300+). While it does,
 `Movement.unstick` returns early for that hull (movement.gd ~3080), `manoeuvring()` reads true, and the census is blind.
-Proposed to planner: `live()` false past STALE_TICKS since `tick_seen`, with a test.
+Proposed to planner: `live()` false past STALE_TICKS since `tick_seen`, with a test. **Planner's fix:** branch `fix/planner-live-stale` `03d1a50c`
+(stale crews released once a tick before any controller runs; `tests/test_planner_seam_stale.gd`), check running; the
+orchestrator ruled it R33.3 and will name the hash when it merges. No guard in `unstick` (agreed).
 
 **Agreed with planner (C33.6 (c), 2026-10-17):** manoeuvre owns WHEN a faced finish turns the hull and the residual;
 planner owns HOW only while `PlannerSeam.take()` holds the hull (rigs ≥ 10 m). CP-F's at-rest face goes through
