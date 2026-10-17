@@ -71,3 +71,30 @@ func test_the_commander_seats_a_big_squad_formed_whole_and_refused() -> void:
 				unseated.append(unit_name)
 	assert_eq(unseated, [], "every crew of every squad is in an element after the first think")
 	assert_eq(elements.of_team(Match.Team.RUST).size(), 5, "Eyes + Guns x2 + Hunters x2")
+
+
+## A respawn match: a crew that died was pruned from its element and comes back alive in no element. The commander seats
+## it on its next think, alone, under its squad's name; the squad's living element keeps the rest (R33.6, kept as built:
+## rejoining the living element is a round 34 candidate). Simulated by taking a living crew out of its element, which is
+## the state the prune and the respawn leave.
+func test_a_crew_back_from_a_respawn_gets_its_own_element() -> void:
+	var game_match := _setup()
+	var elements := Elements.install(game_match)
+	await wait_physics_frames(2)
+	ElementCommander.install(game_match, Match.Team.RUST, elements)
+	await wait_physics_frames(ElementCommander.THINK_TICKS + 2)
+	var eyes: Element = null
+	for element: Element in elements.of_team(Match.Team.RUST):
+		if element.element_name == "Eyes":
+			eyes = element
+	assert_true(eyes != null and eyes.members().size() == 3, "setup: Eyes is one element of 3")
+	var back := String(eyes.members()[2])
+	eyes.remove(back)
+	assert_true(elements.of(back) == null, "setup: %s stands in no element" % back)
+	await wait_physics_frames(ElementCommander.THINK_TICKS + 2)
+	var seated := elements.of(back)
+	assert_true(seated != null, "%s is seated again on the next think" % back)
+	assert_true(seated != eyes, "in its own element, not Eyes'")
+	assert_eq(seated.members().size(), 1, "alone")
+	assert_eq(seated.element_name, "Eyes", "under its squad's name")
+	assert_eq(eyes.members().size(), 2, "Eyes keeps the other two")
