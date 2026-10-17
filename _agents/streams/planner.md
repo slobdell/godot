@@ -154,6 +154,11 @@ Pass = every line. Partial (1)-(2) pass, a guard fails: PARKED with the worst pa
 
 ### Decisions
 
+- **R33.10 (the orchestrator, builder0 overloaded):** ONE heavy builder0 job at a time for this stream, in priority order:
+  a named merge check > P2's judged series > tuning and traces (light lane or laptop). As of ~09:25 PDT: the heavy job is
+  the full check of `1b5c69df` (R33.3; `03d1a50c`'s was killed at slot.sh's 5400 s cap, not a verdict: sim-baseline 13
+  unmoved, shards 0-2 763/778/618 passed 0 failed, shard 3 cut at 504/0); P3's shadow census runs on the light lane.
+
 - **R33.2 (agreed with manoeuvre, the orchestrator's ruling):** manoeuvre owns WHEN a faced finish runs and its residual;
   planner owns HOW while `take()` holds the hull.
 - **R33.3 as a release, not a check in `live()`** (the orchestrator's amendment on native's assessment): `live()` stays a
