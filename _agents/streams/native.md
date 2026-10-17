@@ -72,4 +72,11 @@ which is the hand-back proof, not a vacuous twin. Measured at `ae3dad71`, builde
 FILTER=native_face_behind`, n 1: `exited 0`, 2 passed / 0 failed; tank 142 native executes, 2 handed back, 0 mismatches
 (aligned 2.37 s); War Rig 0 native, 928 handed back writing nothing, 0 mismatches (GDScript legs 3, drift 1.5 m, aligned
 15.43 s). The War Rig's case becomes a native-execute floor when the k-turn / `_manoeuvre` port lands (N5).
+**R33.3 (PlannerSeam.live staleness, planner's main-bug fix), pre-assessed:** the C++ drive mirrors `live()` INLINE
+(`drive_native.cpp:280` `seam_live()`: reads `_crews`, calls `live()` back only for a freed hull; gates the native unstick
+~1449 and the `_planned_reverse` open ~2211; `manoeuvring()` is not ported). A release from `_crews` where the cutting
+order lands needs no mirror (recommended to planner); a check inside `live()` needs one in `seam_live()`. Sent to the
+orchestrator and planner; confirm with the twins on planner's commit. **Orchestrator (main `00ebe1af`, R33.3 amended):**
+planner releases the stale crew from `_crews` where the order is replaced, `live()` stays a lookup, no C++ change expected;
+native confirms with the k-turn / execute twins on planner's pair tree when it names the hash.
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
