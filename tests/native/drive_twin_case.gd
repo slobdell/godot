@@ -102,8 +102,11 @@ func _compare_tick(movers: Array[Movement], controllers: Array[OrderController],
 ## every mover with a move order, from one snapshot of all movers: the game's own state, then forced states that reach
 ## each branch (about to fire the stall rule, backing off, escaping a pressed wall, about to call a press). Returns
 ## [compared, mismatches, first, branches].
+## `part` of `parts` (round 33): a mover is compared on the frames where `(frame + i) % parts == part`, so every half
+## sees every crew (a branch floor splits by frame). The draws are made for every pair either way: `rng` also places the
+## k-turns, and the fight must be the same in every half.
 func _unstick_compare(movers: Array[Movement], controllers: Array[OrderController], rng: RandomNumberGenerator,
-		frame: int) -> Array:
+		frame: int, part := 0, parts := 1) -> Array:
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var compared := 0
 	var mismatches := 0
@@ -114,7 +117,26 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 		var order: Dictionary = controllers[i].move_order
 		if String(order.get("type", "")) != "move_to" or not mover.ctl.tank.is_alive():
 			continue
+		var mine := (frame + i) % parts == part
 		for variant in 5:
+			# The draws first, in the order the forcing below reads them.
+			var pivot := false
+			var left := 0.0
+			var gear := 0.0
+			var esc_turn := 0.0
+			var press := 0.0
+			match variant:
+				2:
+					pivot = rng.randf() < 0.5
+				3:
+					left = rng.randf_range(0.01, 0.5)
+					gear = 1.0 if rng.randf() < 0.5 else -1.0
+					esc_turn = 1.0 if rng.randf() < 0.5 else -1.0
+					press = rng.randf_range(-2.0, 2.0)
+			var throttle := 1.0 if variant == 1 else rng.randf_range(-1.0, 1.0)
+			var turn := rng.randf_range(-1.0, 1.0)
+			if not mine:
+				continue
 			var start := _capture_all(movers)
 			match variant:
 				1:
@@ -123,18 +145,16 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 				2:
 					mover._unstick_left = 0.5
 					mover._escape_gear = 0.0
-					mover._unstick_pivot = rng.randf() < 0.5
+					mover._unstick_pivot = pivot
 				3:
-					mover._unstick_left = rng.randf_range(0.01, 0.5)
-					mover._escape_gear = 1.0 if rng.randf() < 0.5 else -1.0
-					mover._escape_turn = 1.0 if rng.randf() < 0.5 else -1.0
-					mover._press_from = mover.ctl.tank.global_position + Vector3(rng.randf_range(-2.0, 2.0), 0.0, 0.5)
+					mover._unstick_left = left
+					mover._escape_gear = gear
+					mover._escape_turn = esc_turn
+					mover._press_from = mover.ctl.tank.global_position + Vector3(press, 0.0, 0.5)
 				4:
 					mover._unstick_left = 0.0
 					mover._press_time = Movement.PRESS_SECONDS - 0.01
 			var forced := _capture_all(movers)
-			var throttle := 1.0 if variant == 1 else rng.randf_range(-1.0, 1.0)
-			var turn := rng.randf_range(-1.0, 1.0)
 			var arms := []
 			for arm in 3:
 				_restore_all(movers, forced)
@@ -165,7 +185,9 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 	return [compared, mismatches, first, branches]
 
 
-func _k_turn_case(owned: bool) -> void:
+## `parts` > 1 (round 33): the unstick compare's `part` of the frames (see `_unstick_compare`); `drive` false leaves the
+## drive compare to the file that has it (the fight is the same either way: the compares restore what they touch).
+func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
@@ -221,12 +243,12 @@ func _k_turn_case(owned: bool) -> void:
 					controllers[i].set_orders({"type": "move_to", "x": behind.x, "z": behind.z}, null)
 					break
 		await wait_physics_frames(1)
-		var result := _compare_tick(movers, controllers, frame)
+		var result := _compare_tick(movers, controllers, frame) if drive else [0, 0, ""]
 		drives += result[0]
 		mismatches += result[1]
 		if first == "" and result[2] != "":
 			first = result[2]
-		var stuck := _unstick_compare(movers, controllers, rng, frame) if not owned else [0, 0, "", {}]
+		var stuck := _unstick_compare(movers, controllers, rng, frame, part, parts) if not owned else [0, 0, "", {}]
 		unstick_compared += stuck[0]
 		unstick_mismatches += stuck[1]
 		if unstick_first == "" and stuck[2] != "":
@@ -239,10 +261,10 @@ func _k_turn_case(owned: bool) -> void:
 			" (owned state)" if owned else "", drives, kturn_before, kturn_after, mismatches])
 	assert_eq(mismatches, 0, "the native drive is the live GDScript drive through k-turns: %s" % first)
 	if not owned:
-		print("native unstick: %d compared (by variant:fired %s), %d mismatches" % [unstick_compared, unstick_branches,
-				unstick_mismatches])
+		print("native unstick (part %d of %d): %d compared (by variant:fired %s), %d mismatches" % [part, parts,
+				unstick_compared, unstick_branches, unstick_mismatches])
 		assert_eq(unstick_mismatches, 0, "the native unstick is the live GDScript unstick: %s" % unstick_first)
-		assert_true(unstick_compared >= 1000 and int(unstick_branches.get("1:fired", 0)) >= 20,
+		assert_true(unstick_compared >= 1000 / parts and int(unstick_branches.get("1:fired", 0)) >= 20 / parts,
 				"every branch asked (%s)" % unstick_branches)
 	# Floors against a vacuous run, not targets: kturnarc (a leg ends by the arc driven; round 31's H2 signed by gear)
 	# leaves this fight 4 plans (builder0, pair/cph-on), against >= 5 before (round 30's lab measured the same).
