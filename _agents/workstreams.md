@@ -431,6 +431,24 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   **Amended before numbers (orchestrator):** both arms run on the queue main has when P3's series starts (`shared` if P2
   shipped, FIFO if not), named in the verdict; and if CP-F has merged by then, on a tree with it (R33.2: the faced finish's
   when is manoeuvre's), else REPORTED which.
+  **P3's pair tree failed C31.1 (`6f89ecc1`, builder0 `make check exited 2`, 2733/4, sim-baseline unmoved):** a War Rig in a
+  Terminus street (s31, (−70, 0, 0)) told to face back. Keep 1 runs out every hold (abandoned 8, still 42° off after 40 s)
+  where today's search serves it. Probe (laptop GDScript, failing scenes only, planned whole at budget 20000): yard_open,
+  keep 0 189 expansions / 17.5 s / 25.3 m, keep 1 4 / 11.7 s / 11.5 m; street, keep 0 7 / 16.9 s / 28.9 m, keep 1 10091 /
+  41.7 s / 13.9 m (a 16-leg shuffle); 1.5, 2 and 3 serve neither well. **Amended before any series number (orchestrator,
+  2026-10-17), a NEW candidate under the fallback rule:** pair `bca4eaca` (= `6f89ecc1` + the change). The kept search (keep
+  1) gets the first FACE_KEPT_SHARE = 45 expansions of the hold. On a refusal, or no plan by then, today's search runs from
+  the same pose in the remaining 135, inside the same pending cap: no budget raised, and the slice price is unchanged on
+  every preset. 45 was sized on the diagnosis census `a6368824` (seeds 66–71: 19 of 20 in-hold faces served kept, none
+  lost), not on judged seeds. The keep now applies AFTER the slot law. On `6f89ecc1` the slot law's req.keep replaced it,
+  so slotted faces went unkept. Arms: `--planner-face-keep=0` v keep 1 + fallback, FIFO, no CP-F (named in the verdict).
+  Lines: **(0)** the open-ground gain survives: the yard_open stage, NATIVE on and off, served by the KEPT plan
+  (face_kept_served ≥ 1, face_kept_fallbacks 0), abandoned 0, drift ≤ 8 m, aligned no later than today; AND on the
+  hull-rest arms ≥ 50 % of the candidate's served face plans are kept plans (else it is main in disguise → PARK). **(0b)**
+  the street face-back is served inside the hold (test_planner_face_epsilon's new test, test_planner_seam). (1), (2a–c) and
+  (3) as filed, fresh seeds 84–95 and 231–243. **(2d)** REPORTED: face hold per event, median candidate v base (a fallback
+  costs ≤ 23 ticks at slice 2). Line (2a)'s settle guard judges what he'd feel. The both-arms-seam guard in series_verdict
+  is read by hand, and the verdict says so. Pass = every line; early stop OFF. The series waits for `bca4eaca`'s suite.
 - **R4 B5c-v6 (brains, R33.8; filed 2026-10-17 before any number, stream/brains `a579b245`).** *Preamble:* round 32's
   v6 as carried (`b8a34c4f`) fails `test_nav_gate_v4` and `test_wheeled_arrival` (the 180-degree car parks at dot -0.60),
   so the candidate is the NARROWED v6: the side gate only where v4's come-round has no turning circle beside the rear
