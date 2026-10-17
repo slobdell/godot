@@ -235,3 +235,37 @@ manoeuvre-h1b-drive: import ## manoeuvre H1b: the Terminus drive base v H1b on t
 		d=$$out/pinned/$$arm-$${rest%-*}/$${rest##*-}/drive; mkdir -p $$d; ln -sf $(CURDIR)/$$f $$d/run.log; done; \
 	for squad in $(H1B_SQUAD_LIST); do echo "== pinned $$squad (base v h1b)"; \
 		$(PYTHON) tests/manoeuvre/pinned_table.py $$out/pinned/base-$$squad $$out/pinned/h1b-$$squad || true; done
+
+# ---- round 33 (stretch): the War Rig told to face, filmed before and after CP-F ------------------------------------
+# His gesture, the screen test's faced right-drag (faced_right) on gangs (War Rigs), filmed windowed on ONE seed twice:
+# BEFORE = today (round 8's decline: the turret takes the drawn facing, the hull stays) and AFTER = turnhull ON (the hull
+# turns to it). Both arms on the GDScript path (R31.1). Side by side -> FACE_CLIP_MOVIE (default
+# build/manoeuvre/face_clip.mp4). Needs a display (the laptop). FACE_CLIP_ON: the AFTER arm's switch; on a tree where
+# TURN_HULL_DEFAULT is already true, pass FACE_CLIP_ON= and FACE_CLIP_OFF=--nav-off=turnhull.
+FACE_CLIP_SEED ?= 5
+FACE_CLIP_FACTION ?= gangs
+FACE_CLIP_TASK ?= faced_right
+FACE_CLIP_OFF ?=
+FACE_CLIP_ON ?= --nav-off=turnhull
+FACE_CLIP_SPEED ?= 2
+# The drawn angle off the travel (180 = behind; the screen test's own default is 60).
+FACE_CLIP_DEG ?= 180
+.PHONY: manoeuvre-face-clip
+manoeuvre-face-clip: import ## manoeuvre stretch: a drawn facing on War Rigs filmed before v after CP-F (turnhull), side by side -> FACE_CLIP_MOVIE (needs a display)
+	@out=$(BUILD_DIR)/manoeuvre/face-clip; rm -rf $$out && mkdir -p $$out; \
+	movie="$(or $(FACE_CLIP_MOVIE),$(CURDIR)/$(BUILD_DIR)/manoeuvre/face_clip.mp4)"; case "$$movie" in /*) ;; *) movie="$(CURDIR)/$$movie" ;; esac; \
+	commit=$$(git rev-parse --short HEAD 2>/dev/null || echo ?); enemy=law; [ "$(FACE_CLIP_FACTION)" = law ] && enemy=gangs; \
+	echo ">> manoeuvre-face-clip on $$(hostname) commit $$commit | $(FACE_CLIP_FACTION) $(FACE_CLIP_TASK) $(FACE_CLIP_DEG) deg seed $(FACE_CLIP_SEED)"; \
+	for arm in before after; do \
+		if [ $$arm = before ]; then off="$(FACE_CLIP_OFF)"; else off="$(FACE_CLIP_ON)"; fi; mkdir -p $$out/$$arm; \
+		timeout 600 $(GODOT) --path . --fixed-fps $(DEMO_FPS) --resolution 960x540 --write-movie $(CURDIR)/$$out/$$arm.avi \
+			-- --skirmish --seed=$(FACE_CLIP_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
+			--player-faction=$(FACE_CLIP_FACTION) --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+			--no-element-cpu $$off --brains-off=native --turn-states --screen-test=$(CURDIR)/$$out/$$arm \
+			--screen-only=$(FACE_CLIP_TASK) --faced-off-deg=$(FACE_CLIP_DEG) > $$out/$$arm.log 2>&1 || true; \
+		grep -E "^SCREEN |SCREEN_DONE|SCRIPT ERROR" $$out/$$arm.log | cut -c1-300 || true; \
+	done; \
+	command -v ffmpeg >/dev/null || { echo ">> manoeuvre-face-clip: no ffmpeg; the AVIs are in $$out"; exit 0; }; \
+	ffmpeg -loglevel error -y -i $$out/before.avi -i $$out/after.avi -filter_complex \
+		"[0:v]drawtext=text='BEFORE (today)':x=20:y=20:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.5[a];[1:v]drawtext=text='AFTER (CP-F, $$commit)':x=20:y=20:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.5[b];[a][b]hstack=inputs=2:shortest=0,scale=1920:-2,setpts=PTS/$(FACE_CLIP_SPEED)[v]" \
+		-map "[v]" -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -movflags +faststart "$$movie" && echo "FACE_CLIP_MOVIE $$movie"
