@@ -875,3 +875,42 @@ goals, of 1604 astern, that reverse clear but do not arrive inside SIM_HORIZON_S
 none called back. Merged as main `199d1587` (R33.15). The drive twins: 165 / 179 decisions native, 0 called back, 0
 mismatches (route only: the Sumps refuses its reverses). The k-turn fight compares none (an order lands before the fight's
 own drive decides it), so it asks no floor.
+
+## N5.Y (round 33): `_negotiate`'s body, `ask` and `_begin_yield` in C++ (the design, written before the code)
+
+**Released by R33.12** (main `402b3803`: parkedroom is parked, so `_begin_yield`'s body on main stands).
+**What:** past `negotiate`'s early-outs (already native since round 27), the drive calls back
+`cb(k._negotiate, …)` (drive_native.cpp ~1421) and that GDScript decides who gives way:
+- it asks the friend (`mover.ask` → the friend's `_begin_yield`), or gives way itself (`_begin_yield`);
+- else it applies the parked-refusal rule or swaps (R2).
+N5.Y runs that body in C++:
+- `travel_direction`, `on_fire_post`, `ask`, `_begin_yield`, `_start_yield` (yield_log off);
+- `free_spot`, `room_to_turn`, `distance_to_ray`, `yield_fits` / `yield_run_ok` / `yield_shorten`;
+- the priority rule (PRIORITY_MARGIN, name order) and the swap.
+**On the asked mover:** `ask` writes ANOTHER mover's members (`yield_to`, `_yield_point`, `phase`, …), as the GDScript
+does. The C++ reaches that mover through an ObjectView on its live members and sets its `native_stale |= STALE_ALL`
+(the GDScript `ask` does the same first). That mover's next owned drive re-pulls. Its `_travel_direction`, `_remaining`,
+`_goal`, `_path` / `_path_index` and `_last_yielded_to` are read live.
+**Equal:** the yield-run sweep is N2b's geometry plus pieces already proved bit for bit:
+- `outline_offs` / `outline_ok` (N2a);
+- `wheels()` in either gear (drive_toward_wheels / reverse_toward_wheels);
+- `drive_toward(backward)`;
+- `turn_heading` (N6.1);
+- `ahead_of_wheels`, `straight_behind`.
+`Avoidance.refresh` / `neighbours` are called back (one call each, scene order, the record's set); `Pathing.closest_point`
+uses N2a's index under the same site key ("yield"). Spot order is YIELD_SPOTS × [side, −side], then YIELD_BACK_UP, as
+the GDScript.
+**Declared:** `Movement.yields_started`, `asks_refused`, `setup_refusals`, `parked_refusals`, `yield_swaps(_shorter)`,
+`yield_spots_unfit / _shortened / _refused`, `yield_holds` (statics, compared by the twins). The drive's own count
+`negotiate_native` / `negotiate_called_back` is read by the live guard as `taken["negotiate"]`.
+**Fallback (called back whole):**
+- `yield_log`, `setup_log` (measurement rows);
+- `Traffic.off(...)` switches other than the defaults;
+- any `--nav-off` / `--traffic-off` (the native drive already requires `_off` empty);
+- the asked hull is not a `Movement` (the player's own: `Movement.of` null);
+- `BrainSwitches.native_yield` off (new; default ON once the twins read 0).
+**Proof:** a new `test_native_yield`: hulls of each class in the Terminus streets and the yard, pairs set nose to
+nose, nose to tail, crossing, one parked, one set up on a fire post. `_negotiate` is twinned on its tick, live and
+owned: the command, both movers' members, and Movement's statics. Floors cover each answer (asked and gave, gave way
+myself, parked refusal, setup refusal, swap, hold, shortened, back-up) and the rig that fits nowhere. Then the drive
+twins plus the k-turn twins, `native-live-guard`, and a full check.
