@@ -138,7 +138,10 @@ reaches in the drive, twins at 0 as a gate, and the arms run on the default (nat
 affordable, one hull-rest drawn seed set on the native path must agree with it in sign on (a) and (d). (n) Fights 470–493
 run wholly before R33.6 merges, or with it in both arms. (o) In (b) a lone p < 0.05 in a class CP-F does not touch
 (tracks, hover) is traced before it fails the series and reported either way; wheels (fixed or turret) fail as written.
-Base = the R33.9 main (hash from the orchestrator).
+Base = the R33.9 main (hash from the orchestrator). **Native's statement (2026-10-17, read on `136c3828`): no C++ change.**
+`_order_move` and its decline are not in C++; N5.M reads none of TURN_HULL_DEFAULT / facekeep; no Movement members added.
+Every face CP-F creates is a WHEELED one (`turret_carries_aim` is wheels + turret only), handed back to GDScript by
+execute_native (~363). The pair tree's plain check (switch ON) runs the native twins: that is the proof.
 **Partial:** (a)–(j) are the gate; any miss = parked with the trace. Ships ON as a pair if it holds; brains is told the
 merge hash the day it lands (B11b).
 
