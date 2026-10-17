@@ -76,6 +76,21 @@ func _stage(owned: bool) -> void:
 					if first == "" and result[2] != "":
 						first = result[2]
 					frame += 1
+	# `no_arrival`: goals a long wheeled hull's reverse does not reach inside SIM_HORIZON_S on open ground (a scratch sweep
+	# of Manoeuvre.simulate at 145ada3a, builder0: the War Rig 15.5 m at 140 / 220 degrees and 17 m at 135 / 225 degrees,
+	# 4 of 1604 behind goals; the lancer 6; no other unit). Every hull at yaw 0, no facing.
+	for i in controllers.size():
+		controllers[i].tank.place(_slot(i), 0.0)
+	await wait_physics_frames(1)
+	for ask: Array in [[15.5, 140.0], [15.5, 220.0], [17.0, 135.0], [17.0, 225.0]]:
+		for i in controllers.size():
+			controllers[i].set_orders(_behind(controllers[i].tank, float(ask[0]), float(ask[1]), 0), null)
+		var result := _compare_tick(movers, controllers, frame)
+		drives += result[0]
+		mismatches += result[1]
+		if first == "" and result[2] != "":
+			first = result[2]
+		frame += 1
 	# Rolling: driven ahead for three seconds (past REAIM_TICKS, so not a re-aimed point), then a goal astern.
 	for bearing in BEARINGS:
 		for i in controllers.size():
@@ -105,9 +120,10 @@ func _stage(owned: bool) -> void:
 				float(callback_usec) / maxi(at_rest, 1)])
 	assert_eq(mismatches, 0, "the native decision is the live GDScript's: %s" % first)
 	# Floors against a vacuous run (about half of builder0's first count, 920 decisions at lab/native-n5m): both answers
-	# and every refusal the stage reaches. `no_arrival` (a reverse the 14 s horizon does not finish) is not reached here.
+	# and every refusal the stage reaches (`no_arrival`: the War Rig's asks above).
 	_man_check("stage", {"": 450, "plans:reverse": 150, "plans:route": 300, "refused:route_faster": 30,
-			"refused:facing_nose": 100, "refused:static": 40, "refused:friendly": 3, "refused:enemy": 1})
+			"refused:facing_nose": 100, "refused:static": 40, "refused:friendly": 3, "refused:enemy": 1,
+			"refused:no_arrival": 1})
 
 
 func _slot(i: int) -> Vector3:
