@@ -63,17 +63,19 @@ Nothing.
 
 ## Status
 
-_Updated 2026-10-17 ~08:10 PDT by the planner worker (`godot-planner`, `stream/planner`, from main `ae3dad71`, which
-inherits `0c124cf7`'s green check: no baseline check run; Opus). Every number builder0 unless named._
+_Updated 2026-10-17 ~14:50 PDT by the planner worker (`godot-planner`, `stream/planner`; Opus). Every number builder0
+unless named. While P3's series runs the `godot-planner` checkout sits on `pair/planner-face-keep-r33` (each remote call
+rsyncs the working tree); this Status is committed from a scratch worktree._
 
 ### The report (read this first)
 
 | item | state | evidence |
 |---|---|---|
-| **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **GREEN, MERGE HERE: `1b5c69df`** (`fix/planner-live-stale`, main `86975667` + the fix `03d1a50c` + its test's dispose; builder0 `make check exited 0`, 2725 passed 0 failed, sim-baseline 13 UNMOVED, 2 NOT JUDGED on a busy box). Native APPROVED, twins 10/0, 0 mismatches; no C++ change. On this branch as `48a694b0` + `0120be71` | `test_planner_seam_stale`: red without (laptop: still live 2 s after `stop`), green with (released 2 ticks after) |
-| **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, `make remote exited 0`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
-| **P2** CP-Q re-judged | bar SENT to the orchestrator (below), before any number; the pair tree waits on R33.3's check | — |
-| **P3** open-ground face-behind | candidate = the **FACE KEEP circle** (`--planner-face-keep=1`, OFF, `45390507`); bar SENT before numbers (below). The weight (ε 2.0) is DROPPED: it serves the wrong plan | builder0 light `7ff19c2f`: ε 2.0 serves the face-behind 25.3 m off its spot; keep 1 (laptop stage): served, aligned 9.8 s, drift 1.0 m v today 15.4 s / 1.5 m |
+| **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **MERGED** (main `b122cf60` merges `1b5c69df`: builder0 `make check exited 0`, 2725/0, sim-baseline unmoved). **Shown by removal** to be why the FIFO's abandonment fell (R33.13, below) | `test_planner_seam_stale`; laptop removal test |
+| **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
+| **P2** CP-Q re-judged | **FAIL, does not ship (R33.13, main `64d0f952`)**: line (1) fails both modes (the FIFO base is already ~1 % abandoned on main), (2) fails on the Terminus rigs, (3a) drawn fails. Pair tree `c75f20a6` (main `624cc957` + QUEUE_DEFAULT true), its whole suite green (builder0 exited 0, 2725/0) | P2's verdict below |
+| **P3** open-ground face-behind | candidate = the **FACE KEEP circle**, bar filed (main `8681d2aa` + amendment). Pair tree **`6f89ecc1`** (main `b800a6aa` + P3, FACE_KEEP_DEFAULT 1, FIFO, no CP-F: not merged) whole suite **queued 14:40 PDT**; then the series (`planner-p3-series.sh`: the NATIVE=off cell, hull-rest 84-95 two arms, Terminus 231-243) | `1eb4e709` superseded before its check ran: `--planner-face-keep=0` fell back to the default 1 (no base arm possible); fixed in `6f89ecc1` / stream `8449be6d` |
+| **Stretch** early GOAL_BLOCKED / START_BLOCKED refusals | **NOT TAKEN**: P2 shows they cost nothing he would see | refused asks end in short holds (<= 4 ticks, ~1.5 each, 10-16 % of hold ticks); shared's 369 early refusals cut queue_waits 2679 -> 264 and moved no player line |
 
 **R33.3, the orchestrator's three questions (evidence from the code at `03d1a50c`):**
 1. **"Asked about"** = `PlannerSeam.take()` or `hold()` reached for that hull: `_serve` writes `crew.tick_seen` and nothing
@@ -140,6 +142,34 @@ A/A's figure in brackets is what n was sized on). No tuning on these seeds; this
 6. **C31.1:** the whole suite on the pair tree, green.
 Pass = every line. Partial (1)-(2) pass, a guard fails: PARKED with the worst pair's trace (lesson 302), not tuned.
 
+### P2's verdict: FAIL (read once, early stop OFF; R33.13)
+
+Pair tree `c75f20a6` (main `624cc957` + `2f4d62b7` test tooling + QUEUE_DEFAULT true), whole suite builder0 exited 0,
+2725/0, 26 targets ALL JUDGED, sim-baseline unmoved. Hull-rest gangs seeds 72-83 x 6 tasks, n 72 paired runs a mode,
+base `--planner-queue=fifo` v candidate `shared` (explicit flags), the native drive; Terminus rigs 218-230 (n 13).
+| line | drawn | clicked | |
+|---|---|---|---|
+| (1) abandoned share | 15/1764 = 0.9 % v 18/1894 = 1.0 %, Fisher p 0.44 | 14/1557 = 0.9 % v 25/1590 = 1.6 %, p 0.06 | **FAIL** (both under 5 %, neither below base) |
+| (2) hold median | 2.0 v 2.0 | 2.0 v 3 | PASS; **Terminus rigs FAIL 17 v 11 ticks** (n 372 v 435) |
+| (3a) at-rest error | +5.43 deg, line +4.50 (se 2.74) | +0.46, line +4.01 | **drawn FAIL** (worst: faced_ambush s73 83.0 v 18.4; per task ambush +4.2, attack_move +13.2, move +15.2, right +4.1, screen -2.1, sbf -2.0) |
+| (3b) settle | -4.53 s, line +4.22 (never 44 v 54) | — | PASS |
+| (3c) moving at 75 s | -17, line +22.8 | +12, line +17.7 | PASS |
+| (4) Terminus arrivals | 183 v 180 of 208, +0.23 (se 0.43) | | PASS; contact median 442 v 529 reported |
+| (5) s207 | shared: Green_S0_4 0 pinned ticks | | PASS (the shared-rolling control no longer pins: DOES NOT REPRODUCE) |
+| (6) whole suite | green | | PASS |
+
+**Why (1) failed: R33.3, shown by removal** (laptop, no native library: the GDScript drive both arms; hull-rest gangs
+drawn FIFO, seeds 72-74 x 6 tasks, 18 runs an arm): with the release `c75f20a6` abandoned **7/594 = 1.2 %**
+(stale_released 109, plans 128, driven 52, queue_waits 1298); with `_hook()` stubbed (`02934dec`, a throwaway, deleted)
+**142/667 = 21.3 %** (stale_released 0, plans 86, driven 32, queue_waits 15767); Fisher one-sided p 6e-34. A crew whose
+order was replaced used to sit at the head of the FIFO until the 90-tick cap and everyone behind it waited.
+**Tool issues for the close (not this round's):** (a) `series_verdict.py`'s round-31 guard refuses when BOTH arms run
+the seam ("the BASE arm's seam fired"): `make planner-series-queue` exits 2 and the PLANNER_SERIES_SQUAD lines are read by
+hand; it needs a both-arms-seam mode. (b) `stage_s207.py` exits 1 now that round 32's pin does not reproduce: the stage
+needs a new control or retirement. Also: a local `build/manoeuvre/hull-rest` keeps other seeds' arm dirs from earlier
+runs; `queue_table.py` reads every run.log (re-run on the fresh seeds only, as above), `hull_aa.py` only runs with a
+screen.json.
+
 ### P3: the finding, the census, the bar
 
 **Finding.** The face-behind's 189-expansion plan is the WRONG plan: F-1x24 R-1x15 F-1x4 F+0x17 F+1x5.5 (17.5 s) swings
@@ -164,15 +194,12 @@ FIFO; the verdict names it), and on a tree with manoeuvre's CP-F if it has merge
 
 ### Plan (ordered)
 
-1. R33.3 (ruling): fix + test + check (`03d1a50c`), native twins. **← check running**
-2. P1 A/A: DONE.
-3. P2: verdict tooling (pooled paired lines, `hull_aa.py` on base v candidate), the pair tree (QUEUE_DEFAULT true) on
-   the fix, its full check, then hull-rest 72-83 (one arm a call) + Terminus 218-230 + s207, read once.
-4. P3: the face-shadow census on hull-rest drawn + Terminus rigs (which face requests land inside the hold at 1.5 / 2.0 /
-   3.0, at what cost), then its own bar to the orchestrator; judged on test_manoeuvre_face_behind + the hull-rest rigs.
-   Decision (why a weight, not a longer hold): the per-tick price is the slice on every preset, so a weight costs nothing
-   per tick on the laptop or desktop (a face only searches LESS); a longer hold would keep the rig standing longer.
-5. Stretch: early refusals of GOAL_BLOCKED / START_BLOCKED, if P2 shows they cost.
+1. R33.3: MERGED. 2. P1: DONE. 3. P2: FAIL (R33.13). 4. Stretch: not taken (above).
+5. **P3 (now):** `6f89ecc1`'s whole suite (queued) -> `planner-p3-series.sh` on the same tree, one job at a time:
+   (1) `make test FILTER=test_planner_face_epsilon|test_manoeuvre_face_behind|test_manoeuvre_behind NATIVE=off` (native
+   on = the whole suite's run); (2) `make planner-judge-face PLANNER_FACE_ARM=base|candidate` (seeds 84-95, keep 0 v 1,
+   FIFO) -> `hull_aa.py --verdict` (2a), `face_keep_table.py` (2b, 2c); (3) `make planner-series-face` (231-243; its
+   series_verdict exits 2 on guard (a): read the PLANNER_SERIES_SQUAD lines). Read once against the filed bar.
 
 ### Decisions
 
@@ -192,4 +219,4 @@ None.
 
 ### Requests to other streams
 
-- native: twins on `03d1a50c` (running); later the pair for CP-Q (QUEUE_DEFAULT) if it passes.
+- native: none (CP-Q does not ship). If P3 passes: a look at `6f89ecc1` (no C++ change; keep is a request field native reads).
