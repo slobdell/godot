@@ -250,6 +250,8 @@ FACE_CLIP_ON ?= --nav-off=turnhull
 FACE_CLIP_SPEED ?= 2
 # The drawn angle off the travel (180 = behind; the screen test's own default is 60).
 FACE_CLIP_DEG ?= 180
+# The squads the drag selects (1 = squad 1 alone; empty = the probe's own 1 and 2).
+FACE_CLIP_SQUADS ?=
 .PHONY: manoeuvre-face-clip
 manoeuvre-face-clip: import ## manoeuvre stretch: a drawn facing on War Rigs filmed before v after CP-F (turnhull), side by side -> FACE_CLIP_MOVIE (needs a display)
 	@out=$(BUILD_DIR)/manoeuvre/face-clip; rm -rf $$out && mkdir -p $$out; \
@@ -262,7 +264,7 @@ manoeuvre-face-clip: import ## manoeuvre stretch: a drawn facing on War Rigs fil
 			-- --skirmish --seed=$(FACE_CLIP_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$(FACE_CLIP_FACTION) --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
 			--no-element-cpu $$off --brains-off=native --turn-states --screen-test=$(CURDIR)/$$out/$$arm \
-			--screen-only=$(FACE_CLIP_TASK) --faced-off-deg=$(FACE_CLIP_DEG) > $$out/$$arm.log 2>&1 || true; \
+			--screen-only=$(FACE_CLIP_TASK) --faced-off-deg=$(FACE_CLIP_DEG) $(if $(FACE_CLIP_SQUADS),--faced-squads=$(FACE_CLIP_SQUADS)) > $$out/$$arm.log 2>&1 || true; \
 		grep -E "^SCREEN |SCREEN_DONE|SCRIPT ERROR" $$out/$$arm.log | cut -c1-300 || true; \
 	done; \
 	command -v ffmpeg >/dev/null || { echo ">> manoeuvre-face-clip: no ffmpeg; the AVIs are in $$out"; exit 0; }; \
