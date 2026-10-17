@@ -77,7 +77,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 | Item | State |
 |---|---|
 | F0 the missing face step | **DONE: not a main bug** (no fix commit). A real main bug found on the way, in planner's file: stale `PlannerSeam.live()` (sent to planner + orchestrator) |
-| F1 CP-F | IN PROGRESS: traced (attack-move's movers = element `arrived` limit cycle on main, brokered as R33.9 to brains); drawn_face fix + test committed 136c3828; bar filed with (m)-(o). **Waiting on** R33.9's main hash (and planner's stale-live fix 03d1a50c) to build the pair tree; then C31.1 check, then the judged series as the day's LAST heavy builder0 job (R33.10) |
+| F1 CP-F | IN PROGRESS: traced (attack-move's movers = element `arrived` limit cycle on main, brokered as R33.9 to brains); drawn_face fix + test committed 136c3828; bar filed with (m)-(o). pair tree 887ac6d2 GREEN (C31.1: builder0 2735/0, sim-baseline unmoved; native twins 0 mismatches). **Waiting on R33.9's verdict** to start the judged series (the day's last heavy builder0 job, R33.10). Planner's stale-live fix merged (main b122cf60) |
 | F2 help B11b | waiting on CP-F |
 | Stretch clip | not started |
 
@@ -201,6 +201,16 @@ drawn: ON == OFF); quick-remote at 136c3828 showed that as 76 passed, 1 failed.
 ae3dad71, GDScript, n 1 per arm): the move completes and its station is `drawn`; ON 117/117 declined faces held, ends
 **4.2 deg** off, 1 shot; OFF 598/600 stop ticks, ends **49.9 deg** off, 5 shots. `test_an_elements_own_facing_is_not_a_drawn_station`
 pins the player-only rule. quick (light lane) on turn_hull + control_orders + wheeled_face: 18 passed, 0 failed.
+
+### CP-F pair tree (C31.1) — GREEN `887ac6d2` (branch `pair/cpf-on`, 2026-10-17)
+
+`pair/cpf-on 887ac6d2` = main 227d0bb6 + R33.9's latch 429ebc4b (green on lab/brains-r339, not yet merged) +
+stream/manoeuvre e5c66718 + `TURN_HULL_DEFAULT := true`. **`make remote T=check` on builder0 exited 0, 2735 passed, 0
+failed, sim-baseline unmoved on all 13 maps** (the whole suite with the switch ON). Native's twins on 887ac6d2 (builder0
+light lane, `make native test FILTER=native_drive|native_execute|native_face_behind` exited 0, 9/0, n 1): 0 mismatches
+everywhere; War Rig face_behind 928 handed back, tank 142 native / 2 handed back; no C++ change (stations' `drawn` is
+never read natively). The orchestrator: these settle bar line (m). **The series waits for R33.9's verdict:** if it passes,
+the base matches main; if it PARKS, rebuild the pair tree on main without it and the orchestrator rules on (d).
 
 ### Plan (ordered)
 
