@@ -24,6 +24,20 @@ extends RefCounted
 
 ## The element counts as arrived within this far of its task destination (meters)...
 const ARRIVE_M := 12.0
+## Round 33 (R33.9, brains; manoeuvre's F1 trace): ...and, once arrived on a task, stays arrived until its centre is more
+## than ARRIVE_M + ARRIVE_LEAVE_M out (`_arrived_at`; `Element.assign` clears `arrived` for every new task). Without the
+## latch the flag was a limit cycle ON MAIN: arrived lays the seats on the halt at the spot (his drawn heading), not
+## arrived lays them in the travelling shape the other way, every seat jumped 19-27 m each flip, and the crews driving to
+## the new seats carried the centre back across the 12 m line (gangs hull-rest faced_attack_move s40, Battery 67 flips,
+## re-seats 286, base arm). 6 m: half the arrive radius, one bus length, above the centre's swing when a swarm of five
+## re-seats (the seats move ~20 m; the centre, their mean, by its fifth-weighted share) and far below a real departure.
+## `--arrive-latch=off` is main's rule (the control arm).
+const ARRIVE_LEAVE_M := 6.0
+static var ARRIVE_LATCH := true
+
+
+static func _arrived_at(to_go: float, state: Dictionary) -> bool:
+	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M)
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
@@ -287,7 +301,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			var target := _target_contact(task, situation)
 			_engage(plan, slot_order(situation), situation, toward, target)
 			return
-	plan["arrived"] = to_go <= ARRIVE_M
+	plan["arrived"] = _arrived_at(to_go, state)
 	if plan["arrived"]:
 		if verb == "move" and ElementTask.facing(task) is Vector3:
 			_arrive_facing(plan, situation, table, destination, ElementTask.facing(task))
@@ -683,7 +697,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# not a shape filing through a gap, so the corridor does not deform them. The transit is `_flow`'s business, and
 	# deforming that is recorded as the follow-on rather than guessed at here.
 	plan["corridor_m"] = INF
-	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
+	plan["arrived"] = _arrived_at(center.distance_to(destination), state)
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	if in_transit:
 		plan["why"] = "moving as ordered: travelling in %s" % String(plan["formation"]).replace("_", " ")
