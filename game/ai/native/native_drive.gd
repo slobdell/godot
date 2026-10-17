@@ -148,6 +148,8 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 					float(c["pulls"]) / n, float(c["pushes"]) / n])
 	else:
 		NativeBridge.impl.drive(mover, cmd, order, delta)
+	if NativeBridge.counting:
+		_count_manoeuvre()
 	if profile:
 		_drives += 1
 		if _drives % PROFILE_EVERY == 0:
@@ -157,6 +159,20 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 				if key != "drives":
 					parts.append("%s %.1f" % [key, float(clocks[key]) / maxi(int(clocks["drives"]), 1)])
 			print("NATIVE_DRIVE_PROFILE %d drives, usec a drive: %s" % [int(clocks["drives"]), ", ".join(parts)])
+
+
+## Round 33 (N5.M, the live guard): `_manoeuvre`'s decision runs INSIDE the C++ drive with no GDScript seam to call
+## `took`, so while the guard counts, `taken["manoeuvre"]` is the drive's own count of native decisions since counting began.
+static var _manoeuvre_base := -1
+
+
+static func _count_manoeuvre() -> void:
+	var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
+	var native := int(c.get("manoeuvre_native", 0))
+	if _manoeuvre_base < 0:
+		_manoeuvre_base = native
+	NativeBridge.taken["manoeuvre"] = native - _manoeuvre_base
+	NativeBridge.taken["manoeuvre_called_back"] = int(c.get("manoeuvre_called_back", 0))
 
 
 ## N4 (tests): Movement._around_fire natively on this mover, from its state now (the proof asks it beside the GDScript).
