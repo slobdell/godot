@@ -250,10 +250,17 @@ static func face_keep() -> float:
 
 ## A face request with no KEEP circle of its own (the slot law's) keeps every pose within `lengths` hull lengths of
 ## its home; a request that has one is left as it is.
-static func keep_face(req: PlanRequest, lengths: float) -> void:
-	if lengths <= 0.0 or req.keep_all_m < INF or req.keep_end_m < INF:
+static func keep_face(req: PlanRequest, lengths: float, slotted := false) -> void:
+	if lengths <= 0.0 or req.keep_all_m < INF:
 		return
-	req.keep(req.goal_x, req.goal_z, lengths * 2.0 * req.half_l, req.tol_m)
+	var reach := lengths * 2.0 * req.half_l
+	if req.keep_end_m < INF:
+		# The slot law's circle bounds only where the plan ENDS (the hull-rest census, 9259321d: 24 of 31 face searches
+		# carried it and swung up to 19.7 m out): `slotted` bounds every pose too, a reach beyond the end circle.
+		if slotted:
+			req.keep_all_m = req.keep_end_m + reach
+		return
+	req.keep(req.goal_x, req.goal_z, reach, req.tol_m)
 
 
 ## The shadow (measurement): every face search's request planned whole at SHADOW_EPSILONS, printed.
@@ -268,10 +275,11 @@ static func _shadow_face(crew: Crew, name: String, tick: int) -> void:
 		variants["e%.1f" % e] = [e, 0.0]
 	variants["k1.0"] = [Planner.EPSILON, 1.0]
 	variants["k1.0e2.0"] = [2.0, 1.0]
+	variants["s1.0"] = [Planner.EPSILON, 1.0]   # k1.0 and the slotted faces bounded too
 	for label: String in variants:
 		var req := crew.req.copy()
 		req.epsilon = variants[label][0]
-		keep_face(req, variants[label][1])
+		keep_face(req, variants[label][1], label.begins_with("s"))
 		var p := Planner.plan(req)
 		var far := 0.0
 		for pose: Array in p.poses:

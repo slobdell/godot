@@ -24,7 +24,7 @@ def main(root):
     if not rows:
         print(f"FACE_SHADOW no lines under {root}")
         return 1
-    weights = [k for k in rows[0] if k.startswith(("e", "k"))]
+    weights = [k for k, v in rows[0].items() if isinstance(v, dict)]
     cap = rows[0]["cap"]
     print(f"FACE_SHADOW searches {len(rows)} (keep circle on {sum(1 for r in rows if r.get('keep'))}), hold cap {cap} expansions")
     for w in weights:
