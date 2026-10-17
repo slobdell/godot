@@ -194,6 +194,13 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   `test_traffic_neck` (merge note). **Before the series:** the first test's ON yield point (-100, 0, 2) is on the lane and
   behind the asker's start, so traffic shows the parked crew's path, minimum gap to the asker and contacts ON; a head-on
   means the room search excludes spots whose path crosses the asker's corridor, fixed before the series.
+  **Answered and fixed (traffic, stream/traffic `ad347548`):** the spot was 6 m AHEAD of the asker down the lane (LANE is
+  z 20), but the defect was real: the asker asks before it has a route, so the corridor was a point and a spot straight down
+  the lane read as off route. Now with no route the corridor is the asked direction (40 m), and the straight run to a room
+  spot never comes closer to the asker than it starts nor re-enters the corridor. Test (a) ON (pair tree `ea550faf` =
+  `cf17abd6` + the fix + the pins, builder0 light): spot 8.3 m off the lane, MIN GAP 7.1 m, contacts 0; traffic_neck 7/0,
+  test_movement 9/0, nav_yield_fit 4/0. **The series tree moves to `ad347548`'s code; its full check (`ea550faf`) first.**
+  The pins must restore in a teardown/after_each, not a last line (a failing assert would leak the pin into later tests).
 
 **Bars (round 33):** filed here before any number.
 
