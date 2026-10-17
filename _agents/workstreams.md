@@ -384,6 +384,27 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   **Amended before numbers (orchestrator):** both arms run on the queue main has when P3's series starts (`shared` if P2
   shipped, FIFO if not), named in the verdict; and if CP-F has merged by then, on a tree with it (R33.2: the faced finish's
   when is manoeuvre's), else REPORTED which.
+- **R4 B5c-v6 (brains, R33.8; filed 2026-10-17 before any number, stream/brains `a579b245`).** *Preamble:* round 32's
+  v6 as carried (`b8a34c4f`) fails `test_nav_gate_v4` and `test_wheeled_arrival` (the 180-degree car parks at dot -0.60),
+  so the candidate is the NARROWED v6: the side gate only where v4's come-round has no turning circle beside the rear
+  gate, plus `inside_circle` (R33.8). Candidate = `db72c8e9` + native's mirror (pair branch, test_native_gate 0
+  mismatches), on the B10b base if B10b ships (else main). Arms: ON v `--nav-off=gateside,gateinside` (v5's gate, as main
+  ships), one tree, native path, fresh seeds where a cell is named by seeds below.
+  (1) **Named pass cases, DECIDING.** **Yard s27 t8:** every crew in, ON, and last crew in ON ≤ OFF. **Sumps s17 t11:**
+  all-within-8 m ON ≤ OFF + 2 s (round 32's tuning read 35.8 v 34.8, n 1). **Yard head-on s42 t3 Green_A_5 (R33.8):**
+  settles ON ≤ OFF + 5 s with circle reverses ≤ 20, ghost OFF, and ghost ON too if traffic's ghost is on the base tree
+  (else said so).
+  (2) **Pursuit** (R31.3's count): `make pursuit-aa`, 24 cells, ON ≥ OFF − 3 as written AND nudged, no new let-go at 18 m/s.
+  (3) **Yard crossing cell** (seeds 29 30 × ticks 1 3 6 8 11 16, n 12), DECIDING: runs with every crew in ON ≥ OFF, and
+  crews in ON ≥ OFF in every run. Last-crew median REPORTED.
+  (4) **Sumps cell** (seeds 22 23 × the same 6 ticks, n 12): all-within-8 m median ON ≤ OFF, no run more than 5 s later;
+  guns_on_arc ≥ OFF − 0.05.
+  (5) Terminus head-on (seeds 8–11, t11) REPORTED.
+  (6) **Arrive series** (5 maps × 5 squads × seeds 61–64, n 100): all-within-8 m ON ≥ OFF − 1.645 se.
+  (7) **The faced finish:** test_nav_gate_v4, test_wheeled_arrival and test_nav_gate_inside green on the native path.
+  Counters gates_side and gates_inside > 0 on the acting ON runs and 0 on every OFF run.
+  (8) The check green on the candidate, sim-baseline moves listed with the reason.
+  (9) The worst ON run of (3) and (4) traced before the medians are read.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
