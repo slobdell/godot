@@ -114,6 +114,25 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
 
 **Bars (round 33):** filed here before any number.
 
+- **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
+  the held seat lies on a moving squadmate's navmesh route (both hulls' half widths + 1 m).
+  Candidate: stream/brains at the hash its check goes green on. Arms, one tree, builder0, the DEFAULT path (native where
+  it runs; Element.ground is GDScript on every path, so no native half): **on** = default (latch + corridor);
+  **off** = `--ground-latch=off` (main's rules); **b10** = `--ground-corridor=off`, reported only.
+  1. **Pass case Sumps s16 t8** (main's flip case: 22 flips, never in): no flipping crew (> 10 drift moves) on.
+  2. **Pass case Sumps s19 t8** (the case B10 failed, +19.9 s): on's all-within-8 m time ≤ off's + 5 s.
+  3. **Drift census, FRESH seeds** (`make ground-series`: Sumps 20 21 × ticks 1 3 6 8 11 16, n 12; yard 31 32 × the
+     same, n 12; Terminus head-on 16–19 t11, n 4): pooled runs with a flipping crew on ≤ off AND pooled drift moves on <
+     off; Sumps all-within-8 m median on ≤ off and no run > 5 s later; yard crews in on ≥ off every run.
+  4. **Arrive series, FRESH seeds 53–56, n 100 an arm:** all-within-8 m count on ≥ off − 1.645 se (se of the paired
+     difference of the per-run 0/1 outcomes, × n); discordant pairs and the paired median reported.
+  5. **sim-baseline:** moved maps listed with reasons (a CPU element's held seat re-grounded off a route), adoption by the
+     orchestrator; unmoved also acceptable.
+  6. **The whole suite on the tree** (the check, on), bridge-pooled 18/18.
+  7. Cost: `t.poll.element` on Locks ≤ 0.5 ms (B10: 0.149 v 0.164).
+  8. The worst on-arm run of 1–4 traced before medians are read.
+  Ships ON as one commit if every line passes.
+
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
 **Goal: ship his two yeses first (T3b-c, T1c-b2; `game_design.md` *Round 31 close: his two answers*), then carry home
