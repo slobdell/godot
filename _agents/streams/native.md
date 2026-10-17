@@ -64,7 +64,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Round 32 (started 2026-10-16 ~00:40 PDT from main `6efdf42b`; covered by `e66b41f1`'s inherited green check)
+### Round 32 (started 2026-10-16 ~00:40 PDT from main `6efdf42b`) — CLOSED by the orchestrator
+**Final:** green hash `17ab77b9` (builder0 `make check exited 0`, 2703/0), merged to main; later commits are this brief only.
+Shipped: T3b-c pair, twin splits, H1b pair (`273654e6`, its exec rows ride with H1b), wall split by frame (`cb408505`),
+the seam reset (`45b52d04`), test_native_face_behind. Parked, NOT to merge, kept as record: `pair/swap-on` `d14de5c7`,
+`pair/swap-ship` `80300909` (the C32.10 swap missed its gain line). Held for next round: B5c-v6 (C32.11), N5's ports.
 
 **Report (kept current).**
 - **1. T3b-c pair (CP-T, R32.1):** my mirror `413252ea` is already an ancestor of main (round 31; inert until Traffic has
@@ -127,6 +131,28 @@ whole (merge the named hash), never one file: `test_native_h1b` extends `Execute
   (builder0 light, `native_drive_owned|native_execute_odd` serial): main 99afc1f8 1/1, f686f155 2/0. Off main as
   `fix/seam-reset` `45b52d04` (3/0 with h1b). **Lesson:** a twin case owns its world: empty every static table it
   captures at its start, or it inherits the shard's history.
+- **stream/native green: `17ab77b9`** (main 99afc1f8 merged + face twin + seam reset): builder0 `make check exited 0`,
+  2703 passed / 0 failed, 24 passed, all maps unmoved. (`1ca9988f`'s check had 2702/1: the face twin's War Rig case at
+  tick 0, the same seam carry-over, before `f686f155` gave it `world_reset`.) Later commits are this brief only.
+- **Still open:** B5c-v6 is on HOLD this round (C32.11: behind B10b, behind C32.10's swap, behind H1b's series); when it
+  returns, the v6 carry's `test_native_gate` needs `MoverState.world_reset()` at its start like every other
+  seam-capturing twin. **C32.10 swap pair, pre-assessed on `lab/manoeuvre-swap` `98a29c57`: NONE PORTED.** The native
+  drive calls `_escape_step` back for any `_esc_stage` != 0 (drive_native.cpp ~1452), so ESC_SWAP (4) runs as
+  GDScript; `_h1b_swap` runs inside `_escape_begin` (a callback, like H1b). The pair needs ONE exec_fields row,
+  `F(Vector3, VECTOR3, _h1b_swap_goal)` after `_h1b_last_answer` (declaration order), shipped with the swap;
+  `swap_seam_override` is a static Callable (MoverState's statics carry it; not an exec row). Then the plain check.
+  **Pair cut:** `pair/swap-on` `d14de5c7` (main eae90160 + manoeuvre `d21b5d56` + the row + H1B_SWAP_DEFAULT true;
+  worktree `../godot-native-h1b`). builder0 plain check: `make check exited 2`, 2723 passed / 1 failed. The one red is
+  R32.6 (test_tactics_body three squads; brains' fix c029cf70 not on main), not the swap. All 13 maps unmoved, exec
+  table 157/157. Reported to manoeuvre and the orchestrator.
+  **Ship tree:** `pair/swap-ship` `80300909` (main a32d603d, which has R32.6's fix, + `d21b5d56` + the row/default
+  commit). builder0 light `test_tactics_body|native_h1b|native_exec_state|manoeuvre_h1b`: exited 0, 15/0. Merge it
+  once manoeuvre's series passes. **PARKED by manoeuvre:** the gain line failed on fights 400-423 (builder0: far loops
+  6 v 6, swaps taken 0, all 24 fights bit-identical). `pair/swap-on` and `pair/swap-ship` do NOT merge; the
+  `_h1b_swap_goal` row stays off main. **Answered (orchestrator):** N5's held ports stay HELD into round 33: its
+  first far-loop candidate (a cross-element give-way / make-room, traffic's block) will likely change exactly
+  `_negotiate` / `ask` / `_begin_yield`; port them once that design settles.
+  N5's held ports (item 6) stay held until the swap ships (it is their moving target).
 **Lesson (splits):** split a twin by crew only where the floor is a sample size; a branch floor (walls, hulls) must split
 by frame, or a behaviour change elsewhere starves one half.
 - **3. Twin splits (C32.8):** `d98f4400` (test-only). BEFORE, measured first (builder0 light lane, `6efdf42b`, one
