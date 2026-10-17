@@ -1,3 +1,5 @@
+> **ARCHIVED at round 32's close (2026-10-16).** This is the brief as its worker left it on `stream/traffic` at `0fc259bc`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: traffic (his two yeses ship first: the Terminus crossing give-way and the set-up mortar truck; then the default arena's navmesh gap)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 31 close: his two answers*,

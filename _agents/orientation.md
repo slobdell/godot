@@ -284,3 +284,8 @@ build/   (gitignored)    exports and screenshots
     (the stage N times in one process) and `--body-trace` found both at tick 0. So lab stages set spawns apart
     (`BodyStage.spawns`), snap each hull's INTENDED spawn after `start()` with zero velocity, and test that spawns never
     overlap (brains, round 32, R32.6).
+83. **A test that builds a `TacticsLab` (or any match) must dispose it in its teardown.** An undisposed lab leaves ~20
+    ObjectDB instances and 4 resources alive at exit, and the engine-log gate fails the whole check on it, in whatever
+    shard happens to run the file. It happened twice (round 31 `test_traffic_ghost`, round 32 `test_traffic_setup`). And a
+    test that ends with a crew still held in `PlannerSeam` leaks it into the next file's twins: twin cases start with
+    `MoverState.world_reset()` (round 32, native).

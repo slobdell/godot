@@ -1,3 +1,5 @@
+> **ARCHIVED at round 32's close (2026-10-16).** This is the brief as its worker left it on `stream/manoeuvre` at `b95d9c5d`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: manoeuvre (a vehicle pinned on a squadmate that never moves goes round or settles instead of looping; wheeled turret vehicles turn their hull to his facing AND settle)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 28 direction* (his call 2: turn

@@ -1,5 +1,5 @@
 # ---- planner (round 30): a local motion planner for long wheeled hulls, isolated this round (C30.4) -----------------
-# Owner: the planner stream (_agents/streams/planner.md). Nothing here is reached in play. Every Godot run goes to
+# Owner: the planner stream (_agents/streams/archive/round32/planner.md). Nothing here is reached in play. Every Godot run goes to
 # builder0 (`make remote LIGHT=1 T=planner-...`: one process, the light lane, one at a time).
 
 # P0 reproductions on main's code, each the exact command the problem statement cites

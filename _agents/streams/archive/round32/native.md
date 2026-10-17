@@ -1,3 +1,5 @@
+> **ARCHIVED at round 32's close (2026-10-16).** This is the brief as its worker left it on `stream/native` at `6ff7a28f`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: native (every pair, T3b-c first; the four slow twin files split; N5's held ports)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/native.md` (*N7*, *Stage 1*), `_agents/workstreams.md`

@@ -1,3 +1,5 @@
+> **ARCHIVED at round 32's close (2026-10-16).** This is the brief as its worker left it on `stream/planner` at `1984f78a`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: planner (the side gate brains' arrival needs; SLICE as a hardware preset; the gang-press queue that starves)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 32** (C32.4, C32.7, C32.8) and

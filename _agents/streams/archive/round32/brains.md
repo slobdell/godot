@@ -1,3 +1,5 @@
+> **ARCHIVED at round 32's close (2026-10-16).** This is the brief as its worker left it on `stream/brains` at `3c4adba4`; the live round's briefs are in `_agents/streams/`.
+
 # Stream: brains (every crew across his bridge without the arrive maps paying; the yard's last crew in every time, Sumps included; the re-seat question with manoeuvre)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/doctrine.md`,
