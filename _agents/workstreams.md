@@ -114,6 +114,8 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   hold() is face_turn's and `_planned_reverse`'s first line, both called every tick, and the C++ hands wheeled faces back
   to face_turn (execute_native.cpp:363-376) and calls `_planned_reverse` back every tick (drive_native.cpp:2211-2214);
   STALE_TICKS 2 (`_serve`'s rule since round 31), run each physics_frame (the frame counter only). Native approved.
+  **Native's twins on `03d1a50c`** (builder0 light, `native_drive|native_execute|native_face_behind|planner_seam_stale`):
+  exited 0, 10/0, every twin 0 mismatches; answer (a), no C++ change. Planner's full check is the ship gate.
   Native's face_behind floor was already on main (builder0 `ae3dad71`: 142 native executes, 0 mismatches).
 
 **Bars (round 33):** filed here before any number.
