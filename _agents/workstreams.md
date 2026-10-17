@@ -227,7 +227,7 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
 - **R33.13 CP-Q (planner P2) does not ship (2026-10-17; builder0, pair `c75f20a6`, hull-rest gangs fresh seeds 72–83, n 72
   paired a mode).** Line (1), abandoned share, FAILS in both modes: drawn 0.9 % v FIFO 1.0 % (p 0.44), clicked 0.9 % v 1.6 %
   (p 0.06). Both are under 5 %, and neither is significantly below base. The FIFO base was 13–25 % in round 32 and P1's A/A;
-  on main today, with R33.3's stale release, it is 1.0–1.6 %. R33.3 is the likely cause; it has not been shown by removal.
+  on main today, with R33.3's stale release, it is 1.0–1.6 %. **R33.3 is the cause, shown by removal** (planner, laptop GDScript, FIFO hull-rest gangs drawn, seeds 72–74 × 6, 18 runs an arm): release on (`c75f20a6`) 7/594 = 1.2 % abandoned; `_hook()` stubbed (`02934dec`, never pushed) 142/667 = 21.3 %, queue_waits 1298 v 15767, Fisher p 6e-34.
   (2) PASS. (3a) drawn at-rest hull error +5.43° against a +4.50 line FAILS (attack_move +13.2, move +15.2). (3b) and (3c)
   PASS. Terminus and s207 are reported in full (early stop off). **Main keeps FIFO; P3's series tree = main + FACE_KEEP on
   FIFO.** The stretch item (refuse GOAL_BLOCKED / START_BLOCKED before queueing) is planner's call, and only if a cheap read

@@ -31,6 +31,8 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
   whose planned turn was cut off by a new order can back out when stuck again (it was frozen out of unstick all match).
+  **Its size, shown by removal (planner, laptop, R33.13):** turn requests abandoned 21.3 % without it v 1.2 % with it (FIFO,
+  gangs hull-rest, 18 runs an arm, p 6e-34): the problem CP-Q was built for is solved by R33.3.
 
 - **R1 → main `07b8e99a`** (brains `2fd9f420`, covered by lab/brains-r339 `429ebc4b`'s check per R33.10: builder0 `make check
   exited 0`, 2731/0, sim-baseline 13 unmoved, determinism passed). What he'd notice: a respawning vehicle never appears inside
