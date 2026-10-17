@@ -2125,7 +2125,30 @@ func _on_tank_died(tank: Tank) -> void:
 		return  # squad vs squad: destroyed means destroyed
 	await get_tree().create_timer(respawn_seconds).timeout
 	if is_instance_valid(tank) and not tank.is_queued_for_deletion():
-		tank.respawn(_jittered(spawn_position(tank.team, tank.slot)), spawn_yaw(tank.team))
+		tank.respawn(respawn_spot(tank, _jittered(spawn_position(tank.team, tank.slot))), spawn_yaw(tank.team))
+
+
+## C33.5 (round 33, brains): where `tank` respawns, given the spot it `wanted` (its jittered slot). A slot is not kept
+## free while its owner is dead, so a living hull can stand on it (a squadmate parked there, a War Rig's 14 m reaching
+## over from the next slot, an enemy that drove in). A respawn placed into that hull is an overlap, and physics separates
+## overlapping bodies on a process's first match and not on later ones (trip-up 82), so the same seed played
+## differently by its place in a session. So the slot is kept exactly when its hull box clears every standing hull,
+## and otherwise the respawn takes the NEAREST clear, standable spot (the deploy's own search, ArmyLayout._clear_spot:
+## rings outward from the slot, STAND_CLEAR_M between boxes, each on its own axes, clear of the layout's obstacles).
+## Deterministic for both peers: the hulls are read sorted by name, no clock, no RNG.
+func respawn_spot(tank: Tank, wanted: Vector3) -> Vector3:
+	var forward: Vector3 = TacticsFormation.flat(team_frame(tank.team)["forward"])
+	var hull := ArmyLayout._hull(tank.unit_id)
+	var standing: Array = []  # [position, hull width, hull length, forward]: ArmyLayout's `taken`
+	for team: int in [Team.GREEN, Team.RUST]:
+		for other: Tank in sorted_team_tanks(team):
+			if other != tank and other.is_alive():
+				var other_hull := ArmyLayout._hull(other.unit_id)
+				standing.append([other.global_position, other_hull.x, other_hull.y, TacticsFormation.flat(-other.global_basis.z)])
+	if ArmyLayout._is_clear(wanted, hull, forward, standing):
+		return wanted
+	var spot := ArmyLayout._clear_spot(tank, wanted, hull, forward, standing)
+	return Vector3(spot.x, wanted.y, spot.z)
 
 
 # ---- Effects (every peer with a screen) ----------------------------------------------
