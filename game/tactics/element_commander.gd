@@ -177,7 +177,7 @@ func form_elements() -> Array:
 				if tank != null and tank.is_alive() and elements.of(unit_name) == null:
 					roster.append(unit_name)
 			if not roster.is_empty():
-				made.append(elements.form(roster, squad.squad_name))
+				made.append_array(elements.form_squad(roster, squad.squad_name))
 		return made
 	var loose: Array = []
 	for tank in game_match.sorted_team_tanks(team):
@@ -200,12 +200,24 @@ func _physics_process(_delta: float) -> void:
 	if tick == _last_tick or tick % THINK_TICKS != 0:
 		return
 	_last_tick = tick
-	if elements.of_team(team).is_empty():
+	# Round 33 (R33.6): also whenever a living crew of one of our squads has no element (a squad past MAX_MEMBERS formed
+	# whole and refused, or one formed before this commander), not only when the team has none left.
+	if elements.of_team(team).is_empty() or _unseated():
 		form_elements()
 	think()
 	if TankBrain.census and tick % (SimClock.TICK_RATE * 15) == 0:
 		print("BRAINS_AMBUSH_T team %d t=%ds posture %s taken %d refused %s" % [team, tick / SimClock.TICK_RATE,
 				posture["posture"], ambushes_taken, ambush_refused])
+
+
+## Round 33 (R33.6): does a living crew of one of our squads stand outside every element?
+func _unseated() -> bool:
+	for squad: Squad in game_match.team_squads(team):
+		for unit_name in squad.roster:
+			var tank := _tank(unit_name)
+			if tank != null and tank.is_alive() and elements.of(unit_name) == null:
+				return true
+	return false
 
 
 ## One planning cycle: classify our elements, then give each one a task.
