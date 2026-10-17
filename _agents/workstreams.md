@@ -233,6 +233,17 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   FIFO.** The stretch item (refuse GOAL_BLOCKED / START_BLOCKED before queueing) is planner's call, and only if a cheap read
   shows those refusals cost hold time. Native gets nothing from P2.
 
+- **R33.14 T4's line 7 red is an order-dependent test, and T4's series goes ahead (2026-10-17).** Pair `bbb4d2db` (ghost out
+  of OPT_IN), builder0 `make check exited 2`: 2730/1, sim-baseline 13 moved (expected), perf NOT JUDGED. The red is
+  `test_tactics_body::test_his_three_squads_keep_together`, brains'. Traffic's light lane on `bbb4d2db`: alone it passes 3/3
+  (alone_s off 43.5, on 15.0). With test_rts_camera in front it fails (off 38.0, on 18.5 against a line of < 19.0). On
+  ghost-OFF trees it passes in every order traffic tried (off 41–44.5, on 12–15). It is the same class as R32.6: the result
+  depends on what ran before it, on a relative line. **Ruling:** (a) the Terminus re-judge runs on `bbb4d2db` as filed. T4
+  does NOT merge until line 7 is green on a named hash. Brains hardens the test (laptop; e.g. each arm in a fresh stage
+  state, or a fixed start phase, keeping the halving line) as its own small commit, and traffic carries it onto the pair
+  tree for the merge check. Traffic REPORTS ghost OFF v ON alone_s for the body-ON arm in the failing order (test_rts_camera
+  in front), so a real ghost cost on keeping squads together shows up as a number and not a flake.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
