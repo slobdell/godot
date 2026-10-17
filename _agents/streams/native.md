@@ -93,5 +93,16 @@ drive compare). Draws are made for every pair in their old order (rng also place
 builder0 light, n 1: both halves 5 plans / 206 leg ticks (before: the same); unstick 3600 + 3600 (before 7200), 1:fired 164
 + 164 (328), 4:fired 44 + 46 (90); 0 mismatches; 3/0 with the owned file. CPU before (`6f88a2e5`, load ~3, serial):
 kturn 166.4 CPU-s, kturn_owned 34.2. A first after-reading (load 12-18: kturn 218.6, odd 148.5) is contaminated, NOT
-evidence; an interleaved whole / even / odd ABAB in one window is the measurement (below when in).
+evidence; the interleaved ABAB was CANCELLED unrun (it queued 38 min for a heavy slot behind two full checks; it would
+have held one ~40 min for a stretch number). **The split's CPU gain is unmeasured**; re-measure on a quiet builder0.
+**3. N5's held ports.** R33.4 (orchestrator, main `404f1e37`): traffic's CP-X design is `parkedroom`, GDScript-only, and
+changes `_begin_yield`'s body, so `_negotiate` / `ask` / `_begin_yield` stay HELD for its verdict; `_manoeuvre` released.
+Manoeuvre confirmed CP-F does not touch `_manoeuvre`'s decision path.
+**N5.M, `_manoeuvre`'s decision in C++: `04ee782e` + `.uid` `145ada3a`** (design first: `native.md` *N5.M*).
+`BrainSwitches.native_manoeuvre` (default ON; off = the round-26 callback). Proof (builder0 light, lab `536f773c`, the
+same code): new `test_native_manoeuvre` (five hulls on yard_open sent astern at rest and rolling, the decision twinned
+on its tick, live and owned): 920 decisions native, 0 called back, 0 mismatches; route 613 / reverse 307; refusals
+facing_nose 225, static 84, route_faster 66, friendly 6, enemy 2; `no_arrival` not reached. Drive twins 165 / 179
+decisions native, 0 mismatches. Price (same run, load ~18, n 1): a decision tick's drive 1762 usec with the callback,
+719 usec native, 1728 all GDScript. Full `check`, `check NATIVE=off` and `native-proof` on `145ada3a`: running.
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
