@@ -208,6 +208,11 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
      the pair check is the equality check); the ship tree (ON) may move maps: listed with the reason for the orchestrator.
   Verdict: ships ON as a pair (a docs/DEFAULT_OFF flip) only if L1, L2, L3, L4, L5, L6 pass; a fail is traced (the worst
   fight's episode read before any total) and written up.
+  **Pre-series gate MET (traffic, builder0, `5da50167` + `--traffic-on=parkedroom`, s403 crossing, 90 s, elements formed):** the
+  scout gave way at ~23.5 s and reached its room spot within ~1.8 m UNDER its element; Green_Guns_4 through by 24 s, at goal
+  29 s (OFF: pinned 23–52 s, 4 far loops); scout back on post ~33 s. 51 room give-ways in that fight (both sides). **Added
+  before numbers (orchestrator), REPORTED only:** room give-ways per fight ON v all give-ways OFF, median and worst, in L1's
+  fights; a clip of the busiest neck ON for him if it ships (does it look like milling).
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
