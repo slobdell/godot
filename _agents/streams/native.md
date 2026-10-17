@@ -79,4 +79,19 @@ order lands needs no mirror (recommended to planner); a check inside `live()` ne
 orchestrator and planner; confirm with the twins on planner's commit. **Orchestrator (main `b80fb7a0`, R33.3 amended):**
 planner releases the stale crew from `_crews` where the order is replaced, `live()` stays a lookup, no C++ change expected;
 native confirms with the k-turn / execute twins on planner's pair tree when it names the hash.
+**R33.3 pair: planner `fix/planner-live-stale` `03d1a50c` REVIEWED, APPROVED, NONE PORTED (answer (a)).** `tick_seen` is
+written only in `take` / `hold`, which the C++ drive reaches only through GDScript callbacks (`_planned_reverse`,
+drive_native.cpp ~2214), and `_release_stale` runs on `SceneTree.physics_frame`, between ticks, so both twin arms see the
+same `_crews`. Twins on `03d1a50c` (worktree `../godot-native-pair`, branch `pair/r333-live-stale`), builder0 light,
+`make native test FILTER=native_drive|native_execute|native_face_behind|planner_seam_stale`, n 1: `exited 0`, 10 passed /
+0 failed, every twin 0 mismatches (drive 2160 a view, live and owned; k-turn 1440 drives / 5 plans, unstick 7200; execute
+5880 + 6000 native; face_behind tank 142 native, rig 928 hand-backs; seam_stale released 2 ticks after `stop`). Sent to
+planner and the orchestrator; planner's full check is the ship gate.
+**Stretch: the k-turn twin split, `26a35318` (test-only).** `_unstick_compare` compares a mover on frames where
+`(frame + mover) % 2 == part`; test_native_drive_kturn = drive compare + part 0, test_native_drive_kturn_odd = part 1 (no
+drive compare). Draws are made for every pair in their old order (rng also places the k-turns), so the fight is unchanged.
+builder0 light, n 1: both halves 5 plans / 206 leg ticks (before: the same); unstick 3600 + 3600 (before 7200), 1:fired 164
++ 164 (328), 4:fired 44 + 46 (90); 0 mismatches; 3/0 with the owned file. CPU before (`6f88a2e5`, load ~3, serial):
+kturn 166.4 CPU-s, kturn_owned 34.2. A first after-reading (load 12-18: kturn 218.6, odd 148.5) is contaminated, NOT
+evidence; an interleaved whole / even / odd ABAB in one window is the measurement (below when in).
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
