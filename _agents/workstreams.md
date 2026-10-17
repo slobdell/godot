@@ -243,6 +243,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   state, or a fixed start phase, keeping the halving line) as its own small commit, and traffic carries it onto the pair
   tree for the merge check. Traffic REPORTS ghost OFF v ON alone_s for the body-ON arm in the failing order (test_rts_camera
   in front), so a real ghost cost on keeping squads together shows up as a number and not a flake.
+  **Read (traffic, builder0 light, seed 1, n 1 a cell; OFF = stream/traffic `b4b78825`, ON = `bbb4d2db`):** body-ON
+  alone_s ghost OFF v ON, by what runs in front: none 15.0 v 15.0; det_core 15.0 v 15.0; rts_camera 12.0 v 18.5; shard-3
+  48–70 12.0 v 18.5; 71–93 15.0 v 17.5. So it isn't only the order: in 3 of 5 orders the ghost costs the body-route squads
+  +2.5 to +6.5 s alone. **Added to T4's bar as a JUDGED guard, filed before its numbers:** the body stage
+  (`tests/tactics/body_stage.gd`, locks), seeds 1–3 × fronts {none, test_det_core, test_rts_camera}, n 9 a side, body ON,
+  ghost OFF v ON on one tree. Median alone_s ON ≤ OFF + 3.0 s, every cell ON ≤ OFF × 0.5 + the body-OFF arm, and the Sirens
+  choose "body" in every ON cell. Fail = T4 parks with the worst cell traced. Brains' hardening must not hide this:
+  the hardened test has to fail on a stage that really loses cohesion, so it is shown failing on one such case.
 
 **Bars (round 33):** filed here before any number.
 
