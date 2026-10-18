@@ -591,6 +591,20 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   those same asks (its furthest-from-home under the fallback executor or abandon): no worse. Faces only the base serves
   are reported. A new bar on FRESH seeds, filed with the face-pairing tool proven (pinned runs are deterministic, so faces
   match). v3 as written is withdrawn.
+  **Bar filed (2026-10-18, before any number; planner's tool stream/planner `33f8905b7`, proven on the laptop).** The seam
+  reports `face_episodes` (a crew at one home, from the first ask until a new home, a new order, the hull freed, or 30 s;
+  with outcome, plan_far, and the HULL's own furthest from home, whoever drove it). face_pairs.py pairs them by crew and
+  home. **Judged on hull_far**, with plan_far reported: in the yard stage the base's "served" re-ask plan reads 1.4 m
+  while its hull went 12.1 m under the executor, so plan_far understates today. Candidate = the same code + the
+  measurement; keep 0 v 1, FIFO, no CP-F. Pair = main + `670f4e12` (if not on main) + FACE_KEEP_DEFAULT 1 + the tools,
+  suite green on builder2 first. FRESH seeds: hull-rest gangs 120–131 (drawn + clicked), Terminus rigs and mixed 270–282
+  (n 13). builder2, pinned, distinct pairs. (0), (0b), (1), (2a), (2b), (2d) and (3) unchanged. **(2c) per mode:**
+  BOTH-PLANNED faces, median and p90 hull_far ≤ base + 1.645 se (a paired bootstrap over faces, 4000 rounds, seed 33);
+  CANDIDATE-ONLY faces, hull_far ≤ the base hull's hull_far for the same episode + 1.645 se (plan_far and the kept count
+  reported). A class with fewer than 2 faces is NOT JUDGED and reported; base-only, neither-served and unmatched episodes
+  are reported. **Added (orchestrator):** the BOTH-PLANNED class must have ≥ 10 faces per mode, or that mode's (2c) is
+  INCONCLUSIVE, and an inconclusive mode can't PASS. Pass = every line, early stop OFF; a failed guard → PARKED with the
+  worst face pair's trace.
 
 **Bars (round 33):** filed here before any number.
 
