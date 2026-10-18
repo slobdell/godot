@@ -123,6 +123,10 @@ element traced first. (2) squad-arrive-series, FRESH seeds 69–72, n 100: all-w
 median inset reported. (3) The check, with sim-baseline moves listed. (4) The worst ON run traced before the counts.
 What he'd notice: a squad sent right to the arena's edge stops a few metres inland, in formation, instead of half of it
 never "arriving".
+**Added before any judged number (orchestrator, 2026-10-18):** brains' tuning read (seed 8) showed the largest inset
+at 50.8 m (a 4-crew swarm reaches 51 m across). A squad sent to the edge stopping 50 m from where he clicked is a miss he
+would see. So the design fits the SHAPE to the edge (folds or compresses the clamped side), or caps the inset, and
+**(1b) is judged: the largest inset ON ≤ 15 m (one swarm pitch)**, with the median reported.
 
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
