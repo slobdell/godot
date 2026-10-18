@@ -100,6 +100,28 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   threshold. File a bar before any number. Native: if the change is in Manoeuvre.choose / behind / simulate (C++ since N5.M),
   it pairs with native (C26.2). The same rule applies to every fixed-gun wheeled hull on every side (symmetric). Priority:
   after CP-F's series and verdict, ahead of manoeuvre's stretch items.
+  **Diagnosed (manoeuvre, laptop, scratch of main `0ef2443b`, GDScript, seed 4, n 1 a cell, 30 s; stage
+  tests/test_manoeuvre_orbit.gd):** the back-and-forth is OrderController's FACE CREEP, reached because the scout picks SPOT
+  (0.88 whenever a visible threat is closer than 75 m), not ENGAGE. SPOT clamps its 85 m post to the 18 m player-post leash
+  and then sends `face` at the threat. plan_face finds no plan against a moving target (23–24 empty a run v 1–5 made), so
+  the creep drives full lock forward/back: 38 gear flips in 30 s. choose, plan_lay, unstick and wheelhold are not involved.
+  His scene (player-team law_scout v syn_scout), radius 30 / 15 m: the scout yaws 20.8 / 26.9°/s against the orbiter's
+  bearing rate of 32.3 / 57.9°/s; target in arc 3.8 / 4.4 % of ticks; shots 5 v 112 / 20 v 128; hits taken 60 / 108.
+  **Bar C33.9 "turn in" (filed 2026-10-17 before any fix number).** Candidate: on a face order whose spot is more than
+  T = 30° off the arc, a wheeled fixed-gun hull (law_scout, gang_scout) drives FORWARD at full lock toward the spot's side,
+  with no reverse leg. Inside T it rolls on its turning circle at the speed that matches the target's bearing rate (creep
+  floor), and stops only when that rate is near zero. Lands in order_controller.gd's face-at-rest path plus a new function
+  in manoeuvre.gd (choose/behind/simulate untouched; manoeuvre confirms with native that the wheeled face path has no C++
+  twin before building). Opt-in `--nav-off=turnin` until it passes. Cells: subject law_scout / gang_scout × orbiter
+  syn_scout / gang_ifv × radius 15/30/45 m × player post on/off × FRESH seeds 11–16; arms ON v OFF on one tree. (a) median
+  target-in-arc share ON ≥ 2× OFF and ≥ 25 %. (b) median scout shots ON ≥ 1.5× OFF. (c) median hits taken ON ≤ OFF, and no
+  cell worse by more than 20 %. (d) while |error| > T, ON spends 0 reverse ticks in every run and makes ≤ 2 gear flips per
+  30 s. (e) ON's furthest point from the post ≤ the 18 m leash + 11 m. **(e2), added by the orchestrator:** a STATIC face
+  (a drawn facing with no moving target, his CP-F case for a fixed-gun scout) is no worse: aligned no later than OFF, and
+  no further from its spot than OFF + 2 m. (f) builder0 guards: scout tests and scenarios green; the fights stage's scout
+  kills and deaths no worse than OFF within noise; the full check green, sim-baseline unmoved while opt-in. The default
+  flips later, with its own A/B. **The SPOT-v-ENGAGE question goes to brains** (a scout under fire within its gun's reach
+  probably should ENGAGE), recorded and not built this round unless brains has room after R4.
 
 **Rulings (round 33, the orchestrator's, as they arise):**
 
