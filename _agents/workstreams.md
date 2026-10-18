@@ -37,6 +37,16 @@ separately. Each mover gets a reason. (3) Any test that fails pinned is fixed, o
 merge; nothing is loosened to pass. **Added (orchestrator):** (4) REPORT the suite's wall time and slowest shard, fixed
 v free, on both machines.
 
+**Bar, planner overnight item 2: P3 v2 re-judged PINNED (filed 2026-10-18 before any number).** R33.19's bar (main
+`8681d2aa` + amendment `e8383ce6`), unchanged except: the candidate is the same code that is on main (keep 1 plus the
+kept-first fallback, FACE_KEPT_SHARE 45), with arms `--planner-face-keep=0` v `=1`, FIFO, explicit on each arm. The pair
+tree is main `e46f1720` + manoeuvre's `670f4e12` (hull-rest and hull-one pinned at `--fixed-fps $(SIM_HZ)`) +
+FACE_KEEP_DEFAULT 1, and its whole suite goes green on builder2 first. No CP-F (named). FRESH seeds: hull-rest gangs
+96–107 (drawn + clicked, n 72 paired a mode); Terminus rigs and mixed 244–256 (n 13). All on builder2, labelled. (3) is
+read by series_verdict `seam=both`. Pass = every line, early stop OFF; (1) passes and a guard fails → PARKED, then v3.
+Pinned numbers don't compare with bca4eaca's. **Added (orchestrator, as for CP-F's R33.23):** hull-rest barely varies
+with the seed, so the verdict reports distinct rows per cell, and every se is over distinct pairs only.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
