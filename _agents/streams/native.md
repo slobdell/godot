@@ -146,6 +146,16 @@ job, run in sequence:
 Round close, if builder0 is free: file one `NATIVE=off` perf-judge reading on main as a known item.
 **R33.12 (main `402b3803`):** parkedroom is parked and stays DEFAULT_OFF, so the ask / `_begin_yield` port is
 RELEASED. It is ported from main's body after R4's twins, with twins at 0.
+**R4 pair GREEN: `pair/brains-v6-r4` `97c3b654`** (brains db72c8e9 + the mirror 560e09e8 + test_native_gate's floors as
+filed on main `e4d1f749`). builder0 light, `make native test FILTER=native_gate|nav_gate_inside exited 0`, 8 / 0, n 1,
+every twin 0 mismatches. Sent to brains (godot-brains-47) and the orchestrator. test_native_gate's FILE_TIME was 1006 s:
+a frame-split candidate at round close.
+**N5.Y built:** `4d2781e3` (C++) + `97ddf174` (test_native_yield + .uid). Design and proof in `native.md` *N5.Y*.
+builder0 light, n 1, each run's exit line read:
+- `make native test FILTER=native_yield exited 0`, 4 / 0, every case 0 mismatches.
+- `make native native-live-guard test FILTER=native_drive|native_execute|native_face_behind|native_manoeuvre|native_gate|native_unstick|native_exec exited 0`,
+  16 / 0, every twin 0 mismatches. The live guard: native_yield 14 taken; 24 switches in force, 2 held elsewhere.
+Merge chain running on `<hash below>`: `T=check`, then `tools/remote.sh check NATIVE=off`, then `native-proof`.
 **Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
 its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
 wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:

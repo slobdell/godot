@@ -914,3 +914,22 @@ nose, nose to tail, crossing, one parked, one set up on a fire post. `_negotiate
 owned: the command, both movers' members, and Movement's statics. Floors cover each answer (asked and gave, gave way
 myself, parked refusal, setup refusal, swap, hold, shortened, back-up) and the rig that fits nowhere. Then the drive
 twins plus the k-turn twins, `native-live-guard`, and a full check.
+
+**N5.Y proof as built (stream/native `4d2781e3` + test, builder0 light, n 1).** `test_native_yield`: two ranks
+(tank, gang_tank, ifv, scout, artillery, lancer) face each other on yard_open and in the Sumps, each hull sent to the
+opposite slot and back, with a friend parked in a lane. On every physics frame each mover's live drive is screened
+from its own snapshot (plus the fields an ask writes on other movers). Ticks where the ask cadence fired are twinned
+whole: 543 / 238 / 697 / 637 drives (yard, yard owned, sumps, sumps owned), 0 mismatches. Negotiations native /
+called back: 31 / 0, 15 / 0, 230 / 0, 248 / 0. Reached:
+- give-way at a spot, a back-up and a hold in place;
+- an unfit spot;
+- a parked refusal, a refused ask;
+- a setup refusal: 5, from a forced variant where every other hull is set up on a fire post.
+182 s (1181 s twinning every frame).
+**Not reached, reachable:**
+- **The swap** needs four things on one tick: I am the one to give way, none of my spots fits me, my
+  `_yield_unfit_last` holds, and the friend has room. Both stages' hulls either found a spot or held in place first.
+- **A shortened spot** (R2) needs a spot whose run is clear for at least YIELD_SHORT_MIN_M (2 m) + 1 m and then not.
+  Unfit spots in the Sumps failed in their first metres.
+Both are the GDScript's lines one for one: `yield_swaps` / `yield_spots_shortened` are statics, so the drive twins
+compare them wherever a fight reaches them.
