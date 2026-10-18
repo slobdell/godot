@@ -72,6 +72,10 @@ nothing because the situation never came up. **Choices:** (1) ship it as it is: 
 facing, with a few gang crews on attack-move still shuffling into place; (2) **recommended:** one more attempt, which also
 fixes the "arrived" flicker in the middle of a three-point turn that planner found, possibly the cause of those late
 movers, and is being developed tonight; (3) leave it parked.
+**Update (overnight):** the flicker fix was built and tried on tuning seeds. It is real but rare and did NOT close the
+attack-move gap (late gang movers +26 v +27 against a limit of about 12). Those movers are crews whose seats keep moving
+after they've faced. Manoeuvre is tracing why, on a tree with tonight's War Rig change (dev only). Recommendation now:
+**leave it parked until that trace reads**, then decide between shipping and a fourth attempt.
 
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
