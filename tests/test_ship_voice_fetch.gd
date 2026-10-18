@@ -23,6 +23,16 @@ func _remove_tree(path: String) -> void:
 
 
 ## A fetcher whose "network" reads the project's clips after `delay_s` (0 = at once), counting the requests.
+## Round 33 overnight (native, item 1): a WALL-clock wait. AnnouncerVoice judges lateness on the wall clock
+## (Time.get_ticks_msec, as a real network fetch is), so the fake fetch's delay and the waits are wall time too. A
+## SceneTree timer is game time, which runs faster than the wall at --fixed-fps (the suite's default since item 1), and
+## LATE_S + 0.4 s of game time arrived inside LATE_S of wall time.
+func _wall(seconds: float) -> void:
+	var until := Time.get_ticks_msec() + int(seconds * 1000.0)
+	while Time.get_ticks_msec() < until:
+		await tree.process_frame
+
+
 func _fetcher(delay_s: float) -> VoiceFetch:
 	_clean()
 	var fetch := VoiceFetch.new()
@@ -34,7 +44,7 @@ func _fetcher(delay_s: float) -> VoiceFetch:
 		var file := url.trim_prefix(fetch.base_url).uri_decode()
 		var bytes := FileAccess.get_file_as_bytes(ProjectSettings.globalize_path(CLIPS).path_join(file))
 		if delay_s > 0.0:
-			await tree.create_timer(delay_s).timeout
+			await _wall(delay_s)
 		done.call(bytes, not bytes.is_empty())
 	add_to_tree(fetch)
 	return fetch
@@ -71,7 +81,7 @@ func test_a_line_whose_clip_lands_in_time_is_spoken_late() -> void:
 	await wait_physics_frames(1)
 	assert_true(not voice.play(CUE), "the first time, the clip is not here yet: nothing plays at once")
 	assert_true(not voice.is_speaking(), "silent while it travels")
-	await tree.create_timer(0.6).timeout
+	await _wall(0.6)
 	assert_true(voice.is_speaking(), "it is spoken when it lands, inside LATE_S")
 	assert_eq(voice.late_lines, 1, "counted as a late line")
 	assert_true(voice._player.stream is AudioStreamOggVorbis, "from the fetched Ogg file")
@@ -83,7 +93,7 @@ func test_a_line_whose_clip_is_too_late_stays_subtitles() -> void:
 	var voice := _voice(fetch)
 	await wait_physics_frames(1)
 	voice.play(CUE)
-	await tree.create_timer(AnnouncerVoice.LATE_S + 0.8).timeout
+	await _wall(AnnouncerVoice.LATE_S + 0.8)
 	assert_true(not voice.is_speaking(), "a clip that lands after LATE_S does not talk over what came next")
 	assert_eq(voice.missed_lines, 1, "counted as missed")
 	assert_true(fetch.has_cached(FILE), "but it is kept: the next time this line is said, it is local")

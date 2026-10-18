@@ -164,7 +164,9 @@ builder0 light, n 1, each run's exit line read:
   - sim-baseline unmoved both times. `native-proof exited 0`, EQUAL `10c328a0f978ea49`.
 - Fix `1053045e`: `stream/native` fast-forwarded to `d7938a6e`, plus the parked floor 60 -> 20. The stage counts depend on
   test order; see native.md *N5.Y*. The orchestrator ruled no full chain: `make test exited 0`, 2741 / 0, and
-  `perf-judge` JUDGED PASS 1.16x on attempt 1.
+  `perf-judge` JUDGED PASS 1.16x on attempt 1. **CORRECTION:** that `make test` ran with the library ABSENT (86 `native:
+  absent`), so it proved nothing about the floor (native.md hazard 10). N5.Y's evidence is the 6434969e check (native ON)
+  and every builder2 main check since (HANDOFF corrected).
 **R4 on main GREEN: `pair/brains-r4-main` `e382202e`** (main d99394f1 + v6 narrowed + inside_circle + the mirror, no B10b;
 code-identical to `45d5f1ea`). builder0 light, `make native test FILTER=native_gate|nav_gate_inside exited 0`, 8 / 0, every
 stage 0 mismatches, the same counts as `97c3b654`. Sent to brains and the orchestrator.
@@ -184,13 +186,21 @@ main + R4), B11b, R1; planner's CP-Q C++ review; traffic's CP-X (parkedroom is G
 Docs-only commits on stream/native after the merges: `beb3e868` (native.md N5.Y order-dependence), `159248db` and this
 one (Status, hazard 8).
 **Round 34 candidates (native):**
-- Split `test_native_gate` by frame, where a floor is a branch (FILE_TIME 1006 s on the pair). It lands on main with R4.
-  Measure CPU seconds before and after; the next slowest are `test_native_execute` (221 s) and `test_native_drive_kturn`
+- Split `test_native_gate` by frame, where a floor is a branch. It is on main now, and its 4 stages run as fresh children
+  (90–104 s each on builder2, 393 s for the file), so the split matters less than it did. Measure CPU seconds before and after; the next slowest are `test_native_execute` (221 s) and `test_native_drive_kturn`
   (204 s), both under the suite's largest file (`test_tactics_pursuit`, 312 s), so split them only if shard balance
   needs it.
 - One `NATIVE=off` perf-judge reading on main, filed as a known item (1.47x at `c70be402`, builder0; 1.07x at
   `6434969e` under a lighter load). Use builder2 or builder0, whichever is free.
+- Move the Sumps stage centre of `test_native_yield` off the pits, then re-verify its paths. Its slots sit on pit
+  edges, so hulls print TANK_OFF_FLOOR at spawn. That is the stage's own placement, not a game path; both arms drive
+  from one snapshot, so the twin is unaffected.
 - The pairs above, as they arrive.
+**test_native_yield floors, round 33 late:** builder2's 16-shard order put the Sumps' parked refusals at 6 (main
+4d6f321d: 2 floors red, 0 mismatches). Fix `7b82b2e9`: each path floored at 1 (reached at all) and 100 drives compared.
+`make native test FILTER=native_yield exited 0`, 6 / 0, on builder2 and builder0 light, n 1 each, with every counter
+identical across the two CPUs. **MERGED: main `de6d3266`.** The in-order proof is main's next builder2 check. If a thin
+path reads 0 there (asks_refused 2–3, holds 4–7), the next step is a fresh process per stage (brains' `f8cf6476` shape).
 **Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
 its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
 wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:
@@ -203,6 +213,23 @@ wheeled face, handed back by execute_native (`simple_face` false on wheels); the
 nothing. (My first answer wrongly said tracked tanks could reach it; retracted within minutes, manoeuvre agreed.)
 Read the twins on manoeuvre's pair hash when it names one.
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
+**Fresh-process twin stages (round 33 late; main `7851690c` = `bbb9821f`).** Main de6d3266 went red on builder2: floors
+at >= 1 (native_gate's foundry latch turned 0; Sumps parked and asks 0), every twin 0 mismatches. The shard order decided
+which paths a stage reached. Fix, test-only, on `fix/native-fresh-stages`:
+- `e534a028`: `tests/native/fresh_stage.gd` + its child (+ `.uid`s). The pattern is native.md hazard 9, applied to 17
+  stages.
+- `43562eab`: the child finds the stage on the instance. The laptop negative proof caught this.
+- `bbb9821f`: the yield floors at half the fresh counts; MIN_COMPARED 185.
+Results:
+- Filtered on 43562eab, `FILTER=native_yield|native_gate|native_drive|native_manoeuvre`: builder0 light and builder2 both
+  `exited 0`, 18 / 0. Every counter is identical across the two CPUs, and each owned arm equals its live arm.
+- Full order on bbb9821f, builder2: `make test exited 0`, 2771 / 0, native ON. Slowest shard 921 s (was 932 s); the 8
+  files 770 -> 711 s.
+- builder0 `make remote T="native test"` on bbb9821f: `exited 0`, 2771 / 0, native ON. Slowest of 6 shards 1899 s. The earlier
+  `T=test` run (2208 s) had no library, so there is no fair builder0 before. FILE_TIME: native_gate 535 s (1006 s
+  in-process on the R4 pair), native_yield 118 s.
+- The negative proof (laptop, scratch, not committed): a child's failed assert, engine error or kill (137) each turns
+  the parent red with the child's message; a passing child stays PASS.
 
 ## Overnight (round 33 extension, 2026-10-18 ~00:45 PDT)
 
@@ -222,3 +249,71 @@ tools/test_slot_light.sh, tools/remote.sh (merge notes for each).
 4. **Split test_native_gate by frame** (FILE_TIME 535 s on builder0).
 5. **One NATIVE=off perf-judge reading on main** (builder2 and builder0, labelled).
 Pairs pre-empt all of it (brains' arrivedgate mirror first).
+
+### Overnight status (2026-10-18; the laptop froze ~01:45, work resumed 10:50)
+**Pair: brains' arrivedgate mirror GREEN, `pair/native-arrivedgate` `6805367b`.** The C++ mirror of `_approach_gate`'s
+arrived latch (`8200e230`), line for line. A new twin, `test_native_gate_arrived`, poses hulls at the goal from brains'
+test shape: 144 poses a stage, each driven both ways from one snapshot, in its own process. On builder2 (n 1) it reached
+the latch for artillery 40 / 144 (live and owned) and IFV 32, and never for the scout (fixed gun). The twin set +
+nav_gate* + wheeled_arrival: `exited 0`, 63 / 0, 0 mismatches. In brains' battery candidate `e8530098`. Switches (a)
+and (c) are GDScript only (no twin missed).
+**Next pair queued: brains' scout_fights_back (`lab/brains-scout` `57d8342c`)**, after brains' battery series. It needs
+`since_hit` in the C++ situation's self fields and the new first SPOT branch (0.15) in decide_native.
+**1. The suite at --fixed-fps: BUILT, judging.** `e80ad0a8`: run_tests.gd gets `--fixed-fps $(SIM_HZ)` (`TEST_FPS`;
+`TEST_FPS=` is the old free suite). builder2 (n 2 each, at load ~70, so the free arm is distorted): pinned 968 / 880 s
+wall v free 1318 / 947 s; pinned 2768 / 3 twice, free 2771 / 0 twice. The 3 pinned fails each read the wrong clock, and
+each was fixed test-only under a grant (`06d4998d`, `8aa67196`):
+- `test_fx_kill_cam` asserted the runner never pins. Now the reader agrees with the runner's own flag.
+- `test_control_dials` waited 40 frames. Now it waits until the camera settles on physics frames (game time).
+- `test_ship_voice_fetch`'s fake fetch delay was game time against a wall-clock lateness. Now it is wall time.
+All three pass pinned and free (builder0 light). The judged moves list is the builder0 set (fixed ×2, free ×2 at
+`8aa67196`, load sampled); the comparison script splits each log into per-test blocks.
+**2. A remote `make test` with no library REFUSES: DONE, `f3fe436d` + `6b66f161`.** It refuses (exit 3) when NATIVE is
+not off, a toolchain is present and `native/bin` is missing, for the whole suite or a FILTER naming "native". Other
+filters run as before. Laptop: FILTER '' and 'native_yield' refuse, 'nav_gate' runs, NATIVE=off runs.
+test_filter_gate / test_test_shards skip `_native-ready` (granted): 17 / 0 and 5 / 0 with no library.
+**3. Load-flaky targets read NOT JUDGED: DONE, `0a11a815` + `f5683f5f`.** web-smoke's first-sound bound,
+test_slot_light's quiet-window case and test_quiet_window's live cases are NOT JUDGED only when they are the sole miss
+and the 1-minute load is >= 1.5 per CPU. On a quiet box they FAIL as before. Check reads it from
+`build/check/notjudged/{web-smoke,remote-guard-test}`. Stub-proven both ways on the laptop; shell-tools-test passes.
+**4. test_native_gate split: DONE, `79b8a5b7`.** By case, not by frame: each stage already runs in its own process, so two
+files of two stages halve a shard's share without replaying the fight. The harness is `tests/native/gate_twin_case.gd`;
+the files are `test_native_gate` (Sumps) and `test_native_gate_foundry`. builder2: 4 / 0, 0 mismatches, counts as before,
+219 s + 244 s (was 393 s). Merge note: arrivedgate's `gates_arrived` line moves into the harness.
+**5. NATIVE=off perf-judge on main `729c2306`:** builder2 `exited 0`, JUDGED PASS 1.03x on attempt 1 (load 33 on 32 CPUs,
+75 % idle), n 1. builder0 follows when the moves set frees its slot.
+**6 (optional, granted). The broker's npm install takes a lock: DONE, `e0759118`.** In a fresh folder, three installs
+started at once installed exactly once (two read "installed by a concurrent run"), and the broker tests passed 31 / 0.
+**Overnight results, afternoon 2026-10-18 (stream/native `5caf639d` holds items 1-4 and 6):**
+- **Bar (1), full check on both machines at `5caf639d`:**
+  - builder0 `make check exited 0`: 26 targets passed, ALL JUDGED; tests 2771 / 0 at fps 30 (test wall 1271 s, 5 shards);
+    sim-baseline 13 unmoved; perf-judge PASS 1.49x.
+  - builder2 `make check exited 2`: tests 2771 / 0 (test wall 518 s, 16 shards); sim-baseline 13 unmoved; perf-judge
+    PASS 1.36x. The one FAIL is net-smoke (a client saw 1 / 2 tanks, at load 46 with 79 other godot), so combat-smoke
+    was NOT RUN. Re-run alone on builder2 at the same commit: `make net-smoke combat-smoke exited 0`, both clients 2 / 2.
+    Load, not this change: net-smoke runs Godot directly, through no recipe this work touched.
+- **Bar (2), the moves list** (the judged set: builder0, `8aa67196`, `native test` ×2 pinned, ×2 free, every run 2771 / 0;
+  builder0's 1-min load sampled 149 times, median 12.4 on 12 CPUs):
+  - Verdict differences pinned v free: 0, once the three tests below read the right clock.
+  - Stable movers: 4. test_audio_music_director's `cost=` (a wall-clock ms measure, 0.05 v 0.06). test_control_awareness
+    and test_control_cinematic: camera and marker geometry paced by frames. All pass both ways.
+  - Run-to-run noise is not reduced by pinning: builder0 157 tests pinned v 129 free; builder2 68 v 114. It is almost
+    all printed timings and live-match outcomes, and it moves no verdict.
+- **Bar (3), the three pinned fails, fixed test-only under grants:** test_fx_kill_cam, test_control_dials and
+  test_ship_voice_fetch (above).
+- **Bar (4), throughput, pinned v free:**
+  - builder2: test wall 968 / 880 s v 1318 / 947 s (load ~70).
+  - builder0: 2975 / 1867 s v 2924 / 2548 s (shards vary 4-5 with load).
+  - Pinned is the same or faster on both. In builder2's check the pinned suite took 518 s.
+- **Item 5, NATIVE=off perf-judge on main:**
+  - builder2, main `729c2306`: JUDGED PASS 1.03x (load 33 on 32 CPUs).
+  - builder0, main `4dd04cbe`: JUDGED PASS 1.01x (load 9.2 on 12 CPUs). n 1 each.
+- **Pairs:**
+  - Brains' scout decide mirror is GREEN, `pair/native-scout` `0565d1a8`: 7536 decisions, 0 mismatches; the fight-back
+    branch reached in 108 of 480 forced cases (floor 54). test_native_decide runs in its own process.
+  - The arrivedgate mirror is DROPPED (R33.27: (b) had no measured effect). `pair/native-arrivedgate` `6805367b` stays
+    unmerged, so the gate split's merge note about it no longer applies.
+  - The ghost-aware stages are WITHDRAWN (R33.30: T4 parked). `fix/native-ghost-stages` `4b6433b4` and
+    `pair/native-ghost-on` `b2b97188` stay unmerged and were never judged. The design, for when T4 returns:
+    `Traffic.set_off("ghost", true)` in each gate / yield stage (`--traffic-off=ghost` means opposite things on main and
+    on T4's pair), plus a ghost-ON stage each for the latch and the Sumps.
