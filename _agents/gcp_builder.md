@@ -61,7 +61,11 @@ is built by the first `check` or `quick`, as on a fresh builder0 folder.
 3. **Rendering targets** (screenshots, windowed renders) stay on builder0 or the laptop. This box has no desktop.
 4. **Stop it when the burst ends** (`make gcp-stop`). Before stopping, make sure no stream has a run there:
    `gcp-stop` refuses while any `make` runs, and `tools/remote.sh --status` under `REMOTE_HOST` shows whose.
-5. **Turning it on is the lead's standing yes** ("we'll turn this builder on periodically whenever we want higher
+5. **While it is on, builder2 is the FIRST choice for every remote run, light or heavy** (the lead, 2026-10-18: "builder2
+   is clearly the machine to leverage"). builder0 takes a run only when builder2 is full, when the number must be
+   builder0's (a builder0 timing, or a series already running there), or for rendering. A judged series stays on one
+   machine from start to end.
+6. **Turning it on is the lead's standing yes** ("we'll turn this builder on periodically whenever we want higher
    build throughput", 2026-10-17). Start it when the queue on builder0 is deep, and say so in HANDOFF.
 
 ## First check (2026-10-17, main `d99394f1`)
