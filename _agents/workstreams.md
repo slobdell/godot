@@ -26,6 +26,17 @@ gcp-start`, the lead's standing yes). A run lost that way is no result, so re-ru
 | planner | (1) The tools: series_verdict's both-arms-seam mode; re-make or retire stage_s207. (2) P3 v2 RE-JUDGED with hull-rest pinned on fresh seeds (its clicked-drift miss may be pacing, as CP-F's was), using the same pair code that is on main OFF. (3) Only if it fails pinned: P3 v3, the slot cap. |
 | native | Test infra, granted for these items: mk/core.mk's `test` and `check` recipes, mk/web.mk's web-smoke judge, tools/test_slot_light.sh, tools/remote.sh. (1) The suite at a fixed physics rate (`--fixed-fps $(SIM_HZ)` for run_tests), with a full check on builder2 and a list of every test whose numbers move. (2) A remote `make test` with no native library refuses, or builds it. (3) web-smoke's sound bound and test_slot_light read NOT JUDGED under load instead of FAIL. (4) Split test_native_gate by frame. (5) One NATIVE=off perf reading on main. Pairs (brains' arrivedgate mirror) pre-empt all of it (C31.2). |
 
+**Bar, native overnight item 1: the suite at a fixed physics rate (filed 2026-10-18 before any number).** The change is
+in mk/core.mk's `test` recipe only: run_tests.gd under `--fixed-fps $(SIM_HZ)` (`TEST_FPS ?= $(SIM_HZ)`; `TEST_FPS=` is
+the old free-running suite), and the test-wall line names the fps. Other streams' direct run_tests.gd callers (nav, pace,
+planner, command, tactics .mk) are left alone, with a merge note. (1) `make gcp-remote T=check` (builder2) and
+`make remote T=check` (builder0), both native ON (read from the NATIVE line): exit 0, sim-baseline 13 unmoved. (2) A
+moves list: on builder2 at one commit, `native test` twice at TEST_FPS=30 and twice free. A test MOVES when its verdict
+or any number it prints differs between the fixed pair and the free pair. A difference inside a pair is noise, listed
+separately. Each mover gets a reason. (3) Any test that fails pinned is fixed, or listed with its owner, before the
+merge; nothing is loosened to pass. **Added (orchestrator):** (4) REPORT the suite's wall time and slowest shard, fixed
+v free, on both machines.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
