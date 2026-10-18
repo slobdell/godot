@@ -1,0 +1,8 @@
+>> remote: make manoeuvre-c339-cells C339_SEEDS=31-36 C339_JOBS=6 on slobdell@builder2
+   seed 31: 1 passed, 0 failed
+   seed 32: 1 passed, 0 failed
+   seed 33: 1 passed, 0 failed
+   seed 34: 1 passed, 0 failed
+   seed 35: 1 passed, 0 failed
+   seed 36: 1 passed, 0 failed
+>> remote: make manoeuvre-c339-cells C339_SEEDS=31-36 C339_JOBS=6 exited 0 (build/ copied back)

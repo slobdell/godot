@@ -72,6 +72,31 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### C33.9 JUDGED: PARKS (2026-10-18; data in `references/round33/manoeuvre/c339-judged/`)
+
+**Candidate:** ea043755's turn-in, judged tree **781801da0** (branch `lab/c339-turnin`) = ea043755's game code + measurement only
+(the stage's `damage_dealt`, the table's in-reach exchange). Chosen over 835da0875 (out-of-reach evasion): its only gain was
+out-of-reach hits 53 -> 47 (OFF 42) and it cost in-reach (a) 25.7 -> 21.9 % on dev (law v gang 30 m 20.8 -> 14.9; gang v gang
+15 m 37.9 -> 31.7). **Judged:** FRESH seeds 31-36, both arms, builder2 start to end, `--fixed-fps 30` a seed process, n 6 a
+cell (288 rows), every seed exited 0. **Machine equivalence:** dev 11-23 OFF rows, builder2 v builder0 (both pinned): 312 of
+312 identical (unpinned, builder0 paced v laptop: 0 of 19).
+
+| line (the bar as ruled, workstreams.md main) | OFF | ON | verdict |
+|---|---|---|---|
+| (a) in-arc %, in-reach cells (gang 15 m; law 15, 30 m) | 3.7 | **23.9** | **FAIL** (>= 25) |
+| (b) shots, every player cell | 2 | 10 | PASS |
+| (c) exchange in reach, damage dealt / taken | 0.20 | 1.77 (no cell worse; hits 111 -> 104 reported) | PASS |
+| (c-out) out-of-reach pooled hits / worst cell | 42 | 57 / +37 % gang v syn 45 m | **FAIL** |
+| (d) commanded reverse / commanded gear changes, face | | 0 / 0 (72 runs) | PASS |
+| (d2) reverse at stop | max 30 | 0 | PASS |
+| (e) furthest from post | | 25.8 m | PASS |
+| (g) free cells | | identical | PASS |
+
+**Reading:** the shuffle is gone (no reverse chosen under a face or a HOLD, in any run), the scout stays by its post and fights:
+4-5x the shots and 9x the damage exchange in reach. It misses on two lines: aim time in reach (23.9 v 25) and hits taken
+out of its gun's reach (it faces a target it cannot hit). Out of reach is brains' question (stand or hang back), on the lead's
+morning list. Not shipped: the bar is the gate.
+
 ### Overnight status (2026-10-18 ~02:00 PDT; for the lead's morning read)
 
 **What you'll notice when these ship:** a lone scout (law or gang) circled by a faster enemy stops driving forward-and-back.
@@ -80,7 +105,7 @@ between looks. A War Rig, gang tank or IFV told to face a direction ends with it
 
 | Item | State |
 |---|---|
-| **C33.9 the scout** | Built on a scratch tree (main + 0ef2443b..., last commit **d7cf8cbf**), dev cells on builder2 under `--fixed-fps` running. Dev seeds 11-23 at 9456b4f3 (builder2, n 13 a cell): (e) PASS 23.6 m, (b) PASS, (g) PASS, (d) 0 commanded reverse in 156 runs; (a) 23.0 % (bar 25), (c) worst cell +53 % (gang_scout v syn_scout 45 m: it cannot shoot that far). d7cf8cbf adds the HOLD-shuffle hook (d2). Judged run 31-36 on builder2 when dev is clean. |
+| **C33.9 the scout** | **JUDGED: PARKS** ((a) 23.9 v 25; out-of-reach hits 42 -> 57), section above. Was: built on a scratch tree (main + 0ef2443b..., last commit **d7cf8cbf**), dev cells on builder2 under `--fixed-fps` running. Dev seeds 11-23 at 9456b4f3 (builder2, n 13 a cell): (e) PASS 23.6 m, (b) PASS, (g) PASS, (d) 0 commanded reverse in 156 runs; (a) 23.0 % (bar 25), (c) worst cell +53 % (gang_scout v syn_scout 45 m: it cannot shoot that far). d7cf8cbf adds the HOLD-shuffle hook (d2). Judged run 31-36 on builder2 when dev is clean. |
 | **CP-F attempt 3** | R33.23: pair **pair/cpf3-on 60d2d86a** (+ the 3 m pulled-off give-up becb15d8, + the hull-rest pin 670f4e12). Full check and the tuning sanity (40-45) running on builder2; then the series 460-475 on builder2. |
 | Hull-rest judge fixes | Queued after CP-F's series. |
 

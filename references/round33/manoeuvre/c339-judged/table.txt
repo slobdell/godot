@@ -1,0 +1,43 @@
+rows 288, seeds [31, 32, 33, 34, 35, 36]
+subject    enemy       r post    n | in-arc off/on | shots     | hits      | revface  flipsf    far
+gang_scout gang_ifv   15 free    6 |  18.6  18.6 |    4    4 |   99   99 |       -       -      -
+gang_scout gang_ifv   15 player  6 |   7.9  32.3 |    2    8 |  123   60 |       0       0   19.0
+gang_scout gang_ifv   30 free    6 |  32.7  32.7 |    0    0 |   14   14 |       -       -      -
+gang_scout gang_ifv   30 player  6 |   2.2  25.7 |    0    4 |   82   70 |       0       0   19.7
+gang_scout gang_ifv   45 free    6 |  68.9  68.9 |    0    0 |    0    0 |       -       -      -
+gang_scout gang_ifv   45 player  6 |   5.8  28.4 |    0    2 |    2   19 |       0       0   19.7
+gang_scout syn_scout  15 free    6 |   5.2   5.2 |    2    2 |  106  106 |       -       -      -
+gang_scout syn_scout  15 player  6 |   3.2  22.6 |    3    5 |  110   92 |       0       0   18.9
+gang_scout syn_scout  30 free    6 |  11.7  11.7 |    0    0 |   48   48 |       -       -      -
+gang_scout syn_scout  30 player  6 |   1.6  83.0 |    0    8 |   72   90 |       0       0   20.0
+gang_scout syn_scout  45 free    6 |  38.2  38.2 |    0    0 |   16   16 |       -       -      -
+gang_scout syn_scout  45 player  6 |   2.7  20.7 |    0    1 |   40   56 |       0       0   19.6
+law_scout  gang_ifv   15 free    6 |   3.8   3.8 |   20   20 |  120  120 |       -       -      -
+law_scout  gang_ifv   15 player  6 |   7.5  22.0 |   42  200 |  144  116 |       0       0   20.0
+law_scout  gang_ifv   30 free    6 |   9.5   9.5 |  120  120 |   28   28 |       -       -      -
+law_scout  gang_ifv   30 player  6 |   2.2  22.7 |    9   76 |  102   76 |       0       0   20.9
+law_scout  gang_ifv   45 free    6 |  61.0  61.0 |    0    0 |    0    0 |       -       -      -
+law_scout  gang_ifv   45 player  6 |   3.2  24.7 |    0   49 |    8   25 |       0       0   25.8
+law_scout  syn_scout  15 free    6 |   4.3   4.3 |   16   16 |  123  123 |       -       -      -
+law_scout  syn_scout  15 player  6 |   3.8  18.0 |   17   52 |  116  120 |       0       0   18.8
+law_scout  syn_scout  30 free    6 |   5.0   5.0 |   20   20 |   64   64 |       -       -      -
+law_scout  syn_scout  30 player  6 |   2.6  72.1 |   10  262 |   90  107 |       0       0   20.2
+law_scout  syn_scout  45 free    6 |   8.2   8.2 |    0    0 |   33   33 |       -       -      -
+law_scout  syn_scout  45 player  6 |   2.4  16.3 |    0   28 |   58   60 |       0       0   21.6
+
+PLAYER-POST CELLS (in reach: ['gang_scout/gang_ifv/15', 'gang_scout/syn_scout/15', 'law_scout/gang_ifv/15', 'law_scout/gang_ifv/30', 'law_scout/syn_scout/15', 'law_scout/syn_scout/30'])
+(a) in-arc % on in-reach cells: off 3.7 on 23.9 -> FAIL
+(b) shots, every player cell: off 2 on 10 -> PASS
+(c) exchange on in-reach cells (damage dealt / taken): off 0.20 on 1.77; worst cell +0 % ('law_scout', 'syn_scout', 30, True) -> PASS
+    reported: in-reach hits taken off 111 on 104; worst cell +18 % ('law_scout', 'syn_scout', 30, True)
+(c-out) out-of-reach cells: pooled hits off 42 on 57; worst cell with off >= 10: +37 % ('gang_scout', 'syn_scout', 45, True) -> FAIL
+    reported: out-of-reach in-arc off 2.6 on 23.5
+    reported (off < 10): ('gang_scout', 'gang_ifv', 45, True) 2 -> 19 (+660 %)
+    reported (off < 10): ('law_scout', 'gang_ifv', 45, True) 8 -> 25 (+212 %)
+    damage (reported, not judged): off 230 on 208; mean distance off 26.8 on 20.6 m
+(d) while a face holds: reverse ticks under a reverse command max 0, commanded gear changes max 0 -> PASS
+(d2) while the order is stop: reverse ticks max 0 -> PASS; OFF max 30 (median 6); stop swings turned in, ON median 3
+    reported: total reverse ticks max 0 (runs with any 0 of 72), plant gear changes max 0; bounces touched {}
+(e) furthest from post 25.8 m -> PASS
+    while a face holds (the turn-in's): 25.8 m
+FREE CELLS (g): in-arc off 11.7 on 11.7, shots off 2 on 2, hits off 41 on 41 -> PASS
