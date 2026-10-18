@@ -236,6 +236,13 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (OFF hits ≥ 10), both read on IN-REACH cells (the orbit radius within the scout's effective range). OUT-OF-REACH cells:
   pooled hits ON ≤ OFF, and no cell worse by more than 20 % (OFF hits ≥ 10), with in-arc reported. The 25 % line stands
   and is not lowered. A scout outgunned at range LEAVING is brains' item 2 (the SPOT question), not steering. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
+  **(c) in reach re-read (orchestrator, 2026-10-18; dev 11–23 only, judged 31–36 unseen):** dev at `835da0875` shows
+  the in-reach (c) miss is a DUEL the scout now takes: law_scout v syn_scout 30 m, scout shots 8 → 260 and hits taken
+  78 → 103. Hits taken alone penalises exactly what he asked for ("get a shot off"). So in reach, (c) is judged as the
+  EXCHANGE: pooled damage dealt ÷ damage taken ON ≥ OFF, and no cell's exchange worse by more than 20 % (cells with OFF
+  hits ≥ 10). Hits taken are reported. (a)'s 25 % stands. Out of reach, the lines are unchanged. Manoeuvre picks ONE
+  candidate (ea043755 or 835da0875, or one more dev iteration on 11–23) before 31–36, and the verdict says why. Whether
+  a scout that can't get away should stand and trade at all is put to the lead in player terms (HANDOFF).
   moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
   ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
   reported in the verdict.

@@ -40,6 +40,12 @@ ahead of main), `pair/native-arrivedgate` (native's arrivedgate mirror for it, t
 godot-native is back on `stream/native` (fast-forwarded to native/fixed-fps-suite `0cdeff77`). builder2 was idle and
 RUNNING, with no orphans on either builder.
 
+**❓ For the lead (morning, from C33.9, his scout report):** when your scout is being circled by an enemy scout it
+can't outrun, should it **stand and trade shots** or **hang back and dodge**? Tonight's fix makes it turn and fight.
+In that case (a law scout against a Syndicate scout circling at 30 m) it fires about 30× more (8 → 260 shots) and takes
+about 30 % more hits (78 → 103), against hardly firing and slowly losing today. **Recommendation: stand and trade**, as
+you described. The judged rule now compares damage dealt against damage taken, not hits taken alone.
+
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
