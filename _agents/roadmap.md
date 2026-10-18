@@ -1317,3 +1317,6 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 - **Two planner tools need repair (planner, round 33 close):** series_verdict needs a both-arms-seam mode (its round-31
   guard refused, so P2 and P3 were read by hand), and stage_s207's rolling control no longer reproduces the round-32 pin
   (re-make it or retire it).
+- **A remote `make test` with no native library should refuse, not pass (orchestrator, test infra):** today it runs
+  every twin as "native: absent" and exits 0 (R33 trap, `remote_builds.md`). On builder0/builder2 a missing library
+  should read NOT JUDGED for the twin files, or `test` should build it first, as `check` does.

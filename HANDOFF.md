@@ -68,7 +68,9 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   C++, default ON. Gates: 6434969e's check had 0 mismatches and sim-baseline unmoved; its one red was a coverage floor,
   lowered 60 → 20 (it depends on test order); NATIVE=off 2739/0 with perf 1.07x; native-proof EQUAL; then on 1053045e
   `make test` 2741/0 and perf-judge JUDGED PASS 1.16x (builder0). What he'd notice: nothing. **Rides the next main
-  check** (planned on builder2).
+  check** (planned on builder2). **Correction (native, 2026-10-18):** 1053045e's `make test` 2741/0 ran with NO native
+  library (every twin "native: absent"), so it proved nothing about the floors. N5.Y's native evidence is 6434969e's
+  check (native ON, 0 mismatches) plus every builder2 main check since, all native ON.
 
 - **Planner close → main `5b574075`** (stream/planner `01d53411`, code = `1de6a692`): the parked P3 face keep lands OFF
   (keep 0) with its counters and judge targets. builder2: 2745/0, sim-baseline unmoved. builder0 alone: web-smoke 0, and
