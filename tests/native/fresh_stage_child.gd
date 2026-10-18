@@ -26,10 +26,10 @@ func _run() -> void:
 	var failures: PackedStringArray = []
 	var script: GDScript = load(_flag("case"))
 	var stage := _flag("stage")
-	if script == null or not script.has_method(stage):
+	var case: TestCase = script.new() if script != null else null
+	if case == null or not case.has_method(stage):
 		failures.append("no stage %s in %s" % [stage, _flag("case")])
 	else:
-		var case: TestCase = script.new()
 		case.tree = self
 		errors.take()
 		await case.call(stage)
