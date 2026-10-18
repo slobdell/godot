@@ -926,10 +926,17 @@ called back: 31 / 0, 15 / 0, 230 / 0, 248 / 0. Reached:
 - a parked refusal, a refused ask;
 - a setup refusal: 5, from a forced variant where every other hull is set up on a fire post.
 182 s (1181 s twinning every frame).
-**Not reached, reachable:**
-- **The swap** needs four things on one tick: I am the one to give way, none of my spots fits me, my
-  `_yield_unfit_last` holds, and the friend has room. Both stages' hulls either found a spot or held in place first.
-- **A shortened spot** (R2) needs a spot whose run is clear for at least YIELD_SHORT_MIN_M (2 m) + 1 m and then not.
-  Unfit spots in the Sumps failed in their first metres.
-Both are the GDScript's lines one for one: `yield_swaps` / `yield_spots_shortened` are statics, so the drive twins
-compare them wherever a fight reaches them.
+**The shortened spot: REACHED, forced** (`0e3a192c`, test-only). A sweep of the GDScript `_begin_yield` over the
+Sumps at `6434969e` found the poses that give way shortened (of 7688 each): War Rig 370, IFV 415, lancer 403, tank 183.
+`test_the_asked_hull_gives_way_shortened(_owned)` asks the War Rig at three poses and the IFV at two: each hull is under
+way, and a tank 6 m off its nose is stalled on a direct order past it, with further to go, so it asks rather than gives
+way. 5 + 5 drives, 0 mismatches, `yield_spots_shortened` 5 each, 0 called back.
+**The swap: UNREACHABLE on the native path.** The native drive runs only with `Movement._off` empty, so `yield_fit_on()`
+and the hold (`not switched_off("yieldhold")`) are both on. `_begin_yield` returns false by one of two exits:
+- its last line, reached only past the hold branch, whose condition is `_yield_unfit_last and yield_fit_on() and not
+  switched_off("yieldhold")`. So there `_yield_unfit_last` is false.
+- the `along == ZERO` early return, before `_yield_unfit_last` is reset. That needs a zero `its_way` and the asker
+  exactly at the friend's x / z: physics never leaves two hulls coincident.
+The swap (`i_give_way and yield_fit_on() and _yield_unfit_last and ask(...)`) follows a false `_begin_yield`, so it needs
+`_yield_unfit_last` true. It is reachable only under `--nav-off=yieldhold`, where the GDScript drives. The C++ keeps the
+swap lines one for one so the mirror stays a pair (ruled by the orchestrator, round 33).
