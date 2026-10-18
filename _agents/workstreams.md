@@ -122,6 +122,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   kills and deaths no worse than OFF within noise; the full check green, sim-baseline unmoved while opt-in. The default
   flips later, with its own A/B. **The SPOT-v-ENGAGE question goes to brains** (a scout under fire within its gun's reach
   probably should ENGAGE), recorded and not built this round unless brains has room after R4.
+  **First matrix NOT a verdict (manoeuvre, laptop, scratch `777d2979`, seeds 14–16, 144 cells):** the stage's seed changed
+  only the hit dice (orbit direction, start and heading fixed), so 3 seeds were about 1 sample. The candidate had a stall
+  bug: on target, "under 5° in 1 s" read as stuck and handed back to the creep, which reversed. Player-post cells: (a) time
+  on target 4.3 → 55.1 %, (b) shots 2 → 19, (c) hits 91 → 86 median but worst cell +167 % (6 → 16 hits), (d) 27 flips, and
+  (e) 36 m from the post. Free cells: ON ≡ OFF (turn-in never runs; that scout reverses on SPOT moves). **Amended
+  (orchestrator, 2026-10-17):** the seed now also sets orbit direction, start phase and scout heading, and "on target" counts
+  as progress in the stall check. Because seeds 11–16 have now been seen, **the judged run is on FRESH seeds 31–36**
+  (builder0 light, one tree, named). Seed 21 is development only. (d) counts reverse ticks while a FACE ORDER holds, and
+  (d) and (e) are judged on the player-post cells. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
+  moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
+  ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
+  reported in the verdict.
 
 **Rulings (round 33, the orchestrator's, as they arise):**
 
