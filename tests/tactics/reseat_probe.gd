@@ -42,6 +42,8 @@ func _run() -> void:
 	report["gates_latched_away"] = Movement.gates_latched_away
 	report["gates_near"] = Movement.gates_near
 	report["gates_side"] = Movement.gates_side  # round 32 (B5c-v6)
+	report["gates_inside"] = Movement.gates_inside  # round 33 (R4, R33.8): gates latched inside the turning circle
+	report["circle_reverses"] = Movement.circle_reverses  # round 33 (R4): R33.8's case reads it (process-wide, one run a process)
 	report.merge(Element.drift_census())  # round 32 (B10): the seats that drifted on their anchor
 	print("RESEAT_PROBE " + JSON.stringify(report))
 	case.teardown()

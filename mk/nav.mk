@@ -336,6 +336,13 @@ GATE_JOBS ?= 6
 GATE_CELLS ?= yard sumps terminus
 ## Extra probe flags on every run (e.g. --gate-trace); each run's whole output stays in build/gate-runs/<run>.log.
 GATE_EXTRA ?=
+## Round 33 (R4): the drive both arms run (default the GDScript drive; GATE_DRIVE= for the default native path), the off
+## arm's switches (default round 30's control; R4's is --nav-off=gateside,gateinside), and a `yardhead` cell: yard_open
+## head-on at GATE_YARDHEAD_SEEDS x GATE_YARDHEAD_TICK (R33.8's s42 t3).
+GATE_DRIVE ?= --brains-off=native
+GATE_OFF ?= --nav-off=gategiveup
+GATE_YARDHEAD_SEEDS ?= 42
+GATE_YARDHEAD_TICK ?= 3
 .PHONY: gate-series
 gate-series: import ## Round 30 (B5c-v4): yard crossing / Sumps cell / Terminus head-on, gate rule on v off (GDScript drive), paired -> build/gate-series.jsonl + table
 	@rm -rf $(BUILD_DIR)/gate-runs; mkdir -p $(BUILD_DIR)/gate-runs
@@ -343,15 +350,16 @@ gate-series: import ## Round 30 (B5c-v4): yard crossing / Sumps cell / Terminus 
 	@for cell in $(GATE_CELLS); do for arm in $(GATE_ARMS); do \
 		case $$cell in yard) for s in $(GATE_YARD_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; \
 		terminus) for s in $(GATE_TERMINUS_SEEDS); do echo "$$cell $$arm $$s 11"; done;; \
+		yardhead) for s in $(GATE_YARDHEAD_SEEDS); do echo "$$cell $$arm $$s $(GATE_YARDHEAD_TICK)"; done;; \
 		sumps) for s in $(GATE_SUMPS_SEEDS); do for t in $(GATE_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; esac; \
 	done; done | xargs -P $(GATE_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; \
-		flags="--brains-off=native $(GATE_EXTRA)"; [ "$$arm" = off ] && flags="$$flags --nav-off=gategiveup"; \
+		flags="$(GATE_DRIVE) $(GATE_EXTRA)"; [ "$$arm" = off ] && flags="$$flags $(GATE_OFF)"; \
 		out=$(BUILD_DIR)/gate-runs/$$cell-$$arm-$$seed-$$tick.json; log=$${out%.json}.log; \
 		case $$cell in \
 		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
 			--dir=forward --metres=150 --seed=$$seed --units=law_scout:law_ifv:law_tank:law_tank --seconds=120 --drills=on \
 			--lab-start-tick=$$tick $$flags > $$log 2>&1; grep -o "SETTLE_PROBE {.*" $$log | sed "s/^SETTLE_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; \
-		*) arena=yard_open; kind=cross; [ $$cell = terminus ] && arena=terminus && kind=head; \
+		*) arena=yard_open; kind=cross; [ $$cell = terminus ] && arena=terminus && kind=head; [ $$cell = yardhead ] && kind=head; \
 			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/reseat_probe.gd -- --arena=$$arena \
 			--kind=$$kind --which=both --seed=$$seed --seconds=90 --lab-start-tick=$$tick $$flags > $$log 2>&1; \
 			grep -o "RESEAT_PROBE {.*" $$log | sed "s/^RESEAT_PROBE {/{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"start_tick\":$$tick,/" > $$out;; esac; \
