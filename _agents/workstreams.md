@@ -175,6 +175,21 @@ measure native equality on those paths), and a ghost-ON twin stage is added with
 counts, plus compared ≥ 100. Native's commit is carried onto the pair, line 7 re-runs, and relay-smoke and
 remote-guard-test re-run alone if they're the only reds. (c) G and R may run now, and T runs only after 7 is green.
 
+**Bar, traffic overnight item 1: parkedroom v2 (filed 2026-10-18 before any number on its fights; traffic `d8ad761b0`,
+references/round33/traffic/ov_parkedroom_v2_bar.md).** Gate: the room rule applies only to a crew AT a post (not under
+way, still ≥ 2.0 s). Return: v2 drives the crew back to its post once the asker is past, unless the brain sent it
+somewhere new (a move_to more than 3 m from the post); a re-sent order keeps the post owed. Tree stream/traffic-overnight
+`20b1cc113`: main + traffic's game diff only (movement.gd, traffic.gd; checked by the orchestrator), DEFAULT_OFF; arm
+`--traffic-on=parkedroom`. Native, builder2 for both arms, --fixed-fps 30, k 1.645. FRESH fights 724–771 × {terminus,
+locks, random}, n 144 paired, 180 s. Pre-series: test_traffic_neck, C31.1 on pair `5259fb463`, and one s403 episode
+traced ON. **Deciding:** L1a far loops behind a parked blocker on a HOLD post ≤ 50 % of base; L1b all parked far loops
+≤ base + k·se; L2 all far loops ≤ base + k·se; L3 random's 48 fights, kills, deaths and hit rate within base ± k·se; L4
+four crossing cases, fresh 44–46 × six ticks, n 18 a case, crews in ≥ base − k·se; L5 repack while firing = 0; L6 room
+give-ways whose crew is alive 30 s later with an UNCHANGED order: ≥ 90 % within 3 m of the post (a change from v1's L6,
+since v2 lets a new order win by design; the all-alive line and the new-order count are reported). **Added
+(orchestrator):** L6 needs ≥ 50 unchanged-order give-ways, or it reads INCONCLUSIVE and can't pass. Dev reads put L6 at
+78 %: a real risk, flagged before numbers.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
