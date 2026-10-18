@@ -923,3 +923,19 @@ rejoin-fights: import ## Overnight item 4 (brains): respawn element fights (matc
 			--green-elements --rust-elements --rejoin-trace $(REJOIN_FLAGS) > $(BUILD_DIR)/rejoin-fights/$$1-$$2.log 2>&1 || true; \
 		echo "  ran $$1 s$$2"'
 	@grep -l MATCH_RESULT $(BUILD_DIR)/rejoin-fights/*.log | wc -l | xargs echo "rejoin-fights: MATCH_RESULT rows"
+
+# Overnight item 3 (brains): the War Rig 4-of-5 case headless and PINNED (manoeuvre's face-clip setup without the movie:
+# foundry, gangs v a quiet law, his right-drag with the facing drawn 180 deg off, squad 1 only) with --element-trace on
+# the faced squad's element. WARRIG_SEED (8), WARRIG_FLAGS (an arm), WARRIG_TRACE (element-name substring) ->
+# build/warrig/<seed>.log, ELEMENT_TRACE + MANOEUVRE_STATE lines.
+WARRIG_SEED ?= 8
+WARRIG_TRACE ?= Guns
+.PHONY: warrig-trace
+warrig-trace: import ## Overnight item 3 (brains): the War Rig 4-of-5 case, headless, pinned, element-traced (WARRIG_SEED WARRIG_FLAGS WARRIG_TRACE) -> build/warrig/
+	@d=$(BUILD_DIR)/warrig; mkdir -p $$d; \
+	timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --skirmish --seed=$(WARRIG_SEED) --no-pick-faction --mute \
+		--arena=$(FACING_ARENA) --player-faction=gangs --enemy-faction=law --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+		--no-element-cpu --brains-off=native --turn-states --screen-test=$(CURDIR)/$$d/screens-$(WARRIG_SEED) --screen-only=faced_right \
+		--faced-off-deg=180 --faced-squads=1 --element-trace=$(WARRIG_TRACE) $(WARRIG_FLAGS) > $$d/$(WARRIG_SEED).log 2>&1; \
+	grep -q SCREEN_DONE $$d/$(WARRIG_SEED).log || echo "warrig-trace: no SCREEN_DONE"; \
+	echo ">> warrig-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null) | seed $(WARRIG_SEED) | flags '$(WARRIG_FLAGS)' | ELEMENT_TRACE $$(grep -c ELEMENT_TRACE $$d/$(WARRIG_SEED).log) lines"

@@ -38,6 +38,16 @@ static var ARRIVE_LATCH := true
 
 static func _arrived_at(to_go: float, state: Dictionary) -> bool:
 	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M)
+## Overnight item 3 (brains): a move's destination is inset from the arena edge by its shape (inset_anchor);
+## `--anchor-inset=off` is main's rule.
+static var ANCHOR_INSET := not OS.get_cmdline_user_args().has("--anchor-inset=off")
+## ...capped at one swarm pitch (filed: the largest inset ON <= 15 m), so the element stops near his click; what still falls
+## outside folds onto the edge (clamp_to_arena, then SlotGround), and such an element arrives at its LAID seats' centroid.
+const INSET_CAP_M := 15.0
+## ...and only on the final approach: within this of the destination. Further out the move is today's, so a drill that
+## fires on the way (the far ambush's base of fire: 11.4 -> 12.7 m off its line with the inset applied from the start,
+## laptop, tactics-drills) sees the same route.
+const INSET_NEAR_M := 60.0
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
@@ -275,7 +285,23 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		plan["arrived"] = true
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
-	var to_go := center.distance_to(destination)
+	# Overnight item 3: a move's spot inland enough that its whole shape stands inside the arena (inset_anchor).
+	if verb == "move" and destination is Vector3 and center.distance_to(destination) <= INSET_NEAR_M:
+		var asked: Vector3 = destination
+		destination = inset_anchor(members_of(situation), String(plan["formation"]), destination,
+				table.spacing(String(situation["terrain"])))
+		plan["inset_m"] = asked.distance_to(destination)
+		# Cap + fold: an element whose shape still reaches past the edge arrives at its laid seats' centroid.
+		if ANCHOR_INSET:
+			var told_facing: Variant = ElementTask.facing(task)
+			var facing: Vector3 = told_facing if told_facing is Vector3 \
+					else TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
+					else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+			var laid := laid_centroid(members_of(situation), String(plan["formation"]), destination, facing,
+					table.spacing(String(situation["terrain"])))
+			if bool(laid["clipped"]):
+				plan["arrive_point"] = laid["centroid"]
+	var to_go := center.distance_to(plan.get("arrive_point", destination))
 	if not ElementTask.runs_drills(task):
 		_plan_form_up(plan, situation, state, table, destination)
 		return
@@ -703,7 +729,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# not a shape filing through a gap, so the corridor does not deform them. The transit is `_flow`'s business, and
 	# deforming that is recorded as the follow-on rather than guessed at here.
 	plan["corridor_m"] = INF
-	plan["arrived"] = _arrived_at(center.distance_to(destination), state)
+	plan["arrived"] = _arrived_at(center.distance_to(plan.get("arrive_point", destination)), state)
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	if in_transit:
 		plan["why"] = "moving as ordered: travelling in %s" % String(plan["formation"]).replace("_", " ")
@@ -2475,6 +2501,46 @@ static func clamp_to_arena(point: Vector3) -> Vector3:
 	var clamped := Orders.clamp_to_arena(point)
 	return Vector3(clamped.x, 0.0, clamped.z)
 
+
+## Overnight item 3 (brains, the War Rig 4-of-5 case): `destination` moved inland until a disc of the shape's reach
+## (the farthest seat of `members` laid in `formation` there, TacticsFormation.place's open-field shape) is inside the
+## arena: every seat stands inside whichever way the element ends up facing, and the answer does not move with the
+## heading from one update to the next. Per axis, the largest correction clamp_to_arena makes, each way; both at once
+## (a shape wider than the arena) cancel to the middle. Traced (builder0, foundry faced drag s8): a destination on the
+## north edge had two seats clamped onto it, the centroid sat 17-20 m off, and the element never arrived.
+## `--anchor-inset=off`: `destination` unchanged.
+static func inset_anchor(members: Array, formation: String, destination: Vector3, spacing: float) -> Vector3:
+	if not ANCHOR_INSET or members.is_empty():
+		return destination
+	var reach := 0.0
+	for entry in TacticsFormation.place(members, formation, destination, Vector3.FORWARD, spacing, {"corridor_m": INF}):
+		reach = maxf(reach, Vector2((entry["to"] as Vector3).x - destination.x, (entry["to"] as Vector3).z - destination.z).length())
+	var up := Vector2.ZERO
+	var down := Vector2.ZERO
+	for probe: Vector3 in [Vector3(reach, 0, 0), Vector3(-reach, 0, 0), Vector3(0, 0, reach), Vector3(0, 0, -reach)]:
+		var point := destination + probe
+		var fix := clamp_to_arena(point) - point
+		up = Vector2(maxf(up.x, fix.x), maxf(up.y, fix.z))
+		down = Vector2(minf(down.x, fix.x), minf(down.y, fix.z))
+	var shift := up + down
+	if shift.length() > INSET_CAP_M:
+		shift = shift.normalized() * INSET_CAP_M
+	return clamp_to_arena(destination + Vector3(shift.x, 0.0, shift.y))
+
+
+## Overnight item 3 (cap + fold): where an element laid at `anchor` facing `heading` stands once its seats are clamped
+## into the arena, the mean of the clamped seats, and whether any seat was clamped at all ({"centroid", "clipped"}).
+## Inland nothing is clamped and the centroid is the anchor (the shapes are centred), so callers keep the anchor there.
+static func laid_centroid(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float) -> Dictionary:
+	var sum := Vector3.ZERO
+	var clipped := false
+	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing, {"corridor_m": INF})
+	for entry in placed:
+		var seat: Vector3 = entry["to"]
+		var laid := clamp_to_arena(seat)
+		clipped = clipped or Vector2(laid.x - seat.x, laid.z - seat.z).length() > 0.5
+		sum += laid
+	return {"centroid": sum / maxf(placed.size(), 1.0) if not placed.is_empty() else anchor, "clipped": clipped}
 
 # ---- Preview (control's animated button help) ----------------------------------------------------------
 

@@ -166,9 +166,26 @@ func _scenario(scenario: String) -> void:
 
 
 ## O2: one armed task given by the real gesture to squads 1 and 2 together, then judged on the ground.
+## Round 33 (manoeuvre CP-F (r), granted): how far off the travel the faced drag draws its facing,
+## `--faced-off-deg=<deg>` (the face-behind clip draws 180), else FACED_OFF_TRAVEL_DEG: every other run is unchanged.
+static func faced_off_deg(flags: LaunchFlags) -> float:
+	var given := flags.text("faced-off-deg", "")
+	return float(given) if given.is_valid_float() else FACED_OFF_TRAVEL_DEG
+
+
+## Round 33 (manoeuvre CP-F (r), granted): which squads the faced drag selects, `--faced-squads=1` (the War Rig clip
+## films squad 1 alone), else squads 1 and 2: every other run is unchanged.
+static func faced_squads(flags: LaunchFlags) -> Array[int]:
+	var picked: Array[int] = []
+	for piece in flags.text("faced-squads", "").split(",", false):
+		if piece.is_valid_int():
+			picked.append(int(piece))
+	return picked if not picked.is_empty() else [1, 2] as Array[int]
+
+
 func _faced(scenario: String) -> void:
 	var members: Array[String] = []
-	for number in [1, 2]:
+	for number in faced_squads(LaunchFlags.from_environment()):
 		for unit_name: String in controls.groups.members(number):
 			if _alive(unit_name):
 				members.append(unit_name)
@@ -185,7 +202,7 @@ func _faced(scenario: String) -> void:
 	var centre := _centroid(members)
 	var travel := -right if centre.dot(right) > 0.0 else right
 	var at := ElementPlan.clamp_to_arena(centre + travel * OFF_M)
-	var facing := travel.rotated(Vector3.UP, deg_to_rad(FACED_OFF_TRAVEL_DEG)).normalized()
+	var facing := travel.rotated(Vector3.UP, deg_to_rad(faced_off_deg(LaunchFlags.from_environment()))).normalized()
 	row["nearest_enemy_at_press_m"] = snappedf(_nearest_enemy(members), 0.1)
 	row["at"] = [snappedf(at.x, 0.1), snappedf(at.z, 0.1)]
 	row["drawn"] = [snappedf(facing.x, 0.001), snappedf(facing.z, 0.001)]

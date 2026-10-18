@@ -1022,6 +1022,10 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 			return  # decided once per task: a short move never grows an anchor later
 		var center: Vector3 = transit_origin(situation, _doctrine().spacing("open"))
 		var to := Vector3((destination as Vector3).x, 0.0, (destination as Vector3).z)
+		# Overnight item 3: the route ends where the plan stands the shape (ElementPlan.inset_anchor, capped), so the
+		# hand-off from travelling to standing moves nobody at an arena edge either.
+		to = ElementPlan.inset_anchor(ElementPlan.members_of(situation), formation, to,
+				_doctrine().spacing(String(situation.get("terrain", "open"))))
 		var from := Vector3(center.x, 0.0, center.z)
 		if from.distance_to(to) < ElementPlan.TRANSIT_MIN_M:
 			_transit_declined_seq = task_seq
@@ -1569,6 +1573,53 @@ func _bt_fire_order(situation: Dictionary) -> void:
 					element_name, key])
 
 
+## Overnight item 3 (brains), MEASUREMENT ONLY: `--element-trace=<substring>` prints ELEMENT_TRACE once a second for
+## elements whose name contains it: task, anchor, heading, shape, file share and corridor, arrived, and per crew where it
+## stands, its slot (and the slot it asked for, when grounded), its slot's offset from the anchor along / across the
+## heading, and its distance to its slot. For the War Rig 4-of-5 case (foundry s8, two seats 28 m and 56-68 m out).
+static var _element_trace := ""
+static var _element_trace_read := false
+var _et_last := -1000
+
+
+func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
+	if not _element_trace_read:
+		_element_trace_read = true
+		for arg in OS.get_cmdline_user_args():
+			if arg.begins_with("--element-trace="):
+				_element_trace = arg.trim_prefix("--element-trace=")
+	var tick := int(situation.get("tick", 0))
+	if _element_trace == "" or not element_name.contains(_element_trace) or tick - _et_last < SimClock.TICK_RATE:
+		return
+	_et_last = tick
+	var anchor_v: Variant = plan.get("anchor")
+	var heading: Vector3 = plan.get("heading", Vector3.FORWARD)
+	var forward := TacticsFormation.flat(heading)
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var rows := []
+	for member: Dictionary in situation.get("members", []):
+		var n := String(member["name"])
+		var at: Vector3 = member["position"]
+		var slot: Variant = (plan.get("slots", {}) as Dictionary).get(n)
+		var text := "%s at (%.1f,%.1f)" % [n, at.x, at.z]
+		if slot is Vector3:
+			text += " slot (%.1f,%.1f) %.1f m off" % [(slot as Vector3).x, (slot as Vector3).z, Vector2(at.x - slot.x, at.z - slot.z).length()]
+			if anchor_v is Vector3:
+				var rel: Vector3 = (slot as Vector3) - (anchor_v as Vector3)
+				text += " rel along %.1f across %.1f" % [rel.dot(forward), rel.dot(right)]
+		if slots_asked.has(n):
+			text += " asked (%.1f,%.1f)" % [(slots_asked[n] as Vector3).x, (slots_asked[n] as Vector3).z]
+		var seat: Variant = (plan.get("seats", {}) as Dictionary).get(n)
+		if seat is Array:
+			text += " seat %s" % str(seat)
+		rows.append(text)
+	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
+			float(tick) / SimClock.TICK_RATE, element_name, id, String(task.get("verb", "-")), task.get("to"), anchor_v,
+			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
+			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived,
+			" | ".join(PackedStringArray(rows))])
+
+
 func _take(plan: Dictionary, situation: Dictionary) -> void:
 	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
 		_bt_fire_order(situation)
@@ -1612,6 +1663,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 				row.append("B2 route %.1f m goal %s steer %s blocked %s" % [float(st.get("remaining_m", -1.0)), st.get("goal"), st.get("steer_to"), st.get("blocked_by")])
 		print("BATTERY_TRACE t=%.0f team %d %s %s/%s anchor %s | %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, element_name,
 				String(plan["formation"]), String(plan["technique"]), plan["anchor"], " | ".join(PackedStringArray(row))])
+	_trace_element(plan, situation)
 	formation = String(plan["formation"])
 	technique = String(plan["technique"])
 	reason = String(plan["why"])
