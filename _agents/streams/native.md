@@ -190,7 +190,15 @@ one (Status, hazard 8).
   needs it.
 - One `NATIVE=off` perf-judge reading on main, filed as a known item (1.47x at `c70be402`, builder0; 1.07x at
   `6434969e` under a lighter load). Use builder2 or builder0, whichever is free.
+- Move the Sumps stage centre of `test_native_yield` off the pits, then re-verify its paths. Its slots sit on pit
+  edges, so hulls print TANK_OFF_FLOOR at spawn. That is the stage's own placement, not a game path; both arms drive
+  from one snapshot, so the twin is unaffected.
 - The pairs above, as they arrive.
+**test_native_yield floors, round 33 late:** builder2's 16-shard order put the Sumps' parked refusals at 6 (main
+4d6f321d: 2 floors red, 0 mismatches). Fix `7b82b2e9`: each path floored at 1 (reached at all) and 100 drives compared.
+`make native test FILTER=native_yield exited 0`, 6 / 0, on builder2 and builder0 light, n 1 each, with every counter
+identical across the two CPUs. **MERGED: main `de6d3266`.** The in-order proof is main's next builder2 check. If a thin
+path reads 0 there (asks_refused 2–3, holds 4–7), the next step is a fresh process per stage (brains' `f8cf6476` shape).
 **Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
 its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
 wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:
