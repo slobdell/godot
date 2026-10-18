@@ -25,7 +25,7 @@ func _edge() -> Vector3:
 	return ElementPlan.clamp_to_arena(Vector3(0, 0, 10000.0))
 
 
-func test_on_the_edge_the_destination_moves_in_until_every_seat_is_inside() -> void:
+func test_on_the_edge_the_destination_moves_in_by_at_most_one_pitch() -> void:
 	var edge := _edge()
 	var heading := Vector3(-1, 0, 0)
 	var members := _members(4)
@@ -37,10 +37,27 @@ func test_on_the_edge_the_destination_moves_in_until_every_seat_is_inside() -> v
 	assert_true(clipped > 0, "setup: laid on the edge, some seats fall outside the arena")
 	var inset := ElementPlan.inset_anchor(members, "swarm", edge, 18.0)
 	assert_true(inset.distance_to(edge) > 1.0, "the destination moved in (%s from %s)" % [inset, edge])
-	for facing: Vector3 in [heading, Vector3.FORWARD, Vector3(1, 0, 0), Vector3.BACK]:
-		for entry in TacticsFormation.place(members, "swarm", inset, facing, 18.0, {"corridor_m": INF}):
+	assert_true(inset.distance_to(edge) <= ElementPlan.INSET_CAP_M + 0.01,
+			"by at most INSET_CAP_M (%.1f m)" % inset.distance_to(edge))
+
+
+## A small shape fits inside the cap: every seat stands inside the arena whichever way it faces.
+func test_a_shape_that_fits_inside_the_cap_stands_wholly_inside() -> void:
+	var edge := _edge()
+	var members := _members(2)
+	var inset := ElementPlan.inset_anchor(members, "line", edge, 10.0)
+	for facing: Vector3 in [Vector3(-1, 0, 0), Vector3.FORWARD, Vector3(1, 0, 0), Vector3.BACK]:
+		for entry in TacticsFormation.place(members, "line", inset, facing, 10.0, {"corridor_m": INF}):
 			assert_true((entry["to"] as Vector3).distance_to(ElementPlan.clamp_to_arena(entry["to"])) < 0.5,
 					"every seat inside the arena, facing %s (%s)" % [facing, entry["to"]])
+
+
+## Inland the laid shape's centroid IS the anchor and nothing is clamped: arrival there is measured as before.
+func test_inland_the_laid_centroid_is_the_anchor() -> void:
+	var inland := ElementPlan.clamp_to_arena(Vector3.ZERO)
+	var laid := ElementPlan.laid_centroid(_members(5), "swarm", inland, Vector3(-1, 0, 0), 18.0)
+	assert_true(not bool(laid["clipped"]), "nothing clamped inland")
+	assert_true((laid["centroid"] as Vector3).distance_to(inland) < 0.01, "the centroid is the anchor (%s)" % laid["centroid"])
 
 
 func test_inland_the_destination_is_unchanged() -> void:
@@ -83,3 +100,33 @@ func test_an_element_on_its_inset_destination_is_holding() -> void:
 	var second := ElementPlan.build(situation, again, table)
 	assert_true((second["anchor"] as Vector3).distance_to(first["anchor"]) < 0.5, "the inset anchor holds")
 	assert_eq(second["formation"], first["formation"], "its shape is kept")
+
+
+
+## Cap + fold: an element sent to the edge whose shape still reaches past it arrives at its LAID seats' centroid, so a
+## centre standing there reads arrived though it is more than ARRIVE_M from the (capped) anchor.
+func test_a_folded_element_arrives_at_its_laid_seats() -> void:
+	DoctrineTable.clear_cache()
+	var table: DoctrineTable = DoctrineTable.load_table("standard")["table"]
+	var edge := _edge()
+	var members: Array = []
+	for i in 4:
+		members.append({"name": "Guns_%d" % i, "unit": "gang_tank", "role": "tank", "speed": 9.0, "range": 60.0,
+				"effective_range": 45.0, "sight": 60.0, "health": 1.0, "suppression": 0.0, "taking_fire": false,
+				"forward": Vector3.FORWARD, "position": edge + Vector3(i * 8.0 - 12.0, 0, -40.0)})
+	var situation := {"tick": 1000, "team": 0, "center": edge + Vector3(0, 0, -40), "heading": Vector3.FORWARD,
+			"leader": "Guns_0", "members": members, "contacts": [], "terrain": "open", "threat": "none",
+			"composition": "heavy", "strength": 800.0, "enemy_strength": 0.0, "taking_fire": false, "arrived": false}
+	var task := {"verb": "move", "to": [edge.x, edge.z], "facing": [-1.0, 0.0]}
+	var state := {"task": task, "drill": "", "drill_tick": 0, "drill_point": null, "drill_target": "", "drill_why": "",
+			"anchor": null, "bounding": 0, "arrived": false, "heading": Vector3.FORWARD, "seats": {}}
+	var first := ElementPlan.build(situation, state, table)
+	assert_true(first.get("arrive_point") is Vector3, "setup: capped at %s m, the shape still reaches past the edge: folded"
+			% first.get("inset_m"))
+	var point: Vector3 = first["arrive_point"]
+	var at_point := situation.duplicate(true)
+	at_point["center"] = point
+	var arrived := ElementPlan.build(at_point, state, table)
+	assert_true(bool(arrived["arrived"]), "standing on its laid seats' centroid it has arrived")
+	if (first["anchor"] as Vector3).distance_to(point) > ElementPlan.ARRIVE_M:
+		print("MEASURE fold: the laid centroid is %.1f m from the anchor" % (first["anchor"] as Vector3).distance_to(point))
