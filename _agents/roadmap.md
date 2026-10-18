@@ -1320,3 +1320,10 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 - **A remote `make test` with no native library should refuse, not pass (orchestrator, test infra):** today it runs
   every twin as "native: absent" and exits 0 (R33 trap, `remote_builds.md`). On builder0/builder2 a missing library
   should read NOT JUDGED for the twin files, or `test` should build it first, as `check` does.
+- **Judged series must run at a fixed physics rate (orchestrator, round 33 close; method):** `manoeuvre-hull-rest`
+  (mk/manoeuvre.mk:84, :98) runs Godot WITHOUT `--fixed-fps`, so its readings are paced by the wall clock and move with
+  box load. CP-F's judged series (R33.21) ran on a loaded builder0 and read about 2.3 "still moving" crews a run on
+  ambush. The same arms on the laptop's tuning seeds read about 0.3 in every arm (manoeuvre, attempt-3 trace). Planner's
+  P2/P3 hull-rest arms use the same workload. The `mk/*.mk` grep (2026-10-18) finds unpinned `$(GODOT) --headless --path`
+  calls in 22 files (most are renders, smokes and network targets, where the wall clock is the point). Audit every
+  JUDGED stage, pin it to `--fixed-fps $(SIM_HZ)`, and say in each parked verdict whether it rested on an unpinned stage.
