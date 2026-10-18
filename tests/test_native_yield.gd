@@ -36,6 +36,86 @@ func test_the_give_way_in_the_sumps_owned() -> void:
 			"spot:back": 15, "spot:hold": 3})
 
 
+## The shortened give-way (R2: no spot fits whole, so the asked hull gives way as far as it DOES fit): poses from a sweep of
+## Movement._begin_yield in the Sumps at 6434969e (builder0 light: the War Rig 370, the IFV 415 of 7688 poses
+## shortened). The asked hull is under way there; a tank 6 m off its nose, stalled with a direct order past it and further
+## to go (so it asks rather than gives way), negotiates on the twinned tick.
+const SHORT_POSES := [["gang_tank", Vector3(-60.0, 0.0, -36.0), 3], ["gang_tank", Vector3(-60.0, 0.0, -32.0), 5],
+		["gang_tank", Vector3(-60.0, 0.0, -12.0), 0], ["ifv", Vector3(-60.0, 0.0, -40.0), 6],
+		["ifv", Vector3(-60.0, 0.0, -24.0), 3]]
+
+
+func test_the_asked_hull_gives_way_shortened() -> void:
+	await _shortened(false)
+
+
+func test_the_asked_hull_gives_way_shortened_owned() -> void:
+	await _shortened(true)
+
+
+func _shortened(owned: bool) -> void:
+	if not NativeBridge.available:
+		return
+	MoverState.world_reset()
+	_man_reset()
+	_yield_reset()
+	NativeDrive.owned = owned
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "sumps")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.seed_spawns(1, 0.0)
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	for k in SHORT_POSES.size():
+		var pose: Array = SHORT_POSES[k]
+		var controllers: Array[OrderController] = []
+		var movers: Array[Movement] = []
+		for unit: String in ["tank", String(pose[0])]:
+			var tank := game_match.spawn_tank("Short%d_%s" % [k, unit], 0, Match.Team.GREEN, unit)
+			var orders := OrderController.new()
+			orders.tank = tank
+			orders.tanks_root = game_match.tanks
+			add_to_tree(orders)
+			controllers.append(orders)
+		var asked := controllers[1].tank
+		asked.place(pose[1], int(pose[2]) * PI / 4.0)
+		var nose := -asked.global_basis.z
+		var at: Vector3 = pose[1]
+		controllers[0].tank.place(at + nose * 6.0, int(pose[2]) * PI / 4.0 + PI)
+		await wait_physics_frames(1)
+		for orders in controllers:
+			orders.set_physics_process(false)
+			movers.append(Movement.of(orders.tank))
+		var past: Vector3 = at - nose * 30.0
+		var away: Vector3 = at + nose * -2.0
+		controllers[0].set_orders({"type": "move_to", "x": past.x, "z": past.z, "direct": true}, null)
+		controllers[1].set_orders({"type": "move_to", "x": away.x, "z": away.z}, null)
+		var asker := movers[0]
+		asker._progress_goal = Vector3(past.x, 0.0, past.z)
+		asker._progress_best = 0.0
+		asker.stalled_ticks = 100000
+		asker._ask_left = 0
+		movers[1].phase = "driving"
+		movers[1]._remaining = 3.0
+		for mover in movers:
+			mover.native_stale |= Movement.STALE_ALL
+		var result := _compare_tick(movers, controllers, k, 0)
+		drives += result[0]
+		mismatches += result[1]
+		if first == "" and result[2] != "":
+			first = result[2]
+		for orders in controllers:
+			orders.tank.queue_free()
+			orders.queue_free()
+		await wait_physics_frames(1)
+	NativeDrive.owned = false
+	print("native yield shortened%s: %d drives compared, %d mismatches" % [" (owned state)" if owned else "", drives, mismatches])
+	assert_eq(mismatches, 0, "the native shortened give-way is the live GDScript's: %s" % first)
+	_yield_check("shortened%s" % [" owned" if owned else ""], {"": 2, "yield_spots_shortened": 2})
+
+
 func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0) -> void:
 	if not NativeBridge.available:
 		print("native: absent, the give-way is not exercised in this run")
