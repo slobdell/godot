@@ -75,3 +75,11 @@ CLOCK (`make test` runs without `--fixed-fps`; `roadmap.md` has the candidate), 
 waits 30 real ones, however many cores are free. **So builder2's throughput comes from running SEVERAL streams' jobs at
 once, not from one check finishing much faster.** `REMOTE_SLOTS` (default 3 heavy) is the knob to raise once memory is
 measured (121 GB is room for many).
+
+**Seeding a new worktree folder (2026-10-17).** A worktree's first run on builder2 pays a cold `make import` (517
+steps), and one cold import segfaulted (planner's folder, JetBrainsMono-Blocks.ttf, n 1). Copy the warm folder's import
+cache instead: `ssh builder2 'cd ~/tank_squad && mkdir -p <wt> && cp -a godot/.godot <wt>/'` (105 MB). Godot then
+re-imports only the files that differ, checked by content hash. rsync protects `.godot/`, so the next sync keeps it.
+**Do NOT copy `native/bin` or `native/build`.** CMake's cache holds absolute paths, and a copied `.so` can look newer
+than a branch's different C++ sources (rsync keeps the laptop's mtimes), so a stale library would be used. Let each
+folder build its own native library.
