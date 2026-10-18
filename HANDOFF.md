@@ -33,6 +33,12 @@ scout) and CP-F's third attempt; brains the battery item, the scout fighting bac
 its tools and P3 v2 re-judged pinned; native the test infra (the suite at --fixed-fps, and more). **builder2 (the GCP
 Spot VM) is ON and is the first-choice builder,** with 6 heavy slots. It bills while on (about $0.52/h, Spot). If it is
 preempted, the orchestrator runs `make gcp-start`. The lead decides in the morning whether to `make gcp-stop`.
+**Restart 2026-10-18 ~10:50 (the lead's laptop froze; every agent restarted):** the side worktrees were removed. All
+were clean, and their commits are kept on their branches: `lab/brains-r33-battery` (brains' battery work, 5 commits
+ahead of main), `pair/native-arrivedgate` (native's arrivedgate mirror for it, test floors done), `pair/brains-r4-main`
+(R4, merged) and `pair/cpf3-on` (CP-F attempt 3's pair, 60d2d86a). Check out a fresh worktree from the branch to go on.
+godot-native is back on `stream/native` (fast-forwarded to native/fixed-fps-suite `0cdeff77`). builder2 was idle and
+RUNNING, with no orphans on either builder.
 
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
