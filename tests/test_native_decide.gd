@@ -82,7 +82,7 @@ func test_decide_is_the_gdscript() -> void:
 	var mismatches := 0
 	var first := ""
 	# Overnight item 2 (brains' scout): every scout's situation once more, under fire (since_hit across the 2 s bound),
-	# its contacts threatening it or not, matchups on or off, and one case in five with the rule switched off. A rng of
+	# its contacts threatening it or not and some moved into sight within (or just past) its reach, matchups on or off, and one case in five with the rule switched off. A rng of
 	# its own, so the mutated cases above are the same draws as before.
 	var scout_rng := RandomNumberGenerator.new()
 	scout_rng.seed = 3317
@@ -105,8 +105,16 @@ func test_decide_is_the_gdscript() -> void:
 			if String(s["self"].get("unit", "")) == "scout":
 				var f := s.duplicate(true)
 				f["self"]["since_hit"] = scout_rng.randi_range(0, 2 * TankBrain.SCOUT_FIGHT_HIT_TICKS)
+				var at: Vector3 = f["self"]["position"]
+				var weapon: Dictionary = f["self"]["weapon"]
+				var reach := float(weapon.get("effective_range", weapon.get("range", 0.0)))
 				for c: Dictionary in f["contacts"]:
 					c["threatens_me"] = scout_rng.randf() < 0.7
+					# Some in sight inside (or just past) the scout's reach, so the rule's distance test cuts both ways.
+					if scout_rng.randf() < 0.6:
+						c["visible"] = true
+						var angle := scout_rng.randf_range(0.0, TAU)
+						c["position"] = at + Vector3(cos(angle), 0.0, sin(angle)) * scout_rng.randf_range(5.0, reach * 1.2)
 				f["features"]["matchups"] = scout_rng.randf() < 0.5
 				if scout_rng.randf() < 0.2:
 					flag_off = cases.size()
