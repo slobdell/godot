@@ -109,6 +109,21 @@ candidate only after it.
   peer drops at teardown), filed UNOWNED in the roadmap per HANDOFF's "a second relay-smoke red gets traced, not waved
   through". CP-F does not merge while relay-smoke is red in its merge check.
 
+**Bar, brains overnight item 3: the War Rig that never arrives (filed 2026-10-18 before any number; lab/brains-warrig
+`387004f7`).** Cause confirmed (builder0, pinned, seed 8, seat triples). R33.6 splits the 13 Guns crews 5/4/4. One
+4-crew element's anchor (6, 116) sits ON the arena's north edge (the orders layer's share of the order). clamp_to_arena
+pulls its two outer seats onto the edge, then SlotGround moves them 6 m in, so the shape collapses on one side, the
+seat centroid sits 17–20 m off the anchor, and the element can never pass the 12 m centre rule. Stale seat sizes are
+refuted. **Candidate (ElementPlan, GDScript only):** an element's anchor, the move destination and each leg's anchor, is
+inset from the arena edge by its shape's half-extent along the heading frame, so every nominal seat lies inside;
+clamp_to_arena stays as the backstop. `--anchor-inset=off`. The "4 of 5" rule is DROPPED. (1) DECIDING, warrig-trace
+(foundry faced drag, gangs, 180°, squads 1, pinned), named seed 8 + FRESH seeds 9–14, n 7: ON, every element's seat
+centroid ≤ 3 m from its anchor once laid, and every element arrives (centre within 12 m); OFF reported; the second 4-crew
+element traced first. (2) squad-arrive-series, FRESH seeds 69–72, n 100: all-within-8 m ON ≥ OFF − 1.645 se, with the
+median inset reported. (3) The check, with sim-baseline moves listed. (4) The worst ON run traced before the counts.
+What he'd notice: a squad sent right to the arena's edge stops a few metres inland, in formation, instead of half of it
+never "arriving".
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
