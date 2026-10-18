@@ -1351,3 +1351,10 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   run `npm ci` at the same time inside one check (12 targets in parallel) and corrupt node_modules/ws (TAR_ENTRY_ERROR
   ENOENT), so both go red. Have one prerequisite target install node_modules once (an order-only dependency or a lock),
   and until then seed node_modules from a warm folder with the same package-lock (_agents/gcp_builder.md).
+- **A k-turn leg crossing the arrival circle flips the order into a face nobody wanted (manoeuvre owns, brains for the
+  held-post refusal; planner's diagnosis, stream/planner `c68cd0f77`, references/round33/planner/face-flip-s69/).** On
+  diagnosis seed 69 (builder0 light, keep 1), Green_Guns_7 reversing on a k-turn leg crosses inside its attack-move goal's
+  6 m arrival radius (tick 509). `_act`'s arrived branch (tank_brain.gd ~2461) turns the order into a face "from post"
+  mid-manoeuvre, the seam drops the k-turn, and every new move_to for 36 ticks is refused by `_order_move`'s held-post rule
+  until one is accepted at tick 554. Fix: don't declare "arrived" while the seam or executor is mid-leg, or hold the faced
+  finish until the leg ends (R33.2: manoeuvre owns WHEN a faced finish runs).
