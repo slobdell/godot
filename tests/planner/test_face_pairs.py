@@ -60,7 +60,7 @@ class Verdict(unittest.TestCase):
         return code, out.getvalue()
 
     def fill(self, cand_far_both, cand_hull_only):
-        for seed in range(1, 9):
+        for seed in range(1, 13):
             for mode in ("drawn", "clicked"):
                 write(self.root, "base_" + mode, "faced_move", seed,
                       [ep("A", (0, 0), served=True, plan_far=1.0, hull_far=3.0 + seed * 0.1),
@@ -73,8 +73,8 @@ class Verdict(unittest.TestCase):
         self.fill(3.0, 3.0)
         code, out = self.run_tool()
         self.assertEqual(code, 0, out)
-        self.assertIn("FACE_PAIRS_BOTH clicked | faces 8", out)
-        self.assertIn("FACE_PAIRS_CAND_ONLY clicked | faces 8", out)
+        self.assertIn("FACE_PAIRS_BOTH clicked | faces 12", out)
+        self.assertIn("FACE_PAIRS_CAND_ONLY clicked | faces 12", out)
         self.assertNotIn("FAIL", out)
         self.assertIn("FACE_PAIRS line (2c): ALL PASS", out)
 
@@ -91,18 +91,29 @@ class Verdict(unittest.TestCase):
         only = [l for l in out.splitlines() if l.startswith("FACE_PAIRS_CAND_ONLY clicked")][0]
         self.assertTrue(only.endswith("FAIL"), only)
 
+    def test_fewer_than_ten_faces_both_planned_is_inconclusive_and_cannot_pass(self):
+        # R33.26 as filed: small classes must not decide a mode by going unjudged.
+        for seed in range(1, 6):
+            for mode in ("drawn", "clicked"):
+                write(self.root, "base_" + mode, "faced_move", seed, [ep("A", (0, 0), served=True, plan_far=1.0, hull_far=3.0)])
+                write(self.root, "new_" + mode, "faced_move", seed, [ep("A", (0, 0), served=True, plan_far=1.0, hull_far=3.0)])
+        _, out = self.run_tool()
+        both = [l for l in out.splitlines() if l.startswith("FACE_PAIRS_BOTH drawn")][0]
+        self.assertIn("INCONCLUSIVE", both)
+        self.assertIn("FACE_PAIRS line (2c): NOT ALL PASS", out)
+
     def test_distinct_reads_a_repeated_pair_once(self):
         self.fill(3.0, 3.0)
         for mode in ("drawn", "clicked"):   # seed 9 repeats seed 1 row for row
             for arm in ("base_", "new_"):
                 src = os.path.join(self.root, arm + mode, "gangs", "faced_move-1", "run.log")
-                d = os.path.join(self.root, arm + mode, "gangs", "faced_move-9")
+                d = os.path.join(self.root, arm + mode, "gangs", "faced_move-13")
                 os.makedirs(d)
                 with open(src) as f, open(os.path.join(d, "run.log"), "w") as g:
                     g.write(f.read())
         _, out = self.run_tool("--distinct")
-        self.assertIn("FACE_PAIRS_DISTINCT clicked | distinct pairs 8 of 9", out)
-        self.assertIn("FACE_PAIRS_BOTH clicked | faces 8", out)
+        self.assertIn("FACE_PAIRS_DISTINCT clicked | distinct pairs 12 of 13", out)
+        self.assertIn("FACE_PAIRS_BOTH clicked | faces 12", out)
 
 
 if __name__ == "__main__":
