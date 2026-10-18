@@ -130,7 +130,10 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (orchestrator, 2026-10-17):** the seed now also sets orbit direction, start phase and scout heading, and "on target" counts
   as progress in the stall check. Because seeds 11–16 have now been seen, **the judged run is on FRESH seeds 31–36**
   (builder0 light, one tree, named). Seed 21 is development only. (d) counts reverse ticks while a FACE ORDER holds, and
-  (d) and (e) are judged on the player-post cells. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
+  (d) and (e) are judged on the player-post cells. **(d) amended (orchestrator, 2026-10-18, before any judged number; dev 11–23 seen
+  only):** (d) counts reverse ticks under a REVERSE COMMAND, which must be 0 in every run, and gear flips by command. Total
+  reverse ticks are REPORTED: 12 of 156 dev runs had 1–9, every one under a forward command at full lock, which are
+  contact/depenetration bounces from the physics plant and not the controller choosing reverse. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
   moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
   ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
   reported in the verdict.
