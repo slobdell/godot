@@ -58,7 +58,11 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   2732/0, sim-baseline unmoved, foundry included). The navmesh bake drops foundry's crate-roof islands (region_min_size 8).
   What he'd notice: nothing, except no unit ever plans onto a crate roof. **Far census → main `dd32ede1`** (traffic `c54a932d`):
   round 34's measurement tools, no game code.
-  **Main check of cf35bd13 (R33.6 + body test + islands + far census) running** (`build/r33-main-check-cf35bd13.log`).
+  **Main `0ef2443b` (R33.6 + body test + islands + far census) checked: builder0 streamed `make check exited 0`, 2739/0,
+  26 targets ALL JUDGED, sim-baseline 13 unmoved.** The link dropped again during the copy-back, so the wrapper's last line is
+  "treating that as a failure: nothing local proves what the run did". The verdict lines above were streamed live by the run
+  itself, and no number is read from the stale local build/, so the orchestrator accepts it as the main check (recorded
+  here, the only exception made this round).
 
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
