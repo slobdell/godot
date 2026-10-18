@@ -27,6 +27,12 @@ last check). On a freshly seeded builder2 folder there's NO library, so they sil
 <target>`**, or runs right after a check in the same folder at the same commit, and its log shows the NATIVE line.
 Also: a showmatch's `--seconds` changes the fight from early on, so a trace uses the fight's own length.
 
+**Never keep anything you need in a worktree's `build/` if you run remote.sh from that worktree (manoeuvre, round
+33).** The copy-back rsyncs `build/` with `--delete`, so overnight drivers, jsonl and tables kept in
+`godot-manoeuvre/build/overnight` were wiped by one `make remote` from the same worktree (logs and directories survived).
+Keep persistent work outside every worktree (e.g. `~/overnight-<stream>`), or file it under `_agents/streams/references/`
+first.
+
 **Variables go inside the quotes.** `make remote T=check NATIVE=off` sets NATIVE for the *local* make only. builder0 runs
 a plain `make check`, native ON, and nothing warns you. Native lost a full check to this in round 33 (145ada3a). Write
 `make remote T="check NATIVE=off"` or `tools/remote.sh check NATIVE=off`. The tell is the wrapper's first line,
