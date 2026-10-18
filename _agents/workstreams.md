@@ -51,7 +51,8 @@ with the seed, so the verdict reports distinct rows per cell, and every se is ov
 or number).** Lab on lab/c339-turnin `ea043755` (the orbit stage exists only there; main's behaviour = its turn-in-OFF
 arm, named in the verdict). Candidate: in TankBrain.decide (plus native's mirror, C26.2), a scout hit within 2 s with a
 visible non-prey contact C inside both its effective range and C's, AND unable to get away (duel advantage v C ≥ 0, or
-C's speed ≥ 0.9 × its top speed), scores SPOT 0.7 instead of 0.88, so ENGAGE wins. `--scout-fight=off`. The proxy
+C's speed ≥ 0.9 × its top speed; clarified before any number: Matchups.duel_advantage is a RATIO, so the code
+reads ≥ 1.0, an even duel or better), scores SPOT 0.7 instead of 0.88, so ENGAGE wins. `--scout-fight=off`. The proxy
 "fire from a contact in reach" is stated, because no attacker is recorded on a hit. (1) DECIDING, the orbit cells
 (--fixed-fps a seed): 24 cells × FRESH seeds 60–72 (n 13), turn-in OFF, ON v off: (a) pooled median scout shots ON ≥
 1.5× OFF; (b) median damage taken ON ≤ OFF, and no cell worse by more than 20 % (read on cells with OFF hits ≥ 10;
