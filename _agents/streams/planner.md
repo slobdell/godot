@@ -314,3 +314,11 @@ the morning.
   round 32's pin no longer reproduces, and the shared queue it guarded failed P2 (R33.13) and does not ship. Re-make it
   with a new control seed if the shared queue is ever re-filed. `planner-pytest` is not in `make check` (core.mk is not
   planner's).
+- **(2) P3 v2 re-judged PINNED: bar FILED** (main `daa71aaf`, before any number): R33.19's bar on pair tree main +
+  manoeuvre's `670f4e12` (hull-rest at `--fixed-fps`) + FACE_KEEP_DEFAULT 1. Fresh seeds: hull-rest 96-107, Terminus
+  244-256. All on builder2. The orchestrator added CP-F's rule: report distinct rows per cell, every se over distinct
+  pairs only. **Tooling for that** (laptop, unit tests 7/7): `hull_distinct.py` (one pair per distinct (base,
+  candidate) row in a cell), `hull_aa.py --distinct`, `face_keep_table.py --distinct`, `kept_share.py` (line (0)'s kept
+  share and (2d)'s holds, now in the repo). **Decided before numbers:** the judged lines are the `--distinct` outputs
+  (lines (2a), (2b), (2c) and (0)'s share all on the distinct pairs, (2c)'s median and p90 included). The all-runs
+  lines are reported beside them.
