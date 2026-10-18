@@ -7,6 +7,7 @@ extends TestCase
 
 ## The fall-in tests switch the rule on for the pure function under test; every test ends on the shipped default.
 func teardown() -> void:
+	ElementPlan.ANCHOR_INSET = true
 	ElementPlan.FALLIN_ENABLED = _fallin_shipped
 	super.teardown()
 
@@ -130,13 +131,14 @@ func test_a_screen_stands_across_the_point() -> void:
 
 func test_a_move_halts_on_the_spot_it_was_sent_to_and_stays() -> void:
 	var table := _table()
-	var task := {"verb": "move", "to": [0, -100]}
-	var arriving := ElementPlan.build(_situation([], Vector3(6, 0, -92)), _state(task), table)
+	# Overnight item 3: inland (-100 is on the pure world's default bound, where the anchor is inset by its shape).
+	var task := {"verb": "move", "to": [0, -80]}
+	var arriving := ElementPlan.build(_situation([], Vector3(6, 0, -72)), _state(task), table)
 	assert_true(bool(arriving["arrived"]), "within the arrive radius")
-	assert_true((arriving["anchor"] as Vector3).is_equal_approx(Vector3(0, 0, -100)),
+	assert_true((arriving["anchor"] as Vector3).is_equal_approx(Vector3(0, 0, -80)),
 			"the halt stands on the ordered spot, not on the element's centre (%s)" % arriving["anchor"])
 	var state := _carry(_state(task), arriving)
-	var later := ElementPlan.build(_situation([], Vector3(3, 0, -97)), state, table)
+	var later := ElementPlan.build(_situation([], Vector3(3, 0, -77)), state, table)
 	assert_true((later["anchor"] as Vector3).is_equal_approx(arriving["anchor"]), "and it does not creep")
 	assert_eq((later["seats"] as Dictionary).size(), 4, "every crew keeps a seat")
 
@@ -285,6 +287,10 @@ func _transit(s: float, arrived := false) -> Dictionary:
 
 
 func test_a_travelling_plain_move_publishes_a_station_per_crew_on_the_route_and_keeps_its_orders() -> void:
+	# Overnight item 3: this fabricated transit ends at (0, -100), the pure world's default bound, where the plan's anchor
+	# is inset by its shape (test_tactics_anchor_inset); the live transit ends at the same inset point (Element).
+	# Off here so the station geometry is read on its own.
+	ElementPlan.ANCHOR_INSET = false
 	var table := _table()
 	var task := {"verb": "move", "to": [0, -100], "drills": false}
 	var still := ElementPlan.build(_situation([], Vector3(0, 0, -20)), _state(task), table)

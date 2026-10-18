@@ -1022,6 +1022,10 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 			return  # decided once per task: a short move never grows an anchor later
 		var center: Vector3 = transit_origin(situation, _doctrine().spacing("open"))
 		var to := Vector3((destination as Vector3).x, 0.0, (destination as Vector3).z)
+		# Overnight item 3: the route ends where the plan stands the shape (ElementPlan.inset_anchor, capped), so the
+		# hand-off from travelling to standing moves nobody at an arena edge either.
+		to = ElementPlan.inset_anchor(ElementPlan.members_of(situation), formation, to,
+				_doctrine().spacing(String(situation.get("terrain", "open"))))
 		var from := Vector3(center.x, 0.0, center.z)
 		if from.distance_to(to) < ElementPlan.TRANSIT_MIN_M:
 			_transit_declined_seq = task_seq
