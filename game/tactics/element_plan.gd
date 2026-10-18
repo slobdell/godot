@@ -44,6 +44,10 @@ static var ANCHOR_INSET := not OS.get_cmdline_user_args().has("--anchor-inset=of
 ## ...capped at one swarm pitch (filed: the largest inset ON <= 15 m), so the element stops near his click; what still falls
 ## outside folds onto the edge (clamp_to_arena, then SlotGround), and such an element arrives at its LAID seats' centroid.
 const INSET_CAP_M := 15.0
+## ...and only on the final approach: within this of the destination. Further out the move is today's, so a drill that
+## fires on the way (the far ambush's base of fire: 11.4 -> 12.7 m off its line with the inset applied from the start,
+## laptop, tactics-drills) sees the same route.
+const INSET_NEAR_M := 60.0
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
@@ -282,7 +286,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
 	# Overnight item 3: a move's spot inland enough that its whole shape stands inside the arena (inset_anchor).
-	if verb == "move" and destination is Vector3:
+	if verb == "move" and destination is Vector3 and center.distance_to(destination) <= INSET_NEAR_M:
 		var asked: Vector3 = destination
 		destination = inset_anchor(members_of(situation), String(plan["formation"]), destination,
 				table.spacing(String(situation["terrain"])))
