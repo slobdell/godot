@@ -70,6 +70,11 @@ so SPOT still wins: the roadmap's "drops to 0.7, so ENGAGE wins" was a code read
 0.27–0.43 even with the ~0.10 commitment bonus), and SPOT returns 2 s after the last hit. **(c) gains:** where the rule
 fires, the chosen option is ENGAGE (counted by option, so no other option such as ADVANCE takes over), ENGAGE ticks ON >
 OFF, and 0 in the out-of-reach cells. Brains prints the full option table on one tuning run first, to show ENGAGE wins.
+**Shown (brains, laptop, tuning seed 50, 48 cells, lab/brains-scout `57d8342c`):** in 2130 rule-firing ticks, ENGAGE
+was chosen 1925 times (90 %), COVER_FIRE 82, SPOT 76 (committed, right after first firing) and HOLD 47. **(a) clarified
+before any judged number:** the median scout shots per cell are about 0.5 in BOTH arms (most cells fire almost nothing
+either way), so a ratio of medians is degenerate. (a) reads POOLED TOTAL shots ON ≥ 1.5× OFF, with the medians
+reported.
 
 **Bar, brains overnight item 4: a respawned crew rejoins its squad's living element when it has room (filed 2026-10-18
 before any code or number).** ElementCommander.form_elements: a squad's unseated living crew first JOINS a living element
