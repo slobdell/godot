@@ -64,6 +64,12 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   itself, and no number is read from the stale local build/, so the orchestrator accepts it as the main check (recorded
   here, the only exception made this round).
 
+- **N5.Y → main `a47d43e3`** (native `1053045e`): the give-way negotiation (`_negotiate`, ask, `_begin_yield`) runs in
+  C++, default ON. Gates: 6434969e's check had 0 mismatches and sim-baseline unmoved; its one red was a coverage floor,
+  lowered 60 → 20 (it depends on test order); NATIVE=off 2739/0 with perf 1.07x; native-proof EQUAL; then on 1053045e
+  `make test` 2741/0 and perf-judge JUDGED PASS 1.16x (builder0). What he'd notice: nothing. **Rides the next main
+  check** (planned on builder2).
+
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
   failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
