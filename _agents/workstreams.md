@@ -666,6 +666,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   `670f4e12` with it. What he'd notice: a vehicle told to face behind it in open ground turns round in about 10 s
   instead of 15, in three tight legs instead of a wide loop.
 
+- **R33.30 T4 (ghost ON) PARKED a third time, on G2 (2026-10-18; traffic, `6e23e692d`,
+  references/round33/traffic/ov_t4_bar.md, Result).** builder2, pair `aacdfb4b6` (game `2b41d3a04`), fresh pinned
+  body_probe children, Locks, seeds 7–18, n 12. G1 PASS (median alone 14.0 v 15.5 s); **G2 FAIL**: 4 of 12 seeds are
+  worse by more than 3 s (s7 +6.5, s8 +4.0, s9 +3.5, s14 +4.0; the line is ≤ 2), while s16 improves by 41 s. The children
+  are deterministic, so these are the ghost's real per-seed effects. G3 PASS (7/12 both arms). r1 PASS (a fresh process
+  replays exactly, 36/36, both arms). r2 REPORTED: a same-process rematch's digest differs on 12/12 seeds in BOTH arms.
+  Line 7 was also red (native floors under ghost ON). T not run. **Native's ghost-aware stages (R33.29) are withdrawn**:
+  there's no ghost-ON default to cover. For a fourth try (round 34+, not tonight): trace s7, and a cohesion bar over more
+  than Locks.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
