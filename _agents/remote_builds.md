@@ -20,6 +20,13 @@ Two native proofs were lost to it in one day (1053045e's `make test`, 2741/0, an
 evidence uses `T="native test"` or `T=check`, and is read from the `NATIVE ON/OFF` line or a twin's count line, not the
 exit line alone.**
 
+**A probe target that doesn't depend on `native` runs whatever library that folder last built (traffic, 2026-10-18).**
+traffic-far-census and similar targets depend only on `import`. On builder0 they ran an OLDER tree's C++ (the folder's
+last check). On a freshly seeded builder2 folder there's NO library, so they silently take the GDScript path
+(NATIVE_EXEC in 0 of 72 logs). Each run is still deterministic, so nothing looks wrong. **A judged run is `native
+<target>`**, or runs right after a check in the same folder at the same commit, and its log shows the NATIVE line.
+Also: a showmatch's `--seconds` changes the fight from early on, so a trace uses the fight's own length.
+
 **Variables go inside the quotes.** `make remote T=check NATIVE=off` sets NATIVE for the *local* make only. builder0 runs
 a plain `make check`, native ON, and nothing warns you. Native lost a full check to this in round 33 (145ada3a). Write
 `make remote T="check NATIVE=off"` or `tools/remote.sh check NATIVE=off`. The tell is the wrapper's first line,
