@@ -64,6 +64,21 @@ around (brains' own design, roadmap), so brains adds the probe before any number
 decide at 0 mismatches. (5) The worst ON cell traced before the medians. Ships ON if (1), (3), (3b) and (4) pass. Tuning
 seeds 50–59 only. Runs on builder2 after the battery series. Tell manoeuvre before any merge (it moves C33.9's base).
 
+**Bar, brains overnight item 4: a respawned crew rejoins its squad's living element when it has room (filed 2026-10-18
+before any code or number).** ElementCommander.form_elements: a squad's unseated living crew first JOINS a living element
+of the same squad with room (members < MAX_MEMBERS; most room first, then name order) through a new
+Element.join / Elements.join. The element keeps its id, task and seats, and the joiner is seated at the next plan. Only
+crews that don't fit form a new element. `--rejoin=off` = R33.6. GDScript only (native confirms there is no twin).
+(1) Tests: joins with room, keeping id and task; past MAX it forms its own; off = R33.6's outcome. (2) DECIDING,
+manoeuvre-fights (showmatch, respawn, --fixed-fps 30, 180 s), FRESH seeds 560–575, n 16, ON v off on one tree: (a)
+one-crew elements formed after the first minute ON < OFF; (b) pooled kills ON ≥ OFF − 1.645 se, deaths ON ≤ OFF + 1.645
+se; (c) 0 C19.1 refusals and 0 ERROR lines. Reported: joins per fight, and the joined element's leg progress, traced on
+the worst ON fight before the totals. (3) The check, with sim-baseline moves listed. Judged on builder2 after the battery
+and scout series; dev on builder0. **Also (item 3, the War Rig):** manoeuvre's read says the four were AT their seats;
+two seats were laid 28 m and 56–68 m south of the anchor, so the centre can't come within 12 m. It's seat geometry or a
+clamp, not a stalled crew, so the roadmap's "4 of 5" rule may be wrong. A pinned --element-trace comes first, and a
+candidate only after it.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
