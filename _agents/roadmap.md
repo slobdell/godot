@@ -1284,12 +1284,17 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   arrived when 4 of 5 are in their slots and the rest are stalled. Brains' read is code-only; manoeuvre is checking the slots.
 - **T4 ghost ON, a third try (traffic + brains):** blocked by the body stage's order swing (body_stage.gd:31), which moved
   the control arm 17.0 → 7.0 s alone (R33.17). First brains' order-free body stage, then T4's cohesion guard on it, then
-  Terminus. **Also (traffic `ef6589f0`, `references/round33/traffic/x4_rematch_statics.md`, laptop GDScript, fixed-fps 60):**
-  no traffic static carries one match into the next. With the ghost OFF a second match in the same process replays exactly
-  (35.0 → 35.0 s alone). With it ON it does not (37.0 → 28.5), whatever GDScript state is cleared, because the ghost reads
-  Tank.real_velocity (the physics server's contact result, tank.gd:734-748), and the server's history from match 1 feeds
-  ORCA. T4's next bar needs a line on this: a rematch replays, or a reason it needn't. Determinism matters for replays and
-  for the network.
+  Terminus. **Also: a same-process rematch does not replay, ghost or not (traffic, corrected 2026-10-18; `33154cc3`,
+  `references/round33/traffic/ov_replay.md`).** Body stage (Locks, body OFF), 3 matches in one process, seeds 1–6, laptop
+  GDScript, --fixed-fps 60: a rematch branched on 2 of 6 seeds with the ghost OFF (s3 39.0 → 37.0, s5 56.5 → 19.5) and 4
+  of 6 with it ON. It enters at TICK 1 as hull height (y 0.000871 v 0.00087): the physics server settles a hull
+  differently in a second match. A fresh World3D or clearing every GDScript static does not change it; a fresh process
+  replays exactly in both arms. (The earlier "ghost OFF replays exactly" was seed 1 only.) T4's replay line: a fresh
+  process is replay-exact with the ghost ON, and the ghost adds no new kind of non-replay (it only raises the branch rate).
+- **A same-process rematch is not deterministic (UNOWNED; match/physics; important for replays and the network):** see
+  the line above. A player's rematch without restarting the game does not play out identically, with or without the ghost.
+  Find what the physics server carries between matches (body RIDs, broadphase, contact caches), and either reset it or
+  run each match in a fresh physics space.
 - **Run the suite at a fixed physics rate (orchestrator, test infra):** `make test` (mk/core.mk:266) runs run_tests.gd
   without `--fixed-fps`, so in-process stages pace by the wall clock and a heavy test in front moves them. Brains (laptop,
   stream/brains, ghost OFF): the body stage after test_rts_camera swings up to 9 s unpinned, and ≤ 2 s at `--fixed-fps 60`
