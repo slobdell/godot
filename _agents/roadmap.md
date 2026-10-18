@@ -1309,3 +1309,6 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   re-run at load 12.6 (11.7 s). (2) tools/test_slot_light.sh (remote-guard-test) failed twice, "the quiet window opened"
   and "ran while EXCLUSIVE held the box", on a shared live box. Both should either scale with measured load or refuse
   (NOT JUDGED) rather than FAIL, like perf-judge.
+- **P3 v3, the face keep (planner):** v2 (kept first, today's search as fallback, R33.19) passed everything but clicked
+  drift's p90 (15.4 v 12.8 m), apparently from slot-law faces kept out to their end circle + a hull. Candidate: cap a
+  slotted face's kept circle at one hull length from the slot. The yard face-behind gain (9.8 v 15.4 s) is the prize.

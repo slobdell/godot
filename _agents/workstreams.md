@@ -340,6 +340,15 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   bar unchanged and a fresh check. Its named cases are the same deterministic cases, judged once more on the new base, and
   the census is untouched so far.
 
+- **R33.19 P3 PARKED (2026-10-17; planner, bca4eaca, builder0, 20:25–22:07 PDT, FIFO, no CP-F; evidence stream/planner
+  `ddbca315`, references/round33/planner/p3-bca4eaca/).** (0) PASS: the yard stage on and off native, kept plan, drift
+  0.97 m, aligned 9.83 v 15.43 s; kept share of hull-rest face plans 23/23 drawn, 16/18 clicked. (0b) PASS: the street
+  is served in a 26-tick hold after 1 fallback. (1), (2a), (2b) and (3) PASS (rigs 175 v 181 of 208, paired −0.46, se
+  0.55; series_verdict hand-read). **(2c) clicked FAILS:** p90 furthest-from-home 15.4 v 12.8 m (n 18 v 27 plans). Worst
+  pair: clicked faced_attack_move s87, a 15.4 m KEPT plan v base 2.7 m, past one hull length, which only a slot-law face's
+  circle allows (inferred, not traced). The series can't separate the slot-law ordering from the fallback. Parked per the
+  bar's rule. Round 34 candidate: cap a slotted face's kept circle at one hull length from the slot, on fresh seeds.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
