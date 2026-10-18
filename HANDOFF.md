@@ -27,6 +27,43 @@ worktrees start fresh; `origin` holds old `stream/*` branches, so workers don't 
 ports, and brains' seam only if traffic picks an element make-room; traffic's T4 circle trace → brains' v6; planner P3 and
 manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars (round 33)* before its numbers.
 
+**🌙 Overnight 2026-10-18 (the lead asleep; `workstreams.md` *Round 33, overnight extension*):** all five workers have
+taken round-34 candidates on their same worktrees: traffic gets parkedroom v2 and T4's third try; manoeuvre C33.9 (the
+scout) and CP-F's third attempt; brains the battery item, the scout fighting back, and the War Rig 4-of-5 arrival; planner
+its tools and P3 v2 re-judged pinned; native the test infra (the suite at --fixed-fps, and more). **builder2 (the GCP
+Spot VM) is ON and is the first-choice builder,** with 6 heavy slots. It bills while on (about $0.52/h, Spot). If it is
+preempted, the orchestrator runs `make gcp-start`. The lead decides in the morning whether to `make gcp-stop`.
+**Restart 2026-10-18 ~10:50 (the lead's laptop froze; every agent restarted):** the side worktrees were removed. All
+were clean, and their commits are kept on their branches: `lab/brains-r33-battery` (brains' battery work, 5 commits
+ahead of main), `pair/native-arrivedgate` (native's arrivedgate mirror for it, test floors done), `pair/brains-r4-main`
+(R4, merged) and `pair/cpf3-on` (CP-F attempt 3's pair, 60d2d86a). Check out a fresh worktree from the branch to go on.
+godot-native is back on `stream/native` (fast-forwarded to native/fixed-fps-suite `0cdeff77`). builder2 was idle and
+RUNNING, with no orphans on either builder.
+
+**❓ For the lead (morning, from C33.9, his scout report):** when your scout is being circled by an enemy scout it
+can't outrun, should it **stand and trade shots** or **hang back and dodge**? Tonight's fix makes it turn and fight.
+In that case (a law scout against a Syndicate scout circling at 30 m) it fires about 30× more (8 → 260 shots) and takes
+about 30 % more hits (78 → 103), against hardly firing and slowly losing today. **Recommendation: stand and trade**, as
+you described. The judged rule now compares damage dealt against damage taken, not hits taken alone.
+
+**❓ For the lead, the scout fix's verdict (C33.9, R33.24): it PARKED narrowly.** On fresh seeds, the shuffle you saw is
+gone in every run: it never chooses to reverse, not even while holding. It stays near its post and fights back: about
+5× the shots, and it now deals more damage than it takes when its gun can reach (1.77 dealt per 1 taken, against 0.20
+today). It missed two lines. Its aim was on target 23.9 % of the time against a 25 % line. And where its gun CAN'T reach
+the attacker (a gang scout circled at 45 m by a Syndicate scout), it takes more hits than today (57 v 42), because it
+turns to face something it can't shoot. **Choices:** (1) ship it as it is: the shuffle is gone, at the cost of those
+out-of-reach hits; (2) a second attempt that turns in only when its gun can reach, and keeps today's motion otherwise, judged on fresh
+seeds. **Caveat (manoeuvre):** "today's motion" out of reach IS the shuffle, so you'd see it again whenever the attacker
+is beyond your scout's gun. That shuffle happens to dodge the enemy's aim. Every alternative tried so far (turning in,
+straight-line jinking) took more hits out there. (3) leave it parked. **Recommendation, revised: (1), ship as it is.**
+The shuffle you reported is gone everywhere. Out of reach the real answer is that an outgunned scout should LEAVE, which
+is brains' "scout fights back or gets away" work, already in progress. Option 2 would bring back the very thing you
+reported.
+**Option 2 measured (dev seeds, builder0; stream/manoeuvre `3a274fffb`):** with "turn in only within reach", the shuffle
+came back beyond reach, with up to 203 chosen reverse ticks and 42 gear changes in a run, a scout drifting 75.6 m from
+its post, and out-of-reach hits still up (42 → 49). A tuned variant was worse. **So the recommendation stands: ship
+attempt 1 (`781801da0`'s turn-in) as it is.**
+
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
@@ -92,6 +129,10 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   26 targets ALL JUDGED, perf-judge PASS 1.00x, sim-baseline 13 unmoved, 0 "native: absent", 1084 s. This covers every
   round-33 merge together: R33.3, R1, R33.9, N5.M, R33.6, the islands, N5.Y, planner's parked P3 (OFF), R4, and the test
   fixes.
+
+- **P3 → main (R33.28; the merge of `923fcb97f`):** the face keep ships ON. A vehicle told to face behind it turns round in
+  about 10 s instead of 15 (the yard: 9.83 v 15.43 s), with no worse drift on faces either version plans. It rides the
+  next main check (builder2).
 
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift

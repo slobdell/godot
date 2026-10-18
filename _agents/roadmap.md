@@ -1276,7 +1276,13 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 
 - **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
   room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.
-- **The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
+- **The fire-post loop: DIAGNOSED and OWNED by traffic (2026-10-18; `e7b6504c7`,
+  references/round33/traffic/ov_firepost_r705.md).** An artillery truck reads arrived 5.1 m short, digs in after 0.25 s
+  still with NO target, and T1c-b2's on_fire_post() (deployed + not hold_fire + arrived) treats that readiness as firing,
+  so it refuses passers for 66 s. Fix (traffic and brains agree): a battery counts as firing only when set up AND it has a
+  fire mission (a target, engaged, or a recent shot). That keeps his yes (a truck ORDERED to fire stays set up). Judge
+  it on a tree with brains' battery item. Traffic item 4, after parkedroom v2 and T4.
+- **(was) The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
   one fight (random-705, builder0, `d90fbdb7`).
 - **An element that never arrives because one crew is still driving (brains):** foundry s8, five War Rigs given a move with a
   drawn facing (laptop, manoeuvre `8fc224fa`, n 1). Four stopped 20–45 m out and one drove on to about 52 s. Arrival is the
@@ -1284,12 +1290,17 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   arrived when 4 of 5 are in their slots and the rest are stalled. Brains' read is code-only; manoeuvre is checking the slots.
 - **T4 ghost ON, a third try (traffic + brains):** blocked by the body stage's order swing (body_stage.gd:31), which moved
   the control arm 17.0 → 7.0 s alone (R33.17). First brains' order-free body stage, then T4's cohesion guard on it, then
-  Terminus. **Also (traffic `ef6589f0`, `references/round33/traffic/x4_rematch_statics.md`, laptop GDScript, fixed-fps 60):**
-  no traffic static carries one match into the next. With the ghost OFF a second match in the same process replays exactly
-  (35.0 → 35.0 s alone). With it ON it does not (37.0 → 28.5), whatever GDScript state is cleared, because the ghost reads
-  Tank.real_velocity (the physics server's contact result, tank.gd:734-748), and the server's history from match 1 feeds
-  ORCA. T4's next bar needs a line on this: a rematch replays, or a reason it needn't. Determinism matters for replays and
-  for the network.
+  Terminus. **Also: a same-process rematch does not replay, ghost or not (traffic, corrected 2026-10-18; `33154cc3`,
+  `references/round33/traffic/ov_replay.md`).** Body stage (Locks, body OFF), 3 matches in one process, seeds 1–6, laptop
+  GDScript, --fixed-fps 60: a rematch branched on 2 of 6 seeds with the ghost OFF (s3 39.0 → 37.0, s5 56.5 → 19.5) and 4
+  of 6 with it ON. It enters at TICK 1 as hull height (y 0.000871 v 0.00087): the physics server settles a hull
+  differently in a second match. A fresh World3D or clearing every GDScript static does not change it; a fresh process
+  replays exactly in both arms. (The earlier "ghost OFF replays exactly" was seed 1 only.) T4's replay line: a fresh
+  process is replay-exact with the ghost ON, and the ghost adds no new kind of non-replay (it only raises the branch rate).
+- **A same-process rematch is not deterministic (UNOWNED; match/physics; important for replays and the network):** see
+  the line above. A player's rematch without restarting the game does not play out identically, with or without the ghost.
+  Find what the physics server carries between matches (body RIDs, broadphase, contact caches), and either reset it or
+  run each match in a fresh physics space.
 - **Run the suite at a fixed physics rate (orchestrator, test infra):** `make test` (mk/core.mk:266) runs run_tests.gd
   without `--fixed-fps`, so in-process stages pace by the wall clock and a heavy test in front moves them. Brains (laptop,
   stream/brains, ghost OFF): the body stage after test_rts_camera swings up to 9 s unpinned, and ≤ 2 s at `--fixed-fps 60`
@@ -1332,3 +1343,11 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   velocity, or report wedged crews as their own line.
 - **The hull-rest stage is barely seed-sensitive (manoeuvre, R33.23):** seeds 40 = 43 and 44 = 45, row for row, so a
   paired se over seeds understates the noise. Make the seed vary the stage's geometry, as C33.9's orbit stage now does.
+- **relay-smoke: a shell's RPC fires after the peer has dropped (UNOWNED, network; R33.25):** ×6 "Trying to call an RPC
+  via a multiplayer peer which is not connected" from match.gd:2094 `_shell_hit` ← shell.gd `_fly`, under a full check's
+  load on builder2 (pair 70cb7f683); it passed alone twice. Guard `_shell_hit`'s RPC on a connected peer (or stop shells
+  at teardown), with a test that drops the peer while a shell is in flight.
+- **Fresh folders race `npm ci` (infra; brains, 2026-10-18):** in a new remote folder, broker-test and relay-smoke each
+  run `npm ci` at the same time inside one check (12 targets in parallel) and corrupt node_modules/ws (TAR_ENTRY_ERROR
+  ENOENT), so both go red. Have one prerequisite target install node_modules once (an order-only dependency or a lock),
+  and until then seed node_modules from a warm folder with the same package-lock (_agents/gcp_builder.md).

@@ -66,8 +66,8 @@ rm -f "$TANK_SQUAD_PINNED_SELF"
 
 host=${REMOTE_HOST:-slobdell@builder0}
 root=${REMOTE_ROOT:-tank_squad}
-# builder2 (the GCP burst box: 32 threads, 121 GB; _agents/gcp_builder.md) takes 6 heavy runs at once, builder0 3.
-case "$host" in *builder2*|*10.115.229.9) default_slots=6 ;; *) default_slots=3 ;; esac
+# builder2 (the GCP burst box: 32 threads, 121 GB; _agents/gcp_builder.md) takes 4 heavy runs at once, builder0 3 (6 drove load to ~70 on 32 threads, 2026-10-18).
+case "$host" in *builder2*|*10.115.229.9) default_slots=4 ;; *) default_slots=3 ;; esac
 slots=${REMOTE_SLOTS:-$default_slots}
 node_version=v22.14.0
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
