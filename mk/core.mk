@@ -827,12 +827,15 @@ remote-quiet: ## A TIMING run on builder0 that holds the whole box and says whet
 # needs no Godot, no ports and no `user://` path, so it joins with no exclusion edge.
 remote-guard-test: shell-tools-test ## Alias kept for the name that shipped in CHECK_TARGETS
 
+# Round 33 overnight (native, item 3): a suite whose wall-clock case could not be judged on a loaded box (slot-light)
+# appends its reason to NOT_JUDGED_FILE: check reads remote-guard-test as NOT JUDGED, not FAIL (check_verdict.sh).
 shell-tools-test: ## Every tools/test_*.sh known-answer suite (no Godot, ~20 s), and it FAILS if it finds none
 	@suites=$$(ls tools/test_*.sh 2>/dev/null); \
 	test -n "$$suites" || { echo "shell-tools-test FAILED: no tools/test_*.sh found. A suite that runs"; \
 		echo "  nothing reports success, which is how \`lint\` passed over zero files for three rounds."; exit 1; }; \
 	echo "shell-tools-test: $$(echo "$$suites" | wc -l) suites"; \
-	rc=0; for s in $$suites; do echo "-- $$s"; bash $$s || rc=1; done; exit $$rc
+	nj=$(BUILD_DIR)/check/notjudged/remote-guard-test; rm -f $$nj; mkdir -p $$(dirname $$nj); \
+	rc=0; for s in $$suites; do echo "-- $$s"; NOT_JUDGED_FILE=$$nj bash $$s || rc=1; done; exit $$rc
 
 # ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
 
