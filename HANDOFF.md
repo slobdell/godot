@@ -79,6 +79,10 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   s27 t8 10/10 both arms; the yard head-on s42 circle reverses 0 v 2; arrivals 97 v 97 of 100; pursuit 24/24. What he'd
   notice: a vehicle no longer circles round an approach point that sits inside its own turning circle. It rides the next
   main check, after `4d6f321d`'s on builder2.
+- **Main `4d6f321d` on builder2: RED on two coverage floors.** test_native_yield's sumps stages: parked_refusals 6 ≥ 20 and
+  spot:back 9 ≥ 15, with 0 mismatches in 546 and 738 compared drives. Everything else is green: 2749 passed, perf-judge
+  JUDGED PASS 1.00x, sim-baseline 13 unmoved, 908 s. The stage's counts move with the shard order (16 shards on builder2).
+  Native fixes it test-only (fresh-process arms, or ≥ 1 floors); main stays red until it lands.
 
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
