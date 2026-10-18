@@ -1,0 +1,13 @@
+TERMINUS_AB  base /tmp/claude-1000/-home-slobdell-projects-godot-manoeuvre/d6b4a6fc-41ce-484a-abf7-e7a03b4d1093/scratchpad/cpf-series/data/census-base/census | new /tmp/claude-1000/-home-slobdell-projects-godot-manoeuvre/d6b4a6fc-41ce-484a-abf7-e7a03b4d1093/scratchpad/cpf-series/data/census-new/census
+== mixed (13 seeds)
+  arrivals base 293 new 294 of 312: diff +1 se 4.76 1.645se 7.8: PASS
+  contact-ticks base 2328 new 2154: diff -174 se 646.7 1.645se 1063.9: PASS
+  arrived without each arm's two worst runs (9 pairs): diff +2 se 2.9: PASS
+  contacts without each arm's two worst runs (9 pairs): diff +99 se 332.9: PASS
+  per seed arrived(contacts): 450:22>23(308>170) 451:21>22(57>237) 452:22>23(39>305) 453:22>22(204>211) 454:23>21(197>299) 455:23>23(83>106) 456:21>23(472>118) 457:23>23(391>104) 458:23>24(141>44) 459:22>23(179>123) 460:23>21(115>296) 461:24>24(98>64) 462:24>22(44>77)
+== rigs (13 seeds)
+  arrivals base 186 new 181 of 208: diff -5 se 5.61 1.645se 9.2: PASS
+  contact-ticks base 7298 new 7859: diff +561 se 2241.0 1.645se 3686.4: PASS
+  arrived without each arm's two worst runs (10 pairs): diff -5 se 3.4: PASS
+  contacts without each arm's two worst runs (9 pairs): diff +627 se 427.1: PASS
+  per seed arrived(contacts): 450:16>15(100>420) 451:12>12(594>595) 452:15>14(279>516) 453:14>14(586>828) 454:15>15(546>635) 455:13>13(539>2049) 456:14>15(792>364) 457:12>15(345>465) 458:16>16(247>285) 459:14>11(1990>600) 460:15>15(162>162) 461:15>14(355>328) 462:15>12(763>612)

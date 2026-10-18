@@ -1,0 +1,60 @@
+>> step 1 fights-new start 15:19 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=fights CPH_SEEDS=470-493 exited 0 (build/ copied back)
+>> step 2 fights-base start 15:49 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=fights CPH_SEEDS=470-493 exited 0 (build/ copied back)
+>> step 3 hull-new_drawn start 16:32 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_GD=1 M1_SEEDS=440-445 exited 255 (build/ copied back: FAILED)
+>> step 4 hull-base_drawn start 17:43 on pair/cpf-on b6c2a974
+>> step 5 hull-new_clicked start 17:43 on pair/cpf-on b6c2a974
+cp: cannot stat 'build/manoeuvre/hull-rest/new_clicked': No such file or directory
+   copy of build/manoeuvre/hull-rest/new_clicked failed
+>> step 6 hull-base_clicked start 17:43 on pair/cpf-on b6c2a974
+cp: cannot stat 'build/manoeuvre/hull-rest/base_clicked': No such file or directory
+   copy of build/manoeuvre/hull-rest/base_clicked failed
+>> step 7 census-new start 17:43 on pair/cpf-on b6c2a974
+cp: cannot stat 'build/manoeuvre/census': No such file or directory
+   copy of build/manoeuvre/census failed
+>> step 8 census-base start 17:43 on pair/cpf-on b6c2a974
+cp: cannot stat 'build/manoeuvre/census': No such file or directory
+   copy of build/manoeuvre/census failed
+>> step 9 sbf-new start 17:43 on pair/cpf-on b6c2a974
+cp: cannot stat 'build/sbf-series.jsonl': No such file or directory
+cp: cannot stat 'build/sbf-runs': No such file or directory
+   copy of build/sbf-series.jsonl build/sbf-runs failed
+>> step 10 sbf-base start 17:43 on pair/cpf-on b6c2a974
+cp: cannot stat 'build/sbf-series.jsonl': No such file or directory
+cp: cannot stat 'build/sbf-runs': No such file or directory
+   copy of build/sbf-series.jsonl build/sbf-runs failed
+>> step 11 bridge-new start 17:43 on pair/cpf-on b6c2a974
+>> step 12 bridge-base start 17:44 on pair/cpf-on b6c2a974
+>> step 13 native-hull-new_drawn start 17:44 on pair/cpf-on b6c2a974
+>> step 14 native-hull-base_drawn start 17:44 on pair/cpf-off e5b767da
+>> series done 17:44
+>> step 3 hull-new_drawn start 18:08 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_GD=1 M1_SEEDS=440-445 exited 255 (build/ copied back: FAILED)
+   step 3 hull-new_drawn did not exit 0: series stopped here (resume with START_AT=3)
+>> step 3 hull-new_drawn start 19:07 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_GD=1 M1_SEEDS=440-445 exited 0 (build/ copied back)
+>> step 4 hull-base_drawn start 20:27 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF=turnhull M1_GD=1 M1_SEEDS=440-445 exited 0 (build/ copied back)
+>> step 5 hull-new_clicked start 21:00 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_clicked M1_NEW_OFF= M1_GD=1 M1_SEEDS=440-445 exited 0 (build/ copied back)
+>> step 6 hull-base_clicked start 21:30 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_clicked M1_BASE_OFF=turnhull M1_GD=1 M1_SEEDS=440-445 exited 0 (build/ copied back)
+>> step 7 census-new start 22:04 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=census CPH_SEEDS=450-462 exited 0 (build/ copied back)
+>> step 8 census-base start 22:13 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=census CPH_SEEDS=450-462 exited 0 (build/ copied back)
+>> step 9 sbf-new start 22:19 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=sbf CPH_SEEDS=500-505 exited 0 (build/ copied back)
+>> step 10 sbf-base start 22:19 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=sbf CPH_SEEDS=500-505 exited 0 (build/ copied back)
+>> step 11 bridge-new start 22:20 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=bridge exited 0 (build/ copied back)
+>> step 12 bridge-base start 22:22 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=bridge exited 0 (build/ copied back)
+>> step 13 native-hull-new_drawn start 22:24 on pair/cpf-on b6c2a974
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_SEEDS=440-445 exited 0 (build/ copied back)
+>> step 14 native-hull-base_drawn start 22:50 on pair/cpf-off e5b767da
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF= M1_SEEDS=440-445 exited 0 (build/ copied back)
+>> series done 23:15

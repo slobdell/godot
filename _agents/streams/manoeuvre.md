@@ -72,14 +72,51 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-17, in progress)
+### Report (2026-10-17, CP-F judged: parks; C33.9 in development)
 
 | Item | State |
 |---|---|
 | F0 the missing face step | **DONE: not a main bug** (no fix commit). A real main bug found on the way, in planner's file: stale `PlannerSeam.live()` (sent to planner + orchestrator) |
-| F1 CP-F | IN PROGRESS: traced (attack-move's movers = element `arrived` limit cycle on main, brokered as R33.9 to brains); drawn_face fix + test committed 136c3828; bar filed with (m)-(o). pair tree 887ac6d2 GREEN (C31.1: builder0 2735/0, sim-baseline unmoved; native twins 0 mismatches). **Waiting on R33.9's verdict** to start the judged series (the day's last heavy builder0 job, R33.10). Planner's stale-live fix merged (main b122cf60) |
-| F2 help B11b | waiting on CP-F |
+| F1 CP-F | **JUDGED: PARKS** (series on pair/cpf-on b6c2a974, builder0, 14/14 calls exited 0): misses (a) attack-move 69.5 % (needs 70), (b) wheels/fixed ambush p 0.042, (c) as written, **(d) movers on ambush / move / screen**, (e) move. Passes (f)–(l), (q). Verdict below; orchestrator rules |
+| F2 help B11b | waiting on CP-F (parked) |
 | Stretch clip | DONE (CP-F (r)): **`build/manoeuvre/face_clip_rigs.mp4`** (War Rigs, squad 1 alone, laptop, commit 8fc224fa) + the IFV clips; for his eye, not evidence |
+
+### CP-F JUDGED SERIES: PARKS (2026-10-17; tables in `references/round33/manoeuvre/cpf-series/`)
+
+Tree **pair/cpf-on `b6c2a974`** (switch ON), BASE the same tree with `--nav-off=turnhull`; GDScript arms (`M1_GD=1` /
+`--brains-off=native`), builder0 heavy lane, one arm a call, 14/14 calls exited 0 (two builder0 drops on call 3, resumed;
+`series-summary.txt`). (m)'s native arms: flagless pair/cpf-on v **pair/cpf-off `e5b767da`**. Hull-rest 440-445: 4
+factions x 6 tasks x 6 seeds; runs read NEW drawn 143 / BASE drawn 141 / NEW clicked 143 / BASE clicked 140 of 144
+(gangs runs wrote no row; pairs dropped). Paired lines at **1.645 se of the summed paired difference** (`tests/manoeuvre/cpf_judge.py`;
+`hull_rest_ab.py`'s own M1_CLASS uses 2 se).
+
+| line | reading (GDScript, n as stated) | verdict |
+|---|---|---|
+| (a) wheels/turret drawn point tasks | move 4.3 deg / 78.0 %; right 2.8 / 82.3 %; attack-move 6.0 / **69.5 %** (n 164 crews each; native 71.3 %) | **FAIL** by 0.5 pt (attack-move) |
+| (b) every class, drawn, worse at p < 0.05 | **ambush wheels/fixed 3.9 v 2.6 deg, p 0.042** (p90 76 v 7); every other class/task better or p > 0.13 | **FAIL** (wheels fail as written, (o)) |
+| (c) clicked wheels/turret within +-5 deg | move 47.7 v 47.7, screen 52.0 v 55.1 PASS; ambush -6.8, right -7.1, attack-move **+9.5**, SBF **+8.8** (all p >= 0.197, both signs) | **FAIL as written**: the +-5 deg line is under the clicked arm's run-to-run spread (my bar's error, reported, not tuned) |
+| (d) crews moving at the judge, wt and all classes | ambush **+14 / +16** (lim 13.0 / 12.7); move **+13 / +11** (8.9 / 9.5); screen **+20 / +20** (15.7 / 15.5); attack-move +5, right +4/-2, SBF -10 PASS (n 23-24 paired runs) | **FAIL** on 3 of 6 tasks: attempt 2's line again |
+| (e) never settled, runs with wheels/turret | move **+3** (lim 2.6); others within; settle medians 75 v 75 s on 5 tasks | **FAIL** (move) |
+| (f) squads arrived, paired | 289 v 287 (140 pairs), diff +2, se 5.3 | PASS; re-seats NOT MEASURED (hull-rest rows carry no re-seat count) |
+| (g) Terminus 450-462 arrivals | mixed 294 v 293 of 312 (+1, lim 7.8); rigs 181 v 186 of 208 (-5, lim 9.2) | PASS |
+| (h) bridge-pooled | 18/18 both arms | PASS |
+| (i) fights 470-493 (21 pairs) | kills 894 v 896 (se 25.6), deaths 902 v 899 (se 25.0), hit rate 0.703 v 0.685 (+0.018, se 0.017) | PASS |
+| (j) counters, new drawn | hull_turns 113 355 (base 0); `hull_holds` is a Manoeuvre static never written to the census: **not read**; face_keep_refused 11 686 (by unit in counters.txt) | hull_turns PASS, hull_holds unmeasured |
+| (l) SBF gang_ifv drawn 500-505 | 24/24 in both; hull error at in **2.3 v 34.0 deg** (>= 45: 0 v 9) | REPORTED |
+| (m) native sign v GDScript | (a) agrees (move 3.3 v 62.6, right 3.3 v 92.7, attack-move 6.1 v 59.6); (d) agrees on ambush (+17/+21, FAIL) and attack-move all classes (+14, lim 12.8: FAIL natively); disagrees on move/screen (native +0/+2, +1/+1) | sign agrees on (a); (d) fails on both paths, on different tasks |
+| (q) fire while the hull turns | fights shots 24 086 v 20 146, hits 16 684 v 13 091 (both outside 2 se, UP) | the turn does not cost fire |
+
+**Reading.** The turn works where the bar aimed it: wheeled turret hulls on drawn point tasks end 3-6 deg off v 60-100
+deg (both paths), the squad still arrives, Terminus/bridge/fights hold and the turret fires more. **What fails is the
+settle**, the line attempt 2 failed: more crews are still moving at 75 s on ambush / move / screen. Who they are
+(`hull_rest_moving.txt`, MOVING_KIND): ambush NEW drawn 55 moving = **39 driving a move > 8 m from its goal**, 11
+pinned, 3 dressing, **2 face_legs, 0 face_creep**; BASE 35 = 28 driving, 7 pinned. So the extra movers are not hulls
+still turning: they are crews sent a NEW seat after they faced (goal 8-28 m out at the judge), as on tuning seeds
+40-45 before R33.9's latch. R33.9 latched `arrived`; something else still moves seats once the hulls turn (candidates:
+the turn's own drift moving the element centre, or the drawn station (p) changing what the seat is laid by). Gangs and law
+carry it (ambush 17/14 and 23/15, screen 23/10 and 17/8). **(b)**'s wheels/fixed tail (p90 76 v 7 deg on ambush) is a
+fixed-gun crew the switch should not touch; not traced. **Next if the orchestrator wants a second attempt:** trace the
+re-seat on one ambush run (gangs or law, a tuning seed 40-45) with seat-goal prints, NEW v BASE; no tuning on 440-445.
 
 ### F0: s66 faced_move traced on main (2026-10-17)
 
