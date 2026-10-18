@@ -20,7 +20,9 @@ Paired on (mode, faction, task, seed) where mode = drawn | clicked. Prints:
   HULL_PAIR  (with --verdict) round 33 P2's pooled guard lines: per mode, the paired diff over every (task, seed) of
              rest_med (mean), settle (mean, drawn) and moving (sum), its own se, the line at +K se and PASS / FAIL;
              the abandoned share per mode with a one-sided Fisher p (candidate below base) and the <= 5 % line.
-Optional --rows OUT.jsonl writes every per-run row. Usage: hull_aa.py DIR [--base base] [--new new] [--rows OUT]
+Optional --rows OUT.jsonl writes every per-run row. --distinct (round 33 overnight, as for CP-F's R33.23): HULL_PAIR
+counts a (base, new) pair once per cell however many seeds repeat it (hull_distinct.py) and prints HULL_DISTINCT.
+Usage: hull_aa.py DIR [--base base] [--new new] [--rows OUT] [--verdict [--distinct]]
 Report only: exits 0 whenever it read something.
 """
 import argparse
@@ -30,6 +32,9 @@ import pathlib
 import random
 import statistics
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import hull_distinct  # noqa: E402
 
 FOCUS = "wheels/turret"
 WINDOW_S = 75.0
@@ -128,6 +133,7 @@ def main(argv=None):
     ap.add_argument("--rows")
     ap.add_argument("--verdict", action="store_true", help="print P2's pooled lines (HULL_PAIR)")
     ap.add_argument("--k", type=float, default=1.645)
+    ap.add_argument("--distinct", action="store_true", help="HULL_PAIR over distinct pairs only (R33.23's rule)")
     args = ap.parse_args(argv)
     base, base_crews = read_arm(args.root, args.base)
     new, new_crews = read_arm(args.root, args.new)
@@ -218,6 +224,10 @@ def main(argv=None):
             ab = sum(recs[k]["abandoned"] for k in keys if k[0] == mode)
             print(f"HULL_AA_NULL 1 abandoned {mode} {arm} | {ab}/{asks} = {100.0 * ab / asks if asks else 0:.1f} %")
     if args.verdict:
+        if args.distinct:
+            keys, cells = hull_distinct.distinct_keys(base, new, keys)
+            for line in hull_distinct.summary(cells, "HULL_DISTINCT"):
+                print(line)
         verdict(base, new, keys, args.k)
     return 0
 

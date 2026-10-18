@@ -77,7 +77,8 @@ func _stage(weight: float, keep := 0.0) -> Dictionary:
 	var r := {"plans": PlannerSeam.plans, "abandoned": PlannerSeam.abandoned, "driven": PlannerSeam.driven,
 			"kept_served": PlannerSeam.face_kept_served, "fallbacks": PlannerSeam.face_kept_fallbacks,
 			"aligned_s": float(aligned) / SimClock.TICK_RATE if aligned >= 0 else -1.0,
-			"drift_m": Vector2(tank.global_position.x - START.x, tank.global_position.z - START.z).length()}
+			"drift_m": Vector2(tank.global_position.x - START.x, tank.global_position.z - START.z).length(),
+			"episodes": PlannerSeam.report()["face_episodes"]}
 	PlannerSeam.face_epsilon_override = -1.0
 	PlannerSeam.face_keep_override = -1.0
 	# Disposed (trip-up 83): a second stage's "Rig" beside an undisposed first one shares its name in the seam's table,
@@ -134,4 +135,47 @@ func test_a_street_face_back_falls_back_to_todays_search_inside_the_hold() -> vo
 	assert_true(PlannerSeam.face_kept_fallbacks >= 1 and PlannerSeam.face_kept_served == 0, "by today's search, after the kept one gave way (%s)" % r)
 	PlannerSeam.face_keep_override = -1.0
 	lab.dispose()
+	PlannerSeam.reset()
+
+
+## R33.26 (P3's (2c) re-scoped, paired BY FACE): every face the seam is asked about is an EPISODE (one crew, one home,
+## from its first ask until its order moves on), with its outcome and the hull's own furthest from home. A face only
+## the candidate plans is judged against what the base's hull did for the same ask: here the base abandons the
+## face-behind and today's executor turns it, and its episode still says how far the hull went.
+func test_each_face_is_one_episode_with_the_hulls_own_furthest_from_home() -> void:
+	var base := await _stage(0.0)
+	var cand := await _stage(0.0, 1.0)
+	print("FACE_EPISODES stage: default %s | keep 1 %s" % [JSON.stringify(base["episodes"]), JSON.stringify(cand["episodes"])])
+	for r: Dictionary in [base, cand]:
+		var eps: Array = r["episodes"]
+		assert_eq(eps.size(), 1, "one face ordered, one episode (%s)" % [eps])
+		if eps.size() != 1:
+			return
+		var ep: Dictionary = eps[0]
+		assert_eq(String(ep["name"]), "Rig", "named by its crew (%s)" % ep)
+		assert_near(float(ep["home"][0]), START.x, 0.6, "its home is the face's spot (%s)" % ep)
+		assert_near(float(ep["home"][1]), START.z, 0.6, "its home is the face's spot (%s)" % ep)
+		assert_true(float(ep["hull_far"]) + 0.15 >= float(r["drift_m"]), "the hull's furthest covers where it ended (%s v %s)" % [ep, r["drift_m"]])
+	var b: Dictionary = base["episodes"][0]
+	var c: Dictionary = cand["episodes"][0]
+	# Today: abandoned, the executor turns the rig (its hull out to ~12 m), and a re-ask plans the remainder (a short
+	# plan): the plan's furthest understates where the hull went, which is why (2c) reads hull_far.
+	assert_true(int(b["abandoned"]) >= 1 and float(b["hull_far"]) > float(b["plan_far"]) + 2.0,
+			"the base abandons it to the executor, whose drive the plan's furthest does not show (%s)" % b)
+	assert_true(bool(c["served"]) and bool(c["kept"]) and float(c["plan_far"]) > 0.0, "the candidate's kept plan serves it (%s)" % c)
+	assert_true(float(c["plan_far"]) <= float(c["hull_far"]) + 2.0, "and the plan's furthest is what the hull drove, near enough (%s)" % c)
+
+
+## An episode ends when its crew asks for a face somewhere else: two homes, two episodes, the first closed.
+func test_a_new_home_closes_the_crews_episode() -> void:
+	PlannerSeam.reset()
+	PlannerSeam._face_ask("Rig", Vector3(0.0, 0.0, 0.0), null, 10)
+	PlannerSeam._face_ask("Rig", Vector3(0.3, 0.0, 0.2), null, 40)
+	PlannerSeam._face_ask("Rig", Vector3(20.0, 0.0, 0.0), null, 90)
+	var eps: Array = PlannerSeam.report()["face_episodes"]
+	assert_eq(eps.size(), 2, "the same home asked again is one episode, a new home a second (%s)" % [eps])
+	if eps.size() == 2:
+		assert_eq(int(eps[0]["asks"]), 2, "two asks at the first home (%s)" % [eps])
+		assert_eq(String(eps[0]["closed_by"]), "new home", "closed by the new home (%s)" % [eps])
+		assert_eq(int(eps[1]["asked"]), 90, "the second opened at its own ask (%s)" % [eps])
 	PlannerSeam.reset()

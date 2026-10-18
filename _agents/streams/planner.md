@@ -21,7 +21,8 @@ trucks pinning on a wall at speed; a War Rig told to face behind in open ground 
 - **On main:** CP-S (the side gate), the SLICE preset (laptop back to SLICE 2: ~0.18–0.24 ms a tick on his laptop,
   `65cc43dd`), the capture fix, `--planner-queue=shared` (refuse early ONLY at rest, `d98656ab`) OFF, `shared-rolling` kept
   for the record. Targets: `planner-judge-queue`, `planner-series-queue`, `planner-trace-hull-rest`,
-  `planner-trace-drive-queue`, `planner-stage-s207`.
+  `planner-trace-drive-queue` (`planner-stage-s207` RETIRED in the round 33 overnight: its control no longer reproduces
+  and the shared queue failed P2).
 - **CP-Q PARKED in round 32:** the starvation is gone, but serving 1.5–2× the face plans in a 19-crew press cost drawn
   facing, settling and wall contact; the FIFO's hold was an implicit brake (Terminus s207: shared-rolling pins
   Green_S0_4 on Block_7 2043 ticks; refuse-at-rest 0). Line (3)'s misses at n 6 seeds were not shown to be the queue's:
@@ -304,3 +305,54 @@ the morning.
    builder2. CP-F's misses turned out to be pacing (R33.23), and P3's clicked-drift p90 miss may be too. The bar is
    R33.19's, re-filed with the new seeds.
 3. **Only if it fails pinned:** P3 v3, the slot cap (roadmap).
+
+**Overnight Status (keep current; the lead reads this in the morning):**
+- **(1) Tools: DONE** (laptop, `make planner-pytest` 4/4). `series_verdict.py seam=both`: the seam runs in BOTH arms, so
+  the base's seam firing is expected. It prints `PLANNER_SERIES_SEAM_BASE_TOTAL` beside the candidate's, still judges
+  arrivals the same way, and refuses if the base's seam NEVER fired (the flags missed the base). The default keeps round
+  31's guard. `planner-series-face` passes `PLANNER_SERIES_SEAM=both`. **stage_s207 RETIRED** (target and script):
+  round 32's pin no longer reproduces, and the shared queue it guarded failed P2 (R33.13) and does not ship. Re-make it
+  with a new control seed if the shared queue is ever re-filed. `planner-pytest` is not in `make check` (core.mk is not
+  planner's).
+- **(2) P3 v2 re-judged PINNED: bar FILED** (main `daa71aaf`, before any number): R33.19's bar on pair tree main +
+  manoeuvre's `670f4e12` (hull-rest at `--fixed-fps`) + FACE_KEEP_DEFAULT 1. Fresh seeds: hull-rest 96-107, Terminus
+  244-256. All on builder2. The orchestrator added CP-F's rule: report distinct rows per cell, every se over distinct
+  pairs only. **Tooling for that** (laptop, unit tests 7/7): `hull_distinct.py` (one pair per distinct (base,
+  candidate) row in a cell), `hull_aa.py --distinct`, `face_keep_table.py --distinct`, `kept_share.py` (line (0)'s kept
+  share and (2d)'s holds, now in the repo). **Decided before numbers:** the judged lines are the `--distinct` outputs
+  (lines (2a), (2b), (2c) and (0)'s share all on the distinct pairs, (2c)'s median and p90 included). The all-runs
+  lines are reported beside them.
+- **(2) VERDICT: FAIL -> PARKED again, on (2c) clicked alone** (pair `c3acd47a2`, builder2 (GCP c4d-32), 2026-10-18
+  11:55-12:20 PDT; check green by the orchestrator's rule: builder2 `2771 passed, 0 failed`, remote-guard-test failed
+  under load there (quiet-window), builder0 `make remote-guard-test exited 0`). FIFO, no CP-F, one tree for every step.
+  Pinned runs pair off by seed (96 = 101, 99 = 106, 100 = 104), so distinct pairs are 36 of 72 a mode. Judged on the
+  distinct pairs; all-runs lines agree on every PASS/FAIL. Evidence: `references/round33/planner/p3-pinned-c3acd47a2/`.
+
+  | line | result (distinct pairs; all runs in brackets) |
+  |---|---|
+  | (0) | **PASS**. yard stage native on (check) and off (cell): kept_served 1, fallbacks 0, abandoned 0, aligned 9.83 v 15.43 s, drift 0.97 m. Kept share drawn 17/21 = 81 % (29/36), clicked 14/14 = 100 % (26/26) |
+  | (0b) | **PASS** native on and off: served after 1 fallback, hold 26, abandoned 0 |
+  | (1) | **PASS**: the cell 19/0 native off; the check native on |
+  | (2a) | **PASS**. drawn rest_med -0.15 (se 0.40, line +0.65), settle +1.15 (se 1.43, +2.35), moving -1 (se 1.00, +1.65); clicked rest_med +0.27 (se 0.25, +0.41), moving -1 (se 1.00, +1.65). 3a null cells failing: 0 of 24 |
+  | (2b) | **PASS**. drawn 0/105 v 0/111; clicked 2/152 = 1.3 % v 1/154 = 0.6 % (line 2.5 %) |
+  | (2c) | drawn **PASS** (median 3.4 v 3.9 m, p90 14.3 v 14.3). clicked **FAIL**: median 3.0 v 2.7 m ok (line 4.1), **p90 6.3 v 4.9 m over** (all runs 6.3 v 5.7), max 12.4 v 5.7; plans 14 v 10 distinct (26 v 18) |
+  | (2d) | REPORTED: hold medians 4 v 4 both modes |
+  | (3) | **PASS** (series_verdict seam=both): rigs 178 v 179 of 208, paired -0.077 (se 0.560); mixed 295 v 295; contact-ticks median rigs 488 v 415 |
+
+  **What the miss is (traced):** the clicked tail is faces TODAY'S SEARCH DOES NOT PLAN. Clicked face asks 267 v 271,
+  served plans 26 v 18: the candidate serves 8 more, from the same asks. The worst pair, faced_attack_move s100 (= s104),
+  has base face_far [] (10 face asks, none planned) and candidate [12.4, 3.2] (2 kept, 0 fallbacks). So (2c) compares
+  different populations: it charges the candidate for serving faces the base hands elsewhere. **12.4 m is inside one hull
+  length (14 m), so the slot cap (v3) would not cut it.** It is not the slot-law extension that `bca4eaca`'s inference
+  suspected. **Recommendation (to the orchestrator before any v3 work):** v3 as written cannot fix this line. Either
+  re-scope (2c) to faces both arms planned (paired by face), with the extra faces reported along with what the base did
+  instead, or park P3 for good. Either is a new bar on fresh seeds.
+- **R33.26 (orchestrator): (a).** P3 v2 parks as filed; (2c) re-scoped to drift paired BY FACE; v3 withdrawn.
+  **Built (laptop, GDScript drive: planner Godot tests 22/0; tool tests 13/13):** the seam's `face_episodes` (one crew
+  at one home, from its first ask until a new home, a new order destination, the hull freed or 30 s: the seam's
+  outcome, the plan's furthest and the HULL's own furthest from home, whoever drove it; measurement only) and
+  `tests/planner/face_pairs.py` (episodes paired by crew and home inside a paired run; classes both / candidate only /
+  base only / unmatched; `--distinct`). **Finding that shapes the bar:** the yard stage's base episode is "served",
+  because after the abandon the executor turns the rig (hull 12.1 m out) and a re-ask plans a 1.4 m remainder. A
+  plan's furthest understates what today does, so every class is judged on the hull's own furthest (candidate 11.5 v
+  base 12.1 m there), with plan_far reported.

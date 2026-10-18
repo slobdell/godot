@@ -7,7 +7,10 @@ PLANNER_SEAM_REPORT of every run.
   FACE_KEEP_FAR        (2c) served face plans' furthest-from-home (face_far, m): candidate median <= base median +
                        1.645 se (bootstrap over plans, 4000 rounds, seed 33) AND candidate p90 <= base p90; max reported
 
-Usage: face_keep_table.py <hull-rest dir> [--seeds "84 85 ..."]  (only those seeds' runs are read when given)
+Usage: face_keep_table.py <hull-rest dir> [--seeds "84 85 ..."] [--distinct]
+  --seeds: only those seeds' runs are read. --distinct (round 33 overnight, as for CP-F's R33.23): a (base, candidate)
+  run pair whose face counters and plans repeat another seed's in the same (faction, task) is read once
+  (hull_distinct.py), and FACE_KEEP_DISTINCT says how many pairs remain.
 """
 import json
 import math
@@ -15,6 +18,9 @@ import pathlib
 import random
 import statistics
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import hull_distinct  # noqa: E402
 
 K = 1.645
 
@@ -27,20 +33,27 @@ def last_report(log):
     return json.loads(last.split(" ", 1)[1]) if last else None
 
 
-def arm(root, name, seeds):
-    asks = abandoned = runs = 0
-    far = []
+def runs(root, name, seeds):
+    """{(faction, task, seed): {"asks", "abandoned", "far"}} from each run's last report (face asks only)."""
+    out = {}
     for log in sorted(pathlib.Path(root, name).glob("*/*/run.log")):
-        if seeds and log.parent.name.rsplit("-", 1)[-1] not in seeds:
+        task, seed = log.parent.name.rsplit("-", 1)
+        if seeds and seed not in seeds:
             continue
         rep = last_report(log)
         if rep is None:
             continue
-        runs += 1
-        asks += int(rep.get("asks_by_kind", {}).get("face", 0))
-        abandoned += int(rep.get("abandoned_by_kind", {}).get("face", 0))
-        far += [float(x) for x in rep.get("face_far", [])]
-    return {"runs": runs, "asks": asks, "abandoned": abandoned, "far": far}
+        out[(log.parent.parent.name, task, seed)] = {
+            "asks": int(rep.get("asks_by_kind", {}).get("face", 0)),
+            "abandoned": int(rep.get("abandoned_by_kind", {}).get("face", 0)),
+            "far": [float(x) for x in rep.get("face_far", [])]}
+    return out
+
+
+def total(recs, keys):
+    keys = [k for k in keys if k in recs]
+    return {"runs": len(keys), "asks": sum(recs[k]["asks"] for k in keys),
+            "abandoned": sum(recs[k]["abandoned"] for k in keys), "far": [x for k in keys for x in recs[k]["far"]]}
 
 
 def p90(xs):
@@ -60,7 +73,14 @@ def main():
     seeds = set(sys.argv[sys.argv.index("--seeds") + 1].split()) if "--seeds" in sys.argv else set()
     ok = True
     for mode in ("drawn", "clicked"):
-        b, c = arm(root, f"base_{mode}", seeds), arm(root, f"new_{mode}", seeds)
+        rb, rc = runs(root, f"base_{mode}", seeds), runs(root, f"new_{mode}", seeds)
+        if "--distinct" in sys.argv:
+            keys, cells = hull_distinct.distinct_keys(rb, rc, sorted(set(rb) & set(rc)))
+            for line in hull_distinct.summary({(mode,) + c: v for c, v in cells.items()}, "FACE_KEEP_DISTINCT"):
+                print(line)
+            b, c = total(rb, keys), total(rc, keys)
+        else:
+            b, c = total(rb, rb), total(rc, rc)
         if not b["runs"] or not c["runs"]:
             print(f"FACE_KEEP_ABANDONED {mode} | missing arm (base runs {b['runs']}, candidate runs {c['runs']})")
             ok = False

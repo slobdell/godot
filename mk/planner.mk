@@ -121,6 +121,9 @@ PLANNER_SERIES_DIR := $(BUILD_DIR)/planner-series
 # native drive) v candidate "--planner-queue=shared" (`make planner-series-queue`).
 PLANNER_SERIES_BASE_FLAGS ?= --brains-off=native_drive
 PLANNER_SERIES_CAND_FLAGS ?= --brains-off=native_drive --nav-off=planner
+# Round 33 overnight: `both` when the seam runs in BOTH arms (the switch under test is the queue or the face keep), so
+# series_verdict reports the base's seam instead of refusing on it. Empty = round 31's guard (the base never seams).
+PLANNER_SERIES_SEAM ?=
 
 .PHONY: planner-series
 planner-series: native import ## planner CP-P1: the judged Terminus series, base v the seam ON over PLANNER_SERIES_SEEDS x PLANNER_SERIES_SQUADS, read by series_verdict.py -> build/planner-series/
@@ -131,7 +134,7 @@ planner-series: native import ## planner CP-P1: the judged Terminus series, base
 		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS="$(PLANNER_SERIES_SQUADS)" DRIVE_SEEDS="$(PLANNER_SERIES_SEEDS)" \
 			NAV_FLAGS="$$flags" > $(PLANNER_SERIES_DIR)/$$arm.out 2>&1 || { tail -20 $(PLANNER_SERIES_DIR)/$$arm.out; echo ">> planner-series: arm $$arm REFUSED"; exit 1; }; \
 		mv $(BUILD_DIR)/nav-drive $(PLANNER_SERIES_DIR)/$$arm; done
-	@$(PYTHON) tests/planner/series_verdict.py base=$(PLANNER_SERIES_DIR)/base candidate=$(PLANNER_SERIES_DIR)/candidate | tee $(PLANNER_SERIES_DIR)/verdict.txt
+	@$(PYTHON) tests/planner/series_verdict.py base=$(PLANNER_SERIES_DIR)/base candidate=$(PLANNER_SERIES_DIR)/candidate $(if $(PLANNER_SERIES_SEAM),seam=$(PLANNER_SERIES_SEAM)) | tee $(PLANNER_SERIES_DIR)/verdict.txt
 
 # Round 31 (planner CP-P1, bar lines (c)-(e)): the judged chain's other stages on manoeuvre's / tactics' targets with
 # the bar's two arms, ONE arm a call (lesson 311). PLANNER_JUDGE_ARM = base | candidate: both arms the GDScript drive
@@ -248,18 +251,14 @@ planner-trace-drive-queue: native import ## planner round 32: the Terminus drive
 		cp $(BUILD_DIR)/nav-drive/$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log; \
 		grep -E "^PLANNER_SEAM $(PLANNER_TQ_UNIT) " $(PLANNER_TRACE_DIR)/$$arm-$(PLANNER_TQ_SQUAD)-$(PLANNER_TQ_SEED).log | cut -c1-260 || true; done
 
-# Round 32 (the round-33 candidate, "refuse early only at rest"): Terminus rigs seed 207 on --planner-queue=shared-rolling
-# (the first cut: must reproduce Green_S0_4's pin on Block_7) and on shared (must not). Deterministic: one run an arm.
-# make remote LIGHT=1 T=planner-stage-s207 -> build/planner-stage/{shared-rolling,shared}-rigs-207.log + STAGE_S207
-PLANNER_STAGE_DIR := $(BUILD_DIR)/planner-stage
-.PHONY: planner-stage-s207
-planner-stage-s207: native import ## planner round 32: the s207 stage, refuse early from a rolling pose (pins) v only at rest (must not) -> STAGE_S207
-	@rm -rf $(PLANNER_STAGE_DIR) && mkdir -p $(PLANNER_STAGE_DIR)
-	@echo ">> planner-stage-s207 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
-	@for arm in shared-rolling shared; do \
-		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS=rigs DRIVE_SEEDS=207 NAV_FLAGS="--planner-queue=$$arm" NAV_JOBS=1 > /dev/null 2>&1 || true; \
-		cp $(BUILD_DIR)/nav-drive/rigs-207.log $(PLANNER_STAGE_DIR)/$$arm-rigs-207.log; done
-	@$(PYTHON) tests/planner/stage_s207.py rolling=$(PLANNER_STAGE_DIR)/shared-rolling-rigs-207.log shared=$(PLANNER_STAGE_DIR)/shared-rigs-207.log
+# Round 32's s207 stage (planner-stage-s207, tests/planner/stage_s207.py) is RETIRED (round 33 overnight): its control
+# (--planner-queue=shared-rolling pinning Green_S0_4 on Block_7) no longer reproduces, and the shared queue it guarded
+# failed P2 (R33.13) and does not ship. Re-make it with a new control seed if the shared queue is ever re-filed.
+
+# The planner's own Python tool tests (series_verdict's both-arms-seam mode). Laptop-light: make planner-pytest
+.PHONY: planner-pytest
+planner-pytest: ## planner: the planner tools' own Python tests (tests/planner/test_*.py)
+	$(PYTHON) -m unittest discover -s tests/planner -p 'test_*.py'
 
 # ---- round 33 (P1, C33.6 (a)): line (3)'s noise, the hull-rest gang arm A/A -------------------------------------------
 # The FIFO both arms: base_* and new_* run the SAME flags (--planner-queue=fifo, the native drive) on the SAME seeds, so
@@ -312,4 +311,5 @@ PLANNER_FACE_SERIES_SEEDS ?= 231 232 233 234 235 236 237 238 239 240 241 242 243
 .PHONY: planner-series-face
 planner-series-face: ## planner round 33 P3: planner-series with base = --planner-face-keep=0, candidate = 1 (FIFO both), on PLANNER_FACE_SERIES_SEEDS
 	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_FACE_SERIES_SEEDS)" \
-		PLANNER_SERIES_BASE_FLAGS="--planner-queue=fifo --planner-face-keep=0" PLANNER_SERIES_CAND_FLAGS="--planner-queue=fifo --planner-face-keep=1"
+		PLANNER_SERIES_BASE_FLAGS="--planner-queue=fifo --planner-face-keep=0" PLANNER_SERIES_CAND_FLAGS="--planner-queue=fifo --planner-face-keep=1" \
+		PLANNER_SERIES_SEAM=both

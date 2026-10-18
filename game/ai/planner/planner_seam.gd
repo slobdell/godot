@@ -112,6 +112,8 @@ const SHADOW_EPSILONS: Array[float] = [1.5, 2.0, 3.0]
 ## pending cap (no budget raised: the price per tick is the slice on every preset). Census a6368824 (seeds 66-71,
 ## diagnosis): 20 faces served inside the hold either way, 19 of them by the kept plan.
 const FACE_KEPT_SHARE := EXPANSIONS_PER_HOLD / 4
+const FACE_WATCH_S := 30.0      # an episode's longest watch: a face is long done by then (hull-rest's window is 75 s)
+const FACE_HOME_M := 1.0        # the same home within this: the same face asked again
 const RETRY_TICKS := SimClock.TICK_RATE
 const REPLANS_PER_ORDER := 2
 const MOVED_M := 0.5
@@ -152,6 +154,13 @@ static var asks_by_kind := {}
 static var abandoned_by_kind := {}
 static var face_kept_served := 0      # face plans served by the KEPT search (P3's open-ground gain line)
 static var face_kept_fallbacks := 0   # kept searches that gave way to today's
+## R33.26 (P3's (2c) paired BY FACE): every face the seam is asked about is an EPISODE, one crew at one home from its
+## first ask until the crew asks for a face elsewhere ("new home"), its order takes it to a new destination ("order"),
+## its hull is freed ("freed") or FACE_WATCH_S pass ("cap"). Each says how it ended for the seam (served, kept, the
+## plan's furthest from home; refusals by code; abandons) and how far the HULL itself went from home over the episode,
+## whoever drove it (the plan, today's executor after an abandon or a refusal). Measurement only: nothing reads it back.
+static var face_episodes: Array = []
+static var _face_watch: Dictionary = {}   # name -> {"ep", "tank", "mover", "goal"}: the open episodes (never captured)
 static var holds: PackedInt32Array = []   # hull-ticks held before each event's end (a plan landed, refused or abandoned): median/max reported
 ## The slice this match plans at (`slice()`), latched once per match; where it came from ("flag", "preset", "default").
 static var _slice := SLICE
@@ -395,7 +404,8 @@ static func report() -> Dictionary:
 			"driving_ticks": driving_ticks, "queue_waits": queue_waits, "refused_early": refused_early, "stale_released": stale_released, "queue": "shared" if queue_on() else "fifo", "live": _live_count(), "slice": _slice,
 			"holds": _hold_stats(), "hold_ticks": Array(holds), "face_far": Array(face_far),
 			"asks_by_kind": asks_by_kind.duplicate(), "abandoned_by_kind": abandoned_by_kind.duplicate(),
-			"face_kept_served": face_kept_served, "face_kept_fallbacks": face_kept_fallbacks}   # hold_ticks: the per-event list (the series pools it per arm)
+			"face_kept_served": face_kept_served, "face_kept_fallbacks": face_kept_fallbacks,
+			"face_episodes": face_episodes.duplicate(true)}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
@@ -430,6 +440,8 @@ static func reset() -> void:
 	abandoned_by_kind = {}
 	face_kept_served = 0
 	face_kept_fallbacks = 0
+	face_episodes = []
+	_face_watch = {}
 	last_plans = []
 	_release_all()
 
@@ -462,9 +474,10 @@ static func _hook() -> void:
 
 
 static func _release_stale() -> void:
+	var tick := Engine.get_physics_frames()
+	_watch_faces(tick)
 	if _crews.is_empty():
 		return
-	var tick := Engine.get_physics_frames()
 	for name: String in _crews.keys():
 		var crew: Crew = _crews[name]
 		if tick - crew.tick_seen > STALE_TICKS:
@@ -618,6 +631,8 @@ static func _request(mover: Movement, kind: String, target: Vector3, want: Vecto
 	crew.free_keep = free_keep
 	_crews[name] = crew
 	_hook()
+	if kind == "face":
+		_face_ask(name, target, mover, tick)
 	_queue.append(name)
 	requests += 1
 	asks_by_kind[kind] = int(asks_by_kind.get(kind, 0)) + 1
@@ -632,6 +647,9 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	if tick - crew.asked_tick >= pending_cap():
 		abandoned += 1
 		abandoned_by_kind[crew.kind] = int(abandoned_by_kind.get(crew.kind, 0)) + 1
+		if crew.kind == "face":
+			var gave_up := _face_episode(name)
+			gave_up["abandoned"] = int(gave_up["abandoned"]) + 1
 		holds.append(tick - crew.held_since)
 		last_abandoned = {"name": name, "kind": crew.kind, "begun": crew.begun, "stepped": crew.stepped,
 				"start": [snappedf(crew.req.start_x, 0.01), snappedf(crew.req.start_z, 0.01), snappedf(crew.req.start_fx, 0.01), snappedf(crew.req.start_fz, 0.01)],
@@ -824,6 +842,9 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 		return false
 	if plan.code != PackedPlan.OK:
 		refused[plan.code] = int(refused.get(plan.code, 0)) + 1
+		if crew.kind == "face":
+			var by_code: Dictionary = _face_episode(name)["refused"]
+			by_code[plan.code] = int(by_code.get(plan.code, 0)) + 1
 		holds.append(tick - crew.held_since)
 		_last_refusal[name] = [tick, plan.code]
 		_release(name)
@@ -842,6 +863,10 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 		for pose: Array in plan.poses:
 			far = maxf(far, Vector2(float(pose[0]) - crew.goal.x, float(pose[1]) - crew.goal.z).length())
 		face_far.append(snappedf(far, 0.1))
+		var ep := _face_episode(name)
+		ep["served"] = true
+		ep["kept"] = bool(ep["kept"]) or crew.kept
+		ep["plan_far"] = maxf(float(ep["plan_far"]), snappedf(far, 0.1))
 	crew.pending = false
 	crew.executor = PlannerExecutor.new()
 	crew.executor.start(plan, tank)
@@ -988,6 +1013,62 @@ static func side_gate_in(world: PlannerWorld, slot: Vector3, facing: Vector3, un
 ## Decline asks from THIS hull for RETRY_TICKS. Keyed by name, carrying the hull's instance: a later match's hull under
 ## the same name is not declined (round 32: the War Rig face-behind played twice in one process skipped its first plan
 ## in the second match, play 1's window still open on "Rig"; the round-31 rule for any static keyed by name).
+## A face ask: the crew's open episode when it is the same home, else a new one (the old closed by the new home). `mover`
+## null (tests) watches nothing.
+static func _face_ask(name: String, home: Vector3, mover: Movement, tick: int) -> Dictionary:
+	var open: Variant = _face_watch.get(name)
+	if open != null:
+		var ep: Dictionary = (open as Dictionary)["ep"]
+		if Vector2(float(ep["home"][0]) - home.x, float(ep["home"][1]) - home.z).length() <= FACE_HOME_M:
+			ep["asks"] = int(ep["asks"]) + 1
+			return ep
+		_face_close(name, "new home")
+	var fresh := {"name": name, "home": [snappedf(home.x, 0.1), snappedf(home.z, 0.1)], "asked": tick, "asks": 1,
+			"served": false, "kept": false, "plan_far": 0.0, "refused": {}, "abandoned": 0, "hull_far": 0.0, "ticks": 0,
+			"closed_by": ""}
+	face_episodes.append(fresh)
+	_face_watch[name] = {"ep": fresh, "tank": weakref(mover.ctl.tank) if mover != null else null,
+			"mover": weakref(mover) if mover != null else null, "goal": mover._goal if mover != null else Vector3.INF}
+	return fresh
+
+
+## The crew's open episode (a throwaway when none is open: a restored snapshot's crew).
+static func _face_episode(name: String) -> Dictionary:
+	var open: Variant = _face_watch.get(name)
+	return (open as Dictionary)["ep"] if open != null else {"abandoned": 0, "refused": {}, "kept": false, "plan_far": 0.0}
+
+
+static func _face_close(name: String, why: String) -> void:
+	var open: Variant = _face_watch.get(name)
+	if open != null:
+		(open as Dictionary)["ep"]["closed_by"] = why
+		_face_watch.erase(name)
+
+
+## Once a tick (the physics_frame hook): each open episode's hull, its furthest from home, and whether it has ended.
+static func _watch_faces(tick: int) -> void:
+	if _face_watch.is_empty():
+		return
+	var cap := int(FACE_WATCH_S * Engine.physics_ticks_per_second)
+	for name: String in _face_watch.keys():
+		var open: Dictionary = _face_watch[name]
+		var ep: Dictionary = open["ep"]
+		var tank: Tank = (open["tank"] as WeakRef).get_ref() if open["tank"] != null else null
+		var mover: Movement = (open["mover"] as WeakRef).get_ref() if open["mover"] != null else null
+		if tank == null or not is_instance_valid(tank) or tank.is_queued_for_deletion():
+			if open["tank"] != null:
+				_face_close(name, "freed")
+			continue
+		ep["ticks"] = tick - int(ep["asked"])
+		var at := Vector2(tank.global_position.x - float(ep["home"][0]), tank.global_position.z - float(ep["home"][1])).length()
+		ep["hull_far"] = maxf(float(ep["hull_far"]), snappedf(at, 0.1))
+		var goal: Vector3 = mover._goal if mover != null and is_instance_valid(mover) else Vector3.INF
+		if goal != Vector3.INF and (open["goal"] == Vector3.INF or _flat(goal, open["goal"]) > FACE_HOME_M):
+			_face_close(name, "order")
+		elif int(ep["ticks"]) >= cap:
+			_face_close(name, "cap")
+
+
 static func _decline(name: String, tank: Tank, tick: int) -> void:
 	_retry_until[name] = [tick + RETRY_TICKS, tank.get_instance_id() if is_instance_valid(tank) else 0]
 
@@ -1074,6 +1155,8 @@ static func restore(snapshot: Dictionary) -> void:
 	refused_early = int(counters.get("refused_early", 0))
 	stale_released = int(counters.get("stale_released", 0))
 	face_far = PackedFloat32Array(counters.get("face_far", []))
+	face_episodes = (counters.get("face_episodes", []) as Array).duplicate(true)
+	_face_watch = {}   # open episodes are not captured: a restored run's episodes stop where the snapshot stood
 	asks_by_kind = (counters.get("asks_by_kind", {}) as Dictionary).duplicate()
 	abandoned_by_kind = (counters.get("abandoned_by_kind", {}) as Dictionary).duplicate()
 	face_kept_served = int(counters.get("face_kept_served", 0))
