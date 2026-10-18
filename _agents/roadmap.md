@@ -1361,3 +1361,7 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 - **Scout fights back, second try (brains; R33.31):** fight only an even-or-better duel (duel advantage ≥ 1), dropping
   the "can't get away" speed clause that sent it into fights it lost against faster, longer-ranged syn_scouts. Judge reach
   over the next second or two, not the tick. Fresh bar on orbit seeds 73–79.
+- **hull-rest's crew row and spawn (control's file, screen_playtest.gd; asked by manoeuvre):** (1B) an additive
+  `real_mps` field per crew row, so "still" reads real velocity in the row itself; (2B) `--faced-shift-m`, a per-seed
+  shift of the order's destination, so the seed varies the stage's geometry. Round 33 shipped the judge-side versions
+  (wedged crews reported apart; a per-seed facing jitter).
