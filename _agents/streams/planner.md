@@ -403,3 +403,10 @@ shipped (R33.28). (3) v3, the slot cap: WITHDRAWN (R33.26); its target, the 12.4
 - **The old unpaired (2c)** (face_keep_table FACE_KEEP_FAR) is superseded by face_pairs; keep it reported, or retire it.
 - **The shared queue (CP-Q, R33.13)** stays parked; if re-filed it needs a new s207-style control (stage_s207 retired).
 - **test_quiet_window.sh** fails under builder2's load (orchestrator: native's load-flaky item).
+
+**CLOSED (2026-10-18). GREEN HASH: main `bed0ef59e`** (P3 in, code identical to `31bf55ae3`; the orchestrator's run):
+builder2 (GCP c4d-32) `make check exited 2`, 2773 passed / 0 failed, sim-baseline 13 unmoved, perf-judge JUDGED PASS
+1.09x. The only reds were load-sensitive (net-smoke: one client saw 1/2 tanks; combat-smoke not run behind it; the
+quiet-window test), and all three re-ran green alone on builder0: `make net-smoke combat-smoke remote-guard-test exited
+0`. GREEN by the R33.6 rule. Stream tip `b05583f1a` = that + this Status, the R33.26 evidence and face_pairs.py's
+1-face fix (tests/planner Python only, which check does not run). Nothing pushed.
