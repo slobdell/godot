@@ -62,6 +62,8 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 
 
 func test_decide_is_the_gdscript() -> void:
+	if FreshStage.parent(self, "test_decide_is_the_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	if not NativeBridge.available:
 		print("native: absent, the decide equality is not exercised in this run")
 		return
@@ -148,5 +150,6 @@ func test_decide_is_the_gdscript() -> void:
 	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native decide: %d decisions, %d mismatches, chosen %s" % [asked, mismatches, options])
 	assert_eq(mismatches, 0, "the native decide is the GDScript's: %s" % first)
-	assert_true(scout_fights >= 1, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
+	# Half builder2's fresh-process count (108 of 480 at bea3738f): a floor against a vacuous run, not a target.
+	assert_true(scout_fights >= 54, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])
