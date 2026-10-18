@@ -53,7 +53,11 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   wall-clock bound failed at load 30.8 and passed re-run alone, first sound 11.7 s). What he'd notice: a CPU squad of 6–8
   fights in coordinated groups of at most five instead of unseated, and a respawned CPU crew rejoins doctrine. **Plus
   `279600af`** (brains `f8cf6476`, test only): the body test runs each arm in its own process (R33.14). Both ride the next
-  main check, with traffic's islands once they're rebased onto main.
+  main check, with traffic's islands.
+- **Islands → main `f18e021f`** (traffic `0bf0a721` = b71b8097's three commits rebased onto main; b71b8097 builder0 exited 0,
+  2732/0, sim-baseline unmoved, foundry included). The navmesh bake drops foundry's crate-roof islands (region_min_size 8).
+  What he'd notice: nothing, except no unit ever plans onto a crate roof. **Far census → main `dd32ede1`** (traffic `c54a932d`):
+  round 34's measurement tools, no game code.
 
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
