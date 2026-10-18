@@ -59,6 +59,10 @@ straight-line jinking) took more hits out there. (3) leave it parked. **Recommen
 The shuffle you reported is gone everywhere. Out of reach the real answer is that an outgunned scout should LEAVE, which
 is brains' "scout fights back or gets away" work, already in progress. Option 2 would bring back the very thing you
 reported.
+**Option 2 measured (dev seeds, builder0; stream/manoeuvre `3a274fffb`):** with "turn in only within reach", the shuffle
+came back beyond reach, with up to 203 chosen reverse ticks and 42 gear changes in a run, a scout drifting 75.6 m from
+its post, and out-of-reach hits still up (42 → 49). A tuned variant was worse. **So the recommendation stands: ship
+attempt 1 (`781801da0`'s turn-in) as it is.**
 
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
