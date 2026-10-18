@@ -83,6 +83,9 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   spot:back 9 ≥ 15, with 0 mismatches in 546 and 738 compared drives. Everything else is green: 2749 passed, perf-judge
   JUDGED PASS 1.00x, sim-baseline 13 unmoved, 908 s. The stage's counts move with the shard order (16 shards on builder2).
   Native fixes it test-only (fresh-process arms, or ≥ 1 floors); main stays red until it lands.
+  **≥ 1 floors (`de6d3266`) were not enough:** main `de6d3266` on builder2 (R4 in it): 2769/2, sim-baseline unmoved, 0
+  mismatches. test_native_gate's latch path read 0, and test_native_yield's parked_refusals and asks_refused read 0, in
+  that shard order. Native is moving every twin stage into its own fresh `--fixed-fps` process, which is the durable fix.
 
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
