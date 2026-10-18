@@ -72,6 +72,31 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Overnight status (2026-10-18 ~02:00 PDT; for the lead's morning read)
+
+**What you'll notice when these ship:** a lone scout (law or gang) circled by a faster enemy stops driving forward-and-back.
+It rolls forward and turns in toward the attacker, changing speed as it goes, and it does the same while it holds its post
+between looks. A War Rig, gang tank or IFV told to face a direction ends with its hull pointing there and sits still.
+
+| Item | State |
+|---|---|
+| **C33.9 the scout** | Built on a scratch tree (main + 0ef2443b..., last commit **d7cf8cbf**), dev cells on builder2 under `--fixed-fps` running. Dev seeds 11-23 at 9456b4f3 (builder2, n 13 a cell): (e) PASS 23.6 m, (b) PASS, (g) PASS, (d) 0 commanded reverse in 156 runs; (a) 23.0 % (bar 25), (c) worst cell +53 % (gang_scout v syn_scout 45 m: it cannot shoot that far). d7cf8cbf adds the HOLD-shuffle hook (d2). Judged run 31-36 on builder2 when dev is clean. |
+| **CP-F attempt 3** | R33.23: pair **pair/cpf3-on 60d2d86a** (+ the 3 m pulled-off give-up becb15d8, + the hull-rest pin 670f4e12). Full check and the tuning sanity (40-45) running on builder2; then the series 460-475 on builder2. |
+| Hull-rest judge fixes | Queued after CP-F's series. |
+
+**Found tonight (each traced, numbers below in the sections):**
+- **CP-F's judged miss was mostly pacing:** hull-rest ran wall-clock paced on a loaded builder0. Under `--fixed-fps` (builder2,
+  tuning seeds 40-45) the extra movers vanish (ambush 7 v 6 against the paced 51 v 35); `manoeuvre-hull-rest` is now pinned
+  (670f4e12); earlier hull-rest numbers do not compare. One real loop left (support-by-fire: the face crept a gang tank off
+  its seat, the dressing move pulled it back, every second): fixed by the 3 m give-up.
+- **Why the scout was hit more:** the orbiter only fires once its turret's lay settles on a lead point. Today's creep
+  shuffle keeps that from settling by accident (45 m: 42 enemy shots v 198 when the scout braked), so the turn-in jinks:
+  it changes speed on uneven dwells (from the match tick and the hull's name: deterministic, tested in two fresh children).
+- **The shuffle you saw lives under HOLD too:** at `stop`, gunnery's swing of a fixed gun with no throttle is the creep. Now
+  it goes through the turn-in (OFF 8 v ON 0 reverse ticks at stop in the test).
+- Bugs fixed in the turn-in on the way: a stall check that read a full lap as "no yaw"; a leash whose side flipped every
+  tick with the post behind (31.5 m out); the jink's clock read the engine frame, not the match tick.
+
 ### Report (2026-10-17, CP-F judged: parks; C33.9 in development)
 
 | Item | State |
