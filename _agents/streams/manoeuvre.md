@@ -169,17 +169,18 @@ cell (288 rows), every seed exited 0. **Machine equivalence:** dev 11-23 OFF row
 out of its gun's reach (it faces a target it cannot hit). Out of reach is brains' question (stand or hang back), on the lead's
 morning list. Not shipped: the bar is the gate.
 
-### Overnight status (2026-10-18 ~02:00 PDT; for the lead's morning read)
+### Overnight status (2026-10-18, updated ~17:00 PDT; for the lead's morning read)
 
-**What you'll notice when these ship:** a lone scout (law or gang) circled by a faster enemy stops driving forward-and-back.
-It rolls forward and turns in toward the attacker, changing speed as it goes, and it does the same while it holds its post
-between looks. A War Rig, gang tank or IFV told to face a direction ends with its hull pointing there and sits still.
+**What you'd notice if these ship:** a lone scout circled by a faster enemy stops driving forward-and-back; it rolls and turns
+in and fights (C33.9). A War Rig, gang tank or IFV told to face a direction ends with its hull pointing there (CP-F).
 
-| Item | State |
+| Item | State (each verdict has its own section below) |
 |---|---|
-| **C33.9 the scout** | **JUDGED: PARKS** ((a) 23.9 v 25; out-of-reach hits 42 -> 57), section above. Was: built on a scratch tree (main + 0ef2443b..., last commit **d7cf8cbf**), dev cells on builder2 under `--fixed-fps` running. Dev seeds 11-23 at 9456b4f3 (builder2, n 13 a cell): (e) PASS 23.6 m, (b) PASS, (g) PASS, (d) 0 commanded reverse in 156 runs; (a) 23.0 % (bar 25), (c) worst cell +53 % (gang_scout v syn_scout 45 m: it cannot shoot that far). d7cf8cbf adds the HOLD-shuffle hook (d2). Judged run 31-36 on builder2 when dev is clean. |
-| **CP-F attempt 3** | **JUDGED: PARKS** (attack-move movers +7 v 6.5; (j) hull_holds 0), section above. Was: R33.23: pair **pair/cpf3-on 60d2d86a** (+ the 3 m pulled-off give-up becb15d8, + the hull-rest pin 670f4e12). Full check and the tuning sanity (40-45) running on builder2; then the series 460-475 on builder2. |
-| Hull-rest judge fixes | Queued after CP-F's series. |
+| **C33.9 the scout** | **JUDGED: PARKS** (builder2, seeds 31-36): no reverse chosen at all (face or HOLD), stays within 26 m, exchange 0.20 -> 1.77; misses aim time in reach (23.9 v 25 %) and hits taken out of its gun's reach (42 -> 57). Attempt 2 (dev) brings the shuffle back out of reach. **Your call (HANDOFF):** ship as is, second attempt, or leave it. |
+| **CP-F attempt 3** | **JUDGED: PARKS** (builder2, fresh 460-475 + guards): the turn is right (2.6-4.0 deg on point tasks), every guard holds; misses attack-move's settle (+7 v 6.5) and (j)'s hold counter (no contact on the judged seeds). |
+| CP-F attack-move cause | **TRACED, owner brains** (R33.35): the herringbone halt lays seats on the members' averaged hull heading, so CP-F's turns rotate it. Main's War Rig change already halves the gap. Brains builds the fix; CP-F attempt 4 waits for your word on top of it. |
+| Arrival flicker (planner's s69) | Dev only, `lab/cpf-arriveleg`: real but rare; does not move the gap. Round 34, its own item. |
+| Hull-rest judge | **DONE:** pinned at `--fixed-fps`; the seed now sets the drawn facing (seeds stopped repeating); wedged crews reported apart. Old hull-rest numbers do not compare with new ones. |
 
 **Found tonight (each traced, numbers below in the sections):**
 - **CP-F's judged miss was mostly pacing:** hull-rest ran wall-clock paced on a loaded builder0. Under `--fixed-fps` (builder2,
