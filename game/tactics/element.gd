@@ -1517,9 +1517,32 @@ static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dicti
 
 ## Record what the leader decided.
 var _bt_last := -1000
+## Battery stretch (measurement, every plan, both arms): the place a crew was ASSIGNED when it began to deploy, and where it
+## stood once set up (BATTERY_SETUP: the bar's "set up within 8 m of its place" reads this, not the place it ends with).
+var _bt_assigned := {}
+var _bt_logged := {}
 
 
 func _take(plan: Dictionary, situation: Dictionary) -> void:
+	if OS.get_cmdline_user_args().has("--battery-trace") and element_name.contains("Battery"):
+		for member: Dictionary in situation.get("members", []):
+			var n := String(member["name"])
+			var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
+			if tank == null:
+				continue
+			var slot: Variant = slots.get(n)
+			if tank.deploy_ratio <= 0.0:
+				_bt_assigned.erase(n)
+				_bt_logged.erase(n)
+			elif not _bt_assigned.has(n) and slot is Vector3:
+				_bt_assigned[n] = slot
+			if tank.deploy_ratio >= 1.0 and _bt_assigned.has(n) and not _bt_logged.has(n):
+				_bt_logged[n] = true
+				var at := member["position"] as Vector3
+				var was := _bt_assigned[n] as Vector3
+				print("BATTERY_SETUP t=%.1f team %d %s assigned (%.1f,%.1f) stood (%.1f,%.1f) off %.1f m" % [
+						float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, n, was.x, was.z, at.x, at.z,
+						Vector2(at.x - was.x, at.z - was.z).length()])
 	if OS.get_cmdline_user_args().has("--battery-trace") and element_name.contains("Battery") and int(situation.get("tick", 0)) - _bt_last >= 60:
 		_bt_last = int(situation.get("tick", 0))
 		var row := []
@@ -1528,10 +1551,17 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 			var slot: Variant = (plan.get("slots", {}) as Dictionary).get(n)
 			var order: Dictionary = (plan.get("orders", {}) as Dictionary).get(n, {})
 			var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
-			row.append("%s at (%.0f,%.0f) slot %s to %s dep %.1f" % [n.trim_prefix("Green_").trim_prefix("Rust_"), (member["position"] as Vector3).x,
+			var mover := Movement.of(tank) if tank != null else null
+			var brain := mover.ctl as TankBrain if mover != null else null
+			row.append("%s %s/%s at (%.0f,%.0f) slot %s to %s dep %.1f" % [n.trim_prefix("Green_").trim_prefix("Rust_"),
+					String(brain.choice.get("option", "-")) if brain != null else "-", (mover.phase + ((">" + mover.yield_to) if mover.yield_to != "" else "")) if mover != null else "-",
+					(member["position"] as Vector3).x,
 					(member["position"] as Vector3).z, ("(%.0f,%.0f)" % [(slot as Vector3).x, (slot as Vector3).z]) if slot is Vector3 else "-",
 					("(%.0f,%.0f)" % [(order["to"] as Vector3).x, (order["to"] as Vector3).z]) if order.get("to") is Vector3 else String(order.get("verb", "-")),
 					tank.deploy_ratio if tank != null else -1.0])
+			if mover != null and n.ends_with("Battery_2"):
+				var st := Movement.state(tank)
+				row.append("B2 route %.1f m goal %s steer %s blocked %s" % [float(st.get("remaining_m", -1.0)), st.get("goal"), st.get("steer_to"), st.get("blocked_by")])
 		print("BATTERY_TRACE t=%.0f team %d %s %s/%s anchor %s | %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, element_name,
 				String(plan["formation"]), String(plan["technique"]), plan["anchor"], " | ".join(PackedStringArray(row))])
 	formation = String(plan["formation"])
