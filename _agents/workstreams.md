@@ -87,6 +87,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
 - **C33.8 Native.** Pairs pre-empt its own work (C31.2). N5's held ports (`_negotiate` / ask / `_begin_yield`, `_manoeuvre`)
   stay held until CP-X's design is written (it will likely change exactly those); then port them. `test_native_face_behind`
   compared 0 native executes in round 32 (vacuous): give it a floor if round 32 did not.
+- **C33.9 The scout out-turned by an attacker orbiting it (manoeuvre; his words 2026-10-17, `game_design.md` *Round 33,
+  his playtest words during the round*).** His law_scout (Pursuit Cruiser: wheels, fixed machine gun with a 20° arc, min
+  turn radius 5.5 m, 16 m/s forward / 7 reverse, hull_turn_rate 130°/s), alone, under fire from a vehicle circling it. It
+  drove forward and back trying to yaw right and never got its nose round. He wants it to drive forward on a hard turn toward
+  the attacker's side, because a wheeled hull yaws faster rolling forward, and moving is also evasion. Manoeuvre owns it;
+  diagnose FIRST on the laptop while CP-F's series holds builder0. (1) Build a stage that reproduces it: a law_scout alone
+  and a faster enemy orbiting it at its own range, and name what drives the back-and-forth (Manoeuvre.choose's k-turn, the
+  fixed-mount aim, the unstick, or the brain's engage). (2) Report his scene's numbers: time to the first shot, hits taken,
+  and the scout's yaw rate against the orbiter's angular rate. (3) A fix: a fixed-gun wheeled hull whose target is off its
+  arc and moving round it takes a forward turning arc toward the target's side (no reverse leg) while the arc is outside a
+  threshold. File a bar before any number. Native: if the change is in Manoeuvre.choose / behind / simulate (C++ since N5.M),
+  it pairs with native (C26.2). The same rule applies to every fixed-gun wheeled hull on every side (symmetric). Priority:
+  after CP-F's series and verdict, ahead of manoeuvre's stretch items.
 
 **Rulings (round 33, the orchestrator's, as they arise):**
 
