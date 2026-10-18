@@ -138,6 +138,13 @@ rounds and nowhere else:
    (ad1d1f3d). Hold ids (`RID::get_id()`), numbers and std containers in statics; hold godot objects per instance (or in
    the uninitialize hook's care, as `exec_states` is). `make native-live-guard` (in `check`) starts and quits Godot through
    the library once and fails on a crash line or a non-zero exit.
+8. **A twin compares no wall-clock value, not even `> 0`** (round 33, builder2). `Time.get_ticks_usec()` counts whole
+   microseconds, so a charged span can be 0 on one side and 1 on the other. On builder2's Zen 5 the GDScript held
+   controller tick sometimes finished within 1 µs while the native one crossed a microsecond: 7 of 600 mismatches,
+   only on `profile_usec > 0` (main d99394f1; builder0 never showed it). Make every timed span cross the clock (the
+   probe spins until the clock advances: `test_native_controller`, `c7646f41`, main `ac06a393`), or leave the field out.
+   Every other field stays exact. A twin that passes on one CPU only is a test bug, or a determinism bug: say which
+   before accepting it.
 
 ## The proof (every port, every commit)
 
@@ -926,6 +933,13 @@ called back: 31 / 0, 15 / 0, 230 / 0, 248 / 0. Reached:
 - a parked refusal, a refused ask;
 - a setup refusal: 5, from a forced variant where every other hull is set up on a fire post.
 182 s (1181 s twinning every frame).
+**The stage counts depend on test order.** The twin compares one tick from one snapshot, so it holds in any order (0
+mismatches everywhere). But how often each branch is reached depends on what ran earlier in the same process. The
+Sumps' parked refusals were 129 run filtered and 47 inside `make check` at `6434969e` (builder0, n 1 each). In the
+check, the stages' counters shifted as a block: check's yard owned matched filtered yard live exactly, and check's
+sumps owned matched filtered sumps live. So the floors guard against an empty run (`1053045e`: each is at most half the
+lowest count seen, parked 60 -> 20), not a target. Read them in the full shard order (`make remote T=test`: 2741
+passed, 0 failed at `1053045e`).
 **The shortened spot: REACHED, forced** (`0e3a192c`, test-only). A sweep of the GDScript `_begin_yield` over the
 Sumps at `6434969e` found the poses that give way shortened (of 7688 each): War Rig 370, IFV 415, lancer 403, tank 183.
 `test_the_asked_hull_gives_way_shortened(_owned)` asks the War Rig at three poses and the IFV at two: each hull is under
