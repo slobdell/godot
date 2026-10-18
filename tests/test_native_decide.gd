@@ -81,6 +81,14 @@ func test_decide_is_the_gdscript() -> void:
 	var options := {}
 	var mismatches := 0
 	var first := ""
+	# Overnight item 2 (brains' scout): every scout's situation once more, under fire (since_hit across the 2 s bound),
+	# its contacts threatening it or not, matchups on or off, and one case in five with the rule switched off. A rng of
+	# its own, so the mutated cases above are the same draws as before.
+	var scout_rng := RandomNumberGenerator.new()
+	scout_rng.seed = 3317
+	var scout_cases := 0
+	var scout_fights := 0
+	var flag_saved := TankBrain.SCOUT_FIGHT_BACK
 	for frame in 600:
 		await wait_physics_frames(1)
 		if frame % 5 != 4:
@@ -93,7 +101,23 @@ func test_decide_is_the_gdscript() -> void:
 			var cases := [[s, brain.choice.duplicate()]]
 			for n in 2:
 				cases.append(_mutate(s, brain.choice, asked + n, rng))
-			for pair: Array in cases:
+			var flag_off := -1
+			if String(s["self"].get("unit", "")) == "scout":
+				var f := s.duplicate(true)
+				f["self"]["since_hit"] = scout_rng.randi_range(0, 2 * TankBrain.SCOUT_FIGHT_HIT_TICKS)
+				for c: Dictionary in f["contacts"]:
+					c["threatens_me"] = scout_rng.randf() < 0.7
+				f["features"]["matchups"] = scout_rng.randf() < 0.5
+				if scout_rng.randf() < 0.2:
+					flag_off = cases.size()
+				elif TankBrain.scout_fights_back(f["self"], f["contacts"], TankBrain.matchups_for(f)
+						if bool(f["features"].get("matchups", true)) else {}):
+					scout_fights += 1
+				scout_cases += 1
+				cases.append([f, brain.choice.duplicate()])
+			for ci in cases.size():
+				var pair: Array = cases[ci]
+				TankBrain.SCOUT_FIGHT_BACK = flag_saved and ci != flag_off
 				BrainSwitches.native_decide = false
 				var t0 := Time.get_ticks_usec()
 				var live := TankBrain.decide(pair[0], pair[1])
@@ -111,7 +135,10 @@ func test_decide_is_the_gdscript() -> void:
 						first = "frame %d %s: live %s, native %s" % [frame, brain.tank.name, var_to_str(live).left(500),
 								var_to_str(native).left(500)]
 	BrainSwitches.native_decide = saved
+	TankBrain.SCOUT_FIGHT_BACK = flag_saved
+	print("native decide: %d scout cases under fire, %d where the scout fights back" % [scout_cases, scout_fights])
 	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native decide: %d decisions, %d mismatches, chosen %s" % [asked, mismatches, options])
 	assert_eq(mismatches, 0, "the native decide is the GDScript's: %s" % first)
+	assert_true(scout_fights >= 1, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])
