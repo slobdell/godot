@@ -682,6 +682,17 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   there's no ghost-ON default to cover. For a fourth try (round 34+, not tonight): trace s7, and a cohesion bar over more
   than Locks.
 
+- **R33.31 Scout fights back PARKED (2026-10-18; brains, lab/brains-scout `0565d1a8` + native's mirror, builder2; rows
+  references/round33/brains/scout_series_0565d1a8_builder2.txt).** (1)(a) pooled shots 5121 v 3158 (×1.62) PASS; (c)
+  ENGAGE 52180 v 0 PASS; **(b) FAIL**: damage median 190 v 186, and 3 cells more than 20 % worse, all against syn_scout
+  with no post (gang_scout 15 m 619 v 475; law_scout 15 m 431 v 353 and 30 m 250 v 205). The out-of-reach check isn't
+  zero (693 ENGAGE ticks for gang_scout at 30/45 m: reach is judged at the tick and the orbiter swings inside 24 m). (3) the
+  fights guard is identical in both arms (element-commanded scouts never pick SPOT), a trivial pass. Attribution:
+  `sim-baseline SCOUT_FIGHT=off` gives 13 unmoved, so the six moves were the rule's. **Reading:** fighting back pays in
+  shots, but costs hull where the shooter is faster AND outranges it. The "can't get away" speed clause sends it into
+  fights it loses. A next try (round 34): fight only an even-or-better duel (advantage ≥ 1), with a fresh bar on seeds
+  73–79. That bears on the lead's morning question (stand and trade, or hang back).
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while

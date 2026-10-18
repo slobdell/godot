@@ -1358,3 +1358,6 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   mid-manoeuvre, the seam drops the k-turn, and every new move_to for 36 ticks is refused by `_order_move`'s held-post rule
   until one is accepted at tick 554. Fix: don't declare "arrived" while the seam or executor is mid-leg, or hold the faced
   finish until the leg ends (R33.2: manoeuvre owns WHEN a faced finish runs).
+- **Scout fights back, second try (brains; R33.31):** fight only an even-or-better duel (duel advantage ≥ 1), dropping
+  the "can't get away" speed clause that sent it into fights it lost against faster, longer-ranged syn_scouts. Judge reach
+  over the next second or two, not the tick. Fresh bar on orbit seeds 73–79.
