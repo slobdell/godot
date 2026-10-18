@@ -127,6 +127,14 @@ never "arriving".
 at 50.8 m (a 4-crew swarm reaches 51 m across). A squad sent to the edge stopping 50 m from where he clicked is a miss he
 would see. So the design fits the SHAPE to the edge (folds or compresses the clamped side), or caps the inset, and
 **(1b) is judged: the largest inset ON ≤ 15 m (one swarm pitch)**, with the median reported.
+**Design filed (brains, agreed by the orchestrator, before any judged number): CAP + FOLD, one rule under
+`--anchor-inset`.** (i) The inset is capped at one swarm pitch (15 m). (ii) Whatever still falls outside is clamped as
+today (the fold). (iii) The element's arrival is measured to the CENTROID OF THE SEATS IT LAID (after clamp and ground),
+not the anchor. Compressing the shape alone moves the centroid inland by construction, so a fold needs (iii) anyway.
+(1) becomes: every element arrives, with the centroid offset reported; (1b) the largest inset ≤ 15 m, judged; plus a
+pure test that an inland element's arrival is unchanged (its seats' centroid = its anchor). Because (iii) changes how
+every element's arrival is measured, the squad-arrive line (2) and the check are the guards that it changes nothing
+inland.
 
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
