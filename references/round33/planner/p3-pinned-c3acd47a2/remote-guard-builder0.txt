@@ -1,0 +1,4 @@
+  ok   the stage says the judge exited 1
+  ok   the wrapper fails a target whose make exited 0 but printed the line (on stderr)
+quiet-window: 28 passed, 0 failed
+>> remote: make remote-guard-test exited 0 (build/ copied back)

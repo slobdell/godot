@@ -322,3 +322,28 @@ the morning.
   share and (2d)'s holds, now in the repo). **Decided before numbers:** the judged lines are the `--distinct` outputs
   (lines (2a), (2b), (2c) and (0)'s share all on the distinct pairs, (2c)'s median and p90 included). The all-runs
   lines are reported beside them.
+- **(2) VERDICT: FAIL -> PARKED again, on (2c) clicked alone** (pair `c3acd47a2`, builder2 (GCP c4d-32), 2026-10-18
+  11:55-12:20 PDT; check green by the orchestrator's rule: builder2 `2771 passed, 0 failed`, remote-guard-test failed
+  under load there (quiet-window), builder0 `make remote-guard-test exited 0`). FIFO, no CP-F, one tree for every step.
+  Pinned runs pair off by seed (96 = 101, 99 = 106, 100 = 104), so distinct pairs are 36 of 72 a mode. Judged on the
+  distinct pairs; all-runs lines agree on every PASS/FAIL. Evidence: `references/round33/planner/p3-pinned-c3acd47a2/`.
+
+  | line | result (distinct pairs; all runs in brackets) |
+  |---|---|
+  | (0) | **PASS**. yard stage native on (check) and off (cell): kept_served 1, fallbacks 0, abandoned 0, aligned 9.83 v 15.43 s, drift 0.97 m. Kept share drawn 17/21 = 81 % (29/36), clicked 14/14 = 100 % (26/26) |
+  | (0b) | **PASS** native on and off: served after 1 fallback, hold 26, abandoned 0 |
+  | (1) | **PASS**: the cell 19/0 native off; the check native on |
+  | (2a) | **PASS**. drawn rest_med -0.15 (se 0.40, line +0.65), settle +1.15 (se 1.43, +2.35), moving -1 (se 1.00, +1.65); clicked rest_med +0.27 (se 0.25, +0.41), moving -1 (se 1.00, +1.65). 3a null cells failing: 0 of 24 |
+  | (2b) | **PASS**. drawn 0/105 v 0/111; clicked 2/152 = 1.3 % v 1/154 = 0.6 % (line 2.5 %) |
+  | (2c) | drawn **PASS** (median 3.4 v 3.9 m, p90 14.3 v 14.3). clicked **FAIL**: median 3.0 v 2.7 m ok (line 4.1), **p90 6.3 v 4.9 m over** (all runs 6.3 v 5.7), max 12.4 v 5.7; plans 14 v 10 distinct (26 v 18) |
+  | (2d) | REPORTED: hold medians 4 v 4 both modes |
+  | (3) | **PASS** (series_verdict seam=both): rigs 178 v 179 of 208, paired -0.077 (se 0.560); mixed 295 v 295; contact-ticks median rigs 488 v 415 |
+
+  **What the miss is (traced):** the clicked tail is faces TODAY'S SEARCH DOES NOT PLAN. Clicked face asks 267 v 271,
+  served plans 26 v 18: the candidate serves 8 more, from the same asks. The worst pair, faced_attack_move s100 (= s104),
+  has base face_far [] (10 face asks, none planned) and candidate [12.4, 3.2] (2 kept, 0 fallbacks). So (2c) compares
+  different populations: it charges the candidate for serving faces the base hands elsewhere. **12.4 m is inside one hull
+  length (14 m), so the slot cap (v3) would not cut it.** It is not the slot-law extension that `bca4eaca`'s inference
+  suspected. **Recommendation (to the orchestrator before any v3 work):** v3 as written cannot fix this line. Either
+  re-scope (2c) to faces both arms planned (paired by face), with the extra faces reported along with what the base did
+  instead, or park P3 for good. Either is a new bar on fresh seeds.
