@@ -1,0 +1,12 @@
+M1_HULL runs {'base': 144, 'new': 144, 'newlatch': 144}
+M1_HULL task | class | arm | n | median | p90 | <=15 deg | >=100 deg | p(new v base medians)
+M1_SETTLE task | runs paired | new_drawn median s | base_drawn median s | median paired diff s | never new/base
+M1_MOVING task | new_drawn | base_drawn | new_clicked | base_clicked | new_drawn - base_drawn (guard: <= +5)
+M1_MOVING faced_ambush | 0 | 0 | 0 | 0 | +0
+M1_MOVING faced_attack_move | 0 | 0 | 0 | 0 | +0
+M1_MOVING faced_move | 0 | 0 | 0 | 0 | +0
+M1_MOVING faced_right | 0 | 0 | 0 | 0 | +0
+M1_MOVING faced_screen | 0 | 0 | 0 | 0 | +0
+M1_MOVING faced_support_by_fire | 0 | 0 | 0 | 0 | +0
+M1_REST (wheels/turret) task | arm | at rest / all | at-rest share | at-rest median | at-rest <= 15 deg | share new - base (guard: not below -5 pts)
+M1_CLASS task | class | runs paired | moving new | moving base | paired diff | se | within 2 se
