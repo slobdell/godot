@@ -1,0 +1,7 @@
+P3_DISTINCT drawn | distinct pairs 36 of 48 | cells that repeat: gangs/faced_ambush 6/8, gangs/faced_attack_move 6/8, gangs/faced_move 6/8, gangs/faced_right 6/8, gangs/faced_screen 6/8, gangs/faced_support_by_fire 6/8
+P3_KEPT drawn | runs 36 | candidate face plans served 23, by the kept search 15 (65 %), fallbacks 27 | line >= 50 % | PASS
+P3_HOLD drawn | hold median (all events) candidate 4 (n 393) v base 4 (n 397) | reported
+P3_DISTINCT clicked | distinct pairs 37 of 48 | cells that repeat: gangs/faced_ambush 6/8, gangs/faced_attack_move 7/8, gangs/faced_move 6/8, gangs/faced_right 6/8, gangs/faced_screen 6/8, gangs/faced_support_by_fire 6/8
+P3_KEPT clicked | runs 37 | candidate face plans served 23, by the kept search 22 (96 %), fallbacks 18 | line >= 50 % | PASS
+P3_HOLD clicked | hold median (all events) candidate 4.0 (n 512) v base 4 (n 515) | reported
+P3_KEPT line (0), the kept share: PASS

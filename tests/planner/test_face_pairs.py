@@ -102,6 +102,22 @@ class Verdict(unittest.TestCase):
         self.assertIn("INCONCLUSIVE", both)
         self.assertIn("FACE_PAIRS line (2c): NOT ALL PASS", out)
 
+    def test_a_one_face_candidate_only_class_is_not_judged_and_does_not_fail(self):
+        # R33.28: the filed text governs. Under 2 faces a class is NOT JUDGED and reported; only BOTH under 10 is
+        # INCONCLUSIVE. judge() failed a 1-face class, found after R33.26's numbers.
+        self.fill(3.0, 3.0)
+        for mode in ("drawn", "clicked"):   # one candidate-only face a mode: B only in seed 1
+            for seed in range(2, 13):
+                path = os.path.join(self.root, "new_" + mode, "gangs", "faced_move-%d" % seed, "run.log")
+                rep = json.loads(open(path).read().split(" ", 1)[1])
+                rep["face_episodes"][1]["served"] = False
+                with open(path, "w") as f:
+                    f.write("PLANNER_SEAM_REPORT " + json.dumps(rep) + "\n")
+        _, out = self.run_tool()
+        only = [l for l in out.splitlines() if l.startswith("FACE_PAIRS_CAND_ONLY clicked")][0]
+        self.assertIn("faces 1 | NOT JUDGED", only)
+        self.assertIn("FACE_PAIRS line (2c): ALL PASS", out)
+
     def test_distinct_reads_a_repeated_pair_once(self):
         self.fill(3.0, 3.0)
         for mode in ("drawn", "clicked"):   # seed 9 repeats seed 1 row for row

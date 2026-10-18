@@ -1,0 +1,11 @@
+FACE_PAIRS_DISTINCT drawn | distinct pairs 36 of 48 | cells that repeat: gangs/faced_ambush 6/8, gangs/faced_attack_move 6/8, gangs/faced_move 6/8, gangs/faced_right 6/8, gangs/faced_screen 6/8, gangs/faced_support_by_fire 6/8
+FACE_PAIRS_BOTH drawn | faces 19 | median 2.8 v 3.0 m (se 0.71, line <= 4.2) ok | p90 8.5 v 8.5 (se 0.13, line <= 8.7) ok | max 20.4 v 20.4 | hull_far (plan_far median 4.0 v 4.0) | PASS
+FACE_PAIRS_CAND_ONLY drawn | faces 2 | median 2.5 v 2.7 m (se 0.28, line <= 3.2) ok | p90 3.1 v 3.7 (se 0.35, line <= 4.3) ok | max 3.1 v 3.7 | hull_far (candidate plan_far median 3.3; kept 2) | PASS
+FACE_PAIRS_BASE_ONLY drawn | faces 1 | hull_far candidate [2.1] v base [5.2] (base plan_far [5.2]) | reported
+FACE_PAIRS_OTHER drawn | neither served 112 | unmatched base 12 candidate 3 | reported
+FACE_PAIRS_DISTINCT clicked | distinct pairs 34 of 48 | cells that repeat: gangs/faced_ambush 4/8, gangs/faced_attack_move 7/8, gangs/faced_move 6/8, gangs/faced_right 6/8, gangs/faced_screen 6/8, gangs/faced_support_by_fire 5/8
+FACE_PAIRS_BOTH clicked | faces 21 | median 1.6 v 1.6 m (se 0.05, line <= 1.7) ok | p90 6.3 v 6.3 (se 0.00, line <= 6.3) ok | max 6.9 v 6.9 | hull_far (plan_far median 2.8 v 2.8) | PASS
+FACE_PAIRS_CAND_ONLY clicked | faces 1 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 12.4; kept 1)
+FACE_PAIRS_BASE_ONLY clicked | faces 1 | hull_far candidate [0.4] v base [3.0] (base plan_far [19.1]) | reported
+FACE_PAIRS_OTHER clicked | neither served 196 | unmatched base 5 candidate 3 | reported
+FACE_PAIRS line (2c): NOT ALL PASS

@@ -356,3 +356,50 @@ the morning.
   because after the abandon the executor turns the rig (hull 12.1 m out) and a re-ask plans a 1.4 m remainder. A
   plan's furthest understates what today does, so every class is judged on the hull's own furthest (candidate 11.5 v
   base 12.1 m there), with plan_far reported.
+- **R33.26 VERDICT: every line passes by the filed text; one tool line contradicts it (for the orchestrator to rule).**
+  Pair tree `f8b7b003e` checked green on builder2 (GCP c4d-32): `make check exited 0`, 2773/0, sim-baseline unmoved,
+  perf-judge JUDGED PASS 1.00x. Series on `923fcb97f` (= that + the Python 10-face rule), builder2, 12:57-~14:00 PDT,
+  FIFO, no CP-F, fresh seeds hull-rest 120-131 and Terminus 270-282. Judged on distinct pairs (all runs in brackets).
+  Evidence: `references/round33/planner/p3-pairs-923fcb97f/`.
+
+  | line | result |
+  |---|---|
+  | (0) | **PASS**. yard stage native on (check) and off (cell 21/0): kept, 0 fallbacks, aligned 9.83 v 15.43 s. Kept share drawn 15/23 = 65 %, clicked 22/23 = 96 % |
+  | (0b) | **PASS** native on and off |
+  | (1) | **PASS** (cell 21/0, check 2773/0) |
+  | (2a) | **PASS**. drawn rest_med -0.14 (se 0.32, line +0.52), settle +0.57 (se 1.13, +1.86), moving -2 (se 1.40, +2.30); clicked rest_med +0.18 (se 0.18, +0.29), moving 0. 3a null cells failing: 0 of 24 |
+  | (2b) | **PASS**. drawn 0.7 v 0.7 %; clicked 1.3 v 0.9 % (line 2.4 %) |
+  | (2c) R33.26 | BOTH-planned: drawn 19 faces, hull_far median 2.8 v 3.0 m, p90 8.5 v 8.5: **PASS**; clicked 21 faces, median 1.6 v 1.6, p90 6.3 v 6.3: **PASS** [all runs: drawn PASS; clicked median 1.7 v 1.6 over its se 0.05, FAIL]. CANDIDATE-ONLY: drawn 2 faces, hull 2.5 v 2.7, p90 3.1 v 3.7: **PASS**; clicked **1 face: NOT JUDGED** (the filed text: under 2, reported): faced_attack_move s120, candidate kept plan_far 12.4 m but hull_far 2.2 v the base hull's 0.6 (the base never resolved that face before the order moved on). BASE-ONLY: 1 a mode, reported |
+  | (2d) | REPORTED: hold medians 4 v 4 |
+  | (3) | **PASS** (seam=both): rigs 172 v 170 of 208, paired +0.154 (se 0.436); mixed 298 v 298 |
+
+  **The contradiction:** `face_pairs.py` prints "(2c): NOT ALL PASS" because its `judge()` returns a failure for a class
+  with exactly 1 face, against the filed text ("fewer than 2 faces: NOT JUDGED for that class, reported"; only BOTH
+  under 10 is INCONCLUSIVE). Found after the numbers, so NOT fixed: the orchestrator rules whether (2c) reads PASS (the
+  filed text) or not. The old (2c) (face_keep_table, unpaired) is superseded and is reported: drawn p90 14.3 v 8.2 over,
+  clicked PASS. Distinct-pair counts differ by tool because each de-duplicates its own rows (hull rows, face counters,
+  episodes).
+- **R33.28 (orchestrator): the filed text governs, so P3 v2 PASSES every line and SHIPS ON.** Merged: main `31bf55ae3`
+  (= pair `923fcb97f`; its check on `f8b7b003e`, builder2 `make check exited 0`, 2773/0, covers it). The face keep is
+  ON by default (keep 1 + kept-first fallback, FACE_KEPT_SHARE 45), with `face_episodes` measurement; it also carried
+  manoeuvre's hull-rest pin `670f4e12`. **The tool bug, fixed after the ruling** (stream, test first): `face_pairs.py`'s
+  `judge()` failed a class with exactly 1 face, against the filed text; it now reads NOT JUDGED and never fails. On
+  R33.26's own data it now prints "(2c): ALL PASS" (laptop, tool tests 15/15). It did not decide the verdict.
+
+**Overnight items: all DONE.** (1) tools: series_verdict `seam=both`, stage_s207 retired. (2) P3 v2 re-judged pinned:
+PARKED on (2c) clicked (c3acd47a2), traced to unpaired populations; R33.26 re-scoped (2c), and the re-judge PASSED and
+shipped (R33.28). (3) v3, the slot cap: WITHDRAWN (R33.26); its target, the 12.4 m tail, sits inside one hull length.
+
+**Round 34, what is left (planner's notes):**
+- **The clicked faced_attack_move face** (seeds 100/104 pinned, then 120): the kept search plans a 12.4 m face that
+  the hull never drives out (hull 2.2 m) before the order moves on, and the base never resolves it at all. One face,
+  every series. Trace what the order does there; it may be a face asked mid-attack that should not be a face.
+- **`make planner-pytest` is not in `make check`** (core.mk is not planner's): series_verdict, the distinct rule and
+  face_pairs are guarded only when someone runs it. Ask the check's owner to add it.
+- **Distinct-pair counts differ by tool** (hull rows, face counters, episodes), so the same series reads 48, 32 and 36
+  pairs. One shared run identity (screen.json plus the seam's report) would make them agree.
+- **hull-rest repeats itself pinned** (96 = 101, 100 = 104, about a third of the seeds): manoeuvre's overnight item (3),
+  a seed that varies the stage, would give every hull-rest bar more real n.
+- **The old unpaired (2c)** (face_keep_table FACE_KEEP_FAR) is superseded by face_pairs; keep it reported, or retire it.
+- **The shared queue (CP-Q, R33.13)** stays parked; if re-filed it needs a new s207-style control (stage_s207 retired).
+- **test_quiet_window.sh** fails under builder2's load (orchestrator: native's load-flaky item).
