@@ -288,3 +288,19 @@ None.
 ### Requests to other streams
 
 - native: none (CP-Q does not ship). If P3 passes: a look at `6f89ecc1` (no C++ change; keep is a request field native reads).
+
+## Overnight (round 33 extension, 2026-10-18 ~00:45 PDT)
+
+The lead has gone to bed and wants builder2 kept busy. Take these items in order (`workstreams.md` *Round 33, overnight
+extension*; the details are in `roadmap.md` *Round 34 candidates*). Merge main first. builder2 FIRST (`make gcp-remote`,
+6 heavy slots). Every judged stage pinned at `--fixed-fps $(SIM_HZ)`. A bar is filed (sent to the orchestrator) before any
+number, judged on FRESH seeds, and every number labelled with its machine. Keep this Status current: the lead reads it in
+the morning.
+
+1. **The tools:** series_verdict gets a both-arms-seam mode; stage_s207 is re-made with a control that reproduces, or
+   retired.
+2. **P3 v2 re-judged PINNED:** the same candidate (keep 1 + fallback, the code on main OFF), with hull-rest pinned
+   (manoeuvre's `670f4e12` flag, on main once manoeuvre merges; until then carry the one flag), on FRESH seeds, all on
+   builder2. CP-F's misses turned out to be pacing (R33.23), and P3's clicked-drift p90 miss may be too. The bar is
+   R33.19's, re-filed with the new seeds.
+3. **Only if it fails pinned:** P3 v3, the slot cap (roadmap).

@@ -3,6 +3,29 @@
 > **ROUND 33 PREPARED (2026-10-17; launched FRESH from the docs commit — no worktree or agent carried over from round
 > 32): five streams, all on Opus (his rule).** Briefs in `streams/`.
 
+## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
+
+**The lead, going to bed:** "Are you able to just go ahead and kick off the subsequent workstreams for the next round to
+the current set of workers? Obviously we want to run on builder2 now primarily since it's 4x faster." So there is no
+formal close yet. Each worker keeps its worktree and takes the next items from `roadmap.md` *Round 34 candidates*,
+listed in its brief under **Overnight (round 33 extension)**. Every round-33 contract, ruling and the bar discipline
+stand: a bar is filed before any number, judged on fresh seeds, with every judged stage pinned at `--fixed-fps $(SIM_HZ)`.
+
+**Machines (`_agents/gcp_builder.md`):** builder2 is FIRST for every remote run (`make gcp-remote T=…`, or
+`REMOTE_HOST=slobdell@builder2`), and takes 6 heavy at once (main `b739912a`). Merge main into your branch first, to get
+mk/gcp.mk, the 6-slot remote.sh and the perf nominal. Seed a new builder2 folder's `.godot` from `~/tank_squad/godot`
+(never native/). builder0 takes overflow and builder0-specific numbers. **builder2 is a Spot VM:** if it stops answering,
+check `make gcp-status`. If it reads TERMINATED it was preempted: tell the orchestrator, who restarts it (`make
+gcp-start`, the lead's standing yes). A run lost that way is no result, so re-run it.
+
+| Stream | Overnight items, in order (details in its brief) |
+|---|---|
+| traffic | (1) parkedroom v2 (the rule only for a crew AT a post), fresh bar. (2) T4 ghost, third try: the cohesion guard on body_probe children at --fixed-fps, plus a REPLAY line (a same-process rematch replays), then Terminus. (3) Diagnose the fire-post loop (random-705) with brains: owner to be decided. |
+| manoeuvre | (1) C33.9, the scout (his report): finish, judged run 31–36. (2) CP-F attempt 3 (R33.23), series 460–475. (3) The hull-rest judge: real-velocity "still", a seed that varies the stage (after CP-F's series, never during it). |
+| brains | (1) The battery item (three switches, filed bar). (2) A scout under fire fights back when it can't get away (bar first; pairs with C33.9). (3) An element that never arrives because one crew still drives (the War Rig 4-of-5 case). (4) A respawned crew rejoins its squad's living element when it has room. |
+| planner | (1) The tools: series_verdict's both-arms-seam mode; re-make or retire stage_s207. (2) P3 v2 RE-JUDGED with hull-rest pinned on fresh seeds (its clicked-drift miss may be pacing, as CP-F's was), using the same pair code that is on main OFF. (3) Only if it fails pinned: P3 v3, the slot cap. |
+| native | Test infra, granted for these items: mk/core.mk's `test` and `check` recipes, mk/web.mk's web-smoke judge, tools/test_slot_light.sh, tools/remote.sh. (1) The suite at a fixed physics rate (`--fixed-fps $(SIM_HZ)` for run_tests), with a full check on builder2 and a list of every test whose numbers move. (2) A remote `make test` with no native library refuses, or builds it. (3) web-smoke's sound bound and test_slot_light read NOT JUDGED under load instead of FAIL. (4) Split test_native_gate by frame. (5) One NATIVE=off perf reading on main. Pairs (brains' arrivedgate mirror) pre-empt all of it (C31.2). |
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
