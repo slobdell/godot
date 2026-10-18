@@ -28,7 +28,7 @@ func test_the_give_way_on_the_owned_state() -> void:
 
 func test_the_give_way_in_the_sumps() -> void:
 	await _stage("sumps", false, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 115, "spot:spot": 30, "yield_spots_unfit": 35,
-			"spot:back": 9, "spot:hold": 2, "parked_refusals": 60, "asks_refused": 1})
+			"spot:back": 9, "spot:hold": 2, "parked_refusals": 20, "asks_refused": 1})
 
 
 func test_the_give_way_in_the_sumps_owned() -> void:
@@ -186,8 +186,10 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	print("native yield stage %s%s: %d negotiating drives compared (of %d drives screened), %d mismatches" % [arena,
 			" (owned state)" if owned else "", drives, screened, mismatches])
 	assert_eq(mismatches, 0, "the native give-way is the live GDScript's: %s" % first)
-	# Floors against a vacuous run: about half of builder0's first count (light, stream/native, n 1). Not reached here:
-	# the swap, a shortened spot and a set-up hull's refusal (native.md N5.Y: why).
+	# Floors against a vacuous run: about half of the LOWEST count builder0 has shown (n 2 per stage: the light lane
+	# alone, and inside `make check` at 6434969e). The stages' counts depend on what ran before them in the process
+	# (the Sumps' parked refusals 129 alone, 47 in the check), so the floors are against nothing, not a count.
+	# Not reached here: the swap (native.md N5.Y: why); the shortened spot is forced below.
 	_yield_check("%s%s" % [arena, " owned" if owned else ""], floors)
 
 
