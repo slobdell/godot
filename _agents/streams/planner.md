@@ -192,6 +192,15 @@ arrivals not down beyond 1.645 se. Early stop OFF. After P2 (R33.10). **Filed on
 amendment (before numbers): both arms run on the queue main has when the series starts (`shared` if P2 shipped, else
 FIFO; the verdict names it), and on a tree with manoeuvre's CP-F if it has merged (else the verdict says which tree).
 
+### Closing check (stream/planner `1de6a692` = main `0b0d73f3` + the parked P3, keep 0 = OFF)
+
+builder2 (GCP c4d-32), 2026-10-17 22:2x PDT: `>> remote: make check exited 2`; **2745 passed, 0 failed**; sim-baseline
+**unmoved** on every arena (keep 0 is OFF); targets 23 passed, 1 FAILED, 2 NOT JUDGED. The FAIL is **web-smoke: no Chrome
+on builder2** ("Browser was not found at ... /usr/bin/google-chrome"), a machine gap, not the code; perf-judge NOT JUDGED
+(builder2 has no nominal yet). A first run there segfaulted in the cold `make import` (JetBrainsMono-Blocks.ttf), no test
+run. Laptop `make test FILTER=test_planner` on `1de6a692`: 51/0 (GDScript drive). **Still owed:** web-smoke and perf-judge
+alone, where the orchestrator says. The last fully green stream check remains `1b5c69df` (builder0 exited 0, 2725/0).
+
 ### P3's verdict (`bca4eaca`, builder0, 2026-10-17 20:25-22:07 PDT; bar main `8681d2aa` + amendment `e8383ce6`)
 
 Arms: `--planner-face-keep=0` v keep 1 + the kept-first fallback, `--planner-queue=fifo` (P2 did not ship), no CP-F (not
