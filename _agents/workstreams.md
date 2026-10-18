@@ -606,6 +606,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   INCONCLUSIVE, and an inconclusive mode can't PASS. Pass = every line, early stop OFF; a failed guard → PARKED with the
   worst face pair's trace.
 
+- **R33.27 Battery item FAILS as a whole; subset (a) filed; (c) parked, (b) dropped (2026-10-18; brains,
+  lab/brains-r33-battery `ee18403b`, builder2, rows `references/round33/brains/battery_series_ee18403b9_builder2.txt`).**
+  (2) census, n 18, ON v OFF: never-past battery askers 2 v 1 FAIL; far set-ups 7/99 v 186/344 PASS; shots 441 v 446
+  PASS; repack-while-firing 0 PASS; friendly-stuck PASS; first shot median 9.0 v 3.3 s (limit 8.3) FAIL, with 19/28
+  orders answered v 28/31. (1) named PASS on ON. (b)'s arrive line 97 v 97 PASS. The check green. The worst run traced:
+  (c)'s hold-fire-to-place is the first-shot delay (Parade s49: 20.1 s v 7.1). **The subset is chosen from the bar's own
+  per-switch arms in (1), not from (2):** (a)-alone fired the most in both named cases (109 and 90 shots) with far
+  set-ups 5/6 and 5/7; (c)-alone is the only alone-arm with never-past askers (Foundry 2); (b)-alone was identical to OFF
+  in both. **Filed:** (a) ALONE (`--battery-seat`, a set-up crew keeps its seat), on FRESH census seeds 53–58, n 18, with
+  (2)'s lines unchanged, the named cases re-run, and the check. (c) PARKED (its cost is its design: firing waits for the
+  place). (b) DROPPED (no measured effect; a switch with no case doesn't ship, as B10b).
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
