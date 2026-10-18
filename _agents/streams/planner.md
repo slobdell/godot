@@ -428,3 +428,9 @@ quiet-window test), and all three re-ran green alone on builder0: `make net-smok
   a k-turn leg is still driving), **with brains** for the held-post refusal that holds the flicker for 45 ticks.
   Candidate fix to hand them: do not declare "arrived" while the seam or the executor is mid-leg (or hold the finish
   until the leg ends). Evidence: `references/round33/planner/face-flip-s69/`.
+- **(2) `planner-pytest` IN `make check`: DONE.** Appended LAST to CHECK_TARGETS (mk/core.mk, the orchestrator's grant;
+  native told, no collision) with a membership note; the target now fails on zero collected tests like metrics-pytest.
+  Mutation-checked: face_pairs' 1-face bug restored -> `make planner-pytest exited 2`; restored, exit 0 (15 tests).
+  **Check: stream `59752c462`, builder2 (GCP c4d-32): `make check exited 0`, 2773 passed / 0 failed, "26 targets, all
+  passed, ALL JUDGED" (planner-pytest among them, collected 15), sim-baseline unmoved. GREEN HASH `59752c462`.** The
+  commits after it are Status and references only.
