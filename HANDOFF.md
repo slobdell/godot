@@ -136,6 +136,11 @@ attempt 1 (`781801da0`'s turn-in) as it is.**
   1/2 tanks; combat-smoke not run behind it; the quiet-window test), and all three re-ran green alone on builder0
   (`make net-smoke combat-smoke remote-guard-test exited 0`). GREEN by the R33.6 web-smoke rule.
 
+- **Battery seat → main `32e740843`** (brains `1ea8ce40`, R33.27's subset (a)): a mortar truck that has set up keeps its
+  formation seat, so nobody re-seats it across the battery. Fresh census, n 18: trucks setting up far from their place
+  39/86 v 118/193, artillery shots 377 v 240, no stuck batteries, first shot 3.0 v 2.5 s. What he'd notice: a battery's
+  trucks set up where they belong and fire more, instead of shuffling places while deployed. Rides the next main check.
+
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
   moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but

@@ -76,6 +76,12 @@ before any judged number:** the median scout shots per cell are about 0.5 in BOT
 either way), so a ratio of medians is degenerate. (a) reads POOLED TOTAL shots ON ≥ 1.5× OFF, with the medians
 reported.
 
+**Rejoin's stage re-filed before any number (2026-10-18):** manoeuvre-fights is ELIMINATION (skirmish_mode.gd:423), so
+no crew respawns and both arms read identical (0 reforms in 32 fights); nothing was judged there. New stage `make
+rejoin-fights`: the match runner WITHOUT --elimination, perf_armies 25 a side, both sides on elements, score limit 0,
+180 s, --fixed-fps 30, --rejoin-trace on both arms; FRESH seeds 580–583 × sumps/yard/terminus/foundry, n 16. The lines are
+unchanged; (b) reads MATCH_RESULT kills and losses per side, pooled. The check stays 2775/0, since the commit adds only a
+make target.
 **Bar, brains overnight item 4: a respawned crew rejoins its squad's living element when it has room (filed 2026-10-18
 before any code or number).** ElementCommander.form_elements: a squad's unseated living crew first JOINS a living element
 of the same squad with room (members < MAX_MEMBERS; most room first, then name order) through a new
