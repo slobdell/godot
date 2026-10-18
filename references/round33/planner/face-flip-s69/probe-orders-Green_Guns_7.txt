@@ -1,0 +1,24 @@
+TMP_PROBE f 446 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.95, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 455 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.9, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 464 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.9, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 473 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.9, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 482 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 1.0, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 491 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 1.0, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 500 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 1.0, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 509 Green_Guns_7 order { "type": "face", "x": -73.6063995361328, "z": 52.3286743164062, "told": true, "from": "post" } from ["_act", 2462]
+TMP_PROBE f 510 Green_Guns_7 held-refused move_to -> { "type": "face", "x": -73.6847991943359, "z": 52.3509101867676, "told": true, "from": "post" }
+TMP_PROBE f 510 Green_Guns_7 order { "type": "face", "x": -73.6847991943359, "z": 52.3509101867676, "told": true, "from": "post" } from ["_act", 2847]
+TMP_PROBE f 518 Green_Guns_7 held-refused move_to -> { "type": "face", "x": -74.0041275024414, "z": 52.4414710998535, "told": true, "from": "post" }
+TMP_PROBE f 518 Green_Guns_7 order { "type": "face", "x": -74.0041275024414, "z": 52.4414710998535, "told": true, "from": "post" } from ["_act", 2847]
+TMP_PROBE f 527 Green_Guns_7 held-refused move_to -> { "type": "face", "x": -73.9980773925781, "z": 52.4397583007812, "told": true, "from": "post" }
+TMP_PROBE f 527 Green_Guns_7 order { "type": "face", "x": -73.9980773925781, "z": 52.4397583007812, "told": true, "from": "post" } from ["_act", 2847]
+TMP_PROBE f 536 Green_Guns_7 held-refused move_to -> { "type": "face", "x": -73.5959091186523, "z": 52.3187980651855, "told": true, "from": "post" }
+TMP_PROBE f 536 Green_Guns_7 order { "type": "face", "x": -73.5959091186523, "z": 52.3187980651855, "told": true, "from": "post" } from ["_act", 2847]
+TMP_PROBE f 545 Green_Guns_7 held-refused move_to -> { "type": "face", "x": -72.6102752685547, "z": 51.9582901000977, "told": true, "from": "post" }
+TMP_PROBE f 545 Green_Guns_7 order { "type": "face", "x": -72.6102752685547, "z": 51.9582901000977, "told": true, "from": "post" } from ["_act", 2847]
+TMP_PROBE f 554 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.75, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 563 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.75, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 572 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.75, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 581 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.95, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 590 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.95, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
+TMP_PROBE f 599 Green_Guns_7 order { "type": "move_to", "x": -55.8459663391113, "z": 53.0135078430176, "reverse": false, "speed": 0.95, "arrive": 6.0, "facing": [-0.96722710132599, 0.25391307473183] } from ["_act", 2464]
