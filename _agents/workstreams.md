@@ -133,6 +133,10 @@ never "arriving".
 at 50.8 m (a 4-crew swarm reaches 51 m across). A squad sent to the edge stopping 50 m from where he clicked is a miss he
 would see. So the design fits the SHAPE to the edge (folds or compresses the clamped side), or caps the inset, and
 **(1b) is judged: the largest inset ON ≤ 15 m (one swarm pitch)**, with the median reported.
+**Scope set before the series (brains, 2026-10-18):** applied from a move's start, the inset changed a drill's route
+(tactics-drills far_ambush held_the_line_m 12.68 against its 12 bound). It now applies only on the final approach (within
+INSET_NEAR_M = 60 m of the destination), and further out a move is today's (far_ambush back to 11.354 exactly). The
+verdict REPORTS the distance from the destination at which the inset engaged.
 **Design filed (brains, agreed by the orchestrator, before any judged number): CAP + FOLD, one rule under
 `--anchor-inset`.** (i) The inset is capped at one swarm pitch (15 m). (ii) Whatever still falls outside is clamped as
 today (the fold). (iii) The element's arrival is measured to the CENTROID OF THE SEATS IT LAID (after clamp and ground),
@@ -692,6 +696,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   shots, but costs hull where the shooter is faster AND outranges it. The "can't get away" speed clause sends it into
   fights it loses. A next try (round 34): fight only an even-or-better duel (advantage ≥ 1), with a fresh bar on seeds
   73–79. That bears on the lead's morning question (stand and trade, or hang back).
+
+- **R33.32 Rejoin passed, but NOT merged: its tree carried B10b ON (2026-10-18).** lab/brains-rejoin `6345125b` sits on
+  stream/brains, which has B10b's ground latch at GROUND_LATCH := true (parked, R33.22; main has it OFF). A merge
+  attempt also conflicted in mk/tactics.mk, so it was reset (nothing pushed). The verdict (one-crew elements 0 v 1691;
+  kills and deaths within noise) was judged on main + rejoin + B10b ON in BOTH arms, not on main + rejoin. **Ruling:**
+  rebuild rejoin on MAIN alone (no B10b), check it, and re-run the rejoin series on FRESH seeds 584–587 × the same 4
+  maps (n 16) with the lines unchanged. Merge on that. **Rule for every stream's branch:** a candidate is main + its own
+  commits only; anything else on its tree is named in the bar, or the tree is rebuilt.
 
 **Bars (round 33):** filed here before any number.
 
