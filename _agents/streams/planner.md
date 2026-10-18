@@ -356,3 +356,26 @@ the morning.
   because after the abandon the executor turns the rig (hull 12.1 m out) and a re-ask plans a 1.4 m remainder. A
   plan's furthest understates what today does, so every class is judged on the hull's own furthest (candidate 11.5 v
   base 12.1 m there), with plan_far reported.
+- **R33.26 VERDICT: every line passes by the filed text; one tool line contradicts it (for the orchestrator to rule).**
+  Pair tree `f8b7b003e` checked green on builder2 (GCP c4d-32): `make check exited 0`, 2773/0, sim-baseline unmoved,
+  perf-judge JUDGED PASS 1.00x. Series on `923fcb97f` (= that + the Python 10-face rule), builder2, 12:57-~14:00 PDT,
+  FIFO, no CP-F, fresh seeds hull-rest 120-131 and Terminus 270-282. Judged on distinct pairs (all runs in brackets).
+  Evidence: `references/round33/planner/p3-pairs-923fcb97f/`.
+
+  | line | result |
+  |---|---|
+  | (0) | **PASS**. yard stage native on (check) and off (cell 21/0): kept, 0 fallbacks, aligned 9.83 v 15.43 s. Kept share drawn 15/23 = 65 %, clicked 22/23 = 96 % |
+  | (0b) | **PASS** native on and off |
+  | (1) | **PASS** (cell 21/0, check 2773/0) |
+  | (2a) | **PASS**. drawn rest_med -0.14 (se 0.32, line +0.52), settle +0.57 (se 1.13, +1.86), moving -2 (se 1.40, +2.30); clicked rest_med +0.18 (se 0.18, +0.29), moving 0. 3a null cells failing: 0 of 24 |
+  | (2b) | **PASS**. drawn 0.7 v 0.7 %; clicked 1.3 v 0.9 % (line 2.4 %) |
+  | (2c) R33.26 | BOTH-planned: drawn 19 faces, hull_far median 2.8 v 3.0 m, p90 8.5 v 8.5: **PASS**; clicked 21 faces, median 1.6 v 1.6, p90 6.3 v 6.3: **PASS** [all runs: drawn PASS; clicked median 1.7 v 1.6 over its se 0.05, FAIL]. CANDIDATE-ONLY: drawn 2 faces, hull 2.5 v 2.7, p90 3.1 v 3.7: **PASS**; clicked **1 face: NOT JUDGED** (the filed text: under 2, reported): faced_attack_move s120, candidate kept plan_far 12.4 m but hull_far 2.2 v the base hull's 0.6 (the base never resolved that face before the order moved on). BASE-ONLY: 1 a mode, reported |
+  | (2d) | REPORTED: hold medians 4 v 4 |
+  | (3) | **PASS** (seam=both): rigs 172 v 170 of 208, paired +0.154 (se 0.436); mixed 298 v 298 |
+
+  **The contradiction:** `face_pairs.py` prints "(2c): NOT ALL PASS" because its `judge()` returns a failure for a class
+  with exactly 1 face, against the filed text ("fewer than 2 faces: NOT JUDGED for that class, reported"; only BOTH
+  under 10 is INCONCLUSIVE). Found after the numbers, so NOT fixed: the orchestrator rules whether (2c) reads PASS (the
+  filed text) or not. The old (2c) (face_keep_table, unpaired) is superseded and is reported: drawn p90 14.3 v 8.2 over,
+  clicked PASS. Distinct-pair counts differ by tool because each de-duplicates its own rows (hull rows, face counters,
+  episodes).

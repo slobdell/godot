@@ -1,0 +1,34 @@
+PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=5607 per_ref_ms=6230 cpus=0-31 idle=98% waited=0s load=1.29 run=10s
+>> perf-judge: JUDGED, PASS on attempt 1 of 3 (12s)
+net-smoke/server: exited 143 (expected: named in its recipe)
+relay-smoke/host: exited 143 (expected: named in its recipe)
+  foundry    f72b1712479b2570  unmoved
+  yard       df0c04272c671909  unmoved
+  pit        76b986231ec5b85a  unmoved
+  terminus   1c2d8ee6ba3af808  unmoved
+  crossing   f8024203917ca808  unmoved
+  sumps      8ac8cffce54c83fc  unmoved
+  locks      9bbfe8b7e38cef8d  unmoved
+  parade     27580bb53aa4ebe3  unmoved
+  gorge      408d8c5e49d22a5f  unmoved
+  archipelago f97836b7868c7906  unmoved
+  cut        b31bbf132c154b23  unmoved
+  docks      50f15553c558d108  unmoved
+  yard_open  d93353b60efd6db3  unmoved
+sim-baseline passed: 13 maps unmoved (glibc-2.43)
+combat-smoke/server: exited 143 (expected: named in its recipe)
+  ok   the stage says the judge exited 1
+check-perf-judge: 10 passed, 0 failed
+  ok   the wrapper fails a target whose make exited 0 but printed the line (on stderr)
+perf-judge: 5 passed, 0 failed
+  ok   the other maps still read unmoved
+  ok   an unmoved line keeps its OLD provenance
+  ok   prints ONE commit message naming moved and unmoved maps
+  ok   all moved: every map listed, none unmoved
+  ok   make check-hashes: absent data reads NOT RUN, never unmoved
+native-verify-scenarios: runner exited 0, 0 verify mismatches (build/native-verify-scenarios.log)
+FACE_EPSILON stage: default { "plans": 1, "abandoned": 1, "driven": 1, "kept_served": 0, "fallbacks": 0, "aligned_s": 15.4333333333333, "drift_m": 1.54050922393799, "episodes": [{ "name": "Rig", "home": [0.0, 15.0], "asked": 3336, "asks": 2, "served": true, "kept": false, "plan_far": 1.4, "refused": {  }, "abandoned": 1, "hull_far": 12.1, "ticks": 464, "closed_by": "" }] } | keep 1 hull length { "plans": 1, "abandoned": 0, "driven": 0, "kept_served": 1, "fallbacks": 0, "aligned_s": 9.83333333333333, "drift_m": 0.97200620174408, "episodes": [{ "name": "Rig", "home": [0.0, 15.0], "asked": 3804, "asks": 1, "served": true, "kept": true, "plan_far": 11.5, "refused": {  }, "abandoned": 0, "hull_far": 11.5, "ticks": 296, "closed_by": "" }] }
+FACE_EPISODES stage: default [{"abandoned":1,"asked":4133,"asks":2,"closed_by":"","home":[0.0,15.0],"hull_far":12.1,"kept":false,"name":"Rig","plan_far":1.4,"refused":{},"served":true,"ticks":464}] | keep 1 [{"abandoned":0,"asked":4601,"asks":1,"closed_by":"","home":[0.0,15.0],"hull_far":11.5,"kept":true,"name":"Rig","plan_far":11.5,"refused":{},"served":true,"ticks":296}]
+2773 passed, 0 failed
+>> check: hashes on balsa-worker-gcp.us-west1-a.c.leddrones.internal (glibc-2.43) | sim-baseline foundry=f72b1712479b2570(unmoved) yard=df0c04272c671909(unmoved) pit=76b986231ec5b85a(unmoved) terminus=1c2d8ee6ba3af808(unmoved) crossing=f8024203917ca808(unmoved) sumps=8ac8cffce54c83fc(unmoved) locks=9bbfe8b7e38cef8d(unmoved) parade=27580bb53aa4ebe3(unmoved) gorge=408d8c5e49d22a5f(unmoved) archipelago=f97836b7868c7906(unmoved) cut=b31bbf132c154b23(unmoved) docks=50f15553c558d108(unmoved) yard_open=d93353b60efd6db3(unmoved) | determinism 9d66d3a0c59a7936
+>> remote: make check exited 0 (build/ copied back)

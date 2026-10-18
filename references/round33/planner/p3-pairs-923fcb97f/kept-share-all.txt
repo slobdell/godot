@@ -1,0 +1,5 @@
+P3_KEPT drawn | runs 48 | candidate face plans served 32, by the kept search 21 (66 %), fallbacks 33 | line >= 50 % | PASS
+P3_HOLD drawn | hold median (all events) candidate 4.0 (n 514) v base 4.0 (n 524) | reported
+P3_KEPT clicked | runs 48 | candidate face plans served 25, by the kept search 24 (96 %), fallbacks 19 | line >= 50 % | PASS
+P3_HOLD clicked | hold median (all events) candidate 4 (n 607) v base 4.0 (n 610) | reported
+P3_KEPT line (0), the kept share: PASS
