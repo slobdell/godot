@@ -1314,3 +1314,6 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 - **P3 v3, the face keep (planner):** v2 (kept first, today's search as fallback, R33.19) passed everything but clicked
   drift's p90 (15.4 v 12.8 m), apparently from slot-law faces kept out to their end circle + a hull. Candidate: cap a
   slotted face's kept circle at one hull length from the slot. The yard face-behind gain (9.8 v 15.4 s) is the prize.
+- **Two planner tools need repair (planner, round 33 close):** series_verdict needs a both-arms-seam mode (its round-31
+  guard refused, so P2 and P3 were read by hand), and stage_s207's rolling control no longer reproduces the round-32 pin
+  (re-make it or retire it).

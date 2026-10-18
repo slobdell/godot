@@ -70,6 +70,10 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   `make test` 2741/0 and perf-judge JUDGED PASS 1.16x (builder0). What he'd notice: nothing. **Rides the next main
   check** (planned on builder2).
 
+- **Planner close → main `5b574075`** (stream/planner `01d53411`, code = `1de6a692`): the parked P3 face keep lands OFF
+  (keep 0) with its counters and judge targets. builder2: 2745/0, sim-baseline unmoved. builder0 alone: web-smoke 0, and
+  perf-judge JUDGED PASS 1.09x. **Native's controller-twin test fix → `ac06a393`** (timer granularity on builder2's Zen 5).
+
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
   failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
