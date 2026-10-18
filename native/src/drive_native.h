@@ -69,6 +69,17 @@ struct DriveConfig {
 	// (Traffic.refresh + Traffic.hold_of: the table work stays traffic's GDScript) and the C29.3 gates read
 	// Traffic.holding natively from its `_live` table.
 	bool traffic_hold = false;
+	// Round 29 (brains B5c, C29.2): Movement.gate_giveup_on() (ON by default since brains' flip; the native drive runs only
+	// with no --nav-off, so the configure-time value is the one in force). False on a tree without it.
+	bool gate_giveup = false;
+	// Round 32 (brains B5c-v6): Movement.gate_side_on(), the planner's side gate for a goal first seen facing away.
+	bool gate_side = false;
+	// Round 33 (brains B5c-v6, R33.8): Movement.gate_inside_on(), a gate inside the hull's turning circle is latched.
+	bool gate_inside = false;
+	int64_t GATE_ROOM_POINTS = 8;
+	// Round 30 (brains B5c-v4): the bounded come-round, the near rule, the turn-room ring.
+	double GATE_TURN_SECONDS = 12.0, GATE_NEAR_DETOUR = 2.0;
+	int64_t TURN_ROOM_POINTS = 12;
 	// Round 31 (traffic T3b, C31.2): the crossing. traffic_shape is false on a tree without Traffic.shape; with it, _avoid
 	// calls NativeTraffic.avoid_shape back once the route's wish is known (the verdicts stay traffic's GDScript).
 	bool traffic_shape = false;
