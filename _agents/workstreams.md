@@ -349,6 +349,13 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   circle allows (inferred, not traced). The series can't separate the slot-law ordering from the fallback. Parked per the
   bar's rule. Round 34 candidate: cap a slotted face's kept circle at one hull length from the slot, on fresh seeds.
 
+- **R33.20 Main's known native coverage-floor reds don't block a pair's series (2026-10-17).** Main `de6d3266` / `54abf20a` is
+  red on builder2 only on test_native_gate / test_native_yield path floors (0 mismatches everywhere; the stage's counts move
+  with shard order). Native's fresh-process fix (`fix/native-fresh-stages`) is in flight. Until it lands, a pair tree whose
+  check reds ONLY on those same floors, with 0 mismatches and everything else green, meets C31.1 for STARTING its series.
+  It does NOT merge until a check on its merge tree is fully green with native's fix in it. First use: B10b's
+  `f91b61c7` (builder2: 2770/3, the three floors only, sim-baseline unmoved; main 54abf20a fails the same way filtered).
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
