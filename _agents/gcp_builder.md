@@ -61,7 +61,13 @@ is built by the first `check` or `quick`, as on a fresh builder0 folder.
 3. **Rendering targets** (screenshots, windowed renders) stay on builder0 or the laptop. This box has no desktop.
 4. **Stop it when the burst ends** (`make gcp-stop`). Before stopping, make sure no stream has a run there:
    `gcp-stop` refuses while any `make` runs, and `tools/remote.sh --status` under `REMOTE_HOST` shows whose.
-5. **While it is on, builder2 is the FIRST choice for every remote run, light or heavy** (the lead, 2026-10-18: "builder2
+5. **Use BOTH machines (2026-10-18, revised the same day).** With 6 slots builder2 sat at load about 70 on 32 threads,
+   so jobs queued there while builder0 idled. Now builder2 takes 4 heavy runs at once, and work is split by kind:
+   **builder2:** judged series and the full checks that gate them (a named hash). **builder0:** development and tuning
+   runs, traces, filtered or light tests, and any check while builder2's queue is deep (`tools/remote.sh --status` /
+   the slot owners show it). A pinned (`--fixed-fps`) run reads the same on either machine, so dev numbers move freely;
+   a judged series stays on ONE machine from start to end.
+6. **(superseded by 5) While it is on, builder2 is the FIRST choice for every remote run, light or heavy** (the lead, 2026-10-18: "builder2
    is clearly the machine to leverage"). builder0 takes a run only when builder2 is full, when the number must be
    builder0's (a builder0 timing, or a series already running there), or for rendering. A judged series stays on one
    machine from start to end.
