@@ -476,6 +476,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   extended). Manoeuvre's files only; it's a new pair hash and needs its own check first. Also: the stage is barely
   seed-sensitive (seeds 40 = 43 and 44 = 45, row for row), so **the series runs seeds 460–475 (n 16 a cell)**, and the
   verdict reports how many distinct rows each cell has and computes se over distinct pairs only.
+  **Re-filed (orchestrator, 2026-10-18, before any 460–475 number):** the tuning sanity (builder2, pinned, 40–45, 144 runs
+  an arm, pair `60d2d86a`) showed the 3 m rule never fires on SBF (face_pulled_holds 0 there; 514 attack-move, 874
+  screen), and SBF's movers were unchanged (8 v 3). Re-read: the hull stays 6.5–8 m off its seat, the dressing move
+  reverses toward it, then the face that turnhull lifts REPLACES the move, it creeps, and the cycle repeats. BASE
+  declines that face, the move finishes, and the crew sits. **New amendment (a):** a face is NOT lifted (and drawn_face
+  does not convert it) while the crew stands further from its held seat than its arrive radius
+  (max(ORDER_ARRIVE, settle_radius)). The decline stands as today: the hull finishes its move, then turns once seated.
+  **The 3 m give-up is DROPPED** (one reason per candidate; it fires about 1390 times elsewhere unjudged). Test first
+  (gang_tank 7 m off its seat with an order face: declined until it's inside the radius), then the sanity again on 40–45,
+  then a new pair hash and its check, and only then 460–475.
 
 - **R33.22 B10b PARKED after its re-judge on main + R4 (2026-10-18; brains, builder2, pair `f91b61c7`, rows
   `references/round33/brains/b10b_rejudge_f91b61c7_builder2.txt`).** It fails as written on line 3's strict clause: pooled
