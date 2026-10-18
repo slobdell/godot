@@ -17,7 +17,7 @@ bad() { fail=$((fail + 1)); printf '  FAIL %s\n     %s\n' "$1" "${2:-}"; }
 # A stub that records the arguments it was handed and nothing else.
 printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@" > "%s/argv"\nexit 0\n' "$tmp" > "$tmp/godot"
 chmod +x "$tmp/godot"
-run_test() { rm -f "$tmp/argv"; ( cd "$repo" && make --no-print-directory -o import test \
+run_test() { rm -f "$tmp/argv"; ( cd "$repo" && make --no-print-directory -o import -o _native-ready test \
 	GODOT="$tmp/godot" BUILD_DIR="$tmp/build" TEST_SHARDS=1 FILTER="$1" 2>&1 ); }
 
 out=$(run_test 'a|b'); rc=$?
