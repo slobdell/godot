@@ -698,6 +698,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   THIRD switch, `--battery-seat=deployatplace`, judged alone like the other two:** a battery crew deploys only at its place
   (within 8 m). The cost is firing later, so the bar gains: median time from a battery's fire order to its first shot,
   ON ≤ OFF + 5 s on the census, plus the shots line already filed.
+  **How each line is read (brains, filed 2026-10-18 before any number; candidate lab/brains-r33-battery `e8530098` =
+  three switches + native's arrivedgate mirror + main 579c6fc4 + a measurement-only commit; all on builder2).** Flags:
+  (a) `--battery-seat=off`, (b) `--nav-off=arrivedgate`, (c) `--battery-deploy=off`. ON = all three, OFF = none. (1)
+  Parade s43 and Foundry s45 run five arms: on, off, a-alone, b-alone, c-alone. DECIDING on ON: 0 never-past battery
+  askers, with set-ups > 8 m from the assigned place reported per arm. (2) `make battery-census` (census_probe pinned at
+  --fixed-fps 30), Sumps/Parade/Foundry × FRESH seeds 47–52, n 18, ON v OFF, with the filed lines; first shot = from the
+  battery element's attack/SBF task to any crew's shot, median ON ≤ OFF + 5 s, unanswered orders counted. (b)'s line:
+  squad-arrive-series FRESH seeds 65–68, n 100. (3) The check. (4) The worst ON runs printed before the totals. **Added
+  (orchestrator):** if (2) fails as a whole, shipping a SUBSET of the switches needs its own census on fresh seeds
+  53–58 for that subset, filed first. No subset is picked from (2)'s numbers.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
