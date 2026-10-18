@@ -284,3 +284,36 @@ the files are `test_native_gate` (Sumps) and `test_native_gate_foundry`. builder
 75 % idle), n 1. builder0 follows when the moves set frees its slot.
 **6 (optional, granted). The broker's npm install takes a lock: DONE, `e0759118`.** In a fresh folder, three installs
 started at once installed exactly once (two read "installed by a concurrent run"), and the broker tests passed 31 / 0.
+**Overnight results, afternoon 2026-10-18 (stream/native `5caf639d` holds items 1-4 and 6):**
+- **Bar (1), full check on both machines at `5caf639d`:**
+  - builder0 `make check exited 0`: 26 targets passed, ALL JUDGED; tests 2771 / 0 at fps 30 (test wall 1271 s, 5 shards);
+    sim-baseline 13 unmoved; perf-judge PASS 1.49x.
+  - builder2 `make check exited 2`: tests 2771 / 0 (test wall 518 s, 16 shards); sim-baseline 13 unmoved; perf-judge
+    PASS 1.36x. The one FAIL is net-smoke (a client saw 1 / 2 tanks, at load 46 with 79 other godot), so combat-smoke
+    was NOT RUN. Re-run alone on builder2 at the same commit: `make net-smoke combat-smoke exited 0`, both clients 2 / 2.
+    Load, not this change: net-smoke runs Godot directly, through no recipe this work touched.
+- **Bar (2), the moves list** (the judged set: builder0, `8aa67196`, `native test` ×2 pinned, ×2 free, every run 2771 / 0;
+  builder0's 1-min load sampled 149 times, median 12.4 on 12 CPUs):
+  - Verdict differences pinned v free: 0, once the three tests below read the right clock.
+  - Stable movers: 4. test_audio_music_director's `cost=` (a wall-clock ms measure, 0.05 v 0.06). test_control_awareness
+    and test_control_cinematic: camera and marker geometry paced by frames. All pass both ways.
+  - Run-to-run noise is not reduced by pinning: builder0 157 tests pinned v 129 free; builder2 68 v 114. It is almost
+    all printed timings and live-match outcomes, and it moves no verdict.
+- **Bar (3), the three pinned fails, fixed test-only under grants:** test_fx_kill_cam, test_control_dials and
+  test_ship_voice_fetch (above).
+- **Bar (4), throughput, pinned v free:**
+  - builder2: test wall 968 / 880 s v 1318 / 947 s (load ~70).
+  - builder0: 2975 / 1867 s v 2924 / 2548 s (shards vary 4-5 with load).
+  - Pinned is the same or faster on both. In builder2's check the pinned suite took 518 s.
+- **Item 5, NATIVE=off perf-judge on main:**
+  - builder2, main `729c2306`: JUDGED PASS 1.03x (load 33 on 32 CPUs).
+  - builder0, main `4dd04cbe`: JUDGED PASS 1.01x (load 9.2 on 12 CPUs). n 1 each.
+- **Pairs:**
+  - Brains' scout decide mirror is GREEN, `pair/native-scout` `0565d1a8`: 7536 decisions, 0 mismatches; the fight-back
+    branch reached in 108 of 480 forced cases (floor 54). test_native_decide runs in its own process.
+  - The arrivedgate mirror is DROPPED (R33.27: (b) had no measured effect). `pair/native-arrivedgate` `6805367b` stays
+    unmerged, so the gate split's merge note about it no longer applies.
+  - The ghost-aware stages are WITHDRAWN (R33.30: T4 parked). `fix/native-ghost-stages` `4b6433b4` and
+    `pair/native-ghost-on` `b2b97188` stay unmerged and were never judged. The design, for when T4 returns:
+    `Traffic.set_off("ghost", true)` in each gate / yield stage (`--traffic-off=ghost` means opposite things on main and
+    on T4's pair), plus a ghost-ON stage each for the latch and the Sumps.
