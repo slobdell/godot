@@ -136,6 +136,22 @@ pure test that an inland element's arrival is unchanged (its seats' centroid = i
 every element's arrival is measured, the squad-arrive line (2) and the check are the guards that it changes nothing
 inland.
 
+**Bar, traffic overnight item 2: T4 ghost ON, the third try (filed 2026-10-18 before any number; traffic
+`7f81383e3`, references/round33/traffic/ov_t4_bar.md).** Pair/ghost-on-r34 `2b41d3a04` = main `2b40ce075` + the ghost
+out of OPT_IN + traffic-t4-guard tooling; OFF = `--traffic-off=ghost`. Native path, builder2 for every line and both
+arms, everything at --fixed-fps 30, FRESH seeds, k 1.645. **G** (fresh body_probe children, Locks, seeds 7–18, n 12,
+ghost × body): G1 median body-ON alone_s, ghost ON ≤ OFF + 3.0 s; G2 at most 2 of 12 seeds where ON exceeds OFF by
+more than 3.0 s (each child is deterministic, so every per-seed difference is real); G3 the Sirens choose body with the
+ghost ON in at least as many seeds as with it OFF; G4 test_tactics_body green in the check. **R:** r1 (deciding) a FRESH
+process replays exactly with the ghost ON (each probe child twice; rematch_probe's run-0 digest of every position and
+velocity identical across two processes, seeds 7–18); r2 REPORTED, the same-process rematch branch rate ON v OFF.
+**7:** make check on the pair green on builder2 first (C31.1). **T,** Terminus (C33.7's lines), FRESH drive seeds
+849–896, n 48: (1) mixed friend-stuck crew-s ON < base and (base − ON) − k·se > 0; (2) rigs stuck ≤ base + k·se;
+(3) pinned ≤ base + k·se; (4) arrivals ≥ base − k·se; (5) REPORTED, the yard head-on and between-squad contacts;
+(6) a skirmish guard, random arena, fresh 924–947, n 24: kills, deaths, hit rate and far loops each within base ± k·se.
+**Amended at filing (orchestrator):** T(2), (3), (4) and (6) are DECIDING guards too, alongside G1–G4, r1, 7 and T(1).
+Any one failing parks T4 with its reading, and there is no partial rule.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
