@@ -424,17 +424,23 @@ static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
 	return true
 
 
-## Round 33 (CP-F attempt 3, R33.23): a crew standing further from its held seat than its arrive radius is still on its
+## Round 33 (CP-F attempt 3, R33.23): a crew standing further from its held seat than it may and still be ARRIVED is on its
 ## way there, so neither lift applies and the decline stands (`stop`): the move finishes first and the hull turns once
 ## seated. Traced (builder2, --fixed-fps, hull-rest gangs SBF s44/s45): Guns_5 stood 6.5-8 m from its seat, its dressing
 ## move reversed toward it for a second, then the lifted face replaced the move and crept it, every second to the 75 s
 ## judge (support-by-fire movers 8 v 3).
+## R32.3's ARRIVED_M (workstreams.md): a crew within this of its seat at completion HAS arrived, the definition the bar's
+## (f) reads. ORDER_ARRIVE's 3.5 m left crews seated 3.5-7 m out unturned (builder0, 40-45: attack-move within 15 deg
+## 78.8 -> 58.8 %).
+const SEAT_ARRIVED_M := 7.0
+
+
 static func off_seat(brain: TankBrain) -> bool:
 	var seat: Vector3 = brain.face_slot
 	if seat == Vector3.INF:
 		return false
 	var here := brain.tank.global_position
-	if _flat(here, seat) <= maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(brain.tank.unit_id)):
+	if _flat(here, seat) <= maxf(SEAT_ARRIVED_M, Movement.settle_radius(brain.tank.unit_id)):
 		return false
 	off_seat_declines += 1
 	return true

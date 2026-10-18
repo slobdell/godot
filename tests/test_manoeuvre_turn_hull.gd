@@ -179,7 +179,7 @@ func test_an_elements_own_facing_is_not_a_drawn_station() -> void:
 	s.dispose()
 
 
-## Round 33 (CP-F attempt 3, R33.23): a crew further from its held seat than its arrive radius is still on its way
+## Round 33 (CP-F attempt 3, R33.23): a crew further from its held seat than R32.3's ARRIVED_M is still on its way
 ## there: neither lift applies (the face stays declined, no drawn_face), so the move finishes first. Traced at hull-rest
 ## gangs SBF s44: the lifted face replaced the dressing move every second and the gang tank crept 7 m off its seat to the
 ## judge. Inside the radius both apply as before.
@@ -198,14 +198,14 @@ func test_a_crew_off_its_seat_is_not_turned_until_it_is_seated() -> void:
 		await s.step()
 	assert_true(Manoeuvre.drawn_facing(brain), "setup: his heading is drawn (the completed move's station)")
 	var face := {"type": "face", "x": 0.0, "z": 40.0, "from": "order"}
-	var radius := maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius("gang_tank"))
+	var radius := maxf(Manoeuvre.SEAT_ARRIVED_M, Movement.settle_radius("gang_tank"))
 	brain.face_slot = me.global_position + Vector3(0, 0, radius + 3.0)
 	var declines0 := Manoeuvre.off_seat_declines
 	assert_true(not Manoeuvre.hull_takes_face(brain, face), "%.1f m off its seat: the face is not lifted" % (radius + 3.0))
 	assert_true(Manoeuvre.drawn_face(brain).is_empty(), "...and no drawn_face either")
 	assert_eq(Manoeuvre.off_seat_declines - declines0, 2, "both counted")
-	brain.face_slot = me.global_position + Vector3(0, 0, 1.0)
-	assert_true(Manoeuvre.hull_takes_face(brain, face), "1 m off: lifted as before")
+	brain.face_slot = me.global_position + Vector3(0, 0, 5.0)
+	assert_true(Manoeuvre.hull_takes_face(brain, face), "5 m off (arrived by R32.3): lifted as before")
 	assert_true(not Manoeuvre.drawn_face(brain).is_empty(), "...and drawn_face as before")
 	s.dispose()
 	Movement._off = was_off
