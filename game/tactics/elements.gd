@@ -157,6 +157,24 @@ func form_squad(units: Array, squad_name: String) -> Array[Element]:
 const PIECE_NUMERALS := ["", "II", "III", "IV", "V", "VI", "VII", "VIII"]
 
 
+## Overnight item 4 (brains): whether `element` can take one more crew (fewer than `cap` members; MAX_MEMBERS, C19.1).
+static func has_room(element: Element, cap := Formations.MAX_MEMBERS) -> bool:
+	return element != null and element.members().size() < cap
+
+
+## Overnight item 4: `unit_name` (living, in no element) joins `element`, which keeps its id and task. False, and
+## nothing changes, when it has no room under `cap` or the crew is already seated.
+func join(element: Element, unit_name: String, cap := Formations.MAX_MEMBERS) -> bool:
+	var tank := _tank(unit_name)
+	if not has_room(element, cap) or tank == null or not tank.is_alive() or of(unit_name) != null \
+			or not by_id.has(element.id) or tank.team != element.team:
+		return false
+	element.join(unit_name)
+	_by_unit[unit_name] = element
+	element_changed.emit(element.id)
+	return true
+
+
 ## The element `unit_name` belongs to, or null.
 func of(unit_name: String) -> Element:
 	var element: Element = _by_unit.get(unit_name)
