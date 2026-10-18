@@ -249,3 +249,38 @@ tools/test_slot_light.sh, tools/remote.sh (merge notes for each).
 4. **Split test_native_gate by frame** (FILE_TIME 535 s on builder0).
 5. **One NATIVE=off perf-judge reading on main** (builder2 and builder0, labelled).
 Pairs pre-empt all of it (brains' arrivedgate mirror first).
+
+### Overnight status (2026-10-18; the laptop froze ~01:45, work resumed 10:50)
+**Pair: brains' arrivedgate mirror GREEN, `pair/native-arrivedgate` `6805367b`.** The C++ mirror of `_approach_gate`'s
+arrived latch (`8200e230`), line for line. A new twin, `test_native_gate_arrived`, poses hulls at the goal from brains'
+test shape: 144 poses a stage, each driven both ways from one snapshot, in its own process. On builder2 (n 1) it reached
+the latch for artillery 40 / 144 (live and owned) and IFV 32, and never for the scout (fixed gun). The twin set +
+nav_gate* + wheeled_arrival: `exited 0`, 63 / 0, 0 mismatches. In brains' battery candidate `e8530098`. Switches (a)
+and (c) are GDScript only (no twin missed).
+**Next pair queued: brains' scout_fights_back (`lab/brains-scout` `57d8342c`)**, after brains' battery series. It needs
+`since_hit` in the C++ situation's self fields and the new first SPOT branch (0.15) in decide_native.
+**1. The suite at --fixed-fps: BUILT, judging.** `e80ad0a8`: run_tests.gd gets `--fixed-fps $(SIM_HZ)` (`TEST_FPS`;
+`TEST_FPS=` is the old free suite). builder2 (n 2 each, at load ~70, so the free arm is distorted): pinned 968 / 880 s
+wall v free 1318 / 947 s; pinned 2768 / 3 twice, free 2771 / 0 twice. The 3 pinned fails each read the wrong clock, and
+each was fixed test-only under a grant (`06d4998d`, `8aa67196`):
+- `test_fx_kill_cam` asserted the runner never pins. Now the reader agrees with the runner's own flag.
+- `test_control_dials` waited 40 frames. Now it waits until the camera settles on physics frames (game time).
+- `test_ship_voice_fetch`'s fake fetch delay was game time against a wall-clock lateness. Now it is wall time.
+All three pass pinned and free (builder0 light). The judged moves list is the builder0 set (fixed ×2, free ×2 at
+`8aa67196`, load sampled); the comparison script splits each log into per-test blocks.
+**2. A remote `make test` with no library REFUSES: DONE, `f3fe436d` + `6b66f161`.** It refuses (exit 3) when NATIVE is
+not off, a toolchain is present and `native/bin` is missing, for the whole suite or a FILTER naming "native". Other
+filters run as before. Laptop: FILTER '' and 'native_yield' refuse, 'nav_gate' runs, NATIVE=off runs.
+test_filter_gate / test_test_shards skip `_native-ready` (granted): 17 / 0 and 5 / 0 with no library.
+**3. Load-flaky targets read NOT JUDGED: DONE, `0a11a815` + `f5683f5f`.** web-smoke's first-sound bound,
+test_slot_light's quiet-window case and test_quiet_window's live cases are NOT JUDGED only when they are the sole miss
+and the 1-minute load is >= 1.5 per CPU. On a quiet box they FAIL as before. Check reads it from
+`build/check/notjudged/{web-smoke,remote-guard-test}`. Stub-proven both ways on the laptop; shell-tools-test passes.
+**4. test_native_gate split: DONE, `79b8a5b7`.** By case, not by frame: each stage already runs in its own process, so two
+files of two stages halve a shard's share without replaying the fight. The harness is `tests/native/gate_twin_case.gd`;
+the files are `test_native_gate` (Sumps) and `test_native_gate_foundry`. builder2: 4 / 0, 0 mismatches, counts as before,
+219 s + 244 s (was 393 s). Merge note: arrivedgate's `gates_arrived` line moves into the harness.
+**5. NATIVE=off perf-judge on main `729c2306`:** builder2 `exited 0`, JUDGED PASS 1.03x on attempt 1 (load 33 on 32 CPUs,
+75 % idle), n 1. builder0 follows when the moves set frees its slot.
+**6 (optional, granted). The broker's npm install takes a lock: DONE, `e0759118`.** In a fresh folder, three installs
+started at once installed exactly once (two read "installed by a concurrent run"), and the broker tests passed 31 / 0.
