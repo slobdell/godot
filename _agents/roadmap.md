@@ -1304,3 +1304,8 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   room to retreat) or the shooter matches it (advantage ≥ 0), SPOT drops to its in-sight 0.7, so ENGAGE wins. Against a
   shooter it loses to, it opens distance as today. The bar would cover: the shots ratio, scout survival, and team
   enemy-seen seconds ≥ base − 1.645 se. It pairs with manoeuvre's turn-in.
+- **Two load-flaky targets in `make check` (orchestrator, test infra; round 33, 2026-10-17):** (1) web-smoke's
+  "first sound ≤ 30 s after READY" is a wall-clock bound. It failed at load 30.8 (31.5 s) and 36.8 (34.7 s), and passed
+  re-run at load 12.6 (11.7 s). (2) tools/test_slot_light.sh (remote-guard-test) failed twice, "the quiet window opened"
+  and "ran while EXCLUSIVE held the box", on a shared live box. Both should either scale with measured load or refuse
+  (NOT JUDGED) rather than FAIL, like perf-judge.
