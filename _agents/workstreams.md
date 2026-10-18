@@ -137,6 +137,11 @@ would see. So the design fits the SHAPE to the edge (folds or compresses the cla
 (tactics-drills far_ambush held_the_line_m 12.68 against its 12 bound). It now applies only on the final approach (within
 INSET_NEAR_M = 60 m of the destination), and further out a move is today's (far_ambush back to 11.354 exactly). The
 verdict REPORTS the distance from the destination at which the inset engaged.
+**Tree named (R33.32):** lab/brains-warrig-main `befd86c2` = main + EXACTLY two manoeuvre harness commits the stage needs,
+`77348a53` (--faced-off-deg) and `8fc224fa` (--faced-squads): screen_playtest.gd, mk/manoeuvre.mk and
+test_manoeuvre_face_clip, defaults unchanged (CP-F (r)'s grant). Plus brains' six War Rig commits. One real merge: R33.9's
+latch is kept, with both arrival sites reading `_arrived_at(center.distance_to(arrive_point or destination), state)`, so
+the fold's arrive point goes THROUGH the latch.
 **Design filed (brains, agreed by the orchestrator, before any judged number): CAP + FOLD, one rule under
 `--anchor-inset`.** (i) The inset is capped at one swarm pitch (15 m). (ii) Whatever still falls outside is clamped as
 today (the fold). (iii) The element's arrival is measured to the CENTROID OF THE SEATS IT LAID (after clamp and ground),
