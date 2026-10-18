@@ -47,6 +47,22 @@ read by series_verdict `seam=both`. Pass = every line, early stop OFF; (1) passe
 Pinned numbers don't compare with bca4eaca's. **Added (orchestrator, as for CP-F's R33.23):** hull-rest barely varies
 with the seed, so the verdict reports distinct rows per cell, and every se is over distinct pairs only.
 
+**Bar, brains overnight item 2: a scout under fire fights back when it can't get away (filed 2026-10-18 before any code
+or number).** Lab on lab/c339-turnin `ea043755` (the orbit stage exists only there; main's behaviour = its turn-in-OFF
+arm, named in the verdict). Candidate: in TankBrain.decide (plus native's mirror, C26.2), a scout hit within 2 s with a
+visible non-prey contact C inside both its effective range and C's, AND unable to get away (duel advantage v C ≥ 0, or
+C's speed ≥ 0.9 × its top speed), scores SPOT 0.7 instead of 0.88, so ENGAGE wins. `--scout-fight=off`. The proxy
+"fire from a contact in reach" is stated, because no attacker is recorded on a hit. (1) DECIDING, the orbit cells
+(--fixed-fps a seed): 24 cells × FRESH seeds 60–72 (n 13), turn-in OFF, ON v off: (a) pooled median scout shots ON ≥
+1.5× OFF; (b) median damage taken ON ≤ OFF, and no cell worse by more than 20 % (read on cells with OFF hits ≥ 10;
+smaller cells reported); (c) ENGAGE ticks > 0 ON, and SPOT ticks ON < OFF. Turn-in ON reported alongside. (2) A pure
+test: a scout that loses the duel and can outrun keeps SPOT 0.88. (3) Fights guard, scout-census (showmatch,
+--fixed-fps), FRESH seeds 21–28, n 8: scout deaths ON ≤ OFF + 1.645 se, kills reported. **Added (orchestrator): (3b)
+team enemy-seen seconds is MEASURED and judged**, ON ≥ OFF − 1.645 se. It is the scouting risk this change was designed
+around (brains' own design, roadmap), so brains adds the probe before any number. (4) The check, with native's twin of
+decide at 0 mismatches. (5) The worst ON cell traced before the medians. Ships ON if (1), (3), (3b) and (4) pass. Tuning
+seeds 50–59 only. Runs on builder2 after the battery series. Tell manoeuvre before any merge (it moves C33.9's base).
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
