@@ -752,6 +752,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   maps (n 16) with the lines unchanged. Merge on that. **Rule for every stream's branch:** a candidate is main + its own
   commits only; anything else on its tree is named in the bar, or the tree is rebuilt.
 
+- **R33.34 CP-F attempt 3 PARKS, narrowly (2026-10-18; manoeuvre, stream/manoeuvre `22e9cab4e`,
+  references/round33/manoeuvre/cpf3b-series/; pair `0dad42fa2`, check green; all builder2, pinned, fresh seeds; 21 of 64
+  pairs a task distinct, judged over distinct pairs).** PASS: (a) within 15° on move 93.8 %, right 96.0 %, attack-move
+  80.2 %; (b); (c) one-sided; (e); (f) 273 v 274; (g) Terminus mixed 300 v 295, rigs 182 v 177; (h) 18/18; (i) fights
+  within noise (shots 21,987 v 21,090); (m) native = GDScript, byte-identical rows. **FAIL: (d) attack-move all classes
+  +7 against a limit of 6.5** (gang crews mostly DRIVING a move at 75 s: the seat-move pattern, now on attack-move only);
+  **(j) as written**, hull_holds = 0, because only 1 of 383 judged runs had the quiet enemy in sight (the mechanism is
+  tested; the tuning sanity had 4,256 holds). Reported: SBF hull error 2.3 v 22.8°. **Next:** attempt 4 = CP-F + the
+  k-turn arrival-flicker fix (planner's s69 diagnosis, roadmap; manoeuvre owns it), since an attack-move's late movers may
+  be that flicker. Developed and checked on tuning 40–45 tonight; judged only after the lead's word (HANDOFF), on FRESH
+  seeds. (j) is re-filed as REPORTED, since a hold that needs a quiet enemy in sight can't be forced by seed choice.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while

@@ -64,6 +64,15 @@ came back beyond reach, with up to 203 chosen reverse ticks and 42 gear changes 
 its post, and out-of-reach hits still up (42 → 49). A tuned variant was worse. **So the recommendation stands: ship
 attempt 1 (`781801da0`'s turn-in) as it is.**
 
+**❓ For the lead, the War Rig turn-to-face (CP-F, his round-32/33 ask; R33.34): it PARKED narrowly, a third time.**
+On fresh seeds, wheeled turret vehicles told to face a direction now end 3–4° off it (93–96 % within 15°; attack-move
+80 %), against 60–100° off today. Fights, Terminus, the bridge and arrivals are all no worse. It missed one line: on
+attack-move, gang crews still driving at 75 s numbered 7 more than without it, against a limit of 6.5. A second line read
+nothing because the situation never came up. **Choices:** (1) ship it as it is: you'd see turrets ending on your drawn
+facing, with a few gang crews on attack-move still shuffling into place; (2) **recommended:** one more attempt, which also
+fixes the "arrived" flicker in the middle of a three-point turn that planner found, possibly the cause of those late
+movers, and is being developed tonight; (3) leave it parked.
+
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
