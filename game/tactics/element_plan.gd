@@ -24,6 +24,8 @@ extends RefCounted
 
 ## The element counts as arrived within this far of its task destination (meters)...
 const ARRIVE_M := 12.0
+## R33.35 (brains): the herringbone halt lays on a heading that holds (herring_heading); `--herring-heading=off` is main's.
+static var HERRING_HEADING := not OS.get_cmdline_user_args().has("--herring-heading=off")
 ## Round 33 (R33.9, brains; manoeuvre's F1 trace): ...and, once arrived on a task, stays arrived until its centre is more
 ## than ARRIVE_M + ARRIVE_LEAVE_M out (`_arrived_at`; `Element.assign` clears `arrived` for every new task). Without the
 ## latch the flag was a limit cycle ON MAIN: arrived lays the seats on the halt at the spot (his drawn heading), not
@@ -1702,6 +1704,22 @@ static func _names_of(members: Array) -> PackedStringArray:
 ## Round 12 (C12.5): a shape the player chose with G (`task.formation`) is the halt's shape too. Before this a chosen
 ## wedge on a drills-on move dissolved into the table's coil or herringbone on arrival -- round 11 made the task carry
 ## the shape and this was the phase it missed. The table's hold pick decides only under AUTO.
+## R33.35 (brains; manoeuvre's CP-F trace): the heading a herringbone halt lays its seats on. The task's drawn facing
+## when it has one; else the heading it was laid on, kept while the element stays in the herringbone; else (entering)
+## `current`. It was the members' averaged hull forwards every update: as the hulls turned the shape re-laid rotated,
+## seats jumped 5-27 m and crews were re-sent (gangs faced_attack_move s41: Hunters 1,046 seat moves after arrival, both
+## arms). `--herring-heading=off`: `current` (main's rule).
+static func herring_heading(state: Dictionary, current: Vector3) -> Vector3:
+	if not HERRING_HEADING:
+		return current
+	var told: Variant = ElementTask.facing(state.get("task", {}))
+	if told is Vector3:
+		return TacticsFormation.flat(told)
+	if String(state.get("drill", "")) == "herringbone" and state.get("heading") is Vector3:
+		return TacticsFormation.flat(state["heading"])
+	return current
+
+
 static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable, at: Vector3) -> void:
 	var pick := table.select({"task": "hold", "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
@@ -1904,6 +1922,7 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 			plan["technique"] = "traveling"
 			var at := _kept_halt(state, center)
 			plan["anchor"] = at
+			plan["heading"] = herring_heading(state, plan["heading"])
 			_group(plan, ordered, "herringbone", at, plan["heading"], spacing, "move", "", true)
 		"encircle":
 			_plan_encircle(plan, situation, table, ordered, focus, toward, spacing, contact)
