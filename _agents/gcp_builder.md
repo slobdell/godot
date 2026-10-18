@@ -111,3 +111,7 @@ re-imports only the files that differ, checked by content hash. rsync protects `
 **Do NOT copy `native/bin` or `native/build`.** CMake's cache holds absolute paths, and a copied `.so` can look newer
 than a branch's different C++ sources (rsync keeps the laptop's mtimes), so a stale library would be used. Let each
 folder build its own native library.
+
+**node_modules too (2026-10-18):** in a fresh folder, broker-test and relay-smoke race `npm ci` inside one check and
+corrupt node_modules/ws. Seed it with `cp -a ~/tank_squad/<warm>/node_modules <wt>/` (same package-lock) along with
+`.godot`, until the roadmap's install-once fix lands.

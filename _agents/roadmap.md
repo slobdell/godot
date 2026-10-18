@@ -1347,3 +1347,7 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   via a multiplayer peer which is not connected" from match.gd:2094 `_shell_hit` ← shell.gd `_fly`, under a full check's
   load on builder2 (pair 70cb7f683); it passed alone twice. Guard `_shell_hit`'s RPC on a connected peer (or stop shells
   at teardown), with a test that drops the peer while a shell is in flight.
+- **Fresh folders race `npm ci` (infra; brains, 2026-10-18):** in a new remote folder, broker-test and relay-smoke each
+  run `npm ci` at the same time inside one check (12 targets in parallel) and corrupt node_modules/ws (TAR_ENTRY_ERROR
+  ENOENT), so both go red. Have one prerequisite target install node_modules once (an order-only dependency or a lock),
+  and until then seed node_modules from a warm folder with the same package-lock (_agents/gcp_builder.md).
