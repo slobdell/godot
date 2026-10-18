@@ -825,3 +825,49 @@ prev_size"): state must live as long as its owner, not the process.
 
 **C26.2 for M1:** an edit to `_manoeuvre`'s first block (the lines above the decision) needs the C++ to follow; an edit
 inside the decision branch (`Manoeuvre.choose`, the plan, the kept goal) needs nothing.
+
+## N5.M (round 33): `_manoeuvre`'s decision in C++ — the design, written before the code
+
+**What.** Round 26 put `_manoeuvre`'s per-tick GATE in C++ (`Drive::manoeuvre`); the DECISION (a new goal, or the same
+spot after a gap in the drive ticks) is still `cb(k._manoeuvre, order)`. N5.M ports the decision: the rest of
+`Movement._manoeuvre` (reaimed, arrive, the facing test, `_kept_goal` / `_kept_from`, the counters) and what it calls,
+`Manoeuvre.choose` / `behind` / `simulate` / `_others` / `_hull_hit` / `_note`, `Movement._kturn_frame`, `_outline_offs`
+(new `NavNative::outline_offs`, `outline_off` per point: the same arithmetic) and `TankMotion.state_of` (built natively;
+the unit's `state_for` stats memoized per unit like `settle_of`). Manoeuvre (owner) confirmed 2026-10-17 that CP-F does
+not touch these; the orchestrator released the port (R33.4: parkedroom leaves `_manoeuvre` alone).
+
+**Equal, line by line.** Every member write through the view (`_behind_tick`, `_behind_since`, `_behind_goal`,
+`_behind_plan`, `_kept_goal`, `_kept_from`: exec rows already exist), Movement's statics `behind_asked` /
+`behind_reverses` through `sadd`, Manoeuvre's `plans` / `refused` tables in place on the Manoeuvre script (`_note`). The
+simulation reuses the proven pieces: `motion_step` (N6.1), `drive_toward` (backward for `reverse_toward`) and `wheels`
+(gear ±1), `NavNative::outline_ok`, `pathing_ready()`, the memoized `hull_box` / settle radius / `bake_radius`.
+**Declared, not equal:** `NativeBridge.took("motion")` / `took("nav")` (the bridge's measurement table) is not counted
+by the native decision. It is never game state.
+
+**Falls back to the callback (the decision whole, as today) when** `manoeuvre_ready` is false (a constant or the
+Manoeuvre script missing: an older tree), or any switch the GDScript arm would read differently is off:
+`native_nav` (the GDScript's outline then asks the engine, not N2a's index) or `kturn_cap` (another outline rule) is off,
+or the new switch `BrainSwitches.native_manoeuvre` (default ON; `--brains-off=native_manoeuvre` puts the callback back
+for an A/B). `native_motion` and `native_move` are OFF by default (crossing cost, not equality): the GDScript arm steps
+and checks outlines in GDScript, and the C++ decision calls `motion_step` and `NavNative::outline_ok` directly, each
+proven the same bits (N6.1, N2b), as the native tank drive does; `NativeMotion.configure()` is asked at
+`NativeDrive.configure` so the motion constants are there.
+
+**Proof.** The drive twins compare the whole drive from one snapshot; `MoverState.capture` gains Manoeuvre's `plans` /
+`refused` (statics of another script) so the decision's counters are compared too. Floors: the k-turn fight (every hull
+sent 8-16 m behind it) and the drive fight count decisions made natively (`drive_owned_counts`: `manoeuvre_native`,
+`manoeuvre_called_back`), with both answers (`reverse`, `route`) and a refusal reached. Then manoeuvre's own behind
+tests native-on in the plain check, `native-proof` (determinism and the thirteen maps unmoved: nothing changes by
+construction) and `make check NATIVE=off`.
+
+**Price.** Measured in `test_native_manoeuvre` (builder0 light lane under load ~18, lab `536f773c`, n 1 run of 900
+at-rest decision ticks): a decision tick's whole drive 1762 usec native with the decision CALLED BACK (rounds 26-32),
+719 usec with N5.M, 1728 usec all GDScript. About 1 ms saved per new goal (a spike, not a per-tick cost: decisions are
+once per goal).
+
+**Proof as built (lab `536f773c`, builder0 light):** `test_native_manoeuvre` (new; five hulls on yard_open sent astern
+at rest and rolling, the decision twinned on its tick, live and owned): 920 decisions native, 0 called back, 0
+mismatches; plans route 613 / reverse 307; refusals facing_nose 225, static 84, route_faster 66, friendly 6, enemy 2
+(a parked Rust hull). Not reached: `no_arrival`. The drive twins: 165 / 179 decisions native, 0 called back, 0
+mismatches (route only: the Sumps refuses its reverses). The k-turn fight compares none (an order lands before the fight's
+own drive decides it), so it asks no floor.

@@ -14,6 +14,11 @@ make remote T=skirmish-shots           # rendering targets use builder0's logged
 tools/remote.sh ai-ladder VARIANTS=a6,a5   # the script directly
 ```
 
+**Variables go inside the quotes.** `make remote T=check NATIVE=off` sets NATIVE for the *local* make only. builder0 runs
+a plain `make check`, native ON, and nothing warns you. Native lost a full check to this in round 33 (145ada3a). Write
+`make remote T="check NATIVE=off"` or `tools/remote.sh check NATIVE=off`. The tell is the wrapper's first line,
+`>> remote: make check NATIVE=off on builder0`: if the variable isn't there, it didn't arrive.
+
 **Read the result from the wrapper's own line, never from a shell exit code.** The last thing `tools/remote.sh`
 prints is `>> remote: make <target> exited <N> (build/ copied back)`, and that `N` is the build's verdict. **Do not
 pipe the command** (`make remote T=check | tail -20`): a pipeline reports the exit status of the *last* command in it,

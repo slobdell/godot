@@ -616,6 +616,28 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.MESH_EPSILON = config.get("MESH_EPSILON", 0.0);
 	c.keep_manoeuvre_census = config.get("manoeuvre_census", Variant());
 	c.manoeuvre_census = c.keep_manoeuvre_census.get_validated_object();
+	{
+		// Round 33 (N5.M): _manoeuvre's decision. Any constant, the Manoeuvre script or the motion model missing: the callback.
+		const char *names[] = { "MAN_MAX_M", "MAN_BEHIND_DEG", "MAN_FACING_KEEP_DEG", "MAN_SIM_DT", "MAN_SIM_HORIZON_S",
+			"MAN_HULL_MARGIN_M", "KTURN_MARGIN_M", "CUSP_DEADBAND" };
+		double *slots[] = { &c.MAN_MAX_M, &c.MAN_BEHIND_DEG, &c.MAN_FACING_KEEP_DEG, &c.MAN_SIM_DT, &c.MAN_SIM_HORIZON_S,
+			&c.MAN_HULL_MARGIN_M, &c.KTURN_MARGIN_M, &c.CUSP_DEADBAND };
+		c.keep_manoeuvre_script = config.get("manoeuvre", Variant());
+		c.manoeuvre_script = c.keep_manoeuvre_script.get_validated_object();
+		c.motion = &motion_config;
+		c.manoeuvre_ready = c.manoeuvre_script != nullptr && config.has("MAN_CHECK_EVERY") && config.has("REAIM_TICKS") &&
+				(bool)config.get("motion_ok", false) && motion_config.ready;
+		for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+			if (!config.has(names[i])) {
+				c.manoeuvre_ready = false;
+				break;
+			}
+			*slots[i] = config[names[i]];
+		}
+		c.MAN_CHECK_EVERY = MAX((int64_t)config.get("MAN_CHECK_EVERY", 1), (int64_t)1);
+		c.REAIM_TICKS = config.get("REAIM_TICKS", 0);
+		c.state_stats_of.clear();
+	}
 	c.KTURN_MIN_ERROR_DEG = config.get("KTURN_MIN_ERROR_DEG", 0.0);
 	c.KTURN_CIRCLE_SPEED = config.get("KTURN_CIRCLE_SPEED", 0.0);
 	{

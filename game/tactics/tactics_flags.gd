@@ -119,6 +119,9 @@ static func _parse() -> void:
 		if arg == "--route-seat-across=off":
 			Element.ROUTE_SEAT_REMATCH_ACROSS = false
 		# Round 32 (brains B10): a seat's grounding re-chosen every plan (the element centre's 5 m cell), the control arm.
+		# Round 33 (R33.9): an element's arrival read afresh every plan (main's rule), the control arm.
+		if arg == "--arrive-latch=off":
+			ElementPlan.ARRIVE_LATCH = false
 		if arg == "--ground-latch=off":
 			Element.GROUND_LATCH = false
 		if arg == "--ground-latch=on":

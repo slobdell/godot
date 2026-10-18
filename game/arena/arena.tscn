@@ -16,6 +16,7 @@ cell_height = 0.25
 agent_height = 1.75
 agent_radius = 2.0
 agent_max_climb = 0.25
+region_min_size = 8.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_perimeter_ns"]
 size = Vector3(244, 3, 2)

@@ -64,6 +64,8 @@ static func execute(ctl: OrderController, delta: float) -> Variant:
 			else EXEC_LIVE
 	if mode != EXEC_LIVE and NativeBridge.counting:
 		NativeBridge.took("owned")
+	if NativeBridge.counting:
+		NativeDrive._count_manoeuvre()  # the drive the execute runs inside the C++ (N5.M's decision)
 	_executes += 1
 	if mode != EXEC_LIVE and _executes % REPORT_EVERY == 0:
 		var c: Dictionary = NativeBridge.impl.execute_counts(false)

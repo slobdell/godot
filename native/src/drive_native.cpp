@@ -2,6 +2,7 @@
 
 #include "avoidance.h"
 #include "exec_view.h"
+#include "motion_native.h"
 #include "nav_native.h"
 
 #include <godot_cpp/classes/character_body3d.hpp>
@@ -46,6 +47,10 @@ CallbackClock &clock_() {
 }
 // The clocks run only while DriveConfig.profile is on (set by drive_configure; the drive's own entry sets it here).
 bool profiling_ = false;
+// Round 33 (N5.M), measurement only (drive_owned_counts): `_manoeuvre` decisions the native drive made, and called back.
+struct ManoeuvreCounts {
+	int64_t native = 0, called_back = 0;
+} manoeuvre_counts_;
 struct Timed {
 	const char *name;
 	std::chrono::steady_clock::time_point t0;
@@ -118,6 +123,12 @@ struct N {
 			// Round 26 (manoeuvre M1)
 			_manoeuvre{ "_manoeuvre" }, _behind_tick{ "_behind_tick" }, _behind_goal{ "_behind_goal" },
 			_behind_plan{ "_behind_plan" },
+			// Round 33 (N5.M): the decision
+			native_manoeuvre{ "native_manoeuvre" }, kturn_cap{ "kturn_cap" }, behind_asked{ "behind_asked" },
+			behind_reverses{ "behind_reverses" }, plans{ "plans" }, refused{ "refused" }, acceleration_mps2{ "acceleration_mps2" },
+			braking_mps2{ "braking_mps2" }, lateral_grip{ "lateral_grip" }, position{ "position" }, forward{ "forward" },
+			velocity{ "velocity" }, max_reverse_speed{ "max_reverse_speed" }, hull_turn_rate{ "hull_turn_rate" },
+			hull_turn_rate_deg{ "hull_turn_rate_deg" }, _motion{ "_motion" }, yaw_rate{ "yaw_rate" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
@@ -167,6 +178,10 @@ inline double flat_distance(const Vector3 &a, const Vector3 &b) {
 
 inline double deg_to_rad(double deg) {
 	return deg * (Math::PI / 180.0); // Math::deg_to_rad(double)
+}
+
+inline double rad_to_deg(double rad) {
+	return rad * (180.0 / Math::PI); // Math::rad_to_deg(double), as tank_drive_native.cpp
 }
 
 // ---- steering.gd, line by line ----
@@ -2011,6 +2026,28 @@ struct Drive {
 	bool cb_on = false;
 	bool run(Object *cmd, const Dictionary &order, double delta);
 	Dictionary manoeuvre(const Dictionary &order);
+
+	// ---- Round 33 (N5.M): `_manoeuvre`'s decision and Manoeuvre's choose / behind / simulate, line by line ----
+	struct Sim {
+		bool arrived = false, clear = true;
+		double seconds = 0.0, metres = 0.0;
+		int64_t legs = 0;
+		String blocked;
+	};
+	struct Other {
+		double x, z, reach;
+		bool friendly;
+	};
+	bool manoeuvre_native_on();
+	void manoeuvre_decide(const Dictionary &order, const Vector3 &goal, int64_t tick, bool gap);
+	String man_choose(const Vector3 &goal, const Dictionary &order, double arrive);
+	bool man_behind(const Vector3 &goal, double radius);
+	Sim man_simulate(const Vector3 &goal, double arrive, int gear);
+	LocalVector<Other> man_others();
+	Dictionary man_state_of();
+	void man_note(const StringName &table, const String &key);
+	double hull_width_of(const String &unit);
+	double settle_of(const String &unit);
 };
 
 } // namespace
@@ -2051,9 +2088,15 @@ Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 	const Vector3 behind_goal = v._behind_goal();
 	if (gap || behind_goal == V3_INF || flat_distance(goal, behind_goal) > c.NEW_GOAL_JUMP) {
 		Timed t("manoeuvre");
-		return cb(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+		if (!manoeuvre_native_on()) {
+			manoeuvre_counts_.called_back++;
+			return cb(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+		}
+		manoeuvre_counts_.native++;
+		manoeuvre_decide(order, goal, tick, gap); // writes _behind_tick with the rest
+	} else {
+		v.set__behind_tick(tick);
 	}
-	v.set__behind_tick(tick);
 	if (String(v._behind_plan()) != r_reverse_plan) {
 		return order;
 	}
@@ -2061,6 +2104,309 @@ Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 	reversed[k.reverse] = true;
 	reversed.erase(k.facing);
 	return reversed;
+}
+
+// Round 33 (N5.M): the decision natively while BrainSwitches.native_manoeuvre and native_cb are on and the GDScript arm
+// would ask the same geometry: native_nav (its outline's closest points are N2a's index) and kturn_cap (the outline rule).
+template <class V>
+bool Drive<V>::manoeuvre_native_on() {
+	return c.manoeuvre_ready && cb_on && (bool)c.switches->get(k.native_manoeuvre) && (bool)c.switches->get(k.native_nav) &&
+			(bool)c.switches->get(k.kturn_cap);
+}
+
+// Movement._manoeuvre below the gate (its early-outs and goal are the gate's):
+//   _behind_tick = tick
+//   reaimed := not gap and _behind_goal != INF and tick - _behind_since < REAIM_TICKS
+//   _behind_since = tick; _behind_goal = goal; behind_asked += 1
+//   arrive := maxf(clampf(float(order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0), settle_radius(unit) if wheel_radius() > 0 else 0)
+//   reaimed: _behind_plan = "route"; _note(refused, "reaimed")
+//   else: _behind_plan = Manoeuvre.choose(...) if Pathing.enabled and Pathing.is_ready(tank) else "route"
+//   has_facing := facing is Array and size >= 2 and Vector2(f0, f1).length_squared() > 1e-6
+//   _kept_goal = goal if not reaimed and not has_facing and Manoeuvre.behind(tank, goal, wheel_radius()) else INF
+//   _kept_from = tank.global_position; _note(plans, _behind_plan); reverse: behind_reverses += 1
+template <class V>
+void Drive<V>::manoeuvre_decide(const Dictionary &order, const Vector3 &goal, int64_t tick, bool gap) {
+	static const String route("route"), reverse_plan("reverse"), reaimed_key("reaimed");
+	v.set__behind_tick(tick);
+	const bool reaimed = !gap && (Vector3)v._behind_goal() != V3_INF && tick - (int64_t)v._behind_since() < c.REAIM_TICKS;
+	v.set__behind_since(tick);
+	v.set__behind_goal(goal);
+	sadd(k.behind_asked, 1);
+	const double radius = wheel_radius();
+	const double settle = radius > 0.0 ? settle_of(tank->get(k.unit_id)) : 0.0;
+	const double arrive = MAX(clampd((double)order.get(k.arrive, c.ARRIVE_RADIUS), 0.5, 10.0), settle);
+	String plan;
+	if (reaimed) {
+		plan = route;
+		man_note(k.refused, reaimed_key);
+	} else {
+		plan = pathing_ready() ? man_choose(goal, order, arrive) : route;
+	}
+	v.set__behind_plan(plan);
+	const Variant drawn = order.get(k.facing, Variant());
+	bool has_facing = false;
+	if (drawn.get_type() == Variant::ARRAY) {
+		const Array a = drawn;
+		has_facing = a.size() >= 2 && (double)Vector2((real_t)(double)a[0], (real_t)(double)a[1]).length_squared() > 1e-6;
+	}
+	v.set__kept_goal(!reaimed && !has_facing && man_behind(goal, wheel_radius()) ? goal : V3_INF);
+	v.set__kept_from(here);
+	man_note(k.plans, plan);
+	if (plan == reverse_plan) {
+		sadd(k.behind_reverses, 1);
+	}
+}
+
+// Manoeuvre.choose(mover, goal, order, arrive)
+template <class V>
+String Drive<V>::man_choose(const Vector3 &goal, const Dictionary &order, double arrive) {
+	static const String route("route"), reverse_plan("reverse"), facing_nose("facing_nose"), no_arrival("no_arrival"),
+			route_faster("route_faster");
+	const double radius = wheel_radius();
+	if (!man_behind(goal, radius)) {
+		return route;
+	}
+	const Vector2 nose = Vector2(-basis_z.x, -basis_z.z).normalized();
+	bool want_tail = false;
+	bool want_nose = false;
+	const Variant facing = order.get(k.facing, Variant());
+	if (facing.get_type() == Variant::ARRAY) {
+		const Array a = facing;
+		if (a.size() >= 2) {
+			const Vector2 f((real_t)(double)a[0], (real_t)(double)a[1]);
+			if ((double)f.length_squared() > 1e-6) {
+				want_tail = std::fabs((double)nose.angle_to(f)) <= deg_to_rad(c.MAN_FACING_KEEP_DEG);
+				want_nose = !want_tail;
+			}
+		}
+	}
+	if (want_nose) {
+		man_note(k.refused, facing_nose);
+		return route;
+	}
+	const Sim reverse = man_simulate(goal, arrive, -1);
+	if (!reverse.clear) {
+		man_note(k.refused, reverse.blocked);
+		return route;
+	}
+	if (!reverse.arrived) {
+		man_note(k.refused, no_arrival);
+		return route;
+	}
+	if (want_tail) {
+		return reverse_plan;
+	}
+	const Sim forward = man_simulate(goal, arrive, 1);
+	if (forward.arrived && forward.seconds <= reverse.seconds) {
+		man_note(k.refused, route_faster);
+		return route;
+	}
+	return reverse_plan;
+}
+
+// Manoeuvre.behind(tank, goal, radius)
+template <class V>
+bool Drive<V>::man_behind(const Vector3 &goal, double radius) {
+	const Vector2 to((real_t)((double)goal.x - (double)here.x), (real_t)((double)goal.z - (double)here.z));
+	const double d = to.length();
+	if (d > c.MAN_MAX_M || d < 0.5) {
+		return false;
+	}
+	const Vector2 nose = Vector2(-basis_z.x, -basis_z.z).normalized();
+	if (std::fabs((double)nose.angle_to(to)) >= deg_to_rad(c.MAN_BEHIND_DEG)) {
+		return true;
+	}
+	if (radius > 0.0) {
+		// Inside the forward turning circle on the goal's side: no forward arc reaches it.
+		const Vector2 left(nose.y, -nose.x);
+		const double side = (double)nose.angle_to(to) <= 0.0 ? 1.0 : -1.0;
+		const Vector2 centre = Vector2(here.x, here.z) - left * (real_t)side * (real_t)radius;
+		return (double)centre.distance_to(Vector2(goal.x, goal.z)) < radius;
+	}
+	return false;
+}
+
+// Manoeuvre.simulate(mover, goal, arrive, gear): the plant (TankMotion.step_in_place = motion_step, N6.1's same bits)
+// driven by the steering law that will drive it, every CHECK_EVERY steps the outline (Movement._outline_ok, kturn_cap,
+// a start pose: NavNative::outline_ok, N2b's same bits) and the hull discs (_hull_hit).
+template <class V>
+typename Drive<V>::Sim Drive<V>::man_simulate(const Vector3 &goal, double arrive, int gear) {
+	static const String static_kind("static"), friendly("friendly"), enemy("enemy");
+	const double radius = wheel_radius();
+	Dictionary state = man_state_of();
+	const RID map = tank->get_world_3d()->get_navigation_map();
+	// _kturn_frame(tank): [hull_box[0] * 0.5, hull_box[2] * 0.5, bake_radius(tank) - KTURN_MARGIN_M]
+	const String unit = tank->get(k.unit_id);
+	const double half_w = hull_width_of(unit) * 0.5;
+	const double half_l = hull_length(unit) * 0.5;
+	const double clear = bake_radius() - c.KTURN_MARGIN_M;
+	const PackedFloat32Array start = c.nav->outline_offs(map, half_w, half_l, here, (Vector3)state[k.forward]);
+	const LocalVector<Other> others = man_others();
+	double t = 0.0;
+	int64_t legs = 0;
+	int64_t last_gear = 0;
+	double metres = 0.0;
+	int64_t steps = 0;
+	Sim out;
+	out.seconds = c.MAN_SIM_HORIZON_S;
+	while (t < c.MAN_SIM_HORIZON_S) {
+		const Vector3 at = state[k.position];
+		const Vector3 forward = state[k.forward];
+		const double speed = state[k.speed];
+		const double remaining = Vector2((real_t)((double)goal.x - (double)at.x), (real_t)((double)goal.z - (double)at.z)).length();
+		Vector2 drive;
+		if (radius > 0.0) {
+			drive = wheels(c, at, forward, goal, arrive, radius, speed, remaining, gear > 0 ? 1.0 : -1.0);
+		} else {
+			drive = drive_toward(c, at, forward, goal, arrive, remaining, gear < 0);
+		}
+		if (drive == Vector2()) {
+			out.arrived = true;
+			// The hull still has to stop: count the braking from here (v / braking), as the order completes at rest.
+			t += std::fabs(speed) / MAX((double)state[k.braking_mps2], 0.1);
+			break;
+		}
+		motion_step(*c.motion, state, (double)drive.x, (double)drive.y, c.MAN_SIM_DT);
+		t += c.MAN_SIM_DT;
+		steps += 1;
+		const Vector3 moved = state[k.position];
+		metres += (double)Vector2((real_t)((double)moved.x - (double)at.x), (real_t)((double)moved.z - (double)at.z)).length();
+		const double now = state[k.speed];
+		const int64_t g = std::fabs(now) <= c.CUSP_DEADBAND ? 0 : (now > 0.0 ? 1 : -1);
+		if (g != 0 && g != last_gear) {
+			legs += 1;
+			last_gear = g;
+		}
+		if (steps % c.MAN_CHECK_EVERY == 0) {
+			if (!c.nav->outline_ok(map, half_w, half_l, clear, moved, (Vector3)state[k.forward], start, Vector3(), Vector3())) {
+				out.clear = false;
+				out.blocked = static_kind;
+				break;
+			}
+			// _hull_hit(moved, frame, others, tank.global_position): a disc of half the hull's length beyond the reach,
+			// and only nearer than the start was.
+			bool hit = false;
+			for (const Other &row : others) {
+				const double d = Vector2((real_t)(row.x - (double)moved.x), (real_t)(row.z - (double)moved.z)).length();
+				if (d < row.reach + half_l * 0.5) {
+					const double d0 = Vector2((real_t)(row.x - (double)here.x), (real_t)(row.z - (double)here.z)).length();
+					if (d < d0 - 0.25) {
+						out.clear = false;
+						out.blocked = row.friendly ? friendly : enemy;
+						hit = true;
+						break;
+					}
+				}
+			}
+			if (hit) {
+				break;
+			}
+		}
+	}
+	out.seconds = t;
+	out.legs = legs;
+	out.metres = metres;
+	return out;
+}
+
+// Manoeuvre._others(mover): every other living hull as [x, z, (mine[0] + theirs[0]) * 0.5 + HULL_MARGIN_M, kind]
+template <class V>
+LocalVector<typename Drive<V>::Other> Drive<V>::man_others() {
+	LocalVector<Other> out;
+	Node *tanks_root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	if (tanks_root == nullptr) {
+		return out;
+	}
+	const double mine = hull_width_of(tank->get(k.unit_id));
+	const int64_t my_team = tank->get(k.team);
+	const int count = tanks_root->get_child_count();
+	for (int i = 0; i < count; i++) {
+		Node3D *other = Object::cast_to<Node3D>(tanks_root->get_child(i));
+		if (other == nullptr || other == tank) {
+			continue;
+		}
+		const Variant alive = other->get(k.alive);
+		if (alive.get_type() != Variant::BOOL || !(bool)alive) {
+			continue; // not a Tank (no `alive`), or a dead one
+		}
+		const double theirs = hull_width_of(other->get(k.unit_id));
+		const Vector3 at = other->get_global_position();
+		out.push_back(Other{ (double)at.x, (double)at.z, (mine + theirs) * 0.5 + c.MAN_HULL_MARGIN_M,
+				(int64_t)other->get(k.team) == my_team });
+	}
+	return out;
+}
+
+// TankMotion.state_of(tank): state_for(unit, position, -basis.z, tank.speed()) with the live tank's speeds, turn rate,
+// estimated velocity and yaw rate. state_for's Units.stat answers are a pure function of the unit (memoized).
+template <class V>
+Dictionary Drive<V>::man_state_of() {
+	static const String tracks("tracks");
+	const String unit = tank->get(k.unit_id);
+	const Dictionary *known = c.state_stats_of.getptr(unit);
+	Dictionary stats;
+	if (known != nullptr) {
+		stats = *known;
+	} else {
+		stats[k.locomotion] = String(c.units->call(k.stat, unit, k.locomotion, tracks));
+		stats[k.acceleration_mps2] = (double)c.units->call(k.stat, unit, k.acceleration_mps2, 14.0);
+		stats[k.braking_mps2] = (double)c.units->call(k.stat, unit, k.braking_mps2, 14.0);
+		stats[k.min_turn_radius_m] = (double)c.units->call(k.stat, unit, k.min_turn_radius_m, 0.0);
+		stats[k.lateral_grip] = (double)c.units->call(k.stat, unit, k.lateral_grip, 1.0);
+		c.state_stats_of.insert(unit, stats);
+	}
+	const Vector3 back = -basis_z;
+	const Vector3 flat = Vector3(back.x, 0, back.z).normalized();
+	Dictionary state;
+	state[k.position] = here;
+	state[k.forward] = flat;
+	state[k.speed] = (double)tank->get(k._speed);
+	state[k.velocity] = tank->get(k.estimated_velocity);
+	state[k.locomotion] = stats[k.locomotion];
+	state[k.max_forward_speed] = (double)tank->get(k.max_forward_speed);
+	state[k.max_reverse_speed] = (double)tank->get(k.max_reverse_speed);
+	state[k.hull_turn_rate_deg] = rad_to_deg((double)tank->get(k.hull_turn_rate));
+	state[k.acceleration_mps2] = stats[k.acceleration_mps2];
+	state[k.braking_mps2] = stats[k.braking_mps2];
+	state[k.min_turn_radius_m] = stats[k.min_turn_radius_m];
+	state[k.lateral_grip] = stats[k.lateral_grip];
+	const Variant live = tank->get(k._motion);
+	if (live.get_type() == Variant::DICTIONARY) {
+		state[k.yaw_rate] = (double)((Dictionary)live).get(k.yaw_rate, 0.0);
+	}
+	return state;
+}
+
+// Manoeuvre._note(table, key): table[key] = int(table.get(key, 0)) + 1, on Manoeuvre's static Dictionary in place.
+template <class V>
+void Drive<V>::man_note(const StringName &table, const String &key) {
+	Dictionary d = c.manoeuvre_script->get(table);
+	d[key] = (int64_t)d.get(key, 0) + 1;
+}
+
+// Movement.hull_box(unit)[0], memoized by unit (a pure function of the roster).
+template <class V>
+double Drive<V>::hull_width_of(const String &unit) {
+	const double *known = c.hull_width_of.getptr(unit);
+	if (known != nullptr) {
+		return *known;
+	}
+	const Array size = script->call(k.hull_box, unit);
+	const double width = size[0];
+	c.hull_width_of.insert(unit, width);
+	return width;
+}
+
+// Movement.settle_radius(unit), memoized by unit (a pure function of the roster).
+template <class V>
+double Drive<V>::settle_of(const String &unit) {
+	const double *known = c.settle_of.getptr(unit);
+	if (known != nullptr) {
+		return *known;
+	}
+	const double settle = script->call(k.settle_radius, unit);
+	c.settle_of.insert(unit, settle);
+	return settle;
 }
 
 template <class V>
@@ -2492,8 +2838,11 @@ Dictionary drive_owned_counts(bool reset) {
 	out["end_push_fields"] = owned_counts_.end_push_fields;
 	out["end_push_usec"] = owned_counts_.end_push_usec;
 	out["start_pull_usec"] = owned_counts_.start_pull_usec;
+	out["manoeuvre_native"] = manoeuvre_counts_.native;
+	out["manoeuvre_called_back"] = manoeuvre_counts_.called_back;
 	if (reset) {
 		owned_counts_ = OwnedCounts();
+		manoeuvre_counts_ = ManoeuvreCounts();
 	}
 	return out;
 }

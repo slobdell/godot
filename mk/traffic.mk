@@ -172,3 +172,84 @@ traffic-native-verify: native import ## Round 30 (T1c-b): census + ApproachStage
 		v=$$(grep -c "NativeExec verify" $$log || true); p=$$(grep -o '"repacks":[0-9]*' $$log | head -1); \
 		echo "  approach s$$seed: $$v mismatches, $${p:-NO PROBE LINE}"; [ "$$v" = 0 ] && [ -n "$$p" ] || bad=1; done; \
 	[ $$bad = 0 ] && echo "traffic-native-verify: 0 mismatches" || { echo "traffic-native-verify FAILED (build/traffic-native-verify/)"; exit 1; }
+
+# Round 33 (traffic stretch): the navmesh's disconnected islands per arena at each bake region_min_size
+# (ISLAND_ARENAS=a,b ISLAND_SIZES=2,6,8,10) -> ISLANDS lines (tests/traffic/island_probe.gd). Measurement only.
+ISLAND_ARENAS ?=
+ISLAND_SIZES ?= 2,6,8,10
+.PHONY: traffic-islands
+traffic-islands: import ## Round 33 (traffic stretch): navmesh islands (crate roofs) per arena and bake region_min_size -> build/traffic-islands.log
+	@timeout 1200 $(GODOT) --headless --path . --script res://tests/traffic/island_probe.gd -- \
+		$(if $(ISLAND_ARENAS),--arenas=$(ISLAND_ARENAS)) --min-sizes=$(ISLAND_SIZES) > $(BUILD_DIR)/traffic-islands.log 2>&1 || true
+	@grep "^ISLANDS\|SCRIPT ERROR" $(BUILD_DIR)/traffic-islands.log || tail -20 $(BUILD_DIR)/traffic-islands.log
+
+# ---- round 33 (traffic X1, C33.2 (1)): the far ask loop's census on skirmish stages ---------------------------------
+# FAR_ARENAS x FAR_SEEDS showmatch fights (--skirmish --demo-match: both CPU sides run elements, as his opponent does),
+# each through tests/traffic/far_census.gd (manoeuvre's H1B_FAR rows + what the blocker was doing that tick), FAR_JOBS at
+# a time -> build/traffic-far/<arena>-<seed>.log + tests/traffic/far_table.py's table (far loops per match by
+# blocker_kind, parked or moving, route left, gap, where the parked blocker stood, why it refused). FAR_FLAGS for an arm.
+FAR_ARENAS ?= terminus locks random
+FAR_SEEDS ?= 500 501 502 503 504 505 506 507
+FAR_JOBS ?= 6
+FAR_SECONDS ?= 180
+FAR_FLAGS ?=
+FAR_DIR ?= $(BUILD_DIR)/traffic-far
+# make remote's T is word-split: FAR_RANGE=a-b replaces FAR_SEEDS, FAR_AT=a,b,c replaces FAR_ARENAS.
+FAR_RANGE ?=
+FAR_AT ?=
+FAR_SEED_LIST = $(if $(FAR_RANGE),$(shell seq $(subst -, ,$(FAR_RANGE))),$(FAR_SEEDS))
+FAR_ARENA_LIST = $(if $(FAR_AT),$(subst $(comma), ,$(FAR_AT)),$(FAR_ARENAS))
+.PHONY: traffic-far-census
+traffic-far-census: import ## Round 33 (traffic X1): far ask loops per skirmish fight by blocker kind and what the parked blocker was doing (FAR_ARENAS x FAR_SEEDS, FAR_FLAGS) -> build/traffic-far/ + table
+	@rm -rf $(FAR_DIR); mkdir -p $(FAR_DIR)
+	@echo ">> traffic-far-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(FAR_ARENA_LIST)' seeds '$(FAR_SEED_LIST)' | flags '$(FAR_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(FAR_SEED_LIST); do for arena in $(FAR_ARENA_LIST); do echo "$$arena $$seed"; done; done | \
+		xargs -P $(FAR_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/traffic/far_census.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--seconds=$(FAR_SECONDS) $(FAR_FLAGS) > $(FAR_DIR)/$$0-$$1.log 2>&1 || true; \
+		grep -q "^FAR_CENSUS" $(FAR_DIR)/$$0-$$1.log && echo "  ran $$0 s$$1" || echo "  MISSING FAR_CENSUS $$0 s$$1"'
+	@$(PYTHON) tests/traffic/far_table.py $(FAR_DIR)
+
+# The same census on hull-rest's workload (his drawn faced orders, two player squads, a quiet holding enemy, foundry):
+# HULL_FACTIONS x FAR_RANGE seeds (default HULL_SEEDS) x the six faced tasks, through far_census.gd -> build/traffic-far-hull/.
+FAR_HULL_DIR ?= $(BUILD_DIR)/traffic-far-hull
+.PHONY: traffic-far-hull
+traffic-far-hull: import ## Round 33 (traffic X1): the far census on hull-rest's drawn faced orders (HULL_FACTIONS x FAR_RANGE|HULL_SEEDS x tasks) -> build/traffic-far-hull/ + table
+	@rm -rf $(FAR_HULL_DIR); mkdir -p $(FAR_HULL_DIR)
+	@echo ">> traffic-far-hull on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(FAR_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for faction in $(HULL_FACTIONS); do for seed in $(if $(FAR_RANGE),$(FAR_SEED_LIST),$(HULL_SEEDS)); do for task in $(_FACING_TASKS); do \
+		echo "$$faction $$seed $$task"; done; done; done | xargs -P $(FAR_JOBS) -L 1 sh -c '\
+		d=$(FAR_HULL_DIR)/$$0-$$1-$$2; mkdir -p $$d; enemy=law; [ $$0 = law ] && enemy=gangs; \
+		timeout 300 $(GODOT) --headless --path . --script res://tests/traffic/far_census.gd -- --skirmish --seed=$$1 \
+			--no-pick-faction --mute --arena=$(FACING_ARENA) --player-faction=$$0 --enemy-faction=$$enemy \
+			--tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --seconds=0 $(FAR_FLAGS) \
+			--screen-test=$(CURDIR)/$$d --screen-only=$$2 > $$d.log 2>&1 || true; \
+		grep -q "^FAR_CENSUS" $$d.log || echo "  MISSING FAR_CENSUS $$0 s$$1 $$2"'
+	@$(PYTHON) tests/traffic/far_table.py $(FAR_HULL_DIR)
+
+# One fight traced: FAR_ONE_ARENA, FAR_ONE_SEED, FAR_TRACE=a,b ('+' for a space in a name), FAR_FROM/FAR_TO seconds
+# -> build/traffic-far-one.log (FAR_ROW + FAR_TRACE every 0.5 s). Light: tools/remote.sh --light traffic-far-one ...
+FAR_ONE_ARENA ?= random
+FAR_ONE_SEED ?= 403
+FAR_TRACE ?=
+FAR_FROM ?= 0
+FAR_TO ?= 180
+.PHONY: traffic-far-one
+traffic-far-one: import ## Round 33 (traffic X1): one fight with the named hulls traced every 0.5 s (FAR_ONE_ARENA FAR_ONE_SEED FAR_TRACE FAR_FROM FAR_TO FAR_FLAGS) -> build/traffic-far-one.log
+	@timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/far_census.gd -- --skirmish \
+		--demo-match --clean --seed=$(FAR_ONE_SEED) --arena=$(FAR_ONE_ARENA) --mute --seconds=$(FAR_TO) \
+		--far-trace=$(FAR_TRACE) --far-trace-from=$(FAR_FROM) --far-trace-to=$(FAR_TO) $(FAR_FLAGS) > $(BUILD_DIR)/traffic-far-one.log 2>&1 || true
+	@(grep -c "^FAR_TRACE" $(BUILD_DIR)/traffic-far-one.log || true) | xargs echo "traffic-far-one: FAR_TRACE rows"; grep -m3 "SCRIPT ERROR" $(BUILD_DIR)/traffic-far-one.log || true
+
+# The navmesh, obstacle footprints and (optionally) a far_census trace's hulls round one spot (round 32's navgap probe):
+# NAVGAP_ARENA NAVGAP_X NAVGAP_Z [NAVGAP_TRACE=<FAR_TRACE log> NAVGAP_AT=<s>] -> build/traffic-navgap.json + .png
+NAVGAP_ARENA ?= crossing
+NAVGAP_X ?= 53
+NAVGAP_Z ?= 56
+NAVGAP_TRACE ?=
+NAVGAP_AT ?= 0
+.PHONY: traffic-navgap
+traffic-navgap: import ## Round 33 (traffic X1): navmesh + obstacles (+ a trace's hulls) round NAVGAP_X/Z on NAVGAP_ARENA -> build/traffic-navgap.png
+	@timeout 300 $(GODOT) --headless --path . --script res://tests/traffic/navgap_probe.gd -- --arena=$(NAVGAP_ARENA) \
+		--x=$(NAVGAP_X) --z=$(NAVGAP_Z) 2>&1 | grep -o "^NAVGAP {.*" | sed "s/^NAVGAP //" > $(BUILD_DIR)/traffic-navgap.json
+	@$(PYTHON) tests/traffic/navgap_plot.py $(BUILD_DIR)/traffic-navgap.json $(BUILD_DIR)/traffic-navgap.png "$(NAVGAP_ARENA) ($(NAVGAP_X), $(NAVGAP_Z))" $(NAVGAP_TRACE) $(NAVGAP_AT)

@@ -1271,3 +1271,44 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   current commander first, then league self-play; the bottleneck is headless match throughput (CPU cores), not the GPUs;
   inference through the native extension (LiteRT or ONNX Runtime); judged by the fights series like any change; fog-fair
   inputs; his pillars (smart AI both sides, die-hard squad tactics) and the GCP spend are his calls.
+
+## Round 34 candidates (found during round 33)
+
+- **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
+  room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.
+- **The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
+  one fight (random-705, builder0, `d90fbdb7`).
+- **An element that never arrives because one crew is still driving (brains):** foundry s8, five War Rigs given a move with a
+  drawn facing (laptop, manoeuvre `8fc224fa`, n 1). Four stopped 20–45 m out and one drove on to about 52 s. Arrival is the
+  five-crew centre within 12 m, so the squad never read arrived and the drawn facing never reached the crews. Candidate rule:
+  arrived when 4 of 5 are in their slots and the rest are stalled. Brains' read is code-only; manoeuvre is checking the slots.
+- **T4 ghost ON, a third try (traffic + brains):** blocked by the body stage's order swing (body_stage.gd:31), which moved
+  the control arm 17.0 → 7.0 s alone (R33.17). First brains' order-free body stage, then T4's cohesion guard on it, then
+  Terminus. **Also (traffic `ef6589f0`, `references/round33/traffic/x4_rematch_statics.md`, laptop GDScript, fixed-fps 60):**
+  no traffic static carries one match into the next. With the ghost OFF a second match in the same process replays exactly
+  (35.0 → 35.0 s alone). With it ON it does not (37.0 → 28.5), whatever GDScript state is cleared, because the ghost reads
+  Tank.real_velocity (the physics server's contact result, tank.gd:734-748), and the server's history from match 1 feeds
+  ORCA. T4's next bar needs a line on this: a rematch replays, or a reason it needn't. Determinism matters for replays and
+  for the network.
+- **Run the suite at a fixed physics rate (orchestrator, test infra):** `make test` (mk/core.mk:266) runs run_tests.gd
+  without `--fixed-fps`, so in-process stages pace by the wall clock and a heavy test in front moves them. Brains (laptop,
+  stream/brains, ghost OFF): the body stage after test_rts_camera swings up to 9 s unpinned, and ≤ 2 s at `--fixed-fps 60`
+  (s1 off 44.5 v 37.0, s1 on 7.0 v 15.0). Candidate: `--fixed-fps $(SIM_HZ)` for the suite, as sim-baseline does. That
+  changes every test's pacing, so it gets its own full check and a list of any test whose numbers move. The residual 0–2 s is
+  leftover state (the physics server, which GDScript can't reset). Per-process arms (brains `f8cf6476`) are the guard shape
+  for any judged stage until then.
+- **A scout under fire fights back when it can't get away (brains; from C33.9, his scout report):** SPOT's 0.88
+  (tank_brain.gd:1606) is meant to buy distance, but a leash-clamped post buys none, so the circled scout keeps facing the
+  shooter and barely fires (manoeuvre's trace, main `0ef2443b`, seed 4: shots 5–20 v 112–128). Brains' design (code read
+  only): while taking fire from a contact inside the scout's own effective range, AND its SPOT post is clamped (or has no
+  room to retreat) or the shooter matches it (advantage ≥ 0), SPOT drops to its in-sight 0.7, so ENGAGE wins. Against a
+  shooter it loses to, it opens distance as today. The bar would cover: the shots ratio, scout survival, and team
+  enemy-seen seconds ≥ base − 1.645 se. It pairs with manoeuvre's turn-in.
+- **Two load-flaky targets in `make check` (orchestrator, test infra; round 33, 2026-10-17):** (1) web-smoke's
+  "first sound ≤ 30 s after READY" is a wall-clock bound. It failed at load 30.8 (31.5 s) and 36.8 (34.7 s), and passed
+  re-run at load 12.6 (11.7 s). (2) tools/test_slot_light.sh (remote-guard-test) failed twice, "the quiet window opened"
+  and "ran while EXCLUSIVE held the box", on a shared live box. Both should either scale with measured load or refuse
+  (NOT JUDGED) rather than FAIL, like perf-judge.
+- **P3 v3, the face keep (planner):** v2 (kept first, today's search as fallback, R33.19) passed everything but clicked
+  drift's p90 (15.4 v 12.8 m), apparently from slot-law faces kept out to their end circle + a hull. Candidate: cap a
+  slotted face's kept circle at one hull length from the slot. The yard face-behind gain (9.8 v 15.4 s) is the prize.

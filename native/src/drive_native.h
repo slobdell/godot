@@ -134,6 +134,17 @@ struct DriveConfig {
 		   PRESS_BACKOFF_M = 0, PRESS_SECONDS = 0, PRESS_PROGRESS_M = 0, PRESS_ESCAPE_MAX_S = 0, THROTTLE_MIN = 0;
 	Object *manoeuvre_census = nullptr; // ManoeuvreCensus (its trace_unit: a traced unit takes the GDScript, which prints)
 	Variant keep_manoeuvre_census;
+	// Round 33 (N5.M): Movement._manoeuvre's DECISION natively (BrainSwitches.native_manoeuvre; the gate is round 26's):
+	// Manoeuvre.choose and its simulation over motion_step and NavNative::outline_ok. manoeuvre_ready false (a constant,
+	// the Manoeuvre script or the motion model missing) keeps the callback. MAN_* are Manoeuvre's constants.
+	bool manoeuvre_ready = false;
+	double MAN_MAX_M = 0, MAN_BEHIND_DEG = 0, MAN_FACING_KEEP_DEG = 0, MAN_SIM_DT = 0, MAN_SIM_HORIZON_S = 0,
+		   MAN_HULL_MARGIN_M = 0, KTURN_MARGIN_M = 0, CUSP_DEADBAND = 0;
+	int64_t MAN_CHECK_EVERY = 1, REAIM_TICKS = 0;
+	Object *manoeuvre_script = nullptr; // Manoeuvre (its statics `plans` / `refused`)
+	Variant keep_manoeuvre_script;
+	const struct MotionConfig *motion = nullptr; // TankMotion.step_in_place's model (TankNative's, NativeMotion.configure)
+	mutable HashMap<String, Dictionary> state_stats_of; // TankMotion.state_for's Units.stat answers by unit (pure)
 };
 
 // Executes one drive: returns false (nothing done) when the configuration is missing. `owned` (round 27, E1c): on the
@@ -153,7 +164,8 @@ bool unstick_native(const DriveConfig &config, Object *mover, Object *cmd, const
 // Steering.drive_toward(position, forward, target, arrive_radius) (remaining -1), for the other execute ports.
 Vector2 steering_drive_toward(const DriveConfig &c, const Vector3 &position, const Vector3 &forward, const Vector3 &target,
 		double arrive_radius);
-// Measurement: owned drives, and the transition's pulls and pushes they made; `reset` zeroes them.
+// Measurement: owned drives, and the transition's pulls and pushes they made; round 33 (N5.M): `_manoeuvre` decisions
+// made natively and called back. `reset` zeroes them.
 Dictionary drive_owned_counts(bool reset);
 // Measurement only: microseconds a callback took (by name), "drives", "total"; `reset` zeroes it.
 Dictionary drive_profile(bool reset);

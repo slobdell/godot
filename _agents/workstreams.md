@@ -87,10 +87,498 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
 - **C33.8 Native.** Pairs pre-empt its own work (C31.2). N5's held ports (`_negotiate` / ask / `_begin_yield`, `_manoeuvre`)
   stay held until CP-X's design is written (it will likely change exactly those); then port them. `test_native_face_behind`
   compared 0 native executes in round 32 (vacuous): give it a floor if round 32 did not.
+- **C33.9 The scout out-turned by an attacker orbiting it (manoeuvre; his words 2026-10-17, `game_design.md` *Round 33,
+  his playtest words during the round*).** His law_scout (Pursuit Cruiser: wheels, fixed machine gun with a 20° arc, min
+  turn radius 5.5 m, 16 m/s forward / 7 reverse, hull_turn_rate 130°/s), alone, under fire from a vehicle circling it. It
+  drove forward and back trying to yaw right and never got its nose round. He wants it to drive forward on a hard turn toward
+  the attacker's side, because a wheeled hull yaws faster rolling forward, and moving is also evasion. Manoeuvre owns it;
+  diagnose FIRST on the laptop while CP-F's series holds builder0. (1) Build a stage that reproduces it: a law_scout alone
+  and a faster enemy orbiting it at its own range, and name what drives the back-and-forth (Manoeuvre.choose's k-turn, the
+  fixed-mount aim, the unstick, or the brain's engage). (2) Report his scene's numbers: time to the first shot, hits taken,
+  and the scout's yaw rate against the orbiter's angular rate. (3) A fix: a fixed-gun wheeled hull whose target is off its
+  arc and moving round it takes a forward turning arc toward the target's side (no reverse leg) while the arc is outside a
+  threshold. File a bar before any number. Native: if the change is in Manoeuvre.choose / behind / simulate (C++ since N5.M),
+  it pairs with native (C26.2). The same rule applies to every fixed-gun wheeled hull on every side (symmetric). Priority:
+  after CP-F's series and verdict, ahead of manoeuvre's stretch items.
+  **Diagnosed (manoeuvre, laptop, scratch of main `0ef2443b`, GDScript, seed 4, n 1 a cell, 30 s; stage
+  tests/test_manoeuvre_orbit.gd):** the back-and-forth is OrderController's FACE CREEP, reached because the scout picks SPOT
+  (0.88 whenever a visible threat is closer than 75 m), not ENGAGE. SPOT clamps its 85 m post to the 18 m player-post leash
+  and then sends `face` at the threat. plan_face finds no plan against a moving target (23–24 empty a run v 1–5 made), so
+  the creep drives full lock forward/back: 38 gear flips in 30 s. choose, plan_lay, unstick and wheelhold are not involved.
+  His scene (player-team law_scout v syn_scout), radius 30 / 15 m: the scout yaws 20.8 / 26.9°/s against the orbiter's
+  bearing rate of 32.3 / 57.9°/s; target in arc 3.8 / 4.4 % of ticks; shots 5 v 112 / 20 v 128; hits taken 60 / 108.
+  **Bar C33.9 "turn in" (filed 2026-10-17 before any fix number).** Candidate: on a face order whose spot is more than
+  T = 30° off the arc, a wheeled fixed-gun hull (law_scout, gang_scout) drives FORWARD at full lock toward the spot's side,
+  with no reverse leg. Inside T it rolls on its turning circle at the speed that matches the target's bearing rate (creep
+  floor), and stops only when that rate is near zero. Lands in order_controller.gd's face-at-rest path plus a new function
+  in manoeuvre.gd (choose/behind/simulate untouched; manoeuvre confirms with native that the wheeled face path has no C++
+  twin before building). Opt-in `--nav-off=turnin` until it passes. Cells: subject law_scout / gang_scout × orbiter
+  syn_scout / gang_ifv × radius 15/30/45 m × player post on/off × FRESH seeds 11–16; arms ON v OFF on one tree. (a) median
+  target-in-arc share ON ≥ 2× OFF and ≥ 25 %. (b) median scout shots ON ≥ 1.5× OFF. (c) median hits taken ON ≤ OFF, and no
+  cell worse by more than 20 %. (d) while |error| > T, ON spends 0 reverse ticks in every run and makes ≤ 2 gear flips per
+  30 s. (e) ON's furthest point from the post ≤ the 18 m leash + 11 m. **(e2), added by the orchestrator:** a STATIC face
+  (a drawn facing with no moving target, his CP-F case for a fixed-gun scout) is no worse: aligned no later than OFF, and
+  no further from its spot than OFF + 2 m. (f) builder0 guards: scout tests and scenarios green; the fights stage's scout
+  kills and deaths no worse than OFF within noise; the full check green, sim-baseline unmoved while opt-in. The default
+  flips later, with its own A/B. **The SPOT-v-ENGAGE question goes to brains** (a scout under fire within its gun's reach
+  probably should ENGAGE), recorded and not built this round unless brains has room after R4.
+  **First matrix NOT a verdict (manoeuvre, laptop, scratch `777d2979`, seeds 14–16, 144 cells):** the stage's seed changed
+  only the hit dice (orbit direction, start and heading fixed), so 3 seeds were about 1 sample. The candidate had a stall
+  bug: on target, "under 5° in 1 s" read as stuck and handed back to the creep, which reversed. Player-post cells: (a) time
+  on target 4.3 → 55.1 %, (b) shots 2 → 19, (c) hits 91 → 86 median but worst cell +167 % (6 → 16 hits), (d) 27 flips, and
+  (e) 36 m from the post. Free cells: ON ≡ OFF (turn-in never runs; that scout reverses on SPOT moves). **Amended
+  (orchestrator, 2026-10-17):** the seed now also sets orbit direction, start phase and scout heading, and "on target" counts
+  as progress in the stall check. Because seeds 11–16 have now been seen, **the judged run is on FRESH seeds 31–36**
+  (builder0 light, one tree, named). Seed 21 is development only. (d) counts reverse ticks while a FACE ORDER holds, and
+  (d) and (e) are judged on the player-post cells. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
+  moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
+  ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
+  reported in the verdict.
 
-**Rulings (round 33, the orchestrator's, as they arise):** none yet.
+**Rulings (round 33, the orchestrator's, as they arise):**
+
+- **R33.1 F0 closes with no fix; CP-F is the change (2026-10-17, manoeuvre's trace):** builder0, main `ae3dad71`, hull-rest
+  gangs s66 faced_move, native path, n 1: Green_Guns_5 ends 109.1° off, at rest. Its element's faced hold replaces its move
+  ~12 m out; every face after that (order/sector sources, and contact) is declined to `stop` by round 8's
+  turret-carries-aim rule because turnhull is OFF, so no face reaches the mover and the seam never acts. Not a main bug.
+  Manoeuvre's F1 lead: under turnhull ON a contact face is declined to `stop` mid-plan, so the hull stops partway through
+  its turn (the attack-move moving-at-75-s line).
+- **R33.2 A faced finish (C33.3 / C33.6 (c), agreed by manoeuvre and planner):** manoeuvre owns WHEN a faced finish runs
+  and its residual; planner owns HOW while `take()` holds.
+- **R33.3 `PlannerSeam.live()` has no staleness check: a MAIN BUG, planner's first item (pre-empts P1):** a crew whose seam
+  face or k-turn is cut off by another order stays live until the match ends (`planner_seam.gd:254` checks only that the
+  crew and hull exist), so `Movement.unstick` is skipped for that hull (`movement.gd:3078`) and the census is blind to it
+  (s66 Green_Guns_5: live from ~f 500 to ~f 2300 under order `stop`). Fix alone on its own commit with a test that fails
+  without it (a seam hold released when the order that started it is replaced), a check, a named hash; a sim-baseline move
+  goes to the orchestrator with the reason. Native says whether the C++ drive reads the hold through the same callback
+  (no mirror) or needs one.
+  **Amended (native's pre-assessment, same day):** the C++ drive does NOT call live(); `drive_native.cpp:280` `seam_live()`
+  mirrors it inline from `PlannerSeam._crews` (read by the unstick gate :1449 and the `_planned_reverse` open :2211; it
+  calls live() back only for a freed hull). **Ruling: the fix RELEASES the stale crew from `_crews` where the order is
+  replaced (the seam's sweep / step / order hand-off), and live() stays a pure lookup**, so the C++ needs no change and the
+  tick stays cheap. A check inside live() would mismatch the twin. Native confirms on the pair tree (kturn / execute twins).
+  **Answered (planner, `33300f99`):** "asked about" = take()/hold() (only `_serve` writes tick_seen; live() writes nothing);
+  hold() is face_turn's and `_planned_reverse`'s first line, both called every tick, and the C++ hands wheeled faces back
+  to face_turn (execute_native.cpp:363-376) and calls `_planned_reverse` back every tick (drive_native.cpp:2211-2214);
+  STALE_TICKS 2 (`_serve`'s rule since round 31), run each physics_frame (the frame counter only). Native approved.
+  **Native's twins on `03d1a50c`** (builder0 light, `native_drive|native_execute|native_face_behind|planner_seam_stale`):
+  exited 0, 10/0, every twin 0 mismatches; answer (a), no C++ change. Planner's full check is the ship gate.
+  Native's face_behind floor was already on main (builder0 `ae3dad71`: 142 native executes, 0 mismatches).
+
+- **R33.4 CP-X: BUILD, kind-agnostic, as traffic's own give-way (2026-10-17, on traffic's X1 census):** builder0, tree
+  `dc6723ed` (main + probe), showmatch fights 500–523 on Terminus / Locks / random, 180 s, n 69: far loops 0.54 a match
+  (9/69 matches); the brief's case (parked crew of ANOTHER element) 3 episodes / 9 loops (~1 in 23 matches); behind ANY
+  parked crew ~10 episodes / 30 loops (~1 in 7). Mechanism (s403): no spot in `_begin_yield`'s fixed set fits a parked
+  crew in a neck, so it gives way IN PLACE (moves nothing), then refuses that asker for good ("just gave way to you": 20
+  of 30 loops); the other 10 are set-up batteries (T1c-b2, his yes). **Ruling:** build X2 option (a), kind-agnostic: a
+  parked crew never yields in place, is never refused for "just gave way" after an in-place yield, searches wider for a
+  spot off the asker's ROUTE, then returns. Switch `parkedroom`, DEFAULT_OFF; stage `test_traffic_neck`. No brains seam.
+  **The bar must carry T1c-b2's line** (a set-up mortar truck ordered to fire never repacks for a passer: 0, as shipped)
+  and the parked crew's return (it ends back at its slot / post within a filed time). Native: ask / `_begin_yield` run in
+  GDScript on both paths, so no mirror for parkedroom; **N5's ports of those functions wait for parkedroom's verdict**
+  (it changes `_begin_yield`'s body).
+- **R33.5 CPU squads of > 5 hulls are refused an element every think tick (traffic's side finding; brains owns it, next
+  after R1):** C19.1 refuses an element at start and again every think tick once a team's elements are gone
+  (`element_commander.gd:180`): unseated crews and up to ~470 ERROR lines a fight. A play bug (log spam each tick, crews
+  never seated): trace, fix alone with a test, its own check.
+
+- **R33.6 R33.5's cause and fix: SPLIT a > 5-hull CPU-played squad into elements (brains, 2026-10-17):** only on a side
+  folded with `SquadConsolidation.for_player` but played by the CPU (showmatch / `--player=cpu`; never his opponent).
+  for_player splits only past SPLIT_OVER 8, so that side has squads of 6–8; `skirmish_mode.gd:415` forms one element per
+  squad and C19.1 refuses each big one; `element_commander.gd:180` re-forms only when the team has NO element, so those
+  crews stay unseated all match, and once the formed ones die the refusal repeats every THINK_TICKS (~470 ERRORs).
+  **Ruling: build the split** (his rule: symmetric AI improvements ship without asking; it is the existing doctrine): a
+  squad of n > MAX_MEMBERS becomes ceil(n / 5) balanced blocks ("<squad>", "<squad> II", …), the same count and balance as
+  his own `SelectionSquads.split` deals a big group into; the commander also re-forms when any living squad member of its
+  team has no element. Grant: brains edits `game/modes/skirmish_mode.gd:415` (one line: `form_squad` for `form`; merge
+  note). A test that fails without it (0 ERRORs, every crew seated, on a showmatch side with a 6- and an 8-hull squad);
+  its own check; sim-baseline moves listed with the reason (showmatch maps). **Every running series stays on its own tree:**
+  traffic's parkedroom and manoeuvre's fights stages use showmatch fights, whose Green side this changes.
+
+  **Side effect accepted (orchestrator, on brains' `71f80a70` read):** in RESPAWN (non-elimination) matches, a crew that
+  respawns is now re-formed on the next think into a new element named after its squad, usually 1 crew. Main left it
+  unseated (its brain alone) until its team had no element. It is a symmetric AI change and ships with R33.6: a respawned
+  crew rejoins doctrine. Two elements can share a squad name on the CPU side (cosmetic). Elimination matches are unchanged.
+  A sim-baseline move from this is listed with its reason at merge. Round 34 candidate: rejoin the squad's living element
+  when it has room.
+- **R33.7 N5.M, `_manoeuvre`'s decision in C++ (native, 2026-10-17):** stream/native `04ee782e` + `145ada3a`, switch
+  `BrainSwitches.native_manoeuvre` default ON (off = round 26's callback); design in `native.md` *N5.M*. Proof (builder0
+  light): `test_native_manoeuvre` 920 decisions, 0 mismatches, 0 called back (reverse 307, route 613, every refusal but
+  no_arrival). Price: a decision tick's drive 1762 → 719 µs (loaded box, n 1), nothing per tick. Merges ALONE when green
+  with sim-baseline 13 UNMOVED (the port's own proof), NATIVE=off and native-proof read, no_arrival covered or shown
+  unreachable. **From its merge, `Manoeuvre.choose / simulate / behind / _others` are twinned (C26.2):** manoeuvre's edits
+  there become pairs with native.
+
+- **R33.8 T4's circling hull is the approach gate's (traffic's X4 trace, 2026-10-17; `references/round33/traffic/x4_t4_circle.md`):**
+  builder0 light, yard head-on s42 t3, native path: ghost ON A_5 settles 44.6 s v base 25.2 s (round 32's case reproduces).
+  A faced wheeled hull interrupted ~5 m from its approach gate, pointing the wrong way, re-aims the gate from inside its
+  turning circle and the circle rule loops 16 s; the ghost only changes where the hull ends up near the gate. **Ruling:**
+  brains' fix, inside B5c-v6 (R4): yard s42 t3 A_5 joins v6's bar as a named pass case (ghost ON and OFF). T4's mixed-stuck
+  re-judge (n ≈ 48) runs after parkedroom's series, with the yard head-on's settle time REPORTED (not judged) until v6 lands.
+
+- **R33.9 An element's `arrived` flips with no hysteresis: a MAIN bug, brains' next item after R1 (manoeuvre's F1 trace,
+  2026-10-17; `references/round33/manoeuvre/f1-arrived-flip/`):** builder0 light, `97bcd952` + a goal print, gangs hull-rest
+  faced_attack_move s40, GDScript, n 1 an arm: the Battery element (14 crews, swarm) flips `arrived` every 0.5–3 s from
+  t ≈ 15 s to the end on ONE anchor; arrived lays the seats on his drawn heading, not-arrived ~150° the other way, so every
+  seat jumps 19–27 m a flip. Base (turnhull OFF) as bad: Battery 67 flips v 59, Hunters 17 v 5, re-seats 286 v 234. Cause:
+  `element_plan.gd:290` `plan["arrived"] = to_go <= ARRIVE_M` (12 m, the centre) — the arrival layout pulls the centre past
+  12 m, the travelling layout pulls it back (the pattern line 781's `facing_sent` already guards for the facing). Turnhull
+  only catches more crews mid-turn at the judge. **What he would see:** a gang battery that never settles after an
+  attack-move, crews shuttling ~20 m back and forth. **Ruling:** brains latches arrival per task (arrived stays true for the
+  task until the centre leaves ARRIVE_M + a margin; line 686's twin read too), alone, a test on a 14-crew swarm
+  attack-move that fails without it, its own bar (s40 Battery flips 0; arrivals not down; re-seats down), its own check;
+  sim-baseline moves adopted with the reason; native states whether element_plan has a twin. **Order for brains:** R1 →
+  R33.9 → R33.6 → B10b (its series on a tree with R33.9). **Manoeuvre's CP-F bar judges on a tree with R33.9.**
+
+- **R33.10 builder0 is the bottleneck (2026-10-17):** two full checks (planner `03d1a50c`, brains `2fd9f420`) were killed at
+  slot.sh's 5400 s cap at load ~23 with shard 3 unfinished (both 0 failed in what ran, sim-baseline 13 unmoved): no verdict.
+  **Rules for the rest of the round:** each stream runs ONE heavy builder0 job at a time; priority is (1) the full check of a
+  hash named for merge, (2) a filed judged series, (3) tuning / traces (light lane or the laptop where the number is not
+  judged). **R1 merges on R33.9's check:** if lab/brains-r339 `429ebc4b` (= R1 `2fd9f420` + R33.9) is green, `2fd9f420`
+  merges on it (its own partial check read 2640 passed / 0 failed, sim-baseline unmoved, 23 other targets passed);
+  `429ebc4b` itself merges only when R33.9's bar passes.
+
+- **R33.11 parkedroom's pair check `cf17abd6` (builder0 `make check exited 2`: test 2724 passed / 3 failed, sim-baseline red as
+  expected, native traffic twins 0 mismatches):** the three reds are tests of the old fixed-set give-way
+  (`test_movement::test_asked_to_give_way_it_steps_off_the_line_and_resumes`, brains';
+  `test_nav_yield_fit::test_a_rig_accepts_only_a_spot_it_fits_and_gives_way_without_the_wall` and
+  `::test_the_refusing_build_declines_when_nothing_fits`, manoeuvre's). **Granted:** traffic pins parkedroom OFF in those
+  three functions' setup only (they judge the fixed-set rules, which remain), and adds ON counterparts to
+  `test_traffic_neck` (merge note). **Before the series:** the first test's ON yield point (-100, 0, 2) is on the lane and
+  behind the asker's start, so traffic shows the parked crew's path, minimum gap to the asker and contacts ON; a head-on
+  means the room search excludes spots whose path crosses the asker's corridor, fixed before the series.
+  **Answered and fixed (traffic, stream/traffic `ad347548`):** the spot was 6 m AHEAD of the asker down the lane (LANE is
+  z 20), but the defect was real: the asker asks before it has a route, so the corridor was a point and a spot straight down
+  the lane read as off route. Now with no route the corridor is the asked direction (40 m), and the straight run to a room
+  spot never comes closer to the asker than it starts nor re-enters the corridor. Test (a) ON (pair tree `ea550faf` =
+  `cf17abd6` + the fix + the pins, builder0 light): spot 8.3 m off the lane, MIN GAP 7.1 m, contacts 0; traffic_neck 7/0,
+  test_movement 9/0, nav_yield_fit 4/0. **The series tree moves to `ad347548`'s code; its full check (`ea550faf`) first.**
+  The pins must restore in a teardown/after_each, not a last line (a failing assert would leak the pin into later tests).
+  **Done:** pins restore in teardown() (stream/traffic `aff64e2b`). Pair hash for the check: `pair/parkedroom-on` `6ea486ef`
+  (= `ea550faf` + that; ea550faf's check stopped, no verdict). Series tree: stream/traffic `aff64e2b`.
+
+- **R33.12 parkedroom PARKED (2026-10-17; series FAIL, stream/traffic `b4b78825`,
+  `_agents/streams/references/round33/traffic/x3_series_verdict.md`).** builder0, tree `d90fbdb7` (code `aff64e2b`), fights
+  700–723 × terminus/locks/random, 180 s, n 72 paired: L1 parked far loops 22 → 25 (paired se of the sum 20.3) FAIL; L2 all
+  far loops 36 → 44 PASS; L3 PASS; L6 return 212/2175 back within 3 m FAIL; L4/L5 not run. It stays DEFAULT_OFF and
+  `pair/parkedroom-on` does not merge. Findings: the targeted hold-post "just gave way" loops went 11 → 0, but L1's remaining
+  loops are T1c-b2 fire-post refusals (20 of 23 in random-705), which the rule leaves alone. L6 is a real defect: "parked" =
+  "not under way", so a crew paused between orders makes room and its element then sends it on (median 19.1 m from the
+  "post" at 30 s). **Ruling:** no v2 this round ahead of T4 and islands. If traffic reaches it, v2 gates the rule on a crew AT
+  a post, and its bar is filed fresh before any number: new fights (not 700–723), L1 on hold-post far loops plus all
+  parked far loops not up, L6 kept. Narrowing L1 after seeing these numbers counts only on fresh seeds. The random-705
+  fire-post loop (20 loops, one fight) is REPORTED to the round's close as a separate problem; no stream owns it this round.
+  What he'd notice ON (traffic, same tree): crews shuffle aside about 42 extra times a fight (median; worst 111). They are
+  crews paused between orders that never needed to move, so a busy neck could look like milling. The fights look the same.
+
+- **R33.13 CP-Q (planner P2) does not ship (2026-10-17; builder0, pair `c75f20a6`, hull-rest gangs fresh seeds 72–83, n 72
+  paired a mode).** Line (1), abandoned share, FAILS in both modes: drawn 0.9 % v FIFO 1.0 % (p 0.44), clicked 0.9 % v 1.6 %
+  (p 0.06). Both are under 5 %, and neither is significantly below base. The FIFO base was 13–25 % in round 32 and P1's A/A;
+  on main today, with R33.3's stale release, it is 1.0–1.6 %. **R33.3 is the cause, shown by removal** (planner, laptop GDScript, FIFO hull-rest gangs drawn, seeds 72–74 × 6, 18 runs an arm): release on (`c75f20a6`) 7/594 = 1.2 % abandoned; `_hook()` stubbed (`02934dec`, never pushed) 142/667 = 21.3 %, queue_waits 1298 v 15767, Fisher p 6e-34.
+  (2) PASS. (3a) drawn at-rest hull error +5.43° against a +4.50 line FAILS (attack_move +13.2, move +15.2). (3b) and (3c)
+  PASS. Terminus and s207 are reported in full (early stop off). **Main keeps FIFO; P3's series tree = main + FACE_KEEP on
+  FIFO.** The stretch item (refuse GOAL_BLOCKED / START_BLOCKED before queueing) is planner's call, and only if a cheap read
+  shows those refusals cost hold time. Native gets nothing from P2.
+
+- **R33.14 T4's line 7 red is an order-dependent test, and T4's series goes ahead (2026-10-17).** Pair `bbb4d2db` (ghost out
+  of OPT_IN), builder0 `make check exited 2`: 2730/1, sim-baseline 13 moved (expected), perf NOT JUDGED. The red is
+  `test_tactics_body::test_his_three_squads_keep_together`, brains'. Traffic's light lane on `bbb4d2db`: alone it passes 3/3
+  (alone_s off 43.5, on 15.0). With test_rts_camera in front it fails (off 38.0, on 18.5 against a line of < 19.0). On
+  ghost-OFF trees it passes in every order traffic tried (off 41–44.5, on 12–15). It is the same class as R32.6: the result
+  depends on what ran before it, on a relative line. **Ruling:** (a) the Terminus re-judge runs on `bbb4d2db` as filed. T4
+  does NOT merge until line 7 is green on a named hash. Brains hardens the test (laptop; e.g. each arm in a fresh stage
+  state, or a fixed start phase, keeping the halving line) as its own small commit, and traffic carries it onto the pair
+  tree for the merge check. Traffic REPORTS ghost OFF v ON alone_s for the body-ON arm in the failing order (test_rts_camera
+  in front), so a real ghost cost on keeping squads together shows up as a number and not a flake.
+  **Read (traffic, builder0 light, seed 1, n 1 a cell; OFF = stream/traffic `b4b78825`, ON = `bbb4d2db`):** body-ON
+  alone_s ghost OFF v ON, by what runs in front: none 15.0 v 15.0; det_core 15.0 v 15.0; rts_camera 12.0 v 18.5; shard-3
+  48–70 12.0 v 18.5; 71–93 15.0 v 17.5. So it isn't only the order: in 3 of 5 orders the ghost costs the body-route squads
+  +2.5 to +6.5 s alone. **Added to T4's bar as a JUDGED guard, filed before its numbers:** the body stage
+  (`tests/tactics/body_stage.gd`, locks), seeds 1–3 × fronts {none, test_det_core, test_rts_camera}, n 9 a side, body ON,
+  ghost OFF v ON on one tree. Median alone_s ghost ON ≤ ghost OFF + 3.0 s; in every ghost-ON cell, body-ON alone_s < 0.5 × that cell's
+  body-OFF alone_s (the test's own halving line); and the Sirens choose "body" in every ghost-ON cell. Fail = T4 parks with the worst cell traced. Brains' hardening must not hide this:
+  the hardened test has to fail on a stage that really loses cohesion, so it is shown failing on one such case.
+  **Read and ruled (traffic `cea5cb56`, builder0 light, tree `95f85afc` = game code `bbb4d2db`, n 9 a side): (1) PASS
+  (median 15.0 v 15.0). (2) and (3) FAIL, all at seed 2, and the ghost-OFF arm fails the same cells.** At seed 2 the Sirens
+  choose "own", identically in both arms and before anything drives (own 103.0 m with 24.6 m alone v body 123.6 m with 22.4 m
+  alone), which is the right choice. Ghost-OFF's body-OFF baseline there never arrives (alone 56.5 s). **R33.16, a bar
+  defect, shown by the control arm:** (2) and (3) were written as absolute lines, but the guard's filed purpose is a ghost
+  COST. They are re-read in the guard's own relative form: (2') every cell's body-ON alone_s ghost ON ≤ ghost OFF + 3.0 s;
+  (3') the Sirens' choice is the same, ghost ON v OFF, in every cell. Amended after the numbers were seen, so the reason is
+  recorded here. Dropping seed 2 was rejected. The earlier suite-order signal (12.0 v 18.5) did not reproduce in the guard
+  at --fixed-fps 60 (13.5 v 12.5). Traffic reports both. Also: tactics.mk's BODY_SEEDS shadowed traffic's variable, now
+  renamed BGUARD_*.
+  **Re-read, then T4 PARKED (R33.17; traffic `787fb8ae`, same tree, seeds 1–3 × 3 fronts):** (3') PASSES in all 9 cells.
+  (2') passes in 8 and FAILS at rts_camera s3: ghost OFF 7.0 v ON 12.5, against a line of 10.0. Traced: the ghost arm reads
+  12.5 at seed 3 behind every front. The CONTROL arm swung 17.0 → 7.0 with the front, because Hunters2 was late and the army
+  came in at 23.1 s (body_stage.gd:31's known order swing). It still fails as filed, so T4 stays OPT_IN and the Terminus
+  re-judge is not run. Next time (round 34): a T4 guard on this stage needs brains' hardened, order-free stage, or many fronts.
+
+- **R33.15 N5.M merges; the NATIVE=off perf budget is not N5.M's (2026-10-17).** native: `025d5631` builder0 `make check
+  exited 0`, 2727/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved, determinism 9d66d3a0c59a7936. `c70be402` (diff:
+  _agents/streams/native.md only) `make check NATIVE=off exited 2`: 2727/0, sim-baseline unmoved with the same hashes. The
+  two FAILs: native-live-guard (fails by construction with no library) and perf-judge 1.47x (ai_usec_per_tick 20050,
+  load 9.01) on the all-GDScript AI. native-proof EQUAL 10c328a0f978ea49. no_arrival reached in `1a1182bb` (940 decisions,
+  0 mismatches). **Ruling:** merged (main `199d1587`). N5.M's GDScript diff touches the off path only under
+  `NativeBridge.counting` plus a new switch, read by the orchestrator, so the off-path perf is main's own. **Known, not
+  this round:** the all-GDScript AI (the no-library path: browser, or a missing .so) is over perf-judge's CPU budget at
+  about 1.5x on builder0, n 1. Native files a NATIVE=off perf reading on main at round close if the box is free.
+  Merge notes: brain_switches.gd (native_manoeuvre), native_drive.gd and native_exec.gd (counting only), and
+  tests/native/mover_state.gd. C26.2 now reaches Manoeuvre.choose / behind / simulate / _others / _hull_hit / _note, so a
+  CP-F or F1 edit there becomes a pair with native.
+
+- **R33.18 B10b FAILS on its own base, and R4 goes first, on main (2026-10-17).** B10b pair `99e867ee`: builder0 check
+  green (2740/0, ALL JUDGED, sim-baseline unmoved, BRIDGE_POOLED 18/18). Series, named cases, native path, n 1: line 1 PASS
+  (Sumps s16 t8); **line 2 FAIL** (Sumps s19 t8 all-within-8 m: on 100.8 s v off 69.4 s, bar ≤ off + 5), deterministic
+  on the native path (the laptop's GDScript gives 35.3 v 35.3). Trace: Green_S_1 circles inside its approach gate's turning
+  circle t=78–98 (30 SETTLE_NOPATH), S_4 likewise t=30–79. That is R33.8's loop: B10b's latch holds the seat, so the gate
+  holds still, and in the off arm the drifting seat frees it by accident. Tuning read, NOT judged, on R4's candidate
+  `97c3b654` (B10b ON + v6 + inside_circle + mirror): s19 38.8 v 42.4 s, s16 36.2 v 36.5 s. **Ruling:** B10b's verdict on
+  `99e867ee` stands as FAIL and it does not ship on that base. R4 is judged FIRST, on MAIN, as its bar allows ("else
+  main"): brains rebuilds R4's pair as main + R4 + native's mirror without B10b, names it, gets native's twins at 0
+  mismatches on it, then runs the full check (C31.1), then R4's series. If R4 ships, B10b is re-judged on main + R4 with its
+  bar unchanged and a fresh check. Its named cases are the same deterministic cases, judged once more on the new base, and
+  the census is untouched so far.
+
+- **R33.19 P3 PARKED (2026-10-17; planner, bca4eaca, builder0, 20:25–22:07 PDT, FIFO, no CP-F; evidence stream/planner
+  `ddbca315`, references/round33/planner/p3-bca4eaca/).** (0) PASS: the yard stage on and off native, kept plan, drift
+  0.97 m, aligned 9.83 v 15.43 s; kept share of hull-rest face plans 23/23 drawn, 16/18 clicked. (0b) PASS: the street
+  is served in a 26-tick hold after 1 fallback. (1), (2a), (2b) and (3) PASS (rigs 175 v 181 of 208, paired −0.46, se
+  0.55; series_verdict hand-read). **(2c) clicked FAILS:** p90 furthest-from-home 15.4 v 12.8 m (n 18 v 27 plans). Worst
+  pair: clicked faced_attack_move s87, a 15.4 m KEPT plan v base 2.7 m, past one hull length, which only a slot-law face's
+  circle allows (inferred, not traced). The series can't separate the slot-law ordering from the fallback. Parked per the
+  bar's rule. Round 34 candidate: cap a slotted face's kept circle at one hull length from the slot, on fresh seeds.
 
 **Bars (round 33):** filed here before any number.
+
+- **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
+  the held seat lies on a moving squadmate's navmesh route (both hulls' half widths + 1 m).
+  Candidate: stream/brains at the hash its check goes green on. Arms, one tree, builder0, the DEFAULT path (native where
+  it runs; Element.ground is GDScript on every path, so no native half): **on** = default (latch + corridor);
+  **off** = `--ground-latch=off` (main's rules); **b10** = `--ground-corridor=off`, reported only.
+  1. **Pass case Sumps s16 t8** (main's flip case: 22 flips, never in): no flipping crew (> 10 drift moves) on.
+  2. **Pass case Sumps s19 t8** (the case B10 failed, +19.9 s): on's all-within-8 m time ≤ off's + 5 s.
+  3. **Drift census, FRESH seeds** (`make ground-series`: Sumps 20 21 × ticks 1 3 6 8 11 16, n 12; yard 31 32 × the
+     same, n 12; Terminus head-on 16–19 t11, n 4): pooled runs with a flipping crew on ≤ off AND pooled drift moves on <
+     off; Sumps all-within-8 m median on ≤ off and no run > 5 s later; yard crews in on ≥ off every run.
+  4. **Arrive series, FRESH seeds 53–56, n 100 an arm:** all-within-8 m count on ≥ off − 1.645 se (se of the paired
+     difference of the per-run 0/1 outcomes, × n); discordant pairs and the paired median reported.
+  5. **sim-baseline:** moved maps listed with reasons (a CPU element's held seat re-grounded off a route), adoption by the
+     orchestrator; unmoved also acceptable.
+  6. **The whole suite on the tree** (the check, on), bridge-pooled 18/18.
+  7. Cost: `t.poll.element` on Locks ≤ 0.5 ms (B10: 0.149 v 0.164).
+  8. The worst on-arm run of 1–4 traced before medians are read.
+  Ships ON as one commit if every line passes.
+- **P2, CP-Q re-judged (planner, C33.6 (b); filed 2026-10-17 before any number, stream/planner `33300f99`; noise from P1's
+  A/A, builder0 `4bbe8322`: round 32's line (3) misses were inside the probe's own null swing).**
+  
+  Arms: base `--planner-queue=fifo`, candidate `--planner-queue=shared` (refuse early only at rest, `d98656ab`), both the
+  native drive, ONE tree: the pair tree (`QUEUE_DEFAULT` true) on top of R33.3's fix, after its whole suite is green (C31.1).
+  Hull-rest gangs, FRESH seeds **72-83** (12) x 6 tasks, drawn and clicked: **n 72 paired runs a mode**. Terminus rigs FRESH
+  seeds **218-230** (13). Early stop OFF on every line (R31.8: guards). The se on each guard is the PAIR's own paired se (the
+  A/A's figure in brackets is what n was sized on). No tuning on these seeds; this is CP-Q's last attempt this round.
+  1. **(gain) abandoned share of asks <= 5 % in each mode, AND below base (Fisher one-sided p <= 0.05).** (Round 32: 1.0 /
+     3.7 % v 18.6 / 14.5 %; A/A base 25 / 13-16 %.)
+  2. **(gain) the hold per event, pooled median, candidate <= base** in each mode; and on the Terminus rigs.
+  3. **(guards, pooled over the six tasks, paired on (task, seed)):**
+     (a) at-rest hull error: mean paired per-run median diff <= **+1.645 se** in each mode [A/A: se 2.56 deg drawn -> line
+     +4.2 deg, MDE 6.4; clicked se 2.06 -> +3.4, MDE 5.1];
+     (b) settle (drawn): mean paired diff <= +1.645 se [A/A se 1.9 s -> +3.1 s]; never-settled runs reported (censored);
+     (c) crews moving at 75 s: summed paired diff <= +1.645 se of the sum in each mode [A/A: drawn se 13.1 -> +21.5 crews
+     over 72 runs, ~0.3 a run; clicked se 17.3 -> +28.5].
+     Per-task numbers REPORTED (each is inside the A/A swing at n 12).
+  4. **(guard) Terminus rig arrivals:** paired not down beyond 1.645 se (judging.md's Terminus rigs row: sd 1.68 a seed);
+     wall contact-ticks REPORTED (not affordable: the row's n > 700).
+  5. **(deterministic cell) s207 stage:** under `shared`, Green_S0_4 pinned on Block_7 0 ticks (`make planner-stage-s207`).
+  6. **C31.1:** the whole suite on the pair tree, green.
+  Pass = every line. Partial (1)-(2) pass, a guard fails: PARKED with the worst pair's trace (lesson 302), not tuned.
+- **parkedroom (traffic X3, C33.2 / R33.4), filed 2026-10-17 before any number.** Arms on ONE pair tree: base = default
+  (`parkedroom` in DEFAULT_OFF), arm = `--traffic-on=parkedroom` (the ship flips DEFAULT_OFF to []). Native: none (`ask` /
+  `_begin_yield` run in GDScript on both paths; R33.4). Pre-series gates: `test_traffic_neck` (fights s403's neck, both crews
+  in their own elements: OFF never through in 40 s, ON through and the scout back on its post) green, the whole suite on the
+  pair tree with the switch ON (C31.1), and one real fight episode with elements formed traced ON end to end
+  (`traffic-far-one`, s403 crossing). Stages and lines (k = 1.645, se = paired se of the SUM from the pair's own rows,
+  `tests/traffic/far_ab.py` prints them):
+  1. **L1 gain (the product line):** far loops behind a PARKED blocker (any kind), FRESH showmatch fights 700–723 ×
+     {terminus, locks, random} (n 72 paired, 180 s, `make traffic-far-census FAR_RANGE=700-723 FAR_AT=terminus,locks,random`):
+     arm ≤ 50 % of base AND (base − arm) − k·se > 0. No table row exists for this probe (it is new): X1's base read 30 parked
+     loops in 69 fights, ~10 fights with any, so the line is decided by the ~10–15 fights where it acts. **Partial rule:** if
+     the point passes and the distinguishable clause fails, ONE extension to fights 724–747 (n 144), then judged; nothing else.
+  2. **L2 guard:** all far loops, same fights: arm ≤ base + k·se.
+  3. **L3 fights guard** (manoeuvre-fights, `NAV_FLAGS=--traffic-on=parkedroom` v none, FIGHT_SEEDS 700–723, random arena):
+     kills, deaths, hit rate each within base ± k·se (the pair's own se; the table's manoeuvre-fights rows for reference:
+     kills se 28.2 at n 24).
+  4. **L4 arrivals not down:** traffic-series his four crossing cases (seeds 1–3 × six ticks, n 18 a case, `TRAFFIC_FLAGS`
+     for the arm): crews in ≥ base − k·se per case (table rows: se 1.2–4.1); the hull-rest rigs (drawn) arrived ≥ base − k·se
+     REPORTED if the box allows.
+  5. **L5 T1c-b2 as shipped (deciding, deterministic in the rule):** traffic-census with the arm: runs with a repack while
+     firing 0 (a set-up mortar truck ordered to fire never repacks for a passer); setup refusals reported both arms. By
+     construction `on_fire_post()` refuses before parkedroom is read.
+  6. **L6 the parked crew's return:** of the arm's room give-ways in L1's fights, read 30 s after each began
+     (`FAR_ROOM back_m`): ≥ 90 % of those whose crew is alive are within 3 m of the post they left (the element may have
+     moved the post meanwhile: those are listed, not excused). Plus the stage: the scout back within 3 m of its post 20 s
+     after the tank is through.
+  7. **sim-baseline:** OFF (default) the pair tree is behaviour-identical to main by construction (sim-baseline unmoved on
+     the pair check is the equality check); the ship tree (ON) may move maps: listed with the reason for the orchestrator.
+  Verdict: ships ON as a pair (a docs/DEFAULT_OFF flip) only if L1, L2, L3, L4, L5, L6 pass; a fail is traced (the worst
+  fight's episode read before any total) and written up.
+  **Pre-series gate MET (traffic, builder0, `5da50167` + `--traffic-on=parkedroom`, s403 crossing, 90 s, elements formed):** the
+  scout gave way at ~23.5 s and reached its room spot within ~1.8 m UNDER its element; Green_Guns_4 through by 24 s, at goal
+  29 s (OFF: pinned 23–52 s, 4 far loops); scout back on post ~33 s. 51 room give-ways in that fight (both sides). **Added
+  before numbers (orchestrator), REPORTED only:** room give-ways per fight ON v all give-ways OFF, median and worst, in L1's
+  fights; a clip of the busiest neck ON for him if it ships (does it look like milling).
+  **Series tree and an L3 amendment (traffic, before numbers):** stream/traffic `23cad95c` = pair tree `cf17abd6`'s game code
+  exactly (DEFAULT_OFF = ["parkedroom"]: base default, arm `--traffic-on=parkedroom`) + measurement-only changes
+  (`tests/traffic/**`, `mk/traffic.mk`); its check is `cf17abd6`'s. L3 reads kills / deaths / hit rate from L1's own
+  random-arena fights 700–723 (the manoeuvre-fights command line) instead of a second stage. Accepted.
+- **T4-ON re-judged (traffic, C33.7; filed 2026-10-17 before any number, stream/traffic `9b4e5ab7`).** Native path, arm
+  `--traffic-on=ghost` v none, FRESH Terminus drive seeds 801–848 (n 48 a squad, paired). (1) deciding: mixed friend-stuck
+  arm < base AND drop − 1.645 se > 0; (2) rigs stuck ≤ base + 1.645 se; (3) pinned mixed / rigs ≤ base + 1.645 se;
+  (4) arrivals mixed / rigs ≥ base − 1.645 se; (5) REPORTED until v6 (R33.8): yard head-on all-in median, last arrival,
+  between-squad fast (traffic-series 41–43 × 6 ticks). No partial rule. Runs after parkedroom's series.
+  **Added before numbers (orchestrator):** (6) the Terminus drive forms no elements (round 32's lesson), so a skirmish
+  guard: showmatch fights on the random arena, FRESH seeds 900–923 (n 24, the manoeuvre-fights command line), kills,
+  deaths, hit rate and far loops each within base ± 1.645 se of the pair's own se; (7) C31.1: the whole suite on the pair
+  tree with the ghost ON, green, before the series.
+- **CP-F, turn the hull at rest (manoeuvre, C33.3; filed 2026-10-17 before any number, manoeuvre's brief Status).** Candidate:
+  ONE switch `turnhull` = M1b(2) attempt 2 (the decline lifted for a DRAWN face from order/sector, + facekeep) PLUS
+  round 33's `Manoeuvre.drawn_face`: a face still declined under turnhull (a contact the turret takes) keeps the hull on
+  his drawn heading instead of `stop` (counter `hull_holds`; test
+  `test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading`). Base: main with R33.9, same tree, switch at
+  default. Gate: C31.1 check on the pair tree (TURN_HULL_DEFAULT true) + native-verify-scenarios; sim-baselines may move
+  (CPU element task facings lift the decline too, symmetric). FRESH seeds: hull-rest 440–445 (144 runs an arm, drawn and
+  clicked), Terminus 450–462, fights 470–493, SBF gang_ifv 500–505, the bridge's 18. Lines: (a) drawn point tasks,
+  wheels/turret median ≤ 15° AND ≥ 70 % within 15° per task; (b) no class worse than base at p < 0.05 on any task,
+  fixed-gun wheels included; (c) clicked arm within ±5° of base; (d) moving at the judge ≤ base + 1.645 se per task,
+  wheels/turret and all classes; (e) never-settled ≤ base + 1.645 se, settle time REPORTED; (f) R32.3 arrivals at the held
+  seat, re-seats ≤ base + 1.645 se (FAIL); (g) Terminus arrivals, rigs and mixed apart, not down beyond 1.645 se paired;
+  (h) bridge 18/18; (i) fights kills, deaths, hit rate within 1.645 se; (j) hull_turns > 0 and hull_holds > 0; (k) s66 G5
+  REPORTED; (l) SBF REPORTED. (a)–(j) gate.
+  **Amended before numbers (orchestrator):** (m) **the default path:** the arms run the path he plays (native, stage 1 ON),
+  not GDScript only; native mirrors what reaches the drive first (R33.7: `Manoeuvre.*` twinned once N5.M merges), twins
+  at 0 mismatches as a gate; if a GDScript-only series is the only one affordable, one hull-rest drawn seed set on the
+  native path must agree with it in sign on (a) and (d). (n) fights 470–493 run wholly before R33.6 merges, or with it in
+  both arms. (o) (b)'s many cells are a guard against harm: a single cell at p < 0.05 in a class the change does not touch
+  (e.g. tracks) is traced before it fails the series, and the trace is reported either way.
+  **(m) resolved (native + manoeuvre, on `136c3828`):** nothing to mirror. The decline is in `TankBrain._order_move` (the
+  think, GDScript on every path); `drawn_face` only rewrites the ORDER to a face `from: drawn`; `turret_carries_aim` is
+  wheels + turret only, and execute_native hands wheeled faces back to GDScript by design (~365). N5.M's functions and the
+  exec rows are untouched. So CP-F's arms run on the default native path; native reads the twins on its pair tree.
+  **(p) added before numbers (orchestrator, on manoeuvre's `b09eee0b` note):** his plainest case is a K1 move with a drawn
+  facing, then a contact; `Orders._remember_station` (`game/control/orders.gd:489`) keeps the heading but not that it was
+  drawn, so there the declined face stays round 8's `stop` in both arms. **Granted to manoeuvre:** one additive field in that
+  function (`"drawn": order.has("facing")` on the station; merge note), read by `drawn_face` under the same `turnhull`
+  switch, with a test of that case; it rides CP-F (no separate series). (q) REPORTED: turret shots in the first 20 s of a
+  contact while the hull turns (manoeuvre's test: ON 1 v OFF 5 shots, n 1); the fights' hit-rate line (i) judges it.
+  **(r) granted (orchestrator, for the stretch clip only):** `game/control/screen_playtest.gd` (nobody's this round), one
+  additive read `--faced-off-deg=<deg>` replacing the const's use in the faced_right right-drag (default 60 =
+  `FACED_OFF_TRAVEL_DEG`, so every existing run and the hull-rest workload are byte-unchanged), plus a `manoeuvre-face-clip`
+  target in `mk/manoeuvre.mk`. Filmed on the laptop, windowed, `--write-movie`, switch OFF v ON; no builder0. Merge note;
+  it rides CP-F's merge, and the clip is not evidence for any CP-F line.
+- **R33.9, the arrival latch (brains; filed 2026-10-17 before any number).** Candidate lab/brains-r339 `429ebc4b` (R1 +
+  R33.9): arrived until the centre is ARRIVE_M + 6 m out (half the arrive radius: above a five-crew swarm's centre swing on
+  a re-seat, far below a real departure), cleared per task by `Element.assign`; both read sites (`element_plan.gd:290`,
+  `:686`); `--arrive-latch=off` = main's rule. ElementPlan has no C++ twin (no mirror). Lines: (a) gangs hull-rest
+  faced_attack_move s40 (GDScript, as traced): Battery arrive-flips 0 on (off reported), re-seats on < off (counter
+  `arrive_flips` beside `goal_moves`, measurement only); (b) arrivals not down: that cell's settled crews on ≥ off, and
+  squad-arrive-series FRESH seeds 57–60 (n 100) all-within-8 m on ≥ off − 1.645 se; (c) the check; sim-baseline moves
+  listed with reasons.
+- **P3, the face keep circle (planner, C33.6 (c); filed 2026-10-17 before any judged number).** Candidate
+  `--planner-face-keep=1` (stream/planner `45390507`, OFF): every pose of a face plan stays within one hull length of the
+  face's home (a slot-law face: its end circle + one hull length); `keep` is a request field native already reads (no C++
+  change; per-tick price the slice on every preset). Diagnosis only: builder0 light census seeds 66–71 (31 and 58 searches)
+  furthest-from-home max 29.0 → 14.2 m at identical cost; the ε 2.0 weight DROPPED (it served the 25 m plan). Tree: main after
+  R33.3 + P3 with FACE_KEEP_DEFAULT 1, whole suite green first (C31.1). Arms: base today v keep 1, native drive. Runs after
+  P2's series. (1) Deterministic cell, test_manoeuvre_face_behind's stage, NATIVE on and off: served (abandoned 0), drift
+  ≤ 8 m, aligned no later than today's abandon-then-executor arm (15.4 s, laptop), legs ≤ 3; test_manoeuvre_face_behind and
+  test_manoeuvre_behind pass on the pair tree. (2) Hull-rest gangs FRESH seeds 84–95, drawn + clicked, n 72 paired a mode:
+  (2a) P2's pooled guards at + 1.645 of the pair's own se (at-rest error, settle, moving at 75 s); (2b) abandoned share of
+  FACE asks not up beyond 1.645 se (two-proportion); (2c) drift: served face plans' furthest-from-home (`face_far`),
+  candidate median ≤ base median + 1.645 se (bootstrap over plans) and p90 ≤ base p90, max reported. (3) Terminus rigs FRESH
+  seeds 231–243: arrivals not down beyond 1.645 se; contact-ticks reported. Pass = every line; early stop OFF; (1) passes
+  and a guard fails → PARKED with the worst pair's trace.
+  **Amended before numbers (orchestrator):** both arms run on the queue main has when P3's series starts (`shared` if P2
+  shipped, FIFO if not), named in the verdict; and if CP-F has merged by then, on a tree with it (R33.2: the faced finish's
+  when is manoeuvre's), else REPORTED which.
+  **P3's pair tree failed C31.1 (`6f89ecc1`, builder0 `make check exited 2`, 2733/4, sim-baseline unmoved):** a War Rig in a
+  Terminus street (s31, (−70, 0, 0)) told to face back. Keep 1 runs out every hold (abandoned 8, still 42° off after 40 s)
+  where today's search serves it. Probe (laptop GDScript, failing scenes only, planned whole at budget 20000): yard_open,
+  keep 0 189 expansions / 17.5 s / 25.3 m, keep 1 4 / 11.7 s / 11.5 m; street, keep 0 7 / 16.9 s / 28.9 m, keep 1 10091 /
+  41.7 s / 13.9 m (a 16-leg shuffle); 1.5, 2 and 3 serve neither well. **Amended before any series number (orchestrator,
+  2026-10-17), a NEW candidate under the fallback rule:** pair `bca4eaca` (= `6f89ecc1` + the change). The kept search (keep
+  1) gets the first FACE_KEPT_SHARE = 45 expansions of the hold. On a refusal, or no plan by then, today's search runs from
+  the same pose in the remaining 135, inside the same pending cap: no budget raised, and the slice price is unchanged on
+  every preset. 45 was sized on the diagnosis census `a6368824` (seeds 66–71: 19 of 20 in-hold faces served kept, none
+  lost), not on judged seeds. The keep now applies AFTER the slot law. On `6f89ecc1` the slot law's req.keep replaced it,
+  so slotted faces went unkept. Arms: `--planner-face-keep=0` v keep 1 + fallback, FIFO, no CP-F (named in the verdict).
+  Lines: **(0)** the open-ground gain survives: the yard_open stage, NATIVE on and off, served by the KEPT plan
+  (face_kept_served ≥ 1, face_kept_fallbacks 0), abandoned 0, drift ≤ 8 m, aligned no later than today; AND on the
+  hull-rest arms ≥ 50 % of the candidate's served face plans are kept plans (else it is main in disguise → PARK). **(0b)**
+  the street face-back is served inside the hold (test_planner_face_epsilon's new test, test_planner_seam). (1), (2a–c) and
+  (3) as filed, fresh seeds 84–95 and 231–243. **(2d)** REPORTED: face hold per event, median candidate v base (a fallback
+  costs ≤ 23 ticks at slice 2). Line (2a)'s settle guard judges what he'd feel. The both-arms-seam guard in series_verdict
+  is read by hand, and the verdict says so. Pass = every line; early stop OFF. The series waits for `bca4eaca`'s suite.
+- **R4 B5c-v6 (brains, R33.8; filed 2026-10-17 before any number, stream/brains `a579b245`).** *Preamble:* round 32's
+  v6 as carried (`b8a34c4f`) fails `test_nav_gate_v4` and `test_wheeled_arrival` (the 180-degree car parks at dot -0.60),
+  so the candidate is the NARROWED v6: the side gate only where v4's come-round has no turning circle beside the rear
+  gate, plus `inside_circle` (R33.8). Candidate = `db72c8e9` + native's mirror (pair branch, test_native_gate 0
+  mismatches), on the B10b base if B10b ships (else main). Arms: ON v `--nav-off=gateside,gateinside` (v5's gate, as main
+  ships), one tree, native path, fresh seeds where a cell is named by seeds below.
+  (1) **Named pass cases, DECIDING.** **Yard s27 t8:** every crew in, ON, and last crew in ON ≤ OFF. **Sumps s17 t11:**
+  all-within-8 m ON ≤ OFF + 2 s (round 32's tuning read 35.8 v 34.8, n 1). **Yard head-on s42 t3 Green_A_5 (R33.8):**
+  settles ON ≤ OFF + 5 s with circle reverses ≤ 20, ghost OFF, and ghost ON too if traffic's ghost is on the base tree
+  (else said so).
+  (2) **Pursuit** (R31.3's count): `make pursuit-aa`, 24 cells, ON ≥ OFF − 3 as written AND nudged, no new let-go at 18 m/s.
+  (3) **Yard crossing cell** (seeds 29 30 × ticks 1 3 6 8 11 16, n 12), DECIDING: runs with every crew in ON ≥ OFF, and
+  crews in ON ≥ OFF in every run. Last-crew median REPORTED.
+  (4) **Sumps cell** (seeds 22 23 × the same 6 ticks, n 12): all-within-8 m median ON ≤ OFF, no run more than 5 s later;
+  guns_on_arc ≥ OFF − 0.05.
+  (5) Terminus head-on (seeds 8–11, t11) REPORTED.
+  (6) **Arrive series** (5 maps × 5 squads × seeds 61–64, n 100): all-within-8 m ON ≥ OFF − 1.645 se.
+  (7) **The faced finish:** test_nav_gate_v4, test_wheeled_arrival and test_nav_gate_inside green on the native path.
+  Counters gates_side and gates_inside > 0 on the acting ON runs and 0 on every OFF run.
+  (8) The check green on the candidate, sim-baseline moves listed with the reason.
+  (9) The worst ON run of (3) and (4) traced before the medians are read.
+  Ships ON as one pair with native's mirror if (1)–(4) and (6)–(8) pass. (This line, from a579b245's text, was dropped when
+  the bar was first copied here; restored.)
+  **test_native_gate's floors, re-filed before any change (native, pair/brains-v6-r4 `560e09e8`, builder0 light, n 1,
+  twins 0 mismatches on sumps and foundry):** the narrowed side gate and inside_circle make two vacuous-run floors fail on
+  foundry. Side gates went 1/1, because the rear gate has turning room there now. The live latch went 0, because
+  inside_circle latches first. **Granted:** side gates ≥ 5 on sumps only (6/6 seen); on foundry, gates_inside ≥ 1 (3/1
+  seen); and the latch floor becomes latched + latched_away + inside > 0 (inside_circle is a `_gate_latch`). Everything
+  else is unchanged (near, turned/forced_turning, shortened, cramped on sumps, drives ≥ 3000). These are guards that the
+  paths ran, not targets.
+- **Battery seats (brains stretch; filed 2026-10-17 before any number, lab/brains-r33-battery `c104f45e`, trace
+  `references/round33/brains/battery_parade_s43_laptop.txt`).** Trace (laptop, parade gangs v law s43, 150 s, n 1): (1) at
+  t=86 the coil swapped Battery_2's and Battery_5's places while 1, 3 and 4 were set up. Battery_2's new place was 20 m
+  across the set-up trucks; Battery_3 refused it and it never moved again. Nothing in the seating knows a crew is set up.
+  (2) At t=52 Battery_4 and Battery_2 set up 11 m and 5 m short and stood in their squadmates' lanes. (3) The post re-laid
+  ~30 m at t=64 under set-up trucks. Unexplained, and traced before building: Battery_2 drove 20 m south at t=80–84 with
+  its place 5 m away. Candidate: a set-up battery crew (deploy_ratio ≥ 1) keeps its seat, and its place is where it
+  stands. Movers get the remaining places and are never seated past a set-up squadmate while another place is open.
+  GDScript only (ElementPlan has no C++ twin); `--battery-seat=off`. Lines: (1) DECIDING, parade s43 and foundry s45: ON,
+  no never-past battery asker, and the asker sets up within 8 m of its place. (2) Census, traffic-census parade + foundry
+  + sumps × FRESH seeds 47–52, n 18: never-past battery askers ON ≤ OFF; trucks set up > 8 m from their place ON ≤ OFF;
+  artillery shots ON ≥ OFF − 5 %; T1c-b2 (repack while firing) 0; friendly-stuck crew-s ON ≤ OFF + its round-32 limit.
+  (3) The check, with sim-baseline moves listed. (4) The worst ON run traced before the counts are read. Ships ON if 1–3 pass.
+  **Amended at filing (orchestrator):** "its place" in (1) and in (2)'s "> 8 m" line means the place the crew was ASSIGNED
+  when it began to deploy, not the seat the candidate gives it afterwards. Otherwise ON passes by definition (its place
+  becomes where it stands). Queued behind B10b and R4.
+  **Second cause traced (brains, laptop, parade s43, native path, n 1):** Battery_2 ARRIVED 4.9 m from its place at
+  t=80 pointing the wrong way without passing its approach gate. The gate was re-aimed 20.0 m back along the place's
+  facing, it drove back, yielded to a squadmate crossing the coil, was re-seated across the set-up trucks at t=86 and
+  refused. **Ruling (orchestrator):** R4 stays as filed and frozen (`97c3b654`). "An arrived hull latches its goal's gate,
+  and the face at rest does the turn" joins this item as a SECOND switch, `--nav-off=arrivedgate`, on its own and not
+  folded into the seat rule. It is scoped to hulls whose gun doesn't need the hull's facing (artillery/battery and turreted
+  hulls). Never fixed-gun wheeled hulls: their face at rest is exactly C33.9's creep. A gate change, so it pairs with native
+  (C26.2) and the gate tests. The bar gains: named cases with each switch ALONE reported and both together DECIDING;
+  squad-arrive-series FRESH seeds (n 100) all-within-8 m ON ≥ OFF − 1.645 se; test_nav_gate_v4 / test_wheeled_arrival /
+  test_nav_gate_inside green on native.
+  **Third cause measured (brains, lab `87181cf3`, laptop, parade s43, n 1):** 18 of 31 Green set-ups stood more than 8 m
+  from the place assigned at deploy, many 13–27 m off. Trucks deploy where they stand once they may fire. **Added as a
+  THIRD switch, `--battery-seat=deployatplace`, judged alone like the other two:** a battery crew deploys only at its place
+  (within 8 m). The cost is firing later, so the bar gains: median time from a battery's fire order to its first shot,
+  ON ≤ OFF + 5 s on the census, plus the shots line already filed.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
