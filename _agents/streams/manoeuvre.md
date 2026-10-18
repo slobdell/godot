@@ -72,6 +72,16 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### C33.9 attempt 2, DEV ONLY (R33.24; not judged, waiting on the lead; data in `references/round33/manoeuvre/c339-attempt2-dev/`)
+
+builder0, pinned, dev seeds 11-23, n 13 a cell. Turn in ONLY within the gun's effective reach; out of reach, today's motion.
+- **C `96d6a1521`** (branch `lab/c339-attempt2`): the reach rule alone. (a) in reach 24.6 % (FAIL by 0.4), (b) PASS, (c)
+  exchange 0.18 -> 1.57 PASS, (c-out) hits 42 -> 49 FAIL. **Out of reach the shuffle is back:** (d) up to 203 commanded
+  reverse ticks and 42 gear changes in a run, (d2) 20 at stop, (e) 75.6 m from the post. That is what he reported.
+- **D `9fb3b9db6`**: C + catch-up gain 5 + the jink's slow half 0.3: worse, (a) 17.7 %, the exchange fails in one cell.
+- Reading: attempt 2 trades the lead's own complaint back in for out-of-reach hits; the orchestrator's HANDOFF now
+  recommends shipping attempt 1 (781801da0) as is and leaving out-of-reach to brains' fight-or-leave work.
+
 ### C33.9 JUDGED: PARKS (2026-10-18; data in `references/round33/manoeuvre/c339-judged/`)
 
 **Candidate:** ea043755's turn-in, judged tree **781801da0** (branch `lab/c339-turnin`) = ea043755's game code + measurement only
