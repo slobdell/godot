@@ -143,6 +143,15 @@ struct DriveConfig {
 	int64_t MAN_CHECK_EVERY = 1, REAIM_TICKS = 0;
 	Object *manoeuvre_script = nullptr; // Manoeuvre (its statics `plans` / `refused`)
 	Variant keep_manoeuvre_script;
+	// Round 33 (N5.Y): _negotiate's body, ask and _begin_yield natively (BrainSwitches.native_yield). yield_port_ready false
+	// (a constant missing) keeps the callback. yield_fit / yield_short / yield_clear / yield_hold are Movement's arms as
+	// configured (the native drive runs only with no --nav-off: the values here are the ones in force).
+	bool yield_port_ready = false, yield_fit = false, yield_short = false, yield_clear = false, yield_hold = false;
+	double PRIORITY_MARGIN = 0, YIELD_MAX_SECONDS = 0, YIELD_LINE_MARGIN = 0, YIELD_SPOT_CLEARANCE = 0, YIELD_MESH_SLACK = 0,
+		   YIELD_FIT_STEP_M = 0, YIELD_FIT_PIVOT_DEG = 0, YIELD_SHORT_MIN_M = 0, YIELD_SHORT_MARGIN_M = 0;
+	int64_t YIELD_FIT_STEPS_PER_M = 0, YIELD_FIT_MIN_STEPS = 0;
+	PackedVector2Array YIELD_SPOTS;
+	PackedFloat64Array YIELD_BACK_UP;
 	const struct MotionConfig *motion = nullptr; // TankMotion.step_in_place's model (TankNative's, NativeMotion.configure)
 	mutable HashMap<String, Dictionary> state_stats_of; // TankMotion.state_for's Units.stat answers by unit (pure)
 };

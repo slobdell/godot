@@ -114,6 +114,17 @@ static func configure() -> bool:
 		"MAN_HULL_MARGIN_M": Manoeuvre.HULL_MARGIN_M, "REAIM_TICKS": Movement.REAIM_TICKS,
 		"KTURN_MARGIN_M": Movement.KTURN_MARGIN_M, "CUSP_DEADBAND": ManoeuvreCensus.CUSP_DEADBAND,
 		"motion_ok": NativeMotion.configure(),
+		# Round 33 (N5.Y): _negotiate's body, ask and _begin_yield natively (BrainSwitches.native_yield): the give-way's
+		# constants and its arms as configured (the native drive runs only with no --nav-off).
+		"PRIORITY_MARGIN": Movement.PRIORITY_MARGIN, "YIELD_MAX_SECONDS": Movement.YIELD_MAX_SECONDS,
+		"YIELD_LINE_MARGIN": Movement.YIELD_LINE_MARGIN, "YIELD_SPOT_CLEARANCE": Movement.YIELD_SPOT_CLEARANCE,
+		"YIELD_MESH_SLACK": Movement.YIELD_MESH_SLACK, "YIELD_FIT_STEP_M": Movement.YIELD_FIT_STEP_M,
+		"YIELD_FIT_PIVOT_DEG": Movement.YIELD_FIT_PIVOT_DEG, "YIELD_SHORT_MIN_M": Movement.YIELD_SHORT_MIN_M,
+		"YIELD_SHORT_MARGIN_M": Movement.YIELD_SHORT_MARGIN_M, "YIELD_FIT_STEPS_PER_M": Movement.YIELD_FIT_STEPS_PER_M,
+		"YIELD_FIT_MIN_STEPS": Movement.YIELD_FIT_MIN_STEPS, "YIELD_SPOTS": PackedVector2Array(Movement.YIELD_SPOTS),
+		"YIELD_BACK_UP": PackedFloat64Array(Movement.YIELD_BACK_UP), "yield_fit": Movement.yield_fit_on(),
+		"yield_short": Movement.yield_short_on(), "yield_clear": Movement.yield_clear_on(),
+		"yield_hold": not Movement.switched_off("yieldhold"),
 	}
 	# Round 31 (planner CP-P1): the seam's switch and its table, when this tree has the seam (loaded by path: the file
 	# parses on a tree without it).
@@ -164,6 +175,7 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 ## Round 33 (N5.M, the live guard): `_manoeuvre`'s decision runs INSIDE the C++ drive with no GDScript seam to call
 ## `took`, so while the guard counts, `taken["manoeuvre"]` is the drive's own count of native decisions since counting began.
 static var _manoeuvre_base := -1
+static var _negotiate_base := -1
 
 
 static func _count_manoeuvre() -> void:
@@ -173,6 +185,12 @@ static func _count_manoeuvre() -> void:
 		_manoeuvre_base = native
 	NativeBridge.taken["manoeuvre"] = native - _manoeuvre_base
 	NativeBridge.taken["manoeuvre_called_back"] = int(c.get("manoeuvre_called_back", 0))
+	# Round 33 (N5.Y): _negotiate's body runs inside the C++ drive too (BrainSwitches.native_yield: taken["yield"]).
+	var negotiated := int(c.get("negotiate_native", 0))
+	if _negotiate_base < 0:
+		_negotiate_base = negotiated
+	NativeBridge.taken["yield"] = negotiated - _negotiate_base
+	NativeBridge.taken["yield_called_back"] = int(c.get("negotiate_called_back", 0))
 
 
 ## N4 (tests): Movement._around_fire natively on this mover, from its state now (the proof asks it beside the GDScript).
