@@ -138,6 +138,38 @@ rounds and nowhere else:
    (ad1d1f3d). Hold ids (`RID::get_id()`), numbers and std containers in statics; hold godot objects per instance (or in
    the uninitialize hook's care, as `exec_states` is). `make native-live-guard` (in `check`) starts and quits Godot through
    the library once and fails on a crash line or a non-zero exit.
+8. **A twin compares no wall-clock value, not even `> 0`** (round 33, builder2). `Time.get_ticks_usec()` counts whole
+   microseconds, so a charged span can be 0 on one side and 1 on the other. On builder2's Zen 5 the GDScript held
+   controller tick sometimes finished within 1 µs while the native one crossed a microsecond: 7 of 600 mismatches,
+   only on `profile_usec > 0` (main d99394f1; builder0 never showed it). Make every timed span cross the clock (the
+   probe spins until the clock advances: `test_native_controller`, `c7646f41`, main `ac06a393`), or leave the field out.
+   Every other field stays exact. A twin that passes on one CPU only is a test bug, or a determinism bug: say which
+   before accepting it.
+9. **A twin stage with path floors runs in its own fresh process** (round 33; `tests/native/fresh_stage.gd`, main
+   `7851690c`). In one process a stage reads by what ran before it: a match leaves physics bodies and statics that
+   branch the run. The Sumps' parked refusals read 129 alone, 47 in builder0's check, then 6 and 0 in builder2's 16
+   shards, while every twin read 0 mismatches. So floors set at half of one reading kept going red, and even "reached
+   at all" was not stable. The pattern is the test's first line: `if FreshStage.parent(self, "<its name>"): return`.
+   The runner's process starts a child (`--headless --fixed-fps TICK_RATE`), and in the child the same method runs its
+   body. The child takes the runner's steps:
+   - a fresh instance with `tree` set, awaited;
+   - the sealed `_teardown`;
+   - engine messages reconciled with the case's expectations and the allowlist.
+   Its failures come back as the test's failures, and its lines are printed in the parent's log. In a child the counts
+   are a function of the stage alone: identical on builder0 and builder2, and each owned arm reads its live arm's
+   counts. So the floors are half the fresh counts again. Every DriveTwinCase stage, `test_native_gate` and
+   `test_native_yield` use it (17 stages).
+   - **Cost:** none net. builder2's 8 files went from 770 to 711 s, because `--fixed-fps` runs the child flat out.
+     Builder2's slowest shard went from 932 to 921 s.
+   - **The negative proof** (laptop, once): a child's failed assert, engine error or death (exit 137) each turns the
+     parent red with the child's message. It caught a real bug first: `has_method` on a GDScript resource does not see
+     its methods, so it is asked of the instance.
+   - **New twin stage with counts:** use it.
+10. **`make remote T=test` does not build the library.** It runs native-ON only where the remote checkout already has
+    `native/bin` from an earlier `native` or `check`. In a fresh checkout every native test prints `native: absent …`
+    and PASSES. Twin evidence uses `T="native test"` (or `check`), and is read from a count line or the `NATIVE ON/OFF`
+    line, never the exit line alone. Round 33 sent two vacuous `T=test` runs as evidence before this was seen:
+    `1053045e`, and `bbb9821f` on a new builder0 checkout.
 
 ## The proof (every port, every commit)
 
@@ -825,3 +857,126 @@ prev_size"): state must live as long as its owner, not the process.
 
 **C26.2 for M1:** an edit to `_manoeuvre`'s first block (the lines above the decision) needs the C++ to follow; an edit
 inside the decision branch (`Manoeuvre.choose`, the plan, the kept goal) needs nothing.
+
+## N5.M (round 33): `_manoeuvre`'s decision in C++ — the design, written before the code
+
+**What.** Round 26 put `_manoeuvre`'s per-tick GATE in C++ (`Drive::manoeuvre`); the DECISION (a new goal, or the same
+spot after a gap in the drive ticks) is still `cb(k._manoeuvre, order)`. N5.M ports the decision: the rest of
+`Movement._manoeuvre` (reaimed, arrive, the facing test, `_kept_goal` / `_kept_from`, the counters) and what it calls,
+`Manoeuvre.choose` / `behind` / `simulate` / `_others` / `_hull_hit` / `_note`, `Movement._kturn_frame`, `_outline_offs`
+(new `NavNative::outline_offs`, `outline_off` per point: the same arithmetic) and `TankMotion.state_of` (built natively;
+the unit's `state_for` stats memoized per unit like `settle_of`). Manoeuvre (owner) confirmed 2026-10-17 that CP-F does
+not touch these; the orchestrator released the port (R33.4: parkedroom leaves `_manoeuvre` alone).
+
+**Equal, line by line.** Every member write through the view (`_behind_tick`, `_behind_since`, `_behind_goal`,
+`_behind_plan`, `_kept_goal`, `_kept_from`: exec rows already exist), Movement's statics `behind_asked` /
+`behind_reverses` through `sadd`, Manoeuvre's `plans` / `refused` tables in place on the Manoeuvre script (`_note`). The
+simulation reuses the proven pieces: `motion_step` (N6.1), `drive_toward` (backward for `reverse_toward`) and `wheels`
+(gear ±1), `NavNative::outline_ok`, `pathing_ready()`, the memoized `hull_box` / settle radius / `bake_radius`.
+**Declared, not equal:** `NativeBridge.took("motion")` / `took("nav")` (the bridge's measurement table) is not counted
+by the native decision. It is never game state.
+
+**Falls back to the callback (the decision whole, as today) when** `manoeuvre_ready` is false (a constant or the
+Manoeuvre script missing: an older tree), or any switch the GDScript arm would read differently is off:
+`native_nav` (the GDScript's outline then asks the engine, not N2a's index) or `kturn_cap` (another outline rule) is off,
+or the new switch `BrainSwitches.native_manoeuvre` (default ON; `--brains-off=native_manoeuvre` puts the callback back
+for an A/B). `native_motion` and `native_move` are OFF by default (crossing cost, not equality): the GDScript arm steps
+and checks outlines in GDScript, and the C++ decision calls `motion_step` and `NavNative::outline_ok` directly, each
+proven the same bits (N6.1, N2b), as the native tank drive does; `NativeMotion.configure()` is asked at
+`NativeDrive.configure` so the motion constants are there.
+
+**Proof.** The drive twins compare the whole drive from one snapshot; `MoverState.capture` gains Manoeuvre's `plans` /
+`refused` (statics of another script) so the decision's counters are compared too. Floors: the k-turn fight (every hull
+sent 8-16 m behind it) and the drive fight count decisions made natively (`drive_owned_counts`: `manoeuvre_native`,
+`manoeuvre_called_back`), with both answers (`reverse`, `route`) and a refusal reached. Then manoeuvre's own behind
+tests native-on in the plain check, `native-proof` (determinism and the thirteen maps unmoved: nothing changes by
+construction) and `make check NATIVE=off`.
+
+**Price.** Measured in `test_native_manoeuvre` (builder0 light lane under load ~18, lab `536f773c`, n 1 run of 900
+at-rest decision ticks): a decision tick's whole drive 1762 usec native with the decision CALLED BACK (rounds 26-32),
+719 usec with N5.M, 1728 usec all GDScript. About 1 ms saved per new goal (a spike, not a per-tick cost: decisions are
+once per goal).
+
+**Proof as built (lab `536f773c`, builder0 light):** `test_native_manoeuvre` (new; five hulls on yard_open sent astern
+at rest and rolling, the decision twinned on its tick, live and owned): 920 decisions native, 0 called back, 0
+mismatches; plans route 613 / reverse 307; refusals facing_nose 225, static 84, route_faster 66, friendly 6, enemy 2
+(a parked Rust hull). `no_arrival` is reached from `1a1182bb`: a sweep of Manoeuvre.simulate found 4 War Rig and 6 Lancer
+goals, of 1604 astern, that reverse clear but do not arrive inside SIM_HORIZON_S. The stage asks the War Rig's four:
+940 decisions, 0 mismatches both views, `refused:no_arrival` 4 (floor 1). The live guard counts the decision as
+`taken["manoeuvre"]` from the drive's own count (`607fca1a`); in the tick profile's 20-a-side foundry match it took 227,
+none called back. Merged as main `199d1587` (R33.15). The drive twins: 165 / 179 decisions native, 0 called back, 0
+mismatches (route only: the Sumps refuses its reverses). The k-turn fight compares none (an order lands before the fight's
+own drive decides it), so it asks no floor.
+
+## N5.Y (round 33): `_negotiate`'s body, `ask` and `_begin_yield` in C++ (the design, written before the code)
+
+**Released by R33.12** (main `402b3803`: parkedroom is parked, so `_begin_yield`'s body on main stands).
+**What:** past `negotiate`'s early-outs (already native since round 27), the drive calls back
+`cb(k._negotiate, …)` (drive_native.cpp ~1421) and that GDScript decides who gives way:
+- it asks the friend (`mover.ask` → the friend's `_begin_yield`), or gives way itself (`_begin_yield`);
+- else it applies the parked-refusal rule or swaps (R2).
+N5.Y runs that body in C++:
+- `travel_direction`, `on_fire_post`, `ask`, `_begin_yield`, `_start_yield` (yield_log off);
+- `free_spot`, `room_to_turn`, `distance_to_ray`, `yield_fits` / `yield_run_ok` / `yield_shorten`;
+- the priority rule (PRIORITY_MARGIN, name order) and the swap.
+**On the asked mover:** `ask` writes ANOTHER mover's members (`yield_to`, `_yield_point`, `phase`, …), as the GDScript
+does. The C++ reaches that mover through an ObjectView on its live members and sets its `native_stale |= STALE_ALL`
+(the GDScript `ask` does the same first). That mover's next owned drive re-pulls. Its `_travel_direction`, `_remaining`,
+`_goal`, `_path` / `_path_index` and `_last_yielded_to` are read live.
+**Equal:** the yield-run sweep is N2b's geometry plus pieces already proved bit for bit:
+- `outline_offs` / `outline_ok` (N2a);
+- `wheels()` in either gear (drive_toward_wheels / reverse_toward_wheels);
+- `drive_toward(backward)`;
+- `turn_heading` (N6.1);
+- `ahead_of_wheels`, `straight_behind`.
+`Avoidance.refresh` / `neighbours` are called back (one call each, scene order, the record's set); `Pathing.closest_point`
+uses N2a's index under the same site key ("yield"). Spot order is YIELD_SPOTS × [side, −side], then YIELD_BACK_UP, as
+the GDScript.
+**Declared:** `Movement.yields_started`, `asks_refused`, `setup_refusals`, `parked_refusals`, `yield_swaps(_shorter)`,
+`yield_spots_unfit / _shortened / _refused`, `yield_holds` (statics, compared by the twins). The drive's own count
+`negotiate_native` / `negotiate_called_back` is read by the live guard as `taken["negotiate"]`.
+**Fallback (called back whole):**
+- `yield_log`, `setup_log` (measurement rows);
+- `Traffic.off(...)` switches other than the defaults;
+- any `--nav-off` / `--traffic-off` (the native drive already requires `_off` empty);
+- the asked hull is not a `Movement` (the player's own: `Movement.of` null);
+- `BrainSwitches.native_yield` off (new; default ON once the twins read 0).
+**Proof:** a new `test_native_yield`: hulls of each class in the Terminus streets and the yard, pairs set nose to
+nose, nose to tail, crossing, one parked, one set up on a fire post. `_negotiate` is twinned on its tick, live and
+owned: the command, both movers' members, and Movement's statics. Floors cover each answer (asked and gave, gave way
+myself, parked refusal, setup refusal, swap, hold, shortened, back-up) and the rig that fits nowhere. Then the drive
+twins plus the k-turn twins, `native-live-guard`, and a full check.
+
+**N5.Y proof as built (stream/native `4d2781e3` + test, builder0 light, n 1).** `test_native_yield`: two ranks
+(tank, gang_tank, ifv, scout, artillery, lancer) face each other on yard_open and in the Sumps, each hull sent to the
+opposite slot and back, with a friend parked in a lane. On every physics frame each mover's live drive is screened
+from its own snapshot (plus the fields an ask writes on other movers). Ticks where the ask cadence fired are twinned
+whole: 543 / 238 / 697 / 637 drives (yard, yard owned, sumps, sumps owned), 0 mismatches. Negotiations native /
+called back: 31 / 0, 15 / 0, 230 / 0, 248 / 0. Reached:
+- give-way at a spot, a back-up and a hold in place;
+- an unfit spot;
+- a parked refusal, a refused ask;
+- a setup refusal: 5, from a forced variant where every other hull is set up on a fire post.
+182 s (1181 s twinning every frame).
+**The stage counts depend on test order.** The twin compares one tick from one snapshot, so it holds in any order (0
+mismatches everywhere). But how often each branch is reached depends on what ran earlier in the same process. The
+Sumps' parked refusals were 129 run filtered and 47 inside `make check` at `6434969e` (builder0, n 1 each). In the
+check, the stages' counters shifted as a block: check's yard owned matched filtered yard live exactly, and check's
+sumps owned matched filtered sumps live. So the floors guard against an empty run (`1053045e`: each is at most half the
+lowest count seen, parked 60 -> 20), not a target. (`make remote T=test` at `1053045e`, 2741 / 0, ran with the
+library absent, so that run proved nothing; hazard 10.) The durable fix is hazard 9: each stage runs in its own process,
+with floors at half the fresh counts (`bbb9821f`, main `7851690c`).
+**The shortened spot: REACHED, forced** (`0e3a192c`, test-only). A sweep of the GDScript `_begin_yield` over the
+Sumps at `6434969e` found the poses that give way shortened (of 7688 each): War Rig 370, IFV 415, lancer 403, tank 183.
+`test_the_asked_hull_gives_way_shortened(_owned)` asks the War Rig at three poses and the IFV at two: each hull is under
+way, and a tank 6 m off its nose is stalled on a direct order past it, with further to go, so it asks rather than gives
+way. 5 + 5 drives, 0 mismatches, `yield_spots_shortened` 5 each, 0 called back.
+**The swap: UNREACHABLE on the native path.** The native drive runs only with `Movement._off` empty, so `yield_fit_on()`
+and the hold (`not switched_off("yieldhold")`) are both on. `_begin_yield` returns false by one of two exits:
+- its last line, reached only past the hold branch, whose condition is `_yield_unfit_last and yield_fit_on() and not
+  switched_off("yieldhold")`. So there `_yield_unfit_last` is false.
+- the `along == ZERO` early return, before `_yield_unfit_last` is reset. That needs a zero `its_way` and the asker
+  exactly at the friend's x / z: physics never leaves two hulls coincident.
+The swap (`i_give_way and yield_fit_on() and _yield_unfit_last and ask(...)`) follows a false `_begin_yield`, so it needs
+`_yield_unfit_last` true. It is reachable only under `--nav-off=yieldhold`, where the GDScript drives. The C++ keeps the
+swap lines one for one so the mirror stays a pair (ruled by the orchestrator, round 33).

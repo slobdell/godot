@@ -12,11 +12,35 @@ func teardown() -> void:
 	super.teardown()
 
 
+## Round 33 (R33.14): each arm runs in a FRESH process (tests/tactics/body_probe.gd), so no test before it in the shard
+## can reach it. In one process the stage read differently by what ran first, after R32.6's spawn fix, on traffic's ghost-ON
+## pair (bbb4d2db, laptop): alone 37.0 v 16.0, with test_rts_camera first 28.5 v 15.5 (builder0: 38.0 v 18.5), the halving
+## line failed. Not the start: with the navmesh awaited before the spawn every match began on the same frames (1, then
+## tick 2) and still read 29.5 first in the process v 38.5 after the camera test, seed 2's on arm 22.0 v 15.0 as the 4th
+## match of each. What a match leaves behind (the physics server's bodies, statics a new match does not clear) moved one
+## crew's yield at tick ~56 by 0.1 m and the run branched (Sirens_1 stood ~35 ticks in one order, drove on in the other).
+const CHILD_TIMEOUT_S := "300"
+
+
+func _arm(body: String) -> Dictionary:
+	var out: Array = []
+	var code := OS.execute("timeout", [CHILD_TIMEOUT_S, OS.get_executable_path(), "--headless", "--fixed-fps",
+			str(SimClock.TICK_RATE), "--path", ProjectSettings.globalize_path("res://"), "--script",
+			"res://tests/tactics/body_probe.gd", "--", "--seed=1", "--body=%s" % body, "--seconds=%d" % int(SECONDS)], out, true)
+	var text := "\n".join(PackedStringArray(out.map(func(line: Variant) -> String: return str(line))))
+	assert_true(code == 0, "the body=%s child finished inside %ss (exit %d)" % [body, CHILD_TIMEOUT_S, code])
+	for line in text.split("\n"):
+		if line.begins_with("BODY_PROBE "):
+			var parsed: Variant = JSON.parse_string(line.trim_prefix("BODY_PROBE "))
+			if parsed is Dictionary:
+				return parsed
+	assert_true(false, "the body=%s child printed its line: %s" % [body, text.substr(0, 400)])
+	return {"alone_s": INF, "arrived_s": -1.0, "Sirens": {"choice": {}}}
+
+
 func test_his_three_squads_keep_together() -> void:
-	Element.BODY_ENABLED = false
-	var off: Dictionary = await BodyStage.run(self, 1, SECONDS)
-	Element.BODY_ENABLED = true
-	var on: Dictionary = await BodyStage.run(self, 1, SECONDS)
+	var off := _arm("off")
+	var on := _arm("on")
 	print("MEASURE body locks seed 1: off %s | on %s" % [off, on])
 	assert_eq(String((on["Sirens"]["choice"] as Dictionary).get("chosen", "")), "body", "the Sirens take the army's route")
 	assert_true(float(on["alone_s"]) < float(off["alone_s"]) * 0.5,

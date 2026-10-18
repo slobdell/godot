@@ -77,3 +77,18 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+## Overnight (round 33 extension, 2026-10-18 ~00:45 PDT)
+
+The lead has gone to bed and wants builder2 kept busy. Take these items in order (`workstreams.md` *Round 33, overnight
+extension*; the details are in `roadmap.md` *Round 34 candidates*). Merge main first. builder2 FIRST (`make gcp-remote`,
+6 heavy slots). Every judged stage pinned at `--fixed-fps $(SIM_HZ)`. A bar is filed (sent to the orchestrator) before any
+number, judged on FRESH seeds, and every number labelled with its machine. Keep this Status current: the lead reads it in
+the morning.
+
+1. **The battery item:** three switches judged alone, its filed bar (native mirrors arrivedgate).
+2. **A scout under fire fights back when it can't get away:** your design (roadmap). Bar first. It pairs with
+   manoeuvre's C33.9, so judge it on a tree that has C33.9 if C33.9 has shipped, else say which.
+3. **An element that never arrives because one crew still drives** (foundry s8, the War Rig 4-of-5 case): trace, then
+   a candidate ("arrived when 4 of 5 are in their slots and the rest are stalled").
+4. **A respawned crew rejoins its squad's living element when it has room** (R33.6's side effect, improved).

@@ -876,3 +876,66 @@ body-twice: import ## Round 32 (R32.6): the body stage run twice in one process 
 			--arms=$$arms --clear=$$clears $(BODY_TWICE_EXTRA) > $(BUILD_DIR)/body-twice-$$arms.log 2>&1; grep -oE 'BODY_TWICE .*|SCRIPT ERROR.*' $(BUILD_DIR)/body-twice-$$arms.log | python3 -c "import sys,json; [print(l.strip()[:60] if not l.startswith('BODY_TWICE') else '  run %(run)s %(arm)s cleared=[%(cleared)s] alone_s %(alone_s)s arrived_s %(arrived_s)s' % json.loads(l[11:])) for l in sys.stdin]"; \
 	done
 
+
+# Round 33 (brains battery stretch): the battery bar's census (workstreams *Bars (round 33)*, "Battery seats"). traffic's
+# census probe (pinned at --fixed-fps, as traffic-census) with --battery-trace, BATTERY_CASES x BATTERY_SEEDS x
+# BATTERY_ARMS (tag:flags, flags separated by ";", "-" = none), each run's TRAFFIC_CENSUS row, TRAFFIC_ASKER rows and BATTERY_SETUP /
+# BATTERY_FIRE_ORDER / BATTERY_FIRST_SHOT lines kept -> build/battery-census/<tag>/ + tests/tactics/battery_table.py.
+BATTERY_CASES ?= sumps,law,gangs,1000,opponent parade,gangs,law,2000,opponent foundry,condemned,syndicate,2000,opponent
+BATTERY_SEEDS ?= 47 48 49 50 51 52
+BATTERY_OFF := --battery-seat=off
+BATTERY_ARMS ?= on:- off:$(BATTERY_OFF)
+BATTERY_SECONDS ?= 150
+BATTERY_JOBS ?= 6
+.PHONY: battery-census
+battery-census: import ## Round 33 (brains battery stretch): the battery bar's census, BATTERY_ARMS x BATTERY_CASES x BATTERY_SEEDS (census probe + --battery-trace) -> build/battery-census/<arm>/ + table
+	@rm -rf $(BUILD_DIR)/battery-census; mkdir -p $(BUILD_DIR)/battery-census
+	@echo ">> battery-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arms '$(BATTERY_ARMS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for arm in $(foreach a,$(BATTERY_ARMS),'$(a)'); do for seed in $(BATTERY_SEEDS); do for case in $(BATTERY_CASES); do echo "$$arm|$$case,$$seed"; done; done; done | \
+		xargs -P $(BATTERY_JOBS) -I{} sh -c 'arm=$${1%%|*}; rest=$${1#*|}; tag=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr ";" " "); [ "$$flags" = - ] && flags=""; \
+		set -- $$(echo $$rest | tr "," " "); dir=$(BUILD_DIR)/battery-census/$$tag; mkdir -p $$dir; out=$$dir/$$1-$$6; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
+			--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(BATTERY_SECONDS) --battery-trace $$flags \
+			2>/dev/null > $$out.log; grep -o "TRAFFIC_CENSUS {.*" $$out.log | sed "s/^TRAFFIC_CENSUS //" > $$out.json; \
+		grep -o "TRAFFIC_ASKER {.*" $$out.log | sed "s/^TRAFFIC_ASKER //" > $$out.askers; \
+		grep -E "^BATTERY_(SETUP|FIRE_ORDER|FIRST_SHOT) " $$out.log > $$out.battery; gzip -f $$out.log; \
+		[ -s $$out.json ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"missing\":true}" > $$out.json; \
+		echo "  ran $$tag $$1 s$$6"' _ {}
+	@$(PYTHON) tests/tactics/battery_table.py $(BUILD_DIR)/battery-census $(foreach a,$(BATTERY_ARMS),$(firstword $(subst :, ,$(a))))
+
+# Overnight item 4 (brains): RESPAWN element fights for the rejoin bar. Skirmish and showmatch fights are elimination
+# (skirmish_mode.gd sets it), so no crew ever respawns there; this is the match runner WITHOUT --elimination, 25 a side
+# (tools/perf_armies.py), --green-elements --rust-elements, no score limit, pinned. REJOIN_SEEDS x REJOIN_ARENAS,
+# REJOIN_FLAGS for an arm, --rejoin-trace always -> build/rejoin-fights/<arena>-<seed>.log (BRAINS_REFORM, MATCH_RESULT).
+REJOIN_SEEDS ?= 580 581 582 583
+REJOIN_ARENAS ?= sumps yard terminus foundry
+REJOIN_TIME ?= 180
+REJOIN_JOBS ?= 8
+.PHONY: rejoin-fights
+rejoin-fights: import ## Overnight item 4 (brains): respawn element fights (match runner, no --elimination, 25 a side), REJOIN_SEEDS x REJOIN_ARENAS, REJOIN_FLAGS -> build/rejoin-fights/
+	@rm -rf $(BUILD_DIR)/rejoin-fights; mkdir -p $(BUILD_DIR)/rejoin-fights; $(PYTHON) tools/perf_armies.py size 25 $(BUILD_DIR)/perf-armies > /dev/null
+	@echo ">> rejoin-fights on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(REJOIN_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(REJOIN_SEEDS); do for arena in $(REJOIN_ARENAS); do echo "$$arena,$$seed"; done; done | \
+		xargs -P $(REJOIN_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match \
+			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_25.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_25.json \
+			--budget=100000 --squad-cap=5 --score-limit=0 --time-limit=$(REJOIN_TIME) --seed=$$2 --arena=$$1 \
+			--green-elements --rust-elements --rejoin-trace $(REJOIN_FLAGS) > $(BUILD_DIR)/rejoin-fights/$$1-$$2.log 2>&1 || true; \
+		echo "  ran $$1 s$$2"'
+	@grep -l MATCH_RESULT $(BUILD_DIR)/rejoin-fights/*.log | wc -l | xargs echo "rejoin-fights: MATCH_RESULT rows"
+
+# Overnight item 3 (brains): the War Rig 4-of-5 case headless and PINNED (manoeuvre's face-clip setup without the movie:
+# foundry, gangs v a quiet law, his right-drag with the facing drawn 180 deg off, squad 1 only) with --element-trace on
+# the faced squad's element. WARRIG_SEED (8), WARRIG_FLAGS (an arm), WARRIG_TRACE (element-name substring) ->
+# build/warrig/<seed>.log, ELEMENT_TRACE + MANOEUVRE_STATE lines.
+WARRIG_SEED ?= 8
+WARRIG_TRACE ?= Guns
+.PHONY: warrig-trace
+warrig-trace: import ## Overnight item 3 (brains): the War Rig 4-of-5 case, headless, pinned, element-traced (WARRIG_SEED WARRIG_FLAGS WARRIG_TRACE) -> build/warrig/
+	@d=$(BUILD_DIR)/warrig; mkdir -p $$d; \
+	timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --skirmish --seed=$(WARRIG_SEED) --no-pick-faction --mute \
+		--arena=$(FACING_ARENA) --player-faction=gangs --enemy-faction=law --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
+		--no-element-cpu --brains-off=native --turn-states --screen-test=$(CURDIR)/$$d/screens-$(WARRIG_SEED) --screen-only=faced_right \
+		--faced-off-deg=180 --faced-squads=1 --element-trace=$(WARRIG_TRACE) $(WARRIG_FLAGS) > $$d/$(WARRIG_SEED).log 2>&1; \
+	grep -q SCREEN_DONE $$d/$(WARRIG_SEED).log || echo "warrig-trace: no SCREEN_DONE"; \
+	echo ">> warrig-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null) | seed $(WARRIG_SEED) | flags '$(WARRIG_FLAGS)' | ELEMENT_TRACE $$(grep -c ELEMENT_TRACE $$d/$(WARRIG_SEED).log) lines"

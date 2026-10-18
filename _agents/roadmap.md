@@ -1271,3 +1271,97 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   current commander first, then league self-play; the bottleneck is headless match throughput (CPU cores), not the GPUs;
   inference through the native extension (LiteRT or ONNX Runtime); judged by the fights series like any change; fog-fair
   inputs; his pillars (smart AI both sides, die-hard squad tactics) and the GCP spend are his calls.
+
+## Round 34 candidates (found during round 33)
+
+- **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
+  room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.
+- **The fire-post loop: DIAGNOSED and OWNED by traffic (2026-10-18; `e7b6504c7`,
+  references/round33/traffic/ov_firepost_r705.md).** An artillery truck reads arrived 5.1 m short, digs in after 0.25 s
+  still with NO target, and T1c-b2's on_fire_post() (deployed + not hold_fire + arrived) treats that readiness as firing,
+  so it refuses passers for 66 s. Fix (traffic and brains agree): a battery counts as firing only when set up AND it has a
+  fire mission (a target, engaged, or a recent shot). That keeps his yes (a truck ORDERED to fire stays set up). Judge
+  it on a tree with brains' battery item. Traffic item 4, after parkedroom v2 and T4.
+- **(was) The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
+  one fight (random-705, builder0, `d90fbdb7`).
+- **An element that never arrives because one crew is still driving (brains):** foundry s8, five War Rigs given a move with a
+  drawn facing (laptop, manoeuvre `8fc224fa`, n 1). Four stopped 20–45 m out and one drove on to about 52 s. Arrival is the
+  five-crew centre within 12 m, so the squad never read arrived and the drawn facing never reached the crews. Candidate rule:
+  arrived when 4 of 5 are in their slots and the rest are stalled. Brains' read is code-only; manoeuvre is checking the slots.
+- **T4 ghost ON, a third try (traffic + brains):** blocked by the body stage's order swing (body_stage.gd:31), which moved
+  the control arm 17.0 → 7.0 s alone (R33.17). First brains' order-free body stage, then T4's cohesion guard on it, then
+  Terminus. **Also: a same-process rematch does not replay, ghost or not (traffic, corrected 2026-10-18; `33154cc3`,
+  `references/round33/traffic/ov_replay.md`).** Body stage (Locks, body OFF), 3 matches in one process, seeds 1–6, laptop
+  GDScript, --fixed-fps 60: a rematch branched on 2 of 6 seeds with the ghost OFF (s3 39.0 → 37.0, s5 56.5 → 19.5) and 4
+  of 6 with it ON. It enters at TICK 1 as hull height (y 0.000871 v 0.00087): the physics server settles a hull
+  differently in a second match. A fresh World3D or clearing every GDScript static does not change it; a fresh process
+  replays exactly in both arms. (The earlier "ghost OFF replays exactly" was seed 1 only.) T4's replay line: a fresh
+  process is replay-exact with the ghost ON, and the ghost adds no new kind of non-replay (it only raises the branch rate).
+- **A same-process rematch is not deterministic (UNOWNED; match/physics; important for replays and the network):** see
+  the line above. A player's rematch without restarting the game does not play out identically, with or without the ghost.
+  Find what the physics server carries between matches (body RIDs, broadphase, contact caches), and either reset it or
+  run each match in a fresh physics space.
+- **Run the suite at a fixed physics rate (orchestrator, test infra):** `make test` (mk/core.mk:266) runs run_tests.gd
+  without `--fixed-fps`, so in-process stages pace by the wall clock and a heavy test in front moves them. Brains (laptop,
+  stream/brains, ghost OFF): the body stage after test_rts_camera swings up to 9 s unpinned, and ≤ 2 s at `--fixed-fps 60`
+  (s1 off 44.5 v 37.0, s1 on 7.0 v 15.0). Candidate: `--fixed-fps $(SIM_HZ)` for the suite, as sim-baseline does. That
+  changes every test's pacing, so it gets its own full check and a list of any test whose numbers move. The residual 0–2 s is
+  leftover state (the physics server, which GDScript can't reset). Per-process arms (brains `f8cf6476`) are the guard shape
+  for any judged stage until then.
+- **A scout under fire fights back when it can't get away (brains; from C33.9, his scout report):** SPOT's 0.88
+  (tank_brain.gd:1606) is meant to buy distance, but a leash-clamped post buys none, so the circled scout keeps facing the
+  shooter and barely fires (manoeuvre's trace, main `0ef2443b`, seed 4: shots 5–20 v 112–128). Brains' design (code read
+  only): while taking fire from a contact inside the scout's own effective range, AND its SPOT post is clamped (or has no
+  room to retreat) or the shooter matches it (advantage ≥ 0), SPOT drops to its in-sight 0.7, so ENGAGE wins. Against a
+  shooter it loses to, it opens distance as today. The bar would cover: the shots ratio, scout survival, and team
+  enemy-seen seconds ≥ base − 1.645 se. It pairs with manoeuvre's turn-in.
+  Also (manoeuvre's C33.9 dev runs, builder0 light, seeds 21–23): about a third of the scout's face time is broken by
+  the brain's own ADVANCE/HOLD stops (ADVANCE scores 0.3 with no visible threat), in the OFF arm too.
+- **Two load-flaky targets in `make check` (orchestrator, test infra; round 33, 2026-10-17):** (1) web-smoke's
+  "first sound ≤ 30 s after READY" is a wall-clock bound. It failed at load 30.8 (31.5 s) and 36.8 (34.7 s), and passed
+  re-run at load 12.6 (11.7 s). (2) tools/test_slot_light.sh (remote-guard-test) failed twice, "the quiet window opened"
+  and "ran while EXCLUSIVE held the box", on a shared live box. Both should either scale with measured load or refuse
+  (NOT JUDGED) rather than FAIL, like perf-judge.
+- **P3 v3, the face keep (planner):** v2 (kept first, today's search as fallback, R33.19) passed everything but clicked
+  drift's p90 (15.4 v 12.8 m), apparently from slot-law faces kept out to their end circle + a hull. Candidate: cap a
+  slotted face's kept circle at one hull length from the slot. The yard face-behind gain (9.8 v 15.4 s) is the prize.
+- **Two planner tools need repair (planner, round 33 close):** series_verdict needs a both-arms-seam mode (its round-31
+  guard refused, so P2 and P3 were read by hand), and stage_s207's rolling control no longer reproduces the round-32 pin
+  (re-make it or retire it).
+- **A remote `make test` with no native library should refuse, not pass (orchestrator, test infra):** today it runs
+  every twin as "native: absent" and exits 0 (R33 trap, `remote_builds.md`). On builder0/builder2 a missing library
+  should read NOT JUDGED for the twin files, or `test` should build it first, as `check` does.
+- **Judged series must run at a fixed physics rate (orchestrator, round 33 close; method):** `manoeuvre-hull-rest`
+  (mk/manoeuvre.mk:84, :98) runs Godot WITHOUT `--fixed-fps`, so its readings are paced by the wall clock and move with
+  box load. CP-F's judged series (R33.21) ran on a loaded builder0 and read about 2.3 "still moving" crews a run on
+  ambush. The same arms on the laptop's tuning seeds read about 0.3 in every arm (manoeuvre, attempt-3 trace). Planner's
+  P2/P3 hull-rest arms use the same workload. The `mk/*.mk` grep (2026-10-18) finds unpinned `$(GODOT) --headless --path`
+  calls in 22 files (most are renders, smokes and network targets, where the wall clock is the point). Audit every
+  JUDGED stage, pin it to `--fixed-fps $(SIM_HZ)`, and say in each parked verdict whether it rested on an unpinned stage.
+- **The hull-rest judge counts a wedged crew as "still moving" (manoeuvre, R33.23 trace):** "still" reads the reported
+  velocity, so a hull pinned short of its seat (reported v 4.9, real 0.00) counts as a mover in both arms. Read real
+  velocity, or report wedged crews as their own line.
+- **The hull-rest stage is barely seed-sensitive (manoeuvre, R33.23):** seeds 40 = 43 and 44 = 45, row for row, so a
+  paired se over seeds understates the noise. Make the seed vary the stage's geometry, as C33.9's orbit stage now does.
+- **relay-smoke: a shell's RPC fires after the peer has dropped (UNOWNED, network; R33.25):** ×6 "Trying to call an RPC
+  via a multiplayer peer which is not connected" from match.gd:2094 `_shell_hit` ← shell.gd `_fly`, under a full check's
+  load on builder2 (pair 70cb7f683); it passed alone twice. Guard `_shell_hit`'s RPC on a connected peer (or stop shells
+  at teardown), with a test that drops the peer while a shell is in flight.
+- **Fresh folders race `npm ci` (infra; brains, 2026-10-18):** in a new remote folder, broker-test and relay-smoke each
+  run `npm ci` at the same time inside one check (12 targets in parallel) and corrupt node_modules/ws (TAR_ENTRY_ERROR
+  ENOENT), so both go red. Have one prerequisite target install node_modules once (an order-only dependency or a lock),
+  and until then seed node_modules from a warm folder with the same package-lock (_agents/gcp_builder.md).
+- **A k-turn leg crossing the arrival circle flips the order into a face nobody wanted (manoeuvre owns, brains for the
+  held-post refusal; planner's diagnosis, stream/planner `c68cd0f77`, references/round33/planner/face-flip-s69/).** On
+  diagnosis seed 69 (builder0 light, keep 1), Green_Guns_7 reversing on a k-turn leg crosses inside its attack-move goal's
+  6 m arrival radius (tick 509). `_act`'s arrived branch (tank_brain.gd ~2461) turns the order into a face "from post"
+  mid-manoeuvre, the seam drops the k-turn, and every new move_to for 36 ticks is refused by `_order_move`'s held-post rule
+  until one is accepted at tick 554. Fix: don't declare "arrived" while the seam or executor is mid-leg, or hold the faced
+  finish until the leg ends (R33.2: manoeuvre owns WHEN a faced finish runs).
+- **Scout fights back, second try (brains; R33.31):** fight only an even-or-better duel (duel advantage ≥ 1), dropping
+  the "can't get away" speed clause that sent it into fights it lost against faster, longer-ranged syn_scouts. Judge reach
+  over the next second or two, not the tick. Fresh bar on orbit seeds 73–79.
+- **hull-rest's crew row and spawn (control's file, screen_playtest.gd; asked by manoeuvre):** (1B) an additive
+  `real_mps` field per crew row, so "still" reads real velocity in the row itself; (2B) `--faced-shift-m`, a per-seed
+  shift of the order's destination, so the seed varies the stage's geometry. Round 33 shipped the judge-side versions
+  (wedged crews reported apart; a per-seed facing jitter).

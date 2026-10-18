@@ -27,10 +27,158 @@ worktrees start fresh; `origin` holds old `stream/*` branches, so workers don't 
 ports, and brains' seam only if traffic picks an element make-room; traffic's T4 circle trace → brains' v6; planner P3 and
 manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars (round 33)* before its numbers.
 
+**🌙 Overnight 2026-10-18 (the lead asleep; `workstreams.md` *Round 33, overnight extension*):** all five workers have
+taken round-34 candidates on their same worktrees: traffic gets parkedroom v2 and T4's third try; manoeuvre C33.9 (the
+scout) and CP-F's third attempt; brains the battery item, the scout fighting back, and the War Rig 4-of-5 arrival; planner
+its tools and P3 v2 re-judged pinned; native the test infra (the suite at --fixed-fps, and more). **builder2 (the GCP
+Spot VM) is ON and is the first-choice builder,** with 6 heavy slots. It bills while on (about $0.52/h, Spot). If it is
+preempted, the orchestrator runs `make gcp-start`. The lead decides in the morning whether to `make gcp-stop`.
+**Restart 2026-10-18 ~10:50 (the lead's laptop froze; every agent restarted):** the side worktrees were removed. All
+were clean, and their commits are kept on their branches: `lab/brains-r33-battery` (brains' battery work, 5 commits
+ahead of main), `pair/native-arrivedgate` (native's arrivedgate mirror for it, test floors done), `pair/brains-r4-main`
+(R4, merged) and `pair/cpf3-on` (CP-F attempt 3's pair, 60d2d86a). Check out a fresh worktree from the branch to go on.
+godot-native is back on `stream/native` (fast-forwarded to native/fixed-fps-suite `0cdeff77`). builder2 was idle and
+RUNNING, with no orphans on either builder.
+
+**❓ For the lead (morning, from C33.9, his scout report):** when your scout is being circled by an enemy scout it
+can't outrun, should it **stand and trade shots** or **hang back and dodge**? Tonight's fix makes it turn and fight.
+In that case (a law scout against a Syndicate scout circling at 30 m) it fires about 30× more (8 → 260 shots) and takes
+about 30 % more hits (78 → 103), against hardly firing and slowly losing today. **Recommendation: stand and trade**, as
+you described. The judged rule now compares damage dealt against damage taken, not hits taken alone.
+
+**❓ For the lead, the scout fix's verdict (C33.9, R33.24): it PARKED narrowly.** On fresh seeds, the shuffle you saw is
+gone in every run: it never chooses to reverse, not even while holding. It stays near its post and fights back: about
+5× the shots, and it now deals more damage than it takes when its gun can reach (1.77 dealt per 1 taken, against 0.20
+today). It missed two lines. Its aim was on target 23.9 % of the time against a 25 % line. And where its gun CAN'T reach
+the attacker (a gang scout circled at 45 m by a Syndicate scout), it takes more hits than today (57 v 42), because it
+turns to face something it can't shoot. **Choices:** (1) ship it as it is: the shuffle is gone, at the cost of those
+out-of-reach hits; (2) a second attempt that turns in only when its gun can reach, and keeps today's motion otherwise, judged on fresh
+seeds. **Caveat (manoeuvre):** "today's motion" out of reach IS the shuffle, so you'd see it again whenever the attacker
+is beyond your scout's gun. That shuffle happens to dodge the enemy's aim. Every alternative tried so far (turning in,
+straight-line jinking) took more hits out there. (3) leave it parked. **Recommendation, revised: (1), ship as it is.**
+The shuffle you reported is gone everywhere. Out of reach the real answer is that an outgunned scout should LEAVE, which
+is brains' "scout fights back or gets away" work, already in progress. Option 2 would bring back the very thing you
+reported.
+**Option 2 measured (dev seeds, builder0; stream/manoeuvre `3a274fffb`):** with "turn in only within reach", the shuffle
+came back beyond reach, with up to 203 chosen reverse ticks and 42 gear changes in a run, a scout drifting 75.6 m from
+its post, and out-of-reach hits still up (42 → 49). A tuned variant was worse. **So the recommendation stands: ship
+attempt 1 (`781801da0`'s turn-in) as it is.**
+
+**❓ For the lead, the War Rig turn-to-face (CP-F, his round-32/33 ask; R33.34): it PARKED narrowly, a third time.**
+On fresh seeds, wheeled turret vehicles told to face a direction now end 3–4° off it (93–96 % within 15°; attack-move
+80 %), against 60–100° off today. Fights, Terminus, the bridge and arrivals are all no worse. It missed one line: on
+attack-move, gang crews still driving at 75 s numbered 7 more than without it, against a limit of 6.5. A second line read
+nothing because the situation never came up. **Choices:** (1) ship it as it is: you'd see turrets ending on your drawn
+facing, with a few gang crews on attack-move still shuffling into place; (2) **recommended:** one more attempt, which also
+fixes the "arrived" flicker in the middle of a three-point turn that planner found, possibly the cause of those late
+movers, and is being developed tonight; (3) leave it parked.
+
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
   whose planned turn was cut off by a new order can back out when stuck again (it was frozen out of unstick all match).
+  **Its size, shown by removal (planner, laptop, R33.13):** turn requests abandoned 21.3 % without it v 1.2 % with it (FIFO,
+  gangs hull-rest, 18 runs an arm, p 6e-34): the problem CP-Q was built for is solved by R33.3.
+
+- **R1 → main `07b8e99a`** (brains `2fd9f420`, covered by lab/brains-r339 `429ebc4b`'s check per R33.10: builder0 `make check
+  exited 0`, 2731/0, sim-baseline 13 unmoved, determinism passed). What he'd notice: a respawning vehicle never appears inside
+  one standing at its slot. **Main `07b8e99a` = R33.3 + R1, each checked alone, not together** (disjoint files:
+  `planner_seam.gd` v `match.gd`): ONE main check after the next batch (N5.M, R33.9 if it passes), per R33.10's load rules.
+
+- **R33.9 → main `9396e795`** (brains `429ebc4b`: builder0 `make check exited 0`, 2731/0, sim-baseline 13 unmoved; bar passed
+  on 97ec141f = 429ebc4b + 14 lines of measurement, kept in lab/brains-r339). Gangs s40 Battery arrive-flips 0 v 39, re-seats
+  6 v 302; arrivals unchanged (all within 8 m 93 v 93 of 100). What he'd notice: a gang squad that has reached its spot stops
+  shuffling seats. **Main check of R33.3 + R1 + R33.9 together: GREEN** (main `9396e795`, builder0 `make check exited 0`, 2732/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved).
+
+- **N5.M → main `199d1587`** (native `c70be402`; R33.15). `_manoeuvre`'s decision runs in C++, default ON. Check on
+  `025d5631`: builder0 exited 0, 2727/0, ALL JUDGED, sim-baseline unmoved. NATIVE=off: tests 2727/0, sim-baseline unmoved,
+  perf-judge 1.47x over budget (main's own all-GDScript path; known). native-proof EQUAL. What he'd notice: nothing, the same
+  game, decided in C++. **Main 199d1587 checked: builder0 `make check exited 0`, 2735/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved.**
+
+- **R33.6 → main `863cb199`** (brains `fc195815`: builder0 25 targets passed, 2735/0, sim-baseline 13 unmoved; web-smoke's
+  wall-clock bound failed at load 30.8 and passed re-run alone, first sound 11.7 s). What he'd notice: a CPU squad of 6–8
+  fights in coordinated groups of at most five instead of unseated, and a respawned CPU crew rejoins doctrine. **Plus
+  `279600af`** (brains `f8cf6476`, test only): the body test runs each arm in its own process (R33.14). Both ride the next
+  main check, with traffic's islands.
+- **Islands → main `f18e021f`** (traffic `0bf0a721` = b71b8097's three commits rebased onto main; b71b8097 builder0 exited 0,
+  2732/0, sim-baseline unmoved, foundry included). The navmesh bake drops foundry's crate-roof islands (region_min_size 8).
+  What he'd notice: nothing, except no unit ever plans onto a crate roof. **Far census → main `dd32ede1`** (traffic `c54a932d`):
+  round 34's measurement tools, no game code.
+  **Main `0ef2443b` (R33.6 + body test + islands + far census) checked: builder0 streamed `make check exited 0`, 2739/0,
+  26 targets ALL JUDGED, sim-baseline 13 unmoved.** The link dropped again during the copy-back, so the wrapper's last line is
+  "treating that as a failure: nothing local proves what the run did". The verdict lines above were streamed live by the run
+  itself, and no number is read from the stale local build/, so the orchestrator accepts it as the main check (recorded
+  here, the only exception made this round).
+
+- **N5.Y → main `a47d43e3`** (native `1053045e`): the give-way negotiation (`_negotiate`, ask, `_begin_yield`) runs in
+  C++, default ON. Gates: 6434969e's check had 0 mismatches and sim-baseline unmoved; its one red was a coverage floor,
+  lowered 60 → 20 (it depends on test order); NATIVE=off 2739/0 with perf 1.07x; native-proof EQUAL; then on 1053045e
+  `make test` 2741/0 and perf-judge JUDGED PASS 1.16x (builder0). What he'd notice: nothing. **Rides the next main
+  check** (planned on builder2). **Correction (native, 2026-10-18):** 1053045e's `make test` 2741/0 ran with NO native
+  library (every twin "native: absent"), so it proved nothing about the floors. N5.Y's native evidence is 6434969e's
+  check (native ON, 0 mismatches) plus every builder2 main check since, all native ON.
+
+- **Planner close → main `5b574075`** (stream/planner `01d53411`, code = `1de6a692`): the parked P3 face keep lands OFF
+  (keep 0) with its counters and judge targets. builder2: 2745/0, sim-baseline unmoved. builder0 alone: web-smoke 0, and
+  perf-judge JUDGED PASS 1.09x. **Native's controller-twin test fix → `ac06a393`** (timer granularity on builder2's Zen 5).
+
+- **R4 → main `54abf20a`** (brains `45d5f1ea`, with native's mirror): the approach gate, B5c-v6 narrowed + inside_circle.
+  builder0: check 2759/0, ALL JUDGED, sim-baseline unmoved, twins 0 mismatches. Series PASS on every deciding line: yard
+  s27 t8 10/10 both arms; the yard head-on s42 circle reverses 0 v 2; arrivals 97 v 97 of 100; pursuit 24/24. What he'd
+  notice: a vehicle no longer circles round an approach point that sits inside its own turning circle. It rides the next
+  main check, after `4d6f321d`'s on builder2.
+- **Main `4d6f321d` on builder2: RED on two coverage floors.** test_native_yield's sumps stages: parked_refusals 6 ≥ 20 and
+  spot:back 9 ≥ 15, with 0 mismatches in 546 and 738 compared drives. Everything else is green: 2749 passed, perf-judge
+  JUDGED PASS 1.00x, sim-baseline 13 unmoved, 908 s. The stage's counts move with the shard order (16 shards on builder2).
+  Native fixes it test-only (fresh-process arms, or ≥ 1 floors); main stays red until it lands.
+  **≥ 1 floors (`de6d3266`) were not enough:** main `de6d3266` on builder2 (R4 in it): 2769/2, sim-baseline unmoved, 0
+  mismatches. test_native_gate's latch path read 0, and test_native_yield's parked_refusals and asks_refused read 0, in
+  that shard order. Native is moving every twin stage into its own fresh `--fixed-fps` process, which is the durable fix.
+- **MAIN GREEN AGAIN: `7851690c` on builder2** (native's fresh-process twin stages merged): `make check exited 0`, 2771/0,
+  26 targets ALL JUDGED, perf-judge PASS 1.00x, sim-baseline 13 unmoved, 0 "native: absent", 1084 s. This covers every
+  round-33 merge together: R33.3, R1, R33.9, N5.M, R33.6, the islands, N5.Y, planner's parked P3 (OFF), R4, and the test
+  fixes.
+
+- **P3 → main (R33.28; the merge of `923fcb97f`):** the face keep ships ON. A vehicle told to face behind it turns round in
+  about 10 s instead of 15 (the yard: 9.83 v 15.43 s), with no worse drift on faces either version plans. **Main `bed0ef59e` checked:** builder2 2773/0,
+  sim-baseline 13 unmoved, perf-judge JUDGED PASS 1.09x; its only reds were load-sensitive (net-smoke: a client saw
+  1/2 tanks; combat-smoke not run behind it; the quiet-window test), and all three re-ran green alone on builder0
+  (`make net-smoke combat-smoke remote-guard-test exited 0`). GREEN by the R33.6 web-smoke rule.
+
+- **Battery seat → main `32e740843`** (brains `1ea8ce40`, R33.27's subset (a)): a mortar truck that has set up keeps its
+  formation seat, so nobody re-seats it across the battery. Fresh census, n 18: trucks setting up far from their place
+  39/86 v 118/193, artillery shots 377 v 240, no stuck batteries, first shot 3.0 v 2.5 s. What he'd notice: a battery's
+  trucks set up where they belong and fire more, instead of shuffling places while deployed. Rides the next main check.
+
+- **Native's test infra → main `401e9a3ce`** (stream/native `5ccd8d57`, code `5caf639d`). The whole suite now runs at a
+  fixed physics rate (`--fixed-fps $(SIM_HZ)`; `TEST_FPS=` restores free-running), with 0 verdict differences and the
+  same speed or faster. `make test` refuses where a native library could be built and isn't. web-smoke's sound bound and
+  the slot/quiet-window tests read NOT JUDGED under measured load instead of FAIL. npm installs once, under a lock.
+  test_native_gate is split. NATIVE=off perf is JUDGED PASS on both machines (1.03x, 1.01x), which closes yesterday's
+  1.47x worry. Other streams' direct run_tests.gd callers (nav, pace, planner, command, tactics .mk) still run free.
+
+- **Main `74e238236` GREEN on builder2** (native's test infra + battery seat): `make check exited 0`, 2779/0, 27 targets
+  ALL JUDGED, sim-baseline 13 unmoved, perf-judge PASS 1.07x, 0 "native: absent".
+- **Rejoin → main `6703d74dc`** (brains `d5c98eb7`, main-based; R33.32 re-run): a respawned CPU crew joins its squad's
+  surviving group. One-crew groups 2 v 1595; kills and deaths within the lines (deaths close: 163.1 v the 164.6 limit).
+- **War Rig → main `c583e0a85`** (brains `befd86c2`): a squad sent to the arena edge has its target moved in by at most
+  15 m on the final approach, and counts as arrived when it reaches the spots it actually laid. Every element arrives
+  (10/10 v 5/10); arrivals elsewhere 100 v 100. What he'd notice: his War Rig squad sent to the edge arrives, and faces
+  the way he drew. It brings manoeuvre's two test-screen options (defaults unchanged). Both ride the next main check.
+
+**Parked (round 33):**
+- **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
+  moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
+  crews are re-seated after they face; a trace is running. **P3 (planner) PARKED, R33.19.**
+- **T4 ghost: parked a THIRD time tonight (R33.30, G2: 4 of 12 seeds keep squads apart 3.5–6.5 s longer; replay exact
+  in a fresh process).** Earlier: **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
+  failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
+  7.0 with the front), and the ghost arm was steady at 12.5, but it failed as filed. Terminus was not re-judged. Round 34
+  needs an order-free body stage first.
+- **parkedroom (traffic X3) PARKED, R33.12** (builder0, tree `d90fbdb7`, n 72 paired: L1 parked far loops 22 → 25 FAIL, L6
+  only 10 % return to the post FAIL). The targeted "gave way in place, then refused" loops went 11 → 0. A crew paused between
+  orders is treated as parked, makes room, and then drifts about 19 m. Stays DEFAULT_OFF. A v2 (rule only for a crew AT a
+  post) needs a fresh bar on fresh fights, and comes after T4 and islands.
 
 **To launch (the lead):** the five worktrees are created. In each folder start a CLI on Opus with the kickoff prompt from
 `_agents/orchestration.md` *The kickoff prompt* (the same text for every stream), then the orchestrator runs the loop prompt

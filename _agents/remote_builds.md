@@ -14,6 +14,24 @@ make remote T=skirmish-shots           # rendering targets use builder0's logged
 tools/remote.sh ai-ladder VARIANTS=a6,a5   # the script directly
 ```
 
+**`make remote T=test` does NOT build the native library (native, round 33).** On a folder with no `native/bin`, every
+native twin prints "native: absent …" and PASSES, and the run says `NATIVE OFF: no native/bin/tank_squad.gdextension`.
+Two native proofs were lost to it in one day (1053045e's `make test`, 2741/0, and a builder0 timing run). **Any native
+evidence uses `T="native test"` or `T=check`, and is read from the `NATIVE ON/OFF` line or a twin's count line, not the
+exit line alone.**
+
+**A probe target that doesn't depend on `native` runs whatever library that folder last built (traffic, 2026-10-18).**
+traffic-far-census and similar targets depend only on `import`. On builder0 they ran an OLDER tree's C++ (the folder's
+last check). On a freshly seeded builder2 folder there's NO library, so they silently take the GDScript path
+(NATIVE_EXEC in 0 of 72 logs). Each run is still deterministic, so nothing looks wrong. **A judged run is `native
+<target>`**, or runs right after a check in the same folder at the same commit, and its log shows the NATIVE line.
+Also: a showmatch's `--seconds` changes the fight from early on, so a trace uses the fight's own length.
+
+**Variables go inside the quotes.** `make remote T=check NATIVE=off` sets NATIVE for the *local* make only. builder0 runs
+a plain `make check`, native ON, and nothing warns you. Native lost a full check to this in round 33 (145ada3a). Write
+`make remote T="check NATIVE=off"` or `tools/remote.sh check NATIVE=off`. The tell is the wrapper's first line,
+`>> remote: make check NATIVE=off on builder0`: if the variable isn't there, it didn't arrive.
+
 **Read the result from the wrapper's own line, never from a shell exit code.** The last thing `tools/remote.sh`
 prints is `>> remote: make <target> exited <N> (build/ copied back)`, and that `N` is the build's verdict. **Do not
 pipe the command** (`make remote T=check | tail -20`): a pipeline reports the exit status of the *last* command in it,

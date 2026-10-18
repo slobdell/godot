@@ -33,6 +33,17 @@ func _run() -> void:
 	var report := await TrafficStage.run(case, int(_flag("seed", "1")), _flag("arena", "terminus"),
 			_flag("kind", "head"), _flag("which", "both"), float(_flag("seconds", "90")), _flag("side", "green"),
 			false, _watch)
+	report["gates_given_up"] = Movement.gates_given_up
+	report["gates_reached_latched"] = Movement.gates_reached_latched
+	report["gates_shortened"] = Movement.gates_shortened
+	report["gate_refusals"] = Movement.gate_refusals.duplicate()
+	report["gates_aimed"] = Movement.gates_aimed
+	report["gates_turned"] = Movement.gates_turned
+	report["gates_latched_away"] = Movement.gates_latched_away
+	report["gates_near"] = Movement.gates_near
+	report["gates_side"] = Movement.gates_side  # round 32 (B5c-v6)
+	report["gates_inside"] = Movement.gates_inside  # round 33 (R4, R33.8): gates latched inside the turning circle
+	report["circle_reverses"] = Movement.circle_reverses  # round 33 (R4): R33.8's case reads it (process-wide, one run a process)
 	report.merge(Element.drift_census())  # round 32 (B10): the seats that drifted on their anchor
 	print("RESEAT_PROBE " + JSON.stringify(report))
 	case.teardown()
@@ -41,6 +52,22 @@ func _run() -> void:
 
 func _watch(lab: TacticsLab, ticks: int) -> void:
 	var t := ticks / float(SimClock.TICK_RATE)
+	# Every two seconds, a crew not yet in: where it is, which way it points, what its route aims at, and its phase.
+	if ticks % (SimClock.TICK_RATE * 2) == 0:
+		for element: Element in lab.elements.all():
+			for unit_name: String in element.slots:
+				var ctl := lab.game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as OrderController
+				var tank := lab.tank_of(unit_name)
+				var slot: Variant = element.slots[unit_name]
+				if ctl == null or tank == null or not (slot is Vector3) or String(ctl.movement.phase) == "arrived":
+					continue
+				var fwd := -tank.global_basis.z
+				print("RESEAT_TRACE t=%.1f TRACK %s at (%.1f, %.1f) heading (%.2f, %.2f) slot (%.1f, %.1f) %.1f m off; phase %s blocked %s path_goal %s gate_dropped_for %s stalled %d" % [
+						t, unit_name, tank.global_position.x, tank.global_position.z, fwd.x, fwd.z, (slot as Vector3).x,
+						(slot as Vector3).z, Vector2(tank.global_position.x - (slot as Vector3).x,
+						tank.global_position.z - (slot as Vector3).z).length(), String(ctl.movement.phase),
+						String(ctl.movement.get("blocked_by")), str(ctl.movement.get("_path_goal")),
+						str(ctl.movement.get("_gate_dropped_for")), int(ctl.movement.stalled_ticks)])
 	# Every half second, a crew reading blocked/no_path: what its Movement planned to and what the route reading said.
 	if ticks % (SimClock.TICK_RATE / 2) == 0:
 		for element: Element in lab.elements.all():

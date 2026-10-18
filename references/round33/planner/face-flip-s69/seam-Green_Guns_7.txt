@@ -1,0 +1,10 @@
+PLANNER_SEAM Green_Guns_7 kturn: OK R+1.0x12.5 | 1 legs, 4.5 s, 2 expansions (first plan at 2)
+PLANNER_SEAM Green_Guns_7 kturn: released at tick 509 (another kind; asked 1 ticks ago, goal moved inf m; driving leg 1, 12.5 m left)
+PLANNER_SEAM Green_Guns_7 face: OK F-1.0x16.0 R-1.0x13.0 F-1.0x11.0 F+1.0x4.0 | 4 legs, 13.6 s, 17 expansions (first plan at 17)
+PLANNER_SEAM Green_Guns_7 face: released at tick 554 (another kind; asked 1 ticks ago, goal moved 16.8 m; driving leg 1, 16.0 m left)
+PLANNER_SEAM Green_Guns_7 kturn: OK R+1.0x14.5 | 1 legs, 5.2 s, 2 expansions (first plan at 2)
+PLANNER_SEAM Green_Guns_7 kturn: aborted (stalled on leg 1), replans 0
+PLANNER_SEAM Green_Guns_7 kturn: OK F+1.0x13.0 | 1 legs, 1.5 s, 3 expansions (first plan at 3)
+PLANNER_SEAM Green_Guns_7 kturn: released at tick 1049 (another kind; asked 2 ticks ago, goal moved inf m; driving leg 1, 13.0 m left)
+PLANNER_SEAM Green_Guns_7 face: OK R+0.0x2.0 F+1.0x3.0 | 2 legs, 3.3 s, 8 expansions (first plan at 6)
+PLANNER_SEAM Green_Guns_7 face: released at tick 1123 (stale: not asked for 3 ticks, the order replaced)

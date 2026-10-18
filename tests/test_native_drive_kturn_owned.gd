@@ -4,4 +4,6 @@ extends DriveTwinCase
 
 ## Round 27 (stage 1 E1c): the same, the native drive running on the C++-owned state (ExecState, StructView).
 func test_the_k_turn_legs_on_the_owned_state() -> void:
+	if FreshStage.parent(self, "test_the_k_turn_legs_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _k_turn_case(true)

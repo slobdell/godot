@@ -74,9 +74,15 @@ BROKER_PORT       ?= $(shell echo $$(( $(NET_PORT) + 5 )))
 SMOKE_BROKER_PORT ?= $(shell echo $$(( $(SMOKE_NET_PORT) + 5 )))
 BROKER_HOST       ?= 127.0.0.1
 
+# Round 33 overnight (native, item 6): ONE install at a time. check runs each target in its own sub-make, so in a fresh
+# folder broker-test and relay-smoke (and lobby-smoke...) each saw no node_modules and ran `npm ci` at once, and the two
+# corrupted node_modules/ws (TAR_ENTRY_ERROR ENOENT; brains, builder2). The install takes a lock; a waiter that finds it
+# done when the lock frees (the stamp newer than both package files) installs nothing.
 $(BROKER_DEPS): $(BROKER_DIR)/package.json $(BROKER_DIR)/package-lock.json
-	cd $(BROKER_DIR) && $(NPM) ci --no-audit --no-fund
-	touch $@
+	@mkdir -p $(BUILD_DIR)
+	flock $(BUILD_DIR)/.broker-npm.lock sh -c '[ $@ -nt $(BROKER_DIR)/package.json ] && [ $@ -nt $(BROKER_DIR)/package-lock.json ] \
+		&& echo ">> broker deps: installed by a concurrent run" \
+		|| { cd $(BROKER_DIR) && $(NPM) ci --no-audit --no-fund && cd - >/dev/null && touch $@; }'
 
 broker-bootstrap: $(BROKER_DEPS) ## Install the broker's pinned Node dependencies (server/broker)
 

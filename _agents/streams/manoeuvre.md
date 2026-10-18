@@ -402,3 +402,16 @@ Driver: a scratchpad script; the per-arm data is filed under references/round33/
 
 - F0 gets no fix commit: the decline is round 8's deliberate rule, and the brief's "if it is a bug" is answered no.
 
+
+## Overnight (round 33 extension, 2026-10-18 ~00:45 PDT)
+
+The lead has gone to bed and wants builder2 kept busy. Take these items in order (`workstreams.md` *Round 33, overnight
+extension*; the details are in `roadmap.md` *Round 34 candidates*). Merge main first. builder2 FIRST (`make gcp-remote`,
+6 heavy slots). Every judged stage pinned at `--fixed-fps $(SIM_HZ)`. A bar is filed (sent to the orchestrator) before any
+number, judged on FRESH seeds, and every number labelled with its machine. Keep this Status current: the lead reads it in
+the morning.
+
+1. **C33.9, the scout:** finish it (the HOLD shuffle hook, (d2)), dev seeds clean, then the judged run 31–36 on builder2.
+2. **CP-F attempt 3 (R33.23):** pair 60d2d86a's check plus the tuning sanity, then the series 460–475 on builder2.
+3. **The hull-rest judge** (only after CP-F's series): read real velocity for "still" (or report wedged crews as their
+   own line), and make the seed vary the stage's geometry. Both change what hull-rest measures: say so in the target.

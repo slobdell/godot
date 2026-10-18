@@ -14,6 +14,13 @@
       "recorded": "2026-09-28",
       "load": "0.45, 2 other godot (idle)",
       "note": "the laptop; make ai-perf-nominal locally"
+    },
+    "builder2": {
+      "ref_ms": 0.898,
+      "commit": "9454b72a",
+      "recorded": "2026-10-17 22:33",
+      "load": "0.32, 2 other godot (idle)",
+      "note": "the GCP burst builder (balsa-worker-gcp, AMD EPYC 9B45, 32 threads; _agents/gcp_builder.md): make gcp-remote T=ai-perf-nominal, 39 samples, ai_usec_per_tick 5508 alone."
     }
   }
 }

@@ -412,7 +412,7 @@ func _start_match() -> void:
 			var cpu_teams := [Match.Team.RUST, Match.Team.GREEN] if SkirmishMode.spectated(flags) else [Match.Team.RUST]
 			for cpu_team: int in cpu_teams:
 				for squad in game_match.team_squads(cpu_team):
-					elements.form(Array(squad.roster), String(squad.squad_name))
+					elements.form_squad(Array(squad.roster), String(squad.squad_name))  # R33.6: a squad past five, split
 				ElementCommander.install(game_match, cpu_team, elements)
 	LoadingScreen.mark("elements")
 	var executor := OrderExecutor.new()

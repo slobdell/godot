@@ -106,7 +106,38 @@ static func configure() -> bool:
 		"KTURN_ARC_DEFAULT": bool((Movement as Script).get_script_constant_map().get("KTURN_ARC_DEFAULT", false)),
 		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
 		"tank_script": Tank,
+		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
+		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).
+		"manoeuvre": Manoeuvre, "MAN_MAX_M": Manoeuvre.MAX_M, "MAN_BEHIND_DEG": Manoeuvre.BEHIND_DEG,
+		"MAN_FACING_KEEP_DEG": Manoeuvre.FACING_KEEP_DEG, "MAN_SIM_DT": Manoeuvre.SIM_DT,
+		"MAN_SIM_HORIZON_S": Manoeuvre.SIM_HORIZON_S, "MAN_CHECK_EVERY": Manoeuvre.CHECK_EVERY,
+		"MAN_HULL_MARGIN_M": Manoeuvre.HULL_MARGIN_M, "REAIM_TICKS": Movement.REAIM_TICKS,
+		"KTURN_MARGIN_M": Movement.KTURN_MARGIN_M, "CUSP_DEADBAND": ManoeuvreCensus.CUSP_DEADBAND,
+		"motion_ok": NativeMotion.configure(),
+		# Round 33 (N5.Y): _negotiate's body, ask and _begin_yield natively (BrainSwitches.native_yield): the give-way's
+		# constants and its arms as configured (the native drive runs only with no --nav-off).
+		"PRIORITY_MARGIN": Movement.PRIORITY_MARGIN, "YIELD_MAX_SECONDS": Movement.YIELD_MAX_SECONDS,
+		"YIELD_LINE_MARGIN": Movement.YIELD_LINE_MARGIN, "YIELD_SPOT_CLEARANCE": Movement.YIELD_SPOT_CLEARANCE,
+		"YIELD_MESH_SLACK": Movement.YIELD_MESH_SLACK, "YIELD_FIT_STEP_M": Movement.YIELD_FIT_STEP_M,
+		"YIELD_FIT_PIVOT_DEG": Movement.YIELD_FIT_PIVOT_DEG, "YIELD_SHORT_MIN_M": Movement.YIELD_SHORT_MIN_M,
+		"YIELD_SHORT_MARGIN_M": Movement.YIELD_SHORT_MARGIN_M, "YIELD_FIT_STEPS_PER_M": Movement.YIELD_FIT_STEPS_PER_M,
+		"YIELD_FIT_MIN_STEPS": Movement.YIELD_FIT_MIN_STEPS, "YIELD_SPOTS": PackedVector2Array(Movement.YIELD_SPOTS),
+		"YIELD_BACK_UP": PackedFloat64Array(Movement.YIELD_BACK_UP), "yield_fit": Movement.yield_fit_on(),
+		"yield_short": Movement.yield_short_on(), "yield_clear": Movement.yield_clear_on(),
+		"yield_hold": not Movement.switched_off("yieldhold"),
 	}
+	# Round 29 (brains B5c): the arrival gate given up / latched / roomy (ON unless --nav-off=gategiveup, and the native
+	# drive runs only with no --nav-off: the value here is the one in force).
+	config["gate_giveup"] = Movement.gate_giveup_on()
+	# Round 32 (brains B5c-v6): the planner's side gate for a goal first seen facing away (`--nav-off=gateside`).
+	config["gate_side"] = Movement.gate_side_on()
+	# Round 33 (brains B5c-v6, R33.8): a gate inside the hull's turning circle is latched (`--nav-off=gateinside`).
+	config["gate_inside"] = Movement.gate_inside_on()
+	config["GATE_ROOM_POINTS"] = Movement.GATE_ROOM_POINTS
+	# Round 30 (brains B5c-v4): the come-round's cap, the near rule's detour, the turn-room ring.
+	config["GATE_TURN_SECONDS"] = Movement.GATE_TURN_SECONDS
+	config["GATE_NEAR_DETOUR"] = Movement.GATE_NEAR_DETOUR
+	config["TURN_ROOM_POINTS"] = Movement.TURN_ROOM_POINTS
 	# Round 31 (planner CP-P1): the seam's switch and its table, when this tree has the seam (loaded by path: the file
 	# parses on a tree without it).
 	if ResourceLoader.exists(PLANNER_SEAM):
@@ -140,6 +171,8 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 					float(c["pulls"]) / n, float(c["pushes"]) / n])
 	else:
 		NativeBridge.impl.drive(mover, cmd, order, delta)
+	if NativeBridge.counting:
+		_count_manoeuvre()
 	if profile:
 		_drives += 1
 		if _drives % PROFILE_EVERY == 0:
@@ -149,6 +182,27 @@ static func drive(mover: Movement, cmd: TankCommand, order: Dictionary, delta: f
 				if key != "drives":
 					parts.append("%s %.1f" % [key, float(clocks[key]) / maxi(int(clocks["drives"]), 1)])
 			print("NATIVE_DRIVE_PROFILE %d drives, usec a drive: %s" % [int(clocks["drives"]), ", ".join(parts)])
+
+
+## Round 33 (N5.M, the live guard): `_manoeuvre`'s decision runs INSIDE the C++ drive with no GDScript seam to call
+## `took`, so while the guard counts, `taken["manoeuvre"]` is the drive's own count of native decisions since counting began.
+static var _manoeuvre_base := -1
+static var _negotiate_base := -1
+
+
+static func _count_manoeuvre() -> void:
+	var c: Dictionary = NativeBridge.impl.drive_owned_counts(false)
+	var native := int(c.get("manoeuvre_native", 0))
+	if _manoeuvre_base < 0:
+		_manoeuvre_base = native
+	NativeBridge.taken["manoeuvre"] = native - _manoeuvre_base
+	NativeBridge.taken["manoeuvre_called_back"] = int(c.get("manoeuvre_called_back", 0))
+	# Round 33 (N5.Y): _negotiate's body runs inside the C++ drive too (BrainSwitches.native_yield: taken["yield"]).
+	var negotiated := int(c.get("negotiate_native", 0))
+	if _negotiate_base < 0:
+		_negotiate_base = negotiated
+	NativeBridge.taken["yield"] = negotiated - _negotiate_base
+	NativeBridge.taken["yield_called_back"] = int(c.get("negotiate_called_back", 0))
 
 
 ## N4 (tests): Movement._around_fire natively on this mover, from its state now (the proof asks it beside the GDScript).

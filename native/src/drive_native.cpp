@@ -2,6 +2,7 @@
 
 #include "avoidance.h"
 #include "exec_view.h"
+#include "motion_native.h"
 #include "nav_native.h"
 
 #include <godot_cpp/classes/character_body3d.hpp>
@@ -46,6 +47,14 @@ CallbackClock &clock_() {
 }
 // The clocks run only while DriveConfig.profile is on (set by drive_configure; the drive's own entry sets it here).
 bool profiling_ = false;
+// Round 33 (N5.M), measurement only (drive_owned_counts): `_manoeuvre` decisions the native drive made, and called back.
+struct ManoeuvreCounts {
+	int64_t native = 0, called_back = 0;
+} manoeuvre_counts_;
+// Round 33 (N5.Y), measurement only (drive_owned_counts): _negotiate bodies the native drive ran, and called back.
+struct NegotiateCounts {
+	int64_t native = 0, called_back = 0;
+} negotiate_counts_;
 struct Timed {
 	const char *name;
 	std::chrono::steady_clock::time_point t0;
@@ -118,12 +127,28 @@ struct N {
 			// Round 26 (manoeuvre M1)
 			_manoeuvre{ "_manoeuvre" }, _behind_tick{ "_behind_tick" }, _behind_goal{ "_behind_goal" },
 			_behind_plan{ "_behind_plan" },
+			// Round 33 (N5.M): the decision
+			native_manoeuvre{ "native_manoeuvre" }, kturn_cap{ "kturn_cap" }, behind_asked{ "behind_asked" },
+			behind_reverses{ "behind_reverses" }, plans{ "plans" }, refused{ "refused" }, acceleration_mps2{ "acceleration_mps2" },
+			braking_mps2{ "braking_mps2" }, lateral_grip{ "lateral_grip" }, position{ "position" }, forward{ "forward" },
+			velocity{ "velocity" }, max_reverse_speed{ "max_reverse_speed" }, hull_turn_rate{ "hull_turn_rate" },
+			hull_turn_rate_deg{ "hull_turn_rate_deg" }, _motion{ "_motion" }, yaw_rate{ "yaw_rate" },
+			// Round 33 (N5.Y)
+			native_yield{ "native_yield" }, deploy_ratio{ "deploy_ratio" }, weapon_order{ "weapon_order" },
+			move_order{ "move_order" }, asks_refused{ "asks_refused" }, setup_refusals{ "setup_refusals" },
+			parked_refusals{ "parked_refusals" }, yields_started{ "yields_started" }, yield_swaps{ "yield_swaps" },
+			yield_swaps_shorter{ "yield_swaps_shorter" }, yield_spots_unfit{ "yield_spots_unfit" },
+			yield_spots_shortened{ "yield_spots_shortened" }, yield_holds{ "yield_holds" }, neighbours{ "neighbours" },
+			off{ "off" }, yield_log{ "yield_log" }, setup_log{ "setup_log" }, yield_site{ "yield" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
 			_bake_radius{ "_bake_radius" }, split{ "split" },
 			gates_offered{ "gates_offered" }, gates_aimed{ "gates_aimed" }, gates_refused{ "gates_refused" },
 			gate_refusals{ "gate_refusals" }, gate_off_mesh_fit{ "gate_off_mesh_fit" }, gate_site{ "gate" },
+			gates_given_up{ "gates_given_up" }, gates_reached_latched{ "gates_reached_latched" },
+			gates_shortened{ "gates_shortened" }, _gate_answer{ "_gate_answer" }, gates_turned{ "gates_turned" },
+			gates_latched_away{ "gates_latched_away" }, gates_near{ "gates_near" }, gates_side{ "gates_side" }, gates_inside{ "gates_inside" }, side_gate{ "side_gate" },
 			// the k-turn leg
 			_kturn_rolling{ "_kturn_rolling" }, _kturn_gear{ "_kturn_gear" }, _kturn_from{ "_kturn_from" }, real_velocity{ "real_velocity" },
 			_escape_step{ "_escape_step" }, _escape_begin{ "_escape_begin" },
@@ -167,6 +192,10 @@ inline double flat_distance(const Vector3 &a, const Vector3 &b) {
 
 inline double deg_to_rad(double deg) {
 	return deg * (Math::PI / 180.0); // Math::deg_to_rad(double)
+}
+
+inline double rad_to_deg(double rad) {
+	return rad * (180.0 / Math::PI); // Math::rad_to_deg(double), as tank_drive_native.cpp
 }
 
 // ---- steering.gd, line by line ----
@@ -237,6 +266,7 @@ struct Drive {
 	Object *ctl;
 	Node3D *tank;
 	Vector3 here; // tank.global_position (constant for the whole drive)
+	String gate_answer; // Movement._gate_answer for this drive
 	Vector3 basis_z; // tank.global_basis.z
 	int64_t step;
 	int64_t frame = -1;
@@ -881,15 +911,135 @@ struct Drive {
 	}
 
 	// Movement._gate_refused(reason, goal)
-	Vector3 gate_refused(const char *reason, const Vector3 &goal) {
+	Vector3 gate_refused(const char *reason, const Vector3 &goal) { return gate_refused(String(reason), goal); }
+	Vector3 gate_refused(const String &reason, const Vector3 &goal) {
+		gate_answer = reason; // v4's static _gate_answer (written once a drive, below)
 		sadd(k.gates_refused, 1);
-		count_into(k.gate_refusals, String(reason));
+		count_into(k.gate_refusals, reason);
 		return goal;
+	}
+
+	// ---- Movement._gate_has_room / _roomy_gate / _roomy_gate_memo (brains B5c v3): a gate a car can turn onto its line
+	// at (every point of a ring one turning radius round it on the navmesh), else the longest shorter run-in, else INF ----
+	bool gate_has_room(const RID &map, const Vector3 &gate, double radius) { return gate_has_room(map, gate, radius, c.GATE_ROOM_POINTS); }
+	bool gate_has_room(const RID &map, const Vector3 &gate, double radius, int64_t points) {
+		for (int64_t i = 0; i < points; i++) {
+			// var a := TAU * k / points; var point := gate + Vector3(cos(a), 0.0, sin(a)) * radius
+			const double a = 6.2831853071795864769252867666 /* GDScript TAU */ * (double)i / (double)points;
+			const Vector3 point = gate + Vector3((real_t)cos(a), 0, (real_t)sin(a)) * (real_t)radius;
+			if (flat_distance(closest_point(map, point, k.gate_site), point) > c.MESH_GATE_SLACK) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	Vector3 roomy_gate(const RID &map, const Vector3 &goal, const Vector2 &direction, double length, double radius) {
+		double shares[4] = { 1.0, c.OFF_MESH_PROBES[0], c.OFF_MESH_PROBES[1], c.OFF_MESH_PROBES[2] };
+		for (double share : shares) {
+			const Vector3 gate((real_t)((double)goal.x - (double)direction.x * length * share), 0,
+					(real_t)((double)goal.z - (double)direction.y * length * share));
+			if (gate_has_room(map, gate, radius)) {
+				return gate;
+			}
+		}
+		return V3_INF;
+	}
+
+	Vector3 roomy_gate_memo(const RID &map, const Vector3 &goal, const Vector2 &direction, double length, double radius) {
+		Array key;
+		key.push_back(goal);
+		key.push_back(direction);
+		key.push_back(length);
+		key.push_back(radius);
+		if (key != v._roomy_key()) {
+			v.set__roomy_key(key);
+			v.set__roomy_value(roomy_gate(map, goal, direction, length, radius));
+		}
+		return v._roomy_value();
+	}
+
+	// ---- v4: Movement._gate_latch / _turn_room / _turn_room_memo (brains B5c-v4) ----
+	Vector3 gate_latch(const Vector3 &goal, const String &why) {
+		v.set__gate_dropped_for(goal);
+		v.set__gate_dropped_why(why);
+		return gate_refused(why, goal);
+	}
+
+	bool turn_room(const RID &map, const Vector3 &gate, const Vector2 &direction, double radius) {
+		const double sides[2] = { 1.0, -1.0 };
+		for (double side : sides) {
+			// var centre := gate + Vector3(-direction.y, 0.0, direction.x) * radius * side
+			const Vector3 centre = gate + Vector3(-direction.y, 0, direction.x) * (real_t)radius * (real_t)side;
+			if (gate_has_room(map, centre, radius, c.TURN_ROOM_POINTS)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool turn_room_memo(const RID &map, const Vector3 &gate, const Vector2 &direction, double radius) {
+		Array key;
+		key.push_back(gate);
+		key.push_back(direction);
+		key.push_back(radius);
+		if (key != v._turn_room_key()) {
+			v.set__turn_room_key(key);
+			v.set__turn_room_value(turn_room(map, gate, direction, radius));
+		}
+		return v._turn_room_value();
+	}
+
+	// Movement._arrive_gate(): maxf(GATE_REACHED, settle_radius(unit)), the settle radius memoised per unit.
+	double arrive_gate() {
+		const String unit = tank->get(k.unit_id);
+		const double *settle_known = c.settle_of.getptr(unit);
+		double settle;
+		if (settle_known != nullptr) {
+			settle = *settle_known;
+		} else {
+			settle = script->call(k.settle_radius, unit);
+			c.settle_of.insert(unit, settle);
+		}
+		return MAX(c.GATE_REACHED, settle);
+	}
+
+	// ---- v6 (R33.8): Movement.inside_turning_circle, pure: `gate` strictly inside a circle of `radius` beside the hull ----
+	static bool inside_turning_circle(const Vector3 &at3, const Vector2 &forward, const Vector3 &gate, double radius) {
+		const Vector2 right(-forward.y, forward.x);
+		const Vector2 at(at3.x, at3.z);
+		const Vector2 point(gate.x, gate.z);
+		return (double)at.distance_to(point) > 0.0 && ((double)point.distance_to(at + right * (real_t)radius) < radius ||
+				(double)point.distance_to(at - right * (real_t)radius) < radius);
 	}
 
 	// ---- Movement._approach_gate, A4 (the curved gate, opt-in) off: called only with a wheeled hull and a facing ----
 	Vector3 approach_gate(const Vector3 &goal, const Dictionary &order, double radius) {
 		sadd(k.gates_offered, 1);
+		bool turning = false;
+		// Round 29 (brains B5c): a gate this hull stalled against (or reached) is given up for this goal.
+		if (c.gate_giveup) {
+			const Vector3 dropped = v._gate_dropped_for();
+			if (dropped != V3_INF && flat_distance(goal, dropped) <= c.NEW_GOAL_JUMP) {
+				return gate_refused(v._gate_dropped_why(), goal);
+			}
+			static const String blocked("blocked"), stalled("stalled"), no_path("no_path"), turn_blocked("turn_blocked"),
+					turn_capped("turn_capped");
+			const Vector3 turning_for = v._gate_turning_for();
+			turning = turning_for != V3_INF && flat_distance(goal, turning_for) <= c.NEW_GOAL_JUMP;
+			if (turning) {
+				// v4: coming round is bounded: stuck on terrain or a hull (not "no_path": circling), or out of time.
+				const bool stuck = v.phase() == blocked && v.blocked_by() != no_path;
+				if (stuck || v._order_ticks() - v._gate_turning_tick() > (int64_t)(c.GATE_TURN_SECONDS * (double)c.TICK_RATE)) {
+					return gate_latch(goal, stuck ? turn_blocked : turn_capped);
+				}
+			} else if (v.arc_live() && v.phase() == blocked) {
+				v.set__gate_dropped_for(goal);
+				v.set__gate_dropped_why(stalled);
+				sadd(k.gates_given_up, 1);
+				return gate_refused(stalled, goal);
+			}
+		}
 		const Variant facing = order[k.facing];
 		if (facing.get_type() != Variant::ARRAY || ((Array)facing).size() < 2) {
 			return gate_refused("bad_facing", goal);
@@ -900,26 +1050,92 @@ struct Drive {
 			return gate_refused("bad_facing", goal);
 		}
 		direction = direction.normalized();
-		const double length = clampd(radius * c.APPROACH_RADII, c.APPROACH_MIN, c.APPROACH_MAX);
-		const Vector3 gate((real_t)((double)goal.x - (double)direction.x * length), 0,
+		double length = clampd(radius * c.APPROACH_RADII, c.APPROACH_MIN, c.APPROACH_MAX);
+		Vector3 gate((real_t)((double)goal.x - (double)direction.x * length), 0,
 				(real_t)((double)goal.z - (double)direction.y * length));
-		// _arrive_gate(): maxf(GATE_REACHED, settle_radius(unit))
-		const String unit = tank->get(k.unit_id);
-		const double *settle_known = c.settle_of.getptr(unit);
-		double settle;
-		if (settle_known != nullptr) {
-			settle = *settle_known;
-		} else {
-			settle = script->call(k.settle_radius, unit);
-			c.settle_of.insert(unit, settle);
+		if (c.gate_giveup && flat_distance(goal, v._gate_seen_for()) > c.NEW_GOAL_JUMP) {
+			// v4 near: judged on the nominal approach (before the roomy rule shortens it), once per new goal.
+			v.set__gate_seen_for(goal);
+			const double straight = flat_distance(here, goal);
+			if (straight <= length && flat_distance(here, gate) + length > c.GATE_NEAR_DETOUR * straight) {
+				sadd(k.gates_near, 1);
+				static const String near("near");
+				return gate_latch(goal, near);
+			}
+			// v6 (brains B5c-v6, C32.4): pointed away from the heading, the planner's side gate (once per goal; called
+			// back: PlannerSeam.side_gate reads the C++ clearances itself, so both arms take one answer).
+			v.set__gate_side_for(goal);
+			v.set__gate_side(V3_INF);
+			const Vector2 ahead = Vector2(-basis_z.x, -basis_z.z).normalized();
+			// Round 33 (R4): only where v4's come-round has no turning circle beside the (nominal) rear gate.
+			if (c.gate_side && c.planner_seam != nullptr && (double)ahead.dot(direction) < 0.0 &&
+					!turn_room_memo(tank->get_world_3d()->get_navigation_map(), gate, direction, radius)) {
+				const Vector3 side = c.planner_seam->call(k.side_gate, goal, Vector3(direction.x, 0, direction.y),
+						String(tank->get(k.unit_id)), tank->get_world_3d()->get_navigation_map(), here);
+				if (side != Vector3()) {
+					v.set__gate_side(Vector3(side.x, 0, side.z));
+					sadd(k.gates_side, 1);
+				}
+			}
 		}
-		if (flat_distance(here, gate) <= MAX(c.GATE_REACHED, settle)) {
-			return gate_refused("reached", goal);
+		if (c.gate_side && v._gate_side() != V3_INF && flat_distance(goal, v._gate_side_for()) <= c.NEW_GOAL_JUMP) {
+			if (flat_distance(here, v._gate_side()) <= arrive_gate()) {
+				static const String side_latched("side_latched");
+				return gate_latch(goal, side_latched);
+			}
+			if (c.gate_inside && !turning &&
+					inside_turning_circle(here, Vector2(-basis_z.x, -basis_z.z).normalized(), v._gate_side(), radius)) {
+				sadd(k.gates_inside, 1);
+				static const String inside_circle("inside_circle");
+				return gate_latch(goal, inside_circle);
+			}
+			sadd(k.gates_aimed, 1);
+			return v._gate_side();
+		}
+		if (c.gate_giveup) {
+			const Vector3 roomy = roomy_gate_memo(tank->get_world_3d()->get_navigation_map(), goal, direction, length, radius);
+			if (roomy == V3_INF) {
+				return gate_refused("cramped", goal);
+			}
+			if (roomy != gate) {
+				sadd(k.gates_shortened, 1);
+				length = flat_distance(roomy, goal);
+				gate = roomy;
+			}
 		}
 		const Vector2 forward = Vector2(-basis_z.x, -basis_z.z).normalized();
+		if (flat_distance(here, gate) <= arrive_gate()) {
+			if (c.gate_giveup) {
+				if ((double)forward.dot(direction) < 0.0) {
+					// Reached pointing away from the heading: it comes round the gate first, where a turning circle fits
+					// beside it (v4); else latched facing away.
+					if (turning) {
+						return gate_refused("reached_facing_away", goal);
+					}
+					if (turn_room_memo(tank->get_world_3d()->get_navigation_map(), gate, direction, radius)) {
+						v.set__gate_turning_for(goal);
+						v.set__gate_turning_tick(v._order_ticks());
+						sadd(k.gates_turned, 1);
+						return gate_refused("reached_facing_away", goal);
+					}
+					sadd(k.gates_latched_away, 1);
+					static const String latched_away("latched_away");
+					return gate_latch(goal, latched_away);
+				}
+				static const String latched("latched");
+				sadd(k.gates_reached_latched, 1);
+				return gate_latch(goal, latched);
+			}
+			return gate_refused("reached", goal);
+		}
 		const Vector2 to_goal((real_t)((double)goal.x - (double)here.x), (real_t)((double)goal.z - (double)here.z));
 		if ((double)to_goal.length() <= length && (double)forward.dot(direction) >= c.APPROACH_ALIGNED_COS) {
 			return gate_refused("on_approach", goal);
+		}
+		if (c.gate_inside && !turning && inside_turning_circle(here, forward, gate, radius)) {
+			sadd(k.gates_inside, 1);
+			static const String inside_circle("inside_circle");
+			return gate_latch(goal, inside_circle);
 		}
 		const RID map = tank->get_world_3d()->get_navigation_map();
 		if (flat_distance(closest_point(map, gate, k.gate_site), gate) > c.MESH_GATE_SLACK) {
@@ -1403,7 +1619,14 @@ struct Drive {
 		if (still_only && String(mover->get(k.phase)) != arrived) {
 			return;
 		}
-		cb(k._negotiate, goal, direct, still_only);
+		// Round 33 (N5.Y): past the early-outs (nothing above writes), the body natively; else the GDScript from the top.
+		if (!yield_native_on()) {
+			negotiate_counts_.called_back++;
+			cb(k._negotiate, goal, direct, still_only);
+			return;
+		}
+		negotiate_counts_.native++;
+		negotiate_body(goal, direct, Object::cast_to<Node3D>(other), mover);
 	}
 
 	// ---- Pathing.query(tank, from, to) (round 27, stage 1 E2), line by line; `is_ready` is the drive's own answer (asked
@@ -2011,6 +2234,43 @@ struct Drive {
 	bool cb_on = false;
 	bool run(Object *cmd, const Dictionary &order, double delta);
 	Dictionary manoeuvre(const Dictionary &order);
+
+	// ---- Round 33 (N5.M): `_manoeuvre`'s decision and Manoeuvre's choose / behind / simulate, line by line ----
+	struct Sim {
+		bool arrived = false, clear = true;
+		double seconds = 0.0, metres = 0.0;
+		int64_t legs = 0;
+		String blocked;
+	};
+	struct Other {
+		double x, z, reach;
+		bool friendly;
+	};
+	bool manoeuvre_native_on();
+	void manoeuvre_decide(const Dictionary &order, const Vector3 &goal, int64_t tick, bool gap);
+	String man_choose(const Vector3 &goal, const Dictionary &order, double arrive);
+	bool man_behind(const Vector3 &goal, double radius);
+	Sim man_simulate(const Vector3 &goal, double arrive, int gear);
+	LocalVector<Other> man_others();
+	Dictionary man_state_of();
+	void man_note(const StringName &table, const String &key);
+	double hull_width_of(const String &unit);
+	double settle_of(const String &unit);
+	// ---- Round 33 (N5.Y): _negotiate's body, ask, _begin_yield and the give-way's spot tests, line by line ----
+	bool yield_native_on();
+	void negotiate_body(const Vector3 &goal, bool direct, Node3D *other, Object *mover);
+	bool ask(const String &asker, const Vector3 &from, const Vector2 &direction, const String &via);
+	bool begin_yield(const String &other, const Vector3 &from, const Vector2 &direction, const String &via);
+	void start_yield(const String &other, const Vector3 &point, const Vector2 &along, const String &spot);
+	bool free_spot(const Vector3 &point, const String &me, const String &other);
+	bool yield_fits(const Vector3 &point);
+	bool yield_run_ok(const RID &map, const Vector3 &point, LocalVector<Vector3> &poses);
+	Vector3 yield_shorten(const Vector3 &point);
+	Vector2 travel_direction(const Vector3 &goal, bool direct);
+	bool on_fire_post();
+	bool traffic_off(const String &name);
+	double avoid_radius(const String &unit);
+	void refresh_avoidance();
 };
 
 } // namespace
@@ -2051,9 +2311,15 @@ Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 	const Vector3 behind_goal = v._behind_goal();
 	if (gap || behind_goal == V3_INF || flat_distance(goal, behind_goal) > c.NEW_GOAL_JUMP) {
 		Timed t("manoeuvre");
-		return cb(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+		if (!manoeuvre_native_on()) {
+			manoeuvre_counts_.called_back++;
+			return cb(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+		}
+		manoeuvre_counts_.native++;
+		manoeuvre_decide(order, goal, tick, gap); // writes _behind_tick with the rest
+	} else {
+		v.set__behind_tick(tick);
 	}
-	v.set__behind_tick(tick);
 	if (String(v._behind_plan()) != r_reverse_plan) {
 		return order;
 	}
@@ -2061,6 +2327,700 @@ Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 	reversed[k.reverse] = true;
 	reversed.erase(k.facing);
 	return reversed;
+}
+
+// Round 33 (N5.Y): _negotiate's body natively while BrainSwitches.native_yield and native_cb are on, the arms the port
+// mirrors are the ones in force (yield_clear's turning-room probe is not ported: opt-in, called back), the measurement
+// logs are off (yield_log, setup_log: rows the GDScript writes), and the sweep asks the same geometry (native_nav: N2a's
+// closest points; kturn_cap: the outline rule).
+template <class V>
+bool Drive<V>::yield_native_on() {
+	return c.yield_port_ready && cb_on && !c.yield_clear && c.traffic_script != nullptr &&
+			(bool)c.switches->get(k.native_yield) && (bool)c.switches->get(k.native_nav) &&
+			(bool)c.switches->get(k.kturn_cap) && !(bool)sget(k.yield_log) && !(bool)sget(k.setup_log);
+}
+
+// Traffic.off(name): asked live, as the GDScript does (a static of traffic's: its command line, parsed once).
+template <class V>
+bool Drive<V>::traffic_off(const String &name) {
+	return c.traffic_script->call(k.off, name);
+}
+
+// Avoidance.radius_of(unit): a pure function of the unit, memoised in DriveConfig (as _avoid's).
+template <class V>
+double Drive<V>::avoid_radius(const String &unit) {
+	const double *known = c.radius_of.getptr(unit);
+	if (known != nullptr) {
+		return *known;
+	}
+	const double radius = c.avoidance_script->call(k.radius_of, unit);
+	c.radius_of.insert(unit, radius);
+	return radius;
+}
+
+// Avoidance.refresh(ctl.tanks_root): a no-op when this tick's table is built; otherwise the live GDScript builds it.
+template <class V>
+void Drive<V>::refresh_avoidance() {
+	Object *tanks_root = ctl->get(k.tanks_root).get_validated_object();
+	Object *av = c.avoidance_script;
+	if ((int64_t)av->get(k._table_root) != (int64_t)tanks_root->get_instance_id() ||
+			(int64_t)av->get(k._table_frame) != Engine_frames()) {
+		gd(av, k.refresh, tanks_root);
+	}
+}
+
+// Movement._negotiate below its early-outs (the caller's `negotiate`: the same reads, nothing written above):
+//   my_way := _travel_direction(goal, direct); i_give_way := false
+//   mover.is_under_way(): difference := _remaining - mover._remaining
+//       i_give_way = difference < -PRIORITY_MARGIN or (|difference| <= PRIORITY_MARGIN and String(tank.name) < name)
+//   mover._last_yielded_to == String(tank.name): i_give_way = true
+//   not i_give_way and mover.ask(me, here, my_way): return
+//   not mover.is_under_way() and not Traffic.off("parked"): parked_refusals += 1; return
+//   _last_yielded_to == name: return
+//   its_way := mover._travel_direction(mover._goal, false) if mover.is_under_way() else ZERO; ZERO: here - other
+//   _begin_yield(name, other.global_position, its_way): return
+//   i_give_way and yield_fit_on() and _yield_unfit_last and mover.ask(me, here, my_way, "swap"):
+//       yield_swaps += 1; hull_box(other)[2] < hull_box(tank)[2]: yield_swaps_shorter += 1
+// The asked mover is driven through its own view of its live members (another Drive over an ObjectView): `ask` marks it
+// native_stale first, as the GDScript does, so its next owned drive pulls what was written.
+template <class V>
+void Drive<V>::negotiate_body(const Vector3 &goal, bool direct, Node3D *other, Object *mover) {
+	static const String arrived("arrived"), asked("asked"), self("self"), swap("swap"), parked("parked");
+	// The callback pushed this crew's state before the GDScript ran (Avoidance.refresh reads every mover's phase): so here.
+	v.push_out();
+	const String me = tank->get_name();
+	const String name = other->get_name();
+	Drive<ObjectView> them(c, mover, ObjectView(mover));
+	them.cb_on = cb_on;
+	if (!them.bind()) {
+		return;
+	}
+	const Vector2 my_way = travel_direction(goal, direct);
+	bool i_give_way = false;
+	if (String(them.v.phase()) != arrived) {
+		const double difference = (double)v._remaining() - (double)them.v._remaining();
+		i_give_way = difference < -c.PRIORITY_MARGIN || (std::fabs(difference) <= c.PRIORITY_MARGIN && me < name);
+	}
+	if (String(them.v._last_yielded_to()) == me) {
+		i_give_way = true;
+	}
+	if (!i_give_way && them.ask(me, here, my_way, asked)) {
+		return;
+	}
+	if (String(them.v.phase()) == arrived && !traffic_off(parked)) {
+		sadd(k.parked_refusals, 1);
+		return;
+	}
+	if (String(v._last_yielded_to()) == name) {
+		return;
+	}
+	const Vector3 there = other->get_global_position();
+	Vector2 its_way = String(them.v.phase()) != arrived ? them.travel_direction(them.v._goal(), false) : Vector2();
+	if (its_way == Vector2()) {
+		its_way = Vector2((real_t)((double)here.x - (double)there.x), (real_t)((double)here.z - (double)there.z));
+	}
+	if (begin_yield(name, there, its_way, self)) {
+		return;
+	}
+	if (i_give_way && c.yield_fit && v._yield_unfit_last() && them.ask(me, here, my_way, swap)) {
+		sadd(k.yield_swaps, 1);
+		if (hull_length(String(other->get(k.unit_id))) < hull_length(String(tank->get(k.unit_id)))) {
+			sadd(k.yield_swaps_shorter, 1);
+		}
+	}
+}
+
+// Movement._travel_direction(goal, direct)
+template <class V>
+Vector2 Drive<V>::travel_direction(const Vector3 &goal, bool direct) {
+	const PackedVector3Array path = v._path();
+	const int64_t index = v._path_index();
+	const Vector3 toward = index < path.size() && !direct ? path[index] : goal;
+	if (toward == V3_INF) {
+		return Vector2();
+	}
+	const Vector2 flat((real_t)((double)toward.x - (double)here.x), (real_t)((double)toward.z - (double)here.z));
+	return (double)flat.length_squared() > 0.0001 ? flat.normalized() : Vector2();
+}
+
+// Movement.on_fire_post(): deploy_ratio > 0, a weapon order that is not hold_fire, and no move of its own under way.
+template <class V>
+bool Drive<V>::on_fire_post() {
+	static const String type("type"), hold_fire("hold_fire"), move_to("move_to"), arrived("arrived");
+	if (!((double)tank->get(k.deploy_ratio) > 0.0)) {
+		return false;
+	}
+	const Dictionary weapon = ctl->get(k.weapon_order);
+	if (String(weapon.get(type, String())) == hold_fire) {
+		return false;
+	}
+	const Dictionary move = ctl->get(k.move_order);
+	return String(move.get(type, String())) != move_to || String(v.phase()) == arrived;
+}
+
+// Movement.ask(asker, from, direction, via): native_stale |= STALE_ALL; already giving way, or the same asker as last
+// time: false; set up on a fire post (not --traffic-off=setup): setup_refusals += 1, false; _begin_yield, else
+// asks_refused += 1.
+template <class V>
+bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &direction, const String &via) {
+	static const String setup("setup");
+	v.set_native_stale(v.native_stale() | 1); // Movement.STALE_ALL
+	if (!String(v.yield_to()).is_empty() || asker == String(v._last_yielded_to())) {
+		return false;
+	}
+	if (on_fire_post() && !traffic_off(setup)) {
+		sadd(k.setup_refusals, 1);
+		return false;
+	}
+	if (begin_yield(asker, from, direction, via)) {
+		return true;
+	}
+	sadd(k.asks_refused, 1);
+	return false;
+}
+
+namespace {
+inline double distance_to_ray(const Vector3 &point, const Vector3 &origin, const Vector2 &direction) {
+	// Movement._distance_to_ray: the offset narrowed, t = max(offset . direction, 0), |offset - direction * t|.
+	const Vector2 offset((real_t)((double)point.x - (double)origin.x), (real_t)((double)point.z - (double)origin.z));
+	const double t = MAX((double)offset.dot(direction), 0.0);
+	return (offset - direction * (real_t)t).length();
+}
+
+inline String spot_label(const char *kind, int64_t a, int64_t b) {
+	return String(kind) + "(" + String::num_int64(a) + "," + String::num_int64(b) + ")";
+}
+} // namespace
+
+// Movement._begin_yield(other, from, direction, via), line by line (`_off.has("backup")` is never true here: the native
+// drive runs only with no --nav-off).
+template <class V>
+bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vector2 &direction, const String &via) {
+	static const String hold("hold");
+	Vector2 along;
+	if ((double)direction.length_squared() > 0.0001) {
+		along = direction.normalized();
+	} else {
+		along = Vector2((real_t)((double)here.x - (double)from.x), (real_t)((double)here.z - (double)from.z)).normalized();
+	}
+	if (along == Vector2()) {
+		return false;
+	}
+	const Vector2 across(-along.y, along.x);
+	v.set__yield_unfit_last(false);
+	Vector3 short_best = V3_INF;
+	Vector3 short_target = V3_INF;
+	String short_label;
+	const Vector2 from_me((real_t)((double)here.x - (double)from.x), (real_t)((double)here.z - (double)from.z));
+	const double side = (double)across.dot(from_me) >= 0.0 ? 1.0 : -1.0;
+	Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	Node *other_tank = root != nullptr ? root->get_node_or_null(NodePath(other)) : nullptr;
+	if (other_tank != nullptr && Object::cast_to<Object>(other_tank)->get(k.unit_id).get_type() != Variant::STRING) {
+		other_tank = nullptr; // `as Tank`: not a hull
+	}
+	const double other_radius = other_tank != nullptr ? avoid_radius(String(other_tank->get(k.unit_id))) : 1.8;
+	const double line_clear = avoid_radius(String(tank->get(k.unit_id))) + other_radius + c.YIELD_LINE_MARGIN;
+	refresh_avoidance();
+	(void)via; // the yield log's (measurement; off here)
+	const String me = tank->get_name();
+	const double from_here = flat_distance(here, from);
+	for (int64_t s = 0; s < c.YIELD_SPOTS.size(); s++) {
+		const Vector2 spot = c.YIELD_SPOTS[s];
+		const double flips[2] = { side, -side };
+		const int n_flips = (double)spot.y != 0.0 ? 2 : 1;
+		for (int f = 0; f < n_flips; f++) {
+			const double flip = flips[f];
+			const Vector2 offset = along * spot.x + across * (real_t)((double)spot.y * flip);
+			const Vector3 point((real_t)((double)here.x + (double)offset.x), 0, (real_t)((double)here.z + (double)offset.y));
+			if ((double)spot.y != 0.0 && distance_to_ray(point, from, along) < line_clear) {
+				continue;
+			}
+			if (flat_distance(point, from) < from_here) {
+				continue;
+			}
+			if (wheel_radius() > 0.0 && !ahead_of_wheels(point, wheel_radius()) && !straight_behind(point)) {
+				continue;
+			}
+			if (!free_spot(point, me, other)) {
+				continue;
+			}
+			const String label = spot_label("spot", (int64_t)(double)spot.x, (int64_t)((double)spot.y * flip));
+			if (!yield_fits(point)) {
+				const Vector3 shorter = c.yield_short ? yield_shorten(point) : V3_INF;
+				if (shorter != V3_INF && (short_best == V3_INF || flat_distance(shorter, here) > flat_distance(short_best, here)) &&
+						((double)spot.y == 0.0 || distance_to_ray(shorter, from, along) >= line_clear) &&
+						flat_distance(shorter, from) >= from_here && free_spot(shorter, me, other)) {
+					short_best = shorter;
+					short_target = point;
+					short_label = String("short:") + label;
+				}
+				continue;
+			}
+			start_yield(other, point, along, label);
+			return true;
+		}
+	}
+	// Last resort: back straight up along my own hull, as long as that isn't toward the unit being let past.
+	const Vector2 back = Vector2(basis_z.x, basis_z.z).normalized();
+	for (int64_t i = 0; i < c.YIELD_BACK_UP.size(); i++) {
+		const double distance = c.YIELD_BACK_UP[i];
+		const Vector3 point((real_t)((double)here.x + (double)back.x * distance), 0,
+				(real_t)((double)here.z + (double)back.y * distance));
+		if (flat_distance(point, from) < from_here) {
+			continue;
+		}
+		if (!free_spot(point, me, other)) {
+			continue;
+		}
+		const String label = String("back(") + String::num_int64((int64_t)distance) + ")";
+		if (yield_fits(point)) {
+			start_yield(other, point, along, label);
+			return true;
+		}
+		const Vector3 shorter = c.yield_short ? yield_shorten(point) : V3_INF;
+		if (shorter != V3_INF && (short_best == V3_INF || flat_distance(shorter, here) > flat_distance(short_best, here)) &&
+				flat_distance(shorter, from) >= from_here && free_spot(shorter, me, other)) {
+			short_best = shorter;
+			short_target = point;
+			short_label = String("short:") + label;
+		}
+	}
+	if (short_best != V3_INF) {
+		sadd(k.yield_spots_shortened, 1);
+		start_yield(other, short_target, along, short_label);
+		v.set__yield_stop_m(flat_distance(short_best, here));
+		return true;
+	}
+	if (v._yield_unfit_last() && c.yield_fit && c.yield_hold) {
+		sadd(k.yield_holds, 1);
+		start_yield(other, here, along, hold);
+		return true;
+	}
+	return false;
+}
+
+// Movement._start_yield (yield_log off: the gate)
+template <class V>
+void Drive<V>::start_yield(const String &other, const Vector3 &point, const Vector2 &along, const String &spot) {
+	static const String yielding("yielding");
+	v.set_yield_to(other);
+	v.set_yield_spot(spot);
+	v.set__yield_point(point);
+	v.set__yield_from(here);
+	v.set__yield_stop_m(0.0);
+	v.set__yield_dir(along);
+	v.set__yield_left((int64_t)(c.YIELD_MAX_SECONDS * (double)c.TICK_RATE));
+	v.set__yield_held(0);
+	v.set_phase(yielding);
+	v.set_blocked_by(other);
+	sadd(k.yields_started, 1);
+}
+
+// Movement._free_spot(point, me, other) (yield_clear off: the gate)
+template <class V>
+bool Drive<V>::free_spot(const Vector3 &point, const String &me, const String &other) {
+	if (pathing_ready()) {
+		const Vector3 on_mesh = closest_point(tank->get_world_3d()->get_navigation_map(), point, k.yield_site);
+		if (flat_distance(on_mesh, point) > c.YIELD_MESH_SLACK) {
+			return false;
+		}
+	}
+	const Array rows = gd(c.avoidance_script, k.neighbours, me, (double)point.x, (double)point.z);
+	for (int64_t i = 0; i < rows.size(); i++) {
+		const Array row = rows[i];
+		if (String(row[1]) != other && std::sqrt((double)row[0]) < c.YIELD_SPOT_CLEARANCE) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// Movement._yield_fits(point) (yield_log off: the gate)
+template <class V>
+bool Drive<V>::yield_fits(const Vector3 &point) {
+	if (!c.yield_fit || !pathing_ready()) {
+		return true;
+	}
+	LocalVector<Vector3> poses;
+	if (yield_run_ok(tank->get_world_3d()->get_navigation_map(), point, poses)) {
+		return true;
+	}
+	sadd(k.yield_spots_unfit, 1);
+	v.set__yield_unfit_last(true);
+	return false;
+}
+
+// Movement._yield_run_ok(map, point, poses): the drive right_of_way() makes to `point`, stepped, the whole outline swept
+// at every pose (_outline_offs / _outline_ok: N2a's points, the kturn_cap rule, as N5.M's simulation).
+template <class V>
+bool Drive<V>::yield_run_ok(const RID &map, const Vector3 &point, LocalVector<Vector3> &poses) {
+	const String unit = tank->get(k.unit_id);
+	const double half_w = hull_width_of(unit) * 0.5;
+	const double half_l = hull_length(unit) * 0.5;
+	const double clear = bake_radius() - c.KTURN_MARGIN_M;
+	Vector3 at(here.x, 0, here.z);
+	Vector3 heading = Vector3(-basis_z.x, 0, -basis_z.z).normalized();
+	const PackedFloat32Array start = c.nav->outline_offs(map, half_w, half_l, at, heading);
+	const bool behind = straight_behind(point);
+	const double radius = wheel_radius();
+	const double reach = c.YIELD_REACHED * 0.5;
+	const Vector3 target(point.x, 0, point.z);
+	const int64_t steps = c.YIELD_FIT_MIN_STEPS + (int64_t)((double)at.distance_to(target) * (double)c.YIELD_FIT_STEPS_PER_M);
+	double rolling = 0.0;
+	for (int64_t i = 0; i < steps; i++) {
+		if ((double)Vector2((real_t)((double)target.x - (double)at.x), (real_t)((double)target.z - (double)at.z)).length() <= reach) {
+			return true;
+		}
+		Vector2 drive;
+		if (radius > 0.0) {
+			drive = wheels(c, at, heading, target, reach, radius, rolling, -1.0, behind ? -1.0 : 1.0);
+		} else {
+			drive = drive_toward(c, at, heading, target, reach, -1.0, behind);
+		}
+		if (drive == Vector2()) {
+			return true;
+		}
+		const double gear = (double)drive.x > 0.0 ? 1.0 : ((double)drive.x < 0.0 ? -1.0 : 0.0);
+		if (gear == 0.0) {
+			const double turn_sign = (double)drive.y > 0.0 ? 1.0 : ((double)drive.y < 0.0 ? -1.0 : 0.0);
+			heading = heading.rotated(Vector3(0, 1, 0), (real_t)(-turn_sign * deg_to_rad(c.YIELD_FIT_PIVOT_DEG)));
+		} else {
+			const double yaw = radius > 0.0 ? c.YIELD_FIT_STEP_M * (double)drive.y / radius
+											: (double)drive.y * deg_to_rad(c.YIELD_FIT_PIVOT_DEG);
+			heading = motion_turn_heading(heading, yaw);
+			at += heading * (real_t)c.YIELD_FIT_STEP_M * (real_t)gear;
+		}
+		rolling = gear;
+		if (!c.nav->outline_ok(map, half_w, half_l, clear, at, heading, start, Vector3(), Vector3())) {
+			return false;
+		}
+		poses.push_back(at);
+	}
+	return false;
+}
+
+// Movement._yield_shorten(point)
+template <class V>
+Vector3 Drive<V>::yield_shorten(const Vector3 &point) {
+	if (!pathing_ready()) {
+		return V3_INF;
+	}
+	LocalVector<Vector3> poses;
+	yield_run_ok(tank->get_world_3d()->get_navigation_map(), point, poses);
+	if (poses.is_empty()) {
+		return V3_INF;
+	}
+	const double furthest = flat_distance(poses[poses.size() - 1], here);
+	for (int64_t i = (int64_t)poses.size() - 1; i >= 0; i--) {
+		const Vector3 pose = poses[i];
+		if (flat_distance(pose, here) <= furthest - c.YIELD_SHORT_MARGIN_M) {
+			return flat_distance(pose, here) >= c.YIELD_SHORT_MIN_M ? pose : V3_INF;
+		}
+	}
+	return V3_INF;
+}
+
+// Round 33 (N5.M): the decision natively while BrainSwitches.native_manoeuvre and native_cb are on and the GDScript arm
+// would ask the same geometry: native_nav (its outline's closest points are N2a's index) and kturn_cap (the outline rule).
+template <class V>
+bool Drive<V>::manoeuvre_native_on() {
+	return c.manoeuvre_ready && cb_on && (bool)c.switches->get(k.native_manoeuvre) && (bool)c.switches->get(k.native_nav) &&
+			(bool)c.switches->get(k.kturn_cap);
+}
+
+// Movement._manoeuvre below the gate (its early-outs and goal are the gate's):
+//   _behind_tick = tick
+//   reaimed := not gap and _behind_goal != INF and tick - _behind_since < REAIM_TICKS
+//   _behind_since = tick; _behind_goal = goal; behind_asked += 1
+//   arrive := maxf(clampf(float(order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0), settle_radius(unit) if wheel_radius() > 0 else 0)
+//   reaimed: _behind_plan = "route"; _note(refused, "reaimed")
+//   else: _behind_plan = Manoeuvre.choose(...) if Pathing.enabled and Pathing.is_ready(tank) else "route"
+//   has_facing := facing is Array and size >= 2 and Vector2(f0, f1).length_squared() > 1e-6
+//   _kept_goal = goal if not reaimed and not has_facing and Manoeuvre.behind(tank, goal, wheel_radius()) else INF
+//   _kept_from = tank.global_position; _note(plans, _behind_plan); reverse: behind_reverses += 1
+template <class V>
+void Drive<V>::manoeuvre_decide(const Dictionary &order, const Vector3 &goal, int64_t tick, bool gap) {
+	static const String route("route"), reverse_plan("reverse"), reaimed_key("reaimed");
+	v.set__behind_tick(tick);
+	const bool reaimed = !gap && (Vector3)v._behind_goal() != V3_INF && tick - (int64_t)v._behind_since() < c.REAIM_TICKS;
+	v.set__behind_since(tick);
+	v.set__behind_goal(goal);
+	sadd(k.behind_asked, 1);
+	const double radius = wheel_radius();
+	const double settle = radius > 0.0 ? settle_of(tank->get(k.unit_id)) : 0.0;
+	const double arrive = MAX(clampd((double)order.get(k.arrive, c.ARRIVE_RADIUS), 0.5, 10.0), settle);
+	String plan;
+	if (reaimed) {
+		plan = route;
+		man_note(k.refused, reaimed_key);
+	} else {
+		plan = pathing_ready() ? man_choose(goal, order, arrive) : route;
+	}
+	v.set__behind_plan(plan);
+	const Variant drawn = order.get(k.facing, Variant());
+	bool has_facing = false;
+	if (drawn.get_type() == Variant::ARRAY) {
+		const Array a = drawn;
+		has_facing = a.size() >= 2 && (double)Vector2((real_t)(double)a[0], (real_t)(double)a[1]).length_squared() > 1e-6;
+	}
+	v.set__kept_goal(!reaimed && !has_facing && man_behind(goal, wheel_radius()) ? goal : V3_INF);
+	v.set__kept_from(here);
+	man_note(k.plans, plan);
+	if (plan == reverse_plan) {
+		sadd(k.behind_reverses, 1);
+	}
+}
+
+// Manoeuvre.choose(mover, goal, order, arrive)
+template <class V>
+String Drive<V>::man_choose(const Vector3 &goal, const Dictionary &order, double arrive) {
+	static const String route("route"), reverse_plan("reverse"), facing_nose("facing_nose"), no_arrival("no_arrival"),
+			route_faster("route_faster");
+	const double radius = wheel_radius();
+	if (!man_behind(goal, radius)) {
+		return route;
+	}
+	const Vector2 nose = Vector2(-basis_z.x, -basis_z.z).normalized();
+	bool want_tail = false;
+	bool want_nose = false;
+	const Variant facing = order.get(k.facing, Variant());
+	if (facing.get_type() == Variant::ARRAY) {
+		const Array a = facing;
+		if (a.size() >= 2) {
+			const Vector2 f((real_t)(double)a[0], (real_t)(double)a[1]);
+			if ((double)f.length_squared() > 1e-6) {
+				want_tail = std::fabs((double)nose.angle_to(f)) <= deg_to_rad(c.MAN_FACING_KEEP_DEG);
+				want_nose = !want_tail;
+			}
+		}
+	}
+	if (want_nose) {
+		man_note(k.refused, facing_nose);
+		return route;
+	}
+	const Sim reverse = man_simulate(goal, arrive, -1);
+	if (!reverse.clear) {
+		man_note(k.refused, reverse.blocked);
+		return route;
+	}
+	if (!reverse.arrived) {
+		man_note(k.refused, no_arrival);
+		return route;
+	}
+	if (want_tail) {
+		return reverse_plan;
+	}
+	const Sim forward = man_simulate(goal, arrive, 1);
+	if (forward.arrived && forward.seconds <= reverse.seconds) {
+		man_note(k.refused, route_faster);
+		return route;
+	}
+	return reverse_plan;
+}
+
+// Manoeuvre.behind(tank, goal, radius)
+template <class V>
+bool Drive<V>::man_behind(const Vector3 &goal, double radius) {
+	const Vector2 to((real_t)((double)goal.x - (double)here.x), (real_t)((double)goal.z - (double)here.z));
+	const double d = to.length();
+	if (d > c.MAN_MAX_M || d < 0.5) {
+		return false;
+	}
+	const Vector2 nose = Vector2(-basis_z.x, -basis_z.z).normalized();
+	if (std::fabs((double)nose.angle_to(to)) >= deg_to_rad(c.MAN_BEHIND_DEG)) {
+		return true;
+	}
+	if (radius > 0.0) {
+		// Inside the forward turning circle on the goal's side: no forward arc reaches it.
+		const Vector2 left(nose.y, -nose.x);
+		const double side = (double)nose.angle_to(to) <= 0.0 ? 1.0 : -1.0;
+		const Vector2 centre = Vector2(here.x, here.z) - left * (real_t)side * (real_t)radius;
+		return (double)centre.distance_to(Vector2(goal.x, goal.z)) < radius;
+	}
+	return false;
+}
+
+// Manoeuvre.simulate(mover, goal, arrive, gear): the plant (TankMotion.step_in_place = motion_step, N6.1's same bits)
+// driven by the steering law that will drive it, every CHECK_EVERY steps the outline (Movement._outline_ok, kturn_cap,
+// a start pose: NavNative::outline_ok, N2b's same bits) and the hull discs (_hull_hit).
+template <class V>
+typename Drive<V>::Sim Drive<V>::man_simulate(const Vector3 &goal, double arrive, int gear) {
+	static const String static_kind("static"), friendly("friendly"), enemy("enemy");
+	const double radius = wheel_radius();
+	Dictionary state = man_state_of();
+	const RID map = tank->get_world_3d()->get_navigation_map();
+	// _kturn_frame(tank): [hull_box[0] * 0.5, hull_box[2] * 0.5, bake_radius(tank) - KTURN_MARGIN_M]
+	const String unit = tank->get(k.unit_id);
+	const double half_w = hull_width_of(unit) * 0.5;
+	const double half_l = hull_length(unit) * 0.5;
+	const double clear = bake_radius() - c.KTURN_MARGIN_M;
+	const PackedFloat32Array start = c.nav->outline_offs(map, half_w, half_l, here, (Vector3)state[k.forward]);
+	const LocalVector<Other> others = man_others();
+	double t = 0.0;
+	int64_t legs = 0;
+	int64_t last_gear = 0;
+	double metres = 0.0;
+	int64_t steps = 0;
+	Sim out;
+	out.seconds = c.MAN_SIM_HORIZON_S;
+	while (t < c.MAN_SIM_HORIZON_S) {
+		const Vector3 at = state[k.position];
+		const Vector3 forward = state[k.forward];
+		const double speed = state[k.speed];
+		const double remaining = Vector2((real_t)((double)goal.x - (double)at.x), (real_t)((double)goal.z - (double)at.z)).length();
+		Vector2 drive;
+		if (radius > 0.0) {
+			drive = wheels(c, at, forward, goal, arrive, radius, speed, remaining, gear > 0 ? 1.0 : -1.0);
+		} else {
+			drive = drive_toward(c, at, forward, goal, arrive, remaining, gear < 0);
+		}
+		if (drive == Vector2()) {
+			out.arrived = true;
+			// The hull still has to stop: count the braking from here (v / braking), as the order completes at rest.
+			t += std::fabs(speed) / MAX((double)state[k.braking_mps2], 0.1);
+			break;
+		}
+		motion_step(*c.motion, state, (double)drive.x, (double)drive.y, c.MAN_SIM_DT);
+		t += c.MAN_SIM_DT;
+		steps += 1;
+		const Vector3 moved = state[k.position];
+		metres += (double)Vector2((real_t)((double)moved.x - (double)at.x), (real_t)((double)moved.z - (double)at.z)).length();
+		const double now = state[k.speed];
+		const int64_t g = std::fabs(now) <= c.CUSP_DEADBAND ? 0 : (now > 0.0 ? 1 : -1);
+		if (g != 0 && g != last_gear) {
+			legs += 1;
+			last_gear = g;
+		}
+		if (steps % c.MAN_CHECK_EVERY == 0) {
+			if (!c.nav->outline_ok(map, half_w, half_l, clear, moved, (Vector3)state[k.forward], start, Vector3(), Vector3())) {
+				out.clear = false;
+				out.blocked = static_kind;
+				break;
+			}
+			// _hull_hit(moved, frame, others, tank.global_position): a disc of half the hull's length beyond the reach,
+			// and only nearer than the start was.
+			bool hit = false;
+			for (const Other &row : others) {
+				const double d = Vector2((real_t)(row.x - (double)moved.x), (real_t)(row.z - (double)moved.z)).length();
+				if (d < row.reach + half_l * 0.5) {
+					const double d0 = Vector2((real_t)(row.x - (double)here.x), (real_t)(row.z - (double)here.z)).length();
+					if (d < d0 - 0.25) {
+						out.clear = false;
+						out.blocked = row.friendly ? friendly : enemy;
+						hit = true;
+						break;
+					}
+				}
+			}
+			if (hit) {
+				break;
+			}
+		}
+	}
+	out.seconds = t;
+	out.legs = legs;
+	out.metres = metres;
+	return out;
+}
+
+// Manoeuvre._others(mover): every other living hull as [x, z, (mine[0] + theirs[0]) * 0.5 + HULL_MARGIN_M, kind]
+template <class V>
+LocalVector<typename Drive<V>::Other> Drive<V>::man_others() {
+	LocalVector<Other> out;
+	Node *tanks_root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	if (tanks_root == nullptr) {
+		return out;
+	}
+	const double mine = hull_width_of(tank->get(k.unit_id));
+	const int64_t my_team = tank->get(k.team);
+	const int count = tanks_root->get_child_count();
+	for (int i = 0; i < count; i++) {
+		Node3D *other = Object::cast_to<Node3D>(tanks_root->get_child(i));
+		if (other == nullptr || other == tank) {
+			continue;
+		}
+		const Variant alive = other->get(k.alive);
+		if (alive.get_type() != Variant::BOOL || !(bool)alive) {
+			continue; // not a Tank (no `alive`), or a dead one
+		}
+		const double theirs = hull_width_of(other->get(k.unit_id));
+		const Vector3 at = other->get_global_position();
+		out.push_back(Other{ (double)at.x, (double)at.z, (mine + theirs) * 0.5 + c.MAN_HULL_MARGIN_M,
+				(int64_t)other->get(k.team) == my_team });
+	}
+	return out;
+}
+
+// TankMotion.state_of(tank): state_for(unit, position, -basis.z, tank.speed()) with the live tank's speeds, turn rate,
+// estimated velocity and yaw rate. state_for's Units.stat answers are a pure function of the unit (memoized).
+template <class V>
+Dictionary Drive<V>::man_state_of() {
+	static const String tracks("tracks");
+	const String unit = tank->get(k.unit_id);
+	const Dictionary *known = c.state_stats_of.getptr(unit);
+	Dictionary stats;
+	if (known != nullptr) {
+		stats = *known;
+	} else {
+		stats[k.locomotion] = String(c.units->call(k.stat, unit, k.locomotion, tracks));
+		stats[k.acceleration_mps2] = (double)c.units->call(k.stat, unit, k.acceleration_mps2, 14.0);
+		stats[k.braking_mps2] = (double)c.units->call(k.stat, unit, k.braking_mps2, 14.0);
+		stats[k.min_turn_radius_m] = (double)c.units->call(k.stat, unit, k.min_turn_radius_m, 0.0);
+		stats[k.lateral_grip] = (double)c.units->call(k.stat, unit, k.lateral_grip, 1.0);
+		c.state_stats_of.insert(unit, stats);
+	}
+	const Vector3 back = -basis_z;
+	const Vector3 flat = Vector3(back.x, 0, back.z).normalized();
+	Dictionary state;
+	state[k.position] = here;
+	state[k.forward] = flat;
+	state[k.speed] = (double)tank->get(k._speed);
+	state[k.velocity] = tank->get(k.estimated_velocity);
+	state[k.locomotion] = stats[k.locomotion];
+	state[k.max_forward_speed] = (double)tank->get(k.max_forward_speed);
+	state[k.max_reverse_speed] = (double)tank->get(k.max_reverse_speed);
+	state[k.hull_turn_rate_deg] = rad_to_deg((double)tank->get(k.hull_turn_rate));
+	state[k.acceleration_mps2] = stats[k.acceleration_mps2];
+	state[k.braking_mps2] = stats[k.braking_mps2];
+	state[k.min_turn_radius_m] = stats[k.min_turn_radius_m];
+	state[k.lateral_grip] = stats[k.lateral_grip];
+	const Variant live = tank->get(k._motion);
+	if (live.get_type() == Variant::DICTIONARY) {
+		state[k.yaw_rate] = (double)((Dictionary)live).get(k.yaw_rate, 0.0);
+	}
+	return state;
+}
+
+// Manoeuvre._note(table, key): table[key] = int(table.get(key, 0)) + 1, on Manoeuvre's static Dictionary in place.
+template <class V>
+void Drive<V>::man_note(const StringName &table, const String &key) {
+	Dictionary d = c.manoeuvre_script->get(table);
+	d[key] = (int64_t)d.get(key, 0) + 1;
+}
+
+// Movement.hull_box(unit)[0], memoized by unit (a pure function of the roster).
+template <class V>
+double Drive<V>::hull_width_of(const String &unit) {
+	const double *known = c.hull_width_of.getptr(unit);
+	if (known != nullptr) {
+		return *known;
+	}
+	const Array size = script->call(k.hull_box, unit);
+	const double width = size[0];
+	c.hull_width_of.insert(unit, width);
+	return width;
+}
+
+// Movement.settle_radius(unit), memoized by unit (a pure function of the roster).
+template <class V>
+double Drive<V>::settle_of(const String &unit) {
+	const double *known = c.settle_of.getptr(unit);
+	if (known != nullptr) {
+		return *known;
+	}
+	const double settle = script->call(k.settle_radius, unit);
+	c.settle_of.insert(unit, settle);
+	return settle;
 }
 
 template <class V>
@@ -2104,10 +3064,15 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 		radius = wheel_radius();
 	}
 	Vector3 aim = goal;
+	// v4 (brains B5c-v4): `_gate_answer = "aimed"` then the gate's refusal reason, if any (Movement's static, which
+	// only --gate-trace reads; the trace itself is the GDScript drive's).
+	static const String aimed("aimed");
+	gate_answer = aimed;
 	if (radius > 0.0 && order.has(k.facing)) {
 		Timed t("~approach_gate");
 		aim = approach_gate(goal, order, radius);
 	}
+	sset(k._gate_answer, gate_answer);
 	v.set_arc_live(aim != goal);
 	Vector3 routed;
 	{
@@ -2492,8 +3457,14 @@ Dictionary drive_owned_counts(bool reset) {
 	out["end_push_fields"] = owned_counts_.end_push_fields;
 	out["end_push_usec"] = owned_counts_.end_push_usec;
 	out["start_pull_usec"] = owned_counts_.start_pull_usec;
+	out["manoeuvre_native"] = manoeuvre_counts_.native;
+	out["manoeuvre_called_back"] = manoeuvre_counts_.called_back;
+	out["negotiate_native"] = negotiate_counts_.native;
+	out["negotiate_called_back"] = negotiate_counts_.called_back;
 	if (reset) {
 		owned_counts_ = OwnedCounts();
+		manoeuvre_counts_ = ManoeuvreCounts();
+		negotiate_counts_ = NegotiateCounts();
 	}
 	return out;
 }

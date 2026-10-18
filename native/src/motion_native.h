@@ -4,6 +4,7 @@
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/vector3.hpp>
 
 namespace godot {
 
@@ -20,5 +21,8 @@ struct MotionConfig {
 
 // TankMotion.step_in_place(state, throttle, turn, delta): `state` updated in place (Dictionaries are shared references).
 void motion_step(const MotionConfig &config, Dictionary state, double throttle, double turn, double delta);
+
+// TankMotion.turn_heading(forward, radians): (forward + right * radians).normalized(), radians narrowed to float32.
+Vector3 motion_turn_heading(const Vector3 &forward, double radians);
 
 } // namespace godot

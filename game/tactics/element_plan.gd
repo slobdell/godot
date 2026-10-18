@@ -24,6 +24,30 @@ extends RefCounted
 
 ## The element counts as arrived within this far of its task destination (meters)...
 const ARRIVE_M := 12.0
+## Round 33 (R33.9, brains; manoeuvre's F1 trace): ...and, once arrived on a task, stays arrived until its centre is more
+## than ARRIVE_M + ARRIVE_LEAVE_M out (`_arrived_at`; `Element.assign` clears `arrived` for every new task). Without the
+## latch the flag was a limit cycle ON MAIN: arrived lays the seats on the halt at the spot (his drawn heading), not
+## arrived lays them in the travelling shape the other way, every seat jumped 19-27 m each flip, and the crews driving to
+## the new seats carried the centre back across the 12 m line (gangs hull-rest faced_attack_move s40, Battery 67 flips,
+## re-seats 286, base arm). 6 m: half the arrive radius, one bus length, above the centre's swing when a swarm of five
+## re-seats (the seats move ~20 m; the centre, their mean, by its fifth-weighted share) and far below a real departure.
+## `--arrive-latch=off` is main's rule (the control arm).
+const ARRIVE_LEAVE_M := 6.0
+static var ARRIVE_LATCH := true
+
+
+static func _arrived_at(to_go: float, state: Dictionary) -> bool:
+	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M)
+## Overnight item 3 (brains): a move's destination is inset from the arena edge by its shape (inset_anchor);
+## `--anchor-inset=off` is main's rule.
+static var ANCHOR_INSET := not OS.get_cmdline_user_args().has("--anchor-inset=off")
+## ...capped at one swarm pitch (filed: the largest inset ON <= 15 m), so the element stops near his click; what still falls
+## outside folds onto the edge (clamp_to_arena, then SlotGround), and such an element arrives at its LAID seats' centroid.
+const INSET_CAP_M := 15.0
+## ...and only on the final approach: within this of the destination. Further out the move is today's, so a drill that
+## fires on the way (the far ambush's base of fire: 11.4 -> 12.7 m off its line with the inset applied from the start,
+## laptop, tactics-drills) sees the same route.
+const INSET_NEAR_M := 60.0
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
@@ -116,6 +140,12 @@ static var APPROACH_CARRY := true
 ## Round 28 (B2): an artillery element (is_battery) carries its drawn approach (its firing position on the side, below)
 ## whatever APPROACH_CARRY says. `--approach-battery=off` is B0's rule for it.
 static var APPROACH_BATTERY := true
+## Round 33 (brains battery stretch, switch (a)): a SET-UP battery crew (the situation's "deployed") keeps the seat it had
+## and its place is where it stands; movers take the remaining places, never past a set-up squadmate while another is
+## open (TacticsFormation.seat's `set_up_at`). Traced (laptop, parade gangs v law s43): at t=86 the coil swapped two
+## places while three trucks were set up, and the crew sent 20 m across them was refused and never moved again.
+## `--battery-seat=off` is main's rule.
+static var BATTERY_SEAT := true
 ## The orchestrator's ruling on (c) (C28.5, 2026-10-12): a TARGET that charges the squad has left the position the side was
 ## drawn against. When it drives at the element (APPROACH_CLOSING_MPS) and is inside any crew's reach, the flank is
 ## dropped for the task ("charged") and the attack fights where it is, as a clicked one (which kills a lone charging IFV
@@ -255,7 +285,23 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		plan["arrived"] = true
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
-	var to_go := center.distance_to(destination)
+	# Overnight item 3: a move's spot inland enough that its whole shape stands inside the arena (inset_anchor).
+	if verb == "move" and destination is Vector3 and center.distance_to(destination) <= INSET_NEAR_M:
+		var asked: Vector3 = destination
+		destination = inset_anchor(members_of(situation), String(plan["formation"]), destination,
+				table.spacing(String(situation["terrain"])))
+		plan["inset_m"] = asked.distance_to(destination)
+		# Cap + fold: an element whose shape still reaches past the edge arrives at its laid seats' centroid.
+		if ANCHOR_INSET:
+			var told_facing: Variant = ElementTask.facing(task)
+			var facing: Vector3 = told_facing if told_facing is Vector3 \
+					else TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
+					else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+			var laid := laid_centroid(members_of(situation), String(plan["formation"]), destination, facing,
+					table.spacing(String(situation["terrain"])))
+			if bool(laid["clipped"]):
+				plan["arrive_point"] = laid["centroid"]
+	var to_go := center.distance_to(plan.get("arrive_point", destination))
 	if not ElementTask.runs_drills(task):
 		_plan_form_up(plan, situation, state, table, destination)
 		return
@@ -287,7 +333,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			var target := _target_contact(task, situation)
 			_engage(plan, slot_order(situation), situation, toward, target)
 			return
-	plan["arrived"] = to_go <= ARRIVE_M
+	plan["arrived"] = _arrived_at(to_go, state)
 	if plan["arrived"]:
 		if verb == "move" and ElementTask.facing(task) is Vector3:
 			_arrive_facing(plan, situation, table, destination, ElementTask.facing(task))
@@ -683,7 +729,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# not a shape filing through a gap, so the corridor does not deform them. The transit is `_flow`'s business, and
 	# deforming that is recorded as the follow-on rather than guessed at here.
 	plan["corridor_m"] = INF
-	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
+	plan["arrived"] = _arrived_at(center.distance_to(plan.get("arrive_point", destination)), state)
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	if in_transit:
 		plan["why"] = "moving as ordered: travelling in %s" % String(plan["formation"]).replace("_", " ")
@@ -2140,6 +2186,13 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		var seat: Variant = parked.get(String(member["name"]))
 		if seat is Array and String(seat[0]) == formation and int(seat[1]) == members.size():
 			keep[String(member["name"])] = int(seat[2])
+	# Round 33 (battery stretch (a)): a battery's set-up crews keep their seats in this shape at this size, stand where
+	# they are, and are in the movers' way.
+	var set_up := _battery_set_up(plan, members, formation)
+	for name: String in set_up:
+		keep[name] = int(set_up[name][0])
+	if not set_up.is_empty():
+		place_opts["set_up_at"] = set_up.values().map(func(entry: Array) -> Vector3: return entry[1])
 	if not keep.is_empty():
 		place_opts["keep"] = keep
 	# Round 25 (F1): the caller's seating extras (a plain move's seats laid along its route, its halt re-seat).
@@ -2152,6 +2205,8 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		if halt:
 			spot += TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
 		spot = clamp_to_arena(spot)
+		if set_up.has(name):
+			spot = set_up[name][1]
 		plan["slots"][name] = spot
 		plan["sectors"][name] = entry["sector"]
 		plan["seats"][name] = [formation, members.size(), int(entry["index"])]
@@ -2165,6 +2220,24 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		# had driven. `told` is that explicitly-chosen facing and nothing else: null on every doctrine-chosen heading,
 		# so nav keeps deriving those from travel exactly as before.
 		_order(plan, name, verb, spot, target, entry["facing"] if halt else told)
+
+
+## Round 33 (battery stretch (a)): {name: [seat index, where it stands]} for the set-up crews of a BATTERY (every member
+## artillery) that had a seat in this shape at this size last update. {} under `--battery-seat=off`.
+static func _battery_set_up(plan: Dictionary, members: Array, formation: String) -> Dictionary:
+	var result := {}
+	if not BATTERY_SEAT or members.is_empty():
+		return result
+	for member: Dictionary in members:
+		if String(member.get("role", "")) != "artillery":
+			return {}
+	var before: Dictionary = plan.get("previous_seats", {})
+	for member: Dictionary in members:
+		var seat: Variant = before.get(String(member["name"]))
+		if bool(member.get("deployed", false)) and member.has("position") and seat is Array \
+				and String(seat[0]) == formation and int(seat[1]) == members.size():
+			result[String(member["name"])] = [int(seat[2]), member["position"]]
+	return result
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).
@@ -2428,6 +2501,46 @@ static func clamp_to_arena(point: Vector3) -> Vector3:
 	var clamped := Orders.clamp_to_arena(point)
 	return Vector3(clamped.x, 0.0, clamped.z)
 
+
+## Overnight item 3 (brains, the War Rig 4-of-5 case): `destination` moved inland until a disc of the shape's reach
+## (the farthest seat of `members` laid in `formation` there, TacticsFormation.place's open-field shape) is inside the
+## arena: every seat stands inside whichever way the element ends up facing, and the answer does not move with the
+## heading from one update to the next. Per axis, the largest correction clamp_to_arena makes, each way; both at once
+## (a shape wider than the arena) cancel to the middle. Traced (builder0, foundry faced drag s8): a destination on the
+## north edge had two seats clamped onto it, the centroid sat 17-20 m off, and the element never arrived.
+## `--anchor-inset=off`: `destination` unchanged.
+static func inset_anchor(members: Array, formation: String, destination: Vector3, spacing: float) -> Vector3:
+	if not ANCHOR_INSET or members.is_empty():
+		return destination
+	var reach := 0.0
+	for entry in TacticsFormation.place(members, formation, destination, Vector3.FORWARD, spacing, {"corridor_m": INF}):
+		reach = maxf(reach, Vector2((entry["to"] as Vector3).x - destination.x, (entry["to"] as Vector3).z - destination.z).length())
+	var up := Vector2.ZERO
+	var down := Vector2.ZERO
+	for probe: Vector3 in [Vector3(reach, 0, 0), Vector3(-reach, 0, 0), Vector3(0, 0, reach), Vector3(0, 0, -reach)]:
+		var point := destination + probe
+		var fix := clamp_to_arena(point) - point
+		up = Vector2(maxf(up.x, fix.x), maxf(up.y, fix.z))
+		down = Vector2(minf(down.x, fix.x), minf(down.y, fix.z))
+	var shift := up + down
+	if shift.length() > INSET_CAP_M:
+		shift = shift.normalized() * INSET_CAP_M
+	return clamp_to_arena(destination + Vector3(shift.x, 0.0, shift.y))
+
+
+## Overnight item 3 (cap + fold): where an element laid at `anchor` facing `heading` stands once its seats are clamped
+## into the arena, the mean of the clamped seats, and whether any seat was clamped at all ({"centroid", "clipped"}).
+## Inland nothing is clamped and the centroid is the anchor (the shapes are centred), so callers keep the anchor there.
+static func laid_centroid(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float) -> Dictionary:
+	var sum := Vector3.ZERO
+	var clipped := false
+	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing, {"corridor_m": INF})
+	for entry in placed:
+		var seat: Vector3 = entry["to"]
+		var laid := clamp_to_arena(seat)
+		clipped = clipped or Vector2(laid.x - seat.x, laid.z - seat.z).length() > 0.5
+		sum += laid
+	return {"centroid": sum / maxf(placed.size(), 1.0) if not placed.is_empty() else anchor, "clipped": clipped}
 
 # ---- Preview (control's animated button help) ----------------------------------------------------------
 

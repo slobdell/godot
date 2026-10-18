@@ -21,7 +21,7 @@ printf '%s\n' '#!/usr/bin/env bash' \
 	'exit 0' > "$tmp/godot"
 chmod +x "$tmp/godot"
 run() { rm -f "$tmp"/mode.*; for m in "$@"; do echo "${m#*=}" > "$tmp/mode.${m%%=*}"; done
-	( cd "$repo" && make --no-print-directory -o import test TEST_SHARDS=3 GODOT="$tmp/godot" BUILD_DIR="$tmp/build" 2>&1 ); }
+	( cd "$repo" && make --no-print-directory -o import -o _native-ready test TEST_SHARDS=3 GODOT="$tmp/godot" BUILD_DIR="$tmp/build" 2>&1 ); }
 
 out=$(run); rc=$?
 [ $rc = 0 ] && grep -q '^15 passed, 0 failed' <<<"$out" && ok "three clean shards: pass, totals summed" || bad "clean" "$out"

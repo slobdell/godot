@@ -574,6 +574,13 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		c.HOLD_SLOW_M = config["HOLD_SLOW_M"];
 		c.LIVE_TICKS = config["LIVE_TICKS"];
 	}
+	c.gate_giveup = (bool)config.get("gate_giveup", false);
+	c.gate_side = (bool)config.get("gate_side", false);
+	c.gate_inside = (bool)config.get("gate_inside", false);
+	c.GATE_ROOM_POINTS = config.get("GATE_ROOM_POINTS", 8);
+	c.GATE_TURN_SECONDS = config.get("GATE_TURN_SECONDS", 12.0);
+	c.GATE_NEAR_DETOUR = config.get("GATE_NEAR_DETOUR", 2.0);
+	c.TURN_ROOM_POINTS = config.get("TURN_ROOM_POINTS", 12);
 	c.traffic_shape = c.traffic_hold && (bool)config.get("traffic_shape", false);
 	c.UNSTICK_BACK = (bool)config.get("UNSTICK_BACK_DEFAULT", false);
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
@@ -616,6 +623,28 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.MESH_EPSILON = config.get("MESH_EPSILON", 0.0);
 	c.keep_manoeuvre_census = config.get("manoeuvre_census", Variant());
 	c.manoeuvre_census = c.keep_manoeuvre_census.get_validated_object();
+	{
+		// Round 33 (N5.M): _manoeuvre's decision. Any constant, the Manoeuvre script or the motion model missing: the callback.
+		const char *names[] = { "MAN_MAX_M", "MAN_BEHIND_DEG", "MAN_FACING_KEEP_DEG", "MAN_SIM_DT", "MAN_SIM_HORIZON_S",
+			"MAN_HULL_MARGIN_M", "KTURN_MARGIN_M", "CUSP_DEADBAND" };
+		double *slots[] = { &c.MAN_MAX_M, &c.MAN_BEHIND_DEG, &c.MAN_FACING_KEEP_DEG, &c.MAN_SIM_DT, &c.MAN_SIM_HORIZON_S,
+			&c.MAN_HULL_MARGIN_M, &c.KTURN_MARGIN_M, &c.CUSP_DEADBAND };
+		c.keep_manoeuvre_script = config.get("manoeuvre", Variant());
+		c.manoeuvre_script = c.keep_manoeuvre_script.get_validated_object();
+		c.motion = &motion_config;
+		c.manoeuvre_ready = c.manoeuvre_script != nullptr && config.has("MAN_CHECK_EVERY") && config.has("REAIM_TICKS") &&
+				(bool)config.get("motion_ok", false) && motion_config.ready;
+		for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+			if (!config.has(names[i])) {
+				c.manoeuvre_ready = false;
+				break;
+			}
+			*slots[i] = config[names[i]];
+		}
+		c.MAN_CHECK_EVERY = MAX((int64_t)config.get("MAN_CHECK_EVERY", 1), (int64_t)1);
+		c.REAIM_TICKS = config.get("REAIM_TICKS", 0);
+		c.state_stats_of.clear();
+	}
 	c.KTURN_MIN_ERROR_DEG = config.get("KTURN_MIN_ERROR_DEG", 0.0);
 	c.KTURN_CIRCLE_SPEED = config.get("KTURN_CIRCLE_SPEED", 0.0);
 	{
@@ -637,6 +666,37 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.REPAIR_MAX_M = config.get("REPAIR_MAX_M", 0.0);
 	c.NAV_AGENT_RADIUS = config.get("NAV_AGENT_RADIUS", 0.0);
 	c.repair_ready = config.has("REPAIR_MAX_M") && c.slot_ground != nullptr;
+	// Round 33 (N5.Y): the give-way's own constants and arms.
+	{
+		static const char *keys[] = { "PRIORITY_MARGIN", "YIELD_MAX_SECONDS", "YIELD_LINE_MARGIN", "YIELD_SPOT_CLEARANCE",
+			"YIELD_MESH_SLACK", "YIELD_FIT_STEP_M", "YIELD_FIT_PIVOT_DEG", "YIELD_SHORT_MIN_M", "YIELD_SHORT_MARGIN_M",
+			"YIELD_FIT_STEPS_PER_M", "YIELD_FIT_MIN_STEPS", "YIELD_SPOTS", "YIELD_BACK_UP", "yield_fit", "yield_short",
+			"yield_clear", "yield_hold" };
+		bool all = true;
+		for (const char *key : keys) {
+			all = all && config.has(key);
+		}
+		c.yield_port_ready = all;
+		if (all) {
+			c.PRIORITY_MARGIN = config["PRIORITY_MARGIN"];
+			c.YIELD_MAX_SECONDS = config["YIELD_MAX_SECONDS"];
+			c.YIELD_LINE_MARGIN = config["YIELD_LINE_MARGIN"];
+			c.YIELD_SPOT_CLEARANCE = config["YIELD_SPOT_CLEARANCE"];
+			c.YIELD_MESH_SLACK = config["YIELD_MESH_SLACK"];
+			c.YIELD_FIT_STEP_M = config["YIELD_FIT_STEP_M"];
+			c.YIELD_FIT_PIVOT_DEG = config["YIELD_FIT_PIVOT_DEG"];
+			c.YIELD_SHORT_MIN_M = config["YIELD_SHORT_MIN_M"];
+			c.YIELD_SHORT_MARGIN_M = config["YIELD_SHORT_MARGIN_M"];
+			c.YIELD_FIT_STEPS_PER_M = config["YIELD_FIT_STEPS_PER_M"];
+			c.YIELD_FIT_MIN_STEPS = config["YIELD_FIT_MIN_STEPS"];
+			c.YIELD_SPOTS = config["YIELD_SPOTS"];
+			c.YIELD_BACK_UP = config["YIELD_BACK_UP"];
+			c.yield_fit = config["yield_fit"];
+			c.yield_short = config["yield_short"];
+			c.yield_clear = config["yield_clear"];
+			c.yield_hold = config["yield_hold"];
+		}
+	}
 	c.yield_ready = config.has("YIELD_REACHED") && config.has("YIELD_CLEAR") && config.has("YIELD_HOLD_SECONDS");
 	c.YIELD_REACHED = config.get("YIELD_REACHED", 0.0);
 	c.YIELD_CLEAR = config.get("YIELD_CLEAR", 0.0);

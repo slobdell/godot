@@ -153,4 +153,6 @@ func test_a_fixed_fps_command_line_switches_the_bound_off() -> void:
 		assert_true(args.size() > 0 and args[0].contains("Godot"), "argv[0] is the engine on %s (%s)" % [OS.get_name(), args])
 		assert_true(args.has("--headless") and args.has("res://tests/run_tests.gd"),
 				"the whole command line, split on NUL (%s): if not, witness runs need --kill-cam-ticks-only" % [args])
-		assert_true(not KillCam.fixed_fps_in(args), "the test runner runs in real time (no --fixed-fps)")
+		# Round 33 overnight (native, item 1): the suite runs at --fixed-fps $(SIM_HZ) by default and free with TEST_FPS=, so
+		# the reader must agree with the runner's own command line either way (it asserted "no --fixed-fps" before).
+		assert_eq(KillCam.fixed_fps_in(args), args.has("--fixed-fps"), "the reader agrees with the runner's own command line")

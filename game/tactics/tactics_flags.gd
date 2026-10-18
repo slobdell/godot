@@ -77,6 +77,9 @@ static func _parse() -> void:
 		# Round 28: B1 is parked (off by default); on = its rule for every element.
 		if arg == "--approach-carry=on":
 			ElementPlan.APPROACH_CARRY = true
+		# Round 33 (brains battery stretch (a)): main's seating for a battery's set-up crews.
+		if arg == "--battery-seat=off":
+			ElementPlan.BATTERY_SEAT = false
 		# Round 28 (B2): B0's rule for a battery too.
 		if arg == "--approach-battery=off":
 			ElementPlan.APPROACH_BATTERY = false
@@ -119,6 +122,9 @@ static func _parse() -> void:
 		if arg == "--route-seat-across=off":
 			Element.ROUTE_SEAT_REMATCH_ACROSS = false
 		# Round 32 (brains B10): a seat's grounding re-chosen every plan (the element centre's 5 m cell), the control arm.
+		# Round 33 (R33.9): an element's arrival read afresh every plan (main's rule), the control arm.
+		if arg == "--arrive-latch=off":
+			ElementPlan.ARRIVE_LATCH = false
 		if arg == "--ground-latch=off":
 			Element.GROUND_LATCH = false
 		if arg == "--ground-latch=on":

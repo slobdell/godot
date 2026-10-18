@@ -53,6 +53,9 @@ static func capture(mover: Movement) -> Dictionary:
 			state[name] = _copy(mover.get(name))
 	for name in static_names():
 		state["static:" + name] = _copy(mover.get(name))
+	# Round 33 (N5.M): the tables `_manoeuvre`'s decision counts into are Manoeuvre's statics, not Movement's.
+	state["static:Manoeuvre.plans"] = _copy(Manoeuvre.plans)
+	state["static:Manoeuvre.refused"] = _copy(Manoeuvre.refused)
 	var station: Object = mover._station
 	if station != null:
 		for prop: Dictionary in station.get_property_list():
@@ -67,6 +70,12 @@ static func restore(mover: Movement, state: Dictionary) -> void:
 			continue
 		if key.begins_with("@"):
 			mover.set(key.trim_prefix("@"), state[key])
+			continue
+		if key == "static:Manoeuvre.plans":
+			Manoeuvre.plans = _copy(state[key])
+			continue
+		if key == "static:Manoeuvre.refused":
+			Manoeuvre.refused = _copy(state[key])
 			continue
 		mover.set(key.trim_prefix("static:"), _copy(state[key]))
 	var station: Object = mover._station

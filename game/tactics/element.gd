@@ -1022,6 +1022,10 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 			return  # decided once per task: a short move never grows an anchor later
 		var center: Vector3 = transit_origin(situation, _doctrine().spacing("open"))
 		var to := Vector3((destination as Vector3).x, 0.0, (destination as Vector3).z)
+		# Overnight item 3: the route ends where the plan stands the shape (ElementPlan.inset_anchor, capped), so the
+		# hand-off from travelling to standing moves nobody at an arena edge either.
+		to = ElementPlan.inset_anchor(ElementPlan.members_of(situation), formation, to,
+				_doctrine().spacing(String(situation.get("terrain", "open"))))
 		var from := Vector3(center.x, 0.0, center.z)
 		if from.distance_to(to) < ElementPlan.TRANSIT_MIN_M:
 			_transit_declined_seq = task_seq
@@ -1339,6 +1343,16 @@ func is_detached(unit_name: String) -> bool:
 	return _detached.has(unit_name)
 
 
+## Overnight item 4 (brains): a crew joins this element at the end of the succession (Elements.join, which checks the
+## room). It is seated fresh at the next plan: the last seating names every member, so it no longer stands.
+func join(unit_name: String) -> void:
+	if roster.has(unit_name):
+		return
+	_state_stamp += 1
+	roster.append(unit_name)
+	_log("%s joins" % unit_name)
+
+
 func remove(unit_name: String) -> void:
 	_state_stamp += 1
 	var index := roster.find(unit_name)
@@ -1516,7 +1530,140 @@ static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dicti
 
 
 ## Record what the leader decided.
+var _bt_last := -1000
+## Battery stretch (measurement, every plan, both arms): the place a crew was ASSIGNED when it began to deploy, and where it
+## stood once set up (BATTERY_SETUP: the bar's "set up within 8 m of its place" reads this, not the place it ends with).
+var _bt_assigned := {}
+var _bt_logged := {}
+## ...and the bar's cost line (switch (c) fires later): from a battery's FIRE ORDER (its task becomes an attack or a
+## support-by-fire, keyed by verb and target) to the first shot by any of its crews (BATTERY_FIRST_SHOT; "none" when
+## the task changes or the run ends first). Physics frames, both arms.
+var _bt_order_key := ""
+var _bt_order_frame := -1
+var _bt_shot_frame := -1
+var _bt_wired := {}
+
+
+func _bt_fire_order(situation: Dictionary) -> void:
+	var verb := String(task.get("verb", ""))
+	var key := "%s:%s" % [verb, String(task.get("target", ""))] if verb in ["attack", "support_by_fire"] else ""
+	for member: Dictionary in situation.get("members", []):
+		var n := String(member["name"])
+		if _bt_wired.has(n):
+			continue
+		var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
+		if tank != null:
+			_bt_wired[n] = true
+			tank.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void:
+				if _bt_order_frame >= 0 and _bt_shot_frame < 0:
+					_bt_shot_frame = Engine.get_physics_frames())
+	if _bt_order_frame >= 0 and _bt_shot_frame >= 0:
+		print("BATTERY_FIRST_SHOT team %d %s order %s after %.1f s" % [team, element_name, _bt_order_key,
+				float(_bt_shot_frame - _bt_order_frame) / SimClock.TICK_RATE])
+		_bt_order_frame = -2  # answered: no second line for this order
+	if key != _bt_order_key:
+		if _bt_order_frame >= 0:
+			print("BATTERY_FIRST_SHOT team %d %s order %s none after %.1f s" % [team, element_name, _bt_order_key,
+					float(Engine.get_physics_frames() - _bt_order_frame) / SimClock.TICK_RATE])
+		_bt_order_key = key
+		_bt_order_frame = Engine.get_physics_frames() if key != "" else -1
+		_bt_shot_frame = -1
+		if key != "":
+			print("BATTERY_FIRE_ORDER t=%.1f team %d %s %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team,
+					element_name, key])
+
+
+## Overnight item 3 (brains), MEASUREMENT ONLY: `--element-trace=<substring>` prints ELEMENT_TRACE once a second for
+## elements whose name contains it: task, anchor, heading, shape, file share and corridor, arrived, and per crew where it
+## stands, its slot (and the slot it asked for, when grounded), its slot's offset from the anchor along / across the
+## heading, and its distance to its slot. For the War Rig 4-of-5 case (foundry s8, two seats 28 m and 56-68 m out).
+static var _element_trace := ""
+static var _element_trace_read := false
+var _et_last := -1000
+
+
+func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
+	if not _element_trace_read:
+		_element_trace_read = true
+		for arg in OS.get_cmdline_user_args():
+			if arg.begins_with("--element-trace="):
+				_element_trace = arg.trim_prefix("--element-trace=")
+	var tick := int(situation.get("tick", 0))
+	if _element_trace == "" or not element_name.contains(_element_trace) or tick - _et_last < SimClock.TICK_RATE:
+		return
+	_et_last = tick
+	var anchor_v: Variant = plan.get("anchor")
+	var heading: Vector3 = plan.get("heading", Vector3.FORWARD)
+	var forward := TacticsFormation.flat(heading)
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var rows := []
+	for member: Dictionary in situation.get("members", []):
+		var n := String(member["name"])
+		var at: Vector3 = member["position"]
+		var slot: Variant = (plan.get("slots", {}) as Dictionary).get(n)
+		var text := "%s at (%.1f,%.1f)" % [n, at.x, at.z]
+		if slot is Vector3:
+			text += " slot (%.1f,%.1f) %.1f m off" % [(slot as Vector3).x, (slot as Vector3).z, Vector2(at.x - slot.x, at.z - slot.z).length()]
+			if anchor_v is Vector3:
+				var rel: Vector3 = (slot as Vector3) - (anchor_v as Vector3)
+				text += " rel along %.1f across %.1f" % [rel.dot(forward), rel.dot(right)]
+		if slots_asked.has(n):
+			text += " asked (%.1f,%.1f)" % [(slots_asked[n] as Vector3).x, (slots_asked[n] as Vector3).z]
+		var seat: Variant = (plan.get("seats", {}) as Dictionary).get(n)
+		if seat is Array:
+			text += " seat %s" % str(seat)
+		rows.append(text)
+	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
+			float(tick) / SimClock.TICK_RATE, element_name, id, String(task.get("verb", "-")), task.get("to"), anchor_v,
+			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
+			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived,
+			" | ".join(PackedStringArray(rows))])
+
+
 func _take(plan: Dictionary, situation: Dictionary) -> void:
+	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
+		_bt_fire_order(situation)
+	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
+		for member: Dictionary in situation.get("members", []):
+			var n := String(member["name"])
+			var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
+			if tank == null:
+				continue
+			var slot: Variant = slots.get(n)
+			if tank.deploy_ratio <= 0.0:
+				_bt_assigned.erase(n)
+				_bt_logged.erase(n)
+			elif not _bt_assigned.has(n) and slot is Vector3:
+				_bt_assigned[n] = slot
+			if tank.deploy_ratio >= 1.0 and _bt_assigned.has(n) and not _bt_logged.has(n):
+				_bt_logged[n] = true
+				var at := member["position"] as Vector3
+				var was := _bt_assigned[n] as Vector3
+				print("BATTERY_SETUP t=%.1f team %d %s assigned (%.1f,%.1f) stood (%.1f,%.1f) off %.1f m" % [
+						float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, n, was.x, was.z, at.x, at.z,
+						Vector2(at.x - was.x, at.z - was.z).length()])
+	if OS.get_cmdline_user_args().has("--battery-trace") and element_name.contains("Battery") and int(situation.get("tick", 0)) - _bt_last >= 60:
+		_bt_last = int(situation.get("tick", 0))
+		var row := []
+		for member: Dictionary in situation.get("members", []):
+			var n := String(member["name"])
+			var slot: Variant = (plan.get("slots", {}) as Dictionary).get(n)
+			var order: Dictionary = (plan.get("orders", {}) as Dictionary).get(n, {})
+			var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
+			var mover := Movement.of(tank) if tank != null else null
+			var brain := mover.ctl as TankBrain if mover != null else null
+			row.append("%s %s/%s at (%.0f,%.0f) slot %s to %s dep %.1f" % [n.trim_prefix("Green_").trim_prefix("Rust_"),
+					String(brain.choice.get("option", "-")) if brain != null else "-", (mover.phase + ((">" + mover.yield_to) if mover.yield_to != "" else "")) if mover != null else "-",
+					(member["position"] as Vector3).x,
+					(member["position"] as Vector3).z, ("(%.0f,%.0f)" % [(slot as Vector3).x, (slot as Vector3).z]) if slot is Vector3 else "-",
+					("(%.0f,%.0f)" % [(order["to"] as Vector3).x, (order["to"] as Vector3).z]) if order.get("to") is Vector3 else String(order.get("verb", "-")),
+					tank.deploy_ratio if tank != null else -1.0])
+			if mover != null and n.ends_with("Battery_2"):
+				var st := Movement.state(tank)
+				row.append("B2 route %.1f m goal %s steer %s blocked %s" % [float(st.get("remaining_m", -1.0)), st.get("goal"), st.get("steer_to"), st.get("blocked_by")])
+		print("BATTERY_TRACE t=%.0f team %d %s %s/%s anchor %s | %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, element_name,
+				String(plan["formation"]), String(plan["technique"]), plan["anchor"], " | ".join(PackedStringArray(row))])
+	_trace_element(plan, situation)
 	formation = String(plan["formation"])
 	technique = String(plan["technique"])
 	reason = String(plan["why"])

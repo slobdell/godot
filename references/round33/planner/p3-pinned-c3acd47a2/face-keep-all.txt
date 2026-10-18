@@ -1,0 +1,5 @@
+FACE_KEEP_ABANDONED drawn | runs 42 v 42 | candidate 0/181 = 0.0 % v base 0/192 = 0.0 % | se 0.0 pts | line <= 0.0 % | PASS
+FACE_KEEP_FAR drawn | plans candidate 36 v base 36 | median 4.3 v 4.2 m (se 0.99, line <= 5.8) ok | p90 17.0 v 17.1 ok | max 19.0 v 18.9 | PASS
+FACE_KEEP_ABANDONED clicked | runs 42 v 42 | candidate 4/267 = 1.5 % v base 2/271 = 0.7 % | se 0.9 pts | line <= 2.2 % | PASS
+FACE_KEEP_FAR clicked | plans candidate 26 v base 18 | median 3.0 v 2.7 m (se 0.71, line <= 3.9) ok | p90 6.3 v 5.7 over | max 12.4 v 5.7 | FAIL
+FACE_KEEP lines (2b) and (2c): NOT ALL PASS

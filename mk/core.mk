@@ -258,23 +258,46 @@ test-leaks: import ## Which tests leave orphan nodes / leak at exit: every shard
 		echo "== $$f"; grep -E '^SHARD |^  \+[0-9]+  |leaked|still in use|^Leaked instance|^ERROR: Leaked|Orphan' "$$f" | sort | uniq -c | sort -rn | head -60; \
 	done
 
+# Round 33 overnight (native, item 1): the suite runs at a FIXED physics rate, as every judged stage already does
+# (sim-baseline, perf-judge, the fresh twin children). `--fixed-fps $(SIM_HZ)` steps one physics tick a frame and runs
+# frames as fast as the machine allows, so a test's ticks no longer follow the wall clock: a loaded box, or a fast one,
+# ran a different number of physics steps a frame before. TEST_FPS= (empty) is the old free-running suite, for comparison.
+TEST_FPS ?= $(SIM_HZ)
+TEST_FPS_ARGS = $(if $(TEST_FPS),--fixed-fps $(TEST_FPS))
+
+# Round 33 overnight (native, item 2): a suite run with NO native library where one is expected REFUSES. The twin files
+# print `native: absent` and pass when the library is missing, so a fresh checkout's `make remote T=test` passed 2771 /
+# 0 having proved nothing native (twice in round 33: native.md hazard 10). Expected = NATIVE is not off and this machine
+# has cmake + c++ (native-for-check's own rule). `make native test` builds it; `make check` builds it first; NATIVE=off
+# runs the GDScript paths on purpose; a machine without the toolchain runs them as before. Scoped to the runs that can
+# pass vacuously: the whole suite, or a FILTER naming a native file. A laptop `make test FILTER=nav_gate` runs as before.
+.PHONY: _native-ready
+_native-ready:
+	@if [ "$(NATIVE)" != off ] && [ "$(NATIVE_TOOLCHAIN)" = yes ] && [ ! -e $(NATIVE_GDEXT) ] \
+			&& { [ -z '$(FILTER)' ] || case '$(FILTER)' in *native*) true;; *) false;; esac; }; then \
+		echo "test REFUSED: no native library in this checkout ($(NATIVE_GDEXT)) on $$(hostname), so every twin would pass"; \
+		echo "             without running. Build it first (make native test, or make remote T=\"native test\"), or say"; \
+		echo "             NATIVE=off to run the GDScript paths on purpose."; \
+		exit 3; \
+	fi
+
 # Round 18 (ship): each shard's EXIT STATUS is read, not only its summary line. It was written to test-shards/N.status
 # and never read, so a shard that printed `SHARD i/n: ... 0 failed` and then aborted at exit (heap corruption in picker's
 # test_previewing_a_formation_issues_nothing, exit 134, laptop) passed `test`. Stub-driven: tools/test_test_shards.sh.
-test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
+test: _filter-ok _native-ready import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
-		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
+		$(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
 		exit $$?; \
 	fi; \
 	rm -rf $(BUILD_DIR)/test-shards && mkdir -p $(BUILD_DIR)/test-shards; \
 	started=$$(date +%s); \
 	seq 0 $$(( $(TEST_SHARDS) - 1 )) | xargs -P $(TEST_SHARDS) -I{} sh -c \
-		'from=$$(date +%s); $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
+		'from=$$(date +%s); $(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
 			--shard-plan=$(TEST_SHARD_PLAN) > $(BUILD_DIR)/test-shards/{}.log 2>&1; echo $$? > $(BUILD_DIR)/test-shards/{}.status; \
 			echo $$(( $$(date +%s) - from )) > $(BUILD_DIR)/test-shards/{}.secs'; \
 	grep -hv '^FILE_TIME ' $(BUILD_DIR)/test-shards/*.log; \
 	grep -h '^FILE_TIME ' $(BUILD_DIR)/test-shards/*.log | sed 's/^FILE_TIME //' | sort > $(BUILD_DIR)/test-times.txt || true; \
-	echo "test wall: $$(( $$(date +%s) - started )) s on $$(hostname), plan $(TEST_SHARD_PLAN), shards (s):$$(for f in $(BUILD_DIR)/test-shards/*.secs; do printf ' %s' $$(cat $$f); done)"; \
+	echo "test wall: $$(( $$(date +%s) - started )) s on $$(hostname), plan $(TEST_SHARD_PLAN), fps $(or $(TEST_FPS),free), shards (s):$$(for f in $(BUILD_DIR)/test-shards/*.secs; do printf ' %s' $$(cat $$f); done)"; \
 	shards=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | wc -l); \
 	if [ "$$shards" -ne "$(TEST_SHARDS)" ]; then \
 		echo "test FAILED: $$shards of $(TEST_SHARDS) shards reported a summary line. A shard that died without"; \
@@ -346,13 +369,16 @@ test-times: ## Round 29 (I1): write tests/shard_times.txt from the last sharded 
 # game reaches for against every preset's filters (tools/web_pack/export_guard.py; ~0.5 s, no Godot, no port, no
 # `user://`). web-smoke checks the same model against the real web pack. Mutation-checked: both of 2026-09-22's
 # breaks (FactionArt excluded with the art; a preload of a .gdignore'd tools/ script) turn it red.
+# Round 33 overnight (planner, the orchestrator's grant): `planner-pytest` joins, LAST: the planner judges' own tests
+# (series_verdict, the distinct-pairs rule, face_pairs). R33.26's face_pairs shipped a 1-face bug that its tests would
+# have caught. Pure Python (<1 s, no Godot, no port, no `user://`), so it needs no exclusion edge.
 # Round 26 (C26.6, brains B1): `bridge-pooled` joins -- his bridge drill, seeds 1-3 x start ticks {1,8,15} x both sides
 # (18 runs, ~3.4 min on builder0), judged by tools/tactics/bridge_verdict.py (every surviving crew across; a crew killed
 # while not stuck excused). Round 25 fixed his bridge and nothing guarded it; CP1a fixed it again.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
                  ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard \
-                 bridge-pooled native-verify-scenarios native-live-guard
+                 bridge-pooled native-verify-scenarios native-live-guard planner-pytest
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #
@@ -804,12 +830,15 @@ remote-quiet: ## A TIMING run on builder0 that holds the whole box and says whet
 # needs no Godot, no ports and no `user://` path, so it joins with no exclusion edge.
 remote-guard-test: shell-tools-test ## Alias kept for the name that shipped in CHECK_TARGETS
 
+# Round 33 overnight (native, item 3): a suite whose wall-clock case could not be judged on a loaded box (slot-light)
+# appends its reason to NOT_JUDGED_FILE: check reads remote-guard-test as NOT JUDGED, not FAIL (check_verdict.sh).
 shell-tools-test: ## Every tools/test_*.sh known-answer suite (no Godot, ~20 s), and it FAILS if it finds none
 	@suites=$$(ls tools/test_*.sh 2>/dev/null); \
 	test -n "$$suites" || { echo "shell-tools-test FAILED: no tools/test_*.sh found. A suite that runs"; \
 		echo "  nothing reports success, which is how \`lint\` passed over zero files for three rounds."; exit 1; }; \
 	echo "shell-tools-test: $$(echo "$$suites" | wc -l) suites"; \
-	rc=0; for s in $$suites; do echo "-- $$s"; bash $$s || rc=1; done; exit $$rc
+	nj=$(BUILD_DIR)/check/notjudged/remote-guard-test; rm -f $$nj; mkdir -p $$(dirname $$nj); \
+	rc=0; for s in $$suites; do echo "-- $$s"; NOT_JUDGED_FILE=$$nj bash $$s || rc=1; done; exit $$rc
 
 # ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
 

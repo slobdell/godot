@@ -1,0 +1,21 @@
+SEED 66 exited 0
+SEED 67 exited 0
+SEED 68 exited 0
+SEED 69 exited 0
+SEED 70 exited 0
+SEED 71 exited 0
+DONE
+s66.log episodes 6 served 0 neither 6
+s67.log episodes 6 served 1 neither 4
+   SERVED Green_Guns_6 asked 237 ticks 900 closed cap plan_far 11.4 hull_far 5.0 kept True
+s68.log episodes 0 served 0 neither 0
+s69.log episodes 10 served 5 neither 5
+   SERVED Green_Guns_3 asked 409 ticks 900 closed cap plan_far 2.8 hull_far 1.0 kept True
+   SERVED Green_Guns_7 asked 509 ticks 46 closed order plan_far 15.3 hull_far 3.0 kept True
+   SERVED Green_Guns_7 asked 1049 ticks 900 closed cap plan_far 1.6 hull_far 1.7 kept True
+   SERVED Green_Guns II_2 asked 1161 ticks 900 closed cap plan_far 2.4 hull_far 1.9 kept True
+   SERVED Green_Guns II_6 asked 1246 ticks 216 closed order plan_far 11.9 hull_far 11.4 kept True
+s70.log episodes 0 served 0 neither 0
+s71.log episodes 0 served 0 neither 0
+
+[exited with code 0]

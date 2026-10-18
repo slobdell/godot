@@ -1,0 +1,9 @@
+FACE_PAIRS_BOTH drawn | faces 25 | median 2.8 v 3.0 m (se 0.81, line <= 4.3) ok | p90 8.5 v 8.5 (se 0.10, line <= 8.7) ok | max 20.4 v 20.4 | hull_far (plan_far median 3.4 v 3.4) | PASS
+FACE_PAIRS_CAND_ONLY drawn | faces 3 | median 3.1 v 3.7 m (se 0.35, line <= 4.3) ok | p90 3.1 v 3.7 (se 0.15, line <= 3.9) ok | max 3.1 v 3.7 | hull_far (candidate plan_far median 3.2; kept 3) | PASS
+FACE_PAIRS_BASE_ONLY drawn | faces 1 | hull_far candidate [2.1] v base [5.2] (base plan_far [5.2]) | reported
+FACE_PAIRS_OTHER drawn | neither served 148 | unmatched base 21 candidate 5 | reported
+FACE_PAIRS_BOTH clicked | faces 23 | median 1.7 v 1.6 m (se 0.05, line <= 1.7) over | p90 6.3 v 6.3 (se 0.00, line <= 6.3) ok | max 6.9 v 6.9 | hull_far (plan_far median 2.8 v 2.8) | FAIL
+FACE_PAIRS_CAND_ONLY clicked | faces 1 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 12.4; kept 1)
+FACE_PAIRS_BASE_ONLY clicked | faces 1 | hull_far candidate [0.4] v base [3.0] (base plan_far [19.1]) | reported
+FACE_PAIRS_OTHER clicked | neither served 232 | unmatched base 5 candidate 3 | reported
+FACE_PAIRS line (2c): NOT ALL PASS

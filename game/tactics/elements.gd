@@ -127,6 +127,54 @@ func form(units: Array, element_name := "", table: DoctrineTable = null) -> Elem
 	return element
 
 
+## Round 33 (R33.5/R33.6, brains): a CPU SQUAD as elements. A squad of at most Formations.MAX_MEMBERS living crews is
+## one element (`form`). A bigger one, which `form` refuses (C19.1), is dealt into ceil(n / MAX_MEMBERS) elements as even
+## as they come, by his own side's arithmetic (SelectionSquads.deal: west to east, then north to south, so each piece is
+## a cluster of neighbours), named "<squad>", "<squad> II", "<squad> III"... Traced (traffic's X1 census, builder0,
+## showmatch fights 500-523): a showmatch's Green side is folded like a player's army (SquadConsolidation.for_player
+## splits only past 8), so its squads of 6-8 were refused, fought unseated all match, and once the team's other
+## elements died the commander's re-form logged the refusal every think (~470 ERRORs a fight). Callers: ElementCommander
+## and the skirmish's CPU forming; every other caller keeps `form` (manoeuvre's stages form gang squads of up to 13).
+func form_squad(units: Array, squad_name: String) -> Array[Element]:
+	var living: Array[String] = []
+	for unit: Variant in units:
+		var tank := _tank(String(unit))
+		if tank != null and tank.is_alive() and not living.has(String(unit)):
+			living.append(String(unit))
+	var made: Array[Element] = []
+	if living.is_empty():
+		return made
+	if living.size() <= Formations.MAX_MEMBERS:
+		made.append(form(living, squad_name))
+		return made
+	var pieces: Array = SelectionSquads.deal(living, func(unit_name: String) -> Vector3: return _tank(unit_name).global_position)
+	for index in pieces.size():
+		var piece_name := squad_name if index == 0 else "%s %s" % [squad_name, PIECE_NUMERALS[mini(index, PIECE_NUMERALS.size() - 1)]]
+		made.append(form(pieces[index], piece_name))
+	return made
+
+
+const PIECE_NUMERALS := ["", "II", "III", "IV", "V", "VI", "VII", "VIII"]
+
+
+## Overnight item 4 (brains): whether `element` can take one more crew (fewer than `cap` members; MAX_MEMBERS, C19.1).
+static func has_room(element: Element, cap := Formations.MAX_MEMBERS) -> bool:
+	return element != null and element.members().size() < cap
+
+
+## Overnight item 4: `unit_name` (living, in no element) joins `element`, which keeps its id and task. False, and
+## nothing changes, when it has no room under `cap` or the crew is already seated.
+func join(element: Element, unit_name: String, cap := Formations.MAX_MEMBERS) -> bool:
+	var tank := _tank(unit_name)
+	if not has_room(element, cap) or tank == null or not tank.is_alive() or of(unit_name) != null \
+			or not by_id.has(element.id) or tank.team != element.team:
+		return false
+	element.join(unit_name)
+	_by_unit[unit_name] = element
+	element_changed.emit(element.id)
+	return true
+
+
 ## The element `unit_name` belongs to, or null.
 func of(unit_name: String) -> Element:
 	var element: Element = _by_unit.get(unit_name)
