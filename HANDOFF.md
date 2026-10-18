@@ -47,7 +47,7 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
 - **N5.M → main `199d1587`** (native `c70be402`; R33.15). `_manoeuvre`'s decision runs in C++, default ON. Check on
   `025d5631`: builder0 exited 0, 2727/0, ALL JUDGED, sim-baseline unmoved. NATIVE=off: tests 2727/0, sim-baseline unmoved,
   perf-judge 1.47x over budget (main's own all-GDScript path; known). native-proof EQUAL. What he'd notice: nothing, the same
-  game, decided in C++. **Main check of 199d1587 running** (`build/r33-main-check-199d1587.log`).
+  game, decided in C++. **Main 199d1587 checked: builder0 `make check exited 0`, 2735/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved.**
 
 - **R33.6 → main `863cb199`** (brains `fc195815`: builder0 25 targets passed, 2735/0, sim-baseline 13 unmoved; web-smoke's
   wall-clock bound failed at load 30.8 and passed re-run alone, first sound 11.7 s). What he'd notice: a CPU squad of 6–8
@@ -58,6 +58,7 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   2732/0, sim-baseline unmoved, foundry included). The navmesh bake drops foundry's crate-roof islands (region_min_size 8).
   What he'd notice: nothing, except no unit ever plans onto a crate roof. **Far census → main `dd32ede1`** (traffic `c54a932d`):
   round 34's measurement tools, no game code.
+  **Main check of cf35bd13 (R33.6 + body test + islands + far census) running** (`build/r33-main-check-cf35bd13.log`).
 
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
