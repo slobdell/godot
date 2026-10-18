@@ -1,0 +1,107 @@
+# R4 B5c-v6 series on pair/brains-r4-main 45d5f1ea, builder0, native path (GATE_DRIVE=), OFF = --nav-off=gateside,gateinside, 2026-10-17
+
+## named-yard
+== yard (n = 1 pairs): last crew in (s)
+  s27  t8   on    22.1  off    22.1 crews 10/10 v 10/10  fired on 10 off 89  (turned 1 latched_away 0 near 6 side 0)
+  median on 22.1 v off 22.1; on never 0, off never 0
+  runs with fewer crews in on: 0 []
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 1
+
+## named-sumps
+== sumps (n = 1 pairs): all within 8 m (s)
+  s17  t11  on    58.3  off    58.3 arc 0.92 v 0.92  fired on 129 off 129  (turned 0 latched_away 0 near 75 side 0)
+  median on 58.3 v off 58.3; on never 0, off never 0
+  runs > 5 s later on: 0 []; guns_on_arc mean on 0.920 v off 0.920
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 1
+
+## named-yardhead
+
+## cells
+== yard (n = 12 pairs): last crew in (s)
+  s29  t1   on    18.7  off    24.8 crews 10/10 v 10/10  fired on 7 off 86  (turned 0 latched_away 0 near 5 side 0)
+  s29  t3   on    19.3  off    25.4 crews 10/10 v 10/10  fired on 7 off 80  (turned 0 latched_away 0 near 5 side 0)
+  s29  t6   on    21.6  off    21.6 crews 10/10 v 10/10  fired on 7 off 22  (turned 0 latched_away 0 near 6 side 0)
+  s29  t8   on    18.8  off    23.4 crews 10/10 v 10/10  fired on 7 off 83  (turned 0 latched_away 0 near 5 side 0)
+  s29  t11  on    22.1  off    22.1 crews 10/10 v 10/10  fired on 7 off 22  (turned 0 latched_away 0 near 6 side 0)
+  s29  t16  on    16.4  off    20.7 crews 10/10 v 10/10  fired on 7 off 86  (turned 0 latched_away 0 near 5 side 0)
+  s30  t1   on    20.5  off    19.1 crews 10/10 v 10/10  fired on 5 off 81  (turned 0 latched_away 0 near 3 side 0)
+  s30  t3   on    14.0  off    28.4 crews 10/10 v 10/10  fired on 5 off 85  (turned 0 latched_away 0 near 3 side 0)
+  s30  t6   on    21.1  off    31.2 crews 10/10 v 10/10  fired on 27 off 403  (turned 0 latched_away 0 near 3 side 1)
+  s30  t8   on    19.6  off    24.4 crews 10/10 v 10/10  fired on 6 off 85  (turned 0 latched_away 0 near 4 side 1)
+  s30  t11  on    21.0  off    20.9 crews 10/10 v 10/10  fired on 7 off 134  (turned 0 latched_away 0 near 5 side 1)
+  s30  t16  on    21.7  off    27.9 crews 10/10 v 10/10  fired on 24 off 277  (turned 0 latched_away 0 near 5 side 1)
+  median on 20.1 v off 23.9; on never 0, off never 0
+  runs with fewer crews in on: 0 []
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 12
+== sumps (n = 12 pairs): all within 8 m (s)
+  s22  t1   on    23.6  off    23.6 arc 0.96 v 0.96  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s22  t3   on    71.9  off    74.4 arc 0.92 v 0.92  fired on 7 off 8  (turned 0 latched_away 0 near 7 side 0)
+  s22  t6   on    29.5  off    29.5 arc 0.97 v 0.97  fired on 2 off 2  (turned 0 latched_away 0 near 2 side 0)
+  s22  t8   on    24.2  off    24.2 arc 0.95 v 0.95  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s22  t11  on    41.3  off    41.9 arc 0.93 v 0.93  fired on 76 off 67  (turned 0 latched_away 0 near 1 side 0)
+  s22  t16  on    23.9  off    23.9 arc 0.96 v 0.96  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s23  t1   on    23.6  off    23.6 arc 0.96 v 0.96  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s23  t3   on    22.6  off    22.6 arc 0.97 v 0.97  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s23  t6   on    36.9  off    39.3 arc 0.92 v 0.92  fired on 65 off 68  (turned 0 latched_away 0 near 3 side 0)
+  s23  t8   on    23.7  off    23.7 arc 0.94 v 0.94  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s23  t11  on    23.6  off    23.6 arc 0.96 v 0.96  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  s23  t16  on    24.0  off    24.0 arc 0.96 v 0.96  fired on 2 off 3  (turned 0 latched_away 0 near 2 side 0)
+  median on 24.0 v off 24.0; on never 0, off never 0
+  runs > 5 s later on: 0 []; guns_on_arc mean on 0.950 v off 0.950
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 12
+== terminus (n = 4 pairs): last crew in (s)
+  s8   t11  on    42.3  off    42.3 crews 10/10 v 10/10  fired on 8 off 8  (turned 1 latched_away 0 near 5 side 0)
+  s9   t11  on    46.4  off    46.4 crews 10/10 v 10/10  fired on 6 off 122  (turned 0 latched_away 0 near 4 side 0)
+  s10  t11  on    71.7  off    70.0 crews 10/10 v 10/10  fired on 8 off 7  (turned 1 latched_away 0 near 5 side 0)
+  s11  t11  on    48.5  off    48.5 crews 10/10 v 10/10  fired on 9 off 9  (turned 1 latched_away 0 near 6 side 0)
+  median on 47.5 v off 47.5; on never 0, off never 0
+  runs with fewer crews in on: 0 []
+  counter: on-arm runs with 0 fired 0; off-arm runs with > 0 fired 4
+
+## pursuit-on
+== 8 m/s ==
+nudge 0: 12/12 pass; let go 0; closing margin (finite 11) min +13.1 median +13.1 sd 0.7 m; reversal margin min +47 median +47 sd 0 deg
+nudge 0.25: 12/12 pass; let go 0; closing margin (finite 11) min +12.7 median +14.2 sd 3.0 m; reversal margin min +47 median +66 sd 12 deg
+paired: 0/12 verdicts flipped by the nudge alone (seeds []); 0/12 runs identical in both measures
+== 18 m/s ==
+nudge 0: 12/12 pass; let go 0; closing margin (finite 12) min +17.2 median +18.6 sd 1.5 m; reversal margin min +45 median +59 sd 6 deg
+nudge 0.25: 12/12 pass; let go 0; closing margin (finite 12) min +4.7 median +16.1 sd 4.4 m; reversal margin min +24 median +59 sd 16 deg
+paired: 0/12 verdicts flipped by the nudge alone (seeds []); 0/12 runs identical in both measures
+
+## pursuit-off
+== 8 m/s ==
+nudge 0: 12/12 pass; let go 0; closing margin (finite 11) min +13.1 median +13.1 sd 0.7 m; reversal margin min +47 median +47 sd 0 deg
+nudge 0.25: 12/12 pass; let go 0; closing margin (finite 11) min +12.7 median +14.2 sd 3.0 m; reversal margin min +47 median +66 sd 12 deg
+paired: 0/12 verdicts flipped by the nudge alone (seeds []); 0/12 runs identical in both measures
+== 18 m/s ==
+nudge 0: 12/12 pass; let go 0; closing margin (finite 12) min +17.2 median +18.6 sd 1.5 m; reversal margin min +45 median +59 sd 6 deg
+nudge 0.25: 12/12 pass; let go 0; closing margin (finite 12) min +4.7 median +16.1 sd 4.4 m; reversal margin min +24 median +59 sd 16 deg
+paired: 0/12 verdicts flipped by the nudge alone (seeds []); 0/12 runs identical in both measures
+
+## arrive-on
+| squad | yard | terminus | pit | sumps | cut |
+|---|---|---|---|---|---|
+| scout:scout:ifv:tank | 4/4 (37.5), 3, 1 | 4/4 (23.3), 0, 0 | 4/4 (23.9), 0, 0 | 4/4 (28.2), 0, 0 | 4/4 (23.6), 0, 0 |
+| law_scout:law_scout:law_ifv:law_tank | 4/4 (17.9), 0, 0 | 3/4 (21.5) 1h, 0, 0 | 1/4 (18.4) 3h, 0, 0 | 4/4 (31.9), 0, 0 | 4/4 (22.6), 0, 0 |
+| law_scout:law_ifv:law_tank:law_tank | 2/4 (30.8) 2h, 1, 0 | 4/4 (16.4), 0, 0 | 4/4 (22.8), 0, 0 | 3/4 (26.1) 1h, 2, 0 | 4/4 (22.5), 0, 0 |
+| law_ifv:law_ifv:law_suppressor:law_tank | 4/4 (24.4), 0, 0 | 2/4 (31.0) 2h, 0, 0 | 4/4 (33.2), 0, 0 | 3/4 (47.6), 2, 0 | 3/4 (26.5) 1h, 0, 0 |
+| law_tank:law_tank:law_tank:law_tank | 4/4 (29.3), 1, 0 | 4/4 (19.0), 0, 0 | 4/4 (22.1), 0, 0 | 2/4 (50.9), 1, 0 | 4/4 (30.9), 0, 0 |
+SQUAD_ARRIVE make-room=on: 87 of 100 arrive (every crew on its slot); the element said 97; hollow 10; within the element's own 8 m tolerance 97
+SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 10, 6-12 m 0, >12 m 0 (median 4.0 m)
+SQUAD_ARRIVE missing 0
+
+## arrive-off
+| squad | yard | terminus | pit | sumps | cut |
+|---|---|---|---|---|---|
+| scout:scout:ifv:tank | 4/4 (37.5), 3, 1 | 4/4 (20.9), 0, 0 | 4/4 (26.7), 0, 0 | 4/4 (29.3), 0, 0 | 4/4 (23.6), 0, 0 |
+| law_scout:law_scout:law_ifv:law_tank | 4/4 (21.9), 1, 0 | 3/4 (22.3) 1h, 0, 0 | 1/4 (18.4) 3h, 0, 0 | 4/4 (32.2), 0, 0 | 4/4 (22.6), 0, 0 |
+| law_scout:law_ifv:law_tank:law_tank | 2/4 (30.8) 2h, 1, 0 | 4/4 (16.4), 0, 0 | 4/4 (22.8), 0, 0 | 3/4 (26.1) 1h, 2, 0 | 4/4 (22.6), 0, 0 |
+| law_ifv:law_ifv:law_suppressor:law_tank | 4/4 (24.4), 0, 0 | 2/4 (31.0) 2h, 0, 0 | 3/4 (33.9) 1h, 0, 0 | 3/4 (48.5), 2, 0 | 3/4 (26.5) 1h, 0, 0 |
+| law_tank:law_tank:law_tank:law_tank | 4/4 (29.3), 1, 0 | 4/4 (19.0), 0, 0 | 4/4 (22.1), 0, 0 | 2/4 (50.9), 1, 0 | 4/4 (30.9), 0, 0 |
+SQUAD_ARRIVE make-room=on: 86 of 100 arrive (every crew on its slot); the element said 97; hollow 11; within the element's own 8 m tolerance 97
+SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 11, 6-12 m 0, >12 m 0 (median 4.3 m)
+SQUAD_ARRIVE missing 0
+
+## arrive paired (bar line 6)
+B10B_ARRIVE n 100 (missing on 0 off 0) | all-within-8 m 97 v 97 | floor 97.0 | PASS
+B10B_ARRIVE discordant: on-only 0, off-only 0 | paired all_in8_s median 0.00 s (n 97)
