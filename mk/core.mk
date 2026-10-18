@@ -258,23 +258,30 @@ test-leaks: import ## Which tests leave orphan nodes / leak at exit: every shard
 		echo "== $$f"; grep -E '^SHARD |^  \+[0-9]+  |leaked|still in use|^Leaked instance|^ERROR: Leaked|Orphan' "$$f" | sort | uniq -c | sort -rn | head -60; \
 	done
 
+# Round 33 overnight (native, item 1): the suite runs at a FIXED physics rate, as every judged stage already does
+# (sim-baseline, perf-judge, the fresh twin children). `--fixed-fps $(SIM_HZ)` steps one physics tick a frame and runs
+# frames as fast as the machine allows, so a test's ticks no longer follow the wall clock: a loaded box, or a fast one,
+# ran a different number of physics steps a frame before. TEST_FPS= (empty) is the old free-running suite, for comparison.
+TEST_FPS ?= $(SIM_HZ)
+TEST_FPS_ARGS = $(if $(TEST_FPS),--fixed-fps $(TEST_FPS))
+
 # Round 18 (ship): each shard's EXIT STATUS is read, not only its summary line. It was written to test-shards/N.status
 # and never read, so a shard that printed `SHARD i/n: ... 0 failed` and then aborted at exit (heap corruption in picker's
 # test_previewing_a_formation_issues_nothing, exit 134, laptop) passed `test`. Stub-driven: tools/test_test_shards.sh.
 test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
-		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
+		$(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
 		exit $$?; \
 	fi; \
 	rm -rf $(BUILD_DIR)/test-shards && mkdir -p $(BUILD_DIR)/test-shards; \
 	started=$$(date +%s); \
 	seq 0 $$(( $(TEST_SHARDS) - 1 )) | xargs -P $(TEST_SHARDS) -I{} sh -c \
-		'from=$$(date +%s); $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
+		'from=$$(date +%s); $(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
 			--shard-plan=$(TEST_SHARD_PLAN) > $(BUILD_DIR)/test-shards/{}.log 2>&1; echo $$? > $(BUILD_DIR)/test-shards/{}.status; \
 			echo $$(( $$(date +%s) - from )) > $(BUILD_DIR)/test-shards/{}.secs'; \
 	grep -hv '^FILE_TIME ' $(BUILD_DIR)/test-shards/*.log; \
 	grep -h '^FILE_TIME ' $(BUILD_DIR)/test-shards/*.log | sed 's/^FILE_TIME //' | sort > $(BUILD_DIR)/test-times.txt || true; \
-	echo "test wall: $$(( $$(date +%s) - started )) s on $$(hostname), plan $(TEST_SHARD_PLAN), shards (s):$$(for f in $(BUILD_DIR)/test-shards/*.secs; do printf ' %s' $$(cat $$f); done)"; \
+	echo "test wall: $$(( $$(date +%s) - started )) s on $$(hostname), plan $(TEST_SHARD_PLAN), fps $(or $(TEST_FPS),free), shards (s):$$(for f in $(BUILD_DIR)/test-shards/*.secs; do printf ' %s' $$(cat $$f); done)"; \
 	shards=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | wc -l); \
 	if [ "$$shards" -ne "$(TEST_SHARDS)" ]; then \
 		echo "test FAILED: $$shards of $(TEST_SHARDS) shards reported a summary line. A shard that died without"; \
