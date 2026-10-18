@@ -28,15 +28,29 @@ func test_the_rig_frames_with_its_inset() -> void:
 	await f.build(false)
 	f.rig.vision = f.controls.vision_state
 	f.controls.recall_group(1)
-	for i in 40:
-		await tree.process_frame
+	await _settled(f.rig)
 	var default_zoom := f.rig.zoom
 	f.rig.vision_inset = 0.55
 	f.controls.recall_group(2)
 	f.controls.recall_group(1)
-	for i in 40:
-		await tree.process_frame
+	await _settled(f.rig)
 	assert_true(f.rig.zoom > default_zoom + 0.01, "a wider inset pulls the camera back (%.2f vs %.2f)" % [f.rig.zoom, default_zoom])
+
+
+## Round 33 overnight (native, item 1): wait for the camera to settle, not a count of frames. 40 frames was a time only
+## while the suite ran free (real deltas); at --fixed-fps 30 it is 1.33 s of game time and the frame was still
+## arriving. At least 1 s of game time, then until the zoom holds for 30 frames (capped at 20 s).
+func _settled(rig: RtsCamera) -> void:
+	var last := rig.zoom
+	var still := 0
+	var started := Time.get_ticks_msec()
+	await tree.create_timer(1.0).timeout
+	for i in 600:
+		await tree.process_frame
+		still = still + 1 if is_equal_approx(rig.zoom, last) else 0
+		last = rig.zoom
+		if still >= 30 or Time.get_ticks_msec() - started > 20000:
+			break
 
 
 func test_alert_lines_show_the_newest_unseen_alerts_up_to_the_setting() -> void:
