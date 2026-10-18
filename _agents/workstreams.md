@@ -91,6 +91,24 @@ two seats were laid 28 m and 56–68 m south of the anchor, so the centre can't 
 clamp, not a stalled crew, so the roadmap's "4 of 5" rule may be wrong. A pinned --element-trace comes first, and a
 candidate only after it.
 
+- **R33.24 C33.9 PARKED (2026-10-18; manoeuvre, stream/manoeuvre `7e8e072bf`, references/round33/manoeuvre/c339-judged/;
+  tree `781801da0` = ea043755's turn-in + measurement; FRESH seeds 31–36, builder2 start to end, --fixed-fps 30, 288
+  rows).** (a) in-reach in-arc 3.7 → 23.9 % FAIL (≥ 25). (b) shots 2 → 10 PASS. (c) in-reach exchange 0.20 → 1.77, no
+  cell worse, PASS (hits 111 → 104). (c-out) pooled hits 42 → 57, worst +37 % (gang_scout v syn_scout 45 m) FAIL. (d) 0
+  commanded reverse in 72 runs, (d2) 0 reverse at stop (OFF max 30), (e) 25.8 m, (g) identical: all PASS. Machine
+  equivalence: dev OFF rows 312/312 identical on builder2 and builder0. **What he saw is fixed in every judged run** (no
+  chosen reverse at a face or a HOLD; it fights, with an exchange of 1.77 v 0.20). It misses on aim time (23.9 v 25) and
+  on hits taken where its gun can't reach. Nothing ships. **The next step is the lead's** (HANDOFF, morning): ship as it
+  is, or a second attempt that turns in only within weapon reach (out of reach it keeps today's motion, so (c-out) =
+  OFF by construction). Recommendation in HANDOFF.
+- **R33.25 relay-smoke red under load on CP-F's pair `70cb7f683` (2026-10-18).** The suite: 2777/0 and sim-baseline
+  unmoved. The only red is relay-smoke's engine-log gate, ×6 "Trying to call an RPC via a multiplayer peer which is not
+  connected" (match.gd:2094 `_shell_hit` ← shell.gd `_fly`), a different message from round 31's 4/5-tanks race. It
+  passed alone twice on the same tree and box. CP-F touches neither the network nor shells. **Ruling:** the pair meets
+  C31.1 for STARTING its series (its suite is green). The message is a LATENT network bug (a shell's RPC fired after the
+  peer drops at teardown), filed UNOWNED in the roadmap per HANDOFF's "a second relay-smoke red gets traced, not waved
+  through". CP-F does not merge while relay-smoke is red in its merge check.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it

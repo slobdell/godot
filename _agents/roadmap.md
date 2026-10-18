@@ -1343,3 +1343,7 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   velocity, or report wedged crews as their own line.
 - **The hull-rest stage is barely seed-sensitive (manoeuvre, R33.23):** seeds 40 = 43 and 44 = 45, row for row, so a
   paired se over seeds understates the noise. Make the seed vary the stage's geometry, as C33.9's orbit stage now does.
+- **relay-smoke: a shell's RPC fires after the peer has dropped (UNOWNED, network; R33.25):** ×6 "Trying to call an RPC
+  via a multiplayer peer which is not connected" from match.gd:2094 `_shell_hit` ← shell.gd `_fly`, under a full check's
+  load on builder2 (pair 70cb7f683); it passed alone twice. Guard `_shell_hit`'s RPC on a connected peer (or stop shells
+  at teardown), with a test that drops the peer while a shell is in flight.

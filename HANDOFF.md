@@ -46,6 +46,15 @@ In that case (a law scout against a Syndicate scout circling at 30 m) it fires a
 about 30 % more hits (78 → 103), against hardly firing and slowly losing today. **Recommendation: stand and trade**, as
 you described. The judged rule now compares damage dealt against damage taken, not hits taken alone.
 
+**❓ For the lead, the scout fix's verdict (C33.9, R33.24): it PARKED narrowly.** On fresh seeds, the shuffle you saw is
+gone in every run: it never chooses to reverse, not even while holding. It stays near its post and fights back: about
+5× the shots, and it now deals more damage than it takes when its gun can reach (1.77 dealt per 1 taken, against 0.20
+today). It missed two lines. Its aim was on target 23.9 % of the time against a 25 % line. And where its gun CAN'T reach
+the attacker (a gang scout circled at 45 m by a Syndicate scout), it takes more hits than today (57 v 42), because it
+turns to face something it can't shoot. **Choices:** (1) ship it as it is: the shuffle is gone, at the cost of those
+out-of-reach hits; (2) **recommended:** a second attempt that turns in only when its gun can reach, and keeps today's
+motion otherwise, judged on fresh seeds (one evening of builder2); (3) leave it parked.
+
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
