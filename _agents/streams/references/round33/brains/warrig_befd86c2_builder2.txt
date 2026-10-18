@@ -1,0 +1,22 @@
+# War Rig cap + fold (item 3): lab/brains-warrig-main befd86c2, builder2 (warrig-trace runs --brains-off=native: GDScript brains, as manoeuvre's face-clip setup)
+worst ON seeds first (elements not arrived ON, then largest inset):
+  s8 on  id 1 IN t=25.1 inset 0.0 centroid 0.0 | id 2 IN t=11.1 inset 15.0 centroid 12.7 | id 3 IN t=36.1 inset 15.0 centroid 1.2
+  s8 off id 1 IN t=24.1 inset 0.0 centroid 0.0 | id 2 out t=None inset 0.0 centroid 20.2 | id 3 IN t=53.1 inset 0.0 centroid 3.7
+  s14 on  id 1 IN t=24.1 inset 0.0 centroid 0.0 | id 2 IN t=11.1 inset 15.0 centroid 12.7 | id 3 IN t=44.1 inset 15.0 centroid 1.2
+  s14 off id 1 IN t=24.1 inset 0.0 centroid 0.0 | id 2 out t=None inset 0.0 centroid 20.2 | id 3 out t=None inset 0.0 centroid 1.6
+  s11 on  id 1 IN t=12.1 inset 0.0 centroid 2.1 | id 2 IN t=18.1 inset 15.0 centroid 6.4
+  s11 off id 1 IN t=20.1 inset 0.0 centroid 2.1 | id 2 out t=None inset 0.0 centroid 15.6
+  s12 on  id 1 IN t=11.1 inset 0.0 centroid 1.3 | id 2 IN t=27.1 inset 15.0 centroid 8.5
+  s12 off id 1 IN t=12.1 inset 0.0 centroid 1.3 | id 2 out t=None inset 0.0 centroid 15.4
+WARRIG on seeds 7 elements 10 | arrived 10 | largest inset 15.0 m, median 15.0 m
+WARRIG off seeds 7 elements 10 | arrived 5 | largest inset 0.0 m, median 0.0 m
+
+## squad-arrive 69-72, ON v --anchor-inset=off
+arrive-off.log:SQUAD_ARRIVE make-room=on: 80 of 100 arrive (every crew on its slot); the element said 100; hollow 20; within the element's own 8 m tolerance 100
+arrive-off.log:SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 13, 6-12 m 7, >12 m 0 (median 4.2 m)
+arrive-off.log:SQUAD_ARRIVE missing 0
+arrive-on.log:SQUAD_ARRIVE make-room=on: 80 of 100 arrive (every crew on its slot); the element said 100; hollow 20; within the element's own 8 m tolerance 100
+arrive-on.log:SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 13, 6-12 m 7, >12 m 0 (median 4.2 m)
+arrive-on.log:SQUAD_ARRIVE missing 0
+ARRIVE_PAIR n 100 (missing on 0 off 0) | all-within-8 m 100 v 100 | floor 100.0 | PASS
+ARRIVE_PAIR discordant: on-only 0, off-only 0 | paired all_in8_s median 0.00 s (n 100)

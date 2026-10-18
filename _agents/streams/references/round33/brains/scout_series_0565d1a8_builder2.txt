@@ -1,0 +1,36 @@
+# Scout fights-back (item 2) series, lab/brains-scout 0565d1a8 (native pair), builder2, 2026-10-18
+
+## (1) orbit cells 60-72 (turn-in OFF judged, ON reported), ON v SCOUT_FIGHT=off
+worst ON cells first (median damage ON / OFF):
+  ('gang_scout', 'syn_scout', 15.0, False) dmg 619 v 475 | shots 24 v 25 | hits_off 1404 | ENGAGE 8039 v 0
+  ('law_scout', 'syn_scout', 15.0, False)  dmg 431 v 353 | shots 652 v 137 | hits_off 1757 | ENGAGE 9087 v 0
+  ('law_scout', 'syn_scout', 30.0, False)  dmg 250 v 205 | shots 1750 v 353 | hits_off 875 | ENGAGE 9335 v 0
+  ('gang_scout', 'syn_scout', 15.0, True)  dmg 636 v 589 | shots 45 v 39 | hits_off 1383 | ENGAGE 7905 v 0
+  ('law_scout', 'syn_scout', 30.0, True)   dmg 316 v 294 | shots 126 v 120 | hits_off 951 | ENGAGE 7218 v 0
+SCOUT_CELLS turn-in OFF (judged) n 312 v 312 rows, 24 cells | (a) shots 5121 v 3158 (x1.62, bar 1.5) medians 1.0 v 1.0 | (b) damage median 190 v 186, cells (OFF hits >= 10) > 20% worse: 3 [(('gang_scout', 'syn_scout', 15.0, False), 619.0, 475.0), (('law_scout', 'syn_scout', 15.0, False), 431.0, 353.0), (('law_scout', 'syn_scout', 30.0, False), 250.0, 205.0)] | (c) ENGAGE ticks 52180 v 0, SPOT ticks 193510 v 247892
+SCOUT_CELLS out-of-reach cells (gang_scout v syn_scout at 30/45 m): ENGAGE ticks ON 693
+SCOUT_CELLS turn-in ON (reported) n 312 v 312 rows, 24 cells | (a) shots 11903 v 9599 (x1.24, bar 1.5) medians 6.0 v 5.0 | (b) damage median 181 v 177, cells (OFF hits >= 10) > 20% worse: 2 [(('gang_scout', 'syn_scout', 15.0, False), 630.0, 475.0), (('gang_scout', 'syn_scout', 15.0, True), 557.0, 369.0)] | (c) ENGAGE ticks 63864 v 0, SPOT ticks 196649 v 262886
+
+## (3) fights guard, scout-census 21-28, ON v --scout-fight=off
+worst ON fights first (deaths, then enemy-seen lost):
+  seed 21 deaths 3 v 3 | kills 0 v 0 | enemy-seen 827 v 827 s | fight_s 62 v 62
+  seed 22 deaths 16 v 16 | kills 2 v 2 | enemy-seen 1339 v 1339 s | fight_s 232 v 232
+  seed 23 deaths 11 v 11 | kills 4 v 4 | enemy-seen 2582 v 2582 s | fight_s 239 v 239
+  seed 24 deaths 4 v 4 | kills 1 v 1 | enemy-seen 1171 v 1171 s | fight_s 6 v 6
+SCOUT_GUARD n 8 (on 8 off 8 rows) | deaths 89 v 89 (limit 89.0) PASS | kills 14 v 14 | enemy-seen 15943 v 15943 s (floor 15943) PASS
+
+## attribution: sim-baseline with SCOUT_FIGHT=off (builder0, same tree)
+  foundry    f72b1712479b2570  unmoved
+  yard       df0c04272c671909  unmoved
+  pit        76b986231ec5b85a  unmoved
+  terminus   1c2d8ee6ba3af808  unmoved
+  crossing   f8024203917ca808  unmoved
+  sumps      8ac8cffce54c83fc  unmoved
+  locks      9bbfe8b7e38cef8d  unmoved
+  parade     27580bb53aa4ebe3  unmoved
+  gorge      408d8c5e49d22a5f  unmoved
+  archipelago f97836b7868c7906  unmoved
+  cut        b31bbf132c154b23  unmoved
+  docks      50f15553c558d108  unmoved
+  yard_open  d93353b60efd6db3  unmoved
+sim-baseline passed: 13 maps unmoved (glibc-2.43)

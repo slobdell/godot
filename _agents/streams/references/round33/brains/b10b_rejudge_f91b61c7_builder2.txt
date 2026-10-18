@@ -1,0 +1,71 @@
+# B10b re-judged on main 54abf20a + R4 (R33.18/R33.20), pair f91b61c7 (tree c2ba1756, Status-only on top), builder2, 2026-10-18
+
+## named
+== sumps
+  on  n 2 | runs with a flipping crew 0 | drift moves 1 | worst crew 1 | complete 2 | all_in8 median 37.50 s
+  off n 2 | runs with a flipping crew 0 | drift moves 4 | worst crew 2 | complete 2 | all_in8 median 39.44 s
+  b10 n 2 | runs with a flipping crew 0 | drift moves 1 | worst crew 1 | complete 2 | all_in8 median 37.50 s
+  on worse than off: none
+
+## census
+== sumps
+  on  n 12 | runs with a flipping crew 0 | drift moves 40 | worst crew 2 | complete 12 | all_in8 median 24.57 s
+  off n 12 | runs with a flipping crew 0 | drift moves 40 | worst crew 2 | complete 12 | all_in8 median 24.57 s
+  b10 n 12 | runs with a flipping crew 0 | drift moves 39 | worst crew 1 | complete 12 | all_in8 median 24.57 s
+  on worse than off: none
+== terminus
+  on  n 4 | runs with a flipping crew 0 | drift moves 31 | worst crew 3 | complete 4 | crews in 40
+  off n 4 | runs with a flipping crew 0 | drift moves 31 | worst crew 3 | complete 4 | crews in 40
+  b10 n 4 | runs with a flipping crew 0 | drift moves 31 | worst crew 3 | complete 4 | crews in 40
+  on worse than off: none
+== yard
+  on  n 12 | runs with a flipping crew 0 | drift moves 41 | worst crew 1 | complete 11 | crews in 119
+  off n 12 | runs with a flipping crew 0 | drift moves 41 | worst crew 1 | complete 11 | crews in 119
+  b10 n 12 | runs with a flipping crew 0 | drift moves 41 | worst crew 1 | complete 11 | crews in 119
+  on worse than off: none
+
+## per run (on / off / b10): all_in8_s or last crew, flipping, drift
+sumps 16 t8 36.23 36.5 36.23 | flip 0 0 0 | drift 1 2 1 
+sumps 19 t8 38.77 42.37 38.77 | flip 0 0 0 | drift 0 2 0 
+sumps 20 t1 28.87 28.87 28.87 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 20 t3 24.57 24.57 24.57 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 20 t6 23.8 23.8 23.8 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 20 t8 23.67 23.67 23.67 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 20 t11 24.67 24.67 24.67 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 20 t16 28.9 28.9 28.9 | flip 0 0 0 | drift 0 0 0 | identical on/off
+sumps 21 t1 24.47 24.47 24.47 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 21 t3 22.97 22.97 22.97 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 21 t6 32.27 32.27 32.27 | flip 0 0 0 | drift 2 2 2 | identical on/off
+sumps 21 t8 23.17 23.17 23.17 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 21 t11 24.57 24.57 24.57 | flip 0 0 0 | drift 4 4 4 | identical on/off
+sumps 21 t16 37.87 37.87 43.67 | flip 0 0 0 | drift 2 2 1 | identical on/off
+terminus 16 t11 43.0 43.0 43.0 | flip 0 0 0 | drift 11 11 11 | identical on/off
+terminus 17 t11 45.2 45.2 45.2 | flip 0 0 0 | drift 8 8 8 | identical on/off
+terminus 18 t11 43.0 43.0 43.0 | flip 0 0 0 | drift 8 8 8 | identical on/off
+terminus 19 t11 40.3 40.3 40.3 | flip 0 0 0 | drift 4 4 4 | identical on/off
+yard 31 t1 21.9 21.9 21.9 | flip 0 0 0 | drift 3 3 3 | identical on/off
+yard 31 t3 20.8 20.8 20.8 | flip 0 0 0 | drift 3 3 3 | identical on/off
+yard 31 t6 21.2 21.2 21.2 | flip 0 0 0 | drift 4 4 4 | identical on/off
+yard 31 t8 20.9 20.9 20.9 | flip 0 0 0 | drift 3 3 3 | identical on/off
+yard 31 t11 20.3 20.3 20.3 | flip 0 0 0 | drift 3 3 3 | identical on/off
+yard 31 t16 20.3 20.3 20.3 | flip 0 0 0 | drift 4 4 4 | identical on/off
+yard 32 t1 26.5 26.5 26.5 | flip 0 0 0 | drift 4 4 4 | identical on/off
+yard 32 t3 19.9 19.9 19.9 | flip 0 0 0 | drift 3 3 3 | identical on/off
+yard 32 t6 15.9 15.9 15.9 | flip 0 0 0 | drift 4 4 4 | identical on/off
+yard 32 t8 20.5 20.5 20.5 | flip 0 0 0 | drift 4 4 4 | identical on/off
+yard 32 t11 21.1 21.1 21.1 | flip 0 0 0 | drift 2 2 2 | identical on/off
+yard 32 t16 23.2 23.2 23.2 | flip 0 0 0 | drift 4 4 4 | identical on/off
+
+## arrive (seeds 53-56, n 100 an arm)
+b10b-b2-c2ba1756/arrive-on.log:SQUAD_ARRIVE make-room=on: 85 of 100 arrive (every crew on its slot); the element said 98; hollow 13; within the element's own 8 m tolerance 98
+b10b-b2-c2ba1756/arrive-on.log:SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 8, 6-12 m 5, >12 m 0 (median 4.4 m)
+b10b-b2-c2ba1756/arrive-on.log:SQUAD_ARRIVE missing 0
+b10b-b2-c2ba1756/arrive-off.log:SQUAD_ARRIVE make-room=on: 84 of 100 arrive (every crew on its slot); the element said 98; hollow 14; within the element's own 8 m tolerance 98
+b10b-b2-c2ba1756/arrive-off.log:SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 9, 6-12 m 5, >12 m 0 (median 4.2 m)
+b10b-b2-c2ba1756/arrive-off.log:SQUAD_ARRIVE missing 0
+B10B_ARRIVE n 100 (missing on 0 off 0) | all-within-8 m 98 v 98 | floor 98.0 | PASS
+B10B_ARRIVE discordant: on-only 0, off-only 0 | paired all_in8_s median 0.00 s (n 98)
+
+## cost (Locks, ai-parts-match)
+on "t.poll.element":[0.039,25.53]
+off "t.poll.element":[0.039,25.53]
