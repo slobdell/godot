@@ -1,0 +1,13 @@
+arms new_drawn base_drawn runs 48 48 missing: {'new_drawn': [], 'base_drawn': []}
+(a) wheels/turret per task: median, share <= 15
+   faced_attack_move        n 342 median   5.3  <=15  76.3 %
+(d) crews moving at the judge, summed over paired runs: new base diff se(sum) limit(1.645se) verdict
+   faced_attack_move        wt  n 48   41  30   +11  se   7.6  lim +12.5  PASS
+   faced_attack_move        all n 48   51  38   +13  se   7.8  lim +12.8  FAIL
+(d-wedged) crews WEDGED at the judge (not still, pinned by real speed), REPORTED: new base
+   faced_attack_move        wedged_wt n 48    3   3    +0
+   faced_attack_move        wedged    n 48    6   7    -1
+(e) never settled (-1 or >= 75) per task, runs holding wheels/turret: new base diff se lim
+   faced_attack_move        n 30  11 10   +1  se  2.3 lim +3.7 PASS | settle median new 48.0 base 47.0 paired-diff median +0.0
+(d) by faction, all classes: new/base
+   faced_attack_move        cond 14/10  gang 37/26  law 0/2  synd 0/0

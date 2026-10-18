@@ -72,6 +72,21 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### CP-F: attack-move's late movers TRACED, owner brains (2026-10-18; `references/round33/manoeuvre/cpf-herringbone-trace/`)
+
+Diagnosis only. pair/cpf3b-on + main (War Rig c583e0a85) + a temporary seat-goal print (TMPGOAL) and extended ELEMENT_TRACE;
+builder0, pinned, GDScript, attack-move, seeds 40-45 + 66-71, 48 runs an arm.
+- **Main's War Rig change alone halves the gap:** wheels/turret movers NEW v BASE 41 v 30 (+11, lim 12.5, PASS); all classes
+  +13 (lim 12.8). The rest is gang crews (37 v 26).
+- **The loop (seed 41, gangs, the second gang-tank element):** with a quiet enemy "possible", Drills picks **herringbone**
+  (drills.gd ~178); its plan branch (element_plan.gd ~1902) lays the seats on the situation's heading, which is **the members'
+  hull forwards averaged** (element_situation.gd ~72), never the task's drawn facing. CP-F turns the hulls, the average moves,
+  the herringbone re-lays rotated (heading (0.13,-0.99) -> (-0.84,-0.54) in 6 s, anchor fixed), seats jump 5-17 m, crews are
+  re-sent. Guns' late seat drifts 12 BASE v 103 NEW. The other gang-tank element takes `_halt`'s drawn-facing branch and stays.
+- **Fix (brains' file):** the herringbone halt lays on the task's drawn facing when it has one, else on the kept heading while
+  it holds; never on the live average. Sent to the orchestrator for an owner.
+- Also (both arms, base behaviour): the Hunters swarm re-lays its seats ~750 times after arrival (median 8.5 m); not traced.
+
 ### CP-F: the arrival-flicker fix, DEV ONLY (R33.34; `references/round33/manoeuvre/cpf-arriveleg-dev/`)
 
 Planner's s69 trace: reversing on a k-turn leg inside its attack-move goal's 6 m radius, a crew was "arrived" mid-leg, the move
