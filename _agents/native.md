@@ -138,6 +138,13 @@ rounds and nowhere else:
    (ad1d1f3d). Hold ids (`RID::get_id()`), numbers and std containers in statics; hold godot objects per instance (or in
    the uninitialize hook's care, as `exec_states` is). `make native-live-guard` (in `check`) starts and quits Godot through
    the library once and fails on a crash line or a non-zero exit.
+8. **A twin compares no wall-clock value, not even `> 0`** (round 33, builder2). `Time.get_ticks_usec()` counts whole
+   microseconds, so a charged span can be 0 on one side and 1 on the other. On builder2's Zen 5 the GDScript held
+   controller tick sometimes finished within 1 µs while the native one crossed a microsecond: 7 of 600 mismatches,
+   only on `profile_usec > 0` (main d99394f1; builder0 never showed it). Make every timed span cross the clock (the
+   probe spins until the clock advances: `test_native_controller`, `c7646f41`, main `ac06a393`), or leave the field out.
+   Every other field stays exact. A twin that passes on one CPU only is a test bug, or a determinism bug: say which
+   before accepting it.
 
 ## The proof (every port, every commit)
 

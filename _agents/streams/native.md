@@ -173,9 +173,24 @@ controller_tick runs the GDScript compute_command; N5.M and N5.Y never touch fac
 exec_fields.h; `--nav-off=turnin` empties nothing native (the drive steps aside on any `_off`).
 **builder2 (GCP Zen 5) controller twin: 7 / 600 at d99394f1, TIMER GRANULARITY, not libm.** The only differing field is
 `OrderController.profile_usec > 0`, on held ticks with profiling on: the GDScript held path sometimes finishes within 1 µs
-there and charges 0. Fix, test-only, approved: `lab/native-controller-usec` `c7646f41` (main `a47d43e3` + the probe
-brain spinning until get_ticks_usec advances). Run it on builder2 when the orchestrator frees the box, and on builder0
-light.
+there and charges 0. Fix, test-only: `lab/native-controller-usec` `c7646f41` (main `a47d43e3` + the probe brain spinning
+until get_ticks_usec advances). n 1 on each, both `make native test FILTER=native_controller exited 0`, 1 / 0, 0 of 600
+mismatches: builder2 (`make gcp-remote`) and builder0 light. **MERGED: main `ac06a393`.** The rule is native.md
+hazard 8.
+**Round 33 close (native).** Merged this round: N5.M (`199d1587`), N5.Y (`a47d43e3`), the controller-twin fix
+(`ac06a393`). Paired and green: R4 (`e382202e`) and CP-F (no C++). Reviewed, none ported: R33.3, planner `1b5c69df`.
+Answered, no twin: C33.9. Not reached this round (they come as pairs): brains' B10b (failed on its base; re-judged on
+main + R4), B11b, R1; planner's CP-Q C++ review; traffic's CP-X (parkedroom is GDScript-only). Nothing barred is left.
+Docs-only commits on stream/native after the merges: `beb3e868` (native.md N5.Y order-dependence), `159248db` and this
+one (Status, hazard 8).
+**Round 34 candidates (native):**
+- Split `test_native_gate` by frame, where a floor is a branch (FILE_TIME 1006 s on the pair). It lands on main with R4.
+  Measure CPU seconds before and after; the next slowest are `test_native_execute` (221 s) and `test_native_drive_kturn`
+  (204 s), both under the suite's largest file (`test_tactics_pursuit`, 312 s), so split them only if shard balance
+  needs it.
+- One `NATIVE=off` perf-judge reading on main, filed as a known item (1.47x at `c70be402`, builder0; 1.07x at
+  `6434969e` under a lighter load). Use builder2 or builder0, whichever is free.
+- The pairs above, as they arrive.
 **Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
 its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
 wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:
