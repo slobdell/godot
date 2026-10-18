@@ -540,6 +540,11 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (C26.2) and the gate tests. The bar gains: named cases with each switch ALONE reported and both together DECIDING;
   squad-arrive-series FRESH seeds (n 100) all-within-8 m ON ≥ OFF − 1.645 se; test_nav_gate_v4 / test_wheeled_arrival /
   test_nav_gate_inside green on native.
+  **Third cause measured (brains, lab `87181cf3`, laptop, parade s43, n 1):** 18 of 31 Green set-ups stood more than 8 m
+  from the place assigned at deploy, many 13–27 m off. Trucks deploy where they stand once they may fire. **Added as a
+  THIRD switch, `--battery-seat=deployatplace`, judged alone like the other two:** a battery crew deploys only at its place
+  (within 8 m). The cost is firing later, so the bar gains: median time from a battery's fire order to its first shot,
+  ON ≤ OFF + 5 s on the census, plus the shots line already filed.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
