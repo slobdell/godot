@@ -172,3 +172,13 @@ traffic-native-verify: native import ## Round 30 (T1c-b): census + ApproachStage
 		v=$$(grep -c "NativeExec verify" $$log || true); p=$$(grep -o '"repacks":[0-9]*' $$log | head -1); \
 		echo "  approach s$$seed: $$v mismatches, $${p:-NO PROBE LINE}"; [ "$$v" = 0 ] && [ -n "$$p" ] || bad=1; done; \
 	[ $$bad = 0 ] && echo "traffic-native-verify: 0 mismatches" || { echo "traffic-native-verify FAILED (build/traffic-native-verify/)"; exit 1; }
+
+# Round 33 (traffic stretch): the navmesh's disconnected islands per arena at each bake region_min_size
+# (ISLAND_ARENAS=a,b ISLAND_SIZES=2,6,8,10) -> ISLANDS lines (tests/traffic/island_probe.gd). Measurement only.
+ISLAND_ARENAS ?=
+ISLAND_SIZES ?= 2,6,8,10
+.PHONY: traffic-islands
+traffic-islands: import ## Round 33 (traffic stretch): navmesh islands (crate roofs) per arena and bake region_min_size -> build/traffic-islands.log
+	@timeout 1200 $(GODOT) --headless --path . --script res://tests/traffic/island_probe.gd -- \
+		$(if $(ISLAND_ARENAS),--arenas=$(ISLAND_ARENAS)) --min-sizes=$(ISLAND_SIZES) > $(BUILD_DIR)/traffic-islands.log 2>&1 || true
+	@grep "^ISLANDS\|SCRIPT ERROR" $(BUILD_DIR)/traffic-islands.log || tail -20 $(BUILD_DIR)/traffic-islands.log
