@@ -72,6 +72,23 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### CP-F: the arrival-flicker fix, DEV ONLY (R33.34; `references/round33/manoeuvre/cpf-arriveleg-dev/`)
+
+Planner's s69 trace: reversing on a k-turn leg inside its attack-move goal's 6 m radius, a crew was "arrived" mid-leg, the move
+became a face "from post", the k-turn was dropped and the held-post rule refused moves for 36 ticks. Fix on
+**`lab/cpf-arriveleg` `7e0953f9d`** (0dad42fa2 + `Manoeuvre.leg_holds_arrival`, opt-in `--nav-off=arriveleg`, one condition
+in `TankBrain._act`'s arrived branch, brains agreed; test `test_manoeuvre_arrive_leg`). builder0, pinned, GDScript,
+faced_attack_move only, seeds 40-45 + 66-71 (48 runs an arm), one arm a call:
+
+| attack-move movers at the judge (wheels/turret, paired) | NEW | BASE | NEW - BASE (lim) |
+|---|---|---|---|
+| without the fix | 71 | 44 | +27 (13.1) |
+| with the fix | 66 | 40 | +26 (12.2) |
+
+The fix fires rarely (arrivals held: BASE 8, NEW 3 in 48 runs) and takes about 5 movers off each arm alike; **it does not
+close CP-F's attack-move gap**, so no attempt-4 bar (the orchestrator's rule). The late gang movers are still seat moves
+(driving a move at 75 s), not this flicker. Wedged crews 3-4 v 2 (reported).
+
 ### CP-F ATTEMPT 3 JUDGED: PARKS (2026-10-18; tables in `references/round33/manoeuvre/cpf3b-series/`)
 
 Pair **pair/cpf3b-on `0dad42fa2`** (full check builder2 exited 0, 2777/0, sim-baseline 13 unmoved; seat-first at
