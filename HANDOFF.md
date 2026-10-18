@@ -157,6 +157,15 @@ movers, and is being developed tonight; (3) leave it parked.
   test_native_gate is split. NATIVE=off perf is JUDGED PASS on both machines (1.03x, 1.01x), which closes yesterday's
   1.47x worry. Other streams' direct run_tests.gd callers (nav, pace, planner, command, tactics .mk) still run free.
 
+- **Main `74e238236` GREEN on builder2** (native's test infra + battery seat): `make check exited 0`, 2779/0, 27 targets
+  ALL JUDGED, sim-baseline 13 unmoved, perf-judge PASS 1.07x, 0 "native: absent".
+- **Rejoin → main `6703d74dc`** (brains `d5c98eb7`, main-based; R33.32 re-run): a respawned CPU crew joins its squad's
+  surviving group. One-crew groups 2 v 1595; kills and deaths within the lines (deaths close: 163.1 v the 164.6 limit).
+- **War Rig → main `c583e0a85`** (brains `befd86c2`): a squad sent to the arena edge has its target moved in by at most
+  15 m on the final approach, and counts as arrived when it reaches the spots it actually laid. Every element arrives
+  (10/10 v 5/10); arrivals elsewhere 100 v 100. What he'd notice: his War Rig squad sent to the edge arrives, and faces
+  the way he drew. It brings manoeuvre's two test-screen options (defaults unchanged). Both ride the next main check.
+
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
   moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
