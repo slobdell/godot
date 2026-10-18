@@ -202,7 +202,17 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   out of arc goes through turn-in (or holds still), never the creep. Manoeuvre puts it in order_controller.gd (its own
   file) before the creep. If the gunnery R2 line itself must change, that line is granted to manoeuvre for this, with a
   merge note. **(d) gains (d2):** reverse ticks while the order is `stop` (HOLD), ON = 0 in every player-post run, and
-  total reverse ticks are reported. Filed before any judged number. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
+  total reverse ticks are reported. Filed before any judged number.
+  **Weapon reach (orchestrator, 2026-10-18; after dev 11–23 only, judged 31–36 unseen):** dev on three variants
+  (`ea043755`, `679de95d`, `ecb955be`; builder2, --fixed-fps, n 13) passes (b), (d), (d2), (e) and (g), but (a) is 21–23 %
+  and (c)'s worst cell is +36 to +56 %, always gang_scout v syn_scout at 30/45 m. There the gang scout's spear_gun
+  (effective 24 m) fires 0 shots in BOTH arms, while the orbiter's pulse_repeater reaches 55 m. Turning in to face a
+  target it cannot hit gains nothing and exposes it. That is a design fact, not a number to tune, so: **the candidate
+  becomes `ea043755` + "out of its weapon's effective reach, the turn-in jinks without chasing the bearing" (evasion only,
+  no facing)**, developed on 11–23 first. **Judged on 31–36:** (a) ≥ 2× OFF and ≥ 25 %, and (c)'s per-cell 20 % line
+  (OFF hits ≥ 10), both read on IN-REACH cells (the orbit radius within the scout's effective range). OUT-OF-REACH cells:
+  pooled hits ON ≤ OFF, and no cell worse by more than 20 % (OFF hits ≥ 10), with in-arc reported. The 25 % line stands
+  and is not lowered. A scout outgunned at range LEAVING is brains' item 2 (the SPOT question), not steering. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
   moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
   ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
   reported in the verdict.
