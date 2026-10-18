@@ -347,3 +347,12 @@ the morning.
   suspected. **Recommendation (to the orchestrator before any v3 work):** v3 as written cannot fix this line. Either
   re-scope (2c) to faces both arms planned (paired by face), with the extra faces reported along with what the base did
   instead, or park P3 for good. Either is a new bar on fresh seeds.
+- **R33.26 (orchestrator): (a).** P3 v2 parks as filed; (2c) re-scoped to drift paired BY FACE; v3 withdrawn.
+  **Built (laptop, GDScript drive: planner Godot tests 22/0; tool tests 13/13):** the seam's `face_episodes` (one crew
+  at one home, from its first ask until a new home, a new order destination, the hull freed or 30 s: the seam's
+  outcome, the plan's furthest and the HULL's own furthest from home, whoever drove it; measurement only) and
+  `tests/planner/face_pairs.py` (episodes paired by crew and home inside a paired run; classes both / candidate only /
+  base only / unmatched; `--distinct`). **Finding that shapes the bar:** the yard stage's base episode is "served",
+  because after the abandon the executor turns the rig (hull 12.1 m out) and a re-ask plans a 1.4 m remainder. A
+  plan's furthest understates what today does, so every class is judged on the hull's own furthest (candidate 11.5 v
+  base 12.1 m there), with plan_far reported.
