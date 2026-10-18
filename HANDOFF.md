@@ -131,8 +131,10 @@ attempt 1 (`781801da0`'s turn-in) as it is.**
   fixes.
 
 - **P3 → main (R33.28; the merge of `923fcb97f`):** the face keep ships ON. A vehicle told to face behind it turns round in
-  about 10 s instead of 15 (the yard: 9.83 v 15.43 s), with no worse drift on faces either version plans. It rides the
-  next main check (builder2).
+  about 10 s instead of 15 (the yard: 9.83 v 15.43 s), with no worse drift on faces either version plans. **Main `bed0ef59e` checked:** builder2 2773/0,
+  sim-baseline 13 unmoved, perf-judge JUDGED PASS 1.09x; its only reds were load-sensitive (net-smoke: a client saw
+  1/2 tanks; combat-smoke not run behind it; the quiet-window test), and all three re-ran green alone on builder0
+  (`make net-smoke combat-smoke remote-guard-test exited 0`). GREEN by the R33.6 web-smoke rule.
 
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
