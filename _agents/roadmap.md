@@ -1327,3 +1327,8 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   P2/P3 hull-rest arms use the same workload. The `mk/*.mk` grep (2026-10-18) finds unpinned `$(GODOT) --headless --path`
   calls in 22 files (most are renders, smokes and network targets, where the wall clock is the point). Audit every
   JUDGED stage, pin it to `--fixed-fps $(SIM_HZ)`, and say in each parked verdict whether it rested on an unpinned stage.
+- **The hull-rest judge counts a wedged crew as "still moving" (manoeuvre, R33.23 trace):** "still" reads the reported
+  velocity, so a hull pinned short of its seat (reported v 4.9, real 0.00) counts as a mover in both arms. Read real
+  velocity, or report wedged crews as their own line.
+- **The hull-rest stage is barely seed-sensitive (manoeuvre, R33.23):** seeds 40 = 43 and 44 = 45, row for row, so a
+  paired se over seeds understates the noise. Make the seed vary the stage's geometry, as C33.9's orbit stage now does.
