@@ -103,7 +103,7 @@ const QUANTUM := 20                # expansions a search runs before the next be
 const FACE_EPSILON_FLAG := "planner-face-epsilon"
 const FACE_EPSILON_DEFAULT := 0.0
 const FACE_KEEP_FLAG := "planner-face-keep"
-const FACE_KEEP_DEFAULT := 0.0     # hull lengths; 0 = off (today's bits)
+const FACE_KEEP_DEFAULT := 1.0     # hull lengths; 0 = off (today's bits)
 const FACE_SHADOW_FLAG := "planner-face-shadow"
 const SHADOW_EPSILONS: Array[float] = [1.5, 2.0, 3.0]
 ## P3 revised (C31.1 on 6f89ecc1: a Terminus street face-back has NO kept plan inside the hold -- keep 1 found a 16-leg
