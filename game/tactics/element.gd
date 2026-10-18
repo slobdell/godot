@@ -1339,6 +1339,16 @@ func is_detached(unit_name: String) -> bool:
 	return _detached.has(unit_name)
 
 
+## Overnight item 4 (brains): a crew joins this element at the end of the succession (Elements.join, which checks the
+## room). It is seated fresh at the next plan: the last seating names every member, so it no longer stands.
+func join(unit_name: String) -> void:
+	if roster.has(unit_name):
+		return
+	_state_stamp += 1
+	roster.append(unit_name)
+	_log("%s joins" % unit_name)
+
+
 func remove(unit_name: String) -> void:
 	_state_stamp += 1
 	var index := roster.find(unit_name)

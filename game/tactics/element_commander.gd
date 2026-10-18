@@ -40,6 +40,12 @@ const SCREEN_REAIM_MIN_M := 10.0
 var screen_tasks := {}
 ## Elements are formed this big when a team has no squads to form them from.
 const ELEMENT_SIZE := 4
+## Overnight item 4 (brains): a squad's unseated living crew (a respawn) joins a living element of its squad that has
+## room before anything new is formed; `--rejoin=off` is R33.6 (its own element under the squad's name). REJOIN_ROOM is
+## the cap (MAX_MEMBERS; a test lowers it). `--rejoin-trace` prints BRAINS_REFORM per crew seated (measurement only).
+static var REJOIN := not OS.get_cmdline_user_args().has("--rejoin=off")
+static var REJOIN_ROOM := Formations.MAX_MEMBERS
+static var REJOIN_TRACE := OS.get_cmdline_user_args().has("--rejoin-trace")
 ## How far ahead of the main body the recon element screens, and how far behind the support element trails.
 const SCREEN_AHEAD_M := 45.0
 const SUPPORT_BEHIND_M := 45.0
@@ -176,8 +182,16 @@ func form_elements() -> Array:
 				var tank := _tank(unit_name)
 				if tank != null and tank.is_alive() and elements.of(unit_name) == null:
 					roster.append(unit_name)
+			if REJOIN and not roster.is_empty():
+				roster = _rejoin(squad, roster)
 			if not roster.is_empty():
-				made.append_array(elements.form_squad(roster, squad.squad_name))
+				var formed := elements.form_squad(roster, squad.squad_name)
+				if REJOIN_TRACE:
+					for element: Element in formed:
+						print("BRAINS_REFORM team %d t=%.1f squad %s formed %s with %d" % [team,
+								float(game_match.tick) / SimClock.TICK_RATE, squad.squad_name, element.element_name,
+								element.members().size()])
+				made.append_array(formed)
 		return made
 	var loose: Array = []
 	for tank in game_match.sorted_team_tanks(team):
@@ -208,6 +222,33 @@ func _physics_process(_delta: float) -> void:
 	if TankBrain.census and tick % (SimClock.TICK_RATE * 15) == 0:
 		print("BRAINS_AMBUSH_T team %d t=%ds posture %s taken %d refused %s" % [team, tick / SimClock.TICK_RATE,
 				posture["posture"], ambushes_taken, ambush_refused])
+
+
+## Overnight item 4: seat each of `roster` (a squad's unseated living crews) in a living element of `squad` with room:
+## the one with the most room, then by name. Returns the crews still unseated.
+func _rejoin(squad: Squad, roster: Array) -> Array:
+	var left: Array = []
+	for unit_name: Variant in roster:
+		var best: Element = null
+		for element: Element in elements.of_team(team):
+			if element.members().is_empty() or not Elements.has_room(element, REJOIN_ROOM):
+				continue
+			var ours := true
+			for member in element.members():
+				ours = ours and squad.roster.has(member)
+			if not ours:
+				continue
+			if best == null or element.members().size() < best.members().size() \
+					or (element.members().size() == best.members().size() and element.element_name < best.element_name):
+				best = element
+		if best != null and elements.join(best, String(unit_name), REJOIN_ROOM):
+			if REJOIN_TRACE:
+				print("BRAINS_REFORM team %d t=%.1f squad %s joined %s %s now %d" % [team,
+						float(game_match.tick) / SimClock.TICK_RATE, squad.squad_name, best.element_name, unit_name,
+						best.members().size()])
+		else:
+			left.append(unit_name)
+	return left
 
 
 ## Round 33 (R33.6): does a living crew of one of our squads stand outside every element?

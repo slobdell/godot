@@ -18,6 +18,12 @@ func _units(unit_id: String, count: int) -> Array:
 
 
 ## A showmatch-shaped CPU side: a squad of 6, one of 8 and one of 3.
+func teardown() -> void:
+	ElementCommander.REJOIN = true
+	ElementCommander.REJOIN_ROOM = Formations.MAX_MEMBERS
+	super.teardown()
+
+
 func _setup() -> Match:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()
@@ -73,14 +79,9 @@ func test_the_commander_seats_a_big_squad_formed_whole_and_refused() -> void:
 	assert_eq(elements.of_team(Match.Team.RUST).size(), 5, "Eyes + Guns x2 + Hunters x2")
 
 
-## A respawn match: a crew that died was pruned from its element and comes back alive in no element. The commander seats
-## it on its next think, alone, under its squad's name; the squad's living element keeps the rest (R33.6, kept as built:
-## rejoining the living element is a round 34 candidate). Simulated by taking a living crew out of its element, which is
-## the state the prune and the respawn leave.
-func test_a_crew_back_from_a_respawn_gets_its_own_element() -> void:
-	var game_match := _setup()
-	var elements := Elements.install(game_match)
-	await wait_physics_frames(2)
+## A respawn match: a crew that died was pruned from its element and comes back alive in no element. Simulated by taking a
+## living crew out of its element, which is the state the prune and the respawn leave.
+func _eyes_with_one_out(game_match: Match, elements: Elements) -> Array:
 	ElementCommander.install(game_match, Match.Team.RUST, elements)
 	await wait_physics_frames(ElementCommander.THINK_TICKS + 2)
 	var eyes: Element = null
@@ -91,7 +92,59 @@ func test_a_crew_back_from_a_respawn_gets_its_own_element() -> void:
 	var back := String(eyes.members()[2])
 	eyes.remove(back)
 	assert_true(elements.of(back) == null, "setup: %s stands in no element" % back)
+	return [eyes, back]
+
+
+## Overnight item 4 (brains): the crew REJOINS its squad's living element when it has room (fewer than MAX_MEMBERS): the
+## same element, its id and task kept, not a new one of its own (R33.6's side effect, improved).
+func test_a_crew_back_from_a_respawn_rejoins_its_squads_element() -> void:
+	var game_match := _setup()
+	var elements := Elements.install(game_match)
+	await wait_physics_frames(2)
+	var setup: Array = await _eyes_with_one_out(game_match, elements)
+	var eyes: Element = setup[0]
+	var back: String = setup[1]
+	var id := eyes.id
+	var task := eyes.task.duplicate()
 	await wait_physics_frames(ElementCommander.THINK_TICKS + 2)
+	assert_eq(elements.of(back), eyes, "%s is back in Eyes" % back)
+	assert_eq(eyes.members().size(), 3, "Eyes is three again")
+	assert_eq(eyes.id, id, "the same element")
+	assert_eq(elements.get_element(id), eyes, "still registered under its id")
+	assert_eq(String(eyes.task.get("verb", "")), String(task.get("verb", "")), "its task kept")
+	var named_eyes := elements.of_team(Match.Team.RUST).filter(func(e: Element) -> bool: return e.element_name == "Eyes")
+	assert_eq(named_eyes.size(), 1, "no second Eyes element")
+
+
+## A full element has no room: the crew is seated in its own element under its squad's name, as R33.6 built.
+func test_a_full_element_has_no_room() -> void:
+	var game_match := _setup()
+	var elements := Elements.install(game_match)
+	await wait_physics_frames(2)
+	var setup: Array = await _eyes_with_one_out(game_match, elements)
+	var eyes: Element = setup[0]
+	var back: String = setup[1]
+	assert_true(not Elements.has_room(eyes, 2), "an element at its cap (2 of 2) has no room")
+	assert_true(Elements.has_room(eyes), "Eyes, 2 of %d, has room" % Formations.MAX_MEMBERS)
+	ElementCommander.REJOIN_ROOM = 2  # this test's cap: Eyes' 2 are full
+	await wait_physics_frames(ElementCommander.THINK_TICKS + 2)
+	ElementCommander.REJOIN_ROOM = Formations.MAX_MEMBERS
+	var seated := elements.of(back)
+	assert_true(seated != null and seated != eyes, "%s is seated in its own element" % back)
+	assert_eq(seated.element_name, "Eyes", "under its squad's name")
+
+
+## `--rejoin=off`: R33.6 as built, the crew alone in a new element under its squad's name; Eyes keeps the other two.
+func test_with_rejoin_off_a_crew_back_from_a_respawn_gets_its_own_element() -> void:
+	ElementCommander.REJOIN = false
+	var game_match := _setup()
+	var elements := Elements.install(game_match)
+	await wait_physics_frames(2)
+	var setup: Array = await _eyes_with_one_out(game_match, elements)
+	var eyes: Element = setup[0]
+	var back: String = setup[1]
+	await wait_physics_frames(ElementCommander.THINK_TICKS + 2)
+	ElementCommander.REJOIN = true
 	var seated := elements.of(back)
 	assert_true(seated != null, "%s is seated again on the next think" % back)
 	assert_true(seated != eyes, "in its own element, not Eyes'")
