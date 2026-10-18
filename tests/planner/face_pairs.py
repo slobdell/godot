@@ -13,8 +13,9 @@ Every class reads the HULL's own furthest from home (hull_far), like for like; e
 reported beside it. A plan's furthest understates a face today serves after an abandon: the executor drives the hull
 out and a re-ask plans the short remainder (the yard stage, laptop: base plan_far 1.4 m, hull_far 12.1 m).
 Line per judged class and mode: candidate median <= base median + 1.645 se AND candidate p90 <= base p90 + 1.645 se, each
-se a paired bootstrap over the faces (4000 rounds, seed 33). Fewer than 2 faces: NOT JUDGED (no faces: nothing to judge,
-reported). --distinct: a run pair whose episodes repeat another seed's in the same (faction, task) is read once
+se a paired bootstrap over the faces (4000 rounds, seed 33). BOTH needs >= 10 faces a mode, or that mode's (2c) is
+INCONCLUSIVE, which cannot pass (R33.26 as filed: a small class must not decide by going unjudged). CAND_ONLY with fewer
+than 2 faces: NOT JUDGED (none: nothing to judge, reported). --distinct: a run pair whose episodes repeat another seed's in the same (faction, task) is read once
 (hull_distinct.py, R33.23's rule). Usage: face_pairs.py <hull-rest dir> [--seeds "96 97 ..."] [--distinct]
 """
 import json
@@ -28,6 +29,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import hull_distinct  # noqa: E402
 
 K = 1.645
+BOTH_AT_LEAST = 10
 HOME_M = 1.0
 
 
@@ -124,8 +126,13 @@ def main(argv):
         only = [(b["hull_far"], c["hull_far"]) for b, c in totals["candidate_only"]]
         kept_only = sum(1 for _, c in totals["candidate_only"] if c.get("kept"))
         plan = lambda cls, side: statistics.median([pair[side]["plan_far"] for pair in totals[cls]]) if totals[cls] else 0.0
-        r_both = judge("FACE_PAIRS_BOTH", mode, both,
-                       f" | hull_far (plan_far median {plan('both', 1):.1f} v {plan('both', 0):.1f})")
+        if len(both) < BOTH_AT_LEAST:
+            print(f"FACE_PAIRS_BOTH {mode} | faces {len(both)} | INCONCLUSIVE (fewer than {BOTH_AT_LEAST} faces both planned):"
+                  f" this mode's (2c) cannot pass")
+            r_both = False
+        else:
+            r_both = judge("FACE_PAIRS_BOTH", mode, both,
+                           f" | hull_far (plan_far median {plan('both', 1):.1f} v {plan('both', 0):.1f})")
         r_only = judge("FACE_PAIRS_CAND_ONLY", mode, only,
                        f" | hull_far (candidate plan_far median {plan('candidate_only', 1):.1f}; kept {kept_only})")
         ok = ok and r_both is not False and r_only is not False
