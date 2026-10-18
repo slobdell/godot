@@ -164,7 +164,9 @@ builder0 light, n 1, each run's exit line read:
   - sim-baseline unmoved both times. `native-proof exited 0`, EQUAL `10c328a0f978ea49`.
 - Fix `1053045e`: `stream/native` fast-forwarded to `d7938a6e`, plus the parked floor 60 -> 20. The stage counts depend on
   test order; see native.md *N5.Y*. The orchestrator ruled no full chain: `make test exited 0`, 2741 / 0, and
-  `perf-judge` JUDGED PASS 1.16x on attempt 1.
+  `perf-judge` JUDGED PASS 1.16x on attempt 1. **CORRECTION:** that `make test` ran with the library ABSENT (86 `native:
+  absent`), so it proved nothing about the floor (native.md hazard 10). N5.Y's evidence is the 6434969e check (native ON)
+  and every builder2 main check since (HANDOFF corrected).
 **R4 on main GREEN: `pair/brains-r4-main` `e382202e`** (main d99394f1 + v6 narrowed + inside_circle + the mirror, no B10b;
 code-identical to `45d5f1ea`). builder0 light, `make native test FILTER=native_gate|nav_gate_inside exited 0`, 8 / 0, every
 stage 0 mismatches, the same counts as `97c3b654`. Sent to brains and the orchestrator.
@@ -184,8 +186,8 @@ main + R4), B11b, R1; planner's CP-Q C++ review; traffic's CP-X (parkedroom is G
 Docs-only commits on stream/native after the merges: `beb3e868` (native.md N5.Y order-dependence), `159248db` and this
 one (Status, hazard 8).
 **Round 34 candidates (native):**
-- Split `test_native_gate` by frame, where a floor is a branch (FILE_TIME 1006 s on the pair). It lands on main with R4.
-  Measure CPU seconds before and after; the next slowest are `test_native_execute` (221 s) and `test_native_drive_kturn`
+- Split `test_native_gate` by frame, where a floor is a branch. It is on main now, and its 4 stages run as fresh children
+  (90–104 s each on builder2, 393 s for the file), so the split matters less than it did. Measure CPU seconds before and after; the next slowest are `test_native_execute` (221 s) and `test_native_drive_kturn`
   (204 s), both under the suite's largest file (`test_tactics_pursuit`, 312 s), so split them only if shard balance
   needs it.
 - One `NATIVE=off` perf-judge reading on main, filed as a known item (1.47x at `c70be402`, builder0; 1.07x at
@@ -211,3 +213,20 @@ wheeled face, handed back by execute_native (`simple_face` false on wheels); the
 nothing. (My first answer wrongly said tracked tanks could reach it; retracted within minutes, manoeuvre agreed.)
 Read the twins on manoeuvre's pair hash when it names one.
 **Decision:** no pre-emptive v6 carry work (it waits behind B10b, C33.4, and the base it lands on is not known yet).
+**Fresh-process twin stages (round 33 late; main `7851690c` = `bbb9821f`).** Main de6d3266 went red on builder2: floors
+at >= 1 (native_gate's foundry latch turned 0; Sumps parked and asks 0), every twin 0 mismatches. The shard order decided
+which paths a stage reached. Fix, test-only, on `fix/native-fresh-stages`:
+- `e534a028`: `tests/native/fresh_stage.gd` + its child (+ `.uid`s). The pattern is native.md hazard 9, applied to 17
+  stages.
+- `43562eab`: the child finds the stage on the instance. The laptop negative proof caught this.
+- `bbb9821f`: the yield floors at half the fresh counts; MIN_COMPARED 185.
+Results:
+- Filtered on 43562eab, `FILTER=native_yield|native_gate|native_drive|native_manoeuvre`: builder0 light and builder2 both
+  `exited 0`, 18 / 0. Every counter is identical across the two CPUs, and each owned arm equals its live arm.
+- Full order on bbb9821f, builder2: `make test exited 0`, 2771 / 0, native ON. Slowest shard 921 s (was 932 s); the 8
+  files 770 -> 711 s.
+- builder0 `make remote T="native test"` on bbb9821f: `exited 0`, 2771 / 0, native ON. Slowest of 6 shards 1899 s. The earlier
+  `T=test` run (2208 s) had no library, so there is no fair builder0 before. FILE_TIME: native_gate 535 s (1006 s
+  in-process on the R4 pair), native_yield 118 s.
+- The negative proof (laptop, scratch, not committed): a child's failed assert, engine error or kill (137) each turns
+  the parent red with the child's message; a passing child stays PASS.

@@ -145,6 +145,31 @@ rounds and nowhere else:
    probe spins until the clock advances: `test_native_controller`, `c7646f41`, main `ac06a393`), or leave the field out.
    Every other field stays exact. A twin that passes on one CPU only is a test bug, or a determinism bug: say which
    before accepting it.
+9. **A twin stage with path floors runs in its own fresh process** (round 33; `tests/native/fresh_stage.gd`, main
+   `7851690c`). In one process a stage reads by what ran before it: a match leaves physics bodies and statics that
+   branch the run. The Sumps' parked refusals read 129 alone, 47 in builder0's check, then 6 and 0 in builder2's 16
+   shards, while every twin read 0 mismatches. So floors set at half of one reading kept going red, and even "reached
+   at all" was not stable. The pattern is the test's first line: `if FreshStage.parent(self, "<its name>"): return`.
+   The runner's process starts a child (`--headless --fixed-fps TICK_RATE`), and in the child the same method runs its
+   body. The child takes the runner's steps:
+   - a fresh instance with `tree` set, awaited;
+   - the sealed `_teardown`;
+   - engine messages reconciled with the case's expectations and the allowlist.
+   Its failures come back as the test's failures, and its lines are printed in the parent's log. In a child the counts
+   are a function of the stage alone: identical on builder0 and builder2, and each owned arm reads its live arm's
+   counts. So the floors are half the fresh counts again. Every DriveTwinCase stage, `test_native_gate` and
+   `test_native_yield` use it (17 stages).
+   - **Cost:** none net. builder2's 8 files went from 770 to 711 s, because `--fixed-fps` runs the child flat out.
+     Builder2's slowest shard went from 932 to 921 s.
+   - **The negative proof** (laptop, once): a child's failed assert, engine error or death (exit 137) each turns the
+     parent red with the child's message. It caught a real bug first: `has_method` on a GDScript resource does not see
+     its methods, so it is asked of the instance.
+   - **New twin stage with counts:** use it.
+10. **`make remote T=test` does not build the library.** It runs native-ON only where the remote checkout already has
+    `native/bin` from an earlier `native` or `check`. In a fresh checkout every native test prints `native: absent …`
+    and PASSES. Twin evidence uses `T="native test"` (or `check`), and is read from a count line or the `NATIVE ON/OFF`
+    line, never the exit line alone. Round 33 sent two vacuous `T=test` runs as evidence before this was seen:
+    `1053045e`, and `bbb9821f` on a new builder0 checkout.
 
 ## The proof (every port, every commit)
 
@@ -938,8 +963,9 @@ mismatches everywhere). But how often each branch is reached depends on what ran
 Sumps' parked refusals were 129 run filtered and 47 inside `make check` at `6434969e` (builder0, n 1 each). In the
 check, the stages' counters shifted as a block: check's yard owned matched filtered yard live exactly, and check's
 sumps owned matched filtered sumps live. So the floors guard against an empty run (`1053045e`: each is at most half the
-lowest count seen, parked 60 -> 20), not a target. Read them in the full shard order (`make remote T=test`: 2741
-passed, 0 failed at `1053045e`).
+lowest count seen, parked 60 -> 20), not a target. (`make remote T=test` at `1053045e`, 2741 / 0, ran with the
+library absent, so that run proved nothing; hazard 10.) The durable fix is hazard 9: each stage runs in its own process,
+with floors at half the fresh counts (`bbb9821f`, main `7851690c`).
 **The shortened spot: REACHED, forced** (`0e3a192c`, test-only). A sweep of the GDScript `_begin_yield` over the
 Sumps at `6434969e` found the poses that give way shortened (of 7688 each): War Rig 370, IFV 415, lancer 403, tank 183.
 `test_the_asked_hull_gives_way_shortened(_owned)` asks the War Rig at three poses and the IFV at two: each hull is under
