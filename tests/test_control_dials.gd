@@ -39,14 +39,16 @@ func test_the_rig_frames_with_its_inset() -> void:
 
 ## Round 33 overnight (native, item 1): wait for the camera to settle, not a count of frames. 40 frames was a time only
 ## while the suite ran free (real deltas); at --fixed-fps 30 it is 1.33 s of game time and the frame was still
-## arriving. At least 1 s of game time, then until the zoom holds for 30 frames (capped at 20 s).
+## arriving. At least 1 s of game time, then until the zoom holds for 30 PHYSICS frames, 1 s of game time (capped at
+## 20 s of wall). Process frames would not do: free-running headless runs many a physics tick, so the zoom looks still
+## between the vision refreshes.
 func _settled(rig: RtsCamera) -> void:
 	var last := rig.zoom
 	var still := 0
 	var started := Time.get_ticks_msec()
 	await tree.create_timer(1.0).timeout
 	for i in 600:
-		await tree.process_frame
+		await tree.physics_frame
 		still = still + 1 if is_equal_approx(rig.zoom, last) else 0
 		last = rig.zoom
 		if still >= 30 or Time.get_ticks_msec() - started > 20000:
