@@ -579,6 +579,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   runs ON and OFF are identical in every field: the latch never acts. Parked, not shipped (a latch with no case left).
   `--ground-latch` stays on stream/brains for manoeuvre's R33.21 re-seat trace. B11b stays BLOCKED (CP-F parked).
 
+- **R33.26 P3 v2 pinned PARKS on (2c) clicked, and (2c) is re-scoped (2026-10-18; planner, pair `c3acd47a2`, builder2,
+  FIFO, no CP-F; stream/planner `4b0e981bd`, references/round33/planner/p3-pinned-c3acd47a2/).** 36 distinct pairs of
+  72 a mode (seeds pair off). (0), (0b), (1), (2a), (2b), (2c) drawn and (3) PASS (yard aligned 9.83 v 15.43 s; rigs
+  178 v 179). (2c) clicked: median 3.0 v 2.7 m, but p90 6.3 v 4.9, max 12.4 v 5.7, on 14 v 10 plans. **The trace:** the
+  candidate SERVES clicked faces today's search never plans (26 v 18 served plans from 267 v 271 asks). The worst pair
+  (faced_attack_move s100) has the base's face_far EMPTY (10 asks, none planned), against [12.4, 3.2] kept. So (2c)
+  compares different populations, 12.4 m is inside one hull length, and v3's slot cap could not touch it: the
+  slot-law inference was wrong. **Ruling: (a).** (2c) becomes paired BY FACE: drift on faces both arms planned (median and
+  p90, no worse than + 1.645 se). The faces only the candidate serves are judged against what the base's hull did for
+  those same asks (its furthest-from-home under the fallback executor or abandon): no worse. Faces only the base serves
+  are reported. A new bar on FRESH seeds, filed with the face-pairing tool proven (pinned runs are deterministic, so faces
+  match). v3 as written is withdrawn.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
