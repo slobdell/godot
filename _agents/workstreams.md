@@ -134,6 +134,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
   ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
   reported in the verdict.
+  **Mechanism found (manoeuvre, builder0 light, dev seeds 21–23, `640d9535`):** every turn-in variant raised hits taken
+  because the orbiter's gunner fires only once its turret lay settles on the lead point (gunnery `aimed`). OFF's
+  half-second creep reversals keep moving that point, so they work as evasion by accident. Enemy shots at 45 m v gang_ifv:
+  42 OFF v 198 with braking; hit per shot barely moved (0.19 v 0.25). So the evasion he asked for is the mechanism.
+  Candidate `b9656866` jinks on target: speed swaps between 0.2 and the yaw-cap share on uneven 0.5–1.0 s dwells,
+  always forward, with a 10 m leash. **Added (orchestrator):** the dwells come from the sim's seeded randomness (or tick
+  and hull id), never a time-seeded source, and (f) gains a determinism line: the same seed run twice gives identical ON
+  rows.
 
 **Rulings (round 33, the orchestrator's, as they arise):**
 
