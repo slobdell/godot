@@ -76,6 +76,9 @@ min) and the folder imported cold.
 - **2738 passed, 1 failed:** `test_native_controller::test_the_controller_tick_is_the_live_gdscript`, 7 mismatches in
   600 scenarios. It passes on builder0 on the same code. native_controller is OFF by default, but a twin that depends on
   the CPU (AMD EPYC 9B45, AVX-512, v builder0's Intel i5-1345U) is handed to native as a determinism question.
+  **Answered (native, `c7646f41`, merged as main `ac06a393`):** timer granularity, not the sim. The twin compares
+  `profile_usec > 0`, and on Zen 5 the GDScript held path sometimes finishes inside one microsecond. The test now spins
+  until the clock advances, and reads 0 mismatches on builder2 and on builder0.
 - **web-smoke FAILED: no Chrome.** Installed since (google-chrome-stable 155.0.8059.84; builder0 has 150.0.7871.46).
 - **perf-judge and scenario_perf NOT JUDGED: no nominal.** The image had no `/etc/hostname`, so the machine read as
   "unknown". It now holds `builder2`. The nominal is recorded idle with
