@@ -776,6 +776,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   facing when it has one, else on the heading kept while the halt holds, never on the live average. Its own bar and
   fresh seeds, judged on main, with the Hunters re-lays as a measured line. Then CP-F attempt 4 = a pair on main + that
   fix, with the new judge, after the lead's word.
+  **Hunters traced and bar filed (brains, before any code or number):** of 1,121 Hunters seat-goal moves, 1,046 come
+  AFTER arrival in the herringbone (831 drift, 215 reseat), with the anchor fixed and the laying heading swinging with
+  the hulls. Same root. Candidate (ElementPlan, GDScript only, `--herring-heading=off`): the herringbone halt lays on
+  (1) the task's drawn facing when it has one, else (2) the heading it was first laid on, kept while the element stays in
+  the herringbone drill, with (3) the current heading only on entry. (1) DECIDING, hull-rest (main, pinned,
+  --arrive-trace), gangs faced_attack_move AND plain attack_move, FRESH seeds **520–525** (the orchestrator moved them off
+  480–485 to keep clear of CP-F's fights block), n 6 a task, ON v off: the Hunters element's seat jumps ≥ 8 m after
+  arrival ON ≤ 25 % of OFF, and every element's arrive-flips ON ≤ OFF; Guns' drifts reported; arrived elements ON ≥ OFF.
+  (2) squad-arrive-series FRESH 73–76, n 100: all-within-8 m ON ≥ OFF − 1.645 se, drift moves ON ≤ OFF. (3)
+  tactics-drills green (its herringbone coverage and bearings) and the check, with sim-baseline moves listed. (4) The worst
+  ON run traced first. **Added (orchestrator):** hull-rest's seeds barely vary on main (no jitter there yet), so report
+  distinct rows per task and read (1) on distinct pairs. builder2, `native <target>`.
 
 **Bars (round 33):** filed here before any number.
 
