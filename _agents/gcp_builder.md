@@ -115,3 +115,6 @@ folder build its own native library.
 **node_modules too (2026-10-18):** in a fresh folder, broker-test and relay-smoke race `npm ci` inside one check and
 corrupt node_modules/ws. Seed it with `cp -a ~/tank_squad/<warm>/node_modules <wt>/` (same package-lock) along with
 `.godot`, until the roadmap's install-once fix lands.
+**And touch the marker after copying** (brains, 2026-10-18): `cp -a` keeps `node_modules/.package-lock.json`'s old mtime, so make
+judges it older than the synced package-lock.json and both targets re-run `npm ci` anyway. Run
+`touch <wt>/node_modules/.package-lock.json` after the copy.
