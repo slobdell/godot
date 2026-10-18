@@ -445,6 +445,12 @@ var _face_left := FACE_STALL_SECONDS
 var face_stalled := false
 ## Round 30 (M1b): the goal of the last move_to this crew was given (INF = none yet): see set_orders.
 var face_slot := Vector3.INF
+## Round 33 (CP-F attempt 3, R33.23): a face CP-F gives a wheeled hull (`from` order / sector / drawn, under turnhull)
+## gives up, holding the error it has, once it has pulled the hull this much further from its held seat than where the
+## face began, on the planned legs and the creep alike. Traced (builder2, --fixed-fps, hull-rest gangs SBF s44/s45):
+## Guns_5's face crept it off its seat, the element's dressing move reversed it back (goal 7.9 m), and the face began
+## again, every second to the 75 s judge, ending 120 deg off and "moving".
+const FACE_PULL_GIVEUP_M := 3.0
 
 
 ## Is `candidate` the same face order the hull is already executing (same spot, within a metre)?
@@ -503,6 +509,8 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				return
 			if _wheel_hold(cmd, spot):
 				return
+			if _face_pulled_off(cmd):
+				return
 			# Round 26 (manoeuvre M1b): a wheeled hull comes round in planned legs, not the creep's 0.5 s shuffle.
 			if movement.face_turn(cmd, spot, delta):
 				return
@@ -547,6 +555,25 @@ static var wheel_arc_stops := 0
 
 static func wheel_hold_on() -> bool:
 	return Movement.switched_off("wheelhold")
+
+
+func _face_pulled_off(cmd: TankCommand) -> bool:
+	if not Manoeuvre.turn_hull_on() or face_slot == Vector3.INF or movement.wheel_radius() <= 0.0:
+		return false
+	if not String(move_order.get("from", "")) in ["order", "sector", "drawn"]:
+		return false
+	if Engine.get_physics_frames() - movement._face_tick > Movement.BEHIND_GAP_TICKS:
+		return false  # no face under way: its start is not known yet (face_turn sets it on this face's first tick)
+	var here := Vector2(tank.global_position.x, tank.global_position.z)
+	var seat := Vector2(face_slot.x, face_slot.z)
+	var began := Vector2(movement._face_home.x, movement._face_home.z)
+	if here.distance_to(seat) - began.distance_to(seat) <= FACE_PULL_GIVEUP_M:
+		return false
+	cmd.throttle = 0.0
+	cmd.turn = 0.0
+	Manoeuvre.face_pulled_holds += 1
+	movement._face_tick = Engine.get_physics_frames()  # still this face: its start stands
+	return true
 
 
 func _wheel_hold(cmd: TankCommand, spot: Vector3) -> bool:

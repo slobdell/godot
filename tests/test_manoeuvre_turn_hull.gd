@@ -177,3 +177,36 @@ func test_an_elements_own_facing_is_not_a_drawn_station() -> void:
 	assert_true(not post.is_empty(), "setup: the move completed and left a station")
 	assert_true(not bool(post.get("drawn", true)), "an element's facing is not his drawn heading")
 	s.dispose()
+
+
+## Round 33 (CP-F attempt 3, R33.23): a face that has pulled a wheeled turret hull more than FACE_PULL_GIVEUP_M off its
+## held seat holds (throttle and turn 0) instead of creeping on; one pulled less keeps turning. The face began on the
+## seat (`_face_home`), the hull now stands `pulled_m` from it, his drawn face is behind it.
+func _pulled(pulled_m: float) -> Dictionary:
+	var was_off := Movement._off
+	Movement._off = PackedStringArray([]) if Manoeuvre.TURN_HULL_DEFAULT else PackedStringArray(["turnhull"])
+	Movement._off_parsed = true
+	var s := AiScenario.create(self, 4)
+	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(0, 0, 0), 0.0, {}, "gang_tank")
+	await s.start()
+	var brain := s.brain_of(me)
+	brain.face_slot = Vector3(0, 0, pulled_m)
+	brain.movement._face_home = Vector3(0, 0, pulled_m)
+	brain.movement._face_tick = Engine.get_physics_frames()
+	brain.move_order = {"type": "face", "x": 0.0, "z": 40.0, "from": "order"}
+	var holds0 := Manoeuvre.face_pulled_holds
+	var cmd := TankCommand.new()
+	brain._apply_move(cmd, 1.0 / SimClock.TICK_RATE)
+	var out := {"throttle": cmd.throttle, "turn": cmd.turn, "holds": Manoeuvre.face_pulled_holds - holds0}
+	s.dispose()
+	Movement._off = was_off
+	return out
+
+
+func test_a_face_that_pulled_its_hull_off_its_seat_holds() -> void:
+	var far := await _pulled(4.5)
+	assert_eq(far["holds"], 1, "pulled 4.5 m off: the face holds")
+	assert_true(far["throttle"] == 0.0 and far["turn"] == 0.0, "...still (%s)" % [far])
+	var near := await _pulled(1.0)
+	assert_eq(near["holds"], 0, "pulled 1 m: no hold")
+	assert_true(near["throttle"] != 0.0 or near["turn"] != 0.0, "...it keeps turning (%s)" % [near])

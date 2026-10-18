@@ -55,6 +55,8 @@ static func reset() -> void:
 	face_refused = 0
 	hull_turns = 0
 	face_keep_refused = 0
+	hull_holds = 0
+	face_pulled_holds = 0
 	face_keep_by_unit = {}
 
 
@@ -439,6 +441,9 @@ static func drawn_face(brain: TankBrain) -> Dictionary:
 
 ## Arm counter: declined faces that kept the hull on his drawn heading instead (drawn_face).
 static var hull_holds := 0
+## Arm counter (R33.23): ticks a face that had pulled its hull off its held seat held instead of turning
+## (OrderController.FACE_PULL_GIVEUP_M).
+static var face_pulled_holds := 0
 
 
 static func _kept(at: Vector3) -> bool:
