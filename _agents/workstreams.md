@@ -375,6 +375,12 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   driving a move to a goal 8–28 m away, i.e. crews are RE-SEATED after they face (gangs, law). **Next:** a diagnosis-only
   trace of that re-seat on tuning seeds 40–45, NEW v BASE, with seat-goal prints. Also run B10b's seat latch ON in that
   trace, as a question (if B10b ships, CP-F's attempt 3 sits on it). C33.9 keeps priority for manoeuvre.
+  **Pacing caveat (2026-10-18):** manoeuvre-hull-rest (and hull-one) run WITHOUT `--fixed-fps`, 6 at once (HULL_JOBS),
+  so CP-F's (a)–(f), (j), (k) and (m) came from wall-clock-paced runs on a loaded builder0. Its fights, Terminus, SBF,
+  bridge and sim-baseline stages were pinned. On the laptop's tuning seeds, the movers behind (d) read about 0.3 a run
+  in every arm, against about 2.3 in the series. Manoeuvre pins hull-rest (`--fixed-fps $(SIM_HZ)`, mk/manoeuvre.mk) on
+  stream/manoeuvre, and from then on hull-rest numbers don't compare with earlier ones. Planner's P2/P3 hull-rest lines
+  carry the same caveat (R33.13, R33.19).
 
 - **R33.22 B10b PARKED after its re-judge on main + R4 (2026-10-18; brains, builder2, pair `f91b61c7`, rows
   `references/round33/brains/b10b_rejudge_f91b61c7_builder2.txt`).** It fails as written on line 3's strict clause: pooled
