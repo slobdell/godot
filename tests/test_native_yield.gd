@@ -10,6 +10,8 @@ extends DriveTwinCase
 
 const RANK: Array[String] = ["tank", "gang_tank", "ifv", "scout", "artillery", "lancer"]
 const STAGE_FRAMES := 420
+## The fewest negotiating drives a stage twins: the lowest seen is 238 (yard_open owned, builder0 light).
+const MIN_COMPARED := 100
 var screened := 0
 var set_up_asks := 0
 var _movers: Array[Movement] = []
@@ -19,21 +21,21 @@ const ASKED_FIELDS: Array[String] = ["native_stale", "yield_to", "yield_spot", "
 
 
 func test_the_give_way_on_open_ground() -> void:
-	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 13, "spot:spot": 11, "setup_refusals": 2}, 60)
+	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 1, "spot:spot": 1, "setup_refusals": 1}, 60)
 
 
 func test_the_give_way_on_the_owned_state() -> void:
-	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 7, "spot:spot": 5})
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 1, "spot:spot": 1})
 
 
 func test_the_give_way_in_the_sumps() -> void:
-	await _stage("sumps", false, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 115, "spot:spot": 30, "yield_spots_unfit": 35,
-			"spot:back": 9, "spot:hold": 2, "parked_refusals": 20, "asks_refused": 1})
+	await _stage("sumps", false, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 1, "spot:spot": 1, "yield_spots_unfit": 1,
+			"spot:back": 1, "spot:hold": 1, "parked_refusals": 1, "asks_refused": 1})
 
 
 func test_the_give_way_in_the_sumps_owned() -> void:
-	await _stage("sumps", true, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 120, "spot:spot": 30, "yield_spots_unfit": 40,
-			"spot:back": 15, "spot:hold": 3})
+	await _stage("sumps", true, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 1, "spot:spot": 1, "yield_spots_unfit": 1,
+			"spot:back": 1, "spot:hold": 1})
 
 
 ## The shortened give-way (R2: no spot fits whole, so the asked hull gives way as far as it DOES fit): poses from a sweep of
@@ -113,7 +115,7 @@ func _shortened(owned: bool) -> void:
 	NativeDrive.owned = false
 	print("native yield shortened%s: %d drives compared, %d mismatches" % [" (owned state)" if owned else "", drives, mismatches])
 	assert_eq(mismatches, 0, "the native shortened give-way is the live GDScript's: %s" % first)
-	_yield_check("shortened%s" % [" owned" if owned else ""], {"": 2, "yield_spots_shortened": 2})
+	_yield_check("shortened%s" % [" owned" if owned else ""], {"": 1, "yield_spots_shortened": 1})
 
 
 func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0) -> void:
@@ -186,10 +188,11 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	print("native yield stage %s%s: %d negotiating drives compared (of %d drives screened), %d mismatches" % [arena,
 			" (owned state)" if owned else "", drives, screened, mismatches])
 	assert_eq(mismatches, 0, "the native give-way is the live GDScript's: %s" % first)
-	# Floors against a vacuous run: about half of the LOWEST count builder0 has shown (n 2 per stage: the light lane
-	# alone, and inside `make check` at 6434969e). The stages' counts depend on what ran before them in the process
-	# (the Sumps' parked refusals 129 alone, 47 in the check), so the floors are against nothing, not a count.
-	# Not reached here: the swap (native.md N5.Y: why); the shortened spot is forced below.
+	# Coverage, not a count: each path the stage reaches is floored at 1 (reached at all), plus MIN_COMPARED drives
+	# twinned. The counts depend on what ran before the stage in the process, so a floor at a fraction of one
+	# observation cannot hold. The Sumps' parked refusals were 129 alone, 47 in builder0's check, and 6 in builder2's
+	# 16 shards (main 4d6f321d). Not reached here: the swap (native.md N5.Y: why); the shortened spot is forced below.
+	assert_true(drives >= MIN_COMPARED, "%s: %d negotiating drives compared >= %d" % [arena, drives, MIN_COMPARED])
 	_yield_check("%s%s" % [arena, " owned" if owned else ""], floors)
 
 
