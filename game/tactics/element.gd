@@ -1521,10 +1521,48 @@ var _bt_last := -1000
 ## stood once set up (BATTERY_SETUP: the bar's "set up within 8 m of its place" reads this, not the place it ends with).
 var _bt_assigned := {}
 var _bt_logged := {}
+## ...and the bar's cost line (switch (c) fires later): from a battery's FIRE ORDER (its task becomes an attack or a
+## support-by-fire, keyed by verb and target) to the first shot by any of its crews (BATTERY_FIRST_SHOT; "none" when
+## the task changes or the run ends first). Physics frames, both arms.
+var _bt_order_key := ""
+var _bt_order_frame := -1
+var _bt_shot_frame := -1
+var _bt_wired := {}
+
+
+func _bt_fire_order(situation: Dictionary) -> void:
+	var verb := String(task.get("verb", ""))
+	var key := "%s:%s" % [verb, String(task.get("target", ""))] if verb in ["attack", "support_by_fire"] else ""
+	for member: Dictionary in situation.get("members", []):
+		var n := String(member["name"])
+		if _bt_wired.has(n):
+			continue
+		var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
+		if tank != null:
+			_bt_wired[n] = true
+			tank.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void:
+				if _bt_order_frame >= 0 and _bt_shot_frame < 0:
+					_bt_shot_frame = Engine.get_physics_frames())
+	if _bt_order_frame >= 0 and _bt_shot_frame >= 0:
+		print("BATTERY_FIRST_SHOT team %d %s order %s after %.1f s" % [team, element_name, _bt_order_key,
+				float(_bt_shot_frame - _bt_order_frame) / SimClock.TICK_RATE])
+		_bt_order_frame = -2  # answered: no second line for this order
+	if key != _bt_order_key:
+		if _bt_order_frame >= 0:
+			print("BATTERY_FIRST_SHOT team %d %s order %s none after %.1f s" % [team, element_name, _bt_order_key,
+					float(Engine.get_physics_frames() - _bt_order_frame) / SimClock.TICK_RATE])
+		_bt_order_key = key
+		_bt_order_frame = Engine.get_physics_frames() if key != "" else -1
+		_bt_shot_frame = -1
+		if key != "":
+			print("BATTERY_FIRE_ORDER t=%.1f team %d %s %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team,
+					element_name, key])
 
 
 func _take(plan: Dictionary, situation: Dictionary) -> void:
-	if OS.get_cmdline_user_args().has("--battery-trace") and element_name.contains("Battery"):
+	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
+		_bt_fire_order(situation)
+	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
 		for member: Dictionary in situation.get("members", []):
 			var n := String(member["name"])
 			var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank

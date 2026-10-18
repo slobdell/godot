@@ -876,3 +876,29 @@ body-twice: import ## Round 32 (R32.6): the body stage run twice in one process 
 			--arms=$$arms --clear=$$clears $(BODY_TWICE_EXTRA) > $(BUILD_DIR)/body-twice-$$arms.log 2>&1; grep -oE 'BODY_TWICE .*|SCRIPT ERROR.*' $(BUILD_DIR)/body-twice-$$arms.log | python3 -c "import sys,json; [print(l.strip()[:60] if not l.startswith('BODY_TWICE') else '  run %(run)s %(arm)s cleared=[%(cleared)s] alone_s %(alone_s)s arrived_s %(arrived_s)s' % json.loads(l[11:])) for l in sys.stdin]"; \
 	done
 
+
+# Round 33 (brains battery stretch): the battery bar's census (workstreams *Bars (round 33)*, "Battery seats"). traffic's
+# census probe (pinned at --fixed-fps, as traffic-census) with --battery-trace, BATTERY_CASES x BATTERY_SEEDS x
+# BATTERY_ARMS (tag:flags, flags separated by ";", "-" = none), each run's TRAFFIC_CENSUS row, TRAFFIC_ASKER rows and BATTERY_SETUP /
+# BATTERY_FIRE_ORDER / BATTERY_FIRST_SHOT lines kept -> build/battery-census/<tag>/ + tests/tactics/battery_table.py.
+BATTERY_CASES ?= sumps,law,gangs,1000,opponent parade,gangs,law,2000,opponent foundry,condemned,syndicate,2000,opponent
+BATTERY_SEEDS ?= 47 48 49 50 51 52
+BATTERY_OFF := --battery-seat=off;--battery-deploy=off;--nav-off=arrivedgate
+BATTERY_ARMS ?= on:- off:$(BATTERY_OFF)
+BATTERY_SECONDS ?= 150
+BATTERY_JOBS ?= 6
+.PHONY: battery-census
+battery-census: import ## Round 33 (brains battery stretch): the battery bar's census, BATTERY_ARMS x BATTERY_CASES x BATTERY_SEEDS (census probe + --battery-trace) -> build/battery-census/<arm>/ + table
+	@rm -rf $(BUILD_DIR)/battery-census; mkdir -p $(BUILD_DIR)/battery-census
+	@echo ">> battery-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arms '$(BATTERY_ARMS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for arm in $(foreach a,$(BATTERY_ARMS),'$(a)'); do for seed in $(BATTERY_SEEDS); do for case in $(BATTERY_CASES); do echo "$$arm|$$case,$$seed"; done; done; done | \
+		xargs -P $(BATTERY_JOBS) -I{} sh -c 'arm=$${1%%|*}; rest=$${1#*|}; tag=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr ";" " "); [ "$$flags" = - ] && flags=""; \
+		set -- $$(echo $$rest | tr "," " "); dir=$(BUILD_DIR)/battery-census/$$tag; mkdir -p $$dir; out=$$dir/$$1-$$6; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/traffic/census_probe.gd -- \
+			--arena=$$1 --green=$$2 --rust=$$3 --credits=$$4 --army=$$5 --seed=$$6 --seconds=$(BATTERY_SECONDS) --battery-trace $$flags \
+			2>/dev/null > $$out.log; grep -o "TRAFFIC_CENSUS {.*" $$out.log | sed "s/^TRAFFIC_CENSUS //" > $$out.json; \
+		grep -o "TRAFFIC_ASKER {.*" $$out.log | sed "s/^TRAFFIC_ASKER //" > $$out.askers; \
+		grep -E "^BATTERY_(SETUP|FIRE_ORDER|FIRST_SHOT) " $$out.log > $$out.battery; gzip -f $$out.log; \
+		[ -s $$out.json ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"missing\":true}" > $$out.json; \
+		echo "  ran $$tag $$1 s$$6"' _ {}
+	@$(PYTHON) tests/tactics/battery_table.py $(BUILD_DIR)/battery-census $(foreach a,$(BATTERY_ARMS),$(firstword $(subst :, ,$(a))))
