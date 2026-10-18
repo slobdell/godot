@@ -347,7 +347,7 @@ const SLOT_TOLERANCE := 4.0
 ## Round 25 (brains F7): read the K1 order only when order_changed flagged it (true) or also on every think (false).
 static var ORDER_READ_ON_SIGNAL := true
 ## Overnight item 2 (brains, from C33.9): a scout under fire fights back when it can't get away (scout_fights_back):
-## SPOT drops to its in-sight 0.7 so ENGAGE wins. `--scout-fight=off` (or env SCOUT_FIGHT=off, which a make target
+## SPOT drops to SCOUT_FIGHT_SPOT so ENGAGE wins. `--scout-fight=off` (or env SCOUT_FIGHT=off, which a make target
 ## carries to its children) is main's rule.
 static var SCOUT_FIGHT_BACK := not (OS.get_cmdline_user_args().has("--scout-fight=off") \
 		or OS.get_environment("SCOUT_FIGHT") == "off")
@@ -355,6 +355,8 @@ static var SCOUT_FIGHT_BACK := not (OS.get_cmdline_user_args().has("--scout-figh
 ## is one it cannot get away from.
 const SCOUT_FIGHT_HIT_TICKS := SimClock.TICK_RATE * 2
 const SCOUT_FIGHT_SPEED_SHARE := 0.9
+## ...and SPOT's score then (re-filed: at the in-sight 0.7 the rule fired and SPOT still won, ENGAGE scoring 0.27-0.43).
+const SCOUT_FIGHT_SPOT := 0.15
 
 
 ## Overnight item 2: whether a scout (`me`: the situation's self) should fight rather than open distance. Hit within
@@ -1637,7 +1639,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 					and float(matchups[c["name"]]["advantage"]) >= ORBIT_KEEP_ADVANTAGE
 			if c["visible"] and not TankBrain._is_prey(c, String(me.get("unit", ""))) and not orbitable:
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
-		if nearest < SCOUT_STANDOFF - 10.0 and not TankBrain.scout_fights_back(me, contacts, matchups):
+		if nearest < INF and TankBrain.scout_fights_back(me, contacts, matchups):
+			# Overnight item 2 (re-filed): below ENGAGE (0.27-0.43 for a scout in the orbit stage, seed 50) even with the
+			# commitment bonus on the current option, above HOLD's 0.10: it fights rather than keeps its distance.
+			spot = SCOUT_FIGHT_SPOT
+		elif nearest < SCOUT_STANDOFF - 10.0:
 			spot = 0.88
 		elif nearest < INF:
 			spot = 0.7

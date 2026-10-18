@@ -5,7 +5,7 @@ extends TestCase
 ## 5-20 against the orbiter's 112-128 at it, SPOT held). Rule (TankBrain.scout_fights_back): hit within
 ## SCOUT_FIGHT_HIT_TICKS, by a visible non-prey contact that can shoot it now (threatens_me) and is inside its own
 ## effective range, and either matches it (duel advantage >= 1, an even duel) or is not slower than it (top speed >= 0.9 x its own):
-## SPOT drops to its in-sight 0.7, so ENGAGE wins. Against a shooter it loses to and can outrun, SPOT opens distance as
+## SPOT drops to SCOUT_FIGHT_SPOT (0.15; re-filed from 0.7, which the rule fired at and SPOT still won), so ENGAGE wins. Against a shooter it loses to and can outrun, SPOT opens distance as
 ## today. `--scout-fight=off` (or env SCOUT_FIGHT=off) is main's rule.
 
 
