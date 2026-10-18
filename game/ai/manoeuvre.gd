@@ -56,7 +56,7 @@ static func reset() -> void:
 	hull_turns = 0
 	face_keep_refused = 0
 	hull_holds = 0
-	face_pulled_holds = 0
+	off_seat_declines = 0
 	face_keep_by_unit = {}
 
 
@@ -418,7 +418,25 @@ static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
 	# 37 % v artillery's 95 %); `drawn_facing` is what says the facing is his, the label only says which way it came.
 	if not turn_hull_on() or not String(order.get("from", "")) in ["order", "sector"] or not drawn_facing(brain):
 		return false
+	if off_seat(brain):
+		return false
 	hull_turns += 1
+	return true
+
+
+## Round 33 (CP-F attempt 3, R33.23): a crew standing further from its held seat than its arrive radius is still on its
+## way there, so neither lift applies and the decline stands (`stop`): the move finishes first and the hull turns once
+## seated. Traced (builder2, --fixed-fps, hull-rest gangs SBF s44/s45): Guns_5 stood 6.5-8 m from its seat, its dressing
+## move reversed toward it for a second, then the lifted face replaced the move and crept it, every second to the 75 s
+## judge (support-by-fire movers 8 v 3).
+static func off_seat(brain: TankBrain) -> bool:
+	var seat: Vector3 = brain.face_slot
+	if seat == Vector3.INF:
+		return false
+	var here := brain.tank.global_position
+	if _flat(here, seat) <= maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(brain.tank.unit_id)):
+		return false
+	off_seat_declines += 1
 	return true
 
 
@@ -431,7 +449,7 @@ static func drawn_face(brain: TankBrain) -> Dictionary:
 	if not turn_hull_on():
 		return {}
 	var direction: Variant = drawn_direction(brain)
-	if direction == null:
+	if direction == null or off_seat(brain):
 		return {}
 	var here := brain.tank.global_position
 	var look: Vector3 = Vector3(here.x, 0.0, here.z) + (direction as Vector3) * 20.0
@@ -441,9 +459,8 @@ static func drawn_face(brain: TankBrain) -> Dictionary:
 
 ## Arm counter: declined faces that kept the hull on his drawn heading instead (drawn_face).
 static var hull_holds := 0
-## Arm counter (R33.23): ticks a face that had pulled its hull off its held seat held instead of turning
-## (OrderController.FACE_PULL_GIVEUP_M).
-static var face_pulled_holds := 0
+## Arm counter (R33.23): faces left declined because the crew was still off its seat (`off_seat`).
+static var off_seat_declines := 0
 
 
 static func _kept(at: Vector3) -> bool:
