@@ -1276,7 +1276,13 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 
 - **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
   room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.
-- **The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
+- **The fire-post loop: DIAGNOSED and OWNED by traffic (2026-10-18; `e7b6504c7`,
+  references/round33/traffic/ov_firepost_r705.md).** An artillery truck reads arrived 5.1 m short, digs in after 0.25 s
+  still with NO target, and T1c-b2's on_fire_post() (deployed + not hold_fire + arrived) treats that readiness as firing,
+  so it refuses passers for 66 s. Fix (traffic and brains agree): a battery counts as firing only when set up AND it has a
+  fire mission (a target, engaged, or a recent shot). That keeps his yes (a truck ORDERED to fire stays set up). Judge
+  it on a tree with brains' battery item. Traffic item 4, after parkedroom v2 and T4.
+- **(was) The fire-post loop (unowned):** a set-up mortar truck refuses a passer, which loops; T1c-b2 holds as shipped. 20 loops in
   one fight (random-705, builder0, `d90fbdb7`).
 - **An element that never arrives because one crew is still driving (brains):** foundry s8, five War Rigs given a move with a
   drawn facing (laptop, manoeuvre `8fc224fa`, n 1). Four stopped 20–45 m out and one drove on to about 52 s. Arrival is the
