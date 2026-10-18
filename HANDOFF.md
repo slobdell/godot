@@ -27,6 +27,13 @@ worktrees start fresh; `origin` holds old `stream/*` branches, so workers don't 
 ports, and brains' seam only if traffic picks an element make-room; traffic's T4 circle trace → brains' v6; planner P3 and
 manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars (round 33)* before its numbers.
 
+**🌙 Overnight 2026-10-18 (the lead asleep; `workstreams.md` *Round 33, overnight extension*):** all five workers have
+taken round-34 candidates on their same worktrees: traffic gets parkedroom v2 and T4's third try; manoeuvre C33.9 (the
+scout) and CP-F's third attempt; brains the battery item, the scout fighting back, and the War Rig 4-of-5 arrival; planner
+its tools and P3 v2 re-judged pinned; native the test infra (the suite at --fixed-fps, and more). **builder2 (the GCP
+Spot VM) is ON and is the first-choice builder,** with 6 heavy slots. It bills while on (about $0.52/h, Spot). If it is
+preempted, the orchestrator runs `make gcp-start`. The lead decides in the morning whether to `make gcp-stop`.
+
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT
   JUDGED, busy box; native twins 0 mismatches). Main `b122cf60` INHERITS `1b5c69df`'s check. What he'd notice: a vehicle
