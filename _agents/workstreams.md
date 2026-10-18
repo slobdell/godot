@@ -151,6 +151,14 @@ velocity identical across two processes, seeds 7–18); r2 REPORTED, the same-pr
 (6) a skirmish guard, random arena, fresh 924–947, n 24: kills, deaths, hit rate and far loops each within base ± k·se.
 **Amended at filing (orchestrator):** T(2), (3), (4) and (6) are DECIDING guards too, alongside G1–G4, r1, 7 and T(1).
 Any one failing parks T4 with its reading, and there is no partial rule.
+**Line 7 red, ruled (orchestrator, 2026-10-18, R33.29):** the pair `2b41d3a04` read 2768/5 on builder2 (sim-baseline
+13 moved, as expected; perf JUDGED PASS). relay-smoke (the R33.25 RPC message) and the quiet-window test are known load
+reds. test_native_fire passed when re-run. Four reds are native COVERAGE FLOORS with the ghost ON (the gate
+"came round" path at 0; sumps parked_refusals 2 ≥ 5), with 0 mismatches. A ghost-ON default must stay covered, so: (b)
+native makes its twin stages ghost-aware. Stages whose floor paths the ghost starves run with `--traffic-off=ghost` (they
+measure native equality on those paths), and a ghost-ON twin stage is added with floors restated at half its fresh
+counts, plus compared ≥ 100. Native's commit is carried onto the pair, line 7 re-runs, and relay-smoke and
+remote-guard-test re-run alone if they're the only reds. (c) G and R may run now, and T runs only after 7 is green.
 
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
