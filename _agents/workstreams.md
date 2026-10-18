@@ -381,6 +381,20 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   in every arm, against about 2.3 in the series. Manoeuvre pins hull-rest (`--fixed-fps $(SIM_HZ)`, mk/manoeuvre.mk) on
   stream/manoeuvre, and from then on hull-rest numbers don't compare with earlier ones. Planner's P2/P3 hull-rest lines
   carry the same caveat (R33.13, R33.19).
+  **Attempt-3 trace (manoeuvre, builder2, hull-rest pinned at --fixed-fps 30, GDScript, tuning seeds 40–45, 4 factions
+  × 6 tasks, 144 runs an arm, tree `e9197ecb`; stream/manoeuvre `80e49424`,
+  references/round33/manoeuvre/cpf-trace-fixedfps/):** crews still moving at the judge, NEW v BASE: ambush 7 v 6 (paced
+  series 51 v 35), move 9 v 8 (26 v 15), screen 7 v 10 (49 v 29), attack-move 36 v 29, right 6 v 12, support-by-fire 8 v 3
+  (+5 over its 3.3 limit). (e) never-settled passes on 5 of 6 tasks; SBF 7 v 2. (a) within 15°: move 93.9 %, right
+  93.9 %, attack-move 79.4 % (paced 69.5–82 %). B10b's latch changes nothing (seat moves 875/2485 v NEW 886/2565). So
+  the judged misses (a), (d) and (e) came mostly from wall-clock pacing on a loaded builder0, not from re-seats.
+- **R33.23 CP-F attempt 3 (orchestrator, 2026-10-18; filed before any attempt-3 number).** The same pair (`b6c2a974` v
+  `--nav-off=turnhull`, plus native's (m) arms) is re-judged with hull-rest PINNED (stream/manoeuvre `670f4e12`'s flag) on
+  FRESH seeds 460–465 (never read), every call and both arms on builder2, labelled builder2. The bar's lines stand, with
+  one change, made now: **(c)** clicked wheels/turret per task: paired median difference NEW − BASE ≤ +1.645 se (one-sided:
+  no worse), replacing the ±5° median line that sat inside run-to-run noise. Before the series, manoeuvre traces SBF's
+  movers on tuning seeds 40–45 (diagnosis only). A fix found there is a candidate change and is re-filed before numbers.
+  C33.9 keeps priority.
 
 - **R33.22 B10b PARKED after its re-judge on main + R4 (2026-10-18; brains, builder2, pair `f91b61c7`, rows
   `references/round33/brains/b10b_rejudge_f91b61c7_builder2.txt`).** It fails as written on line 3's strict clause: pooled
