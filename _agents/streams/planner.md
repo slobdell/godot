@@ -74,7 +74,7 @@ rsyncs the working tree); this Status is committed from a scratch worktree._
 | **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **MERGED** (main `b122cf60` merges `1b5c69df`: builder0 `make check exited 0`, 2725/0, sim-baseline unmoved). **Shown by removal** to be why the FIFO's abandonment fell (R33.13, below) | `test_planner_seam_stale`; laptop removal test |
 | **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
 | **P2** CP-Q re-judged | **FAIL, does not ship (R33.13, main `64d0f952`)**: line (1) fails both modes (the FIFO base is already ~1 % abandoned on main), (2) fails on the Terminus rigs, (3a) drawn fails. Pair tree `c75f20a6` (main `624cc957` + QUEUE_DEFAULT true), its whole suite green (builder0 exited 0, 2725/0) | P2's verdict below |
-| **P3** open-ground face-behind | **REVISED** (amendment filed main `e8383ce6`): `6f89ecc1` (keep 1 alone) was RED, builder0 2733/4: a Terminus street face-back has no kept plan inside the hold (abandoned 8x, 42 deg off at 40 s). Candidate now **kept first, today's search after**: pair tree **`bca4eaca`** (stream `c6def5b3`), its whole suite sent 16:16 PDT was **LOST twice** (builder0 down 17:43 PDT, then again ~18:53 PDT after the re-send got its slot; both `make check exited 255`, build/ stale, nothing read from it). **WAITING on the orchestrator's queue** (slot 4 after main, native N5.Y, brains B10b): re-send the check on `bca4eaca`, then `planner-p3-series.sh` | probe table and the revision below |
+| **P3** open-ground face-behind | **FAIL -> PARKED** (the bar's own rule: (1) passes and a guard fails). Pair tree **`bca4eaca`** (main `b800a6aa` + P3, keep 1 + kept-first fallback + slot-law ordering; stream `c6def5b3`), whole suite green (builder0 `make check exited 0`, 2738/0; perf-judge and scenario_perf NOT JUDGED on load, moot now). Every line passes but **(2c) clicked**: face_far p90 15.4 v 12.8 m (n 18 v 27 plans). FIFO, no CP-F, one tree for every step | P3's verdict below; `references/round33/planner/p3-bca4eaca/` |
 | **Stretch** early GOAL_BLOCKED / START_BLOCKED refusals | **NOT TAKEN**: P2 shows they cost nothing he would see | refused asks end in short holds (<= 4 ticks, ~1.5 each, 10-16 % of hold ticks); shared's 369 early refusals cut queue_waits 2679 -> 264 and moved no player line |
 
 **R33.3, the orchestrator's three questions (evidence from the code at `03d1a50c`):**
@@ -192,6 +192,37 @@ arrivals not down beyond 1.645 se. Early stop OFF. After P2 (R33.10). **Filed on
 amendment (before numbers): both arms run on the queue main has when the series starts (`shared` if P2 shipped, else
 FIFO; the verdict names it), and on a tree with manoeuvre's CP-F if it has merged (else the verdict says which tree).
 
+### P3's verdict (`bca4eaca`, builder0, 2026-10-17 20:25-22:07 PDT; bar main `8681d2aa` + amendment `e8383ce6`)
+
+Arms: `--planner-face-keep=0` v keep 1 + the kept-first fallback, `--planner-queue=fifo` (P2 did not ship), no CP-F (not
+merged). Every step ran on the same tree `bca4eaca`. Hull-rest gangs fresh seeds 84-95 x 6 tasks, n 72 paired runs a mode;
+Terminus rigs fresh seeds 231-243, n 13. k 1.645, early stop OFF.
+
+| line | result |
+|---|---|
+| (0) open-ground gain survives | **PASS**. yard_open stage NATIVE on (the check) and off (the cell): plans 1, abandoned 0, kept_served 1, fallbacks 0, drift 0.97 m, aligned 9.83 s v today's 15.43 s (abandon-then-executor). Hull-rest face plans from the kept search: drawn 23/23 = 100 %, clicked 16/18 = 89 % (line >= 50 %) |
+| (0b) street face-back served | **PASS**, native on and off: plans 1, abandoned 0, fallbacks 1, kept_served 0, hold 26 ticks; test_planner_seam passes |
+| (1) deterministic cell | **PASS**: test_manoeuvre_face_behind and test_manoeuvre_behind pass native on (check 2738/0) and off (cell 19/0) |
+| (2a) P2's pooled guards | **PASS**. drawn rest_med +1.59 (se 3.01, line +4.94), settle -1.76 (se 1.53, +2.52), moving -4.0 (se 12.81, +21.07); clicked rest_med -1.00 (se 2.12, +3.48), moving +2.0 (se 15.07, +24.79). 3a null cells failing p < 0.05: 0 of 24. (hull_aa's HULL_PAIR "abandoned" rows are P2's reduction line, not P3's: P3's is (2b)) |
+| (2b) face asks abandoned | **PASS**. drawn 7/104 = 6.7 % v 4/135 = 3.0 % (se 2.7 pts, line <= 7.5 %); clicked 1/210 = 0.5 % v 1/226 = 0.4 % (line <= 1.5 %) |
+| (2c) face_far | drawn **PASS**: median 2.0 v 5.0 m (se 1.13, line <= 6.9), p90 5.6 v 16.9, max 11.9 v 19.2. clicked **FAIL**: median 2.0 v 3.1 m (se 0.89, line <= 4.6) ok, **p90 15.4 v 12.8 m over**, max 24.2 v 22.5 |
+| (2d) face holds | REPORTED: median drawn 3.0 (n 880) v 2.0 (n 848) ticks; clicked 3.0 (n 714) v 3 (n 795) |
+| (3) Terminus arrivals | **PASS**: rigs 175 v 181 of 208, paired -0.462 (se 0.550, line -0.905); contact-ticks median 465 v 481; mixed 293 v 293. series_verdict REFUSED ("the BASE arm's seam fired": both arms run the seam), so the PLANNER_SERIES_SQUAD lines were read by hand as the amendment says |
+
+**The worst pair (clicked, faced_attack_move):** s87 candidate face_far [3.5, **15.4**, 3.4, 3.5] with kept_served 4 and
+fallbacks 0 (so the 15.4 m plan came from the kept search) v base [2.7]; s95 candidate [5.6, **24.2**] with 1 kept and 2
+fallbacks v base [0.6, 3.1, 22.5]. The candidate's p90 rests on those two plans out of 18. A kept plan at 15.4 m is past one
+hull length (the rig's 14 m), which only a slot-law face's circle allows (its end circle + one hull length): **inferred**,
+not traced per plan. The s95 tail is shared with the base (24.2 v 22.5).
+**Crediting:** the slot-law ordering and the fallback are both in the candidate and no arm separates them, so this series
+cannot credit either alone. The kept slot faces are the ordering's change, so the clicked tail is more likely the
+ordering's than the fallback's (inference).
+**Not judged/side notes:** `queue_table.py` read 180 runs (old seed dirs in the copied `build/`; it is not a P3 line);
+perf-judge was NOT JUDGED on load in the check and is moot unless P3 is re-filed.
+**If re-filed (a new candidate, the orchestrator's call):** cap a slot-law face's kept circle at one hull length from the
+slot (or keep slotted faces unkept, as `6f89ecc1` did by accident). The open-ground gain (0) does not depend on slotted
+faces.
+
 ### P3 revised: the street failure, the probe, the fallback
 
 `6f89ecc1` (main `b800a6aa` + P3, FACE_KEEP_DEFAULT 1) failed C31.1 on builder0 (`make check exited 2`, 2733 passed, 4
@@ -220,7 +251,7 @@ candidate's hull-rest face plans from the kept search; (0b) the street cell serv
 ### Plan (ordered)
 
 1. R33.3: MERGED. 2. P1: DONE. 3. P2: FAIL (R33.13). 4. Stretch: not taken (above).
-5. **P3 (now):** `bca4eaca`'s whole suite (sent 16:16, lost to the builder0 outage at 17:43; re-send only when the orchestrator says) -> `planner-p3-series.sh` on the same tree, one job at a time:
+5. **P3: FAIL -> PARKED** (verdict above). The series as it ran, for the record:
    (1) `make test FILTER=test_planner_face_epsilon|test_manoeuvre_face_behind|test_manoeuvre_behind NATIVE=off` (native
    on = the whole suite's run); (2) `make planner-judge-face PLANNER_FACE_ARM=base|candidate` (seeds 84-95, keep 0 v 1,
    FIFO) -> `hull_aa.py --verdict` (2a), `face_keep_table.py` (2b, 2c); (3) `make planner-series-face` (231-243; its

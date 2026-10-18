@@ -1,0 +1,10 @@
+>> perf-judge: NOT JUDGED -- another check held the perf lock for 300s
+ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.
+  ok   the wrapper fails a target whose make exited 0 but printed the line (on stderr)
+native-verify-scenarios: runner exited 0, 0 verify mismatches (build/native-verify-scenarios.log)
+FACE_EPSILON stage: default { "plans": 1, "abandoned": 1, "driven": 1, "kept_served": 0, "fallbacks": 0, "aligned_s": 15.4333333333333, "drift_m": 1.54050922393799 } | keep 1 hull length { "plans": 1, "abandoned": 0, "driven": 0, "kept_served": 1, "fallbacks": 0, "aligned_s": 9.83333333333333, "drift_m": 0.97200620174408 }
+FACE_KEEP street: {"abandoned":0,"abandoned_by_kind":{},"aborted":0,"asks_by_kind":{"face":1},"driven":0,"driving_ticks":1,"face_far":[28.8999996185303],"face_kept_fallbacks":1,"face_kept_served":0,"hold_ticks":[26],"holds":{"max":26,"median":26,"n":1},"live":1,"pending_ticks":27,"plan_legs":5,"plans":1,"queue":"fifo","queue_waits":0,"refused":{},"refused_early":0,"requests":1,"rerequested":0,"slice":2,"stale_released":0}
+2738 passed, 0 failed
+>> check: 24 passed, 2 NOT JUDGED  [test x5, lint -P6, 2 at once, builder0]
+   NOT JUDGED perf-judge: NOT JUDGED -- another check held the perf lock for 300s
+>> remote: make check exited 0 (build/ copied back)
