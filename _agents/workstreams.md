@@ -189,6 +189,14 @@ give-ways whose crew is alive 30 s later with an UNCHANGED order: ≥ 90 % withi
 since v2 lets a new order win by design; the all-alive line and the new-order count are reported). **Added
 (orchestrator):** L6 needs ≥ 50 unchanged-order give-ways, or it reads INCONCLUSIVE and can't pass. Dev reads put L6 at
 78 %: a real risk, flagged before numbers.
+**Blocked before any judged number; R33.33 (2026-10-18):** N5.Y moved ask / _negotiate / _begin_yield into C++, and
+Drive::ask (drive_native.cpp:2465) has NO parkedroom. So on the shipping native path v1 and v2 act only on the few asks
+still made in GDScript: a fresh-native dev census (old fights 700–707, builder0) shows 1.5 room give-ways a fight,
+against 12 on the stale or absent libraries the earlier dev reads ran. **Ruling (a):** native mirrors it as a
+HAND-BACK. While parkedroom is ON, Drive::ask hands the ask to GDScript Movement.ask when the asked crew is not under
+way, still ≥ Traffic.still_s and not on a fire post; everything else stays native. The twins check the hand-back at
+0 mismatches, both switch states. The series then runs on a pair with native's commit, the bar unchanged. Item 4's
+on_fire_post mirror changes alongside it.
 
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
