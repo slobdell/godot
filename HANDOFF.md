@@ -88,6 +88,9 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   that shard order. Native is moving every twin stage into its own fresh `--fixed-fps` process, which is the durable fix.
 
 **Parked (round 33):**
+- **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
+  moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
+  crews are re-seated after they face; a trace is running. **P3 (planner) PARKED, R33.19.**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
   failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
   7.0 with the front), and the ghost arm was steady at 12.5, but it failed as filed. Terminus was not re-judged. Round 34

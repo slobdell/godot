@@ -376,6 +376,13 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   trace of that re-seat on tuning seeds 40–45, NEW v BASE, with seat-goal prints. Also run B10b's seat latch ON in that
   trace, as a question (if B10b ships, CP-F's attempt 3 sits on it). C33.9 keeps priority for manoeuvre.
 
+- **R33.22 B10b PARKED after its re-judge on main + R4 (2026-10-18; brains, builder2, pair `f91b61c7`, rows
+  `references/round33/brains/b10b_rejudge_f91b61c7_builder2.txt`).** It fails as written on line 3's strict clause: pooled
+  drift moves 112 v 112 (on < off required). Every other line passes, and no ON run is later than OFF. With R4 on main,
+  OFF no longer flips on Sumps s16 t8 (0 flipping, 2 drift), so R4 fixed the case B10b was built for. On 28 fresh census
+  runs ON and OFF are identical in every field: the latch never acts. Parked, not shipped (a latch with no case left).
+  `--ground-latch` stays on stream/brains for manoeuvre's R33.21 re-seat trace. B11b stays BLOCKED (CP-F parked).
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
