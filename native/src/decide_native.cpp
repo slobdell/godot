@@ -161,6 +161,16 @@ double penetration_multiplier(double penetration, double thickness) {
 	return clampd(0.5 * std::log(1.6 * penetration / thickness) / std::log(2.0), 0.05, 1.5);
 }
 
+// TankBrain._is_prey(contact, my_unit): a mortar, or a unit whose role my unit is good against (Units' table).
+bool is_prey(const DecideConsts &c, const DN &k, const Dictionary &profiles, const Dictionary &contact, const String &my_unit) {
+	if (contact.get(k.weapon, k.empty) == Variant(k.mortar)) {
+		return true;
+	}
+	const String unit = contact.get(k.unit, k.empty);
+	const String role = profiles.has(unit) ? String(((Dictionary)profiles[unit]).get(k.role, k.empty)) : k.empty;
+	return role != k.empty && ((Array)((Dictionary)profiles.get(my_unit, Dictionary())).get(k.good_vs, Array())).has(role);
+}
+
 // Overnight item 2 (brains' scout, R33 overnight): TankBrain.scout_fights_back(me, contacts, matchups), line for line.
 // Its flag and constants are read live from the brain script (a test turns the flag off); Units.stat is asked of the
 // live GDScript (tuning, fallbacks), as the rarely used helpers are. Reached only for a scout with a contact in sight.
@@ -195,16 +205,6 @@ bool scout_fights_back(const DecideConsts &c, const DN &k, const Dictionary &pro
 		}
 	}
 	return false;
-}
-
-// TankBrain._is_prey(contact, my_unit): a mortar, or a unit whose role my unit is good against (Units' table).
-bool is_prey(const DecideConsts &c, const DN &k, const Dictionary &profiles, const Dictionary &contact, const String &my_unit) {
-	if (contact.get(k.weapon, k.empty) == Variant(k.mortar)) {
-		return true;
-	}
-	const String unit = contact.get(k.unit, k.empty);
-	const String role = profiles.has(unit) ? String(((Dictionary)profiles[unit]).get(k.role, k.empty)) : k.empty;
-	return role != k.empty && ((Array)((Dictionary)profiles.get(my_unit, Dictionary())).get(k.good_vs, Array())).has(role);
 }
 
 // TankBrain.rounds_barely_mark(weapon, contact)
