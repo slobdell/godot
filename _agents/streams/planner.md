@@ -410,3 +410,21 @@ builder2 (GCP c4d-32) `make check exited 2`, 2773 passed / 0 failed, sim-baselin
 quiet-window test), and all three re-ran green alone on builder0: `make net-smoke combat-smoke remote-guard-test exited
 0`. GREEN by the R33.6 rule. Stream tip `b05583f1a` = that + this Status, the R33.26 evidence and face_pairs.py's
 1-face fix (tests/planner Python only, which check does not run). Nothing pushed.
+
+**After the close (the orchestrator's two extra items, 2026-10-18 afternoon):**
+- **(1) The clicked faced_attack_move face that never resolves: DIAGNOSED (mechanism + owner).** Diagnosis seeds 66-71
+  (never judged), builder0 light, keep 1, one run a seed: seed 69 shows it (Green_Guns_7: kept plan 15.3 m, hull 3.0 m,
+  the order moved on after 46 ticks); seeds 67 and 69 have 1 and 5 served faces, 66/68/70/71 none. Traced with a
+  temporary order probe in `TankBrain._order_move` (printed each order and its caller; reverted, never committed).
+  **Mechanism:** reversing on a k-turn leg (seam: `kturn OK R+1.0x12.5`), the hull crosses INSIDE its attack-move
+  goal's 6 m arrival radius at tick 509. `_act` takes its "arrived" branch (tank_brain.gd ~2461: within
+  `_order_arrive()` -> `_face_intended_or(stop)`), so the order becomes a FACE "from post" mid-manoeuvre, and the
+  seam releases the k-turn and is asked a face from that pose. For ticks 510-545 each new move_to the brain issues is
+  REFUSED by the held-post rule in `_order_move` (round 5: a held unit may not start moving on its own) and turned
+  into the post face. At 554 the move_to is accepted and the face is dropped (the seam: "released, another kind").
+  So the face is an arrival-circle flicker mid-k-turn, not a face anyone wanted: today's search never answers inside
+  the 45 ticks (the "neither served" faces), and the kept search answers fast and starts a swing the order then
+  cancels. **Owner: manoeuvre** (R33.2: manoeuvre owns WHEN a faced finish runs; here an arrival is declared while
+  a k-turn leg is still driving), **with brains** for the held-post refusal that holds the flicker for 45 ticks.
+  Candidate fix to hand them: do not declare "arrived" while the seam or the executor is mid-leg (or hold the finish
+  until the leg ends). Evidence: `references/round33/planner/face-flip-s69/`.
