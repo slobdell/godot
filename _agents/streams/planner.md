@@ -198,8 +198,10 @@ builder2 (GCP c4d-32), 2026-10-17 22:2x PDT: `>> remote: make check exited 2`; *
 **unmoved** on every arena (keep 0 is OFF); targets 23 passed, 1 FAILED, 2 NOT JUDGED. The FAIL is **web-smoke: no Chrome
 on builder2** ("Browser was not found at ... /usr/bin/google-chrome"), a machine gap, not the code; perf-judge NOT JUDGED
 (builder2 has no nominal yet). A first run there segfaulted in the cold `make import` (JetBrainsMono-Blocks.ttf), no test
-run. Laptop `make test FILTER=test_planner` on `1de6a692`: 51/0 (GDScript drive). **Still owed:** web-smoke and perf-judge
-alone, where the orchestrator says. The last fully green stream check remains `1b5c69df` (builder0 exited 0, 2725/0).
+run. Laptop `make test FILTER=test_planner` on `1de6a692`: 51/0 (GDScript drive). The two owed lines, run alone on
+builder0 (the orchestrator's call) on `2e8a8721` (= `1de6a692` + this Status only): `make web-smoke exited 0` (WEB SMOKE
+PASSED, WEB MATCH SMOKE PASSED; the screenshot shows the HUD, the tank and the caller line) and `make perf-judge exited 0`
+(JUDGED, PASS attempt 1 of 3, ratio 1.09x, ai 8981 us/tick, builder0). **GREEN HASH: `1de6a692`** (the orchestrator merges it).
 
 ### P3's verdict (`bca4eaca`, builder0, 2026-10-17 20:25-22:07 PDT; bar main `8681d2aa` + amendment `e8383ce6`)
 
