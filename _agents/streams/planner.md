@@ -74,7 +74,7 @@ rsyncs the working tree); this Status is committed from a scratch worktree._
 | **R33.3 (main bug, first by ruling)** `PlannerSeam.live()` stuck true after the order is replaced | **MERGED** (main `b122cf60` merges `1b5c69df`: builder0 `make check exited 0`, 2725/0, sim-baseline unmoved). **Shown by removal** to be why the FIFO's abandonment fell (R33.13, below) | `test_planner_seam_stale`; laptop removal test |
 | **P1** line (3)'s noise | **DONE** (`4bbe8322`, builder0, `make planner-aa-queue`, hull-rest gangs seeds 66-71 x 6 tasks, fifo v fifo, 72 paired runs a mode) | `references/round33/planner/aa-4bbe8322/` |
 | **P2** CP-Q re-judged | **FAIL, does not ship (R33.13, main `64d0f952`)**: line (1) fails both modes (the FIFO base is already ~1 % abandoned on main), (2) fails on the Terminus rigs, (3a) drawn fails. Pair tree `c75f20a6` (main `624cc957` + QUEUE_DEFAULT true), its whole suite green (builder0 exited 0, 2725/0) | P2's verdict below |
-| **P3** open-ground face-behind | **REVISED** (amendment filed main `e8383ce6`): `6f89ecc1` (keep 1 alone) was RED, builder0 2733/4: a Terminus street face-back has no kept plan inside the hold (abandoned 8x, 42 deg off at 40 s). Candidate now **kept first, today's search after**: pair tree **`bca4eaca`** (stream `c6def5b3`), its whole suite sent 16:16 PDT; then `planner-p3-series.sh` | probe table and the revision below |
+| **P3** open-ground face-behind | **REVISED** (amendment filed main `e8383ce6`): `6f89ecc1` (keep 1 alone) was RED, builder0 2733/4: a Terminus street face-back has no kept plan inside the hold (abandoned 8x, 42 deg off at 40 s). Candidate now **kept first, today's search after**: pair tree **`bca4eaca`** (stream `c6def5b3`), its whole suite sent 16:16 PDT was **LOST** (builder0 down 17:43 PDT, `make check exited 255`, build/ stale, nothing read from it). **WAITING on the orchestrator's queue** (slot 4 after main, native N5.Y, brains B10b): re-send the check on `bca4eaca`, then `planner-p3-series.sh` | probe table and the revision below |
 | **Stretch** early GOAL_BLOCKED / START_BLOCKED refusals | **NOT TAKEN**: P2 shows they cost nothing he would see | refused asks end in short holds (<= 4 ticks, ~1.5 each, 10-16 % of hold ticks); shared's 369 early refusals cut queue_waits 2679 -> 264 and moved no player line |
 
 **R33.3, the orchestrator's three questions (evidence from the code at `03d1a50c`):**
@@ -220,7 +220,7 @@ candidate's hull-rest face plans from the kept search; (0b) the street cell serv
 ### Plan (ordered)
 
 1. R33.3: MERGED. 2. P1: DONE. 3. P2: FAIL (R33.13). 4. Stretch: not taken (above).
-5. **P3 (now):** `bca4eaca`'s whole suite (sent 16:16) -> `planner-p3-series.sh` on the same tree, one job at a time:
+5. **P3 (now):** `bca4eaca`'s whole suite (sent 16:16, lost to the builder0 outage at 17:43; re-send only when the orchestrator says) -> `planner-p3-series.sh` on the same tree, one job at a time:
    (1) `make test FILTER=test_planner_face_epsilon|test_manoeuvre_face_behind|test_manoeuvre_behind NATIVE=off` (native
    on = the whole suite's run); (2) `make planner-judge-face PLANNER_FACE_ARM=base|candidate` (seeds 84-95, keep 0 v 1,
    FIFO) -> `hull_aa.py --verdict` (2a), `face_keep_table.py` (2b, 2c); (3) `make planner-series-face` (231-243; its
