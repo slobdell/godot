@@ -265,10 +265,26 @@ test-leaks: import ## Which tests leave orphan nodes / leak at exit: every shard
 TEST_FPS ?= $(SIM_HZ)
 TEST_FPS_ARGS = $(if $(TEST_FPS),--fixed-fps $(TEST_FPS))
 
+# Round 33 overnight (native, item 2): a suite run with NO native library where one is expected REFUSES. The twin files
+# print `native: absent` and pass when the library is missing, so a fresh checkout's `make remote T=test` passed 2771 /
+# 0 having proved nothing native (twice in round 33: native.md hazard 10). Expected = NATIVE is not off and this machine
+# has cmake + c++ (native-for-check's own rule). `make native test` builds it; `make check` builds it first; NATIVE=off
+# runs the GDScript paths on purpose; a machine without the toolchain runs them as before. Scoped to the runs that can
+# pass vacuously: the whole suite, or a FILTER naming a native file. A laptop `make test FILTER=nav_gate` runs as before.
+.PHONY: _native-ready
+_native-ready:
+	@if [ "$(NATIVE)" != off ] && [ "$(NATIVE_TOOLCHAIN)" = yes ] && [ ! -e $(NATIVE_GDEXT) ] \
+			&& { [ -z '$(FILTER)' ] || case '$(FILTER)' in *native*) true;; *) false;; esac; }; then \
+		echo "test REFUSED: no native library in this checkout ($(NATIVE_GDEXT)) on $$(hostname), so every twin would pass"; \
+		echo "             without running. Build it first (make native test, or make remote T=\"native test\"), or say"; \
+		echo "             NATIVE=off to run the GDScript paths on purpose."; \
+		exit 3; \
+	fi
+
 # Round 18 (ship): each shard's EXIT STATUS is read, not only its summary line. It was written to test-shards/N.status
 # and never read, so a shard that printed `SHARD i/n: ... 0 failed` and then aborted at exit (heap corruption in picker's
 # test_previewing_a_formation_issues_nothing, exit 134, laptop) passed `test`. Stub-driven: tools/test_test_shards.sh.
-test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
+test: _filter-ok _native-ready import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
 		$(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
 		exit $$?; \
