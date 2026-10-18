@@ -1,0 +1,6 @@
+FACE_EPSILON stage weighted alone { "plans": 1, "abandoned": 0, "driven": 0, "kept_served": 0, "fallbacks": 0, "aligned_s": 11.7333333333333, "drift_m": 25.3008079528809 }
+FACE_EPSILON stage: default { "plans": 1, "abandoned": 1, "driven": 1, "kept_served": 0, "fallbacks": 0, "aligned_s": 15.4333333333333, "drift_m": 1.54050922393799 } | keep 1 hull length { "plans": 1, "abandoned": 0, "driven": 0, "kept_served": 1, "fallbacks": 0, "aligned_s": 9.83333333333333, "drift_m": 0.97200620174408 }
+FACE_KEEP street: {"abandoned":0,"abandoned_by_kind":{},"aborted":0,"asks_by_kind":{"face":1},"driven":0,"driving_ticks":1,"face_far":[28.8999996185303],"face_kept_fallbacks":1,"face_kept_served":0,"hold_ticks":[26],"holds":{"max":26,"median":26,"n":1},"live":1,"pending_ticks":27,"plan_legs":5,"plans":1,"queue":"fifo","queue_waits":0,"refused":{},"refused_early":0,"requests":1,"rerequested":0,"slice":2,"stale_released":0}
+19 passed, 0 failed
+>> remote: make test FILTER=test_planner_face_epsilon|test_planner_seam|test_manoeuvre_face_behind|test_manoeuvre_behind NATIVE=off exited 0 (build/ copied back)
+CELL native-off exited 0

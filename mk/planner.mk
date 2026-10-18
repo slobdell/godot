@@ -260,3 +260,56 @@ planner-stage-s207: native import ## planner round 32: the s207 stage, refuse ea
 		$(MAKE) --no-print-directory nav-terminus-drive DRIVE_SQUADS=rigs DRIVE_SEEDS=207 NAV_FLAGS="--planner-queue=$$arm" NAV_JOBS=1 > /dev/null 2>&1 || true; \
 		cp $(BUILD_DIR)/nav-drive/rigs-207.log $(PLANNER_STAGE_DIR)/$$arm-rigs-207.log; done
 	@$(PYTHON) tests/planner/stage_s207.py rolling=$(PLANNER_STAGE_DIR)/shared-rolling-rigs-207.log shared=$(PLANNER_STAGE_DIR)/shared-rigs-207.log
+
+# ---- round 33 (P1, C33.6 (a)): line (3)'s noise, the hull-rest gang arm A/A -------------------------------------------
+# The FIFO both arms: base_* and new_* run the SAME flags (--planner-queue=fifo, the native drive) on the SAME seeds, so
+# every difference is the probe's run-to-run noise (hull-rest is not deterministic). Read by tests/planner/hull_aa.py
+# (per-class sd a run, round 32's lines read on the null) -> build/planner/hull-aa.txt + hull-aa-rows.jsonl. Heavy:
+# make remote T=planner-aa-queue (144 runs at the default seeds).
+PLANNER_AA_SEEDS ?= 66 67 68 69 70 71
+.PHONY: planner-aa-queue
+planner-aa-queue: native import ## planner round 33 P1: hull-rest's gang arm fifo v fifo (A/A) on PLANNER_AA_SEEDS -> build/planner/hull-aa.txt
+	@mkdir -p $(BUILD_DIR)/planner
+	@echo ">> planner-aa-queue on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_AA_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="base_drawn base_clicked new_drawn new_clicked" \
+		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states --planner-queue=fifo" \
+		HULL_SEEDS="$(PLANNER_AA_SEEDS)" HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)" > $(BUILD_DIR)/planner/hull-aa-runs.txt 2>&1 || true
+	@grep -E "no SCREEN_DONE|SCRIPT ERROR" $(BUILD_DIR)/planner/hull-aa-runs.txt | head -5 || true
+	@$(PYTHON) tests/planner/queue_table.py $(BUILD_DIR)/manoeuvre/hull-rest | tee $(BUILD_DIR)/planner/hull-aa.txt
+	@$(PYTHON) tests/planner/hull_aa.py $(BUILD_DIR)/manoeuvre/hull-rest --rows $(BUILD_DIR)/planner/hull-aa-rows.jsonl | tee -a $(BUILD_DIR)/planner/hull-aa.txt
+
+# ---- round 33 (P3, C33.6 (c)): the face searches' census at each weight ------------------------------------------------
+# hull-rest's gang arm, drawn only, the FIFO (today), with --planner-face-shadow: every face search the seam begins is
+# also planned whole at 1.5 / 2.0 / 3.0 (measurement; the hull drives today's). The DIAGNOSIS seeds (66-71: P1's A/A
+# set), never P2's or P3's judged ones. -> build/planner/face-shadow.txt
+PLANNER_SHADOW_SEEDS ?= 66 67 68 69 70 71
+.PHONY: planner-face-shadow
+planner-face-shadow: native import ## planner round 33 P3: which face searches land inside the hold at each weight (hull-rest gangs drawn, PLANNER_SHADOW_SEEDS) -> build/planner/face-shadow.txt
+	@mkdir -p $(BUILD_DIR)/planner
+	@echo ">> planner-face-shadow on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(PLANNER_SHADOW_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF= \
+		M1_FLAGS="--turn-states --planner-queue=fifo --planner-face-shadow" HULL_SEEDS="$(PLANNER_SHADOW_SEEDS)" \
+		HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)" > $(BUILD_DIR)/planner/face-shadow-runs.txt 2>&1 || true
+	@$(PYTHON) tests/planner/face_shadow_table.py $(BUILD_DIR)/manoeuvre/hull-rest/base_drawn | tee $(BUILD_DIR)/planner/face-shadow.txt
+
+# ---- round 33 (P3, C33.6 (c)): the face keep circle's judged series ----------------------------------------------------
+# One arm a call (PLANNER_FACE_ARM=base|candidate) on the pair tree (FACE_KEEP_DEFAULT 1): hull-rest's gang arm drawn +
+# clicked, the native drive, the FIFO both arms (main's queue, R33.13), the keep EXPLICIT on each arm (base
+# --planner-face-keep=0, candidate =1). Both arms called = the A/B: hull_aa.py --verdict (P2's pooled guards, line (2a))
+# and face_keep_table.py (lines (2b) the FACE asks' abandoned share, (2c) the drift line).
+PLANNER_FACE_SEEDS ?= 84 85 86 87 88 89 90 91 92 93 94 95
+PLANNER_FACE_ARM ?= base
+.PHONY: planner-judge-face
+planner-judge-face: native import ## planner round 33 P3: hull-rest's gang arm, PLANNER_FACE_ARM=base (keep 0) | candidate (keep 1) on PLANNER_FACE_SEEDS
+	@echo ">> planner-judge-face on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(PLANNER_FACE_ARM) | seeds $(PLANNER_FACE_SEEDS)"
+	@$(MAKE) --no-print-directory manoeuvre-hull-rest M1_ARMS="$(if $(filter candidate,$(PLANNER_FACE_ARM)),new_drawn new_clicked,base_drawn base_clicked)" \
+		M1_BASE_OFF= M1_NEW_OFF= M1_FLAGS="--turn-states --planner-queue=fifo --planner-face-keep=$(if $(filter candidate,$(PLANNER_FACE_ARM)),1,0)" \
+		HULL_SEEDS="$(PLANNER_FACE_SEEDS)" HULL_FACTIONS="$(PLANNER_QUEUE_FACTIONS)"
+	@$(PYTHON) tests/planner/face_keep_table.py $(BUILD_DIR)/manoeuvre/hull-rest --seeds "$(PLANNER_FACE_SEEDS)"
+
+# The keep's Terminus rig series (line (3), arrivals): keep 0 v keep 1 on fresh seeds, the FIFO both arms.
+PLANNER_FACE_SERIES_SEEDS ?= 231 232 233 234 235 236 237 238 239 240 241 242 243
+.PHONY: planner-series-face
+planner-series-face: ## planner round 33 P3: planner-series with base = --planner-face-keep=0, candidate = 1 (FIFO both), on PLANNER_FACE_SERIES_SEEDS
+	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_FACE_SERIES_SEEDS)" \
+		PLANNER_SERIES_BASE_FLAGS="--planner-queue=fifo --planner-face-keep=0" PLANNER_SERIES_CAND_FLAGS="--planner-queue=fifo --planner-face-keep=1"
