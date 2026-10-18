@@ -88,6 +88,10 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   **≥ 1 floors (`de6d3266`) were not enough:** main `de6d3266` on builder2 (R4 in it): 2769/2, sim-baseline unmoved, 0
   mismatches. test_native_gate's latch path read 0, and test_native_yield's parked_refusals and asks_refused read 0, in
   that shard order. Native is moving every twin stage into its own fresh `--fixed-fps` process, which is the durable fix.
+- **MAIN GREEN AGAIN: `7851690c` on builder2** (native's fresh-process twin stages merged): `make check exited 0`, 2771/0,
+  26 targets ALL JUDGED, perf-judge PASS 1.00x, sim-baseline 13 unmoved, 0 "native: absent", 1084 s. This covers every
+  round-33 merge together: R33.3, R1, R33.9, N5.M, R33.6, the islands, N5.Y, planner's parked P3 (OFF), R4, and the test
+  fixes.
 
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
