@@ -127,7 +127,7 @@ manoeuvre-hull-seeds-differ: import ## manoeuvre: two seeds of one hull-rest tas
 	done; \
 	if cmp -s $$d/$(SEEDS_DIFFER_A).json $$d/$(SEEDS_DIFFER_B).json; then \
 		echo "manoeuvre-hull-seeds-differ: FAIL, seeds $(SEEDS_DIFFER_A) and $(SEEDS_DIFFER_B) gave identical rows"; exit 1; fi; \
-	echo "manoeuvre-hull-seeds-differ: PASS, seeds $(SEEDS_DIFFER_A) and $(SEEDS_DIFFER_B) differ ($$(grep -o '"drawn":\[[^]]*\]' $$d/$(SEEDS_DIFFER_A).json | head -1) v $$(grep -o '"drawn":\[[^]]*\]' $$d/$(SEEDS_DIFFER_B).json | head -1))"
+	echo "manoeuvre-hull-seeds-differ: PASS, seeds $(SEEDS_DIFFER_A) and $(SEEDS_DIFFER_B) differ (drawn $$($(PYTHON) -c "import json,sys; print([r['drawn'] for r in json.load(open(sys.argv[1])) if 'drawn' in r][0])" $$d/$(SEEDS_DIFFER_A).json) v $$($(PYTHON) -c "import json,sys; print([r['drawn'] for r in json.load(open(sys.argv[1])) if 'drawn' in r][0])" $$d/$(SEEDS_DIFFER_B).json))"
 
 # ---- round 29 (M4): the fights guard -----------------------------------------------------------------------------
 # The showmatch's own match headless per FIGHT_SEEDS (tests/manoeuvre/fight_census.gd: shots, hits, kills, deaths per
