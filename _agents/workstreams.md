@@ -788,6 +788,10 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   tactics-drills green (its herringbone coverage and bearings) and the check, with sim-baseline moves listed. (4) The worst
   ON run traced first. **Added (orchestrator):** hull-rest's seeds barely vary on main (no jitter there yet), so report
   distinct rows per task and read (1) on distinct pairs. builder2, `native <target>`.
+  **Corrected before any number:** main's hull-rest has no plain attack_move task (only the six faced ones), so (1)
+  runs on faced_attack_move only. The undrawn path (kept heading, heading on entry) is judged by (2),
+  squad-arrive-series (drills-on attack-move with no facing, which halts in the herringbone): drift moves ON ≤ OFF as
+  filed, with after-arrival drift moves reported beside it.
 
 **Bars (round 33):** filed here before any number.
 
