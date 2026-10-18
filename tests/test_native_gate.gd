@@ -74,19 +74,27 @@ func _both_ways(movers: Array[Movement], i: int, order: Dictionary, delta: float
 
 ## Sumps: tight ground (gates shortened, cramped, given up).
 func test_the_gate_rule_drives_as_the_gdscript() -> void:
+	if FreshStage.parent(self, "test_the_gate_rule_drives_as_the_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _case(false, "sumps")
 
 
 func test_the_gate_rule_on_the_owned_state() -> void:
+	if FreshStage.parent(self, "test_the_gate_rule_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _case(true, "sumps")
 
 
 ## The default layout's open ground (brains' latch case): gates reached and latched.
 func test_the_latch_drives_as_the_gdscript() -> void:
+	if FreshStage.parent(self, "test_the_latch_drives_as_the_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _case(false, Arena.DEFAULT_LAYOUT)
 
 
 func test_the_latch_on_the_owned_state() -> void:
+	if FreshStage.parent(self, "test_the_latch_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _case(true, Arena.DEFAULT_LAYOUT)
 
 
