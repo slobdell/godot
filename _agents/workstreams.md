@@ -530,6 +530,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   **Amended at filing (orchestrator):** "its place" in (1) and in (2)'s "> 8 m" line means the place the crew was ASSIGNED
   when it began to deploy, not the seat the candidate gives it afterwards. Otherwise ON passes by definition (its place
   becomes where it stands). Queued behind B10b and R4.
+  **Second cause traced (brains, laptop, parade s43, native path, n 1):** Battery_2 ARRIVED 4.9 m from its place at
+  t=80 pointing the wrong way without passing its approach gate. The gate was re-aimed 20.0 m back along the place's
+  facing, it drove back, yielded to a squadmate crossing the coil, was re-seated across the set-up trucks at t=86 and
+  refused. **Ruling (orchestrator):** R4 stays as filed and frozen (`97c3b654`). "An arrived hull latches its goal's gate,
+  and the face at rest does the turn" joins this item as a SECOND switch, `--nav-off=arrivedgate`, on its own and not
+  folded into the seat rule. It is scoped to hulls whose gun doesn't need the hull's facing (artillery/battery and turreted
+  hulls). Never fixed-gun wheeled hulls: their face at rest is exactly C33.9's creep. A gate change, so it pairs with native
+  (C26.2) and the gate tests. The bar gains: named cases with each switch ALONE reported and both together DECIDING;
+  squad-arrive-series FRESH seeds (n 100) all-within-8 m ON ≥ OFF − 1.645 se; test_nav_gate_v4 / test_wheeled_arrival /
+  test_nav_gate_inside green on native.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
