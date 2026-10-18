@@ -1516,7 +1516,24 @@ static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dicti
 
 
 ## Record what the leader decided.
+var _bt_last := -1000
+
+
 func _take(plan: Dictionary, situation: Dictionary) -> void:
+	if OS.get_cmdline_user_args().has("--battery-trace") and element_name.contains("Battery") and int(situation.get("tick", 0)) - _bt_last >= 60:
+		_bt_last = int(situation.get("tick", 0))
+		var row := []
+		for member: Dictionary in situation.get("members", []):
+			var n := String(member["name"])
+			var slot: Variant = (plan.get("slots", {}) as Dictionary).get(n)
+			var order: Dictionary = (plan.get("orders", {}) as Dictionary).get(n, {})
+			var tank := Engine.get_main_loop().root.find_child(n, true, false) as Tank
+			row.append("%s at (%.0f,%.0f) slot %s to %s dep %.1f" % [n.trim_prefix("Green_").trim_prefix("Rust_"), (member["position"] as Vector3).x,
+					(member["position"] as Vector3).z, ("(%.0f,%.0f)" % [(slot as Vector3).x, (slot as Vector3).z]) if slot is Vector3 else "-",
+					("(%.0f,%.0f)" % [(order["to"] as Vector3).x, (order["to"] as Vector3).z]) if order.get("to") is Vector3 else String(order.get("verb", "-")),
+					tank.deploy_ratio if tank != null else -1.0])
+		print("BATTERY_TRACE t=%.0f team %d %s %s/%s anchor %s | %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, element_name,
+				String(plan["formation"]), String(plan["technique"]), plan["anchor"], " | ".join(PackedStringArray(row))])
 	formation = String(plan["formation"])
 	technique = String(plan["technique"])
 	reason = String(plan["why"])
