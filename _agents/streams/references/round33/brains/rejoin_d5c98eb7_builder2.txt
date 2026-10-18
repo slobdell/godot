@@ -1,0 +1,9 @@
+# Rejoin (item 4) on main (R33.32): lab/brains-rejoin-main d5c98eb7, builder2, native rejoin-fights, fresh 584-587 x sumps/yard/terminus/foundry, n 16
+worst ON fights first (1-crew forms after 60 s, deaths):
+  seed sumps-585 solo 0 v 70 | joins 117 v 0 | kills 119 v 127 | deaths 120 v 128
+  seed sumps-587 solo 0 v 78 | joins 112 v 0 | kills 116 v 120 | deaths 116 v 120
+  seed sumps-586 solo 1 v 82 | joins 165 v 0 | kills 172 v 146 | deaths 172 v 150
+  seed yard-586 solo 0 v 87 | joins 154 v 0 | kills 150 v 141 | deaths 156 v 143
+REJOIN on n 16 (rows 16 of 16) | 1-crew forms after 60 s 2 | joins 2533 | kills/fight 159.69 | deaths/fight 163.12 | ERROR 0 | C19.1 0
+REJOIN off n 16 (rows 16 of 16) | 1-crew forms after 60 s 1595 | joins 0 | kills/fight 157.00 | deaths/fight 160.44 | ERROR 0 | C19.1 0
+REJOIN lines: (a) solo ON < OFF PASS | (b) kills ON 159.69 >= 152.75 PASS, deaths ON 163.12 <= 164.56 PASS | (c) ERROR+C19.1 ON 0

@@ -1,0 +1,59 @@
+# Battery series on lab/brains-r33-battery ee18403b9, builder2, 2026-10-18 (check green: 2791/0, broker/relay re-run alone)
+
+## named-parade
+worst on runs v off first (never-past battery askers, set-ups > 8 m, shots, friendly-stuck s):
+  parade-43    askers 0 v 0 | far 1/6 v 12/13 | shots 32 v 20 | friend 35 v 48 s
+BATTERY_CENSUS on   n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 1 of 6 | art shots 32 | runs with a repack while firing 0 | friendly-stuck 35 s | first shot median 8.5 s (1 of 1 orders answered)
+BATTERY_CENSUS off  n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 12 of 13 | art shots 20 | runs with a repack while firing 0 | friendly-stuck 48 s | first shot median 4.8 s (2 of 2 orders answered)
+BATTERY_CENSUS a    n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 5 of 6 | art shots 109 | runs with a repack while firing 0 | friendly-stuck 52 s | first shot median 5.2 s (1 of 1 orders answered)
+BATTERY_CENSUS b    n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 12 of 13 | art shots 20 | runs with a repack while firing 0 | friendly-stuck 48 s | first shot median 4.8 s (2 of 2 orders answered)
+BATTERY_CENSUS c    n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 0 of 14 | art shots 14 | runs with a repack while firing 0 | friendly-stuck 44 s | first shot median 8.5 s (1 of 1 orders answered)
+BATTERY_CENSUS friendly-stuck on 35 v limit 48 (off + 1.645 se of the paired difference, round 32's line)
+
+## named-foundry
+worst on runs v off first (never-past battery askers, set-ups > 8 m, shots, friendly-stuck s):
+  foundry-45   askers 0 v 0 | far 2/12 v 26/35 | shots 61 v 44 | friend 24 v 72 s
+BATTERY_CENSUS on   n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 2 of 12 | art shots 61 | runs with a repack while firing 0 | friendly-stuck 24 s | first shot median 2.9 s (2 of 3 orders answered)
+BATTERY_CENSUS off  n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 26 of 35 | art shots 44 | runs with a repack while firing 0 | friendly-stuck 72 s | first shot median 2.8 s (3 of 5 orders answered)
+BATTERY_CENSUS a    n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 5 of 7 | art shots 90 | runs with a repack while firing 0 | friendly-stuck 10 s | first shot median 2.8 s (2 of 2 orders answered)
+BATTERY_CENSUS b    n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 26 of 35 | art shots 44 | runs with a repack while firing 0 | friendly-stuck 72 s | first shot median 2.8 s (3 of 5 orders answered)
+BATTERY_CENSUS c    n 1 (missing 0) | never-past battery askers 2 | set-ups > 8 m 1 of 19 | art shots 30 | runs with a repack while firing 0 | friendly-stuck 65 s | first shot median 11.2 s (4 of 4 orders answered)
+BATTERY_CENSUS friendly-stuck on 24 v limit 72 (off + 1.645 se of the paired difference, round 32's line)
+
+## census
+worst on runs v off first (never-past battery askers, set-ups > 8 m, shots, friendly-stuck s):
+  parade-49    askers 1 v 0 | far 0/8 v 37/66 | shots 66 v 86 | friend 50 v 118 s
+  sumps-49     askers 0 v 0 | far 0/0 v 0/0 | shots 4 v 12 | friend 50 v 34 s
+  sumps-47     askers 0 v 0 | far 0/0 v 0/0 | shots 7 v 8 | friend 83 v 30 s
+  foundry-48   askers 0 v 0 | far 0/0 v 0/0 | shots 0 v 0 | friend 10 v 10 s
+  foundry-51   askers 0 v 0 | far 0/0 v 0/0 | shots 0 v 0 | friend 15 v 15 s
+BATTERY_CENSUS on   n 18 (missing 0) | never-past battery askers 2 | set-ups > 8 m 7 of 99 | art shots 441 | runs with a repack while firing 0 | friendly-stuck 637 s | first shot median 9.0 s (19 of 28 orders answered)
+BATTERY_CENSUS off  n 18 (missing 0) | never-past battery askers 1 | set-ups > 8 m 186 of 344 | art shots 446 | runs with a repack while firing 0 | friendly-stuck 746 s | first shot median 3.3 s (28 of 31 orders answered)
+BATTERY_CENSUS friendly-stuck on 637 v limit 931 (off + 1.645 se of the paired difference, round 32's line)
+
+## arrive (b's line), seeds 65-68, ON v --nav-off=arrivedgate
+arrive-off.log:SQUAD_ARRIVE make-room=on: 87 of 100 arrive (every crew on its slot); the element said 98; hollow 11; within the element's own 8 m tolerance 97
+arrive-off.log:SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 10, 6-12 m 0, >12 m 1 (median 3.9 m)
+arrive-off.log:SQUAD_ARRIVE missing 0
+arrive-on.log:SQUAD_ARRIVE make-room=on: 87 of 100 arrive (every crew on its slot); the element said 98; hollow 11; within the element's own 8 m tolerance 97
+arrive-on.log:SQUAD_ARRIVE make-room=on hollow worst crew off: <=6 m 10, 6-12 m 0, >12 m 1 (median 3.9 m)
+arrive-on.log:SQUAD_ARRIVE missing 0
+ARRIVE_PAIR n 100 (missing on 0 off 0) | all-within-8 m 97 v 97 | floor 97.0 | PASS
+ARRIVE_PAIR discordant: on-only 0, off-only 0 | paired all_in8_s median 0.00 s (n 97)
+
+## worst ON run traced: parade-49
+{"after_s":20.4,"asker":"Green_Battery_2","asker_at":[-66.1,102.4],"goal":[-53.9,75.8],"goal_m":29.3,"goal_moved_after_s":2.5,"hull":"Green_Battery_3","hull_m":42.4,"outcome":"stopped (no longer under way)","refused_s":30.6,"sat_near_s":0.5}
+BATTERY_FIRE_ORDER t=3.0 team 1 Battery support_by_fire:
+BATTERY_FIRE_ORDER t=5.1 team 0 Battery support_by_fire:
+BATTERY_FIRST_SHOT team 0 Battery order support_by_fire: after 20.1 s
+BATTERY_FIRST_SHOT team 1 Battery order support_by_fire: after 40.2 s
+BATTERY_FIRE_ORDER t=101.6 team 0 Hunters support_by_fire:
+-- off
+BATTERY_FIRE_ORDER t=3.0 team 1 Battery support_by_fire:
+BATTERY_FIRE_ORDER t=5.1 team 0 Battery support_by_fire:
+BATTERY_FIRST_SHOT team 1 Battery order support_by_fire: after 3.1 s
+BATTERY_FIRST_SHOT team 0 Battery order support_by_fire: after 7.1 s
+BATTERY_FIRE_ORDER t=39.1 team 0 Spears2 support_by_fire:
+BATTERY_FIRST_SHOT team 0 Spears2 order support_by_fire: after 26.9 s
+BATTERY_FIRE_ORDER t=136.8 team 0 Hunters support_by_fire:
+BATTERY_FIRST_SHOT team 0 Hunters order support_by_fire: after 3.8 s

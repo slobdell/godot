@@ -1,0 +1,26 @@
+# Battery (a) alone (R33.27), lab/brains-battery-a 1ea8ce40 (merged as main 32e74084), builder2, 2026-10-18
+
+## named-parade
+worst on runs v off first (never-past battery askers, set-ups > 8 m, shots, friendly-stuck s):
+  parade-43    askers 0 v 0 | far 5/6 v 12/13 | shots 109 v 20 | friend 52 v 48 s
+BATTERY_CENSUS on   n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 5 of 6 | art shots 109 | runs with a repack while firing 0 | friendly-stuck 52 s | first shot median 5.2 s (1 of 1 orders answered)
+BATTERY_CENSUS off  n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 12 of 13 | art shots 20 | runs with a repack while firing 0 | friendly-stuck 48 s | first shot median 4.8 s (2 of 2 orders answered)
+BATTERY_CENSUS friendly-stuck on 52 v limit 48 (off + 1.645 se of the paired difference, round 32's line)
+
+## named-foundry
+worst on runs v off first (never-past battery askers, set-ups > 8 m, shots, friendly-stuck s):
+  foundry-45   askers 0 v 0 | far 5/7 v 26/35 | shots 90 v 44 | friend 10 v 72 s
+BATTERY_CENSUS on   n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 5 of 7 | art shots 90 | runs with a repack while firing 0 | friendly-stuck 10 s | first shot median 2.8 s (2 of 2 orders answered)
+BATTERY_CENSUS off  n 1 (missing 0) | never-past battery askers 0 | set-ups > 8 m 26 of 35 | art shots 44 | runs with a repack while firing 0 | friendly-stuck 72 s | first shot median 2.8 s (3 of 5 orders answered)
+BATTERY_CENSUS friendly-stuck on 10 v limit 72 (off + 1.645 se of the paired difference, round 32's line)
+
+## census
+worst on runs v off first (never-past battery askers, set-ups > 8 m, shots, friendly-stuck s):
+  foundry-54   askers 0 v 0 | far 0/0 v 0/0 | shots 0 v 0 | friend 5 v 5 s
+  foundry-56   askers 0 v 0 | far 0/1 v 0/1 | shots 7 v 7 | friend 39 v 39 s
+  foundry-58   askers 0 v 0 | far 0/0 v 0/0 | shots 0 v 0 | friend 19 v 19 s
+  parade-57    askers 0 v 0 | far 0/0 v 0/0 | shots 0 v 0 | friend 46 v 46 s
+  sumps-54     askers 0 v 0 | far 0/0 v 0/0 | shots 0 v 0 | friend 10 v 10 s
+BATTERY_CENSUS on   n 18 (missing 0) | never-past battery askers 0 | set-ups > 8 m 39 of 86 | art shots 377 | runs with a repack while firing 0 | friendly-stuck 525 s | first shot median 3.0 s (18 of 21 orders answered)
+BATTERY_CENSUS off  n 18 (missing 0) | never-past battery askers 0 | set-ups > 8 m 118 of 193 | art shots 240 | runs with a repack while firing 0 | friendly-stuck 602 s | first shot median 2.5 s (20 of 22 orders answered)
+BATTERY_CENSUS friendly-stuck on 525 v limit 687 (off + 1.645 se of the paired difference, round 32's line)
