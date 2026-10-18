@@ -21,7 +21,8 @@ trucks pinning on a wall at speed; a War Rig told to face behind in open ground 
 - **On main:** CP-S (the side gate), the SLICE preset (laptop back to SLICE 2: ~0.18–0.24 ms a tick on his laptop,
   `65cc43dd`), the capture fix, `--planner-queue=shared` (refuse early ONLY at rest, `d98656ab`) OFF, `shared-rolling` kept
   for the record. Targets: `planner-judge-queue`, `planner-series-queue`, `planner-trace-hull-rest`,
-  `planner-trace-drive-queue`, `planner-stage-s207`.
+  `planner-trace-drive-queue` (`planner-stage-s207` RETIRED in the round 33 overnight: its control no longer reproduces
+  and the shared queue failed P2).
 - **CP-Q PARKED in round 32:** the starvation is gone, but serving 1.5–2× the face plans in a 19-crew press cost drawn
   facing, settling and wall contact; the FIFO's hold was an implicit brake (Terminus s207: shared-rolling pins
   Green_S0_4 on Block_7 2043 ticks; refuse-at-rest 0). Line (3)'s misses at n 6 seeds were not shown to be the queue's:
@@ -304,3 +305,12 @@ the morning.
    builder2. CP-F's misses turned out to be pacing (R33.23), and P3's clicked-drift p90 miss may be too. The bar is
    R33.19's, re-filed with the new seeds.
 3. **Only if it fails pinned:** P3 v3, the slot cap (roadmap).
+
+**Overnight Status (keep current; the lead reads this in the morning):**
+- **(1) Tools: DONE** (laptop, `make planner-pytest` 4/4). `series_verdict.py seam=both`: the seam runs in BOTH arms, so
+  the base's seam firing is expected. It prints `PLANNER_SERIES_SEAM_BASE_TOTAL` beside the candidate's, still judges
+  arrivals the same way, and refuses if the base's seam NEVER fired (the flags missed the base). The default keeps round
+  31's guard. `planner-series-face` passes `PLANNER_SERIES_SEAM=both`. **stage_s207 RETIRED** (target and script):
+  round 32's pin no longer reproduces, and the shared queue it guarded failed P2 (R33.13) and does not ship. Re-make it
+  with a new control seed if the shared queue is ever re-filed. `planner-pytest` is not in `make check` (core.mk is not
+  planner's).

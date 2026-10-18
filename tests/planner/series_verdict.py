@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Round 31 (planner CP-P1, bar line (a)): the judged Terminus series read as the bar is written.
 
-Usage: series_verdict.py base=DIR candidate=DIR [se=1.645]
+Usage: series_verdict.py base=DIR candidate=DIR [se=1.645] [seam=both]
   (each DIR holds <squad>-<seed>.log from `make nav-terminus-drive`, the two arms on the SAME seeds)
+  seam=both (round 33 overnight): the seam runs in BOTH arms (the switch under test is the queue or the face keep, not
+  the seam), so the base's seam firing is expected: its report is printed beside the candidate's
+  (PLANNER_SERIES_SEAM_BASE_TOTAL), and the run refuses instead if the base's seam NEVER fired (the flags missed it).
 
 Per squad, PAIRED on seed (candidate - base): arrivals (the sum over legs of hulls that arrived) -- the bar's pass
 line is "not down beyond 1.645 se": the mean paired difference >= -1.645 x se (se = sd / sqrt n of the paired
@@ -60,13 +63,42 @@ def paired(base, cand, keys, field):
     return {"n": n, "mean": round(mean, 3), "sd": round(sd, 3), "se": round(se, 3), "diffs": diffs}
 
 
+def seam_totals(reports, label):
+    """Sum an arm's seam reports, printing one PLANNER_SERIES_SEAM<label> line a run."""
+    totals = {"requests": 0, "plans": 0, "driven": 0, "aborted": 0, "abandoned": 0, "rerequested": 0, "queue_waits": 0,
+              "pending_ticks": 0, "refused": {}, "runs_fired": 0, "runs_silent": 0, "holds_max": 0, "holds_medians": []}
+    for run in sorted(reports):
+        rep = reports[run]
+        if rep is None:
+            totals["runs_silent"] += 1
+            print("PLANNER_SERIES_SEAM%s %s: never fired (an equality check, not a sample)" % (label, run))
+            continue
+        totals["runs_fired"] += 1
+        for key in ("requests", "plans", "driven", "aborted", "abandoned", "rerequested", "queue_waits", "pending_ticks"):
+            totals[key] += int(rep.get(key, 0))
+        for code, count in rep.get("refused", {}).items():
+            totals["refused"][code] = totals["refused"].get(code, 0) + int(count)
+        holds = rep.get("holds", {})
+        totals["holds_max"] = max(totals["holds_max"], int(holds.get("max", 0)))
+        if int(holds.get("n", 0)) > 0:
+            totals["holds_medians"].append(int(holds["median"]))
+        print("PLANNER_SERIES_SEAM%s %s: %s" % (label, run, json.dumps(rep, sort_keys=True)))
+    totals["holds_median_of_medians"] = statistics.median(totals["holds_medians"]) if totals["holds_medians"] else 0
+    del totals["holds_medians"]
+    totals["pending_per_event"] = pooled_holds(reports)   # every event in the arm, pooled: n / median / max hull-ticks
+    return totals
+
+
 def main(argv):
     arms = {}
     mult = 1.645
+    seam_mode = "candidate"
     for arg in argv:
         name, _, value = arg.partition("=")
         if name == "se":
             mult = float(value)
+        elif name == "seam":
+            seam_mode = value
         else:
             arms[name] = value
     if "base" not in arms or "candidate" not in arms:
@@ -80,7 +112,7 @@ def main(argv):
         return 2
     reports = seam_reports(arms["candidate"])
     base_reports = seam_reports(arms["base"])
-    verdict = {"se_mult": mult, "squads": {}, "seam": {}}
+    verdict = {"se_mult": mult, "squads": {}, "seam": {}, "seam_mode": seam_mode}
     squads = sorted({squad for squad, _ in base})
     for squad in squads:
         keys = sorted(k for k in base if k[0] == squad)
@@ -115,31 +147,17 @@ def main(argv):
                   row["contacts"]["worst_candidate"], cand[(squad, row["contacts"]["worst_candidate"])]["contacts"],
                   row["pending_per_event"]["n"], row["pending_per_event"]["median"], row["pending_per_event"]["max"]))
     # The seam, per candidate run and summed.
-    totals = {"requests": 0, "plans": 0, "driven": 0, "aborted": 0, "abandoned": 0, "rerequested": 0, "queue_waits": 0,
-              "pending_ticks": 0, "refused": {}, "runs_fired": 0, "runs_silent": 0, "holds_max": 0, "holds_medians": []}
-    for run in sorted(reports):
-        rep = reports[run]
-        if rep is None:
-            totals["runs_silent"] += 1
-            print("PLANNER_SERIES_SEAM %s: never fired (an equality check, not a sample)" % run)
-            continue
-        totals["runs_fired"] += 1
-        for key in ("requests", "plans", "driven", "aborted", "abandoned", "rerequested", "queue_waits", "pending_ticks"):
-            totals[key] += int(rep.get(key, 0))
-        for code, count in rep.get("refused", {}).items():
-            totals["refused"][code] = totals["refused"].get(code, 0) + int(count)
-        holds = rep.get("holds", {})
-        totals["holds_max"] = max(totals["holds_max"], int(holds.get("max", 0)))
-        if int(holds.get("n", 0)) > 0:
-            totals["holds_medians"].append(int(holds["median"]))
-        print("PLANNER_SERIES_SEAM %s: %s" % (run, json.dumps(rep, sort_keys=True)))
+    totals = seam_totals(reports, "")
     base_fired = [run for run, rep in base_reports.items() if rep is not None and int(rep.get("requests", 0)) > 0]
-    if base_fired:
+    if seam_mode == "both":
+        if not base_fired:
+            print("REFUSED: seam=both but the BASE arm's seam never fired (the flags did not reach the base)")
+            return 2
+        verdict["base_seam"] = seam_totals(base_reports, "_BASE")
+        print("PLANNER_SERIES_SEAM_BASE_TOTAL %s" % json.dumps(verdict["base_seam"], sort_keys=True))
+    elif base_fired:
         print("REFUSED: the BASE arm's seam fired in %s (the switch reached the base)" % sorted(base_fired))
         return 2
-    totals["holds_median_of_medians"] = statistics.median(totals["holds_medians"]) if totals["holds_medians"] else 0
-    del totals["holds_medians"]
-    totals["pending_per_event"] = pooled_holds(reports)   # every event in the arm, pooled: n / median / max hull-ticks
     verdict["seam"] = totals
     print("PLANNER_SERIES_SEAM_TOTAL %s" % json.dumps(totals, sort_keys=True))
     print("PLANNER_SERIES %s" % json.dumps(verdict, sort_keys=True))
