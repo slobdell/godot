@@ -66,8 +66,23 @@ is built by the first `check` or `quick`, as on a fresh builder0 folder.
 
 ## First check (2026-10-17, main `d99394f1`)
 
-(filled in from `build/gcp-first-check-d99394f1.log` when it reads: wall time, test count, sim-baseline v builder0's
-hashes, perf-judge's verdict)
+`build/gcp-first-check-d99394f1.log`. It was a cold box: the shared tools downloaded once (Godot and templates, about 2
+min) and the folder imported cold.
+
+- **The suite took 932 s (15.5 min), against 58–71 min (3461–4239 s) for builder0's main checks the same day under
+  load.** It ran 12 targets at once, with 16 test shards and lint -P16. The AI's cost per tick was 5.5 ms here against
+  about 10.9 ms on builder0, so each core is roughly 2× faster.
+- **sim-baseline: 13 maps unmoved**, the same hashes as builder0's. The glibc match holds.
+- **2738 passed, 1 failed:** `test_native_controller::test_the_controller_tick_is_the_live_gdscript`, 7 mismatches in
+  600 scenarios. It passes on builder0 on the same code. native_controller is OFF by default, but a twin that depends on
+  the CPU (AMD EPYC 9B45, AVX-512, v builder0's Intel i5-1345U) is handed to native as a determinism question.
+- **web-smoke FAILED: no Chrome.** Installed since (google-chrome-stable 155.0.8059.84; builder0 has 150.0.7871.46).
+- **perf-judge and scenario_perf NOT JUDGED: no nominal.** The image had no `/etc/hostname`, so the machine read as
+  "unknown". It now holds `builder2`. The nominal is recorded idle with
+  `make gcp-remote T=ai-perf-nominal` and goes into `tests/ai_scenarios/perf_nominal.json`. perf-judge's 1.5× refusal
+  line is relative to each machine's own nominal, so builder2 judges against builder2.
+- **A second worktree's cold import segfaulted once** (planner, re-run). See *Seeding a new worktree folder*.
+
 
 **Not CPU-bound under one check (the lead watched htop, 2026-10-17).** One `make check` there runs up to 12 targets at
 once, with 16 test shards and lint -P16, and the box still sits at load about 16 of 32. The tests are paced by the WALL
