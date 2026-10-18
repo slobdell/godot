@@ -76,6 +76,11 @@ movers, and is being developed tonight; (3) leave it parked.
 attack-move gap (late gang movers +26 v +27 against a limit of about 12). Those movers are crews whose seats keep moving
 after they've faced. Manoeuvre is tracing why, on a tree with tonight's War Rig change (dev only). Recommendation now:
 **leave it parked until that trace reads**, then decide between shipping and a fourth attempt.
+**Trace read (R33.35):** the late movers come from a separate formation bug, not the turn. A halted "herringbone"
+formation lays its seats along the AVERAGE of where its vehicles are pointing, so when CP-F turns the hulls the formation
+re-lays and sends them driving again. The same bug makes a large gang swarm re-lay about 750 times a match even without
+CP-F. Brains fixes the formation bug as its own item first (lay it on your drawn facing). Then CP-F's fourth attempt
+sits on top. Tonight's War Rig change already halved the gap.
 
 **Merges (round 33):**
 - **R33.3 → main `b122cf60`** (planner `1b5c69df`, builder0 `make check exited 0`, 2725/0, sim-baseline 13 unmoved; perf NOT

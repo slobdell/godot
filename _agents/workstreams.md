@@ -764,6 +764,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   be that flicker. Developed and checked on tuning 40–45 tonight; judged only after the lead's word (HANDOFF), on FRESH
   seeds. (j) is re-filed as REPORTED, since a hold that needs a quiet enemy in sight can't be forced by seed choice.
 
+- **R33.35 CP-F's attack-move movers are the HERRINGBONE halt laying seats on the live average hull heading
+  (2026-10-18; manoeuvre's diagnosis, dev only; builder0, pinned, attack-move, seeds 40–45 + 66–71, n 48 an arm, on
+  CP-F's pair + main with the War Rig).** First, main's War Rig change roughly halves the gap (wheels/turret +11 against
+  a limit of 12.5, PASS; all classes +13 against 12.8, by a hair). The loop: with a quiet enemy "possible", Drills picks
+  herringbone (drills.gd ~178). `_plan_drill`'s herringbone branch (element_plan.gd ~1902) lays seats on the
+  situation's heading, which is the members' hull forwards AVERAGED (element_situation.gd ~72), never the task's facing.
+  CP-F turns the hulls, so the average moves, the herringbone re-lays rotated, the seats jump 5–17 m and the crews are
+  re-sent, over and over. (Guns, seed 41: seat drifts after 30 s, 12 BASE v 103 NEW.) In BOTH arms, the Hunters swarm
+  re-lays about 750 times after arrival, likely the same root, untraced: a base bug. **Ruling:** brains' own item (one reason): the herringbone halt lays on the task's drawn
+  facing when it has one, else on the heading kept while the halt holds, never on the live average. Its own bar and
+  fresh seeds, judged on main, with the Hunters re-lays as a measured line. Then CP-F attempt 4 = a pair on main + that
+  fix, with the new judge, after the lead's word.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
