@@ -198,6 +198,18 @@ way, still ≥ Traffic.still_s and not on a fire post; everything else stays nat
 0 mismatches, both switch states. The series then runs on a pair with native's commit, the bar unchanged. Item 4's
 on_fire_post mirror changes alongside it.
 
+**Bar, traffic overnight item 4: a battery counts as firing only with a fire mission (filed 2026-10-18 before any
+number; traffic `1e48e66a3`, references/round33/traffic/ov_item4_bar.md).** Movement.on_fire_post() is true only for a
+hull that is set up, on a fire order that isn't hold_fire, with no move of its own under way, AND with a fire mission
+(weapon order target/suppress, or an engaged target). `--traffic-off=firemission` = today. Native's Drive::on_fire_post
+(drive_native.cpp:2448) mirrors it. **Tree: current MAIN** (brains' battery seat (a) is already on main, `32e740843`; that
+is the battery item as shipped) + the narrowing + native's mirror. Native path, every run `native <target>`, builder2,
+--fixed-fps 30, k 1.645, FRESH. (1) random-705 on the pair: fire-post far loops ON = 0 (if base is also 0, the traced
+reason is reported and (2) decides alone). (2) census fights 772–795 × 3 arenas, n 72: fire-post far loops ON ≤ base, and
+(base − ON) − k·se > 0 if base ≥ 10. (3) repack while firing = 0. (4) brains' battery census, Sumps/Parade/Foundry ×
+FRESH 59–64, n 18: shots ON ≥ base − 5 %, median first shot ≤ base + 5 s. (5) all far loops ≤ base + k·se, and random's
+24 fights: kills, deaths, hit rate within ± k·se. (6) C31.1 on the pair. All deciding.
+
 ## Round 33: five streams, all Opus (prepared 2026-10-17; briefs in `streams/`)
 
 **Goal: carry home round 32's parked candidates (`roadmap.md` *Round 33 candidates*), each judged on a stage where it
