@@ -681,6 +681,29 @@ const _PINNED := 1.0e9
 ## "point man", 2026-10-10). The extreme swap (the toughest crew in the most sheltered slot and the most fragile in the
 ## most exposed) is worth exactly this; every smaller difference in tiers is worth proportionally less.
 const SHORT_SWAP_M := 8.0
+## Round 33 (brains battery stretch): a set-up truck within this of a mover's straight line to a seat (and this far from
+## the seat itself, so a neighbouring seat is not "past" it) stands in the way; the seat costs PAST_COST more. Below
+## _PINNED, so the only open seat is still given; above any tier cost (TIER_COST x tiers x tiers).
+const PAST_M := 6.0
+const PAST_COST := 1.0e7
+
+
+## Round 33 (brains battery stretch): whether the straight line from `from` to `seat` passes a set-up truck.
+static func _passes_set_up(from: Vector3, seat: Vector3, set_up_at: Array) -> bool:
+	var a := Vector2(from.x, from.z)
+	var b := Vector2(seat.x, seat.z)
+	var ab := b - a
+	var length_sq := ab.length_squared()
+	if length_sq < 1e-6:
+		return false
+	for point: Vector3 in set_up_at:
+		var p := Vector2(point.x, point.z)
+		if p.distance_to(b) <= PAST_M or p.distance_to(a) <= 0.5:
+			continue
+		var t := clampf((p - a).dot(ab) / length_sq, 0.0, 1.0)
+		if t > 0.0 and t < 1.0 and p.distance_to(a + ab * t) < PAST_M:
+			return true
+	return false
 ## OFF by measurement (F1, builder0 2c141b0c, the drill move's arrive series, 5 maps x 5 squads x 4 seeds, paired):
 ## with the short swap on drill moves, +0.85 s (se 0.41) and one squad of 100 never arrived (the Sumps, a mixed squad,
 ## three fresh seatings); nothing else on that path changes, so a drill move keeps round 24's strict tiers until its
@@ -759,6 +782,7 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
 	var keep: Dictionary = opts.get("keep", {})
+	var set_up_at: Array = opts.get("set_up_at", [])
 	# Round 30 (brains B3b): `via` = [entry, exit] of a crossing every crew's route goes through (a bridge deck).
 	var via: Array = opts.get("via", []) if nearest and not halted else []
 	var along_route := nearest and not halted and SQUARED_ALONG_ROUTE and opts.has("at")
@@ -822,6 +846,12 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
 					value += _PINNED
+			# Round 33 (brains battery stretch): a mover is not seated past a set-up squadmate (`set_up_at`: where the
+			# set-up crews stand) while another place is open. Traced (parade s43): Battery_2 re-seated 20 m across three
+			# set-up trucks was refused by one and never moved again.
+			if not set_up_at.is_empty() and member.has("position") and not keep.has(String(member.get("name", ""))) \
+					and _passes_set_up(member["position"], world[j], set_up_at):
+				value += PAST_COST
 			# Round 27 (B2): a crew whose seat is kept (`keep`: {name: index}, a re-seat round a parked squadmate) takes
 			# that seat and no other.
 			if keep.has(String(member.get("name", ""))) and int(keep[String(member.get("name", ""))]) != j:
