@@ -133,7 +133,16 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (d) and (e) are judged on the player-post cells. **(d) amended (orchestrator, 2026-10-18, before any judged number; dev 11–23 seen
   only):** (d) counts reverse ticks under a REVERSE COMMAND, which must be 0 in every run, and gear flips by command. Total
   reverse ticks are REPORTED: 12 of 156 dev runs had 1–9, every one under a forward command at full lock, which are
-  contact/depenetration bounces from the physics plant and not the controller choosing reverse. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
+  contact/depenetration bounces from the physics plant and not the controller choosing reverse.
+  **Corrected the same day (manoeuvre, laptop, --fixed-fps 30, gang_scout v syn_scout 15 m seed 14, scratch `0782504d`):
+  they are NOT contact.** No slide collision on those ticks. Between SPOTs the brain picks HOLD → `stop`, and gunnery's R2
+  hook (gunnery.gd ~172: a fixed mount at `stop` steers `drive_toward` at throttle 0) swings the gun through the plant's
+  creep, so the scout shuffles under HOLD (164 of 900 ticks in that run). That is HIS shuffle, alive outside the face
+  path. **Added to C33.9 (orchestrator):** under the turn-in switch, a wheeled fixed-gun hull at `stop` with its target
+  out of arc goes through turn-in (or holds still), never the creep. Manoeuvre puts it in order_controller.gd (its own
+  file) before the creep. If the gunnery R2 line itself must change, that line is granted to manoeuvre for this, with a
+  merge note. **(d) gains (d2):** reverse ticks while the order is `stop` (HOLD), ON = 0 in every player-post run, and
+  total reverse ticks are reported. Filed before any judged number. A new line (g): free cells ON no worse than OFF on (a)–(c). SPOT's own
   moves stay with brains' SPOT-v-ENGAGE question. (c)'s "no cell worse by more than 20 %" is read on cells with OFF hits
   ≥ 10, and cells below that are reported. The machine-equivalence check (laptop seed 11 v builder0 seed 11, same code) is
   reported in the verdict.
