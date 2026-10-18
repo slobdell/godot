@@ -155,7 +155,27 @@ builder0 light, n 1, each run's exit line read:
 - `make native test FILTER=native_yield exited 0`, 4 / 0, every case 0 mismatches.
 - `make native native-live-guard test FILTER=native_drive|native_execute|native_face_behind|native_manoeuvre|native_gate|native_unstick|native_exec exited 0`,
   16 / 0, every twin 0 mismatches. The live guard: native_yield 14 taken; 24 switches in force, 2 held elsewhere.
-Merge chain running on `<hash below>`: `T=check`, then `tools/remote.sh check NATIVE=off`, then `native-proof`.
+**N5.Y MERGED: main `a47d43e3` (= `1053045e`).** builder0, n 1 each:
+- Chain 1 on `6434969e`: builder0 dropped at 57 min (`exited 255`, no route to host). Re-run after the orchestrator's go.
+- Chain 2 on `6434969e`:
+  - `check exited 2`, 2738 / 1. The FAIL: `test_the_give_way_in_the_sumps` floor, `parked_refusals 47 >= 60`; every stage
+    0 mismatches. perf-judge and ai-scenarios NOT JUDGED (box busy; unpinned).
+  - `check NATIVE=off exited 2`, 2739 / 0, perf-judge PASS 1.07x judged; only FAIL native-live-guard (by construction).
+  - sim-baseline unmoved both times. `native-proof exited 0`, EQUAL `10c328a0f978ea49`.
+- Fix `1053045e`: `stream/native` fast-forwarded to `d7938a6e`, plus the parked floor 60 -> 20. The stage counts depend on
+  test order; see native.md *N5.Y*. The orchestrator ruled no full chain: `make test exited 0`, 2741 / 0, and
+  `perf-judge` JUDGED PASS 1.16x on attempt 1.
+**R4 on main GREEN: `pair/brains-r4-main` `e382202e`** (main d99394f1 + v6 narrowed + inside_circle + the mirror, no B10b;
+code-identical to `45d5f1ea`). builder0 light, `make native test FILTER=native_gate|nav_gate_inside exited 0`, 8 / 0, every
+stage 0 mismatches, the same counts as `97c3b654`. Sent to brains and the orchestrator.
+**C33.9 (manoeuvre's wheeled turn-in): NO C++ TWIN.** Wheeled faces hand back (execute_native `simple_face`, reason 3);
+controller_tick runs the GDScript compute_command; N5.M and N5.Y never touch faces; no OrderController field is in
+exec_fields.h; `--nav-off=turnin` empties nothing native (the drive steps aside on any `_off`).
+**builder2 (GCP Zen 5) controller twin: 7 / 600 at d99394f1, TIMER GRANULARITY, not libm.** The only differing field is
+`OrderController.profile_usec > 0`, on held ticks with profiling on: the GDScript held path sometimes finishes within 1 µs
+there and charges 0. Fix, test-only, approved: `lab/native-controller-usec` `c7646f41` (main `a47d43e3` + the probe
+brain spinning until get_ticks_usec advances). Run it on builder2 when the orchestrator frees the box, and on builder0
+light.
 **Trap (all streams):** `make remote T=check NATIVE=off` silently drops NATIVE. Make takes the trailing `NATIVE=off` as
 its own variable, and the remote recipe passes only `$(T)`, so builder0 runs a plain native-ON `make check`. The
 wrapper's line shows it: `>> remote: make check on …` with no `NATIVE=off`. Two forms that do forward it:
