@@ -49,6 +49,12 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   perf-judge 1.47x over budget (main's own all-GDScript path; known). native-proof EQUAL. What he'd notice: nothing, the same
   game, decided in C++. **Main check of 199d1587 running** (`build/r33-main-check-199d1587.log`).
 
+- **R33.6 → main `863cb199`** (brains `fc195815`: builder0 25 targets passed, 2735/0, sim-baseline 13 unmoved; web-smoke's
+  wall-clock bound failed at load 30.8 and passed re-run alone, first sound 11.7 s). What he'd notice: a CPU squad of 6–8
+  fights in coordinated groups of at most five instead of unseated, and a respawned CPU crew rejoins doctrine. **Plus
+  `279600af`** (brains `f8cf6476`, test only): the body test runs each arm in its own process (R33.14). Both ride the next
+  main check, with traffic's islands once they're rebased onto main.
+
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
   failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
