@@ -1297,3 +1297,10 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   changes every test's pacing, so it gets its own full check and a list of any test whose numbers move. The residual 0–2 s is
   leftover state (the physics server, which GDScript can't reset). Per-process arms (brains `f8cf6476`) are the guard shape
   for any judged stage until then.
+- **A scout under fire fights back when it can't get away (brains; from C33.9, his scout report):** SPOT's 0.88
+  (tank_brain.gd:1606) is meant to buy distance, but a leash-clamped post buys none, so the circled scout keeps facing the
+  shooter and barely fires (manoeuvre's trace, main `0ef2443b`, seed 4: shots 5–20 v 112–128). Brains' design (code read
+  only): while taking fire from a contact inside the scout's own effective range, AND its SPOT post is clamped (or has no
+  room to retreat) or the shooter matches it (advantage ≥ 0), SPOT drops to its in-sight 0.7, so ENGAGE wins. Against a
+  shooter it loses to, it opens distance as today. The bar would cover: the shots ratio, scout survival, and team
+  enemy-seen seconds ≥ base − 1.645 se. It pairs with manoeuvre's turn-in.
