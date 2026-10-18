@@ -902,3 +902,24 @@ battery-census: import ## Round 33 (brains battery stretch): the battery bar's c
 		[ -s $$out.json ] || echo "{\"arena\":\"$$1\",\"seed\":$$6,\"missing\":true}" > $$out.json; \
 		echo "  ran $$tag $$1 s$$6"' _ {}
 	@$(PYTHON) tests/tactics/battery_table.py $(BUILD_DIR)/battery-census $(foreach a,$(BATTERY_ARMS),$(firstword $(subst :, ,$(a))))
+
+# Overnight item 4 (brains): RESPAWN element fights for the rejoin bar. Skirmish and showmatch fights are elimination
+# (skirmish_mode.gd sets it), so no crew ever respawns there; this is the match runner WITHOUT --elimination, 25 a side
+# (tools/perf_armies.py), --green-elements --rust-elements, no score limit, pinned. REJOIN_SEEDS x REJOIN_ARENAS,
+# REJOIN_FLAGS for an arm, --rejoin-trace always -> build/rejoin-fights/<arena>-<seed>.log (BRAINS_REFORM, MATCH_RESULT).
+REJOIN_SEEDS ?= 580 581 582 583
+REJOIN_ARENAS ?= sumps yard terminus foundry
+REJOIN_TIME ?= 180
+REJOIN_JOBS ?= 8
+.PHONY: rejoin-fights
+rejoin-fights: import ## Overnight item 4 (brains): respawn element fights (match runner, no --elimination, 25 a side), REJOIN_SEEDS x REJOIN_ARENAS, REJOIN_FLAGS -> build/rejoin-fights/
+	@rm -rf $(BUILD_DIR)/rejoin-fights; mkdir -p $(BUILD_DIR)/rejoin-fights; $(PYTHON) tools/perf_armies.py size 25 $(BUILD_DIR)/perf-armies > /dev/null
+	@echo ">> rejoin-fights on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | flags '$(REJOIN_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(REJOIN_SEEDS); do for arena in $(REJOIN_ARENAS); do echo "$$arena,$$seed"; done; done | \
+		xargs -P $(REJOIN_JOBS) -I{} sh -c 'set -- $$(echo {} | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match \
+			--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_25.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_25.json \
+			--budget=100000 --squad-cap=5 --score-limit=0 --time-limit=$(REJOIN_TIME) --seed=$$2 --arena=$$1 \
+			--green-elements --rust-elements --rejoin-trace $(REJOIN_FLAGS) > $(BUILD_DIR)/rejoin-fights/$$1-$$2.log 2>&1 || true; \
+		echo "  ran $$1 s$$2"'
+	@grep -l MATCH_RESULT $(BUILD_DIR)/rejoin-fights/*.log | wc -l | xargs echo "rejoin-fights: MATCH_RESULT rows"
