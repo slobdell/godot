@@ -38,6 +38,9 @@ static var ARRIVE_LATCH := true
 
 static func _arrived_at(to_go: float, state: Dictionary) -> bool:
 	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M)
+## Overnight item 3 (brains): a move's destination is inset from the arena edge by its shape (inset_anchor);
+## `--anchor-inset=off` is main's rule.
+static var ANCHOR_INSET := not OS.get_cmdline_user_args().has("--anchor-inset=off")
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
@@ -275,6 +278,12 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		plan["arrived"] = true
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
+	# Overnight item 3: a move's spot inland enough that its whole shape stands inside the arena (inset_anchor).
+	if verb == "move" and destination is Vector3:
+		var asked: Vector3 = destination
+		destination = inset_anchor(members_of(situation), String(plan["formation"]), destination,
+				table.spacing(String(situation["terrain"])))
+		plan["inset_m"] = asked.distance_to(destination)
 	var to_go := center.distance_to(destination)
 	if not ElementTask.runs_drills(task):
 		_plan_form_up(plan, situation, state, table, destination)
@@ -2475,6 +2484,29 @@ static func clamp_to_arena(point: Vector3) -> Vector3:
 	var clamped := Orders.clamp_to_arena(point)
 	return Vector3(clamped.x, 0.0, clamped.z)
 
+
+## Overnight item 3 (brains, the War Rig 4-of-5 case): `destination` moved inland until a disc of the shape's reach
+## (the farthest seat of `members` laid in `formation` there, TacticsFormation.place's open-field shape) is inside the
+## arena: every seat stands inside whichever way the element ends up facing, and the answer does not move with the
+## heading from one update to the next. Per axis, the largest correction clamp_to_arena makes, each way; both at once
+## (a shape wider than the arena) cancel to the middle. Traced (builder0, foundry faced drag s8): a destination on the
+## north edge had two seats clamped onto it, the centroid sat 17-20 m off, and the element never arrived.
+## `--anchor-inset=off`: `destination` unchanged.
+static func inset_anchor(members: Array, formation: String, destination: Vector3, spacing: float) -> Vector3:
+	if not ANCHOR_INSET or members.is_empty():
+		return destination
+	var reach := 0.0
+	for entry in TacticsFormation.place(members, formation, destination, Vector3.FORWARD, spacing, {"corridor_m": INF}):
+		reach = maxf(reach, Vector2((entry["to"] as Vector3).x - destination.x, (entry["to"] as Vector3).z - destination.z).length())
+	var up := Vector2.ZERO
+	var down := Vector2.ZERO
+	for probe: Vector3 in [Vector3(reach, 0, 0), Vector3(-reach, 0, 0), Vector3(0, 0, reach), Vector3(0, 0, -reach)]:
+		var point := destination + probe
+		var fix := clamp_to_arena(point) - point
+		up = Vector2(maxf(up.x, fix.x), maxf(up.y, fix.z))
+		down = Vector2(minf(down.x, fix.x), minf(down.y, fix.z))
+	var shift := up + down
+	return clamp_to_arena(destination + Vector3(shift.x, 0.0, shift.y))
 
 # ---- Preview (control's animated button help) ----------------------------------------------------------
 
