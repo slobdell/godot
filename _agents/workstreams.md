@@ -356,6 +356,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   It does NOT merge until a check on its merge tree is fully green with native's fix in it. First use: B10b's
   `f91b61c7` (builder2: 2770/3, the three floors only, sim-baseline unmoved; main 54abf20a fails the same way filtered).
 
+- **R33.21 CP-F PARKED (manoeuvre, stream/manoeuvre `b4bf8f2c`, references/round33/manoeuvre/cpf-series/; pair/cpf-on
+  `b6c2a974` v base `--nav-off=turnhull`, builder0, all 14 calls exited 0, hull-rest seeds 440–445).** The turn works:
+  drawn wheeled turret hulls end 3–6° off, against 60–100° today, on both paths; SBF gang_ifv drawn 2.3 v 34.0°; fights
+  no worse, with shots +20 % and hits +27 %; Terminus, the bridge and arrivals pass. **Misses:** (a) attack-move
+  wheels/turret 69.5 % within 15°, against a 70 % line. (b) ambush wheels/fixed worse, 3.9 v 2.6° (p 0.042), p90 76 v 7°,
+  not traced. (c) clicked's ±5° median line sits inside run-to-run noise (−6.8 to +9.5°, every p ≥ 0.197): the bar was
+  wrong, and nothing was tuned. (d) crews still moving at the judge: ambush +14, move +13, screen +20, over their limits.
+  (e) never-settled on move: +3 against a limit of 2.6. The extra movers are not turning hulls: on ambush, 39 of 55 are
+  driving a move to a goal 8–28 m away, i.e. crews are RE-SEATED after they face (gangs, law). **Next:** a diagnosis-only
+  trace of that re-seat on tuning seeds 40–45, NEW v BASE, with seat-goal prints. Also run B10b's seat latch ON in that
+  trace, as a question (if B10b ships, CP-F's attempt 3 sits on it). C33.9 keeps priority for manoeuvre.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
