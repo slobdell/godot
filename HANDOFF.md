@@ -74,6 +74,12 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
   (keep 0) with its counters and judge targets. builder2: 2745/0, sim-baseline unmoved. builder0 alone: web-smoke 0, and
   perf-judge JUDGED PASS 1.09x. **Native's controller-twin test fix → `ac06a393`** (timer granularity on builder2's Zen 5).
 
+- **R4 → main `54abf20a`** (brains `45d5f1ea`, with native's mirror): the approach gate, B5c-v6 narrowed + inside_circle.
+  builder0: check 2759/0, ALL JUDGED, sim-baseline unmoved, twins 0 mismatches. Series PASS on every deciding line: yard
+  s27 t8 10/10 both arms; the yard head-on s42 circle reverses 0 v 2; arrivals 97 v 97 of 100; pursuit 24/24. What he'd
+  notice: a vehicle no longer circles round an approach point that sits inside its own turning circle. It rides the next
+  main check, after `4d6f321d`'s on builder2.
+
 **Parked (round 33):**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
   failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
