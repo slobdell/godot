@@ -1297,3 +1297,38 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   changes every test's pacing, so it gets its own full check and a list of any test whose numbers move. The residual 0–2 s is
   leftover state (the physics server, which GDScript can't reset). Per-process arms (brains `f8cf6476`) are the guard shape
   for any judged stage until then.
+- **A scout under fire fights back when it can't get away (brains; from C33.9, his scout report):** SPOT's 0.88
+  (tank_brain.gd:1606) is meant to buy distance, but a leash-clamped post buys none, so the circled scout keeps facing the
+  shooter and barely fires (manoeuvre's trace, main `0ef2443b`, seed 4: shots 5–20 v 112–128). Brains' design (code read
+  only): while taking fire from a contact inside the scout's own effective range, AND its SPOT post is clamped (or has no
+  room to retreat) or the shooter matches it (advantage ≥ 0), SPOT drops to its in-sight 0.7, so ENGAGE wins. Against a
+  shooter it loses to, it opens distance as today. The bar would cover: the shots ratio, scout survival, and team
+  enemy-seen seconds ≥ base − 1.645 se. It pairs with manoeuvre's turn-in.
+  Also (manoeuvre's C33.9 dev runs, builder0 light, seeds 21–23): about a third of the scout's face time is broken by
+  the brain's own ADVANCE/HOLD stops (ADVANCE scores 0.3 with no visible threat), in the OFF arm too.
+- **Two load-flaky targets in `make check` (orchestrator, test infra; round 33, 2026-10-17):** (1) web-smoke's
+  "first sound ≤ 30 s after READY" is a wall-clock bound. It failed at load 30.8 (31.5 s) and 36.8 (34.7 s), and passed
+  re-run at load 12.6 (11.7 s). (2) tools/test_slot_light.sh (remote-guard-test) failed twice, "the quiet window opened"
+  and "ran while EXCLUSIVE held the box", on a shared live box. Both should either scale with measured load or refuse
+  (NOT JUDGED) rather than FAIL, like perf-judge.
+- **P3 v3, the face keep (planner):** v2 (kept first, today's search as fallback, R33.19) passed everything but clicked
+  drift's p90 (15.4 v 12.8 m), apparently from slot-law faces kept out to their end circle + a hull. Candidate: cap a
+  slotted face's kept circle at one hull length from the slot. The yard face-behind gain (9.8 v 15.4 s) is the prize.
+- **Two planner tools need repair (planner, round 33 close):** series_verdict needs a both-arms-seam mode (its round-31
+  guard refused, so P2 and P3 were read by hand), and stage_s207's rolling control no longer reproduces the round-32 pin
+  (re-make it or retire it).
+- **A remote `make test` with no native library should refuse, not pass (orchestrator, test infra):** today it runs
+  every twin as "native: absent" and exits 0 (R33 trap, `remote_builds.md`). On builder0/builder2 a missing library
+  should read NOT JUDGED for the twin files, or `test` should build it first, as `check` does.
+- **Judged series must run at a fixed physics rate (orchestrator, round 33 close; method):** `manoeuvre-hull-rest`
+  (mk/manoeuvre.mk:84, :98) runs Godot WITHOUT `--fixed-fps`, so its readings are paced by the wall clock and move with
+  box load. CP-F's judged series (R33.21) ran on a loaded builder0 and read about 2.3 "still moving" crews a run on
+  ambush. The same arms on the laptop's tuning seeds read about 0.3 in every arm (manoeuvre, attempt-3 trace). Planner's
+  P2/P3 hull-rest arms use the same workload. The `mk/*.mk` grep (2026-10-18) finds unpinned `$(GODOT) --headless --path`
+  calls in 22 files (most are renders, smokes and network targets, where the wall clock is the point). Audit every
+  JUDGED stage, pin it to `--fixed-fps $(SIM_HZ)`, and say in each parked verdict whether it rested on an unpinned stage.
+- **The hull-rest judge counts a wedged crew as "still moving" (manoeuvre, R33.23 trace):** "still" reads the reported
+  velocity, so a hull pinned short of its seat (reported v 4.9, real 0.00) counts as a mover in both arms. Read real
+  velocity, or report wedged crews as their own line.
+- **The hull-rest stage is barely seed-sensitive (manoeuvre, R33.23):** seeds 40 = 43 and 44 = 45, row for row, so a
+  paired se over seeds understates the noise. Make the seed vary the stage's geometry, as C33.9's orbit stage now does.

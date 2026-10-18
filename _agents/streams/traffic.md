@@ -83,3 +83,19 @@ Nothing. X1's frequency may become a question for him through the orchestrator, 
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+## Overnight (round 33 extension, 2026-10-18 ~00:45 PDT)
+
+The lead has gone to bed and wants builder2 kept busy. Take these items in order (`workstreams.md` *Round 33, overnight
+extension*; the details are in `roadmap.md` *Round 34 candidates*). Merge main first. builder2 FIRST (`make gcp-remote`,
+6 heavy slots). Every judged stage pinned at `--fixed-fps $(SIM_HZ)`. A bar is filed (sent to the orchestrator) before any
+number, judged on FRESH seeds, and every number labelled with its machine. Keep this Status current: the lead reads it in
+the morning.
+
+1. **parkedroom v2:** the room rule only for a crew AT a post (not one paused between orders). The bar is fresh, on new
+   fights (not 700–723), with L1 on hold-post far loops plus all parked far loops not up, and L6 (return) kept (R33.12).
+2. **T4 ghost, third try:** the cohesion guard on `tests/tactics/body_probe.gd` children at --fixed-fps (brains'
+   f8cf6476 shape), plus a REPLAY line (a same-process rematch replays exactly, ghost ON, or the reason it needn't:
+   R33.17 and roadmap), then the Terminus re-judge.
+3. **The fire-post loop** (random-705, 20 loops): diagnose who refuses whom and why, with brains (it borders the
+   battery item). Report an owner proposal; build nothing.

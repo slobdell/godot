@@ -230,3 +230,22 @@ Results:
   in-process on the R4 pair), native_yield 118 s.
 - The negative proof (laptop, scratch, not committed): a child's failed assert, engine error or kill (137) each turns
   the parent red with the child's message; a passing child stays PASS.
+
+## Overnight (round 33 extension, 2026-10-18 ~00:45 PDT)
+
+The lead has gone to bed and wants builder2 kept busy. Take these items in order (`workstreams.md` *Round 33, overnight
+extension*; the details are in `roadmap.md` *Round 34 candidates*). Merge main first. builder2 FIRST (`make gcp-remote`,
+6 heavy slots). Every judged stage pinned at `--fixed-fps $(SIM_HZ)`. A bar is filed (sent to the orchestrator) before any
+number, judged on FRESH seeds, and every number labelled with its machine. Keep this Status current: the lead reads it in
+the morning.
+
+Granted for these items only: mk/core.mk's `test` and `check` recipes, mk/web.mk's web-smoke judge,
+tools/test_slot_light.sh, tools/remote.sh (merge notes for each).
+1. **The suite at a fixed physics rate:** `--fixed-fps $(SIM_HZ)` for run_tests.gd. A full check on builder2 and on
+   builder0, plus a list of every test whose numbers or verdict move, and why. sim-baseline must stay unmoved.
+2. **A remote `make test` with no native library** refuses (NOT JUDGED for the twin files), or builds the library first.
+3. **web-smoke's first-sound bound and test_slot_light** read NOT JUDGED under measured load instead of FAIL, as
+   perf-judge does.
+4. **Split test_native_gate by frame** (FILE_TIME 535 s on builder0).
+5. **One NATIVE=off perf-judge reading on main** (builder2 and builder0, labelled).
+Pairs pre-empt all of it (brains' arrivedgate mirror first).

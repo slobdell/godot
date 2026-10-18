@@ -27,14 +27,26 @@ class ProbeBrain:
 
 	func think(delta: float) -> void:
 		calls.append(["think", delta])
+		_tick_over()
 
 	func compute_command(delta: float) -> TankCommand:
 		calls.append(["execute", delta])
+		_tick_over()
 		return TankCommand.new(delta, -delta, Vector3(delta, 0, 0), false)
 
 	func wants_to_run() -> bool:
 		calls.append(["wants"])
+		_tick_over()
 		return run_wanted
+
+	## Wait for the microsecond clock to advance. Every span the controller charges (profile_usec, the parts, BrainsAB's
+	## split) then covers at least 1 µs on either side. Without it, a fast core (builder2's Zen 5) sometimes finishes
+	## the GDScript held tick inside one microsecond and charges 0 while the native one charges 1: the twin was reading
+	## timer granularity, not the controller (round 33, d99394f1 on builder2: 7 of 600, `profile_usec > 0` only).
+	static func _tick_over() -> void:
+		var at := Time.get_ticks_usec()
+		while Time.get_ticks_usec() == at:
+			pass
 
 
 static func _statics() -> Array:

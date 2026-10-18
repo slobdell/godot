@@ -5,4 +5,6 @@ extends DriveTwinCase
 
 ## Wheeled hulls nose-on to walls with their goal behind them: the k-turn planner, its legs, their ends.
 func test_the_k_turn_legs_are_the_live_gdscript() -> void:
+	if FreshStage.parent(self, "test_the_k_turn_legs_are_the_live_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _k_turn_case(false, 0, 2)

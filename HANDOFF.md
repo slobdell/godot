@@ -47,9 +47,56 @@ manoeuvre F1 agree who owns a faced finish. Every bar in `workstreams.md` *Bars 
 - **N5.M → main `199d1587`** (native `c70be402`; R33.15). `_manoeuvre`'s decision runs in C++, default ON. Check on
   `025d5631`: builder0 exited 0, 2727/0, ALL JUDGED, sim-baseline unmoved. NATIVE=off: tests 2727/0, sim-baseline unmoved,
   perf-judge 1.47x over budget (main's own all-GDScript path; known). native-proof EQUAL. What he'd notice: nothing, the same
-  game, decided in C++. **Main check of 199d1587 running** (`build/r33-main-check-199d1587.log`).
+  game, decided in C++. **Main 199d1587 checked: builder0 `make check exited 0`, 2735/0, 26 targets ALL JUDGED, sim-baseline 13 unmoved.**
+
+- **R33.6 → main `863cb199`** (brains `fc195815`: builder0 25 targets passed, 2735/0, sim-baseline 13 unmoved; web-smoke's
+  wall-clock bound failed at load 30.8 and passed re-run alone, first sound 11.7 s). What he'd notice: a CPU squad of 6–8
+  fights in coordinated groups of at most five instead of unseated, and a respawned CPU crew rejoins doctrine. **Plus
+  `279600af`** (brains `f8cf6476`, test only): the body test runs each arm in its own process (R33.14). Both ride the next
+  main check, with traffic's islands.
+- **Islands → main `f18e021f`** (traffic `0bf0a721` = b71b8097's three commits rebased onto main; b71b8097 builder0 exited 0,
+  2732/0, sim-baseline unmoved, foundry included). The navmesh bake drops foundry's crate-roof islands (region_min_size 8).
+  What he'd notice: nothing, except no unit ever plans onto a crate roof. **Far census → main `dd32ede1`** (traffic `c54a932d`):
+  round 34's measurement tools, no game code.
+  **Main `0ef2443b` (R33.6 + body test + islands + far census) checked: builder0 streamed `make check exited 0`, 2739/0,
+  26 targets ALL JUDGED, sim-baseline 13 unmoved.** The link dropped again during the copy-back, so the wrapper's last line is
+  "treating that as a failure: nothing local proves what the run did". The verdict lines above were streamed live by the run
+  itself, and no number is read from the stale local build/, so the orchestrator accepts it as the main check (recorded
+  here, the only exception made this round).
+
+- **N5.Y → main `a47d43e3`** (native `1053045e`): the give-way negotiation (`_negotiate`, ask, `_begin_yield`) runs in
+  C++, default ON. Gates: 6434969e's check had 0 mismatches and sim-baseline unmoved; its one red was a coverage floor,
+  lowered 60 → 20 (it depends on test order); NATIVE=off 2739/0 with perf 1.07x; native-proof EQUAL; then on 1053045e
+  `make test` 2741/0 and perf-judge JUDGED PASS 1.16x (builder0). What he'd notice: nothing. **Rides the next main
+  check** (planned on builder2). **Correction (native, 2026-10-18):** 1053045e's `make test` 2741/0 ran with NO native
+  library (every twin "native: absent"), so it proved nothing about the floors. N5.Y's native evidence is 6434969e's
+  check (native ON, 0 mismatches) plus every builder2 main check since, all native ON.
+
+- **Planner close → main `5b574075`** (stream/planner `01d53411`, code = `1de6a692`): the parked P3 face keep lands OFF
+  (keep 0) with its counters and judge targets. builder2: 2745/0, sim-baseline unmoved. builder0 alone: web-smoke 0, and
+  perf-judge JUDGED PASS 1.09x. **Native's controller-twin test fix → `ac06a393`** (timer granularity on builder2's Zen 5).
+
+- **R4 → main `54abf20a`** (brains `45d5f1ea`, with native's mirror): the approach gate, B5c-v6 narrowed + inside_circle.
+  builder0: check 2759/0, ALL JUDGED, sim-baseline unmoved, twins 0 mismatches. Series PASS on every deciding line: yard
+  s27 t8 10/10 both arms; the yard head-on s42 circle reverses 0 v 2; arrivals 97 v 97 of 100; pursuit 24/24. What he'd
+  notice: a vehicle no longer circles round an approach point that sits inside its own turning circle. It rides the next
+  main check, after `4d6f321d`'s on builder2.
+- **Main `4d6f321d` on builder2: RED on two coverage floors.** test_native_yield's sumps stages: parked_refusals 6 ≥ 20 and
+  spot:back 9 ≥ 15, with 0 mismatches in 546 and 738 compared drives. Everything else is green: 2749 passed, perf-judge
+  JUDGED PASS 1.00x, sim-baseline 13 unmoved, 908 s. The stage's counts move with the shard order (16 shards on builder2).
+  Native fixes it test-only (fresh-process arms, or ≥ 1 floors); main stays red until it lands.
+  **≥ 1 floors (`de6d3266`) were not enough:** main `de6d3266` on builder2 (R4 in it): 2769/2, sim-baseline unmoved, 0
+  mismatches. test_native_gate's latch path read 0, and test_native_yield's parked_refusals and asks_refused read 0, in
+  that shard order. Native is moving every twin stage into its own fresh `--fixed-fps` process, which is the durable fix.
+- **MAIN GREEN AGAIN: `7851690c` on builder2** (native's fresh-process twin stages merged): `make check exited 0`, 2771/0,
+  26 targets ALL JUDGED, perf-judge PASS 1.00x, sim-baseline 13 unmoved, 0 "native: absent", 1084 s. This covers every
+  round-33 merge together: R33.3, R1, R33.9, N5.M, R33.6, the islands, N5.Y, planner's parked P3 (OFF), R4, and the test
+  fixes.
 
 **Parked (round 33):**
+- **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
+  moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
+  crews are re-seated after they face; a trace is running. **P3 (planner) PARKED, R33.19.**
 - **T4 (traffic ghost ON) PARKED, R33.17.** Line 7's red is an order-dependent body test (R33.14). The judged cohesion guard
   failed one cell of 9 (rts_camera s3: ghost OFF 7.0 v ON 12.5 s alone, line 10.0). The swing was in the control arm (17.0 →
   7.0 with the front), and the ghost arm was steady at 12.5, but it failed as filed. Terminus was not re-judged. Round 34

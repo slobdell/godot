@@ -4,4 +4,6 @@ extends DriveTwinCase
 
 
 func test_the_k_turn_unstick_odd_frames() -> void:
+	if FreshStage.parent(self, "test_the_k_turn_unstick_odd_frames"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _k_turn_case(false, 1, 2, false)

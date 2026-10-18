@@ -16,10 +16,14 @@ const YAWS: Array[float] = [0.0, 1.9, -2.6]
 
 
 func test_the_decision_is_the_live_gdscript() -> void:
+	if FreshStage.parent(self, "test_the_decision_is_the_live_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _stage(false)
 
 
 func test_the_decision_on_the_owned_state() -> void:
+	if FreshStage.parent(self, "test_the_decision_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _stage(true)
 
 

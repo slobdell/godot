@@ -574,6 +574,13 @@ bool TankNative::drive_configure(const Dictionary &config) {
 		c.HOLD_SLOW_M = config["HOLD_SLOW_M"];
 		c.LIVE_TICKS = config["LIVE_TICKS"];
 	}
+	c.gate_giveup = (bool)config.get("gate_giveup", false);
+	c.gate_side = (bool)config.get("gate_side", false);
+	c.gate_inside = (bool)config.get("gate_inside", false);
+	c.GATE_ROOM_POINTS = config.get("GATE_ROOM_POINTS", 8);
+	c.GATE_TURN_SECONDS = config.get("GATE_TURN_SECONDS", 12.0);
+	c.GATE_NEAR_DETOUR = config.get("GATE_NEAR_DETOUR", 2.0);
+	c.TURN_ROOM_POINTS = config.get("TURN_ROOM_POINTS", 12);
 	c.traffic_shape = c.traffic_hold && (bool)config.get("traffic_shape", false);
 	c.UNSTICK_BACK = (bool)config.get("UNSTICK_BACK_DEFAULT", false);
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);

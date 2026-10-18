@@ -3988,3 +3988,18 @@ His words: "prepare the workspaces for our next round." No playtest feedback sin
 vehicle told to face a direction ends facing it, including after being pushed off its post; respawns never land inside a
 standing hull; seats stop jumping without blocking a squadmate. Any playtest words he gives before or during the round go
 here verbatim first, then into the briefs.
+
+## Round 33, his playtest words during the round (2026-10-17, verbatim)
+
+> ok I'm playing a few games. There's some subtle flaws that are hard to pinpoint, but I just observed a clear behavior
+> fault on the scout - I had a single scout in my last game (I was the law) that was trying to engage some vehicle that was
+> circling it and shooting it. The scout was repeatedly driving forward and backward trying to yaw right so that it could
+> engage the other target. But its rate of yaw was lower than the vehicle circling it. As a result, the vehicle was doing
+> nothing but taking hits and meanwhile not moving fast enough to actually get a shot off on its own. THe obvious correct
+> behavior in this case would have been for the vehicle to just drive straight forward and to the right, thus eventually
+> yawing fast enough to get a shot off (car turns faster in forward motion) and also some sort of evasive maneuver
+
+Orchestrator's reading (C33.9): a fixed-gun wheeled hull under fire from an enemy that orbits it k-turns (forward/back) to
+bring its nose round, and the orbiting enemy out-turns the k-turn. He wants it to drive forward on a hard turn toward the
+attacker's side: a wheeled hull yaws faster rolling forward, and moving is also evasion. It is symmetric AI and ships
+without asking.
