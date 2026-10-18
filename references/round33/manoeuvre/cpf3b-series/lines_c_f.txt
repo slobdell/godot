@@ -1,0 +1,9 @@
+(c) clicked wheels/turret, one-sided: paired median (NEW-BASE) of the per-run median error <= +1.645 se (distinct pairs)
+   faced_ambush             n  8 paired median  +0.0 deg  se  0.0  lim  +0.0  PASS
+   faced_attack_move        n 10 paired median  -0.8 deg  se  2.5  lim  +4.2  PASS
+   faced_move               n 10 paired median  +0.0 deg  se  0.0  lim  +0.0  PASS
+   faced_right              n 10 paired median  +0.0 deg  se  0.2  lim  +0.4  PASS
+   faced_screen             n 10 paired median  +0.0 deg  se  2.7  lim  +4.4  PASS
+   faced_support_by_fire    n  8 paired median  +0.0 deg  se  2.7  lim  +4.4  PASS
+(f) squads arrived, drawn, distinct pairs 125: new 273 base 274 diff -1 se 2.7 lim -4.4 -> PASS
+    all pairs 383: new 815 base 812 diff +3 se 3.9

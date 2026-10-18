@@ -72,6 +72,36 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### CP-F ATTEMPT 3 JUDGED: PARKS (2026-10-18; tables in `references/round33/manoeuvre/cpf3b-series/`)
+
+Pair **pair/cpf3b-on `0dad42fa2`** (full check builder2 exited 0, 2777/0, sim-baseline 13 unmoved; seat-first at
+max(R32.3's 7 m, settle_radius), stream/manoeuvre c7f7eb5eb), BASE `--nav-off=turnhull`; native (m) BASE twin
+**pair/cpf3b-off `fdc47e576`**. ALL on builder2, every stage pinned, one arm a call, 15 calls exited 0 (step 6 re-run as
+`native <target>`: the first had NO library in a fresh folder, 0 NATIVE_EXEC lines). FRESH seeds: hull-rest 460-475 (384
+runs an arm), fights 476-499, Terminus 500-512, SBF 513-518, bridge's 18 cells. **Distinct pairs** (R33.23): the stage repeats
+itself, 21 distinct of 64 pairs a task; the lines below are over distinct pairs, all-pairs beside.
+
+| line | reading | verdict |
+|---|---|---|
+| (a) wheels/turret drawn point tasks | move 2.7 deg / 93.8 %; right 2.6 / 96.0 %; attack-move 4.0 / 80.2 % | PASS |
+| (b) any class worse at p < 0.05 | none (wheels/fixed p >= 0.135; wheels/turret better everywhere) | PASS |
+| (c) clicked, one-sided paired median NEW - BASE | every task <= +1.645 se (attack-move -0.8 deg) | PASS |
+| (d) movers at the judge | **attack-move all classes +7 (lim +6.5)**; every other task and class within (SBF +4, lim 5.7). All pairs: attack-move +22/+23 and SBF +8 fail | **FAIL** (attack-move) |
+| (e) never settled | all six within (distinct); all pairs: SBF +8 fails | PASS (distinct) |
+| (f) squads arrived | 273 v 274 over 125 distinct pairs (lim -4.4); re-seats not measured | PASS |
+| (g) Terminus 500-512 | mixed 300 v 295 of 312, rigs 182 v 177 of 208 | PASS |
+| (h) bridge-pooled | 18/18 both | PASS |
+| (i) fights 476-499 (23 pairs) | kills -15 (se 31.4), deaths -20 (se 29.7), hit rate 0.725 v 0.729 (se 0.017) | PASS |
+| (j) counters | hull_turns 287 721; **hull_holds 0** (the declined-contact hold needs the quiet enemy in sight: 1 of 383 runs saw one; the 40-45 sanity had 4 256 on move) | **FAIL as written** |
+| (l) SBF gang_ifv drawn | hull error at in 2.3 v 22.8 deg | REPORTED |
+| (m) native v GDScript | screen rows byte-identical, NEW 383/383, BASE 384/384: the sign agrees on (a) and (d) | PASS |
+| (q) fights shots | 21 987 v 21 090 (within se) | REPORTED |
+
+**Reading:** the turn is right (wheeled turret hulls 2.6-4.0 deg on point tasks against BASE's tens of degrees) and every guard
+holds. It parks on the settle again, now only on attack-move: the gang crews (15 v 9 distinct) are still DRIVING a move at 75 s
+(40 v 26 wheels/turret), the seat-moves pattern; and on (j), whose mechanism the judged seeds hardly exercise (it is tested:
+`test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading`). Not shipped.
+
 ### C33.9 attempt 2, DEV ONLY (R33.24; not judged, waiting on the lead; data in `references/round33/manoeuvre/c339-attempt2-dev/`)
 
 builder0, pinned, dev seeds 11-23, n 13 a cell. Turn in ONLY within the gun's effective reach; out of reach, today's motion.
@@ -116,7 +146,7 @@ between looks. A War Rig, gang tank or IFV told to face a direction ends with it
 | Item | State |
 |---|---|
 | **C33.9 the scout** | **JUDGED: PARKS** ((a) 23.9 v 25; out-of-reach hits 42 -> 57), section above. Was: built on a scratch tree (main + 0ef2443b..., last commit **d7cf8cbf**), dev cells on builder2 under `--fixed-fps` running. Dev seeds 11-23 at 9456b4f3 (builder2, n 13 a cell): (e) PASS 23.6 m, (b) PASS, (g) PASS, (d) 0 commanded reverse in 156 runs; (a) 23.0 % (bar 25), (c) worst cell +53 % (gang_scout v syn_scout 45 m: it cannot shoot that far). d7cf8cbf adds the HOLD-shuffle hook (d2). Judged run 31-36 on builder2 when dev is clean. |
-| **CP-F attempt 3** | R33.23: pair **pair/cpf3-on 60d2d86a** (+ the 3 m pulled-off give-up becb15d8, + the hull-rest pin 670f4e12). Full check and the tuning sanity (40-45) running on builder2; then the series 460-475 on builder2. |
+| **CP-F attempt 3** | **JUDGED: PARKS** (attack-move movers +7 v 6.5; (j) hull_holds 0), section above. Was: R33.23: pair **pair/cpf3-on 60d2d86a** (+ the 3 m pulled-off give-up becb15d8, + the hull-rest pin 670f4e12). Full check and the tuning sanity (40-45) running on builder2; then the series 460-475 on builder2. |
 | Hull-rest judge fixes | Queued after CP-F's series. |
 
 **Found tonight (each traced, numbers below in the sections):**
