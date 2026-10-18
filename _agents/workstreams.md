@@ -395,6 +395,15 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   no worse), replacing the ±5° median line that sat inside run-to-run noise. Before the series, manoeuvre traces SBF's
   movers on tuning seeds 40–45 (diagnosis only). A fix found there is a candidate change and is re-filed before numbers.
   C33.9 keeps priority.
+  **SBF traced (manoeuvre, builder2, pinned, tuning 40–45):** NEW's 8 SBF movers v BASE's 3 are two things. (i) Wedged
+  crews (reported v > 0, real 0.00), counted as "still moving" in BOTH arms: a pre-existing judge issue, reported only.
+  (ii) CP-F's own **face ↔ dressing loop** (gangs Guns_5 gang_tank, s44): the face at rest creeps the hull off its seat,
+  the element's dressing reverses it back, and it repeats until the judge (the planner has no legs for it, so it
+  creeps). **R33.23 amended before any 460–465 number:** the candidate adds (a): a face at rest that has pulled its hull
+  more than 3 m off its held seat gives up and holds the residual error, on the creep path too (facekeep's rule
+  extended). Manoeuvre's files only; it's a new pair hash and needs its own check first. Also: the stage is barely
+  seed-sensitive (seeds 40 = 43 and 44 = 45, row for row), so **the series runs seeds 460–475 (n 16 a cell)**, and the
+  verdict reports how many distinct rows each cell has and computes se over distinct pairs only.
 
 - **R33.22 B10b PARKED after its re-judge on main + R4 (2026-10-18; brains, builder2, pair `f91b61c7`, rows
   `references/round33/brains/b10b_rejudge_f91b61c7_builder2.txt`).** It fails as written on line 3's strict clause: pooled
