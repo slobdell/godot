@@ -126,6 +126,18 @@ static func configure() -> bool:
 		"yield_short": Movement.yield_short_on(), "yield_clear": Movement.yield_clear_on(),
 		"yield_hold": not Movement.switched_off("yieldhold"),
 	}
+	# Round 29 (brains B5c): the arrival gate given up / latched / roomy (ON unless --nav-off=gategiveup, and the native
+	# drive runs only with no --nav-off: the value here is the one in force).
+	config["gate_giveup"] = Movement.gate_giveup_on()
+	# Round 32 (brains B5c-v6): the planner's side gate for a goal first seen facing away (`--nav-off=gateside`).
+	config["gate_side"] = Movement.gate_side_on()
+	# Round 33 (brains B5c-v6, R33.8): a gate inside the hull's turning circle is latched (`--nav-off=gateinside`).
+	config["gate_inside"] = Movement.gate_inside_on()
+	config["GATE_ROOM_POINTS"] = Movement.GATE_ROOM_POINTS
+	# Round 30 (brains B5c-v4): the come-round's cap, the near rule's detour, the turn-room ring.
+	config["GATE_TURN_SECONDS"] = Movement.GATE_TURN_SECONDS
+	config["GATE_NEAR_DETOUR"] = Movement.GATE_NEAR_DETOUR
+	config["TURN_ROOM_POINTS"] = Movement.TURN_ROOM_POINTS
 	# Round 31 (planner CP-P1): the seam's switch and its table, when this tree has the seam (loaded by path: the file
 	# parses on a tree without it).
 	if ResourceLoader.exists(PLANNER_SEAM):

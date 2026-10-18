@@ -50,7 +50,7 @@ def main(on_path, off_path):
               f"({(mo / mf - 1) * 100:+.1f} %); paired diff median {statistics.median(d):+.1f} s")
     for name, rows in (("on", on), ("off", off)):
         tot = {c: sum(int(r.get(c, 0)) for r in rows.values()) for c in
-               ("gates_turned", "gates_latched_away", "gates_near", "gates_given_up", "gates_reached_latched",
+               ("gates_turned", "gates_latched_away", "gates_near", "gates_side", "gates_given_up", "gates_reached_latched",
                 "crossings_found", "crossings_held")}
         fired = sum(1 for r in rows.values() if any(int(r.get(c, 0)) > 0 for c in tot))
         print(f"counters {name}: {tot}; runs with any counter > 0: {fired}/{len(rows)}")
