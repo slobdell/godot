@@ -379,3 +379,27 @@ the morning.
   filed text) or not. The old (2c) (face_keep_table, unpaired) is superseded and is reported: drawn p90 14.3 v 8.2 over,
   clicked PASS. Distinct-pair counts differ by tool because each de-duplicates its own rows (hull rows, face counters,
   episodes).
+- **R33.28 (orchestrator): the filed text governs, so P3 v2 PASSES every line and SHIPS ON.** Merged: main `31bf55ae3`
+  (= pair `923fcb97f`; its check on `f8b7b003e`, builder2 `make check exited 0`, 2773/0, covers it). The face keep is
+  ON by default (keep 1 + kept-first fallback, FACE_KEPT_SHARE 45), with `face_episodes` measurement; it also carried
+  manoeuvre's hull-rest pin `670f4e12`. **The tool bug, fixed after the ruling** (stream, test first): `face_pairs.py`'s
+  `judge()` failed a class with exactly 1 face, against the filed text; it now reads NOT JUDGED and never fails. On
+  R33.26's own data it now prints "(2c): ALL PASS" (laptop, tool tests 15/15). It did not decide the verdict.
+
+**Overnight items: all DONE.** (1) tools: series_verdict `seam=both`, stage_s207 retired. (2) P3 v2 re-judged pinned:
+PARKED on (2c) clicked (c3acd47a2), traced to unpaired populations; R33.26 re-scoped (2c), and the re-judge PASSED and
+shipped (R33.28). (3) v3, the slot cap: WITHDRAWN (R33.26); its target, the 12.4 m tail, sits inside one hull length.
+
+**Round 34, what is left (planner's notes):**
+- **The clicked faced_attack_move face** (seeds 100/104 pinned, then 120): the kept search plans a 12.4 m face that
+  the hull never drives out (hull 2.2 m) before the order moves on, and the base never resolves it at all. One face,
+  every series. Trace what the order does there; it may be a face asked mid-attack that should not be a face.
+- **`make planner-pytest` is not in `make check`** (core.mk is not planner's): series_verdict, the distinct rule and
+  face_pairs are guarded only when someone runs it. Ask the check's owner to add it.
+- **Distinct-pair counts differ by tool** (hull rows, face counters, episodes), so the same series reads 48, 32 and 36
+  pairs. One shared run identity (screen.json plus the seam's report) would make them agree.
+- **hull-rest repeats itself pinned** (96 = 101, 100 = 104, about a third of the seeds): manoeuvre's overnight item (3),
+  a seed that varies the stage, would give every hull-rest bar more real n.
+- **The old unpaired (2c)** (face_keep_table FACE_KEEP_FAR) is superseded by face_pairs; keep it reported, or retire it.
+- **The shared queue (CP-Q, R33.13)** stays parked; if re-filed it needs a new s207-style control (stage_s207 retired).
+- **test_quiet_window.sh** fails under builder2's load (orchestrator: native's load-flaky item).

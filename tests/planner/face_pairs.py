@@ -91,7 +91,7 @@ def judge(label, mode, pairs, note):
     """pairs: [(base value, candidate value)]. Prints one line; returns True / False / None (not judged)."""
     if len(pairs) < 2:
         print(f"{label} {mode} | faces {len(pairs)} | NOT JUDGED (fewer than 2){note}")
-        return None if not pairs else False
+        return None   # R33.28: NOT JUDGED never fails a class (it returned False for 1 face, found after R33.26)
     b, c = [x for x, _ in pairs], [y for _, y in pairs]
     se_med, se_p90 = boot_se(pairs, statistics.median), boot_se(pairs, p90)
     med_ok = statistics.median(c) <= statistics.median(b) + K * se_med
