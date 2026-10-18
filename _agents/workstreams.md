@@ -327,6 +327,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   tests/native/mover_state.gd. C26.2 now reaches Manoeuvre.choose / behind / simulate / _others / _hull_hit / _note, so a
   CP-F or F1 edit there becomes a pair with native.
 
+- **R33.18 B10b FAILS on its own base, and R4 goes first, on main (2026-10-17).** B10b pair `99e867ee`: builder0 check
+  green (2740/0, ALL JUDGED, sim-baseline unmoved, BRIDGE_POOLED 18/18). Series, named cases, native path, n 1: line 1 PASS
+  (Sumps s16 t8); **line 2 FAIL** (Sumps s19 t8 all-within-8 m: on 100.8 s v off 69.4 s, bar ≤ off + 5), deterministic
+  on the native path (the laptop's GDScript gives 35.3 v 35.3). Trace: Green_S_1 circles inside its approach gate's turning
+  circle t=78–98 (30 SETTLE_NOPATH), S_4 likewise t=30–79. That is R33.8's loop: B10b's latch holds the seat, so the gate
+  holds still, and in the off arm the drifting seat frees it by accident. Tuning read, NOT judged, on R4's candidate
+  `97c3b654` (B10b ON + v6 + inside_circle + mirror): s19 38.8 v 42.4 s, s16 36.2 v 36.5 s. **Ruling:** B10b's verdict on
+  `99e867ee` stands as FAIL and it does not ship on that base. R4 is judged FIRST, on MAIN, as its bar allows ("else
+  main"): brains rebuilds R4's pair as main + R4 + native's mirror without B10b, names it, gets native's twins at 0
+  mismatches on it, then runs the full check (C31.1), then R4's series. If R4 ships, B10b is re-judged on main + R4 with its
+  bar unchanged and a fresh check. Its named cases are the same deterministic cases, judged once more on the new base, and
+  the census is untouched so far.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
