@@ -197,6 +197,13 @@ HAND-BACK. While parkedroom is ON, Drive::ask hands the ask to GDScript Movement
 way, still ≥ Traffic.still_s and not on a fire post; everything else stays native. The twins check the hand-back at
 0 mismatches, both switch states. The series then runs on a pair with native's commit, the bar unchanged. Item 4's
 on_fire_post mirror changes alongside it.
+**Built (native, pair/native-parkedroom `ae8d6e85` on traffic's pair `5259fb463`):** while parkedroom is on and the
+asked crew is not under way, Drive::ask calls Traffic.refresh then Traffic.still_s, and at still ≥ ROOM_STILL_S hands
+the WHOLE ask to the live Movement.ask (counted as ask_handed_back). **The ruling's "not on a fire post" carve-out is
+dropped, with the orchestrator's agreement:** the GDScript reaches the setup refusal through the parked path, so
+handing back every parked ask is equal by construction, and a carve-out would mismatch the counters. The twins: yield
+stages set parkedroom OFF for their parked floors, and a new Sumps stage with it ON is floored on ask_handed_back. The
+per-ask Traffic.refresh cost is read in the pair's perf-judge.
 
 **Bar, traffic overnight item 4: a battery counts as firing only with a fire mission (filed 2026-10-18 before any
 number; traffic `1e48e66a3`, references/round33/traffic/ov_item4_bar.md).** Movement.on_fire_post() is true only for a
