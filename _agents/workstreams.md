@@ -564,6 +564,13 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   **The 3 m give-up is DROPPED** (one reason per candidate; it fires about 1390 times elsewhere unjudged). Test first
   (gang_tank 7 m off its seat with an order face: declined until it's inside the radius), then the sanity again on 40–45,
   then a new pair hash and its check, and only then 460–475.
+  **Radius re-filed (orchestrator, 2026-10-18; tuning 40–45 only):** at max(ORDER_ARRIVE 3.5 m, settle_radius) the rule
+  over-corrects (builder0, pinned, pair `70cb7f683`): wheels/turret within 15° fell to 58.8 % on attack-move (from 78.8;
+  bar 70), and to about 71–72 % on move, right and ambush (from 94–96). off_seat_declines ran 4–12 k a task, because crews
+  3.5–7 m out are "arrived" by R32.3 (ARRIVED_M 7 m) yet never turned. SBF improved, but its movers (6 v 3) and
+  never-settled (5 v 2) are still over their limits. **Now:** the radius is max(R32.3's ARRIVED_M, settle_radius), the
+  same "arrived" the bar's (f) uses. That's a definition, not a tuned value, so there is no sweep. Then the sanity on
+  40–45, a new pair and its check, and 460–475. If SBF stays marginal at 7 m, it is reported and judged as filed.
 
 - **R33.22 B10b PARKED after its re-judge on main + R4 (2026-10-18; brains, builder2, pair `f91b61c7`, rows
   `references/round33/brains/b10b_rejudge_f91b61c7_builder2.txt`).** It fails as written on line 3's strict clause: pooled
