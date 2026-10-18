@@ -1595,9 +1595,12 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 				text += " rel along %.1f across %.1f" % [rel.dot(forward), rel.dot(right)]
 		if slots_asked.has(n):
 			text += " asked (%.1f,%.1f)" % [(slots_asked[n] as Vector3).x, (slots_asked[n] as Vector3).z]
+		var seat: Variant = (plan.get("seats", {}) as Dictionary).get(n)
+		if seat is Array:
+			text += " seat %s" % str(seat)
 		rows.append(text)
-	print("ELEMENT_TRACE t=%.1f %s task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
-			float(tick) / SimClock.TICK_RATE, element_name, String(task.get("verb", "-")), task.get("to"), anchor_v,
+	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
+			float(tick) / SimClock.TICK_RATE, element_name, id, String(task.get("verb", "-")), task.get("to"), anchor_v,
 			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
 			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived,
 			" | ".join(PackedStringArray(rows))])
