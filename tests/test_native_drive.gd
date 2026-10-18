@@ -15,4 +15,6 @@ func test_the_harness_reaches_the_statics() -> void:
 
 
 func test_drive_is_the_live_gdscript() -> void:
+	if FreshStage.parent(self, "test_drive_is_the_live_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _drive_case(false)

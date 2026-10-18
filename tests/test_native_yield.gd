@@ -21,19 +21,27 @@ const ASKED_FIELDS: Array[String] = ["native_stale", "yield_to", "yield_spot", "
 
 
 func test_the_give_way_on_open_ground() -> void:
+	if FreshStage.parent(self, "test_the_give_way_on_open_ground"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 1, "spot:spot": 1, "setup_refusals": 1}, 60)
 
 
 func test_the_give_way_on_the_owned_state() -> void:
+	if FreshStage.parent(self, "test_the_give_way_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 1, "spot:spot": 1})
 
 
 func test_the_give_way_in_the_sumps() -> void:
+	if FreshStage.parent(self, "test_the_give_way_in_the_sumps"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _stage("sumps", false, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 1, "spot:spot": 1, "yield_spots_unfit": 1,
 			"spot:back": 1, "spot:hold": 1, "parked_refusals": 1, "asks_refused": 1})
 
 
 func test_the_give_way_in_the_sumps_owned() -> void:
+	if FreshStage.parent(self, "test_the_give_way_in_the_sumps_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _stage("sumps", true, Vector3(-16.0, 0.0, -6.0), 7.0, 16.0, {"": 1, "spot:spot": 1, "yield_spots_unfit": 1,
 			"spot:back": 1, "spot:hold": 1})
 
@@ -48,10 +56,14 @@ const SHORT_POSES := [["gang_tank", Vector3(-60.0, 0.0, -36.0), 3], ["gang_tank"
 
 
 func test_the_asked_hull_gives_way_shortened() -> void:
+	if FreshStage.parent(self, "test_the_asked_hull_gives_way_shortened"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _shortened(false)
 
 
 func test_the_asked_hull_gives_way_shortened_owned() -> void:
+	if FreshStage.parent(self, "test_the_asked_hull_gives_way_shortened_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
 	await _shortened(true)
 
 
