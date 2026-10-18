@@ -58,6 +58,8 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"effective_range": float(tank.weapon.get("effective_range", tank.weapon.get("range", 60.0))),
 				"sight": tank.sight_radius, "health": clampf((hull + shield) * 0.5 + hull * 0.5, 0.0, 1.0),
 				"suppression": suppression_of(tank), "taking_fire": hit_recently,
+				# Round 33 (brains battery stretch): set up to fire (Tank.deploy_ratio at 1), for the battery seat rule.
+				"deployed": tank.deploy_ratio >= 1.0,
 				# Round 22 (B1): how long since its last hit, in ticks (UnansweredFire's clock).
 				"since_hit": tank.ticks_since_hit,
 				# Round 23 (B3): hull + shield left as a share of their maxima (UnansweredFire's damage-rate read).

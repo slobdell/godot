@@ -130,6 +130,12 @@ static var APPROACH_CARRY := true
 ## Round 28 (B2): an artillery element (is_battery) carries its drawn approach (its firing position on the side, below)
 ## whatever APPROACH_CARRY says. `--approach-battery=off` is B0's rule for it.
 static var APPROACH_BATTERY := true
+## Round 33 (brains battery stretch, switch (a)): a SET-UP battery crew (the situation's "deployed") keeps the seat it had
+## and its place is where it stands; movers take the remaining places, never past a set-up squadmate while another is
+## open (TacticsFormation.seat's `set_up_at`). Traced (laptop, parade gangs v law s43): at t=86 the coil swapped two
+## places while three trucks were set up, and the crew sent 20 m across them was refused and never moved again.
+## `--battery-seat=off` is main's rule.
+static var BATTERY_SEAT := true
 ## The orchestrator's ruling on (c) (C28.5, 2026-10-12): a TARGET that charges the squad has left the position the side was
 ## drawn against. When it drives at the element (APPROACH_CLOSING_MPS) and is inside any crew's reach, the flank is
 ## dropped for the task ("charged") and the attack fights where it is, as a clicked one (which kills a lone charging IFV
@@ -2154,6 +2160,13 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		var seat: Variant = parked.get(String(member["name"]))
 		if seat is Array and String(seat[0]) == formation and int(seat[1]) == members.size():
 			keep[String(member["name"])] = int(seat[2])
+	# Round 33 (battery stretch (a)): a battery's set-up crews keep their seats in this shape at this size, stand where
+	# they are, and are in the movers' way.
+	var set_up := _battery_set_up(plan, members, formation)
+	for name: String in set_up:
+		keep[name] = int(set_up[name][0])
+	if not set_up.is_empty():
+		place_opts["set_up_at"] = set_up.values().map(func(entry: Array) -> Vector3: return entry[1])
 	if not keep.is_empty():
 		place_opts["keep"] = keep
 	# Round 25 (F1): the caller's seating extras (a plain move's seats laid along its route, its halt re-seat).
@@ -2166,6 +2179,8 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		if halt:
 			spot += TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
 		spot = clamp_to_arena(spot)
+		if set_up.has(name):
+			spot = set_up[name][1]
 		plan["slots"][name] = spot
 		plan["sectors"][name] = entry["sector"]
 		plan["seats"][name] = [formation, members.size(), int(entry["index"])]
@@ -2179,6 +2194,24 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		# had driven. `told` is that explicitly-chosen facing and nothing else: null on every doctrine-chosen heading,
 		# so nav keeps deriving those from travel exactly as before.
 		_order(plan, name, verb, spot, target, entry["facing"] if halt else told)
+
+
+## Round 33 (battery stretch (a)): {name: [seat index, where it stands]} for the set-up crews of a BATTERY (every member
+## artillery) that had a seat in this shape at this size last update. {} under `--battery-seat=off`.
+static func _battery_set_up(plan: Dictionary, members: Array, formation: String) -> Dictionary:
+	var result := {}
+	if not BATTERY_SEAT or members.is_empty():
+		return result
+	for member: Dictionary in members:
+		if String(member.get("role", "")) != "artillery":
+			return {}
+	var before: Dictionary = plan.get("previous_seats", {})
+	for member: Dictionary in members:
+		var seat: Variant = before.get(String(member["name"]))
+		if bool(member.get("deployed", false)) and member.has("position") and seat is Array \
+				and String(seat[0]) == formation and int(seat[1]) == members.size():
+			result[String(member["name"])] = [int(seat[2]), member["position"]]
+	return result
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).
