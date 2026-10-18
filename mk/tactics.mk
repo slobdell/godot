@@ -883,7 +883,7 @@ body-twice: import ## Round 32 (R32.6): the body stage run twice in one process 
 # BATTERY_FIRE_ORDER / BATTERY_FIRST_SHOT lines kept -> build/battery-census/<tag>/ + tests/tactics/battery_table.py.
 BATTERY_CASES ?= sumps,law,gangs,1000,opponent parade,gangs,law,2000,opponent foundry,condemned,syndicate,2000,opponent
 BATTERY_SEEDS ?= 47 48 49 50 51 52
-BATTERY_OFF := --battery-seat=off;--battery-deploy=off;--nav-off=arrivedgate
+BATTERY_OFF := --battery-seat=off
 BATTERY_ARMS ?= on:- off:$(BATTERY_OFF)
 BATTERY_SECONDS ?= 150
 BATTERY_JOBS ?= 6
