@@ -514,6 +514,22 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   seen); and the latch floor becomes latched + latched_away + inside > 0 (inside_circle is a `_gate_latch`). Everything
   else is unchanged (near, turned/forced_turning, shortened, cramped on sumps, drives ≥ 3000). These are guards that the
   paths ran, not targets.
+- **Battery seats (brains stretch; filed 2026-10-17 before any number, lab/brains-r33-battery `c104f45e`, trace
+  `references/round33/brains/battery_parade_s43_laptop.txt`).** Trace (laptop, parade gangs v law s43, 150 s, n 1): (1) at
+  t=86 the coil swapped Battery_2's and Battery_5's places while 1, 3 and 4 were set up. Battery_2's new place was 20 m
+  across the set-up trucks; Battery_3 refused it and it never moved again. Nothing in the seating knows a crew is set up.
+  (2) At t=52 Battery_4 and Battery_2 set up 11 m and 5 m short and stood in their squadmates' lanes. (3) The post re-laid
+  ~30 m at t=64 under set-up trucks. Unexplained, and traced before building: Battery_2 drove 20 m south at t=80–84 with
+  its place 5 m away. Candidate: a set-up battery crew (deploy_ratio ≥ 1) keeps its seat, and its place is where it
+  stands. Movers get the remaining places and are never seated past a set-up squadmate while another place is open.
+  GDScript only (ElementPlan has no C++ twin); `--battery-seat=off`. Lines: (1) DECIDING, parade s43 and foundry s45: ON,
+  no never-past battery asker, and the asker sets up within 8 m of its place. (2) Census, traffic-census parade + foundry
+  + sumps × FRESH seeds 47–52, n 18: never-past battery askers ON ≤ OFF; trucks set up > 8 m from their place ON ≤ OFF;
+  artillery shots ON ≥ OFF − 5 %; T1c-b2 (repack while firing) 0; friendly-stuck crew-s ON ≤ OFF + its round-32 limit.
+  (3) The check, with sim-baseline moves listed. (4) The worst ON run traced before the counts are read. Ships ON if 1–3 pass.
+  **Amended at filing (orchestrator):** "its place" in (1) and in (2)'s "> 8 m" line means the place the crew was ASSIGNED
+  when it began to deploy, not the seat the candidate gives it afterwards. Otherwise ON passes by definition (its place
+  becomes where it stands). Queued behind B10b and R4.
 
 ## Round 32: five streams, all Opus (launched 2026-10-16, CLOSED 2026-10-16 ~19:00 PDT; briefs in `streams/archive/round32/`)
 
