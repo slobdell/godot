@@ -63,6 +63,13 @@ team enemy-seen seconds is MEASURED and judged**, ON ≥ OFF − 1.645 se. It is
 around (brains' own design, roadmap), so brains adds the probe before any number. (4) The check, with native's twin of
 decide at 0 mismatches. (5) The worst ON cell traced before the medians. Ships ON if (1), (3), (3b) and (4) pass. Tuning
 seeds 50–59 only. Runs on builder2 after the battery series. Tell manoeuvre before any merge (it moves C33.9's base).
+**Re-filed (orchestrator, 2026-10-18, after TUNING seeds 50–52 only):** as built, ON and OFF were identical (shots
+799 v 799). The rule fires and SPOT drops 1.01 → 0.80, but ENGAGE scores only 0.27–0.43 for a scout against syn_scout,
+so SPOT still wins: the roadmap's "drops to 0.7, so ENGAGE wins" was a code read that never checked ENGAGE's score.
+**Mechanism now:** under the same condition SPOT scores SCOUT_FIGHT_SPOT = 0.15 (above HOLD's 0.10, below ENGAGE's
+0.27–0.43 even with the ~0.10 commitment bonus), and SPOT returns 2 s after the last hit. **(c) gains:** where the rule
+fires, the chosen option is ENGAGE (counted by option, so no other option such as ADVANCE takes over), ENGAGE ticks ON >
+OFF, and 0 in the out-of-reach cells. Brains prints the full option table on one tuning run first, to show ENGAGE wins.
 
 **Bar, brains overnight item 4: a respawned crew rejoins its squad's living element when it has room (filed 2026-10-18
 before any code or number).** ElementCommander.form_elements: a squad's unseated living crew first JOINS a living element
