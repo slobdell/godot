@@ -141,6 +141,13 @@ attempt 1 (`781801da0`'s turn-in) as it is.**
   39/86 v 118/193, artillery shots 377 v 240, no stuck batteries, first shot 3.0 v 2.5 s. What he'd notice: a battery's
   trucks set up where they belong and fire more, instead of shuffling places while deployed. Rides the next main check.
 
+- **Native's test infra → main `401e9a3ce`** (stream/native `5ccd8d57`, code `5caf639d`). The whole suite now runs at a
+  fixed physics rate (`--fixed-fps $(SIM_HZ)`; `TEST_FPS=` restores free-running), with 0 verdict differences and the
+  same speed or faster. `make test` refuses where a native library could be built and isn't. web-smoke's sound bound and
+  the slot/quiet-window tests read NOT JUDGED under measured load instead of FAIL. npm installs once, under a lock.
+  test_native_gate is split. NATIVE=off perf is JUDGED PASS on both machines (1.03x, 1.01x), which closes yesterday's
+  1.47x worry. Other streams' direct run_tests.gd callers (nav, pace, planner, command, tactics .mk) still run free.
+
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
   moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
