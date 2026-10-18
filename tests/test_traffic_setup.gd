@@ -11,6 +11,7 @@ var _lab: TacticsLab
 
 func teardown() -> void:
 	Traffic.set_off("setup", false)
+	Traffic.set_off("firemission", Traffic.DEFAULT_OFF.has("firemission"))  # the default back, whichever it is
 	if _lab != null:
 		_lab.dispose()  # each case's lab (undisposed, the shard leaked 20 ObjectDB instances at exit: engine-log-gate)
 		_lab = null
@@ -87,3 +88,37 @@ func test_off_switch_restores_the_old_give_way() -> void:
 	var mover := _on_post(battery)
 	Traffic.set_off("setup", true)
 	assert_true(mover.ask(String(tank.name), tank.global_position, Vector2(0.0, -1.0)), "--traffic-off=setup: it gives way")
+
+
+## Round 33 overnight (item 4, `firemission`): set up on fire_at_will with NOTHING to fire at (random-705's truck, dug in
+## 5 m short of its place) is not a firing battery: it is asked like any parked crew, and packs up to give way.
+func test_on_a_dug_in_battery_with_nothing_to_shoot_gives_way() -> void:
+	Traffic.set_off("firemission", false)
+	var units: Array = await _stage()
+	var battery: Tank = units[0]
+	var tank: Tank = units[1]
+	var mover := _on_post(battery)
+	assert_eq(mover.ctl.engaged_target, "", "nothing engaged")
+	assert_true(not mover.on_fire_post(), "fire_at_will, no target: not on a fire post")
+	assert_true(mover.ask(String(tank.name), tank.global_position, Vector2(0.0, -1.0)), "it gives way")
+	assert_eq(mover.yield_to, String(tank.name), "to the asker")
+
+
+## ...and the lead's T1c-b2 yes holds: a battery ORDERED to fire at someone keeps its post.
+func test_on_a_battery_ordered_to_fire_keeps_its_post() -> void:
+	Traffic.set_off("firemission", false)
+	var units: Array = await _stage()
+	var battery: Tank = units[0]
+	var tank: Tank = units[1]
+	for kind in ["target", "suppress"]:
+		var mover := _on_post(battery, kind)
+		assert_true(mover.on_fire_post(), "%s: on its fire post" % kind)
+		assert_true(not mover.ask(String(tank.name), tank.global_position, Vector2(0.0, -1.0)), "%s: it refuses the ask" % kind)
+
+
+## OFF (today's reading): the dug-in battery with nothing to shoot refuses, as T1c-b2 shipped.
+func test_off_a_dug_in_battery_with_nothing_to_shoot_refuses() -> void:
+	Traffic.set_off("firemission", true)
+	var units: Array = await _stage()
+	var mover := _on_post(units[0] as Tank)
+	assert_true(mover.on_fire_post(), "today's reading: set up on fire_at_will is a fire post")

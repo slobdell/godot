@@ -1667,7 +1667,17 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 ## fire), and no move of its own under way (its order is not a move, or the move has arrived).
 func on_fire_post() -> bool:
 	return ctl.tank.deploy_ratio > 0.0 and String(ctl.weapon_order.get("type", "")) != "hold_fire" \
-			and (String(ctl.move_order.get("type", "")) != "move_to" or not is_under_way())
+			and (String(ctl.move_order.get("type", "")) != "move_to" or not is_under_way()) \
+			and (Traffic.off("firemission") or fire_mission())
+
+
+## Round 33 overnight (traffic item 4, `--traffic-on=firemission`, DEFAULT_OFF until judged): a set-up hull counts as
+## firing only with something to fire at: a fire order at someone (target, suppress) or an engaged target. A battery dug
+## in on fire_at_will with nothing to shoot (random-705: tank.gd digs it in after 0.25 s still, 5 m short of its place)
+## is asked like any parked crew; one ORDERED to fire keeps its post (the lead's T1c-b2 yes). Native mirrors it.
+func fire_mission() -> bool:
+	var kind := String(ctl.weapon_order.get("type", ""))
+	return kind == "target" or kind == "suppress" or ctl.engaged_target != ""
 
 
 ## Another unit asks this one to give way: `asker` wants to go along `direction` from `from`. True when this unit
