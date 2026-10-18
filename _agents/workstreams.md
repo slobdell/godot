@@ -630,6 +630,18 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (2)'s lines unchanged, the named cases re-run, and the check. (c) PARKED (its cost is its design: firing waits for the
   place). (b) DROPPED (no measured effect; a switch with no case doesn't ship, as B10b).
 
+- **R33.28 P3 v2 SHIPS ON (2026-10-18; planner, series on `923fcb97f`, builder2, FIFO, no CP-F; evidence stream/planner
+  `4cefb2011`, references/round33/planner/p3-pairs-923fcb97f/).** Every filed line passes on distinct pairs: (0) the yard
+  9.83 v 15.43 s, kept share drawn 65 %, clicked 96 %; (0b), (1), (2a) (0/24 3a cells), (2b); (2c) BOTH-planned drawn
+  19 faces (median 2.8 v 3.0, p90 8.5 v 8.5) and clicked 21 (1.6 v 1.6, 6.3 v 6.3); CANDIDATE-ONLY drawn 2 faces PASS,
+  clicked 1 face NOT JUDGED by the filed text (under 2); (2d) 4 v 4; (3) rigs 172 v 170 of 208. **Ruling:** the filed text
+  governs. face_pairs.py's judge() returned FAIL for a 1-face class, against the text: a tool bug, found after the
+  numbers, fixed after the verdict, and it does not decide. Reported: the all-runs clicked both-planned median, 1.7 v 1.6,
+  over a 0.05 se (distinct was the pre-declared judged set). **Merged: main = pair/planner-face-pairs `923fcb97f`**
+  (pair check green on `f8b7b003e`; main since the pair's base is docs only). It brings manoeuvre's hull-rest pin
+  `670f4e12` with it. What he'd notice: a vehicle told to face behind it in open ground turns round in about 10 s
+  instead of 15, in three tight legs instead of a wide loop.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while

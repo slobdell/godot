@@ -130,6 +130,10 @@ attempt 1 (`781801da0`'s turn-in) as it is.**
   round-33 merge together: R33.3, R1, R33.9, N5.M, R33.6, the islands, N5.Y, planner's parked P3 (OFF), R4, and the test
   fixes.
 
+- **P3 → main (R33.28; the merge of `923fcb97f`):** the face keep ships ON. A vehicle told to face behind it turns round in
+  about 10 s instead of 15 (the yard: 9.83 v 15.43 s), with no worse drift on faces either version plans. It rides the
+  next main check (builder2).
+
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
   moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
