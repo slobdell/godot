@@ -94,6 +94,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   it, so the wing crews have up to ~27 m each to go, through squadmates, in lanes.
 - **Tried and reverted:** seating nobody past a standing squadmate (the battery rule's PAST_COST with every squadmate):
   Terminus 5 unchanged (31.3 m), Locks 3 worse (23.1 v 8.6 m), Crossing 5 21.4 -> 27.3. Not kept.
+- **Built, `93c1b35db`: minimax deploy seating** (`ElementPlan._deploy_keep`, `--deploy-minimax=off`): every assignment
+  (<= 6 crews), the longest leg shortest, then the least total, pinned through `_group`'s `keep`. Laptop GDScript seed 34:
+  Terminus 5 twitch 31.3 -> 14.0 m (place 25.0 -> 22.4), Locks 5 13.6 -> 15.5 (place 28.7 -> 26.0), 4 cells identical.
+  `test_control_deploy_minimax` 3/0. Not judged yet (builder0, fresh seeds, a bar first).
+- **Crossing 3, squad 1 (25.2 m), traced:** a different cause. At the deploy (t 13) Alpha_1's seat is 8.7 m off and Alpha_3's
+  18.5 m, but both drive detours of 20-30 m (Alpha_1 to the west deck's end and back over 20 s; Alpha_3 30 m south and back):
+  the halt laid ON the spot puts seats that are reached only round an obstacle. The halt lay would need driving distance
+  (like `_dry_halt_anchor` steps inland from water); ElementPlan is pure (no navmesh) today. A design question, not built.
 - **What the trace points at (not built):** the deploy's shape change itself. Either the halt is laid so the travel seats
   map onto it without crossing (a herringbone's seats ordered as the wedge's, wings to the far ends by side, not by
   least total), or the halt in lanes is laid ACROSS the street as the travel shape is. Both are the halt-lay functions in
