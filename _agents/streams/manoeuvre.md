@@ -143,6 +143,12 @@ builder2 from godot-manoeuvre-cpf4 (the native base arm from godot-manoeuvre-m1)
 test runs two matches in one process with the same crew name (4/4 laptop); its check, then M1's (lab/m1-ruler 6c54f4e66,
 main merged), run on builder2 behind the series' first steps.
 
+**Native's pin-moves (C34.8 (a), relayed 2026-10-19):** hull-rest-probe reads differently pinned v free (drawn ALL median
+10.3° pinned v 8.7/7.2° free; tracks/turret drawn worst 59.7° pinned v 3.3/4.8° free; faced_ambush facing-probe 75.2° v
+86.8/70.7°). CP-F attempt 3 (R33.34) and attempt 4 are both pinned, and the new ruler (jitter + shift) changes the stage
+again, so attempt 4's rows are read against their own base arm only, never against attempt 3's. If a tracks/turret crew
+lands near 60° in attempt 4's rows, it gets one trace before the verdict.
+
 ### M1 A/A read (2026-10-19 ~05:00 PDT; builder2, lab/m1-ruler e28ba432d, native path, the OFF arm on seeds 201–209 v 210–218: 4 factions × 9 × 6 tasks a set, 36 pairs a task; `references/round34/manoeuvre/m1-aa/`)
 
 The new ruler's noise, per task (A total, B total; paired sd a run; se of the summed difference over 36 pairs; the swing):
