@@ -290,3 +290,23 @@ ai-element-perfplay: import ## (C25.6: fields this machine's squad cap, 4 on the
 			$$flag --brains-census > $(ELEMENT_PLAY_DIR)/perfplay-$$arena-$$seed-$$arm.log 2>&1 || true; \
 		grep -h '^BRAINS_ARM\|^BRAINS_AMBUSH\|^PERF_PLAY_DONE' $(ELEMENT_PLAY_DIR)/perfplay-$$arena-$$seed-$$arm.log || echo "ai-element-perfplay: no census lines (see $(ELEMENT_PLAY_DIR)/perfplay-$$arena-$$seed-$$arm.log)"; \
 	done; done; done
+
+# ---- round 34 (brains B1, C34.5: scout try 2, stand when it can win, leave when it can't) ------------------------------
+# The orbit stage is manoeuvre's (tests/test_manoeuvre_orbit.gd, test_c339_cells): it exists only on a tree that carries
+# it (the judged tree, lab/brains-scout2 = stream/brains + manoeuvre's 608c3357e, turn-in default OFF). Each cell runs
+# turn-in OFF (judged) and ON (reported); this target runs both rule arms, the env SCOUT_FIGHT=off arm reaching the child.
+# One --fixed-fps process a seed and arm; SCOUT_CELLS_JOBS of them at once.
+SCOUT_CELLS_SEEDS ?= 50-52
+SCOUT_CELLS_JOBS ?= 4
+scout-cells: import ## brains B1 (C34.5): the orbit cells, scout rule ON v SCOUT_FIGHT=off, SCOUT_CELLS_SEEDS (judged: 73-79), on a tree with manoeuvre's orbit stage -> build/scout-cells/{on,off}.jsonl + table
+	@test -f tests/test_manoeuvre_orbit.gd || { echo "scout-cells: this tree has no orbit stage (tests/test_manoeuvre_orbit.gd)"; exit 2; }
+	@d=$(BUILD_DIR)/scout-cells; rm -rf $$d; mkdir -p $$d; first=$${SCOUT_CELLS_SEEDS%-*}; last=$${SCOUT_CELLS_SEEDS#*-}; status=0; \
+	echo ">> scout-cells on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(SCOUT_CELLS_SEEDS) | jobs $(SCOUT_CELLS_JOBS)"; \
+	for seed in $$(seq $$first $$last); do for arm in on off; do \
+		while [ $$(jobs -rp | wc -l) -ge $(SCOUT_CELLS_JOBS) ]; do sleep 1; done; \
+		( env $$( [ $$arm = off ] && echo SCOUT_FIGHT=off ) C339_CELLS=$$seed-$$seed $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+			--script res://tests/run_tests.gd -- --filter=c339_cells > $$d/$$arm-$$seed.log 2>&1; echo $$? > $$d/$$arm-$$seed.status ) & \
+	done; done; wait; \
+	for f in $$d/*.status; do [ "$$(cat $$f)" = 0 ] || { status=1; echo "   FAILED $$f"; }; done; \
+	for arm in on off; do grep -h '^C339_CELL ' $$d/$$arm-*.log | cut -d' ' -f2- > $$d/$$arm.jsonl; done; \
+	python3 tests/ai_scenarios/scout_cells_table.py $$d/on.jsonl $$d/off.jsonl | tee $$d/table.txt; exit $$status
