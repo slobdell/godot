@@ -26,6 +26,10 @@ someone logs into its desktop again.** Merged so far: native 12ac7b172, brains B
 unmoved; INHERIT).** In his terms: three or more squads sent to one point beside a bridge no longer send one across it; a place
 the click can't reach directly by ground comes back toward the click on his side; open ground lays out as before. B6's code
 rides along OFF by default (`--halt-shape-early=on` opts in). Parked: B6 (R34.7), parkedroom v4 (R34.9; v4b re-judge running on builder0).
+**main 89e775f87 = planner C34.6 (a rematch replays); cea87edc0 = O3 (squads priced at their halt footprint); 2c7c1d0dc = all 13
+maps adopted for C34.6** (read twice on builder0 at cea87edc0). Locks differs from planner's own tree read; CONFIRMED B1's scouts
+under the new phase (brains, builder2, `SCOUT_FIGHT=off` on 2c7c1d0dc reads planner's 4674958b0c779970, the other 12 unmoved). Main's
+check of 2c7c1d0dc is running on builder0. **Waiting on the lead:** M0 ship (R34.10, recommended yes), the deploy step (R34.7).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
 tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are
