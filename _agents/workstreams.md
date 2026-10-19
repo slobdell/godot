@@ -309,6 +309,9 @@ _Filed here before any number._
   until rest, and the standing face runs round 9's own give-up window (`OrderController._face_giving_up`). **Re-gate hashes:**
   candidate lab/cpf5 `61a46d3c6` (stream cc2a001fc + both defaults true), native base lab/cpf5-base `de75b6757` (cc2a001fc, defaults
   false), on main 1a18dd278; E1 not in.
+  **Superseded by R35.23's scope:** gate candidate lab/cpf5 `63336d690` (stream a960fa2c2 + both defaults true), native base
+  lab/cpf5-base `4fb7493a2` (same code, defaults false), on main 1a18dd278; E1 not in. Pre-gate builder0 `make native test` over 49
+  face / planner-seam / planner-trace / turn-hull / planner-keep / wheeled-arrival tests: 49/0.
 - **R35.21 (2026-10-19 ~14:55) D2's report (reported, not gating; his "mixed" confirmed).** `make orders-probe` builder0, main
   977a270fa (1a18dd278's code; library from 581b8a396's build, no game-code difference), seed 34, n 1 a cell, main v deploy_off.
   With the step on: twitch after settling falls on Crossing (5 click 46.5 -> 23.3 m, 3 click 32.2 -> 18.3) and Locks 3, rises on Locks
