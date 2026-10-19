@@ -609,6 +609,20 @@ static func approach_of(blocks: Array, click: Vector3, fallback_heading := Vecto
 	return _heading(blocks, Vector3(click.x, 0.0, click.z), facing, fallback_heading)
 
 
+## Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle can never be arrived at (O3's
+## narrower body put one inside a block; every seat was pushed 11-19 m off it and the squad never moved on). Each anchor
+## `standable(p)` refuses goes to `ground(p, from)`, the nearest standable point reached from where its block stands
+## (SlotGround.standable_from). Standable anchors are untouched.
+static func ground_anchors(anchors: Array[Vector3], blocks: Array, standable: Callable, ground: Callable) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	for i in anchors.size():
+		var at := anchors[i]
+		if not bool(standable.call(at)) and i < blocks.size():
+			at = ground.call(at, Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+		result.append(at)
+	return result
+
+
 static func never_behind(anchors: Array[Vector3], blocks: Array, click: Vector3, heading: Vector3) -> Array[Vector3]:
 	if not RANK_FORWARD:
 		return anchors

@@ -1121,6 +1121,15 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if ground != null:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle (O3's narrower body put squad
+		# 3's at (32.7, 67.4), inside a block) can never be arrived at: every seat was pushed 11-19 m off it, the leader
+		# held at its own and the squad never moved on. Each anchor not standable goes to the nearest standable point
+		# reached from where its squad stands (SlotGround.standable_from, a hull's clearance), as a single unit's goal is.
+		if ground != null:
+			var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+			anchors = SelectionSquads.ground_anchors(anchors, blocks,
+					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
+					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
