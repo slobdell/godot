@@ -557,9 +557,10 @@ static func turn_in_on() -> bool:
 
 
 ## R33.38 (the ship check: a plain face round the compass rolled a scout 24.5 m off its spot, and a stop's swing at a
-## parked target never came round): the turn-in is for the case it was judged on, a spot ON A MOVING ENEMY. A live hostile
-## hull within TURN_IN_CONTACT_M of the spot (a contact's last position, or gunnery's lead point) moving faster than
-## TURN_IN_MOVER_MPS, and a crew with a BRAIN (TankBrain: every judged cell was one; a scripted OrderController with no
+## parked target never came round): the turn-in is for the case it was judged on, a spot ON A MOVING ENEMY. A threat face
+## before its spot is seen to move, and every stop swing, need a live hostile hull within TURN_IN_CONTACT_M of the spot
+## (a contact's last position, or gunnery's lead point) moving faster than TURN_IN_MOVER_MPS; and every turn-in a crew
+## with a BRAIN (TankBrain: every judged cell was one; a scripted OrderController with no
 ## brain, scenario_suppression's tracking scout at `stop`, keeps gunnery's swing and its held fire). Any other face or
 ## swing keeps the face planner and the creep, as before C33.9.
 const TURN_IN_CONTACT_M := 10.0
@@ -581,7 +582,7 @@ static func facing_mover(ctl: OrderController, spot: Vector3) -> bool:
 ## the spot's own motion across ticks (a face order carries only the spot).
 static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	var tank := ctl.tank
-	if not turn_in_on() or tank.mount != "fixed" or ctl.movement.wheel_radius() <= 0.0 or not facing_mover(ctl, spot):
+	if not turn_in_on() or tank.mount != "fixed" or ctl.movement.wheel_radius() <= 0.0 or not ctl is TankBrain:
 		return false
 	var here := tank.global_position
 	var to := Vector3(spot.x - here.x, 0.0, spot.z - here.z)
@@ -624,7 +625,10 @@ static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta
 	# goes back to the face planner either way.
 	var threat_face := String(ctl.move_order.get("from", "")) == ""
 	if ctl._turn_in_tick < 0:
-		if not threat_face or tick - ctl._turn_in_seen_first > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
+		# ...and only at a MOVING enemy (R33.38): before the spot is seen to move, a threat face on a parked or empty spot
+		# keeps the face planner (gating every tick on it handed a live orbit to the planner whenever the contact lagged
+		# the orbiter: builder2 bd4f001f, seeds 31-36, (d) 0 -> 23 reverse ticks).
+		if not threat_face or not facing_mover(ctl, spot) or tick - ctl._turn_in_seen_first > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
 			return false
 	elif tick - ctl._turn_in_tick > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
 		return false  # a spot that stands still: the face planner has it
