@@ -85,7 +85,11 @@ builder0, pinned, GDScript, attack-move, seeds 40-45 + 66-71, 48 runs an arm.
   re-sent. Guns' late seat drifts 12 BASE v 103 NEW. The other gang-tank element takes `_halt`'s drawn-facing branch and stays.
 - **Fix (brains' file):** the herringbone halt lays on the task's drawn facing when it has one, else on the kept heading while
   it holds; never on the live average. Sent to the orchestrator for an owner.
-- Also (both arms, base behaviour): the Hunters swarm re-lays its seats ~750 times after arrival (median 8.5 m); not traced.
+- Also (both arms, base behaviour): the Hunters swarm re-lays its seats ~750 times after arrival (median 8.5 m). **Brains
+  confirmed it is the same root and main's own bug** (on main, no CP-F, gangs faced_attack_move s41, tuning: their fix OFF
+  1 097 Hunters seat moves after arrival, never settles; ON 29, settled at 30.5 s). **The seed rolls the gang army** on this
+  stage: seeds 41/44/45/66/67 field Guns + a gang_ifv swarm (the case), 40/43/68/70/71 a Battery army (it does not bite).
+  Trace tree pinned as `lab/manoeuvre-seattrace` (3ab9ffd67, trace-only prints, never merge).
 
 ### CP-F: the arrival-flicker fix, DEV ONLY (R33.34; `references/round33/manoeuvre/cpf-arriveleg-dev/`)
 
