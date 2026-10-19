@@ -79,7 +79,13 @@ _Filed here before any number._
 
 ## Rulings (round 35)
 
-_Empty at launch._
+- **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
+  2885/0, only sim-baseline). Attribution on builder0: `--nav-off=turnin` on 3902ade09 reads main's base40 AND base90 on all 13
+  maps (main's own base40 equals the recorded lines). Moved and adopted: yard terminus crossing locks parade gorge cut docks.
+  The merge carried round 34's manoeuvre Status into round 35's brief; restored (`ffa462c94`). Orientation 84–86 kept.
+- **R35.2 (2026-10-19) C35.7, manoeuvre's side of the seam approved:** W2 face settle (a face no plan fits 3 times in a row stops
+  still; `--nav-off=facesettle`; ships with turnhull ON) and `Movement.face_settled()`, a read-only query. Brains' side waits
+  for E1's leg-gate trace to name the rule that holds the leg.
 
 ## Round 34: six streams, two on Fable (prepared 2026-10-18, CLOSED 2026-10-19; briefs in `streams/archive/round34/`)
 
