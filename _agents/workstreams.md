@@ -156,6 +156,10 @@ _Filed here before any number._
   held crew that is being hit leaves the hold. Not folded into T7: T7's bar is filed. (C) **W1b approved** (bar above), default
   OFF; native mirrors after its dev read. (D) traffic's census adds `jam:held` as a REPORTED sub-cause; T5's definition that T7's
   G counts stays fixed until T7's series has read.
+- **R35.8 (2026-10-19) T7's native mirror (`pair/native-t7` c9ba20917):** everything native except `_pass_lane` and its
+  `_pass_wheels_ok/_pass_clear/_pass_swept`, which C++ calls back into GDScript (reads only the navmesh, the Avoidance table and the
+  two hulls; ~19 calls a fight; exact by construction). Ported only if T7 ships, with its own twins (R34.20: a parked rule's mirror is
+  dead weight).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
