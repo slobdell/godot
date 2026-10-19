@@ -319,6 +319,16 @@ builder0), ruled R34.3.
   k·se > 0), L1a and L1b as guards (arm ≤ base + k·se), L3–L6 as filed. Run on **builder0** (a judged series stays on one machine)
   so T4's fourth try runs on builder2 at the same time. If v4b also fails, parkedroom parks for the round, with no fifth try
   without a new design.
+- **R34.10 C33.9 turn-in, second series (M0): every line passes but (c-out); by the bar it does NOT ship; the lead decides
+  (manoeuvre, pair `c8fb8b6a3` = 764ef5427 + native 25fd4298e, check green, builder2, fresh 101–112, n 12 a cell, 576 rows;
+  `references/round34/manoeuvre/m0-series/`).** (a) in-arc 3.1 → 74.2 % (sd_boot 4.6); (b) shots 1 → 10; (c) exchange 0.13 → 2.34;
+  in-reach hits taken 8088 → 5690; all six in-reach cells take less damage (−38 to −280 a run); (d)/(d2) 0 reverse in 144 runs
+  (OFF max 48 at stop); (e) 26.0 m; (g) free cells byte-identical. **(c-out) FAIL:** out-of-reach hits taken 3139 → 4627
+  (+1488 v k·se 437), pooled median 46 → 60 against the 57 he accepted (+3 hits, +1.0 sd_boot), worst cell +10 % (inside +37 %).
+  Out of reach the scout now turns in and fights: exchange there 0.06 → 1.45; gang scout v IFV 30 m kills it in 5 of 12 runs.
+  R34.1's ship reading puts a pooled median above 57 on the regression side, so the orchestrator does not ship it. The pair
+  stays ready; the orchestrator recommends SHIP to the lead (the shuffle he reported is gone in every run, and the out-of-reach
+  cost buys kills). On his yes: merge `c8fb8b6a3`, adopt crossing / parade / archipelago at the attributed hashes.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
