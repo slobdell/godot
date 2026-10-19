@@ -84,6 +84,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
+### D4 bar (minimax deploy seating), FILED BEFORE ANY BUILDER0 NUMBER (2026-10-19 11:35 PDT)
+- **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3621 3622 3623 3624 3625 3626" ORDERS_PROBE_ARMS="main: minimax_off:--deploy-minimax=off"`
+  on builder0 (native), 24 cells x 6 fresh seeds (never run anywhere; seeds move the click <= 12 m), medians a cell. Seed
+  34 (tuned on, laptop) reported only. **Counter first:** the two arms' rows differ in >= 1 cell (the seating acted).
+- **Gain (must pass):** summed over the 24 cells, the median `twitch worst m` at least 20 % lower on main; and the Terminus 5
+  click cell's median twitch lower on main.
+- **Guards (each cell):** median all in <= minimax_off x 1.2 + 3 s, no more never-in seeds; median `place worst m` <=
+  minimax_off + 5 m; median end foreign min >= minimax_off - 3 m; deck / far no higher.
+
 ### D4 what's left of the shuffle: traced (laptop GDScript, seed 34, the 6 click cells, stream/orders `9370f5ddb`)
 - Twitch after the place window (8 s from the deploy), worst crew: Crossing 3 25.2 m, Crossing 5 21.4, Locks 3 8.6, Locks 5
   13.6, Terminus 3 9.8, Terminus 5 31.3. Squads deploy all-in or on the 10 s cap about half and half.
