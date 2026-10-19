@@ -492,6 +492,30 @@ static func face_plan_failed(mover: Movement, want: Vector3, refused := false) -
 	face_failed_id(mover.get_instance_id(), want)
 
 
+## Per mover: the face began with the hull rolling and it has not yet come to rest (its home follows it until then).
+static var _face_rolling := {}
+
+
+static func face_roll_begin(id: int, rolling: bool) -> void:
+	if rolling:
+		if _face_rolling.size() >= 64:
+			for key: int in _face_rolling.keys():
+				if not is_instance_id_valid(key):
+					_face_rolling.erase(key)
+		_face_rolling[id] = true
+	else:
+		_face_rolling.erase(id)
+
+
+static func face_still_rolling(id: int, speed: float) -> bool:
+	if not _face_rolling.has(id):
+		return false
+	if speed <= FACE_SETTLE_REST_MPS:
+		_face_rolling.erase(id)
+		return false
+	return true
+
+
 static func face_settle_forget_id(id: int) -> void:
 	_face_settle.erase(id)
 

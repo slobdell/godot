@@ -1304,13 +1304,14 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		# ends within the settle radius of THAT spot, so a minute of facings never walks the hull off its slot.
 		_face_home = here
 		Manoeuvre.face_settle_forget_id(get_instance_id())  # round 35 (W2): a new face starts with no failed plans
+		Manoeuvre.face_roll_begin(get_instance_id(), absf(tank.speed()) > Manoeuvre.FACE_SETTLE_REST_MPS)
 	_face_tick = tick
 	Manoeuvre.face_note_id(get_instance_id(), tick, want, false)
-	# Round 35 (W2): a face ordered while the hull still rolls has its home where the hull COMES TO REST, not where the order
-	# found it (planner's rolling-face test: a rig rolled 8.8 m past a home it had to plan within 5 m of, and with no creep to
+	# Round 35 (W2): a face ordered while the hull still rolls has its home where the hull FIRST comes to rest, not where the
+	# order found it (only that first roll: a leg the seam or a plan drives later moves no home) (planner's rolling-face test: a rig rolled 8.8 m past a home it had to plan within 5 m of, and with no creep to
 	# drift it back no plan ever fitted).
 	var settle := Manoeuvre.face_settle_on() and tank.mount != "fixed"  # a hull-fixed scout's hull IS its gun's arc: it keeps trying
-	if settle and _face_left_m <= 0.0 and absf(tank.speed()) > Manoeuvre.FACE_SETTLE_REST_MPS:
+	if settle and Manoeuvre.face_still_rolling(get_instance_id(), absf(tank.speed())):
 		_face_home = here
 	# Round 31 (planner CP-P1, R31.2): a face the lattice planner's seam holds is driven by it to its end (the request
 	# is made below, after the aligned test).
