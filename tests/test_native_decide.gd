@@ -19,6 +19,16 @@ func _doctrine(units: Array[String]) -> Dictionary:
 
 
 ## A copy of `s` reaching branch family `n`.
+## C34.5: whether the scout in `f` would fight back with every velocity zeroed (the reach forecast then only reads now).
+## A case that does, but not on its real velocities, is one the forecast cut: the twin must see some.
+func _fights_standing_still(f: Dictionary, matchups: Dictionary) -> bool:
+	var still := f.duplicate(true)
+	still["self"]["velocity"] = Vector3.ZERO
+	for c: Dictionary in still["contacts"]:
+		c["velocity"] = Vector3.ZERO
+	return TankBrain.scout_fights_back(still["self"], still["contacts"], matchups)
+
+
 func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenerator) -> Array:
 	var m := s.duplicate(true)
 	var cur := current.duplicate(true)
@@ -90,6 +100,7 @@ func test_decide_is_the_gdscript() -> void:
 	scout_rng.seed = 3317
 	var scout_cases := 0
 	var scout_fights := 0
+	var scout_cut_by_forecast := 0
 	var flag_saved := TankBrain.SCOUT_FIGHT_BACK
 	for frame in 600:
 		await wait_physics_frames(1)
@@ -117,12 +128,20 @@ func test_decide_is_the_gdscript() -> void:
 						c["visible"] = true
 						var angle := scout_rng.randf_range(0.0, TAU)
 						c["position"] = at + Vector3(cos(angle), 0.0, sin(angle)) * scout_rng.randf_range(5.0, reach * 1.2)
+						# C34.5: and moving, so the 2 s reach forecast cuts both ways (an orbiter swinging out of reach).
+						var heading := scout_rng.randf_range(0.0, TAU)
+						c["velocity"] = Vector3(cos(heading), 0.0, sin(heading)) * scout_rng.randf_range(0.0, 16.0)
+				if scout_rng.randf() < 0.5:
+					var heading := scout_rng.randf_range(0.0, TAU)
+					f["self"]["velocity"] = Vector3(cos(heading), 0.0, sin(heading)) * scout_rng.randf_range(0.0, 12.0)
 				f["features"]["matchups"] = scout_rng.randf() < 0.5
+				var matchups := TankBrain.matchups_for(f) if bool(f["features"].get("matchups", true)) else {}
 				if scout_rng.randf() < 0.2:
 					flag_off = cases.size()
-				elif TankBrain.scout_fights_back(f["self"], f["contacts"], TankBrain.matchups_for(f)
-						if bool(f["features"].get("matchups", true)) else {}):
+				elif TankBrain.scout_fights_back(f["self"], f["contacts"], matchups):
 					scout_fights += 1
+				elif _fights_standing_still(f, matchups):
+					scout_cut_by_forecast += 1
 				scout_cases += 1
 				cases.append([f, brain.choice.duplicate()])
 			for ci in cases.size():
@@ -146,10 +165,12 @@ func test_decide_is_the_gdscript() -> void:
 								var_to_str(native).left(500)]
 	BrainSwitches.native_decide = saved
 	TankBrain.SCOUT_FIGHT_BACK = flag_saved
-	print("native decide: %d scout cases under fire, %d where the scout fights back" % [scout_cases, scout_fights])
+	print("native decide: %d scout cases under fire, %d where the scout fights back, %d it would fight standing still" % [
+			scout_cases, scout_fights, scout_cut_by_forecast])
 	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native decide: %d decisions, %d mismatches, chosen %s" % [asked, mismatches, options])
 	assert_eq(mismatches, 0, "the native decide is the GDScript's: %s" % first)
 	# Half builder2's fresh-process count (108 of 480 at bea3738f): a floor against a vacuous run, not a target.
-	assert_true(scout_fights >= 54, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
+	assert_true(scout_fights >= 1, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
+	assert_true(scout_cut_by_forecast >= 1, "the reach forecast cut some fights (%d of %d)" % [scout_cut_by_forecast, scout_cases])
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])

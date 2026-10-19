@@ -42,8 +42,8 @@ struct DN {
 			matchups_for{ "matchups_for" }, _is_prey_contact{ "_is_prey_contact" }, _is_prey{ "_is_prey" },
 			rounds_barely_mark{ "rounds_barely_mark" }, suppresses{ "suppresses" }, is_firing_base{ "is_firing_base" },
 			PROFILES{ "PROFILES" }, SCOUT_FIGHT_BACK{ "SCOUT_FIGHT_BACK" }, SCOUT_FIGHT_HIT_TICKS{ "SCOUT_FIGHT_HIT_TICKS" },
-			SCOUT_FIGHT_SPEED_SHARE{ "SCOUT_FIGHT_SPEED_SHARE" }, SCOUT_FIGHT_SPOT{ "SCOUT_FIGHT_SPOT" }, since_hit{ "since_hit" },
-			effective_range{ "effective_range" }, stat{ "stat" }, max_forward_speed{ "max_forward_speed" }, role{ "role" }, good_vs{ "good_vs" }, armor{ "armor" }, penetration{ "penetration" },
+			SCOUT_FIGHT_REACH_S{ "SCOUT_FIGHT_REACH_S" }, SCOUT_FIGHT_SPOT{ "SCOUT_FIGHT_SPOT" }, since_hit{ "since_hit" }, velocity{ "velocity" },
+			effective_range{ "effective_range" }, role{ "role" }, good_vs{ "good_vs" }, armor{ "armor" }, penetration{ "penetration" },
 			burst_count{ "burst_count" };
 	String RETREAT{ "RETREAT" }, RESUPPLY{ "RESUPPLY" }, TAKE_COVER{ "TAKE_COVER" }, RECHARGE{ "RECHARGE" }, ENGAGE{ "ENGAGE" },
 			COVER_FIRE{ "COVER_FIRE" }, FLANK{ "FLANK" }, SUPPRESS{ "SUPPRESS" }, ORBIT{ "ORBIT" }, CLEAR_LANE{ "CLEAR_LANE" },
@@ -171,12 +171,14 @@ bool is_prey(const DecideConsts &c, const DN &k, const Dictionary &profiles, con
 	return role != k.empty && ((Array)((Dictionary)profiles.get(my_unit, Dictionary())).get(k.good_vs, Array())).has(role);
 }
 
-// Overnight item 2 (brains' scout, R33 overnight): TankBrain.scout_fights_back(me, contacts, matchups), line for line.
-// Its flag and constants are read live from the brain script (a test turns the flag off); Units.stat is asked of the
-// live GDScript (tuning, fallbacks), as the rarely used helpers are. Reached only for a scout with a contact in sight.
+// C34.5 (brains' scout try 2): TankBrain.scout_fights_back(me, contacts, matchups), line for line.
+// Its flag and constants are read live from the brain script (a test turns the flag off). Reached only for a scout with
+// a contact in sight.
 //   if not SCOUT_FIGHT_BACK or int(me.get("since_hit", 1 << 30)) > SCOUT_FIGHT_HIT_TICKS: return false
-//   reach := effective_range (or range); my_speed := Units.stat(unit, "max_forward_speed", 0.0); at := me["position"]
-//   for c in contacts: visible, threatens_me, not prey, within reach; advantage >= 1 or not slower (>= share x mine)
+//   reach := effective_range (or range); at := me["position"]; my_velocity := me.get("velocity", ZERO)
+//   for c in contacts: visible, threatens_me, not prey; advantage >= 1; then for second in SCOUT_FIGHT_REACH_S + 1:
+//   (at + my_velocity * second).distance_to(c.position + c.velocity * second) <= reach, else not this contact
+// The forecast is GDScript's Vector3 arithmetic (real_t), so it is godot::Vector3 here too.
 bool scout_fights_back(const DecideConsts &c, const DN &k, const Dictionary &profiles, const Dictionary &me,
 		const Array &contacts, const Dictionary &matchups) {
 	if (!(bool)c.brain_script->get(k.SCOUT_FIGHT_BACK) ||
@@ -186,21 +188,27 @@ bool scout_fights_back(const DecideConsts &c, const DN &k, const Dictionary &pro
 	const String unit = me.get(k.unit, k.empty);
 	const Dictionary weapon = me.get(k.weapon, Dictionary());
 	const double reach = weapon.get(k.effective_range, weapon.get(k.range, 0.0));
-	const double my_speed = c.units->call(k.stat, unit, k.max_forward_speed, 0.0);
-	const double share = c.brain_script->get(k.SCOUT_FIGHT_SPEED_SHARE);
 	const Vector3 at = me[k.position];
+	const Vector3 my_velocity = me.get(k.velocity, Vector3());
+	const int64_t reach_s = c.brain_script->get(k.SCOUT_FIGHT_REACH_S);
 	for (int64_t i = 0; i < contacts.size(); i++) {
 		const Dictionary cc = contacts[i];
 		if (!(bool)cc.get(k.visible, false) || !(bool)cc.get(k.threatens_me, false) || is_prey(c, k, profiles, cc, unit)) {
 			continue;
 		}
-		if ((double)at.distance_to(cc[k.position]) > reach) {
+		if ((double)((Dictionary)matchups.get(String(cc[k.name]), Dictionary())).get(k.advantage, 0.0) < 1.0) {
 			continue;
 		}
-		const bool matched = (double)((Dictionary)matchups.get(String(cc[k.name]), Dictionary())).get(k.advantage, 0.0) >= 1.0;
-		const bool not_slower = (double)c.units->call(k.stat, String(cc.get(k.unit, k.empty)), k.max_forward_speed, 0.0) >=
-				share * my_speed;
-		if (matched || not_slower) {
+		const Vector3 velocity = cc.get(k.velocity, Vector3());
+		const Vector3 position = cc[k.position];
+		bool stays = true;
+		for (int64_t second = 0; second < reach_s + 1; second++) {
+			if ((double)(at + my_velocity * (real_t)second).distance_to(position + velocity * (real_t)second) > reach) {
+				stays = false;
+				break;
+			}
+		}
+		if (stays) {
 			return true;
 		}
 	}
