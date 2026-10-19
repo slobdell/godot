@@ -170,7 +170,8 @@ func test_decide_is_the_gdscript() -> void:
 	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native decide: %d decisions, %d mismatches, chosen %s" % [asked, mismatches, options])
 	assert_eq(mismatches, 0, "the native decide is the GDScript's: %s" % first)
-	# Half builder2's fresh-process count (108 of 480 at bea3738f): a floor against a vacuous run, not a target.
-	assert_true(scout_fights >= 1, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
-	assert_true(scout_cut_by_forecast >= 1, "the reach forecast cut some fights (%d of %d)" % [scout_cut_by_forecast, scout_cases])
+	# Half builder2's fresh-process counts (C34.5's rule at 2135c0af: 27 fights and 6 cut by the forecast, of 480): floors
+	# against a vacuous run, not targets.
+	assert_true(scout_fights >= 13, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
+	assert_true(scout_cut_by_forecast >= 3, "the reach forecast cut some fights (%d of %d)" % [scout_cut_by_forecast, scout_cases])
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])
