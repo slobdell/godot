@@ -39,24 +39,28 @@ class Table(unittest.TestCase):
             self.assertGreater(r["guard_today"], 2.0, case)  # the noise-sized guard is wider than "- 2"
             self.assertGreater(r["n_needed"], 100, case)
 
-    def test_hull_rest_guard_row_pools_the_m1_and_m1b_class_tables(self):
+    def test_hull_rest_guard_row_pools_the_m1_m1b_and_round_33_class_tables(self):
         r = self.by[("hull-rest probe (a task)", "crews still moving at 75 s, wheeled turret")]
-        self.assertAlmostEqual(r["sd_run"], 1.63, delta=0.05)  # M1 alone read 1.46 (round 29's table); M1b's n = 15 lines lift it
-        self.assertTrue(400 <= r["n_needed"] <= 560, r["n_needed"])
-        self.assertEqual(r["n_today"], 15)
-        self.assertAlmostEqual(r["guard_today"], 10.4, delta=0.5)
+        # M1 alone read 1.46 (round 29's table), M1 + M1b 1.63 (round 30's); round 33's five tables (CP-F 1 both paths,
+        # CP-F 3 at n 32, CP-Q and P3 on gangs at n 12) bring it to 1.50
+        self.assertAlmostEqual(r["sd_run"], 1.50, delta=0.05)
+        self.assertTrue(350 <= r["n_needed"] <= 470, r["n_needed"])
+        self.assertEqual(r["n_today"], 32)
+        self.assertAlmostEqual(r["guard_today"], 14.0, delta=0.5)
         self.assertIn("M1b 55622870", r["pairs"])
+        self.assertIn("CP-F 3 22e9cab4e", r["pairs"])
 
     def test_round_30_pairs_are_pooled(self):
         rigs = self.by[("Terminus census, rigs (a seed)", "arrived (of 16)")]
         self.assertEqual(rigs["n_today"], 13)
-        self.assertEqual(len(rigs["pairs"].split(";")), 4)  # M4, M1b, M2b, kturnarc; M4b run 2's rigs are byte-identical and out
+        # M4, M1b, M2b, kturnarc, and round 33's two planner series (printed se); M4b run 2's rigs are byte-identical and out
+        self.assertEqual(len(rigs["pairs"].split(";")), 6)
         self.assertNotIn("M4b run 2", rigs["pairs"])
         mixed = self.by[("Terminus census, mixed (a seed)", "arrived (of 24)")]
         self.assertEqual(len(mixed["pairs"].split(";")), 5)
         kills = self.by[("manoeuvre-fights (180 s)", "kills")]
-        self.assertEqual(len(kills["pairs"].split(";")), 2)
-        self.assertAlmostEqual(kills["sd_run"], 5.76, delta=0.05)  # pooled from se 21.5 and 33.6 at n = 24
+        self.assertEqual(len(kills["pairs"].split(";")), 4)
+        self.assertAlmostEqual(kills["sd_run"], 5.93, delta=0.05)  # se 21.5, 33.6 (n 24), CP-F's 25.6 (n 21) and 31.4 (n 23)
         art = self.by[("traffic-census (3 arenas x seeds)", "artillery shots")]
         self.assertGreater(art["sd_run"], 30.0)  # T1c-b's one Parade run: the T1b-style caveat
         clock = self.by[("traffic-series yard_open/cross", "xclear (crossing clock, s)")]
@@ -67,6 +71,20 @@ class Table(unittest.TestCase):
         self.assertIn("sd_run", sumps)
         xfast = self.by[("traffic-series terminus/head", "xfast")]
         self.assertNotIn("T3b", xfast["pairs"])  # the turns rule fired in 2 of 18 head-on runs: untouched, not pooled
+
+    def test_round_33_pairs_are_pooled(self):
+        mixed = self.by[("Terminus census, mixed (a seed)", "arrived (of 24)")]
+        self.assertNotIn("P3 v2", mixed["pairs"])  # the seam never fired for the mixed squad: se 0, an equality check
+        aa = self.by[("hull-rest gangs A/A (a run, fifo v fifo)", "crews still moving at 75 s, wheeled turret")]
+        self.assertAlmostEqual(aa["sd_run"], 1.81, delta=0.02)  # the null's own noise is no smaller than the pooled pairs'
+        kills = self.by[("far census (terminus / locks / random fights)", "kills (L3)")]
+        self.assertEqual(len(kills["pairs"].split(";")), 3)  # item 4's two pairs differ in < a third of their fights
+        self.assertNotIn("item 4", kills["pairs"])
+        self.assertAlmostEqual(kills["sd_run"], 5.96, delta=0.05)
+        loops = self.by[("far census (terminus / locks / random fights)", "parked far loops (L1)")]
+        self.assertEqual(len(loops["pairs"].split(";")), 5)
+        shots = self.by[("orbit cells (scout duel, player post, a seed)", "shots")]
+        self.assertEqual(len(shots["pairs"].split(";")), 3)
 
     def test_terminus_contact_ticks_cannot_carry_a_ten_percent_line(self):
         r = self.by[("Terminus census, rigs (a seed)", "wall contact-ticks")]
