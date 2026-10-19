@@ -139,7 +139,51 @@ if parkedroom becomes an element make-room. Each is in `roadmap.md`.
 
 ## Bars (round 34)
 
-_Filed here before any number. Empty at launch._
+_Filed here before any number._
+
+**Bar, brains B1 (C34.5) scout try 2: stand when it can win, leave when it can't (filed 2026-10-18 by brains, before any
+number; rule at stream/brains `86c8d7f68`).** Rule: TankBrain.scout_fights_back fires for a scout hit within 2 s by a
+visible, non-prey contact that threatens it, with duel advantage >= 1.0 (a ratio), that stays within the scout's
+effective range now and at +1 s and +2 s (both on their current velocities). Then SPOT scores 0.15 and ENGAGE wins.
+Otherwise today's SPOT (0.88 / 0.7) stands and it opens distance. `--scout-fight=off` / env `SCOUT_FIGHT=off` is main.
+Try 1's "can't outrun it" clause is dropped (R33.31). **Judged tree:** lab/brains-scout2 = stream/brains + manoeuvre's
+`608c3357e` (the orbit stage, which exists only beside the turn-in; switch default OFF). Turn-in OFF rows are judged and
+turn-in ON rows are reported (each cell runs both). **Ship tree:** stream/brains without 608c3357e.
+(1) DECIDING, `make scout-cells SCOUT_CELLS_SEEDS=73-79` (24 cells, n 7, GDScript both arms, --fixed-fps), ON v off:
+(a) pooled scout shots ON >= OFF, and on ENGAGED cells (ON ENGAGE ticks >= 1 s a run) pooled shots ON >= 1.25x OFF;
+(b) no cell with OFF median hits >= 10 has median damage taken ON > 1.2x OFF (smaller cells reported); (c) ENGAGE
+ticks ON > 0; out-of-reach cells' ENGAGE ticks reported. The exchange (dealt / taken) per cell is reported.
+(2) The pure tests, both sides of the rule (tests/test_ai_scout_fights_back.gd).
+(3) Fights guard, `make scout-census` (showmatch, native ON, --fixed-fps), FRESH seeds 29–36, n 8, ON v
+`--scout-fight=off`: scout deaths, paired per seed, mean(ON − OFF) <= 1.645 se; team enemy-seen seconds mean(ON − OFF)
+>= −1.645 se; kills reported. (4) `make check` on the ship tree with native's mirror: test_native_decide 0 mismatches;
+sim-baseline moves named and attributed with `SCOUT_FIGHT=off`. (5) The worst ON cell traced before its medians are read.
+**Ships ON if (1)(a)(b)(c), (3) and (4) pass.** Tuning: seeds 50–59 only. One machine for each series.
+**Amended (brains, 2026-10-18, approved by the orchestrator; before any judged number, tuning seeds 50–52 only).**
+Two findings in tuning. (i) The champion x18m runs with `matchups: false`, so decide's matchups table is empty and an
+advantage rule never fires (seeds 50–52, builder0: ENGAGE 0, arms identical 799 v 799). Fix `834562ab1`: decide
+computes `matchups_for(s)` only for a scout under fire with the switch ON. With `--scout-fight=off`, `scout_under_fire` is
+false and nothing extra is computed, so the OFF arm stays main. (ii) The stage's own cells (syn_scout, gang_ifv) can't
+exercise the stand side. Laptop probe, seed 50: advantage >= 1 on 207 of 5320 rule ticks, and none of those in reach.
+**So:** (1) runs two cell sets per seed. The STAGE set is manoeuvre's 24 cells. The DUEL set is
+`tests/test_ai_scout_duel_cells.gd`, which drives manoeuvre's `_orbit_stage` unchanged: subjects law_scout and
+gang_scout, circled by syn_lancer or law_tank (turreted orbiters a scout can beat by the brain's own estimate), at 15,
+24 and 35 m, post and free, turn-in OFF. That is 24 cells, all judged, PINNED now, and none added or dropped later.
+**(a) and (c) are judged on the DUEL set** ((c) now reads ENGAGE ticks ON > OFF, and "engaged" means ON exceeds OFF by
+>= 1 s a run). **(b) is judged on BOTH sets**, plus pooled shots ON >= OFF on the stage set. The stage set's turn-in ON is
+reported. Judged seeds are FRESH 73–79. Seed 50 and every cell already seen count as tuning only.
+**Verdict (brains, 2026-10-18): PASS, ships ON** (rows in `references/round34/brains/scout2_*`). (1) builder2,
+lab/brains-scout2 `5abdcd32e`, seeds 73–79, n 7 a cell. DUEL set: (a) pooled shots 4299 v 3490 (×1.23), engaged cells
+(8) 1950 v 1139 (×1.71, bar 1.25) PASS; (b) no cell worse by > 20 % PASS, pooled damage median 825 v 842; (c) ENGAGE
+ON−OFF 14452 PASS, out-of-reach cells +32 ticks. STAGE set: shots 1779 v 1778, (b) PASS, damage median 182 v 182 (the
+outgunned scout keeps its distance, as today). Turn-in ON reported: shots 5432 v 5434, (b) PASS. (5) Worst ON cell
+(gang_scout v syn_lancer 15 m, post: damage 825 v 759) traced on seed 76: held at its post, the fixed gun k-turns
+("backing up to keep its gun on it"), in-arc 0 %, 0 shots in both arms. That is the lead's C33.9 shuffle, manoeuvre's
+C34.10. (2) The pure tests and the decide test under the champion pass. (3) builder2, stream/brains `02b0c1267`,
+scout-census seeds 29–36, n 8, native ON: deaths 134 v 140, mean diff −0.75 (limit +1.75) PASS; team enemy-seen
+18403 v 18413 s, mean diff −1.2 (floor −93.2) PASS; kills 12 v 12. (4) builder2 `0b8fbd3f6` check: 2809/0, every native
+twin 0 mismatches. sim-baseline: docks moved (50f15553 → 4074d105), attributed by `SCOUT_FIGHT=off` (13 unmoved,
+builder0), ruled R34.3.
 
 - **B1 scout try 2 (brains), filed and amended before any judged number on `stream/brains` `66df97de3` (full text there).**
   Rule: fight only when advantage >= 1 AND the shooter is in reach at 0/1/2 s; otherwise today's SPOT. The stage's own

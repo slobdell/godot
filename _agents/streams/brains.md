@@ -67,3 +67,53 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### REPORT (2026-10-18; every number builder2 unless said)
+- **B1 scout try 2: PASS, merge here: `0b8fbd3f6`** (its check: builder2 `make check exited 2`, 2809 passed / 0 failed,
+  26 of 27 targets; the one red is sim-baseline's docks move, ruled R34.3 and attributed by `SCOUT_FIGHT=off`, which
+  left 13 unmoved on builder0). Later commits are docs and a Python table only. **What he'd notice:** a scout under
+  fire that wins the duel by the brain's own estimate stands and trades. A law scout circled at 15 m by a syn_lancer
+  fires 1032 shots against 175 over 7 runs. One that is outgunned (syn_scout, gang_ifv) keeps its distance as today,
+  shots unchanged. In fights (scout-census, n 8, native) scout deaths are 134 v 140 and team scouting is unchanged.
+  **Known cost:** a FIXED-gun scout held at a post shuffles when it stands (the lead's C33.9 shuffle). In its worst cell
+  it takes about 1 more hit in 25 for no shots. Manoeuvre's turn-in (C34.10) is the fix for that.
+  Rows: `references/round34/brains/scout2_*`. The verdict is in workstreams *Bars (round 34)*.
+- **B3 DONE**, inside `0b8fbd3f6`.
+- **B2 brains side DONE** (`984896b8f`, `e7275ee79`, inside `0b8fbd3f6`). Inert until manoeuvre's function lands.
+
+### Plan (2026-10-18)
+B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
+B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
+
+### Progress
+- **B1 (scout try 2):** rule on stream/brains `86c8d7f68`. Main + try 1's GDScript and native pair cherry-picked, then
+  try 2: fight only a duel at advantage >= 1 whose shooter stays in reach at 0/1/2 s, both sides on their velocities.
+  Try 1's can't-outrun clause is dropped. Otherwise today's SPOT 0.88/0.7. **Decision:** I read "otherwise SPOT 0.88" as
+  today's SPOT scoring unchanged. It is the narrowest change, and R33.31's harm was ENGAGE in lost duels, not SPOT.
+  **Tuning finding (builder0, lab/brains-scout2, seeds 50–52, n 3 a cell):** the arms were identical (799 v 799 shots,
+  ENGAGE 0). Cause: the champion x18m has `matchups: false`, so decide's table is empty. Try 1 only ever fired through
+  its speed clause. Fix `834562ab1`: decide computes matchups_for for a scout under fire, only when the switch is ON.
+  There's a decide-level test under the champion's features (laptop 9/0; with the fix reverted, 8/1). **Second finding (laptop
+  probe, seed 50):** the stage's cells hold only duels the scouts lose (advantage >= 1 on 207 of 5320 rule ticks, none
+  in reach). New duel cells, `tests/test_ai_scout_duel_cells.gd`, drive manoeuvre's `_orbit_stage` unchanged against
+  syn_lancer and law_tank. Tuning, seed 50, laptop, n 1: law_scout v syn_lancer at 15 m, free: 218 v 23 shots, damage
+  765 v 799. Bar FILED, then AMENDED before any judged number (orchestrator-approved; workstreams *Bars (round 34)*).
+  Native mirror: pair/native-scout2 (native; lazy-matchups change sent). Next: the pair check, then the series on fresh
+  73–79 and the census on 29–36.
+- **quick-remote `66df97de3`** (builder0, QUICK_BASE main): 241 passed, 1 failed. The failure is
+  test_native_decide::test_decide_is_the_gdscript, expected until native's mirror of try 2 and the lazy duel lands.
+- **B3 DONE (no check yet; it rides B1's pair check):** `2aa657577` ELEMENT_TRACE prints `inset X m engaged at Y m`.
+  Measurement only. Laptop anchor_inset 8/0.
+- **B2 brains side DONE** (`984896b8f`, `e7275ee79`; seam acked by manoeuvre via the orchestrator). The `_act` MOVE
+  arrived branch asks Manoeuvre.leg_holds_arrival through an adapter: false until manoeuvre's function is on the tree, so
+  it's inert on main. tests/test_ai_arrive_leg.gd: mid k-turn leg, inside its radius, switch on → keeps move_to,
+  held_moves_refused 0; switch off → today's arrival. If manoeuvre's const or switch name is present, the function must
+  be too. Verified with 7e0953f9d's function pasted in on a scratch tree (laptop 1/0). `_act` has no C++ mirror. **At
+  merge after manoeuvre:** drop the existence guard and assert outright.
+
+### Requests to other streams
+- native: scout try 2 mirror (taken: pair/native-scout2).
+- manoeuvre (via orchestrator): agree the B2 seam; tell brains if C34.10 changes the orbit stage's rows or switch default.
+
+### Questions for the lead
+None.

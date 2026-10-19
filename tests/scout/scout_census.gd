@@ -87,6 +87,7 @@ func _run() -> void:
 	var suppress_by := {}
 	var touching := {}
 	var started := -1
+	var enemy_seen := [0.0, 0.0]
 	var last_tick := -1
 	var frames := 0
 	while true:
@@ -106,6 +107,11 @@ func _run() -> void:
 		var t := (tick - started) * dt
 		if t > seconds:
 			break
+		# Overnight item 2 (brains, the bar's (3b)): each side's enemy-seen seconds, one per enemy its intel shows visible.
+		for side in 2:
+			for contact_name: String in game_match.intel[side]:
+				if bool(game_match.intel[side][contact_name].get("visible", false)):
+					enemy_seen[side] += dt
 		var fixed_alive := 0
 		for child in game_match.tanks.get_children():
 			var scout := child as Tank
@@ -218,7 +224,8 @@ func _run() -> void:
 	var out := {"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [],
 			"scouts": per.size(), "per_scout": per, "breakdown": breakdown,
-			"suppress_by": suppress_by, "deaths_by": deaths_by}
+			"suppress_by": suppress_by, "deaths_by": deaths_by,
+			"enemy_seen_s": [snappedf(enemy_seen[0], 0.1), snappedf(enemy_seen[1], 0.1)]}
 	out.merge(total)
 	out.merge(outcome)
 	print("SCOUT_CENSUS " + JSON.stringify(out))
