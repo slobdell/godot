@@ -103,4 +103,12 @@ se of the paired sum.
 quick-remote of `7b85b470a` (builder0, QUICK_BASE a0ae0aafd, 107 tests): 105/2. The two reds are main's new scout turn-in tests
 (`test_manoeuvre_orbit::…at_stop…`, `test_native_execute_turn_in::…`), single-scout stages with no element. Read as the folder's
 STALE native library (quick builds none; the last native build there was my census at `c23acdbe2`, before the turn-in's C++
-landed): "210 mismatches". The full check (which builds native) of `67a5a9db0` is running and decides it.
+landed): "210 mismatches".
+Full check of `67a5a9db0` (builder0): `make check exited 2`, 2888/2, 23/26 targets passed; the same two turn-in reds, plus sim-baseline
+MOVED terminus/parade/gorge/docks. **VOID: a stale native library.** My census (`c23acdbe2`) synced the pre-merge tree at ~09:00,
+waited for a slot and built native at 09:23 from pre-merge C++; the main merge (09:22:13 locally, native/src +19/-5) reached builder0
+with mtime 09:22 (rsync keeps it), older than the objects, so cmake rebuilt nothing. Proof (builder0, `native test FILTER=
+test_native_execute_turn_in|test_manoeuvre_orbit`): clean `0f4d528d7` 8/0; my tree after `touch native/src/*` 8/0, the same
+numbers (c339_stop on 0, 147 turned in). Parade and docks had gone back to their pre-turn-in lines. A fresh check is asked for
+(slot after orders' D1, traffic's T7 and manoeuvre's M5); the lesson goes to native via the orchestrator (stamp native/src's
+hash, not mtimes).
