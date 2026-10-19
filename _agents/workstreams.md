@@ -171,6 +171,17 @@ _Filed here before any number._
   foreign min >= minimax_off - 3 m; deck / far no higher; **(added) median `twitch worst m` <= minimax_off + 3 m** (the laptop's
   Locks 5 read 13.6 -> 15.5: a sum can hide one cell getting worse).
 
+- **M6/T9 JOINT: the stuck asker asks again (W1c, manoeuvre) and the asked parked crew answers (T9 yieldfit2, traffic), filed
+  2026-10-19 ~11:55 before any T9 code, replacing M6's two-arm read (R35.13).** T9 design: `stream/traffic` `0a1567b56`
+  `references/round35/traffic/t9_trace_design.md`. **Arms (one tree):** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
+  both; base = `--nav-off=stallintent --traffic-off=yieldfit2`. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
+  traffic's T9 + native's mirrors; gate = the pair's `make native check` on builder0 plus switch-OFF sim-baseline inertness. Seeds:
+  M6's FRESH blocks (hull-rest 901–916 drawn; fights + wedge probe on fixed locks/terminus/sumps x 940–963). **Counter first:**
+  stall_intent_ticks, H1 escapes, asks AND `yields_unfinished` > 0 in the candidate. **Deciding:** M6's (d) and (e) as filed
+  (attack-move movers by real_mps; never-settled), plus crews ending > 25 m off goal with a live move, new <= base. **Guards:**
+  M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
+  team <= base + 1.645 se.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
@@ -238,6 +249,14 @@ _Filed here before any number._
   attack-move tuning 460–467, 32 an arm: movers 10 v 14, never settled 4 v 7, settle median 37.2 v 44.5 s, about half M6 (d)'s
   needed effect. M6 NOT run; W1c held OFF (f9b3bb7f3). Traffic traces T9's mechanism now (why a once-yielded crew refuses); W1c + T9
   judged as ONE series under a joint bar filed when T9's design is in.
+- **R35.14 (2026-10-19 ~11:55) T9's mechanism (traffic, builder0 light, GDScript, W1c ON, law faced_attack_move 605, n 1,
+  lab/t9-trace-w1c e2bea96f2):** `ask()` opens with `if yield_to != "" or asker == _last_yielded_to: return false`;
+  `_last_yielded_to` is written at the end of EVERY give-way, so a PARKED crew whose give-way ended on the 6 s clock with the asker
+  never past (II_5: 5.1 m centre to centre) refuses that asker forever (f676, 941, 1395; II_7 the same). A turn-taking rule for two
+  movers acting as a once-only rule for a parked crew (the same lock parkedroom v2–v4 removed). **T9 approved** (`--traffic-on=
+  yieldfit2`, DEFAULT_OFF): an unfinished give-way (asker not passed AND yielder within 1.0 m box gap or across its travel line)
+  does not write `_last_yielded_to`; at most 2 unfinished to the same asker in 30 s; finished give-ways, the battery rule and T7's
+  gate unchanged. Native mirrors `_end_yield` and ask()'s first line. Joint bar above.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
