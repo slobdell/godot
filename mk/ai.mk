@@ -298,14 +298,16 @@ ai-element-perfplay: import ## (C25.6: fields this machine's squad cap, 4 on the
 # One --fixed-fps process a seed and arm; SCOUT_CELLS_JOBS of them at once.
 SCOUT_CELLS_SEEDS ?= 50-52
 SCOUT_CELLS_JOBS ?= 4
-scout-cells: import ## brains B1 (C34.5): the orbit cells, scout rule ON v SCOUT_FIGHT=off, SCOUT_CELLS_SEEDS (judged: 73-79), on a tree with manoeuvre's orbit stage -> build/scout-cells/{on,off}.jsonl + table
+scout-cells: import ## brains B1 (C34.5): the orbit cells + the scout duel cells (test_ai_scout_duel_cells), scout rule ON v SCOUT_FIGHT=off, SCOUT_CELLS_SEEDS (judged: 73-79), on a tree with manoeuvre's orbit stage -> build/scout-cells/{on,off}.jsonl + table
 	@test -f tests/test_manoeuvre_orbit.gd || { echo "scout-cells: this tree has no orbit stage (tests/test_manoeuvre_orbit.gd)"; exit 2; }
 	@d=$(BUILD_DIR)/scout-cells; rm -rf $$d; mkdir -p $$d; first=$${SCOUT_CELLS_SEEDS%-*}; last=$${SCOUT_CELLS_SEEDS#*-}; status=0; \
 	echo ">> scout-cells on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | seeds $(SCOUT_CELLS_SEEDS) | jobs $(SCOUT_CELLS_JOBS)"; \
 	for seed in $$(seq $$first $$last); do for arm in on off; do \
 		while [ $$(jobs -rp | wc -l) -ge $(SCOUT_CELLS_JOBS) ]; do sleep 1; done; \
 		( env $$( [ $$arm = off ] && echo SCOUT_FIGHT=off ) C339_CELLS=$$seed-$$seed $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
-			--script res://tests/run_tests.gd -- --filter=c339_cells > $$d/$$arm-$$seed.log 2>&1; echo $$? > $$d/$$arm-$$seed.status ) & \
+			--script res://tests/run_tests.gd -- --filter=c339_cells > $$d/$$arm-$$seed.log 2>&1 \
+		&& env $$( [ $$arm = off ] && echo SCOUT_FIGHT=off ) SCOUT_DUEL_CELLS=$$seed-$$seed $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+			--script res://tests/run_tests.gd -- --filter=scout_duel_cells >> $$d/$$arm-$$seed.log 2>&1; echo $$? > $$d/$$arm-$$seed.status ) & \
 	done; done; wait; \
 	for f in $$d/*.status; do [ "$$(cat $$f)" = 0 ] || { status=1; echo "   FAILED $$f"; }; done; \
 	for arm in on off; do grep -h '^C339_CELL ' $$d/$$arm-*.log | cut -d' ' -f2- > $$d/$$arm.jsonl; done; \
