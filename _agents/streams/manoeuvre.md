@@ -56,6 +56,20 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Dev reads (2026-10-19 afternoon; tuning seeds, NOT judged)
+
+- **W1b** (builder0, stream a0c874924 tree, wedge 3500–3503 × locks/terminus/sumps, 12 fights an arm, both arms GDScript drive):
+  wheeled pace-0 ticks still moving ≥ 0.5 m/s **60 % → 4 %** (7181/11871 → 636/15723; 7099 of the base's were Traffic holds); halts =
+  asks 15727. Deaths 483 v 485, wedged 48 v 46 (dev n). `references/round35/manoeuvre/w1b-dev/`. Native's mirror queued (orchestrator).
+- **W2** (builder0, lab/cpf5 bdacb1786, hull-rest 460–463 drawn, GDScript both arms): wheels/turret point tasks median 3.9–5.4° v
+  32–72° (≤ 15°: 73–80 % v 11–33 %); movers at the judge new ≤ base on 5 of 6 tasks (right 7 v 5), `face_creep` 0 in the new arm.
+  **Found:** hull-fixed scouts (wheels/fixed) ≥ 45° off rose 33 → 48 over six tasks: a scout's creep is how it aims, so the give-up is
+  now TURRET hulls only (5c692b507, test added). lab/cpf5 is re-cut on that before the gate.
+- **W1c traces** (brains' E1 laggards, native, main 0f4d528d7 + OFF switches): law-605 Green_Eyes_4 (scout) still wedges with the
+  turn-in shipped: 70 s blocked by a PARKED crew of another squad (Green_Eyes II_5, which gave way once but only 2.4 m, still
+  touching); law-607 Guns_6 the same in a pack of friends. ORCA pace 0.05–0.09 hides the stall from unstick's |throttle| > 0.5 gate.
+  W1c approved (R35.12), Bar M6 filed; built OFF (f9b3bb7f3). `references/round35/manoeuvre/w1c-trace/`.
+
 ### W1b and W2 built, default OFF; quick green (2026-10-19 ~10:30 PDT)
 
 `9d2486dab` builder0 `make quick-remote` (QUICK_BASE 0f4d528d7) **exited 0, 75 passed 0 failed**, lint clean. W2's boxed War Rig
