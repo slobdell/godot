@@ -418,6 +418,13 @@ builder0), ruled R34.3.
   that reads face_pairs, not a bar. **The round-34 Terminus route stall** (planner's bisect: O4's a5a362737 first bad; brains: O3 put
   squad 3's first-leg anchor in a block) is fixed in brains' next check (ground_anchors + a player-route stall fallback, 12 s, every
   crew settled, in-between legs only).
+- **R34.17 T6 (under fire, no give-way) FAILS as filed; a T6b without the mid-step abort is approved (traffic, pair
+  `ac1bf4692`, builder2, fixed arenas × 1300–1327, n 140, `x6_series_ac1bf4692.txt`).** G jam-under-fire deaths 231 → 72 (7 se):
+  PASS. Guards FAIL: open deaths +169 (band ±123), stuck deaths +124 (line 877), kills +138 (band ±112), friendly contacts in the 3 s
+  after a hit-ended give-way 331 → 1049 (5.7 se over). All deaths +2.3 %. Reading: the deaths moved rather than went (crews holding
+  under fire and the askers behind them die where they stand), and the mid-step abort (c) reverses a crew into the asker. DEFAULT_OFF;
+  native's mirror `bc6aaa203` not merged. **T6b = (a) + (b) only, no (c)**, re-judged on a FRESH fixed-arena block with the same
+  lines; if open and stuck deaths still rise, the trade is real and T6 parks for the round.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
