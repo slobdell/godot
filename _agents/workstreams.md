@@ -151,8 +151,9 @@ _Filed here before any number._
 - **D5 a multi-squad route's in-between gate dealt by each squad's previous leg (orders, C35.5), filed before any builder0 number
   from `stream/orders` `fac1f5ca4` Status *D5 bar*, with one change by the orchestrator: fresh seeds.** `--gate-deal=off` = round 34.
   `make orders-probe` on builder0 (native), the 24 cells, arms `main:` v `gate_off:--gate-deal=off`, same tree (deploy step ON, pack
-  OFF). **Seeds (changed):** seed 34 (the tuned cell) is REPORTED only; the gain and guards read FRESH seeds 3601–3606 (n 6 a
-  cell). **Counter first:** `gates_laid` > 0 in every multi-waypoint route cell on main; the printed legs differ between arms in
+  OFF). **Seeds (changed):** seed 34 (the tuned cell) is REPORTED only; the gain and guards read FRESH seeds 3611–3616 (n 6 a
+  cell; 3601–3602 were read on the laptop while fixing the probe). A seed other than 34 moves the click (and the route's
+  waypoints) by <= 12 m to a dry standable point (`stream/orders` 3ac51d4b0: before it, every seed replayed seed 34 byte for byte). **Counter first:** `gates_laid` > 0 in every multi-waypoint route cell on main; the printed legs differ between arms in
   the Locks 5 route. **Gain:** the Locks 5-squad route median all-in <= 0.7 x gate_off's (or in where gate_off never is), and the
   summed all-in over the 12 route cells lower on main. **Guards:** the 12 click cells byte-identical between arms; every route cell
   median all-in <= gate_off x 1.2 + 3 s, never in on gate_off but not on main; deck / far bank no higher than gate_off in any cell;
