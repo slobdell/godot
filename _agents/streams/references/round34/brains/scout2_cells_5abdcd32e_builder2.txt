@@ -1,0 +1,123 @@
+# B1 scout try 2, judged cells: lab/brains-scout2 5abdcd32e (= stream/brains 0b8fbd3f6 + table + manoeuvre 608c3357e), builder2, seeds 73-79, n 7 a cell, --fixed-fps 30
+tools/remote.sh scout-cells SCOUT_CELLS_SEEDS=73-79 SCOUT_CELLS_JOBS=14
+>> remote: make scout-cells SCOUT_CELLS_SEEDS=73-79 SCOUT_CELLS_JOBS=14 on slobdell@builder2
+>> scout-cells on balsa-worker-gcp.us-west1-a.c.leddrones.internal | commit 5abdcd32e | seeds 73-79 | jobs 14
+#### the stage's cells (syn_scout, gang_ifv: duels the scouts lose; the 'leaves' side)
+== turn-in OFF (judged): 24 cells, rows 168 v 168, seeds [73, 74, 75, 76, 77, 78, 79]
+gang_scout gang_ifv   15 free    7 |    16    16 |   256   256 |       115 |      0      0 | 0.97 0.97
+gang_scout gang_ifv   15 player  7 |    13    13 |   290   290 |        97 |      0      0 | 0.68 0.68
+gang_scout gang_ifv   30 free    7 |     2     2 |    27    27 |        13 |      0      0 | 1.56 1.56  (out of reach 24 m)
+gang_scout gang_ifv   30 player  7 |     1     1 |   193   193 |        91 |      0      0 | 0.10 0.10  (out of reach 24 m)
+gang_scout gang_ifv   45 free    7 |     0     0 |     0     0 |         0 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout gang_ifv   45 player  7 |     0     0 |    16    16 |         8 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_scout  15 free    7 |    16    15 |   455   455 |        99 |     27      0 | 0.03 0.03
+gang_scout syn_scout  15 player  7 |    23    23 |   618   618 |       113 |      0      0 | 0.02 0.02
+gang_scout syn_scout  30 free    7 |     0     0 |   241   241 |        51 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_scout  30 player  7 |     2     2 |   350   350 |        70 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_scout  45 free    7 |     0     0 |    89    89 |        20 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_scout  45 player  7 |     1     1 |   196   196 |        42 |      0      0 | 0.00 0.00  (out of reach 24 m)
+law_scout  gang_ifv   15 free    7 |   342   342 |   175   175 |       138 |      0      0 | 0.36 0.36
+law_scout  gang_ifv   15 player  7 |   222   222 |   289   289 |       141 |      0      0 | 0.21 0.21
+law_scout  gang_ifv   30 free    7 |   563   563 |     0     0 |        28 |      0      0 | 137.10 137.10
+law_scout  gang_ifv   30 player  7 |    53    53 |   153   153 |       107 |      0      0 | 0.08 0.08
+law_scout  gang_ifv   45 free    7 |     7     7 |     0     0 |         0 |      0      0 | 11000000.00 11000000.00  (out of reach 35 m)
+law_scout  gang_ifv   45 player  7 |   108   108 |     0     0 |         0 |      0      0 | 13.79 13.79  (out of reach 35 m)
+law_scout  syn_scout  15 free    7 |   107   107 |   346   346 |       117 |      0      0 | 0.00 0.00
+law_scout  syn_scout  15 player  7 |   118   118 |   500   500 |       123 |      0      0 | 0.01 0.01
+law_scout  syn_scout  30 free    7 |    98    98 |   232   232 |        71 |      0      0 | 0.02 0.02
+law_scout  syn_scout  30 player  7 |    75    75 |   290   290 |        85 |      0      0 | 0.00 0.00
+law_scout  syn_scout  45 free    7 |     0     0 |   101   101 |        32 |      0      0 | 0.00 0.00  (out of reach 35 m)
+law_scout  syn_scout  45 player  7 |    12    12 |   169   169 |        55 |      0      0 | 0.00 0.00  (out of reach 35 m)
+(a) pooled shots 1779 v 1778 (x1.00) PASS | engaged cells 0: shots 0 v 0 (x0.00, bar 1.25) PASS
+(b) cells (OFF hits >= 10) worse by > 20 %: 0 [] PASS | pooled damage median 182 v 182 (reported)
+    small cell (OFF hits < 10, reported): ('law_scout', 'gang_ifv', 45, True) dmg 0 v 0
+    small cell (OFF hits < 10, reported): ('law_scout', 'gang_ifv', 45, False) dmg 0 v 0
+    small cell (OFF hits < 10, reported): ('gang_scout', 'gang_ifv', 45, True) dmg 16 v 16
+(c) ENGAGE ticks ON - OFF 27 PASS | out-of-reach cells 12: ENGAGE ticks ON - OFF 0 (reported)
+worst ON cell (trace it before the medians): ('law_scout', 'syn_scout', 45, True) dmg 169 v 169
+#### the duel cells (syn_lancer, law_tank: duels a scout can win; the 'stands' side)
+== turn-in OFF (judged): 24 cells, rows 168 v 168, seeds [73, 74, 75, 76, 77, 78, 79]
+gang_scout law_tank   15 free    7 |    32    32 |  2400  2400 |         8 |   4342   4342 | 0.05 0.05
+gang_scout law_tank   15 player  7 |    21    21 |  2400  2400 |         8 |   3535   3535 | 0.02 0.02
+gang_scout law_tank   24 free    7 |    44    44 |  2100  2100 |         7 |   4698   4698 | 0.13 0.13
+gang_scout law_tank   24 player  7 |     8     8 |  1500  1500 |         5 |   4645   4645 | 0.00 0.00
+gang_scout law_tank   35 free    7 |    21    21 |  2100  2100 |         7 |   4710   4710 | 0.03 0.03  (out of reach 24 m)
+gang_scout law_tank   35 player  7 |     3     3 |  1800  1800 |         6 |   5127   5127 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_lancer  15 free    7 |    22    17 |   825   858 |        26 |    818      0 | 0.03 0.04
+gang_scout syn_lancer  15 player  7 |    10     6 |   825   759 |        23 |    815      0 | 0.01 0.00
+gang_scout syn_lancer  24 free    7 |     7     9 |   759   759 |        23 |     42      0 | 0.00 0.02
+gang_scout syn_lancer  24 player  7 |     8     8 |   726   726 |        22 |    147      0 | 0.00 0.00
+gang_scout syn_lancer  35 free    7 |     0     0 |   726   726 |        22 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_lancer  35 player  7 |     0     0 |   693   792 |        24 |     32      0 | 0.00 0.00  (out of reach 24 m)
+law_scout  law_tank   15 free    7 |   534   534 |  1528  1528 |         8 |      0      0 | 0.03 0.03
+law_scout  law_tank   15 player  7 |   404   404 |  1752  1752 |         8 |      0      0 | 0.01 0.01
+law_scout  law_tank   24 free    7 |   856   856 |  1073  1073 |         6 |      0      0 | 0.10 0.10
+law_scout  law_tank   24 player  7 |   127   127 |  1276  1276 |         7 |      0      0 | 0.00 0.00
+law_scout  law_tank   35 free    7 |   116   116 |   999   999 |         6 |      0      0 | 0.01 0.01
+law_scout  law_tank   35 player  7 |   168   168 |   938   938 |         5 |      0      0 | 0.02 0.02
+law_scout  syn_lancer  15 free    7 |  1032   175 |   718   673 |        26 |   4663      0 | 0.19 0.02
+law_scout  syn_lancer  15 player  7 |   111   103 |   681   731 |        23 |   3160      0 | 0.01 0.00
+law_scout  syn_lancer  24 free    7 |   577   676 |   603   674 |        25 |   1450      0 | 0.07 0.07
+law_scout  syn_lancer  24 player  7 |    65    64 |   630   678 |        22 |   2373      0 | 0.00 0.00
+law_scout  syn_lancer  35 free    7 |    66    31 |   603   603 |        23 |    237      0 | 0.00 0.00
+law_scout  syn_lancer  35 player  7 |    67    67 |   571   540 |        22 |    715      0 | 0.00 0.00
+(a) pooled shots 4299 v 3490 (x1.23) PASS | engaged cells 8: shots 1950 v 1139 (x1.71, bar 1.25) PASS
+(b) cells (OFF hits >= 10) worse by > 20 %: 0 [] PASS | pooled damage median 825 v 842 (reported)
+    small cell (OFF hits < 10, reported): ('law_scout', 'law_tank', 35, True) dmg 938 v 938
+    small cell (OFF hits < 10, reported): ('law_scout', 'law_tank', 35, False) dmg 999 v 999
+    small cell (OFF hits < 10, reported): ('law_scout', 'law_tank', 24, True) dmg 1276 v 1276
+(c) ENGAGE ticks ON - OFF 14452 PASS | out-of-reach cells 4: ENGAGE ticks ON - OFF 32 (reported)
+worst ON cell (trace it before the medians): ('gang_scout', 'syn_lancer', 15, True) dmg 825 v 759
+#### the stage's cells, turn-in ON (reported)
+== turn-in ON (reported): 24 cells, rows 168 v 168, seeds [73, 74, 75, 76, 77, 78, 79]
+gang_scout gang_ifv   15 free    7 |    16    16 |   256   256 |       115 |      0      0 | 0.97 0.97
+gang_scout gang_ifv   15 player  7 |    58    58 |   187   187 |        81 |      0      0 | 6.15 6.15
+gang_scout gang_ifv   30 free    7 |     2     2 |    27    27 |        13 |      0      0 | 1.56 1.56  (out of reach 24 m)
+gang_scout gang_ifv   30 player  7 |    32    32 |   174   174 |        66 |      0      0 | 2.53 2.53  (out of reach 24 m)
+gang_scout gang_ifv   45 free    7 |     0     0 |     0     0 |         0 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout gang_ifv   45 player  7 |     8     8 |    38    38 |        15 |      0      0 | 1.91 1.91  (out of reach 24 m)
+gang_scout syn_scout  15 free    7 |    16    15 |   455   455 |        99 |     27      0 | 0.03 0.03
+gang_scout syn_scout  15 player  7 |    37    35 |   450   435 |        96 |     84      0 | 0.10 0.04
+gang_scout syn_scout  30 free    7 |     0     0 |   241   241 |        51 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_scout  30 player  7 |    50    52 |   410   411 |        95 |     45      0 | 0.22 0.27  (out of reach 24 m)
+gang_scout syn_scout  45 free    7 |     0     0 |    89    89 |        20 |      0      0 | 0.00 0.00  (out of reach 24 m)
+gang_scout syn_scout  45 player  7 |     6     6 |   272   272 |        52 |      0      0 | 0.03 0.03  (out of reach 24 m)
+law_scout  gang_ifv   15 free    7 |   342   342 |   175   175 |       138 |      0      0 | 0.36 0.36
+law_scout  gang_ifv   15 player  7 |   750   750 |    68    68 |        95 |     27      0 | 3.70 3.70
+law_scout  gang_ifv   30 free    7 |   563   563 |     0     0 |        28 |      0      0 | 137.10 137.10
+law_scout  gang_ifv   30 player  7 |   857   857 |   121   121 |        76 |      9      0 | 2.20 2.20
+law_scout  gang_ifv   45 free    7 |     7     7 |     0     0 |         0 |      0      0 | 11000000.00 11000000.00  (out of reach 35 m)
+law_scout  gang_ifv   45 player  7 |   236   239 |     0     0 |        22 |     45      0 | 15.70 15.59  (out of reach 35 m)
+law_scout  syn_scout  15 free    7 |   107   107 |   346   346 |       117 |      0      0 | 0.00 0.00
+law_scout  syn_scout  15 player  7 |   309   309 |   352   352 |       127 |     18      0 | 0.04 0.04
+law_scout  syn_scout  30 free    7 |    98    98 |   232   232 |        71 |      0      0 | 0.02 0.02
+law_scout  syn_scout  30 player  7 |  1489  1489 |   260   260 |       106 |      0      0 | 1.45 1.45
+law_scout  syn_scout  45 free    7 |     0     0 |   101   101 |        32 |      0      0 | 0.00 0.00  (out of reach 35 m)
+law_scout  syn_scout  45 player  7 |   449   449 |   208   208 |        63 |      0      0 | 0.17 0.17  (out of reach 35 m)
+(a) pooled shots 5432 v 5434 (x1.00) FAIL | engaged cells 0: shots 0 v 0 (x0.00, bar 1.25) PASS
+(b) cells (OFF hits >= 10) worse by > 20 %: 0 [] PASS | pooled damage median 184 v 184 (reported)
+    small cell (OFF hits < 10, reported): ('law_scout', 'gang_ifv', 45, False) dmg 0 v 0
+    small cell (OFF hits < 10, reported): ('gang_scout', 'gang_ifv', 45, False) dmg 0 v 0
+(c) ENGAGE ticks ON - OFF 255 PASS | out-of-reach cells 12: ENGAGE ticks ON - OFF 90 (reported)
+worst ON cell (trace it before the medians): ('gang_scout', 'syn_scout', 15, True) dmg 450 v 435
+SCOUT_CELLS (1) PASS (turn-in OFF judged: stage cells PASS, duel cells PASS)
+>> remote: make scout-cells SCOUT_CELLS_SEEDS=73-79 SCOUT_CELLS_JOBS=14 exited 0 (build/ copied back)
+
+## worst ON duel cell traced (gang_scout v syn_lancer 15 m post, seed 76, laptop, n 1)
+trace76_off.log:TRACE_ROW hits 24 shots 0 whys { "HOLD": 75, "SPOT": 776, "ADVANCE": 49 } in_arc 0.0 far 17.9
+trace76_on.log:TRACE_ROW hits 25 shots 0 whys { "HOLD": 3, "SPOT": 506, "COVER_FIRE": 63, "ADVANCE": 85, "ENGAGE": 243 } in_arc 0.0 far 23.4
+  TL syn_lancer r15 ptrue onfalse t0.0 stop why=HOLD: err=-56 spd=+0.0 d=15 at=(0,0) goal=(0,0) ti_rate=0 live=false yawnow=0 post=(0.0, 0.0, 0.0) leashed=0 thr=0.00 turn=0.00
+  TL syn_lancer r15 ptrue onfalse t2.0 move_to why=COVER_FIRE:peek, laying the gun err=-42 spd=+5.5 d=13 at=(-0,4) goal=(5,2) ti_rate=0 live=false yawnow=63 post=(0.0, 0.0, 0.0) leashed=0 thr=0.66 tur
+  TL syn_lancer r15 ptrue onfalse t4.0 stop why=ADVANCE: err=-60 spd=-3.3 d=16 at=(-5,10) goal=(0,0) ti_rate=0 live=false yawnow=0 post=(0.0, 0.0, 0.0) leashed=0 thr=0.00 turn=0.00
+  TL syn_lancer r15 ptrue onfalse t6.0 stop why=ENGAGE:short halt err=-89 spd=-4.0 d=15 at=(-6,8) goal=(0,0) ti_rate=0 live=false yawnow=51 post=(0.0, 0.0, 0.0) leashed=0 thr=0.00 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t8.0 face why=ENGAGE:laying its gun err=-87 spd=-4.4 d=15 at=(-8,10) goal=(-8,24) ti_rate=0 live=false yawnow=56 post=(0.0, 0.0, 0.0) leashed=0 thr=-0.55 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t10.0 face why=ENGAGE:backing up to keep its gun on it err=-81 spd=-3.7 d=13 at=(-6,9) goal=(-20,8) ti_rate=0 live=false yawnow=56 post=(0.0, 0.0, 0.0) leashed=0 thr=
+  TL syn_lancer r15 ptrue onfalse t12.0 face why=SPOT: err=-84 spd=+0.3 d=16 at=(-6,11) goal=(-6,-4) ti_rate=0 live=false yawnow=5 post=(0.0, 0.0, 0.0) leashed=0 thr=0.55 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t14.0 face why=SPOT: err=-119 spd=-2.2 d=17 at=(-9,9) goal=(8,8) ti_rate=0 live=false yawnow=20 post=(0.0, 0.0, 0.0) leashed=0 thr=-0.55 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t16.0 face why=ENGAGE:backing up to keep its gun on it err=-113 spd=-4.4 d=14 at=(-9,10) goal=(-8,24) ti_rate=0 live=false yawnow=56 post=(0.0, 0.0, 0.0) leashed=0 th
+  TL syn_lancer r15 ptrue onfalse t18.0 face why=SPOT: err=-126 spd=+5.7 d=12 at=(-8,10) goal=(-21,14) ti_rate=0 live=false yawnow=65 post=(0.0, 0.0, 0.0) leashed=0 thr=0.55 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t20.0 face why=ENGAGE:laying its gun err=-136 spd=-4.4 d=14 at=(-7,12) goal=(-8,-3) ti_rate=0 live=false yawnow=56 post=(0.0, 0.0, 0.0) leashed=0 thr=-0.55 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t22.0 stop why=ADVANCE: err=-74 spd=-2.9 d=21 at=(-10,10) goal=(0,0) ti_rate=0 live=false yawnow=0 post=(0.0, 0.0, 0.0) leashed=0 thr=0.00 turn=0.00
+  TL syn_lancer r15 ptrue onfalse t24.0 face why=SPOT: err=-101 spd=-1.8 d=16 at=(-11,7) goal=(6,9) ti_rate=0 live=false yawnow=15 post=(0.0, 0.0, 0.0) leashed=0 thr=0.35 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t26.0 face why=SPOT: err=-98 spd=-3.8 d=15 at=(-9,8) goal=(-13,23) ti_rate=0 live=false yawnow=41 post=(0.0, 0.0, 0.0) leashed=0 thr=-0.55 turn=1.00
+  TL syn_lancer r15 ptrue onfalse t28.0 move_to why=COVER_FIRE:peek, laying the gun err=-39 spd=+12.0 d=15 at=(-10,15) goal=(-14,11) ti_rate=0 live=false yawnow=146 post=(0.0, 0.0, 0.0) leashed=0 thr=

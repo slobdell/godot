@@ -28,7 +28,7 @@ func test_the_decision_on_the_owned_state() -> void:
 
 
 func _stage(owned: bool) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the manoeuvre decision is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world

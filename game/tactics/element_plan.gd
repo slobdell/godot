@@ -293,6 +293,9 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		destination = inset_anchor(members_of(situation), String(plan["formation"]), destination,
 				table.spacing(String(situation["terrain"])))
 		plan["inset_m"] = asked.distance_to(destination)
+		# C34.9 (brains B3), MEASUREMENT ONLY: how far out the element stood when the inset moved its spot (Element
+		# latches the first per task for ELEMENT_TRACE).
+		plan["inset_from_m"] = center.distance_to(asked)
 		# Cap + fold: an element whose shape still reaches past the edge arrives at its laid seats' centroid.
 		if ANCHOR_INSET:
 			var told_facing: Variant = ElementTask.facing(task)

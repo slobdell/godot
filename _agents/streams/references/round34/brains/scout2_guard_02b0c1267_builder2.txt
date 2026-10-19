@@ -1,0 +1,11 @@
+# B1 scout try 2, fights guard: scout-census, ship tree stream/brains 02b0c1267 (= 0b8fbd3f6 + this table's script), builder2, FRESH seeds 29-36, n 8, native ON, --fixed-fps 30, ON v --scout-fight=off
+seeds [29, 30, 31, 32, 33, 34, 35, 36]
+  seed 29 terminus   deaths 16 v 14 | kills 2 v 2 | enemy-seen 1895 v 2200 s | fight_s 433 v 437
+  seed 30 yard       deaths 29 v 29 | kills 2 v 2 | enemy-seen 3534 v 3534 s | fight_s 260 v 260
+  seed 31 archipelago deaths 19 v 19 | kills 1 v 1 | enemy-seen 1446 v 1446 s | fight_s 80 v 80
+  seed 32 docks      deaths 23 v 23 | kills 2 v 2 | enemy-seen 3907 v 3907 s | fight_s 319 v 319
+  seed 33 locks      deaths 8 v 16 | kills 0 v 0 | enemy-seen 1571 v 1276 s | fight_s 23 v 72
+  seed 34 archipelago deaths 0 v 0 | kills 0 v 0 | enemy-seen 782 v 782 s | fight_s 0 v 0
+  seed 35 pit        deaths 20 v 20 | kills 0 v 0 | enemy-seen 1645 v 1645 s | fight_s 118 v 118
+  seed 36 archipelago deaths 19 v 19 | kills 5 v 5 | enemy-seen 3623 v 3623 s | fight_s 366 v 366
+SCOUT_GUARD n 8 | deaths 134 v 140, mean diff -0.75 (limit +1.75) PASS | enemy-seen 18403 v 18413 s, mean diff -1.2 (floor -93.2) PASS | kills 12 v 12

@@ -47,7 +47,7 @@ func _switch(name: String) -> bool:
 
 
 func test_closest_approach_is_the_gdscript_bit_for_bit() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the closest_approach equality is not exercised in this run")
 		return
 	var rng := RandomNumberGenerator.new()

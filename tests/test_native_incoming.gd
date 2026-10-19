@@ -13,7 +13,7 @@ const SCENES := 120
 
 
 func test_the_incoming_query_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the incoming equality is not exercised in this run")
 		return
 	assert_true(NativeIncoming.configure(), "the native query takes the live constants")

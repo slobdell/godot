@@ -33,7 +33,7 @@ func test_the_tank_faces_behind_natively_as_the_gdscript() -> void:
 
 ## The stage for `unit`, twinned; {} when the library is absent.
 func _face_case(unit: String) -> Dictionary:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the face-behind equality is not exercised in this run")
 		return {}
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world

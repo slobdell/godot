@@ -38,7 +38,7 @@ func _random_table(rng: RandomNumberGenerator, n: int, spread: float) -> Array:
 
 
 func test_solve_is_the_gdscript_bit_for_bit() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the avoidance equality is not exercised in this run")
 		return
 	var rng := RandomNumberGenerator.new()
@@ -95,7 +95,7 @@ func test_solve_is_the_gdscript_bit_for_bit() -> void:
 
 func test_the_existing_avoidance_tests_run_both_ways() -> void:
 	# The suite's own test_avoidance.gd runs on whichever path the switch has; this pins the two on one encounter.
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	var rows := [["A", 0, 0, 0, 6, 1.8, false], ["B", 0.2, 12, 0, -6, 1.8, false]]
 	Avoidance.load_rows(rows)

@@ -98,7 +98,7 @@ func _run(brain: ProbeBrain, contact: ContactProbe, held: TankCommand, start: Di
 
 
 func test_the_controller_tick_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the controller tick equality is not exercised in this run")
 		return
 	assert_true(NativeController.configure(), "the native controller tick takes its scripts")

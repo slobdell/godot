@@ -249,7 +249,7 @@ converge-probe: import ## Round 20 (M1): orders' two-squad probe on CONVERGE_MAP
 	@echo ">> converge-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for rep in $$(seq 1 $(CONVERGE_REPS)); do for map in $(CONVERGE_MAPS); do for arm in $(CONVERGE_ARMS); do \
 		d=$(CURDIR)/$(CONVERGE_DIR)/$$map-$$arm-r$$rep; mkdir -p $$d; s=0; \
-		timeout 240 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$$d --two-squads \
+		timeout 240 $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$$d --two-squads \
 			$(TWO_ARMY) --arena=$$map --converge=$$arm > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$map converge=$$arm rep $$rep: exit $$s $$(grep -o 'TWO_SQUADS_DONE ok=[a-z]*' $$d/run.log || true)"; \
 	done; done; done
@@ -771,7 +771,7 @@ scenario-times: import ## Round 30 (B7): every test in SCENARIO_TIME_FILES timed
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/scenario-times.txt
 	@echo ">> scenario-times on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for f in $(SCENARIO_TIME_FILES); do stem=$$(basename $$f .gd); for t in $$(grep -o '^func test_[a-z0-9_]*' $$f | sed 's/^func //'); do \
-		from=$$(date +%s%N); out=$$($(GODOT) --headless --path . --script res://tests/run_tests.gd -- "--filter=$$stem::$$t" 2>&1 | grep -E '  (PASS|FAIL)  ' | head -1); \
+		from=$$(date +%s%N); out=$$($(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- "--filter=$$stem::$$t" 2>&1 | grep -E '  (PASS|FAIL)  ' | head -1); \
 		echo "$$stem::$$t	$$(( ($$(date +%s%N) - from) / 1000000 ))	$$out" | tee -a $(BUILD_DIR)/scenario-times.txt; done; done
 	@awk -F'\t' '{s += $$2} END {print "total ms", s}' $(BUILD_DIR)/scenario-times.txt
 

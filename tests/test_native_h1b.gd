@@ -20,7 +20,7 @@ static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
 
 
 func test_the_pinned_hull_settles_as_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the H1b equality is not exercised in this run")
 		return
 	if not (Movement as Script).get_script_constant_map().has("H1B_DEFAULT"):

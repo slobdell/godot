@@ -139,7 +139,51 @@ if parkedroom becomes an element make-room. Each is in `roadmap.md`.
 
 ## Bars (round 34)
 
-_Filed here before any number. Empty at launch._
+_Filed here before any number._
+
+**Bar, brains B1 (C34.5) scout try 2: stand when it can win, leave when it can't (filed 2026-10-18 by brains, before any
+number; rule at stream/brains `86c8d7f68`).** Rule: TankBrain.scout_fights_back fires for a scout hit within 2 s by a
+visible, non-prey contact that threatens it, with duel advantage >= 1.0 (a ratio), that stays within the scout's
+effective range now and at +1 s and +2 s (both on their current velocities). Then SPOT scores 0.15 and ENGAGE wins.
+Otherwise today's SPOT (0.88 / 0.7) stands and it opens distance. `--scout-fight=off` / env `SCOUT_FIGHT=off` is main.
+Try 1's "can't outrun it" clause is dropped (R33.31). **Judged tree:** lab/brains-scout2 = stream/brains + manoeuvre's
+`608c3357e` (the orbit stage, which exists only beside the turn-in; switch default OFF). Turn-in OFF rows are judged and
+turn-in ON rows are reported (each cell runs both). **Ship tree:** stream/brains without 608c3357e.
+(1) DECIDING, `make scout-cells SCOUT_CELLS_SEEDS=73-79` (24 cells, n 7, GDScript both arms, --fixed-fps), ON v off:
+(a) pooled scout shots ON >= OFF, and on ENGAGED cells (ON ENGAGE ticks >= 1 s a run) pooled shots ON >= 1.25x OFF;
+(b) no cell with OFF median hits >= 10 has median damage taken ON > 1.2x OFF (smaller cells reported); (c) ENGAGE
+ticks ON > 0; out-of-reach cells' ENGAGE ticks reported. The exchange (dealt / taken) per cell is reported.
+(2) The pure tests, both sides of the rule (tests/test_ai_scout_fights_back.gd).
+(3) Fights guard, `make scout-census` (showmatch, native ON, --fixed-fps), FRESH seeds 29–36, n 8, ON v
+`--scout-fight=off`: scout deaths, paired per seed, mean(ON − OFF) <= 1.645 se; team enemy-seen seconds mean(ON − OFF)
+>= −1.645 se; kills reported. (4) `make check` on the ship tree with native's mirror: test_native_decide 0 mismatches;
+sim-baseline moves named and attributed with `SCOUT_FIGHT=off`. (5) The worst ON cell traced before its medians are read.
+**Ships ON if (1)(a)(b)(c), (3) and (4) pass.** Tuning: seeds 50–59 only. One machine for each series.
+**Amended (brains, 2026-10-18, approved by the orchestrator; before any judged number, tuning seeds 50–52 only).**
+Two findings in tuning. (i) The champion x18m runs with `matchups: false`, so decide's matchups table is empty and an
+advantage rule never fires (seeds 50–52, builder0: ENGAGE 0, arms identical 799 v 799). Fix `834562ab1`: decide
+computes `matchups_for(s)` only for a scout under fire with the switch ON. With `--scout-fight=off`, `scout_under_fire` is
+false and nothing extra is computed, so the OFF arm stays main. (ii) The stage's own cells (syn_scout, gang_ifv) can't
+exercise the stand side. Laptop probe, seed 50: advantage >= 1 on 207 of 5320 rule ticks, and none of those in reach.
+**So:** (1) runs two cell sets per seed. The STAGE set is manoeuvre's 24 cells. The DUEL set is
+`tests/test_ai_scout_duel_cells.gd`, which drives manoeuvre's `_orbit_stage` unchanged: subjects law_scout and
+gang_scout, circled by syn_lancer or law_tank (turreted orbiters a scout can beat by the brain's own estimate), at 15,
+24 and 35 m, post and free, turn-in OFF. That is 24 cells, all judged, PINNED now, and none added or dropped later.
+**(a) and (c) are judged on the DUEL set** ((c) now reads ENGAGE ticks ON > OFF, and "engaged" means ON exceeds OFF by
+>= 1 s a run). **(b) is judged on BOTH sets**, plus pooled shots ON >= OFF on the stage set. The stage set's turn-in ON is
+reported. Judged seeds are FRESH 73–79. Seed 50 and every cell already seen count as tuning only.
+**Verdict (brains, 2026-10-18): PASS, ships ON** (rows in `references/round34/brains/scout2_*`). (1) builder2,
+lab/brains-scout2 `5abdcd32e`, seeds 73–79, n 7 a cell. DUEL set: (a) pooled shots 4299 v 3490 (×1.23), engaged cells
+(8) 1950 v 1139 (×1.71, bar 1.25) PASS; (b) no cell worse by > 20 % PASS, pooled damage median 825 v 842; (c) ENGAGE
+ON−OFF 14452 PASS, out-of-reach cells +32 ticks. STAGE set: shots 1779 v 1778, (b) PASS, damage median 182 v 182 (the
+outgunned scout keeps its distance, as today). Turn-in ON reported: shots 5432 v 5434, (b) PASS. (5) Worst ON cell
+(gang_scout v syn_lancer 15 m, post: damage 825 v 759) traced on seed 76: held at its post, the fixed gun k-turns
+("backing up to keep its gun on it"), in-arc 0 %, 0 shots in both arms. That is the lead's C33.9 shuffle, manoeuvre's
+C34.10. (2) The pure tests and the decide test under the champion pass. (3) builder2, stream/brains `02b0c1267`,
+scout-census seeds 29–36, n 8, native ON: deaths 134 v 140, mean diff −0.75 (limit +1.75) PASS; team enemy-seen
+18403 v 18413 s, mean diff −1.2 (floor −93.2) PASS; kills 12 v 12. (4) builder2 `0b8fbd3f6` check: 2809/0, every native
+twin 0 mismatches. sim-baseline: docks moved (50f15553 → 4074d105), attributed by `SCOUT_FIGHT=off` (13 unmoved,
+builder0), ruled R34.3.
 
 - **B1 scout try 2 (brains), filed and amended before any judged number on `stream/brains` `66df97de3` (full text there).**
   Rule: fight only when advantage >= 1 AND the shooter is in reach at 0/1/2 s; otherwise today's SPOT. The stage's own
@@ -154,6 +198,44 @@ _Filed here before any number. Empty at launch._
   tree `--nav-off=turnin`; builder2 start to end; FRESH seeds 101–112 (n 12 a cell, 576 rows), 11–36 tuning. R33.24's lines
   (a)–(h) in variance-aware form (k 1.645), noise from round 33's rows. (c)'s per-cell exchange ratio is re-formed into a
   REPORT plus two harm guards (R34.1). A third judged series would need a new design.
+
+- **X2 parkedroom v4 (traffic), filed before any v4 number on `stream/traffic` `672a695f8`
+  (`references/round34/traffic/x2_parkedroom_v4_bar.md`, full text).** v4 = v3 + ONE gate change (`1b2fd26f1`:
+  `Movement.at_post()` = not under way AND (still ≥ 2 s OR a HOLD crew inside its hold line); native's hand-back calls
+  `at_post_of`). Tree `pair/parkedroom-v4` = current main + stream/traffic + native's hand-back on that main (carrying N5
+  `17876e4b6`) + a DEFAULT_OFF flip; base `--traffic-off=parkedroom`; native path; builder2 for every line, both arms;
+  pinned; FRESH 868–915 × {terminus, locks, random}, n 144. Gates: C31.1 native check on the pair, test_traffic_neck 13/0, one
+  end-to-end trace ON. L1a hold-post loops ≤ 50 % base; L1b parked loops ≤ base + k se; L2 all loops ≤ base + k se; L3 (random 48,
+  `--far-kills=on`) a GUARD by cause (X1: parkedroom moves no death line): (a) deaths in the open within base ± k se, (b)
+  stuck/jammed deaths ≤ base + k se, (c) hit rate ≥ base − k se; kills/deaths/routs reported; L4 crossing arrivals ≥ base − k se
+  a case; L5 repack while firing 0/9; L6 read at 45 s both arms (reason: the rule's own clocks, a room ≤ 20 s + a way back ≤ 20 s;
+  19 of v3's 45 misses were inside them at 30 s), ≥ 90 % at the post or inside the hold line, n ≥ 50. Ships ON only if every
+  deciding line passes; no re-read.
+- **T4 fourth try (traffic, R34.4), filed before any number on `stream/traffic` `b1cdf9025`
+  (`references/round34/traffic/x4_t4_fourth_bar.md`).** Tree `pair/ghost-on-r34b` = current main + ghost out of OPT_IN + T4
+  tooling + native's ghost-aware twins (`b2b97188d` rebased); base `--traffic-off=ghost`; builder2 both arms, native, pinned.
+  Seeds above 915, never read: body 920–931 (n 12), Terminus drive 940–987 (n 48 a squad, mixed + rigs), skirmish random
+  1000–1023 (n 24). Gates: C31.1 native check ghost ON; one traced Terminus cell (a pinned hull's asked v real velocity).
+  Deciding GAIN: T(1) mixed friend-stuck crew-s arm < base AND (base − arm) − k se > 0; byte-identical arms on every cell =
+  NOT ARISEN, no ship. Deciding guards T(2)–T(4), T(6) within base ± k se; G1–G4, r1 on 920–931, each naming its count of
+  byte-identical cells. Order 7 → G, r1 → T; a fail parks; no re-read. Runs after the v4 series.
+- **B6 the halt shape laid on the final approach (brains), approved 2026-10-18 before any number (code `stream/brains`
+  `619eff0e1`, `ElementPlan.HALT_SHAPE_EARLY`; cause traced `661be82f7`: the move → halt hand-off re-lays every seat ±9.3 → ±16–17 m
+  as the centre enters the arrival radius).** No C++ mirror (shape and seats are GDScript; el_native only grounds). ON v
+  `--halt-shape-early=off`, builder2, paired, FRESH seeds (40–41 tuning only). (1) DECIDING, ground-series `--drift-trace`:
+  Sumps 610 611 × ticks {1,3,6,8,11,16}, yard the same, Terminus 610–613 (28 runs an arm; amended from 50–53 before any
+  number: squad-arrive-series read 49–56 on the same probe): (a) pooled drift moves ON ≤ 0.5 × OFF;
+  (b) Sumps all_in8_s paired mean(ON−OFF) ≤ 1.645 se and hollow runs ON ≤ OFF + 1; yard/Terminus crews in, mean(ON−OFF) ≥
+  −1.645 se; (c) REPORTED: arrived re-lays left ON (count, distance, formation before/after). (2) Choke guard, crossing-series
+  AUTO, drills on, crossing/locks × green/rust, seeds 4–7 × ticks {1,8,15} (48 runs an arm), arrival just past the bridge: runs
+  all-across ON ≥ OFF − 1; last-across time and inversions + point passes + overtakes, mean(ON−OFF) ≤ 1.645 se. (3) make check on
+  the ship tree, sim-baseline moves attributed with HALT_EARLY=off. Ships ON if (1)(a)(b), (2), (3) pass.
+
+- **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
+  random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
+  open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
+  kills was that series' draw. About 1 death in 5 is counted stuck or jammed (~9 a fight), split (X1 data): 622 parked by order (30 %, not stuck), 106 jammed by friendly traffic (5 %), 322 stuck with a live move order (15 %: wedged 133, static 85, still under way 2–7 s 94, no path 10), 1046 driving or in contact (50 %). Wedged (Movement.wedged, manoeuvre's) is the biggest stuck kind: relayed to manoeuvre as a post-CP-F finding. Firemission was OFF in both
+  arms (an overnight DEFAULT_OFF artefact, fixed `e6468b2e0`).
 
 ## Rulings (round 34)
 
@@ -176,6 +258,27 @@ _Filed here before any number. Empty at launch._
   use and fix or clear each; native mirrors any C++ twin; prefer the match tick as origin; the test fails on today's main;
   sim-baseline repeats twice on the fixed tree. Merged ALONE, then the orchestrator adopts the baseline (it moves once on
   every map); judged series already running stay on their pair trees.
+- **R34.3 B1's pair check counts green on an expected sim-baseline move (2026-10-18; brains `0b8fbd3f6`, builder2).**
+  `make check exited 2`: 2809/0, 26 of 27 targets green, the only red sim-baseline: docks 50f15553c558d108 → 4074d105e1739377,
+  12 unmoved. Same tree `SCOUT_FIGHT=off` (builder0): 13 unmoved, so the move is the default-ON rule's (a scout standing in a
+  won duel); B2's adapter, B3's trace and the lazy duel are inert. The judged series may start (R33.31's precedent), on
+  condition that scout-cells / scout-census are pinned at `--fixed-fps` on that tree (it predates main 02a912163). The
+  orchestrator adopts the docks baseline at merge.
+- **R34.4 T4, a fourth try, approved (C34.3; traffic X4, `references/round34/traffic/x4_t4_guard_reread.txt`).** On current
+  main the R33.30 G2 failure is gone (tuning seeds 7–18, builder0, native, pinned: body-ON alone_s 2–6 s both arms, every
+  ON−OFF 0.0; body OFF 17–21 s). Brains' route now keeps the Sirens with the body. A fresh bar after the v4 series on
+  builder2, with seeds disjoint from every judged block (above 915), the Terminus T(1)–T(6) GAIN lines deciding (the guards
+  pass trivially on identical arms), byte-identical arms reported, C31.1 with ghost ON and native's ghost-aware twins.
+- **R34.5 FACE_KEEP_FAR retired as a judged line (planner P4 (b), 2026-10-18).** On one series it flips with the distinct
+  rule alone (p3-pinned drawn FAIL all-pairs / PASS distinct; clicked the reverse); its p90 "over" is faces planned in one arm
+  only (clicked max 12.4 v 5.7). The paired `face_pairs` (crew and home) reads both-planned faces identical (clicked p90 6.3 v
+  6.3, se 0.00; drawn 8.5 v 8.5). Judged: `face_pairs`, CAND_ONLY reported. FACE_KEEP_FAR REPORTED in round 34, deleted in 35.
+- **R34.6 parkedroom v4's pair check counts green (traffic `pair/parkedroom-v4` `5914d3ac5`, builder2 `make native check`
+  exited 2, 2824/0, 24/26).** (1) sim-baseline: the same tree `--traffic-off=parkedroom` leaves 12 unmoved and docks at B1's
+  4074d105e1739377, so terminus → accbd28434111b99, sumps → 02a1d4ff63c20c1b, parade → a6178ae02c7e3769, docks → 874553bfdb105b07 are
+  parkedroom ON's (v3's same four). (2) native-verify-scenarios' scenario_perf 29238 µs at 1.50× in the check; alone on builder2
+  17435 µs at 1.41× (line 20000), and main's own last check read 22407 at 1.51× unjudged: a both-paths measure swinging with
+  load, not a 7× cost. Judged perf on the pair PERF_JUDGE PASS 1.05×; traffic's GDScript share 529 of 17435 µs (3 %).
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 

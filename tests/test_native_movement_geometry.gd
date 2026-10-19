@@ -30,7 +30,7 @@ func _ask(native: bool, mover: Movement, what: String, args: Array) -> Variant:
 
 
 func test_the_seams_answer_as_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the movement geometry equality is not exercised in this run")
 		return
 	var arena := await ArenaFixture.build(self, "sumps")

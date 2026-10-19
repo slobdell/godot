@@ -16,7 +16,7 @@ func _doctrine(units: Array[String]) -> Dictionary:
 
 
 func test_the_constants_are_the_live_ones() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the matchups constants are not exercised in this run")
 		return
 	assert_eq(NativeBridge.impl.matchups_constants(), NativeMatchups.live_constants(),
@@ -24,7 +24,7 @@ func test_the_constants_are_the_live_ones() -> void:
 
 
 func test_matchups_and_decide_are_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the matchups equality is not exercised in this run")
 		return
 	await ArenaFixture.build(self, "sumps")
