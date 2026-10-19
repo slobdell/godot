@@ -15,16 +15,17 @@ func teardown() -> void:
 	super.teardown()
 
 
-## A parked Law tank at the origin and a squadmate 14 m south of it, sent north through it (under way when it asks).
+## A parked Law tank at the origin and a squadmate 8 m south of it (inside YIELD_CLEAR: a 14 m gap already reads "passed"),
+## sent north through it (under way when it asks).
 func _stage() -> Array:
 	_lab = TacticsLab.create(self, 7, "yard_open")
 	var parked := _lab.gun(Match.Team.GREEN, "Green_Parked", Vector3.ZERO, 0.0, "law_tank")
-	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 14.0), 0.0, "law_tank")
+	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 8.0), 0.0, "law_tank")
 	await _lab.start()
 	for i in 3:
 		await _lab.step()
 	_lab.element([String(asker.name)], "Go").assign({"verb": "move", "to": [0.0, -30.0]})
-	for i in 6:
+	for i in 2:
 		await _lab.step()
 	return [parked, asker, Movement.of(parked)]
 
