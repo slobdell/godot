@@ -181,6 +181,12 @@ sits on top. Tonight's War Rig change already halved the gap.
   swarm's after-arrival seat jumps fell 107 v 2342, and every squad settles (30–50 s) where today none did. What he'd
   notice: a halted gang squad stops shuffling. It also clears the way for CP-F's 4th attempt.
 
+- **Main `92b442908` (herringbone in) GREEN on builder2:** `make check exited 0`, 2794/0, 27 targets ALL JUDGED.
+- **Fire mission → main `8684a97bb`** (traffic item 4, pair `23251f069` with native's mirror): a set-up mortar truck
+  counts as "firing" (and refuses to move for passers) only when it has a target. IDLE-truck loops went 20 → 0, and all
+  fire-post loops 68 → 11, with shots and first shot unchanged. What he'd notice: an idle mortar truck no longer blocks a
+  street for a minute. His T1c-b2 yes still holds for a truck that's actually firing. Rides the next main check.
+
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
   moves, identical census). **CP-F (manoeuvre's turn-to-face) PARKED, R33.21:** the turn works (3–6° v 60–100° off), but
