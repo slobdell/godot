@@ -10,6 +10,13 @@ Arena.ROTATION on its first line: a rotation that has changed since (a map added
 re-write the table first. `load(path, rotation=None)` refuses a table whose rotation differs from the one given.
 
     python3 tools/judge/seed_twins.py rows.jsonl [--arena-field arena] [--seed-field seed]   (prints what it drops)
+
+Round 35 (C35.9): series tools that read a folder of `<arena>-<seed>.log` files (traffic-far-census and the tables built
+on it) call `filter_logs(files)` before pooling. A random log's own census line (`<NAME>_CENSUS {..."arena": ...}`,
+Arena.active's name) says which map it was dealt, so the table is needed only for a log without one. The fixed log
+it twins must be in the same folder (one folder = one series arm).
+
+    python3 tools/judge/seed_twins.py --logs DIR [DIR ...]   (prints what it would drop)
 """
 import argparse
 import json
@@ -53,7 +60,68 @@ def drop_twins(rows, dealt, arena_field="arena", seed_field="seed", random_name=
     return kept, dropped
 
 
+LOG_NAME = re.compile(r"^(\w+)-(\d+)\.log$")
+CENSUS = re.compile(r'^[A-Z][A-Z_]*CENSUS \{.*?"arena": ?"(\w+)"')
+
+
+def census_arena(path):
+    """The map a log's census line says was dealt, or None."""
+    with open(path, errors="replace") as handle:
+        for line in handle:
+            m = CENSUS.match(line)
+            if m:
+                return m.group(1)
+    return None
+
+
+def _table_or_empty():
+    try:
+        return load()[0]
+    except OSError:
+        return {}
+
+
+def drop_twin_logs(files, dealt=None, random_name="random"):
+    """(kept files, dropped [(file, seed, map)]) in the given order: `<random>-<seed>.log` is dropped when the map it was
+    dealt (its census line, else `dealt`, else the R34.15 table) has `<map>-<seed>.log` in the same folder."""
+    present = set()
+    for f in files:
+        m = LOG_NAME.match(os.path.basename(f))
+        if m and m.group(1) != random_name:
+            present.add((os.path.dirname(f), m.group(1), int(m.group(2))))
+    kept, dropped = [], []
+    for f in files:
+        m = LOG_NAME.match(os.path.basename(f))
+        if m and m.group(1) == random_name:
+            seed = int(m.group(2))
+            got = census_arena(f)
+            if got is None:
+                if dealt is None:
+                    dealt = _table_or_empty()
+                got = dealt.get(seed)
+            if got is not None and (os.path.dirname(f), got, seed) in present:
+                dropped.append((f, seed, got))
+                continue
+        kept.append(f)
+    return kept, dropped
+
+
+def filter_logs(files, dealt=None):
+    """(kept files, the lines a tool prints): one SEED_TWIN line per drop, then the SEED_TWINS count."""
+    kept, dropped = drop_twin_logs(files, dealt)
+    lines = ["SEED_TWIN dropped random seed %d (dealt %s, also run as a fixed arena): %s" % (seed, got, f)
+             for f, seed, got in dropped]
+    lines.append("SEED_TWINS kept %d of %d logs, dropped %d" % (len(kept), len(files), len(dropped)))
+    return kept, lines
+
+
 def main(argv):
+    if argv and argv[0] == "--logs":
+        import glob
+        files = [f for d in argv[1:] for f in sorted(glob.glob(os.path.join(d, "*.log")))]
+        for line in filter_logs(files)[1]:
+            print(line)
+        return 0
     ap = argparse.ArgumentParser()
     ap.add_argument("rows")
     ap.add_argument("--arena-field", default="arena")

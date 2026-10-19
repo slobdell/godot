@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Every judged bar line of rounds 27-30, as data (sizing S1). Quoted numbers are the streams' own, from the Bars
-blocks in `_agents/workstreams.md` (Round 27 / 28 / 29 / 30) and the tables under `_agents/streams/references/`; the
-`noise` spec tells `inventory.py` how to read the line's noise from rows where rows exist, or carries the se the
-table printed. Nothing here is re-measured; `inventory.py` reproduces the quoted totals from the rows as a check.
+"""Every judged bar line of rounds 27-34, as data (sizing S1; rounds 31-34 are in `lines_r31_34.py`, C35.9). Quoted
+numbers are the streams' own, from the Bars blocks in `_agents/workstreams.md` (Round 27 / 28 / 29 / 30) and the tables
+under `_agents/streams/references/`; the `noise` spec tells `inventory.py` how to read the line's noise from rows where
+rows exist, or carries the se the table printed. Nothing here is re-measured; `inventory.py` reproduces the quoted
+totals from the rows as a check.
 
 Fields: round, stream, item, commit, line (the bar's words), form (total | mean | median | count-runs | count-cells |
 count-crews | share | episodes | deterministic | reported), n, rule (the threshold as written), base, arm, verdict,
@@ -713,3 +714,8 @@ LINES += [
       form="deterministic", n="108 cells", rule="108/108", base="106/108 (green t5 s2, rust t9 s2)", arm="107/108 (green t18 s3 new)", verdict="FAIL",
       source=b3b, noise={"kind": "bridge108", "control": B108_C, "on": B108_ON}),
 ]
+
+# ---------------------------------------------------------------- rounds 31-34 (C35.9) --------------------------
+import lines_r31_34  # noqa: E402  (the same fields; owed since round 31, filed by native in round 35)
+
+LINES += lines_r31_34.LINES

@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""Round 33 P3's lines (2b) and (2c) over manoeuvre-hull-rest's layout (`make planner-judge-face`, both arms called):
+"""Round 33 P3's line (2b) over manoeuvre-hull-rest's layout (`make planner-judge-face`, both arms called):
 base_* = --planner-face-keep=0 (today), new_* = --planner-face-keep=1, per mode (drawn, clicked), the last
 PLANNER_SEAM_REPORT of every run.
 
   FACE_KEEP_ABANDONED  (2b) the FACE asks' abandoned share, candidate not up beyond 1.645 se (two-proportion, pooled se)
-  FACE_KEEP_FAR        (2c) served face plans' furthest-from-home (face_far, m): candidate median <= base median +
-                       1.645 se (bootstrap over plans, 4000 rounds, seed 33) AND candidate p90 <= base p90; max reported.
-                       REPORTED ONLY since R34.5 (round 34; deleted in round 35): unpaired, it pools faces planned in
-                       one arm only, so it measured WHICH faces got planned, and flipped with the distinct rule alone.
-                       The judged reading is face_pairs.py (faces matched by crew and home)
+  (2c) FACE_KEEP_FAR was deleted in round 35 (R34.5, C35.9): unpaired, it pooled faces planned in one arm only, so it
+  measured WHICH faces got planned and flipped with the distinct rule alone. The judged reading is face_pairs.py (faces
+  matched by crew and home).
 
 Usage: face_keep_table.py <hull-rest dir> [--seeds "84 85 ..."] [--distinct]
   --seeds: only those seeds' runs are read. --distinct (round 33 overnight, as for CP-F's R33.23): a (base, candidate)
@@ -18,8 +16,6 @@ Usage: face_keep_table.py <hull-rest dir> [--seeds "84 85 ..."] [--distinct]
 import json
 import math
 import pathlib
-import random
-import statistics
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -37,7 +33,7 @@ def last_report(log):
 
 
 def runs(root, name, seeds):
-    """{(faction, task, seed): {"asks", "abandoned", "far"}} from each run's last report (face asks only)."""
+    """{(faction, task, seed): {"asks", "abandoned"}} from each run's last report (face asks only)."""
     out = {}
     for log in sorted(pathlib.Path(root, name).glob("*/*/run.log")):
         task, seed = log.parent.name.rsplit("-", 1)
@@ -48,27 +44,14 @@ def runs(root, name, seeds):
             continue
         out[(log.parent.parent.name, task, seed)] = {
             "asks": int(rep.get("asks_by_kind", {}).get("face", 0)),
-            "abandoned": int(rep.get("abandoned_by_kind", {}).get("face", 0)),
-            "far": [float(x) for x in rep.get("face_far", [])]}
+            "abandoned": int(rep.get("abandoned_by_kind", {}).get("face", 0))}
     return out
 
 
 def total(recs, keys):
     keys = [k for k in keys if k in recs]
     return {"runs": len(keys), "asks": sum(recs[k]["asks"] for k in keys),
-            "abandoned": sum(recs[k]["abandoned"] for k in keys), "far": [x for k in keys for x in recs[k]["far"]]}
-
-
-def p90(xs):
-    xs = sorted(xs)
-    return xs[min(len(xs) - 1, int(math.ceil(0.9 * len(xs))) - 1)] if xs else float("nan")
-
-
-def boot_se_median_diff(a, b, rounds=4000):
-    rng = random.Random(33)
-    diffs = [statistics.median(rng.choices(a, k=len(a))) - statistics.median(rng.choices(b, k=len(b)))
-             for _ in range(rounds)]
-    return statistics.pstdev(diffs)
+            "abandoned": sum(recs[k]["abandoned"] for k in keys)}
 
 
 def main():
@@ -103,19 +86,7 @@ def main():
         print(f"FACE_KEEP_ABANDONED {mode} | runs {c['runs']} v {b['runs']} | candidate {c['abandoned']}/{c['asks']} = "
               f"{100 * pc:.1f} % v base {b['abandoned']}/{b['asks']} = {100 * pb:.1f} % | se {100 * se:.1f} pts | "
               f"line <= {100 * line:.1f} % | {verdict}")
-        if not b["far"] or not c["far"]:
-            print(f"FACE_KEEP_FAR {mode} | plans candidate {len(c['far'])} v base {len(b['far'])}: nothing to compare (REPORTED, R34.5)")
-            continue
-        mb, mc = statistics.median(b["far"]), statistics.median(c["far"])
-        se_m = boot_se_median_diff(c["far"], b["far"])
-        med_ok = mc <= mb + K * se_m
-        p90_ok = p90(c["far"]) <= p90(b["far"])
-        verdict = "REPORTED (R34.5), would read " + ("PASS" if med_ok and p90_ok else "FAIL")
-        print(f"FACE_KEEP_FAR {mode} | plans candidate {len(c['far'])} v base {len(b['far'])} | median {mc:.1f} v "
-              f"{mb:.1f} m (se {se_m:.2f}, line <= {mb + K * se_m:.1f}) {'ok' if med_ok else 'over'} | p90 "
-              f"{p90(c['far']):.1f} v {p90(b['far']):.1f} {'ok' if p90_ok else 'over'} | max {max(c['far']):.1f} v "
-              f"{max(b['far']):.1f} | {verdict}")
-    print(f"FACE_KEEP line (2b): {'ALL PASS' if ok else 'NOT ALL PASS'} ((2c) FACE_KEEP_FAR reported only, R34.5)")
+    print(f"FACE_KEEP line (2b): {'ALL PASS' if ok else 'NOT ALL PASS'}")
 
 
 if __name__ == "__main__":
