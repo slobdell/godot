@@ -434,3 +434,57 @@ quiet-window test), and all three re-ran green alone on builder0: `make net-smok
   **Check: stream `59752c462`, builder2 (GCP c4d-32): `make check exited 0`, 2773 passed / 0 failed, "26 targets, all
   passed, ALL JUDGED" (planner-pytest among them, collected 15), sim-baseline unmoved. GREEN HASH `59752c462`.** The
   commits after it are Status and references only.
+
+### Round 33 close-out (2026-10-18, the orchestrator's close; no new runs)
+
+**Branch:** stream/planner is fully merged (main `3367f4b77` holds `e0c2d15b0`). Nothing but docs and references
+follows it. Last green check: `59752c462`, builder2, `make check exited 0`, 2773/0.
+
+**Rescued payload:** `references/round33/planner/p3-pairs-923fcb97f/seam-reports.jsonl` (269 KB). It holds the last
+PLANNER_SEAM_REPORT (face_episodes included) of every judged run in R33.26's re-judge: seeds 120-131, 4 arms, 192 runs
+with a report. Source: the git-ignored `build/manoeuvre/hull-rest` (718 MB, seeds 66-131 mixed). This file lets the
+(2c) faces be re-read without re-running. The rest of `build/` is not worth keeping. `build/planner-series` holds the
+P3 Terminus verdict, already filed as `terminus-verdict.txt`. `build/r33x` and `build/planner-stage` (s207) are
+superseded and retired.
+
+**Lab/pair branches with planner work not in main:**
+
+| Branch | Hash | What it holds | Verdict |
+|---|---|---|---|
+| `pair/planner-face-keep-r33` | `bca4eaca5` | P3 v2's first pair tree (unpinned) | Dead: P3 shipped through 923fcb97f |
+| `pair/planner-face-keep-pinned` | `c3acd47a2` | P3 pinned re-judge tree (with manoeuvre's 670f4e12) | Dead: superseded; evidence in references |
+| `pair/planner-queue` | `65cc43ddb` | CP-Q switch ON (round 31) | Dead: P2 failed, the queue is parked |
+| `pair/planner-queue-r33` | `c75f20a6c` | CP-Q switch ON + P2 tooling | Dead: same. Carry only if CP-Q is re-filed (a one-line switch) |
+| `round31/planner` | `216367bfb` | Round 31's record (CP-P1 tables) | Dead as code. Its Status text is the round-31 record; keep it only if the archive wants it |
+| `scen/planner-alone` | `611fe0a1f` | CP-P1 scenario cut (native mirror, test_native_drive) | Dead: CP-P1 shipped in round 31 |
+| `scratch/face-arms` | `e2c131912` | Scratch face-behind arms | Dead |
+
+Two branches show 0 commits ahead of main: `pair/planner-face-pairs` and `round32/planner`. Not mine but related:
+`lab/cpf-arriveleg` (`7e0953f9d`), manoeuvre's CP-F dev on the s69 flicker below.
+
+**Round 34, what I'd want next (and what blocked each):**
+1. **The k-turn arrival flicker** (s69, Green_Guns_7; owners manoeuvre + brains).
+   - What happens: an attack-move's 6 m arrival circle is crossed mid-k-turn. That turns the order into a post face,
+     and the held-post rule then holds it for about 45 ticks.
+   - Fix to try: do not declare arrival while a seam or executor leg drives.
+   - Blocked by: ownership. Planner diagnosed it, but the fix lives in tank_brain / Manoeuvre. lab/cpf-arriveleg
+     looks like manoeuvre's start.
+   - Judge it on the clicked faced_attack_move faces, with `face_pairs.py` reading both arms. It is the one face
+     every P3 series flagged.
+2. **P3 v3 (the slot cap).**
+   - Status: withdrawn under R33.26. Its target, the 12.4 m clicked tail, sits inside one hull length.
+   - Most of that tail is item 1's flicker, so v3 would be a cap on a face nobody wanted.
+   - Blocked by: item 1. Re-measure after the flicker fix; re-file v3 only if a tail remains on faces that were
+     really asked.
+3. **The tool repairs.**
+   - (a) **One run identity across tools.** Distinct-pair counts differ by tool (hull rows 48, face counters 32,
+     episodes 36 on one series). Key them all on screen.json plus the seam report. Blocked by time only; owned by
+     planner.
+   - (b) **Retire face_keep_table's unpaired FACE_KEEP_FAR**, now superseded by face_pairs. Blocked by nothing; a
+     ruling to retire it would do.
+   - (c) **A stage-varying hull-rest seed.** Pinned hull-rest repeats about a third of its seeds (96 = 101,
+     100 = 104), which costs every bar real n. Blocked by ownership: manoeuvre owns hull-rest (their overnight item 3).
+   - (d) **CP-Q needs a new s207-style control** if it is ever re-filed (stage_s207 is retired). Blocked by CP-Q
+     being parked.
+4. **test_quiet_window.sh under builder2 load.** Native's load-flaky item, listed here only because it reds planner's
+   checks.
