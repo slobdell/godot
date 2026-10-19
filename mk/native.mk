@@ -18,6 +18,27 @@ GODOTCPP_SRC     := $(TOOLS_DIR)/godot-cpp-$(GODOTCPP_VERSION)
 # The proof's flags (_agents/native.md): -O2, no FMA contraction, no fast math, no -march. Also the key of the
 # machine's godot-cpp build tree, so a flag change (or a Godot upgrade) builds a fresh binding beside the old one.
 NATIVE_FP_FLAGS  := -O2 -ffp-contract=off -fno-fast-math
+
+# ---- C34.8 (a) (round 34, native): every judged stage pinned ----------------------------------------------------
+# A stage whose numbers decide a ship runs Godot at one physics step a frame (--fixed-fps SIM_HZ), as `make test` has
+# since round 33: a free clock lets a loaded machine change how many physics steps fall in a frame, and with them
+# which tick an await or a nav sync lands on (pace-determinism's bridge: deck_jam_s 12.6 v 21.0 by load alone).
+# PIN_FPS is the one token each pinned recipe carries; `PIN_FPS=` is the free arm (the moves list, native's Status).
+# Pinned (C34.8 (a)): command.mk five-squads-series, interleaved-probe, control-timing (x2), facing-probe,
+# hull-rest-probe, flank-probe; nav.mk gate-test; pace.mk pace-p0-tests, pace-leak-tests (x2); planner.mk planner-twin,
+# planner-trace-hull-rest; tactics.mk converge-probe, scenario-times; traffic.mk traffic-far-hull.
+# Free ON PURPOSE, with the reason:
+#   the clock is the parameter: pace-div, pace-repro, pace-determinism.
+#   real sockets and a wall clock are the point: net-smoke, combat-smoke, relay-*, lobby-smoke, broker-smoke,
+#     web-*-smoke, server, play, agent-*, replay, det-spike.
+#   a CPU bench measures cost per frame, not outcomes: hud-profile, spawn-cost, native-bench, audio-bench.
+#   UI playtests read screenshots and response ticks against the camera's frame pacing (a smoke, not a judged
+#     number): control-playtest, picker-playtest, two-squads-playtest, command-playtest, repath-test, screen-probe,
+#     garage-smoke, garage-e2e, army-loop-smoke.
+#   no physics step decides anything (geometry, assets, exports, the parser): arena-cover, roster-boxes, spawn-probe,
+#     tactics-terrain, traffic-islands, traffic-navgap, native-info, native-live-guard's load probe, lint, import,
+#     manoeuvre-parse, assets-*, fx-textures, sfx, export-*.
+PIN_FPS ?= --fixed-fps $(SIM_HZ)
 GODOTCPP_BUILD   := $(GODOTCPP_SRC)/build-$(shell printf '%s' '$(NATIVE_FP_FLAGS) $(GODOT_TAG)' | sha256sum | cut -c1-8)
 GODOTCPP_LIB     := $(GODOTCPP_BUILD)/bin/libgodot-cpp.linux.template_debug.x86_64.a
 NATIVE_DIR       := native
