@@ -383,6 +383,15 @@ builder0), ruled R34.3.
   switch, default OFF (B8)**, so his answer to R34.7 meets something he can see rather than a description: an AUTO squad keeps its
   travel seats until every crew is in, then lays its halt shape on the approach heading as one move. With the heading fixed at
   order time, O2's (B) packing becomes exact. Default stays OFF until he says yes; planner's O5 probe reads it before/after.
+- **R34.15 T5 the jam-death census (traffic, REPORTED, `references/round34/traffic/t5_jam_death_census.md`; builder2, native,
+  fresh 1200–1247 × 3, 144 fights, pinned, 5984 deaths).** Jammed by friendly traffic 337 = 5.6 % (2.34 a fight): giving way 83 %,
+  held by ANOTHER squad's crew 69 %, by a set-up battery 1 % (so the mortar-truck question is not what jam deaths are about);
+  lanes 74 %, Locks the worst; under fire while jammed 77 %, last hit during the jam 63 %; jam time median 1.5 s. Stuck deaths
+  17 % (wedged 8 %). **Decided (symmetric AI, ships without asking if it passes its bar): a crew under fire does not give way
+  (T6, traffic):** it holds the lane and the asker goes round or waits; fresh bar, filed before numbers. The CPU feeding two or
+  three squads through one Locks lane under fire is brains' commander lane choice (later). **Measurement note:** 14 of 48
+  "random" seeds dealt the Locks or Terminus, so those fights twin the fixed-arena fight of the same seed (paired readings
+  unaffected; totals double-count them; true of X1/v4/v4b): future series exclude random seeds that deal a fixed arena.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
