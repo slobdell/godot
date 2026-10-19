@@ -39,7 +39,10 @@ static var ARRIVE_LATCH := true
 
 
 static func _arrived_at(to_go: float, state: Dictionary) -> bool:
-	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M)
+	# Round 34 (the orchestrator's safety net): an element whose centre has stopped closing on its spot counts as arrived
+	# (Element.track_stall), so a route queued behind it moves on rather than freezing.
+	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M) \
+			or bool(state.get("stall_arrived", false))
 ## Overnight item 3 (brains): a move's destination is inset from the arena edge by its shape (inset_anchor);
 ## `--anchor-inset=off` is main's rule.
 static var ANCHOR_INSET := not OS.get_cmdline_user_args().has("--anchor-inset=off")
