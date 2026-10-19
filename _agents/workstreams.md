@@ -334,6 +334,14 @@ _Filed here before any number._
   green by composition.** Its only check-read diff from 1a18dd278 (green) is three files that only shell-tools-test reads, and
   shell-tools-test passed on 44d06cbbe (builder0 light, 25 suites). **Every worker launches full checks behind `tools/builder_checks.sh
   --wait-below 2`** (counts `make [native] check` in every form, one per worktree).
+- **R35.26 (2026-10-19 ~16:15) D5's A/B: gain passes, three guards fail; one trace, one fix try, fresh re-read.** builder0 `make
+  native orders-probe`, stream/orders 554131533, seeds 3611–3616, n 6 a cell, medians. Counter: gates laid in 31/36 main route runs;
+  the Locks 5 route's legs differ. **Gain passes:** Locks 5 route median all-in 19.9 v 33.4 s (bar <= 23.4); summed route medians
+  153.3 v 170.4 s; click cells 36/36 identical. **Guards fail:** (1) Crossing 5 route 1 never-in seed on main v 0 (s3614, squad 4
+  29 m short); (2) deck up in Crossing 3 route (6 v 5) and Locks 3 route (4 v 2), far bank 0 everywhere; (3) Crossing 5 route
+  drive/plan 2.17 v 1.94 (+0.23 v +0.2). Fails as filed; lines unchanged. Next: trace s3614 and the deck runs; at most one fix try;
+  re-read on FRESH seeds **3631–3636** (same bar); a second fail parks D5 with the trace. D4's A/B runs with `--gate-deal=off` in both
+  arms if the tree has the deal ON, so D4 is judged on main's behaviour.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
