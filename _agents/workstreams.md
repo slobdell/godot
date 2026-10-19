@@ -171,6 +171,12 @@ _Filed here before any number._
   `_pass_wheels_ok/_pass_clear/_pass_swept`, which C++ calls back into GDScript (reads only the navmesh, the Avoidance table and the
   two hulls; ~19 calls a fight; exact by construction). Ported only if T7 ships, with its own twins (R34.20: a parked rule's mirror is
   dead weight).
+- **R35.9 (2026-10-19) E1's census closes the face question.** Brains (`c23acdbe2` = main a0ae0aafd + trace, builder0,
+  attack-move, seeds 601–616 x 4 factions, n 64 an arm): leg-wait seconds CP-F off 516 = closing 252, WEDGED 255 (49 %), face 0;
+  CP-F on 428 = closing 228, wedged 189, face 2 (the on arm's drive ran GDScript, base native). Holds >= 10 s: 11 / 329 s off, 7 /
+  191 s on, nearly all on a WEDGED crew (< 0.5 m/s, 20–50 m off its slot; law-605 Eyes_4 71 s in both arms). face_settled() stays
+  out. These long out-of-fire wedges are NOT W1's populations (1–5 s, under fire): relayed to manoeuvre to trace (a possible W1c);
+  brains' guard (c) reported split by wedged-at-release.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
