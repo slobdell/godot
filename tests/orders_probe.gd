@@ -114,6 +114,7 @@ func _run() -> void:
 				if anchor is Vector3 and ground != null else false
 		squad["deck"] = false
 		squad["crossed"] = false
+		squad["goals_across"] = []
 		squad["driven"] = 0.0
 		squad["arrived_tick"] = -1
 		squad["shuffle"] = 0.0
@@ -145,7 +146,8 @@ func _run() -> void:
 						if int(squad["arrived_tick"]) >= 0 else -1.0,
 				"foreign_m": snappedf(float(squad.get("foreign", -1.0)), 0.1),
 				"enemy_m": snappedf(float(squad.get("enemy", -1.0)), 0.1),
-				"shuffle_m": snappedf(float(squad["shuffle"]), 0.1), "arrived_by": squad.get("arrived_by", ""),
+				"shuffle_m": snappedf(float(squad["shuffle"]), 0.1), "goals_across": squad["goals_across"],
+				"arrived_by": squad.get("arrived_by", ""),
 				"end": _end_state(squad)}
 		rows.append(row)
 		print("ORDERS_PROBE_SQUAD " + JSON.stringify(row))
@@ -226,6 +228,25 @@ func _watch() -> void:
 			squad["foreign"] = _nearest(alive, func(t: Tank) -> bool: return t.team == Match.Team.GREEN \
 					and not (squad["units"] as Array).has(String(t.name)))
 			squad["enemy"] = _nearest(alive, func(t: Tank) -> bool: return t.team != Match.Team.GREEN)
+		# `--probe-trace=N`: squad N's crews every second (position, own goal, the brain's option), to read a crossing.
+		if int(_flag("probe-trace", "0")) == int(squad["number"]) and (_match.tick - _order_tick) % SimClock.TICK_RATE == 0:
+			var parts: Array = []
+			for n: String in alive:
+				var goal: Variant = _controls.orders.goal_position(n)
+				var mover := Movement.of(_tank(n))
+				var option := ""
+				if mover != null and mover.ctl is TankBrain:
+					option = String((mover.ctl as TankBrain).choice.get("option", ""))
+				parts.append("%s(%.1f,%.1f goal %s %s)" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
+						str(_xz(goal)) if goal is Vector3 else "-", option])
+			print("ORDERS_PROBE_TRACE t=%d %s" % [(_match.tick - _order_tick) / SimClock.TICK_RATE, " ".join(parts)])
+		# Each crew's OWN destination (its formation slot, not the squad's anchor), sampled every half second: one past a
+		# deck on the far bank is a crew sent over the river however the anchor was capped.
+		if (_match.tick - _order_tick) % (SimClock.TICK_RATE / 2) == 0:
+			for n: String in alive:
+				var goal: Variant = _controls.orders.goal_position(n)
+				if goal is Vector3 and _across(goal) and not (squad["goals_across"] as Array).any(func(g: Array) -> bool: return g[0] == n):
+					(squad["goals_across"] as Array).append([n, _xz(goal), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)])
 		if int(squad["arrived_tick"]) >= 0:
 			var seats: Dictionary = squad["at_arrival"]
 			for n: String in alive:
