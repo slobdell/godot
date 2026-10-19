@@ -1532,6 +1532,11 @@ func _squad_block(squad: Dictionary) -> Dictionary:
 			# AUTO: the leader halts in a shape of its own; the ranks never step less than the deepest halt shape
 			# (SelectionSquads.min_step): the coil, a ring, is the deepest the table picks.
 			block["halt_depth"] = SelectionSquads.depth(HALT_SHAPE, count, (block["pitch_v"] as Vector2).y)
+			# R34.12b: the halt it will arrive in (O3), for the ranks' hull clearance between halts.
+			if SelectionSquads.HALT_PRICE:
+				var element: Element = squad.get("element")
+				block["halt"] = SelectionSquads.squad_halt_shape(squad["units"], element.table if element != null \
+						and is_instance_valid_element(element) else null, game_match)
 	return block
 
 
@@ -1583,10 +1588,9 @@ func _squad_depth(squad: Dictionary) -> float:
 		standing = element.formation
 	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
 		return SelectionSquads.depth(shape, count, spacing)
-	if SelectionSquads.HALT_PRICE:
-		# O3: the halt it will arrive in, as deep as it stands (a herringbone is the deepest halt).
-		return SelectionSquads.halt_footprint(SelectionSquads.squad_halt_shape(squad["units"], element.table if element != null \
-				and is_instance_valid_element(element) else null, game_match), count, spacing).y
+	# R34.12b (planner's O5: the back rank stayed home): NOT the halt's depth. O3 priced a rank at the herringbone's 54.8 m
+	# and the ranks stepped ~69 m, onto where the squads already stood; the rank step widens from this only as far as
+	# the two ranks' halt seats need for hull clearance (SelectionSquads.ranks, the blocks' `halt`).
 	var deepest := SelectionSquads.depth("auto", count, spacing)
 	if TacticsFormation.NAMES.has(standing):
 		deepest = maxf(deepest, SelectionSquads.depth(standing, count, spacing))
