@@ -238,6 +238,15 @@ builder0), ruled R34.3.
   L3–L6 exactly as filed. Ships ON only if all pass, as a pair with native's `4445f6b4c` and one fresh check on the hand-over
   tree; a fail parks parkedroom for the round.
 
+- **M3 CP-F attempt 4 (manoeuvre), filed before any attempt-4 number on `stream/manoeuvre` `be2770a10` (Status, "Bar M3").**
+  Candidate `lab/cpf4` `e76f6dab6` (main 82feffa86 + round33/manoeuvre's attempt-3 code + M1's ruler, TURN_HULL_DEFAULT true); base
+  the same tree `--nav-off=turnhull`; builder2 start to end; FRESH hull-rest 601–616 (64 pairs a task), Terminus 620–632, fights
+  640–663, SBF 670–675, bridge 18. R33.21's lines with (c) one-sided (R33.23); (d) by real_mps with wedged apart, guard base +
+  1.645 × sd_run × √pairs from M1's A/A (attack-move +15.4 at 64 pairs, right +8.4, move +6.7, screen +5.4, ambush +3.2, SBF +3.0);
+  (e) likewise; FACE_KEEP_FAR reported (R34.5); (m) native's statement (no C++ change, twins 14/0 on e76f6dab6) plus the hull-rest
+  drawn arms on the native path. M1's A/A (`references/round34/manoeuvre/m1-aa/`): about half the old ruler's "still moving"
+  crews were WEDGED hulls.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
