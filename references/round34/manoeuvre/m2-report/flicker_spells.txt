@@ -1,0 +1,20 @@
+FLICKER = a `face` spell between two move_to spells lasting <= 3 s (state lines once a second), per run; new = main (arriveleg ON), base = --nav-off=arriveleg
+   faced_ambush             pairs 48  flickers new  38 base  38  (faces of any length new   54 base   54; paired diff sum +0, sd/run 0.00)
+   faced_attack_move        pairs 48  flickers new  70 base  70  (faces of any length new   92 base   92; paired diff sum +0, sd/run 0.00)
+   faced_move               pairs 48  flickers new  32 base  32  (faces of any length new   51 base   51; paired diff sum +0, sd/run 0.00)
+   faced_right              pairs 48  flickers new  68 base  68  (faces of any length new   87 base   87; paired diff sum +0, sd/run 0.00)
+   faced_screen             pairs 48  flickers new 122 base 122  (faces of any length new  389 base  389; paired diff sum +0, sd/run 0.00)
+   faced_support_by_fire    pairs 48  flickers new  50 base  50  (faces of any length new   67 base   67; paired diff sum +0, sd/run 0.00)
+   TOTAL flickers new 380 base 380
+-- new_drawn gangs/faced_ambush-69 Green_Guns_7 seam lines 0: 
+-- new_drawn gangs/faced_attack_move-69 Green_Guns_7 seam lines 0: 
+-- new_drawn gangs/faced_move-69 Green_Guns_7 seam lines 0: 
+-- new_drawn gangs/faced_right-69 Green_Guns_7 seam lines 0: 
+-- new_drawn gangs/faced_screen-69 Green_Guns_7 seam lines 0: 
+-- new_drawn gangs/faced_support_by_fire-69 Green_Guns_7 seam lines 0: 
+-- base_drawn gangs/faced_ambush-69 Green_Guns_7 seam lines 0: 
+-- base_drawn gangs/faced_attack_move-69 Green_Guns_7 seam lines 0: 
+-- base_drawn gangs/faced_move-69 Green_Guns_7 seam lines 0: 
+-- base_drawn gangs/faced_right-69 Green_Guns_7 seam lines 0: 
+-- base_drawn gangs/faced_screen-69 Green_Guns_7 seam lines 0: 
+-- base_drawn gangs/faced_support_by_fire-69 Green_Guns_7 seam lines 0: 

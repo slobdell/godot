@@ -1,0 +1,31 @@
+>> step 1 hull-new_drawn start 01:34 on e76f6dab6 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_GD=1 M1_SEEDS=601-616 HULL_JOBS=4 exited 0 (build/ copied back)
+>> step 2 hull-base_drawn start 02:16 on e76f6dab6 builder2
+>> step 1 hull-new_drawn done earlier (its wrapper line is in the summary); resumed under systemd-run 02:25
+>> step 2 hull-base_drawn start 02:25 on e76f6dab6 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF=turnhull M1_GD=1 M1_SEEDS=601-616 HULL_JOBS=4 exited 0 (build/ copied back)
+>> step 3 hull-new_clicked start 02:59 on e76f6dab6 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_clicked M1_NEW_OFF= M1_GD=1 M1_SEEDS=601-616 HULL_JOBS=4 exited 0 (build/ copied back)
+>> step 4 hull-base_clicked start 03:32 on e76f6dab6 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_clicked M1_BASE_OFF=turnhull M1_GD=1 M1_SEEDS=601-616 HULL_JOBS=4 exited 0 (build/ copied back)
+>> step 5 native-new_drawn start 04:05 on e76f6dab6 builder2
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_SEEDS=601-616 HULL_JOBS=4 M1_DIR=build/manoeuvre/hull-rest-native exited 0 (build/ copied back)
+>> step 6 native-base_drawn on 6c54f4e66 start 04:34 on e76f6dab6 builder2
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF= M1_SEEDS=601-616 HULL_JOBS=4 M1_DIR=build/manoeuvre/hull-rest-native exited 0 (build/ copied back)
+>> step 7 fights-new start 05:13 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=fights CPH_SEEDS=640-663 exited 0 (build/ copied back)
+>> step 8 fights-base start 05:35 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=fights CPH_SEEDS=640-663 exited 0 (build/ copied back)
+>> step 9 census-new start 05:50 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=census CPH_SEEDS=620-632 exited 0 (build/ copied back)
+>> step 10 census-base start 06:02 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=census CPH_SEEDS=620-632 exited 0 (build/ copied back)
+>> step 11 sbf-new start 06:10 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=sbf CPH_SEEDS=670-675 exited 0 (build/ copied back)
+>> step 12 sbf-base start 06:11 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=sbf CPH_SEEDS=670-675 exited 0 (build/ copied back)
+>> step 13 bridge-new start 06:11 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=bridge exited 0 (build/ copied back)
+>> step 14 bridge-base start 06:13 on e76f6dab6 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=bridge exited 0 (build/ copied back)
+>> series done 06:15
