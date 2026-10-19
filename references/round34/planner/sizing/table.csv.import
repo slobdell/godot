@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bfylrrosemond"
+
+[deps]
+
+files=["res://references/round34/planner/sizing/table.metric.translation", "res://references/round34/planner/sizing/table.form.translation", "res://references/round34/planner/sizing/table.sd.translation", "res://references/round34/planner/sizing/table.base.translation", "res://references/round34/planner/sizing/table.icc.translation", "res://references/round34/planner/sizing/table.n.translation", "res://references/round34/planner/sizing/table.se.translation", "res://references/round34/planner/sizing/table.line.translation", "res://references/round34/planner/sizing/table.effect.translation", "res://references/round34/planner/sizing/table.effect.translation", "res://references/round34/planner/sizing/table.n.translation", "res://references/round34/planner/sizing/table.mde.translation", "res://references/round34/planner/sizing/table.mde.translation", "res://references/round34/planner/sizing/table.guard.translation", "res://references/round34/planner/sizing/table.cost.translation", "res://references/round34/planner/sizing/table.cost.translation", "res://references/round34/planner/sizing/table.aa.translation", "res://references/round34/planner/sizing/table.pairs.translation"]
+
+source_file="res://references/round34/planner/sizing/table.csv"
+dest_files=["res://references/round34/planner/sizing/table.metric.translation", "res://references/round34/planner/sizing/table.form.translation", "res://references/round34/planner/sizing/table.sd.translation", "res://references/round34/planner/sizing/table.base.translation", "res://references/round34/planner/sizing/table.icc.translation", "res://references/round34/planner/sizing/table.n.translation", "res://references/round34/planner/sizing/table.se.translation", "res://references/round34/planner/sizing/table.line.translation", "res://references/round34/planner/sizing/table.effect.translation", "res://references/round34/planner/sizing/table.effect.translation", "res://references/round34/planner/sizing/table.n.translation", "res://references/round34/planner/sizing/table.mde.translation", "res://references/round34/planner/sizing/table.mde.translation", "res://references/round34/planner/sizing/table.guard.translation", "res://references/round34/planner/sizing/table.cost.translation", "res://references/round34/planner/sizing/table.cost.translation", "res://references/round34/planner/sizing/table.aa.translation", "res://references/round34/planner/sizing/table.pairs.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

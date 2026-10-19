@@ -78,6 +78,18 @@ M1_SEED_LIST = $(if $(M1_SEEDS),$(shell seq $(subst -, ,$(M1_SEEDS))),$(HULL_SEE
 # with HULL_JOBS runs sharing the box, so the box's load could change what a crew was doing at the judge. Numbers from
 # before the pin (every hull-rest series to round 33's CP-F, b6c2a974, and planner's P2/P3) do NOT compare with numbers
 # after it; re-run both arms under the pin.
+# Round 33 (R33.34 / the overnight judge item): the faced stage placed the same army on the same spots whatever the seed
+# (`--seed` reaches only the RNG), so most seeds repeated another's rows (CP-F attempt 3: 21 distinct pairs of 64 a task).
+# The SEED now sets the drawn facing too: FACED_OFF_TRAVEL_DEG (60) +- HULL_JITTER_DEG, a whole degree from the seed, so
+# every crew's turn differs seed to seed. HULL_JITTER_DEG=0 restores the fixed 60. Numbers from before this (every
+# hull-rest series to CP-F attempt 3) do NOT compare with numbers after it.
+HULL_JITTER_DEG ?= 20
+_hull_jitter = $(if $(filter-out 0,$(HULL_JITTER_DEG)),--faced-off-deg=$$(( 60 - $(HULL_JITTER_DEG) + ($(1)) % (2 * $(HULL_JITTER_DEG) + 1) )))
+# Round 34 (M1 (2B), the ruler): the seed also shifts the order's destination HULL_SHIFT_M metres in a seed-hashed
+# direction (screen_playtest's --faced-shift-m), so two seeds never share a geometry. HULL_SHIFT_M=0 restores the fixed
+# destination. Numbers from before this (every hull-rest series to CP-F attempt 3) do NOT compare with numbers after it.
+HULL_SHIFT_M ?= 6
+_hull_shift = $(if $(filter-out 0,$(HULL_SHIFT_M)),--faced-shift-m=$(HULL_SHIFT_M))
 .PHONY: manoeuvre-hull-rest
 manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
 	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
@@ -87,7 +99,8 @@ manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class,
 		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=$(if $(M1_BASE_OFF),--nav-off=$(M1_BASE_OFF));; new_*) off=$(if $(M1_NEW_OFF),--nav-off=$(M1_NEW_OFF));; esac; \
 		timeout 300 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
+			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) $(call _hull_jitter,$$2) $(_hull_shift) \
+			--screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
 	$(PYTHON) tests/manoeuvre/hull_rest_ab.py $(M1_DIR)
@@ -101,9 +114,26 @@ manoeuvre-hull-one: import ## manoeuvre M1: one hull-rest run (ONE_FACTION ONE_S
 	@d=$(BUILD_DIR)/manoeuvre/hull-one; rm -rf $$d && mkdir -p $$d; enemy=law; [ "$(ONE_FACTION)" = law ] && enemy=gangs; \
 	timeout 300 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --skirmish --seed=$(ONE_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
 		--player-faction=$(ONE_FACTION) --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-		--no-element-cpu $(if $(ONE_CLICK),--faced-click) $(NAV_FLAGS) --screen-test=$(CURDIR)/$$d --screen-only=$(ONE_TASK) \
+		--no-element-cpu $(if $(ONE_CLICK),--faced-click) $(NAV_FLAGS) $(call _hull_jitter,$(ONE_SEED)) \
+		--screen-test=$(CURDIR)/$$d --screen-only=$(ONE_TASK) \
 		> $$d/run.log 2>&1; grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-one: no SCREEN_DONE"; \
 	grep -c MANOEUVRE_TRACE $$d/run.log || true
+# Round 33 (the overnight judge item, R33.34): the seed must vary the faced stage. Two hull-one runs of one task on
+# two seeds (default 40 and 41, gangs, faced_move); fails if their screen rows are identical (they were, before the
+# per-seed facing jitter: hull-rest repeated seeds, 21 distinct pairs of 64 a task on CP-F attempt 3).
+SEEDS_DIFFER_A ?= 40
+SEEDS_DIFFER_B ?= 41
+.PHONY: manoeuvre-hull-seeds-differ
+manoeuvre-hull-seeds-differ: import ## manoeuvre: two seeds of one hull-rest task give different rows (the per-seed jitter works)
+	@d=$(BUILD_DIR)/manoeuvre/seeds-differ; rm -rf $$d && mkdir -p $$d; \
+	for seed in $(SEEDS_DIFFER_A) $(SEEDS_DIFFER_B); do \
+		$(MAKE) --no-print-directory manoeuvre-hull-one ONE_FACTION=gangs ONE_SEED=$$seed ONE_TASK=faced_move > /dev/null 2>&1; \
+		cp $(BUILD_DIR)/manoeuvre/hull-one/screen.json $$d/$$seed.json || { echo "manoeuvre-hull-seeds-differ: seed $$seed wrote no rows"; exit 1; }; \
+	done; \
+	if cmp -s $$d/$(SEEDS_DIFFER_A).json $$d/$(SEEDS_DIFFER_B).json; then \
+		echo "manoeuvre-hull-seeds-differ: FAIL, seeds $(SEEDS_DIFFER_A) and $(SEEDS_DIFFER_B) gave identical rows"; exit 1; fi; \
+	echo "manoeuvre-hull-seeds-differ: PASS, seeds $(SEEDS_DIFFER_A) and $(SEEDS_DIFFER_B) differ (drawn $$($(PYTHON) -c "import json,sys; print([r['drawn'] for r in json.load(open(sys.argv[1])) if 'drawn' in r][0])" $$d/$(SEEDS_DIFFER_A).json) v $$($(PYTHON) -c "import json,sys; print([r['drawn'] for r in json.load(open(sys.argv[1])) if 'drawn' in r][0])" $$d/$(SEEDS_DIFFER_B).json))"
+
 # ---- round 29 (M4): the fights guard -----------------------------------------------------------------------------
 # The showmatch's own match headless per FIGHT_SEEDS (tests/manoeuvre/fight_census.gd: shots, hits, kills, deaths per
 # team; shots at and hits on targets touching something), NAV_FLAGS for an arm -> build/manoeuvre/fights/<seed>.log.

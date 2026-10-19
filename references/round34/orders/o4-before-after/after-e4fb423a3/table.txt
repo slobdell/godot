@@ -1,0 +1,7 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 route          main      |   27.7 /    0.0   |    2   0 |     20.6 |               5.7 |            24.2 | 1.15 | 64.6
+crossing 5 route          main      |   82.3 /   29.1   |    2   0 |     57.5 |               4.7 |            89.6 | 9.17 | 13.5
+locks 3 route             main      |   36.9 /   34.4   |    1   0 |     37.3 |              11.2 |            28.8 | 1.94 | 39.7
+locks 5 route             main      |   71.6 /   39.4   |    0   0 |     30.2 |               6.3 |            38.2 | 7.32 | 6.0
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |        - |               5.9 |            32.8 | 1.30 | 27.6
+terminus 5 route          main      |   65.1 /   39.4   |    0   0 |     32.1 |               4.7 |            26.3 | 15.65 | 3.1

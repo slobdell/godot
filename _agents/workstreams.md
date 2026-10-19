@@ -247,6 +247,25 @@ builder0), ruled R34.3.
   drawn arms on the native path. M1's A/A (`references/round34/manoeuvre/m1-aa/`): about half the old ruler's "still moving"
   crews were WEDGED hulls.
 
+- **T6 a crew under fire does not give way (traffic, R34.15), filed before any number on `stream/traffic` `95d160ce1`
+  (`references/round34/traffic/x6_underfire_bar.md`).** Pair `pair/underfire-r34` = current main + stream/traffic + native's twins
+  + the ON flip (base `--traffic-off=underfire`; a switch-OFF sim-baseline inertness run beside the C31.1); native, one machine,
+  pinned; FRESH fixed arenas only {terminus, locks, sumps, gorge, parade} × 1300–1327, n 140, no twins. DECIDING GAIN:
+  jam-under-fire deaths (last hit during the jam, or ≥ 2 hits in the 10 s before) arm < base AND (base − arm) − k·se > 0. Guards:
+  open deaths ± k·se; stuck deaths, far loops, friendly contacts in the 3 s after an under-fire abort ≤ base + k·se; kills ± k·se and
+  hit rate ≥ base − k·se; crossing arrivals 44–46 × 6 ≥ base − k·se a case. Reported: standoffs with durations, all jam and all deaths,
+  the counters. Sizing from T5: 1.75 a fight, sd 1.61, se of the sum ≤ ~19 at n 140.
+
+- **B9 lane spread (brains), design and bar approved before any code or number (lane census: `stream/brains` `44e7bd397`,
+  `references/round34/brains/b9_lane_census_*`; the CPU's centre lane takes 89 % of Locks and 78 % of Terminus picks, 2 in 3 stack).**
+  ArmyPlan: when a side's lane holds 2+ of its elements, the cheapest-detour one moves to another lane only if the detour ≤ 1.4 ×
+  direct + 30 m, the side's own intel shows enemy strength within 40 m of that lane's middle ≤ 0.5 × the mover's, and the lane has
+  fewer of the side's squads; the task carries `via`, latched per task. `--lane-spread=off|green|rust|both`, default off. Series:
+  asymmetric judge, symmetric ship: showmatch, Locks + Terminus + Crossing, FRESH seeds 1400–1439 each (n 120; moved off 1301–1340 to
+  stay clear of T6's block), ruled side by seed parity. DECIDING: exchange gain E (ln-ratio, ruled v base) mean > 1.645 se,
+  pooled, each arena reported. Guards (≤ base + 1.645 se): jam deaths, stuck deaths, far loops, time to first contact, fight length,
+  piecemeal arrival. An A/A first (E ≈ 0, sizes se); the worst ruled fight traced before the means. Ships ON for both sides on a pass.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
@@ -323,6 +342,16 @@ builder0), ruled R34.3.
   `RtsControls._queue_task_for` and its helpers, new `tests/test_control*.gd`; the `Element._next_queued` seam by a signature
   agreed with brains through the orchestrator. Design (passed radius, gate width from the ground, the seam, the failing test)
   to the orchestrator before code. Not `selection_squads.gd` / `_order_squads` (brains, O2).
+  **O5 read (planner, `stream/planner` `749a7a155`, `references/round34/orders/o5.md`; builder0, native, main 2c7c1d0dc + probe,
+  3 maps × 3/5 squads × click/route × main/cap-off/halt-price-off, n 1 a cell, deterministic).** (1) 5 squads to one point: the
+  second rank's anchors sit 71.6 m behind the click, at or behind their start (they "arrive" in 0.1 s): O2. (2) **His bridge case
+  is NOT closed on the Locks:** O1 capped the anchor to the near bank, but a crew SEAT that lands in the canal snaps to the far
+  bank (Green_Echo_3 (39.4, 12.2) → (39.4, −12.2) at 9 s); Echo_1 crossed the east bridge and came back; the squad shuffled 78.5 m
+  after "arrived". Brains, FIRST: snap a seat only onto ground its anchor reaches without a deck. (3) Where O1 acts it works
+  (Crossing far-bank crews 1 → 0 and 2 → 0). (4) RETRACTED by planner before any code: clamp_to_arena already clamps to the polygon (ArenaShape,
+  inset WALL_CLEARANCE_M); (−100.9, 59.7) is 4.6 m inside the Crossing's hex wall. The probe's top-down shots drew the HUD's 2D
+  rings through the game's perspective camera, so they landed wrong; the vehicles were right. Grant withdrawn. Post-arrival
+  shuffle 20–48 m worst with 3 squads, 28–124 m with 5 (B6's cause; the deploy step is his question).
 - **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
   pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
   far loops 34 → 18 against a line of ≤ 17 (paired se 20.2): FAIL by one loop. 16 of the 18 are ONE episode (locks-913: a
@@ -352,6 +381,57 @@ builder0), ruled R34.3.
   there to cure on today's main (escape, unstick and manoeuvre's later rules took it), and real-velocity ORCA sometimes steers
   round a stalled friend it would have pushed through. The ghost stays OPT_IN; `pair/ghost-on-r34b` is NOT merged; native's
   ghost twins return only with a new case. No fifth try without one.
+- **R34.12 O2 (packing by driving distance) PARKED; a small rank fix instead (brains, `wip/brains-o2` kept as the record).**
+  The AUTO-only pack (C) was NOT tighter (three AUTO squads, outer anchors 136 m v O3's 78.8 m), regressed the click's response
+  (box-around-the-army 4 ticks v the 3-tick window at 30 units) and still mixed five squads (closest pair 4.2 m). Cause: until
+  arrival an AUTO element's final seats are its TRAVEL wedge (±25 m; B6 parked) at a heading not knowable at order time.
+  "Packed at the halt" needs (B) the order fixing the heading AND B6's halt seats from the final approach. That is the
+  same design question as his deploy step (R34.7), so it waits on his answer. Now: brains fixes planner's O5 finding (1) in the
+  existing ranks path (a rank's anchor never farther back along the approach than its squad's own centre), with a test from
+  the Locks/Terminus case.
+- **R34.13 parkedroom PARKS for round 34 (v4b, traffic, pair `5914d3ac5`, builder0, fresh 1100–1147 × 3, n 144,
+  `x3_v4b_series_5914d3ac5.txt`).** L2 all far loops 169 → 127 (drop 42, paired se 54.9): not distinguishable: FAIL. Guards pass:
+  L1a hold-post loops 82 → 21 (−74 %, 2.7 se: the targeted mechanism works), L1b 136 → 102, L3 (a)/(b)/(c), L4, L5 0/9, L6 93.3 %.
+  **Watch:** jammed-by-friendly-traffic deaths ALONE 79 → 116 (+37, se 12.6, 2.9 se; stuck 276 → 257), under the combined line.
+  What's left in the arm's loops is mostly behind batteries set up and firing (67 of 127; his T1c-b2 yes keeps them put).
+  v3/v4/v4b each cut hold-post loops 50–74 % and brought 90–94 % home; each failed on totals the rule doesn't reach. DEFAULT_OFF
+  stays; the pair and native's `4445f6b4c` are not merged; no fifth try without a new design. **A question for him:** should a
+  crew stuck behind a FIRING mortar truck get by (the truck packs up briefly, or the asker is sent round)?
+- **R34.14 main 6d167331a is GREEN by inheritance** (brains `1fc467258`, builder2 `make check exited 0`, 2847/0, sim-baseline 13
+  unmoved: main's batch M1 + O4 + N6 + the rank fix + LOADED_RATIO 1.2). **Brains builds the deploy step as a prototype behind a
+  switch, default OFF (B8)**, so his answer to R34.7 meets something he can see rather than a description: an AUTO squad keeps its
+  travel seats until every crew is in, then lays its halt shape on the approach heading as one move. With the heading fixed at
+  order time, O2's (B) packing becomes exact. Default stays OFF until he says yes; planner's O5 probe reads it before/after.
+- **R34.15 T5 the jam-death census (traffic, REPORTED, `references/round34/traffic/t5_jam_death_census.md`; builder2, native,
+  fresh 1200–1247 × 3, 144 fights, pinned, 5984 deaths).** Jammed by friendly traffic 337 = 5.6 % (2.34 a fight): giving way 83 %,
+  held by ANOTHER squad's crew 69 %, by a set-up battery 1 % (so the mortar-truck question is not what jam deaths are about);
+  lanes 74 %, Locks the worst; under fire while jammed 77 %, last hit during the jam 63 %; jam time median 1.5 s. Stuck deaths
+  17 % (wedged 8 %). **Decided (symmetric AI, ships without asking if it passes its bar): a crew under fire does not give way
+  (T6, traffic):** it holds the lane and the asker goes round or waits; fresh bar, filed before numbers. The CPU feeding two or
+  three squads through one Locks lane under fire is brains' commander lane choice (later). **Measurement note:** 14 of 48
+  "random" seeds dealt the Locks or Terminus, so those fights twin the fixed-arena fight of the same seed (paired readings
+  unaffected; totals double-count them; true of X1/v4/v4b): future series exclude random seeds that deal a fixed arena.
+- **R34.16 P5 closes with NO v3 (planner, `references/round34/planner/p5-remeasure-15f5980ac/`; builder0, native, main with M2 + M1,
+  hull-rest gangs, dev seeds 96–107, face_pairs distinct 42/41).** The tail v3 targeted was the flicker: round 33's miss was a face only
+  the candidate planned (asked mid-k-turn). With M2 in, candidate-only faces are 0 drawn, 0 clicked, so a slot cap has nothing to cut.
+  Both-planned clicked faces 2.5 v 2.0 m median (se 0.26), p90 4.0 v 3.9, max 9.1 v 4.0 (one face): a WATCH item for the next series
+  that reads face_pairs, not a bar. **The round-34 Terminus route stall** (planner's bisect: O4's a5a362737 first bad; brains: O3 put
+  squad 3's first-leg anchor in a block) is fixed in brains' next check (ground_anchors + a player-route stall fallback, 12 s, every
+  crew settled, in-between legs only).
+- **R34.17 T6 (under fire, no give-way) FAILS as filed; a T6b without the mid-step abort is approved (traffic, pair
+  `ac1bf4692`, builder2, fixed arenas × 1300–1327, n 140, `x6_series_ac1bf4692.txt`).** G jam-under-fire deaths 231 → 72 (7 se):
+  PASS. Guards FAIL: open deaths +169 (band ±123), stuck deaths +124 (line 877), kills +138 (band ±112), friendly contacts in the 3 s
+  after a hit-ended give-way 331 → 1049 (5.7 se over). All deaths +2.3 %. Reading: the deaths moved rather than went (crews holding
+  under fire and the askers behind them die where they stand), and the mid-step abort (c) reverses a crew into the asker. DEFAULT_OFF;
+  native's mirror `bc6aaa203` not merged. **T6b = (a) + (b) only, no (c)**, re-judged on a FRESH fixed-arena block with the same
+  lines; if open and stuck deaths still rise, the trade is real and T6 parks for the round.
+- **R34.18 CP-F attempt 4 (M3) PARKS (manoeuvre, `lab/cpf4` `e76f6dab6`, builder2, 14/14 steps, fresh seeds as filed,
+  `references/round34/manoeuvre/cpf4-series/`).** The turn itself is right: point tasks 3.0–4.0° median, 82–94 % within 15° (base
+  48–57°, 14–24 %); ambush 3.7 v 80.4°, SBF 3.7 v 77.5; native twins 14/0. Misses: (d) movers by real_mps (ambush +7 v guard +3.2,
+  move +9 v +6.7, screen +13 v +5.4), (e) attack-move never settled +6 v 4.9, (g) Terminus mixed arrivals −5 v 4.6. Two mechanisms
+  traced: faces no plan fits creep at the 0.35 lock until the judge; attack-move elements step to the next leg ~30 s later when
+  arrived crews sit on a sector face (tank_brain ~2960) instead of a stop. Per R33.34 a fifth attempt needs a NEW design (a face
+  that gives up cleanly when no plan fits; the element step not waiting on a sector face), not seeds. B11b gets no merge hash.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 

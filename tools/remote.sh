@@ -237,8 +237,13 @@ export TANK_SQUAD_COMMIT=$commit
 export TANK_SQUAD_DIRTY=$dirty
 # The auth file the running Xwayland uses (older sessions leave stale ones: with a stale cookie Godot falls back to Wayland,
 # which stops redrawing a hidden window, so screenshots after the first silently repeat old frames).
+# Round 34 (native N6): only while an Xwayland is RUNNING. builder0's desktop session died (~23:00 2026-10-18) and left its
+# auth files; the newest-file fallback then exported DISPLAY=:0 for a display that was gone, and headless Chrome there lost
+# WebGL2 (web-smoke red on every builder0 check). No Xwayland, no DISPLAY: renders fail loud instead of drawing nowhere.
 auth=\$(ps -C Xwayland -o args= 2>/dev/null | sed -n 's/.* -auth \\([^ ]*\\).*/\\1/p' | head -1)
-[ -n "\$auth" ] || auth=\$(ls -t /run/user/\$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1)
+if [ -z "\$auth" ] && pgrep -x Xwayland >/dev/null 2>&1; then
+	auth=\$(ls -t /run/user/\$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1)
+fi
 if [ -n "\$auth" ]; then export DISPLAY=:0 XAUTHORITY="\$auth"; fi
 if ! compgen -G ".tools/godot-*/editor_data/export_templates/*/.installed" >/dev/null && [ "\$1" != bootstrap ]; then
 	echo ">> remote: first run here, bootstrapping the toolchain" >&2

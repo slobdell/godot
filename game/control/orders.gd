@@ -497,7 +497,10 @@ func _remember_station(unit_name: String, order: Dictionary) -> void:
 			heading = [(-tank.global_basis.z).x, (-tank.global_basis.z).z]
 	if position.is_empty():
 		return
-	_stations[unit_name] = {"position": position, "heading": heading, "units": order["units"], "id": order["id"]}
+	# Round 33 (manoeuvre CP-F, granted by the orchestrator): whether the PLAYER drew this heading (his order named a
+	# facing) or it is the way the group travelled or an element's sector; read by Manoeuvre.drawn_direction (turnhull).
+	_stations[unit_name] = {"position": position, "heading": heading, "units": order["units"], "id": order["id"],
+			"drawn": order.has("facing") and String(order.get("source", "")) == "player"}
 
 
 static func _flat_distance(a: Vector3, b: Vector3) -> float:

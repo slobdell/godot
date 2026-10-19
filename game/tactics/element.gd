@@ -130,6 +130,20 @@ var facing_sent := false
 ## re-seat by exposure has been made (ElementPlan._plan_form_up: his option 2, once per task).
 var arrived_tick := -1
 var halt_seated := false
+## B8 (R34.14): the deploy step's state (ElementPlan._deploy_state), reset with every task.
+var deploy := {}
+## Round 34 (the orchestrator's safety net, after the Terminus route stall: an anchor inside a block, the element never
+## arrived, and since O4 the route queued behind it waited for ever). A PLAYER's element with route legs queued, on a
+## move, every crew SETTLED (no mover under way: not a give-way, a crossing hold or a form-up) and its centre not come
+## STALL_PROGRESS_M closer to its spot for STALL_ARRIVE_S, counts as arrived
+## (ElementPlan._arrived_at reads `stall_arrived`): a hole of that kind becomes a delay, not a frozen squad. The CPU's
+## elements never queue, so their sims are untouched. `stalls_arrived` counts it (process-wide).
+const STALL_ARRIVE_S := 12.0
+const STALL_PROGRESS_M := 1.0
+static var stalls_arrived := 0
+var _stall_best := INF
+var _stall_tick := -1
+var stall_arrived := false
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
 var _mouth_sent := {}
 ## Round 29 (B3): when each crew was last sent on for holding up a squadmate in a mouth, and how often (lesson 300).
@@ -327,6 +341,10 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	arrived = false
 	arrived_tick = -1
 	halt_seated = false
+	deploy = {}
+	_stall_best = INF
+	_stall_tick = -1
+	stall_arrived = false
 	_mouth_sent = {}
 	_mouth_held_tick = {}
 	_feed_since = {}
@@ -417,8 +435,8 @@ func _next_queued(orders: Object, game_match: Match = null) -> void:
 				if not (orders.call("current", unit_name) as Dictionary).is_empty():
 					done = false
 					break
-	elif String(task.get("verb", "")) == "move" and arrived:
-		done = true
+	elif String(task.get("verb", "")) == "move" and (arrived or passed_waypoint(game_match)):
+		done = true  # Round 34 (traffic O4): an in-between waypoint is passed at about the squad's width; arrived stays the fallback
 	elif String(task.get("verb", "")) == "attack" and game_match != null:
 		var target := AiTickCache.tanks_by_name(game_match).get(String(task.get("target", ""))) as Tank
 		done = target == null or not target.is_alive()
@@ -426,6 +444,54 @@ func _next_queued(orders: Object, game_match: Match = null) -> void:
 		var next: Dictionary = queued_tasks.pop_front()
 		_log("next queued task: %s" % String(next.get("verb", "")))
 		assign(next, true)
+
+
+## Round 34 (traffic O4, his correction 2; agreed with brains, R34.8): an in-between waypoint (a move with a queue behind
+## it) is PASSED when the element's centre, the mean of its LIVING commanded members, is within about its own width of the
+## point: max(ElementPlan.ARRIVE_M, half its frontage at the doctrine's spacing), at most PASS_MAX_M. No wait for `arrived`,
+## so no stop to form up; crews keep their slots. `arrived` stays the fallback (a squad diverted off its line never strands),
+## and the LAST waypoint keeps it alone. A column's frontage is ~0, so it gets ARRIVE_M. False with no task or no living crew.
+const PASS_MAX_M := 30.0
+
+
+func passed_waypoint(game_match: Match) -> bool:
+	if game_match == null or task.is_empty() or String(task.get("verb", "")) != "move":
+		return false
+	var point: Variant = ElementTask.destination(task)
+	if not point is Vector3:
+		return false
+	var centre := Vector3.ZERO
+	var alive := 0
+	var tanks: Dictionary = AiTickCache.tanks_by_name(game_match)
+	for unit_name in _commanded_members():
+		var tank := tanks.get(unit_name) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		centre += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+		alive += 1
+	if alive == 0:
+		return false
+	centre /= alive
+	var pass_m := clampf(0.5 * TacticsFormation.frontage(formation, alive, _doctrine().spacing("open")), ElementPlan.ARRIVE_M, PASS_MAX_M)
+	return Vector3((point as Vector3).x - centre.x, 0.0, (point as Vector3).z - centre.z).length() <= pass_m
+
+
+## Round 34 (traffic O4): a queued task's destination rewritten (the control re-lays a gate once a further waypoint is
+## queued). Bumps the state as enqueue does, so feeds keyed on it see the rewrite. "" or why it was refused (nothing changes).
+func relay_queued(i: int, to: Array) -> String:
+	if i < 0 or i >= queued_tasks.size():
+		return "no queued task %d" % i
+	if to.size() != 2:
+		return "'to' must be [x, z]"
+	var changed: Dictionary = (queued_tasks[i] as Dictionary).duplicate(true)
+	changed["to"] = [float(to[0]), float(to[1])]
+	var error := ElementTask.validate(changed)
+	if error != "":
+		return error
+	_state_stamp += 1
+	queued_tasks[i] = changed
+	revision += 1
+	return ""
 
 
 func stand_down() -> void:
@@ -468,10 +534,19 @@ func update(game_match: Match, orders: Object) -> bool:
 			crossing["seated"] = false
 			crossings_rematched += 1
 	_track_pursuit(game_match)
+	var spot: Variant = ElementTask.destination(task)
+	var under_way := false
+	for member: Dictionary in situation.get("members", []):
+		var mover := Movement.of(AiTickCache.tanks_by_name(game_match).get(String(member["name"])) as Tank)
+		under_way = under_way or (mover != null and mover.is_under_way())
+	track_stall(team == OrderFeed.player_team(game_match), not queued_tasks.is_empty(), String(task.get("verb", "")),
+			(situation["center"] as Vector3).distance_to(spot) if spot is Vector3 else INF, int(situation.get("tick", 0)),
+			under_way)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
-			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated,
+			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated, "deploy": deploy,
+			"stall_arrived": stall_arrived,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "reseat_keep": _reseat_keep if _reseat else {}, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
@@ -493,12 +568,12 @@ func update(game_match: Match, orders: Object) -> bool:
 	Element.apply_swap(plan, _swap)
 	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null
-	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if GROUND_LATCH and arrived else null)
+	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if (GROUND_LATCH and arrived) or bool(deploy.get("deployed", false)) else null)
 	if ElementPlan.PACE_ENABLED and plan.has("shape_along"):
 		# Round 23 (B1): the pacing rules measure against each seat where the hull can actually stand (the brain drives
 		# to its station grounded the same way); a seat laid inside a container would otherwise hold the anchor for
 		# a crew that can never reach it (the yard's lanes).
-		Element.ground_stations(plan["shape_along"], ground_node, _envelopes(situation))
+		Element.ground_stations(plan["shape_along"], ground_node, _envelopes(situation), plan.get("slots", {}))
 	_take(plan, situation)
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
@@ -1518,19 +1593,25 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
-			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
+			# Round 34 (C34.11; planner's O5, the Locks 3): the ORDER stands on its anchor's bank too, not only the slot. A
+			# seat laid past the canal (dry, on the far bank) came back as a slot but went out as an order, and Alpha_3
+			# crossed the bridge to reach it (SlotGround.on_anchor_side handles the far bank; pulled_dry only the water).
+			var to: Vector3 = SlotGround.pulled_dry(SlotGround.on_anchor_side(order["to"], anchor), anchor) if anchor is Vector3 \
+					else order["to"]
 			var clearance := float(envelopes.get(unit_name, 0.0))
 			order["to"] = _latched(latch, "order:" + unit_name, to,
 					func() -> Vector3: return SlotGround.standable_from(node, to, clearance, from))
 
 
 ## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,
-## the brain's own grounding of a station). Pure but for the navmesh query.
-static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dictionary) -> void:
+## the brain's own grounding of a station). Round 34: one over the water stands on its crew's final seat's bank
+## (`slots`, SlotGround.station_on_goal_side), as the brain grounds it. Pure but for the navmesh query.
+static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dictionary, slots: Dictionary = {}) -> void:
 	if node == null:
 		return
 	for unit_name: String in stations:
-		stations[unit_name] = SlotGround.standable_for(node, stations[unit_name], float(envelopes.get(unit_name, 0.0)))
+		var station: Vector3 = SlotGround.station_on_goal_side(stations[unit_name], slots.get(unit_name))
+		stations[unit_name] = SlotGround.standable_for(node, station, float(envelopes.get(unit_name, 0.0)))
 
 
 ## Record what the leader decided.
@@ -1587,6 +1668,24 @@ var _et_last := -1000
 ## C34.9 (brains B3): the inset's engage distance, latched per task: [task_seq, centre-to-click metres when the inset first
 ## moved the spot (> 0.5 m), the inset then]. Round 33's (1b) reported the inset only.
 var inset_engaged := [-1, -1.0, 0.0]
+
+
+## The stall safety net's tracking (see STALL_ARRIVE_S), once an update: `player` and `queued` from the element, `to_go`
+## the centre's distance to its spot, `tick` the match tick. Pure but for this element's own fields.
+func track_stall(player: bool, queued: bool, verb: String, to_go: float, tick: int, under_way := false) -> void:
+	# A crew still under way (a give-way, a crossing hold, a form-up: each has a live move) restarts the clock: only a
+	# squad that has settled AND stopped closing is stuck.
+	if not player or not queued or verb != "move" or arrived or stall_arrived or under_way:
+		_stall_best = INF
+		_stall_tick = -1
+		return
+	if _stall_tick < 0 or to_go < _stall_best - STALL_PROGRESS_M:
+		_stall_best = to_go
+		_stall_tick = tick
+	elif tick - _stall_tick >= int(STALL_ARRIVE_S * SimClock.TICK_RATE):
+		stall_arrived = true
+		stalls_arrived += 1
+		_log("stalled %.0f s %.1f m from its spot: counted as arrived" % [STALL_ARRIVE_S, to_go])
 
 
 func _latch_inset(plan: Dictionary) -> void:
@@ -1707,6 +1806,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	elif arrived_tick < 0:
 		arrived_tick = int(situation.get("tick", 0))
 	halt_seated = bool(plan.get("halt_seated", false))
+	deploy = plan.get("deploy", {})
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]

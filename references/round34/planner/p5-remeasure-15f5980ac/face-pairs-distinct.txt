@@ -1,0 +1,11 @@
+FACE_PAIRS_DISTINCT drawn | distinct pairs 42 of 42 | cells that repeat: none
+FACE_PAIRS_BOTH drawn | faces 9 | INCONCLUSIVE (fewer than 10 faces both planned): this mode's (2c) cannot pass
+FACE_PAIRS_CAND_ONLY drawn | faces 0 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 0.0; kept 0)
+FACE_PAIRS_BASE_ONLY drawn | faces 0 | hull_far candidate [] v base [] (base plan_far []) | reported
+FACE_PAIRS_OTHER drawn | neither served 73 | unmatched base 3 candidate 5 | reported
+FACE_PAIRS_DISTINCT clicked | distinct pairs 41 of 41 | cells that repeat: none
+FACE_PAIRS_BOTH clicked | faces 19 | median 2.5 v 2.0 m (se 0.26, line <= 2.4) over | p90 4.0 v 3.9 (se 2.27, line <= 7.6) ok | max 9.1 v 4.0 | hull_far (plan_far median 3.2 v 3.2) | FAIL
+FACE_PAIRS_CAND_ONLY clicked | faces 0 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 0.0; kept 0)
+FACE_PAIRS_BASE_ONLY clicked | faces 0 | hull_far candidate [] v base [] (base plan_far []) | reported
+FACE_PAIRS_OTHER clicked | neither served 126 | unmatched base 8 candidate 19 | reported
+FACE_PAIRS line (2c): NOT ALL PASS

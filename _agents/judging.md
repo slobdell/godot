@@ -59,11 +59,11 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | traffic-series yard_open/head | allin | median | 7.57 | 33.90 | 0.0356 | 18 | 2.82 | all-in median <= base + 20 % | 6.78 (20 %) | **20** | 7.02 (21 %) | base ± 4.65 | 63 → 70 |
 | traffic-series yard_open/head | fstuck | total | 2.50 | 0.886 | 0.133 | 18 | 10.6 | friendly-stuck <= base x 1.2 + 10 | 0.177 (20 %) | **> 1000 (not affordable)** | 1.46 (165 %) | base ± 17.4 | 63 → 4305 |
 | traffic-series crossings pooled | xfast | total | 2.28 | 5.60 | 0.00 | 36 | 13.7 | between-squad fast pooled over the two crossing cases down >= 25 % (T3, T3b) | 1.40 (25 %) | **17** | 0.945 (17 %) | base ± 22.5 | 126 → 59.5 |
-| hull-rest probe (a task) | crews still moving at 75 s, wheeled turret | total | 1.47 | 1.75 | 0.00 | 32 | 8.34 | guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b) | 0.185 (11 %) | **392** | 0.648 (37 %) | base ± 13.7 | 160 → 1960 |
-| hull-rest probe (a task) | crews still moving at 75 s, all classes | total | 1.62 | 2.08 | 0.00 | 32 | 9.16 | guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b) | 0.185 (9 %) | **473** | 0.712 (34 %) | base ± 15.1 | 160 → 2365 |
-| hull-rest probe (a task) | hull error median, wheeled turret (310 crews) | median | – | – | – | 27 | – | clicked within +-5 deg of base; point tasks median <= 15 deg; per-class permutation p >= 0.05 (M1b) | – | see *Count lines* / A/A | – | – | – |
-| hull-rest probe (a task) | share within 15 deg, wheeled turret | share | – | – | – | 27 | – | >= 70 % within 15 deg | – | owed (A/A column) | – | – | – |
-| hull-rest probe (a task) | settle time (75 s window) | median | – | – | – | 27 | – | settle paired median <= +6 s | – | see *Count lines* / A/A | – | – | – |
+| hull-rest probe (a task, OLD ruler) | crews still moving at 75 s, wheeled turret | total | 1.47 | 1.75 | 0.00 | 32 | 8.34 | guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b) | 0.185 (11 %) | **392** | 0.648 (37 %) | base ± 13.7 | 160 → 1960 |
+| hull-rest probe (a task, OLD ruler) | crews still moving at 75 s, all classes | total | 1.62 | 2.08 | 0.00 | 32 | 9.16 | guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b) | 0.185 (9 %) | **473** | 0.712 (34 %) | base ± 15.1 | 160 → 2365 |
+| hull-rest probe (a task, OLD ruler) | hull error median, wheeled turret (310 crews) | median | – | – | – | 27 | – | clicked within +-5 deg of base; point tasks median <= 15 deg; per-class permutation p >= 0.05 (M1b) | – | see *Count lines* / A/A | – | – | – |
+| hull-rest probe (a task, OLD ruler) | share within 15 deg, wheeled turret | share | – | – | – | 27 | – | >= 70 % within 15 deg | – | owed (A/A column) | – | – | – |
+| hull-rest probe (a task, OLD ruler) | settle time (75 s window) | median | – | – | – | 27 | – | settle paired median <= +6 s | – | see *Count lines* / A/A | – | – | – |
 | pinned probe (hull-rest seeds, 144 runs) | pinned crew-seconds | total | 38.10 | 19.92 | 0.00 | 144 | 457.2 | down by > 2 se (M4 b2, M4b b2); sized here for a -50 % effect | 9.96 (50 %) | **91** | 7.89 (40 %) | base ± 752.1 | 121 → 76.4 |
 | pinned probe | pinned crews (count) | total | 0.895 | 0.477 | 0.00 | 144 | 10.7 | down (M4 b2); reported (M4b) | 0.238 (50 %) | **88** | 0.185 (39 %) | base ± 17.7 | 121 → 73.9 |
 | manoeuvre-fights (180 s) | kills | total | 5.47 | 41.02 | 0.00 | 24 | 26.8 | guard: within 2 se (M4, M4b); sized for a 5 % loss | 2.05 (5 %) | **44** | 2.78 (7 %) | base ± 44.1 | 168 → 308 |
@@ -74,6 +74,9 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | Terminus census, rigs (a seed) | wall contact-ticks | total | 820.27 | 865.69 | 0.00 | 13 | 2957.5 | <= base + 10 % (M2); down (M4); <= base + 1.645 se (M4b run 2); reported (M1b, M2b, kturnarc) | 86.57 (10 %) | **556** | 565.68 (65 %) | base ± 4864.7 | 104 → 4448 |
 | Terminus census, mixed (a seed) | arrived (of 24) | total | 1.00 | 22.39 | 0.00 | 13 | 3.61 | arrivals >= base; not down beyond 1 se / 1.645 se (round 30) | 2.24 (10 %) | **2** | 0.69 (3 %) | base ± 5.94 | 104 → 16 |
 | Terminus census, mixed (a seed) | wall contact-ticks | total | 157.21 | 150.32 | 0.00 | 13 | 566.8 | <= base + 10 %; <= base + 1.645 se (M4b run 2) | 15.03 (10 %) | **677** | 108.41 (72 %) | base ± 932.3 | 104 → 5416 |
+| hull-rest A/A, M1's new ruler (a run) | crews moving by real velocity | total | 0.621 | 0.148 | 0.00 | 36 | 3.73 | reported (M1 A/A, round 34): the new ruler's null sd; CP-F 4's bars are sized on it | 0.139 (94 %) | **124** | 0.258 (174 %) | base ± 6.13 | 180 → 620 |
+| hull-rest A/A, M1's new ruler (a run) | wedged crews | total | 0.594 | 0.176 | 0.00 | 36 | 3.56 | reported (M1 A/A): wedged hulls, now their own line (about half the old ruler's movers) | 0.139 (79 %) | **114** | 0.246 (140 %) | base ± 5.86 | 180 → 570 |
+| hull-rest A/A, M1's new ruler (a run) | crews moving by commanded speed (the old reading) | total | 0.852 | 0.324 | 0.00 | 36 | 5.11 | reported (M1 A/A): the old ruler's count on the new stage, for the comparison | 0.139 (43 %) | **233** | 0.353 (109 %) | base ± 8.41 | 180 → 1165 |
 | hull-rest gangs A/A (a run, fifo v fifo) | crews still moving at 75 s, wheeled turret | total | 1.81 | 1.50 | 0.00 | 12 | 6.27 | reported (P1 A/A, round 33): the null's sd a run; a pair whose own sd is far above it acted | 1.00 (67 %) | **21** | 1.30 (87 %) | base ± 10.3 | 60 → 105 |
 | hull-rest gangs A/A (a run, fifo v fifo) | median rest error deg, wheeled turret | mean | 19.72 | 60.03 | 0.00 | 12 | 5.69 | reported (P1 A/A); P3's faced-rest lines were sized on it (R33.26, R33.28) | 5.00 (8 %) | **97** | 14.15 (24 %) | base ± 9.36 | 60 → 485 |
 | orbit cells (scout duel, player post, a seed) | shots | total | 74.69 | 7.29 | 0.00 | 72 | 633.7 | shots ON >= 1.5 x OFF over the player cells (C33.9 R33.24; scout try 2's (a)) | 3.65 (50 %) | **> 1000 (not affordable)** | 21.89 (300 %) | base ± 1042.4 | 72 → 2595 |
@@ -583,3 +586,33 @@ all classes 1.85 → 1.62; kills 5.76 → 5.47 (the 5 % guard needs n 44); Termi
   SCOUT_GUARD with identical guard fights), the battery series (n 1 a named stage), herringbone, warrig and B10b's arrive
   pairs (0 discordant cells: equality checks), and R4's nudge pairs (0 of 12 flipped).
 - T4's guard (rows under traffic's tarball, not a judged pair format the tools read). C33.9's dev tables (tuning).
+
+## Round 34: M1's new hull-rest ruler and its A/A (2026-10-19, planner, at the orchestrator's request)
+
+Manoeuvre's M1 (on main `f97e5fdb1`) changed what hull-rest measures. "Still" now reads REAL velocity, wedged hulls are
+their own count, and the stage's geometry shifts with the seed (`HULL_SHIFT_M=6`). **Every hull-rest row above is the
+OLD ruler's** (now named "hull-rest probe (a task, OLD ruler)"; pairs of rounds 29–33), and its numbers do not compare
+with the new ruler's. The new ruler's A/A (lab/m1-ruler `e28ba432d`, builder2, the OFF arm on seeds 201–209 v 210–218,
+36 pairs a task, six tasks; the table copied to `references/round34/planner/sizing/m1-aa-e28ba432d-builder2.txt` from
+stream/manoeuvre) is three new rows, "hull-rest A/A, M1's new ruler":
+
+- crews moving by real velocity: **sd 0.62 a run** (tasks 0.23–1.17), base 0.15 a run. A +5-crews-a-task line is
+  5 / 36 = 0.14 a run, so it needs n 124.
+- wedged crews: sd 0.59 a run, base 0.18. Wedged hulls were about half of the old ruler's "still moving" crews.
+- crews moving by commanded speed (the old reading on the new stage): sd 0.85 a run. The old reading is noisier than the
+  new one by the wedged hulls it counted.
+
+Task totals swing 0–200 % between the two seed sets (the table's `swing` column): a task's total at n 36 is not a
+stable base. CP-F 4's bars (`workstreams.md` *Bars (round 34)*) cite these rows. `python3 tools/judge/table.py`
+re-renders them; tools tests 74/74.
+
+## R34.15: a random-arena fight can be a twin of a fixed-arena fight (2026-10-19)
+
+A `--arena=random` fight deals its map from the seed (`Arena.resolve_name`). When the series also runs that map as a
+fixed arena on the same seed, the two fights are byte-identical. Traffic found 14 of the 48 random seeds in 1200–1247
+dealt the Locks or the Terminus (7 each; `references/round34/planner/sizing/random_arenas.txt` agrees). Paired readings
+are unaffected (each arm has the same twin), but **pooled totals and n count those fights twice** (X1, v4, v4b). Before
+pooling, drop them: `tools/judge/seed_twins.py rows.jsonl` (or `seed_twins.drop_twins(rows, seed_twins.load()[0])` from
+a series tool) keeps the fixed-arena row and drops its random twin. The seed-to-map table is Godot's and is written by
+`tests/planner/random_arenas.gd`; it names `Arena.ROTATION`, and `load(path, rotation=...)` refuses a table written for
+another rotation (a map added changes what every seed deals). A bar on a random-arena series names its n AFTER the drop.

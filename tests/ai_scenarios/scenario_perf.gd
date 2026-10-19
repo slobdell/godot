@@ -37,7 +37,11 @@ const PER_SQUAD := 5
 ## mutation arm: it judges regardless, which is how it failed under load before.
 const ControlFixture := preload("res://tests/support/control_fixture.gd")
 const NOMINAL_PATH := "res://tests/ai_scenarios/perf_nominal.json"
-const LOADED_RATIO := 1.5
+## Round 34 (brains, the orchestrator's ruling): 1.2, was 1.5. Under a heavy check the reference SATURATES near 1.5x
+## (builder2, 8 checks: 1.52-1.54x at loads 20-67 while the brains read 16964-32870 usec), so 1.5 sat on its plateau
+## and a loaded run fell either side of it by chance (native's 26109 usec, judged); an idle run reads 1.01x (5940 usec).
+## The nominal is per machine (perf_nominal.json by hostname), so a quiet laptop or builder0 still judges.
+const LOADED_RATIO := 1.2
 ## One reference sample: this many `reference_work` calls (~1-2 ms on builder0), long enough to read above the
 ## microsecond clock's granularity and short enough not to disturb the fight it is interleaved with.
 const REF_CALLS := 20

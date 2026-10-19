@@ -1010,6 +1010,8 @@ func _order_context() -> Variant:
 				# tank of a mixed squad stood pivoting for 4 s while its station drove off, same probe). The lead shrinks
 				# to nothing as the crew closes on its station, plus the anchor's own motion over a think's staleness.
 				station += tangent * (minf(across, TRANSIT_LEAD_MAX_M) + (velocity as Vector3).length() * STATION_LEAD_S)
+			# Round 34 (C34.11): a station over the water stands on my final seat's bank (SlotGround.station_on_goal_side).
+			station = SlotGround.station_on_goal_side(station, order["goal"])
 			context["goal"] = SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id))
 			context["transit"] = true
 		if _order_source.has_method("pace_factor"):
@@ -3558,10 +3560,12 @@ func _order_move(order: Dictionary) -> void:
 	# turn that settles, and is still honoured; a fixed gun's hull IS its aim, so it still faces.
 	# Round 31 (manoeuvre M1b(2), his round-28 call "turn the whole vehicle", C31.8 grant): under `turnhull` a facing he
 	# DREW is turned to by the hull, front armour where he pointed; a clicked order keeps the rule above (the turret).
+	# Round 33 (CP-F): under it a face that IS declined (a contact the turret takes) keeps the hull on his drawn heading.
 	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id) \
 			and not Manoeuvre.hull_takes_face(self, order):
 		faces_declined += 1
-		order = {"type": "stop"}
+		var drawn := Manoeuvre.drawn_face(self)
+		order = drawn if not drawn.is_empty() else {"type": "stop"}
 	# Round 13 (S6): a no-pivot fixed gun with nothing in sight is not asked to turn unless its order says which way.
 	if String(order.get("type", "")) == "face" and not _enemy_in_sight:
 		var source := String(order.get("from", "other"))
