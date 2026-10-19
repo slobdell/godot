@@ -59,4 +59,22 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+**Report (2026-10-18, live):**
+- **P1 done (06b5be57c): the rematch diagnosis.** Traffic's solve stagger (`traffic.gd` hold_of/shape) read
+  `Engine.get_physics_frames() % 6`, and the process's frame counter never resets, so a rematch started at another phase
+  and branched. Nothing else carries a match: GDScript statics (all 798 restored), a new World3D, the resource cache,
+  ids and heap all change no bit. Evidence (918ede503, builder0 native, sim-baseline match through main.tscn, 3 runs a
+  process × idle phases 0–5, 1150 ticks): base gives 6 outcomes and 12 of 12 rematches branched; a scratch patch gives
+  1 outcome and 0 of 12. Write-up: `references/round34/planner/rematch/diagnosis.md`. The orchestrator ruled (A), granting the traffic.gd lines.
+- **P2 built (b7184e87d):** `Traffic._phase` = the Match's tick. The audit of every frame-counter read in game/ and
+  native/src is in the diagnosis: this was the only absolute phase on a decision path, and it has no C++ mirror.
+  `tests/test_rematch.gd` passes with the fix and fails without it (tick 250), builder0 light lane. Full check running.
+  sim-baseline WILL move once (a phase shift); the orchestrator adopts it on main after the merge.
+
+**Plan:** P1 → P2 (merge alone, then the baseline adoption on main) → P3 judging table (rounds 31–33's judged pairs:
+the table was last rendered at round 30) → P4 tools → P5 after the flicker merges.
+
+**Merge notes (shared files):** `game/ai/traffic.gd` (traffic's; three changes, granted for C34.6: `_match_id`, `_phase`,
+and the two stagger lines).
+
+**Questions for the lead:** none. **Requests to other streams:** none (native: no C++ mirror to write).
