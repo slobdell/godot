@@ -10,6 +10,16 @@ extends TestCase
 const LANE_X := TacticsScenarios.LANE_X
 
 
+## The arm list (the defaults may be either way): facesettle as asked, turnhull ON (the give-up acts on lifted faces only).
+static func _arm(settle: bool) -> PackedStringArray:
+	var off := PackedStringArray([])
+	if settle != Manoeuvre.FACE_SETTLE_DEFAULT:
+		off.append("facesettle")
+	if not Manoeuvre.TURN_HULL_DEFAULT:
+		off.append("turnhull")
+	return off
+
+
 static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
 	for child in lab.game_match.brains.get_children():
 		if child is OrderController and (child as OrderController).tank == tank:
@@ -19,10 +29,10 @@ static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
 
 ## A War Rig boxed in by four parked squadmates (no face plan fits: every pose comes nearer one of them), told to face
 ## 90 deg right, for 8 s. Returns what it did over the last 3 s.
-func _boxed_face(settle: bool, unit_id := "gang_tank") -> Dictionary:
+func _boxed_face(settle: bool, unit_id := "gang_tank", from := "drawn") -> Dictionary:
 	var was_off := Movement._off
 	# The arm list follows the default (on a tree where FACE_SETTLE_DEFAULT is true the empty list is ON).
-	Movement._off = PackedStringArray([]) if settle == Manoeuvre.FACE_SETTLE_DEFAULT else PackedStringArray(["facesettle"])
+	Movement._off = _arm(settle)
 	var lab := TacticsLab.create(self, 31)
 	var here := Vector3(LANE_X, 0, 30)
 	var box: Array = Movement.hull_box(unit_id)
@@ -35,7 +45,7 @@ func _boxed_face(settle: bool, unit_id := "gang_tank") -> Dictionary:
 	lab.gun(Match.Team.GREEN, "Green_A_5", here + Vector3(-(half_w * 2.0 + 1.5), 0, 0), 0.0, unit_id)
 	await lab.start()
 	var ctl := _controller_of(lab, rig)
-	ctl.set_orders({"type": "face", "x": here.x + 20.0, "z": here.z}, {"type": "hold_fire"})
+	ctl.set_orders({"type": "face", "x": here.x + 20.0, "z": here.z, "from": from}, {"type": "hold_fire"})
 	var none_before := Manoeuvre.face_none
 	var settles_before := Manoeuvre.face_settles
 	var ticks := SimClock.TICK_RATE * 8
@@ -72,13 +82,13 @@ func test_a_boxed_face_stops_still_after_its_plans_fail() -> void:
 ## A face that plans fine on open ground is untouched: it turns, ends aligned, and face_settled() says so; no give-up.
 func test_an_open_face_turns_and_reads_settled_when_aligned() -> void:
 	var was_off := Movement._off
-	Movement._off = PackedStringArray([]) if Manoeuvre.FACE_SETTLE_DEFAULT else PackedStringArray(["facesettle"])
+	Movement._off = _arm(true)
 	var lab := TacticsLab.create(self, 31)
 	var here := Vector3(LANE_X, 0, 30)
 	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", here, 0.0, "gang_tank")
 	await lab.start()
 	var ctl := _controller_of(lab, rig)
-	ctl.set_orders({"type": "face", "x": here.x + 20.0, "z": here.z}, {"type": "hold_fire"})
+	ctl.set_orders({"type": "face", "x": here.x + 20.0, "z": here.z, "from": "drawn"}, {"type": "hold_fire"})
 	var settles_before := Manoeuvre.face_settles
 	for tick in SimClock.TICK_RATE * 20:
 		await lab.step()
@@ -112,3 +122,12 @@ func test_a_hull_fixed_scout_does_not_give_up() -> void:
 	var scout := await _boxed_face(true, "gang_scout")
 	print("MEASURE w2_face_settle boxed gang_scout (hull-fixed), ON: %s" % [scout])
 	assert_eq(int(scout["settles"]), 0, "a hull-fixed hull never gives up its face")
+
+
+## The scope (round 35's design note): a PLAIN face (no `from`: a lab's, a probe's, the planner seam's wedged semi) on the same
+## boxed War Rig keeps round 9's creep with the switch ON: no give-up, the creep's throttle stands.
+func test_a_plain_face_keeps_round_nines_creep() -> void:
+	var plain := await _boxed_face(true, "gang_tank", "")
+	print("MEASURE w2_face_settle boxed War Rig, PLAIN face, ON: %s" % [plain])
+	assert_eq(int(plain["settles"]), 0, "a plain face never gives up")
+	assert_true(float(plain["throttle_max"]) >= Steering.WHEELS_MIN_THROTTLE - 0.01, "it creeps as before (%.2f)" % float(plain["throttle_max"]))
