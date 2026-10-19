@@ -128,6 +128,17 @@ _Filed here before any number._
   gave up REPORTED (median, count >= 45 deg). Gate: (a)–(j), (n); a miss parks it with a trace. If (d)/(e) miss on attack-move only,
   the trace names the mechanism and the verdict is the orchestrator's (the step is brains' E1).
 
+- **T8 a held crew under fire leaves the hold (traffic, R35.7 (B)), filed before any code or number from `stream/traffic`
+  `d3d2e6478` (`references/round35/traffic/t8_design.md`), with two lines added by the orchestrator.** `--traffic-on=holdfire`
+  (DEFAULT_OFF): in `Traffic.hold_of`, a held crew hit within UNDER_FIRE_S (5 s) is released from its squad's wait like a passed
+  crew (`released_fire`), for good for that wait; native mirrors the hold. Pair cut AFTER T7's series reads (on T7's verdict).
+  Fixed arenas {terminus, locks, crossing, gorge, parade} x 1700–1727, n 140, native, builder0, pinned; k = 1.645 paired se.
+  **Counter first (added):** `released_fire` > 0 in the arm. **G:** held deaths (dead while `Traffic.holding` the tick before, or
+  within 3 s of a hold ending; jam_census `held`, T5's causes untouched) arm < base and (base - arm) - k·se > 0. **Guards:** stuck
+  deaths, jam deaths, open deaths ±, far loops, kills / hit rate, all friendly contacts, crossing arrivals 44–46 x 6, `tr_holds` >=
+  half of base; **(added) all deaths per team <= base + k·se** (T6's lesson: deaths moved cause one for one). Reported:
+  `released_fire`, hold seconds, standoffs, deaths by cause.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
