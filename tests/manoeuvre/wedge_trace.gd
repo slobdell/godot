@@ -225,6 +225,10 @@ func _observe(game_match: Match) -> void:
 			row["stall_intent_ticks"] = Manoeuvre.stall_intent_ticks
 			row["esc_fires_hull"] = Movement.esc_fires_hull
 			row["esc_asks"] = Movement.esc_asks
+			var arms := Movement.route_arms()  # traffic T9's yields_unfinished, where the tree has it (-1 where not)
+			row["yields_started"] = int(arms.get("yields_started", -1))
+			row["yields_unfinished"] = int(arms.get("yields_unfinished", -1))
+			row["asks_refused"] = int(arms.get("asks_refused", -1))
 			var hulls: Array = []
 			for i in tank.get_slide_collision_count():
 				var hit := tank.get_slide_collision(i).get_collider()
