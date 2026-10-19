@@ -959,3 +959,20 @@ lane-census: native-for-check import ## brains B9: the CPU's lane picks and thei
 		| xargs -P $(LANE_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
 			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 > $(LANE_DIR)/$$0-$$1.log 2>&1 || true'
 	@$(PYTHON) tests/tactics/lane_table.py $(LANE_DIR)
+
+# B9 (R34.15) the lane spread's series (workstreams *Bars (round 34)*, brains B9): showmatch fights over LANE_SERIES_AT x
+# LANE_SERIES_SEEDS; LANE_ARM=aa runs both sides OFF (the A/A, run first), LANE_ARM=ruled runs ONE side with the rule
+# (green on even seeds, rust on odd) -> LANE_SERIES_DIR/<arm>/ + tests/tactics/lane_series.py (needs both arms' dirs).
+LANE_SERIES_AT ?= locks terminus crossing
+LANE_SERIES_SEEDS ?= 1400_1439
+LANE_ARM ?= aa
+LANE_SERIES_DIR ?= $(BUILD_DIR)/lane-series
+.PHONY: lane-series
+lane-series: native-for-check import ## brains B9: the lane spread's one-sided series, LANE_ARM=aa|ruled over LANE_SERIES_AT x LANE_SERIES_SEEDS (first_last) -> LANE_SERIES_DIR/<arm>/
+	@rm -rf $(LANE_SERIES_DIR)/$(LANE_ARM); mkdir -p $(LANE_SERIES_DIR)/$(LANE_ARM)
+	@echo ">> lane-series $(LANE_ARM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(LANE_SERIES_AT)' seeds '$(LANE_SERIES_SEEDS)'"
+	@first=$${LANE_SERIES_SEEDS%_*}; last=$${LANE_SERIES_SEEDS#*_}; for a in $(LANE_SERIES_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
+		| xargs -P $(LANE_JOBS) -L 1 sh -c 'side=off; if [ "$(LANE_ARM)" = ruled ]; then side=$$([ $$(( $$1 % 2 )) = 0 ] && echo green || echo rust); fi; \
+			timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
+			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 --lane-spread=$$side > $(LANE_SERIES_DIR)/$(LANE_ARM)/$$0-$$1.log 2>&1 || true'
+	@ls $(LANE_SERIES_DIR)/$(LANE_ARM) | wc -l | sed 's/^/   logs: /'

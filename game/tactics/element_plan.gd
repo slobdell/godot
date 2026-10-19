@@ -253,6 +253,16 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	plan["drill"] = drill["drill"]
 	# Round 21 (R2): who set the anchor, a drill or the movement (stale_anchor reads it back next update).
 	plan["anchor_by_drill"] = bool(state.get("anchor_by_drill", false))
+	# B9 (the lane spread): a task with a `via` drives through it first, before its own drill (support by fire, an
+	# ambush) or movement; a contact drill still takes over on the way.
+	var via: Variant = ElementTask.via(task)
+	plan["via_done"] = bool(state.get("via_done", false))
+	if via is Vector3 and not bool(plan["via_done"]) and (situation["center"] as Vector3).distance_to(via) <= VIA_REACHED_M:
+		plan["via_done"] = true
+	if via is Vector3 and not bool(plan["via_done"]) and (drill["drill"] == "" or TASK_DRILLS.has(String(drill["drill"]))):
+		_plan_via(plan, situation, table, via)
+		plan["ducks"] = UnansweredFire.apply(plan, situation, state)
+		return plan
 	if drill["drill"] != "":
 		plan["why"] = drill["why"]
 		_plan_drill(plan, situation, state, table, drill)
@@ -268,6 +278,22 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# orders excepted: it holds and the readout says why).
 	plan["ducks"] = UnansweredFire.apply(plan, situation, state)
 	return plan
+
+
+## B9: the via leg is done within this of the via point; the drills a task itself runs (the via leg goes first).
+const VIA_REACHED_M := 15.0
+const TASK_DRILLS := ["support_by_fire", "ambush"]
+
+
+## B9: drive the element's shape to `via` (another lane's middle), on the way, as a plain leg.
+static func _plan_via(plan: Dictionary, situation: Dictionary, table: DoctrineTable, via: Vector3) -> void:
+	var center: Vector3 = situation["center"]
+	plan["anchor"] = via
+	plan["heading"] = TacticsFormation.flat(via - center) if center.distance_to(via) > 1.0 else plan.get("heading", Vector3.FORWARD)
+	plan["why"] = "%s, by the %s lane" % [String(plan.get("why", "")), "west" if via.x < -1.0 else "east" if via.x > 1.0 else "centre"]
+	var verb := "attack_move" if String(situation.get("threat", "none")) in ["likely", "contact"] else "move"
+	_group(plan, slot_order(situation), String(plan["formation"]), via, plan["heading"], table.spacing(String(situation["terrain"])),
+			verb)
 
 
 ## The shape the player chose for `task` with G, or "" under AUTO (the table decides). Pure.

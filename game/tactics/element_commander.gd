@@ -261,8 +261,96 @@ func _unseated() -> bool:
 	return false
 
 
+## B9 (R34.15; traffic's T5 jam census and brains' lane census: the direct commander fed ~2 in 3 of its lane picks down a
+## lane another of its squads had just taken, the centre lane 78-89 % of them). LANE SPREAD: when a task's route crosses
+## the middle (z = 0) into a lane this side already sent a squad down this think, it goes `via` another lane's middle
+## point instead, when (a) the detour (centre -> via -> spot, straight) is at most LANE_DETOUR x the direct line +
+## LANE_DETOUR_SLACK_M, (b) the enemy this side knows of within LANE_HELD_M of that point is at most LANE_HELD_SHARE x
+## the squad's crews (it never spreads into a lane held in strength), and (c) that lane has fewer of this side's squads.
+## The choice is latched per element while its spot stands. `--lane-spread=off|green|rust|both` (env LANE_SPREAD): judged
+## one-sided first (the bar), shipped for both sides if it passes.
+const LANE_DETOUR := 1.4
+const LANE_DETOUR_SLACK_M := 30.0
+const LANE_HELD_M := 40.0
+const LANE_HELD_SHARE := 0.5
+static var LANE_SPREAD := _lane_spread_arg()
+static var lanes_spread := 0
+
+
+static func _lane_spread_arg() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--lane-spread="):
+			return String(arg).trim_prefix("--lane-spread=")
+	var env := OS.get_environment("LANE_SPREAD")
+	return env if env != "" else "off"
+
+
+static func lane_spread_on(team: int) -> bool:
+	return LANE_SPREAD == "both" or (LANE_SPREAD == "green" and team == Match.Team.GREEN) \
+			or (LANE_SPREAD == "rust" and team == Match.Team.RUST)
+
+
+## The arena's north-south lanes where they cross the middle (z = 0): their points, west to east.
+static func lane_points(data: Dictionary = Arena.active) -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	for lane: Dictionary in data.get("lanes", []):
+		var pts: Array = lane.get("points", [])
+		for i in range(1, pts.size()):
+			var a := Vector2(float(pts[i - 1][0]), float(pts[i - 1][1]))
+			var b := Vector2(float(pts[i][0]), float(pts[i][1]))
+			if (a.y > 0.0) != (b.y > 0.0) and absf(b.y - a.y) > 1e-4:
+				out.append(Vector3(a.x + (b.x - a.x) * (0.0 - a.y) / (b.y - a.y), 0.0, 0.0))
+				break
+	out.sort_custom(func(p: Vector3, q: Vector3) -> bool: return p.x < q.x)
+	return out
+
+
+## The lane (index into `lanes`) a straight route from `from` to `to` crosses the middle nearest, -1 if it does not cross.
+static func lane_of_route(from: Vector3, to: Vector3, lanes: Array[Vector3]) -> int:
+	if (from.z > 0.0) == (to.z > 0.0) or absf(to.z - from.z) < 1e-4 or lanes.is_empty():
+		return -1
+	var x := from.x + (to.x - from.x) * (0.0 - from.z) / (to.z - from.z)
+	var best := -1
+	for i in lanes.size():
+		if best < 0 or absf(lanes[i].x - x) < absf(lanes[best].x - x):
+			best = i
+	return best
+
+
+## Pure: the lane a squad of `crews` at `from` going to `to` should take, given `used` ({lane index: squads of this side
+## sent down it this think}) and the enemy `contacts` this side knows ([{"position"}]): its own lane when nobody else took
+## it, else the best other lane that passes (a)-(c); -1 when it does not cross the middle; its own when none passes.
+static func lane_pick(from: Vector3, to: Vector3, crews: int, lanes: Array[Vector3], used: Dictionary, contacts: Array) -> int:
+	var own := lane_of_route(from, to, lanes)
+	if own < 0 or int(used.get(own, 0)) == 0:
+		return own
+	var direct := Vector2(to.x - from.x, to.z - from.z).length()
+	var best := -1
+	var best_cost := INF
+	for i in lanes.size():
+		if i == own or int(used.get(i, 0)) >= int(used.get(own, 0)):
+			continue
+		var via := lanes[i]
+		var detour := Vector2(via.x - from.x, via.z - from.z).length() + Vector2(to.x - via.x, to.z - via.z).length()
+		if detour > direct * LANE_DETOUR + LANE_DETOUR_SLACK_M:
+			continue
+		var held := 0
+		for contact: Dictionary in contacts:
+			var at: Vector3 = contact["position"]
+			if Vector2(at.x - via.x, at.z - via.z).length() <= LANE_HELD_M:
+				held += 1
+		if float(held) > LANE_HELD_SHARE * float(crews):
+			continue
+		var cost := detour + 1000.0 * float(used.get(i, 0))
+		if cost < best_cost:
+			best_cost = cost
+			best = i
+	return best if best >= 0 else own
+
+
 ## One planning cycle: classify our elements, then give each one a task.
 func think() -> void:
+	_lane_used = {}
 	var mine := elements.of_team(team)
 	if mine.is_empty():
 		return
@@ -794,7 +882,45 @@ static func _snap_to_lane(x: float, lanes: Array) -> float:
 
 
 ## Give an element a task, unless it is already doing that.
-func _give(element: Element, task: Dictionary) -> void:
+## B9: this think's lanes ({lane index: squads}) and each element's latched lane choice ({id: {"to", "via"}}).
+var _lane_used := {}
+var _lane_latch := {}
+
+
+## B9: `task` with a `via` when the lane spread moves it (see lane_pick); counts its lane in this think's ledger.
+func _spread(element: Element, task: Dictionary) -> Dictionary:
+	var lanes := ElementCommander.lane_points()
+	var spot: Variant = null
+	if task.has("to"):
+		spot = Vector3(float(task["to"][0]), 0.0, float(task["to"][1]))
+	elif task.has("target"):
+		var target := game_match.tanks.get_node_or_null(NodePath(String(task["target"]))) as Tank
+		spot = _flat(target.global_position) if target != null else null
+	if not (spot is Vector3) or lanes.is_empty():
+		return task
+	var from := _center(element)
+	var latch: Dictionary = _lane_latch.get(element.id, {})
+	var lane := -1
+	if not latch.is_empty() and (latch["to"] as Vector3).distance_to(spot) <= REASSIGN_M:
+		lane = int(latch["lane"])
+	else:
+		lane = ElementCommander.lane_pick(from, spot, element.members().size(), lanes, _lane_used, _contacts()) \
+				if ElementCommander.lane_spread_on(team) else ElementCommander.lane_of_route(from, spot, lanes)
+		_lane_latch[element.id] = {"to": spot, "lane": lane}
+	if lane < 0:
+		return task
+	_lane_used[lane] = int(_lane_used.get(lane, 0)) + 1
+	if not ElementCommander.lane_spread_on(team) or lane == ElementCommander.lane_of_route(from, spot, lanes):
+		return task
+	var spread := task.duplicate()
+	spread["via"] = [lanes[lane].x, lanes[lane].z]
+	if latch.is_empty() or int(latch.get("lane", -1)) != lane:
+		ElementCommander.lanes_spread += 1
+	return spread
+
+
+func _give(element: Element, given: Dictionary) -> void:
+	var task := _spread(element, given)
 	var previous: Dictionary = assigned.get(element.id, {})
 	var same_verb := not previous.is_empty() and String(previous.get("verb", "")) == String(task["verb"])
 	if same_verb:
