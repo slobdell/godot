@@ -1,0 +1,17 @@
+>> remote: syncing godot-manoeuvre-pair to slobdell@builder2:~/tank_squad/godot-manoeuvre-pair
+>> remote: make manoeuvre-c339-cells C339_SEEDS=101-112 C339_JOBS=4 on slobdell@builder2
+>> remote: no override.cfg in this checkout; this run's Godot user dir is tank_squad_godot-manoeuvre-pair
+   seed 101: 1 passed, 0 failed
+   seed 102: 1 passed, 0 failed
+   seed 103: 1 passed, 0 failed
+   seed 104: 1 passed, 0 failed
+   seed 105: 1 passed, 0 failed
+   seed 106: 1 passed, 0 failed
+   seed 107: 1 passed, 0 failed
+   seed 108: 1 passed, 0 failed
+   seed 109: 1 passed, 0 failed
+   seed 110: 1 passed, 0 failed
+   seed 111: 1 passed, 0 failed
+   seed 112: 1 passed, 0 failed
+>> remote: copy-back verified, 280 files, sha256
+>> remote: make manoeuvre-c339-cells C339_SEEDS=101-112 C339_JOBS=4 exited 0 (build/ copied back)
