@@ -1,0 +1,16 @@
+{
+  "name": "Orders probe, 5 squads",
+  "note": "Round 34 O5 (planner, tests/orders_probe.gd): five player squads of four or five. Formed and holding until ordered.",
+  "squads": [
+    {"name": "Alpha", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "scout"}]},
+    {"name": "Bravo", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}, {"unit": "scout"}]},
+    {"name": "Charlie", "formation": "wedge", "verb": "hold", "directive": {"role": "scout"},
+     "units": [{"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}]},
+    {"name": "Delta", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}]},
+    {"name": "Echo", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "ifv"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}]}
+  ]
+}
