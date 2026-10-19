@@ -156,9 +156,18 @@ load) and remote-guard-test (the shared-box flake) were red in the check and GRE
 (`make net-smoke remote-guard-test exited 0`). Bar M3 is recorded on main. The 14-step series (attempt 3's shape) runs on
 builder2 from godot-manoeuvre-cpf4 (the native base arm from godot-manoeuvre-m1), results to
 `/home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/`, then `references/round34/manoeuvre/cpf4-series/`.
-**M2 re-cut on main ≥ 2c7c1d0dc** (C34.6's concern): the hold is keyed by the Movement INSTANCE, dead movers pruned, and a
-test runs two matches in one process with the same crew name (4/4 laptop); its check, then M1's (lab/m1-ruler 6c54f4e66,
-main merged), run on builder2 behind the series' first steps.
+### M2 the k-turn arrival flicker is GREEN: merge here `lab/m2-arriveleg` 0d0f22027 (2026-10-19 ~08:10 PDT)
+
+builder0 under systemd-run, `>> remote: make native check exited 2`: 2829 passed 0 failed, 25/26 targets green,
+sim-baseline unmoved, native-verify-scenarios 52/0 with 0 mismatches; the one red, web-smoke, is builder0's pre-N6
+WebGL2/Xwayland-auth failure (HANDOFF, main 71bd4e466's case; native's N6 on main since c9dea4337 fixes it, my tree
+predates it). Cleared on the laptop: `make web-smoke exited 0` at 0d0f22027 (WEB SMOKE PASSED, TANK_SQUAD_READY 8.9 s, no
+console error, export-guard 0 disagreements over 905 files, WEB MATCH SMOKE PASSED; screenshot looked at). The
+orchestrator agreed to this reading before the laptop run. Named to the orchestrator; planner's P5 waits on the merge.
+Re-cut on main ≥ 2c7c1d0dc (C34.6's concern): the hold is keyed by the Movement INSTANCE, dead movers pruned, a test runs
+two matches in one process with the same crew name (4/4 laptop, 74/0 builder0 quick). Paths: game/ai/manoeuvre.gd,
+game/ai/movement.gd (new_order → arrive_hold_forget; OFF_NAMES "arriveleg"), tests/test_manoeuvre_arrive_leg.gd; no
+native change. Logs: ~/overnight-manoeuvre/r34_m2_check4_0d0f22027.log, r34_m2_websmoke_laptop_0d0f22027.log.
 
 **Native's pin-moves (C34.8 (a), relayed 2026-10-19):** hull-rest-probe reads differently pinned v free (drawn ALL median
 10.3° pinned v 8.7/7.2° free; tracks/turret drawn worst 59.7° pinned v 3.3/4.8° free; faced_ambush facing-probe 75.2° v

@@ -302,3 +302,5 @@ build/   (gitignored)    exports and screenshots
     remote makes ran on (orphans, killed by cwd); a third wrapper died inside a judged series' step. The brief's rule is
     the right one: `systemd-run --user --unit=<name> --collect <script>` puts the run in its own cgroup, and the result is
     read from the wrapper line as always. A run with no wrapper line is not nameable, however green its own summary.
+    The unit does NOT inherit your shell's PATH (`~/projects/bin` with node/npm is missing, so `make web-smoke` dies at
+    `npm: command not found`): pass `--setenv=PATH="$PATH"`.
