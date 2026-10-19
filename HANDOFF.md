@@ -43,6 +43,10 @@ carries manoeuvre's M2 (the k-turn arrival flicker, ARRIVE_LEG_DEFAULT on; `0d0f
 second Locks leak (an order goal on the far bank's dry ground comes back to the anchor's side: planner's Locks 3 crossed 1 → 0)
 and B8's deploy-step prototype OFF. **He can try the deploy step:** `DEPLOY_STEP=on make skirmish ARENA=locks` (B8b, the shorter
 version, follows in brains' next merge).
+**main 62d90dc97 is GREEN** (builder0 `make check exited 0`, 2866/0, web-smoke green on builder0 with no desktop, sim-baseline 13
+unmoved): brains' batch (B8b deploy step OFF, rank depth: the back rank comes up; ground_anchors: an anchor on a building stands
+beside it, the Terminus route stall; the player-route stall fallback) plus traffic's o4b gate fix. **He can try the deploy step:**
+`DEPLOY_STEP=on make skirmish ARENA=locks`.
 **Waiting on the lead:** M0 ship (R34.10, recommended yes); the deploy step (R34.7; prototype on main, try it); a crew stuck behind a FIRING mortar truck (R34.13; T5 says it is 1 % of jam deaths, low stakes).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
