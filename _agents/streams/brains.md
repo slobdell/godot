@@ -71,7 +71,11 @@ arms, leg-gate trace `c23acdbe2`: the leg is held by `ElementPlan._advance`'s `_
 every hold; `_cohesive` fails on one crew over its allowance (20 m x 1.0 / 12 m/s = 1.33 s, ~16 m); each step fires the moment
 the laggard gets inside. The crew on `face from sector` stood 3-4 m from its slot (closed up). Base arm: element 3 waits t 37 to
 past 75 on Green_Guns_4 WEDGED at (18, 87.5) (plant 9.25 m/s, real 1.17, 30 m off, re-seat budget spent). The 128-run census
-(builder0, seeds 601-616 x 4 factions x CP-F on/off, `leg_wait_table.py`) is running.
+(builder0, seeds 601-616 x 4 factions x CP-F on/off, n 64 an arm, `leg_wait_table.py`; filed
+`references/round35/brains/e1_leg_wait_census_c23acdbe2_builder0.txt`): wait seconds CP-F on 428 (closing 228, wedged 189, face 2,
+stop 9), off 516 (closing 252, wedged 255, face 0, parked 1, stop 8); long holds 7 / 191 s v 11 / 329 s, nearly all waiting on a
+WEDGED crew (a move held, < 0.5 m/s real, 20-50 m off its slot). Face is 0-0.5 %: face_settled() stays out (orchestrator,
+recorded). The wedged crews themselves (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3) went to manoeuvre's W1.
 
 **E1 design: the straggler release.** `_advance`'s gate stops waiting for a crew that has not come STRAGGLER_GAIN_M (2 m) closer
 to its slot in STRAGGLER_S (8 s) while the element stands at its anchor: closed-up is judged over the others, the element steps,
