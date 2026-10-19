@@ -1,0 +1,54 @@
+en_Eyes_4 0.5 -32.9 95.7 goal_m -1.0 mps 0.0 arrived stop stop drive pace 1.0 thr 0.0 st 0.0 w 0 fires 0 k 0.0 col ['static:Ground'] wall 0 held 0 fr 6 6.0 blk   HOLD
+en_Eyes_4 2.0 -31.2 91.3 goal_m 58.3 mps 7.16 driving move_to route orca_turn pace 0.44 thr 0.42 st -0.15 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 5 5.3 blk   MOVE
+en_Eyes_4 3.5 -29.8 89.7 goal_m 57.2 mps 3.54 yielding move_to yield yield pace 0.31 thr -0.51 st -0.04 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 2 10.0 blk Green_Eyes_1 Green_Eyes_1 MOVE
+en_Eyes_4 5.0 -32.3 92.2 goal_m 59.1 mps 1.72 yielding move_to yield yield pace 0.31 thr -0.24 st -0.04 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 1 7.6 blk Green_Eyes_1 Green_Eyes_1 MOVE
+en_Eyes_4 6.5 -25.9 91.3 goal_m 53.1 mps 13.92 driving move_to route drive pace 1.0 thr 0.87 st 0.52 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 1 4.6 blk   MOVE
+en_Eyes_4 8.0 -8.9 97.3 goal_m 35.2 mps 0.06 driving move_to route orca_slow pace 0.21 thr 0.19 st -0.22 w 0 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 4 3.0 blk   MOVE
+en_Eyes_4 9.5 -8.3 99.7 goal_m 34.3 mps 0.04 driving move_to route orca_slow pace 0.17 thr 0.16 st -0.29 w 0 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 4 3.3 blk   MOVE
+en_Eyes_4 11.0 -8.2 99.6 goal_m 34.2 mps 0.08 blocked move_to route orca_turn pace 0.18 thr 0.16 st -0.38 w 1 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 4 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 12.5 -8.1 99.6 goal_m 34.1 mps 0.06 blocked move_to route orca_slow pace 0.19 thr 0.18 st 0.33 w 1 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 14.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.15 thr 0.15 st 0.01 w 1 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 15.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.1 thr 0.1 st 0.0 w 1 fires 1 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 17.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 1 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 18.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 1 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 20.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 2 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 21.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 2 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 23.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 2 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 24.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 2 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 26.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 27.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 29.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 30.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 32.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 33.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 35.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 36.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 38.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 39.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 41.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 42.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 44.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 45.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 47.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 48.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 50.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 51.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 53.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 54.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 56.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 57.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 59.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 60.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 62.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 63.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 65.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 66.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 68.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 69.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 71.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 72.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 74.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 75.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 77.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 78.5 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 80.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to route orca_slow pace 0.05 thr 0.05 st 0.0 w 1 fires 3 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 6 3.6 blk Green_Eyes II_5  MOVE
