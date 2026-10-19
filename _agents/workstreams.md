@@ -139,6 +139,15 @@ _Filed here before any number._
   half of base; **(added) all deaths per team <= base + k·se** (T6's lesson: deaths moved cause one for one). Reported:
   `released_fire`, hold seconds, standoffs, deaths by cause.
 
+- **M6 W1c, the stall rule reads the drive's intent against a friendly hull (manoeuvre, R35.12), filed before code from
+  `stream/manoeuvre` `df0c7efba` Status *Bar M6*.** Switch `--nav-off=stallintent`, default OFF. Candidate = lab/w1c (default
+  flipped) + native's mirror; base = `--nav-off=stallintent`; gate = the pair's `make native check` on builder0. FRESH seeds:
+  hull-rest 901–916 drawn; fights + wedge probe on fixed locks/terminus/sumps x 940–963. **(0) Counter first:** stall_intent_ticks,
+  H1 hull escapes, asks > 0 in the ON arm. **Deciding:** (d) attack-move movers by real_mps, new <= base - 1.645 x 1.17 x sqrt(pairs),
+  no other task over Bar M3's (d) guard; (e) attack-move never-settled <= base, no task over M3's (e) guard. **Guards:** (f)
+  arrivals, (i) fights per team, (q) stuck/jam/open deaths, (r) far loops, (s) friendly contact ticks, each within 1.645 se paired;
+  (t) asks and give-ways REPORTED (the churn risk).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
