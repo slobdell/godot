@@ -971,3 +971,114 @@ static func _group_exactly(groups: ControlGroups, members: Array[String], alive:
 		if living.size() == members.size() and living.all(func(n: String) -> bool: return members.has(n)):
 			return number
 	return 0
+
+
+## Round 35 (orders D3, C35.4; round 34's O2 (B), his correction 1: "isn't there enough spacing where we could intersect
+## two wedges basically?"). TIGHT PACKING ON THE DEPLOY STEP. With the deploy step on, an AUTO squad's final seats are
+## its halt shape (`block["halt"]`, O3's pick) laid on a heading fixed when the order is given (the body's approach), so
+## where every crew will finally stand is known now and the squads can be packed by those seats, not by boxes:
+##   * every halt seat of one squad stands at least HALT_CLEAR_M (9 m) from every halt seat of another (wedges nest);
+##     two squads that both halt in a column keep his COLUMN_GAP_M (28 m) between their files;
+##   * the squad nearest the click is placed first and takes the place nearest it, and so on outward (first in, front);
+##   * each squad keeps its own side of the approach (one standing clearly left of the click's line is never laid right
+##     of it, and the other way round), so no two squads' drives cross to reach their places (untangle stays as the backstop);
+##   * no anchor farther back along the approach than its own squad stands now (R34.12b: a back rank never drives away);
+##   * every seat on ground `seat_ok(p)` accepts (dry, standable: nothing on a building), and the anchor one the click
+##     reaches by ground (`reached(p)`, O1's ground cap), tried in order of cost up to PACK_REACH_TRIES.
+## Places are searched on a PACK_STEP_M grid in the body's frame, PACK_ACROSS_M either side of the click and PACK_BEHIND_M
+## behind it (never ahead: the front squad stands on the click). Returns [] (the caller keeps `ranks`) unless every
+## block carries a halt shape. `--pack=off` (PACK false) is round 34's ranks.
+static var PACK := not OS.get_cmdline_user_args().has("--pack=off")
+const PACK_STEP_M := 2.0
+const PACK_ACROSS_M := 90.0
+const PACK_BEHIND_M := 100.0
+## A squad whose centre stands more than this across the click's line has a side.
+const PACK_SIDE_M := 8.0
+const PACK_REACH_TRIES := 24
+## How many packs the controls laid, this process (a probe reads it).
+static var packed := 0
+
+
+static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok: Callable, reached: Callable) -> Array[Vector3]:
+	var none: Array[Vector3] = []
+	if not PACK or blocks.size() < 2:
+		return none
+	for block: Dictionary in blocks:
+		if not block.has("halt"):
+			return none
+	var ahead := TacticsFormation.flat(heading)
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	# Seats of each block in the body's frame (x across, y ahead), and where each block stands now in that frame.
+	var seats: Array = []
+	var now: Array[Vector2] = []
+	for block: Dictionary in blocks:
+		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		seats.append(halt_offsets(String(block["halt"]), int(block.get("count", 1)), p.x))
+		var c := Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) - flat_click
+		now.append(Vector2(c.dot(across), c.dot(ahead)))
+	var grid: Array[Vector2] = []
+	var n_across := int(PACK_ACROSS_M / PACK_STEP_M)
+	for i in range(-n_across, n_across + 1):
+		for j in range(0, int(PACK_BEHIND_M / PACK_STEP_M) + 1):
+			grid.append(Vector2(i * PACK_STEP_M, -j * PACK_STEP_M))
+	grid.sort_custom(func(a: Vector2, b: Vector2) -> bool:
+		return a.length_squared() < b.length_squared() if a.length_squared() != b.length_squared() else \
+				(a.x < b.x if a.x != b.x else a.y > b.y))
+	var order := range(blocks.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		return now[a].length() < now[b].length() if now[a].length() != now[b].length() else a < b)
+	var world := func(local: Vector2) -> Vector3: return flat_click + across * local.x + ahead * local.y
+	var ok_memo := {}
+	var seat_good := func(p: Vector3) -> bool:
+		var key := Vector2i(roundi(p.x), roundi(p.z))
+		if not ok_memo.has(key):
+			ok_memo[key] = bool(seat_ok.call(p))
+		return ok_memo[key]
+	var placed_seats: Array = []  # [Vector2 local seat, block index]
+	var anchors: Array[Vector3] = []
+	anchors.resize(blocks.size())
+	for i: int in order:
+		var side := 0.0 if absf(now[i].x) <= PACK_SIDE_M else signf(now[i].x)
+		var column := String(blocks[i]["halt"]) == "column"
+		var found: Variant = null
+		var fallback: Variant = null
+		var tries := 0
+		for at: Vector2 in grid:
+			if side * at.x < 0.0 or at.y < minf(now[i].y, 0.0) - 0.01:
+				continue
+			var clear := true
+			for entry: Array in placed_seats:
+				var gap := COLUMN_GAP_M if column and String(blocks[int(entry[1])]["halt"]) == "column" else HALT_CLEAR_M
+				for s: Vector2 in seats[i]:
+					if (at + s).distance_to(entry[0]) < gap:
+						clear = false
+						break
+				if not clear:
+					break
+			if not clear:
+				continue
+			var dry := true
+			for s: Vector2 in seats[i]:
+				if not bool(seat_good.call(world.call(at + s))):
+					dry = false
+					break
+			if not dry:
+				continue
+			if fallback == null:
+				fallback = at
+			if tries >= PACK_REACH_TRIES:
+				break
+			tries += 1
+			if bool(reached.call(world.call(at))):
+				found = at
+				break
+		if found == null:
+			found = fallback
+		if found == null:
+			return none  # no place fits: the caller keeps the ranks
+		anchors[i] = world.call(found)
+		for s: Vector2 in seats[i]:
+			placed_seats.append([(found as Vector2) + s, i])
+	packed += 1
+	return anchors

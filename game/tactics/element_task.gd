@@ -31,7 +31,8 @@ const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
 ## Round 28 (B5): "facing_from": "waypoint" marks a facing the controls set from his last waypoint (a queued task), not
 ## one he drew; only the readout differs.
-const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from", "approach", "facing_from", "lay", "via"]
+const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from", "approach", "facing_from", "lay", "via",
+		"halt_at", "halt_shape"]
 ## Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 ## His 2026-09-16 ruling stands as the DEFAULT -- "there's essentially always a formation for any given task OR
 ## there's always a central decision maker ... that automatically determines what the formation is" -- so a task with
@@ -80,6 +81,14 @@ static func validate(task: Variant) -> String:
 		if typeof(lay) != TYPE_ARRAY or (lay as Array).size() != 2 or not _finite(lay[0]) or not _finite(lay[1]) \
 				or Vector2(float(lay[0]), float(lay[1])).length() < 1e-6:
 			return "'lay' must be a non-zero [x, z] direction"
+	# D3 (round 35, orders; tight packing on the deploy step): where the squad's halt stands and the shape it was priced in,
+	# laid by the controls when several squads are packed at one click.
+	if task.has("halt_at"):
+		var halt_at: Variant = task["halt_at"]
+		if typeof(halt_at) != TYPE_ARRAY or (halt_at as Array).size() != 2 or not _finite(halt_at[0]) or not _finite(halt_at[1]):
+			return "'halt_at' must be an [x, z] point"
+	if task.has("halt_shape") and not TacticsFormation.NAMES.has(str(task["halt_shape"])):
+		return "'halt_shape' must be one of %s" % ", ".join(TacticsFormation.NAMES)
 	# B9 (round 34, the lane spread): a point the element drives through first (another lane's middle).
 	if task.has("via"):
 		var via_point: Variant = task["via"]

@@ -100,6 +100,8 @@ const DOUBLE_TAP_SECONDS := 0.4
 const FRAME_DESTINATION_M := 220.0
 
 var game_match: Match
+## D3 (C35.4): the heading the last pack laid its halts on (the body's approach), read when the squads' tasks are given.
+var pack_heading := Vector3.ZERO
 var orders: Orders
 var camera: Camera3D
 var rig: RtsCamera
@@ -1098,6 +1100,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size()),
 				"depth": SelectionSquads.depth("auto", loose.size())})
 	var anchors: Array[Vector3] = []
+	var packed_shapes := {}  # D3: each packed anchor -> the halt shape its seats were packed in
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1130,6 +1133,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors = SelectionSquads.ground_anchors(anchors, blocks,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
+		# Round 35 (D3, C35.4): with the deploy step on, an AUTO body's halts are packed now by their seats (hull clearance,
+		# his correction 1) on the approach; the ranks above stand when the pack does not apply or finds no fit.
+		packed_shapes = _pack_halts(squads, blocks, click, drawn, loose, verb, extra, ground)
+		if not packed_shapes.is_empty():
+			anchors.clear()
+			for at: Vector3 in packed_shapes:
+				anchors.append(at)
 		# Round 34 (planner's O5, the Locks route): a route leg through one gate is dealt first through, farthest along,
 		# each squad starting the leg where its previous one ends.
 		if ground != null and bool(extra.get("queue", false)) and squads.size() >= 2 and anchors.size() >= squads.size():
@@ -1163,8 +1173,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
+			# D3: a packed squad deploys exactly where the pack laid its seats, in that shape, on the pack's heading.
+			if packed_shapes.has(anchors[i]):
+				given["halt_at"] = [anchors[i].x, anchors[i].z]
+				given["halt_shape"] = packed_shapes[anchors[i]]
+				given["lay"] = [pack_heading.x, pack_heading.z]
 			# B8 (R34.14): the heading each squad lays its halt on when it deploys, fixed now (the approach).
-			if ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
+			elif ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
 				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
 						Match.team_frame(team)["forward"])
 				given["lay"] = [approach.x, approach.z]
@@ -1234,8 +1249,9 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
 	if extra.has("lay"):
-		task["lay"] = extra["lay"]  # B8: the halt's heading when the squad deploys (prototype)
+		task["lay"] = extra["lay"]  # B8: the halt's heading when the squad deploys
 	_copy_approach(extra, task)
+	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO:
 		task["formation"] = shape
 	if task["verb"] == "move" and not task.has("to"):
@@ -1308,6 +1324,7 @@ func _queue_task_for(units: Array, element: Element, number: int, verb: String, 
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
 	_copy_approach(extra, task)
+	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
 		task["formation"] = shape
 	if task["verb"] == "move" and not task.has("to"):
@@ -1336,6 +1353,7 @@ func _start_route(element: Element, units: Array, verb: String, extra: Dictionar
 	var task := {"verb": "move", "to": [float(extra["to"][0]), float(extra["to"][1])], "drills": false}
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
+	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
 		task["formation"] = shape
 	var error := element.assign(task)
@@ -1376,6 +1394,57 @@ func _waypoints_end(units: Array) -> Variant:
 
 
 ## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
+## D3 (C35.4): a packed squad's halt (where, in what shape, on what heading) rides its move task, queued or not.
+func _copy_pack(extra: Dictionary, task: Dictionary) -> void:
+	if extra.has("halt_at") and task["verb"] == "move":
+		for key: String in ["halt_at", "halt_shape", "lay"]:
+			if extra.has(key):
+				task[key] = extra[key]
+
+
+## D3 (C35.4): {anchor: halt shape} for each squad, in squad order, when the deploy step is on and the order is an AUTO
+## plain move of squads only (no loose units, no drawn facing) whose halts SelectionSquads.pack_halts can fit; else {}.
+## The heading is the body's approach: from the squads to the click, or for a shifted waypoint from where their routes
+## end now. Sets `pack_heading`.
+func _pack_halts(squads: Array, blocks: Array, click: Vector3, drawn: Variant, loose: Array, verb: String,
+		extra: Dictionary, ground: Node3D) -> Dictionary:
+	if not ElementPlan.DEPLOY_STEP or verb != "move" or drawn != null or not loose.is_empty() or ground == null \
+			or squads.size() < 2 or blocks.size() != squads.size():
+		return {}
+	var from_blocks := blocks
+	if bool(extra.get("queue", false)):
+		from_blocks = []
+		for i in squads.size():
+			var held: Element = squads[i].get("element")
+			var start: Variant = held.last_point() if held != null and is_instance_valid_element(held) \
+					and (not held.task.is_empty() or not held.queued_tasks.is_empty()) else null
+			var block: Dictionary = (blocks[i] as Dictionary).duplicate()
+			if start is Vector3:
+				block["center"] = start
+			from_blocks.append(block)
+	var heading := SelectionSquads.approach_of(from_blocks, click, Match.team_frame(team)["forward"])
+	var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_on(ground)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var seat_ok := func(p: Vector3) -> bool:
+		var inside := Orders.clamp_to_arena(p)
+		if Vector2(inside.x - p.x, inside.z - p.z).length() > 0.5 or SlotGround.over_water(p):
+			return false
+		var stand := SlotGround.standable_for(ground, p, clearance)
+		return Vector2(stand.x - p.x, stand.z - p.z).length() < 0.5
+	var reached := func(p: Vector3) -> bool:
+		return not SelectionSquads.GROUND_CAP or SelectionSquads._reached_from(flat_click, p, drive, crosses)
+	var anchors := SelectionSquads.pack_halts(from_blocks, click, heading, seat_ok, reached)
+	if anchors.is_empty():
+		return {}
+	pack_heading = heading
+	var shapes := {}
+	for i in anchors.size():
+		shapes[anchors[i]] = String(blocks[i]["halt"])
+	return shapes
+
+
 func _copy_approach(extra: Dictionary, task: Dictionary) -> void:
 	if extra.has("approach") and task["verb"] == "attack":
 		task["approach"] = extra["approach"]
@@ -1545,6 +1614,11 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	for i in held_elements.size():
 		var element: Element = held_elements[i]
 		element.relay_queued(element.queued_tasks.size() - 1, [gate[i].x, gate[i].z])
+		# D3: a waypoint that is no longer the last is passed as a gate, not deployed on: its packed halt goes.
+		var relayed: Dictionary = element.queued_tasks[element.queued_tasks.size() - 1]
+		if relayed.has("halt_at"):
+			for key: String in ["halt_at", "halt_shape", "lay"]:
+				relayed.erase(key)
 	gates_laid += 1
 
 

@@ -810,7 +810,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var deploy := _deploy_state(plan, situation, state, destination, center, told, table)
 	plan["deploy"] = deploy
 	if bool(deploy.get("deployed", false)):
-		plan["formation"] = String(_halt_pick(situation, state, table)["formation"])
+		plan["formation"] = _deploy_shape(situation, state, table)
 		plan["heading"] = deploy["heading"]
 		plan["why"] = "deployed: %s on the spot" % String(plan["formation"]).replace("_", " ")
 		var stand: Vector3 = deploy.get("anchor", destination)
@@ -1832,9 +1832,22 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["tick"] = tick
 		deploy["cause"] = "all_in" if all_in else "cap"
 		var at: Vector3 = destination if DEPLOY_ON_CLICK else clamp_to_arena(Vector3(center.x, 0.0, center.z))
-		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), String(_halt_pick(situation, state, table)["formation"]),
+		# D3 (C35.4): a squad packed at the order stands where the pack laid it (its `halt_at`), in the shape priced there.
+		var packed_at: Variant = task.get("halt_at")
+		if packed_at is Array and (packed_at as Array).size() == 2:
+			at = Vector3(float(packed_at[0]), 0.0, float(packed_at[1]))
+		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy
+
+
+## The shape a deploy stands in: the task's `halt_shape` when the order priced one (D3: the pack laid its seats in it), else
+## the table's hold pick for this situation.
+static func _deploy_shape(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> String:
+	var priced := str((state.get("task", {}) as Dictionary).get("halt_shape", ""))
+	if TacticsFormation.NAMES.has(priced):
+		return priced
+	return String(_halt_pick(situation, state, table)["formation"])
 
 
 ## B8b: `at` stepped away from water, DEPLOY_INLAND_STEP_M at a time (up to DEPLOY_INLAND_MAX_M), until every seat of the
