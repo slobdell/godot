@@ -43,7 +43,7 @@ func test_a_set_up_battery_on_its_fire_order_does_not_give_way() -> void:
 	var units: Array = await _stage()
 	var battery: Tank = units[0]
 	var tank: Tank = units[1]
-	var mover := _on_post(battery)
+	var mover := _on_post(battery, "target")  # a fire mission: on its post with the firemission rule on or off
 	assert_true(mover.on_fire_post(), "set up, ordered to fire, no move of its own: on its fire post")
 	var refused_before := Movement.setup_refusals
 	var gave_way := mover.ask(String(tank.name), tank.global_position, Vector2(0.0, -1.0))
