@@ -167,6 +167,14 @@ _Filed here before any number. Empty at launch._
   a case; L5 repack while firing 0/9; L6 read at 45 s both arms (reason: the rule's own clocks, a room ≤ 20 s + a way back ≤ 20 s;
   19 of v3's 45 misses were inside them at 30 s), ≥ 90 % at the post or inside the hold line, n ≥ 50. Ships ON only if every
   deciding line passes; no re-read.
+- **T4 fourth try (traffic, R34.4), filed before any number on `stream/traffic` `b1cdf9025`
+  (`references/round34/traffic/x4_t4_fourth_bar.md`).** Tree `pair/ghost-on-r34b` = current main + ghost out of OPT_IN + T4
+  tooling + native's ghost-aware twins (`b2b97188d` rebased); base `--traffic-off=ghost`; builder2 both arms, native, pinned.
+  Seeds above 915, never read: body 920–931 (n 12), Terminus drive 940–987 (n 48 a squad, mixed + rigs), skirmish random
+  1000–1023 (n 24). Gates: C31.1 native check ghost ON; one traced Terminus cell (a pinned hull's asked v real velocity).
+  Deciding GAIN: T(1) mixed friend-stuck crew-s arm < base AND (base − arm) − k se > 0; byte-identical arms on every cell =
+  NOT ARISEN, no ship. Deciding guards T(2)–T(4), T(6) within base ± k se; G1–G4, r1 on 920–931, each naming its count of
+  byte-identical cells. Order 7 → G, r1 → T; a fail parks; no re-read. Runs after the v4 series.
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
