@@ -87,7 +87,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (2026-10-19 early, round 34 in progress; Fable)
 
-**Latest (2026-10-19 ~01:30 PDT): M0's candidate is stream/manoeuvre 764ef5427** (fa5226f14 + the out-of-reach rule +
+**Latest (2026-10-19 ~02:15 PDT): the judged series is RELEASED** on pair c8fb8b6a3 (builder2, seeds 101–112, n 12, after
+its check and the `--nav-off=turnin` attribution in the same folder); no candidate change from here. **Dev 764ef5427**
+(builder2, 11–23, n 13): (a) 3.8 → 74.1 % (sd_boot 5.9); (b) 2 → 10; (c) exchange 0.18 → 2.15 (gain − k·sd 1.72);
+in-reach hits −1436 v k·se 597; per-cell damage taken all six PASS (−17 to −250 a run); (d) 0; (d2) 0; (e) 26.9 m; (g)
+identical. (c-out) as written FAIL (totals +1265 v k·se 505; medians 45 → 56; worst +25 % gang_scout v syn_scout 45 m),
+inside what he accepted (57, +37 %); the out-of-reach rule took gang_scout v gang_ifv 30 m from 133 to 80 hits (OFF 86).
+**M1 the ruler** is built on `lab/m1-ruler` (round33/manoeuvre + main 82feffa86): 1B `real_mps`/`mps` on every crew row,
+2B `--faced-shift-m` (seed-hashed direction; hull-rest passes HULL_SHIFT_M=6), cpf_judge reads still from real_mps and
+counts wedged apart; test_manoeuvre_ruler 1/1 laptop. Next for M1: its A/A on builder2 after M0's series.
+M0's candidate is stream/manoeuvre 764ef5427 (fa5226f14 + the out-of-reach rule +
 main 82feffa86); its pair `pair/c339-r34` **c8fb8b6a3** (= 764ef5427 + `pair/native-c339` 25fd4298e, clean) runs on
 builder2: `native check` → `sim-variants VARIANTS_EXTRA=--nav-off=turnin` (the sim-baseline attribution) → the judged
 series 101–112 (one chain, folder godot-manoeuvre-pair). Dev cells 11–23 at 764ef5427 run beside it. **M2's quick-remote
