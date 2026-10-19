@@ -1,0 +1,13 @@
+TERMINUS_AB  base /home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/census-base | new /home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/census-new
+== mixed (13 seeds)
+  arrivals base 290 new 285 of 312: diff -5 se 2.77 1.645se 4.6: FAIL
+  contact-ticks base 4836 new 4521: diff -315 se 258.1 1.645se 424.5: PASS
+  arrived without each arm's two worst runs (10 pairs): diff -3 se 1.5: FAIL
+  contacts without each arm's two worst runs (10 pairs): diff -269 se 198.1: PASS
+  per seed arrived(contacts): 620:22>21(316>355) 621:22>22(221>206) 622:23>23(204>189) 623:22>22(149>111) 624:22>22(187>162) 625:23>22(171>189) 626:24>24(308>270) 627:23>22(85>99) 628:23>23(441>295) 629:23>22(276>84) 630:22>20(74>63) 631:23>23(304>337) 632:18>19(2100>2161)
+== rigs (13 seeds)
+  arrivals base 175 new 184 of 208: diff +9 se 9.24 1.645se 15.2: PASS
+  contact-ticks base 12975 new 11900: diff -1075 se 5835.9 1.645se 9600.0: PASS
+  arrived without each arm's two worst runs (9 pairs): diff +5 se 3.7: PASS
+  contacts without each arm's two worst runs (9 pairs): diff +1914 se 1898.3: PASS
+  per seed arrived(contacts): 620:15>15(511>764) 621:15>15(553>2300) 622:14>10(330>676) 623:14>15(367>2104) 624:15>13(298>641) 625:15>14(337>474) 626:14>13(1150>2976) 627:12>13(519>224) 628:13>14(751>344) 629:10>15(683>588) 630:14>15(3669>395) 631:11>16(3541>253) 632:13>16(266>161)

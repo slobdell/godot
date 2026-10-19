@@ -105,6 +105,8 @@ static func configure() -> bool:
 		"UNSTICK_BACK_DEFAULT": bool((Movement as Script).get_script_constant_map().get("UNSTICK_BACK_DEFAULT", false)),
 		"KTURN_ARC_DEFAULT": bool((Movement as Script).get_script_constant_map().get("KTURN_ARC_DEFAULT", false)),
 		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
+		# Round 33 (manoeuvre C33.9): the turn-in's default; with it the native execute hands a wheeled fixed gun's stop back.
+		"TURN_IN_DEFAULT": bool((Manoeuvre as Script).get_script_constant_map().get("TURN_IN_DEFAULT", false)),
 		"tank_script": Tank,
 		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
 		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).

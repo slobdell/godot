@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -1407,6 +1407,13 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	cmd.throttle = FACE_THROTTLE * _face_gear
 	cmd.turn = _face_turn
 	return true
+
+
+## Round 34 (C33.9's M0): the turn-in has the hull this tick; whatever face_turn had planned is stale (its first leg may be
+## a reverse: seed 36 of round 33's judged cells reversed 13 ticks on legs planned before the turn-in took over).
+func face_drop() -> void:
+	_face_left_m = 0.0
+	_face_legs.clear()
 
 
 func _face_start_leg(leg: Vector2) -> void:

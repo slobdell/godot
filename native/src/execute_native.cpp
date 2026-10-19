@@ -32,7 +32,7 @@ struct EN {
 			lazy_path{ "lazy_path" }, driver{ "driver" }, deflected{ "deflected" }, steer_to{ "steer_to" }, why{ "why" },
 			leg{ "leg" }, path{ "path" }, path_all{ "path_all" }, path_from{ "path_from" }, profile_detail{ "profile_detail" }, yield_to{ "yield_to" }, from{ "from" }, x{ "x" }, z{ "z" },
 			_wheel_radius_unit{ "_wheel_radius_unit" }, _wheel_radius_value{ "_wheel_radius_value" }, unit_id{ "unit_id" },
-			order_controller{ "OrderController" };
+			mount{ "mount" }, order_controller{ "OrderController" };
 };
 const EN &en_() {
 	static const EN names;
@@ -229,7 +229,7 @@ ExecState *Exec<StructView>::state_of() {
 struct ExecCounts {
 	int64_t native = 0, handed_back = 0, stale_pulls = 0, verified = 0, verify_mismatches = 0;
 	int64_t part_pulls = 0;
-	int64_t dead = 0, reflexes = 0, yielding = 0, face = 0, drive = 0, other_order = 0;
+	int64_t dead = 0, reflexes = 0, yielding = 0, face = 0, drive = 0, other_order = 0, turn_in_stop = 0;
 	std::string first_mismatch;
 };
 ExecCounts &exec_counts() {
@@ -244,6 +244,7 @@ void note_hand_back(int reason, const Variant &type) {
 		case 0: c.dead++; break;
 		case 1: c.reflexes++; break;
 		case 2: c.yielding++; break;
+		case 4: c.turn_in_stop++; break;
 		default: {
 			const String t = type;
 			if (t == String("face")) {
@@ -362,12 +363,19 @@ Variant execute_native(const ExecConfig &config, Object *ctl, double delta, int 
 		static const String face("face"), post("post");
 		// A face order natively only on a tracked hull's plain facing: Movement.keeps_heading answers false (the order
 		// is not "from" a post), face_turn false (no wheels), _wheel_hold off (opt-in): the turn toward the spot.
-		const bool simple_face = type == Variant(face) && String(move_order.get(k.from, String())) != post &&
-				String(mover->get(k._wheel_radius_unit)) == String(tank->get(k.unit_id)) &&
+		// Tracked: the wheel cache is this unit's and says no wheels (a cache for another unit, or none, is not known).
+		const bool tracked = String(mover->get(k._wheel_radius_unit)) == String(tank->get(k.unit_id)) &&
 				(double)mover->get(k._wheel_radius_value) <= 0.0;
+		const bool simple_face = type == Variant(face) && String(move_order.get(k.from, String())) != post && tracked;
+		// Round 33 (manoeuvre C33.9): under the turn-in a `stop` on a fixed gun on wheels goes to the GDScript, whose
+		// OrderController._stop_turn_in turns gunnery's swing in after the gun (and keeps the controller's turn-in
+		// history); its own throttle / turn test then decides. Not known to be tracked counts as wheeled.
+		static const String fixed("fixed");
+		const bool turn_in_stop = config.drive->TURN_IN && type == Variant(stop) && !tracked &&
+				String(tank->get(k.mount)) == fixed;
 		const int reason = !(bool)tank->get(k.alive) ? 0 : (!((Array)ctl->get(k.reflexes)).is_empty() ? 1 :
 				((!String(mover->get(k.yield_to)).is_empty() && !config.drive->yield_ready) ? 2 :
-				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : -1)));
+				((type != Variant(move_to) && type != Variant(stop) && !simple_face) ? 3 : (turn_in_stop ? 4 : -1))));
 		if (reason >= 0) {
 			note_hand_back(reason, type);
 			if (mode != EXEC_LIVE) {
@@ -454,6 +462,7 @@ Dictionary execute_counts(bool reset) {
 	out["face"] = exec_counts_.face;
 	out["drive"] = exec_counts_.drive;
 	out["other_order"] = exec_counts_.other_order;
+	out["turn_in_stop"] = exec_counts_.turn_in_stop;
 	out["first_mismatch"] = String::utf8(exec_counts_.first_mismatch.c_str());
 	if (reset) {
 		exec_counts() = ExecCounts();

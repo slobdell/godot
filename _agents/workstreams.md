@@ -69,11 +69,70 @@ carve-outs. **native** takes planner's paths this round (`game/ai/planner/**`, `
 
 ## Bars (round 35)
 
-_Filed here before any number. Empty at launch._
+_Filed here before any number._
+
+- **C35.3 the scout turn-in (orchestrator, filed 2026-10-19 08:45 before `3902ade09`'s check read).** Ships when (1) builder0
+  `make check` on `pair/c339-r34b` `3902ade09` exits 0 on every target except sim-baseline; (2) every sim-baseline map that MOVES
+  reads main's line again with the turn-in off (`make sim-variants VARIANTS_EXTRA=--nav-off=turnin` on the same commit), so the
+  move is the turn-in's alone; then the moved maps are adopted in the merge commit. A map that moves with the turn-in off too
+  blocks the merge until traced.
+- **T7 under fire, refuse only when the asker has a way round (traffic, C35.8), filed before any number on `stream/traffic`
+  (design `references/round35/traffic/t7_design.md`).** Pair = current main + T7 (`--traffic-on=underfire`, DEFAULT_OFF) + native's
+  mirror + the ON flip; base arm `--traffic-off=underfire`; switch-OFF sim-baseline inertness beside the C31.1 full check. Native,
+  builder0 start to end, pinned, 180 s showmatch, FRESH fixed arenas `{terminus, locks, sumps, gorge, parade} × 1600–1627` (n 140,
+  no random arena, no twins). k = 1.645, paired se (`tests/traffic/jam_ab.py`). DECIDING GAIN G: jam-under-fire deaths (T5's
+  definition) arm < base AND (base − arm) − k·se > 0. Guards (T6b's, unchanged): (1) open deaths ± k·se; (2) stuck deaths ≤ base +
+  k·se; (3) far loops ≤ base + k·se; (4) kills ± k·se, hit rate ≥ base − k·se; (5) contacts in the 3 s after a hit-ended give-way ≤
+  base + k·se; (6) crossing arrivals 44–46 × 6 ≥ base − k·se a case; **(7, new) all friendly hull contacts a fight ≤ base + k·se**
+  (a pass must not buy bumps). Reported: contacts with a crew passing, standoffs with durations, all/jam deaths, deaths by cause,
+  `underfire_refusals/gives/holds`, `passes/passes_done/passes_timeout`. A fail is traced (worst fight first); no re-read.
+- **D3 tight packing (orders, C35.4), filed before any number on `stream/orders` `54cff1bfc` (2026-10-19 ~09:20).** The deploy
+  step ON in both arms; `main:` (pack on) v `pack_off:--pack=off`. Its counter: `SelectionSquads.packed` non-zero in the main arm.
+  - **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell (deterministic): Locks / Crossing / Terminus x 3 / 5
+    squads x click / route = 24 cells, arms `main:` (pack on) v `pack_off:--pack=off`, the same tree, the deploy step ON in both.
+  - **Gain (must pass):** over the 6 CLICK cells, the median of each cell's `end far max m` (the farthest crew from the click at
+    the window's end) at least 15 % below pack_off's; and in EVERY cell `end foreign min m` >= 7 m (the 9 m design, less
+    grounding slop), on both arms reported.
+  - **Guards (each must hold in every cell):** all-in <= pack_off x 1.2 + 3 s, and no cell all-in on pack_off but not on main;
+    far bank 0; `toward min m` >= 0 (nobody sent away from the click); `twitch worst m` <= pack_off + 5 m.
+  - **Response:** `test_control_scale` (the click's 3-tick response) passes in the check of the named hash.
+  - **Single squads:** the pack acts only on 2+ squads; `make squad-arrive-series ARRIVE_ARM_FLAG=pack ARRIVE_MAPS="terminus sumps"
+    ARRIVE_SEEDS="1 2"` both arms must be byte-identical (an equality check, reported).
+  - Screenshots (`orders-probe-shots`, arrival and +5 s, desktop and phone) looked at for every 5-squad click cell.
 
 ## Rulings (round 35)
 
-_Empty at launch._
+- **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
+  2885/0, only sim-baseline). Attribution on builder0: `--nav-off=turnin` on 3902ade09 reads main's base40 AND base90 on all 13
+  maps (main's own base40 equals the recorded lines). Moved and adopted: yard terminus crossing locks parade gorge cut docks.
+  The merge carried round 34's manoeuvre Status into round 35's brief; restored (`ffa462c94`). Orientation 84–86 kept.
+- **R35.2 (2026-10-19) C35.7, manoeuvre's side of the seam approved:** W2 face settle (a face no plan fits 3 times in a row stops
+  still; `--nav-off=facesettle`; ships with turnhull ON) and `Movement.face_settled()`, a read-only query. Brains' side waits
+  for E1's leg-gate trace to name the rule that holds the leg.
+- **R35.3 (2026-10-19 ~09:40) C35.7 is DECOUPLED.** Brains' E1 trace (laptop, GDScript, lab/cpf4 `e76f6dab6` both arms,
+  law/faced_attack_move-614; probe `c23acdbe2`): the leg is held by `ElementPlan._advance`'s `_cohesive` gate on ONE laggard
+  (allowance 20 m x 1.0 / slowest 12 m/s = 1.33 s, ~16 m); `reached` is true at every hold; the crew on `face from sector` sat 3–4 m
+  from its slot and never held a step. R34.18's "steps at 60 v 32" is that gate waiting on a laggard, chaotic by arm. Brains' side
+  becomes a **straggler release** (the gate stops waiting on a crew with no progress on its slot for N s), no face knowledge;
+  face_settled() returns only if the 128-run series (seeds 601–616 x 4 factions x CP-F on/off, builder0) shows a real `face`
+  share. Manoeuvre's W2 ships on its own bar. Brains' base-arm laggard G4, wedged at (18, 87.5) (plant 9.25 v real 1.17 m/s,
+  re-seat watch out of budget), relayed to manoeuvre's W1.
+- **R35.4 (2026-10-19) main 0f4d528d7 is GREEN without a new check:** the only check-read diff from `3902ade09` is
+  `tests/baselines/sim_state_hash.txt`, adopted from the 13 maps read twice at ffa462c94 on builder0, equal to 3902ade09's
+  check's hashes. All five workers told to `git merge main` (orders BEFORE D1's attribution).
+- **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
+  `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
+  0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
+  step never fires in a CPU fight. Its bar was filed after the reading (orders said so); it is moot. His yes (C35.2) is the
+  decision; D1 ships when `orders-d1` `1a5e33c47`'s builder0 check is green and every moved sim-baseline map reads the
+  recorded line with `--deploy-step=off`. What the step does on HIS moves is read by D2's probe (main v deploy_off), reported,
+  not gating. **Lesson:** an A/B whose arms come out byte-identical has not exercised the change; check the change's own
+  counter (deploys) is non-zero in an arm before reading any guard.
+- **R35.6 (2026-10-19) C35.4a, ElementTask keys for packing (orders writes; brains' file).** Orders may add to
+  `game/tactics/element_task.gd` ONLY: `KEYS` += `"halt_at"` ([x, z]) and `"halt_shape"` (a formation name), plus their
+  `validate` lines. Additive and optional; set only by the controls when several squads are packed; absent = today. Brains
+  owns the file and is told. ElementPlan reads them only in orders' own carve-out (`_deploy_state`: the anchor = halt_at when
+  present; `_deploy_shape`: halt_shape, else `_halt_pick`); any other reader goes through brains.
 
 ## Round 34: six streams, two on Fable (prepared 2026-10-18, CLOSED 2026-10-19; briefs in `streams/archive/round34/`)
 
