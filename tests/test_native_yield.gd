@@ -159,11 +159,23 @@ const SUMPS_FLOORS := {"": 10, "spot:spot": 1, "yield_spots_unfit": 1, "spot:bac
 		"parked_refusals": 1, "asks_refused": 1}
 
 
+## Round 35 (manoeuvre W1c, `stallintent`; C34.6's rule: the floors are the paths the stage reaches). With W1c ON the Sumps
+## fight changes: a pinned crew's stall reads its intent and it escapes before it meets a parked friend, so the stage reaches
+## no parked refusal and no plain refused ask (lab 6548394ea, builder0: 0 and 0, 0 mismatches; OFF 8 and 1). Those two are
+## floored here only with W1c off; the parked refusal stays floored on yard_open's owned stage.
+func _sumps_floors() -> Dictionary:
+	var floors := SUMPS_FLOORS.duplicate()
+	if bool((Manoeuvre as Script).get_script_constant_map().get("STALL_INTENT_DEFAULT", false)):
+		floors.erase("parked_refusals")
+		floors.erase("asks_refused")
+	return floors
+
+
 func test_the_give_way_in_the_sumps() -> void:
 	if FreshStage.parent(self, "test_the_give_way_in_the_sumps"):  # its own process (tests/native/fresh_stage.gd)
 		return
 	var before := Tank.off_floor
-	await _stage("sumps", false, SUMPS_CENTRE, 7.0, 16.0, SUMPS_FLOORS)
+	await _stage("sumps", false, SUMPS_CENTRE, 7.0, 16.0, _sumps_floors())
 	assert_eq(Tank.off_floor - before, 0, "no hull of the Sumps stage leaves the floor (N5)")
 
 
@@ -171,7 +183,7 @@ func test_the_give_way_in_the_sumps_owned() -> void:
 	if FreshStage.parent(self, "test_the_give_way_in_the_sumps_owned"):  # its own process (tests/native/fresh_stage.gd)
 		return
 	var before := Tank.off_floor
-	await _stage("sumps", true, SUMPS_CENTRE, 7.0, 16.0, SUMPS_FLOORS)
+	await _stage("sumps", true, SUMPS_CENTRE, 7.0, 16.0, _sumps_floors())
 	assert_eq(Tank.off_floor - before, 0, "no hull of the Sumps stage leaves the floor (N5)")
 
 
