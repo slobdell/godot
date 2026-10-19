@@ -684,3 +684,14 @@ deploy-census: native-for-check import ## Round 35 (orders D1): CPU v CPU fights
 		echo "  ran $$0 $$1 s$$2"'
 	@grep -L '^DEPLOY_CENSUS ' $(DEPLOY_CENSUS_DIR)/*/*.log | sed 's/^/MISSING (no DEPLOY_CENSUS line): /' || true
 	@$(PYTHON) tests/control/deploy_census_table.py $(DEPLOY_CENSUS_DIR)/off $(DEPLOY_CENSUS_DIR)/on | tee $(DEPLOY_CENSUS_DIR)/table.txt
+
+# Round 35 (orders D1): brains' body stage (his three squads on the Locks, seed 1, green, --body=on), traced every 0.25 s
+# (BODY_TICK), whole log kept, for BODY_TRACE_ARMS "name:flags" (e.g. "on: off:--deploy-step=off") -> build/body-trace/<name>.log
+BODY_TRACE_ARMS ?= on: off:--deploy-step=off
+.PHONY: body-trace-orders
+body-trace-orders: native-for-check import ## Round 35 (orders D1): the body stage traced per BODY_TRACE_ARMS -> build/body-trace/<arm>.log
+	@rm -rf $(BUILD_DIR)/body-trace && mkdir -p $(BUILD_DIR)/body-trace
+	@for arm in $(BODY_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
+			--seed=1 --body=on --side=green --seconds=60 --body-trace $$flags > $(BUILD_DIR)/body-trace/$$name.log 2>&1 || true; \
+		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-trace/$$name.log | cut -c1-300 || echo "$$name: no BODY_PROBE line"; done
