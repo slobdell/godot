@@ -794,6 +794,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   filed, with after-arrival drift moves reported beside it.
   **Tree named:** lab/brains-herring `3f0bab2a` = main `7dcae6b5` + R33.9's flag-gated arrive-trace measurement
   (`70ffe28e`/`97ec141f`, no behaviour change) + the fix `725e058e`. Check GREEN on builder2 (2794/0, BRIDGE_POOLED 18/18).
+  **Both stages were NULLS (builder2, native): identical arms, nothing judged.** Main's hull-rest army on 520–525 is not
+  manoeuvre's case: a 21-crew Gangs army whose "Hunters" holds Battery crews (Hunters jumps 15 v 15, every pair
+  identical). squad-arrive's herringbones are the HALT formation through `_halt` (which already keeps its heading), not
+  the `herringbone` DRILL this fix changes (drift 331 v 331). **Re-filed before any judged number:** (a) reproduce
+  first, on manoeuvre's exact stage at s41 (or main + whatever fields its 14-crew gang_ifv Hunters swarm), as a TUNING
+  check that the arms differ, with a measurement-only counter of herringbone-drill lays per element proving the path
+  fires; (b) only then judge on that stage, FRESH seeds, the same lines. If the drill path fires only in CP-F's world,
+  the fix is chiefly CP-F's enabler, and attempt 4 judges them together, which the lead decides.
 
 **Bars (round 33):** filed here before any number.
 
