@@ -107,6 +107,18 @@ _Filed here before any number._
 - **R35.4 (2026-10-19) main 0f4d528d7 is GREEN without a new check:** the only check-read diff from `3902ade09` is
   `tests/baselines/sim_state_hash.txt`, adopted from the 13 maps read twice at ffa462c94 on builder0, equal to 3902ade09's
   check's hashes. All five workers told to `git merge main` (orders BEFORE D1's attribution).
+- **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
+  `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
+  0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
+  step never fires in a CPU fight. Its bar was filed after the reading (orders said so); it is moot. His yes (C35.2) is the
+  decision; D1 ships when `orders-d1` `1a5e33c47`'s builder0 check is green and every moved sim-baseline map reads the
+  recorded line with `--deploy-step=off`. What the step does on HIS moves is read by D2's probe (main v deploy_off), reported,
+  not gating. **Lesson:** an A/B whose arms come out byte-identical has not exercised the change; check the change's own
+  counter (deploys) is non-zero in an arm before reading any guard.
+- **R35.6 (2026-10-19) C35.4a, ElementTask keys for packing (orders writes; brains' file).** Orders may add to
+  `game/tactics/element_task.gd` ONLY: `KEYS` += `"halt_at"` ([x, z]) and `"halt_shape"` (a formation name), plus their
+  `validate` lines. Additive and optional; set only by the controls when several squads are packed; absent = today. Brains
+  owns the file and is told; any reader in brains' paths (ElementPlan) goes through brains.
 
 ## Round 34: six streams, two on Fable (prepared 2026-10-18, CLOSED 2026-10-19; briefs in `streams/archive/round34/`)
 
