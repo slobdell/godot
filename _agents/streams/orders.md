@@ -192,6 +192,10 @@ It is moot in this instance: the two arms are byte-identical (below), so no line
   screen / attack / support_by_fire / ambush tasks, never a plain move (`--trace=on`, laptop, Locks s3501, 40 s), so the deploy
   step never fires in a fight. **Not gross: D1 passes.** Rows: `references/round35/orders/d1-census-e9066083a/`.
 
+### Working rule (R35.15)
+After any merge of main that touches `native/src`, `touch native/src/*` before a remote run (builder0's rsync keeps the old
+mtimes, so a stale native library can survive) and check sim-baseline reads main's current lines.
+
 ### Plan (2026-10-19, round 35)
 1. **D1** the flip (`ee16b1b1e` = main a0ae0aafd + 07c029732's code; brains' brief left out) → quick-remote → full check on
    builder0 (one at a time: the orchestrator's C35.3 pair check is on the box at launch) → attribute moved sim-baseline maps
