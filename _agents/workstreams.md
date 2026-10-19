@@ -176,6 +176,12 @@ _Filed here before any number. Empty at launch._
   use and fix or clear each; native mirrors any C++ twin; prefer the match tick as origin; the test fails on today's main;
   sim-baseline repeats twice on the fixed tree. Merged ALONE, then the orchestrator adopts the baseline (it moves once on
   every map); judged series already running stay on their pair trees.
+- **R34.3 B1's pair check counts green on an expected sim-baseline move (2026-10-18; brains `0b8fbd3f6`, builder2).**
+  `make check exited 2`: 2809/0, 26 of 27 targets green, the only red sim-baseline: docks 50f15553c558d108 → 4074d105e1739377,
+  12 unmoved. Same tree `SCOUT_FIGHT=off` (builder0): 13 unmoved, so the move is the default-ON rule's (a scout standing in a
+  won duel); B2's adapter, B3's trace and the lazy duel are inert. The judged series may start (R33.31's precedent), on
+  condition that scout-cells / scout-census are pinned at `--fixed-fps` on that tree (it predates main 02a912163). The
+  orchestrator adopts the docks baseline at merge.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
