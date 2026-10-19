@@ -1,0 +1,24 @@
+M1_HULL runs {'base_drawn': 32, 'new_drawn': 32}
+M1_HULL task | class | arm | n | median | p90 | <=15 deg | >=100 deg | p(new v base medians)
+M1_HULL faced_attack_move | ALL | new_drawn | 429 | 11.5 | 82.9 | 52% | 6% | 0.383
+M1_HULL faced_attack_move | ALL | base_drawn | 429 | 19.8 | 87.9 | 49% | 8% | 
+M1_HULL faced_attack_move | hover/turret | new_drawn | 78 | 38.7 | 53.6 | 35% | 0% | 1.000
+M1_HULL faced_attack_move | hover/turret | base_drawn | 78 | 38.7 | 53.6 | 35% | 0% | 
+M1_HULL faced_attack_move | tracks/turret | new_drawn | 61 | 2.1 | 5.4 | 90% | 7% | 0.574
+M1_HULL faced_attack_move | tracks/turret | base_drawn | 61 | 2.2 | 102.9 | 82% | 13% | 
+M1_HULL faced_attack_move | wheels/fixed | new_drawn | 111 | 2.5 | 7.3 | 97% | 0% | 0.052
+M1_HULL faced_attack_move | wheels/fixed | base_drawn | 111 | 3.6 | 14.0 | 90% | 1% | 
+M1_HULL faced_attack_move | wheels/turret | new_drawn | 179 | 47.4 | 111.6 | 18% | 13% | 0.862
+M1_HULL faced_attack_move | wheels/turret | base_drawn | 179 | 45.5 | 114.5 | 18% | 13% | 
+M1_SETTLE task | runs paired | new_drawn median s | base_drawn median s | median paired diff s | never new/base
+M1_SETTLE faced_attack_move | 16 | 37.2 | 44.5 | +0.0 | 4/7
+M1_MOVING task | new_drawn | base_drawn | new_clicked | base_clicked | new_drawn - base_drawn (guard: <= +5)
+M1_MOVING faced_attack_move | 8 | 14 | 0 | 0 | -6
+M1_REST (wheels/turret) task | arm | at rest / all | at-rest share | at-rest median | at-rest <= 15 deg | share new - base (guard: not below -5 pts)
+M1_REST faced_attack_move | new_drawn | 176/179 | 98% | 45.3 | 18% | +1.1 pts
+M1_REST faced_attack_move | base_drawn | 174/179 | 97% | 45.2 | 19% | 
+M1_CLASS task | class | runs paired | moving new | moving base | paired diff | se | within 2 se
+M1_CLASS faced_attack_move | hover/turret | 8 | 0 | 0 | +0 | 0.0 | yes
+M1_CLASS faced_attack_move | tracks/turret | 4 | 4 | 2 | +2 | 1.2 | yes
+M1_CLASS faced_attack_move | wheels/fixed | 12 | 1 | 7 | -6 | 3.1 | yes
+M1_CLASS faced_attack_move | wheels/turret | 16 | 3 | 5 | -2 | 2.0 | yes
