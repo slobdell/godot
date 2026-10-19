@@ -346,15 +346,19 @@ native-gate-cells: import ## Round 30: brains' yard + Sumps gate cells, rule ON,
 PIN_MOVES_TARGETS ?= five-squads-series interleaved-probe control-timing facing-probe hull-rest-probe flank-probe \
 	gate-test pace-p0-tests pace-leak-tests planner-twin planner-trace-hull-rest converge-probe scenario-times traffic-far-hull
 PIN_MOVES_JOBS ?= 6
+# A run cut short (slot.sh's 90-minute limit took facing-probe's and hull-rest-probe's free2 the first time) is finished
+# arm by arm: PIN_MOVES_TARGETS="facing-probe hull-rest-probe" PIN_MOVES_ARMS=free2 PIN_MOVES_KEEP=1.
+PIN_MOVES_ARMS ?= pin1 free1 pin2 free2
+PIN_MOVES_KEEP ?=
 pin_moves_out = five-squads-series:five-squads interleaved-probe:interleaved facing-probe:facing hull-rest-probe:hull-rest \
 	flank-probe:flank gate-test:gate-test.log pace-p0-tests:pace/p0t pace-leak-tests:pace/leakt planner-twin: \
 	planner-trace-hull-rest:planner converge-probe:converge-probe scenario-times:scenario-times.txt traffic-far-hull:traffic-far-hull \
 	control-timing:
 pin-moves: import native ## C34.8 (a): every pinned stage x (pinned, free, pinned, free) on one commit -> build/pin-moves/ + the moves table
-	@rm -rf $(BUILD_DIR)/pin-moves; mkdir -p $(BUILD_DIR)/pin-moves
+	@$(if $(PIN_MOVES_KEEP),,rm -rf $(BUILD_DIR)/pin-moves;) mkdir -p $(BUILD_DIR)/pin-moves
 	@printf '%s\n' $(PIN_MOVES_TARGETS) | xargs -P $(PIN_MOVES_JOBS) -I{} sh -c '\
 		out=""; for m in $(pin_moves_out); do [ "$${m%%:*}" = {} ] && out=$${m#*:}; done; \
-		for arm in pin1 free1 pin2 free2; do d=$(BUILD_DIR)/pin-moves/{}/$$arm; mkdir -p $$d; \
+		for arm in $(PIN_MOVES_ARMS); do d=$(BUILD_DIR)/pin-moves/{}/$$arm; rm -rf $$d; mkdir -p $$d; \
 			case $$arm in pin*) fps="--fixed-fps $(SIM_HZ)";; *) fps="";; esac; \
 			cut -d" " -f1 /proc/loadavg > $$d/load_before; started=$$(date +%s); \
 			$(MAKE) --no-print-directory {} PIN_FPS="$$fps" > $$d/run.log 2>&1; echo $$? > $$d/exit; \

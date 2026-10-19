@@ -216,7 +216,8 @@ static func report() -> Dictionary:
 static func counters() -> Dictionary:
 	return {"face_plans": Manoeuvre.face_plans, "face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none,
 			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
-			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns,
+			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns, "hull_holds": Manoeuvre.hull_holds, "off_seat_declines": Manoeuvre.off_seat_declines,
+			"arrivals_held": Manoeuvre.arrivals_held, "arrivals_held_ticks": Manoeuvre.arrivals_held_ticks,
 			"face_keep_refused": Manoeuvre.face_keep_refused, "face_keep_by_unit": Manoeuvre.face_keep_by_unit.duplicate(), "escape": Movement.escape_arms(),
 			"unstick_fires": Movement.unstick_fires, "press_escapes": Movement.press_escapes, "h1b": h1b_report(),
 			# Round 31 (R31.2): the planner's column. Planner-held ticks never reach `observe` (the seam's gate in
@@ -258,13 +259,13 @@ func observe(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 	var speed := tank.speed()
 	trace(mover, cmd, order)
 	if states_on and tick % STATE_EVERY == 0:
-		print("MANOEUVRE_STATE f %d %s %s order %s from %s v %.2f moved %.2f cmd %.2f/%.2f face %d/%.1f blocked %s retry %d touch %s stuck %.1f pivot %s esc %.1f goal %.1f real %.2f" % [
+		print("MANOEUVRE_STATE f %d %s %s order %s from %s v %.2f moved %.2f cmd %.2f/%.2f face %d/%.1f blocked %s retry %d touch %s stuck %.1f pivot %s esc %.1f goal %.1f real %.2f at %.1f %.1f to %.1f %.1f" % [
 				tick, String(tank.name), tank.unit_id, String(order.get("type", "")), String(order.get("from", "")),
 				Vector2(tank.velocity.x, tank.velocity.z).length(), tank.estimated_velocity.length(), cmd.throttle, cmd.turn,
 				mover._face_legs.size(), mover._face_left_m, str(mover._face_blocked != Vector3.ZERO), mover._face_retry,
 				str(mover.contact.touching), mover._stuck_time, str(mover._unstick_pivot), mover._unstick_left,
 				Vector2(here.x - float(order.get("x", here.x)), here.z - float(order.get("z", here.z))).length(),
-				tank.real_velocity.length()])
+				tank.real_velocity.length(), here.x, here.z, float(order.get("x", INF)), float(order.get("z", INF))])
 	var gear := 1 if speed > CUSP_DEADBAND else (-1 if speed < -CUSP_DEADBAND else 0)
 	var type := String(order.get("type", ""))
 	var goal := Vector3(float(order.get("x", 0.0)), 0.0, float(order.get("z", 0.0))) if type == "move_to" else Vector3.INF

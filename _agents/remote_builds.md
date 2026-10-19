@@ -10,7 +10,7 @@
 ```bash
 make remote T=check                    # make check on builder0; logs and screenshots copied back to build/
 make remote T="test FILTER=combat"     # any make target with its variables
-make remote T=skirmish-shots           # rendering targets use builder0's logged-in desktop (DISPLAY :0)
+make remote T=skirmish-shots           # rendering targets need builder0's desktop LOGGED IN (DISPLAY :0 only while Xwayland runs)
 tools/remote.sh ai-ladder VARIANTS=a6,a5   # the script directly
 ```
 
@@ -97,7 +97,7 @@ you are still editing is a check of no commit; commit, then launch, then leave t
 |---|---|
 | Sync | `rsync -az --delete` of the checkout to `builder0:~/tank_squad/<folder name>` (`godot`, `godot-control`, …): each worktree gets its own remote folder, so parallel agents never share files. `local.mk` (ports) and `override.cfg` (Godot user dir) travel with it, so parallel remote runs don't collide either. Not synced: `.git/`, `.tools`, `.godot/`, `build/`, `node_modules/`, `assets/incoming/` (builder0 keeps its own import cache and dependencies). |
 | Toolchain | `builder0:~/tank_squad/.tools` holds the pinned Godot + export templates (installed by our own `make bootstrap`) and Node v22.14.0, shared by every remote folder via a `.tools` symlink. No sudo, nothing system-wide. First use bootstraps automatically (~45 s on builder0's network). |
-| Run | `make <args>` in the remote folder with Node on `PATH`, `TANK_SQUAD_SLOTS=3` (builder0's own heavy-run slots, so parallel agents queue there instead of overloading it), and `DISPLAY=:0` + the mutter Xwayland auth file when the desktop session is logged in. |
+| Run | `make <args>` in the remote folder with Node on `PATH`, `TANK_SQUAD_SLOTS=3` (builder0's own heavy-run slots, so parallel agents queue there instead of overloading it), and `DISPLAY=:0` + the mutter Xwayland auth file only while an Xwayland is running (round 34, N6). |
 | Results | `build/` is copied back (logs, screenshots, reports, review pages; not `web/`, `server/`, `.pck`, `.wasm`). The script exits with make's status, or 4 when the copy-back failed and the build passed. |
 
 Knobs (environment or `local.mk`): `REMOTE_HOST` (default `slobdell@builder0`), `REMOTE_ROOT` (default
@@ -298,8 +298,16 @@ laptop had the same trap the other way round: a library older than `native/src` 
   responding"* or *"No route to host"* has told you nothing about your code: probe again a few seconds later, and
   re-run. Don't start a local full `make check` as a fallback unless the outage lasts: it takes 14–22 minutes, shares
   the laptop with every other agent, and makes timing-sensitive tests *less* trustworthy, not more.
-- **Rendering targets fail with a display error:** nobody is logged into builder0's desktop (no
-  `/run/user/1000/.mutter-Xwaylandauth.*`). Run that target locally, or ask the lead to log in. **Since 2026-10-06
+- **Rendering targets fail with a display error:** nobody is logged into builder0's desktop. **Since round 34 (N6)
+  `remote.sh` exports `DISPLAY=:0` only while an Xwayland process is RUNNING**, not merely when an old
+  `/run/user/1000/.mutter-Xwaylandauth.*` file is left behind. A dead session's leftover files used to send runs to a
+  display that was gone (2026-10-18 ~23:00): headless Chrome lost WebGL2 and web-smoke went red on every builder0 check.
+  Now a target that needs a window fails loudly with no DISPLAY, instead of drawing nowhere. Those are the targets that
+  run Godot without `--headless`: every `*-shots`, `*-clip`, `*-gallery`, `*-look` and `*-frames` target, the windowed
+  series and perf plays (`windowed-*`, `perf-play`, `ai-*-play`, `showmatch`, `cinematic`), and the play targets
+  (`skirmish`, `run`, `demo`, `garage`, `title`). Nothing in `make check` needs a display: web-smoke runs headless
+  SwiftShader with no display variables at all (`tools/web_smoke/headless_env.mjs`), and every check target passes
+  on builder2, which has no desktop. Run a render target locally, or ask the lead to log in. **Since 2026-10-06
   (round 20) the lead keeps caffeinate on there, so the screen stays on and the desktop stays unlocked**; windowed
   renders that timed out behind the lock screen (round 19's thumbnails and in-play frames) should no longer. If one
   still fails, report the wrapper's exact line to the orchestrator rather than assuming the lock.

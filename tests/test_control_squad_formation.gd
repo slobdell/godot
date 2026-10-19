@@ -104,10 +104,11 @@ func test_a_pick_survives_a_direct_order_through_the_group() -> void:
 	var f: Fixture = await _setup()
 	f.controls.recall_group(1)
 	f.controls.set_formation("line")
-	f.controls.order_selection("move", {"to": [WEST.x, WEST.z - 30.0], "queue": true})  # a hand-drawn route: direct
-	assert_true(_element(f, 1) == null, "setup: the queued route dissolved the squad's element")
-	assert_eq(String(f.orders.current(f.controls.groups.members(1)[0]).get("formation", "")), "line",
-			"the route goes in the squad's Line")
+	f.controls.order_selection("move", {"to": [WEST.x, WEST.z - 30.0], "queue": true})  # a hand-drawn route
+	# Round 34 (traffic O4; merge note): a shift-queued route on a squad is the squad's element move, not the crews' direct
+	# orders, so the pick rides on the element's task.
+	assert_true(_element(f, 1) != null, "setup: the queued route is the squad's element move")
+	assert_eq(_task_formation(f, 1), "line", "the route goes in the squad's Line")
 	assert_eq(f.controls.formation, "line", "the button still reads Line (the group remembers)")
 	f.controls.order_selection("move", {"to": [WEST.x, WEST.z - 60.0]})
 	assert_eq(_task_formation(f, 1), "line", "and the next task carries it again")

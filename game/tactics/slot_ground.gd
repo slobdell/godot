@@ -172,6 +172,17 @@ static func on_anchor_side(slot: Vector3, anchor: Vector3, data: Dictionary = Ar
 	return Vector3(at.x, slot.y, at.z)
 
 
+## Round 34 (C34.11; planner's O5 probe, his bridge case on the Locks): a transit STATION that falls over the water stands
+## on the bank of its crew's final seat (`goal`, which Element.ground keeps on its anchor's side), not on whichever bank
+## the nearest-point grounding finds: a station in the canal beside a squad whose anchor O1 kept on his bank was grounded
+## on the FAR bank (z -12.2), and the crew crossed the east bridge to reach it. A dry station is unchanged (a squad that
+## really crosses keeps its near-bank stations until the route takes it over).
+static func station_on_goal_side(station: Vector3, goal: Variant, data: Dictionary = Arena.active) -> Vector3:
+	if not (goal is Vector3) or not over_water(station, data):
+		return station
+	return on_anchor_side(station, goal, data)
+
+
 ## Round 21 (brains stretch d; orders' R1, builder0, parade seed 3): a wedge anchored on the bay's row of stacked
 ## containers asked for a slot inside the row, and the NEAREST standable point was the row's far side; the crew drove
 ## round the west end and ended blocked 26 m short. `standable_from` grounds a slot on the side its element reaches it
