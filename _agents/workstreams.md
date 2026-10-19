@@ -370,6 +370,14 @@ builder0), ruled R34.3.
   same design question as his deploy step (R34.7), so it waits on his answer. Now: brains fixes planner's O5 finding (1) in the
   existing ranks path (a rank's anchor never farther back along the approach than its squad's own centre), with a test from
   the Locks/Terminus case.
+- **R34.13 parkedroom PARKS for round 34 (v4b, traffic, pair `5914d3ac5`, builder0, fresh 1100–1147 × 3, n 144,
+  `x3_v4b_series_5914d3ac5.txt`).** L2 all far loops 169 → 127 (drop 42, paired se 54.9): not distinguishable: FAIL. Guards pass:
+  L1a hold-post loops 82 → 21 (−74 %, 2.7 se: the targeted mechanism works), L1b 136 → 102, L3 (a)/(b)/(c), L4, L5 0/9, L6 93.3 %.
+  **Watch:** jammed-by-friendly-traffic deaths ALONE 79 → 116 (+37, se 12.6, 2.9 se; stuck 276 → 257), under the combined line.
+  What's left in the arm's loops is mostly behind batteries set up and firing (67 of 127; his T1c-b2 yes keeps them put).
+  v3/v4/v4b each cut hold-post loops 50–74 % and brought 90–94 % home; each failed on totals the rule doesn't reach. DEFAULT_OFF
+  stays; the pair and native's `4445f6b4c` are not merged; no fifth try without a new design. **A question for him:** should a
+  crew stuck behind a FIRING mortar truck get by (the truck packs up briefly, or the asker is sent round)?
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
