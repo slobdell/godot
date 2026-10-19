@@ -111,6 +111,9 @@ screen should still see the hit.
   ROOM_STILL_S, or on a HOLD order inside its hold line) instead of inlining `Traffic.still_s`. The phase test stays as
   at_post's own first clause. No new floor stage: the C++ asks the GDScript's at_post itself, so the decision is equal by
   construction, and traffic's neck test covers the hold-line clause.
+  **GREEN, sent to traffic: `6231e7222`.** builder2, n 1, `make native test FILTER=native_yield|native_drive|
+  native_execute|native_h1b|traffic_neck|native_gate` exited 0, 33 / 0, every twin 0 mismatches; the parkedroom Sumps
+  stage: 173 negotiations, ask_handed_back 1 (floor 1).
 - **N4, the refusal the rest of the way: `12ac7b172`.** Every twin's "native: absent" early return (57 sites, 42 files)
   goes through `NativeExpect.absent(self)` (tests/native/native_expect.gd). That FAILS the twin when make exported
   `TANK_NATIVE_EXPECTED=1` (NATIVE on and a C++ toolchain, mk/native.mk). It covers what `_native-ready` can't see: a
