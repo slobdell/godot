@@ -66,14 +66,13 @@ Nothing.
   ids and heap all change no bit. Evidence (918ede503, builder0 native, sim-baseline match through main.tscn, 3 runs a
   process × idle phases 0–5, 1150 ticks): base gives 6 outcomes and 12 of 12 rematches branched; a scratch patch gives
   1 outcome and 0 of 12. `references/round34/planner/rematch/diagnosis.md`. Ruled (A) by the orchestrator.
-- **P2 built (b7184e87d): a rematch replays.** `Traffic._phase` = the Match's tick (a frame origin would still drift
-  through the planning pause). The audit of every frame-counter read in game/ and native/src is in the diagnosis: this
-  was the only absolute phase on a decision path, and it has no C++ mirror. `tests/test_rematch.gd` passes with the fix
-  and fails without it (tick 250), builder0. **Check of 09a98132c (same game code), builder2: exited 2, 2797/1.** The
-  reds: sim-baseline moved (planned; repeats twice on all 13 maps); native-verify-scenarios was load (53/0 alone); and
-  `test_native_yield` owned coverage floor reads 10 against 11, deterministic after the phase shift. **Waiting on the
-  orchestrator's ruling on that floor.** Then the green hash goes to the orchestrator: they merge it alone and adopt the
-  baseline on main.
+- **P2 done. GREEN HASH, merge here: `39f0d7e81`** (stream/planner + native's `ae2f03c59`: N5's Sumps stage move
+  and test_native_yield's floors, now set as paths reached, after the phase shift). builder0 `make check exited 2`:
+  test 2798 / 0, perf-judge JUDGED PASS, 25 of 27 targets passed. The two reds are the planned sim-baseline move (all
+  13 maps; identical to builder2's two agreeing reads; foundry `2e54d6f5c9fc22ac`) and web-smoke (builder0's Chrome lost
+  WebGL2: environmental, per the orchestrator). `Traffic._phase` = the Match's tick (a frame origin would still drift
+  through the planning pause). The audit of every frame-counter read is in the diagnosis. `tests/test_rematch.gd` passes
+  with the fix and fails without it (tick 250). The orchestrator merges it alone and adopts the baseline on builder0.
 - **P3 done (697029f4a):** judging table re-rendered with round 33's pairs (hull-rest, fights, Terminus printed se, plus
   three new probes: hull-rest gangs A/A, orbit cells, far census). No row's sd moved more than 20 %. Far-census kills:
   sd 5.96 a fight, MDE 5 % at 48 fights. `_agents/judging.md` *Round 34 re-render*; csv under
@@ -89,11 +88,10 @@ Nothing.
 and the two stagger lines). `tools/judge/**` (granted for C34.8). Main moved (docks adopted, 71bd4e466) after this
 branch's base.
 
-**Known issues:** test_native_yield's owned arm differs from its live arm even on base (24 v 22 spot:spot; after the fix
-21 v 10), though its file says they read the same counts. That's native's to look at.
+**Known issues:** none open. (Native explained the owned ≠ live counts: yard_open's two stages differ by design, and
+their floors are now set as paths reached.)
 
-**Questions for the lead:** none. **Requests to other streams:** native: the owned/live count gap above; the floor
-(pending the ruling).
+**Questions for the lead:** none. **Requests to other streams:** none.
 
 **What to playtest:** nothing new to see. A rematch from the results screen should now play out the same as the first
 fight given the same orders (the floor under replays and the network).
