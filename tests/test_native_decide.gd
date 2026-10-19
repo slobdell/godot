@@ -135,7 +135,10 @@ func test_decide_is_the_gdscript() -> void:
 					var heading := scout_rng.randf_range(0.0, TAU)
 					f["self"]["velocity"] = Vector3(cos(heading), 0.0, sin(heading)) * scout_rng.randf_range(0.0, 12.0)
 				f["features"]["matchups"] = scout_rng.randf() < 0.5
-				var matchups := TankBrain.matchups_for(f) if bool(f["features"].get("matchups", true)) else {}
+				# Half the cases run as the champion does (x18m: no matchups), where decide computes the duel for a scout
+				# under fire alone (C34.5, brains 834562ab1): the count follows the same rule.
+				var matchups := TankBrain.matchups_for(f) if bool(f["features"].get("matchups", true)) \
+						or TankBrain.scout_under_fire(f["self"]) else {}
 				if scout_rng.randf() < 0.2:
 					flag_off = cases.size()
 				elif TankBrain.scout_fights_back(f["self"], f["contacts"], matchups):
