@@ -277,6 +277,13 @@ _Filed here before any number._
   (1a5e33c47) 20.9 s, step on + on-spot lay 23.8 s. Ruling: orders takes ONE builder0 trace (+ one fix try in its carve-out); if
   that fails, the line is resized to the measured cost + 2 s, citing this ruling (he chose the deploy step knowing planner's pass
   was slower in some cells); NOT the centred lay (a squad sent to a spot ends on it is the stronger promise).
+  **Follow-up:** orders' trace (builder0, `make body-trace-orders`): with the step on, the arrived Hunters2 re-forms into the Law's
+  lane herringbone across the Sirens' street; Sirens_1 blocked 15–24 s; no carve-out fix keeps the on-spot promise; line resized to
+  off + 8.1 s (measured 6.1 + 2), orders-d1 `581b8a396`; brains agrees; a round-36 item in game_design.md.
+- **R35.18 (2026-10-19 ~13:05) T7's gate (C31.1) passes; its series starts.** `pair/underfire-t7` `e95179252` builder0 `make native
+  check exited 2`, 2902/0, 24/27 pass; the one red sim-baseline (5 maps moved with T7 ON, 8 unmoved); switch-OFF inertness
+  (`--traffic-off=underfire`, same commit) reads main's 13 lines. perf-judge and scenario_perf NOT JUDGED (load); perf-judge alone on
+  a quiet builder0 is owed before any ship.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
