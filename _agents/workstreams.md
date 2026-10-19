@@ -279,6 +279,13 @@ builder0), ruled R34.3.
   parkedroom ON's (v3's same four). (2) native-verify-scenarios' scenario_perf 29238 µs at 1.50× in the check; alone on builder2
   17435 µs at 1.41× (line 20000), and main's own last check read 22407 at 1.51× unjudged: a both-paths measure swinging with
   load, not a 7× cost. Judged perf on the pair PERF_JUDGE PASS 1.05×; traffic's GDScript share 529 of 17435 µs (3 %).
+- **R34.7 B6 PARKED (brains, `a2add1d0f`, builder2, `references/round34/brains/b6_series_a2add1d0f_builder2.txt`).** (1)(a) FAIL
+  pooled drift 121 ON v 104 OFF (limit 52); (1)(b) FAIL Sumps hollow 9/12 ON v 0/12; all_in8 +9.97 s (passes alone); yard/Terminus
+  crews in 160 v 160; (1)(c) 82 arrived re-lays left ON (median 10.3 m). (2) passed TRIVIALLY: crossing ON = OFF row for row, the
+  early lay never engaged. Worst run traced (Sumps s611 t16, 60 v 4): an early-laid halt seat on an obstacle edge flips every
+  0.5–1 s, B10's round-32 grounding flip (standable_from keyed on the centre's 5 m cell). Switch OFF on stream/brains. Next:
+  trace one hollow run and one leftover re-lay on tuning seeds 40–41; a try 2 only with those causes written, and its choke
+  guard must show the early lay ENGAGING. The player-visible shuffle (C34.11's arrival) stays open.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
