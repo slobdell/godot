@@ -29,7 +29,7 @@ func test_the_give_way_on_open_ground() -> void:
 func test_the_give_way_on_the_owned_state() -> void:
 	if FreshStage.parent(self, "test_the_give_way_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1})
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1, "parked_refusals": 1})  # round 35: 4 in both W1c arms
 
 
 ## Round 34 (traffic T6b, R34.17, `underfire`): the open-ground stage with the switch on in forced compares. After a
