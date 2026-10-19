@@ -4059,3 +4059,12 @@ abreast or in ranks in the open, single file only where the TERRAIN narrows (a b
 packs by (1)-(3). Owner: the new **orders** stream (round 34, C34.11). He did not pick between "queue back along the
 road" and "stop short together" for tight ground; the recommendation (queue back along the approach road, near the click)
 is taken as decided.
+
+## Round 34 close: his three answers (2026-10-19 morning, in chat via the question tool)
+
+Asked in player terms with one recommendation each; his picks verbatim:
+- **The circled scout (M0, R34.10):** "Ship it (Recommended)". The turn-in ships, including the out-of-reach close-in (60 hits a
+  run v the 57 he had accepted, kills an IFV 5 of 12).
+- **The deploy step (R34.7, B8b):** "Yes, use the deploy step". A squad arrives in its travel shape and spreads into its halt shape as
+  one deliberate move; it goes default ON and is the basis for tight packing (O2's (B)) next round.
+- **A firing mortar truck (R34.13):** "Keep the truck firing (Recommended)". His round-31 T1c-b2 rule stands.

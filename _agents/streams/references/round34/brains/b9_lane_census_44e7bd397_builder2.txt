@@ -1,0 +1,8 @@
+# B9 lane census (R34.15), builder2, stream/brains 44e7bd397 (= main 62d90dc97-era + measurement), showmatch 180 s, seeds 1201-1224 x locks/terminus, n 24 fights an arena. A census, not a judged series.
+fights 48, picks 596
+== locks: 24 fights, 309 picks, 214 stacked (69 %), lanes {'x+0': 275, 'x+92': 24, 'x-92': 10}, verbs {'ambush': 38, 'support_by_fire': 220, 'hold': 29, 'move': 22}
+   mostly stacked (>= 50 % of picks)  n 39 | deaths median 20.0 mean  21.3 | jam deaths mean  2.2 | kills mean  18.8
+   mostly split (< 50 %)              n  9 | deaths median  7.0 mean  13.0 | jam deaths mean  1.4 | kills mean  22.0
+== terminus: 24 fights, 287 picks, 182 stacked (63 %), lanes {'x+0': 223, 'x-70': 20, 'x+70': 44}, verbs {'support_by_fire': 229, 'move': 26, 'hold': 32}
+   mostly stacked (>= 50 % of picks)  n 42 | deaths median 23.5 mean  23.4 | jam deaths mean  1.7 | kills mean  20.4
+   mostly split (< 50 %)              n  6 | deaths median 11.5 mean  11.8 | jam deaths mean  1.5 | kills mean  30.3
