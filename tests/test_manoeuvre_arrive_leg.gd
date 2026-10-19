@@ -34,7 +34,7 @@ func test_a_move_mid_leg_is_not_arrived_until_the_leg_ends_or_the_bound() -> voi
 	assert_true(not Manoeuvre.leg_holds_arrival(brain), "only a move_to is held")
 	brain.move_order = {"type": "move_to", "x": 0.0, "z": -3.0}
 	# The bound: a leg that never ends cannot deny the arrival past ARRIVE_LEG_HOLD_S of this order.
-	brain.movement.arrive_hold_until = Engine.get_physics_frames() - 1
+	Manoeuvre._arrive_hold_until[String(me.name)] = Engine.get_physics_frames() - 1
 	assert_true(not Manoeuvre.leg_holds_arrival(brain), "past the bound the arrival goes through")
 	brain.movement.new_order()
 	assert_true(Manoeuvre.leg_holds_arrival(brain), "a new order starts a new hold")

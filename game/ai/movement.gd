@@ -913,13 +913,9 @@ func bind() -> void:
 
 
 ## Forget the route (a new move order): the next drive() repaths at once.
-## Round 34 (C34.4 (2)): the last tick Manoeuvre.leg_holds_arrival may hold this order's arrival (-1 = not held yet).
-var arrive_hold_until := -1
-
-
 func new_order() -> void:
 	native_stale |= STALE_ORDER
-	arrive_hold_until = -1
+	Manoeuvre.arrive_hold_forget(String(ctl.tank.name))  # round 34 (C34.4 (2)): a new order starts a new arrival hold
 	_repath_left = 0.0
 	_reissued = true
 
