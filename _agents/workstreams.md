@@ -273,6 +273,12 @@ builder0), ruled R34.3.
   rule alone (p3-pinned drawn FAIL all-pairs / PASS distinct; clicked the reverse); its p90 "over" is faces planned in one arm
   only (clicked max 12.4 v 5.7). The paired `face_pairs` (crew and home) reads both-planned faces identical (clicked p90 6.3 v
   6.3, se 0.00; drawn 8.5 v 8.5). Judged: `face_pairs`, CAND_ONLY reported. FACE_KEEP_FAR REPORTED in round 34, deleted in 35.
+- **R34.6 parkedroom v4's pair check counts green (traffic `pair/parkedroom-v4` `5914d3ac5`, builder2 `make native check`
+  exited 2, 2824/0, 24/26).** (1) sim-baseline: the same tree `--traffic-off=parkedroom` leaves 12 unmoved and docks at B1's
+  4074d105e1739377, so terminus → accbd28434111b99, sumps → 02a1d4ff63c20c1b, parade → a6178ae02c7e3769, docks → 874553bfdb105b07 are
+  parkedroom ON's (v3's same four). (2) native-verify-scenarios' scenario_perf 29238 µs at 1.50× in the check; alone on builder2
+  17435 µs at 1.41× (line 20000), and main's own last check read 22407 at 1.51× unjudged: a both-paths measure swinging with
+  load, not a 7× cost. Judged perf on the pair PERF_JUDGE PASS 1.05×; traffic's GDScript share 529 of 17435 µs (3 %).
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
