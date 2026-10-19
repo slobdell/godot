@@ -85,7 +85,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
 ### D4 bar (minimax deploy seating), FILED BEFORE ANY BUILDER0 NUMBER (2026-10-19 11:35 PDT)
-- **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3621 3622 3623 3624 3625 3626" ORDERS_PROBE_ARMS="main: minimax_off:--deploy-minimax=off"`
+- **Probe:** `make native orders-probe ORDERS_PROBE_SEEDS="3621 3622 3623 3624 3625 3626" ORDERS_PROBE_ARMS="main:--gate-deal=off minimax_off:--gate-deal=off,--deploy-minimax=off"`
+  (R35.26: both arms with the gate deal OFF, so D4 is judged on today's main behaviour whatever D5's fate); tree stream/orders
+  `68d4c06cd` (code = `554131533`).
   on builder0 (native), 24 cells x 6 fresh seeds (never run anywhere; seeds move the click <= 12 m), medians a cell. Seed
   34 (tuned on, laptop) reported only. **Counter first:** the two arms' rows differ in >= 1 cell (the seating acted).
 - **Gain (must pass):** summed over the 24 cells, the median `twitch worst m` at least 20 % lower on main; and the Terminus 5
