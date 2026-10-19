@@ -120,11 +120,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   40–41, `references/round34/brains/b6_tuning_traces_laptop.txt`):** (1) the early lay doesn't remove the swerve, it
   moves it 60 m out: wedge → herringbone at t=20 sends a seat about 35 m sideways. (2) Leftover re-lays come from the
   HEADING. The early lay uses the per-update bearing to the destination, which swings close in ((0.42,−0.91) one tick,
-  (−0.04,−1.00) at the arrival), and a ±17 m herringbone turned 27° moves seats 5–8 m. (3) Hollow: a crew coming 40 m
-  straight onto its halt seat parks 3.7 m off for good. That's inside the brain's SLOT_TOLERANCE 4.0 m ("in position",
-  so no further move) and outside the arrival line's 3.5 m. (4) The worst run (s611 t16) brings back B10's round-32
+  (−0.04,−1.00) at the arrival), and a ±17 m herringbone turned 27° moves seats 5–8 m. (3) Hollow (CORRECTED by B7's trace, `references/round34/brains/b7_hollow_trace_laptop.txt`): NOT
+  SLOT_TOLERANCE. The crew's move goal (−9.5,−44.1) was 1.8 m from its halt slot (−10.0,−45.8). It arrived at the goal and
+  went HOLD/face, and the element never re-sent it, so it sits 3.7 m off the slot the judge reads. B6-specific: main
+  goes hollow in 0 of 24 Sumps runs. (4) The worst run (s611 t16) brings back B10's round-32
   grounding flip. **Recommendation: no try 2 of the early lay** (it needs three fixes to only move the swerve). See the
   orchestrator's call.
+
+- **B7 (SLOT_TOLERANCE 4.0 v ORDER_ARRIVE 3.5): NO CASE, premise withdrawn.** My B6 cause (3) was wrong. The arrival
+  line and the brain's move arrival both use max(ORDER_ARRIVE, settle_radius); SLOT_TOLERANCE is only read by decide's
+  old squad-context KEEP_SLOT (and _bounding_slot). The hollow was a stale goal under B6 (above).
 
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
