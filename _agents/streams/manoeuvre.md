@@ -131,7 +131,27 @@ says yes: the pair c8fb8b6a3 (code = stream/manoeuvre 764ef5427 + pair/native-c3
 sim-baseline is then adopted at the three attributed hashes.** Later stream commits are docs, references and the table
 script's R34.1 block only.
 
-### Bar M3 (CP-F attempt 4) — DRAFT, filed with the orchestrator once M1's A/A has read the noise; no attempt-4 number before
+### M1 A/A read (2026-10-19 ~05:00 PDT; builder2, lab/m1-ruler e28ba432d, native path, the OFF arm on seeds 201–209 v 210–218: 4 factions × 9 × 6 tasks a set, 36 pairs a task; `references/round34/manoeuvre/m1-aa/`)
+
+The new ruler's noise, per task (A total, B total; paired sd a run; se of the summed difference over 36 pairs; the swing):
+| task | moving (by `still`) | moving_real (by `real_mps`) | wedged (reported moving, made < 0.3) | settle s (sum, sd/run) | wt error med (sum of run medians, 21 pairs, sd/run) |
+|---|---|---|---|---|---|
+| ambush | 6 v 3, sd 0.65, se 3.9 | 1 v 1, sd 0.24, se 1.4 | 5 v 2, sd 0.50 | 1143 v 1167, 20.0 | 1923 v 1796, 35 |
+| attack-move | 23 v 11, sd 1.41, se 8.5 | 12 v 5, sd 1.17, se 7.0 | 11 v 6, sd 0.80 | 1625 v 1570, 31.5 | 1106 v 832, 23 |
+| move | 5 v 10, sd 0.68, se 4.1 | 3 v 4, sd 0.51, se 3.0 | 2 v 6, sd 0.46 | 1315 v 1476, 27.7 | 1152 v 747, 27 |
+| right | 17 v 11, sd 0.77, se 4.6 | 11 v 3, sd 0.64, se 3.8 | 6 v 8, sd 0.63 | 1608 v 1533, 27.7 | 1210 v 825, 41 |
+| screen | 10 v 6, sd 0.71, se 4.2 | 3 v 1, sd 0.41, se 2.5 | 7 v 5, sd 0.53 | 1608 v 1535, 20.9 | 1031 v 658, 21 |
+| support by fire | 9 v 5, sd 0.62, se 3.7 | 2 v 0, sd 0.23, se 1.4 | 7 v 5, sd 0.58 | 1198 v 1224, 21.4 | 2241 v 2427, 45 |
+**Reading:** about half of the old ruler's "crews still moving at the judge" were WEDGED hulls (reported moving, made
+nothing): the old (d) line judged the stage's wedges, not the candidate. By `real_mps` the movers are 0–12 a task over 36
+runs with a paired sd of 0.23–1.17 a run; the A/A swing of the totals is 0–200 %, so a fixed "+N" guard is meaningless
+and the guard must be `base + 1.645 × sd_run × √pairs` (attack-move at 64 pairs: +15.4; right +8.4; move +6.7; screen
++5.4; ambush +3.2; SBF +3.0). The per-run median hull error of wheels/turret crews swings 28–44 % between seed sets on
+four tasks (sd 20–45° a run): (a) stays on the pooled crews, never on run medians. Settle sums swing 2–12 % (sd 20–31 s a
+run). **For planner's `judging.md` table (C34.8 (b)): the rows above are the hull-rest probe's pre-registered noise for
+round 34's bars.**
+
+### Bar M3 (CP-F attempt 4) — FILED 2026-10-19 (the A/A's noise in); no attempt-4 number before the orchestrator records it
 
 **Candidate:** `lab/m1-ruler`'s tree (= main + round33/manoeuvre's CP-F attempt-3 code, `TURN_HULL_DEFAULT` flipped to
 true) + M1's ruler; the pair = that + native's mirrors (native cuts them on the tree; round 33's statement: no C++ change,
@@ -148,8 +168,8 @@ as judging.md S5 asks; (d) and (e) are re-sized to the MDE the A/A gives.
 | (a) | drawn POINT tasks (move, right, attack-move), wheels/turret at rest | per task median ≤ 15° AND ≥ 70 % within 15° (as R33.21) |
 | (b) | drawn LINE tasks and every class on every task | no class median worse than base at permutation p < 0.05; (o) stands |
 | (c) | clicked arm, wheels/turret | paired median NEW − BASE ≤ +1.645 se, one-sided (R33.23) |
-| (d) | crews moving at the judge by `real_mps`, per task, wheels/turret AND all | ≤ base + 1.645 se, se from the A/A; **wedged crews counted apart and REPORTED** |
-| (e) | never settled (75 s), per task | ≤ base + 1.645 se (A/A se); settle paired median REPORTED |
+| (d) | crews moving at the judge by `real_mps`, per task, all classes (wheels/turret reported) | ≤ base + 1.645 × sd_run(A/A) × √pairs, sd_run per task from the A/A table above (attack-move 1.17, right 0.64, move 0.51, screen 0.41, ambush 0.24, SBF 0.23; at 64 pairs the guards are +15.4 / +8.4 / +6.7 / +5.4 / +3.2 / +3.0); **wedged crews counted apart and REPORTED**; distinct pairs reported beside |
+| (e) | never settled (75 s), per task | ≤ base + 1.645 × sd_run × √pairs with sd_run from the A/A's settle column read as a count (the A/A: 0–3 never-settled a set; se filed as 3.0 a task at 64 pairs); settle paired median REPORTED |
 | (f) | arrived within ARRIVED_M 7 m; re-seats | arrivals not down beyond 1.645 se paired; re-seats ≤ base + 1.645 se |
 | (g) | Terminus arrivals, rigs and mixed | not down beyond 1.645 se paired |
 | (h) | bridge-pooled | 18/18 |
