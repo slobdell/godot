@@ -1,0 +1,15 @@
+  foundry    2e54d6f5c9fc22ac 2e54d6f5c9fc22ac
+  yard       0fdc33ed5d5757a6 0fdc33ed5d5757a6
+  pit        022e54dcc1c3e787 022e54dcc1c3e787
+  terminus   23edc5782084a2fe 23edc5782084a2fe
+  crossing   aa4ad61e41ee6e20 aa4ad61e41ee6e20
+  sumps      8909a3d97aef76de 8909a3d97aef76de
+  locks      4674958b0c779970 4674958b0c779970
+  parade     fc435f111c689d64 fc435f111c689d64
+  gorge      eb810b61f83b3646 eb810b61f83b3646
+  archipelago 5595506fcfeac33f 5595506fcfeac33f
+  cut        986826d576d4eb65 986826d576d4eb65
+  docks      0cf63204b0290ae1 0cf63204b0290ae1
+  yard_open  9287bb338b29a976 9287bb338b29a976
+>> sim-baseline-adopt: 13 maps read twice, agreeing
+>> remote: make sim-baseline-record exited 0 (build/ copied back)

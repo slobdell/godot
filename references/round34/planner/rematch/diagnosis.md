@@ -117,3 +117,11 @@ first match's end, the worst case for such a carry, and replays.
 - `tests/test_rematch.gd` (builder0 light lane, native ON): **passes with the fix** (run 0 and the rematch both
   `1102d7243f9f6fc4` at tick 600, full per-tick detail identical); **fails on 06b5be57c's traffic.gd** (rematch parts
   at tick 250, Green_Line_2's throttle: the diagnosed fork).
+- **Full check, 09a98132c (= b7184e87d's game code + P3/P4 tools and docs), builder2, `make check exited 2`, 2797 passed
+  / 1 failed, 23 of 26 targets passed.** (a) sim-baseline MOVED on every dealt map: the planned move. The fixed tree reads
+  identical twice, 13 maps (`sim-baseline-twice-builder2.txt`). (b) native-verify-scenarios: scenario_perf over budget on
+  a loaded box (perf_reference 1.49×). Alone: 53 passed / 0 failed / 0 mismatches. (c)
+  `test_native_yield::test_the_give_way_on_the_owned_state`: yard_open owned, spot:spot 10 against a floor of 11, 0 twin
+  mismatches. It's a coverage floor moved by the phase shift (base live 24 / owned 22 → fixed live 21 / owned 10,
+  `native-yield-{base,fix}-builder2.txt`). Ruling asked of the orchestrator. (builder0's run of b7184e87d died with the
+  machine at ~22:55, exit 255: no reading.)
