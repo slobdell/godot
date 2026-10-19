@@ -1088,6 +1088,10 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String:
 	var squads: Array = found["squads"]
 	var loose: Array = found["loose"]
+	# D6 (R35.28): a shifted move's squads stand on the elements their units belong to now (the gate below reads each
+	# squad's element for where its previous leg ends), and again after untangle, which re-deals vehicles.
+	if bool(extra.get("queue", false)) and elements != null and REQUEUE:
+		squads = _squads_on_their_elements(squads)
 	# O3: each AUTO squad is priced at its halt on the ground he clicked.
 	SelectionSquads.halt_terrain = ElementSituation.terrain_at(Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))) \
 			if extra.has("to") else ""
@@ -1168,6 +1172,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
+	# Round 35 (D6, R35.28): a shift-click queues on the elements the squads' units belong to NOW. Round 22's untangle
+	# re-deals vehicles between squads at a click, so no element is exactly a control group after it; the shifted move then
+	# found no element to queue behind and REPLACED each squad's task (planner's Crossing 5 route s3614: three squads got one leg).
+	if queue and elements != null and REQUEUE:
+		squads = _squads_on_their_elements(squads)
 	# Round 34 (traffic O4): a further shift-waypoint makes the previous queued one in-between: re-laid as a gate.
 	if queue and verb == "move" and extra.has("to") and squads.size() > 1 and elements != null:
 		_relay_previous_waypoint(squads, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])))
@@ -1400,6 +1409,44 @@ func _waypoints_end(units: Array) -> Variant:
 
 
 ## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
+## D6 (R35.28): OFF until its A/B (`--requeue=on` / env REQUEUE=on opts in; off = round 34's: a squad with no exactly
+## matching element has its task REPLACED by a shift-click). Kept off while D5's re-read and D4's A/B run on this tree.
+static var REQUEUE := OS.get_cmdline_user_args().has("--requeue=on") or OS.get_environment("REQUEUE") == "on"
+
+
+## D6: the squads, each given (as its "element") the element holding most of its units, when every unit of every squad
+## is in an element and the matching is one squad to one element; else the squads as they came. A squad whose element
+## already matches is untouched.
+func _squads_on_their_elements(squads: Array) -> Array:
+	var holders: Array = []
+	for squad: Dictionary in squads:
+		var held: Element = squad.get("element")
+		if held != null and is_instance_valid_element(held):
+			holders.append(held)
+			continue
+		var count := {}
+		for unit_name: String in squad["units"]:
+			var owner := elements.of(unit_name)
+			if owner == null:
+				return squads
+			count[owner] = int(count.get(owner, 0)) + 1
+		var best: Element = null
+		for owner: Element in count:
+			if best == null or int(count[owner]) > int(count[best]) or (int(count[owner]) == int(count[best]) and owner.id < best.id):
+				best = owner
+		holders.append(best)
+	for i in holders.size():
+		for j in range(i + 1, holders.size()):
+			if holders[i] == holders[j]:
+				return squads
+	var out: Array = []
+	for i in squads.size():
+		var squad: Dictionary = (squads[i] as Dictionary).duplicate()
+		squad["element"] = holders[i]
+		out.append(squad)
+	return out
+
+
 ## D3 (C35.4): a packed squad's halt (where, in what shape, on what heading) rides its move task, queued or not.
 func _copy_pack(extra: Dictionary, task: Dictionary) -> void:
 	if extra.has("halt_at") and task["verb"] == "move":
