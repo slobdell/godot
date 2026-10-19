@@ -310,6 +310,11 @@ _Filed here before any number._
   5 click (4.4 -> 19.6), Terminus 5 click (13.1 -> 30.6); all-in mostly within a few s; Locks 3 route slower (38.3 v 18.5 s); Locks 5
   route now finishes (45.6 s; deploy_off never). D4 (minimax seating) and D5 (gate deal) target exactly those cells. Rows:
   `stream/orders` 56ed913fc `references/round35/orders/d2-main-1a18dd278/`.
+- **R35.22 (2026-10-19 ~15:25) E1's re-check timed out; the unfinished targets run alone.** `83b3b90b4` (67a5a9db0 + main
+  fc1f4ac0e's N3), builder0: `slot.sh: killed after 5400s` under load mid ai-scenarios-check (no FAIL in its log). Finished: test
+  2890/0 (the turn-in tests pass: the stale-library diagnosis confirmed), 16/26 targets passed, sim-baseline ALL 13 UNMOVED at main's
+  current lines (the release changes no baseline match), determinism 8c3c1232b711a760. Ruling: the 10 unfinished targets run on the
+  same tree with CHECK_TARGETS; finished 16 + those 10 = the gate.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
