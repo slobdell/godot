@@ -123,6 +123,24 @@ screen should still see the hit.
   it, they skip as before. A first try (an engine error at NativeBridge's static init) was dropped: it fires before any
   test, so the runner does not count it. Not converted: tests/test_manoeuvre_wedge.gd (manoeuvre's, one site; relayed).
 
+- **C34.2 v4 on CURRENT main (traffic's re-cut): `pair/native-parkedroom-v4m` `4445f6b4c`** = main `16db9e19b` + N5 +
+  the 6 hand-back commits + the at_post_of gate + the parkedroom stage at N5's centre + the C34.6 floor rule. builder2,
+  merged with traffic `e6468b2e0`: 33/0, 0 mismatches. The parkedroom stage: 88 negotiations, 21 handed back (1 at the
+  old centre), 2 rooms. **Alone on main it is RED** (exec_fields.h carries `_room_*` members main's Movement lacks:
+  NativeExec verify errors in test_native_execute / _odd / h1b). It must merge only with traffic's v4. Traffic told.
+- **R34.4 T4's ghost twins: `pair/native-ghost-r34` `3a45b58b4`** = v4m + R33.29's design re-ported onto the split gate
+  harness. The stages run with the ghost OFF whatever the tree's default; the ghost-ON stages are
+  test_native_gate_ghost (new file) and the Sumps give-way. builder2, with traffic `e6468b2e0` and the ghost ON
+  (scratch): 22/0 on the twin set, 0 mismatches; 13/0 on the final floors. The ghost ON never reaches the come-round
+  (turned 0).
+- **C34.6 floor ruling: `b99b23386`** (stream/native; for planner `pair/native-c346-floors` `ae2f03c59` = planner
+  `09a98132c` + N5 + the floors, builder2 native_yield 6/0). test_native_yield's floors are paths reached (1 each) and
+  10 negotiations, not half a fight's counts. Planner's phase fix moves the counts with 0 mismatches (Sumps 44 -> 30,
+  yard_open owned 22 -> 15). The yard_open live and owned stages differ because the live one forces 60 set-up compares;
+  on the Sumps, with the same parameters, owned = live exactly.
+- **C33.9's turn-in twin through NativeExpect: `pair/native-c339` `25fd4298e`** (main merged in for N4). It doesn't
+  move manoeuvre's running check.
+
 **N2 C34.7, the shell RPC after the drop: BUILT, `cd0fc9ed0` (+ `.uid`).** `test_match_shell_dropped_peer`: a seated
 relay host (grace 0) fires a shell at a tank 15 m away, the socket drops with the shell in flight, the session ends on the
 next poll, the shell lands. Red without the guard (laptop, NATIVE=off): exactly R33.25's engine error, "Trying to call an
