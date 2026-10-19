@@ -219,6 +219,17 @@ builder0), ruled R34.3.
   Deciding GAIN: T(1) mixed friend-stuck crew-s arm < base AND (base − arm) − k se > 0; byte-identical arms on every cell =
   NOT ARISEN, no ship. Deciding guards T(2)–T(4), T(6) within base ± k se; G1–G4, r1 on 920–931, each naming its count of
   byte-identical cells. Order 7 → G, r1 → T; a fail parks; no re-read. Runs after the v4 series.
+- **B6 the halt shape laid on the final approach (brains), approved 2026-10-18 before any number (code `stream/brains`
+  `619eff0e1`, `ElementPlan.HALT_SHAPE_EARLY`; cause traced `661be82f7`: the move → halt hand-off re-lays every seat ±9.3 → ±16–17 m
+  as the centre enters the arrival radius).** No C++ mirror (shape and seats are GDScript; el_native only grounds). ON v
+  `--halt-shape-early=off`, builder2, paired, FRESH seeds (40–41 tuning only). (1) DECIDING, ground-series `--drift-trace`:
+  Sumps 50 51 × ticks {1,3,6,8,11,16}, yard the same, Terminus 50–53 (28 runs an arm): (a) pooled drift moves ON ≤ 0.5 × OFF;
+  (b) Sumps all_in8_s paired mean(ON−OFF) ≤ 1.645 se and hollow runs ON ≤ OFF + 1; yard/Terminus crews in, mean(ON−OFF) ≥
+  −1.645 se; (c) REPORTED: arrived re-lays left ON (count, distance, formation before/after). (2) Choke guard, crossing-series
+  AUTO, drills on, crossing/locks × green/rust, seeds 4–7 × ticks {1,8,15} (48 runs an arm), arrival just past the bridge: runs
+  all-across ON ≥ OFF − 1; last-across time and inversions + point passes + overtakes, mean(ON−OFF) ≤ 1.645 se. (3) make check on
+  the ship tree, sim-baseline moves attributed with HALT_EARLY=off. Ships ON if (1)(a)(b), (2), (3) pass.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
