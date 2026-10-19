@@ -807,6 +807,14 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   check that the arms differ, with a measurement-only counter of herringbone-drill lays per element proving the path
   fires; (b) only then judge on that stage, FRESH seeds, the same lines. If the drill path fires only in CP-F's world,
   the fix is chiefly CP-F's enabler, and attempt 4 judges them together, which the lead decides.
+  **(a) reproduced ON MAIN (tuning, builder0, native, lab/brains-herring `3baf3a06`, gangs faced_attack_move s41):** OFF:
+  HERRING_LAY 201, Hunters goal moves after arrival 1,097, never settled; ON: 60, 29, settled at 30.5 s. The drill path
+  fires on MAIN, not only in CP-F's world. The nulls happened because the SEED rolls the gang army: seeds 41/44/45/66/67
+  field Guns + three gang_ifv squads (the looping case), while 40/43/68/70/71 and 520–525 roll the Battery army (no
+  herringbone, HERRING_LAY 0). **(b) re-filed:** scan fresh seeds 526–575 for their army only (screen.json's squads,
+  fixed by seed before either arm acts), take the FIRST 6 that roll Guns + gang_ifv, and run ON v off on those, with the
+  same lines and distinct pairs counted. Selecting on the army is selecting on something fixed before treatment, so it's
+  fair, and the scan's army list is filed before any arm runs.
 
 **Bars (round 33):** filed here before any number.
 
