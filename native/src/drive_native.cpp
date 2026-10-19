@@ -177,8 +177,7 @@ struct N {
 			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" },
 			// Round 34 (traffic T6, `underfire`)
 			ticks_since_hit{ "ticks_since_hit" }, underfire_refusals{ "underfire_refusals" },
-			underfire_holds{ "underfire_holds" }, underfire_aborts{ "underfire_aborts" }, underfire_log{ "underfire_log" },
-			unit{ "unit" }, f{ "f" }, to{ "to" }, spot{ "spot" };
+			underfire_holds{ "underfire_holds" }, underfire_aborts{ "underfire_aborts" }, underfire_log{ "underfire_log" };
 };
 const N &n_() {
 	static const N names;
@@ -1844,11 +1843,13 @@ struct Drive {
 			sadd(k.underfire_aborts, 1);
 			Array log = sget(k.underfire_log);
 			if (log.size() < 500) {
+				// The GDScript's row: String keys, the unit's name a String (not the node's StringName).
+				static const String unit("unit"), f("f"), to("to"), spot("spot");
 				Dictionary row;
-				row[k.unit] = tank->get_name();
-				row[k.f] = Engine_frames();
-				row[k.to] = yield_to;
-				row[k.spot] = v.yield_spot();
+				row[unit] = String(tank->get_name());
+				row[f] = Engine_frames();
+				row[to] = yield_to;
+				row[spot] = v.yield_spot();
 				log.append(row);
 			}
 			end_yield(yield_to);
