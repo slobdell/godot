@@ -509,8 +509,10 @@ static func _face_legs(mover: Movement, map: RID, frame: Array, start: PackedFlo
 ## round it does not shuffle (the face creep, 38 gear changes in 30 s on the laptop stage) but TURNS IN: forward on the
 ## turning circle toward the target's side, never a reverse leg, at the speed that yaws it at the bearing's rate plus a
 ## catch-up on the error. A car turns fastest rolling forward, and rolling is the evasion he asked for. A spot that
-## stands still keeps the face planner (`plan_face`). OPT-IN until its bar passes: `--nav-off=turnin` flips it.
-const TURN_IN_DEFAULT := false
+## stands still keeps the face planner (`plan_face`). ON (the lead shipped attempt 1, R33.24 option 1, judged builder2
+## seeds 31-36 on 781801da0: in-reach exchange 0.20 -> 1.77, (a) 23.9 % v 25 and out-of-reach hits 42 -> 57 accepted):
+## `--nav-off=turnin` turns it off.
+const TURN_IN_DEFAULT := true
 ## The spot must have moved within this long (s) for a face to turn in; a spot that stood still that long goes back to
 ## the face planner. (A bearing-rate threshold, 8 deg/s, let go whenever the orbiter slowed and handed the hull back to
 ## the creep: builder0 seeds 21-23 on 66411eb7, up to 76 reverse ticks under a face.)
