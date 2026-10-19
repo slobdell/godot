@@ -131,6 +131,16 @@ PASS (−1317 v k·se 528), per-cell damage guard **FAIL on law v scout 15 m** (
 (e) (g) PASS. The one line at risk is that cell's damage guard, at the hull's physical limit; fa5226f14's jink is aimed at
 it, and the series' verdict falls where it falls (the orchestrator, 2026-10-19).
 
+**Traffic's X1 census, the wedged-and-killed class (asked by the orchestrator; code read only, main 82feffa86):** 133 of
+2096 deaths were crews `Movement.wedged` with a live move. My view: it is the UNSTICK NEVER FIRING, not firing slowly.
+`wedged` (movement.gd ~1490) is a measurement: avoidance shaped the hull's velocity on > 50 % of the last 2 s and it moved
+less than a hull length; nothing acts on it (counters only). The blind stall rule in `_unstick` (~3410) needs |throttle|
+> 0.5 and a reading < STUCK_SPEED for 1 s, and a hull that avoidance is shaping has its throttle shaped DOWN, so the
+stall clock never runs while the hull grinds in place; the honest reading (`unstickback`, H1) is opt-in and applies to
+routed moves pinned on a HULL. Candidate (round 35, manoeuvre): a second trigger for `_unstick`, `wedged` itself (2 s of
+avoidance with under a hull length made good) → the H1 ask/escape path, judged on traffic's far_census deaths-by-cause
+(stuck/jammed deaths ON ≤ base) with the x1 rows as the base. Not this round.
+
 **M2 is built:** `lab/m2-arriveleg` bbf1f6b77 (main 9c0f4dfce merged, brains' adapter in): `Manoeuvre.leg_holds_arrival`
 holds a move_to's arrival while a planned leg drives, bounded at 3 s of leg time per order (`Movement.arrive_hold_until`,
 reset by new_order), `arrivals_held` once per order + `arrivals_held_ticks`, `--nav-off=arriveleg` (default ON), census
