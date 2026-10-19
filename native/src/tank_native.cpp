@@ -586,6 +586,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.UNSTICK_BACK = (bool)config.get("UNSTICK_BACK_DEFAULT", false);
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
 	c.TURN_IN = (bool)config.get("TURN_IN_DEFAULT", false);
+	c.wheel_halt_ready = config.get("WHEEL_HALT_DEFAULT", Variant()).get_type() == Variant::BOOL;
+	c.WHEEL_HALT = c.wheel_halt_ready && (bool)config.get("WHEEL_HALT_DEFAULT", false);
+	c.WHEEL_CREEP_THROTTLE = config.get("WHEEL_CREEP_THROTTLE", 0.5);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
 	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);
