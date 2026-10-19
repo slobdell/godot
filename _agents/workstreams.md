@@ -432,6 +432,11 @@ builder0), ruled R34.3.
   traced: faces no plan fits creep at the 0.35 lock until the judge; attack-move elements step to the next leg ~30 s later when
   arrived crews sit on a sector face (tank_brain ~2960) instead of a stop. Per R33.34 a fifth attempt needs a NEW design (a face
   that gives up cleanly when no plan fits; the element step not waiting on a sector face), not seeds. B11b gets no merge hash.
+- **R34.19 B9 lane spread FAILS its bar and stays OFF (brains, `a82615a2b`, builder2, locks/terminus/crossing × 1400–1439,
+  n 120 an arm, `references/round34/brains/b9_lane_series/`).** A/A E +0.254 (se 0.292); ruled E +0.157 (se 0.310), needed > +0.511.
+  Every guard passes. The mechanism works (stacked picks 64 % → 49 %), the outcome doesn't follow: the census's stacking/deaths link
+  was a correlation, not a lever. Worst ruled fight traced (locks-1404: two squads sent together round the side fed in piecemeal).
+  No re-tune. The code rides main OFF (green at f1034b904).
 - **Round-35 candidates recorded (2026-10-19 morning):** (1) **wedged deaths** (manoeuvre, from T5's rows,
   `references/round34/manoeuvre/wedged-deaths/`): 499 of 5984 = 8.3 %, 3.5 a fight, all `driving`, none held; mid-weight hulls
   (suppressor, burner, IFV, tank, lancer 13–16 % of their own deaths; scouts and artillery 2–4 %); lanes, the Locks worst (the x≈0 lane
