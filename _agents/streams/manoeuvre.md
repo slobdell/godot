@@ -79,7 +79,13 @@ granted decline and an AGREED flicker seam), elements, `game/tactics/**`; native
 
 ## Waiting on the lead
 
-Nothing.
+**M0, the scout turn-in (R34.10, 2026-10-19):** by the bar it does not ship ((c-out)'s pooled median 60 is above the 57 he
+accepted; every other line passes). It goes to him with the orchestrator's and my recommendation to SHIP, in the player
+terms under *M0 JUDGED* in Status. Pair `pair/c339-r34` c8fb8b6a3 is FROZEN and ready; on his yes the orchestrator merges
+it and adopts sim-baseline's three maps. What he would notice: his circled scout turns and fights (74 % of the time with
+the attacker in its sights, 10× the shots, fewer hits in reach); where the attacker's gun outranges its own it turns in
+and often closes to fight instead of dodging, taking 60 hits a run against 46 today and 57 accepted, and dealing 1.45
+per damage taken there (was 0.06).
 
 ## Status
 
@@ -124,6 +130,37 @@ compose (brains' rule decides whether to stand; mine decides how a standing scou
 says yes: the pair c8fb8b6a3 (code = stream/manoeuvre 764ef5427 + pair/native-c339 25fd4298e), green as above; main's
 sim-baseline is then adopted at the three attributed hashes.** Later stream commits are docs, references and the table
 script's R34.1 block only.
+
+### Bar M3 (CP-F attempt 4) — DRAFT, filed with the orchestrator once M1's A/A has read the noise; no attempt-4 number before
+
+**Candidate:** `lab/m1-ruler`'s tree (= main + round33/manoeuvre's CP-F attempt-3 code, `TURN_HULL_DEFAULT` flipped to
+true) + M1's ruler; the pair = that + native's mirrors (native cuts them on the tree; round 33's statement: no C++ change,
+wheeled faces are handed back). **Base:** the same tree, `--nav-off=turnhull`. **Gate first (C31.1):** the pair's whole
+suite green on builder2 (sim-baseline moves adopted with the reason). **Machine:** builder2 start to end. **Seeds:** FRESH
+hull-rest 601–616 (4 factions × 16 × 6 tasks = 384 runs an arm, drawn and clicked), Terminus 620–632, fights 640–663, SBF
+670–675, bridge-pooled's 18; 41/44/45/66/67 and 460–475 stay tuning. **Ruler:** the new one (M1): "still" by `real_mps`,
+wedged crews their own line, the seed shifts the destination (HULL_SHIFT_M 6) and the facing (HULL_JITTER_DEG 20), every
+target pinned; distinct pairs reported beside all pairs (R33.23). **Noise:** from the A/A `references/round34/manoeuvre/
+m1-aa/` (two seed sets of the OFF arm, 36 pairs a task): each guard's k·se below is that table's se, not the series' own,
+as judging.md S5 asks; (d) and (e) are re-sized to the MDE the A/A gives.
+| line | reads | rule |
+|---|---|---|
+| (a) | drawn POINT tasks (move, right, attack-move), wheels/turret at rest | per task median ≤ 15° AND ≥ 70 % within 15° (as R33.21) |
+| (b) | drawn LINE tasks and every class on every task | no class median worse than base at permutation p < 0.05; (o) stands |
+| (c) | clicked arm, wheels/turret | paired median NEW − BASE ≤ +1.645 se, one-sided (R33.23) |
+| (d) | crews moving at the judge by `real_mps`, per task, wheels/turret AND all | ≤ base + 1.645 se, se from the A/A; **wedged crews counted apart and REPORTED** |
+| (e) | never settled (75 s), per task | ≤ base + 1.645 se (A/A se); settle paired median REPORTED |
+| (f) | arrived within ARRIVED_M 7 m; re-seats | arrivals not down beyond 1.645 se paired; re-seats ≤ base + 1.645 se |
+| (g) | Terminus arrivals, rigs and mixed | not down beyond 1.645 se paired |
+| (h) | bridge-pooled | 18/18 |
+| (i) | fights: kills, deaths, hit rate per team | within 1.645 se (gate) |
+| (j) | counters in the new arm | `hull_turns` > 0; `hull_holds` REPORTED (R33.34: 0 when the judged seeds have no contact) |
+| (k) | the named case s66 Green_Guns_5 | REPORTED |
+| (l) | SBF gang_ifv drawn | REPORTED |
+| (m) | the default path | the pair's twins at 0 as the gate; one drawn seed set on the native path agrees in sign on (a) and (d) |
+| FACE_KEEP_FAR | | REPORTED only (R34.5); face distance judged on face_pairs, CAND_ONLY reported |
+**Partial:** (a)–(j) are the gate; any miss parks it with the trace. Ships ON as a pair; brains told the merge hash the
+day it lands (B11b). **Last attempt:** this is the fourth; a fifth needs a new design, not a re-run.
 
 ### Report (2026-10-19 early, round 34 in progress; Fable)
 
