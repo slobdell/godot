@@ -670,6 +670,66 @@ static func depth(shape: String, count: int, spacing := SPACING_M) -> float:
 	return TacticsFormation.depth(shape, count, spacing)
 
 
+## Round 34 (C34.11, O3): an AUTO squad is priced at the shape it will ARRIVE in, its halt, not a line's frontage. An
+## element's arrival lays the doctrine's HOLD pick (ElementPlan._halt: a coil in the open, a herringbone in lanes or
+## dense ground for law/standard/condemned, a coil for the gangs, a line for the syndicate; brains' B6 trace), each seat
+## led FACE_LEAD toward its sector. Five crews at 14 m: a line 57.2 x 0.7 m, a coil 36.3 x 34.5, a herringbone
+## 25.4 x 54.8. Three AUTO squads abreast in the open price 3 x 36.3 + 2 x 14 = 137 m instead of 196.
+## `--halt-price=off` (HALT_PRICE false) is round 33's line.
+static var HALT_PRICE := not OS.get_cmdline_user_args().has("--halt-price=off")
+## The terrain at the click of the order being laid ("" = none set: the open), set by RtsControls._order_squads.
+static var halt_terrain := ""
+static var _halt_memo := {}
+
+
+## The shape a squad of `roles` halts in under `table`, on `terrain` (the table's hold pick; threat and composition as
+## an element's situation reads them, the hold rules key on terrain only).
+static func halt_shape(table: DoctrineTable, terrain: String, roles: Array) -> String:
+	var members: Array = []
+	for role: String in roles:
+		members.append({"role": role})
+	var pick := table.select({"task": "hold", "threat": "none", "terrain": terrain if terrain != "" else "open",
+			"composition": ElementSituation.composition_of(members)})
+	var shape := String(pick.get("formation", "coil"))
+	return shape if TacticsFormation.NAMES.has(shape) else "coil"
+
+
+## The halt shape of a squad of `units` (names in `game_match`): its element's `table` when it has one, else its
+## faction's, on the clicked ground (`halt_terrain`).
+static func squad_halt_shape(units: Array, table: DoctrineTable, game_match: Match) -> String:
+	var roles := []
+	var faction := ""
+	for unit_name: String in units:
+		var unit := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+		if unit != null:
+			roles.append(Units.role_of(unit.unit_id))
+			faction = String(Units.PROFILES.get(unit.unit_id, {}).get("faction", ""))
+	return halt_shape(table if table != null else DoctrineTable.for_faction(faction), halt_terrain, roles)
+
+
+## [across, deep] of a halt in `shape`: the seats TacticsFormation.place lays with `halt`, each led ElementPlan.FACE_LEAD
+## toward its sector, as ElementPlan._group stands them (memoised: pure in its three numbers).
+static func halt_footprint(shape: String, count: int, spacing := SPACING_M) -> Vector2:
+	if count <= 1:
+		return Vector2.ZERO
+	var key := "%s:%d:%.2f" % [shape, count, spacing]
+	if _halt_memo.has(key):
+		return _halt_memo[key]
+	var members := []
+	for i in count:
+		members.append({"name": "S%d" % i, "unit": "tank", "role": "tank", "position": Vector3(i, 0.0, 30.0)})
+	var low := Vector2(INF, INF)
+	var high := Vector2(-INF, -INF)
+	for entry in TacticsFormation.place(members, shape, Vector3.ZERO, Vector3.FORWARD, spacing, {"halt": true, "corridor_m": INF}):
+		var at: Vector3 = (entry["to"] as Vector3) + TacticsFormation.rotate(Vector3.FORWARD, deg_to_rad(float(entry["sector"]))) \
+				* ElementPlan.FACE_LEAD
+		low = Vector2(minf(low.x, at.x), minf(low.y, at.z))
+		high = Vector2(maxf(high.x, at.x), maxf(high.y, at.z))
+	var size := high - low
+	_halt_memo[key] = size
+	return size
+
+
 static func _living(names: Array[String], alive: Callable) -> Array[String]:
 	var result: Array[String] = []
 	for unit_name in names:

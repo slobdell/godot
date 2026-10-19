@@ -1085,6 +1085,9 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String:
 	var squads: Array = found["squads"]
 	var loose: Array = found["loose"]
+	# O3: each AUTO squad is priced at its halt on the ground he clicked.
+	SelectionSquads.halt_terrain = ElementSituation.terrain_at(Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))) \
+			if extra.has("to") else ""
 	var blocks: Array = []
 	for squad: Dictionary in squads:
 		blocks.append(_squad_block(squad))
@@ -1367,14 +1370,17 @@ static func nominal_shape(shape: String, count: int) -> String:
 static var auto_nominal_shape := true
 
 
-## How wide this squad will stand: its formation at its element's pitch. Under AUTO the leader picks the shape on the
-## way (doctrine, by terrain and threat), so it is given a line's frontage, the widest it can choose: two squads
-## must never be laid so close that the leader's pick puts them on top of each other.
+## How wide this squad will stand: its formation at its element's pitch. Under AUTO (round 34, O3) the shape it will
+## ARRIVE in, its doctrine's halt on the click's ground (SelectionSquads.halt_shape / halt_footprint); round 33 gave it
+## a line's frontage, the widest it could choose on the way (`--halt-price=off`).
 func _squad_width(squad: Dictionary) -> float:
 	var shape := squad_formation(squad)
 	var element: Element = squad.get("element")
 	var spacing := _squad_pitch(squad).x
 	if shape == UnitCommand.AUTO or not TacticsFormation.NAMES.has(shape):
+		if SelectionSquads.HALT_PRICE:
+			return SelectionSquads.halt_footprint(SelectionSquads.squad_halt_shape(squad["units"], element.table if element != null \
+					and is_instance_valid_element(element) else null, game_match), (squad["units"] as Array).size(), spacing).x
 		shape = "line"
 	return SelectionSquads.width(shape, (squad["units"] as Array).size(), spacing)
 
@@ -1392,6 +1398,10 @@ func _squad_depth(squad: Dictionary) -> float:
 		standing = element.formation
 	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
 		return SelectionSquads.depth(shape, count, spacing)
+	if SelectionSquads.HALT_PRICE:
+		# O3: the halt it will arrive in, as deep as it stands (a herringbone is the deepest halt).
+		return SelectionSquads.halt_footprint(SelectionSquads.squad_halt_shape(squad["units"], element.table if element != null \
+				and is_instance_valid_element(element) else null, game_match), count, spacing).y
 	var deepest := SelectionSquads.depth("auto", count, spacing)
 	if TacticsFormation.NAMES.has(standing):
 		deepest = maxf(deepest, SelectionSquads.depth(standing, count, spacing))
