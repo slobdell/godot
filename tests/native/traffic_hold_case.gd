@@ -27,8 +27,14 @@ func _hold_case(owned: bool, part: int, parts: int) -> void:
 		return
 	_saved_native = BrainSwitches.native
 	Traffic.set_off("hold", false)
+	var halt := (Manoeuvre as Script).get_script_constant_map().has("WHEEL_HALT_DEFAULT")  # round 35 (W1b)
+	var halt_before: Array = [Manoeuvre.wheel_halt_asks, Manoeuvre.wheel_halts] if halt else [0, 0]
 	var acc: Dictionary = await TrafficTwin.run(self, owned, "terminus", "head", 30.0, part, parts)
 	var report: Dictionary = acc["report"]
+	if halt:
+		print("native traffic hold%s, crews %d/%d: wheeled pace-0 halts (the stage's own drives): asks %d, halts %d (WHEEL_HALT_DEFAULT %s)" % [
+				" (owned state)" if owned else "", part, parts, Manoeuvre.wheel_halt_asks - int(halt_before[0]),
+				Manoeuvre.wheel_halts - int(halt_before[1]), Manoeuvre.WHEEL_HALT_DEFAULT])
 	print("native traffic hold%s, crews %d/%d: %d drives compared (%d holding: %d at the spot, %d approaching), %d unsticks (%d holding), %d mismatches; the stage: %s" % [
 			" (owned state)" if owned else "", part, parts, acc["drives"], acc["held"], acc["at_spot"], acc["approach"], acc["unsticks"], acc["held_unsticks"],
 			acc["mismatches"], report])
