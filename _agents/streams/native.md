@@ -93,6 +93,27 @@ screen should still see the hit.
   native test FILTER=native_decide` at `2135c0af5` (n 1): `exited 0`, 7536 decisions, 0 mismatches; 480 forced scout
   cases, 27 fight back, 6 cut by the forecast (floors at half: 13 and 3, `93d878924`).
 
+- **C34.5, brains' second change (834562ab1: the champion runs without matchups, so decide computes the duel for a
+  scout under fire): `pair/native-scout3` `85f34ca63`** = brains `834562ab1` + the two commits above + `scout_under_fire`
+  in C++ and the lazy `matchups_for` in decide's SPOT branch. test_native_decide's count follows the same rule. builder2,
+  n 1: native_decide 7536 decisions, 0 mismatches; 480 forced scout cases, 52 fight back, 17 cut by the forecast.
+  **GREEN, sent to brains: `85f34ca63`.** builder2, n 1, `make native test FILTER=native_decide|scout_fights_back|
+  native_gate|native_drive|native_execute|native_matchups` exited 0, 24 / 0, every twin 0 mismatches (drive 2160,
+  k-turns 1440, unstick 3600 + 3600, execute 5880 native / 120 handed back). Brains merges it and runs its ship check.
+- **C34.2 v4: `pair/native-parkedroom-v4` `6231e7222`** = traffic `1b2fd26f1` + the r34 hand-back (merged) + one commit:
+  Drive::ask's hand-back asks `Movement.at_post_of(tanks_root, name)` (traffic's one definition of AT a post: still for
+  ROOM_STILL_S, or on a HOLD order inside its hold line) instead of inlining `Traffic.still_s`. The phase test stays as
+  at_post's own first clause. No new floor stage: the C++ asks the GDScript's at_post itself, so the decision is equal by
+  construction, and traffic's neck test covers the hold-line clause.
+- **N4, the refusal the rest of the way: `12ac7b172`.** Every twin's "native: absent" early return (57 sites, 42 files)
+  goes through `NativeExpect.absent(self)` (tests/native/native_expect.gd). That FAILS the twin when make exported
+  `TANK_NATIVE_EXPECTED=1` (NATIVE on and a C++ toolchain, mk/native.mk). It covers what `_native-ready` can't see: a
+  FILTER that matches a twin without saying "native" (`FILTER=decide` ran test_native_decide vacuously), shards,
+  native-verify-suite / -scenarios, and every other recipe's run_tests.gd call. Laptop, no library: the runner with
+  `TANK_NATIVE_EXPECTED=1` and `--filter=decide|native_shell` reads 32 / 3, the three twins FAIL with the message; without
+  it, they skip as before. A first try (an engine error at NativeBridge's static init) was dropped: it fires before any
+  test, so the runner does not count it. Not converted: tests/test_manoeuvre_wedge.gd (manoeuvre's, one site; relayed).
+
 **N2 C34.7, the shell RPC after the drop: BUILT, `cd0fc9ed0` (+ `.uid`).** `test_match_shell_dropped_peer`: a seated
 relay host (grace 0) fires a shell at a tank 15 m away, the socket drops with the shell in flight, the session ends on the
 next poll, the shell lands. Red without the guard (laptop, NATIVE=off): exactly R33.25's engine error, "Trying to call an
