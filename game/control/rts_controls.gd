@@ -1652,6 +1652,12 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var approach := prev - before
 	if approach.length() < 1.0:
 		approach = next_click - prev
+	# Round 35 (D5, the A/B's failing seed: Crossing 5 route s3614): when the waypoint's places were laid near the squads'
+	# previous legs, prev - before pointed BACKWARDS (-9.4, 4.2 against a route heading -x -z), so the deal's front rank and
+	# never_behind ran the wrong way and sent squad 1 17 m back. The gate is passed on the way from where the squads come
+	# from to where the route goes next.
+	if GATE_DEAL and (next_click - before).length() >= 1.0:
+		approach = next_click - before
 	var drive: Callable = SelectionSquads.drive_on(ground) if ground != null else func(a: Vector3, b: Vector3) -> float: return a.distance_to(b)
 	var crosses: Callable = SelectionSquads.crosses_on(ground) if ground != null else func(_a: Vector3, _b: Vector3) -> bool: return false
 	var gate := gate_anchors(blocks, prev, approach, drive, crosses, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
