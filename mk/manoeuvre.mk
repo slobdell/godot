@@ -275,11 +275,13 @@ manoeuvre-face-clip: import ## manoeuvre stretch: a drawn facing on War Rigs fil
 # ---- round 33 (C33.9, his scout out-turned by an orbiting attacker) ---------------------------------------------------
 C339_SEEDS ?= 11-16
 C339_JOBS ?= 1
+# C339_SET=report: the reported cell (gang_scout v syn_lancer 15 m post) instead of the bar's 24 cells (round 34).
+C339_SET ?=
 manoeuvre-c339-cells: import ## manoeuvre: C33.9's bar cells (turn-in ON v OFF, both GDScript; C339_JOBS seeds at once, one --fixed-fps process a seed: the box's load never paces the sim) -> build/manoeuvre/c339_cells.jsonl
 	@d=$(BUILD_DIR)/manoeuvre/c339; rm -rf $$d; mkdir -p $$d; first=$${C339_SEEDS%-*}; last=$${C339_SEEDS#*-}; status=0; \
 	for seed in $$(seq $$first $$last); do \
 		while [ $$(jobs -rp | wc -l) -ge $(C339_JOBS) ]; do sleep 1; done; \
-		( C339_CELLS=$$seed-$$seed $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/run_tests.gd -- --filter=c339_cells \
+		( C339_CELLS=$$seed-$$seed C339_SET=$(C339_SET) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/run_tests.gd -- --filter=c339_cells \
 			> $$d/$$seed.log 2>&1; echo $$? > $$d/$$seed.status ) & \
 	done; wait; \
 	for seed in $$(seq $$first $$last); do [ "$$(cat $$d/$$seed.status)" = 0 ] || status=1; tail -1 $$d/$$seed.log | sed "s/^/   seed $$seed: /"; done; \

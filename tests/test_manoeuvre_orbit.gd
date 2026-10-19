@@ -237,11 +237,19 @@ func test_c339_cells() -> void:
 	# machine with the library and not on one without).
 	var was_native := BrainSwitches.native
 	BrainSwitches.native = false
+	# C339_SET=report (round 34, the orchestrator's ask from brains' B1 verdict): the REPORTED cell beside the bar's,
+	# gang_scout v syn_lancer 15 m at a post (their worst duel cell: a held fixed gun k-turning, 0 shots), both arms. Its
+	# rows are kept apart from the bar's cells (the table pools by cell, so they never enter a judged line).
+	var report := OS.get_environment("C339_SET") == "report"
+	var subjects: Array = ["gang_scout"] if report else ["law_scout", "gang_scout"]
+	var enemies: Array = ["syn_lancer"] if report else ["syn_scout", "gang_ifv"]
+	var radii: Array = [15.0] if report else [15.0, 30.0, 45.0]
+	var posts: Array = [true] if report else [true, false]
 	for seed_value in range(int(ends[0]), int(ends[-1]) + 1):
-		for subject: String in ["law_scout", "gang_scout"]:
-			for enemy_unit: String in ["syn_scout", "gang_ifv"]:
-				for radius: float in [15.0, 30.0, 45.0]:
-					for player: bool in [true, false]:
+		for subject: String in subjects:
+			for enemy_unit: String in enemies:
+				for radius: float in radii:
+					for player: bool in posts:
 						for on: bool in [false, true]:
 							var r := await _orbit_stage(enemy_unit, 30.0, radius, player, seed_value, on, subject, false)
 							r.erase("kturn")
