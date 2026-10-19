@@ -9,8 +9,12 @@ const AHEAD := Vector3(0, 0, -1)
 const PITCH := Vector2(14.0, 14.0)
 
 
+var _was_pack := SelectionSquads.PACK
+var _off := false
+
+
 func teardown() -> void:
-	SelectionSquads.PACK = true
+	SelectionSquads.PACK = _was_pack
 	super.teardown()
 
 
@@ -19,6 +23,12 @@ func _blocks(count: int, halt := "coil", crews := 5, spacing := 60.0, z := 100.0
 	for i in count:
 		blocks.append({"center": Vector3((i - (count - 1) * 0.5) * spacing, 0, z), "width": 40.0, "depth": 30.0,
 				"shape": "wedge", "count": crews, "pitch_v": PITCH, "halt": halt})
+	return blocks
+
+
+func _no_travel(blocks: Array) -> Array:
+	for block: Dictionary in blocks:
+		block.erase("shape")
 	return blocks
 
 
@@ -41,6 +51,8 @@ var _headings: Array = []
 
 func _pack(blocks: Array, ok: Callable, reach: Callable, start: Array[Vector3] = [], heading := AHEAD) -> Array[Vector3]:
 	_headings = []
+	if not _off:
+		SelectionSquads.PACK = true  # parked OFF by default (D3): these tests exercise it switched on
 	return SelectionSquads.pack_halts(blocks, CLICK, heading, ok, reach, start, _headings)
 
 
@@ -80,6 +92,25 @@ func _mixed(blocks: Array, anchors: Array[Vector3]) -> bool:
 	return false
 
 
+func test_their_travel_shapes_do_not_mix_either() -> void:
+	# They arrive in wedges before they deploy: no wedge seat of one squad within 7 m of another's, none inside its outline.
+	var blocks := _blocks(3, "coil")
+	var anchors := _pack(blocks, _any, _any)
+	var wedge: Array[Vector2] = TacticsFormation.offsets_at("wedge", 5, PITCH)
+	var at := func(i: int) -> Array[Vector3]:
+		var out: Array[Vector3] = []
+		for o: Vector2 in wedge:
+			out.append(anchors[i] + Vector3(o.x, 0, o.y))  # AHEAD is -Z: offsets' y (behind) is +Z
+		return out
+	var closest := INF
+	for i in 3:
+		for j in range(i + 1, 3):
+			for p: Vector3 in at.call(i):
+				for q: Vector3 in at.call(j):
+					closest = minf(closest, p.distance_to(q))
+	assert_true(closest >= SelectionSquads.PACK_TRAVEL_CLEAR_M - 0.01, "travel seats %.1f m apart at the closest" % closest)
+
+
 func test_squads_never_mix() -> void:
 	for halt: String in ["coil", "herringbone", "wedge", "line"]:
 		for count in [3, 5]:
@@ -90,7 +121,7 @@ func test_squads_never_mix() -> void:
 
 
 func test_the_middle_squad_stands_on_the_click_and_the_sides_keep_their_side() -> void:
-	var blocks := _blocks(3)
+	var blocks := _no_travel(_blocks(3))
 	var anchors := _pack(blocks, _any, _any)
 	assert_true(anchors[1].distance_to(CLICK) < 0.01, "the squad nearest the click takes it (%s)" % anchors[1])
 	assert_true(anchors[0].x < 0.0, "the left squad stands left of the click's line (%s)" % anchors[0])
@@ -99,7 +130,8 @@ func test_the_middle_squad_stands_on_the_click_and_the_sides_keep_their_side() -
 
 func test_tighter_than_the_ranks() -> void:
 	# Five coils: the farthest crew from the click is nearer than round 34's ranks put it.
-	var blocks := _blocks(5, "coil", 5, 50.0)
+	# By the halts alone (the travel shapes are what bind, D3's record: with them it is no tighter than the ranks).
+	var blocks := _no_travel(_blocks(5, "coil", 5, 50.0))
 	for block: Dictionary in blocks:
 		var foot := SelectionSquads.halt_footprint("coil", 5, PITCH.x)
 		block["width"] = foot.x
@@ -176,7 +208,8 @@ func test_does_not_apply() -> void:
 	assert_true(_pack(blocks, _any, _any).is_empty(), "a squad with no halt (his pick): the ranks")
 	assert_true(_pack(_blocks(1), _any, _any).is_empty(), "one squad: nothing to pack")
 	SelectionSquads.PACK = false
-	assert_true(_pack(_blocks(3), _any, _any).is_empty(), "--pack=off: the ranks")
+	_off = true
+	assert_true(_pack(_blocks(3), _any, _any).is_empty(), "switched off: the ranks")
 
 
 const Fixture := preload("res://tests/support/control_fixture.gd")
@@ -187,6 +220,7 @@ const Fixture := preload("res://tests/support/control_fixture.gd")
 func test_the_controls_hand_each_squad_its_packed_halt() -> void:
 	var was := ElementPlan.DEPLOY_STEP
 	ElementPlan.DEPLOY_STEP = true
+	SelectionSquads.PACK = true
 	var f := Fixture.new(self)
 	await f.build_scale(15)
 	var squads: Array = []

@@ -977,6 +977,7 @@ static func _group_exactly(groups: ControlGroups, members: Array[String], alive:
 ## two wedges basically?"). TIGHT PACKING ON THE DEPLOY STEP. With the deploy step on, an AUTO squad's final seats are
 ## its halt shape (`block["halt"]`, O3's pick) laid on a heading fixed when the order is given (the body's approach), so
 ## where every crew will finally stand is known now and the squads can be packed by those seats, not by boxes:
+##   * the squads' TRAVEL shapes at their anchors (what they arrive in) keep PACK_TRAVEL_CLEAR_M and do not mix;
 ##   * every halt seat of one squad stands at least HALT_CLEAR_M (9 m) from every halt seat of another (wedges nest),
 ##     and none inside another squad's halt outline (the convex hull of its seats): a coil is a ring with an empty middle,
 ##     and by seat clearance alone a second coil stood inside it, the two squads' crews mixed (D3's first controls test);
@@ -993,8 +994,10 @@ static func _group_exactly(groups: ControlGroups, members: Array[String], alive:
 ## `headings` (out) gets each squad's halt heading: the approach, or the approach turned (PACK_TURNS).
 ## Places are searched on a PACK_STEP_M grid in the body's frame, PACK_ACROSS_M either side of the click and PACK_BEHIND_M
 ## behind it (never ahead: the front squad stands on the click). Returns [] (the caller keeps `ranks`) unless every
-## block carries a halt shape. `--pack=off` (PACK false) is round 34's ranks.
-static var PACK := not OS.get_cmdline_user_args().has("--pack=off")
+## block carries a halt shape. PARKED (round 35, D3): OFF by default, `--pack=on` (env PACK=on) opts in. With the travel
+## shapes kept apart (PACK_TRAVEL_CLEAR_M) it is no tighter than the ranks (the wedge they arrive in binds, as round 34's
+## O2 found); without that, two squads' arrival slots mix (test_control_two_squads). Status *D3* has the record.
+static var PACK := OS.get_cmdline_user_args().has("--pack=on") or OS.get_environment("PACK") == "on"
 const PACK_STEP_M := 2.0
 const PACK_ACROSS_M := 90.0
 const PACK_BEHIND_M := 100.0
@@ -1012,6 +1015,11 @@ const PACK_TURN_COST_M := 6.0
 ## every seat onto the nearest such point anyway, and the strict test (0.5 m) put the Locks squads behind the buildings.
 ## Water is never good ground (the controls' seat test refuses it outright).
 const PACK_GROUND_SLACK_M := 4.0
+## The squads arrive in their TRAVEL shapes (a block's nominal `shape`, laid on the approach at its anchor) and deploy
+## only once every crew is in, so those must not mix either: no travel seat of one squad within this of another's, nor
+## inside its outline (test_control_two_squads' bar: half the gap). Round 34's O2 note: "a fixed order-time heading
+## makes the HALT seats exact, but the travel seats before all-in still aren't" -- this is what keeps them apart.
+const PACK_TRAVEL_CLEAR_M := 7.0
 ## How many packs the controls laid, this process (a probe reads it).
 static var packed := 0
 
@@ -1032,9 +1040,17 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 	# outlines, and where each block stands now in that frame.
 	var seats: Array = []
 	var hulls: Array = []
+	var travel: Array = []  # each block's TRAVEL shape at its anchor on the approach (its nominal `shape`), and outline
+	var travel_hulls: Array = []
 	var now: Array[Vector2] = []
 	for block: Dictionary in blocks:
 		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		var moving := PackedVector2Array()
+		if block.has("shape"):
+			for o: Vector2 in TacticsFormation.offsets_at(String(block["shape"]), int(block.get("count", 1)), p):
+				moving.append(Vector2(o.x, -o.y))  # offsets_at's y is behind; this frame's is ahead
+		travel.append(moving)
+		travel_hulls.append(Geometry2D.convex_hull(moving) if moving.size() >= 3 else PackedVector2Array())
 		var offsets := halt_offsets(String(block["halt"]), int(block.get("count", 1)), p.x)
 		var by_turn: Array = []
 		var outline: Array = []
@@ -1108,6 +1124,21 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 			if hi.size() >= 3:
 				for b: Vector2 in theirs:
 					if Geometry2D.is_point_in_polygon(there + b - at, hi):
+						return false
+			# The squads ARRIVE in their travel shapes before they deploy: those must not mix either.
+			for a: Vector2 in travel[i]:
+				for b: Vector2 in travel[j]:
+					if (at + a).distance_to(there + b) < PACK_TRAVEL_CLEAR_M:
+						return false
+			var tj: PackedVector2Array = travel_hulls[j]
+			if tj.size() >= 3:
+				for a: Vector2 in travel[i]:
+					if Geometry2D.is_point_in_polygon(at + a - there, tj):
+						return false
+			var ti: PackedVector2Array = travel_hulls[i]
+			if ti.size() >= 3:
+				for b: Vector2 in travel[j]:
+					if Geometry2D.is_point_in_polygon(there + b - at, ti):
 						return false
 		for a: Vector2 in mine:
 			if not bool(seat_good.call(world.call(at + a))):
