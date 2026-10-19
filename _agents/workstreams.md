@@ -222,6 +222,13 @@ _Filed here before any number._
   hull, the stall rule reads the drive's intent; H1's escape unchanged; native mirrors after its dev read; fresh seeds hull-rest
   901–916, fights 940–963; bar to the orchestrator before code. **T9 (traffic, after T7 and T8):** a give-way that ends with the
   yielder still touching or across the asker's route does not count as done.
+- **R35.13 (2026-10-19 ~11:35) W1c alone rocks, it does not free; W1c + T9 become one series.** Manoeuvre's dev read (builder0,
+  ec991cf7f, GDScript both arms): counter fires (stall_intent_ticks 0 v 1434 on law-605, 0 v 2088 on law-607; asks 2 -> 7; H1 escapes
+  3 -> 8), but neither traced crew reaches its goal: the parked blocker (Green_Eyes II_5) yielded once (t 9–13 s, 2.4 m, still
+  touching) and refused all 5 later asks, so the asker cycles ask / stand / reverse <= 3 m / forward into the same friend. Hull-rest
+  attack-move tuning 460–467, 32 an arm: movers 10 v 14, never settled 4 v 7, settle median 37.2 v 44.5 s, about half M6 (d)'s
+  needed effect. M6 NOT run; W1c held OFF (f9b3bb7f3). Traffic traces T9's mechanism now (why a once-yielded crew refuses); W1c + T9
+  judged as ONE series under a joint bar filed when T9's design is in.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
