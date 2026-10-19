@@ -9,9 +9,9 @@ extends ExecuteTwinCase
 const ORBIT_R := 15.0
 const LEAD_DEG := 40.0
 const SECONDS := 30.0
-## builder2's fresh counts halved (n 1): see the run's "turn-in stop" line.
-const MIN_TURN_IN_STOPS := 1
-const MIN_LIVE_TURN_INS := 1
+## builder2's fresh counts halved (8b0d91c5, n 1: 506 turn-in stops handed back over both views, 99 live stop turn-ins).
+const MIN_TURN_IN_STOPS := 253
+const MIN_LIVE_TURN_INS := 49
 
 
 ## The controller's turn-in history (C33.9's members): the twin's extra live call must not move it.
