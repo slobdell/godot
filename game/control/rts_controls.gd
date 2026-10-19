@@ -1154,12 +1154,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
 			for i in dealt.size():
 				anchors[i] = dealt[i]
-			# Round 35 (D5, C35.5): then by the DRIVES: two squads whose navmesh paths off the last waypoint cross swap places
+			# Round 35 (D5, C35.5): then, on a route of moves, by the DRIVES: two squads whose navmesh paths off the last waypoint cross swap places
 			# (planner's Locks 5-squad route: squads 3 and 5 jammed ~55 s at the junction near (5, 65)), within a length guard.
-			var uncrossed := SelectionSquads.uncross_paths(anchors.slice(0, squads.size()), starts,
-					func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
-			for i in uncrossed.size():
-				anchors[i] = uncrossed[i]
+			if verb == "move":
+				var uncrossed := SelectionSquads.uncross_paths(anchors.slice(0, squads.size()), starts,
+						func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
+				for i in uncrossed.size():
+					anchors[i] = uncrossed[i]
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
