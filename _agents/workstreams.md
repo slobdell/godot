@@ -122,7 +122,26 @@ if parkedroom becomes an element make-room. Each is in `roadmap.md`.
 
 ## Bars (round 34)
 
-_Filed here before any number. Empty at launch._
+_Filed here before any number._
+
+**Bar, brains B1 (C34.5) scout try 2: stand when it can win, leave when it can't (filed 2026-10-18 by brains, before any
+number; rule at stream/brains `86c8d7f68`).** Rule: TankBrain.scout_fights_back fires for a scout hit within 2 s by a
+visible, non-prey contact that threatens it, with duel advantage >= 1.0 (a ratio), that stays within the scout's
+effective range now and at +1 s and +2 s (both on their current velocities). Then SPOT scores 0.15 and ENGAGE wins.
+Otherwise today's SPOT (0.88 / 0.7) stands and it opens distance. `--scout-fight=off` / env `SCOUT_FIGHT=off` is main.
+Try 1's "can't outrun it" clause is dropped (R33.31). **Judged tree:** lab/brains-scout2 = stream/brains + manoeuvre's
+`608c3357e` (the orbit stage, which exists only beside the turn-in; switch default OFF). Turn-in OFF rows are judged and
+turn-in ON rows are reported (each cell runs both). **Ship tree:** stream/brains without 608c3357e.
+(1) DECIDING, `make scout-cells SCOUT_CELLS_SEEDS=73-79` (24 cells, n 7, GDScript both arms, --fixed-fps), ON v off:
+(a) pooled scout shots ON >= OFF, and on ENGAGED cells (ON ENGAGE ticks >= 1 s a run) pooled shots ON >= 1.25x OFF;
+(b) no cell with OFF median hits >= 10 has median damage taken ON > 1.2x OFF (smaller cells reported); (c) ENGAGE
+ticks ON > 0; out-of-reach cells' ENGAGE ticks reported. The exchange (dealt / taken) per cell is reported.
+(2) The pure tests, both sides of the rule (tests/test_ai_scout_fights_back.gd).
+(3) Fights guard, `make scout-census` (showmatch, native ON, --fixed-fps), FRESH seeds 29–36, n 8, ON v
+`--scout-fight=off`: scout deaths, paired per seed, mean(ON − OFF) <= 1.645 se; team enemy-seen seconds mean(ON − OFF)
+>= −1.645 se; kills reported. (4) `make check` on the ship tree with native's mirror: test_native_decide 0 mismatches;
+sim-baseline moves named and attributed with `SCOUT_FIGHT=off`. (5) The worst ON cell traced before its medians are read.
+**Ships ON if (1)(a)(b)(c), (3) and (4) pass.** Tuning: seeds 50–59 only. One machine for each series.
 
 ## Rulings (round 34)
 
