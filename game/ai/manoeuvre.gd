@@ -57,6 +57,9 @@ static func reset() -> void:
 	face_keep_refused = 0
 	hull_holds = 0
 	off_seat_declines = 0
+	arrivals_held = 0
+	arrivals_held_ticks = 0
+	_arrive_hold_until = {}
 	face_keep_by_unit = {}
 
 
@@ -372,6 +375,55 @@ const TURN_HULL_DEFAULT := false
 const FACE_KEEP_MARGIN_M := 0.75
 static var _keep_slot := Vector3.INF
 static var _keep_m := INF
+## Round 33 (planner's s69 trace) / round 34 (C34.4 (2), the seam agreed with brains): an arrival declared while a planned
+## leg is still driving is a flicker, not an arrival. Reversing on a k-turn leg (seam `kturn OK R+1.0x12.5`), Green_Guns_7
+## crossed inside its attack-move goal's 6 m arrival radius; `TankBrain._act`'s arrived branch turned the move into a face
+## "from post" mid-leg, the k-turn was dropped, and the held-post rule refused the next move_tos for 36 ticks. While this
+## is true the move stands until the leg ends, or until ARRIVE_LEG_HOLD_S of leg time on this order (a leg that never
+## ends cannot deny an arrival). Brains' `_act` asks through an adapter with exactly this signature; the switch is
+## `--nav-off=arriveleg` (default below).
+const ARRIVE_LEG_DEFAULT := true
+const ARRIVE_LEG_HOLD_S := 3.0
+## Arm counters: arrivals held (once per order, its first held think) and the think ticks they were held.
+static var arrivals_held := 0
+static var arrivals_held_ticks := 0
+## Per mover (by the Movement's instance id, never a crew's name: names repeat in a rematch, C34.6): the last tick this
+## order's arrival may be held (Movement.new_order forgets it; a dead mover's entry is pruned). Kept here, not as a
+## Movement member: every Movement member is a field of native's exec-state table (exec_fields.h), and this is GDScript
+## decision state the C++ never reads.
+static var _arrive_hold_until := {}
+
+
+static func arrive_hold_forget(mover: Object) -> void:
+	_arrive_hold_until.erase(mover.get_instance_id())
+
+
+static func _arrive_hold_prune() -> void:
+	for id: int in _arrive_hold_until.keys():
+		if not is_instance_id_valid(id):
+			_arrive_hold_until.erase(id)
+
+
+static func arrive_leg_on() -> bool:
+	return ARRIVE_LEG_DEFAULT != Movement.switched_off("arriveleg")
+
+
+static func leg_holds_arrival(brain: TankBrain) -> bool:
+	if not arrive_leg_on() or String(brain.move_order.get("type", "")) != "move_to" or not brain.movement.manoeuvring():
+		return false
+	var tick := Engine.get_physics_frames()
+	var mover := brain.movement.get_instance_id()
+	if not _arrive_hold_until.has(mover):
+		if _arrive_hold_until.size() >= 64:
+			_arrive_hold_prune()
+		_arrive_hold_until[mover] = tick + int(SimClock.TICK_RATE * ARRIVE_LEG_HOLD_S)
+		arrivals_held += 1
+	elif tick > int(_arrive_hold_until[mover]):
+		return false  # the leg has run its bound on this order: the arrival goes through
+	arrivals_held_ticks += 1
+	return true
+
+
 ## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused
 ## for leaving the arrive radius.
 static var hull_turns := 0
