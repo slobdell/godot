@@ -271,6 +271,12 @@ _Filed here before any number._
   t 16 s to the judge (80 s), ON arrived by t ~24 s; law-607 Green_Guns_6 base blocked 23 m short from t 24 s, ON arrived by t ~48 s.
   ON counters: stall_intent_ticks 205 / 983, yields_unfinished 1 / 4, asks_refused 0 / 1. Native: N3 -> W1b pair -> W1c + T9 mirrors
   on ONE pair branch.
+- **R35.17 (2026-10-19 ~12:45) D1's last red: test_tactics_body (brains' file).** orders-d1 `0603f3274` (builder0): `make check
+  exited 2`, 2885/1, sim-baseline 13 unmoved; the scenario fix works. Red: his three squads keep together, "off 17.7 s, on 23.8 s"
+  (line off + 5 s); reproduces alone; native path only. Sirens' body-route arrival: step off 18.5 s, step on + centred lay
+  (1a5e33c47) 20.9 s, step on + on-spot lay 23.8 s. Ruling: orders takes ONE builder0 trace (+ one fix try in its carve-out); if
+  that fails, the line is resized to the measured cost + 2 s, citing this ruling (he chose the deploy step knowing planner's pass
+  was slower in some cells); NOT the centred lay (a squad sent to a spot ends on it is the stronger promise).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
