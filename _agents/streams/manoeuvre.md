@@ -164,6 +164,16 @@ moving at walking pace (median 1.2 m/s, 58 % ≥ 0.5 m/s, only 17 % still ≥ 1 
 counting on at most a quarter of them (under 0.8 m/s); the rest it never sees. The round-35 candidate: `wedged` as a
 second unstick trigger, bar first (a back-off under fire is the question).
 
+**The stream branch's own check (252380fda, builder2, `make native check exited 2`, 2872/1):** the one red test is
+`test_manoeuvre_orbit::test_a_scout_at_stop_does_not_shuffle_under_turn_in` (ON 29 reverse ticks, 0 swings turned in) and
+sim-baseline moved on yard/terminus/crossing/locks/gorge/cut. Both are the known shape of M0 WITHOUT native's stop hand-back:
+on the native path the stop swing never reaches `_stop_turn_in`, so the creep shuffles as before; the same test on the
+laptop's GDScript path passes (ON 0 reverse, 104 swings turned in, 7/7), and on the pair c8fb8b6a3 (stream + pair/native-c339
+2f9ad0fb9) builder2 read 2818/0 with the twins at 0. So stream/manoeuvre alone is not a candidate and never was: M0's
+candidate is the pair, frozen (R34.10). If he says SHIP, the pair is re-cut on current main and its check re-run there
+(six baselines move on today's main v three on the pair's base; attribution as before via sim-variants --nav-off=turnin).
+Commits after 252380fda are docs and one additive Makefile variable (M1_GDD, b33b12fec).
+
 **What a fresh agent needs:** worktrees godot-manoeuvre (this), -pair (c8fb8b6a3, frozen), -m1 (merged), -m2 (now detached
 on main for the report), -cpf4 (e76f6dab6, parked); raw runs in ~/overnight-manoeuvre; long runs under systemd-run with
 `--setenv=PATH="$PATH"` (orientation 86); the clicked faces never reach the hull turn (`hull_turns` 0 in the clicked arms) —
