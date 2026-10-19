@@ -636,7 +636,7 @@ ORDERS_PROBE_DIR ?= $(BUILD_DIR)/orders-probe
 ORDERS_PROBE_JOBS ?= 4
 .PHONY: orders-probe orders-probe-shots
 orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE_MAPS x _SQUADS x _ROUTES x _ARMS -> build/orders-probe/rows.jsonl + table.txt
-	@mkdir -p $(ORDERS_PROBE_DIR)/logs
+	@rm -rf $(ORDERS_PROBE_DIR)/logs && mkdir -p $(ORDERS_PROBE_DIR)/logs
 	@echo ">> orders-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"
 	@for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SQUADS); do for route in $(ORDERS_PROBE_ROUTES); do for arm in $(ORDERS_PROBE_ARMS); do \
 		echo "$$map $$n $$route $$arm"; done; done; done; done | xargs -P $(ORDERS_PROBE_JOBS) -L 1 sh -c \
