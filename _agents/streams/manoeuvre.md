@@ -64,7 +64,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   law-607 Guns_6 by 48 s; base: stuck to the judge), attack-move dev 8 v 14 movers; mirror spec sent to native
   (`references/round35/manoeuvre/w1c_native_spec.md`); joint M6/T9 bar on main; I cut the pair when native's mirrors land.
 - **W2** (CP-F 5 face side): turret-only give-up; candidate **lab/cpf5 9a463b0b9** (= a7167e4f9's code, on main 0f4d528d7, E1 not
-  in); Bar M5 on main with 128 pairs (hull-rest 901–932); gate = `make native check` launches automatically at builder0's slot
+  in); Bar M5 on main as filed (hull-rest 701–716, fights 740–763; 901–932 and 940–963 are the JOINT W1c+T9 bar's 128 pairs); gate = `make native check` launches automatically at builder0's slot
   (`~/overnight-manoeuvre/r35/m5_wait.sh`, log `m5_gate_a7167e4f9.log`), native/src touched (R35.15); the 14-step series is armed
   (`m5_series.sh`, waits for `~/overnight-manoeuvre/r35/m5/go`, which the stream writes after reading the gate).
 - **Worktrees:** godot-manoeuvre (stream), -cpf5 (lab/cpf5), -trace (lab/w1c-t9), -pair2 (old). Raw runs `~/overnight-manoeuvre/r35/`.
