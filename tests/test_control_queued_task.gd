@@ -107,8 +107,11 @@ func test_shift_screen_after_shift_waypoints_waits_for_the_route() -> void:
 	assert_true(element != null, "the squad has a leader to carry the queued screen")
 	if element == null:
 		return
-	assert_true(element.task.is_empty() and element.queued_tasks.size() == 1, "no task yet; the screen is queued (%s / %s)"
-			% [element.task, element.queued_tasks])
+	# Round 34 (traffic O4, his correction 2; merge note): a squad's shift route is the squad's from its first leg (the
+	# element's move, the later legs queued), not the crews' own queue, so the screen waits behind TWO legs here.
+	assert_true(String(element.task.get("verb", "")) == "move" and element.queued_tasks.size() == 2
+			and String(element.queued_tasks[1].get("verb", "")) == "screen",
+			"the route is the squad's: first leg running, second leg and the screen queued (%s / %s)" % [element.task, element.queued_tasks])
 	var took: Array = await _until_screen(f, element, 60 * 60)
 	print("MEASURE queued_screen route_first frames %d nearest_m %.1f" % [took[0], took[1]])
 	assert_true(int(took[0]) >= 0, "the screen starts once the route is driven")
