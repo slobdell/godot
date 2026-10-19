@@ -346,6 +346,52 @@ const COOLDOWN_FACTOR := 0.25
 const SLOT_TOLERANCE := 4.0
 ## Round 25 (brains F7): read the K1 order only when order_changed flagged it (true) or also on every think (false).
 static var ORDER_READ_ON_SIGNAL := true
+## Round 34 (brains B1, C34.5; try 1 was R33.31's overnight item 2): a scout under fire stands and trades only when it
+## can win (scout_fights_back): SPOT drops to SCOUT_FIGHT_SPOT so ENGAGE wins. An outgunned scout keeps SPOT and opens
+## distance. `--scout-fight=off` (or env SCOUT_FIGHT=off, which a make target carries to its children) is main's rule.
+static var SCOUT_FIGHT_BACK := not (OS.get_cmdline_user_args().has("--scout-fight=off") \
+		or OS.get_environment("SCOUT_FIGHT") == "off")
+## ...hit within this many ticks (2 s) is "under fire"; the contact must stay inside its reach this many whole seconds
+## ahead (sampled each second, both on their current velocities: R33.31's orbiter was in reach at the tick and swung out).
+const SCOUT_FIGHT_HIT_TICKS := SimClock.TICK_RATE * 2
+const SCOUT_FIGHT_REACH_S := 2
+## ...and SPOT's score then (re-filed: at the in-sight 0.7 the rule fired and SPOT still won, ENGAGE scoring 0.27-0.43).
+const SCOUT_FIGHT_SPOT := 0.15
+
+
+## C34.5: the rule is on and the scout (`me`) was hit within SCOUT_FIGHT_HIT_TICKS.
+static func scout_under_fire(me: Dictionary) -> bool:
+	return SCOUT_FIGHT_BACK and int(me.get("since_hit", 1 << 30)) <= SCOUT_FIGHT_HIT_TICKS
+
+
+## C34.5: whether a scout (`me`: the situation's self) should fight rather than open distance. Hit within
+## SCOUT_FIGHT_HIT_TICKS, by a visible non-prey contact that can shoot it now (threatens_me), that it wins the duel
+## against (`matchups` advantage >= 1: Matchups.duel_advantage is a ratio, > 1 I win) and that stays inside its own
+## effective range now and at each second up to SCOUT_FIGHT_REACH_S ahead. Try 1's "can't outrun it" clause is gone: it
+## sent scouts into duels they lost (R33.31). No attacker is recorded on a hit, so "the one shooting it" is that contact.
+## Pure.
+static func scout_fights_back(me: Dictionary, contacts: Array, matchups: Dictionary) -> bool:
+	if not TankBrain.scout_under_fire(me):
+		return false
+	var unit := String(me.get("unit", ""))
+	var weapon: Dictionary = me.get("weapon", {})
+	var reach := float(weapon.get("effective_range", weapon.get("range", 0.0)))
+	var at: Vector3 = me["position"]
+	var my_velocity: Vector3 = me.get("velocity", Vector3.ZERO)
+	for c: Dictionary in contacts:
+		if not bool(c.get("visible", false)) or not bool(c.get("threatens_me", false)) or TankBrain._is_prey(c, unit):
+			continue
+		if float((matchups.get(String(c["name"]), {}) as Dictionary).get("advantage", 0.0)) < 1.0:
+			continue
+		var velocity: Vector3 = c.get("velocity", Vector3.ZERO)
+		var stays := true
+		for second in SCOUT_FIGHT_REACH_S + 1:
+			if (at + my_velocity * second).distance_to((c["position"] as Vector3) + velocity * second) > reach:
+				stays = false
+				break
+		if stays:
+			return true
+	return false
 ## Round 25 (brains F1b): a crew on the chase stays on it (on_the_chase; `--pursuit-stays=off` = the arm).
 static var PURSUIT_STAYS := true
 ## Round 25 (brains F4): a bounding crew suppresses on the move to its bound slot (`--bound-suppress=stand` = the arm).
@@ -1603,7 +1649,16 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 					and float(matchups[c["name"]]["advantage"]) >= ORBIT_KEEP_ADVANTAGE
 			if c["visible"] and not TankBrain._is_prey(c, String(me.get("unit", ""))) and not orbitable:
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
-		if nearest < SCOUT_STANDOFF - 10.0:
+		# C34.5: the champion runs without matchups (x18m "matchups": false), so the duel the rule needs is computed
+		# here for a scout under fire alone (tuning seeds 50-52: an empty table, so the rule never fired).
+		var duels: Dictionary = matchups if not matchups.is_empty() or nearest == INF or not TankBrain.scout_under_fire(me) \
+				else TankBrain.matchups_for(s)
+		if nearest < INF and TankBrain.scout_fights_back(me, contacts, duels):
+			# C34.5 (a duel it wins, in reach): below ENGAGE (0.27-0.43 for a scout in the orbit stage, seed 50) even with
+			# the commitment bonus on the current option, above HOLD's 0.10: it stands and trades. Otherwise SPOT's
+			# 0.88 / 0.7 stand and it opens distance.
+			spot = SCOUT_FIGHT_SPOT
+		elif nearest < SCOUT_STANDOFF - 10.0:
 			spot = 0.88
 		elif nearest < INF:
 			spot = 0.7
@@ -2143,7 +2198,9 @@ func build_situation() -> Dictionary:
 				"class": Units.PROFILES.get(tank.unit_id, {}).get("role", "tank"), "sight_radius": tank.sight_radius,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position),
 				# L2 (X3): my own crew's suppression, and whether it is bad enough that my fire is wasted.
-				"suppression": SuppressionFeed.of(tank), "pinned": SuppressionFeed.is_pinned(tank)},
+				"suppression": SuppressionFeed.of(tank), "pinned": SuppressionFeed.is_pinned(tank),
+				# C34.5 (brains): ticks since its last hit, for scout_fights_back.
+				"since_hit": tank.ticks_since_hit},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,
 		"contacts": contacts,
@@ -2417,6 +2474,23 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 
 # ---- Acting: choice → standing orders ----------------------------------------------
 
+## C34.4 (2) (brains B2; the seam agreed with manoeuvre through the orchestrator): no arrival is declared while a planned
+## leg still drives (planner's s69 flicker: a k-turn leg crossed inside the goal's radius, the move became a face mid-leg
+## and the held-post rule then refused the next moves). Manoeuvre owns WHEN (Manoeuvre.leg_holds_arrival and its
+## `arriveleg` switch, R33.2); this branch only asks. Until that function is on this tree the adapter answers false:
+## today's arrival.
+static var _leg_hold_known := -1
+
+
+func _leg_holds_arrival() -> bool:
+	if _leg_hold_known < 0:
+		_leg_hold_known = 0
+		for m: Dictionary in (Manoeuvre as GDScript).get_script_method_list():
+			if String(m["name"]) == "leg_holds_arrival":
+				_leg_hold_known = 1
+	return _leg_hold_known == 1 and bool((Manoeuvre as GDScript).call("leg_holds_arrival", self))
+
+
 func _act(s: Dictionary) -> void:
 	var act_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	why = TankBrain.tactics_tag(s, choice)
@@ -2458,7 +2532,7 @@ func _act(s: Dictionary) -> void:
 				if ElementPlan.PACE_ENABLED:
 					sliding["paced"] = true  # Movement._keep_station: the pace outranks the station PID
 				_order_move(sliding)
-			elif _flat(my_position).distance_to(goal) <= _order_arrive():
+			elif _flat(my_position).distance_to(goal) <= _order_arrive() and not _leg_holds_arrival():
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_arrive_facing(_move_to(goal, false, float(o["speed"]), _order_arrive())))
