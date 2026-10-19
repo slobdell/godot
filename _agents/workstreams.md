@@ -792,6 +792,8 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   runs on faced_attack_move only. The undrawn path (kept heading, heading on entry) is judged by (2),
   squad-arrive-series (drills-on attack-move with no facing, which halts in the herringbone): drift moves ON ≤ OFF as
   filed, with after-arrival drift moves reported beside it.
+  **Tree named:** lab/brains-herring `3f0bab2a` = main `7dcae6b5` + R33.9's flag-gated arrive-trace measurement
+  (`70ffe28e`/`97ec141f`, no behaviour change) + the fix `725e058e`. Check GREEN on builder2 (2794/0, BRIDGE_POOLED 18/18).
 
 **Bars (round 33):** filed here before any number.
 
