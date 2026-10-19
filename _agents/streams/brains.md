@@ -65,3 +65,30 @@ green (HANDOFF), no baseline check run.
    the rule that actually holds, not the one the README guessed.
 2. E1 seam note to the orchestrator; tests first; code only after the seam is agreed.
 3. E2 only if CP-F 5 ships. 4. E3 write-up (no code without a bar). 5. Merge fallout from orders' D1.
+
+**E1 trace (R35.3, agreed: the seam is decoupled).** law/faced_attack_move-614 on `lab/cpf4` `e76f6dab6`, laptop, GDScript, both
+arms, leg-gate trace `c23acdbe2`: the leg is held by `ElementPlan._advance`'s `_cohesive`, never by a face. `reached` is true at
+every hold; `_cohesive` fails on one crew over its allowance (20 m x 1.0 / 12 m/s = 1.33 s, ~16 m); each step fires the moment
+the laggard gets inside. The crew on `face from sector` stood 3-4 m from its slot (closed up). Base arm: element 3 waits t 37 to
+past 75 on Green_Guns_4 WEDGED at (18, 87.5) (plant 9.25 m/s, real 1.17, 30 m off, re-seat budget spent). The 128-run census
+(builder0, seeds 601-616 x 4 factions x CP-F on/off, `leg_wait_table.py`) is running.
+
+**E1 design: the straggler release.** `_advance`'s gate stops waiting for a crew that has not come STRAGGLER_GAIN_M (2 m) closer
+to its slot in STRAGGLER_S (8 s) while the element stands at its anchor: closed-up is judged over the others, the element steps,
+and the straggler is sent to its slot on the next leg (it catches up; a wedged crew gets a new goal, which is also its best
+chance to come unstuck). Both sides (symmetric AI). `--straggler=off` is main's gate (the base arm and the attribution).
+
+**Bar E1 (filed 2026-10-19 before any number).** One commit, builder0, native, both arms the same tree (base `--straggler=off`).
+Workload: hull-rest drawn, `faced_attack_move` + `faced_move`, FRESH seeds 701-716 x gangs/law/syndicate/condemned (128 runs an
+arm), `--element-trace=all --turn-states`; fights: `manoeuvre-fights`' census on fresh seeds 720-743 (24 an arm). Paired by seed;
+se of the paired sum.
+- (a) DECIDING: long-hold seconds (leg waits >= 10 s, `leg_wait_table.py`) summed over attack-move runs: new <= 0.6 x base AND the
+  paired difference < 0 by > 2 se.
+- (b) the same on faced_move: not worse by > 2 se (report the size).
+- (c) GUARD, left behind: crews > 25 m off their slot in their element's last trace row before the judge, new - base <= max(2, 2 se)
+  on each task.
+- (d) GUARD, late movers at 75 s: crews with real_mps >= 0.3 at the judge, new - base <= 2 se on each task; settled-in-75 s counts
+  the same.
+- (e) GUARD, squads arrived (judge rows): base - new <= 2 se.
+- (f) GUARD, fights: kills and deaths each side within 2 se (paired).
+- (g) `make check` green on the hash; sim-baseline maps that move are attributed with `--straggler=off` on the same tree.

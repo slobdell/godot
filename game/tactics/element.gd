@@ -144,6 +144,8 @@ static var stalls_arrived := 0
 var _stall_best := INF
 var _stall_tick := -1
 var stall_arrived := false
+## Round 35 (brains E1): the leg gate's straggler clock (ElementPlan.leg_wait), reset with every task.
+var leg_wait := {}
 ## B9: the task's `via` point has been driven through (ElementPlan's via leg), reset with every task.
 var via_done := false
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
@@ -347,6 +349,7 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	_stall_best = INF
 	_stall_tick = -1
 	stall_arrived = false
+	leg_wait = {}
 	via_done = false
 	_mouth_sent = {}
 	_mouth_held_tick = {}
@@ -549,7 +552,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated, "deploy": deploy,
-			"stall_arrived": stall_arrived, "via_done": via_done,
+			"stall_arrived": stall_arrived, "via_done": via_done, "leg_wait": leg_wait,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "reseat_keep": _reseat_keep if _reseat else {}, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
@@ -1797,6 +1800,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	technique = String(plan["technique"])
 	reason = String(plan["why"])
 	anchor = plan["anchor"]
+	leg_wait = plan.get("leg_wait", leg_wait)
 	heading = plan["heading"]
 	bounding = int(plan["bounding"])
 	var was_arrived := arrived
