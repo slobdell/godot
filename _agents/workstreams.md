@@ -815,6 +815,11 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   fixed by seed before either arm acts), take the FIRST 6 that roll Guns + gang_ifv, and run ON v off on those, with the
   same lines and distinct pairs counted. Selecting on the army is selecting on something fixed before treatment, so it's
   fair, and the scan's army list is filed before any arm runs.
+  **Scan filed (brains, builder2, SCREEN squads only):** Guns + THREE gang_ifv Hunters squads: 526 527 528 537 542 550
+  551 557 560 562 565 566 571 572; a two-Hunters variant: 532 535 539 546 553 564 567 570; Battery: 529–531 534 536 543
+  548 549 555 556 558 563 568 569 573 574; Guns only: the rest. The criterion is manoeuvre's literal "three Hunters
+  squads". The two-Hunters variant is excluded (520/525 rolled it, with identical arms). **Judged seeds: 526, 527, 528,
+  537, 542, 550.** Line (2) stands as run (97 v 97, identical; its halts aren't the drill).
 
 **Bars (round 33):** filed here before any number.
 
