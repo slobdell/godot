@@ -1,0 +1,186 @@
+M1_HULL runs {'base_clicked': 383, 'base_drawn': 384, 'new_clicked': 384, 'new_drawn': 382}
+M1_HULL task | class | arm | n | median | p90 | <=15 deg | >=100 deg | p(new v base medians)
+M1_HULL faced_ambush | ALL | new_drawn | 835 | 2.7 | 8.5 | 91% | 2% | 0.000
+M1_HULL faced_ambush | ALL | base_drawn | 855 | 7.0 | 132.5 | 57% | 18% | 
+M1_HULL faced_ambush | ALL | new_clicked | 855 | 37.6 | 129.0 | 20% | 20% | 1.000
+M1_HULL faced_ambush | ALL | base_clicked | 855 | 37.6 | 129.3 | 20% | 20% | 
+M1_HULL faced_ambush | hover/turret | new_drawn | 140 | 1.3 | 3.2 | 92% | 0% | 1.000
+M1_HULL faced_ambush | hover/turret | base_drawn | 140 | 1.3 | 3.2 | 92% | 0% | 
+M1_HULL faced_ambush | hover/turret | new_clicked | 140 | 21.9 | 87.4 | 26% | 6% | 1.000
+M1_HULL faced_ambush | hover/turret | base_clicked | 140 | 21.9 | 87.4 | 26% | 6% | 
+M1_HULL faced_ambush | tracks/turret | new_drawn | 48 | 2.2 | 3.6 | 94% | 0% | 1.000
+M1_HULL faced_ambush | tracks/turret | base_drawn | 48 | 2.2 | 3.6 | 94% | 0% | 
+M1_HULL faced_ambush | tracks/turret | new_clicked | 48 | 36.7 | 92.6 | 23% | 8% | 1.000
+M1_HULL faced_ambush | tracks/turret | base_clicked | 48 | 36.7 | 92.6 | 23% | 8% | 
+M1_HULL faced_ambush | wheels/fixed | new_drawn | 254 | 3.3 | 7.6 | 96% | 0% | 0.426
+M1_HULL faced_ambush | wheels/fixed | base_drawn | 254 | 3.1 | 7.5 | 97% | 0% | 
+M1_HULL faced_ambush | wheels/fixed | new_clicked | 254 | 21.6 | 77.7 | 30% | 6% | 0.404
+M1_HULL faced_ambush | wheels/fixed | base_clicked | 254 | 21.0 | 81.8 | 30% | 7% | 
+M1_HULL faced_ambush | wheels/turret | new_drawn | 393 | 3.7 | 52.5 | 88% | 5% | 0.000
+M1_HULL faced_ambush | wheels/turret | base_drawn | 413 | 80.4 | 151.5 | 15% | 37% | 
+M1_HULL faced_ambush | wheels/turret | new_clicked | 413 | 70.1 | 151.3 | 12% | 34% | 1.000
+M1_HULL faced_ambush | wheels/turret | base_clicked | 413 | 70.1 | 151.3 | 12% | 34% | 
+M1_HULL faced_attack_move | ALL | new_drawn | 835 | 3.1 | 54.3 | 84% | 3% | 0.000
+M1_HULL faced_attack_move | ALL | base_drawn | 855 | 10.4 | 108.7 | 52% | 12% | 
+M1_HULL faced_attack_move | ALL | new_clicked | 855 | 49.1 | 142.9 | 14% | 23% | 0.645
+M1_HULL faced_attack_move | ALL | base_clicked | 842 | 47.2 | 142.9 | 14% | 22% | 
+M1_HULL faced_attack_move | hover/turret | new_drawn | 140 | 2.0 | 10.7 | 90% | 1% | 1.000
+M1_HULL faced_attack_move | hover/turret | base_drawn | 140 | 2.0 | 10.7 | 90% | 1% | 
+M1_HULL faced_attack_move | hover/turret | new_clicked | 140 | 40.2 | 83.6 | 6% | 9% | 1.000
+M1_HULL faced_attack_move | hover/turret | base_clicked | 140 | 40.2 | 83.6 | 6% | 9% | 
+M1_HULL faced_attack_move | tracks/turret | new_drawn | 48 | 2.2 | 27.5 | 85% | 2% | 1.000
+M1_HULL faced_attack_move | tracks/turret | base_drawn | 48 | 2.2 | 27.5 | 85% | 2% | 
+M1_HULL faced_attack_move | tracks/turret | new_clicked | 48 | 59.5 | 149.0 | 15% | 27% | 1.000
+M1_HULL faced_attack_move | tracks/turret | base_clicked | 48 | 59.5 | 149.0 | 15% | 27% | 
+M1_HULL faced_attack_move | wheels/fixed | new_drawn | 254 | 3.9 | 50.5 | 83% | 2% | 0.667
+M1_HULL faced_attack_move | wheels/fixed | base_drawn | 254 | 3.7 | 46.0 | 87% | 2% | 
+M1_HULL faced_attack_move | wheels/fixed | new_clicked | 254 | 26.6 | 96.4 | 22% | 10% | 0.655
+M1_HULL faced_attack_move | wheels/fixed | base_clicked | 254 | 27.5 | 101.2 | 22% | 11% | 
+M1_HULL faced_attack_move | wheels/turret | new_drawn | 393 | 4.0 | 63.9 | 82% | 4% | 0.000
+M1_HULL faced_attack_move | wheels/turret | base_drawn | 413 | 57.1 | 143.7 | 14% | 23% | 
+M1_HULL faced_attack_move | wheels/turret | new_clicked | 413 | 71.0 | 159.2 | 11% | 34% | 0.976
+M1_HULL faced_attack_move | wheels/turret | base_clicked | 400 | 69.8 | 159.3 | 12% | 34% | 
+M1_HULL faced_move | ALL | new_drawn | 855 | 2.7 | 35.7 | 88% | 2% | 0.000
+M1_HULL faced_move | ALL | base_drawn | 855 | 7.6 | 104.7 | 56% | 11% | 
+M1_HULL faced_move | ALL | new_clicked | 855 | 35.5 | 109.4 | 14% | 13% | 1.000
+M1_HULL faced_move | ALL | base_clicked | 855 | 35.4 | 110.2 | 14% | 13% | 
+M1_HULL faced_move | hover/turret | new_drawn | 140 | 1.3 | 3.2 | 92% | 0% | 1.000
+M1_HULL faced_move | hover/turret | base_drawn | 140 | 1.3 | 3.2 | 92% | 0% | 
+M1_HULL faced_move | hover/turret | new_clicked | 140 | 27.7 | 80.0 | 7% | 4% | 1.000
+M1_HULL faced_move | hover/turret | base_clicked | 140 | 27.7 | 80.0 | 7% | 4% | 
+M1_HULL faced_move | tracks/turret | new_drawn | 48 | 1.9 | 67.7 | 85% | 10% | 1.000
+M1_HULL faced_move | tracks/turret | base_drawn | 48 | 1.9 | 67.7 | 85% | 10% | 
+M1_HULL faced_move | tracks/turret | new_clicked | 48 | 46.5 | 91.0 | 19% | 8% | 1.000
+M1_HULL faced_move | tracks/turret | base_clicked | 48 | 46.5 | 91.0 | 19% | 8% | 
+M1_HULL faced_move | wheels/fixed | new_drawn | 254 | 4.2 | 58.1 | 81% | 2% | 0.996
+M1_HULL faced_move | wheels/fixed | base_drawn | 254 | 4.1 | 53.8 | 81% | 2% | 
+M1_HULL faced_move | wheels/fixed | new_clicked | 254 | 27.0 | 79.2 | 13% | 5% | 0.852
+M1_HULL faced_move | wheels/fixed | base_clicked | 254 | 27.3 | 79.2 | 12% | 5% | 
+M1_HULL faced_move | wheels/turret | new_drawn | 413 | 3.0 | 8.0 | 92% | 2% | 0.000
+M1_HULL faced_move | wheels/turret | base_drawn | 413 | 49.3 | 132.5 | 24% | 21% | 
+M1_HULL faced_move | wheels/turret | new_clicked | 413 | 51.1 | 128.4 | 17% | 22% | 1.000
+M1_HULL faced_move | wheels/turret | base_clicked | 413 | 51.6 | 127.8 | 17% | 22% | 
+M1_HULL faced_right | ALL | new_drawn | 855 | 2.6 | 9.4 | 90% | 1% | 0.000
+M1_HULL faced_right | ALL | base_drawn | 855 | 7.1 | 108.3 | 56% | 12% | 
+M1_HULL faced_right | ALL | new_clicked | 855 | 36.1 | 105.6 | 14% | 12% | 1.000
+M1_HULL faced_right | ALL | base_clicked | 855 | 36.1 | 105.6 | 13% | 12% | 
+M1_HULL faced_right | hover/turret | new_drawn | 140 | 1.3 | 3.2 | 92% | 0% | 1.000
+M1_HULL faced_right | hover/turret | base_drawn | 140 | 1.3 | 3.2 | 92% | 0% | 
+M1_HULL faced_right | hover/turret | new_clicked | 140 | 30.0 | 79.9 | 8% | 4% | 1.000
+M1_HULL faced_right | hover/turret | base_clicked | 140 | 30.0 | 79.9 | 8% | 4% | 
+M1_HULL faced_right | tracks/turret | new_drawn | 48 | 1.7 | 2.5 | 96% | 0% | 1.000
+M1_HULL faced_right | tracks/turret | base_drawn | 48 | 1.7 | 2.5 | 96% | 0% | 
+M1_HULL faced_right | tracks/turret | new_clicked | 48 | 43.8 | 90.9 | 19% | 8% | 1.000
+M1_HULL faced_right | tracks/turret | base_clicked | 48 | 43.8 | 90.9 | 19% | 8% | 
+M1_HULL faced_right | wheels/fixed | new_drawn | 254 | 3.5 | 49.8 | 83% | 1% | 0.739
+M1_HULL faced_right | wheels/fixed | base_drawn | 254 | 3.6 | 53.7 | 83% | 3% | 
+M1_HULL faced_right | wheels/fixed | new_clicked | 254 | 27.6 | 76.9 | 14% | 4% | 1.000
+M1_HULL faced_right | wheels/fixed | base_clicked | 254 | 27.6 | 76.9 | 13% | 4% | 
+M1_HULL faced_right | wheels/turret | new_drawn | 413 | 3.2 | 7.6 | 93% | 2% | 0.000
+M1_HULL faced_right | wheels/turret | base_drawn | 413 | 47.5 | 145.1 | 22% | 23% | 
+M1_HULL faced_right | wheels/turret | new_clicked | 413 | 52.1 | 122.9 | 15% | 20% | 1.000
+M1_HULL faced_right | wheels/turret | base_clicked | 413 | 52.1 | 122.9 | 15% | 20% | 
+M1_HULL faced_screen | ALL | new_drawn | 855 | 27.3 | 54.2 | 38% | 2% | 0.000
+M1_HULL faced_screen | ALL | base_drawn | 855 | 31.7 | 90.5 | 28% | 7% | 
+M1_HULL faced_screen | ALL | new_clicked | 855 | 37.2 | 122.1 | 13% | 16% | 0.863
+M1_HULL faced_screen | ALL | base_clicked | 855 | 36.6 | 122.8 | 14% | 16% | 
+M1_HULL faced_screen | hover/turret | new_drawn | 140 | 29.0 | 32.9 | 36% | 1% | 1.000
+M1_HULL faced_screen | hover/turret | base_drawn | 140 | 29.0 | 32.9 | 36% | 1% | 
+M1_HULL faced_screen | hover/turret | new_clicked | 140 | 28.1 | 62.6 | 9% | 3% | 1.000
+M1_HULL faced_screen | hover/turret | base_clicked | 140 | 28.1 | 62.6 | 9% | 3% | 
+M1_HULL faced_screen | tracks/turret | new_drawn | 48 | 27.5 | 32.1 | 48% | 2% | 1.000
+M1_HULL faced_screen | tracks/turret | base_drawn | 48 | 27.5 | 32.1 | 48% | 2% | 
+M1_HULL faced_screen | tracks/turret | new_clicked | 48 | 34.3 | 85.6 | 23% | 6% | 1.000
+M1_HULL faced_screen | tracks/turret | base_clicked | 48 | 34.3 | 85.6 | 23% | 6% | 
+M1_HULL faced_screen | wheels/fixed | new_drawn | 254 | 26.5 | 61.4 | 37% | 2% | 0.646
+M1_HULL faced_screen | wheels/fixed | base_drawn | 254 | 27.8 | 61.3 | 37% | 1% | 
+M1_HULL faced_screen | wheels/fixed | new_clicked | 254 | 26.9 | 76.0 | 15% | 6% | 0.817
+M1_HULL faced_screen | wheels/fixed | base_clicked | 254 | 27.7 | 80.4 | 17% | 7% | 
+M1_HULL faced_screen | wheels/turret | new_drawn | 413 | 26.0 | 54.2 | 38% | 2% | 0.000
+M1_HULL faced_screen | wheels/turret | base_drawn | 413 | 53.7 | 113.7 | 19% | 14% | 
+M1_HULL faced_screen | wheels/turret | new_clicked | 413 | 59.9 | 143.3 | 13% | 28% | 0.932
+M1_HULL faced_screen | wheels/turret | base_clicked | 413 | 59.7 | 143.3 | 13% | 27% | 
+M1_HULL faced_support_by_fire | ALL | new_drawn | 855 | 2.6 | 8.0 | 93% | 2% | 0.000
+M1_HULL faced_support_by_fire | ALL | base_drawn | 855 | 7.1 | 132.2 | 57% | 19% | 
+M1_HULL faced_support_by_fire | ALL | new_clicked | 855 | 37.9 | 131.2 | 24% | 21% | 1.000
+M1_HULL faced_support_by_fire | ALL | base_clicked | 855 | 38.0 | 131.2 | 24% | 21% | 
+M1_HULL faced_support_by_fire | hover/turret | new_drawn | 140 | 1.2 | 2.6 | 100% | 0% | 1.000
+M1_HULL faced_support_by_fire | hover/turret | base_drawn | 140 | 1.2 | 2.6 | 100% | 0% | 
+M1_HULL faced_support_by_fire | hover/turret | new_clicked | 140 | 21.0 | 86.7 | 37% | 6% | 1.000
+M1_HULL faced_support_by_fire | hover/turret | base_clicked | 140 | 21.0 | 86.7 | 37% | 6% | 
+M1_HULL faced_support_by_fire | tracks/turret | new_drawn | 48 | 2.1 | 2.5 | 94% | 4% | 1.000
+M1_HULL faced_support_by_fire | tracks/turret | base_drawn | 48 | 2.1 | 2.5 | 94% | 4% | 
+M1_HULL faced_support_by_fire | tracks/turret | new_clicked | 48 | 36.4 | 77.2 | 23% | 4% | 1.000
+M1_HULL faced_support_by_fire | tracks/turret | base_clicked | 48 | 36.4 | 77.2 | 23% | 4% | 
+M1_HULL faced_support_by_fire | wheels/fixed | new_drawn | 254 | 3.2 | 8.1 | 95% | 0% | 0.409
+M1_HULL faced_support_by_fire | wheels/fixed | base_drawn | 254 | 3.7 | 8.0 | 94% | 1% | 
+M1_HULL faced_support_by_fire | wheels/fixed | new_clicked | 254 | 19.9 | 82.6 | 34% | 7% | 0.950
+M1_HULL faced_support_by_fire | wheels/fixed | base_clicked | 254 | 19.9 | 82.9 | 35% | 7% | 
+M1_HULL faced_support_by_fire | wheels/turret | new_drawn | 413 | 3.7 | 11.5 | 90% | 4% | 0.000
+M1_HULL faced_support_by_fire | wheels/turret | base_drawn | 413 | 77.5 | 151.6 | 15% | 39% | 
+M1_HULL faced_support_by_fire | wheels/turret | new_clicked | 413 | 72.7 | 157.4 | 13% | 36% | 1.000
+M1_HULL faced_support_by_fire | wheels/turret | base_clicked | 413 | 72.7 | 157.4 | 13% | 36% | 
+M1_SETTLE task | runs paired | new_drawn median s | base_drawn median s | median paired diff s | never new/base
+M1_SETTLE faced_ambush | 36 | 48.2 | 34.5 | +2.8 | 13/9
+M1_SETTLE faced_attack_move | 36 | 75.0 | 48.5 | +2.0 | 20/14
+M1_SETTLE faced_move | 37 | 46.5 | 36.0 | +1.5 | 13/13
+M1_SETTLE faced_right | 37 | 52.0 | 72.5 | +0.0 | 11/18
+M1_SETTLE faced_screen | 37 | 75.0 | 75.0 | +0.0 | 20/19
+M1_SETTLE faced_support_by_fire | 37 | 54.0 | 38.0 | +9.0 | 12/8
+M1_MOVING task | new_drawn | base_drawn | new_clicked | base_clicked | new_drawn - base_drawn (guard: <= +5)
+M1_MOVING faced_ambush | 23 | 12 | 16 | 16 | +11
+M1_MOVING faced_attack_move | 36 | 26 | 45 | 33 | +10
+M1_MOVING faced_move | 28 | 24 | 17 | 18 | +4
+M1_MOVING faced_right | 21 | 27 | 8 | 8 | -6
+M1_MOVING faced_screen | 41 | 34 | 18 | 15 | +7
+M1_MOVING faced_support_by_fire | 17 | 17 | 9 | 9 | +0
+M1_REST (wheels/turret) task | arm | at rest / all | at-rest share | at-rest median | at-rest <= 15 deg | share new - base (guard: not below -5 pts)
+M1_REST faced_ambush | new_drawn | 373/393 | 95% | 3.4 | 92% | -2.9 pts
+M1_REST faced_ambush | base_drawn | 404/413 | 98% | 80.0 | 16% | 
+M1_REST faced_ambush | new_clicked | 401/413 | 97% | 68.6 | 11% | +0.0 pts
+M1_REST faced_ambush | base_clicked | 401/413 | 97% | 68.6 | 11% | 
+M1_REST faced_attack_move | new_drawn | 366/393 | 93% | 3.5 | 88% | -2.3 pts
+M1_REST faced_attack_move | base_drawn | 394/413 | 95% | 56.0 | 14% | 
+M1_REST faced_attack_move | new_clicked | 392/413 | 95% | 71.7 | 11% | -1.3 pts
+M1_REST faced_attack_move | base_clicked | 385/400 | 96% | 71.0 | 11% | 
+M1_REST faced_move | new_drawn | 402/413 | 97% | 2.9 | 94% | -0.5 pts
+M1_REST faced_move | base_drawn | 404/413 | 98% | 48.0 | 24% | 
+M1_REST faced_move | new_clicked | 402/413 | 97% | 50.0 | 17% | +0.0 pts
+M1_REST faced_move | base_clicked | 402/413 | 97% | 50.3 | 17% | 
+M1_REST faced_right | new_drawn | 401/413 | 97% | 3.2 | 96% | +1.0 pts
+M1_REST faced_right | base_drawn | 397/413 | 96% | 46.0 | 23% | 
+M1_REST faced_right | new_clicked | 407/413 | 99% | 51.7 | 15% | +0.0 pts
+M1_REST faced_right | base_clicked | 407/413 | 99% | 51.0 | 15% | 
+M1_REST faced_screen | new_drawn | 383/413 | 93% | 24.2 | 40% | -0.7 pts
+M1_REST faced_screen | base_drawn | 386/413 | 93% | 51.8 | 20% | 
+M1_REST faced_screen | new_clicked | 406/413 | 98% | 59.6 | 13% | -0.2 pts
+M1_REST faced_screen | base_clicked | 407/413 | 99% | 59.4 | 14% | 
+M1_REST faced_support_by_fire | new_drawn | 401/413 | 97% | 3.5 | 93% | -0.7 pts
+M1_REST faced_support_by_fire | base_drawn | 404/413 | 98% | 76.5 | 15% | 
+M1_REST faced_support_by_fire | new_clicked | 407/413 | 99% | 72.5 | 13% | +0.0 pts
+M1_REST faced_support_by_fire | base_clicked | 407/413 | 99% | 72.5 | 13% | 
+M1_CLASS task | class | runs paired | moving new | moving base | paired diff | se | within 2 se
+M1_CLASS faced_ambush | hover/turret | 16 | 0 | 0 | +0 | 0.0 | yes
+M1_CLASS faced_ambush | tracks/turret | 3 | 1 | 1 | +0 | 0.0 | yes
+M1_CLASS faced_ambush | wheels/fixed | 28 | 2 | 2 | +0 | 0.0 | yes
+M1_CLASS faced_ambush | wheels/turret | 36 | 20 | 9 | +11 | 5.3 | NO
+M1_CLASS faced_attack_move | hover/turret | 16 | 2 | 2 | +0 | 0.0 | yes
+M1_CLASS faced_attack_move | tracks/turret | 3 | 3 | 3 | +0 | 0.0 | yes
+M1_CLASS faced_attack_move | wheels/fixed | 28 | 4 | 2 | +2 | 1.4 | yes
+M1_CLASS faced_attack_move | wheels/turret | 36 | 27 | 17 | +10 | 5.1 | yes
+M1_CLASS faced_move | hover/turret | 16 | 0 | 0 | +0 | 0.0 | yes
+M1_CLASS faced_move | tracks/turret | 3 | 5 | 5 | +0 | 0.0 | yes
+M1_CLASS faced_move | wheels/fixed | 28 | 12 | 10 | +2 | 2.9 | yes
+M1_CLASS faced_move | wheels/turret | 37 | 11 | 9 | +2 | 3.5 | yes
+M1_CLASS faced_right | hover/turret | 16 | 0 | 0 | +0 | 0.0 | yes
+M1_CLASS faced_right | tracks/turret | 3 | 1 | 1 | +0 | 0.0 | yes
+M1_CLASS faced_right | wheels/fixed | 28 | 8 | 10 | -2 | 2.0 | yes
+M1_CLASS faced_right | wheels/turret | 37 | 12 | 16 | -4 | 4.2 | yes
+M1_CLASS faced_screen | hover/turret | 16 | 0 | 0 | +0 | 0.0 | yes
+M1_CLASS faced_screen | tracks/turret | 3 | 3 | 3 | +0 | 0.0 | yes
+M1_CLASS faced_screen | wheels/fixed | 28 | 8 | 4 | +4 | 2.4 | yes
+M1_CLASS faced_screen | wheels/turret | 37 | 30 | 27 | +3 | 6.5 | yes
+M1_CLASS faced_support_by_fire | hover/turret | 16 | 0 | 0 | +0 | 0.0 | yes
+M1_CLASS faced_support_by_fire | tracks/turret | 3 | 1 | 1 | +0 | 0.0 | yes
+M1_CLASS faced_support_by_fire | wheels/fixed | 28 | 4 | 7 | -3 | 4.6 | yes
+M1_CLASS faced_support_by_fire | wheels/turret | 37 | 12 | 9 | +3 | 3.6 | yes

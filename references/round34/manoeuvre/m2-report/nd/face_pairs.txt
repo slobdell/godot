@@ -1,0 +1,11 @@
+FACE_PAIRS_DISTINCT drawn | distinct pairs 54 of 54 | cells that repeat: none
+FACE_PAIRS_BOTH drawn | faces 12 | median 2.7 v 2.7 m (se 0.00, line <= 2.7) ok | p90 12.5 v 12.5 (se 0.00, line <= 12.5) ok | max 14.4 v 14.4 | hull_far (plan_far median 3.9 v 3.9) | PASS
+FACE_PAIRS_CAND_ONLY drawn | faces 0 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 0.0; kept 0)
+FACE_PAIRS_BASE_ONLY drawn | faces 0 | hull_far candidate [] v base [] (base plan_far []) | reported
+FACE_PAIRS_OTHER drawn | neither served 99 | unmatched base 0 candidate 0 | reported
+FACE_PAIRS_DISTINCT clicked | distinct pairs 53 of 53 | cells that repeat: none
+FACE_PAIRS_BOTH clicked | faces 28 | median 2.0 v 2.0 m (se 0.00, line <= 2.0) ok | p90 9.6 v 9.6 (se 0.00, line <= 9.6) ok | max 16.9 v 16.9 | hull_far (plan_far median 2.9 v 2.9) | PASS
+FACE_PAIRS_CAND_ONLY clicked | faces 0 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 0.0; kept 0)
+FACE_PAIRS_BASE_ONLY clicked | faces 0 | hull_far candidate [] v base [] (base plan_far []) | reported
+FACE_PAIRS_OTHER clicked | neither served 217 | unmatched base 2 candidate 1 | reported
+FACE_PAIRS line (2c): ALL PASS

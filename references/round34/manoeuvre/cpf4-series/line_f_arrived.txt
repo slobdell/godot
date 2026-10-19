@@ -1,0 +1,2 @@
+(f) squads arrived (ARRIVED_M, the stage's `arrived` per squad), new_drawn v base_drawn, 382 pairs: new 846 base 842 diff +4 se 5.2 lim -8.5 -> PASS; re-seats not measured (the rows carry no re-seat count, as attempt 3)
+(f) squads arrived (ARRIVED_M, the stage's `arrived` per squad), new_clicked v base_clicked, 383 pairs: new 830 base 830 diff +0 se 1.4 lim -2.3 -> PASS; re-seats not measured (the rows carry no re-seat count, as attempt 3)

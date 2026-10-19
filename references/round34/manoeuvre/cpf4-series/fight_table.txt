@@ -1,0 +1,9 @@
+FIGHT_GUARD runs paired 23 (base 24, new 23)
+FIGHT_GUARD kills: base 889 new 901 diff +12 se 27.8 within 2 se
+FIGHT_GUARD deaths: base 897 new 914 diff +17 se 25.2 within 2 se
+FIGHT_GUARD shots: base 19212 new 20011 diff +799 se 1308.7 within 2 se
+FIGHT_GUARD hits: base 13075 new 13387 diff +312 se 807.7 within 2 se
+FIGHT_GUARD touch_shots: base 1118 new 1142 diff +24 se 183.4 within 2 se
+FIGHT_GUARD touch_hits: base 594 new 609 diff +15 se 124.2 within 2 se
+FIGHT_GUARD hit rate: base 0.688 new 0.677 paired mean diff -0.011 se 0.011 within 2 se (n 23)
+FIGHT_GUARD hit rate on touching targets: base 0.612 new 0.580 paired mean diff -0.031 se 0.034 within 2 se (n 23)

@@ -1,0 +1,2 @@
+/home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/bridge-base.log:BRIDGE_POOLED 18 of 18 runs pass
+/home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/bridge-new.log:BRIDGE_POOLED 18 of 18 runs pass
