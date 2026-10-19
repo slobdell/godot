@@ -177,6 +177,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **O2 stays parked** (`wip/brains-o2`); a fixed order-time heading makes the HALT seats exact (cheap packing), but the
   travel seats before all-in still aren't.
 
+### Round-35 candidates (noted, nothing now)
+- **B11b's brains mechanism** (from CP-F attempt 4, parked R34.18): an attack-move element steps to its next leg ~30 s
+  late when its arrived crews sit on a `face from sector` (tank_brain.gd ~2960, the sector watch) rather than a stop.
+  law/faced_attack_move-614 stepped at t 60 v t 32 with the same laggard crew; 7 of 26 pairs stepped >= 10 s later.
+  Candidate: the element's step should not wait on a sector face.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
