@@ -300,6 +300,18 @@ builder0), ruled R34.3.
   `_squad_width` / `_squad_depth`, and new `tests/test_control*.gd`, for O1 (the ground cap) then O3 (price a squad at its halt
   shape), working on `stream/brains`, per `streams/orders.md`. If an orders worker starts, brains hands over at its next
   green commit and orders continues from there (O2, O4, O5).
+- **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
+  pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
+  far loops 34 → 18 against a line of ≤ 17 (paired se 20.2): FAIL by one loop. 16 of the 18 are ONE episode (locks-913: a
+  battery asking a squadmate parked on HOLD 1.3 m from its slot, 16 times in 70 s, where the room search found no spot and so
+  refused, as OFF does; without it 34 → 2). Everything else passed: L1b 92 → 47, L2 124 → 60, L3 (a) open deaths +51 in a ±54 band,
+  (b) stuck/jammed 410 → 387, (c) hit rate within its line, L4 identical, L5 0/9, L6 94.2 % at 45 s. No re-read: the verdict stands.
+  **Why a v4b:** L1a's "≤ 50 % of base" on a base of 34 with se 20 asked for a drop the series could not resolve (17 is 0.84 se),
+  so the line failed on one fight's single cramped spot, not on the rule. v4b = the same code, a FRESH seed block disjoint from every
+  judged one, a bar re-filed before any number with the far-loop gain judged on L2 (all far loops: arm < base AND (base − arm) −
+  k·se > 0), L1a and L1b as guards (arm ≤ base + k·se), L3–L6 as filed. Run on **builder0** (a judged series stays on one machine)
+  so T4's fourth try runs on builder2 at the same time. If v4b also fails, parkedroom parks for the round, with no fifth try
+  without a new design.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
