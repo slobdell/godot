@@ -347,7 +347,10 @@ func test_an_auto_squad_block_carries_its_nominal_shape() -> void:
 	var block: Dictionary = f.controls._squad_block(squad)
 	assert_eq(String(block.get("shape", "")), "wedge", "an AUTO squad of five is laid as a wedge")
 	assert_eq(int(block.get("count", 0)), 5, "of five")
-	assert_near(float(block["width"]), SelectionSquads.width("line", 5, (block["pitch_v"] as Vector2).x), 0.01, "priced a line wide, as round 22")
+	# Round 34 (O3): priced at the halt it will arrive in (round 22 priced a line; `--halt-price=off` keeps that).
+	var halt := SelectionSquads.squad_halt_shape(squad["units"], null, f.game_match)
+	assert_near(float(block["width"]), SelectionSquads.halt_footprint(halt, 5, (block["pitch_v"] as Vector2).x).x, 0.01,
+			"priced at its halt's footprint (O3: a %s)" % halt)
 	assert_near(float(block.get("halt_depth", 0.0)), SelectionSquads.depth(RtsControls.HALT_SHAPE, 5, (block["pitch_v"] as Vector2).y), 0.01,
 			"and carries the coil's depth, the shape its leader halts in, as the floor on the rank step")
 	f.controls.recall_group(1)
