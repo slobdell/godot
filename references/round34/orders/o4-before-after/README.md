@@ -2,6 +2,6 @@
 
 - before: lab/planner-o4-before `df3a5abb0` = main `2c7c1d0dc` (a1199d198) + the current probe
 - after: stream/planner `e4fb423a3` = main with O4 `471cdcd5e`, M2 `75a1d8c51` and brains' Locks station fix + the probe
-- The Locks 5-squad and Locks 3-squad one-click rows: `../rows-95155fc8e-builder0.jsonl` (before) and the after run's
-  click logs in this commit's history (`o4-655fe383d`, removed: its build folder mixed old logs); the numbers are in the
-  message to the orchestrator and in planner.md's Status.
+- The one-click Locks rows: before `../rows-95155fc8e-builder0.jsonl`; after (655fe383d, builder0, the same game code
+  as e4fb423a3): Locks 5 click far-bank 1 -> 0, all in 21.5 -> 13.8 s, worst shuffle 78.5 -> 33.2 m (brains' station
+  fix); Locks 3 click far-bank 0 -> 1 (squad 1 over the middle bridge at 38 s: a second leak; brains has c3cdbd6c4).
