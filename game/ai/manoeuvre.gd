@@ -424,6 +424,85 @@ static func leg_holds_arrival(brain: TankBrain) -> bool:
 	return true
 
 
+## Round 35 (W2, C35.7, CP-F attempt 5, the face side): A FACE NO PLAN FITS GIVES UP CLEANLY. Attempt 4 (R34.18) turned
+## the hull right wherever a plan fitted and failed on settling: a face whose plans kept failing crept at the 0.35 lock to
+## the stage's judge (face_creep at the judge: screen 8 v 0, attack-move 4 v 0). Now FACE_SETTLE_FAILS failed plans in a
+## row (none fitted, or one the world refused) for the same want (within Movement.FACE_REPLAN_DEG) end the face as it is:
+## the hull stands still and the turret keeps the facing; between the failed tries it waits still instead of creeping.
+## The want swinging further, a new order, or a gap in the face re-arms it. `--nav-off=facesettle` flips the default.
+## State per mover by its INSTANCE id (M2's precedent: every Movement member is a field of native's exec table, and this
+## is GDScript decision state; wheeled faces are handed back to GDScript, reason 3, so nothing here runs in C++).
+const FACE_SETTLE_DEFAULT := false
+const FACE_SETTLE_FAILS := 3
+## Arm counters: faces that gave up (once per want), and failed plans counted toward it.
+static var face_settles := 0
+static var face_settle_fails := 0
+static var _face_settle := {}  # mover instance id -> [fails, want (flat unit), given up]
+
+
+static func face_settle_on() -> bool:
+	return FACE_SETTLE_DEFAULT != Movement.switched_off("facesettle")
+
+
+static func _same_want(a: Vector3, b: Vector3) -> bool:
+	return absf(a.signed_angle_to(b, Vector3.UP)) <= deg_to_rad(Movement.FACE_REPLAN_DEG)
+
+
+## A plan for `want` failed on this mover; true when that makes FACE_SETTLE_FAILS in a row (the face gives up now).
+static func face_failed_id(id: int, want: Vector3) -> bool:
+	var row: Array = _face_settle.get(id, [0, want, false])
+	if not _same_want(row[1], want):
+		row = [0, want, false]
+	row[0] = int(row[0]) + 1
+	face_settle_fails += 1
+	var gives_up := int(row[0]) >= FACE_SETTLE_FAILS and not bool(row[2])
+	if gives_up:
+		row[2] = true
+		face_settles += 1
+	if _face_settle.size() >= 64 and not _face_settle.has(id):
+		for key: int in _face_settle.keys():
+			if not is_instance_id_valid(key):
+				_face_settle.erase(key)
+	_face_settle[id] = row
+	return gives_up
+
+
+## Has this mover's face for `want` given up? A want swung beyond FACE_REPLAN_DEG re-arms it (forgets the row).
+static func face_given_up_id(id: int, want: Vector3) -> bool:
+	var row: Variant = _face_settle.get(id)
+	if row == null:
+		return false
+	if not _same_want((row as Array)[1], want):
+		_face_settle.erase(id)
+		return false
+	return bool((row as Array)[2])
+
+
+static func face_settle_forget_id(id: int) -> void:
+	_face_settle.erase(id)
+
+
+## The last face tick of a mover: [tick, want, aligned that tick] (for face_settled_id).
+static var _face_now := {}
+
+
+static func face_note_id(id: int, tick: int, want: Vector3, aligned: bool) -> void:
+	if _face_now.size() >= 64 and not _face_now.has(id):
+		for key: int in _face_now.keys():
+			if not is_instance_id_valid(key):
+				_face_now.erase(key)
+	_face_now[id] = [tick, want, aligned]
+
+
+static func face_settled_id(id: int, planned_leg: bool, since_tick: int) -> bool:
+	var row: Variant = _face_now.get(id)
+	if row == null or int((row as Array)[0]) < since_tick:
+		return false
+	if bool((row as Array)[2]):
+		return true
+	return not planned_leg and face_given_up_id(id, (row as Array)[1])
+
+
 ## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused
 ## for leaving the arrive radius.
 static var hull_turns := 0
