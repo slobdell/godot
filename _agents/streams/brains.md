@@ -87,7 +87,8 @@ se of the paired sum.
   paired difference < 0 by > 2 se.
 - (b) the same on faced_move: not worse by > 2 se (report the size).
 - (c) GUARD, left behind: crews > 25 m off their slot in their element's last trace row before the judge, new - base <= max(2, 2 se)
-  on each task.
+  on each task; reported split by whether the left crew is wedged at that row (R35.3: a wedged crew left behind is the same crew
+  in both arms, manoeuvre's/traffic's to fix, not caused by the release).
 - (d) GUARD, late movers at 75 s: crews with real_mps >= 0.3 at the judge, new - base <= 2 se on each task; settled-in-75 s counts
   the same.
 - (e) GUARD, squads arrived (judge rows): base - new <= 2 se.
