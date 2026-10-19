@@ -301,3 +301,24 @@ manoeuvre-face-clip: import ## manoeuvre stretch: a drawn facing on War Rigs fil
 	ffmpeg -loglevel error -y -i $$out/before.avi -i $$out/after.avi -filter_complex \
 		"[0:v]drawtext=text='BEFORE (today)':x=20:y=20:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.5[a];[1:v]drawtext=text='AFTER (CP-F, $$commit)':x=20:y=20:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.5[b];[a][b]hstack=inputs=2:shortest=0,scale=1920:-2,setpts=PTS/$(FACE_CLIP_SPEED)[v]" \
 		-map "[v]" -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -movflags +faststart "$$movie" && echo "FACE_CLIP_MOVIE $$movie"
+
+# Round 35 (W1, C35.6): why crews die wedged. WEDGE_AT x WEDGE_RANGE showmatch fights through tests/manoeuvre/wedge_trace.gd
+# (WEDGE_EP per wedged episode, WEDGE_DEATH with a 10 s timeline per stuck:wedged death) -> WEDGE_DIR + the table.
+# Measurement only; judged/traced on the native path: run as `native manoeuvre-wedge-trace`.
+WEDGE_RANGE ?= 3500-3503
+WEDGE_AT ?= locks,terminus
+WEDGE_JOBS ?= 4
+WEDGE_SECONDS ?= 180
+WEDGE_FLAGS ?=
+WEDGE_DIR ?= $(BUILD_DIR)/manoeuvre/wedge
+.PHONY: manoeuvre-wedge-trace
+manoeuvre-wedge-trace: import ## manoeuvre W1: wedged episodes and wedged deaths, what moved each hull (ORCA, holds, yields, unstick, the drive), WEDGE_AT x WEDGE_RANGE -> WEDGE_DIR + table
+	@rm -rf $(WEDGE_DIR); mkdir -p $(WEDGE_DIR)
+	@echo ">> manoeuvre-wedge-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(WEDGE_AT)' seeds '$(WEDGE_RANGE)' | flags '$(WEDGE_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $$(seq $(subst -, ,$(WEDGE_RANGE))); do for arena in $(subst $(comma), ,$(WEDGE_AT)); do echo "$$arena $$seed"; done; done | \
+		xargs -P $(WEDGE_JOBS) -L 1 sh -c 'timeout 1200 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/manoeuvre/wedge_trace.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--seconds=$(WEDGE_SECONDS) $(WEDGE_FLAGS) > $(WEDGE_DIR)/$$0-$$1.log 2>&1 || true; \
+		grep -q "^WEDGE_TRACE" $(WEDGE_DIR)/$$0-$$1.log && echo "  ran $$0 s$$1" || echo "  MISSING WEDGE_TRACE $$0 s$$1"'
+	@grep -l "NATIVE" $(WEDGE_DIR)/*.log | head -1 | xargs -r grep -m1 "NATIVE" || true
+	@$(PYTHON) tests/manoeuvre/wedge_table.py $(WEDGE_DIR) --top 3

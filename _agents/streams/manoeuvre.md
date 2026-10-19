@@ -55,3 +55,21 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Plan (2026-10-19, Opus)
+
+1. **W1 trace** — `tests/manoeuvre/wedge_trace.gd` + `wedge_table.py`, `make native manoeuvre-wedge-trace` (WEDGE_AT, WEDGE_RANGE;
+   fresh seeds 3500+ on Locks/Terminus; native path). Per wedged episode: what shaped the motion each tick (unstick / k-turn /
+   yield / Traffic hold / ORCA turn / ORCA slow / sideways shove / the drive itself), what unstick's stall rule saw, the order and
+   brain option, hits, friends near. Per `stuck:wedged` death (T5's `death_cause`, verbatim): a 10 s timeline. → design note to
+   the orchestrator → bar → only then a change.
+2. **W2 face settle** — seam proposed to the orchestrator 2026-10-19 (a face no plan fits 3 times in a row stops still, `--nav-off=facesettle`,
+   ships with turnhull ON; `Movement.face_settled()` offered to brains). Code waits for the agreement.
+3. **Stretch** — the R34.16 watch item, if a face_pairs series runs.
+
+### W1 first read (laptop, stream a0ae0aafd + probe, locks s3500, 90 s, one fight, mechanism only)
+
+The `wedged` flag counts every tick whose pace is under 0.999 — so a crew **holding at a street mouth on purpose** (Traffic's
+take-turns hold, pace 0) and a crew **giving way** are "wedged" too. In that fight: 251 episodes; by tick, Traffic hold 37 %,
+ORCA slow 36 %, yield 10 %, drive 8 %, ORCA turn 6 %, k-turn 3 %, shove 1 %. Of 5 wedged-at-death crews, one was holding (pace 0,
+held True), which T5's `death_cause` files as `stuck:wedged`. The builder0 batch (24 fights) decides how big that share is.
