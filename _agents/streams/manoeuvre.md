@@ -1,81 +1,52 @@
-# Stream: manoeuvre (a wheeled turret vehicle told to face a direction ends facing it and sits still: a better ruler, the arrival flicker, then CP-F attempt 4)
+# Stream: manoeuvre (fewer crews die shoved around in a lane mouth; a wheeled hull told to face a way faces it and goes still)
 
-> Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` *Round 28 direction* (his call 2: turn
-> the whole vehicle), `_agents/judging.md`, `_agents/workstreams.md` **Round 34** (C34.1, C34.4; R33.2, R33.21, R33.23,
-> R33.34, R33.35 in *Round 33*), `_agents/roadmap.md` *Round 34 candidates* (the hull-rest entries, the k-turn flicker),
-> your round-33 brief `streams/archive/round33/manoeuvre.md` (its close-out Status), and planner's diagnosis
-> `references/round33/planner/face-flip-s69/`. Evidence: `references/round33/manoeuvre/` (cpf3b-series, cpf-arriveleg-dev,
-> c339-judged). Raw runs (1.4 GB): `/home/slobdell/overnight-manoeuvre`, outside the repo.
-> **You own:** round 33's manoeuvre paths (`game/ai/movement.gd`'s `drive()` body, `_nose_stop`, `unstick`,
-> `_pressing_escape`, H1/H1b, the k-turn / planned-reverse / circle executor; `game/ai/manoeuvre*.gd`, `clothoid.gd`,
-> `wall_contact.gd`; the face-at-rest path and C33.9's turn-in in `order_controller.gd`; `tests/test_manoeuvre*.gd`,
-> `tests/test_kturn*.gd`, `tests/manoeuvre/**`, `tests/ai_scenarios/scenario_manoeuvre*.gd`, `mk/manoeuvre.mk`).
-> **Granted (round 34):** `game/control/screen_playtest.gd`, ADDITIVE only: `real_mps` per hull-rest crew row (1B) and
-> `--faced-shift-m` (2B); defaults unchanged, merge note. Still granted: gunnery's two aim-lead lines and the `_order_move`
-> decline for wheeled turret hulls under turnhull (C31.8). **The C++ (C31.2):** send native each settled diff.
-> **Model: FABLE** (CP-F has parked three times).
+> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md` (M1's A/A rows), `_agents/workstreams.md` **Round 35**
+> (C35.1, C35.3, C35.6, C35.7; R34.10, R34.18 in *Round 34*), and your round-34 brief `streams/archive/round34/manoeuvre.md`
+> (its Status is the close-out: M0, M1, M2, CP-F 4, the wedged-death table). Evidence: `references/round34/manoeuvre/`
+> (cpf4-series, wedged-deaths, m2-report), traffic's T5 census `references/round34/traffic/t5_jam_death_census.md`.
+> **You own:** round 34's carve-outs: the `drive()` body, `_nose_stop`, `unstick`, `_pressing_escape`, the k-turn executor, H1/H1b,
+> the face-at-rest path in `order_controller.gd`, the `_order_move` decline for wheeled turret hulls, `game/ai/manoeuvre*.gd`,
+> `tests/manoeuvre/**`, `tests/test_manoeuvre*.gd`, `mk/manoeuvre.mk`, additive fields in `game/control/screen_playtest.gd`.
+> **Model:** Opus. **Machine:** builder0 only (C35.1).
 
 ## The lead's direction
 
-Round 28, call 2: **turn the whole vehicle to his drawn facing.** At round 33's close (2026-10-18) he chose to keep CP-F
-parked and give it a fourth try now, on top of the herringbone fix. What he will notice: a War Rig, gang tank or IFV he
-tells to face a direction ends with its hull pointing there and then sits still. With brains' B11b on top, one pushed off
-its post goes back and faces his way again.
+Smart AI on both sides; symmetric improvements ship without asking. His answer at round 34's close: **"Ship it"**: the scout
+turn-in (M0) ships (the orchestrator merges `pair/c339-r34b` `3902ade09` on its green check, C35.3). His standing CP-F ask: a War
+Rig or other wheeled turret vehicle told to face a direction ends facing it and sits still.
 
-## Where things stand (main at the round-34 docs commit)
+What he will notice: fewer crews dying while being shoved around in a lane mouth; a wheeled hull told to face a way turns to it
+and goes still, without the squad hanging at each leg.
 
-- **C33.9 (his scout report) did NOT ship (R33.38, R33.39).** He said ship attempt 1. Its whole suite with the switch
-  ON then went red: the turn-in took every plain face and every `stop` swing, so a wheeled hull turning in place drove
-  24.5 m (creep_bound), and a tracking scout rolled in a swept lane. Both narrowings tried at the close flipped judged
-  lines on seeds 31–36 (`fc809b60a`: (c) worst in-reach cell −46 %, (d) max 13 reverse ticks). C31.1 had not been run
-  before the judged series. Carry: `pair/c339-ship` `fc809b60a`, `lab/c339-turnin` `781801da0`, refs
-  `references/round33/manoeuvre/c339-narrow/`. Native's stop hand-back (`pair/native-c339` `2f9ad0fb9`) covers any
-  narrowing.
-- **CP-F attempt 3 PARKED narrowly (R33.34):** turrets end 3–4° off the drawn facing (93–96 % within 15°) against
-  60–100° today. It missed one line, gang crews still driving at 75 s on attack-move (+7 against 6.5). The trace (R33.35)
-  showed those late movers came from the herringbone re-lay, which brains fixed on main (`7f27a479c`; seat jumps 107 v 2342).
-- **The judge was part of every miss.** R33.21's series ran unpinned on a loaded box. hull-rest's "still" reads reported
-  velocity, so a wedged hull counts as moving. Seeds 40 = 43 and 44 = 45 row for row. Your judge fixes (`cpf_judge.py`:
-  jitter, `--wedged`, `--distinct`) and the CP-F code are on `round33/manoeuvre` `18e37ec76`, default OFF.
-- **The k-turn arrival flicker (planner's s69):** a k-turn leg that crosses the 6 m arrival circle turns the order into a
-  face nobody wanted. Your lab is `lab/cpf-arriveleg` `7e0953f9d`: one condition in `TankBrain._act`'s arrived branch, which
-  is brains' code.
+## Where things stand
+
+- **Shipped in round 34:** M1 the ruler (real_mps, wedged apart, A/A), M2 the arrival hold (ARRIVE_LEG_DEFAULT on), the M0 turn-in
+  (merging under C35.3).
+- **Wedged deaths (C35.6):** 499 of 5984 (8.3 %, 3.5 a fight) in T5's census, all `driving`, none held; mid-weight hulls (suppressor,
+  burner, IFV, tank, lancer 13–16 % of their own deaths); lanes, the Locks lane mouths worst; median speed at death 1.2 m/s, 85 %
+  under fire, only 26 % below STUCK_SPEED, so the stall rule never sees most of them.
+- **CP-F (R34.18):** the turn is right (3–4° v ~50°); it failed on settling: faces no plan fits creep at the 0.35 lock until the
+  judge, and attack-move elements step ~30 s later when arrived crews sit on a sector face (brains' side).
 
 ## Backlog (in order)
 
-0. **M0 C33.9, the scout turn-in, done right (his report; he already said ship it).** Scope it to the case he reported:
-   a scout's crew facing a live threat it can't yaw onto at rest. Never a plain face, a static spot or a `stop` with
-   nothing to face. The order: (1) the WHOLE suite with the switch ON first (C31.1), and every test and scenario passes
-   unchanged; (2) a fresh bar, filed before any number, on FRESH orbit seeds (not 11–36), keeping R33.24's lines; (3) the
-   judged series on one machine; (4) the pair with native's hand-back. It ships ON when it passes. Out of reach, brains' scout
-   try 2 decides whether the scout leaves (C34.5), so agree with brains which arm each judges on.
-1. **M1 The ruler (C34.4 (1)).** Rebase `round33/manoeuvre`'s judge onto main (`git merge main` on a branch from it). Add 1B
-   (`real_mps`) and 2B (`--faced-shift-m`) in screen_playtest. "Still" reads real velocity, wedged crews get their own line,
-   the seed varies the geometry, and every hull-rest target is pinned. Then an A/A (OFF v OFF) on the new ruler on builder2,
-   sized like planner's P1 (n ≥ 36 paired). The sd rows go to planner for `judging.md`. Ship the ruler alone (tests plus a
-   check; it changes no game behaviour).
-2. **M2 The flicker (C34.4 (2)).** Restate planner's s69 on current main. Agree the seam with brains through the orchestrator
-   BEFORE code (brains owns `_act`'s arrived branch and `_order_move`'s held-post refusal; you own WHEN a faced finish runs,
-   R33.2). A test that fails without the fix. If it's a bug fix, it ships alone with its check, before M3.
-3. **M3 CP-F attempt 4 (C34.4 (3)).** On main (herringbone and M1/M2 in), a fresh bar filed before any number, on the new
-   ruler. Fresh seeds, not 41/44/45/66/67. One machine. The pair = main + CP-F ON + native's mirrors only. Ships ON. **Tell
-   brains the merge hash the day it lands** (B11b).
-4. **M4 Help B11b:** answer brains' questions on the face step.
-5. **Stretch:** a short clip of a War Rig told to face behind, before and after, for him (builder0 renders; builder2 has no
-   display).
+1. **W1 Wedged deaths: trace first.** On main, fresh seeds on the Locks/Terminus lanes: for the three largest episodes, which force
+   moves the hull (ORCA, avoid, around_friends, the drive's own steer), what `Movement.wedged` and unstick saw, and what the crew was
+   ordered to do. Then a design note to the orchestrator (a wedged trigger that acts on walking-pace shoving; what a crew under
+   fire should do instead: back off, hold, or push through). Then a bar before any number: deciding gain wedged deaths; guards open,
+   stuck, jam deaths, far loops, kills, hit rate (as T6b's). Native mirrors anything in the drive.
+2. **W2 CP-F attempt 5, the face side (C35.7).** A face that gives up cleanly after N refused plans (no creep at the 0.35 lock).
+   The seam with brains' element step is agreed through the orchestrator before code. A fresh bar with guards from M1's A/A.
+3. **Stretch:** the watch item from R34.16 (one 9.1 m both-planned face) if a face_pairs series runs.
 
 ## How to verify
 
-`make quick-remote` to iterate; `make native check` on the pair tree (switch ON) before any series, only for named hashes.
-`make manoeuvre-hull-rest`, `manoeuvre-fights`, `manoeuvre-census`, `cpf_judge.py`, `test_manoeuvre_face_behind`,
-`native-verify-scenarios`. Build squad-facing fixes on stages that form elements. Long remote runs under `systemd-run
---user`. Every number: commit, machine, workload, n, its row.
+Tests first; `make quick-remote`; one full check at a time on builder0; series pinned, fresh seeds, no random twins
+(`tools/judge/seed_twins.py`). Every number: commit, machine, workload, n.
 
 ## Don't touch
 
-Traffic's give-way block, `_avoid`, `traffic*.gd`; planner's `game/ai/planner/**`; brains' `tank_brain.gd` (beyond the
-granted decline and an AGREED flicker seam), elements, `game/tactics/**`; native's `native/**`; `game/match/**`;
-`game/control/**` beyond the 1B/2B grant; `tests/baselines/**`; `tools/judge/**`. Don't push.
+Traffic's give-way block, brains' tactics/ai outside your carve-outs, `native/**`, `tests/baselines/**`. Don't push.
 
 ## Waiting on the lead
 

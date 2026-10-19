@@ -6,7 +6,31 @@
 
 _Last updated: 2026-10-18 — **ROUND 34 IS PREPARED (below); round 33 is CLOSED.** Main inherits `d7d57f4cf`'s green check (builder2, `make check exited 0`, 2797/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved; `tools/merge_check_needed.sh d7d57f4cf` says INHERIT: only docs since). He pushes `main`._
 
-## 👋 FOR HIM WHEN HE WAKES (round 34, 2026-10-19 morning) — read this first
+## 🚀 ROUND 35 IS PREPARED (2026-10-19) — read this first
+
+**Five streams, ALL OPUS (his words: "move all our agents back to Opus"), builder0 ONLY (he powered builder2 off the same
+morning).** Split, ownership and contracts C35.1–C35.9 are in `workstreams.md` *Round 35*; briefs in `_agents/streams/`. Worktrees are
+created FRESH from the docs commit; round 34's `stream/*` branches are `round34/<stream>`.
+
+**To launch (the lead):** in each folder `~/projects/godot-<stream>`, start a CLI on Opus and paste the kickoff prompt from
+`_agents/orchestration.md` *The kickoff prompt* (the same text for every stream). Then the orchestrator (this checkout) runs the round.
+
+| Stream | Folder (offset) | What he will notice | First item |
+|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | a crew under fire doesn't step aside into a killing zone when the one behind can go round | the design note (T7) |
+| **manoeuvre** | `godot-manoeuvre` (2) | fewer crews die shoved around in a lane mouth; a wheeled hull told to face a way faces it and goes still | the wedged-death trace (W1) |
+| **brains** | `godot-brains` (3) | squads on an attack-move don't hang ~30 s at each leg | the sector-face step (E1) |
+| **native** | `godot-native` (4) | nothing alone: every pair; the judging table complete | pairs, then planner's leftovers |
+| **orders** | `godot-orders` (5) | squads arrive and deploy as one move, packed close without overlapping; the Locks 5-squad route doesn't jam | ship the deploy step (D1) |
+
+**His round-34 answers (game_design.md *Round 34 close*):** ship the scout turn-in (C35.3: the orchestrator merges `pair/c339-r34b`
+`3902ade09` on its green check, running on builder0 at launch); the deploy step ON (C35.2, orders' D1); the firing truck keeps its spot.
+
+**Launch baseline:** main inherits the last green main check (c29a8c7b6, builder0 2877/0); workers run no baseline check.
+
+## 🏁 ROUND 34 IS CLOSED (2026-10-19)
+
+### Round 34's close-out (what he was told, 2026-10-19 morning)
 
 **Main is green at c29a8c7b6** (builder0 2877/0). Workers are done or idle; the worktrees stay until his three answers, then the
 orchestrator closes the round (briefs to `streams/archive/round34/`, branches renamed `round34/*`).

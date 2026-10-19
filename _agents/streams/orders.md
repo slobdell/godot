@@ -1,117 +1,76 @@
-# Stream: orders (one click, several squads: everyone goes where he clicked, never across a bridge he didn't pick)
+# Stream: orders (squads arrive in their travel shape and deploy as one move, packed close; routes that don't jam)
 
-> Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 34** (C34.11), and
-> `_agents/game_design.md` *Round 34, his playtest words during the round: one click, several squads* (verbatim, with
-> what was decided). History of this code: round 19–23 orders briefs in `streams/archive/round19/` … `round23/` (O1 ranks,
-> O1b untangle, O3, O4 nesting), whose lead quotes sit in the file headers of `game/control/selection_squads.gd`.
-> **You own:** `game/control/**` EXCEPT manoeuvre's additive fields in `game/control/screen_playtest.gd` (round 34 grant;
-> don't edit that file), `tests/test_control*.gd`, `mk/command.mk`, `references/round34/orders/**`.
-> **Granted (C34.11):** READ-ONLY calls into `game/tactics/slot_ground.gd` (`path_length`, `reached_directly`),
-> `game/ai/pathing.gd` and the navmesh; for O4 only, the queued-move "done" rule in `game/tactics/element.gd`
-> (`_next_queued` and a helper beside it; brains owns the file: merge note, and tell the orchestrator before you edit it).
-> **Model:** Opus.
+> Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 35** (C35.1, C35.2, C35.4, C35.5),
+> `_agents/game_design.md` *Round 34, his playtest words during the round* and *Round 34 close* (his answers, verbatim), and the
+> round-34 briefs `streams/archive/round34/orders.md` and `streams/archive/round34/brains.md` (B6, B8, B8b, O1–O4, R34.12: the
+> whole history of this code, with every trace). Evidence: `references/round34/orders/` (planner's probe, the lead's pass and its
+> screenshots), `_agents/streams/references/round34/brains/` (B6/B8 traces and tables).
+> **You own:** `game/control/**` (except manoeuvre's additive fields in `game/control/screen_playtest.gd`), `tests/test_control*.gd`,
+> `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`, and in `game/tactics/element_plan.gd` the deploy-step and
+> halt-lay functions (`DEPLOY_STEP`, the deploy step's helpers, the halt seat lay for a plain AUTO move; merge note to brains).
+> **Model:** Opus. **Machine:** builder0 only (C35.1).
 
-## The lead's direction (2026-10-18, verbatim in game_design.md)
+## The lead's direction
 
-> "If I select 3 squads and then tell them all to move to some point on the map, there's some algorithm that
-> automatically determines new points for each squad … in my last game I told 3 squads to go to a single waypoint, but
-> because there were 3 squads, 3 waypoints were selected, where one of them was all the way across the bridge, thus
-> causing one of my squads of scouts to go on a suicidal mission. How can we get behavior closer to starcraft, where I
-> can click some target waypoint and have all units go to it? … The current setup makes it impossible for me to select a
-> bunch of units and have them follow some target route."
+His round-34 report, verbatim: *"If I select 3 squads and then tell them all to move to some point on the map, there's some
+algorithm that automatically determines new points for each squad … one of them was all the way across the bridge, thus causing
+one of my squads of scouts to go on a suicidal mission. How can we get behavior closer to starcraft…"* His corrections: squads may
+nest (*"isn't there enough spacing where we could intersect two wedges basically?"*), and waypoints are the squad's (*"it's more
+about the squad moving through that waypoint versus individual vehicles"*). His answer at round 34's close: **"Yes, use the deploy
+step"**: a squad arrives in its travel shape and spreads into its halt shape as one deliberate move.
 
-His corrections: "Must we assume that the squads can't overlap with each other? … isn't there enough spacing where we
-could intersect two wedges basically?" and "if we overcorrect on this term then we might have 25 vehicles all trying to
-roll through the same waypoint. The waypoints are obviously sort of loose guidelines, and it's more about the squad
-moving through that waypoint versus individual vehicles." Then: all four recommendations stand, with those two
-corrections folded in. **He says the game is unplayable while this is wrong: this is the round's most player-visible item.**
+What he will notice this round: squads that arrive and deploy once, with no twitching afterwards; several squads sent to one point
+packed close but never on top of each other; five squads on a Locks route that don't jam at a junction.
 
-What he will notice: three squads sent to one point all end up near that point, on the side of the river he clicked;
-a shift-clicked route is followed by the squads as squads, not funnelled vehicle by vehicle through each point.
+## Where things stand (main at the round-35 docs commit)
 
-## Where things stand (main at the round-34 docs commit)
-
-- `RtsControls._order_squads` (`game/control/rts_controls.gd` ~1086): one click with several squads → `SelectionSquads.ranks`
-  (≤3 abreast, ranks behind, `nested_offsets` nests ranks since round 23) → `fit_inside` slides the body off the ARENA
-  WALLS only → `untangle` re-deals vehicles whose straight paths cross → one task per squad to its own anchor.
-- Each squad is priced by `_squad_width` at a LINE's frontage under AUTO (the widest shape the leader might pick): five
-  crews at 14 m ≈ 56 m, plus `GAP_M` 14 between squads. Three squads abreast put the outer anchors ~70 m from the click.
-- **Nothing asks the ground.** An anchor 70 m sideways can be hundreds of metres by road, over a bridge, into the enemy.
-  That is his scout squad. `SlotGround.path_length` / `reached_directly` (REACH_DETOUR, REACH_SLACK_M) already answer
-  "how far by ground" and "is this a detour" for slots; nothing in control calls them.
-- Shift-queued moves (`_queue_task_for`) give each squad its own anchor at EVERY waypoint (the same `ranks` spread), and
-  an element's queued move is "done" only when the element has `arrived` (formed up) at it (`Element._next_queued`), so
-  a route of waypoints is a series of stop-and-form-ups.
-- Tests on this path: `tests/test_control_squad_ranks.gd`, `test_control_two_squads.gd`, `test_control_untangle.gd`,
-  `test_control_oversize_squad.gd`, `tests/test_tactics_squad_split.gd` (brains'; read it). Probe: `make squad-orders-test`
-  (needs a display: laptop, not builder0); `make squad-partial`, `squad-settle` (tactics.mk, brains') as references.
+- **Shipped in round 34:** O1 the ground cap (no squad sent over a bridge it wasn't clicked across), O3 squads priced at their halt
+  shape, O4 routes are the squad's (passed at about its width, gates), o4b, brains' two Locks fixes (stations and order goals stay
+  on the anchor's bank), the rank fix + rank depth (the back rank comes up), ground_anchors (an anchor on a building stands beside
+  it), the player-route stall fallback (12 s settled), gate order (first through a shared gate takes the farthest place). The
+  lead's pass on main 62d90dc97: no crossing in 24 cells; five squads all go; routes finish except the Locks cells below.
+- **The deploy step:** B8b is on main OFF. `round34/brains` `07c029732` is the WIP that flips it ON (tests updated, `test_on_by_default`),
+  **no check run**. It reaches CPU elements too (ElementCommander gives plain moves), so sim-baseline WILL move.
+- **The shuffle:** post-arrival seat moves 19–38 m worst with 3 squads, up to 87 m with 5 (main); with B8b, the twitch after the
+  deploy is ~0 in 4 of 6 cells, the deploy move itself 16–30 m. Remaining causes known (B6/B8b traces): the halt re-seat after 2 s,
+  travel seats re-grounded while the slowest crew arrives, the Locks strip between canal and building squeezing seats.
+- **O2 packing (parked R34.12):** an AUTO pack before the deploy step was neither tighter nor fast enough (the heading isn't known at
+  order time). With the deploy step, it is: the halt seats are laid on the order's approach heading. `wip/brains-o2` holds the
+  attempt and the rotation-tolerant core.
+- **Locks 5-squad route:** squads 3 and 5 jam for ~55 s at (5, 65); their drives cross though their anchors' lines don't
+  (planner's trace, `references/round34/orders/gate-order-f1034b904/`).
 
 ## Backlog (in order)
 
-1. **O1 The ground cap (ship first, small).** After `fit_inside`, any squad's anchor whose drive from the CLICK is more
-   than ~1.5× its straight offset (+ slack), or more than ~30 m straight, comes back toward the click along the ground
-   (nearest point that passes). Test first: a stage with a river and a bridge (crossing / locks have them: arenas JSON
-   names "west bridge", "west swing bridge"), three squads clicked on the near bank beside the bridge: today one anchor is
-   across (the failing test), after O1 none is. Pure where it can be (the length callable injected, as `untangle`'s
-   position callable). Commit, quick-remote, name a hash, tell the orchestrator: it can merge alone.
-   **Built by brains (R34.8, stream/brains `43d81ec13`):** `SelectionSquads.ground_cap` after `fit_inside`. An anchor
-   passes when its drive from the click is <= 1.5 x straight + 8 m (navmesh) AND the path from the click crosses no
-   bridge deck (unless the click is on one). A failing anchor walks back toward the click in 4 m steps, clamped dry.
-   **Decided (orchestrator agreed): no ~30 m straight cap.** On the Crossing the west bridge is in line with the click,
-   so the far-bank anchor is a DIRECT drive (~70 m); the deck test is what catches his case, and a straight cap would
-   squash every open-ground spread (O2's packing). Arenas have only water and pit (both carve the navmesh) and bridge
-   (the only deck), so there is no ford or shallow crossing: water is crossed only over a deck (the deck test), and a pit
-   only round it (a detour, the 1.5x ratio). Default ON; `--ground-cap=off` is round 33.
-2. **O2 Places found by driving distance, with hull clearance (his correction 1).** Replace "lay a block in the air, then
-   clamp" with: flood outward from the click over drivable ground (navmesh / the ground grid) by DRIVING distance; seat
-   squads into the nearest free ground in order of arrival along their approach. The constraint between squads is
-   **hull-to-hull clearance between vehicles of different squads (~9 m, decide and record)**, NOT squad boxes: two
-   wedges may nest and overlap footprints. Each squad takes places on its own side of the approach so paths don't cross
-   (`untangle` stays as the backstop). Never across a choke the click is not beyond: tight ground stacks later squads
-   back along the road they came in on, near the click (decided; StarCraft's "everyone goes to the click, space settles
-   on arrival"). A drawn facing still lays them out as drawn (round 10's rule), capped by O1.
-   **Brains' B6 finding (2026-10-18, stream/brains 661be82f7, trace references/round34/brains/b6_relay_trace_sumps41t3_laptop.txt):**
-   an AUTO element travels in a wedge and, the tick its centre enters the arrival radius, `_halt` re-lays every seat in
-   the doctrine's HOLD shape (herringbone, ±16–17 m along v the wedge's ±9.3): crews swerve 4–10 m outward as they
-   "arrive". Brains' B6 will lay the halt shape from the final approach. **Pack O2 to the HALT shape, not the travel
-   shape**, and read O3's "shape it will arrive in" as the halt pick.
-3. **O3 Price a squad at the shape it will arrive in.** Under AUTO, the shape its leader will halt in (the doctrine's
-   pick for that terrain, and `min_step`'s halt depth), not a line's frontage. Record the footprint before/after for 3×5.
-   **Built by brains (R34.8):** `_squad_width` / `_squad_depth` under AUTO price the halt's footprint
-   (`SelectionSquads.halt_shape`: the squad's table's HOLD pick on the clicked ground, `ElementSituation.terrain_at`;
-   `halt_footprint`: the halt's seats with their FACE_LEAD sector leads). Five crews at 14 m: line 57.2 x 0.7 m, coil
-   36.3 x 34.5, herringbone 25.4 x 54.8. **3 x 5 AUTO, one click, outer anchors apart:** 140.0 m priced as lines (before) v
-   78.8 m on dense ground (herringbone; the fixture's click) or 100.6 m in the open (coil). `--halt-price=off` = round
-   33. The round-23 nesting block shape (`nominal_shape`, a wedge) is unchanged.
-4. **O4 Waypoints are the squad's (his correction 2).** For a shift-clicked route: an in-between waypoint is passed when
-   the SQUAD's centre is within about its own width of it (crews keep their slots, never aim at the point, no stop to form
-   up); for several squads, a waypoint is a GATE as wide as the ground there: abreast or in ranks in the open, single file
-   only where the terrain narrows (a bridge, a gap; traffic's give-way decides who goes first). Only the LAST waypoint
-   packs by O2. This touches `Element._next_queued` (grant above): agree the rule with the orchestrator before editing
-   brains' file; if brains needs to own the edit, write the request and build the control side against it.
-5. **O5 The player test.** A scripted probe in your paths (or extend `--squad-orders-test`): 3 and 5 squads, one click
-   and a 3-waypoint shift route, on the Locks, the Crossing and the Terminus; report per squad: straight offset from the
-   click, drive length, whether it crossed a bridge, arrival time, nearest foreign hull. Screenshots at desktop and phone
-   aspect, top-down, at arrival; look at them. This is what he will judge by eye.
-6. **Stretch:** the order markers (the dots he sees at the click) show each squad's real place before he lets go of the
-   button, so a bad spread is visible before it happens.
+1. **D1 Ship the deploy step ON (C35.2).** Start from `round34/brains` `07c029732` (cherry-pick or merge onto your branch). Laptop
+   tests, then the full check on builder0 under systemd-run; attribute every moved sim-baseline map with `DEPLOY_STEP=off` on the same
+   tree. A REPORTED fights census beside it (fresh fixed arenas, both sides, deaths/kills/stuck), since the CPU gets it too; bring a
+   gross regression (> 2 se) to the orchestrator before shipping. Name the hash; the orchestrator adopts the baseline.
+2. **D2 The probe on the shipped hash.** `make orders-probe` (planner's, now yours): 24 cells, main v `--deploy-step=off`, with the
+   screenshots at arrival and +5 s. File as the "before" for D3.
+3. **D3 Tight packing (C35.4).** On the deploy step: the order fixes each squad's approach heading; the halt seats are known at
+   order time; pack by hull clearance (~9 m between crews of different squads), his 28 m between two columns, each squad on its own
+   side of the approach, back ranks no farther back than their own squad, nothing on a building. The click's 3-tick response kept.
+   Bar filed with the orchestrator before any number (the probe's cells + the squad-arrive / settle series, both arms).
+4. **D4 What's left of the shuffle.** Trace the 5-squad cells' remaining post-deploy moves and the Locks strip; fix what the trace
+   names (likely seats re-grounded during the wait, and the halt re-seat).
+5. **D5 Crossing drives on the last leg (C35.5).** Deal the last leg by navmesh paths where they cross; a length guard; the Locks
+   5-squad route as the test; probe before/after.
+6. **Stretch:** the order markers show each squad's real halt place before he lets go of the button.
 
 ## How to verify
 
-Tests first for each item; `make quick-remote` while iterating; `make remote T=check` for a hash you will name.
-`make sim-baseline` must not move (the CPU orders through `cpu_commander`, not `RtsControls`; if it moves, find out why
-before anything else). The probe (O5) on the laptop with a display; every number with commit, machine, map, n. This is
-a feel item: no judged series bar unless the orchestrator asks for one. His eye is the check that counts.
+Tests first; `make quick-remote` while iterating; `make remote T=check` only for a hash you'll name (one at a time on builder0).
+`make orders-probe` for anything he'll see, with screenshots looked at. Every number: commit, machine, map, n.
 
 ## Don't touch
 
-`game/ai/**`, `game/tactics/**` (except the O4 grant), `game/control/screen_playtest.gd`, other streams' tests and mk
-files, `tests/baselines/**`. Don't push.
+`game/ai/**`, the rest of `game/tactics/**` (brains), `screen_playtest.gd`, `tests/baselines/**`. Don't push.
 
 ## Waiting on the lead
 
-Nothing.
+Nothing (his deploy-step yes is the go).
 
 ## Status
 
-(the worker keeps this current)
+_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_

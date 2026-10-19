@@ -1,3 +1,5 @@
+> **ARCHIVED (round 34, closed 2026-10-19).** The round-34 brief as the stream left it (its Status is the record). Round 35 briefs are in `streams/`.
+
 # Stream: planner (a rematch without restarting plays out the same; the judging table re-rendered; P3 v3 after the flicker)
 
 > Read `_agents/orchestration.md` (the worker contract, and *Close the round* step 5b, the judging table), `_agents/judging.md`,
@@ -59,7 +61,12 @@ Nothing.
 
 ## Status
 
-**Report (2026-10-18, late):**
+**Report (2026-10-19). GREEN HASH (named): `b38cf700d`** (builder2: test 2866/0, sim-baseline unmoved; net-smoke and
+relay-smoke red under load, both PASS re-run alone on `ed85c5c49` = b38cf700d + one test-only probe line). Every
+backlog item is done or closed (P5 by R34.16). Extended work for orders (O5, the O4 read, the lead's pass) and
+measurement (R34.15, M1 rows) is done.
+
+**Earlier report (2026-10-18, late):**
 - **P1 done (06b5be57c): the rematch diagnosis.** Traffic's solve stagger (`traffic.gd` hold_of/shape) read
   `Engine.get_physics_frames() % 6`, and the process's frame counter never resets, so a rematch started at another phase
   and branched. Nothing else carries a match: GDScript statics (all 798 restored), a new World3D, the resource cache,
@@ -113,3 +120,33 @@ their floors are now set as paths reached.)
 
 **What to playtest:** nothing new to see. A rematch from the results screen should now play out the same as the first
 fight given the same orders (the floor under replays and the network).
+
+## Round 34 close-out (2026-10-19)
+
+**Merged:** C34.6 (main `89e775f87` = `39f0d7e81`: a rematch replays) and everything up to `b38cf700d` (main
+`fd45c8ccf`: the O5 probe and its targets, the judging re-render with rounds 31/33 and M1's ruler, seed_twins, the
+series tools' run identity, FACE_KEEP_FAR reported only). `ed85c5c49`'s probe line (Movement.route_arms in the run line)
+rides the next named check.
+
+**For round 35:**
+- **Delete FACE_KEEP_FAR** from `tests/planner/face_keep_table.py` (R34.5: reported in round 34, deleted in 35).
+- **Watch item (R34.16):** one clicked face that both arms planned drove 9.1 m (v 4.0) in P5's re-measure. Read it in the
+  next series that runs `face_pairs.py`.
+- **Owed in the judging table:** round 31's brains pairs, round 32's pairs, and every round-31–34 judged LINE in
+  `tools/judge/lines.py` (the inventory still ends at round 30).
+- **The orders probe re-read** after brains' gate-order fix (the two short Locks routes) and B6 (the shuffle): the same
+  pass as `references/round34/orders/lead-pass-1ed50cf94/`, so the before/after is one table.
+
+**The probe, how to run it:**
+- `make orders-probe` runs the headless matrix and its table: `ORDERS_PROBE_MAPS`, `_SQUADS`, `_ROUTES`, and `_ARMS` as
+  `NAME:FLAGS` (e.g. `main: deploy_on:--deploy-step=on`). Output goes to `build/orders-probe/{rows.jsonl,table.txt,logs/}`.
+  Remote: `tools/remote.sh native orders-probe 'ORDERS_PROBE_ARMS=…'`. Quote any value with spaces: `make remote T=…`
+  refuses them.
+- `make orders-probe-shots` takes the same flags plus `ORDERS_PROBE_SHOT_ROUTES`. It needs a display (the laptop) and
+  runs one window at a time. A remote copy-back of `build/` deletes local shots, so copy them out, or keep remote runs
+  on another `ORDERS_PROBE_DIR`.
+- One cell by hand: `godot --fixed-fps 30 --path . --script res://tests/orders_probe.gd -- --arena=locks --seed=34
+  --probe-squads=5 --probe-route=click [--probe-trace=N] [--probe-shots=DIR] [game switches]`.
+- The probe pins `--squad-cap`, parks the token enemy, hides the HUD in its shots (2D rings misproject under its camera)
+  and marks the click (white) and squads 1–5 (red, yellow, green, blue, violet) with 3D posts.
+- A route's squad counts as arrived only after it has left its start.

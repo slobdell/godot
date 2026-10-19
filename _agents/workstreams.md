@@ -1,11 +1,81 @@
 # Workstreams: the current round
 
-> **ROUND 34 PREPARED (2026-10-18; launched FRESH from the docs commit: no worktree or agent carried over from round
-> 33): five streams. traffic and manoeuvre run on FABLE (the lead, 2026-10-18: "for one or two of these tasks where
-> we're getting stuck we can re-engage a fable agent"); brains, native, planner and the orchestrator on Opus.** Briefs
-> in `streams/`.
+> **ROUND 35 PREPARED (2026-10-19; launched FRESH from the docs commit: no worktree or agent carried over from round
+> 34): five streams, ALL OPUS (the lead, 2026-10-19: "move all our agents back to Opus"), builder0 ONLY (builder2 powered off by
+> the lead the same morning).** Briefs in `streams/`.
 
-## Round 34: five streams, two on Fable (prepared 2026-10-18; briefs in `streams/`)
+## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
+
+**Goal: finish what he asked for in round 34, then the biggest avoidable loss.** His three answers (game_design.md *Round 34
+close*): ship the scout turn-in, turn the deploy step ON, the firing truck keeps its spot. Round 34 closed his "one click,
+three squads" complaint on the river (no crossing in any of 24 probe cells) and made routes the squad's; what's left of it is
+the arrival (squads shuffle 19–87 m after arriving) and tight packing, which his deploy-step yes unlocks. The biggest avoidable
+loss in every fight is the wedged crew (8.3 % of deaths, R34 candidates).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew under fire doesn't step aside into a killing zone when the one behind can go round | the design note |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | fewer crews die shoved around in a lane mouth; a wheeled hull told to face a direction ends facing it and goes still | the wedged-death trace |
+| **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | squads on an attack-move don't hang ~30 s at each leg while a crew finishes turning to its arc | the sector-face step |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; the judging table complete | pairs, then planner's leftovers |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | squads arrive in their travel shape and deploy as one move, packed close without overlapping; five squads on the Locks route don't jam at a junction | ship the deploy step |
+
+**Machines (C35.1):** builder0 only (12 cores, 14 GB). **At most ONE full check and ONE judged series on builder0 at a time**;
+before any heavy launch read `free -g` and the Godot count by cwd (lesson 321). Every named run under `systemd-run --user
+--setenv=PATH="$PATH"` (remote_builds.md; lesson: setsid wrappers die). A judged series takes `FAR_JOBS=3` or the stage's own
+lower setting while a check runs. Light runs and the laptop for dev. If two streams want the box, the orchestrator orders them.
+
+**Ownership:** round 34's table stands (round 33's, with the round-34 grants) EXCEPT: **orders** owns `game/control/**` (except
+manoeuvre's additive fields in `screen_playtest.gd`), `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`,
+`mk/command.mk`, and in `game/tactics/element_plan.gd` the deploy-step and halt-lay functions (`DEPLOY_STEP`, `_deploy_*`, the
+halt seat lay for a plain AUTO move; merge note to brains); brains owns the rest of `game/tactics/**` and `game/ai/**` outside the
+carve-outs. **native** takes planner's paths this round (`game/ai/planner/**`, `native/src/planner_*`, `tests/planner/**`,
+`mk/planner.mk`, `tools/judge/**`). **Nobody:** `tests/baselines/**` except the orchestrator's adoption on main.
+
+**Contracts (round 35):**
+
+- **C35.1 Fresh start, builder0 only.** Round 34's `stream/*` branches are `round34/<stream>`; every worktree is created from this
+  docs commit. The machine rule above.
+- **C35.2 The deploy step ships ON (orders' FIRST item; his yes).** Base: `round34/brains` `07c029732` (WIP: default flipped,
+  tests updated, NO check run). It reaches CPU elements too (any plain move with no chosen formation or told facing), so
+  sim-baseline moves: attribute every moved map with `DEPLOY_STEP=off` on the same tree, then the orchestrator adopts. Because
+  the CPU gets it too, one REPORTED fights census on fresh fixed-arena seeds (deaths, kills, stuck, by side) beside the check:
+  a gross regression (> 2 se) is brought to the orchestrator before shipping. Then the O5 probe's 24 cells on the shipped hash.
+- **C35.3 The scout turn-in ships (his yes; the orchestrator).** `pair/c339-r34b` `3902ade09` (manoeuvre's turn-in + native's stop
+  hand-back, on main c46f66dc2) is checking on builder0 (log `~/overnight-manoeuvre/r34_pair2_check_3902ade09.log`, done marker
+  `r34_pair2_done`, attribution `godot-manoeuvre-pair2/build/sim-variants-turninoff.tsv`). The orchestrator merges it on green and
+  adopts the moved maps. Streams merge main after.
+- **C35.4 Tight packing on the deploy step (orders; round 34's O2 (B)).** With the deploy step on, a squad's final seats are its
+  halt shape on a heading fixed at ORDER time, so packing is exact: hull-to-hull ≥ ~9 m between crews of different squads (his
+  correction 1: wedges nest), his 28 m between two columns kept, each squad on its own side of the approach, back ranks no farther
+  back than their own squad (R34.12b), nothing on a building (ground_anchors). Bar filed before numbers: the probe's 24 cells and
+  the settle/arrive series; the click's 3-tick response kept (`test_control_scale`).
+- **C35.5 Crossing drives on the last leg (orders).** Planner's Locks 5-squad route: squads 3 and 5 jam for ~55 s at (5, 65) because
+  their DRIVES cross though their anchors' straight lines don't. Deal the last leg by navmesh paths (crossing test, swap with a
+  length guard). Probe before/after.
+- **C35.6 Wedged deaths (manoeuvre).** 499 of 5984 deaths (8.3 %) in T5's census: mid-weight hulls pushed at walking pace by their
+  own avoidance in lane mouths under fire; only 26 % slow enough for the stall rule. Trace first (which force pushes them; why
+  unstick doesn't see them), then a design note to the orchestrator, then a bar: deciding gain wedged deaths, guards as T6's
+  (open, stuck, jam, far loops, kills, hit rate).
+- **C35.7 CP-F attempt 5, the new design (manoeuvre's face side; brains' element side; seam agreed through the orchestrator
+  before code).** R34.18's two mechanisms: a face no plan fits gives up cleanly after N refused plans (manoeuvre); an element
+  steps to its next leg without waiting on a crew's `face from sector` (brains, tank_brain ~2960). Fresh bar, guards sized from M1's
+  A/A (judging.md).
+- **C35.8 Under fire, refuse only when the asker has another way (traffic).** T6/T6b (R34.17, R34.20): refusing every ask under
+  fire cut yielding deaths 53–69 % but moved them to stuck/blocked/parked one for one. Refuse only when the asker has a way round
+  (parkedroom's room/route test). Design note first; bar as T6b's (fresh fixed arenas, no twins). Native mirrors.
+- **C35.9 Planner's leftovers (native).** Delete FACE_KEEP_FAR (R34.5); the judging table's owed rows (round 31 brains, round 32,
+  the round 31–34 inventory lines); every series tool drops random-seed twins (R34.15, `seed_twins.py`).
+
+## Bars (round 35)
+
+_Filed here before any number. Empty at launch._
+
+## Rulings (round 35)
+
+_Empty at launch._
+
+## Round 34: six streams, two on Fable (prepared 2026-10-18, CLOSED 2026-10-19; briefs in `streams/archive/round34/`)
 
 **Goal: the problems that have failed three times get the strongest model and a better ruler.** Round 33 shipped 14
 items (HANDOFF *Round 33 closed*). Three things parked three times running: the parked crew that makes room
