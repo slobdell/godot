@@ -142,6 +142,19 @@ ticks ON > 0; out-of-reach cells' ENGAGE ticks reported. The exchange (dealt / t
 >= −1.645 se; kills reported. (4) `make check` on the ship tree with native's mirror: test_native_decide 0 mismatches;
 sim-baseline moves named and attributed with `SCOUT_FIGHT=off`. (5) The worst ON cell traced before its medians are read.
 **Ships ON if (1)(a)(b)(c), (3) and (4) pass.** Tuning: seeds 50–59 only. One machine for each series.
+**Amended (brains, 2026-10-18, approved by the orchestrator; before any judged number, tuning seeds 50–52 only).**
+Two findings in tuning. (i) The champion x18m runs with `matchups: false`, so decide's matchups table is empty and an
+advantage rule never fires (seeds 50–52, builder0: ENGAGE 0, arms identical 799 v 799). Fix `834562ab1`: decide
+computes `matchups_for(s)` only for a scout under fire with the switch ON. With `--scout-fight=off`, `scout_under_fire` is
+false and nothing extra is computed, so the OFF arm stays main. (ii) The stage's own cells (syn_scout, gang_ifv) can't
+exercise the stand side. Laptop probe, seed 50: advantage >= 1 on 207 of 5320 rule ticks, and none of those in reach.
+**So:** (1) runs two cell sets per seed. The STAGE set is manoeuvre's 24 cells. The DUEL set is
+`tests/test_ai_scout_duel_cells.gd`, which drives manoeuvre's `_orbit_stage` unchanged: subjects law_scout and
+gang_scout, circled by syn_lancer or law_tank (turreted orbiters a scout can beat by the brain's own estimate), at 15,
+24 and 35 m, post and free, turn-in OFF. That is 24 cells, all judged, PINNED now, and none added or dropped later.
+**(a) and (c) are judged on the DUEL set** ((c) now reads ENGAGE ticks ON > OFF, and "engaged" means ON exceeds OFF by
+>= 1 s a run). **(b) is judged on BOTH sets**, plus pooled shots ON >= OFF on the stage set. The stage set's turn-in ON is
+reported. Judged seeds are FRESH 73–79. Seed 50 and every cell already seen count as tuning only.
 
 ## Rulings (round 34)
 
