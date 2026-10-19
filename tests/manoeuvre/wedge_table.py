@@ -39,6 +39,14 @@ def main():
     print(f"fights {len(totals)}  deaths {n_deaths}  wedged deaths {causes['stuck:wedged']}"
           f" ({100 * causes['stuck:wedged'] / max(n_deaths, 1):.1f} %)")
     print("deaths by cause: " + share(causes))
+    ht = sum(t["totals"].get("halt_ticks", 0) for t in totals)
+    hc = sum(t["totals"].get("halt_creep_ticks", 0) for t in totals)
+    hh = sum(t["totals"].get("halt_creep_held_ticks", 0) for t in totals)
+    asks = sum(t.get("wheel_halt_asks", 0) for t in totals)
+    halts = sum(t.get("wheel_halts", 0) for t in totals)
+    on = sorted({str(t.get("wheel_halt_on")) for t in totals})
+    print(f"W1b: wheeled pace-0 drive ticks {ht}, moving >= 0.5 m/s (creep) {hc} ({100 * hc / max(ht, 1):.0f} %), of those held {hh};"
+          f" wheel_halt on {','.join(on)}: asks {asks}, halts {halts}")
     if not deaths:
         return
     at_death, last3, units, options, orders = Counter(), Counter(), Counter(), Counter(), Counter()

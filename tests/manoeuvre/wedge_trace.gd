@@ -25,13 +25,15 @@ const TURN_DEG := 15.0
 const SHOVE_MPS := 0.5
 const NEAR_M := 14.0
 const STILL_MPS := 0.3
+const HALT_CREEP_MPS := 0.5
 
 var _rows := {}  # crew -> ring of per-tick samples (TIMELINE_S)
 var _episodes := {}  # crew -> the open episode
 var _moving_at := {}
 var _hits_at := {}
 var _last_pos := {}
-var _totals := {"episodes": 0, "episode_ticks": 0, "deaths": 0, "wedged_deaths": 0, "by_force": {}}
+var _totals := {"episodes": 0, "episode_ticks": 0, "deaths": 0, "wedged_deaths": 0, "by_force": {},
+		"halt_ticks": 0, "halt_creep_ticks": 0, "halt_creep_held_ticks": 0}
 
 
 func _initialize() -> void:
@@ -87,7 +89,8 @@ func _run() -> void:
 	for crew: String in _episodes.keys():
 		_close(crew, false)
 	print("WEDGE_TRACE " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
-			"totals": _totals, "wedged_units": Movement.wedged_units}))
+			"totals": _totals, "wedged_units": Movement.wedged_units,
+			"wheel_halt_on": Manoeuvre.wheel_halt_on(), "wheel_halt_asks": Manoeuvre.wheel_halt_asks, "wheel_halts": Manoeuvre.wheel_halts}))
 	quit(0)
 
 
@@ -190,6 +193,14 @@ func _observe(game_match: Match) -> void:
 				"hits_2s": _hits_since(crew, tick, 2.0), "hits_10s": _hits_since(crew, tick, 10.0), "cause": cause,
 				"since_hit_s": snappedf(minf(tank.ticks_since_hit / float(SimClock.TICK_RATE), 999.0), 0.1), "option": option, "order": order_type,
 				"wedge_moved_m": snappedf(mover.wedge_moved_m, 0.01), "held": held}
+		# W1b's measure, from MOTION (so the rule cannot zero it by construction): a wheeled drive at pace 0, and of those
+		# the ticks the hull still moved >= HALT_CREEP_MPS (the plant's creep shuffling it).
+		if mover.wheel_radius() > 0.0 and driver in ["route", "direct"] and mover.pace_now <= 0.0:
+			_totals["halt_ticks"] = int(_totals["halt_ticks"]) + 1
+			if flat_moved.length() >= HALT_CREEP_MPS:
+				_totals["halt_creep_ticks"] = int(_totals["halt_creep_ticks"]) + 1
+				if held:
+					_totals["halt_creep_held_ticks"] = int(_totals["halt_creep_held_ticks"]) + 1
 		var ring: Array = _rows.get_or_add(crew, [])
 		ring.append(sample)
 		while ring.size() > int(TIMELINE_S * SimClock.TICK_RATE):

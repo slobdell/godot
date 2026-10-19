@@ -55,8 +55,8 @@ avoidance slow both meet it, and T5's precedence (`yielding`, `blocked`, then `w
 
 ## The bar W1b would file (before any number)
 
-Fresh fixed arenas (locks, terminus, random) × a fresh block of seeds (no twins, `seed_twins.py`), native path, the pair = stream +
-native's mirror; base = `--nav-off=wheelhalt` (the switch). n = 72 fights an arm. **Deciding:** at-spot creep ticks of held wheeled
-crews (a counter) → ~0; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open deaths, stuck deaths, jam deaths, far
+Fixed arenas only, **locks, terminus, sumps** (no random arena: R34.15, random arenas deal twins; the orchestrator's change, R35.7) × a fresh block of seeds (no twins, `seed_twins.py`), native path, the pair = stream +
+native's mirror; base = `--nav-off=wheelhalt` (the switch). n = 72 fights an arm. **First:** the creep counter (the probe's `halt_creep_ticks`, wheeled pace-0 drive ticks still moving ≥ 0.5 m/s, read from
+motion) is NON-ZERO in the base arm. **Deciding:** that counter → ~0 in the ON arm; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open deaths, stuck deaths, jam deaths, far
 loops, kills and hit rate per team, each within 1.645 se paired; all deaths reported. The scout's fights (C33.9 shipped) are covered by
 kills/hit rate.
