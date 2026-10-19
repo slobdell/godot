@@ -155,6 +155,18 @@ gang_scout, circled by syn_lancer or law_tank (turreted orbiters a scout can bea
 **(a) and (c) are judged on the DUEL set** ((c) now reads ENGAGE ticks ON > OFF, and "engaged" means ON exceeds OFF by
 >= 1 s a run). **(b) is judged on BOTH sets**, plus pooled shots ON >= OFF on the stage set. The stage set's turn-in ON is
 reported. Judged seeds are FRESH 73–79. Seed 50 and every cell already seen count as tuning only.
+**Verdict (brains, 2026-10-18): PASS, ships ON** (rows in `references/round34/brains/scout2_*`). (1) builder2,
+lab/brains-scout2 `5abdcd32e`, seeds 73–79, n 7 a cell. DUEL set: (a) pooled shots 4299 v 3490 (×1.23), engaged cells
+(8) 1950 v 1139 (×1.71, bar 1.25) PASS; (b) no cell worse by > 20 % PASS, pooled damage median 825 v 842; (c) ENGAGE
+ON−OFF 14452 PASS, out-of-reach cells +32 ticks. STAGE set: shots 1779 v 1778, (b) PASS, damage median 182 v 182 (the
+outgunned scout keeps its distance, as today). Turn-in ON reported: shots 5432 v 5434, (b) PASS. (5) Worst ON cell
+(gang_scout v syn_lancer 15 m, post: damage 825 v 759) traced on seed 76: held at its post, the fixed gun k-turns
+("backing up to keep its gun on it"), in-arc 0 %, 0 shots in both arms. That is the lead's C33.9 shuffle, manoeuvre's
+C34.10. (2) The pure tests and the decide test under the champion pass. (3) builder2, stream/brains `02b0c1267`,
+scout-census seeds 29–36, n 8, native ON: deaths 134 v 140, mean diff −0.75 (limit +1.75) PASS; team enemy-seen
+18403 v 18413 s, mean diff −1.2 (floor −93.2) PASS; kills 12 v 12. (4) builder2 `0b8fbd3f6` check: 2809/0, every native
+twin 0 mismatches. sim-baseline: docks moved (50f15553 → 4074d105), attributed by `SCOUT_FIGHT=off` (13 unmoved,
+builder0), ruled R34.3.
 
 ## Rulings (round 34)
 

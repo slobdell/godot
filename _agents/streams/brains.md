@@ -68,6 +68,19 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### REPORT (2026-10-18; every number builder2 unless said)
+- **B1 scout try 2: PASS, merge here: `0b8fbd3f6`** (its check: builder2 `make check exited 2`, 2809 passed / 0 failed,
+  26 of 27 targets; the one red is sim-baseline's docks move, ruled R34.3 and attributed by `SCOUT_FIGHT=off`, which
+  left 13 unmoved on builder0). Later commits are docs and a Python table only. **What he'd notice:** a scout under
+  fire that wins the duel by the brain's own estimate stands and trades. A law scout circled at 15 m by a syn_lancer
+  fires 1032 shots against 175 over 7 runs. One that is outgunned (syn_scout, gang_ifv) keeps its distance as today,
+  shots unchanged. In fights (scout-census, n 8, native) scout deaths are 134 v 140 and team scouting is unchanged.
+  **Known cost:** a FIXED-gun scout held at a post shuffles when it stands (the lead's C33.9 shuffle). In its worst cell
+  it takes about 1 more hit in 25 for no shots. Manoeuvre's turn-in (C34.10) is the fix for that.
+  Rows: `references/round34/brains/scout2_*`. The verdict is in workstreams *Bars (round 34)*.
+- **B3 DONE**, inside `0b8fbd3f6`.
+- **B2 brains side DONE** (`984896b8f`, `e7275ee79`, inside `0b8fbd3f6`). Inert until manoeuvre's function lands.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
