@@ -176,7 +176,9 @@ _Filed here before any number._
   `references/round35/traffic/t9_trace_design.md`. **Arms (one tree):** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
   both; base = `--nav-off=stallintent --traffic-off=yieldfit2`. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
   traffic's T9 + native's mirrors; gate = the pair's `make native check` on builder0 plus switch-OFF sim-baseline inertness. Seeds:
-  M6's FRESH blocks (hull-rest 901–916 drawn; fights + wedge probe on fixed locks/terminus/sumps x 940–963). **Counter first:**
+  M6's FRESH blocks (hull-rest **901–932** drawn, i.e. 128 pairs; fights + wedge probe on fixed locks/terminus/sumps x 940–963).
+  **n raised 2026-10-19 ~12:30, before any judged number, the line itself unchanged:** the joint dev read (tuning 460–467, 32 an arm)
+  read movers 8 v 14; at that rate (d)'s line (-1.645 x 1.17 x sqrt(pairs)) needs ~105 pairs, so 64 would miss on n alone. **Counter first:**
   stall_intent_ticks, H1 escapes, asks AND `yields_unfinished` > 0 in the candidate. **Deciding:** M6's (d) and (e) as filed
   (attack-move movers by real_mps; never-settled), plus crews ending > 25 m off goal with a live move, new <= base. **Guards:**
   M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
