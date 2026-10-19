@@ -571,11 +571,13 @@ static func wheel_hold_on() -> bool:
 ## Round 33 (C33.9, filed on main after R33.23: "it's literally what the lead saw"): at `stop`, gunnery's R2 swing turns
 ## a FIXED gun on wheels onto its target with no throttle, which the plant drives as the creep's forward/back legs (the
 ## shuffle, alive under every HOLD between SPOTs: its leftover reverse spilled into the next face, builder2 9456b4f3).
-## Under the turn-in switch that swing goes through the turn-in, or the hull holds still; never the creep.
+## Under the turn-in switch a swing at a MOVING enemy (Manoeuvre.facing_mover, R33.38) goes through the turn-in, or the hull
+## holds still; never the creep. Any other swing keeps gunnery's turn.
 func _stop_turn_in(cmd: TankCommand, delta: float) -> void:
 	if String(move_order.get("type", "")) != "stop" or not Manoeuvre.turn_in_on() or tank.mount != "fixed" \
-			or movement.wheel_radius() <= 0.0 or cmd.throttle != 0.0 or cmd.turn == 0.0:
-		return
+			or movement.wheel_radius() <= 0.0 or cmd.throttle != 0.0 or cmd.turn == 0.0 \
+			or not Manoeuvre.facing_mover(self, cmd.aim_point):
+		return  # R33.38: a swing at anything but a moving enemy keeps gunnery's turn, as before C33.9
 	if Manoeuvre.turn_in(self, cmd, cmd.aim_point, delta):
 		Manoeuvre.turn_in_stops += 1
 		return

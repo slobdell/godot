@@ -556,11 +556,32 @@ static func turn_in_on() -> bool:
 	return TURN_IN_DEFAULT != Movement.switched_off("turnin")
 
 
+## R33.38 (the ship check: a plain face round the compass rolled a scout 24.5 m off its spot, and a stop's swing at a
+## parked target never came round): the turn-in is for the case it was judged on, a spot ON A MOVING ENEMY. A live hostile
+## hull within TURN_IN_CONTACT_M of the spot (a contact's last position, or gunnery's lead point) moving faster than
+## TURN_IN_MOVER_MPS, and a crew with a BRAIN (TankBrain: every judged cell was one; a scripted OrderController with no
+## brain, scenario_suppression's tracking scout at `stop`, keeps gunnery's swing and its held fire). Any other face or
+## swing keeps the face planner and the creep, as before C33.9.
+const TURN_IN_CONTACT_M := 10.0
+const TURN_IN_MOVER_MPS := 1.5
+
+
+static func facing_mover(ctl: OrderController, spot: Vector3) -> bool:
+	if ctl.tanks_root == null or not ctl is TankBrain:
+		return false
+	for enemy in Perception.enemies_of(ctl.tank, ctl.tanks_root):
+		var v := enemy.real_velocity
+		if Vector2(enemy.global_position.x - spot.x, enemy.global_position.z - spot.z).length() <= TURN_IN_CONTACT_M \
+				and Vector2(v.x, v.z).length() > TURN_IN_MOVER_MPS:
+			return true
+	return false
+
+
 ## Drive this tick's `face` at `spot` as a turn-in; false leaves it to the face planner. The bearing rate is read from
 ## the spot's own motion across ticks (a face order carries only the spot).
 static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	var tank := ctl.tank
-	if not turn_in_on() or tank.mount != "fixed" or ctl.movement.wheel_radius() <= 0.0:
+	if not turn_in_on() or tank.mount != "fixed" or ctl.movement.wheel_radius() <= 0.0 or not facing_mover(ctl, spot):
 		return false
 	var here := tank.global_position
 	var to := Vector3(spot.x - here.x, 0.0, spot.z - here.z)
