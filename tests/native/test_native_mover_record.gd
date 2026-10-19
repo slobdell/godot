@@ -24,7 +24,7 @@ static func _fields(object: Object, owner: int) -> Array:
 
 
 func test_the_native_gather_reads_what_the_gdscript_reads() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the mover record is not exercised in this run")
 		return
 	var native: Object = NativeBridge.impl

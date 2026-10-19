@@ -1,0 +1,16 @@
+diff --git a/tests/traffic/far_census.gd b/tests/traffic/far_census.gd
+index bf82db3b7..99cdeb18f 100644
+--- a/tests/traffic/far_census.gd
++++ b/tests/traffic/far_census.gd
+@@ -127,7 +127,10 @@ static func _trace_row(game_match: Match, name: String) -> Dictionary:
+ 		var slot: Variant = brain.element.get("slot")
+ 		row.merge({"verb": String(brain.order.get("verb", "")), "option": String(brain.choice.get("option", "")),
+ 				"move": String(brain.move_order.get("type", "")),
+-				"slot": _v(slot) if slot is Vector3 else null})
++				"slot": _v(slot) if slot is Vector3 else null,
++				"weapon": String(brain.weapon_order.get("type", "")), "target": brain.engaged_target,
++				"task": String((brain.element.get("task", {}) as Dictionary).get("verb", "")) if brain.element.get("task") is Dictionary else "",
++				"fire_post": mover.on_fire_post() if mover != null else null})
+ 	return row
+ 
+ 

@@ -1,0 +1,11 @@
+far_ab: 72 paired fights; left out (no FAR_CENSUS) none; in one folder only none
+L1 parked far loops: base 22, arm 25 over 72 paired fights; drop -3, paired se of the sum 20.26 (k 1.645: drop - k*se = -36.33); fights differing 10
+L1 FAIL (arm 25 <= 50% of base 22: False; distinguishable: False)
+L2 all far loops: base 36, arm 44 over 72 paired fights; drop -8, paired se of the sum 21.76 (k 1.645: drop - k*se = -43.80); fights differing 20
+L2 PASS (arm 44 <= base 36 + k*se 35.80)
+L6 FAIL: room give-ways started 3093, read at 30 s 2755 (alive 2175), back within 3 m 212 (10 %) (sorted list cut; see x3_series_verdict.md)
+L3 kills: base 1031, arm 1013 over 24 paired fights; drop 18, paired se of the sum 21.73 (k 1.645: drop - k*se = -17.75); fights differing 23
+L3 deaths: base 1041, arm 1026 over 24 paired fights; drop 15, paired se of the sum 20.93 (k 1.645: drop - k*se = -19.42); fights differing 22
+L3 hit rate: base 0.704, arm 0.694 (mean of fights), paired se of the mean 0.0155
+L3 PASS (each within base +/- k*se)
+R give-way count a fight (median / worst): OFF all kinds 158 / 330; ON all kinds 176 / 285, of which room 42 / 111; busiest ON fight locks-706.log (OFF 207, ON 285, room 34)

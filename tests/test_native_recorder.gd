@@ -49,7 +49,7 @@ static func _task(rng: RandomNumberGenerator) -> Dictionary:
 
 
 func test_the_recorder_writes_the_same_bytes_natively() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the recorder equality is not exercised in this run")
 		return
 	assert_true(NativeRecorder.configure(), "the native recorder takes the live constants")

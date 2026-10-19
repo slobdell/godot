@@ -1,0 +1,25 @@
+>> remote: make native traffic-far-census FAR_RANGE=724-771 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v2n-base FAR_FLAGS=--traffic-off=parkedroom on slobdell@builder2
+>> remote: make native traffic-far-census FAR_RANGE=724-771 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v2n-base FAR_FLAGS=--traffic-off=parkedroom exited 0 (light lane, build/light/build/ copied back)
+base: 144 logs, 0 missing
+>> remote: make native traffic-far-census FAR_RANGE=724-771 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v2n-arm FAR_FLAGS= on slobdell@builder2
+>> remote: make native traffic-far-census FAR_RANGE=724-771 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v2n-arm FAR_FLAGS= exited 0 (light lane, build/light/build/ copied back)
+arm: 144 logs, 0 missing
+far_ab: 144 paired fights; left out (no FAR_CENSUS) none; in one folder only none
+L1 parked far loops: base 51, arm 39 over 144 paired fights; drop 12, paired se of the sum 21.73 (k 1.645: drop - k*se = -23.75); fights differing 26
+L1 FAIL (arm 39 <= 50% of base 51: False; distinguishable: False)
+L2 all far loops: base 83, arm 95 over 144 paired fights; drop -12, paired se of the sum 31.04 (k 1.645: drop - k*se = -63.07); fights differing 41
+L2 PASS (arm 95 <= base 83 + k*se 51.07)
+v2 L1a hold-post far loops: base 39, arm 1 over 144 paired fights; drop 38, paired se of the sum 14.54 (k 1.645: drop - k*se = 14.08); fights differing 13
+v2 L1a PASS (arm 1 <= 50% of base 39)
+v2 L1b PASS (all parked far loops: arm 39 <= base 51 + k*se 35.75)
+v2 fire-post far loops (REPORTED apart): base 12, arm 37 over 144 paired fights; drop -25, paired se of the sum 15.57 (k 1.645: drop - k*se = -50.61); fights differing 13
+v2 L6 FAIL: unchanged-order room give-ways alive at 30 s 395, within 3 m 248 (63 %)
+v2 L6 REPORTED: all alive 1353, within 3 m 303 (22 %); with a new order 958; without crews giving way again at the read 192 of 264 (73 %); ways back begun 1167
+v2 R ask_handed_back a fight: median 21, worst 162, total 4866 (n 144; -1 = no native count)
+L3 kills: base 1964, arm 1957 over 48 paired fights; drop 7, paired se of the sum 45.87 (k 1.645: drop - k*se = -68.45); fights differing 39
+L3 deaths: base 1979, arm 1971 over 48 paired fights; drop 8, paired se of the sum 45.56 (k 1.645: drop - k*se = -66.95); fights differing 38
+L3 hit rate: base 0.714, arm 0.731 (mean of fights), paired se of the mean 0.0086
+L3 FAIL (each within base +/- k*se)
+R give-way count a fight (median / worst): OFF all kinds 157 / 478; ON all kinds 160 / 514, of which room 12 / 68; busiest ON fight terminus-762.log (OFF 478, ON 514, room 68)
+
+[exited with code 0]

@@ -1,0 +1,42 @@
+s1 ghostoff REMATCH {"Sirens_arrived_s":16.1,"alone_s":35.0,"arm":"off","arrived_s":16.1,"cleared":"","run":0}
+s1 ghostoff REMATCH {"Sirens_arrived_s":16.1,"alone_s":35.0,"arm":"off","arrived_s":16.1,"cleared":"","run":1}
+s1 ghostoff REMATCH {"Sirens_arrived_s":16.1,"alone_s":35.0,"arm":"off","arrived_s":16.1,"cleared":"","run":2}
+s1 ghoston REMATCH {"Sirens_arrived_s":17.2,"alone_s":37.0,"arm":"off","arrived_s":17.2,"cleared":"","run":0}
+s1 ghoston REMATCH_DIFF {"field":"pos","now":"[(4.895523, 0.0, 63.98169), (-2.281036, 0.0, -1.999283), (-2.28104, 0.0, -1.999316)]","run":1,"run0":"[(4.895452, 0.0, 63.98177), (-2.283144, 0.0, -1.996973), (-2.283168, 0.0, -1.996945)]","tick":49,"unit":"Green_S
+s1 ghoston REMATCH {"Sirens_arrived_s":14.8,"alone_s":28.5,"arm":"off","arrived_s":14.8,"cleared":"","run":1}
+s1 ghoston REMATCH {"Sirens_arrived_s":17.2,"alone_s":37.0,"arm":"off","arrived_s":17.2,"cleared":"","run":2}
+s2 ghostoff REMATCH {"Sirens_arrived_s":17.7,"alone_s":12.0,"arm":"off","arrived_s":17.7,"cleared":"","run":0}
+s2 ghostoff REMATCH {"Sirens_arrived_s":17.7,"alone_s":12.0,"arm":"off","arrived_s":17.7,"cleared":"","run":1}
+s2 ghostoff REMATCH {"Sirens_arrived_s":17.7,"alone_s":12.0,"arm":"off","arrived_s":17.7,"cleared":"","run":2}
+s2 ghoston REMATCH {"Sirens_arrived_s":18.8,"alone_s":14.5,"arm":"off","arrived_s":18.8,"cleared":"","run":0}
+s2 ghoston REMATCH_DIFF {"field":"pos","now":"[(2.973518, 0.0, 66.84664), (0.937979, 0.0, 0.307617), (-3.387457, 0.0, -1.112903)]","run":1,"run0":"[(2.97352, 0.0, 66.84664), (0.938022, 0.0, 0.307617), (-3.387457, 0.0, -1.112903)]","tick":51,"unit":"Green_Siren
+s2 ghoston REMATCH {"Sirens_arrived_s":18.8,"alone_s":15.0,"arm":"off","arrived_s":18.8,"cleared":"","run":1}
+s2 ghoston REMATCH {"Sirens_arrived_s":18.8,"alone_s":14.5,"arm":"off","arrived_s":18.8,"cleared":"","run":2}
+s3 ghostoff REMATCH {"Sirens_arrived_s":18.2,"alone_s":39.0,"arm":"off","arrived_s":18.2,"cleared":"","run":0}
+s3 ghostoff REMATCH_DIFF {"field":"pos","now":"[(-1.565845, 0.0, 55.70131), (-2.150556, 0.0, -2.040475), (-2.150564, 0.0, -2.040466)]","run":1,"run0":"[(-1.548925, 0.0, 55.71737), (-1.64296, 0.0, -1.558452), (-1.642965, 0.0, -1.558446)]","tick":52,"unit":"Gree
+s3 ghostoff REMATCH {"Sirens_arrived_s":17.2,"alone_s":37.0,"arm":"off","arrived_s":17.2,"cleared":"","run":1}
+s3 ghostoff REMATCH {"Sirens_arrived_s":18.2,"alone_s":39.0,"arm":"off","arrived_s":18.2,"cleared":"","run":2}
+s3 ghoston REMATCH {"Sirens_arrived_s":19.4,"alone_s":40.0,"arm":"off","arrived_s":19.4,"cleared":"","run":0}
+s3 ghoston REMATCH_DIFF {"field":"pos","now":"[(-1.565845, 0.0, 55.70131), (-2.150556, 0.0, -2.040475), (-2.150564, 0.0, -2.040466)]","run":1,"run0":"[(-1.548925, 0.0, 55.71737), (-1.64296, 0.0, -1.558452), (-1.642965, 0.0, -1.558446)]","tick":52,"unit":"Green
+s3 ghoston REMATCH {"Sirens_arrived_s":17.6,"alone_s":37.5,"arm":"off","arrived_s":17.6,"cleared":"","run":1}
+s3 ghoston REMATCH {"Sirens_arrived_s":19.4,"alone_s":40.0,"arm":"off","arrived_s":19.4,"cleared":"","run":2}
+s4 ghostoff REMATCH {"Sirens_arrived_s":17.9,"alone_s":34.5,"arm":"off","arrived_s":17.9,"cleared":"","run":0}
+s4 ghostoff REMATCH {"Sirens_arrived_s":17.9,"alone_s":34.5,"arm":"off","arrived_s":17.9,"cleared":"","run":1}
+s4 ghostoff REMATCH {"Sirens_arrived_s":17.9,"alone_s":34.5,"arm":"off","arrived_s":17.9,"cleared":"","run":2}
+s4 ghoston REMATCH {"Sirens_arrived_s":23.1,"alone_s":51.0,"arm":"off","arrived_s":23.1,"cleared":"","run":0}
+s4 ghoston REMATCH {"Sirens_arrived_s":23.1,"alone_s":51.0,"arm":"off","arrived_s":23.1,"cleared":"","run":1}
+s4 ghoston REMATCH {"Sirens_arrived_s":23.1,"alone_s":51.0,"arm":"off","arrived_s":23.1,"cleared":"","run":2}
+s5 ghostoff REMATCH {"Sirens_arrived_s":-1.0,"alone_s":56.5,"arm":"off","arrived_s":-1.0,"cleared":"","run":0}
+s5 ghostoff REMATCH_DIFF {"field":"pos","now":"[(17.34274, 0.0, 64.7574), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]","run":1,"run0":"[(17.34217, 0.0, 64.74333), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]","tick":1,"unit":"Green_Sirens_4"}
+s5 ghostoff REMATCH {"Sirens_arrived_s":23.3,"alone_s":19.5,"arm":"off","arrived_s":23.3,"cleared":"","run":1}
+s5 ghostoff REMATCH {"Sirens_arrived_s":23.3,"alone_s":19.5,"arm":"off","arrived_s":23.3,"cleared":"","run":2}
+s5 ghoston REMATCH {"Sirens_arrived_s":17.4,"alone_s":14.5,"arm":"off","arrived_s":17.4,"cleared":"","run":0}
+s5 ghoston REMATCH_DIFF {"field":"pos","now":"[(17.34274, 0.0, 64.7574), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]","run":1,"run0":"[(17.34217, 0.0, 64.74333), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]","tick":1,"unit":"Green_Sirens_4"}
+s5 ghoston REMATCH {"Sirens_arrived_s":-1.0,"alone_s":57.0,"arm":"off","arrived_s":-1.0,"cleared":"","run":1}
+s5 ghoston REMATCH {"Sirens_arrived_s":17.0,"alone_s":14.5,"arm":"off","arrived_s":17.0,"cleared":"","run":2}
+s6 ghostoff REMATCH {"Sirens_arrived_s":18.3,"alone_s":15.5,"arm":"off","arrived_s":18.3,"cleared":"","run":0}
+s6 ghostoff REMATCH {"Sirens_arrived_s":18.3,"alone_s":15.5,"arm":"off","arrived_s":18.3,"cleared":"","run":1}
+s6 ghostoff REMATCH {"Sirens_arrived_s":18.3,"alone_s":15.5,"arm":"off","arrived_s":18.3,"cleared":"","run":2}
+s6 ghoston REMATCH {"Sirens_arrived_s":18.3,"alone_s":16.0,"arm":"off","arrived_s":18.3,"cleared":"","run":0}
+s6 ghoston REMATCH {"Sirens_arrived_s":18.3,"alone_s":16.0,"arm":"off","arrived_s":18.3,"cleared":"","run":1}
+s6 ghoston REMATCH {"Sirens_arrived_s":18.3,"alone_s":16.0,"arm":"off","arrived_s":18.3,"cleared":"","run":2}

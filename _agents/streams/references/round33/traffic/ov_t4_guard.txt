@@ -1,0 +1,22 @@
+>> traffic-t4-guard on balsa-worker-gcp.us-west1-a.c.leddrones.internal | commit aacdfb4b6 | seeds '7 8 9 10 11 12 13 14 15 16 17 18' | load 18.69 28.12 32.06
+| seed | ghost OFF: body-OFF / body-ON alone_s, Sirens | ghost ON: body-OFF / body-ON alone_s, Sirens | ON - OFF (body ON) |
+| 7 | 13.0 / 13.0, own | 19.5 / 19.5, own | +6.5 |
+| 8 | 51.0 / 10.5, body | 38.5 / 14.5, body | +4.0 |
+| 9 | 30.0 / 13.5, body | 27.0 / 17.0, body | +3.5 |
+| 10 | 16.5 / 16.5, own | 17.5 / 17.5, own | +1.0 |
+| 11 | 58.5 / 13.5, body | 53.5 / 12.0, body | -1.5 |
+| 12 | 39.0 / 14.5, body | 50.5 / 14.0, body | -0.5 |
+| 13 | 16.5 / 16.5, own | 15.5 / 15.5, own | -1.0 |
+| 14 | 51.0 / 6.5, body | 50.5 / 10.5, body | +4.0 |
+| 15 | 41.0 / 15.0, body | 55.0 / 17.5, body | +2.5 |
+| 16 | 57.5 / 57.5, own | 16.5 / 16.5, own | -41.0 |
+| 17 | 39.5 / 8.5, body | 38.5 / 7.0, body | -1.5 |
+| 18 | 21.0 / 21.0, own | 15.5 / 15.5, own | -5.5 |
+G1 median body-ON alone_s: ghost OFF 14.0 (n 12), ON 15.5 (n 12), line OFF + 3.0 = 17.0: PASS
+G2 seeds ghost ON > OFF + 3.0 s: 4 of 12 [7, 8, 9, 14] (line <= 2): FAIL
+G3 Sirens choose body: ghost OFF 7 of 12, ON 7 of 12: PASS
+r1 a fresh process replays exactly: ghost ON 36 of 36 pairs identical (PASS); ghost OFF 36 of 36 (reported)
+r2 same-process rematch branched, ghost OFF: 12 of 12 (REPORTED) ['s7 13.0->13.0', 's8 51.0->39.0', 's9 30.0->30.0', 's10 16.5->16.5', 's11 58.5->58.5', 's12 39.0->44.5', 's13 16.5->21.5', 's14 51.0->51.0', 's15 41.0->41.0', 's16 57.5->17.5', 's17 39.5->39.5', 's18 21.0->21.0']
+r2 same-process rematch branched, ghost ON: 12 of 12 (REPORTED) ['s7 19.5->19.5', 's8 38.5->55.5', 's9 27.0->26.5', 's10 17.5->16.0', 's11 53.5->41.0', 's12 50.5->50.5', 's13 15.5->15.5', 's14 50.5->50.5', 's15 55.0->55.0', 's16 16.5->18.0', 's17 38.5->38.5', 's18 15.5->15.5']
+T4 GUARD FAIL
+>> remote: make native traffic-t4-guard exited 0 (build/ copied back)

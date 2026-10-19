@@ -78,7 +78,7 @@ static func _command(cmd: TankCommand) -> Array:
 
 ## Compares the crews at `part` mod `parts` in the frame's mover list; the others play as the game does, uncompared.
 func _execute_case(part: int, parts: int) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the execute equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world

@@ -18,7 +18,7 @@ func _random_features(rng: RandomNumberGenerator, n: int, spread: float) -> Arra
 
 
 func test_line_of_sight_is_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the cover equality is not exercised in this run")
 		return
 	var rng := RandomNumberGenerator.new()

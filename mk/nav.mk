@@ -318,7 +318,7 @@ GATE_ARGS ?= --brains-off=native --gate-trace
 gate-test: import ## Round 30 (B5c-v4): the facing/gate tests with GATE_ARGS (default the GDScript drive + --gate-trace) -> build/gate-test.log
 	@mkdir -p $(BUILD_DIR)
 	@echo ">> gate-test on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | args '$(GATE_ARGS)'"
-	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(GATE_FILTER)' $(GATE_ARGS) \
+	@$(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- '--filter=$(GATE_FILTER)' $(GATE_ARGS) \
 		> $(BUILD_DIR)/gate-test.log 2>&1; status=$$?; \
 	grep -E "  (PASS|FAIL)  |passed, .* failed|SCRIPT ERROR" $(BUILD_DIR)/gate-test.log | head -60; exit $$status
 

@@ -1,0 +1,35 @@
+arms new_drawn base_drawn runs 384 384 missing: {'new_drawn': [], 'base_drawn': []}
+(a) wheels/turret per task: median, share <= 15
+   faced_ambush             n 373 median   2.4  <=15  97.1 %
+   faced_attack_move        n 373 median   4.0  <=15  80.2 %
+   faced_move               n 373 median   2.7  <=15  93.8 %
+   faced_right              n 373 median   2.6  <=15  96.0 %
+   faced_screen             n 373 median  20.8  <=15  40.2 %
+   faced_support_by_fire    n 373 median   4.6  <=15  90.6 %
+(d) crews moving at the judge, summed over paired runs: new base diff se(sum) limit(1.645se) verdict
+   faced_ambush             wt  n 21    1   5    -4  se   1.8  lim  +3.0  PASS
+   faced_ambush             all n 21    2   5    -3  se   2.2  lim  +3.6  PASS
+   faced_attack_move        wt  n 21   17  11    +6  se   3.9  lim  +6.4  PASS
+   faced_attack_move        all n 21   24  17    +7  se   3.9  lim  +6.5  FAIL
+   faced_move               wt  n 21    4   2    +2  se   2.5  lim  +4.1  PASS
+   faced_move               all n 21   10   7    +3  se   2.6  lim  +4.3  PASS
+   faced_right              wt  n 21    3   4    -1  se   2.7  lim  +4.4  PASS
+   faced_right              all n 21    9   9    +0  se   2.9  lim  +4.8  PASS
+   faced_screen             wt  n 21    3   3    +0  se   2.5  lim  +4.1  PASS
+   faced_screen             all n 21    9  11    -2  se   4.1  lim  +6.7  PASS
+   faced_support_by_fire    wt  n 21    6   2    +4  se   3.4  lim  +5.7  PASS
+   faced_support_by_fire    all n 21    8   4    +4  se   3.4  lim  +5.7  PASS
+(e) never settled (-1 or >= 75) per task, runs holding wheels/turret: new base diff se lim
+   faced_ambush             n  8   1  4   -3  se  1.5 lim +2.4 PASS | settle median new 53.8 base 65.5 paired-diff median -4.0
+   faced_attack_move        n  8   5  5   +0  se  1.5 lim +2.5 PASS | settle median new 75.0 base 75.0 paired-diff median +0.0
+   faced_move               n  8   3  3   +0  se  1.5 lim +2.5 PASS | settle median new 66.5 base 50.0 paired-diff median +8.8
+   faced_right              n  8   2  5   -3  se  2.1 lim +3.5 PASS | settle median new 55.8 base 75.0 paired-diff median -12.5
+   faced_screen             n  8   4  4   +0  se  2.1 lim +3.5 PASS | settle median new 71.5 base 74.8 paired-diff median +0.0
+   faced_support_by_fire    n  8   5  2   +3  se  2.1 lim +3.5 PASS | settle median new 75.0 base 49.0 paired-diff median +11.0
+(d) by faction, all classes: new/base
+   faced_ambush             cond 1/0  gang 1/4  law 0/1  synd 0/0
+   faced_attack_move        cond 7/6  gang 15/9  law 2/2  synd 0/0
+   faced_move               cond 6/5  gang 3/1  law 1/1  synd 0/0
+   faced_right              cond 6/5  gang 2/3  law 1/1  synd 0/0
+   faced_screen             cond 5/7  gang 3/1  law 1/3  synd 0/0
+   faced_support_by_fire    cond 2/2  gang 5/2  law 1/0  synd 0/0

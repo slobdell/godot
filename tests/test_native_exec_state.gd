@@ -77,7 +77,7 @@ static func _movers(game_match: Match) -> Array[Movement]:
 
 
 func test_the_table_is_the_scripts_members() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the execute state is not exercised in this run")
 		return
 	var ctl := OrderController.new()
@@ -100,7 +100,7 @@ func test_the_table_is_the_scripts_members() -> void:
 
 
 func test_the_pull_reads_what_the_gdscript_reads() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	var native: Object = NativeBridge.impl
 	native.exec_clear()
@@ -137,7 +137,7 @@ func test_the_pull_reads_what_the_gdscript_reads() -> void:
 
 
 func test_a_push_after_a_scramble_restores_every_member() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	var native: Object = NativeBridge.impl
 	native.exec_clear()
@@ -182,7 +182,7 @@ func test_a_push_after_a_scramble_restores_every_member() -> void:
 
 
 func test_a_changed_only_push_writes_exactly_the_changed_fields() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	var native: Object = NativeBridge.impl
 	native.exec_clear()

@@ -1,0 +1,15 @@
+# Round 33 traffic stretch: the crate-roof islands full check on traffic-islands b71b8097 (tree = parkedroom's base aff64e2b + arena.tscn region_min_size = 8.0 + the test and probe; parkedroom DEFAULT_OFF there), builder0 main lane, make remote T=check, 2026-10-17
+# merged to main as islands-on-main 0bf0a721 (main f18e021f); main's next check covers it
+SHARD-ENGINE 0/5: 0 errors, 0 warnings
+SHARD 0/5: 98 files, 543 passed, 0 failed
+SHARD-ENGINE 1/5: 0 errors, 0 warnings
+SHARD 1/5: 98 files, 621 passed, 0 failed
+SHARD-ENGINE 2/5: 0 errors, 0 warnings
+SHARD 2/5: 98 files, 517 passed, 0 failed
+SHARD-ENGINE 3/5: 0 errors, 0 warnings
+SHARD 3/5: 97 files, 511 passed, 0 failed
+SHARD-ENGINE 4/5: 0 errors, 0 warnings
+SHARD 4/5: 97 files, 540 passed, 0 failed
+2732 passed, 0 failed
+>> check: hashes on builder0 (glibc-2.43) | sim-baseline foundry=f72b1712479b2570(unmoved) yard=df0c04272c671909(unmoved) pit=76b986231ec5b85a(unmoved) terminus=1c2d8ee6ba3af808(unmoved) crossing=f8024203917ca808(unmoved) sumps=8ac8cffce54c83fc(unmoved) locks=9bbfe8b7e38cef8d(unmoved) parade=27580bb53aa4ebe3(unmoved) gorge=408d8c5e49d22a5f(unmoved) archipelago=f97836b7868c7906(unmoved) cut=b31bbf132c154b23(unmoved) docks=50f15553c558d108(unmoved) yard_open=d93353b60efd6db3(unmoved) | determinism 9d66d3a0c59a7936
+>> remote: make check exited 0 (build/ copied back)

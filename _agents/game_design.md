@@ -4003,3 +4003,59 @@ Orchestrator's reading (C33.9): a fixed-gun wheeled hull under fire from an enem
 bring its nose round, and the orbiting enemy out-turns the k-turn. He wants it to drive forward on a hard turn toward the
 attacker's side: a wheeled hull yaws faster rolling forward, and moving is also evasion. It is symmetric AI and ships
 without asking.
+
+## Round 33 close: his answers (2026-10-18, verbatim)
+
+> "ok let's go with both of your recommendations. You can go ahead and update the handoffs and briefs for next rounds,
+> assuming there's plenty of work. Also, for one or two of these tasks where we're getting stuck we can re-engage a fable
+> agent."
+
+The two recommendations were: (1) ship the scout turn-in (C33.9) as it is; (2) keep CP-F parked, with a fourth attempt
+after the herringbone fix. (1) then failed the whole suite and did not ship (R33.38, R33.39): it is round 34's C34.10.
+Read with his C33.9 report, the stand-or-hang-back question resolves to: a scout that can win the duel stands and trades,
+and an outgunned one leaves (C34.5).
+
+## Round 34, his playtest words during the round: one click, several squads (2026-10-18, verbatim)
+
+> ok I also just played a quick game to collect some feedback. Basically I'm continuously playin and there's always small
+> issues where one small issue makes the game unplayable. As far as we've come, it's still unplayable. Here's a big
+> problem: If I select 3 squads and then tell them all to move to some point on the map, there's some algorithm that
+> automatically determines new points for each squad based on the size of the estimated formations or something. But
+> these arenas are so small it creates a big problem. For example, in my last game I told 3 squads to go to a single
+> waypoint, but because there were 3 squads, 3 waypoints were selected, where one of them was all the way across the
+> bridge, thus causing one of my squads of scouts to go on a suicidal mission. How can we get behavior closer to
+> starcraft, where I can click some target waypoint and have all units go to it? Don't take action yet, just talk to me -
+> we clearly need to reconcile the fact that we have a lot of vehicles competing for the same space. What do you
+> recommend we do here? The current setup makes it impossible for me to select a bunch of units and have them follow
+> some target route. I imagine there's a few craft options at our disposal
+
+The orchestrator's reading (from the code): `SelectionSquads.ranks` lays up to three squads abreast, each priced at a
+LINE's frontage under AUTO (5 crews at 14 m ≈ 56 m, plus GAP_M 14), so the outer squads' anchors sit ~70 m from the click;
+`fit_inside` clamps only to the arena walls, never asks which side of a river or how far by ground, so an anchor 70 m
+sideways can be a long drive over a bridge. The recommendation he heard: (1) a hard cap: no squad's anchor further from
+the click BY GROUND than ~1.5× its straight offset, nor more than ~30 m; (2) anchors found by flooding outward from the
+click over drivable ground, by driving distance, never across a choke; tight ground stacks squads back along the road
+they came in on (StarCraft: everyone goes to the click, space is settled on arrival); (3) price a squad at the shape it
+will actually arrive in, not the widest; (4) multi-waypoint routes: in-between waypoints shared, only the last spreads.
+
+His corrections (verbatim):
+
+> ok all of this sounds good and like it will be much better, but there's a few potential revisions. 1. Must we assume
+> that the squads can't overlap with each other? For example, you're saying we have the width of a formation, but isn't
+> there enough spacing where we could intersect two wedges basically? 2. Your ideas about vehicles driving through
+> waypoints directly is good, but if we overcorrect on this term then we might have 25 vehicles all trying to roll
+> through the same waypoint. The waypoints are obviously sort of loose guidelines, and it's more about the squad moving
+> through that waypoint versus individual vehicles
+
+> go, but with the distinction that your response befor ethis last one also had some good ideas (i.e. choose points based
+> on driving distance or whatever you recommended earlier). I made corrections to only 2 specific points
+
+**Decided (2026-10-18):** ALL FOUR points stand, with his two corrections folded in. (a) Squads MAY overlap: the
+constraint is hull-to-hull clearance between vehicles of different squads (~9 m), not squad bounding boxes; wedges nest.
+Each squad takes the places on its own side of the approach so no paths cross (untangle stays as the backstop). (b) A
+waypoint is a squad's, not a vehicle's: a squad has passed it when its centre is within about its own width; crews keep
+their formation slots and never aim at the point. For several squads a waypoint is a GATE as wide as the ground there:
+abreast or in ranks in the open, single file only where the TERRAIN narrows (a bridge, a gap). The final destination
+packs by (1)-(3). Owner: the new **orders** stream (round 34, C34.11). He did not pick between "queue back along the
+road" and "stop short together" for tight ground; the recommendation (queue back along the approach road, near the click)
+is taken as decided.

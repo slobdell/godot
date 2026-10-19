@@ -28,7 +28,7 @@ func _ask(map: CoverMap, request: Dictionary) -> Array:
 
 
 func test_the_queries_are_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the tactical query equality is not exercised in this run")
 		return
 	assert_true(NativeTq.configure(), "the native queries take the live constants")

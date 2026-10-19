@@ -1,0 +1,56 @@
+MOVING_KIND task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND faced_ambush | base_drawn | 0 | 0 | 2 | 0 | 4 | 0 | 0 | 6
+MOVING_KIND faced_ambush | new_drawn | 0 | 0 | 3 | 0 | 4 | 0 | 0 | 7
+MOVING_KIND faced_attack_move | base_drawn | 0 | 0 | 1 | 2 | 25 | 1 | 0 | 29
+MOVING_KIND faced_attack_move | new_drawn | 2 | 2 | 2 | 4 | 26 | 0 | 0 | 36
+MOVING_KIND faced_move | base_drawn | 0 | 0 | 2 | 2 | 4 | 0 | 0 | 8
+MOVING_KIND faced_move | new_drawn | 1 | 1 | 2 | 2 | 3 | 0 | 0 | 9
+MOVING_KIND faced_right | base_drawn | 0 | 0 | 9 | 0 | 3 | 0 | 0 | 12
+MOVING_KIND faced_right | new_drawn | 0 | 0 | 2 | 0 | 4 | 0 | 0 | 6
+MOVING_KIND faced_screen | base_drawn | 0 | 1 | 1 | 0 | 8 | 0 | 0 | 10
+MOVING_KIND faced_screen | new_drawn | 0 | 1 | 3 | 1 | 2 | 0 | 0 | 7
+MOVING_KIND faced_support_by_fire | base_drawn | 0 | 0 | 3 | 0 | 0 | 0 | 0 | 3
+MOVING_KIND faced_support_by_fire | new_drawn | 0 | 1 | 3 | 2 | 2 | 0 | 0 | 8
+MOVING_KIND_WT (wheels/turret only) task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND_WT faced_ambush | base_drawn | 0 | 0 | 2 | 0 | 3 | 0 | 0 | 5
+MOVING_KIND_WT faced_ambush | new_drawn | 0 | 0 | 2 | 0 | 3 | 0 | 0 | 5
+MOVING_KIND_WT faced_attack_move | base_drawn | 0 | 0 | 1 | 2 | 19 | 1 | 0 | 23
+MOVING_KIND_WT faced_attack_move | new_drawn | 2 | 2 | 1 | 4 | 22 | 0 | 0 | 31
+MOVING_KIND_WT faced_move | base_drawn | 0 | 0 | 2 | 0 | 3 | 0 | 0 | 5
+MOVING_KIND_WT faced_move | new_drawn | 1 | 1 | 2 | 0 | 3 | 0 | 0 | 7
+MOVING_KIND_WT faced_right | base_drawn | 0 | 0 | 7 | 0 | 0 | 0 | 0 | 7
+MOVING_KIND_WT faced_right | new_drawn | 0 | 0 | 0 | 0 | 3 | 0 | 0 | 3
+MOVING_KIND_WT faced_screen | base_drawn | 0 | 0 | 0 | 0 | 4 | 0 | 0 | 4
+MOVING_KIND_WT faced_screen | new_drawn | 0 | 1 | 1 | 1 | 2 | 0 | 0 | 5
+MOVING_KIND_WT faced_support_by_fire | base_drawn | 0 | 0 | 2 | 0 | 0 | 0 | 0 | 2
+MOVING_KIND_WT faced_support_by_fire | new_drawn | 0 | 0 | 2 | 2 | 1 | 0 | 0 | 5
+MOVING_WORST base_drawn: 12 moving in /tmp/claude-1000/-home-slobdell-projects-godot-manoeuvre/d6b4a6fc-41ce-484a-abf7-e7a03b4d1093/scratchpad/hrx/base_drawn/gangs/faced_attack_move-41
+MOVING_WORST   Green_Hunters_1 (gang_ifv) 46.6 deg driving: f 2430 Green_Hunters_1 gang_ifv order move_to from  v 11.57 moved 11.57 cmd 0.90/-0.42 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 37.3 real 11.57
+MOVING_WORST   Green_Hunters_10 (gang_ifv) 138.7 deg dressing: f 2430 Green_Hunters_10 gang_ifv order move_to from  v 3.00 moved 3.00 cmd -0.50/-1.00 face 0/2.2 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 7.1 real 3.00
+MOVING_WORST   Green_Hunters_12 (gang_ifv) 169.3 deg driving: f 2430 Green_Hunters_12 gang_ifv order move_to from  v 3.68 moved 3.68 cmd -0.54/-1.00 face 1/2.8 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 9.7 real 3.68
+MOVING_WORST   Green_Hunters_2 (gang_ifv) 13.2 deg driving: f 2430 Green_Hunters_2 gang_ifv order move_to from  v 2.53 moved 2.53 cmd 0.30/1.00 face 1/1.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 16.4 real 2.53
+MOVING_WORST   Green_Hunters_7 (gang_ifv) 18.1 deg driving: f 2430 Green_Hunters_7 gang_ifv order move_to from  v 8.78 moved 8.78 cmd 0.68/-1.00 face 2/3.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 19.8 real 8.78
+MOVING_WORST   Green_Hunters_11 (gang_ifv) 94.1 deg driving: f 2430 Green_Hunters_11 gang_ifv order move_to from  v 1.73 moved 1.73 cmd 0.75/-1.00 face 0/2.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 13.0 real 1.73
+MOVING_WORST   Green_Hunters_13 (gang_ifv) 178.8 deg dressing: f 2430 Green_Hunters_13 gang_ifv order move_to from  v 0.43 moved 0.43 cmd -0.60/1.00 face 1/2.6 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 4.0 real 0.43
+MOVING_WORST   Green_Hunters_9 (gang_ifv) 124.0 deg driving: f 2430 Green_Hunters_9 gang_ifv order move_to from  v 3.24 moved 3.24 cmd -0.54/-1.00 face 2/6.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 12.0 real 3.24
+MOVING_WORST   Green_Hunters_4 (gang_ifv) 23.3 deg driving: f 2430 Green_Hunters_4 gang_ifv order move_to from  v 12.68 moved 12.68 cmd 0.97/0.03 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 32.9 real 12.68
+MOVING_WORST   Green_Hunters_5 (gang_ifv) 76.7 deg driving: f 2430 Green_Hunters_5 gang_ifv order move_to from  v 2.27 moved 2.27 cmd 0.26/-1.00 face 0/0.0 blocked false retry 30 touch false stuck 0.0 pivot false esc 0.0 goal 18.9 real 2.27
+MOVING_WORST   Green_Hunters_6 (gang_ifv) 160.3 deg other: f 2430 Green_Hunters_6 gang_ifv order stop from  v 0.00 moved 0.00 cmd 0.00/0.00 face 3/2.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 0.0 real 0.00
+MOVING_WORST   Green_Hunters_8 (gang_ifv) 67.1 deg driving: f 2430 Green_Hunters_8 gang_ifv order move_to from  v 9.75 moved 9.75 cmd 0.11/-1.00 face 1/1.9 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 28.9 real 9.75
+MOVING_WORST new_drawn: 16 moving in /tmp/claude-1000/-home-slobdell-projects-godot-manoeuvre/d6b4a6fc-41ce-484a-abf7-e7a03b4d1093/scratchpad/hrx/new_drawn/gangs/faced_attack_move-41
+MOVING_WORST   Green_Guns_6 (gang_tank) 40.4 deg face_legs: f 2250 Green_Guns_6 gang_tank order face from sector v 2.83 moved 2.83 cmd 0.55/-1.00 face 1/2.8 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 20.3 real 2.83
+MOVING_WORST   Green_Guns_2 (gang_tank) 96.1 deg face_creep: f 2130 Green_Guns_2 gang_tank order face from drawn v 0.00 moved 0.00 cmd 0.00/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 19.4 real 0.00
+MOVING_WORST   Green_Guns_3 (gang_tank) 22.9 deg dressing: f 2430 Green_Guns_3 gang_tank order move_to from  v 3.05 moved 3.05 cmd -0.75/0.33 face 0/0.0 blocked false retry 1 touch false stuck 0.0 pivot false esc 0.0 goal 6.9 real 3.05
+MOVING_WORST   Green_Hunters_1 (gang_ifv) 168.6 deg driving: f 2430 Green_Hunters_1 gang_ifv order move_to from  v 9.10 moved 9.10 cmd 0.70/1.00 face 0/0.0 blocked false retry 14 touch false stuck 0.0 pivot false esc 0.0 goal 51.7 real 9.10
+MOVING_WORST   Green_Hunters_10 (gang_ifv) 57.2 deg face_legs: f 2430 Green_Hunters_10 gang_ifv order face from sector v 5.77 moved 5.77 cmd 0.55/-1.00 face 2/3.2 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 20.0 real 5.77
+MOVING_WORST   Green_Hunters_12 (gang_ifv) 9.6 deg driving: f 2430 Green_Hunters_12 gang_ifv order move_to from  v 5.61 moved 5.61 cmd 0.34/-1.00 face 0/0.0 blocked false retry 28 touch false stuck 0.0 pivot false esc 0.0 goal 11.8 real 5.61
+MOVING_WORST   Green_Hunters_2 (gang_ifv) 149.5 deg driving: f 2430 Green_Hunters_2 gang_ifv order move_to from  v 7.22 moved 7.22 cmd 0.64/1.00 face 1/5.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 20.4 real 7.22
+MOVING_WORST   Green_Hunters_7 (gang_ifv) 144.4 deg driving: f 2430 Green_Hunters_7 gang_ifv order move_to from  v 0.67 moved 0.67 cmd 0.34/-1.00 face 0/0.0 blocked false retry 30 touch false stuck 0.0 pivot false esc 0.0 goal 24.4 real 0.67
+MOVING_WORST   Green_Hunters_11 (gang_ifv) 93.7 deg driving: f 2430 Green_Hunters_11 gang_ifv order move_to from  v 12.91 moved 12.91 cmd 0.99/0.03 face 2/4.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 28.6 real 12.91
+MOVING_WORST   Green_Hunters_13 (gang_ifv) 177.2 deg dressing: f 2430 Green_Hunters_13 gang_ifv order move_to from  v 1.72 moved 1.72 cmd -0.28/1.00 face 3/5.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 6.4 real 1.72
+MOVING_WORST   Green_Hunters_3 (gang_ifv) 0.9 deg driving: f 2430 Green_Hunters_3 gang_ifv order move_to from  v 5.09 moved 5.09 cmd 0.45/1.00 face 2/4.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 17.8 real 5.09
+MOVING_WORST   Green_Hunters_9 (gang_ifv) 94.9 deg driving: f 2430 Green_Hunters_9 gang_ifv order move_to from  v 4.87 moved 4.87 cmd 0.38/0.66 face 2/3.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 10.2 real 4.87
+MOVING_WORST   Green_Hunters_4 (gang_ifv) 65.6 deg driving: f 2430 Green_Hunters_4 gang_ifv order move_to from  v 6.03 moved 6.03 cmd 0.79/-0.76 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 31.6 real 6.03
+MOVING_WORST   Green_Hunters_5 (gang_ifv) 95.9 deg driving: f 2430 Green_Hunters_5 gang_ifv order move_to from  v 6.75 moved 6.75 cmd 0.10/-1.00 face 0/6.4 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 19.7 real 6.75
+MOVING_WORST   Green_Hunters_6 (gang_ifv) 179.7 deg driving: f 2430 Green_Hunters_6 gang_ifv order move_to from  v 6.52 moved 6.52 cmd 0.50/-0.34 face 2/5.1 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 15.6 real 6.52
+MOVING_WORST   Green_Hunters_8 (gang_ifv) 92.7 deg driving: f 2430 Green_Hunters_8 gang_ifv order move_to from  v 2.27 moved 2.27 cmd 0.32/-1.00 face 1/2.8 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 19.5 real 2.27

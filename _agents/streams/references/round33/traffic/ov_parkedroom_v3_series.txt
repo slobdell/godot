@@ -1,0 +1,41 @@
+>> remote: make native traffic-far-census FAR_RANGE=820-867 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v3-base FAR_FLAGS=--traffic-off=parkedroom on slobdell@builder2
+>> remote: make native traffic-far-census FAR_RANGE=820-867 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v3-base FAR_FLAGS=--traffic-off=parkedroom exited 0 (light lane, build/light/build/ copied back)
+base: 144 logs, 0 missing
+>> remote: make native traffic-far-census FAR_RANGE=820-867 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v3-arm FAR_FLAGS= on slobdell@builder2
+>> remote: make native traffic-far-census FAR_RANGE=820-867 FAR_AT=terminus,locks,random FAR_JOBS=10 FAR_DIR=build/v3-arm FAR_FLAGS= exited 0 (light lane, build/light/build/ copied back)
+arm: 144 logs, 0 missing
+far_ab: 144 paired fights; left out (no FAR_CENSUS) none; in one folder only none
+L1 parked far loops: base 224, arm 63 over 144 paired fights; drop 161, paired se of the sum 52.44 (k 1.645: drop - k*se = 74.73); fights differing 40
+L1 PASS (arm 63 <= 50% of base 224: True; distinguishable: True)
+L2 all far loops: base 411, arm 201 over 144 paired fights; drop 210, paired se of the sum 97.60 (k 1.645: drop - k*se = 49.45); fights differing 58
+L2 PASS (arm 201 <= base 411 + k*se 160.55)
+L6 FAIL: room give-ways started 2126, read at 30 s 1865 (alive 1489), back within 3 m 285 (19 %); back_m sorted [...]
+v2 L1a hold-post far loops: base 59, arm 18 over 144 paired fights; drop 41, paired se of the sum 22.20 (k 1.645: drop - k*se = 4.48); fights differing 13
+v2 L1a PASS (arm 18 <= 50% of base 59)
+v2 L1b PASS (all parked far loops: arm 63 <= base 224 + k*se 86.27)
+v2 fire-post far loops (REPORTED apart): base 135, arm 45 over 144 paired fights; drop 90, paired se of the sum 45.34 (k 1.645: drop - k*se = 15.41); fights differing 24
+v2 L6 FAIL: unchanged-order room give-ways alive at 30 s 448, within 3 m 218 (49 %)
+v3 L6 FAIL (R33.36): unchanged-order room give-ways alive at 30 s 448, at the post or inside the hold line 403 (90 %)
+v2 L6 REPORTED: all alive 1489, within 3 m 285 (19 %); with a new order 1041; without crews giving way again at the read 177 of 321 (55 %); ways back begun 1314
+v2 R ask_handed_back a fight: median 29, worst 205, total 5743 (n 144; -1 = no native count)
+L3 kills: base 2072, arm 1992 over 48 paired fights; drop 80, paired se of the sum 40.88 (k 1.645: drop - k*se = 12.75); fights differing 39
+L3 deaths: base 2090, arm 2008 over 48 paired fights; drop 82, paired se of the sum 40.75 (k 1.645: drop - k*se = 14.97); fights differing 39
+L3 hit rate: base 0.736, arm 0.736 (mean of fights), paired se of the mean 0.0112
+L3 FAIL (kills, deaths within base +/- k*se; hit rate arm >= base - k*se, R33.36)
+R give-way count a fight (median / worst): OFF all kinds 169 / 396; ON all kinds 184 / 392, of which room 14 / 38; busiest ON fight locks-835.log (OFF 391, ON 392, room 36)
+>> remote: make native traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both CACHE=off TRAFFIC_JOBS=10 TRAFFIC_OUT=build/v3-series-base.jsonl TRAFFIC_FLAGS=--traffic-off=parkedroom on slobdell@builder2
+>> traffic-series rows: 72
+>> remote: make native traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both CACHE=off TRAFFIC_JOBS=10 TRAFFIC_OUT=build/v3-series-base.jsonl TRAFFIC_FLAGS=--traffic-off=parkedroom exited 0 (light lane, build/light/build/ copied back)
+>> remote: make native traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both CACHE=off TRAFFIC_JOBS=10 TRAFFIC_OUT=build/v3-series-arm.jsonl TRAFFIC_FLAGS= on slobdell@builder2
+>> traffic-series rows: 72
+>> remote: make native traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both CACHE=off TRAFFIC_JOBS=10 TRAFFIC_OUT=build/v3-series-arm.jsonl TRAFFIC_FLAGS= exited 0 (light lane, build/light/build/ copied back)
+>> remote: make native traffic-census TRAFFIC_JOBS=10 on slobdell@builder2
+>> remote: make native traffic-census TRAFFIC_JOBS=10 exited 0 (light lane, build/light/build/ copied back)
+L4 terminus,cross crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+L4 terminus,head crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+L4 yard_open,cross crews arrived: base 178 arm 178 diff +0 se 0.0 (n 18), line >= 178.0: PASS
+L4 yard_open,head crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+v2 L4 PASS
+v2 L5 runs with a repack while firing: 0 of 9 (missing 0): PASS
+
+[exited with code 0]

@@ -1,0 +1,24 @@
+| front | seed | ghost OFF: body-OFF / body-ON alone_s, Sirens | ghost ON: body-OFF / body-ON alone_s, Sirens | ON cell < 0.5 x |
+|---|---|---|---|---|
+| none | 1 | 41.0 / 15.0, body | 43.5 / 15.0, body | yes |
+| none | 2 | 56.5 / 15.0, own | 15.5 / 16.0, own | NO |
+| none | 3 | 39.0 / 17.0, body | 36.5 / 12.5, body | yes |
+| none | 4 | 33.0 / 16.5, body | 37.5 / 8.5, body | yes |
+| none | 5 | 56.5 / 20.5, own | 14.0 / 14.0, own | NO |
+| none | 6 | 17.5 / 17.5, own | 58.0 / 16.0, own | yes |
+| test_det_core | 1 | 41.0 / 15.0, body | 43.5 / 15.0, body | yes |
+| test_det_core | 2 | 56.5 / 15.0, own | 15.5 / 16.0, own | NO |
+| test_det_core | 3 | 39.0 / 17.0, body | 36.5 / 12.5, body | yes |
+| test_det_core | 4 | 33.0 / 16.5, body | 37.5 / 8.5, body | yes |
+| test_det_core | 5 | 56.5 / 20.5, own | 14.0 / 14.0, own | NO |
+| test_det_core | 6 | 17.5 / 17.5, own | 58.0 / 16.0, own | yes |
+| test_rts_camera | 1 | 38.0 / 12.5, body | 41.5 / 13.5, body | yes |
+| test_rts_camera | 2 | 12.0 / 12.0, own | 14.5 / 15.0, own | NO |
+| test_rts_camera | 3 | 39.0 / 7.0, body | 37.0 / 12.5, body | yes |
+| test_rts_camera | 4 | 34.5 / 17.0, body | 51.0 / 14.0, body | yes |
+| test_rts_camera | 5 | 56.5 / 56.5, own | 14.5 / 57.0, own | NO |
+| test_rts_camera | 6 | 15.5 / 15.5, own | 16.0 / 16.0, own | NO |
+(1) median body-ON alone_s: ghost OFF 16.5 (n 18), ON 14.5 (n 18), line OFF + 3.0 = 19.5: PASS
+(2) every ghost-ON cell body-ON < 0.5 x body-OFF: FAIL
+(3) the Sirens choose body in every ghost-ON cell: FAIL
+GUARD FAIL (INCOMPLETE: n off 18, on 18)

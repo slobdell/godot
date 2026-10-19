@@ -1,0 +1,47 @@
+far_table: build/traffic-far/random-502.log has no FAR_CENSUS (skipped; 0 rows)
+far_table: build/traffic-far/random-509.log has no FAR_CENSUS (skipped; 0 rows)
+far_table: build/traffic-far/terminus-509.log has no FAR_CENSUS (skipped; 0 rows)
+FAR TABLE: 69 matches, 37 far loops (0.54 a match), 9 matches with any
+| arena | matches | elements formed (min green/rust) | squads refused an element (oversize) | seconds (min) | far loops | a match | matches with any | episodes | other_element parked loops | a match |
+|---|---|---|---|---|---|---|---|---|---|---|
+| archipelago | 2 | 3/7 | 86 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+| crossing | 2 | 1/5 | 147 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+| cut | 2 | 1/5 | 165 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+| locks | 26 | 1/5 | 1482 | 180 | 20 | 0.77 | 5 | 6 | 8 | 0.31 |
+| parade | 2 | 1/6 | 136 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+| pit | 4 | 2/6 | 5 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+| sumps | 4 | 2/5 | 37 | 180 | 1 | 0.25 | 1 | 1 | 1 | 0.25 |
+| terminus | 24 | 1/5 | 706 | 180 | 16 | 0.67 | 3 | 4 | 0 | 0.00 |
+| yard | 1 | 3/11 | 2 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+| yard_open | 2 | 1/5 | 6 | 180 | 0 | 0.00 | 0 | 0 | 0 | 0.00 |
+
+| blocker kind | blocker | loops | a match | episodes | route left p10/50/90 m | gap p10/50/90 m |
+|---|---|---|---|---|---|---|
+| same_element | parked | 17 | 0.25 | 4 | 12.9/14.5/83.8 | 6.2/6.4/8.5 |
+| other_element | parked | 9 | 0.13 | 3 | 19.8/19.8/68.0 | 4.2/5.2/5.2 |
+| same_element | moving | 5 | 0.07 | 2 | 15.8/33.6/33.6 | 5.1/5.1/5.8 |
+| unseated | parked | 4 | 0.06 | 2 | 33.6/39.3/39.3 | 3.5/3.5/5.1 |
+| unseated | moving | 2 | 0.03 | 1 | 105.4/105.5/105.5 | 3.3/3.3/3.3 |
+
+Parked blockers (all kinds), where they stood | loops | episodes
+  hold post (hold)                                               16    4
+  set up on a fire post                                          10    3
+  elsewhere (, slot 45 m)                                         3    1
+  elsewhere (HOLD, slot 16 m)                                     1    1
+Parked blockers, the ask's answer | loops
+  refused: just gave way to this asker                           20
+  refused: set up and firing (T1c-b2)                            10
+
+Episodes (match, asker, blocker, kind: loops, where, route left at first):
+  locks-512.log Rust_Battery_1 on Rust_Battery_3 (same_element): 6, set up on a fire post, 44.5 m, gap 8.3 m, refused: set up and firing (T1c-b2)
+  locks-501.log Green_Battery_1 on Green_Eyes_5 (other_element): 5, hold post (hold), 19.8 m, gap 5.2 m, refused: just gave way to this asker
+  random-518.log Rust_Guns_5 on Rust_Guns_3 (same_element): 4, hold post (hold), 15.1 m, gap 6.6 m, refused: just gave way to this asker
+  terminus-500.log Rust_Battery3_4 on Rust_Battery3_3 (same_element): 4, moving, 33.6 m, gap 5.1 m, refused: just gave way to this asker
+  terminus-518.log Rust_Guns_5 on Rust_Guns_3 (same_element): 4, hold post (hold), 15.1 m, gap 6.6 m, refused: just gave way to this asker
+  locks-510.log Green_Battery_3 on Green_Battery_1 (same_element): 3, set up on a fire post, 12.9 m, gap 6.2 m, refused: set up and firing (T1c-b2)
+  locks-520.log Rust_Eyes_3 on Rust_Hunters_4 (other_element): 3, hold post (hold), 68.0 m, gap 4.2 m, refused: just gave way to this asker
+  terminus-500.log Rust_Battery3_3 on Rust_Spears2_1 (unseated): 3, elsewhere (, slot 45 m), 39.3 m, gap 3.5 m, refused: just gave way to this asker
+  locks-521.log Green_Hunters_6 on Green_Battery_10 (unseated): 2, moving, 105.4 m, gap 3.3 m, refused: just gave way to this asker
+  locks-512.log Rust_Battery_4 on Rust_Battery_3 (same_element): 1, moving, 15.8 m, gap 5.8 m, said yes (gave way, then back in the lane)
+  random-517.log Rust_Battery_2 on Rust_Lances_3 (other_element): 1, elsewhere (HOLD, slot 16 m), 31.9 m, gap 5.0 m, refused: just gave way to this asker
+  terminus-500.log Rust_Battery3_4 on Rust_Battery3_3 (unseated): 1, moving, 33.6 m, gap 5.1 m, refused: just gave way to this asker

@@ -4,9 +4,79 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-17 ~07:30 PDT — **ROUND 33 IS PREPARED (below).** Main inherits `0c124cf7`'s green check (builder0, `make check exited 0`, 2724/0, sim-baseline 13 unmoved; later commits are docs plus one comment line in `mk/planner.mk`). He pushes `main`._
+_Last updated: 2026-10-18 — **ROUND 34 IS PREPARED (below); round 33 is CLOSED.** Main inherits `d7d57f4cf`'s green check (builder2, `make check exited 0`, 2797/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved; `tools/merge_check_needed.sh d7d57f4cf` says INHERIT: only docs since). He pushes `main`._
 
-## 🚀 ROUND 33 IS PREPARED (2026-10-17) — read this first
+## 🚀 ROUND 34 IS PREPARED (2026-10-18) — read this first
+
+**Round 34 is RUNNING (launched 2026-10-18 ~21:45 PDT), plus a SIXTH stream added mid-round: orders (Opus, offset 5).**
+His playtest that evening: one click with three squads put one squad's anchor across a bridge and his scouts died there;
+"it's still unplayable". Decided in chat (game_design.md *Round 34, his playtest words during the round*, verbatim):
+anchors capped and found by DRIVING distance, squads may nest (hull clearance, not boxes), squads priced at their arrival
+shape, waypoints are the squad's (gates, not pins). C34.11; brief `streams/orders.md`. The orchestrator's loop runs.
+
+**Merges (round 34):** main `02a912163` = native `12ac7b172` (C34.7 shell RPC guard, C34.8 (a) PIN_FPS on every judged stage +
+`make pin-moves`, N4 NativeExpect.absent); **main 02a912163 inherits 12ac7b172's check** (builder2 `make native check` exit 0,
+2798/0, sim-baseline unmoved; `tools/merge_check_needed.sh` INHERIT). Rulings so far: R34.1 (bar M0), R34.2 (the rematch
+carrier: traffic's solve phase; planner's fix approved, the baseline moves once when it merges).
+
+**Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
+tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are
+in `workstreams.md` *Round 34*, and the briefs are in `_agents/streams/`. The worktrees were created FRESH from the docs
+commit. Round 33's `stream/*` branches are now `round33/<stream>` (plus `round33/traffic-overnight`). Every round-33
+worktree (24 of them, all clean; one 5-line diff rescued into references) and every remote folder except `godot` /
+`godot-light` were removed on builder0 and builder2.
+
+**To launch (the lead):** in each folder `~/projects/godot-<stream>`, start a CLI. For **traffic** and **manoeuvre** run
+`/model fable` first; brains, native and planner stay on Opus. Paste the kickoff prompt from `_agents/orchestration.md`
+*The kickoff prompt* (the same text for every stream). Then the orchestrator (this checkout) runs the round.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | **Fable** | a crew stuck behind a parked crew of another squad gets by, and the parked crew goes back to its post; fewer crews die stuck in jams | the stuck-death census, then parkedroom v4 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | his circled scout turns and fights instead of shuffling; a War Rig told to face a direction ends facing it and sits still | C33.9 done right, then the hull-rest ruler, the flicker, CP-F 4 |
+| **brains** | `godot-brains` (3) | Opus | a scout stands and trades when it can win and leaves when it can't; a pushed-off War Rig returns facing his way (after CP-F) | scout try 2 |
+| **native** | `godot-native` (4) | Opus | nothing alone: every pair; a network match never logs a shell hitting a dropped player | pairs, then relay-smoke's shell RPC |
+| **planner** | `godot-planner` (6) | Opus | a rematch without restarting plays out the same (replays and the network) | the rematch diagnosis |
+| **orders** (added 2026-10-18, mid-round) | `godot-orders` (5) | Opus | three squads sent to one point all end up near it, on the side of the river he clicked; a shift-clicked route is followed squad by squad | O1 the ground cap (C34.11) |
+
+**His round-33 answers (2026-10-18), recorded:** "let's go with both of your recommendations". (1) Ship the scout
+turn-in (C33.9) as it is. It then FAILED the whole-suite check: it reached plain faces and every stop, so a wheeled hull
+turning in place drove 24.5 m. Narrowing it flipped judged lines (R33.38, R33.39). So it did NOT ship, and it is
+manoeuvre's first round-34 item. **Tell him in player terms: the scout shuffle he reported is still in this build.**
+(2) CP-F stays parked in round 33, with a fourth try in round 34. His stand-or-hang-back question is read as "a scout
+that can win stands and trades; an outgunned one leaves" (brains' scout try 2).
+
+**Carry branches (unmerged work round 34 builds on):** `round33/manoeuvre` `8f9846a5c` (CP-F code + the new judge,
+default OFF); `pair/c339-ship` `fc809b60a`, `lab/c339-turnin` `781801da0`, `lab/cpf-arriveleg` `7e0953f9d`,
+`lab/c339-attempt2` `96d6a1521` (record); `pair/native-c339` `2f9ad0fb9` (the stop hand-back, green twins);
+`round33/traffic-overnight` `b8866331a` (parkedroom v3, DEFAULT_OFF); `pair/parkedroom-on-v3` `ef7f7901f`;
+`pair/native-parkedroom` `5e5465af8`; `pair/ghost-on-r34` `aacdfb4b6` and `pair/native-ghost-on` `b2b97188d` (T4,
+only if it returns); `lab/brains-scout` / `pair/native-scout` `0565d1a89`; `round33/brains` `78e9b59af` (B10b,
+parked); `lab/brains-r33-battery` `ee18403b9` (battery (c)); `lab/brains-r32-swap` `f2cc956d3` (R5). Every other
+lab/pair/scratch branch is history and can be deleted. Raw runs outside the repo: `/home/slobdell/overnight-manoeuvre`
+(1.4 GB; keep until CP-F 4's bar is filed).
+
+**Not done at the close (owned in round 34):** the judging table re-render (orchestration step 5b) goes to planner
+(C34.8 (b)). There were no review pages with a `db` this round.
+
+**builder2 (GCP Spot) is idle and still billing (~$0.52/h).** He decides `make gcp-stop`. Round 34 runs on builder0
+alone unless he turns builder2 on (rule 5 in `_agents/gcp_builder.md`; the briefs say to check `make gcp-status`).
+
+## Round 33 (CLOSED 2026-10-18): what shipped, in player terms
+
+- **Shipped:** respawns never inside a standing vehicle (R1); a stuck vehicle whose planned turn was cut off can back out
+  again (R33.3); gang squads stop shuffling seats once arrived (R33.9); CPU squads fight in coordinated groups of up to
+  five (R33.6); no unit plans onto a crate roof (islands); the give-way negotiation and `_manoeuvre` run in C++ (N5.Y,
+  N5.M); a vehicle no longer circles an approach point inside its own turning circle (R4); a vehicle told to face behind
+  turns round in about 10 s instead of 15 (P3); a battery's trucks keep their places once set up (battery seat); a
+  respawned crew rejoins its squad (rejoin); a War Rig squad sent to the map edge arrives (War Rig); a halted gang squad in
+  herringbone stops re-laying (herringbone); an idle mortar truck no longer blocks a street (fire mission). The test
+  suite runs at a fixed physics rate. builder2 joined as the burst builder.
+- **Parked:** the parked crew making room (v1–v3: it works, but the judging was wrong-shaped; v4 next), the War Rig turn
+  at rest (CP-F 1–3; attempt 4 next), the yard's last hull circling (T4 1–3; trace first), the scout turn-in (C33.9,
+  above), scout fights back try 1, B10b, CP-Q, battery (c).
+
+## Round 33 (CLOSED 2026-10-18): the record as it ran
 
 **Five streams, ALL Opus (his round-32 rule), the orchestrator on Opus too.** No new playtest words from him ("prepare the
 workspaces for our next round"): round 33 is round 32's parked candidates. Split, ownership and contracts C33.1–C33.8 in
@@ -40,13 +110,13 @@ ahead of main), `pair/native-arrivedgate` (native's arrivedgate mirror for it, t
 godot-native is back on `stream/native` (fast-forwarded to native/fixed-fps-suite `0cdeff77`). builder2 was idle and
 RUNNING, with no orphans on either builder.
 
-**❓ For the lead (morning, from C33.9, his scout report):** when your scout is being circled by an enemy scout it
+**(ANSWERED 2026-10-18; R33.38, R33.39) For the lead (morning, from C33.9, his scout report):** when your scout is being circled by an enemy scout it
 can't outrun, should it **stand and trade shots** or **hang back and dodge**? Tonight's fix makes it turn and fight.
 In that case (a law scout against a Syndicate scout circling at 30 m) it fires about 30× more (8 → 260 shots) and takes
 about 30 % more hits (78 → 103), against hardly firing and slowly losing today. **Recommendation: stand and trade**, as
 you described. The judged rule now compares damage dealt against damage taken, not hits taken alone.
 
-**❓ For the lead, the scout fix's verdict (C33.9, R33.24): it PARKED narrowly.** On fresh seeds, the shuffle you saw is
+**(ANSWERED 2026-10-18; R33.38, R33.39) For the lead, the scout fix's verdict (C33.9, R33.24): it PARKED narrowly.** On fresh seeds, the shuffle you saw is
 gone in every run: it never chooses to reverse, not even while holding. It stays near its post and fights back: about
 5× the shots, and it now deals more damage than it takes when its gun can reach (1.77 dealt per 1 taken, against 0.20
 today). It missed two lines. Its aim was on target 23.9 % of the time against a 25 % line. And where its gun CAN'T reach
@@ -64,7 +134,7 @@ came back beyond reach, with up to 203 chosen reverse ticks and 42 gear changes 
 its post, and out-of-reach hits still up (42 → 49). A tuned variant was worse. **So the recommendation stands: ship
 attempt 1 (`781801da0`'s turn-in) as it is.**
 
-**❓ For the lead, the War Rig turn-to-face (CP-F, his round-32/33 ask; R33.34): it PARKED narrowly, a third time.**
+**(ANSWERED 2026-10-18; R33.38, R33.39) For the lead, the War Rig turn-to-face (CP-F, his round-32/33 ask; R33.34): it PARKED narrowly, a third time.**
 On fresh seeds, wheeled turret vehicles told to face a direction now end 3–4° off it (93–96 % within 15°; attack-move
 80 %), against 60–100° off today. Fights, Terminus, the bridge and arrivals are all no worse. It missed one line: on
 attack-move, gang crews still driving at 75 s numbered 7 more than without it, against a limit of 6.5. A second line read

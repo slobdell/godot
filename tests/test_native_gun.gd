@@ -87,7 +87,7 @@ func _synthetic(rng: RandomNumberGenerator, tank: Tank, enemies: Array) -> Dicti
 
 
 func test_gunnery_apply_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the gun equality is not exercised in this run")
 		return
 	assert_true(NativeGun.configure(), "the native gun takes the live constants")

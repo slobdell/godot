@@ -1272,7 +1272,20 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   inference through the native extension (LiteRT or ONNX Runtime); judged by the fights series like any change; fog-fair
   inputs; his pillars (smart AI both sides, die-hard squad tactics) and the GCP spend are his calls.
 
+## Round 35 candidates (found during round 34)
+
+_(empty at round 34's launch)_
+
 ## Round 34 candidates (found during round 33)
+
+> **Taken into round 34 (2026-10-18, `workstreams.md` *Round 34*):** parkedroom v4 and T4's trace (traffic, Fable);
+> the hull-rest ruler (1B/2B, real velocity, seed geometry), the k-turn flicker and CP-F attempt 4 (manoeuvre, Fable,
+> brains for the seam); scout try 2, War Rig engage distance, B11b, B10b's new form (brains); relay-smoke's shell RPC and
+> the judged-stage pinning audit (native); the same-process rematch, the judging table, the planner tools and P3 v3 after
+> the flicker (planner). **Done in round 33:** the fixed-fps suite, the npm race, `make test` refusing without a library,
+> the load-flaky targets, the fire-post loop (item 4), the War Rig 4-of-5, the battery seat. **Left here:** battery (c),
+> engaged fire-post loops (his T1c-b2 yes stands), CP-Q, R5.
+
 
 - **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
   room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.

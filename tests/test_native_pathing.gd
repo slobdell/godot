@@ -12,7 +12,7 @@ static func _bytes(value: Variant) -> PackedByteArray:
 
 
 func test_pathing_wrappers_are_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the pathing equality is not exercised in this run")
 		return
 	assert_true(NativePathing.configure(), "the native wrappers take the live Pathing")
