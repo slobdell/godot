@@ -297,3 +297,8 @@ build/   (gitignored)    exports and screenshots
 85. **The laptop is not row-equivalent to the builders, even pinned.** A `--fixed-fps` orbit cell on the laptop gave a
     different row from builder2's at the same commit (in-arc 22 v 12 %, reverse 0 v 13), while builder0 and builder2 agree
     312/312. Laptop runs are for a mechanism's trace; every dev or judged number is a builder's (round 34, manoeuvre).
+86. **`setsid nohup … &` is NOT enough for a long remote run from a laptop session (round 34, manoeuvre).** Two
+    `make remote T="native check"` wrappers detached that way died mid-run with no `>> remote: … exited` line while their
+    remote makes ran on (orphans, killed by cwd); a third wrapper died inside a judged series' step. The brief's rule is
+    the right one: `systemd-run --user --unit=<name> --collect <script>` puts the run in its own cgroup, and the result is
+    read from the wrapper line as always. A run with no wrapper line is not nameable, however green its own summary.

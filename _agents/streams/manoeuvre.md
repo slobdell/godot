@@ -131,6 +131,12 @@ says yes: the pair c8fb8b6a3 (code = stream/manoeuvre 764ef5427 + pair/native-c3
 sim-baseline is then adopted at the three attributed hashes.** Later stream commits are docs, references and the table
 script's R34.1 block only.
 
+**Process (2026-10-19 ~06:50 PDT):** two of my detached (`setsid nohup`) check wrappers died mid-run with no wrapper exit
+line (M2 on builder2 at 0d0f22027 read "27 targets, all passed, 2829/0" in its own summary; M2 on builder0 stopped at 18
+min; CP-F 4's step 2 wrapper died 6 min in) while the remote makes ran on as orphans (killed by cwd, nothing else
+touched). Neither M2 run is named from those logs. Both the M2 check (builder0) and the CP-F 4 series (resumed from step
+2; step 1's wrapper line is in its summary) now run under `systemd-run --user` as the brief orders; orientation trip-up 86.
+
 ### M1 the ruler is GREEN: merge here `lab/m1-ruler` 6c54f4e66 (2026-10-19 ~06:30 PDT)
 
 builder2, `make native check exited 0`, 2831 passed 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved (no behaviour
