@@ -88,6 +88,10 @@ struct DriveConfig {
 	// _escape_begin / _escape_step called back); H2 `kturnarc`: the leg measured by the arc signed by gear. Absent on a
 	// tree without them: false, the drive as before.
 	bool UNSTICK_BACK = false, KTURN_ARC = false;
+	// Round 33 (manoeuvre C33.9): Manoeuvre.TURN_IN_DEFAULT (the native drive runs only with `Movement._off` empty, so the
+	// default is the switch in force). With it, a `stop` on a fixed gun on wheels is handed back to the GDScript, whose
+	// OrderController._stop_turn_in turns gunnery's swing in. False on a tree without it.
+	bool TURN_IN = false;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs
