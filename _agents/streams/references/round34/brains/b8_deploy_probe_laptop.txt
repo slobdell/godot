@@ -16,3 +16,14 @@ terminus  5 deploy  all_in  13.7 crossed 0 | (a) 18 (max 35.5 m) | (b)  7 (max 3
 terminus  5 main    all_in  13.7 crossed 0 | (a)  0              | (b) 21 (max 27.9 m) |        | nearest foreign 15.8 m
 Screenshots (b8_shots/, desktop, arrival and arrival_plus5, main v deploy) were taken BEFORE c3cdbd6c4 for locks 3 (a crew
 stands across the canal in main) and show the deploy arm's red squad bunched at the canal edge on locks 3.
+
+# B8b (c8bae93fa: halt centred where the squad stands at deploy, stepped inland off water, seated by least driving then
+# fixed, the 2 s halt re-seat held while a deploy is pending), same probe, laptop, seed 34, n 1 a cell:
+crossing  3 B8b all_in 21.4 crossed 0 | (a)  9 (max 18.6 m) | (b) 0             | (c)  0 | nearest foreign  3.0 m
+crossing  5 B8b all_in 34.2 crossed 0 | (a) 14 (max 29.8 m) | (b) 1 (max  3.3) | (c)  0 | nearest foreign  3.7 m
+locks     3 B8b all_in 18.0 crossed 0 | (a)  8 (max 16.1 m) | (b) 0             | (c)  0 | nearest foreign 14.0 m
+locks     5 B8b all_in 13.8 crossed 0 | (a) 16 (max 28.2 m) | (b) 0             | (c) 12 | nearest foreign 15.7 m
+terminus  3 B8b all_in 22.1 crossed 0 | (a)  7 (max 20.0 m) | (b) 0             | (c)  0 | nearest foreign  6.2 m
+terminus  5 B8b all_in 13.7 crossed 0 | (a) 16 (max 26.3 m) | (b) 2 (max 27.0) | (c) 12 | nearest foreign 15.8 m
+Locks 3 shot (b8_shots/b8b-*): the red squad still clusters on the narrow strip between the canal and a building (the inland
+step handles water, not obstacles).
