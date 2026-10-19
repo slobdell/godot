@@ -546,8 +546,8 @@ known-answer test on round 33's files).
 - **Terminus** (`TERMINUS_PRINTED`, new reader `rows.planner_series_lines`): P3 v2 pinned `c3acd47a2` (R33.26) and P3 v2
   `923fcb97f` (R33.28) print a paired MEAN and its se per squad, not per-seed rows, so sd a seed = se × √13. Rigs only.
   The mixed squad never fired the seam (se 0, an equality check). Rigs contact-ticks 894 → 1052 (+18 %). P3 v1's and
-  CP-Q's series were REFUSED by series_verdict ("the switch reached the base"), so they're not pooled (P4's run-identity
-  item).
+  CP-Q's series were REFUSED by series_verdict ("the switch reached the base": the tool before its `seam=both`
+  mode), so they're not pooled. Their numbers are sound, and a later render may add them.
 - **New probe: hull-rest gangs A/A** (`rows.hull_aa_cells`, the planner's P1 A/A `4bbe8322`, FIFO v FIFO, 72 paired runs,
   12 cells): crews still moving at 75 s, wheeled turret, **sd 1.81 a run for a NULL change**. That's no smaller than
   the pooled treatment pairs' 1.50, so on this probe the noise is the stage itself, not the treatments. Median rest error

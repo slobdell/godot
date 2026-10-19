@@ -4,12 +4,20 @@ found seeds 40 = 43 and 44 = 45 row for row), so a judged verdict counts a (base
 repeat it, and reports how many distinct pairs each cell has. Shared by hull_aa.py --distinct, face_keep_table.py
 --distinct and kept_share.py --distinct. Run: make planner-pytest
 """
+import contextlib
+import io
+import json
 import os
+import pathlib
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hull_distinct  # noqa: E402
+import face_keep_table  # noqa: E402
+import face_pairs  # noqa: E402
+import kept_share  # noqa: E402
 
 
 def rec(moving, rest, settle=75.0):
@@ -38,6 +46,54 @@ class Distinct(unittest.TestCase):
         keys, cells = hull_distinct.distinct_keys(base, new, sorted(base))
         self.assertEqual(len(keys), 2)
         self.assertEqual(cells[("clicked", "f", "t")], (2, 2))
+
+
+
+def write_run(root, arm, seed, screen, report):
+    run = pathlib.Path(root, arm, "gangs", "faced_move-%s" % seed)
+    run.mkdir(parents=True, exist_ok=True)
+    (run / "screen.json").write_text(json.dumps(screen))
+    (run / "run.log").write_text("noise\nPLANNER_SEAM_REPORT " + json.dumps(report) + "\n")
+
+
+class RunIdentity(unittest.TestCase):
+    """Round 34 (P4 (a)): every tool keeps the same pairs, keyed on the whole run, not on its own rows."""
+
+    def layout(self):
+        root = tempfile.mkdtemp()
+        report = {"asks_by_kind": {"face": 2}, "abandoned_by_kind": {"face": 0}, "face_far": [1.0], "face_kept_served": 1,
+                  "face_kept_fallbacks": 0, "face_episodes": []}
+        for mode in ("drawn", "clicked"):
+            # seeds 1 and 2: the same face counters, different hulls (screen.json): two distinct runs
+            write_run(root, "base_" + mode, 1, [{"scenario": "faced_move", "x": 1}], report)
+            write_run(root, "new_" + mode, 1, [{"scenario": "faced_move", "x": 1}], report)
+            write_run(root, "base_" + mode, 2, [{"scenario": "faced_move", "x": 2}], report)
+            write_run(root, "new_" + mode, 2, [{"scenario": "faced_move", "x": 2}], report)
+            # seed 3 repeats seed 1 byte for byte: counted once
+            write_run(root, "base_" + mode, 3, [{"scenario": "faced_move", "x": 1}], report)
+            write_run(root, "new_" + mode, 3, [{"scenario": "faced_move", "x": 1}], report)
+        return root
+
+    def test_a_run_repeated_byte_for_byte_counts_once_and_matching_counters_alone_do_not(self):
+        root = self.layout()
+        keys = [("gangs", "faced_move", s) for s in ("1", "2", "3")]
+        kept, cells = hull_distinct.distinct_runs(root, keys, lambda _k: ("base_drawn", "new_drawn"))
+        self.assertEqual(kept, [("gangs", "faced_move", "1"), ("gangs", "faced_move", "2")])
+        self.assertEqual(cells[("gangs", "faced_move")], (2, 3))
+
+    def test_every_tool_reports_the_same_distinct_count(self):
+        root = self.layout()
+        counts = {}
+        for name, run in (("face_keep_table", lambda: (setattr(sys, "argv", ["x", root, "--distinct"]), face_keep_table.main())),
+                          ("face_pairs", lambda: face_pairs.main([root, "--distinct"])),
+                          ("kept_share", lambda: kept_share.main(["x", root, "--distinct"]))):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                run()
+            counts[name] = sorted(line.split("|")[1].strip() for line in out.getvalue().splitlines() if "_DISTINCT " in line)
+        self.assertEqual(counts["face_keep_table"], ["distinct pairs 2 of 3"] * 2, counts)
+        self.assertEqual(counts["face_pairs"], counts["face_keep_table"])
+        self.assertEqual(counts["kept_share"], counts["face_keep_table"])
 
 
 if __name__ == "__main__":

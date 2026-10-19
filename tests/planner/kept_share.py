@@ -52,7 +52,7 @@ def main(argv):
             ok = False
             continue
         if "--distinct" in argv:
-            keys, cells = hull_distinct.distinct_keys(rb, rc, keys)
+            keys, cells = hull_distinct.distinct_runs(root, keys, lambda _k, m=mode: (f"base_{m}", f"new_{m}"))
             for line in hull_distinct.summary({(mode,) + c: v for c, v in cells.items()}, "P3_DISTINCT"):
                 print(line)
         served = sum(len(rc[k]["face_far"]) for k in keys)

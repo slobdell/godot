@@ -109,8 +109,8 @@ GUARD_TABLES += [
 
 # Round 33 (planner's Terminus series): the verdict prints a paired MEAN and its se a seed per squad
 # (`PLANNER_SERIES_SQUAD rigs: n 13 | arrivals base 179 candidate 178 of 208, paired mean -0.077 se 0.560 ...`), not per-seed
-# rows: sd a seed = se x sqrt(n). Only the two series series_verdict accepted (P3 bca4eaca's and CP-Q's were REFUSED: the
-# switch reached the base). The mixed squad never fired the seam in either (se 0: an equality check, skipped).
+# rows: sd a seed = se x sqrt(n). Only the two series series_verdict accepted (P3 bca4eaca's and CP-Q's were REFUSED by the
+# tool before its seam=both mode: "the switch reached the base"). The mixed squad never fired the seam in either (se 0: an equality check, skipped).
 TERMINUS_PRINTED = [
     ("P3 v2 pinned c3acd47a2 (R33.26)", R33 + "planner/p3-pinned-c3acd47a2/terminus-verdict.txt"),
     ("P3 v2 923fcb97f (R33.28)", R33 + "planner/p3-pairs-923fcb97f/terminus-verdict.txt"),

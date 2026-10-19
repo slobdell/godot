@@ -75,7 +75,7 @@ def main():
     for mode in ("drawn", "clicked"):
         rb, rc = runs(root, f"base_{mode}", seeds), runs(root, f"new_{mode}", seeds)
         if "--distinct" in sys.argv:
-            keys, cells = hull_distinct.distinct_keys(rb, rc, sorted(set(rb) & set(rc)))
+            keys, cells = hull_distinct.distinct_runs(root, sorted(set(rb) & set(rc)), lambda _k, m=mode: (f"base_{m}", f"new_{m}"))
             for line in hull_distinct.summary({(mode,) + c: v for c, v in cells.items()}, "FACE_KEEP_DISTINCT"):
                 print(line)
             b, c = total(rb, keys), total(rc, keys)
