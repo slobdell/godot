@@ -19,6 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import puppeteer from "puppeteer-core";
+import { headlessEnv } from "./headless_env.mjs";
 
 const [url, outDir, ...rest] = process.argv.slice(2);
 if (!url || !outDir) {
@@ -141,6 +142,8 @@ const browser = await puppeteer.launch({
       : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]), `--window-size=${width},${height}`,
     "--autoplay-policy=no-user-gesture-required",
   ],
+  // N6: SwiftShader needs no display, and a dead one takes WebGL2 away (headless_env.mjs); GPU and headful keep it.
+  env: process.env.OBSERVE_GPU || process.env.OBSERVE_HEADFUL ? process.env : headlessEnv(process.env),
 });
 const report = { url, started: new Date().toISOString(), viewport: [width, height], mbps: opt.mbps ?? null, cpu: Number(opt.cpu ?? 1),
   marks: {}, console: [], failed_requests: [], responses: [], shots: [], audio: null, errors: [] };
