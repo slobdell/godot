@@ -24,7 +24,7 @@ import rows  # noqa: E402
 import stats  # noqa: E402
 
 DOC = "_agents/judging.md"
-CSV = "_agents/streams/references/round30/sizing/table.csv"
+CSV = "references/round34/planner/sizing/table.csv"  # round 34 (C34.8 (b)); round 30's csv stays in its folder
 COLUMNS = ["probe", "metric", "form", "sd_run", "base_run", "icc", "n_today", "se_today", "line", "effect_run", "effect_share",
            "n_needed", "mde_today", "mde_today_share", "guard_today", "cost_today_min", "cost_needed_min", "aa", "pairs"]
 

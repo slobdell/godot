@@ -231,6 +231,13 @@ builder0), ruled R34.3.
   all-across ON ≥ OFF − 1; last-across time and inversions + point passes + overtakes, mean(ON−OFF) ≤ 1.645 se. (3) make check on
   the ship tree, sim-baseline moves attributed with HALT_EARLY=off. Ships ON if (1)(a)(b), (2), (3) pass.
 
+- **v4b parkedroom re-judge (traffic, R34.9), filed before any number on `stream/traffic` `07276c881`
+  (`x2_parkedroom_v4_bar.md`, section v4b).** The same pair `5914d3ac5` (its C31.1 and attribution stand); builder0 start to end,
+  headless, pinned, native path (ask_handed_back > 0); base `--traffic-off=parkedroom`; FRESH 1100–1147 × {terminus, locks, random},
+  n 144 paired; L6 at 45 s. DECIDING GAIN L2 all far loops: arm < base AND (base − arm) − k·se > 0. Guards: L1a, L1b arm ≤ base + k·se.
+  L3–L6 exactly as filed. Ships ON only if all pass, as a pair with native's `4445f6b4c` and one fresh check on the hand-over
+  tree; a fail parks parkedroom for the round.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
@@ -300,6 +307,31 @@ builder0), ruled R34.3.
   `_squad_width` / `_squad_depth`, and new `tests/test_control*.gd`, for O1 (the ground cap) then O3 (price a squad at its halt
   shape), working on `stream/brains`, per `streams/orders.md`. If an orders worker starts, brains hands over at its next
   green commit and orders continues from there (O2, O4, O5).
+  **Extended (00:50 PDT): planner takes orders' O5 (the player test) while idle on P5:** GRANTED new probe files under
+  `tests/control/` (or `tests/orders_probe*.gd`), one additive target in `mk/command.mk`, and `references/round34/orders/**`;
+  READ-ONLY on game code. Measurement and screenshots only, no game code.
+- **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
+  pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
+  far loops 34 → 18 against a line of ≤ 17 (paired se 20.2): FAIL by one loop. 16 of the 18 are ONE episode (locks-913: a
+  battery asking a squadmate parked on HOLD 1.3 m from its slot, 16 times in 70 s, where the room search found no spot and so
+  refused, as OFF does; without it 34 → 2). Everything else passed: L1b 92 → 47, L2 124 → 60, L3 (a) open deaths +51 in a ±54 band,
+  (b) stuck/jammed 410 → 387, (c) hit rate within its line, L4 identical, L5 0/9, L6 94.2 % at 45 s. No re-read: the verdict stands.
+  **Why a v4b:** L1a's "≤ 50 % of base" on a base of 34 with se 20 asked for a drop the series could not resolve (17 is 0.84 se),
+  so the line failed on one fight's single cramped spot, not on the rule. v4b = the same code, a FRESH seed block disjoint from every
+  judged one, a bar re-filed before any number with the far-loop gain judged on L2 (all far loops: arm < base AND (base − arm) −
+  k·se > 0), L1a and L1b as guards (arm ≤ base + k·se), L3–L6 as filed. Run on **builder0** (a judged series stays on one machine)
+  so T4's fourth try runs on builder2 at the same time. If v4b also fails, parkedroom parks for the round, with no fifth try
+  without a new design.
+- **R34.10 C33.9 turn-in, second series (M0): every line passes but (c-out); by the bar it does NOT ship; the lead decides
+  (manoeuvre, pair `c8fb8b6a3` = 764ef5427 + native 25fd4298e, check green, builder2, fresh 101–112, n 12 a cell, 576 rows;
+  `references/round34/manoeuvre/m0-series/`).** (a) in-arc 3.1 → 74.2 % (sd_boot 4.6); (b) shots 1 → 10; (c) exchange 0.13 → 2.34;
+  in-reach hits taken 8088 → 5690; all six in-reach cells take less damage (−38 to −280 a run); (d)/(d2) 0 reverse in 144 runs
+  (OFF max 48 at stop); (e) 26.0 m; (g) free cells byte-identical. **(c-out) FAIL:** out-of-reach hits taken 3139 → 4627
+  (+1488 v k·se 437), pooled median 46 → 60 against the 57 he accepted (+3 hits, +1.0 sd_boot), worst cell +10 % (inside +37 %).
+  Out of reach the scout now turns in and fights: exchange there 0.06 → 1.45; gang scout v IFV 30 m kills it in 5 of 12 runs.
+  R34.1's ship reading puts a pooled median above 57 on the regression side, so the orchestrator does not ship it. The pair
+  stays ready; the orchestrator recommends SHIP to the lead (the shuffle he reported is gone in every run, and the out-of-reach
+  cost buys kills). On his yes: merge `c8fb8b6a3`, adopt crossing / parade / archipelago at the attributed hashes.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
