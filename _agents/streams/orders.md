@@ -84,6 +84,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
+### D4 A/B: FAILED its bar, minimax seating PARKED OFF (`bd22ac4c8`; `--deploy-minimax=on` opts in)
+builder0, `make native orders-probe`, `68d4c06cd`, seeds 3621-3626, n 6, both arms `--gate-deal=off`; rows
+`references/round35/orders/d4-ab-68d4c06cd/`. Counter: acted (25 / 36 click runs differ). Gain: summed median twitch 169.1 v
+179.8 m (6 %, needed 20 %); Terminus 5 click 5.7 v 18.9 (better). Per-cell guard fails in 4 cells (Crossing 3 click 15.4 v
+10.7, Crossing 5 route 29.4 v 21.4, Locks 5 click 21.4 v 13.9, Terminus 5 route 21.2 v 17.3); never-in up (Terminus 5 route
+3 v 2, Locks 5 route 1 v 0). What stands from D4: the residual twitch is the deploy move itself, and halt seats reached
+only round obstacles (round-36 design questions, below).
+
 ### D4 bar (minimax deploy seating), FILED BEFORE ANY BUILDER0 NUMBER (2026-10-19 11:35 PDT)
 - **Probe:** `make native orders-probe ORDERS_PROBE_SEEDS="3621 3622 3623 3624 3625 3626" ORDERS_PROBE_ARMS="main:--gate-deal=off minimax_off:--gate-deal=off,--deploy-minimax=off"`
   (R35.26: both arms with the gate deal OFF, so D4 is judged on today's main behaviour whatever D5's fate); tree stream/orders
@@ -227,8 +235,7 @@ stage).
 **D5, the Locks 5-squad route jam:** cause traced (the in-between gate dealt by where squads stood at home); fix built on
 stream/orders (`--gate-deal=off` = round 34). Laptop GDScript seed 34: all in 16.9 s v 43.3 s. Judged A/B on builder0
 (fresh seeds 3611-3616) waits for D1's merge + D2.
-**D4, the shuffle:** traced; minimax deploy seating built (`--deploy-minimax=off`), laptop seed 34 Terminus 5 twitch 31.3 -> 14.0 m;
-judged A/B (3621-3626) after D5's. The Crossing's detour seats and the herringbone-across-a-street are round-36 questions.
+**D4, the shuffle:** traced; minimax deploy seating FAILED its judged A/B (6 % v the 20 % line, 4 cells worse), parked OFF. The Crossing's detour seats and the herringbone-across-a-street are round-36 questions.
 **D3, tight packing:** PARKED OFF (R35.11): the halts pack, the arrivals don't. D3b (a narrower arrival shape) after D5/D4.
 **D2, done (reported):** `references/round35/orders/d2-main-1a18dd278/` (README in his terms, table, 48 shots). builder0 table
 on main 977a270fa (seed 34, n 1): the twitch after settling falls on the Crossing and Locks 3 cells, rises on Locks 5 click and
