@@ -115,6 +115,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   scenario_perf_per_ref_builder2.txt`). Next, the orchestrator's call: three idle readings on builder2 as measurement,
   then decide verify's NOT_JUDGED.
 
+- **B6 PARKED (R34.7)**, switch OFF (`a539188fe`). Series (builder2 `a2add1d0f`, fresh): drift 121 v 104 (limit 52) FAIL;
+  Sumps hollow 9 v 0 FAIL; crossing guard ON = OFF (the early lay never engaged). **Causes (tuning traces, laptop, seeds
+  40–41, `references/round34/brains/b6_tuning_traces_laptop.txt`):** (1) the early lay doesn't remove the swerve, it
+  moves it 60 m out: wedge → herringbone at t=20 sends a seat about 35 m sideways. (2) Leftover re-lays come from the
+  HEADING. The early lay uses the per-update bearing to the destination, which swings close in ((0.42,−0.91) one tick,
+  (−0.04,−1.00) at the arrival), and a ±17 m herringbone turned 27° moves seats 5–8 m. (3) Hollow: a crew coming 40 m
+  straight onto its halt seat parks 3.7 m off for good. That's inside the brain's SLOT_TOLERANCE 4.0 m ("in position",
+  so no further move) and outside the arrival line's 3.5 m. (4) The worst run (s611 t16) brings back B10's round-32
+  grounding flip. **Recommendation: no try 2 of the early lay** (it needs three fixes to only move the swerve). See the
+  orchestrator's call.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
