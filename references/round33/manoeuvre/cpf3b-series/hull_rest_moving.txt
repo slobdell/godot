@@ -1,0 +1,80 @@
+MOVING_KIND task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND faced_ambush | base_clicked | 0 | 0 | 0 | 12 | 2 | 0 | 0 | 14
+MOVING_KIND faced_ambush | base_drawn | 0 | 0 | 8 | 0 | 14 | 0 | 0 | 22
+MOVING_KIND faced_ambush | new_clicked | 0 | 0 | 0 | 4 | 2 | 0 | 0 | 6
+MOVING_KIND faced_ambush | new_drawn | 0 | 0 | 8 | 0 | 4 | 0 | 0 | 12
+MOVING_KIND faced_attack_move | base_clicked | 2 | 3 | 3 | 14 | 93 | 8 | 0 | 123
+MOVING_KIND faced_attack_move | base_drawn | 0 | 0 | 8 | 0 | 38 | 0 | 0 | 46
+MOVING_KIND faced_attack_move | new_clicked | 1 | 2 | 1 | 15 | 67 | 6 | 0 | 92
+MOVING_KIND faced_attack_move | new_drawn | 0 | 6 | 8 | 3 | 52 | 0 | 0 | 69
+MOVING_KIND faced_move | base_clicked | 0 | 6 | 0 | 0 | 7 | 0 | 0 | 13
+MOVING_KIND faced_move | base_drawn | 0 | 0 | 6 | 2 | 7 | 0 | 0 | 15
+MOVING_KIND faced_move | new_clicked | 0 | 6 | 0 | 0 | 7 | 0 | 0 | 13
+MOVING_KIND faced_move | new_drawn | 0 | 1 | 6 | 5 | 7 | 0 | 0 | 19
+MOVING_KIND faced_right | base_clicked | 0 | 12 | 2 | 0 | 7 | 0 | 0 | 21
+MOVING_KIND faced_right | base_drawn | 0 | 0 | 16 | 0 | 11 | 0 | 0 | 27
+MOVING_KIND faced_right | new_clicked | 0 | 10 | 1 | 0 | 8 | 0 | 0 | 19
+MOVING_KIND faced_right | new_drawn | 0 | 0 | 2 | 0 | 21 | 0 | 0 | 23
+MOVING_KIND faced_screen | base_clicked | 3 | 0 | 0 | 0 | 4 | 0 | 0 | 7
+MOVING_KIND faced_screen | base_drawn | 0 | 6 | 0 | 2 | 32 | 0 | 0 | 40
+MOVING_KIND faced_screen | new_clicked | 3 | 4 | 0 | 0 | 4 | 0 | 0 | 11
+MOVING_KIND faced_screen | new_drawn | 1 | 2 | 12 | 4 | 5 | 0 | 0 | 24
+MOVING_KIND faced_support_by_fire | base_clicked | 0 | 0 | 0 | 0 | 14 | 0 | 0 | 14
+MOVING_KIND faced_support_by_fire | base_drawn | 0 | 0 | 14 | 0 | 1 | 0 | 0 | 15
+MOVING_KIND faced_support_by_fire | new_clicked | 0 | 0 | 0 | 0 | 14 | 0 | 0 | 14
+MOVING_KIND faced_support_by_fire | new_drawn | 0 | 0 | 12 | 0 | 11 | 0 | 0 | 23
+MOVING_KIND_WT (wheels/turret only) task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND_WT faced_ambush | base_clicked | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 2
+MOVING_KIND_WT faced_ambush | base_drawn | 0 | 0 | 8 | 0 | 14 | 0 | 0 | 22
+MOVING_KIND_WT faced_ambush | new_clicked | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 2
+MOVING_KIND_WT faced_ambush | new_drawn | 0 | 0 | 8 | 0 | 0 | 0 | 0 | 8
+MOVING_KIND_WT faced_attack_move | base_clicked | 0 | 0 | 3 | 5 | 13 | 0 | 0 | 21
+MOVING_KIND_WT faced_attack_move | base_drawn | 0 | 0 | 4 | 0 | 26 | 0 | 0 | 30
+MOVING_KIND_WT faced_attack_move | new_clicked | 0 | 0 | 1 | 6 | 24 | 0 | 0 | 31
+MOVING_KIND_WT faced_attack_move | new_drawn | 0 | 6 | 4 | 2 | 40 | 0 | 0 | 52
+MOVING_KIND_WT faced_move | base_clicked | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 5
+MOVING_KIND_WT faced_move | base_drawn | 0 | 0 | 4 | 0 | 2 | 0 | 0 | 6
+MOVING_KIND_WT faced_move | new_clicked | 0 | 0 | 0 | 0 | 5 | 0 | 0 | 5
+MOVING_KIND_WT faced_move | new_drawn | 0 | 1 | 4 | 0 | 2 | 0 | 0 | 7
+MOVING_KIND_WT faced_right | base_clicked | 0 | 2 | 2 | 0 | 5 | 0 | 0 | 9
+MOVING_KIND_WT faced_right | base_drawn | 0 | 0 | 14 | 0 | 1 | 0 | 0 | 15
+MOVING_KIND_WT faced_right | new_clicked | 0 | 0 | 1 | 0 | 6 | 0 | 0 | 7
+MOVING_KIND_WT faced_right | new_drawn | 0 | 0 | 0 | 0 | 8 | 0 | 0 | 8
+MOVING_KIND_WT faced_screen | base_clicked | 0 | 0 | 0 | 0 | 4 | 0 | 0 | 4
+MOVING_KIND_WT faced_screen | base_drawn | 0 | 0 | 0 | 0 | 9 | 0 | 0 | 9
+MOVING_KIND_WT faced_screen | new_drawn | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 3
+MOVING_KIND_WT faced_support_by_fire | base_clicked | 0 | 0 | 0 | 0 | 14 | 0 | 0 | 14
+MOVING_KIND_WT faced_support_by_fire | base_drawn | 0 | 0 | 8 | 0 | 1 | 0 | 0 | 9
+MOVING_KIND_WT faced_support_by_fire | new_clicked | 0 | 0 | 0 | 0 | 14 | 0 | 0 | 14
+MOVING_KIND_WT faced_support_by_fire | new_drawn | 0 | 0 | 10 | 0 | 7 | 0 | 0 | 17
+MOVING_WORST base_clicked: 7 moving in /home/slobdell/projects/godot-manoeuvre/build/overnight/cpf3b-series/hr/base_clicked/gangs/faced_attack_move-466
+MOVING_WORST   Green_Guns_1 (gang_tank) 45.6 deg pinned: f 2430 Green_Guns_1 gang_tank order move_to from  v 0.23 moved 0.23 cmd 0.75/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.1 pivot false esc 0.0 goal 17.4 real 0.23
+MOVING_WORST   Green_Guns_5 (gang_tank) 152.2 deg pinned: f 2430 Green_Guns_5 gang_tank order move_to from  v 0.23 moved 0.23 cmd 0.93/-0.34 face 0/0.0 blocked false retry 0 touch false stuck 0.1 pivot false esc 0.0 goal 9.4 real 0.23
+MOVING_WORST   Green_Guns_6 (gang_tank) 31.2 deg driving: f 2430 Green_Guns_6 gang_tank order move_to from  v 0.57 moved 0.57 cmd 0.75/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.1 pivot false esc 0.0 goal 23.1 real 0.57
+MOVING_WORST   Green_Guns_7 (gang_tank) 131.6 deg driving: f 2250 Green_Guns_7 gang_tank order move_to from  v 2.40 moved 2.40 cmd -0.60/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 15.4 real 2.40
+MOVING_WORST   Green_Guns_2 (gang_tank) 60.0 deg driving: f 2430 Green_Guns_2 gang_tank order move_to from  v 3.99 moved 3.99 cmd 0.86/-0.54 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 33.6 real 3.99
+MOVING_WORST   Green_Guns_4 (gang_tank) 33.2 deg driving: f 2430 Green_Guns_4 gang_tank order move_to from  v 3.90 moved 3.90 cmd -0.98/0.09 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 36.0 real 3.90
+MOVING_WORST   Green_Guns II_1 (gang_tank) 79.1 deg driving: f 2430 Green_Guns II_1 gang_tank order move_to from  v 5.10 moved 5.10 cmd 0.96/0.15 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 34.6 real 5.10
+MOVING_WORST base_drawn: 6 moving in /home/slobdell/projects/godot-manoeuvre/build/overnight/cpf3b-series/hr/base_drawn/gangs/faced_attack_move-460
+MOVING_WORST   Green_Guns_10 (gang_tank) 107.1 deg driving: f 2430 Green_Guns_10 gang_tank order move_to from  v 2.27 moved 2.27 cmd -1.00/-0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 27.7 real 2.27
+MOVING_WORST   Green_Guns_11 (gang_tank) 58.3 deg driving: f 2430 Green_Guns_11 gang_tank order move_to from  v 3.43 moved 3.43 cmd -0.86/-0.57 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.6 real 3.43
+MOVING_WORST   Green_Guns_6 (gang_tank) 119.9 deg driving: f 2430 Green_Guns_6 gang_tank order move_to from  v 6.03 moved 6.03 cmd -0.88/-0.49 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 10.7 real 6.03
+MOVING_WORST   Green_Guns_8 (gang_tank) 177.5 deg driving: f 2430 Green_Guns_8 gang_tank order move_to from  v 2.64 moved 2.64 cmd -0.98/-0.07 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 29.0 real 2.64
+MOVING_WORST   Green_Guns_5 (gang_tank) 57.1 deg driving: f 2430 Green_Guns_5 gang_tank order move_to from  v 4.14 moved 4.14 cmd -0.95/0.21 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 21.4 real 4.14
+MOVING_WORST   Green_Hunters_2 (gang_ifv) 47.1 deg driving: f 2430 Green_Hunters_2 gang_ifv order move_to from  v 2.56 moved 2.56 cmd 0.20/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 27.8 real 0.00
+MOVING_WORST new_clicked: 7 moving in /home/slobdell/projects/godot-manoeuvre/build/overnight/cpf3b-series/hr/new_clicked/gangs/faced_attack_move-466
+MOVING_WORST   Green_Guns_1 (gang_tank) 161.3 deg driving: f 2430 Green_Guns_1 gang_tank order move_to from  v 4.04 moved 4.04 cmd 0.34/-0.64 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 10.8 real 4.04
+MOVING_WORST   Green_Guns_5 (gang_tank) 13.8 deg driving: f 2430 Green_Guns_5 gang_tank order move_to from  v 1.33 moved 1.33 cmd 0.34/-0.14 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 17.8 real 1.33
+MOVING_WORST   Green_Guns_6 (gang_tank) 25.3 deg driving: f 2130 Green_Guns_6 gang_tank order move_to from  v 2.53 moved 2.53 cmd -0.24/1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.2 real 2.53
+MOVING_WORST   Green_Guns_7 (gang_tank) 165.0 deg driving: f 2430 Green_Guns_7 gang_tank order move_to from  v 9.00 moved 9.00 cmd 0.75/-1.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 38.9 real 9.00
+MOVING_WORST   Green_Guns_2 (gang_tank) 60.0 deg driving: f 2430 Green_Guns_2 gang_tank order move_to from  v 3.99 moved 3.99 cmd 0.86/-0.54 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 33.6 real 3.99
+MOVING_WORST   Green_Guns_4 (gang_tank) 33.2 deg driving: f 2430 Green_Guns_4 gang_tank order move_to from  v 3.90 moved 3.90 cmd -0.98/0.09 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 36.0 real 3.90
+MOVING_WORST   Green_Guns II_1 (gang_tank) 79.1 deg driving: f 2430 Green_Guns II_1 gang_tank order move_to from  v 5.10 moved 5.10 cmd 0.96/0.15 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 34.6 real 5.10
+MOVING_WORST new_drawn: 7 moving in /home/slobdell/projects/godot-manoeuvre/build/overnight/cpf3b-series/hr/new_drawn/gangs/faced_attack_move-460
+MOVING_WORST   Green_Guns_10 (gang_tank) 109.2 deg driving: f 2430 Green_Guns_10 gang_tank order move_to from  v 3.89 moved 3.89 cmd -0.97/-0.11 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 15.2 real 3.89
+MOVING_WORST   Green_Guns_11 (gang_tank) 51.0 deg driving: f 2430 Green_Guns_11 gang_tank order move_to from  v 3.43 moved 3.43 cmd -0.86/-0.57 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 8.7 real 3.43
+MOVING_WORST   Green_Guns_12 (gang_tank) 67.9 deg driving: f 2430 Green_Guns_12 gang_tank order move_to from  v 1.86 moved 1.86 cmd -0.94/0.25 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 14.2 real 1.86
+MOVING_WORST   Green_Guns_6 (gang_tank) 56.8 deg dressing: f 2400 Green_Guns_6 gang_tank order move_to from  v 5.83 moved 5.83 cmd 0.58/-0.08 face 0/0.0 blocked false retry 30 touch false stuck 0.0 pivot false esc 0.0 goal 5.7 real 5.83
+MOVING_WORST   Green_Guns_8 (gang_tank) 176.7 deg driving: f 2430 Green_Guns_8 gang_tank order move_to from  v 3.92 moved 3.92 cmd -0.98/-0.08 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 35.5 real 3.92
+MOVING_WORST   Green_Guns_5 (gang_tank) 57.1 deg driving: f 2430 Green_Guns_5 gang_tank order move_to from  v 4.14 moved 4.14 cmd -0.95/0.21 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 21.4 real 4.14
+MOVING_WORST   Green_Hunters_2 (gang_ifv) 47.1 deg driving: f 2430 Green_Hunters_2 gang_ifv order move_to from  v 2.56 moved 2.56 cmd 0.20/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 27.8 real 0.00

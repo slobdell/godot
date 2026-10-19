@@ -1,0 +1,24 @@
+diff --git a/game/tactics/element.gd b/game/tactics/element.gd
+index fd6411043..fdf32be64 100644
+--- a/game/tactics/element.gd
++++ b/game/tactics/element.gd
+@@ -1613,8 +1613,8 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
+ 		if seat is Array:
+ 			text += " seat %s" % str(seat)
+ 		rows.append(text)
+-	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
+-			float(tick) / SimClock.TICK_RATE, element_name, id, String(task.get("verb", "-")), task.get("to"), anchor_v,
++	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s TMPfacing %s TMPwhy %s TMPtech %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
++			float(tick) / SimClock.TICK_RATE, element_name, id, String(task.get("verb", "-")), task.get("to"), task.get("facing"), String(plan.get("why", "")), String(plan.get("drill", "")), anchor_v,
+ 			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
+ 			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived,
+ 			" | ".join(PackedStringArray(rows))])
+@@ -1811,6 +1811,8 @@ func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary
+ 	elif int(before.get("seat", -1)) != _seat_index(unit_name):
+ 		key = "reseat"
+ 	goal_moves[key] = int(goal_moves[key]) + 1
++	if OS.get_cmdline_user_args().has("--tmp-goal-trace") and unit_name.begins_with("Green"):
++		print("TMPGOAL t=%.2f %s key %s %.1f m seat %d arrived %s formation %s anchor %s heading %s" % [Engine.get_physics_frames() / float(SimClock.TICK_RATE), unit_name, key, (before["to"] as Vector3).distance_to(desired["to"]), _seat_index(unit_name), arrived, formation, anchor, heading])
+ 	if key == "drift":
+ 		drift_moves += 1
+ 		var who := "%d:%s" % [id, unit_name]

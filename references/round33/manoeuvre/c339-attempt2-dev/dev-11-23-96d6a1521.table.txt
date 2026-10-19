@@ -1,0 +1,43 @@
+rows 624, seeds [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+subject    enemy       r post    n | in-arc off/on | shots     | hits      | revface  flipsf    far
+gang_scout gang_ifv   15 free   13 |  11.8  11.8 |    3    3 |   98   98 |       -       -      -
+gang_scout gang_ifv   15 player 13 |   8.3  35.2 |    2    8 |  102   93 |      33       4   75.6
+gang_scout gang_ifv   30 free   13 |  61.1  61.1 |    0    0 |    6    6 |       -       -      -
+gang_scout gang_ifv   30 player 13 |   2.6  10.0 |    0    2 |   86   84 |     268      32   51.3
+gang_scout gang_ifv   45 free   13 |  64.9  64.9 |    0    0 |    0    0 |       -       -      -
+gang_scout gang_ifv   45 player 13 |   5.6   5.6 |    0    0 |    4    4 |     334      37   11.3
+gang_scout syn_scout  15 free   13 |   2.4   2.4 |    2    2 |  103  103 |       -       -      -
+gang_scout syn_scout  15 player 13 |   3.1  21.8 |    3    5 |  101   97 |       0       0   23.6
+gang_scout syn_scout  30 free   13 |   8.6   8.6 |    0    0 |   53   53 |       -       -      -
+gang_scout syn_scout  30 player 13 |   1.7   4.2 |    0    1 |   64   76 |     320      30   25.8
+gang_scout syn_scout  45 free   13 |  26.4  26.4 |    0    0 |   20   20 |       -       -      -
+gang_scout syn_scout  45 player 13 |   2.6   2.9 |    0    0 |   36   40 |     303      31   21.1
+law_scout  gang_ifv   15 free   13 |   9.8   9.8 |   39   39 |  126  126 |       -       -      -
+law_scout  gang_ifv   15 player 13 |   9.3  23.1 |   38  197 |  135  112 |       0       0   20.4
+law_scout  gang_ifv   30 free   13 |  10.6  10.6 |   64   64 |   22   22 |       -       -      -
+law_scout  gang_ifv   30 player 13 |   2.3  19.1 |   10   59 |   98   65 |     103      16   64.5
+law_scout  gang_ifv   45 free   13 |  40.8  40.8 |    0    0 |    0    0 |       -       -      -
+law_scout  gang_ifv   45 player 13 |   3.0  17.4 |    4   34 |    3   25 |     255      27   21.5
+law_scout  syn_scout  15 free   13 |   3.6   3.6 |   13   13 |  126  126 |       -       -      -
+law_scout  syn_scout  15 player 13 |   4.2  20.3 |   17   65 |  118  132 |       0       0   19.9
+law_scout  syn_scout  30 free   13 |   5.6   5.6 |   21   21 |   63   63 |       -       -      -
+law_scout  syn_scout  30 player 13 |   2.1  71.2 |    8  260 |   78  103 |      39       3   34.1
+law_scout  syn_scout  45 free   13 |   6.0   6.0 |    0    0 |   32   32 |       -       -      -
+law_scout  syn_scout  45 player 13 |   2.4   9.0 |    0   23 |   53   53 |     256      28   27.5
+
+PLAYER-POST CELLS (in reach: ['gang_scout/gang_ifv/15', 'gang_scout/syn_scout/15', 'law_scout/gang_ifv/15', 'law_scout/gang_ifv/30', 'law_scout/syn_scout/15', 'law_scout/syn_scout/30'])
+(a) in-arc % on in-reach cells: off 3.8 on 24.6 -> FAIL
+(b) shots, every player cell: off 2 on 8 -> PASS
+(c) exchange on in-reach cells (damage dealt / taken): off 0.18 on 1.57; worst cell +0 % ('law_scout', 'syn_scout', 30, True) -> PASS
+    reported: in-reach hits taken off 104 on 98; worst cell +32 % ('law_scout', 'syn_scout', 30, True)
+(c-out) out-of-reach cells: pooled hits off 42 on 49; worst cell with off >= 10: +19 % ('gang_scout', 'syn_scout', 30, True) -> FAIL
+    reported: out-of-reach in-arc off 2.6 on 7.3
+    reported (off < 10): ('law_scout', 'gang_ifv', 45, True) 3 -> 25 (+733 %)
+    reported (off < 10): ('gang_scout', 'gang_ifv', 45, True) 4 -> 4 (+0 %)
+    damage (reported, not judged): off 228 on 190; mean distance off 26.8 on 25.0 m
+(d) while a face holds: reverse ticks under a reverse command max 203, commanded gear changes max 42 -> FAIL
+(d2) while the order is stop: reverse ticks max 20 -> FAIL; OFF max 46 (median 6); stop swings turned in, ON median 0
+    reported: total reverse ticks max 334 (runs with any 98 of 156), plant gear changes max 37; bounces touched {'none': 9004, 'Crate_0': 805, 'Ground': 521, 'Crate_8': 30}
+(e) furthest from post 75.6 m -> FAIL
+    while a face holds (the turn-in's): 75.6 m
+FREE CELLS (g): in-arc off 11.2 on 11.2, shots off 1 on 1, hits off 46 on 46 -> PASS

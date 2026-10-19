@@ -1,0 +1,32 @@
+>> step 1 hull-new_drawn start 13:05 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_GD=1 M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+>> step 2 hull-base_drawn start 13:26 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF=turnhull M1_GD=1 M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+>> step 3 hull-new_clicked start 13:49 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_clicked M1_NEW_OFF= M1_GD=1 M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+>> step 4 hull-base_clicked start 14:05 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_clicked M1_BASE_OFF=turnhull M1_GD=1 M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+>> step 5 native-new_drawn start 14:23 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+>> step 6 native-base_drawn start 14:42 on pair/cpf3b-off fdc47e576 builder2
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF= M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+>> step 7 fights-new start 15:03 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=fights CPH_SEEDS=476-499 exited 0 (build/ copied back)
+>> step 8 fights-base start 15:19 on pair/cpf3b-on 0dad42fa2 builder2
+>> step 6b native-base_drawn (native target) start 15:32 on pair/cpf3b-off fdc47e576 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=fights CPH_SEEDS=476-499 exited 0 (build/ copied back)
+>> step 9 census-new start 15:44 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF= M1_SEEDS=460-475 HULL_JOBS=8 M1_FLAGS=--turn-states exited 0 (build/ copied back)
+   6b NATIVE_EXEC logs: 269
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=census CPH_SEEDS=500-512 exited 0 (build/ copied back)
+>> step 10 census-base start 15:53 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=census CPH_SEEDS=500-512 exited 0 (build/ copied back)
+>> step 11 sbf-new start 15:58 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=sbf CPH_SEEDS=513-518 exited 0 (build/ copied back)
+>> step 12 sbf-base start 15:58 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=sbf CPH_SEEDS=513-518 exited 0 (build/ copied back)
+>> step 13 bridge-new start 15:59 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-cph CPH_ARM=off CPH_STAGE=bridge exited 0 (build/ copied back)
+>> step 14 bridge-base start 16:01 on pair/cpf3b-on 0dad42fa2 builder2
+>> remote: make manoeuvre-cph CPH_ARM=turnhull CPH_STAGE=bridge exited 0 (build/ copied back)
+>> series done 16:03

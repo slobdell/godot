@@ -1,0 +1,25 @@
+== (i) fights 476-499
+FIGHT_GUARD runs paired 23 (base 23, new 24)
+FIGHT_GUARD kills: base 904 new 889 diff -15 se 31.4 within 2 se
+FIGHT_GUARD deaths: base 915 new 895 diff -20 se 29.7 within 2 se
+FIGHT_GUARD shots: base 21090 new 21987 diff +897 se 1561.4 within 2 se
+FIGHT_GUARD hits: base 15179 new 15503 diff +324 se 1103.6 within 2 se
+FIGHT_GUARD touch_shots: base 1425 new 1481 diff +56 se 206.3 within 2 se
+FIGHT_GUARD touch_hits: base 855 new 839 diff -16 se 92.9 within 2 se
+FIGHT_GUARD hit rate: base 0.729 new 0.725 paired mean diff -0.004 se 0.017 within 2 se (n 23)
+FIGHT_GUARD hit rate on touching targets: base 0.632 new 0.612 paired mean diff -0.021 se 0.037 within 2 se (n 23)
+== (g) Terminus 500-512
+== mixed (13 seeds)
+  arrivals base 295 new 300 of 312: diff +5 se 5.00 1.645se 8.2: PASS
+  contact-ticks base 1698 new 1931: diff +233 se 346.5 1.645se 570.0: PASS
+== rigs (13 seeds)
+  arrivals base 177 new 182 of 208: diff +5 se 4.78 1.645se 7.9: PASS
+  contact-ticks base 12729 new 8659: diff -4070 se 3219.8 1.645se 5296.6: PASS
+== (h) bridge
+BRIDGE_POOLED 18 of 18 runs pass
+BRIDGE_POOLED 18 of 18 runs pass
+== (l) SBF 513-518
+NEW  gang_ifv   drawn in 24/24  median in  19.5 s  hull err at in: median   2.3 deg, >= 45: 0, >= 100: 0  | never in: []
+BASE gang_ifv   drawn in 24/24  median in  14.5 s  hull err at in: median  22.8 deg, >= 45: 2, >= 100: 0  | never in: []
+== (j) counters, new drawn
+HULL_COUNTERS face_keep_refused=0 hull_holds=0 hull_turns=0 off_seat_declines=0 HULL_COUNTERS base_drawn face_keep_refused=0 hull_holds=0 hull_turns=0 off_seat_declines=0 HULL_COUNTERS face_keep_refused=12910 hull_holds=0 hull_turns=0 off_seat_declines=0 HULL_COUNTERS new_drawn face_keep_refused=26262 hull_holds=0 hull_turns=287721 off_seat_declines=13676

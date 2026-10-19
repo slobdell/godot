@@ -1,0 +1,5 @@
+>> base_drawn start 16:32 dd7963e3a builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_GD=1 HULL_SEEDS=40 41 42 43 44 45 66 67 68 69 70 71 FACING_ONLY=faced_attack_move HULL_JOBS=6 HULL_JITTER_DEG=0 M1_BASE_OFF=turnhull M1_NEW_OF
+>> new_drawn start 16:36 dd7963e3a builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_GD=1 HULL_SEEDS=40 41 42 43 44 45 66 67 68 69 70 71 FACING_ONLY=faced_attack_move HULL_JOBS=6 HULL_JITTER_DEG=0 M1_BASE_OFF=turnhull M1_NEW_OFF
+>> done 16:41
