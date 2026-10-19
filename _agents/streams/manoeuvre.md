@@ -56,6 +56,21 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### W1 TRACED, design note sent (2026-10-19 ~09:30 PDT): `references/round35/manoeuvre/w1-trace/README.md`
+
+builder0, native path, behaviour of main a0ae0aafd + the probe, Locks/Terminus × fresh 3500–3511, 24 fights × 180 s, 984 deaths:
+**81 stuck:wedged (8.2 %, T5's rate)**, 80/81 hit in the last 10 s, 67/81 wheeled. Two populations, neither one stuck: **41 % held by
+Traffic's take-turns hold** at a street mouth under fire (median 5.4 s into the hold; the 3 longest episodes, 18 s, all holds; on
+wheels the at-spot hold is throttle 0 at full lock = the plant's creep shuffle, 67/106 at-spot ticks moving); **59 % ORCA slowing a
+crew in a fight's crowd, wedged a median 1.2 s** before death. Unstick drove 1 % of ticks. Proposals: (A) no new wedged trigger;
+(B) traffic: a held crew that is hit leaves the hold (request); (C) mine W1b: a wheeled hull held to a standstill doesn't creep
+(native mirrors); (D) traffic's death_cause gets `jam:held`. Waiting on the orchestrator for (C); built OFF meanwhile.
+
+### Requests to other streams
+
+- **traffic:** (B) release a Traffic hold for a crew being hit; (D) `jam:held` in `death_cause` before `stuck:wedged`.
+- **native:** mirror W1b in drive_native (pace-0 wheeled hold: turn 0) once the switch's GDScript lands.
+
 ### Plan (2026-10-19, Opus)
 
 1. **W1 trace** — `tests/manoeuvre/wedge_trace.gd` + `wedge_table.py`, `make native manoeuvre-wedge-trace` (WEDGE_AT, WEDGE_RANGE;
