@@ -1,0 +1,7 @@
+FACE_KEEP_DISTINCT drawn | distinct pairs 42 of 42 | cells that repeat: none
+FACE_KEEP_ABANDONED drawn | runs 42 v 42 | candidate 0/88 = 0.0 % v base 0/86 = 0.0 % | se 0.0 pts | line <= 0.0 % | PASS
+FACE_KEEP_FAR drawn | plans candidate 9 v base 10 | median 2.5 v 3.1 m (se 1.43, line <= 5.5) ok | p90 8.7 v 6.7 over | max 8.7 v 8.7 | REPORTED (R34.5), would read FAIL
+FACE_KEEP_DISTINCT clicked | distinct pairs 41 of 41 | cells that repeat: none
+FACE_KEEP_ABANDONED clicked | runs 41 v 41 | candidate 1/175 = 0.6 % v base 2/164 = 1.2 % | se 1.0 pts | line <= 2.9 % | PASS
+FACE_KEEP_FAR clicked | plans candidate 22 v base 20 | median 3.5 v 3.2 m (se 1.07, line <= 5.0) ok | p90 14.9 v 16.5 ok | max 16.6 v 21.0 | REPORTED (R34.5), would read PASS
+FACE_KEEP line (2b): ALL PASS ((2c) FACE_KEEP_FAR reported only, R34.5)
