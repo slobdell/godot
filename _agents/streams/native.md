@@ -148,6 +148,51 @@ RPC via a multiplayer peer which is not connected" (scene_rpc_interface.cpp:478)
 `_show_shell_impact` (rpc when connected, else the local call): laptop 7 runs, alone and with relay_peer + fx_tank_shell.
 One early combined run read 20/1 with its detail lost; 7 since are green. Watching for it in the full check.
 
+**N3 C34.8 (a), the MOVES LIST: DONE.** `make pin-moves` ran each of the 16 pinned recipes (14 stages) four times on
+ONE commit (`74853ade4`, builder2, pinned / free / pinned / free, each stage's four arms in series and six stages at once).
+slot.sh's 90-minute limit cut facing-probe's and hull-rest-probe's free2. They were finished alone (`PIN_MOVES_ARMS=free2
+PIN_MOVES_KEEP=1`, same commit, load 56). The table masks wall-clock text (timestamps, timing ratios, the timing
+stages' ms). pp / ff = lines differing between the two pinned / the two free runs; pf = pinned v free:
+
+    stage                    pp     ff     pf   verdicts  secs pinned / free (each run)
+    control-timing            1      1      3   same       26, 28 / 28, 27
+    converge-probe            0   1745   1928   same      117, 119 / 643, 643
+    facing-probe              0   2107   2217   same     1379, 1470 / 2299, 2219
+    five-squads-series        0    849   1016   same      140, 140 / 326, 338
+    flank-probe               0  10938  11848   same      168, 218 / 400, 403
+    gate-test                 0      0      0   same       22, 20 / 143, 141
+    hull-rest-probe           0   7421   8093   same      818, 719 / 2308, 2229
+    interleaved-probe         0     57    136   same       51, 48 / 159, 157
+    pace-leak-tests           0      0      0   same       28, 28 / 92, 99
+    pace-p0-tests             4      0      0   same      199, 157 / 2067, 2056
+    planner-trace-hull-rest   0   4766   1870   same       48, 39 / 72, 117
+    planner-twin              0      0      0   same      200, 150 / 249, 191
+    scenario-times            1      1      1   same       30, 28 / 96, 99
+    traffic-far-hull          0   5224   4960   same      506, 384 / 1203, 1232
+
+**What it says.** Every stage that plays a match REPRODUCES EXACTLY when pinned (pp 0) and does not when free (ff up to
+10,938 lines between two free runs on one commit). No verdict changed: every arm exited 0, and every PASS/FAIL set is
+the same across the four. The movers are the match-playing stages. Their numbers move pinned v free because a free
+clock's frames carry a varying number of physics steps under load (its load column: 2.5-56 on 32 CPUs), so awaits,
+nav syncs and order timing land on different ticks. The free runs disagree with each other by as much as with pinned.
+Nothing was loosened: no threshold, floor or bar line changed. Examples:
+- hull-rest-probe (manoeuvre's ruler): drawn ALL median 10.3 deg pinned (both runs) v 8.7 / 7.2 free; tracks/turret
+  drawn worst 59.7 pinned v 3.3 / 4.8 free (one run lands differently on the pinned clock). <=15 deg 51 % v 51 / 54 %.
+- facing-probe: faced_ambush hull err median 75.2 pinned (both) v 86.8 / 70.7 free; squads ok 3/15 v 3/15, 5/15.
+- flank-probe: drawn reached its side 9/12 pinned (both) v 10/12, 9/12 free; median s 18.0 v 18.5, 17.0.
+- five-squads-series, interleaved-probe, converge-probe, traffic-far-hull, planner-trace-hull-rest: the per-run
+  json/tables are identical pinned and differ free.
+The rest:
+- No movers (identical all four ways): gate-test, pace-leak-tests, pace-p0-tests, planner-twin. Their test runs already
+  pace by physics frames. pace-p0's pp 4 is one load warning from Jolt ("job system exceeded the maximum number of
+  jobs"), not a result.
+- The timing stages (control-timing, scenario-times) time wall clock on purpose. Pinned, they measure the same CPU per
+  frame (their ratios are masked). control-timing's per-system frame costs read lower pinned (awareness 0.132 v 0.196
+  ms) because a free clock adds frame-pacing work. Both arms pass the budgets.
+- Throughput: pinned is 1.3-13x faster (pace-p0-tests 199 / 157 s v 2067 / 2056 s).
+Table: `tests/native/pin_moves.py` over build/pin-moves (raw arms kept on builder2 in ~/tank_squad/godot-native/build/
+pin-moves).
+
 **N5, the yield Sumps stage off the pits: DONE, `17876e4b6` (test-only).** The off-floor hulls were NOT the pits alone.
 A laptop sweep of the stage's spawn layout over 961 Sumps centres (4 m grid, NATIVE=off) found hulls pushed off the floor
 almost everywhere: only 231 centres spawn clean. The old (-16, -6) put 7 hulls off the floor, where its ranks overlapped
