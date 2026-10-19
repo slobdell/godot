@@ -137,6 +137,21 @@ min; CP-F 4's step 2 wrapper died 6 min in) while the remote makes ran on as orp
 touched). Neither M2 run is named from those logs. Both the M2 check (builder0) and the CP-F 4 series (resumed from step
 2; step 1's wrapper line is in its summary) now run under `systemd-run --user` as the brief orders; orientation trip-up 86.
 
+### CP-F attempt 4 JUDGED (2026-10-19 ~09:00 PDT): PARKS on (d), (e), (g) — the hull turn works, the stage does not settle
+
+Series on `lab/cpf4` e76f6dab6, builder2 start to end, 14/14 steps exited 0, fresh seeds as filed; every reader's output
+and the trace in `references/round34/manoeuvre/cpf4-series/` (README has the full table). In his terms: a wheeled turret
+crew told a drawn facing now ends facing it (point tasks median 3.0–4.0° v 47–57° today, 82–94 % within 15° v 14–24 %;
+ambush and support-by-fire 3.7° v 80° and 78°), every other class unchanged, fights/bridge/arrivals unchanged, the native
+path agrees in sign. But more crews are still moving when the stage judges at 75 s — ambush 8 v 1, move 14 v 5, screen
+23 v 10 (guards +3.2 / +6.7 / +5.4) — attack-move never settles in 20 runs v 14, and Terminus mixed squads lose one arrival
+in five of thirteen seeds (285 v 290, −5, 1.645 se 4.6). Two mechanisms traced: faces no plan fits creep to the judge
+(face_creep at the judge: screen 8 v 0, attack-move 4 v 0), and attack-move elements step to their next leg ~30 s later when
+their crews sit on a `face from sector` instead of a `stop` (7 of 26 pairs ≥ 10 s later), so legs 2–3 run past the judge.
+**By R33.34's clause this was the last re-run: a fifth attempt needs a new design** (a face that gives up cleanly when no
+plan fits, and the element step not waiting on a sector face), not a seed change. Not shipped; brains keeps B11b on the
+seam as is (no merge hash). The clip below stays mechanism-only.
+
 ### Stretch: the War Rig face-behind clip is CUT (2026-10-19 ~08:30 PDT, laptop)
 
 `references/round34/manoeuvre/face-clip/` (4 MB mp4, frames, both SCREEN rows, README): lab/cpf4 e76f6dab6, gangs
