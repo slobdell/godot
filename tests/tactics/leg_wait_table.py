@@ -33,9 +33,12 @@ STATE = re.compile(r"MANOEUVRE_STATE f (\d+) (\S+) \S+ order (\S+) from (\S*) .*
 def read_run(path):
     crews = {}  # second -> crew -> (order, source, goal, real)
     gates = []  # (second, element key, reached, closed, held_by, gap)
+    releases = [0]  # LEG_GATE lines that say the straggler release stepped the leg (traced once a second: a lower bound)
     with open(path, errors="replace") as handle:
         for line in handle:
             if "LEG_GATE" in line:
+                if " released " in line:
+                    releases[0] += 1
                 m = GATE.search(line)
                 if m and m.group(4) == "false":
                     gates.append((int(float(m.group(1))), "%s#%s" % (m.group(2), m.group(3)), m.group(5) == "true",
@@ -46,7 +49,7 @@ def read_run(path):
                     second = int(m.group(1)) // 30
                     goal = float(m.group(5)) if m.group(5) != "inf" else float("inf")
                     crews.setdefault(second, {})[m.group(2)] = (m.group(3), m.group(4), goal, float(m.group(6)))
-    return gates, crews
+    return gates, crews, releases[0]
 
 
 def kind_of(state):
@@ -77,7 +80,8 @@ def main():
                 if not os.path.exists(log):
                     continue
                 task = run.rsplit("-", 1)[0]
-                gates, crews = read_run(log)
+                gates, crews, released = read_run(log)
+                table[(arm, task)]["released"] += released
                 key = (arm, task)
                 table[key]["runs"] += 1
                 streak = {}
@@ -102,10 +106,11 @@ def main():
             table[(arm, task)]["long_s"] += length
     kinds = ["closing", "wedged", "parked", "face", "stop"]
     print("leg waits (element reached its anchor, not closed up), seconds summed over runs; long = holds >= %d s" % LONG_S)
-    print("%-11s %-22s %5s %7s %s %6s %7s" % ("arm", "task", "runs", "wait_s", " ".join("%8s" % k for k in kinds), "long", "long_s"))
+    print("%-11s %-22s %5s %7s %s %6s %7s %8s" % ("arm", "task", "runs", "wait_s", " ".join("%8s" % k for k in kinds), "long", "long_s",
+          "released"))
     for (arm, task), counts in sorted(table.items()):
-        print("%-11s %-22s %5d %7d %s %6d %7d" % (arm, task, counts["runs"], counts["wait"],
-              " ".join("%8d" % counts[k] for k in kinds), counts["long"], counts["long_s"]))
+        print("%-11s %-22s %5d %7d %s %6d %7d %8d" % (arm, task, counts["runs"], counts["wait"],
+              " ".join("%8d" % counts[k] for k in kinds), counts["long"], counts["long_s"], counts["released"]))
     if rows:
         print("\nlong holds: arm task faction run element from-to (s) gap first->last (m) waiting on, seconds by kind")
         for arm, task, faction, run, element, start, last, kinds_seen, first_gap, gap, who in holds:

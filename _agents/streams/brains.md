@@ -82,6 +82,7 @@ chance to come unstuck). Both sides (symmetric AI). `--straggler=off` is main's 
 Workload: hull-rest drawn, `faced_attack_move` + `faced_move`, FRESH seeds 701-716 x gangs/law/syndicate/condemned (128 runs an
 arm), `--element-trace=all --turn-states`; fights: `manoeuvre-fights`' census on fresh seeds 720-743 (24 an arm). Paired by seed;
 se of the paired sum.
+- (0) FIRST (R35.5's rule): straggler releases > 0 in the new arm (LEG_GATE `released`), else the A/B is vacuous.
 - (a) DECIDING: long-hold seconds (leg waits >= 10 s, `leg_wait_table.py`) summed over attack-move runs: new <= 0.6 x base AND the
   paired difference < 0 by > 2 se.
 - (b) the same on faced_move: not worse by > 2 se (report the size).
