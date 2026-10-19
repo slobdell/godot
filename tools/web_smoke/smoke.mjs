@@ -6,8 +6,10 @@
 // with no uncaught exceptions or console errors. Always writes the screenshot
 // so a human or agent can look at what the browser actually rendered.
 // Uses the system Chrome (override with $CHROME); SwiftShader provides WebGL 2
-// without a GPU, so this works on a headless server too.
+// without a GPU, so this works on a headless server too. Chrome is given no
+// display (headless_env.mjs: a dead desktop's DISPLAY took WebGL2 away).
 import puppeteer from "puppeteer-core";
+import { headlessEnv } from "./headless_env.mjs";
 
 const [url, screenshotPath, settleArg, markerArg] = process.argv.slice(2);
 const settleMs = Number(settleArg ?? 3) * 1000;
@@ -18,6 +20,7 @@ const browser = await puppeteer.launch({
   executablePath: process.env.CHROME ?? "/usr/bin/google-chrome",
   headless: true,
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--window-size=1280,720"],
+  env: headlessEnv(process.env),
 });
 
 const problems = [];
