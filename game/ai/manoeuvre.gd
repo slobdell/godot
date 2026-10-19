@@ -55,6 +55,8 @@ static func reset() -> void:
 	face_refused = 0
 	hull_turns = 0
 	face_keep_refused = 0
+	hull_holds = 0
+	off_seat_declines = 0
 	face_keep_by_unit = {}
 
 
@@ -383,13 +385,29 @@ static func turn_hull_on() -> bool:
 ## Did the player DRAW this crew's facing (its element task, or its own K1 order, carries one)? Read by the brain's
 ## decline (`TankBrain._order_move`) under `turnhull`.
 static func drawn_facing(brain: TankBrain) -> bool:
+	return drawn_direction(brain) != null
+
+
+## The facing he DREW for this crew as a flat unit direction (its element task's, else its own K1 order's, else -- with
+## no order current -- the station its last order left it at when that order named a facing), or null.
+static func drawn_direction(brain: TankBrain) -> Variant:
 	var source: Variant = brain.get("_element_source")
 	if source != null:
 		var mine: Variant = ElementFeed.element_of(source, String(brain.tank.name))
 		if mine != null and "task" in mine:
 			var task: Variant = mine.get("task")
-			return task is Dictionary and TankBrain._direction_of((task as Dictionary).get("facing")) != null
-	return brain._ordered_facing()
+			return TankBrain._direction_of((task as Dictionary).get("facing")) if task is Dictionary else null
+	if brain._ordered_facing():
+		return brain.intended_facing()
+	# Round 33 (CP-F, the orchestrator's call): a plain move with a drawn facing COMPLETES on arrival, and the contact that follows is the
+	# commonest case of all; the station keeps whether its heading was drawn (`Orders._remember_station`).
+	var orders: Variant = brain._order_source
+	if orders == null or not orders.has_method("station") or not OrderFeed.current(orders, String(brain.tank.name)).is_empty():
+		return null
+	var post: Variant = orders.call("station", String(brain.tank.name))
+	if not post is Dictionary or not bool((post as Dictionary).get("drawn", false)):
+		return null
+	return TankBrain._direction_of((post as Dictionary).get("heading"))
 
 
 ## The brain's decline is lifted for this order (turn-hull ON, a face from the crew's order, a drawn facing).
@@ -400,8 +418,55 @@ static func hull_takes_face(brain: TankBrain, order: Dictionary) -> bool:
 	# 37 % v artillery's 95 %); `drawn_facing` is what says the facing is his, the label only says which way it came.
 	if not turn_hull_on() or not String(order.get("from", "")) in ["order", "sector"] or not drawn_facing(brain):
 		return false
+	if off_seat(brain):
+		return false
 	hull_turns += 1
 	return true
+
+
+## Round 33 (CP-F attempt 3, R33.23): a crew standing further from its held seat than it may and still be ARRIVED is on its
+## way there, so neither lift applies and the decline stands (`stop`): the move finishes first and the hull turns once
+## seated. Traced (builder2, --fixed-fps, hull-rest gangs SBF s44/s45): Guns_5 stood 6.5-8 m from its seat, its dressing
+## move reversed toward it for a second, then the lifted face replaced the move and crept it, every second to the 75 s
+## judge (support-by-fire movers 8 v 3).
+## R32.3's ARRIVED_M (workstreams.md): a crew within this of its seat at completion HAS arrived, the definition the bar's
+## (f) reads. ORDER_ARRIVE's 3.5 m left crews seated 3.5-7 m out unturned (builder0, 40-45: attack-move within 15 deg
+## 78.8 -> 58.8 %).
+const SEAT_ARRIVED_M := 7.0
+
+
+static func off_seat(brain: TankBrain) -> bool:
+	var seat: Vector3 = brain.face_slot
+	if seat == Vector3.INF:
+		return false
+	var here := brain.tank.global_position
+	if _flat(here, seat) <= maxf(SEAT_ARRIVED_M, Movement.settle_radius(brain.tank.unit_id)):
+		return false
+	off_seat_declines += 1
+	return true
+
+
+## Round 33 (CP-F, F1): ...and a face the brain DECLINES under turnhull (round 8: a contact the turret takes) keeps the
+## HULL on his drawn heading instead of becoming `stop`. Traced (builder0, hull-rest gangs s66 faced_move, turnhull ON):
+## the War Rig's planned face was cut to `stop` mid-leg each time the quiet enemy came into sight at ~74 m, and it ended
+## 44-126 deg off. The turret still fights the contact (gunnery picks its own target); the front armour stays where he
+## pointed. {} when off, or nothing was drawn (the round-8 decline stands).
+static func drawn_face(brain: TankBrain) -> Dictionary:
+	if not turn_hull_on():
+		return {}
+	var direction: Variant = drawn_direction(brain)
+	if direction == null or off_seat(brain):
+		return {}
+	var here := brain.tank.global_position
+	var look: Vector3 = Vector3(here.x, 0.0, here.z) + (direction as Vector3) * 20.0
+	hull_holds += 1
+	return {"type": "face", "x": look.x, "z": look.z, "from": "drawn"}
+
+
+## Arm counter: declined faces that kept the hull on his drawn heading instead (drawn_face).
+static var hull_holds := 0
+## Arm counter (R33.23): faces left declined because the crew was still off its seat (`off_seat`).
+static var off_seat_declines := 0
 
 
 static func _kept(at: Vector3) -> bool:
