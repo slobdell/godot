@@ -56,6 +56,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### W1b and W2 built, default OFF; quick green (2026-10-19 ~10:30 PDT)
+
+`9d2486dab` builder0 `make quick-remote` (QUICK_BASE 0f4d528d7) **exited 0, 75 passed 0 failed**, lint clean. W2's boxed War Rig
+(four parked squadmates, face 90° right): ON gives up after 3 failed plans and stands (throttle 0, moved 0.0 m over the last 3 s,
+`face_settled()` true); OFF creeps (throttle 0.7, 3.2 m). Open ground: turns to 3.4°, no give-up. W1b's rule test: 3/3. Orchestrator: W1b
+approved (R35.7, arenas locks/terminus/sumps); Bar M5 filed on main 8640ec500. Dev reads running (tuning seeds: wedge 3500–3503 ×
+locks/terminus/sumps, both arms GDScript; hull-rest 460–463 drawn on lab/cpf5 bdacb1786).
+
 ### W1 TRACED, design note sent (2026-10-19 ~09:30 PDT): `references/round35/manoeuvre/w1-trace/README.md`
 
 builder0, native path, behaviour of main a0ae0aafd + the probe, Locks/Terminus × fresh 3500–3511, 24 fights × 180 s, 984 deaths:
