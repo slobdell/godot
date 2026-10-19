@@ -37,29 +37,110 @@ func test_the_give_way_on_the_owned_state() -> void:
 ## (its own step aside held: underfire_holds); and every frame, each crew giving way hit this tick, its whole execute
 ## step compared: T6b's give-way FINISHES under fire (T6's abort, dropped at R34.17, reversed crews into the asker), so
 ## the native step must carry it on too. Tanks' ticks_since_hit and the switch are put back after each.
-const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1, "passes": 1, "pass_ticks": 1,
-		"passes_timeout": 1, "passes_done": 1}
+## Round 35 (T7): in this stage's ranks a neighbour sits in every pass lane, so an asked crew under fire gives way as
+## today (underfire_gives); the refusal, the hold and a real pass start are floored on the pass stage below.
+const UNDERFIRE_FLOORS := {"": 10, "underfire_gives": 1, "pass_ticks": 1, "passes_timeout": 1, "passes_done": 1}
 ## Round 35 (traffic T7): the forced passes. Each mover with a move order, `under_fire` times a stage, is put mid-pass round
 ## the nearest other hull and its drive twinned (`_avoid` steers by `_pass_point`): cycling a live pass (its way toward the
 ## refuser: behind it, the abreast point), one on its last tick (the clock ends it: passes_timeout) and one already past
 ## the refuser's nose (passes_done). Put back after each.
 const PASS_CASES := ["live", "timeout", "done"]
-## Round 35 (T7): the under-fire stages' hulls 22 m apart in a rank (the plain stages' 9 m put a neighbour in every pass
-## lane, so no asked crew under fire ever had one: 10 gives, 0 refusals at c9ba20917). At 22 m the lane ~7 m beside a hull
-## is clear and the refusal, the hold and a real pass start are twinned.
-const UNDERFIRE_GAP := 22.0
 
 
 func test_the_give_way_under_fire() -> void:
 	if FreshStage.parent(self, "test_the_give_way_under_fire"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), UNDERFIRE_GAP, 24.0, UNDERFIRE_FLOORS, 0, 60)
+	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
 
 
 func test_the_give_way_under_fire_owned() -> void:
 	if FreshStage.parent(self, "test_the_give_way_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), UNDERFIRE_GAP, 24.0, UNDERFIRE_FLOORS, 0, 60)
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+
+
+## Round 35 (traffic T7): the pass, end to end (traffic's open-ground staging, test_traffic_underfire). Two law tanks on
+## yard_open. Leg 0: the crew under fire stands on a stop order, hit every tick, and a squadmate is sent 30 m straight
+## through it: asked, it refuses with a side offered (a lane on open ground), the asker passes and ends abreast. Leg 1: both
+## drive head-on, both hit every tick: the one to give way holds its own step aside when the other has a lane. Every drive
+## of both twinned, every frame.
+const PASS_FLOORS := {"": 2, "underfire_refusals": 1, "passes": 1, "pass_ticks": 1, "passes_done": 1, "underfire_holds": 1}
+const PASS_FRAMES := 600
+
+
+func test_the_pass_under_fire() -> void:
+	if FreshStage.parent(self, "test_the_pass_under_fire"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _pass_stage(false)
+
+
+func test_the_pass_under_fire_owned() -> void:
+	if FreshStage.parent(self, "test_the_pass_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _pass_stage(true)
+
+
+func _pass_stage(owned: bool) -> void:
+	if NativeExpect.absent(self):
+		print("native: absent, the pass is not exercised in this run")
+		return
+	MoverState.world_reset()
+	_man_reset()
+	_yield_reset()
+	NativeDrive.owned = owned
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "yard_open")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.seed_spawns(1, 0.0)
+	var controllers: Array[OrderController] = []
+	var movers: Array[Movement] = []
+	var tanks: Array[Tank] = []
+	for spec: Array in [["PassRefuser", Vector3(0.0, 0.0, 0.0), 0.0], ["PassAsker", Vector3(0.0, 0.0, 14.0), 0.0]]:
+		var tank := game_match.spawn_tank(spec[0], 0, Match.Team.GREEN, "tank")
+		tank.place(spec[1], spec[2])
+		tanks.append(tank)
+		var orders := OrderController.new()
+		orders.tank = tank
+		orders.tanks_root = game_match.tanks
+		add_to_tree(orders)
+		controllers.append(orders)
+	await wait_physics_frames(2)
+	for orders in controllers:
+		movers.append(Movement.of(orders.tank))
+	_movers = movers
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	for leg in 2:
+		var start_asker := Vector3(0.0, 0.0, 14.0)
+		tanks[0].place(Vector3.ZERO, 0.0)
+		tanks[1].place(start_asker, 0.0)
+		await wait_physics_frames(2)
+		if leg == 0:
+			controllers[0].set_orders({"type": "stop"}, null)
+		else:
+			controllers[0].set_orders({"type": "move_to", "x": 0.0, "z": 30.0}, null)
+		controllers[1].set_orders({"type": "move_to", "x": 0.0, "z": -30.0}, null)
+		for frame in PASS_FRAMES:
+			tanks[0].ticks_since_hit = 0
+			if leg == 1:
+				tanks[1].ticks_since_hit = 0
+			var result := _compare_tick(movers, controllers, leg * PASS_FRAMES + frame)
+			drives += result[0]
+			mismatches += result[1]
+			if first == "" and result[2] != "":
+				first = "(pass leg %d) %s" % [leg, result[2]]
+			await wait_physics_frames(1)
+			if tanks[1].global_position.z < -20.0:
+				break
+	NativeDrive.owned = false
+	Traffic.set_off("underfire", was_off)
+	print("native yield pass stage%s: %d drives compared, %d mismatches" % [" (owned state)" if owned else "", drives, mismatches])
+	assert_eq(mismatches, 0, "the native pass is the live GDScript's: %s" % first)
+	_yield_check("pass%s" % [" owned" if owned else ""], PASS_FLOORS)
 
 
 ## Round 34 (native N5): the Sumps stage stands beside the west pit, not on its edge. At (-16, -6) its ranks overlapped
