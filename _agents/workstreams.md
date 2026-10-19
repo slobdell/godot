@@ -329,8 +329,9 @@ builder0), ruled R34.3.
   is NOT closed on the Locks:** O1 capped the anchor to the near bank, but a crew SEAT that lands in the canal snaps to the far
   bank (Green_Echo_3 (39.4, 12.2) → (39.4, −12.2) at 9 s); Echo_1 crossed the east bridge and came back; the squad shuffled 78.5 m
   after "arrived". Brains, FIRST: snap a seat only onto ground its anchor reaches without a deck. (3) Where O1 acts it works
-  (Crossing far-bank crews 1 → 0 and 2 → 0). (4) Anchors outside the hex maps' diagonal walls (clamp_to_arena is a rectangle):
-  **planner GRANTED `Orders.clamp_to_arena` (game/control/orders.gd) + a test** to clamp to the real outline. Post-arrival
+  (Crossing far-bank crews 1 → 0 and 2 → 0). (4) RETRACTED by planner before any code: clamp_to_arena already clamps to the polygon (ArenaShape,
+  inset WALL_CLEARANCE_M); (−100.9, 59.7) is 4.6 m inside the Crossing's hex wall. The probe's top-down shots drew the HUD's 2D
+  rings through the game's perspective camera, so they landed wrong; the vehicles were right. Grant withdrawn. Post-arrival
   shuffle 20–48 m worst with 3 squads, 28–124 m with 5 (B6's cause; the deploy step is his question).
 - **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
   pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
