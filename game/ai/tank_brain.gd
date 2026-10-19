@@ -346,40 +346,45 @@ const COOLDOWN_FACTOR := 0.25
 const SLOT_TOLERANCE := 4.0
 ## Round 25 (brains F7): read the K1 order only when order_changed flagged it (true) or also on every think (false).
 static var ORDER_READ_ON_SIGNAL := true
-## Overnight item 2 (brains, from C33.9): a scout under fire fights back when it can't get away (scout_fights_back):
-## SPOT drops to SCOUT_FIGHT_SPOT so ENGAGE wins. `--scout-fight=off` (or env SCOUT_FIGHT=off, which a make target
-## carries to its children) is main's rule.
+## Round 34 (brains B1, C34.5; try 1 was R33.31's overnight item 2): a scout under fire stands and trades only when it
+## can win (scout_fights_back): SPOT drops to SCOUT_FIGHT_SPOT so ENGAGE wins. An outgunned scout keeps SPOT and opens
+## distance. `--scout-fight=off` (or env SCOUT_FIGHT=off, which a make target carries to its children) is main's rule.
 static var SCOUT_FIGHT_BACK := not (OS.get_cmdline_user_args().has("--scout-fight=off") \
 		or OS.get_environment("SCOUT_FIGHT") == "off")
-## ...hit within this many ticks (2 s) is "under fire"; a shooter whose top speed is at least this share of the scout's
-## is one it cannot get away from.
+## ...hit within this many ticks (2 s) is "under fire"; the contact must stay inside its reach this many whole seconds
+## ahead (sampled each second, both on their current velocities: R33.31's orbiter was in reach at the tick and swung out).
 const SCOUT_FIGHT_HIT_TICKS := SimClock.TICK_RATE * 2
-const SCOUT_FIGHT_SPEED_SHARE := 0.9
+const SCOUT_FIGHT_REACH_S := 2
 ## ...and SPOT's score then (re-filed: at the in-sight 0.7 the rule fired and SPOT still won, ENGAGE scoring 0.27-0.43).
 const SCOUT_FIGHT_SPOT := 0.15
 
 
-## Overnight item 2: whether a scout (`me`: the situation's self) should fight rather than open distance. Hit within
-## SCOUT_FIGHT_HIT_TICKS, by a visible non-prey contact that can shoot it now (threatens_me) and is inside its own
-## effective range, which it matches (`matchups` advantage >= 1, an even duel) or cannot outrun (top speed >= SCOUT_FIGHT_SPEED_SHARE
-## x its own). No attacker is recorded on a hit, so "the one shooting it" is that contact. Pure.
+## C34.5: whether a scout (`me`: the situation's self) should fight rather than open distance. Hit within
+## SCOUT_FIGHT_HIT_TICKS, by a visible non-prey contact that can shoot it now (threatens_me), that it wins the duel
+## against (`matchups` advantage >= 1: Matchups.duel_advantage is a ratio, > 1 I win) and that stays inside its own
+## effective range now and at each second up to SCOUT_FIGHT_REACH_S ahead. Try 1's "can't outrun it" clause is gone: it
+## sent scouts into duels they lost (R33.31). No attacker is recorded on a hit, so "the one shooting it" is that contact.
+## Pure.
 static func scout_fights_back(me: Dictionary, contacts: Array, matchups: Dictionary) -> bool:
 	if not SCOUT_FIGHT_BACK or int(me.get("since_hit", 1 << 30)) > SCOUT_FIGHT_HIT_TICKS:
 		return false
 	var unit := String(me.get("unit", ""))
 	var weapon: Dictionary = me.get("weapon", {})
 	var reach := float(weapon.get("effective_range", weapon.get("range", 0.0)))
-	var my_speed := float(Units.stat(unit, "max_forward_speed", 0.0))
 	var at: Vector3 = me["position"]
+	var my_velocity: Vector3 = me.get("velocity", Vector3.ZERO)
 	for c: Dictionary in contacts:
 		if not bool(c.get("visible", false)) or not bool(c.get("threatens_me", false)) or TankBrain._is_prey(c, unit):
 			continue
-		if at.distance_to(c["position"]) > reach:
+		if float((matchups.get(String(c["name"]), {}) as Dictionary).get("advantage", 0.0)) < 1.0:
 			continue
-		# Matchups.duel_advantage is a ratio (> 1: I win): "matches it" is an even duel or better.
-		var matched := float((matchups.get(String(c["name"]), {}) as Dictionary).get("advantage", 0.0)) >= 1.0
-		var not_slower := float(Units.stat(String(c.get("unit", "")), "max_forward_speed", 0.0)) >= SCOUT_FIGHT_SPEED_SHARE * my_speed
-		if matched or not_slower:
+		var velocity: Vector3 = c.get("velocity", Vector3.ZERO)
+		var stays := true
+		for second in SCOUT_FIGHT_REACH_S + 1:
+			if (at + my_velocity * second).distance_to((c["position"] as Vector3) + velocity * second) > reach:
+				stays = false
+				break
+		if stays:
 			return true
 	return false
 ## Round 25 (brains F1b): a crew on the chase stays on it (on_the_chase; `--pursuit-stays=off` = the arm).
@@ -1640,8 +1645,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if c["visible"] and not TankBrain._is_prey(c, String(me.get("unit", ""))) and not orbitable:
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
 		if nearest < INF and TankBrain.scout_fights_back(me, contacts, matchups):
-			# Overnight item 2 (re-filed): below ENGAGE (0.27-0.43 for a scout in the orbit stage, seed 50) even with the
-			# commitment bonus on the current option, above HOLD's 0.10: it fights rather than keeps its distance.
+			# C34.5 (a duel it wins, in reach): below ENGAGE (0.27-0.43 for a scout in the orbit stage, seed 50) even with
+			# the commitment bonus on the current option, above HOLD's 0.10: it stands and trades. Otherwise SPOT's
+			# 0.88 / 0.7 stand and it opens distance.
 			spot = SCOUT_FIGHT_SPOT
 		elif nearest < SCOUT_STANDOFF - 10.0:
 			spot = 0.88
@@ -2184,7 +2190,7 @@ func build_situation() -> Dictionary:
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position),
 				# L2 (X3): my own crew's suppression, and whether it is bad enough that my fire is wasted.
 				"suppression": SuppressionFeed.of(tank), "pinned": SuppressionFeed.is_pinned(tank),
-				# Overnight item 2 (brains): ticks since its last hit, for scout_fights_back.
+				# C34.5 (brains): ticks since its last hit, for scout_fights_back.
 				"since_hit": tank.ticks_since_hit},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,
