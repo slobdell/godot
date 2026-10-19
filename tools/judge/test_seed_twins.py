@@ -35,5 +35,51 @@ class SeedTwins(unittest.TestCase):
             seed_twins.load(path, rotation=["yard", "pit", "locks"])
 
 
+def write_log(folder, name, census_arena=None, prefix="FAR_CENSUS"):
+    path = os.path.join(folder, name)
+    with open(path, "w") as handle:
+        handle.write("noise\n")
+        if census_arena is not None:
+            handle.write('%s {"seed": 1, "arena": "%s"}\n' % (prefix, census_arena))
+    return path
+
+
+class TwinLogs(unittest.TestCase):
+    """Round 35 (C35.9): a series folder of <arena>-<seed>.log files drops the random log that twins a fixed one."""
+
+    def test_the_random_logs_own_census_names_the_dealt_map(self):
+        d = tempfile.mkdtemp()
+        files = [write_log(d, "locks-1200.log", "locks"), write_log(d, "random-1200.log", "locks"),  # twin: dropped
+                 write_log(d, "terminus-1201.log", "terminus"), write_log(d, "random-1201.log", "pit"),  # kept
+                 write_log(d, "random-1202.log", "locks")]  # dealt the Locks, no Locks 1202 in the series: kept
+        kept, dropped = seed_twins.drop_twin_logs(files, dealt={})
+        self.assertEqual([os.path.basename(f) for f, _s, _m in dropped], ["random-1200.log"])
+        self.assertEqual(len(kept), 4)
+
+    def test_the_census_beats_the_table_and_the_table_covers_a_log_without_one(self):
+        d = tempfile.mkdtemp()
+        files = [write_log(d, "locks-5.log", "locks"), write_log(d, "random-5.log", "pit", prefix="JAM_CENSUS"),
+                 write_log(d, "pit-6.log", "pit"), write_log(d, "random-6.log")]  # no census: the table says pit
+        kept, dropped = seed_twins.drop_twin_logs(files, dealt={5: "locks", 6: "pit"})
+        self.assertEqual([os.path.basename(f) for f, _s, _m in dropped], ["random-6.log"])
+
+    def test_other_names_and_folders_pass_through(self):
+        d = tempfile.mkdtemp()
+        sub = os.path.join(d, "x")
+        os.mkdir(sub)
+        files = [write_log(d, "summary.log"), write_log(sub, "locks-1.log", "locks"), write_log(d, "random-1.log", "locks")]
+        kept, dropped = seed_twins.drop_twin_logs(files, dealt={})
+        self.assertEqual(dropped, [])  # the fixed Locks 1 is in another folder: another series
+        self.assertEqual(kept, files)
+
+    def test_say_prints_one_line_per_drop_and_a_count(self):
+        d = tempfile.mkdtemp()
+        files = [write_log(d, "locks-1.log", "locks"), write_log(d, "random-1.log", "locks")]
+        kept, lines = seed_twins.filter_logs(files, dealt={})
+        self.assertEqual(len(kept), 1)
+        self.assertTrue(lines[0].startswith("SEED_TWIN dropped random seed 1 (dealt locks"), lines)
+        self.assertEqual(lines[-1], "SEED_TWINS kept 1 of 2 logs, dropped 1")
+
+
 if __name__ == "__main__":
     unittest.main()

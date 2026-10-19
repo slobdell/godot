@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sizing S2 (CP-N): render the per-probe n table into `_agents/judging.md` (between its markers) and a csv.
 
-    python3 tools/judge/table.py [--root REPO] [--doc _agents/judging.md] [--csv references/round30/sizing/table.csv]
+    python3 tools/judge/table.py [--root REPO] [--doc _agents/judging.md] [--csv references/round35/native/sizing/table.csv]
 
 Every number comes from `probes.py` (the rows under references/, or the se a judged table printed). The doc keeps
 three generated blocks, each between `<!-- judge:NAME:begin -->` and `<!-- judge:NAME:end -->`:
@@ -24,7 +24,7 @@ import rows  # noqa: E402
 import stats  # noqa: E402
 
 DOC = "_agents/judging.md"
-CSV = "references/round34/planner/sizing/table.csv"  # round 34 (C34.8 (b)); round 30's csv stays in its folder
+CSV = "references/round35/native/sizing/table.csv"  # round 35 (C35.9); rounds 30's and 34's csvs stay in their folders
 COLUMNS = ["probe", "metric", "form", "sd_run", "base_run", "icc", "n_today", "se_today", "line", "effect_run", "effect_share",
            "n_needed", "mde_today", "mde_today_share", "guard_today", "cost_today_min", "cost_needed_min", "aa", "pairs"]
 
@@ -94,7 +94,11 @@ def render_counts():
     for a, n1, c, n2, label in ((18, 18, 0, 18, "B1 r29 on side"), (14, 18, 0, 18, "B2 (a) r29"), (10, 18, 0, 18, "B1 (a) r28, failed its 12/18 threshold"),
                                 (4, 18, 0, 18, "B1 (c) r28"), (12, 12, 5, 12, "B5c yard, every crew in"), (12, 12, 1, 12, "B5c-v4 yard r30, every crew in"),
                                 (9, 18, 0, 18, "S3 / S4 contact runs (read as 0 v 9)"), (0, 9, 4, 9, "T1c-b r30 runs with a repack while firing (read as 0 v 4 of 9)"),
-                                (21, 24, 14, 24, "B2 v4 Sumps cell"), (12, 12, 10, 12, "a 12/12 v 10/12 cell")):
+                                (21, 24, 14, 24, "B2 v4 Sumps cell"), (12, 12, 10, 12, "a 12/12 v 10/12 cell"),
+                                # rounds 31-34 (C35.9)
+                                (11, 12, 1, 12, "B5c-v5 yard r31, every crew in"), (0, 18, 6, 18, "T1c-b2 r31 repack runs (NULL: base under its 8/18 precondition)"),
+                                (0, 18, 5, 18, "T1c-b2 r32 re-judge repack runs"), (10, 10, 5, 10, "War Rig r33, every element in"),
+                                (9, 12, 0, 12, "B6 r34 Sumps hollow runs (a harm, read the other way)")):
         two, one = stats.fisher_exact(a, n1 - a, c, n2 - c)
         n = stats.fisher_min_n(c / n2, a / n1) if a / n1 > c / n2 else stats.fisher_min_n(1 - c / n2, 1 - a / n1)
         out.append("| %d/%d v %d/%d (%s) | %.4f | %s |" % (a, n1, c, n2, label, one, n if n else "not by 400"))
@@ -114,8 +118,13 @@ def render_counts():
     out.append("|---|---|---|")
     for b, c, label in ((11, 0, "B5c arrive 100/100 v 89/100"), (8, 0, "B5c-v4 arrive 99 v 91 (r30)"), (8, 1, "B2 v5 95 v 88"), (5, 1, "B3 make-room 97 v 93"),
                         (7, 4, "B2 v3 89 v 86"), (4, 2, "B2 v4 85 v 83"), (2, 1, "B3b bridge 108: 107 v control 106 (r30)"), (0, 1, "M4 bridge 17/18 v 18/18"),
-                        (1, 0, "one cell gained")):
-        out.append("| %d v %d (%s) | %.4f | %s |" % (b, c, label, stats.mcnemar_exact(b, c), "decided" if stats.mcnemar_exact(b, c) <= 0.05 else "not decided: a coin"))
+                        (1, 0, "one cell gained"),
+                        # rounds 31-34 (C35.9), read from the rows by probes.arrive_discordant / rows.bridge_cells
+                        (2, 9, "B3b-2b arrive r31: 90 v 97, FAILED"), (2, 0, "B3b-2b bridge 108 r31: 108 v 106"), (1, 0, "B3b-2c bridge 108 r32: 108 v 107"),
+                        (0, 0, "B3b-2c / B10 / B10b / R4 arrive r32-33: identical cells (the rule never reached the arrive maps)")):
+        reading = ("an equality: no discordant cell, nothing to test" if b + c == 0
+                   else "decided" if stats.mcnemar_exact(b, c) <= 0.05 else "not decided: a coin")
+        out.append("| %d v %d (%s) | %.4f | %s |" % (b, c, label, stats.mcnemar_exact(b, c), reading))
     out.append("\nCells needed for a one-way gain (the arm wins cells the base loses, never the reverse) at 80 %% power: a %d %% gain needs %s cells, "
                "5 %% needs %s, 2 %% needs %s. A line \"lost ≤ 1\" is a direction check on the against-cells alone; \"≥ control − 1\" fails on one "
                "unlucky cell, which at 100 cells of an 11 %% base failure rate is a coin (p = 1.0 for 0 v 1)." % (

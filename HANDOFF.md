@@ -34,6 +34,21 @@ created FRESH from the docs commit; round 34's `stream/*` branches are `round34/
 gorge cut docks), read twice at ffa462c94 agreeing = 3902ade09's hashes, so main is GREEN with no new check (the baseline file
 is the only check-read diff). **Tell him in player terms:** his circled scout now turns and fights instead of shuffling
 backwards. Workers told to `git merge main`.
+**main c32606204 = native N2 (C35.9)** (`2f7683d21`, builder0 `make check exited 0`, 27/27 ALL JUDGED, 2885/0, sim-baseline 13
+unmoved; INHERIT): FACE_KEEP_FAR deleted, series tools drop random-seed twins (`seed_twins.filter_logs`), judging table's owed rows
+(rounds 31–34) re-rendered. Tooling only: nothing he'd notice.
+**Round 35 in flight (2026-10-19 noon):** orders D1 (the deploy step ON; on-spot fix 0603f3274) checking; traffic T7 pair checking
+next; manoeuvre M5 (CP-F 5, turret hulls) gate queued; brains E1 (straggler release) check done, series next; W1b's mirror on
+pair/native-w1b; W1c + T9 (the 70 s scout dead-stop: a parked crew refused every repeat ask) joint dev read. Parked: D3 (R35.11).
+Rulings R35.1–R35.19 in workstreams.
+**main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
+sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
+older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
+**main 1a18dd278 = orders D1, THE DEPLOY STEP IS ON (C35.2, his yes)** (`581b8a396`, builder0 `make check exited 0`, 2886/0,
+sim-baseline 13 unmoved). **Tell him in player terms:** squads sent together keep their travel shape until all are in, then spread
+to their places as one move; a squad sent to a spot ends ON it. The cost he chose: a squad that has just set up across a street can
+hold up the next squad for a few seconds (R35.17; a round-36 item in game_design.md). D1 + N2 + N3 were each checked alone: ONE
+main check of 1a18dd278 is queued for when builder0 drops to one full check.
 
 ## 🏁 ROUND 34 IS CLOSED (2026-10-19)
 

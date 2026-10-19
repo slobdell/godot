@@ -14,6 +14,9 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "tools", "judge"))
+import seed_twins  # noqa: E402  (round 35, C35.9: a random fight that twins a fixed one in the folder is read once)
+
 
 def q(values):
     v = sorted(values)
@@ -58,6 +61,9 @@ def load(paths):
     files = []
     for p in paths:
         files += sorted(glob.glob(os.path.join(p, "*.log"))) if os.path.isdir(p) else [p]
+    files, said = seed_twins.filter_logs(files)
+    for line in said:
+        print("far_table: " + line)
     for f in files:
         census = None
         mine = []
