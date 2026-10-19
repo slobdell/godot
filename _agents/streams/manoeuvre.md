@@ -87,7 +87,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (2026-10-19 early, round 34 in progress; Fable)
 
-**Latest (2026-10-19 ~02:15 PDT): the judged series is RELEASED** on pair c8fb8b6a3 (builder2, seeds 101–112, n 12, after
+**Attribution (2026-10-19 ~03:00 PDT, builder2, pair c8fb8b6a3):** the C31.1 check: 2818/0, 26 of 27 targets, twins 0
+mismatches; sim-baseline's three MOVED maps (crossing 87d6a60d2b9e7497, parade f16fd810ae957839, archipelago
+74099e787f74682c). `sim-variants VARIANTS_EXTRA=--nav-off=turnin` on the SAME tree: all 13 base40 hashes equal main's
+recorded lines (crossing f8024203917ca808, parade 27580bb53aa4ebe3, archipelago f97836b7868c7906, docks 4074d105e1739377):
+**the moves are the turn-in's own.** Files: `references/round34/manoeuvre/m0-series/` (check summary, the variants
+tsv, dev-11-23 rows and table at 764ef5427, the syn_lancer report rows). The series runs.
+
+**Earlier (2026-10-19 ~02:15 PDT): the judged series is RELEASED** on pair c8fb8b6a3 (builder2, seeds 101–112, n 12, after
 its check and the `--nav-off=turnin` attribution in the same folder); no candidate change from here. **Dev 764ef5427**
 (builder2, 11–23, n 13): (a) 3.8 → 74.1 % (sd_boot 5.9); (b) 2 → 10; (c) exchange 0.18 → 2.15 (gain − k·sd 1.72);
 in-reach hits −1436 v k·se 597; per-cell damage taken all six PASS (−17 to −250 a run); (d) 0; (d2) 0; (e) 26.9 m; (g)
