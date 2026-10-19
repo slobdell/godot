@@ -256,6 +256,16 @@ builder0), ruled R34.3.
   hit rate ≥ base − k·se; crossing arrivals 44–46 × 6 ≥ base − k·se a case. Reported: standoffs with durations, all jam and all deaths,
   the counters. Sizing from T5: 1.75 a fight, sd 1.61, se of the sum ≤ ~19 at n 140.
 
+- **B9 lane spread (brains), design and bar approved before any code or number (lane census: `stream/brains` `44e7bd397`,
+  `references/round34/brains/b9_lane_census_*`; the CPU's centre lane takes 89 % of Locks and 78 % of Terminus picks, 2 in 3 stack).**
+  ArmyPlan: when a side's lane holds 2+ of its elements, the cheapest-detour one moves to another lane only if the detour ≤ 1.4 ×
+  direct + 30 m, the side's own intel shows enemy strength within 40 m of that lane's middle ≤ 0.5 × the mover's, and the lane has
+  fewer of the side's squads; the task carries `via`, latched per task. `--lane-spread=off|green|rust|both`, default off. Series:
+  asymmetric judge, symmetric ship: showmatch, Locks + Terminus + Crossing, FRESH seeds 1400–1439 each (n 120; moved off 1301–1340 to
+  stay clear of T6's block), ruled side by seed parity. DECIDING: exchange gain E (ln-ratio, ruled v base) mean > 1.645 se,
+  pooled, each arena reported. Guards (≤ base + 1.645 se): jam deaths, stuck deaths, far loops, time to first contact, fight length,
+  piecemeal arrival. An A/A first (E ≈ 0, sizes se); the worst ruled fight traced before the means. Ships ON for both sides on a pass.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
