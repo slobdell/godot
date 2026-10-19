@@ -84,3 +84,96 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (2026-10-18, round 34 in progress; Fable)
+
+**M0 (C34.10) in development; the fix is cut and tested on the laptop, the fresh bar is filed below.** Nothing judged yet.
+
+**Plan (ordered):** M0 C33.9 (the fix → quick-remote → dev cells 11–23 on builder0 → the bar to the orchestrator →
+C31.1 full suite ON on the pair tree, builder2 → the judged series, fresh seeds, builder2) → M1 the ruler (1B/2B, A/A) →
+M2 the flicker (seam agreed with brains, see below) → M3 CP-F attempt 4 → M4 → stretch clip.
+
+**M0, what round 33's narrowing really failed on (laptop traces, commit dd0b2127c's tests; `C339_ONE=law_scout,syn_scout,15,36 C339_DENSE=1.4-5.4 make test FILTER=c339_cells`):**
+1. Seed 36's 13 reverse ticks (R33.39): the scout turned in, closed from 15 to 3 m and sat on the orbiter's nose; the
+   orbiter STOPPED for 3.0 s (its velocity read 0.0 from t1.6 to t4.6); the turn-in's "spot stood still 3 s → the face
+   planner" rule handed a live threat face to the planner, whose first leg was a reverse (NEGCMD t4.63–5.17). Neither
+   narrowing (speed gate on the first ticks, R33.38) touched this path; the speed gate itself made it worse because the
+   stage's orbiter starts from rest.
+2. The brain's face spot is STALE by 1–2 m: `TankBrain._order_move` drops a face within 2 m of the one executing (its
+   near-duplicate rule, brains' code, correct for a fixed point), so after the enemy stops the spot sits where it was
+   last re-issued (seed 14 halt trace: spot (13.7,−13.2), enemy (15.3,−12.4): 7° at 14 m, half a scout's arc). A hull
+   holding on the spot had the real enemy at the edge of its arc and fired once in 10 s.
+3. The judged ruler: (c)'s per-cell exchange on gang_scout/syn_scout/15 is 0.04 → 0.02 ("−46 %") in a cell where the
+   gang scout deals nothing in 5 of 6 runs; its seed bootstrap at n = 6 spans −100..+135 %. That line cannot carry a
+   verdict at any n this round can run; the bar below re-forms it.
+
+**M0, the fix (dd0b2127c, `game/ai/manoeuvre.gd` turn_in, `order_controller.gd` _stop_turn_in, `movement.gd` face_drop):**
+the turn-in resolves its spot to the LIVE ENEMY HULL it stands for (`Manoeuvre.live_enemy_near`: the nearest within
+10 m; a brain's crew only; a threat face only, `from` empty, or a stop's swing) and reads the bearing, its rate (from the
+enemy's velocity: d(theta)/dt = (p × v).y / |p|², smoothed a tick) and whether it STANDS (< 0.5 m/s) from that hull every
+tick. A standing enemy in the arc: hold still and shoot. Out of the arc: come round forward (full lock at ≥ 0.55 share).
+The face planner takes a face only when NO live enemy is at its spot (a memory, a drawn, post, sector or squad facing, a
+scripted order): so creep_bound's plain faces, the suppression scenario's scripted scout and every drawn facing are
+untouched, and a live threat face never reaches the planner's reverse legs. The planner's leftover legs are dropped the
+tick a turn-in has the hull. The spot-step rate machinery (`_turn_in_bearing/_tick/_seen`, TURN_IN_MOVING_S, the speed
+gate `facing_mover`) is gone. Native's stop hand-back (`pair/native-c339` 2f9ad0fb9) is untouched by this: the C++ hands
+every stop on a fixed gun on wheels back under the switch, and the GDScript decides.
+
+| test (laptop, --fixed-fps 30, n 1) | old code (fc809b60a's gate) | dd0b2127c |
+|---|---|---|
+| halted orbiter (gang_scout v syn_scout 15 m, seed 14, enemy stops at 2 s) | rev cmd 12, gear changes 1, in-arc 60 % | rev cmd 0, 0, in-arc 69 %, held still 181 ticks, dealt 137 |
+| parked enemy (law_scout, syn_scout standing at 20 m 133° off, seed 36, 10 s) | turn-in never ran; the creep reversed 81 ticks; in-arc 44 % | rev cmd 0; in-arc 83 %; 84 shots; 9.4 m from post |
+| (d2) stop (gang_scout v syn_scout 15 m, seed 14) | OFF 27 reverse ticks at stop | ON 0 |
+| static drawn face (6 cells), determinism (2 fresh children) | pass | pass |
+
+Laptop rows are for mechanism only: a pinned laptop run of seed 36 did NOT reproduce builder2's row (in-arc 22.4 v 12.4,
+reverse 0 v 13 under the same code), so the laptop is not row-equivalent to the builders even at --fixed-fps (builder0 v
+builder2 were 312/312 in round 33). Every judged or dev number below is a builder's.
+
+**M2 seam (agreed through the orchestrator, 2026-10-18):** brains takes `lab/cpf-arriveleg` 7e0953f9d's one condition into
+`TankBrain._act` as-is and keeps `_order_move`'s held-post refusal; manoeuvre owns `Manoeuvre.leg_holds_arrival` and the
+`arriveleg` switch, bounds the hold at 3 s of leg time, and ships it with a test that fails without it. The counter's unit
+(think ticks v arrivals) waits on brains' answer via the orchestrator.
+
+**Native (C34.8):** native pinned command.mk's hull-rest/facing/flank probes (d8ce74b91, one $(PIN_FPS) token each): M1 adds
+no second pin. `tests/test_manoeuvre_wedge.gd`'s "native: absent" return goes to `NativeExpect.absent(self)` once native's
+12ac7b172 is on main (they will say).
+
+### Bar M0 (C34.10): the scout turn-in, round 34 (filed 2026-10-18 before any fresh-seed number)
+
+**Probe:** the orbit stage, `tests/test_manoeuvre_orbit.gd` `_orbit_stage` via `make manoeuvre-c339-cells` (one
+`--fixed-fps 30` Godot a seed, both arms GDScript): 2 subjects (law_scout, gang_scout) × 2 orbiters (syn_scout, gang_ifv)
+× 3 radii (15, 30, 45 m) × post (player / free) × arm (ON / OFF), 30 s a cell. In reach = radius ≤ the scout's
+`reach_m` (35 m): the six in-reach player cells are gang 15 m, law 15 and 30 m against each orbiter.
+**Candidate:** stream/manoeuvre at the hash whose C31.1 check is green (the pair tree = main + this branch +
+`pair/native-c339`'s three native commits rebased; TURN_IN_DEFAULT true). **Base:** the same tree, `--nav-off=turnin`.
+**Machine:** builder2, start to end; builder0 for dev only. **Seeds:** FRESH 101–112 (n = 12 a cell, 576 rows); 11–36 are
+tuning. **Last attempt:** this is C33.9's second judged series (R33.24 was the first); a third would need a new design.
+**Counters:** `turn_in` ticks/stalls, `holds`, `hold_ticks`, `stop_turn_ins` in every row.
+**Noise, read from round 33's rows** (c339-judged/cells-31-36.jsonl n 6; dev-11-23 n 13; the bootstrap resamples seeds):
+(a) pooled in-arc median sd_boot 3.5 at n 6 (≈ 2.5 at n 12); in-reach pooled exchange sd_boot 0.13 at n 6 (≈ 0.09);
+per-cell damage-taken sd a run 12–90 (law/syn/15 11.7; gang/syn/15 89.6); per-cell hits-taken sd 6–38.
+
+Lines, player-post cells (R33.24's lines kept, each in its variance-aware form; k = 1.645):
+- **(a)** in-arc % median on in-reach cells: ON ≥ 2 × OFF and ≥ 25 (the point as R33.24 wrote it). Beside the verdict:
+  sd_boot and the margin to R33.24's 23.9, the value he accepted (R33.38). *Ship reading:* ≥ 25 passes; ≥ 23.9 − k·sd_boot
+  is "no worse than what he accepted" and is reported as such for the orchestrator's ruling; below that is a regression.
+- **(b)** shots median, every player cell: ON ≥ 1.5 × OFF.
+- **(c)** exchange (damage dealt / taken) pooled on in-reach cells: ON ≥ OFF (point) AND the gain distinguishable from
+  nothing (ON − OFF − k·sd_boot > 0). **Re-formed:** the per-cell −20 % exchange ratio is a REPORT, not a line (a cell
+  whose OFF deals 0.04 cannot carry a ratio: bootstrap −100..+135 %). In its place, two guards on harm he would see:
+  in-reach pooled hits taken ON ≤ OFF + k·se (se = paired se of the sum over the 72 run pairs), and per in-reach cell
+  damage taken ON ≤ OFF + k·se_cell (se_cell from that cell's 12 paired differences).
+- **(c-out)** out-of-reach player cells: pooled hits taken ON ≤ OFF + k·se, and no cell with OFF ≥ 10 worse than +20 %
+  (as R33.24 wrote). Beside the verdict: R33.24's accepted 42 → 57 / +37 %. *Ship reading* as (a): ≤ 57 and ≤ +37 % is
+  "no worse than what he accepted"; out of reach is brains' C34.5 (the outgunned scout leaves), so the orchestrator rules.
+- **(d)** while a face holds: 0 ticks under a reverse command in every ON run; commanded gear changes ≤ 2 a run. A
+  deterministic count: a failing run is named and its trace read before the medians (lesson 302).
+- **(d2)** while the order is `stop`: 0 reverse ticks in every ON run (OFF reported: the shuffle he saw).
+- **(e)** furthest from the post ≤ 29 m in every ON run (14 m leash + a turning circle + a hull).
+- **(g)** free cells: ON no worse than OFF on (a)–(c) medians; if the arms are byte-identical, say so.
+- **(h) reported:** holds / hold_ticks, mean distance, damage, stalls, the per-cell exchange table.
+**Before the series:** C31.1, the whole suite with the switch ON on the pair tree, green on builder2, with any sim-baseline
+move named and explained as the turn-in's own (the brains' scouts that now turn in). **Partial rule:** (a) alone missing
+by less than its sd_boot does not park a candidate that passes (b)–(g); any (d)/(d2)/(e) run fails it.
+
