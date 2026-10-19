@@ -160,6 +160,23 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   is the lead's deploy-step question.
 - **Traffic's O4** may edit Element._next_queued + passed_waypoint + relay_queued (agreed with two counters).
 
+### Round 34, later items (2026-10-19), all green at `771586b2c` (builder2 2865/0, sim-baseline 13 unmoved)
+- **Second Locks leak** `c3cdbd6c4` (merged via `a1896dc07`): an ORDER goal laid dry on the far bank came back as a slot
+  but went out as an order. Element.ground's order path takes on_anchor_side. Locks 3 crossed 1→0.
+- **B8 / B8b deploy step, PROTOTYPE, OFF** (`DEPLOY_STEP=on make skirmish ARENA=locks` to feel it). B8b: the halt is
+  centred where the squad stands, stepped inland off water, seated by least driving; the halt re-seat is held while a
+  deploy waits. The twitch after arrival drops sharply (Locks 5: 33 → 0; Terminus 5: 21 → 2); the deploy move is
+  16–30 m. Known: a squad squeezed between the canal and a building still clusters. The lead decides (R34.7). Rows:
+  `references/round34/brains/b8_*`.
+- **R34.12b rank depth**: AUTO ranks step by the travel shape, widened only for 9 m halt-seat clearance (back rank 49 m
+  v ~69 m behind the click).
+- **Terminus route stall** (planner's bisect: O4 a5a362737; my arms: O3's spacing): an anchor on a block is grounded
+  from the squad's side (`SelectionSquads.ground_anchors`). Squad 3 now in at 8.9 s (was never).
+- **Stall safety net**: a player's route leg, every crew settled and no progress for 12 s → arrived (Element.track_stall).
+- **B2 test** now asserts manoeuvre's leg_holds_arrival outright (it's on main, ON).
+- **O2 stays parked** (`wip/brains-o2`); a fixed order-time heading makes the HALT seats exact (cheap packing), but the
+  travel seats before all-in still aren't.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
