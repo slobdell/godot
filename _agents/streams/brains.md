@@ -73,18 +73,24 @@ B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → 
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
 
 ### Progress
-- **B1:** rule on stream/brains `86c8d7f68` (main + try 1's GDScript and native pair cherry-picked, then try 2: fight
-  only an advantage >= 1 duel whose shooter stays in reach at 0/1/2 s on both velocities; try 1's can't-outrun clause
-  dropped; otherwise today's SPOT 0.88/0.7). Laptop scout_fights_back 8/0. **Decision:** "otherwise SPOT 0.88" read as
-  today's SPOT scoring unchanged (the narrowest change; R33.31's harm was ENGAGE in lost duels, not SPOT). Bar FILED in
-  workstreams *Bars (round 34)* before any number. Judged tree `lab/brains-scout2` (worktree godot-brains-scout2) =
-  stream/brains + manoeuvre's `608c3357e` (orbit stage; turn-in default OFF). `make scout-cells` + table
-  `tests/ai_scenarios/scout_cells_table.py`. Native mirror: pair/native-scout2 `2135c0af5` (native, awaiting green).
-  Tuning seeds 50–52 running on builder0.
-- **B3 DONE:** `2aa657577` ELEMENT_TRACE prints `inset X m engaged at Y m` (the centre-to-click distance when the inset
-  first moved the spot, latched per task). Measurement only. Laptop anchor_inset 8/0.
-- **B2:** seam proposal sent to the orchestrator (take 7e0953f9d's condition into `_act`; leave the held-post refusal;
-  test that a leg-driving crew isn't refused; asked manoeuvre to bound the hold). No code until agreed.
+- **B1 (scout try 2):** rule on stream/brains `86c8d7f68`. Main + try 1's GDScript and native pair cherry-picked, then
+  try 2: fight only a duel at advantage >= 1 whose shooter stays in reach at 0/1/2 s, both sides on their velocities.
+  Try 1's can't-outrun clause is dropped. Otherwise today's SPOT 0.88/0.7. **Decision:** I read "otherwise SPOT 0.88" as
+  today's SPOT scoring unchanged. It is the narrowest change, and R33.31's harm was ENGAGE in lost duels, not SPOT.
+  **Tuning finding (builder0, lab/brains-scout2, seeds 50–52, n 3 a cell):** the arms were identical (799 v 799 shots,
+  ENGAGE 0). Cause: the champion x18m has `matchups: false`, so decide's table is empty. Try 1 only ever fired through
+  its speed clause. Fix `834562ab1`: decide computes matchups_for for a scout under fire, only when the switch is ON.
+  There's a decide-level test under the champion's features (laptop 9/0; with the fix reverted, 8/1). **Second finding (laptop
+  probe, seed 50):** the stage's cells hold only duels the scouts lose (advantage >= 1 on 207 of 5320 rule ticks, none
+  in reach). New duel cells, `tests/test_ai_scout_duel_cells.gd`, drive manoeuvre's `_orbit_stage` unchanged against
+  syn_lancer and law_tank. Tuning, seed 50, laptop, n 1: law_scout v syn_lancer at 15 m, free: 218 v 23 shots, damage
+  765 v 799. Bar FILED, then AMENDED before any judged number (orchestrator-approved; workstreams *Bars (round 34)*).
+  Native mirror: pair/native-scout2 (native; lazy-matchups change sent). Next: the pair check, then the series on fresh
+  73–79 and the census on 29–36.
+- **B3 DONE (no check yet; it rides B1's pair check):** `2aa657577` ELEMENT_TRACE prints `inset X m engaged at Y m`.
+  Measurement only. Laptop anchor_inset 8/0.
+- **B2:** the seam shape is agreed with the orchestrator. Waiting on manoeuvre's ack of the signature (bounded hold
+  about 3 s; arrivals_held counts arrivals). No code yet.
 
 ### Requests to other streams
 - native: scout try 2 mirror (taken: pair/native-scout2).
