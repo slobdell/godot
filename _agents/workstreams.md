@@ -432,6 +432,13 @@ builder0), ruled R34.3.
   traced: faces no plan fits creep at the 0.35 lock until the judge; attack-move elements step to the next leg ~30 s later when
   arrived crews sit on a sector face (tank_brain ~2960) instead of a stop. Per R33.34 a fifth attempt needs a NEW design (a face
   that gives up cleanly when no plan fits; the element step not waiting on a sector face), not seeds. B11b gets no merge hash.
+- **Round-35 candidates recorded (2026-10-19 morning):** (1) **wedged deaths** (manoeuvre, from T5's rows,
+  `references/round34/manoeuvre/wedged-deaths/`): 499 of 5984 = 8.3 %, 3.5 a fight, all `driving`, none held; mid-weight hulls
+  (suppressor, burner, IFV, tank, lancer 13–16 % of their own deaths; scouts and artillery 2–4 %); lanes, the Locks worst (the x≈0 lane
+  mouths 57 of 195); median speed at death 1.2 m/s, 85 % under fire, only 26 % slow enough for the stall rule to see: crews pushed
+  around at walking pace by their own avoidance in a lane mouth while being shot. (2) **CP-F's new design** on both sides (a face that
+  gives up after N refused plans; the element step not waiting on a sector face). (3) **the Locks 5-squad route's crossing drives**
+  (brains: deal the last leg by drive paths). (4) **O2's (B) packing** with the deploy step, if he wants it.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
