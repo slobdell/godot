@@ -277,7 +277,7 @@ static func route_arms() -> Dictionary:
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -311,6 +311,10 @@ static func reset_route_arms() -> void:
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
+	underfire_refusals = 0
+	underfire_holds = 0
+	underfire_aborts = 0
+	underfire_log.clear()
 	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
@@ -1633,6 +1637,13 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	var tank := ctl.tank
 	var here := tank.global_position
 	_yield_left -= ctl._step
+	# Round 34 (traffic T6): a hit lands while giving way: the give-way ends now and the crew drives its own route.
+	if underfire_on() and tank.ticks_since_hit <= ctl._step:
+		underfire_aborts += 1
+		if underfire_log.size() < 500:
+			underfire_log.append({"unit": String(tank.name), "f": Engine.get_physics_frames(), "to": yield_to, "spot": yield_spot})
+		_end_yield()
+		return false
 	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank if ctl.tanks_root != null else null
 	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED \
 			or (_yield_stop_m > 0.0 and _flat_distance(here, _yield_from) >= _yield_stop_m)
@@ -1698,6 +1709,10 @@ func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bo
 		if setup_log:
 			setup_log_rows.append([asker, String(ctl.tank.name), Engine.get_physics_frames()])
 		return false
+	# Round 34 (traffic T6): a crew under fire holds its lane: it refuses, and the asker goes round or waits.
+	if under_fire():
+		underfire_refusals += 1
+		return false
 	if _begin_yield(asker, from, direction, via):
 		return true
 	asks_refused += 1
@@ -1720,8 +1735,37 @@ func _end_yield() -> void:
 	_repath_left = 0.0
 
 
+# ---- Round 34 (traffic T6, R34.15; `--traffic-on=underfire`, DEFAULT_OFF until judged): a crew under fire holds its lane ------
+# T5's census on main (144 fights): 337 crews died jammed by friendly traffic, 83 % GIVING WAY, for a median 1.5 s, 77 % already
+# under fire (the last hit landed during the give-way for 63 %). The step aside is what exposed them. So a crew hit within
+# UNDER_FIRE_S starts no give-way (ask() refuses; its own step aside in _negotiate is held) and ends the one it is in the tick
+# a hit lands (right_of_way), resuming its route; the asker goes round or waits (avoidance, the escape). Hits only, no
+# line-of-sight query: Tank.ticks_since_hit is on both drive paths and deterministic. Native mirrors all three places.
+## Hit within this long = under fire: T5's hit cadence on jammed crews is one hit every ~2.5 s (median 4 in 10 s), so the
+## brain's 2 s ENGAGED window would lapse between hits; 5 s covers two and is shorter than a give-way's own clocks.
+const UNDER_FIRE_S := 5.0
+## Measurement: asks refused for fire, step-asides held for fire, give-ways ended by a hit (+ a capped log of the aborts).
+static var underfire_refusals := 0
+static var underfire_holds := 0
+static var underfire_aborts := 0
+static var underfire_log: Array = []
+
+
+static func underfire_on() -> bool:
+	return not Traffic.off("underfire")
+
+
+## Hit within UNDER_FIRE_S (with the switch on).
+func under_fire() -> bool:
+	return underfire_on() and ctl.tank != null and ctl.tank.ticks_since_hit <= int(UNDER_FIRE_S * SimClock.TICK_RATE)
+
+
 ## Give way to `other`, travelling along `direction` from `from`: find the nearest validated spot off its line.
 func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self") -> bool:
+	# Round 34 (traffic T6): under fire, no step aside of its own either (the asker's self-yield in _negotiate): it holds.
+	if under_fire():
+		underfire_holds += 1
+		return false
 	var tank := ctl.tank
 	var here := tank.global_position
 	var along := direction.normalized() if direction.length_squared() > 0.0001 else \
