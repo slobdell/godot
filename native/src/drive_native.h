@@ -93,6 +93,8 @@ struct DriveConfig {
 	// OrderController._stop_turn_in turns gunnery's swing in. False on a tree without it.
 	bool TURN_IN = false;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
+	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).
+	int64_t UNDER_FIRE_TICKS = -1;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs
 	// only with `Movement._off` empty). A crew the seam holds (PlannerSeam._crews has it) always takes the

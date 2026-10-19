@@ -174,7 +174,11 @@ struct N {
 			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" }, ready_memo{ "ready_memo" },
 			_ready_map{ "_ready_map" }, _ready_iteration{ "_ready_iteration" }, _ready_answer{ "_ready_answer" },
 			locomotion{ "locomotion" }, min_turn_radius_m{ "min_turn_radius_m" }, for_unit{ "for_unit" },
-			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" };
+			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" },
+			// Round 34 (traffic T6, `underfire`)
+			ticks_since_hit{ "ticks_since_hit" }, underfire_refusals{ "underfire_refusals" },
+			underfire_holds{ "underfire_holds" }, underfire_aborts{ "underfire_aborts" }, underfire_log{ "underfire_log" },
+			unit{ "unit" }, f{ "f" }, to{ "to" }, spot{ "spot" };
 };
 const N &n_() {
 	static const N names;
@@ -1828,12 +1832,28 @@ struct Drive {
 	// ---- Movement.right_of_way (round 27, stage 1 E5c), line by line; `_end_yield` natively unless its diagnosis record
 	// is open (yield_log: then the GDScript, which writes it). 1: giving way (cmd filled), 0: not (or it just ended). ----
 	int right_of_way(Object *cmd) {
-		static const String yielding("yielding"), driving("driving"), arrived("arrived");
+		static const String yielding("yielding"), arrived("arrived");
 		const String yield_to = v.yield_to();
 		if (yield_to.is_empty()) {
 			return 0;
 		}
 		v.set__yield_left(v._yield_left() - step);
+		// Round 34 (traffic T6): a hit lands while giving way: the give-way ends now and the crew drives its own route.
+		//   underfire_on() and tank.ticks_since_hit <= ctl._step: underfire_aborts += 1; the capped log; _end_yield(); false
+		if (underfire_on() && (int64_t)tank->get(k.ticks_since_hit) <= step) {
+			sadd(k.underfire_aborts, 1);
+			Array log = sget(k.underfire_log);
+			if (log.size() < 500) {
+				Dictionary row;
+				row[k.unit] = tank->get_name();
+				row[k.f] = Engine_frames();
+				row[k.to] = yield_to;
+				row[k.spot] = v.yield_spot();
+				log.append(row);
+			}
+			end_yield(yield_to);
+			return 0;
+		}
 		Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
 		Node *asker_node = root != nullptr ? root->get_node_or_null(NodePath(yield_to)) : nullptr;
 		Node3D *asker = asker_node != nullptr && asker_node->get(k.alive).get_type() == Variant::BOOL ?
@@ -1857,18 +1877,7 @@ struct Drive {
 			passed = true;
 		}
 		if (v._yield_left() <= 0 || (passed && (there || v._yield_held() >= (int64_t)(c.YIELD_HOLD_SECONDS * (double)c.TICK_RATE)))) {
-			if (!v._yield_rec().is_empty()) {
-				cb(k._end_yield);
-			} else {
-				v.set__last_yielded_to(yield_to);
-				v.set_yield_to(String());
-				v.set__yield_point(V3_INF);
-				v.set_blocked_by(String());
-				v.set_phase(driving);
-				v.set_stalled_ticks(0);
-				v.set__progress_goal(V3_INF);
-				v.set__repath_left(0.0);
-			}
+			end_yield(yield_to);
 			return 0;
 		}
 		v.set_phase(yielding);
@@ -1889,6 +1898,35 @@ struct Drive {
 			cmd->set(k.turn, (double)drive_vector.y);
 		}
 		return 1;
+	}
+
+	// Movement._end_yield: natively unless its diagnosis record is open (yield_log: then the GDScript, which writes it).
+	void end_yield(const String &yield_to) {
+		static const String driving("driving");
+		if (!v._yield_rec().is_empty()) {
+			cb(k._end_yield);
+			return;
+		}
+		v.set__last_yielded_to(yield_to);
+		v.set_yield_to(String());
+		v.set__yield_point(V3_INF);
+		v.set_blocked_by(String());
+		v.set_phase(driving);
+		v.set_stalled_ticks(0);
+		v.set__progress_goal(V3_INF);
+		v.set__repath_left(0.0);
+	}
+
+	// Round 34 (traffic T6, R34.15): Movement.underfire_on(), the switch (`--traffic-on=underfire`); off while the
+	// GDScript has no T6 (UNDER_FIRE_TICKS -1: Movement.UNDER_FIRE_S absent).
+	bool underfire_on() {
+		static const String underfire("underfire");
+		return c.UNDER_FIRE_TICKS >= 0 && c.traffic_script != nullptr && !traffic_off(underfire);
+	}
+
+	// Movement.under_fire(): hit within UNDER_FIRE_S, with the switch on.
+	bool under_fire() {
+		return underfire_on() && (int64_t)tank->get(k.ticks_since_hit) <= c.UNDER_FIRE_TICKS;
 	}
 
 	// Movement._straight_behind(point)
@@ -2471,8 +2509,8 @@ bool Drive<V>::on_fire_post() {
 }
 
 // Movement.ask(asker, from, direction, via): native_stale |= STALE_ALL; already giving way, or the same asker as last
-// time: false; set up on a fire post (not --traffic-off=setup): setup_refusals += 1, false; _begin_yield, else
-// asks_refused += 1.
+// time: false; set up on a fire post (not --traffic-off=setup): setup_refusals += 1, false; under fire (round 34, T6):
+// underfire_refusals += 1, false; _begin_yield, else asks_refused += 1.
 template <class V>
 bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &direction, const String &via) {
 	static const String setup("setup");
@@ -2482,6 +2520,11 @@ bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &dire
 	}
 	if (on_fire_post() && !traffic_off(setup)) {
 		sadd(k.setup_refusals, 1);
+		return false;
+	}
+	// Round 34 (traffic T6): a crew under fire holds its lane: it refuses (after the set-up rule, which counts first).
+	if (under_fire()) {
+		sadd(k.underfire_refusals, 1);
 		return false;
 	}
 	if (begin_yield(asker, from, direction, via)) {
@@ -2509,6 +2552,11 @@ inline String spot_label(const char *kind, int64_t a, int64_t b) {
 template <class V>
 bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vector2 &direction, const String &via) {
 	static const String hold("hold");
+	// Round 34 (traffic T6): under fire, no step aside of its own either (the asker's self-yield in _negotiate): it holds.
+	if (under_fire()) {
+		sadd(k.underfire_holds, 1);
+		return false;
+	}
 	Vector2 along;
 	if ((double)direction.length_squared() > 0.0001) {
 		along = direction.normalized();

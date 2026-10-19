@@ -107,6 +107,9 @@ static func configure() -> bool:
 		"UNSTICK_BLIND_MAX_LEN_M": float((Movement as Script).get_script_constant_map().get("UNSTICK_BLIND_MAX_LEN_M", 10.0)),
 		# Round 33 (manoeuvre C33.9): the turn-in's default; with it the native execute hands a wheeled fixed gun's stop back.
 		"TURN_IN_DEFAULT": bool((Manoeuvre as Script).get_script_constant_map().get("TURN_IN_DEFAULT", false)),
+		# Round 34 (traffic T6, `underfire`): the under-fire window in ticks, as Movement.under_fire() reads it (absent: -1, off).
+		"UNDER_FIRE_TICKS": int(float((Movement as Script).get_script_constant_map().get("UNDER_FIRE_S", -1.0)) * SimClock.TICK_RATE) \
+				if (Movement as Script).get_script_constant_map().has("UNDER_FIRE_S") else -1,
 		"tank_script": Tank,
 		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
 		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).

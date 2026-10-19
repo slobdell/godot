@@ -586,6 +586,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
 	c.TURN_IN = (bool)config.get("TURN_IN_DEFAULT", false);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
+	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());
 	c.planner_seam = c.keep_planner_seam.get_validated_object();
