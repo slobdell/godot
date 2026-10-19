@@ -25,6 +25,8 @@ const MAIN := "res://game/main.tscn"
 const DECK_BACK_M := 18.0
 const WINDOW_S := 90.0
 const AFTER_ARRIVAL_S := 20.0
+## Squad 1..5's anchor posts in the shots (the order the probe lists squads in).
+const MARK_COLOURS := [Color(1.0, 0.25, 0.25), Color(1.0, 0.85, 0.1), Color(0.2, 1.0, 0.3), Color(0.2, 0.6, 1.0), Color(0.9, 0.3, 1.0)]
 const SHOT_SIZES := {"desktop": Vector2i(1280, 720), "phone": Vector2i(1560, 720)}
 
 var _controls: RtsControls
@@ -308,6 +310,20 @@ func _shots(label: String) -> void:
 		if t != null:
 			extent = maxf(extent, _flat_d(t.global_position, centre) + 15.0)
 	extent = maxf(extent, _flat_d(_click, centre) + 15.0)
+	# The HUD's 2D layers (order rings, labels) are projected through the GAME's perspective camera, so under this
+	# orthographic one they land in the wrong place (round 34: a ring drawn "in the void" was read as an anchor outside
+	# the walls). They are hidden for the shot; the click (white) and each squad's anchor (a coloured post, squad order)
+	# are marked in 3D instead, so everything in the frame is where it is.
+	var hidden: Array = []
+	for layer in current_scene.find_children("*", "CanvasLayer", true, false):
+		if (layer as CanvasLayer).visible:
+			(layer as CanvasLayer).visible = false
+			hidden.append(layer)
+	var marks: Array = [_post(_click, Color.WHITE, 3.0)]
+	for i in _squads.size():
+		var anchor: Variant = (_squads[i] as Dictionary)["anchor"]
+		if anchor is Vector3:
+			marks.append(_post(anchor, MARK_COLOURS[i % MARK_COLOURS.size()], 2.0))
 	var camera := Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.size = extent * 2.0
@@ -329,8 +345,29 @@ func _shots(label: String) -> void:
 		image.save_png(path)
 		print("ORDERS_PROBE_SHOT %s %dx%d" % [path, image.get_width(), image.get_height()])
 	camera.queue_free()
+	for mark: Node in marks:
+		mark.queue_free()
+	for layer: CanvasLayer in hidden:
+		layer.visible = true
 	if was != null:
 		was.make_current()
+
+
+## A tall unshaded post at `at` (seen from above as a disc): a mark that is in the world, not on the HUD.
+func _post(at: Vector3, colour: Color, radius: float) -> MeshInstance3D:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = 30.0
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = colour
+	mesh.material = material
+	var post := MeshInstance3D.new()
+	post.mesh = mesh
+	current_scene.add_child(post)
+	post.global_position = Vector3(at.x, 15.0, at.z)
+	return post
 
 
 func _nearest(alive: Array, keep: Callable) -> float:

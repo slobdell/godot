@@ -1,0 +1,32 @@
+HULL_AA aa1_drawn v aa2_drawn under build/manoeuvre/hull-rest (pairs: the i-th seed of each per task x faction)
+task                   metric       pairs |        A        B |   sd/run  se(sum)     k se |  swing
+faced_ambush           moving          36 |      6.0      3.0 |     0.65      3.9      6.4 |    67%
+faced_ambush           moving_real     36 |      1.0      1.0 |     0.24      1.4      2.4 |     0%
+faced_ambush           wedged          36 |      5.0      2.0 |     0.50      3.0      4.9 |    86%
+faced_ambush           settled_s       36 |   1143.0   1166.5 |    20.04    120.2    197.8 |     2%
+faced_ambush           wt_err_med      21 |   1922.5   1795.6 |    35.01    160.4    263.9 |     7%
+faced_attack_move      moving          36 |     23.0     11.0 |     1.41      8.5     14.0 |    71%
+faced_attack_move      moving_real     36 |     12.0      5.0 |     1.17      7.0     11.5 |    82%
+faced_attack_move      wedged          36 |     11.0      6.0 |     0.80      4.8      7.9 |    59%
+faced_attack_move      settled_s       36 |   1624.5   1570.0 |    31.48    188.9    310.7 |     3%
+faced_attack_move      wt_err_med      21 |   1105.5    832.0 |    23.35    107.0    176.0 |    28%
+faced_move             moving          36 |      5.0     10.0 |     0.68      4.1      6.7 |    67%
+faced_move             moving_real     36 |      3.0      4.0 |     0.51      3.0      5.0 |    29%
+faced_move             wedged          36 |      2.0      6.0 |     0.46      2.8      4.6 |   100%
+faced_move             settled_s       36 |   1314.5   1476.0 |    27.70    166.2    273.4 |    12%
+faced_move             wt_err_med      21 |   1152.0    746.8 |    27.35    125.3    206.2 |    43%
+faced_right            moving          36 |     17.0     11.0 |     0.77      4.6      7.6 |    43%
+faced_right            moving_real     36 |     11.0      3.0 |     0.64      3.8      6.3 |   114%
+faced_right            wedged          36 |      6.0      8.0 |     0.63      3.8      6.2 |    29%
+faced_right            settled_s       36 |   1607.5   1533.0 |    27.74    166.5    273.8 |     5%
+faced_right            wt_err_med      21 |   1209.7    824.8 |    40.99    187.9    309.0 |    38%
+faced_screen           moving          36 |     10.0      6.0 |     0.71      4.2      7.0 |    50%
+faced_screen           moving_real     36 |      3.0      1.0 |     0.41      2.5      4.0 |   100%
+faced_screen           wedged          36 |      7.0      5.0 |     0.53      3.2      5.2 |    33%
+faced_screen           settled_s       36 |   1608.0   1534.5 |    20.91    125.4    206.3 |     5%
+faced_screen           wt_err_med      21 |   1030.7    658.2 |    20.64     94.6    155.6 |    44%
+faced_support_by_fire  moving          36 |      9.0      5.0 |     0.62      3.7      6.1 |    57%
+faced_support_by_fire  moving_real     36 |      2.0      0.0 |     0.23      1.4      2.3 |   200%
+faced_support_by_fire  wedged          36 |      7.0      5.0 |     0.58      3.5      5.8 |    33%
+faced_support_by_fire  settled_s       36 |   1198.0   1223.5 |    21.44    128.6    211.6 |     2%
+faced_support_by_fire  wt_err_med      21 |   2241.1   2427.4 |    45.27    207.4    341.2 |     8%
