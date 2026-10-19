@@ -377,6 +377,9 @@ _Filed here before any number._
   **Series trees:** base lab/joint-base `df82e66a7` (6177ee87a + FIGHT_RANGE + the probe's T9 counter rows, measurement only), ON
   lab/joint-on `b04bfdda2` (same + STALL_INTENT_DEFAULT true + yieldfit2 default on); native both, no flag arms; ON's check queued
   after M5's gate.
+- **R35.30 (2026-10-19 ~17:00) W1b's gate (C31.1) passes; its series starts.** lab/w1b-on `7fc4a5307` builder0 `make native check exited
+  0`, 2891/0, one ai-scenario NOT JUDGED (load), sim-baseline unmoved on all 13 (nothing to attribute). Series ON 7fc4a5307 v base
+  ab9c50c76, 3820–3843 x locks/terminus/sumps, JOBS 2 beside T7's, E1's and D4's series.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
