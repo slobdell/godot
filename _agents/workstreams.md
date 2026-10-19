@@ -836,6 +836,17 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   counted both kinds; the item's purpose is the idle kind. **Re-filed:** line 2 = IDLE fire-post loops (blocker with
   no fire mission) ON = 0 and ≤ base, with engaged ones REPORTED. FRESH fights 796–819 × 3, n 72, same tree, lines 3–6
   unchanged.
+- **R33.37 Traffic's parkedroom v3 fails as filed; parkedroom PARKS for round 33 (2026-10-18; pair
+  `pair/parkedroom-on-v3 6d0e00652`, stream/traffic-overnight `db8ef0878`, ov_parkedroom_v2_bar.md "v3 result",
+  ov_parkedroom_v3_series.txt; builder2 throughout, native, FRESH 820–867 × 3, n 144 paired).** PASS: L1a hold-post
+  loops 59 → 18, L1b parked loops 224 → 63, L2 far loops 411 → 201, L4 crossing arrivals identical, L5 repack while
+  firing 0 of 9. FAIL: **L3** kills 2072 → 1992 (se 40.9) and deaths 2090 → 2008, both outside the line, with hit rate
+  equal (0.736 / 0.736) and shots −0.6 %. Kills fell in 29 of 48 random fights (worst random-859 54 → 34) and stayed flat on
+  Terminus and Locks. **L6** 89.96 % (403 of 448, line 90 %). All 45 misses are hold orders: 19 still owed the way back,
+  and 15 ended it 4–23 m off the goal. No re-read: the bar stands as filed. Fewer kills from the same hits is a fight
+  change the fix doesn't explain, so a trace comes before any v4. **Granted:** one dev read on builder0 (not judged)
+  of random-859, both arms, with kills by hull and by time, into the stream's references. Its finding goes to the round
+  34 roadmap entry. A v4 needs a fresh bar, fresh fights, and a pair on current main with native's hand-back.
 
 **Bars (round 33):** filed here before any number.
 

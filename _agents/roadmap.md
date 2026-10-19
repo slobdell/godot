@@ -1276,6 +1276,9 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 
 - **parkedroom v2 (traffic):** apply the rule only to a crew AT a post. R33.12 parked v1: a crew paused between orders made
   room and then drifted away (only 10 % returned; about 42 extra shuffles a fight). Needs a fresh bar on fresh fights.
+  **v2 and v3 parked too (R33.36, R33.37).** v3 (return to the hold point) cut loops hard: hold-post 59 → 18, far 411 → 201.
+  But kills fell 2072 → 1992 with the hit rate equal, and only 89.96 % got back to their posts. Next is traffic's
+  random-859 trace (why the same hits convert into fewer kills), then v4 on current main.
 - **The fire-post loop: DIAGNOSED and OWNED by traffic (2026-10-18; `e7b6504c7`,
   references/round33/traffic/ov_firepost_r705.md).** An artillery truck reads arrived 5.1 m short, digs in after 0.25 s
   still with NO target, and T1c-b2's on_fire_post() (deployed + not hold_fire + arrived) treats that readiness as firing,
