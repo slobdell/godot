@@ -66,7 +66,7 @@ Traffic's give-way block, `_avoid`, `traffic*.gd`; the planner's `game/ai/planne
 
 ## Waiting on the lead
 
-Nothing (C33.9 shipped as is; CP-F parked to round 34).
+Nothing (C33.9 to round 34 by R33.38; CP-F parked to round 34).
 
 ## Status
 
@@ -74,16 +74,36 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### ROUND 33 CLOSE (2026-10-18)
 
-**C33.9 SHIPS** (the lead: attempt 1 as it is, R33.24 option 1). The pair `pair/c339-ship` **4a7cbc6ea** sits on main
-eb532bf51 and holds two commits:
-- 608c3357e: the judged tree lab/c339-turnin 781801da0 as one net-diff commit. It holds the turn-in, the stop hook
-  `_stop_turn_in`, the orbit stage with its FreshStage determinism test, `c339_table.py` and `manoeuvre-c339-cells`.
-- 4a7cbc6ea: TURN_IN_DEFAULT true. `--nav-off=turnin` is now the off arm.
+**C33.9 DOES NOT SHIP; it is round 34's first item** (R33.38). The lead chose to ship attempt 1 as it is. Its pair,
+`pair/c339-ship` 4a7cbc6ea (main eb532bf51 + 781801da0's net diff + TURN_IN_DEFAULT true), plus native's stop
+hand-back (pair/native-c339 2f9ad0fb9), went RED on builder2's full check (exited 2, 2801/2). The cause is the turn-in's
+GDScript: it fails the same way with the library off, and main passes. What failed:
+- test_nav_creep_bound: a plain face round the compass rolled a scout 24.5 m off its spot.
+- The swept lane, in test_ai_scenarios_elements and scenario_suppression.
+- scenario_suppression's held aim point.
+- sim-baseline: crossing, parade and archipelago moved.
 
-Native found a gap: execute_native runs every `stop` natively, so with the switch ON the GDScript stop hook never ran.
-Their hand-back sends a `stop` with turn-in on, a fixed mount and wheels back to GDScript (reason 3), and comes with a
-twin case. It lives on `pair/native-c339`, rebased onto 4a7cbc6ea. Native runs the combined pair's `make native check`
-on builder2, so the green hash comes from them, not from this tree. The judged numbers are in *C33.9 JUDGED* below.
+The cause: the turn-in took any brainless or plain face from its first tick, and every `stop` swing. A static spot
+rolled the hull for 3 s, then froze its turn.
+
+R33.38 says narrow it to the judged case, change no test, then re-judge seeds 31-36. Two narrowings were tried, both on
+`pair/c339-ship`, tests on builder0, cells on builder2 (`references/round33/manoeuvre/c339-narrow/`):
+- **bd4f001fa:** gate every turn-in on a brain's crew with its spot within 10 m of a live enemy moving > 1.5 m/s
+  (Manoeuvre.facing_mover). The tests pass unchanged, but (d) FLIPS: max 0 -> 23 reverse ticks under a face.
+- **fc809b60a:** apply that gate only on a threat face's first ticks (before its spot is seen to move) and on the stop
+  swing; every turn-in still needs a brain. The tests pass unchanged (creep_bound 2/0, scenarios_elements 3/0,
+  suppression 3/0, orbit 5/0). Two lines flip:
+  - (d) FAIL: max 13 reverse ticks, all in one run (law_scout v syn_scout, 15 m, seed 36). There the first-tick gate
+    missed and the face planner's legs held the hull (legs_fwd 691).
+  - (c) FAIL: the worst in-reach cell went from +0 % to -46 % (gang_scout v syn_scout 15 m), though the pooled exchange
+    is 1.58 against 1.77.
+  - The rest is close to R33.24: (a) 22.5 % (was 23.9), (c-out) 50 (was 57), (b), (d2), (e) 23.7 m and (g) all keep
+    their verdicts.
+
+Round 34: re-file the narrowing as a bar on FRESH seeds, not 31-36, which two tries have now tuned on. The likely fix is
+the first-tick case. When the moving-enemy gate misses at the start, the face planner has the hull, and a spot that
+moves later does not win it back cleanly. Native's hand-back hands back every `stop` with turn-in on, a fixed mount and
+wheels, which covers any narrowing of the GDScript hook, so it holds as written.
 
 **CP-F attempt 3 PARKED** (judged on 0dad42fa2: it fails (d) attack-move +7 against a 6.5 limit, and (j)). The cause is
 traced to main's herringbone loop, which is brains' item (R33.35): their fix takes s41's Hunters from 1,097 seat moves to 29.
@@ -95,6 +115,7 @@ and the judge fixes are on stream/manoeuvre (tip below), default OFF.
 `manoeuvre-hull-seeds-differ`, cpf_judge `--wedged`/`--distinct`) and every round-33 reference.
 
 **Round 34 items, and what blocks each:**
+0. **C33.9, narrowed** (above): first. Needs a fresh-seed bar from the orchestrator; nothing else blocks it.
 1. **CP-F attempt 4.** Re-run CP-F's bar on main once brains' herringbone fix ships. Blocked on that fix landing on
    main. Seeds 41/44/45/66/67 (Guns + gang_ifv) are kept for it; brains won't use them.
 2. **The arrival-flicker fix** (lab/cpf-arriveleg 7e0953f9d) as its own item. It fires rarely and did not close CP-F's
@@ -110,8 +131,8 @@ and the judge fixes are on stream/manoeuvre (tip below), default OFF.
 
 | branch | hash | what | |
 |---|---|---|---|
-| pair/c339-ship | 4a7cbc6ea | C33.9 ship (above) | merges this round |
-| lab/c339-turnin | 781801da0 | C33.9 judged tree, history behind 608c3357e | dead once shipped |
+| pair/c339-ship | fc809b60a | C33.9 ship tree + both narrowings (bd4f001fa, fc809b60a); RED at 4a7cbc6ea, judged lines flip at fc809b60a | carry (round 34 item 0) |
+| lab/c339-turnin | 781801da0 | C33.9 judged tree, history behind 608c3357e | carry (until C33.9 ships) |
 | lab/c339-attempt2 | 96d6a1521 | C33.9 attempt 2 C (dev); variant D 9fb3b9db6 | carry (item 5) |
 | lab/cpf-arriveleg | 7e0953f9d | arrival-flicker fix, opt-in `arriveleg`, test | carry (item 2) |
 | pair/cpf3b-on | 0dad42fa2 | CP-F attempt 3 judged pair (check green builder2, 2777/0) | dead: attempt 4 re-cuts on main |

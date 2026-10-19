@@ -1,0 +1,9 @@
+2 passed, 0 failed
+>> remote: make test FILTER=creep_bound exited 0 (build/ copied back)
+3 passed, 0 failed
+>> remote: make test FILTER=ai_scenarios_elements exited 0 (build/ copied back)
+MEASURE suppression_held_aim held point: peak suppression 0.27, peak density 1.02, 161 rounds; tracking: 0.09, 0.28, 6 rounds
+scenarios: 3 passed, 0 failed, 0 pending, 0 unexpectedly passing
+>> remote: make ai-scenarios FILTER=suppression exited 0 (build/ copied back)
+5 passed, 0 failed
+>> remote: make test FILTER=manoeuvre_orbit exited 0 (build/ copied back)

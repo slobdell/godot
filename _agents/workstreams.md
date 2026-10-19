@@ -862,6 +862,19 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   (row-identical, or each line's value reported beside R33.24's); (3) a new full check, with any sim-baseline moves named
   and explained as the turn-in's own. If (2) changes any line's pass/fail, C33.9 does not ship this round and becomes
   round 34's first manoeuvre item.
+- **R33.39 C33.9 does NOT ship in round 33; it is round 34's first manoeuvre item (2026-10-18; manoeuvre stream
+  `8f9846a5c`, references/round33/manoeuvre/c339-narrow/).** The cause of R33.38's reds: the turn-in took every brainless
+  or plain face from its first tick, and every `stop` swing. A static spot rolled the hull for 3 s and then froze its turn
+  (creep_bound's 24.5 m; the suppression scenario's tracking scout). Two narrowings were tried, both on builder2's judged
+  cells 31–36. `bd4f001fa` (gate on a brain's crew whose spot is within 10 m of a live enemy moving > 1.5 m/s) passes the
+  tests and the scenarios, but (d) flips (reverse ticks max 0 → 23). `fc809b60a` (the gate only on a threat face's first
+  ticks and on the stop swing) passes every test unchanged, but (c) flips to FAIL (worst in-reach cell −46 %, pooled
+  exchange 1.58 v 1.77) and so does (d) (max 13). Manoeuvre stopped rather than tune a third time on the judged seeds.
+  **Process lesson:** C31.1 (the whole suite with the switch ON) was not run before C33.9's judged series. It would have
+  caught this a day earlier. Round 34: the turn-in's full suite comes FIRST, then a fresh bar on fresh orbit seeds.
+  Native's stop hand-back (`pair/native-c339` `2f9ad0fb9`) covers any narrowing and needs no change. CARRY:
+  `pair/c339-ship` `fc809b60a`, `lab/c339-turnin` `781801da0`. The lead is told in player terms: the scout shuffle he
+  reported is still there in round 33's build.
 
 **Bars (round 33):** filed here before any number.
 
