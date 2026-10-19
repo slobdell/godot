@@ -336,3 +336,26 @@ native-gate-cells: import ## Round 30: brains' yard + Sumps gate cells, rule ON,
 		[ -s $$out ] || echo "{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
 		echo "  ran $$cell s$$seed t$$tick"'
 	@cat $(BUILD_DIR)/native-gate-runs/*.json > $(BUILD_DIR)/native-gate.jsonl; wc -l < $(BUILD_DIR)/native-gate.jsonl
+
+# C34.8 (a)'s moves list: each pinned stage run twice pinned and twice free (ABAB) on one commit, its output kept per
+# arm under build/pin-moves/<target>/<arm><n>/ (the target's own outputs, its log, the 1-min load before and after).
+# Stages run PIN_MOVES_JOBS at a time, each one's four arms in series. tests/native/pin_moves.py reads the result.
+PIN_MOVES_TARGETS ?= five-squads-series interleaved-probe control-timing facing-probe hull-rest-probe flank-probe \
+	gate-test pace-p0-tests pace-leak-tests planner-twin planner-trace-hull-rest converge-probe scenario-times traffic-far-hull
+PIN_MOVES_JOBS ?= 6
+pin_moves_out = five-squads-series:five-squads interleaved-probe:interleaved facing-probe:facing hull-rest-probe:hull-rest \
+	flank-probe:flank gate-test:gate-test.log pace-p0-tests:pace/p0t pace-leak-tests:pace/leakt planner-twin: \
+	planner-trace-hull-rest:planner converge-probe:converge-probe scenario-times:scenario-times.txt traffic-far-hull:traffic-far-hull \
+	control-timing:
+pin-moves: import native ## C34.8 (a): every pinned stage x (pinned, free, pinned, free) on one commit -> build/pin-moves/ + the moves table
+	@rm -rf $(BUILD_DIR)/pin-moves; mkdir -p $(BUILD_DIR)/pin-moves
+	@printf '%s\n' $(PIN_MOVES_TARGETS) | xargs -P $(PIN_MOVES_JOBS) -I{} sh -c '\
+		out=""; for m in $(pin_moves_out); do [ "$${m%%:*}" = {} ] && out=$${m#*:}; done; \
+		for arm in pin1 free1 pin2 free2; do d=$(BUILD_DIR)/pin-moves/{}/$$arm; mkdir -p $$d; \
+			case $$arm in pin*) fps="--fixed-fps $(SIM_HZ)";; *) fps="";; esac; \
+			cut -d" " -f1 /proc/loadavg > $$d/load_before; started=$$(date +%s); \
+			$(MAKE) --no-print-directory {} PIN_FPS="$$fps" > $$d/run.log 2>&1; echo $$? > $$d/exit; \
+			echo $$(( $$(date +%s) - started )) > $$d/secs; cut -d" " -f1 /proc/loadavg > $$d/load_after; \
+			[ -n "$$out" ] && [ -e $(BUILD_DIR)/$$out ] && cp -r $(BUILD_DIR)/$$out $$d/out; \
+			echo "PIN_MOVES {} $$arm exit=$$(cat $$d/exit) secs=$$(cat $$d/secs) load=$$(cat $$d/load_before)"; done'
+	@$(PYTHON) tests/native/pin_moves.py $(BUILD_DIR)/pin-moves | tee $(BUILD_DIR)/pin-moves/table.txt
