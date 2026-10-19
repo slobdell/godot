@@ -141,6 +141,8 @@ func _run() -> void:
 				"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "squad": squad["number"],
 				"crews": (squad["units"] as Array).size(), "start": _xz(squad["start"]), "anchor": _xz(anchor) if anchor is Vector3 else null,
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
+				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
+				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
 				"plan_drive_m": snappedf(float(squad["path_len"]), 0.1), "driven_m": snappedf(float(squad["driven"]), 0.1),
 				"plan_deck": squad["plan_deck"], "deck": squad["deck"], "deck_at": squad.get("deck_at"),
 				"crossed": squad["crossed"], "crossed_at": squad.get("crossed_at"),

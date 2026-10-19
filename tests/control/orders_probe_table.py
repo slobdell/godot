@@ -13,7 +13,7 @@ def main(path):
     cases = {}
     for r in rows:
         cases.setdefault((r["map"], r["squads"], r["route"]), {}).setdefault(r.get("arm") or "?", []).append(r)
-    print("case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst")
+    print("case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m")
     for case in sorted(cases):
         for arm, squads in sorted(cases[case].items()):
             offs = [r["anchor_offset_m"] for r in squads]
@@ -24,7 +24,7 @@ def main(path):
             print("%-25s %-9s | %6.1f / %6.1f   | %4d %3d | %8s | %17s | %15.1f | %.2f" % (
                 "%s %d %s" % case, arm, max(offs), statistics.median(offs), sum(r["deck"] for r in squads),
                 sum(r.get("crossed", False) for r in squads), all_in, "%.1f" % min(foreign) if foreign else "-",
-                max(r["shuffle_m"] for r in squads), ratio))
+                max(r["shuffle_m"] for r in squads), ratio) + " | %.1f" % min(r.get("toward_m", 0.0) for r in squads))
     return 0
 
 
