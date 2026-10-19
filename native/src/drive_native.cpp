@@ -198,8 +198,6 @@ inline double clampd(double v, double lo, double hi) {
 inline double flat_distance(const Vector3 &a, const Vector3 &b) {
 	return (double)Vector2((real_t)((double)a.x - (double)b.x), (real_t)((double)a.z - (double)b.z)).length();
 }
-// Movement._distance_to_ray (defined below, beside the give-way's helpers; round 35 T9's yield_unfinished reads it too)
-inline double distance_to_ray(const Vector3 &point, const Vector3 &origin, const Vector2 &direction);
 
 inline double deg_to_rad(double deg) {
 	return deg * (Math::PI / 180.0); // Math::deg_to_rad(double)
@@ -1987,7 +1985,10 @@ struct Drive {
 		const double reach = avoid_radius(String(tank->get(k.unit_id))) + avoid_radius(String(asker->get(k.unit_id)));
 		const bool touching = flat_distance(here, at) - reach <= c.YIELD_CONTACT_M;
 		const bool ahead = (double)Vector2((real_t)((double)here.x - (double)at.x), (real_t)((double)here.z - (double)at.z)).dot(dir) > 0.0;
-		const bool on_line = ahead && distance_to_ray(here, at, dir) < reach + c.YIELD_LINE_MARGIN;
+		// Movement._distance_to_ray(here, at, dir), as distance_to_ray below computes it
+		const Vector2 offset((real_t)((double)here.x - (double)at.x), (real_t)((double)here.z - (double)at.z));
+		const double t = MAX((double)offset.dot(dir), 0.0);
+		const bool on_line = ahead && (double)(offset - dir * (real_t)t).length() < reach + c.YIELD_LINE_MARGIN;
 		if (!touching && !on_line) {
 			return false;
 		}
