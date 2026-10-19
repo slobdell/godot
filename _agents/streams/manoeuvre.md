@@ -131,6 +131,18 @@ says yes: the pair c8fb8b6a3 (code = stream/manoeuvre 764ef5427 + pair/native-c3
 sim-baseline is then adopted at the three attributed hashes.** Later stream commits are docs, references and the table
 script's R34.1 block only.
 
+### CP-F attempt 4: gate green, series RELEASED (2026-10-19 ~05:40 PDT)
+
+lab/cpf4 e76f6dab6's C31.1 `native check` on builder2: 2815 passed, 0 failed, twins 0 mismatches, sim-baseline UNMOVED
+(the switch lifts the decline for drawn facings only), 24 of 27 targets; net-smoke (one client saw 1 of 2 tanks under
+load) and remote-guard-test (the shared-box flake) were red in the check and GREEN re-run alone in the same folder
+(`make net-smoke remote-guard-test exited 0`). Bar M3 is recorded on main. The 14-step series (attempt 3's shape) runs on
+builder2 from godot-manoeuvre-cpf4 (the native base arm from godot-manoeuvre-m1), results to
+`/home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/`, then `references/round34/manoeuvre/cpf4-series/`.
+**M2 re-cut on main ≥ 2c7c1d0dc** (C34.6's concern): the hold is keyed by the Movement INSTANCE, dead movers pruned, and a
+test runs two matches in one process with the same crew name (4/4 laptop); its check, then M1's (lab/m1-ruler 6c54f4e66,
+main merged), run on builder2 behind the series' first steps.
+
 ### M1 A/A read (2026-10-19 ~05:00 PDT; builder2, lab/m1-ruler e28ba432d, native path, the OFF arm on seeds 201–209 v 210–218: 4 factions × 9 × 6 tasks a set, 36 pairs a task; `references/round34/manoeuvre/m1-aa/`)
 
 The new ruler's noise, per task (A total, B total; paired sd a run; se of the summed difference over 36 pairs; the swing):
