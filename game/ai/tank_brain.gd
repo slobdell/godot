@@ -1010,6 +1010,8 @@ func _order_context() -> Variant:
 				# tank of a mixed squad stood pivoting for 4 s while its station drove off, same probe). The lead shrinks
 				# to nothing as the crew closes on its station, plus the anchor's own motion over a think's staleness.
 				station += tangent * (minf(across, TRANSIT_LEAD_MAX_M) + (velocity as Vector3).length() * STATION_LEAD_S)
+			# Round 34 (C34.11): a station over the water stands on my final seat's bank (SlotGround.station_on_goal_side).
+			station = SlotGround.station_on_goal_side(station, order["goal"])
 			context["goal"] = SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id))
 			context["transit"] = true
 		if _order_source.has_method("pace_factor"):
