@@ -417,8 +417,8 @@ func _next_queued(orders: Object, game_match: Match = null) -> void:
 				if not (orders.call("current", unit_name) as Dictionary).is_empty():
 					done = false
 					break
-	elif String(task.get("verb", "")) == "move" and arrived:
-		done = true
+	elif String(task.get("verb", "")) == "move" and (arrived or passed_waypoint(game_match)):
+		done = true  # Round 34 (traffic O4): an in-between waypoint is passed at about the squad's width; arrived stays the fallback
 	elif String(task.get("verb", "")) == "attack" and game_match != null:
 		var target := AiTickCache.tanks_by_name(game_match).get(String(task.get("target", ""))) as Tank
 		done = target == null or not target.is_alive()
@@ -426,6 +426,54 @@ func _next_queued(orders: Object, game_match: Match = null) -> void:
 		var next: Dictionary = queued_tasks.pop_front()
 		_log("next queued task: %s" % String(next.get("verb", "")))
 		assign(next, true)
+
+
+## Round 34 (traffic O4, his correction 2; agreed with brains, R34.8): an in-between waypoint (a move with a queue behind
+## it) is PASSED when the element's centre, the mean of its LIVING commanded members, is within about its own width of the
+## point: max(ElementPlan.ARRIVE_M, half its frontage at the doctrine's spacing), at most PASS_MAX_M. No wait for `arrived`,
+## so no stop to form up; crews keep their slots. `arrived` stays the fallback (a squad diverted off its line never strands),
+## and the LAST waypoint keeps it alone. A column's frontage is ~0, so it gets ARRIVE_M. False with no task or no living crew.
+const PASS_MAX_M := 30.0
+
+
+func passed_waypoint(game_match: Match) -> bool:
+	if game_match == null or task.is_empty() or String(task.get("verb", "")) != "move":
+		return false
+	var point: Variant = ElementTask.destination(task)
+	if not point is Vector3:
+		return false
+	var centre := Vector3.ZERO
+	var alive := 0
+	var tanks: Dictionary = AiTickCache.tanks_by_name(game_match)
+	for unit_name in _commanded_members():
+		var tank := tanks.get(unit_name) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		centre += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+		alive += 1
+	if alive == 0:
+		return false
+	centre /= alive
+	var pass_m := clampf(0.5 * TacticsFormation.frontage(formation, alive, _doctrine().spacing("open")), ElementPlan.ARRIVE_M, PASS_MAX_M)
+	return Vector3((point as Vector3).x - centre.x, 0.0, (point as Vector3).z - centre.z).length() <= pass_m
+
+
+## Round 34 (traffic O4): a queued task's destination rewritten (the control re-lays a gate once a further waypoint is
+## queued). Bumps the state as enqueue does, so feeds keyed on it see the rewrite. "" or why it was refused (nothing changes).
+func relay_queued(i: int, to: Array) -> String:
+	if i < 0 or i >= queued_tasks.size():
+		return "no queued task %d" % i
+	if to.size() != 2:
+		return "'to' must be [x, z]"
+	var changed: Dictionary = (queued_tasks[i] as Dictionary).duplicate(true)
+	changed["to"] = [float(to[0]), float(to[1])]
+	var error := ElementTask.validate(changed)
+	if error != "":
+		return error
+	_state_stamp += 1
+	queued_tasks[i] = changed
+	revision += 1
+	return ""
 
 
 func stand_down() -> void:
