@@ -131,6 +131,17 @@ says yes: the pair c8fb8b6a3 (code = stream/manoeuvre 764ef5427 + pair/native-c3
 sim-baseline is then adopted at the three attributed hashes.** Later stream commits are docs, references and the table
 script's R34.1 block only.
 
+### M1 the ruler is GREEN: merge here `lab/m1-ruler` 6c54f4e66 (2026-10-19 ~06:30 PDT)
+
+builder2, `make native check exited 0`, 2831 passed 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved (no behaviour
+change: CP-F's code rides with its switch OFF). It carries: round33/manoeuvre's CP-F attempt-3 code (default OFF) and judge
+fixes (HULL_JITTER_DEG, `--wedged`, `--distinct`, manoeuvre-hull-seeds-differ); 1B `real_mps`/`mps` on every hull-rest crew
+row; 2B `--faced-shift-m` (hull-rest passes HULL_SHIFT_M=6); cpf_judge reads still by real velocity, wedged apart;
+`tests/manoeuvre/hull_rest_aa.py`; tests test_manoeuvre_ruler, test_manoeuvre_turn_hull. **Merge notes (shared files,
+all granted):** `game/control/screen_playtest.gd` additive (1B/2B, control has no stream); `game/control/orders.gd` one
+additive field (`drawn`, CP-F (p)); `game/ai/tank_brain.gd` the C31.8 decline (4 lines); `game/ai/manoeuvre_census.gd`
+counters; `mk/manoeuvre.mk` targets and HULL_SHIFT_M. Numbers from hull-rest before this do not compare with after.
+
 ### CP-F attempt 4: gate green, series RELEASED (2026-10-19 ~05:40 PDT)
 
 lab/cpf4 e76f6dab6's C31.1 `native check` on builder2: 2815 passed, 0 failed, twins 0 mismatches, sim-baseline UNMOVED
