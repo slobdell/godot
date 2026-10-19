@@ -77,7 +77,7 @@ func _compare(element: Object, unit_name: String, verb: String) -> String:
 
 
 func test_the_native_feed_builds_live_contexts_as_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the feed equality is not exercised in this run")
 		return
 	assert_true(NativeFeed.configure(), "the native feed takes the live lists")
@@ -135,7 +135,7 @@ func test_the_native_feed_builds_live_contexts_as_the_gdscript() -> void:
 
 
 func test_the_native_feed_reads_every_shape_a_source_may_publish_as_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the feed equality is not exercised in this run")
 		return
 	assert_true(NativeFeed.configure(), "the native feed takes the live lists")

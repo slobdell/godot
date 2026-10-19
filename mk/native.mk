@@ -18,6 +18,27 @@ GODOTCPP_SRC     := $(TOOLS_DIR)/godot-cpp-$(GODOTCPP_VERSION)
 # The proof's flags (_agents/native.md): -O2, no FMA contraction, no fast math, no -march. Also the key of the
 # machine's godot-cpp build tree, so a flag change (or a Godot upgrade) builds a fresh binding beside the old one.
 NATIVE_FP_FLAGS  := -O2 -ffp-contract=off -fno-fast-math
+
+# ---- C34.8 (a) (round 34, native): every judged stage pinned ----------------------------------------------------
+# A stage whose numbers decide a ship runs Godot at one physics step a frame (--fixed-fps SIM_HZ), as `make test` has
+# since round 33: a free clock lets a loaded machine change how many physics steps fall in a frame, and with them
+# which tick an await or a nav sync lands on (pace-determinism's bridge: deck_jam_s 12.6 v 21.0 by load alone).
+# PIN_FPS is the one token each pinned recipe carries; `PIN_FPS=` is the free arm (the moves list, native's Status).
+# Pinned (C34.8 (a)): command.mk five-squads-series, interleaved-probe, control-timing (x2), facing-probe,
+# hull-rest-probe, flank-probe; nav.mk gate-test; pace.mk pace-p0-tests, pace-leak-tests (x2); planner.mk planner-twin,
+# planner-trace-hull-rest; tactics.mk converge-probe, scenario-times; traffic.mk traffic-far-hull.
+# Free ON PURPOSE, with the reason:
+#   the clock is the parameter: pace-div, pace-repro, pace-determinism.
+#   real sockets and a wall clock are the point: net-smoke, combat-smoke, relay-*, lobby-smoke, broker-smoke,
+#     web-*-smoke, server, play, agent-*, replay, det-spike.
+#   a CPU bench measures cost per frame, not outcomes: hud-profile, spawn-cost, native-bench, audio-bench.
+#   UI playtests read screenshots and response ticks against the camera's frame pacing (a smoke, not a judged
+#     number): control-playtest, picker-playtest, two-squads-playtest, command-playtest, repath-test, screen-probe,
+#     garage-smoke, garage-e2e, army-loop-smoke.
+#   no physics step decides anything (geometry, assets, exports, the parser): arena-cover, roster-boxes, spawn-probe,
+#     tactics-terrain, traffic-islands, traffic-navgap, native-info, native-live-guard's load probe, lint, import,
+#     manoeuvre-parse, assets-*, fx-textures, sfx, export-*.
+PIN_FPS ?= --fixed-fps $(SIM_HZ)
 GODOTCPP_BUILD   := $(GODOTCPP_SRC)/build-$(shell printf '%s' '$(NATIVE_FP_FLAGS) $(GODOT_TAG)' | sha256sum | cut -c1-8)
 GODOTCPP_LIB     := $(GODOTCPP_BUILD)/bin/libgodot-cpp.linux.template_debug.x86_64.a
 NATIVE_DIR       := native
@@ -30,6 +51,9 @@ NATIVE_CPUS      ?=
 NATIVE           ?= on
 CMAKE            ?= cmake
 NATIVE_TOOLCHAIN := $(shell command -v $(CMAKE) >/dev/null 2>&1 && command -v c++ >/dev/null 2>&1 && echo yes || echo no)
+# Round 34 (N4): every Godot that make starts knows whether a library is expected here, so a twin that finds none FAILS
+# (tests/native/native_expect.gd) instead of passing with "native: absent". NATIVE=off, or no toolchain: not expected.
+export TANK_NATIVE_EXPECTED := $(if $(filter-out off,$(NATIVE)),$(if $(filter yes,$(NATIVE_TOOLCHAIN)),1))
 NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOTCPP_VERSION=$(GODOTCPP_VERSION) \
 	GODOTCPP_SHA256=$(GODOTCPP_SHA256) GODOTCPP_URL=$(GODOTCPP_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) \
 	GODOTCPP_BUILD=$(GODOTCPP_BUILD) GODOTCPP_LIB=$(GODOTCPP_LIB) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" \
@@ -315,3 +339,26 @@ native-gate-cells: import ## Round 30: brains' yard + Sumps gate cells, rule ON,
 		[ -s $$out ] || echo "{\"cell\":\"$$cell\",\"arm\":\"$$arm\",\"seed\":$$seed,\"start_tick\":$$tick,\"missing\":true}" > $$out; \
 		echo "  ran $$cell s$$seed t$$tick"'
 	@cat $(BUILD_DIR)/native-gate-runs/*.json > $(BUILD_DIR)/native-gate.jsonl; wc -l < $(BUILD_DIR)/native-gate.jsonl
+
+# C34.8 (a)'s moves list: each pinned stage run twice pinned and twice free (ABAB) on one commit, its output kept per
+# arm under build/pin-moves/<target>/<arm><n>/ (the target's own outputs, its log, the 1-min load before and after).
+# Stages run PIN_MOVES_JOBS at a time, each one's four arms in series. tests/native/pin_moves.py reads the result.
+PIN_MOVES_TARGETS ?= five-squads-series interleaved-probe control-timing facing-probe hull-rest-probe flank-probe \
+	gate-test pace-p0-tests pace-leak-tests planner-twin planner-trace-hull-rest converge-probe scenario-times traffic-far-hull
+PIN_MOVES_JOBS ?= 6
+pin_moves_out = five-squads-series:five-squads interleaved-probe:interleaved facing-probe:facing hull-rest-probe:hull-rest \
+	flank-probe:flank gate-test:gate-test.log pace-p0-tests:pace/p0t pace-leak-tests:pace/leakt planner-twin: \
+	planner-trace-hull-rest:planner converge-probe:converge-probe scenario-times:scenario-times.txt traffic-far-hull:traffic-far-hull \
+	control-timing:
+pin-moves: import native ## C34.8 (a): every pinned stage x (pinned, free, pinned, free) on one commit -> build/pin-moves/ + the moves table
+	@rm -rf $(BUILD_DIR)/pin-moves; mkdir -p $(BUILD_DIR)/pin-moves
+	@printf '%s\n' $(PIN_MOVES_TARGETS) | xargs -P $(PIN_MOVES_JOBS) -I{} sh -c '\
+		out=""; for m in $(pin_moves_out); do [ "$${m%%:*}" = {} ] && out=$${m#*:}; done; \
+		for arm in pin1 free1 pin2 free2; do d=$(BUILD_DIR)/pin-moves/{}/$$arm; mkdir -p $$d; \
+			case $$arm in pin*) fps="--fixed-fps $(SIM_HZ)";; *) fps="";; esac; \
+			cut -d" " -f1 /proc/loadavg > $$d/load_before; started=$$(date +%s); \
+			$(MAKE) --no-print-directory {} PIN_FPS="$$fps" > $$d/run.log 2>&1; echo $$? > $$d/exit; \
+			echo $$(( $$(date +%s) - started )) > $$d/secs; cut -d" " -f1 /proc/loadavg > $$d/load_after; \
+			[ -n "$$out" ] && [ -e $(BUILD_DIR)/$$out ] && cp -r $(BUILD_DIR)/$$out $$d/out; \
+			echo "PIN_MOVES {} $$arm exit=$$(cat $$d/exit) secs=$$(cat $$d/secs) load=$$(cat $$d/load_before)"; done'
+	@$(PYTHON) tests/native/pin_moves.py $(BUILD_DIR)/pin-moves | tee $(BUILD_DIR)/pin-moves/table.txt

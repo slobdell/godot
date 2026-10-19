@@ -30,7 +30,7 @@ func test_a_held_rig_on_the_owned_state() -> void:
 ## The planner's f9d2c639: a crew under the rig's NAME whose hull is queued for deletion (a disposed match's) is no hold;
 ## PlannerSeam.live releases it. The native gates must read it the same (drive and unstick twinned with the seam's world).
 func test_a_crew_of_a_freed_hull_is_no_hold() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the freed-hull gate is not exercised in this run")
 		return
 	if not ResourceLoader.exists(PLANNER_SEAM) or not bool(load(PLANNER_SEAM).call("on")):
@@ -109,7 +109,7 @@ func _diff(movers: Array[Movement], a: Array, b: Array) -> String:
 
 
 func _case(owned: bool) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the seam's drive equality is not exercised in this run")
 		return
 	if not ResourceLoader.exists(PLANNER_SEAM) or not bool(load(PLANNER_SEAM).call("on")):

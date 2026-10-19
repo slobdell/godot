@@ -63,7 +63,7 @@ static func _diff(a: Dictionary, b: Dictionary) -> String:
 
 ## Compares each crew on the frames where `frame + its node index` is `part` mod `parts`; the rest play uncompared.
 func _scan_case(part: int, parts: int) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the wall scan equality is not exercised in this run")
 		return
 	assert_true(NativeWall.configure(), "the native scan takes the live constants")

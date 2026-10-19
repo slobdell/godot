@@ -47,7 +47,7 @@ func _stamp(game_match: Match, rng: RandomNumberGenerator) -> void:
 
 
 func test_around_fire_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the around-fire equality is not exercised in this run")
 		return
 	assert_true(NativeDrive.fire_ready(), "the native drive takes _around_fire's constants and scripts")

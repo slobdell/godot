@@ -286,7 +286,7 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 ## `parts` > 1 (round 33): the unstick compare's `part` of the frames (see `_unstick_compare`); `drive` false leaves the
 ## drive compare to the file that has it (the fight is the same either way: the compares restore what they touch).
 func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
@@ -374,7 +374,7 @@ func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 
 
 func _drive_case(owned: bool) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the drive equality is not exercised in this run")
 		return
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world

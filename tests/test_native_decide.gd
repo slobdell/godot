@@ -62,7 +62,7 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 
 
 func test_decide_is_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the decide equality is not exercised in this run")
 		return
 	assert_true(NativeDecide.configure(), "the native decide takes the live constants")

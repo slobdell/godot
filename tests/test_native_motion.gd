@@ -58,7 +58,7 @@ static func _diff(a: Dictionary, b: Dictionary) -> String:
 
 
 func test_motion_step_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the motion equality is not exercised in this run")
 		return
 	assert_true(NativeMotion.configure(), "the native motion model takes the live constants")
