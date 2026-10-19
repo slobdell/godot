@@ -175,9 +175,9 @@ struct N {
 			_ready_map{ "_ready_map" }, _ready_iteration{ "_ready_iteration" }, _ready_answer{ "_ready_answer" },
 			locomotion{ "locomotion" }, min_turn_radius_m{ "min_turn_radius_m" }, for_unit{ "for_unit" },
 			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" },
-			// Round 34 (traffic T6, `underfire`)
+			// Round 34 (traffic T6b, `underfire`: (a) the ask refusal, (b) the begin_yield gate; (c) the hit abort dropped, R34.17)
 			ticks_since_hit{ "ticks_since_hit" }, underfire_refusals{ "underfire_refusals" },
-			underfire_holds{ "underfire_holds" }, underfire_aborts{ "underfire_aborts" }, underfire_log{ "underfire_log" };
+			underfire_holds{ "underfire_holds" };
 };
 const N &n_() {
 	static const N names;
@@ -1837,24 +1837,6 @@ struct Drive {
 			return 0;
 		}
 		v.set__yield_left(v._yield_left() - step);
-		// Round 34 (traffic T6): a hit lands while giving way: the give-way ends now and the crew drives its own route.
-		//   underfire_on() and tank.ticks_since_hit <= ctl._step: underfire_aborts += 1; the capped log; _end_yield(); false
-		if (underfire_on() && (int64_t)tank->get(k.ticks_since_hit) <= step) {
-			sadd(k.underfire_aborts, 1);
-			Array log = sget(k.underfire_log);
-			if (log.size() < 500) {
-				// The GDScript's row: String keys, the unit's name a String (not the node's StringName).
-				static const String unit("unit"), f("f"), to("to"), spot("spot");
-				Dictionary row;
-				row[unit] = String(tank->get_name());
-				row[f] = Engine_frames();
-				row[to] = yield_to;
-				row[spot] = v.yield_spot();
-				log.append(row);
-			}
-			end_yield(yield_to);
-			return 0;
-		}
 		Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
 		Node *asker_node = root != nullptr ? root->get_node_or_null(NodePath(yield_to)) : nullptr;
 		Node3D *asker = asker_node != nullptr && asker_node->get(k.alive).get_type() == Variant::BOOL ?
