@@ -637,7 +637,11 @@ static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta
 	var want_yaw := rate + own + TURN_IN_GAIN * error  # deg/s, + = to the left
 	var radius := ctl.movement.wheel_radius()
 	var top_speed := maxf(tank.max_forward_speed, 0.1)
-	if still and absf(error) <= half_arc:
+	# Out of the gun's effective reach there is nothing to shoot: the hull never holds still and the leash never slows
+	# its dance (both made a steadier target of a scout facing an IFV that outranges it: gang_scout v gang_ifv 30 m, dev
+	# 11-23, hits 86 -> 133). It keeps turning in and jinking at speed; leaving is brains' call (C34.5).
+	var in_reach := to.length() <= Engagement.effective_range(tank.weapon)
+	if still and absf(error) <= half_arc and in_reach:
 		# A target that stands, in the arc: hold still and shoot. (Seed 36's trace: the jink rolled the hull past a
 		# stopped orbiter 3 m away, the arc was lost, and the hand-off to the planner reversed.)
 		cmd.throttle = 0.0
@@ -724,24 +728,24 @@ static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta
 		want_yaw = absf(want_yaw) * ctl._turn_in_sign
 	ctl._turn_in_sign = signf(want_yaw)
 	cmd.turn = -signf(want_yaw) * clampf(yaw_share / maxf(cmd.throttle, 0.01), 0.0, 1.0)  # Steering's convention: turn < 0 turns left
-	_turn_in_leash(ctl, cmd, here, forward, yaw_share, floor_share)
+	_turn_in_leash(ctl, cmd, here, forward, yaw_share, floor_share, in_reach)
 	turn_in_ticks += 1
 	return true
 
 
 ## Past TURN_IN_LEASH_M from the player's post, heading away from it, the hull turns full lock toward the post's side.
-static func _turn_in_leash(ctl: OrderController, cmd: TankCommand, here: Vector3, forward: Vector3, yaw_share: float, floor_share: float) -> void:
+static func _turn_in_leash(ctl: OrderController, cmd: TankCommand, here: Vector3, forward: Vector3, yaw_share: float, floor_share: float, in_reach := true) -> void:
 	var post: Variant = ctl.get("_player_post")
 	if post is Vector3:
 		var home := Vector3((post as Vector3).x - here.x, 0.0, (post as Vector3).z - here.z)
-		if home.length() > TURN_IN_LEASH_M and home.length() <= TURN_IN_LEASH_HOME_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
+		if in_reach and home.length() > TURN_IN_LEASH_M and home.length() <= TURN_IN_LEASH_HOME_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
 			# The first tier: the tightest circle that tracks (see TURN_IN_LEASH_HOME_M).
 			cmd.throttle = minf(cmd.throttle, floor_share)
 			cmd.turn = signf(cmd.turn) * clampf(yaw_share / maxf(cmd.throttle, 0.01), 0.0, 1.0)
 			ctl._turn_in_leash_sign = 0.0
 			turn_in_leashed += 1
 			return
-		if home.length() > TURN_IN_LEASH_HOME_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
+		if home.length() > (TURN_IN_LEASH_HOME_M if in_reach else TURN_IN_LEASH_M) and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
 			# Its side is chosen once and held until the hull heads home: with the post nearly behind, the side's sign
 			# flipped every tick and the full lock wiggled while the hull drove straight away (gang_scout, 30 m orbit,
 			# seed 23: 31.5 m out, the leash on 408 of 829 face ticks).
