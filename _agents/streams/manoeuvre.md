@@ -137,6 +137,38 @@ min; CP-F 4's step 2 wrapper died 6 min in) while the remote makes ran on as orp
 touched). Neither M2 run is named from those logs. Both the M2 check (builder0) and the CP-F 4 series (resumed from step
 2; step 1's wrapper line is in its summary) now run under `systemd-run --user` as the brief orders; orientation trip-up 86.
 
+### Round-34 close-out (manoeuvre, 2026-10-19 ~10:00 PDT; branch stream/manoeuvre with main 165953b64 merged at ed353a1df)
+
+**Shipped this round:** M1 the hull-rest ruler (lab/m1-ruler 6c54f4e66, main f97e5fdb1); M2 the k-turn arrival flicker
+(lab/m2-arriveleg 0d0f22027, main 75a1d8c51). **Judged, not shipped:** M0 the scout turn-in (pair c8fb8b6a3, R34.10:
+to the lead), M3 CP-F attempt 4 (R34.18: parks). **Done:** the War Rig clip (stretch). **Running:** the M2 before/after
+report on main (builder0; result appended below when it lands).
+
+**Open with the lead (M0):** the scout turn-in passes every bar line but (c-out): out of reach of its own gun it now trades
+1.45 damage per damage taken instead of 0.06 and kills the IFV at 30 m in 5 of 12 runs, taking 60 hits instead of 46
+(pooled median; the accepted margin was 57). Recommendation stands: SHIP; it is a stronger scout, not a reckless one. The
+pair stays frozen until he says.
+
+**CP-F for round 35 (a fifth needs a new design, R34.18):** the hull turn is right (point tasks 3–4° v 50°); what misses is
+the stage settling. Two designs, one each side of the seam: (1) manoeuvre: a face no plan fits must give up cleanly —
+after N refused plans the hull stops and the face is declared done-as-is (today it creeps at the 0.35 lock to the judge:
+face_creep at the judge screen 8 v 0, attack-move 4 v 0); (2) brains: the element's step to its next attack-move leg must
+not wait on a `face from sector` (law/faced_attack_move-614 stepped at t 60 v t 32 with the same laggard in both arms).
+Both filed before any number; the bar re-uses Bar M3 with the A/A noise. Terminus mixed's −5 arrivals (one a seed in five
+of thirteen) gets a trace in the design, not a re-run.
+
+**Traffic's wedged deaths, a candidate item (measurement only, `references/round34/manoeuvre/wedged-deaths/`):** from
+T5's 5984 rows, 499 (8.3 %, 3.5 a fight) died `stuck:wedged`: mid-weight hulls (IFV, tank, suppressor, burner 13–16 % of
+their deaths; scouts 2–3 %), in lane mouths at the enemy (Locks 10 %, the x ≈ 0 column holds 57 of 195), 85 % under fire,
+moving at walking pace (median 1.2 m/s, 58 % ≥ 0.5 m/s, only 17 % still ≥ 1 s). Unstick's stall rule can have been
+counting on at most a quarter of them (under 0.8 m/s); the rest it never sees. The round-35 candidate: `wedged` as a
+second unstick trigger, bar first (a back-off under fire is the question).
+
+**What a fresh agent needs:** worktrees godot-manoeuvre (this), -pair (c8fb8b6a3, frozen), -m1 (merged), -m2 (now detached
+on main for the report), -cpf4 (e76f6dab6, parked); raw runs in ~/overnight-manoeuvre; long runs under systemd-run with
+`--setenv=PATH="$PATH"` (orientation 86); the clicked faces never reach the hull turn (`hull_turns` 0 in the clicked arms) —
+a fifth design should say whether that is intended.
+
 ### CP-F attempt 4 JUDGED (2026-10-19 ~09:00 PDT): PARKS on (d), (e), (g) — the hull turn works, the stage does not settle
 
 Series on `lab/cpf4` e76f6dab6, builder2 start to end, 14/14 steps exited 0, fresh seeds as filed; every reader's output
