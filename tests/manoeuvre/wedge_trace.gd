@@ -34,7 +34,7 @@ var _episodes := {}  # crew -> the open episode
 var _moving_at := {}
 var _hits_at := {}
 var _last_pos := {}
-var _trace_crew := ""
+var _trace_crews: PackedStringArray = []
 var _totals := {"episodes": 0, "episode_ticks": 0, "deaths": 0, "wedged_deaths": 0, "by_force": {},
 		"halt_ticks": 0, "halt_creep_ticks": 0, "halt_creep_held_ticks": 0}
 
@@ -61,7 +61,9 @@ static func _angle_deg(a: Vector2, b: Vector2) -> float:
 
 
 func _run() -> void:
-	_trace_crew = _flag("trace-crew", "")
+	# A comma list; "+" stands for a space (make remote word-splits: "Green_Eyes+II_5").
+	for name in _flag("trace-crew", "").split(",", false):
+		_trace_crews.append(name.replace("+", " "))
 	var main: Node = (load("res://game/main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	var game_match: Match = main.get("game_match")
@@ -205,7 +207,7 @@ func _observe(game_match: Match) -> void:
 				_totals["halt_creep_ticks"] = int(_totals["halt_creep_ticks"]) + 1
 				if held:
 					_totals["halt_creep_held_ticks"] = int(_totals["halt_creep_held_ticks"]) + 1
-		if crew == _trace_crew and tick % maxi(1, int(SAMPLE_S * SimClock.TICK_RATE)) == 0:
+		if _trace_crews.has(crew) and tick % maxi(1, int(SAMPLE_S * SimClock.TICK_RATE)) == 0:
 			var row := sample.duplicate()
 			row["crew"] = crew
 			row["goal"] = [snappedf(mover._goal.x, 0.1), snappedf(mover._goal.z, 0.1)] if mover._goal != Vector3.INF else null
