@@ -89,9 +89,11 @@ Nothing.
   (anchors outside the walls) was RETRACTED. The clamp is right; my shots' HUD rings were misdrawn under the probe's
   camera, and the shots are re-taken with 3D posts. (1) and (2) are routed to brains.
 - **Judging table, M1's ruler (18de4e9ab):** M1's A/A as three rows; the old hull-rest rows are marked OLD ruler.
-- **P5 re-measured (references/round34/planner/p5-remeasure-15f5980ac/):** after M2 (the flicker fix), no face is
-  planned by the candidate only (round 33's 12.4 m tail is gone), so v3 has no target. **Recommendation sent: close P5
-  with no v3** (the orchestrator's ruling). One both-planned clicked face at 9.1 m v 4.0 is a watch item.
+- **The lead's probe pass (5f31281ee; `references/round34/orders/lead-pass-1ed50cf94/README.md`, in his terms):** on
+  main 62d90dc97, no squad crosses the river in any cell; all five squads go (the back rank 52–64 m behind the click);
+  two Locks routes leave one squad short at 90 s; the shuffle remains (up to 87 m); the deploy step is mixed.
+- **P5 CLOSED (R34.16): no v3.** Re-measured (references/round34/planner/p5-remeasure-15f5980ac/):** after M2 (the flicker fix), no face is
+  planned by the candidate only (round 33's 12.4 m tail is gone), so v3 has no target. Ruled R34.16: P5 closes with no v3. One both-planned clicked face at 9.1 m v 4.0 is a watch item.
 - **Also done this round:** the O4 before/after through the probe (`references/round34/orders/o4-before-after/`); the
   Terminus 3-squad route stall bisected to traffic's a5a362737 (O4's queue made an O3 anchor inside a block
   load-bearing; brains fixes it); R34.15 `tools/judge/seed_twins.py` + `tests/planner/random_arenas.gd` (a random
