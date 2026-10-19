@@ -148,8 +148,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (their task REPLACED at each shift-click, never queued). Traced with the probe's `--probe-legs-each=on`: from the first
   click, `selection_squads()` returns squads 3-5 with MIXED units (squad 4 = Charlie_2, Charlie_3, Delta_4, Delta_5, Echo_4;
   squad 3 = Echo_1-3), i.e. `SelectionSquads.split` dealt them west to east as if from one oversized group, so no element is
-  exactly theirs, `_queue_task_for` gets `held == null`, returns null, and the squad's task is replaced. Not yet traced: why
-  split takes rule 3 on this seed (seed 34 splits cleanly). Candidate next item after D4 / D5.
+  exactly theirs, `_queue_task_for` gets `held == null`, returns null, and the squad's task is replaced. **Cause (traced):**
+  the split is clean at every click; the mixing is round 22's `SelectionSquads.untangle` (O1b) inside the FIRST click,
+  which re-deals VEHICLES between squads whose drives would cross, so the elements formed then no longer match the control
+  groups, and every later shift-click finds no element exactly the group. Fix options: untangle whole squads (deal squads
+  to places, never vehicles across squads), or have a shifted move queue on the elements the units now belong to. A design
+  choice (O1b's re-deal was his round-22 case): to the orchestrator.
 - **Next:** the fresh re-read on 3631-3636 (filed on main, same bar) once D4's run frees this folder; fails again -> D5 parks.
 
 ### D5 crossing drives: built on stream/orders `77c284868` (no builder0 number yet)
