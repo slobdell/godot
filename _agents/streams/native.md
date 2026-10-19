@@ -73,7 +73,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Round 34 (started 2026-10-18 from main `918ede503`, which inherits `d7d57f4cf`'s green check)
 
-**REPORT (top, 2026-10-19).** Backlog N1-N5 DONE; the stretch was not needed (below).
+**REPORT (top, 2026-10-19).** Backlog N1-N5 DONE, plus N6 (web-smoke on builder0); the stretch was not needed (below).
 - **Merged to main:** C34.7 + C34.8 (a) + N4 as main `02a912163` (= `12ac7b172`, builder2 `make native check exited 0`,
   2798 / 0, ALL JUDGED, under load 28.8 / 32 CPUs). N5 + the C34.6 floor rule are in main through planner's C34.6
   (`89e775f87`).
@@ -211,6 +211,15 @@ The rest:
 - Throughput: pinned is 1.3-13x faster (pace-p0-tests 199 / 157 s v 2067 / 2056 s).
 Table: `tests/native/pin_moves.py` over build/pin-moves (raw arms kept on builder2 in ~/tank_squad/godot-native/build/
 pin-moves).
+
+**N6 (the orchestrator, mid-round): web-smoke independent of any desktop: DONE, `530d77c6c`.** builder0's web-smoke
+had read "WebGL2 missing" since ~23:00 2026-10-18. The cause was not a desktop GPU: the smoke always ran SwiftShader.
+builder0's desktop session died and left its Xwayland auth files, and tools/remote.sh's newest-file fallback exported
+DISPLAY=:0 for a display that was gone. A probe on builder0 with the smoke's exact flags read "NO WEBGL2" with that
+DISPLAY/XAUTHORITY, and SwiftShader's renderer without them. Fix: the smoke's Chrome, and observe's in SwiftShader mode,
+get no display variables (tools/web_smoke/headless_env.mjs, with a node test web-smoke runs first). remote.sh exports
+DISPLAY only while an Xwayland runs. builder0 `make web-smoke exited 0` with nobody logged in (READY 11.5 s, first
+sound 15.5 s); builder2 exited 0 (7.5 s, 9.5 s). Both screenshots were looked at: the game is rendered.
 
 **N5, the yield Sumps stage off the pits: DONE, `17876e4b6` (test-only).** The off-floor hulls were NOT the pits alone.
 A laptop sweep of the stage's spawn layout over 961 Sumps centres (4 m grid, NATIVE=off) found hulls pushed off the floor
