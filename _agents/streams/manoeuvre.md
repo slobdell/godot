@@ -91,6 +91,29 @@ round 34's Status. **Lines:** Bar M3's (a)–(m) unchanged (same rules, same A/A
 **Partial:** (a)–(j), (n) are the gate; a miss parks it with a trace. Attack-move's step (attempt 4's mechanism 2) is brains' (R35.3,
 the straggler release); if (d)/(e) miss on attack-move only, the trace says which mechanism, and the verdict goes to the orchestrator.
 
+### Bar M6 (W1c, the stall gate reads the drive's intent against a friendly hull; R35.12) — DRAFT, to the orchestrator before code
+
+**Change:** in `Movement._unstick`, for a ROUTED move (`move_to`, not `direct`) whose hull is in contact with a friendly hull (slide
+collision) or whose phase is `blocked` by a friend, the stall rule's throttle test reads the drive's intent, |throttle| / pace when
+pace < 1; every other case keeps `|throttle| > 0.5`. H1's escape unchanged (ask, straight reverse by the sweep, stand). Switch
+`--nav-off=stallintent` (default OFF until this bar passes); native mirrors after the dev read. **Candidate** = stream + the
+default flipped (lab/w1c), as a pair with native's mirror; **base** = the same tree `--nav-off=stallintent`. **Gate:** the pair's
+whole `make native check` on builder0. **Seeds (fresh, outside E1's and M5's 701–716):** hull-rest 901–916 (4 factions × 16 × 6
+tasks, drawn, both arms on the pair's native path), fights on FIXED locks/terminus/sumps × 940–963 (`FIGHT_AT`; also the wedge probe's
+WEDGE_RANGE 940–963 for far loops / contacts / asks). Tuning seeds stay 460–475 and wedge 3500–3511.
+| line | reads | rule |
+|---|---|---|
+| (0) counter first | in the ON arm: stall clocks run under the intent reading (`stall_intent_ticks`), H1 escapes started (`esc_fires_hull`), asks (`esc_asks`) | each > 0, or nothing is read |
+| (d) deciding | hull-rest attack-move crews moving at the judge by `real_mps` (wedged apart) | new ≤ base − 1.645 × sd_run(A/A 1.17) × √pairs; also no other task worse than Bar M3's (d) guard (+1.645 sd√n: right 0.64, move 0.51, screen 0.41, ambush 0.24, SBF 0.23) |
+| (e) deciding | attack-move never settled (75 s) | new ≤ base, and no task over base + Bar M3's (e) guard (se 3.0 a task at 64 pairs) |
+| (f) | arrivals within ARRIVED_M | not down beyond 1.645 se paired |
+| (i) fights | kills, deaths, hit rate per team (fight_table) | within 1.645 se paired |
+| (q) jams | stuck, jam (yielding/friend) and open deaths (wedge probe's causes) | each within 1.645 se paired |
+| (r) far loops | ManoeuvreCensus far rows | ≤ base + 1.645 se |
+| (s) friendly contacts | ticks touching a friendly hull (wedge probe) | ≤ base + 1.645 se |
+| (t) asks | H1 asks and give-ways started, per fight | REPORTED (the churn risk) beside base |
+**Partial:** (0), (d), (e), (f), (i), (q)–(s) are the gate. A miss parks it with a trace.
+
 ### Requests to other streams
 
 - **traffic:** (B) release a Traffic hold for a crew being hit; (D) `jam:held` in `death_cause` before `stuck:wedged`.
