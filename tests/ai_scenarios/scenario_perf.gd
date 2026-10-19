@@ -55,6 +55,26 @@ static func _units() -> int:
 	return DEFAULT_UNITS
 
 
+## Why the CPU budget is NOT judged this run ("" = judged). Pure (test_ai_perf_refusal).
+## Round 34 (brains, the orchestrator's ruling): under native-verify-scenarios (TANK_NATIVE_EXEC_VERIFY=1) every owned
+## execute runs on both paths, so the budget measures the verifier, and it swung with load right up to the refusal line
+## (builder2, 2026-10-19: 18045-35457 usec at 1.41-1.54x; three false FAILs in one night). check's perf-judge judges the
+## shipped path's budget, pinned and in an idle window (4 of 5 checks that night, 1.05-1.34x), and ai-scenarios-check
+## judges the plain path too when it can.
+static func refusal(refuse: bool, nominal: float, machine: String, cpu_kind: String, ratio: float, verify: bool) -> String:
+	if not refuse:
+		return ""
+	if verify:
+		return "reason=verify (both paths run; perf-judge judges the shipped budget)"
+	if nominal <= 0.0:
+		return "reason=no_nominal machine=%s" % machine
+	if cpu_kind != "-" and cpu_kind != "P":
+		return "reason=unpinned cpu=%s (a hybrid machine: perf-judge judges, pinned to the P-cores)" % cpu_kind
+	if ratio > LOADED_RATIO:
+		return "reason=loaded ref=%.2fx" % ratio
+	return ""
+
+
 func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var total := _units()
 	var per_side := total / 2
@@ -164,13 +184,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	# types, and the reference and the brains do NOT slow alike: 9b404030 under load read the reference at 1.46x (under
 	# the refusal line) and the brains at 21444 usec/tick (over the fail line) -- a false FAIL -- while perf-judge in the
 	# same check passed at 1.35x. A machine with no hybrid topology (the laptop) judges as before.
-	var cpu_kind := _cpu_kind()
-	if refuse and nominal <= 0.0:
-		not_judged = "reason=no_nominal machine=%s" % machine
-	elif refuse and cpu_kind != "-" and cpu_kind != "P":
-		not_judged = "reason=unpinned cpu=%s (a hybrid machine: perf-judge judges, pinned to the P-cores)" % cpu_kind
-	elif refuse and ratio > LOADED_RATIO:
-		not_judged = "reason=loaded ref=%.2fx" % ratio
+	not_judged = refusal(refuse, nominal, machine, _cpu_kind(), ratio, OS.get_environment("TANK_NATIVE_EXEC_VERIFY") == "1")
 	if not not_judged.is_empty():
 		print("SCENARIO_NOT_JUDGED %s (the CPU budget was not judged: %.0f usec per tick %s the %.0f line; not a pass)" % [
 				not_judged, per_tick, "under" if per_tick < FAIL_USEC else "OVER", FAIL_USEC])

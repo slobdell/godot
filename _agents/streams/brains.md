@@ -136,6 +136,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   straight + 8 m. Tests: tests/test_control_ground_cap.gd (the Crossing's own navmesh and deck: today ≥ 1 of 3 anchors
   over the bridge, after none). Laptop test_control_* 411/0. Full check running on builder2. Next: O3.
 
+- **O1 MERGED** (main `a5a6d0e95` = `473fbf22f`, green at `43d81ec13`: builder2 2818/0, sim-baseline 13 unmoved).
+- **O3 BUILT** (`9260089f5`, check running): AUTO squads priced at their halt footprint (orders.md O3 entry has the
+  numbers). **Merge note (grant):** one assertion in `tests/test_control_two_squads.gd` (round 22's "priced a line
+  wide") follows O3 (orchestrator-approved); `--halt-price=off` keeps round 22's pricing.
+- **scenario_perf under verify: NOT JUDGED** (orchestrator's ruling), `refusal()` factored pure, tests/test_ai_perf_refusal.gd
+  4/0; laptop plain run still judged (PASS), verify run NOT JUDGED (21760 µs). The idle-nominal item (a) was DROPPED (the
+  poll never found an idle builder2; removed). perf-judge judges the shipped budget in check (4 of 5 checks that night).
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
