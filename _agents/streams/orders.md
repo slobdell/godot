@@ -62,6 +62,11 @@ a shift-clicked route is followed by the squads as squads, not funnelled vehicle
    (`untangle` stays as the backstop). Never across a choke the click is not beyond: tight ground stacks later squads
    back along the road they came in on, near the click (decided; StarCraft's "everyone goes to the click, space settles
    on arrival"). A drawn facing still lays them out as drawn (round 10's rule), capped by O1.
+   **Brains' B6 finding (2026-10-18, stream/brains 661be82f7, trace references/round34/brains/b6_relay_trace_sumps41t3_laptop.txt):**
+   an AUTO element travels in a wedge and, the tick its centre enters the arrival radius, `_halt` re-lays every seat in
+   the doctrine's HOLD shape (herringbone, ±16–17 m along v the wedge's ±9.3): crews swerve 4–10 m outward as they
+   "arrive". Brains' B6 will lay the halt shape from the final approach. **Pack O2 to the HALT shape, not the travel
+   shape**, and read O3's "shape it will arrive in" as the halt pick.
 3. **O3 Price a squad at the shape it will arrive in.** Under AUTO, the shape its leader will halt in (the doctrine's
    pick for that terrain, and `min_step`'s halt depth), not a line's frontage. Record the footprint before/after for 3×5.
 4. **O4 Waypoints are the squad's (his correction 2).** For a shift-clicked route: an in-between waypoint is passed when

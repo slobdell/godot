@@ -219,6 +219,18 @@ builder0), ruled R34.3.
   Deciding GAIN: T(1) mixed friend-stuck crew-s arm < base AND (base − arm) − k se > 0; byte-identical arms on every cell =
   NOT ARISEN, no ship. Deciding guards T(2)–T(4), T(6) within base ± k se; G1–G4, r1 on 920–931, each naming its count of
   byte-identical cells. Order 7 → G, r1 → T; a fail parks; no re-read. Runs after the v4 series.
+- **B6 the halt shape laid on the final approach (brains), approved 2026-10-18 before any number (code `stream/brains`
+  `619eff0e1`, `ElementPlan.HALT_SHAPE_EARLY`; cause traced `661be82f7`: the move → halt hand-off re-lays every seat ±9.3 → ±16–17 m
+  as the centre enters the arrival radius).** No C++ mirror (shape and seats are GDScript; el_native only grounds). ON v
+  `--halt-shape-early=off`, builder2, paired, FRESH seeds (40–41 tuning only). (1) DECIDING, ground-series `--drift-trace`:
+  Sumps 610 611 × ticks {1,3,6,8,11,16}, yard the same, Terminus 610–613 (28 runs an arm; amended from 50–53 before any
+  number: squad-arrive-series read 49–56 on the same probe): (a) pooled drift moves ON ≤ 0.5 × OFF;
+  (b) Sumps all_in8_s paired mean(ON−OFF) ≤ 1.645 se and hollow runs ON ≤ OFF + 1; yard/Terminus crews in, mean(ON−OFF) ≥
+  −1.645 se; (c) REPORTED: arrived re-lays left ON (count, distance, formation before/after). (2) Choke guard, crossing-series
+  AUTO, drills on, crossing/locks × green/rust, seeds 4–7 × ticks {1,8,15} (48 runs an arm), arrival just past the bridge: runs
+  all-across ON ≥ OFF − 1; last-across time and inversions + point passes + overtakes, mean(ON−OFF) ≤ 1.645 se. (3) make check on
+  the ship tree, sim-baseline moves attributed with HALT_EARLY=off. Ships ON if (1)(a)(b), (2), (3) pass.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
@@ -257,6 +269,37 @@ builder0), ruled R34.3.
   ON−OFF 0.0; body OFF 17–21 s). Brains' route now keeps the Sirens with the body. A fresh bar after the v4 series on
   builder2, with seeds disjoint from every judged block (above 915), the Terminus T(1)–T(6) GAIN lines deciding (the guards
   pass trivially on identical arms), byte-identical arms reported, C31.1 with ghost ON and native's ghost-aware twins.
+- **R34.5 FACE_KEEP_FAR retired as a judged line (planner P4 (b), 2026-10-18).** On one series it flips with the distinct
+  rule alone (p3-pinned drawn FAIL all-pairs / PASS distinct; clicked the reverse); its p90 "over" is faces planned in one arm
+  only (clicked max 12.4 v 5.7). The paired `face_pairs` (crew and home) reads both-planned faces identical (clicked p90 6.3 v
+  6.3, se 0.00; drawn 8.5 v 8.5). Judged: `face_pairs`, CAND_ONLY reported. FACE_KEEP_FAR REPORTED in round 34, deleted in 35.
+- **R34.6 parkedroom v4's pair check counts green (traffic `pair/parkedroom-v4` `5914d3ac5`, builder2 `make native check`
+  exited 2, 2824/0, 24/26).** (1) sim-baseline: the same tree `--traffic-off=parkedroom` leaves 12 unmoved and docks at B1's
+  4074d105e1739377, so terminus → accbd28434111b99, sumps → 02a1d4ff63c20c1b, parade → a6178ae02c7e3769, docks → 874553bfdb105b07 are
+  parkedroom ON's (v3's same four). (2) native-verify-scenarios' scenario_perf 29238 µs at 1.50× in the check; alone on builder2
+  17435 µs at 1.41× (line 20000), and main's own last check read 22407 at 1.51× unjudged: a both-paths measure swinging with
+  load, not a 7× cost. Judged perf on the pair PERF_JUDGE PASS 1.05×; traffic's GDScript share 529 of 17435 µs (3 %).
+- **R34.7 B6 PARKED (brains, `a2add1d0f`, builder2, `references/round34/brains/b6_series_a2add1d0f_builder2.txt`).** (1)(a) FAIL
+  pooled drift 121 ON v 104 OFF (limit 52); (1)(b) FAIL Sumps hollow 9/12 ON v 0/12; all_in8 +9.97 s (passes alone); yard/Terminus
+  crews in 160 v 160; (1)(c) 82 arrived re-lays left ON (median 10.3 m). (2) passed TRIVIALLY: crossing ON = OFF row for row, the
+  early lay never engaged. Worst run traced (Sumps s611 t16, 60 v 4): an early-laid halt seat on an obstacle edge flips every
+  0.5–1 s, B10's round-32 grounding flip (standable_from keyed on the centre's 5 m cell). Switch OFF on stream/brains. Next:
+  trace one hollow run and one leftover re-lay on tuning seeds 40–41; a try 2 only with those causes written, and its choke
+  guard must show the early lay ENGAGING. The player-visible shuffle (C34.11's arrival) stays open.
+  **Causes traced (tuning 40–41, laptop, n 4, `333830f17`):** (1) the early lay MOVES the swerve to the 60 m line (a seat jumps
+  ~35 m sideways there), it doesn't remove it; (2) leftover re-lays = the early lay's per-update heading swings close in (27°
+  turns a ±17 m herringbone 5–8 m a seat); (3) hollow = CORRECTED (`b77910424`): a crew's move goal and its halt slot part by
+  ~1.8 m after the goal is sent (the early lay shifts the slot); it arrives at its goal (2.7 m off), HOLDs, and is never
+  re-sent, so it sits 3.7 m from the slot the line reads. B6-specific (main's arm: 0 of 24 Sumps runs hollow). SLOT_TOLERANCE
+  is not involved: B7 has NO CASE. A B6 return would need a re-send when goal and slot part by > 1 m after arrival; (4) B10's grounding flip. **No try 2.** The better
+  design, if he dislikes the shuffle, is a deliberate deploy step (travel seats until all in, then one visible move into the
+  halt shape): a question for him.
+- **R34.8 orders' O1 and O3 go to brains while no orders worker runs (2026-10-19 ~00:20 PDT).** The orders worktree was
+  created at 21:50 but no agent has started in it, and C34.11 is the round's most player-visible item; brains is idle
+  (B4 waits on CP-F, B5 on traffic). Brains is GRANTED `game/control/selection_squads.gd`, `RtsControls._order_squads` /
+  `_squad_width` / `_squad_depth`, and new `tests/test_control*.gd`, for O1 (the ground cap) then O3 (price a squad at its halt
+  shape), working on `stream/brains`, per `streams/orders.md`. If an orders worker starts, brains hands over at its next
+  green commit and orders continues from there (O2, O4, O5).
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
