@@ -50,6 +50,13 @@ const INSET_CAP_M := 15.0
 ## fires on the way (the far ambush's base of fire: 11.4 -> 12.7 m off its line with the inset applied from the start,
 ## laptop, tactics-drills) sees the same route.
 const INSET_NEAR_M := 60.0
+## B6 (round 34): a plain move's final approach (anchor on its destination, within INSET_NEAR_M, no shape he chose, no
+## facing he drew) lays its destination seats in the HALT's own shape (_halt_pick, the halt's own _group call), so the
+## arrival re-lays nothing. Traced on main 9c0f4dfce (Sumps s41 t3): wedge seats until the centre came inside ARRIVE_M,
+## then the table's hold herringbone, every seat 4-10 m away with the crews still 15-20 m short.
+## `--halt-shape-early=off` (or env HALT_EARLY=off, which a make target carries to its children) is main's rule.
+static var HALT_SHAPE_EARLY := not (OS.get_cmdline_user_args().has("--halt-shape-early=off") \
+		or OS.get_environment("HALT_EARLY") == "off")
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
@@ -377,6 +384,11 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 					"attack_move")
 		_:
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
+			# ...not while a crossing seats the crews (round 30's B3b: the file order over the bridge stands).
+			if _halt_shape_early(verb, task, center, destination, anchor) and (state.get("crossing", {}) as Dictionary).is_empty():
+				plan["formation"] = String(_halt_pick(situation, state, table)["formation"])
+				_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb, "", true)
+				return
 			# Round 30 (B3b): seats beyond a crossing every route goes through are taken in crossing order.
 			var via := {}
 			var crossing: Dictionary = state.get("crossing", {})
@@ -1723,9 +1735,20 @@ static func herring_heading(state: Dictionary, current: Vector3) -> Vector3:
 	return current
 
 
-static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable, at: Vector3) -> void:
-	var pick := table.select({"task": "hold", "threat": String(situation["threat"]),
+## B6: whether this update of a move is its final approach, laid in the halt's shape (HALT_SHAPE_EARLY).
+static func _halt_shape_early(verb: String, task: Dictionary, center: Vector3, destination: Vector3, anchor: Vector3) -> bool:
+	return HALT_SHAPE_EARLY and verb == "move" and chosen_formation(task) == "" and not (ElementTask.facing(task) is Vector3) \
+			and center.distance_to(destination) <= INSET_NEAR_M and anchor.distance_to(destination) < 0.5
+
+
+## What the halt stands in: the table's hold pick for this situation (B6: the final approach asks it too).
+static func _halt_pick(situation: Dictionary, _state: Dictionary, table: DoctrineTable) -> Dictionary:
+	return table.select({"task": "hold", "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
+
+
+static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable, at: Vector3) -> void:
+	var pick := _halt_pick(situation, state, table)
 	plan["formation"] = pick["formation"]
 	plan["technique"] = pick["technique"]
 	plan["why"] = pick["why"]

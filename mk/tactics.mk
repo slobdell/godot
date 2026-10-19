@@ -840,16 +840,19 @@ GROUND_ARMS ?= on off
 GROUND_CELLS ?= sumps yard terminus
 GROUND_JOBS ?= 6
 GROUND_EXTRA ?=
+## Each arm's flags (round 34, B6: GROUND_ON_FLAGS= GROUND_OFF_FLAGS=--halt-shape-early=off judges another switch).
+GROUND_ON_FLAGS ?= --ground-latch=on
+GROUND_OFF_FLAGS ?= --ground-latch=off
 .PHONY: ground-series
 ground-series: native-for-check import ## Round 32 (B10): drift census, grounding latch on v --ground-latch=off, Sumps/yard/Terminus cells -> build/ground-series.jsonl + table
 	@rm -rf $(BUILD_DIR)/ground-runs; mkdir -p $(BUILD_DIR)/ground-runs
-	@echo ">> ground-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cells '$(GROUND_CELLS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@echo ">> ground-series on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cells '$(GROUND_CELLS)' | on '$(GROUND_ON_FLAGS)' off '$(GROUND_OFF_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for cell in $(GROUND_CELLS); do for arm in $(GROUND_ARMS); do \
 		case $$cell in yard) for s in $(GROUND_YARD_SEEDS); do for t in $(GROUND_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; \
 		terminus) for s in $(GROUND_TERMINUS_SEEDS); do echo "$$cell $$arm $$s 11"; done;; \
 		sumps) for s in $(GROUND_SUMPS_SEEDS); do for t in $(GROUND_TICKS); do echo "$$cell $$arm $$s $$t"; done; done;; esac; \
 	done; done | xargs -P $(GROUND_JOBS) -L 1 sh -c 'cell=$$0; arm=$$1; seed=$$2; tick=$$3; \
-		flags="$(GROUND_EXTRA) --ground-latch=on"; [ "$$arm" = off ] && flags="$(GROUND_EXTRA) --ground-latch=off"; \
+		flags="$(GROUND_EXTRA) $(GROUND_ON_FLAGS)"; [ "$$arm" = off ] && flags="$(GROUND_EXTRA) $(GROUND_OFF_FLAGS)"; \
 		out=$(BUILD_DIR)/ground-runs/$$cell-$$arm-$$seed-$$tick.json; log=$${out%.json}.log; \
 		case $$cell in \
 		sumps) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- --arena=sumps \
