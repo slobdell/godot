@@ -371,7 +371,7 @@ static func face_slot_on() -> bool:
 ## hull to it (the face planner's legs) instead of leaving it to the turret — `TankBrain._order_move`'s decline is
 ## lifted for it (C31.8) — and every pose of a face plan keeps inside the arrive radius (facekeep). ONE switch:
 ## `--nav-off=turnhull` flips TURN_HULL_DEFAULT (false = OPT-IN until its bar passes).
-const TURN_HULL_DEFAULT := false
+const TURN_HULL_DEFAULT := true
 const FACE_KEEP_MARGIN_M := 0.75
 static var _keep_slot := Vector3.INF
 static var _keep_m := INF
@@ -432,7 +432,7 @@ static func leg_holds_arrival(brain: TankBrain) -> bool:
 ## The want swinging further, a new order, or a gap in the face re-arms it. `--nav-off=facesettle` flips the default.
 ## State per mover by its INSTANCE id (M2's precedent: every Movement member is a field of native's exec table, and this
 ## is GDScript decision state; wheeled faces are handed back to GDScript, reason 3, so nothing here runs in C++).
-const FACE_SETTLE_DEFAULT := false
+const FACE_SETTLE_DEFAULT := true
 const FACE_SETTLE_FAILS := 3
 ## Arm counters: faces that gave up (once per want), and failed plans counted toward it.
 static var face_settles := 0
