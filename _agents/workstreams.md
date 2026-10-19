@@ -284,6 +284,12 @@ _Filed here before any number._
   check exited 2`, 2902/0, 24/27 pass; the one red sim-baseline (5 maps moved with T7 ON, 8 unmoved); switch-OFF inertness
   (`--traffic-off=underfire`, same commit) reads main's 13 lines. perf-judge and scenario_perf NOT JUDGED (load); perf-judge alone on
   a quiet builder0 is owed before any ship.
+- **R35.19 (2026-10-19 ~13:10) Mirror pairs, and the joint pair's base.** W1b: `pair/native-w1b` `f4f6bf1d2` (manoeuvre 58395b79c +
+  mirror; builder0 light `native test FILTER=test_native_` 107/0, 0 mismatches; halt ON on lab 1d2f0cac9 1094 halts a stage, 0
+  mismatches) is W1b's SERIES pair; main only on W1b's bar. Joint: `pair/native-w1c-t9` `2446d46f9` = lab/w1c-t9 878200ede + traffic
+  f432645dd + pair/native-t7 + pair/native-w1b + T9's and W1c's mirrors. Traffic's stream carries **T6b** (a give-way already begun
+  finishes when a hit lands) as DEFAULT behaviour, not on main, plus T7 OFF; so the joint series' base includes T6b, and the joint
+  pair merges only AFTER T7's verdict (if T7 parks, re-cut without T6b/T7 and re-twinned).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
