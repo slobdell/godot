@@ -257,6 +257,10 @@ builder0), ruled R34.3.
   ON−OFF 0.0; body OFF 17–21 s). Brains' route now keeps the Sirens with the body. A fresh bar after the v4 series on
   builder2, with seeds disjoint from every judged block (above 915), the Terminus T(1)–T(6) GAIN lines deciding (the guards
   pass trivially on identical arms), byte-identical arms reported, C31.1 with ghost ON and native's ghost-aware twins.
+- **R34.5 FACE_KEEP_FAR retired as a judged line (planner P4 (b), 2026-10-18).** On one series it flips with the distinct
+  rule alone (p3-pinned drawn FAIL all-pairs / PASS distinct; clicked the reverse); its p90 "over" is faces planned in one arm
+  only (clicked max 12.4 v 5.7). The paired `face_pairs` (crew and home) reads both-planned faces identical (clicked p90 6.3 v
+  6.3, se 0.00; drawn 8.5 v 8.5). Judged: `face_pairs`, CAND_ONLY reported. FACE_KEEP_FAR REPORTED in round 34, deleted in 35.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
