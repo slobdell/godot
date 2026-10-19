@@ -12,13 +12,13 @@ func test_under_verify_the_budget_is_not_judged() -> void:
 
 func test_a_quiet_plain_run_still_judges() -> void:
 	assert_eq(Perf.refusal(true, 0.9, "builder2", "-", 1.1, false), "", "plain, quiet, a nominal: judged")
-	assert_eq(Perf.refusal(true, 0.9, "builder0", "P", 1.4, false), "", "pinned to a P-core under the line: judged")
+	assert_eq(Perf.refusal(true, 0.9, "builder0", "P", 1.15, false), "", "pinned to a P-core under the line: judged")
 
 
 func test_the_old_refusals_stand() -> void:
 	assert_true(Perf.refusal(true, 0.0, "x", "-", 1.0, false).begins_with("reason=no_nominal"), "no nominal")
 	assert_true(Perf.refusal(true, 0.9, "builder0", "E", 1.0, false).begins_with("reason=unpinned"), "an E-core")
-	assert_true(Perf.refusal(true, 0.9, "builder2", "-", 1.51, false).begins_with("reason=loaded"), "loaded")
+	assert_true(Perf.refusal(true, 0.9, "builder2", "-", 1.36, false).begins_with("reason=loaded"), "loaded: the plateau reads 1.36-1.54x")
 
 
 func test_perf_refuse_off_judges_everything() -> void:
