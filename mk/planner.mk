@@ -259,14 +259,17 @@ planner-trace-drive-queue: native import ## planner round 32: the Terminus drive
 # rule, face_pairs). IN `make check` (round 33 overnight, the orchestrator's grant): R33.26's verdict tool shipped a bug
 # (a 1-face class read FAIL) that its tests caught only once someone ran them. Fails if it collects nothing, like
 # metrics-pytest. <1 s, no Godot, no port, no user://.
+# Round 35 (native, C35.9): tools/judge's own tests join it (seed_twins, the table, sequential...; ~20 s, mostly test_table).
 .PHONY: planner-pytest
-planner-pytest: ## planner: the planner tools' own Python tests (tests/planner/test_*.py); in make check
-	@out=$$($(PYTHON) -m unittest discover -s tests/planner -p 'test_*.py' 2>&1); \
-	echo "$$out" | tail -3; \
-	ran=$$(echo "$$out" | grep -oE '^Ran [0-9]+ test' | grep -oE '[0-9]+' || echo 0); \
-	echo "planner-pytest: collected $$ran tests"; \
-	test "$$ran" -gt 0 || { echo "planner-pytest FAILED: unittest discovered NO tests"; exit 1; }; \
-	echo "$$out" | tail -1 | grep -qE '^(OK|OK \()' || { echo "$$out"; exit 1; }
+planner-pytest: ## planner: the planner tools' and tools/judge's own Python tests (tests/planner/, tools/judge/ test_*.py); in make check
+	@for dir in tests/planner tools/judge; do \
+		out=$$($(PYTHON) -m unittest discover -s $$dir -p 'test_*.py' 2>&1); \
+		echo "$$out" | tail -3; \
+		ran=$$(echo "$$out" | grep -oE '^Ran [0-9]+ test' | grep -oE '[0-9]+' || echo 0); \
+		echo "planner-pytest: $$dir collected $$ran tests"; \
+		test "$$ran" -gt 0 || { echo "planner-pytest FAILED: unittest discovered NO tests in $$dir"; exit 1; }; \
+		echo "$$out" | tail -1 | grep -qE '^(OK|OK \()' || { echo "$$out"; exit 1; }; \
+	done
 
 # ---- round 33 (P1, C33.6 (a)): line (3)'s noise, the hull-rest gang arm A/A -------------------------------------------
 # The FIFO both arms: base_* and new_* run the SAME flags (--planner-queue=fifo, the native drive) on the SAME seeds, so
@@ -303,7 +306,7 @@ planner-face-shadow: native import ## planner round 33 P3: which face searches l
 # One arm a call (PLANNER_FACE_ARM=base|candidate) on the pair tree (FACE_KEEP_DEFAULT 1): hull-rest's gang arm drawn +
 # clicked, the native drive, the FIFO both arms (main's queue, R33.13), the keep EXPLICIT on each arm (base
 # --planner-face-keep=0, candidate =1). Both arms called = the A/B: hull_aa.py --verdict (P2's pooled guards, line (2a))
-# and face_keep_table.py (lines (2b) the FACE asks' abandoned share, (2c) the drift line).
+# and face_keep_table.py (line (2b) the FACE asks' abandoned share; (2c) deleted in round 35, R34.5: face_pairs.py judges).
 PLANNER_FACE_SEEDS ?= 84 85 86 87 88 89 90 91 92 93 94 95
 PLANNER_FACE_ARM ?= base
 .PHONY: planner-judge-face
