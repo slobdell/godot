@@ -2474,6 +2474,23 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 
 # ---- Acting: choice → standing orders ----------------------------------------------
 
+## C34.4 (2) (brains B2; the seam agreed with manoeuvre through the orchestrator): no arrival is declared while a planned
+## leg still drives (planner's s69 flicker: a k-turn leg crossed inside the goal's radius, the move became a face mid-leg
+## and the held-post rule then refused the next moves). Manoeuvre owns WHEN (Manoeuvre.leg_holds_arrival and its
+## `arriveleg` switch, R33.2); this branch only asks. Until that function is on this tree the adapter answers false:
+## today's arrival.
+static var _leg_hold_known := -1
+
+
+func _leg_holds_arrival() -> bool:
+	if _leg_hold_known < 0:
+		_leg_hold_known = 0
+		for m: Dictionary in (Manoeuvre as GDScript).get_script_method_list():
+			if String(m["name"]) == "leg_holds_arrival":
+				_leg_hold_known = 1
+	return _leg_hold_known == 1 and bool((Manoeuvre as GDScript).call("leg_holds_arrival", self))
+
+
 func _act(s: Dictionary) -> void:
 	var act_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	why = TankBrain.tactics_tag(s, choice)
@@ -2515,7 +2532,7 @@ func _act(s: Dictionary) -> void:
 				if ElementPlan.PACE_ENABLED:
 					sliding["paced"] = true  # Movement._keep_station: the pace outranks the station PID
 				_order_move(sliding)
-			elif _flat(my_position).distance_to(goal) <= _order_arrive():
+			elif _flat(my_position).distance_to(goal) <= _order_arrive() and not _leg_holds_arrival():
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_arrive_facing(_move_to(goal, false, float(o["speed"]), _order_arrive())))
