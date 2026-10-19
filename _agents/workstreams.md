@@ -299,6 +299,12 @@ _Filed here before any number._
   counts only at rest (|speed| <= 0.5 m/s; a refused leg still counts), and the give-up reports. Re-gate on main 1a18dd278 (the
   deploy step changes player plain-move halts, which hull-rest's drawn/clicked stages use); full-check order main's batch -> M5 ->
   W1b-ON.
+- **R35.21 (2026-10-19 ~14:55) D2's report (reported, not gating; his "mixed" confirmed).** `make orders-probe` builder0, main
+  977a270fa (1a18dd278's code; library from 581b8a396's build, no game-code difference), seed 34, n 1 a cell, main v deploy_off.
+  With the step on: twitch after settling falls on Crossing (5 click 46.5 -> 23.3 m, 3 click 32.2 -> 18.3) and Locks 3, rises on Locks
+  5 click (4.4 -> 19.6), Terminus 5 click (13.1 -> 30.6); all-in mostly within a few s; Locks 3 route slower (38.3 v 18.5 s); Locks 5
+  route now finishes (45.6 s; deploy_off never). D4 (minimax seating) and D5 (gate deal) target exactly those cells. Rows:
+  `stream/orders` 56ed913fc `references/round35/orders/d2-main-1a18dd278/`.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
