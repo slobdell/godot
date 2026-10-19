@@ -380,6 +380,12 @@ _Filed here before any number._
 - **R35.30 (2026-10-19 ~17:00) W1b's gate (C31.1) passes; its series starts.** lab/w1b-on `7fc4a5307` builder0 `make native check exited
   0`, 2891/0, one ai-scenario NOT JUDGED (load), sim-baseline unmoved on all 13 (nothing to attribute). Series ON 7fc4a5307 v base
   ab9c50c76, 3820–3843 x locks/terminus/sumps, JOBS 2 beside T7's, E1's and D4's series.
+- **R35.31 (2026-10-19 ~17:05) D4 minimax seating FAILS its bar; PARKED OFF.** builder0 `make native orders-probe`, stream/orders
+  68d4c06cd, seeds 3621–3626, n 6, both arms `--gate-deal=off`. Counter: 25 of 36 click runs differ. Gain: summed median twitch
+  169.1 v 179.8 m (-6 %, line -20 %); Terminus 5 click 5.7 v 18.9. Per-cell guard (<= off + 3 m) fails in 4 cells (Crossing 3 click
+  15.4 v 10.7; Crossing 5 route 29.4 v 21.4; Locks 5 click 21.4 v 13.9; Terminus 5 route 21.2 v 17.3); never-in up (Terminus 5 route 3
+  v 2, Locks 5 route 1 v 0). Parked OFF (`bd22ac4c8`, `--deploy-minimax=on`). Round 36: the residual twitch IS the deploy move (a
+  wedge across the street re-forming into a herringbone along it) plus seats reached only round obstacles (game_design.md).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
