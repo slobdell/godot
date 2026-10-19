@@ -175,6 +175,8 @@ _Filed here before any number._
   cell):** median all-in <= minimax_off x 1.2 + 3 s, no more never-in seeds; median `place worst m` <= minimax_off + 5 m; median end
   foreign min >= minimax_off - 3 m; deck / far no higher; **(added) median `twitch worst m` <= minimax_off + 3 m** (the laptop's
   Locks 5 read 13.6 -> 15.5: a sum can hide one cell getting worse).
+  **Arms as run (R35.26):** tree stream/orders `68d4c06cd` (code = 554131533, gate deal ON by default), so both arms carry
+  `--gate-deal=off`: `main:--gate-deal=off` v `minimax_off:--gate-deal=off,--deploy-minimax=off`; JOBS 2.
 
 - **M6/T9 JOINT: the stuck asker asks again (W1c, manoeuvre) and the asked parked crew answers (T9 yieldfit2, traffic), filed
   2026-10-19 ~11:55 before any T9 code, replacing M6's two-arm read (R35.13).** T9 design: `stream/traffic` `0a1567b56`
