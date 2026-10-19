@@ -162,6 +162,15 @@ _Filed here before any number._
   median all-in <= gate_off x 1.2 + 3 s, never in on gate_off but not on main; deck / far bank no higher than gate_off in any cell;
   drive/plan worst <= gate_off + 0.2 in each cell.
 
+- **D4 minimax deploy seating (orders, the shuffle), filed before any builder0 number from `stream/orders` `b6068ded0` Status
+  *D4 bar*, with one guard added by the orchestrator.** The deploy seats crews so the longest leg is shortest; `--deploy-minimax=off`
+  = D1. `make orders-probe` on builder0 (native), 24 cells x FRESH seeds 3621–3626 (never run; seeds move the click <= 12 m),
+  medians a cell; seed 34 (tuned, laptop) reported only. **Counter first:** the arms' rows differ in >= 1 cell. **Gain:** summed over
+  the 24 cells, median `twitch worst m` >= 20 % lower on main, and the Terminus 5 click cell's median twitch lower. **Guards (each
+  cell):** median all-in <= minimax_off x 1.2 + 3 s, no more never-in seeds; median `place worst m` <= minimax_off + 5 m; median end
+  foreign min >= minimax_off - 3 m; deck / far no higher; **(added) median `twitch worst m` <= minimax_off + 3 m** (the laptop's
+  Locks 5 read 13.6 -> 15.5: a sum can hide one cell getting worse).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
