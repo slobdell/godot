@@ -1,0 +1,7 @@
+{
+  "name": "Orders probe, a token enemy",
+  "note": "Round 34 O5: one scout holding at the CPU base, so the probe measures driving, not fighting.",
+  "squads": [
+    {"name": "Picket", "formation": "line", "verb": "hold", "directive": {"role": "scout"}, "units": [{"unit": "scout"}]}
+  ]
+}

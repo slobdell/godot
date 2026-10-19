@@ -1,0 +1,4 @@
+p5_cand.log:>> planner-judge-face on builder0 | commit 84ce3e301 | arm candidate | seeds 96 97 98 99 100 101 102 103 104 105 106 107
+p5_cand.log:>> remote: make native planner-judge-face PLANNER_FACE_ARM=candidate PLANNER_FACE_SEEDS=96 97 98 99 100 101 102 103 104 105 106 107 HULL_JOBS=6 exited 0 (build/ copied back)
+p5_base.log:>> planner-judge-face on builder0 | commit 15f5980ac | arm base | seeds 96 97 98 99 100 101 102 103 104 105 106 107
+p5_base.log:>> remote: make native planner-judge-face PLANNER_FACE_ARM=base PLANNER_FACE_SEEDS=96 97 98 99 100 101 102 103 104 105 106 107 HULL_JOBS=6 exited 0 (build/ copied back)

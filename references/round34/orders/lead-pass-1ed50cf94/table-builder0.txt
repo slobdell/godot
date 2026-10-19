@@ -1,0 +1,25 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          deploy_on |   27.7 /    0.0   |    2   0 |     18.6 |               3.7 |            27.8 | 1.24 | 64.6
+crossing 3 click          main      |   27.7 /    0.0   |    2   0 |     24.4 |               4.4 |            37.8 | 1.27 | 64.6
+crossing 3 route          deploy_on |   27.7 /    0.0   |    2   0 |     21.0 |               3.8 |            22.7 | 1.55 | 64.6
+crossing 3 route          main      |   27.7 /    0.0   |    2   0 |     20.7 |               4.6 |            19.6 | 1.46 | 64.6
+crossing 5 click          deploy_on |   63.6 /   29.1   |    2   0 |     29.4 |               4.6 |            74.2 | 1.57 | 41.2
+crossing 5 click          main      |   63.6 /   29.1   |    2   0 |     28.5 |               4.6 |            86.8 | 1.26 | 41.2
+crossing 5 route          deploy_on |   63.6 /   29.1   |    2   0 |     41.7 |               4.8 |            80.4 | 1.61 | 41.2
+crossing 5 route          main      |   63.6 /   29.1   |    2   0 |     31.0 |               3.9 |            87.5 | 1.64 | 41.2
+locks 3 click             deploy_on |   36.9 /   34.4   |    1   0 |     18.4 |              14.1 |            26.2 | 1.35 | 39.7
+locks 3 click             main      |   36.9 /   34.4   |    0   0 |     18.7 |               7.6 |            23.8 | 1.21 | 39.7
+locks 3 route             deploy_on |   36.9 /   34.4   |    1   0 |     21.7 |               6.4 |            28.5 | 1.79 | 39.7
+locks 3 route             main      |   36.9 /   34.4   |    1   0 |        - |               2.7 |            21.4 | 1.74 | 39.7
+locks 5 click             deploy_on |   51.9 /   39.4   |    0   0 |     13.9 |               8.0 |            25.9 | 1.26 | 25.7
+locks 5 click             main      |   51.9 /   39.4   |    0   0 |     13.9 |               8.0 |            21.8 | 1.14 | 25.7
+locks 5 route             deploy_on |   51.9 /   39.4   |    0   0 |     49.3 |               5.0 |            35.8 | 3.19 | 25.7
+locks 5 route             main      |   51.9 /   39.4   |    0   0 |        - |               5.0 |            45.5 | 3.68 | 25.7
+terminus 3 click          deploy_on |   36.9 /   34.4   |    0   0 |     23.4 |               8.4 |            18.8 | 1.33 | 27.6
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     20.3 |               6.7 |            32.3 | 1.40 | 27.6
+terminus 3 route          deploy_on |   36.9 /   34.4   |    0   0 |     20.1 |              23.7 |            32.3 | 1.15 | 27.6
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     20.1 |              24.8 |            32.1 | 1.05 | 27.6
+terminus 5 click          deploy_on |   55.7 /   39.4   |    0   0 |     13.7 |               7.5 |            33.3 | 2.45 | 11.6
+terminus 5 click          main      |   55.7 /   39.4   |    0   0 |     13.7 |               7.5 |            27.3 | 1.87 | 11.6
+terminus 5 route          deploy_on |   55.7 /   39.4   |    0   0 |     50.5 |               2.9 |            37.4 | 6.21 | 11.6
+terminus 5 route          main      |   55.7 /   39.4   |    0   0 |     49.9 |               2.9 |            45.1 | 7.39 | 11.6

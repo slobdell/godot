@@ -362,3 +362,18 @@ def hull_aa_cells(path):
             except (ValueError, IndexError):
                 continue
     return out
+
+
+def m1_aa_lines(path):
+    """[{task, metric, pairs, a, b, sd_run, se_sum, swing}] from manoeuvre's M1 hull-rest A/A table (round 34, the new
+    ruler: `faced_move  moving_real  36 |  3.0  4.0 |  0.51  3.0  5.0 |  29%`)."""
+    out = []
+    pat = re.compile(r"^(faced_\w+)\s+(\w+)\s+(\d+) \|\s+([-.\d]+)\s+([-.\d]+) \|\s+([.\d]+)\s+([.\d]+)\s+[.\d]+ \|\s+(\d+)%")
+    with open(path) as handle:
+        for line in handle:
+            m = pat.search(line)
+            if m:
+                out.append({"task": m.group(1), "metric": m.group(2), "pairs": int(m.group(3)), "a": float(m.group(4)),
+                            "b": float(m.group(5)), "sd_run": float(m.group(6)), "se_sum": float(m.group(7)),
+                            "swing": int(m.group(8))})
+    return out

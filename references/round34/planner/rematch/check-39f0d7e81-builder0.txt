@@ -1,0 +1,50 @@
+>> remote: syncing godot-planner to slobdell@builder0:~/tank_squad/godot-planner
+>> remote: make check on slobdell@builder0
+>> check: 26 targets, up to 3 at once (lint -P6, test x6) on builder0 | commit 39f0d7e81 | load 0.12 2.87 14.56 | MemAvailable 13377 MB | 2 other godot
+check-perf-judge: 10 passed, 0 failed
+check-trap: 4 passed, 0 failed
+check-verdict: 30 passed, 0 failed
+copyback-verify: 18 passed, 0 failed
+determinism: 7 passed, 0 failed
+engine-log-gate: 23 passed, 0 failed
+exit-gate: 5 passed, 0 failed
+filter-gate: 17 passed, 0 failed
+known-red: 12 passed, 0 failed
+lent-exit-codes: 9 passed, 0 failed
+lint-gate: 18 passed, 0 failed
+perf-fight-report: 7 passed, 0 failed
+perf-judge: 5 passed, 0 failed
+quiet-window: 28 passed, 0 failed
+reap: 5 passed, 0 failed
+remote-excludes: 7 passed, 0 failed
+remote-guard: 36 passed, 0 failed
+round-status: 44 passed, 0 failed
+series-arms: 12 passed, 0 failed
+sim-baseline: 53 passed, 0 failed
+slot-exclusive: 14 passed, 0 failed
+slot-light: 6 passed, 0 failed
+test-shards: 5 passed, 0 failed
+  scenarios: 52 passed, 0 failed, 5 pending, 0 unexpectedly passing
+scenarios: 52 passed, 0 failed, 5 pending, 0 unexpectedly passing
+SHARD-ENGINE 0/6: 0 errors, 0 warnings
+SHARD 0/6: 85 files, 455 passed, 0 failed
+SHARD-ENGINE 1/6: 0 errors, 0 warnings
+SHARD 1/6: 84 files, 523 passed, 0 failed
+SHARD-ENGINE 2/6: 0 errors, 0 warnings
+SHARD 2/6: 84 files, 402 passed, 0 failed
+SHARD-ENGINE 3/6: 0 errors, 0 warnings
+SHARD 3/6: 84 files, 502 passed, 0 failed
+SHARD-ENGINE 4/6: 0 errors, 0 warnings
+SHARD 4/6: 84 files, 427 passed, 0 failed
+SHARD-ENGINE 5/6: 0 errors, 0 warnings
+SHARD 5/6: 84 files, 489 passed, 0 failed
+2798 passed, 0 failed
+>> check: 2190s total on builder0
+>> check: hashes on builder0 (glibc-2.43) | sim-baseline foundry=2e54d6f5c9fc22ac(MOVED from f72b1712479b2570) yard=0fdc33ed5d5757a6(MOVED from df0c04272c671909) pit=022e54dcc1c3e787(MOVED from 76b986231ec5b85a) terminus=23edc5782084a2fe(MOVED from 1c2d8ee6ba3af808) crossing=aa4ad61e41ee6e20(MOVED from f8024203917ca808) sumps=8909a3d97aef76de(MOVED from 8ac8cffce54c83fc) locks=4674958b0c779970(MOVED from 9bbfe8b7e38cef8d) parade=fc435f111c689d64(MOVED from 27580bb53aa4ebe3) gorge=eb810b61f83b3646(MOVED from 408d8c5e49d22a5f) archipelago=5595506fcfeac33f(MOVED from f97836b7868c7906) cut=986826d576d4eb65(MOVED from b31bbf132c154b23) docks=0cf63204b0290ae1(MOVED from 50f15553c558d108) yard_open=9287bb338b29a976(MOVED from d93353b60efd6db3) | determinism 8c3c1232b711a760
+>> check: ai-scenarios-check refused scenario_perf (reason=unpinned cpu=mixed:0-11); perf-judge JUDGED it, so that verdict stands
+>> check: 25 passed, 2 FAILED, 0 NOT RUN  [test x6, lint -P6, 3 at once, builder0]
+   FAIL     sim-baseline
+   FAIL     web-smoke
+>> check: failed: sim-baseline web-smoke
+>> remote: copy-back verified, 206 files, sha256
+>> remote: make check exited 2 (build/ copied back)

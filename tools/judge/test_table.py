@@ -40,7 +40,7 @@ class Table(unittest.TestCase):
             self.assertGreater(r["n_needed"], 100, case)
 
     def test_hull_rest_guard_row_pools_the_m1_m1b_and_round_33_class_tables(self):
-        r = self.by[("hull-rest probe (a task)", "crews still moving at 75 s, wheeled turret")]
+        r = self.by[("hull-rest probe (a task, OLD ruler)", "crews still moving at 75 s, wheeled turret")]
         # M1 alone read 1.46 (round 29's table), M1 + M1b 1.63 (round 30's); round 31's three (CP-H, M1b(2) x2) and round
         # 33's five (CP-F 1 both paths, CP-F 3 at n 32, CP-Q and P3 on gangs at n 12) bring it to 1.47
         self.assertAlmostEqual(r["sd_run"], 1.47, delta=0.05)
@@ -87,6 +87,13 @@ class Table(unittest.TestCase):
         self.assertEqual(len(loops["pairs"].split(";")), 5)
         shots = self.by[("orbit cells (scout duel, player post, a seed)", "shots")]
         self.assertEqual(len(shots["pairs"].split(";")), 3)
+
+    def test_m1s_new_ruler_aa_is_its_own_row(self):
+        real = self.by[("hull-rest A/A, M1's new ruler (a run)", "crews moving by real velocity")]
+        self.assertAlmostEqual(real["sd_run"], 0.62, delta=0.02)  # six tasks' 0.23-1.17 pooled at 36 pairs each
+        old = self.by[("hull-rest A/A, M1's new ruler (a run)", "crews moving by commanded speed (the old reading)")]
+        self.assertGreater(old["sd_run"], real["sd_run"])  # wedged hulls counted as movers were half the old ruler's noise
+        self.assertIn(("hull-rest probe (a task, OLD ruler)", "crews still moving at 75 s, wheeled turret"), self.by)
 
     def test_terminus_contact_ticks_cannot_carry_a_ten_percent_line(self):
         r = self.by[("Terminus census, rigs (a seed)", "wall contact-ticks")]

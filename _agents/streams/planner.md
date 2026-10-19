@@ -66,14 +66,14 @@ Nothing.
   ids and heap all change no bit. Evidence (918ede503, builder0 native, sim-baseline match through main.tscn, 3 runs a
   process × idle phases 0–5, 1150 ticks): base gives 6 outcomes and 12 of 12 rematches branched; a scratch patch gives
   1 outcome and 0 of 12. `references/round34/planner/rematch/diagnosis.md`. Ruled (A) by the orchestrator.
-- **P2 built (b7184e87d): a rematch replays.** `Traffic._phase` = the Match's tick (a frame origin would still drift
-  through the planning pause). The audit of every frame-counter read in game/ and native/src is in the diagnosis: this
-  was the only absolute phase on a decision path, and it has no C++ mirror. `tests/test_rematch.gd` passes with the fix
-  and fails without it (tick 250), builder0. **Check of 09a98132c (same game code), builder2: exited 2, 2797/1.** The
-  reds: sim-baseline moved (planned; repeats twice on all 13 maps); native-verify-scenarios was load (53/0 alone); and
-  `test_native_yield` owned coverage floor reads 10 against 11, deterministic after the phase shift. **Waiting on the
-  orchestrator's ruling on that floor.** Then the green hash goes to the orchestrator: they merge it alone and adopt the
-  baseline on main.
+- **P2 MERGED: main `89e775f87` = `39f0d7e81`** (the orchestrator, 2026-10-19; baseline adoption on builder0 follows).
+  **Green hash was `39f0d7e81`** (stream/planner + native's `ae2f03c59`: N5's Sumps stage move
+  and test_native_yield's floors, now set as paths reached, after the phase shift). builder0 `make check exited 2`:
+  test 2798 / 0, perf-judge JUDGED PASS, 25 of 27 targets passed. The two reds are the planned sim-baseline move (all
+  13 maps; identical to builder2's two agreeing reads; foundry `2e54d6f5c9fc22ac`) and web-smoke (builder0's Chrome lost
+  WebGL2: environmental, per the orchestrator). `Traffic._phase` = the Match's tick (a frame origin would still drift
+  through the planning pause). The audit of every frame-counter read is in the diagnosis. `tests/test_rematch.gd` passes
+  with the fix and fails without it (tick 250). The orchestrator merges it alone and adopts the baseline on builder0.
 - **P3 done (697029f4a):** judging table re-rendered with round 33's pairs (hull-rest, fights, Terminus printed se, plus
   three new probes: hull-rest gangs A/A, orbit cells, far census). No row's sd moved more than 20 %. Far-census kills:
   sd 5.96 a fight, MDE 5 % at 48 fights. `_agents/judging.md` *Round 34 re-render*; csv under
@@ -81,7 +81,24 @@ Nothing.
 - **P4 done:** (a) d3203aeb3, one run identity (screen.json + seam report) for hull_aa / face_keep_table / face_pairs /
   kept_share; they used to read 48 / 32 / 36 distinct pairs on one series. (b) R34.5 (orchestrator): FACE_KEEP_FAR is
   REPORTED only (09a98132c) and gets deleted in round 35.
-- **P5 waiting:** P3 v3 starts only after the k-turn arrival flicker fix (C34.4 (2)) merges.
+- **O5 done (orders' player test, R34.8 extended; stream/planner 29c5b4187):** `tests/orders_probe.gd` +
+  `make orders-probe` / `orders-probe-shots`. The table (builder0 95155fc8e) and the shots (laptop) are in
+  `references/round34/orders/o5.md`. Findings: a 5-squad click leaves two squads at their start (the second rank sits
+  72 m back); on the Locks a crew still crosses the river because its SEAT snaps to the far bank (the anchor is capped,
+  the seats aren't); O1 works where it acts (Crossing far-bank crews 2 → 0); a large shuffle after arrival. Finding 4
+  (anchors outside the walls) was RETRACTED. The clamp is right; my shots' HUD rings were misdrawn under the probe's
+  camera, and the shots are re-taken with 3D posts. (1) and (2) are routed to brains.
+- **Judging table, M1's ruler (18de4e9ab):** M1's A/A as three rows; the old hull-rest rows are marked OLD ruler.
+- **The lead's probe pass (5f31281ee; `references/round34/orders/lead-pass-1ed50cf94/README.md`, in his terms):** on
+  main 62d90dc97, no squad crosses the river in any cell; all five squads go (the back rank 52–64 m behind the click);
+  two Locks routes leave one squad short at 90 s; the shuffle remains (up to 87 m); the deploy step is mixed.
+- **P5 CLOSED (R34.16): no v3.** Re-measured (references/round34/planner/p5-remeasure-15f5980ac/):** after M2 (the flicker fix), no face is
+  planned by the candidate only (round 33's 12.4 m tail is gone), so v3 has no target. Ruled R34.16: P5 closes with no v3. One both-planned clicked face at 9.1 m v 4.0 is a watch item.
+- **Also done this round:** the O4 before/after through the probe (`references/round34/orders/o4-before-after/`); the
+  Terminus 3-squad route stall bisected to traffic's a5a362737 (O4's queue made an O3 anchor inside a block
+  load-bearing; brains fixes it); R34.15 `tools/judge/seed_twins.py` + `tests/planner/random_arenas.gd` (a random
+  arena's twin of a fixed-arena fight is dropped before pooling); brains' 2d6955367 read through the probe (the Locks
+  bridge fix is confirmed; the rank fix didn't get the back rank moving).
 
 **Plan:** P1 → P2 (merge alone, then the baseline adoption on main) → P3 → P4 → P5 after the flicker.
 
@@ -89,11 +106,10 @@ Nothing.
 and the two stagger lines). `tools/judge/**` (granted for C34.8). Main moved (docks adopted, 71bd4e466) after this
 branch's base.
 
-**Known issues:** test_native_yield's owned arm differs from its live arm even on base (24 v 22 spot:spot; after the fix
-21 v 10), though its file says they read the same counts. That's native's to look at.
+**Known issues:** none open. (Native explained the owned ≠ live counts: yard_open's two stages differ by design, and
+their floors are now set as paths reached.)
 
-**Questions for the lead:** none. **Requests to other streams:** native: the owned/live count gap above; the floor
-(pending the ruling).
+**Questions for the lead:** none. **Requests to other streams:** none.
 
 **What to playtest:** nothing new to see. A rematch from the results screen should now play out the same as the first
 fight given the same orders (the floor under replays and the network).

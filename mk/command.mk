@@ -622,3 +622,40 @@ five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, i
 		[ $$s -eq 0 ] || echo "five-squads-shots $$size: exited $$s"; \
 	done
 	@echo "Now LOOK at build/five-squads-shots/*/*.png"
+
+# Round 34 (planner, orders' O5 for C34.11; measurement only): his "select 3 squads, click one point" case through
+# RtsControls.order_selection (tests/orders_probe.gd). Every map x squad count x route x arm, headless; one row a squad
+# (anchor offset from the click, drive, deck / far bank, arrival, nearest foreign hull, the shuffle after arrival) and
+# the table (tests/control/orders_probe_table.py). An arm is NAME:FLAGS (main's own switches: O1 --ground-cap=off, O3
+# --halt-price=off; O2's when it lands). orders-probe-shots: the same in a window, top-down at arrival, desktop and phone.
+ORDERS_PROBE_MAPS ?= locks crossing terminus
+ORDERS_PROBE_SQUADS ?= 3 5
+ORDERS_PROBE_ROUTES ?= click route
+ORDERS_PROBE_ARMS ?= main: cap_off:--ground-cap=off halt_off:--halt-price=off
+ORDERS_PROBE_DIR ?= $(BUILD_DIR)/orders-probe
+ORDERS_PROBE_JOBS ?= 4
+.PHONY: orders-probe orders-probe-shots
+orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE_MAPS x _SQUADS x _ROUTES x _ARMS -> build/orders-probe/rows.jsonl + table.txt
+	@rm -rf $(ORDERS_PROBE_DIR)/logs && mkdir -p $(ORDERS_PROBE_DIR)/logs
+	@echo ">> orders-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"
+	@for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SQUADS); do for route in $(ORDERS_PROBE_ROUTES); do for arm in $(ORDERS_PROBE_ARMS); do \
+		echo "$$map $$n $$route $$arm"; done; done; done; done | xargs -P $(ORDERS_PROBE_JOBS) -L 1 sh -c \
+		'name=$${3%%:*}; flags=$$(echo "$${3#*:}" | tr "," " "); \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$0 --seed=34 \
+			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(ORDERS_PROBE_DIR)/logs/$$0-$$1-$$2-$$name.log 2>&1 || true'
+	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_PROBE_DIR)/rows.jsonl || true
+	@grep -L '^ORDERS_PROBE {' $(ORDERS_PROBE_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
+	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
+
+ORDERS_PROBE_SHOT_SQUADS ?= 3 5
+ORDERS_PROBE_SHOT_ARMS ?= main: cap_off:--ground-cap=off
+ORDERS_PROBE_SHOT_ROUTES ?= click
+orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later (desktop 1280x720, phone 1560x720), ORDERS_PROBE_MAPS x _SHOT_SQUADS x _SHOT_ROUTES x _SHOT_ARMS -> build/orders-probe/shots/*.png (needs a display)
+	@mkdir -p $(ORDERS_PROBE_DIR)/shots
+	@for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SHOT_SQUADS); do for route in $(ORDERS_PROBE_SHOT_ROUTES); do \
+	for arm in $(ORDERS_PROBE_SHOT_ARMS); do \
+		name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		timeout 600 $(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=34 \
+			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$(ORDERS_PROBE_DIR)/shots $$flags \
+			2>&1 | grep -E '^ORDERS_PROBE( \{|_SHOT)' || true; \
+	done; done; done; done
