@@ -7,7 +7,8 @@
 #   3. the binding built ONCE PER MACHINE AND FLAG SET under .tools/godot-cpp-<ver>/build-<key>/ (a flock: two worktrees
 #      may ask at once), ccache when present, pinned to NATIVE_CPUS when given;
 #   4. this worktree's extension (native/src) into native/build and native/bin, with a stamp of the host and the tree it
-#      was built in: a .so that arrived by rsync from another machine is rebuilt, never trusted;
+#      was built in: a .so that arrived by rsync from another machine is rebuilt, never trusted; and (round 35, N3) a
+#      source whose content changed since the last build is touched first (native/src_sync.sh), whatever its mtime;
 #   5. native/bin/tank_squad.gdextension written beside the .so, which is what switches the library ON for Godot.
 #
 # Exit 3 when there is no C++ toolchain (make decides whether that is a failure), non-zero on any build error.
@@ -102,8 +103,13 @@ if [ ! -e "$build_dir/CMakeCache.txt" ]; then
 		-DTANK_NATIVE_BIN="$bin_dir" -DTANK_NATIVE_FP_FLAGS="$NATIVE_FP_FLAGS" "${launcher[@]}" > "$build_dir/configure.log" 2>&1 \
 		|| { tail -30 "$build_dir/configure.log"; say "configure FAILED (see $build_dir/configure.log)"; exit 1; }
 fi
+# Round 35 (N3, R35.15): a source whose CONTENT changed since the last successful build is touched first, so cmake's
+# mtime test rebuilds it even when it arrived by `rsync -a` with an older mtime than its objects (a full check once ran
+# on a library built from the pre-merge tree that way). The sums are recorded only after a successful build.
+say "$(bash "$NATIVE_DIR/src_sync.sh" check "$native_abs" "$build_dir/.src-sums")"
 run "$CMAKE" --build "$build_dir" -j"$NATIVE_JOBS" > "$build_dir/build.log" 2>&1 \
 	|| { tail -40 "$build_dir/build.log"; say "build FAILED (see $build_dir/build.log)"; exit 1; }
+bash "$NATIVE_DIR/src_sync.sh" record "$native_abs" "$build_dir/.src-sums"
 grep -E "warning:" "$build_dir/build.log" | head -20 || true
 [ -s "$NATIVE_SO" ] || { say "built, but $NATIVE_SO is missing"; exit 1; }
 hostname > "$bin_dir/.built-on"
