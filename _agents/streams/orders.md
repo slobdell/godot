@@ -75,6 +75,17 @@ Nothing (his deploy-step yes is the go).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### D1 census bar (C35.2), FILED AFTER THE READING (said plainly)
+The census ran (`e9066083a`, builder0) before the orchestrator asked for the bar, so this bar is written after its numbers.
+It is moot in this instance: the two arms are byte-identical (below), so no line could read differently.
+- **Probe:** `make deploy-census`: CPU v CPU (both sides ElementCommander), Locks / Terminus / Sumps x fresh seeds 3501-3516,
+  factions rotated by seed, 1000 credits, 150 s, paired by (arena, seed), on v `--deploy-step=off`; n 48 pairs.
+- **Gross (blocks shipping, to the orchestrator):** per side or pooled, deaths UP or kills DOWN by more than 2 se of the
+  summed paired difference; stuck crew-seconds UP by more than 2 se. Alive and deploys are reported only.
+- **Reading:** every line diff +0.0, se 0.0: arms byte-identical, 0 deploys on either side. The census's CPU gives
+  screen / attack / support_by_fire / ambush tasks, never a plain move (`--trace=on`, laptop, Locks s3501, 40 s), so the deploy
+  step never fires in a fight. **Not gross: D1 passes.** Rows: `references/round35/orders/d1-census-e9066083a/`.
+
 ### Plan (2026-10-19, round 35)
 1. **D1** the flip (`ee16b1b1e` = main a0ae0aafd + 07c029732's code; brains' brief left out) → quick-remote → full check on
    builder0 (one at a time: the orchestrator's C35.3 pair check is on the box at launch) → attribute moved sim-baseline maps
