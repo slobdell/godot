@@ -77,3 +77,43 @@ A guard for the future: any new decision keyed to the engine frame counter fails
 
 **Checked and left:** `game/ai/brains_ab.gd:155` alternates a perf A/B's arms on `Engine.get_physics_frames() / _block`
 (a CPU-cost tool that flips switches within one run, never play or a judged behaviour series). Brains' file; noted only.
+
+## The fix (C34.6 (2), the orchestrator's ruling: (A), with the audit first)
+
+`game/ai/traffic.gd`: `_phase(frame)` returns the Match's tick (the tanks root's parent, found when the table meets a new
+root; `frame` for a table with no Match, as `load_rows` tests use); `hold_of` and `shape` stagger on `_phase(frame)`.
+The Match's tick was chosen over the first-seen frame (the orchestrator's preference, and a better clock): the frame
+counter still runs while the tree is paused (the skirmish's planning pause), so a frame origin would make the phase
+depend on how long a player paused, which a replay doesn't reproduce. Every other read of `frame` in traffic.gd is a
+difference (LIVE_TICKS, SOLVE_TICKS age, the cap, TABLE_TICKS), unchanged. No C++ mirror: the native drive calls
+`Traffic.hold_of` / `Traffic.shape` (native_traffic.gd), and native/src has no SOLVE_TICKS.
+
+### The audit: every engine frame-counter read on a sim path (grep get_physics_frames / get_process_frames, game/ and native/src)
+
+| site | how the value is used | class |
+|---|---|---|
+| traffic.gd hold_of 282, shape 415 (the `%` term) | `(frame + hash) % SOLVE_TICKS` | **absolute phase: FIXED** |
+| traffic.gd 245/276/412/893 (all other uses) | `frame - seen`, `frame - last >= SOLVE_TICKS`, table age; `_forget()` on a new root | difference |
+| drive_native.cpp 342 | C++ twin of `Traffic.holding`: `frame - at <= LIVE_TICKS` | difference |
+| drive_native.cpp 2286/2294 (`_manoeuvre`'s `tick`) = movement.gd 1148 | `tick - _behind_tick > BEHIND_GAP_TICKS`, `tick - _behind_since`; per-mover members (fresh each match) | difference |
+| movement.gd 1278 (`_face_tick`) | `tick - _face_tick` | difference |
+| execute_native.cpp 269 | `swept_frame != frame`: sweep freed movers once a frame | per-frame memo (equality to now) |
+| gun_native.cpp 533 | `wander_frame != now`: difficulty read once a frame | per-frame memo |
+| pathing.gd 120, perception.gd 37, avoidance.gd 114, movement.gd 3256 (`_chord`), native_route.gd 22, native_scan.gd 30, native_record.gd 53, element.gd 815 (feed key) | `frame != _memo_frame` (+ map / root / match id) | per-frame memo |
+| element.gd 315/1195/1201 (`task_frame`) | squads tasked on the SAME frame weigh the body together: equality between elements of one match | equality within a frame |
+| ai_tick_cache.gd 312/323 (`_fired`) | `now - fired`, keyed by the hull's instance id (never reused across matches) | difference |
+| planner_seam.gd 477/527 (`tick_seen`, `_retry_until`, `_watch_faces`) | `tick - tick_seen > STALE_TICKS`, `held > tick` with the hull's instance id checked | difference |
+| planner_seam `_last_refusal` → manoeuvre_census.gd `refusal_recent` (movement.gd 3521) | `now - last <= window`, keyed by NAME across matches | difference; read only by a measurement counter (`esc_after_refusal`), not a decision |
+| manoeuvre_census.gd 260/407 | `tick % STATE_EVERY`, `tick % TRACE_EVERY`: which ticks a trace prints | absolute phase, **measurement output only** (no decision reads it) |
+| brains_ab.gd 155 | perf A/B alternates arms on `frame / _block` | absolute phase, CPU-cost tool only |
+| element.gd 1563-1573/1836/1846, tank.gd 971, wall_contact.gd, movement.gd logs, tick_profile.gd, match.gd 459 | printed or logged | output only |
+
+A name-keyed carry can still depend on the GAP between two matches (a difference against a frame from the last
+match): the only such read is `_last_refusal`, measurement only. The test's rematch starts within ~1 frame of the
+first match's end, the worst case for such a carry, and replays.
+
+### Measured (the fix = this commit's game/ai/traffic.gd)
+
+- `tests/test_rematch.gd` (builder0 light lane, native ON): **passes with the fix** (run 0 and the rematch both
+  `1102d7243f9f6fc4` at tick 600, full per-tick detail identical); **fails on 06b5be57c's traffic.gd** (rematch parts
+  at tick 250, Green_Line_2's throttle: the diagnosed fork).
