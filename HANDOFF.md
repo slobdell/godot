@@ -40,7 +40,10 @@ unmoved; INHERIT): FACE_KEEP_FAR deleted, series tools drop random-seed twins (`
 **Round 35 in flight (2026-10-19 noon):** orders D1 (the deploy step ON; on-spot fix 0603f3274) checking; traffic T7 pair checking
 next; manoeuvre M5 (CP-F 5, turret hulls) gate queued; brains E1 (straggler release) check done, series next; W1b's mirror on
 pair/native-w1b; W1c + T9 (the 70 s scout dead-stop: a parked crew refused every repeat ask) joint dev read. Parked: D3 (R35.11).
-Rulings R35.1–R35.14 in workstreams.
+Rulings R35.1–R35.19 in workstreams.
+**main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
+sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
+older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
 
 ## 🏁 ROUND 34 IS CLOSED (2026-10-19)
 
