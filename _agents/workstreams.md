@@ -821,6 +821,22 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   squads". The two-Hunters variant is excluded (520/525 rolled it, with identical arms). **Judged seeds: 526, 527, 528,
   537, 542, 550.** Line (2) stands as run (97 v 97, identical; its halts aren't the drill).
 
+- **R33.36 Traffic's v2 and item 4 both fail as filed; both re-filed (2026-10-18; traffic stream/traffic-overnight
+  `4afc4a85a`, ov_parkedroom_v2_bar.md and ov_item4_bar.md, Result sections).** **v2** (pair `e7b202760`, native
+  hand-back, fresh 724–771 × 3, n 144): L1a hold-post loops 39 → 1, L1b 51 → 39 and L2 83 → 95 PASS. L3 FAILS on the GOOD
+  side (hit rate 0.714 → 0.731, against a two-sided line). L6 63 % of 395 (line 90 %). Trace: of 147 misses, 99 sit
+  inside the brain's own hold line around the ORDER GOAL (the parked spot was a median 3.1 m off it, and the hold order
+  took them there); only 48 are off station by both readings. ask_handed_back median 21 a fight. **v3, filed now, before
+  any number:** a crew on a HOLD order returns to its hold point (the order goal), not to the parked spot. L6 = back
+  within 3 m of its post OR inside its hold line around its order goal, ≥ 90 % (≥ 50 rooms); L3 = no worse, one-sided
+  (kills ≥ base − k·se, deaths ≤ base + k·se, hit rate ≥ base − k·se), as a guard means. Every other line unchanged.
+  FRESH fights 820–867 × 3. **Item 4** (pair `23251f069`, fresh 772–795): line 2 FAILS (fire-post loops 34 → 29, se
+  14.4), lines 3–6 PASS (shots 594 v 595, first shot 2.8 v 2.8 s). Trace: all 29 of the arm's fire-post loops have an
+  ENGAGED blocker, a real fire mission that his T1c-b2 yes keeps by design, while the IDLE kind went 10 → 0. The line
+  counted both kinds; the item's purpose is the idle kind. **Re-filed:** line 2 = IDLE fire-post loops (blocker with
+  no fire mission) ON = 0 and ≤ base, with engaged ones REPORTED. FRESH fights 796–819 × 3, n 72, same tree, lines 3–6
+  unchanged.
+
 **Bars (round 33):** filed here before any number.
 
 - **B10b (brains, C33.4; filed 2026-10-17 before any number, stream/brains `03dabed8`).** Form: the latch is released while
