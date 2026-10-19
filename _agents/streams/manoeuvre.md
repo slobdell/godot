@@ -66,11 +66,68 @@ Traffic's give-way block, `_avoid`, `traffic*.gd`; the planner's `game/ai/planne
 
 ## Waiting on the lead
 
-Nothing.
+Nothing (C33.9 shipped as is; CP-F parked to round 34).
 
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### ROUND 33 CLOSE (2026-10-18)
+
+**C33.9 SHIPS** (the lead: attempt 1 as it is, R33.24 option 1). The pair `pair/c339-ship` **4a7cbc6ea** sits on main
+eb532bf51 and holds two commits:
+- 608c3357e: the judged tree lab/c339-turnin 781801da0 as one net-diff commit. It holds the turn-in, the stop hook
+  `_stop_turn_in`, the orbit stage with its FreshStage determinism test, `c339_table.py` and `manoeuvre-c339-cells`.
+- 4a7cbc6ea: TURN_IN_DEFAULT true. `--nav-off=turnin` is now the off arm.
+
+Native found a gap: execute_native runs every `stop` natively, so with the switch ON the GDScript stop hook never ran.
+Their hand-back sends a `stop` with turn-in on, a fixed mount and wheels back to GDScript (reason 3), and comes with a
+twin case. It lives on `pair/native-c339`, rebased onto 4a7cbc6ea. Native runs the combined pair's `make native check`
+on builder2, so the green hash comes from them, not from this tree. The judged numbers are in *C33.9 JUDGED* below.
+
+**CP-F attempt 3 PARKED** (judged on 0dad42fa2: it fails (d) attack-move +7 against a 6.5 limit, and (j)). The cause is
+traced to main's herringbone loop, which is brains' item (R33.35): their fix takes s41's Hunters from 1,097 seat moves to 29.
+Attempt 4 comes next round, on main with brains' herringbone fix in. Its bar uses the new judge (jitter, `--wedged`,
+`--distinct`) and re-files (j) as REPORTED. The CP-F code (turnhull, seat-first `off_seat` at max(7 m, settle_radius))
+and the judge fixes are on stream/manoeuvre (tip below), default OFF.
+
+**Stream tip:** stream/manoeuvre (this commit). It holds CP-F attempt 3's code, the judge fixes (HULL_JITTER_DEG,
+`manoeuvre-hull-seeds-differ`, cpf_judge `--wedged`/`--distinct`) and every round-33 reference.
+
+**Round 34 items, and what blocks each:**
+1. **CP-F attempt 4.** Re-run CP-F's bar on main once brains' herringbone fix ships. Blocked on that fix landing on
+   main. Seeds 41/44/45/66/67 (Guns + gang_ifv) are kept for it; brains won't use them.
+2. **The arrival-flicker fix** (lab/cpf-arriveleg 7e0953f9d) as its own item. It fires rarely and did not close CP-F's
+   gap (+27 -> +26). It needs its own bar (what it fixes, on which seeds) and brains' agreement, because it adds one
+   condition in TankBrain._act's arrived branch.
+3. **The planner's s69 case.** The flicker fix was cut for it. Blocked on the planner restating the case on main.
+4. **1B/2B** (control's screen_playtest fields). Blocked on control.
+5. **C33.9's open misses**, only if the lead asks: (a) in-reach 23.9 % against 25, and out-of-reach hits 42 -> 57.
+   Attempt 2's dev result is lab/c339-attempt2 96d6a1521. It brings the shuffle back out of reach, so it is not a ready
+   candidate.
+
+**Branches with unmerged work** (carry = keep for round 34; dead = can be deleted):
+
+| branch | hash | what | |
+|---|---|---|---|
+| pair/c339-ship | 4a7cbc6ea | C33.9 ship (above) | merges this round |
+| lab/c339-turnin | 781801da0 | C33.9 judged tree, history behind 608c3357e | dead once shipped |
+| lab/c339-attempt2 | 96d6a1521 | C33.9 attempt 2 C (dev); variant D 9fb3b9db6 | carry (item 5) |
+| lab/cpf-arriveleg | 7e0953f9d | arrival-flicker fix, opt-in `arriveleg`, test | carry (item 2) |
+| pair/cpf3b-on | 0dad42fa2 | CP-F attempt 3 judged pair (check green builder2, 2777/0) | dead: attempt 4 re-cuts on main |
+| pair/cpf3b-off | fdc47e576 | its native BASE twin | dead |
+| pair/cpf3-on | 60d2d86a9 | attempt 3's first pair (superseded) | dead |
+| pair/cpf-on / pair/cpf-off | b6c2a9745 / e5b767da4 | CP-F series-1 pair | dead |
+| lab/cpf3-trace | e9197ecb3 | trace tree (`--fixed-fps` hull-rest) | dead (refs filed) |
+| lab/manoeuvre-seattrace | 3ab9ffd67 | ELEMENT_TRACE seat trace, never merge | dead (refs filed) |
+
+Older lab/pair branches from rounds 29-32 (manoeuvre-m1b3, -m2b, -m5, -kturnarc, -r31-*, -s19diag, -swap*, pair/cph-*,
+pair/m1b, pair/swap-*) were reported in their rounds and are dead unless the lead revives one.
+
+**Git-ignored payload:** nothing needs rescuing to reproduce anything, because every table is filed under
+`references/round33/manoeuvre/`. The raw runs (screen.json, run.log, jsonl; 1.4 GB) are in
+`/home/slobdell/overnight-manoeuvre`. They are outside every worktree, so removing this worktree does not touch them.
+Keep them until attempt 4's bar is filed; it may want BASE rows from the old screens. `build/` (1.6 GB) is scratch.
 
 ### CP-F: attack-move's late movers TRACED, owner brains (2026-10-18; `references/round33/manoeuvre/cpf-herringbone-trace/`)
 
