@@ -443,6 +443,10 @@ builder0), ruled R34.3.
   902 → 963 (+6.8 %, 1.9 se over the line); far loops doubled (96 → 192, passing by 0.1). A crew refused by an under-fire squadmate
   stalls behind it: the rule converts yielding deaths into stuck/blocked/parked deaths about one for one. DEFAULT_OFF; neither pair nor
   native's `badfdb978` is merged. For round 35: refuse only when the asker has another way round (parkedroom's room/route test).
+- **M2 report (manoeuvre, `references/round34/manoeuvre/m2-report/`, builder0, REPORT only):** with the planner seam driving
+  (new `M1_GDD=1`; the plain GDScript arm abandons every k-turn ask, so no crew is ever mid-leg: a measurement trap, written down),
+  gangs × six tasks × seeds 60–71: the hold fired 3 times in 144 runs, one tick each; every other row identical to base. M2's footprint
+  on today's hull-rest stage is small; its effect on the flicker is P5's re-measure (R34.16: candidate-only faces 0 with M2 in).
 - **Round-35 candidates recorded (2026-10-19 morning):** (1) **wedged deaths** (manoeuvre, from T5's rows,
   `references/round34/manoeuvre/wedged-deaths/`): 499 of 5984 = 8.3 %, 3.5 a fight, all `driving`, none held; mid-weight hulls
   (suppressor, burner, IFV, tank, lancer 13–16 % of their own deaths; scouts and artillery 2–4 %); lanes, the Locks worst (the x≈0 lane
