@@ -1,0 +1,80 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          gate_off  |   31.3 /   14.3   |    4   0 |        - |               3.6 |            38.0 | 1.42 | 51.6
+crossing 3 click          main      |   31.3 /   14.3   |    4   0 |        - |               3.6 |            38.0 | 1.42 | 51.6
+crossing 3 route          gate_off  |   31.3 /   14.3   |    5   0 |     25.8 |               3.6 |            35.6 | 1.78 | 51.6
+crossing 3 route          main      |   31.3 /   14.3   |    6   0 |     25.8 |               4.4 |            35.3 | 1.63 | 51.6
+crossing 5 click          gate_off  |   72.4 /   28.3   |    5   0 |        - |               3.2 |            86.2 | 2.67 | 19.0
+crossing 5 click          main      |   72.4 /   28.3   |    5   0 |        - |               3.2 |            86.2 | 2.67 | 19.0
+crossing 5 route          gate_off  |   72.4 /   28.3   |    3   0 |     38.1 |               2.2 |            85.2 | 2.79 | 19.0
+crossing 5 route          main      |   72.4 /   28.3   |    3   0 |        - |               2.6 |            88.7 | 2.79 | 19.0
+locks 3 click             gate_off  |   46.8 /   34.7   |    7   0 |     79.8 |               2.7 |            36.9 | 2.13 | 20.2
+locks 3 click             main      |   46.8 /   34.7   |    7   0 |     79.8 |               2.7 |            36.9 | 2.13 | 20.2
+locks 3 route             gate_off  |   46.8 /   34.7   |    2   0 |        - |               3.4 |            44.0 | 2.17 | 20.2
+locks 3 route             main      |   46.8 /   34.7   |    4   0 |        - |               3.2 |            39.1 | 2.03 | 20.2
+locks 5 click             gate_off  |   51.9 /   44.5   |    1   0 |     30.9 |               2.9 |            52.5 | 3.43 | 14.4
+locks 5 click             main      |   51.9 /   44.5   |    1   0 |     30.9 |               2.9 |            52.5 | 3.43 | 14.4
+locks 5 route             gate_off  |   51.9 /   44.5   |    2   0 |     48.9 |               3.6 |            57.2 | 4.04 | 14.4
+locks 5 route             main      |   51.9 /   44.5   |    1   0 |     37.0 |               3.7 |            48.5 | 2.21 | 14.4
+terminus 3 click          gate_off  |   37.1 /   34.4   |    0   0 |     31.1 |               4.0 |            38.9 | 1.78 | 16.0
+terminus 3 click          main      |   37.1 /   34.4   |    0   0 |     31.1 |               4.0 |            38.9 | 1.78 | 16.0
+terminus 3 route          gate_off  |   37.1 /   34.4   |    0   0 |     25.3 |               8.0 |            41.1 | 1.57 | 16.0
+terminus 3 route          main      |   37.1 /   34.4   |    0   0 |     23.6 |              10.8 |            41.1 | 2.31 | 16.0
+terminus 5 click          gate_off  |   60.0 /   39.4   |    0   0 |     31.3 |               7.4 |            54.9 | 2.87 | 4.9
+terminus 5 click          main      |   60.0 /   39.4   |    0   0 |     31.3 |               7.4 |            54.9 | 2.87 | 4.9
+terminus 5 route          gate_off  |   60.0 /   39.4   |    0   0 |        - |               3.2 |            57.9 | 10.07 | 4.9
+terminus 5 route          main      |   60.0 /   39.4   |    0   0 |        - |               3.2 |            62.4 | 5.70 | 4.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          gate_off  |             - |          28.2 |              - |               3.7 |          40.4
+crossing 3 click          main      |             - |          28.2 |              - |               3.7 |          40.4
+crossing 3 route          gate_off  |          35.8 |          24.7 |           11.6 |               4.1 |          40.1
+crossing 3 route          main      |          35.8 |          24.7 |           11.6 |               4.1 |          40.1
+crossing 5 click          gate_off  |             - |          48.5 |              - |               3.2 |         106.8
+crossing 5 click          main      |             - |          48.5 |              - |               3.2 |         106.8
+crossing 5 route          gate_off  |          48.1 |          45.6 |           29.4 |               4.5 |         104.1
+crossing 5 route          main      |             - |          38.9 |              - |               3.9 |         102.5
+locks 3 click             gate_off  |          89.8 |          23.1 |              - |               6.5 |          58.3
+locks 3 click             main      |          89.8 |          23.1 |              - |               6.5 |          58.3
+locks 3 route             gate_off  |             - |          19.0 |              - |               4.4 |          55.3
+locks 3 route             main      |             - |          20.2 |              - |               6.9 |          55.7
+locks 5 click             gate_off  |          33.9 |          34.4 |           23.9 |               6.3 |          77.5
+locks 5 click             main      |          33.9 |          34.4 |           23.9 |               6.3 |          77.5
+locks 5 route             gate_off  |          58.9 |          36.1 |           28.7 |               6.9 |          74.7
+locks 5 route             main      |          47.0 |          29.4 |           34.7 |               8.8 |          74.1
+terminus 3 click          gate_off  |          41.1 |          33.6 |           25.7 |              11.0 |          66.1
+terminus 3 click          main      |          41.1 |          33.6 |           25.7 |              11.0 |          66.1
+terminus 3 route          gate_off  |          28.8 |          25.4 |           25.2 |               6.2 |          55.7
+terminus 3 route          main      |          28.8 |          25.4 |           25.2 |               6.2 |          55.7
+terminus 5 click          gate_off  |          38.0 |          31.1 |           40.0 |               4.4 |          81.5
+terminus 5 click          main      |          38.0 |          31.1 |           40.0 |               4.4 |          81.5
+terminus 5 route          gate_off  |             - |          36.7 |              - |               5.0 |          79.5
+terminus 5 route          main      |             - |          24.4 |              - |               4.2 |          81.0
+
+MEDIANS over seeds [3611, 3612, 3613, 3614, 3615, 3616] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          gate_off    | 6 |         19.8 |     1 |          28.6 |         16.7 |          33.2 |               3.7 |    4   0 | 1.34
+crossing 3 click          main        | 6 |         19.8 |     1 |          28.6 |         16.7 |          33.2 |               3.7 |    4   0 | 1.34
+crossing 3 route          gate_off    | 6 |         19.5 |     0 |          28.4 |          8.6 |          36.2 |               4.1 |    5   0 | 1.54
+crossing 3 route          main        | 6 |         18.1 |     0 |          30.4 |          8.8 |          36.1 |               4.1 |    6   0 | 1.33
+crossing 5 click          gate_off    | 6 |         35.0 |     1 |          71.7 |         21.5 |          92.2 |               3.2 |    5   0 | 2.19
+crossing 5 click          main        | 6 |         35.0 |     1 |          71.7 |         21.5 |          92.2 |               3.2 |    5   0 | 2.19
+crossing 5 route          gate_off    | 6 |         33.5 |     0 |          75.3 |         19.9 |          91.9 |               4.5 |    3   0 | 1.94
+crossing 5 route          main        | 6 |         36.2 |     1 |          80.8 |         27.2 |          91.1 |               3.9 |    3   0 | 2.17
+locks 3 click             gate_off    | 6 |         27.9 |     0 |          30.2 |         19.6 |          49.0 |               6.5 |    7   0 | 1.65
+locks 3 click             main        | 6 |         27.9 |     0 |          30.2 |         19.6 |          49.0 |               6.5 |    7   0 | 1.65
+locks 3 route             gate_off    | 6 |         24.0 |     1 |          31.1 |          9.2 |          49.7 |               4.4 |    2   0 | 1.92
+locks 3 route             main        | 6 |         25.1 |     1 |          31.2 |          7.2 |          50.0 |               6.9 |    4   0 | 1.54
+locks 5 click             gate_off    | 6 |         13.4 |     0 |          41.3 |         19.6 |          75.1 |               6.3 |    1   0 | 1.32
+locks 5 click             main        | 6 |         13.4 |     0 |          41.3 |         19.6 |          75.1 |               6.3 |    1   0 | 1.32
+locks 5 route             gate_off    | 6 |         33.4 |     0 |          45.1 |         14.6 |          69.3 |               6.9 |    2   0 | 3.42
+locks 5 route             main        | 6 |         19.9 |     0 |          39.9 |         18.6 |          73.8 |               8.8 |    1   0 | 1.59
+terminus 3 click          gate_off    | 6 |         20.9 |     0 |          36.2 |         15.7 |          50.6 |              11.0 |    0   0 | 1.56
+terminus 3 click          main        | 6 |         20.9 |     0 |          36.2 |         15.7 |          50.6 |              11.0 |    0   0 | 1.56
+terminus 3 route          gate_off    | 6 |         21.1 |     0 |          32.5 |          3.4 |          53.9 |               6.2 |    0   0 | 1.37
+terminus 3 route          main        | 6 |         19.6 |     0 |          31.3 |          3.4 |          54.0 |               6.2 |    0   0 | 1.37
+terminus 5 click          gate_off    | 6 |         11.4 |     0 |          35.7 |         12.6 |          73.3 |               4.4 |    0   0 | 2.45
+terminus 5 click          main        | 6 |         11.4 |     0 |          35.7 |         12.6 |          73.3 |               4.4 |    0   0 | 2.45
+terminus 5 route          gate_off    | 6 |         38.9 |     1 |          46.3 |         16.7 |          68.1 |               5.0 |    0   0 | 4.32
+terminus 5 route          main        | 6 |         34.4 |     1 |          42.9 |         20.3 |          71.3 |               4.2 |    0   0 | 3.24
+
+EQUALITY click cells: 36 identical across arms, 0 differ
