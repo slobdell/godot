@@ -11,9 +11,11 @@ extends TestCase
 ## then PASSES (steers by the lane, <= PASS_MAX_S). With no lane (a one-hull neck, a third hull in it) it gives way as today.
 
 var _lab: TacticsLab
+var _was_native := BrainSwitches.native
 
 
 func teardown() -> void:
+	BrainSwitches.native = _was_native
 	Traffic.set_off("underfire", Traffic.DEFAULT_OFF.has("underfire"))  # the default back, whichever it is
 	Traffic.set_off("setup", false)
 	if _lab != null:
@@ -149,23 +151,36 @@ func test_on_open_ground_the_refusal_offers_a_side_and_the_asker_passes() -> voi
 	_hit(parked, 1.0)
 	assert_true(not mover.ask(String(asker.name), asker.global_position, Vector2(0.0, -1.0)), "refused under fire")
 	assert_true(mover.pass_offer != 0.0, "with a side offered (%.0f)" % mover.pass_offer)
-	# The whole drive: the asker sent 30 m north through the crew under fire, which is hit every tick and never moves.
+
+
+## The whole drive. The crew under fire is a hull on standing orders (a brain hit every tick would run for cover): it is hit
+## every tick and never moves; a squadmate is sent 30 m north straight through it on open ground.
+func test_on_open_ground_the_asker_drives_round_the_crew_under_fire() -> void:
+	Traffic.set_off("underfire", false)
+	_was_native = BrainSwitches.native
+	BrainSwitches.native = false  # the GDScript reference (native's twin compares the mirror)
+	_lab = TacticsLab.create(self, 7, "yard_open")
+	var post := Vector3(0.0, 0.0, 0.0)
+	var parked := _lab.gun(Match.Team.GREEN, "Green_Parked", post, 0.0, "law_tank")
+	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 14.0), 0.0, "law_tank")
+	await _lab.start()
+	for i in 3:
+		await _lab.step()
+	var mover := Movement.of(parked)
+	post = parked.global_position
 	var passes := Movement.passes
 	var done := Movement.passes_done
 	var refusals := Movement.underfire_refusals
-	var post := parked.global_position
-	_lab.element([String(parked.name)], "Post").assign({"verb": "move", "to": [post.x, post.z]})
-	var go := _lab.element([String(asker.name)], "Go")
-	go.assign({"verb": "move", "to": [0.0, -30.0]})
+	_lab.element([String(asker.name)], "Go").assign({"verb": "move", "to": [0.0, -30.0]})
 	var yielded := false
-	for tick in SimClock.TICK_RATE * 20:
+	for tick in SimClock.TICK_RATE * 25:
 		parked.ticks_since_hit = 0
 		await _lab.step()
-		if tick % 15 == 0:
-			print("T7PASS t=%d asker=(%.1f,%.1f) %s by=%s parked=(%.1f,%.1f) %s order=%s" % [tick, asker.global_position.x,
-					asker.global_position.z, Movement.of(asker).phase, Movement.of(asker)._pass_by, parked.global_position.x,
-					parked.global_position.z, mover.phase, str(mover.ctl.move_order.get("type", ""))])
 		yielded = yielded or mover.yield_to != ""
+		if tick % 15 == 0:
+			print("T7PASS t=%d asker=(%.1f,%.1f) %s by=%s parked=(%.1f,%.1f) %s" % [tick, asker.global_position.x,
+					asker.global_position.z, Movement.of(asker).phase, Movement.of(asker)._pass_by, parked.global_position.x,
+					parked.global_position.z, mover.phase])
 		if asker.global_position.z < -12.0:
 			break
 	assert_true(Movement.underfire_refusals > refusals, "the asker asked and was refused (%d)" % (Movement.underfire_refusals - refusals))
