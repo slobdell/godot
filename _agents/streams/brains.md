@@ -93,6 +93,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   into its halt shape, this is it (planner/manoeuvre may want it; no item filed).
 - **Waiting:** B4 on CP-F's merge hash (manoeuvre); B5 on traffic's request. **Done** otherwise.
 
+- **B6 (new, from the orchestrator): an arrived herringbone re-lays once. CAUSE WRITTEN, fix proposed, no code yet.**
+  Trace (laptop, main `9c0f4dfce`, Sumps seed 41 tick 3, n 1, matches builder2's row): the element travels in a WEDGE
+  and its final slots are wedge seats (±9.3 m along). The tick its CENTRE comes inside the arrival radius (t ≈ 26),
+  ElementPlan switches to the halt, and `_halt` asks the table for the hold shape (herringbone). Every seat is re-laid
+  at ±16–17 m along, on the same anchor and heading. The crews are still 15–20 m from their wedge seats, so they swerve
+  4–10 m onto the new shape. Not the latch, not the herringbone drill (no HERRING_LAY). Rows:
+  `references/round34/brains/b6_relay_trace_*`. **Proposal:** on the final approach (anchor = destination, within the
+  final-approach distance, no shape chosen by him), lay the move's destination seats in the HALT's shape (the table's
+  hold pick), with the technique still travelling. Then arrival changes nothing. A shape he chose (G) is untouched.
+  Waiting on the orchestrator's go.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
