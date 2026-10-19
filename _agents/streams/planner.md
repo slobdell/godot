@@ -59,22 +59,41 @@ Nothing.
 
 ## Status
 
-**Report (2026-10-18, live):**
+**Report (2026-10-18, late):**
 - **P1 done (06b5be57c): the rematch diagnosis.** Traffic's solve stagger (`traffic.gd` hold_of/shape) read
   `Engine.get_physics_frames() % 6`, and the process's frame counter never resets, so a rematch started at another phase
   and branched. Nothing else carries a match: GDScript statics (all 798 restored), a new World3D, the resource cache,
   ids and heap all change no bit. Evidence (918ede503, builder0 native, sim-baseline match through main.tscn, 3 runs a
   process × idle phases 0–5, 1150 ticks): base gives 6 outcomes and 12 of 12 rematches branched; a scratch patch gives
-  1 outcome and 0 of 12. Write-up: `references/round34/planner/rematch/diagnosis.md`. The orchestrator ruled (A), granting the traffic.gd lines.
-- **P2 built (b7184e87d):** `Traffic._phase` = the Match's tick. The audit of every frame-counter read in game/ and
-  native/src is in the diagnosis: this was the only absolute phase on a decision path, and it has no C++ mirror.
-  `tests/test_rematch.gd` passes with the fix and fails without it (tick 250), builder0 light lane. Full check running.
-  sim-baseline WILL move once (a phase shift); the orchestrator adopts it on main after the merge.
+  1 outcome and 0 of 12. `references/round34/planner/rematch/diagnosis.md`. Ruled (A) by the orchestrator.
+- **P2 built (b7184e87d): a rematch replays.** `Traffic._phase` = the Match's tick (a frame origin would still drift
+  through the planning pause). The audit of every frame-counter read in game/ and native/src is in the diagnosis: this
+  was the only absolute phase on a decision path, and it has no C++ mirror. `tests/test_rematch.gd` passes with the fix
+  and fails without it (tick 250), builder0. **Check of 09a98132c (same game code), builder2: exited 2, 2797/1.** The
+  reds: sim-baseline moved (planned; repeats twice on all 13 maps); native-verify-scenarios was load (53/0 alone); and
+  `test_native_yield` owned coverage floor reads 10 against 11, deterministic after the phase shift. **Waiting on the
+  orchestrator's ruling on that floor.** Then the green hash goes to the orchestrator: they merge it alone and adopt the
+  baseline on main.
+- **P3 done (697029f4a):** judging table re-rendered with round 33's pairs (hull-rest, fights, Terminus printed se, plus
+  three new probes: hull-rest gangs A/A, orbit cells, far census). No row's sd moved more than 20 %. Far-census kills:
+  sd 5.96 a fight, MDE 5 % at 48 fights. `_agents/judging.md` *Round 34 re-render*; csv under
+  `references/round34/planner/sizing/`. Owed: rounds 31–32's pairs and the round-31–33 inventory lines.
+- **P4 done:** (a) d3203aeb3, one run identity (screen.json + seam report) for hull_aa / face_keep_table / face_pairs /
+  kept_share; they used to read 48 / 32 / 36 distinct pairs on one series. (b) R34.5 (orchestrator): FACE_KEEP_FAR is
+  REPORTED only (09a98132c) and gets deleted in round 35.
+- **P5 waiting:** P3 v3 starts only after the k-turn arrival flicker fix (C34.4 (2)) merges.
 
-**Plan:** P1 → P2 (merge alone, then the baseline adoption on main) → P3 judging table (rounds 31–33's judged pairs:
-the table was last rendered at round 30) → P4 tools → P5 after the flicker merges.
+**Plan:** P1 → P2 (merge alone, then the baseline adoption on main) → P3 → P4 → P5 after the flicker.
 
 **Merge notes (shared files):** `game/ai/traffic.gd` (traffic's; three changes, granted for C34.6: `_match_id`, `_phase`,
-and the two stagger lines).
+and the two stagger lines). `tools/judge/**` (granted for C34.8). Main moved (docks adopted, 71bd4e466) after this
+branch's base.
 
-**Questions for the lead:** none. **Requests to other streams:** none (native: no C++ mirror to write).
+**Known issues:** test_native_yield's owned arm differs from its live arm even on base (24 v 22 spot:spot; after the fix
+21 v 10), though its file says they read the same counts. That's native's to look at.
+
+**Questions for the lead:** none. **Requests to other streams:** native: the owned/live count gap above; the floor
+(pending the ruling).
+
+**What to playtest:** nothing new to see. A rematch from the results screen should now play out the same as the first
+fight given the same orders (the floor under replays and the network).
