@@ -29,8 +29,13 @@ func _hold_case(owned: bool, part: int, parts: int) -> void:
 	Traffic.set_off("hold", false)
 	var halt := (Manoeuvre as Script).get_script_constant_map().has("WHEEL_HALT_DEFAULT")  # round 35 (W1b)
 	var halt_before: Array = [Manoeuvre.wheel_halt_asks, Manoeuvre.wheel_halts] if halt else [0, 0]
+	var intent := (Manoeuvre as Script).get_script_constant_map().has("STALL_INTENT_DEFAULT")  # round 35 (W1c)
+	var intent_before: int = Manoeuvre.stall_intent_ticks if intent else 0
 	var acc: Dictionary = await TrafficTwin.run(self, owned, "terminus", "head", 30.0, part, parts)
 	var report: Dictionary = acc["report"]
+	if intent:
+		print("native traffic hold%s, crews %d/%d: stall intent ticks (the stage's own drives) %d (STALL_INTENT_DEFAULT %s)" % [
+				" (owned state)" if owned else "", part, parts, Manoeuvre.stall_intent_ticks - intent_before, Manoeuvre.STALL_INTENT_DEFAULT])
 	if halt:
 		print("native traffic hold%s, crews %d/%d: wheeled pace-0 halts (the stage's own drives): asks %d, halts %d (WHEEL_HALT_DEFAULT %s)" % [
 				" (owned state)" if owned else "", part, parts, Manoeuvre.wheel_halt_asks - int(halt_before[0]),

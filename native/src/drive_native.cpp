@@ -102,7 +102,8 @@ struct N {
 			_wheel_radius_value{ "_wheel_radius_value" };
 	// Movement statics (through the script)
 	StringName leash_orders{ "leash_orders" }, avoidance_on{ "avoidance_on" }, station_on{ "station_on" },
-			kturn_eased{ "kturn_eased" }, wheel_halt_asks{ "wheel_halt_asks" }, wheel_halts{ "wheel_halts" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
+			kturn_eased{ "kturn_eased" }, wheel_halt_asks{ "wheel_halt_asks" }, wheel_halts{ "wheel_halts" },
+			stall_intent_ticks{ "stall_intent_ticks" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
 			wedged_units{ "wedged_units" }, a1_replans{ "a1_replans" }, a1_cadence_due{ "a1_cadence_due" },
 			a1_by_cause{ "a1_by_cause" }, route_not_ready{ "route_not_ready" }, guard_rescues{ "guard_rescues" };
 	// methods called back
@@ -1726,9 +1727,9 @@ struct Drive {
 		// and the outline sweep are GDScript).
 		Object *pinned_on = c.UNSTICK_BACK ? honest_blocker(order) : nullptr;
 		const bool honest = pinned_on != nullptr;
-		const double throttle = cmd->get(k.throttle);
 		const Vector3 velocity = tank->get(honest ? k.real_velocity : k.estimated_velocity);
-		if (std::fabs(throttle) > 0.5 && (double)velocity.length() < c.STUCK_SPEED) {
+		// Round 35 (W1c, R35.12, `stallintent`): against a friendly hull, the throttle test reads the drive's intent.
+		if (stall_throttle(cmd, order) > 0.5 && (double)velocity.length() < c.STUCK_SPEED) {
 			const double stuck = v._stuck_time() + delta;
 			v.set__stuck_time(stuck);
 			if (stuck >= c.STUCK_SECONDS && honest) {
@@ -1781,6 +1782,55 @@ struct Drive {
 		Object *wall = v.contact().get_validated_object();
 		const bool touching = wall != nullptr && (bool)wall->get(k.touching);
 		return hull != nullptr && !touching ? hull : nullptr;
+	}
+
+	// Round 35 (manoeuvre W1c, `stallintent`): Manoeuvre.stall_throttle(self, cmd, order), line by line: |throttle|, unless
+	// the switch is on, pace_now < 1, the command <= 0.5, a routed move_to (not direct, not reverse) and the hull is against
+	// a friend: then command / max(pace_now, STALL_INTENT_MIN_PACE), counting stall_intent_ticks when it passes 0.5.
+	double stall_throttle(Object *cmd, const Dictionary &order) {
+		static const String move_to("move_to");
+		const double command = std::fabs((double)cmd->get(k.throttle));
+		if (command > 0.5 || !c.stall_intent_ready || !c.STALL_INTENT || c.manoeuvre_script == nullptr || (double)v.pace_now() >= 1.0) {
+			return command;
+		}
+		if (String(order.get(k.type, String())) != move_to || (bool)order.get(k.direct, false) || (bool)order.get(k.reverse, false)) {
+			return command;
+		}
+		if (!against_friend()) {
+			return command;
+		}
+		const double intent = command / MAX((double)v.pace_now(), c.STALL_INTENT_MIN_PACE);
+		if (intent > 0.5) {
+			Object *man = c.manoeuvre_script;
+			man->set(k.stall_intent_ticks, (int64_t)man->get(k.stall_intent_ticks) + step);
+		}
+		return intent;
+	}
+
+	// Manoeuvre._against_friend(mover): a slide collider that is a Tank of this team, or blocked by a friendly Tank.
+	bool against_friend() {
+		static const String blocked("blocked");
+		const int64_t team = tank->get(k.team);
+		CharacterBody3D *body = Object::cast_to<CharacterBody3D>(tank);
+		if (body != nullptr) {
+			const int n = body->get_slide_collision_count();
+			for (int i = 0; i < n; i++) {
+				Ref<KinematicCollision3D> hit = body->get_slide_collision(i);
+				Object *collider = hit->get_collider();
+				if (is_tank(collider) && (int64_t)collider->get(k.team) == team) {
+					return true;
+				}
+			}
+		}
+		const String by = v.blocked_by();
+		if (String(v.phase()) == blocked && !by.is_empty()) {
+			Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+			if (root != nullptr) {
+				Object *blocker = root->get_node_or_null(NodePath(by));
+				return is_tank(blocker) && (int64_t)blocker->get(k.team) == team;
+			}
+		}
+		return false;
 	}
 
 	bool is_tank(Object *o) const {

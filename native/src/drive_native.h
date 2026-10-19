@@ -95,6 +95,9 @@ struct DriveConfig {
 	// Round 35 (manoeuvre W1b): Manoeuvre.wheel_halt's switch (WHEEL_HALT_DEFAULT, the native drive running only with
 	// `Movement._off` empty) and TankMotion.WHEEL_CREEP_THROTTLE. wheel_halt_ready false on a tree without W1b.
 	bool wheel_halt_ready = false, WHEEL_HALT = false;
+	// Round 35 (manoeuvre W1c): Manoeuvre.stall_throttle's switch (STALL_INTENT_DEFAULT) and STALL_INTENT_MIN_PACE.
+	bool stall_intent_ready = false, STALL_INTENT = false;
+	double STALL_INTENT_MIN_PACE = 0.05;
 	double WHEEL_CREEP_THROTTLE = 0.5;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).
