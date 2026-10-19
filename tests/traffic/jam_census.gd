@@ -10,6 +10,9 @@ extends SceneTree
 ##   JAM_CENSUS {...}  the fight's totals.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/traffic/jam_census.gd -- --skirmish --demo-match --clean --seed=N --arena=A --mute --seconds=180
 
+## Still means slower than this (m/s): Traffic's table clock on the parkedroom branch; a local constant here so the probe runs on main.
+const STILL_MPS := 0.3
+
 var _teams := {}
 var _seconds_run := 0.0
 var _printed := false
@@ -142,7 +145,7 @@ func _observe(game_match: Match, last_seen: Dictionary, moving_at: Dictionary, j
 			var b: Array = base.get_or_add(str(tank.team), [Vector3.ZERO, 0])
 			b[0] += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
 			b[1] += 1
-		if tank.speed() > Traffic.STILL_SPEED or not moving_at.has(name):
+		if tank.speed() > STILL_MPS or not moving_at.has(name):
 			moving_at[name] = tick
 		var still_s := (tick - int(moving_at[name])) / float(SimClock.TICK_RATE)
 		var mover := Movement.of(tank)
