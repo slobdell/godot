@@ -352,6 +352,15 @@ _Filed here before any number._
   on the partial's done-file and runs on (test 2890/0 on this tree; sim-baseline at main's lines); the corrected partial (`lint` + the
   10) follows it; a red there on E1's paths voids the series. E1 merges only on the partial's green. **Lesson for orchestration.md:**
   a CHECK_TARGETS partial lists `lint` too.
+- **R35.28 (2026-10-19 ~16:40) A shift-clicked route REPLACED, not queued, after untangle (orders' find; pre-existing, both arms).**
+  Crossing 5 route s3614: squads 3–5 got ONE leg (two shared a place). Cause: round 22's `SelectionSquads.untangle` (O1b) re-deals
+  VEHICLES between squads at the first click; the elements no longer match the control groups, so each later shift-click finds no
+  element exactly the group, `_queue_task_for` returns null, and the task replaces instead of queueing. **Ruling: (b)**, a shifted
+  move queues on the elements its units now belong to. NOT (a) (whole squads only): round 22's answer to his interleaved squads WAS
+  the cross-squad re-deal, and he accepted "two interleaved squads sent abreast no longer cross". **D6 (orders)**, after D5's re-read
+  and D4; bar filed before code: every squad gets every leg on the reproduction (reported) and fresh route seeds; round 22's Sumps
+  seed 5988 case keeps 0 path crossings; queued-task / route tests green; click cells byte-identical; a test that reproduces the
+  replace. D5 fix try `45d34470a` (the gate's approach pointed backwards on s3614); re-read on fresh 3631–3636.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
