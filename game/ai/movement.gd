@@ -1307,7 +1307,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	# is made below, after the aligned test).
 	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "face", _face_home, delta): return true
 	# Round 35 (W2): a face no plan fits gave up: it stands still as it is (Manoeuvre.FACE_SETTLE_FAILS).
-	var settle := Manoeuvre.face_settle_on()
+	var settle := Manoeuvre.face_settle_on() and tank.mount != "fixed"  # a hull-fixed scout's hull IS its gun's arc: it keeps trying
 	if settle and _face_left_m <= 0.0 and Manoeuvre.face_given_up_id(get_instance_id(), want):
 		return _face_still(cmd)
 	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
@@ -1372,7 +1372,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	if _face_window <= 0.0:
 		if absf(_face_window_heading.signed_angle_to(forward, Vector3.UP)) < deg_to_rad(OrderController.FACE_STALL_DEG):
 			Manoeuvre.face_refused += 1
-			if Manoeuvre.face_settle_on():
+			if Manoeuvre.face_settle_on() and tank.mount != "fixed":
 				Manoeuvre.face_failed_id(get_instance_id(), _face_want)
 			_face_blocked = _face_want
 			_face_left_m = 0.0

@@ -430,6 +430,8 @@ static func leg_holds_arrival(brain: TankBrain) -> bool:
 ## row (none fitted, or one the world refused) for the same want (within Movement.FACE_REPLAN_DEG) end the face as it is:
 ## the hull stands still and the turret keeps the facing; between the failed tries it waits still instead of creeping.
 ## The want swinging further, a new order, or a gap in the face re-arms it. `--nav-off=facesettle` flips the default.
+## TURRET hulls only: a hull-fixed scout's hull is its gun's arc, so it keeps creeping round (the dev read, lab/cpf5 bdacb1786,
+## builder0, hull-rest 460-463 drawn: with fixed hulls included, wheels/fixed crews >= 45 deg off rose 33 -> 48 over six tasks).
 ## State per mover by its INSTANCE id (M2's precedent: every Movement member is a field of native's exec table, and this
 ## is GDScript decision state; wheeled faces are handed back to GDScript, reason 3, so nothing here runs in C++).
 const FACE_SETTLE_DEFAULT := false
