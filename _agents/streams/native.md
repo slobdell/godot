@@ -90,8 +90,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - Twins at `2446d46f9`: 111/0, 0 mismatches.
   - W1c ON (lab): every twin 0 mismatches, but Sumps reaches no parked refusal and no plain refused ask. So floors moved
     (C34.6): the Sumps pair is floored only with W1c off, and the parked refusal on the under-fire stages (4 both arms).
-  - A forced plain-refusal stage (5 Sumps poses from a sweep of ask) is the orchestrator's request: twins running at
-    `6177ee87a` / lab `c8db0a442`.
+  - A forced plain-refusal stage (5 Sumps poses from a sweep of ask; the orchestrator's request): **green hash
+    `6177ee87a`**, test_native_yield 12/0 on it and on lab `c8db0a442` (W1c ON): asks_refused 5/5 live and owned,
+    0 mismatches.
   - **R35.19:** this pair merges only after T7's verdict (if T7 parks, it is re-cut without T6b/T7 and re-twinned).
 - **D1 (orders' deploy step):** no native change (statement to the orchestrator).
 
@@ -100,7 +101,7 @@ fights calls `seed_twins.filter_logs(files)` first.
 
 **Merge notes:** `tests/traffic/far_table.py` (traffic's: one import + one call, merged with N2).
 
-**Next:** name the joint pair's hash once both arms of the refusal stage are green; port T7's `_pass_lane` sweep if T7
+**Next:** port T7's `_pass_lane` sweep if T7
 ships; W2's mirror when its bar passes.
 
 **Questions for the lead:** none. **Known issues:** none.
