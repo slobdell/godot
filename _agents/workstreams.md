@@ -170,7 +170,7 @@ _Filed here before any number. Empty at launch._
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
-  kills was that series' draw. About 1 death in 5 is counted stuck or jammed (~9 a fight), but "stuck" includes "still >= 2 s" (crews holding on purpose): split asked before it is told to him. Firemission was OFF in both
+  kills was that series' draw. About 1 death in 5 is counted stuck or jammed (~9 a fight), split (X1 data): 622 parked by order (30 %, not stuck), 106 jammed by friendly traffic (5 %), 322 stuck with a live move order (15 %: wedged 133, static 85, still under way 2–7 s 94, no path 10), 1046 driving or in contact (50 %). Wedged (Movement.wedged, manoeuvre's) is the biggest stuck kind: relayed to manoeuvre as a post-CP-F finding. Firemission was OFF in both
   arms (an overnight DEFAULT_OFF artefact, fixed `e6468b2e0`).
 
 ## Rulings (round 34)
@@ -200,6 +200,11 @@ _Filed here before any number. Empty at launch._
   won duel); B2's adapter, B3's trace and the lazy duel are inert. The judged series may start (R33.31's precedent), on
   condition that scout-cells / scout-census are pinned at `--fixed-fps` on that tree (it predates main 02a912163). The
   orchestrator adopts the docks baseline at merge.
+- **R34.4 T4, a fourth try, approved (C34.3; traffic X4, `references/round34/traffic/x4_t4_guard_reread.txt`).** On current
+  main the R33.30 G2 failure is gone (tuning seeds 7–18, builder0, native, pinned: body-ON alone_s 2–6 s both arms, every
+  ON−OFF 0.0; body OFF 17–21 s). Brains' route now keeps the Sirens with the body. A fresh bar after the v4 series on
+  builder2, with seeds disjoint from every judged block (above 915), the Terminus T(1)–T(6) GAIN lines deciding (the guards
+  pass trivially on identical arms), byte-identical arms reported, C31.1 with ghost ON and native's ghost-aware twins.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
