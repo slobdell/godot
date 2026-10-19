@@ -117,6 +117,17 @@ _Filed here before any number._
   arrived within 2 se; (f) fights' kills and deaths each side within 2 se; (g) `make check` green, moved sim-baseline maps
   attributed with `--straggler=off`.
 
+- **M5 W2, CP-F attempt 5, the face side (manoeuvre, C35.7 decoupled by R35.3), filed before any number from `stream/manoeuvre`
+  `d544e83a0` Status *Bar M5*.** Candidate: stream + `TURN_HULL_DEFAULT := true` + `FACE_SETTLE_DEFAULT := true` (lab/cpf5); base
+  the same tree `--nav-off=turnhull,facesettle`. Gate (C31.1): lab/cpf5's whole `make native check` green on builder0, sim-baseline
+  moves attributed with `--nav-off=turnhull,facesettle`. builder0 only. FRESH seeds: hull-rest 701–716 (4 factions x 16 x 6 tasks,
+  drawn and clicked, GDScript M1_GD=1 both arms, plus the native drawn pair), Terminus 720–732, SBF 770–775, bridge-pooled's 18,
+  fights on FIXED arenas locks/terminus/sumps x 740–763 (`FIGHT_AT`). Ruler and noise: M1's, round 34's A/A table. Lines: Bar M3's
+  (a)–(m) unchanged (`streams/archive/round34/manoeuvre.md`), plus (n) `face_creep` crews at the judge, new <= base + 1 per task;
+  (o2) counter first: `face_settles` > 0, `hull_turns` > 0, `face_settle_fails` reported; (p) at-rest hull error of the crews that
+  gave up REPORTED (median, count >= 45 deg). Gate: (a)–(j), (n); a miss parks it with a trace. If (d)/(e) miss on attack-move only,
+  the trace names the mechanism and the verdict is the orchestrator's (the step is brains' E1).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
