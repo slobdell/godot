@@ -74,3 +74,14 @@ Nothing (his deploy-step yes is the go).
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Plan (2026-10-19, round 35)
+1. **D1** the flip (`ee16b1b1e` = main a0ae0aafd + 07c029732's code; brains' brief left out) → quick-remote → full check on
+   builder0 (one at a time: the orchestrator's C35.3 pair check is on the box at launch) → attribute moved sim-baseline maps
+   with `make remote T="native sim-variants VARIANTS_EXTRA=--deploy-step=off VARIANTS_TAG=deployoff"` (off must read the
+   recorded lines) → the REPORTED fights census (`make deploy-census`, new: CPU v CPU, Locks/Terminus/Sumps x fresh seeds
+   3501–3516, factions rotated, on v off, deaths/kills/stuck/deploys by side, > 2 se = gross) → name the hash.
+   *Decided:* own census probe (`tests/control/deploy_census.gd`) rather than manoeuvre's fight_census (random arenas deal
+   twins, R34.15; it has no stuck count) or traffic's jam census (not on main).
+2. **D2** `make orders-probe` arms `main:` v `deploy_off:--deploy-step=off` on the shipped hash + shots (arrival, +5 s).
+3. **D3** tight packing (bar filed first). 4. **D4** shuffle trace. 5. **D5** crossing drives. 6. Stretch: halt markers.
