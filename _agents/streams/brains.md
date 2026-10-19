@@ -54,3 +54,14 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Start (2026-10-19 08:40 PDT):** worktree `godot-brains` on `stream/brains` at `a0ae0aafd`; launch baseline is main's inherited
+green (HANDOFF), no baseline check run.
+
+**Plan (in order):**
+1. E1 trace: reproduce law/faced_attack_move-614 on `lab/cpf4` `e76f6dab6` (the tree R34.18 traced) and on today's main, with a
+   measurement-only leg-gate trace (`ElementPlan._advance`: `reached`, `_cohesive`, which crew fails it by how much), then the
+   26-pair attack-move set on builder0 to see whether the hold still exists on main. Reason: the seam with manoeuvre must name
+   the rule that actually holds, not the one the README guessed.
+2. E1 seam note to the orchestrator; tests first; code only after the seam is agreed.
+3. E2 only if CP-F 5 ships. 4. E3 write-up (no code without a bar). 5. Merge fallout from orders' D1.

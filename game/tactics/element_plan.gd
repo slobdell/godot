@@ -63,6 +63,10 @@ const INSET_NEAR_M := 60.0
 static var HALT_SHAPE_EARLY := OS.get_cmdline_user_args().has("--halt-shape-early=on") or OS.get_environment("HALT_EARLY") == "on"
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
+## Round 35 (brains E1), MEASUREMENT ONLY: under `--element-trace=<name|all>` `_advance` writes plan["leg_gate"] (reached, closed
+## up, and the crew `_cohesive` is waiting on: its gap, its seconds against the allowance) for ELEMENT_TRACE's LEG_GATE line.
+static var LEG_TRACE := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--element-trace="))
+static var _cohesion_held_by := ""
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
 ## K1 orders carry no facing, so a vehicle's heading comes from the way it travelled (see _agents/doctrine.md).
 const FACE_LEAD := 5.0
@@ -2444,8 +2448,12 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 	# when the element has them for this anchor: in a lane the nominal slot can sit metres inside a block, and a squad
 	# standing in its real slots read as "not closed up" forever.
 	var issued: Dictionary = state.get("issued_slots", {}) if state.get("issued_anchor") == anchor else {}
-	if reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table,
-			float(plan.get("corridor_m", INF)), _seating_given(plan, keyed, String(plan["formation"])), issued):
+	var closed: bool = reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table,
+			float(plan.get("corridor_m", INF)), _seating_given(plan, keyed, String(plan["formation"])), issued)
+	if LEG_TRACE:
+		plan["leg_gate"] = "reached %s (%.1f m) closed %s%s" % [reached, center.distance_to(anchor) if anchor is Vector3 else -1.0,
+				closed, (" held by " + _cohesion_held_by) if reached and not closed else ""]
+	if closed:
 		anchor = clamp_to_arena(center + heading * minf(leg, center.distance_to(destination)))
 	elif anchor == null:
 		anchor = clamp_to_arena(center)
@@ -2497,6 +2505,8 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 			gap = minf(gap, (member["position"] as Vector3).distance_to(sent[String(member["name"])]))
 		var seconds := gap / maxf(float(member.get("speed", 9.0)), 0.5)
 		if seconds > allowed_s:
+			if LEG_TRACE:
+				_cohesion_held_by = "%s %.1f m %.2f s > %.2f s" % [String(member["name"]), gap, seconds, allowed_s]
 			return false
 	return true
 

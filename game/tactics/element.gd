@@ -1665,6 +1665,7 @@ func _bt_fire_order(situation: Dictionary) -> void:
 ## elements whose name contains it: task, anchor, heading, shape, file share and corridor, arrived, and per crew where it
 ## stands, its slot (and the slot it asked for, when grounded), its slot's offset from the anchor along / across the
 ## heading, and its distance to its slot. For the War Rig 4-of-5 case (foundry s8, two seats 28 m and 56-68 m out).
+## Round 35 (brains E1): `all` traces every element, and a LEG_GATE line follows each row (ElementPlan.LEG_TRACE).
 static var _element_trace := ""
 static var _element_trace_read := false
 var _et_last := -1000
@@ -1703,7 +1704,7 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			if arg.begins_with("--element-trace="):
 				_element_trace = arg.trim_prefix("--element-trace=")
 	var tick := int(situation.get("tick", 0))
-	if _element_trace == "" or not element_name.contains(_element_trace) or tick - _et_last < SimClock.TICK_RATE:
+	if _element_trace == "" or (_element_trace != "all" and not element_name.contains(_element_trace)) or tick - _et_last < SimClock.TICK_RATE:
 		return
 	_et_last = tick
 	var anchor_v: Variant = plan.get("anchor")
@@ -1734,6 +1735,7 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
 			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived, inset,
 			" | ".join(PackedStringArray(rows))])
+	print("LEG_GATE t=%.1f [%s] id %d arrived %s %s" % [float(tick) / SimClock.TICK_RATE, element_name, id, arrived, String(plan.get("leg_gate", "-"))])
 
 
 ## R33.35, MEASUREMENT ONLY (under --arrive-trace): HERRING_LAY once a second while this element is in the herringbone
