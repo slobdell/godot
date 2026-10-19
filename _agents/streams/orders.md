@@ -91,7 +91,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Gain (must pass):** summed over the 24 cells, the median `twitch worst m` at least 20 % lower on main; and the Terminus 5
   click cell's median twitch lower on main.
 - **Guards (each cell):** median all in <= minimax_off x 1.2 + 3 s, no more never-in seeds; median `place worst m` <=
-  minimax_off + 5 m; median end foreign min >= minimax_off - 3 m; deck / far no higher.
+  minimax_off + 5 m; median `twitch worst m` <= minimax_off + 3 m (the orchestrator's addition: a sum can hide one cell
+  getting worse, as the laptop's Locks 5 did); median end foreign min >= minimax_off - 3 m; deck / far no higher.
 
 ### D4 what's left of the shuffle: traced (laptop GDScript, seed 34, the 6 click cells, stream/orders `9370f5ddb`)
 - Twitch after the place window (8 s from the deploy), worst crew: Crossing 3 25.2 m, Crossing 5 21.4, Locks 3 8.6, Locks 5
@@ -110,7 +111,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Crossing 3, squad 1 (25.2 m), traced:** a different cause. At the deploy (t 13) Alpha_1's seat is 8.7 m off and Alpha_3's
   18.5 m, but both drive detours of 20-30 m (Alpha_1 to the west deck's end and back over 20 s; Alpha_3 30 m south and back):
   the halt laid ON the spot puts seats that are reached only round an obstacle. The halt lay would need driving distance
-  (like `_dry_halt_anchor` steps inland from water); ElementPlan is pure (no navmesh) today. A design question, not built.
+  (like `_dry_halt_anchor` steps inland from water); ElementPlan is pure (no navmesh) today. Ruled (orchestrator): the
+  halt lay stays pure this round; **round-36 design question:** give the deploy's halt lay a reachability input (e.g. the
+  controls pass, with the order, which grid cells near the spot are reached by a short drive), so seats behind a wall
+  or across a bank step away as `_dry_halt_anchor` does for water.
 - **What the trace points at (not built):** the deploy's shape change itself. Either the halt is laid so the travel seats
   map onto it without crossing (a herringbone's seats ordered as the wedge's, wings to the far ends by side, not by
   least total), or the halt in lanes is laid ACROSS the street as the travel shape is. Both are the halt-lay functions in
