@@ -1,0 +1,17 @@
+planner's s69 stage: gangs, CLICKED faced_attack_move, seeds 66-71, --planner-face-keep=1, --brains-off=native_drive; builder0, stream 34f363b03 (= main 165953b64 + the unshipped turn-in). PLANNER_SEAM_REPORT face_episodes per run.
+   new_clicked  seed 66: episodes  4 served 1 neither  3 | seam driven 4 aborted 6
+        SERVED Green_Guns_1 asked 392 ticks 399 plan_far 3.0 hull_far 0.6 kept True
+   new_clicked  seed 67: episodes  5 served 0 neither  5 | seam driven 1 aborted 1
+   new_clicked  seed 68: episodes  0 served 0 neither  0 | seam driven - aborted -
+   new_clicked  seed 69: episodes 12 served 1 neither 11 | seam driven 4 aborted 2
+        SERVED Green_Guns II_3 asked 729 ticks 855 plan_far 1.7 hull_far 1.8 kept True
+   new_clicked  seed 70: episodes  0 served 0 neither  0 | seam driven - aborted -
+   new_clicked  seed 71: episodes  0 served 0 neither  0 | seam driven - aborted -
+   base_clicked seed 66: episodes  4 served 1 neither  3 | seam driven 2 aborted 4
+        SERVED Green_Guns_1 asked 392 ticks 399 plan_far 3.0 hull_far 0.6 kept True
+   base_clicked seed 67: episodes  5 served 0 neither  5 | seam driven 1 aborted 1
+   base_clicked seed 68: episodes  0 served 0 neither  0 | seam driven - aborted -
+   base_clicked seed 69: episodes 12 served 1 neither 11 | seam driven 4 aborted 2
+        SERVED Green_Guns II_3 asked 729 ticks 855 plan_far 1.7 hull_far 1.8 kept True
+   base_clicked seed 70: episodes  0 served 0 neither  0 | seam driven - aborted -
+   base_clicked seed 71: episodes  0 served 0 neither  0 | seam driven - aborted -

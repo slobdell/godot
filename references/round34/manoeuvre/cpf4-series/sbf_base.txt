@@ -1,0 +1,2 @@
+gang_ifv   drawn in 24/24  median in  15.2 s  hull err at in: median  31.9 deg, >= 45: 7, >= 100: 0  | never in: []
+gang_ifv   none  in 24/24  median in  12.0 s  hull err at in: median  49.8 deg, >= 45: 13, >= 100: 0  | never in: []

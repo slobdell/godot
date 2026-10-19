@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-18 — **ROUND 34 IS PREPARED (below); round 33 is CLOSED.** Main inherits `d7d57f4cf`'s green check (builder2, `make check exited 0`, 2797/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved; `tools/merge_check_needed.sh d7d57f4cf` says INHERIT: only docs since). He pushes `main`._
+_Last updated: 2026-10-19 — **ROUND 35 IS RUNNING** (main 0f4d528d7 green, the scout turn-in shipped). Older header: **ROUND 34 IS PREPARED (below); round 33 is CLOSED.** Main inherits `d7d57f4cf`'s green check (builder2, `make check exited 0`, 2797/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved; `tools/merge_check_needed.sh d7d57f4cf` says INHERIT: only docs since). He pushes `main`._
 
 ## 🚀 ROUND 35 IS PREPARED (2026-10-19) — read this first
 
@@ -27,6 +27,13 @@ created FRESH from the docs commit; round 34's `stream/*` branches are `round34/
 `3902ade09` on its green check, running on builder0 at launch); the deploy step ON (C35.2, orders' D1); the firing truck keeps its spot.
 
 **Launch baseline:** main inherits the last green main check (c29a8c7b6, builder0 2877/0); workers run no baseline check.
+
+**Round 35 merges:** **main 0f4d528d7 = C35.3, the scout turn-in shipped** (R35.1): `pair/c339-r34b` `3902ade09` merged
+(`c6fd30d71`), builder0 `make native check` on 3902ade09 26/27, 2885/0, the one red sim-baseline; attribution
+(`--nav-off=turnin`, builder0) reads the recorded lines on all 13 maps; 8 maps adopted (yard terminus crossing locks parade
+gorge cut docks), read twice at ffa462c94 agreeing = 3902ade09's hashes, so main is GREEN with no new check (the baseline file
+is the only check-read diff). **Tell him in player terms:** his circled scout now turns and fights instead of shuffling
+backwards. Workers told to `git merge main`.
 
 ## 🏁 ROUND 34 IS CLOSED (2026-10-19)
 

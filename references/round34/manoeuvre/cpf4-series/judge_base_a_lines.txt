@@ -1,0 +1,8 @@
+(a) wheels/turret per task: median, share <= 15
+   faced_ambush             n 413 median  80.4  <=15  15.5 %
+   faced_attack_move        n 413 median  57.1  <=15  13.6 %
+   faced_move               n 413 median  49.3  <=15  23.7 %
+   faced_right              n 413 median  47.5  <=15  21.8 %
+   faced_screen             n 413 median  53.7  <=15  18.6 %
+   faced_support_by_fire    n 413 median  77.5  <=15  14.8 %
+(d) crews moving at the judge, summed over paired runs: new base diff se(sum) limit(1.645se) verdict

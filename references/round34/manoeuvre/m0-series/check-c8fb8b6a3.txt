@@ -1,0 +1,18 @@
+  gorge      408d8c5e49d22a5f  unmoved
+  archipelago 74099e787f74682c  MOVED (was f97836b7868c7906)
+  cut        b31bbf132c154b23  unmoved
+  docks      4074d105e1739377  unmoved
+  yard_open  d93353b60efd6db3  unmoved
+  - crossing MOVED: expected f8024203917ca808, got 87d6a60d2b9e7497
+  - parade MOVED: expected 27580bb53aa4ebe3, got f16fd810ae957839
+  - archipelago MOVED: expected f97836b7868c7906, got 74099e787f74682c
+  ok   the other maps still read unmoved
+  ok   an unmoved line keeps its OLD provenance
+  ok   prints ONE commit message naming moved and unmoved maps
+  ok   WHY / WHY_UNMOVED land in the commit message, no hand edit
+  ok   all moved: every map listed, none unmoved
+  ok   make check-hashes: absent data reads NOT RUN, never unmoved
+2818 passed, 0 failed
+>> check: hashes on builder2 (glibc-2.43) | sim-baseline foundry=f72b1712479b2570(unmoved) yard=df0c04272c671909(unmoved) pit=76b986231ec5b85a(unmoved) terminus=1c2d8ee6ba3af808(unmoved) crossing=87d6a60d2b9e7497(MOVED from f8024203917ca808) sumps=8ac8cffce54c83fc(unmoved) locks=9bbfe8b7e38cef8d(unmoved) parade=f16fd810ae957839(MOVED from 27580bb53aa4ebe3) gorge=408d8c5e49d22a5f(unmoved) archipelago=74099e787f74682c(MOVED from f97836b7868c7906) cut=b31bbf132c154b23(unmoved) docks=4074d105e1739377(unmoved) yard_open=d93353b60efd6db3(unmoved) | determinism 9d66d3a0c59a7936
+>> check: 26 passed, 1 FAILED, 0 NOT RUN  [test x16, lint -P16, 12 at once, builder2]
+>> remote: make native check exited 2 (build/ copied back)

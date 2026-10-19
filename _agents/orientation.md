@@ -289,3 +289,18 @@ build/   (gitignored)    exports and screenshots
     shard happens to run the file. It happened twice (round 31 `test_traffic_ghost`, round 32 `test_traffic_setup`). And a
     test that ends with a crew still held in `PlannerSeam` leaks it into the next file's twins: twin cases start with
     `MoverState.world_reset()` (round 32, native).
+84. **Every `Movement` member is a field of native's exec-state table** (`native/src/exec_fields.h`;
+    `test_native_exec_state::test_the_table_is_the_scripts_members` counts them). Adding a `var` to movement.gd for
+    GDScript-only decision state fails the whole suite until native adds a C++ field. Keep such state in `Manoeuvre`
+    statics keyed by the Movement INSTANCE (never a crew name: names repeat in a rematch, C34.6), pruned when the instance
+    dies (round 34, M2's `_arrive_hold_until`).
+85. **The laptop is not row-equivalent to the builders, even pinned.** A `--fixed-fps` orbit cell on the laptop gave a
+    different row from builder2's at the same commit (in-arc 22 v 12 %, reverse 0 v 13), while builder0 and builder2 agree
+    312/312. Laptop runs are for a mechanism's trace; every dev or judged number is a builder's (round 34, manoeuvre).
+86. **`setsid nohup … &` is NOT enough for a long remote run from a laptop session (round 34, manoeuvre).** Two
+    `make remote T="native check"` wrappers detached that way died mid-run with no `>> remote: … exited` line while their
+    remote makes ran on (orphans, killed by cwd); a third wrapper died inside a judged series' step. The brief's rule is
+    the right one: `systemd-run --user --unit=<name> --collect <script>` puts the run in its own cgroup, and the result is
+    read from the wrapper line as always. A run with no wrapper line is not nameable, however green its own summary.
+    The unit does NOT inherit your shell's PATH (`~/projects/bin` with node/npm is missing, so `make web-smoke` dies at
+    `npm: command not found`): pass `--setenv=PATH="$PATH"`.
