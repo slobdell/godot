@@ -661,6 +661,8 @@ orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later
 			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$(ORDERS_PROBE_DIR)/shots $$flags \
 			2>&1 | grep -E '^ORDERS_PROBE( \{|_SHOT)' || true; \
 	done; done; done; done
+	@# Round 35 (D2): builder0 with no desktop rendered nothing and this recipe exited 0; no frames is a failure.
+	@n=$$(ls $(ORDERS_PROBE_DIR)/shots/*.png 2>/dev/null | wc -l); echo "orders-probe-shots: $$n frames"; [ $$n -gt 0 ] || { echo "orders-probe-shots: NO FRAMES (no display?)"; exit 1; }
 
 # Round 35 (orders D1, C35.2): the deploy step reaches CPU elements, so its ship check carries this REPORTED fights census:
 # CPU v CPU on DEPLOY_CENSUS_ARENAS (fixed arenas; random ones deal twins, R34.15) x DEPLOY_CENSUS_SEEDS (fresh), factions
