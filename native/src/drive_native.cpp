@@ -181,7 +181,9 @@ struct N {
 			underfire_holds{ "underfire_holds" },
 			// Round 35 (traffic T7, C35.8): refuse under fire only when the asker has a pass lane; the refused asker passes
 			underfire_gives{ "underfire_gives" }, passes{ "passes" }, passes_done{ "passes_done" },
-			passes_timeout{ "passes_timeout" }, pass_ticks{ "pass_ticks" }, _pass_lane{ "_pass_lane" }, is_alive{ "is_alive" }, _radii{ "_radii" };
+			passes_timeout{ "passes_timeout" }, pass_ticks{ "pass_ticks" }, _pass_lane{ "_pass_lane" }, is_alive{ "is_alive" }, _radii{ "_radii" },
+			// Round 35 (traffic T9, `yieldfit2`)
+			yields_unfinished{ "yields_unfinished" }, yields_unfinished_capped{ "yields_unfinished_capped" };
 };
 const N &n_() {
 	static const N names;
@@ -196,6 +198,8 @@ inline double clampd(double v, double lo, double hi) {
 inline double flat_distance(const Vector3 &a, const Vector3 &b) {
 	return (double)Vector2((real_t)((double)a.x - (double)b.x), (real_t)((double)a.z - (double)b.z)).length();
 }
+// Movement._distance_to_ray (defined below, beside the give-way's helpers; round 35 T9's yield_unfinished reads it too)
+inline double distance_to_ray(const Vector3 &point, const Vector3 &origin, const Vector2 &direction);
 
 inline double deg_to_rad(double deg) {
 	return deg * (Math::PI / 180.0); // Math::deg_to_rad(double)
@@ -1955,6 +1959,54 @@ struct Drive {
 		return 1;
 	}
 
+	// Round 35 (traffic T9, `yieldfit2`): Movement._yield_unfinished(), line by line: the give-way ended with the asker NOT
+	// passed (right_of_way's own reading) and this crew still in its way (touching, or ahead on its line within both radii +
+	// YIELD_LINE_MARGIN) is not recorded, at most YIELD_RETRIES times to one asker in YIELD_RETRY_WINDOW_S.
+	bool yield_unfinished(const String &yield_to) {
+		static const String yieldfit2("yieldfit2"), arrived("arrived");
+		if (yield_to.is_empty() || !c.yieldfit2_ready || c.traffic_script == nullptr || traffic_off(yieldfit2)) {
+			return false;
+		}
+		Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+		if (root == nullptr) {
+			return false;
+		}
+		Node3D *asker = Object::cast_to<Node3D>(root->get_node_or_null(NodePath(yield_to)));
+		if (asker == nullptr || asker->get(k.alive).get_type() != Variant::BOOL || !(bool)asker->call(k.is_alive)) {
+			return false;
+		}
+		const Vector3 at = asker->get_global_position();
+		Object *asker_mover = mover_of(asker);
+		const Vector2 dir = v._yield_dir();
+		const bool passed = flat_distance(here, at) > c.YIELD_CLEAR ||
+				(double)Vector2((real_t)((double)at.x - (double)here.x), (real_t)((double)at.z - (double)here.z)).dot(dir) > 0.0 ||
+				(asker_mover != nullptr && String(asker_mover->get(k.phase)) == arrived);
+		if (passed) {
+			return false;
+		}
+		const double reach = avoid_radius(String(tank->get(k.unit_id))) + avoid_radius(String(asker->get(k.unit_id)));
+		const bool touching = flat_distance(here, at) - reach <= c.YIELD_CONTACT_M;
+		const bool ahead = (double)Vector2((real_t)((double)here.x - (double)at.x), (real_t)((double)here.z - (double)at.z)).dot(dir) > 0.0;
+		const bool on_line = ahead && distance_to_ray(here, at, dir) < reach + c.YIELD_LINE_MARGIN;
+		if (!touching && !on_line) {
+			return false;
+		}
+		const int64_t frame = Engine_frames();
+		if (String(v._unfinished_to()) != yield_to ||
+				frame - (int64_t)v._unfinished_since() > (int64_t)(c.YIELD_RETRY_WINDOW_S * (double)c.TICK_RATE)) {
+			v.set__unfinished_to(yield_to);
+			v.set__unfinished_count(0);
+			v.set__unfinished_since(frame);
+		}
+		v.set__unfinished_count((int64_t)v._unfinished_count() + 1);
+		if ((int64_t)v._unfinished_count() > c.YIELD_RETRIES) {
+			sadd(k.yields_unfinished_capped, 1);
+			return false;
+		}
+		sadd(k.yields_unfinished, 1);
+		return true;
+	}
+
 	// Movement._end_yield: natively unless its diagnosis record is open (yield_log: then the GDScript, which writes it).
 	void end_yield(const String &yield_to) {
 		static const String driving("driving");
@@ -1962,7 +2014,10 @@ struct Drive {
 			cb(k._end_yield);
 			return;
 		}
-		v.set__last_yielded_to(yield_to);
+		// Round 35 (traffic T9): an unfinished give-way is not recorded (evaluated before yield_to is cleared).
+		if (!yield_unfinished(yield_to)) {
+			v.set__last_yielded_to(yield_to);
+		}
 		v.set_yield_to(String());
 		v.set__yield_point(V3_INF);
 		v.set_blocked_by(String());
