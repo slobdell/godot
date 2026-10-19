@@ -75,6 +75,19 @@ Nothing (his deploy-step yes is the go).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### D3 bar (C35.4), FILED BEFORE ANY NUMBER (2026-10-19 ~09:20 PDT)
+- **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell (deterministic): Locks / Crossing / Terminus x 3 / 5
+  squads x click / route = 24 cells, arms `main:` (pack on) v `pack_off:--pack=off`, the same tree, the deploy step ON in both.
+- **Gain (must pass):** over the 6 CLICK cells, the median of each cell's `end far max m` (the farthest crew from the click at
+  the window's end) at least 15 % below pack_off's; and in EVERY cell `end foreign min m` >= 7 m (the 9 m design, less
+  grounding slop), on both arms reported.
+- **Guards (each must hold in every cell):** all-in <= pack_off x 1.2 + 3 s, and no cell all-in on pack_off but not on main;
+  far bank 0; `toward min m` >= 0 (nobody sent away from the click); `twitch worst m` <= pack_off + 5 m.
+- **Response:** `test_control_scale` (the click's 3-tick response) passes in the check of the named hash.
+- **Single squads:** the pack acts only on 2+ squads; `make squad-arrive-series ARRIVE_ARM_FLAG=pack ARRIVE_MAPS="terminus sumps"
+  ARRIVE_SEEDS="1 2"` both arms must be byte-identical (an equality check, reported).
+- Screenshots (`orders-probe-shots`, arrival and +5 s, desktop and phone) looked at for every 5-squad click cell.
+
 ### D1 census bar (C35.2), FILED AFTER THE READING (said plainly)
 The census ran (`e9066083a`, builder0) before the orchestrator asked for the bar, so this bar is written after its numbers.
 It is moot in this instance: the two arms are byte-identical (below), so no line could read differently.
