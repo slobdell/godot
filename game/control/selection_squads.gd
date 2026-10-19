@@ -977,7 +977,9 @@ static func _group_exactly(groups: ControlGroups, members: Array[String], alive:
 ## two wedges basically?"). TIGHT PACKING ON THE DEPLOY STEP. With the deploy step on, an AUTO squad's final seats are
 ## its halt shape (`block["halt"]`, O3's pick) laid on a heading fixed when the order is given (the body's approach), so
 ## where every crew will finally stand is known now and the squads can be packed by those seats, not by boxes:
-##   * every halt seat of one squad stands at least HALT_CLEAR_M (9 m) from every halt seat of another (wedges nest);
+##   * every halt seat of one squad stands at least HALT_CLEAR_M (9 m) from every halt seat of another (wedges nest),
+##     and none inside another squad's halt outline (the convex hull of its seats): a coil is a ring with an empty middle,
+##     and by seat clearance alone a second coil stood inside it, the two squads' crews mixed (D3's first controls test);
 ##     two squads that both halt in a column keep his COLUMN_GAP_M (28 m) between their files;
 ##   * the squad nearest the click is placed first and takes the place nearest it, and so on outward (first in, front);
 ##   * each squad keeps its own side of the approach (one standing clearly left of the click's line is never laid right
@@ -985,6 +987,10 @@ static func _group_exactly(groups: ControlGroups, members: Array[String], alive:
 ##   * no anchor farther back along the approach than its own squad stands now (R34.12b: a back rank never drives away);
 ##   * every seat on ground `seat_ok(p)` accepts (dry, standable: nothing on a building), and the anchor one the click
 ##     reaches by ground (`reached(p)`, O1's ground cap), tried in order of cost up to PACK_REACH_TRIES.
+## The search starts from `start` (the ranks the controls laid, where they fit) and compacts: each squad, farthest
+## first, moves to the cheapest place that fits beside the others (cost: the farthest of its seats from the click), up to
+## PACK_PASSES passes; so a pack is never wider than the ranks it began from.
+## `headings` (out) gets each squad's halt heading: the approach, or the approach turned (PACK_TURNS).
 ## Places are searched on a PACK_STEP_M grid in the body's frame, PACK_ACROSS_M either side of the click and PACK_BEHIND_M
 ## behind it (never ahead: the front squad stands on the click). Returns [] (the caller keeps `ranks`) unless every
 ## block carries a halt shape. `--pack=off` (PACK false) is round 34's ranks.
@@ -995,12 +1001,21 @@ const PACK_BEHIND_M := 100.0
 ## A squad whose centre stands more than this across the click's line has a side.
 const PACK_SIDE_M := 8.0
 const PACK_REACH_TRIES := 24
+const PACK_PASSES := 4
+## The turns a halt may be laid at, off the approach (degrees, the body's frame): the approach itself first, then across
+## it. On the Locks his Law squads halt in a herringbone 55 m deep, which laid along the approach toward the canal did
+## not fit the strip between the water and the buildings (the pack put them 48 m back, behind the buildings); laid along
+## the bank it does. A turned halt costs PACK_TURN_COST_M more, so the approach wins wherever it fits.
+const PACK_TURNS: Array[float] = [0.0, 90.0, -90.0]
+const PACK_TURN_COST_M := 6.0
 ## How many packs the controls laid, this process (a probe reads it).
 static var packed := 0
 
 
-static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok: Callable, reached: Callable) -> Array[Vector3]:
+static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok: Callable, reached: Callable,
+		start: Array[Vector3] = [], headings: Array = []) -> Array[Vector3]:
 	var none: Array[Vector3] = []
+	headings.clear()
 	if not PACK or blocks.size() < 2:
 		return none
 	for block: Dictionary in blocks:
@@ -1009,76 +1024,182 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 	var ahead := TacticsFormation.flat(heading)
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var flat_click := Vector3(click.x, 0.0, click.z)
-	# Seats of each block in the body's frame (x across, y ahead), and where each block stands now in that frame.
+	# Each block's halt seats in the body's frame (x across, y ahead) for each turn PACK_TURNS (seats[i][o]), their
+	# outlines, and where each block stands now in that frame.
 	var seats: Array = []
+	var hulls: Array = []
 	var now: Array[Vector2] = []
 	for block: Dictionary in blocks:
 		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
-		seats.append(halt_offsets(String(block["halt"]), int(block.get("count", 1)), p.x))
+		var offsets := halt_offsets(String(block["halt"]), int(block.get("count", 1)), p.x)
+		var by_turn: Array = []
+		var outline: Array = []
+		for turn: float in PACK_TURNS:
+			var turned := PackedVector2Array()
+			for o: Vector2 in offsets:
+				turned.append(o.rotated(deg_to_rad(turn)))
+			by_turn.append(turned)
+			outline.append(Geometry2D.convex_hull(turned) if turned.size() >= 3 else PackedVector2Array())
+		seats.append(by_turn)
+		hulls.append(outline)
 		var c := Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) - flat_click
 		now.append(Vector2(c.dot(across), c.dot(ahead)))
-	var grid: Array[Vector2] = []
-	var n_across := int(PACK_ACROSS_M / PACK_STEP_M)
-	for i in range(-n_across, n_across + 1):
-		for j in range(0, int(PACK_BEHIND_M / PACK_STEP_M) + 1):
-			grid.append(Vector2(i * PACK_STEP_M, -j * PACK_STEP_M))
-	grid.sort_custom(func(a: Vector2, b: Vector2) -> bool:
-		return a.length_squared() < b.length_squared() if a.length_squared() != b.length_squared() else \
-				(a.x < b.x if a.x != b.x else a.y > b.y))
-	var order := range(blocks.size())
-	order.sort_custom(func(a: int, b: int) -> bool:
-		return now[a].length() < now[b].length() if now[a].length() != now[b].length() else a < b)
-	var world := func(local: Vector2) -> Vector3: return flat_click + across * local.x + ahead * local.y
+	var local := func(p: Vector3) -> Vector2:
+		var d := Vector3(p.x, 0.0, p.z) - flat_click
+		return Vector2(d.dot(across), d.dot(ahead))
+	var world := func(at: Vector2) -> Vector3: return flat_click + across * at.x + ahead * at.y
+	# Squads that all halt in one shape lay PLACES (no side, no squad yet), then are dealt to them by the least total
+	# driving (`_assign`: straight paths that never cross); mixed shapes keep their side as they are placed.
+	var shared := true
+	for block: Dictionary in blocks:
+		if String(block["halt"]) != String(blocks[0]["halt"]) or int(block.get("count", 1)) != int(blocks[0].get("count", 1)) \
+				or block.get("pitch_v", Vector2(SPACING_M, SPACING_M)) != blocks[0].get("pitch_v", Vector2(SPACING_M, SPACING_M)):
+			shared = false
+	var lowest := 0.0
+	for p in now:
+		lowest = minf(lowest, p.y)
 	var ok_memo := {}
 	var seat_good := func(p: Vector3) -> bool:
 		var key := Vector2i(roundi(p.x), roundi(p.z))
 		if not ok_memo.has(key):
 			ok_memo[key] = bool(seat_ok.call(p))
 		return ok_memo[key]
-	var placed_seats: Array = []  # [Vector2 local seat, block index]
-	var anchors: Array[Vector3] = []
-	anchors.resize(blocks.size())
-	for i: int in order:
-		var side := 0.0 if absf(now[i].x) <= PACK_SIDE_M else signf(now[i].x)
-		var column := String(blocks[i]["halt"]) == "column"
-		var found: Variant = null
-		var fallback: Variant = null
+	var reach_memo := {}
+	var reaches := func(at: Vector2) -> bool:
+		var key := Vector2i(roundi(at.x), roundi(at.y))
+		if not reach_memo.has(key):
+			reach_memo[key] = bool(reached.call(world.call(at)))
+		return reach_memo[key]
+	# A place is Vector3(x, y, turn index).
+	var spread_of := func(i: int, place: Vector3) -> float:
+		var at := Vector2(place.x, place.y)
+		var far := 0.0
+		for o: Vector2 in seats[i][int(place.z)]:
+			far = maxf(far, (at + o).length())
+		return far
+	# Whether squad i fits at `place` beside the others placed (`places`: index -> place): hull clearance, no seat inside
+	# another's outline, every seat on good ground.
+	var fits := func(i: int, place: Vector3, places: Dictionary) -> bool:
+		var at := Vector2(place.x, place.y)
+		var mine: PackedVector2Array = seats[i][int(place.z)]
+		for j: int in places:
+			if j == i:
+				continue
+			var other: Vector3 = places[j]
+			var there := Vector2(other.x, other.y)
+			if (at - there).length() > 2.0 * PACK_ACROSS_M:
+				continue
+			var theirs: PackedVector2Array = seats[j][int(other.z)]
+			var gap := COLUMN_GAP_M if String(blocks[i]["halt"]) == "column" and String(blocks[j]["halt"]) == "column" else HALT_CLEAR_M
+			for a: Vector2 in mine:
+				for b: Vector2 in theirs:
+					if (at + a).distance_to(there + b) < gap:
+						return false
+			var hj: PackedVector2Array = hulls[j][int(other.z)]
+			if hj.size() >= 3:
+				for a: Vector2 in mine:
+					if Geometry2D.is_point_in_polygon(at + a - there, hj):
+						return false
+			var hi: PackedVector2Array = hulls[i][int(place.z)]
+			if hi.size() >= 3:
+				for b: Vector2 in theirs:
+					if Geometry2D.is_point_in_polygon(there + b - at, hi):
+						return false
+		for a: Vector2 in mine:
+			if not bool(seat_good.call(world.call(at + a))):
+				return false
+		return true
+	var grid: Array[Vector2] = []
+	var n_across := int(PACK_ACROSS_M / PACK_STEP_M)
+	for gi in range(-n_across, n_across + 1):
+		for gj in range(0, int(PACK_BEHIND_M / PACK_STEP_M) + 1):
+			grid.append(Vector2(gi * PACK_STEP_M, -gj * PACK_STEP_M))
+	# Each squad's candidate places (every grid point at every turn), sorted once and natively by one float key: its
+	# spread in dm (a turned halt PACK_TURN_COST_M dearer), then the anchor's own distance in dm, then the place index.
+	var sorted_keys := {}
+	var candidates := func(i: int) -> PackedFloat64Array:
+		if sorted_keys.has(i):
+			return sorted_keys[i]
+		var side := 0.0 if shared or absf(now[i].x) <= PACK_SIDE_M else signf(now[i].x)
+		var back := lowest if shared else minf(now[i].y, 0.0)
+		var keys := PackedFloat64Array()
+		for o in PACK_TURNS.size():
+			for g in grid.size():
+				var at := grid[g]
+				if side * at.x < 0.0 or at.y < back - 0.01:
+					continue
+				var cost: float = spread_of.call(i, Vector3(at.x, at.y, o)) + (PACK_TURN_COST_M if o > 0 else 0.0)
+				keys.append((roundf(cost * 10.0) * 10000.0 + roundf(at.length() * 10.0)) * 100000.0 + o * grid.size() + g)
+		keys.sort()
+		sorted_keys[i] = keys
+		return keys
+	var cost_of := func(i: int, place: Vector3) -> float:
+		return float(spread_of.call(i, place)) + (PACK_TURN_COST_M if int(place.z) > 0 else 0.0)
+	# The cheapest place for squad i beside `places` costing under `limit`, or null.
+	var best_place := func(i: int, places: Dictionary, limit: float) -> Variant:
+		var limit_key := roundf(limit * 10.0) * 1e9 if is_finite(limit) else INF
 		var tries := 0
-		for at: Vector2 in grid:
-			if side * at.x < 0.0 or at.y < minf(now[i].y, 0.0) - 0.01:
+		for key in candidates.call(i):
+			if key >= limit_key:
+				return null
+			var index := int(fmod(key, 100000.0))
+			var at := grid[index % grid.size()]
+			var place := Vector3(at.x, at.y, float(index / grid.size()))
+			if not bool(fits.call(i, place, places)):
 				continue
-			var clear := true
-			for entry: Array in placed_seats:
-				var gap := COLUMN_GAP_M if column and String(blocks[int(entry[1])]["halt"]) == "column" else HALT_CLEAR_M
-				for s: Vector2 in seats[i]:
-					if (at + s).distance_to(entry[0]) < gap:
-						clear = false
-						break
-				if not clear:
-					break
-			if not clear:
-				continue
-			var dry := true
-			for s: Vector2 in seats[i]:
-				if not bool(seat_good.call(world.call(at + s))):
-					dry = false
-					break
-			if not dry:
-				continue
-			if fallback == null:
-				fallback = at
 			if tries >= PACK_REACH_TRIES:
-				break
+				return place
 			tries += 1
-			if bool(reached.call(world.call(at))):
-				found = at
-				break
-		if found == null:
-			found = fallback
-		if found == null:
-			return none  # no place fits: the caller keeps the ranks
-		anchors[i] = world.call(found)
-		for s: Vector2 in seats[i]:
-			placed_seats.append([(found as Vector2) + s, i])
+			if bool(reaches.call(at)):
+				return place
+		return null
+	var order := range(blocks.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		return now[a].length() < now[b].length() if now[a].length() != now[b].length() else a < b)
+	# Start: the ranks the caller laid (`start`, each kept only where it fits, on the approach), else nothing; every
+	# squad without a place is placed nearest first; then COMPACTION passes, each squad (dearest first) moved to the
+	# cheapest place that fits beside the others, until nothing moves. Never dearer than the start.
+	var places := {}
+	if start.size() == blocks.size():
+		for i: int in order:
+			var at: Vector2 = local.call(start[i])
+			if bool(fits.call(i, Vector3(at.x, at.y, 0.0), places)):
+				places[i] = Vector3(at.x, at.y, 0.0)
+	for i: int in order:
+		if not places.has(i):
+			var place: Variant = best_place.call(i, places, INF)
+			if place == null:
+				return none  # no place fits: the caller keeps the ranks
+			places[i] = place
+	for pass_index in PACK_PASSES:
+		var moved := false
+		var by_cost := order.duplicate()
+		by_cost.sort_custom(func(a: int, b: int) -> bool: return float(cost_of.call(a, places[a])) > float(cost_of.call(b, places[b])))
+		for i: int in by_cost:
+			var others := places.duplicate()
+			others.erase(i)
+			var place: Variant = best_place.call(i, others, float(cost_of.call(i, places[i])))
+			if place != null:
+				places[i] = place
+				moved = true
+		if not moved:
+			break
+	var dealt: Array = []
+	for i in blocks.size():
+		dealt.append(places[i])
+	if shared:
+		var centers: Array[Vector3] = []
+		var spots: Array[Vector3] = []
+		for k in blocks.size():
+			centers.append(Vector3((blocks[k]["center"] as Vector3).x, 0.0, (blocks[k]["center"] as Vector3).z))
+			spots.append(world.call(Vector2((places[k] as Vector3).x, (places[k] as Vector3).y)))
+		var given := _assign(centers, spots)
+		for k in blocks.size():
+			dealt[k] = places[given[k]]
+	var anchors: Array[Vector3] = []
+	for place: Vector3 in dealt:
+		anchors.append(world.call(Vector2(place.x, place.y)))
+		var turned := Vector2(0.0, 1.0).rotated(deg_to_rad(PACK_TURNS[int(place.z)]))
+		headings.append((across * turned.x + ahead * turned.y).normalized())
 	packed += 1
 	return anchors

@@ -100,8 +100,6 @@ const DOUBLE_TAP_SECONDS := 0.4
 const FRAME_DESTINATION_M := 220.0
 
 var game_match: Match
-## D3 (C35.4): the heading the last pack laid its halts on (the body's approach), read when the squads' tasks are given.
-var pack_heading := Vector3.ZERO
 var orders: Orders
 var camera: Camera3D
 var rig: RtsCamera
@@ -1100,7 +1098,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size()),
 				"depth": SelectionSquads.depth("auto", loose.size())})
 	var anchors: Array[Vector3] = []
-	var packed_shapes := {}  # D3: each packed anchor -> the halt shape its seats were packed in
+	var packed_shapes := {}  # D3: each packed anchor -> {shape, heading} its seats were packed in
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1135,7 +1133,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
 		# Round 35 (D3, C35.4): with the deploy step on, an AUTO body's halts are packed now by their seats (hull clearance,
 		# his correction 1) on the approach; the ranks above stand when the pack does not apply or finds no fit.
-		packed_shapes = _pack_halts(squads, blocks, click, drawn, loose, verb, extra, ground)
+		packed_shapes = _pack_halts(squads, blocks, click, drawn, loose, verb, extra, ground, anchors)
 		if not packed_shapes.is_empty():
 			anchors.clear()
 			for at: Vector3 in packed_shapes:
@@ -1176,8 +1174,9 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			# D3: a packed squad deploys exactly where the pack laid its seats, in that shape, on the pack's heading.
 			if packed_shapes.has(anchors[i]):
 				given["halt_at"] = [anchors[i].x, anchors[i].z]
-				given["halt_shape"] = packed_shapes[anchors[i]]
-				given["lay"] = [pack_heading.x, pack_heading.z]
+				given["halt_shape"] = String(packed_shapes[anchors[i]]["shape"])
+				var lay: Vector3 = packed_shapes[anchors[i]]["heading"]
+				given["lay"] = [lay.x, lay.z]
 			# B8 (R34.14): the heading each squad lays its halt on when it deploys, fixed now (the approach).
 			elif ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
 				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
@@ -1402,12 +1401,16 @@ func _copy_pack(extra: Dictionary, task: Dictionary) -> void:
 				task[key] = extra[key]
 
 
-## D3 (C35.4): {anchor: halt shape} for each squad, in squad order, when the deploy step is on and the order is an AUTO
+static var PACK_TRACE := OS.get_cmdline_user_args().has("--pack-trace")
+
+
+## D3 (C35.4): {anchor: {"shape", "heading"}} for each squad, in squad order, when the deploy step is on and the order is an AUTO
 ## plain move of squads only (no loose units, no drawn facing) whose halts SelectionSquads.pack_halts can fit; else {}.
 ## The heading is the body's approach: from the squads to the click, or for a shifted waypoint from where their routes
-## end now. Sets `pack_heading`.
+## end now. The pack starts from `ranks` (the anchors laid so far) and only ever tightens them; a halt that fits only
+## turned across the approach gets that heading.
 func _pack_halts(squads: Array, blocks: Array, click: Vector3, drawn: Variant, loose: Array, verb: String,
-		extra: Dictionary, ground: Node3D) -> Dictionary:
+		extra: Dictionary, ground: Node3D, ranks: Array[Vector3]) -> Dictionary:
 	if not ElementPlan.DEPLOY_STEP or verb != "move" or drawn != null or not loose.is_empty() or ground == null \
 			or squads.size() < 2 or blocks.size() != squads.size():
 		return {}
@@ -1435,14 +1438,17 @@ func _pack_halts(squads: Array, blocks: Array, click: Vector3, drawn: Variant, l
 		return Vector2(stand.x - p.x, stand.z - p.z).length() < 0.5
 	var reached := func(p: Vector3) -> bool:
 		return not SelectionSquads.GROUND_CAP or SelectionSquads._reached_from(flat_click, p, drive, crosses)
-	var anchors := SelectionSquads.pack_halts(from_blocks, click, heading, seat_ok, reached)
+	var headings: Array = []
+	var anchors := SelectionSquads.pack_halts(from_blocks, click, heading, seat_ok, reached, ranks, headings)
+	if PACK_TRACE:
+		print("PACK_TRACE click %s heading %s ranks %s -> %s halts %s" % [click, heading, ranks, anchors,
+				blocks.map(func(b: Dictionary) -> String: return String(b["halt"]))])
 	if anchors.is_empty():
 		return {}
-	pack_heading = heading
-	var shapes := {}
+	var packed := {}
 	for i in anchors.size():
-		shapes[anchors[i]] = String(blocks[i]["halt"])
-	return shapes
+		packed[anchors[i]] = {"shape": String(blocks[i]["halt"]), "heading": headings[i]}
+	return packed
 
 
 func _copy_approach(extra: Dictionary, task: Dictionary) -> void:
