@@ -46,3 +46,32 @@ func test_a_dry_station_on_the_near_bank_is_kept_while_its_squad_really_crosses(
 	var far_seat := Vector3(39.4, 0, -30.0)
 	assert_eq(SlotGround.station_on_goal_side(near, far_seat), near, "a dry station stands: the route takes it over the bridge")
 	assert_eq(SlotGround.station_on_goal_side(Vector3(39.4, 0, 2.0), null), Vector3(39.4, 0, 2.0), "no seat: unchanged")
+
+
+func test_an_order_goal_in_the_canal_stands_on_the_anchors_bank() -> void:
+	var lab := TacticsLab.create(self, 1, "locks")
+	var probe := lab.unit(Match.Team.GREEN, "Green_P_1", Vector3(-12.0, 0, 16.0), 0.0)
+	await lab.start()
+	var anchor := Vector3(-34.4, 0, 18.9)
+	for asked: Vector3 in [Vector3(-37.4, 0, 4.0), Vector3(-37.4, 0, -2.0), Vector3(-37.4, 0, -5.0)]:
+		for from: Vector3 in [Vector3(-12.0, 0, 16.0), Vector3(-34.0, 0, 40.0)]:
+			var plan := {"anchor": anchor, "slots": {}, "orders": {"Green_P_1": {"to": asked}}}
+			Element.ground(plan, probe, {"Green_P_1": 3.0}, from)
+			var to: Vector3 = plan["orders"]["Green_P_1"]["to"]
+			print("ORDER_BANK asked %s from %s -> %s" % [asked, from, to])
+			assert_true(to.z > 7.0, "an order goal asked at %s (from %s) stands on the anchor's bank, not %s" % [asked, from, to])
+
+
+func test_an_order_goal_laid_on_the_far_bank_comes_back_to_the_anchors() -> void:
+	var lab := TacticsLab.create(self, 1, "locks")
+	var probe := lab.unit(Match.Team.GREEN, "Green_P_1", Vector3(-12.0, 0, 16.0), 0.0)
+	await lab.start()
+	var anchor := Vector3(-34.4, 0, 18.9)
+	var asked := Vector3(-37.4, 0, -12.2)  # the probe's goal: dry, but across the canal from its anchor
+	var plan := {"anchor": anchor, "slots": {"Green_P_1": asked}, "orders": {"Green_P_1": {"to": asked}}}
+	Element.ground(plan, probe, {"Green_P_1": 3.0}, Vector3(-12.0, 0, 16.0))
+	var slot: Vector3 = plan["slots"]["Green_P_1"]
+	var to: Vector3 = plan["orders"]["Green_P_1"]["to"]
+	print("FAR_BANK slot %s order %s" % [slot, to])
+	assert_true(slot.z > 7.0, "its slot stands on the anchor's bank (%s)" % slot)
+	assert_true(to.z > 7.0, "and so does its ORDER (%s)" % to)
