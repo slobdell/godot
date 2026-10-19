@@ -96,7 +96,9 @@ func _run() -> void:
 		_close(crew, false)
 	print("WEDGE_TRACE " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"totals": _totals, "wedged_units": Movement.wedged_units,
-			"wheel_halt_on": Manoeuvre.wheel_halt_on(), "wheel_halt_asks": Manoeuvre.wheel_halt_asks, "wheel_halts": Manoeuvre.wheel_halts}))
+			"wheel_halt_on": Manoeuvre.wheel_halt_on(), "wheel_halt_asks": Manoeuvre.wheel_halt_asks, "wheel_halts": Manoeuvre.wheel_halts,
+			"stall_intent_on": Manoeuvre.stall_intent_on(), "stall_intent_ticks": Manoeuvre.stall_intent_ticks,
+			"esc_fires_hull": Movement.esc_fires_hull, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started}))
 	quit(0)
 
 
@@ -219,6 +221,10 @@ func _observe(game_match: Match) -> void:
 			row["unstick_fires"] = mover.unstick_fires
 			row["esc_stage"] = mover._esc_stage
 			row["kturn_m"] = snappedf(mover._kturn_left_m, 0.1)
+			# Game-wide statics (W1c's counter first): stall clocks run by the intent reading, H1 hull escapes, asks.
+			row["stall_intent_ticks"] = Manoeuvre.stall_intent_ticks
+			row["esc_fires_hull"] = Movement.esc_fires_hull
+			row["esc_asks"] = Movement.esc_asks
 			var hulls: Array = []
 			for i in tank.get_slide_collision_count():
 				var hit := tank.get_slide_collision(i).get_collider()
