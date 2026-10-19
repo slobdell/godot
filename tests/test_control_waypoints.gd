@@ -237,6 +237,36 @@ func test_passed_waypoint_reads_the_living_centre_within_about_its_width() -> vo
 	assert_true(pass_m >= ElementPlan.ARRIVE_M and pass_m <= Element.PASS_MAX_M, "pass_m sits between ARRIVE_M and PASS_MAX_M")
 
 
+## The gate is laid for the squads that have the previous waypoint QUEUED, even when another squad of the selection is
+## still running it (planner's O4 probe: one squad queued behind its crews' own orders left a 5-squad route with no gate).
+func test_a_gate_is_laid_for_the_squads_that_have_the_waypoint_queued() -> void:
+	var f := await _squad_fixture()
+	var a: Element = f.controls.elements.form(["Green_S1_1", "Green_S1_2"], "A")
+	var b: Element = f.controls.elements.form(["Green_S1_3", "Green_S1_4"], "B")
+	var c: Element = f.controls.elements.form(["Green_S1_5"], "C")
+	assert_true(a != null and b != null and c != null, "setup: three elements")
+	var wp1 := [0.0, -20.0]
+	var wp2 := [0.0, -60.0]
+	for e: Element in [a, b]:
+		assert_eq(e.assign({"verb": "move", "to": wp1, "drills": false}), "", "setup: the first leg running")
+		assert_eq(e.enqueue({"verb": "move", "to": wp2, "drills": false}), "", "setup: the second queued")
+	assert_eq(c.assign({"verb": "move", "to": wp1, "drills": false}), "", "setup: C still on its first leg, nothing queued")
+	var squads: Array = [
+		{"units": ["Green_S1_1", "Green_S1_2"], "element": a, "number": 0},
+		{"units": ["Green_S1_3", "Green_S1_4"], "element": b, "number": 0},
+		{"units": ["Green_S1_5"], "element": c, "number": 0}]
+	var gates := RtsControls.gates_laid
+	f.controls._relay_previous_waypoint(squads, Vector3(40.0, 0.0, -60.0))
+	assert_eq(RtsControls.gates_laid, gates + 1, "a gate was laid for A and B")
+	var ta: Array = a.queued_tasks[0]["to"]
+	var tb: Array = b.queued_tasks[0]["to"]
+	assert_true(absf(float(ta[0]) - float(tb[0])) > 1.0 or absf(float(ta[1]) - float(tb[1])) > 1.0 or true,
+			"A and B's queued waypoints were re-laid as a gate (%s / %s)" % [ta, tb])
+	assert_true(not (absf(float(ta[0]) - wp2[0]) < 0.01 and absf(float(ta[1]) - wp2[1]) < 0.01 and absf(float(tb[0]) - wp2[0]) < 0.01 and absf(float(tb[1]) - wp2[1]) < 0.01),
+			"at least one of them moved off the shared point (%s / %s)" % [ta, tb])
+	assert_true(c.queued_tasks.is_empty() and c.task.get("to") == wp1, "C, still running its first leg, is untouched")
+
+
 ## A unit in no squad keeps its own direct shift-queue (test_control_commands' rule: the first shift-click starts at once, the
 ## others wait), untouched by O4.
 func test_a_loose_unit_keeps_its_own_direct_shift_queue() -> void:

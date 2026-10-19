@@ -1492,11 +1492,13 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var ground: Node3D = null
 	for squad: Dictionary in squads:
 		var held: Element = squad.get("element")
+		# A squad whose previous waypoint is RUNNING (or that has no element) keeps its anchor; the others still get the gate
+		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
 		if held == null or not is_instance_valid_element(held) or held.queued_tasks.is_empty():
-			return
+			continue
 		var last: Dictionary = held.queued_tasks[held.queued_tasks.size() - 1]
 		if String(last.get("verb", "")) != "move" or not last.has("to"):
-			return
+			continue
 		prev += Vector3(float(last["to"][0]), 0.0, float(last["to"][1]))
 		var earlier: Variant = null
 		if held.queued_tasks.size() >= 2:
@@ -1514,8 +1516,10 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 				if tank != null and tank.is_inside_tree():
 					ground = tank
 					break
-	prev /= squads.size()
-	before /= squads.size()
+	if held_elements.size() < 2:
+		return  # a gate is for several squads sharing the waypoint
+	prev /= held_elements.size()
+	before /= held_elements.size()
 	var approach := prev - before
 	if approach.length() < 1.0:
 		approach = next_click - prev
