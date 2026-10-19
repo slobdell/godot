@@ -55,6 +55,8 @@ static func reset() -> void:
 	face_refused = 0
 	hull_turns = 0
 	face_keep_refused = 0
+	arrivals_held = 0
+	arrivals_held_ticks = 0
 	face_keep_by_unit = {}
 
 
@@ -370,6 +372,37 @@ const TURN_HULL_DEFAULT := false
 const FACE_KEEP_MARGIN_M := 0.75
 static var _keep_slot := Vector3.INF
 static var _keep_m := INF
+## Round 33 (planner's s69 trace) / round 34 (C34.4 (2), the seam agreed with brains): an arrival declared while a planned
+## leg is still driving is a flicker, not an arrival. Reversing on a k-turn leg (seam `kturn OK R+1.0x12.5`), Green_Guns_7
+## crossed inside its attack-move goal's 6 m arrival radius; `TankBrain._act`'s arrived branch turned the move into a face
+## "from post" mid-leg, the k-turn was dropped, and the held-post rule refused the next move_tos for 36 ticks. While this
+## is true the move stands until the leg ends, or until ARRIVE_LEG_HOLD_S of leg time on this order (a leg that never
+## ends cannot deny an arrival). Brains' `_act` asks through an adapter with exactly this signature; the switch is
+## `--nav-off=arriveleg` (default below).
+const ARRIVE_LEG_DEFAULT := true
+const ARRIVE_LEG_HOLD_S := 3.0
+## Arm counters: arrivals held (once per order, its first held think) and the think ticks they were held.
+static var arrivals_held := 0
+static var arrivals_held_ticks := 0
+
+
+static func arrive_leg_on() -> bool:
+	return ARRIVE_LEG_DEFAULT != Movement.switched_off("arriveleg")
+
+
+static func leg_holds_arrival(brain: TankBrain) -> bool:
+	if not arrive_leg_on() or String(brain.move_order.get("type", "")) != "move_to" or not brain.movement.manoeuvring():
+		return false
+	var tick := Engine.get_physics_frames()
+	if brain.movement.arrive_hold_until < 0:
+		brain.movement.arrive_hold_until = tick + int(SimClock.TICK_RATE * ARRIVE_LEG_HOLD_S)
+		arrivals_held += 1
+	elif tick > brain.movement.arrive_hold_until:
+		return false  # the leg has run its bound on this order: the arrival goes through
+	arrivals_held_ticks += 1
+	return true
+
+
 ## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused
 ## for leaving the arrive radius.
 static var hull_turns := 0

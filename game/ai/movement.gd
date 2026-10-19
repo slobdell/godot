@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "turnhull", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -913,8 +913,13 @@ func bind() -> void:
 
 
 ## Forget the route (a new move order): the next drive() repaths at once.
+## Round 34 (C34.4 (2)): the last tick Manoeuvre.leg_holds_arrival may hold this order's arrival (-1 = not held yet).
+var arrive_hold_until := -1
+
+
 func new_order() -> void:
 	native_stale |= STALE_ORDER
+	arrive_hold_until = -1
 	_repath_left = 0.0
 	_reissued = true
 
