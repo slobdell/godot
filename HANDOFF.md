@@ -33,6 +33,11 @@ check of 2c7c1d0dc: **GREEN** (builder0 `make check exited 2`, 2822/0, 26/27, si
 red is web-smoke, the stale-Xwayland-auth cause native's N6 fixes: builder0 has needed no desktop login since 530d77c6c).
 **main f97e5fdb1 = manoeuvre M1, the hull-rest ruler (`6c54f4e66`, builder2 native check exit 0, 2831/0, ALL JUDGED, INHERIT;
 it also covers brains' scenario_perf verify change 1e3c0fb69).** Hull-rest numbers before it don't compare with after.
+**main 471cdcd5e is GREEN** (builder2 `make check exited 0`, 2843/0, all 27, sim-baseline 13 unmoved; systemd-run): it carries native
+N6 (`58eb0efc4`: web-smoke needs no desktop), brains' Locks station fix (`42401f95f`: a squad beside the canal no longer sends a
+crew over the bridge and back) and traffic's O4 (`6c44c0394`: a shift-clicked route on a squad is the squad's; in-between
+waypoints passed at about its width with no form-up stop; a waypoint is a gate as wide as the ground). O2 parked (R34.12);
+brains does a small rank fix instead.
 **Waiting on the lead:** M0 ship (R34.10, recommended yes), the deploy step (R34.7).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
