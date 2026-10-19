@@ -286,6 +286,12 @@ builder0), ruled R34.3.
   0.5–1 s, B10's round-32 grounding flip (standable_from keyed on the centre's 5 m cell). Switch OFF on stream/brains. Next:
   trace one hollow run and one leftover re-lay on tuning seeds 40–41; a try 2 only with those causes written, and its choke
   guard must show the early lay ENGAGING. The player-visible shuffle (C34.11's arrival) stays open.
+  **Causes traced (tuning 40–41, laptop, n 4, `333830f17`):** (1) the early lay MOVES the swerve to the 60 m line (a seat jumps
+  ~35 m sideways there), it doesn't remove it; (2) leftover re-lays = the early lay's per-update heading swings close in (27°
+  turns a ±17 m herringbone 5–8 m a seat); (3) hollow = TankBrain.SLOT_TOLERANCE 4.0 m v ORDER_ARRIVE 3.5 m (a crew parks 3.7 m
+  off, "in position" to the brain, not arrived to the judge): brains' B7; (4) B10's grounding flip. **No try 2.** The better
+  design, if he dislikes the shuffle, is a deliberate deploy step (travel seats until all in, then one visible move into the
+  halt shape): a question for him.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
