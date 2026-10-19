@@ -324,6 +324,12 @@ _Filed here before any number._
   round 9's creep and its window are the designed behaviour, and settle removed the creep that ran the window. Approved: the give-up
   acts only on faces lifted by turnhull (his drawn facing on a wheeled turret hull), plus a test that a plain face on a wheeled turret
   hull still creeps under FACE_SETTLE true. Plain faces pass by construction, not by tuning.
+- **R35.24 (2026-10-19 ~15:55) The joint pair's twins.** `2446d46f9` (W1c OFF) builder0 light 111/0, 0 mismatches; T9's forced
+  endings reach 8 unrecorded and 6 capped give-ways. Lab 6548394ea (W1c ON): 0 mismatches, W1c's intent read fires 49 a fight / 8 a
+  hold stage, but 109/2 on coverage floors: Sumps' yield stage reaches no parked refusal and no plain refused ask with W1c ON (the
+  pinned crew escapes first). Floors re-scoped under C34.6 (`f9ff445b0`, `ca004661e`: the parked refusal floored on yard_open in both
+  arms). Ruling: the plain refused ask (ask()'s line T9 changes) gets a FORCED compare with W1c ON before the pair is named; it is the
+  shipped configuration's path.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
