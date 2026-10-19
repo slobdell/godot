@@ -257,6 +257,13 @@ _Filed here before any number._
   yieldfit2`, DEFAULT_OFF): an unfinished give-way (asker not passed AND yielder within 1.0 m box gap or across its travel line)
   does not write `_last_yielded_to`; at most 2 unfinished to the same asker in 30 s; finished give-ways, the battery rule and T7's
   gate unchanged. Native mirrors `_end_yield` and ask()'s first line. Joint bar above.
+- **R35.15 (2026-10-19 ~12:20) A STALE native library on builder0 voided brains' E1 check (67a5a9db0: 2888/2, both turn-in
+  tests; parade/docks back on their PRE-turn-in lines).** A remote run that waited for a slot built native at 09:23 from the
+  pre-merge tree; the worker's merge (native/src changed, local mtime 09:22) then synced with `rsync -a` preserving the OLDER mtimes,
+  so cmake rebuilt nothing. Proof (builder0): clean 0f4d528d7 8/0; brains' tree after `touch native/src/*` 8/0, identical. The check
+  and its sim-baseline moves are VOID; E1 re-checks after M5. **Until N3 lands:** after any merge that touches native/src, `touch
+  native/src/*` before a remote run, and read sim-baseline against main's current lines. **N3 (native, urgent):** native/build.sh
+  stamps a content hash of native/src so a source change always rebuilds.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
