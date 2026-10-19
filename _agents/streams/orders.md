@@ -84,6 +84,30 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
+### D5 bar (C35.5), FILED BEFORE ANY BUILDER0 NUMBER (2026-10-19 ~11:15 PDT; laptop iteration above is not the reading)
+- **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell, the 24 cells, arms `main:` v `gate_off:--gate-deal=off`,
+  the same tree (deploy step ON, pack OFF). **Counter first (R35.5):** `gates_laid` > 0 in every multi-waypoint route cell on
+  main; the legs printed (`ORDERS_PROBE_LEGS`) differ between arms in at least the Locks 5 route.
+- **Gain (must pass):** the Locks 5-squad route all in at <= 0.7 x gate_off's (43.3 s on the laptop; or in where gate_off is
+  never in); and over the 12 route cells the summed all-in lower on main.
+- **Guards:** the 12 click cells byte-identical rows between arms (the deal acts only on queued legs: an equality check);
+  every route cell all in <= gate_off x 1.2 + 3 s, never "in on gate_off, not in on main"; deck / far bank no higher than
+  gate_off in any cell; drive/plan worst <= gate_off + 0.2 in each cell.
+
+### D5 crossing drives: built on stream/orders `77c284868` (no builder0 number yet)
+- **Trace** (laptop GDScript, Locks 5 route, seed 34, `ORDERS_PROBE_LEGS` + `--probe-trace`): not the last leg. The IN-BETWEEN
+  gate (O4's `gate_anchors`, waypoint 2) dealt squads left to right by where they stood AT HOME and stepped ranks by the
+  HALT depth (herringbone, 55 m + gap): squad 3 (middle start, middle end) got the gate's far east (40, 60) and squads 2 / 4
+  places 11-15 m BEHIND their own first leg. Squad 3 drove 208.6 m for a 69.9 m plan and crossed squad 5 at the junction.
+- **Fix** (`RtsControls.GATE_DEAL`, `--gate-deal=off` = round 34): the gate is dealt by each squad's previous leg end, the
+  nearest the gate take the front rank (left to right within it), ranks step by the travel shape's depth, and no gate place
+  is behind the previous leg (R34.12b's never_behind). Plus `SelectionSquads.uncross_paths` (a leg's places swapped where
+  the squads' navmesh paths cross, length guard 1.25x + 10 m, `--uncross=off`): a backstop, 0 swaps in this cell.
+- **Laptop GDScript, Locks 5 route, seed 34, n 1:** all in 16.9 s v 43.3 s (`--gate-deal=off`), worst shuffle 32.6 v 53.8 m,
+  twitch 3.1 v 12.5 m, drive/plan 1.26 v 3.06, deck 0 v 1. Tests: `test_control_gate_deal` 3/0, `test_control_uncross` 5/0.
+- **Next:** the 24-cell probe on builder0 with arms main / `--gate-deal=off` (counter: gates_laid and the legs) after D1's
+  merge and D2; bar below before reading it.
+
 ### D3 tight packing: PARKED, OFF by default (`--pack=on` / `PACK=on`), code on stream/orders `183eb4cd6`
 **What was built** (`SelectionSquads.pack_halts`, `RtsControls._pack_halts`, the task's `halt_at` / `halt_shape` / `lay` per
 R35.6, `ElementPlan._deploy_state` / `_deploy_shape` read them): with the deploy step on and 2+ AUTO squads on one plain
