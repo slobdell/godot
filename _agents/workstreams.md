@@ -127,6 +127,9 @@ _Filed here before any number._
   (o2) counter first: `face_settles` > 0, `hull_turns` > 0, `face_settle_fails` reported; (p) at-rest hull error of the crews that
   gave up REPORTED (median, count >= 45 deg). Gate: (a)–(j), (n); a miss parks it with a trace. If (d)/(e) miss on attack-move only,
   the trace names the mechanism and the verdict is the orchestrator's (the step is brains' E1).
+  **Scope change before the gate (2026-10-19 ~11:05, from W2's dev read on tuning seeds 460–463, builder0, lab/cpf5 bdacb1786):**
+  the give-up applies to TURRET hulls only (`5c692b507`); with it on hull-fixed scouts, scouts >= 45 deg off rose 33 -> 48 over six
+  tasks (a scout's creep is how it aims). Gate candidate lab/cpf5 `a7167e4f9` (stream b18fa5fdf on main 0f4d528d7; E1 NOT in).
 
 - **T8 a held crew under fire leaves the hold (traffic, R35.7 (B)), filed before any code or number from `stream/traffic`
   `d3d2e6478` (`references/round35/traffic/t8_design.md`), with two lines added by the orchestrator.** `--traffic-on=holdfire`
