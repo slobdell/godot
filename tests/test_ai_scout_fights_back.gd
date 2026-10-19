@@ -86,3 +86,42 @@ func test_the_switch_off_is_mains_rule() -> void:
 	TankBrain.SCOUT_FIGHT_BACK = false
 	var c := _case(10)
 	assert_true(not TankBrain.scout_fights_back(c[0], c[1], {"Rust_1": {"advantage": 2.0}}), "--scout-fight=off: SPOT")
+
+
+## The rule inside decide, under the CHAMPION's features. The champion runs without matchups (an empty table), so the
+## duel the rule needs is computed for a scout under fire alone (tuning, lab/brains-scout2: with the table empty the rule
+## never fired, ENGAGE 0 in 144 runs).
+func _decide_case(since_hit: int, enemy_unit: String, health_share: float) -> String:
+	var unit := "law_scout"
+	var enemy := {"name": "Rust_S_1", "unit": enemy_unit, "position": Vector3(0, 0, -15), "velocity": Vector3.ZERO,
+			"forward": Vector3.BACK, "health": float(Units.stat(enemy_unit, "max_health")) * health_share,
+			"weapon": String(Units.stat(enemy_unit, "weapon")), "visible": true, "age": 0, "exposed_face": "front",
+			"facing_ally": false, "aiming_at_me": true, "threatens_me": true, "role": Units.role_of(enemy_unit)}
+	var situation := {
+		"tick": 1000,
+		"self": {"name": "Green_A_1", "team": 0, "position": Vector3.ZERO, "forward": Vector3.FORWARD, "unit": unit,
+				"class": "scout", "health": Units.stat(unit, "max_health"), "max_health": Units.stat(unit, "max_health"),
+				"weapon": Weapons.profile(String(Units.stat(unit, "weapon"))), "since_hit": since_hit,
+				"velocity": Vector3.ZERO},
+		"directives": Directives.resolve([]), "contacts": [enemy], "allies": [], "objective": null,
+		"objective_radius": 0.0, "squad_center": null, "cover": [], "rally": Vector3(0, 0, 42),
+		"enemy_base": Vector3(0, 0, -42), "memory_ticks": Match.CONTACT_MEMORY_TICKS,
+		"features": (BrainVariants.PROFILES[BrainVariants.CHAMPION] as Dictionary).duplicate(),
+	}
+	return String(TankBrain.decide(situation, {})["choice"]["option"])
+
+
+func test_under_the_champion_a_scout_in_a_won_duel_stands_and_one_outgunned_spots() -> void:
+	assert_true(not bool((BrainVariants.PROFILES[BrainVariants.CHAMPION] as Dictionary).get("matchups", true)),
+			"setup: the champion runs without matchups")
+	var weak := 0.1
+	var duel := TankBrain.matchups_for({"self": {"unit": "law_scout", "position": Vector3.ZERO, "forward": Vector3.FORWARD,
+			"health": Units.stat("law_scout", "max_health"), "weapon": Weapons.profile(String(Units.stat("law_scout", "weapon")))},
+			"contacts": [{"name": "R", "unit": "gang_scout", "position": Vector3(0, 0, -15), "velocity": Vector3.ZERO,
+			"forward": Vector3.BACK, "health": float(Units.stat("gang_scout", "max_health")) * weak, "age": 0,
+			"exposed_face": "front", "weapon": String(Units.stat("gang_scout", "weapon"))}], "features": {}})
+	assert_true(float(duel["R"]["advantage"]) >= 1.0, "setup: a crippled gang scout is a won duel (%s)" % duel["R"]["advantage"])
+	assert_true(_decide_case(10, "gang_scout", weak) != "SPOT", "won duel, under fire: it stands and trades")
+	assert_eq(_decide_case(TankBrain.SCOUT_FIGHT_HIT_TICKS + 1, "gang_scout", weak), "SPOT", "not under fire: it spots")
+	TankBrain.SCOUT_FIGHT_BACK = false
+	assert_eq(_decide_case(10, "gang_scout", weak), "SPOT", "--scout-fight=off: main's SPOT")

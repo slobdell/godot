@@ -359,6 +359,11 @@ const SCOUT_FIGHT_REACH_S := 2
 const SCOUT_FIGHT_SPOT := 0.15
 
 
+## C34.5: the rule is on and the scout (`me`) was hit within SCOUT_FIGHT_HIT_TICKS.
+static func scout_under_fire(me: Dictionary) -> bool:
+	return SCOUT_FIGHT_BACK and int(me.get("since_hit", 1 << 30)) <= SCOUT_FIGHT_HIT_TICKS
+
+
 ## C34.5: whether a scout (`me`: the situation's self) should fight rather than open distance. Hit within
 ## SCOUT_FIGHT_HIT_TICKS, by a visible non-prey contact that can shoot it now (threatens_me), that it wins the duel
 ## against (`matchups` advantage >= 1: Matchups.duel_advantage is a ratio, > 1 I win) and that stays inside its own
@@ -366,7 +371,7 @@ const SCOUT_FIGHT_SPOT := 0.15
 ## sent scouts into duels they lost (R33.31). No attacker is recorded on a hit, so "the one shooting it" is that contact.
 ## Pure.
 static func scout_fights_back(me: Dictionary, contacts: Array, matchups: Dictionary) -> bool:
-	if not SCOUT_FIGHT_BACK or int(me.get("since_hit", 1 << 30)) > SCOUT_FIGHT_HIT_TICKS:
+	if not TankBrain.scout_under_fire(me):
 		return false
 	var unit := String(me.get("unit", ""))
 	var weapon: Dictionary = me.get("weapon", {})
@@ -1644,7 +1649,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 					and float(matchups[c["name"]]["advantage"]) >= ORBIT_KEEP_ADVANTAGE
 			if c["visible"] and not TankBrain._is_prey(c, String(me.get("unit", ""))) and not orbitable:
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
-		if nearest < INF and TankBrain.scout_fights_back(me, contacts, matchups):
+		# C34.5: the champion runs without matchups (x18m "matchups": false), so the duel the rule needs is computed
+		# here for a scout under fire alone (tuning seeds 50-52: an empty table, so the rule never fired).
+		var duels: Dictionary = matchups if not matchups.is_empty() or nearest == INF or not TankBrain.scout_under_fire(me) \
+				else TankBrain.matchups_for(s)
+		if nearest < INF and TankBrain.scout_fights_back(me, contacts, duels):
 			# C34.5 (a duel it wins, in reach): below ENGAGE (0.27-0.43 for a scout in the orbit stage, seed 50) even with
 			# the commitment bonus on the current option, above HOLD's 0.10: it stands and trades. Otherwise SPOT's
 			# 0.88 / 0.7 stand and it opens distance.
