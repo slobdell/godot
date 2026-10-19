@@ -13,7 +13,7 @@ const UNITS: Array[String] = ["scout", "tank", "gang_tank", "artillery", "ifv", 
 
 
 func test_the_scan_picks_as_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the scan equality is not exercised in this run")
 		return
 	await ArenaFixture.build(self, "sumps")

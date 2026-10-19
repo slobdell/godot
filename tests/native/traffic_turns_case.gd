@@ -21,7 +21,7 @@ func teardown() -> void:
 
 ## `owned`: the native arm on the C++-owned state; only the crews at `part` mod `parts` are compared (TrafficTwin.run).
 func _turns_case(owned: bool, part: int, parts: int) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the crossing's drive equality is not exercised in this run")
 		return
 	if not bool(NativeTraffic.drive_config().get("traffic_shape", false)):

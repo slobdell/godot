@@ -22,7 +22,7 @@ static func _host() -> String:
 
 
 func _skip() -> bool:
-	if not NativeBridge.available or not ClassDB.class_exists("PlannerNative"):
+	if NativeExpect.absent(self) or not ClassDB.class_exists("PlannerNative"):
 		print("native: absent, the planner equality is not exercised in this run")
 		return true
 	if _impl == null:

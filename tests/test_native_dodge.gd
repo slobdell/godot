@@ -8,7 +8,7 @@ const SAMPLES := 3000
 
 
 func test_would_be_hit_is_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the would_be_hit equality is not exercised in this run")
 		return
 	var rng := RandomNumberGenerator.new()

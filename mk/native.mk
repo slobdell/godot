@@ -51,6 +51,9 @@ NATIVE_CPUS      ?=
 NATIVE           ?= on
 CMAKE            ?= cmake
 NATIVE_TOOLCHAIN := $(shell command -v $(CMAKE) >/dev/null 2>&1 && command -v c++ >/dev/null 2>&1 && echo yes || echo no)
+# Round 34 (N4): every Godot that make starts knows whether a library is expected here, so a twin that finds none FAILS
+# (tests/native/native_expect.gd) instead of passing with "native: absent". NATIVE=off, or no toolchain: not expected.
+export TANK_NATIVE_EXPECTED := $(if $(filter-out off,$(NATIVE)),$(if $(filter yes,$(NATIVE_TOOLCHAIN)),1))
 NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOTCPP_VERSION=$(GODOTCPP_VERSION) \
 	GODOTCPP_SHA256=$(GODOTCPP_SHA256) GODOTCPP_URL=$(GODOTCPP_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) \
 	GODOTCPP_BUILD=$(GODOTCPP_BUILD) GODOTCPP_LIB=$(GODOTCPP_LIB) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" \

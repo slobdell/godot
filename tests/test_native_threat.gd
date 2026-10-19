@@ -38,7 +38,7 @@ static func _operate(field: ThreatField, op: Array) -> void:
 
 
 func test_field_stamps_and_decay_are_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the threat field equality is not exercised in this run")
 		return
 	assert_true(NativeThreat.configure(), "the native threat field takes the live constants")
@@ -115,7 +115,7 @@ static func _set_suppression_state(game_match: Match, hulls: Array[Tank], state:
 
 
 func test_update_suppression_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the suppression update equality is not exercised in this run")
 		return
 	assert_true(NativeThreat.configure(), "the native threat field takes the live constants")

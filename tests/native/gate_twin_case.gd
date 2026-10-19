@@ -76,7 +76,7 @@ func _both_ways(movers: Array[Movement], i: int, order: Dictionary, delta: float
 
 
 func _case(owned: bool, arena: String) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the gate rule's drive equality is not exercised in this run")
 		return
 	if not Movement.gate_giveup_on():
