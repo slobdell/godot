@@ -1624,7 +1624,17 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			" | ".join(PackedStringArray(rows))])
 
 
+## R33.35, MEASUREMENT ONLY (under --arrive-trace): HERRING_LAY once a second while this element is in the herringbone
+## drill, with the heading its seats are laid on, so a stage shows whether the drill path runs and whether it holds.
+var _herring_last := -1000
+
+
 func _take(plan: Dictionary, situation: Dictionary) -> void:
+	if ARRIVE_TRACE and drill == "herringbone" and int(situation.get("tick", 0)) - _herring_last >= SimClock.TICK_RATE:
+		_herring_last = int(situation.get("tick", 0))
+		var h: Vector3 = plan.get("heading", Vector3.ZERO)
+		print("HERRING_LAY t=%.1f team %d element %s heading (%.2f, %.2f) anchor %s" % [
+				float(_herring_last) / SimClock.TICK_RATE, team, element_name, h.x, h.z, plan.get("anchor")])
 	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
 		_bt_fire_order(situation)
 	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
