@@ -13,7 +13,8 @@ set -uo pipefail
 # is correct -- a nested make must not queue behind itself -- but it means that run from inside `make check`,
 # where slot.sh exported it, every test below would exercise nothing and six of them failed on builder0 while
 # passing on an idle laptop. Unsetting it here affects only this script's children; the real slot stays held.
-unset TANK_SQUAD_SLOT TANK_SQUAD_EXCLUSIVE TANK_SQUAD_SLOTS TANK_SQUAD_SLOT_DIR TANK_SQUAD_SLOT_TIMEOUT
+unset TANK_SQUAD_SLOT TANK_SQUAD_EXCLUSIVE TANK_SQUAD_SLOTS TANK_SQUAD_SLOT_DIR TANK_SQUAD_SLOT_TIMEOUT \
+	TANK_SQUAD_LIGHT TANK_SQUAD_LIGHT_SLOT TANK_SQUAD_LIGHT_SLOTS  # round 35: and the light lane's (LIGHT + EXCLUSIVE exits 2)
 
 slot="$(cd "$(dirname "$0")" && pwd)/slot.sh"
 pass=0; fail=0; kids=()
