@@ -4003,3 +4003,14 @@ Orchestrator's reading (C33.9): a fixed-gun wheeled hull under fire from an enem
 bring its nose round, and the orbiting enemy out-turns the k-turn. He wants it to drive forward on a hard turn toward the
 attacker's side: a wheeled hull yaws faster rolling forward, and moving is also evasion. It is symmetric AI and ships
 without asking.
+
+## Round 33 close: his answers (2026-10-18, verbatim)
+
+> "ok let's go with both of your recommendations. You can go ahead and update the handoffs and briefs for next rounds,
+> assuming there's plenty of work. Also, for one or two of these tasks where we're getting stuck we can re-engage a fable
+> agent."
+
+The two recommendations were: (1) ship the scout turn-in (C33.9) as it is; (2) keep CP-F parked, with a fourth attempt
+after the herringbone fix. (1) then failed the whole suite and did not ship (R33.38, R33.39): it is round 34's C34.10.
+Read with his C33.9 report, the stand-or-hang-back question resolves to: a scout that can win the duel stands and trades,
+and an outgunned one leaves (C34.5).

@@ -3875,3 +3875,12 @@ instrument that cannot lie about load — removal within one run — and let eve
 316. **A player's laptop runs whatever native library it last built.** (Round 32.) His game went choppy on round 31's code
      because his `.so` predated it; builder0's checks always rebuild, so no check could see it. Play targets now rebuild a
      stale library (`native-fresh`).
+317. **A lab switch judged on its own stage has not met the game.** (Round 33, C33.9.) The scout turn-in passed most of
+     its judged lines on the orbit cells. The lead said ship. Then its first whole-suite run with the switch ON went red:
+     the hook reached every plain face and every `stop`, so a wheeled hull turning in place drove 24.5 m. Narrowing it
+     after the fact flipped judged lines. C31.1 (the whole suite on the pair tree, switch ON) comes BEFORE the judged
+     series, including for lab work on a dev stage. The orchestrator asks for that hash before accepting a series.
+318. **The ruler can be the thing that fails.** (Round 33.) CP-F parked three times: once on an unpinned stage paced by a
+     loaded box, once on a formation bug outside the change (herringbone), and once on a judge that counted wedged hulls
+     as moving. parkedroom v3 failed a two-sided kills line because the fix PREVENTED a rout of jammed crews. Before a
+     third try, trace the miss. If it lands on the judge, fix the judge (with its own A/A) before the candidate.
