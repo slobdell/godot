@@ -362,6 +362,14 @@ builder0), ruled R34.3.
   there to cure on today's main (escape, unstick and manoeuvre's later rules took it), and real-velocity ORCA sometimes steers
   round a stalled friend it would have pushed through. The ghost stays OPT_IN; `pair/ghost-on-r34b` is NOT merged; native's
   ghost twins return only with a new case. No fifth try without one.
+- **R34.12 O2 (packing by driving distance) PARKED; a small rank fix instead (brains, `wip/brains-o2` kept as the record).**
+  The AUTO-only pack (C) was NOT tighter (three AUTO squads, outer anchors 136 m v O3's 78.8 m), regressed the click's response
+  (box-around-the-army 4 ticks v the 3-tick window at 30 units) and still mixed five squads (closest pair 4.2 m). Cause: until
+  arrival an AUTO element's final seats are its TRAVEL wedge (±25 m; B6 parked) at a heading not knowable at order time.
+  "Packed at the halt" needs (B) the order fixing the heading AND B6's halt seats from the final approach. That is the
+  same design question as his deploy step (R34.7), so it waits on his answer. Now: brains fixes planner's O5 finding (1) in the
+  existing ranks path (a rank's anchor never farther back along the approach than its squad's own centre), with a test from
+  the Locks/Terminus case.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
