@@ -81,6 +81,14 @@ Nothing.
 - **P4 done:** (a) d3203aeb3, one run identity (screen.json + seam report) for hull_aa / face_keep_table / face_pairs /
   kept_share; they used to read 48 / 32 / 36 distinct pairs on one series. (b) R34.5 (orchestrator): FACE_KEEP_FAR is
   REPORTED only (09a98132c) and gets deleted in round 35.
+- **O5 done (orders' player test, R34.8 extended; stream/planner 29c5b4187):** `tests/orders_probe.gd` +
+  `make orders-probe` / `orders-probe-shots`. The table (builder0 95155fc8e) and the shots (laptop) are in
+  `references/round34/orders/o5.md`. Findings: a 5-squad click leaves two squads at their start (the second rank sits
+  72 m back); on the Locks a crew still crosses the river because its SEAT snaps to the far bank (the anchor is capped,
+  the seats aren't); O1 works where it acts (Crossing far-bank crews 2 → 0); a large shuffle after arrival. Finding 4
+  (anchors outside the walls) was RETRACTED. The clamp is right; my shots' HUD rings were misdrawn under the probe's
+  camera, and the shots are re-taken with 3D posts. (1) and (2) are routed to brains.
+- **Judging table, M1's ruler (18de4e9ab):** M1's A/A as three rows; the old hull-rest rows are marked OLD ruler.
 - **P5 waiting:** P3 v3 starts only after the k-turn arrival flicker fix merges (manoeuvre's M2, C34.4 (2); its check
   was running at the C34.6 merge). Next step then: merge main at the orchestrator's checkpoint, re-measure the face-keep
   tail on the flicker-fixed tree, and file v3 only if a tail remains on faces really asked (fresh bar, pinned, paired by
