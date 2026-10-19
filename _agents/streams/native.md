@@ -73,7 +73,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Round 34 (started 2026-10-18 from main `918ede503`, which inherits `d7d57f4cf`'s green check)
 
-**REPORT (top).** **Green, merge here: `12ac7b172`** (C34.7 + C34.8 (a) + N4). builder2 `make native check exited 0`:
+**REPORT (top).** **MERGED: main `02a912163`** (= `12ac7b172`: C34.7 + C34.8 (a) + N4; INHERIT, no main check). builder2 `make native check exited 0`:
 2798 / 0, 27 targets ALL JUDGED, sim-baseline 13 unmoved, perf-judge PASS 1.34x. The load at the start was 28.8 on 32
 CPUs with 55 other godot processes (pin-moves and three twin runs at once). relay-smoke and net-smoke both passed under
 that load, n 1. Pairs: scout try 2 GREEN `85f34ca63` (merged into stream/brains `0b8fbd3f6`); parkedroom v4 `6231e7222`
