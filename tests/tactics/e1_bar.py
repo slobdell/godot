@@ -40,6 +40,9 @@ def long_seconds(log):
 
 
 def left_behind(log):
+    """(left, left_wedged): crews > LEFT_M off their slot in their element's last row, and of those the ones whose
+    MANOEUVRE_STATE at that row's second is wedged (holding a move, real speed under lw.MOVING_MPS, goal beyond lw.PARKED_GOAL_M): stuck where
+    they were, which the release leaves behind but does not cause (the orchestrator's split, R35.3)."""
     last = {}
     with open(log, errors="replace") as handle:
         for line in handle:
@@ -47,12 +50,15 @@ def left_behind(log):
                 continue
             m = ROW.search(line)
             if m:
-                last[m.group(2)] = line
-    count = 0
-    for line in last.values():
-        for _unit, off in OFF.findall(line):
-            count += float(off) > LEFT_M
-    return count
+                last[m.group(2)] = (int(float(m.group(1))), line)
+    _gates, crews, _released = lw.read_run(log)
+    count, wedged = 0, 0
+    for second, line in last.values():
+        for unit, off in OFF.findall(line):
+            if float(off) > LEFT_M:
+                count += 1
+                wedged += lw.kind_of(crews.get(second, {}).get(unit)) == "wedged"
+    return count, wedged
 
 
 def judge(run_dir):
@@ -81,7 +87,8 @@ def read_arm(root, arm):
                 continue
             held, released = long_seconds(log)
             task, seed = run.rsplit("-", 1)
-            runs[(faction, task, seed)] = {"long_s": held, "released": released, "left": left_behind(log),
+            left, left_wedged = left_behind(log)
+            runs[(faction, task, seed)] = {"long_s": held, "released": released, "left": left, "left_wedged": left_wedged,
                                            "movers": judged[0], "arrived": judged[1], "settled": judged[2]}
     return runs
 
@@ -96,7 +103,7 @@ def main():
     for task in sorted({k[1] for k in keys}):
         pairs = [k for k in keys if k[1] == task]
         print("== %s (n %d)" % (task, len(pairs)))
-        for line in ["released", "long_s", "left", "movers", "settled", "arrived"]:
+        for line in ["released", "long_s", "left", "left_wedged", "movers", "settled", "arrived"]:
             diffs = [new[k][line] - base[k][line] for k in pairs]
             n = len(diffs)
             mean = sum(diffs) / n
