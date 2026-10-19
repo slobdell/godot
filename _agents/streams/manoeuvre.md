@@ -85,6 +85,46 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### M0 JUDGED (2026-10-19 ~03:40 PDT): PASSES every line but (c-out); (c-out) misses as written and sits 3 hits (+1.0 sd) over what he accepted — the lead's call (R34.1)
+
+**Pair `pair/c339-r34` c8fb8b6a3** = stream/manoeuvre 764ef5427 (the turn-in) + `pair/native-c339` 25fd4298e (native's stop
+hand-back). **Check green:** builder2, `make native check exited 2`, 2818/0 tests, 26 of 27 targets, twins 0 mismatches,
+the only FAIL sim-baseline (crossing, parade, archipelago MOVED; attributed to the turn-in: the same tree with
+`--nav-off=turnin` reproduces main's 13 lines, tsv filed). **Series:** builder2 start to end, FRESH seeds 101–112, n 12 a
+cell, 576 rows, both arms GDScript, each seed its own `--fixed-fps 30` process; rows and table under
+`references/round34/manoeuvre/m0-series/`. Every line as filed (Bar M0, R34.1), k = 1.645:
+
+| line | OFF | ON | noise | verdict |
+|---|---|---|---|---|
+| (a) in-arc median, in-reach cells | 3.1 % | **74.2 %** | sd_boot 4.6 (90 % 66–80) | PASS (≥ 2× and ≥ 25); +10.9 sd over the accepted 23.9 |
+| (b) shots median, player cells | 1 | **10** | — | PASS (≥ 1.5×) |
+| (c) exchange pooled in reach (dealt / taken) | 0.13 | **2.34** | gain 2.22, sd_boot 0.14, gain − k·sd 1.98 | PASS |
+| (c) guard: in-reach hits taken, totals | 8088 | **5690** (−2398) | se 219, k·se 360 | PASS |
+| (c) guard: damage taken a run, each in-reach cell | — | −38 … −280 a run in all six | k·se 16–74 | PASS (all six) |
+| (c-out) hits out of reach: totals / pooled median / worst cell | 3139 / 46 / — | 4627 (+1488) / **60** / +10 % (gang_scout v syn_scout 45 m) | k·se 437; median sd_boot 3.3 | **FAIL as written** (totals); worst cell ≤ 20 % passes. **V accepted (57, +37 %): 60 v 57 = +1.0 sd WORSE on the pooled median; worst cell well inside** |
+| (d) reverse under a reverse command / commanded gear changes, face | — | **0 / 0** in 144 runs | deterministic | PASS |
+| (d2) reverse at stop | max 48 (median 6) | **0** in 144 runs | deterministic | PASS |
+| (e) furthest from post | — | **26.0 m** | deterministic | PASS (≤ 29) |
+| (g) free cells | byte-identical arms | | | PASS |
+| (h) report | holds median 0 (hold ticks fire in 2 % of runs), stalls 0; mean distance 26.4 → 20.8 m | | | |
+
+**In player terms, for the lead.** The scout you saw shuffling forward and back now turns and fights: in every one of
+144 runs it never once chose reverse under a face or at a stop (OFF reversed up to 48 ticks a run at stop). Where its gun
+reaches it has the attacker in its sights 74 % of the time (was 3 %), fires 10× as often, deals 10× the damage it takes
+(was 0.13), and takes fewer hits in every one of the six cells (−25 % overall). **The one miss is out of its gun's reach**
+(an attacker circling at 30–45 m where only the attacker's gun reaches): it now turns to face and often closes in to
+fight instead of dodging, and over those six cells it takes 60 hits a run against 46 today, and against the 57 you
+accepted in round 33 (+1.0 sd of the measurement). What it buys there: it now deals 1.45 damage per damage taken out of
+reach (was 0.06): a gang scout circled by an IFV at 30 m kills it in 5 of 12 runs (dealt 854 v 47 a run, hits taken 91 v
+95), and a law scout under an IFV at 45 m deals 186 (was 8) while taking 54 hits (was 0, it was never in the fight). The
+worst cell for hits is the gang scout under a syn scout at 45 m, +10 % (48 v 44), a fight it cannot win (dealt 3).
+**My recommendation: ship it.** The shuffle is gone everywhere, the in-reach fight is won, and out of reach the extra hits
+buy kills; whether a scout should instead LEAVE an attacker it can't outgun is brains' C34.5, now on main, and the two
+compose (brains' rule decides whether to stand; mine decides how a standing scout turns). **The merge candidate, if he
+says yes: the pair c8fb8b6a3 (code = stream/manoeuvre 764ef5427 + pair/native-c339 25fd4298e), green as above; main's
+sim-baseline is then adopted at the three attributed hashes.** Later stream commits are docs, references and the table
+script's R34.1 block only.
+
 ### Report (2026-10-19 early, round 34 in progress; Fable)
 
 **Attribution (2026-10-19 ~03:00 PDT, builder2, pair c8fb8b6a3):** the C31.1 check: 2818/0, 26 of 27 targets, twins 0
