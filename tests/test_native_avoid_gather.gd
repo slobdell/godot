@@ -64,7 +64,7 @@ func test_the_gathered_table_with_the_ghost_on() -> void:
 
 
 func _case(ghost: bool) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the gathered table is not exercised in this run")
 		return
 	await ArenaFixture.build(self, "sumps")

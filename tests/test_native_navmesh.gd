@@ -10,7 +10,7 @@ const RANDOM_POINTS := 1500
 
 
 func test_closest_point_is_the_engines() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the navmesh equality is not exercised in this run")
 		return
 	var arena := await ArenaFixture.build(self, "sumps")
@@ -77,7 +77,7 @@ func test_closest_point_is_the_engines() -> void:
 func test_every_dealt_map_agrees() -> void:
 	# Coarser than the Sumps lattice above, on every map the game deals (and foundry): the bridges, water and channels
 	# of crossing / archipelago / docks make different meshes, and a mesh is where an index can go wrong.
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 37
@@ -112,7 +112,7 @@ func test_a_synced_map_this_side_cannot_read_falls_back_to_the_engine() -> void:
 	# polygons whose node is gone (an arena freed, the next one built: the layout test's window, found on builder0) or
 	# whose mesh was re-baked. The index cannot read those back, so it must hand every query to the engine's own
 	# scan until the iteration moves -- and say so.
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	var arena := await ArenaFixture.build(self, "foundry")
 	var map: RID = arena.get_world_3d().navigation_map

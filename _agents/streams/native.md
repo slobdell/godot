@@ -70,3 +70,39 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Round 34 (started 2026-10-18 from main `918ede503`, which inherits `d7d57f4cf`'s green check)
+
+**Plan (in order; pairs pre-empt, C31.2):** (0) the waiting pairs: parkedroom's hand-back rebased onto main for traffic's
+v4; brains' scout try 2 mirror as it arrives. (1) N2 C34.7: the dropped-peer test first, then the guard. (2) N3 C34.8 (a):
+the audit, one token a recipe, the moves list as a make target (pinned ×2, free ×2, one commit). (3) N4 the library
+refusal audit. (4) N5 the yield Sumps stage off the pits. (5) A full `make native check` on a loaded box for N2 + N3.
+**Decisions:** the pin is one token `$(PIN_FPS)` (defined in mk/native.mk, `?= --fixed-fps $(SIM_HZ)`), so the free arm
+is `PIN_FPS=` with no second recipe; the guard shows the impact locally when the peer is not connected (what call_local
+would have done) rather than stopping shells at teardown: the host's match goes on after its room closes, and its own
+screen should still see the hit.
+
+**Pairs:**
+- **C34.2 parkedroom hand-back, rebased: `pair/native-parkedroom-r34`** = main `918ede503` + `ae8d6e858`, `6596e871c`,
+  `f16f49867`, `bcb0af2ba`, `a7999c5c4`, `5e5465af8` cherry-picked, no conflicts. It reads traffic's parkedroom members, so
+  it is for traffic's v4 pair tree; twins run on traffic's v4 hash.
+- **C34.5 scout try 2 mirror: `pair/native-scout2` `93d878924`** on brains' `86c8d7f68`. `scout_fights_back` in C++: the
+  can't-outrun clause and its `Units.stat` calls are gone; an advantage < 1 skips; the reach forecast samples now and each
+  second to `SCOUT_FIGHT_REACH_S` on `godot::Vector3` (real_t, as GDScript). test_native_decide's forced scout case now
+  also moves the contacts (0-16 m/s) and the scout (0-12 m/s) and counts the cases the forecast cut. builder2, `make
+  native test FILTER=native_decide` at `2135c0af5` (n 1): `exited 0`, 7536 decisions, 0 mismatches; 480 forced scout
+  cases, 27 fight back, 6 cut by the forecast (floors at half: 13 and 3, `93d878924`).
+
+**N2 C34.7, the shell RPC after the drop: BUILT, `cd0fc9ed0` (+ `.uid`).** `test_match_shell_dropped_peer`: a seated
+relay host (grace 0) fires a shell at a tank 15 m away, the socket drops with the shell in flight, the session ends on the
+next poll, the shell lands. Red without the guard (laptop, NATIVE=off): exactly R33.25's engine error, "Trying to call an
+RPC via a multiplayer peer which is not connected" (scene_rpc_interface.cpp:478); every other assertion held. Green with
+`_show_shell_impact` (rpc when connected, else the local call): laptop 7 runs, alone and with relay_peer + fx_tank_shell.
+One early combined run read 20/1 with its detail lost; 7 since are green. Watching for it in the full check.
+
+**N3 C34.8 (a), the pinning audit: BUILT, `d8ce74b91`.** Pinned (one `$(PIN_FPS)` token each): command.mk
+five-squads-series, interleaved-probe, control-timing ×2, facing-probe, hull-rest-probe, flank-probe; nav.mk gate-test;
+pace.mk pace-p0-tests, pace-leak-tests ×2; planner.mk planner-twin, planner-trace-hull-rest; tactics.mk converge-probe,
+scenario-times; traffic.mk traffic-far-hull. Free on purpose, each with its reason, in mk/native.mk's audit comment
+(the clock is the parameter; real sockets; CPU benches; UI playtests; no physics step decides anything).
+

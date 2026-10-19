@@ -14,7 +14,7 @@ func _mismatch(what: String, native: Variant, live: Variant) -> String:
 
 
 func test_the_layout_is_the_library_s() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the record is not exercised in this run")
 		assert_true(not NativeRecord.layout_ok(), "no library, no layout")
 		return
@@ -22,7 +22,7 @@ func test_the_layout_is_the_library_s() -> void:
 
 
 func test_every_field_reads_back_as_the_live_value() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the record is not exercised in this run")
 		return
 	await ArenaFixture.build(self, "sumps")
@@ -129,7 +129,7 @@ func test_every_field_reads_back_as_the_live_value() -> void:
 
 
 func test_the_contacts_table_is_the_intel() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the contacts table is not exercised in this run")
 		return
 	var game_match: Match = MATCH.instantiate()

@@ -2091,8 +2091,19 @@ func _shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 		_emit_impact(shell.projectile_id, point, shell.hit_normal, victim, hit, suppression)
 	else:
 		_emit_impact(shell.projectile_id, point, shell.hit_normal, null, {}, suppression)
-	show_impact.rpc(point, killed)
+	_show_shell_impact(point, killed)
 	shell.queue_free()
+
+
+## C34.7 (round 34, native; R33.25): a player host whose relay session ended (its grace expired, the broker went) keeps
+## simulating, and a shell already in flight lands after it. rpc() on a peer that is not connected sends nothing and
+## logs an engine error (relay-smoke's red under load), so the impact is shown here only, as call_local would have.
+func _show_shell_impact(point: Vector3, killed: bool) -> void:
+	var peer := multiplayer.multiplayer_peer
+	if peer != null and peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
+		show_impact.rpc(point, killed)
+	else:
+		show_impact(point, killed)
 
 
 ## L2: a round that burned out without hitting anything still swept a lane; mark it, then free the shell.

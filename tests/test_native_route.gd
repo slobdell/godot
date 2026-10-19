@@ -26,7 +26,7 @@ func _restore(m: Movement, s: Array) -> void:
 
 
 func test_the_route_tail_answers_as_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the route equality is not exercised in this run")
 		return
 	var constants: PackedFloat64Array = NativeBridge.impl.route_constants()

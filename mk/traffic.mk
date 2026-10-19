@@ -220,7 +220,7 @@ traffic-far-hull: import ## Round 33 (traffic X1): the far census on hull-rest's
 	@for faction in $(HULL_FACTIONS); do for seed in $(if $(FAR_RANGE),$(FAR_SEED_LIST),$(HULL_SEEDS)); do for task in $(_FACING_TASKS); do \
 		echo "$$faction $$seed $$task"; done; done; done | xargs -P $(FAR_JOBS) -L 1 sh -c '\
 		d=$(FAR_HULL_DIR)/$$0-$$1-$$2; mkdir -p $$d; enemy=law; [ $$0 = law ] && enemy=gangs; \
-		timeout 300 $(GODOT) --headless --path . --script res://tests/traffic/far_census.gd -- --skirmish --seed=$$1 \
+		timeout 300 $(GODOT) --headless $(PIN_FPS) --path . --script res://tests/traffic/far_census.gd -- --skirmish --seed=$$1 \
 			--no-pick-faction --mute --arena=$(FACING_ARENA) --player-faction=$$0 --enemy-faction=$$enemy \
 			--tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu --seconds=0 $(FAR_FLAGS) \
 			--screen-test=$(CURDIR)/$$d --screen-only=$$2 > $$d.log 2>&1 || true; \

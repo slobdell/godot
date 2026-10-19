@@ -15,7 +15,7 @@ func _doctrine(units: Array[String]) -> Dictionary:
 
 
 func test_the_situation_is_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the situation equality is not exercised in this run")
 		return
 	await ArenaFixture.build(self, "sumps")
