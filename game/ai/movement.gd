@@ -1637,13 +1637,10 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	var tank := ctl.tank
 	var here := tank.global_position
 	_yield_left -= ctl._step
-	# Round 34 (traffic T6): a hit lands while giving way: the give-way ends now and the crew drives its own route.
-	if underfire_on() and tank.ticks_since_hit <= ctl._step:
-		underfire_aborts += 1
-		if underfire_log.size() < 500:
-			underfire_log.append({"unit": String(tank.name), "f": Engine.get_physics_frames(), "to": yield_to, "spot": yield_spot})
-		_end_yield()
-		return false
+	# Round 34 (traffic T6b, R34.17): a give-way already under way FINISHES when a hit lands. T6's first try ended it on the
+	# hit (rule (c)) and that put the crew back into the asker's path: friendly contacts in the 3 s after tripled (331 -> 1049)
+	# and stuck deaths rose 812 -> 936 on 140 fights. A crew under fire starts no give-way (ask, _begin_yield); one it has
+	# begun it completes. `underfire_aborts` stays as a counter and reads 0.
 	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank if ctl.tanks_root != null else null
 	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED \
 			or (_yield_stop_m > 0.0 and _flat_distance(here, _yield_from) >= _yield_stop_m)
@@ -1738,9 +1735,10 @@ func _end_yield() -> void:
 # ---- Round 34 (traffic T6, R34.15; `--traffic-on=underfire`, DEFAULT_OFF until judged): a crew under fire holds its lane ------
 # T5's census on main (144 fights): 337 crews died jammed by friendly traffic, 83 % GIVING WAY, for a median 1.5 s, 77 % already
 # under fire (the last hit landed during the give-way for 63 %). The step aside is what exposed them. So a crew hit within
-# UNDER_FIRE_S starts no give-way (ask() refuses; its own step aside in _negotiate is held) and ends the one it is in the tick
-# a hit lands (right_of_way), resuming its route; the asker goes round or waits (avoidance, the escape). Hits only, no
-# line-of-sight query: Tank.ticks_since_hit is on both drive paths and deterministic. Native mirrors all three places.
+# UNDER_FIRE_S starts no give-way (ask() refuses; its own step aside in _negotiate is held); the asker goes round or waits
+# (avoidance, the escape). T6b (R34.17): a give-way already begun FINISHES (T6's first try ended it on the hit, which tripled the
+# friendly contacts after). Hits only, no line-of-sight query: Tank.ticks_since_hit is on both drive paths and deterministic.
+# Native mirrors both places.
 ## Hit within this long = under fire: T5's hit cadence on jammed crews is one hit every ~2.5 s (median 4 in 10 s), so the
 ## brain's 2 s ENGAGED window would lapse between hits; 5 s covers two and is shorter than a give-way's own clocks.
 const UNDER_FIRE_S := 5.0

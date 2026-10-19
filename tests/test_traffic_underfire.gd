@@ -4,7 +4,7 @@ extends TestCase
 ## friendly traffic, 83 % of them GIVING WAY, for a median 1.5 s, 77 % already under fire (the last hit landed during the
 ## give-way for 63 %): the step aside is what exposed them. Under fire = hit within UNDER_FIRE_S (5 s: T5's hit cadence is one
 ## hit every ~2.5 s, so the brain's 2 s ENGAGED window would lapse between hits). Three places, one rule: `ask()` refuses, the
-## asker's own step aside (`_begin_yield`) is held, and a give-way under way ends the tick a hit lands.
+## asker's own step aside (`_begin_yield`) is held, and a give-way already begun finishes (T6b, R34.17).
 
 var _lab: TacticsLab
 
@@ -63,7 +63,9 @@ func test_on_a_crew_hit_six_seconds_ago_gives_way_as_today() -> void:
 	assert_eq(mover.yield_to, String(asker.name), "to the asker")
 
 
-func test_on_a_crew_hit_while_giving_way_ends_it_and_drives_its_own_route() -> void:
+func test_on_a_crew_hit_while_giving_way_finishes_its_step_aside() -> void:
+	# T6b (R34.17): the first try ended the give-way on the hit and put the crew back into the asker's path (contacts in the
+	# 3 s after tripled on 140 fights). Now a give-way begun is finished; only a NEW one is refused under fire.
 	Traffic.set_off("underfire", false)
 	var units: Array = await _stage()
 	var parked: Tank = units[0]
@@ -76,9 +78,10 @@ func test_on_a_crew_hit_while_giving_way_ends_it_and_drives_its_own_route() -> v
 	parked.ticks_since_hit = 0  # a hit lands this tick
 	for i in 3:
 		await _lab.step()
-	assert_eq(mover.yield_to, "", "the give-way ended when the hit landed")
-	assert_true(mover.phase != "yielding", "and the crew is back on its own route (%s)" % mover.phase)
-	assert_eq(Movement.underfire_aborts, aborts + 1, "counted as an under-fire abort")
+	assert_eq(mover.yield_to, String(asker.name), "the give-way goes on after the hit")
+	assert_eq(mover.phase, "yielding", "still stepping aside (%s)" % mover.phase)
+	assert_eq(Movement.underfire_aborts, aborts, "no abort counted")
+	assert_true(mover.under_fire(), "and the crew is under fire, so a NEW ask would be refused")
 
 
 func test_on_a_set_up_battery_under_fire_refuses_by_the_battery_rule_not_twice() -> void:
