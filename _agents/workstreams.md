@@ -102,8 +102,10 @@ _Filed here before any number._
 
 - **W1b a wheeled hull held to a standstill sits still (manoeuvre, C35.6's W1 follow-on), filed before any number from
   `godot-manoeuvre` `references/round35/manoeuvre/w1-trace/README.md`, with one change by the orchestrator: fixed arenas only
-  (locks, terminus, sumps; NO random arena, R34.15).** Pair = stream + native's mirror (drive_native's pace-0 branch); base =
-  `--nav-off=wheelhalt`; native path, builder0, a fresh seed block, n = 72 fights an arm. **Deciding:** at-spot creep ticks of held
+  (locks, terminus, sumps; NO random arena, R34.15).** Pair = stream + native's mirror (drive_native's pace-0 branch). **Arms (R35.19
+  follow-up): two native trees,** base `lab/w1b-base` `ab9c50c76` (= f4f6bf1d2 + mk FIGHT_RANGE; halt OFF), ON `lab/w1b-on` `7fc4a5307` (= 0015f48ad + mk; WHEEL_HALT_DEFAULT true),
+  since any `--nav-off` leaves native's drive; C31.1's `make native check` on the ON tree first. Builder0, FRESH seeds 3820–3843 x
+  locks/terminus/sumps, n = 72 fights an arm; counter first: wheel_halts > 0 in the ON arm. **Deciding:** at-spot creep ticks of held
   wheeled crews (its counter; non-zero in base first) → ~0; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open,
   stuck, jam deaths, far loops, kills and hit rate per team, each within 1.645 se paired; all deaths reported.
 
@@ -129,7 +131,7 @@ _Filed here before any number._
   the trace names the mechanism and the verdict is the orchestrator's (the step is brains' E1).
   **Scope change before the gate (2026-10-19 ~11:05, from W2's dev read on tuning seeds 460–463, builder0, lab/cpf5 bdacb1786):**
   the give-up applies to TURRET hulls only (`5c692b507`); with it on hull-fixed scouts, scouts >= 45 deg off rose 33 -> 48 over six
-  tasks (a scout's creep is how it aims). Gate candidate lab/cpf5 `a7167e4f9` (stream b18fa5fdf on main 0f4d528d7; E1 NOT in).
+  tasks (a scout's creep is how it aims). Gate candidate lab/cpf5 `a7167e4f9`, then `9a463b0b9` (same game/ and native/; + a cpf5base arm and references; on main 0f4d528d7; E1 NOT in). Native base arm: lab/cpf5-base `f77360f92` (= 9a463b0b9 with TURN_HULL/FACE_SETTLE defaults false).
 
 - **T8 a held crew under fire leaves the hold (traffic, R35.7 (B)), filed before any code or number from `stream/traffic`
   `d3d2e6478` (`references/round35/traffic/t8_design.md`), with two lines added by the orchestrator.** `--traffic-on=holdfire`
@@ -176,7 +178,9 @@ _Filed here before any number._
   `references/round35/traffic/t9_trace_design.md`. **Arms (one tree):** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
   both; base = `--nav-off=stallintent --traffic-off=yieldfit2`. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
   traffic's T9 + native's mirrors; gate = the pair's `make native check` on builder0 plus switch-OFF sim-baseline inertness. Seeds:
-  M6's FRESH blocks (hull-rest 901–916 drawn; fights + wedge probe on fixed locks/terminus/sumps x 940–963). **Counter first:**
+  M6's FRESH blocks (hull-rest **901–932** drawn, i.e. 128 pairs; fights + wedge probe on fixed locks/terminus/sumps x 940–963).
+  **n raised 2026-10-19 ~12:30, before any judged number, the line itself unchanged:** the joint dev read (tuning 460–467, 32 an arm)
+  read movers 8 v 14; at that rate (d)'s line (-1.645 x 1.17 x sqrt(pairs)) needs ~105 pairs, so 64 would miss on n alone. **Counter first:**
   stall_intent_ticks, H1 escapes, asks AND `yields_unfinished` > 0 in the candidate. **Deciding:** M6's (d) and (e) as filed
   (attack-move movers by real_mps; never-settled), plus crews ending > 25 m off goal with a live move, new <= base. **Guards:**
   M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
@@ -257,6 +261,37 @@ _Filed here before any number._
   yieldfit2`, DEFAULT_OFF): an unfinished give-way (asker not passed AND yielder within 1.0 m box gap or across its travel line)
   does not write `_last_yielded_to`; at most 2 unfinished to the same asker in 30 s; finished give-ways, the battery rule and T7's
   gate unchanged. Native mirrors `_end_yield` and ask()'s first line. Joint bar above.
+- **R35.15 (2026-10-19 ~12:20) A STALE native library on builder0 voided brains' E1 check (67a5a9db0: 2888/2, both turn-in
+  tests; parade/docks back on their PRE-turn-in lines).** A remote run that waited for a slot built native at 09:23 from the
+  pre-merge tree; the worker's merge (native/src changed, local mtime 09:22) then synced with `rsync -a` preserving the OLDER mtimes,
+  so cmake rebuilt nothing. Proof (builder0): clean 0f4d528d7 8/0; brains' tree after `touch native/src/*` 8/0, identical. The check
+  and its sim-baseline moves are VOID; E1 re-checks after M5. **Until N3 lands:** after any merge that touches native/src, `touch
+  native/src/*` before a remote run, and read sim-baseline against main's current lines. **N3 (native, urgent):** native/build.sh
+  stamps a content hash of native/src so a source change always rebuilds.
+- **R35.16 (2026-10-19 ~12:35) The joint W1c + T9 dev read frees the stuck crews; mirrors released.** Manoeuvre (builder0,
+  GDScript both arms, lab/w1c-t9 878200ede = stream 2428a2b25 + traffic 2af7d3528): law-605 Green_Eyes_4 base blocked 34.1 m short
+  t 16 s to the judge (80 s), ON arrived by t ~24 s; law-607 Green_Guns_6 base blocked 23 m short from t 24 s, ON arrived by t ~48 s.
+  ON counters: stall_intent_ticks 205 / 983, yields_unfinished 1 / 4, asks_refused 0 / 1. Native: N3 -> W1b pair -> W1c + T9 mirrors
+  on ONE pair branch.
+- **R35.17 (2026-10-19 ~12:45) D1's last red: test_tactics_body (brains' file).** orders-d1 `0603f3274` (builder0): `make check
+  exited 2`, 2885/1, sim-baseline 13 unmoved; the scenario fix works. Red: his three squads keep together, "off 17.7 s, on 23.8 s"
+  (line off + 5 s); reproduces alone; native path only. Sirens' body-route arrival: step off 18.5 s, step on + centred lay
+  (1a5e33c47) 20.9 s, step on + on-spot lay 23.8 s. Ruling: orders takes ONE builder0 trace (+ one fix try in its carve-out); if
+  that fails, the line is resized to the measured cost + 2 s, citing this ruling (he chose the deploy step knowing planner's pass
+  was slower in some cells); NOT the centred lay (a squad sent to a spot ends on it is the stronger promise).
+  **Follow-up:** orders' trace (builder0, `make body-trace-orders`): with the step on, the arrived Hunters2 re-forms into the Law's
+  lane herringbone across the Sirens' street; Sirens_1 blocked 15–24 s; no carve-out fix keeps the on-spot promise; line resized to
+  off + 8.1 s (measured 6.1 + 2), orders-d1 `581b8a396`; brains agrees; a round-36 item in game_design.md.
+- **R35.18 (2026-10-19 ~13:05) T7's gate (C31.1) passes; its series starts.** `pair/underfire-t7` `e95179252` builder0 `make native
+  check exited 2`, 2902/0, 24/27 pass; the one red sim-baseline (5 maps moved with T7 ON, 8 unmoved); switch-OFF inertness
+  (`--traffic-off=underfire`, same commit) reads main's 13 lines. perf-judge and scenario_perf NOT JUDGED (load); perf-judge alone on
+  a quiet builder0 is owed before any ship.
+- **R35.19 (2026-10-19 ~13:10) Mirror pairs, and the joint pair's base.** W1b: `pair/native-w1b` `f4f6bf1d2` (manoeuvre 58395b79c +
+  mirror; builder0 light `native test FILTER=test_native_` 107/0, 0 mismatches; halt ON on lab 1d2f0cac9 1094 halts a stage, 0
+  mismatches) is W1b's SERIES pair; main only on W1b's bar. Joint: `pair/native-w1c-t9` `2446d46f9` = lab/w1c-t9 878200ede + traffic
+  f432645dd + pair/native-t7 + pair/native-w1b + T9's and W1c's mirrors. Traffic's stream carries **T6b** (a give-way already begun
+  finishes when a hit lands) as DEFAULT behaviour, not on main, plus T7 OFF; so the joint series' base includes T6b, and the joint
+  pair merges only AFTER T7's verdict (if T7 parks, re-cut without T6b/T7 and re-twinned).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
