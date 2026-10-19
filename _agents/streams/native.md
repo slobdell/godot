@@ -73,6 +73,31 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Round 34 (started 2026-10-18 from main `918ede503`, which inherits `d7d57f4cf`'s green check)
 
+**REPORT (top, 2026-10-19).** Backlog N1-N5 DONE, plus N6 (web-smoke on builder0); the stretch was not needed (below).
+- **Merged to main:** C34.7 + C34.8 (a) + N4 as main `02a912163` (= `12ac7b172`, builder2 `make native check exited 0`,
+  2798 / 0, ALL JUDGED, under load 28.8 / 32 CPUs). N5 + the C34.6 floor rule are in main through planner's C34.6
+  (`89e775f87`).
+- **Pairs (N1):**
+  - Scout try 2 is green (`85f34ca63`) and merged with brains B1.
+  - Parkedroom v4 on current main: `pair/native-parkedroom-v4m` `4445f6b4c`, twins 33/0 with traffic's v4. It is RED
+    alone (needs traffic's Movement).
+  - T4's ghost twins: `pair/native-ghost-r34` `3a45b58b4`, 22/0 with the ghost ON. It is in traffic's T4 pair
+    `777820d7b`.
+  - CP-F 4: no C++ change; 14/0 twins on `e76f6dab6`.
+  - C33.9's turn-in twin is on NativeExpect: `pair/native-c339` `25fd4298e`.
+- **N3 moves list:** below. Pinned, every match stage reproduces exactly; free, it doesn't. No verdict moved.
+- **Stretch:** a native turn-in is not needed, because C33.9 is not shipped. Twin splits are not needed now: builder2's
+  check had the 16 shards at 95-535 s, and their balance was not checked by file (a next step if shard time becomes
+  the bottleneck).
+- **Questions for the lead:** none.
+- **Requests:** manoeuvre converts tests/test_manoeuvre_wedge.gd's one `NativeBridge.available` early return to
+  `NativeExpect.absent(self)` (relayed by the orchestrator).
+- **To playtest:** nothing he sees changes from this stream alone. A network match whose relay room closes mid-fight
+  no longer logs RPC errors on the host (`make relay-smoke`).
+- **Merge notes (shared files):** one `$(PIN_FPS)` token per line in command.mk (7), nav.mk, pace.mk (3), planner.mk
+  (2), tactics.mk (2) and traffic.mk; match.gd `_show_shell_impact` (C34.7 grant); 57 twin sites across 42 files of
+  mine moved to `NativeExpect.absent(self)`.
+
 **Plan (in order; pairs pre-empt, C31.2):** (0) the waiting pairs: parkedroom's hand-back rebased onto main for traffic's
 v4; brains' scout try 2 mirror as it arrives. (1) N2 C34.7: the dropped-peer test first, then the guard. (2) N3 C34.8 (a):
 the audit, one token a recipe, the moves list as a make target (pinned ×2, free ×2, one commit). (3) N4 the library
@@ -93,12 +118,123 @@ screen should still see the hit.
   native test FILTER=native_decide` at `2135c0af5` (n 1): `exited 0`, 7536 decisions, 0 mismatches; 480 forced scout
   cases, 27 fight back, 6 cut by the forecast (floors at half: 13 and 3, `93d878924`).
 
+- **C34.5, brains' second change (834562ab1: the champion runs without matchups, so decide computes the duel for a
+  scout under fire): `pair/native-scout3` `85f34ca63`** = brains `834562ab1` + the two commits above + `scout_under_fire`
+  in C++ and the lazy `matchups_for` in decide's SPOT branch. test_native_decide's count follows the same rule. builder2,
+  n 1: native_decide 7536 decisions, 0 mismatches; 480 forced scout cases, 52 fight back, 17 cut by the forecast.
+  **GREEN, sent to brains: `85f34ca63`.** builder2, n 1, `make native test FILTER=native_decide|scout_fights_back|
+  native_gate|native_drive|native_execute|native_matchups` exited 0, 24 / 0, every twin 0 mismatches (drive 2160,
+  k-turns 1440, unstick 3600 + 3600, execute 5880 native / 120 handed back). Brains merges it and runs its ship check.
+- **C34.2 v4: `pair/native-parkedroom-v4` `6231e7222`** = traffic `1b2fd26f1` + the r34 hand-back (merged) + one commit:
+  Drive::ask's hand-back asks `Movement.at_post_of(tanks_root, name)` (traffic's one definition of AT a post: still for
+  ROOM_STILL_S, or on a HOLD order inside its hold line) instead of inlining `Traffic.still_s`. The phase test stays as
+  at_post's own first clause. No new floor stage: the C++ asks the GDScript's at_post itself, so the decision is equal by
+  construction, and traffic's neck test covers the hold-line clause.
+  **GREEN, sent to traffic: `6231e7222`.** builder2, n 1, `make native test FILTER=native_yield|native_drive|
+  native_execute|native_h1b|traffic_neck|native_gate` exited 0, 33 / 0, every twin 0 mismatches; the parkedroom Sumps
+  stage: 173 negotiations, ask_handed_back 1 (floor 1).
+- **N4, the refusal the rest of the way: `12ac7b172`.** Every twin's "native: absent" early return (57 sites, 42 files)
+  goes through `NativeExpect.absent(self)` (tests/native/native_expect.gd). That FAILS the twin when make exported
+  `TANK_NATIVE_EXPECTED=1` (NATIVE on and a C++ toolchain, mk/native.mk). It covers what `_native-ready` can't see: a
+  FILTER that matches a twin without saying "native" (`FILTER=decide` ran test_native_decide vacuously), shards,
+  native-verify-suite / -scenarios, and every other recipe's run_tests.gd call. Laptop, no library: the runner with
+  `TANK_NATIVE_EXPECTED=1` and `--filter=decide|native_shell` reads 32 / 3, the three twins FAIL with the message; without
+  it, they skip as before. A first try (an engine error at NativeBridge's static init) was dropped: it fires before any
+  test, so the runner does not count it. Not converted: tests/test_manoeuvre_wedge.gd (manoeuvre's, one site; relayed).
+
+- **C34.2 v4 on CURRENT main (traffic's re-cut): `pair/native-parkedroom-v4m` `4445f6b4c`** = main `16db9e19b` + N5 +
+  the 6 hand-back commits + the at_post_of gate + the parkedroom stage at N5's centre + the C34.6 floor rule. builder2,
+  merged with traffic `e6468b2e0`: 33/0, 0 mismatches. The parkedroom stage: 88 negotiations, 21 handed back (1 at the
+  old centre), 2 rooms. **Alone on main it is RED** (exec_fields.h carries `_room_*` members main's Movement lacks:
+  NativeExec verify errors in test_native_execute / _odd / h1b). It must merge only with traffic's v4. Traffic told.
+- **R34.4 T4's ghost twins: `pair/native-ghost-r34` `3a45b58b4`** = v4m + R33.29's design re-ported onto the split gate
+  harness. The stages run with the ghost OFF whatever the tree's default; the ghost-ON stages are
+  test_native_gate_ghost (new file) and the Sumps give-way. builder2, with traffic `e6468b2e0` and the ghost ON
+  (scratch): 22/0 on the twin set, 0 mismatches; 13/0 on the final floors. The ghost ON never reaches the come-round
+  (turned 0).
+- **C34.6 floor ruling: `b99b23386`** (stream/native; for planner `pair/native-c346-floors` `ae2f03c59` = planner
+  `09a98132c` + N5 + the floors, builder2 native_yield 6/0). test_native_yield's floors are paths reached (1 each) and
+  10 negotiations, not half a fight's counts. Planner's phase fix moves the counts with 0 mismatches (Sumps 44 -> 30,
+  yard_open owned 22 -> 15). The yard_open live and owned stages differ because the live one forces 60 set-up compares;
+  on the Sumps, with the same parameters, owned = live exactly.
+- **C33.9's turn-in twin through NativeExpect: `pair/native-c339` `25fd4298e`** (main merged in for N4). It doesn't
+  move manoeuvre's running check.
+
 **N2 C34.7, the shell RPC after the drop: BUILT, `cd0fc9ed0` (+ `.uid`).** `test_match_shell_dropped_peer`: a seated
 relay host (grace 0) fires a shell at a tank 15 m away, the socket drops with the shell in flight, the session ends on the
 next poll, the shell lands. Red without the guard (laptop, NATIVE=off): exactly R33.25's engine error, "Trying to call an
 RPC via a multiplayer peer which is not connected" (scene_rpc_interface.cpp:478); every other assertion held. Green with
 `_show_shell_impact` (rpc when connected, else the local call): laptop 7 runs, alone and with relay_peer + fx_tank_shell.
 One early combined run read 20/1 with its detail lost; 7 since are green. Watching for it in the full check.
+
+**N3 C34.8 (a), the MOVES LIST: DONE.** `make pin-moves` ran each of the 16 pinned recipes (14 stages) four times on
+ONE commit (`74853ade4`, builder2, pinned / free / pinned / free, each stage's four arms in series and six stages at once).
+slot.sh's 90-minute limit cut facing-probe's and hull-rest-probe's free2. They were finished alone (`PIN_MOVES_ARMS=free2
+PIN_MOVES_KEEP=1`, same commit, load 56). The table masks wall-clock text (timestamps, timing ratios, the timing
+stages' ms). pp / ff = lines differing between the two pinned / the two free runs; pf = pinned v free:
+
+    stage                    pp     ff     pf   verdicts  secs pinned / free (each run)
+    control-timing            1      1      3   same       26, 28 / 28, 27
+    converge-probe            0   1745   1928   same      117, 119 / 643, 643
+    facing-probe              0   2107   2217   same     1379, 1470 / 2299, 2219
+    five-squads-series        0    849   1016   same      140, 140 / 326, 338
+    flank-probe               0  10938  11848   same      168, 218 / 400, 403
+    gate-test                 0      0      0   same       22, 20 / 143, 141
+    hull-rest-probe           0   7421   8093   same      818, 719 / 2308, 2229
+    interleaved-probe         0     57    136   same       51, 48 / 159, 157
+    pace-leak-tests           0      0      0   same       28, 28 / 92, 99
+    pace-p0-tests             4      0      0   same      199, 157 / 2067, 2056
+    planner-trace-hull-rest   0   4766   1870   same       48, 39 / 72, 117
+    planner-twin              0      0      0   same      200, 150 / 249, 191
+    scenario-times            1      1      1   same       30, 28 / 96, 99
+    traffic-far-hull          0   5224   4960   same      506, 384 / 1203, 1232
+
+**What it says.** Every stage that plays a match REPRODUCES EXACTLY when pinned (pp 0) and does not when free (ff up to
+10,938 lines between two free runs on one commit). No verdict changed: every arm exited 0, and every PASS/FAIL set is
+the same across the four. The movers are the match-playing stages. Their numbers move pinned v free because a free
+clock's frames carry a varying number of physics steps under load (its load column: 2.5-56 on 32 CPUs), so awaits,
+nav syncs and order timing land on different ticks. The free runs disagree with each other by as much as with pinned.
+Nothing was loosened: no threshold, floor or bar line changed. Examples:
+- hull-rest-probe (manoeuvre's ruler): drawn ALL median 10.3 deg pinned (both runs) v 8.7 / 7.2 free; tracks/turret
+  drawn worst 59.7 pinned v 3.3 / 4.8 free (one run lands differently on the pinned clock). <=15 deg 51 % v 51 / 54 %.
+- facing-probe: faced_ambush hull err median 75.2 pinned (both) v 86.8 / 70.7 free; squads ok 3/15 v 3/15, 5/15.
+- flank-probe: drawn reached its side 9/12 pinned (both) v 10/12, 9/12 free; median s 18.0 v 18.5, 17.0.
+- five-squads-series, interleaved-probe, converge-probe, traffic-far-hull, planner-trace-hull-rest: the per-run
+  json/tables are identical pinned and differ free.
+The rest:
+- No movers (identical all four ways): gate-test, pace-leak-tests, pace-p0-tests, planner-twin. Their test runs already
+  pace by physics frames. pace-p0's pp 4 is one load warning from Jolt ("job system exceeded the maximum number of
+  jobs"), not a result.
+- The timing stages (control-timing, scenario-times) time wall clock on purpose. Pinned, they measure the same CPU per
+  frame (their ratios are masked). control-timing's per-system frame costs read lower pinned (awareness 0.132 v 0.196
+  ms) because a free clock adds frame-pacing work. Both arms pass the budgets.
+- Throughput: pinned is 1.3-13x faster (pace-p0-tests 199 / 157 s v 2067 / 2056 s).
+Table: `tests/native/pin_moves.py` over build/pin-moves (raw arms kept on builder2 in ~/tank_squad/godot-native/build/
+pin-moves).
+
+**N6 (the orchestrator, mid-round): web-smoke independent of any desktop: DONE, `530d77c6c`.** builder0's web-smoke
+had read "WebGL2 missing" since ~23:00 2026-10-18. The cause was not a desktop GPU: the smoke always ran SwiftShader.
+builder0's desktop session died and left its Xwayland auth files, and tools/remote.sh's newest-file fallback exported
+DISPLAY=:0 for a display that was gone. A probe on builder0 with the smoke's exact flags read "NO WEBGL2" with that
+DISPLAY/XAUTHORITY, and SwiftShader's renderer without them. Fix: the smoke's Chrome, and observe's in SwiftShader mode,
+get no display variables (tools/web_smoke/headless_env.mjs, with a node test web-smoke runs first). remote.sh exports
+DISPLAY only while an Xwayland runs. builder0 `make web-smoke exited 0` with nobody logged in (READY 11.5 s, first
+sound 15.5 s); builder2 exited 0 (7.5 s, 9.5 s). Both screenshots were looked at: the game is rendered.
+**Heads-up (also in remote_builds.md):** builder0 render targets, the ones that run Godot without `--headless`
+(`*-shots`, `*-clip`, galleries, looks, windowed series, perf plays, play targets), now FAIL LOUDLY when nobody is
+logged in, instead of drawing on a dead display. Nothing in `make check` needs a display.
+
+**N5, the yield Sumps stage off the pits: DONE, `17876e4b6` (test-only).** The off-floor hulls were NOT the pits alone.
+A laptop sweep of the stage's spawn layout over 961 Sumps centres (4 m grid, NATIVE=off) found hulls pushed off the floor
+almost everywhere: only 231 centres spawn clean. The old (-16, -6) put 7 hulls off the floor, where its ranks overlapped
+the pump house and the west pit's rim. On flat yard_open the same layout spawns clean. Six clean candidates near a pit
+were run as the real stage on builder2 (scratch `2c4f5d2e1`). (-40, 40) keeps every hull on the floor through the whole
+stage and reaches every path. Its ranks are 6 m from the pit, which still makes give-way spots unfit (45). builder2, n 1,
+`make native test FILTER=native_yield` at `17876e4b6`: exited 0, 6 / 0. Both Sumps stages read the same: 546 drives
+compared, 0 mismatches, 44 negotiations (spot 34, unfit 45, back 5, hold 1, parked refusals 3, asks refused 1). The
+counts equal the probe's, which shows the fresh-process stage is deterministic. Floors are at half, each path at least 1,
+and a guard asserts no hull leaves the floor. The old stage reached more paths (107 negotiations); the floors only ask
+that each path is reached. Traffic's parkedroom stage (on its pair tree) still uses (-16, -6); it moves when N5 merges.
 
 **N3 C34.8 (a), the pinning audit: BUILT, `d8ce74b91`.** Pinned (one `$(PIN_FPS)` token each): command.mk
 five-squads-series, interleaved-probe, control-timing ×2, facing-probe, hull-rest-probe, flank-probe; nav.mk gate-test;

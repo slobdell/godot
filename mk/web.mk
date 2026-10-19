@@ -36,6 +36,7 @@ play: export-web ## One command: game server (BOTS=N) + web page. Open http://lo
 
 web-smoke: export-web $(WEB_SMOKE_DEPS) ## Boot the web export in headless Chrome, screenshot it, fail on errors (and check the pack: export-guard --pack)
 	mkdir -p $(BUILD_DIR)/screenshots
+	$(NODE) --test $(WEB_SMOKE_DIR)/headless_env.test.mjs > $(BUILD_DIR)/web-smoke-unit.log 2>&1 || { cat $(BUILD_DIR)/web-smoke-unit.log; exit 1; }
 	$(PYTHON) tools/web_pack/export_guard.py --pack $(BUILD_DIR)/web/index.pck --pack-preset Web
 	@echo ">> web pack: $$(( $$(stat -c %s $(BUILD_DIR)/web/index.pck) / 1000000 )) MB pck + $$(( $$(stat -c %s $(BUILD_DIR)/web/index.wasm) / 1000000 )) MB wasm (round 17 W2: the pack's size is the lead's call)"
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
