@@ -177,6 +177,13 @@ _Filed here before any number._
   191 s on, nearly all on a WEDGED crew (< 0.5 m/s, 20–50 m off its slot; law-605 Eyes_4 71 s in both arms). face_settled() stays
   out. These long out-of-fire wedges are NOT W1's populations (1–5 s, under fire): relayed to manoeuvre to trace (a possible W1c);
   brains' guard (c) reported split by wedged-at-release.
+- **R35.10 (2026-10-19 ~10:20) W1b's dev read, and the 70 s scout dead-stop.** W1b (builder0, a0c874924's tree, tuning seeds
+  3500–3503 x locks/terminus/sumps, 12 fights an arm, GDScript both arms): wheeled pace-0 ticks still moving >= 0.5 m/s 7181/11871
+  (60 %, 7099 Traffic holds) -> 636/15723 (4 %). Native asked for the mirror (`pair/native-w1b`, after T7's pair). law-605
+  Green_Eyes_4 (native, main 0f4d528d7; also on a0ae0aafd, so NOT the scout turn-in's): from t ~10 s to the judge at (-8.1, 99.6),
+  34 m off, move_to, phase `blocked` by Green_Eyes II_5 (another squad's scout), touching it; not a Traffic hold; ORCA pace 0.05,
+  unstick's stall rule needs |throttle| > 0.5 so stops counting after t 26; nothing asks II_5 to give way. Parkedroom's shape out of
+  fire (traffic told, heads-up). Owner decided after manoeuvre traces II_5.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
