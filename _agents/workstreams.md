@@ -170,7 +170,7 @@ _Filed here before any number. Empty at launch._
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
-  kills was that series' draw. About 1 death in 5 is a crew stuck or jammed (~9 a fight). Firemission was OFF in both
+  kills was that series' draw. About 1 death in 5 is counted stuck or jammed (~9 a fight), but "stuck" includes "still >= 2 s" (crews holding on purpose): split asked before it is told to him. Firemission was OFF in both
   arms (an overnight DEFAULT_OFF artefact, fixed `e6468b2e0`).
 
 ## Rulings (round 34)
