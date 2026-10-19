@@ -157,6 +157,8 @@ func _run() -> void:
 			"arm": _flag("probe-arm", ""),
 			"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 			"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "capped": SelectionSquads.ground_capped,
+			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them
+			"gates_laid": _static_or(RtsControls, "gates_laid"), "route_starts": _static_or(RtsControls, "route_starts"),
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
@@ -254,6 +256,14 @@ func _watch() -> void:
 			for n: String in alive:
 				if seats.has(n):
 					squad["shuffle"] = maxf(float(squad["shuffle"]), _flat_d(_tank(n).global_position, seats[n]))
+
+
+## A static of `script` by name, or -1 on a tree before it existed (the probe runs on both sides of a change).
+static func _static_or(script: Script, name: String) -> int:
+	for property in script.get_property_list():
+		if String(property["name"]) == name:
+			return int(script.get(name))
+	return -1
 
 
 ## At the window's end: the element's arrived flag, its queue, its task's verb, and the centre's distance to the anchor.
