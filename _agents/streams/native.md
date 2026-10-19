@@ -220,6 +220,9 @@ DISPLAY/XAUTHORITY, and SwiftShader's renderer without them. Fix: the smoke's Ch
 get no display variables (tools/web_smoke/headless_env.mjs, with a node test web-smoke runs first). remote.sh exports
 DISPLAY only while an Xwayland runs. builder0 `make web-smoke exited 0` with nobody logged in (READY 11.5 s, first
 sound 15.5 s); builder2 exited 0 (7.5 s, 9.5 s). Both screenshots were looked at: the game is rendered.
+**Heads-up (also in remote_builds.md):** builder0 render targets, the ones that run Godot without `--headless`
+(`*-shots`, `*-clip`, galleries, looks, windowed series, perf plays, play targets), now FAIL LOUDLY when nobody is
+logged in, instead of drawing on a dead display. Nothing in `make check` needs a display.
 
 **N5, the yield Sumps stage off the pits: DONE, `17876e4b6` (test-only).** The off-floor hulls were NOT the pits alone.
 A laptop sweep of the stage's spawn layout over 961 Sumps centres (4 m grid, NATIVE=off) found hulls pushed off the floor
