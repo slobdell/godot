@@ -86,6 +86,17 @@ _Filed here before any number._
 - **R35.2 (2026-10-19) C35.7, manoeuvre's side of the seam approved:** W2 face settle (a face no plan fits 3 times in a row stops
   still; `--nav-off=facesettle`; ships with turnhull ON) and `Movement.face_settled()`, a read-only query. Brains' side waits
   for E1's leg-gate trace to name the rule that holds the leg.
+- **R35.3 (2026-10-19 ~09:40) C35.7 is DECOUPLED.** Brains' E1 trace (laptop, GDScript, lab/cpf4 `e76f6dab6` both arms,
+  law/faced_attack_move-614; probe `c23acdbe2`): the leg is held by `ElementPlan._advance`'s `_cohesive` gate on ONE laggard
+  (allowance 20 m x 1.0 / slowest 12 m/s = 1.33 s, ~16 m); `reached` is true at every hold; the crew on `face from sector` sat 3–4 m
+  from its slot and never held a step. R34.18's "steps at 60 v 32" is that gate waiting on a laggard, chaotic by arm. Brains' side
+  becomes a **straggler release** (the gate stops waiting on a crew with no progress on its slot for N s), no face knowledge;
+  face_settled() returns only if the 128-run series (seeds 601–616 x 4 factions x CP-F on/off, builder0) shows a real `face`
+  share. Manoeuvre's W2 ships on its own bar. Brains' base-arm laggard G4, wedged at (18, 87.5) (plant 9.25 v real 1.17 m/s,
+  re-seat watch out of budget), relayed to manoeuvre's W1.
+- **R35.4 (2026-10-19) main 0f4d528d7 is GREEN without a new check:** the only check-read diff from `3902ade09` is
+  `tests/baselines/sim_state_hash.txt`, adopted from the 13 maps read twice at ffa462c94 on builder0, equal to 3902ade09's
+  check's hashes. All five workers told to `git merge main` (orders BEFORE D1's attribution).
 
 ## Round 34: six streams, two on Fable (prepared 2026-10-18, CLOSED 2026-10-19; briefs in `streams/archive/round34/`)
 
