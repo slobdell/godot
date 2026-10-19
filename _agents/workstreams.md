@@ -378,6 +378,11 @@ builder0), ruled R34.3.
   v3/v4/v4b each cut hold-post loops 50–74 % and brought 90–94 % home; each failed on totals the rule doesn't reach. DEFAULT_OFF
   stays; the pair and native's `4445f6b4c` are not merged; no fifth try without a new design. **A question for him:** should a
   crew stuck behind a FIRING mortar truck get by (the truck packs up briefly, or the asker is sent round)?
+- **R34.14 main 6d167331a is GREEN by inheritance** (brains `1fc467258`, builder2 `make check exited 0`, 2847/0, sim-baseline 13
+  unmoved: main's batch M1 + O4 + N6 + the rank fix + LOADED_RATIO 1.2). **Brains builds the deploy step as a prototype behind a
+  switch, default OFF (B8)**, so his answer to R34.7 meets something he can see rather than a description: an AUTO squad keeps its
+  travel seats until every crew is in, then lays its halt shape on the approach heading as one move. With the heading fixed at
+  order time, O2's (B) packing becomes exact. Default stays OFF until he says yes; planner's O5 probe reads it before/after.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
