@@ -38,7 +38,12 @@ N6 (`58eb0efc4`: web-smoke needs no desktop), brains' Locks station fix (`42401f
 crew over the bridge and back) and traffic's O4 (`6c44c0394`: a shift-clicked route on a squad is the squad's; in-between
 waypoints passed at about its width with no form-up stop; a waypoint is a gate as wide as the ground). O2 parked (R34.12);
 brains does a small rank fix instead.
-**Waiting on the lead:** M0 ship (R34.10, recommended yes), the deploy step (R34.7).
+**main 38b32ca0c is GREEN by inheritance** (brains `a1896dc07`, builder2 `make check exited 0`, 2855/0, sim-baseline 13 unmoved): it
+carries manoeuvre's M2 (the k-turn arrival flicker, ARRIVE_LEG_DEFAULT on; `0d0f22027`), references/.gdignore, the rank fix, the
+second Locks leak (an order goal on the far bank's dry ground comes back to the anchor's side: planner's Locks 3 crossed 1 → 0)
+and B8's deploy-step prototype OFF. **He can try the deploy step:** `DEPLOY_STEP=on make skirmish ARENA=locks` (B8b, the shorter
+version, follows in brains' next merge).
+**Waiting on the lead:** M0 ship (R34.10, recommended yes); the deploy step (R34.7; prototype on main, try it); a crew stuck behind a FIRING mortar truck (R34.13; T5 says it is 1 % of jam deaths, low stakes).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
 tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are
