@@ -1271,9 +1271,12 @@ func face_settled() -> bool:
 	return Manoeuvre.face_settled_id(get_instance_id(), _face_left_m > 0.0, Engine.get_physics_frames() - BEHIND_GAP_TICKS)
 
 
-func _face_still(cmd: TankCommand) -> bool:
+## A settled face stands: throttle and turn 0. Round 9's guarantee holds (a face that cannot turn never stands still SILENTLY):
+## OrderController's own give-up window runs on it, so face_checked / face_giveups / face_stalled read as they always have.
+func _face_still(cmd: TankCommand, delta: float) -> bool:
 	cmd.throttle = 0.0
 	cmd.turn = 0.0
+	ctl._face_giving_up(delta)
 	return true
 
 
@@ -1303,22 +1306,24 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		Manoeuvre.face_settle_forget_id(get_instance_id())  # round 35 (W2): a new face starts with no failed plans
 	_face_tick = tick
 	Manoeuvre.face_note_id(get_instance_id(), tick, want, false)
+	# Round 35 (W2): a face ordered while the hull still rolls has its home where the hull COMES TO REST, not where the order
+	# found it (planner's rolling-face test: a rig rolled 8.8 m past a home it had to plan within 5 m of, and with no creep to
+	# drift it back no plan ever fitted).
+	var settle := Manoeuvre.face_settle_on() and tank.mount != "fixed"  # a hull-fixed scout's hull IS its gun's arc: it keeps trying
+	if settle and _face_left_m <= 0.0 and absf(tank.speed()) > Manoeuvre.FACE_SETTLE_REST_MPS:
+		_face_home = here
 	# Round 31 (planner CP-P1, R31.2): a face the lattice planner's seam holds is driven by it to its end (the request
 	# is made below, after the aligned test).
 	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "face", _face_home, delta): return true
 	# Round 35 (W2): a face no plan fits gave up: it stands still as it is (Manoeuvre.FACE_SETTLE_FAILS).
-	var settle := Manoeuvre.face_settle_on() and tank.mount != "fixed"  # a hull-fixed scout's hull IS its gun's arc: it keeps trying
 	if settle and _face_left_m <= 0.0 and Manoeuvre.face_given_up_id(get_instance_id(), want):
-		ctl.face_stalled = true  # round 9's guarantee: a face that cannot turn never stands still SILENTLY
-		return _face_still(cmd)
-	if settle:
-		ctl.face_stalled = false
+		return _face_still(cmd, delta)
 	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
 		if settle:
 			# The refused plan counted as a failure; try a fresh plan after the retry wait, still meanwhile.
 			_face_blocked = Vector3.ZERO
 			_face_retry = KTURN_RETRY_TICKS
-			return _face_still(cmd)
+			return _face_still(cmd, delta)
 		return false  # a planned leg here could not be driven (a wedge the plant refuses): the creep and its give-up
 	if _face_left_m > 0.0:
 		# A plan keeps the heading it was made for while the spot's BEARING from where the plan began holds (the hull
@@ -1341,14 +1346,14 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "face", _face_home, delta, want): return true
 		if _face_retry > 0:
 			_face_retry -= ctl._step
-			return _face_still(cmd) if settle else false
+			return _face_still(cmd, delta) if settle else false
 		var plan := Manoeuvre.plan_face(self, here, forward, want, _face_home)
 		if plan.is_empty():
 			Manoeuvre.face_none += 1
 			_face_retry = KTURN_RETRY_TICKS
 			if settle:
 				Manoeuvre.face_plan_failed(self, want)
-				return _face_still(cmd)
+				return _face_still(cmd, delta)
 			return false
 		Manoeuvre.face_plans += 1
 		Manoeuvre.face_plan_legs += plan.size()
