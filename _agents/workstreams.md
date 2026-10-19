@@ -76,6 +76,16 @@ _Filed here before any number._
   reads main's line again with the turn-in off (`make sim-variants VARIANTS_EXTRA=--nav-off=turnin` on the same commit), so the
   move is the turn-in's alone; then the moved maps are adopted in the merge commit. A map that moves with the turn-in off too
   blocks the merge until traced.
+- **T7 under fire, refuse only when the asker has a way round (traffic, C35.8), filed before any number on `stream/traffic`
+  (design `references/round35/traffic/t7_design.md`).** Pair = current main + T7 (`--traffic-on=underfire`, DEFAULT_OFF) + native's
+  mirror + the ON flip; base arm `--traffic-off=underfire`; switch-OFF sim-baseline inertness beside the C31.1 full check. Native,
+  builder0 start to end, pinned, 180 s showmatch, FRESH fixed arenas `{terminus, locks, sumps, gorge, parade} × 1600–1627` (n 140,
+  no random arena, no twins). k = 1.645, paired se (`tests/traffic/jam_ab.py`). DECIDING GAIN G: jam-under-fire deaths (T5's
+  definition) arm < base AND (base − arm) − k·se > 0. Guards (T6b's, unchanged): (1) open deaths ± k·se; (2) stuck deaths ≤ base +
+  k·se; (3) far loops ≤ base + k·se; (4) kills ± k·se, hit rate ≥ base − k·se; (5) contacts in the 3 s after a hit-ended give-way ≤
+  base + k·se; (6) crossing arrivals 44–46 × 6 ≥ base − k·se a case; **(7, new) all friendly hull contacts a fight ≤ base + k·se**
+  (a pass must not buy bumps). Reported: contacts with a crew passing, standoffs with durations, all/jam deaths, deaths by cause,
+  `underfire_refusals/gives/holds`, `passes/passes_done/passes_timeout`. A fail is traced (worst fight first); no re-read.
 
 ## Rulings (round 35)
 
