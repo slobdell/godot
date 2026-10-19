@@ -85,7 +85,37 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-18 late, round 34 in progress; Fable)
+### Report (2026-10-19 early, round 34 in progress; Fable)
+
+**Latest (2026-10-19 ~00:30 PDT):** M0's candidate is now stream/manoeuvre **fa5226f14**; its dev cells 11–23 run on
+builder2, then the REPORTED syn_lancer cell. The superseded pair d38f688f2's C31.1 check on builder2 (`make native check
+exited 2`): every test passed (2818/0), native twins 0 mismatches (test_native_execute_turn_in PASS, 276 turn_in_stop
+hand-backs), lint clean; the one FAIL is sim-baseline with four maps MOVED (crossing, parade, archipelago, docks: brains'
+scouts in contact now turn in), the NOT JUDGED is perf-judge's load refusal. The orchestrator asks the moves attributed on
+the pair tree with `--nav-off=turnin` before the series (`make gcp-remote T="sim-variants VARIANTS_EXTRA=--nav-off=turnin
+VARIANTS_TAG=turninoff"` against main's lines), and main ≥ 82feffa86 (docks adopted at B1's hash) merged at the re-cut.
+
+**Third round of fixes (fa5226f14), from the 5055a6ed8 dev cells (builder2, 11–23, n 13):** the 5055a6ed8 table read
+(a) 3.8 → **75.7 %** in-arc on in-reach cells, exchange 0.18 → 2.02, in-reach hits taken 104 → 85, (d)/(d2)/(e)/(g)
+pass, but law_scout v syn_scout 15 m dealt **0 in every seed** and took 496 against 440 damage: my creep-line floor
+`sqrt(yaw_share × 0.55 × 1.1)` read 1.15 for a 310 deg/s want, so the hull ran at 16 m/s, past the speed at which full
+lock reaches its yaw cap, and sat 60° off the orbiter for 25 s (the failure the original code's comment names). Now the
+floor is capped at TURN_IN_ROLL and the throttle at the yaw-cap speed; and when the bearing's own swing (rate + own)
+outruns what full lock at the cap can yaw (a 17 m/s scout at 10 m), the catch-up JINKS instead of chasing smoothly (a
+smooth circle is the easiest motion for the orbiter's lead). Laptop: that cell s11 0 → 31 dealt, 19 → 23 % in arc; s36
+91 %; the other four cells unchanged. R34.1's lines read on the 5055a6ed8 dev rows (dev seeds; steering only, the bar
+stays as filed): (a) PASS (75.7, sd_boot 3.0), (b) PASS, (c) exchange PASS (gain 1.84, k·sd 0.13), in-reach hits guard
+PASS (−1317 v k·se 528), per-cell damage guard **FAIL on law v scout 15 m** (+56 a run v k·se 47; the other five pass by
+12–257), (c-out) FAIL as written (+996 v k·se 592) but within what he accepted (medians 45 → 50, worst +23 %), (d) (d2)
+(e) (g) PASS. The one line at risk is that cell's damage guard, at the hull's physical limit; fa5226f14's jink is aimed at
+it, and the series' verdict falls where it falls (the orchestrator, 2026-10-19).
+
+**M2 is built:** `lab/m2-arriveleg` bbf1f6b77 (main 9c0f4dfce merged, brains' adapter in): `Manoeuvre.leg_holds_arrival`
+holds a move_to's arrival while a planned leg drives, bounded at 3 s of leg time per order (`Movement.arrive_hold_until`,
+reset by new_order), `arrivals_held` once per order + `arrivals_held_ticks`, `--nav-off=arriveleg` (default ON), census
+counters; tests/test_manoeuvre_arrive_leg.gd (the hold, its bound, the counters; the seam end to end through brains'
+`_leg_holds_arrival`, the hold counted, held_moves_refused 0) + brains' tests/test_ai_arrive_leg.gd: 3/3 laptop. Its
+quick-remote runs on builder0; its check waits behind M0 on builder2.
 
 **M0 (C34.10): candidate stream/manoeuvre 5055a6ed8 (main 9c0f4dfce merged); pair tree `pair/c339-r34` d38f688f2 (= 5055a6ed8 +
 `pair/native-c339`'s three native commits, clean). Its C31.1 `native check` runs on builder2 (folder godot-manoeuvre-pair);

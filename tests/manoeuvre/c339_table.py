@@ -133,3 +133,146 @@ def main(paths):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+
+# ---- Round 34 (Bar M0, R34.1): the lines in judging.md's variance-aware form ------------------------------------------
+# k = 1.645. The noise is read from the judged pair's own rows: paired differences ON - OFF per seed (per cell and
+# pooled), and a seed bootstrap for the pooled median (a) and the pooled exchange (c).
+K = 1.645
+ACCEPTED_A = 23.9          # R33.24's (a), the value he accepted (R33.38)
+ACCEPTED_COUT_HITS = 57.0  # R33.24's out-of-reach pooled hits, accepted
+ACCEPTED_COUT_WORST = 0.37  # ...and its worst cell
+
+
+def _paired(cells, keys, field, agg=sum):
+    """Per-seed paired differences ON - OFF of agg(field) over the cells in keys; returns (diffs, off_total, on_total)."""
+    seeds = sorted({r["seed"] for k in keys for r in cells[k][True]})
+    diffs = []
+    for s in seeds:
+        on = agg(float(r[field]) for k in keys for r in cells[k][True] if r["seed"] == s)
+        off = agg(float(r[field]) for k in keys for r in cells[k][False] if r["seed"] == s)
+        diffs.append(on - off)
+    return diffs, seeds
+
+
+def _se(diffs):
+    if len(diffs) < 2:
+        return float("inf")
+    return statistics.stdev(diffs) / (len(diffs) ** 0.5)
+
+
+def r34_lines(paths, boots=2000, seed=1):
+    import random
+    rng = random.Random(seed)
+    rows = [json.loads(line) for p in paths for line in open(p) if line.strip()]
+    cells = cells_of(rows)
+    seeds = sorted({r["seed"] for r in rows})
+    n = len(seeds)
+
+    def reach_of(key):
+        rs = cells[key][True] + cells[key][False]
+        return float(rs[0].get("reach_m", 1e9)) if rs else 1e9
+    inr = [k for k in cells if k[3] and k[2] <= reach_of(k)]
+    outr = [k for k in cells if k[3] and k[2] > reach_of(k)]
+    player = [k for k in cells if k[3]]
+    by_seed = {}
+    for k in cells:
+        for arm in (False, True):
+            for r in cells[k][arm]:
+                by_seed.setdefault((k, arm, r["seed"]), r)
+
+    def pool_med(keys, arm, field, ss):
+        return med([float(by_seed[(k, arm, s)][field]) for k in keys for s in ss if (k, arm, s) in by_seed])
+
+    def exchange(keys, arm, ss):
+        dealt = sum(float(by_seed[(k, arm, s)].get("damage_dealt", 0.0)) for k in keys for s in ss if (k, arm, s) in by_seed)
+        taken = sum(float(by_seed[(k, arm, s)]["damage"]) for k in keys for s in ss if (k, arm, s) in by_seed)
+        return dealt / taken if taken > 0 else float("inf")
+
+    print()
+    print("R34.1 LINES (Bar M0; k = %.3f; n = %d seeds %s..%s)" % (K, n, seeds[0], seeds[-1]))
+    # (a) pooled in-arc median on in-reach cells, with a seed bootstrap sd and the margin to 25 and to 23.9
+    a_off, a_on = pool_med(inr, False, "in_arc_pct", seeds), pool_med(inr, True, "in_arc_pct", seeds)
+    boot = sorted(pool_med(inr, True, "in_arc_pct", [rng.choice(seeds) for _ in seeds]) for _ in range(boots))
+    sd_a = statistics.pstdev(boot)
+    verdict = "PASS" if a_on >= 2 * a_off and a_on >= 25 else "FAIL"
+    accepted = "no worse than what he accepted" if a_on >= ACCEPTED_A - K * sd_a else "WORSE than what he accepted"
+    print("(a) in-arc median, in-reach cells: off %.1f on %.1f (sd_boot %.1f, 90%% %.1f..%.1f) -> %s; v R33.24's %.1f: %s (margin %+.1f sd)" % (
+        a_off, a_on, sd_a, boot[int(0.05 * boots)], boot[int(0.95 * boots)], verdict, ACCEPTED_A, accepted, (a_on - ACCEPTED_A) / sd_a if sd_a > 0 else float("inf")))
+    # (b) shots median, every player cell
+    b_off, b_on = pool_med(player, False, "shots", seeds), pool_med(player, True, "shots", seeds)
+    print("(b) shots median, player cells: off %.0f on %.0f -> %s" % (b_off, b_on, "PASS" if b_on >= 1.5 * b_off else "FAIL"))
+    # (c) pooled exchange: point AND distinguishable (ON - OFF - k sd_boot > 0)
+    x_off, x_on = exchange(inr, False, seeds), exchange(inr, True, seeds)
+    xb = sorted(exchange(inr, True, [rng.choice(seeds) for _ in seeds]) - exchange(inr, False, [rng.choice(seeds) for _ in seeds]) for _ in range(boots))
+    sd_x = statistics.pstdev(xb)
+    gain = x_on - x_off
+    print("(c) exchange pooled, in-reach: off %.2f on %.2f; gain %.2f, sd_boot %.2f, gain - k sd %.2f -> %s" % (
+        x_off, x_on, gain, sd_x, gain - K * sd_x, "PASS" if gain >= 0 and gain - K * sd_x > 0 else "FAIL"))
+    # (c) harm guards: in-reach pooled hits taken ON <= OFF + k se (paired se of the sum); per cell damage taken
+    d, _ = _paired(cells, inr, "hits_taken")
+    h_off = sum(float(r["hits_taken"]) for k in inr for r in cells[k][False])
+    h_on = sum(float(r["hits_taken"]) for k in inr for r in cells[k][True])
+    se_h = _se(d) * 1.0  # se of the per-seed sum difference; the total over seeds has se * sqrt(n)... keep it per total:
+    se_total = statistics.stdev(d) * (len(d) ** 0.5) if len(d) > 1 else float("inf")
+    print("(c) guard, in-reach hits taken (totals over %d seeds): off %.0f on %.0f (%+.0f), se %.1f, k se %.1f -> %s" % (
+        n, h_off, h_on, h_on - h_off, se_total, K * se_total, "PASS" if h_on <= h_off + K * se_total else "FAIL"))
+    worst = None
+    for k in inr:
+        dk, _ = _paired(cells, [k], "damage")
+        off_k = sum(float(r["damage"]) for r in cells[k][False]) / n
+        on_k = sum(float(r["damage"]) for r in cells[k][True]) / n
+        se_k = _se(dk)
+        ok = on_k <= off_k + K * se_k
+        line = "    cell %-26s damage taken a run: off %6.1f on %6.1f (%+6.1f), se %5.1f, k se %5.1f -> %s" % (
+            "/".join(str(x) for x in k[:3]), off_k, on_k, on_k - off_k, se_k, K * se_k, "PASS" if ok else "FAIL")
+        print(line)
+        if not ok:
+            worst = k
+    print("(c) guard, per in-reach cell damage taken: %s" % ("PASS" if worst is None else "FAIL (%s)" % "/".join(str(x) for x in worst[:3])))
+    # (c) report: per-cell exchange
+    for k in inr:
+        print("    report exchange %-26s off %.2f on %.2f" % ("/".join(str(x) for x in k[:3]), exchange([k], False, seeds), exchange([k], True, seeds)))
+    # (c-out): pooled hits ON <= OFF + k se; worst cell with OFF >= 10 (median) <= +20 %; v the accepted 57 / +37 %
+    if outr:
+        d, _ = _paired(cells, outr, "hits_taken")
+        ho_off = sum(float(r["hits_taken"]) for k in outr for r in cells[k][False])
+        ho_on = sum(float(r["hits_taken"]) for k in outr for r in cells[k][True])
+        se_o = statistics.stdev(d) * (len(d) ** 0.5) if len(d) > 1 else float("inf")
+        co_off, co_on = pool_med(outr, False, "hits_taken", seeds), pool_med(outr, True, "hits_taken", seeds)
+        worst_c = max(((med([r["hits_taken"] for r in cells[k][True]]) / med([r["hits_taken"] for r in cells[k][False]]) - 1.0, k)
+                       for k in outr if med([r["hits_taken"] for r in cells[k][False]]) >= 10), default=(0.0, None))
+        pass_o = ho_on <= ho_off + K * se_o and worst_c[0] <= 0.20
+        acc = co_on <= ACCEPTED_COUT_HITS and worst_c[0] <= ACCEPTED_COUT_WORST
+        print("(c-out) hits taken out of reach: totals off %.0f on %.0f (%+.0f), se %.1f, k se %.1f; medians off %.0f on %.0f; worst cell %+.0f %% %s -> %s; v accepted (57, +37 %%): %s" % (
+            ho_off, ho_on, ho_on - ho_off, se_o, K * se_o, co_off, co_on, 100 * worst_c[0], worst_c[1], "PASS" if pass_o else "FAIL",
+            "no worse than what he accepted" if acc else "WORSE than what he accepted"))
+    on_player = [r for k in player for r in cells[k][True]]
+    d_cmd = max(r.get("rev_face_cmd", 0) for r in on_player)
+    d_flips = max(r.get("flips_face_cmd", 0) for r in on_player)
+    bad = sorted((r["subject"], r["enemy"], int(r["radius"]), r["seed"]) for r in on_player if r.get("rev_face_cmd", 0) > 0 or r.get("flips_face_cmd", 0) > 2)
+    print("(d) reverse under a reverse command max %d, commanded gear changes max %d -> %s%s" % (d_cmd, d_flips, "PASS" if d_cmd == 0 and d_flips <= 2 else "FAIL", "" if not bad else "; runs: %s" % bad))
+    d2 = max(r.get("rev_stop", 0) for r in on_player)
+    bad2 = sorted((r["subject"], r["enemy"], int(r["radius"]), r["seed"]) for r in on_player if r.get("rev_stop", 0) > 0)
+    print("(d2) reverse at stop max %d -> %s%s" % (d2, "PASS" if d2 == 0 else "FAIL", "" if not bad2 else "; runs: %s" % bad2))
+    e = max(float(r["far_m"]) for r in on_player)
+    bad_e = sorted((r["subject"], r["enemy"], int(r["radius"]), r["seed"], round(r["far_m"], 1)) for r in on_player if float(r["far_m"]) > 29.0)
+    print("(e) furthest from post %.1f m -> %s%s" % (e, "PASS" if e <= 29.0 else "FAIL", "" if not bad_e else "; runs: %s" % bad_e))
+    free = [k for k in cells if not k[3]]
+    ident = all(JSON_DUMP(by_seed[(k, True, s)]) == JSON_DUMP(by_seed[(k, False, s)]) for k in free for s in seeds if (k, True, s) in by_seed and (k, False, s) in by_seed)
+    print("(g) free cells: %s" % ("byte-identical arms" if ident else "arms differ: in-arc off %.1f on %.1f, shots off %.0f on %.0f, hits off %.0f on %.0f" % (
+        pool_med(free, False, "in_arc_pct", seeds), pool_med(free, True, "in_arc_pct", seeds), pool_med(free, False, "shots", seeds), pool_med(free, True, "shots", seeds),
+        pool_med(free, False, "hits_taken", seeds), pool_med(free, True, "hits_taken", seeds))))
+    print("(h) report: holds a run (ON, player) median %.0f, hold_ticks %.0f; stalls max %d; mean distance off %.1f on %.1f m" % (
+        med([r.get("holds", 0) for r in on_player]), med([r.get("hold_ticks", 0) for r in on_player]), max(int(r["turn_in"][1]) for r in on_player),
+        pool_med(player, False, "mean_d", seeds), pool_med(player, True, "mean_d", seeds)))
+
+
+def JSON_DUMP(r):
+    q = dict(r)
+    q.pop("on", None)
+    return json.dumps(q, sort_keys=True)
+
+
+if __name__ == "__main__" and len(sys.argv) > 1:
+    r34_lines(sys.argv[1:])
