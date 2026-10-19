@@ -173,7 +173,8 @@ sits on top. Tonight's War Rig change already halved the gap.
 - **War Rig → main `c583e0a85`** (brains `befd86c2`): a squad sent to the arena edge has its target moved in by at most
   15 m on the final approach, and counts as arrived when it reaches the spots it actually laid. Every element arrives
   (10/10 v 5/10); arrivals elsewhere 100 v 100. What he'd notice: his War Rig squad sent to the edge arrives, and faces
-  the way he drew. It brings manoeuvre's two test-screen options (defaults unchanged). Both ride the next main check.
+  the way he drew. It brings manoeuvre's two test-screen options (defaults unchanged). **Main `437a00eb2` (rejoin + War
+  Rig) GREEN on builder2:** `make check exited 0`, 2790/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved.
 
 - **Herringbone → main `7f27a479c`** (brains `3baf3a06`, R33.35): a halted gang squad in herringbone formation lays its
   spots on your drawn facing (or the heading it first laid), not on where its vehicles happen to point. Its big gang_ifv
