@@ -536,6 +536,12 @@ const TURN_IN_STALL_DEG := 5.0
 const TURN_IN_LEASH_M := 14.0
 ## The leash lets go once the hull heads this far toward the post (cosine), not the moment it stops heading away.
 const TURN_IN_HOME_DOT := 0.5
+## Round 34: between TURN_IN_LEASH_M and this (m) the leash SLOWS THE DANCE instead of steering: no fast dwell, the
+## tightest circle that still tracks the target (the creep-line share and the lock it needs), so the hull stops drifting
+## out while keeping its aim (a full lock the shortest way home was the target's far side half the time, and lost a
+## 48 deg/s orbiter for a lap: law_scout v syn_scout 30 m seed 11, in-arc 71 -> 13 %). Past it, the shortest way home at
+## full lock, as round 33 did (the target's side alone let a gang_scout spiral 65 m from its post, seed 17).
+const TURN_IN_LEASH_HOME_M := 18.0
 ## A target further round than this keeps the side the hull was already turning to.
 const TURN_IN_BEHIND_DEG := 150.0
 ## Arm counters: ticks a hull turned in, turn-ins that stalled, and ticks the leash turned it home.
@@ -661,60 +667,67 @@ static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta
 		var game_match: Variant = ctl.get("game_match")
 		var sim_tick: int = int(game_match.tick) if game_match != null else 0
 		ctl._turn_in_pulse = TURN_IN_JINK_S * (1.0 + float(hash([String(tank.name), sim_tick]) % 1000) / 1000.0)
+	# The share x lock that yaws it as wanted (yaw = speed / turning radius at full lock), the least share that keeps
+	# that yaw above the creep line (share >= WHEEL_CREEP_THROTTLE x lock, with a margin: the plant reads a slower throttle
+	# as a multi-point turn and swaps gear every half second), and the share past which full lock reaches the hull's yaw
+	# cap (past it the yaw stops growing and the travel only swings the bearing away faster: the 15 m orbit at 16 m/s held
+	# 65 deg off at the 124 deg/s cap).
+	var yaw_share := deg_to_rad(absf(want_yaw)) * radius / top_speed
+	var floor_share := sqrt(yaw_share * TankMotion.WHEEL_CREEP_THROTTLE * 1.1)
+	var cap_share := minf(tank.max_forward_speed, deg_to_rad(float(Units.stat(tank.unit_id, "hull_turn_rate_deg", 360.0))) * radius) / top_speed
 	if not ctl._turn_in_live:
-		var yaw := deg_to_rad(absf(want_yaw)) * radius / top_speed  # = share x lock
-		# The least share that holds this yaw above the creep line (share >= WHEEL_CREEP_THROTTLE x lock, with a margin).
-		var floor_share := sqrt(yaw * TankMotion.WHEEL_CREEP_THROTTLE * 1.1)
-		var cap_share := minf(tank.max_forward_speed, deg_to_rad(float(Units.stat(tank.unit_id, "hull_turn_rate_deg", 360.0))) * radius) / top_speed
-		var share := maxf(cap_share if ctl._turn_in_fast else TURN_IN_JINK_LOW, floor_share)
-		cmd.throttle = share
-		cmd.turn = -signf(want_yaw) * clampf(yaw / maxf(share, 0.01), 0.0, 1.0)
-		_turn_in_leash(ctl, cmd, here, forward)
-		turn_in_ticks += 1
-		return true
-	# On target is progress: a hull inside its arc yaws only as fast as the bearing, and read as stalled it handed back to
-	# the creep, which reversed (the 45 m orbit: +4 / -3 m/s every think, 27 gear changes in 30 s). The yaw is SUMMED tick
-	# by tick: the angle between the window's first heading and this one read a full lap at 146 deg/s as no yaw at all, and
-	# handed a hull at 11.8 m/s to the face planner's reverse legs (gang_scout, 30 m orbit, seed 23).
-	ctl._turn_in_yawed += rad_to_deg(absf(ctl._turn_in_heading.signed_angle_to(forward, Vector3.UP)))
-	ctl._turn_in_heading = forward
-	if absf(error) <= half_arc:
-		ctl._turn_in_window = TURN_IN_STALL_S
-		ctl._turn_in_yawed = 0.0
-	ctl._turn_in_window -= delta
-	if ctl._turn_in_window <= 0.0:
-		if ctl._turn_in_yawed < TURN_IN_STALL_DEG:
-			turn_in_stalls += 1
-			ctl._turn_in_live = false
-			ctl._turn_in_rest = tick + int(SimClock.TICK_RATE * TURN_IN_STALL_S)  # sit out a second: the planner has it
-			return false
-		ctl._turn_in_window = TURN_IN_STALL_S
-		ctl._turn_in_yawed = 0.0
-	# Full lock, at the speed that yaws it as wanted: never under TURN_IN_ROLL (the plant's creep line,
-	# WHEEL_CREEP_THROTTLE x |turn|, reads a slower throttle as a multi-point turn and swaps gear every half second) and
-	# never past the speed at which full lock reaches the hull's yaw cap (past it the yaw stops growing and the travel
-	# only swings the bearing away faster: the 15 m orbit at 16 m/s held 65 deg off at the 124 deg/s cap).
-	var top := minf(tank.max_forward_speed, deg_to_rad(float(Units.stat(tank.unit_id, "hull_turn_rate_deg", 360.0))) * radius)
-	# At the speed that yaws it as wanted. (Jinking the catch-up too, roll / cap on the jink's clock, cost the aim it is
-	# for: builder2 d7cf8cbf, dev seeds 11-23, in-arc 23.0 -> 18.3 %, hits 72 -> 78.)
-	cmd.throttle = clampf(deg_to_rad(absf(want_yaw)) * radius / top_speed, TURN_IN_ROLL, maxf(top / top_speed, TURN_IN_ROLL))
+		# On target: the jink's dwell, slow or fast.
+		cmd.throttle = maxf(cap_share if ctl._turn_in_fast else TURN_IN_JINK_LOW, floor_share)
+	else:
+		# On target is progress: a hull inside its arc yaws only as fast as the bearing, and read as stalled it handed back
+		# to the creep, which reversed (the 45 m orbit: +4 / -3 m/s every think, 27 gear changes in 30 s). The yaw is SUMMED
+		# tick by tick: the angle between the window's first heading and this one read a full lap at 146 deg/s as no yaw at
+		# all, and handed a hull at 11.8 m/s to the face planner's reverse legs (gang_scout, 30 m orbit, seed 23).
+		ctl._turn_in_yawed += rad_to_deg(absf(ctl._turn_in_heading.signed_angle_to(forward, Vector3.UP)))
+		ctl._turn_in_heading = forward
+		if absf(error) <= half_arc:
+			ctl._turn_in_window = TURN_IN_STALL_S
+			ctl._turn_in_yawed = 0.0
+		ctl._turn_in_window -= delta
+		if ctl._turn_in_window <= 0.0:
+			if ctl._turn_in_yawed < TURN_IN_STALL_DEG:
+				turn_in_stalls += 1
+				ctl._turn_in_live = false
+				ctl._turn_in_rest = tick + int(SimClock.TICK_RATE * TURN_IN_STALL_S)  # sit out a second: the planner has it
+				return false
+			ctl._turn_in_window = TURN_IN_STALL_S
+			ctl._turn_in_yawed = 0.0
+		# Catching up: no jink (jinking the catch-up too cost the aim it is for: builder2 d7cf8cbf, dev seeds 11-23,
+		# in-arc 23.0 -> 18.3 %, hits 72 -> 78), at the speed that yaws it as wanted. Round 34: that speed was floored
+		# at TURN_IN_ROLL with a FULL lock whatever the want, which chattered left-right every tick once the want was
+		# small and, worse, drove a hull with an 11 deg error nearly straight at 6.9 m/s, out past its leash every time
+		# (law_scout v syn_scout 30 m, seed 11: leashed 416 of 786 ticks, far 31 m, in-arc 71 -> 10 %). Now the creep
+		# line is the floor and the lock is proportional, as on target.
+		cmd.throttle = clampf(yaw_share, floor_share, maxf(cap_share, floor_share))
 	# A target nearly behind keeps the way it was being turned to: the error's sign flips across 180 deg, and a full lock
 	# that followed it wiggled left-right in place of coming round (the trace: err +177 -> -121).
 	if absf(error) > TURN_IN_BEHIND_DEG and ctl._turn_in_sign != 0.0:
 		want_yaw = absf(want_yaw) * ctl._turn_in_sign
 	ctl._turn_in_sign = signf(want_yaw)
-	cmd.turn = -signf(want_yaw)  # Steering's convention: turn < 0 turns left
-	_turn_in_leash(ctl, cmd, here, forward)
+	cmd.turn = -signf(want_yaw) * clampf(yaw_share / maxf(cmd.throttle, 0.01), 0.0, 1.0)  # Steering's convention: turn < 0 turns left
+	_turn_in_leash(ctl, cmd, here, forward, yaw_share, floor_share)
 	turn_in_ticks += 1
 	return true
 
 
 ## Past TURN_IN_LEASH_M from the player's post, heading away from it, the hull turns full lock toward the post's side.
-static func _turn_in_leash(ctl: OrderController, cmd: TankCommand, here: Vector3, forward: Vector3) -> void:
+static func _turn_in_leash(ctl: OrderController, cmd: TankCommand, here: Vector3, forward: Vector3, yaw_share: float, floor_share: float) -> void:
 	var post: Variant = ctl.get("_player_post")
 	if post is Vector3:
 		var home := Vector3((post as Vector3).x - here.x, 0.0, (post as Vector3).z - here.z)
-		if home.length() > TURN_IN_LEASH_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
+		if home.length() > TURN_IN_LEASH_M and home.length() <= TURN_IN_LEASH_HOME_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
+			# The first tier: the tightest circle that tracks (see TURN_IN_LEASH_HOME_M).
+			cmd.throttle = minf(cmd.throttle, floor_share)
+			cmd.turn = signf(cmd.turn) * clampf(yaw_share / maxf(cmd.throttle, 0.01), 0.0, 1.0)
+			ctl._turn_in_leash_sign = 0.0
+			turn_in_leashed += 1
+			return
+		if home.length() > TURN_IN_LEASH_HOME_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
 			# Its side is chosen once and held until the hull heads home: with the post nearly behind, the side's sign
 			# flipped every tick and the full lock wiggled while the hull drove straight away (gang_scout, 30 m orbit,
 			# seed 23: 31.5 m out, the leash on 408 of 829 face ticks).
