@@ -142,6 +142,9 @@ manoeuvre-hull-seeds-differ: import ## manoeuvre: two seeds of one hull-rest tas
 # team; shots at and hits on targets touching something), NAV_FLAGS for an arm -> build/manoeuvre/fights/<seed>.log.
 # Two arms side by side: tests/manoeuvre/fight_table.py BASE_DIR NEW_DIR (paired by seed, within 2 se).
 FIGHT_SEEDS ?= 1 2 3 4 5 6 7 8
+# Round 35: FIGHT_RANGE=a-b replaces FIGHT_SEEDS (make remote's T is word-split, so a list can't travel).
+FIGHT_RANGE ?=
+override FIGHT_SEEDS := $(if $(FIGHT_RANGE),$(shell seq $(subst -, ,$(FIGHT_RANGE))),$(FIGHT_SEEDS))
 FIGHT_JOBS ?= 4
 FIGHT_SECONDS ?= 180
 # Round 35 (R34.15/R35.7: random arenas deal twins): FIGHT_AT = a comma list of fixed arenas runs each seed on each

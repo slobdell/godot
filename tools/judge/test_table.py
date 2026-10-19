@@ -53,9 +53,9 @@ class Table(unittest.TestCase):
     def test_round_30_pairs_are_pooled(self):
         rigs = self.by[("Terminus census, rigs (a seed)", "arrived (of 16)")]
         self.assertEqual(rigs["n_today"], 13)
-        # M4, M1b, M2b, kturnarc, round 31's CP-H and M1b(2) x2, and round 33's two planner series (printed se); M4b run 2's
-        # rigs are byte-identical and out
-        self.assertEqual(len(rigs["pairs"].split(";")), 9)
+        # M4, M1b, M2b, kturnarc, round 31's CP-H and M1b(2) x2, round 33's two planner series and round 32's CP-Q (printed
+        # se); M4b run 2's rigs are byte-identical and out
+        self.assertEqual(len(rigs["pairs"].split(";")), 10)
         self.assertNotIn("M4b run 2", rigs["pairs"])
         mixed = self.by[("Terminus census, mixed (a seed)", "arrived (of 24)")]
         self.assertEqual(len(mixed["pairs"].split(";")), 8)  # round 30's five and round 31's three
@@ -63,16 +63,28 @@ class Table(unittest.TestCase):
         self.assertEqual(len(kills["pairs"].split(";")), 5)
         # se 21.5, 33.6 (n 24), CP-H's 15.4 (n 24, round 31), CP-F's 25.6 (n 21) and 31.4 (n 23)
         self.assertAlmostEqual(kills["sd_run"], 5.47, delta=0.05)
-        art = self.by[("traffic-census (3 arenas x seeds)", "artillery shots")]
-        self.assertGreater(art["sd_run"], 30.0)  # T1c-b's one Parade run: the T1b-style caveat
-        clock = self.by[("traffic-series yard_open/cross", "xclear (crossing clock, s)")]
-        self.assertAlmostEqual(clock["sd_run"], 0.92, delta=0.02)
-        self.assertAlmostEqual(clock["se_today"], 0.217, delta=0.005)  # T3b quoted se 0.22
-        sumps = self.by[("Sumps cell (seeds x 6 ticks, a run)", "all-within-8 m s (never = 90 s)")]
-        self.assertAlmostEqual(sumps["base_run"], 37.53, delta=0.05)  # the base median B5c-v4 quoted as 37.5
-        self.assertIn("sd_run", sumps)
         xfast = self.by[("traffic-series terminus/head", "xfast")]
         self.assertNotIn("T3b", xfast["pairs"])  # the turns rule fired in 2 of 18 head-on runs: untouched, not pooled
+
+    def test_round_31_and_32_pairs_are_pooled(self):
+        """C35.9 (round 35): the owed pairs. Each moved a row the round-30/34 renders pinned; the old values are in the comments."""
+        art = self.by[("traffic-census (3 arenas x seeds)", "artillery shots")]
+        self.assertIn("T1c-b2 cf81aedc", art["pairs"])
+        self.assertLess(art["sd_run"], 25.0)  # was 34.05 on T1c-b's one Parade run; two T1c-b2 pairs at n 18 dilute it (19.6)
+        clock = self.by[("traffic-series yard_open/cross", "xclear (crossing clock, s)")]
+        self.assertAlmostEqual(clock["sd_run"], 1.02, delta=0.02)  # was 0.92 (T3b alone); T3b-c's pair pooled in
+        self.assertAlmostEqual(clock["se_today"], 0.240, delta=0.005)  # T3b-c quoted se 0.26 on its own pair
+        self.assertIn("T3b-c b5882c9c", clock["pairs"])
+        self.assertNotIn("f5dc4147", clock["pairs"])  # round 31's pair: the same seeds and totals, not pooled twice
+        sumps = self.by[("Sumps cell (seeds x 6 ticks, a run)", "all-within-8 m s (never = 90 s)")]
+        self.assertIn("B5c-v5 e675a28a", sumps["pairs"])
+        self.assertAlmostEqual(sumps["base_run"], 35.92, delta=0.05)  # the pooled base median (B5c-v4 alone quoted 37.5)
+        arrive = self.by[("arrive series (100 cells)", "all-within-8 m s, cells complete in both arms")]
+        self.assertIn("B3b-2b 5ed61f91", arrive["pairs"])
+        self.assertNotIn("B10", arrive["pairs"])  # B3b-2c's and B10's arrive arms are identical in every cell: equalities
+        hull = self.by[("hull-rest probe (a task, OLD ruler)", "crews still moving at 75 s, wheeled turret")]
+        self.assertIn("B11 ffba7f77", hull["pairs"])
+        self.assertIn("CP-Q 65cc43dd", hull["pairs"])
 
     def test_round_33_pairs_are_pooled(self):
         mixed = self.by[("Terminus census, mixed (a seed)", "arrived (of 24)")]
@@ -120,6 +132,8 @@ class Table(unittest.TestCase):
         self.assertIn("| traffic-series terminus/head | xfast |", text)
         self.assertIn("18/18 v 0/18", text)
         self.assertIn("12/12 v 1/12 (B5c-v4 yard r30", text)
+        self.assertIn("2 v 9 (B3b-2b arrive r31", text)
+        self.assertIn("an equality: no discordant cell", text)
         self.assertIn("hold ON (4 seed sets)", text)
         self.assertIn("the clicked pair at `55622870`", text)
         with open(csv_path) as handle:

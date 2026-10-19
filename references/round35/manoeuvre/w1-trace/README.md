@@ -60,3 +60,12 @@ native's mirror; base = `--nav-off=wheelhalt` (the switch). n = 72 fights an arm
 motion) is NON-ZERO in the base arm. **Deciding:** that counter → ~0 in the ON arm; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open deaths, stuck deaths, jam deaths, far
 loops, kills and hit rate per team, each within 1.645 se paired; all deaths reported. The scout's fights (C33.9 shipped) are covered by
 kills/hit rate.
+
+## W1b's series, as agreed with the orchestrator (2026-10-19 afternoon, before any judged number)
+
+- **Arms, both native:** base = `pair/native-w1b` f4f6bf1d2 as is (WHEEL_HALT_DEFAULT false); ON = `lab/w1b-on` 0015f48ad (the same
+  + WHEEL_HALT_DEFAULT true). (A `--nav-off` arm would leave native's drive.)
+- **Gate (C31.1):** `make native check` on 0015f48ad, sim-baseline moves attributed with the base tree.
+- **Seeds:** 3820–3843 × locks/terminus/sumps = 72 fights an arm, through the wedge probe (`manoeuvre-wedge-trace`: the creep counter,
+  causes, wedged/held deaths) and the fights census (`manoeuvre-fights FIGHT_AT=locks,terminus,sumps`: kills, hit rate, far rows).
+- **Counter first:** `wheel_halts` > 0 in the ON arm, and `halt_creep_ticks` non-zero in the base.

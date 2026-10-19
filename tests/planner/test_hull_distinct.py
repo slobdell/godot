@@ -95,6 +95,16 @@ class RunIdentity(unittest.TestCase):
         self.assertEqual(counts["face_pairs"], counts["face_keep_table"])
         self.assertEqual(counts["kept_share"], counts["face_keep_table"])
 
+    def test_face_keep_far_is_deleted(self):
+        """R34.5: FACE_KEEP_FAR was reported only in round 34 and is deleted in round 35 (C35.9); face_pairs judges."""
+        root = self.layout()
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            sys.argv = ["x", root]
+            face_keep_table.main()
+        self.assertNotIn("FACE_KEEP_FAR", out.getvalue())
+        self.assertIn("FACE_KEEP_ABANDONED drawn", out.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
