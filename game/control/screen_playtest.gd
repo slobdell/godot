@@ -183,6 +183,23 @@ static func faced_squads(flags: LaunchFlags) -> Array[int]:
 	return picked if not picked.is_empty() else [1, 2] as Array[int]
 
 
+## Round 34 (manoeuvre M1 (2B), granted, ADDITIVE): `--faced-shift-m=<m>` shifts the faced drag's destination by that many
+## metres in a direction the match SEED sets (the stage was barely seed-sensitive: seeds 40 = 43 and 44 = 45 row for row,
+## R33.23, so a paired se over seeds understated the noise). Default 0: every other run is unchanged.
+static func faced_shift_m(flags: LaunchFlags) -> float:
+	var given := flags.text("faced-shift-m", "")
+	return float(given) if given.is_valid_float() else 0.0
+
+
+## The shift as a vector: `faced_shift_m` long, at an angle a hash of the seed picks (whole degrees, deterministic).
+static func faced_shift(flags: LaunchFlags) -> Vector3:
+	var m := faced_shift_m(flags)
+	if m <= 0.0:
+		return Vector3.ZERO
+	var angle := deg_to_rad(float(hash(flags.integer("seed", 0) * 7919 + 13) % 360))
+	return Vector3(cos(angle), 0.0, sin(angle)) * m
+
+
 func _faced(scenario: String) -> void:
 	var members: Array[String] = []
 	for number in faced_squads(LaunchFlags.from_environment()):
@@ -201,10 +218,13 @@ func _faced(scenario: String) -> void:
 	var right: Vector3 = Match.team_frame(controls.team)["right"]
 	var centre := _centroid(members)
 	var travel := -right if centre.dot(right) > 0.0 else right
-	var at := ElementPlan.clamp_to_arena(centre + travel * OFF_M)
+	var shift := faced_shift(LaunchFlags.from_environment())
+	var at := ElementPlan.clamp_to_arena(centre + travel * OFF_M + shift)
 	var facing := travel.rotated(Vector3.UP, deg_to_rad(faced_off_deg(LaunchFlags.from_environment()))).normalized()
 	row["nearest_enemy_at_press_m"] = snappedf(_nearest_enemy(members), 0.1)
 	row["at"] = [snappedf(at.x, 0.1), snappedf(at.z, 0.1)]
+	if shift != Vector3.ZERO:
+		row["shift"] = [snappedf(shift.x, 0.1), snappedf(shift.z, 0.1)]
 	row["drawn"] = [snappedf(facing.x, 0.001), snappedf(facing.z, 0.001)]
 	# Look at the spot from his pose: the press must land on the ground there, the release toward the facing.
 	var rig := controls.rig
@@ -490,7 +510,11 @@ func _judge(crews: Array[String], facing: Vector3, lines := true) -> Dictionary:
 		each.append({"unit": unit_name, "id": tank.unit_id,
 				"class": "%s/%s" % [Units.stat(tank.unit_id, "locomotion", "?"), Units.stat(tank.unit_id, "mount", "?")],
 				"hull_error_deg": snappedf(absf(rad_to_deg(Vector2(nose.x, nose.z).angle_to(Vector2(facing.x, facing.z)))), 0.1),
-				"still": _all_still([unit_name] as Array[String])})
+				"still": _all_still([unit_name] as Array[String]),
+				# Round 34 (manoeuvre M1 (1B), granted, ADDITIVE): the speed the hull really made (Tank.real_velocity) beside
+				# `still`, which reads the plant's velocity (a wedged hull reported 4.9 m/s and made 0.00: R33.23).
+				"real_mps": snappedf(Vector2(tank.real_velocity.x, tank.real_velocity.z).length(), 0.01),
+				"mps": snappedf(Vector2(tank.velocity.x, tank.velocity.z).length(), 0.01)})
 		# Where the gun points (a turret's heading), which is what "faces it" means for a turreted crew.
 		var gun := -tank.turret.global_basis.z if tank.turret != null else nose
 		guns += Vector3(gun.x, 0.0, gun.z).normalized()

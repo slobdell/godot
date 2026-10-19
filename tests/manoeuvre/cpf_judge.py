@@ -35,7 +35,13 @@ for p in sorted(root.glob("*/*/*/screen.json")):
         for sq in row["squads"]:
             for c in sq.get("each", []):
                 mv = 0 if c.get("still", True) else 1
-                if mv and WEDGED and kind_of(last.get(c.get("unit", ""))) == "pinned":
+                # Round 34 (M1 (1B)): "still" reads the speed the hull really made when the row carries it (real_mps,
+                # screen_playtest); a hull the plant reports moving but that made < 0.3 m/s is WEDGED, its own line.
+                if mv and "real_mps" in c and float(c["real_mps"]) < 0.3:
+                    mv = 0
+                    r["wedged"] += 1
+                    r["wedged_wt"] += 1 if c["class"] == "wheels/turret" else 0
+                elif mv and WEDGED and kind_of(last.get(c.get("unit", ""))) == "pinned":
                     mv = 0
                     r["wedged"] += 1
                     r["wedged_wt"] += 1 if c["class"] == "wheels/turret" else 0

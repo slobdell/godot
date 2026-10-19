@@ -85,6 +85,11 @@ M1_SEED_LIST = $(if $(M1_SEEDS),$(shell seq $(subst -, ,$(M1_SEEDS))),$(HULL_SEE
 # hull-rest series to CP-F attempt 3) do NOT compare with numbers after it.
 HULL_JITTER_DEG ?= 20
 _hull_jitter = $(if $(filter-out 0,$(HULL_JITTER_DEG)),--faced-off-deg=$$(( 60 - $(HULL_JITTER_DEG) + ($(1)) % (2 * $(HULL_JITTER_DEG) + 1) )))
+# Round 34 (M1 (2B), the ruler): the seed also shifts the order's destination HULL_SHIFT_M metres in a seed-hashed
+# direction (screen_playtest's --faced-shift-m), so two seeds never share a geometry. HULL_SHIFT_M=0 restores the fixed
+# destination. Numbers from before this (every hull-rest series to CP-F attempt 3) do NOT compare with numbers after it.
+HULL_SHIFT_M ?= 6
+_hull_shift = $(if $(filter-out 0,$(HULL_SHIFT_M)),--faced-shift-m=$(HULL_SHIFT_M))
 .PHONY: manoeuvre-hull-rest
 manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class, drawn/clicked x new/base (--nav-off=turnhull) on one commit -> build/manoeuvre/hull-rest/ + the A/B table
 	mkdir -p $(M1_DIR) && for arm in $(M1_ARMS); do rm -rf $(M1_DIR)/$$arm; done  # one arm a call keeps the others
@@ -94,7 +99,7 @@ manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class,
 		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=$(if $(M1_BASE_OFF),--nav-off=$(M1_BASE_OFF));; new_*) off=$(if $(M1_NEW_OFF),--nav-off=$(M1_NEW_OFF));; esac; \
 		timeout 300 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) $(call _hull_jitter,$$2) \
+			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) $(call _hull_jitter,$$2) $(_hull_shift) \
 			--screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
