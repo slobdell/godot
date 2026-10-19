@@ -144,8 +144,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   collapsed to a single leg, both arms: a separate bug, below) ended 29 m short in the changed traffic.
 - **Fix try (`45d34470a`):** with the deal on, the gate is passed from where the squads come from (`before`) toward the next
   click. s3614 laptop: squad 1's place now forward and to the side; all in 33 s. Locks 5 route s34 unchanged (17 s).
-- **Separate bug seen (both arms, not touched):** in Crossing 5 route s3614 squads 3-5 got ONE leg (straight to their final
-  place), not the shifted route: their first waypoint order didn't start a route for them. To trace (round 36 or after D4).
+- **Separate bug seen (both arms, not touched; he would notice it):** in Crossing 5 route s3614 squads 3-5 got ONE leg each
+  (their task REPLACED at each shift-click, never queued). Traced with the probe's `--probe-legs-each=on`: from the first
+  click, `selection_squads()` returns squads 3-5 with MIXED units (squad 4 = Charlie_2, Charlie_3, Delta_4, Delta_5, Echo_4;
+  squad 3 = Echo_1-3), i.e. `SelectionSquads.split` dealt them west to east as if from one oversized group, so no element is
+  exactly theirs, `_queue_task_for` gets `held == null`, returns null, and the squad's task is replaced. Not yet traced: why
+  split takes rule 3 on this seed (seed 34 splits cleanly). Candidate next item after D4 / D5.
 - **Next:** the fresh re-read on 3631-3636 (filed on main, same bar) once D4's run frees this folder; fails again -> D5 parks.
 
 ### D5 crossing drives: built on stream/orders `77c284868` (no builder0 number yet)
