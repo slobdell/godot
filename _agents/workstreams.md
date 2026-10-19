@@ -107,6 +107,16 @@ _Filed here before any number._
   wheeled crews (its counter; non-zero in base first) → ~0; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open,
   stuck, jam deaths, far loops, kills and hit rate per team, each within 1.645 se paired; all deaths reported.
 
+- **E1 straggler release (brains, C35.7 element side per R35.3), filed before any number on `stream/brains` (code `ec1f5cc75`:
+  `ElementPlan._advance` stops waiting on a crew that has not come 2 m nearer its slot in 8 s; `--straggler=off` = the old gate).**
+  One commit, builder0, native, both arms on the same tree. Workload: hull-rest drawn, faced_attack_move + faced_move, FRESH seeds
+  701–716 x 4 factions (128 runs an arm); fights census on fresh seeds 720–743. **Counter first (R35.5):** straggler releases > 0
+  in the new arm. **(a) Deciding:** attack-move long-hold seconds (leg waits >= 10 s) new <= 0.6 x base AND lower by > 2 se, paired
+  by seed. **(b)** faced_move not worse by > 2 se. **Guards:** (c) crews left > 25 m off their slot in their element's last trace
+  row, new - base <= max(2, 2 se), each task; (d) late movers at 75 s (real_mps >= 0.3) and settled-in-75 s within 2 se; (e) squads
+  arrived within 2 se; (f) fights' kills and deaths each side within 2 se; (g) `make check` green, moved sim-baseline maps
+  attributed with `--straggler=off`.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
