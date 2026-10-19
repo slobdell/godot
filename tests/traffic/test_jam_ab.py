@@ -47,7 +47,7 @@ class Lines(unittest.TestCase):
                 jam_ab.main([base, arm])
             text = out.getvalue()
             self.assertIn("G jam-under-fire deaths (deciding gain)", text)
-            self.assertIn("T6 PASS", text)
+            self.assertIn("T6/T7 PASS", text)
             self.assertNotIn("WARNING", text)
 
     def test_a_rise_fails_the_gain(self):
@@ -58,7 +58,7 @@ class Lines(unittest.TestCase):
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
                 jam_ab.main([base, arm])
-            self.assertIn("T6 FAIL", out.getvalue())
+            self.assertIn("T6/T7 FAIL", out.getvalue())
 
 
 if __name__ == "__main__":

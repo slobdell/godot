@@ -5,6 +5,10 @@ extends TestCase
 ## give-way for 63 %): the step aside is what exposed them. Under fire = hit within UNDER_FIRE_S (5 s: T5's hit cadence is one
 ## hit every ~2.5 s, so the brain's 2 s ENGAGED window would lapse between hits). Three places, one rule: `ask()` refuses, the
 ## asker's own step aside (`_begin_yield`) is held, and a give-way already begun finishes (T6b, R34.17).
+##
+## Round 35 (T7, C35.8): T6b moved the dying one for one into crews stalled behind the refuser. So the refusal (and the hold)
+## happens ONLY when the asker has a way round: a pass lane beside the refuser swept for the asker's hull. The refused asker
+## then PASSES (steers by the lane, <= PASS_MAX_S). With no lane (a one-hull neck, a third hull in it) it gives way as today.
 
 var _lab: TacticsLab
 
@@ -19,10 +23,12 @@ func teardown() -> void:
 
 
 ## A Law tank parked on open ground (yard_open's band) and a Law tank 12 m south of it heading north.
-func _stage() -> Array:
+func _stage(blockers: Array = []) -> Array:
 	_lab = TacticsLab.create(self, 7, "yard_open")
 	var parked := _lab.unit(Match.Team.GREEN, "Green_Parked", Vector3(0.0, 0.0, 0.0), 0.0, "law_tank")
 	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 12.0), 0.0, "law_tank")
+	for i in blockers.size():
+		_lab.unit(Match.Team.GREEN, "Green_Block_%d" % i, blockers[i], 0.0, "law_tank")
 	await _lab.start()
 	for i in 3:
 		await _lab.step()
@@ -100,21 +106,142 @@ func test_on_a_set_up_battery_under_fire_refuses_by_the_battery_rule_not_twice()
 	assert_eq(Movement.underfire_refusals, fire, "not counted again as under fire")
 
 
-func test_on_an_asker_under_fire_does_not_step_aside_itself() -> void:
+func test_on_a_crew_under_fire_does_not_step_aside_itself_for_one_that_can_pass_it() -> void:
 	Traffic.set_off("underfire", false)
 	var units: Array = await _stage()
 	var parked: Tank = units[0]
 	var asker: Tank = units[1]
-	var asker_mover := Movement.of(asker)
+	var mover: Movement = units[2]
 	var holds := Movement.underfire_holds
-	_hit(asker, 1.0)
-	assert_true(not asker_mover._begin_yield(String(parked.name), parked.global_position, Vector2(0.0, -1.0)),
-			"under fire, the asker's own step aside is held")
+	_hit(parked, 1.0)
+	# The other (12 m south, facing north) wants to go NORTH, through me, on open ground: it has a lane round me.
+	assert_true(not mover._begin_yield(String(asker.name), asker.global_position, Vector2(0.0, -1.0)),
+			"under fire, my own step aside is held: the other can pass me")
 	assert_eq(Movement.underfire_holds, holds + 1, "counted as an under-fire hold")
-	assert_eq(asker_mover.yield_to, "", "it is not giving way")
-	_hit(asker, 8.0)
-	assert_true(asker_mover._begin_yield(String(parked.name), parked.global_position, Vector2(0.0, -1.0)),
+	assert_eq(mover.yield_to, "", "it is not giving way")
+	assert_true(not mover._yield_unfit_last, "a hold is not 'nothing fits' (no swap ask follows)")
+	_hit(parked, 8.0)
+	assert_true(mover._begin_yield(String(asker.name), asker.global_position, Vector2(0.0, -1.0)),
 			"8 s after the last hit it steps aside as today")
+
+
+func test_on_a_crew_under_fire_steps_aside_for_one_that_has_no_way_past_it() -> void:
+	# The other is going NORTH, away from me: a pass is forward, so there is no lane round me for it; I step aside as today.
+	Traffic.set_off("underfire", false)
+	var units: Array = await _stage()
+	var parked: Tank = units[0]
+	var asker: Tank = units[1]
+	var mover: Movement = units[2]
+	var holds := Movement.underfire_holds
+	_hit(parked, 1.0)
+	assert_eq(mover._pass_lane(String(asker.name), asker.global_position, Vector2(0.0, 1.0)), 0.0,
+			"the other is going away from me: a pass is forward, so no lane")
+	mover._begin_yield(String(asker.name), asker.global_position, Vector2(0.0, 1.0))
+	assert_eq(Movement.underfire_holds, holds, "no hold counted")
+
+
+func test_on_open_ground_the_refusal_offers_a_side_and_the_asker_passes() -> void:
+	Traffic.set_off("underfire", false)
+	var units: Array = await _stage()
+	var parked: Tank = units[0]
+	var asker: Tank = units[1]
+	var mover: Movement = units[2]
+	_hit(parked, 1.0)
+	assert_true(not mover.ask(String(asker.name), asker.global_position, Vector2(0.0, -1.0)), "refused under fire")
+	assert_true(mover.pass_offer != 0.0, "with a side offered (%.0f)" % mover.pass_offer)
+	# The whole drive: the asker sent 30 m north through the crew under fire, which is hit every tick and never moves.
+	var passes := Movement.passes
+	var done := Movement.passes_done
+	var refusals := Movement.underfire_refusals
+	var post := parked.global_position
+	_lab.element([String(parked.name)], "Post").assign({"verb": "move", "to": [post.x, post.z]})
+	var go := _lab.element([String(asker.name)], "Go")
+	go.assign({"verb": "move", "to": [0.0, -30.0]})
+	var yielded := false
+	for tick in SimClock.TICK_RATE * 20:
+		parked.ticks_since_hit = 0
+		await _lab.step()
+		if tick % 15 == 0:
+			print("T7PASS t=%d asker=(%.1f,%.1f) %s by=%s parked=(%.1f,%.1f) %s order=%s" % [tick, asker.global_position.x,
+					asker.global_position.z, Movement.of(asker).phase, Movement.of(asker)._pass_by, parked.global_position.x,
+					parked.global_position.z, mover.phase, str(mover.ctl.move_order.get("type", ""))])
+		yielded = yielded or mover.yield_to != ""
+		if asker.global_position.z < -12.0:
+			break
+	assert_true(Movement.underfire_refusals > refusals, "the asker asked and was refused (%d)" % (Movement.underfire_refusals - refusals))
+	assert_true(Movement.passes > passes, "and passed (%d passes)" % (Movement.passes - passes))
+	assert_true(Movement.passes_done > done, "a pass ended abreast (%d)" % (Movement.passes_done - done))
+	assert_true(asker.global_position.z < -12.0, "the asker is past the crew (z %.1f)" % asker.global_position.z)
+	assert_true(not yielded, "the crew under fire never stepped aside")
+	assert_true(Movement._flat_distance(parked.global_position, post) < 1.5, "and holds its spot (moved %.1f m)"
+			% Movement._flat_distance(parked.global_position, post))
+
+
+func test_on_a_third_hull_in_both_lanes_the_crew_under_fire_gives_way_as_today() -> void:
+	Traffic.set_off("underfire", false)
+	var lateral := Avoidance.radius_of("law_tank") * 2.0 + Movement.YIELD_LINE_MARGIN
+	var units: Array = await _stage([Vector3(lateral, 0.0, 0.0), Vector3(-lateral, 0.0, 0.0)])
+	var parked: Tank = units[0]
+	var asker: Tank = units[1]
+	var mover: Movement = units[2]
+	Avoidance.refresh(mover.ctl.tanks_root)
+	_hit(parked, 1.0)
+	assert_eq(mover._pass_lane(String(asker.name), asker.global_position, Vector2(0.0, -1.0)), 0.0, "no lane: both sides taken")
+	var gives := Movement.underfire_gives
+	mover.ask(String(asker.name), asker.global_position, Vector2(0.0, -1.0))
+	assert_eq(Movement.underfire_gives, gives + 1, "under fire with no lane: counted as given way anyway")
+	assert_eq(mover.pass_offer, 0.0, "and nothing offered")
+
+
+func test_on_a_one_hull_neck_the_crew_under_fire_gives_way_as_today() -> void:
+	# test_traffic_neck's place (crossing, seed 403): a scout in a one-hull neck, a tank coming through from the west.
+	Traffic.set_off("underfire", false)
+	_lab = TacticsLab.create(self, 403, "crossing")
+	var neck := Vector3(54.1, 0.0, 56.5)
+	var from := Vector3(44.0, 0.0, 58.0)
+	var scout := _lab.unit(Match.Team.GREEN, "Green_Eyes_1", neck, PI / 2.0, "scout")
+	var tank := _lab.unit(Match.Team.GREEN, "Green_Guns_1", from, -PI / 2.0, "tank")
+	await _lab.start()
+	for pair: Array in [[scout, neck, PI / 2.0], [tank, from, -PI / 2.0]]:
+		var hull: Tank = pair[0]
+		hull.global_position = pair[1]
+		hull.rotation.y = pair[2]
+		hull.velocity = Vector3.ZERO
+	for i in 3:
+		await _lab.step()
+	var mover := Movement.of(scout)
+	mover.ctl.move_order = {"type": "stop"}
+	mover.idle()
+	_hit(scout, 1.0)
+	var way := Vector2(neck.x - from.x, neck.z - from.z).normalized()
+	assert_eq(mover._pass_lane(String(tank.name), tank.global_position, way), 0.0, "no lane round the scout in the neck")
+	mover.ask(String(tank.name), tank.global_position, way)
+	assert_eq(mover.pass_offer, 0.0, "nothing offered: the give-way proceeds as today")
+
+
+func test_on_an_unsticking_crew_asking_behind_is_never_refused_for_fire() -> void:
+	Traffic.set_off("underfire", false)
+	var units: Array = await _stage()
+	var asker: Tank = units[1]
+	var mover: Movement = units[2]
+	_hit(units[0], 1.0)
+	var refusals := Movement.underfire_refusals
+	assert_true(mover.ask(String(asker.name), asker.global_position, Vector2(0.0, -1.0), "behind"), "a 'behind' ask: gives way")
+	assert_eq(Movement.underfire_refusals, refusals, "no under-fire refusal")
+
+
+func test_on_a_pass_runs_out_of_clock_and_that_crew_is_not_passed_again() -> void:
+	Traffic.set_off("underfire", false)
+	var units: Array = await _stage()
+	var parked: Tank = units[0]
+	var asker_mover := Movement.of(units[1])
+	assert_true(asker_mover._pass_start(String(parked.name), 1.0, Vector2(0.0, -1.0)), "a pass starts")
+	assert_true(asker_mover._pass_point() != Vector3.INF, "and steers")
+	var timeouts := Movement.passes_timeout
+	asker_mover._pass_left = 0
+	assert_eq(asker_mover._pass_point(), Vector3.INF, "out of clock: no steering point")
+	assert_eq(Movement.passes_timeout, timeouts + 1, "counted")
+	assert_true(not asker_mover._pass_start(String(parked.name), 1.0, Vector2(0.0, -1.0)), "the same crew is not passed again")
 
 
 func test_off_a_crew_hit_two_seconds_ago_gives_way_as_before() -> void:

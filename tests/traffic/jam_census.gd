@@ -26,6 +26,9 @@ const CONTACT_GAP_M := 0.15
 var _standoffs := 0
 var _aborts := 0
 var _abort_contacts := 0
+## Round 35 (T7's bar): every new friendly hull contact (guard 7), and those with a crew passing a refuser (reported).
+var _friendly_contacts := 0
+var _pass_contacts := 0
 var _teams := {}
 var _seconds_run := 0.0
 var _printed := false
@@ -63,6 +66,7 @@ func _report() -> void:
 	print("JAM_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"seconds": snappedf(_seconds_run, 0.1), "deaths": _deaths, "by_cause": _by_cause, "teams": _teams,
 			"standoffs": _standoffs, "aborts": _aborts, "abort_contacts": _abort_contacts,
+			"friendly_contacts": _friendly_contacts, "pass_contacts": _pass_contacts,
 			"underfire_on": not Traffic.off("underfire"), "route_arms": Movement.route_arms()}))
 
 
@@ -243,6 +247,11 @@ func _standoffs_and_aborts(game_match: Match, prev_yield: Dictionary, standing: 
 			var key := "%s|%s" % [a.name, b.name]
 			var touching := gap <= CONTACT_GAP_M
 			if touching and not bool(in_contact.get(key, false)):
+				_friendly_contacts += 1
+				var pa := Movement.of(a)
+				var pb := Movement.of(b)
+				if (pa != null and pa._pass_by != "") or (pb != null and pb._pass_by != ""):
+					_pass_contacts += 1
 				for ab: Array in open_aborts:  # a new friendly contact inside an abort's window, involving the aborted crew
 					if (String(ab[0]) == String(a.name) or String(ab[0]) == String(b.name)) and tick - int(ab[1]) <= int(ABORT_WINDOW_S * SimClock.TICK_RATE):
 						ab[2] = int(ab[2]) + 1

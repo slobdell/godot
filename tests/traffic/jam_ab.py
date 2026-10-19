@@ -73,7 +73,9 @@ def per_fight(deaths, census, standoffs, aborts):
         "standoff_s": sum(float(s.get("lasted_s", 0)) for s in standoffs),
         "aborts": len(aborts),
         "abort_contacts": sum(int(a.get("contacts_3s", 0)) for a in aborts),
-        "counters": {k: int(((census or {}).get("route_arms") or {}).get(k, 0)) for k in ("underfire_refusals", "underfire_holds", "underfire_aborts")},
+        "friendly_contacts": int((census or {}).get("friendly_contacts", 0)),
+        "pass_contacts": int((census or {}).get("pass_contacts", 0)),
+        "counters": {k: int(((census or {}).get("route_arms") or {}).get(k, 0)) for k in ("underfire_refusals", "underfire_holds", "underfire_aborts", "underfire_gives", "passes", "passes_done", "passes_timeout")},
     }
 
 
@@ -135,6 +137,8 @@ def main(argv):
             ("3 far loops, H1b (guard)", "far", "notup", True),
             ("4a kills (guard, two-sided)", "kills", "two", True),
             ("5 contacts in 3 s after a hit-ended give-way (guard)", "abort_contacts", "notup", True),
+            ("7 friendly hull contacts, all (guard; T7)", "friendly_contacts", "notup", True),
+            ("R contacts with a crew passing (T7)", "pass_contacts", "notup", False),
             ("R jam deaths, all kinds", "jam", "two", False),
             ("R all deaths", "all", "two", False),
             ("R standoffs (count)", "standoffs", "notup", False),
@@ -159,7 +163,7 @@ def main(argv):
         print("R standoffs %s: %d%s; Movement counters %s" % (side, len(durs),
               (" (lasted s median %.1f, p90 %.1f, max %.1f)" % (durs[len(durs) // 2], durs[min(len(durs) - 1, 9 * len(durs) // 10)], durs[-1])) if durs else "",
               dict(r["counters"][side])))
-    print("T6 %s (G and every guard; line 6 crossing arrivals read apart)" % ("PASS" if verdict else "FAIL"))
+    print("T6/T7 %s (G and every guard; line 6 crossing arrivals read apart)" % ("PASS" if verdict else "FAIL"))
 
 
 if __name__ == "__main__":
