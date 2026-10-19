@@ -148,9 +148,25 @@ _Filed here before any number. Empty at launch._
   Fresh seeds 73–79; seed 50 is tuning. The OFF arm adds no compute (lazy matchups gated by `scout_under_fire`); the hash
   proof is `sim-baseline SCOUT_FIGHT=off` beside the pair check.
 
+- **M0 C33.9 turn-in, second judged series (manoeuvre), filed before any fresh-seed number on `stream/manoeuvre`
+  `ebc7da585` (full text in its brief, *Bar M0*).** Orbit stage via `manoeuvre-c339-cells`, both arms GDScript; candidate =
+  the pair tree (main + stream/manoeuvre at its C31.1-green hash + `pair/native-c339`'s three native commits), base = the same
+  tree `--nav-off=turnin`; builder2 start to end; FRESH seeds 101–112 (n 12 a cell, 576 rows), 11–36 tuning. R33.24's lines
+  (a)–(h) in variance-aware form (k 1.645), noise from round 33's rows. (c)'s per-cell exchange ratio is re-formed into a
+  REPORT plus two harm guards (R34.1). A third judged series would need a new design.
+
 ## Rulings (round 34)
 
-_Empty at launch._
+- **R34.1 Bar M0's three re-forms ruled (2026-10-18, before any fresh-seed number).** (1) **(c) per-cell exchange
+  becomes a report: APPROVED.** A ratio whose denominator is ~0 (gang_scout v syn_scout 15 m: OFF deals 0.04, bootstrap
+  −100..+135 %) measures nothing. The two replacement guards are on the harm he would see: in-reach pooled hits taken ON ≤
+  OFF + k·se, and per in-reach cell damage taken ON ≤ OFF + k·se_cell. They are judged lines, and the pooled exchange gain
+  stays judged (point AND distinguishable). (2) **"No worse than what he accepted" ship readings: APPROVED** for (a)
+  (≥ 23.9 − k·sd_boot) and (c-out) (≤ 57 hits pooled, no cell worse than +37 %). He accepted those values when he said ship
+  it (R33.38); attempt 1 failed on the suite, not on them. Out of reach is brains' C34.5 (the outgunned scout leaves). A
+  candidate shipping on these readings is reported to him in player terms, with the margin. (3) **Partial rule: APPROVED as
+  written:** (a) alone missing by less than its sd_boot does not park a candidate that passes (b)–(g); any (d)/(d2)/(e) run
+  fails it.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
