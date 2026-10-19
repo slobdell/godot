@@ -330,6 +330,10 @@ _Filed here before any number._
   pinned crew escapes first). Floors re-scoped under C34.6 (`f9ff445b0`, `ca004661e`: the parked refusal floored on yard_open in both
   arms). Ruling: the plain refused ask (ask()'s line T9 changes) gets a FORCED compare with W1c ON before the pair is named; it is the
   shipped configuration's path.
+- **R35.25 (2026-10-19 ~16:00) main eea6fb9fa = native 44d06cbbe (`tools/builder_checks.sh` + the slot-exclusive light-lane fix):
+  green by composition.** Its only check-read diff from 1a18dd278 (green) is three files that only shell-tools-test reads, and
+  shell-tools-test passed on 44d06cbbe (builder0 light, 25 suites). **Every worker launches full checks behind `tools/builder_checks.sh
+  --wait-below 2`** (counts `make [native] check` in every form, one per worktree).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
