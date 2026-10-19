@@ -98,3 +98,9 @@ se of the paired sum.
 - (e) GUARD, squads arrived (judge rows): base - new <= 2 se.
 - (f) GUARD, fights: kills and deaths each side within 2 se (paired).
 - (g) `make check` green on the hash; sim-baseline maps that move are attributed with `--straggler=off` on the same tree.
+
+**E1 progress.** Code `ec1f5cc75` (+ `67a5a9db0`: the switch read at load). `test_tactics_straggler` 5/0 (laptop, GDScript).
+quick-remote of `7b85b470a` (builder0, QUICK_BASE a0ae0aafd, 107 tests): 105/2. The two reds are main's new scout turn-in tests
+(`test_manoeuvre_orbit::…at_stop…`, `test_native_execute_turn_in::…`), single-scout stages with no element. Read as the folder's
+STALE native library (quick builds none; the last native build there was my census at `c23acdbe2`, before the turn-in's C++
+landed): "210 mismatches". The full check (which builds native) of `67a5a9db0` is running and decides it.
