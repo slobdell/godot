@@ -144,6 +144,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   4/0; laptop plain run still judged (PASS), verify run NOT JUDGED (21760 µs). The idle-nominal item (a) was DROPPED (the
   poll never found an idle builder2; removed). perf-judge judges the shipped budget in check (4 of 5 checks that night).
 
+### Round 34, orders work (R34.8, R34.12; granted control paths), 2026-10-19
+- **O1 MERGED** (green `43d81ec13`), **O3 MERGED** (green `9260089f5`), **scenario_perf under verify MERGED**
+  (`4bdc736fb`).
+- **His Locks bridge case CLOSED, named `42401f95f`** (builder2 2829/0, sim-baseline 13 unmoved). Cause: transit
+  STATIONS over the canal were grounded on the nearest bank (`standable_for`), the far one. Fix:
+  `SlotGround.station_on_goal_side` (only a station over water; it goes to its crew's final-seat bank). Planner's
+  probe (laptop, Locks 5 click s34): crossed 1→0, all-in 21.5→13.8 s, worst shuffle 78.5→33.0 m.
+- **R34.12 rank fix, named `2d6955367`** (builder2 2833/0, unmoved): no rank's anchor stands behind its own squad
+  along the approach. Planner runs the O5 before/after (`--rank-forward=off`).
+- **scenario_perf LOADED_RATIO 1.5→1.2** `5ea102e1e` (check running): the reference saturates at ~1.5× under
+  load; the 8-run table is in the commit.
+- **O2 PARKED** (R34.12; record on `wip/brains-o2` `da7524908`): (C) wasn't tighter than O3 (136 v 78.8 m: B6's
+  travel wedge binds), the box order missed its response window, and five squads still mixed. It waits on (B)+B6, which
+  is the lead's deploy-step question.
+- **Traffic's O4** may edit Element._next_queued + passed_waypoint + relay_queued (agreed with two counters).
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
