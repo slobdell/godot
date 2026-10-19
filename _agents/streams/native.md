@@ -73,11 +73,30 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Round 34 (started 2026-10-18 from main `918ede503`, which inherits `d7d57f4cf`'s green check)
 
-**REPORT (top).** **MERGED: main `02a912163`** (= `12ac7b172`: C34.7 + C34.8 (a) + N4; INHERIT, no main check). builder2 `make native check exited 0`:
-2798 / 0, 27 targets ALL JUDGED, sim-baseline 13 unmoved, perf-judge PASS 1.34x. The load at the start was 28.8 on 32
-CPUs with 55 other godot processes (pin-moves and three twin runs at once). relay-smoke and net-smoke both passed under
-that load, n 1. Pairs: scout try 2 GREEN `85f34ca63` (merged into stream/brains `0b8fbd3f6`); parkedroom v4 `6231e7222`
-twins running. Still running: the moves list (pin-moves), N5's centre probe.
+**REPORT (top, 2026-10-19).** Backlog N1-N5 DONE; the stretch was not needed (below).
+- **Merged to main:** C34.7 + C34.8 (a) + N4 as main `02a912163` (= `12ac7b172`, builder2 `make native check exited 0`,
+  2798 / 0, ALL JUDGED, under load 28.8 / 32 CPUs). N5 + the C34.6 floor rule are in main through planner's C34.6
+  (`89e775f87`).
+- **Pairs (N1):**
+  - Scout try 2 is green (`85f34ca63`) and merged with brains B1.
+  - Parkedroom v4 on current main: `pair/native-parkedroom-v4m` `4445f6b4c`, twins 33/0 with traffic's v4. It is RED
+    alone (needs traffic's Movement).
+  - T4's ghost twins: `pair/native-ghost-r34` `3a45b58b4`, 22/0 with the ghost ON. It is in traffic's T4 pair
+    `777820d7b`.
+  - CP-F 4: no C++ change; 14/0 twins on `e76f6dab6`.
+  - C33.9's turn-in twin is on NativeExpect: `pair/native-c339` `25fd4298e`.
+- **N3 moves list:** below. Pinned, every match stage reproduces exactly; free, it doesn't. No verdict moved.
+- **Stretch:** a native turn-in is not needed, because C33.9 is not shipped. Twin splits are not needed now: builder2's
+  check had the 16 shards at 95-535 s, and their balance was not checked by file (a next step if shard time becomes
+  the bottleneck).
+- **Questions for the lead:** none.
+- **Requests:** manoeuvre converts tests/test_manoeuvre_wedge.gd's one `NativeBridge.available` early return to
+  `NativeExpect.absent(self)` (relayed by the orchestrator).
+- **To playtest:** nothing he sees changes from this stream alone. A network match whose relay room closes mid-fight
+  no longer logs RPC errors on the host (`make relay-smoke`).
+- **Merge notes (shared files):** one `$(PIN_FPS)` token per line in command.mk (7), nav.mk, pace.mk (3), planner.mk
+  (2), tactics.mk (2) and traffic.mk; match.gd `_show_shell_impact` (C34.7 grant); 57 twin sites across 42 files of
+  mine moved to `NativeExpect.absent(self)`.
 
 **Plan (in order; pairs pre-empt, C31.2):** (0) the waiting pairs: parkedroom's hand-back rebased onto main for traffic's
 v4; brains' scout try 2 mirror as it arrives. (1) N2 C34.7: the dropped-peer test first, then the guard. (2) N3 C34.8 (a):
