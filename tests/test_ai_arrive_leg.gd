@@ -35,6 +35,11 @@ func test_a_crew_mid_leg_inside_its_radius_keeps_its_move_and_is_never_refused()
 	var known := false
 	for m: Dictionary in (Manoeuvre as GDScript).get_script_method_list():
 		known = known or String(m["name"]) == "leg_holds_arrival"
+	# Once manoeuvre's side has landed (its const or its `arriveleg` switch name), the function MUST be there: the adapter
+	# falls back silently, and a rename would otherwise read as today's arrival with everything green. Drop the guard
+	# (assert `known` outright) when this merges after manoeuvre.
+	var landed := (Manoeuvre as GDScript).get_script_constant_map().has("ARRIVE_LEG_DEFAULT") or Movement.OFF_NAMES.has("arriveleg")
+	assert_true(known or not landed, "manoeuvre's arriveleg side is on this tree, so Manoeuvre.leg_holds_arrival must be too")
 	var off: Dictionary = await _held_ticks_mid_leg(false)
 	assert_true(off["type"] != "move_to", "switch off: today's arrival turns the move into its face/stop (%s)" % off["type"])
 	if not known:
