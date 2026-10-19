@@ -1104,6 +1104,9 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# whole near a wall rather than clamped one by one onto each other.
 		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
 				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
+		anchors = SelectionSquads.never_behind(anchors, blocks, click,
+				SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
 		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
 		# the navmesh of one of the ordered vehicles.
 		var ground: Node3D = null

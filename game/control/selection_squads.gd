@@ -521,6 +521,36 @@ static func _reached_from(click: Vector3, at: Vector3, drive: Callable, crosses:
 	return float(drive.call(click, at)) <= straight * GROUND_CAP_RATIO + GROUND_CAP_SLACK_M and not bool(crosses.call(click, at))
 
 
+## Round 34 (R34.12; planner's O5 probe): A RANK NEVER STANDS BEHIND ITS OWN SQUAD. Five squads, one click: the back rank's
+## anchors were laid 71.6 m behind the click, where those squads already stood (the Locks) or 7-15 m behind them (the
+## Terminus), so they "arrived" in 0.1 s or drove AWAY from his click. Along the body's heading (`heading`, as `ranks`
+## laid it), an anchor farther back than its block's centre comes forward to that centre's line: the squad never drives
+## away from the point he clicked. Across the heading it keeps its place. `--rank-forward=off` is round 23's ranks.
+static var RANK_FORWARD := not OS.get_cmdline_user_args().has("--rank-forward=off")
+
+
+## The body's approach: from the middle of the blocks to the click (round 21's `_heading`; a drawn facing when given).
+static func approach_of(blocks: Array, click: Vector3, fallback_heading := Vector3.FORWARD, facing: Variant = null) -> Vector3:
+	return _heading(blocks, Vector3(click.x, 0.0, click.z), facing, fallback_heading)
+
+
+static func never_behind(anchors: Array[Vector3], blocks: Array, click: Vector3, heading: Vector3) -> Array[Vector3]:
+	if not RANK_FORWARD:
+		return anchors
+	var forward := TacticsFormation.flat(heading)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var result: Array[Vector3] = []
+	for i in anchors.size():
+		var at := anchors[i]
+		if i < blocks.size():
+			var centre := Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z)
+			var behind := (centre - flat_click).dot(forward) - (Vector3(at.x, 0.0, at.z) - flat_click).dot(forward)
+			if behind > 0.0:
+				at += forward * behind
+		result.append(at)
+	return result
+
+
 static func _fits_one_rank(blocks: Array) -> bool:
 	if blocks.size() > MAX_ABREAST:
 		return false
