@@ -102,6 +102,6 @@ func test_a_new_want_rearms_the_face() -> void:
 		Manoeuvre.face_failed_id(mover_id, want)
 	assert_true(Manoeuvre.face_given_up_id(mover_id, want), "given up after FACE_SETTLE_FAILS fails")
 	assert_true(Manoeuvre.face_given_up_id(mover_id, want.rotated(Vector3.UP, deg_to_rad(10.0))), "a 10 deg swing is the same want")
-	assert_false(Manoeuvre.face_given_up_id(mover_id, want.rotated(Vector3.UP, deg_to_rad(45.0))), "a 45 deg swing re-arms it")
-	assert_false(Manoeuvre.face_given_up_id(mover_id, want), "and the old want is no longer given up")
+	assert_true(not Manoeuvre.face_given_up_id(mover_id, want.rotated(Vector3.UP, deg_to_rad(45.0))), "a 45 deg swing re-arms it")
+	assert_true(not Manoeuvre.face_given_up_id(mover_id, want), "and the old want is no longer given up")
 	Manoeuvre.face_settle_forget_id(mover_id)
