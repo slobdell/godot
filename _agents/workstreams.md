@@ -238,6 +238,15 @@ builder0), ruled R34.3.
   L3–L6 exactly as filed. Ships ON only if all pass, as a pair with native's `4445f6b4c` and one fresh check on the hand-over
   tree; a fail parks parkedroom for the round.
 
+- **M3 CP-F attempt 4 (manoeuvre), filed before any attempt-4 number on `stream/manoeuvre` `be2770a10` (Status, "Bar M3").**
+  Candidate `lab/cpf4` `e76f6dab6` (main 82feffa86 + round33/manoeuvre's attempt-3 code + M1's ruler, TURN_HULL_DEFAULT true); base
+  the same tree `--nav-off=turnhull`; builder2 start to end; FRESH hull-rest 601–616 (64 pairs a task), Terminus 620–632, fights
+  640–663, SBF 670–675, bridge 18. R33.21's lines with (c) one-sided (R33.23); (d) by real_mps with wedged apart, guard base +
+  1.645 × sd_run × √pairs from M1's A/A (attack-move +15.4 at 64 pairs, right +8.4, move +6.7, screen +5.4, ambush +3.2, SBF +3.0);
+  (e) likewise; FACE_KEEP_FAR reported (R34.5); (m) native's statement (no C++ change, twins 14/0 on e76f6dab6) plus the hull-rest
+  drawn arms on the native path. M1's A/A (`references/round34/manoeuvre/m1-aa/`): about half the old ruler's "still moving"
+  crews were WEDGED hulls.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
@@ -310,6 +319,10 @@ builder0), ruled R34.3.
   **Extended (00:50 PDT): planner takes orders' O5 (the player test) while idle on P5:** GRANTED new probe files under
   `tests/control/` (or `tests/orders_probe*.gd`), one additive target in `mk/command.mk`, and `references/round34/orders/**`;
   READ-ONLY on game code. Measurement and screenshots only, no game code.
+  **Extended (01:40 PDT): traffic takes orders' O4 (waypoints are the squad's; gates) after T4 parked:** GRANTED
+  `RtsControls._queue_task_for` and its helpers, new `tests/test_control*.gd`; the `Element._next_queued` seam by a signature
+  agreed with brains through the orchestrator. Design (passed radius, gate width from the ground, the seam, the failing test)
+  to the orchestrator before code. Not `selection_squads.gd` / `_order_squads` (brains, O2).
 - **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
   pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
   far loops 34 → 18 against a line of ≤ 17 (paired se 20.2): FAIL by one loop. 16 of the 18 are ONE episode (locks-913: a
@@ -332,6 +345,13 @@ builder0), ruled R34.3.
   R34.1's ship reading puts a pooled median above 57 on the regression side, so the orchestrator does not ship it. The pair
   stays ready; the orchestrator recommends SHIP to the lead (the shuffle he reported is gone in every run, and the out-of-reach
   cost buys kills). On his yes: merge `c8fb8b6a3`, adopt crossing / parade / archipelago at the attributed hashes.
+- **R34.11 T4 (the ghost) PARKS a fourth time, on its deciding gain (traffic, pair `777820d7b`, builder2, fresh 920–931 /
+  940–987 / 1000–1023, `references/round34/traffic/x4_t4_fourth_series_777820d7b.txt`).** T(1) mixed friend-stuck crew-s 307 → 426
+  (+119, se 210.5; 34 of 48 cells byte-identical): FAIL. Guards pass (T(2) rigs stuck 597 → 848 inside its line but the wrong way,
+  T(3), T(4), T(6) fights unchanged; G1–G3 identical arms, no information). The yard circling it cured in rounds 31–32 is not
+  there to cure on today's main (escape, unstick and manoeuvre's later rules took it), and real-velocity ORCA sometimes steers
+  round a stalled friend it would have pushed through. The ghost stays OPT_IN; `pair/ghost-on-r34b` is NOT merged; native's
+  ghost twins return only with a new case. No fifth try without one.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
