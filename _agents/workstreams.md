@@ -86,6 +86,19 @@ _Filed here before any number._
   base + k·se; (6) crossing arrivals 44–46 × 6 ≥ base − k·se a case; **(7, new) all friendly hull contacts a fight ≤ base + k·se**
   (a pass must not buy bumps). Reported: contacts with a crew passing, standoffs with durations, all/jam deaths, deaths by cause,
   `underfire_refusals/gives/holds`, `passes/passes_done/passes_timeout`. A fail is traced (worst fight first); no re-read.
+- **D3 tight packing (orders, C35.4), filed before any number on `stream/orders` `54cff1bfc` (2026-10-19 ~09:20).** The deploy
+  step ON in both arms; `main:` (pack on) v `pack_off:--pack=off`. Its counter: `SelectionSquads.packed` non-zero in the main arm.
+  - **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell (deterministic): Locks / Crossing / Terminus x 3 / 5
+    squads x click / route = 24 cells, arms `main:` (pack on) v `pack_off:--pack=off`, the same tree, the deploy step ON in both.
+  - **Gain (must pass):** over the 6 CLICK cells, the median of each cell's `end far max m` (the farthest crew from the click at
+    the window's end) at least 15 % below pack_off's; and in EVERY cell `end foreign min m` >= 7 m (the 9 m design, less
+    grounding slop), on both arms reported.
+  - **Guards (each must hold in every cell):** all-in <= pack_off x 1.2 + 3 s, and no cell all-in on pack_off but not on main;
+    far bank 0; `toward min m` >= 0 (nobody sent away from the click); `twitch worst m` <= pack_off + 5 m.
+  - **Response:** `test_control_scale` (the click's 3-tick response) passes in the check of the named hash.
+  - **Single squads:** the pack acts only on 2+ squads; `make squad-arrive-series ARRIVE_ARM_FLAG=pack ARRIVE_MAPS="terminus sumps"
+    ARRIVE_SEEDS="1 2"` both arms must be byte-identical (an equality check, reported).
+  - Screenshots (`orders-probe-shots`, arrival and +5 s, desktop and phone) looked at for every 5-squad click cell.
 
 ## Rulings (round 35)
 
@@ -118,7 +131,8 @@ _Filed here before any number._
 - **R35.6 (2026-10-19) C35.4a, ElementTask keys for packing (orders writes; brains' file).** Orders may add to
   `game/tactics/element_task.gd` ONLY: `KEYS` += `"halt_at"` ([x, z]) and `"halt_shape"` (a formation name), plus their
   `validate` lines. Additive and optional; set only by the controls when several squads are packed; absent = today. Brains
-  owns the file and is told; any reader in brains' paths (ElementPlan) goes through brains.
+  owns the file and is told. ElementPlan reads them only in orders' own carve-out (`_deploy_state`: the anchor = halt_at when
+  present; `_deploy_shape`: halt_shape, else `_halt_pick`); any other reader goes through brains.
 
 ## Round 34: six streams, two on Fable (prepared 2026-10-18, CLOSED 2026-10-19; briefs in `streams/archive/round34/`)
 
