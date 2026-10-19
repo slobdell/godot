@@ -100,6 +100,13 @@ _Filed here before any number._
     ARRIVE_SEEDS="1 2"` both arms must be byte-identical (an equality check, reported).
   - Screenshots (`orders-probe-shots`, arrival and +5 s, desktop and phone) looked at for every 5-squad click cell.
 
+- **W1b a wheeled hull held to a standstill sits still (manoeuvre, C35.6's W1 follow-on), filed before any number from
+  `godot-manoeuvre` `references/round35/manoeuvre/w1-trace/README.md`, with one change by the orchestrator: fixed arenas only
+  (locks, terminus, sumps; NO random arena, R34.15).** Pair = stream + native's mirror (drive_native's pace-0 branch); base =
+  `--nav-off=wheelhalt`; native path, builder0, a fresh seed block, n = 72 fights an arm. **Deciding:** at-spot creep ticks of held
+  wheeled crews (its counter; non-zero in base first) → ~0; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open,
+  stuck, jam deaths, far loops, kills and hit rate per team, each within 1.645 se paired; all deaths reported.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
@@ -120,6 +127,14 @@ _Filed here before any number._
 - **R35.4 (2026-10-19) main 0f4d528d7 is GREEN without a new check:** the only check-read diff from `3902ade09` is
   `tests/baselines/sim_state_hash.txt`, adopted from the 13 maps read twice at ffa462c94 on builder0, equal to 3902ade09's
   check's hashes. All five workers told to `git merge main` (orders BEFORE D1's attribution).
+- **R35.7 (2026-10-19 ~10:10) W1 read: wedged deaths are not stuck hulls.** Manoeuvre (builder0, native, main a0ae0aafd + probe,
+  Locks/Terminus x fresh seeds 3500–3511, 24 fights x 180 s): 81 of 984 deaths `stuck:wedged` (8.2 %); 80/81 hit in the last
+  10 s; 67/81 wheeled; unstick drove 1 % of ticks. Two populations: 41 % (33) HELD by Traffic's take-turns hold at a street mouth
+  under fire (median 5.4 s into the hold; the 3 longest episodes, 18 s, all holds); 59 % (48) ORCA-slowed in a fight's crowd
+  (median 1.2 s wedged). Rulings: (A) NO new wedged trigger in unstick. (B) **T8 (traffic, after T7's series; its own bar):** a
+  held crew that is being hit leaves the hold. Not folded into T7: T7's bar is filed. (C) **W1b approved** (bar above), default
+  OFF; native mirrors after its dev read. (D) traffic's census adds `jam:held` as a REPORTED sub-cause; T5's definition that T7's
+  G counts stays fixed until T7's series has read.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
