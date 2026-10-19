@@ -71,10 +71,10 @@ static var LEG_TRACE := Array(OS.get_cmdline_user_args()).any(func(a: String) ->
 ## steps and the crew is sent on to its next slot, where it catches up. Traced (lab/cpf4 e76f6dab6, law/faced_attack_move-614,
 ## laptop): an element stood at its anchor from t 37 past the 75 s judge for one crew wedged 30 m off its slot (plant 9.25 m/s,
 ## real 1.17, its re-seats spent) while the other three had closed up. R34.18's "steps at t 60 not 32" was this gate waiting on
-## a laggard, not a sector face. `--straggler=off` (TacticsFlags) is the gate as before.
+## a laggard, not a sector face. `--straggler=off` (read here, at load, so no element plans before it) is the gate as before.
 const STRAGGLER_S := 8.0
 const STRAGGLER_GAIN_M := 2.0
-static var STRAGGLER_RELEASE := true
+static var STRAGGLER_RELEASE := not OS.get_cmdline_user_args().has("--straggler=off")
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
 ## K1 orders carry no facing, so a vehicle's heading comes from the way it travelled (see _agents/doctrine.md).
 const FACE_LEAD := 5.0

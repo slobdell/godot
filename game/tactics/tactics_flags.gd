@@ -157,9 +157,6 @@ static func _parse() -> void:
 		# Round 21 (brains P2): round 20's attack on a running target (the control arm of the pursuit).
 		if arg == "--pursuit=off":
 			ElementPlan.PURSUIT_ENABLED = false
-		# Round 35 (brains E1): the leg gate waits for every crew, stragglers included (the control arm).
-		if arg == "--straggler=off":
-			ElementPlan.STRAGGLER_RELEASE = false
 		# Round 21 (brains stretch d): a pushed slot on the nearest side, as before (the control arm).
 		if arg == "--slot-side=nearest" or arg == "--slot-side=off":
 			SlotGround.SIDE_ENABLED = false
