@@ -1569,7 +1569,11 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
-			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
+			# Round 34 (C34.11; planner's O5, the Locks 3): the ORDER stands on its anchor's bank too, not only the slot. A
+			# seat laid past the canal (dry, on the far bank) came back as a slot but went out as an order, and Alpha_3
+			# crossed the bridge to reach it (SlotGround.on_anchor_side handles the far bank; pulled_dry only the water).
+			var to: Vector3 = SlotGround.pulled_dry(SlotGround.on_anchor_side(order["to"], anchor), anchor) if anchor is Vector3 \
+					else order["to"]
 			var clearance := float(envelopes.get(unit_name, 0.0))
 			order["to"] = _latched(latch, "order:" + unit_name, to,
 					func() -> Vector3: return SlotGround.standable_from(node, to, clearance, from))
