@@ -17,7 +17,7 @@ var set_up_asks := 0
 var _movers: Array[Movement] = []
 const ASKED_FIELDS: Array[String] = ["native_stale", "yield_to", "yield_spot", "_yield_point", "_yield_from", "_yield_stop_m",
 		"_yield_dir", "_yield_left", "_yield_held", "phase", "blocked_by", "_yield_unfit_last", "_wheel_radius_unit",
-		"_wheel_radius_value"]
+		"_wheel_radius_value", "pass_offer"]
 
 
 func test_the_give_way_on_open_ground() -> void:
@@ -37,7 +37,13 @@ func test_the_give_way_on_the_owned_state() -> void:
 ## (its own step aside held: underfire_holds); and every frame, each crew giving way hit this tick, its whole execute
 ## step compared: T6b's give-way FINISHES under fire (T6's abort, dropped at R34.17, reversed crews into the asker), so
 ## the native step must carry it on too. Tanks' ticks_since_hit and the switch are put back after each.
-const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1}
+const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1, "passes": 1, "pass_ticks": 1,
+		"passes_timeout": 1, "passes_done": 1}
+## Round 35 (traffic T7): the forced passes. Each mover with a move order, `under_fire` times a stage, is put mid-pass round
+## the nearest other hull and its drive twinned (`_avoid` steers by `_pass_point`): cycling a live pass (its way toward the
+## refuser: behind it, the abreast point), one on its last tick (the clock ends it: passes_timeout) and one already past
+## the refuser's nose (passes_done). Put back after each.
+const PASS_CASES := ["live", "timeout", "done"]
 
 
 func test_the_give_way_under_fire() -> void:
@@ -210,6 +216,7 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	set_up_asks = set_up
 	var fire_asks := under_fire
 	var fire_aborts := under_fire
+	var fire_passes := under_fire
 	var fire_executes := 0
 	if under_fire > 0:
 		assert_true(NativeGun.configure(), "the native gun takes the live constants (the execute step)")
@@ -231,6 +238,16 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 					mismatches += result[1]
 					if first == "" and result[2] != "":
 						first = "(hit giving way) " + result[2]
+			for i in movers.size():
+				if fire_passes > 0 and String(controllers[i].move_order.get("type", "")) == "move_to" \
+						and movers[i].ctl.tank.is_alive() and movers[i].yield_to == "":
+					fire_passes -= 1
+					var result := _pass_compare(movers, controllers, i, PASS_CASES[fire_passes % PASS_CASES.size()],
+							leg * STAGE_FRAMES + frame)
+					drives += result[0]
+					mismatches += result[1]
+					if first == "" and result[2] != "":
+						first = "(passing) " + result[2]
 			for i in movers.size():
 				if not _negotiates(movers[i], controllers[i]):
 					continue
@@ -345,6 +362,35 @@ func _fire_compare(movers: Array[Movement], controllers: Array[OrderController],
 	var result := _compare_tick(movers, controllers, frame, i)
 	for k in hit.size():
 		controllers[hit[k]].tank.ticks_since_hit = keep[k]
+	Traffic.set_off("underfire", was_off)
+	return result
+
+
+## Round 35 (traffic T7): mover `i` put mid-pass round the nearest other hull (`which` of PASS_CASES), its drive twinned with
+## the `underfire` switch on; the pass state and the switch put back.
+func _pass_compare(movers: Array[Movement], controllers: Array[OrderController], i: int, which: String, frame: int) -> Array:
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	var mover := movers[i]
+	var here := mover.ctl.tank.global_position
+	var nearest: Tank = null
+	for j in controllers.size():
+		var other := controllers[j].tank
+		if j != i and other.is_alive() and (nearest == null or here.distance_to(other.global_position) < here.distance_to(nearest.global_position)):
+			nearest = other
+	var keep := [mover._pass_by, mover._pass_side, mover._pass_way, mover._pass_left, mover._pass_failed_by]
+	var toward := Vector2(nearest.global_position.x - here.x, nearest.global_position.z - here.z).normalized()
+	mover._pass_by = String(nearest.name)
+	mover._pass_side = 1.0 if frame % 2 == 0 else -1.0
+	mover._pass_way = -toward if which == "done" else toward
+	mover._pass_left = 1 if which == "timeout" else int(Movement.PASS_MAX_S * SimClock.TICK_RATE)
+	mover._pass_failed_by = ""
+	var result := _compare_tick(movers, controllers, frame, i)
+	mover._pass_by = keep[0]
+	mover._pass_side = keep[1]
+	mover._pass_way = keep[2]
+	mover._pass_left = keep[3]
+	mover._pass_failed_by = keep[4]
 	Traffic.set_off("underfire", was_off)
 	return result
 

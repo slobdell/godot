@@ -177,7 +177,10 @@ struct N {
 			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" },
 			// Round 34 (traffic T6b, `underfire`: (a) the ask refusal, (b) the begin_yield gate; (c) the hit abort dropped, R34.17)
 			ticks_since_hit{ "ticks_since_hit" }, underfire_refusals{ "underfire_refusals" },
-			underfire_holds{ "underfire_holds" };
+			underfire_holds{ "underfire_holds" },
+			// Round 35 (traffic T7, C35.8): refuse under fire only when the asker has a pass lane; the refused asker passes
+			underfire_gives{ "underfire_gives" }, passes{ "passes" }, passes_done{ "passes_done" },
+			passes_timeout{ "passes_timeout" }, pass_ticks{ "pass_ticks" }, _pass_lane{ "_pass_lane" }, is_alive{ "is_alive" };
 };
 const N &n_() {
 	static const N names;
@@ -551,6 +554,10 @@ struct Drive {
 			const Array hold = gd(c.native_traffic, k.avoid_hold, String(tank->get_name()), ctl->get(k.tanks_root));
 			hold_state = -1;
 			if (!hold.is_empty()) {
+				// Round 35 (traffic T7): a street-mouth hold outranks a pass.
+				if (!String(v._pass_by()).is_empty()) {
+					pass_end();
+				}
 				const Vector2 face = hold[1];
 				if ((bool)hold[2]) {
 					out_point = Vector3(face.x, 0.0, face.y);
@@ -568,9 +575,17 @@ struct Drive {
 				return;
 			}
 		}
-		out_point = waypoint;
+		// Round 35 (traffic T7): passing a crew under fire that refused me: steer by its lane (ORCA still shapes it).
+		Vector3 point = waypoint;
+		if (!held && !String(v._pass_by()).is_empty()) {
+			const Vector3 lane = pass_point();
+			if (lane != V3_INF) {
+				point = lane;
+			}
+		}
+		out_point = point;
 		out_keep = 1.0;
-		const Vector2 to((real_t)((double)waypoint.x - (double)here.x), (real_t)((double)waypoint.z - (double)here.z));
+		const Vector2 to((real_t)((double)point.x - (double)here.x), (real_t)((double)point.z - (double)here.z));
 		const double distance = to.length();
 		if (distance < 0.5) {
 			return;
@@ -2288,6 +2303,11 @@ struct Drive {
 	bool yield_run_ok(const RID &map, const Vector3 &point, LocalVector<Vector3> &poses);
 	Vector3 yield_shorten(const Vector3 &point);
 	Vector2 travel_direction(const Vector3 &goal, bool direct);
+	// ---- Round 35 (traffic T7, C35.8): the pass ----
+	double pass_lane(const String &passer, const Vector3 &from, const Vector2 &direction);
+	bool pass_start(const String &refuser, double side, const Vector2 &way);
+	void pass_end(bool timed_out = false);
+	Vector3 pass_point();
 	bool on_fire_post();
 	bool traffic_off(const String &name);
 	double avoid_radius(const String &unit);
@@ -2428,6 +2448,10 @@ void Drive<V>::negotiate_body(const Vector3 &goal, bool direct, Node3D *other, O
 	if (!i_give_way && them.ask(me, here, my_way, asked)) {
 		return;
 	}
+	// Round 35 (traffic T7): refused by a crew under fire that found me a way round: I pass it.
+	if (!i_give_way && pass_start(name, (double)them.v.pass_offer(), my_way)) {
+		return;
+	}
 	if (String(them.v.phase()) == arrived && !traffic_off(parked)) {
 		sadd(k.parked_refusals, 1);
 		return;
@@ -2443,12 +2467,92 @@ void Drive<V>::negotiate_body(const Vector3 &goal, bool direct, Node3D *other, O
 	if (begin_yield(name, there, its_way, self)) {
 		return;
 	}
-	if (i_give_way && c.yield_fit && v._yield_unfit_last() && them.ask(me, here, my_way, swap)) {
-		sadd(k.yield_swaps, 1);
-		if (hull_length(String(other->get(k.unit_id))) < hull_length(String(tank->get(k.unit_id)))) {
-			sadd(k.yield_swaps_shorter, 1);
+	if (i_give_way && c.yield_fit && v._yield_unfit_last()) {
+		if (them.ask(me, here, my_way, swap)) {
+			sadd(k.yield_swaps, 1);
+			if (hull_length(String(other->get(k.unit_id))) < hull_length(String(tank->get(k.unit_id)))) {
+				sadd(k.yield_swaps_shorter, 1);
+			}
+		} else {
+			pass_start(name, (double)them.v.pass_offer(), my_way); // T7: refused under fire with a lane: pass it
 		}
 	}
+}
+
+// ---- Round 35 (traffic T7, C35.8; `--traffic-on=underfire`): the pass ----
+// Movement._pass_lane(passer, from, direction): the side (+1 / -1) of my hull the passer can drive past me on, else 0. A
+// GDScript call: it reads the navmesh, the Avoidance table and the two hulls only (never this crew's members; `gd` pushes
+// first anyway), and it runs only when a crew under fire is asked (T6: ~19 a fight). The sweep is NavNative::outline_ok's
+// bits in the GDScript already; a C++ port of it waits for T7's verdict (a parked rule's mirror is dead weight, R34.20).
+template <class V>
+double Drive<V>::pass_lane(const String &passer, const Vector3 &from, const Vector2 &direction) {
+	return (double)gd(m, k._pass_lane, passer, from, direction);
+}
+
+// Movement._pass_start(refuser, side, way)
+template <class V>
+bool Drive<V>::pass_start(const String &refuser, double side, const Vector2 &way) {
+	if (side == 0.0 || (double)way.length_squared() < 0.0001 || refuser == String(v._pass_failed_by())) {
+		return false;
+	}
+	if (String(v._pass_by()) == refuser) {
+		return true;
+	}
+	v.set__pass_by(refuser);
+	v.set__pass_side(side);
+	v.set__pass_way(way.normalized());
+	v.set__pass_left((int64_t)(c.PASS_MAX_S * (double)c.TICK_RATE));
+	sadd(k.passes, 1);
+	return true;
+}
+
+// Movement._pass_end(timed_out)
+template <class V>
+void Drive<V>::pass_end(bool timed_out) {
+	if (timed_out) {
+		sadd(k.passes_timeout, 1);
+		v.set__pass_failed_by(String(v._pass_by()));
+	}
+	v.set__pass_by(String());
+	v.set__pass_side(0.0);
+}
+
+// Movement._pass_point(): the pass's steering point (INF = none), line by line (Vector2 maths in real_t where the
+// GDScript's Vector2 is; the sums in double, narrowed into the Vector3 as its constructor does).
+template <class V>
+Vector3 Drive<V>::pass_point() {
+	const String by = v._pass_by();
+	if (by.is_empty()) {
+		return V3_INF;
+	}
+	Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	Node3D *refuser = root != nullptr ? Object::cast_to<Node3D>(root->get_node_or_null(NodePath(by))) : nullptr;
+	v.set__pass_left((int64_t)v._pass_left() - step);
+	if (refuser == nullptr || !(bool)refuser->call(k.is_alive)) {
+		pass_end();
+		return V3_INF;
+	}
+	if ((int64_t)v._pass_left() <= 0) {
+		pass_end(true);
+		return V3_INF;
+	}
+	const Vector3 there = refuser->get_global_position();
+	const String refuser_unit = refuser->get(k.unit_id);
+	const double half = hull_length(refuser_unit) * 0.5;
+	const Vector2 way = v._pass_way();
+	const double along = Vector2((real_t)((double)here.x - (double)there.x), (real_t)((double)here.z - (double)there.z)).dot(way);
+	if (along >= half) {
+		sadd(k.passes_done, 1);
+		v.set__pass_failed_by(String());
+		pass_end();
+		return V3_INF;
+	}
+	sadd(k.pass_ticks, step);
+	const double reach = avoid_radius(refuser_unit) + avoid_radius(String(tank->get(k.unit_id))) + c.YIELD_LINE_MARGIN;
+	const Vector2 across = Vector2(-way.y, way.x) * (real_t)(double)v._pass_side() * (real_t)reach;
+	const double ahead = along < -half ? 0.0 : half + hull_length(String(tank->get(k.unit_id))) * 0.5 + c.PASS_BEYOND_M;
+	return Vector3((real_t)((double)there.x + (double)across.x + (double)way.x * ahead), 0.0,
+			(real_t)((double)there.z + (double)across.y + (double)way.y * ahead));
 }
 
 // Movement._travel_direction(goal, direct)
@@ -2498,6 +2602,7 @@ template <class V>
 bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &direction, const String &via) {
 	static const String setup("setup");
 	v.set_native_stale(v.native_stale() | 1); // Movement.STALE_ALL
+	v.set_pass_offer(0.0); // round 35 (T7)
 	if (!String(v.yield_to()).is_empty() || asker == String(v._last_yielded_to())) {
 		return false;
 	}
@@ -2505,10 +2610,17 @@ bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &dire
 		sadd(k.setup_refusals, 1);
 		return false;
 	}
-	// Round 34 (traffic T6): a crew under fire holds its lane: it refuses (after the set-up rule, which counts first).
-	if (under_fire()) {
-		sadd(k.underfire_refusals, 1);
-		return false;
+	// Round 35 (traffic T7, C35.8): a crew under fire holds its lane ONLY when the asker has a pass lane beside it (after
+	// the set-up rule, which counts first); it hands the side back. No lane: the give-way proceeds. Never for "behind".
+	static const String behind("behind");
+	if (under_fire() && via != behind) {
+		const double side = pass_lane(asker, from, direction);
+		if (side != 0.0) {
+			sadd(k.underfire_refusals, 1);
+			v.set_pass_offer(side);
+			return false;
+		}
+		sadd(k.underfire_gives, 1);
 	}
 	if (begin_yield(asker, from, direction, via)) {
 		return true;
@@ -2534,10 +2646,12 @@ inline String spot_label(const char *kind, int64_t a, int64_t b) {
 // drive runs only with no --nav-off).
 template <class V>
 bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vector2 &direction, const String &via) {
-	static const String hold("hold");
-	// Round 34 (traffic T6): under fire, no step aside of its own either (the asker's self-yield in _negotiate): it holds.
-	if (under_fire()) {
+	static const String hold("hold"), self_via("self");
+	// Round 34 (traffic T6), T7's gate: under fire, no step aside of its own (the self-yield in _negotiate) when the other
+	// can pass me; with no lane I step aside as today. A hold is not "no spot fits": no swap ask follows it.
+	if (via == self_via && under_fire() && pass_lane(other, from, direction) != 0.0) {
 		sadd(k.underfire_holds, 1);
+		v.set__yield_unfit_last(false);
 		return false;
 	}
 	Vector2 along;
