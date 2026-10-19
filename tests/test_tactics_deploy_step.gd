@@ -95,3 +95,22 @@ func test_off_by_default_the_travel_shape_stands() -> void:
 	var plans := _drive([1.0, 0.0], func(slots: Dictionary) -> Array: return _on_seats(slots))
 	assert_true((plans[-1].get("deploy", {}) as Dictionary).is_empty(), "no deploy state with the switch off")
 	assert_eq(String(plans[-1]["formation"]), String(plans[1]["formation"]), "round 33's shape on the spot")
+
+
+## B8b: on the Locks, a halt laid at the canal's edge steps inland until every seat is dry and on its own bank (B8's
+## red squad bunched on one strip of bank there).
+func test_a_halt_at_the_canal_edge_steps_inland_until_every_seat_is_dry() -> void:
+	var lab := TacticsLab.create(self, 1, "locks")
+	lab.unit(Match.Team.GREEN, "Green_P_1", Vector3(-34.0, 0, 40.0), 0.0)
+	await lab.start()
+	var edge := Vector3(-34.0, 0, 12.0)  # the north quay's edge; the canal is z -7..7
+	var members := _members(edge, 8.0)
+	var anchor := ElementPlan._dry_halt_anchor(edge, members, "herringbone", Vector3(1, 0, 0), 14.0)
+	var wet := 0
+	for entry in TacticsFormation.place(members, "herringbone", anchor, Vector3(1, 0, 0), 14.0, {"halt": true, "corridor_m": INF}):
+		var seat: Vector3 = entry["to"]
+		if SlotGround.over_water(seat) or seat.z < 7.0:
+			wet += 1
+	print("DEPLOY_INLAND edge %s -> anchor %s" % [edge, anchor])
+	assert_eq(wet, 0, "every seat on the north quay (anchor %s)" % anchor)
+	assert_true(anchor.z > edge.z, "stepped inland (away from the canal)")
