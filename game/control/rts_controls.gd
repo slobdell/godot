@@ -1101,6 +1101,17 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# whole near a wall rather than clamped one by one onto each other.
 		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
 				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
+		# the navmesh of one of the ordered vehicles.
+		var ground: Node3D = null
+		for squad: Dictionary in squads:
+			for unit_name: String in squad["units"]:
+				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D if game_match != null else null
+				if ground == null and tank != null and tank.is_inside_tree():
+					ground = tank
+		if ground != null:
+			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.

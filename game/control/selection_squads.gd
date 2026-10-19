@@ -450,6 +450,77 @@ static func fit_inside(anchors: Array[Vector3], clamp: Callable) -> Array[Vector
 	return result
 
 
+## Round 34 (C34.11, O1; his "one of them was all the way across the bridge ... a suicidal mission"): THE GROUND CAP.
+## The body's anchors were laid in the air (`ranks`, `row`) and slid off the walls (`fit_inside`); nothing asked the
+## ground, so an anchor 70 m sideways stood across a river. An anchor stands only where it is reached from the CLICK
+## directly: its drive from the click at most GROUND_CAP_RATIO x its straight offset + GROUND_CAP_SLACK_M, and no bridge
+## deck on the way unless the click is on one (on the Crossing the west bridge is in line with the click, so the drive
+## across is barely longer than the straight line: the deck is the test that catches his case). One that fails comes
+## back toward the click along the straight line, GROUND_CAP_STEP_M at a time (each point clamped by `clamp`, onto dry
+## ground), to the first that passes; none passes: the click. Anchors that pass are untouched, so open ground lays out
+## exactly as before (no straight-line cap: packing near the click is O2's).
+## `drive(from, to) -> float` (metres by ground), `crosses(from, to) -> bool` (a deck on the way), `clamp(p) -> Vector3`.
+## `--ground-cap=off` (GROUND_CAP false) is round 33's layout.
+const GROUND_CAP_RATIO := 1.5
+const GROUND_CAP_SLACK_M := 8.0
+const GROUND_CAP_STEP_M := 4.0
+static var GROUND_CAP := not OS.get_cmdline_user_args().has("--ground-cap=off")
+## How many anchors the cap moved, this process (a probe reads it).
+static var ground_capped := 0
+
+
+static func ground_cap(anchors: Array[Vector3], click: Vector3, drive: Callable, crosses: Callable,
+		clamp: Callable) -> Array[Vector3]:
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var result: Array[Vector3] = []
+	for anchor in anchors:
+		if not GROUND_CAP or _reached_from(flat_click, anchor, drive, crosses):
+			result.append(anchor)
+			continue
+		ground_capped += 1
+		var back := flat_click - Vector3(anchor.x, 0.0, anchor.z)
+		var steps := ceili(back.length() / GROUND_CAP_STEP_M)
+		var placed := flat_click
+		for k in range(1, steps):
+			var p: Vector3 = clamp.call(Vector3(anchor.x, 0.0, anchor.z) + back * (float(k) / steps))
+			if _reached_from(flat_click, p, drive, crosses):
+				placed = p
+				break
+		result.append(placed)
+	return result
+
+
+## O1's ground, read on `node`'s navmesh (a vehicle in the match): the drive between two points
+## (SlotGround.path_length), and whether that drive runs over a bridge deck (SlotGround.near_deck along the path, the
+## test Element's crossing finder uses), unless it starts on one.
+static func drive_on(node: Node3D) -> Callable:
+	return func(from: Vector3, to: Vector3) -> float: return SlotGround.path_length(node, from, to)
+
+
+static func crosses_on(node: Node3D) -> Callable:
+	return func(from: Vector3, to: Vector3) -> bool:
+		if SlotGround.near_deck(from, 0.0):
+			return false
+		var path := Pathing.find_path(node, from, to)
+		if path.size() < 2:
+			path = PackedVector3Array([from, to])
+		for i in range(1, path.size()):
+			var a := Vector3(path[i - 1].x, 0.0, path[i - 1].z)
+			var b := Vector3(path[i].x, 0.0, path[i].z)
+			var steps := maxi(1, ceili(a.distance_to(b) / 2.0))
+			for k in steps + 1:
+				if SlotGround.near_deck(a.lerp(b, float(k) / steps), 0.0):
+					return true
+		return false
+
+
+static func _reached_from(click: Vector3, at: Vector3, drive: Callable, crosses: Callable) -> bool:
+	var straight := Vector2(at.x - click.x, at.z - click.z).length()
+	if straight < 0.5:
+		return true
+	return float(drive.call(click, at)) <= straight * GROUND_CAP_RATIO + GROUND_CAP_SLACK_M and not bool(crosses.call(click, at))
+
+
 static func _fits_one_rank(blocks: Array) -> bool:
 	if blocks.size() > MAX_ABREAST:
 		return false
