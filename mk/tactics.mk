@@ -942,3 +942,37 @@ warrig-trace: import ## Overnight item 3 (brains): the War Rig 4-of-5 case, head
 		--faced-off-deg=180 --faced-squads=1 --element-trace=$(WARRIG_TRACE) $(WARRIG_FLAGS) > $$d/$(WARRIG_SEED).log 2>&1; \
 	grep -q SCREEN_DONE $$d/$(WARRIG_SEED).log || echo "warrig-trace: no SCREEN_DONE"; \
 	echo ">> warrig-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null) | seed $(WARRIG_SEED) | flags '$(WARRIG_FLAGS)' | ELEMENT_TRACE $$(grep -c ELEMENT_TRACE $$d/$(WARRIG_SEED).log) lines"
+
+# Round 34 (brains B9, R34.15, MEASUREMENT ONLY): how the CPU commander feeds squads through the Locks' and the Terminus'
+# lanes (tests/tactics/lane_census.gd: a LANE_PICK row per element task whose route crosses the middle, its lane and
+# whether another squad of its side picked the same lane in the last 20 s; LANE_CENSUS per fight and team: picks, stacked,
+# deaths, kills, jam deaths) over LANE_AT x LANE_SEEDS showmatch fights -> LANE_DIR + tests/tactics/lane_table.py.
+LANE_AT ?= locks terminus
+LANE_SEEDS ?= 1201_1224
+LANE_JOBS ?= 12
+LANE_DIR ?= $(BUILD_DIR)/lane-census
+.PHONY: lane-census
+lane-census: native-for-check import ## brains B9: the CPU's lane picks and their fights' losses, LANE_AT x LANE_SEEDS (first_last) showmatch fights -> LANE_DIR + table
+	@rm -rf $(LANE_DIR); mkdir -p $(LANE_DIR)
+	@echo ">> lane-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(LANE_AT)' seeds '$(LANE_SEEDS)'"
+	@first=$(word 1,$(subst _, ,$(LANE_SEEDS))); last=$(word 2,$(subst _, ,$(LANE_SEEDS))); for a in $(LANE_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
+		| xargs -P $(LANE_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
+			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 > $(LANE_DIR)/$$0-$$1.log 2>&1 || true'
+	@$(PYTHON) tests/tactics/lane_table.py $(LANE_DIR)
+
+# B9 (R34.15) the lane spread's series (workstreams *Bars (round 34)*, brains B9): showmatch fights over LANE_SERIES_AT x
+# LANE_SERIES_SEEDS; LANE_ARM=aa runs both sides OFF (the A/A, run first), LANE_ARM=ruled runs ONE side with the rule
+# (green on even seeds, rust on odd) -> LANE_SERIES_DIR/<arm>/ + tests/tactics/lane_series.py (needs both arms' dirs).
+LANE_SERIES_AT ?= locks terminus crossing
+LANE_SERIES_SEEDS ?= 1400_1439
+LANE_ARM ?= aa
+LANE_SERIES_DIR ?= $(BUILD_DIR)/lane-series
+.PHONY: lane-series
+lane-series: native-for-check import ## brains B9: the lane spread's one-sided series, LANE_ARM=aa|ruled over LANE_SERIES_AT x LANE_SERIES_SEEDS (first_last) -> LANE_SERIES_DIR/<arm>/
+	@rm -rf $(LANE_SERIES_DIR)/$(LANE_ARM); mkdir -p $(LANE_SERIES_DIR)/$(LANE_ARM)
+	@echo ">> lane-series $(LANE_ARM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(LANE_SERIES_AT)' seeds '$(LANE_SERIES_SEEDS)'"
+	@first=$(word 1,$(subst _, ,$(LANE_SERIES_SEEDS))); last=$(word 2,$(subst _, ,$(LANE_SERIES_SEEDS))); for a in $(LANE_SERIES_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
+		| xargs -P $(LANE_JOBS) -L 1 sh -c 'side=off; if [ "$(LANE_ARM)" = ruled ]; then side=$$([ $$(( $$1 % 2 )) = 0 ] && echo green || echo rust); fi; \
+			timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
+			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 --lane-spread=$$side > $(LANE_SERIES_DIR)/$(LANE_ARM)/$$0-$$1.log 2>&1 || true'
+	@ls $(LANE_SERIES_DIR)/$(LANE_ARM) | wc -l | sed 's/^/   logs: /'
