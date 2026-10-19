@@ -141,6 +141,13 @@ if parkedroom becomes an element make-room. Each is in `roadmap.md`.
 
 _Filed here before any number. Empty at launch._
 
+- **B1 scout try 2 (brains), filed and amended before any judged number on `stream/brains` `66df97de3` (full text there).**
+  Rule: fight only when advantage >= 1 AND the shooter is in reach at 0/1/2 s; otherwise today's SPOT. The stage's own
+  cells hold only duels the scout loses (advantage >= 1 on 207 of 5320 rule ticks, none in reach), so (a)/(c) are judged on 24
+  pinned duel cells (law/gang scout × syn_lancer/law_tank × 15/24/35 m × post/free, turn-in OFF) and (b) on both sets.
+  Fresh seeds 73–79; seed 50 is tuning. The OFF arm adds no compute (lazy matchups gated by `scout_under_fire`); the hash
+  proof is `sim-baseline SCOUT_FIGHT=off` beside the pair check.
+
 ## Rulings (round 34)
 
 _Empty at launch._
