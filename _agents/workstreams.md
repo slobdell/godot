@@ -167,6 +167,15 @@ _Filed here before any number. Empty at launch._
   candidate shipping on these readings is reported to him in player terms, with the margin. (3) **Partial rule: APPROVED as
   written:** (a) alone missing by less than its sd_boot does not park a candidate that passes (b)–(g); any (d)/(d2)/(e) run
   fails it.
+- **R34.2 The rematch carrier is traffic's solve phase; fix (A) approved (2026-10-18; planner, diagnosis on `stream/planner`
+  `references/round34/planner/rematch/diagnosis.md`).** `traffic.gd` `hold_of()` / `shape()` re-solve on
+  `(Engine.get_physics_frames() + name.hash()) % SOLVE_TICKS == 0`; the process frame counter never resets, so a rematch
+  starts at another phase (builder0 native, 918ede503: 12 of 12 rematches branched, 6 outcomes; with a 3-line patch, 0 of 12,
+  1 outcome). Physics server, World3D, statics: no effect. Planner is GRANTED those two phase lines + one helper in
+  traffic.gd (traffic told). Conditions: audit every `get_physics_frames()` in `game/` and `native/src` for absolute-phase
+  use and fix or clear each; native mirrors any C++ twin; prefer the match tick as origin; the test fails on today's main;
+  sim-baseline repeats twice on the fixed tree. Merged ALONE, then the orchestrator adopts the baseline (it moves once on
+  every map); judged series already running stay on their pair trees.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
