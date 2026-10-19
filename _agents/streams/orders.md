@@ -75,6 +75,15 @@ Nothing (his deploy-step yes is the go).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### D1 the deploy step ON: check record
+- `orders-d1` `1a5e33c47` (= the flip + census + probe columns + main 0f4d528d7), builder0: `>> remote: make check exited 2`;
+  test 2884 passed, 2 failed; **sim-baseline passed, 13 maps unmoved** (glibc-2.43): nothing to attribute (the CPU never
+  reaches a plain move with the step on, as the census found). The 2 failures: test_tactics_scenarios_3/4 "every formation
+  stands on the spot it was sent to (anchor 1.5-9.5 m off)": B8b laid the halt centred where the squad stood.
+- Fix `orders-d1` `0603f3274`: within DEPLOY_ON_SPOT_M (12 m) of its spot the halt stands ON it; B8b's centred lay stays
+  for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
+  builder0 full check: queued behind native's (C35.1: one check at a time).
+
 ### D3 tight packing: PARKED, OFF by default (`--pack=on` / `PACK=on`), code on stream/orders `183eb4cd6`
 **What was built** (`SelectionSquads.pack_halts`, `RtsControls._pack_halts`, the task's `halt_at` / `halt_shape` / `lay` per
 R35.6, `ElementPlan._deploy_state` / `_deploy_shape` read them): with the deploy step on and 2+ AUTO squads on one plain

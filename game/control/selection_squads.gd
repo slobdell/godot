@@ -1238,3 +1238,75 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 		headings.append((across * turned.x + ahead * turned.y).normalized())
 	packed += 1
 	return anchors
+
+
+## Round 35 (orders D5, C35.5): A QUEUED LEG IS DEALT BY THE SQUADS' DRIVES. Planner's Locks 5-squad route: squads 3 and 5
+## jammed ~55 s at the junction near (5, 65); the final anchors did not cross in a straight line, but their navmesh drives
+## off the second waypoint did (`gate_order` found no shared gate; `untangle` reads straight lines and skips queued legs).
+## For every pair whose paths (`paths(start, place)`) cross, the two places are swapped when the swap uncrosses that pair
+## and the leg's total drive (`drive(start, place)`) grows by no more than UNCROSS_GUARD_RATIO + UNCROSS_GUARD_M (the
+## length guard: a swap that sends both squads the long way round is worse than a crossing). Up to UNCROSS_ROUNDS
+## sweeps. `starts[i]` is where squad i begins the leg. `--uncross=off` (UNCROSS false) is round 34's dealing.
+static var UNCROSS := not OS.get_cmdline_user_args().has("--uncross=off")
+const UNCROSS_GUARD_RATIO := 0.25
+const UNCROSS_GUARD_M := 10.0
+const UNCROSS_ROUNDS := 3
+## Two paths crossing within this of either path's END is two squads arriving side by side, not a crossing.
+const UNCROSS_END_M := 6.0
+## How many swaps this process made (a probe reads it).
+static var uncrossed := 0
+
+
+static func uncross_paths(anchors: Array[Vector3], starts: Array, paths: Callable, drive: Callable) -> Array[Vector3]:
+	var dealt: Array[Vector3] = anchors.duplicate()
+	if not UNCROSS or anchors.size() < 2 or starts.size() != anchors.size():
+		return dealt
+	var guard := 0.0
+	for i in dealt.size():
+		guard += float(drive.call(starts[i], dealt[i]))
+	guard = guard * (1.0 + UNCROSS_GUARD_RATIO) + UNCROSS_GUARD_M
+	for sweep in UNCROSS_ROUNDS:
+		var swapped := false
+		for i in dealt.size():
+			for j in range(i + 1, dealt.size()):
+				if not paths_cross(paths.call(starts[i], dealt[i]), paths.call(starts[j], dealt[j])):
+					continue
+				if paths_cross(paths.call(starts[i], dealt[j]), paths.call(starts[j], dealt[i])):
+					continue
+				var total := 0.0
+				for k in dealt.size():
+					var place := dealt[j] if k == i else (dealt[i] if k == j else dealt[k])
+					total += float(drive.call(starts[k], place))
+				if total > guard:
+					continue
+				var keep := dealt[i]
+				dealt[i] = dealt[j]
+				dealt[j] = keep
+				uncrossed += 1
+				swapped = true
+		if not swapped:
+			break
+	return dealt
+
+
+## Whether two drives (polylines on the ground) cross, other than near either one's end (squads arriving side by side).
+static func paths_cross(a: PackedVector3Array, b: PackedVector3Array) -> bool:
+	if a.size() < 2 or b.size() < 2:
+		return false
+	var a_end := Vector2(a[a.size() - 1].x, a[a.size() - 1].z)
+	var b_end := Vector2(b[b.size() - 1].x, b[b.size() - 1].z)
+	var a_start := Vector2(a[0].x, a[0].z)
+	var b_start := Vector2(b[0].x, b[0].z)
+	for i in range(1, a.size()):
+		var p := Vector2(a[i - 1].x, a[i - 1].z)
+		var q := Vector2(a[i].x, a[i].z)
+		for j in range(1, b.size()):
+			var hit: Variant = Geometry2D.segment_intersects_segment(p, q, Vector2(b[j - 1].x, b[j - 1].z), Vector2(b[j].x, b[j].z))
+			if hit == null:
+				continue
+			var at: Vector2 = hit
+			if at.distance_to(a_end) < UNCROSS_END_M or at.distance_to(b_end) < UNCROSS_END_M \
+					or at.distance_to(a_start) < UNCROSS_END_M or at.distance_to(b_start) < UNCROSS_END_M:
+				continue
+			return true
+	return false
