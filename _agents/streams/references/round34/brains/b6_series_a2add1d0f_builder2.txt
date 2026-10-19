@@ -1,0 +1,28 @@
+# B6 judged series: stream/brains a2add1d0f (B6 619eff0e1), builder2, ON v --halt-shape-early=off. ground-series fresh 610-613 (28 pairs); crossing-series auto/drills on, fresh 4-7 x {1,8,15} (48 pairs)
+(1) ground-series: 28 pairs
+(a) pooled drift moves 121 v 104 (limit 52.0) FAIL
+(b) Sumps n 12: all_in8 mean diff +9.97 s (limit +10.78) | hollow 9 v 0 (limit 1) FAIL
+    yard/Terminus n 16: crews in 160 v 160, mean diff +0.00 (floor -0.00) PASS
+    sumps s610 t1: drift 0 v 4 | all_in8 29.37 v 22.97 hollow False v False
+    sumps s610 t3: drift 0 v 4 | all_in8 25.73 v 26.57 hollow True v False
+    sumps s610 t8: drift 2 v 2 | all_in8 32.53 v 28.77 hollow True v False
+    sumps s610 t11: drift 8 v 4 | all_in8 43.1 v 24.9 hollow False v False
+    sumps s611 t1: drift 0 v 4 | all_in8 25.37 v 24.13 hollow True v False
+    sumps s611 t3: drift 4 v 4 | all_in8 27.13 v 25.33 hollow True v False
+    sumps s611 t6: drift 0 v 4 | all_in8 25.97 v 24.07 hollow True v False
+    sumps s611 t8: drift 0 v 4 | all_in8 22.6 v 22.97 hollow True v False
+    sumps s611 t11: drift 2 v 3 | all_in8 41.33 v 33.87 hollow True v False
+    sumps s611 t16: drift 60 v 4 | all_in8 None v 39.93 hollow True v False
+    terminus s610 t11: drift 2 v 8 | crews in 10 v 10 of 10
+    terminus s611 t11: drift 5 v 9 | crews in 10 v 10 of 10
+    terminus s612 t11: drift 6 v 4 | crews in 10 v 10 of 10
+    terminus s613 t11: drift 1 v 6 | crews in 10 v 10 of 10
+    yard s610 t3: drift 0 v 3 | crews in 10 v 10 of 10
+    yard s610 t8: drift 0 v 3 | crews in 10 v 10 of 10
+    yard s611 t16: drift 0 v 3 | crews in 10 v 10 of 10
+(c) REPORTED arrived re-lays left ON: 82 | median 10.3 m, max 13.0 m, runs 16, formations ['herringbone']
+(2) crossing-series: 48 pairs
+    every crew across: 48 v 48 (floor 47) PASS
+    last across (n 48 both crossed): mean diff +0.00 s (limit +0.00) PASS
+    seat + point passes + overtakes: 281 v 281, mean diff +0.00 (limit +0.00) PASS
+B6_BAR (1) FAIL (2) PASS

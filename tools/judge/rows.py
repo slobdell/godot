@@ -302,3 +302,63 @@ def by_seed(pairs, metric):
         seed = k[0] if isinstance(k, tuple) else k
         out.setdefault(seed, []).append(f(a) - f(b))
     return out
+
+
+def planner_series_lines(path):
+    """{squad: {n, base_arrived, arrived_mean, arrived_se, contacts_base_median, contacts_mean, contacts_se}} from the
+    planner series verdict's PLANNER_SERIES_SQUAD lines (round 33): paired MEANS a seed and their se, no per-seed rows."""
+    out = {}
+    pat = re.compile(r"PLANNER_SERIES_SQUAD (\w+): n (\d+) \| arrivals base (\d+) candidate (\d+) of (\d+), paired mean ([-+.\d]+) "
+                     r"se ([.\d]+).*?contact-ticks median base (\d+) candidate (\d+), paired mean ([-+.\d]+) se ([.\d]+)")
+    with open(path) as handle:
+        for line in handle:
+            m = pat.search(line)
+            if m:
+                n = int(m.group(2))
+                out[m.group(1)] = {"n": n, "base_arrived": int(m.group(3)) / n, "arrived_mean": float(m.group(6)),
+                                   "arrived_se": float(m.group(7)), "contacts_base_median": float(m.group(8)),
+                                   "contacts_mean": float(m.group(10)), "contacts_se": float(m.group(11))}
+    return out
+
+
+def far_lines(path):
+    """{name: {base, arm, n, se, differing}} from far_ab's paired-sum lines (round 33 traffic: `L1 parked far loops`, `L2 all
+    far loops`, `L3 kills`, `L3 deaths`) and {"hit rate": {base, arm, n, se_mean}} from its paired-mean hit-rate line (n is
+    the L3 kills line's fights)."""
+    out = {}
+    pat = re.compile(r"^(L1 parked far loops|L2 all far loops|L3 kills|L3 deaths): base (\d+), arm (\d+) over (\d+) paired fights; "
+                     r"drop -?\d+, paired se of the sum ([.\d]+).*?fights differing (\d+)")
+    hit = re.compile(r"^L3 hit rate: base ([.\d]+), arm ([.\d]+) \(mean of fights\), paired se of the mean ([.\d]+)")
+    with open(path) as handle:
+        for line in handle:
+            m = pat.search(line)
+            if m:
+                out[m.group(1)] = {"base": int(m.group(2)), "arm": int(m.group(3)), "n": int(m.group(4)),
+                                   "se": float(m.group(5)), "differing": int(m.group(6))}
+                continue
+            m = hit.search(line)
+            if m:
+                out["hit rate"] = {"base": float(m.group(1)), "arm": float(m.group(2)), "se_mean": float(m.group(3))}
+    if "hit rate" in out and "L3 kills" in out:
+        out["hit rate"]["n"] = out["L3 kills"]["n"]
+        out["hit rate"]["differing"] = out["L3 kills"]["differing"]
+    return out
+
+
+def hull_aa_cells(path):
+    """[{mode, task, klass, metric, n, base_median, new_median, mean_diff, sd_run}] from the planner's HULL_AA_CELL lines."""
+    out = []
+    with open(path) as handle:
+        for line in handle:
+            if not line.startswith("HULL_AA_CELL ") or "mode task class" in line:
+                continue
+            parts = [p.strip() for p in line[len("HULL_AA_CELL "):].split("|")]
+            head = parts[0].split()
+            try:
+                medians = parts[2].split()
+                out.append({"mode": head[0], "task": head[1], "klass": head[2], "metric": head[3], "n": int(parts[1]),
+                            "base_median": float(medians[0]), "new_median": float(medians[1]), "mean_diff": float(parts[3]),
+                            "sd_run": float(parts[4])})
+            except (ValueError, IndexError):
+                continue
+    return out

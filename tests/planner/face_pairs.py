@@ -115,7 +115,7 @@ def main(argv):
             ok = False
             continue
         if "--distinct" in argv:
-            keys, cells = hull_distinct.distinct_keys(rb, rc, keys)
+            keys, cells = hull_distinct.distinct_runs(root, keys, lambda _k, m=mode: (f"base_{m}", f"new_{m}"))
             for line in hull_distinct.summary({(mode,) + c: v for c, v in cells.items()}, "FACE_PAIRS_DISTINCT"):
                 print(line)
         totals = {k: [] for k in ("both", "candidate_only", "base_only", "neither", "unmatched_base", "unmatched_candidate")}

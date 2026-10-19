@@ -1,0 +1,14 @@
+native yield stage yard_open: 607 negotiating drives compared (of 10080 drives screened), 0 mismatches
+native yield (yard_open): 27 negotiations native, 0 called back, { "yields_started": 25, "spot:spot": 24, "setup_refusals": 5, "parked_refusals": 1, "yield_spots_unfit": 1, "spot:back": 1 }
+native yield stage yard_open (owned state): 483 negotiating drives compared (of 10080 drives screened), 0 mismatches
+native yield (yard_open owned): 26 negotiations native, 0 called back, { "yields_started": 23, "spot:spot": 22, "parked_refusals": 1, "spot:back": 1 }
+native yield stage sumps: 370 negotiating drives compared (of 10080 drives screened), 0 mismatches
+native yield (sumps): 107 negotiations native, 0 called back, { "yields_started": 94, "spot:spot": 58, "yield_spots_unfit": 61, "spot:back": 30, "yield_holds": 6, "spot:hold": 6, "parked_refusals": 11, "asks_refused": 1 }
+native yield stage sumps (owned state): 370 negotiating drives compared (of 10080 drives screened), 0 mismatches
+native yield (sumps owned): 107 negotiations native, 0 called back, { "yields_started": 94, "spot:spot": 58, "yield_spots_unfit": 61, "spot:back": 30, "yield_holds": 6, "spot:hold": 6, "parked_refusals": 11, "asks_refused": 1 }
+native yield shortened: 5 drives compared, 0 mismatches
+native yield (shortened): 5 negotiations native, 0 called back, { "yields_started": 5, "yield_spots_unfit": 15, "yield_spots_shortened": 5, "spot:short:spot": 5 }
+native yield shortened (owned state): 5 drives compared, 0 mismatches
+native yield (shortened owned): 5 negotiations native, 0 called back, { "yields_started": 5, "yield_spots_unfit": 15, "yield_spots_shortened": 5, "spot:short:spot": 5 }
+6 passed, 0 failed
+>> remote: make native test FILTER=test_native_yield exited 0 (build/ copied back)
