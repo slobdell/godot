@@ -14,6 +14,11 @@ His playtest that evening: one click with three squads put one squad's anchor ac
 anchors capped and found by DRIVING distance, squads may nest (hull clearance, not boxes), squads priced at their arrival
 shape, waypoints are the squad's (gates, not pins). C34.11; brief `streams/orders.md`. The orchestrator's loop runs.
 
+**Merges (round 34):** main `02a912163` = native `12ac7b172` (C34.7 shell RPC guard, C34.8 (a) PIN_FPS on every judged stage +
+`make pin-moves`, N4 NativeExpect.absent); **main 02a912163 inherits 12ac7b172's check** (builder2 `make native check` exit 0,
+2798/0, sim-baseline unmoved; `tools/merge_check_needed.sh` INHERIT). Rulings so far: R34.1 (bar M0), R34.2 (the rematch
+carrier: traffic's solve phase; planner's fix approved, the baseline moves once when it merges).
+
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
 tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are
 in `workstreams.md` *Round 34*, and the briefs are in `_agents/streams/`. The worktrees were created FRESH from the docs
