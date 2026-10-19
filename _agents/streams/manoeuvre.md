@@ -137,6 +137,15 @@ min; CP-F 4's step 2 wrapper died 6 min in) while the remote makes ran on as orp
 touched). Neither M2 run is named from those logs. Both the M2 check (builder0) and the CP-F 4 series (resumed from step
 2; step 1's wrapper line is in its summary) now run under `systemd-run --user` as the brief orders; orientation trip-up 86.
 
+### Stretch: the War Rig face-behind clip is CUT (2026-10-19 ~08:30 PDT, laptop)
+
+`references/round34/manoeuvre/face-clip/` (4 MB mp4, frames, both SCREEN rows, README): lab/cpf4 e76f6dab6, gangs
+faced_right 180° seed 5, before (`--nav-off=turnhull`) v after (the tree's default) side by side at 2x. Before: the ten
+hulls rest 134–174° off the arrow (two IFVs 62°/16.5°), faced_ok false. After: 0.9–7.2° off, all still, faced_ok true,
+settled 34.5 s. Mechanism only (laptop); whether he sees it ships with CP-F 4's verdict. Note for the target: on a tree
+where TURN_HULL_DEFAULT is true the arms must be passed the other way round (its own comment says so; my first cut had
+them swapped, the labels inverted; re-cut).
+
 ### M1 the ruler is GREEN: merge here `lab/m1-ruler` 6c54f4e66 (2026-10-19 ~06:30 PDT)
 
 builder2, `make native check exited 0`, 2831 passed 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved (no behaviour
