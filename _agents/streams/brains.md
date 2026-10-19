@@ -110,6 +110,29 @@ Process notes: rejoin's first stage (showmatch) could not act (elimination: noth
 carried parked B10b; both caught before a merge, re-run on fresh seeds. builder2 fresh folders race `npm ci` in
 broker-test/relay-smoke; seed node_modules AND touch its .package-lock.json.
 
+### ROUND 33 CLOSE (2026-10-18): what round 34 should carry, and what blocked each
+1. **Scout fights back, try 2 (duel-only).** ENGAGE only when the scout's advantage >= 1 and its reach is judged over
+   the next 1–2 s, fresh seeds 73–79. Blocked on the lead's stand-or-hang-back answer (what a scout under fire should do
+   in player terms). Base: `lab/brains-scout` `0565d1a8` (GDScript + native pair, test_native_decide's fork) is the
+   starting point; its SPOT 0.15 rule as built FAILED (R33.31).
+2. **War Rig trace: log the inset's engage distance** (reported-only in the overnight (1b)). Small, unblocked; the 4-of-5
+   case itself is fixed and merged (`c583e0a8`).
+3. **R3 B11b (C33.3):** HOLD's return honours the post's facing for turret-mounted wheeled hulls; pass case s66
+   Green_Guns_5 <= 90° in >= 2 of 3. Blocked: manoeuvre's CP-F never merged (R33.21/R33.23); needs a CP-F-ON base.
+4. **B10b (C33.4) the corridor latch:** FAILED as written twice (R33.18, re-judge pair `f91b61c7` on builder2). Parked
+   with `--ground-latch` on stream/brains (`game/tactics/element.gd`, `tactics_flags.gd`, `mk/tactics.mk`,
+   `tests/test_tactics_ground_latch.gd`, `tests/tactics/ground_census.py`); worth carrying only with a new form
+   (re-ground with hysteresis, not the hold) and a fresh bar. Not merged; not for main as it stands.
+5. **T4's body stage (traffic's circling-hull trace, the yard head-on s27 t8):** R4 shipped (`45d5f1ea`) without it;
+   read T4's trace when traffic sends it, and if the hull still circles, a body-stage case under the gate series.
+   Blocked on traffic's trace.
+6. **Battery (c) deploy-at-place:** parked on `lab/brains-r33-battery` `ee18403b`; worth one retry measured by
+   battery-census on a main with (a), only if the lead still sees trucks setting up short. (b) arrivedgate is dead.
+7. **Stretch T1c-b2:** a battery's firing spots chosen so no truck's spot is behind another set-up truck. Not started;
+   partly answered by (a). Trace first on current main.
+8. **R5 (C33.2 (2)(b)):** only if traffic's CP-X picks an element make-room; `lab/brains-r32-swap` `f2cc956d`
+   (Elements.swap_seats, inert) is the seam ready for it.
+
 ### NOW (2026-10-17; order by ruling: R1 → R33.9 → R33.6 → B10b's series)
 - **R1 MERGED** (`2fd9f420` → main `07b8e99a`, on `429ebc4b`'s green check per R33.10).
 - **R33.9: the bar PASSES on (a), (b) and (c)**; the verdict with tables went to the orchestrator 2026-10-17. Merge `429ebc4b` on its
