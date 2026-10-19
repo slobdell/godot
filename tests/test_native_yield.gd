@@ -32,11 +32,12 @@ func test_the_give_way_on_the_owned_state() -> void:
 	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1})
 
 
-## Round 34 (traffic T6, R34.15, `underfire`): the open-ground stage with the switch on in forced compares. After a
-## negotiating compare: every OTHER hull hit this tick (the asked crew refuses: underfire_refusals), then this hull hit
-## (its own step aside held: underfire_holds); and every frame, each crew giving way hit this tick (the give-way ends:
-## underfire_aborts). Tanks' ticks_since_hit and the switch are put back after each.
-const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1, "underfire_aborts": 1}
+## Round 34 (traffic T6b, R34.17, `underfire`): the open-ground stage with the switch on in forced compares. After a
+## negotiating compare: every OTHER hull hit this tick (the asked crew refuses: underfire_refusals), then every hull hit
+## (its own step aside held: underfire_holds); and every frame, each crew giving way hit this tick, its whole execute
+## step compared: T6b's give-way FINISHES under fire (T6's abort, dropped at R34.17, reversed crews into the asker), so
+## the native step must carry it on too. Tanks' ticks_since_hit and the switch are put back after each.
+const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1}
 
 
 func test_the_give_way_under_fire() -> void:
@@ -274,6 +275,7 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 		print("native yield %s%s: %d give-ways hit (execute step compared)" % [arena, " (owned state)" if owned else "",
 				fire_executes])
 		assert_true(fire_executes >= 1, "%s: a crew giving way is hit and compared" % arena)
+		assert_eq(int(yield_tally.get("underfire_aborts", 0)), 0, "%s: a give-way under fire finishes (T6b)" % arena)
 	_yield_check("%s%s" % [arena, " owned" if owned else ""], floors)
 
 
@@ -347,9 +349,10 @@ func _fire_compare(movers: Array[Movement], controllers: Array[OrderController],
 	return result
 
 
-## Round 34 (traffic T6): a crew GIVING WAY hit this tick, its whole execute step (OrderController.compute_command, where
+## Round 34 (traffic T6b): a crew GIVING WAY hit this tick, its whole execute step (OrderController.compute_command, where
 ## right_of_way runs) against the native one (NativeBridge.impl.execute, execute_native.cpp's right_of_way_with), the
-## `underfire` switch on; the give-way ends (underfire_aborts, tallied). [executes, mismatches, first]; all put back.
+## `underfire` switch on; the give-way goes on in both (no abort: underfire_aborts must not move, and is tallied if it
+## does). [executes, mismatches, first]; all put back.
 func _abort_compare(movers: Array[Movement], ctl: OrderController, owned: bool, frame: int) -> Array:
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var was_off := Traffic.off("underfire")
