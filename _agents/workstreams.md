@@ -847,6 +847,21 @@ note) for C33.5; traffic gets `arenas/**` / `game/arena/**` ONLY for the crate-r
   change the fix doesn't explain, so a trace comes before any v4. **Granted:** one dev read on builder0 (not judged)
   of random-859, both arms, with kills by hull and by time, into the stream's references. Its finding goes to the round
   34 roadmap entry. A v4 needs a fresh bar, fresh fights, and a pair on current main with native's hand-back.
+- **R33.38 The lead ships C33.9 attempt 1 and keeps CP-F parked (2026-10-18, "let's go with both of your
+  recommendations"). C33.9's ship pair is RED on the whole suite.** Pair `pair/native-c339` `2f9ad0fb9` = manoeuvre's
+  `4a7cbc6ea` (`608c3357e` the net diff + TURN_IN_DEFAULT true) + native's stop hand-back. builder2 `make native check
+  exited 2`, 2801/2. The fails: test_nav_creep_bound (a wheeled hull turning in place ends 24.5 m from its start) and
+  test_ai_scenarios_elements' swept lane (20 v 16 ticks in the fire). scenario_suppression has 2 fails (51/53), and
+  sim-baseline moved crossing, parade and archipelago. Every twin is at 0 mismatches. With the library off the same tests fail,
+  and main passes them, so the turn-in's GDScript causes them. **Ruling: no test is loosened, and no baseline is
+  re-recorded to make it pass.** A hull told to turn in place that drives 24.5 m away, and a crew that sits longer in a
+  swept lane, are harms he would see. The judged stage (orbit cells) never exercised them. **Manoeuvre narrows the
+  turn-in to the case it was judged on**, a wheeled fixed gun turning to face a contact or a facing it can't yaw onto at
+  rest, never a plain turn in place or a stop that isn't facing anything. Then: (1) the two tests and the two scenarios
+  pass, unchanged; (2) the judged orbit cells, seeds 31–36, re-run on the narrowed tree read the same verdict lines
+  (row-identical, or each line's value reported beside R33.24's); (3) a new full check, with any sim-baseline moves named
+  and explained as the turn-in's own. If (2) changes any line's pass/fail, C33.9 does not ship this round and becomes
+  round 34's first manoeuvre item.
 
 **Bars (round 33):** filed here before any number.
 
