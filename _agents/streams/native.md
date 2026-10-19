@@ -130,6 +130,18 @@ RPC via a multiplayer peer which is not connected" (scene_rpc_interface.cpp:478)
 `_show_shell_impact` (rpc when connected, else the local call): laptop 7 runs, alone and with relay_peer + fx_tank_shell.
 One early combined run read 20/1 with its detail lost; 7 since are green. Watching for it in the full check.
 
+**N5, the yield Sumps stage off the pits: DONE, `17876e4b6` (test-only).** The off-floor hulls were NOT the pits alone.
+A laptop sweep of the stage's spawn layout over 961 Sumps centres (4 m grid, NATIVE=off) found hulls pushed off the floor
+almost everywhere: only 231 centres spawn clean. The old (-16, -6) put 7 hulls off the floor, where its ranks overlapped
+the pump house and the west pit's rim. On flat yard_open the same layout spawns clean. Six clean candidates near a pit
+were run as the real stage on builder2 (scratch `2c4f5d2e1`). (-40, 40) keeps every hull on the floor through the whole
+stage and reaches every path. Its ranks are 6 m from the pit, which still makes give-way spots unfit (45). builder2, n 1,
+`make native test FILTER=native_yield` at `17876e4b6`: exited 0, 6 / 0. Both Sumps stages read the same: 546 drives
+compared, 0 mismatches, 44 negotiations (spot 34, unfit 45, back 5, hold 1, parked refusals 3, asks refused 1). The
+counts equal the probe's, which shows the fresh-process stage is deterministic. Floors are at half, each path at least 1,
+and a guard asserts no hull leaves the floor. The old stage reached more paths (107 negotiations); the floors only ask
+that each path is reached. Traffic's parkedroom stage (on its pair tree) still uses (-16, -6); it moves when N5 merges.
+
 **N3 C34.8 (a), the pinning audit: BUILT, `d8ce74b91`.** Pinned (one `$(PIN_FPS)` token each): command.mk
 five-squads-series, interleaved-probe, control-timing ×2, facing-probe, hull-rest-probe, flank-probe; nav.mk gate-test;
 pace.mk pace-p0-tests, pace-leak-tests ×2; planner.mk planner-twin, planner-trace-hull-rest; tactics.mk converge-probe,
