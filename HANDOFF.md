@@ -31,6 +31,8 @@ maps adopted for C34.6** (read twice on builder0 at cea87edc0). Locks differs fr
 under the new phase (brains, builder2, `SCOUT_FIGHT=off` on 2c7c1d0dc reads planner's 4674958b0c779970, the other 12 unmoved). Main's
 check of 2c7c1d0dc: **GREEN** (builder0 `make check exited 2`, 2822/0, 26/27, sim-baseline 13 unmoved at the new lines; the one
 red is web-smoke, the stale-Xwayland-auth cause native's N6 fixes: builder0 has needed no desktop login since 530d77c6c).
+**main f97e5fdb1 = manoeuvre M1, the hull-rest ruler (`6c54f4e66`, builder2 native check exit 0, 2831/0, ALL JUDGED, INHERIT;
+it also covers brains' scenario_perf verify change 1e3c0fb69).** Hull-rest numbers before it don't compare with after.
 **Waiting on the lead:** M0 ship (R34.10, recommended yes), the deploy step (R34.7).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
