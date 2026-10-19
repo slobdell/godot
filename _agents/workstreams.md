@@ -102,8 +102,10 @@ _Filed here before any number._
 
 - **W1b a wheeled hull held to a standstill sits still (manoeuvre, C35.6's W1 follow-on), filed before any number from
   `godot-manoeuvre` `references/round35/manoeuvre/w1-trace/README.md`, with one change by the orchestrator: fixed arenas only
-  (locks, terminus, sumps; NO random arena, R34.15).** Pair = stream + native's mirror (drive_native's pace-0 branch); base =
-  `--nav-off=wheelhalt`; native path, builder0, a fresh seed block, n = 72 fights an arm. **Deciding:** at-spot creep ticks of held
+  (locks, terminus, sumps; NO random arena, R34.15).** Pair = stream + native's mirror (drive_native's pace-0 branch). **Arms (R35.19
+  follow-up): two native trees,** base `pair/native-w1b` `f4f6bf1d2` (halt OFF), ON `lab/w1b-on` `0015f48ad` (WHEEL_HALT_DEFAULT true),
+  since any `--nav-off` leaves native's drive; C31.1's `make native check` on the ON tree first. Builder0, FRESH seeds 3820–3843 x
+  locks/terminus/sumps, n = 72 fights an arm; counter first: wheel_halts > 0 in the ON arm. **Deciding:** at-spot creep ticks of held
   wheeled crews (its counter; non-zero in base first) → ~0; wedged + held deaths not up beyond 1.645 se. **Guards (as T6b):** open,
   stuck, jam deaths, far loops, kills and hit rate per team, each within 1.645 se paired; all deaths reported.
 
