@@ -3884,3 +3884,25 @@ instrument that cannot lie about load — removal within one run — and let eve
      loaded box, once on a formation bug outside the change (herringbone), and once on a judge that counted wedged hulls
      as moving. parkedroom v3 failed a two-sided kills line because the fix PREVENTED a rout of jammed crews. Before a
      third try, trace the miss. If it lands on the judge, fix the judge (with its own A/A) before the candidate.
+319. **One click is a product decision; read it in the player's terms before the code's.** (Round 34, C34.11.) His "three squads,
+     one click, one sent across the bridge" was four separate bugs: anchors laid in the air (O1), squads priced at their widest
+     shape (O3), crews' transit stations and order goals snapping to the far bank (brains' two Locks fixes), and shift-routes that
+     were never squads at all, just every vehicle's own waypoint queue (O4, found by traffic reading the code). Only planner's probe
+     (the real player path, 3/5 squads, three maps, before/after screenshots) found the last three; each unit test passed. When he
+     reports a feel bug, build the probe that does what he did before anyone tunes a constant.
+320. **Fixing one layer makes the next layer load-bearing.** (Round 34.) O3 packed squads closer and put one anchor in a block,
+     harmlessly while routes were crews' direct orders; O4 then made the route wait for the element to arrive, and the squad froze
+     (planner's bisect and brains' arms disagreed and were both right). Every change that makes "the element arrives" matter needs
+     an answer for "the element can't arrive" (here: ground_anchors and a 12 s stall fallback).
+321. **Never stack two heavy runs on builder0 (12 cores, 14 GB).** (Round 34, ~23:00.) An all-maps baseline adoption (~50 Godot)
+     beside a full check (~40) took builder0 off the network for half an hour and its desktop session with it; the orphaned halves
+     kept running. Look at `free -g` and the Godot count by cwd before every launch; the orchestrator did it wrong twice in one night.
+     A dead desktop then left stale Xwayland auth files that remote.sh exported, and headless Chrome lost WebGL2 (native's N6 fixed
+     the export; web-smoke needs no desktop now).
+322. **"Random" arena seeds can be the fixed arenas' twins.** (Round 34, traffic T5.) 14 of 48 random seeds dealt the Locks or the
+     Terminus, byte-identical to the fixed-arena fight of the same seed: pooled totals double-counted them for three series. Paired
+     readings survived. `tools/judge/seed_twins.py` drops them; a bar on a random-arena series names its n after the drop.
+323. **A rule that moves the dying hasn't removed it.** (Round 34, parkedroom v4/v4b, T6/T6b, B9.) Each cut its target in half or
+     better (hold-post loops −74 %, jam-under-fire deaths −53 %, stacked lanes 64 → 49 %), and each failed on the totals: the deaths
+     reappeared one for one as stuck, blocked or parked. A deciding gain needs its neighbour causes as guards, filed before numbers;
+     every one of these bars had them, which is why nothing harmful shipped.
