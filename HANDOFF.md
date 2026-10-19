@@ -18,6 +18,10 @@ shape, waypoints are the squad's (gates, not pins). C34.11; brief `streams/order
 `make pin-moves`, N4 NativeExpect.absent); **main 02a912163 inherits 12ac7b172's check** (builder2 `make native check` exit 0,
 2798/0, sim-baseline unmoved; `tools/merge_check_needed.sh` INHERIT). Rulings so far: R34.1 (bar M0), R34.2 (the rematch
 carrier: traffic's solve phase; planner's fix approved, the baseline moves once when it merges).
+**main 71bd4e466 (docks adopted) is GREEN:** builder0 `make check exited 2`, 2810/0, 26/27, sim-baseline 13 unmoved; the one red,
+web-smoke, is builder0's headless Chrome without WebGL2 since its ~23:00 thrash (its desktop session died); the same main's
+`make gcp-remote T=web-smoke` on builder2 exited 0 (boot 5.2 s, match smoke passed). **builder0's web-smoke stays red until
+someone logs into its desktop again.** Merged so far: native 12ac7b172, brains B1/B2-adapter/B3 (79d9f26eb). Parked: B6 (R34.7).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
 tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are

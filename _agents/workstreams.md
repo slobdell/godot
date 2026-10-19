@@ -288,10 +288,18 @@ builder0), ruled R34.3.
   guard must show the early lay ENGAGING. The player-visible shuffle (C34.11's arrival) stays open.
   **Causes traced (tuning 40–41, laptop, n 4, `333830f17`):** (1) the early lay MOVES the swerve to the 60 m line (a seat jumps
   ~35 m sideways there), it doesn't remove it; (2) leftover re-lays = the early lay's per-update heading swings close in (27°
-  turns a ±17 m herringbone 5–8 m a seat); (3) hollow = TankBrain.SLOT_TOLERANCE 4.0 m v ORDER_ARRIVE 3.5 m (a crew parks 3.7 m
-  off, "in position" to the brain, not arrived to the judge): brains' B7; (4) B10's grounding flip. **No try 2.** The better
+  turns a ±17 m herringbone 5–8 m a seat); (3) hollow = CORRECTED (`b77910424`): a crew's move goal and its halt slot part by
+  ~1.8 m after the goal is sent (the early lay shifts the slot); it arrives at its goal (2.7 m off), HOLDs, and is never
+  re-sent, so it sits 3.7 m from the slot the line reads. B6-specific (main's arm: 0 of 24 Sumps runs hollow). SLOT_TOLERANCE
+  is not involved: B7 has NO CASE. A B6 return would need a re-send when goal and slot part by > 1 m after arrival; (4) B10's grounding flip. **No try 2.** The better
   design, if he dislikes the shuffle, is a deliberate deploy step (travel seats until all in, then one visible move into the
   halt shape): a question for him.
+- **R34.8 orders' O1 and O3 go to brains while no orders worker runs (2026-10-19 ~00:20 PDT).** The orders worktree was
+  created at 21:50 but no agent has started in it, and C34.11 is the round's most player-visible item; brains is idle
+  (B4 waits on CP-F, B5 on traffic). Brains is GRANTED `game/control/selection_squads.gd`, `RtsControls._order_squads` /
+  `_squad_width` / `_squad_depth`, and new `tests/test_control*.gd`, for O1 (the ground cap) then O3 (price a squad at its halt
+  shape), working on `stream/brains`, per `streams/orders.md`. If an orders worker starts, brains hands over at its next
+  green commit and orders continues from there (O2, O4, O5).
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
