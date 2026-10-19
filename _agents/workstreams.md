@@ -231,6 +231,13 @@ builder0), ruled R34.3.
   all-across ON ≥ OFF − 1; last-across time and inversions + point passes + overtakes, mean(ON−OFF) ≤ 1.645 se. (3) make check on
   the ship tree, sim-baseline moves attributed with HALT_EARLY=off. Ships ON if (1)(a)(b), (2), (3) pass.
 
+- **v4b parkedroom re-judge (traffic, R34.9), filed before any number on `stream/traffic` `07276c881`
+  (`x2_parkedroom_v4_bar.md`, section v4b).** The same pair `5914d3ac5` (its C31.1 and attribution stand); builder0 start to end,
+  headless, pinned, native path (ask_handed_back > 0); base `--traffic-off=parkedroom`; FRESH 1100–1147 × {terminus, locks, random},
+  n 144 paired; L6 at 45 s. DECIDING GAIN L2 all far loops: arm < base AND (base − arm) − k·se > 0. Guards: L1a, L1b arm ≤ base + k·se.
+  L3–L6 exactly as filed. Ships ON only if all pass, as a pair with native's `4445f6b4c` and one fresh check on the hand-over
+  tree; a fail parks parkedroom for the round.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
