@@ -157,7 +157,7 @@ as judging.md S5 asks; (d) and (e) are re-sized to the MDE the A/A gives.
 | (j) | counters in the new arm | `hull_turns` > 0; `hull_holds` REPORTED (R33.34: 0 when the judged seeds have no contact) |
 | (k) | the named case s66 Green_Guns_5 | REPORTED |
 | (l) | SBF gang_ifv drawn | REPORTED |
-| (m) | the default path | the pair's twins at 0 as the gate; one drawn seed set on the native path agrees in sign on (a) and (d) |
+| (m) | the default path | the pair's twins at 0 as the gate (native, 2026-10-19: no C++ change, every change is GDScript decision code the C++ does not port; wheeled faces handed back, reason 3; on e76f6dab6 builder2 `native test` of the execute/face_behind/drive/manoeuvre/h1b/decide twins 14/0, 0 mismatches); the hull-rest drawn arms ALSO run on the native path, ON on lab/cpf4 and base on lab/m1-ruler e28ba432d (the same code, default false; a --nav-off arm would leave the native path), agreeing in sign with the GDScript arms on (a) and (d) |
 | FACE_KEEP_FAR | | REPORTED only (R34.5); face distance judged on face_pairs, CAND_ONLY reported |
 **Partial:** (a)–(j) are the gate; any miss parks it with the trace. Ships ON as a pair; brains told the merge hash the
 day it lands (B11b). **Last attempt:** this is the fourth; a fifth needs a new design, not a re-run.
