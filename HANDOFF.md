@@ -47,8 +47,9 @@ older mtimes can no longer leave builder0 a stale library (what voided brains' E
 **main 1a18dd278 = orders D1, THE DEPLOY STEP IS ON (C35.2, his yes)** (`581b8a396`, builder0 `make check exited 0`, 2886/0,
 sim-baseline 13 unmoved). **Tell him in player terms:** squads sent together keep their travel shape until all are in, then spread
 to their places as one move; a squad sent to a spot ends ON it. The cost he chose: a squad that has just set up across a street can
-hold up the next squad for a few seconds (R35.17; a round-36 item in game_design.md). D1 + N2 + N3 were each checked alone: ONE
-main check of 1a18dd278 is queued for when builder0 drops to one full check.
+hold up the next squad for a few seconds (R35.17; a round-36 item in game_design.md). **Main's batch check of 1a18dd278 (D1 + N2 +
+N3): GREEN** (builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load (perf-judge 1.85x x3; scenario_perf unpinned),
+2886/0). perf-judge on a quiet builder0 is owed for main (and T7) when the box is quiet.
 
 ## 🏁 ROUND 34 IS CLOSED (2026-10-19)
 
