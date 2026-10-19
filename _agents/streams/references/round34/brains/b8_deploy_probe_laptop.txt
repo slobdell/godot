@@ -1,0 +1,18 @@
+# B8 deploy step (prototype, --deploy-step=on), planner's O5 probe (local copy + a split-metric probe), laptop, seed 34,
+# one click, n 1 a cell; tree stream/brains c3cdbd6c4 (both Locks bridge fixes in). (a) the deploy's own move: goal
+# changes > 1 m within 1 s of the element's deploy tick; (b) goal changes > 1 m after arrival (OFF) / after the deploy
+# (ON): the twitch; (c) ON only, goal changes between arrival and the deploy. Goals sampled every 0.5 s.
+crossing  3 deploy  all_in  22.3 crossed 0 | (a)  9 (max 36.0 m) | (b)  0 (max  0.0 m) | (c)  2 | nearest foreign 3.2 m
+crossing  3 main    all_in  23.3 crossed 0 | (a)  0              | (b)  2 (max 36.8 m) |        | nearest foreign 3.2 m
+crossing  5 deploy  all_in  40.9 crossed 0 | (a) 15 (max 35.6 m) | (b)  2 (max 15.2 m) | (c)  4 | nearest foreign 3.7 m
+crossing  5 main    all_in  45.1 crossed 0 | (a)  0              | (b)  7 (max 18.6 m) |        | nearest foreign 3.7 m
+locks     3 deploy  all_in  35.0 crossed 0 | (a)  9 (max 41.9 m) | (b)  1 (max 12.8 m) | (c)  3 | nearest foreign 7.2 m
+locks     3 main    all_in  18.8 crossed 0 | (a)  0              | (b)  2 (max 15.8 m) |        | nearest foreign 6.2 m
+locks     5 deploy  all_in  13.8 crossed 0 | (a) 18 (max 29.5 m) | (b)  4 (max 27.7 m) | (c) 21 | nearest foreign 15.7 m
+locks     5 main    all_in  13.8 crossed 0 | (a)  0              | (b) 33 (max 38.5 m) |        | nearest foreign 15.7 m
+terminus  3 deploy  all_in  18.8 crossed 0 | (a)  9 (max 24.0 m) | (b)  1 (max 12.3 m) | (c)  4 | nearest foreign 7.3 m
+terminus  3 main    all_in  21.4 crossed 0 | (a)  0              | (b)  3 (max 16.5 m) |        | nearest foreign 6.7 m
+terminus  5 deploy  all_in  13.7 crossed 0 | (a) 18 (max 35.5 m) | (b)  7 (max 35.8 m) | (c) 21 | nearest foreign 15.8 m
+terminus  5 main    all_in  13.7 crossed 0 | (a)  0              | (b) 21 (max 27.9 m) |        | nearest foreign 15.8 m
+Screenshots (b8_shots/, desktop, arrival and arrival_plus5, main v deploy) were taken BEFORE c3cdbd6c4 for locks 3 (a crew
+stands across the canal in main) and show the deploy arm's red squad bunched at the canal edge on locks 3.
