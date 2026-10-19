@@ -130,6 +130,8 @@ var facing_sent := false
 ## re-seat by exposure has been made (ElementPlan._plan_form_up: his option 2, once per task).
 var arrived_tick := -1
 var halt_seated := false
+## B8 (R34.14): the deploy step's state (ElementPlan._deploy_state), reset with every task.
+var deploy := {}
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
 var _mouth_sent := {}
 ## Round 29 (B3): when each crew was last sent on for holding up a squadmate in a mouth, and how often (lesson 300).
@@ -327,6 +329,7 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	arrived = false
 	arrived_tick = -1
 	halt_seated = false
+	deploy = {}
 	_mouth_sent = {}
 	_mouth_held_tick = {}
 	_feed_since = {}
@@ -519,7 +522,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
-			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated,
+			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated, "deploy": deploy,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "reseat_keep": _reseat_keep if _reseat else {}, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
@@ -541,7 +544,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	Element.apply_swap(plan, _swap)
 	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null
-	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if GROUND_LATCH and arrived else null)
+	Element.ground(plan, ground_node, _envelopes(situation), situation["center"], _grounded if (GROUND_LATCH and arrived) or bool(deploy.get("deployed", false)) else null)
 	if ElementPlan.PACE_ENABLED and plan.has("shape_along"):
 		# Round 23 (B1): the pacing rules measure against each seat where the hull can actually stand (the brain drives
 		# to its station grounded the same way); a seat laid inside a container would otherwise hold the anchor for
@@ -1566,7 +1569,11 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
-			var to: Vector3 = SlotGround.pulled_dry(order["to"], anchor) if anchor is Vector3 else order["to"]
+			# Round 34 (C34.11; planner's O5, the Locks 3): the ORDER stands on its anchor's bank too, not only the slot. A
+			# seat laid past the canal (dry, on the far bank) came back as a slot but went out as an order, and Alpha_3
+			# crossed the bridge to reach it (SlotGround.on_anchor_side handles the far bank; pulled_dry only the water).
+			var to: Vector3 = SlotGround.pulled_dry(SlotGround.on_anchor_side(order["to"], anchor), anchor) if anchor is Vector3 \
+					else order["to"]
 			var clearance := float(envelopes.get(unit_name, 0.0))
 			order["to"] = _latched(latch, "order:" + unit_name, to,
 					func() -> Vector3: return SlotGround.standable_from(node, to, clearance, from))
@@ -1757,6 +1764,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	elif arrived_tick < 0:
 		arrived_tick = int(situation.get("tick", 0))
 	halt_seated = bool(plan.get("halt_seated", false))
+	deploy = plan.get("deploy", {})
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]

@@ -1138,6 +1138,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
+			# B8 (R34.14, prototype): the heading each squad lays its halt on when it deploys, fixed now (the approach).
+			if ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
+				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
+						Match.team_frame(team)["forward"])
+				given["lay"] = [approach.x, approach.z]
 		var error := ""
 		# Round 28 (B5): shift + a task on squads still driving their waypoints: each squad queues behind its own.
 		# Round 29 (B5, grant extended): so do a shifted attack-move / attack, and a shifted move behind a queued task.
@@ -1203,6 +1208,8 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 		task["target"] = String(extra["target"])
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
+	if extra.has("lay"):
+		task["lay"] = extra["lay"]  # B8: the halt's heading when the squad deploys (prototype)
 	_copy_approach(extra, task)
 	if shape != UnitCommand.AUTO:
 		task["formation"] = shape
