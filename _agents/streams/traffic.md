@@ -32,7 +32,14 @@ stalling there instead.
    any number: deciding gain jam-under-fire deaths; guards stuck deaths, open deaths, far loops, kills, hit rate, contacts after a
    give-way, crossings (as T6b's); fresh fixed arenas, no twins. Base it on `round34/traffic` (T6b's code) on current main; native
    mirrors from `badfdb978` with the new gate.
-2. **Stretch:** the measurement notes for judging.md (random-seed twins are now dropped by `seed_twins.py`; the fresh-folder import
+2. **T8 (R35.7, after T7's series; its own bar filed first):** a held crew that is being hit leaves the take-turns hold. From
+   manoeuvre's W1 (builder0, native, main a0ae0aafd, Locks/Terminus × 3500–3511, 24 fights): 33 of 81 stuck:wedged deaths were HELD
+   by the T1 street-mouth hold under fire, a median 5.4 s in; the 3 longest wedged episodes (18 s) are all holds. Not folded into T7.
+3. **(D) (R35.7, after T7's series reads):** jam_census adds `jam:held` as a REPORTED sub-cause (a death while held by the hold);
+   T5's definition (T7's G) unchanged until then.
+4. **After T7's series, once native's N2 is on main (the orchestrator says when):** every traffic series reader that pools a folder
+   that could hold random-arena fights (far_ab, far_kills, jam_ab, jam_table) calls `seed_twins.filter_logs` first (small commit).
+5. **Stretch:** the measurement notes for judging.md (random-seed twins are now dropped by `seed_twins.py`; the fresh-folder import
    segfault is intermittent and a relaunch cures it).
 
 ## How to verify
