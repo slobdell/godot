@@ -157,6 +157,7 @@ func _run() -> void:
 	for squad: Dictionary in _squads:
 		var anchor: Variant = squad["anchor"]
 		var row := {"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"), "arm": _flag("probe-arm", ""),
+				"seed": int(_flag("seed", "34")),
 				"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 				"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "squad": squad["number"],
 				"crews": (squad["units"] as Array).size(), "start": _xz(squad["start"]), "anchor": _xz(anchor) if anchor is Vector3 else null,

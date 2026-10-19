@@ -634,15 +634,17 @@ ORDERS_PROBE_ROUTES ?= click route
 ORDERS_PROBE_ARMS ?= main: deploy_off:--deploy-step=off
 ORDERS_PROBE_DIR ?= $(BUILD_DIR)/orders-probe
 ORDERS_PROBE_JOBS ?= 4
+## Round 35 (R35, D5's bar): the seeds every cell runs (fresh seeds judge; 34 is the round-34 reference cell).
+ORDERS_PROBE_SEEDS ?= 34
 .PHONY: orders-probe orders-probe-shots
 orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE_MAPS x _SQUADS x _ROUTES x _ARMS -> build/orders-probe/rows.jsonl + table.txt
 	@rm -rf $(ORDERS_PROBE_DIR)/logs && mkdir -p $(ORDERS_PROBE_DIR)/logs
 	@echo ">> orders-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"
-	@for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SQUADS); do for route in $(ORDERS_PROBE_ROUTES); do for arm in $(ORDERS_PROBE_ARMS); do \
-		echo "$$map $$n $$route $$arm"; done; done; done; done | xargs -P $(ORDERS_PROBE_JOBS) -L 1 sh -c \
+	@for seed in $(ORDERS_PROBE_SEEDS); do for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SQUADS); do for route in $(ORDERS_PROBE_ROUTES); do for arm in $(ORDERS_PROBE_ARMS); do \
+		echo "$$map $$n $$route $$arm $$seed"; done; done; done; done; done | xargs -P $(ORDERS_PROBE_JOBS) -L 1 sh -c \
 		'name=$${3%%:*}; flags=$$(echo "$${3#*:}" | tr "," " "); \
-		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$0 --seed=34 \
-			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(ORDERS_PROBE_DIR)/logs/$$0-$$1-$$2-$$name.log 2>&1 || true'
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$0 --seed=$$4 \
+			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(ORDERS_PROBE_DIR)/logs/$$0-$$1-$$2-$$name-s$$4.log 2>&1 || true'
 	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_PROBE_DIR)/rows.jsonl || true
 	@grep -L '^ORDERS_PROBE {' $(ORDERS_PROBE_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt

@@ -84,15 +84,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
-### D5 bar (C35.5), FILED BEFORE ANY BUILDER0 NUMBER (2026-10-19 ~11:15 PDT; laptop iteration above is not the reading)
-- **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell, the 24 cells, arms `main:` v `gate_off:--gate-deal=off`,
-  the same tree (deploy step ON, pack OFF). **Counter first (R35.5):** `gates_laid` > 0 in every multi-waypoint route cell on
-  main; the legs printed (`ORDERS_PROBE_LEGS`) differ between arms in at least the Locks 5 route.
-- **Gain (must pass):** the Locks 5-squad route all in at <= 0.7 x gate_off's (43.3 s on the laptop; or in where gate_off is
-  never in); and over the 12 route cells the summed all-in lower on main.
-- **Guards:** the 12 click cells byte-identical rows between arms (the deal acts only on queued legs: an equality check);
-  every route cell all in <= gate_off x 1.2 + 3 s, never "in on gate_off, not in on main"; deck / far bank no higher than
-  gate_off in any cell; drive/plan worst <= gate_off + 0.2 in each cell.
+### D5 bar (C35.5), FILED BEFORE ANY BUILDER0 NUMBER; amended by the orchestrator (fresh seeds), as filed on main
+- **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3601 3602 3603 3604 3605 3606" ORDERS_PROBE_ARMS="main: gate_off:--gate-deal=off"`
+  on builder0 (native), the 24 cells x 6 FRESH seeds (n 6 a cell; medians, the table's MEDIANS block), the same tree (deploy
+  step ON, pack OFF). Seed 34 (the cell the fix was tuned on, 43.3 -> 16.9 s on the laptop) is REPORTED only.
+  **Counter first (R35.5):** `gates_laid` > 0 in the route cells on main; the legs (`ORDERS_PROBE_LEGS`) differ between arms.
+- **Gain (must pass):** the Locks 5-squad route's median all in <= 0.7 x gate_off's median (a seed never in counts as inf);
+  and over the 12 route cells the summed median all in lower on main.
+- **Guards:** the click cells identical across arms on every seed (the table's EQUALITY line: the deal acts only on queued
+  legs); every route cell median all in <= gate_off x 1.2 + 3 s, and no more never-in seeds than gate_off; deck / far no
+  higher than gate_off in any cell; drive/plan median <= gate_off + 0.2 in each cell.
 
 ### D5 crossing drives: built on stream/orders `77c284868` (no builder0 number yet)
 - **Trace** (laptop GDScript, Locks 5 route, seed 34, `ORDERS_PROBE_LEGS` + `--probe-trace`): not the last leg. The IN-BETWEEN
