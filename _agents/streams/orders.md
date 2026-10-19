@@ -85,8 +85,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
 ### D5 bar (C35.5), FILED BEFORE ANY BUILDER0 NUMBER; amended by the orchestrator (fresh seeds), as filed on main
-- **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3601 3602 3603 3604 3605 3606" ORDERS_PROBE_ARMS="main: gate_off:--gate-deal=off"`
-  on builder0 (native), the 24 cells x 6 FRESH seeds (n 6 a cell; medians, the table's MEDIANS block), the same tree (deploy
+- **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3611 3612 3613 3614 3615 3616" ORDERS_PROBE_ARMS="main: gate_off:--gate-deal=off"`
+  on builder0 (native), the 24 cells x 6 FRESH seeds 3611-3616 (n 6 a cell; medians, the table's MEDIANS block; a seed moves the click, and the route's waypoints, <= 12 m to a dry standable point; 3601-3602 were seen on the laptop, so not judged; no laptop run on 3611-3616), the same tree (deploy
   step ON, pack OFF). Seed 34 (the cell the fix was tuned on, 43.3 -> 16.9 s on the laptop) is REPORTED only.
   **Counter first (R35.5):** `gates_laid` > 0 in the route cells on main; the legs (`ORDERS_PROBE_LEGS`) differ between arms.
 - **Gain (must pass):** the Locks 5-squad route's median all in <= 0.7 x gate_off's median (a seed never in counts as inf);
