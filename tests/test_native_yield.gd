@@ -29,7 +29,7 @@ func test_the_give_way_on_open_ground() -> void:
 func test_the_give_way_on_the_owned_state() -> void:
 	if FreshStage.parent(self, "test_the_give_way_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1, "parked_refusals": 1})  # round 35: 4 in both W1c arms
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1})
 
 
 ## Round 34 (traffic T6b, R34.17, `underfire`): the open-ground stage with the switch on in forced compares. After a
@@ -39,7 +39,8 @@ func test_the_give_way_on_the_owned_state() -> void:
 ## the native step must carry it on too. Tanks' ticks_since_hit and the switch are put back after each.
 ## Round 35 (T7): in this stage's ranks a neighbour sits in every pass lane, so an asked crew under fire gives way as
 ## today (underfire_gives); the refusal, the hold and a real pass start are floored on the pass stage below.
-const UNDERFIRE_FLOORS := {"": 10, "underfire_gives": 1, "pass_ticks": 1, "passes_timeout": 1, "passes_done": 1}
+const UNDERFIRE_FLOORS := {"": 10, "underfire_gives": 1, "pass_ticks": 1, "passes_timeout": 1, "passes_done": 1,
+		"parked_refusals": 1}  # parked: 4 with W1c off and on
 ## Round 35 (traffic T7): the forced passes. Each mover with a move order, `under_fire` times a stage, is put mid-pass round
 ## the nearest other hull and its drive twinned (`_avoid` steers by `_pass_point`): cycling a live pass (its way toward the
 ## refuser: behind it, the abreast point), one on its last tick (the clock ends it: passes_timeout) and one already past
@@ -162,7 +163,8 @@ const SUMPS_FLOORS := {"": 10, "spot:spot": 1, "yield_spots_unfit": 1, "spot:bac
 ## Round 35 (manoeuvre W1c, `stallintent`; C34.6's rule: the floors are the paths the stage reaches). With W1c ON the Sumps
 ## fight changes: a pinned crew's stall reads its intent and it escapes before it meets a parked friend, so the stage reaches
 ## no parked refusal and no plain refused ask (lab 6548394ea, builder0: 0 and 0, 0 mismatches; OFF 8 and 1). Those two are
-## floored here only with W1c off; the parked refusal stays floored on yard_open's owned stage.
+## floored here only with W1c off; the parked refusal is floored on the yard_open under-fire stages (4 in both W1c arms) and
+## the plain refusal on the forced refusal stage (REFUSE_POSES).
 func _sumps_floors() -> Dictionary:
 	var floors := SUMPS_FLOORS.duplicate()
 	if bool((Manoeuvre as Script).get_script_constant_map().get("STALL_INTENT_DEFAULT", false)):
@@ -196,6 +198,26 @@ const SHORT_POSES := [["gang_tank", Vector3(-60.0, 0.0, -36.0), 3], ["gang_tank"
 		["ifv", Vector3(-60.0, 0.0, -24.0), 3]]
 
 
+## Round 35 (traffic T9 / manoeuvre W1c, the orchestrator's request): a PLAIN refusal (ask -> _begin_yield false -> asks_refused:
+## no spot free and none merely unfit), forced, since with W1c ON no fight stage reaches one. Poses from a sweep of
+## Movement.ask in the Sumps (laptop, GDScript, main 1a18dd278; 12 of 15392 poses refused): the asked hull under way, a tank
+## 6 m off its nose driving straight through it, as the shortened stage stages it.
+const REFUSE_POSES := [["tank", Vector3(-12.0, 0.0, -24.0), 1], ["tank", Vector3(-4.0, 0.0, 24.0), 3],
+		["tank", Vector3(4.0, 0.0, -24.0), 7], ["tank", Vector3(12.0, 0.0, 24.0), 5], ["ifv", Vector3(-100.0, 0.0, -4.0), 0]]
+
+
+func test_the_asked_hull_refuses_with_no_spot() -> void:
+	if FreshStage.parent(self, "test_the_asked_hull_refuses_with_no_spot"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _shortened(false, REFUSE_POSES, "refused", {"": 2, "asks_refused": 2})
+
+
+func test_the_asked_hull_refuses_with_no_spot_owned() -> void:
+	if FreshStage.parent(self, "test_the_asked_hull_refuses_with_no_spot_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _shortened(true, REFUSE_POSES, "refused", {"": 2, "asks_refused": 2})
+
+
 func test_the_asked_hull_gives_way_shortened() -> void:
 	if FreshStage.parent(self, "test_the_asked_hull_gives_way_shortened"):  # its own process (tests/native/fresh_stage.gd)
 		return
@@ -208,7 +230,8 @@ func test_the_asked_hull_gives_way_shortened_owned() -> void:
 	await _shortened(true)
 
 
-func _shortened(owned: bool) -> void:
+func _shortened(owned: bool, poses: Array = SHORT_POSES, label := "shortened",
+		floors := {"": 2, "yield_spots_shortened": 2}) -> void:
 	if NativeExpect.absent(self):
 		return
 	MoverState.world_reset()
@@ -223,8 +246,8 @@ func _shortened(owned: bool) -> void:
 	var drives := 0
 	var mismatches := 0
 	var first := ""
-	for k in SHORT_POSES.size():
-		var pose: Array = SHORT_POSES[k]
+	for k in poses.size():
+		var pose: Array = poses[k]
 		var controllers: Array[OrderController] = []
 		var movers: Array[Movement] = []
 		for unit: String in ["tank", String(pose[0])]:
@@ -266,9 +289,9 @@ func _shortened(owned: bool) -> void:
 			orders.queue_free()
 		await wait_physics_frames(1)
 	NativeDrive.owned = false
-	print("native yield shortened%s: %d drives compared, %d mismatches" % [" (owned state)" if owned else "", drives, mismatches])
+	print("native yield %s%s: %d drives compared, %d mismatches" % [label, " (owned state)" if owned else "", drives, mismatches])
 	assert_eq(mismatches, 0, "the native shortened give-way is the live GDScript's: %s" % first)
-	_yield_check("shortened%s" % [" owned" if owned else ""], {"": 2, "yield_spots_shortened": 2})
+	_yield_check("%s%s" % [label, " owned" if owned else ""], floors)
 
 
 func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0,
