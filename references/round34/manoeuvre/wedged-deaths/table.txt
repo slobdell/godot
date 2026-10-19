@@ -1,0 +1,57 @@
+T5 rows: 5984 deaths in 144 fights (builder2, fda16c670, seeds 1200-1247 x terminus/locks/random, 180 s)
+by cause: open:driving 2947, open:parked 1693, stuck:wedged 499, stuck:still 294, jam:yielding 281, stuck:static 190, jam:friend 56, stuck:no_path 21, open:enemy 3
+
+WEDGED deaths: 499 = 8.3 %  (3.5 a fight)
+by hull (wedged / that hull's deaths):
+   gang_ifv       68 /  804 =  8.5 %
+   ifv            63 /  440 = 14.3 %
+   gang_support   55 /  473 = 11.6 %
+   gang_tank      49 /  436 = 11.2 %
+   law_ifv        42 /  311 = 13.5 %
+   tank           40 /  294 = 13.6 %
+   law_suppressor   40 /  257 = 15.6 %
+   gang_scout     28 /  841 =  3.3 %
+   burner         23 /  146 = 15.8 %
+   lancer         20 /  150 = 13.3 %
+   law_tank       17 /  234 =  7.3 %
+   scout          13 /  623 =  2.1 %
+   law_scout      10 /  322 =  3.1 %
+   syn_ifv         8 /  174 =  4.6 %
+   syn_scout       8 /  134 =  6.0 %
+   syn_lancer      5 /   59 =  8.5 %
+   gang_artillery    4 /  158 =  2.5 %
+   law_artillery    3 /   71 =  4.2 %
+   syn_tank        2 /   50 =  4.0 %
+   syn_artillery    1 /    4 = 25.0 %
+by arena: locks 195/1912 (10.2 %), random 153/2014 (7.6 %), terminus 151/2058 (7.3 %)
+by terrain: lanes 377/4272 (8.8 %), dense 74/1112 (6.7 %), open 48/600 (8.0 %)
+by phase: [('driving', 499)]
+blocked_by set: 0 blocker_rel: [('', 499)]
+v: p10 -2.2 median 1.2 p90 6.0 max 14.3
+still_s: p10 0.0 median 0.0 p90 2.1 max 164.8
+jam_s: p10 0.0 median 0.0 p90 0.0 max 0.0
+hits_10s: p10 0.0 median 5.0 p90 27.0 max 314.0
+base_m: p10 54.9 median 79.4 p90 110.9 max 181.7
+s: p10 17.7 median 33.3 p90 79.0 max 175.0
+wedged crews with v >= 0.5 m/s at death: 288 = 58 %   (unstick's stall rule needs speed < STUCK_SPEED under |throttle| > 0.5)
+wedged crews still >= 1.0 s at death: 83 = 17 %; >= 2.0 s: 51
+under fire (hits_10s >= 1): 422 = 85 %
+team: [(1, 255), (0, 244)]
+hull x terrain (top 10): [(('gang_ifv', 'lanes'), 54), (('ifv', 'lanes'), 45), (('gang_tank', 'lanes'), 42), (('gang_support', 'lanes'), 38), (('tank', 'lanes'), 32), (('law_ifv', 'lanes'), 30), (('law_suppressor', 'lanes'), 27), (('gang_scout', 'lanes'), 20), (('burner', 'lanes'), 19), (('lancer', 'lanes'), 17)]
+
+example wedged rows:
+   {'unit': 'Green_Hunters_3', 'hull': 'ifv', 'arena': 'locks', 'terrain': 'open', 'phase': 'driving', 'v': 1.9, 'still_s': 0.0, 'hits_10s': 1, 'base_m': 97.0, 'at': [50.5, 17.2], 's': 23.0}
+   {'unit': 'Green_Burners_4', 'hull': 'burner', 'arena': 'locks', 'terrain': 'lanes', 'phase': 'driving', 'v': 1.6, 'still_s': 0.0, 'hits_10s': 24, 'base_m': 72.9, 'at': [-4.3, 19.0], 's': 31.6}
+   {'unit': 'Rust_Guns_3', 'hull': 'law_tank', 'arena': 'locks', 'terrain': 'lanes', 'phase': 'driving', 'v': 1.6, 'still_s': 0.0, 'hits_10s': 1, 'base_m': 84.8, 'at': [-3.8, -10.5], 's': 37.7}
+   {'unit': 'Green_Guns_4', 'hull': 'tank', 'arena': 'locks', 'terrain': 'lanes', 'phase': 'driving', 'v': 0.0, 'still_s': 1.1, 'hits_10s': 12, 'base_m': 80.1, 'at': [0.4, 12.4], 's': 50.1}
+   {'unit': 'Green_Burners II_4', 'hull': 'burner', 'arena': 'locks', 'terrain': 'lanes', 'phase': 'driving', 'v': 1.2, 'still_s': 0.0, 'hits_10s': 4, 'base_m': 71.8, 'at': [2.2, 21.1], 's': 55.1}
+   {'unit': 'Green_Burners II_5', 'hull': 'burner', 'arena': 'locks', 'terrain': 'lanes', 'phase': 'driving', 'v': -1.4, 'still_s': 0.2, 'hits_10s': 10, 'base_m': 73.0, 'at': [-3.5, 19.0], 's': 56.3}
+
+|v| < 0.8 m/s (STUCK_SPEED) at death: 130 = 26 % (the stall rule could be counting); reversing (v < -0.5): 104
+of the slow ones, still >= 1 s: 53 ; under fire: 107
+locks: wedged deaths by 10 m cell, top 6: [((0, 20), 13), ((0, -20), 13), ((0, -10), 12), ((0, 10), 10), ((0, 0), 9), ((10, 10), 8)] of 195
+terminus: wedged deaths by 10 m cell, top 6: [((20, 30), 7), ((-30, -30), 6), ((-10, -20), 5), ((70, 20), 5), ((10, 10), 5), ((10, -10), 4)] of 151
+stuck:wedged   death time median  33.3 s, hits_10s median 5
+open:driving   death time median  45.5 s, hits_10s median 5
+stuck:still    death time median  62.8 s, hits_10s median 8.0
+jam:yielding   death time median  37.1 s, hits_10s median 4

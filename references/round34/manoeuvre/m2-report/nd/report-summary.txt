@@ -1,0 +1,10 @@
+>> m2 report (native_drive flags) on b33b12fec builder0 07:10; waiting for builder0's check
+>> new_drawn start 07:32 on b33b12fec builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_GDD=1 M1_SEEDS=60-71 HULL_FACTIONS=gangs HULL_JOBS=6 exited 0 (build/ copied back)
+>> base_drawn start 07:40 on b33b12fec builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_drawn M1_BASE_OFF=arriveleg M1_GDD=1 M1_SEEDS=60-71 HULL_FACTIONS=gangs HULL_JOBS=6 exited 0 (build/ copied back)
+>> new_clicked start 07:47 on b33b12fec builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_clicked M1_NEW_OFF= M1_GDD=1 M1_SEEDS=60-71 HULL_FACTIONS=gangs HULL_JOBS=6 exited 0 (build/ copied back)
+>> base_clicked start 07:54 on b33b12fec builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_clicked M1_BASE_OFF=arriveleg M1_GDD=1 M1_SEEDS=60-71 HULL_FACTIONS=gangs HULL_JOBS=6 exited 0 (build/ copied back)
+>> done 08:01

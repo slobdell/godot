@@ -1,0 +1,8 @@
+faced_attack_move: time of the crews' last NEW move goal after 20 s (run median, s): new - base paired median +0.0 over 26 pairs; new median 34.0 base 27.5
+   runs where new is >= 10 s later: 7: gangs/604:45v25 gangs/605:42v29 gangs/607:40v25 gangs/611:81v26 gangs/616:36v26 law/612:45v24 law/614:78v42
+faced_ambush: time of the crews' last NEW move goal after 20 s (run median, s): new - base paired median +0.0 over 24 pairs; new median 29.0 base 28.5
+   runs where new is >= 10 s later: 1: gangs/607:49v38
+faced_screen: time of the crews' last NEW move goal after 20 s (run median, s): new - base paired median +0.0 over 33 pairs; new median 30 base 30
+   runs where new is >= 10 s later: 2: law/602:44v25 law/614:77v67
+faced_move: time of the crews' last NEW move goal after 20 s (run median, s): new - base paired median +0.0 over 23 pairs; new median 24 base 23
+   runs where new is >= 10 s later: 3: gangs/603:45v25 condemned/606:44v32 condemned/610:42v27

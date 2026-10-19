@@ -1,0 +1,14 @@
+(c) paired run-median wheels/turret hull error, new_clicked - base_clicked, 221 pairs (bootstrap se, 2000 rounds, seed 33)
+   faced_ambush             n  37 paired median   +0.0 se  0.0 lim + 0.0 PASS | mean   +0.0
+   faced_attack_move        n  36 paired median   +0.0 se  0.0 lim + 0.0 PASS | mean   +0.0
+   faced_move               n  37 paired median   +0.0 se  0.0 lim + 0.0 PASS | mean   -0.3
+   faced_right              n  37 paired median   +0.0 se  0.0 lim + 0.0 PASS | mean   +0.1
+   faced_screen             n  37 paired median   +0.0 se  0.0 lim + 0.0 PASS | mean   +0.5
+   faced_support_by_fire    n  37 paired median   +0.0 se  0.0 lim + 0.0 PASS | mean   -0.0
+(c) paired run-median wheels/turret hull error, new_drawn - base_drawn, 220 pairs (bootstrap se, 2000 rounds, seed 33)
+   faced_ambush             n  36 paired median  -84.2 se  5.9 lim + 9.8 PASS | mean  -82.7
+   faced_attack_move        n  36 paired median  -45.4 se  3.5 lim + 5.7 PASS | mean  -44.9
+   faced_move               n  37 paired median  -45.5 se  4.8 lim + 7.9 PASS | mean  -50.3
+   faced_right              n  37 paired median  -39.4 se  4.6 lim + 7.5 PASS | mean  -49.5
+   faced_screen             n  37 paired median  -28.6 se  2.7 lim + 4.4 PASS | mean  -26.8
+   faced_support_by_fire    n  37 paired median  -79.6 se  4.4 lim + 7.3 PASS | mean  -79.1

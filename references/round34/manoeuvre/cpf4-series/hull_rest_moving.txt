@@ -1,0 +1,76 @@
+MOVING_KIND task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND faced_ambush | base_clicked | 0 | 0 | 4 | 4 | 7 | 1 | 0 | 16
+MOVING_KIND faced_ambush | base_drawn | 0 | 1 | 3 | 0 | 8 | 0 | 0 | 12
+MOVING_KIND faced_ambush | new_clicked | 0 | 0 | 4 | 4 | 7 | 1 | 0 | 16
+MOVING_KIND faced_ambush | new_drawn | 1 | 2 | 4 | 1 | 15 | 0 | 0 | 23
+MOVING_KIND faced_attack_move | base_clicked | 1 | 1 | 4 | 1 | 23 | 3 | 0 | 33
+MOVING_KIND faced_attack_move | base_drawn | 0 | 0 | 7 | 4 | 15 | 0 | 0 | 26
+MOVING_KIND faced_attack_move | new_clicked | 1 | 5 | 2 | 1 | 31 | 5 | 0 | 45
+MOVING_KIND faced_attack_move | new_drawn | 1 | 4 | 5 | 5 | 21 | 0 | 0 | 36
+MOVING_KIND faced_move | base_clicked | 1 | 2 | 3 | 0 | 12 | 0 | 0 | 18
+MOVING_KIND faced_move | base_drawn | 0 | 0 | 6 | 5 | 13 | 0 | 0 | 24
+MOVING_KIND faced_move | new_clicked | 0 | 2 | 3 | 0 | 12 | 0 | 0 | 17
+MOVING_KIND faced_move | new_drawn | 1 | 1 | 7 | 5 | 14 | 0 | 0 | 28
+MOVING_KIND faced_right | base_clicked | 0 | 0 | 2 | 0 | 6 | 0 | 0 | 8
+MOVING_KIND faced_right | base_drawn | 1 | 1 | 5 | 3 | 17 | 0 | 0 | 27
+MOVING_KIND faced_right | new_clicked | 0 | 0 | 2 | 0 | 6 | 0 | 0 | 8
+MOVING_KIND faced_right | new_drawn | 1 | 2 | 2 | 3 | 13 | 0 | 0 | 21
+MOVING_KIND faced_screen | base_clicked | 1 | 0 | 2 | 2 | 10 | 0 | 0 | 15
+MOVING_KIND faced_screen | base_drawn | 0 | 1 | 6 | 5 | 22 | 0 | 0 | 34
+MOVING_KIND faced_screen | new_clicked | 0 | 3 | 4 | 2 | 9 | 0 | 0 | 18
+MOVING_KIND faced_screen | new_drawn | 1 | 8 | 8 | 3 | 21 | 0 | 0 | 41
+MOVING_KIND faced_support_by_fire | base_clicked | 0 | 0 | 6 | 0 | 3 | 0 | 0 | 9
+MOVING_KIND faced_support_by_fire | base_drawn | 0 | 0 | 4 | 5 | 8 | 0 | 0 | 17
+MOVING_KIND faced_support_by_fire | new_clicked | 0 | 0 | 6 | 0 | 3 | 0 | 0 | 9
+MOVING_KIND faced_support_by_fire | new_drawn | 0 | 2 | 2 | 6 | 7 | 0 | 0 | 17
+MOVING_KIND_WT (wheels/turret only) task | arm | face_legs | face_creep | pinned | dressing | driving | other | no_state | total
+MOVING_KIND_WT faced_ambush | base_clicked | 0 | 0 | 4 | 1 | 6 | 1 | 0 | 12
+MOVING_KIND_WT faced_ambush | base_drawn | 0 | 0 | 3 | 0 | 6 | 0 | 0 | 9
+MOVING_KIND_WT faced_ambush | new_clicked | 0 | 0 | 4 | 1 | 6 | 1 | 0 | 12
+MOVING_KIND_WT faced_ambush | new_drawn | 1 | 1 | 4 | 1 | 13 | 0 | 0 | 20
+MOVING_KIND_WT faced_attack_move | base_clicked | 0 | 0 | 4 | 0 | 10 | 1 | 0 | 15
+MOVING_KIND_WT faced_attack_move | base_drawn | 0 | 0 | 6 | 3 | 10 | 0 | 0 | 19
+MOVING_KIND_WT faced_attack_move | new_clicked | 0 | 0 | 2 | 0 | 17 | 2 | 0 | 21
+MOVING_KIND_WT faced_attack_move | new_drawn | 1 | 4 | 4 | 4 | 14 | 0 | 0 | 27
+MOVING_KIND_WT faced_move | base_clicked | 0 | 0 | 3 | 0 | 8 | 0 | 0 | 11
+MOVING_KIND_WT faced_move | base_drawn | 0 | 0 | 2 | 1 | 6 | 0 | 0 | 9
+MOVING_KIND_WT faced_move | new_clicked | 0 | 0 | 3 | 0 | 8 | 0 | 0 | 11
+MOVING_KIND_WT faced_move | new_drawn | 1 | 1 | 0 | 3 | 6 | 0 | 0 | 11
+MOVING_KIND_WT faced_right | base_clicked | 0 | 0 | 1 | 0 | 5 | 0 | 0 | 6
+MOVING_KIND_WT faced_right | base_drawn | 0 | 0 | 3 | 0 | 13 | 0 | 0 | 16
+MOVING_KIND_WT faced_right | new_clicked | 0 | 0 | 1 | 0 | 5 | 0 | 0 | 6
+MOVING_KIND_WT faced_right | new_drawn | 1 | 2 | 1 | 0 | 8 | 0 | 0 | 12
+MOVING_KIND_WT faced_screen | base_clicked | 0 | 0 | 2 | 1 | 3 | 0 | 0 | 6
+MOVING_KIND_WT faced_screen | base_drawn | 0 | 0 | 5 | 3 | 19 | 0 | 0 | 27
+MOVING_KIND_WT faced_screen | new_clicked | 0 | 0 | 3 | 1 | 3 | 0 | 0 | 7
+MOVING_KIND_WT faced_screen | new_drawn | 1 | 8 | 4 | 1 | 16 | 0 | 0 | 30
+MOVING_KIND_WT faced_support_by_fire | base_clicked | 0 | 0 | 3 | 0 | 3 | 0 | 0 | 6
+MOVING_KIND_WT faced_support_by_fire | base_drawn | 0 | 0 | 2 | 1 | 6 | 0 | 0 | 9
+MOVING_KIND_WT faced_support_by_fire | new_clicked | 0 | 0 | 3 | 0 | 3 | 0 | 0 | 6
+MOVING_KIND_WT faced_support_by_fire | new_drawn | 0 | 2 | 1 | 3 | 6 | 0 | 0 | 12
+MOVING_WORST base_clicked: 6 moving in /home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/hull-rest/base_clicked/condemned/faced_attack_move-615
+MOVING_WORST   Green_Eyes_1 (scout) 165.9 deg driving: f 2430 Green_Eyes_1 scout order move_to from  v 6.00 moved 6.00 cmd 0.67/-1.00 face 0/0.0 blocked true retry 2 touch false stuck 0.0 pivot false esc 0.0 goal 43.6 real 6.00
+MOVING_WORST   Green_Eyes_3 (scout) 118.7 deg driving: f 2430 Green_Eyes_3 scout order move_to from  v 5.77 moved 5.77 cmd -0.83/-0.68 face 1/2.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.5 real 5.77
+MOVING_WORST   Green_Eyes_4 (scout) 54.6 deg driving: f 2430 Green_Eyes_4 scout order move_to from  v 5.73 moved 5.73 cmd -0.82/0.70 face 0/0.9 blocked true retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.7 real 5.73
+MOVING_WORST   Green_Eyes_7 (scout) 122.9 deg driving: f 2430 Green_Eyes_7 scout order move_to from  v 5.77 moved 5.77 cmd -0.83/-0.68 face 2/1.7 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.5 real 5.77
+MOVING_WORST   Green_Eyes_5 (scout) 163.9 deg other: f 2430 Green_Eyes_5 scout order stop from  v 0.38 moved 0.38 cmd 0.00/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 0.0 real 0.38
+MOVING_WORST   Green_Eyes II_10 (scout) 120.1 deg face_legs: f 2430 Green_Eyes II_10 scout order face from  v 3.85 moved 3.85 cmd -0.55/1.00 face 1/3.6 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 194.8 real 3.85
+MOVING_WORST base_drawn: 4 moving in /home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/hull-rest/base_drawn/condemned/faced_support_by_fire-614
+MOVING_WORST   Green_Eyes_5 (scout) 11.6 deg dressing: f 2430 Green_Eyes_5 scout order move_to from  v 0.62 moved 0.62 cmd 0.04/-0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 6.1 real 0.00
+MOVING_WORST   Green_Eyes II_2 (scout) 131.6 deg driving: f 2430 Green_Eyes II_2 scout order move_to from  v 0.00 moved 0.00 cmd 0.00/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.2 goal 54.1 real 0.00
+MOVING_WORST   Green_Eyes II_4 (scout) 75.3 deg pinned: f 2430 Green_Eyes II_4 scout order move_to from  v 9.60 moved 9.60 cmd 0.70/0.02 face 0/0.0 blocked false retry 0 touch false stuck 0.6 pivot false esc 0.0 goal 40.0 real 0.02
+MOVING_WORST   Green_Eyes II_6 (scout) 79.2 deg driving: f 2430 Green_Eyes II_6 scout order move_to from  v 3.42 moved 3.42 cmd 0.24/-0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 31.3 real 0.01
+MOVING_WORST new_clicked: 8 moving in /home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/hull-rest/new_clicked/condemned/faced_attack_move-615
+MOVING_WORST   Green_Eyes_1 (scout) 165.9 deg driving: f 2430 Green_Eyes_1 scout order move_to from  v 6.00 moved 6.00 cmd 0.67/-1.00 face 0/0.0 blocked true retry 2 touch false stuck 0.0 pivot false esc 0.0 goal 43.6 real 6.00
+MOVING_WORST   Green_Eyes_3 (scout) 118.7 deg driving: f 2430 Green_Eyes_3 scout order move_to from  v 5.77 moved 5.77 cmd -0.83/-0.68 face 1/2.5 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.5 real 5.77
+MOVING_WORST   Green_Eyes_4 (scout) 54.6 deg driving: f 2430 Green_Eyes_4 scout order move_to from  v 5.73 moved 5.73 cmd -0.82/0.70 face 0/0.9 blocked true retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.7 real 5.73
+MOVING_WORST   Green_Eyes_7 (scout) 122.9 deg driving: f 2430 Green_Eyes_7 scout order move_to from  v 5.77 moved 5.77 cmd -0.83/-0.68 face 2/1.7 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 11.5 real 5.77
+MOVING_WORST   Green_Eyes_5 (scout) 163.9 deg other: f 2430 Green_Eyes_5 scout order stop from  v 0.38 moved 0.38 cmd 0.00/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 0.0 real 0.38
+MOVING_WORST   Green_Eyes II_10 (scout) 122.7 deg face_legs: f 2430 Green_Eyes II_10 scout order face from  v 3.10 moved 3.10 cmd -0.55/1.00 face 1/3.6 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 194.7 real 3.10
+MOVING_WORST   Green_Eyes II_14 (scout) 71.6 deg face_creep: f 2430 Green_Eyes II_14 scout order face from  v 0.39 moved 0.39 cmd 0.00/0.11 face 0/0.0 blocked true retry 27 touch false stuck 0.0 pivot false esc 0.0 goal 169.6 real 0.39
+MOVING_WORST   Green_Eyes II_5 (scout) 64.0 deg face_creep: f 2430 Green_Eyes II_5 scout order face from  v 0.63 moved 0.63 cmd 0.00/0.18 face 0/0.0 blocked true retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 126.2 real 0.63
+MOVING_WORST new_drawn: 4 moving in /home/slobdell/overnight-manoeuvre/r34_cpf4_series_e76f6dab6/hull-rest/new_drawn/gangs/faced_move-615
+MOVING_WORST   Green_Guns_13 (gang_tank) 104.8 deg driving: f 2430 Green_Guns_13 gang_tank order move_to from  v 1.80 moved 1.80 cmd -1.00/0.00 face 0/0.0 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 28.9 real 1.80
+MOVING_WORST   Green_Hunters_1 (gang_ifv) 65.7 deg dressing: f 2430 Green_Hunters_1 gang_ifv order move_to from  v 3.63 moved 3.63 cmd -0.60/-0.69 face 2/0.7 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 5.6 real 3.63
+MOVING_WORST   Green_Hunters_7 (gang_ifv) 56.4 deg dressing: f 2430 Green_Hunters_7 gang_ifv order move_to from  v 8.40 moved 8.40 cmd 0.62/-0.25 face 1/3.3 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 4.7 real 8.40
+MOVING_WORST   Green_Hunters_6 (gang_ifv) 23.7 deg dressing: f 2430 Green_Hunters_6 gang_ifv order move_to from  v 0.20 moved 0.20 cmd 0.13/0.06 face 1/1.3 blocked false retry 0 touch false stuck 0.0 pivot false esc 0.0 goal 6.2 real 0.20
