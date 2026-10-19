@@ -369,6 +369,11 @@ _Filed here before any number._
   and D4; bar filed before code: every squad gets every leg on the reproduction (reported) and fresh route seeds; round 22's Sumps
   seed 5988 case keeps 0 path crossings; queued-task / route tests green; click cells byte-identical; a test that reproduces the
   replace. D5 fix try `45d34470a` (the gate's approach pointed backwards on s3614); re-read on fresh 3631–3636.
+- **R35.29 (2026-10-19 ~16:45) The joint W1c + T9 pair is green: `pair/native-w1c-t9` `6177ee87a`.** Builder0 light, `native test
+  FILTER=test_native_yield` 12/0 on it (W1c OFF) and on lab c8db0a442 (W1c ON); the forced plain-refusal stage (REFUSE_POSES, 5 Sumps
+  poses) reaches asks_refused 5/5, 0 mismatches both arms; the parked refusal floored on the under-fire stages (native corrected its
+  own earlier yard_open claim on the re-run). Next: C31.1's `make native check` with BOTH switches ON (manoeuvre cuts that tree),
+  then the joint series; merge only after T7's verdict (R35.19).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
