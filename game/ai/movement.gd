@@ -1310,7 +1310,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	# Round 35 (W2): a face ordered while the hull still rolls has its home where the hull FIRST comes to rest, not where the
 	# order found it (only that first roll: a leg the seam or a plan drives later moves no home) (planner's rolling-face test: a rig rolled 8.8 m past a home it had to plan within 5 m of, and with no creep to
 	# drift it back no plan ever fitted).
-	var settle := Manoeuvre.face_settle_on() and tank.mount != "fixed"  # a hull-fixed scout's hull IS its gun's arc: it keeps trying
+	var settle := Manoeuvre.face_settles_here(self)
 	if settle and Manoeuvre.face_still_rolling(get_instance_id(), absf(tank.speed())):
 		_face_home = here
 	# Round 31 (planner CP-P1, R31.2): a face the lattice planner's seam holds is driven by it to its end (the request
@@ -1381,7 +1381,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	if _face_window <= 0.0:
 		if absf(_face_window_heading.signed_angle_to(forward, Vector3.UP)) < deg_to_rad(OrderController.FACE_STALL_DEG):
 			Manoeuvre.face_refused += 1
-			if Manoeuvre.face_settle_on() and tank.mount != "fixed":
+			if Manoeuvre.face_settles_here(self):
 				Manoeuvre.face_plan_failed(self, _face_want, true)
 			_face_blocked = _face_want
 			_face_left_m = 0.0

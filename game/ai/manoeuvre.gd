@@ -446,6 +446,19 @@ static func face_settle_on() -> bool:
 	return FACE_SETTLE_DEFAULT != Movement.switched_off("facesettle")
 
 
+## The faces the give-up acts on (the design note to the orchestrator, round 35): ONLY a facing he gave that turnhull lifted to
+## the HULL of a wheeled TURRET crew -- `from` "drawn" (drawn_face), or "order"/"sector" (which reach a wheeled turret hull only
+## through the lift, or as a told face). Every plain face (a lab's or a probe's, the planner seam's wedged semi) keeps round 9's
+## creep and its give-up window bit for bit; a hull-fixed scout's hull is its gun's arc, so it keeps trying.
+const FACE_SETTLE_FROM: Array[String] = ["drawn", "order", "sector"]
+
+
+static func face_settles_here(mover: Movement) -> bool:
+	if not face_settle_on() or not turn_hull_on() or mover.ctl == null or mover.ctl.tank.mount == "fixed":
+		return false
+	return FACE_SETTLE_FROM.has(String(mover.ctl.move_order.get("from", "")))
+
+
 static func _same_want(a: Vector3, b: Vector3) -> bool:
 	return absf(a.signed_angle_to(b, Vector3.UP)) <= deg_to_rad(Movement.FACE_REPLAN_DEG)
 
