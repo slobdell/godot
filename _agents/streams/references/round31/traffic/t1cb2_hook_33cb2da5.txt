@@ -1,0 +1,1 @@
+SEQ census 18/18: rwf_any:rate:0.02:0.44 PASS llr +10.07 | fstuck:guard:0.2 PASS llr -0.27 | fast:guard:0.1 PASS llr -9.10 -> SERIES PASS at run 18

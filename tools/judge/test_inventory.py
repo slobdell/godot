@@ -24,7 +24,8 @@ class Inventory(unittest.TestCase):
         self.assertEqual(len(self.table), len(lines.LINES))
         for r in self.table:
             self.assertTrue(r["source"], r["line"])
-            self.assertIn(r["verdict"].split()[0], ("PASS", "FAIL", "KEPT", "REPORTED", "VOID"), r["verdict"])
+            # NULL: a precondition the bar named was not met (T1c-b2, lesson 300); NOT READABLE: R32.7's defective reader
+            self.assertIn(r["verdict"].split()[0], ("PASS", "FAIL", "KEPT", "REPORTED", "VOID", "NULL", "NOT"), r["verdict"])
 
     def test_cp_t_between_squad_line_reproduces_the_verdict_and_its_noise(self):
         r = self.by_line[(29, "CP-T", "Terminus head-on between-squad fast down >= 25 %")]
@@ -38,6 +39,20 @@ class Inventory(unittest.TestCase):
         self.assertIn("median 39.4 -> 48.3", r["reproduced"])
         self.assertEqual(r["line_inside_noise"], "Y")
         self.assertLess(abs(float(r["verdict_margin_se"])), 0.5)
+
+    def test_rounds_31_to_34_are_in_and_their_kept_rows_reproduce_the_quotes(self):
+        """C35.9: the owed rounds; where the rows are on main the readers give back the streams' own numbers."""
+        self.assertEqual({r["round"] for r in self.table} & {31, 32, 33, 34}, {31, 32, 33, 34})
+        r = self.by_line[(31, "M1b(2) attempt 2", "(g) Terminus mixed arrivals not down beyond 1.645 se")]
+        self.assertIn("rows: 293 -> 285", r["reproduced"])  # the bar's "293 -> 285 of 312, diff -8, se 4.55"
+        self.assertAlmostEqual(float(r["noise_se"]), 4.55, delta=0.01)
+        self.assertLess(float(r["verdict_margin_se"]), 0.0)  # FAILED, by a tenth of an se
+        r = self.by_line[(31, "B3b-2b", "(1) his bridge, the full 108: on 108/108")]
+        self.assertIn("rows: 106/108 -> 108/108", r["reproduced"])
+        r = self.by_line[(31, "B3b-2b", "(3) arrive series: every crew within 8 m on >= control - 1 AND discordant against <= 1")]
+        self.assertAlmostEqual(float(r["exact_p"]), 0.065, delta=0.001)  # the stream's "McNemar p 0.065"
+        r = self.by_line[(31, "B5c-v5", "(3) Sumps all-within-8 m median on <= off")]
+        self.assertIn("median 24.9 -> 24.8", r["reproduced"])
 
     def test_untouched_cases_read_as_identical_arms(self):
         r = self.by_line[(29, "CP-T", "other three cases: fast and all-in within 2 se, crews >= base - 2")]

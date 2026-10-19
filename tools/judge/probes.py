@@ -35,6 +35,8 @@ R28 = "_agents/streams/references/round28/"
 R29 = "_agents/streams/references/round29/"
 R30 = "_agents/streams/references/round30/"
 R31 = "_agents/streams/references/round31/"
+R32 = "_agents/streams/references/round32/"
+R32T = "references/round32/"  # round 32's traffic and planner rows are at the top level
 R33 = "references/round33/"  # round 33 filed planner's and manoeuvre's rows at the top level
 R33S = "_agents/streams/references/round33/"
 
@@ -48,6 +50,9 @@ TRAFFIC_PAIRS = [
     ("T1 v3 672eb785 s4-6", R28 + "traffic/judged-jbase-672eb785-seeds456.jsonl", R28 + "traffic/judged-jv3-672eb785-seeds456.jsonl"),
     ("T1b 474558f8 s10-12", R28 + "traffic/t1b-cbase-474558f8-seeds101112.jsonl", R28 + "traffic/t1b-ct1b-474558f8-seeds101112.jsonl"),
     ("T3b cf124433 s31-33", R30 + "traffic/t3b_judged_base_cf124433_seeds313233.jsonl", R30 + "traffic/t3b_judged_arm_cf124433_seeds313233.jsonl"),
+    # Round 35 (C35.9): T3b-c as shipped (C32.1's re-judge on the carried tree). Round 31's judged pair (f5dc4147, the same
+    # seeds 41-43) reads the same totals line for line, so it is in the inventory only, not pooled twice.
+    ("T3b-c b5882c9c s41-43 (round 32)", R32T + "traffic/t3bc_r32_base_b5882c9c.jsonl.gz", R32T + "traffic/t3bc_r32_arm_b5882c9c.jsonl.gz"),
 ]
 # The same ARM on different seed sets (and commits): the A/A swing of a case total at n = 18. T3b's base (no flag at
 # cf124433, where round 29's hold is the default) is a fourth hold-ON set.
@@ -69,6 +74,10 @@ ACTED_SHARE = 1.0 / 3.0  # a pair counts toward a case's noise only if the arms 
 CENSUS_PAIRS = [
     ("T1c 761bd727 seeds 4-6", R29 + "traffic/t1c_census_base_761bd727_seeds456.jsonl", R29 + "traffic/t1c_census_arm_761bd727_seeds456.jsonl"),
     ("T1c-b 16780030 seeds 7-9", R30 + "traffic/t1cb_judged_census_base_16780030_seeds789_131415.jsonl", R30 + "traffic/t1cb_judged_census_arm_16780030_seeds789_131415.jsonl"),
+    # Round 35 (C35.9): T1c-b2 at round 31 (33cb2da5, rows copied from round31/traffic) and its round-32 re-judge (cf81aedc);
+    # the same seeds 41-46 on two trees, whose runs differ (746 -> 787 v 789 -> 696 friendly-stuck).
+    ("T1c-b2 33cb2da5 seeds 41-46 (round 31)", R31 + "traffic/t1cb2_judged_census_base_33cb2da5_seeds41-46.jsonl", R31 + "traffic/t1cb2_judged_census_arm_33cb2da5_seeds41-46.jsonl"),
+    ("T1c-b2 cf81aedc seeds 41-46 (round 32)", R32T + "traffic/t1cb2_r32_census_base_cf81aedc.jsonl.gz", R32T + "traffic/t1cb2_r32_census_arm_cf81aedc.jsonl.gz"),
 ]
 CENSUS_KEY = ["arena", "seed", "credits", "units"]
 
@@ -102,6 +111,9 @@ HULL_REST_TABLES += [
     ("CP-F 3 22e9cab4e (R33.34)", R33 + "manoeuvre/cpf3b-series/hull_rest_ab.txt", 32),
     ("CP-Q c75f20a6 gangs (R33.13)", R33 + "planner/p2-c75f20a6/hull-ab.txt", 12),
     ("P3 bca4eaca gangs (R33.19)", R33 + "planner/p3-bca4eaca/hull-ab.txt", 12),
+    # Round 35 (C35.9): round 32's two hull-rest pairs (old ruler, wall-clock paced like every pair before R33.21's pin).
+    ("B11 ffba7f77 seeds 350-355 (round 32)", R32 + "brains/b11-ab-ffba7f77.txt", 15),
+    ("CP-Q 65cc43dd gangs seeds 66-71 (round 32)", R32T + "planner/cpq-65cc43dd/hull-rest-tables.txt", 6),
 ]
 HULL_REST_N_TODAY = 32  # CP-F attempt 3's grid (R33.34), the latest judged hull-rest bar
 
@@ -125,6 +137,7 @@ GUARD_TABLES += [
 TERMINUS_PRINTED = [
     ("P3 v2 pinned c3acd47a2 (R33.26)", R33 + "planner/p3-pinned-c3acd47a2/terminus-verdict.txt"),
     ("P3 v2 923fcb97f (R33.28)", R33 + "planner/p3-pairs-923fcb97f/terminus-verdict.txt"),
+    ("CP-Q 65cc43dd seeds 205-217 (round 32)", R32T + "planner/cpq-65cc43dd/terminus-series.txt"),
 ]
 
 # Round 33 (manoeuvre, C33.9): the scout orbit cells (subject x enemy x radius x post, 6 seeds a cell), one jsonl holding
@@ -155,8 +168,19 @@ M1_AA = "references/round34/planner/sizing/m1-aa-e28ba432d-builder2.txt"
 # Round 33 (planner P1): the hull-rest gangs A/A, fifo v fifo, per-cell sd a run printed (HULL_AA_CELL).
 HULL_AA = R33 + "planner/aa-4bbe8322/hull-aa.txt"
 
-GATE_SERIES = R30 + "brains/b5c-v4-gate-series-19eca15a.jsonl"
-ARRIVE_OFF, ARRIVE_ON = R30 + "brains/b5c-v4-arrive-off-19eca15a.jsonl", R30 + "brains/b5c-v4-arrive-on-19eca15a.jsonl"
+# Brains' gate-series cells (one jsonl, both arms, `cell` + `arm` off/on) and arrive series (100 cells an arm, two jsonl).
+# Round 35 (C35.9): round 31's and 32's brains pairs pool in (a pair counts where its arms acted in >= a third of its
+# cells, as everywhere): B5c-v5's Sumps cells; B3b-2b's, B3b-2c's and B10's arrive series.
+GATE_SERIES = [
+    ("B5c-v4 19eca15a seeds 14-15 x 6", R30 + "brains/b5c-v4-gate-series-19eca15a.jsonl"),
+    ("B5c-v5 e675a28a seeds 16-17 x 6 (round 31)", R31 + "brains/b5c-v5-gate-sumps-terminus-e675a28a.jsonl"),
+]
+ARRIVE_PAIRS = [
+    ("B5c-v4 19eca15a seeds 29-32", R30 + "brains/b5c-v4-arrive-off-19eca15a.jsonl", R30 + "brains/b5c-v4-arrive-on-19eca15a.jsonl"),
+    ("B3b-2b 5ed61f91 seeds 41-44 (round 31)", R31 + "brains/b3b2b-arrive-ctrl.jsonl", R31 + "brains/b3b2b-arrive-on.jsonl"),
+    ("B3b-2c cbddb940 seeds 45-48 (round 32)", R32 + "brains/b3b2c-arrive-ctrl-cbddb940.jsonl", R32 + "brains/b3b2c-arrive-on-cbddb940.jsonl"),
+    ("B10 8e43cc5c seeds 49-52 (round 32)", R32 + "brains/b10-arrive-off-8e43cc5c.jsonl", R32 + "brains/b10-arrive-on-8e43cc5c.jsonl"),
+]
 
 
 def case_acted(pairs):
@@ -379,29 +403,51 @@ def guard_metric(root, tag, name, form="total"):
             "pairs": used, "n_pairs": len(used)}
 
 
-def cell_metric(root, cell, metric, stat, label):
-    """A gate-series cell (B5c-v4): off v on per (seed, tick); a median line carries its bootstrap sd."""
-    pairs = rows.cell_pairs(os.path.join(root, GATE_SERIES), cell)
-    d = rows.diffs(pairs, metric)
-    b, a = rows.values(pairs, metric, "base"), rows.values(pairs, metric, "arm")
-    out = {"sd_run": stats.paired_sd(d), "base_run": statistics.mean(b), "icc": stats.variance_components(rows.by_seed(pairs, metric))["icc"],
-           "pairs": [label], "n_pairs": 1, "n": len(d)}
-    if stat == "median":
-        out["median_sd_18"] = stats.bootstrap_median_diff(b, a, reps=1000)[3]
-        out["base_median"] = statistics.median(b)
+def _pooled_pairs(pair_lists, metric, stat, n_today=None):
+    """Pool [(label, [(key, base_row, arm_row)])] where the arms acted: per-pair paired sd, and for a median line the
+    bootstrap sd of the median difference over the pairs' cells concatenated, rescaled from the pooled n to n_today
+    (a median's sd scales as 1 / sqrt(n)) so it is the se a bar at n_today quotes."""
+    sds, used, b_all, a_all = [], [], [], []
+    for label, pairs in pair_lists:
+        d = rows.diffs(pairs, metric)
+        if not pairs or len(stats.acted(d)) < ACTED_SHARE * len(d):
+            continue
+        sds.append((stats.paired_sd(d), len(d)))
+        b_all += rows.values(pairs, metric, "base")
+        a_all += rows.values(pairs, metric, "arm")
+        used.append("%s (n %d)" % (label, len(d)))
+    out = {"sd_run": pooled_sd(sds), "base_run": statistics.mean(b_all) if b_all else float("nan"), "icc": 0.0,
+           "pairs": used, "n_pairs": len(used), "n": len(b_all)}
+    if stat == "median" and b_all:
+        sd = stats.bootstrap_median_diff(b_all, a_all, reps=1000)[3]
+        out["median_sd_18"] = sd * math.sqrt(len(b_all) / n_today) if n_today else sd
+        out["base_median"] = statistics.median(b_all)
     return out
 
 
-def arrive_metric(root, metric, stat, label):
-    """The arrive series' all-within-8 m time over the cells both arms completed (the stream's reading: 91 of 100 at B5c-v4)."""
-    pairs = [(k, o, n) for k, o, n in rows.arrive_pairs(os.path.join(root, ARRIVE_OFF), os.path.join(root, ARRIVE_ON))
-             if o.get(metric) is not None and n.get(metric) is not None]
-    d = rows.diffs(pairs, metric)
-    b, a = rows.values(pairs, metric, "base"), rows.values(pairs, metric, "arm")
-    out = {"sd_run": stats.paired_sd(d), "base_run": statistics.mean(b), "icc": 0.0, "pairs": [label], "n_pairs": 1, "n": len(d)}
-    if stat == "median":
-        out["median_sd_18"] = stats.bootstrap_median_diff(b, a, reps=1000)[3]
-        out["base_median"] = statistics.median(b)
+def cell_metric(root, cell, metric, stat, n_today=12):
+    """A gate-series cell, off v on per (seed, tick), pooled over GATE_SERIES; a median line carries its bootstrap sd."""
+    return _pooled_pairs([(label, rows.cell_pairs(os.path.join(root, path), cell)) for label, path in GATE_SERIES], metric, stat, n_today)
+
+
+def arrive_metric(root, metric, stat, n_today=91):
+    """The arrive series' all-within-8 m time over the cells both arms completed, pooled over ARRIVE_PAIRS."""
+    lists = []
+    for label, off, on in ARRIVE_PAIRS:
+        pairs = [(k, o, n) for k, o, n in rows.arrive_pairs(os.path.join(root, off), os.path.join(root, on))
+                 if o.get(metric) is not None and n.get(metric) is not None]
+        lists.append((label, pairs))
+    return _pooled_pairs(lists, metric, stat, n_today)
+
+
+def arrive_discordant(root):
+    """[(label, for, against)]: cells within 8 m in one arm only, per arrive pair (the count block's McNemar rows)."""
+    out = []
+    for label, off, on in ARRIVE_PAIRS:
+        pairs = rows.arrive_pairs(os.path.join(root, off), os.path.join(root, on))
+        won = sum(1 for _k, o, n in pairs if n.get("all_in8_s") is not None and o.get("all_in8_s") is None)
+        lost = sum(1 for _k, o, n in pairs if o.get("all_in8_s") is not None and n.get("all_in8_s") is None)
+        out.append((label, won, lost))
     return out
 
 
@@ -560,19 +606,19 @@ def build(root):
          "cost_min": 1.5, "unit": "run"},
         {"probe": "Sumps cell (seeds x 6 ticks, a run)", "metric": "all-within-8 m s (never = 90 s)", "form": "median", "n_today": 12, "effect": {"abs": 5.0},
          "line": "median on <= off; no run > 5 s later (B5c, B5c-v4); sized for the 5 s the lines name",
-         "read": lambda root=root: cell_metric(root, "sumps", rows.all_in8_or_end, "median", "B5c-v4 19eca15a seeds 14-15 x 6"),
-         "aa": "owed as a base-v-base; one judged pair (off 37.5 -> on 24.5 s, 11 of 12 runs complete in both arms)", "cost_min": 1.5, "unit": "run"},
+         "read": lambda root=root: cell_metric(root, "sumps", rows.all_in8_or_end, "median"),
+         "aa": "owed as a base-v-base; judged pairs B5c-v4 (off 37.5 -> on 24.5 s) and B5c-v5 (24.9 -> 24.8 s, round 31; its s17 t11 +22.3 s failed the per-run line)", "cost_min": 1.5, "unit": "run"},
         {"probe": "Sumps cell (seeds x 6 ticks, a run)", "metric": "guns on arc (share)", "form": "mean", "n_today": 12, "effect": {"abs": 0.05},
-         "line": "guns_on_arc >= off - 0.05 (B5c, B5c-v4)", "read": lambda root=root: cell_metric(root, "sumps", "guns_on_arc", "mean", "B5c-v4 19eca15a seeds 14-15 x 6"),
-         "aa": "owed; the judged pair read 0.941 = 0.941 (the arms differ by < 0.01 in every run)", "cost_min": 1.5, "unit": "run"},
+         "line": "guns_on_arc >= off - 0.05 (B5c, B5c-v4)", "read": lambda root=root: cell_metric(root, "sumps", "guns_on_arc", "mean"),
+         "aa": "owed; B5c-v4 read 0.941 = 0.941 and B5c-v5 0.939 = 0.939 (round 31): the arms differ by < 0.01 in every run", "cost_min": 1.5, "unit": "run"},
         {"probe": "arrive series (100 cells)", "metric": "cells within 8 m", "form": "count-cells", "n_today": 100, "effect": None,
-         "line": ">= control - 1; 100/100 v 89/100 (B5c), 99 v 91 (B5c-v4), 95 v 88 (B2 v5), 97 v 93 (B3)", "read": None,
+         "line": ">= control - 1; 100/100 v 89/100 (B5c), 99 v 91 (B5c-v4), 95 v 88 (B2 v5), 97 v 93 (B3); 90 v 97 (B3b-2b, r31, FAILED); 90 = 90, 93 = 93 (B3b-2c, B10, r32: identical cells)", "read": None,
          "aa": "a rule that never acts gives 0 discordant cells (deterministic): McNemar on the discordants is the test; n for an 11 % one-way gain below",
          "cost_min": 1.2, "unit": "cell"},
         {"probe": "arrive series (100 cells)", "metric": "all-within-8 m s, cells complete in both arms", "form": "median", "n_today": 91, "effect": 0.02,
-         "line": "median no slower than +2 % (B5c-v4: 29.6 -> 24.5 s over 91 complete pairs)",
-         "read": lambda root=root: arrive_metric(root, "all_in8_s", "median", "B5c-v4 19eca15a seeds 29-32 (91 complete pairs)"),
-         "aa": "owed as a base-v-base; one judged pair", "cost_min": 1.2, "unit": "cell"},
+         "line": "median no slower than +2 % (B5c-v4: 29.6 -> 24.5 s over 91 complete pairs; B3b-2b r31 28.9 -> 28.1 over 88; reported since)",
+         "read": lambda root=root: arrive_metric(root, "all_in8_s", "median"),
+         "aa": "owed as a base-v-base; B3b-2c's and B10's arrive arms (round 32) were byte-identical in every cell, an equality and not an A/A (the rule never reached the arrive maps)", "cost_min": 1.2, "unit": "cell"},
         {"probe": "bridge-pooled (18 cells) / his bridge 108", "metric": "cells passed", "form": "deterministic", "n_today": 18, "effect": None,
          "line": "18/18; 108/108", "read": None,
          "aa": "not a sample: named cells on a deterministic sim; a new failing cell is a trace to read, not a statistic (B3b: 107/108 v control 106/108 is 2 cells gained, 1 lost: McNemar p 1.0, a coin, and the lost cell is a regression by name)",

@@ -19,6 +19,7 @@ A pair is (key, base_row, arm_row). `diffs(pairs, metric)` turns pairs into per-
 RUNNER'S ORDER (seed-major, start tick minor: mk/traffic.mk's loop), which is the order sequential judging walks.
 """
 import functools
+import gzip
 import json
 import os
 import re
@@ -28,7 +29,8 @@ TRAFFIC_TICKS = (1, 3, 6, 8, 11, 16)
 
 @functools.lru_cache(maxsize=256)
 def _read_jsonl_cached(path):
-    with open(path) as handle:
+    opener = gzip.open if path.endswith(".gz") else open  # round 32's traffic rows are filed gzipped
+    with opener(path, "rt") as handle:
         return tuple(json.loads(line) for line in handle if line.strip())
 
 

@@ -38,29 +38,29 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | traffic-series terminus/head | arrived | total | 0.975 | 9.59 | 0.124 | 18 | 4.14 | crews in >= base - 2 (over 18 runs) | 0.111 (1 %) | **477** | 0.572 (6 %) | base ± 6.81 | 63 → 1670 |
 | traffic-series terminus/head | allin | median | 17.45 | 60.08 | 0.148 | 18 | 5.85 | all-in median <= base + 20 % | 12.02 (20 %) | **27** | 14.54 (24 %) | base ± 9.62 | 63 → 94.5 |
 | traffic-series terminus/head | fstuck | total | 41.17 | 32.77 | 0.166 | 18 | 174.7 | friendly-stuck <= base x 1.2 + 10 | 6.55 (20 %) | **244** | 24.13 (74 %) | base ± 287.3 | 63 → 854 |
-| traffic-series terminus/cross | xfast | total | 2.69 | 5.08 | 0.114 | 18 | 11.4 | between-squad fast contacts down >= 25 % | 1.27 (25 %) | **28** | 1.58 (31 %) | base ± 18.8 | 63 → 98 |
-| traffic-series terminus/cross | fast | total | 6.33 | 13.18 | 0.0809 | 18 | 26.9 | fast friendly contacts down >= 25 % (round 28's line) | 3.30 (25 %) | **23** | 3.71 (28 %) | base ± 44.2 | 63 → 80.5 |
-| traffic-series terminus/cross | ownfast | total | 6.23 | 8.10 | 0.0729 | 18 | 26.4 | same-squad fast <= base x 1.2 + 10 | 1.62 (20 %) | **92** | 3.65 (45 %) | base ± 43.5 | 63 → 322 |
-| traffic-series terminus/cross | arrived | total | 0.586 | 9.78 | 0.0665 | 18 | 2.49 | crews in >= base - 2 (over 18 runs) | 0.111 (1 %) | **173** | 0.344 (4 %) | base ± 4.09 | 63 → 606 |
-| traffic-series terminus/cross | allin | median | 24.97 | 42.91 | 0.0833 | 18 | 7.32 | all-in median <= base + 20 % | 8.58 (20 %) | **81** | 18.21 (42 %) | base ± 12.0 | 63 → 284 |
-| traffic-series terminus/cross | fstuck | total | 8.98 | 6.74 | 0.188 | 18 | 38.1 | friendly-stuck <= base x 1.2 + 10 | 1.35 (20 %) | **275** | 5.26 (78 %) | base ± 62.7 | 63 → 962 |
-| traffic-series terminus/cross | xclear (crossing clock, s) | mean | 4.44 | 13.91 | 0.408 | 18 | 1.05 | mean paired cross_clear_s <= 0.10 x base median + 1.645 se (T3b; the effect here is 10 % of the base MEAN) | 1.39 (10 %) | **63** | 2.60 (19 %) | base ± 1.72 | 63 → 220 |
-| traffic-series yard_open/cross | xfast | total | 1.77 | 6.11 | 0.488 | 18 | 7.51 | between-squad fast contacts down >= 25 % | 1.53 (25 %) | **9** | 1.04 (17 %) | base ± 12.4 | 63 → 31.5 |
-| traffic-series yard_open/cross | fast | total | 7.68 | 15.56 | 0.261 | 18 | 32.6 | fast friendly contacts down >= 25 % (round 28's line) | 3.89 (25 %) | **25** | 4.50 (29 %) | base ± 53.6 | 63 → 87.5 |
-| traffic-series yard_open/cross | ownfast | total | 7.16 | 9.44 | 0.162 | 18 | 30.4 | same-squad fast <= base x 1.2 + 10 | 1.89 (20 %) | **89** | 4.20 (44 %) | base ± 50.0 | 63 → 312 |
-| traffic-series yard_open/cross | arrived | total | 0.66 | 9.35 | 0.0726 | 18 | 2.8 | crews in >= base - 2 (over 18 runs) | 0.111 (1 %) | **219** | 0.387 (4 %) | base ± 4.61 | 63 → 766 |
-| traffic-series yard_open/cross | allin | median | 25.40 | 81.19 | 0.0192 | 18 | 8.89 | all-in median <= base + 20 % | 16.24 (20 %) | **34** | 22.11 (27 %) | base ± 14.6 | 63 → 119 |
-| traffic-series yard_open/cross | fstuck | total | 12.25 | 9.89 | 0.185 | 18 | 52.0 | friendly-stuck <= base x 1.2 + 10 | 1.98 (20 %) | **238** | 7.18 (73 %) | base ± 85.5 | 63 → 833 |
-| traffic-series yard_open/cross | xclear (crossing clock, s) | mean | 0.92 | 8.39 | 0.00 | 18 | 0.217 | mean paired cross_clear_s <= 0.10 x base median + 1.645 se (T3b; the effect here is 10 % of the base MEAN) | 0.839 (10 %) | **8** | 0.539 (6 %) | base ± 0.357 | 63 → 28 |
+| traffic-series terminus/cross | xfast | total | 2.64 | 5.10 | 0.146 | 18 | 11.2 | between-squad fast contacts down >= 25 % | 1.27 (25 %) | **27** | 1.55 (30 %) | base ± 18.5 | 63 → 94.5 |
+| traffic-series terminus/cross | fast | total | 5.98 | 13.18 | 0.148 | 18 | 25.4 | fast friendly contacts down >= 25 % (round 28's line) | 3.29 (25 %) | **21** | 3.50 (27 %) | base ± 41.7 | 63 → 73.5 |
+| traffic-series terminus/cross | ownfast | total | 5.96 | 8.08 | 0.217 | 18 | 25.3 | same-squad fast <= base x 1.2 + 10 | 1.62 (20 %) | **85** | 3.49 (43 %) | base ± 41.6 | 63 → 298 |
+| traffic-series terminus/cross | arrived | total | 0.593 | 9.78 | 0.0532 | 18 | 2.52 | crews in >= base - 2 (over 18 runs) | 0.111 (1 %) | **177** | 0.348 (4 %) | base ± 4.14 | 63 → 620 |
+| traffic-series terminus/cross | allin | median | 24.01 | 42.24 | 0.191 | 18 | 6.49 | all-in median <= base + 20 % | 8.45 (20 %) | **66** | 16.15 (38 %) | base ± 10.7 | 63 → 231 |
+| traffic-series terminus/cross | fstuck | total | 8.24 | 6.16 | 0.15 | 18 | 35.0 | friendly-stuck <= base x 1.2 + 10 | 1.23 (20 %) | **277** | 4.83 (78 %) | base ± 57.5 | 63 → 970 |
+| traffic-series terminus/cross | xclear (crossing clock, s) | mean | 3.54 | 12.94 | 0.367 | 18 | 0.834 | mean paired cross_clear_s <= 0.10 x base median + 1.645 se (T3b; the effect here is 10 % of the base MEAN) | 1.29 (10 %) | **47** | 2.07 (16 %) | base ± 1.37 | 63 → 164 |
+| traffic-series yard_open/cross | xfast | total | 1.75 | 5.98 | 0.391 | 18 | 7.41 | between-squad fast contacts down >= 25 % | 1.49 (25 %) | **9** | 1.02 (17 %) | base ± 12.2 | 63 → 31.5 |
+| traffic-series yard_open/cross | fast | total | 7.32 | 15.20 | 0.298 | 18 | 31.1 | fast friendly contacts down >= 25 % (round 28's line) | 3.80 (25 %) | **23** | 4.29 (28 %) | base ± 51.1 | 63 → 80.5 |
+| traffic-series yard_open/cross | ownfast | total | 6.88 | 9.22 | 0.219 | 18 | 29.2 | same-squad fast <= base x 1.2 + 10 | 1.84 (20 %) | **87** | 4.03 (44 %) | base ± 48.0 | 63 → 304 |
+| traffic-series yard_open/cross | arrived | total | 0.663 | 9.36 | 0.0581 | 18 | 2.81 | crews in >= base - 2 (over 18 runs) | 0.111 (1 %) | **221** | 0.389 (4 %) | base ± 4.63 | 63 → 774 |
+| traffic-series yard_open/cross | allin | median | 25.52 | 79.40 | 0.0153 | 18 | 10.8 | all-in median <= base + 20 % | 15.88 (20 %) | **52** | 26.97 (34 %) | base ± 17.8 | 63 → 182 |
+| traffic-series yard_open/cross | fstuck | total | 11.42 | 9.52 | 0.201 | 18 | 48.5 | friendly-stuck <= base x 1.2 + 10 | 1.90 (20 %) | **223** | 6.69 (70 %) | base ± 79.7 | 63 → 780 |
+| traffic-series yard_open/cross | xclear (crossing clock, s) | mean | 1.02 | 8.23 | 0.00 | 18 | 0.24 | mean paired cross_clear_s <= 0.10 x base median + 1.645 se (T3b; the effect here is 10 % of the base MEAN) | 0.823 (10 %) | **10** | 0.596 (7 %) | base ± 0.394 | 63 → 35 |
 | traffic-series yard_open/head | xfast | total | 0.692 | 3.11 | 0.004 | 18 | 2.94 | between-squad fast contacts down >= 25 % | 0.778 (25 %) | **8** | 0.406 (13 %) | base ± 4.83 | 63 → 28 |
 | traffic-series yard_open/head | fast | total | 1.52 | 6.67 | 0.00 | 18 | 6.45 | fast friendly contacts down >= 25 % (round 28's line) | 1.67 (25 %) | **8** | 0.891 (13 %) | base ± 10.6 | 63 → 28 |
 | traffic-series yard_open/head | ownfast | total | 1.57 | 3.56 | 0.0276 | 18 | 6.65 | same-squad fast <= base x 1.2 + 10 | 0.711 (20 %) | **31** | 0.918 (26 %) | base ± 10.9 | 63 → 108 |
 | traffic-series yard_open/head | arrived | total | 0.283 | 9.94 | 0.1 | 18 | 1.2 | crews in >= base - 2 (over 18 runs) | 0.111 (1 %) | **41** | 0.166 (2 %) | base ± 1.97 | 63 → 144 |
 | traffic-series yard_open/head | allin | median | 7.57 | 33.90 | 0.0356 | 18 | 2.82 | all-in median <= base + 20 % | 6.78 (20 %) | **20** | 7.02 (21 %) | base ± 4.65 | 63 → 70 |
 | traffic-series yard_open/head | fstuck | total | 2.50 | 0.886 | 0.133 | 18 | 10.6 | friendly-stuck <= base x 1.2 + 10 | 0.177 (20 %) | **> 1000 (not affordable)** | 1.46 (165 %) | base ± 17.4 | 63 → 4305 |
-| traffic-series crossings pooled | xfast | total | 2.28 | 5.60 | 0.00 | 36 | 13.7 | between-squad fast pooled over the two crossing cases down >= 25 % (T3, T3b) | 1.40 (25 %) | **17** | 0.945 (17 %) | base ± 22.5 | 126 → 59.5 |
-| hull-rest probe (a task, OLD ruler) | crews still moving at 75 s, wheeled turret | total | 1.47 | 1.75 | 0.00 | 32 | 8.34 | guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b) | 0.185 (11 %) | **392** | 0.648 (37 %) | base ± 13.7 | 160 → 1960 |
-| hull-rest probe (a task, OLD ruler) | crews still moving at 75 s, all classes | total | 1.62 | 2.08 | 0.00 | 32 | 9.16 | guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b) | 0.185 (9 %) | **473** | 0.712 (34 %) | base ± 15.1 | 160 → 2365 |
+| traffic-series crossings pooled | xfast | total | 2.24 | 5.54 | 0.00 | 36 | 13.5 | between-squad fast pooled over the two crossing cases down >= 25 % (T3, T3b) | 1.38 (25 %) | **17** | 0.93 (17 %) | base ± 22.1 | 126 → 59.5 |
+| hull-rest probe (a task, OLD ruler) | crews still moving at 75 s, wheeled turret | total | 1.47 | 1.77 | 0.00 | 32 | 8.31 | guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b) | 0.185 (10 %) | **389** | 0.646 (36 %) | base ± 13.7 | 160 → 1945 |
+| hull-rest probe (a task, OLD ruler) | crews still moving at 75 s, all classes | total | 1.62 | 2.09 | 0.00 | 32 | 9.14 | guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b) | 0.185 (9 %) | **471** | 0.71 (34 %) | base ± 15.0 | 160 → 2355 |
 | hull-rest probe (a task, OLD ruler) | hull error median, wheeled turret (310 crews) | median | – | – | – | 27 | – | clicked within +-5 deg of base; point tasks median <= 15 deg; per-class permutation p >= 0.05 (M1b) | – | see *Count lines* / A/A | – | – | – |
 | hull-rest probe (a task, OLD ruler) | share within 15 deg, wheeled turret | share | – | – | – | 27 | – | >= 70 % within 15 deg | – | owed (A/A column) | – | – | – |
 | hull-rest probe (a task, OLD ruler) | settle time (75 s window) | median | – | – | – | 27 | – | settle paired median <= +6 s | – | see *Count lines* / A/A | – | – | – |
@@ -70,8 +70,8 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | manoeuvre-fights (180 s) | deaths | total | 5.42 | 41.36 | 0.00 | 24 | 26.5 | guard: within 2 se | 2.07 (5 %) | **43** | 2.75 (7 %) | base ± 43.7 | 168 → 301 |
 | manoeuvre-fights (180 s) | hit rate | mean | 0.0694 | 0.704 | 0.00 | 24 | 0.0142 | guard: within 2 se; sized for -2 pts | 0.02 (3 %) | **75** | 0.0352 (5 %) | base ± 0.0233 | 168 → 525 |
 | manoeuvre-fights (180 s) | hits | total | 261.95 | 764.73 | 0.00 | 24 | 1283.3 | reported (outside 2 se at M4; within at M4b) | 38.24 (5 %) | **291** | 132.95 (17 %) | base ± 2110.8 | 168 → 2037 |
-| Terminus census, rigs (a seed) | arrived (of 16) | total | 1.41 | 13.61 | 0.00 | 13 | 5.09 | arrivals >= base (M2, M4); not down beyond 1 se / 1.645 se (M4b, M1b, M2b, kturnarc); sized for -10 % | 1.36 (10 %) | **8** | 0.974 (7 %) | base ± 8.38 | 104 → 64 |
-| Terminus census, rigs (a seed) | wall contact-ticks | total | 820.27 | 865.69 | 0.00 | 13 | 2957.5 | <= base + 10 % (M2); down (M4); <= base + 1.645 se (M4b run 2); reported (M1b, M2b, kturnarc) | 86.57 (10 %) | **556** | 565.68 (65 %) | base ± 4864.7 | 104 → 4448 |
+| Terminus census, rigs (a seed) | arrived (of 16) | total | 1.43 | 13.63 | 0.00 | 13 | 5.16 | arrivals >= base (M2, M4); not down beyond 1 se / 1.645 se (M4b, M1b, M2b, kturnarc); sized for -10 % | 1.36 (10 %) | **8** | 0.987 (7 %) | base ± 8.49 | 104 → 64 |
+| Terminus census, rigs (a seed) | wall contact-ticks | total | 808.56 | 865.69 | 0.00 | 13 | 2915.3 | <= base + 10 % (M2); down (M4); <= base + 1.645 se (M4b run 2); reported (M1b, M2b, kturnarc) | 86.57 (10 %) | **540** | 557.60 (64 %) | base ± 4795.3 | 104 → 4320 |
 | Terminus census, mixed (a seed) | arrived (of 24) | total | 1.00 | 22.39 | 0.00 | 13 | 3.61 | arrivals >= base; not down beyond 1 se / 1.645 se (round 30) | 2.24 (10 %) | **2** | 0.69 (3 %) | base ± 5.94 | 104 → 16 |
 | Terminus census, mixed (a seed) | wall contact-ticks | total | 157.21 | 150.32 | 0.00 | 13 | 566.8 | <= base + 10 %; <= base + 1.645 se (M4b run 2) | 15.03 (10 %) | **677** | 108.41 (72 %) | base ± 932.3 | 104 → 5416 |
 | hull-rest A/A, M1's new ruler (a run) | crews moving by real velocity | total | 0.621 | 0.148 | 0.00 | 36 | 3.73 | reported (M1 A/A, round 34): the new ruler's null sd; CP-F 4's bars are sized on it | 0.139 (94 %) | **124** | 0.258 (174 %) | base ± 6.13 | 180 → 620 |
@@ -98,15 +98,15 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | scout census (showmatch, a seed) | fixed-gun contacts | total | 11.64 | 7.75 | 0.00 | 12 | 40.3 | down (B3 shipped line: 93 -> 24) | 3.88 (50 %) | **56** | 8.35 (108 %) | base ± 66.3 | 96 → 448 |
 | scout census (showmatch, a seed) | gang_scout gun on target, pts of fight time | mean | 9.12 | 6.02 | 0.00 | 13 | 2.53 | >= +5 pts outside 2 se (CP-S v1/v2, S1) | 5.00 (83 %) | **21** | 6.29 (105 %) | base ± 4.16 | 104 → 168 |
 | scout census (showmatch, a seed) | kills | total | 2.68 | 1.42 | 0.00 | 12 | 9.28 | guard: kills not down beyond 2 se | 0.283 (20 %) | **553** | 1.92 (136 %) | base ± 15.3 | 96 → 4424 |
-| traffic-census (3 arenas x seeds) | artillery shots | total | 34.05 | 24.89 | 0.00 | 9 | 102.2 | not down > 2 se (T1c); not down > 21.6 (T1c-b: FAILED on one run, 171 -> 26) | 4.98 (20 %) | **290** | 28.22 (113 %) | base ± 168.0 | 90 → 2900 |
-| traffic-census (3 arenas x seeds) | fast friendly contacts | total | 6.84 | 58.50 | 0.00 | 9 | 20.5 | <= base x 1.1 + 5 (T1c); <= base + 27.1 (T1c-b) | 5.85 (10 %) | **9** | 5.67 (10 %) | base ± 33.7 | 90 → 90 |
-| traffic-census (3 arenas x seeds) | friendly-stuck s | total | 32.25 | 44.15 | 0.00 | 9 | 96.7 | <= base x 1.2 + 10 (T1c); <= base + 1.645 se (T1c-b) | 8.83 (20 %) | **83** | 26.73 (61 %) | base ± 159.1 | 90 → 830 |
+| traffic-census (3 arenas x seeds) | artillery shots | total | 19.57 | 24.74 | 0.00 | 9 | 58.7 | not down > 2 se (T1c); not down > 21.6 (T1c-b: FAILED on one run, 171 -> 26) | 4.95 (20 %) | **97** | 16.22 (66 %) | base ± 96.6 | 90 → 970 |
+| traffic-census (3 arenas x seeds) | fast friendly contacts | total | 5.01 | 56.40 | 0.00 | 9 | 15.0 | <= base x 1.1 + 5 (T1c); <= base + 27.1 (T1c-b) | 5.64 (10 %) | **8** | 4.15 (7 %) | base ± 24.7 | 90 → 80 |
+| traffic-census (3 arenas x seeds) | friendly-stuck s | total | 19.92 | 43.40 | 0.00 | 9 | 59.8 | <= base x 1.2 + 10 (T1c); <= base + 1.645 se (T1c-b) | 8.68 (20 %) | **33** | 16.51 (38 %) | base ± 98.3 | 90 → 330 |
 | traffic-census (3 arenas x seeds) | runs with a repack while firing | count-runs | – | – | – | 9 | – | arm 0/9 and Fisher p <= 0.05 v base (T1c-b: 0/9 v 4/9, p 0.041) | – | see *Count lines* / A/A | – | – | – |
 | yard crossing cell (seeds x 6 ticks) | runs with every crew in | count-runs | – | – | – | 12 | – | last crew in every run; median <= off - 5 s (B5c, B5c-v4) | – | see *Count lines* / A/A | – | – | – |
-| Sumps cell (seeds x 6 ticks, a run) | all-within-8 m s (never = 90 s) | median | 12.92 | 37.53 | 0.766 | 12 | 6.61 | median on <= off; no run > 5 s later (B5c, B5c-v4); sized for the 5 s the lines name | 5.00 (13 %) | **130** | 16.43 (44 %) | base ± 10.9 | 36 → 390 |
+| Sumps cell (seeds x 6 ticks, a run) | all-within-8 m s (never = 90 s) | median | 16.00 | 35.92 | 0.00 | 12 | 8.65 | median on <= off; no run > 5 s later (B5c, B5c-v4); sized for the 5 s the lines name | 5.00 (14 %) | **223** | 21.52 (60 %) | base ± 14.2 | 36 → 669 |
 | Sumps cell (seeds x 6 ticks, a run) | guns on arc (share) | mean | – | – | – | 12 | – | guns_on_arc >= off - 0.05 (B5c, B5c-v4) | – | owed (A/A column) | – | – | – |
-| arrive series (100 cells) | cells within 8 m | count-cells | – | – | – | 100 | – | >= control - 1; 100/100 v 89/100 (B5c), 99 v 91 (B5c-v4), 95 v 88 (B2 v5), 97 v 93 (B3) | – | see *Count lines* / A/A | – | – | – |
-| arrive series (100 cells) | all-within-8 m s, cells complete in both arms | median | 14.95 | 29.57 | 0.00 | 91 | 1.03 | median no slower than +2 % (B5c-v4: 29.6 -> 24.5 s over 91 complete pairs) | 0.591 (2 %) | **> 1000 (not affordable)** | 2.56 (9 %) | base ± 1.69 | 218 → 4080 |
+| arrive series (100 cells) | cells within 8 m | count-cells | – | – | – | 100 | – | >= control - 1; 100/100 v 89/100 (B5c), 99 v 91 (B5c-v4), 95 v 88 (B2 v5), 97 v 93 (B3); 90 v 97 (B3b-2b, r31, FAILED); 90 = 90, 93 = 93 (B3b-2c, B10, r32: identical cells) | – | see *Count lines* / A/A | – | – | – |
+| arrive series (100 cells) | all-within-8 m s, cells complete in both arms | median | 13.68 | 29.43 | 0.00 | 91 | 1.01 | median no slower than +2 % (B5c-v4: 29.6 -> 24.5 s over 91 complete pairs; B3b-2b r31 28.9 -> 28.1 over 88; reported since) | 0.589 (2 %) | **> 1000 (not affordable)** | 2.52 (9 %) | base ± 1.67 | 218 → 4013 |
 | bridge-pooled (18 cells) / his bridge 108 | cells passed | deterministic | – | – | – | 18 | – | 18/18; 108/108 | – | see *Count lines* / A/A | – | – | – |
 <!-- judge:table:end -->
 
@@ -144,6 +144,11 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | 0/9 v 4/9 (T1c-b r30 runs with a repack while firing (read as 0 v 4 of 9)) | 0.0412 | 12 |
 | 21/24 v 14/24 (B2 v4 Sumps cell) | 0.0245 | 34 |
 | 12/12 v 10/12 (a 12/12 v 10/12 cell) | 0.2391 | 39 |
+| 11/12 v 1/12 (B5c-v5 yard r31, every crew in) | 0.0001 | 6 |
+| 0/18 v 6/18 (T1c-b2 r31 repack runs (NULL: base under its 8/18 precondition)) | 0.0095 | 19 |
+| 0/18 v 5/18 (T1c-b2 r32 re-judge repack runs) | 0.0227 | 23 |
+| 10/10 v 5/10 (War Rig r33, every element in) | 0.0163 | 10 |
+| 9/12 v 0/12 (B6 r34 Sumps hollow runs (a harm, read the other way)) | 0.0002 | 6 |
 
 **One arm against a threshold ("on side ≥ 12/18"): how often the line passes at a true rate p (binomial):**
 
@@ -170,6 +175,10 @@ A threshold at two thirds of 18 runs passes a true 50 % rule a quarter of the ti
 | 2 v 1 (B3b bridge 108: 107 v control 106 (r30)) | 1.0000 | not decided: a coin |
 | 0 v 1 (M4 bridge 17/18 v 18/18) | 1.0000 | not decided: a coin |
 | 1 v 0 (one cell gained) | 1.0000 | not decided: a coin |
+| 2 v 9 (B3b-2b arrive r31: 90 v 97, FAILED) | 0.0654 | not decided: a coin |
+| 2 v 0 (B3b-2b bridge 108 r31: 108 v 106) | 0.5000 | not decided: a coin |
+| 1 v 0 (B3b-2c bridge 108 r32: 108 v 107) | 1.0000 | not decided: a coin |
+| 0 v 0 (B3b-2c / B10 / B10b / R4 arrive r32-33: identical cells (the rule never reached the arrive maps)) | 1.0000 | an equality: no discordant cell, nothing to test |
 
 Cells needed for a one-way gain (the arm wins cells the base loses, never the reverse) at 80 % power: a 11 % gain needs 71 cells, 5 % needs 157, 2 % needs 394. A line "lost ≤ 1" is a direction check on the against-cells alone; "≥ control − 1" fails on one unlucky cell, which at 100 cells of an 11 % base failure rate is a coin (p = 1.0 for 0 v 1).
 <!-- judge:counts:end -->
@@ -616,3 +625,55 @@ pooling, drop them: `tools/judge/seed_twins.py rows.jsonl` (or `seed_twins.drop_
 a series tool) keeps the fixed-arena row and drops its random twin. The seed-to-map table is Godot's and is written by
 `tests/planner/random_arenas.gd`; it names `Arena.ROTATION`, and `load(path, rotation=...)` refuses a table written for
 another rotation (a map added changes what every seed deals). A bar on a random-arena series names its n AFTER the drop.
+
+## Round 35 re-render: the owed rows, rounds 31–34 (2026-10-19, native for planner, C35.9)
+
+Laptop, pure Python, on `stream/native` (main `a0ae0aafd` + this stream's commits). `python3 tools/judge/table.py` re-wrote the
+generated blocks above and `references/round35/native/sizing/table.csv`; `python3 tools/judge/inventory.py` wrote
+`inventory.{csv,md}` beside it (round 30's and 34's renders stay in their folders). The tools' own tests now run in
+`make check` (`planner-pytest` discovers `tools/judge` too: 83 tests).
+
+**The inventory now runs to round 34** (`tools/judge/lines_r31_34.py`, imported by `lines.py`): 185 new lines (round 31: 51,
+32: 34, 33: 62, 34: 38), 171 of them judged. Every number is the streams' own, from *Bars* and *Rulings* in `workstreams.md`
+and the archived briefs. Most of those series kept their rows on stream branches, so a line's noise is usually the se its
+table printed (kind `se`; where a bar quoted only its limit, se = limit / k). Where the rows are on main they are read and
+reproduce the quotes: M1b(2) attempt 2 mixed 293 → 285 at se 4.55; B3b-2b's bridge 106 → 108 of 108 and its arrive McNemar
+p 0.065; B5c-v5's Sumps median 24.9 → 24.8 s; T3b-c's between-squad fast 191 → 117; T1c-b2's friendly-stuck 746 → 787
+(round 31) and 789 → 696 (round 32). **Round 31's traffic rows** (T3b-c `f5dc4147`, T1c-b2 `33cb2da5`) were only on
+`round31/traffic`; they are copied byte for byte to `_agents/streams/references/round31/traffic/` (PROVENANCE.md there).
+`rows.read_jsonl` reads `.gz` (round 32 filed its traffic rows gzipped). Two new verdict words that don't count as judged:
+NULL (T1c-b2 round 31: the base read 6/18, under the precondition the bar named) and NOT READABLE (R32.7).
+
+**Pairs added to the table** (`tools/judge/probes.py`; a pair pools where its arms acted in at least a third of its runs):
+traffic-series T3b-c as shipped (`b5882c9c`, round 32; round 31's judged pair on the same seeds reads the same totals, so it
+is not pooled twice); traffic-census T1c-b2 round 31 and its round-32 re-judge; hull-rest (OLD ruler) B11 `ffba7f77` and
+round 32's CP-Q `65cc43dd`; Terminus rigs, CP-Q's printed series (round 32); the Sumps cell, B5c-v5 (round 31); the arrive
+series, B3b-2b (round 31). B3b-2c's and B10's arrive arms (round 32) are byte-identical in every cell, so they don't pool
+(an equality, not a sample); their 0 v 0 is in the count block. A pooled median's bootstrap sd is now rescaled to *n today*.
+
+**Rows whose sd a run moved by more than 20 %:**
+
+| row | sd before → after | why |
+|---|---|---|
+| traffic-census, artillery shots | 34.05 → 19.57 (**−43 %**) | two T1c-b2 pairs at n 18; round 30's T1c-b pair (one Parade run 171 → 26) no longer carries the row. A ±10 % artillery line is still not affordable |
+| traffic-census, friendly-stuck s | 32.25 → 19.92 (−38 %) | the same two pairs |
+| traffic-census, fast friendly contacts | 6.84 → 5.01 (−27 %) | the same two pairs |
+| Sumps cell, all-within-8 m median | 12.92 → 16.00 (+24 %) | B5c-v5's s17 t11 (+22.3 s, the per-run line it failed) |
+| traffic-series Terminus crossing, crossing clock | 4.44 → 3.54 (−20 %) | T3b-c's pair at n 18 |
+
+Everything else moved by less than 20 % (the four crossing cases' contact rows −1 to −8 %, yard crossing all-in +0 %,
+hull-rest wheeled turret 1.47 → 1.47, Terminus rigs arrived +1 %, the arrive median −9 %).
+
+**The count, rounds 31–34: 2 of 171 judged lines inside the noise** (rounds 27–30: 56 of 194). They are B5c-v5's Sumps
+median (a pure direction check, x = 0) and parkedroom v4's L1a (≤ 50 % of a base of 34 at se 20.2: R34.9's own reading).
+Read this with care: from round 31 every guard is written as "≤ base + 1.645 × the pair's own se" (C31.3), which sits exactly
+at the 5 % edge, so "x < 1.645 se" can't fire on it. The number that still tells you something is the verdict margin: **45
+of the 171 verdicts cleared or missed their line by less than 1.645 se** (could flip on another seed set; `inventory.md`
+lists them). Most are guards that passed narrowly (CP-H's fights and Terminus lines, CP-P1's per-task movers at +0.08 and
++0.19 se) and fails decided by a fraction of an se (M1b(2) attempt 2's mixed −0.11, T4-ON's yard guards −0.06 and −0.16,
+CP-F 3's attack-move −0.13, M3's Terminus mixed −0.14).
+
+**Not ingested, and why:** the rows of M0, T6/T6b, T4's fourth try, parkedroom v4/v4b, B1, B6, B9 and CP-F 4 are on their
+stream branches (`round34/*`), not on main; their lines carry the printed se and a later render can copy the rows as round
+31's traffic rows were. Brains' round-33 verdict-only series (battery, rejoin, War Rig, herringbone, R33.9) printed counts
+without paired se: their lines carry `none` or a Fisher/McNemar. X1's census (round 34) is in as REPORTED.
