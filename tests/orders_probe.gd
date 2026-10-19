@@ -49,6 +49,7 @@ func _flag(name: String, fallback: String) -> String:
 
 
 func _run() -> void:
+	# `--squad-cap`: his laptop's preset caps a side at 4 squads (C25.6); the probe pins N so every machine fields them all.
 	# The arena and Match read the COMMAND LINE (LaunchFlags.from_environment), not Main.next_flags: `--arena` and `--seed`
 	# are the probe's own arguments, and the rest is added to what main.gd reads.
 	var map := _flag("arena", "locks")
@@ -56,7 +57,7 @@ func _run() -> void:
 	var flags := LaunchFlags.from_environment()
 	for extra: String in ["--skirmish", "--player=res://tests/control/orders_probe_%d.json" % count,
 			"--enemy=res://tests/control/orders_probe_enemy.json", "--budget=6000", "--no-control", "--no-pick-faction",
-			"--hints=off", "--no-record"]:
+			"--hints=off", "--no-record", "--squad-cap=%d" % count]:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		flags.values[parts[0]] = parts[1] if parts.size() > 1 else ""
 	Main.next_flags = flags
