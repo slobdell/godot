@@ -1,0 +1,30 @@
+# parkedroom v2 C31.1 (for the record, R33.33): builder2 make gcp-remote T=check on pair/parkedroom-on-v2 5259fb463 (v2 ON), native, 2026-10-18
+2776 passed, 6 failed
+          add to native/src/exec_fields.h: owner 0: F(Vector3, VECTOR3, _room_post), owner 0: F(Dictionary, DICTIONARY, _room_order), owner 0: F(bool, BOOL, _room_back), owner 0: F(String, STRING, _room_asker), owner 0: F(Vector2, VECTOR2, _room_dir), owner 0: F(int64_t, INT, _room_frame), owner 0: F(bool, BOOL, _room_counted)
+>> check: hashes on balsa-worker-gcp.us-west1-a.c.leddrones.internal (glibc-2.43) | sim-baseline foundry=f72b1712479b2570(unmoved) yard=df0c04272c671909(unmoved) pit=76b986231ec5b85a(unmoved) terminus=1c2d8ee6ba3af808(unmoved) crossing=f8024203917ca808(unmoved) sumps=8ac8cffce54c83fc(unmoved) locks=9bbfe8b7e38cef8d(unmoved) parade=27580bb53aa4ebe3(unmoved) gorge=408d8c5e49d22a5f(unmoved) archipelago=f97836b7868c7906(unmoved) cut=b31bbf132c154b23(unmoved) docks=75532c4a17474638(MOVED from 50f15553c558d108) yard_open=d93353b60efd6db3(unmoved) | determinism 9d66d3a0c59a7936
+   FAIL     sim-baseline
+   FAIL     test
+  FAIL  test_native_exec_state::test_the_table_is_the_scripts_members
+  FAIL  test_native_h1b::test_the_pinned_hull_settles_as_the_gdscript
+  FAIL  test_traffic_neck::test_on_a_crew_that_made_room_drives_back_to_its_post
+  FAIL  test_traffic_neck::test_on_a_reissued_hold_still_brings_the_crew_back
+  FAIL  test_traffic_neck::test_on_the_lane_case_makes_room_without_meeting_the_asker
+  FAIL  test_traffic_neck::test_on_the_parked_scout_makes_room_and_returns
+          one field per member (expected 174, got 167)
+>> remote: make check exited 2 (build/ copied back)
+SHARD 0/16: 32 files, 194 passed, 4 failed
+SHARD 10/16: 31 files, 153 passed, 0 failed
+SHARD 11/16: 31 files, 151 passed, 0 failed
+SHARD 1/16: 32 files, 157 passed, 0 failed
+SHARD 12/16: 31 files, 168 passed, 0 failed
+SHARD 13/16: 31 files, 194 passed, 0 failed
+SHARD 14/16: 31 files, 189 passed, 1 failed
+SHARD 15/16: 31 files, 221 passed, 0 failed
+SHARD 2/16: 32 files, 176 passed, 0 failed
+SHARD 3/16: 32 files, 158 passed, 0 failed
+SHARD 4/16: 31 files, 184 passed, 0 failed
+SHARD 5/16: 31 files, 219 passed, 0 failed
+SHARD 6/16: 31 files, 134 passed, 1 failed
+SHARD 7/16: 31 files, 125 passed, 0 failed
+SHARD 8/16: 31 files, 163 passed, 0 failed
+SHARD 9/16: 31 files, 190 passed, 0 failed

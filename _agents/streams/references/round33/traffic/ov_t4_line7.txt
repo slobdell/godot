@@ -1,0 +1,44 @@
+# T4 third try, line 7 (C31.1): builder2 make gcp-remote T=check on pair/ghost-on-r34 2b41d3a04 (ghost ON), 2026-10-18
+2768 passed, 5 failed
+>> check: hashes on balsa-worker-gcp.us-west1-a.c.leddrones.internal (glibc-2.43) | sim-baseline foundry=fa728bd7b3c265a7(MOVED from f72b1712479b2570) yard=6baf89295e0e5786(MOVED from df0c04272c671909) pit=3b9cc8f25bb75e58(MOVED from 76b986231ec5b85a) terminus=f4254fcbafdf98e4(MOVED from 1c2d8ee6ba3af808) crossing=eb6e1730e815e542(MOVED from f8024203917ca808) sumps=74eb0f99b5aca074(MOVED from 8ac8cffce54c83fc) locks=90a22ee85e64fe1c(MOVED from 9bbfe8b7e38cef8d) parade=8b36abe4f0a8b119(MOVED from 27580bb53aa4ebe3) gorge=433a83801cffa7ef(MOVED from 408d8c5e49d22a5f) archipelago=2c8cb8be223ce4d7(MOVED from f97836b7868c7906) cut=06dd096b82cea212(MOVED from b31bbf132c154b23) docks=c23cb2c6bc455e35(MOVED from 50f15553c558d108) yard_open=8edf3fc8c231c78d(MOVED from d93353b60efd6db3) | determinism 2b0c9e4809a10c67
+   FAIL     relay-smoke: engine message x8: "ERROR: Trying to call an RPC via a multiplayer peer which is not connected."
+   FAIL     remote-guard-test
+   FAIL     sim-baseline
+   FAIL     test
+  FAIL  test_native_fire::test_around_fire_is_the_live_gdscript
+  FAIL  test_native_gate::test_the_latch_drives_as_the_gdscript
+  FAIL  test_native_gate::test_the_latch_on_the_owned_state
+  FAIL  test_native_yield::test_the_give_way_in_the_sumps
+  FAIL  test_native_yield::test_the_give_way_in_the_sumps_owned
+>> perf-judge: JUDGED, PASS on attempt 1 of 3 (141s)
+>> remote: make check exited 2 (build/ copied back)
+SHARD 0/16: 32 files, 198 passed, 0 failed
+SHARD 10/16: 31 files, 152 passed, 0 failed
+SHARD 11/16: 31 files, 157 passed, 0 failed
+SHARD 1/16: 32 files, 168 passed, 0 failed
+SHARD 12/16: 31 files, 169 passed, 0 failed
+SHARD 13/16: 31 files, 189 passed, 0 failed
+SHARD 14/16: 31 files, 194 passed, 0 failed
+SHARD 15/16: 31 files, 217 passed, 0 failed
+SHARD 2/16: 32 files, 154 passed, 0 failed
+SHARD 3/16: 31 files, 159 passed, 1 failed
+SHARD 4/16: 31 files, 182 passed, 4 failed
+SHARD 5/16: 31 files, 219 passed, 0 failed
+SHARD 6/16: 31 files, 135 passed, 0 failed
+SHARD 7/16: 31 files, 121 passed, 0 failed
+SHARD 8/16: 31 files, 166 passed, 0 failed
+SHARD 9/16: 31 files, 188 passed, 0 failed
+
+# re-run, builder2 light, FILTER=test_native_fire|test_native_gate|test_native_yield
+## ghost ON (pair tree)
+  FAIL  test_native_gate::test_the_latch_drives_as_the_gdscript
+          (fresh process) a crew came round its gate (0), compared capped / stuck (0)
+  FAIL  test_native_gate::test_the_latch_on_the_owned_state
+          (fresh process) a crew came round its gate (0), compared capped / stuck (0)
+  FAIL  test_native_yield::test_the_give_way_in_the_sumps
+          (fresh process) sumps: parked_refusals 2 >= 5
+  FAIL  test_native_yield::test_the_give_way_in_the_sumps_owned
+          (fresh process) sumps owned: parked_refusals 2 >= 5
+7 passed, 4 failed
+## ghost OFF (stream/traffic-overnight)
+11 passed, 0 failed
