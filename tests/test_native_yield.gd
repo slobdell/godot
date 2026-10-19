@@ -23,23 +23,28 @@ const ASKED_FIELDS: Array[String] = ["native_stale", "yield_to", "yield_spot", "
 func test_the_give_way_on_open_ground() -> void:
 	if FreshStage.parent(self, "test_the_give_way_on_open_ground"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 15, "spot:spot": 13, "setup_refusals": 2}, 60)
+	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1, "setup_refusals": 1}, 60)
 
 
 func test_the_give_way_on_the_owned_state() -> void:
 	if FreshStage.parent(self, "test_the_give_way_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 13, "spot:spot": 11})
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1})
 
 
 ## Round 34 (native N5): the Sumps stage stands beside the west pit, not on its edge. At (-16, -6) its ranks overlapped
 ## the pump house and the pit's rim, and 7 hulls were pushed off the floor at spawn (TANK_OFF_FLOOR), so its counts rode
 ## on that geometry. (-40, 40) was chosen from a sweep of 961 centres (laptop: 231 spawn clean) and six builder2 stage
 ## runs: no hull leaves the floor all stage, every path is reached, and its ranks are 6 m from the pit, so the pit still
-## makes give-way spots unfit (45). Floors at half its fresh-process counts (builder2, scratch 2c4f5d2e1: 44
-## negotiations; spot 34, unfit 45, back 5, hold 1, parked refusals 3, asks refused 1), each path at least 1.
+## makes give-way spots unfit.
+## Round 34 (C34.6 ruling): the floors are what the twin is for, not the fight's size. Every path the stage reaches is
+## floored at 1, and the negotiations at 10 (with MIN_COMPARED drives). The counts are a fight, and they move with
+## any traffic or planner timing change: planner's C34.6 phase fix took this stage from 44 negotiations to 30 (spot
+## 34 -> 14) and yard_open's owned stage from 22 to 15, with 0 mismatches. The yard_open live and owned stages are
+## different stages: the live one forces 60 set-up compares (`set_up`) and the owned one none, so their counts differ.
+## Here, with the same parameters, owned = live exactly.
 const SUMPS_CENTRE := Vector3(-40.0, 0.0, 40.0)
-const SUMPS_FLOORS := {"": 22, "spot:spot": 17, "yield_spots_unfit": 22, "spot:back": 2, "spot:hold": 1,
+const SUMPS_FLOORS := {"": 10, "spot:spot": 1, "yield_spots_unfit": 1, "spot:back": 1, "spot:hold": 1,
 		"parked_refusals": 1, "asks_refused": 1}
 
 
