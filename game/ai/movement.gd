@@ -1309,7 +1309,10 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	# Round 35 (W2): a face no plan fits gave up: it stands still as it is (Manoeuvre.FACE_SETTLE_FAILS).
 	var settle := Manoeuvre.face_settle_on() and tank.mount != "fixed"  # a hull-fixed scout's hull IS its gun's arc: it keeps trying
 	if settle and _face_left_m <= 0.0 and Manoeuvre.face_given_up_id(get_instance_id(), want):
+		ctl.face_stalled = true  # round 9's guarantee: a face that cannot turn never stands still SILENTLY
 		return _face_still(cmd)
+	if settle:
+		ctl.face_stalled = false
 	if _face_blocked != Vector3.ZERO and absf(_face_blocked.signed_angle_to(want, Vector3.UP)) <= deg_to_rad(FACE_REPLAN_DEG):
 		if settle:
 			# The refused plan counted as a failure; try a fresh plan after the retry wait, still meanwhile.
@@ -1344,7 +1347,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 			Manoeuvre.face_none += 1
 			_face_retry = KTURN_RETRY_TICKS
 			if settle:
-				Manoeuvre.face_failed_id(get_instance_id(), want)
+				Manoeuvre.face_plan_failed(self, want)
 				return _face_still(cmd)
 			return false
 		Manoeuvre.face_plans += 1
@@ -1373,7 +1376,7 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 		if absf(_face_window_heading.signed_angle_to(forward, Vector3.UP)) < deg_to_rad(OrderController.FACE_STALL_DEG):
 			Manoeuvre.face_refused += 1
 			if Manoeuvre.face_settle_on() and tank.mount != "fixed":
-				Manoeuvre.face_failed_id(get_instance_id(), _face_want)
+				Manoeuvre.face_plan_failed(self, _face_want, true)
 			_face_blocked = _face_want
 			_face_left_m = 0.0
 			_face_legs.clear()
