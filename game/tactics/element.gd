@@ -498,7 +498,7 @@ func update(game_match: Match, orders: Object) -> bool:
 		# Round 23 (B1): the pacing rules measure against each seat where the hull can actually stand (the brain drives
 		# to its station grounded the same way); a seat laid inside a container would otherwise hold the anchor for
 		# a crew that can never reach it (the yard's lanes).
-		Element.ground_stations(plan["shape_along"], ground_node, _envelopes(situation))
+		Element.ground_stations(plan["shape_along"], ground_node, _envelopes(situation), plan.get("slots", {}))
 	_take(plan, situation)
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
@@ -1525,12 +1525,14 @@ static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}, f
 
 
 ## Round 23 (B1): `stations` ({unit: Vector3}) moved in place to where each hull can stand (SlotGround.standable_for,
-## the brain's own grounding of a station). Pure but for the navmesh query.
-static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dictionary) -> void:
+## the brain's own grounding of a station). Round 34: one over the water stands on its crew's final seat's bank
+## (`slots`, SlotGround.station_on_goal_side), as the brain grounds it. Pure but for the navmesh query.
+static func ground_stations(stations: Dictionary, node: Node3D, envelopes: Dictionary, slots: Dictionary = {}) -> void:
 	if node == null:
 		return
 	for unit_name: String in stations:
-		stations[unit_name] = SlotGround.standable_for(node, stations[unit_name], float(envelopes.get(unit_name, 0.0)))
+		var station: Vector3 = SlotGround.station_on_goal_side(stations[unit_name], slots.get(unit_name))
+		stations[unit_name] = SlotGround.standable_for(node, station, float(envelopes.get(unit_name, 0.0)))
 
 
 ## Record what the leader decided.
