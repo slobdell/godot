@@ -34,6 +34,7 @@ import stats  # noqa: E402
 R28 = "_agents/streams/references/round28/"
 R29 = "_agents/streams/references/round29/"
 R30 = "_agents/streams/references/round30/"
+R31 = "_agents/streams/references/round31/"
 R33 = "references/round33/"  # round 33 filed planner's and manoeuvre's rows at the top level
 R33S = "_agents/streams/references/round33/"
 
@@ -80,6 +81,11 @@ TERMINUS_PAIRS = [
     ("M2b 1f1c9835 seeds 49-61", R30 + "manoeuvre/m2b_judged.txt"),
     ("kturnarc e7a58262 seeds 75-87", R30 + "manoeuvre/kturnarc_judged.txt"),
 ]
+TERMINUS_PAIRS += [
+    ("CP-H 130a069b (round 31)", R31 + "manoeuvre/cph_terminus.txt"),
+    ("M1b(2) run 1 6efd1ed9 (round 31)", R31 + "manoeuvre/m1b2_terminus_judged.txt"),
+    ("M1b(2) run 2 25ef8f7e (round 31)", R31 + "manoeuvre/m1b2_run2_terminus_judged.txt"),
+]
 TERMINUS_N_TODAY = 13
 
 # The hull-rest tables (M1_CLASS lines) and the paired n of the wheeled-turret class in each (the per-run convention).
@@ -88,6 +94,9 @@ HULL_REST_TABLES = [
     ("M1b 55622870 seeds 48-53", R30 + "manoeuvre/m1b_judged.txt", 15),
 ]
 HULL_REST_TABLES += [
+    ("CP-H 130a069b seeds 84-89 (round 31)", R31 + "manoeuvre/cph_hull_rest.txt", 14),
+    ("M1b(2) run 1 6efd1ed9 seeds 76-81 (round 31)", R31 + "manoeuvre/m1b2_run1_judged.txt", 17),
+    ("M1b(2) run 2 25ef8f7e seeds 90-95 (round 31)", R31 + "manoeuvre/m1b2_run2_judged.txt", 14),
     ("CP-F b4bf8f2c GDScript (R33.21)", R33 + "manoeuvre/cpf-series/hull_rest_ab.txt", 14),
     ("CP-F b4bf8f2c native (R33.21)", R33 + "manoeuvre/cpf-series/hull_rest_ab_native.txt", 15),
     ("CP-F 3 22e9cab4e (R33.34)", R33 + "manoeuvre/cpf3b-series/hull_rest_ab.txt", 32),
@@ -103,6 +112,8 @@ GUARD_TABLES = [
 ]
 
 GUARD_TABLES += [
+    ("CP-H 130a069b (fights, round 31)", R31 + "manoeuvre/cph_fights.txt"),
+    ("CP-H 130a069b (pinned 84-89, round 31)", R31 + "manoeuvre/cph_hull_rest.txt"),
     ("CP-F b4bf8f2c (fights, R33.21)", R33 + "manoeuvre/cpf-series/fights.txt"),
     ("CP-F 3 22e9cab4e (fights, R33.34)", R33 + "manoeuvre/cpf3b-series/lines_guards.txt"),
 ]

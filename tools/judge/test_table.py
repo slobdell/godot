@@ -41,10 +41,10 @@ class Table(unittest.TestCase):
 
     def test_hull_rest_guard_row_pools_the_m1_m1b_and_round_33_class_tables(self):
         r = self.by[("hull-rest probe (a task)", "crews still moving at 75 s, wheeled turret")]
-        # M1 alone read 1.46 (round 29's table), M1 + M1b 1.63 (round 30's); round 33's five tables (CP-F 1 both paths,
-        # CP-F 3 at n 32, CP-Q and P3 on gangs at n 12) bring it to 1.50
-        self.assertAlmostEqual(r["sd_run"], 1.50, delta=0.05)
-        self.assertTrue(350 <= r["n_needed"] <= 470, r["n_needed"])
+        # M1 alone read 1.46 (round 29's table), M1 + M1b 1.63 (round 30's); round 31's three (CP-H, M1b(2) x2) and round
+        # 33's five (CP-F 1 both paths, CP-F 3 at n 32, CP-Q and P3 on gangs at n 12) bring it to 1.47
+        self.assertAlmostEqual(r["sd_run"], 1.47, delta=0.05)
+        self.assertTrue(330 <= r["n_needed"] <= 460, r["n_needed"])
         self.assertEqual(r["n_today"], 32)
         self.assertAlmostEqual(r["guard_today"], 14.0, delta=0.5)
         self.assertIn("M1b 55622870", r["pairs"])
@@ -53,14 +53,16 @@ class Table(unittest.TestCase):
     def test_round_30_pairs_are_pooled(self):
         rigs = self.by[("Terminus census, rigs (a seed)", "arrived (of 16)")]
         self.assertEqual(rigs["n_today"], 13)
-        # M4, M1b, M2b, kturnarc, and round 33's two planner series (printed se); M4b run 2's rigs are byte-identical and out
-        self.assertEqual(len(rigs["pairs"].split(";")), 6)
+        # M4, M1b, M2b, kturnarc, round 31's CP-H and M1b(2) x2, and round 33's two planner series (printed se); M4b run 2's
+        # rigs are byte-identical and out
+        self.assertEqual(len(rigs["pairs"].split(";")), 9)
         self.assertNotIn("M4b run 2", rigs["pairs"])
         mixed = self.by[("Terminus census, mixed (a seed)", "arrived (of 24)")]
-        self.assertEqual(len(mixed["pairs"].split(";")), 5)
+        self.assertEqual(len(mixed["pairs"].split(";")), 8)  # round 30's five and round 31's three
         kills = self.by[("manoeuvre-fights (180 s)", "kills")]
-        self.assertEqual(len(kills["pairs"].split(";")), 4)
-        self.assertAlmostEqual(kills["sd_run"], 5.93, delta=0.05)  # se 21.5, 33.6 (n 24), CP-F's 25.6 (n 21) and 31.4 (n 23)
+        self.assertEqual(len(kills["pairs"].split(";")), 5)
+        # se 21.5, 33.6 (n 24), CP-H's 15.4 (n 24, round 31), CP-F's 25.6 (n 21) and 31.4 (n 23)
+        self.assertAlmostEqual(kills["sd_run"], 5.47, delta=0.05)
         art = self.by[("traffic-census (3 arenas x seeds)", "artillery shots")]
         self.assertGreater(art["sd_run"], 30.0)  # T1c-b's one Parade run: the T1b-style caveat
         clock = self.by[("traffic-series yard_open/cross", "xclear (crossing clock, s)")]
