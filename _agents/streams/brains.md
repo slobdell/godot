@@ -67,3 +67,28 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Plan (2026-10-18)
+B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
+B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
+
+### Progress
+- **B1:** rule on stream/brains `86c8d7f68` (main + try 1's GDScript and native pair cherry-picked, then try 2: fight
+  only an advantage >= 1 duel whose shooter stays in reach at 0/1/2 s on both velocities; try 1's can't-outrun clause
+  dropped; otherwise today's SPOT 0.88/0.7). Laptop scout_fights_back 8/0. **Decision:** "otherwise SPOT 0.88" read as
+  today's SPOT scoring unchanged (the narrowest change; R33.31's harm was ENGAGE in lost duels, not SPOT). Bar FILED in
+  workstreams *Bars (round 34)* before any number. Judged tree `lab/brains-scout2` (worktree godot-brains-scout2) =
+  stream/brains + manoeuvre's `608c3357e` (orbit stage; turn-in default OFF). `make scout-cells` + table
+  `tests/ai_scenarios/scout_cells_table.py`. Native mirror: pair/native-scout2 `2135c0af5` (native, awaiting green).
+  Tuning seeds 50–52 running on builder0.
+- **B3 DONE:** `2aa657577` ELEMENT_TRACE prints `inset X m engaged at Y m` (the centre-to-click distance when the inset
+  first moved the spot, latched per task). Measurement only. Laptop anchor_inset 8/0.
+- **B2:** seam proposal sent to the orchestrator (take 7e0953f9d's condition into `_act`; leave the held-post refusal;
+  test that a leg-driving crew isn't refused; asked manoeuvre to bound the hold). No code until agreed.
+
+### Requests to other streams
+- native: scout try 2 mirror (taken: pair/native-scout2).
+- manoeuvre (via orchestrator): agree the B2 seam; tell brains if C34.10 changes the orbit stage's rows or switch default.
+
+### Questions for the lead
+None.
