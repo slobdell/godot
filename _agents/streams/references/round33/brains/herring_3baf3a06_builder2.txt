@@ -1,0 +1,70 @@
+# R33.35 herringbone heading, lab/brains-herring 3baf3a06 (main 7dcae6b5 + R33.9 arrive-trace + fix 725e058e + HERRING_LAY), builder2, native
+## army scan 526-575 (SCREEN squads only)
+526 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+527 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+528 True [('Guns', 3), ('Guns', 3), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+529 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+530 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+531 False [('Battery', 4), ('Battery', 3), ('Battery II', 4), ('Battery II', 3)]
+532 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 3)]
+533 False [('Guns', 4), ('Guns', 3), ('Guns II', 3), ('Guns II', 3)]
+534 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+535 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 3)]
+536 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+537 True [('Guns', 3), ('Guns', 3), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+538 False [('Guns', 4), ('Guns', 3), ('Guns II', 4), ('Guns II', 3)]
+539 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 4)]
+540 False [('Guns', 4), ('Guns', 3), ('Guns II', 3), ('Guns II', 3)]
+541 False [('Guns', 4), ('Guns', 3), ('Guns II', 4), ('Guns II', 3)]
+542 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+543 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+544 False [('Guns', 4), ('Guns', 3), ('Guns II', 4), ('Guns II', 3)]
+545 False [('Guns', 4), ('Guns', 3), ('Guns II', 3), ('Guns II', 3)]
+546 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 3)]
+547 False [('Guns', 4), ('Guns', 3), ('Guns II', 3), ('Guns II', 3)]
+548 False [('Battery', 4), ('Battery', 3), ('Battery II', 4), ('Battery II', 3)]
+549 False [('Battery', 4), ('Battery', 3), ('Battery II', 4), ('Battery II', 3)]
+550 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+551 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+552 False [('Guns', 4), ('Guns', 3), ('Guns II', 3), ('Guns II', 3)]
+553 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 4)]
+554 False [('Guns', 4), ('Guns', 3), ('Guns II', 3), ('Guns II', 3)]
+555 False [('Battery', 4), ('Battery', 3), ('Battery II', 4), ('Battery II', 3)]
+556 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+557 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+558 False [('Battery', 4), ('Battery II', 4), ('Battery', 3), ('Battery II', 3)]
+559 False [('Guns', 4), ('Guns', 3), ('Guns II', 4), ('Guns II', 3)]
+560 True [('Guns', 3), ('Guns', 3), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+561 False [('Guns', 4), ('Guns', 3), ('Guns II', 4), ('Guns II', 3)]
+562 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+563 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+564 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 3)]
+565 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+566 True [('Guns', 3), ('Guns', 3), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+567 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 4)]
+568 False [('Battery', 4), ('Battery', 3), ('Battery II', 4), ('Battery II', 3)]
+569 False [('Battery', 4), ('Battery II', 4), ('Battery', 3), ('Battery II', 3)]
+570 True [('Hunters', 4), ('Guns', 5), ('Guns', 4), ('Guns', 4), ('Hunters', 4)]
+571 True [('Guns', 3), ('Guns', 3), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+572 True [('Guns', 3), ('Guns', 4), ('Hunters', 5), ('Hunters', 4), ('Hunters', 4)]
+573 False [('Battery', 5), ('Hunters', 4), ('Battery', 5), ('Hunters', 3), ('Battery', 4)]
+574 False [('Battery', 4), ('Battery II', 4), ('Battery', 3), ('Battery II', 3)]
+575 False [('Guns', 4), ('Guns', 3), ('Guns II', 4), ('Guns II', 3)]
+
+## (1) hull-rest gangs faced_attack_move, first 6 three-Hunters seeds: 526 527 528 537 542 550
+runs 6, distinct (on, off) pairs 4
+worst ON pairs first (Hunters jumps after arrival, flips):
+  gangs/faced_attack_move-537 | hunters 28 v 588 | flips 0 v 0 | guns late 0 v 85 | arrived None v None
+  gangs/faced_attack_move-528 | hunters 27 v 760 | flips 0 v 0 | guns late 0 v 12 | arrived None v None
+  gangs/faced_attack_move-526,gangs/faced_attack_move-542,gangs/faced_attack_move-550 | hunters 26 v 481 | flips 0 v 0 | guns late 0 v 99 | arrived None v None
+  gangs/faced_attack_move-527 | hunters 26 v 513 | flips 0 v 0 | guns late 0 v 145 | arrived None v None
+HERRING distinct pairs 4 | Hunters jumps after arrival 107 v 2342 (bar <= 25%: 586) PASS | flips 0 v 0 PASS | Guns late drifts 0 v 341
+on HERRING_LAY 441 settled "settled_after_s":50.0 "settled_after_s":35.0 "settled_after_s":35.0 "settled_after_s":30.5 "settled_after_s":35.0 "settled_after_s":42.0 
+off HERRING_LAY 1059 settled "settled_after_s":-1.0 "settled_after_s":-1.0 "settled_after_s":-1.0 "settled_after_s":-1.0 "settled_after_s":-1.0 "settled_after_s":-1.0 
+
+## (2) squad-arrive 73-76 (run on 3f0bab2a)
+ARRIVE_PAIR n 100 (missing on 0 off 0) | all-within-8 m 97 v 97 | floor 97.0 | PASS
+ARRIVE_PAIR discordant: on-only 0, off-only 0 | paired all_in8_s median 0.00 s (n 97)
+
+## the earlier null on 520-525 (Battery / two-Hunters armies)
+HERRING distinct pairs 5 | Hunters jumps after arrival 15 v 15 (bar <= 25%: 4) FAIL | flips 0 v 0 PASS | Guns late drifts 6 v 6
