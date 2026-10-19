@@ -18,6 +18,8 @@ form of the line a bar puts on it and the effect that bar names. `compute()` tur
 
 Everything is reproducible from `python3 tools/judge/table.py`; numbers carry their source pair and commit. Round 30's
 judged pairs (T3b, T1c-b, M4b run 2, M1b, M2b, kturnarc, B5c-v4) were added at the round's close (judging.md step 8).
+Round 33's (CP-F attempts 1 and 3, CP-Q, P3 v1/v2, C33.9 and its narrowings, parkedroom v1-v3 and item 4, the planner's
+hull-rest A/A) were added in round 34 (planner, C34.8 (b)); rounds 31-32 were never ingested (judging.md says which).
 """
 import math
 import os
@@ -32,6 +34,9 @@ import stats  # noqa: E402
 R28 = "_agents/streams/references/round28/"
 R29 = "_agents/streams/references/round29/"
 R30 = "_agents/streams/references/round30/"
+R31 = "_agents/streams/references/round31/"
+R33 = "references/round33/"  # round 33 filed planner's and manoeuvre's rows at the top level
+R33S = "_agents/streams/references/round33/"
 
 # The judged traffic pairs (base, arm, label); a case x metric pools the per-run paired sd over the pairs where the arms acted.
 TRAFFIC_PAIRS = [
@@ -76,6 +81,11 @@ TERMINUS_PAIRS = [
     ("M2b 1f1c9835 seeds 49-61", R30 + "manoeuvre/m2b_judged.txt"),
     ("kturnarc e7a58262 seeds 75-87", R30 + "manoeuvre/kturnarc_judged.txt"),
 ]
+TERMINUS_PAIRS += [
+    ("CP-H 130a069b (round 31)", R31 + "manoeuvre/cph_terminus.txt"),
+    ("M1b(2) run 1 6efd1ed9 (round 31)", R31 + "manoeuvre/m1b2_terminus_judged.txt"),
+    ("M1b(2) run 2 25ef8f7e (round 31)", R31 + "manoeuvre/m1b2_run2_terminus_judged.txt"),
+]
 TERMINUS_N_TODAY = 13
 
 # The hull-rest tables (M1_CLASS lines) and the paired n of the wheeled-turret class in each (the per-run convention).
@@ -83,13 +93,61 @@ HULL_REST_TABLES = [
     ("M1 d7385da2 seeds 22-33", R29 + "manoeuvre/m1_judged.txt", 27),
     ("M1b 55622870 seeds 48-53", R30 + "manoeuvre/m1b_judged.txt", 15),
 ]
-HULL_REST_N_TODAY = 15
+HULL_REST_TABLES += [
+    ("CP-H 130a069b seeds 84-89 (round 31)", R31 + "manoeuvre/cph_hull_rest.txt", 14),
+    ("M1b(2) run 1 6efd1ed9 seeds 76-81 (round 31)", R31 + "manoeuvre/m1b2_run1_judged.txt", 17),
+    ("M1b(2) run 2 25ef8f7e seeds 90-95 (round 31)", R31 + "manoeuvre/m1b2_run2_judged.txt", 14),
+    ("CP-F b4bf8f2c GDScript (R33.21)", R33 + "manoeuvre/cpf-series/hull_rest_ab.txt", 14),
+    ("CP-F b4bf8f2c native (R33.21)", R33 + "manoeuvre/cpf-series/hull_rest_ab_native.txt", 15),
+    ("CP-F 3 22e9cab4e (R33.34)", R33 + "manoeuvre/cpf3b-series/hull_rest_ab.txt", 32),
+    ("CP-Q c75f20a6 gangs (R33.13)", R33 + "planner/p2-c75f20a6/hull-ab.txt", 12),
+    ("P3 bca4eaca gangs (R33.19)", R33 + "planner/p3-bca4eaca/hull-ab.txt", 12),
+]
+HULL_REST_N_TODAY = 32  # CP-F attempt 3's grid (R33.34), the latest judged hull-rest bar
 
 # The tables whose FIGHT_GUARD / PINNED lines print a paired se (rows not kept): the sd a run is se / sqrt(n).
 GUARD_TABLES = [
     ("M4 9db2a57c (fights 109-132, pinned 34-39)", R29 + "manoeuvre/m4_judged.txt"),
     ("M4b run 2 77a1603f (fights 157-180, pinned 54-59)", R30 + "manoeuvre/m4b_run2_judged.txt"),
 ]
+
+GUARD_TABLES += [
+    ("CP-H 130a069b (fights, round 31)", R31 + "manoeuvre/cph_fights.txt"),
+    ("CP-H 130a069b (pinned 84-89, round 31)", R31 + "manoeuvre/cph_hull_rest.txt"),
+    ("CP-F b4bf8f2c (fights, R33.21)", R33 + "manoeuvre/cpf-series/fights.txt"),
+    ("CP-F 3 22e9cab4e (fights, R33.34)", R33 + "manoeuvre/cpf3b-series/lines_guards.txt"),
+]
+
+# Round 33 (planner's Terminus series): the verdict prints a paired MEAN and its se a seed per squad
+# (`PLANNER_SERIES_SQUAD rigs: n 13 | arrivals base 179 candidate 178 of 208, paired mean -0.077 se 0.560 ...`), not per-seed
+# rows: sd a seed = se x sqrt(n). Only the two series series_verdict accepted (P3 bca4eaca's and CP-Q's were REFUSED by the
+# tool before its seam=both mode: "the switch reached the base"). The mixed squad never fired the seam in either (se 0: an equality check, skipped).
+TERMINUS_PRINTED = [
+    ("P3 v2 pinned c3acd47a2 (R33.26)", R33 + "planner/p3-pinned-c3acd47a2/terminus-verdict.txt"),
+    ("P3 v2 923fcb97f (R33.28)", R33 + "planner/p3-pairs-923fcb97f/terminus-verdict.txt"),
+]
+
+# Round 33 (manoeuvre, C33.9): the scout orbit cells (subject x enemy x radius x post, 6 seeds a cell), one jsonl holding
+# both arms (`on`). The turn-in acts only at the player post; the free-post rows are identical by construction.
+ORBIT_CELLS = [
+    ("C33.9 781801da0 seeds 31-36 (R33.24)", R33 + "manoeuvre/c339-judged/cells-31-36.jsonl"),
+    ("C33.9 narrow bd4f001fa (R33.39)", R33 + "manoeuvre/c339-narrow/cells-31-36-bd4f001fa.jsonl"),
+    ("C33.9 narrow fc809b60a (R33.39)", R33 + "manoeuvre/c339-narrow/cells-31-36-fc809b60a.jsonl"),
+]
+ORBIT_KEY = ["seed", "subject", "enemy", "radius"]
+
+# Round 33 (traffic): the far census over terminus / locks / random fights, judged by far_ab's printed paired-sum lines
+# (`L3 kills: base 2072, arm 1992 over 48 paired fights; drop 80, paired se of the sum 40.88 ...; fights differing 39`).
+FAR_TABLES = [
+    ("parkedroom v1 x3 (fights 72)", R33S + "traffic/x3_series_far_ab.txt"),
+    ("parkedroom v2n (fights 820-867 x 3)", R33S + "traffic/ov_parkedroom_v2n_series.txt"),
+    ("parkedroom v3 (fights 820-867 x 3, R33.37)", R33S + "traffic/ov_parkedroom_v3_series.txt"),
+    ("item 4 series (R33.36)", R33S + "traffic/ov_item4_series.txt"),
+    ("item 4 re-judge (R33.36)", R33S + "traffic/ov_item4_rejudge.txt"),
+]
+
+# Round 33 (planner P1): the hull-rest gangs A/A, fifo v fifo, per-cell sd a run printed (HULL_AA_CELL).
+HULL_AA = R33 + "planner/aa-4bbe8322/hull-aa.txt"
 
 GATE_SERIES = R30 + "brains/b5c-v4-gate-series-19eca15a.jsonl"
 ARRIVE_OFF, ARRIVE_ON = R30 + "brains/b5c-v4-arrive-off-19eca15a.jsonl", R30 + "brains/b5c-v4-arrive-on-19eca15a.jsonl"
@@ -192,8 +250,70 @@ def terminus_metric(root, squad, metric):
         sds.append((stats.paired_sd(d), len(d)))
         bases.append(statistics.mean(rows.values(table, metric, "base")))
         used.append(label)
+    for label, path in TERMINUS_PRINTED:
+        line = rows.planner_series_lines(os.path.join(root, path)).get(squad)
+        se = line and (line["arrived_se"] if metric == "arrived" else line["contacts_se"])
+        if not se:
+            continue  # se 0: the seam never fired for this squad (an equality check, not a sample)
+        sds.append((se * math.sqrt(line["n"]), line["n"]))
+        if metric == "arrived":
+            bases.append(line["base_arrived"])
+        used.append(label + " (printed se)")
     return {"sd_run": pooled_sd(sds), "base_run": statistics.mean(bases) if bases else float("nan"), "icc": 0.0,
             "pairs": used, "n_pairs": len(used)}
+
+
+def orbit_metric(root, metric):
+    """Pool the per-run paired sd of one orbit-cell metric (player post only: where the turn-in acts) over the C33.9 pairs."""
+    sds, bases, used, by_seed = [], [], [], {}
+    for label, path in ORBIT_CELLS:
+        rows_ = [r for r in rows.read_jsonl(os.path.join(root, path)) if r.get("player")]
+        off = {tuple(str(r[f]) for f in ORBIT_KEY): r for r in rows_ if not r["on"]}
+        on = {tuple(str(r[f]) for f in ORBIT_KEY): r for r in rows_ if r["on"]}
+        pairs = [(k, off[k], on[k]) for k in off if k in on]
+        if not pairs or not pairs_acted(pairs, (metric,)):
+            continue
+        d = rows.diffs(pairs, metric)
+        sds.append((stats.paired_sd(d), len(d)))
+        bases.append(statistics.mean(rows.values(pairs, metric, "base")))
+        used.append(label)
+        for seed, ds in rows.by_seed(pairs, metric).items():
+            by_seed.setdefault((label, seed), []).extend(ds)
+    icc = stats.variance_components(by_seed)["icc"] if by_seed else 0.0
+    return {"sd_run": pooled_sd(sds), "base_run": statistics.mean(bases) if bases else float("nan"), "icc": icc,
+            "pairs": used, "n_pairs": len(used)}
+
+
+def far_metric(root, name):
+    """Pool far_ab's printed paired se into a per-fight sd over the far-census pairs: sd = se / sqrt(n) for a sum, se x
+    sqrt(n) for the hit rate's paired mean. A kills/deaths/hit-rate pair counts where the arms differed in >= ACTED_SHARE
+    of its fights; the loop counts are rare events (a few fights differ), so every pair where any fight differed counts."""
+    sds, bases, used = [], [], []
+    for label, path in FAR_TABLES:
+        line = rows.far_lines(os.path.join(root, path)).get(name)
+        if not line or line["differing"] == 0:
+            continue
+        if not name.startswith("L1") and not name.startswith("L2") and line["differing"] < ACTED_SHARE * line["n"]:
+            continue
+        n = line["n"]
+        if name == "hit rate":
+            sds.append((line["se_mean"] * math.sqrt(n), n))
+            bases.append(line["base"])
+        else:
+            sds.append((line["se"] / math.sqrt(n), n))
+            bases.append(line["base"] / n)
+        used.append("%s (%d of %d fights differ)" % (label, line["differing"], n))
+    return {"sd_run": pooled_sd(sds), "base_run": statistics.mean(bases) if bases else float("nan"), "icc": 0.0,
+            "pairs": used, "n_pairs": len(used)}
+
+
+def hull_aa_metric(root, metric, klass="wheels/turret"):
+    """The planner's hull-rest gangs A/A (fifo v fifo, both modes, six tasks, n 6 a cell): the per-run sd of a null
+    change, pooled over the cells (no treatment: this IS the noise floor)."""
+    cells = [c for c in rows.hull_aa_cells(os.path.join(root, HULL_AA)) if c["klass"] == klass and c["metric"] == metric]
+    sds = [(c["sd_run"], c["n"]) for c in cells]
+    return {"sd_run": pooled_sd(sds), "base_run": statistics.mean([c["base_median"] for c in cells]) if cells else float("nan"),
+            "icc": 0.0, "pairs": ["hull-rest gangs A/A 4bbe8322 seeds 66-71 (%d cells, fifo v fifo)" % len(cells)], "n_pairs": 1}
 
 
 def hull_rest_metric(root, klass):
@@ -339,6 +459,38 @@ def build(root):
          "read": lambda root=root: terminus_metric(root, "mixed", "arrived"), "aa": "owed", "cost_min": 4.0, "unit": "run"},
         {"probe": "Terminus census, mixed (a seed)", "metric": "wall contact-ticks", "form": "total", "n_today": TERMINUS_N_TODAY, "effect": 0.10, "line": "<= base + 10 %; <= base + 1.645 se (M4b run 2)",
          "read": lambda root=root: terminus_metric(root, "mixed", "contacts"), "aa": "owed", "cost_min": 4.0, "unit": "run"},
+        {"probe": "hull-rest gangs A/A (a run, fifo v fifo)", "metric": "crews still moving at 75 s, wheeled turret", "form": "total", "n_today": 12,
+         "effect": {"abs": 1.0}, "line": "reported (P1 A/A, round 33): the null's sd a run; a pair whose own sd is far above it acted",
+         "read": lambda root=root: hull_aa_metric(root, "moving"), "aa": "this row IS an A/A: the same arm twice (4bbe8322, 72 paired runs)",
+         "cost_min": 2.5, "unit": "run"},
+        {"probe": "hull-rest gangs A/A (a run, fifo v fifo)", "metric": "median rest error deg, wheeled turret", "form": "mean", "n_today": 12,
+         "effect": {"abs": 5.0}, "line": "reported (P1 A/A); P3's faced-rest lines were sized on it (R33.26, R33.28)",
+         "read": lambda root=root: hull_aa_metric(root, "rest_med"), "aa": "this row IS an A/A (4bbe8322)", "cost_min": 2.5, "unit": "run"},
+        {"probe": "orbit cells (scout duel, player post, a seed)", "metric": "shots", "form": "total", "n_today": 72, "effect": 0.5,
+         "line": "shots ON >= 1.5 x OFF over the player cells (C33.9 R33.24; scout try 2's (a))", "read": lambda root=root: orbit_metric(root, "shots"),
+         "aa": "the free-post rows are byte-identical across arms (the turn-in never acts there): an equality check", "cost_min": 0.5, "unit": "cell-seed"},
+        {"probe": "orbit cells (scout duel, player post, a seed)", "metric": "hits taken", "form": "total", "n_today": 72, "effect": 0.2,
+         "line": "hits taken not up > 20 % a cell (C33.9; scout try 2's (b) on damage)", "read": lambda root=root: orbit_metric(root, "hits_taken"),
+         "aa": "owed as a base-v-base", "cost_min": 0.5, "unit": "cell-seed"},
+        {"probe": "orbit cells (scout duel, player post, a seed)", "metric": "damage dealt", "form": "total", "n_today": 72, "effect": 0.2,
+         "line": "damage dealt v taken (R33.24's ratio line)", "read": lambda root=root: orbit_metric(root, "damage_dealt"),
+         "aa": "owed", "cost_min": 0.5, "unit": "cell-seed"},
+        {"probe": "orbit cells (scout duel, player post, a seed)", "metric": "gun in arc %", "form": "mean", "n_today": 72, "effect": {"abs": 5.0},
+         "line": "in-arc % on in-reach cells >= 25 % (C33.9 (a): 23.9 FAILED)", "read": lambda root=root: orbit_metric(root, "in_arc_pct"),
+         "aa": "owed", "cost_min": 0.5, "unit": "cell-seed"},
+        {"probe": "far census (terminus / locks / random fights)", "metric": "parked far loops (L1)", "form": "total", "n_today": 144, "effect": 0.5,
+         "line": "arm <= 50 % of base and drop > 1.645 se (parkedroom v1-v3)", "read": lambda root=root: far_metric(root, "L1 parked far loops"),
+         "aa": "owed as a base-v-base; base totals across fight sets 22 / 51 / 224 / 90 (different trees and seeds)", "cost_min": 1.0, "unit": "fight"},
+        {"probe": "far census (terminus / locks / random fights)", "metric": "all far loops (L2)", "form": "total", "n_today": 144, "effect": 0.2,
+         "line": "arm <= base + 1.645 se (parkedroom v2/v3)", "read": lambda root=root: far_metric(root, "L2 all far loops"),
+         "aa": "owed", "cost_min": 1.0, "unit": "fight"},
+        {"probe": "far census (terminus / locks / random fights)", "metric": "kills (L3)", "form": "total", "n_today": 48, "effect": 0.03,
+         "line": "within base +- 1.645 se (parkedroom v3: FAILED -3.9 %, R33.37; C34.2 re-forms it)", "read": lambda root=root: far_metric(root, "L3 kills"),
+         "aa": "owed", "cost_min": 1.0, "unit": "fight"},
+        {"probe": "far census (terminus / locks / random fights)", "metric": "deaths (L3)", "form": "total", "n_today": 48, "effect": 0.03,
+         "line": "within base +- 1.645 se", "read": lambda root=root: far_metric(root, "L3 deaths"), "aa": "owed", "cost_min": 1.0, "unit": "fight"},
+        {"probe": "far census (terminus / locks / random fights)", "metric": "hit rate (L3)", "form": "mean", "n_today": 48, "effect": {"abs": 0.01},
+         "line": "arm >= base - 1.645 se", "read": lambda root=root: far_metric(root, "hit rate"), "aa": "owed", "cost_min": 1.0, "unit": "fight"},
         {"probe": "ApproachStage flank probe (a roster)", "metric": "on side (median hit bearing <= 35 deg), runs", "form": "count-runs", "n_today": 18,
          "effect": None, "line": ">= 12/18 (threshold) or v clicked 0/18 (comparison)", "read": None,
          "aa": "clicked arm 0/18 on every roster and round; the comparison form decides at n = 3-6 a side (Fisher, below)", "cost_min": 1.5, "unit": "run"},

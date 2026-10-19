@@ -59,21 +59,32 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | traffic-series yard_open/head | allin | median | 7.57 | 33.90 | 0.0356 | 18 | 2.82 | all-in median <= base + 20 % | 6.78 (20 %) | **20** | 7.02 (21 %) | base ± 4.65 | 63 → 70 |
 | traffic-series yard_open/head | fstuck | total | 2.50 | 0.886 | 0.133 | 18 | 10.6 | friendly-stuck <= base x 1.2 + 10 | 0.177 (20 %) | **> 1000 (not affordable)** | 1.46 (165 %) | base ± 17.4 | 63 → 4305 |
 | traffic-series crossings pooled | xfast | total | 2.28 | 5.60 | 0.00 | 36 | 13.7 | between-squad fast pooled over the two crossing cases down >= 25 % (T3, T3b) | 1.40 (25 %) | **17** | 0.945 (17 %) | base ± 22.5 | 126 → 59.5 |
-| hull-rest probe (a task) | crews still moving at 75 s, wheeled turret | total | 1.63 | 1.76 | 0.00 | 15 | 6.3 | guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b) | 0.185 (11 %) | **478** | 1.04 (59 %) | base ± 10.4 | 75 → 2390 |
-| hull-rest probe (a task) | crews still moving at 75 s, all classes | total | 1.85 | 2.32 | 0.00 | 15 | 7.17 | guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b) | 0.185 (8 %) | **619** | 1.19 (51 %) | base ± 11.8 | 75 → 3095 |
+| hull-rest probe (a task) | crews still moving at 75 s, wheeled turret | total | 1.47 | 1.75 | 0.00 | 32 | 8.34 | guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b) | 0.185 (11 %) | **392** | 0.648 (37 %) | base ± 13.7 | 160 → 1960 |
+| hull-rest probe (a task) | crews still moving at 75 s, all classes | total | 1.62 | 2.08 | 0.00 | 32 | 9.16 | guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b) | 0.185 (9 %) | **473** | 0.712 (34 %) | base ± 15.1 | 160 → 2365 |
 | hull-rest probe (a task) | hull error median, wheeled turret (310 crews) | median | – | – | – | 27 | – | clicked within +-5 deg of base; point tasks median <= 15 deg; per-class permutation p >= 0.05 (M1b) | – | see *Count lines* / A/A | – | – | – |
 | hull-rest probe (a task) | share within 15 deg, wheeled turret | share | – | – | – | 27 | – | >= 70 % within 15 deg | – | owed (A/A column) | – | – | – |
 | hull-rest probe (a task) | settle time (75 s window) | median | – | – | – | 27 | – | settle paired median <= +6 s | – | see *Count lines* / A/A | – | – | – |
-| pinned probe (hull-rest seeds, 144 runs) | pinned crew-seconds | total | 36.77 | 19.09 | 0.00 | 144 | 441.2 | down by > 2 se (M4 b2, M4b b2); sized here for a -50 % effect | 9.55 (50 %) | **92** | 7.62 (40 %) | base ± 725.8 | 121 → 77.3 |
-| pinned probe | pinned crews (count) | total | 0.88 | 0.465 | 0.00 | 144 | 10.6 | down (M4 b2); reported (M4b) | 0.233 (50 %) | **89** | 0.182 (39 %) | base ± 17.4 | 121 → 74.8 |
-| manoeuvre-fights (180 s) | kills | total | 5.76 | 41.00 | 0.00 | 24 | 28.2 | guard: within 2 se (M4, M4b); sized for a 5 % loss | 2.05 (5 %) | **49** | 2.92 (7 %) | base ± 46.4 | 168 → 343 |
-| manoeuvre-fights (180 s) | deaths | total | 5.87 | 41.35 | 0.00 | 24 | 28.8 | guard: within 2 se | 2.07 (5 %) | **50** | 2.98 (7 %) | base ± 47.3 | 168 → 350 |
-| manoeuvre-fights (180 s) | hit rate | mean | 0.0749 | 0.714 | 0.00 | 24 | 0.0153 | guard: within 2 se; sized for -2 pts | 0.02 (3 %) | **87** | 0.038 (5 %) | base ± 0.0252 | 168 → 609 |
-| manoeuvre-fights (180 s) | hits | total | 329.98 | 858.15 | 0.00 | 24 | 1616.5 | reported (outside 2 se at M4; within at M4b) | 42.91 (5 %) | **366** | 167.48 (20 %) | base ± 2659.0 | 168 → 2562 |
-| Terminus census, rigs (a seed) | arrived (of 16) | total | 1.68 | 13.66 | 0.00 | 13 | 6.07 | arrivals >= base (M2, M4); not down beyond 1 se / 1.645 se (M4b, M1b, M2b, kturnarc); sized for -10 % | 1.37 (10 %) | **10** | 1.16 (8 %) | base ± 9.98 | 104 → 80 |
-| Terminus census, rigs (a seed) | wall contact-ticks | total | 894.41 | 828.70 | 0.00 | 13 | 3224.9 | <= base + 10 % (M2); down (M4); <= base + 1.645 se (M4b run 2); reported (M1b, M2b, kturnarc) | 82.87 (10 %) | **721** | 616.81 (74 %) | base ± 5304.4 | 104 → 5768 |
-| Terminus census, mixed (a seed) | arrived (of 24) | total | 1.04 | 22.44 | 0.00 | 13 | 3.75 | arrivals >= base; not down beyond 1 se / 1.645 se (round 30) | 2.24 (10 %) | **2** | 0.718 (3 %) | base ± 6.17 | 104 → 16 |
-| Terminus census, mixed (a seed) | wall contact-ticks | total | 253.54 | 145.09 | 0.00 | 13 | 914.2 | <= base + 10 %; <= base + 1.645 se (M4b run 2) | 14.51 (10 %) | **> 1000 (not affordable)** | 174.85 (121 %) | base ± 1503.7 | 104 → 15104 |
+| pinned probe (hull-rest seeds, 144 runs) | pinned crew-seconds | total | 38.10 | 19.92 | 0.00 | 144 | 457.2 | down by > 2 se (M4 b2, M4b b2); sized here for a -50 % effect | 9.96 (50 %) | **91** | 7.89 (40 %) | base ± 752.1 | 121 → 76.4 |
+| pinned probe | pinned crews (count) | total | 0.895 | 0.477 | 0.00 | 144 | 10.7 | down (M4 b2); reported (M4b) | 0.238 (50 %) | **88** | 0.185 (39 %) | base ± 17.7 | 121 → 73.9 |
+| manoeuvre-fights (180 s) | kills | total | 5.47 | 41.02 | 0.00 | 24 | 26.8 | guard: within 2 se (M4, M4b); sized for a 5 % loss | 2.05 (5 %) | **44** | 2.78 (7 %) | base ± 44.1 | 168 → 308 |
+| manoeuvre-fights (180 s) | deaths | total | 5.42 | 41.36 | 0.00 | 24 | 26.5 | guard: within 2 se | 2.07 (5 %) | **43** | 2.75 (7 %) | base ± 43.7 | 168 → 301 |
+| manoeuvre-fights (180 s) | hit rate | mean | 0.0694 | 0.704 | 0.00 | 24 | 0.0142 | guard: within 2 se; sized for -2 pts | 0.02 (3 %) | **75** | 0.0352 (5 %) | base ± 0.0233 | 168 → 525 |
+| manoeuvre-fights (180 s) | hits | total | 261.95 | 764.73 | 0.00 | 24 | 1283.3 | reported (outside 2 se at M4; within at M4b) | 38.24 (5 %) | **291** | 132.95 (17 %) | base ± 2110.8 | 168 → 2037 |
+| Terminus census, rigs (a seed) | arrived (of 16) | total | 1.41 | 13.61 | 0.00 | 13 | 5.09 | arrivals >= base (M2, M4); not down beyond 1 se / 1.645 se (M4b, M1b, M2b, kturnarc); sized for -10 % | 1.36 (10 %) | **8** | 0.974 (7 %) | base ± 8.38 | 104 → 64 |
+| Terminus census, rigs (a seed) | wall contact-ticks | total | 820.27 | 865.69 | 0.00 | 13 | 2957.5 | <= base + 10 % (M2); down (M4); <= base + 1.645 se (M4b run 2); reported (M1b, M2b, kturnarc) | 86.57 (10 %) | **556** | 565.68 (65 %) | base ± 4864.7 | 104 → 4448 |
+| Terminus census, mixed (a seed) | arrived (of 24) | total | 1.00 | 22.39 | 0.00 | 13 | 3.61 | arrivals >= base; not down beyond 1 se / 1.645 se (round 30) | 2.24 (10 %) | **2** | 0.69 (3 %) | base ± 5.94 | 104 → 16 |
+| Terminus census, mixed (a seed) | wall contact-ticks | total | 157.21 | 150.32 | 0.00 | 13 | 566.8 | <= base + 10 %; <= base + 1.645 se (M4b run 2) | 15.03 (10 %) | **677** | 108.41 (72 %) | base ± 932.3 | 104 → 5416 |
+| hull-rest gangs A/A (a run, fifo v fifo) | crews still moving at 75 s, wheeled turret | total | 1.81 | 1.50 | 0.00 | 12 | 6.27 | reported (P1 A/A, round 33): the null's sd a run; a pair whose own sd is far above it acted | 1.00 (67 %) | **21** | 1.30 (87 %) | base ± 10.3 | 60 → 105 |
+| hull-rest gangs A/A (a run, fifo v fifo) | median rest error deg, wheeled turret | mean | 19.72 | 60.03 | 0.00 | 12 | 5.69 | reported (P1 A/A); P3's faced-rest lines were sized on it (R33.26, R33.28) | 5.00 (8 %) | **97** | 14.15 (24 %) | base ± 9.36 | 60 → 485 |
+| orbit cells (scout duel, player post, a seed) | shots | total | 74.69 | 7.29 | 0.00 | 72 | 633.7 | shots ON >= 1.5 x OFF over the player cells (C33.9 R33.24; scout try 2's (a)) | 3.65 (50 %) | **> 1000 (not affordable)** | 21.89 (300 %) | base ± 1042.4 | 72 → 2595 |
+| orbit cells (scout duel, player post, a seed) | hits taken | total | 32.71 | 77.78 | 0.118 | 72 | 277.6 | hits taken not up > 20 % a cell (C33.9; scout try 2's (b) on damage) | 15.56 (20 %) | **28** | 9.59 (12 %) | base ± 456.6 | 72 → 28 |
+| orbit cells (scout duel, player post, a seed) | damage dealt | total | 301.92 | 39.23 | 0.00 | 72 | 2561.9 | damage dealt v taken (R33.24's ratio line) | 7.85 (20 %) | **> 1000 (not affordable)** | 88.47 (226 %) | base ± 4214.0 | 72 → 9157 |
+| orbit cells (scout duel, player post, a seed) | gun in arc % | mean | 22.28 | 3.99 | 0.00 | 72 | 2.63 | in-arc % on in-reach cells >= 25 % (C33.9 (a): 23.9 FAILED) | 5.00 (125 %) | **123** | 6.53 (163 %) | base ± 4.32 | 72 → 123 |
+| far census (terminus / locks / random fights) | parked far loops (L1) | total | 3.28 | 1.01 | 0.00 | 144 | 39.4 | arm <= 50 % of base and drop > 1.645 se (parkedroom v1-v3) | 0.505 (50 %) | **262** | 0.68 (67 %) | base ± 64.8 | 288 → 524 |
+| far census (terminus / locks / random fights) | all far loops (L2) | total | 5.04 | 1.42 | 0.00 | 144 | 60.5 | arm <= base + 1.645 se (parkedroom v2/v3) | 0.283 (20 %) | **> 1000 (not affordable)** | 1.04 (74 %) | base ± 99.5 | 288 → 3918 |
+| far census (terminus / locks / random fights) | kills (L3) | total | 5.96 | 42.35 | 0.00 | 48 | 41.3 | within base +- 1.645 se (parkedroom v3: FAILED -3.9 %, R33.37; C34.2 re-forms it) | 1.27 (3 %) | **136** | 2.14 (5 %) | base ± 67.9 | 96 → 272 |
+| far census (terminus / locks / random fights) | deaths (L3) | total | 5.90 | 42.72 | 0.00 | 48 | 40.9 | within base +- 1.645 se | 1.28 (3 %) | **132** | 2.12 (5 %) | base ± 67.3 | 96 → 264 |
+| far census (terminus / locks / random fights) | hit rate (L3) | mean | 0.0706 | 0.718 | 0.00 | 48 | 0.0102 | arm >= base - 1.645 se | 0.01 (1 %) | **308** | 0.0253 (4 %) | base ± 0.0168 | 96 → 616 |
 | ApproachStage flank probe (a roster) | on side (median hit bearing <= 35 deg), runs | count-runs | – | – | – | 18 | – | >= 12/18 (threshold) or v clicked 0/18 (comparison) | – | see *Count lines* / A/A | – | – | – |
 | ApproachStage flank probe (a roster) | alive (of 5) | mean | 2.33 | 1.50 | 0.00 | 18 | 0.55 | guard: alive >= clicked - 0.5 | 0.5 (33 %) | **135** | 1.37 (91 %) | base ± 0.904 | 54 → 405 |
 | ApproachStage flank probe (a roster) | first shot s | mean | 1.14 | 7.58 | 0.0607 | 18 | 0.269 | first round <= clicked + 10 s (B2 battery) / + 30 s (B1) | 10.00 (132 %) | **2** | 0.668 (9 %) | base ± 0.442 | 54 → 6 |
@@ -516,3 +527,59 @@ read SERIES PASS at run 6 for BOTH squads (mixed llr −5.74), while the fixed l
 to completion per C31.3 and was judged on the fixed line. **Rule from here (R31.8):** on a GUARD line, early stop is
 OFF and the series runs to completion, judged on its fixed line. A GAIN line may stop early only on a rule whose effect
 is the fixed line's own MDE.
+
+## Round 34 re-render: rounds 31 (manoeuvre) and 33's judged pairs (2026-10-18, planner, C34.8 (b))
+
+Round 33's close skipped step 5b, and so did rounds 31 and 32. This re-render adds **round 33's** judged pairs and **round 31's manoeuvre** pairs
+(`tools/judge/probes.py`, `rows.py`). Laptop, pure Python, tree `stream/planner` on top of main `918ede503`.
+`python3 tools/judge/table.py` re-wrote the generated blocks above and `references/round34/planner/sizing/table.csv`.
+`python3 tools/judge/inventory.py` wrote `inventory.{csv,md}` there. The tools' tests pass, 73 of 73 (72 before; one new
+known-answer test on round 33's files).
+
+**Pairs added** (a pair pools into a row only where its arms acted in at least a third of its runs, as before):
+- **Round 31, manoeuvre** (`R31`): CP-H `130a069b` (v `a2ef0b31`, hull-rest 84–89 M1_CLASS and PINNED, fights FIGHT_GUARD,
+  Terminus per seed), M1b(2) run 1 `6efd1ed9` (hull-rest 76–81, Terminus) and run 2 `25ef8f7e` (90–95, Terminus).
+  These move the numbers below a little further: the final values are in the generated table.
+- **hull-rest** (`HULL_REST_TABLES`, the M1_CLASS lines): CP-F attempt 1 `b4bf8f2c` on both paths (R33.21), CP-F
+  attempt 3 `22e9cab4e` (R33.34; wheeled turret n 32), CP-Q `c75f20a6` and P3 v1 `bca4eaca` (both gangs, n 12). *n today*
+  is now **32** (CP-F 3's grid). With round 31's tables too, the wheeled-turret sd a run is **1.47** (was 1.63).
+- **fights** (`GUARD_TABLES`): CP-F 1 and CP-F 3's FIGHT_GUARD se (25.6 at n 21, 31.4 at n 23).
+- **Terminus** (`TERMINUS_PRINTED`, new reader `rows.planner_series_lines`): P3 v2 pinned `c3acd47a2` (R33.26) and P3 v2
+  `923fcb97f` (R33.28) print a paired MEAN and its se per squad, not per-seed rows, so sd a seed = se × √13. Rigs only.
+  The mixed squad never fired the seam (se 0, an equality check). P3 v1's and
+  CP-Q's series were REFUSED by series_verdict ("the switch reached the base": the tool before its `seam=both`
+  mode), so they're not pooled. Their numbers are sound, and a later render may add them.
+- **New probe: hull-rest gangs A/A** (`rows.hull_aa_cells`, the planner's P1 A/A `4bbe8322`, FIFO v FIFO, 72 paired runs,
+  12 cells): crews still moving at 75 s, wheeled turret, **sd 1.81 a run for a NULL change**. That's no smaller than
+  the pooled treatment pairs' 1.50, so on this probe the noise is the stage itself, not the treatments. Median rest error
+  sd 19.7° a run.
+- **New probe: orbit cells** (`ORBIT_CELLS`; C33.9 `781801da0` seeds 31–36 and its two narrowings `bd4f001fa`,
+  `fc809b60a`; player-post rows only, where the turn-in acts; the free-post rows are byte-identical by construction).
+  Hits taken: sd 32.7 a cell-seed, n 28 for a 20 % line. Shots and damage dealt can't be sized as a % of base: base 7.3
+  shots a run against an sd of 75. The turn-in multiplies shots, so a pair's paired sd is mostly the treatment's own
+  spread across cells. A ratio or count form (C34.5's "shots ON ≥ 1.5 × OFF over the cells") is the line to use, not a
+  % effect a run.
+- **New probe: far census** (`FAR_TABLES`, new reader `rows.far_lines`; traffic's parkedroom v1 x3, v2n, v3 and item 4's
+  series and re-judge). Kills and deaths pool only where ≥ a third of the fights differed (item 4's two pairs differ in
+  3 and 7 of 24: out). Every pair counts for the loop counts (rare events). **Kills: sd 5.96 a fight, MDE 5.0 % at 48
+  fights.** v3's −3.9 % (R33.37) sat just inside what 48 fights can tell apart. C34.2's deaths-in-the-open line should
+  be sized on this row. All far loops: sd 5.0 a fight against a base of 1.4, so a 20 % line needs about 2000 fights.
+
+**Rows whose sd a run moved by more than 20 %** (against round 30's table, rounds 31 and 33 together):
+
+| row | sd before → after | why |
+|---|---|---|
+| Terminus census, mixed, wall contact-ticks | 254 → 157 (**−38 %**) | three more 13-seed pairs (CP-H's 78 rows, M1b(2) x2): round 30's pairs were the noisy end. A ±10 % contact line still needs n 677 |
+| manoeuvre-fights, hits | 330 → 262 (−21 %) | CP-H's tight se (n 24) and CP-F's two |
+
+Everything else moved by less than 20 %: hull-rest wheeled turret 1.63 → 1.47 (the +5 guard needs n 392, was 478),
+all classes 1.85 → 1.62; kills 5.76 → 5.47 (the 5 % guard needs n 44); Terminus rigs arrived 1.68 → 1.41 (n 8 for
+−10 %); rigs contact-ticks 894 → 820; pinned +2..+4 %.
+
+**Not ingested, and why:**
+- **Round 31's brains pairs and round 32's**, and every round-31–33 LINE in the inventory (`lines.py` still ends at round 30:
+  215 lines, 68 inside the noise, the same as round 30's render). Owed: a stream with a free slot can add them.
+- **Brains' round-33 series** print verdicts, not paired se or rows: the scout series (`0565d1a8`, SCOUT_CELLS and
+  SCOUT_GUARD with identical guard fights), the battery series (n 1 a named stage), herringbone, warrig and B10b's arrive
+  pairs (0 discordant cells: equality checks), and R4's nudge pairs (0 of 12 flipped).
+- T4's guard (rows under traffic's tarball, not a judged pair format the tools read). C33.9's dev tables (tuning).
