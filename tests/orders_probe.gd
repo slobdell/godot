@@ -25,7 +25,7 @@ extends SceneTree
 ##     --probe-route=click [--ground-cap=off] [--halt-price=off] [--probe-shots=build/orders-probe] [--probe-click=x,z]
 ## The arms are main's own switches (O1's ground cap, O3's halt price; O2's when it lands), read by SelectionSquads.
 ## The click (unless given): the near bank of the deck nearest the arena's middle, DECK_BACK_M short of it on the
-## player's side, where an anchor laid 70 m sideways meets the river (his case). The route: the squads' middle, then
+## player's side, where an anchor laid 70 m sideways meets the river (his case); moved by the seed (`_jitter`) unless 34. The route: the squads' middle, then
 ## two points a third and two thirds of the way, then the click.
 
 const MAIN := "res://game/main.tscn"
@@ -372,11 +372,39 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 		var mid := Vector3((float(box[0]) + float(box[2])) * 0.5, 0.0, (float(box[1]) + float(box[3])) * 0.5)
 		if best == null or mid.length() < (best as Vector3).length():
 			best = mid
-	if best == null:
-		return Orders.clamp_to_arena(army + forward * 60.0)
-	# DECK_BACK_M short of the deck along the player's forward axis, on his side.
-	var back := forward * -1.0 if (best as Vector3).dot(forward) > army.dot(forward) else forward
-	return Orders.clamp_to_arena((best as Vector3) + back * DECK_BACK_M)
+	var picked := Orders.clamp_to_arena(army + forward * 60.0)
+	if best != null:
+		# DECK_BACK_M short of the deck along the player's forward axis, on his side.
+		var back := forward * -1.0 if (best as Vector3).dot(forward) > army.dot(forward) else forward
+		picked = Orders.clamp_to_arena((best as Vector3) + back * DECK_BACK_M)
+	return _jitter(picked)
+
+
+## Round 35 (D5's bar, fresh seeds): the probe's army and click are otherwise fixed, so every seed played the same run
+## (seed 3601 = seed 34, byte for byte). A seed other than REFERENCE_SEED moves the click up to CLICK_JITTER_M (and so the
+## route's waypoints), to a dry point his squads could stand on; seed 34 is round 34's reference cell, unmoved.
+const REFERENCE_SEED := 34
+const CLICK_JITTER_M := 12.0
+
+
+func _jitter(click: Vector3) -> Vector3:
+	var seed_value := int(_flag("seed", str(REFERENCE_SEED)))
+	if seed_value == REFERENCE_SEED:
+		return click
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var ground: Tank = null
+	for squad: Dictionary in _squads:
+		ground = _tank(String(squad["units"][0]))
+		if ground != null:
+			break
+	for attempt in 40:
+		var angle := rng.randf() * TAU
+		var r := sqrt(rng.randf()) * CLICK_JITTER_M
+		var p := Orders.clamp_to_arena(click + Vector3(cos(angle), 0.0, sin(angle)) * r)
+		if not SlotGround.over_water(p) and (ground == null or SlotGround.is_standable(ground, p)):
+			return p
+	return click
 
 
 func _shots(label: String) -> void:
