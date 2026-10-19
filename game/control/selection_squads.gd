@@ -623,6 +623,91 @@ static func ground_anchors(anchors: Array[Vector3], blocks: Array, standable: Ca
 	return result
 
 
+## Round 34 (planner's O5, the Locks route cells): on a route's leg whose squads all come through ONE gate (a street
+## mouth onto the Locks' north quay), the places were dealt by least straight driving, so a squad parked at the gate's
+## mouth and the one going farther was blocked behind it for 30 s+ (Alpha by Bravo_2). FIRST THROUGH, FARTHEST ALONG:
+## the squad that reaches the gate first takes the place farthest past it; the gate-mouth place goes last. `starts[i]`
+## is where squad i begins the leg; `paths(from, to) -> PackedVector3Array`; `drive(from, to) -> float`. The gate is the
+## last point every squad's path (start -> its place) shares (within GATE_SHARE_M), when they share GATE_MIN_SHARED_M of
+## it (so every place lies past it); otherwise the places stand.
+## `--gate-order=off` (GATE_ORDER false) is round 33's dealing.
+static var GATE_ORDER := not OS.get_cmdline_user_args().has("--gate-order=off")
+const GATE_SHARE_M := 10.0
+const GATE_MIN_SHARED_M := 10.0
+
+
+static func gate_of(routes: Array) -> Variant:
+	if routes.size() < 2:
+		return null
+	# The first route sampled every 2 m (a straight leg has no vertex inside the stretch the others share).
+	var first := PackedVector3Array()
+	var raw: PackedVector3Array = routes[0]
+	for i in raw.size():
+		if i > 0:
+			var steps := maxi(1, ceili(raw[i - 1].distance_to(raw[i]) / 2.0))
+			for k in range(1, steps):
+				first.append(raw[i - 1].lerp(raw[i], float(k) / steps))
+		first.append(raw[i])
+	var gate: Variant = null
+	var shared := 0.0
+	var started: Variant = null
+	for i in first.size():
+		var p := first[i]
+		var everyone := true
+		for r in range(1, routes.size()):
+			if _distance_to_path(p, routes[r]) > GATE_SHARE_M:
+				everyone = false
+				break
+		if everyone:
+			if started == null:
+				started = p
+			gate = p
+			shared = Vector2(p.x - (started as Vector3).x, p.z - (started as Vector3).z).length()
+		elif gate != null:
+			break
+	return gate if gate != null and shared >= GATE_MIN_SHARED_M else null
+
+
+static func _distance_to_path(p: Vector3, path: PackedVector3Array) -> float:
+	var best := INF
+	for i in range(1, path.size()):
+		var a := Vector2(path[i - 1].x, path[i - 1].z)
+		var b := Vector2(path[i].x, path[i].z)
+		var q := Vector2(p.x, p.z)
+		var ab := b - a
+		var t := clampf((q - a).dot(ab) / maxf(ab.length_squared(), 1e-6), 0.0, 1.0)
+		best = minf(best, q.distance_to(a + ab * t))
+	if path.size() == 1:
+		best = Vector2(p.x - path[0].x, p.z - path[0].z).length()
+	return best
+
+
+static func gate_order(anchors: Array[Vector3], starts: Array, paths: Callable, drive: Callable) -> Array[Vector3]:
+	if not GATE_ORDER or anchors.size() < 2 or starts.size() != anchors.size():
+		return anchors
+	var routes: Array = []
+	for i in anchors.size():
+		routes.append(paths.call(starts[i], anchors[i]))
+	var gate: Variant = gate_of(routes)
+	if gate == null:
+		return anchors
+	var past: Array = []
+	for a in anchors:
+		past.append(float(drive.call(gate, a)))
+	var arrive: Array = []
+	for st: Vector3 in starts:
+		arrive.append(float(drive.call(st, gate)))
+	var by_arrival := range(anchors.size())
+	by_arrival.sort_custom(func(a: int, b: int) -> bool: return arrive[a] < arrive[b] if arrive[a] != arrive[b] else a < b)
+	var by_far := range(anchors.size())
+	by_far.sort_custom(func(a: int, b: int) -> bool: return past[a] > past[b] if past[a] != past[b] else a < b)
+	var result: Array[Vector3] = []
+	result.resize(anchors.size())
+	for k in by_arrival.size():
+		result[by_arrival[k]] = anchors[by_far[k]]
+	return result
+
+
 static func never_behind(anchors: Array[Vector3], blocks: Array, click: Vector3, heading: Vector3) -> Array[Vector3]:
 	if not RANK_FORWARD:
 		return anchors

@@ -1130,6 +1130,22 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors = SelectionSquads.ground_anchors(anchors, blocks,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
+		# Round 34 (planner's O5, the Locks route): a route leg through one gate is dealt first through, farthest along,
+		# each squad starting the leg where its previous one ends.
+		if ground != null and bool(extra.get("queue", false)) and squads.size() >= 2 and anchors.size() >= squads.size():
+			var starts: Array = []
+			for i in squads.size():
+				var held_element: Element = squads[i].get("element")
+				var start: Variant = null
+				if held_element != null and is_instance_valid_element(held_element):
+					start = ElementTask.destination(held_element.queued_tasks[held_element.queued_tasks.size() - 1]) \
+							if not held_element.queued_tasks.is_empty() else ElementTask.destination(held_element.task)
+				starts.append(start if start is Vector3 else Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+			var drive := SelectionSquads.drive_on(ground)
+			var dealt := SelectionSquads.gate_order(anchors.slice(0, squads.size()), starts,
+					func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
+			for i in dealt.size():
+				anchors[i] = dealt[i]
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
