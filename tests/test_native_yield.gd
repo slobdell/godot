@@ -44,18 +44,22 @@ const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1
 ## refuser: behind it, the abreast point), one on its last tick (the clock ends it: passes_timeout) and one already past
 ## the refuser's nose (passes_done). Put back after each.
 const PASS_CASES := ["live", "timeout", "done"]
+## Round 35 (T7): the under-fire stages' hulls 22 m apart in a rank (the plain stages' 9 m put a neighbour in every pass
+## lane, so no asked crew under fire ever had one: 10 gives, 0 refusals at c9ba20917). At 22 m the lane ~7 m beside a hull
+## is clear and the refusal, the hold and a real pass start are twinned.
+const UNDERFIRE_GAP := 22.0
 
 
 func test_the_give_way_under_fire() -> void:
 	if FreshStage.parent(self, "test_the_give_way_under_fire"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), UNDERFIRE_GAP, 24.0, UNDERFIRE_FLOORS, 0, 60)
 
 
 func test_the_give_way_under_fire_owned() -> void:
 	if FreshStage.parent(self, "test_the_give_way_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), UNDERFIRE_GAP, 24.0, UNDERFIRE_FLOORS, 0, 60)
 
 
 ## Round 34 (native N5): the Sumps stage stands beside the west pit, not on its edge. At (-16, -6) its ranks overlapped
