@@ -87,10 +87,16 @@ B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
   765 v 799. Bar FILED, then AMENDED before any judged number (orchestrator-approved; workstreams *Bars (round 34)*).
   Native mirror: pair/native-scout2 (native; lazy-matchups change sent). Next: the pair check, then the series on fresh
   73–79 and the census on 29–36.
+- **quick-remote `66df97de3`** (builder0, QUICK_BASE main): 241 passed, 1 failed. The failure is
+  test_native_decide::test_decide_is_the_gdscript, expected until native's mirror of try 2 and the lazy duel lands.
 - **B3 DONE (no check yet; it rides B1's pair check):** `2aa657577` ELEMENT_TRACE prints `inset X m engaged at Y m`.
   Measurement only. Laptop anchor_inset 8/0.
-- **B2:** the seam shape is agreed with the orchestrator. Waiting on manoeuvre's ack of the signature (bounded hold
-  about 3 s; arrivals_held counts arrivals). No code yet.
+- **B2 brains side DONE** (`984896b8f`, `e7275ee79`; seam acked by manoeuvre via the orchestrator). The `_act` MOVE
+  arrived branch asks Manoeuvre.leg_holds_arrival through an adapter: false until manoeuvre's function is on the tree, so
+  it's inert on main. tests/test_ai_arrive_leg.gd: mid k-turn leg, inside its radius, switch on → keeps move_to,
+  held_moves_refused 0; switch off → today's arrival. If manoeuvre's const or switch name is present, the function must
+  be too. Verified with 7e0953f9d's function pasted in on a scratch tree (laptop 1/0). `_act` has no C++ mirror. **At
+  merge after manoeuvre:** drop the existence guard and assert outright.
 
 ### Requests to other streams
 - native: scout try 2 mirror (taken: pair/native-scout2).
