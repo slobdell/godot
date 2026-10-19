@@ -425,6 +425,13 @@ builder0), ruled R34.3.
   under fire and the askers behind them die where they stand), and the mid-step abort (c) reverses a crew into the asker. DEFAULT_OFF;
   native's mirror `bc6aaa203` not merged. **T6b = (a) + (b) only, no (c)**, re-judged on a FRESH fixed-arena block with the same
   lines; if open and stuck deaths still rise, the trade is real and T6 parks for the round.
+- **R34.18 CP-F attempt 4 (M3) PARKS (manoeuvre, `lab/cpf4` `e76f6dab6`, builder2, 14/14 steps, fresh seeds as filed,
+  `references/round34/manoeuvre/cpf4-series/`).** The turn itself is right: point tasks 3.0–4.0° median, 82–94 % within 15° (base
+  48–57°, 14–24 %); ambush 3.7 v 80.4°, SBF 3.7 v 77.5; native twins 14/0. Misses: (d) movers by real_mps (ambush +7 v guard +3.2,
+  move +9 v +6.7, screen +13 v +5.4), (e) attack-move never settled +6 v 4.9, (g) Terminus mixed arrivals −5 v 4.6. Two mechanisms
+  traced: faces no plan fits creep at the 0.35 lock until the judge; attack-move elements step to the next leg ~30 s later when
+  arrived crews sit on a sector face (tank_brain ~2960) instead of a stop. Per R33.34 a fifth attempt needs a NEW design (a face
+  that gives up cleanly when no plan fits; the element step not waiting on a sector face), not seeds. B11b gets no merge hash.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
