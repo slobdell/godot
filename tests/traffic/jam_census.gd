@@ -8,11 +8,24 @@ extends SceneTree
 ##   hit_in_jam  whether its last hit before the death blow landed during that jam; hits_10s hits on it in the last 10 s
 ##   terrain  ElementSituation.terrain_at (dense / lanes / open) at the death; base_m its distance from its team's start
 ##   JAM_CENSUS {...}  the fight's totals.
+## Round 34 (T6's bar): also STANDOFF rows (two friendly crews nose to nose, box gap <= STANDOFF_GAP_M, both under way, both
+## hit within UNDER_FIRE_S, neither giving way, both slower than STANDOFF_MPS, for STANDOFF_MIN_S or more: the pair, where, how
+## long) and ABORT rows (a give-way that ended the tick a hit landed: the crew, and the friendly hull contacts it had in the
+## ABORT_WINDOW_S after). Both read from state only, so the probe runs on main and on the under-fire pair alike.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/traffic/jam_census.gd -- --skirmish --demo-match --clean --seed=N --arena=A --mute --seconds=180
 
 ## Still means slower than this (m/s): Traffic's table clock on the parkedroom branch; a local constant here so the probe runs on main.
 const STILL_MPS := 0.3
 
+const UNDER_FIRE_S := 5.0
+const STANDOFF_GAP_M := 1.0
+const STANDOFF_MPS := 0.5
+const STANDOFF_MIN_S := 2.0
+const ABORT_WINDOW_S := 3.0
+const CONTACT_GAP_M := 0.15
+var _standoffs := 0
+var _aborts := 0
+var _abort_contacts := 0
 var _teams := {}
 var _seconds_run := 0.0
 var _printed := false
@@ -49,7 +62,8 @@ func _report() -> void:
 	_printed = true
 	print("JAM_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"seconds": snappedf(_seconds_run, 0.1), "deaths": _deaths, "by_cause": _by_cause, "teams": _teams,
-			"parkedroom_on": not Traffic.off("parkedroom")}))
+			"standoffs": _standoffs, "aborts": _aborts, "abort_contacts": _abort_contacts,
+			"underfire_on": not Traffic.off("underfire"), "route_arms": Movement.route_arms()}))
 
 
 ## far_census.gd's death_cause, verbatim (traffic X1, round 34).
@@ -109,6 +123,10 @@ func _run() -> void:
 	var jam_since := {}
 	var base := {}  # team -> [sum, n] of first-seen positions
 	var first_seen := {}
+	var standing := {}  # "a|b" -> the tick the standoff began
+	var open_aborts: Array = []  # [unit, tick, contacts] for ABORT_WINDOW_S
+	var in_contact := {}  # "a|b" -> touching last tick
+	var prev_yield := {}  # unit -> yield_to last tick (an abort = a give-way ending the tick a hit lands)
 	while true:
 		await physics_frame
 		frames += 1
@@ -124,6 +142,7 @@ func _run() -> void:
 			started = tick
 		_seconds_run = (tick - started) / float(SimClock.TICK_RATE)
 		_observe(game_match, last_seen, moving_at, jam_since, hits_at, base, first_seen)
+		_standoffs_and_aborts(game_match, prev_yield, standing, open_aborts, in_contact)
 		if seconds > 0.0 and _seconds_run > seconds:
 			break
 	_report()
@@ -202,3 +221,68 @@ func _observe(game_match: Match, last_seen: Dictionary, moving_at: Dictionary, j
 			print("JAM_DEATH " + JSON.stringify(row))
 	last_seen.clear()
 	last_seen.merge(alive)
+
+
+## T6's bar lines, read from state. `last_seen` holds this tick's rows (after _observe), with each crew's yield_to.
+func _standoffs_and_aborts(game_match: Match, prev_yield: Dictionary, standing: Dictionary, open_aborts: Array, in_contact: Dictionary) -> void:
+	var tick := game_match.tick
+	var hulls: Array = []
+	for node in game_match.tanks.get_children():
+		var tank := node as Tank
+		if tank != null and tank.is_alive():
+			hulls.append(tank)
+	var fire_ticks := int(UNDER_FIRE_S * SimClock.TICK_RATE)
+	var seen_pairs := {}
+	for i in hulls.size():
+		for j in range(i + 1, hulls.size()):
+			var a: Tank = hulls[i]
+			var b: Tank = hulls[j]
+			if a.team != b.team:
+				continue
+			var gap := TrafficStage.box_gap(a, b)
+			var key := "%s|%s" % [a.name, b.name]
+			var touching := gap <= CONTACT_GAP_M
+			if touching and not bool(in_contact.get(key, false)):
+				for ab: Array in open_aborts:  # a new friendly contact inside an abort's window, involving the aborted crew
+					if (String(ab[0]) == String(a.name) or String(ab[0]) == String(b.name)) and tick - int(ab[1]) <= int(ABORT_WINDOW_S * SimClock.TICK_RATE):
+						ab[2] = int(ab[2]) + 1
+			in_contact[key] = touching
+			var ma := Movement.of(a)
+			var mb := Movement.of(b)
+			var standoff := gap <= STANDOFF_GAP_M and ma != null and mb != null and ma.is_under_way() and mb.is_under_way() \
+					and ma.yield_to == "" and mb.yield_to == "" and a.ticks_since_hit <= fire_ticks and b.ticks_since_hit <= fire_ticks \
+					and absf(a.speed()) < STANDOFF_MPS and absf(b.speed()) < STANDOFF_MPS
+			if standoff:
+				seen_pairs[key] = true
+				if not standing.has(key):
+					standing[key] = tick
+	for key: String in standing.keys():
+		if not seen_pairs.has(key):
+			var lasted := (tick - int(standing[key])) / float(SimClock.TICK_RATE)
+			standing.erase(key)
+			if lasted >= STANDOFF_MIN_S:
+				_standoffs += 1
+				var names := key.split("|")
+				var a := game_match.tanks.get_node_or_null(NodePath(names[0])) as Tank
+				var at: Array = [snappedf(a.global_position.x, 0.1), snappedf(a.global_position.z, 0.1)] if a != null else [0.0, 0.0]
+				print("STANDOFF " + JSON.stringify({"pair": [names[0], names[1]], "s": snappedf(_seconds_run - lasted, 0.1),
+						"lasted_s": snappedf(lasted, 0.1), "at": at, "terrain": ElementSituation.terrain_at(a.global_position) if a != null else "?"}))
+	# Aborts: a crew whose give-way ended this tick (yield_to non-empty last tick, empty now) the tick a hit landed.
+	for node in hulls:
+		var tank := node as Tank
+		var mover := Movement.of(tank)
+		if mover != null and mover.yield_to == "" and String(prev_yield.get(String(tank.name), "")) != "" and tank.ticks_since_hit <= 3:  # the brain's stride is up to 3 ticks
+			_aborts += 1
+			open_aborts.append([String(tank.name), tick, 0])
+	for node in hulls:
+		var tank := node as Tank
+		var mover := Movement.of(tank)
+		prev_yield[String(tank.name)] = mover.yield_to if mover != null else ""
+	var closed: Array = []
+	for ab: Array in open_aborts:
+		if tick - int(ab[1]) > int(ABORT_WINDOW_S * SimClock.TICK_RATE):
+			_abort_contacts += int(ab[2])
+			print("ABORT " + JSON.stringify({"unit": ab[0], "s": snappedf(int(ab[1]) / float(SimClock.TICK_RATE), 0.1), "contacts_3s": ab[2]}))
+			closed.append(ab)
+	for ab: Array in closed:
+		open_aborts.erase(ab)

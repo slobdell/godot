@@ -94,6 +94,29 @@ def main(argv):
     if js:
         print("Jammed for (s) before dying: p10 %.1f median %.1f p90 %.1f max %.1f; >= 5 s: %d" % (
             js[len(js) // 10], js[len(js) // 2], js[min(len(js) - 1, 9 * len(js) // 10)], js[-1], sum(1 for v in js if v >= 5.0)))
+    # Round 34 (T6's bar): the deciding gain and the two additions, per fight (for the paired reading across two folders use
+    # jam_ab.py); here the totals, the standoffs with durations, and the give-ways ended by a hit with their contacts after.
+    jam_uf = [r for r in jam if under_fire(r)]
+    standoffs, aborts = [], []
+    for path in sorted(glob.glob(os.path.join(argv[0], "*.log"))):
+        with open(path, errors="replace") as f:
+            for line in f:
+                if line.startswith("STANDOFF "):
+                    standoffs.append(json.loads(line[9:]))
+                elif line.startswith("ABORT "):
+                    aborts.append(json.loads(line[6:]))
+    counters = collections.Counter()
+    for c in census:
+        for k in ("underfire_refusals", "underfire_holds", "underfire_aborts", "yields_started", "asks_refused"):
+            counters[k] += int((c.get("route_arms") or {}).get(k, 0))
+    print("\nT6 lines: jam-under-fire deaths %d (%.2f a fight); underfire_on %s; Movement counters %s" % (
+        len(jam_uf), len(jam_uf) / max(1, fights), sorted({c.get("underfire_on") for c in census}), dict(counters)))
+    durs = sorted(float(s.get("lasted_s", 0)) for s in standoffs)
+    print("  standoffs (two friendly crews nose to nose, both under fire, neither yielding, both still, >= %.0f s): %d in %d fights%s" % (
+        STANDOFF_MIN_S if "STANDOFF_MIN_S" in globals() else 2.0, len(standoffs), fights,
+        ("; lasted s median %.1f p90 %.1f max %.1f" % (durs[len(durs) // 2], durs[min(len(durs) - 1, 9 * len(durs) // 10)], durs[-1])) if durs else ""))
+    print("  give-ways ended by a hit (probe-read) %d; friendly contacts of that crew in the %.0f s after: %d" % (
+        len(aborts), 3.0, sum(int(a.get("contacts_3s", 0)) for a in aborts)))
     eps = episodes(deaths)
     sizes = collections.Counter(len(g) for _, g in eps)
     print("\nEpisodes (one team, within %.0f s and %.0f m): %d; by size %s" % (EP_S, EP_M, len(eps), dict(sorted(sizes.items()))))
