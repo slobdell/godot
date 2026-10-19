@@ -155,6 +155,24 @@ _Filed here before any number. Empty at launch._
   (a)–(h) in variance-aware form (k 1.645), noise from round 33's rows. (c)'s per-cell exchange ratio is re-formed into a
   REPORT plus two harm guards (R34.1). A third judged series would need a new design.
 
+- **X2 parkedroom v4 (traffic), filed before any v4 number on `stream/traffic` `672a695f8`
+  (`references/round34/traffic/x2_parkedroom_v4_bar.md`, full text).** v4 = v3 + ONE gate change (`1b2fd26f1`:
+  `Movement.at_post()` = not under way AND (still ≥ 2 s OR a HOLD crew inside its hold line); native's hand-back calls
+  `at_post_of`). Tree `pair/parkedroom-v4` = current main + stream/traffic + native's hand-back on that main (carrying N5
+  `17876e4b6`) + a DEFAULT_OFF flip; base `--traffic-off=parkedroom`; native path; builder2 for every line, both arms;
+  pinned; FRESH 868–915 × {terminus, locks, random}, n 144. Gates: C31.1 native check on the pair, test_traffic_neck 13/0, one
+  end-to-end trace ON. L1a hold-post loops ≤ 50 % base; L1b parked loops ≤ base + k se; L2 all loops ≤ base + k se; L3 (random 48,
+  `--far-kills=on`) a GUARD by cause (X1: parkedroom moves no death line): (a) deaths in the open within base ± k se, (b)
+  stuck/jammed deaths ≤ base + k se, (c) hit rate ≥ base − k se; kills/deaths/routs reported; L4 crossing arrivals ≥ base − k se
+  a case; L5 repack while firing 0/9; L6 read at 45 s both arms (reason: the rule's own clocks, a room ≤ 20 s + a way back ≤ 20 s;
+  19 of v3's 45 misses were inside them at 30 s), ≥ 90 % at the post or inside the hold line, n ≥ 50. Ships ON only if every
+  deciding line passes; no re-read.
+- **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
+  random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
+  open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
+  kills was that series' draw. About 1 death in 5 is a crew stuck or jammed (~9 a fight). Firemission was OFF in both
+  arms (an overnight DEFAULT_OFF artefact, fixed `e6468b2e0`).
+
 ## Rulings (round 34)
 
 - **R34.1 Bar M0's three re-forms ruled (2026-10-18, before any fresh-seed number).** (1) **(c) per-cell exchange
