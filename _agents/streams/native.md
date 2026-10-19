@@ -73,6 +73,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Round 34 (started 2026-10-18 from main `918ede503`, which inherits `d7d57f4cf`'s green check)
 
+**REPORT (top).** **Green, merge here: `12ac7b172`** (C34.7 + C34.8 (a) + N4). builder2 `make native check exited 0`:
+2798 / 0, 27 targets ALL JUDGED, sim-baseline 13 unmoved, perf-judge PASS 1.34x. The load at the start was 28.8 on 32
+CPUs with 55 other godot processes (pin-moves and three twin runs at once). relay-smoke and net-smoke both passed under
+that load, n 1. Pairs: scout try 2 GREEN `85f34ca63` (merged into stream/brains `0b8fbd3f6`); parkedroom v4 `6231e7222`
+twins running. Still running: the moves list (pin-moves), N5's centre probe.
+
 **Plan (in order; pairs pre-empt, C31.2):** (0) the waiting pairs: parkedroom's hand-back rebased onto main for traffic's
 v4; brains' scout try 2 mirror as it arrives. (1) N2 C34.7: the dropped-peer test first, then the guard. (2) N3 C34.8 (a):
 the audit, one token a recipe, the moves list as a make target (pinned ×2, free ×2, one commit). (3) N4 the library
