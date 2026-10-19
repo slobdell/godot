@@ -185,7 +185,12 @@ sits on top. Tonight's War Rig change already halved the gap.
 - **Fire mission → main `8684a97bb`** (traffic item 4, pair `23251f069` with native's mirror): a set-up mortar truck
   counts as "firing" (and refuses to move for passers) only when it has a target. IDLE-truck loops went 20 → 0, and all
   fire-post loops 68 → 11, with shots and first shot unchanged. What he'd notice: an idle mortar truck no longer blocks a
-  street for a minute. His T1c-b2 yes still holds for a truck that's actually firing. Rides the next main check.
+  street for a minute. His T1c-b2 yes still holds for a truck that's actually firing.
+- **Main `d7d57f4cf` (fire mission in) GREEN on builder2:** `make check exited 0`, 2797/0, 27 targets ALL JUDGED,
+  sim-baseline 13 unmoved (`build/b2-main-check-d7d57f4cf.log`).
+- **Traffic parkedroom v3** (pair `pair/parkedroom-on-v3 6d0e00652`): C31.1 2784/0 on builder2 (only sim-baseline, the ON
+  arm's own maps); trace passed (way back ends 2.4 m off the hold goal, crew holds). Judged series FRESH 820–867 × 3
+  running on builder2, then L4/L5.
 
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
