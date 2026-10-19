@@ -323,6 +323,15 @@ builder0), ruled R34.3.
   `RtsControls._queue_task_for` and its helpers, new `tests/test_control*.gd`; the `Element._next_queued` seam by a signature
   agreed with brains through the orchestrator. Design (passed radius, gate width from the ground, the seam, the failing test)
   to the orchestrator before code. Not `selection_squads.gd` / `_order_squads` (brains, O2).
+  **O5 read (planner, `stream/planner` `749a7a155`, `references/round34/orders/o5.md`; builder0, native, main 2c7c1d0dc + probe,
+  3 maps × 3/5 squads × click/route × main/cap-off/halt-price-off, n 1 a cell, deterministic).** (1) 5 squads to one point: the
+  second rank's anchors sit 71.6 m behind the click, at or behind their start (they "arrive" in 0.1 s): O2. (2) **His bridge case
+  is NOT closed on the Locks:** O1 capped the anchor to the near bank, but a crew SEAT that lands in the canal snaps to the far
+  bank (Green_Echo_3 (39.4, 12.2) → (39.4, −12.2) at 9 s); Echo_1 crossed the east bridge and came back; the squad shuffled 78.5 m
+  after "arrived". Brains, FIRST: snap a seat only onto ground its anchor reaches without a deck. (3) Where O1 acts it works
+  (Crossing far-bank crews 1 → 0 and 2 → 0). (4) Anchors outside the hex maps' diagonal walls (clamp_to_arena is a rectangle):
+  **planner GRANTED `Orders.clamp_to_arena` (game/control/orders.gd) + a test** to clamp to the real outline. Post-arrival
+  shuffle 20–48 m worst with 3 squads, 28–124 m with 5 (B6's cause; the deploy step is his question).
 - **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
   pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
   far loops 34 → 18 against a line of ≤ 17 (paired se 20.2): FAIL by one loop. 16 of the 18 are ONE episode (locks-913: a
