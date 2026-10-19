@@ -132,6 +132,18 @@ var arrived_tick := -1
 var halt_seated := false
 ## B8 (R34.14): the deploy step's state (ElementPlan._deploy_state), reset with every task.
 var deploy := {}
+## Round 34 (the orchestrator's safety net, after the Terminus route stall: an anchor inside a block, the element never
+## arrived, and since O4 the route queued behind it waited for ever). A PLAYER's element with route legs queued, on a
+## move, every crew SETTLED (no mover under way: not a give-way, a crossing hold or a form-up) and its centre not come
+## STALL_PROGRESS_M closer to its spot for STALL_ARRIVE_S, counts as arrived
+## (ElementPlan._arrived_at reads `stall_arrived`): a hole of that kind becomes a delay, not a frozen squad. The CPU's
+## elements never queue, so their sims are untouched. `stalls_arrived` counts it (process-wide).
+const STALL_ARRIVE_S := 12.0
+const STALL_PROGRESS_M := 1.0
+static var stalls_arrived := 0
+var _stall_best := INF
+var _stall_tick := -1
+var stall_arrived := false
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
 var _mouth_sent := {}
 ## Round 29 (B3): when each crew was last sent on for holding up a squadmate in a mouth, and how often (lesson 300).
@@ -330,6 +342,9 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	arrived_tick = -1
 	halt_seated = false
 	deploy = {}
+	_stall_best = INF
+	_stall_tick = -1
+	stall_arrived = false
 	_mouth_sent = {}
 	_mouth_held_tick = {}
 	_feed_since = {}
@@ -519,10 +534,19 @@ func update(game_match: Match, orders: Object) -> bool:
 			crossing["seated"] = false
 			crossings_rematched += 1
 	_track_pursuit(game_match)
+	var spot: Variant = ElementTask.destination(task)
+	var under_way := false
+	for member: Dictionary in situation.get("members", []):
+		var mover := Movement.of(AiTickCache.tanks_by_name(game_match).get(String(member["name"])) as Tank)
+		under_way = under_way or (mover != null and mover.is_under_way())
+	track_stall(team == OrderFeed.player_team(game_match), not queued_tasks.is_empty(), String(task.get("verb", "")),
+			(situation["center"] as Vector3).distance_to(spot) if spot is Vector3 else INF, int(situation.get("tick", 0)),
+			under_way)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated, "deploy": deploy,
+			"stall_arrived": stall_arrived,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "reseat_keep": _reseat_keep if _reseat else {}, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
@@ -1644,6 +1668,24 @@ var _et_last := -1000
 ## C34.9 (brains B3): the inset's engage distance, latched per task: [task_seq, centre-to-click metres when the inset first
 ## moved the spot (> 0.5 m), the inset then]. Round 33's (1b) reported the inset only.
 var inset_engaged := [-1, -1.0, 0.0]
+
+
+## The stall safety net's tracking (see STALL_ARRIVE_S), once an update: `player` and `queued` from the element, `to_go`
+## the centre's distance to its spot, `tick` the match tick. Pure but for this element's own fields.
+func track_stall(player: bool, queued: bool, verb: String, to_go: float, tick: int, under_way := false) -> void:
+	# A crew still under way (a give-way, a crossing hold, a form-up: each has a live move) restarts the clock: only a
+	# squad that has settled AND stopped closing is stuck.
+	if not player or not queued or verb != "move" or arrived or stall_arrived or under_way:
+		_stall_best = INF
+		_stall_tick = -1
+		return
+	if _stall_tick < 0 or to_go < _stall_best - STALL_PROGRESS_M:
+		_stall_best = to_go
+		_stall_tick = tick
+	elif tick - _stall_tick >= int(STALL_ARRIVE_S * SimClock.TICK_RATE):
+		stall_arrived = true
+		stalls_arrived += 1
+		_log("stalled %.0f s %.1f m from its spot: counted as arrived" % [STALL_ARRIVE_S, to_go])
 
 
 func _latch_inset(plan: Dictionary) -> void:

@@ -39,7 +39,10 @@ static var ARRIVE_LATCH := true
 
 
 static func _arrived_at(to_go: float, state: Dictionary) -> bool:
-	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M)
+	# Round 34 (the orchestrator's safety net): an element whose centre has stopped closing on its spot counts as arrived
+	# (Element.track_stall), so a route queued behind it moves on rather than freezing.
+	return to_go <= ARRIVE_M or (ARRIVE_LATCH and bool(state.get("arrived", false)) and to_go <= ARRIVE_M + ARRIVE_LEAVE_M) \
+			or bool(state.get("stall_arrived", false))
 ## Overnight item 3 (brains): a move's destination is inset from the arena edge by its shape (inset_anchor);
 ## `--anchor-inset=off` is main's rule.
 static var ANCHOR_INSET := not OS.get_cmdline_user_args().has("--anchor-inset=off")
@@ -778,14 +781,18 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# drawn one. A hold carrying `told` is the only combination that both persists and points where he pointed.
 	var holding_heading: bool = told is Vector3 and bool(plan["arrived"])
 	# B8 (R34.14): THE DEPLOY STEP (prototype, `--deploy-step=on`). Deployed, an AUTO plain move stands in its halt.
-	var deploy := _deploy_state(plan, situation, state, destination, center, told)
+	var deploy := _deploy_state(plan, situation, state, destination, center, told, table)
 	plan["deploy"] = deploy
 	if bool(deploy.get("deployed", false)):
 		plan["formation"] = String(_halt_pick(situation, state, table)["formation"])
 		plan["heading"] = deploy["heading"]
 		plan["why"] = "deployed: %s on the spot" % String(plan["formation"]).replace("_", " ")
-		_group(plan, slot_order(situation), String(plan["formation"]), destination, deploy["heading"],
-				table.spacing(String(situation["terrain"])), "move", "", true, true)
+		var stand: Vector3 = deploy.get("anchor", destination)
+		plan["anchor"] = stand
+		# Seated by the least total driving (B8b: B8 seated by exposure and sent crews across the shape, moves of 24-42 m),
+		# then fixed: the deploy is one move per crew.
+		_group(plan, slot_order(situation), String(plan["formation"]), stand, deploy["heading"],
+				table.spacing(String(situation["terrain"])), "move", "", true, true, null, false, "travel")
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -795,7 +802,9 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# option 2: the heavies take the front / outside once halted), then the seating is fixed again.
 	var ordered := slot_order(situation)
 	var seat_extra := {}
-	var halt_reseat := NEAREST_ON_ROUTE and TacticsFormation.NEAREST_ENABLED and bool(plan["arrived"]) \
+	# B8b: not while a deploy is pending: the deploy seats the squad once anyway (B8's probe: 21 seat changes a 5-squad
+	# order while the slowest crew came in, this re-seat among them).
+	var halt_reseat := deploy.is_empty() and NEAREST_ON_ROUTE and TacticsFormation.NEAREST_ENABLED and bool(plan["arrived"]) \
 			and not bool(state.get("halt_seated", false)) and int(state.get("arrived_tick", -1)) >= 0 \
 			and int(situation.get("tick", 0)) - int(state["arrived_tick"]) >= HALT_RESEAT_TICKS
 	plan["halt_seated"] = bool(state.get("halt_seated", false)) or halt_reseat
@@ -1752,13 +1761,20 @@ static func herring_heading(state: Dictionary, current: Vector3) -> Vector3:
 ## one visible move, on a heading fixed when the order was given (the task's `lay`, the body's approach; else from where
 ## it stood to the click), and those seats stand (fixed seating; Element grounds them with the latch). B6's causes it
 ## answers: no early lay, no per-update heading, the halt laid only when the crews are in. `--deploy-step=on` opts in.
-static var DEPLOY_STEP := OS.get_cmdline_user_args().has("--deploy-step=on")
+static var DEPLOY_STEP := OS.get_cmdline_user_args().has("--deploy-step=on") or OS.get_environment("DEPLOY_STEP") == "on"
+## B8b (the orchestrator, after B8's probe): the halt is laid CENTRED where the squad stands when it deploys (its centre
+## then, latched), not on the click, so the deploy move is short (B8's ran 24-42 m), and stepped inland from water until
+## every seat is dry and on its own bank (B8 on the Locks: seats clipped by the canal bunched on one strip of bank).
+## `DEPLOY_ON_CLICK` true is B8's (laid on the click).
+static var DEPLOY_ON_CLICK := OS.get_cmdline_user_args().has("--deploy-on-click")
+const DEPLOY_INLAND_STEP_M := 2.0
+const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
 
 
 ## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.
 static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictionary, destination: Vector3, center: Vector3,
-		told: Variant) -> Dictionary:
+		told: Variant, table: DoctrineTable) -> Dictionary:
 	var task: Dictionary = state.get("task", {})
 	if not DEPLOY_STEP or String(task.get("verb", "")) != "move" or chosen_formation(task) != "" or told is Vector3:
 		return {}
@@ -1788,7 +1804,27 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["deployed"] = true
 		deploy["tick"] = tick
 		deploy["cause"] = "all_in" if all_in else "cap"
+		var at: Vector3 = destination if DEPLOY_ON_CLICK else clamp_to_arena(Vector3(center.x, 0.0, center.z))
+		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), String(_halt_pick(situation, state, table)["formation"]),
+				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy
+
+
+## B8b: `at` stepped away from water, DEPLOY_INLAND_STEP_M at a time (up to DEPLOY_INLAND_MAX_M), until every seat of the
+## halt (`shape` at `spacing` on `heading`) stands dry and on its anchor's bank: each step straight back from the seats
+## that fail, the way the shape has to move. None found: `at`.
+static func _dry_halt_anchor(at: Vector3, members: Array, shape: String, heading: Vector3, spacing: float) -> Vector3:
+	var anchor := at
+	for step in int(DEPLOY_INLAND_MAX_M / DEPLOY_INLAND_STEP_M) + 1:
+		var pull := Vector3.ZERO
+		for entry in TacticsFormation.place(members, shape, anchor, heading, spacing, {"halt": true, "corridor_m": INF}):
+			var seat: Vector3 = entry["to"]
+			if SlotGround.over_water(seat) or SlotGround.on_anchor_side(seat, anchor).distance_to(seat) > 0.5:
+				pull += Vector3(anchor.x - seat.x, 0.0, anchor.z - seat.z)
+		if pull.length() < 0.01:
+			return anchor
+		anchor = clamp_to_arena(anchor + pull.normalized() * DEPLOY_INLAND_STEP_M)
+	return at
 
 
 ## B6: whether this update of a move is its final approach, laid in the halt's shape (HALT_SHAPE_EARLY).

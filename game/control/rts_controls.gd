@@ -1121,6 +1121,15 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if ground != null:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle (O3's narrower body put squad
+		# 3's at (32.7, 67.4), inside a block) can never be arrived at: every seat was pushed 11-19 m off it, the leader
+		# held at its own and the squad never moved on. Each anchor not standable goes to the nearest standable point
+		# reached from where its squad stands (SlotGround.standable_from, a hull's clearance), as a single unit's goal is.
+		if ground != null:
+			var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+			anchors = SelectionSquads.ground_anchors(anchors, blocks,
+					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
+					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
@@ -1483,11 +1492,13 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var ground: Node3D = null
 	for squad: Dictionary in squads:
 		var held: Element = squad.get("element")
+		# A squad whose previous waypoint is RUNNING (or that has no element) keeps its anchor; the others still get the gate
+		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
 		if held == null or not is_instance_valid_element(held) or held.queued_tasks.is_empty():
-			return
+			continue
 		var last: Dictionary = held.queued_tasks[held.queued_tasks.size() - 1]
 		if String(last.get("verb", "")) != "move" or not last.has("to"):
-			return
+			continue
 		prev += Vector3(float(last["to"][0]), 0.0, float(last["to"][1]))
 		var earlier: Variant = null
 		if held.queued_tasks.size() >= 2:
@@ -1505,8 +1516,10 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 				if tank != null and tank.is_inside_tree():
 					ground = tank
 					break
-	prev /= squads.size()
-	before /= squads.size()
+	if held_elements.size() < 2:
+		return  # a gate is for several squads sharing the waypoint
+	prev /= held_elements.size()
+	before /= held_elements.size()
 	var approach := prev - before
 	if approach.length() < 1.0:
 		approach = next_click - prev
@@ -1532,6 +1545,11 @@ func _squad_block(squad: Dictionary) -> Dictionary:
 			# AUTO: the leader halts in a shape of its own; the ranks never step less than the deepest halt shape
 			# (SelectionSquads.min_step): the coil, a ring, is the deepest the table picks.
 			block["halt_depth"] = SelectionSquads.depth(HALT_SHAPE, count, (block["pitch_v"] as Vector2).y)
+			# R34.12b: the halt it will arrive in (O3), for the ranks' hull clearance between halts.
+			if SelectionSquads.HALT_PRICE:
+				var element: Element = squad.get("element")
+				block["halt"] = SelectionSquads.squad_halt_shape(squad["units"], element.table if element != null \
+						and is_instance_valid_element(element) else null, game_match)
 	return block
 
 
@@ -1583,10 +1601,9 @@ func _squad_depth(squad: Dictionary) -> float:
 		standing = element.formation
 	if shape != UnitCommand.AUTO and TacticsFormation.NAMES.has(shape):
 		return SelectionSquads.depth(shape, count, spacing)
-	if SelectionSquads.HALT_PRICE:
-		# O3: the halt it will arrive in, as deep as it stands (a herringbone is the deepest halt).
-		return SelectionSquads.halt_footprint(SelectionSquads.squad_halt_shape(squad["units"], element.table if element != null \
-				and is_instance_valid_element(element) else null, game_match), count, spacing).y
+	# R34.12b (planner's O5: the back rank stayed home): NOT the halt's depth. O3 priced a rank at the herringbone's 54.8 m
+	# and the ranks stepped ~69 m, onto where the squads already stood; the rank step widens from this only as far as
+	# the two ranks' halt seats need for hull clearance (SelectionSquads.ranks, the blocks' `halt`).
 	var deepest := SelectionSquads.depth("auto", count, spacing)
 	if TacticsFormation.NAMES.has(standing):
 		deepest = maxf(deepest, SelectionSquads.depth(standing, count, spacing))

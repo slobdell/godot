@@ -247,6 +247,15 @@ builder0), ruled R34.3.
   drawn arms on the native path. M1's A/A (`references/round34/manoeuvre/m1-aa/`): about half the old ruler's "still moving"
   crews were WEDGED hulls.
 
+- **T6 a crew under fire does not give way (traffic, R34.15), filed before any number on `stream/traffic` `95d160ce1`
+  (`references/round34/traffic/x6_underfire_bar.md`).** Pair `pair/underfire-r34` = current main + stream/traffic + native's twins
+  + the ON flip (base `--traffic-off=underfire`; a switch-OFF sim-baseline inertness run beside the C31.1); native, one machine,
+  pinned; FRESH fixed arenas only {terminus, locks, sumps, gorge, parade} × 1300–1327, n 140, no twins. DECIDING GAIN:
+  jam-under-fire deaths (last hit during the jam, or ≥ 2 hits in the 10 s before) arm < base AND (base − arm) − k·se > 0. Guards:
+  open deaths ± k·se; stuck deaths, far loops, friendly contacts in the 3 s after an under-fire abort ≤ base + k·se; kills ± k·se and
+  hit rate ≥ base − k·se; crossing arrivals 44–46 × 6 ≥ base − k·se a case. Reported: standoffs with durations, all jam and all deaths,
+  the counters. Sizing from T5: 1.75 a fight, sd 1.61, se of the sum ≤ ~19 at n 140.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
@@ -392,6 +401,13 @@ builder0), ruled R34.3.
   three squads through one Locks lane under fire is brains' commander lane choice (later). **Measurement note:** 14 of 48
   "random" seeds dealt the Locks or Terminus, so those fights twin the fixed-arena fight of the same seed (paired readings
   unaffected; totals double-count them; true of X1/v4/v4b): future series exclude random seeds that deal a fixed arena.
+- **R34.16 P5 closes with NO v3 (planner, `references/round34/planner/p5-remeasure-15f5980ac/`; builder0, native, main with M2 + M1,
+  hull-rest gangs, dev seeds 96–107, face_pairs distinct 42/41).** The tail v3 targeted was the flicker: round 33's miss was a face only
+  the candidate planned (asked mid-k-turn). With M2 in, candidate-only faces are 0 drawn, 0 clicked, so a slot cap has nothing to cut.
+  Both-planned clicked faces 2.5 v 2.0 m median (se 0.26), p90 4.0 v 3.9, max 9.1 v 4.0 (one face): a WATCH item for the next series
+  that reads face_pairs, not a bar. **The round-34 Terminus route stall** (planner's bisect: O4's a5a362737 first bad; brains: O3 put
+  squad 3's first-leg anchor in a block) is fixed in brains' next check (ground_anchors + a player-route stall fallback, 12 s, every
+  crew settled, in-between legs only).
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 

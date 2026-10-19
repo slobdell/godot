@@ -315,7 +315,8 @@ static func ranks(blocks: Array, click: Vector3, facing: Variant = null, fallbac
 			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
 			slots.append(flat_click + across * aside - heading * behind)
 		if r + 1 < sizes.size():
-			behind += maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
+			var step := maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
+			behind += halt_clear_step(step, size, sizes[r + 1], slot_width, blocks)
 	var centers: Array[Vector3] = []
 	for block: Dictionary in blocks:
 		var c: Vector3 = block["center"]
@@ -381,6 +382,80 @@ static func nested_offsets(blocks: Array) -> Array:
 ## shape its leader picks, the gangs' coil: a ring 36 m across, which overlapped the coil of the rank behind by 10 m
 ## and left one or two crews of fifty blocked outside their ring (measured, Status). The halt shape's depth is the
 ## floor on the step; a squad in a shape he picked carries none.
+## R34.12b (planner's O5 probe: five squads, the back rank anchored on its own start): AUTO squads halt in their
+## doctrine's hold shape (O3, block "halt"), deeper than they travel (a herringbone 54.8 m), and pricing a rank at that
+## depth stepped the ranks ~69 m. Nesting is by HULL CLEARANCE (his correction 1): the step grows from `step` (the
+## travel shape's) RANK_CLEAR_STEP_M at a time only until every halt seat of one rank stands at least HALT_CLEAR_M from
+## every halt seat of the next, never past the deepest halt's depth plus GAP_M. Blocks without a "halt": `step`.
+const HALT_CLEAR_M := 9.0
+const RANK_CLEAR_STEP_M := 2.0
+
+
+static func halt_clear_step(step: float, front: int, rear: int, slot_width: float, blocks: Array) -> float:
+	var shape := ""
+	var count := 0
+	var pitch := SPACING_M
+	var deepest := 0.0
+	for block: Dictionary in blocks:
+		if not block.has("halt"):
+			continue
+		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		var footprint := halt_footprint(String(block["halt"]), int(block.get("count", 1)), p.x)
+		if footprint.y >= deepest:
+			deepest = footprint.y
+			shape = String(block["halt"])
+			count = int(block.get("count", 1))
+			pitch = p.x
+	if shape == "":
+		return step
+	var seats := halt_offsets(shape, count, pitch)
+	var limit := maxf(step, deepest + GAP_M)
+	var at := step
+	while at < limit:
+		if _ranks_clear(front, rear, slot_width, seats, at):
+			return at
+		at += RANK_CLEAR_STEP_M
+	return limit
+
+
+## Whether `front` halts abreast and `rear` halts abreast `behind` metres back stand HALT_CLEAR_M clear of each other
+## (seats in halt_offsets' frame: x across, y ahead; the body's y here is behind the click).
+static func _ranks_clear(front: int, rear: int, slot_width: float, seats: Array[Vector2], behind: float) -> bool:
+	for k in front:
+		var a := (float(k) - (front - 1) * 0.5) * (slot_width + GAP_M)
+		for j in rear:
+			var b := (float(j) - (rear - 1) * 0.5) * (slot_width + GAP_M)
+			for p in seats:
+				for q in seats:
+					if Vector2(a + p.x, -p.y).distance_to(Vector2(b + q.x, behind - q.y)) < HALT_CLEAR_M:
+						return false
+	return true
+
+
+## A halt's seats in its own frame (x across to the right, y along the heading), memoised: TacticsFormation.place with
+## `halt`, each seat led ElementPlan.FACE_LEAD toward its sector, as ElementPlan._group stands them.
+static var _offset_memo := {}
+
+
+static func halt_offsets(shape: String, count: int, spacing := SPACING_M) -> Array[Vector2]:
+	var key := "%s:%d:%.2f" % [shape, count, spacing]
+	if _offset_memo.has(key):
+		return _offset_memo[key]
+	var out: Array[Vector2] = []
+	if count <= 1:
+		out.append(Vector2.ZERO)
+	else:
+		var members := []
+		for i in count:
+			members.append({"name": "S%d" % i, "unit": "tank", "role": "tank", "position": Vector3(i, 0.0, 30.0)})
+		for entry in TacticsFormation.place(members, shape, Vector3.ZERO, Vector3.FORWARD, spacing, {"halt": true, "corridor_m": INF}):
+			var at: Vector3 = (entry["to"] as Vector3) + TacticsFormation.rotate(Vector3.FORWARD, deg_to_rad(float(entry["sector"]))) \
+					* ElementPlan.FACE_LEAD
+			out.append(Vector2(at.x, -at.z))
+	_offset_memo[key] = out
+	return out
+
+
 static func min_step(blocks: Array) -> float:
 	var floor_m := 0.0
 	for block: Dictionary in blocks:
@@ -532,6 +607,20 @@ static var RANK_FORWARD := not OS.get_cmdline_user_args().has("--rank-forward=of
 ## The body's approach: from the middle of the blocks to the click (round 21's `_heading`; a drawn facing when given).
 static func approach_of(blocks: Array, click: Vector3, fallback_heading := Vector3.FORWARD, facing: Variant = null) -> Vector3:
 	return _heading(blocks, Vector3(click.x, 0.0, click.z), facing, fallback_heading)
+
+
+## Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle can never be arrived at (O3's
+## narrower body put one inside a block; every seat was pushed 11-19 m off it and the squad never moved on). Each anchor
+## `standable(p)` refuses goes to `ground(p, from)`, the nearest standable point reached from where its block stands
+## (SlotGround.standable_from). Standable anchors are untouched.
+static func ground_anchors(anchors: Array[Vector3], blocks: Array, standable: Callable, ground: Callable) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	for i in anchors.size():
+		var at := anchors[i]
+		if not bool(standable.call(at)) and i < blocks.size():
+			at = ground.call(at, Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+		result.append(at)
+	return result
 
 
 static func never_behind(anchors: Array[Vector3], blocks: Array, click: Vector3, heading: Vector3) -> Array[Vector3]:
