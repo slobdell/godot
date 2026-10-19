@@ -1,0 +1,28 @@
+>> planner-rematch on builder0 | commit 918ede503 | native on
+idle=0 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":1152,"process_frames":1151,"run":0,"ticks":1150}
+idle=0 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":2303,"process_frames":2302,"run":1,"ticks":1150}
+idle=0 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":3454,"process_frames":3453,"run":2,"ticks":1150}
+idle=1 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":1153,"process_frames":1152,"run":0,"ticks":1150}
+idle=1 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":2304,"process_frames":2303,"run":1,"ticks":1150}
+idle=1 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":3455,"process_frames":3454,"run":2,"ticks":1150}
+idle=2 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":1154,"process_frames":1153,"run":0,"ticks":1150}
+idle=2 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":2305,"process_frames":2304,"run":1,"ticks":1150}
+idle=2 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":3456,"process_frames":3455,"run":2,"ticks":1150}
+idle=3 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":1155,"process_frames":1154,"run":0,"ticks":1150}
+idle=3 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":2306,"process_frames":2305,"run":1,"ticks":1150}
+idle=3 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":3457,"process_frames":3456,"run":2,"ticks":1150}
+idle=4 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":1156,"process_frames":1155,"run":0,"ticks":1150}
+idle=4 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":2307,"process_frames":2306,"run":1,"ticks":1150}
+idle=4 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":3458,"process_frames":3457,"run":2,"ticks":1150}
+idle=5 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":1157,"process_frames":1156,"run":0,"ticks":1150}
+idle=5 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":2308,"process_frames":2307,"run":1,"ticks":1150}
+idle=5 REMATCH {"first_diff_tick":-1,"hash_at_T":"09152e34b99dedc3","physics_frames":3459,"process_frames":3458,"run":2,"ticks":1150}
+REMATCH_BODY {"alone_s":18.0,"arrived_s":19.7,"digest":7301894,"idle":0,"run":0,"seed":1}
+REMATCH_BODY {"alone_s":18.0,"arrived_s":19.7,"digest":7301894,"idle":0,"run":1,"seed":1}
+REMATCH_BODY {"alone_s":18.0,"arrived_s":19.7,"digest":7301894,"idle":0,"run":2,"seed":1}
+REMATCH_BODY {"alone_s":16.0,"arrived_s":18.6,"digest":2240729569,"idle":0,"run":0,"seed":3}
+REMATCH_BODY {"alone_s":16.0,"arrived_s":18.6,"digest":2240729569,"idle":0,"run":1,"seed":3}
+REMATCH_BODY {"alone_s":16.0,"arrived_s":18.6,"digest":2240729569,"idle":0,"run":2,"seed":3}
+REMATCH_BODY {"alone_s":3.0,"arrived_s":19.5,"digest":2104907851,"idle":0,"run":0,"seed":5}
+REMATCH_BODY {"alone_s":3.0,"arrived_s":19.5,"digest":2104907851,"idle":0,"run":1,"seed":5}
+REMATCH_BODY {"alone_s":3.0,"arrived_s":19.5,"digest":2104907851,"idle":0,"run":2,"seed":5}
