@@ -131,6 +131,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   line and the brain's move arrival both use max(ORDER_ARRIVE, settle_radius); SLOT_TOLERANCE is only read by decide's
   old squad-context KEEP_SLOT (and _bounding_slot). The hollow was a stale goal under B6 (above).
 
+- **O1 (C34.11, granted R34.8): the ground cap BUILT** (`43d81ec13`; decision and reasons in orders.md's O1 entry). No
+  anchor of a several-squad order stands where the click reaches it only over a bridge deck, or by a drive > 1.5 x
+  straight + 8 m. Tests: tests/test_control_ground_cap.gd (the Crossing's own navmesh and deck: today ≥ 1 of 3 anchors
+  over the bridge, after none). Laptop test_control_* 411/0. Full check running on builder2. Next: O3.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.

@@ -54,6 +54,14 @@ a shift-clicked route is followed by the squads as squads, not funnelled vehicle
    names "west bridge", "west swing bridge"), three squads clicked on the near bank beside the bridge: today one anchor is
    across (the failing test), after O1 none is. Pure where it can be (the length callable injected, as `untangle`'s
    position callable). Commit, quick-remote, name a hash, tell the orchestrator: it can merge alone.
+   **Built by brains (R34.8, stream/brains `43d81ec13`):** `SelectionSquads.ground_cap` after `fit_inside`. An anchor
+   passes when its drive from the click is <= 1.5 x straight + 8 m (navmesh) AND the path from the click crosses no
+   bridge deck (unless the click is on one). A failing anchor walks back toward the click in 4 m steps, clamped dry.
+   **Decided (orchestrator agreed): no ~30 m straight cap.** On the Crossing the west bridge is in line with the click,
+   so the far-bank anchor is a DIRECT drive (~70 m); the deck test is what catches his case, and a straight cap would
+   squash every open-ground spread (O2's packing). Arenas have only water and pit (both carve the navmesh) and bridge
+   (the only deck), so there is no ford or shallow crossing: water is crossed only over a deck (the deck test), and a pit
+   only round it (a detour, the 1.5x ratio). Default ON; `--ground-cap=off` is round 33.
 2. **O2 Places found by driving distance, with hull clearance (his correction 1).** Replace "lay a block in the air, then
    clamp" with: flood outward from the click over drivable ground (navmesh / the ground grid) by DRIVING distance; seat
    squads into the nearest free ground in order of arrival along their approach. The constraint between squads is
