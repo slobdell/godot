@@ -5,8 +5,11 @@ extends TestCase
 ## Pure: ElementPlan._deploy_keep.
 
 
+var _was := ElementPlan.DEPLOY_MINIMAX
+
+
 func teardown() -> void:
-	ElementPlan.DEPLOY_MINIMAX = true
+	ElementPlan.DEPLOY_MINIMAX = _was
 	super.teardown()
 
 
@@ -29,6 +32,7 @@ func _longest(members: Array, keep: Dictionary, formation: String, anchor: Vecto
 
 
 func test_every_crew_gets_one_seat() -> void:
+	ElementPlan.DEPLOY_MINIMAX = true  # parked OFF by default (D4's A/B)
 	var members := _members([Vector3(-30, 0, 10), Vector3(-15, 0, 0), Vector3(0, 0, -10), Vector3(15, 0, 0), Vector3(30, 0, 10)])
 	var keep := ElementPlan._deploy_keep(members, "herringbone", Vector3.ZERO, Vector3.FORWARD, 14.0)
 	assert_eq(keep.size(), 5, "a seat each")
@@ -38,6 +42,7 @@ func test_every_crew_gets_one_seat() -> void:
 
 
 func test_the_longest_leg_is_no_longer_than_any_other_seating() -> void:
+	ElementPlan.DEPLOY_MINIMAX = true
 	# A wedge (wide across) deploying into a herringbone (deep along): every one of the 120 seatings is no better.
 	var members := _members([Vector3(-30, 0, 10), Vector3(-15, 0, 0), Vector3(0, 0, -10), Vector3(15, 0, 0), Vector3(30, 0, 10)])
 	var keep := ElementPlan._deploy_keep(members, "herringbone", Vector3.ZERO, Vector3.FORWARD, 14.0)

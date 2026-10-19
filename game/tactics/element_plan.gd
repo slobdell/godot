@@ -1865,8 +1865,9 @@ static func _deploy_shape(situation: Dictionary, state: Dictionary, table: Doctr
 
 ## D4 (round 35): the deploy's seating, {crew name: seat index}, chosen so the longest leg from where each crew stands to
 ## its halt seat is the shortest it can be, ties to the least total (every assignment tried: a squad is at most
-## DEPLOY_MINIMAX_MAX crews). {} = _group's own seating. `--deploy-minimax=off` is D1's least total.
-static var DEPLOY_MINIMAX := not OS.get_cmdline_user_args().has("--deploy-minimax=off")
+## DEPLOY_MINIMAX_MAX crews). {} = _group's own seating (D1's least total, the default while parked).
+## PARKED OFF (round 35, D4's A/B failed its bar: builder0 68d4c06cd, seeds 3621-3626): `--deploy-minimax=on` opts in.
+static var DEPLOY_MINIMAX := OS.get_cmdline_user_args().has("--deploy-minimax=on")
 const DEPLOY_MINIMAX_MAX := 6
 
 
