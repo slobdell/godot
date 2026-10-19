@@ -1,0 +1,15 @@
+FLICKER = a `face` spell between two move_to spells lasting <= 3 s (state lines once a second); gangs, seeds 60-71, --brains-off=native_drive; new = main (arriveleg ON), base = --nav-off=arriveleg
+   drawn   faced_ambush             pairs 12  flickers new   1 base   1  (faces new    4 base    4; runs differing 0)
+   drawn   faced_attack_move        pairs 12  flickers new   3 base   3  (faces new   12 base   12; runs differing 0)
+   drawn   faced_move               pairs 12  flickers new   0 base   0  (faces new    8 base    8; runs differing 0)
+   drawn   faced_right              pairs 12  flickers new   1 base   1  (faces new    5 base    5; runs differing 0)
+   drawn   faced_screen             pairs 12  flickers new   0 base   0  (faces new   12 base   12; runs differing 0)
+   drawn   faced_support_by_fire    pairs 12  flickers new   0 base   0  (faces new    2 base    2; runs differing 0)
+   drawn   TOTAL flickers new 5 base 5
+   clicked faced_ambush             pairs 12  flickers new   0 base   0  (faces new    3 base    3; runs differing 0)
+   clicked faced_attack_move        pairs 12  flickers new  10 base  10  (faces new  140 base  140; runs differing 0)
+   clicked faced_move               pairs 12  flickers new   2 base   2  (faces new   28 base   28; runs differing 0)
+   clicked faced_right              pairs 12  flickers new  12 base  12  (faces new   48 base   48; runs differing 0)
+   clicked faced_screen             pairs 12  flickers new   1 base   1  (faces new   49 base   49; runs differing 0)
+   clicked faced_support_by_fire    pairs 12  flickers new   0 base   0  (faces new    6 base    6; runs differing 0)
+   clicked TOTAL flickers new 25 base 25

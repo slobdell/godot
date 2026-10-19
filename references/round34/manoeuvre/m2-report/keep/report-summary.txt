@@ -1,0 +1,6 @@
+>> m2 keep-1 report on 34f363b03 builder0 08:04; waiting for builder0's check
+>> new_clicked start 08:04 on 34f363b03 builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=new_clicked M1_NEW_OFF= M1_GDD=1 M1_FLAGS=--planner-face-keep=1 M1_SEEDS=66-71 HULL_FACTIONS=gangs FACING_ONLY=faced_attack_move HULL_JOBS=6 exited 0 (build/ copied back)
+>> base_clicked start 08:05 on 34f363b03 builder0
+>> remote: make manoeuvre-hull-rest M1_ARMS=base_clicked M1_BASE_OFF=arriveleg M1_GDD=1 M1_FLAGS=--planner-face-keep=1 M1_SEEDS=66-71 HULL_FACTIONS=gangs FACING_ONLY=faced_attack_move HULL_JOBS=6 exited 0 (build/ copied back)
+>> done 08:06

@@ -144,6 +144,15 @@ touched). Neither M2 run is named from those logs. Both the M2 check (builder0) 
 to the lead), M3 CP-F attempt 4 (R34.18: parks). **Done:** the War Rig clip (stretch). **Running:** the M2 before/after
 report on main (builder0; result appended below when it lands).
 
+**M2 before/after report (DONE, `references/round34/manoeuvre/m2-report/`, builder0, main c4aa9e2e0 then stream
+b33b12fec/34f363b03 = main 165953b64 + the unshipped turn-in):** `--nav-off=arriveleg` v main over 288 drawn runs (all
+factions), 144 gangs drawn+clicked runs under planner's flags, and planner's s69 stage (keep 1, clicked attack-move 66–71):
+**every row identical** — (d), (e), settle, planner's face episodes, the short face spells — and the hold fired 3 times in
+144 runs (one tick each; seed 66 clicked attack-move, under keep 0 and keep 1 alike), so nothing else moved and the mid-leg
+arrival is rare on this stage. Planner's s69 shape is not on today's stage in either arm (the ruler moved the seeds).
+Trap found and written on `M1_GDD`: under `--brains-off=native` the seam abandons every k-turn ask (driven 0), so a
+hull-rest pass with M1_GD=1 cannot see the seam's legs at all; planner's `--brains-off=native_drive` is the flag.
+
 **Open with the lead (M0):** the scout turn-in passes every bar line but (c-out): out of reach of its own gun it now trades
 1.45 damage per damage taken instead of 0.06 and kills the IFV at 30 m in 5 of 12 runs, taking 60 hits instead of 46
 (pooled median; the accepted margin was 57). Recommendation stands: SHIP; it is a stronger scout, not a reckless one. The

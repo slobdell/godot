@@ -1,0 +1,48 @@
+arms new_clicked base_clicked runs 72 72 missing: {'new_clicked': [], 'base_clicked': []}
+(a) wheels/turret per task: median, share <= 15
+   faced_ambush             n 211 median  61.0  <=15  15.6 %
+   faced_attack_move        n 211 median  79.3  <=15  10.9 %
+   faced_move               n 211 median  46.9  <=15  19.9 %
+   faced_right              n 211 median  45.4  <=15  18.0 %
+   faced_screen             n 211 median  52.6  <=15  16.1 %
+   faced_support_by_fire    n 211 median  64.0  <=15  14.2 %
+(d) crews moving at the judge, summed over paired runs: new base diff se(sum) limit(1.645se) verdict
+   faced_ambush             wt  n 12    2   2    +0  se   0.0  lim  +0.0  PASS
+   faced_ambush             all n 12    2   2    +0  se   0.0  lim  +0.0  PASS
+   faced_attack_move        wt  n 12    1   1    +0  se   0.0  lim  +0.0  PASS
+   faced_attack_move        all n 12    1   1    +0  se   0.0  lim  +0.0  PASS
+   faced_move               wt  n 12    0   0    +0  se   0.0  lim  +0.0  PASS
+   faced_move               all n 12    0   0    +0  se   0.0  lim  +0.0  PASS
+   faced_right              wt  n 12    0   0    +0  se   0.0  lim  +0.0  PASS
+   faced_right              all n 12    0   0    +0  se   0.0  lim  +0.0  PASS
+   faced_screen             wt  n 12    1   1    +0  se   0.0  lim  +0.0  PASS
+   faced_screen             all n 12    1   1    +0  se   0.0  lim  +0.0  PASS
+   faced_support_by_fire    wt  n 12    1   1    +0  se   0.0  lim  +0.0  PASS
+   faced_support_by_fire    all n 12    1   1    +0  se   0.0  lim  +0.0  PASS
+(d-wedged) crews WEDGED at the judge (not still, pinned by real speed), REPORTED: new base
+   faced_ambush             wedged_wt n 12    2   2    +0
+   faced_ambush             wedged    n 12    2   2    +0
+   faced_attack_move        wedged_wt n 12    2   2    +0
+   faced_attack_move        wedged    n 12    2   2    +0
+   faced_move               wedged_wt n 12    0   0    +0
+   faced_move               wedged    n 12    0   0    +0
+   faced_right              wedged_wt n 12    4   4    +0
+   faced_right              wedged    n 12    4   4    +0
+   faced_screen             wedged_wt n 12    2   2    +0
+   faced_screen             wedged    n 12    2   2    +0
+   faced_support_by_fire    wedged_wt n 12    6   6    +0
+   faced_support_by_fire    wedged    n 12    6   6    +0
+(e) never settled (-1 or >= 75) per task, runs holding wheels/turret: new base diff se lim
+   faced_ambush             n 12   3  3   +0  se  0.0 lim +0.0 PASS | settle median new 42.5 base 42.5 paired-diff median +0.0
+   faced_attack_move        n 12   4  4   +0  se  0.0 lim +0.0 PASS | settle median new 66.8 base 66.8 paired-diff median +0.0
+   faced_move               n 12   0  0   +0  se  0.0 lim +0.0 PASS | settle median new 33.2 base 33.2 paired-diff median +0.0
+   faced_right              n 12   3  3   +0  se  0.0 lim +0.0 PASS | settle median new 38.0 base 38.0 paired-diff median +0.0
+   faced_screen             n 12   2  2   +0  se  0.0 lim +0.0 PASS | settle median new 39.2 base 39.2 paired-diff median +0.0
+   faced_support_by_fire    n 12   4  4   +0  se  0.0 lim +0.0 PASS | settle median new 47.0 base 47.0 paired-diff median +0.0
+(d) by faction, all classes: new/base
+   faced_ambush             cond 0/0  gang 2/2  law 0/0  synd 0/0
+   faced_attack_move        cond 0/0  gang 1/1  law 0/0  synd 0/0
+   faced_move               cond 0/0  gang 0/0  law 0/0  synd 0/0
+   faced_right              cond 0/0  gang 0/0  law 0/0  synd 0/0
+   faced_screen             cond 0/0  gang 1/1  law 0/0  synd 0/0
+   faced_support_by_fire    cond 0/0  gang 1/1  law 0/0  synd 0/0
