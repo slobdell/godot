@@ -649,11 +649,13 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 
 ORDERS_PROBE_SHOT_SQUADS ?= 3 5
 ORDERS_PROBE_SHOT_ARMS ?= main: cap_off:--ground-cap=off
-orders-probe-shots: import ## O5: the one-click case in a window, top-down at arrival (desktop 1280x720, phone 1560x720), ORDERS_PROBE_MAPS x _SHOT_SQUADS x _SHOT_ARMS -> build/orders-probe/shots/*.png (needs a display)
+ORDERS_PROBE_SHOT_ROUTES ?= click
+orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later (desktop 1280x720, phone 1560x720), ORDERS_PROBE_MAPS x _SHOT_SQUADS x _SHOT_ROUTES x _SHOT_ARMS -> build/orders-probe/shots/*.png (needs a display)
 	@mkdir -p $(ORDERS_PROBE_DIR)/shots
-	@for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SHOT_SQUADS); do for arm in $(ORDERS_PROBE_SHOT_ARMS); do \
+	@for map in $(ORDERS_PROBE_MAPS); do for n in $(ORDERS_PROBE_SHOT_SQUADS); do for route in $(ORDERS_PROBE_SHOT_ROUTES); do \
+	for arm in $(ORDERS_PROBE_SHOT_ARMS); do \
 		name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
 		timeout 600 $(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=34 \
-			--probe-squads=$$n --probe-route=click --probe-arm=$$name --mute --probe-shots=$(ORDERS_PROBE_DIR)/shots $$flags \
+			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$(ORDERS_PROBE_DIR)/shots $$flags \
 			2>&1 | grep -E '^ORDERS_PROBE( \{|_SHOT)' || true; \
-	done; done; done
+	done; done; done; done

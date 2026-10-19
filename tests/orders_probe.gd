@@ -25,6 +25,7 @@ const MAIN := "res://game/main.tscn"
 const DECK_BACK_M := 18.0
 const WINDOW_S := 90.0
 const AFTER_ARRIVAL_S := 20.0
+const SHOT_AFTER_S := 5
 ## Squad 1..5's anchor posts in the shots (the order the probe lists squads in).
 const MARK_COLOURS := [Color(1.0, 0.25, 0.25), Color(1.0, 0.85, 0.1), Color(0.2, 1.0, 0.3), Color(0.2, 0.6, 1.0), Color(0.9, 0.3, 1.0)]
 const SHOT_SIZES := {"desktop": Vector2i(1280, 720), "phone": Vector2i(1560, 720)}
@@ -36,7 +37,7 @@ var _click := Vector3.ZERO
 var _route: Array = []
 var _order_tick := 0
 var _last_centre := {}
-var _shot := false
+var _shot := {}  # labels already shot
 
 
 func _initialize() -> void:
@@ -129,6 +130,9 @@ func _run() -> void:
 		if all_in and all_in_tick < 0:
 			all_in_tick = _match.tick
 			await _shots("arrival")
+		# And 5 s later: what he sees once the squads have settled (or shuffled) after arriving.
+		if all_in_tick >= 0 and _match.tick - all_in_tick == SHOT_AFTER_S * SimClock.TICK_RATE:
+			await _shots("arrival_plus5")
 		if all_in_tick >= 0 and _match.tick - all_in_tick >= int(AFTER_ARRIVAL_S * SimClock.TICK_RATE):
 			break
 	if all_in_tick < 0:
@@ -313,9 +317,9 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 
 func _shots(label: String) -> void:
 	var out := _flag("probe-shots", "")
-	if out == "" or DisplayServer.get_name() == "headless" or _shot:
+	if out == "" or DisplayServer.get_name() == "headless" or _shot.has(label):
 		return
-	_shot = true
+	_shot[label] = true
 	DirAccess.make_dir_recursive_absolute(out)
 	var everyone: Array = []
 	for squad: Dictionary in _squads:
