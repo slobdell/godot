@@ -4071,11 +4071,13 @@ Asked in player terms with one recommendation each; his picks verbatim:
 
 ## Round 35: found during the round, for round 36 (the orchestrator, 2026-10-19)
 
-- **A deployed squad can block its neighbours' street (orders' D1 trace, R35.17).** With the deploy step on, an arrived squad
+- **A deployed squad JAMS its neighbours' street (orders' D1 trace, R35.17): a jam, not "the deploy step is slower".** With the deploy step on, an arrived squad
   re-forms from its travel wedge into its halt shape (a herringbone along a lane). On the body route its seats straddle the street
   the next squad drives through, so that squad waits ~6 s behind it (builder0: 23.8 s v 18.5 s with the step off). What he'd notice:
   his second or third squad pausing behind a squad that has just set up across its road. Shipped as the cost of the deploy step he
   chose; round 36 candidate: a halt shape that leaves a through-lane open, or deploys off the street.
+  Watch (brains): once E1's straggler release ships, a crew held behind such a herringbone may be released and left behind by its
+  element; brains re-reads test_tactics_body's arrival on its merge of D1.
 - **The Crossing's halt seats reached only by a detour (orders' D4 trace).** Some on-spot seats are reachable only round an obstacle
   (20–30 m detours) because the halt lay is laid by straight-line distance. Round 36 design question: a halt lay that knows driving
   distance (ElementPlan is pure today).
