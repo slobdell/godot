@@ -584,6 +584,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.traffic_shape = c.traffic_hold && (bool)config.get("traffic_shape", false);
 	c.UNSTICK_BACK = (bool)config.get("UNSTICK_BACK_DEFAULT", false);
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
+	c.TURN_IN = (bool)config.get("TURN_IN_DEFAULT", false);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());
