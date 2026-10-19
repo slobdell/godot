@@ -89,10 +89,14 @@ Nothing.
   (anchors outside the walls) was RETRACTED. The clamp is right; my shots' HUD rings were misdrawn under the probe's
   camera, and the shots are re-taken with 3D posts. (1) and (2) are routed to brains.
 - **Judging table, M1's ruler (18de4e9ab):** M1's A/A as three rows; the old hull-rest rows are marked OLD ruler.
-- **P5 waiting:** P3 v3 starts only after the k-turn arrival flicker fix merges (manoeuvre's M2, C34.4 (2); its check
-  was running at the C34.6 merge). Next step then: merge main at the orchestrator's checkpoint, re-measure the face-keep
-  tail on the flicker-fixed tree, and file v3 only if a tail remains on faces really asked (fresh bar, pinned, paired by
-  face via face_pairs).
+- **P5 re-measured (references/round34/planner/p5-remeasure-15f5980ac/):** after M2 (the flicker fix), no face is
+  planned by the candidate only (round 33's 12.4 m tail is gone), so v3 has no target. **Recommendation sent: close P5
+  with no v3** (the orchestrator's ruling). One both-planned clicked face at 9.1 m v 4.0 is a watch item.
+- **Also done this round:** the O4 before/after through the probe (`references/round34/orders/o4-before-after/`); the
+  Terminus 3-squad route stall bisected to traffic's a5a362737 (O4's queue made an O3 anchor inside a block
+  load-bearing; brains fixes it); R34.15 `tools/judge/seed_twins.py` + `tests/planner/random_arenas.gd` (a random
+  arena's twin of a fixed-arena fight is dropped before pooling); brains' 2d6955367 read through the probe (the Locks
+  bridge fix is confirmed; the rank fix didn't get the back rank moving).
 
 **Plan:** P1 → P2 (merge alone, then the baseline adoption on main) → P3 → P4 → P5 after the flicker.
 
