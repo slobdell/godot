@@ -85,9 +85,34 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-18, round 34 in progress; Fable)
+### Report (2026-10-18 late, round 34 in progress; Fable)
 
-**M0 (C34.10) in development; the fix is cut and tested on the laptop, the fresh bar is filed below.** Nothing judged yet.
+**M0 (C34.10): candidate stream/manoeuvre 5055a6ed8 (main 9c0f4dfce merged); pair tree `pair/c339-r34` d38f688f2 (= 5055a6ed8 +
+`pair/native-c339`'s three native commits, clean). Its C31.1 `native check` runs on builder2 (folder godot-manoeuvre-pair);
+dev cells 11–23 both arms run on builder2 (godot-manoeuvre), then the REPORTED gang_scout v syn_lancer cell. The bar is
+filed (R34.1). Nothing judged yet.** builder0 went down ~22:55 PDT; nothing was read from it after that.
+
+**M0, the second round of fixes (5055a6ed8; from the first dev set at dd0b2127c, builder0, 11–23 n 13: (a) 18.8 against
+the judged tree's 21.3; the loss was all in the 30 m fast-orbit cells, law_scout v syn_scout 30 m 71 → 14 % in-arc,
+while law v IFV 15 m went 23 → 71 % and hits taken 130 → 11):**
+1. The catch-up (live) branch floored its speed at TURN_IN_ROLL 0.55 with a FULL lock whatever the wanted yaw. Once the
+   want was small it chattered left-right every tick (yaw 92 deg/s read per tick, the heading net still), and a hull
+   with an 11° error drove nearly straight at 6.9 m/s, out past its leash every time. Now: the lock is proportional
+   (yaw_share / throttle) and the speed floor is the creep line (sqrt(yaw_share × WHEEL_CREEP × 1.1)), as the on-target
+   branch already had.
+2. The leash's first tier (14–18 m from the post, heading away) SLOWS THE DANCE: no fast dwell, the tightest circle that
+   still tracks the target (creep-line share, the lock it needs). Round 33's override (full lock the shortest way home)
+   was the target's far side half the time and lost a 48 deg/s orbiter for a lap; on the target's own side alone a
+   gang_scout spiralled 65 m from its post (seed 17). Past 18 m, round 33's override as it was.
+
+| laptop cell (n 1, --fixed-fps 30; mechanism only) | judged tree 781801da0 | dd0b2127c | 5055a6ed8 |
+|---|---|---|---|
+| law_scout v syn_scout 30 m s11: in-arc / hits / far | 71 % / 108 / 15 m | 11 % / 111 / 17 m | **91 % / 82 / 17 m** |
+| law_scout v syn_scout 15 m s36 | 50 % / 150 | 22 % / 129 | **91 % / 147 / 20 m** |
+| gang_scout v syn_scout 15 m s17 | 76 % / 149 | 7 % / 159 | **86 % / 108 / 17 m** |
+| law_scout v gang_ifv 15 m s19 | 19 % / 140 | 94 % / 0 | **94 % / 1 / 12 m** |
+| gang_scout v gang_ifv 30 m s12 | — | — | 32 % / 36 / 24 m |
+Every run: 0 reverse ticks under a reverse command. The 7 orbit tests pass (laptop).
 
 **Plan (ordered):** M0 C33.9 (the fix → quick-remote → dev cells 11–23 on builder0 → the bar to the orchestrator →
 C31.1 full suite ON on the pair tree, builder2 → the judged series, fresh seeds, builder2) → M1 the ruler (1B/2B, A/A) →
