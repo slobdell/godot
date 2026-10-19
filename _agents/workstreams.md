@@ -347,6 +347,11 @@ _Filed here before any number._
   drive/plan 2.17 v 1.94 (+0.23 v +0.2). Fails as filed; lines unchanged. Next: trace s3614 and the deck runs; at most one fix try;
   re-read on FRESH seeds **3631–3636** (same bar); a second fail parks D5 with the trace. D4's A/B runs with `--gate-deal=off` in both
   arms if the tree has the deal ON, so D4 is judged on main's behaviour.
+- **R35.27 (2026-10-19 ~16:30) E1's partial ran nothing: a partial check must include `lint`.** `check CHECK_TARGETS="<10>"` on
+  83b3b90b4: 0 passed, 10 NOT RUN, because the runner orders every target after `lint`. E1's series (HULL_JOBS / FIGHT_JOBS 3) started
+  on the partial's done-file and runs on (test 2890/0 on this tree; sim-baseline at main's lines); the corrected partial (`lint` + the
+  10) follows it; a red there on E1's paths voids the series. E1 merges only on the partial's green. **Lesson for orchestration.md:**
+  a CHECK_TARGETS partial lists `lint` too.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
