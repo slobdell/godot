@@ -144,7 +144,8 @@ func _run() -> void:
 						if int(squad["arrived_tick"]) >= 0 else -1.0,
 				"foreign_m": snappedf(float(squad.get("foreign", -1.0)), 0.1),
 				"enemy_m": snappedf(float(squad.get("enemy", -1.0)), 0.1),
-				"shuffle_m": snappedf(float(squad["shuffle"]), 0.1)}
+				"shuffle_m": snappedf(float(squad["shuffle"]), 0.1), "arrived_by": squad.get("arrived_by", ""),
+				"end": _end_state(squad)}
 		rows.append(row)
 		print("ORDERS_PROBE_SQUAD " + JSON.stringify(row))
 	print("ORDERS_PROBE " + JSON.stringify({"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"),
@@ -162,6 +163,7 @@ func _run() -> void:
 ## Past a deck to the far side from the click: within a deck's span across the river (its x range, widened by
 ## ACROSS_SIDE_M) and beyond its far edge along the line from the click. A crew nosing onto the near ramp is `deck`, not this.
 const ACROSS_SIDE_M := 30.0
+const ARRIVE_M := 12.0
 
 
 func _across(at: Vector3) -> bool:
@@ -207,8 +209,14 @@ func _watch() -> void:
 				squad["crossed"] = true
 				squad["crossed_at"] = [_xz(at), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
 		var element := _controls.elements.of(String(alive[0])) if _controls.elements != null else null
-		if int(squad["arrived_tick"]) < 0 and element != null and element.arrived and element.queued_tasks.is_empty() \
-				and _match.tick > _order_tick + 2:
+		# Arrived: its element says so with nothing queued, or (a route's element is gone by its end) its centre is within
+		# ARRIVE_M of its anchor with every crew still.
+		var anchor: Variant = squad["anchor"]
+		var settled := anchor is Vector3 and _flat_d(centre, anchor) <= ARRIVE_M \
+				and alive.all(func(n: String) -> bool: return Vector2(_tank(n).velocity.x, _tank(n).velocity.z).length() < 0.5)
+		if int(squad["arrived_tick"]) < 0 and _match.tick > _order_tick + 2 \
+				and ((element != null and element.arrived and element.queued_tasks.is_empty()) or settled):
+			squad["arrived_by"] = "element" if element != null and element.arrived else "settled"
 			squad["arrived_tick"] = _match.tick
 			var seats := {}
 			for n: String in alive:
@@ -222,6 +230,16 @@ func _watch() -> void:
 			for n: String in alive:
 				if seats.has(n):
 					squad["shuffle"] = maxf(float(squad["shuffle"]), _flat_d(_tank(n).global_position, seats[n]))
+
+
+## At the window's end: the element's arrived flag, its queue, its task's verb, and the centre's distance to the anchor.
+func _end_state(squad: Dictionary) -> Dictionary:
+	var element := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
+	var anchor: Variant = squad["anchor"]
+	return {"arrived": element.arrived if element != null else null,
+			"queued": element.queued_tasks.size() if element != null else -1,
+			"verb": String(element.task.get("verb", "")) if element != null else "",
+			"centre_to_anchor_m": snappedf(_flat_d(_centre(squad["units"]), anchor), 0.1) if anchor is Vector3 else -1.0}
 
 
 ## The squad's own anchor: its element's last task destination (the route's last waypoint for a queued route).

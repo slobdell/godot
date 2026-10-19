@@ -655,5 +655,5 @@ orders-probe-shots: import ## O5: the one-click case in a window, top-down at ar
 		name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
 		timeout 600 $(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=34 \
 			--probe-squads=$$n --probe-route=click --probe-arm=$$name --mute --probe-shots=$(ORDERS_PROBE_DIR)/shots $$flags \
-			2>&1 | grep -E '^ORDERS_PROBE (\{|_SHOT)' || true; \
+			2>&1 | grep -E '^ORDERS_PROBE( \{|_SHOT)' || true; \
 	done; done; done
