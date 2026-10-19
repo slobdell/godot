@@ -47,6 +47,10 @@ version, follows in brains' next merge).
 unmoved): brains' batch (B8b deploy step OFF, rank depth: the back rank comes up; ground_anchors: an anchor on a building stands
 beside it, the Terminus route stall; the player-route stall fallback) plus traffic's o4b gate fix. **He can try the deploy step:**
 `DEPLOY_STEP=on make skirmish ARENA=locks`.
+**main c29a8c7b6 is GREEN** (builder0 `make check exited 0`, 2877/0, 25 passed + 2 NOT JUDGED by load): brains' gate order (a
+multi-squad route through a shared gate: first through takes the farthest place; planner's Locks 3 route never → all in at 18.5 s),
+planner's probe and tools, B9 lane spread OFF (failed its bar, R34.19). Parked this round: B6, O2, parkedroom (R34.13), T4 (R34.11),
+CP-F 4 (R34.18), B9. T6b's series is running (traffic + native's mirror `badfdb978`, merge together only if it passes).
 **Waiting on the lead:** M0 ship (R34.10, recommended yes); the deploy step (R34.7; prototype on main, try it); a crew stuck behind a FIRING mortar truck (R34.13; T5 says it is 1 % of jam deaths, low stakes).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
