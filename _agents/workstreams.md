@@ -231,6 +231,22 @@ builder0), ruled R34.3.
   all-across ON ≥ OFF − 1; last-across time and inversions + point passes + overtakes, mean(ON−OFF) ≤ 1.645 se. (3) make check on
   the ship tree, sim-baseline moves attributed with HALT_EARLY=off. Ships ON if (1)(a)(b), (2), (3) pass.
 
+- **v4b parkedroom re-judge (traffic, R34.9), filed before any number on `stream/traffic` `07276c881`
+  (`x2_parkedroom_v4_bar.md`, section v4b).** The same pair `5914d3ac5` (its C31.1 and attribution stand); builder0 start to end,
+  headless, pinned, native path (ask_handed_back > 0); base `--traffic-off=parkedroom`; FRESH 1100–1147 × {terminus, locks, random},
+  n 144 paired; L6 at 45 s. DECIDING GAIN L2 all far loops: arm < base AND (base − arm) − k·se > 0. Guards: L1a, L1b arm ≤ base + k·se.
+  L3–L6 exactly as filed. Ships ON only if all pass, as a pair with native's `4445f6b4c` and one fresh check on the hand-over
+  tree; a fail parks parkedroom for the round.
+
+- **M3 CP-F attempt 4 (manoeuvre), filed before any attempt-4 number on `stream/manoeuvre` `be2770a10` (Status, "Bar M3").**
+  Candidate `lab/cpf4` `e76f6dab6` (main 82feffa86 + round33/manoeuvre's attempt-3 code + M1's ruler, TURN_HULL_DEFAULT true); base
+  the same tree `--nav-off=turnhull`; builder2 start to end; FRESH hull-rest 601–616 (64 pairs a task), Terminus 620–632, fights
+  640–663, SBF 670–675, bridge 18. R33.21's lines with (c) one-sided (R33.23); (d) by real_mps with wedged apart, guard base +
+  1.645 × sd_run × √pairs from M1's A/A (attack-move +15.4 at 64 pairs, right +8.4, move +6.7, screen +5.4, ambush +3.2, SBF +3.0);
+  (e) likewise; FACE_KEEP_FAR reported (R34.5); (m) native's statement (no C++ change, twins 14/0 on e76f6dab6) plus the hull-rest
+  drawn arms on the native path. M1's A/A (`references/round34/manoeuvre/m1-aa/`): about half the old ruler's "still moving"
+  crews were WEDGED hulls.
+
 - **X1 the stuck-death census (traffic), REPORTED (`references/round34/traffic/x1_stuck_death_census.md`).** builder0, native,
   random 600–647, n 48 paired, 180 s, pinned, v3 + hand-back: deaths stuck or jammed 428 v 443 (paired se 22.3), in the
   open 1668 v 1634 (se 43), kills 2065 v 2051 (se 35): parkedroom changes neither how many crews die nor how; v3's judged −80
@@ -279,6 +295,63 @@ builder0), ruled R34.3.
   parkedroom ON's (v3's same four). (2) native-verify-scenarios' scenario_perf 29238 µs at 1.50× in the check; alone on builder2
   17435 µs at 1.41× (line 20000), and main's own last check read 22407 at 1.51× unjudged: a both-paths measure swinging with
   load, not a 7× cost. Judged perf on the pair PERF_JUDGE PASS 1.05×; traffic's GDScript share 529 of 17435 µs (3 %).
+- **R34.7 B6 PARKED (brains, `a2add1d0f`, builder2, `references/round34/brains/b6_series_a2add1d0f_builder2.txt`).** (1)(a) FAIL
+  pooled drift 121 ON v 104 OFF (limit 52); (1)(b) FAIL Sumps hollow 9/12 ON v 0/12; all_in8 +9.97 s (passes alone); yard/Terminus
+  crews in 160 v 160; (1)(c) 82 arrived re-lays left ON (median 10.3 m). (2) passed TRIVIALLY: crossing ON = OFF row for row, the
+  early lay never engaged. Worst run traced (Sumps s611 t16, 60 v 4): an early-laid halt seat on an obstacle edge flips every
+  0.5–1 s, B10's round-32 grounding flip (standable_from keyed on the centre's 5 m cell). Switch OFF on stream/brains. Next:
+  trace one hollow run and one leftover re-lay on tuning seeds 40–41; a try 2 only with those causes written, and its choke
+  guard must show the early lay ENGAGING. The player-visible shuffle (C34.11's arrival) stays open.
+  **Causes traced (tuning 40–41, laptop, n 4, `333830f17`):** (1) the early lay MOVES the swerve to the 60 m line (a seat jumps
+  ~35 m sideways there), it doesn't remove it; (2) leftover re-lays = the early lay's per-update heading swings close in (27°
+  turns a ±17 m herringbone 5–8 m a seat); (3) hollow = CORRECTED (`b77910424`): a crew's move goal and its halt slot part by
+  ~1.8 m after the goal is sent (the early lay shifts the slot); it arrives at its goal (2.7 m off), HOLDs, and is never
+  re-sent, so it sits 3.7 m from the slot the line reads. B6-specific (main's arm: 0 of 24 Sumps runs hollow). SLOT_TOLERANCE
+  is not involved: B7 has NO CASE. A B6 return would need a re-send when goal and slot part by > 1 m after arrival; (4) B10's grounding flip. **No try 2.** The better
+  design, if he dislikes the shuffle, is a deliberate deploy step (travel seats until all in, then one visible move into the
+  halt shape): a question for him.
+- **R34.8 orders' O1 and O3 go to brains while no orders worker runs (2026-10-19 ~00:20 PDT).** The orders worktree was
+  created at 21:50 but no agent has started in it, and C34.11 is the round's most player-visible item; brains is idle
+  (B4 waits on CP-F, B5 on traffic). Brains is GRANTED `game/control/selection_squads.gd`, `RtsControls._order_squads` /
+  `_squad_width` / `_squad_depth`, and new `tests/test_control*.gd`, for O1 (the ground cap) then O3 (price a squad at its halt
+  shape), working on `stream/brains`, per `streams/orders.md`. If an orders worker starts, brains hands over at its next
+  green commit and orders continues from there (O2, O4, O5).
+  **Extended (00:50 PDT): planner takes orders' O5 (the player test) while idle on P5:** GRANTED new probe files under
+  `tests/control/` (or `tests/orders_probe*.gd`), one additive target in `mk/command.mk`, and `references/round34/orders/**`;
+  READ-ONLY on game code. Measurement and screenshots only, no game code.
+  **Extended (01:40 PDT): traffic takes orders' O4 (waypoints are the squad's; gates) after T4 parked:** GRANTED
+  `RtsControls._queue_task_for` and its helpers, new `tests/test_control*.gd`; the `Element._next_queued` seam by a signature
+  agreed with brains through the orchestrator. Design (passed radius, gate width from the ground, the seam, the failing test)
+  to the orchestrator before code. Not `selection_squads.gd` / `_order_squads` (brains, O2).
+- **R34.9 parkedroom v4 FAILS as filed and is PARKED (DEFAULT_OFF); a v4b re-judge of the SAME code is approved (traffic,
+  pair `5914d3ac5`, builder2, fresh 868–915 × 3, n 144, `references/round34/traffic/x3_v4_series_5914d3ac5.txt`).** L1a hold-post
+  far loops 34 → 18 against a line of ≤ 17 (paired se 20.2): FAIL by one loop. 16 of the 18 are ONE episode (locks-913: a
+  battery asking a squadmate parked on HOLD 1.3 m from its slot, 16 times in 70 s, where the room search found no spot and so
+  refused, as OFF does; without it 34 → 2). Everything else passed: L1b 92 → 47, L2 124 → 60, L3 (a) open deaths +51 in a ±54 band,
+  (b) stuck/jammed 410 → 387, (c) hit rate within its line, L4 identical, L5 0/9, L6 94.2 % at 45 s. No re-read: the verdict stands.
+  **Why a v4b:** L1a's "≤ 50 % of base" on a base of 34 with se 20 asked for a drop the series could not resolve (17 is 0.84 se),
+  so the line failed on one fight's single cramped spot, not on the rule. v4b = the same code, a FRESH seed block disjoint from every
+  judged one, a bar re-filed before any number with the far-loop gain judged on L2 (all far loops: arm < base AND (base − arm) −
+  k·se > 0), L1a and L1b as guards (arm ≤ base + k·se), L3–L6 as filed. Run on **builder0** (a judged series stays on one machine)
+  so T4's fourth try runs on builder2 at the same time. If v4b also fails, parkedroom parks for the round, with no fifth try
+  without a new design.
+- **R34.10 C33.9 turn-in, second series (M0): every line passes but (c-out); by the bar it does NOT ship; the lead decides
+  (manoeuvre, pair `c8fb8b6a3` = 764ef5427 + native 25fd4298e, check green, builder2, fresh 101–112, n 12 a cell, 576 rows;
+  `references/round34/manoeuvre/m0-series/`).** (a) in-arc 3.1 → 74.2 % (sd_boot 4.6); (b) shots 1 → 10; (c) exchange 0.13 → 2.34;
+  in-reach hits taken 8088 → 5690; all six in-reach cells take less damage (−38 to −280 a run); (d)/(d2) 0 reverse in 144 runs
+  (OFF max 48 at stop); (e) 26.0 m; (g) free cells byte-identical. **(c-out) FAIL:** out-of-reach hits taken 3139 → 4627
+  (+1488 v k·se 437), pooled median 46 → 60 against the 57 he accepted (+3 hits, +1.0 sd_boot), worst cell +10 % (inside +37 %).
+  Out of reach the scout now turns in and fights: exchange there 0.06 → 1.45; gang scout v IFV 30 m kills it in 5 of 12 runs.
+  R34.1's ship reading puts a pooled median above 57 on the regression side, so the orchestrator does not ship it. The pair
+  stays ready; the orchestrator recommends SHIP to the lead (the shuffle he reported is gone in every run, and the out-of-reach
+  cost buys kills). On his yes: merge `c8fb8b6a3`, adopt crossing / parade / archipelago at the attributed hashes.
+- **R34.11 T4 (the ghost) PARKS a fourth time, on its deciding gain (traffic, pair `777820d7b`, builder2, fresh 920–931 /
+  940–987 / 1000–1023, `references/round34/traffic/x4_t4_fourth_series_777820d7b.txt`).** T(1) mixed friend-stuck crew-s 307 → 426
+  (+119, se 210.5; 34 of 48 cells byte-identical): FAIL. Guards pass (T(2) rigs stuck 597 → 848 inside its line but the wrong way,
+  T(3), T(4), T(6) fights unchanged; G1–G3 identical arms, no information). The yard circling it cured in rounds 31–32 is not
+  there to cure on today's main (escape, unstick and manoeuvre's later rules took it), and real-velocity ORCA sometimes steers
+  round a stalled friend it would have pushed through. The ghost stays OPT_IN; `pair/ghost-on-r34b` is NOT merged; native's
+  ghost twins return only with a new case. No fifth try without one.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 

@@ -1,0 +1,20 @@
+# scenario_perf readings from existing builder2 logs (2026-10-19 UTC, no new runs). ratio = perf_reference / nominal 0.898 ms
+# (refuses above 1.5x); usec = ai_usec_per_tick; per_ref = ai_usec_per_ref_ms. Each is one run, inside a check unless "alone".
+time   folder/target                                   ratio  usec   per_ref
+02:02  godot (main) ai-scenarios-check                 1.51   15294  11246
+02:03  godot (main) native-verify-scenarios            1.51   22407  16561
+05:23  godot-native-check ai-scenarios-check           1.49   17804  13297
+05:24  godot-native-check native-verify-scenarios      1.54   33597  24364
+06:17  pair-parkedroom-v4 ai-scenarios-check           1.52   17474  12829
+06:20  pair-parkedroom-v4 native-verify-scenarios      1.50   29238  21722
+06:23  godot-planner ai-scenarios-check (other fight)  1.51   18411  13597
+06:34  godot-brains ai-scenarios-check (B6 check)      1.50   17407  12923
+06:34  pair-parkedroom-v4-light native-verify          1.41   17435  13739
+06:48  godot-brains native-verify (ALONE)              1.46   18045  13754
+06:49  godot-manoeuvre-pair ai-scenarios-check         1.53   20552  14947
+06:50  godot-manoeuvre-pair native-verify-scenarios    1.53   35457  25749
+06:50  godot-planner native-verify-scenarios           1.43   16488  12861
+Reading: every reading is 1.41-1.54x, none near 1.0x, even alone (1.46x). Inside that band, per_ref is not flat:
+plain 11246-14947 (+33 %) at 1.49-1.53x; verify 12861-25749 (2x) at 1.41-1.54x. The reference does NOT scale with load
+the way the brains do, so normalising by it would hide load, not remove it. builder2's nominal 0.898 ms reads 1.41-1.46x
+even alone: stale or the box changed (open question).

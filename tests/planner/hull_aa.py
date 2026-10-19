@@ -225,7 +225,7 @@ def main(argv=None):
             print(f"HULL_AA_NULL 1 abandoned {mode} {arm} | {ab}/{asks} = {100.0 * ab / asks if asks else 0:.1f} %")
     if args.verdict:
         if args.distinct:
-            keys, cells = hull_distinct.distinct_keys(base, new, keys)
+            keys, cells = hull_distinct.distinct_runs(args.root, keys, lambda k: (f"{args.base}_{k[0]}", f"{args.new}_{k[0]}"))
             for line in hull_distinct.summary(cells, "HULL_DISTINCT"):
                 print(line)
         verdict(base, new, keys, args.k)

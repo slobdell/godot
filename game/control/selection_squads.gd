@@ -450,6 +450,77 @@ static func fit_inside(anchors: Array[Vector3], clamp: Callable) -> Array[Vector
 	return result
 
 
+## Round 34 (C34.11, O1; his "one of them was all the way across the bridge ... a suicidal mission"): THE GROUND CAP.
+## The body's anchors were laid in the air (`ranks`, `row`) and slid off the walls (`fit_inside`); nothing asked the
+## ground, so an anchor 70 m sideways stood across a river. An anchor stands only where it is reached from the CLICK
+## directly: its drive from the click at most GROUND_CAP_RATIO x its straight offset + GROUND_CAP_SLACK_M, and no bridge
+## deck on the way unless the click is on one (on the Crossing the west bridge is in line with the click, so the drive
+## across is barely longer than the straight line: the deck is the test that catches his case). One that fails comes
+## back toward the click along the straight line, GROUND_CAP_STEP_M at a time (each point clamped by `clamp`, onto dry
+## ground), to the first that passes; none passes: the click. Anchors that pass are untouched, so open ground lays out
+## exactly as before (no straight-line cap: packing near the click is O2's).
+## `drive(from, to) -> float` (metres by ground), `crosses(from, to) -> bool` (a deck on the way), `clamp(p) -> Vector3`.
+## `--ground-cap=off` (GROUND_CAP false) is round 33's layout.
+const GROUND_CAP_RATIO := 1.5
+const GROUND_CAP_SLACK_M := 8.0
+const GROUND_CAP_STEP_M := 4.0
+static var GROUND_CAP := not OS.get_cmdline_user_args().has("--ground-cap=off")
+## How many anchors the cap moved, this process (a probe reads it).
+static var ground_capped := 0
+
+
+static func ground_cap(anchors: Array[Vector3], click: Vector3, drive: Callable, crosses: Callable,
+		clamp: Callable) -> Array[Vector3]:
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var result: Array[Vector3] = []
+	for anchor in anchors:
+		if not GROUND_CAP or _reached_from(flat_click, anchor, drive, crosses):
+			result.append(anchor)
+			continue
+		ground_capped += 1
+		var back := flat_click - Vector3(anchor.x, 0.0, anchor.z)
+		var steps := ceili(back.length() / GROUND_CAP_STEP_M)
+		var placed := flat_click
+		for k in range(1, steps):
+			var p: Vector3 = clamp.call(Vector3(anchor.x, 0.0, anchor.z) + back * (float(k) / steps))
+			if _reached_from(flat_click, p, drive, crosses):
+				placed = p
+				break
+		result.append(placed)
+	return result
+
+
+## O1's ground, read on `node`'s navmesh (a vehicle in the match): the drive between two points
+## (SlotGround.path_length), and whether that drive runs over a bridge deck (SlotGround.near_deck along the path, the
+## test Element's crossing finder uses), unless it starts on one.
+static func drive_on(node: Node3D) -> Callable:
+	return func(from: Vector3, to: Vector3) -> float: return SlotGround.path_length(node, from, to)
+
+
+static func crosses_on(node: Node3D) -> Callable:
+	return func(from: Vector3, to: Vector3) -> bool:
+		if SlotGround.near_deck(from, 0.0):
+			return false
+		var path := Pathing.find_path(node, from, to)
+		if path.size() < 2:
+			path = PackedVector3Array([from, to])
+		for i in range(1, path.size()):
+			var a := Vector3(path[i - 1].x, 0.0, path[i - 1].z)
+			var b := Vector3(path[i].x, 0.0, path[i].z)
+			var steps := maxi(1, ceili(a.distance_to(b) / 2.0))
+			for k in steps + 1:
+				if SlotGround.near_deck(a.lerp(b, float(k) / steps), 0.0):
+					return true
+		return false
+
+
+static func _reached_from(click: Vector3, at: Vector3, drive: Callable, crosses: Callable) -> bool:
+	var straight := Vector2(at.x - click.x, at.z - click.z).length()
+	if straight < 0.5:
+		return true
+	return float(drive.call(click, at)) <= straight * GROUND_CAP_RATIO + GROUND_CAP_SLACK_M and not bool(crosses.call(click, at))
+
+
 static func _fits_one_rank(blocks: Array) -> bool:
 	if blocks.size() > MAX_ABREAST:
 		return false
@@ -597,6 +668,66 @@ static func depth(shape: String, count: int, spacing := SPACING_M) -> float:
 	if not TacticsFormation.NAMES.has(shape):
 		shape = TacticsFormation.auto(count, "move")
 	return TacticsFormation.depth(shape, count, spacing)
+
+
+## Round 34 (C34.11, O3): an AUTO squad is priced at the shape it will ARRIVE in, its halt, not a line's frontage. An
+## element's arrival lays the doctrine's HOLD pick (ElementPlan._halt: a coil in the open, a herringbone in lanes or
+## dense ground for law/standard/condemned, a coil for the gangs, a line for the syndicate; brains' B6 trace), each seat
+## led FACE_LEAD toward its sector. Five crews at 14 m: a line 57.2 x 0.7 m, a coil 36.3 x 34.5, a herringbone
+## 25.4 x 54.8. Three AUTO squads abreast in the open price 3 x 36.3 + 2 x 14 = 137 m instead of 196.
+## `--halt-price=off` (HALT_PRICE false) is round 33's line.
+static var HALT_PRICE := not OS.get_cmdline_user_args().has("--halt-price=off")
+## The terrain at the click of the order being laid ("" = none set: the open), set by RtsControls._order_squads.
+static var halt_terrain := ""
+static var _halt_memo := {}
+
+
+## The shape a squad of `roles` halts in under `table`, on `terrain` (the table's hold pick; threat and composition as
+## an element's situation reads them, the hold rules key on terrain only).
+static func halt_shape(table: DoctrineTable, terrain: String, roles: Array) -> String:
+	var members: Array = []
+	for role: String in roles:
+		members.append({"role": role})
+	var pick := table.select({"task": "hold", "threat": "none", "terrain": terrain if terrain != "" else "open",
+			"composition": ElementSituation.composition_of(members)})
+	var shape := String(pick.get("formation", "coil"))
+	return shape if TacticsFormation.NAMES.has(shape) else "coil"
+
+
+## The halt shape of a squad of `units` (names in `game_match`): its element's `table` when it has one, else its
+## faction's, on the clicked ground (`halt_terrain`).
+static func squad_halt_shape(units: Array, table: DoctrineTable, game_match: Match) -> String:
+	var roles := []
+	var faction := ""
+	for unit_name: String in units:
+		var unit := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+		if unit != null:
+			roles.append(Units.role_of(unit.unit_id))
+			faction = String(Units.PROFILES.get(unit.unit_id, {}).get("faction", ""))
+	return halt_shape(table if table != null else DoctrineTable.for_faction(faction), halt_terrain, roles)
+
+
+## [across, deep] of a halt in `shape`: the seats TacticsFormation.place lays with `halt`, each led ElementPlan.FACE_LEAD
+## toward its sector, as ElementPlan._group stands them (memoised: pure in its three numbers).
+static func halt_footprint(shape: String, count: int, spacing := SPACING_M) -> Vector2:
+	if count <= 1:
+		return Vector2.ZERO
+	var key := "%s:%d:%.2f" % [shape, count, spacing]
+	if _halt_memo.has(key):
+		return _halt_memo[key]
+	var members := []
+	for i in count:
+		members.append({"name": "S%d" % i, "unit": "tank", "role": "tank", "position": Vector3(i, 0.0, 30.0)})
+	var low := Vector2(INF, INF)
+	var high := Vector2(-INF, -INF)
+	for entry in TacticsFormation.place(members, shape, Vector3.ZERO, Vector3.FORWARD, spacing, {"halt": true, "corridor_m": INF}):
+		var at: Vector3 = (entry["to"] as Vector3) + TacticsFormation.rotate(Vector3.FORWARD, deg_to_rad(float(entry["sector"]))) \
+				* ElementPlan.FACE_LEAD
+		low = Vector2(minf(low.x, at.x), minf(low.y, at.z))
+		high = Vector2(maxf(high.x, at.x), maxf(high.y, at.z))
+	var size := high - low
+	_halt_memo[key] = size
+	return size
 
 
 static func _living(names: Array[String], alive: Callable) -> Array[String]:

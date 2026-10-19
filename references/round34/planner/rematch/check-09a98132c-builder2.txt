@@ -1,0 +1,72 @@
+>> remote: syncing godot-planner to slobdell@builder2:~/tank_squad/godot-planner
+>> remote: make check on slobdell@builder2
+>> check: 26 targets, up to 12 at once (lint -P16, test x16) on balsa-worker-gcp.us-west1-a.c.leddrones.internal | commit 09a98132c | load 37.92 24.57 21.82 | MemAvailable 103663 MB | 137 other godot
+check-perf-judge: 10 passed, 0 failed
+check-trap: 4 passed, 0 failed
+check-verdict: 30 passed, 0 failed
+copyback-verify: 18 passed, 0 failed
+determinism: 7 passed, 0 failed
+engine-log-gate: 23 passed, 0 failed
+exit-gate: 5 passed, 0 failed
+filter-gate: 17 passed, 0 failed
+known-red: 12 passed, 0 failed
+lent-exit-codes: 9 passed, 0 failed
+lint-gate: 18 passed, 0 failed
+perf-fight-report: 7 passed, 0 failed
+perf-judge: 5 passed, 0 failed
+quiet-window: 27 passed, 0 failed, 1 NOT JUDGED
+reap: 5 passed, 0 failed
+remote-excludes: 7 passed, 0 failed
+remote-guard: 36 passed, 0 failed
+round-status: 44 passed, 0 failed
+series-arms: 12 passed, 0 failed
+sim-baseline: 53 passed, 0 failed
+slot-exclusive: 14 passed, 0 failed
+slot-light: 6 passed, 0 failed
+test-shards: 5 passed, 0 failed
+  scenarios: 52 passed, 0 failed, 5 pending, 0 unexpectedly passing
+scenarios: 52 passed, 1 failed, 5 pending, 0 unexpectedly passing
+SHARD-ENGINE 0/16: 0 errors, 0 warnings
+SHARD 0/16: 32 files, 158 passed, 0 failed
+SHARD-ENGINE 1/16: 0 errors, 0 warnings
+SHARD 1/16: 32 files, 188 passed, 0 failed
+SHARD-ENGINE 10/16: 0 errors, 0 warnings
+SHARD 10/16: 31 files, 144 passed, 0 failed
+SHARD-ENGINE 11/16: 0 errors, 0 warnings
+SHARD 11/16: 31 files, 190 passed, 0 failed
+SHARD-ENGINE 12/16: 0 errors, 0 warnings
+SHARD 12/16: 31 files, 157 passed, 0 failed
+SHARD-ENGINE 13/16: 0 errors, 0 warnings
+SHARD 13/16: 31 files, 192 passed, 0 failed
+SHARD-ENGINE 14/16: 0 errors, 0 warnings
+SHARD 14/16: 31 files, 184 passed, 0 failed
+SHARD-ENGINE 15/16: 0 errors, 0 warnings
+SHARD 15/16: 31 files, 163 passed, 0 failed
+SHARD-ENGINE 2/16: 0 errors, 0 warnings
+SHARD 2/16: 32 files, 197 passed, 0 failed
+SHARD-ENGINE 3/16: 0 errors, 0 warnings
+SHARD 3/16: 32 files, 150 passed, 0 failed
+SHARD-ENGINE 4/16: 0 errors, 0 warnings
+SHARD 4/16: 32 files, 195 passed, 0 failed
+SHARD-ENGINE 5/16: 0 errors, 0 warnings
+SHARD 5/16: 32 files, 269 passed, 0 failed
+  FAIL  test_native_yield::test_the_give_way_on_the_owned_state
+SHARD-ENGINE 6/16: 0 errors, 0 warnings
+SHARD 6/16: 32 files, 132 passed, 1 failed
+SHARD-ENGINE 7/16: 0 errors, 0 warnings
+SHARD 7/16: 32 files, 153 passed, 0 failed
+SHARD-ENGINE 8/16: 0 errors, 0 warnings
+SHARD 8/16: 32 files, 116 passed, 0 failed
+SHARD-ENGINE 9/16: 0 errors, 0 warnings
+SHARD 9/16: 31 files, 209 passed, 0 failed
+2797 passed, 1 failed
+>> check: 744s total on balsa-worker-gcp.us-west1-a.c.leddrones.internal
+>> check: hashes on balsa-worker-gcp.us-west1-a.c.leddrones.internal (glibc-2.43) | sim-baseline foundry=2e54d6f5c9fc22ac(MOVED from f72b1712479b2570) yard=0fdc33ed5d5757a6(MOVED from df0c04272c671909) pit=022e54dcc1c3e787(MOVED from 76b986231ec5b85a) terminus=23edc5782084a2fe(MOVED from 1c2d8ee6ba3af808) crossing=aa4ad61e41ee6e20(MOVED from f8024203917ca808) sumps=8909a3d97aef76de(MOVED from 8ac8cffce54c83fc) locks=4674958b0c779970(MOVED from 9bbfe8b7e38cef8d) parade=fc435f111c689d64(MOVED from 27580bb53aa4ebe3) gorge=eb810b61f83b3646(MOVED from 408d8c5e49d22a5f) archipelago=5595506fcfeac33f(MOVED from f97836b7868c7906) cut=986826d576d4eb65(MOVED from b31bbf132c154b23) docks=0cf63204b0290ae1(MOVED from 50f15553c558d108) yard_open=9287bb338b29a976(MOVED from d93353b60efd6db3) | determinism 8c3c1232b711a760
+>> check: ai-scenarios-check refused scenario_perf (reason=loaded ref=1.51x); perf-judge JUDGED it, so that verdict stands
+>> check: 23 passed, 3 FAILED, 0 NOT RUN, 1 NOT JUDGED  [test x16, lint -P16, 12 at once, balsa-worker-gcp.us-west1-a.c.leddrones.internal]
+   FAIL     test
+   FAIL     sim-baseline
+   FAIL     native-verify-scenarios
+>> check: failed: test sim-baseline native-verify-scenarios
+>> remote: copy-back verified, 245 files, sha256
+>> remote: make check exited 2 (build/ copied back)

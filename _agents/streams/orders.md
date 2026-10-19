@@ -54,6 +54,14 @@ a shift-clicked route is followed by the squads as squads, not funnelled vehicle
    names "west bridge", "west swing bridge"), three squads clicked on the near bank beside the bridge: today one anchor is
    across (the failing test), after O1 none is. Pure where it can be (the length callable injected, as `untangle`'s
    position callable). Commit, quick-remote, name a hash, tell the orchestrator: it can merge alone.
+   **Built by brains (R34.8, stream/brains `43d81ec13`):** `SelectionSquads.ground_cap` after `fit_inside`. An anchor
+   passes when its drive from the click is <= 1.5 x straight + 8 m (navmesh) AND the path from the click crosses no
+   bridge deck (unless the click is on one). A failing anchor walks back toward the click in 4 m steps, clamped dry.
+   **Decided (orchestrator agreed): no ~30 m straight cap.** On the Crossing the west bridge is in line with the click,
+   so the far-bank anchor is a DIRECT drive (~70 m); the deck test is what catches his case, and a straight cap would
+   squash every open-ground spread (O2's packing). Arenas have only water and pit (both carve the navmesh) and bridge
+   (the only deck), so there is no ford or shallow crossing: water is crossed only over a deck (the deck test), and a pit
+   only round it (a detour, the 1.5x ratio). Default ON; `--ground-cap=off` is round 33.
 2. **O2 Places found by driving distance, with hull clearance (his correction 1).** Replace "lay a block in the air, then
    clamp" with: flood outward from the click over drivable ground (navmesh / the ground grid) by DRIVING distance; seat
    squads into the nearest free ground in order of arrival along their approach. The constraint between squads is
@@ -69,6 +77,12 @@ a shift-clicked route is followed by the squads as squads, not funnelled vehicle
    shape**, and read O3's "shape it will arrive in" as the halt pick.
 3. **O3 Price a squad at the shape it will arrive in.** Under AUTO, the shape its leader will halt in (the doctrine's
    pick for that terrain, and `min_step`'s halt depth), not a line's frontage. Record the footprint before/after for 3×5.
+   **Built by brains (R34.8):** `_squad_width` / `_squad_depth` under AUTO price the halt's footprint
+   (`SelectionSquads.halt_shape`: the squad's table's HOLD pick on the clicked ground, `ElementSituation.terrain_at`;
+   `halt_footprint`: the halt's seats with their FACE_LEAD sector leads). Five crews at 14 m: line 57.2 x 0.7 m, coil
+   36.3 x 34.5, herringbone 25.4 x 54.8. **3 x 5 AUTO, one click, outer anchors apart:** 140.0 m priced as lines (before) v
+   78.8 m on dense ground (herringbone; the fixture's click) or 100.6 m in the open (coil). `--halt-price=off` = round
+   33. The round-23 nesting block shape (`nominal_shape`, a wedge) is unchanged.
 4. **O4 Waypoints are the squad's (his correction 2).** For a shift-clicked route: an in-between waypoint is passed when
    the SQUAD's centre is within about its own width of it (crews keep their slots, never aim at the point, no stop to form
    up); for several squads, a waypoint is a GATE as wide as the ground there: abreast or in ranks in the open, single file

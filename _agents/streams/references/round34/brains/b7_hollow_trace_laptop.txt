@@ -1,0 +1,9 @@
+# B7 check (laptop, a539188fe with --halt-shape-early=on, Sumps s41 t3, --trace=on --trace-mover=on, n 1): crew 2 = Green_S_2 (law_ifv, TRACKED: settle radius 0, so its radius is ORDER_ARRIVE 3.5 m in the brain AND the arrival line)
+| 2 w-19.6,-33.4 s-10.3,-46.1,y0.0 fit0.0 [MOVE/move_to] move v10.5 p1.00 slot15.7 driving {spd 10.5 steer -19.0,-36.0 next -19.6,-33.5 pts 8 stall 0.0 wedged false goal -9.5,-44.1} 
+| 2 w-14.1,-41.1 s-10.0,-45.8,y0.0 fit0.0 [MOVE/move_to] move v7.5 p1.00 slot6.3 driving {spd 7.5 steer -10.1,-43.7 next -9.5,-44.1 pts 1 stall 0.0 wedged false goal -9.5,-44.1} 
+| 2 w-11.8,-42.6 s-10.0,-45.8,y0.0 fit0.0 [HOLD/face] - v0.0 p1.00 slot3.7 arrived {spd 0.0 steer -9.5,-44.1 next - pts 0 stall 0.0 wedged false goal -} 
+| 2 w-11.8,-42.6 s-10.0,-45.8,y0.0 fit0.0 [HOLD/face] - v0.0 p1.00 slot3.7 arrived {spd 0.0 steer -9.5,-44.1 next - pts 0 stall 0.0 wedged false goal -} 
+| 2 w-11.8,-42.6 s-10.0,-45.8,y0.0 fit0.0 [HOLD/face] - v0.0 p1.00 slot3.7 arrived {spd 0.0 steer -9.5,-44.1 next - pts 0 stall 0.0 wedged false goal -} 
+| 2 w-11.8,-42.6 s-10.0,-45.8,y0.0 fit0.0 [HOLD/face] - v0.0 p1.00 slot3.7 arrived {spd 0.0 steer -9.5,-44.1 next - pts 0 stall 0.0 wedged false goal -} 
+
+main's arm (--halt-shape-early=off / main): hollow runs on Sumps = 0 of 24 (dev seeds 40-41 x 6 ticks, builder2 9c0f4dfce; fresh 610-611 x 6 ticks, builder2 a2add1d0f)

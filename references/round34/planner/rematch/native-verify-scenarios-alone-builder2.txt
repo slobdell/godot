@@ -1,0 +1,5 @@
+tools/remote.sh native-verify-scenarios
+>> remote: make native-verify-scenarios on slobdell@builder2
+scenarios: 53 passed, 0 failed, 5 pending, 0 unexpectedly passing
+native-verify-scenarios: runner exited 0, 0 verify mismatches (build/native-verify-scenarios.log)
+>> remote: make native-verify-scenarios exited 0 (build/ copied back)

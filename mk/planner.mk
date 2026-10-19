@@ -321,3 +321,28 @@ planner-series-face: ## planner round 33 P3: planner-series with base = --planne
 	@$(MAKE) --no-print-directory planner-series PLANNER_SERIES_SEEDS="$(PLANNER_FACE_SERIES_SEEDS)" \
 		PLANNER_SERIES_BASE_FLAGS="--planner-queue=fifo --planner-face-keep=0" PLANNER_SERIES_CAND_FLAGS="--planner-queue=fifo --planner-face-keep=1" \
 		PLANNER_SERIES_SEAM=both
+
+# Round 34 P1 (C34.6): does a rematch in ONE process replay the first match? The sim-baseline match through main.tscn,
+# PLANNER_REMATCH_RUNS times in one process, at every engine frame phase PLANNER_REMATCH_IDLES (physics frames idled
+# before the first match), then brains' body stage (traffic's ov_replay case) on PLANNER_REMATCH_BODY_SEEDS. One line a
+# run: equal hash_at_T across every run and phase = a rematch replays. -> build/planner/rematch.txt
+PLANNER_REMATCH_RUNS ?= 3
+PLANNER_REMATCH_TICKS ?= 1150
+PLANNER_REMATCH_IDLES ?= 0 1 2 3 4 5
+PLANNER_REMATCH_BODY_SEEDS ?= 1 3 5
+.PHONY: planner-rematch
+planner-rematch: native import ## planner C34.6: the sim-baseline match rematched in one process at every frame phase, and the body stage -> build/planner/rematch.txt
+	@mkdir -p $(BUILD_DIR)/planner
+	@out=$(BUILD_DIR)/planner/rematch.txt; \
+	echo ">> planner-rematch on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)" | tee $$out; \
+	for k in $(PLANNER_REMATCH_IDLES); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/planner/rematch_probe.gd -- \
+			--match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json \
+			--rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 \
+			--rematch-runs=$(PLANNER_REMATCH_RUNS) --rematch-ticks=$(PLANNER_REMATCH_TICKS) --rematch-idle=$$k --rematch-detail=on \
+			$(PLANNER_FLAGS) 2>&1 | grep -E "^REMATCH|SCRIPT ERROR" | sed "s/^/idle=$$k /" | cut -c1-400 | tee -a $$out; \
+	done; \
+	for s in $(PLANNER_REMATCH_BODY_SEEDS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/planner/rematch_body_probe.gd -- \
+			--seed=$$s --runs=3 --from=3 $(PLANNER_FLAGS) 2>&1 | grep -E "^REMATCH_BODY |SCRIPT ERROR" | tee -a $$out; \
+	done
