@@ -65,7 +65,7 @@ func _near(rng: RandomNumberGenerator, data: Dictionary) -> Vector3:
 
 
 func test_the_water_rules_are_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the water-rule equality is not exercised in this run")
 		return
 	var rng := RandomNumberGenerator.new()
@@ -152,7 +152,7 @@ func _fight(arena: String, rng: RandomNumberGenerator, counts: Dictionary) -> St
 
 
 func _fight_test(arena: String, seed: int) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the water-rule equality is not exercised in this run")
 		return
 	var rng := RandomNumberGenerator.new()
@@ -177,7 +177,7 @@ func test_the_water_rules_in_a_sumps_fight_are_the_live_gdscript() -> void:
 ## standable_for on a built arena (its baked navmesh): random points everywhere, points round every obstacle, each
 ## hull's envelope, every point asked twice (the memo's answer is the computed one).
 func _ground_test(arena: String, seed: int) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the grounding equality is not exercised in this run")
 		return
 	var built := await ArenaFixture.build(self, arena)

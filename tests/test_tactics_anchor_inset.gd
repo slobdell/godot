@@ -130,3 +130,37 @@ func test_a_folded_element_arrives_at_its_laid_seats() -> void:
 	assert_true(bool(arrived["arrived"]), "standing on its laid seats' centroid it has arrived")
 	if (first["anchor"] as Vector3).distance_to(point) > ElementPlan.ARRIVE_M:
 		print("MEASURE fold: the laid centroid is %.1f m from the anchor" % (first["anchor"] as Vector3).distance_to(point))
+
+
+## C34.9 (brains B3): the War Rig trace logs the inset's ENGAGE distance: the plan says how far out the element stood when
+## the inset moved its spot, and an Element latches the first one per task (later, closer updates don't overwrite it).
+func test_the_inset_engage_distance_is_logged_once_per_task() -> void:
+	DoctrineTable.clear_cache()
+	var table: DoctrineTable = DoctrineTable.load_table("standard")["table"]
+	var edge := _edge()
+	var members: Array = []
+	for i in 4:
+		members.append({"name": "Guns_%d" % i, "unit": "gang_tank", "role": "tank", "speed": 9.0, "range": 60.0,
+				"effective_range": 45.0, "sight": 60.0, "health": 1.0, "suppression": 0.0, "taking_fire": false,
+				"forward": Vector3.FORWARD, "position": edge + Vector3(i * 8.0 - 12.0, 0, -40.0)})
+	var situation := {"tick": 1000, "team": 0, "center": edge + Vector3(0, 0, -40), "heading": Vector3.FORWARD,
+			"leader": "Guns_0", "members": members, "contacts": [], "terrain": "open", "threat": "none",
+			"composition": "heavy", "strength": 800.0, "enemy_strength": 0.0, "taking_fire": false, "arrived": false}
+	var task := {"verb": "move", "to": [edge.x, edge.z]}
+	var state := {"task": task, "drill": "", "drill_tick": 0, "drill_point": null, "drill_target": "", "drill_why": "",
+			"anchor": null, "bounding": 0, "arrived": false, "heading": Vector3.FORWARD, "seats": {}}
+	var first := ElementPlan.build(situation, state, table)
+	assert_true(float(first.get("inset_m", 0.0)) > 1.0, "setup: inset (%s m)" % first.get("inset_m"))
+	assert_true(absf(float(first.get("inset_from_m", -1.0)) - 40.0) < 0.01, "engaged 40 m out (%s)" % first.get("inset_from_m"))
+	var element := Element.new()
+	element.task_seq = 3
+	element._latch_inset(first)
+	assert_eq(element.inset_engaged[0], 3, "latched for this task")
+	assert_true(absf(float(element.inset_engaged[1]) - 40.0) < 0.01, "at 40 m")
+	element._latch_inset({"inset_m": 9.0, "inset_from_m": 12.0})
+	assert_true(absf(float(element.inset_engaged[1]) - 40.0) < 0.01, "a closer update keeps the first")
+	element.task_seq = 4
+	element._latch_inset({"inset_m": 0.2, "inset_from_m": 30.0})
+	assert_eq(element.inset_engaged[0], 3, "no inset (<= 0.5 m) on the new task: nothing latched")
+	element._latch_inset({"inset_m": 6.0, "inset_from_m": 30.0})
+	assert_eq(element.inset_engaged[0], 4, "the next task latches its own")

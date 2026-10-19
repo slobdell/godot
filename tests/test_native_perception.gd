@@ -29,7 +29,7 @@ func _pass(game_match: Match, native: bool) -> Array:
 
 
 func test_the_sight_pass_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the perception equality is not exercised in this run")
 		return
 	assert_true(NativePerception.configure(), "the native pass takes the live constants")

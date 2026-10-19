@@ -8,6 +8,25 @@ _Last updated: 2026-10-18 — **ROUND 34 IS PREPARED (below); round 33 is CLOSED
 
 ## 🚀 ROUND 34 IS PREPARED (2026-10-18) — read this first
 
+**Round 34 is RUNNING (launched 2026-10-18 ~21:45 PDT), plus a SIXTH stream added mid-round: orders (Opus, offset 5).**
+His playtest that evening: one click with three squads put one squad's anchor across a bridge and his scouts died there;
+"it's still unplayable". Decided in chat (game_design.md *Round 34, his playtest words during the round*, verbatim):
+anchors capped and found by DRIVING distance, squads may nest (hull clearance, not boxes), squads priced at their arrival
+shape, waypoints are the squad's (gates, not pins). C34.11; brief `streams/orders.md`. The orchestrator's loop runs.
+
+**Merges (round 34):** main `02a912163` = native `12ac7b172` (C34.7 shell RPC guard, C34.8 (a) PIN_FPS on every judged stage +
+`make pin-moves`, N4 NativeExpect.absent); **main 02a912163 inherits 12ac7b172's check** (builder2 `make native check` exit 0,
+2798/0, sim-baseline unmoved; `tools/merge_check_needed.sh` INHERIT). Rulings so far: R34.1 (bar M0), R34.2 (the rematch
+carrier: traffic's solve phase; planner's fix approved, the baseline moves once when it merges).
+**main 71bd4e466 (docks adopted) is GREEN:** builder0 `make check exited 2`, 2810/0, 26/27, sim-baseline 13 unmoved; the one red,
+web-smoke, is builder0's headless Chrome without WebGL2 since its ~23:00 thrash (its desktop session died); the same main's
+`make gcp-remote T=web-smoke` on builder2 exited 0 (boot 5.2 s, match smoke passed). **builder0's web-smoke stays red until
+someone logs into its desktop again.** Merged so far: native 12ac7b172, brains B1/B2-adapter/B3 (79d9f26eb). Parked: B6 (R34.7).
+**main a5a6d0e95 = C34.11 O1, the ground cap (brains under R34.8, code `43d81ec13`, builder2 check exit 0, 2818/0, sim-baseline 13
+unmoved; INHERIT).** In his terms: three or more squads sent to one point beside a bridge no longer send one across it; a place
+the click can't reach directly by ground comes back toward the click on his side; open ground lays out as before. B6's code
+rides along OFF by default (`--halt-shape-early=on` opts in). Parked: B6 (R34.7), parkedroom v4 (R34.9; v4b re-judge running on builder0).
+
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
 tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are
 in `workstreams.md` *Round 34*, and the briefs are in `_agents/streams/`. The worktrees were created FRESH from the docs
@@ -26,6 +45,7 @@ worktree (24 of them, all clean; one 5-line diff rescued into references) and ev
 | **brains** | `godot-brains` (3) | Opus | a scout stands and trades when it can win and leaves when it can't; a pushed-off War Rig returns facing his way (after CP-F) | scout try 2 |
 | **native** | `godot-native` (4) | Opus | nothing alone: every pair; a network match never logs a shell hitting a dropped player | pairs, then relay-smoke's shell RPC |
 | **planner** | `godot-planner` (6) | Opus | a rematch without restarting plays out the same (replays and the network) | the rematch diagnosis |
+| **orders** (added 2026-10-18, mid-round) | `godot-orders` (5) | Opus | three squads sent to one point all end up near it, on the side of the river he clicked; a shift-clicked route is followed squad by squad | O1 the ground cap (C34.11) |
 
 **His round-33 answers (2026-10-18), recorded:** "let's go with both of your recommendations". (1) Ship the scout
 turn-in (C33.9) as it is. It then FAILED the whole-suite check: it reached plain faces and every stop, so a wheeled hull

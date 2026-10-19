@@ -40,7 +40,7 @@ func _fly(shell: Shell, native: bool, delta: float) -> Array:
 
 
 func test_the_flight_is_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the shell equality is not exercised in this run")
 		return
 	assert_true(NativeShell.configure(), "the native flight takes the live constants")

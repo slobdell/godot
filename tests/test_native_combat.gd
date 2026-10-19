@@ -30,7 +30,7 @@ static func _restore(tank: Tank, state: Array) -> void:
 
 
 func test_combat_rules_are_the_live_gdscript() -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the combat equality is not exercised in this run")
 		return
 	assert_true(NativeCombat.configure(), "the native combat rules take the live constants")

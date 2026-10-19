@@ -57,7 +57,7 @@ pace-p0-tests: import ## Pace P0: test files (PACE_P0T_FILTER) x L1 settings x t
 	@mkdir -p $(BUILD_DIR)/pace/p0t
 	@for arm in $(PACE_P0T_ARMS); do for ph in $(PACE_P0T_PHASES); do \
 		case $$arm in base) f="";; q2) f="--think-quiet=2";; q333) f="--think-quiet=3.333";; smart) f="--think-smart=2";; smart2) f="--think-smart=2 --quiet-watched=1";; *) f="$$arm";; esac; \
-		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_P0T_FILTER)' --think-phase=$$ph $$f \
+		$(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_P0T_FILTER)' --think-phase=$$ph $$f \
 			> $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log 2>&1 || true; \
 		echo "$$arm p$$ph: $$(grep -E '^[0-9]+ passed' $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log)"; \
 		grep -hE '^  FAIL|^MEASURE (bridge|pursuit)' $(BUILD_DIR)/pace/p0t/$$arm-p$$ph.log | cut -c1-300; \
@@ -92,8 +92,8 @@ PACE_LEAKT_BEFORE ?= test_near_water_is_the_carved_terrain
 PACE_LEAKT_MEASURE ?= MEASURE bridge
 pace-leak-tests: import ## Fails when a drill's result depends on the test run before it (tests/run_tests.gd) -> build/pace/leakt/
 	@mkdir -p $(BUILD_DIR)/pace/leakt
-	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/leakt/alone.log 2>&1 || true
-	@$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_BEFORE)|$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/leakt/after.log 2>&1 || true
+	@$(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/leakt/alone.log 2>&1 || true
+	@$(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- '--filter=$(PACE_LEAKT_BEFORE)|$(PACE_LEAKT_TARGET)' > $(BUILD_DIR)/pace/leakt/after.log 2>&1 || true
 	@grep -h '$(PACE_LEAKT_MEASURE)' $(BUILD_DIR)/pace/leakt/alone.log > $(BUILD_DIR)/pace/leakt/alone.measure || true
 	@grep -h '$(PACE_LEAKT_MEASURE)' $(BUILD_DIR)/pace/leakt/after.log > $(BUILD_DIR)/pace/leakt/after.measure || true
 	@echo "alone: $$(cut -c1-200 $(BUILD_DIR)/pace/leakt/alone.measure | head -2)"; echo "after: $$(cut -c1-200 $(BUILD_DIR)/pace/leakt/after.measure | head -2)"
@@ -123,7 +123,8 @@ pace-div: import ## His bridge drill traced under engine clocks PACE_DIV_A and P
 	@$(PYTHON) tests/pace/first_divergence.py $(BUILD_DIR)/pace/div/a.trace $(BUILD_DIR)/pace/div/b.trace
 
 # Round 25 (pace): THE DETERMINISM CHECK for a lab drill. PACE_LEAKT_TARGET alone under each engine clock in
-# PACE_DET_CLOCKS (free = no --fixed-fps, as `make test` runs it; N = --fixed-fps N) -> its MEASURE lines must be equal.
+# PACE_DET_CLOCKS (free = no --fixed-fps, as `make test` ran it before round 33; N = --fixed-fps N; `make test` is
+# --fixed-fps $(SIM_HZ) since round 33) -> its MEASURE lines must be equal.
 # FAILS on main at 00b91730: TacticsLab.start() waits for the navigation map, which syncs once a rendered frame, so the
 # drill starts on tick 1 at 30 fps and tick 0 at 60 fps / the free clock, and every think and element cycle shifts by
 # one (his bridge: deck_jam_s 12.6 v 21.0). A loaded machine changes the free clock's frames a tick: the same command

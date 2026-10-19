@@ -41,7 +41,9 @@ struct DN {
 			// helpers asked of the GDScript
 			matchups_for{ "matchups_for" }, _is_prey_contact{ "_is_prey_contact" }, _is_prey{ "_is_prey" },
 			rounds_barely_mark{ "rounds_barely_mark" }, suppresses{ "suppresses" }, is_firing_base{ "is_firing_base" },
-			PROFILES{ "PROFILES" }, role{ "role" }, good_vs{ "good_vs" }, armor{ "armor" }, penetration{ "penetration" },
+			PROFILES{ "PROFILES" }, SCOUT_FIGHT_BACK{ "SCOUT_FIGHT_BACK" }, SCOUT_FIGHT_HIT_TICKS{ "SCOUT_FIGHT_HIT_TICKS" },
+			SCOUT_FIGHT_REACH_S{ "SCOUT_FIGHT_REACH_S" }, SCOUT_FIGHT_SPOT{ "SCOUT_FIGHT_SPOT" }, since_hit{ "since_hit" }, velocity{ "velocity" },
+			effective_range{ "effective_range" }, role{ "role" }, good_vs{ "good_vs" }, armor{ "armor" }, penetration{ "penetration" },
 			burst_count{ "burst_count" };
 	String RETREAT{ "RETREAT" }, RESUPPLY{ "RESUPPLY" }, TAKE_COVER{ "TAKE_COVER" }, RECHARGE{ "RECHARGE" }, ENGAGE{ "ENGAGE" },
 			COVER_FIRE{ "COVER_FIRE" }, FLANK{ "FLANK" }, SUPPRESS{ "SUPPRESS" }, ORBIT{ "ORBIT" }, CLEAR_LANE{ "CLEAR_LANE" },
@@ -167,6 +169,55 @@ bool is_prey(const DecideConsts &c, const DN &k, const Dictionary &profiles, con
 	const String unit = contact.get(k.unit, k.empty);
 	const String role = profiles.has(unit) ? String(((Dictionary)profiles[unit]).get(k.role, k.empty)) : k.empty;
 	return role != k.empty && ((Array)((Dictionary)profiles.get(my_unit, Dictionary())).get(k.good_vs, Array())).has(role);
+}
+
+// C34.5 (brains' scout try 2): TankBrain.scout_fights_back(me, contacts, matchups), line for line.
+// Its flag and constants are read live from the brain script (a test turns the flag off). Reached only for a scout with
+// a contact in sight.
+//   if not scout_under_fire(me): return false
+//   reach := effective_range (or range); at := me["position"]; my_velocity := me.get("velocity", ZERO)
+//   for c in contacts: visible, threatens_me, not prey; advantage >= 1; then for second in SCOUT_FIGHT_REACH_S + 1:
+//   (at + my_velocity * second).distance_to(c.position + c.velocity * second) <= reach, else not this contact
+// The forecast is GDScript's Vector3 arithmetic (real_t), so it is godot::Vector3 here too.
+// TankBrain.scout_under_fire(me): the rule is on and the scout was hit within SCOUT_FIGHT_HIT_TICKS.
+bool scout_under_fire(const DecideConsts &c, const DN &k, const Dictionary &me) {
+	return (bool)c.brain_script->get(k.SCOUT_FIGHT_BACK) &&
+			(int64_t)me.get(k.since_hit, (int64_t)1 << 30) <= (int64_t)c.brain_script->get(k.SCOUT_FIGHT_HIT_TICKS);
+}
+
+bool scout_fights_back(const DecideConsts &c, const DN &k, const Dictionary &profiles, const Dictionary &me,
+		const Array &contacts, const Dictionary &matchups) {
+	if (!scout_under_fire(c, k, me)) {
+		return false;
+	}
+	const String unit = me.get(k.unit, k.empty);
+	const Dictionary weapon = me.get(k.weapon, Dictionary());
+	const double reach = weapon.get(k.effective_range, weapon.get(k.range, 0.0));
+	const Vector3 at = me[k.position];
+	const Vector3 my_velocity = me.get(k.velocity, Vector3());
+	const int64_t reach_s = c.brain_script->get(k.SCOUT_FIGHT_REACH_S);
+	for (int64_t i = 0; i < contacts.size(); i++) {
+		const Dictionary cc = contacts[i];
+		if (!(bool)cc.get(k.visible, false) || !(bool)cc.get(k.threatens_me, false) || is_prey(c, k, profiles, cc, unit)) {
+			continue;
+		}
+		if ((double)((Dictionary)matchups.get(String(cc[k.name]), Dictionary())).get(k.advantage, 0.0) < 1.0) {
+			continue;
+		}
+		const Vector3 velocity = cc.get(k.velocity, Vector3());
+		const Vector3 position = cc[k.position];
+		bool stays = true;
+		for (int64_t second = 0; second < reach_s + 1; second++) {
+			if ((double)(at + my_velocity * (real_t)second).distance_to(position + velocity * (real_t)second) > reach) {
+				stays = false;
+				break;
+			}
+		}
+		if (stays) {
+			return true;
+		}
+	}
+	return false;
 }
 
 // TankBrain.rounds_barely_mark(weapon, contact)
@@ -706,7 +757,15 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 				nearest = MIN(nearest, (double)my_position.distance_to(r.position));
 			}
 		}
-		if (nearest < c.SCOUT_STANDOFF - 10.0) {
+		// C34.5 (834562ab1): a variant without matchups (the champion, x18m) computes the duel for a scout under fire
+		// alone, through the brain's matchups_for (NativeMatchups when usable, as the GDScript takes it).
+		const Dictionary duels = (!matchups.is_empty() || nearest == INFINITY || !scout_under_fire(c, k, me))
+				? matchups
+				: (Dictionary)c.brain_script->call(k.matchups_for, s);
+		if (nearest < INFINITY && scout_fights_back(c, k, profiles, me, contacts, duels)) {
+			// C34.5 (a duel it wins, in reach): below ENGAGE, above HOLD: it stands and trades.
+			spot = c.brain_script->get(k.SCOUT_FIGHT_SPOT);
+		} else if (nearest < c.SCOUT_STANDOFF - 10.0) {
 			spot = 0.88;
 		} else if (nearest < INFINITY) {
 			spot = 0.7;

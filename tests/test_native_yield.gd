@@ -86,7 +86,7 @@ func test_the_asked_hull_gives_way_shortened_owned() -> void:
 
 
 func _shortened(owned: bool) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		return
 	MoverState.world_reset()
 	_man_reset()
@@ -149,7 +149,7 @@ func _shortened(owned: bool) -> void:
 
 
 func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0) -> void:
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the give-way is not exercised in this run")
 		return
 	MoverState.world_reset()

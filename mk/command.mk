@@ -121,7 +121,7 @@ five-squads-series: import ## Round 21 (O2): five gang squads, one attack-move, 
 	@echo ">> five-squads-series SQUADS=$(SQUADS) NEST=$(or $(NEST),on) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@fail=0; for rep in $$(seq 1 $(FIVE_REPS)); do for map in $(FIVE_MAPS); do for shape in $(FIVE_SHAPES); do \
 		d=$(CURDIR)/$(FIVE_DIR)/$$map-$$shape-r$$rep; mkdir -p $$d; s=0; \
-		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
+		timeout $(TWO_TIMEOUT) $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --enemy=cpu --seed=$(FIVE_SEED) --control-playtest=$$d --two-squads --five-squads \
 			--five-shape=$$shape $(if $(FIVE_CLICK),--two-click=$(FIVE_CLICK)) $(FIVE_ARMY) --arena=$$map > $$d/run.log 2>&1 || s=$$?; \
 		echo "$$map $$shape rep $$rep: exit $$s"; grep -E 'FIVE_SQUADS summary|SCRIPT ERROR' $$d/run.log || true; \
 		[ $$s -eq 0 ] || fail=1; \
@@ -139,7 +139,7 @@ interleaved-probe: import ## Round 22 (O1b): his six interleaved APCs ordered in
 	@echo ">> interleaved-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"
 	@rm -rf $(INTERLEAVED_DIR); fail=0; for rep in $$(seq 1 $(INTERLEAVED_REPS)); do for arm in before after; do \
 		d=$(CURDIR)/$(INTERLEAVED_DIR)/$$arm-r$$rep; mkdir -p $$d; s=0; \
-		timeout $(TWO_TIMEOUT) $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
+		timeout $(TWO_TIMEOUT) $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --enemy=cpu --seed=5988 --arena=sumps \
 			--control-playtest=$$d --two-squads --interleaved$(if $(REPLAY),-replay) $$( [ $$arm = before ] && echo --untangle=off ) \
 			--player=res://tests/support/interleaved_army.json --enemy=res://tests/support/two_squads_enemy.json \
 			--budget=100000 --no-control $(INTERLEAVED_FLAGS) > $$d/run.log 2>&1 || s=$$?; \
@@ -465,8 +465,8 @@ spawn-cost: import ## Headless: ms per spawned vehicle, first of each type vs th
 ## JUDGES them. Run it on purpose on an uncontended machine (`make remote T=control-timing` when builder0 is idle):
 ## under full oversubscription the order path measured 14x slower against a 2x reference, so no ratio survives that.
 control-timing: import ## Judge control's timing budgets (frame, order, click, health bars) - run on an idle machine
-	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=test_control_scale
-	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=test_control_readability
+	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- --filter=test_control_scale
+	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- --filter=test_control_readability
 
 ## Round 10 (control item 1, contract R2; the lead: "I was trying to right click to move them in a different direction
 ## and they didnt respond"). Squad 1 en route on Terminus, a right-click 40 m off its line, per tick per crew what Orders
@@ -524,7 +524,7 @@ facing-probe: import ## O2: every armed task given a drawn facing by the real ge
 	for arm in $(FACING_ARMS); do for seed in $(FACING_SEEDS); do for task in $(_FACING_TASKS); do \
 		d=$(FACING_DIR)/headless/$$arm/$$task-$$seed; mkdir -p $$d; \
 		enemy=""; if [ $$arm = quiet ]; then enemy="--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu"; fi; \
-		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$seed --no-pick-faction --mute --arena=$(FACING_ARENA) \
+		timeout 300 $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --seed=$$seed --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			$(SCREEN_FLAGS) $$enemy --screen-test=$(CURDIR)/$$d --screen-only=$$task > $$d/run.log 2>&1 || true; \
 		grep -E '^SCREEN |SCRIPT ERROR' $$d/run.log || true; \
 		grep -q 'SCREEN_DONE' $$d/run.log || { echo "facing-probe FAILED: $$task has no SCREEN_DONE line"; exit 1; }; \
@@ -547,7 +547,7 @@ hull-rest-probe: import ## O3: hull facing at rest per hull class, drawn v click
 		echo "$$arm $$faction $$seed $$task"; done; done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
 		d=$(HULL_DIR)/$$0/$$1/$$3-$$2; mkdir -p $$d; enemy=law; [ $$1 = law ] && enemy=gangs; \
 		click=""; [ $$0 = clicked ] && click=--faced-click; \
-		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+		timeout 300 $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
 			--no-element-cpu $$click --screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "hull-rest-probe: $$d has no SCREEN_DONE"; \
@@ -565,7 +565,7 @@ flank-probe: import ## O1: attack from a drawn side through the real input, draw
 	for arm in drawn clicked; do for side in left right; do for seed in $(FLANK_SEEDS); do echo "$$arm $$side $$seed"; \
 		done; done; done | xargs -P $(HULL_JOBS) -L 1 sh -c '\
 		d=$(FLANK_DIR)/$$0/$$1-$$2; mkdir -p $$d; click=""; [ $$0 = clicked ] && click=--faced-click; \
-		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
+		timeout 300 $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			$(SCREEN_FLAGS) --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu $$click --flank-side=$$1 \
 			--screen-test=$(CURDIR)/$$d --screen-only=flank > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "flank-probe: $$d has no SCREEN_DONE"; \

@@ -19,6 +19,16 @@ func _doctrine(units: Array[String]) -> Dictionary:
 
 
 ## A copy of `s` reaching branch family `n`.
+## C34.5: whether the scout in `f` would fight back with every velocity zeroed (the reach forecast then only reads now).
+## A case that does, but not on its real velocities, is one the forecast cut: the twin must see some.
+func _fights_standing_still(f: Dictionary, matchups: Dictionary) -> bool:
+	var still := f.duplicate(true)
+	still["self"]["velocity"] = Vector3.ZERO
+	for c: Dictionary in still["contacts"]:
+		c["velocity"] = Vector3.ZERO
+	return TankBrain.scout_fights_back(still["self"], still["contacts"], matchups)
+
+
 func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenerator) -> Array:
 	var m := s.duplicate(true)
 	var cur := current.duplicate(true)
@@ -62,7 +72,9 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 
 
 func test_decide_is_the_gdscript() -> void:
-	if not NativeBridge.available:
+	if FreshStage.parent(self, "test_decide_is_the_gdscript"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	if NativeExpect.absent(self):
 		print("native: absent, the decide equality is not exercised in this run")
 		return
 	assert_true(NativeDecide.configure(), "the native decide takes the live constants")
@@ -81,6 +93,15 @@ func test_decide_is_the_gdscript() -> void:
 	var options := {}
 	var mismatches := 0
 	var first := ""
+	# Overnight item 2 (brains' scout): every scout's situation once more, under fire (since_hit across the 2 s bound),
+	# its contacts threatening it or not and some moved into sight within (or just past) its reach, matchups on or off, and one case in five with the rule switched off. A rng of
+	# its own, so the mutated cases above are the same draws as before.
+	var scout_rng := RandomNumberGenerator.new()
+	scout_rng.seed = 3317
+	var scout_cases := 0
+	var scout_fights := 0
+	var scout_cut_by_forecast := 0
+	var flag_saved := TankBrain.SCOUT_FIGHT_BACK
 	for frame in 600:
 		await wait_physics_frames(1)
 		if frame % 5 != 4:
@@ -93,7 +114,42 @@ func test_decide_is_the_gdscript() -> void:
 			var cases := [[s, brain.choice.duplicate()]]
 			for n in 2:
 				cases.append(_mutate(s, brain.choice, asked + n, rng))
-			for pair: Array in cases:
+			var flag_off := -1
+			if String(s["self"].get("unit", "")) == "scout":
+				var f := s.duplicate(true)
+				f["self"]["since_hit"] = scout_rng.randi_range(0, 2 * TankBrain.SCOUT_FIGHT_HIT_TICKS)
+				var at: Vector3 = f["self"]["position"]
+				var weapon: Dictionary = f["self"]["weapon"]
+				var reach := float(weapon.get("effective_range", weapon.get("range", 0.0)))
+				for c: Dictionary in f["contacts"]:
+					c["threatens_me"] = scout_rng.randf() < 0.7
+					# Some in sight inside (or just past) the scout's reach, so the rule's distance test cuts both ways.
+					if scout_rng.randf() < 0.6:
+						c["visible"] = true
+						var angle := scout_rng.randf_range(0.0, TAU)
+						c["position"] = at + Vector3(cos(angle), 0.0, sin(angle)) * scout_rng.randf_range(5.0, reach * 1.2)
+						# C34.5: and moving, so the 2 s reach forecast cuts both ways (an orbiter swinging out of reach).
+						var heading := scout_rng.randf_range(0.0, TAU)
+						c["velocity"] = Vector3(cos(heading), 0.0, sin(heading)) * scout_rng.randf_range(0.0, 16.0)
+				if scout_rng.randf() < 0.5:
+					var heading := scout_rng.randf_range(0.0, TAU)
+					f["self"]["velocity"] = Vector3(cos(heading), 0.0, sin(heading)) * scout_rng.randf_range(0.0, 12.0)
+				f["features"]["matchups"] = scout_rng.randf() < 0.5
+				# Half the cases run as the champion does (x18m: no matchups), where decide computes the duel for a scout
+				# under fire alone (C34.5, brains 834562ab1): the count follows the same rule.
+				var matchups := TankBrain.matchups_for(f) if bool(f["features"].get("matchups", true)) \
+						or TankBrain.scout_under_fire(f["self"]) else {}
+				if scout_rng.randf() < 0.2:
+					flag_off = cases.size()
+				elif TankBrain.scout_fights_back(f["self"], f["contacts"], matchups):
+					scout_fights += 1
+				elif _fights_standing_still(f, matchups):
+					scout_cut_by_forecast += 1
+				scout_cases += 1
+				cases.append([f, brain.choice.duplicate()])
+			for ci in cases.size():
+				var pair: Array = cases[ci]
+				TankBrain.SCOUT_FIGHT_BACK = flag_saved and ci != flag_off
 				BrainSwitches.native_decide = false
 				var t0 := Time.get_ticks_usec()
 				var live := TankBrain.decide(pair[0], pair[1])
@@ -111,7 +167,14 @@ func test_decide_is_the_gdscript() -> void:
 						first = "frame %d %s: live %s, native %s" % [frame, brain.tank.name, var_to_str(live).left(500),
 								var_to_str(native).left(500)]
 	BrainSwitches.native_decide = saved
+	TankBrain.SCOUT_FIGHT_BACK = flag_saved
+	print("native decide: %d scout cases under fire, %d where the scout fights back, %d it would fight standing still" % [
+			scout_cases, scout_fights, scout_cut_by_forecast])
 	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
 	print("native decide: %d decisions, %d mismatches, chosen %s" % [asked, mismatches, options])
 	assert_eq(mismatches, 0, "the native decide is the GDScript's: %s" % first)
+	# Half builder2's fresh-process counts (C34.5's rule at 2135c0af: 27 fights and 6 cut by the forecast, of 480): floors
+	# against a vacuous run, not targets.
+	assert_true(scout_fights >= 13, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
+	assert_true(scout_cut_by_forecast >= 3, "the reach forecast cut some fights (%d of %d)" % [scout_cut_by_forecast, scout_cases])
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])

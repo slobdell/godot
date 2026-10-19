@@ -75,7 +75,7 @@ PLANNER_CPUS ?=
 planner-twin: native import ## planner CP-P0: tests/test_native_planner.gd alone (every fixture both ways, the table, the slice; us a plan each way), pinned with PLANNER_CPUS=0-3
 	@mkdir -p $(BUILD_DIR)/planner
 	@echo ">> planner-twin on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | cpus $(or $(PLANNER_CPUS),any) | load $$(cut -d' ' -f1 /proc/loadavg)"
-	@PLANNER_TWIN_ALL=1 $(if $(PLANNER_CPUS),taskset -c $(PLANNER_CPUS)) $(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=native_planner' \
+	@PLANNER_TWIN_ALL=1 $(if $(PLANNER_CPUS),taskset -c $(PLANNER_CPUS)) $(GODOT) --headless $(PIN_FPS) --path . --script res://tests/run_tests.gd -- '--filter=native_planner' \
 		> $(BUILD_DIR)/planner/twin.log 2>&1; s=$$?; \
 	grep -E "NATIVE_PLANNER |NATIVE_PLANNER_SLICE|MEASURE|PASS|FAIL|passed|SCRIPT ERROR" $(BUILD_DIR)/planner/twin.log | cut -c1-300; \
 	echo ">> planner-twin: runner exited $$s (build/planner/twin.log)"; exit $$s
@@ -229,7 +229,7 @@ planner-trace-hull-rest: native import ## planner round 32: one hull-rest run (P
 	@mkdir -p $(BUILD_DIR)/planner
 	@for arm in fifo shared; do d=$(BUILD_DIR)/planner/trace-$(PLANNER_HR_TASK)-$(PLANNER_HR_SEED)-$$arm; rm -rf $$d; mkdir -p $$d; \
 		echo ">> planner-trace-hull-rest on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $$arm | $(PLANNER_HR_TASK) seed $(PLANNER_HR_SEED) | $(PLANNER_HR_UNIT)"; \
-		timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=$(PLANNER_HR_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
+		timeout 300 $(GODOT) --headless $(PIN_FPS) --path . -- --skirmish --seed=$(PLANNER_HR_SEED) --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=gangs --enemy-faction=law --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) --no-element-cpu \
 			$(if $(PLANNER_HR_CLICK),--faced-click) --turn-states --planner-queue=$$arm "--turn-trace=$(PLANNER_HR_UNIT)" \
 			--screen-test=$(CURDIR)/$$d --screen-only=$(PLANNER_HR_TASK) > $$d/run.log 2>&1; \

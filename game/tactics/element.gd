@@ -1584,6 +1584,14 @@ func _bt_fire_order(situation: Dictionary) -> void:
 static var _element_trace := ""
 static var _element_trace_read := false
 var _et_last := -1000
+## C34.9 (brains B3): the inset's engage distance, latched per task: [task_seq, centre-to-click metres when the inset first
+## moved the spot (> 0.5 m), the inset then]. Round 33's (1b) reported the inset only.
+var inset_engaged := [-1, -1.0, 0.0]
+
+
+func _latch_inset(plan: Dictionary) -> void:
+	if int(inset_engaged[0]) != task_seq and float(plan.get("inset_m", 0.0)) > 0.5:
+		inset_engaged = [task_seq, float(plan.get("inset_from_m", -1.0)), float(plan["inset_m"])]
 
 
 func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
@@ -1617,10 +1625,12 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 		if seat is Array:
 			text += " seat %s" % str(seat)
 		rows.append(text)
-	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s | %s" % [
+	var inset := "inset %.1f m engaged at %.1f m" % [inset_engaged[2], inset_engaged[1]] if int(inset_engaged[0]) == task_seq \
+			else "inset none"
+	print("ELEMENT_TRACE t=%.1f [%s] id %d task %s to %s anchor %s heading (%.2f,%.2f) %s/%s file %.2f corridor %s centre (%.1f,%.1f) arrived %s %s | %s" % [
 			float(tick) / SimClock.TICK_RATE, element_name, id, String(task.get("verb", "-")), task.get("to"), anchor_v,
 			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
-			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived,
+			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived, inset,
 			" | ".join(PackedStringArray(rows))])
 
 
@@ -1677,6 +1687,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 				row.append("B2 route %.1f m goal %s steer %s blocked %s" % [float(st.get("remaining_m", -1.0)), st.get("goal"), st.get("steer_to"), st.get("blocked_by")])
 		print("BATTERY_TRACE t=%.0f team %d %s %s/%s anchor %s | %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, element_name,
 				String(plan["formation"]), String(plan["technique"]), plan["anchor"], " | ".join(PackedStringArray(row))])
+	_latch_inset(plan)
 	_trace_element(plan, situation)
 	formation = String(plan["formation"])
 	technique = String(plan["technique"])
