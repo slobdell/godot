@@ -69,7 +69,13 @@ carve-outs. **native** takes planner's paths this round (`game/ai/planner/**`, `
 
 ## Bars (round 35)
 
-_Filed here before any number. Empty at launch._
+_Filed here before any number._
+
+- **C35.3 the scout turn-in (orchestrator, filed 2026-10-19 08:45 before `3902ade09`'s check read).** Ships when (1) builder0
+  `make check` on `pair/c339-r34b` `3902ade09` exits 0 on every target except sim-baseline; (2) every sim-baseline map that MOVES
+  reads main's line again with the turn-in off (`make sim-variants VARIANTS_EXTRA=--nav-off=turnin` on the same commit), so the
+  move is the turn-in's alone; then the moved maps are adopted in the merge commit. A map that moves with the turn-in off too
+  blocks the merge until traced.
 
 ## Rulings (round 35)
 
