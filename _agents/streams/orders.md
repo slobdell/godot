@@ -138,7 +138,9 @@ Option (b): a shifted move queues on the elements its units now belong to (round
 what stopped his interleaved squads crossing). Bar (as the orchestrator filed it on main): Crossing 5 route s3614 (the
 reproduction; reported) + fresh route seeds: every squad gets every leg (legs per squad = waypoints); round 22's Sumps seed
 5988 scenario keeps 0 path crossings; test_control_queued_task and the route tests green; the click cells byte-identical; a
-test that reproduces the replace. Order: after D5's re-read and D4's A/B.
+test that reproduces the replace. Fresh route seeds **3641-3646** (named on main); counter first: legs queued per squad
+differ between arms in >= 1 route cell; the reproduce-the-replace test red with the switch off, green with it on (built:
+`test_control_requeue`, both directions). Order: after D5's re-read and D4's A/B. Code: `862e60970`, OFF until then.
 
 ### D5 A/B 1 (builder0, `554131533`, seeds 3611-3616): gain PASSED, guards FAILED; one fix try (R35.26)
 - **Read:** Locks 5 route median all in 19.9 v 33.4 s (gain line <= 23.4: pass); route medians summed 153.3 v 170.4 s; click
