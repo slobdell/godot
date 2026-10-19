@@ -87,7 +87,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (2026-10-19 early, round 34 in progress; Fable)
 
-**Latest (2026-10-19 ~00:30 PDT):** M0's candidate is now stream/manoeuvre **fa5226f14**; its dev cells 11–23 run on
+**Latest (2026-10-19 ~01:30 PDT): M0's candidate is stream/manoeuvre 764ef5427** (fa5226f14 + the out-of-reach rule +
+main 82feffa86); its pair `pair/c339-r34` **c8fb8b6a3** (= 764ef5427 + `pair/native-c339` 25fd4298e, clean) runs on
+builder2: `native check` → `sim-variants VARIANTS_EXTRA=--nav-off=turnin` (the sim-baseline attribution) → the judged
+series 101–112 (one chain, folder godot-manoeuvre-pair). Dev cells 11–23 at 764ef5427 run beside it. **M2's quick-remote
+is green** (builder0, bbf1f6b77: 74 passed, 0 failed, 161 scripts lint). **The REPORTED cell** (gang_scout v syn_lancer
+15 m post, builder2 fa5226f14, dev 11–23, n 13, both arms GDScript): OFF in-arc 2.4 %, 2 shots, dealt 5, 85 reverse
+ticks under a face and 53 at stop (the shuffle, brains' "held fixed gun k-turns, 0 shots"); ON in-arc 81.8 %, 10 shots,
+dealt 871, 0 reverse; hits taken 23 → 25, damage taken 736 → 805 (+9 %), furthest 21.7 m. **Dev table at fa5226f14**
+(builder2, 11–23, n 13; steering only): every in-reach line passes, the per-cell damage guard too (law v scout 15 m now
+−82 a run); (c-out) FAILS as written (hits out of reach +1393 over 13 seeds v k·se 518; medians 45 → 55; worst cell
+gang_scout v gang_ifv 30 m +55 %, beyond the accepted +37 %): there the gang scout (reach 24 m) closes to 15–18 m INTO
+reach and kills the IFV (dealt ~1000 a run) while taking 133 hits v 86. The exchange out of reach is reported beside it.
+Earlier:  M0's candidate is now stream/manoeuvre **fa5226f14**; its dev cells 11–23 run on
 builder2, then the REPORTED syn_lancer cell. The superseded pair d38f688f2's C31.1 check on builder2 (`make native check
 exited 2`): every test passed (2818/0), native twins 0 mismatches (test_native_execute_turn_in PASS, 276 turn_in_stop
 hand-backs), lint clean; the one FAIL is sim-baseline with four maps MOVED (crossing, parade, archipelago, docks: brains'
