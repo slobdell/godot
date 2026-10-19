@@ -298,7 +298,12 @@ _Filed here before any number._
   (plan_face failures counted while still ROLLING; give-up before rest; hull 180 deg off at 40 s). Fix `55e53006d`: a failed plan
   counts only at rest (|speed| <= 0.5 m/s; a refused leg still counts), and the give-up reports. Re-gate on main 1a18dd278 (the
   deploy step changes player plain-move halts, which hull-rest's drawn/clicked stages use); full-check order main's batch -> M5 ->
-  W1b-ON.
+  W1b-ON. **Follow-up:** the first fix left the same 3 red (builder0, 39f66c60a). Trace (laptop, each default flipped alone, no flags):
+  only FACE_SETTLE breaks the rolling face: a face ordered while rolling keeps its home where the order found it; the rig rolls 8.8 m
+  past a home it must plan within 5 m of; settle stands it out there. Fix `f283fc089`: under settle the face's home follows the hull
+  until rest, and the standing face runs round 9's own give-up window (`OrderController._face_giving_up`). **Re-gate hashes:**
+  candidate lab/cpf5 `61a46d3c6` (stream cc2a001fc + both defaults true), native base lab/cpf5-base `de75b6757` (cc2a001fc, defaults
+  false), on main 1a18dd278; E1 not in.
 - **R35.21 (2026-10-19 ~14:55) D2's report (reported, not gating; his "mixed" confirmed).** `make orders-probe` builder0, main
   977a270fa (1a18dd278's code; library from 581b8a396's build, no game-code difference), seed 34, n 1 a cell, main v deploy_off.
   With the step on: twitch after settling falls on Crossing (5 click 46.5 -> 23.3 m, 3 click 32.2 -> 18.3) and Locks 3, rises on Locks
