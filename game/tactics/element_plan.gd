@@ -817,8 +817,16 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		plan["anchor"] = stand
 		# Seated by the least total driving (B8b: B8 seated by exposure and sent crews across the shape, moves of 24-42 m),
 		# then fixed: the deploy is one move per crew.
-		_group(plan, slot_order(situation), String(plan["formation"]), stand, deploy["heading"],
-				table.spacing(String(situation["terrain"])), "move", "", true, true, null, false, "travel")
+		# D4 (round 35): seated so the LONGEST deploy leg is as short as it can be (then the least total), not by the least
+		# total alone, which handed one crew a 45 m leg past its squadmates (laptop, Terminus 5 click, seed 34, squad 4).
+		var ordered := slot_order(situation)
+		var spacing := table.spacing(String(situation["terrain"]))
+		var deploy_extra := {}
+		var pinned := _deploy_keep(ordered, String(plan["formation"]), stand, deploy["heading"], spacing)
+		if not pinned.is_empty():
+			deploy_extra["keep"] = pinned
+		_group(plan, ordered, String(plan["formation"]), stand, deploy["heading"], spacing, "move", "", true, true, null,
+				false, "travel", deploy_extra)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1853,6 +1861,68 @@ static func _deploy_shape(situation: Dictionary, state: Dictionary, table: Doctr
 	if TacticsFormation.NAMES.has(priced):
 		return priced
 	return String(_halt_pick(situation, state, table)["formation"])
+
+
+## D4 (round 35): the deploy's seating, {crew name: seat index}, chosen so the longest leg from where each crew stands to
+## its halt seat is the shortest it can be, ties to the least total (every assignment tried: a squad is at most
+## DEPLOY_MINIMAX_MAX crews). {} = _group's own seating. `--deploy-minimax=off` is D1's least total.
+static var DEPLOY_MINIMAX := not OS.get_cmdline_user_args().has("--deploy-minimax=off")
+const DEPLOY_MINIMAX_MAX := 6
+
+
+static func _deploy_keep(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float) -> Dictionary:
+	var count := members.size()
+	if not DEPLOY_MINIMAX or count < 2 or count > DEPLOY_MINIMAX_MAX:
+		return {}
+	var seats := {}
+	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing, {"halt": true, "corridor_m": INF, "layout": true}):
+		seats[int(entry["index"])] = (entry["to"] as Vector3) + TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
+	if seats.size() != count:
+		return {}
+	var legs: Array = []  # legs[i][j]: crew i to seat j
+	for member: Dictionary in members:
+		var row: Array = []
+		var at: Vector3 = member["position"]
+		for j in count:
+			var seat: Vector3 = seats[j]
+			row.append(Vector2(at.x - seat.x, at.z - seat.z).length())
+		legs.append(row)
+	var best: Array = []
+	var best_key := [INF, INF]  # [longest leg, total] (an Array: a lambda captures a Vector2 by value)
+	var perm: Array = range(count)
+	# Every assignment (Heap's algorithm, iterative).
+	var c: Array = []
+	c.resize(count)
+	c.fill(0)
+	var visit := func(p: Array) -> void:
+		var worst := 0.0
+		var total := 0.0
+		for i in count:
+			var leg: float = legs[i][p[i]]
+			worst = maxf(worst, leg)
+			total += leg
+		if worst < float(best_key[0]) - 1e-6 or (absf(worst - float(best_key[0])) <= 1e-6 and total < float(best_key[1]) - 1e-6):
+			best_key[0] = worst
+			best_key[1] = total
+			best.assign(p)
+	visit.call(perm)
+	var i := 0
+	while i < count:
+		if int(c[i]) < i:
+			var k := 0 if i % 2 == 0 else int(c[i])
+			var swap: Variant = perm[k]
+			perm[k] = perm[i]
+			perm[i] = swap
+			visit.call(perm)
+			c[i] = int(c[i]) + 1
+			i = 0
+		else:
+			c[i] = 0
+			i += 1
+	var keep := {}
+	for n in count:
+		keep[String(members[n]["name"])] = int(best[n])
+	return keep
 
 
 ## B8b: `at` stepped away from water, DEPLOY_INLAND_STEP_M at a time (up to DEPLOY_INLAND_MAX_M), until every seat of the
