@@ -605,3 +605,14 @@ stream/manoeuvre) is three new rows, "hull-rest A/A, M1's new ruler":
 Task totals swing 0–200 % between the two seed sets (the table's `swing` column): a task's total at n 36 is not a
 stable base. CP-F 4's bars (`workstreams.md` *Bars (round 34)*) cite these rows. `python3 tools/judge/table.py`
 re-renders them; tools tests 74/74.
+
+## R34.15: a random-arena fight can be a twin of a fixed-arena fight (2026-10-19)
+
+A `--arena=random` fight deals its map from the seed (`Arena.resolve_name`). When the series also runs that map as a
+fixed arena on the same seed, the two fights are byte-identical. Traffic found 14 of the 48 random seeds in 1200–1247
+dealt the Locks or the Terminus (7 each; `references/round34/planner/sizing/random_arenas.txt` agrees). Paired readings
+are unaffected (each arm has the same twin), but **pooled totals and n count those fights twice** (X1, v4, v4b). Before
+pooling, drop them: `tools/judge/seed_twins.py rows.jsonl` (or `seed_twins.drop_twins(rows, seed_twins.load()[0])` from
+a series tool) keeps the fixed-arena row and drops its random twin. The seed-to-map table is Godot's and is written by
+`tests/planner/random_arenas.gd`; it names `Arena.ROTATION`, and `load(path, rotation=...)` refuses a table written for
+another rotation (a map added changes what every seed deals). A bar on a random-arena series names its n AFTER the drop.
