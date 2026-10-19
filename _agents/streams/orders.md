@@ -133,6 +133,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   legs); every route cell median all in <= gate_off x 1.2 + 3 s, and no more never-in seeds than gate_off; deck / far no
   higher than gate_off in any cell; drive/plan median <= gate_off + 0.2 in each cell.
 
+### D6 (R35.28): a shift-click never REPLACES a squad's route because its elements don't match the group. Bar FILED BEFORE CODE
+Option (b): a shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal stays: it is
+what stopped his interleaved squads crossing). Bar (as the orchestrator filed it on main): Crossing 5 route s3614 (the
+reproduction; reported) + fresh route seeds: every squad gets every leg (legs per squad = waypoints); round 22's Sumps seed
+5988 scenario keeps 0 path crossings; test_control_queued_task and the route tests green; the click cells byte-identical; a
+test that reproduces the replace. Order: after D5's re-read and D4's A/B.
+
 ### D5 A/B 1 (builder0, `554131533`, seeds 3611-3616): gain PASSED, guards FAILED; one fix try (R35.26)
 - **Read:** Locks 5 route median all in 19.9 v 33.4 s (gain line <= 23.4: pass); route medians summed 153.3 v 170.4 s; click
   cells 36/36 identical. **Failed guards:** Crossing 5 route 1 never-in seed (s3614) v 0; deck touches Crossing 3 route 6 v
