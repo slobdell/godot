@@ -84,6 +84,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
   builder0 full check: queued behind native's (C35.1: one check at a time).
 
+### D4 what's left of the shuffle: traced (laptop GDScript, seed 34, the 6 click cells, stream/orders `9370f5ddb`)
+- Twitch after the place window (8 s from the deploy), worst crew: Crossing 3 25.2 m, Crossing 5 21.4, Locks 3 8.6, Locks 5
+  13.6, Terminus 3 9.8, Terminus 5 31.3. Squads deploy all-in or on the 10 s cap about half and half.
+- **Terminus 5, squad 4 (31.3 m), traced every second:** the last crew in (Delta_2, still driving to its travel seat on the
+  east wing at t 6-8) was seated at the deploy (t 9) on the far end of its own herringbone, 45 m away; it drove past its
+  squadmates in a street, sat blocked t 11-21 and stopped 18 m short behind Delta_1. So most of what reads as "twitch" is
+  the DEPLOY MOVE overrunning the 8 s window: a wedge (wide ACROSS the approach) re-forms into a herringbone 55 m deep ALONG
+  it, so the wing crews have up to ~27 m each to go, through squadmates, in lanes.
+- **Tried and reverted:** seating nobody past a standing squadmate (the battery rule's PAST_COST with every squadmate):
+  Terminus 5 unchanged (31.3 m), Locks 3 worse (23.1 v 8.6 m), Crossing 5 21.4 -> 27.3. Not kept.
+- **What the trace points at (not built):** the deploy's shape change itself. Either the halt is laid so the travel seats
+  map onto it without crossing (a herringbone's seats ordered as the wedge's, wings to the far ends by side, not by
+  least total), or the halt in lanes is laid ACROSS the street as the travel shape is. Both are the halt-lay functions in
+  my carve-out; the first is the smaller change and the next D4 step.
+
 ### D5 bar (C35.5), FILED BEFORE ANY BUILDER0 NUMBER; amended by the orchestrator (fresh seeds), as filed on main
 - **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3611 3612 3613 3614 3615 3616" ORDERS_PROBE_ARMS="main: gate_off:--gate-deal=off"`
   on builder0 (native), the 24 cells x 6 FRESH seeds 3611-3616 (n 6 a cell; medians, the table's MEDIANS block; a seed moves the click, and the route's waypoints, <= 12 m to a dry standable point; 3601-3602 were seen on the laptop, so not judged; no laptop run on 3611-3616), the same tree (deploy
