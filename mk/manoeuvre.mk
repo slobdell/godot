@@ -72,6 +72,9 @@ M1_BASE_OFF ?= faceslot
 M1_NEW_OFF ?=
 # make remote's T is word-split: M1_GD=1 appends --brains-off=native to every arm; M1_SEEDS=a-b replaces HULL_SEEDS.
 M1_GD ?=
+# M1_GDD=1 appends --brains-off=native_drive (planner's judge flags: the GDScript drive under the native planner; with
+# --brains-off=native the seam's plans are never answered inside their slice and every k-turn ask is abandoned).
+M1_GDD ?=
 M1_SEEDS ?=
 M1_SEED_LIST = $(if $(M1_SEEDS),$(shell seq $(subst -, ,$(M1_SEEDS))),$(HULL_SEEDS))
 # Round 33 (R33.21, 2026-10-18): hull-rest and hull-one run --fixed-fps $(SIM_HZ). Before this they were wall-clock paced
@@ -99,7 +102,7 @@ manoeuvre-hull-rest: import ## manoeuvre M1: hull facing at rest per hull class,
 		click=""; case $$0 in *clicked) click=--faced-click;; esac; off=""; case $$0 in base_*) off=$(if $(M1_BASE_OFF),--nav-off=$(M1_BASE_OFF));; new_*) off=$(if $(M1_NEW_OFF),--nav-off=$(M1_NEW_OFF));; esac; \
 		timeout 300 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --skirmish --seed=$$2 --no-pick-faction --mute --arena=$(FACING_ARENA) \
 			--player-faction=$$1 --enemy-faction=$$enemy --tune=match.no_damage=1 --enemy=$(FACING_QUIET_ENEMY) \
-			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) $(call _hull_jitter,$$2) $(_hull_shift) \
+			--no-element-cpu $$click $$off $(M1_FLAGS) $(if $(M1_GD),--brains-off=native) $(if $(M1_GDD),--brains-off=native_drive) $(call _hull_jitter,$$2) $(_hull_shift) \
 			--screen-test=$(CURDIR)/$$d --screen-only=$$3 > $$d/run.log 2>&1; \
 		grep -q SCREEN_DONE $$d/run.log || echo "manoeuvre-hull-rest: $$d has no SCREEN_DONE"; \
 		! grep -m1 "SCRIPT ERROR" $$d/run.log'
