@@ -66,6 +66,23 @@ crew in a fight's crowd, wedged a median 1.2 s** before death. Unstick drove 1 %
 (B) traffic: a held crew that is hit leaves the hold (request); (C) mine W1b: a wheeled hull held to a standstill doesn't creep
 (native mirrors); (D) traffic's death_cause gets `jam:held`. Waiting on the orchestrator for (C); built OFF meanwhile.
 
+### Bar M5 (W2, CP-F attempt 5, the face side; C35.7, decoupled from brains by R35.3) — DRAFT, to the orchestrator before any number
+
+**Candidate:** stream/manoeuvre + `TURN_HULL_DEFAULT := true` + `FACE_SETTLE_DEFAULT := true` (lab/cpf5). **Base:** the same tree,
+`--nav-off=turnhull,facesettle`. **Gate (C31.1):** lab/cpf5's whole `make native check` green on builder0 (sim-baseline moves
+attributed with `--nav-off=turnhull,facesettle`). **Machine:** builder0 only, one series at a time (C35.1), FAR_JOBS/HULL_JOBS 3 while a
+check runs. **Seeds (fresh):** hull-rest 701–716 (4 factions × 16 × 6 tasks, drawn and clicked, GDScript M1_GD=1 both arms, plus
+the native drawn pair), Terminus 720–732, SBF 770–775, bridge-pooled's 18, fights on FIXED arenas locks/terminus/sumps × 740–763
+(`FIGHT_AT`, R34.15). **Ruler and noise:** M1's (real_mps, wedged apart, HULL_SHIFT_M 6, HULL_JITTER_DEG 20), the A/A table in
+round 34's Status. **Lines:** Bar M3's (a)–(m) unchanged (same rules, same A/A guards), plus:
+| line | reads | rule |
+|---|---|---|
+| (n) | `face_creep` crews at the judge (hull_rest_moving), wheels/turret, per task | new ≤ base + 1 (attempt 4 read 8 v 0 on screen; the mechanism this attempt removes) |
+| (o2) | counters in the new arm | `face_settles` > 0 and `face_settle_fails` REPORTED; `hull_turns` > 0 |
+| (p) | wheels/turret at rest error, the crews that gave up | REPORTED (median, and how many ≥ 45°): the price of standing still |
+**Partial:** (a)–(j), (n) are the gate; a miss parks it with a trace. Attack-move's step (attempt 4's mechanism 2) is brains' (R35.3,
+the straggler release); if (d)/(e) miss on attack-move only, the trace says which mechanism, and the verdict goes to the orchestrator.
+
 ### Requests to other streams
 
 - **traffic:** (B) release a Traffic hold for a crew being hit; (D) `jam:held` in `death_cause` before `stuck:wedged`.

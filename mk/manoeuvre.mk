@@ -144,13 +144,23 @@ manoeuvre-hull-seeds-differ: import ## manoeuvre: two seeds of one hull-rest tas
 FIGHT_SEEDS ?= 1 2 3 4 5 6 7 8
 FIGHT_JOBS ?= 4
 FIGHT_SECONDS ?= 180
+# Round 35 (R34.15/R35.7: random arenas deal twins): FIGHT_AT = a comma list of fixed arenas runs each seed on each
+# (logs <arena>-<seed>.log; fight_table pairs by arena and seed). Default random, as before.
+FIGHT_AT ?= random
 .PHONY: manoeuvre-fights
 manoeuvre-fights: import ## manoeuvre M4: the fights guard (showmatch matches, FIGHT_SEEDS, every unit: shots, hits, kills, deaths, hits on touching targets; NAV_FLAGS for an arm) -> build/manoeuvre/fights/
 	@rm -rf $(BUILD_DIR)/manoeuvre/fights; mkdir -p $(BUILD_DIR)/manoeuvre/fights
 	@echo ">> manoeuvre-fights on $$(hostname) | flags '$(NAV_FLAGS)'"
-	@for seed in $(FIGHT_SEEDS); do echo $$seed; done | xargs -P $(FIGHT_JOBS) -I{} sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+	@if [ "$(FIGHT_AT)" = random ]; then \
+	for seed in $(FIGHT_SEEDS); do echo $$seed; done | xargs -P $(FIGHT_JOBS) -I{} sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
 		--script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match --clean --seed={} --arena=random --mute \
-		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/{}.log 2>&1 || true'
+		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/{}.log 2>&1 || true'; \
+	else \
+	for seed in $(FIGHT_SEEDS); do for arena in $(subst $(comma), ,$(FIGHT_AT)); do echo "$$arena $$seed"; done; done | \
+		xargs -P $(FIGHT_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/$$0-$$1.log 2>&1 || true'; \
+	fi
 	@grep -h '^FIGHT_CENSUS' $(BUILD_DIR)/manoeuvre/fights/*.log | wc -l | xargs echo "manoeuvre-fights: FIGHT_CENSUS rows"
 
 # ---- round 31 (CP-H, C31.4, R31.1): the honest reading's consumers, ONE arm x ONE stage a call ---------------------
