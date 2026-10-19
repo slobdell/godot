@@ -385,14 +385,21 @@ const ARRIVE_LEG_HOLD_S := 3.0
 ## Arm counters: arrivals held (once per order, its first held think) and the think ticks they were held.
 static var arrivals_held := 0
 static var arrivals_held_ticks := 0
-## Per crew (by name): the last tick this order's arrival may be held (Movement.new_order forgets it). Kept here, not as
-## a Movement member: every Movement member is a field of native's exec-state table (exec_fields.h), and this is
-## GDScript decision state the C++ never reads.
+## Per mover (by the Movement's instance id, never a crew's name: names repeat in a rematch, C34.6): the last tick this
+## order's arrival may be held (Movement.new_order forgets it; a dead mover's entry is pruned). Kept here, not as a
+## Movement member: every Movement member is a field of native's exec-state table (exec_fields.h), and this is GDScript
+## decision state the C++ never reads.
 static var _arrive_hold_until := {}
 
 
-static func arrive_hold_forget(crew: String) -> void:
-	_arrive_hold_until.erase(crew)
+static func arrive_hold_forget(mover: Object) -> void:
+	_arrive_hold_until.erase(mover.get_instance_id())
+
+
+static func _arrive_hold_prune() -> void:
+	for id: int in _arrive_hold_until.keys():
+		if not is_instance_id_valid(id):
+			_arrive_hold_until.erase(id)
 
 
 static func arrive_leg_on() -> bool:
@@ -403,11 +410,13 @@ static func leg_holds_arrival(brain: TankBrain) -> bool:
 	if not arrive_leg_on() or String(brain.move_order.get("type", "")) != "move_to" or not brain.movement.manoeuvring():
 		return false
 	var tick := Engine.get_physics_frames()
-	var crew := String(brain.tank.name)
-	if not _arrive_hold_until.has(crew):
-		_arrive_hold_until[crew] = tick + int(SimClock.TICK_RATE * ARRIVE_LEG_HOLD_S)
+	var mover := brain.movement.get_instance_id()
+	if not _arrive_hold_until.has(mover):
+		if _arrive_hold_until.size() >= 64:
+			_arrive_hold_prune()
+		_arrive_hold_until[mover] = tick + int(SimClock.TICK_RATE * ARRIVE_LEG_HOLD_S)
 		arrivals_held += 1
-	elif tick > int(_arrive_hold_until[crew]):
+	elif tick > int(_arrive_hold_until[mover]):
 		return false  # the leg has run its bound on this order: the arrival goes through
 	arrivals_held_ticks += 1
 	return true

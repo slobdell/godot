@@ -34,7 +34,7 @@ func test_a_move_mid_leg_is_not_arrived_until_the_leg_ends_or_the_bound() -> voi
 	assert_true(not Manoeuvre.leg_holds_arrival(brain), "only a move_to is held")
 	brain.move_order = {"type": "move_to", "x": 0.0, "z": -3.0}
 	# The bound: a leg that never ends cannot deny the arrival past ARRIVE_LEG_HOLD_S of this order.
-	Manoeuvre._arrive_hold_until[String(me.name)] = Engine.get_physics_frames() - 1
+	Manoeuvre._arrive_hold_until[brain.movement.get_instance_id()] = Engine.get_physics_frames() - 1
 	assert_true(not Manoeuvre.leg_holds_arrival(brain), "past the bound the arrival goes through")
 	brain.movement.new_order()
 	assert_true(Manoeuvre.leg_holds_arrival(brain), "a new order starts a new hold")
@@ -78,5 +78,39 @@ func test_the_brains_adapter_really_calls_the_hold() -> void:
 			assert_true(String(brain.move_order.get("type", "")) != "move_to", "OFF: today's arrival (%s)" % brain.move_order.get("type", ""))
 		brain.movement._kturn_left_m = 0.0
 		s.dispose()
+	Movement._off = was_off
+	Movement._off_parsed = true
+
+
+## C34.6 (the orchestrator's concern): the hold's state must not outlive a match. Two scenarios in one process, the same
+## crew name in both, the first left mid-hold: the second's crew is held afresh (counted) and never reads the first's
+## deadline (keyed by the mover instance, not the name; dead movers pruned).
+func test_a_rematch_never_reads_the_last_matchs_hold() -> void:
+	var was_off := Movement._off
+	_switch(true)
+	var s := AiScenario.create(self, 4)
+	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(0, 0, 0), 0.0, {}, "gang_tank")
+	var brain := s.brain_of(me)
+	await s.start()
+	brain.move_order = {"type": "move_to", "x": 0.0, "z": -3.0}
+	brain.movement.new_order()
+	brain.movement._kturn_left_m = 6.0
+	assert_true(Manoeuvre.leg_holds_arrival(brain), "match 1: held")
+	# Leave match 1 with its deadline already past, as a stale table would carry it.
+	Manoeuvre._arrive_hold_until[brain.movement.get_instance_id()] = Engine.get_physics_frames() - 1
+	brain.movement._kturn_left_m = 0.0
+	s.dispose()
+	var s2 := AiScenario.create(self, 4)
+	var me2 := s2.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(0, 0, 0), 0.0, {}, "gang_tank")
+	var brain2 := s2.brain_of(me2)
+	await s2.start()
+	brain2.move_order = {"type": "move_to", "x": 0.0, "z": -3.0}
+	brain2.movement.new_order()
+	brain2.movement._kturn_left_m = 6.0
+	var held0 := Manoeuvre.arrivals_held
+	assert_true(Manoeuvre.leg_holds_arrival(brain2), "match 2, the same crew name: held afresh, not released by match 1's stale deadline")
+	assert_eq(Manoeuvre.arrivals_held - held0, 1, "match 2's hold is counted as its own order")
+	brain2.movement._kturn_left_m = 0.0
+	s2.dispose()
 	Movement._off = was_off
 	Movement._off_parsed = true
