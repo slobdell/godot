@@ -6,7 +6,8 @@ extends SceneTree
 ## waypoints (`--probe-route=route`, the first two queued behind nothing, then queued). Then, per squad:
 ##   anchor_offset_m   straight distance from the click (the route's last waypoint) to the squad's own anchor
 ##   plan_drive_m      the drive from the squad's start to its anchor on the navmesh; driven_m: its centre's actual path
-##   deck              whether any crew stood on a bridge deck on the way (plan_deck: whether the planned drive crosses one)
+##   deck              whether any crew stood on a bridge deck (its ramp counts; plan_deck: whether the planned drive
+##                     crosses one); crossed: whether any crew got past a deck to the far bank (his scouts' suicidal run)
 ##   arrived_s         the element's first `arrived`, seconds after the order (-1: not inside the window)
 ##   foreign_m         at arrival, the nearest hull of ANOTHER of his squads (enemy_m: the nearest enemy)
 ##   shuffle_m         the most any crew moved after its squad's arrival, to the end of the window (brains' B6 shuffle)
@@ -14,7 +15,8 @@ extends SceneTree
 ## arrived (or the window ends), desktop 1280x720 and phone 1560x720, into `--probe-shots=DIR`.
 ##
 ##   godot --fixed-fps 30 --path . --script res://tests/orders_probe.gd -- --arena=locks --seed=34 --probe-squads=3 \
-##     --probe-route=click [--ground-cap=off] [--probe-shots=build/orders-probe] [--probe-click=x,z]
+##     --probe-route=click [--ground-cap=off] [--halt-price=off] [--probe-shots=build/orders-probe] [--probe-click=x,z]
+## The arms are main's own switches (O1's ground cap, O3's halt price; O2's when it lands), read by SelectionSquads.
 ## The click (unless given): the near bank of the deck nearest the arena's middle, DECK_BACK_M short of it on the
 ## player's side, where an anchor laid 70 m sideways meets the river (his case). The route: the squads' middle, then
 ## two points a third and two thirds of the way, then the click.
@@ -67,6 +69,14 @@ func _run() -> void:
 		quit(2)
 		return
 	_match = _controls.game_match
+	# The token enemy stands still at its base: its controllers are freed (a probe of driving, not of a fight; a picket
+	# that drove into sight was killed in the first windowed run and the VICTORY banner covered the shot).
+	# It is also held in the far corner every tick (`_park`): its brain lives outside `brains` in a skirmish.
+	for brain in _match.brains.get_children():
+		var driven: Variant = brain.get("tank")
+		if driven is Tank and (driven as Tank).team != Match.Team.GREEN:
+			brain.queue_free()
+	physics_frame.connect(_park)
 	if paused:
 		_controls.set_paused(false, "")
 	for i in 30:
@@ -102,6 +112,7 @@ func _run() -> void:
 		squad["plan_deck"] = bool(SelectionSquads.crosses_on(ground).call(squad["start"], anchor)) \
 				if anchor is Vector3 and ground != null else false
 		squad["deck"] = false
+		squad["crossed"] = false
 		squad["driven"] = 0.0
 		squad["arrived_tick"] = -1
 		squad["shuffle"] = 0.0
@@ -121,12 +132,14 @@ func _run() -> void:
 	var rows: Array = []
 	for squad: Dictionary in _squads:
 		var anchor: Variant = squad["anchor"]
-		var row := {"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"),
-				"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off", "squad": squad["number"],
+		var row := {"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"), "arm": _flag("probe-arm", ""),
+				"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
+				"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "squad": squad["number"],
 				"crews": (squad["units"] as Array).size(), "start": _xz(squad["start"]), "anchor": _xz(anchor) if anchor is Vector3 else null,
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				"plan_drive_m": snappedf(float(squad["path_len"]), 0.1), "driven_m": snappedf(float(squad["driven"]), 0.1),
 				"plan_deck": squad["plan_deck"], "deck": squad["deck"], "deck_at": squad.get("deck_at"),
+				"crossed": squad["crossed"], "crossed_at": squad.get("crossed_at"),
 				"arrived_s": snappedf((int(squad["arrived_tick"]) - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 						if int(squad["arrived_tick"]) >= 0 else -1.0,
 				"foreign_m": snappedf(float(squad.get("foreign", -1.0)), 0.1),
@@ -135,12 +148,43 @@ func _run() -> void:
 		rows.append(row)
 		print("ORDERS_PROBE_SQUAD " + JSON.stringify(row))
 	print("ORDERS_PROBE " + JSON.stringify({"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"),
-			"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off", "capped": SelectionSquads.ground_capped,
+			"arm": _flag("probe-arm", ""),
+			"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
+			"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "capped": SelectionSquads.ground_capped,
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
+			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
 			"worst_offset_m": rows.map(func(r: Dictionary) -> float: return r["anchor_offset_m"]).max(),
 			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}))
 	quit(0)
+
+
+## Past a deck to the far side from the click: within a deck's span across the river (its x range, widened by
+## ACROSS_SIDE_M) and beyond its far edge along the line from the click. A crew nosing onto the near ramp is `deck`, not this.
+const ACROSS_SIDE_M := 30.0
+
+
+func _across(at: Vector3) -> bool:
+	for box: Array in SlotGround.deck_boxes():
+		var lo_x := float(box[0]) - ACROSS_SIDE_M
+		var hi_x := float(box[2]) + ACROSS_SIDE_M
+		if at.x < lo_x or at.x > hi_x:
+			continue
+		var lo_z := float(box[1])
+		var hi_z := float(box[3])
+		if (_click.z > hi_z and at.z < lo_z) or (_click.z < lo_z and at.z > hi_z):
+			return true
+	return false
+
+
+func _park() -> void:
+	if _match == null or not is_instance_valid(_match):
+		return
+	var corner := Orders.clamp_to_arena(Vector3(1000.0, 0.0, -1000.0) * (1.0 if Match.team_frame(Match.Team.GREEN)["forward"].z < 0.0 else -1.0))
+	for t in _match.tanks.get_children():
+		if t is Tank and (t as Tank).team != Match.Team.GREEN:
+			(t as Tank).global_position = Vector3(corner.x, (t as Tank).global_position.y, corner.z)
+			(t as Tank).velocity = Vector3.ZERO
 
 
 ## Every tick: decks crossed, the centre's path, arrival (and the hulls around it then), and the shuffle after it.
@@ -155,9 +199,13 @@ func _watch() -> void:
 		squad["driven"] = float(squad["driven"]) + _flat_d(centre, _last_centre[squad["number"]])
 		_last_centre[squad["number"]] = centre
 		for n: String in alive:
-			if not bool(squad["deck"]) and SlotGround.near_deck(_tank(n).global_position, 0.0):
+			var at := _tank(n).global_position
+			if not bool(squad["deck"]) and SlotGround.near_deck(at, 0.0):
 				squad["deck"] = true
-				squad["deck_at"] = [_xz(_tank(n).global_position), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
+				squad["deck_at"] = [_xz(at), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
+			if not bool(squad["crossed"]) and _across(at):
+				squad["crossed"] = true
+				squad["crossed_at"] = [_xz(at), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
 		var element := _controls.elements.of(String(alive[0])) if _controls.elements != null else null
 		if int(squad["arrived_tick"]) < 0 and element != null and element.arrived and element.queued_tasks.is_empty() \
 				and _match.tick > _order_tick + 2:
@@ -229,10 +277,11 @@ func _shots(label: String) -> void:
 	camera.rotation = Vector3(-PI / 2.0, 0.0, 0.0)
 	var was := root.get_camera_3d()
 	camera.make_current()
-	var stem := "%s-%d-%s-cap%s-%s" % [_flag("arena", "locks"), _squads.size(), _flag("probe-route", "click"),
-			"on" if SelectionSquads.GROUND_CAP else "off", label]
+	var stem := "%s-%d-%s-%s-%s" % [_flag("arena", "locks"), _squads.size(), _flag("probe-route", "click"),
+			_flag("probe-arm", "cap%s-halt%s" % ["on" if SelectionSquads.GROUND_CAP else "off", "on" if SelectionSquads.HALT_PRICE else "off"]), label]
 	for aspect: String in SHOT_SIZES:
 		DisplayServer.window_set_size(SHOT_SIZES[aspect])
+		root.size = SHOT_SIZES[aspect]
 		for i in 6:
 			await process_frame
 		var image := root.get_texture().get_image()
