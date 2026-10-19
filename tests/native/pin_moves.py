@@ -14,7 +14,12 @@ import sys
 
 ARMS = ["pin1", "free1", "pin2", "free2"]
 MASKS = [
-    (re.compile(r"\d{4}-\d\d-\d\d[ T]\d\d:\d\d:\d\d(\.\d+)?"), "<ts>"),
+    (re.compile(r"\d{4}-\d\d-\d\d[ T]\d\d[:-]\d\d[:-]\d\d(\.\d+)?"), "<ts>"),
+    # Wall-clock measures (the timing stages time on purpose; a pinned run is no steadier there): reference ratios,
+    # native speed-ups, and scenario-times' per-test milliseconds.
+    (re.compile(r"ratio=\d+(\.\d+)?"), "ratio=<t>"),
+    (re.compile(r"\(\d+x\)"), "(<t>x)"),
+    (re.compile(r"\t\d+\t"), "\t<t>\t"),
     (re.compile(r"\b\d+(\.\d+)?\s*(ms|usec|us|s|secs|seconds)\b"), "<t>"),
     (re.compile(r"(usec|_ms|_s|wall|elapsed|took|cost=)[=: ]*\d+(\.\d+)?"), r"\1<t>"),
     (re.compile(r"/tmp/\S+"), "<tmp>"),
@@ -31,7 +36,8 @@ def lines_of(arm_dir):
     elif os.path.isdir(base):
         for root, _, files in os.walk(base):
             for f in sorted(files):
-                if f.endswith((".png", ".jpg", ".exr")):
+                # twin.log: planner-twin's, written into build/planner while planner-trace-hull-rest's copy was taken.
+                if f.endswith((".png", ".jpg", ".exr")) or f == "twin.log":
                     continue
                 paths.append(os.path.join(root, f))
     for p in sorted(paths):
