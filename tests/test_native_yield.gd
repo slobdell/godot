@@ -209,6 +209,9 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	set_up_asks = set_up
 	var fire_asks := under_fire
 	var fire_aborts := under_fire
+	var fire_executes := 0
+	if under_fire > 0:
+		assert_true(NativeGun.configure(), "the native gun takes the live constants (the execute step)")
 	var mismatches := 0
 	var first := ""
 	for leg in 2:
@@ -222,9 +225,8 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 			for i in movers.size():
 				if fire_aborts > 0 and movers[i].yield_to != "":
 					fire_aborts -= 1
-					var me: Array[int] = [i]
-					var result := _fire_compare(movers, controllers, i, me, leg * STAGE_FRAMES + frame)
-					drives += result[0]
+					var result := _abort_compare(movers, controllers[i], owned, leg * STAGE_FRAMES + frame)
+					fire_executes += result[0]
 					mismatches += result[1]
 					if first == "" and result[2] != "":
 						first = "(hit giving way) " + result[2]
@@ -251,13 +253,14 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 					for j in movers.size():
 						if j != i:
 							others.append(j)
-					var me: Array[int] = [i]
-					for hit: Array[int] in [others, me]:
+					var all: Array[int] = others.duplicate()
+					all.append(i)
+					for hit: Array[int] in [others, all]:
 						result = _fire_compare(movers, controllers, i, hit, leg * STAGE_FRAMES + frame)
 						drives += result[0]
 						mismatches += result[1]
 						if first == "" and result[2] != "":
-							first = "(%s under fire) %s" % ["others" if hit.size() > 1 else "self", result[2]]
+							first = "(%s under fire) %s" % ["others" if hit.size() < movers.size() else "all", result[2]]
 	NativeDrive.owned = false
 	print("native yield stage %s%s: %d negotiating drives compared (of %d drives screened), %d mismatches" % [arena,
 			" (owned state)" if owned else "", drives, screened, mismatches])
@@ -267,6 +270,10 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	# owned arm reads the live arm's counts. In a shared process they moved with the shard order (the Sumps' parked
 	# refusals 129, 47, 6, 0). Not reached here: the swap (native.md N5.Y: why); the shortened spot is forced below.
 	assert_true(drives >= MIN_COMPARED, "%s: %d negotiating drives compared >= %d" % [arena, drives, MIN_COMPARED])
+	if under_fire > 0:
+		print("native yield %s%s: %d give-ways hit (execute step compared)" % [arena, " (owned state)" if owned else "",
+				fire_executes])
+		assert_true(fire_executes >= 1, "%s: a crew giving way is hit and compared" % arena)
 	_yield_check("%s%s" % [arena, " owned" if owned else ""], floors)
 
 
@@ -336,5 +343,45 @@ func _fire_compare(movers: Array[Movement], controllers: Array[OrderController],
 	var result := _compare_tick(movers, controllers, frame, i)
 	for k in hit.size():
 		controllers[hit[k]].tank.ticks_since_hit = keep[k]
+	Traffic.set_off("underfire", was_off)
+	return result
+
+
+## Round 34 (traffic T6): a crew GIVING WAY hit this tick, its whole execute step (OrderController.compute_command, where
+## right_of_way runs) against the native one (NativeBridge.impl.execute, execute_native.cpp's right_of_way_with), the
+## `underfire` switch on; the give-way ends (underfire_aborts, tallied). [executes, mismatches, first]; all put back.
+func _abort_compare(movers: Array[Movement], ctl: OrderController, owned: bool, frame: int) -> Array:
+	var delta := 1.0 / float(SimClock.TICK_RATE)
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	var was_hit := ctl.tank.ticks_since_hit
+	ctl.tank.ticks_since_hit = 0
+	var was_exec := BrainSwitches.native_exec
+	BrainSwitches.native_exec = false
+	var start := ExecuteTwinCase._capture(movers, ctl)
+	var live_cmd: TankCommand = ctl.compute_command(delta)
+	var live := ExecuteTwinCase._capture(movers, ctl)
+	ExecuteTwinCase._restore(movers, ctl, start)
+	for each in movers:
+		each.native_stale = Movement.STALE_ALL
+	var answer: Variant = NativeBridge.impl.execute(ctl, delta, NativeExec.EXEC_OWNED_VERIFY if owned else NativeExec.EXEC_LIVE)
+	var after := ExecuteTwinCase._capture(movers, ctl)
+	var result := [0, 0, ""]
+	if answer == null:
+		result = [0, 1, "frame %d %s: the execute step handed back" % [frame, ctl.tank.name]]
+	else:
+		result[0] = 1
+		var differ := ExecuteTwinCase._diff(live, after)
+		if ExecuteTwinCase._command(live_cmd) != ExecuteTwinCase._command(answer as TankCommand) or differ != "":
+			result = [1, 1, "frame %d %s: command live %s native %s; %s" % [frame, ctl.tank.name,
+					ExecuteTwinCase._command(live_cmd), ExecuteTwinCase._command(answer as TankCommand), differ]]
+		var moved := int(after[0][0].get("static:underfire_aborts", 0)) - int(start[0][0].get("static:underfire_aborts", 0))
+		if moved != 0:
+			yield_tally["underfire_aborts"] = int(yield_tally.get("underfire_aborts", 0)) + moved
+	ExecuteTwinCase._restore(movers, ctl, start)
+	for each in movers:
+		each.native_stale = Movement.STALE_ALL
+	BrainSwitches.native_exec = was_exec
+	ctl.tank.ticks_since_hit = was_hit
 	Traffic.set_off("underfire", was_off)
 	return result
