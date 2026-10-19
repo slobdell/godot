@@ -11,6 +11,13 @@ extends SceneTree
 ##   arrived_s         the element's first `arrived`, seconds after the order (-1: not inside the window)
 ##   foreign_m         at arrival, the nearest hull of ANOTHER of his squads (enemy_m: the nearest enemy)
 ##   shuffle_m         the most any crew moved after its squad's arrival, to the end of the window (brains' B6 shuffle)
+## Round 35 (orders D2, the deploy step ON): the shuffle split in two. The squad's PLACE move starts when it deploys (the
+## element's deploy tick; with `--deploy-step=off` its arrival) and lasts PLACE_S:
+##   deploy_s          seconds from the order to that start (-1: never); deploy_cause: all_in / cap / arrived (off)
+##   place_m           the most any crew moved from where it stood at that start, during PLACE_S (the deploy move)
+##   twitch_m          the most any crew moved after PLACE_S, to the window's end (what should be ~0)
+##   end_foreign_m     at the window's end, the nearest hull of another of his squads (packing: >= ~9 m wanted)
+##   end_far_m         at the window's end, the farthest crew of the squad from the click (how far the body spreads)
 ## ORDERS_PROBE_SQUAD {...} a squad, ORDERS_PROBE {...} the run. With a display, top-down screenshots when every squad has
 ## arrived (or the window ends), desktop 1280x720 and phone 1560x720, into `--probe-shots=DIR`.
 ##
@@ -24,7 +31,8 @@ extends SceneTree
 const MAIN := "res://game/main.tscn"
 const DECK_BACK_M := 18.0
 const WINDOW_S := 90.0
-const AFTER_ARRIVAL_S := 20.0
+const AFTER_ARRIVAL_S := 30.0
+const PLACE_S := 8.0
 const SHOT_AFTER_S := 5
 ## Squad 1..5's anchor posts in the shots (the order the probe lists squads in).
 const MARK_COLOURS := [Color(1.0, 0.25, 0.25), Color(1.0, 0.85, 0.1), Color(0.2, 1.0, 0.3), Color(0.2, 0.6, 1.0), Color(0.9, 0.3, 1.0)]
@@ -156,6 +164,15 @@ func _run() -> void:
 				"enemy_m": snappedf(float(squad.get("enemy", -1.0)), 0.1),
 				"shuffle_m": snappedf(float(squad["shuffle"]), 0.1), "goals_across": squad["goals_across"],
 				"arrived_by": squad.get("arrived_by", ""),
+				"deploy_s": snappedf((int(squad["place_tick"]) - _order_tick) / float(SimClock.TICK_RATE), 0.1)
+						if squad.has("place_tick") else -1.0, "deploy_cause": squad.get("deploy_cause", ""),
+				"place_m": snappedf(float(squad.get("place", -1.0)), 0.1), "twitch_m": snappedf(float(squad.get("twitch", -1.0)), 0.1)
+						if squad.has("placed") else -1.0,
+				"end_foreign_m": snappedf(_nearest(_living(squad), func(t: Tank) -> bool: return t.team == Match.Team.GREEN \
+						and not (squad["units"] as Array).has(String(t.name))), 0.1),
+				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
+						if not _living(squad).is_empty() else -1.0, 0.1),
+				"deploy_step": "on" if ElementPlan.DEPLOY_STEP else "off",
 				"end": _end_state(squad)}
 		rows.append(row)
 		print("ORDERS_PROBE_SQUAD " + JSON.stringify(row))
@@ -267,6 +284,42 @@ func _watch() -> void:
 			for n: String in alive:
 				if seats.has(n):
 					squad["shuffle"] = maxf(float(squad["shuffle"]), _flat_d(_tank(n).global_position, seats[n]))
+			_watch_place(squad, alive, element)
+
+
+## D2: the place move (from the deploy, or the arrival with the step off) and the twitch after it.
+func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
+	if not squad.has("place_tick"):
+		var deploy: Dictionary = element.deploy if element != null else {}
+		var started := not ElementPlan.DEPLOY_STEP or element == null or bool(deploy.get("deployed", false))
+		if not started:
+			return
+		squad["place_tick"] = _match.tick
+		squad["deploy_cause"] = String(deploy.get("cause", "arrived")) if ElementPlan.DEPLOY_STEP else "arrived"
+		squad["place_from"] = _seats(alive)
+		squad["place"] = 0.0
+		squad["twitch"] = 0.0
+		return
+	var since := _match.tick - int(squad["place_tick"])
+	if since <= int(PLACE_S * SimClock.TICK_RATE):
+		var from: Dictionary = squad["place_from"]
+		for n: String in alive:
+			if from.has(n):
+				squad["place"] = maxf(float(squad["place"]), _flat_d(_tank(n).global_position, from[n]))
+		if since == int(PLACE_S * SimClock.TICK_RATE):
+			squad["placed"] = _seats(alive)
+		return
+	var placed: Dictionary = squad["placed"]
+	for n: String in alive:
+		if placed.has(n):
+			squad["twitch"] = maxf(float(squad["twitch"]), _flat_d(_tank(n).global_position, placed[n]))
+
+
+func _seats(alive: Array) -> Dictionary:
+	var seats := {}
+	for n: String in alive:
+		seats[n] = _tank(n).global_position
+	return seats
 
 
 ## A static of `script` by name, or -1 on a tree before it existed (the probe runs on both sides of a change).
@@ -399,6 +452,12 @@ func _nearest(alive: Array, keep: Callable) -> float:
 		for n: String in alive:
 			best = minf(best, _flat_d((t as Tank).global_position, _tank(n).global_position))
 	return best if best < INF else -1.0
+
+
+func _living(squad: Dictionary) -> Array:
+	return (squad["units"] as Array).filter(func(n: String) -> bool:
+		var t := _tank(n)
+		return t != null and t.is_alive())
 
 
 func _tank(unit_name: String) -> Tank:

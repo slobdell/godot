@@ -131,7 +131,7 @@ _Filed here before any number._
   the trace names the mechanism and the verdict is the orchestrator's (the step is brains' E1).
   **Scope change before the gate (2026-10-19 ~11:05, from W2's dev read on tuning seeds 460–463, builder0, lab/cpf5 bdacb1786):**
   the give-up applies to TURRET hulls only (`5c692b507`); with it on hull-fixed scouts, scouts >= 45 deg off rose 33 -> 48 over six
-  tasks (a scout's creep is how it aims). Gate candidate lab/cpf5 `a7167e4f9`, then `9a463b0b9` (same game/ and native/; + a cpf5base arm and references; on main 0f4d528d7; E1 NOT in).
+  tasks (a scout's creep is how it aims). Gate candidate lab/cpf5 `a7167e4f9`, then `9a463b0b9` (same game/ and native/; + a cpf5base arm and references; on main 0f4d528d7; E1 NOT in). Native base arm: lab/cpf5-base `f77360f92` (= 9a463b0b9 with TURN_HULL/FACE_SETTLE defaults false).
 
 - **T8 a held crew under fire leaves the hold (traffic, R35.7 (B)), filed before any code or number from `stream/traffic`
   `d3d2e6478` (`references/round35/traffic/t8_design.md`), with two lines added by the orchestrator.** `--traffic-on=holdfire`
@@ -292,6 +292,19 @@ _Filed here before any number._
   f432645dd + pair/native-t7 + pair/native-w1b + T9's and W1c's mirrors. Traffic's stream carries **T6b** (a give-way already begun
   finishes when a hit lands) as DEFAULT behaviour, not on main, plus T7 OFF; so the joint series' base includes T6b, and the joint
   pair merges only AFTER T7's verdict (if T7 parks, re-cut without T6b/T7 and re-twinned).
+- **R35.20 (2026-10-19 ~14:30) M5's gate RED; fix; re-gate on main 1a18dd278.** lab/cpf5 `9a463b0b9` builder0 `make native check
+  exited 2`, 2891/3, sim-baseline unmoved. All 3 reds W2's: test_nav_face_recovery and test_planner_trace_wedged (round 9's "never
+  silent": the give-up stood the hull still without face_checked / face_giveups / face_stalled), test_planner_seam_hold rolling face
+  (plan_face failures counted while still ROLLING; give-up before rest; hull 180 deg off at 40 s). Fix `55e53006d`: a failed plan
+  counts only at rest (|speed| <= 0.5 m/s; a refused leg still counts), and the give-up reports. Re-gate on main 1a18dd278 (the
+  deploy step changes player plain-move halts, which hull-rest's drawn/clicked stages use); full-check order main's batch -> M5 ->
+  W1b-ON.
+- **R35.21 (2026-10-19 ~14:55) D2's report (reported, not gating; his "mixed" confirmed).** `make orders-probe` builder0, main
+  977a270fa (1a18dd278's code; library from 581b8a396's build, no game-code difference), seed 34, n 1 a cell, main v deploy_off.
+  With the step on: twitch after settling falls on Crossing (5 click 46.5 -> 23.3 m, 3 click 32.2 -> 18.3) and Locks 3, rises on Locks
+  5 click (4.4 -> 19.6), Terminus 5 click (13.1 -> 30.6); all-in mostly within a few s; Locks 3 route slower (38.3 v 18.5 s); Locks 5
+  route now finishes (45.6 s; deploy_off never). D4 (minimax seating) and D5 (gate deal) target exactly those cells. Rows:
+  `stream/orders` 56ed913fc `references/round35/orders/d2-main-1a18dd278/`.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

@@ -482,18 +482,14 @@ static func face_given_up_id(id: int, want: Vector3) -> bool:
 
 ## A face plan for `want` failed on `mover` (none fitted, or `refused`: a planned leg the world would not turn). Counts toward
 ## the give-up only AT REST (a plan made while the hull still rolls is not "no plan fits": planner's rolling-face test, the seam
-## asks again from rest), and reports like round 9's face give-up (OrderController.face_checked / face_giveups, face_stalled):
-## a face that cannot turn never stands still silently (test_nav_face_recovery, test_planner_trace_wedged).
+## asks again from rest). Reporting is round 9's own window, run while the face stands (Movement._face_still).
 const FACE_SETTLE_REST_MPS := 0.5
 
 
 static func face_plan_failed(mover: Movement, want: Vector3, refused := false) -> void:
 	if not refused and absf(mover.ctl.tank.speed()) > FACE_SETTLE_REST_MPS:
 		return
-	OrderController.face_checked += 1
-	if face_failed_id(mover.get_instance_id(), want):
-		OrderController.face_giveups += 1
-		mover.ctl.face_stalled = true
+	face_failed_id(mover.get_instance_id(), want)
 
 
 static func face_settle_forget_id(id: int) -> void:

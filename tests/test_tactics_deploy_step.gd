@@ -1,11 +1,14 @@
 extends TestCase
-## B8 (R34.14; the lead's deploy-step question): THE DEPLOY STEP, a prototype behind `--deploy-step=on`. An AUTO squad on
+## B8 (R34.14; the lead's deploy-step question): THE DEPLOY STEP, ON (his answer); `--deploy-step=off` is the off arm. An AUTO squad on
 ## a plain move keeps its TRAVEL seats until every crew is in (or DEPLOY_CAP_S), then lays its HALT once, on a heading
 ## fixed at the order (the task's `lay`), and those seats stand.
 
 
+var _was_on := ElementPlan.DEPLOY_STEP
+
+
 func teardown() -> void:
-	ElementPlan.DEPLOY_STEP = false
+	ElementPlan.DEPLOY_STEP = _was_on
 	super.teardown()
 
 
@@ -91,7 +94,13 @@ func test_once_deployed_its_seats_stand() -> void:
 		assert_true((a[n] as Vector3).distance_to(b[n]) < 0.5, "%s's halt seat stands (%.1f m)" % [n, (a[n] as Vector3).distance_to(b[n])])
 
 
-func test_off_by_default_the_travel_shape_stands() -> void:
+func test_on_by_default() -> void:
+	assert_true(ElementPlan.DEPLOY_STEP or OS.get_cmdline_user_args().has("--deploy-step=off") \
+			or OS.get_environment("DEPLOY_STEP") == "off", "the lead's answer: the deploy step is ON")
+
+
+func test_switched_off_the_travel_shape_stands() -> void:
+	ElementPlan.DEPLOY_STEP = false
 	var plans := _drive([1.0, 0.0], func(slots: Dictionary) -> Array: return _on_seats(slots))
 	assert_true((plans[-1].get("deploy", {}) as Dictionary).is_empty(), "no deploy state with the switch off")
 	assert_eq(String(plans[-1]["formation"]), String(plans[1]["formation"]), "round 33's shape on the spot")
