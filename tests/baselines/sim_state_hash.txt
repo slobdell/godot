@@ -1,26 +1,26 @@
 # glibc-2.43 foundry: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 foundry 2e54d6f5c9fc22ac
-# glibc-2.43 yard: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 yard 0fdc33ed5d5757a6
+# glibc-2.43 yard: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 yard 10b591da31fbc932
 # glibc-2.43 pit: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 pit 022e54dcc1c3e787
-# glibc-2.43 terminus: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 terminus 23edc5782084a2fe
-# glibc-2.43 crossing: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 crossing aa4ad61e41ee6e20
+# glibc-2.43 terminus: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 terminus 86d400c26dabd324
+# glibc-2.43 crossing: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 crossing 7dbbd4b72e0ac717
 # glibc-2.43 sumps: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 sumps 8909a3d97aef76de
-# glibc-2.43 locks: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 locks 7e3e85f1a2174f14
-# glibc-2.43 parade: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 parade fc435f111c689d64
-# glibc-2.43 gorge: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 gorge eb810b61f83b3646
+# glibc-2.43 locks: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 locks 68c7dcf476b05e89
+# glibc-2.43 parade: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 parade 72b1c96369096248
+# glibc-2.43 gorge: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 gorge ff3e73d984b8b671
 # glibc-2.43 archipelago: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 archipelago 5595506fcfeac33f
-# glibc-2.43 cut: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 cut 986826d576d4eb65
-# glibc-2.43 docks: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
-glibc-2.43 docks 0cf63204b0290ae1
+# glibc-2.43 cut: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 cut 66759bb811706337
+# glibc-2.43 docks: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
+glibc-2.43 docks 1ad07ab1883a1db8
 # glibc-2.43 yard_open: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 yard_open 9287bb338b29a976

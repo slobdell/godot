@@ -1,0 +1,11 @@
+FACE_PAIRS_DISTINCT drawn | distinct pairs 64 of 64 | cells that repeat: none
+FACE_PAIRS_BOTH drawn | faces 9 | INCONCLUSIVE (fewer than 10 faces both planned): this mode's (2c) cannot pass
+FACE_PAIRS_CAND_ONLY drawn | faces 33 | median 5.4 v 3.6 m (se 0.54, line <= 4.5) over | p90 8.1 v 6.4 (se 0.85, line <= 7.8) over | max 9.4 v 6.6 | hull_far (candidate plan_far median 5.3; kept 0) | FAIL
+FACE_PAIRS_BASE_ONLY drawn | faces 1 | hull_far candidate [8.3] v base [15.5] (base plan_far [15.6]) | reported
+FACE_PAIRS_OTHER drawn | neither served 35 | unmatched base 68 candidate 1091 | reported
+FACE_PAIRS_DISTINCT clicked | distinct pairs 57 of 66 | cells that repeat: gangs/faced_ambush 7/11, gangs/faced_support_by_fire 6/11
+FACE_PAIRS_BOTH clicked | faces 25 | median 1.7 v 1.9 m (se 0.29, line <= 2.4) ok | p90 3.8 v 3.0 (se 0.72, line <= 4.2) ok | max 5.7 v 5.7 | hull_far (plan_far median 4.3 v 3.2) | PASS
+FACE_PAIRS_CAND_ONLY clicked | faces 2 | median 5.2 v 1.4 m (se 1.74, line <= 4.3) over | p90 8.8 v 2.6 (se 2.12, line <= 6.1) over | max 8.8 v 2.6 | hull_far (candidate plan_far median 10.2; kept 0) | FAIL
+FACE_PAIRS_BASE_ONLY clicked | faces 5 | hull_far candidate [0.6, 1.6, 0.9, 2.3, 1.8] v base [9.4, 2.3, 0.8, 6.0, 2.8] (base plan_far [13.6, 20.5, 0.8, 5.9, 3.0]) | reported
+FACE_PAIRS_OTHER clicked | neither served 265 | unmatched base 33 candidate 47 | reported
+FACE_PAIRS line (2c): NOT ALL PASS

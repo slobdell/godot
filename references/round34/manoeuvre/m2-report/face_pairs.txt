@@ -1,0 +1,7 @@
+FACE_PAIRS_DISTINCT drawn | distinct pairs 53 of 53 | cells that repeat: none
+FACE_PAIRS_BOTH drawn | faces 7 | INCONCLUSIVE (fewer than 10 faces both planned): this mode's (2c) cannot pass
+FACE_PAIRS_CAND_ONLY drawn | faces 0 | NOT JUDGED (fewer than 2) | hull_far (candidate plan_far median 0.0; kept 0)
+FACE_PAIRS_BASE_ONLY drawn | faces 0 | hull_far candidate [] v base [] (base plan_far []) | reported
+FACE_PAIRS_OTHER drawn | neither served 96 | unmatched base 0 candidate 0 | reported
+FACE_PAIRS clicked | NOT JUDGED: no paired runs (base 0, candidate 0)
+FACE_PAIRS line (2c): NOT ALL PASS
