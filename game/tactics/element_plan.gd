@@ -1797,6 +1797,7 @@ static var DEPLOY_ON_CLICK := OS.get_cmdline_user_args().has("--deploy-on-click"
 const DEPLOY_INLAND_STEP_M := 2.0
 const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
+const DEPLOY_ON_SPOT_M := 12.0
 
 
 ## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.
@@ -1831,7 +1832,11 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["deployed"] = true
 		deploy["tick"] = tick
 		deploy["cause"] = "all_in" if all_in else "cap"
-		var at: Vector3 = destination if DEPLOY_ON_CLICK else clamp_to_arena(Vector3(center.x, 0.0, center.z))
+		# D1 (round 35, the ship check): within DEPLOY_ON_SPOT_M of the spot it was sent to, the halt stands ON that spot
+		# (the scenarios' "every formation stands on the spot it was sent to": B8b's centred lay left anchors 1.5-9.5 m
+		# off); a squad that deployed on the cap far short of it stands where it is (B8b).
+		var on_spot := DEPLOY_ON_CLICK or Vector2(center.x - destination.x, center.z - destination.z).length() <= DEPLOY_ON_SPOT_M
+		var at: Vector3 = destination if on_spot else clamp_to_arena(Vector3(center.x, 0.0, center.z))
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), String(_halt_pick(situation, state, table)["formation"]),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy
