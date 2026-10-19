@@ -75,6 +75,7 @@ def per_fight(deaths, census, standoffs, aborts):
         "abort_contacts": sum(int(a.get("contacts_3s", 0)) for a in aborts),
         "friendly_contacts": int((census or {}).get("friendly_contacts", 0)),
         "pass_contacts": int((census or {}).get("pass_contacts", 0)),
+        "held": int((census or {}).get("held_deaths", 0)),
         "counters": {k: int(((census or {}).get("route_arms") or {}).get(k, 0)) for k in ("underfire_refusals", "underfire_holds", "underfire_aborts", "underfire_gives", "passes", "passes_done", "passes_timeout")},
     }
 
@@ -139,6 +140,7 @@ def main(argv):
             ("5 contacts in 3 s after a hit-ended give-way (guard)", "abort_contacts", "notup", True),
             ("7 friendly hull contacts, all (guard; T7)", "friendly_contacts", "notup", True),
             ("R contacts with a crew passing (T7)", "pass_contacts", "notup", False),
+            ("R held deaths, (D): held by the hold within 3 s", "held", "two", False),
             ("R jam deaths, all kinds", "jam", "two", False),
             ("R all deaths", "all", "two", False),
             ("R standoffs (count)", "standoffs", "notup", False),
