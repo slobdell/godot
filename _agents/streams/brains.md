@@ -99,6 +99,13 @@ rejoin_d5c98eb7, warrig_befd86c2 (all _builder2.txt). Main's check with both mer
 **Round 34 notes:** the War Rig trace does not log the inset's engage distance (reported-only in (1b)); add it.
 The duel-only scout (advantage >= 1, reach judged over the next 1–2 s, seeds 73–79) waits on the lead's answer.
 B10b stays parked (R33.22), with --ground-latch on stream/brains. B11b waits on CP-F (R33.23).
+5. **R33.35 herringbone halt (reopened after close): PASS, named for merge `3baf3a06`** (lab/brains-herring on main
+   7dcae6b5; check 2794/0, exit 0). The herringbone drill laid its seats on the crews' AVERAGED hull heading every
+   update, so as hulls turned the shape re-laid and crews were re-sent, a loop. Now it lays on the drawn facing, else
+   the heading it was first laid on. Gangs faced_attack_move, the first 6 fresh seeds rolling the Guns + gang_ifv
+   Hunters army (scanned by squads first): Hunters seat jumps after arrival 107 v 2342; every squad settles (30–50 s)
+   v none; Guns' late drifts 0 v 341; 0 flips. squad-arrive 97 v 97. The first run (520–525) was a null: those seeds
+   roll the Battery army, which never enters the herringbone drill.
 Process notes: rejoin's first stage (showmatch) could not act (elimination: nothing respawns) and its second tree
 carried parked B10b; both caught before a merge, re-run on fresh seeds. builder2 fresh folders race `npm ci` in
 broker-test/relay-smoke; seed node_modules AND touch its .package-lock.json.
