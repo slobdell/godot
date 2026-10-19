@@ -6,6 +6,31 @@
 
 _Last updated: 2026-10-18 — **ROUND 34 IS PREPARED (below); round 33 is CLOSED.** Main inherits `d7d57f4cf`'s green check (builder2, `make check exited 0`, 2797/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved; `tools/merge_check_needed.sh d7d57f4cf` says INHERIT: only docs since). He pushes `main`._
 
+## 👋 FOR HIM WHEN HE WAKES (round 34, 2026-10-19 morning) — read this first
+
+**Main is green at c29a8c7b6** (builder0 2877/0). Workers are done or idle; the worktrees stay until his three answers, then the
+orchestrator closes the round (briefs to `streams/archive/round34/`, branches renamed `round34/*`).
+
+**What he'll notice (his "one click, three squads" complaint, C34.11):** no squad crosses the river on a one-click or a route in any
+of planner's 24 cells (Locks, Crossing, Terminus; 3 and 5 squads); five squads to one point all go (back rank 52–64 m behind the click,
+was at home); a shift-clicked route is the SQUAD's (no stop to form up at in-between waypoints; several squads pass a waypoint as a
+gate, single file over a bridge); squads through one gate take the far places first. Report + shots:
+`references/round34/orders/lead-pass-1ed50cf94/README.md`. Also: a scout that can win its duel stands and trades (B1); a rematch
+plays out the same (C34.6); a k-turning hull isn't declared arrived mid-leg (M2); web-smoke needs no desktop on builder0 (N6).
+
+**Three questions for him (one recommendation each):**
+1. **The circled scout (M0, R34.10):** the shuffle is gone in every run, it aims 74 % of the time (was 3 %), deals 2.3× what it takes;
+   out of its gun's reach it now closes and fights (60 hits a run v the 57 he accepted, but it kills an IFV 5 times in 12). **Ship it**
+   (frozen pair `c8fb8b6a3`; on his yes: merge + adopt crossing/parade/archipelago).
+2. **The deploy step (R34.7, B8b on main, OFF):** squads keep their travel shape until all are in, then spread as one move. Try it:
+   `DEPLOY_STEP=on make skirmish ARENA=locks`. Planner's pass: mixed (better on some cells, slower on others). **Keep it if it feels
+   right**; if yes, round 35 flips it on and builds tight packing on top (O2's (B)).
+3. **A crew stuck behind a FIRING mortar truck (R34.13):** 1 % of jam deaths (T5). **Leave the truck firing** (low stakes).
+
+**Parked this round, each judged and traced (workstreams R34.x):** parkedroom v4/v4b, T4 the ghost (4th), T6 under-fire no-give-way
+(2 tries), CP-F 4 (the turn is right, the settle isn't), B6 early halt lay, O2 packing, B9 lane spread. Round-35 candidates: wedged deaths
+(8.3 % of deaths, mid-weight hulls in lane mouths under fire), CP-F's new design, crossing drives on the Locks 5-squad route, packing.
+
 ## 🚀 ROUND 34 IS PREPARED (2026-10-18) — read this first
 
 **Round 34 is RUNNING (launched 2026-10-18 ~21:45 PDT), plus a SIXTH stream added mid-round: orders (Opus, offset 5).**
