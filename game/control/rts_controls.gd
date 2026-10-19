@@ -1504,6 +1504,10 @@ func _direct(units: Array, verb: String, given: Dictionary, shape: String) -> St
 const GATE_SCAN_M := 60.0
 const GATE_STEP_M := 2.0
 const GATE_DETOUR := 1.5
+## Round 35 (D5): an in-between gate dealt by the squads' previous leg ends, nearest the gate in front, ranks stepped by
+## the travel shape, never behind the previous leg. `--gate-deal=off` is round 34's O4 (dealt left to right by where the
+## squads stand now, ranks a halt's depth apart).
+static var GATE_DEAL := not OS.get_cmdline_user_args().has("--gate-deal=off")
 ## Measurement: gates laid (a re-lay of a queued waypoint for several squads).
 static var gates_laid := 0
 
@@ -1533,7 +1537,8 @@ static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses
 
 ## The squads' anchors at an in-between waypoint: a gate as wide as the ground. `blocks` = [{"center", "width", "depth"}] (any
 ## order; laid left to right by where they stand across the approach, so no two cross on the way in); `approach` = the way
-## the route comes in. k = how many fit abreast in the clear width (capped at O2's MAX_FRONTAGE_M) at the widest block's
+## the route comes in. Round 35 (D5): squads nearest the gate (farthest along `approach`) take the front rank; a block's
+## `travel_depth` (the shape it passes in) steps the ranks when given. k = how many fit abreast in the clear width (capped at O2's MAX_FRONTAGE_M) at the widest block's
 ## frontage plus GAP_M, at least one; the rest in ranks behind along -approach, the deepest block's depth + GAP_M apart. A
 ## rank is centred in the CLEAR width (the ground may be clear to one side only); narrower than a squad = single file ON the
 ## click line. Returns one anchor per block, in `blocks`' order, each through `clamp`.
@@ -1553,15 +1558,33 @@ static func gate_anchors(blocks: Array, click: Vector3, approach: Vector3, drive
 	var deepest := 0.0
 	for block: Dictionary in blocks:
 		widest = maxf(widest, float(block["width"]))
-		deepest = maxf(deepest, float(block.get("depth", 0.0)))
+		deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0)) if GATE_DEAL else block.get("depth", 0.0)))
 	var single := clear < widest
 	var abreast := 1 if single else mini(blocks.size(), maxi(1, int(floor((clear + SelectionSquads.GAP_M) / maxf(widest + SelectionSquads.GAP_M, 1.0)))))
 	var centre := flat_click if single else flat_click + across * ((sides[1] - sides[0]) * 0.5)
-	var order: Array = []
+	# Round 35 (D5): the squads farthest along the approach (nearest the gate) take the front rank, the rest the ranks
+	# behind in turn, so nobody drives back past a squad to reach its place; within a rank, left to right.
+	var by_along: Array = []
 	for i in blocks.size():
 		var c: Vector3 = blocks[i]["center"]
-		order.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
-	order.sort()
+		by_along.append([-Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(ahead), i])
+	by_along.sort()
+	var order: Array = []
+	if not GATE_DEAL:
+		for i in blocks.size():
+			var c: Vector3 = blocks[i]["center"]
+			order.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
+		order.sort()
+	var start := 0
+	while GATE_DEAL and start < by_along.size():
+		var rank_members: Array = []
+		for n in range(start, mini(start + abreast, by_along.size())):
+			var i := int(by_along[n][1])
+			var c: Vector3 = blocks[i]["center"]
+			rank_members.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
+		rank_members.sort()
+		order.append_array(rank_members)
+		start += abreast
 	result.resize(blocks.size())
 	var step := widest + SelectionSquads.GAP_M
 	var rank := 0
@@ -1606,7 +1629,15 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 			earlier = _middle_of(squad["units"])
 		before += Vector3((earlier as Vector3).x, 0.0, (earlier as Vector3).z)
 		held_elements.append(held)
-		blocks.append(_squad_block(squad))
+		# Round 35 (D5, planner's Locks 5 route): the gate is dealt by where each squad's PREVIOUS leg ends (where it comes
+		# to the gate from), not where it stands now (at home, the middle squad was dealt the gate's far end and crossed the
+		# others twice), and ranks behind the gate step by the shape it TRAVELS through in, not its halt.
+		var block := _squad_block(squad)
+		if GATE_DEAL:
+			block["center"] = Vector3((earlier as Vector3).x, 0.0, (earlier as Vector3).z)
+		if GATE_DEAL and block.has("shape"):
+			block["travel_depth"] = SelectionSquads.depth(String(block["shape"]), int(block["count"]), (block["pitch_v"] as Vector2).y)
+		blocks.append(block)
 		if ground == null and game_match != null:
 			for unit_name: String in squad["units"]:
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D
@@ -1623,6 +1654,9 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var drive: Callable = SelectionSquads.drive_on(ground) if ground != null else func(a: Vector3, b: Vector3) -> float: return a.distance_to(b)
 	var crosses: Callable = SelectionSquads.crosses_on(ground) if ground != null else func(_a: Vector3, _b: Vector3) -> bool: return false
 	var gate := gate_anchors(blocks, prev, approach, drive, crosses, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	# Round 35 (D5): and no gate place behind where the squad's previous leg ends (R34.12b's rule, on the way through).
+	if GATE_DEAL:
+		gate = SelectionSquads.never_behind(gate, blocks, prev, approach)
 	for i in held_elements.size():
 		var element: Element = held_elements[i]
 		element.relay_queued(element.queued_tasks.size() - 1, [gate[i].x, gate[i].z])

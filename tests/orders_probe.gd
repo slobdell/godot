@@ -116,6 +116,14 @@ func _run() -> void:
 		var p: Vector3 = _route[i]
 		returned.append(_controls.order_selection("move", {"to": [p.x, p.z], "queue": i > 0}))
 	_order_tick = _match.tick
+	# Round 35 (D5): every squad's legs as dealt (its element's task, then its queued tasks' destinations).
+	for squad: Dictionary in _squads:
+		var held := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
+		if held != null:
+			var legs: Array = [held.task.get("to")]
+			for queued: Dictionary in held.queued_tasks:
+				legs.append(queued.get("to"))
+			print("ORDERS_PROBE_LEGS squad %d start %s legs %s" % [int(squad["number"]), _xz(squad["start"]), legs])
 	for squad: Dictionary in _squads:
 		squad["anchor"] = _anchor_of(squad)
 		var ground := _tank(String(squad["units"][0]))
