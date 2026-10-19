@@ -133,6 +133,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   legs); every route cell median all in <= gate_off x 1.2 + 3 s, and no more never-in seeds than gate_off; deck / far no
   higher than gate_off in any cell; drive/plan median <= gate_off + 0.2 in each cell.
 
+### D5 A/B 1 (builder0, `554131533`, seeds 3611-3616): gain PASSED, guards FAILED; one fix try (R35.26)
+- **Read:** Locks 5 route median all in 19.9 v 33.4 s (gain line <= 23.4: pass); route medians summed 153.3 v 170.4 s; click
+  cells 36/36 identical. **Failed guards:** Crossing 5 route 1 never-in seed (s3614) v 0; deck touches Crossing 3 route 6 v
+  5 and Locks 3 route 4 v 2 (every extra one a crew nosing onto the NEAR end of a ramp, z 11.9 / ~31; far bank 0
+  everywhere); Crossing 5 route drive/plan 2.17 v 1.94 (+0.23 v +0.2). Rows: `references/round35/orders/d5-ab-554131533/`.
+- **Trace s3614 (reproduced on the laptop):** the gate's approach `prev - before` pointed BACKWARDS (-9.4, 4.2; the route
+  runs -x -z) because waypoint 2's places had been laid ~40 m behind the click, near the squads' first legs; so the deal's
+  front rank and never_behind ran the wrong way and sent squad 1 17 m back, and squad 4 (one of three squads whose route had
+  collapsed to a single leg, both arms: a separate bug, below) ended 29 m short in the changed traffic.
+- **Fix try (`45d34470a`):** with the deal on, the gate is passed from where the squads come from (`before`) toward the next
+  click. s3614 laptop: squad 1's place now forward and to the side; all in 33 s. Locks 5 route s34 unchanged (17 s).
+- **Separate bug seen (both arms, not touched):** in Crossing 5 route s3614 squads 3-5 got ONE leg (straight to their final
+  place), not the shifted route: their first waypoint order didn't start a route for them. To trace (round 36 or after D4).
+- **Next:** the fresh re-read on 3631-3636 (filed on main, same bar) once D4's run frees this folder; fails again -> D5 parks.
+
 ### D5 crossing drives: built on stream/orders `77c284868` (no builder0 number yet)
 - **Trace** (laptop GDScript, Locks 5 route, seed 34, `ORDERS_PROBE_LEGS` + `--probe-trace`): not the last leg. The IN-BETWEEN
   gate (O4's `gate_anchors`, waypoint 2) dealt squads left to right by where they stood AT HOME and stepped ranks by the
