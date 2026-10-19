@@ -32,6 +32,25 @@ func test_the_give_way_on_the_owned_state() -> void:
 	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1})
 
 
+## Round 34 (traffic T6, R34.15, `underfire`): the open-ground stage with the switch on in forced compares. After a
+## negotiating compare: every OTHER hull hit this tick (the asked crew refuses: underfire_refusals), then this hull hit
+## (its own step aside held: underfire_holds); and every frame, each crew giving way hit this tick (the give-way ends:
+## underfire_aborts). Tanks' ticks_since_hit and the switch are put back after each.
+const UNDERFIRE_FLOORS := {"": 10, "underfire_refusals": 1, "underfire_holds": 1, "underfire_aborts": 1}
+
+
+func test_the_give_way_under_fire() -> void:
+	if FreshStage.parent(self, "test_the_give_way_under_fire"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+
+
+func test_the_give_way_under_fire_owned() -> void:
+	if FreshStage.parent(self, "test_the_give_way_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+
+
 ## Round 34 (native N5): the Sumps stage stands beside the west pit, not on its edge. At (-16, -6) its ranks overlapped
 ## the pump house and the pit's rim, and 7 hulls were pushed off the floor at spawn (TANK_OFF_FLOOR), so its counts rode
 ## on that geometry. (-40, 40) was chosen from a sweep of 961 centres (laptop: 231 spawn clean) and six builder2 stage
@@ -148,7 +167,8 @@ func _shortened(owned: bool) -> void:
 	_yield_check("shortened%s" % [" owned" if owned else ""], {"": 2, "yield_spots_shortened": 2})
 
 
-func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0) -> void:
+func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0,
+		under_fire := 0) -> void:
 	if NativeExpect.absent(self):
 		print("native: absent, the give-way is not exercised in this run")
 		return
@@ -187,6 +207,8 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	var drives := 0
 	screened = 0
 	set_up_asks = set_up
+	var fire_asks := under_fire
+	var fire_aborts := under_fire
 	var mismatches := 0
 	var first := ""
 	for leg in 2:
@@ -197,6 +219,15 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 			controllers[i].set_orders({"type": "move_to", "x": slots[mine].x, "z": slots[mine].z}, null)
 		for frame in STAGE_FRAMES:
 			await wait_physics_frames(1)
+			for i in movers.size():
+				if fire_aborts > 0 and movers[i].yield_to != "":
+					fire_aborts -= 1
+					var me: Array[int] = [i]
+					var result := _fire_compare(movers, controllers, i, me, leg * STAGE_FRAMES + frame)
+					drives += result[0]
+					mismatches += result[1]
+					if first == "" and result[2] != "":
+						first = "(hit giving way) " + result[2]
 			for i in movers.size():
 				if not _negotiates(movers[i], controllers[i]):
 					continue
@@ -214,6 +245,19 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 					mismatches += result[1]
 					if first == "" and result[2] != "":
 						first = "(others set up) " + result[2]
+				if fire_asks > 0:
+					fire_asks -= 1
+					var others: Array[int] = []
+					for j in movers.size():
+						if j != i:
+							others.append(j)
+					var me: Array[int] = [i]
+					for hit: Array[int] in [others, me]:
+						result = _fire_compare(movers, controllers, i, hit, leg * STAGE_FRAMES + frame)
+						drives += result[0]
+						mismatches += result[1]
+						if first == "" and result[2] != "":
+							first = "(%s under fire) %s" % ["others" if hit.size() > 1 else "self", result[2]]
 	NativeDrive.owned = false
 	print("native yield stage %s%s: %d negotiating drives compared (of %d drives screened), %d mismatches" % [arena,
 			" (owned state)" if owned else "", drives, screened, mismatches])
@@ -277,4 +321,20 @@ func _set_up_compare(movers: Array[Movement], controllers: Array[OrderController
 		controllers[j].tank.deploy_ratio = keep[j][0]
 		controllers[j].weapon_order = keep[j][1]
 		controllers[j].move_order = keep[j][2]
+	return result
+
+
+## Round 34 (traffic T6): mover `i`'s drive twinned with the hulls `hit` struck this tick (ticks_since_hit 0) and the
+## `underfire` switch on; both put back.
+func _fire_compare(movers: Array[Movement], controllers: Array[OrderController], i: int, hit: Array[int], frame: int) -> Array:
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	var keep := []
+	for j in hit:
+		keep.append(controllers[j].tank.ticks_since_hit)
+		controllers[j].tank.ticks_since_hit = 0
+	var result := _compare_tick(movers, controllers, frame, i)
+	for k in hit.size():
+		controllers[hit[k]].tank.ticks_since_hit = keep[k]
+	Traffic.set_off("underfire", was_off)
 	return result
