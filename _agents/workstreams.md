@@ -437,6 +437,12 @@ builder0), ruled R34.3.
   Every guard passes. The mechanism works (stacked picks 64 % → 49 %), the outcome doesn't follow: the census's stacking/deaths link
   was a correlation, not a lever. Worst ruled fight traced (locks-1404: two squads sent together round the side fed in piecemeal).
   No re-tune. The code rides main OFF (green at f1034b904).
+- **R34.20 T6 PARKS for the round (T6b, traffic, pair `104ca5a11`, builder2, fixed arenas × 1500–1527, n 140,
+  `x6b_series_104ca5a11.txt`).** G jam-under-fire deaths 256 → 121 (−53 %): PASS. Dropping (c) fixed the collision harm (contacts in
+  the 3 s after a hit-ended give-way 336 → 167, open deaths inside, total deaths flat 5768 → 5735, kills equal). FAIL: stuck deaths
+  902 → 963 (+6.8 %, 1.9 se over the line); far loops doubled (96 → 192, passing by 0.1). A crew refused by an under-fire squadmate
+  stalls behind it: the rule converts yielding deaths into stuck/blocked/parked deaths about one for one. DEFAULT_OFF; neither pair nor
+  native's `badfdb978` is merged. For round 35: refuse only when the asker has another way round (parkedroom's room/route test).
 - **Round-35 candidates recorded (2026-10-19 morning):** (1) **wedged deaths** (manoeuvre, from T5's rows,
   `references/round34/manoeuvre/wedged-deaths/`): 499 of 5984 = 8.3 %, 3.5 a fight, all `driving`, none held; mid-weight hulls
   (suppressor, burner, IFV, tank, lancer 13–16 % of their own deaths; scouts and artillery 2–4 %); lanes, the Locks worst (the x≈0 lane
