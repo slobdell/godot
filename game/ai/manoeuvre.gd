@@ -503,6 +503,52 @@ static func face_settled_id(id: int, planned_leg: bool, since_tick: int) -> bool
 	return not planned_leg and face_given_up_id(id, (row as Array)[1])
 
 
+## Round 35 (W1c, R35.12): THE STALL GATE READS THE DRIVE'S INTENT AGAINST A FRIENDLY HULL. Brains' E1 census: attack-move
+## legs waited on crews holding a move but making < 0.5 m/s 20-50 m off their slots for up to 71 s; traced (references/round35/
+## manoeuvre/w1c-trace): law-605 Green_Eyes_4 sat 70 s nose-on to a parked crew of another squad (Green_Eyes II_5, whose one
+## give-way drove it 2.4 m and left it touching), law-607 Green_Guns_6 23 m off its goal in a pack of friends. ORCA throttled
+## both drives to pace 0.05-0.09, so the command was 0.05-0.09 while the drive asked for full: unstick's |throttle| > 0.5 (driving
+## hard, not moving) never ran its clock, H1's escape (ask, reverse, stand) never started and nobody asked the parked crew again.
+## With this on, a ROUTED move (move_to, not direct) touching a friendly hull, or `blocked` by one, is tested on |throttle| /
+## pace (pace < 1); every other case keeps the command. `--nav-off=stallintent` flips STALL_INTENT_DEFAULT (false = OPT-IN).
+const STALL_INTENT_DEFAULT := false
+## The pace floor the intent divides by (a pace-0 drive is a Traffic hold or a stop: unstick does not run on a hold).
+const STALL_INTENT_MIN_PACE := 0.05
+## Arm counter: unstick ticks whose throttle test passed only by the intent reading (stride ticks by their stride).
+static var stall_intent_ticks := 0
+
+
+static func stall_intent_on() -> bool:
+	return STALL_INTENT_DEFAULT != Movement.switched_off("stallintent")
+
+
+## The throttle unstick's stall rule tests: the command, or under `stallintent` against a friendly hull its intent.
+static func stall_throttle(mover: Movement, cmd: TankCommand, order: Dictionary) -> float:
+	var command := absf(cmd.throttle)
+	if command > 0.5 or not stall_intent_on() or mover.pace_now >= 1.0:
+		return command
+	if String(order.get("type", "")) != "move_to" or bool(order.get("direct", false)) or order.get("reverse", false):
+		return command
+	if not _against_friend(mover):
+		return command
+	var intent := command / maxf(mover.pace_now, STALL_INTENT_MIN_PACE)
+	if intent > 0.5:
+		stall_intent_ticks += mover.ctl._step
+	return intent
+
+
+static func _against_friend(mover: Movement) -> bool:
+	var tank := mover.ctl.tank
+	for i in tank.get_slide_collision_count():
+		var hull := tank.get_slide_collision(i).get_collider() as Tank
+		if hull != null and hull.team == tank.team:
+			return true
+	if mover.phase == "blocked" and mover.blocked_by != "" and mover.ctl.tanks_root != null:
+		var blocker := mover.ctl.tanks_root.get_node_or_null(NodePath(mover.blocked_by)) as Tank
+		return blocker != null and blocker.team == tank.team
+	return false
+
+
 ## Round 35 (W1b, C35.6, R35.7): A WHEELED HULL HELD TO A STANDSTILL DOES NOT CREEP. W1's trace (references/round35/
 ## manoeuvre/w1-trace): 41 % of wedged deaths were crews Traffic held at a street mouth under fire; at the spot the hold asks
 ## pace 0 facing the squad's way, and on wheels throttle 0 at full lock is the plant's creep (TankMotion: |throttle| <
