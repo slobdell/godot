@@ -513,10 +513,6 @@ static func _face_legs(mover: Movement, map: RID, frame: Array, start: PackedFlo
 ## seeds 31-36 on 781801da0: in-reach exchange 0.20 -> 1.77, (a) 23.9 % v 25 and out-of-reach hits 42 -> 57 accepted):
 ## `--nav-off=turnin` turns it off.
 const TURN_IN_DEFAULT := true
-## The spot must have moved within this long (s) for a face to turn in; a spot that stood still that long goes back to
-## the face planner. (A bearing-rate threshold, 8 deg/s, let go whenever the orbiter slowed and handed the hull back to
-## the creep: builder0 seeds 21-23 on 66411eb7, up to 76 reverse ticks under a face.)
-const TURN_IN_MOVING_S := 3.0
 ## Catch-up: yaw this much faster than the bearing per degree of error (1/s). The least throttle (share of top speed) is
 ## above TankMotion.WHEEL_CREEP_THROTTLE at full lock, the only lock a turn-in uses: the tightest circle stays nearest the
 ## post and its velocity swings fastest (a 0.6 throttle at part lock drove 18 m circles: the scout closed on the
@@ -557,93 +553,97 @@ static func turn_in_on() -> bool:
 
 
 ## R33.38 (the ship check: a plain face round the compass rolled a scout 24.5 m off its spot, and a stop's swing at a
-## parked target never came round): the turn-in is for the case it was judged on, a spot ON A MOVING ENEMY. A threat face
-## before its spot is seen to move, and every stop swing, need a live hostile hull within TURN_IN_CONTACT_M of the spot
-## (a contact's last position, or gunnery's lead point) moving faster than TURN_IN_MOVER_MPS; and every turn-in a crew
-## with a BRAIN (TankBrain: every judged cell was one; a scripted OrderController with no
-## brain, scenario_suppression's tracking scout at `stop`, keeps gunnery's swing and its held fire). Any other face or
-## swing keeps the face planner and the creep, as before C33.9.
+## parked target never came round) and round 34 (M0, R33.39): the turn-in is for the case he reported, a crew whose
+## fixed gun on wheels faces a LIVE ENEMY it cannot yaw onto at rest. A threat face (a brain's own, no `from`) and a
+## stop's swing need a live hostile hull within TURN_IN_CONTACT_M of the spot (a contact's position, or gunnery's lead
+## point), and every turn-in a crew with a BRAIN (TankBrain: every judged cell was one; a scripted OrderController with
+## no brain, scenario_suppression's tracking scout at `stop`, keeps gunnery's swing and its held fire). Any other face
+## or swing keeps the face planner and the creep, as before C33.9. The enemy's SPEED is not a condition (round 33's
+## fc809b60a asked for > 1.5 m/s: the stage's orbiter starts from rest and stops when the scout sits on its nose, and
+## each miss handed a live threat face to the face planner, whose first leg reversed: seed 36, 13 reverse ticks). A
+## live enemy that stands still is handled here instead (TURN_IN_STILL_S below), never by the planner.
 const TURN_IN_CONTACT_M := 10.0
-const TURN_IN_MOVER_MPS := 1.5
+## An enemy slower than this (m/s) is a target that stands: in the arc the hull HOLDS STILL and shoots (the jink only
+## rolled it past a stopped orbiter 3 m away and lost the arc: seed 36's trace); out of the arc it keeps coming round
+## forward (a car turns fastest rolling), never the planner's reverse legs while the enemy is live.
+const TURN_IN_STILL_MPS := 0.5
+## Ticks a hull held still in its arc on a standing target.
+static var turn_in_holds := 0
 
 
-static func facing_mover(ctl: OrderController, spot: Vector3) -> bool:
+## The live enemy hull the spot stands for: the nearest within TURN_IN_CONTACT_M of it, for a brain's crew; null if none.
+static func live_enemy_near(ctl: OrderController, spot: Vector3) -> Tank:
 	if ctl.tanks_root == null or not ctl is TankBrain:
-		return false
+		return null
+	var best: Tank = null
+	var best_d := TURN_IN_CONTACT_M
 	for enemy in Perception.enemies_of(ctl.tank, ctl.tanks_root):
-		var v := enemy.real_velocity
-		if Vector2(enemy.global_position.x - spot.x, enemy.global_position.z - spot.z).length() <= TURN_IN_CONTACT_M \
-				and Vector2(v.x, v.z).length() > TURN_IN_MOVER_MPS:
-			return true
-	return false
+		var d := Vector2(enemy.global_position.x - spot.x, enemy.global_position.z - spot.z).length()
+		if d <= best_d:
+			best = enemy
+			best_d = d
+	return best
 
 
-## Drive this tick's `face` at `spot` as a turn-in; false leaves it to the face planner. The bearing rate is read from
-## the spot's own motion across ticks (a face order carries only the spot).
-static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta: float) -> bool:
+## Drive this tick's face (or a stop's swing, `swing`) at `spot` as a turn-in; false leaves it to the face planner (or
+## gunnery's swing). Round 34 (M0): the spot is resolved to the LIVE ENEMY HULL it stands for (the nearest within
+## TURN_IN_CONTACT_M), and the bearing, its rate and whether the target stands are read from that hull every tick.
+## Round 33 read the rate from the spot's steps across the brain's thinks, and the brain re-issues a face spot only
+## when it moves (seed 36's trace: the spot sat 1.8 m from where the enemy had stopped, 7 deg at 14 m, half the gun's
+## arc; a hull holding on that spot could not fire). A spot with no live enemy at it (a memory, a drawn or sector
+## facing, a scripted order) never turns in.
+static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta: float, swing := false) -> bool:
 	var tank := ctl.tank
 	if not turn_in_on() or tank.mount != "fixed" or ctl.movement.wheel_radius() <= 0.0 or not ctl is TankBrain:
 		return false
+	if not swing and String(ctl.move_order.get("from", "")) != "":
+		return false  # a drawn, post, sector or squad facing is not a threat face: the planner, as before C33.9
+	var tick := Engine.get_physics_frames()
+	if tick < ctl._turn_in_rest:
+		return false
+	var enemy := live_enemy_near(ctl, spot)
+	if enemy == null:
+		return false
 	var here := tank.global_position
-	var to := Vector3(spot.x - here.x, 0.0, spot.z - here.z)
+	var to := Vector3(enemy.global_position.x - here.x, 0.0, enemy.global_position.z - here.z)
 	if to.length_squared() < 1.0:
-		# A spot on top of the hull (an orbiter that rams it puts the threat there) has no bearing to turn to: hold, and
-		# never hand it to the face planner, whose leftover leg reversed for a tick each time (gang_scout v gang_ifv at
-		# 15 m, seed 19: 14 commanded gear changes, 3.8 m between the hulls).
+		# An enemy on top of the hull (an orbiter that rams it) has no bearing to turn to: hold, and never hand it to
+		# the face planner, whose leftover leg reversed for a tick each time (gang_scout v gang_ifv at 15 m, seed 19:
+		# 14 commanded gear changes, 3.8 m between the hulls).
 		cmd.throttle = 0.0
 		cmd.turn = 0.0
 		return true
 	var bearing := to.normalized()
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
-	var tick := Engine.get_physics_frames()
-	if tick < ctl._turn_in_rest:
-		return false
-	# The spot moves only when the brain re-issues it (each think), so the rate is read across those updates, never as a
-	# per-tick average. It is the TARGET's swing only, both bearings taken from here: the hull's own travel swings the
-	# bearing too, and a rate that counted it chased itself (the 15 m orbit settled 36 deg off). A face that lapses for
-	# under TURN_IN_MOVING_S (a HOLD or ADVANCE between SPOTs) keeps its history, so the hull is not handed to the face
-	# planner while it relearns (a 1 s lapse did: its reverse legs, up to 40 ticks a run, builder2 e00b09e3).
-	if tick - ctl._turn_in_seen > int(SimClock.TICK_RATE * TURN_IN_MOVING_S) or ctl._turn_in_bearing == Vector3.INF:
-		ctl._turn_in_bearing = Vector3(spot.x, 0.0, spot.z)
-		ctl._turn_in_tick = -1  # no move seen yet
-		ctl._turn_in_seen_first = tick
-		ctl._turn_in_rate = 0.0
-		ctl._turn_in_live = false
-	elif Vector2(spot.x - ctl._turn_in_bearing.x, spot.z - ctl._turn_in_bearing.z).length() > 0.05:
-		var was := Vector3(ctl._turn_in_bearing.x - here.x, 0.0, ctl._turn_in_bearing.z - here.z)
-		if was.length_squared() > 1.0 and ctl._turn_in_tick >= 0:
-			var swing := rad_to_deg(was.normalized().signed_angle_to(bearing, Vector3.UP)) / maxf(delta * (tick - ctl._turn_in_tick), 0.001)
-			ctl._turn_in_rate = lerpf(ctl._turn_in_rate, swing, 0.5)
-		ctl._turn_in_bearing = Vector3(spot.x, 0.0, spot.z)
-		ctl._turn_in_tick = tick
-	elif ctl._turn_in_tick >= 0 and tick - ctl._turn_in_tick > SimClock.TICK_RATE:
-		ctl._turn_in_rate = 0.0  # a spot unchanged for a second: the target stopped
-	ctl._turn_in_seen = tick
-	# A brain's own face at a threat (no `from`: SPOT's) turns in from its first tick, before any move of the spot is seen:
-	# waiting for one handed the first second to the creep, which reversed (gang_scout, 15 m orbit, seed 14: 5 ticks). A
-	# drawn or sector face (`from` order / sector / contact) waits for the spot to move; one that stands still TURN_IN_MOVING_S
-	# goes back to the face planner either way.
-	var threat_face := String(ctl.move_order.get("from", "")) == ""
-	if ctl._turn_in_tick < 0:
-		# ...and only at a MOVING enemy (R33.38): before the spot is seen to move, a threat face on a parked or empty spot
-		# keeps the face planner (gating every tick on it handed a live orbit to the planner whenever the contact lagged
-		# the orbiter: builder2 bd4f001f, seeds 31-36, (d) 0 -> 23 reverse ticks).
-		if not threat_face or not facing_mover(ctl, spot) or tick - ctl._turn_in_seen_first > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
-			return false
-	elif tick - ctl._turn_in_tick > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
-		return false  # a spot that stands still: the face planner has it
+	# The TARGET's swing of the bearing from its own velocity (d(theta)/dt = (p x v).y / |p|^2), smoothed a tick; the
+	# hull's own travel is added below as `own`, so neither can chase the other.
+	var v_t: Vector3 = enemy.real_velocity
+	var target_rate := rad_to_deg(to.cross(Vector3(v_t.x, 0.0, v_t.z)).y / to.length_squared())
+	ctl._turn_in_rate = lerpf(ctl._turn_in_rate, target_rate, 0.5)
+	var still := Vector2(v_t.x, v_t.z).length() < TURN_IN_STILL_MPS
 	var rate := ctl._turn_in_rate
-	var error := rad_to_deg(forward.signed_angle_to(bearing, Vector3.UP))  # + = the spot is to the left
+	var error := rad_to_deg(forward.signed_angle_to(bearing, Vector3.UP))  # + = the enemy is to the left
 	var half_arc := float(Units.stat(tank.unit_id, "fire_arc_deg", 0.0)) * 0.5
 	# The yaw it wants (yaw = speed / turning radius at full lock): the bearing's rate, the catch-up on the error, and the
-	# swing the hull's own travel puts on the bearing (d(theta)/dt = (p x -v).y / |p|^2), which the yaw must also match:
-	# the rate above leaves it out so it cannot chase itself.
+	# swing the hull's own travel puts on the bearing, which the yaw must also match.
 	var travel: Vector3 = tank.velocity
 	var own := rad_to_deg(to.cross(-Vector3(travel.x, 0.0, travel.z)).y / to.length_squared())
 	var want_yaw := rate + own + TURN_IN_GAIN * error  # deg/s, + = to the left
 	var radius := ctl.movement.wheel_radius()
 	var top_speed := maxf(tank.max_forward_speed, 0.1)
-	# Catching up (full lock, below) once the spot leaves the arc, until it is back in the arc's inner half; on target
+	if still and absf(error) <= half_arc:
+		# A target that stands, in the arc: hold still and shoot. (Seed 36's trace: the jink rolled the hull past a
+		# stopped orbiter 3 m away, the arc was lost, and the hand-off to the planner reversed.)
+		cmd.throttle = 0.0
+		cmd.turn = 0.0
+		ctl._turn_in_live = false
+		ctl._turn_in_window = TURN_IN_STALL_S
+		ctl._turn_in_yawed = 0.0
+		ctl._turn_in_leash_sign = 0.0
+		turn_in_holds += 1
+		turn_in_ticks += 1
+		return true
+	# Catching up (full lock, below) once the enemy leaves the arc, until it is back in the arc's inner half; on target
 	# between those, a jink.
 	if not ctl._turn_in_live and absf(error) > half_arc:
 		ctl._turn_in_live = true

@@ -1377,6 +1377,13 @@ func face_turn(cmd: TankCommand, spot: Vector3, delta: float) -> bool:
 	return true
 
 
+## Round 34 (C33.9's M0): the turn-in has the hull this tick; whatever face_turn had planned is stale (its first leg may be
+## a reverse: seed 36 of round 33's judged cells reversed 13 ticks on legs planned before the turn-in took over).
+func face_drop() -> void:
+	_face_left_m = 0.0
+	_face_legs.clear()
+
+
 func _face_start_leg(leg: Vector2) -> void:
 	_face_gear = int(leg.x)
 	_face_left_m = leg.y

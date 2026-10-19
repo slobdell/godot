@@ -446,22 +446,18 @@ var _face_left := FACE_STALL_SECONDS
 var face_stalled := false
 ## Round 30 (M1b): the goal of the last move_to this crew was given (INF = none yet): see set_orders.
 var face_slot := Vector3.INF
-## Round 33 (C33.9): Manoeuvre.turn_in's state: the face spot's last position and the tick it moved, its smoothed swing (deg/s), whether
-## this hull is turning in, and its stall window.
-var _turn_in_bearing := Vector3.INF
-var _turn_in_tick := -1
+## Round 33 (C33.9): Manoeuvre.turn_in's state: the smoothed swing of the bearing from the target's velocity (deg/s),
+## whether this hull is turning in, its stall window, the jink's clock, the side held across 180 deg and the leash's.
 var _turn_in_rate := 0.0
 var _turn_in_live := false
 var _turn_in_window := 0.0
 var _turn_in_heading := Vector3.ZERO
 var _turn_in_rest := -1
-var _turn_in_seen := -1
 var _turn_in_pulse := 0.0
 var _turn_in_fast := false
 var _turn_in_sign := 0.0
 var _turn_in_leash_sign := 0.0
 var _turn_in_yawed := 0.0
-var _turn_in_seen_first := -1
 
 
 ## Is `candidate` the same face order the hull is already executing (same spot, within a metre)?
@@ -521,6 +517,7 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			if _wheel_hold(cmd, spot):
 				return
 			if Manoeuvre.turn_in(self, cmd, spot, delta):
+				movement.face_drop()  # round 34: the planner's leftover legs never resume under a turn-in's hand-back
 				return
 			# Round 26 (manoeuvre M1b): a wheeled hull comes round in planned legs, not the creep's 0.5 s shuffle.
 			if movement.face_turn(cmd, spot, delta):
@@ -571,14 +568,14 @@ static func wheel_hold_on() -> bool:
 ## Round 33 (C33.9, filed on main after R33.23: "it's literally what the lead saw"): at `stop`, gunnery's R2 swing turns
 ## a FIXED gun on wheels onto its target with no throttle, which the plant drives as the creep's forward/back legs (the
 ## shuffle, alive under every HOLD between SPOTs: its leftover reverse spilled into the next face, builder2 9456b4f3).
-## Under the turn-in switch a swing at a MOVING enemy (Manoeuvre.facing_mover, R33.38) goes through the turn-in, or the hull
-## holds still; never the creep. Any other swing keeps gunnery's turn.
+## Under the turn-in switch a swing at a LIVE enemy (Manoeuvre.live_enemy_near, R33.38 and round 34's M0) goes through
+## the turn-in, or the hull holds still; never the creep. Any other swing keeps gunnery's turn.
 func _stop_turn_in(cmd: TankCommand, delta: float) -> void:
 	if String(move_order.get("type", "")) != "stop" or not Manoeuvre.turn_in_on() or tank.mount != "fixed" \
 			or movement.wheel_radius() <= 0.0 or cmd.throttle != 0.0 or cmd.turn == 0.0 \
-			or not Manoeuvre.facing_mover(self, cmd.aim_point):
-		return  # R33.38: a swing at anything but a moving enemy keeps gunnery's turn, as before C33.9
-	if Manoeuvre.turn_in(self, cmd, cmd.aim_point, delta):
+			or Manoeuvre.live_enemy_near(self, cmd.aim_point) == null:
+		return  # R33.38: a swing at anything but a live enemy keeps gunnery's turn, as before C33.9
+	if Manoeuvre.turn_in(self, cmd, cmd.aim_point, delta, true):
 		Manoeuvre.turn_in_stops += 1
 		return
 	cmd.turn = 0.0
