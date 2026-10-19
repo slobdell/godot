@@ -34,6 +34,13 @@ created FRESH from the docs commit; round 34's `stream/*` branches are `round34/
 gorge cut docks), read twice at ffa462c94 agreeing = 3902ade09's hashes, so main is GREEN with no new check (the baseline file
 is the only check-read diff). **Tell him in player terms:** his circled scout now turns and fights instead of shuffling
 backwards. Workers told to `git merge main`.
+**main c32606204 = native N2 (C35.9)** (`2f7683d21`, builder0 `make check exited 0`, 27/27 ALL JUDGED, 2885/0, sim-baseline 13
+unmoved; INHERIT): FACE_KEEP_FAR deleted, series tools drop random-seed twins (`seed_twins.filter_logs`), judging table's owed rows
+(rounds 31–34) re-rendered. Tooling only: nothing he'd notice.
+**Round 35 in flight (2026-10-19 noon):** orders D1 (the deploy step ON; on-spot fix 0603f3274) checking; traffic T7 pair checking
+next; manoeuvre M5 (CP-F 5, turret hulls) gate queued; brains E1 (straggler release) check done, series next; W1b's mirror on
+pair/native-w1b; W1c + T9 (the 70 s scout dead-stop: a parked crew refused every repeat ask) joint dev read. Parked: D3 (R35.11).
+Rulings R35.1–R35.14 in workstreams.
 
 ## 🏁 ROUND 34 IS CLOSED (2026-10-19)
 
