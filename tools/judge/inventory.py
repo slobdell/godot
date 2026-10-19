@@ -32,7 +32,7 @@ import rows  # noqa: E402
 import stats  # noqa: E402
 
 Z = stats.Z_ALPHA_05
-OUT_DIR = "_agents/streams/references/round30/sizing"
+OUT_DIR = "references/round34/planner/sizing"  # round 34 (C34.8 (b))
 
 
 def threshold(base, x, pass_dir):

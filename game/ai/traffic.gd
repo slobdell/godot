@@ -165,6 +165,9 @@ static var last_share := {}
 ## (PackedByteArray) and group (PackedStringArray); `_where` maps a name to [team, row]; `_movers` a name to its mover.
 static var _frame := -1
 static var _root := -1
+## Round 34 (planner, C34.6): the Match whose tanks root the table was built from (its instance id; 0 = none, e.g.
+## load_rows in a test). The solve stagger's phase reads its tick: see `_phase`.
+static var _match_id := 0
 static var _map := RID()
 static var _where := {}
 static var _teams := {}
@@ -265,6 +268,15 @@ static func reset_counters() -> void:
 	cross_reach_free = 0
 
 
+## Round 34 (planner, C34.6): the solve stagger's clock, the MATCH's tick (trip-up 28). It was the engine's physics
+## frame, which never resets in a process, so a rematch started at another phase mod SOLVE_TICKS, every crew re-solved
+## on other ticks, and the rematch branched from its first match (12 of 12 on builder0, 918ede503;
+## references/round34/planner/rematch/diagnosis.md). `frame` (a table with no Match: load_rows) as before.
+static func _phase(frame: int) -> int:
+	var game_match := instance_from_id(_match_id) as Match if _match_id != 0 else null
+	return game_match.tick if game_match != null else frame
+
+
 ## The hold for crew `me` this tick: [] when it is not holding; else [spot (x, z), face (x, z), at the spot]. Movement's
 ## _avoid calls it every tick it steers; it needs the table (refresh, or load_rows).
 static func hold_of(me: String) -> Array:
@@ -279,7 +291,7 @@ static func hold_of(me: String) -> Array:
 	var group: String = (cols["group"] as PackedStringArray)[i]
 	if not _waits.has(group):
 		var last: Variant = _looked.get(me)
-		if last == null or frame - int(last) >= SOLVE_TICKS or frame < int(last) or (frame + (me.hash() & 0xffff)) % SOLVE_TICKS == 0:
+		if last == null or frame - int(last) >= SOLVE_TICKS or frame < int(last) or (_phase(frame) + (me.hash() & 0xffff)) % SOLVE_TICKS == 0:
 			_looked[me] = frame
 			if (cols["moving"] as PackedByteArray)[i] == 1:
 				var lap := Time.get_ticks_usec() if OrderController.profiling else 0
@@ -412,7 +424,7 @@ static func shape(me: String, preferred: Vector2) -> Vector2:
 	var frame := Engine.get_physics_frames() if _root != -1 else _frame
 	var answer: Variant = _cross_answers.get(me)
 	if answer == null or frame - int(answer[0]) >= SOLVE_TICKS or frame < int(answer[0]) \
-			or (frame + (me.hash() & 0xffff)) % SOLVE_TICKS == 0:
+			or (_phase(frame) + (me.hash() & 0xffff)) % SOLVE_TICKS == 0:
 		answer = [frame, _cross_cap(me, frame)]
 		_cross_answers[me] = answer
 	var keep_speed := speed
@@ -896,6 +908,7 @@ static func refresh(tanks_root: Node) -> void:
 	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
 	if root != _root:
 		_forget()
+		_match_id = tanks_root.get_parent().get_instance_id() if tanks_root.get_parent() is Match else 0
 	_root = root
 	_frame = frame
 	var world := (tanks_root as Node3D).get_world_3d() if tanks_root is Node3D else null

@@ -1,0 +1,34 @@
+# B6 tuning traces (laptop, stream/brains a539188fe with --halt-shape-early=on, Sumps settle_probe seeds 40-41 ticks 3/8, n 4)
+s40t3.log {'all_in8_s': 52.67, 'all_in_s': 53.1, 'hollow': False, 'drift_moves': 0, 'worst_off_m': 3.3}
+s40t8.log {'all_in8_s': 51.07, 'all_in_s': None, 'hollow': True, 'drift_moves': 8, 'worst_off_m': 4.4}
+s41t3.log {'all_in8_s': 26.07, 'all_in_s': None, 'hollow': True, 'drift_moves': 0, 'worst_off_m': 3.7}
+s41t8.log {'all_in8_s': 23.63, 'all_in_s': 24.17, 'hollow': False, 'drift_moves': 0, 'worst_off_m': 4.6}
+
+## hollow: s41t3 Green_S_2 (law_ifv)
+t=16.2	wedge/traveling	arrived false	Green_S_2 at (-24.9,-7.2) slot (-23.8,-9.2) 2.3 m off
+t=17.2	wedge/traveling	arrived false	Green_S_2 at (-26.6,-8.6) slot (-23.8,-10.0) 3.1 m off
+t=18.2	wedge/traveling	arrived false	Green_S_2 at (-26.6,-8.6) slot (-23.8,-10.7) 3.5 m off
+t=19.2	wedge/traveling	arrived false	Green_S_2 at (-26.6,-8.6) slot (-23.8,-11.1) 3.7 m off
+t=20.2	herringbone/traveling	arrived false	Green_S_2 at (-26.6,-8.6) slot (-9.5,-44.1) 39.4 m off
+t=21.2	herringbone/traveling	arrived false	Green_S_2 at (-28.0,-10.8) slot (-9.8,-45.2) 38.9 m off
+t=22.2	herringbone/traveling	arrived false	Green_S_2 at (-29.6,-14.0) slot (-9.8,-45.2) 36.9 m off
+t=23.2	herringbone/traveling	arrived false	Green_S_2 at (-27.2,-16.0) slot (-9.8,-44.9) 33.8 m off
+t=24.2	herringbone/traveling	arrived false	Green_S_2 at (-22.1,-24.0) slot (-9.8,-45.0) 24.3 m off
+t=25.2	herringbone/traveling	arrived false	Green_S_2 at (-19.4,-34.1) slot (-10.5,-46.2) 15.0 m off
+t=26.2	herringbone/traveling	arrived true	Green_S_2 at (-13.7,-41.4) slot (-10.0,-45.8) 5.8 m off
+t=27.2	herringbone/traveling	arrived true	Green_S_2 at (-11.8,-42.6) slot (-10.0,-45.8) 3.7 m off
+t=28.2	herringbone/traveling	arrived true	Green_S_2 at (-11.8,-42.6) slot (-10.0,-45.8) 3.7 m off
+t=29.2	herringbone/traveling	arrived true	Green_S_2 at (-11.8,-42.6) slot (-10.0,-45.8) 3.7 m off
+t=30.2	herringbone/traveling	arrived true	Green_S_2 at (-11.8,-42.6) slot (-10.0,-45.8) 3.7 m off
+t=31.2	herringbone/traveling	arrived true	Green_S_2 at (-11.8,-42.6) slot (-10.0,-45.8) 3.7 m off
+t=32.2	herringbone/traveling	arrived true	Green_S_2 at (-11.8,-42.6) slot (-10.0,-45.8) 3.7 m off
+
+## leftover re-lay: s40t8
+DRIFT_TRACE t=31.93 Green_S_1 seat 0 (6.3, -75.9) -> (11.5, -72.8) heading (0.42, -0.91) arrived false formation herringbone anchor (0.251266, 0.0, -60.16454)
+DRIFT_TRACE t=31.93 Green_S_2 seat 1 (-9.4, -64.6) -> (-7.2, -67.7) heading (0.42, -0.91) arrived false formation herringbone anchor (0.251266, 0.0, -60.16454)
+DRIFT_TRACE t=31.93 Green_S_3 seat 3 (-5.9, -41.0) -> (-11.0, -47.6) heading (0.42, -0.91) arrived false formation herringbone anchor (0.251266, 0.0, -60.16454)
+DRIFT_TRACE t=31.93 Green_S_4 seat 2 (9.9, -55.8) -> (7.7, -52.6) heading (0.42, -0.91) arrived false formation herringbone anchor (0.251266, 0.0, -60.16454)
+DRIFT_TRACE t=32.03 Green_S_1 seat 0 (11.5, -72.8) -> (4.5, -76.5) heading (-0.04, -1.00) arrived true formation herringbone anchor (0.252192, 0.0, -60.17799)
+DRIFT_TRACE t=32.03 Green_S_2 seat 1 (-7.2, -67.7) -> (-9.8, -63.5) heading (-0.04, -1.00) arrived true formation herringbone anchor (0.252192, 0.0, -60.17799)
+DRIFT_TRACE t=32.03 Green_S_3 seat 3 (-11.0, -47.6) -> (-4.0, -40.9) heading (-0.04, -1.00) arrived true formation herringbone anchor (0.252192, 0.0, -60.17799)
+DRIFT_TRACE t=32.03 Green_S_4 seat 2 (7.7, -52.6) -> (10.4, -56.9) heading (-0.04, -1.00) arrived true formation herringbone anchor (0.252192, 0.0, -60.17799)

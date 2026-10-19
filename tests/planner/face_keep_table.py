@@ -5,7 +5,10 @@ PLANNER_SEAM_REPORT of every run.
 
   FACE_KEEP_ABANDONED  (2b) the FACE asks' abandoned share, candidate not up beyond 1.645 se (two-proportion, pooled se)
   FACE_KEEP_FAR        (2c) served face plans' furthest-from-home (face_far, m): candidate median <= base median +
-                       1.645 se (bootstrap over plans, 4000 rounds, seed 33) AND candidate p90 <= base p90; max reported
+                       1.645 se (bootstrap over plans, 4000 rounds, seed 33) AND candidate p90 <= base p90; max reported.
+                       REPORTED ONLY since R34.5 (round 34; deleted in round 35): unpaired, it pools faces planned in
+                       one arm only, so it measured WHICH faces got planned, and flipped with the distinct rule alone.
+                       The judged reading is face_pairs.py (faces matched by crew and home)
 
 Usage: face_keep_table.py <hull-rest dir> [--seeds "84 85 ..."] [--distinct]
   --seeds: only those seeds' runs are read. --distinct (round 33 overnight, as for CP-F's R33.23): a (base, candidate)
@@ -75,7 +78,7 @@ def main():
     for mode in ("drawn", "clicked"):
         rb, rc = runs(root, f"base_{mode}", seeds), runs(root, f"new_{mode}", seeds)
         if "--distinct" in sys.argv:
-            keys, cells = hull_distinct.distinct_keys(rb, rc, sorted(set(rb) & set(rc)))
+            keys, cells = hull_distinct.distinct_runs(root, sorted(set(rb) & set(rc)), lambda _k, m=mode: (f"base_{m}", f"new_{m}"))
             for line in hull_distinct.summary({(mode,) + c: v for c, v in cells.items()}, "FACE_KEEP_DISTINCT"):
                 print(line)
             b, c = total(rb, keys), total(rc, keys)
@@ -101,20 +104,18 @@ def main():
               f"{100 * pc:.1f} % v base {b['abandoned']}/{b['asks']} = {100 * pb:.1f} % | se {100 * se:.1f} pts | "
               f"line <= {100 * line:.1f} % | {verdict}")
         if not b["far"] or not c["far"]:
-            print(f"FACE_KEEP_FAR {mode} | plans candidate {len(c['far'])} v base {len(b['far'])}: NOT JUDGED, nothing to compare")
-            ok = False
+            print(f"FACE_KEEP_FAR {mode} | plans candidate {len(c['far'])} v base {len(b['far'])}: nothing to compare (REPORTED, R34.5)")
             continue
         mb, mc = statistics.median(b["far"]), statistics.median(c["far"])
         se_m = boot_se_median_diff(c["far"], b["far"])
         med_ok = mc <= mb + K * se_m
         p90_ok = p90(c["far"]) <= p90(b["far"])
-        verdict = "PASS" if med_ok and p90_ok else "FAIL"
-        ok = ok and verdict == "PASS"
+        verdict = "REPORTED (R34.5), would read " + ("PASS" if med_ok and p90_ok else "FAIL")
         print(f"FACE_KEEP_FAR {mode} | plans candidate {len(c['far'])} v base {len(b['far'])} | median {mc:.1f} v "
               f"{mb:.1f} m (se {se_m:.2f}, line <= {mb + K * se_m:.1f}) {'ok' if med_ok else 'over'} | p90 "
               f"{p90(c['far']):.1f} v {p90(b['far']):.1f} {'ok' if p90_ok else 'over'} | max {max(c['far']):.1f} v "
               f"{max(b['far']):.1f} | {verdict}")
-    print(f"FACE_KEEP lines (2b) and (2c): {'ALL PASS' if ok else 'NOT ALL PASS'}")
+    print(f"FACE_KEEP line (2b): {'ALL PASS' if ok else 'NOT ALL PASS'} ((2c) FACE_KEEP_FAR reported only, R34.5)")
 
 
 if __name__ == "__main__":

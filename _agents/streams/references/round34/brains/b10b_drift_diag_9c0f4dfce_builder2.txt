@@ -1,0 +1,13 @@
+# B10b stretch, REPORTED diagnostic (no bar; dev seeds 40, 41, never judged): ground-series GROUND_ARMS=off --drift-trace on main 9c0f4dfce, builder2, 26 runs (sumps x6 ticks, yard x6 ticks, terminus t11, per seed)
+arrived drift moves (same seat, same anchor, > 1 m, element arrived): 130 of 137 drift moves; all herringbone; 2-6 per run (flipping line > 10: 0 crews); median 7.8 m, p90 19.3, max 22.8
+each element's arrived drifts are ONE burst at one tick (every seat re-laid once), e.g.:
+DRIFT_TRACE t=26.03 Green_S_1 seat 0 (5.4, -68.1) -> (7.2, -74.8) heading (0.17, -0.99) arrived true formation herringbone anchor (-0.383467, 0.0, -59.75048)
+DRIFT_TRACE t=26.03 Green_S_2 seat 3 (-14.1, -53.0) -> (-9.4, -43.9) heading (0.17, -0.99) arrived true formation herringbone anchor (-0.383467, 0.0, -59.75048)
+DRIFT_TRACE t=26.03 Green_S_3 seat 1 (-4.4, -60.5) -> (-9.6, -65.1) heading (0.17, -0.99) arrived true formation herringbone anchor (-0.383467, 0.0, -59.75048)
+DRIFT_TRACE t=26.03 Green_S_4 seat 2 (11.5, -57.4) -> (8.8, -54.4) heading (0.17, -0.99) arrived true formation herringbone anchor (-0.383467, 0.0, -59.75048)
+DRIFT_TRACE t=15.73 Green_A_1 seat 0 (-69.8, -69.4) -> (-63.4, -78.9) heading (0.06, -1.00) arrived true formation herringbone anchor (-70.0, 0.0, -55.0)
+DRIFT_TRACE t=15.73 Green_A_2 seat 4 (-53.8, -45.1) -> (-66.1, -30.5) heading (0.06, -1.00) arrived true formation herringbone anchor (-70.0, 0.0, -55.0)
+DRIFT_TRACE t=15.73 Green_A_3 seat 2 (-59.2, -57.2) -> (-59.7, -54.4) heading (0.06, -1.00) arrived true formation herringbone anchor (-70.0, 0.0, -55.0)
+DRIFT_TRACE t=31.70 Green_B_1 seat 0 (-70.1, 86.2) -> (-73.9, 94.9) heading (0.00, 1.00) arrived true formation herringbone anchor (-70.0, 0.0, 75.0)
+DRIFT_TRACE t=31.70 Green_B_2 seat 4 (-86.2, 67.5) -> (-74.1, 55.1) heading (0.00, 1.00) arrived true formation herringbone anchor (-70.0, 0.0, 75.0)
+DRIFT_TRACE t=31.70 Green_B_3 seat 2 (-78.1, 76.8) -> (-79.0, 75.0) heading (0.00, 1.00) arrived true formation herringbone anchor (-70.0, 0.0, 75.0)
