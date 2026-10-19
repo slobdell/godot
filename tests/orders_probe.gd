@@ -173,6 +173,7 @@ func _run() -> void:
 ## ACROSS_SIDE_M) and beyond its far edge along the line from the click. A crew nosing onto the near ramp is `deck`, not this.
 const ACROSS_SIDE_M := 30.0
 const ARRIVE_M := 12.0
+const LEFT_M := 15.0
 
 
 func _across(at: Vector3) -> bool:
@@ -221,7 +222,11 @@ func _watch() -> void:
 		# Arrived: its element says so with nothing queued, or (a route's element is gone by its end) its centre is within
 		# ARRIVE_M of its anchor with every crew still.
 		var anchor: Variant = squad["anchor"]
-		var settled := anchor is Vector3 and _flat_d(centre, anchor) <= ARRIVE_M \
+		# A route's squad that has not set off yet is not "settled" at a last anchor near its start (round 34: a back-rank
+		# squad read arrived at 0.1 s and then drove the whole route): it must first have been LEFT_M from its start.
+		if _flat_d(centre, squad["start"]) >= LEFT_M or _flag("probe-route", "click") == "click":
+			squad["left"] = true
+		var settled := bool(squad.get("left", false)) and anchor is Vector3 and _flat_d(centre, anchor) <= ARRIVE_M \
 				and alive.all(func(n: String) -> bool: return Vector2(_tank(n).velocity.x, _tank(n).velocity.z).length() < 0.5)
 		if int(squad["arrived_tick"]) < 0 and _match.tick > _order_tick + 2 \
 				and ((element != null and element.arrived and element.queued_tasks.is_empty()) or settled):
