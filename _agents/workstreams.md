@@ -191,6 +191,14 @@ _Filed here before any number._
   M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
   team <= base + 1.645 se.
 
+- **D6 a shift-click never replaces a squad's route (orders, R35.28 option (b)), filed before code on `stream/orders` `bda5db637`;
+  seeds named by the orchestrator.** A shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal
+  stays); code `862e60970`, OFF until its A/B. Probe on builder0 (native), the 24 cells, arms main v the switch off; Crossing 5 route
+  s3614 (the reproduction) REPORTED; FRESH route seeds **3641–3646**. **Counter first:** legs queued per squad differ between arms in
+  >= 1 route cell. **Gain:** every squad gets every leg (legs per squad = waypoints) in every route cell on main. **Guards:** round 22's
+  Sumps seed 5988 scenario keeps 0 path crossings; test_control_queued_task and the route tests green; the 12 click cells
+  byte-identical between arms; a test reproducing the replace (red on the switch off, green on).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
