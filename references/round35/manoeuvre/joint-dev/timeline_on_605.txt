@@ -1,0 +1,29 @@
+en_Eyes_4 0.5 -32.9 95.7 goal_m -1.0 mps 0.0 arrived stop stop drive pace 1.0 thr 0.0 st 0.0 w 0 fires 0 k 0.0 col ['static:Ground'] wall 0 held 0 fr 6 6.0 blk   HOLD
+en_Eyes_4 2.0 -31.2 91.3 goal_m 58.3 mps 7.16 driving move_to route orca_turn pace 0.44 thr 0.42 st -0.15 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 5 5.3 blk   MOVE
+en_Eyes_4 3.5 -29.8 89.7 goal_m 57.2 mps 3.54 yielding move_to yield yield pace 0.31 thr -0.51 st -0.04 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 2 10.0 blk Green_Eyes_1 Green_Eyes_1 MOVE
+en_Eyes_4 5.0 -32.3 92.2 goal_m 59.1 mps 1.72 yielding move_to yield yield pace 0.31 thr -0.24 st -0.04 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 1 7.6 blk Green_Eyes_1 Green_Eyes_1 MOVE
+en_Eyes_4 6.5 -25.9 91.3 goal_m 53.1 mps 13.92 driving move_to route drive pace 1.0 thr 0.87 st 0.52 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 1 4.6 blk   MOVE
+en_Eyes_4 8.0 -8.9 97.3 goal_m 35.2 mps 0.06 driving move_to route orca_slow pace 0.21 thr 0.19 st -0.22 w 0 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 4 3.0 blk   MOVE
+en_Eyes_4 9.5 -8.3 99.7 goal_m 34.3 mps 0.04 driving move_to route orca_slow pace 0.17 thr 0.16 st -0.29 w 0 fires 0 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 4 3.3 blk   MOVE
+en_Eyes_4 11.0 -8.1 99.6 goal_m 34.1 mps 0.0 blocked move_to unstick unstick pace 0.22 thr 0.0 st 0.0 w 1 fires 1 k 0.0 col ['Green_Eyes II_5'] wall 0 held 0 fr 4 3.6 blk Green_Eyes II_5  MOVE
+en_Eyes_4 12.5 -9.6 99.9 goal_m 35.6 mps 6.5 blocked move_to unstick unstick pace 0.17 thr -1.0 st 0.0 w 1 fires 1 k 0.0 col [] wall 0 held 0 fr 6 5.0 blk Green_Eyes II_5  MOVE
+en_Eyes_4 14.0 -7.9 99.4 goal_m 33.9 mps 4.14 driving move_to route orca_slow pace 0.12 thr 0.1 st 0.9 w 1 fires 1 k 0.0 col [] wall 0 held 0 fr 6 4.1 blk   MOVE
+en_Eyes_4 15.5 -7.4 98.3 goal_m 33.6 mps 0.17 driving move_to route orca_slow pace 0.13 thr 0.11 st 0.48 w 1 fires 1 k 0.0 col ['Green_Eyes II_7'] wall 0 held 0 fr 7 3.0 blk   MOVE
+en_Eyes_4 17.0 -6.4 97.4 goal_m 32.7 mps 2.63 driving move_to route orca_slow pace 0.16 thr 0.15 st 0.33 w 1 fires 1 k 0.0 col [] wall 0 held 0 fr 7 3.3 blk   MOVE
+en_Eyes_4 18.5 -1.1 98.2 goal_m 27.4 mps 8.85 driving move_to route orca_slow pace 0.99 thr 0.99 st -0.01 w 0 fires 1 k 0.0 col [] wall 0 held 0 fr 8 3.7 blk   MOVE
+en_Eyes_4 20.0 20.1 101.7 goal_m 44.5 mps 13.75 driving move_to route orca_turn pace 0.93 thr 0.86 st 0.31 w 0 fires 1 k 0.0 col [] wall 0 held 0 fr 2 6.7 blk   MOVE
+en_Eyes_4 21.5 40.7 103.5 goal_m 24.0 mps 15.57 driving move_to route orca_slow pace 0.98 thr 0.97 st -0.02 w 0 fires 1 k 0.0 col [] wall 0 held 0 fr 2 4.1 blk   MOVE
+en_Eyes_4 23.0 60.2 103.1 goal_m 4.7 mps 9.81 driving move_to route orca_turn pace 0.96 thr 0.61 st -0.02 w 0 fires 1 k 0.0 col [] wall 0 held 0 fr 4 4.5 blk   MOVE
+en_Eyes_4 24.5 62.5 103.0 goal_m -1.0 mps 0.0 arrived stop stop drive pace 1.0 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 4.7 blk   HOLD
+en_Eyes_4 26.0 62.5 103.0 goal_m -1.0 mps 0.0 arrived stop stop drive pace 1.0 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 4.7 blk   HOLD
+en_Eyes_4 27.5 62.6 103.0 goal_m 11.8 mps 1.5 driving move_to route drive pace 1.0 thr 0.94 st -0.24 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 4.7 blk   MOVE
+en_Eyes_4 29.0 70.3 96.0 goal_m 4.8 mps 8.22 driving move_to route orca_turn pace 0.94 thr 0.51 st -0.49 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 8.9 blk   HOLD
+en_Eyes_4 30.5 70.6 92.2 goal_m -1.0 mps 1.36 arrived face face orca_slow pace 0.9 thr 0.0 st 0.17 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.1 blk   HOLD
+en_Eyes_4 32.0 70.8 91.7 goal_m -1.0 mps 0.4 arrived face face orca_slow pace 0.9 thr 0.0 st 0.12 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 33.5 70.9 91.4 goal_m -1.0 mps 0.71 arrived face face orca_slow pace 0.9 thr 0.0 st 0.09 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 35.0 70.9 91.3 goal_m -1.0 mps 0.0 arrived face face orca_slow pace 0.9 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 36.5 70.9 91.3 goal_m -1.0 mps 0.0 arrived face face orca_slow pace 0.9 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 38.0 70.9 91.3 goal_m -1.0 mps 0.0 arrived face face orca_slow pace 0.9 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 39.5 70.9 91.3 goal_m -1.0 mps 0.0 arrived face face orca_slow pace 0.9 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 41.0 70.9 91.3 goal_m -1.0 mps 0.0 arrived face face orca_slow pace 0.9 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD
+en_Eyes_4 42.5 70.9 91.3 goal_m -1.0 mps 0.0 arrived stop stop orca_slow pace 0.9 thr 0.0 st 0.0 w 0 fires 2 k 0.0 col [] wall 0 held 0 fr 3 7.0 blk   HOLD

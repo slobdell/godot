@@ -1,0 +1,54 @@
+en_Guns_6 0.5 -21.1 99.0 goal_m -1.0 mps 0.0 arrived stop stop drive pace 1.0 thr 0.0 st 0.0 w 0 fires 0 k 0.0 col ['static:Ground'] wall 0 held 0 fr 6 6.5 blk   HOLD
+en_Guns_6 2.0 -21.0 97.2 goal_m 38.3 mps 2.49 driving move_to route orca_turn pace 0.33 thr 0.21 st 0.11 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 6 6.5 blk   MOVE
+en_Guns_6 3.5 -20.7 95.5 goal_m 37.7 mps 2.87 driving move_to route orca_slow pace 0.11 thr 0.05 st 1.0 w 1 fires 0 k 0.0 col [] wall 0 held 0 fr 7 6.9 blk   MOVE
+en_Guns_6 5.0 -19.7 93.2 goal_m 36.2 mps 2.0 driving move_to route orca_turn pace 0.06 thr 0.05 st 0.29 w 1 fires 0 k 0.0 col ['Green_Guns_2'] wall 0 held 0 fr 7 6.2 blk   MOVE
+en_Guns_6 6.5 -20.0 91.8 goal_m 36.3 mps 1.51 yielding move_to yield yield pace 0.08 thr -0.6 st -0.55 w 1 fires 0 k 0.0 col ['Green_Guns_2'] wall 0 held 0 fr 5 6.6 blk Green_Guns_1 Green_Guns_1 MOVE
+en_Guns_6 8.0 -21.8 95.0 goal_m 38.6 mps 3.17 yielding move_to yield yield pace 0.08 thr -0.63 st -0.38 w 1 fires 0 k 0.0 col [] wall 0 held 0 fr 4 7.8 blk Green_Guns_1 Green_Guns_1 MOVE
+en_Guns_6 9.5 -18.9 92.2 goal_m 49.6 mps 8.78 driving move_to route drive pace 1.0 thr 0.75 st 1.0 w 1 fires 0 k 0.0 col [] wall 0 held 0 fr 3 10.1 blk   MOVE
+en_Guns_6 11.0 -13.8 90.3 goal_m 45.2 mps 0.15 driving move_to route orca_turn pace 0.27 thr 0.22 st 0.74 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 3 11.0 blk   MOVE
+en_Guns_6 12.5 -6.3 90.9 goal_m 38.0 mps 5.47 driving move_to route orca_turn pace 0.52 thr 0.46 st -0.52 w 0 fires 0 k 0.0 col [] wall 0 held 0 fr 3 8.2 blk   MOVE
+en_Guns_6 14.0 -3.4 91.0 goal_m 35.2 mps 2.87 driving move_to route orca_slow pace 0.41 thr 0.37 st 0.37 w 1 fires 0 k 0.0 col ['Green_Guns_4'] wall 0 held 0 fr 4 6.1 blk   MOVE
+en_Guns_6 15.5 -2.4 91.2 goal_m 34.1 mps 0.08 driving move_to route orca_slow pace 0.52 thr 0.43 st 0.16 w 1 fires 0 k 0.0 col ['Green_Eyes_2'] wall 0 held 0 fr 3 5.3 blk   MOVE
+en_Guns_6 17.0 -2.0 91.3 goal_m 33.8 mps 2.35 blocked move_to route orca_slow pace 0.24 thr 0.2 st 0.23 w 1 fires 1 k 0.0 col [] wall 0 held 0 fr 3 5.9 blk Green_Eyes_2  MOVE
+en_Guns_6 18.5 3.9 93.8 goal_m 27.4 mps 3.11 driving move_to route orca_slow pace 0.39 thr 0.26 st -0.24 w 1 fires 1 k 0.0 col [] wall 0 held 0 fr 6 7.6 blk   MOVE
+en_Guns_6 20.0 7.4 95.2 goal_m 23.6 mps 1.43 driving move_to route orca_slow pace 0.18 thr 0.12 st -0.14 w 1 fires 2 k 0.0 col [] wall 0 held 0 fr 9 6.6 blk   MOVE
+en_Guns_6 21.5 9.5 94.9 goal_m 21.8 mps 2.59 driving move_to route orca_slow pace 0.42 thr 0.22 st 0.26 w 1 fires 2 k 0.0 col [] wall 0 held 0 fr 10 6.6 blk   MOVE
+en_Guns_6 23.0 8.5 94.3 goal_m 23.0 mps 0.08 driving move_to route drive pace 1.0 thr 0.55 st 0.03 w 1 fires 2 k 0.0 col ['Green_Hunters_2'] wall 0 held 0 fr 9 7.2 blk   MOVE
+en_Guns_6 24.5 8.5 94.3 goal_m 23.0 mps 0.0 blocked move_to unstick unstick pace 0.19 thr 0.0 st 0.0 w 0 fires 3 k 0.0 col ['Green_Hunters_2'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 26.0 8.0 94.0 goal_m 23.5 mps 3.0 blocked move_to unstick unstick pace 0.19 thr -1.0 st 0.0 w 1 fires 4 k 0.0 col [] wall 0 held 0 fr 9 6.9 blk Green_Hunters_2  MOVE
+en_Guns_6 27.5 8.1 94.1 goal_m 23.4 mps 0.0 blocked move_to route drive pace 1.0 thr 0.55 st -0.03 w 1 fires 4 k 0.0 col ['Green_Hunters_2'] wall 0 held 0 fr 9 7.0 blk Green_Hunters_2  MOVE
+en_Guns_6 29.0 8.1 94.1 goal_m 23.4 mps 0.0 blocked move_to unstick unstick pace 0.14 thr 0.0 st 0.0 w 1 fires 5 k 0.0 col ['Green_Hunters_2'] wall 0 held 0 fr 9 7.0 blk Green_Hunters_2  MOVE
+en_Guns_6 30.5 8.1 94.1 goal_m 23.4 mps 0.0 blocked move_to unstick unstick pace 0.14 thr 0.0 st 0.0 w 1 fires 5 k 0.0 col ['Green_Hunters_2'] wall 0 held 0 fr 9 7.0 blk Green_Hunters_2  MOVE
+en_Guns_6 32.0 8.1 94.1 goal_m 23.4 mps 0.04 blocked move_to route orca_slow pace 0.16 thr 0.08 st 0.18 w 1 fires 5 k 0.0 col ['Green_Hunters_2'] wall 0 held 0 fr 9 7.0 blk Green_Hunters_2  MOVE
+en_Guns_6 33.5 8.2 94.4 goal_m 23.2 mps 0.0 blocked move_to route orca_slow pace 0.15 thr 0.08 st -0.04 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 35.0 8.2 94.4 goal_m 23.1 mps 0.04 blocked move_to route orca_slow pace 0.16 thr 0.09 st 0.06 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 36.5 8.3 94.4 goal_m 23.1 mps 0.04 blocked move_to route orca_slow pace 0.16 thr 0.09 st 0.08 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 38.0 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_slow pace 0.16 thr 0.09 st 0.06 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 39.5 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_slow pace 0.16 thr 0.09 st 0.04 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 41.0 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_slow pace 0.16 thr 0.09 st 0.03 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 42.5 8.3 94.4 goal_m 23.1 mps 0.04 blocked move_to route orca_slow pace 0.16 thr 0.09 st 0.02 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 44.0 8.3 94.4 goal_m 39.7 mps 0.0 driving move_to route orca_slow pace 0.09 thr 0.09 st 0.03 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 9 7.2 blk   MOVE
+en_Guns_6 45.5 8.3 94.4 goal_m 39.7 mps 0.0 blocked move_to route orca_slow pace 0.09 thr 0.09 st 0.02 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 47.0 8.3 94.4 goal_m 39.6 mps 0.0 blocked move_to route orca_slow pace 0.09 thr 0.09 st 0.02 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 48.5 8.3 94.4 goal_m 39.6 mps 0.0 blocked move_to route orca_slow pace 0.09 thr 0.09 st 0.01 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 50.0 8.3 94.4 goal_m 39.6 mps 0.0 blocked move_to route orca_slow pace 0.09 thr 0.09 st 0.01 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 51.5 8.3 94.4 goal_m 39.6 mps 0.0 blocked move_to route orca_slow pace 0.09 thr 0.09 st 0.01 w 1 fires 5 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 53.0 8.0 94.2 goal_m 23.5 mps 1.13 driving move_to route orca_slow pace 0.15 thr 0.13 st -0.45 w 1 fires 5 k 0.0 col [] wall 0 held 0 fr 8 6.9 blk   MOVE
+en_Guns_6 54.5 8.3 94.4 goal_m 23.1 mps 0.04 driving move_to route orca_turn pace 0.09 thr 0.09 st 0.05 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.2 blk   MOVE
+en_Guns_6 56.0 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.04 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.2 blk Green_Hunters_2  MOVE
+en_Guns_6 57.5 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.03 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.0 blk Green_Hunters_2  MOVE
+en_Guns_6 59.0 8.3 94.4 goal_m 23.1 mps 0.04 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.02 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 60.5 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.01 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 62.0 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.01 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 63.5 8.3 94.4 goal_m 23.1 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.01 w 1 fires 6 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 65.0 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.01 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 66.5 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 68.0 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 69.5 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 71.0 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 72.5 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 74.0 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 75.5 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 77.0 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 7 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 78.5 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 8 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE
+en_Guns_6 80.0 8.3 94.4 goal_m 23.0 mps 0.0 blocked move_to route orca_turn pace 0.09 thr 0.09 st 0.0 w 1 fires 8 k 0.0 col ['Green_Guns_5'] wall 0 held 0 fr 8 7.3 blk Green_Hunters_2  MOVE

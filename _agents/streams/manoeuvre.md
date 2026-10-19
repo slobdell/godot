@@ -56,6 +56,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### W1c dev read: the counter fires, the crew still doesn't get out (2026-10-19 ~12:30 PDT) — `references/round35/manoeuvre/w1c-dev/`
+
+builder0, GDScript both arms, ec991cf7f. stall_intent_ticks 0 v 1434/2088, H1 escapes and asks up. The traced crews now ROCK (ask,
+stand, ≤ 3 m reverse, forward into the same friend): the parked Green_Eyes II_5 gave way once and refused every later ask. Hull-rest
+attack-move 460–467 (32 runs an arm): movers 10 v 14, never settled 4 v 7. To the orchestrator: hold M6's series for traffic's T9 (the
+parked crew's half), or drop the reverse against a parked friend. W1c stays OFF. **M5's gate** waits for its builder0 slot (orchestrator's
+order: native N2, brains E1 → orders D1 → traffic T7 → M5).
+
 ### Dev reads (2026-10-19 afternoon; tuning seeds, NOT judged)
 
 - **W1b** (builder0, stream a0c874924 tree, wedge 3500–3503 × locks/terminus/sumps, 12 fights an arm, both arms GDScript drive):

@@ -184,6 +184,10 @@ CPH_FLAGS_ghost := --traffic-off=ghost --brains-off=native
 CPH_FLAGS_realslow := --brains-off=native,realslow
 # M1b(2)'s judged arms through the same runner (one flag, GDScript path; base = `off`).
 CPH_FLAGS_turnhull := --nav-off=turnhull --brains-off=native
+# Round 35: Bar M5's base (CP-F attempt 5: turnhull and facesettle both off; on lab/cpf5 both default true), and Bar M6's ON
+# arm before native's mirror (W1c + traffic's T9; on the joint pair the defaults flip and the base is `stallintentbase`).
+CPH_FLAGS_cpf5base := --nav-off=turnhull,facesettle --brains-off=native
+CPH_FLAGS_w1ct9 := --nav-off=stallintent --traffic-on=yieldfit2 --brains-off=native
 # Round 32: H1b's judged arm through the same runner (base = `off`; H1b's counters ride on MANOEUVRE_TURNS and FIGHT_CENSUS).
 CPH_FLAGS_h1b := --nav-off=h1b --brains-off=native
 CPH_FLAGS = $(CPH_FLAGS_$(CPH_ARM))
