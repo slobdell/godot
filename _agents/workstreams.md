@@ -184,6 +184,12 @@ _Filed here before any number._
   34 m off, move_to, phase `blocked` by Green_Eyes II_5 (another squad's scout), touching it; not a Traffic hold; ORCA pace 0.05,
   unstick's stall rule needs |throttle| > 0.5 so stops counting after t 26; nothing asks II_5 to give way. Parkedroom's shape out of
   fire (traffic told, heads-up). Owner decided after manoeuvre traces II_5.
+- **R35.11 (2026-10-19 10:35) D3 tight packing PARKED, OFF (`--pack=on`), code `stream/orders` `183eb4cd6`.** The halts pack
+  exactly (9 m between squads' seats, coils as rings, 28 m columns, 14 tests), but squads ARRIVE in their travel shape (a five-squad
+  wedge ~60 m wide) and deploy only when all are in, so packed halts put two arriving wedges' slots 5.7 m apart and the 5-squad
+  Locks cell jams (laptop GDScript probe: place move 40.7 m, twitch 27.3 m). Keeping travel shapes apart (7 m) leaves the pack no
+  tighter than the ranks (70.7 v 68.7 m to the farthest crew). No bar number read on builder0. Next try **D3b** = orders' option
+  (a): a packed squad's last stretch in a narrower arrival shape its halt opens out of; fresh bar; AFTER D1's merge, D2, D4, D5.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
