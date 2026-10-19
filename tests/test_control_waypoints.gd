@@ -237,6 +237,19 @@ func test_passed_waypoint_reads_the_living_centre_within_about_its_width() -> vo
 	assert_true(pass_m >= ElementPlan.ARRIVE_M and pass_m <= Element.PASS_MAX_M, "pass_m sits between ARRIVE_M and PASS_MAX_M")
 
 
+## A unit in no squad keeps its own direct shift-queue (test_control_commands' rule: the first shift-click starts at once, the
+## others wait), untouched by O4.
+func test_a_loose_unit_keeps_its_own_direct_shift_queue() -> void:
+	var f := await _squad_fixture()
+	f.controls.selection.units.assign(["Green_S1_1"])
+	for wp: Vector3 in [Vector3(-30.0, 0.0, 0.0), Vector3(-30.0, 0.0, -50.0), Vector3(20.0, 0.0, -50.0)]:
+		assert_eq(f.controls.order_selection("move", {"to": [wp.x, wp.z], "queue": true}), "", "setup: shifted move taken")
+		await wait_physics_frames(2)
+	assert_eq(String(f.orders.current("Green_S1_1").get("verb", "")), "move", "the first shift-click starts at once")
+	assert_eq(f.orders.queue("Green_S1_1").size(), 2, "the others wait in its own queue")
+	assert_true(f.controls.elements.of("Green_S1_1") == null, "no element was formed for a loose unit")
+
+
 ## (d)(1) His route: three shift-clicked waypoints for one squad of five. The squad passes the middle one without a stop:
 ## the next leg starts while its centre is still about a squad's width out, `arrived` never flips on that leg, and the
 ## centre keeps moving. The LAST waypoint still arrives as today.
@@ -253,10 +266,16 @@ func test_a_route_passes_its_middle_waypoint_without_stopping_and_arrives_at_the
 		assert_eq(error, "", "setup: the shifted waypoint %s is taken" % [wp])
 		await wait_physics_frames(2)
 	var element: Element = f.controls.elements.of(SQUAD[0])
-	assert_true(element != null, "setup: the shifted route formed an element for the queued legs")
+	assert_true(element != null, "a shifted route on a squad is the squad's: an element carries it")
 	if element == null:
 		return
-	assert_eq(element.queued_tasks.size(), 2, "the two shifted legs wait behind the crews' first waypoint (%s)" % [element.queued_tasks])
+	# O4's entry: the first leg is the element's move task at once; the others queue behind it; no crew runs its own queue.
+	var first: Variant = element.task.get("to")
+	assert_true(first is Array and absf(float(first[0]) - wp1.x) < 0.5 and absf(float(first[1]) - wp1.z) < 0.5,
+			"the first shifted leg is the element's move, started at once (%s)" % [element.task])
+	assert_eq(element.queued_tasks.size(), 2, "the two later legs wait behind it (%s)" % [element.queued_tasks])
+	for unit_name in SQUAD:
+		assert_eq(f.orders.queue(unit_name).size(), 0, "%s has no direct waypoint queue of its own" % unit_name)
 	# Drive. Sample the centre every 5 frames: when leg 2 (to wp2) is the task, note arrived and the centre's speed near wp2.
 	var pass_m := clampf(0.5 * TacticsFormation.frontage(element.formation, SQUAD.size(), element._doctrine().spacing("open")), ElementPlan.ARRIVE_M, Element.PASS_MAX_M)
 	var last_centre := Vector3.INF

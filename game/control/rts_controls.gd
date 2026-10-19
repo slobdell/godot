@@ -1013,8 +1013,11 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	# Round 29 (brains B5, granted): so do a shifted attack-move and attack (his words: every armed order with an
 	# automatic facing is laid from the last waypoint), and a shifted plain MOVE goes behind a task already queued (else
 	# it would join his crews' route and run before it). A shifted move with nothing queued keeps today's direct queue.
+	# Round 34 (traffic O4, granted): a shifted MOVE on a SQUAD is the squad's route from its first leg (the element's move,
+	# later shifted moves queued behind it), not each crew's own queue: with the direct queue every vehicle aimed at every
+	# waypoint (his "25 vehicles rolling through the same waypoint"). Loose units keep the direct queue (_queue_task_for).
 	if bool(extra.get("queue", false)) and ELEMENT_TASKS.has(verb) and elements != null \
-			and (not UnitCommand.VERBS.has(verb) or verb in QUEUED_ARMED or (verb == "move" and _has_queued_task())):
+			and (not UnitCommand.VERBS.has(verb) or verb in QUEUED_ARMED or (verb == "move" and (_has_queued_task() or _is_squad()))):
 		var queued: Variant = _queue_task(verb, extra)
 		if queued is String:
 			return queued
@@ -1139,8 +1142,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		var held: Element = squad.get("element")
 		if held != null and not is_instance_valid_element(held):
 			held = null
-		if queue and elements != null and (element_only or verb in QUEUED_ARMED
-				or (verb == "move" and held != null and not held.queued_tasks.is_empty())):
+		if queue and elements != null and (element_only or verb in QUEUED_ARMED or verb == "move"):  # Round 34 (traffic O4): every shifted move is the squad's
 			queued = _queue_task_for(squad["units"], held, int(squad.get("number", 0)), verb, given, squad_formation(squad))
 		if queued is String:
 			error = queued
@@ -1248,12 +1250,21 @@ func _queue_task_for(units: Array, element: Element, number: int, verb: String, 
 		if number == 0 and element == null:
 			return null
 		origin = _waypoints_end(units)
+		var start_now := false
 		if origin == null:
-			return null  # nothing driving: the order applies now, as before
+			# Round 34 (traffic O4, granted): a shifted MOVE on a squad with nothing under way is the route's FIRST leg: the
+			# element's move task, assigned now (as an unshifted click does), so the squad moves as one through its waypoints
+			# and Element.passed_waypoint can read it. Any other verb with nothing driving applies now, as before.
+			if not (verb == "move" and extra.has("to")):
+				return null
+			start_now = true
 		if element == null:
 			element = elements.form(units.duplicate(), groups.label(number))
 			if element == null:
 				return null
+		if start_now:
+			route_starts += 1
+			return _start_route(element, units, verb, extra, shape)
 	var task := {"verb": String(ELEMENT_TASKS[verb])}
 	if extra.has("to"):
 		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
@@ -1283,6 +1294,32 @@ func _queue_task_for(units: Array, element: Element, number: int, verb: String, 
 	if error == "":
 		_acknowledge(command)
 	return error
+
+
+## Round 34 (traffic O4): the first leg of a shifted route on a squad: the element's move task, assigned now. "" or why not.
+func _start_route(element: Element, units: Array, verb: String, extra: Dictionary, shape: String) -> Variant:
+	var task := {"verb": "move", "to": [float(extra["to"][0]), float(extra["to"][1])], "drills": false}
+	if extra.has("facing"):
+		task["facing"] = extra["facing"]
+	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
+		task["formation"] = shape
+	var error := element.assign(task)
+	_squads_changed()
+	var command := UnitCommand.make(units, verb, extra)
+	command["task"] = true
+	command_issued.emit(command, error)
+	if error == "":
+		_acknowledge(command)
+	return error
+
+
+## Measurement (round 34, O4): shifted routes that began as a squad's element move.
+static var route_starts := 0
+
+
+## Round 34 (traffic O4): is the selection one squad (a saved group, or one element)? A loose selection keeps the direct queue.
+func _is_squad() -> bool:
+	return selected_group() != 0 or selected_element() != null
 
 
 ## Round 28 (B5): where his crews' own orders (current and shift-queued) end, as the centre of their last goals; null
