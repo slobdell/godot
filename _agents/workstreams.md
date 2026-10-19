@@ -131,7 +131,10 @@ _Filed here before any number._
   the trace names the mechanism and the verdict is the orchestrator's (the step is brains' E1).
   **Scope change before the gate (2026-10-19 ~11:05, from W2's dev read on tuning seeds 460–463, builder0, lab/cpf5 bdacb1786):**
   the give-up applies to TURRET hulls only (`5c692b507`); with it on hull-fixed scouts, scouts >= 45 deg off rose 33 -> 48 over six
-  tasks (a scout's creep is how it aims). Gate candidate lab/cpf5 `a7167e4f9`, then `9a463b0b9` (same game/ and native/; + a cpf5base arm and references; on main 0f4d528d7; E1 NOT in). Native base arm: lab/cpf5-base `f77360f92` (= 9a463b0b9 with TURN_HULL/FACE_SETTLE defaults false).
+  tasks (a scout's creep is how it aims). **Second scope change (R35.23, 2026-10-19 ~15:45, before the gate):** the give-up and
+  its rolling-home rule act ONLY when turn_hull_on() AND the face came through the turnhull lift (from in {drawn, order, sector}),
+  on a turret mount, not a hull-fixed scout; every plain `face` keeps round 9's creep + give-up window bit for bit. (n) reads the drawn
+  tasks, where the give-up acts; clicked faces never reached the hull turn (attempt 4: hull_turns 0 clicked). Gate candidate lab/cpf5 `a7167e4f9`, then `9a463b0b9` (same game/ and native/; + a cpf5base arm and references; on main 0f4d528d7; E1 NOT in). Native base arm: lab/cpf5-base `f77360f92` (= 9a463b0b9 with TURN_HULL/FACE_SETTLE defaults false).
 
 - **T8 a held crew under fire leaves the hold (traffic, R35.7 (B)), filed before any code or number from `stream/traffic`
   `d3d2e6478` (`references/round35/traffic/t8_design.md`), with two lines added by the orchestrator.** `--traffic-on=holdfire`
@@ -315,6 +318,12 @@ _Filed here before any number._
   2890/0 (the turn-in tests pass: the stale-library diagnosis confirmed), 16/26 targets passed, sim-baseline ALL 13 UNMOVED at main's
   current lines (the release changes no baseline match), determinism 8c3c1232b711a760. Ruling: the 10 unfinished targets run on the
   same tree with CHECK_TARGETS; finished 16 + those 10 = the gate.
+- **R35.23 (2026-10-19 ~15:45) W2's design note: the give-up was scoped too wide.** a5053e70e (builder0 native, 48 face / planner /
+  turn-hull / wheeled-arrival tests): 46/2; the rolling face and Terminus street rig pass; the wedged semi (test_nav_face_recovery,
+  test_planner_trace_wedged) reads 0 give-up windows in 8 s, because those tests send PLAIN `face` orders to wheeled hulls, where
+  round 9's creep and its window are the designed behaviour, and settle removed the creep that ran the window. Approved: the give-up
+  acts only on faces lifted by turnhull (his drawn facing on a wheeled turret hull), plus a test that a plain face on a wheeled turret
+  hull still creeps under FACE_SETTLE true. Plain faces pass by construction, not by tuning.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
