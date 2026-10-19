@@ -104,6 +104,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   hold pick), with the technique still travelling. Then arrival changes nothing. A shape he chose (G) is untouched.
   Waiting on the orchestrator's go.
 
+- **B6 BUILT, series RUNNING** (stream/brains `619eff0e1`; check `a2add1d0f` builder2 2812/0. B6 moves no map: docks
+  was B1's move, now adopted on main. native-verify-scenarios' perf red was load: alone it's 53/0, 0 mismatches,
+  18045 µs). Bar approved and recorded on main; ground block moved to fresh 610–613 (50–53 overlap squad-arrive's
+  settle seeds); crossing 4–7 × {1,8,15}, shape auto, drills on. Table: tests/tactics/b6_table.py.
+- **scenario_perf (orchestrator's side item):** under a check's load, scenario_perf's CPU budget false-fails or is NOT
+  JUDGED: 4 of 6 ai-scenarios-check runs refused at 1.51–1.53×. builder2's nominal (0.898 ms) reads 1.41–1.46× even
+  ALONE. Why is OPEN (stale nominal, or the box changed). Normalising by the reference was proposed and REJECTED by
+  measurement: per_ref is not flat (plain +33 %, verify 2× at the same ratio; `references/round34/brains/
+  scenario_perf_per_ref_builder2.txt`). Next, the orchestrator's call: three idle readings on builder2 as measurement,
+  then decide verify's NOT_JUDGED.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
