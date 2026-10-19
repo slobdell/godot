@@ -56,6 +56,28 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Dev reads (2026-10-19 afternoon; tuning seeds, NOT judged)
+
+- **W1b** (builder0, stream a0c874924 tree, wedge 3500–3503 × locks/terminus/sumps, 12 fights an arm, both arms GDScript drive):
+  wheeled pace-0 ticks still moving ≥ 0.5 m/s **60 % → 4 %** (7181/11871 → 636/15723; 7099 of the base's were Traffic holds); halts =
+  asks 15727. Deaths 483 v 485, wedged 48 v 46 (dev n). `references/round35/manoeuvre/w1b-dev/`. Native's mirror queued (orchestrator).
+- **W2** (builder0, lab/cpf5 bdacb1786, hull-rest 460–463 drawn, GDScript both arms): wheels/turret point tasks median 3.9–5.4° v
+  32–72° (≤ 15°: 73–80 % v 11–33 %); movers at the judge new ≤ base on 5 of 6 tasks (right 7 v 5), `face_creep` 0 in the new arm.
+  **Found:** hull-fixed scouts (wheels/fixed) ≥ 45° off rose 33 → 48 over six tasks: a scout's creep is how it aims, so the give-up is
+  now TURRET hulls only (5c692b507, test added). lab/cpf5 is re-cut on that before the gate.
+- **W1c traces** (brains' E1 laggards, native, main 0f4d528d7 + OFF switches): law-605 Green_Eyes_4 (scout) still wedges with the
+  turn-in shipped: 70 s blocked by a PARKED crew of another squad (Green_Eyes II_5, which gave way once but only 2.4 m, still
+  touching); law-607 Guns_6 the same in a pack of friends. ORCA pace 0.05–0.09 hides the stall from unstick's |throttle| > 0.5 gate.
+  W1c approved (R35.12), Bar M6 filed; built OFF (f9b3bb7f3). `references/round35/manoeuvre/w1c-trace/`.
+
+### W1b and W2 built, default OFF; quick green (2026-10-19 ~10:30 PDT)
+
+`9d2486dab` builder0 `make quick-remote` (QUICK_BASE 0f4d528d7) **exited 0, 75 passed 0 failed**, lint clean. W2's boxed War Rig
+(four parked squadmates, face 90° right): ON gives up after 3 failed plans and stands (throttle 0, moved 0.0 m over the last 3 s,
+`face_settled()` true); OFF creeps (throttle 0.7, 3.2 m). Open ground: turns to 3.4°, no give-up. W1b's rule test: 3/3. Orchestrator: W1b
+approved (R35.7, arenas locks/terminus/sumps); Bar M5 filed on main 8640ec500. Dev reads running (tuning seeds: wedge 3500–3503 ×
+locks/terminus/sumps, both arms GDScript; hull-rest 460–463 drawn on lab/cpf5 bdacb1786).
+
 ### W1 TRACED, design note sent (2026-10-19 ~09:30 PDT): `references/round35/manoeuvre/w1-trace/README.md`
 
 builder0, native path, behaviour of main a0ae0aafd + the probe, Locks/Terminus × fresh 3500–3511, 24 fights × 180 s, 984 deaths:
@@ -82,6 +104,29 @@ round 34's Status. **Lines:** Bar M3's (a)–(m) unchanged (same rules, same A/A
 | (p) | wheels/turret at rest error, the crews that gave up | REPORTED (median, and how many ≥ 45°): the price of standing still |
 **Partial:** (a)–(j), (n) are the gate; a miss parks it with a trace. Attack-move's step (attempt 4's mechanism 2) is brains' (R35.3,
 the straggler release); if (d)/(e) miss on attack-move only, the trace says which mechanism, and the verdict goes to the orchestrator.
+
+### Bar M6 (W1c, the stall gate reads the drive's intent against a friendly hull; R35.12) — DRAFT, to the orchestrator before code
+
+**Change:** in `Movement._unstick`, for a ROUTED move (`move_to`, not `direct`) whose hull is in contact with a friendly hull (slide
+collision) or whose phase is `blocked` by a friend, the stall rule's throttle test reads the drive's intent, |throttle| / pace when
+pace < 1; every other case keeps `|throttle| > 0.5`. H1's escape unchanged (ask, straight reverse by the sweep, stand). Switch
+`--nav-off=stallintent` (default OFF until this bar passes); native mirrors after the dev read. **Candidate** = stream + the
+default flipped (lab/w1c), as a pair with native's mirror; **base** = the same tree `--nav-off=stallintent`. **Gate:** the pair's
+whole `make native check` on builder0. **Seeds (fresh, outside E1's and M5's 701–716):** hull-rest 901–916 (4 factions × 16 × 6
+tasks, drawn, both arms on the pair's native path), fights on FIXED locks/terminus/sumps × 940–963 (`FIGHT_AT`; also the wedge probe's
+WEDGE_RANGE 940–963 for far loops / contacts / asks). Tuning seeds stay 460–475 and wedge 3500–3511.
+| line | reads | rule |
+|---|---|---|
+| (0) counter first | in the ON arm: stall clocks run under the intent reading (`stall_intent_ticks`), H1 escapes started (`esc_fires_hull`), asks (`esc_asks`) | each > 0, or nothing is read |
+| (d) deciding | hull-rest attack-move crews moving at the judge by `real_mps` (wedged apart) | new ≤ base − 1.645 × sd_run(A/A 1.17) × √pairs; also no other task worse than Bar M3's (d) guard (+1.645 sd√n: right 0.64, move 0.51, screen 0.41, ambush 0.24, SBF 0.23) |
+| (e) deciding | attack-move never settled (75 s) | new ≤ base, and no task over base + Bar M3's (e) guard (se 3.0 a task at 64 pairs) |
+| (f) | arrivals within ARRIVED_M | not down beyond 1.645 se paired |
+| (i) fights | kills, deaths, hit rate per team (fight_table) | within 1.645 se paired |
+| (q) jams | stuck, jam (yielding/friend) and open deaths (wedge probe's causes) | each within 1.645 se paired |
+| (r) far loops | ManoeuvreCensus far rows | ≤ base + 1.645 se |
+| (s) friendly contacts | ticks touching a friendly hull (wedge probe) | ≤ base + 1.645 se |
+| (t) asks | H1 asks and give-ways started, per fight | REPORTED (the churn risk) beside base |
+**Partial:** (0), (d), (e), (f), (i), (q)–(s) are the gate. A miss parks it with a trace.
 
 ### Requests to other streams
 

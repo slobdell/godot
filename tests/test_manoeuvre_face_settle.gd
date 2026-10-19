@@ -19,20 +19,20 @@ static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
 
 ## A War Rig boxed in by four parked squadmates (no face plan fits: every pose comes nearer one of them), told to face
 ## 90 deg right, for 8 s. Returns what it did over the last 3 s.
-func _boxed_face(settle: bool) -> Dictionary:
+func _boxed_face(settle: bool, unit_id := "gang_tank") -> Dictionary:
 	var was_off := Movement._off
 	# The arm list follows the default (on a tree where FACE_SETTLE_DEFAULT is true the empty list is ON).
 	Movement._off = PackedStringArray([]) if settle == Manoeuvre.FACE_SETTLE_DEFAULT else PackedStringArray(["facesettle"])
 	var lab := TacticsLab.create(self, 31)
 	var here := Vector3(LANE_X, 0, 30)
-	var box: Array = Movement.hull_box("gang_tank")
+	var box: Array = Movement.hull_box(unit_id)
 	var half_l := float(box[2]) * 0.5
 	var half_w := float(box[0]) * 0.5
-	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", here, 0.0, "gang_tank")
-	lab.gun(Match.Team.GREEN, "Green_A_2", here + Vector3(0, 0, -(half_l * 2.0 + 1.0)), 0.0, "gang_tank")
-	lab.gun(Match.Team.GREEN, "Green_A_3", here + Vector3(0, 0, half_l * 2.0 + 1.0), 0.0, "gang_tank")
-	lab.gun(Match.Team.GREEN, "Green_A_4", here + Vector3(half_w * 2.0 + 1.5, 0, 0), 0.0, "gang_tank")
-	lab.gun(Match.Team.GREEN, "Green_A_5", here + Vector3(-(half_w * 2.0 + 1.5), 0, 0), 0.0, "gang_tank")
+	var rig := lab.gun(Match.Team.GREEN, "Green_A_1", here, 0.0, unit_id)
+	lab.gun(Match.Team.GREEN, "Green_A_2", here + Vector3(0, 0, -(half_l * 2.0 + 1.0)), 0.0, unit_id)
+	lab.gun(Match.Team.GREEN, "Green_A_3", here + Vector3(0, 0, half_l * 2.0 + 1.0), 0.0, unit_id)
+	lab.gun(Match.Team.GREEN, "Green_A_4", here + Vector3(half_w * 2.0 + 1.5, 0, 0), 0.0, unit_id)
+	lab.gun(Match.Team.GREEN, "Green_A_5", here + Vector3(-(half_w * 2.0 + 1.5), 0, 0), 0.0, unit_id)
 	await lab.start()
 	var ctl := _controller_of(lab, rig)
 	ctl.set_orders({"type": "face", "x": here.x + 20.0, "z": here.z}, {"type": "hold_fire"})
@@ -105,3 +105,10 @@ func test_a_new_want_rearms_the_face() -> void:
 	assert_true(not Manoeuvre.face_given_up_id(mover_id, want.rotated(Vector3.UP, deg_to_rad(45.0))), "a 45 deg swing re-arms it")
 	assert_true(not Manoeuvre.face_given_up_id(mover_id, want), "and the old want is no longer given up")
 	Manoeuvre.face_settle_forget_id(mover_id)
+
+
+## A hull-fixed scout (its hull is its gun's arc) boxed in the same way keeps trying: no give-up, the creep stands.
+func test_a_hull_fixed_scout_does_not_give_up() -> void:
+	var scout := await _boxed_face(true, "gang_scout")
+	print("MEASURE w2_face_settle boxed gang_scout (hull-fixed), ON: %s" % [scout])
+	assert_eq(int(scout["settles"]), 0, "a hull-fixed hull never gives up its face")

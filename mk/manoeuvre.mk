@@ -353,3 +353,23 @@ manoeuvre-wedge-trace: import ## manoeuvre W1: wedged episodes and wedged deaths
 		grep -q "^WEDGE_TRACE" $(WEDGE_DIR)/$$0-$$1.log && echo "  ran $$0 s$$1" || echo "  MISSING WEDGE_TRACE $$0 s$$1"'
 	@grep -l "NATIVE" $(WEDGE_DIR)/*.log | head -1 | xargs -r grep -m1 "NATIVE" || true
 	@$(PYTHON) tests/manoeuvre/wedge_table.py $(WEDGE_DIR) --top 3
+
+# Round 35 (W1, the orchestrator's relay of brains' E1 census): ONE hull-rest cell (manoeuvre-hull-rest's own flags) under
+# tests/manoeuvre/wedge_trace.gd, with HT_CREW's state every 0.5 s (WEDGE_TICK) -> build/manoeuvre/hull-trace/<cell>.log.
+# HT_OFF a --nav-off list (empty = the tree's default, native); HT_FLAGS anything else (e.g. --brains-off=native).
+HT_FACTION ?= law
+HT_SEED ?= 605
+HT_TASK ?= faced_attack_move
+HT_CREW ?= Green_Eyes_4
+HT_OFF ?=
+HT_FLAGS ?=
+.PHONY: manoeuvre-hull-trace
+manoeuvre-hull-trace: import ## manoeuvre W1: one hull-rest cell (HT_FACTION HT_SEED HT_TASK) traced, HT_CREW every 0.5 s (what moves it, unstick, colliders, Traffic) -> build/manoeuvre/hull-trace/
+	@d=$(BUILD_DIR)/manoeuvre/hull-trace/$(HT_FACTION)-$(HT_TASK)-$(HT_SEED); rm -rf $$d; mkdir -p $$d; enemy=law; [ $(HT_FACTION) = law ] && enemy=gangs; \
+	echo ">> manoeuvre-hull-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | $(HT_FACTION) $(HT_TASK) $(HT_SEED) $(HT_CREW) | off '$(HT_OFF)' flags '$(HT_FLAGS)'"; \
+	timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/wedge_trace.gd -- --skirmish --seed=$(HT_SEED) \
+		--no-pick-faction --mute --arena=$(FACING_ARENA) --player-faction=$(HT_FACTION) --enemy-faction=$$enemy --tune=match.no_damage=1 \
+		--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu $(if $(HT_OFF),--nav-off=$(HT_OFF)) $(HT_FLAGS) $(call _hull_jitter,$(HT_SEED)) $(_hull_shift) \
+		--screen-test=$(CURDIR)/$$d --screen-only=$(HT_TASK) --trace-crew=$(HT_CREW) --seconds=0 > $$d/run.log 2>&1 || true; \
+	grep -c '^WEDGE_TICK' $$d/run.log | xargs echo "manoeuvre-hull-trace: WEDGE_TICK rows"; grep -m1 NATIVE_EXEC $$d/run.log || true; \
+	grep -m1 "SCRIPT ERROR" $$d/run.log || true
