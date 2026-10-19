@@ -38,6 +38,7 @@ ONE machine. Before a run, `make gcp-status` says whether builder2 is up; if not
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | a scout stands and trades when it can win, and leaves when it can't; a pushed-off War Rig returns facing his way (B11b, after CP-F) | scout try 2 |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; a network match that never logs a shell hitting a dropped player | pairs, then the relay-smoke bug |
 | **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | a rematch without restarting plays out the same (replays and the network depend on it) | the rematch diagnosis |
+| **orders** (added mid-round, 2026-10-18) | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | three squads sent to one point all end up near it, on the side of the river he clicked; a shift-clicked route is followed squad by squad (C34.11) | O1 the ground cap |
 
 **Launch baseline:** the docs commit's main inherits the last green main check (HANDOFF names it). Workers run no
 baseline check.
@@ -52,6 +53,10 @@ baseline check.
   `game/combat/shell.gd` (or its actual path), with a test. For C34.8, one `--fixed-fps $(SIM_HZ)` token in each of
   nav.mk, pace.mk, planner.mk, command.mk and tactics.mk's direct run_tests.gd callers, and in each JUDGED stage target
   the audit finds unpinned.
+- **orders (new, C34.11):** `game/control/**` except manoeuvre's additive fields in `screen_playtest.gd`, `tests/test_control*.gd`,
+  `mk/command.mk` (native's one `--fixed-fps` token there stands), `references/round34/orders/**`; READ-ONLY calls into
+  `game/tactics/slot_ground.gd` and `game/ai/pathing.gd`; for O4 only, the queued-move done rule in `game/tactics/element.gd`
+  (`_next_queued` + one helper; brains' file, merge note, agreed through the orchestrator first).
 - **Nobody:** `tests/baselines/**` except the orchestrator's `make sim-baseline-adopt` on main.
 
 **Contracts (round 34):**
@@ -115,6 +120,18 @@ baseline check.
 - **C34.9 War Rig follow-ups (brains).** Log the inset's engage distance in the War Rig trace (small). Then B11b (HOLD's
   return honours the post's facing for turret-mounted wheeled hulls) on CP-F ON, if CP-F ships this round. B10b returns only
   in a new form (re-ground with hysteresis) with a fresh bar, as a stretch.
+
+- **C34.11 One click, several squads (orders; added mid-round from his playtest, game_design.md 2026-10-18).** Today
+  `SelectionSquads.ranks` lays squads ≤3 abreast at a line's frontage and `fit_inside` clamps only to the arena walls, so
+  an outer squad's anchor (~70 m off the click) can sit across a river; his scouts drove over a bridge to die. Decided:
+  (O1) a ground cap: no anchor further from the click by DRIVE than ~1.5× its straight offset (+ slack) or > ~30 m
+  straight; (O2) places found outward from the click by driving distance, constraint = ~9 m hull-to-hull clearance between
+  vehicles of DIFFERENT squads (wedges may nest/overlap), each squad on its own side of the approach, tight ground stacks
+  back along the approach road; (O3) a squad priced at the shape it will arrive in; (O4) in-between waypoints are the
+  SQUAD's (passed when its centre is within ~its width; no form-up stop), a GATE as wide as the ground for several
+  squads, single file only where the terrain narrows; only the last waypoint packs. Feel item: no judged bar unless
+  asked; sim-baseline must not move (the CPU orders through `cpu_commander`). O4's edit in `element.gd` is agreed with
+  brains through the orchestrator before code.
 
 **Not this round (recorded):** battery (c) deploy-at-place, only if he still sees trucks setting up short. Engaged
 fire-post loops (a battery firing at a target holds its spot): his T1c-b2 yes stands. CP-Q stays parked. R5 seat swap only
