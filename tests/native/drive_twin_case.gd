@@ -500,6 +500,9 @@ func _drive_case(owned: bool) -> void:
 	print("native drive: gates (the fight's own drives) %s -> %s" % [gates_before, Movement.gate_report()])
 	print("native drive: k-turns planned / back-and-fills / leg ticks / aborted, the fight's own drives: %s -> %s"
 			% [kturn_before, [Movement.kturns, Movement.kturn_multi, Movement.kturn_ticks, Movement.kturn_aborted]])
+	if (Manoeuvre as Script).get_script_constant_map().has("WHEEL_HALT_DEFAULT"):  # round 35 (W1b): its reach in this fight
+		print("native drive: wheeled pace-0 halts (the fight's own drives): asks %d, halts %d (WHEEL_HALT_DEFAULT %s)" % [
+				Manoeuvre.wheel_halt_asks, Manoeuvre.wheel_halts, Manoeuvre.WHEEL_HALT_DEFAULT])
 	NativeDrive.owned = false
 	print("native drive%s: %d drives (%d wheeled), %d replans (%d native), %d stationed, %d deflected, %d reversing, %d touched another mover, %d mismatches"
 			% [" (owned state)" if owned else "", asked, wheeled, replans, native_replans, stationed, avoided, reversing,
