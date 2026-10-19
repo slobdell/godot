@@ -401,6 +401,13 @@ builder0), ruled R34.3.
   three squads through one Locks lane under fire is brains' commander lane choice (later). **Measurement note:** 14 of 48
   "random" seeds dealt the Locks or Terminus, so those fights twin the fixed-arena fight of the same seed (paired readings
   unaffected; totals double-count them; true of X1/v4/v4b): future series exclude random seeds that deal a fixed arena.
+- **R34.16 P5 closes with NO v3 (planner, `references/round34/planner/p5-remeasure-15f5980ac/`; builder0, native, main with M2 + M1,
+  hull-rest gangs, dev seeds 96–107, face_pairs distinct 42/41).** The tail v3 targeted was the flicker: round 33's miss was a face only
+  the candidate planned (asked mid-k-turn). With M2 in, candidate-only faces are 0 drawn, 0 clicked, so a slot cap has nothing to cut.
+  Both-planned clicked faces 2.5 v 2.0 m median (se 0.26), p90 4.0 v 3.9, max 9.1 v 4.0 (one face): a WATCH item for the next series
+  that reads face_pairs, not a bar. **The round-34 Terminus route stall** (planner's bisect: O4's a5a362737 first bad; brains: O3 put
+  squad 3's first-leg anchor in a block) is fixed in brains' next check (ground_anchors + a player-route stall fallback, 12 s, every
+  crew settled, in-between legs only).
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
