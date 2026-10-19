@@ -54,9 +54,10 @@ const INSET_NEAR_M := 60.0
 ## facing he drew) lays its destination seats in the HALT's own shape (_halt_pick, the halt's own _group call), so the
 ## arrival re-lays nothing. Traced on main 9c0f4dfce (Sumps s41 t3): wedge seats until the centre came inside ARRIVE_M,
 ## then the table's hold herringbone, every seat 4-10 m away with the crews still 15-20 m short.
-## `--halt-shape-early=off` (or env HALT_EARLY=off, which a make target carries to its children) is main's rule.
-static var HALT_SHAPE_EARLY := not (OS.get_cmdline_user_args().has("--halt-shape-early=off") \
-		or OS.get_environment("HALT_EARLY") == "off")
+## PARKED (judged 2026-10-19, builder2 a2add1d0f, references/round34/brains/b6_series_*): Sumps hollow 9 v 0, drift moves
+## 121 v 104; the worst run brought back B10's round-32 grounding flip (a halt seat laid early on an obstacle edge). OFF by
+## default: `--halt-shape-early=on` (or env HALT_EARLY=on) turns it on.
+static var HALT_SHAPE_EARLY := OS.get_cmdline_user_args().has("--halt-shape-early=on") or OS.get_environment("HALT_EARLY") == "on"
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).

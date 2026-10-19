@@ -5,11 +5,11 @@ extends TestCase
 ## herringbone), and every seat was re-laid 4-10 m away while the crews were still 15-20 m short. Under
 ## ElementPlan.HALT_SHAPE_EARLY a plain move's final approach (anchor on the destination, within INSET_NEAR_M, no shape
 ## he chose, no facing he drew) lays its destination seats in the halt's own shape already, so arriving moves nobody.
-## `--halt-shape-early=off` is main's rule.
+## PARKED: OFF by default (`--halt-shape-early=on` turns it on); these tests set it.
 
 
 func teardown() -> void:
-	ElementPlan.HALT_SHAPE_EARLY = true
+	ElementPlan.HALT_SHAPE_EARLY = false
 	super.teardown()
 
 
@@ -50,6 +50,7 @@ func _seats_across_arrival() -> Array:
 
 
 func test_arriving_moves_no_seat() -> void:
+	ElementPlan.HALT_SHAPE_EARLY = true
 	var plans := _seats_across_arrival()
 	var before: Dictionary = plans[0]
 	var at: Dictionary = plans[1]
