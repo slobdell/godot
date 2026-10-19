@@ -27,7 +27,7 @@ static func _turn_in_state(ctl: OrderController) -> Dictionary:
 func test_a_wheeled_fixed_gun_at_stop_is_handed_back_under_the_turn_in() -> void:
 	if FreshStage.parent(self, "test_a_wheeled_fixed_gun_at_stop_is_handed_back_under_the_turn_in"):  # its own process (tests/native/fresh_stage.gd)
 		return
-	if not NativeBridge.available:
+	if NativeExpect.absent(self):
 		print("native: absent, the turn-in hand-back is not exercised in this run")
 		return
 	if not ("TURN_IN_DEFAULT" in (Manoeuvre as Script).get_script_constant_map()) or not Manoeuvre.turn_in_on():
