@@ -190,6 +190,10 @@ var _facings_issued := 0
 ## EVERY TICK by design (round 7's flow), which nav sees as continuous goal movement and which is not a re-issue at
 ## all. A number here of n means n of this element's members have a deliberately moving goal.
 var goal_moves := {"task": 0, "leg": 0, "reseat": 0, "drift": 0}
+## Round 33 (R33.9, measurement): times this element went from arrived back to not arrived within a task, and
+## `--arrive-trace` prints each (ARRIVE_FLIP).
+var arrive_flips := 0
+static var ARRIVE_TRACE := OS.get_cmdline_user_args().has("--arrive-trace")
 var following := 0
 ## Bumped whenever anything the HUD shows changes.
 var revision := 0
@@ -1620,7 +1624,17 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			" | ".join(PackedStringArray(rows))])
 
 
+## R33.35, MEASUREMENT ONLY (under --arrive-trace): HERRING_LAY once a second while this element is in the herringbone
+## drill, with the heading its seats are laid on, so a stage shows whether the drill path runs and whether it holds.
+var _herring_last := -1000
+
+
 func _take(plan: Dictionary, situation: Dictionary) -> void:
+	if ARRIVE_TRACE and drill == "herringbone" and int(situation.get("tick", 0)) - _herring_last >= SimClock.TICK_RATE:
+		_herring_last = int(situation.get("tick", 0))
+		var h: Vector3 = plan.get("heading", Vector3.ZERO)
+		print("HERRING_LAY t=%.1f team %d element %s heading (%.2f, %.2f) anchor %s" % [
+				float(_herring_last) / SimClock.TICK_RATE, team, element_name, h.x, h.z, plan.get("anchor")])
 	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
 		_bt_fire_order(situation)
 	if OS.get_cmdline_user_args().has("--battery-trace") and ElementPlan.is_battery(situation):
@@ -1670,7 +1684,13 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	anchor = plan["anchor"]
 	heading = plan["heading"]
 	bounding = int(plan["bounding"])
+	var was_arrived := arrived
 	arrived = bool(plan["arrived"])
+	if was_arrived and not arrived:
+		arrive_flips += 1
+		if ARRIVE_TRACE:
+			print("ARRIVE_FLIP t=%.2f team %d element %s flips %d anchor %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE,
+					team, element_name, arrive_flips, anchor])
 	if not arrived:
 		arrived_tick = -1
 	elif arrived_tick < 0:
@@ -1811,6 +1831,10 @@ func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary
 	elif int(before.get("seat", -1)) != _seat_index(unit_name):
 		key = "reseat"
 	goal_moves[key] = int(goal_moves[key]) + 1
+	if ARRIVE_TRACE:
+		print("ARRIVE_GOAL t=%.2f team %d element %s %s key %s %.1f m arrived %s" % [
+				Engine.get_physics_frames() / float(SimClock.TICK_RATE), team, element_name, unit_name, key,
+				(before["to"] as Vector3).distance_to(desired["to"]), arrived])
 	if key == "drift":
 		drift_moves += 1
 		var who := "%d:%s" % [id, unit_name]
