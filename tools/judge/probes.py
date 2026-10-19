@@ -146,6 +146,12 @@ FAR_TABLES = [
     ("item 4 re-judge (R33.36)", R33S + "traffic/ov_item4_rejudge.txt"),
 ]
 
+# Round 34 (manoeuvre M1, the new hull-rest ruler on main f97e5fdb1): its A/A, the OFF arm on seeds 201-209 v 210-218,
+# 36 pairs a task (lab/m1-ruler e28ba432d, builder2; copied from stream/manoeuvre references/round34/manoeuvre/m1-aa/).
+# "Still" reads REAL velocity (moving_real) and wedged hulls are their own count, so the hull-rest rows above (pairs of
+# rounds 29-33) are the OLD ruler's and do not compare with these.
+M1_AA = "references/round34/planner/sizing/m1-aa-e28ba432d-builder2.txt"
+
 # Round 33 (planner P1): the hull-rest gangs A/A, fifo v fifo, per-cell sd a run printed (HULL_AA_CELL).
 HULL_AA = R33 + "planner/aa-4bbe8322/hull-aa.txt"
 
@@ -307,6 +313,14 @@ def far_metric(root, name):
             "pairs": used, "n_pairs": len(used)}
 
 
+def m1_aa_metric(root, metric):
+    """M1's A/A (the new ruler): a null change's per-run paired sd, pooled over its six tasks (36 pairs each)."""
+    lines = [r for r in rows.m1_aa_lines(os.path.join(root, M1_AA)) if r["metric"] == metric]
+    return {"sd_run": pooled_sd([(r["sd_run"], r["pairs"]) for r in lines]),
+            "base_run": statistics.mean([r["a"] / r["pairs"] for r in lines]) if lines else float("nan"), "icc": 0.0,
+            "pairs": ["M1 A/A e28ba432d seeds 201-209 v 210-218 (%d tasks x 36, builder2)" % len(lines)], "n_pairs": 1}
+
+
 def hull_aa_metric(root, metric, klass="wheels/turret"):
     """The planner's hull-rest gangs A/A (fifo v fifo, both modes, six tasks, n 6 a cell): the per-run sd of a null
     change, pooled over the cells (no treatment: this IS the noise floor)."""
@@ -418,21 +432,21 @@ def build(root):
                   "read": lambda root=root: pooled_cases(root, ("terminus/cross", "yard_open/cross"), "xfast"), "aa": None,
                   "cost_min": TRAFFIC_COST_MIN, "unit": "run"})
     specs += [
-        {"probe": "hull-rest probe (a task)", "metric": "crews still moving at 75 s, wheeled turret", "form": "total", "n_today": HULL_REST_N_TODAY,
+        {"probe": "hull-rest probe (a task, OLD ruler)", "metric": "crews still moving at 75 s, wheeled turret", "form": "total", "n_today": HULL_REST_N_TODAY,
          "effect": {"abs": 5.0 / 27}, "line": "guard: <= base + 5 crews a task (M1); <= base + 2 se (M1b)", "read": lambda root=root: hull_rest_metric(root, "wheels/turret"),
          "aa": "clicked pairs (the rules never act on a clicked order): new_clicked - base_clicked moved the same class by -12..+10 a task at n = 27 (M1), see the A/A block for M1b",
          "cost_min": 2.5, "unit": "run with the class"},
-        {"probe": "hull-rest probe (a task)", "metric": "crews still moving at 75 s, all classes", "form": "total", "n_today": HULL_REST_N_TODAY,
+        {"probe": "hull-rest probe (a task, OLD ruler)", "metric": "crews still moving at 75 s, all classes", "form": "total", "n_today": HULL_REST_N_TODAY,
          "effect": {"abs": 5.0 / 27}, "line": "guard: <= base + 5 crews a task, all classes (M1); <= base + 2 se (M1b)", "read": hull_rest_all_classes,
          "aa": "clicked pairs: all classes -16..+5 a task (M1 M1_MOVING new_clicked - base_clicked); M1b's in the A/A block", "cost_min": 2.5, "unit": "run"},
-        {"probe": "hull-rest probe (a task)", "metric": "hull error median, wheeled turret (310 crews)", "form": "median", "n_today": 27,
+        {"probe": "hull-rest probe (a task, OLD ruler)", "metric": "hull error median, wheeled turret (310 crews)", "form": "median", "n_today": 27,
          "effect": None, "line": "clicked within +-5 deg of base; point tasks median <= 15 deg; per-class permutation p >= 0.05 (M1b)", "read": None,
          "aa": "clicked pair medians: wheeled turret -17.8..+6.3 deg (4 of 6 tasks outside +-5), ALL (651 crews) -5.8..-0.2 deg (M1); M1b's clicked pair -6.2..+8.4 deg wheeled turret, ALL within +-1.8", "cost_min": 2.5, "unit": "run"},
-        {"probe": "hull-rest probe (a task)", "metric": "share within 15 deg, wheeled turret", "form": "share", "n_today": 27,
+        {"probe": "hull-rest probe (a task, OLD ruler)", "metric": "share within 15 deg, wheeled turret", "form": "share", "n_today": 27,
          "effect": None, "line": ">= 70 % within 15 deg", "read": None,
          "aa": "owed: crews within a run are correlated, so the binomial +-2.6 pts (310 crews at 0.8) is a floor; two base runs of one task cost 2 x 48 runs ~ 4 box-hours",
          "cost_min": 2.5, "unit": "run"},
-        {"probe": "hull-rest probe (a task)", "metric": "settle time (75 s window)", "form": "median", "n_today": 27, "effect": None,
+        {"probe": "hull-rest probe (a task, OLD ruler)", "metric": "settle time (75 s window)", "form": "median", "n_today": 27, "effect": None,
          "line": "settle paired median <= +6 s", "read": None, "aa": "censored: 17-25 of 27 runs never settle in the window in BOTH arms (M1); 9-13 of 15 (M1b); the line reads +0.0 whatever happens",
          "cost_min": 2.5, "unit": "run"},
         {"probe": "pinned probe (hull-rest seeds, 144 runs)", "metric": "pinned crew-seconds", "form": "total", "n_today": 144, "effect": 0.5,
@@ -459,6 +473,16 @@ def build(root):
          "read": lambda root=root: terminus_metric(root, "mixed", "arrived"), "aa": "owed", "cost_min": 4.0, "unit": "run"},
         {"probe": "Terminus census, mixed (a seed)", "metric": "wall contact-ticks", "form": "total", "n_today": TERMINUS_N_TODAY, "effect": 0.10, "line": "<= base + 10 %; <= base + 1.645 se (M4b run 2)",
          "read": lambda root=root: terminus_metric(root, "mixed", "contacts"), "aa": "owed", "cost_min": 4.0, "unit": "run"},
+        {"probe": "hull-rest A/A, M1's new ruler (a run)", "metric": "crews moving by real velocity", "form": "total", "n_today": 36,
+         "effect": {"abs": 5.0 / 36}, "line": "reported (M1 A/A, round 34): the new ruler's null sd; CP-F 4's bars are sized on it",
+         "read": lambda root=root: m1_aa_metric(root, "moving_real"),
+         "aa": "this row IS an A/A (task totals swing 0-200 % between the two seed sets)", "cost_min": 2.5, "unit": "run"},
+        {"probe": "hull-rest A/A, M1's new ruler (a run)", "metric": "wedged crews", "form": "total", "n_today": 36,
+         "effect": {"abs": 5.0 / 36}, "line": "reported (M1 A/A): wedged hulls, now their own line (about half the old ruler's movers)",
+         "read": lambda root=root: m1_aa_metric(root, "wedged"), "aa": "this row IS an A/A", "cost_min": 2.5, "unit": "run"},
+        {"probe": "hull-rest A/A, M1's new ruler (a run)", "metric": "crews moving by commanded speed (the old reading)", "form": "total", "n_today": 36,
+         "effect": {"abs": 5.0 / 36}, "line": "reported (M1 A/A): the old ruler's count on the new stage, for the comparison",
+         "read": lambda root=root: m1_aa_metric(root, "moving"), "aa": "this row IS an A/A", "cost_min": 2.5, "unit": "run"},
         {"probe": "hull-rest gangs A/A (a run, fifo v fifo)", "metric": "crews still moving at 75 s, wheeled turret", "form": "total", "n_today": 12,
          "effect": {"abs": 1.0}, "line": "reported (P1 A/A, round 33): the null's sd a run; a pair whose own sd is far above it acted",
          "read": lambda root=root: hull_aa_metric(root, "moving"), "aa": "this row IS an A/A: the same arm twice (4bbe8322, 72 paired runs)",

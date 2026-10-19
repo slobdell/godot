@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bvrxsymh5qowg"
+
+[deps]
+
+files=["res://references/round34/planner/sizing/inventory.stream.translation", "res://references/round34/planner/sizing/inventory.item.translation", "res://references/round34/planner/sizing/inventory.commit.translation", "res://references/round34/planner/sizing/inventory.machine.translation", "res://references/round34/planner/sizing/inventory.line.translation", "res://references/round34/planner/sizing/inventory.form.translation", "res://references/round34/planner/sizing/inventory.n.translation", "res://references/round34/planner/sizing/inventory.rule.translation", "res://references/round34/planner/sizing/inventory.base.translation", "res://references/round34/planner/sizing/inventory.arm.translation", "res://references/round34/planner/sizing/inventory.verdict.translation", "res://references/round34/planner/sizing/inventory.noise.translation", "res://references/round34/planner/sizing/inventory.noise.translation", "res://references/round34/planner/sizing/inventory.noise.translation", "res://references/round34/planner/sizing/inventory.line.translation", "res://references/round34/planner/sizing/inventory.line.translation", "res://references/round34/planner/sizing/inventory.verdict.translation", "res://references/round34/planner/sizing/inventory.exact.translation", "res://references/round34/planner/sizing/inventory.n.translation", "res://references/round34/planner/sizing/inventory.reproduced.translation", "res://references/round34/planner/sizing/inventory.source.translation"]
+
+source_file="res://references/round34/planner/sizing/inventory.csv"
+dest_files=["res://references/round34/planner/sizing/inventory.stream.translation", "res://references/round34/planner/sizing/inventory.item.translation", "res://references/round34/planner/sizing/inventory.commit.translation", "res://references/round34/planner/sizing/inventory.machine.translation", "res://references/round34/planner/sizing/inventory.line.translation", "res://references/round34/planner/sizing/inventory.form.translation", "res://references/round34/planner/sizing/inventory.n.translation", "res://references/round34/planner/sizing/inventory.rule.translation", "res://references/round34/planner/sizing/inventory.base.translation", "res://references/round34/planner/sizing/inventory.arm.translation", "res://references/round34/planner/sizing/inventory.verdict.translation", "res://references/round34/planner/sizing/inventory.noise.translation", "res://references/round34/planner/sizing/inventory.noise.translation", "res://references/round34/planner/sizing/inventory.noise.translation", "res://references/round34/planner/sizing/inventory.line.translation", "res://references/round34/planner/sizing/inventory.line.translation", "res://references/round34/planner/sizing/inventory.verdict.translation", "res://references/round34/planner/sizing/inventory.exact.translation", "res://references/round34/planner/sizing/inventory.n.translation", "res://references/round34/planner/sizing/inventory.reproduced.translation", "res://references/round34/planner/sizing/inventory.source.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
