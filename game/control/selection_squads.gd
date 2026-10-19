@@ -1008,6 +1008,10 @@ const PACK_PASSES := 4
 ## the bank it does. A turned halt costs PACK_TURN_COST_M more, so the approach wins wherever it fits.
 const PACK_TURNS: Array[float] = [0.0, 90.0, -90.0]
 const PACK_TURN_COST_M := 6.0
+## A seat counts as on good ground when standable ground (a hull's clearance) lies within this of it: Element grounds
+## every seat onto the nearest such point anyway, and the strict test (0.5 m) put the Locks squads behind the buildings.
+## Water is never good ground (the controls' seat test refuses it outright).
+const PACK_GROUND_SLACK_M := 4.0
 ## How many packs the controls laid, this process (a probe reads it).
 static var packed := 0
 

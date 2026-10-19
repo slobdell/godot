@@ -1435,7 +1435,7 @@ func _pack_halts(squads: Array, blocks: Array, click: Vector3, drawn: Variant, l
 		if Vector2(inside.x - p.x, inside.z - p.z).length() > 0.5 or SlotGround.over_water(p):
 			return false
 		var stand := SlotGround.standable_for(ground, p, clearance)
-		return Vector2(stand.x - p.x, stand.z - p.z).length() < 0.5
+		return Vector2(stand.x - p.x, stand.z - p.z).length() <= SelectionSquads.PACK_GROUND_SLACK_M
 	var reached := func(p: Vector3) -> bool:
 		return not SelectionSquads.GROUND_CAP or SelectionSquads._reached_from(flat_click, p, drive, crosses)
 	var headings: Array = []
