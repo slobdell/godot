@@ -190,6 +190,15 @@ _Filed here before any number._
   Locks cell jams (laptop GDScript probe: place move 40.7 m, twitch 27.3 m). Keeping travel shapes apart (7 m) leaves the pack no
   tighter than the ranks (70.7 v 68.7 m to the farthest crew). No bar number read on builder0. Next try **D3b** = orders' option
   (a): a packed squad's last stretch in a narrower arrival shape its halt opens out of; fresh bar; AFTER D1's merge, D2, D4, D5.
+- **R35.12 (2026-10-19 ~10:45) The out-of-fire dead-stop: W1c (manoeuvre) + T9 (traffic).** Manoeuvre (builder0, native, main
+  0f4d528d7 + OFF switches 58395b79c, hull-rest law faced_attack_move): law-605's blocker Green_Eyes II_5 is a PARKED crew of another
+  squad; asked once, it yielded only 2.4 m (still touching, still across the route), the yield ended at t 14.5 s, nobody asked again
+  for 65 s. law-607 Guns_6 the same (23 m off from t 24 s, a pack of 8–9 friends). Cause on the asker's side: unstick's stall rule
+  reads the POST-ORCA throttle (0.05–0.09), so with the drive's intent ~0.9–1.0 the clock never runs and H1's escape (ask, reverse,
+  stand, `blocked`) never starts. **W1c (manoeuvre, approved, default OFF):** for a routed move in contact with / blocked by a friendly
+  hull, the stall rule reads the drive's intent; H1's escape unchanged; native mirrors after its dev read; fresh seeds hull-rest
+  901–916, fights 940–963; bar to the orchestrator before code. **T9 (traffic, after T7 and T8):** a give-way that ends with the
+  yielder still touching or across the asker's route does not count as done.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
