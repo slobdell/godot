@@ -204,6 +204,11 @@ dropped, with the orchestrator's agreement:** the GDScript reaches the setup ref
 handing back every parked ask is equal by construction, and a carve-out would mismatch the counters. The twins: yield
 stages set parkedroom OFF for their parked floors, and a new Sumps stage with it ON is floored on ask_handed_back. The
 per-ask Traffic.refresh cost is read in the pair's perf-judge.
+**Green (native, pair/native-parkedroom `5e5465af` on `5259fb463`, builder2, n 1):** twins + native_h1b + the traffic tests
+88/0, 0 mismatches; the parkedroom-ON stage reaches the hand-back once and traffic's room path once (thin, but reached);
+perf-judge PASS 1.00x. **Addition, accepted:** crews with `_room_post` set are also EXECUTED by the GDScript (an execute
+hand-back), because traffic's right_of_way owns the way back. Without it, 3 traffic_neck ON tests stayed red. The series
+reports ask_handed_back per fight, so the hand-back's real coverage is read there.
 
 **Bar, traffic overnight item 4: a battery counts as firing only with a fire mission (filed 2026-10-18 before any
 number; traffic `1e48e66a3`, references/round33/traffic/ov_item4_bar.md).** Movement.on_fire_post() is true only for a
