@@ -332,6 +332,13 @@ builder0), ruled R34.3.
   R34.1's ship reading puts a pooled median above 57 on the regression side, so the orchestrator does not ship it. The pair
   stays ready; the orchestrator recommends SHIP to the lead (the shuffle he reported is gone in every run, and the out-of-reach
   cost buys kills). On his yes: merge `c8fb8b6a3`, adopt crossing / parade / archipelago at the attributed hashes.
+- **R34.11 T4 (the ghost) PARKS a fourth time, on its deciding gain (traffic, pair `777820d7b`, builder2, fresh 920–931 /
+  940–987 / 1000–1023, `references/round34/traffic/x4_t4_fourth_series_777820d7b.txt`).** T(1) mixed friend-stuck crew-s 307 → 426
+  (+119, se 210.5; 34 of 48 cells byte-identical): FAIL. Guards pass (T(2) rigs stuck 597 → 848 inside its line but the wrong way,
+  T(3), T(4), T(6) fights unchanged; G1–G3 identical arms, no information). The yard circling it cured in rounds 31–32 is not
+  there to cure on today's main (escape, unstick and manoeuvre's later rules took it), and real-velocity ORCA sometimes steers
+  round a stalled friend it would have pushed through. The ghost stays OPT_IN; `pair/ghost-on-r34b` is NOT merged; native's
+  ghost twins return only with a new case. No fifth try without one.
 
 ## Round 33, overnight extension: round-34 candidates go to the same five workers (2026-10-18 ~00:45 PDT)
 
