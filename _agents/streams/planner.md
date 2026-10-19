@@ -66,7 +66,8 @@ Nothing.
   ids and heap all change no bit. Evidence (918ede503, builder0 native, sim-baseline match through main.tscn, 3 runs a
   process × idle phases 0–5, 1150 ticks): base gives 6 outcomes and 12 of 12 rematches branched; a scratch patch gives
   1 outcome and 0 of 12. `references/round34/planner/rematch/diagnosis.md`. Ruled (A) by the orchestrator.
-- **P2 done. GREEN HASH, merge here: `39f0d7e81`** (stream/planner + native's `ae2f03c59`: N5's Sumps stage move
+- **P2 MERGED: main `89e775f87` = `39f0d7e81`** (the orchestrator, 2026-10-19; baseline adoption on builder0 follows).
+  **Green hash was `39f0d7e81`** (stream/planner + native's `ae2f03c59`: N5's Sumps stage move
   and test_native_yield's floors, now set as paths reached, after the phase shift). builder0 `make check exited 2`:
   test 2798 / 0, perf-judge JUDGED PASS, 25 of 27 targets passed. The two reds are the planned sim-baseline move (all
   13 maps; identical to builder2's two agreeing reads; foundry `2e54d6f5c9fc22ac`) and web-smoke (builder0's Chrome lost
@@ -80,7 +81,10 @@ Nothing.
 - **P4 done:** (a) d3203aeb3, one run identity (screen.json + seam report) for hull_aa / face_keep_table / face_pairs /
   kept_share; they used to read 48 / 32 / 36 distinct pairs on one series. (b) R34.5 (orchestrator): FACE_KEEP_FAR is
   REPORTED only (09a98132c) and gets deleted in round 35.
-- **P5 waiting:** P3 v3 starts only after the k-turn arrival flicker fix (C34.4 (2)) merges.
+- **P5 waiting:** P3 v3 starts only after the k-turn arrival flicker fix merges (manoeuvre's M2, C34.4 (2); its check
+  was running at the C34.6 merge). Next step then: merge main at the orchestrator's checkpoint, re-measure the face-keep
+  tail on the flicker-fixed tree, and file v3 only if a tail remains on faces really asked (fresh bar, pinned, paired by
+  face via face_pairs).
 
 **Plan:** P1 → P2 (merge alone, then the baseline adoption on main) → P3 → P4 → P5 after the flicker.
 
