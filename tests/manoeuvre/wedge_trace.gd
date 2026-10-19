@@ -18,6 +18,8 @@ extends SceneTree
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/manoeuvre/wedge_trace.gd -- --skirmish --demo-match
 ##         --clean --seed=<n> --arena=locks --mute [--seconds=180]
+## `--trace-crew=<name>`: also a WEDGE_TICK line for that crew every SAMPLE_S, wedged or not (any stage main.tscn runs,
+## e.g. a hull-rest cell's own flags: `make manoeuvre-hull-trace`). The fight's own end (a screen test's quit) ends it.
 
 const TIMELINE_S := 10.0
 const SAMPLE_S := 0.5
@@ -32,6 +34,7 @@ var _episodes := {}  # crew -> the open episode
 var _moving_at := {}
 var _hits_at := {}
 var _last_pos := {}
+var _trace_crew := ""
 var _totals := {"episodes": 0, "episode_ticks": 0, "deaths": 0, "wedged_deaths": 0, "by_force": {},
 		"halt_ticks": 0, "halt_creep_ticks": 0, "halt_creep_held_ticks": 0}
 
@@ -58,6 +61,7 @@ static func _angle_deg(a: Vector2, b: Vector2) -> float:
 
 
 func _run() -> void:
+	_trace_crew = _flag("trace-crew", "")
 	var main: Node = (load("res://game/main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	var game_match: Match = main.get("game_match")
@@ -84,7 +88,7 @@ func _run() -> void:
 		if started < 0:
 			started = tick
 		_observe(game_match)
-		if (tick - started) / float(SimClock.TICK_RATE) > seconds:
+		if seconds > 0.0 and (tick - started) / float(SimClock.TICK_RATE) > seconds:
 			break
 	for crew: String in _episodes.keys():
 		_close(crew, false)
@@ -201,6 +205,28 @@ func _observe(game_match: Match) -> void:
 				_totals["halt_creep_ticks"] = int(_totals["halt_creep_ticks"]) + 1
 				if held:
 					_totals["halt_creep_held_ticks"] = int(_totals["halt_creep_held_ticks"]) + 1
+		if crew == _trace_crew and tick % maxi(1, int(SAMPLE_S * SimClock.TICK_RATE)) == 0:
+			var row := sample.duplicate()
+			row["crew"] = crew
+			row["goal"] = [snappedf(mover._goal.x, 0.1), snappedf(mover._goal.z, 0.1)] if mover._goal != Vector3.INF else null
+			row["goal_m"] = snappedf(_flat(here, mover._goal), 0.1) if mover._goal != Vector3.INF else -1.0
+			row["remaining_m"] = snappedf(mover._remaining, 0.1)
+			row["blocked_by"] = mover.blocked_by
+			row["yield_to"] = mover.yield_to
+			row["move_type"] = String(mover.ctl.move_order.get("type", "")) if mover.ctl != null else ""
+			row["unstick_fires"] = mover.unstick_fires
+			row["esc_stage"] = mover._esc_stage
+			row["kturn_m"] = snappedf(mover._kturn_left_m, 0.1)
+			var hulls: Array = []
+			for i in tank.get_slide_collision_count():
+				var hit := tank.get_slide_collision(i).get_collider()
+				if hit is Tank:
+					hulls.append(String((hit as Tank).name))
+				elif hit != null:
+					hulls.append("static:" + String((hit as Node).name))
+			row["colliders"] = hulls
+			row["wall_touch"] = mover.contact.touching if mover.contact != null else false
+			print("WEDGE_TICK " + JSON.stringify(row))
 		var ring: Array = _rows.get_or_add(crew, [])
 		ring.append(sample)
 		while ring.size() > int(TIMELINE_S * SimClock.TICK_RATE):
