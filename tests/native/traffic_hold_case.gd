@@ -35,6 +35,10 @@ func _hold_case(owned: bool, part: int, parts: int) -> void:
 		print("native traffic hold%s, crews %d/%d: wheeled pace-0 halts (the stage's own drives): asks %d, halts %d (WHEEL_HALT_DEFAULT %s)" % [
 				" (owned state)" if owned else "", part, parts, Manoeuvre.wheel_halt_asks - int(halt_before[0]),
 				Manoeuvre.wheel_halts - int(halt_before[1]), Manoeuvre.WHEEL_HALT_DEFAULT])
+		# The halt is asked (counted ON or OFF) at the hold's spots: 1094 a stage at 1d2f0cac9 (builder0, ON). A floor, so the
+		# twin cannot pass with the halt never reached.
+		assert_true(Manoeuvre.wheel_halt_asks - int(halt_before[0]) >= 100, "the wheeled pace-0 halt is reached (%d asks)" % (
+				Manoeuvre.wheel_halt_asks - int(halt_before[0])))
 	print("native traffic hold%s, crews %d/%d: %d drives compared (%d holding: %d at the spot, %d approaching), %d unsticks (%d holding), %d mismatches; the stage: %s" % [
 			" (owned state)" if owned else "", part, parts, acc["drives"], acc["held"], acc["at_spot"], acc["approach"], acc["unsticks"], acc["held_unsticks"],
 			acc["mismatches"], report])
