@@ -188,9 +188,9 @@ sits on top. Tonight's War Rig change already halved the gap.
   street for a minute. His T1c-b2 yes still holds for a truck that's actually firing.
 - **Main `d7d57f4cf` (fire mission in) GREEN on builder2:** `make check exited 0`, 2797/0, 27 targets ALL JUDGED,
   sim-baseline 13 unmoved (`build/b2-main-check-d7d57f4cf.log`).
-- **Traffic parkedroom v3** (pair `pair/parkedroom-on-v3 6d0e00652`): C31.1 2784/0 on builder2 (only sim-baseline, the ON
-  arm's own maps); trace passed (way back ends 2.4 m off the hold goal, crew holds). Judged series FRESH 820–867 × 3
-  running on builder2, then L4/L5.
+- **Traffic parkedroom v3 PARKED (R33.37):** a crew holding a position now gets back to it, and loops halved: far
+  loops 411 → 201 (builder2, fresh 820–867 × 3, pair `6d0e00652`). But kills fell 2072 → 1992 with the same hit rate, and
+  89.96 % of crews got back (line 90 %). Traffic is tracing random-859 on builder0 for the kill drop (dev only).
 
 **Parked (round 33):**
 - **B10b (brains' seat latch) PARKED, R33.22:** R4 fixed its case; on fresh seeds the latch never acts (112 v 112 drift
