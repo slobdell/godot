@@ -22,6 +22,10 @@ carrier: traffic's solve phase; planner's fix approved, the baseline moves once 
 web-smoke, is builder0's headless Chrome without WebGL2 since its ~23:00 thrash (its desktop session died); the same main's
 `make gcp-remote T=web-smoke` on builder2 exited 0 (boot 5.2 s, match smoke passed). **builder0's web-smoke stays red until
 someone logs into its desktop again.** Merged so far: native 12ac7b172, brains B1/B2-adapter/B3 (79d9f26eb). Parked: B6 (R34.7).
+**main a5a6d0e95 = C34.11 O1, the ground cap (brains under R34.8, code `43d81ec13`, builder2 check exit 0, 2818/0, sim-baseline 13
+unmoved; INHERIT).** In his terms: three or more squads sent to one point beside a bridge no longer send one across it; a place
+the click can't reach directly by ground comes back toward the click on his side; open ground lays out as before. B6's code
+rides along OFF by default (`--halt-shape-early=on` opts in). Parked: B6 (R34.7), parkedroom v4 (R34.9; v4b re-judge running on builder0).
 
 **Five streams; traffic and manoeuvre on FABLE, the rest and the orchestrator on Opus** (his words: "for one or two of these
 tasks where we're getting stuck we can re-engage a fable agent"). Split, ownership, grants and contracts C34.1–C34.10 are
