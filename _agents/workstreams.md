@@ -374,6 +374,9 @@ _Filed here before any number._
   poses) reaches asks_refused 5/5, 0 mismatches both arms; the parked refusal floored on the under-fire stages (native corrected its
   own earlier yard_open claim on the re-run). Next: C31.1's `make native check` with BOTH switches ON (manoeuvre cuts that tree),
   then the joint series; merge only after T7's verdict (R35.19).
+  **Series trees:** base lab/joint-base `df82e66a7` (6177ee87a + FIGHT_RANGE + the probe's T9 counter rows, measurement only), ON
+  lab/joint-on `b04bfdda2` (same + STALL_INTENT_DEFAULT true + yieldfit2 default on); native both, no flag arms; ON's check queued
+  after M5's gate.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
