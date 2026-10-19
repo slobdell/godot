@@ -81,6 +81,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **B3 DONE**, inside `0b8fbd3f6`.
 - **B2 brains side DONE** (`984896b8f`, `e7275ee79`, inside `0b8fbd3f6`). Inert until manoeuvre's function lands.
 
+- **B1 MERGED** (main `9c0f4dfce` = stream/brains `79d9f26eb`; stream/brains fast-forwarded to it). Smoke: skirmish
+  screenshots on the laptop (builder0 down), desktop and phone. A live Foundry fight, with HUD, order marks and minimap
+  correct. Looked at both.
+- **Stretch B10b: NO CASE ON MAIN, not built** (time-boxed; rows `references/round34/brains/b10b_drift_diag_*`). A REPORTED
+  diagnostic: main `9c0f4dfce`, builder2, dev seeds 40–41, 26 runs, main's rules, `--drift-trace`. 130 of the 137 drift
+  moves happen after arrival, and all are herringbone. Each element's are ONE burst at one tick (every seat re-laid
+  once), 2–6 a run, median 7.8 m. No crew flips (line > 10). The asked seat itself moves, so neither the 0.5 m latch nor a
+  hysteresis re-ground would act. That matches R33.22 (ON = OFF on 28 runs). **Reported, not a defect claim:** an
+  arrived herringbone squad re-lays its seats once, 8–20 m, after "arrived". If he sees a squad arrive and then shuffle
+  into its halt shape, this is it (planner/manoeuvre may want it; no item filed).
+- **Waiting:** B4 on CP-F's merge hash (manoeuvre); B5 on traffic's request. **Done** otherwise.
+
 ### Plan (2026-10-18)
 B1 scout try 2 → B3 War Rig inset trace (small, done while B1's runs ran) → B2 the flicker seam (agree first) → B4
 B11b (on CP-F's merge) → B5 (on traffic's request) → stretch B10b.
