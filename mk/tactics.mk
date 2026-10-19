@@ -955,7 +955,7 @@ LANE_DIR ?= $(BUILD_DIR)/lane-census
 lane-census: native-for-check import ## brains B9: the CPU's lane picks and their fights' losses, LANE_AT x LANE_SEEDS (first_last) showmatch fights -> LANE_DIR + table
 	@rm -rf $(LANE_DIR); mkdir -p $(LANE_DIR)
 	@echo ">> lane-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(LANE_AT)' seeds '$(LANE_SEEDS)'"
-	@first=$${LANE_SEEDS%_*}; last=$${LANE_SEEDS#*_}; for a in $(LANE_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
+	@first=$(word 1,$(subst _, ,$(LANE_SEEDS))); last=$(word 2,$(subst _, ,$(LANE_SEEDS))); for a in $(LANE_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
 		| xargs -P $(LANE_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
 			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 > $(LANE_DIR)/$$0-$$1.log 2>&1 || true'
 	@$(PYTHON) tests/tactics/lane_table.py $(LANE_DIR)
@@ -971,7 +971,7 @@ LANE_SERIES_DIR ?= $(BUILD_DIR)/lane-series
 lane-series: native-for-check import ## brains B9: the lane spread's one-sided series, LANE_ARM=aa|ruled over LANE_SERIES_AT x LANE_SERIES_SEEDS (first_last) -> LANE_SERIES_DIR/<arm>/
 	@rm -rf $(LANE_SERIES_DIR)/$(LANE_ARM); mkdir -p $(LANE_SERIES_DIR)/$(LANE_ARM)
 	@echo ">> lane-series $(LANE_ARM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(LANE_SERIES_AT)' seeds '$(LANE_SERIES_SEEDS)'"
-	@first=$${LANE_SERIES_SEEDS%_*}; last=$${LANE_SERIES_SEEDS#*_}; for a in $(LANE_SERIES_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
+	@first=$(word 1,$(subst _, ,$(LANE_SERIES_SEEDS))); last=$(word 2,$(subst _, ,$(LANE_SERIES_SEEDS))); for a in $(LANE_SERIES_AT); do for s in $$(seq $$first $$last); do echo "$$a $$s"; done; done \
 		| xargs -P $(LANE_JOBS) -L 1 sh -c 'side=off; if [ "$(LANE_ARM)" = ruled ]; then side=$$([ $$(( $$1 % 2 )) = 0 ] && echo green || echo rust); fi; \
 			timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
 			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 --lane-spread=$$side > $(LANE_SERIES_DIR)/$(LANE_ARM)/$$0-$$1.log 2>&1 || true'
