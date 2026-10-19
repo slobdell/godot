@@ -673,8 +673,13 @@ static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta
 	# cap (past it the yaw stops growing and the travel only swings the bearing away faster: the 15 m orbit at 16 m/s held
 	# 65 deg off at the 124 deg/s cap).
 	var yaw_share := deg_to_rad(absf(want_yaw)) * radius / top_speed
-	var floor_share := sqrt(yaw_share * TankMotion.WHEEL_CREEP_THROTTLE * 1.1)
+	# The creep line's floor is for a PART lock (the lock is yaw_share / share, below); at full lock it is TURN_IN_ROLL,
+	# never more (round 34: sqrt(yaw_share x 0.55) read 1.15 for a 310 deg/s want, so the hull ran at 16 m/s, past the
+	# speed at which full lock reaches its yaw cap, and sat 60 deg off a 15 m orbiter for 25 s: law_scout v syn_scout
+	# 15 m, every dev seed, 0 damage dealt).
+	var floor_share := minf(sqrt(yaw_share * TankMotion.WHEEL_CREEP_THROTTLE * 1.1), TURN_IN_ROLL)
 	var cap_share := minf(tank.max_forward_speed, deg_to_rad(float(Units.stat(tank.unit_id, "hull_turn_rate_deg", 360.0))) * radius) / top_speed
+	cap_share = maxf(cap_share, floor_share)
 	if not ctl._turn_in_live:
 		# On target: the jink's dwell, slow or fast.
 		cmd.throttle = maxf(cap_share if ctl._turn_in_fast else TURN_IN_JINK_LOW, floor_share)
@@ -703,7 +708,16 @@ static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta
 		# small and, worse, drove a hull with an 11 deg error nearly straight at 6.9 m/s, out past its leash every time
 		# (law_scout v syn_scout 30 m, seed 11: leashed 416 of 786 ticks, far 31 m, in-arc 71 -> 10 %). Now the creep
 		# line is the floor and the lock is proportional, as on target.
-		cmd.throttle = clampf(yaw_share, floor_share, maxf(cap_share, floor_share))
+		if deg_to_rad(absf(rate + own)) * radius / top_speed > cap_share:
+			# The bearing swings faster than full lock at the cap can yaw (a syn_scout at 17 m/s swings 65 deg/s round a
+			# hull 10 m away, and the hull's own travel adds as much again): a smooth chase cannot catch it and is the
+			# easiest motion to hit (the orbiter's lead settles: law_scout v syn_scout 15 m, 13 dev seeds, 0 damage dealt,
+			# hits 118 -> 157). Jink instead, at full lock: the dwell's speed swaps as on target, and the target comes round
+			# into the arc on its own lap. (The ERROR's share is not the test: a 90 deg error wants more than the cap too,
+			# and is caught up with.)
+			cmd.throttle = cap_share if ctl._turn_in_fast else maxf(TURN_IN_JINK_LOW, floor_share)
+		else:
+			cmd.throttle = clampf(yaw_share, floor_share, cap_share)
 	# A target nearly behind keeps the way it was being turned to: the error's sign flips across 180 deg, and a full lock
 	# that followed it wiggled left-right in place of coming round (the trace: err +177 -> -121).
 	if absf(error) > TURN_IN_BEHIND_DEG and ctl._turn_in_sign != 0.0:
