@@ -264,6 +264,11 @@ _Filed here before any number._
   and its sim-baseline moves are VOID; E1 re-checks after M5. **Until N3 lands:** after any merge that touches native/src, `touch
   native/src/*` before a remote run, and read sim-baseline against main's current lines. **N3 (native, urgent):** native/build.sh
   stamps a content hash of native/src so a source change always rebuilds.
+- **R35.16 (2026-10-19 ~12:35) The joint W1c + T9 dev read frees the stuck crews; mirrors released.** Manoeuvre (builder0,
+  GDScript both arms, lab/w1c-t9 878200ede = stream 2428a2b25 + traffic 2af7d3528): law-605 Green_Eyes_4 base blocked 34.1 m short
+  t 16 s to the judge (80 s), ON arrived by t ~24 s; law-607 Green_Guns_6 base blocked 23 m short from t 24 s, ON arrived by t ~48 s.
+  ON counters: stall_intent_ticks 205 / 983, yields_unfinished 1 / 4, asks_refused 0 / 1. Native: N3 -> W1b pair -> W1c + T9 mirrors
+  on ONE pair branch.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
