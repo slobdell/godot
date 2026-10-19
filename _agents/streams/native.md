@@ -317,3 +317,64 @@ started at once installed exactly once (two read "installed by a concurrent run"
     `pair/native-ghost-on` `b2b97188` stay unmerged and were never judged. The design, for when T4 returns:
     `Traffic.set_off("ghost", true)` in each gate / yield stage (`--traffic-off=ghost` means opposite things on main and
     on T4's pair), plus a ghost-ON stage each for the latch and the Sumps.
+**Traffic pairs, afternoon 2026-10-18:**
+- **R33.33, parkedroom v2: GREEN, `pair/native-parkedroom` `5e5465af`** (on traffic's `5259fb463`; traffic paired it as
+  `pair/parkedroom-on-v2n`). Three parts:
+  - `Drive::ask` hands every ask of a crew AT its post to the live `Movement.ask`: parkedroom on, not under way,
+    `Traffic.still_s` >= `ROOM_STILL_S`, after the same `Traffic.refresh`. There is no fire-post carve-out: it would make
+    the arms count differently, and handing every parked ask back is equal by construction (the orchestrator accepted).
+  - `exec_fields.h` carries the seven `_room_*` members.
+  - A crew with `_room_post` set is executed by the GDScript (hand-back reason 2): traffic's `right_of_way` owns the way
+    back.
+  builder2, n 1: twins + native_h1b + traffic tests, 88 / 0, 0 mismatches. The parkedroom-ON Sumps stage reaches the
+  hand-back (1) and traffic's room path (1). perf-judge PASS 1.00x. The live guard's fight had 14 negotiations and 0
+  hand-backs.
+- **Item 4, firemission: GREEN on the twins, `pair/native-firemission` `5b6aa0fd`** (on traffic's `0d3f45b25`).
+  `Drive::on_fire_post` needs a fire mission (a target or suppress order, or an engaged target) unless
+  `--traffic-off=firemission`. The yield twin's set-up case cycles the fire order and the switch. builder2: every twin 0
+  mismatches. The one red was traffic's own GDScript test (a fire_at_will battery); traffic fixed it (`328778c9`) and
+  paired the two as `pair/firemission-on-n` `23251f06`.
+**C33.9 ship (manoeuvre's turn-in), round 33 close, 2026-10-18 evening: `pair/native-c339` `2f9ad0fb`** on manoeuvre's
+`pair/c339-ship` `4a7cbc6e` (= main `eb532bf5` + the turn-in `608c3357` + TURN_IN_DEFAULT true).
+- The turn-in's face path needed nothing: a wheeled hull's `face` was already handed back (reason 3).
+- Its stop hook (`OrderController._stop_turn_in`, after the gun on a `stop` of a fixed gun on wheels) is not mirrored.
+  The native execute now hands that stop back: reason 4, counted as `turn_in_stop`. The switch is
+  `Manoeuvre.TURN_IN_DEFAULT`, read at configure (the native drive runs only with `Movement._off` empty). A tree
+  without it: no change.
+- New twin `test_native_execute_turn_in` (its own process): manoeuvre's stop stage, a gang_scout circled at 15 m.
+  builder2, n 1:
+  - Red on `4a7cbc6e` with no native change: 198 mismatches (the live stop turns in at throttle 0.62, native kept 0).
+  - Green at `8b0d91c5`: 0 mismatches, 506 hand-backs (both views), 99 live stop turn-ins. Floors at half (253 / 49).
+  - The twins, h1b and manoeuvre_orbit: `exited 0`, 22 / 0. The Sumps execute twin hands back 114 (was 110), 0
+    mismatches.
+- Full `make native check` on builder2: see the orchestrator's message / HANDOFF for the result.
+
+### Round 33 close-out (2026-10-18)
+**Unmerged native work** (stream/native carries docs only beyond main):
+- `pair/native-scout` `0565d1a8`: brains' scout_fights_back mirror. GREEN. **Carry**: merge when brains ships the
+  scout fight-back.
+- `pair/native-parkedroom` `5e5465af`: traffic's parkedroom ask / execute hand-back, the `_room_*` exec fields, the
+  parkedroom-ON yield stage. GREEN. **Carry**: merge with traffic's parkedroom (v3, parked by R33.37, changes only
+  where the way back goes; no native change needed).
+- `pair/native-c339` `2f9ad0fb`: the turn-in stop hand-back above. **Ships with C33.9.**
+- `pair/native-arrivedgate` `6805367b`: brains' arrivedgate latch mirror plus test_native_gate_arrived. **Dead** (R33.27:
+  (b) had no measured effect). Keep only as reference if the latch returns.
+- `fix/native-ghost-stages` `4b6433b4`, `pair/native-ghost-on` `b2b97188`: the ghost-aware gate / yield stages.
+  **Dead until T4 returns** (R33.30). The design is in the overnight Status above.
+- `pair/native-firemission` `5b6aa0fd`: merged (in main via traffic's pair).
+- Older labs (`lab/native-b5c`, `-b5c-v4`, `-kturnarc`, `-m4b-escapes`, `-n5m`, `-n5m-noarr`, `proof/native-t1`,
+  `round31/native`, `scratch/native-el-dev`, `scratch/native-ellaps`, `local/native-laps-*`): superseded by what merged
+  in rounds 29-33, or measurement scaffolding. **Dead**: delete when convenient.
+
+**Round 34, what native would take next** (in order):
+1. **The judged-stage pinning audit.** `make test` runs at `--fixed-fps $(SIM_HZ)`, but the other run_tests callers
+   (nav, pace, planner, command, tactics .mk) still run free. Pin each judged stage, or name why it must run free, and
+   measure the moves the way item 1 did (pinned ×2, free ×2, load sampled).
+2. **The library refusal, the rest of the way.** `make test` refuses with no library (`_native-ready`, done). Audit
+   the other targets that can pass the twins vacuously: `native-verify-suite`, the shard targets, and any target that
+   runs a `native_*` file by FILTER through another recipe.
+3. **The yield Sumps stage off the pits**, so its counts stop depending on the pit geometry.
+4. **The turn-in natively**, only if perf-judge shows the hand-back costs (the scouts are few; today it is GDScript
+   on a stop with wheels and a fixed gun).
+5. **Pairs as they come**: brains' scout and traffic's parkedroom (carried above).
+6. Twin splits only if shard balance needs them.
