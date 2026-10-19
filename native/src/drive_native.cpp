@@ -134,7 +134,7 @@ struct N {
 			velocity{ "velocity" }, max_reverse_speed{ "max_reverse_speed" }, hull_turn_rate{ "hull_turn_rate" },
 			hull_turn_rate_deg{ "hull_turn_rate_deg" }, _motion{ "_motion" }, yaw_rate{ "yaw_rate" },
 			// Round 33 (N5.Y)
-			native_yield{ "native_yield" }, deploy_ratio{ "deploy_ratio" }, weapon_order{ "weapon_order" },
+			native_yield{ "native_yield" }, deploy_ratio{ "deploy_ratio" }, weapon_order{ "weapon_order" }, engaged_target{ "engaged_target" },
 			move_order{ "move_order" }, asks_refused{ "asks_refused" }, setup_refusals{ "setup_refusals" },
 			parked_refusals{ "parked_refusals" }, yields_started{ "yields_started" }, yield_swaps{ "yield_swaps" },
 			yield_swaps_shorter{ "yield_swaps_shorter" }, yield_spots_unfit{ "yield_spots_unfit" },
@@ -2443,7 +2443,8 @@ Vector2 Drive<V>::travel_direction(const Vector3 &goal, bool direct) {
 	return (double)flat.length_squared() > 0.0001 ? flat.normalized() : Vector2();
 }
 
-// Movement.on_fire_post(): deploy_ratio > 0, a weapon order that is not hold_fire, and no move of its own under way.
+// Movement.on_fire_post(): deploy_ratio > 0, a weapon order that is not hold_fire, no move of its own under way, and (round
+// 33 overnight, traffic item 4) a fire mission unless `--traffic-off=firemission`.
 template <class V>
 bool Drive<V>::on_fire_post() {
 	static const String type("type"), hold_fire("hold_fire"), move_to("move_to"), arrived("arrived");
@@ -2455,7 +2456,18 @@ bool Drive<V>::on_fire_post() {
 		return false;
 	}
 	const Dictionary move = ctl->get(k.move_order);
-	return String(move.get(type, String())) != move_to || String(v.phase()) == arrived;
+	if (!(String(move.get(type, String())) != move_to || String(v.phase()) == arrived)) {
+		return false;
+	}
+	// Round 33 overnight (traffic item 4, `firemission`): and a fire mission, unless the switch is off.
+	//   and (Traffic.off("firemission") or fire_mission())
+	//   fire_mission(): weapon_order type "target" or "suppress", or ctl.engaged_target != ""
+	static const String firemission("firemission"), target("target"), suppress("suppress");
+	if (traffic_off(firemission)) {
+		return true;
+	}
+	const String kind = weapon.get(type, String());
+	return kind == target || kind == suppress || !String(ctl->get(k.engaged_target)).is_empty();
 }
 
 // Movement.ask(asker, from, direction, via): native_stale |= STALE_ALL; already giving way, or the same asker as last

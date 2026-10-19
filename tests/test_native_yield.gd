@@ -239,15 +239,22 @@ func _negotiates(mover: Movement, orders: OrderController) -> bool:
 
 
 ## One mover's negotiating drive twinned with every OTHER hull set up on a fire post; tanks and controllers put back.
+## Round 33 overnight (traffic item 4, `firemission`): the set-up hulls' fire order cycles fire_at_will / target /
+## suppress, and the switch alternates, so on_fire_post's fire-mission test is twinned both ways in both switch states.
 func _set_up_compare(movers: Array[Movement], controllers: Array[OrderController], i: int, frame: int) -> Array:
 	var keep := []
+	var kinds := ["fire_at_will", "target", "suppress"]
+	var kind: String = kinds[set_up_asks % kinds.size()]
+	var mission_was := Traffic.off("firemission")
+	Traffic.set_off("firemission", set_up_asks % 2 == 0)
 	for j in controllers.size():
 		keep.append([controllers[j].tank.deploy_ratio, controllers[j].weapon_order, controllers[j].move_order])
 		if j != i:
 			controllers[j].tank.deploy_ratio = 1.0
-			controllers[j].weapon_order = {"type": "fire_at_will"}
+			controllers[j].weapon_order = {"type": kind, "name": String(controllers[i].tank.name), "x": 0.0, "z": 0.0}
 			controllers[j].move_order = {"type": "stop"}
 	var result := _compare_tick(movers, controllers, frame, i)
+	Traffic.set_off("firemission", mission_was)
 	for j in controllers.size():
 		controllers[j].tank.deploy_ratio = keep[j][0]
 		controllers[j].weapon_order = keep[j][1]
