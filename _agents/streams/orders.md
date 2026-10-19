@@ -181,6 +181,23 @@ round 34 on a stale goal, B7 found the cause). Recommendation: (a).
   ARRIVE_SEEDS="1 2"` both arms must be byte-identical (an equality check, reported).
 - Screenshots (`orders-probe-shots`, arrival and +5 s, desktop and phone) looked at for every 5-squad click cell.
 
+### REPORT (in progress, 2026-10-19 ~12:50 PDT; every number names its commit and machine)
+**D1, the deploy step ON (his item):** ship candidate `orders-d1` `581b8a396` (= round34/brains 07c029732's flip + the
+on-spot lay + R35.17's body-test line + the census and probe tools, on main 0f4d528d7); builder0 check RUNNING (launched
+12:47). Its two earlier checks: `1a5e33c47` exited 2 (2884/2: the scenarios' "on the spot" lines, fixed by the on-spot lay),
+`0603f3274` exited 2 (2885/1: test_tactics_body, resized under R35.17 after a builder0 trace). sim-baseline 13/13 unmoved
+in both (the CPU never deploys: the census's 48 fights byte-identical on and off).
+In his terms: a squad sent somewhere arrives in its travel shape, then steps once into its halt shape ON the spot it was
+sent to; one squad halted in a herringbone across a street can slow a neighbour driving through (+6 s in brains' Locks body
+stage).
+**D5, the Locks 5-squad route jam:** cause traced (the in-between gate dealt by where squads stood at home); fix built on
+stream/orders (`--gate-deal=off` = round 34). Laptop GDScript seed 34: all in 16.9 s v 43.3 s. Judged A/B on builder0
+(fresh seeds 3611-3616) waits for D1's merge + D2.
+**D4, the shuffle:** traced; minimax deploy seating built (`--deploy-minimax=off`), laptop seed 34 Terminus 5 twitch 31.3 -> 14.0 m;
+judged A/B (3621-3626) after D5's. The Crossing's detour seats and the herringbone-across-a-street are round-36 questions.
+**D3, tight packing:** PARKED OFF (R35.11): the halts pack, the arrivals don't. D3b (a narrower arrival shape) after D5/D4.
+**D2:** runs on main after D1's merge.
+
 ### D1 census bar (C35.2), FILED AFTER THE READING (said plainly)
 The census ran (`e9066083a`, builder0) before the orchestrator asked for the bar, so this bar is written after its numbers.
 It is moot in this instance: the two arms are byte-identical (below), so no line could read differently.
