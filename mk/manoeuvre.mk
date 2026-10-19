@@ -271,3 +271,19 @@ manoeuvre-face-clip: import ## manoeuvre stretch: a drawn facing on War Rigs fil
 	ffmpeg -loglevel error -y -i $$out/before.avi -i $$out/after.avi -filter_complex \
 		"[0:v]drawtext=text='BEFORE (today)':x=20:y=20:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.5[a];[1:v]drawtext=text='AFTER (CP-F, $$commit)':x=20:y=20:fontsize=28:fontcolor=white:box=1:boxcolor=black@0.5[b];[a][b]hstack=inputs=2:shortest=0,scale=1920:-2,setpts=PTS/$(FACE_CLIP_SPEED)[v]" \
 		-map "[v]" -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -movflags +faststart "$$movie" && echo "FACE_CLIP_MOVIE $$movie"
+
+# ---- round 33 (C33.9, his scout out-turned by an orbiting attacker) ---------------------------------------------------
+C339_SEEDS ?= 11-16
+C339_JOBS ?= 1
+manoeuvre-c339-cells: import ## manoeuvre: C33.9's bar cells (turn-in ON v OFF, both GDScript; C339_JOBS seeds at once, one --fixed-fps process a seed: the box's load never paces the sim) -> build/manoeuvre/c339_cells.jsonl
+	@d=$(BUILD_DIR)/manoeuvre/c339; rm -rf $$d; mkdir -p $$d; first=$${C339_SEEDS%-*}; last=$${C339_SEEDS#*-}; status=0; \
+	for seed in $$(seq $$first $$last); do \
+		while [ $$(jobs -rp | wc -l) -ge $(C339_JOBS) ]; do sleep 1; done; \
+		( C339_CELLS=$$seed-$$seed $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/run_tests.gd -- --filter=c339_cells \
+			> $$d/$$seed.log 2>&1; echo $$? > $$d/$$seed.status ) & \
+	done; wait; \
+	for seed in $$(seq $$first $$last); do [ "$$(cat $$d/$$seed.status)" = 0 ] || status=1; tail -1 $$d/$$seed.log | sed "s/^/   seed $$seed: /"; done; \
+	cat $$d/*.log > $(BUILD_DIR)/manoeuvre/c339_cells.log; \
+	grep -h '^C339_CELL ' $$d/*.log | cut -d' ' -f2- > $(BUILD_DIR)/manoeuvre/c339_cells.jsonl; \
+	echo ">> manoeuvre-c339-cells: seeds $(C339_SEEDS), jobs $(C339_JOBS), $$(wc -l < $(BUILD_DIR)/manoeuvre/c339_cells.jsonl) cells, commit $$(git rev-parse --short HEAD 2>/dev/null || echo none)"; \
+	exit $$status

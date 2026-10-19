@@ -502,3 +502,201 @@ static func _face_legs(mover: Movement, map: RID, frame: Array, start: PackedFlo
 		legs.append(Vector2(gear, steps * FACE_STEP_M))
 		gear = -gear
 	return []
+
+
+## Round 33 (C33.9, his playtest: a lone law scout circled by a faster attacker "was repeatedly driving forward and
+## backward trying to yaw right", out-turned and hit without a shot). A FIXED gun on WHEELS facing a target that moves
+## round it does not shuffle (the face creep, 38 gear changes in 30 s on the laptop stage) but TURNS IN: forward on the
+## turning circle toward the target's side, never a reverse leg, at the speed that yaws it at the bearing's rate plus a
+## catch-up on the error. A car turns fastest rolling forward, and rolling is the evasion he asked for. A spot that
+## stands still keeps the face planner (`plan_face`). OPT-IN until its bar passes: `--nav-off=turnin` flips it.
+const TURN_IN_DEFAULT := false
+## The spot must have moved within this long (s) for a face to turn in; a spot that stood still that long goes back to
+## the face planner. (A bearing-rate threshold, 8 deg/s, let go whenever the orbiter slowed and handed the hull back to
+## the creep: builder0 seeds 21-23 on 66411eb7, up to 76 reverse ticks under a face.)
+const TURN_IN_MOVING_S := 3.0
+## Catch-up: yaw this much faster than the bearing per degree of error (1/s). The least throttle (share of top speed) is
+## above TankMotion.WHEEL_CREEP_THROTTLE at full lock, the only lock a turn-in uses: the tightest circle stays nearest the
+## post and its velocity swings fastest (a 0.6 throttle at part lock drove 18 m circles: the scout closed on the
+## orbiter, 27 -> 19 m at the 30 m orbit, and was hit 0.39 -> 0.58 of shots).
+const TURN_IN_GAIN := 3.0
+const TURN_IN_ROLL := 0.55
+## On target it keeps rolling and JINKS: its speed swaps between a low and a high share of top speed on uneven dwells
+## (TURN_IN_JINK_S, stretched by up to the same again from a hash of the match tick and the hull's name: deterministic), each
+## at the lock that holds the yaw. A shooter's turret lays on a lead point from the target's velocity, and a velocity
+## that keeps changing keeps that lay from settling: braked or on a steady circle, the orbiter fired 2-5x more (builder0
+## seeds 21-23, 640d9535 / 66411eb7: the 45 m gang_ifv orbit 42 shots OFF v 198 braked).
+const TURN_IN_JINK_LOW := 0.2
+const TURN_IN_JINK_S := 0.5
+## A hull that turns in but does not yaw TURN_IN_STALL_DEG in TURN_IN_STALL_S (a wall, a wreck) hands back to the face
+## planner and its creep.
+const TURN_IN_STALL_S := 1.0
+const TURN_IN_STALL_DEG := 5.0
+## The player's post leashes a turn-in: past TURN_IN_LEASH_M from it the hull turns toward the post's side instead of the
+## target's (16 m let it close on the orbiter: the 30 m orbit's mean range 27 -> 19 m; 10 m, once the leash held its side,
+## held the hull on 418 of 807 turn-in ticks).
+const TURN_IN_LEASH_M := 14.0
+## The leash lets go once the hull heads this far toward the post (cosine), not the moment it stops heading away.
+const TURN_IN_HOME_DOT := 0.5
+## A target further round than this keeps the side the hull was already turning to.
+const TURN_IN_BEHIND_DEG := 150.0
+## Arm counters: ticks a hull turned in, turn-ins that stalled, and ticks the leash turned it home.
+static var turn_in_ticks := 0
+static var turn_in_stalls := 0
+static var turn_in_leashed := 0
+## ...and ticks a `stop`'s swing (gunnery's R2) went through the turn-in instead of the creep.
+static var turn_in_stops := 0
+## ...and ticks it only evaded out of its gun's reach (835da0875's candidate, not chosen: always 0 here).
+static var turn_in_evades := 0
+
+
+static func turn_in_on() -> bool:
+	return TURN_IN_DEFAULT != Movement.switched_off("turnin")
+
+
+## Drive this tick's `face` at `spot` as a turn-in; false leaves it to the face planner. The bearing rate is read from
+## the spot's own motion across ticks (a face order carries only the spot).
+static func turn_in(ctl: OrderController, cmd: TankCommand, spot: Vector3, delta: float) -> bool:
+	var tank := ctl.tank
+	if not turn_in_on() or tank.mount != "fixed" or ctl.movement.wheel_radius() <= 0.0:
+		return false
+	var here := tank.global_position
+	var to := Vector3(spot.x - here.x, 0.0, spot.z - here.z)
+	if to.length_squared() < 1.0:
+		# A spot on top of the hull (an orbiter that rams it puts the threat there) has no bearing to turn to: hold, and
+		# never hand it to the face planner, whose leftover leg reversed for a tick each time (gang_scout v gang_ifv at
+		# 15 m, seed 19: 14 commanded gear changes, 3.8 m between the hulls).
+		cmd.throttle = 0.0
+		cmd.turn = 0.0
+		return true
+	var bearing := to.normalized()
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var tick := Engine.get_physics_frames()
+	if tick < ctl._turn_in_rest:
+		return false
+	# The spot moves only when the brain re-issues it (each think), so the rate is read across those updates, never as a
+	# per-tick average. It is the TARGET's swing only, both bearings taken from here: the hull's own travel swings the
+	# bearing too, and a rate that counted it chased itself (the 15 m orbit settled 36 deg off). A face that lapses for
+	# under TURN_IN_MOVING_S (a HOLD or ADVANCE between SPOTs) keeps its history, so the hull is not handed to the face
+	# planner while it relearns (a 1 s lapse did: its reverse legs, up to 40 ticks a run, builder2 e00b09e3).
+	if tick - ctl._turn_in_seen > int(SimClock.TICK_RATE * TURN_IN_MOVING_S) or ctl._turn_in_bearing == Vector3.INF:
+		ctl._turn_in_bearing = Vector3(spot.x, 0.0, spot.z)
+		ctl._turn_in_tick = -1  # no move seen yet
+		ctl._turn_in_seen_first = tick
+		ctl._turn_in_rate = 0.0
+		ctl._turn_in_live = false
+	elif Vector2(spot.x - ctl._turn_in_bearing.x, spot.z - ctl._turn_in_bearing.z).length() > 0.05:
+		var was := Vector3(ctl._turn_in_bearing.x - here.x, 0.0, ctl._turn_in_bearing.z - here.z)
+		if was.length_squared() > 1.0 and ctl._turn_in_tick >= 0:
+			var swing := rad_to_deg(was.normalized().signed_angle_to(bearing, Vector3.UP)) / maxf(delta * (tick - ctl._turn_in_tick), 0.001)
+			ctl._turn_in_rate = lerpf(ctl._turn_in_rate, swing, 0.5)
+		ctl._turn_in_bearing = Vector3(spot.x, 0.0, spot.z)
+		ctl._turn_in_tick = tick
+	elif ctl._turn_in_tick >= 0 and tick - ctl._turn_in_tick > SimClock.TICK_RATE:
+		ctl._turn_in_rate = 0.0  # a spot unchanged for a second: the target stopped
+	ctl._turn_in_seen = tick
+	# A brain's own face at a threat (no `from`: SPOT's) turns in from its first tick, before any move of the spot is seen:
+	# waiting for one handed the first second to the creep, which reversed (gang_scout, 15 m orbit, seed 14: 5 ticks). A
+	# drawn or sector face (`from` order / sector / contact) waits for the spot to move; one that stands still TURN_IN_MOVING_S
+	# goes back to the face planner either way.
+	var threat_face := String(ctl.move_order.get("from", "")) == ""
+	if ctl._turn_in_tick < 0:
+		if not threat_face or tick - ctl._turn_in_seen_first > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
+			return false
+	elif tick - ctl._turn_in_tick > int(SimClock.TICK_RATE * TURN_IN_MOVING_S):
+		return false  # a spot that stands still: the face planner has it
+	var rate := ctl._turn_in_rate
+	var error := rad_to_deg(forward.signed_angle_to(bearing, Vector3.UP))  # + = the spot is to the left
+	var half_arc := float(Units.stat(tank.unit_id, "fire_arc_deg", 0.0)) * 0.5
+	# The yaw it wants (yaw = speed / turning radius at full lock): the bearing's rate, the catch-up on the error, and the
+	# swing the hull's own travel puts on the bearing (d(theta)/dt = (p x -v).y / |p|^2), which the yaw must also match:
+	# the rate above leaves it out so it cannot chase itself.
+	var travel: Vector3 = tank.velocity
+	var own := rad_to_deg(to.cross(-Vector3(travel.x, 0.0, travel.z)).y / to.length_squared())
+	var want_yaw := rate + own + TURN_IN_GAIN * error  # deg/s, + = to the left
+	var radius := ctl.movement.wheel_radius()
+	var top_speed := maxf(tank.max_forward_speed, 0.1)
+	# Catching up (full lock, below) once the spot leaves the arc, until it is back in the arc's inner half; on target
+	# between those, a jink.
+	if not ctl._turn_in_live and absf(error) > half_arc:
+		ctl._turn_in_live = true
+		ctl._turn_in_window = TURN_IN_STALL_S
+		ctl._turn_in_heading = forward
+		ctl._turn_in_yawed = 0.0
+	elif ctl._turn_in_live and absf(error) <= half_arc * 0.5:
+		ctl._turn_in_live = false
+	# The jink's clock runs on target and catching up alike (the catch-up reads it only for the dwell's phase).
+	ctl._turn_in_pulse -= delta
+	if ctl._turn_in_pulse <= 0.0:
+		ctl._turn_in_fast = not ctl._turn_in_fast
+		# The MATCH's tick, never the engine's frame count (a second match in one process, or a replay, starts on
+		# another frame: the same seed then jinked differently).
+		var game_match: Variant = ctl.get("game_match")
+		var sim_tick: int = int(game_match.tick) if game_match != null else 0
+		ctl._turn_in_pulse = TURN_IN_JINK_S * (1.0 + float(hash([String(tank.name), sim_tick]) % 1000) / 1000.0)
+	if not ctl._turn_in_live:
+		var yaw := deg_to_rad(absf(want_yaw)) * radius / top_speed  # = share x lock
+		# The least share that holds this yaw above the creep line (share >= WHEEL_CREEP_THROTTLE x lock, with a margin).
+		var floor_share := sqrt(yaw * TankMotion.WHEEL_CREEP_THROTTLE * 1.1)
+		var cap_share := minf(tank.max_forward_speed, deg_to_rad(float(Units.stat(tank.unit_id, "hull_turn_rate_deg", 360.0))) * radius) / top_speed
+		var share := maxf(cap_share if ctl._turn_in_fast else TURN_IN_JINK_LOW, floor_share)
+		cmd.throttle = share
+		cmd.turn = -signf(want_yaw) * clampf(yaw / maxf(share, 0.01), 0.0, 1.0)
+		_turn_in_leash(ctl, cmd, here, forward)
+		turn_in_ticks += 1
+		return true
+	# On target is progress: a hull inside its arc yaws only as fast as the bearing, and read as stalled it handed back to
+	# the creep, which reversed (the 45 m orbit: +4 / -3 m/s every think, 27 gear changes in 30 s). The yaw is SUMMED tick
+	# by tick: the angle between the window's first heading and this one read a full lap at 146 deg/s as no yaw at all, and
+	# handed a hull at 11.8 m/s to the face planner's reverse legs (gang_scout, 30 m orbit, seed 23).
+	ctl._turn_in_yawed += rad_to_deg(absf(ctl._turn_in_heading.signed_angle_to(forward, Vector3.UP)))
+	ctl._turn_in_heading = forward
+	if absf(error) <= half_arc:
+		ctl._turn_in_window = TURN_IN_STALL_S
+		ctl._turn_in_yawed = 0.0
+	ctl._turn_in_window -= delta
+	if ctl._turn_in_window <= 0.0:
+		if ctl._turn_in_yawed < TURN_IN_STALL_DEG:
+			turn_in_stalls += 1
+			ctl._turn_in_live = false
+			ctl._turn_in_rest = tick + int(SimClock.TICK_RATE * TURN_IN_STALL_S)  # sit out a second: the planner has it
+			return false
+		ctl._turn_in_window = TURN_IN_STALL_S
+		ctl._turn_in_yawed = 0.0
+	# Full lock, at the speed that yaws it as wanted: never under TURN_IN_ROLL (the plant's creep line,
+	# WHEEL_CREEP_THROTTLE x |turn|, reads a slower throttle as a multi-point turn and swaps gear every half second) and
+	# never past the speed at which full lock reaches the hull's yaw cap (past it the yaw stops growing and the travel
+	# only swings the bearing away faster: the 15 m orbit at 16 m/s held 65 deg off at the 124 deg/s cap).
+	var top := minf(tank.max_forward_speed, deg_to_rad(float(Units.stat(tank.unit_id, "hull_turn_rate_deg", 360.0))) * radius)
+	# At the speed that yaws it as wanted. (Jinking the catch-up too, roll / cap on the jink's clock, cost the aim it is
+	# for: builder2 d7cf8cbf, dev seeds 11-23, in-arc 23.0 -> 18.3 %, hits 72 -> 78.)
+	cmd.throttle = clampf(deg_to_rad(absf(want_yaw)) * radius / top_speed, TURN_IN_ROLL, maxf(top / top_speed, TURN_IN_ROLL))
+	# A target nearly behind keeps the way it was being turned to: the error's sign flips across 180 deg, and a full lock
+	# that followed it wiggled left-right in place of coming round (the trace: err +177 -> -121).
+	if absf(error) > TURN_IN_BEHIND_DEG and ctl._turn_in_sign != 0.0:
+		want_yaw = absf(want_yaw) * ctl._turn_in_sign
+	ctl._turn_in_sign = signf(want_yaw)
+	cmd.turn = -signf(want_yaw)  # Steering's convention: turn < 0 turns left
+	_turn_in_leash(ctl, cmd, here, forward)
+	turn_in_ticks += 1
+	return true
+
+
+## Past TURN_IN_LEASH_M from the player's post, heading away from it, the hull turns full lock toward the post's side.
+static func _turn_in_leash(ctl: OrderController, cmd: TankCommand, here: Vector3, forward: Vector3) -> void:
+	var post: Variant = ctl.get("_player_post")
+	if post is Vector3:
+		var home := Vector3((post as Vector3).x - here.x, 0.0, (post as Vector3).z - here.z)
+		if home.length() > TURN_IN_LEASH_M and home.normalized().dot(forward) < TURN_IN_HOME_DOT:
+			# Its side is chosen once and held until the hull heads home: with the post nearly behind, the side's sign
+			# flipped every tick and the full lock wiggled while the hull drove straight away (gang_scout, 30 m orbit,
+			# seed 23: 31.5 m out, the leash on 408 of 829 face ticks).
+			if ctl._turn_in_leash_sign == 0.0:
+				ctl._turn_in_leash_sign = signf(forward.signed_angle_to(home, Vector3.UP))
+				if ctl._turn_in_leash_sign == 0.0:
+					ctl._turn_in_leash_sign = 1.0
+			cmd.turn = -ctl._turn_in_leash_sign  # full lock: one turning circle past the leash
+			cmd.throttle = maxf(cmd.throttle, TURN_IN_ROLL)  # ...above the creep line, whatever the jink asked
+			turn_in_leashed += 1
+			return
+	ctl._turn_in_leash_sign = 0.0
