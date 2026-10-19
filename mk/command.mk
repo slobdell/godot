@@ -631,7 +631,7 @@ five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, i
 ORDERS_PROBE_MAPS ?= locks crossing terminus
 ORDERS_PROBE_SQUADS ?= 3 5
 ORDERS_PROBE_ROUTES ?= click route
-ORDERS_PROBE_ARMS ?= main: cap_off:--ground-cap=off halt_off:--halt-price=off
+ORDERS_PROBE_ARMS ?= main: deploy_off:--deploy-step=off
 ORDERS_PROBE_DIR ?= $(BUILD_DIR)/orders-probe
 ORDERS_PROBE_JOBS ?= 4
 .PHONY: orders-probe orders-probe-shots
@@ -648,7 +648,7 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
 
 ORDERS_PROBE_SHOT_SQUADS ?= 3 5
-ORDERS_PROBE_SHOT_ARMS ?= main: cap_off:--ground-cap=off
+ORDERS_PROBE_SHOT_ARMS ?= main: deploy_off:--deploy-step=off
 ORDERS_PROBE_SHOT_ROUTES ?= click
 orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later (desktop 1280x720, phone 1560x720), ORDERS_PROBE_MAPS x _SHOT_SQUADS x _SHOT_ROUTES x _SHOT_ARMS -> build/orders-probe/shots/*.png (needs a display)
 	@mkdir -p $(ORDERS_PROBE_DIR)/shots
