@@ -576,16 +576,16 @@ struct Drive {
 			}
 		}
 		// Round 35 (traffic T7): passing a crew under fire that refused me: steer by its lane (ORCA still shapes it).
-		Vector3 point = waypoint;
+		Vector3 steer = waypoint;
 		if (!held && !String(v._pass_by()).is_empty()) {
 			const Vector3 lane = pass_point();
 			if (lane != V3_INF) {
-				point = lane;
+				steer = lane;
 			}
 		}
-		out_point = point;
+		out_point = steer;
 		out_keep = 1.0;
-		const Vector2 to((real_t)((double)point.x - (double)here.x), (real_t)((double)point.z - (double)here.z));
+		const Vector2 to((real_t)((double)steer.x - (double)here.x), (real_t)((double)steer.z - (double)here.z));
 		const double distance = to.length();
 		if (distance < 0.5) {
 			return;
