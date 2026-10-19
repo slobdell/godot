@@ -292,6 +292,13 @@ _Filed here before any number._
   f432645dd + pair/native-t7 + pair/native-w1b + T9's and W1c's mirrors. Traffic's stream carries **T6b** (a give-way already begun
   finishes when a hit lands) as DEFAULT behaviour, not on main, plus T7 OFF; so the joint series' base includes T6b, and the joint
   pair merges only AFTER T7's verdict (if T7 parks, re-cut without T6b/T7 and re-twinned).
+- **R35.20 (2026-10-19 ~14:30) M5's gate RED; fix; re-gate on main 1a18dd278.** lab/cpf5 `9a463b0b9` builder0 `make native check
+  exited 2`, 2891/3, sim-baseline unmoved. All 3 reds W2's: test_nav_face_recovery and test_planner_trace_wedged (round 9's "never
+  silent": the give-up stood the hull still without face_checked / face_giveups / face_stalled), test_planner_seam_hold rolling face
+  (plan_face failures counted while still ROLLING; give-up before rest; hull 180 deg off at 40 s). Fix `55e53006d`: a failed plan
+  counts only at rest (|speed| <= 0.5 m/s; a refused leg still counts), and the give-up reports. Re-gate on main 1a18dd278 (the
+  deploy step changes player plain-move halts, which hull-rest's drawn/clicked stages use); full-check order main's batch -> M5 ->
+  W1b-ON.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
