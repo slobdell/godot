@@ -303,7 +303,7 @@ planner-face-shadow: native import ## planner round 33 P3: which face searches l
 # One arm a call (PLANNER_FACE_ARM=base|candidate) on the pair tree (FACE_KEEP_DEFAULT 1): hull-rest's gang arm drawn +
 # clicked, the native drive, the FIFO both arms (main's queue, R33.13), the keep EXPLICIT on each arm (base
 # --planner-face-keep=0, candidate =1). Both arms called = the A/B: hull_aa.py --verdict (P2's pooled guards, line (2a))
-# and face_keep_table.py (lines (2b) the FACE asks' abandoned share, (2c) the drift line).
+# and face_keep_table.py (line (2b) the FACE asks' abandoned share; (2c) deleted in round 35, R34.5: face_pairs.py judges).
 PLANNER_FACE_SEEDS ?= 84 85 86 87 88 89 90 91 92 93 94 95
 PLANNER_FACE_ARM ?= base
 .PHONY: planner-judge-face
