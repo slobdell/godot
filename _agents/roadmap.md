@@ -1279,6 +1279,11 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
   **v2 and v3 parked too (R33.36, R33.37).** v3 (return to the hold point) cut loops hard: hold-post 59 → 18, far 411 → 201.
   But kills fell 2072 → 1992 with the hit rate equal, and only 89.96 % got back to their posts. Next is traffic's
   random-859 trace (why the same hits convert into fewer kills), then v4 on current main.
+  **Traced (traffic `9e3474e61`, ov_parkedroom_v3_l3_trace.md; builder0, game code 6d0e00652, n 1, reproduces 54 → 34):**
+  give-ways from 13 s on branch the fight. The base's rout of Rust's artillery park (14 lost, caught driving or stuck)
+  never happens in the arm (3 lost): Rust 44 → 20 lost, Green 11 → 15. So the kills that drop are crews dying stuck, which
+  may be the fix working. One fight doesn't show it in general. A v4 bar should read kills BY CAUSE (stuck or jammed
+  versus in the open) rather than a two-sided total.
 - **The fire-post loop: DIAGNOSED and OWNED by traffic (2026-10-18; `e7b6504c7`,
   references/round33/traffic/ov_firepost_r705.md).** An artillery truck reads arrived 5.1 m short, digs in after 0.25 s
   still with NO target, and T1c-b2's on_fire_post() (deployed + not hold_fire + arrived) treats that readiness as firing,
