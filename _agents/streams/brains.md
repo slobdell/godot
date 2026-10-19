@@ -177,6 +177,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **O2 stays parked** (`wip/brains-o2`); a fixed order-time heading makes the HALT seats exact (cheap packing), but the
   travel seats before all-in still aren't.
 
+### Gate order (`f1034b904`; check running on builder2)
+- A queued multi-squad leg whose squads' paths share a gate deals its places FIRST THROUGH, FARTHEST ALONG
+  (`SelectionSquads.gate_order`; `--gate-order=off` = round 33). Planner's builder0 probe (native, seed 34, main v off;
+  stream/planner 8f736fa7e, references/round34/orders/gate-order-f1034b904/): **Locks 3 route FIXED** (all in 18.5 s v
+  never; asks_refused 0 v 55, parked_refusals 5 v 91, unstick_fires 0 v 21). **Locks 5 route unchanged**, byte-identical
+  (no shared gate). Its 22.7 m shortfall is a different shape: squad 3 (north to ~(0, 18)) and squad 5's Echo 2/3 (east
+  to (54, 29–35)) cross at the junction near (5, 65) from t≈25 to ≈85 s. The final anchors don't cross in a straight
+  line, but the drives off the second waypoint do. Candidate fix: untangle a queued leg by its PATHS (from each
+  squad's previous leg end), not by the straight anchor lines (today's untangle skips queued legs).
+
 ### Round-35 candidates (noted, nothing now)
 - **B11b's brains mechanism** (from CP-F attempt 4, parked R34.18): an attack-move element steps to its next leg ~30 s
   late when its arrived crews sit on a `face from sector` (tank_brain.gd ~2960, the sector watch) rather than a stop.
