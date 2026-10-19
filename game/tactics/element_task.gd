@@ -31,7 +31,7 @@ const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
 ## Round 28 (B5): "facing_from": "waypoint" marks a facing the controls set from his last waypoint (a queued task), not
 ## one he drew; only the readout differs.
-const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from", "approach", "facing_from"]
+const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from", "approach", "facing_from", "lay"]
 ## Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 ## His 2026-09-16 ruling stands as the DEFAULT -- "there's essentially always a formation for any given task OR
 ## there's always a central decision maker ... that automatically determines what the formation is" -- so a task with
@@ -73,6 +73,13 @@ static func validate(task: Variant) -> String:
 		if typeof(facing) != TYPE_ARRAY or (facing as Array).size() != 2 or not _finite(facing[0]) or not _finite(facing[1]) \
 				or Vector2(float(facing[0]), float(facing[1])).length() < 1e-6:
 			return "'facing' must be a non-zero [x, z] direction"
+	# B8 (round 34, the deploy step): the heading its halt is laid on once it deploys (the body's approach, set at the
+	# order). Not a facing: nobody turns to it on the way.
+	if task.has("lay"):
+		var lay: Variant = task["lay"]
+		if typeof(lay) != TYPE_ARRAY or (lay as Array).size() != 2 or not _finite(lay[0]) or not _finite(lay[1]) \
+				or Vector2(float(lay[0]), float(lay[1])).length() < 1e-6:
+			return "'lay' must be a non-zero [x, z] direction"
 	if task.has("from"):
 		var from: Variant = task["from"]
 		if verb != "ambush":

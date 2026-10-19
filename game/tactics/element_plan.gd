@@ -777,6 +777,16 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# A facing on a MOVE is an arrival heading and dies with the order; a facing on a HALT is a sector and is not the
 	# drawn one. A hold carrying `told` is the only combination that both persists and points where he pointed.
 	var holding_heading: bool = told is Vector3 and bool(plan["arrived"])
+	# B8 (R34.14): THE DEPLOY STEP (prototype, `--deploy-step=on`). Deployed, an AUTO plain move stands in its halt.
+	var deploy := _deploy_state(plan, situation, state, destination, center, told)
+	plan["deploy"] = deploy
+	if bool(deploy.get("deployed", false)):
+		plan["formation"] = String(_halt_pick(situation, state, table)["formation"])
+		plan["heading"] = deploy["heading"]
+		plan["why"] = "deployed: %s on the spot" % String(plan["formation"]).replace("_", " ")
+		_group(plan, slot_order(situation), String(plan["formation"]), destination, deploy["heading"],
+				table.spacing(String(situation["terrain"])), "move", "", true, true)
+		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
 	# click: matched against slots 150 m away round a bend, the crew nearest the click as the crow flies took the point
@@ -1734,6 +1744,51 @@ static func herring_heading(state: Dictionary, current: Vector3) -> Vector3:
 	if String(state.get("drill", "")) == "herringbone" and state.get("heading") is Vector3:
 		return TacticsFormation.flat(state["heading"])
 	return current
+
+
+## B8 (R34.14; the lead's deploy-step question after B6, R34.7): a prototype, OFF by default. An AUTO squad on a plain
+## move keeps its TRAVEL seats until every living crew is in (within max(TankBrain.ORDER_ARRIVE, its settle radius) of
+## the seat it was last sent to) or DEPLOY_CAP_S after it arrived, then lays its HALT (the table's hold pick) once, as
+## one visible move, on a heading fixed when the order was given (the task's `lay`, the body's approach; else from where
+## it stood to the click), and those seats stand (fixed seating; Element grounds them with the latch). B6's causes it
+## answers: no early lay, no per-update heading, the halt laid only when the crews are in. `--deploy-step=on` opts in.
+static var DEPLOY_STEP := OS.get_cmdline_user_args().has("--deploy-step=on")
+const DEPLOY_CAP_S := 10.0
+
+
+## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.
+static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictionary, destination: Vector3, center: Vector3,
+		told: Variant) -> Dictionary:
+	var task: Dictionary = state.get("task", {})
+	if not DEPLOY_STEP or String(task.get("verb", "")) != "move" or chosen_formation(task) != "" or told is Vector3:
+		return {}
+	var deploy: Dictionary = (state.get("deploy", {}) as Dictionary).duplicate()
+	if not deploy.has("heading"):
+		var lay: Variant = task.get("lay")
+		if lay is Array and (lay as Array).size() == 2:
+			deploy["heading"] = TacticsFormation.flat(Vector3(float(lay[0]), 0.0, float(lay[1])))
+		elif center.distance_to(destination) > 2.0:
+			deploy["heading"] = TacticsFormation.flat(destination - center)
+		else:
+			deploy["heading"] = TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+	if bool(deploy.get("deployed", false)) or not bool(plan["arrived"]):
+		return deploy
+	var issued: Dictionary = state.get("issued_slots", {})
+	var all_in := not issued.is_empty()
+	for member: Dictionary in situation.get("members", []):
+		var seat: Variant = issued.get(String(member["name"]))
+		var radius := maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(String(member.get("unit", ""))))
+		if not (seat is Vector3) or Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
+				(member["position"] as Vector3).z - (seat as Vector3).z).length() > radius:
+			all_in = false
+			break
+	var tick := int(situation.get("tick", 0))
+	var waited := int(state.get("arrived_tick", -1)) >= 0 and tick - int(state["arrived_tick"]) >= int(DEPLOY_CAP_S * SimClock.TICK_RATE)
+	if all_in or waited:
+		deploy["deployed"] = true
+		deploy["tick"] = tick
+		deploy["cause"] = "all_in" if all_in else "cap"
+	return deploy
 
 
 ## B6: whether this update of a move is its final approach, laid in the halt's shape (HALT_SHAPE_EARLY).
