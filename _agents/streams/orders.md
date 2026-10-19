@@ -75,6 +75,29 @@ Nothing (his deploy-step yes is the go).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### D3 tight packing: PARKED, OFF by default (`--pack=on` / `PACK=on`), code on stream/orders `183eb4cd6`
+**What was built** (`SelectionSquads.pack_halts`, `RtsControls._pack_halts`, the task's `halt_at` / `halt_shape` / `lay` per
+R35.6, `ElementPlan._deploy_state` / `_deploy_shape` read them): with the deploy step on and 2+ AUTO squads on one plain
+click, each squad's HALT seats are laid at order time and packed on a 2 m grid: every halt seat 9 m from another squad's,
+no seat inside another squad's halt outline (a coil is a ring: by seat clearance alone a second coil stood inside it),
+columns 28 m, nobody sent back past where it stands, seats within 4 m of standable ground (water refused), the click's
+ground cap, halts may turn 90 deg across the approach (the Locks strip), started from the ranks and compacted (each squad,
+dearest first, to its cheapest place that still fits), squads of one shape dealt to the places by least driving. 14 tests
+(`tests/test_control_pack.gd`), laptop 14/0.
+**Why parked (what it found):** the brief's premise ("with the deploy step the halt seats are known, so packing is exact")
+holds for the HALT only. Squads ARRIVE in their travel shape (a wedge ~60 m wide for five) and deploy only when every crew
+is in, so packed halts put two arriving wedges' slots 5.7 m apart (`test_control_two_squads`' "slots do not mix" fails) and
+the 5-squad Locks cell jams (laptop GDScript probe: place move 40.7 m, twitch 27.3 m, drive/plan 2.25). Keeping the travel
+shapes apart too (`PACK_TRAVEL_CLEAR_M` 7 m) makes the pack no tighter than the ranks (five coils: 70.7 m v 68.7 m to the
+farthest crew; by halts alone 64.4 v 73.6). Round 34's O2 note said the same ("the travel seats before all-in still aren't").
+And on the Locks the strict ground test stacks squads back along the approach (the decided rule for tight ground), so end
+spread there grew (3 squads: 66.9 v 47.6 m), not shrank. No bar number was read on builder0 (laptop iteration only).
+**What would unlock it (a design question, for the orchestrator / the lead):** packed squads must ARRIVE in something that
+nests as tightly as their halts. Options, most reversible first: (a) a packed squad's last stretch in a narrower arrival
+shape (file / column) that its halt opens out of; (b) deploy each squad as soon as ITS crews are in, the first-in front ones
+first, so arrival overlap is transient (needs a stage); (c) accept B6-style shape-on-the-final-approach (failed its bar in
+round 34 on a stale goal, B7 found the cause). Recommendation: (a).
+
 ### D3 bar (C35.4), FILED BEFORE ANY NUMBER (2026-10-19 ~09:20 PDT)
 - **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell (deterministic): Locks / Crossing / Terminus x 3 / 5
   squads x click / route = 24 cells, arms `main:` (pack on) v `pack_off:--pack=off`, the same tree, the deploy step ON in both.
