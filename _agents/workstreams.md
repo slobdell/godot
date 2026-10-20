@@ -67,6 +67,31 @@ carve-outs. **native** takes planner's paths this round (`game/ai/planner/**`, `
 - **C35.9 Planner's leftovers (native).** Delete FACE_KEEP_FAR (R34.5); the judging table's owed rows (round 31 brains, round 32,
   the round 31–34 inventory lines); every series tool drops random-seed twins (R34.15, `seed_twins.py`).
 
+## Round 35 extension (2026-10-20, the lead away for the day: "I do want you and the swarm to keep doing useful work")
+
+Same five worktrees and sessions; each stream copies its items into its brief's backlog. Every item: bar filed before numbers, fresh
+seeds, far bank 0 in every orders cell. **Machines:** builder0 = one full check + one judged series; builder2 (e2-highcpu-32 Spot,
+idle auto-stop) = one full check + one judged series; every full check behind `tools/builder_checks.sh`, long runs under systemd-run.
+
+- **X1 manoeuvre:** (a) finish the joint W1c + T9 ship (R35.66, in flight). (b) W1b's deciding probe: a FIGHT_CENSUS line per impact
+  with the target's held / pace-0 state and exposure ticks, then a small A/B (locks x 24 fresh seeds, both arms, builder0) that says
+  whether a still held hull is a sitting duck; W1b re-tries only if not. (c) R34.16's watch item from a face_pairs read on main (M5 in).
+- **X2 traffic:** T8 (a held crew under fire leaves the hold; bar filed, 1800–1827): cut its pair from main AFTER the joint ship merges
+  (T9 on main), switch-OFF inertness, check + series on builder2 (after orders' D5 check). No native mirror (the drive calls
+  Traffic.hold_of).
+- **X3 orders:** (a) D5 ON (R35.66, in flight). (b) "a deployed squad jams the next squad's street" (R35.17): trace on the body route,
+  a design (a halt that keeps a through-lane open, or deploys off the street) behind a switch, bar, series on builder2 after T8.
+  (c) the Crossing halt detours: design note only (driving-distance halt lay; ElementPlan stays pure unless the note says otherwise).
+- **X4 brains:** (a) the released straggler's catch-up (E1 (d): +3 crews still driving at 75 s): trace, design, bar. (b) after the
+  joint ships, re-read Bar E1's left-behind crews on main (9 of 17 were still wedged): did W1c + T9 free them? Report only.
+- **X5 native:** (a) **the round scoreboard** (his concern, 2026-10-20: "ensure that we're also generally making concrete progress"):
+  a fixed workload (fights on fixed arenas x fixed seeds + the orders probe's click/route cells) run on builder2 against each main the
+  orchestrator names, printing the player-facing numbers (deaths by cause incl. stuck / jam, crews left behind, never-settled,
+  all-in times, far bank, twitch) into one table across mains, rendered to `references/scoreboard/`; first rows: round 34's close
+  c29a8c7b6, round 35's launch a0ae0aafd, and today's main. (b) the copy-back leak (stale `build/` rows from earlier runs reaching a
+  series folder): fix in tools/remote.sh (granted), with a test. (c) R35.47's two Tank.place fixes (test_native_avoid_gather,
+  test_native_record). (d) mirrors as asked.
+
 ## Bars (round 35)
 
 _Filed here before any number._
