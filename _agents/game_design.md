@@ -4108,3 +4108,18 @@ launch timing: *"I'm confused about what's not on main. I just killed all the ot
 anything"* (the orchestrator explained: the joint ship, the scoreboard tool and T8 were not on main; their remote jobs outlived the
 sessions). Round 36 goes after what he would notice from round 35's findings: the held crew under fire (T8), the crew wedged between
 friends (stallnet), crews left behind, and the arrived squad in the next squad's street.
+
+## Round 36: his packing answer (2026-10-20 ~15:40 PDT, in chat, verbatim)
+
+> "should crews of different squads stay 9m apart of pack tighter: why is the 9m your recommendation? My concern here is basically
+> giving some squads an order and then feeling like they're not actually following it, making the game appear dumb"
+
+> "ok yeah let's keep 9 meters then"
+
+- **HALT_CLEAR_M stays 9 m (seat to seat, centre to centre).** The orchestrator's reason, corrected from its first "one shell, two
+  squads": 9 m is about a big hull's length (law tank 9.7 m, artillery 8.2 m), so tighter means bumping and shoving for room, which
+  looks like squads not obeying. Orders' O4 (tighter packing) stays parked.
+- **His real concern, for every stream that touches orders:** *squads that don't look like they follow his order make the game look
+  dumb*. Read as: squads end where he clicked, settle once, and don't wander or wedge. Round 36's O2 (compact deploy), S1/S2a (wedged
+  and left-behind crews) and T8 serve it; traffic between squads arriving together (~half the remaining post-arrival shuffle, orders'
+  O2 count) is the next candidate.
