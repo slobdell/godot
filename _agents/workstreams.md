@@ -116,8 +116,9 @@ _Filed here before any number._
   halt_depth_m lower in every herringbone cell. GAIN (both): median worst deploy leg >= 20 % lower AND summed median twitch >= 15 %
   lower. Guards per cell: all-in <= main x 1.2 + 3 s and no more never-in; twitch <= main + 3 m; end foreign min >= main − 3 m;
   deck no higher, far bank 0; test_control_scale's 3-tick response. **Added by the orchestrator before any number (15:30):** own-squad
-  min crew-to-crew distance at the end REPORTED per cell and >= 9 m hull to hull (the same spacing the lead's O4 question keeps
-  between squads: a compact halt must not bunch one squad under one shell). A pass ships ON.
+  closest crews at the end >= 9 m CENTRE TO CENTRE in every cell (`end_own_min_m`; HALT_CLEAR_M, the O4 question's 9 m, is seat to
+  seat), the hull gap (`end_own_gap_m`) REPORTED per cell beside main's (the orchestrator first wrote "hull to hull", which main
+  itself fails at 6.2–11.5 m; corrected on orders' catch before any number). A pass ships ON.
 
 ## Rulings (round 36)
 
