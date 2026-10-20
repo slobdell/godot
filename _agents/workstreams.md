@@ -634,6 +634,40 @@ _Filed here before any number._
   check of ed121d24f on builder2 (systemd-run): **GREEN**, `make native check exited 0`, 2951/0, 25 passed + 2 NOT JUDGED (timing).
   **In his terms:** a War Rig he tells to face a way turns to it and goes still; nothing
   is left creeping. Brains' E2 (B11b) is unblocked.
+- **R35.62 (2026-10-20 ~07:45) W1b's and W1c's native mirrors land on main as inert code (native).** M5's merge brought W1b
+  (`Manoeuvre.wheel_halt`) and W1c (`stall_throttle`) GDScript onto main, OFF, without their C++ halves: play is identical while OFF,
+  but W1b's counter `wheel_halt_asks` reads 0 on the native path, and an ON flip would leave the native drive ignoring the rule.
+  Native lands both mirrors (W1b from pair/native-w1b, W1c from pair/native-joint3; NOT T9's) re-cut on ed121d24f, defaults false,
+  twins ON and OFF + a builder2 full check; code identical to joint3's so the joint merge is T9's half + the flip.
+  **Merged:** main 9336ea5f8 (native 5e8018726; INHERIT from 44b2e04b5's builder2 check 2953/0, sim-baseline 13 unmoved).
+- **R35.63 (2026-10-20 ~09:50) E2 / B11b PARKS (not merged; stream/brains 4b6b3c589, `--hold-return=turret` opts in).** builder2,
+  native, 05ba49192 (E2 + main with M5), base `--hold-return=old`, 801–816 x 4 factions (n 64 a task an arm), fights 820–843 (n 24).
+  (0) faced returns 2341 v 0. **(a) FAIL:** wheels/turret medians ~4 deg in BOTH arms (faced_move 4.2 v 4.1, p 0.95; faced_right 4.5 v
+  4.5): M5 already ends these hulls facing his way; B11b only trims the tail (p90 85 -> 63 deg). **(d) FAIL:** movers at the judge 30 v 12
+  and 22 v 9 (returning hulls still turning at 75 s). **(f) FAIL:** kills 934 v 972, deaths 944 v 982 (-38 each, se 18). (b)(c)(e) pass.
+  In his terms: with M5 a pushed-off War Rig already ends facing his way; driving back carrying the facing changes little and leaves
+  more hulls turning. Round-36 tooling: the copy-back carried older runs into the series folder (read from filtered copies).
+- **R35.64 (2026-10-20 ~10:20) The joint W1c + T9 FAILS as filed on one deciding line that could not pass; PARKED (W1c OFF on main,
+  T9 on stream/traffic, T9's mirror in pair/native-joint3).** builder0, ON lab/joint3-on 872f82ae5 v base 2a2682560 (main 5f05c997c, T7
+  ON, E1 in), 33/33 calls exited 0; hull-rest 901–932 (128 pairs a task); fights / wedge / jam census 940–963 x 3 arenas, 72 an arm
+  (`references/round35/manoeuvre/joint3-series/README.md`, stream 2c212324d). **(d) FAIL:** attack-move movers 16 -> 17 against <= -21.8;
+  the base had only 16 movers, so the line (sized from the dev read's 14 in 32 pairs, ~56 at 128) could not pass on these seeds.
+  **Deciding lines that pass:** (e) attack-move never-settled 48 -> 23; crews > 25 m off goal with a live move 105 -> 59. **Every guard
+  passes:** arrivals +18; kills / hit rate / deaths per team within; open / stuck / jam deaths +34 / +11 / +3 within; far loops +4;
+  friendly contacts -28601; give-ways started +208 (band 492); jam-under-fire 114 -> 122 (limit 136.8); jam:yielding 124 -> 125 (146.3).
+  Counters: stall_intent 235766, H1 escapes 2005, asks 1977, yields_unfinished 573. **Lesson:** size a deciding line from the BASE's
+  count at the judged n, and check it can be met before the series; a line the base cannot reach is a bar bug, found only after the
+  seeds are spent. **Round 36:** re-file with (e) and crews-off-goal deciding, (d) as a guard, on fresh seeds; or his call to ship.
+- **R35.65 (2026-10-20 ~10:45) perf-judge on main passes.** Alone on a quiet builder0 (load 0.39, idle 97 %), main fde32f78c: JUDGED,
+  PASS on attempt 1, ratio 1.01x, 7021 us AI a tick. Covers every round-35 ship (T7, E1, D1, D6, M5) and the owed reads for T7 and main.
+  All five workers' final reports are filed; the round's work is done; the close waits on his two answers (HANDOFF).
+- **R35.66 (2026-10-20) His answers: D5 ships ON; the joint W1c + T9 ships** (game_design.md *Round 35 close*, verbatim). Hand-overs:
+  (1) **orders:** GATE_DEAL default ON on current main, `make native check` on builder2 (sim-baseline expected unmoved: the CPU never
+  shift-clicks; attribute any move with `--gate-deal=off`). (2) **manoeuvre** (with traffic's T9 commits and native's T9 mirror half):
+  a hand-over on current main = main + T9 GDScript (traffic 2af7d3528 / 3ad8f3ab1 as on joint3) + native's T9 half (yield_unfinished,
+  the `_unfinished_*` exec rows, floors) + STALL_INTENT true + yieldfit2 out of DEFAULT_OFF; W1c's mirror is already on main (R35.62);
+  twins ON, `make native check` on builder0, sim-baseline moves (joint3 moved foundry / crossing / sumps / cut) attributed with the
+  switches off and adopted on the merged tree. Each merges alone; one batch main check after both. Then the round closes.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

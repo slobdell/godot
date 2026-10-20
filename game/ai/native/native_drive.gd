@@ -114,6 +114,12 @@ static func configure() -> bool:
 		"PASS_MAX_S": float((Movement as Script).get_script_constant_map().get("PASS_MAX_S", 6.0)),
 		"PASS_BEYOND_M": float((Movement as Script).get_script_constant_map().get("PASS_BEYOND_M", 2.0)),
 		"PASS_STEP_M": float((Movement as Script).get_script_constant_map().get("PASS_STEP_M", 2.0)),
+		# Round 35 (manoeuvre W1b): the wheeled pace-0 halt's default (absent before W1b: the drive as before) and the creep.
+		"WHEEL_HALT_DEFAULT": (Manoeuvre as Script).get_script_constant_map().get("WHEEL_HALT_DEFAULT", null),
+		"WHEEL_CREEP_THROTTLE": TankMotion.WHEEL_CREEP_THROTTLE,
+		# Round 35 (manoeuvre W1c, `stallintent`): the stall rule's intent reading (absent before W1c: the drive as before).
+		"STALL_INTENT_DEFAULT": (Manoeuvre as Script).get_script_constant_map().get("STALL_INTENT_DEFAULT", null),
+		"STALL_INTENT_MIN_PACE": float((Manoeuvre as Script).get_script_constant_map().get("STALL_INTENT_MIN_PACE", 0.05)),
 		"tank_script": Tank,
 		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
 		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).

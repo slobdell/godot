@@ -230,6 +230,23 @@ reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
 
 ## Lessons (add to this list every round)
 
+- **Round 35: the machine contract is the brief's, not the orchestrator's convenience.** C35.1 said one full check and one judged
+  series on builder0; the orchestrator granted slots ad hoc and let two checks and five series share the box (load 22): a series step
+  died at slot.sh's 5400 s cap and a re-check timed out. Read the round's machine line before granting any slot; gate every full check
+  with `tools/builder_checks.sh --wait-below N`; one series per machine.
+
+- **Round 35: size a deciding line from the BASE's count at the judged n, and check it is reachable before the series.** The joint
+  W1c + T9 bar asked attack-move movers to drop by > 21.8 at 128 pairs; the base had 16 in total, so the line could not pass, and the
+  seeds were spent before anyone noticed (R35.64). When n is raised before a series, recompute every deciding line against the base.
+
+- **Round 35: an orchestrator launching a long remote run from the laptop uses `systemd-run`, and passes multi-target lists as plain
+  make goals.** The laptop's slot.sh killed a 90-minute `make gcp-remote` (the remote make died with its ssh session), and remote.sh
+  word-split `CHECK_TARGETS="a b c"` down to `a`. Read the result from the wrapper's own line, always.
+
+- **Round 35: a merge from a lab tree can carry OFF features without their native mirrors.** M5's merge brought W1b/W1c GDScript
+  onto main without C++; play was identical while OFF, but a counter read 0 on the native path and an ON flip would have been
+  silently ignored there. After merging a lab tree, list every switch it carries and whether its mirror is on main.
+
 - **Round 31: a systemd job wakes nobody when it ends.** The orchestrator chained a baseline re-adoption behind a check,
   then slept on a 25-min wakeup; the adoption finished in ~10 min and builder0 sat idle until the lead asked "builder0 looks
   idle". When a step needs the orchestrator after it (a commit, a merge, the next check), either chain that step into the
