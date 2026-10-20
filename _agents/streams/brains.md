@@ -65,6 +65,24 @@ R35.42), **E4** lab hulls placed with Tank.place (main 5f05c997c, R35.51), the p
 **E3** (no lever, R35.46), **E4b** (a second carry-over traced; the runner warm-up written under R35.54's narrow grant, INTERIM; naming the field is round 36's). **E2** waits on
 CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
 
+### Round-36 candidates (brains' view, 2026-10-20)
+
+1. **The wedged crew itself** (manoeuvre W1 / traffic): E1 stops the squad waiting, but 9 of the 17 crews left > 25 m behind in
+   Bar E1's new arm were still wedged at the judge (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3 traced). He still sees a
+   crew sitting idle behind its squad.
+2. **A released straggler's catch-up** (brains): Bar E1 (d) read +3 crews still driving at 75 s (law-705, law-716): the crew sent
+   on to its next slot takes its time. Candidate: a released crew gets the element's catch-up pace (`crew_paces`) toward its slot,
+   judged on movers-at-75 s and left-behind, guards as Bar E1.
+3. **The runner teardown's field** (native, now tracing from 80ef83789): name what `drain_navigation` / a lazy static changes so
+   tests match real play's first-match state, then retire the interim warm-up.
+4. **85 test files teleport by a bare `global_position =`** (list in E4 above): each owner moves to `Tank.place` (most are
+   harmless singles; the ones spawning touching hulls carry the same stale-body shove).
+5. **An arrived squad's herringbone across another squad's street** (orders, R35.17's resize of test_tactics_body to off + 8.1 s):
+   a jam he would see; native 24.0 v 17.8 s on c7c7d347a.
+6. **E2 B11b** (HOLD's return honours the post's facing for turret-mounted wheeled hulls) if CP-F 5 ships.
+7. Hygiene, low: `Element._body_memo` is keyed by `Engine.get_physics_frames()` (process-wide), not by match; ruled out as
+   E4b's cause, but a match-scoped key is the right shape.
+
 ### Report (2026-10-19 evening)
 
 **E1 PASSES its bar (R35.42); merges when the partial gate is green.** Merge hash: `83b3b90b4` (E1 code `67a5a9db0` + main
