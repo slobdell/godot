@@ -55,6 +55,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Report (2026-10-20, final for the round so far)
+
+**Green:** tip `6b2f68d64` (merged main d068f7020) INHERITS main `5f05c997c`'s green check (builder2, 2911/0;
+`tools/merge_check_needed.sh 5f05c997c`: docs only). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
+R35.42), **E4** lab hulls placed with Tank.place (main 5f05c997c, R35.51), the per-tick release counter. Written up, no code:
+**E3** (no lever, R35.46), **E4b** (a second carry-over traced; runner warm-up proposed, the runner is not mine). **E2** waits on
+CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
+
 ### Report (2026-10-19 evening)
 
 **E1 PASSES its bar (R35.42); merges when the partial gate is green.** Merge hash: `83b3b90b4` (E1 code `67a5a9db0` + main
@@ -110,6 +118,27 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   listed with its old and new value (expected: lines that today read their 'later match' value move to the 'first match'
   value; none of them is a game change). 85 other test files spawn then assign `global_position` (fx, combat, nav, native
   ...): not mine, for their owners: test_units_roster.gd test_combat_deploy.gd test_nav_tube.gd test_fx_orders.gd test_control_point.gd test_visibility.gd test_nav_route_retry.gd test_combat_mechanics.gd test_command_readability.gd test_native_incoming.gd test_weapons_and_intel.gd test_match_score.gd test_native_combat.gd test_nav_gate_inside.gd test_tank_yaw_fit.gd test_hud_score_bug.gd test_native_perception.gd test_native_shell.gd test_movement.gd test_order_completion_repair.gd test_assets_outriggers.gd test_arena_layouts.gd test_native_threat.gd test_nav_gate_v4.gd test_nav_gate_hold.gd test_native_scan.gd test_combat_weapons.gd test_native_movement_geometry.gd test_responsiveness.gd test_manoeuvre_escape.gd test_fx_light_rounds.gd test_artillery.gd test_navigation.gd test_station_keeping.gd test_nav_arrival_heading.gd test_native_tick_profile.gd test_nav_wall_contact.gd test_ai_player_orders_contact.gd test_radar.gd test_ammo_heat.gd test_fx_tank_shell.gd test_units_law_apc_tracked.gd test_shields.gd test_combat_locomotion.gd test_ai_player_holds.gd test_combat_cover.gd test_command_squad_bar.gd test_wheeled_arrival.gd test_ai_perf_equivalence.gd test_reflexes.gd test_combat_events.gd test_combat_weak_spots.gd test_turrets.gd test_friendly_fire.gd test_planner_trace_wedged.gd test_tank_place.gd test_ai_cover_map.gd test_native_avoid_gather.gd test_native_record.gd test_nav_face_recovery.gd test_ai_idle_fallback.gd test_control_response.gd test_combat_envelope.gd test_nav_clearance.gd test_combat.gd test_match_visfield_parity.gd native/gate_twin_case.gd test_native_route.gd native/drive_twin_case.gd scale/visfield_bench.gd arena/slope_probe.gd nav/test_nav_back_and_fill.gd nav/test_nav_yield_log.gd nav/rotation_capture.gd nav/test_nav_blocker_reach.gd nav/test_nav_guard_corner.gd nav/test_nav_yield_fit.gd nav/test_nav_kturn_brake.gd nav/test_nav_reverse_log.gd nav/test_nav_queue_census.gd nav/test_nav_creep_bound.gd nav/test_nav_planned_reverse.gd nav/test_nav_circle_fit.gd nav/test_nav_kturn_look.gd arena/water_probe.gd.
+- **E4 MERGED (main 5f05c997c, R35.51)** at `85fa139cf`: check `exited 0`, 2909/0, sim-baseline 13/13 unmoved; order-independence
+  (builder0 native, TEST_SHARDS=1): mixed_legs four tanks 50.03 s / reseats 1 alone AND after h1b_guard + blocker_reach (main's
+  suite read 56.63 s / 0). Bar (3) table `references/round35/brains/e4_moved_lines_85fa139cf.txt`: 34 moved keys, 33 read the same
+  in the tip suite as each file alone (planner_queue differs only in a process-wide tick stamp; task_posture is a reader artifact).
+- **E4b (the one outlier, a SECOND carry-over; trace, time-boxed, not named to the field):** test_tactics_scenarios_6
+  attack_move_decisions reads switches_per_unit_min 3.2 alone v 4.8 after ANY earlier test in the process (builder0 native;
+  laptop GDScript 4.8 alone v 3.0 after). Bisect (light lane): the first file of the shard already moves it; a test that only
+  waits 1, 97 or 1000 physics frames moves it the same (so not frame phase); the stage played twice inside ONE test is identical
+  (GDScript and native), and the navmesh path / map iteration it starts from are identical. Per-tick dump (laptop,
+  `references/round35/brains/e4b_first_divergence_laptop.txt`, probe `e4b_dump_probe.gd.txt`): identical through step 28; at step
+  29 Rust_B_2 begins YIELDING to Rust_B_1 (its column leader) only when a test ran before. So the yield path reads some state that
+  differs between a process's first test and every later one, and settles after the first test's teardown (the runner's
+  `drain_navigation` or a lazily initialised static are the leading candidates; Element._body_memo keyed by match was tried and
+  ruled out). **Proposed fix (not written; bar first):** `tests/run_tests.gd` warms up before the first test (one physics frame +
+  the same teardown every test gets), so every test sees the 'later' state: the 1-frame test above IS that warm-up and gives the
+  suite value. Bar: scenarios_6 alone == in the suite; the full suite green with every moved line listed (expected: lines that
+  ran first in a shard move to their suite value). **WRITTEN (granted narrowly, R35.54, INTERIM): `0daea3d90`** (laptop
+  GDScript: scenarios_6 alone 3.0 = after 3.0; was 4.8 v 3.0). **Stated plainly:** the stage played twice inside ONE test is
+  identical, so it is the runner's TEARDOWN that changes the state, not playing a match. Real play (no runner teardown) matches
+  a process's FIRST test; after the warm-up every test sees the post-teardown state instead: consistent, not the game's. Naming
+  the field (drain_navigation or the lazy static) so tests can match real play's first-match state is a round-36 item.
 - **D1 fallout DONE:** test_tactics_body on `c7c7d347a` (main f31b5430e = D1 + E1 + T7 merged; builder0 light lane, native ON):
   PASS, body off arrived 17.8 s, on 24.0 s (+6.2, inside R35.17's +8.1; D1 alone read 23.8). E1 merged on main (bbe418b80, R35.42).
 - **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). (Old note:) re-read

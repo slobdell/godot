@@ -1,0 +1,139 @@
+# Bar E4 (3): moved MEASURE lines — suite on main (f2690c8ef batch check, builder0) v suite on tip (85fa139cf check, builder0) v each file ALONE in a fresh process on the tip (builder0 light lane, native). Timing/perf lines excluded.
+# Reader caveats: (1) test_planner_queue differs only in 'asked' (a process-wide tick stamp: 21249/21490 in the suite v 3/244 alone); every behavioural field equal. (2) task_posture rows in scenarios/_2/_4 are a reader artifact (the key prints several times per file): every alone line is found verbatim in the tip suite. (3) the one real outlier, test_tactics_scenarios_6 attack_move_decisions, is traced separately (E4b).
+== | test_manoeuvre_face_slot | m1b_face_slot after a move then a face
+    suite-on-main: mover goal (inf, inf, inf), face_slot (-98.0, 0.0, 24.0) (the move's goal (-98.0, 0.00087, 24.0))
+    suite-on-tip:  mover goal (inf, inf, inf), face_slot (-98.0, 0.0, 24.0) (the move's goal (-98.0, 0.0, 24.0))
+    alone-on-tip:  mover goal (inf, inf, inf), face_slot (-98.0, 0.0, 24.0) (the move's goal (-98.0, 0.0, 24.0))
+DIFF | test_planner_queue | planner_queue
+    suite-on-main: fifo P_2 START_BLOCKED after 27 ticks, report {"abandoned":0,"abandoned_by_kind":{},"aborted":0,"asks_by_kind":{"face":3},"driven":0,"driving_ticks":2
+    suite-on-tip:  fifo P_2 START_BLOCKED after 27 ticks, report {"abandoned":0,"abandoned_by_kind":{},"aborted":0,"asks_by_kind":{"face":3},"driven":0,"driving_ticks":2
+    alone-on-tip:  fifo P_2 START_BLOCKED after 27 ticks, report {"abandoned":0,"abandoned_by_kind":{},"aborted":0,"asks_by_kind":{"face":3},"driven":0,"driving_ticks":2
+== | test_tactics_attack_obeyed | attack_obeyed yard seed 3 five gang squads, his attack
+    suite-on-main: { "drills": { "Squad_1": ["react_to_contact"], "Squad_2": ["react_to_contact"], "Squad_3": ["react_to_contact"], "Squad_4": ["react_to_contact"], "Squ
+    suite-on-tip:  { "drills": { "Squad_1": ["react_to_contact"], "Squad_2": ["react_to_contact"], "Squad_3": ["react_to_contact"], "Squad_4": ["react_to_contact"], "Squ
+    alone-on-tip:  { "drills": { "Squad_1": ["react_to_contact"], "Squad_2": ["react_to_contact"], "Squad_3": ["react_to_contact"], "Squad_4": ["react_to_contact"], "Squ
+== | test_tactics_attack_obeyed | attack_obeyed yard seed 3 five gang squads, his attack-move
+    suite-on-main: { "drills": { "Squad_1": ["react_to_contact"], "Squad_2": ["react_to_contact"], "Squad_3": ["react_to_contact"], "Squad_4": ["react_to_contact"], "Squ
+    suite-on-tip:  { "drills": { "Squad_1": ["react_to_contact"], "Squad_2": ["react_to_contact"], "Squad_3": ["react_to_contact"], "Squad_4": ["react_to_contact"], "Squ
+    alone-on-tip:  { "drills": { "Squad_1": ["react_to_contact"], "Squad_2": ["react_to_contact"], "Squad_3": ["react_to_contact"], "Squad_4": ["react_to_contact"], "Squ
+== | test_tactics_attack_obeyed | attack_obeyed yard seed 3 five gang squads, the computer's move with drills
+    suite-on-main: { "drills": { "Squad_1": ["bait"], "Squad_2": ["react_to_contact", "bait", "far_ambush"], "Squad_3": ["react_to_contact", "bait", "far_ambush"], "Squa
+    suite-on-tip:  { "drills": { "Squad_1": ["bait", "react_to_contact", "far_ambush"], "Squad_2": ["react_to_contact", "bait", "far_ambush"], "Squad_3": ["react_to_cont
+    alone-on-tip:  { "drills": { "Squad_1": ["bait", "react_to_contact", "far_ambush"], "Squad_2": ["react_to_contact", "bait", "far_ambush"], "Squad_3": ["react_to_cont
+== | test_tactics_attack_obeyed | attack_obeyed yard seed 3 five gang squads, no player (the computer's attack)
+    suite-on-main: { "drills": { "Squad_1": ["bait"], "Squad_2": ["react_to_contact", "bait"], "Squad_3": ["react_to_contact", "bait"], "Squad_4": ["react_to_contact", "
+    suite-on-tip:  { "drills": { "Squad_1": ["bait"], "Squad_2": ["react_to_contact", "bait"], "Squad_3": ["react_to_contact", "bait"], "Squad_4": ["react_to_contact", "
+    alone-on-tip:  { "drills": { "Squad_1": ["bait"], "Squad_2": ["react_to_contact", "bait"], "Squad_3": ["react_to_contact", "bait"], "Squad_4": ["react_to_contact", "
+== | test_tactics_body | body locks seed 1
+    suite-on-main: off { "Hunters": { "arrived_s": 2.1, "choice": {  } }, "Hunters2": { "arrived_s": 7.6, "choice": {  } }, "Sirens": { "arrived_s": 17.7, "choice": {  }
+    suite-on-tip:  off { "Hunters": { "arrived_s": 2.1, "choice": {  } }, "Hunters2": { "arrived_s": 7.6, "choice": {  } }, "Sirens": { "arrived_s": 17.8, "choice": {  }
+    alone-on-tip:  off { "Hunters": { "arrived_s": 2.1, "choice": {  } }, "Hunters2": { "arrived_s": 7.6, "choice": {  } }, "Sirens": { "arrived_s": 17.8, "choice": {  }
+== | test_tactics_body | body split seed 1
+    suite-on-main: { "seed": 1, "side": "green", "body": "on", "alone_s": 15.0, "widest_gap_m": 184.1, "West": { "choice": { "own_m": 84.0, "own_alone_m": 84.0, "body_m"
+    suite-on-tip:  { "seed": 1, "side": "green", "body": "on", "alone_s": 15.0, "widest_gap_m": 184.2, "West": { "choice": { "own_m": 84.0, "own_alone_m": 84.0, "body_m"
+    alone-on-tip:  { "seed": 1, "side": "green", "body": "on", "alone_s": 15.0, "widest_gap_m": 184.2, "West": { "choice": { "own_m": 84.0, "own_alone_m": 84.0, "body_m"
+== | test_tactics_bridge | bridge locks green seed 1
+    suite-on-main: { "deck_jam_s": 0.3, "seed": 1, "arena": "locks", "side": "green", "units": "law_tank:law_tank:law_tank:law_tank", "guns": 3, "gun_id": "syn_lancer", 
+    suite-on-tip:  { "deck_jam_s": 1.2, "seed": 1, "arena": "locks", "side": "green", "units": "law_tank:law_tank:law_tank:law_tank", "guns": 3, "gun_id": "syn_lancer", 
+    alone-on-tip:  { "deck_jam_s": 1.2, "seed": 1, "arena": "locks", "side": "green", "units": "law_tank:law_tank:law_tank:law_tank", "guns": 3, "gun_id": "syn_lancer", 
+== | test_tactics_bridge | bridge locks rust seed 1
+    suite-on-main: { "deck_jam_s": 1.4, "seed": 1, "arena": "locks", "side": "rust", "units": "law_tank:law_tank:law_tank:law_tank", "guns": 3, "gun_id": "syn_lancer", "
+    suite-on-tip:  { "deck_jam_s": 0.7, "seed": 1, "arena": "locks", "side": "rust", "units": "law_tank:law_tank:law_tank:law_tank", "guns": 3, "gun_id": "syn_lancer", "
+    alone-on-tip:  { "deck_jam_s": 0.7, "seed": 1, "arena": "locks", "side": "rust", "units": "law_tank:law_tank:law_tank:law_tank", "guns": 3, "gun_id": "syn_lancer", "
+== | test_tactics_cpu_ambush | cpu_ambush parade
+    suite-on-main: without { "took_s": -1.0, "sprung_s": -1.0, "rust_x_at_spring": 0.0, "green_strength_lost": 1880.0, "rust_alive": 3, "green_alive": 0, "taken": 0, "re
+    suite-on-tip:  without { "took_s": -1.0, "sprung_s": -1.0, "rust_x_at_spring": 0.0, "green_strength_lost": 1880.0, "rust_alive": 2, "green_alive": 0, "taken": 0, "re
+    alone-on-tip:  without { "took_s": -1.0, "sprung_s": -1.0, "rust_x_at_spring": 0.0, "green_strength_lost": 1880.0, "rust_alive": 2, "green_alive": 0, "taken": 0, "re
+== | test_tactics_cpu_hold | cpu_hold parade
+    suite-on-main: attack (round 18) { "posture": "attack", "why": "", "took_s": 36.9666666666667, "sprung_s": -1.0, "x_at_spring": 0.0, "rust_at_depot_20s": 0, "green_l
+    suite-on-tip:  attack (round 18) { "posture": "attack", "why": "", "took_s": 25.9666666666667, "sprung_s": -1.0, "x_at_spring": 0.0, "rust_at_depot_20s": 0, "green_l
+    alone-on-tip:  attack (round 18) { "posture": "attack", "why": "", "took_s": 25.9666666666667, "sprung_s": -1.0, "x_at_spring": 0.0, "rust_at_depot_20s": 0, "green_l
+== | test_tactics_cpu_hold_guns | cpu_hold guns parade
+    suite-on-main: on the nearest contact { "posture": "hold", "why": "ahead on points (41 to 0)", "took_s": 0.96666666666667, "sprung_s": 13.8666666666667, "x_at_spring
+    suite-on-tip:  on the nearest contact { "posture": "hold", "why": "ahead on points (41 to 0)", "took_s": 0.96666666666667, "sprung_s": 12.9666666666667, "x_at_spring
+    alone-on-tip:  on the nearest contact { "posture": "hold", "why": "ahead on points (41 to 0)", "took_s": 0.96666666666667, "sprung_s": 12.9666666666667, "x_at_spring
+== | test_tactics_crossing | crossing wedge green seed 1
+    suite-on-main: { "seed": 1, "arena": "crossing", "side": "green", "formation": "wedge", "unit": "law_tank", "drills": false, "crews": 5, "crossed": 5, "crossed_s": 1
+    suite-on-tip:  { "seed": 1, "arena": "crossing", "side": "green", "formation": "wedge", "unit": "law_tank", "drills": false, "crews": 5, "crossed": 5, "crossed_s": 1
+    alone-on-tip:  { "seed": 1, "arena": "crossing", "side": "green", "formation": "wedge", "unit": "law_tank", "drills": false, "crews": 5, "crossed": 5, "crossed_s": 1
+== | test_tactics_crossing | crossing locks wedge green seed 1
+    suite-on-main: crossed 5/5 last 15.3 s, rim { "Green_S_1": 0.0, "Green_S_2": 0.0, "Green_S_3": 0.0, "Green_S_4": 0.0, "Green_S_5": 0.0 }
+    suite-on-tip:  crossed 5/5 last 14.4 s, rim { "Green_S_1": 0.0, "Green_S_2": 0.0, "Green_S_3": 0.0, "Green_S_4": 0.0, "Green_S_5": 0.0 }
+    alone-on-tip:  crossed 5/5 last 14.4 s, rim { "Green_S_1": 0.0, "Green_S_2": 0.0, "Green_S_3": 0.0, "Green_S_4": 0.0, "Green_S_5": 0.0 }
+== | test_tactics_crossing | crossing terminus_canal wedge green seed 1
+    suite-on-main: crossed 5/5 last 9.6 s, rim { "Green_S_1": 0.0, "Green_S_2": 0.0, "Green_S_3": 0.0, "Green_S_4": 0.0, "Green_S_5": 0.0 }
+    suite-on-tip:  crossed 5/5 last 10.3 s, rim { "Green_S_1": 0.0, "Green_S_2": 0.0, "Green_S_3": 0.0, "Green_S_4": 0.0, "Green_S_5": 0.0 }
+    alone-on-tip:  crossed 5/5 last 10.3 s, rim { "Green_S_1": 0.0, "Green_S_2": 0.0, "Green_S_3": 0.0, "Green_S_4": 0.0, "Green_S_5": 0.0 }
+== | test_tactics_facing_tasks_live | b0_facing screen element heading (1.0, 0.0, 0.0), me
+    suite-on-main: MEASURE b0_facing screen element heading (1.0, 0.0, 0.0), mean hull 0.4 deg off, worst 28.7 deg, mean gun 0.0 deg off
+    suite-on-tip:  MEASURE b0_facing screen element heading (1.0, 0.0, 0.0), mean hull 1.5 deg off, worst 32.4 deg, mean gun 0.0 deg off
+    alone-on-tip:  MEASURE b0_facing screen element heading (1.0, 0.0, 0.0), mean hull 1.5 deg off, worst 32.4 deg, mean gun 0.0 deg off
+== | test_tactics_facing_tasks_live | b0_facing support by fire element heading (1.0, 0.0,
+    suite-on-main: MEASURE b0_facing support by fire element heading (1.0, 0.0, 0.0), mean hull 1.4 deg off, worst 1.9 deg, mean gun 0.0 deg off
+    suite-on-tip:  MEASURE b0_facing support by fire element heading (1.0, 0.0, 0.0), mean hull 1.3 deg off, worst 1.6 deg, mean gun 0.0 deg off
+    alone-on-tip:  MEASURE b0_facing support by fire element heading (1.0, 0.0, 0.0), mean hull 1.3 deg off, worst 1.6 deg, mean gun 0.0 deg off
+== | test_tactics_facing_tasks_live_2 | b0_facing ambush element heading (1.0, 0.0, 0.0), me
+    suite-on-main: MEASURE b0_facing ambush element heading (1.0, 0.0, 0.0), mean hull 1.4 deg off, worst 1.9 deg, mean gun 0.2 deg off
+    suite-on-tip:  MEASURE b0_facing ambush element heading (1.0, 0.0, 0.0), mean hull 1.4 deg off, worst 1.9 deg, mean gun 0.1 deg off
+    alone-on-tip:  MEASURE b0_facing ambush element heading (1.0, 0.0, 0.0), mean hull 1.4 deg off, worst 1.9 deg, mean gun 0.1 deg off
+== | test_tactics_facing_tasks_live_2 | b0_facing attack-move element heading (1.0, 0.0, 0.0
+    suite-on-main: MEASURE b0_facing attack-move element heading (1.0, 0.0, 0.0), mean hull 2.3 deg off, worst 2.9 deg, mean gun 0.0 deg off
+    suite-on-tip:  MEASURE b0_facing attack-move element heading (1.0, 0.0, 0.0), mean hull 1.7 deg off, worst 2.4 deg, mean gun 0.0 deg off
+    alone-on-tip:  MEASURE b0_facing attack-move element heading (1.0, 0.0, 0.0), mean hull 1.7 deg off, worst 2.4 deg, mean gun 0.0 deg off
+== | test_tactics_form_on_move | form_on_move yard seed 3 line forward
+    suite-on-main: round 12 { "away_m": 1.2, "off_line_m": 23.8, "slot_away_m": 1.2, "arrived_s": 18.2, "formation": "line" } | converge { "away_m": 2.7, "off_line_m": 2
+    suite-on-tip:  round 12 { "away_m": 1.4, "off_line_m": 23.8, "slot_away_m": 1.4, "arrived_s": 18.4, "formation": "line" } | converge { "away_m": 2.8, "off_line_m": 2
+    alone-on-tip:  round 12 { "away_m": 1.4, "off_line_m": 23.8, "slot_away_m": 1.4, "arrived_s": 18.4, "formation": "line" } | converge { "away_m": 2.8, "off_line_m": 2
+== | test_tactics_form_on_move | form_on_move yard seed 3 wedge forward
+    suite-on-main: round 12 { "away_m": 1.6, "off_line_m": 23.9, "slot_away_m": 1.7, "arrived_s": 15.6, "formation": "wedge" } | converge { "away_m": 0.5, "off_line_m": 
+    suite-on-tip:  round 12 { "away_m": 1.7, "off_line_m": 23.4, "slot_away_m": 1.7, "arrived_s": 15.0, "formation": "wedge" } | converge { "away_m": 0.5, "off_line_m": 
+    alone-on-tip:  round 12 { "away_m": 1.7, "off_line_m": 23.4, "slot_away_m": 1.7, "arrived_s": 15.0, "formation": "wedge" } | converge { "away_m": 0.5, "off_line_m": 
+== | test_tactics_form_on_move | form_on_move yard seed 3 wedge side
+    suite-on-main: round 12 { "away_m": 0.3, "off_line_m": 12.9, "slot_away_m": 0.5, "arrived_s": 7.6, "formation": "wedge" } | converge { "away_m": 1.9, "off_line_m": 6
+    suite-on-tip:  round 12 { "away_m": 0.3, "off_line_m": 11.1, "slot_away_m": 0.5, "arrived_s": 7.4, "formation": "wedge" } | converge { "away_m": 2.0, "off_line_m": 6
+    alone-on-tip:  round 12 { "away_m": 0.3, "off_line_m": 11.1, "slot_away_m": 0.5, "arrived_s": 7.4, "formation": "wedge" } | converge { "away_m": 2.0, "off_line_m": 6
+== | test_tactics_make_room | make_room cut seed 3 four Law tanks
+    suite-on-main: re-seat only { "arrived_s": 30.8333333333333, "to_go_m": 11.1, "reseats": 1, "swaps": 0 } | make room { "arrived_s": 30.8333333333333, "to_go_m": 11.1
+    suite-on-tip:  re-seat only { "arrived_s": 33.2333333333333, "to_go_m": 11.6, "reseats": 1, "swaps": 0 } | make room { "arrived_s": 33.2333333333333, "to_go_m": 11.6
+    alone-on-tip:  re-seat only { "arrived_s": 33.2333333333333, "to_go_m": 11.6, "reseats": 1, "swaps": 0 } | make room { "arrived_s": 33.2333333333333, "to_go_m": 11.6
+== | test_tactics_mixed_legs | mixed_legs sumps seed 1
+    suite-on-main: four tanks { "arrived_s": 56.6333333333333, "to_go_m": 11.7, "reseats": 0 }
+    suite-on-tip:  four tanks { "arrived_s": 50.0333333333333, "to_go_m": 11.7, "reseats": 1 }
+    alone-on-tip:  four tanks { "arrived_s": 50.0333333333333, "to_go_m": 11.7, "reseats": 1 }
+== | test_tactics_mixed_legs_terminus | mixed_legs terminus seed 1
+    suite-on-main: two scouts { "arrived_s": 15.2333333333333, "to_go_m": 11.4, "reseats": 0 } | four tanks { "arrived_s": 16.5333333333333, "to_go_m": 11.6, "reseats": 
+    suite-on-tip:  two scouts { "arrived_s": 15.3333333333333, "to_go_m": 11.4, "reseats": 0 } | four tanks { "arrived_s": 17.1333333333333, "to_go_m": 11.6, "reseats": 
+    alone-on-tip:  two scouts { "arrived_s": 15.3333333333333, "to_go_m": 11.4, "reseats": 0 } | four tanks { "arrived_s": 17.1333333333333, "to_go_m": 11.6, "reseats": 
+== | test_tactics_pursuit | pursuit yard_open seed 3 five Law tanks v a spotter at 18 m/s out of sight
+    suite-on-main: { "closing_worst_m": 23.5, "closing_at": "Green_A_4 at 30.5 s (38.4 -> 61.9 m)", "reversal_worst_deg": 149.0, "reversal_at": "Green_A_2 16.0 -> 20.0 s
+    suite-on-tip:  { "closing_worst_m": 51.6, "closing_at": "Green_A_3 at 5.0 s (133.2 -> 184.8 m)", "reversal_worst_deg": 154.0, "reversal_at": "Green_A_1 35.5 -> 39.5 
+    alone-on-tip:  { "closing_worst_m": 51.6, "closing_at": "Green_A_3 at 5.0 s (133.2 -> 184.8 m)", "reversal_worst_deg": 154.0, "reversal_at": "Green_A_1 35.5 -> 39.5 
+DIFF | test_tactics_scenarios | task_posture { "verb"
+    suite-on-main: "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.1, "to_point_m": [18.8, 10.0, 9.2, 17.3], "frontage_m": 16.4, "depth_m
+    suite-on-tip:  "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.2, "to_point_m": [18.7, 10.0, 9.2, 17.2], "frontage_m": 16.5, "depth_m
+    alone-on-tip:  "support_by_fire", "drills": ["support_by_fire"], "formation": "line", "shooters": 4, "closest_m": 34.0, "to_point_m": [34.2, 34.0, 36.5, 37.5], "fron
+DIFF | test_tactics_scenarios_2 | task_posture { "verb"
+    suite-on-main: "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.1, "to_point_m": [18.8, 10.0, 9.2, 17.3], "frontage_m": 16.4, "depth_m
+    suite-on-tip:  "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.2, "to_point_m": [18.7, 10.0, 9.2, 17.2], "frontage_m": 16.5, "depth_m
+    alone-on-tip:  "move", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 1.3, "to_point_m": [17.5, 9.8, 14.1, 18.8], "frontage_m": 22.7, "depth_m
+== | test_tactics_scenarios_3 | five_squads cpu { "idle_orders"
+    suite-on-main: 1, "anchor_off_m": [0.0, 0.0, 0.0, 0.0, 0.0], "off_slot_m": [1.5, 2.5, 3.6, 5.1, 6.0, 8.2, 8.2, 8.7, 9.8, 9.8, 10.8, 11.4, 11.4, 11.5, 12.8, 16.5, 17.
+    suite-on-tip:  0, "anchor_off_m": [0.0, 0.0, 0.0, 0.0, 0.0], "off_slot_m": [1.3, 1.9, 4.8, 4.8, 5.7, 6.9, 8.0, 8.4, 9.3, 9.9, 10.7, 12.4, 12.7, 12.7, 12.8, 12.9, 14.
+    alone-on-tip:  0, "anchor_off_m": [0.0, 0.0, 0.0, 0.0, 0.0], "off_slot_m": [1.3, 1.9, 4.8, 4.8, 5.7, 6.9, 8.0, 8.4, 9.3, 9.9, 10.7, 12.4, 12.7, 12.7, 12.8, 12.9, 14.
+DIFF | test_tactics_scenarios_4 | task_posture { "verb"
+    suite-on-main: "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.1, "to_point_m": [18.8, 10.0, 9.2, 17.3], "frontage_m": 16.4, "depth_m
+    suite-on-tip:  "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.2, "to_point_m": [18.7, 10.0, 9.2, 17.2], "frontage_m": 16.5, "depth_m
+    alone-on-tip:  "hold", "drills": [], "formation": "herringbone", "shooters": 0, "closest_m": 4.2, "to_point_m": [18.7, 10.0, 9.2, 17.2], "frontage_m": 16.5, "depth_m
+== | test_tactics_scenarios_4 | five_squads players { "idle_orders"
+    suite-on-main: 0, "anchor_off_m": [0.0, 0.0, 0.0, 0.0, 0.0], "off_slot_m": [1.6, 2.0, 2.4, 2.7, 2.7, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.9, 2.9, 3.1, 3.2,
+    suite-on-tip:  0, "anchor_off_m": [0.0, 0.0, 0.0, 0.0, 0.0], "off_slot_m": [1.9, 1.9, 2.0, 2.5, 2.5, 2.7, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.9, 2.9, 2.9, 2.9, 3.0,
+    alone-on-tip:  0, "anchor_off_m": [0.0, 0.0, 0.0, 0.0, 0.0], "off_slot_m": [1.9, 1.9, 2.0, 2.5, 2.5, 2.7, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.9, 2.9, 2.9, 2.9, 3.0,
+== | test_tactics_scenarios_5 | element_transit travelling { "flow"
+    suite-on-main: true, "transit_gap_m": 5.3, "samples": 1203, "arrived_s": 14.2, "worst_off_slot_m": 3.4, "orders_last_10s": 0, "pin": false, "transit": true }; round-
+    suite-on-tip:  true, "transit_gap_m": 5.3, "samples": 1200, "arrived_s": 14.2, "worst_off_slot_m": 3.4, "orders_last_10s": 0, "pin": false, "transit": true }; round-
+    alone-on-tip:  true, "transit_gap_m": 5.3, "samples": 1200, "arrived_s": 14.2, "worst_off_slot_m": 3.4, "orders_last_10s": 0, "pin": false, "transit": true }; round-
+DIFF | test_tactics_scenarios_6 | attack_move_decisions { "switches_per_unit_min"
+    suite-on-main: 6.0, "reversals_per_unit_min": 0.0, "top_reversals": [], "unit_minutes": 6.0 }
+    suite-on-tip:  4.8, "reversals_per_unit_min": 0.0, "top_reversals": [], "unit_minutes": 6.0 }
+    alone-on-tip:  3.2, "reversals_per_unit_min": 0.0, "top_reversals": [], "unit_minutes": 6.0 }
+moved behavioural keys: 34; tip suite == tip alone: 29; differ: 5

@@ -1,0 +1,36 @@
+extends TestCase
+## TEMPORARY (brains E4e probe): attack_move_decisions' stage with a per-tick dump of every tank and brain choice.
+func test_dump() -> void:
+	var out := FileAccess.open("/tmp/claude-1000/-home-slobdell-projects-godot-brains/5351aa27-678c-404e-ad94-f4fd214a2b2e/scratchpad/e4e/dump_%d.txt" % Engine.get_physics_frames(), FileAccess.WRITE)
+	var lab := TacticsLab.create(self, 29)
+	lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var names: Array = []
+	for i in 6:
+		var tank := lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), Vector3(TacticsScenarios.LANE_X - 10.0 + (i % 3) * 10.0, 0.0, 60.0 + (i / 3) * 10.0), 0.0)
+		AiScenario.make_durable(tank)
+		names.append(String(tank.name))
+	for i in 6:
+		var enemy := lab.unit(Match.Team.RUST, "Rust_B_%d" % (i + 1), Vector3(TacticsScenarios.LANE_X - 10.0 + (i % 3) * 10.0, 0.0, -30.0 - (i / 3) * 10.0), PI)
+		AiScenario.make_durable(enemy)
+	await lab.start()
+	(lab.orders as Orders).issue(UnitCommand.make(names, "attack_move", {"to": [TacticsScenarios.LANE_X, -90.0], "source": "player"}))
+	for step in 2 * SimClock.TICK_RATE:
+		await lab.step()
+		for t in lab.game_match.tanks.get_children():
+			var tank := t as Tank
+			if tank == null:
+				continue
+			var brain := lab.game_match.brains.get_node_or_null("Brain_" + String(tank.name)) as TankBrain
+			out.store_line("%d %s (%.5f,%.5f) yaw %.6f tur %.6f hp %.2f sup %.4f ch %s mv %s" % [step, tank.name, tank.global_position.x,
+					tank.global_position.z, tank.rotation.y, tank.turret.rotation.y, tank.health, tank.suppression,
+					("%s %s" % [brain.choice.get("option", ""), brain.choice.get("target", "")]) if brain != null else "-",
+					str(brain.move_order) if brain != null else "-"])
+			if step >= 20 and step <= 32 and String(tank.name).begins_with("Rust_B_"):
+				var mover := Movement.of(tank)
+				var st := Movement.state(tank)
+				out.store_line("   %d %s phase %s yield %s holding %s cmd %s st %s" % [step, tank.name, mover.phase if mover != null else "-",
+						mover.yield_to if mover != null else "-", Traffic.holding(String(tank.name)), str(tank.command) if "command" in tank else "-",
+						str(st).left(600)])
+	out.close()
+	lab.dispose()
+	assert_true(true, "probe")
