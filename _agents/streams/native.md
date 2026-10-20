@@ -113,6 +113,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     face_settle_fails 93, hull_turns 17535; execute_counts face hand-backs 205912, other_order 0.
   - Found: face_settles / face_settle_fails were not in ManoeuvreCensus.counters(). Manoeuvre adds them (orchestrator).
 
+**E4b traced (R35.54; laptop, GDScript, main 5f05c997c, trace only):** test_tactics_scenarios_6's first-in-process v later
+difference is not a script field and not the runner's teardown.
+- **Ruled out:**
+  - Script statics: all 815 `static var`s are identical first v after.
+  - The teardown and drain_navigation: a 0-frame earlier test keeps the alone value 4.8.
+  - Frame phase: waits of 1 / 2 / 3 / 4 / 97 frames all give 3.0.
+  - The nav map's first sync: `map_force_update` alone gives 4.8.
+- **What flips it:** one main-loop iteration before the setup. It is engine-side state set by the first iteration (likely the
+  physics space's first step, or the before-the-main-loop setup context).
+- **Real play** starts long after launch, so it matches the later tests. Brains' one-frame warm-up in run_tests.gd is the right fix.
+
 **Round-36 note (R35.47: tests that spawn a tank, then set `global_position` by hand; native's 13 of brains' 85; read only, no
 code):** a bare `global_position =` leaves the physics body at its Match spawn slot until a step, and how a stale overlap resolves
 depends on process history (the first match in a process syncs without a push, a later one pushes). The native twins compare the
