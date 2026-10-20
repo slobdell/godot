@@ -78,8 +78,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 3. **O2 the deploy move: JUDGING.** Cause count (builder0 `f5aa89ecd`, 287 squads): of 57 twitchy squads, depth 23,
    seating 10, neither 27. DEPLOY_COMPACT (`cd1043de8`, OFF) built in the deploy carve-out. Bar filed 15:10 PDT before any
    compact number. The orchestrator's own-squad guard is read centre to centre (hull-to-hull 9 m fails main itself; ruling
-   asked). Named hash `1bcd704cd`: full check queued (--wait-below 1), judged probe on 3681-3686 running (builder0 light,
-   native); `python3 tests/control/compact_judge.py <rows.jsonl>` reads it.
+   ruled, main 635987442). **GREEN: `7a4226932`** (= `1bcd704cd` + a Status-only commit): builder0 `make check exited 0`,
+   2964 passed / 0 failed, sim-baseline 13/13 unmoved (glibc-2.43). Judged probe on 3681-3686 at `1bcd704cd` running
+   (builder0 light, native); `python3 tests/control/compact_judge.py <rows.jsonl>` reads it.
 4. **O3 the reached halt: FALSIFIED, no switch.** Builder0 `f5aa89ecd`: X3c's anchor test catches 1 of 57 twitchy squads;
    the loops are traffic between squads, not unreachable ground.
 5. **O4 packing: PARKED (orchestrator).** What binds is the 9 m clearance between squads (the lead's spacing call, queued
