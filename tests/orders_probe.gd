@@ -190,6 +190,9 @@ func _run() -> void:
 						if squad.has("placed") else -1.0,
 				"end_foreign_m": snappedf(_nearest(_living(squad), func(t: Tank) -> bool: return t.team == Match.Team.GREEN \
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
+				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
+				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
+				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
 				"deploy_step": "on" if ElementPlan.DEPLOY_STEP else "off",
@@ -604,6 +607,20 @@ func _nearest(alive: Array, keep: Callable) -> float:
 			continue
 		for n: String in alive:
 			best = minf(best, _flat_d((t as Tank).global_position, _tank(n).global_position))
+	return best if best < INF else -1.0
+
+
+## The closest two of `alive` (centre to centre, or hull to hull with `hulls`); -1 with fewer than two.
+func _own_min(alive: Array, hulls: bool) -> float:
+	var best := INF
+	for i in alive.size():
+		for j in range(i + 1, alive.size()):
+			var a := _tank(alive[i])
+			var b := _tank(alive[j])
+			var d := _flat_d(a.global_position, b.global_position)
+			if hulls:
+				d -= SlotGround.envelope_of(String(a.unit_id)) + SlotGround.envelope_of(String(b.unit_id))
+			best = minf(best, d)
 	return best if best < INF else -1.0
 
 
