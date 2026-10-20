@@ -84,6 +84,24 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   the ElementPlan branch, its test, probe column and make arms); `game/tactics/` = main's; brains' R35.74 grant lapsed. The
   lab stage stays as tooling (`make herringbone-lab`, arms off / nostep).
 
+### O4 design note (laptop measurement): park, one player-terms question
+`references/round36/orders/o4-packing-note.md`. `SelectionSquads.pack_refused` (`0409345d1`, measurement only) counts,
+in the pack's last compaction pass, why each place nearer the click was refused. Laptop GDScript, seed 34, `--pack=on`,
+6 click cells: halt-seat clearance between squads (9 m) and outlines dominate, ground is next, and arrival overlap (the
+two travel tests) is only 3-8 % of refusals. "Treat arrival overlap as transient" frees almost nothing; the binding
+constraint is the clearance itself, which is a spacing (survivability) choice for the lead.
+
+### Stretch (both answered, no code)
+1. **A click at a bridge mouth:** the deploy's halt lay (`_dry_halt_anchor`, B8b) already steps a plain click's halt back
+   until no seat is on the deck or the far bank. Crossing west bridge, laptop GDScript: 0 bad seats in 24 geometries
+   (3/4/5 crews x clicks (-92,33) (-92,36) (-92,40) (-88,36) x 2 approach headings). The cost: the anchor moves 5-21 m back
+   from the click. Probe cells with clicks at (-92,36) and (-92,40), 3 and 5 squads: crossed 0. Evidence
+   `references/round36/orders/stretch-bridge-mouth/`.
+2. **`uncross_paths` on a queued screen:** traced on the merged tree (laptop, a temporary local patch, reverted). With
+   uncross allowed on a screen, `test_control_queued_task` passes 12/0, and its several-squads screen case makes a REAL
+   swap. Round 35's "changed behaviour through path planning alone" was a misreading: uncross acted. It stays limited to
+   plain moves (no evidence a screen needs it).
+
 ### O3 first falsifier (X3c's note, "first, check every 20-30 m loop is a seat the anchor test fails")
 - Probe columns (`f5aa89ecd`): each crew's navmesh drive to its halt seat minus the straight line, read 1 s after the
   deploy; `detours` = crews >= 8 m over; `detours_caught` = those whose seat fails X3c's anchor test (drive from the halt
