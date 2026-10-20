@@ -615,6 +615,16 @@ _Filed here before any number._
   Movement members (`_unfinished_to/_count/_since`) in native/src/exec_fields.h, which native's T9 mirror carries in the joint pair.
   stream/traffic is not a merge candidate on its own; T9 reaches main only via the joint pair (joint3-on 2931/0). T8's series cannot
   fit this round behind the joint's (~8 h): its bar and pair plan open round 36.
+- **R35.61 (2026-10-20 ~07:20) M5 PASSES: CP-F attempt 5 ships (main ed121d24f).** lab/cpf5 `63336d690` (stream a960fa2c2 + TURN_HULL and
+  FACE_SETTLE defaults true; R35.23 scope), builder2, 60/60 calls exited 0 (`references/round35/manoeuvre/m5-series/README.md`, stream
+  ced0c8992). (a) wheels/turret point tasks: move 4.3 deg / 80.2 % within 15 deg, right 4.4 / 76.5 %, attack-move 5.0 / 71.3 %. (b) no
+  class worse at p < 0.05. (c) clicked +0.00 everywhere. (d) attack-move +6 v the A/A guard 15.4 (on the series' own se it would read
+  +6 v +4.5: the bar sizes (d) from the A/A, as filed). (e) within +4.9. (h) 18/18. (i) kills / deaths / hit rate within. (j) hull_turns
+  277373 v 0. (n) face_creep at the judge 0 v 0 (attempt 4: 8 v 0). (o2) builder2 sample: 9 give-ups, 16 cells identical crew for crew.
+  (l) SBF hull error at arrival 3.5 v 26.5 deg (reported). (p) not readable (no per-crew give-up mark). 7 hull-rest cells hit the 300 s
+  wall cap, unpaired (listed). The merge also brings W1b and W1c OFF (STALL_INTENT / WHEEL_HALT false), as on the gated tree. Batch
+  check of ed121d24f on builder2 (systemd-run). **In his terms:** a War Rig he tells to face a way turns to it and goes still; nothing
+  is left creeping. Brains' E2 (B11b) is unblocked.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
