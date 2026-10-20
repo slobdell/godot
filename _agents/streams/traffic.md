@@ -63,7 +63,7 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-20 ~14:10 PDT (traffic). Builder2 was preempted at 14:07:35, 4 min into the first check (void); the driver read the exit 255 as done, so it was fixed (`ee30b2194`: verdict line only, 3 tries, NOT RUN stops, series loops to completion) and the pair re-cut as `pair/holdfire-r36` `a2de32420` (same game code), unit `t8-series-r36c`, check from 14:10:30.** Earlier, ~14:00: CP36.1 landed (main `a318a2cd3`, adoption `e45bb6632`); merged into stream/traffic
+**Quick of the merged carry-over GREEN: `c9b2fab03`, builder0, `make quick-remote` QUICK_BASE=main, 83 passed 0 failed (16 traffic/native/manoeuvre test files + lint, 1279 s).** **2026-10-20 ~14:10 PDT (traffic). Builder2 was preempted at 14:07:35, 4 min into the first check (void); the driver read the exit 255 as done, so it was fixed (`ee30b2194`: verdict line only, 3 tries, NOT RUN stops, series loops to completion) and the pair re-cut as `pair/holdfire-r36` `a2de32420` (same game code), unit `t8-series-r36c`, check from 14:10:30.** Earlier, ~14:00: CP36.1 landed (main `a318a2cd3`, adoption `e45bb6632`); merged into stream/traffic
 (`4a2a0d349`, DEFAULT_OFF `["holdfire"]`). **Pair cut: `pair/holdfire-r36` `46e6ba8a9`** = `4a2a0d349` + the ON flip, worktree
 `../godot-traffic-t8` (remove it and builder2's `~/tank_squad/godot-traffic-t8` after the series). **Driver** `t8_series.sh` running
 as systemd unit `t8-series-r36b` (needs `--setenv=PATH` for gcloud: the first unit died on `gcloud: command not found`), out
