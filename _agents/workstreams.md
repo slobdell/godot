@@ -597,6 +597,9 @@ _Filed here before any number._
   time-box). **Real play matches the LATER tests** (a match starts many iterations after launch). So brains' warm-up is the CORRECT
   fix, not interim: every test now sees real play's state. R35.54's caveat ("tests should match the first-match state") is withdrawn.
   Round 36: optional, name the engine state below the main loop.
+- **R35.58 (2026-10-20 ~03:00) D6 merged (main 31e3d605c).** `93cdb1559`: builder2 `make native check exited 0`, 2941/0, sim-baseline 13
+  unmoved (the CPU never shift-clicks). Parked OFF behind switches on main: D3/D3b, D4, D5 (GATE_DEAL=on for his feel call). Main now
+  carries D6 + E4b's warm-up (checked separately): one batch `make native check` of 31e3d605c on builder2.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
