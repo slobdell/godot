@@ -145,6 +145,20 @@ coverage count that moves with what ran before.
   - test_native_shell (waits a frame "so the bodies are where the rays look").
 - Native's round-35 stages (test_native_yield's pass and refusal stages, test_native_pass_lane) already use `Tank.place`.
 
+**Round-36 candidates (native):**
+1. **Mirrors waiting on their owners' bars:**
+   - W2's face settle, if it ever reaches C++: today it is GDScript on the native path by design (face hand-back).
+   - W1b: `pair/native-w1b` `f4f6bf1d2`, rebased on the merge base when W1b returns.
+   - The joint W1c+T9: `pair/native-joint3` `7a1435cdd`.
+2. **The R35.47 note's two fixes:** test_native_avoid_gather and test_native_record to `Tank.place` (or a fresh child);
+   the drive / gate twin harnesses to `place` as cleanup.
+3. **E4b below the main loop (optional, R35.57):** name the engine state the first iteration sets (physics space's first
+   step v the setup context): a minimal two-body repro, with or without one stepped frame.
+4. **The census gap pattern:** a counter added to a rule but not to ManoeuvreCensus.counters() / a series reader. Propose a
+   lint-style test that every `static var` counter named in a bar appears in the series' printed line.
+5. **R34.16's watch item** (one 9.1 m both-planned face) when a face_pairs series next runs.
+6. **The traffic series readers' seed_twins call** (requested; traffic queued it after T7's series).
+
 **Requests to other streams:** traffic, relayed after T7's series: any series reader that pools a folder containing random-arena
 fights calls `seed_twins.filter_logs(files)` first.
 
