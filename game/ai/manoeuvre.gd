@@ -561,8 +561,8 @@ static func face_settled_id(id: int, planned_leg: bool, since_tick: int) -> bool
 ## both drives to pace 0.05-0.09, so the command was 0.05-0.09 while the drive asked for full: unstick's |throttle| > 0.5 (driving
 ## hard, not moving) never ran its clock, H1's escape (ask, reverse, stand) never started and nobody asked the parked crew again.
 ## With this on, a ROUTED move (move_to, not direct) touching a friendly hull of another element, or `blocked` by one, is tested on |throttle| /
-## pace (pace < 1); every other case keeps the command. `--nav-off=stallintent` flips STALL_INTENT_DEFAULT (false = OPT-IN).
-const STALL_INTENT_DEFAULT := false
+## pace (pace < 1); every other case keeps the command. `--nav-off=stallintent` flips STALL_INTENT_DEFAULT (ON since R35.66, the joint W1c+T9).
+const STALL_INTENT_DEFAULT := true
 ## The pace floor the intent divides by (a pace-0 drive is a Traffic hold or a stop: unstick does not run on a hold).
 const STALL_INTENT_MIN_PACE := 0.05
 ## Arm counter: unstick ticks whose throttle test passed only by the intent reading (stride ticks by their stride).
