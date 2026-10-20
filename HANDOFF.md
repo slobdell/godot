@@ -52,7 +52,8 @@ together are UNCHECKED on main: one batch main check after T7's hand-over merges
 sim-baseline the judged moves). **Tell him:** a crew under fire no longer steps aside into a killing zone when the crew behind can
 drive round it; jam-under-fire deaths -13 % on 140 fights, nothing else worse. **f2690c8ef adopts T7's 5 maps** (yard terminus locks
 gorge cut; read twice on the merged tree = the judged hashes: no interaction with E1 / D1). ONE batch main check (`make native check`)
-of D1 + E1 + T7 is running; perf-judge alone on a quiet builder0 owed for main and T7. Rulings R35.1–R35.33 in workstreams.
+of D1 + E1 + T7: **GREEN** (f2690c8ef, builder0 `make native check exited 0`, 2908/0, 25 passed + 2 NOT JUDGED by load). perf-judge
+alone on a quiet builder0 owed for main (T7, E1, D1). Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
