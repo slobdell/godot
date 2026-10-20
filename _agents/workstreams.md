@@ -701,6 +701,13 @@ _Filed here before any number._
   mechanism, to manoeuvre (X1 d):** law-716 Guns_7 pushes at throttle 0.83 for 50 s with estimated_velocity 9.98 m/s v real 0.32 m/s;
   movement.gd:3673's stuck test reads estimated_velocity without an honest blocker, so `_stuck_time` never builds and unstick never
   fires. **Bar lesson:** count movers by NET motion, not real_mps alone (a rocking hull reads >= 0.3 m/s).
+- **R35.68 (2026-10-20 ~12:45) X3: D5 ON checking; R35.17's street jam looks gone on current main.** (a) orders d85e395d4 (GATE_DEAL
+  default ON on main b8ce86cc4), `make native check` on builder2. (b) laptop native d85e395d4, body stage seeds 1–12, deploy step on -
+  off, the Sirens' all-in: mean +0.13 s (sd 1.80, n 12), s1 +1.0 s (builder0 read +6.1 at 0603f3274), worst +3.0, four seeds faster
+  with the step on; not attributed (D6, E4b, M5 landed in between; NOT the joint). Next: confirm on builder0's light lane (12 seeds x 2
+  arms, native); if it holds, X3b closes as "fixed on main" and test_tactics_body's line returns to off + 5 s (R35.17 undone).
+  (c) design note filed: `references/round35/orders/x3c-crossing-halt-detours.md` (the controls hand the deploy a reached `halt_at`;
+  ElementPlan unchanged; a round-36 bar shape).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
