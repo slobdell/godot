@@ -108,6 +108,16 @@ _Filed here before any number._
   street: ON stands (no fire after its first far loop, < 0.5 m in its last 10 s), base >= 3 fires. Guards: Bar S1's set + far loops
   + far bank 0 + unstick fires, fresh hull-rest 6501–6532 and fights 6540–6563. Player line REPORTED, paired: left behind > 25 m,
   still by net motion. Series after S1's.
+- **O2 DEPLOY_COMPACT (orders, C36.4; filed in the brief 2026-10-20 15:10 PDT before any compact number; copied here).** The cause
+  count (builder0 light, native, f5aa89ecd, 12 street cells x 3621–3626, 287 deployed squads; of 57 squads twitching >= 15 m: depth
+  23, seating 10 (3 both), neither 27) chose depth: the deploy's herringbone half as deep. Code cd1043de8 (OFF, deploy carve-out),
+  named hash ab6bef22c (full check queued, `--wait-below 1`; the verdict stands only if it is green). Probe `make native orders-probe`
+  `main:` v `compact:--deploy-compact=on`, the 12 cells, FRESH seeds 3681–3686, n 6, medians, builder0 light, native. Counter:
+  halt_depth_m lower in every herringbone cell. GAIN (both): median worst deploy leg >= 20 % lower AND summed median twitch >= 15 %
+  lower. Guards per cell: all-in <= main x 1.2 + 3 s and no more never-in; twitch <= main + 3 m; end foreign min >= main − 3 m;
+  deck no higher, far bank 0; test_control_scale's 3-tick response. **Added by the orchestrator before any number (15:30):** own-squad
+  min crew-to-crew distance at the end REPORTED per cell and >= 9 m hull to hull (the same spacing the lead's O4 question keeps
+  between squads: a compact halt must not bunch one squad under one shell). A pass ships ON.
 
 ## Rulings (round 36)
 
