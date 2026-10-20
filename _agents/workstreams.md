@@ -634,6 +634,11 @@ _Filed here before any number._
   check of ed121d24f on builder2 (systemd-run): **GREEN**, `make native check exited 0`, 2951/0, 25 passed + 2 NOT JUDGED (timing).
   **In his terms:** a War Rig he tells to face a way turns to it and goes still; nothing
   is left creeping. Brains' E2 (B11b) is unblocked.
+- **R35.62 (2026-10-20 ~07:45) W1b's and W1c's native mirrors land on main as inert code (native).** M5's merge brought W1b
+  (`Manoeuvre.wheel_halt`) and W1c (`stall_throttle`) GDScript onto main, OFF, without their C++ halves: play is identical while OFF,
+  but W1b's counter `wheel_halt_asks` reads 0 on the native path, and an ON flip would leave the native drive ignoring the rule.
+  Native lands both mirrors (W1b from pair/native-w1b, W1c from pair/native-joint3; NOT T9's) re-cut on ed121d24f, defaults false,
+  twins ON and OFF + a builder2 full check; code identical to joint3's so the joint merge is T9's half + the flip.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
