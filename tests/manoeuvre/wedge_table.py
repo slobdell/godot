@@ -39,6 +39,11 @@ def main():
     print(f"fights {len(totals)}  deaths {n_deaths}  wedged deaths {causes['stuck:wedged']}"
           f" ({100 * causes['stuck:wedged'] / max(n_deaths, 1):.1f} %)")
     print("deaths by cause: " + share(causes))
+    uf = Counter()
+    for t in totals:
+        uf.update(t["totals"].get("by_cause_under_fire", {}))
+    print(f"under fire (hit within 5 s): {sum(uf.values())}; jam under fire {sum(v for k, v in uf.items() if k.startswith('jam:'))}"
+          f" (jam:yielding {uf['jam:yielding']}, jam:friend {uf['jam:friend']})")
     ht = sum(t["totals"].get("halt_ticks", 0) for t in totals)
     hc = sum(t["totals"].get("halt_creep_ticks", 0) for t in totals)
     hh = sum(t["totals"].get("halt_creep_held_ticks", 0) for t in totals)

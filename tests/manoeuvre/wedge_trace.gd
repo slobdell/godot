@@ -28,6 +28,7 @@ const SHOVE_MPS := 0.5
 const NEAR_M := 14.0
 const STILL_MPS := 0.3
 const HALT_CREEP_MPS := 0.5
+const UNDER_FIRE_S := 5.0
 
 var _rows := {}  # crew -> ring of per-tick samples (TIMELINE_S)
 var _episodes := {}  # crew -> the open episode
@@ -146,6 +147,12 @@ func _observe(game_match: Match) -> void:
 		for i in tank.get_slide_collision_count():
 			if tank.get_slide_collision(i).get_collider() is Tank:
 				touch_hull = true
+		if touch_hull:
+			for i in tank.get_slide_collision_count():
+				var hit_tank := tank.get_slide_collision(i).get_collider() as Tank
+				if hit_tank != null and hit_tank.team == tank.team:
+					_totals["friendly_contact_ticks"] = int(_totals.get("friendly_contact_ticks", 0)) + 1
+					break
 		var friends := 0
 		var enemies := 0
 		var nearest_friend := 999.0
@@ -320,6 +327,11 @@ func _on_death(game_match: Match, crew: String) -> void:
 	var cause := String(last["cause"])
 	var bc: Dictionary = _totals.get_or_add("by_cause", {})
 	bc[cause] = int(bc.get(cause, 0)) + 1
+	# Round 35 (the joint W1c+T9 bar's guards, from traffic's T9 x T7 note): deaths by cause UNDER FIRE, hit within
+	# UNDER_FIRE_S of the death (traffic T6's window), so jam-under-fire and jam:yielding deaths read from the same rows.
+	if float(last.get("since_hit_s", 999.0)) <= UNDER_FIRE_S:
+		var bf: Dictionary = _totals.get_or_add("by_cause_under_fire", {})
+		bf[cause] = int(bf.get(cause, 0)) + 1
 	if cause != "stuck:wedged":
 		_close(crew, false)
 		return
