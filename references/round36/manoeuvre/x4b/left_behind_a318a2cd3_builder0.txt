@@ -1,0 +1,27 @@
+left_behind: 256 runs, 29 crews > 25 m off their slot at the element's last row
+  by kind (net motion over the last 10 s): {'wedged:idle': 14, 'closing': 6, 'wander': 6, 'wedged:pressing': 3}
+  faced_attack_move     21  {'wedged:idle': 12, 'closing': 4, 'wander': 3, 'wedged:pressing': 2}
+  faced_move             8  {'wander': 3, 'closing': 2, 'wedged:idle': 2, 'wedged:pressing': 1}
+  worst 3 (off, run, crew, kind, net m, goal m, median |thr|, touch ticks, esc ticks, max stuck clock, at):
+     58.7 condemned/faced_attack_move-6325 Green_Battery_2 wedged:idle net 0.00 goal 56.6 thr 0.27 touch 0 esc 6 stuck 1.00 at (-5.7, 101.2) t 51
+     56.9 condemned/faced_attack_move-6332 Green_Guns_2 wander net 1.53 goal 53.4 thr 0.11 touch 0 esc 5 stuck 0.30 at (4.2, 80.3) t 80
+     54.2 condemned/faced_attack_move-6306 Green_Battery_2 wedged:idle net 0.10 goal 51.9 thr 0.00 touch 0 esc 7 stuck 0.60 at (-2.8, 102.6) t 37
+  still crews by mechanism (A parked friend, B mutual, C no friend within 9 m, D a moving friend): {'A:parked-friend': 12, 'C:no-friend': 3, 'D:moving-friend': 1, 'B:mutual': 1}; of each, in H1's escape loop (unstick_left > 0 in the window): {'D:moving-friend': 1, 'A:parked-friend': 9, 'C:no-friend': 3, 'B:mutual': 1}
+  every wedged crew (17):
+     58.7 condemned/faced_attack_move-6325 Green_Battery_2 artillery wedged:idle C:no-friend net 0.00 goal 56.6 thr 0.27 esc 6 stuck 1.00 at (-5.7, 101.2) t 51; nearest Green_Guns_2 9.1 m (stop, goal 0.0, stopped)
+     54.2 condemned/faced_attack_move-6306 Green_Battery_2 artillery wedged:idle D:moving-friend net 0.10 goal 51.9 thr 0.00 esc 7 stuck 0.60 at (-2.8, 102.6) t 37; nearest Green_Battery_4 4.1 m (move_to, goal 41.9, closing)
+     50.8 law/faced_attack_move-6310 Green_Guns_8 law_tank wedged:idle A:parked-friend net 0.00 goal 51.6 thr 0.00 esc 6 stuck 1.00 at (24.0, 111.4) t 80; nearest Green_Hunters_4 5.6 m (stop, goal 0.0, stopped)
+     49.0 condemned/faced_move-6318 Green_Burners_6 burner wedged:idle A:parked-friend net 0.00 goal 49.0 thr 0.00 esc 8 stuck 0.90 at (-8.6, 102.1) t 80; nearest Green_Burners_5 4.4 m (face, goal 19.7, wedged:idle)
+     47.9 condemned/faced_attack_move-6330 Green_Battery_2 artillery wedged:idle A:parked-friend net 0.00 goal 46.5 thr 0.21 esc 6 stuck 0.80 at (-7.4, 93.5) t 80; nearest Green_Guns_1 7.1 m (stop, goal 0.0, stopped)
+     41.8 condemned/faced_attack_move-6316 Green_Battery_2 artillery wedged:idle A:parked-friend net 0.00 goal 45.7 thr 0.00 esc 8 stuck 0.20 at (-6.4, 102.0) t 54; nearest Green_Guns_8 6.1 m (stop, goal 0.0, stopped)
+     41.8 gangs/faced_attack_move-6303 Green_Guns II_3 gang_tank wedged:pressing A:parked-friend net 0.14 goal 41.8 thr 0.96 esc 0 stuck 0.00 at (54.6, 84.4) t 80; nearest Green_Wrenches_2 6.3 m (stop, goal 0.0, stopped)
+     41.4 condemned/faced_attack_move-6315 Green_Guns_7 tank wedged:idle A:parked-friend net 0.32 goal 33.7 thr 0.11 esc 5 stuck 0.70 at (7.1, 100.3) t 80; nearest Green_Guns II_5 7.9 m (face, goal 19.5, wedged:idle)
+     38.8 condemned/faced_attack_move-6325 Green_Battery_4 artillery wedged:idle A:parked-friend net 0.00 goal 40.6 thr 0.00 esc 8 stuck 0.40 at (-0.5, 88.5) t 51; nearest Green_Guns_4 6.4 m (stop, goal 0.0, stopped)
+     35.9 law/faced_attack_move-6303 Green_Guns_7 law_tank wedged:pressing A:parked-friend net 0.00 goal 35.5 thr 0.85 esc 6 stuck 0.10 at (10.9, 97.1) t 80; nearest Green_Hunters_2 5.6 m (stop, goal 0.0, stopped)
+     28.7 condemned/faced_move-6317 Green_Battery_9 artillery wedged:pressing C:no-friend net 0.14 goal 28.8 thr 0.90 esc 3 stuck 1.00 at (-41.4, 59.3) t 80; nearest Green_Battery_1 21.9 m (face, goal 19.3, wedged:idle)
+     27.6 law/faced_attack_move-6332 Green_Eyes_1 law_scout wedged:idle A:parked-friend net 0.20 goal 27.6 thr 0.00 esc 8 stuck 0.40 at (32.8, 101.4) t 29; nearest Green_Hunters_5 4.4 m (stop, goal 0.0, stopped)
+     27.0 condemned/faced_move-6315 Green_Guns_5 tank wedged:idle C:no-friend net 0.00 goal 27.0 thr 0.00 esc 8 stuck 0.40 at (14.9, 90.5) t 80; nearest Green_Guns II_5 9.2 m (face, goal 20.1, wedged:idle)
+     26.7 law/faced_attack_move-6310 Green_Guns_7 law_tank wedged:idle A:parked-friend net 0.00 goal 26.4 thr 0.50 esc 0 stuck 0.00 at (46.0, 91.9) t 80; nearest Green_Guns_2 4.3 m (face, goal 19.9, wedged:idle)
+     26.0 gangs/faced_attack_move-6309 Green_Guns_3 gang_tank wedged:idle A:parked-friend net 0.00 goal 26.0 thr 0.00 esc 8 stuck 0.90 at (53.9, 106.7) t 80; nearest Green_Wrenches_7 4.6 m (stop, goal 0.0, stopped)
+     25.4 law/faced_attack_move-6303 Green_Guns_6 law_tank wedged:idle B:mutual net 0.20 goal 24.4 thr 0.04 esc 6 stuck 0.40 at (9.0, 90.5) t 80; nearest Green_Guns_7 6.9 m (move_to, goal 35.5, wedged:pressing)
+     25.1 gangs/faced_attack_move-6309 Green_Hunters_5 gang_ifv wedged:idle A:parked-friend net 0.00 goal 25.1 thr 0.50 esc 0 stuck 0.40 at (36.2, 51.1) t 80; nearest Green_Guns_4 8.0 m (face, goal 21.2, wedged:idle)

@@ -72,6 +72,48 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~18:15 (worker): S2a built (the orchestrator's GO); Bar S2a filed `5d80b6291` (+ traffic's T9 rider, `dca90d9c0`).**
+`a1b7f7e59`, default OFF, `--nav-off=h1bside`: H1b's far loop goes round the friend (a side point abreast of it) or stands.
+Laptop GDScript lab (`test_manoeuvre_h1b_side`, 3/3 + 33/33 neighbours): room on one side, ON past the friend at 19.6 s (line
+20 s) v base 5 fires; one-hull street, ON stands (0 fires after the far loop, 0.00 m) v base 5 fires. Native mirror spec
+`76486a045`, sent. Queue: native's check of the S1+S3 pair `20acbda5f` (running, builder0) → S1 ON-tree check (queued) → S1
+series → the S2a pair (+ T9 rider) → its check → its series.
+
+**2026-10-20 ~17:30 (worker): S2 / X4b READ, design note sent; waiting on the orchestrator's go before a bar.**
+`references/round36/manoeuvre/x4b/README.md` (stream `5bf752b4f`). Main a318a2cd3, builder0 native, hull-rest drawn attack-move +
+move, fresh 6301–6332 x 4 factions (256 runs): **29 crews > 25 m behind at the judge, 17 still by net motion** (per 128 runs: 14.5 /
+8.5 v E1's 17 / 9; the joint did not free them in aggregate). Worst three traced (byte-identical repro). Mechanisms of the 17:
+**(A) 10 refused forever** by the friend pinning them. It gave way once (or to T9's cap) without clearing them, then `ask` refuses
+the same asker; 8 of the 10 blockers are parked/unseated, 7 have < 1 m room behind. **(B) 1** blocker busy yielding to another.
+**(C) 6** no hull-pinned far loop (not traced yet; one presses at 0.96 with no escape: an S1 candidate). Recommendation: H1b's
+far branch (mine) stops re-ramming. After H1B_ASKS refused asks on the same unmoved friend, re-drive to a side point clear of it,
+or stand when there is no room.
+
+**2026-10-20 ~16:45 (worker):** Main e45bb6632 (CP36.1 + adoption) merged into the stream as `4a0080504`. `4dd6ff750` adds the
+missing `test_manoeuvre_stall_intent_sumps.gd.uid`. **S3 alone is GREEN** at native's `eefc379c5`: builder0 `make check exited 0`,
+2950/0, sim-baseline 13/13 unmoved (W1b's removal is inert). **The merge candidate is `pair/native-s1s3-main` `20acbda5f`** (S1 + S3 +
+both mirrors + main e45bb6632). Native's full check on it is running on builder0; it also stands in for main's own check.
+Bar S1 trees: base `lab/s1-base` = `20acbda5f`, ON `lab/s1-on` `d9864ab07` (STALL_NET_DEFAULT true). ON's `make native check` is
+queued behind `builder_checks --wait-below 1` (unit `manoeuvre-s1on-check`). The series (`~/overnight-manoeuvre/r36/s1_series.sh`)
+starts after X4b finishes: one series per builder.
+
+**2026-10-20 ~16:00 (worker):** CP36.1 is on main at `a318a2cd3`; the orchestrator's sim-baseline adoption is still running. S2 / X4b
+started on a detached side worktree, `godot-manoeuvre-x4b`, pinned at a318a2cd3. Runs: builder0 native, hull-rest drawn,
+faced_attack_move + faced_move, seeds 6301–6332 x 4 factions (256 runs), `--turn-states --element-trace=all`. systemd unit
+`manoeuvre-x4b`, logs `~/overnight-manoeuvre/r36/x4b/`. Adoption touches only baselines, so play is identical. The stream merges
+main after the orchestrator's adoption commit. The stacked S1+S3 pair is `pair/native-s1s3` `779f31be5` (its check is queued).
+Bar S1 is copied to workstreams (7bf08f3ed): the stage proves the rule, the series guards carry the harm check.
+
+**2026-10-20 ~15:30 (worker): where it stands.**
+- **S1 GDScript** `dbe6ed396` (+ the mirror spec `ab71634f4`). quick-remote on dbe6ed396 (builder0, 11 test files + lint): 53/2.
+  Both reds are the missing native mirror: the stage's native-default-arm line (holds 22 v 0) and test_native_h1b's twin
+  (`_stuck_from`). The stage's GDScript lines PASS: **ON fires 1.03 s after wedging; base never fires in 20 s (clock peaks at 0.83 s);
+  without the pop both arms fire alike**.
+- **Native cut both pairs:** `pair/native-s3` `eefc379c5` (check running on builder0) and `pair/native-s1` `e12a381c4`, to be
+  stacked on S3. The stream branch alone is red on those two lines until the pair merges back. That is by design (a pair).
+- **Next:** on S1-pair green, cut ON/base trees on main+CP36.1 and run `~/overnight-manoeuvre/r36/s1_series.sh` (Bar S1 guards).
+  S2's `x4b.sh` is ready and launches when CP36.1 is announced.
+
 **2026-10-20 ~14:00 (worker, Fable).** Plan, in order (smallest foundation first):
 1. C36.1 carry-over (measurement only) — DONE `05f4517e0`, `60a2dbc5c`: STALL_TRACE probe + census counters, fight_census
    exposure, wedge_trace under-fire/contact totals, joint_judge (+ w1b_judge, its import), rocking_census, mover_kind (brains'
@@ -82,6 +124,36 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 3. S1 stallnet — code + deciding lab stage on the stream branch (below); bar filed below before any number; native mirror spec sent.
 4. S2 X4b on main after CP36.1 (+ S1 if it ships), then the trace and a design note.
 5. Stretch R34.16 watch.
+
+### Bar S2a (h1bside: the far loop goes round or stands), filed before any number (2026-10-20, the orchestrator's GO and terms)
+
+- **Change (my paths: unstick / H1b):** in `_h1b_gives_up`'s FAR branch (H1B_ASKS refused asks on the same friend that has not
+  moved, goal beyond H1B_SETTLE_MAX_M; today a counter), with `h1bside` on, the escape is replaced: pick a SIDE point beside the
+  friend (either side, clear of every hull by both hulls' half-widths + margin, on the navmesh, reached by a navmesh path no
+  longer than SIDE_DETOUR_X x the straight line: never across a bridge or the river), and drive to it (it replaces the route's
+  waypoint until reached, its timer runs out, or the friend moves); with no side clear, STAND (throttle 0, no re-ram) until the
+  friend moves > H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (false until judged). Native mirrors
+  the side waypoint and the stand.
+- **Rider (the orchestrator's ruling, 2026-10-20): traffic's T9 "passed by half-lengths" fix** (stream/traffic `9030a12dc`, its own
+  switch, note `_agents/streams/references/round36/traffic/t9_finished_while_pinned.md`): in `_yield_unfinished` only, "passed" =
+  distance − both half-lengths > 2.0 m. It rides in this pair: ON = both switches on, base = both off; its own lab test
+  (test_traffic_yieldfit2) decides its change; a red guard is traced by switch.
+- **Arms:** native, two trees on main (+ S1 if shipped): ON = pair with H1B_SIDE_DEFAULT true, base = same code false. Gate:
+  `make native check` on ON; base's sim-baseline.
+- **(0) Counter first:** `h1b_side_steps` + `h1b_side_stands` > 0 in ON's series (counted only when ON acts; the base's far loops
+  are the comparison).
+- **DECIDING (lab, both paths):** `tests/test_manoeuvre_h1b_side.gd`. A hull H1-looping nose-on to a parked friend that never
+  moves (its controller off), goal 30 m past it. (a) Room on one side (a second parked friend closes the other): ON is past the
+  friend's front within 20 s; base is not, and fires >= 3 escapes in 30 s. (b) A one-hull street (parked friends abreast on both
+  sides): ON stands — no escape fire after its first far loop and moved < 0.5 m in its last 10 s; base fires >= 3. Native: the
+  tree-default arm equals GDScript (first fire, fires, final position within 0.05 m).
+- **Guards (no harm), FRESH seeds, each within 1.645 se of base:** Bar S1's set (the joint bar's (d) movers by net motion, (e),
+  (f), (i), (q), (r), (s), give-ways) on hull-rest 6501–6532 drawn x 4 factions x 6 tasks and wedge/fights/jam on
+  locks/terminus/sumps x 6540–6563; plus **far loops (r) ON <= base + 1.645 se**, **far bank 0** (no hull of either arm ends a
+  hull-rest run across the river from its goal where base did not), **unstick fires ON <= base + 1.645 se**.
+- **Player line, REPORTED (paired ON v base):** crews > 25 m behind at the judge, and of those still by net motion
+  (`left_behind.py`), hull-rest faced_attack_move + faced_move x 6501–6532 x 4 factions with `--element-trace=all`.
+- **Pass = (0) + the lab (both paths) + every guard. A pass ships ON.** Series order: after Bar S1's (one series per builder).
 
 ### Bar S1 (stallnet), filed before any number (2026-10-20, from the x1d-trace draft; C36.3)
 

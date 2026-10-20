@@ -137,6 +137,12 @@
 	F(Vector3, VECTOR3, _h1b_at) \
 	F(int64_t, INT, _h1b_failed) \
 	F(bool, BOOL, _h1b_last_answer) \
+	F(Vector3, VECTOR3, _side_to) \
+	F(double, FLOAT, _side_left) \
+	F(bool, BOOL, _side_stand) \
+	F(Variant, OBJECT, _side_friend) \
+	F(Vector3, VECTOR3, _side_friend_at) \
+	F(Vector3, VECTOR3, _side_goal) \
 	F(double, FLOAT, _esc_gear) \
 	F(double, FLOAT, _press_time) \
 	F(Vector3, VECTOR3, _press_from) \
