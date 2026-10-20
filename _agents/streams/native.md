@@ -103,6 +103,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - Twins, builder0 light: both arms green, 35/0 + 14/0, 0 mismatches.
   - With yieldfit2 ON, the under-fire stage's give-ways rise (66 v 39), natively beside T7's pass lane at 0 mismatches.
   - It supersedes pair/native-w1c-t9 / -main for the joint series; manoeuvre cuts joint3 from it.
+- **R35.62: W1b's and W1c's mirrors on main as inert code: stream/native `44b2e04b5`** (main ed121d24f merged in).
+  - W1b's mirror is from pair/native-w1b. W1c's (stall_throttle, against_friend / same_element, R35.39's element skip) is
+    from pair/native-joint3, byte-identical to it. T9's half (yield_unfinished, the `_unfinished_*` exec rows, T9's floors) is
+    left out.
+  - STALL_INTENT_DEFAULT and WHEEL_HALT_DEFAULT stay false.
+  - Twins, builder0 light, ON arm lab/native-inert-on 567466f85 (both true) and OFF arm 44b2e04b5:
+    - yield + exec_state + pass_lane: 18/0 both arms;
+    - drive + traffic_hold + stall_intent + wheel_halt: 15/0 both arms;
+    - 0 mismatches. ON: stall ticks 49, wheel halts 1044 of 1044 asks. OFF: 0, and 0 of 423.
+  - **Full check green: `44b2e04b5` on builder2**, `make native check exited 0`, 2953 passed / 0 failed, sim-baseline 13
+    unmoved, 25 passed + 2 NOT JUDGED (perf-judge and scenario_perf, the box loaded 2.0x / 3.7x), 1827 s.
+  - joint3's merge later is T9's half plus the flips.
 - **D1 (orders' deploy step):** no native change (statement to the orchestrator).
 - **CP-F 5 / M5 (the orchestrator's question): W2's face settle and turnhull run on the native path, as GDScript, not
   bypassed** (lab/cpf5 63336d690).
