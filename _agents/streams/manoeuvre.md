@@ -72,6 +72,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~19:15 (worker):** S1 + S3 are on main (5d6bb1de8, R36.5); main is merged into the stream (`4685fe5a4`). S2a +
+yieldgap quick-remote on native's `8e6a52fc9` (builder0): 134/1, h1b_side 3/3 (native default arm = GDScript; ON past at 19.6 s,
+one-hull street stands), traffic's long-hull tests PASS. The one red was native's own yield twin (it read a freed hull), fixed in
+`32ba4ca99`, which becomes the S2a pair's full-check hash. builder0 queue: my S1 ON-tree check, then the S1 series.
+
 **2026-10-20 ~18:45 (worker): S1 + S3 GREEN, merge here: `20acbda5f`** (pair/native-s1s3-main: S1 stallnet default OFF + S3 W1b
 deleted + native's mirrors + main e45bb6632). builder0 `make check exited 0`: 2961/0, 25 passed + 2 NOT JUDGED (load),
 sim-baseline 13/13 unmoved. Merged into the stream as `793ef5799`. Native cut the S2a mirror as `pair/native-s2a` `18bc084c9`, which
