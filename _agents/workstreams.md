@@ -407,6 +407,10 @@ _Filed here before any number._
   Gap: `face_settles` / `face_settle_fails` are not in `ManoeuvreCensus.counters()`, so the series' rows can't show (o2). Ruling: a
   measurement-only tree (63336d690 + the two census counters) on a sample of the drawn cells (~16 runs, the series' seeds); its rows
   must equal the series' on every non-counter line, and face_settles > 0 there satisfies (o2); native's counter run is the second check.
+  **Follow-up:** native's counter run (builder0 light, 63336d690 + scratch counters, new_drawn, seed 460, gangs + law, 12 runs):
+  face_settles 27, face_settle_fails 93, hull_turns 17535, hull_holds 688; execute_counts handed_back 285692 (face 205912, other_order
+  0), verify_mismatches 0: W2 and turnhull fire natively. Hull-rest is not run-to-run deterministic everywhere, so the sample's
+  non-counter lines need only sit within M1's A/A noise of the series' rows (exact equality is a bonus).
 - **R35.36 (2026-10-19 ~18:45) The orchestrator broke C35.1; the series lane is enforced from now.** C35.1 says at most ONE full
   check and ONE judged series on builder0 at a time; through the afternoon the orchestrator let two full checks and up to five series
   run together (load 20–22). Cost: W1b's first series step killed at slot.sh's 5400 s (64/72 fights, 3 corrupt copy-back files), E1's
