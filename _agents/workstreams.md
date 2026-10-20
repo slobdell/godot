@@ -600,6 +600,10 @@ _Filed here before any number._
 - **R35.58 (2026-10-20 ~03:00) D6 merged (main 31e3d605c).** `93cdb1559`: builder2 `make native check exited 0`, 2941/0, sim-baseline 13
   unmoved (the CPU never shift-clicks). Parked OFF behind switches on main: D3/D3b, D4, D5 (GATE_DEAL=on for his feel call). Main now
   carries D6 + E4b's warm-up (checked separately): one batch `make native check` of 31e3d605c on builder2.
+- **R35.59 (2026-10-20 ~03:10) joint3's gate (C31.1) passes; its series starts on builder0.** lab/joint3-on `872f82ae5` builder0 `make
+  native check exited 2`, 2931/0, 26/27, the one red sim-baseline (foundry, crossing, sumps, cut MOVED); lab/joint3-base `2a2682560`
+  sim-baseline 13/13 unmoved, so the 4 moves are W1c + T9's (adopt only if it ships). On main 5f05c997c: T7 ON, E1, E4. Series:
+  wedge probe + fights + traffic's jam census on 940–963 x locks/terminus/sumps, then hull-rest drawn 901–932, both arms native, JOBS 3.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
