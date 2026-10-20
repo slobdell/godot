@@ -108,6 +108,14 @@ _Filed here before any number._
   native check exited 2`: 2961 passed, 0 failed; the one red sim-baseline (foundry, crossing, sumps, cut MOVED); base
   `6f830ceea` sim-baseline 13 unmoved, so the moves are the joint's. Adoption on the merged tree (`make sim-baseline-adopt`) and ONE
   main check follow; streams `git merge main` when told.
+- **R36.2 (2026-10-20 ~14:10 PDT) X3b CLOSES "no workload"; DEPLOY_PASS is deleted (orders).** By its bar as filed: builder0 light,
+  native, stage commit 61b6181e2, `make native herringbone-lab` (32 fixed cells x {off, on, nostep}, 96 runs): **0 jam cells of 32**
+  (the bar needed >= 3). The deploy step is FASTER than the old settle on mean (nostep - off +1.94 s); where DEPLOY_PASS acts it
+  costs (on - off +1.53 s mean, 5 cells over +5 s, worst +15.6: the held deploy fires mid-traffic). R35.17's +6.1 s was one chaotic
+  body-stage draw, not the geometry. No series; 5101–5124 stay unseen. DEPLOY_PASS (the element.gd hook, deploy_passers.gd,
+  test_control_deploy_pass) is deleted on stream/orders NOW, so it never reaches main. Table:
+  `references/round36/orders/x3b-lab-builder0-61b6181e2/`. Orders moves to O2 (the deploy move across a street).
+
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
 
