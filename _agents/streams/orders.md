@@ -141,6 +141,13 @@ only round obstacles (round-36 design questions, below).
   legs); every route cell median all in <= gate_off x 1.2 + 3 s, and no more never-in seeds than gate_off; deck / far no
   higher than gate_off in any cell; drive/plan median <= gate_off + 0.2 in each cell.
 
+### D5 re-read: FAILED its bar, the gate deal PARKED OFF (`84ba02a69`; `--gate-deal=on` opts in)
+builder0, `make native orders-probe`, `bd22ac4c8` (D5's fix try on, D4/D6 off), FRESH seeds 3631-3636, n 6; rows
+`references/round35/orders/d5-ab2-bd22ac4c8/`. Click cells 36/36 identical. Gain: Locks 5 route median all in 25.8 v 34.2 s
+(25 % faster; the line was 0.7x = 23.9 s): fail; route medians summed 170.5 v 179.2 s. Guards: never-in, all-in, drive/plan
+pass (Locks 5 route drive/plan 1.49 v 3.37); deck touches up in Crossing 3 route (5 v 3) and Crossing 5 route (5 v 2), all
+near-ramp nosing, far bank 0: fail. In his terms: the Locks 5-squad route gets in ~8 s sooner, less than the bar asked.
+
 ### D6 (R35.28): a shift-click never REPLACES a squad's route because its elements don't match the group. Bar FILED BEFORE CODE
 Option (b): a shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal stays: it is
 what stopped his interleaved squads crossing). Bar (as the orchestrator filed it on main): Crossing 5 route s3614 (the
@@ -232,9 +239,9 @@ in both (the CPU never deploys: the census's 48 fights byte-identical on and off
 In his terms: a squad sent somewhere arrives in its travel shape, then steps once into its halt shape ON the spot it was
 sent to; one squad halted in a herringbone across a street can slow a neighbour driving through (+6 s in brains' Locks body
 stage).
-**D5, the Locks 5-squad route jam:** cause traced (the in-between gate dealt by where squads stood at home); fix built on
-stream/orders (`--gate-deal=off` = round 34). Laptop GDScript seed 34: all in 16.9 s v 43.3 s. Judged A/B on builder0
-(fresh seeds 3611-3616) waits for D1's merge + D2.
+**D5, the Locks 5-squad route jam:** cause traced (the in-between gate dealt by where squads stood at home, and a gate
+approach that could point backwards); fix built, failed its bar twice (gain 25 % v the 30 % line on fresh seeds; deck touches),
+PARKED OFF (`--gate-deal=on`). **D6** (R35.28, routes some squads ignored after an untangled click): built, A/B running.
 **D4, the shuffle:** traced; minimax deploy seating FAILED its judged A/B (6 % v the 20 % line, 4 cells worse), parked OFF. The Crossing's detour seats and the herringbone-across-a-street are round-36 questions.
 **D3, tight packing:** PARKED OFF (R35.11): the halts pack, the arrivals don't. D3b (a narrower arrival shape) after D5/D4.
 **D2, done (reported):** `references/round35/orders/d2-main-1a18dd278/` (README in his terms, table, 48 shots). builder0 table
