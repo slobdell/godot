@@ -119,7 +119,6 @@ fights calls `seed_twins.filter_logs(files)` first.
   - test_native_yield's pass stage reads as before; 12/0 on builder0 light.
   - Merges on a full check (asked the orchestrator for the go, R35.36).
 
-**Next:** port T7's `_pass_lane` sweep if T7
-ships; W2's mirror when its bar passes.
+**Next:** the pass-lane port's full check (on the orchestrator's go); W2's mirror when its bar passes.
 
 **Questions for the lead:** none. **Known issues:** none.
