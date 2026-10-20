@@ -70,6 +70,27 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### REPORT (orders, round 36; 2026-10-20 ~15:40 PDT). Every number names its commit, machine, workload, n.
+**Where each item stands**
+1. **C36.1 carry-over:** done `a80bb28ab`; then X3b deleted by R36.2 (`4eff54d77`).
+2. **O1 / X3b: CLOSED "no workload" (R36.2).** Lab stage `make herringbone-lab` (builder0 light, native, `61b6181e2`,
+   32 cells x 3 arms): 0 jam cells of 32. DEPLOY_PASS deleted; the lab stays as tooling.
+3. **O2 the deploy move: JUDGING.** Cause count (builder0 `f5aa89ecd`, 287 squads): of 57 twitchy squads, depth 23,
+   seating 10, neither 27. DEPLOY_COMPACT (`cd1043de8`, OFF) built in the deploy carve-out. Bar filed 15:10 PDT before any
+   compact number. The orchestrator's own-squad guard is read centre to centre (hull-to-hull 9 m fails main itself; ruling
+   asked). Named hash `1bcd704cd`: full check queued (--wait-below 1), judged probe on 3681-3686 running (builder0 light,
+   native); `python3 tests/control/compact_judge.py <rows.jsonl>` reads it.
+4. **O3 the reached halt: FALSIFIED, no switch.** Builder0 `f5aa89ecd`: X3c's anchor test catches 1 of 57 twitchy squads;
+   the loops are traffic between squads, not unreachable ground.
+5. **O4 packing: PARKED (orchestrator).** What binds is the 9 m clearance between squads (the lead's spacing call, queued
+   in HANDOFF), then ground; arrival overlap is 3-8 % of refusals.
+6. **Stretch:** the bridge-mouth click is already covered by the deploy's halt lay (0 of 24); uncross on a queued screen was a
+   real swap, not path planning.
+**Questions for the lead:** none of mine (O4's spacing question is the orchestrator's, in HANDOFF).
+**Requests to other streams:** none. **Merge notes:** `element_plan.gd`: the deploy carve-out only (DEPLOY_COMPACT, OFF;
+`_deploy_compact`); `game/control/selection_squads.gd`: `pack_refused` (measurement only); `game/tactics/element.gd` =
+main's (the R35.74 hook removed).
+
 ### O1 VERDICT: X3b CLOSES "NO WORKLOAD" (bar as filed; builder0 light lane, native, `61b6181e2`, 96 runs, NATIVE on in all)
 - `make native herringbone-lab`, 32 fixed cells x {off, on, nostep}, n 1 a cell a arm (the stage is deterministic):
   **jam cells (off >= nostep + 3 s): 0 of 32** (needed >= 3). The arrived herringbone at s1's corner does not jam the
