@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Tank Squad's own GCP Spot build machine (2026-10-19; _agents/gcp_builder.md "Choosing a cheaper machine").
 # Creates the VM if it doesn't exist, installs the build toolchain, joins ZeroTier and arms the idle auto-stop.
-# It does NOT touch plane_maker's VM (balsa-worker-gcp) or its scripts.
+# It recreates builder2 (balsa-worker-gcp, shared with plane_maker) if it is ever lost; it never modifies a VM that exists.
 #
 #   make gcp-provision                  # defaults below; override any GCP_* on the make line or in local.mk
 #   GCP_MACHINE=e2-highcpu-32 GCP_ZONE=us-west4-a tools/gcp/provision.sh
 #
 # After the first run: authorize the printed ZeroTier node in my.zerotier.com, give it a static IP, and map that IP
-# to $GCP_HOST's name (builder3) in /etc/hosts. Then `make gcp-status` answers over ZeroTier.
+# to builder2 in /etc/hosts (the converted VM kept 10.115.229.9). Then `make gcp-status` answers over ZeroTier.
 set -euo pipefail
 
 GCP_PROJECT="${GCP_PROJECT:-leddrones}"
 GCP_ZONE="${GCP_ZONE:-us-west4-a}"
-GCP_VM="${GCP_VM:-tanksquad-builder}"
+GCP_VM="${GCP_VM:-balsa-worker-gcp}"
 GCP_MACHINE="${GCP_MACHINE:-e2-highcpu-32}"
 GCP_DISK_GB="${GCP_DISK_GB:-40}"
 GCP_SSH_USER="${GCP_SSH_USER:-slobdell}"
@@ -67,7 +67,7 @@ gcloud compute ssh "$GCP_VM" "${G[@]}" --command="set -e
 cat <<EOF
 >> gcp: $GCP_VM is up. One-time steps (the lead):
    1. my.zerotier.com, network $ZEROTIER_NETWORK_ID: authorize the ZT_NODE above and give it a static IP.
-   2. /etc/hosts on the laptop: "<that IP>  builder3".
+   2. /etc/hosts on the laptop: "<that IP>  builder2".
    3. make gcp-status   (should answer over ZeroTier), then make gcp-remote T=quick (first use bootstraps Godot).
    It stops itself after ${IDLE_STOP_MIN} min with no make running (tools/gcp/startup.sh); make gcp-start wakes it.
 EOF

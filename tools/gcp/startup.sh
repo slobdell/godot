@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tank Squad GCP builder: runs as root on every boot (instance metadata startup-script).
 # Starts ZeroTier and installs the idle auto-stop: the VM powers itself off after IDLE_STOP_MIN minutes in which no
-# `make` runs for any user, so a forgotten burst never bills overnight. Spot preemption stops it too; `make gcp-start`
+# `make` runs for any user and the 1-min load stays under 1, so a forgotten burst never bills overnight. Spot preemption stops it too; `make gcp-start`
 # wakes it either way.
 set -u
 exec >>/var/log/tanksquad_startup.log 2>&1
@@ -16,7 +16,8 @@ cat >/usr/local/bin/tanksquad-idle-stop <<EOF
 #!/usr/bin/env bash
 # Called every minute by tanksquad-idle-stop.timer. Counts consecutive idle minutes in a state file.
 STATE=/run/tanksquad-idle-minutes
-if pgrep -x make >/dev/null || [ "\$(cut -d. -f1 /proc/uptime)" -lt 600 ]; then
+# Busy = any make running (Tank Squad), or 1-min load >= 1 (plane_maker's workers share this box), or booted < 10 min ago.
+if pgrep -x make >/dev/null || awk '{exit !(\$1 >= 1.0)}' /proc/loadavg || [ "\$(cut -d. -f1 /proc/uptime)" -lt 600 ]; then
 	echo 0 >"\$STATE"; exit 0
 fi
 n=\$(( \$(cat "\$STATE" 2>/dev/null || echo 0) + 1 ))

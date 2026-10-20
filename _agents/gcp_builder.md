@@ -1,11 +1,14 @@
 # The GCP burst builder
 
-> **2026-10-19: Tank Squad has its own cost-optimized Spot VM, `tanksquad-builder` (`builder3`): e2-highcpu-32 (32 vCPU,
-> 32 GB) in us-west4-a, 40 GB pd-balanced, idle auto-stop after 20 min with no `make`.** Create it with `make gcp-provision`
-> (`tools/gcp/provision.sh`, startup `tools/gcp/startup.sh`); `make gcp-*` targets now default to it. Why e2 in us-west4: the
-> cheapest CoreMark per Spot dollar of everything compared (table at the end, ~$0.11/h listed). e2 lands on mixed CPU platforms
-> (Broadwell to Rome), so per-core speed varies by boot; throughput per dollar is still the best. builder2 below is plane_maker's
-> VM, kept as it was (reach it with `GCP_VM=balsa-worker-gcp GCP_ZONE=us-west1-a GCP_HOST=slobdell@builder2`).
+> **2026-10-19: builder2 IS NOW A COST-OPTIMIZED SPOT VM.** `balsa-worker-gcp` (shared with plane_maker) was converted from
+> c4d-standard-32 / us-west1-a to **e2-highcpu-32 (32 vCPU, 32 GB) Spot in us-west4-a** (~$0.11/h listed), carried over from a
+> snapshot of its disk onto **pd-balanced** 100 GB (e2 can't use hyperdisk); same name, same ZeroTier IP 10.115.229.9, so
+> `builder2` and every `make gcp-*` target work as before (zone now us-west4-a in `mk/gcp.mk`). Its startup script runs Tank
+> Squad's **idle auto-stop** (`tools/gcp/startup.sh`: powers off after 20 min with no `make` and 1-min load < 1) and then
+> plane_maker's startup. Verified 2026-10-19: AMD EPYC 7B12 (Rome), glibc 2.43, the native library builds, and **`make
+> gcp-remote T=sim-baseline` reads all 13 recorded lines** (so its rows count like builder0's). The old c4d VM, its hyperdisk
+> and the snapshot are deleted. e2 boots on mixed CPU platforms, so per-core speed can differ per boot; timing (perf-judge)
+> stays on builder0. `tools/gcp/provision.sh` recreates it from scratch if ever lost. The section below is its round-33 history.
 
 ## builder2 (plane_maker's `balsa-worker-gcp`), the round-33 burst builder
 
@@ -151,7 +154,6 @@ half builder2's price for about the same). CoreMark is a proxy; one pinned serie
 builder0's) is the real check. Also: auto-stop after ~20 min with no `make` running, a dedicated ~40 GB pd-balanced disk (not the
 shared 100 GB hyperdisk), and a Spot vCPU quota of 60+ for C3D in the region.
 
-**Decided (the lead, 2026-10-19): the cheapest.** e2-highcpu-32 (e2 stops at 32 vCPU) Spot in **us-west4**, listed at ~$0.112/h
+**Decided (the lead, 2026-10-19): the cheapest, by converting builder2 itself.** e2-highcpu-32 (e2 stops at 32 vCPU) Spot in **us-west4**, listed at ~$0.112/h
 (about 3.7 M CoreMark per $/h, the best ratio; us-west1's e2 Spot is $0.475/h). Quota checked: us-west4 E2_CPUS 72, CPUS 200;
-PREEMPTIBLE_CPUS there is 0, so the Spot VM draws on regular CPU quota (the provision run confirms). Verify on first use: a pinned
-series chunk on builder3 reads the same rows as builder0, and sim-baseline reads the recorded lines (same glibc 2.43 image).
+PREEMPTIBLE_CPUS there is 0, so the Spot VM draws on regular CPU quota (the provision run confirms). Verified: sim-baseline on the converted builder2 reads the recorded 13 lines.

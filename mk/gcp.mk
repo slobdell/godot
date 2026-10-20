@@ -1,14 +1,14 @@
 # ---- GCP burst builder (round 33, 2026-10-17): _agents/gcp_builder.md ------------------------------------------
 # A second remote build machine, powered on only when we want more throughput. The same tools/remote.sh drives it
 # (REMOTE_HOST); builder0 stays the default for every target. Override any of these in local.mk (git-ignored).
-# 2026-10-19: Tank Squad's own cost-optimized Spot VM (tools/gcp/provision.sh; _agents/gcp_builder.md "Choosing a cheaper
-# machine"). plane_maker's balsa-worker-gcp (c4d-standard-32, us-west1-a, builder2) is untouched: reach it with
-# GCP_VM=balsa-worker-gcp GCP_ZONE=us-west1-a GCP_HOST=slobdell@builder2.
+# 2026-10-19: builder2 (balsa-worker-gcp, shared with plane_maker) converted to a cost-optimized Spot VM: e2-highcpu-32 in
+# us-west4-a, carried over from a snapshot of its old disk (same ZeroTier IP, same name), with an idle auto-stop
+# (tools/gcp/startup.sh). tools/gcp/provision.sh builds one from scratch if it is ever lost. _agents/gcp_builder.md.
 GCP_PROJECT ?= leddrones
 GCP_ZONE ?= us-west4-a
-GCP_VM ?= tanksquad-builder
+GCP_VM ?= balsa-worker-gcp
 GCP_MACHINE ?= e2-highcpu-32
-GCP_HOST ?= slobdell@builder3
+GCP_HOST ?= slobdell@builder2
 GCLOUD ?= gcloud
 _GCP = $(GCLOUD) compute instances --project=$(GCP_PROJECT)
 
