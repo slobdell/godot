@@ -441,6 +441,11 @@ _Filed here before any number._
   unseated); against an own-element squadmate today's gate and the re-seat stand. Native mirrors one predicate. A deterministic test
   builds the nose-on-own-squadmate pose directly. The between-test state that lets process history decide who ends nose-on is to be
   named (lesson 83).
+  **Follow-up:** built `e795505ea` (+ spec `7620f67f0` to native); builder0 `make native test` over stall_intent / h1b /
+  blocker_reach / mixed_legs (mixed_legs last) 15/0: own squadmate -> 0.05 (the command), another element -> 1.00 (the intent); four
+  tanks across the Sumps with W1c pinned ON arrive 57.3 s, reseats 1, identical to base. The exact nose-on pose is not rebuilt live
+  (time-boxed); the rule test pins the predicate. What carries between tests is unproven; leading candidate trip-up 82 (Godot settles
+  TOUCHING bodies differently in a process's first match); per-instance tables and W1c's counter ruled out.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
