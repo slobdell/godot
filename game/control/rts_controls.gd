@@ -1490,6 +1490,15 @@ func _pack_halts(squads: Array, blocks: Array, click: Vector3, drawn: Variant, l
 				block["center"] = start
 			from_blocks.append(block)
 	var heading := SelectionSquads.approach_of(from_blocks, click, Match.team_frame(team)["forward"])
+	# D3b (R35.41): with the file arrival on, a packed squad ARRIVES in a column, so the pack keeps columns (not wedges) apart.
+	if ElementPlan.ARRIVE_FILE:
+		var filed: Array = []
+		for block: Dictionary in from_blocks:
+			var b := block.duplicate()
+			if b.has("shape"):
+				b["shape"] = "column"
+			filed.append(b)
+		from_blocks = filed
 	var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
 	var drive := SelectionSquads.drive_on(ground)
 	var crosses := SelectionSquads.crosses_on(ground)

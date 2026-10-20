@@ -1,0 +1,35 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   27.7 /    0.0   |    2   0 |     22.5 |               3.3 |            38.7 | 1.37 | 64.6
+crossing 3 click          pack      |   56.1 /   26.7   |    2   1 |     50.8 |               7.0 |            50.0 | 1.94 | 77.9
+crossing 5 click          main      |   63.6 /   29.1   |    2   0 |     38.4 |               3.1 |            78.2 | 1.51 | 41.2
+crossing 5 click          pack      |   92.0 /   27.2   |    1   1 |     50.1 |               7.0 |            58.3 | 2.71 | 18.1
+locks 3 click             main      |   36.9 /   34.4   |    1   0 |     18.7 |              10.7 |            22.6 | 1.23 | 39.7
+locks 3 click             pack      |   58.3 /   40.0   |    1   0 |      8.0 |               8.4 |            26.5 | 1.83 | 24.5
+locks 5 click             main      |   51.9 /   39.4   |    0   0 |     13.9 |               8.0 |            37.3 | 1.28 | 25.7
+locks 5 click             pack      |   66.0 /   57.3   |    0   0 |      7.3 |              13.1 |            68.6 | 1.94 | 14.4
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     20.4 |               7.7 |            30.6 | 1.33 | 27.6
+terminus 3 click          pack      |   58.0 /   15.2   |    0   0 |     14.3 |               7.0 |            30.2 | 143.50 | 0.0
+terminus 5 click          main      |   55.7 /   39.4   |    0   0 |     13.7 |               7.5 |            39.8 | 2.44 | 11.6
+terminus 5 click          pack      |   67.2 /   48.0   |    0   0 |     17.9 |               3.8 |            44.4 | 5.59 | 6.4
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          32.5 |          29.5 |           25.2 |               6.4 |          34.2
+crossing 3 click          pack      |          60.8 |          27.1 |            0.0 |               6.3 |          64.0
+crossing 5 click          main      |          41.6 |          18.1 |           21.4 |               3.6 |          90.3
+crossing 5 click          pack      |          60.1 |          24.2 |           57.2 |               6.4 |         104.0
+locks 3 click             main      |          28.7 |          14.6 |            8.6 |              10.7 |          49.4
+locks 3 click             pack      |          14.4 |          21.1 |           14.9 |               6.5 |          67.3
+locks 5 click             main      |          23.9 |          28.7 |           13.6 |               8.0 |          75.3
+locks 5 click             pack      |          11.2 |          41.2 |           40.5 |               8.1 |          78.2
+terminus 3 click          main      |          30.4 |          28.8 |            9.8 |              16.9 |          61.4
+terminus 3 click          pack      |          24.3 |          13.0 |           14.9 |               5.1 |          66.3
+terminus 5 click          main      |          19.9 |          25.0 |           31.3 |              10.1 |          76.0
+terminus 5 click          pack      |          27.9 |          14.9 |           28.7 |              15.9 |          80.4
+
+EQUALITY click cells: 0 identical across arms, 6 differ
+  DIFFER crossing 3 click seed 34
+  DIFFER crossing 5 click seed 34
+  DIFFER locks 3 click seed 34
+  DIFFER locks 5 click seed 34
+  DIFFER terminus 3 click seed 34
+  DIFFER terminus 5 click seed 34

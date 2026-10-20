@@ -770,6 +770,12 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	else:
 		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
 				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+	# D3b (round 35, orders; R35.41, the one switched addition granted here): a squad the controls PACKED (its task carries
+	# `halt_at`, set only by the pack, itself off) travels its last INSET_NEAR_M in a file, which nests as tightly as the
+	# packed halts do, and its halt opens out of the file on its spot (the deploy step). D3's record: packed halts put two
+	# arriving WEDGES' slots 5.7 m apart. `--arrive-file=on` opts in.
+	if ARRIVE_FILE and (state.get("task", {}) as Dictionary).has("halt_at") and center.distance_to(destination) <= INSET_NEAR_M:
+		plan["formation"] = "column"
 	plan["anchor"] = destination
 	plan["technique"] = "traveling"
 	# X2: these slots are where the element STANDS when it gets there — the shape the player saw when he clicked —
@@ -1806,6 +1812,8 @@ const DEPLOY_INLAND_STEP_M := 2.0
 const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
 const DEPLOY_ON_SPOT_M := 12.0
+## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
+static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
 
 
 ## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.

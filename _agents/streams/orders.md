@@ -129,6 +129,14 @@ is judged, shift-click a three-waypoint route.
 `_deploy_keep`, DEPLOY_ON_SPOT_M); `tests/test_tactics_body.gd` one line (R35.17); `game/tactics/element_task.gd` two keys
 (R35.6, parked with D3). Everything else is in orders' own paths.
 
+### D3b: built (OFF, `--arrive-file=on` with `--pack=on`), NOT run on builder0: a laptop look at seed 34 says it fails
+Code: the one switched addition in `_plan_form_up` (R35.41) + the pack keeping arriving COLUMNS apart. Laptop GDScript, seed 34
+(reported only; 3661-3666 stay unseen), the 6 click cells, `references/round35/orders/d3b-laptop-s34/`: the arrivals no
+longer mix (closest foreign at arrival 7.0-13.1 m in 5 cells; 3.8 in Terminus 5), BUT the spread GROWS in every cell (end far
+Crossing 3 64.0 v 34.2, Locks 3 67.3 v 49.4, Terminus 5 80.4 v 76.0 ...) and the pack arm CROSSES the river in both Crossing
+cells (far bank 1 each). The strict pack (every seat on good ground, arrivals kept apart) pushes places away from the click
+on these maps; packing tighter than the ranks needs a different objective (round 36). Not spending a series slot on it.
+
 ### D3b (R35.41 grant): bar FILED BEFORE CODE (2026-10-19 ~16:45 PDT)
 - **Design:** with the pack on, a squad whose task carries `halt_at` travels its last INSET_NEAR_M in a file (column) on its
   approach, and its halt opens out of the file on its packed spot (the deploy step, unchanged). Files nest as tightly as the
