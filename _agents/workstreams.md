@@ -391,6 +391,9 @@ _Filed here before any number._
   rule; the once-a-second LEG_GATE line misses the release's update); the inference reads 0 in both arms on the pre-release census
   c23acdbe2 (no false positives). Line (b) faced_move is VACUOUS (a plain move plans through `_plan_form_up`, not `_advance`; leg-wait
   0 in every run), reported as vacuous, not a pass.
+- **R35.33 (2026-10-19 ~17:30) M5's re-gate (C31.1) passes; its series starts.** lab/cpf5 `63336d690` builder0 `make native check exited
+  0`, 2896/0, one ai-scenario NOT JUDGED (load), sim-baseline unmoved on all 13 (the scoped give-up touches no baseline match); base
+  lab/cpf5-base `4fb7493a2`. Series at HULL_JOBS / FIGHT_JOBS 2 beside W1b's. The joint W1c+T9 ON check (b04bfdda2) launched.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
