@@ -63,6 +63,13 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~14:00 PDT (traffic).** CP36.1 landed (main `a318a2cd3`, adoption `e45bb6632`); merged into stream/traffic
+(`4a2a0d349`, DEFAULT_OFF `["holdfire"]`). **Pair cut: `pair/holdfire-r36` `46e6ba8a9`** = `4a2a0d349` + the ON flip, worktree
+`../godot-traffic-t8` (remove it and builder2's `~/tank_squad/godot-traffic-t8` after the series). **Driver** `t8_series.sh` running
+as systemd unit `t8-series-r36b` (needs `--setenv=PATH` for gcloud: the first unit died on `gcloud: command not found`), out
+`~/overnight-traffic/r36/t8series/`; its check started 14:00:43 on builder2 (the only full check there). Light quick of
+`4a2a0d349`'s carry-over on builder0 running (`~/overnight-traffic/r36/quick1.log`).
+
 **2026-10-20 (traffic, Opus).** Oriented. **Waiting on CP36.1** (main still `582650b36` at my start; the joint not merged).
 **Done meanwhile:** item 1's carry-over STAGED as `6a564673a` on current main (not checked yet): T8's traffic.gd hunk with
 `DEFAULT_OFF := ["holdfire"]` (T9's yieldfit2 comes through the joint, so not in my list), test_traffic_holdfire (+uid), the jam
