@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-20 — **ROUND 35's WORK IS DONE; the close waits on his two answers (below).** Main is green at ed121d24f and every later main (9336ea5f8: inherited). Older headers below._
+_Last updated: 2026-10-20 — **ROUND 35: HE ANSWERED BOTH QUESTIONS (ship D5 ON; ship the joint W1c + T9). Two hand-overs are in flight (R35.66); merge them, run one batch main check, then close the round.** Older headers below._
 
 ## 🏁 ROUND 35: THE WORK IS DONE (2026-10-20 morning) — for him when he wakes
 
@@ -22,7 +22,15 @@ _Last updated: 2026-10-20 — **ROUND 35's WORK IS DONE; the close waits on his 
 - Under the hood: builder2 is back as a cheap Spot box (e2-highcpu-32, us-west4, ~$0.11/h, stops itself after 20 idle min);
   native builds can't go stale; lab tests now match real play's engine state (E4/E4b); T7's lane test runs in C++.
 
-**Two questions for him (one recommendation each):**
+**HIS ANSWERS (2026-10-20, game_design.md *Round 35 close*): "the GATE_DEAL=on feature is clearly awesome let's keep it" and "yes,
+go ahead and ship it" (the joint). IN FLIGHT (R35.66):** orders flips GATE_DEAL ON and checks on builder2; manoeuvre cuts the joint
+hand-over on current main (T9's GDScript from traffic + T9's native half from native; W1c's mirror is already on main) and checks on
+builder0, attributing the moved maps with the switches off. **The next orchestrator:** merge each green hash alone (adopt the
+joint's moved sim-baseline maps on the merged tree with `make sim-baseline-adopt`), run ONE batch `make native check` of main under
+systemd-run, then close: archive the five briefs to `streams/archive/round35/`, rename `stream/*` to `round35/*`, remove the
+worktrees (rescue anything untracked first), update this file. Then round 36 from the list below.
+
+**The two questions he answered (kept for the record):**
 1. **The Locks 5-squad route (D5, his item; parked as filed, R35.34):** with the gate deal on, all five squads get in about 8 s sooner
    and drive half the detour, but crews nose onto a bridge ramp on the Crossing a little more often (never across). Try it:
    `GATE_DEAL=on make skirmish ARENA=locks`. **Recommendation: try it; if it feels better, say ship and it flips ON.**
