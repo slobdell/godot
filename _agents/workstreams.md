@@ -273,6 +273,10 @@ _Filed here before any number._
   Hunters2's deploy time. **B guards (orders probe):** 24 cells x FRESH 1731–1736, main v pass_off, builder2: far bank 0 every cell;
   per cell all-in median <= pass_off + 1 s, `deploy last s` <= pass_off + 3 s, twitch <= pass_off + 3 m. Ship: `make native check`
   switch ON, sim-baseline 13 unmoved (moves attributed with `--deploy-pass=off`); test_tactics_body back to off + 5 s only if A lands.
+  **Added (brains' note, before any number):** the deploy step reaches CPU elements on a plain move too (B8; no player check), so
+  DEPLOY_PASS applies to the CPU by design (symmetric AI). **C guard:** `make deploy-census` CPU v CPU, fresh seeds 3740–3755, main v
+  pass_off: deaths / kills / stuck per side within 2 se; `deploy_pass_waits` and CPU deploys REPORTED (D1's census read 0 CPU deploys
+  in 48 fights). The passers read the previous update's `arrived` / `deploy` (one update late; harmless, not same-tick).
 
 ## Rulings (round 35)
 
