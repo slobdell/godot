@@ -122,6 +122,10 @@ static func note_h1b_far(mover: Movement, friend: Tank) -> void:
 			"my_last_yielded_to": mover._last_yielded_to,
 			"blocker_yield_to": other.yield_to if other != null else "",
 			"blocker_last_yielded_to": other._last_yielded_to if other != null else "",
+			# Round 36 (S2 / X4b): T9's (yieldfit2) state on the blocker: is the asker its unfinished give-way, how many so far.
+			"blocker_unfinished_to": other._unfinished_to if other != null else "",
+			"blocker_unfinished_count": other._unfinished_count if other != null else -1,
+			"yields_unfinished": Movement.yields_unfinished, "yields_unfinished_capped": Movement.yields_unfinished_capped,
 			"blocker_phase": other.phase if other != null else "?", "blocker_blocked_by": other.blocked_by if other != null else "",
 			# C32.10 amendment (the orchestrator): is the blocker in MY element (the swap's case) or not / no elements at all?
 			"blocker_kind": _blocker_kind(mover, String(tank.name), String(friend.name)),

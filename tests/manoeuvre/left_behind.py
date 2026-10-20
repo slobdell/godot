@@ -51,6 +51,40 @@ def read(log):
     return rows, last
 
 
+def nearest_friend(rows, name, info):
+    """The nearest other crew at the wedged crew's last row (same frame): (distance, name, order, goal m, its kind)."""
+    if not info:
+        return None
+    f, (x, z) = info["frame"], info["at"]
+    best = None
+    for other, track in rows.items():
+        if other == name:
+            continue
+        here = [r for r in track if r[0] <= f]
+        if not here:
+            continue
+        r = here[-1]
+        d = math.hypot(r[9] - x, r[10] - z)
+        if best is None or d < best[0]:
+            best = (d, other, r[2], r[7], kind(track, f / 30.0)[0])
+    return best
+
+
+## Mechanism of a still crew (Round 36 X4b traces): A = pinned on a PARKED friend (order stop or face / no live goal); B = pinned on a
+## friend that is itself holding a far move and still (head-on / mutual); C = no friend within PIN_M (terrain, a gap, a hold).
+PIN_M = 9.0
+
+
+def mechanism(near):
+    if near is None or near[0] > PIN_M:
+        return "C:no-friend"
+    if near[2] in ("stop", "face") or near[3] <= 0.0:  # a face order's `goal` is its look-at point: parked, turning
+        return "A:parked-friend"
+    if near[4].startswith("wedged"):
+        return "B:mutual"
+    return "D:moving-friend"
+
+
 def kind(track, at_s):
     window = [r for r in track if at_s - WINDOW_S <= r[0] / 30.0 <= at_s]
     if len(window) < 2:
@@ -59,7 +93,8 @@ def kind(track, at_s):
     net = math.hypot(b[9] - a[9], b[10] - a[10])
     thr = statistics.median(abs(r[3]) for r in window)
     info = {"unit": b[1], "order": b[2], "net": net, "goal": b[7], "thr": thr, "real": b[8], "touch": sum(r[4] for r in window),
-            "esc": sum(r[6] > 0 for r in window), "max_stuck": max(r[5] for r in window), "at": (b[9], b[10])}
+            "esc": sum(r[6] > 0 for r in window), "max_stuck": max(r[5] for r in window), "at": (b[9], b[10]),
+            "frame": b[0]}
     if b[2] == "stop" or b[7] <= 0.0:
         return "stopped", info
     if a[7] - b[7] >= CLOSE_M:
@@ -73,6 +108,7 @@ def main():
     root = sys.argv[1]
     show = int(sys.argv[sys.argv.index("--list") + 1]) if "--list" in sys.argv else 12
     runs, total, kinds, per_task, out = 0, 0, collections.Counter(), collections.defaultdict(collections.Counter), []
+    mechs, loops = collections.Counter(), collections.Counter()
     for faction in sorted(os.listdir(root)):
         for run in sorted(os.listdir(os.path.join(root, faction))):
             log = os.path.join(root, faction, run, "run.log")
@@ -87,6 +123,11 @@ def main():
                         continue
                     total += 1
                     k, info = kind(rows.get(unit, []), at_s)
+                    if k.startswith("wedged"):
+                        info["near"] = nearest_friend(rows, unit, info)
+                        info["mech"] = mechanism(info["near"])
+                        mechs[info["mech"]] += 1
+                        loops[info["mech"]] += info["esc"] > 0
                     kinds[k] += 1
                     per_task[task][k] += 1
                     out.append((float(off), faction, run, unit, k, info, at_s))
@@ -99,12 +140,16 @@ def main():
         print("    %5.1f %s/%s %s %s net %.2f goal %.1f thr %.2f touch %s esc %s stuck %.2f at %s t %.0f" % (
             off, faction, run, unit, k, info.get("net", -1), info.get("goal", -1), info.get("thr", -1), info.get("touch"),
             info.get("esc"), info.get("max_stuck", -1), info.get("at"), at_s))
+    print("  still crews by mechanism (A parked friend, B mutual, C no friend within %.0f m, D a moving friend): %s;"
+          " of each, in H1's escape loop (unstick_left > 0 in the window): %s" % (PIN_M, dict(mechs.most_common()), dict(loops)))
     wedged = [r for r in out if r[4].startswith("wedged")]
     print("  every wedged crew (%d):" % len(wedged))
     for off, faction, run, unit, k, info, at_s in sorted(wedged, reverse=True, key=lambda r: r[0]):
-        print("    %5.1f %s/%s %s %s %s net %.2f goal %.1f thr %.2f touch %s esc %s stuck %.2f at (%.1f, %.1f) t %.0f" % (
-            off, faction, run, unit, info["unit"], k, info["net"], info["goal"], info["thr"], info["touch"], info["esc"],
-            info["max_stuck"], info["at"][0], info["at"][1], at_s))
+        near = info["near"]
+        print("    %5.1f %s/%s %s %s %s %s net %.2f goal %.1f thr %.2f esc %s stuck %.2f at (%.1f, %.1f) t %.0f; nearest %s" % (
+            off, faction, run, unit, info["unit"], k, info["mech"], info["net"], info["goal"], info["thr"], info["esc"],
+            info["max_stuck"], info["at"][0], info["at"][1], at_s,
+            "none" if near is None else "%s %.1f m (%s, goal %.1f, %s)" % (near[1], near[0], near[2], near[3], near[4])))
 
 
 if __name__ == "__main__":
