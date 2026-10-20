@@ -95,6 +95,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     0 mismatches.
   - **R35.19:** this pair merges only after T7's verdict (if T7 parks, it is re-cut without T6b/T7 and re-twinned).
 - **D1 (orders' deploy step):** no native change (statement to the orchestrator).
+- **CP-F 5 / M5 (the orchestrator's question): W2's face settle and turnhull run on the native path, as GDScript, not
+  bypassed** (lab/cpf5 63336d690).
+  - A wheeled hull's `face` order hands its execute step back (execute_native.cpp ~363–378).
+  - face_turn's only caller is that branch.
+  - turnhull's lift is in TankBrain._order_move (no C++ port; only `decide` is native).
+  - Native cell on builder0 light (new_drawn, seed 460, gangs + law, 12 runs, a scratch counters() line): face_settles 27,
+    face_settle_fails 93, hull_turns 17535; execute_counts face hand-backs 205912, other_order 0.
+  - Found: face_settles / face_settle_fails were not in ManoeuvreCensus.counters(). Manoeuvre adds them (orchestrator).
 
 **Requests to other streams:** traffic, relayed after T7's series: any series reader that pools a folder containing random-arena
 fights calls `seed_twins.filter_logs(files)` first.
