@@ -371,7 +371,7 @@ static func face_slot_on() -> bool:
 ## hull to it (the face planner's legs) instead of leaving it to the turret — `TankBrain._order_move`'s decline is
 ## lifted for it (C31.8) — and every pose of a face plan keeps inside the arrive radius (facekeep). ONE switch:
 ## `--nav-off=turnhull` flips TURN_HULL_DEFAULT (false = OPT-IN until its bar passes).
-const TURN_HULL_DEFAULT := false
+const TURN_HULL_DEFAULT := true
 const FACE_KEEP_MARGIN_M := 0.75
 static var _keep_slot := Vector3.INF
 static var _keep_m := INF
@@ -422,6 +422,212 @@ static func leg_holds_arrival(brain: TankBrain) -> bool:
 		return false  # the leg has run its bound on this order: the arrival goes through
 	arrivals_held_ticks += 1
 	return true
+
+
+## Round 35 (W2, C35.7, CP-F attempt 5, the face side): A FACE NO PLAN FITS GIVES UP CLEANLY. Attempt 4 (R34.18) turned
+## the hull right wherever a plan fitted and failed on settling: a face whose plans kept failing crept at the 0.35 lock to
+## the stage's judge (face_creep at the judge: screen 8 v 0, attack-move 4 v 0). Now FACE_SETTLE_FAILS failed plans in a
+## row (none fitted, or one the world refused) for the same want (within Movement.FACE_REPLAN_DEG) end the face as it is:
+## the hull stands still and the turret keeps the facing; between the failed tries it waits still instead of creeping.
+## The want swinging further, a new order, or a gap in the face re-arms it. `--nav-off=facesettle` flips the default.
+## TURRET hulls only: a hull-fixed scout's hull is its gun's arc, so it keeps creeping round (the dev read, lab/cpf5 bdacb1786,
+## builder0, hull-rest 460-463 drawn: with fixed hulls included, wheels/fixed crews >= 45 deg off rose 33 -> 48 over six tasks).
+## State per mover by its INSTANCE id (M2's precedent: every Movement member is a field of native's exec table, and this
+## is GDScript decision state; wheeled faces are handed back to GDScript, reason 3, so nothing here runs in C++).
+const FACE_SETTLE_DEFAULT := true
+const FACE_SETTLE_FAILS := 3
+## Arm counters: faces that gave up (once per want), and failed plans counted toward it.
+static var face_settles := 0
+static var face_settle_fails := 0
+static var _face_settle := {}  # mover instance id -> [fails, want (flat unit), given up]
+
+
+static func face_settle_on() -> bool:
+	return FACE_SETTLE_DEFAULT != Movement.switched_off("facesettle")
+
+
+## The faces the give-up acts on (the design note to the orchestrator, round 35): ONLY a facing he gave that turnhull lifted to
+## the HULL of a wheeled TURRET crew -- `from` "drawn" (drawn_face), or "order"/"sector" (which reach a wheeled turret hull only
+## through the lift, or as a told face). Every plain face (a lab's or a probe's, the planner seam's wedged semi) keeps round 9's
+## creep and its give-up window bit for bit; a hull-fixed scout's hull is its gun's arc, so it keeps trying.
+const FACE_SETTLE_FROM: Array[String] = ["drawn", "order", "sector"]
+
+
+static func face_settles_here(mover: Movement) -> bool:
+	if not face_settle_on() or not turn_hull_on() or mover.ctl == null or mover.ctl.tank.mount == "fixed":
+		return false
+	return FACE_SETTLE_FROM.has(String(mover.ctl.move_order.get("from", "")))
+
+
+static func _same_want(a: Vector3, b: Vector3) -> bool:
+	return absf(a.signed_angle_to(b, Vector3.UP)) <= deg_to_rad(Movement.FACE_REPLAN_DEG)
+
+
+## A plan for `want` failed on this mover; true when that makes FACE_SETTLE_FAILS in a row (the face gives up now).
+static func face_failed_id(id: int, want: Vector3) -> bool:
+	var row: Array = _face_settle.get(id, [0, want, false])
+	if not _same_want(row[1], want):
+		row = [0, want, false]
+	row[0] = int(row[0]) + 1
+	face_settle_fails += 1
+	var gives_up := int(row[0]) >= FACE_SETTLE_FAILS and not bool(row[2])
+	if gives_up:
+		row[2] = true
+		face_settles += 1
+	if _face_settle.size() >= 64 and not _face_settle.has(id):
+		for key: int in _face_settle.keys():
+			if not is_instance_id_valid(key):
+				_face_settle.erase(key)
+	_face_settle[id] = row
+	return gives_up
+
+
+## Has this mover's face for `want` given up? A want swung beyond FACE_REPLAN_DEG re-arms it (forgets the row).
+static func face_given_up_id(id: int, want: Vector3) -> bool:
+	var row: Variant = _face_settle.get(id)
+	if row == null:
+		return false
+	if not _same_want((row as Array)[1], want):
+		_face_settle.erase(id)
+		return false
+	return bool((row as Array)[2])
+
+
+## A face plan for `want` failed on `mover` (none fitted, or `refused`: a planned leg the world would not turn). Counts toward
+## the give-up only AT REST (a plan made while the hull still rolls is not "no plan fits": planner's rolling-face test, the seam
+## asks again from rest). Reporting is round 9's own window, run while the face stands (Movement._face_still).
+const FACE_SETTLE_REST_MPS := 0.5
+
+
+static func face_plan_failed(mover: Movement, want: Vector3, refused := false) -> void:
+	if not refused and absf(mover.ctl.tank.speed()) > FACE_SETTLE_REST_MPS:
+		return
+	face_failed_id(mover.get_instance_id(), want)
+
+
+## Per mover: the face began with the hull rolling and it has not yet come to rest (its home follows it until then).
+static var _face_rolling := {}
+
+
+static func face_roll_begin(id: int, rolling: bool) -> void:
+	if rolling:
+		if _face_rolling.size() >= 64:
+			for key: int in _face_rolling.keys():
+				if not is_instance_id_valid(key):
+					_face_rolling.erase(key)
+		_face_rolling[id] = true
+	else:
+		_face_rolling.erase(id)
+
+
+static func face_still_rolling(id: int, speed: float) -> bool:
+	if not _face_rolling.has(id):
+		return false
+	if speed <= FACE_SETTLE_REST_MPS:
+		_face_rolling.erase(id)
+		return false
+	return true
+
+
+static func face_settle_forget_id(id: int) -> void:
+	_face_settle.erase(id)
+
+
+## The last face tick of a mover: [tick, want, aligned that tick] (for face_settled_id).
+static var _face_now := {}
+
+
+static func face_note_id(id: int, tick: int, want: Vector3, aligned: bool) -> void:
+	if _face_now.size() >= 64 and not _face_now.has(id):
+		for key: int in _face_now.keys():
+			if not is_instance_id_valid(key):
+				_face_now.erase(key)
+	_face_now[id] = [tick, want, aligned]
+
+
+static func face_settled_id(id: int, planned_leg: bool, since_tick: int) -> bool:
+	var row: Variant = _face_now.get(id)
+	if row == null or int((row as Array)[0]) < since_tick:
+		return false
+	if bool((row as Array)[2]):
+		return true
+	return not planned_leg and face_given_up_id(id, (row as Array)[1])
+
+
+## Round 35 (W1c, R35.12): THE STALL GATE READS THE DRIVE'S INTENT AGAINST A FRIENDLY HULL. Brains' E1 census: attack-move
+## legs waited on crews holding a move but making < 0.5 m/s 20-50 m off their slots for up to 71 s; traced (references/round35/
+## manoeuvre/w1c-trace): law-605 Green_Eyes_4 sat 70 s nose-on to a parked crew of another squad (Green_Eyes II_5, whose one
+## give-way drove it 2.4 m and left it touching), law-607 Green_Guns_6 23 m off its goal in a pack of friends. ORCA throttled
+## both drives to pace 0.05-0.09, so the command was 0.05-0.09 while the drive asked for full: unstick's |throttle| > 0.5 (driving
+## hard, not moving) never ran its clock, H1's escape (ask, reverse, stand) never started and nobody asked the parked crew again.
+## With this on, a ROUTED move (move_to, not direct) touching a friendly hull, or `blocked` by one, is tested on |throttle| /
+## pace (pace < 1); every other case keeps the command. `--nav-off=stallintent` flips STALL_INTENT_DEFAULT (false = OPT-IN).
+const STALL_INTENT_DEFAULT := false
+## The pace floor the intent divides by (a pace-0 drive is a Traffic hold or a stop: unstick does not run on a hold).
+const STALL_INTENT_MIN_PACE := 0.05
+## Arm counter: unstick ticks whose throttle test passed only by the intent reading (stride ticks by their stride).
+static var stall_intent_ticks := 0
+
+
+static func stall_intent_on() -> bool:
+	return STALL_INTENT_DEFAULT != Movement.switched_off("stallintent")
+
+
+## The throttle unstick's stall rule tests: the command, or under `stallintent` against a friendly hull its intent.
+static func stall_throttle(mover: Movement, cmd: TankCommand, order: Dictionary) -> float:
+	var command := absf(cmd.throttle)
+	if command > 0.5 or not stall_intent_on() or mover.pace_now >= 1.0:
+		return command
+	if String(order.get("type", "")) != "move_to" or bool(order.get("direct", false)) or order.get("reverse", false):
+		return command
+	if not _against_friend(mover):
+		return command
+	var intent := command / maxf(mover.pace_now, STALL_INTENT_MIN_PACE)
+	if intent > 0.5:
+		stall_intent_ticks += mover.ctl._step
+	return intent
+
+
+static func _against_friend(mover: Movement) -> bool:
+	var tank := mover.ctl.tank
+	for i in tank.get_slide_collision_count():
+		var hull := tank.get_slide_collision(i).get_collider() as Tank
+		if hull != null and hull.team == tank.team:
+			return true
+	if mover.phase == "blocked" and mover.blocked_by != "" and mover.ctl.tanks_root != null:
+		var blocker := mover.ctl.tanks_root.get_node_or_null(NodePath(mover.blocked_by)) as Tank
+		return blocker != null and blocker.team == tank.team
+	return false
+
+
+## Round 35 (W1b, C35.6, R35.7): A WHEELED HULL HELD TO A STANDSTILL DOES NOT CREEP. W1's trace (references/round35/
+## manoeuvre/w1-trace): 41 % of wedged deaths were crews Traffic held at a street mouth under fire; at the spot the hold asks
+## pace 0 facing the squad's way, and on wheels throttle 0 at full lock is the plant's creep (TankMotion: |throttle| <
+## WHEEL_CREEP_THROTTLE x |turn| = 0.5 s legs forward and back): 67 of 106 at-spot ticks moved at throttle 0, the round-8
+## shuffle, in a lane mouth, while being shot. With this on, a drive whose pace is 0 (the at-spot hold, or avoidance saying
+## stop) and that would creep gets turn 0 as well: the hull stands on the heading it has and the turret keeps its aim.
+## Planned k-turn legs are untouched. `--nav-off=wheelhalt` flips WHEEL_HALT_DEFAULT (false = OPT-IN until its bar passes).
+const WHEEL_HALT_DEFAULT := false
+## Arm counters (ticks, strided ticks by their stride): pace-0 wheeled drives that would creep, and of those the ones
+## turned to a halt (the ON arm).
+static var wheel_halt_asks := 0
+static var wheel_halts := 0
+
+
+static func wheel_halt_on() -> bool:
+	return WHEEL_HALT_DEFAULT != Movement.switched_off("wheelhalt")
+
+
+## The drive's command for a wheeled hull whose pace is `pace`: a pace-0 drive that would creep (no planned leg) stands.
+static func wheel_halt(cmd: TankCommand, radius: float, pace: float, kturn_left_m: float, step: int) -> void:
+	if radius <= 0.0 or kturn_left_m > 0.0 or pace > 0.0 or cmd.turn == 0.0:
+		return
+	if absf(cmd.throttle) >= TankMotion.WHEEL_CREEP_THROTTLE * absf(cmd.turn):
+		return
+	wheel_halt_asks += step
+	if wheel_halt_on():
+		cmd.turn = 0.0
+		wheel_halts += step
 
 
 ## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused

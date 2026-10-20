@@ -142,15 +142,28 @@ manoeuvre-hull-seeds-differ: import ## manoeuvre: two seeds of one hull-rest tas
 # team; shots at and hits on targets touching something), NAV_FLAGS for an arm -> build/manoeuvre/fights/<seed>.log.
 # Two arms side by side: tests/manoeuvre/fight_table.py BASE_DIR NEW_DIR (paired by seed, within 2 se).
 FIGHT_SEEDS ?= 1 2 3 4 5 6 7 8
+# Round 35: FIGHT_RANGE=a-b replaces FIGHT_SEEDS (make remote's T is word-split, so a list can't travel).
+FIGHT_RANGE ?=
+override FIGHT_SEEDS := $(if $(FIGHT_RANGE),$(shell seq $(subst -, ,$(FIGHT_RANGE))),$(FIGHT_SEEDS))
 FIGHT_JOBS ?= 4
 FIGHT_SECONDS ?= 180
+# Round 35 (R34.15/R35.7: random arenas deal twins): FIGHT_AT = a comma list of fixed arenas runs each seed on each
+# (logs <arena>-<seed>.log; fight_table pairs by arena and seed). Default random, as before.
+FIGHT_AT ?= random
 .PHONY: manoeuvre-fights
 manoeuvre-fights: import ## manoeuvre M4: the fights guard (showmatch matches, FIGHT_SEEDS, every unit: shots, hits, kills, deaths, hits on touching targets; NAV_FLAGS for an arm) -> build/manoeuvre/fights/
 	@rm -rf $(BUILD_DIR)/manoeuvre/fights; mkdir -p $(BUILD_DIR)/manoeuvre/fights
 	@echo ">> manoeuvre-fights on $$(hostname) | flags '$(NAV_FLAGS)'"
-	@for seed in $(FIGHT_SEEDS); do echo $$seed; done | xargs -P $(FIGHT_JOBS) -I{} sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+	@if [ "$(FIGHT_AT)" = random ]; then \
+	for seed in $(FIGHT_SEEDS); do echo $$seed; done | xargs -P $(FIGHT_JOBS) -I{} sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
 		--script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match --clean --seed={} --arena=random --mute \
-		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/{}.log 2>&1 || true'
+		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/{}.log 2>&1 || true'; \
+	else \
+	for seed in $(FIGHT_SEEDS); do for arena in $(subst $(comma), ,$(FIGHT_AT)); do echo "$$arena $$seed"; done; done | \
+		xargs -P $(FIGHT_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--seconds=$(FIGHT_SECONDS) $(NAV_FLAGS) > $(BUILD_DIR)/manoeuvre/fights/$$0-$$1.log 2>&1 || true'; \
+	fi
 	@grep -h '^FIGHT_CENSUS' $(BUILD_DIR)/manoeuvre/fights/*.log | wc -l | xargs echo "manoeuvre-fights: FIGHT_CENSUS rows"
 
 # ---- round 31 (CP-H, C31.4, R31.1): the honest reading's consumers, ONE arm x ONE stage a call ---------------------
@@ -174,6 +187,10 @@ CPH_FLAGS_ghost := --traffic-off=ghost --brains-off=native
 CPH_FLAGS_realslow := --brains-off=native,realslow
 # M1b(2)'s judged arms through the same runner (one flag, GDScript path; base = `off`).
 CPH_FLAGS_turnhull := --nav-off=turnhull --brains-off=native
+# Round 35: Bar M5's base (CP-F attempt 5: turnhull and facesettle both off; on lab/cpf5 both default true), and Bar M6's ON
+# arm before native's mirror (W1c + traffic's T9; on the joint pair the defaults flip and the base is `stallintentbase`).
+CPH_FLAGS_cpf5base := --nav-off=turnhull,facesettle --brains-off=native
+CPH_FLAGS_w1ct9 := --nav-off=stallintent --traffic-on=yieldfit2 --brains-off=native
 # Round 32: H1b's judged arm through the same runner (base = `off`; H1b's counters ride on MANOEUVRE_TURNS and FIGHT_CENSUS).
 CPH_FLAGS_h1b := --nav-off=h1b --brains-off=native
 CPH_FLAGS = $(CPH_FLAGS_$(CPH_ARM))
@@ -322,3 +339,44 @@ manoeuvre-c339-cells: import ## manoeuvre: C33.9's bar cells (turn-in ON v OFF, 
 	grep -h '^C339_CELL ' $$d/*.log | cut -d' ' -f2- > $(BUILD_DIR)/manoeuvre/c339_cells.jsonl; \
 	echo ">> manoeuvre-c339-cells: seeds $(C339_SEEDS), jobs $(C339_JOBS), $$(wc -l < $(BUILD_DIR)/manoeuvre/c339_cells.jsonl) cells, commit $$(git rev-parse --short HEAD 2>/dev/null || echo none)"; \
 	exit $$status
+
+# Round 35 (W1, C35.6): why crews die wedged. WEDGE_AT x WEDGE_RANGE showmatch fights through tests/manoeuvre/wedge_trace.gd
+# (WEDGE_EP per wedged episode, WEDGE_DEATH with a 10 s timeline per stuck:wedged death) -> WEDGE_DIR + the table.
+# Measurement only; judged/traced on the native path: run as `native manoeuvre-wedge-trace`.
+WEDGE_RANGE ?= 3500-3503
+WEDGE_AT ?= locks,terminus
+WEDGE_JOBS ?= 4
+WEDGE_SECONDS ?= 180
+WEDGE_FLAGS ?=
+WEDGE_DIR ?= $(BUILD_DIR)/manoeuvre/wedge
+.PHONY: manoeuvre-wedge-trace
+manoeuvre-wedge-trace: import ## manoeuvre W1: wedged episodes and wedged deaths, what moved each hull (ORCA, holds, yields, unstick, the drive), WEDGE_AT x WEDGE_RANGE -> WEDGE_DIR + table
+	@rm -rf $(WEDGE_DIR); mkdir -p $(WEDGE_DIR)
+	@echo ">> manoeuvre-wedge-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(WEDGE_AT)' seeds '$(WEDGE_RANGE)' | flags '$(WEDGE_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $$(seq $(subst -, ,$(WEDGE_RANGE))); do for arena in $(subst $(comma), ,$(WEDGE_AT)); do echo "$$arena $$seed"; done; done | \
+		xargs -P $(WEDGE_JOBS) -L 1 sh -c 'timeout 1200 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/manoeuvre/wedge_trace.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--seconds=$(WEDGE_SECONDS) $(WEDGE_FLAGS) > $(WEDGE_DIR)/$$0-$$1.log 2>&1 || true; \
+		grep -q "^WEDGE_TRACE" $(WEDGE_DIR)/$$0-$$1.log && echo "  ran $$0 s$$1" || echo "  MISSING WEDGE_TRACE $$0 s$$1"'
+	@grep -l "NATIVE" $(WEDGE_DIR)/*.log | head -1 | xargs -r grep -m1 "NATIVE" || true
+	@$(PYTHON) tests/manoeuvre/wedge_table.py $(WEDGE_DIR) --top 3
+
+# Round 35 (W1, the orchestrator's relay of brains' E1 census): ONE hull-rest cell (manoeuvre-hull-rest's own flags) under
+# tests/manoeuvre/wedge_trace.gd, with HT_CREW's state every 0.5 s (WEDGE_TICK) -> build/manoeuvre/hull-trace/<cell>.log.
+# HT_OFF a --nav-off list (empty = the tree's default, native); HT_FLAGS anything else (e.g. --brains-off=native).
+HT_FACTION ?= law
+HT_SEED ?= 605
+HT_TASK ?= faced_attack_move
+HT_CREW ?= Green_Eyes_4
+HT_OFF ?=
+HT_FLAGS ?=
+.PHONY: manoeuvre-hull-trace
+manoeuvre-hull-trace: import ## manoeuvre W1: one hull-rest cell (HT_FACTION HT_SEED HT_TASK) traced, HT_CREW every 0.5 s (what moves it, unstick, colliders, Traffic) -> build/manoeuvre/hull-trace/
+	@d=$(BUILD_DIR)/manoeuvre/hull-trace/$(HT_FACTION)-$(HT_TASK)-$(HT_SEED); rm -rf $$d; mkdir -p $$d; enemy=law; [ $(HT_FACTION) = law ] && enemy=gangs; \
+	echo ">> manoeuvre-hull-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-?}) | $(HT_FACTION) $(HT_TASK) $(HT_SEED) $(HT_CREW) | off '$(HT_OFF)' flags '$(HT_FLAGS)'"; \
+	timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/wedge_trace.gd -- --skirmish --seed=$(HT_SEED) \
+		--no-pick-faction --mute --arena=$(FACING_ARENA) --player-faction=$(HT_FACTION) --enemy-faction=$$enemy --tune=match.no_damage=1 \
+		--enemy=$(FACING_QUIET_ENEMY) --no-element-cpu $(if $(HT_OFF),--nav-off=$(HT_OFF)) $(HT_FLAGS) $(call _hull_jitter,$(HT_SEED)) $(_hull_shift) \
+		--screen-test=$(CURDIR)/$$d --screen-only=$(HT_TASK) --trace-crew=$(HT_CREW) --seconds=0 > $$d/run.log 2>&1 || true; \
+	grep -c '^WEDGE_TICK' $$d/run.log | xargs echo "manoeuvre-hull-trace: WEDGE_TICK rows"; grep -m1 NATIVE_EXEC $$d/run.log || true; \
+	grep -m1 "SCRIPT ERROR" $$d/run.log || true

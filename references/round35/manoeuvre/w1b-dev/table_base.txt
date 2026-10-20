@@ -1,0 +1,19 @@
+fights 12  deaths 483  wedged deaths 48 (9.9 %)
+deaths by cause: open:driving 50%, open:parked 26%, stuck:wedged 10%, jam:yielding 6%, stuck:still 4%, stuck:static 3%, jam:friend 2%, stuck:no_path 0%
+W1b: wheeled pace-0 drive ticks 11871, moving >= 0.5 m/s (creep) 7181 (60 %), of those held 7099; wheel_halt on False: asks 11874, halts 0
+
+stuck:wedged deaths traced: 48
+  force on the death tick: orca_slow 31%, drive 23%, orca_turn 19%, hold 15%, kturn 10%, unstick 2%
+  force over the last 3 s: orca_slow 41%, orca_turn 17%, hold 13%, drive 12%, kturn 12%, yield 3%, unstick 1%, press 0%
+  speed at death median 2.66 m/s; >= 0.5 m/s 38/48
+  hit in the last 10 s 43/48; stall rule counting in the last 3 s 10/48; Traffic hold at death 7/48; touching a hull 5/48
+  option at death: MOVE 79%, HOLD 6%, ENGAGE 6%, RETREAT 4%, FLANK 2%, TAKE_COVER 2%
+  order at death: move 79%, attack_move 8%, hold 6%, attack 6%
+  units: burner 21%, ifv 17%, gang_tank 10%, law_ifv 10%, gang_ifv 8%, scout 8%, law_tank 8%, law_suppressor 8%, law_scout 4%, gang_support 2%, gang_scout 2%
+
+the 3 longest wedged-death episodes:
+  terminus s3503 Green_Burners II_1 (burner) 19.97 s wedged at (1.8, 34.2), net 11.73 m, median 1.32 m/s; force {'drive': 4, 'orca_slow': 293, 'orca_turn': 116, 'yield': 186}; phase {'blocked': 2, 'driving': 410, 'yielding': 187}; stall ticks 65, unstick fires 8; option {'MOVE': 599}; order {'move': 599}; friends<=14m max 8, enemies<=56m max 14
+  locks s3500 Green_Hunters_13 (gang_ifv) 16.23 s wedged at (-11.4, 16.5), net 0.37 m, median 0.28 m/s; force {'hold': 487}; phase {'driving': 487}; stall ticks 0, unstick fires 9; option {'MOVE': 487}; order {'move': 487}; friends<=14m max 6, enemies<=56m max 4
+  terminus s3502 Rust_Hunters2_1 (ifv) 15.77 s wedged at (-23.0, -26.6), net 13.42 m, median 1.72 m/s; force {'drive': 5, 'hold': 2, 'orca_slow': 314, 'orca_turn': 97, 'shove': 19, 'yield': 36}; phase {'blocked': 100, 'driving': 336, 'yielding': 37}; stall ticks 6, unstick fires 4; option {'MOVE': 473}; order {'move': 473}; friends<=14m max 6, enemies<=56m max 6
+
+all wedged episodes: 2858, 11918 s; force share: orca_slow 40%, drive 17%, yield 13%, orca_turn 13%, hold 12%, kturn 3%, shove 1%, unstick 1%, press 0%

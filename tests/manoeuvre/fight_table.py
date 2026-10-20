@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Round 29 (manoeuvre M4): the fights guard. Usage: fight_table.py BASE_DIR NEW_DIR (FIGHT_CENSUS lines in *.log).
 
-Paired by seed, both teams pooled per run: kills, deaths, hit rate (hits / shots) and the hit rate on targets that were
+Paired by (arena, seed), both teams pooled per run: kills, deaths, hit rate (hits / shots) and the hit rate on targets that were
 touching something when fired at; per measure the summed paired difference and its se, and whether it is within 2 se.
 """
 import glob
@@ -21,7 +21,7 @@ def load(d):
                 for team in row["teams"].values():
                     for k in t:
                         t[k] += int(team.get(k, 0))
-                out[row["seed"]] = t
+                out[(row.get("arena", ""), row["seed"])] = t  # round 35: keyed by arena too (FIGHT_AT fixed arenas)
     return out
 
 
