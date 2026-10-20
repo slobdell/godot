@@ -75,6 +75,47 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 1. **C36.1 carry-over:** done `a80bb28ab`; then X3b deleted by R36.2 (`4eff54d77`).
 2. **O1 / X3b: CLOSED "no workload" (R36.2).** Lab stage `make herringbone-lab` (builder0 light, native, `61b6181e2`,
    32 cells x 3 arms): 0 jam cells of 32. DEPLOY_PASS deleted; the lab stays as tooling.
+3. **O2 the deploy move: DEPLOY_COMPACT FAILED its bar; stays OFF.** Judged builder0 light, native, `1bcd704cd` (check
+   green at `7a4226932`), 12 cells x fresh seeds 3681-3686, n 6 a cell, 576 squad rows,
+   `references/round36/orders/o2-compact-judged-builder0-1bcd704cd/verdict.txt`. Counter: 72/72 runs differ. Gain (a) median
+   worst deploy leg 13.4 -> 11.4 m, -14.9 % (needed 20 %). Gain (b) summed median twitch 168.7 -> 177.0 m, +4.9 % WORSE
+   (needed -15 %). Guards: twitch over main + 3 m in Crossing 5 click (29.8 -> 34.1) and Terminus 5 route (18.6 -> 29.7);
+   never-in 1 -> 2 in Crossing 5 route. **The own-spacing line can't be read as filed:** main itself has its closest own
+   crews at 3.8-8.6 m centre to centre in EVERY cell (the minimum over squads and seeds: crews meet in traffic at the window's
+   end, not in the halt), so ">= 9 m in every cell" fails the base. A future spacing guard should read the halt SEATS, not
+   the end positions. **Reading:** a halt half as deep shortens the move (-15 %) but not the twitch: the twitch is mostly
+   what happens after the move (traffic, engagement, crews stopped short), so the next lever is the "neither" group (item 7).
+   Cause count before it (builder0 `f5aa89ecd`, 287 squads): of 57 twitchy squads, depth 23, seating 10, neither 27.
+4. **O3 the reached halt (X3c's note):** `REACHED_HALT` behind a switch, the bar shape from the note (Crossing cells + the probe's 24
+   cells, fresh seeds), `test_control_scale` re-read.
+5. **O4 packing toward the click (R35.43's new objective):** pack toward the click first; treat arrival overlap as transient (each
+   squad deploys when ITS crews are in). Design note first.
+6. **Stretch:** a click right at a bridge mouth can seat a crew past the deck (deck_clear covers shifted legs only); `uncross_paths`
+   on a queued screen (untraced).
+
+## How to verify
+
+Tests and the lab stage first; `make quick-remote`; one full check at a time a builder; probes and series on fresh seeds; every
+number with commit, machine, workload, n. `make orders-probe-shots` (arrival and +5 s, desktop and phone) looked at for every
+5-squad click cell you change. Smoke: `make skirmish ARENA=locks`, three squads to one point, then two more down the same street.
+
+## Don't touch
+
+Manoeuvre's and traffic's paths, brains' paths beyond your grants (C36.6), `native/**`, `tests/baselines/**`. Don't push.
+
+## Waiting on the lead
+
+Nothing.
+
+## Status
+
+_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### REPORT (orders, round 36; 2026-10-20 ~15:40 PDT). Every number names its commit, machine, workload, n.
+**Where each item stands**
+1. **C36.1 carry-over:** done `a80bb28ab`; then X3b deleted by R36.2 (`4eff54d77`).
+2. **O1 / X3b: CLOSED "no workload" (R36.2).** Lab stage `make herringbone-lab` (builder0 light, native, `61b6181e2`,
+   32 cells x 3 arms): 0 jam cells of 32. DEPLOY_PASS deleted; the lab stays as tooling.
 3. **O2 the deploy move: JUDGING.** Cause count (builder0 `f5aa89ecd`, 287 squads): of 57 twitchy squads, depth 23,
    seating 10, neither 27. DEPLOY_COMPACT (`cd1043de8`, OFF) built in the deploy carve-out. Bar filed 15:10 PDT before any
    compact number. The orchestrator's own-squad guard is read centre to centre (hull-to-hull 9 m fails main itself; ruling
