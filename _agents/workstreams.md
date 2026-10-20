@@ -610,6 +610,11 @@ _Filed here before any number._
   native check exited 2`, 2931/0, 26/27, the one red sim-baseline (foundry, crossing, sumps, cut MOVED); lab/joint3-base `2a2682560`
   sim-baseline 13/13 unmoved, so the 4 moves are W1c + T9's (adopt only if it ships). On main 5f05c997c: T7 ON, E1, E4. Series:
   wedge probe + fights + traffic's jam census on 940–963 x locks/terminus/sumps, then hull-rest drawn 901–932, both arms native, JOBS 3.
+- **R35.60 (2026-10-20 ~04:30) stream/traffic's tip is red by construction only; T9 is judged on the joint pair.** 4fbbd4d3c (main 5f05c997c
+  + T8 + T9 OFF), builder0 `make native check exited 2`: 2916/1, sim-baseline unmoved; the one red test_native_exec_state wants T9's three
+  Movement members (`_unfinished_to/_count/_since`) in native/src/exec_fields.h, which native's T9 mirror carries in the joint pair.
+  stream/traffic is not a merge candidate on its own; T9 reaches main only via the joint pair (joint3-on 2931/0). T8's series cannot
+  fit this round behind the joint's (~8 h): its bar and pair plan open round 36.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
