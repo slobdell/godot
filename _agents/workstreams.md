@@ -394,6 +394,13 @@ _Filed here before any number._
 - **R35.33 (2026-10-19 ~17:30) M5's re-gate (C31.1) passes; its series starts.** lab/cpf5 `63336d690` builder0 `make native check exited
   0`, 2896/0, one ai-scenario NOT JUDGED (load), sim-baseline unmoved on all 13 (the scoped give-up touches no baseline match); base
   lab/cpf5-base `4fb7493a2`. Series at HULL_JOBS / FIGHT_JOBS 2 beside W1b's. The joint W1c+T9 ON check (b04bfdda2) launched.
+- **R35.34 (2026-10-19 ~18:05) D5's fresh re-read FAILS; the gate deal is PARKED OFF** (`84ba02a69`, `--gate-deal=on`). builder0,
+  stream/orders bd22ac4c8 (the backwards-approach fix in), seeds 3631–3636, n 6. Counter acted; click cells 36/36 identical. Gain:
+  Locks 5 route median all-in 25.8 v 34.2 s (-25 %, line -30 % = 23.9 s): FAIL; summed route medians 170.5 v 179.2 s. Guards: never-in
+  0 v 1, all-in, drive/plan (Locks 5 route 1.49 v 3.37) pass; deck up in Crossing 3 route (5 v 3) and Crossing 5 route (5 v 2),
+  near-ramp nosing, far bank 0: FAIL. **For the lead at the close (his item, a feel call):** the Locks 5-squad route gets everyone in
+  ~8 s sooner and drives half the detour, at the cost of crews nosing onto a near bridge ramp a little more often on the Crossing
+  (never across). Parked as filed; offered to him with the numbers.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
