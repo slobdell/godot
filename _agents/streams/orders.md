@@ -84,6 +84,30 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   the ElementPlan branch, its test, probe column and make arms); `game/tactics/` = main's; brains' R35.74 grant lapsed. The
   lab stage stays as tooling (`make herringbone-lab`, arms off / nostep).
 
+### O2 + O3 builder0 cause count (`f5aa89ecd`, builder0 light lane, native, main only, 12 street cells x seeds 3621-3626 =
+D4's already-seen seeds, 287 deployed squads; `references/round36/orders/o2-causes-builder0-f5aa89ecd/`)
+- **O2, squads twitching >= 15 m (n 57): depth 23, seating 10 (3 both), neither 27.** All deployed (n 287): depth 53,
+  seating 13. Medians of the worst deploy leg: as seated 18.4, best seating 16.3, half depth 13.1 m (twitchy squads).
+  Depth dominates seating, so DEPLOY_COMPACT (R36.2 follow-up: "if depth dominates, compact"). But 27 of 57 have neither
+  cause (traffic between squads, as O3's trace showed), which caps what any deploy-shape change can win.
+- **O3 FALSIFIED (no switch):** 28 crews in 287 squads drive >= 8 m over the straight line to their seat; X3c's anchor test
+  catches 11; among the 57 twitchy squads, 8 have a detour and 1 is caught. The reached halt would fix about 1 twitch in
+  57. The loops are traffic, not unreachable ground.
+
+### O2 BAR: DEPLOY_COMPACT (FILED 2026-10-20 15:10 PDT, before any compact number; code `cd1043de8`, OFF)
+- **Probe:** `make native orders-probe`, arms `main:` v `compact:--deploy-compact=on`, the 12 cells (locks, crossing,
+  terminus x {3, 5} x {click, route}), FRESH seeds 3681-3686 (never run), n 6 a cell, medians; builder0 (light lane,
+  ORDERS_PROBE_JOBS=1), native; on a hash whose full `make check` is green (the verdict stands only then).
+- **Counter first:** median `halt_depth_m` lower on compact in every cell that deploys a herringbone, and the arms' rows
+  differ.
+- **Gain (both):** (a) the median worst deploy leg over all deployed squads (`deploy_move_causes.py`, as seated) >= 20 %
+  lower on compact; (b) summed over the 12 cells, the median `twitch worst m` >= 15 % lower. 15 %, not D4's 20 %: on
+  builder0, 27 of 57 twitchy squads have neither cause, so a shape change reaches at most about half the twitch.
+- **Guards (each cell):** median all-in <= main x 1.2 + 3 s, no more never-in seeds; median `twitch worst m` <= main + 3 m;
+  median end foreign min >= main - 3 m; deck no higher, far bank 0; `test_control_scale`'s 3-tick response. Spacing:
+  test_control_deploy_compact (no pair under 0.75 spacing).
+- **A pass ships ON** (symmetric; CPU elements seldom deploy, R35.5), with sim-baseline attributed with the switch off.
+
 ### O4 design note (laptop measurement): park, one player-terms question
 `references/round36/orders/o4-packing-note.md`. `SelectionSquads.pack_refused` (`0409345d1`, measurement only) counts,
 in the pack's last compaction pass, why each place nearer the click was refused. Laptop GDScript, seed 34, `--pack=on`,
