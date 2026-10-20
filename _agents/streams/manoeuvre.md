@@ -72,6 +72,16 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~17:30 (worker): S2 / X4b READ, design note sent; waiting on the orchestrator's go before a bar.**
+`references/round36/manoeuvre/x4b/README.md` (stream `5bf752b4f`). Main a318a2cd3, builder0 native, hull-rest drawn attack-move +
+move, fresh 6301–6332 x 4 factions (256 runs): **29 crews > 25 m behind at the judge, 17 still by net motion** (per 128 runs: 14.5 /
+8.5 v E1's 17 / 9; the joint did not free them in aggregate). Worst three traced (byte-identical repro). Mechanisms of the 17:
+**(A) 10 refused forever** by the friend pinning them. It gave way once (or to T9's cap) without clearing them, then `ask` refuses
+the same asker; 8 of the 10 blockers are parked/unseated, 7 have < 1 m room behind. **(B) 1** blocker busy yielding to another.
+**(C) 6** no hull-pinned far loop (not traced yet; one presses at 0.96 with no escape: an S1 candidate). Recommendation: H1b's
+far branch (mine) stops re-ramming. After H1B_ASKS refused asks on the same unmoved friend, re-drive to a side point clear of it,
+or stand when there is no room.
+
 **2026-10-20 ~16:45 (worker):** Main e45bb6632 (CP36.1 + adoption) merged into the stream as `4a0080504`. `4dd6ff750` adds the
 missing `test_manoeuvre_stall_intent_sumps.gd.uid`. **S3 alone is GREEN** at native's `eefc379c5`: builder0 `make check exited 0`,
 2950/0, sim-baseline 13/13 unmoved (W1b's removal is inert). **The merge candidate is `pair/native-s1s3-main` `20acbda5f`** (S1 + S3 +
