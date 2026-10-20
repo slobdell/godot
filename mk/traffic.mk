@@ -253,3 +253,23 @@ traffic-navgap: import ## Round 33 (traffic X1): navmesh + obstacles (+ a trace'
 	@timeout 300 $(GODOT) --headless --path . --script res://tests/traffic/navgap_probe.gd -- --arena=$(NAVGAP_ARENA) \
 		--x=$(NAVGAP_X) --z=$(NAVGAP_Z) 2>&1 | grep -o "^NAVGAP {.*" | sed "s/^NAVGAP //" > $(BUILD_DIR)/traffic-navgap.json
 	@$(PYTHON) tests/traffic/navgap_plot.py $(BUILD_DIR)/traffic-navgap.json $(BUILD_DIR)/traffic-navgap.png "$(NAVGAP_ARENA) ($(NAVGAP_X), $(NAVGAP_Z))" $(NAVGAP_TRACE) $(NAVGAP_AT)
+# Round 34 (traffic T5, measurement on main): crews that die jammed by friendly traffic. Showmatch fights over JAM_AT arenas x
+# JAM_RANGE seeds (tests/traffic/jam_census.gd: a JAM_DEATH row per crew lost, with its drive state the tick before, who held
+# it, where, under fire; JAM_CENSUS totals) -> JAM_DIR + tests/traffic/jam_table.py. Pinned at --fixed-fps $(SIM_HZ).
+JAM_RANGE ?= 1200-1203
+JAM_AT ?= terminus,locks,random
+JAM_JOBS ?= 6
+JAM_SECONDS ?= 180
+JAM_FLAGS ?=
+JAM_DIR ?= $(BUILD_DIR)/traffic-jam
+JAM_SEED_LIST = $(shell seq $(subst -, ,$(JAM_RANGE)))
+.PHONY: traffic-jam-census
+traffic-jam-census: import ## Round 34 (traffic T5): deaths of crews jammed by friendly traffic, JAM_AT x JAM_RANGE showmatch fights -> JAM_DIR + table
+	@rm -rf $(JAM_DIR); mkdir -p $(JAM_DIR)
+	@echo ">> traffic-jam-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arenas '$(JAM_AT)' seeds '$(JAM_RANGE)' | flags '$(JAM_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(JAM_SEED_LIST); do for arena in $(subst $(comma), ,$(JAM_AT)); do echo "$$arena $$seed"; done; done | \
+		xargs -P $(JAM_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/traffic/jam_census.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--seconds=$(JAM_SECONDS) $(JAM_FLAGS) > $(JAM_DIR)/$$0-$$1.log 2>&1 || true; \
+		grep -q "^JAM_CENSUS" $(JAM_DIR)/$$0-$$1.log && echo "  ran $$0 s$$1" || echo "  MISSING JAM_CENSUS $$0 s$$1"'
+	@$(PYTHON) tests/traffic/jam_table.py $(JAM_DIR)

@@ -277,7 +277,7 @@ static func route_arms() -> Dictionary:
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -311,6 +311,15 @@ static func reset_route_arms() -> void:
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
+	underfire_refusals = 0
+	underfire_holds = 0
+	underfire_aborts = 0
+	underfire_log.clear()
+	underfire_gives = 0
+	passes = 0
+	passes_done = 0
+	passes_timeout = 0
+	pass_ticks = 0
 	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
@@ -1640,6 +1649,10 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	var tank := ctl.tank
 	var here := tank.global_position
 	_yield_left -= ctl._step
+	# Round 34 (traffic T6b, R34.17): a give-way already under way FINISHES when a hit lands. T6's first try ended it on the
+	# hit (rule (c)) and that put the crew back into the asker's path: friendly contacts in the 3 s after tripled (331 -> 1049)
+	# and stuck deaths rose 812 -> 936 on 140 fights. A crew under fire starts no give-way (ask, _begin_yield); one it has
+	# begun it completes. `underfire_aborts` stays as a counter and reads 0.
 	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank if ctl.tanks_root != null else null
 	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED \
 			or (_yield_stop_m > 0.0 and _flat_distance(here, _yield_from) >= _yield_stop_m)
@@ -1693,6 +1706,7 @@ func fire_mission() -> bool:
 ## same asker, or there is no room) — and then the asker gives way itself.
 func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bool:
 	native_stale |= STALE_ALL
+	pass_offer = 0.0
 	if yield_to != "" or asker == _last_yielded_to:
 		return false
 	# Round 30 (traffic T1c-b, brains' request): a hull SET UP and still on its fire order, with no move of its own, does
@@ -1705,6 +1719,17 @@ func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bo
 		if setup_log:
 			setup_log_rows.append([asker, String(ctl.tank.name), Engine.get_physics_frames()])
 		return false
+	# Round 35 (traffic T7, C35.8): a crew under fire holds its lane ONLY when the asker has a way round it (a pass lane
+	# beside me, swept for its hull); it hands the side back and the asker passes. With no lane (a one-hull street) the
+	# give-way proceeds as today: T6b refused every ask and the asker stalled behind (stuck deaths +7 %, far loops x2).
+	# Never for an unsticking crew asking the one behind for room to back off (reversing has no pass lane).
+	if under_fire() and via != "behind":
+		var side := _pass_lane(asker, from, direction)
+		if side != 0.0:
+			underfire_refusals += 1
+			pass_offer = side
+			return false
+		underfire_gives += 1
 	if _begin_yield(asker, from, direction, via):
 		return true
 	asks_refused += 1
@@ -1727,8 +1752,192 @@ func _end_yield() -> void:
 	_repath_left = 0.0
 
 
+# ---- Round 34 (traffic T6, R34.15; `--traffic-on=underfire`, DEFAULT_OFF until judged): a crew under fire holds its lane ------
+# T5's census on main (144 fights): 337 crews died jammed by friendly traffic, 83 % GIVING WAY, for a median 1.5 s, 77 % already
+# under fire (the last hit landed during the give-way for 63 %). The step aside is what exposed them. So a crew hit within
+# UNDER_FIRE_S starts no give-way (ask() refuses; its own step aside in _negotiate is held); the asker goes round or waits
+# (avoidance, the escape). T6b (R34.17): a give-way already begun FINISHES (T6's first try ended it on the hit, which tripled the
+# friendly contacts after). Hits only, no line-of-sight query: Tank.ticks_since_hit is on both drive paths and deterministic.
+# Native mirrors both places.
+## Hit within this long = under fire: T5's hit cadence on jammed crews is one hit every ~2.5 s (median 4 in 10 s), so the
+## brain's 2 s ENGAGED window would lapse between hits; 5 s covers two and is shorter than a give-way's own clocks.
+const UNDER_FIRE_S := 5.0
+## Measurement: asks refused for fire, step-asides held for fire, give-ways ended by a hit (+ a capped log of the aborts).
+static var underfire_refusals := 0
+static var underfire_holds := 0
+static var underfire_aborts := 0
+static var underfire_log: Array = []
+
+
+static func underfire_on() -> bool:
+	return not Traffic.off("underfire")
+
+
+## Hit within UNDER_FIRE_S (with the switch on).
+func under_fire() -> bool:
+	return underfire_on() and ctl.tank != null and ctl.tank.ticks_since_hit <= int(UNDER_FIRE_S * SimClock.TICK_RATE)
+
+
+# ---- Round 35 (traffic T7, C35.8; under `--traffic-on=underfire`): refuse under fire only when the asker has another way ----
+# The way round is a PASS LANE beside the refuser, swept for the ASKER's hull: an abreast point P at r(me) + r(asker) +
+# YIELD_LINE_MARGIN to one side of my centre (across the asker's way), a rejoin point Q beyond my nose by both half-lengths +
+# PASS_BEYOND_M; P ahead of the asker (a pass is forward) and, for wheels, outside its turning circles; the asker's whole
+# outline clear (the k-turn's ten points) every PASS_STEP_M along asker -> P -> Q; no third hull at P or Q. Navmesh and the
+# Avoidance table only: deterministic, and native's NavNative::outline_ok is the same bits. Design note:
+# `_agents/streams/references/round35/traffic/t7_design.md`. ORCA alone does not pass a slow mover (its nearest safe velocity
+# is following), so the asker steers by the lane for up to PASS_MAX_S (`_pass_point`, read in _avoid).
+const PASS_BEYOND_M := 2.0
+const PASS_STEP_M := 2.0
+const PASS_MAX_S := 6.0
+## Measurement: under-fire asks given way to anyway (no lane); passes started, ended abreast, ended by the clock; ticks passing.
+static var underfire_gives := 0
+static var passes := 0
+static var passes_done := 0
+static var passes_timeout := 0
+static var pass_ticks := 0
+## Set by ask(): the side (+1 / -1 along the asker's left normal) of the lane offered with an under-fire refusal, else 0.
+var pass_offer := 0.0
+## The pass this crew is making: round whom, on which side, along which way, ticks left; and whom it last failed to pass.
+var _pass_by := ""
+var _pass_side := 0.0
+var _pass_way := Vector2.ZERO
+var _pass_left := 0
+var _pass_failed_by := ""
+
+
+## The side of my hull `passer` (at `from`, going along `direction`) can drive past me on, or 0 when it has no lane.
+func _pass_lane(passer: String, from: Vector3, direction: Vector2) -> float:
+	var tank := ctl.tank
+	var other := ctl.tanks_root.get_node_or_null(NodePath(passer)) as Tank if ctl.tanks_root != null else null
+	if other == null or direction.length_squared() < 0.0001 or not (Pathing.enabled and Pathing.is_ready(tank)):
+		return 0.0  # no navmesh to read the lane on: as today
+	var map := tank.get_world_3d().navigation_map
+	var way := direction.normalized()
+	var across := Vector2(-way.y, way.x)
+	var here := tank.global_position
+	var first := 1.0 if across.dot(Vector2(from.x - here.x, from.z - here.z)) >= 0.0 else -1.0
+	var lateral := Avoidance.radius_of(tank.unit_id) + Avoidance.radius_of(other.unit_id) + YIELD_LINE_MARGIN
+	var beyond := (float(hull_box(tank.unit_id)[2]) + float(hull_box(other.unit_id)[2])) * 0.5 + PASS_BEYOND_M
+	var start := Vector3(from.x, 0.0, from.z)
+	Avoidance.refresh(ctl.tanks_root)
+	for side: float in [first, -first]:
+		var p := Vector3(here.x + across.x * side * lateral, 0.0, here.z + across.y * side * lateral)
+		var q := p + Vector3(way.x, 0.0, way.y) * beyond
+		if Vector2(p.x - start.x, p.z - start.z).dot(way) <= 0.0:
+			continue
+		if not _pass_wheels_ok(other, p) or not _pass_clear(p, other) or not _pass_clear(q, other):
+			continue
+		if _pass_swept(map, other, [start, p, q]):
+			return side
+	return 0.0
+
+
+## A wheeled passer can drive forward onto `point` (_ahead_of_wheels' arithmetic at ITS pose).
+func _pass_wheels_ok(passer: Tank, point: Vector3) -> bool:
+	var mover := Movement.of(passer)
+	var radius := mover.wheel_radius() if mover != null else 0.0
+	if radius <= 0.0:
+		return true
+	var forward := Vector2(-passer.global_basis.z.x, -passer.global_basis.z.z).normalized()
+	var to := Vector2(point.x - passer.global_position.x, point.z - passer.global_position.z)
+	if to.dot(forward) <= 0.0:
+		return false
+	var left := Vector2(forward.y, -forward.x)
+	for side: float in [1.0, -1.0]:
+		if (to - left * side * radius).length() < radius:
+			return false
+	return true
+
+
+## No hull but me and the passer within both radii of `point`.
+func _pass_clear(point: Vector3, passer: Tank) -> bool:
+	var reach := Avoidance.radius_of(passer.unit_id)
+	for row: Array in Avoidance.neighbours(String(ctl.tank.name), point.x, point.z):
+		if String(row[1]) != String(passer.name) and sqrt(float(row[0])) < reach + Avoidance._radii[int(row[2])]:
+			return false
+	return true
+
+
+## The passer's outline clear every PASS_STEP_M along the legs through `points` (heading along each leg; its own pose the start).
+func _pass_swept(map: RID, passer: Tank, points: Array) -> bool:
+	var frame := _kturn_frame(passer)
+	var at := Vector3(passer.global_position.x, 0.0, passer.global_position.z)
+	var heading := Vector3(-passer.global_basis.z.x, 0.0, -passer.global_basis.z.z).normalized()
+	var start := _outline_offs(map, frame, at, heading)
+	for k in range(1, points.size()):
+		var a: Vector3 = points[k - 1]
+		var b: Vector3 = points[k]
+		var leg := Vector3(b.x - a.x, 0.0, b.z - a.z)
+		if leg.length() < 0.01:
+			continue
+		var along := leg.normalized()
+		var steps := maxi(1, int(ceilf(leg.length() / PASS_STEP_M)))
+		for i in range(1, steps + 1):
+			if not _outline_ok(map, frame, a.lerp(b, float(i) / steps), along, start):
+				return false
+	return true
+
+
+## Refused by `refuser` with a lane offered on `side`: pass it along `way`. False (nothing started) with no offer, when
+## already passing it, or when the last pass of it ran out of clock (then the refusal is treated as today's).
+func _pass_start(refuser: String, side: float, way: Vector2) -> bool:
+	if side == 0.0 or way.length_squared() < 0.0001 or refuser == _pass_failed_by:
+		return false
+	if _pass_by == refuser:
+		return true
+	_pass_by = refuser
+	_pass_side = side
+	_pass_way = way.normalized()
+	_pass_left = int(PASS_MAX_S * SimClock.TICK_RATE)
+	passes += 1
+	return true
+
+
+func _pass_end(timed_out := false) -> void:
+	if timed_out:
+		passes_timeout += 1
+		_pass_failed_by = _pass_by
+	_pass_by = ""
+	_pass_side = 0.0
+
+
+## The steering point of the pass under way (INF = none): the refuser's abreast point until my centre reaches its tail, then
+## the rejoin point; the pass ends once my centre is past its nose, when it is gone, or after PASS_MAX_S.
+func _pass_point() -> Vector3:
+	if _pass_by == "":
+		return Vector3.INF
+	var refuser := ctl.tanks_root.get_node_or_null(NodePath(_pass_by)) as Tank if ctl.tanks_root != null else null
+	_pass_left -= ctl._step
+	if refuser == null or not refuser.is_alive():
+		_pass_end()
+		return Vector3.INF
+	if _pass_left <= 0:
+		_pass_end(true)
+		return Vector3.INF
+	var tank := ctl.tank
+	var there := refuser.global_position
+	var half := float(hull_box(refuser.unit_id)[2]) * 0.5
+	var along := Vector2(tank.global_position.x - there.x, tank.global_position.z - there.z).dot(_pass_way)
+	if along >= half:
+		passes_done += 1
+		_pass_failed_by = ""
+		_pass_end()
+		return Vector3.INF
+	pass_ticks += ctl._step
+	var across := Vector2(-_pass_way.y, _pass_way.x) * _pass_side \
+			* (Avoidance.radius_of(refuser.unit_id) + Avoidance.radius_of(tank.unit_id) + YIELD_LINE_MARGIN)
+	var ahead := 0.0 if along < -half else half + float(hull_box(tank.unit_id)[2]) * 0.5 + PASS_BEYOND_M
+	return Vector3(there.x + across.x + _pass_way.x * ahead, 0.0, there.z + across.y + _pass_way.y * ahead)
+
+
 ## Give way to `other`, travelling along `direction` from `from`: find the nearest validated spot off its line.
 func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self") -> bool:
+	# Round 34 (traffic T6), T7's gate: under fire, no step aside of its own (the self-yield in _negotiate) when the other can
+	# pass me; it meets me, asks, is refused with an offer and passes. With no lane I step aside as today.
+	if via == "self" and under_fire() and _pass_lane(other, from, direction) != 0.0:
+		underfire_holds += 1
+		_yield_unfit_last = false  # a hold is not "no spot fits": no swap ask follows it
+		return false
 	var tank := ctl.tank
 	var here := tank.global_position
 	var along := direction.normalized() if direction.length_squared() > 0.0001 else \
@@ -2127,6 +2336,9 @@ func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 		i_give_way = true  # it gave way to me last time: my turn
 	if not i_give_way and mover.ask(String(tank.name), here, my_way):
 		return
+	# Round 35 (traffic T7): refused by a crew under fire that found me a way round: I pass it (not step aside, not follow).
+	if not i_give_way and _pass_start(name, mover.pass_offer, my_way):
+		return
 	# Round 26 (traffic CP1a2): a PARKED friend that refused (it has no room) is never given way to: there is nobody to
 	# let past, so stepping aside only takes me off my route (CP1a's traces: a rear crew yielded to a squadmate parked
 	# on its slot, drove to a yield spot and never reached its own). I keep my route; ORCA gives me all of the avoiding
@@ -2144,10 +2356,13 @@ func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 	# Round 13 (R2): I was the one to give way and no spot fits THIS hull (a 14 m rig in a 21 m street): I hold, and
 	# the other gives way instead if it has room — the asymmetry a driver uses (the short car backs up for the truck).
 	# Only when I had not already asked it (a refused ask means it had no room either).
-	if i_give_way and yield_fit_on() and _yield_unfit_last and mover.ask(String(tank.name), here, my_way, "swap"):
-		yield_swaps += 1
-		if float(hull_box(other.unit_id)[2]) < float(hull_box(tank.unit_id)[2]):
-			yield_swaps_shorter += 1
+	if i_give_way and yield_fit_on() and _yield_unfit_last:
+		if mover.ask(String(tank.name), here, my_way, "swap"):
+			yield_swaps += 1
+			if float(hull_box(other.unit_id)[2]) < float(hull_box(tank.unit_id)[2]):
+				yield_swaps_shorter += 1
+		else:
+			_pass_start(name, mover.pass_offer, my_way)  # T7: refused under fire with a lane: pass it
 
 
 ## The flat direction this unit is trying to go: toward its next waypoint (or the goal).
@@ -2315,6 +2530,8 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 		Traffic.refresh(ctl.tanks_root)
 		var hold := Traffic.hold_of(String(tank.name))
 		if not hold.is_empty():
+			if _pass_by != "":
+				_pass_end()  # a street-mouth hold outranks a pass
 			var face: Vector2 = hold[1]
 			if hold[2]:
 				return [Vector3(face.x, 0.0, face.y), 0.0]
@@ -2322,6 +2539,11 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 			var approach := clampf((Vector2(here.x, here.z).distance_to(spot) - Traffic.HOLD_REACHED_M) / Traffic.HOLD_SLOW_M, 0.15, 1.0)
 			var toward := _avoid(Vector3(spot.x, 0.0, spot.y), speed_factor * approach, delta, true)
 			return [toward[0], minf(float(toward[1]), approach)]
+	# Round 35 (traffic T7): passing a crew under fire that refused me: steer by its lane (ORCA still shapes it).
+	if not held and _pass_by != "":
+		var lane := _pass_point()
+		if lane != Vector3.INF:
+			waypoint = lane
 	var to := Vector2(waypoint.x - here.x, waypoint.z - here.z)
 	var distance := to.length()
 	if distance < 0.5:
