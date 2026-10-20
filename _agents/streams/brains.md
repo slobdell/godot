@@ -57,10 +57,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (2026-10-20, final for the round so far)
 
-**Green:** tip `6b2f68d64` (merged main d068f7020) INHERITS main `5f05c997c`'s green check (builder2, 2911/0;
-`tools/merge_check_needed.sh 5f05c997c`: docs only). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
+**Green:** `4a6394932` (code = `0daea3d90`, the E4b runner warm-up) — builder2 `make check exited 0`, 2911/0, 25 passed + 2 NOT
+JUDGED (timing, by design there), sim-baseline 13/13 unmoved. Moved lines v main 5f05c997c's suite (builder2): 8 keys, none in what
+a test measures (5 process-tick stamps +1 from the warm-up frame; 3 c339 lines only in Manoeuvre's process-wide kturn census).
+scenarios_6 alone 4.8 = suite 4.8 (builder0 native). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
 R35.42), **E4** lab hulls placed with Tank.place (main 5f05c997c, R35.51), the per-tick release counter. Written up, no code:
-**E3** (no lever, R35.46), **E4b** (a second carry-over traced; runner warm-up proposed, the runner is not mine). **E2** waits on
+**E3** (no lever, R35.46), **E4b** (a second carry-over traced; the runner warm-up written under R35.54's narrow grant, INTERIM; naming the field is round 36's). **E2** waits on
 CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
 
 ### Report (2026-10-19 evening)
