@@ -464,6 +464,14 @@ _Filed here before any number._
   the task carries `halt_at` (set only by orders' pack, itself OFF), the last INSET_NEAR_M of the move uses a file/column arrival.
   Nothing else in the function; merge note to brains (told). Bar first (fresh seeds, far bank 0 in every cell, D3's gain/guards);
   its series after T8.
+- **R35.42 (2026-10-19 ~20:30) E1 PASSES its bar; merge waits on the partial gate.** `83b3b90b4` (E1 67a5a9db0 + main fc1f4ac0e
+  tooling), builder0 native, base `--straggler=off` same tree; FRESH 701–716 x 4 factions (64 attack-move pairs), fights 720–743
+  (n 24). (0) releases 6 v 0 (inferred). (a) long-hold seconds 89 v 358 (0.25x; paired -269, se 116.4, 2.3 se): all in the 6
+  released runs, the other 58 identical; wait seconds 339 v 561 (wedged 138 v 342). (b) VACUOUS. (c) left > 25 m 17 v 20. (d) late
+  movers 13 v 10 (+3, limit 4.4; released crews still driving at 75 s), settled 35 v 34. (e) arrived 194 v 190. (f) kills 970 v 970,
+  deaths 984 v 984, hit rate 0.718 both (the release fired 3x for CPU elements). (g) test 2890/0, sim-baseline unmoved; the corrected
+  partial (lint + 10) queued. **In his terms:** when one crew is wedged, its squad moves on to the next attack-move leg after ~8 s
+  instead of waiting a minute or more; the wedged crew catches up or stays stuck (W1c + T9's job).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
