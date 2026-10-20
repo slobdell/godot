@@ -131,6 +131,12 @@ _Filed here before any number._
   same unmoved friend with a far goal, H1b's far branch re-drives to a side point clear of the friend, or the hull stands if no room;
   switch; deciding = deterministic lab stage, guards Bar S1's + far loops / far bank 0 + unstick fires; left-behind and still REPORTED
   paired on fresh seeds; series after S1's. (A)'s "recorded finished while still pinning" case relayed to traffic (T9's bookkeeping).
+- **R36.4 (2026-10-20 ~15:20 PDT) T9's distance guard mis-reads long hulls as passed; the fix rides in S2a's pair.** Traffic traced
+  X4b trace 1 (condemned-6325 Battery_2 / Guns_2; stream/traffic 9030a12dc, `references/round36/traffic/t9_finished_while_pinned.md`):
+  YIELD_CLEAR 9.0 m centre to centre, but a 9.70 m tank nose-on to an 8.20 m artillery hull touches at 8.95 m; a 0.1 m creep (8.99 ->
+  9.07) read as "passed" at the 6 s clock. Fix: in `_yield_unfinished` only, passed = distance − both half-lengths > 2.0 m, behind its
+  own switch (`yieldgap`), native mirror line, test in test_traffic_yieldfit2. Frees few alone (7 of 10 parked blockers have < 1 m
+  room); rides in manoeuvre's S2a pair as a second switch: one series both ON v both OFF; each lab test decides its own change.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
