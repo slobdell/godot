@@ -55,6 +55,37 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Report (2026-10-19 evening)
+
+**E1 PASSES its bar (R35.42); merges when the partial gate is green.** Merge hash: `83b3b90b4` (E1 code `67a5a9db0` + main
+`fc1f4ac0e`'s N3 tooling), gate = the timed-out re-check's 16 finished targets (test 2890/0, sim-baseline 13/13 unmoved at main's
+lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished targets (R35.22; RUNNING on builder0 behind
+`builder_checks.sh --wait-below 1`, log `~/overnight-brains/e1_rest_83b3b90b4.log`).
+- **What he will notice:** a squad on an attack-move whose one crew is wedged takes the next leg after ~8 s instead of hanging
+  up to a minute or more; the wedged crew catches up if it can (if it can't, that is manoeuvre's W1 / traffic's, not this).
+- **Bar E1 series** (`83b3b90b4`, builder0, native, base `--straggler=off` on the same tree; seeds 701-716 x 4 factions, n 64
+  attack-move pairs; fights 720-743, n 24; `references/round35/brains/e1_bar_series_83b3b90b4_builder0.txt`):
+  (0) releases 6 v 0 (inferred: a wait >= 8 s ending with the crew < 2 m nearer over its last 8 s; 0 false positives on the
+  c23acdbe2 census); (a) long-hold s 89 v 358 (0.25x; paired -269, se 116.4, 2.3 se) PASS, a TAIL effect: all of it in the 6
+  releasing runs (law-705 -73, law-716 -68, condemned-701 -44, law-711 -40, law-701 -25, condemned-710 -19), the other 58
+  identical; (b) faced_move VACUOUS (a plain move plans in `_plan_form_up`, never `_advance`); (c) left > 25 m 17 v 20 (se 2.2),
+  wedged among them 9 v 10; (d) movers at 75 s 13 v 10 (+3, limit 4.4: released crews still driving), settled 35 v 34;
+  (e) squads arrived 194 v 190; (f) fights kills 970 v 970, deaths 984 v 984, hit rate 0.718 both (3 CPU releases in 24 fights).
+  (g) sim-baseline: no map moves either way (`--straggler=off` sim-variants on `83b3b90b4` = the baseline 13/13).
+- **Decisions:** the hold R34.18 blamed on the sector face is `_advance`'s cohesion gate waiting on a laggard (face 0-0.5 % of
+  wait seconds; wedged crews 44-61 %); the seam with manoeuvre is decoupled (R35.3), face_settled() stays out. STRAGGLER_S 8 s /
+  STRAGGLER_GAIN_M 2 m sized on the census (no re-tune after the series).
+- **Infra found:** the stale native library via an mtime race (R35.15 -> native's N3); a partial check needs `lint` in
+  CHECK_TARGETS (every target is ordered after it); a hull-rest copy-back carries an earlier series' arm folders (read by seed).
+- **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). **E3:** stretch, below. **D1 fallout:** re-read
+  `test_tactics_body`'s arrival after merging main (the deploy step + the release; orders' resize to off + 8.1 s, R35.17).
+- **Requests to other streams:** native: hash-stamp native/src in build.sh (done, N3). manoeuvre: the wedged crews
+  (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3; law/faced_attack_move-614 G4 on lab/cpf4).
+- **Questions for the lead:** none.
+- **Playtest:** `make skirmish ARENA=foundry`, attack-move (A) a squad across the map; a squad whose crew snags moves on.
+  `--straggler=off` on the same command is the old behaviour.
+- **Next:** a real per-tick release counter in ELEMENT_TRACE (cheap; the orchestrator asked) after the merge; then E3.
+
 **Start (2026-10-19 08:40 PDT):** worktree `godot-brains` on `stream/brains` at `a0ae0aafd`; launch baseline is main's inherited
 green (HANDOFF), no baseline check run.
 
