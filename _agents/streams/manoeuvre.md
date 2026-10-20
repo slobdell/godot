@@ -72,6 +72,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~20:15 (worker): S1's gate PASSES (C31.1), and the S1 series is launched.** ON tree `lab/s1-on` `d9864ab07` on builder2
+(moved there by the orchestrator): `make native check exited 2`, 2961/0, 24 passed + 2 NOT JUDGED + sim-baseline the one red
+(foundry, crossing, sumps, docks moved; 9 unmoved). Attribution = base `20acbda5f` (STALL_NET_DEFAULT false), read 13/13 unmoved by
+native's builder0 check. Series: unit `manoeuvre-s1series`, builder0 after its checks clear, logs `~/overnight-manoeuvre/r36/s1/`.
+
 **2026-10-20 ~19:15 (worker):** S1 + S3 are on main (5d6bb1de8, R36.5); main is merged into the stream (`4685fe5a4`). S2a +
 yieldgap quick-remote on native's `8e6a52fc9` (builder0): 134/1, h1b_side 3/3 (native default arm = GDScript; ON past at 19.6 s,
 one-hull street stands), traffic's long-hull tests PASS. The one red was native's own yield twin (it read a freed hull), fixed in
