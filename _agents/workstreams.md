@@ -401,6 +401,12 @@ _Filed here before any number._
   near-ramp nosing, far bank 0: FAIL. **For the lead at the close (his item, a feel call):** the Locks 5-squad route gets everyone in
   ~8 s sooner and drives half the detour, at the cost of crews nosing onto a near bridge ramp a little more often on the Crossing
   (never across). Parked as filed; offered to him with the numbers.
+- **R35.35 (2026-10-19 ~18:40) M5's ON arm measures W2 on the native path; its counter-first line needs a sample.** Native (code read of
+  63336d690): a wheeled hull's `face` order hands the whole execute step back to GDScript (execute_native.cpp ~363–378, reason 3
+  `other_order`); turnhull's lift is in `TankBrain._order_move` (GDScript); W2 is in `Movement.face_turn` + Manoeuvre's face_* helpers.
+  Gap: `face_settles` / `face_settle_fails` are not in `ManoeuvreCensus.counters()`, so the series' rows can't show (o2). Ruling: a
+  measurement-only tree (63336d690 + the two census counters) on a sample of the drawn cells (~16 runs, the series' seeds); its rows
+  must equal the series' on every non-counter line, and face_settles > 0 there satisfies (o2); native's counter run is the second check.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
