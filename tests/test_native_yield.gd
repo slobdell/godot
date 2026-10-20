@@ -609,10 +609,11 @@ func _long_end(gap: bool) -> Array:
 	Traffic.set_off("yieldgap", not gap)
 	mover._end_yield()
 	var recorded := mover._last_yielded_to
+	var asker_name := String(asker.name)  # read before dispose() frees the hull
 	Traffic.set_off("yieldfit2", was_off[0])
 	Traffic.set_off("yieldgap", was_off[1])
 	lab.dispose()
-	return [result, recorded, String(asker.name)]
+	return [result, recorded, asker_name]
 
 
 func test_the_long_hull_nose_on_end_both_arms() -> void:
