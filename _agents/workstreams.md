@@ -180,8 +180,9 @@ _Filed here before any number._
 
 - **M6/T9 JOINT: the stuck asker asks again (W1c, manoeuvre) and the asked parked crew answers (T9 yieldfit2, traffic), filed
   2026-10-19 ~11:55 before any T9 code, replacing M6's two-arm read (R35.13).** T9 design: `stream/traffic` `0a1567b56`
-  `references/round35/traffic/t9_trace_design.md`. **Arms (one tree):** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
-  both; base = `--nav-off=stallintent --traffic-off=yieldfit2`. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
+  `references/round35/traffic/t9_trace_design.md`. **Arms:** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
+  both; base = the same code with both switches off. **As run (R35.53/59): two native trees** (lab/joint3-on 872f82ae5 v lab/joint3-base
+  2a2682560), since `--nav-off` / `--traffic-off` flags would leave native's drive. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
   traffic's T9 + native's mirrors; gate = the pair's `make native check` on builder0 plus switch-OFF sim-baseline inertness. Seeds:
   M6's FRESH blocks (hull-rest **901–932** drawn, i.e. 128 pairs; fights + wedge probe on fixed locks/terminus/sumps x 940–963).
   **n raised 2026-10-19 ~12:30, before any judged number, the line itself unchanged:** the joint dev read (tuning 460–467, 32 an arm)
