@@ -72,6 +72,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~16:45 (worker):** Main e45bb6632 (CP36.1 + adoption) merged into the stream as `4a0080504`. `4dd6ff750` adds the
+missing `test_manoeuvre_stall_intent_sumps.gd.uid`. **S3 alone is GREEN** at native's `eefc379c5`: builder0 `make check exited 0`,
+2950/0, sim-baseline 13/13 unmoved (W1b's removal is inert). **The merge candidate is `pair/native-s1s3-main` `20acbda5f`** (S1 + S3 +
+both mirrors + main e45bb6632). Native's full check on it is running on builder0; it also stands in for main's own check.
+Bar S1 trees: base `lab/s1-base` = `20acbda5f`, ON `lab/s1-on` `d9864ab07` (STALL_NET_DEFAULT true). ON's `make native check` is
+queued behind `builder_checks --wait-below 1` (unit `manoeuvre-s1on-check`). The series (`~/overnight-manoeuvre/r36/s1_series.sh`)
+starts after X4b finishes: one series per builder.
+
 **2026-10-20 ~16:00 (worker):** CP36.1 is on main at `a318a2cd3`; the orchestrator's sim-baseline adoption is still running. S2 / X4b
 started on a detached side worktree, `godot-manoeuvre-x4b`, pinned at a318a2cd3. Runs: builder0 native, hull-rest drawn,
 faced_attack_move + faced_move, seeds 6301–6332 x 4 factions (256 runs), `--turn-states --element-trace=all`. systemd unit
