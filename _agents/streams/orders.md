@@ -75,7 +75,7 @@ Nothing (his deploy-step yes is the go).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (2026-10-19 ~16:30 PDT; every number names its commit, machine, workload and n)
+### REPORT (2026-10-20, after D6's green check; every number names its commit, machine, workload and n)
 
 **Done, in his terms**
 - **D1, the deploy step is ON in the game (his yes): MERGED, main `1a18dd278`** from `orders-d1` `581b8a396`, builder0 GREEN
@@ -103,12 +103,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   the Locks 5 route is in 25.8 v 34.2 s (the line was 23.9) with a little more near-ramp nosing on the Crossing (never across).
   The orchestrator puts it to him as a feel call at the close (R35.34).
 
-**In flight**
-- **D6, a shift-clicked route that some squads ignored** (22 % of route squads got fewer legs than waypoints in D5's runs):
-  round 22's untangle re-deals vehicles at the first click, so later shift-clicks found no element to queue behind and
-  REPLACED the route. Fix (R35.28 option b) + the s3643 bridge-mouth fix: `1b174f05d`, OFF until judged (`--requeue=on`).
-  A/B 1 passed its bar (every squad every leg 144/144 v 117/144) but crossed a bridge twice on s3643 (HELD, R35.38); fixed on
-  the laptop; the fresh re-read (3651-3656, far bank 0 in every cell) is in the series queue after W1b.
+**D6, a shift-clicked route that some squads ignored: GREEN, merge candidate `93cdb1559`** (builder2 `native check exited 0`,
+2941 passed, 0 failed, sim-baseline 13/13 unmoved; timing NOT JUDGED on builder2 by design). About one squad in six skipped
+his waypoints and drove straight to the last one: round 22's untangle re-deals vehicles at the first click, so later
+shift-clicks found no element to queue behind and REPLACED the route. Fix (R35.28 option b): a shifted move queues on the
+elements the squads' units belong to now; plus (R35.38) a shifted leg's places step back from a bridge deck their seats
+would reach (A/B 1 had crossed a bridge twice on s3643). Fresh re-read (builder0 `ee3a8dab2`, 3651-3656, n 6): every squad
+every leg 144/144 v 121/144, far bank 0 in every cell, click cells identical; all in equal or better in 5 of 6 route cells.
+`--requeue=off` is round 34's.
 
 **Questions for the lead** (via the orchestrator): D5 as a feel call (`GATE_DEAL=on make skirmish ARENA=locks`, five squads,
 a shift-clicked route). Nothing else blocks.
