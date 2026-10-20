@@ -721,6 +721,11 @@ _Filed here before any number._
   `6f830ceea` (switches off). Twins both ON 35/0 + 17/0, 0 mismatches. `make native check` on builder0, base sim-baseline after.
 - **R35.71 (2026-10-20 ~13:10) D5 ON merged: main 36745fa4c (INHERIT from d85e395d4: builder2 2953/0, sim-baseline 13 unmoved).**
   His call. The joint ship merges next on its own green; one batch main check after.
+- **R35.72 (2026-10-20 ~13:30) X3b: the street jam is NOT gone (the laptop read was wrong for builder0).** builder0 light lane,
+  c28901b14, native, body stage seeds 1–12 x {off, on}: on - off all-in mean +0.63 s (sd 2.31), worst s1 +5.5 s (18.5 v 24.0; R35.17
+  read 17.7 v 23.8); others -2.7 to +3.0. The laptop's s1 read +1.0 (orientation 85: laptop rows are not builder rows). The line stays
+  off + 8.1; X3b open: a builder0 trace of s1, then a design behind a switch, a bar whose workload is chosen by a stated property (an
+  arrived squad's halt across the next squad's route), fresh seeds, a guard on the cells where it does not jam.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
