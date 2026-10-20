@@ -563,6 +563,10 @@ _Filed here before any number._
   W1b excluded); native `pair/native-joint3` `7a1435cdd` (813f6e1ff + T9's and W1c's mirrors + floors + the forced refusal stage;
   diff v 813f6e1ff is T9 + W1c only); ON twins on lab 441c4dbc5. Native's first cut e2fe62c9a (with T8 and W1b) is superseded.
   The two new guards read traffic's jam_census (T5's definition), the probe's under-fire counts reported only.
+  **Series trees (joint3):** base lab/joint3-base `2a2682560`, ON lab/joint3-on `872f82ae5` (STALL_INTENT true, DEFAULT_OFF [] = T7 ON
+  + yieldfit2 ON), each = pair/native-joint3 `7a1435cdd` + one probe-only commit (friendly_contact_ticks per fight, guard (s)); E1, E4
+  in; C31.1 `make native check` on 872f82ae5 on builder0, base's sim-baseline for attribution. Native saw the under-fire stage's
+  give-ways 66 v 39 with yieldfit2 ON: the yields-started guard is the one to read closely.
 - **R35.54 (2026-10-20 ~01:50) E4b, the second carry-over (test_tactics_scenarios_6): it is the runner's teardown.** Brains' trace
   (80ef83789): it flips on ANY earlier test in the process (even one that only waits 1 / 97 / 1000 frames, so not frame phase); the
   stage played twice inside ONE test is identical (GDScript and native), so a match does not change it, the first test's TEARDOWN does;
