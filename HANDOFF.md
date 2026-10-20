@@ -35,7 +35,10 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
    moves / 36 group orders): round 35's main v round 34's close: group orders where a squad never got in 5 -> 0 of 36, moves never
    settled 13 -> 10 of 48, jam-under-fire deaths 1.75 -> 1.3 a fight; deaths a fight 40.4 -> 41.9 (kills 40.0 -> 41.4: bloodier both
    ways). c29a8c7b6 and a0ae0aafd read identical (no game source differs).
-3. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
+3. **T8: pair `a2de32420` green on builder2 (2963/0, 13 unmoved, switch-OFF inert); series running since 14:53 (unit
+   t8-series-r36d).** On PASS: traffic cuts the ON hand-over; the orchestrator grants ONE quiet builder0 window for perf-judge on it,
+   which also clears main's owed one.
+4. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
    joint since).
 
 **Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
