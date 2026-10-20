@@ -9,6 +9,7 @@ var _lab: TacticsLab
 
 func teardown() -> void:
 	Traffic.set_off("yieldfit2", Traffic.DEFAULT_OFF.has("yieldfit2"))
+	Traffic.set_off("yieldgap", Traffic.DEFAULT_OFF.has("yieldgap"))
 	if _lab != null:
 		_lab.dispose()
 		_lab = null
@@ -89,3 +90,49 @@ func test_off_an_unfinished_give_way_is_recorded_as_before() -> void:
 	mover._end_yield()
 	assert_eq(mover._last_yielded_to, String(asker.name), "switch off: recorded as before")
 	assert_true(not _ask(mover, asker), "and the next ask refused as before")
+
+
+## Round 36 (R36.4, `--traffic-on=yieldgap`): manoeuvre's X4b trace (condemned-6325): a parked tank (hull 9.70 m) nose-on to an
+## artillery asker (8.20 m) touches at 8.95 m between centres, which YIELD_CLEAR (9.0 m, centre to centre) already reads as
+## "passed", so a give-way that freed nobody was recorded and every later ask refused. Centres 9.05 m apart, nose to nose.
+func _stage_long() -> Array:
+	_lab = TacticsLab.create(self, 7, "yard_open")
+	var parked := _lab.gun(Match.Team.GREEN, "Green_Parked", Vector3.ZERO, 0.0, "tank")
+	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 9.05), 0.0, "artillery")
+	await _lab.start()
+	for i in 3:
+		await _lab.step()
+	asker.global_position = Vector3(0.0, 0.0, 9.05)
+	parked.global_position = Vector3.ZERO
+	_lab.element([String(asker.name)], "Go").assign({"verb": "move", "to": [0.0, -30.0]})
+	for i in 2:
+		await _lab.step()
+	asker.global_position = Vector3(0.0, 0.0, 9.05)
+	parked.global_position = Vector3.ZERO
+	return [parked, asker, Movement.of(parked)]
+
+
+func test_on_a_long_hull_pinned_nose_on_is_not_read_as_passed() -> void:
+	Traffic.set_off("yieldfit2", false)
+	Traffic.set_off("yieldgap", false)
+	var units: Array = await _stage_long()
+	var asker: Tank = units[1]
+	var mover: Movement = units[2]
+	assert_true(Movement._flat_distance(units[0].global_position, asker.global_position) > Movement.YIELD_CLEAR,
+			"setup: the centres are further apart than YIELD_CLEAR")
+	assert_true(Movement.of(asker).is_under_way(), "setup: the asker is under way")
+	assert_true(_ask(mover, asker), "setup: the parked tank gives way")
+	mover._end_yield()  # nose to nose still: nobody was freed
+	assert_eq(mover._last_yielded_to, "", "not recorded: the asker is pinned, not past")
+	assert_true(_ask(mover, asker), "so the asker's next ask is honoured")
+
+
+func test_off_a_long_hull_pinned_nose_on_reads_as_passed_as_before() -> void:
+	Traffic.set_off("yieldfit2", false)
+	Traffic.set_off("yieldgap", true)
+	var units: Array = await _stage_long()
+	var asker: Tank = units[1]
+	var mover: Movement = units[2]
+	assert_true(_ask(mover, asker), "setup: the parked tank gives way")
+	mover._end_yield()
+	assert_eq(mover._last_yielded_to, String(asker.name), "switch off: the 9 m centre distance reads passed, as before")
