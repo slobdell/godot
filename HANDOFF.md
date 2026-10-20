@@ -47,7 +47,12 @@ R35.19), D6 (a shift-click never replaces a squad's route, R35.28), T8 (after T7
 `tools/builder_checks.sh --wait-below 2`.
 **main bbe418b80 = brains E1, THE STRAGGLER RELEASE (R35.42)** (`83b3b90b4`: its own gate green in two parts, R35.22). **Tell him:**
 when one crew is wedged, its squad moves on to the next attack-move leg after ~8 s instead of waiting a minute or more. E1 + D1
-together are UNCHECKED on main: one batch main check after T7's hand-over merges (R35.45); workers don't merge main until then. Rulings R35.1–R35.33 in workstreams.
+together are UNCHECKED on main: one batch main check after T7's hand-over merges (R35.45); workers don't merge main until then.
+**main 9e226c700 = traffic T7, UNDER FIRE, GIVE WAY ONLY WHEN THERE'S NO WAY ROUND (R35.44)** (hand-over `3dbc206a0`, builder0 2903/0,
+sim-baseline the judged moves). **Tell him:** a crew under fire no longer steps aside into a killing zone when the crew behind can
+drive round it; jam-under-fire deaths -13 % on 140 fights, nothing else worse. **f2690c8ef adopts T7's 5 maps** (yard terminus locks
+gorge cut; read twice on the merged tree = the judged hashes: no interaction with E1 / D1). ONE batch main check (`make native check`)
+of D1 + E1 + T7 is running; perf-judge alone on a quiet builder0 owed for main and T7. Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
