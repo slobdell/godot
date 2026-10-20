@@ -697,3 +697,18 @@ body-trace-orders: native-for-check import ## Round 35 (orders D1): the body sta
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
 			--seed=1 --body=on --side=green --seconds=60 --body-trace $$flags > $(BUILD_DIR)/body-trace/$$name.log 2>&1 || true; \
 		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-trace/$$name.log | cut -c1-300 || echo "$$name: no BODY_PROBE line"; done
+
+# Round 35 extension (orders X3b, R35.17 re-read): the body stage per BODY_SEEDS x BODY_TRACE_ARMS, one process at a time
+# (light-lane safe), one "<arm> s<seed> BODY_PROBE {...}" line each -> build/body-seeds/lines.txt, then on - off per seed.
+BODY_SEEDS ?= 1 2 3 4 5 6 7 8 9 10 11 12
+.PHONY: body-seeds-orders
+body-seeds-orders: native-for-check import ## Round 35 (orders X3b): the body stage x BODY_SEEDS x BODY_TRACE_ARMS -> build/body-seeds/lines.txt
+	@rm -rf $(BUILD_DIR)/body-seeds && mkdir -p $(BUILD_DIR)/body-seeds
+	@for seed in $(BODY_SEEDS); do for arm in $(BODY_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
+			--seed=$$seed --body=on --side=green --seconds=60 --deploy-pass-trace $$flags > $(BUILD_DIR)/body-seeds/run.log 2>&1; \
+		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-seeds/run.log | sed "s/^/$$name s$$seed /" >> $(BUILD_DIR)/body-seeds/lines.txt \
+			|| echo "$$name s$$seed: no BODY_PROBE line"; \
+		echo "$$name s$$seed $$(grep -c '^DEPLOY_PASS_WAIT' $(BUILD_DIR)/body-seeds/run.log)" >> $(BUILD_DIR)/body-seeds/pass_waits.txt; done; done
+	@awk '{w[$$1]+=$$3} END {for (a in w) printf "deploy_pass_waits %s %d\n", a, w[a]}' $(BUILD_DIR)/body-seeds/pass_waits.txt | sort
+	@$(PYTHON) tests/control/body_seeds_table.py $(BUILD_DIR)/body-seeds/lines.txt | tee $(BUILD_DIR)/body-seeds/table.txt
