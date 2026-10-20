@@ -113,6 +113,7 @@ static func configure() -> bool:
 		# Round 35 (traffic T7): the pass's clock and its rejoin margin (absent before T7: the GDScript's values).
 		"PASS_MAX_S": float((Movement as Script).get_script_constant_map().get("PASS_MAX_S", 6.0)),
 		"PASS_BEYOND_M": float((Movement as Script).get_script_constant_map().get("PASS_BEYOND_M", 2.0)),
+		"PASS_STEP_M": float((Movement as Script).get_script_constant_map().get("PASS_STEP_M", 2.0)),
 		"tank_script": Tank,
 		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
 		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).
@@ -216,6 +217,11 @@ static func _count_manoeuvre() -> void:
 ## N4 (tests): Movement._around_fire natively on this mover, from its state now (the proof asks it beside the GDScript).
 static func around_fire(mover: Movement, waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector3:
 	return NativeBridge.impl.drive_around_fire(mover, waypoint, goal, order)
+
+
+## Round 35 (R35.8, tests): Movement._pass_lane natively on this mover, from its state now (-9 when not configured).
+static func pass_lane(mover: Movement, passer: String, from: Vector3, direction: Vector2) -> float:
+	return NativeBridge.impl.drive_pass_lane(mover, passer, from, direction)
 
 
 static func fire_ready() -> bool:

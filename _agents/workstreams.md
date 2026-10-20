@@ -190,6 +190,10 @@ _Filed here before any number._
   (attack-move movers by real_mps; never-settled), plus crews ending > 25 m off goal with a live move, new <= base. **Guards:**
   M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
   team <= base + 1.645 se.
+  **Added 2026-10-20 ~01:30 (R35.53, traffic's T9 x T7 note; before any joint3 number):** jam-under-fire deaths (T5's definition)
+  <= base + 1.645 se, and jam:yielding deaths <= base + 1.645 se (an unfinished give-way re-asked under fire meets T7's lane gate:
+  a lane -> refuse + pass; no lane -> up to 2 more step-asides under T9's cap). Base = main 5f05c997c's code (T7 ON) + the joint
+  code with both switches off.
 
 - **D6 a shift-click never replaces a squad's route (orders, R35.28 option (b)), filed before code on `stream/orders` `bda5db637`;
   seeds named by the orchestrator.** A shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal
@@ -520,6 +524,45 @@ _Filed here before any number._
 - **R35.48 (2026-10-19 ~22:20) Main's batch check of D1 + E1 + T7 is GREEN** (f2690c8ef, builder0 `make native check exited 0`, 2908/0,
   25 passed + 2 NOT JUDGED by load). Workers merge main. Full-check order: manoeuvre's joint2-on C31.1 (319d63fec) now, then brains'
   tip (E4 + the release counter) on the orchestrator's word. Series lane: W1b (~02:00) -> D6 re-read -> M5 -> joint -> T8.
+- **R35.49 (2026-10-19 ~23:15) builder2 is back: a second series lane.** The lead had builder2 converted to a cost-optimized Spot VM
+  (e2-highcpu-32, us-west4-a, 32 GB; same name and ZeroTier IP; idle auto-stop after 20 min; `_agents/gcp_builder.md`). Verified:
+  `make gcp-remote T=sim-baseline` reads all 13 recorded lines. **Machines now:** builder0 = one full check + one judged series;
+  builder2 = one judged series (both arms of a series on ONE machine, gcp_builder rule 1), `make gcp-start` first (it stops itself
+  when idle), launched via `make gcp-remote` / `REMOTE_HOST=slobdell@builder2`. **M5 moves to builder2 now** (its gate was builder0's
+  63336d690 check; rows are pinned so the machine does not change them). builder0's lane: W1b -> D6 re-read -> the joint -> T8.
+- **R35.50 (2026-10-19 ~23:50) main 214e444ef = native's pass-lane port (T7's `_pass_lane` + sweep in C++; R35.8 follow-up).**
+  `8f7c8a1f5`: builder2 `make native check exited 0`, 25 passed + 2 NOT JUDGED (timing; builder2 never judges timing), 2910/0,
+  sim-baseline 13 unmoved; 576-pose twin 0 mismatches. Green by composition: the only other diff from the checked tree is
+  mk/gcp.mk and tools/gcp/*.sh, which no check reads. First full check on the converted builder2.
+- **R35.51 (2026-10-20 ~00:30) E4 merged (main 5f05c997c); a batch main check on builder2.** E4's gate (code c7c7d347a, builder0):
+  2909/0, sim-baseline 13/13; bar (2) mixed_legs alone v after the others 50.03 s / reseats 1 both; bar (3) 33 of 34 moved behavioural
+  keys equal their alone value (table `references/round35/brains/e4_moved_lines_85fa139cf.txt`). The 34th, test_tactics_scenarios_6
+  `switches_per_unit_min` (main-suite 6.0, tip-suite 4.8, tip-alone 3.2), is a SECOND, pre-existing carry-over (that stage already
+  places through TacticsLab.unit; history-dependent on main too): merged as known; brains bisects it on the light lane. Main now
+  carries E4 + native's pass-lane port, checked separately: one `make native check` of 5f05c997c on builder2.
+  **GREEN:** builder2 `make native check exited 0`, 2911/0, 25 passed + 2 NOT JUDGED (timing). Workers merge main.
+- **R35.52 (2026-10-20 ~01:00) W1b PARKS as filed (one guard misses, upward).** builder0, native both arms, ON 7fc4a5307 v base
+  ab9c50c76 (E1 not in), fresh 3820–3843 x locks/terminus/sumps, 72 pairs, 12/12 calls exited 0 (`references/round35/manoeuvre/
+  w1b-series/`, stream dccdedd8d). Counter: halts 105296 ON. Deciding: wheeled pace-0 ticks still creeping 63 % -> 4 %; wedged + held
+  deaths 242 v 239 (band 31.1). Guards pass: open, stuck, jam, far loops, kills, team 0 hit rate. **MISS:** team 1 hit rate 0.6733 ->
+  0.6970 (+0.0237 v 1.645 se 0.0230): two-sided, misses by 0.0007. All deaths 2860 v 2862. Not re-read. Trace from the existing rows
+  (no re-run): team 1's hits per exposed second on held wheeled crews at pace 0, base v ON. If up, a still held hull is a sitting
+  duck (the rocking dodged fire) and round 36's answer is T8 (leave the hold when hit); if flat, a round-36 re-try. W1b stays OFF; its
+  mirror unmerged. Series queue (builder0): D6 re-read -> the joint -> T8; builder2: M5.
+  **Follow-up:** the existing rows can't split hits by a held target (FIGHT_CENSUS keeps per-team totals). Proxies (72 pairs, base v
+  ON): held exposure equal (3468 v 3495 wheeled pace-0 s); held deaths 76 v 67 (down), but their last-10-s hits 9.2 v 11.4 per death;
+  pooled accuracy up for both teams. Undecided; the probe line (each impact's target held/pace-0 state + exposure ticks) and a small
+  re-run are round 36's first step, not this round's.
+- **R35.53 (2026-10-20 ~01:20) The joint W1c + T9 series is re-cut on current main before it runs.** joint2-on `319d63fec` check:
+  builder0 `make native check exited 2`, 2925/0, the one red sim-baseline (foundry, crossing, sumps, cut MOVED; joint2-base
+  attribution running). But joint2 predates T7's ship: its base has T7 OFF, main has T7 ON + E1 + E4, and W1c / T9 change the
+  give-way paths T7 gates under fire. Re-cut: native rebases its mirrors onto main 5f05c997c (`pair/native-w1c-t9-main`), manoeuvre
+  cuts joint3 (base switches off, ON both on), C31.1 check + attribution, then the series on 901–932 / 940–963 in builder0's lane
+  after D6. R35.19's T6b caveat is moot (T7 shipped).
+  **Trees:** GDScript lab/joint3 `813f6e1ff` (main 5f05c997c + stream/manoeuvre + T9 c7de7cf95/aba7f800e; DEFAULT_OFF ["yieldfit2"];
+  W1b excluded); native `pair/native-joint3` `7a1435cdd` (813f6e1ff + T9's and W1c's mirrors + floors + the forced refusal stage;
+  diff v 813f6e1ff is T9 + W1c only); ON twins on lab 441c4dbc5. Native's first cut e2fe62c9a (with T8 and W1b) is superseded.
+  The two new guards read traffic's jam_census (T5's definition), the probe's under-fire counts reported only.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

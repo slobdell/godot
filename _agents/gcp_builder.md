@@ -1,4 +1,16 @@
-# builder2, the GCP burst builder (`balsa-worker-gcp`)
+# The GCP burst builder
+
+> **2026-10-19: builder2 IS NOW A COST-OPTIMIZED SPOT VM.** `balsa-worker-gcp` (shared with plane_maker) was converted from
+> c4d-standard-32 / us-west1-a to **e2-highcpu-32 (32 vCPU, 32 GB) Spot in us-west4-a** (~$0.11/h listed), carried over from a
+> snapshot of its disk onto **pd-balanced** 100 GB (e2 can't use hyperdisk); same name, same ZeroTier IP 10.115.229.9, so
+> `builder2` and every `make gcp-*` target work as before (zone now us-west4-a in `mk/gcp.mk`). Its startup script runs Tank
+> Squad's **idle auto-stop** (`tools/gcp/startup.sh`: powers off after 20 min with no `make` and 1-min load < 1) and then
+> plane_maker's startup. Verified 2026-10-19: AMD EPYC 7B12 (Rome), glibc 2.43, the native library builds, and **`make
+> gcp-remote T=sim-baseline` reads all 13 recorded lines** (so its rows count like builder0's). The old c4d VM, its hyperdisk
+> and the snapshot are deleted. e2 boots on mixed CPU platforms, so per-core speed can differ per boot; timing (perf-judge)
+> stays on builder0. `tools/gcp/provision.sh` recreates it from scratch if ever lost. The section below is its round-33 history.
+
+## builder2 (plane_maker's `balsa-worker-gcp`), the round-33 burst builder
 
 A second remote build machine for Tank Squad, powered on only when we want more throughput. builder0 stays the default
 for everything. This one is a Google Cloud VM that we start, use, and stop again. It is the plane_maker project's
@@ -118,3 +130,30 @@ corrupt node_modules/ws. Seed it with `cp -a ~/tank_squad/<warm>/node_modules <w
 **And touch the marker after copying** (brains, 2026-10-18): `cp -a` keeps `node_modules/.package-lock.json`'s old mtime, so make
 judges it older than the synced package-lock.json and both targets re-run `npm ci` anyway. Run
 `touch <wt>/node_modules/.package-lock.json` after the copy.
+
+## Choosing a cheaper machine (research, 2026-10-19; the lead decides)
+
+Our load is many independent single-thread Godot processes (test shards, series fights): the measure is **throughput per Spot
+dollar** = total CoreMark / Spot $ per hour. Memory need is light (~0.35 GB per check process, ~0.75 GB per series Godot), so a
+`highcpu` shape fits. Snapshot from gcloud-compute.com (third-party; data dated 2026-10-18; Spot prices change up to monthly,
+confirm in the console), x86 only (an ARM box would not share the sim-baseline hashes):
+
+| Machine (Spot) | vCPU / RAM | CPU | CoreMark | us-west1 $/h | CoreMark per $/h |
+|---|---|---|---|---|---|
+| **c3d-highcpu-60** | 60 / 118 GB | AMD Genoa | 1,363,944 | **0.542** | **2.52 M** |
+| **c3d-highcpu-30** | 30 / 59 GB | AMD Genoa | 682,826 | **0.271** | **2.52 M** |
+| c4d-highcpu-32 | 32 / 60 GB | AMD Turin | not listed (est. ~0.83 M) | 0.512 (us-west4 0.254) | ~1.6 M est. (us-west4 ~3.3 M) |
+| c4d-standard-32 (builder2 today) | 32 / 124 GB | AMD Turin | not listed (est. ~0.83 M) | 0.609 | ~1.4 M est. |
+| n2d-highcpu-32 | 32 / 32 GB | AMD Rome/Milan | 654,523 | 0.483 | 1.36 M |
+| t2d-standard-32 | 32 / 128 GB | AMD Milan, no SMT | 945,524 | 0.811 | 1.17 M |
+| c2d-highcpu-32 | 32 / 64 GB | AMD Milan | 710,036 | 0.610 | 1.16 M |
+| e2-highcpu-32 | 32 / 32 GB | mixed Intel/AMD | 416,599 | 0.475 (us-west4 0.112) | 0.88 M |
+
+**Recommendation (first pass):** c3d-highcpu-60 Spot in us-west1, about builder2's price for about twice its throughput (or c3d-highcpu-30 at
+half builder2's price for about the same). CoreMark is a proxy; one pinned series chunk on the chosen box (rows must equal
+builder0's) is the real check. Also: auto-stop after ~20 min with no `make` running, a dedicated ~40 GB pd-balanced disk (not the
+shared 100 GB hyperdisk), and a Spot vCPU quota of 60+ for C3D in the region.
+
+**Decided (the lead, 2026-10-19): the cheapest, by converting builder2 itself.** e2-highcpu-32 (e2 stops at 32 vCPU) Spot in **us-west4**, listed at ~$0.112/h
+(about 3.7 M CoreMark per $/h, the best ratio; us-west1's e2 Spot is $0.475/h). Quota checked: us-west4 E2_CPUS 72, CPUS 200;
+PREEMPTIBLE_CPUS there is 0, so the Spot VM draws on regular CPU quota (the provision run confirms). Verified: sim-baseline on the converted builder2 reads the recorded 13 lines.
