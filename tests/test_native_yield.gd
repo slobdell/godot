@@ -17,7 +17,7 @@ var set_up_asks := 0
 var _movers: Array[Movement] = []
 const ASKED_FIELDS: Array[String] = ["native_stale", "yield_to", "yield_spot", "_yield_point", "_yield_from", "_yield_stop_m",
 		"_yield_dir", "_yield_left", "_yield_held", "phase", "blocked_by", "_yield_unfit_last", "_wheel_radius_unit",
-		"_wheel_radius_value"]
+		"_wheel_radius_value", "pass_offer"]
 
 
 func test_the_give_way_on_open_ground() -> void:
@@ -30,6 +30,117 @@ func test_the_give_way_on_the_owned_state() -> void:
 	if FreshStage.parent(self, "test_the_give_way_on_the_owned_state"):  # its own process (tests/native/fresh_stage.gd)
 		return
 	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, {"": 10, "spot:spot": 1})
+
+
+## Round 34 (traffic T6b, R34.17, `underfire`): the open-ground stage with the switch on in forced compares. After a
+## negotiating compare: every OTHER hull hit this tick (the asked crew refuses: underfire_refusals), then every hull hit
+## (its own step aside held: underfire_holds); and every frame, each crew giving way hit this tick, its whole execute
+## step compared: T6b's give-way FINISHES under fire (T6's abort, dropped at R34.17, reversed crews into the asker), so
+## the native step must carry it on too. Tanks' ticks_since_hit and the switch are put back after each.
+## Round 35 (T7): in this stage's ranks a neighbour sits in every pass lane, so an asked crew under fire gives way as
+## today (underfire_gives); the refusal, the hold and a real pass start are floored on the pass stage below.
+const UNDERFIRE_FLOORS := {"": 10, "underfire_gives": 1, "pass_ticks": 1, "passes_timeout": 1, "passes_done": 1}
+## Round 35 (traffic T7): the forced passes. Each mover with a move order, `under_fire` times a stage, is put mid-pass round
+## the nearest other hull and its drive twinned (`_avoid` steers by `_pass_point`): cycling a live pass (its way toward the
+## refuser: behind it, the abreast point), one on its last tick (the clock ends it: passes_timeout) and one already past
+## the refuser's nose (passes_done). Put back after each.
+const PASS_CASES := ["live", "timeout", "done"]
+
+
+func test_the_give_way_under_fire() -> void:
+	if FreshStage.parent(self, "test_the_give_way_under_fire"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+
+
+func test_the_give_way_under_fire_owned() -> void:
+	if FreshStage.parent(self, "test_the_give_way_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+
+
+## Round 35 (traffic T7): the pass, end to end (traffic's open-ground staging, test_traffic_underfire). Two law tanks on
+## yard_open. Leg 0: the crew under fire stands on a stop order, hit every tick, and a squadmate is sent 30 m straight
+## through it: asked, it refuses with a side offered (a lane on open ground), the asker passes and ends abreast. Leg 1: both
+## drive head-on, both hit every tick: the one to give way holds its own step aside when the other has a lane. Every drive
+## of both twinned, every frame.
+const PASS_FLOORS := {"": 2, "underfire_refusals": 1, "passes": 1, "pass_ticks": 1, "passes_done": 1, "underfire_holds": 1}
+const PASS_FRAMES := 600
+
+
+func test_the_pass_under_fire() -> void:
+	if FreshStage.parent(self, "test_the_pass_under_fire"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _pass_stage(false)
+
+
+func test_the_pass_under_fire_owned() -> void:
+	if FreshStage.parent(self, "test_the_pass_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _pass_stage(true)
+
+
+func _pass_stage(owned: bool) -> void:
+	if NativeExpect.absent(self):
+		print("native: absent, the pass is not exercised in this run")
+		return
+	MoverState.world_reset()
+	_man_reset()
+	_yield_reset()
+	NativeDrive.owned = owned
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "yard_open")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.seed_spawns(1, 0.0)
+	var controllers: Array[OrderController] = []
+	var movers: Array[Movement] = []
+	var tanks: Array[Tank] = []
+	for spec: Array in [["PassRefuser", Vector3(0.0, 0.0, 0.0), 0.0], ["PassAsker", Vector3(0.0, 0.0, 14.0), 0.0]]:
+		var tank := game_match.spawn_tank(spec[0], 0, Match.Team.GREEN, "tank")
+		tank.place(spec[1], spec[2])
+		tanks.append(tank)
+		var orders := OrderController.new()
+		orders.tank = tank
+		orders.tanks_root = game_match.tanks
+		add_to_tree(orders)
+		controllers.append(orders)
+	await wait_physics_frames(2)
+	for orders in controllers:
+		movers.append(Movement.of(orders.tank))
+	_movers = movers
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	for leg in 2:
+		var start_asker := Vector3(0.0, 0.0, 14.0)
+		tanks[0].place(Vector3.ZERO, 0.0)
+		tanks[1].place(start_asker, 0.0)
+		await wait_physics_frames(2)
+		if leg == 0:
+			controllers[0].set_orders({"type": "stop"}, null)
+		else:
+			controllers[0].set_orders({"type": "move_to", "x": 0.0, "z": 30.0}, null)
+		controllers[1].set_orders({"type": "move_to", "x": 0.0, "z": -30.0}, null)
+		for frame in PASS_FRAMES:
+			tanks[0].ticks_since_hit = 0
+			if leg == 1:
+				tanks[1].ticks_since_hit = 0
+			var result := _compare_tick(movers, controllers, leg * PASS_FRAMES + frame)
+			drives += result[0]
+			mismatches += result[1]
+			if first == "" and result[2] != "":
+				first = "(pass leg %d) %s" % [leg, result[2]]
+			await wait_physics_frames(1)
+			if tanks[1].global_position.z < -20.0:
+				break
+	NativeDrive.owned = false
+	Traffic.set_off("underfire", was_off)
+	print("native yield pass stage%s: %d drives compared, %d mismatches" % [" (owned state)" if owned else "", drives, mismatches])
+	assert_eq(mismatches, 0, "the native pass is the live GDScript's: %s" % first)
+	_yield_check("pass%s" % [" owned" if owned else ""], PASS_FLOORS)
 
 
 ## Round 34 (native N5): the Sumps stage stands beside the west pit, not on its edge. At (-16, -6) its ranks overlapped
@@ -148,7 +259,8 @@ func _shortened(owned: bool) -> void:
 	_yield_check("shortened%s" % [" owned" if owned else ""], {"": 2, "yield_spots_shortened": 2})
 
 
-func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0) -> void:
+func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: float, floors: Dictionary, set_up := 0,
+		under_fire := 0) -> void:
 	if NativeExpect.absent(self):
 		print("native: absent, the give-way is not exercised in this run")
 		return
@@ -187,6 +299,12 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	var drives := 0
 	screened = 0
 	set_up_asks = set_up
+	var fire_asks := under_fire
+	var fire_aborts := under_fire
+	var fire_passes := under_fire
+	var fire_executes := 0
+	if under_fire > 0:
+		assert_true(NativeGun.configure(), "the native gun takes the live constants (the execute step)")
 	var mismatches := 0
 	var first := ""
 	for leg in 2:
@@ -197,6 +315,24 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 			controllers[i].set_orders({"type": "move_to", "x": slots[mine].x, "z": slots[mine].z}, null)
 		for frame in STAGE_FRAMES:
 			await wait_physics_frames(1)
+			for i in movers.size():
+				if fire_aborts > 0 and movers[i].yield_to != "":
+					fire_aborts -= 1
+					var result := _abort_compare(movers, controllers[i], owned, leg * STAGE_FRAMES + frame)
+					fire_executes += result[0]
+					mismatches += result[1]
+					if first == "" and result[2] != "":
+						first = "(hit giving way) " + result[2]
+			for i in movers.size():
+				if fire_passes > 0 and String(controllers[i].move_order.get("type", "")) == "move_to" \
+						and movers[i].ctl.tank.is_alive() and movers[i].yield_to == "":
+					fire_passes -= 1
+					var result := _pass_compare(movers, controllers, i, PASS_CASES[fire_passes % PASS_CASES.size()],
+							leg * STAGE_FRAMES + frame)
+					drives += result[0]
+					mismatches += result[1]
+					if first == "" and result[2] != "":
+						first = "(passing) " + result[2]
 			for i in movers.size():
 				if not _negotiates(movers[i], controllers[i]):
 					continue
@@ -214,6 +350,20 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 					mismatches += result[1]
 					if first == "" and result[2] != "":
 						first = "(others set up) " + result[2]
+				if fire_asks > 0:
+					fire_asks -= 1
+					var others: Array[int] = []
+					for j in movers.size():
+						if j != i:
+							others.append(j)
+					var all: Array[int] = others.duplicate()
+					all.append(i)
+					for hit: Array[int] in [others, all]:
+						result = _fire_compare(movers, controllers, i, hit, leg * STAGE_FRAMES + frame)
+						drives += result[0]
+						mismatches += result[1]
+						if first == "" and result[2] != "":
+							first = "(%s under fire) %s" % ["others" if hit.size() < movers.size() else "all", result[2]]
 	NativeDrive.owned = false
 	print("native yield stage %s%s: %d negotiating drives compared (of %d drives screened), %d mismatches" % [arena,
 			" (owned state)" if owned else "", drives, screened, mismatches])
@@ -223,6 +373,11 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	# owned arm reads the live arm's counts. In a shared process they moved with the shard order (the Sumps' parked
 	# refusals 129, 47, 6, 0). Not reached here: the swap (native.md N5.Y: why); the shortened spot is forced below.
 	assert_true(drives >= MIN_COMPARED, "%s: %d negotiating drives compared >= %d" % [arena, drives, MIN_COMPARED])
+	if under_fire > 0:
+		print("native yield %s%s: %d give-ways hit (execute step compared)" % [arena, " (owned state)" if owned else "",
+				fire_executes])
+		assert_true(fire_executes >= 1, "%s: a crew giving way is hit and compared" % arena)
+		assert_eq(int(yield_tally.get("underfire_aborts", 0)), 0, "%s: a give-way under fire finishes (T6b)" % arena)
 	_yield_check("%s%s" % [arena, " owned" if owned else ""], floors)
 
 
@@ -277,4 +432,90 @@ func _set_up_compare(movers: Array[Movement], controllers: Array[OrderController
 		controllers[j].tank.deploy_ratio = keep[j][0]
 		controllers[j].weapon_order = keep[j][1]
 		controllers[j].move_order = keep[j][2]
+	return result
+
+
+## Round 34 (traffic T6): mover `i`'s drive twinned with the hulls `hit` struck this tick (ticks_since_hit 0) and the
+## `underfire` switch on; both put back.
+func _fire_compare(movers: Array[Movement], controllers: Array[OrderController], i: int, hit: Array[int], frame: int) -> Array:
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	var keep := []
+	for j in hit:
+		keep.append(controllers[j].tank.ticks_since_hit)
+		controllers[j].tank.ticks_since_hit = 0
+	var result := _compare_tick(movers, controllers, frame, i)
+	for k in hit.size():
+		controllers[hit[k]].tank.ticks_since_hit = keep[k]
+	Traffic.set_off("underfire", was_off)
+	return result
+
+
+## Round 35 (traffic T7): mover `i` put mid-pass round the nearest other hull (`which` of PASS_CASES), its drive twinned with
+## the `underfire` switch on; the pass state and the switch put back.
+func _pass_compare(movers: Array[Movement], controllers: Array[OrderController], i: int, which: String, frame: int) -> Array:
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	var mover := movers[i]
+	var here := mover.ctl.tank.global_position
+	var nearest: Tank = null
+	for j in controllers.size():
+		var other := controllers[j].tank
+		if j != i and other.is_alive() and (nearest == null or here.distance_to(other.global_position) < here.distance_to(nearest.global_position)):
+			nearest = other
+	var keep := [mover._pass_by, mover._pass_side, mover._pass_way, mover._pass_left, mover._pass_failed_by]
+	var toward := Vector2(nearest.global_position.x - here.x, nearest.global_position.z - here.z).normalized()
+	mover._pass_by = String(nearest.name)
+	mover._pass_side = 1.0 if frame % 2 == 0 else -1.0
+	mover._pass_way = -toward if which == "done" else toward
+	mover._pass_left = 1 if which == "timeout" else int(Movement.PASS_MAX_S * SimClock.TICK_RATE)
+	mover._pass_failed_by = ""
+	var result := _compare_tick(movers, controllers, frame, i)
+	mover._pass_by = keep[0]
+	mover._pass_side = keep[1]
+	mover._pass_way = keep[2]
+	mover._pass_left = keep[3]
+	mover._pass_failed_by = keep[4]
+	Traffic.set_off("underfire", was_off)
+	return result
+
+
+## Round 34 (traffic T6b): a crew GIVING WAY hit this tick, its whole execute step (OrderController.compute_command, where
+## right_of_way runs) against the native one (NativeBridge.impl.execute, execute_native.cpp's right_of_way_with), the
+## `underfire` switch on; the give-way goes on in both (no abort: underfire_aborts must not move, and is tallied if it
+## does). [executes, mismatches, first]; all put back.
+func _abort_compare(movers: Array[Movement], ctl: OrderController, owned: bool, frame: int) -> Array:
+	var delta := 1.0 / float(SimClock.TICK_RATE)
+	var was_off := Traffic.off("underfire")
+	Traffic.set_off("underfire", false)
+	var was_hit := ctl.tank.ticks_since_hit
+	ctl.tank.ticks_since_hit = 0
+	var was_exec := BrainSwitches.native_exec
+	BrainSwitches.native_exec = false
+	var start := ExecuteTwinCase._capture(movers, ctl)
+	var live_cmd: TankCommand = ctl.compute_command(delta)
+	var live := ExecuteTwinCase._capture(movers, ctl)
+	ExecuteTwinCase._restore(movers, ctl, start)
+	for each in movers:
+		each.native_stale = Movement.STALE_ALL
+	var answer: Variant = NativeBridge.impl.execute(ctl, delta, NativeExec.EXEC_OWNED_VERIFY if owned else NativeExec.EXEC_LIVE)
+	var after := ExecuteTwinCase._capture(movers, ctl)
+	var result := [0, 0, ""]
+	if answer == null:
+		result = [0, 1, "frame %d %s: the execute step handed back" % [frame, ctl.tank.name]]
+	else:
+		result[0] = 1
+		var differ := ExecuteTwinCase._diff(live, after)
+		if ExecuteTwinCase._command(live_cmd) != ExecuteTwinCase._command(answer as TankCommand) or differ != "":
+			result = [1, 1, "frame %d %s: command live %s native %s; %s" % [frame, ctl.tank.name,
+					ExecuteTwinCase._command(live_cmd), ExecuteTwinCase._command(answer as TankCommand), differ]]
+		var moved := int(after[0][0].get("static:underfire_aborts", 0)) - int(start[0][0].get("static:underfire_aborts", 0))
+		if moved != 0:
+			yield_tally["underfire_aborts"] = int(yield_tally.get("underfire_aborts", 0)) + moved
+	ExecuteTwinCase._restore(movers, ctl, start)
+	for each in movers:
+		each.native_stale = Movement.STALE_ALL
+	BrainSwitches.native_exec = was_exec
+	ctl.tank.ticks_since_hit = was_hit
+	Traffic.set_off("underfire", was_off)
 	return result

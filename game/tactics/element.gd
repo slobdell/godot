@@ -144,6 +144,8 @@ static var stalls_arrived := 0
 var _stall_best := INF
 var _stall_tick := -1
 var stall_arrived := false
+## Round 35 (brains E1): the leg gate's straggler clock (ElementPlan.leg_wait), reset with every task.
+var leg_wait := {}
 ## B9: the task's `via` point has been driven through (ElementPlan's via leg), reset with every task.
 var via_done := false
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
@@ -347,6 +349,7 @@ func assign(new_task: Variant, keep_queue := false) -> String:
 	_stall_best = INF
 	_stall_tick = -1
 	stall_arrived = false
+	leg_wait = {}
 	via_done = false
 	_mouth_sent = {}
 	_mouth_held_tick = {}
@@ -549,7 +552,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"facing_sent": facing_sent, "transit": transit, "arrived_tick": arrived_tick, "halt_seated": halt_seated, "deploy": deploy,
-			"stall_arrived": stall_arrived, "via_done": via_done,
+			"stall_arrived": stall_arrived, "via_done": via_done, "leg_wait": leg_wait,
 			"route": route, "route_index": route_index, "bound": bound, "bait_hide": bait_hide, "bait_back": bait_back,
 			"reseat": _reseat, "reseat_keep": _reseat_keep if _reseat else {}, "unpin_leader": _unpinned, "issued_slots": slots, "issued_anchor": anchor,
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
@@ -1665,6 +1668,7 @@ func _bt_fire_order(situation: Dictionary) -> void:
 ## elements whose name contains it: task, anchor, heading, shape, file share and corridor, arrived, and per crew where it
 ## stands, its slot (and the slot it asked for, when grounded), its slot's offset from the anchor along / across the
 ## heading, and its distance to its slot. For the War Rig 4-of-5 case (foundry s8, two seats 28 m and 56-68 m out).
+## Round 35 (brains E1): `all` traces every element, and a LEG_GATE line follows each row (ElementPlan.LEG_TRACE).
 static var _element_trace := ""
 static var _element_trace_read := false
 var _et_last := -1000
@@ -1703,7 +1707,7 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			if arg.begins_with("--element-trace="):
 				_element_trace = arg.trim_prefix("--element-trace=")
 	var tick := int(situation.get("tick", 0))
-	if _element_trace == "" or not element_name.contains(_element_trace) or tick - _et_last < SimClock.TICK_RATE:
+	if _element_trace == "" or (_element_trace != "all" and not element_name.contains(_element_trace)) or tick - _et_last < SimClock.TICK_RATE:
 		return
 	_et_last = tick
 	var anchor_v: Variant = plan.get("anchor")
@@ -1734,6 +1738,7 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
 			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived, inset,
 			" | ".join(PackedStringArray(rows))])
+	print("LEG_GATE t=%.1f [%s] id %d arrived %s %s" % [float(tick) / SimClock.TICK_RATE, element_name, id, arrived, String(plan.get("leg_gate", "-"))])
 
 
 ## R33.35, MEASUREMENT ONLY (under --arrive-trace): HERRING_LAY once a second while this element is in the herringbone
@@ -1795,6 +1800,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	technique = String(plan["technique"])
 	reason = String(plan["why"])
 	anchor = plan["anchor"]
+	leg_wait = plan.get("leg_wait", leg_wait)
 	heading = plan["heading"]
 	bounding = int(plan["bounding"])
 	var was_arrived := arrived

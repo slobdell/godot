@@ -63,6 +63,18 @@ const INSET_NEAR_M := 60.0
 static var HALT_SHAPE_EARLY := OS.get_cmdline_user_args().has("--halt-shape-early=on") or OS.get_environment("HALT_EARLY") == "on"
 ## ...and as having reached its current leg's anchor within this far.
 const LEG_ARRIVE := 14.0
+## Round 35 (brains E1), MEASUREMENT ONLY: under `--element-trace=<name|all>` `_advance` writes plan["leg_gate"] (reached, closed
+## up, and the crew `_cohesive` is waiting on: its gap, its seconds against the allowance) for ELEMENT_TRACE's LEG_GATE line.
+static var LEG_TRACE := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--element-trace="))
+## Round 35 (brains E1, C35.7 / R35.3): THE LEG GATE DOES NOT WAIT FOR A STRAGGLER. A crew that has not come STRAGGLER_GAIN_M
+## nearer its slot in STRAGGLER_S while the element stands at its anchor no longer holds the next leg (`leg_wait`): the element
+## steps and the crew is sent on to its next slot, where it catches up. Traced (lab/cpf4 e76f6dab6, law/faced_attack_move-614,
+## laptop): an element stood at its anchor from t 37 past the 75 s judge for one crew wedged 30 m off its slot (plant 9.25 m/s,
+## real 1.17, its re-seats spent) while the other three had closed up. R34.18's "steps at t 60 not 32" was this gate waiting on
+## a laggard, not a sector face. `--straggler=off` (read here, at load, so no element plans before it) is the gate as before.
+const STRAGGLER_S := 8.0
+const STRAGGLER_GAIN_M := 2.0
+static var STRAGGLER_RELEASE := not OS.get_cmdline_user_args().has("--straggler=off")
 ## A halt formation's crews drive this far out along their sector so they end up facing it (meters).
 ## K1 orders carry no facing, so a vehicle's heading comes from the way it travelled (see _agents/doctrine.md).
 const FACE_LEAD := 5.0
@@ -2542,13 +2554,54 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 	# when the element has them for this anchor: in a lane the nominal slot can sit metres inside a block, and a squad
 	# standing in its real slots read as "not closed up" forever.
 	var issued: Dictionary = state.get("issued_slots", {}) if state.get("issued_anchor") == anchor else {}
-	if reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table,
-			float(plan.get("corridor_m", INF)), _seating_given(plan, keyed, String(plan["formation"])), issued):
+	var lagging: Dictionary = _lagging(keyed, anchor, String(plan["formation"]), heading, spacing, table,
+			float(plan.get("corridor_m", INF)), _seating_given(plan, keyed, String(plan["formation"])), issued) if reached else {}
+	var closed: bool = reached and lagging.is_empty()
+	# Round 35 (brains E1): ...and without a crew that has stopped closing on its slot (STRAGGLER_S).
+	var released := 0
+	if reached and not closed and STRAGGLER_RELEASE:
+		var wait := leg_wait(state.get("leg_wait", {}), anchor, lagging, int(situation.get("tick", 0)))
+		plan["leg_wait"] = wait
+		if (wait["stalled"] as Array).size() == lagging.size():
+			closed = true
+			released = lagging.size()
+	if LEG_TRACE:
+		var held := ""
+		for unit_name: String in lagging:
+			held += " held by %s %.1f m" % [unit_name, float(lagging[unit_name])]
+			break
+		plan["leg_gate"] = "reached %s (%.1f m) closed %s%s%s" % [reached, center.distance_to(anchor) if anchor is Vector3 else -1.0,
+				closed, held, (" released %d" % released) if released > 0 else ""]
+	if closed:
 		anchor = clamp_to_arena(center + heading * minf(leg, center.distance_to(destination)))
+		if released > 0:
+			plan["leg_wait"] = {"anchor": anchor, "since": {}, "stalled": [],
+					"released": int((state.get("leg_wait", {}) as Dictionary).get("released", 0)) + released}
 	elif anchor == null:
 		anchor = clamp_to_arena(center)
 	plan["anchor"] = anchor
 	return anchor
+
+
+## Round 35 (brains E1): the straggler clock for the leg standing at `anchor`. `was` is the element's last (plan["leg_wait"],
+## kept by Element, cleared with every task); a clock kept for another anchor starts again. For each crew in `lagging`
+## ({name: metres off its slot}, the ones `_cohesive` would wait on) it keeps [the nearest it has come, the tick it came
+## STRAGGLER_GAIN_M nearer than before]; a crew whose tick is STRAGGLER_S old is `stalled`. Returns {"anchor", "since",
+## "stalled": [names], "released": the element's count so far}. Pure.
+static func leg_wait(was: Dictionary, anchor: Vector3, lagging: Dictionary, tick: int) -> Dictionary:
+	var since: Dictionary = was.get("since", {}) if was.get("anchor") is Vector3 \
+			and (was["anchor"] as Vector3).is_equal_approx(anchor) else {}
+	var kept := {}
+	var stalled: Array = []
+	for unit_name: String in lagging:
+		var gap := float(lagging[unit_name])
+		var best: Array = since.get(unit_name, [gap, tick])
+		if gap < float(best[0]) - STRAGGLER_GAIN_M:
+			best = [gap, tick]
+		kept[unit_name] = best
+		if tick - int(best[1]) >= int(STRAGGLER_S * SimClock.TICK_RATE):
+			stalled.append(unit_name)
+	return {"anchor": anchor, "since": kept, "stalled": stalled, "released": int(was.get("released", 0))}
 
 
 ## Round 18 (D4): the seating `_group` gives `members` in `formation` — the pinned leader and the previous seats — for
@@ -2568,8 +2621,16 @@ static func _seating_given(plan: Dictionary, members: Array, formation: String) 
 ## settled, and never took the next (his attack-move; 14 of 24 probe runs off the Sumps).
 static func _cohesive(members: Array, anchor: Variant, formation: String, heading: Vector3, spacing: float,
 		table: DoctrineTable, corridor_m := INF, seating := {}, issued := {}) -> bool:
+	return _lagging(members, anchor, formation, heading, spacing, table, corridor_m, seating, issued, true).is_empty()
+
+
+## Round 35 (brains E1): `_cohesive`'s judgement crew by crew: {name: metres off its slot} for every member that would not
+## reach its slot within the allowance (empty = closed up). `first_only` stops at the first, as `_cohesive` always did.
+static func _lagging(members: Array, anchor: Variant, formation: String, heading: Vector3, spacing: float,
+		table: DoctrineTable, corridor_m := INF, seating := {}, issued := {}, first_only := false) -> Dictionary:
+	var lagging := {}
 	if anchor == null or members.is_empty():
-		return true
+		return lagging
 	var slowest := INF
 	for member: Dictionary in members:
 		slowest = minf(slowest, maxf(float(member.get("speed", 9.0)), 0.5))
@@ -2595,8 +2656,10 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 			gap = minf(gap, (member["position"] as Vector3).distance_to(sent[String(member["name"])]))
 		var seconds := gap / maxf(float(member.get("speed", 9.0)), 0.5)
 		if seconds > allowed_s:
-			return false
-	return true
+			lagging[String(member["name"])] = gap
+			if first_only:
+				return lagging
+	return lagging
 
 
 ## Who stands where: the leader first, then armour, then the fragile and indirect-fire vehicles, by name.

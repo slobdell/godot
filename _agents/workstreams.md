@@ -199,6 +199,20 @@ _Filed here before any number._
   Sumps seed 5988 scenario keeps 0 path crossings; test_control_queued_task and the route tests green; the 12 click cells
   byte-identical between arms; a test reproducing the replace (red on the switch off, green on).
 
+- **D3b a packed squad arrives in a file its halt opens out of (orders, R35.41), filed before code on `stream/orders` `972c05912`.**
+  `make native orders-probe` on builder0, FRESH seeds 3661–3666, n 6, medians; arms `main:` v `pack:--pack=on,--arrive-file=on` (deploy
+  step on; D4/D5/D6 at their defaults). **Counter first:** packed > 0 in the pack arm's click cells, rows differ from main's. **Gain:**
+  summed median `end far max m` over the click cells >= 15 % lower AND closest foreign hull at arrival >= 7 m in every cell (what
+  failed D3). **Guards:** far bank 0 in every cell; all-in <= main x 1.2 + 3 s; never-in no higher; twitch median <= main + 3 m per
+  cell; test_control_scale green.
+
+- **E4 lab hulls placed with `Tank.place` (brains, R35.47), filed before code from `stream/brains` `0fa9b5e29` Status.** TacticsLab.unit,
+  TacticsLab.gun and BodyStage's spawn (body_stage.gd:152) call `tank.place()` instead of a bare `global_position =`. builder0 native:
+  (1) the suite green; (2) test_tactics_mixed_legs alone v after h1b_guard / blocker_reach reads the same arrival and reseats (plus a
+  test pinning order-independence); (3) every test line that moves is listed old -> new, each expected to move from its "later-match"
+  value to its "first-match" value; any other move is traced before the merge. sim-baseline unmoved expected (Match spawns via
+  army_layout, already `place`).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
@@ -446,6 +460,66 @@ _Filed here before any number._
   tanks across the Sumps with W1c pinned ON arrive 57.3 s, reseats 1, identical to base. The exact nose-on pose is not rebuilt live
   (time-boxed); the rule test pins the predicate. What carries between tests is unproven; leading candidate trip-up 82 (Godot settles
   TOUCHING bodies differently in a process's first match); per-instance tables and W1c's counter ruled out.
+- **R35.40 (2026-10-19 ~20:05) D6's far-bank crossing traced and fixed; the re-read joins the series queue after W1b.** s3643:
+  squad 4's final place sat at the west bridge's MOUTH (-100, 28; his click 4 m from the deck's end); with requeue it arrives by its
+  whole route from the north-east and its shape, laid on that heading, puts seats past the dry deck on the far bank (the water rule
+  keeps seats off the canal, not off a deck's far end). Fix (`1b174f05d`, under D6's switch): a shifted leg's places step back along
+  the way the squad came from any deck their seats would reach; a click on or within 2 m of a deck leaves them. Laptop s3643 far bank
+  1 -> 0; test_control_deck_clear 3/0; control suite 467/0. **Series queue now: W1b -> D6 re-read (3651–3656) -> M5 -> joint -> T8.**
+  Round-36 watch: a plain click right at a bridge mouth could lay seats past the deck today (far bank 0 in every A/B this round).
+- **R35.41 (2026-10-19 ~20:15) D3b grant (orders, in brains' `ElementPlan._plan_form_up`).** ONE switched addition, default OFF: when
+  the task carries `halt_at` (set only by orders' pack, itself OFF), the last INSET_NEAR_M of the move uses a file/column arrival.
+  Nothing else in the function; merge note to brains (told). Bar first (fresh seeds, far bank 0 in every cell, D3's gain/guards);
+  its series after T8.
+- **R35.42 (2026-10-19 ~20:30) E1 PASSES its bar; merge waits on the partial gate.** `83b3b90b4` (E1 67a5a9db0 + main fc1f4ac0e
+  tooling), builder0 native, base `--straggler=off` same tree; FRESH 701–716 x 4 factions (64 attack-move pairs), fights 720–743
+  (n 24). (0) releases 6 v 0 (inferred). (a) long-hold seconds 89 v 358 (0.25x; paired -269, se 116.4, 2.3 se): all in the 6
+  released runs, the other 58 identical; wait seconds 339 v 561 (wedged 138 v 342). (b) VACUOUS. (c) left > 25 m 17 v 20. (d) late
+  movers 13 v 10 (+3, limit 4.4; released crews still driving at 75 s), settled 35 v 34. (e) arrived 194 v 190. (f) kills 970 v 970,
+  deaths 984 v 984, hit rate 0.718 both (the release fired 3x for CPU elements). (g) test 2890/0, sim-baseline unmoved; the corrected
+  partial (lint + 10) queued. **In his terms:** when one crew is wedged, its squad moves on to the next attack-move leg after ~8 s
+  instead of waiting a minute or more; the wedged crew catches up or stays stuck (W1c + T9's job).
+- **R35.43 (2026-10-19 ~20:40) D3b withdrawn before its series; D3 stays parked for a round-36 redesign.** Built within R35.41 (OFF).
+  Laptop look at seed 34 (reported only; 3661–3666 unseen): arrivals no longer mix (closest foreign at arrival 7.0–13.1 m in 5 of 6
+  cells) but the spread GROWS in every click cell (end far Crossing 3 64.0 v 34.2, Locks 3 67.3 v 49.4) and the pack arm crosses the
+  river in both Crossing cells (far bank 1 each): the strict pack (every seat on good ground, arrivals apart) pushes places away from
+  the click. Not spent on the series lane. Round 36: redesign the packing objective (game_design.md). Series queue: W1b -> D6 re-read
+  -> M5 -> joint -> T8.
+- **R35.44 (2026-10-19 ~20:45) T7 PASSES its bar as filed.** Pair `e95179252`, builder0 start to end, native, pinned, 180 s, fixed
+  arenas {terminus, locks, sumps, gorge, parade} x 1600–1627, n 140 paired, none missing; crossing 44–46 x 6. Counters (arm):
+  underfire_refusals 427, passes 311 (192 abreast, 44 timed out), gives 1327, holds 68; base 0. **G** jam-under-fire deaths 277 -> 240
+  (-13 %, se 17.65, 2.1 se): PASS. Guards: open 4780 -> 4746; stuck 958 -> 960; far loops 108 -> 108; kills 6037 -> 5979, hit rate
+  0.732 -> 0.731; post-hit contacts 416 -> 407; crossings 180/180 x 4; all friendly contacts 107053 -> 107271 (+0.2 %): all PASS.
+  Reported: all deaths 6082 -> 6019; by arena G terminus 66->49, sumps 71->60, gorge 52->40, locks 55->56, parade 33->35. T6b's costs
+  (stuck +61, far loops x2) are gone. **Before it ships:** (1) T6b's abort removal ("a give-way already begun finishes when a hit
+  lands") is default behaviour in BOTH T7 arms and not on main; R34.20 parked T6 (T6b's series failed stuck and far loops), so T7's
+  pass does not cover it: traffic shows a filed T6b pass, or T6b is switched and ships OFF with T7 re-verified on that tree;
+  (2) the hand-over re-cut on current main + one `make native check`; (3) perf-judge alone on a quiet builder0.
+  **(1) settled (2026-10-19 ~20:55):** main never had a mid-step abort; T6 ADDED it as rule (c) and T6b removed it again, so the
+  hand-over's `right_of_way` differs from main by a comment only (checked by the orchestrator: `git diff main 3dbc206a0 --
+  game/ai/movement.gd`); the native abort was dropped in T6b's re-cut; T6b's kept parts (the refusal, the self-yield hold) are what T7
+  replaces and gates; switch-OFF inertness reads main's 13 lines. T7's pass covers the hand-over. Hand-over: `handover/t7-on-main`
+  `3dbc206a0` (= main 8be787afe + the judged pair); its check follows brains' partial.
+- **R35.45 (2026-10-19 ~21:00) E1 merged (main bbe418b80); one batch main check after T7.** E1's gate: builder0 test 2890/0,
+  sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760 + the partial (lint + 10) exited 0, 2 NOT JUDGED by load. Main now carries
+  E1 and D1 (both in element_plan.gd, different functions) unchecked together; T7's hand-over (cut before E1) takes the full-check slot
+  next, then merges, then ONE main check of E1 + T7 + D1. Workers don't merge main until it's green.
+- **R35.46 (2026-10-19 ~21:30) E3 closed: no lever.** Brains' census (74526bca1, laptop GDScript, lane_census showmatch locks /
+  terminus / crossing x seeds 1400–1409, n 30): 56 flips to hold (35 ahead on points, 21 zone threatened); engaged elements re-posted
+  > 40 m at a flip lost 15 / 30 / 25 % of crews in the next 30 s v 19 / 40 / 33 % for those that kept their task (SELECTED groups: no
+  sign the pull-back is worse, not proof it is better). locks-1404 is one fight's shape (as B9 / R34.19). No A/B. **E4 (brains,
+  trace only):** what carries between matches in one process so test_tactics_mixed_legs plays differently after another test (trip-up
+  82 suspected; BodyStage R32.6), and whether a reset makes the second match equal the first.
+- **R35.47 (2026-10-19 ~22:00) E4 named: a bare `global_position =` leaves the physics body at its spawn slot until the first step.**
+  Brains' probe (laptop GDScript, the four-tank Sumps stage seed 1 played twice in one process): 1st 50.0 s / reseats 1, 2nd 55.9 s /
+  reseats 0; they diverge at step 0 (2nd match only: outer tanks pushed 0.31 m inward), because every body still sits at its Match
+  spawn slot before lab.start and stale bodies overlap neighbours; a later match resolves it as penetration. `Tank.place` (node +
+  server flush + interpolation + sync_position) makes both matches identical in poses AND Match.state_hash at all 1800 steps. Fix in
+  brains' lab paths approved (bar above), after the batch main check. 85 other test files (brains' corrected count) spawn then assign `global_position`; listed
+  for their owners in round 36 (orientation lesson).
+- **R35.48 (2026-10-19 ~22:20) Main's batch check of D1 + E1 + T7 is GREEN** (f2690c8ef, builder0 `make native check exited 0`, 2908/0,
+  25 passed + 2 NOT JUDGED by load). Workers merge main. Full-check order: manoeuvre's joint2-on C31.1 (319d63fec) now, then brains'
+  tip (E4 + the release counter) on the orchestrator's word. Series lane: W1b (~02:00) -> D6 re-read -> M5 -> joint -> T8.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
