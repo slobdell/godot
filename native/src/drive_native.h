@@ -99,6 +99,10 @@ struct DriveConfig {
 	// `Movement._off` empty) and STUCK_NET_M. stall_net_ready false on a tree without S1.
 	bool stall_net_ready = false, STALL_NET = false;
 	double STUCK_NET_M = 0.5;
+	// Round 36 (manoeuvre S2a): Movement._side_waypoint / _side_over's constants; h1b_side_ready false on a tree without
+	// S2a (its members absent: the reads skipped). The switch itself is read only where the side is chosen (GDScript).
+	bool h1b_side_ready = false;
+	double SIDE_REACHED_M = 2.0, H1B_MOVED_M = 0.5;
 	double WHEEL_CREEP_THROTTLE = 0.5;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).

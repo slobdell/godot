@@ -593,6 +593,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.stall_net_ready = config.get("STALL_NET_DEFAULT", Variant()).get_type() == Variant::BOOL;
 	c.STALL_NET = c.stall_net_ready && (bool)config.get("STALL_NET_DEFAULT", false);
 	c.STUCK_NET_M = config.get("STUCK_NET_M", 0.5);
+	c.h1b_side_ready = config.get("H1B_SIDE_DEFAULT", Variant()).get_type() == Variant::BOOL;
+	c.SIDE_REACHED_M = config.get("SIDE_REACHED_M", 2.0);
+	c.H1B_MOVED_M = config.get("H1B_MOVED_M", 0.5);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
 	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);

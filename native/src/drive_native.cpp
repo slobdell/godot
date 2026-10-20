@@ -1692,6 +1692,17 @@ struct Drive {
 		if (seam_live()) {
 			return; // round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
 		}
+		if (c.h1b_side_ready && v._side_stand()) {
+			// Round 36 (S2a, h1bside): no side clear of the friend that would not give way: stand, no re-ram.
+			if (side_over()) {
+				v.set__side_stand(false);
+			} else {
+				cmd->set(k.throttle, 0.0);
+				cmd->set(k.turn, 0.0);
+				v.set__stuck_time(0.0);
+				return;
+			}
+		}
 		if (c.UNSTICK_BACK && (int64_t)v._esc_stage() != 0) {
 			// Round 31 (manoeuvre H1): an escape under way (_esc_stage only leaves ESC_NONE with `unstickback` on).
 			cb(k._escape_step, cmd, order, delta);
@@ -1767,6 +1778,30 @@ struct Drive {
 		} else {
 			v.set__stuck_time(0.0);
 		}
+	}
+
+	// Round 36 (manoeuvre S2a): Movement._side_over(): the friend gone (null, freed, dead), moved more than H1B_MOVED_M from
+	// where the side was chosen, or the goal jumped more than NEW_GOAL_JUMP.
+	bool side_over() {
+		Node3D *friend_hull = Object::cast_to<Node3D>(v._side_friend().get_validated_object());
+		if (friend_hull == nullptr || !(bool)friend_hull->call(k.is_alive)) {
+			return true;
+		}
+		return flat_distance(friend_hull->get_global_position(), v._side_friend_at()) > c.H1B_MOVED_M ||
+				flat_distance(v._goal(), v._side_goal()) > c.NEW_GOAL_JUMP;
+	}
+
+	// Movement._side_waypoint(delta): the side point while it runs (it ends at SIDE_SECONDS, within SIDE_REACHED_M, or over).
+	Vector3 side_waypoint(double delta) {
+		const Vector3 to = v._side_to();
+		if (to == V3_INF) {
+			return V3_INF;
+		}
+		v.set__side_left((double)v._side_left() - delta);
+		if ((double)v._side_left() <= 0.0 || flat_distance(here, to) <= c.SIDE_REACHED_M || side_over()) {
+			v.set__side_to(V3_INF);
+		}
+		return v._side_to();
 	}
 
 	// Movement._honest_blocker(order): what pins the hull (a Tank, or the hull itself for "terrain"), or null for round
@@ -3473,6 +3508,12 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 	{
 		Timed t("~next_waypoint");
 		routed = direct ? aim : next_waypoint(aim, delta);
+	}
+	if (c.h1b_side_ready) {
+		const Vector3 side = side_waypoint(delta); // round 36 (S2a, h1bside): H1b's far loop going round its friend
+		if (side != V3_INF) {
+			routed = side;
+		}
 	}
 	if (!direct && routed != aim && flat_distance(routed, here) < c.WAYPOINT_MIN_M) {
 		const PackedVector3Array path = v._path();
