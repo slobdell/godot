@@ -1,0 +1,24 @@
+JOINT (0) counters ON: stall_intent_ticks 235766, H1 hull escapes 2005, asks 1977, yields_unfinished 573  PASS  (base: stall_intent 0, yields_unfinished 0)
+JOINT (q) open deaths          base     2416 new     2450 diff      +34 1.645se    74.1 pairs 72  PASS
+JOINT (q) stuck deaths         base      453 new      464 diff      +11 1.645se    38.5 pairs 72  PASS
+JOINT (q) jam deaths           base      153 new      156 diff       +3 1.645se    24.8 pairs 72  PASS
+JOINT all deaths               base     3022 new     3070 diff      +48 1.645se    65.6 pairs 72  REPORTED
+JOINT (s) friendly contacts    base  1655317 new  1626716 diff   -28601 1.645se 71098.2 pairs 72  PASS
+JOINT (yields) give-ways started base    12536 new    12744 diff     +208 1.645se   492.3 pairs 72  PASS
+JOINT (t) asks                 base     1425 new     1977 diff     +552 1.645se   163.0 pairs 72  REPORTED
+JOINT retries capped (yields_unfinished_capped) base 0 new 11  REPORTED
+JOINT (r) far loops            base       35 new       39 diff       +4 1.645se    29.4 pairs 72  PASS
+JOINT deaths team 0            base     1534 new     1556 diff      +22 1.645se    45.9 pairs 72  PASS
+JOINT (i) kills team 0         base     1476 new     1504 diff      +28 1.645se    57.1 pairs 72  PASS
+JOINT (i) hit rate team 0         mean diff +0.0016 1.645se 0.0167 pairs 72  PASS
+JOINT deaths team 1            base     1488 new     1514 diff      +26 1.645se    58.4 pairs 72  PASS
+JOINT (i) kills team 1         base     1524 new     1550 diff      +26 1.645se    46.5 pairs 72  PASS
+JOINT (i) hit rate team 1         mean diff +0.0011 1.645se 0.0222 pairs 72  PASS
+JOINT (d) faced_ambush           movers 7 -> 2 (-5) <= +4.5  PASS | (e) never settled 19 -> 10 (-9) <= +4.9  PASS  pairs 128
+JOINT (d) faced_attack_move      movers 16 -> 17 (+1) <= -21.8 (deciding)  FAIL | (e) never settled 48 -> 23 (-25) <= 0 (deciding)  PASS  pairs 128
+JOINT (d) faced_move             movers 11 -> 9 (-2) <= +9.5  PASS | (e) never settled 39 -> 14 (-25) <= +4.9  PASS  pairs 128
+JOINT (d) faced_right            movers 23 -> 26 (+3) <= +11.9  PASS | (e) never settled 39 -> 27 (-12) <= +4.9  PASS  pairs 128
+JOINT (d) faced_screen           movers 16 -> 15 (-1) <= +7.6  PASS | (e) never settled 46 -> 25 (-21) <= +4.9  PASS  pairs 128
+JOINT (d) faced_support_by_fire  movers 10 -> 10 (+0) <= +4.3  PASS | (e) never settled 25 -> 11 (-14) <= +4.9  PASS  pairs 128
+JOINT deciding: crews > 25 m off goal with a live move at the judge  base 105 new 59  pairs 768  PASS (new <= base)
+JOINT VERDICT FAIL (see lines)

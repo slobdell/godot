@@ -1,0 +1,13 @@
+== joint3 base_drawn
+runs 768 crews rocking >=10 s with the clock running, no escape: 6 {'gang_tank': 1, 'gang_ifv': 1, 'scout': 1, 'artillery': 1, 'burner': 1, 'law_scout': 1}
+(33, 'law/faced_attack_move-917', 'Green_Eyes_4')
+(29, 'gangs/faced_right-926', 'Green_Hunters_7')
+(19, 'condemned/faced_right-931', 'Green_Eyes_2')
+(17, 'condemned/faced_attack_move-915', 'Green_Burners_3')
+(13, 'gangs/faced_right-912', 'Green_Guns_4')
+(12, 'condemned/faced_screen-921', 'Green_Battery_2')
+== joint3 new_drawn
+runs 768 crews rocking >=10 s with the clock running, no escape: 3 {'gang_tank': 1, 'burner': 1, 'law_scout': 1}
+(33, 'law/faced_attack_move-917', 'Green_Eyes_4')
+(17, 'condemned/faced_attack_move-915', 'Green_Burners_3')
+(13, 'gangs/faced_right-912', 'Green_Guns_4')
