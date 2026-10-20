@@ -1,0 +1,143 @@
+{
+ "commit": "e45bb6632",
+ "fights": {
+  "deaths": 1637,
+  "hit_rate": 0.7558982717906924,
+  "hits": 36172,
+  "jam": 72,
+  "jam_under_fire": 59,
+  "kills": 1619,
+  "open": 1324,
+  "ran": 40,
+  "read": 40,
+  "shots": 47853,
+  "stuck": 241
+ },
+ "machine": "builder2",
+ "moves": {
+  "crews_left_behind": 6,
+  "left_behind_wedged": 5,
+  "movers": {
+   "closing": 2,
+   "jitter": 4,
+   "unknown": 0,
+   "wander": 3
+  },
+  "never_settled": 9,
+  "per_task": {
+   "faced_attack_move": {
+    "crews_left_behind": 4,
+    "jitter": 3,
+    "never_settled": 4,
+    "runs": 24,
+    "still_moving": 2
+   },
+   "faced_move": {
+    "crews_left_behind": 2,
+    "jitter": 1,
+    "never_settled": 5,
+    "runs": 24,
+    "still_moving": 3
+   }
+  },
+  "ran": 48,
+  "read": 48,
+  "squads": 164,
+  "squads_arrived": 160,
+  "still_moving": 5
+ },
+ "orders": {
+  "all_in_median_s": 18.9,
+  "cases": {
+   "crossing 3 click": {
+    "all_in_median_s": 16.5,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "crossing 3 route": {
+    "all_in_median_s": 19.9,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "crossing 5 click": {
+    "all_in_median_s": 39.6,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "crossing 5 route": {
+    "all_in_median_s": 25.1,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 3 click": {
+    "all_in_median_s": 18.9,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 3 route": {
+    "all_in_median_s": 22.7,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 5 click": {
+    "all_in_median_s": 13.0,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 5 route": {
+    "all_in_median_s": 15.2,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 3 click": {
+    "all_in_median_s": 17.1,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 3 route": {
+    "all_in_median_s": 19.3,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 5 click": {
+    "all_in_median_s": 10.5,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 5 route": {
+    "all_in_median_s": 54.6,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   }
+  },
+  "far_bank_squads": 0,
+  "never_all_in": 0,
+  "ran": 36,
+  "read": 36,
+  "twitch_median_m": 10.8,
+  "twitch_worst_m": 73.1
+ },
+ "overlay": "090580147",
+ "remote_status": 0,
+ "run": [
+  ">> scoreboard-run on builder2 | commit e45bb6632 | native on | parts 'fights moves orders' | load 11.48 3.69 1.31",
+  ">> scoreboard-run done: 40 fights, 48 moves, 36 orders runs"
+ ],
+ "script_errors": {
+  "fights": 0,
+  "moves": 0,
+  "orders": 0
+ }
+}

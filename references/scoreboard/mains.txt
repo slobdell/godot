@@ -2,3 +2,4 @@
 c29a8c7b6 round 34 close
 a0ae0aafd round 35 launch
 1c82d6d1e today's main (2026-10-20)
+e45bb6632 CP36.1: the joint W1c+T9, 4 maps adopted
