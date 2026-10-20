@@ -101,6 +101,13 @@ _Filed here before any number._
   joint bar (d) movers by NET motion, (e), (f), (i), (q), (r), (s), give-ways; unstick fires <= base + 1.645 se. Rocking crews
   REPORTED. Pass ships ON. Full text: `stream/manoeuvre` brief *Bar S1*. **Orchestrator's note:** the deciding stage injects the
   pop (Jolt won't produce it in a lab), so it proves the rule, not the wedge; the series guards are where harm would show.
+- **S2a h1bside (manoeuvre, R36.3; filed 2026-10-20 ~15:05 in the brief before any number, stream 5d80b6291; copied here).** After
+  H1B_ASKS refused asks on the same unmoved friend with a far goal, H1b's far branch re-drives to a side point clear of the friend,
+  or the hull stands when there is no room; behind a switch; native mirrors (side waypoint + stand). DECIDING (lab, both paths):
+  `tests/test_manoeuvre_h1b_side.gd` (a) room on one side: ON past the friend within 20 s, base >= 3 fires in 30 s; (b) a one-hull
+  street: ON stands (no fire after its first far loop, < 0.5 m in its last 10 s), base >= 3 fires. Guards: Bar S1's set + far loops
+  + far bank 0 + unstick fires, fresh hull-rest 6501–6532 and fights 6540–6563. Player line REPORTED, paired: left behind > 25 m,
+  still by net motion. Series after S1's.
 
 ## Rulings (round 36)
 
