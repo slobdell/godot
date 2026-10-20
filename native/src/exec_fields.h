@@ -91,6 +91,12 @@
 	F(int64_t, INT, _face_retry) \
 	F(bool, BOOL, _nose_at_end) \
 	F(Vector3, VECTOR3, _nose_goal) \
+	F(double, FLOAT, pass_offer) \
+	F(String, STRING, _pass_by) \
+	F(double, FLOAT, _pass_side) \
+	F(Vector2, VECTOR2, _pass_way) \
+	F(int64_t, INT, _pass_left) \
+	F(String, STRING, _pass_failed_by) \
 	F(Dictionary, DICTIONARY, _yield_rec) \
 	F(Vector3, VECTOR3, _yield_from) \
 	F(double, FLOAT, _yield_stop_m) \

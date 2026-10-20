@@ -37,10 +37,17 @@ backwards. Workers told to `git merge main`.
 **main c32606204 = native N2 (C35.9)** (`2f7683d21`, builder0 `make check exited 0`, 27/27 ALL JUDGED, 2885/0, sim-baseline 13
 unmoved; INHERIT): FACE_KEEP_FAR deleted, series tools drop random-seed twins (`seed_twins.filter_logs`), judging table's owed rows
 (rounds 31–34) re-rendered. Tooling only: nothing he'd notice.
-**Round 35 in flight (2026-10-19 noon):** orders D1 (the deploy step ON; on-spot fix 0603f3274) checking; traffic T7 pair checking
-next; manoeuvre M5 (CP-F 5, turret hulls) gate queued; brains E1 (straggler release) check done, series next; W1b's mirror on
-pair/native-w1b; W1c + T9 (the 70 s scout dead-stop: a parked crew refused every repeat ask) joint dev read. Parked: D3 (R35.11).
-Rulings R35.1–R35.19 in workstreams.
+**Round 35 in flight (2026-10-19 ~18:00):** SHIPPED on main: the scout turn-in (C35.3), the deploy step ON (D1), native N2/N3 and
+`tools/builder_checks.sh`. PARKED: D3 tight packing (R35.11), D4 minimax seating (R35.31). JUDGED SERIES RUNNING on builder0: T7
+(traffic, under-fire give-way only when the asker has no lane; pair e95179252, gate green), E1 (brains, straggler release; partial
+check owed after), W1b (manoeuvre, a held wheeled hull sits still; gate green 7fc4a5307), M5 (manoeuvre, CP-F 5: his drawn facing on a
+wheeled turret hull ends on it and goes still; gate green 63336d690), D5 re-read (orders, the gate deal; fresh 3631–3636). QUEUED: the
+joint W1c + T9 (the 70 s stuck scout: asker re-asks, a parked crew answers; ON check running, series after; merges after T7's verdict,
+R35.19), D6 (a shift-click never replaces a squad's route, R35.28), T8 (after T7). Every full check launches behind
+`tools/builder_checks.sh --wait-below 2`.
+**main bbe418b80 = brains E1, THE STRAGGLER RELEASE (R35.42)** (`83b3b90b4`: its own gate green in two parts, R35.22). **Tell him:**
+when one crew is wedged, its squad moves on to the next attack-move leg after ~8 s instead of waiting a minute or more. E1 + D1
+together are UNCHECKED on main: one batch main check after T7's hand-over merges (R35.45); workers don't merge main until then. Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
