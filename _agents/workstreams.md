@@ -219,7 +219,7 @@ _Filed here before any number._
   army_layout, already `place`).
 
 - **E2 / B11b HOLD's return carries his drawn facing for wheels/turret hulls (brains), filed before any number on stream/brains (code
-  `61d0ba6be`), counter line added by the orchestrator.** Via `TankBrain.hold_return_faces`; `--hold-return=old` = control,
+  `f0b06d83e`), counter line added by the orchestrator.** Via `TankBrain.hold_return_faces`; `--hold-return=old` = control,
   `--hold-return=faced` = round 32's B11 (every class); GDScript only. One commit WITH M5, builder2, native, base `--hold-return=old`
   on the same tree. Hull-rest drawn, all six tasks, FRESH 801–816 x 4 factions (384 an arm); fights 820–843. **Counter first (added):**
   hold returns carrying a facing > 0 in the arm. **(a) Deciding:** wheels/turret faced_move AND faced_right medians lower, p < 0.05 each.
