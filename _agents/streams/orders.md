@@ -86,7 +86,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
    in HANDOFF), then ground; arrival overlap is 3-8 % of refusals.
 6. **Stretch:** the bridge-mouth click is already covered by the deploy's halt lay (0 of 24); uncross on a queued screen was a
    real swap, not path planning.
-**Questions for the lead:** none of mine (O4's spacing question is the orchestrator's, in HANDOFF).
+7. **Next stretch (orchestrator, after O2 reads): the "neither" twitch.** 27 of 57 twitching squads in builder0's count
+   (`f5aa89ecd`) have neither cause: crews of squads arriving together wander in each other's traffic (O3's trace:
+   Crossing 3 sq1's Alpha_1 circles the deck mouth t 18-36 among squads 2 and 3 and ends 14 m short). His concern
+   (2026-10-20, verbatim): "My concern here is basically giving some squads an order and then feeling like they're not
+   actually following it, making the game appear dumb".
+**His O4 answer (2026-10-20): keep 9 m** (HALT_CLEAR_M, seat to seat); O4 stays parked.
+**Questions for the lead:** none open.
 **Requests to other streams:** none. **Merge notes:** `element_plan.gd`: the deploy carve-out only (DEPLOY_COMPACT, OFF;
 `_deploy_compact`); `game/control/selection_squads.gd`: `pack_refused` (measurement only); `game/tactics/element.gd` =
 main's (the R35.74 hook removed).
