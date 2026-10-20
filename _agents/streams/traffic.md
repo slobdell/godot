@@ -63,4 +63,19 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 (traffic, Opus).** Oriented. **Waiting on CP36.1** (main still `582650b36` at my start; the joint not merged).
+**Done meanwhile:** item 1's carry-over STAGED as `6a564673a` on current main (not checked yet): T8's traffic.gd hunk with
+`DEFAULT_OFF := ["holdfire"]` (T9's yieldfit2 comes through the joint, so not in my list), test_traffic_holdfire (+uid), the jam
+tooling (jam_census `held_deaths`/`holdfire_on`, jam_ab `--bar t8` + seed twins, jam_table, test_jam_ab: OK locally, python),
+t8_series.sh (OUT now `~/overnight-traffic/r36/t8series`), t7_clip + `make traffic-t7-clip`, round-35 references, judging.md's
+notes. round35/traffic's judging.md ended in a stray `||||||| c55471a5e` merge marker: left behind. movement.gd is identical to
+the joint's. When CP36.1 lands: `git merge main` (one expected conflict, the DEFAULT_OFF line: keep `["holdfire"]`) ->
+`make quick-remote`.
+**Item 4 (seed twins), read:** jam_ab and jam_table carry `seed_twins.filter_logs` (in the carry-over); far_table already has it on
+main; "far_ab"/"far_kills" don't exist as files (far_table is the far census reader). seq_hook reads runner rows of scenario cases,
+never a random arena: not applicable. Nothing more to code; closed with the carry-over.
+
+**Plan (ordered).** 1 carry-over (staged) -> merge main at CP36.1 + quick -> 2 cut `pair/holdfire-r36` + ON flip, t8_series.sh on
+builder2 under systemd-run -> 3 ask for a quiet perf-judge slot -> 5 stretch: the held deaths T8 did not release (design note).
+
 **2026-10-20 (orchestrator, at launch).** Not started. CP36.1 (the joint ship) was checking on builder0 at launch.
