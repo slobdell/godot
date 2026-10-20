@@ -118,6 +118,32 @@ Bar S1 is copied to workstreams (7bf08f3ed): the stage proves the rule, the seri
 4. S2 X4b on main after CP36.1 (+ S1 if it ships), then the trace and a design note.
 5. Stretch R34.16 watch.
 
+### Bar S2a (h1bside: the far loop goes round or stands), filed before any number (2026-10-20, the orchestrator's GO and terms)
+
+- **Change (my paths: unstick / H1b):** in `_h1b_gives_up`'s FAR branch (H1B_ASKS refused asks on the same friend that has not
+  moved, goal beyond H1B_SETTLE_MAX_M; today a counter), with `h1bside` on, the escape is replaced: pick a SIDE point beside the
+  friend (either side, clear of every hull by both hulls' half-widths + margin, on the navmesh, reached by a navmesh path no
+  longer than SIDE_DETOUR_X x the straight line: never across a bridge or the river), and drive to it (it replaces the route's
+  waypoint until reached, its timer runs out, or the friend moves); with no side clear, STAND (throttle 0, no re-ram) until the
+  friend moves > H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (false until judged). Native mirrors
+  the side waypoint and the stand.
+- **Arms:** native, two trees on main (+ S1 if shipped): ON = pair with H1B_SIDE_DEFAULT true, base = same code false. Gate:
+  `make native check` on ON; base's sim-baseline.
+- **(0) Counter first:** `h1b_side_steps` + `h1b_side_stands` > 0 in ON's series (counted only when ON acts; the base's far loops
+  are the comparison).
+- **DECIDING (lab, both paths):** `tests/test_manoeuvre_h1b_side.gd`. A hull H1-looping nose-on to a parked friend that never
+  moves (its controller off), goal 30 m past it. (a) Room on one side (a second parked friend closes the other): ON is past the
+  friend's front within 20 s; base is not, and fires >= 3 escapes in 30 s. (b) A one-hull street (parked friends abreast on both
+  sides): ON stands — no escape fire after its first far loop and moved < 0.5 m in its last 10 s; base fires >= 3. Native: the
+  tree-default arm equals GDScript (first fire, fires, final position within 0.05 m).
+- **Guards (no harm), FRESH seeds, each within 1.645 se of base:** Bar S1's set (the joint bar's (d) movers by net motion, (e),
+  (f), (i), (q), (r), (s), give-ways) on hull-rest 6501–6532 drawn x 4 factions x 6 tasks and wedge/fights/jam on
+  locks/terminus/sumps x 6540–6563; plus **far loops (r) ON <= base + 1.645 se**, **far bank 0** (no hull of either arm ends a
+  hull-rest run across the river from its goal where base did not), **unstick fires ON <= base + 1.645 se**.
+- **Player line, REPORTED (paired ON v base):** crews > 25 m behind at the judge, and of those still by net motion
+  (`left_behind.py`), hull-rest faced_attack_move + faced_move x 6501–6532 x 4 factions with `--element-trace=all`.
+- **Pass = (0) + the lab (both paths) + every guard. A pass ships ON.** Series order: after Bar S1's (one series per builder).
+
 ### Bar S1 (stallnet), filed before any number (2026-10-20, from the x1d-trace draft; C36.3)
 
 - **Change:** `Movement._unstick` on the HONEST path (routed move_to, `_honest_blocker` non-null): a fast tick (reading >=
