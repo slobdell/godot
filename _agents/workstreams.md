@@ -497,6 +497,12 @@ _Filed here before any number._
   sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760 + the partial (lint + 10) exited 0, 2 NOT JUDGED by load. Main now carries
   E1 and D1 (both in element_plan.gd, different functions) unchecked together; T7's hand-over (cut before E1) takes the full-check slot
   next, then merges, then ONE main check of E1 + T7 + D1. Workers don't merge main until it's green.
+- **R35.46 (2026-10-19 ~21:30) E3 closed: no lever.** Brains' census (74526bca1, laptop GDScript, lane_census showmatch locks /
+  terminus / crossing x seeds 1400–1409, n 30): 56 flips to hold (35 ahead on points, 21 zone threatened); engaged elements re-posted
+  > 40 m at a flip lost 15 / 30 / 25 % of crews in the next 30 s v 19 / 40 / 33 % for those that kept their task (SELECTED groups: no
+  sign the pull-back is worse, not proof it is better). locks-1404 is one fight's shape (as B9 / R34.19). No A/B. **E4 (brains,
+  trace only):** what carries between matches in one process so test_tactics_mixed_legs plays differently after another test (trip-up
+  82 suspected; BodyStage R32.6), and whether a reset makes the second match equal the first.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
