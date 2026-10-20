@@ -72,6 +72,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~18:45 (worker): S1 + S3 GREEN, merge here: `20acbda5f`** (pair/native-s1s3-main: S1 stallnet default OFF + S3 W1b
+deleted + native's mirrors + main e45bb6632). builder0 `make check exited 0`: 2961/0, 25 passed + 2 NOT JUDGED (load),
+sim-baseline 13/13 unmoved. Merged into the stream as `793ef5799`. Native cut the S2a mirror as `pair/native-s2a` `18bc084c9`, which
+I reviewed; with traffic's yieldgap on top it becomes `8e6a52fc9` (quick-remote next on builder0).
+
 **2026-10-20 ~18:15 (worker): S2a built (the orchestrator's GO); Bar S2a filed `5d80b6291` (+ traffic's T9 rider, `dca90d9c0`).**
 `a1b7f7e59`, default OFF, `--nav-off=h1bside`: H1b's far loop goes round the friend (a side point abreast of it) or stands.
 Laptop GDScript lab (`test_manoeuvre_h1b_side`, 3/3 + 33/33 neighbours): room on one side, ON past the friend at 19.6 s (line
