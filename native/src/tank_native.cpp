@@ -600,6 +600,8 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.yieldfit2_ready = config.get("YIELD_CONTACT_M", Variant()).get_type() == Variant::FLOAT;
 	c.YIELD_CONTACT_M = c.yieldfit2_ready ? (double)config["YIELD_CONTACT_M"] : 1.0;
 	c.YIELD_RETRIES = config.get("YIELD_RETRIES", 2);
+	c.yieldgap_ready = config.get("YIELD_CLEAR_GAP", Variant()).get_type() == Variant::FLOAT;
+	c.YIELD_CLEAR_GAP = c.yieldgap_ready ? (double)config["YIELD_CLEAR_GAP"] : 2.0;
 	c.YIELD_RETRY_WINDOW_S = config.get("YIELD_RETRY_WINDOW_S", 30.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());
