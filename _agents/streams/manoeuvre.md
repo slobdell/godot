@@ -76,6 +76,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 (moved there by the orchestrator): `make native check exited 2`, 2961/0, 24 passed + 2 NOT JUDGED + sim-baseline the one red
 (foundry, crossing, sumps, docks moved; 9 unmoved). Attribution = base `20acbda5f` (STALL_NET_DEFAULT false), read 13/13 unmoved by
 native's builder0 check. Series: unit `manoeuvre-s1series`, builder0 after its checks clear, logs `~/overnight-manoeuvre/r36/s1/`.
+Before the series started, both trees got one identical probe-only commit, in tests/manoeuvre only: WEDGE_TRACE / FIGHT_CENSUS
+print `stall_net_holds` (the bar's counter-first line had no printer) and the run's unstick fires. Series trees: ON `78a93fdb4`, base
+`9564cc66e`. Also fixed `3505cfb8d`: my 793ef5799 merge left diff3's base section in OFF_NAMES (a parse error on the stream branch
+only; main took 20acbda5f).
 
 **2026-10-20 ~19:15 (worker):** S1 + S3 are on main (5d6bb1de8, R36.5); main is merged into the stream (`4685fe5a4`). S2a +
 yieldgap quick-remote on native's `8e6a52fc9` (builder0): 134/1, h1b_side 3/3 (native default arm = GDScript; ON past at 19.6 s,
