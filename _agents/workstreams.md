@@ -76,6 +76,20 @@ side worktree is done (R35.73).
 _Filed here before any number._
 
 - **T8:** as filed in *Bars (round 35)* (traffic's T8 bar) with R35.69's seed swap; unchanged.
+- **X3b DEPLOY_PASS (orders O1, C36.4; filed 2026-10-20 before any builder0 number).** Workload: `make native herringbone-lab`
+  (`tests/control/herringbone_lane_stage.gd`: s1's tick-147 snapshot, no jitter; 32 fixed cells = Sirens lead {-10, -20} m x
+  Hunters2 goal dx {0, 3, 6, 9} x dz {0, -2, -4, -6}; arms `off` = main, `on` = `--deploy-pass=on`, `nostep` =
+  `--deploy-step=off` as the no-herringbone reference), builder0 light lane, native, one stage commit for every arm.
+  **Workload exists first:** a JAM cell = off's Sirens all-in >= nostep's + 3 s; fewer than 3 jam cells of 32 = the stage
+  does not reproduce the jam on builder0 and X3b closes "no workload" (no series). **Counter:** pass_waits > 0 on the on arm
+  in every jam cell. **Deciding:** on the jam cells, on - off Sirens all-in mean <= -3.0 s AND held_s summed <= 50 % of
+  off's. **Lab guard:** on the non-jam cells, on - off mean <= +1.0 s and no cell worse than +5 s. **Series guards (only if
+  the lab passes):** body stage 5101-5124 x {off, on}, builder0 native: PAIRED mean on - off on the seeds that do not jam
+  (off - nostep < 3 s) <= +1.0 s, no seed worse than +5 s; far bank 0 in every orders cell (`make native orders-probe`, fresh
+  seeds); test_control_scale's 3-tick response. A pass ships ON (symmetric), sim-baseline attributed with the switch off.
+  **Seen before filing:** a laptop GDScript design sweep of these 32 cells (stage uncommitted on a80bb28ab, n 1 a cell a
+  arm): 1 jam cell of 32; on - off non-jam mean +1.17 s, 4 cells over +5 s (worst +13.2: the held deploy fires later, in the
+  passing traffic). Laptop rows are not builder rows (orientation 85); the builder0 run decides.
 
 ## Rulings (round 36)
 

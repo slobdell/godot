@@ -712,3 +712,23 @@ body-seeds-orders: native-for-check import ## Round 35 (orders X3b): the body st
 		echo "$$name s$$seed $$(grep -c '^DEPLOY_PASS_WAIT' $(BUILD_DIR)/body-seeds/run.log)" >> $(BUILD_DIR)/body-seeds/pass_waits.txt; done; done
 	@awk '{w[$$1]+=$$3} END {for (a in w) printf "deploy_pass_waits %s %d\n", a, w[a]}' $(BUILD_DIR)/body-seeds/pass_waits.txt | sort
 	@$(PYTHON) tests/control/body_seeds_table.py $(BUILD_DIR)/body-seeds/lines.txt | tee $(BUILD_DIR)/body-seeds/table.txt
+
+# Round 36 (orders O1, C36.4): the herringbone-across-a-lane lab stage (tests/control/herringbone_lane_stage.gd), X3b's
+# DECIDING workload: HB_LEADS x HB_DX x HB_DZ fixed cells x HB_ARMS, one process a run (light-lane safe) ->
+# build/herringbone-lab/lines.txt, then the per-cell table (jam cells: off - nostep >= 3 s) -> table.txt.
+HB_LEADS ?= -10 -20
+HB_DX ?= 0 3 6 9
+HB_DZ ?= 0 -2 -4 -6
+HB_ARMS ?= off: on:--deploy-pass=on nostep:--deploy-step=off
+.PHONY: herringbone-lab
+herringbone-lab: native-for-check import ## Round 36 (orders O1): the herringbone lab stage, every cell x HB_ARMS -> build/herringbone-lab/table.txt
+	@rm -rf $(BUILD_DIR)/herringbone-lab && mkdir -p $(BUILD_DIR)/herringbone-lab
+	@for lead in $(HB_LEADS); do for dx in $(HB_DX); do for dz in $(HB_DZ); do for arm in $(HB_ARMS); do name=$${arm%%:*}; \
+		flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/herringbone_lane_probe.gd -- \
+			--lead=$$lead --goal-dx=$$dx --goal-dz=$$dz --seconds=40 $$flags > $(BUILD_DIR)/herringbone-lab/run.log 2>&1 || true; \
+		grep -q '^NATIVE' $(BUILD_DIR)/herringbone-lab/run.log && grep -m1 '^NATIVE' $(BUILD_DIR)/herringbone-lab/run.log >> $(BUILD_DIR)/herringbone-lab/native.txt || true; \
+		grep -o 'HERRINGBONE_LAB {.*' $(BUILD_DIR)/herringbone-lab/run.log | sed "s/^/$$name /" >> $(BUILD_DIR)/herringbone-lab/lines.txt \
+			|| echo "$$name lead $$lead dx $$dx dz $$dz: no HERRINGBONE_LAB line"; done; done; done; done
+	@sort $(BUILD_DIR)/herringbone-lab/native.txt 2>/dev/null | uniq -c || echo "no NATIVE line in any run"
+	@$(PYTHON) tests/control/herringbone_lab_table.py $(BUILD_DIR)/herringbone-lab/lines.txt | tee $(BUILD_DIR)/herringbone-lab/table.txt
