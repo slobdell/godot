@@ -148,6 +148,12 @@ _Filed here before any number._
   9.07) read as "passed" at the 6 s clock. Fix: in `_yield_unfinished` only, passed = distance − both half-lengths > 2.0 m, behind its
   own switch (`yieldgap`), native mirror line, test in test_traffic_yieldfit2. Frees few alone (7 of 10 parked blockers have < 1 m
   room); rides in manoeuvre's S2a pair as a second switch: one series both ON v both OFF; each lab test decides its own change.
+- **R36.5 (2026-10-20 ~15:45 PDT) S3 + S1 (OFF) merged: main 5d6bb1de8 is GREEN, inheriting 20acbda5f.** `pair/native-s1s3-main`
+  `20acbda5f` (S3: W1b deleted; S1 stallnet code, STALL_NET_DEFAULT false; both native mirrors; contains main e45bb6632): builder0
+  `make check exited 0`, 2961/0, 25 + 2 NOT JUDGED (perf-judge refused for load), sim-baseline 13/13 unmoved. Merged 4ecee1fdf,
+  then manoeuvre's `test_manoeuvre_stall_intent_sumps.gd.uid` (4dd6ff750 -> 5d6bb1de8): the only file a check reads that differs is
+  that generated .uid, so no main check. This also closes main e45bb6632's check (the joint + D5 together). Perf-judge on a quiet
+  builder0 still owed (T8's hand-over window).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)

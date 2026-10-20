@@ -27,8 +27,8 @@ the kickoff prompt from `_agents/orchestration.md` *The kickoff prompt*. **godot
 on builder2** (its old worktree holds the running job); the orchestrator says when.
 
 **The orchestrator's open items (in order):**
-1. ~~CP36.1~~ **MERGED (R36.1):** main a318a2cd3 (joint d56685115, builder0 2961/0), baselines adopted e45bb6632 (foundry,
-   crossing, sumps, cut; read twice, equal to the joint check's hashes). **Main's own check did NOT run (builder2 had idle-stopped; restarted 14:00) and is NOT re-run: native's `pair/native-s1s3-main` `20acbda5f` contains e45bb6632, and its builder0 check covers main (a red outside S1/S3 is main's).** All four streams told to merge main.
+1. ~~CP36.1~~ MERGED (R36.1, e45bb6632). **main 5d6bb1de8 is GREEN** (R36.5): it inherits `pair/native-s1s3-main` `20acbda5f`'s
+   builder0 check (2961/0, 13 unmoved), which contains the joint + D5 + S3 (W1b deleted) + S1 stallnet OFF.
 2. ~~The scoreboard rows~~ DONE (13:18): native's session (launched by the lead at ~12:25 in the OLD godot-native worktree, which
    it merged main into; `stream/native` was never renamed and continues as round 36's branch, no fresh worktree) committed all three
    rows (cdda0bbf9, `references/scoreboard/README.md` on stream/native) and is on S3's pair. First read (builder2, n 40 fights / 48
