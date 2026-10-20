@@ -40,7 +40,7 @@ func test_the_give_way_on_the_owned_state() -> void:
 ## Round 35 (T7): in this stage's ranks a neighbour sits in every pass lane, so an asked crew under fire gives way as
 ## today (underfire_gives); the refusal, the hold and a real pass start are floored on the pass stage below.
 const UNDERFIRE_FLOORS := {"": 10, "underfire_gives": 1, "pass_ticks": 1, "passes_timeout": 1, "passes_done": 1,
-		"parked_refusals": 1}  # parked: 4 with W1c off and on
+		"yields_unfinished": 1, "yields_unfinished_capped": 1, "parked_refusals": 1}  # parked: 4 with W1c off and on
 ## Round 35 (traffic T7): the forced passes. Each mover with a move order, `under_fire` times a stage, is put mid-pass round
 ## the nearest other hull and its drive twinned (`_avoid` steers by `_pass_point`): cycling a live pass (its way toward the
 ## refuser: behind it, the abreast point), one on its last tick (the clock ends it: passes_timeout) and one already past
@@ -337,6 +337,7 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 	var fire_asks := under_fire
 	var fire_aborts := under_fire
 	var fire_passes := under_fire
+	var yield_ends := under_fire
 	var fire_executes := 0
 	if under_fire > 0:
 		assert_true(NativeGun.configure(), "the native gun takes the live constants (the execute step)")
@@ -350,6 +351,16 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 			controllers[i].set_orders({"type": "move_to", "x": slots[mine].x, "z": slots[mine].z}, null)
 		for frame in STAGE_FRAMES:
 			await wait_physics_frames(1)
+			for i in movers.size():
+				# Round 35 (traffic T9, `yieldfit2`): a give-way ended on its clock this tick (the asker usually still close
+				# and under way), its whole execute step twinned; every other one with the retry count at the cap.
+				if yield_ends > 0 and movers[i].yield_to != "":
+					yield_ends -= 1
+					var result := _end_compare(movers, controllers[i], owned, yield_ends % 2 == 0, leg * STAGE_FRAMES + frame)
+					fire_executes += result[0]
+					mismatches += result[1]
+					if first == "" and result[2] != "":
+						first = "(give-way ended) " + result[2]
 			for i in movers.size():
 				if fire_aborts > 0 and movers[i].yield_to != "":
 					fire_aborts -= 1
@@ -512,6 +523,55 @@ func _pass_compare(movers: Array[Movement], controllers: Array[OrderController],
 	mover._pass_left = keep[3]
 	mover._pass_failed_by = keep[4]
 	Traffic.set_off("underfire", was_off)
+	return result
+
+
+## Round 35 (traffic T9): a crew GIVING WAY whose give-way ends this tick (_yield_left 1), `yieldfit2` on, its whole execute
+## step (right_of_way -> _end_yield -> _yield_unfinished) against the native one; `capped`: the retry count already at
+## YIELD_RETRIES for this asker. The give-way counters' moves are tallied. [executes, mismatches, first]; all put back.
+func _end_compare(movers: Array[Movement], ctl: OrderController, owned: bool, capped: bool, frame: int) -> Array:
+	var delta := 1.0 / float(SimClock.TICK_RATE)
+	var was_off := Traffic.off("yieldfit2")
+	Traffic.set_off("yieldfit2", false)
+	var mover := Movement.of(ctl.tank)
+	var keep := [mover._yield_left, mover._unfinished_to, mover._unfinished_count, mover._unfinished_since]
+	mover._yield_left = 1
+	if capped:
+		mover._unfinished_to = mover.yield_to
+		mover._unfinished_count = Movement.YIELD_RETRIES
+		mover._unfinished_since = Engine.get_physics_frames()
+	var was_exec := BrainSwitches.native_exec
+	BrainSwitches.native_exec = false
+	var start := ExecuteTwinCase._capture(movers, ctl)
+	var live_cmd: TankCommand = ctl.compute_command(delta)
+	var live := ExecuteTwinCase._capture(movers, ctl)
+	ExecuteTwinCase._restore(movers, ctl, start)
+	for each in movers:
+		each.native_stale = Movement.STALE_ALL
+	var answer: Variant = NativeBridge.impl.execute(ctl, delta, NativeExec.EXEC_OWNED_VERIFY if owned else NativeExec.EXEC_LIVE)
+	var after := ExecuteTwinCase._capture(movers, ctl)
+	var result := [0, 0, ""]
+	if answer == null:
+		result = [0, 1, "frame %d %s: the execute step handed back" % [frame, ctl.tank.name]]
+	else:
+		result[0] = 1
+		var differ := ExecuteTwinCase._diff(live, after)
+		if ExecuteTwinCase._command(live_cmd) != ExecuteTwinCase._command(answer as TankCommand) or differ != "":
+			result = [1, 1, "frame %d %s: command live %s native %s; %s" % [frame, ctl.tank.name,
+					ExecuteTwinCase._command(live_cmd), ExecuteTwinCase._command(answer as TankCommand), differ]]
+		for name: String in ["yields_unfinished", "yields_unfinished_capped"]:
+			var moved := int(after[0][0].get("static:" + name, 0)) - int(start[0][0].get("static:" + name, 0))
+			if moved != 0:
+				yield_tally[name] = int(yield_tally.get(name, 0)) + moved
+	ExecuteTwinCase._restore(movers, ctl, start)
+	for each in movers:
+		each.native_stale = Movement.STALE_ALL
+	BrainSwitches.native_exec = was_exec
+	mover._yield_left = keep[0]
+	mover._unfinished_to = keep[1]
+	mover._unfinished_count = keep[2]
+	mover._unfinished_since = keep[3]
+	Traffic.set_off("yieldfit2", was_off)
 	return result
 
 
