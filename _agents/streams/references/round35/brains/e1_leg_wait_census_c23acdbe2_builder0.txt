@@ -1,0 +1,26 @@
+# brains E1 census: attack-move leg waits, c23acdbe2 (main a0ae0aafd + the leg-gate trace), builder0, 2026-10-19
+# manoeuvre-hull-rest FACING_ONLY=faced_attack_move, seeds 601-616 x gangs/law/syndicate/condemned, drawn; new_drawn = --nav-off=turnhull (CP-F ON; any --nav-off leaves native's drive, so this arm drove on GDScript), base_drawn = main (CP-F off, native). n 64 an arm.
+leg waits (element reached its anchor, not closed up), seconds summed over runs; long = holds >= 10 s
+arm         task                    runs  wait_s  closing   wedged   parked     face     stop   long  long_s released
+base_drawn  faced_attack_move         64     516      252      255        1        0        8     11     329        0
+new_drawn   faced_attack_move         64     428      228      189        0        2        9      7     191        0
+
+long holds: arm task faction run element from-to (s) gap first->last (m) waiting on, seconds by kind
+  base_drawn faced_attack_move condemned faced_attack_move-608 Guns II#4 44-55 25.9->24.0 Green_Guns_2 {'closing': 8, 'wedged': 4}
+  base_drawn faced_attack_move condemned faced_attack_move-611 Guns II#4 28-37 31.4->25.9 Green_Guns_2 {'closing': 10}
+  base_drawn faced_attack_move gangs faced_attack_move-602 Hunters#4 13-80 37.5->37.4 Green_Hunters_3 {'wedged': 42, 'closing': 26}
+  base_drawn faced_attack_move law faced_attack_move-603 Guns#3 16-32 21.1->19.8 Green_Guns_4 {'closing': 6, 'wedged': 11}
+  base_drawn faced_attack_move law faced_attack_move-605 Eyes#3 8-80 35.2->34.1 Green_Eyes_4 {'closing': 2, 'wedged': 71}
+  base_drawn faced_attack_move law faced_attack_move-607 Guns#3 59-80 23.2->23.1 Green_Guns_6 {'wedged': 22}
+  base_drawn faced_attack_move law faced_attack_move-608 Eyes#2 11-26 25.1->16.3 Green_Battery_2 {'closing': 6, 'wedged': 10}
+  base_drawn faced_attack_move law faced_attack_move-612 Guns#2 11-32 29.2->24.2 Green_Guns_4 {'wedged': 17, 'closing': 5}
+  base_drawn faced_attack_move law faced_attack_move-612 Guns#3 53-80 51.3->51.6 Green_Guns_7 {'wedged': 20, 'closing': 8}
+  base_drawn faced_attack_move law faced_attack_move-614 Guns#2 10-59 26.5->18.6 Green_Guns_5 {'closing': 17, 'stop': 1, 'wedged': 31, 'parked': 1}
+  base_drawn faced_attack_move law faced_attack_move-615 Guns#3 16-26 47.8->34.2 Green_Guns_7 {'closing': 10, 'wedged': 1}
+  new_drawn faced_attack_move condemned faced_attack_move-608 Guns II#4 44-55 25.9->24.0 Green_Guns_2 {'closing': 8, 'wedged': 4}
+  new_drawn faced_attack_move condemned faced_attack_move-611 Guns II#4 28-37 31.4->25.9 Green_Guns_2 {'closing': 10}
+  new_drawn faced_attack_move gangs faced_attack_move-615 Guns#3 2-16 75.7->54.2 Green_Guns_5 {'stop': 3, 'closing': 11, 'wedged': 1}
+  new_drawn faced_attack_move law faced_attack_move-605 Eyes#3 8-80 35.2->34.1 Green_Eyes_4 {'closing': 2, 'wedged': 71}
+  new_drawn faced_attack_move law faced_attack_move-607 Guns#3 40-80 50.4->46.9 Green_Guns_6 {'closing': 3, 'wedged': 38}
+  new_drawn faced_attack_move law faced_attack_move-608 Eyes#2 11-27 25.1->16.3 Green_Battery_2 {'closing': 7, 'wedged': 10}
+  new_drawn faced_attack_move law faced_attack_move-612 Guns#2 10-32 25.6->17.2 Green_Guns_5 {'closing': 12, 'wedged': 10, 'face': 1}
