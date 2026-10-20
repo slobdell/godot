@@ -134,7 +134,11 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   ruled out). **Proposed fix (not written; bar first):** `tests/run_tests.gd` warms up before the first test (one physics frame +
   the same teardown every test gets), so every test sees the 'later' state: the 1-frame test above IS that warm-up and gives the
   suite value. Bar: scenarios_6 alone == in the suite; the full suite green with every moved line listed (expected: lines that
-  ran first in a shard move to their suite value). The runner is shared infra (not brains'): a request through the orchestrator.
+  ran first in a shard move to their suite value). **WRITTEN (granted narrowly, R35.54, INTERIM): `0daea3d90`** (laptop
+  GDScript: scenarios_6 alone 3.0 = after 3.0; was 4.8 v 3.0). **Stated plainly:** the stage played twice inside ONE test is
+  identical, so it is the runner's TEARDOWN that changes the state, not playing a match. Real play (no runner teardown) matches
+  a process's FIRST test; after the warm-up every test sees the post-teardown state instead: consistent, not the game's. Naming
+  the field (drain_navigation or the lazy static) so tests can match real play's first-match state is a round-36 item.
 - **D1 fallout DONE:** test_tactics_body on `c7c7d347a` (main f31b5430e = D1 + E1 + T7 merged; builder0 light lane, native ON):
   PASS, body off arrived 17.8 s, on 24.0 s (+6.2, inside R35.17's +8.1; D1 alone read 23.8). E1 merged on main (bbe418b80, R35.42).
 - **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). (Old note:) re-read
