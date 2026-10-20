@@ -199,6 +199,13 @@ _Filed here before any number._
   Sumps seed 5988 scenario keeps 0 path crossings; test_control_queued_task and the route tests green; the 12 click cells
   byte-identical between arms; a test reproducing the replace (red on the switch off, green on).
 
+- **D3b a packed squad arrives in a file its halt opens out of (orders, R35.41), filed before code on `stream/orders` `972c05912`.**
+  `make native orders-probe` on builder0, FRESH seeds 3661–3666, n 6, medians; arms `main:` v `pack:--pack=on,--arrive-file=on` (deploy
+  step on; D4/D5/D6 at their defaults). **Counter first:** packed > 0 in the pack arm's click cells, rows differ from main's. **Gain:**
+  summed median `end far max m` over the click cells >= 15 % lower AND closest foreign hull at arrival >= 7 m in every cell (what
+  failed D3). **Guards:** far bank 0 in every cell; all-in <= main x 1.2 + 3 s; never-in no higher; twitch median <= main + 3 m per
+  cell; test_control_scale green.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
