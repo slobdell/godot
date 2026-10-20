@@ -218,6 +218,14 @@ _Filed here before any number._
   value to its "first-match" value; any other move is traced before the merge. sim-baseline unmoved expected (Match spawns via
   army_layout, already `place`).
 
+- **E2 / B11b HOLD's return carries his drawn facing for wheels/turret hulls (brains), filed before any number on stream/brains (code
+  `61d0ba6be`), counter line added by the orchestrator.** Via `TankBrain.hold_return_faces`; `--hold-return=old` = control,
+  `--hold-return=faced` = round 32's B11 (every class); GDScript only. One commit WITH M5, builder2, native, base `--hold-return=old`
+  on the same tree. Hull-rest drawn, all six tasks, FRESH 801–816 x 4 factions (384 an arm); fights 820–843. **Counter first (added):**
+  hold returns carrying a facing > 0 in the arm. **(a) Deciding:** wheels/turret faced_move AND faced_right medians lower, p < 0.05 each.
+  (b) s66 gangs faced_move Green_Guns_5 <= 90 deg. (c) no class worse at p < 0.05. (d) never-settled and movers at the judge within 2 se.
+  (e) squads arrived within 2 se. (f) fights within 2 se. (g) check green, moved sim-baseline maps attributed with `--hold-return=old`.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
