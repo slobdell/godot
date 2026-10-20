@@ -1,0 +1,3 @@
+# The mains on the scoreboard, oldest first: <commit> <label>. tools/scoreboard/table.py renders them.
+c29a8c7b6 round 34 close
+a0ae0aafd round 35 launch
