@@ -520,6 +520,12 @@ _Filed here before any number._
 - **R35.48 (2026-10-19 ~22:20) Main's batch check of D1 + E1 + T7 is GREEN** (f2690c8ef, builder0 `make native check exited 0`, 2908/0,
   25 passed + 2 NOT JUDGED by load). Workers merge main. Full-check order: manoeuvre's joint2-on C31.1 (319d63fec) now, then brains'
   tip (E4 + the release counter) on the orchestrator's word. Series lane: W1b (~02:00) -> D6 re-read -> M5 -> joint -> T8.
+- **R35.49 (2026-10-19 ~23:15) builder2 is back: a second series lane.** The lead had builder2 converted to a cost-optimized Spot VM
+  (e2-highcpu-32, us-west4-a, 32 GB; same name and ZeroTier IP; idle auto-stop after 20 min; `_agents/gcp_builder.md`). Verified:
+  `make gcp-remote T=sim-baseline` reads all 13 recorded lines. **Machines now:** builder0 = one full check + one judged series;
+  builder2 = one judged series (both arms of a series on ONE machine, gcp_builder rule 1), `make gcp-start` first (it stops itself
+  when idle), launched via `make gcp-remote` / `REMOTE_HOST=slobdell@builder2`. **M5 moves to builder2 now** (its gate was builder0's
+  63336d690 check; rows are pinned so the machine does not change them). builder0's lane: W1b -> D6 re-read -> the joint -> T8.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
