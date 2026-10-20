@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "stallintent", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhalt", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "stallintent", "stallnet", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhalt", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -410,6 +410,8 @@ var _path_index := 0
 var _path_goal := Vector3.INF
 var _repath_left := 0.0
 var _stuck_time := 0.0
+## Round 36 (S1, stallnet): where the hull stood when the stall clock started (see STALL_NET_DEFAULT).
+var _stuck_from := Vector3.ZERO
 var _unstick_left := 0.0
 var _unstick_pivot := false
 var _progress_goal := Vector3.INF
@@ -3670,7 +3672,12 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var honest := pinned_on != null
 	var reading := ctl.tank.real_velocity if honest else ctl.tank.estimated_velocity
 	# Round 35 (W1c, R35.12, `stallintent`): against a friendly hull, the throttle test reads the drive's intent.
-	if Manoeuvre.stall_throttle(self, cmd, order) > 0.5 and reading.length() < STUCK_SPEED:
+	var pressing := Manoeuvre.stall_throttle(self, cmd, order) > 0.5
+	if pressing and honest and reading.length() >= STUCK_SPEED and _stall_net_holds():
+		return
+	if pressing and reading.length() < STUCK_SPEED:
+		if _stuck_time == 0.0:
+			_stuck_from = ctl.tank.global_position
 		_stuck_time += delta
 		if _stuck_time >= STUCK_SECONDS and honest:
 			_stuck_time = 0.0
@@ -3692,6 +3699,33 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 				_ask_behind(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing)
 	else:
 		_stuck_time = 0.0
+
+
+## Round 36 (manoeuvre S1, C36.3): THE STALL CLOCK RESETS ON NET MOTION, NOT ON ONE FAST TICK. X1(d)'s trace (references/
+## round35/manoeuvre/x1d-trace): a hull wedged at full throttle between two friends of another element read real speed
+## 8.5–9.9 m/s for ONE tick about once a second as the contact popped, net <= 0.1 m in 10 s; the clock reached 0.73–0.99 s and
+## was zeroed by that tick, every second, for ~50 s, so H1's escape never started. With this on, on the honest path (a routed
+## move_to, where the reading is already real_velocity), a fast tick while the clock runs zeroes it only when the hull has
+## gone more than STUCK_NET_M from where the clock started; otherwise the clock holds (it does not add that tick).
+## Every other path and order keeps the reset bit for bit. `--nav-off=stallnet` flips STALL_NET_DEFAULT (false = OPT-IN).
+const STALL_NET_DEFAULT := false
+## Under a hull's width: a one-tick pop moves <= 0.33 m.
+const STUCK_NET_M := 0.5
+## Arm counter: fast ticks whose reset the net rule held (strided ticks by their stride; counted in both arms, so the
+## base reads how often the old rule threw a running clock away within STUCK_NET_M).
+static var stall_net_holds := 0
+
+
+static func stall_net_on() -> bool:
+	return STALL_NET_DEFAULT != switched_off("stallnet")
+
+
+## A fast tick on the honest path while the clock runs: true = the net rule keeps the clock (the caller returns).
+func _stall_net_holds() -> bool:
+	if _stuck_time <= 0.0 or _flat_distance(ctl.tank.global_position, _stuck_from) > STUCK_NET_M:
+		return false
+	stall_net_holds += ctl._step
+	return stall_net_on()
 
 
 # ---- Round 31 (manoeuvre H1, C31.4): the stall escape redesigned, a consumer of the honest reading ----------------
