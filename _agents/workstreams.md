@@ -755,6 +755,14 @@ _Filed here before any number._
   seeds 2601+), `tools/scoreboard/run.sh` (any commit, scratch worktree, builder2), `score.py` + `table.py` -> `references/scoreboard/
   README.md` in player terms; rows carry SCRIPT ERROR counts (the old tree hit 2387 from T7's `_pass_by` under today's census: the
   scoreboard runs a guarded copy). Runs going: c29a8c7b6, a0ae0aafd, 1c82d6d1e. **builder2's lane:** the scoreboard -> T8 -> X3b.
+- **R35.76 (2026-10-20 ~14:10) X1(d) traced: the choke wedge resets its stall clock on one fast tick (R35.67 corrected).** Manoeuvre
+  (builder0 native, 83b3b90b4 + STALL_TRACE; Guns_7 byte-identical to the series): the stall test reads REAL velocity here
+  (`_honest_blocker` returns the friendly hulls it is wedged between); brains' 9.98 m/s was the estimated `moved` column. The clock
+  resets on any single tick >= 0.8 m/s; the contact pops ~once a second (8.5–9.9 m/s for one tick, net <= 0.1 m in 10 s), so it
+  reaches 0.73–0.99 s and zeroes just short of 1.0 for ~50 s. W1c cannot help (throttle already >= 0.83). Today's code: the case
+  arrives (f 1655). Rocking crews (`tests/manoeuvre/rocking_census.py`, joint3 hull-rest, 768 runs an arm): base 6, joint ON 3.
+  Design (A), round 36, low priority: reset on NET motion from the clock's start (> 0.5 m), routed + honest path, `--nav-off=stallnet`,
+  native mirror; draft bar in `references/round35/manoeuvre/x1d-trace/README.md`.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
