@@ -139,8 +139,9 @@ Bar S1 is copied to workstreams (7bf08f3ed): the stage proves the rule, the seri
   waypoint until reached, its timer runs out, or the friend moves); with no side clear, STAND (throttle 0, no re-ram) until the
   friend moves > H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (false until judged). Native mirrors
   the side waypoint and the stand.
-- **Rider (the orchestrator's ruling, 2026-10-20): traffic's T9 "passed by half-lengths" fix** (stream/traffic `9030a12dc`, its own
-  switch, note `_agents/streams/references/round36/traffic/t9_finished_while_pinned.md`): in `_yield_unfinished` only, "passed" =
+- **Rider (the orchestrator's ruling, 2026-10-20): traffic's T9 "passed by half-lengths" fix** (GDScript `lab/yieldgap` `76aea1185`, quick-green builder0
+  105/0; design `9030a12dc`; native stacks it as `pair/native-s2a-yg` `8e6a52fc9`; switch `yieldgap` in Traffic.DEFAULT_OFF, the
+  ON tree flips it, the base keeps it off), note `_agents/streams/references/round36/traffic/t9_finished_while_pinned.md`): in `_yield_unfinished` only, "passed" =
   distance − both half-lengths > 2.0 m. It rides in this pair: ON = both switches on, base = both off; its own lab test
   (test_traffic_yieldfit2) decides its change; a red guard is traced by switch.
 - **Arms:** native, two trees on main (+ S1 if shipped): ON = pair with H1B_SIDE_DEFAULT true, base = same code false. Gate:
