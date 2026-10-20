@@ -91,9 +91,37 @@ _Filed here before any number._
   arm): 1 jam cell of 32; on - off non-jam mean +1.17 s, 4 cells over +5 s (worst +13.2: the held deploy fires later, in the
   passing traffic). Laptop rows are not builder rows (orientation 85); the builder0 run decides.
 
+- **X3b DEPLOY_PASS (orders O1, C36.4; filed 2026-10-20 before any builder0 number).** Workload: `make native herringbone-lab`
+  (`tests/control/herringbone_lane_stage.gd`: s1's tick-147 snapshot, no jitter; 32 fixed cells = Sirens lead {-10, -20} m x
+  Hunters2 goal dx {0, 3, 6, 9} x dz {0, -2, -4, -6}; arms `off` = main, `on` = `--deploy-pass=on`, `nostep` =
+  `--deploy-step=off` as the no-herringbone reference), builder0 light lane, native, one stage commit for every arm.
+  **Workload exists first:** a JAM cell = off's Sirens all-in >= nostep's + 3 s; fewer than 3 jam cells of 32 = the stage
+  does not reproduce the jam on builder0 and X3b closes "no workload" (no series). **Counter:** pass_waits > 0 on the on arm
+  in every jam cell. **Deciding:** on the jam cells, on - off Sirens all-in mean <= -3.0 s AND held_s summed <= 50 % of
+  off's. **Lab guard:** on the non-jam cells, on - off mean <= +1.0 s and no cell worse than +5 s. **Series guards (only if
+  the lab passes):** body stage 5101-5124 x {off, on}, builder0 native: PAIRED mean on - off on the seeds that do not jam
+  (off - nostep < 3 s) <= +1.0 s, no seed worse than +5 s; far bank 0 in every orders cell (`make native orders-probe`, fresh
+  seeds); test_control_scale's 3-tick response. A pass ships ON (symmetric), sim-baseline attributed with the switch off.
+  **Seen before filing:** a laptop GDScript design sweep of these 32 cells (stage uncommitted on a80bb28ab, n 1 a cell a
+  arm): 1 jam cell of 32; on - off non-jam mean +1.17 s, 4 cells over +5 s (worst +13.2: the held deploy fires later, in the
+  passing traffic). Laptop rows are not builder rows (orientation 85); the builder0 run decides.
+- **S1 stallnet (manoeuvre, C36.3; filed 2026-10-20 in the brief before any number, copied here by the orchestrator).** The stall
+  clock on the HONEST path (routed move_to, `_honest_blocker` non-null) is zeroed by a fast tick only when the hull stands > 0.5 m
+  (STUCK_NET_M) from where the clock started; else it holds. `--nav-off=stallnet`; native mirrors `_stuck_from`. Arms native, main
+  WITH CP36.1: ON pair (STALL_NET_DEFAULT true) v base (false). (0) counter `stall_net_holds` > 0 ON. DECIDING (lab, both paths):
+  `test_manoeuvre_stall_net`'s pinch stage (law_tank wedged between two parked law_ifvs of another element, the traced one-tick
+  pop injected every 26 ticks): ON escapes <= 3.0 s after wedging, base never in 20 s; no pop -> both alike. Guards, FRESH seeds:
+  hull-rest 6201–6232 drawn x 4 factions x 6 tasks; fights/wedge/jam on locks/terminus/sumps x 6240–6263; each within 1.645 se:
+  joint bar (d) movers by NET motion, (e), (f), (i), (q), (r), (s), give-ways; unstick fires <= base + 1.645 se. Rocking crews
+  REPORTED. Pass ships ON. Full text: `stream/manoeuvre` brief *Bar S1*. **Orchestrator's note:** the deciding stage injects the
+  pop (Jolt won't produce it in a lab), so it proves the rule, not the wedge; the series guards are where harm would show.
+
 ## Rulings (round 36)
 
-_(none yet)_
+- **R36.1 (2026-10-20 ~14:05 PDT) CP36.1: the joint W1c + T9 merged, main a318a2cd3.** `pair/joint-ship` `d56685115`, builder0 `make
+  native check exited 2`: 2961 passed, 0 failed; the one red sim-baseline (foundry, crossing, sumps, cut MOVED); base
+  `6f830ceea` sim-baseline 13 unmoved, so the moves are the joint's. Adoption on the merged tree (`make sim-baseline-adopt`) and ONE
+  main check follow; streams `git merge main` when told.
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
 

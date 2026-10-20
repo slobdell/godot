@@ -20,12 +20,19 @@ func _arm(on: bool) -> PackedStringArray:
 
 
 ## A scout blocked by `blocker_team`'s parked hull, ORCA's pace 0.05, command 0.05: the throttle the stall rule tests.
-func _reading(on: bool, blocker_team: int, order: Dictionary) -> float:
+## `same_element`: both crews formed into one element (R35.39: against an own squadmate the element's re-seat is the way out).
+func _reading(on: bool, blocker_team: int, order: Dictionary, same_element := false) -> float:
 	var was := Movement._off
 	var lab := TacticsLab.create(self, 31)
 	var scout := lab.gun(Match.Team.GREEN, "Green_A_1", Vector3(LANE_X, 0, 30), 0.0, "scout")
 	var other := lab.gun(blocker_team, "Other_1", Vector3(LANE_X, 0, 20), 0.0, "scout")
 	await lab.start()
+	if same_element:
+		lab.elements.form([String(scout.name), String(other.name)], "Alpha")
+	else:
+		lab.elements.form([String(scout.name)], "Alpha")
+		if blocker_team == Match.Team.GREEN:
+			lab.elements.form([String(other.name)], "Bravo")
 	await lab.step()
 	var ctl := _controller_of(lab, scout)
 	var mover := ctl.movement
@@ -56,3 +63,13 @@ func test_everything_else_keeps_the_command() -> void:
 	assert_true(absf(hop - 0.05) < 0.001, "a direct hop (CombatMotion's): the command (%.2f)" % hop)
 	var back := await _reading(true, Match.Team.GREEN, {"type": "move_to", "x": LANE_X, "z": 60.0, "reverse": true})
 	assert_true(absf(back - 0.05) < 0.001, "a reverse move: the command (%.2f)" % back)
+
+
+## R35.39: against a squadmate of the SAME element the intent reading does not apply (the element's re-seat, round 18 D5, is
+## the way out; the joint dev's Sumps four tanks rocked nose-on to a parked squadmate for 40 s with it applied).
+func test_an_own_squadmate_keeps_the_command() -> void:
+	var own := await _reading(true, Match.Team.GREEN, {"type": "move_to", "x": LANE_X, "z": -20.0}, true)
+	var other := await _reading(true, Match.Team.GREEN, {"type": "move_to", "x": LANE_X, "z": -20.0}, false)
+	print("MEASURE w1c_stall_intent own element %.2f, another element %.2f" % [own, other])
+	assert_true(absf(own - 0.05) < 0.001, "own squadmate: the command (%.2f)" % own)
+	assert_true(other > 0.5, "another element's crew: the intent (%.2f)" % other)
