@@ -661,6 +661,13 @@ _Filed here before any number._
 - **R35.65 (2026-10-20 ~10:45) perf-judge on main passes.** Alone on a quiet builder0 (load 0.39, idle 97 %), main fde32f78c: JUDGED,
   PASS on attempt 1, ratio 1.01x, 7021 us AI a tick. Covers every round-35 ship (T7, E1, D1, D6, M5) and the owed reads for T7 and main.
   All five workers' final reports are filed; the round's work is done; the close waits on his two answers (HANDOFF).
+- **R35.66 (2026-10-20) His answers: D5 ships ON; the joint W1c + T9 ships** (game_design.md *Round 35 close*, verbatim). Hand-overs:
+  (1) **orders:** GATE_DEAL default ON on current main, `make native check` on builder2 (sim-baseline expected unmoved: the CPU never
+  shift-clicks; attribute any move with `--gate-deal=off`). (2) **manoeuvre** (with traffic's T9 commits and native's T9 mirror half):
+  a hand-over on current main = main + T9 GDScript (traffic 2af7d3528 / 3ad8f3ab1 as on joint3) + native's T9 half (yield_unfinished,
+  the `_unfinished_*` exec rows, floors) + STALL_INTENT true + yieldfit2 out of DEFAULT_OFF; W1c's mirror is already on main (R35.62);
+  twins ON, `make native check` on builder0, sim-baseline moves (joint3 moved foundry / crossing / sumps / cut) attributed with the
+  switches off and adopted on the merged tree. Each merges alone; one batch main check after both. Then the round closes.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
