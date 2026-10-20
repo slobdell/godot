@@ -72,6 +72,10 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
+`make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
+Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
+
 **2026-10-20 ~20:15 (worker): S1's gate PASSES (C31.1), and the S1 series is launched.** ON tree `lab/s1-on` `d9864ab07` on builder2
 (moved there by the orchestrator): `make native check exited 2`, 2961/0, 24 passed + 2 NOT JUDGED + sim-baseline the one red
 (foundry, crossing, sumps, docks moved; 9 unmoved). Attribution = base `20acbda5f` (STALL_NET_DEFAULT false), read 13/13 unmoved by
