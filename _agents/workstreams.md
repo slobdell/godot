@@ -647,6 +647,17 @@ _Filed here before any number._
   and 22 v 9 (returning hulls still turning at 75 s). **(f) FAIL:** kills 934 v 972, deaths 944 v 982 (-38 each, se 18). (b)(c)(e) pass.
   In his terms: with M5 a pushed-off War Rig already ends facing his way; driving back carrying the facing changes little and leaves
   more hulls turning. Round-36 tooling: the copy-back carried older runs into the series folder (read from filtered copies).
+- **R35.64 (2026-10-20 ~10:20) The joint W1c + T9 FAILS as filed on one deciding line that could not pass; PARKED (W1c OFF on main,
+  T9 on stream/traffic, T9's mirror in pair/native-joint3).** builder0, ON lab/joint3-on 872f82ae5 v base 2a2682560 (main 5f05c997c, T7
+  ON, E1 in), 33/33 calls exited 0; hull-rest 901–932 (128 pairs a task); fights / wedge / jam census 940–963 x 3 arenas, 72 an arm
+  (`references/round35/manoeuvre/joint3-series/README.md`, stream 2c212324d). **(d) FAIL:** attack-move movers 16 -> 17 against <= -21.8;
+  the base had only 16 movers, so the line (sized from the dev read's 14 in 32 pairs, ~56 at 128) could not pass on these seeds.
+  **Deciding lines that pass:** (e) attack-move never-settled 48 -> 23; crews > 25 m off goal with a live move 105 -> 59. **Every guard
+  passes:** arrivals +18; kills / hit rate / deaths per team within; open / stuck / jam deaths +34 / +11 / +3 within; far loops +4;
+  friendly contacts -28601; give-ways started +208 (band 492); jam-under-fire 114 -> 122 (limit 136.8); jam:yielding 124 -> 125 (146.3).
+  Counters: stall_intent 235766, H1 escapes 2005, asks 1977, yields_unfinished 573. **Lesson:** size a deciding line from the BASE's
+  count at the judged n, and check it can be met before the series; a line the base cannot reach is a bar bug, found only after the
+  seeds are spent. **Round 36:** re-file with (e) and crews-off-goal deciding, (d) as a guard, on fresh seeds; or his call to ship.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
