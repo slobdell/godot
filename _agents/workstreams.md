@@ -719,6 +719,8 @@ _Filed here before any number._
   3ad8f3ab1) + manoeuvre e795505ea (Manoeuvre._same_element, which main's inert native mirror already calls: harmless while W1c is
   OFF, closed by the ship) + 7c6888b2a (test pins) + native 0b43bbdc4 / 708102ac8 / 0ef60f2e8 + the flip; base pair/joint-ship-base
   `6f830ceea` (switches off). Twins both ON 35/0 + 17/0, 0 mismatches. `make native check` on builder0, base sim-baseline after.
+- **R35.71 (2026-10-20 ~13:10) D5 ON merged: main 36745fa4c (INHERIT from d85e395d4: builder2 2953/0, sim-baseline 13 unmoved).**
+  His call. The joint ship merges next on its own green; one batch main check after.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

@@ -30,6 +30,9 @@ joint's moved sim-baseline maps on the merged tree with `make sim-baseline-adopt
 systemd-run, then close: archive the five briefs to `streams/archive/round35/`, rename `stream/*` to `round35/*`, remove the
 worktrees (rescue anything untracked first), update this file. Then round 36 from the list below.
 
+**main 36745fa4c = D5, THE GATE DEAL ON (his call):** a 5-squad shift-clicked route through Locks gets everyone in ~8 s sooner.
+The joint W1c + T9 ship's hand-over (d56685115) is checking on builder0.
+
 **ROUND 35 EXTENSION (2026-10-20, the lead away for the day; workstreams.md *Round 35 extension*):** the same five worktrees keep
 working: X1 manoeuvre (the joint ship, then W1b's deciding probe, R34.16's watch item), X2 traffic (T8 after the joint merges),
 X3 orders (D5 ON, then the deployed-squad street jam, the Crossing detour note), X4 brains (the released straggler's catch-up; the
