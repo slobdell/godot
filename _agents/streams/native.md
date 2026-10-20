@@ -98,6 +98,23 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     manoeuvre's stall_intent, W1c ON and OFF, 0 mismatches. With W1c ON the hold stage's intent ticks go 8 → 0 (own
     squadmates); the drive fight's 49 stay.
   - **R35.19:** this pair merges only after T7's verdict (if T7 parks, it is re-cut without T6b/T7 and re-twinned).
+- **Joint W1c+T9 re-cut on main (R35.53): `pair/native-joint3` `7a1435cdd`.**
+  - The base is manoeuvre's lab/joint3 813f6e1ff: main 5f05c997c + stream/manoeuvre + T9 cherry-picked, W1b's mirror out.
+  - Twins, builder0 light: both arms green, 35/0 + 14/0, 0 mismatches.
+  - With yieldfit2 ON, the under-fire stage's give-ways rise (66 v 39), natively beside T7's pass lane at 0 mismatches.
+  - It supersedes pair/native-w1c-t9 / -main for the joint series; manoeuvre cuts joint3 from it.
+- **R35.62: W1b's and W1c's mirrors on main as inert code: stream/native `44b2e04b5`** (main ed121d24f merged in).
+  - W1b's mirror is from pair/native-w1b. W1c's (stall_throttle, against_friend / same_element, R35.39's element skip) is
+    from pair/native-joint3, byte-identical to it. T9's half (yield_unfinished, the `_unfinished_*` exec rows, T9's floors) is
+    left out.
+  - STALL_INTENT_DEFAULT and WHEEL_HALT_DEFAULT stay false.
+  - Twins, builder0 light, ON arm lab/native-inert-on 567466f85 (both true) and OFF arm 44b2e04b5:
+    - yield + exec_state + pass_lane: 18/0 both arms;
+    - drive + traffic_hold + stall_intent + wheel_halt: 15/0 both arms;
+    - 0 mismatches. ON: stall ticks 49, wheel halts 1044 of 1044 asks. OFF: 0, and 0 of 423.
+  - **Full check green: `44b2e04b5` on builder2**, `make native check exited 0`, 2953 passed / 0 failed, sim-baseline 13
+    unmoved, 25 passed + 2 NOT JUDGED (perf-judge and scenario_perf, the box loaded 2.0x / 3.7x), 1827 s.
+  - joint3's merge later is T9's half plus the flips.
 - **D1 (orders' deploy step):** no native change (statement to the orchestrator).
 - **CP-F 5 / M5 (the orchestrator's question): W2's face settle and turnhull run on the native path, as GDScript, not
   bypassed** (lab/cpf5 63336d690).
@@ -107,6 +124,52 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - Native cell on builder0 light (new_drawn, seed 460, gangs + law, 12 runs, a scratch counters() line): face_settles 27,
     face_settle_fails 93, hull_turns 17535; execute_counts face hand-backs 205912, other_order 0.
   - Found: face_settles / face_settle_fails were not in ManoeuvreCensus.counters(). Manoeuvre adds them (orchestrator).
+
+**E4b traced (R35.54; laptop, GDScript, main 5f05c997c, trace only):** test_tactics_scenarios_6's first-in-process v later
+difference is not a script field and not the runner's teardown.
+- **Ruled out:**
+  - Script statics: all 815 `static var`s are identical first v after.
+  - The teardown and drain_navigation: a 0-frame earlier test keeps the alone value 4.8.
+  - Frame phase: waits of 1 / 2 / 3 / 4 / 97 frames all give 3.0.
+  - The nav map's first sync: `map_force_update` alone gives 4.8.
+- **What flips it:** one main-loop iteration before the setup. It is engine-side state set by the first iteration (likely the
+  physics space's first step, or the before-the-main-loop setup context).
+- **Real play** starts long after launch, so it matches the later tests. Brains' one-frame warm-up in run_tests.gd is the right fix.
+
+**Round-36 note (R35.47: tests that spawn a tank, then set `global_position` by hand; native's 13 of brains' 85; read only, no
+code):** a bare `global_position =` leaves the physics body at its Match spawn slot until a step, and how a stale overlap resolves
+depends on process history (the first match in a process syncs without a push, a later one pushes). The native twins compare the
+GDScript and C++ paths on ONE snapshot, so an overlap can move the sample but never the equality verdict; the risk is a FLOOR or
+coverage count that moves with what ran before.
+- **Can overlap, and a floor reads the stepped stage (fix in round 36: `Tank.place`, or a fresh child):**
+  - `test_native_avoid_gather`: random ±30 m poses, stepped every tick; floors on compared / still / real-velocity rows.
+  - `test_native_record`: 6 m spacing beside the spawn slots, 20 frames stepped; floors on routes and neighbours.
+- **Can overlap, but already order-proof** (every stage in its own child process, FreshStage, round 33):
+  - `native/drive_twin_case.gd` (test_native_drive*, the k-turn stage's mid-stage teleport then one frame).
+  - `native/gate_twin_case.gd` (test_native_gate*, 7 x 8 m grid at x -30 beside the slots; its floors moved with shard order
+    before the fresh-process fix).
+  - Converting them to `place` is still cleaner, low priority.
+- **Harmless** (a snapshot read, with no floor that depends on contact physics after the teleport, or none of the bodies within
+  a hull of another's slot):
+  - test_native_incoming, test_native_combat, test_native_threat, test_native_scan, test_native_route.
+  - test_native_tick_profile (counts ticks only), test_native_movement_geometry (navmesh queries).
+  - test_native_perception (rays may read stale bodies, the same in both arms).
+  - test_native_shell (waits a frame "so the bodies are where the rays look").
+- Native's round-35 stages (test_native_yield's pass and refusal stages, test_native_pass_lane) already use `Tank.place`.
+
+**Round-36 candidates (native):**
+1. **Mirrors waiting on their owners' bars:**
+   - W2's face settle, if it ever reaches C++: today it is GDScript on the native path by design (face hand-back).
+   - W1b: `pair/native-w1b` `f4f6bf1d2`, rebased on the merge base when W1b returns.
+   - The joint W1c+T9: `pair/native-joint3` `7a1435cdd`.
+2. **The R35.47 note's two fixes:** test_native_avoid_gather and test_native_record to `Tank.place` (or a fresh child);
+   the drive / gate twin harnesses to `place` as cleanup.
+3. **E4b below the main loop (optional, R35.57):** name the engine state the first iteration sets (physics space's first
+   step v the setup context): a minimal two-body repro, with or without one stepped frame.
+4. **The census gap pattern:** a counter added to a rule but not to ManoeuvreCensus.counters() / a series reader. Propose a
+   lint-style test that every `static var` counter named in a bar appears in the series' printed line.
+5. **R34.16's watch item** (one 9.1 m both-planned face) when a face_pairs series next runs.
+6. **The traffic series readers' seed_twins call** (requested; traffic queued it after T7's series).
 
 **Requests to other streams:** traffic, relayed after T7's series: any series reader that pools a folder containing random-arena
 fights calls `seed_twins.filter_logs(files)` first.

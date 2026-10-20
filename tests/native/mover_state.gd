@@ -56,6 +56,11 @@ static func capture(mover: Movement) -> Dictionary:
 	# Round 33 (N5.M): the tables `_manoeuvre`'s decision counts into are Manoeuvre's statics, not Movement's.
 	state["static:Manoeuvre.plans"] = _copy(Manoeuvre.plans)
 	state["static:Manoeuvre.refused"] = _copy(Manoeuvre.refused)
+	# Round 35 (W1b): the wheeled pace-0 halt's arm counters, Manoeuvre's statics too.
+	state["static:Manoeuvre.wheel_halt_asks"] = Manoeuvre.wheel_halt_asks
+	state["static:Manoeuvre.wheel_halts"] = Manoeuvre.wheel_halts
+	if (Manoeuvre as Script).get_script_constant_map().has("STALL_INTENT_DEFAULT"):  # round 35 (W1c)
+		state["static:Manoeuvre.stall_intent_ticks"] = Manoeuvre.stall_intent_ticks
 	var station: Object = mover._station
 	if station != null:
 		for prop: Dictionary in station.get_property_list():
@@ -76,6 +81,15 @@ static func restore(mover: Movement, state: Dictionary) -> void:
 			continue
 		if key == "static:Manoeuvre.refused":
 			Manoeuvre.refused = _copy(state[key])
+			continue
+		if key == "static:Manoeuvre.wheel_halt_asks":
+			Manoeuvre.wheel_halt_asks = int(state[key])
+			continue
+		if key == "static:Manoeuvre.wheel_halts":
+			Manoeuvre.wheel_halts = int(state[key])
+			continue
+		if key == "static:Manoeuvre.stall_intent_ticks":
+			Manoeuvre.stall_intent_ticks = int(state[key])
 			continue
 		mover.set(key.trim_prefix("static:"), _copy(state[key]))
 	var station: Object = mover._station
