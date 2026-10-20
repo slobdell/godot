@@ -639,6 +639,7 @@ _Filed here before any number._
   but W1b's counter `wheel_halt_asks` reads 0 on the native path, and an ON flip would leave the native drive ignoring the rule.
   Native lands both mirrors (W1b from pair/native-w1b, W1c from pair/native-joint3; NOT T9's) re-cut on ed121d24f, defaults false,
   twins ON and OFF + a builder2 full check; code identical to joint3's so the joint merge is T9's half + the flip.
+  **Merged:** main 9336ea5f8 (native 5e8018726; INHERIT from 44b2e04b5's builder2 check 2953/0, sim-baseline 13 unmoved).
 - **R35.63 (2026-10-20 ~09:50) E2 / B11b PARKS (not merged; stream/brains 4b6b3c589, `--hold-return=turret` opts in).** builder2,
   native, 05ba49192 (E2 + main with M5), base `--hold-return=old`, 801–816 x 4 factions (n 64 a task an arm), fights 820–843 (n 24).
   (0) faced returns 2341 v 0. **(a) FAIL:** wheels/turret medians ~4 deg in BOTH arms (faced_move 4.2 v 4.1, p 0.95; faced_right 4.5 v
