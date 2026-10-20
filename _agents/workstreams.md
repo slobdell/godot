@@ -252,6 +252,13 @@ _Filed here before any number._
   (b) s66 gangs faced_move Green_Guns_5 <= 90 deg. (c) no class worse at p < 0.05. (d) never-settled and movers at the judge within 2 se.
   (e) squads arrived within 2 se. (f) fights within 2 se. (g) check green, moved sim-baseline maps attributed with `--hold-return=old`.
 
+- **X1b W1b's deciding probe: is a still held hull a sitting duck? (manoeuvre, X1 b), filed before any number on stream/manoeuvre
+  4521b611d.** Probe (33e0f64d4): fight_census `exposure` per victim team: crew-ticks and hits taken while held_p0 (wheeled, route/direct
+  drive at pace 0, Traffic holding) and while p0 (same, not held), hits on a still hull, wheel_halts. Arms native: lab/x1b-base = main
+  b7e55e68d + probe; lab/x1b-on = + WHEEL_HALT_DEFAULT true. Locks x FRESH 4300–4323, 180 s, 24 fights an arm; builder0's one series.
+  **Counter first:** wheel_halts > 0 ON, 0 base. **Deciding:** D = ON - base held_p0 hits per exposed second, both teams pooled, paired
+  bootstrap se: D > 1.645 se -> SITTING DUCK (W1b does not re-try; the answer is T8); otherwise NOT A DUCK (W1b re-tries in round 36).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
@@ -708,6 +715,10 @@ _Filed here before any number._
   arms, native); if it holds, X3b closes as "fixed on main" and test_tactics_body's line returns to off + 5 s (R35.17 undone).
   (c) design note filed: `references/round35/orders/x3c-crossing-halt-detours.md` (the controls hand the deploy a reached `halt_at`;
   ElementPlan unchanged; a round-36 bar shape).
+- **R35.70 (2026-10-20 ~13:00) The joint ship's hand-over.** pair/joint-ship `d56685115` = main 6657144b3 + traffic T9 (2af7d3528,
+  3ad8f3ab1) + manoeuvre e795505ea (Manoeuvre._same_element, which main's inert native mirror already calls: harmless while W1c is
+  OFF, closed by the ship) + 7c6888b2a (test pins) + native 0b43bbdc4 / 708102ac8 / 0ef60f2e8 + the flip; base pair/joint-ship-base
+  `6f830ceea` (switches off). Twins both ON 35/0 + 17/0, 0 mismatches. `make native check` on builder0, base sim-baseline after.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
