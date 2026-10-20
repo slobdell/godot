@@ -97,7 +97,6 @@ func _run() -> void:
 		_close(crew, false)
 	print("WEDGE_TRACE " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"totals": _totals, "wedged_units": Movement.wedged_units,
-			"wheel_halt_on": Manoeuvre.wheel_halt_on(), "wheel_halt_asks": Manoeuvre.wheel_halt_asks, "wheel_halts": Manoeuvre.wheel_halts,
 			"stall_intent_on": Manoeuvre.stall_intent_on(), "stall_intent_ticks": Manoeuvre.stall_intent_ticks,
 			"esc_fires_hull": Movement.esc_fires_hull, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started}))
 	quit(0)

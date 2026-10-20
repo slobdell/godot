@@ -217,7 +217,7 @@ static func counters() -> Dictionary:
 	return {"face_plans": Manoeuvre.face_plans, "face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none,
 			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
 			"face_settles": Manoeuvre.face_settles, "face_settle_fails": Manoeuvre.face_settle_fails,  # round 35 (W2, R35.35)
-			"wheel_halts": Manoeuvre.wheel_halts, "stall_intent_ticks": Manoeuvre.stall_intent_ticks,
+			"stall_intent_ticks": Manoeuvre.stall_intent_ticks,
 			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns, "hull_holds": Manoeuvre.hull_holds, "off_seat_declines": Manoeuvre.off_seat_declines,
 			"arrivals_held": Manoeuvre.arrivals_held, "arrivals_held_ticks": Manoeuvre.arrivals_held_ticks,
 			"face_keep_refused": Manoeuvre.face_keep_refused, "face_keep_by_unit": Manoeuvre.face_keep_by_unit.duplicate(), "escape": Movement.escape_arms(),

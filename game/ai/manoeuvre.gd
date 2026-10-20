@@ -600,36 +600,6 @@ static func _against_friend(mover: Movement) -> bool:
 	return false
 
 
-## Round 35 (W1b, C35.6, R35.7): A WHEELED HULL HELD TO A STANDSTILL DOES NOT CREEP. W1's trace (references/round35/
-## manoeuvre/w1-trace): 41 % of wedged deaths were crews Traffic held at a street mouth under fire; at the spot the hold asks
-## pace 0 facing the squad's way, and on wheels throttle 0 at full lock is the plant's creep (TankMotion: |throttle| <
-## WHEEL_CREEP_THROTTLE x |turn| = 0.5 s legs forward and back): 67 of 106 at-spot ticks moved at throttle 0, the round-8
-## shuffle, in a lane mouth, while being shot. With this on, a drive whose pace is 0 (the at-spot hold, or avoidance saying
-## stop) and that would creep gets turn 0 as well: the hull stands on the heading it has and the turret keeps its aim.
-## Planned k-turn legs are untouched. `--nav-off=wheelhalt` flips WHEEL_HALT_DEFAULT (false = OPT-IN until its bar passes).
-const WHEEL_HALT_DEFAULT := false
-## Arm counters (ticks, strided ticks by their stride): pace-0 wheeled drives that would creep, and of those the ones
-## turned to a halt (the ON arm).
-static var wheel_halt_asks := 0
-static var wheel_halts := 0
-
-
-static func wheel_halt_on() -> bool:
-	return WHEEL_HALT_DEFAULT != Movement.switched_off("wheelhalt")
-
-
-## The drive's command for a wheeled hull whose pace is `pace`: a pace-0 drive that would creep (no planned leg) stands.
-static func wheel_halt(cmd: TankCommand, radius: float, pace: float, kturn_left_m: float, step: int) -> void:
-	if radius <= 0.0 or kturn_left_m > 0.0 or pace > 0.0 or cmd.turn == 0.0:
-		return
-	if absf(cmd.throttle) >= TankMotion.WHEEL_CREEP_THROTTLE * absf(cmd.turn):
-		return
-	wheel_halt_asks += step
-	if wheel_halt_on():
-		cmd.turn = 0.0
-		wheel_halts += step
-
-
 ## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused
 ## for leaving the arrive radius.
 static var hull_turns := 0
