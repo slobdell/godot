@@ -432,6 +432,15 @@ _Filed here before any number._
   river at 31 s (Delta_3 at -79.3, -7.1) though its place (-100.5, 28.9) is on his side. Also: Crossing 5 route all-in 41.0 v 33.9 s,
   Locks 5 route 35.4 v 29.3, Terminus 5 route never-in 2 v 1. The bar omitted D5's far-bank guard (the orchestrator's miss); **every
   orders bar now carries far bank 0 in every cell.** Trace s3643 (laptop), fix, re-read on FRESH 3651–3656 with far bank 0.
+- **R35.39 (2026-10-19 ~19:50) The joint pair's native-only red is a real interaction; W1c is scoped to OTHER elements.**
+  test_tactics_mixed_legs on lab/joint-on (builder0 native) passes alone (50.6 s) and fails whenever another test runs first in the
+  process (31.9 m short); joint-base passes in the same order. Trace: from t 48 s Green_M_3 is blocked by its OWN squadmate M_2
+  (parked at its seat); W1c's escape fires again and again (H1 asks 5 -> 12) but an ask to an own-element crew yields nothing
+  (yields_started 5 stays); the escape's reverse/forward cycling keeps brains' round-18 D5 re-seat (`reseats` 1 in every passing run)
+  from ever reading "driving without closing". Ruling: W1c's intent reading applies only against a friend in ANOTHER element (or
+  unseated); against an own-element squadmate today's gate and the re-seat stand. Native mirrors one predicate. A deterministic test
+  builds the nose-on-own-squadmate pose directly. The between-test state that lets process history decide who ends nose-on is to be
+  named (lesson 83).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
