@@ -103,7 +103,7 @@ struct N {
 	// Movement statics (through the script)
 	StringName leash_orders{ "leash_orders" }, avoidance_on{ "avoidance_on" }, station_on{ "station_on" },
 			kturn_eased{ "kturn_eased" }, wheel_halt_asks{ "wheel_halt_asks" }, wheel_halts{ "wheel_halts" },
-			stall_intent_ticks{ "stall_intent_ticks" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
+			stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
 			wedged_units{ "wedged_units" }, a1_replans{ "a1_replans" }, a1_cadence_due{ "a1_cadence_due" },
 			a1_by_cause{ "a1_by_cause" }, route_not_ready{ "route_not_ready" }, guard_rescues{ "guard_rescues" };
 	// methods called back
@@ -1807,7 +1807,9 @@ struct Drive {
 		return intent;
 	}
 
-	// Manoeuvre._against_friend(mover): a slide collider that is a Tank of this team, or blocked by a friendly Tank.
+	// Manoeuvre._against_friend(mover): a slide collider that is a Tank of this team, or blocked by a friendly Tank, and
+	// (R35.39) NOT of this crew's own element: Manoeuvre._same_element is called (a pure lookup in Elements; an own
+	// squadmate's escape is a no-op ask, and the element's re-seat is the way out).
 	bool against_friend() {
 		static const String blocked("blocked");
 		const int64_t team = tank->get(k.team);
@@ -1817,7 +1819,7 @@ struct Drive {
 			for (int i = 0; i < n; i++) {
 				Ref<KinematicCollision3D> hit = body->get_slide_collision(i);
 				Object *collider = hit->get_collider();
-				if (is_tank(collider) && (int64_t)collider->get(k.team) == team) {
+				if (is_tank(collider) && (int64_t)collider->get(k.team) == team && !same_element(collider)) {
 					return true;
 				}
 			}
@@ -1827,10 +1829,19 @@ struct Drive {
 			Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
 			if (root != nullptr) {
 				Object *blocker = root->get_node_or_null(NodePath(by));
-				return is_tank(blocker) && (int64_t)blocker->get(k.team) == team;
+				return is_tank(blocker) && (int64_t)blocker->get(k.team) == team && !same_element(blocker);
 			}
 		}
 		return false;
+	}
+
+	// Manoeuvre._same_element(tank, other) (absent before R35.39: never the same element, the rule as first shipped).
+	bool same_element(Object *other) {
+		Object *man = c.manoeuvre_script;
+		if (man == nullptr || !man->has_method(k._same_element)) {
+			return false;
+		}
+		return (bool)gd(man, k._same_element, tank, other);
 	}
 
 	bool is_tank(Object *o) const {
