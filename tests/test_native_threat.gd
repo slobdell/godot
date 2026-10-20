@@ -126,7 +126,7 @@ func test_update_suppression_is_the_live_gdscript() -> void:
 	for i in 12:
 		var team := Match.Team.GREEN if i % 2 == 0 else Match.Team.RUST
 		var tank := game_match.spawn_tank("Crew%02d" % i, 0, team, "tank")
-		tank.global_position = Vector3(9.0 * (i % 4) - 14.0, 0.0, 10.0 * (i / 4) - 10.0)
+		tank.place(Vector3(9.0 * (i % 4) - 14.0, 0.0, 10.0 * (i / 4) - 10.0), tank.rotation.y)
 		hulls.append(tank)
 	await wait_physics_frames(2)
 	hulls[5].alive = false  # the dead are skipped

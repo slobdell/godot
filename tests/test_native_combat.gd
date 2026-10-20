@@ -42,7 +42,7 @@ func test_combat_rules_are_the_live_gdscript() -> void:
 	var victims: Array[Tank] = []
 	for i in units.size():
 		var tank := game_match.spawn_tank("Victim%02d" % i, 0, Match.Team.GREEN, String(units[i]))
-		tank.global_position = Vector3(8.0 * (i % 8) - 30.0, 0.0, 8.0 * (i / 8) - 20.0)
+		tank.place(Vector3(8.0 * (i % 8) - 30.0, 0.0, 8.0 * (i / 8) - 20.0), tank.rotation.y)
 		victims.append(tank)
 	await wait_physics_frames(2)
 	var weapons: Array[Dictionary] = []

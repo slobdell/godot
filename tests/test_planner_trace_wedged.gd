@@ -85,8 +85,7 @@ func _wedged(on: bool) -> void:
 	var at := Vector3(-100, 0, 40)
 	add_to_tree(_corridor(at))
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	tank.global_position = at
-	tank.rotation.y = 0.0
+	tank.place(at, 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
