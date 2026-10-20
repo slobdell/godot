@@ -93,6 +93,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - A forced plain-refusal stage (5 Sumps poses from a sweep of ask; the orchestrator's request): **green hash
     `6177ee87a`**, test_native_yield 12/0 on it and on lab `c8db0a442` (W1c ON): asks_refused 5/5 live and owned,
     0 mismatches.
+  - **R35.39 (manoeuvre's scope predicate):** against_friend skips a squadmate of the crew's own element
+    (Manoeuvre._same_element called). **Current pair hash `7372e6118`:** 14/0 on test_native_drive, traffic_hold and
+    manoeuvre's stall_intent, W1c ON and OFF, 0 mismatches. With W1c ON the hold stage's intent ticks go 8 → 0 (own
+    squadmates); the drive fight's 49 stay.
   - **R35.19:** this pair merges only after T7's verdict (if T7 parks, it is re-cut without T6b/T7 and re-twinned).
 - **D1 (orders' deploy step):** no native change (statement to the orchestrator).
 - **CP-F 5 / M5 (the orchestrator's question): W2's face settle and turnhull run on the native path, as GDScript, not
