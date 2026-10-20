@@ -72,6 +72,13 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~16:00 (worker):** CP36.1 is on main at `a318a2cd3`; the orchestrator's sim-baseline adoption is still running. S2 / X4b
+started on a detached side worktree, `godot-manoeuvre-x4b`, pinned at a318a2cd3. Runs: builder0 native, hull-rest drawn,
+faced_attack_move + faced_move, seeds 6301–6332 x 4 factions (256 runs), `--turn-states --element-trace=all`. systemd unit
+`manoeuvre-x4b`, logs `~/overnight-manoeuvre/r36/x4b/`. Adoption touches only baselines, so play is identical. The stream merges
+main after the orchestrator's adoption commit. The stacked S1+S3 pair is `pair/native-s1s3` `779f31be5` (its check is queued).
+Bar S1 is copied to workstreams (7bf08f3ed): the stage proves the rule, the series guards carry the harm check.
+
 **2026-10-20 ~15:30 (worker): where it stands.**
 - **S1 GDScript** `dbe6ed396` (+ the mirror spec `ab71634f4`). quick-remote on dbe6ed396 (builder0, 11 test files + lint): 53/2.
   Both reds are the missing native mirror: the stage's native-default-arm line (holds 22 v 0) and test_native_h1b's twin
