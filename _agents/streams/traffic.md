@@ -72,7 +72,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 | 3 perf-judge | Orchestrator's ruling: on builder0, on the ON hand-over only, after a PASS; it gives the window. |
 | 4 seed twins | **DONE** (nothing to code; see below). |
 | 5 stretch: held deaths T8 doesn't release | Pre-read filed (`references/round36/traffic/held_preread.md`); the real read waits for T8's arm. |
-| R36.4 yieldgap (orchestrator's go) | **Quick GREEN** `lab/yieldgap` `76aea1185` (builder0, 105/0, both long-hull tests PASS); merged here `5cb41002c`. Native's mirror + S2a stack: `pair/native-s2a-yg` `8e6a52fc9` (native's). Rides in manoeuvre's S2a series. Native twin GREEN `32ba4ca99` (builder0 quick, test_native_yield 13/0; nose-on ON 1 twinned 0 mismatches not recorded, OFF recorded); its full check (the S2a+yieldgap pair) running on builder0. |
+| R36.4 yieldgap (orchestrator's go) | **Quick GREEN** `lab/yieldgap` `76aea1185` (builder0, 105/0, both long-hull tests PASS); merged here `5cb41002c`. Native's mirror + S2a stack: `pair/native-s2a-yg` `8e6a52fc9` (native's). Rides in manoeuvre's S2a series. Native twin GREEN `32ba4ca99` (builder0 quick, test_native_yield 13/0; nose-on ON 1 twinned 0 mismatches not recorded, OFF recorded); S2a+yieldgap pair `32ba4ca99` full check GREEN (builder0, exit 0, 2967/0, 25 + 2 NOT JUDGED, sim-baseline 13/13 unmoved); manoeuvre names it and runs the S2a series. |
 | T8 smoke | `make traffic-t8-clip` (laptop): ON 5 held / 5 released for fire / 5 hold ticks; OFF 5 held / 1712 hold ticks. Sheets in `references/round36/traffic/t8_clip/`. |
 
 **Lessons this session (in remote_builds.md via the orchestrator):** a Spot run that lost its host is not a result (the driver now
