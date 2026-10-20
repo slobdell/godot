@@ -658,6 +658,9 @@ _Filed here before any number._
   Counters: stall_intent 235766, H1 escapes 2005, asks 1977, yields_unfinished 573. **Lesson:** size a deciding line from the BASE's
   count at the judged n, and check it can be met before the series; a line the base cannot reach is a bar bug, found only after the
   seeds are spent. **Round 36:** re-file with (e) and crews-off-goal deciding, (d) as a guard, on fresh seeds; or his call to ship.
+- **R35.65 (2026-10-20 ~10:45) perf-judge on main passes.** Alone on a quiet builder0 (load 0.39, idle 97 %), main fde32f78c: JUDGED,
+  PASS on attempt 1, ratio 1.01x, 7021 us AI a tick. Covers every round-35 ship (T7, E1, D1, D6, M5) and the owed reads for T7 and main.
+  All five workers' final reports are filed; the round's work is done; the close waits on his two answers (HANDOFF).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

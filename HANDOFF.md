@@ -43,8 +43,8 @@ sized the joint's deciding line without checking the base could reach it (R35.64
 a deployed squad's herringbone across a street; the packing objective; the Crossing's halt detours; W1b's probe; the released
 straggler's catch-up; the 85 bare-teleport test files; the copy-back leak into series folders.
 
-**Not yet done at the close:** perf-judge alone on a quiet builder0 (running now on fde32f78c); worktrees not removed (they stay until
-his answers, as in round 34); briefs not archived.
+**perf-judge on main, alone on a quiet builder0: JUDGED, PASS** (fde32f78c, ratio 1.01x, 7.0 ms AI a tick, attempt 1; covers T7, E1,
+D1, D6, M5). **Not yet done at the close:** worktrees not removed (they stay until his answers, as in round 34); briefs not archived.
 
 ## 🚀 ROUND 35 IS PREPARED (2026-10-19) — read this first
 
