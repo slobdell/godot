@@ -4081,3 +4081,7 @@ Asked in player terms with one recommendation each; his picks verbatim:
 - **The Crossing's halt seats reached only by a detour (orders' D4 trace).** Some on-spot seats are reachable only round an obstacle
   (20–30 m detours) because the halt lay is laid by straight-line distance. Round 36 design question: a halt lay that knows driving
   distance (ElementPlan is pure today).
+- **Tight packing needs a different objective (orders' D3 and D3b, R35.11, R35.43).** Packing the halts exactly made arriving squads
+  mix; keeping arrivals apart (a narrow file on the last stretch) fixed the mixing but pushed every squad's places AWAY from his click
+  (end spread 64 v 34 m on the Crossing) and, on the Crossing, across the river. Round 36: pack toward the click first and treat
+  arrival overlap as transient (deploy each squad when ITS crews are in), rather than a strict every-seat-on-good-ground pack.

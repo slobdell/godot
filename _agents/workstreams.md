@@ -472,6 +472,12 @@ _Filed here before any number._
   deaths 984 v 984, hit rate 0.718 both (the release fired 3x for CPU elements). (g) test 2890/0, sim-baseline unmoved; the corrected
   partial (lint + 10) queued. **In his terms:** when one crew is wedged, its squad moves on to the next attack-move leg after ~8 s
   instead of waiting a minute or more; the wedged crew catches up or stays stuck (W1c + T9's job).
+- **R35.43 (2026-10-19 ~20:40) D3b withdrawn before its series; D3 stays parked for a round-36 redesign.** Built within R35.41 (OFF).
+  Laptop look at seed 34 (reported only; 3661–3666 unseen): arrivals no longer mix (closest foreign at arrival 7.0–13.1 m in 5 of 6
+  cells) but the spread GROWS in every click cell (end far Crossing 3 64.0 v 34.2, Locks 3 67.3 v 49.4) and the pack arm crosses the
+  river in both Crossing cells (far bank 1 each): the strict pack (every seat on good ground, arrivals apart) pushes places away from
+  the click. Not spent on the series lane. Round 36: redesign the packing objective (game_design.md). Series queue: W1b -> D6 re-read
+  -> M5 -> joint -> T8.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
