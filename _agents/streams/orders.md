@@ -75,59 +75,50 @@ Nothing (his deploy-step yes is the go).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (2026-10-19 ~16:30 PDT; every number names its commit, machine, workload and n)
+### ROUND 35 REPORT (orders; 2026-10-20). Every number names its commit, machine, workload and n.
 
-**Done, in his terms**
-- **D1, the deploy step is ON in the game (his yes): MERGED, main `1a18dd278`** from `orders-d1` `581b8a396`, builder0 GREEN
-  (`make check exited 0`, 2886 passed, 0 failed, sim-baseline 13/13 unmoved). A squad sent somewhere arrives in its travel
-  shape, then steps once into its halt shape ON the spot it was sent to (<= 12 m; B8b's centred lay left formations 1.5-9.5 m
-  off the spot). The CPU never deploys (census: 48 CPU-v-CPU fights byte-identical on and off, builder0 `e9066083a`), so
-  fights are untouched. Cost on record (R35.17): a Law squad halted as a herringbone across a street can slow a neighbour
-  driving through (brains' Locks body stage +6.1 s; the test's line resized and cited).
-- **D2, the probe on the shipped step: done (reported)**, `references/round35/orders/d2-main-1a18dd278/` (README, table,
-  48 frames). Settling after the step is smaller on the Crossing and the Locks 3 cells, larger on Locks 5 / Terminus 5 clicks
-  (the step itself overruns there); the Locks 5 route now finishes (45.6 s; round 34's settle never did); nobody crosses a river.
-- **Tools:** `make deploy-census` (CPU fights, on v off, by side), `make body-trace-orders`, the orders probe's deploy columns
-  (deploy time / place move / twitch / end gaps), `ORDERS_PROBE_SEEDS` (a seed now moves the click <= 12 m: before, every
-  seed replayed seed 34), MEDIANS over seeds + the click EQUALITY check, `--probe-legs-each`, `tests/control/legs_count.py`;
-  `orders-probe-shots` fails on zero frames (builder0 has no desktop).
+**Shipped (on main)**
+1. **D1, the deploy step ON (his yes)**: main `1a18dd278` from `581b8a396` (builder0 `make check exited 0`, 2886/0, sim-baseline
+   13/13 unmoved). A squad sent somewhere arrives in its travel shape, then steps once into its halt shape ON the spot it was
+   sent to (within 12 m). The CPU never deploys (48 CPU-v-CPU fights byte-identical on and off). Known cost (R35.17): a Law
+   herringbone halted across a street slows a neighbour driving through (+6.1 s in brains' Locks body stage).
+2. **D6, every squad follows a shift-clicked route**: main `31e3d605c` from `93cdb1559` (builder2 `native check exited 0`,
+   2941/0, sim-baseline 13/13 unmoved). About one squad in six used to skip his waypoints and drive straight to the last one
+   (round 22's untangle re-deals vehicles, so a later shift-click REPLACED the route). Fresh read (builder0 `ee3a8dab2`,
+   seeds 3651-3656, n 6): every squad every leg 144/144 v 121/144; far bank 0 in every cell; a shifted leg's places step
+   back from a bridge deck (the first A/B had crossed a bridge twice on s3643). `--requeue=off` is the old behaviour.
+3. **D2, the probe on the shipped step** (reported): `references/round35/orders/d2-main-1a18dd278/` (README in his terms,
+   table, 48 frames). Plus tools: `make deploy-census`, `make body-trace-orders`, the probe's deploy columns, seeds that move
+   the click, MEDIANS + EQUALITY, `--probe-legs-each`, `tests/control/legs_count.py`; `orders-probe-shots` fails on no frames.
 
-**Parked, each with its reading (all OFF by default, each switch opts in)**
-- **D3 tight packing** (`--pack=on`): the halts pack (5 coils 64 v 74 m by halts alone), the ARRIVALS don't: two squads'
-  arrival wedges mixed, and keeping them apart gives the gain back (R35.11). D3b (a narrower arrival shape) is the next step.
-- **D4 minimax deploy seating** (`--deploy-minimax=on`): failed its bar (builder0 `68d4c06cd`, 3621-3626: twitch 6 % lower v
-  the 20 % line, 4 cells worse, never-in up). The trace stands: the residual twitch IS the deploy move (a wedge across a
-  street re-forming into a herringbone along it) plus seats reached only round obstacles (round 36).
-- **D5 the gate deal** (`--gate-deal=on`): the Locks 5-squad route jam traced (in-between gates dealt by where squads stood
-  at home; the gate's direction could point backwards). Failed its bar twice; on fresh seeds (builder0 `bd22ac4c8`, 3631-3636)
-  the Locks 5 route is in 25.8 v 34.2 s (the line was 23.9) with a little more near-ramp nosing on the Crossing (never across).
-  The orchestrator puts it to him as a feel call at the close (R35.34).
+**Parked, with their readings (all in main's code, OFF; each switch opts in)**
+- **D3 tight packing** (`--pack=on`, D3b `--arrive-file=on`): the halts pack (five coils 64 v 74 m by halts alone) but the
+  arrivals don't: arriving wedges mixed (5.7 m), keeping them apart gave the gain back (R35.11); D3b's file arrival stopped
+  the mixing but the spread grew in every cell and two river crossings appeared (laptop, seed 34; not run on builder0, R35.43).
+- **D4 minimax deploy seating** (`--deploy-minimax=on`): failed (builder0 `68d4c06cd`, 3621-3626: twitch 6 % lower v 20 %,
+  four cells worse, never-in up). The trace stands: the residual twitch IS the deploy move.
+- **D5 the gate deal for in-between waypoints** (`--gate-deal=on`): failed twice; fresh read (builder0 `bd22ac4c8`,
+  3631-3636): the Locks 5-squad route in 25.8 v 34.2 s (line 23.9) and half the detour (drive/plan 1.49 v 3.37), with a little
+  more near-ramp nosing on the Crossing (never across).
 
-**In flight**
-- **D6, a shift-clicked route that some squads ignored** (22 % of route squads got fewer legs than waypoints in D5's runs):
-  round 22's untangle re-deals vehicles at the first click, so later shift-clicks found no element to queue behind and
-  REPLACED the route. Fix (R35.28 option b) + the s3643 bridge-mouth fix: `1b174f05d`, OFF until judged (`--requeue=on`).
-  A/B 1 passed its bar (every squad every leg 144/144 v 117/144) but crossed a bridge twice on s3643 (HELD, R35.38); fixed on
-  the laptop; the fresh re-read (3651-3656, far bank 0 in every cell) is in the series queue after W1b.
+**His feel call (D5, via the orchestrator, R35.34):** "Five squads on a shift-clicked route on the Locks get in about 8 s
+sooner and drive half as far out of their way; on the Crossing a crew noses onto a bridge ramp a little more often (never
+across). Try it: `GATE_DEAL=on make skirmish ARENA=locks`, select five squads, shift-click three waypoints. Recommendation:
+turn it on if the route feels better."
 
-**Questions for the lead** (via the orchestrator): D5 as a feel call (`GATE_DEAL=on make skirmish ARENA=locks`, five squads,
-a shift-clicked route). Nothing else blocks.
+**Round-36 candidates (each traced this round)**
+1. The deploy move across a street: a wedge, wide across the street, re-forms into a herringbone along it, so wing crews
+   drive past their squadmates (D4's trace; the main source of the post-arrival "twitch").
+2. Halt seats reached only round an obstacle (the Crossing detours, 20-30 m): the halt lay needs a reachability input
+   (ElementPlan stays pure; R35-ruled).
+3. A herringbone halted across a street blocks the lane its neighbours drive through (R35.17).
+4. A click right at a bridge mouth could seat a crew past the deck (deck_clear covers shifted legs only).
+5. Tight packing with a new objective: pack toward the click, arrival overlap treated as transient (R35.43).
+6. `uncross_paths` on a queued screen changed behaviour through path planning alone (limited to plain moves; untraced).
 
-**Requests to other streams:** none open. (R35.6: brains-owned `element_task.gd` gained `halt_at` / `halt_shape`, additive,
-on stream/orders only, parked with D3.)
-
-**Known issues (round-36 candidates):** the deploy move across a street (D4); halt seats behind a wall or across a bank (the
-Crossing detours; the halt lay is pure); a herringbone halted across a street blocks its neighbours' lane (R35.17); a click
-right at a bridge mouth could seat a crew past the deck (deck_clear covers shifted legs only); `uncross_paths` broke a queued
-screen through path planning (limited to plain moves; cause untraced); D3's arrivals.
-
-**What to playtest:** `make skirmish ARENA=locks` (the deploy step, on main): select three or five squads, right-click near
-the bridge; watch each squad arrive, then step once into its halt on its spot. Feel calls: `GATE_DEAL=on` (D5) and, once D6
-is judged, shift-click a three-waypoint route.
-
-**Merge notes:** `game/tactics/element_plan.gd` changes only inside the deploy carve-out (`_deploy_state`, `_deploy_shape`,
-`_deploy_keep`, DEPLOY_ON_SPOT_M); `tests/test_tactics_body.gd` one line (R35.17); `game/tactics/element_task.gd` two keys
-(R35.6, parked with D3). Everything else is in orders' own paths.
+**Questions for the lead:** only D5's feel call. **Requests to other streams:** none open.
+**Merge notes:** `element_plan.gd` changes only in the deploy carve-out plus R35.41's one guarded block (`ARRIVE_FILE`, off);
+`element_task.gd` two keys (R35.6, used only with the pack on); `test_tactics_body.gd` one line (R35.17).
 
 ### D3b: built (OFF, `--arrive-file=on` with `--pack=on`), NOT run on builder0: a laptop look at seed 34 says it fails
 Code: the one switched addition in `_plan_form_up` (R35.41) + the pack keeping arriving COLUMNS apart. Laptop GDScript, seed 34

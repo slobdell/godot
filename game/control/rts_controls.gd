@@ -1574,9 +1574,9 @@ const GATE_STEP_M := 2.0
 const GATE_DETOUR := 1.5
 ## Round 35 (D5): an in-between gate dealt by the squads' previous leg ends, nearest the gate in front, ranks stepped by
 ## the travel shape, never behind the previous leg. `--gate-deal=off` is round 34's O4 (dealt left to right by where the
-## squads stand now, ranks a halt's depth apart), the default while parked.
-## PARKED OFF (round 35, D5's fresh re-read failed its bar, builder0 bd22ac4c8, seeds 3631-3636): `--gate-deal=on` opts in.
-static var GATE_DEAL := OS.get_cmdline_user_args().has("--gate-deal=on") or OS.get_environment("GATE_DEAL") == "on"
+## squads stand now, ranks a halt's depth apart).
+## ON (R35.66: the lead played it, "clearly awesome, let's keep it"; its probe bar had failed twice, R35.34).
+static var GATE_DEAL := not OS.get_cmdline_user_args().has("--gate-deal=off") and OS.get_environment("GATE_DEAL") != "off"
 ## Measurement: gates laid (a re-lay of a queued waypoint for several squads).
 static var gates_laid := 0
 
