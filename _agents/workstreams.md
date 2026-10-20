@@ -478,6 +478,16 @@ _Filed here before any number._
   river in both Crossing cells (far bank 1 each): the strict pack (every seat on good ground, arrivals apart) pushes places away from
   the click. Not spent on the series lane. Round 36: redesign the packing objective (game_design.md). Series queue: W1b -> D6 re-read
   -> M5 -> joint -> T8.
+- **R35.44 (2026-10-19 ~20:45) T7 PASSES its bar as filed.** Pair `e95179252`, builder0 start to end, native, pinned, 180 s, fixed
+  arenas {terminus, locks, sumps, gorge, parade} x 1600–1627, n 140 paired, none missing; crossing 44–46 x 6. Counters (arm):
+  underfire_refusals 427, passes 311 (192 abreast, 44 timed out), gives 1327, holds 68; base 0. **G** jam-under-fire deaths 277 -> 240
+  (-13 %, se 17.65, 2.1 se): PASS. Guards: open 4780 -> 4746; stuck 958 -> 960; far loops 108 -> 108; kills 6037 -> 5979, hit rate
+  0.732 -> 0.731; post-hit contacts 416 -> 407; crossings 180/180 x 4; all friendly contacts 107053 -> 107271 (+0.2 %): all PASS.
+  Reported: all deaths 6082 -> 6019; by arena G terminus 66->49, sumps 71->60, gorge 52->40, locks 55->56, parade 33->35. T6b's costs
+  (stuck +61, far loops x2) are gone. **Before it ships:** (1) T6b's abort removal ("a give-way already begun finishes when a hit
+  lands") is default behaviour in BOTH T7 arms and not on main; R34.20 parked T6 (T6b's series failed stuck and far loops), so T7's
+  pass does not cover it: traffic shows a filed T6b pass, or T6b is switched and ships OFF with T7 re-verified on that tree;
+  (2) the hand-over re-cut on current main + one `make native check`; (3) perf-judge alone on a quiet builder0.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
