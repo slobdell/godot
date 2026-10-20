@@ -726,6 +726,9 @@ _Filed here before any number._
   read 17.7 v 23.8); others -2.7 to +3.0. The laptop's s1 read +1.0 (orientation 85: laptop rows are not builder rows). The line stays
   off + 8.1; X3b open: a builder0 trace of s1, then a design behind a switch, a bar whose workload is chosen by a stated property (an
   arrived squad's halt across the next squad's route), fresh seeds, a guard on the cells where it does not jam.
+- **R35.73 (2026-10-20 ~13:40) Disks.** The laptop was at 885 MB free (14 finished side worktrees removed: 11 GB free); builder0 hit
+  0 bytes (orders' rsync failed; 14 stale remote folders removed: 13 GB free; manoeuvre re-verifies the joint ship check and X1b's
+  series for write errors from that window); builder2 79 % (7 round-34 leftovers removed: 29 GB free). Lesson in orchestration.md.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
