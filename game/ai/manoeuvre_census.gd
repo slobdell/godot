@@ -97,6 +97,9 @@ static var h1b_far := 0
 const H1B_FAR_ROWS := 200
 static var h1b_far_rows: Array = []
 ## How many of h1b_far_rows print_new_far_rows has printed (a probe that prints MANOEUVRE_TURNS gets its H1B_FAR rows too).
+## Round 36 (S2a, h1bside): far loops that went round (a side point) and that stood (no side clear). ON arm only.
+static var h1b_side_steps := 0
+static var h1b_side_stands := 0
 static var _far_rows_printed := 0
 
 
