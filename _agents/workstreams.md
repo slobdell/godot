@@ -536,6 +536,7 @@ _Filed here before any number._
   `switches_per_unit_min` (main-suite 6.0, tip-suite 4.8, tip-alone 3.2), is a SECOND, pre-existing carry-over (that stage already
   places through TacticsLab.unit; history-dependent on main too): merged as known; brains bisects it on the light lane. Main now
   carries E4 + native's pass-lane port, checked separately: one `make native check` of 5f05c997c on builder2.
+  **GREEN:** builder2 `make native check exited 0`, 2911/0, 25 passed + 2 NOT JUDGED (timing). Workers merge main.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
