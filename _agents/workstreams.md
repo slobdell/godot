@@ -563,6 +563,14 @@ _Filed here before any number._
   W1b excluded); native `pair/native-joint3` `7a1435cdd` (813f6e1ff + T9's and W1c's mirrors + floors + the forced refusal stage;
   diff v 813f6e1ff is T9 + W1c only); ON twins on lab 441c4dbc5. Native's first cut e2fe62c9a (with T8 and W1b) is superseded.
   The two new guards read traffic's jam_census (T5's definition), the probe's under-fire counts reported only.
+- **R35.54 (2026-10-20 ~01:50) E4b, the second carry-over (test_tactics_scenarios_6): it is the runner's teardown.** Brains' trace
+  (80ef83789): it flips on ANY earlier test in the process (even one that only waits 1 / 97 / 1000 frames, so not frame phase); the
+  stage played twice inside ONE test is identical (GDScript and native), so a match does not change it, the first test's TEARDOWN does;
+  per-tick dumps identical through step 28, then Rust_B_2 yields to its column leader only after a teardown. Candidates:
+  `drain_navigation` or a lazily initialised static (Element._body_memo ruled out). **Granted (brains, narrowly):** `tests/run_tests.gd`
+  warms up before the first test (one physics frame + the standard teardown) so every test sees the same state; marked interim.
+  Bar: scenarios_6 alone == in the suite; full suite green, moved lines listed. Round 36: name the field, so tests can match the game's
+  real first-match state (no teardown in play).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
