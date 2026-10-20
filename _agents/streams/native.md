@@ -70,6 +70,20 @@ c29a8c7b6, a0ae0aafd; builder2). The 1c82d6d1e row was running at launch.
 **Plan (in order):** N3's S3 pair first (it arrived at launch, small, and manoeuvre waits on it); then N1's check; N2 rows
 as named; N4 sweep; N5 lint; stretch.
 
-- **S3 (W1b's mirror deleted):** `pair/native-s3` = `lab/manoeuvre-s3` d44c13377 + native half eefc379c5. Check pending.
+- **N1 done:** main 434640730, then e45bb6632 (88185ebb0) merged in; rows c29a8c7b6, a0ae0aafd, 1c82d6d1e committed (builder2,
+  exit 0, 0 SCRIPT ERRORs, n=1 run per main) with the README rendered. c29a8c7b6 = a0ae0aafd exactly (no game/native source
+  differs: determinism holds). 1c82d6d1e v a0ae0aafd: group orders never in 5/36 -> 0/36, moves never settled 13/48 -> 10/48,
+  tanks lost per fight 40.4 -> 41.9 (noise not yet sized).
+- **Scoreboard v the Spot box (090580147):** builder2's 14:07 preemption killed e45bb6632's run (255, copy-back FAILED) and
+  run.sh scored the stale local build/scoreboard (1c82d6d1e's files) as e45bb6632's row (deleted, never committed). Now
+  `tools/scoreboard/verdict.sh` gates the row (exited 0 + copied back, verified, no NOT RUN, run.txt names the commit and
+  closes with 40/48/36); each attempt clears the local copy, starts builder2 if it is down, retries a 255 (3). 12 known answers.
+  e45bb6632 re-running on builder2 (systemd unit native-score-e45bb6632).
+- **N3 S3 (W1b's mirror deleted), green alone:** `pair/native-s3` eefc379c5 = manoeuvre's d44c13377 + native half. builder0
+  `make check exited 0`, 2950/0, 25 + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved.
+- **N3 S1 (stallnet mirror) stacked on S3, at manoeuvre's request:** `pair/native-s1s3-main` **20acbda5f** = S3 + manoeuvre's
+  S1 (dbe6ed396/ab71634f4 cherry-picked) + mirror (779f31be5) + main a318a2cd3 (conflicts: OFF_NAMES; manoeuvre.gd's
+  `_same_element` kept, W1b's block gone; native_drive.gd S1 + T9 keys) + main e45bb6632. Full check running on builder0; it
+  also stands as main's check (the orchestrator did not relaunch one). Manoeuvre names and merges this hash.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
