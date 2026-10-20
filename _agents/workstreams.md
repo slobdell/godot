@@ -559,6 +559,10 @@ _Filed here before any number._
   give-way paths T7 gates under fire. Re-cut: native rebases its mirrors onto main 5f05c997c (`pair/native-w1c-t9-main`), manoeuvre
   cuts joint3 (base switches off, ON both on), C31.1 check + attribution, then the series on 901–932 / 940–963 in builder0's lane
   after D6. R35.19's T6b caveat is moot (T7 shipped).
+  **Trees:** GDScript lab/joint3 `813f6e1ff` (main 5f05c997c + stream/manoeuvre + T9 c7de7cf95/aba7f800e; DEFAULT_OFF ["yieldfit2"];
+  W1b excluded); native `pair/native-joint3` `7a1435cdd` (813f6e1ff + T9's and W1c's mirrors + floors + the forced refusal stage;
+  diff v 813f6e1ff is T9 + W1c only); ON twins on lab 441c4dbc5. Native's first cut e2fe62c9a (with T8 and W1b) is superseded.
+  The two new guards read traffic's jam_census (T5's definition), the probe's under-fire counts reported only.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
