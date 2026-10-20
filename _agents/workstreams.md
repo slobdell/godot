@@ -545,6 +545,16 @@ _Filed here before any number._
   (no re-run): team 1's hits per exposed second on held wheeled crews at pace 0, base v ON. If up, a still held hull is a sitting
   duck (the rocking dodged fire) and round 36's answer is T8 (leave the hold when hit); if flat, a round-36 re-try. W1b stays OFF; its
   mirror unmerged. Series queue (builder0): D6 re-read -> the joint -> T8; builder2: M5.
+  **Follow-up:** the existing rows can't split hits by a held target (FIGHT_CENSUS keeps per-team totals). Proxies (72 pairs, base v
+  ON): held exposure equal (3468 v 3495 wheeled pace-0 s); held deaths 76 v 67 (down), but their last-10-s hits 9.2 v 11.4 per death;
+  pooled accuracy up for both teams. Undecided; the probe line (each impact's target held/pace-0 state + exposure ticks) and a small
+  re-run are round 36's first step, not this round's.
+- **R35.53 (2026-10-20 ~01:20) The joint W1c + T9 series is re-cut on current main before it runs.** joint2-on `319d63fec` check:
+  builder0 `make native check exited 2`, 2925/0, the one red sim-baseline (foundry, crossing, sumps, cut MOVED; joint2-base
+  attribution running). But joint2 predates T7's ship: its base has T7 OFF, main has T7 ON + E1 + E4, and W1c / T9 change the
+  give-way paths T7 gates under fire. Re-cut: native rebases its mirrors onto main 5f05c997c (`pair/native-w1c-t9-main`), manoeuvre
+  cuts joint3 (base switches off, ON both on), C31.1 check + attribution, then the series on 901–932 / 940–963 in builder0's lane
+  after D6. R35.19's T6b caveat is moot (T7 shipped).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
