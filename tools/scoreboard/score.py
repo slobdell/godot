@@ -135,6 +135,19 @@ def orders(root):
     return out
 
 
+def script_errors(root):
+    """SCRIPT ERROR lines in every log of the run, by part: a probe that breaks on an older main shows on the page."""
+    out = {}
+    for part in ("fights", "moves", "orders"):
+        n = 0
+        for base, _dirs, files in os.walk(os.path.join(root, part)):
+            for name in files:
+                if name.endswith(".log"):
+                    n += sum(1 for line in open(os.path.join(base, name), errors="replace") if "SCRIPT ERROR" in line)
+        out[part] = n
+    return out
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("raw")
@@ -146,7 +159,8 @@ def main():
     run_txt = os.path.join(a.raw, "run.txt")
     header = open(run_txt).read().strip().splitlines() if os.path.exists(run_txt) else []
     row = {"commit": a.commit, "machine": a.machine, "overlay": a.overlay, "remote_status": a.remote_status,
-           "run": header, "fights": fights(a.raw), "moves": moves(a.raw), "orders": orders(a.raw)}
+           "run": header, "fights": fights(a.raw), "moves": moves(a.raw), "orders": orders(a.raw),
+           "script_errors": script_errors(a.raw)}
     json.dump(row, sys.stdout, indent=1, sort_keys=True)
     print()
 

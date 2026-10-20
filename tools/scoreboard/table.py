@@ -101,15 +101,17 @@ def render(root):
         if r is None:
             out.append("- `%s` (%s): not run yet." % (commit, label))
             continue
-        out.append("- `%s` (%s): %s, workload and probes from `%s`, remote exit %s. %s" % (
-            commit, label, r["machine"], r.get("overlay") or "?", r.get("remote_status"), (r.get("run") or [""])[0]))
+        errors = r.get("script_errors") or {}
+        out.append("- `%s` (%s): %s, workload and probes from `%s`, remote exit %s, SCRIPT ERROR lines %s. %s" % (
+            commit, label, r["machine"], r.get("overlay") or "?", r.get("remote_status"),
+            " / ".join("%s %d" % kv for kv in sorted(errors.items())) or "n/a", (r.get("run") or [""])[0]))
     out += ["", "**How each line is read** (`tools/scoreboard/score.py`): fight deaths by T5's causes (tests/traffic/jam_ab.py; "
             "\"under fire\" = the last hit landed during the jam, or 2+ hits in the 10 s before); never settled = no "
             "`settled_after_s` inside the 75 s judge; left behind = more than 25 m off its slot in its element's last trace "
             "row (tests/tactics/e1_bar.py); still driving / rocking = brains' mover kinds (a crew moving at the judge that "
             "closed 3+ m on its goal or wandered, v one that moved under 1 m net in its last 10 s); group orders = "
             "tests/control/orders_probe_table.py (all-in = the last squad's arrival; twitch = the most a crew moved after "
-            "its place).", ""]
+            "its place; on a main older than the deploy step, from the squad's arrival).", ""]
     return "\n".join(out)
 
 

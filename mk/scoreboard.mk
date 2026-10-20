@@ -2,7 +2,7 @@
 # His concern (2026-10-20): "ensure that we're also generally making concrete progress". ONE fixed workload, the same on every
 # main, so a row per main reads against the others: the player-facing numbers, not the mechanisms. Raw logs only; the
 # numbers are read on the laptop by tools/scoreboard/score.py with TODAY's readers, so an older main is read the same way.
-#   fights  SCORE_FIGHT_AT x SCORE_FIGHT_SEEDS, 180 s showmatch (tests/traffic/jam_census.gd): deaths by cause (open / stuck /
+#   fights  SCORE_FIGHT_AT x SCORE_FIGHT_SEEDS, 180 s showmatch (tests/scoreboard/jam_census.gd, a copy of traffic's that runs on older mains): deaths by cause (open / stuck /
 #           jam, and jammed while under fire), kills, hit rate
 #   moves   hull-rest's drawn faced attack-move and move (foundry, quiet enemy, every faction): crews left behind, crews
 #           that never settle, crews still moving at the judge (brains' mover kinds: closing / wander / jitter)
@@ -26,7 +26,7 @@ scoreboard-run: import ## X5: the round scoreboard's fixed workload on this tree
 	@if echo " $(SCORE_PARTS) " | grep -q " fights "; then \
 	for seed in $(SCORE_FIGHT_SEEDS); do for arena in $(SCORE_FIGHT_AT); do echo "$$arena $$seed"; done; done | \
 		xargs -P $(SCORE_JOBS) -L 1 sh -c 'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
-		--script res://tests/traffic/jam_census.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
+		--script res://tests/scoreboard/jam_census.gd -- --skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute \
 		--seconds=180 > $(SCORE_DIR)/fights/$$0-$$1.log 2>&1 || true; \
 		grep -q "^JAM_CENSUS" $(SCORE_DIR)/fights/$$0-$$1.log || echo "  MISSING JAM_CENSUS fights $$0 s$$1"'; fi
 	@if echo " $(SCORE_PARTS) " | grep -q " moves "; then \

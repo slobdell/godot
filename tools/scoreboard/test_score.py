@@ -42,7 +42,7 @@ def build(root, with_twitch):
         death("open:los"), death("stuck:wall"), death("jam:held", hit_in_jam=True, hits_10s=0),
         death("jam:held", hit_in_jam=False, hits_10s=1),
         census({"green": {"shots": 10, "hits": 4, "kills": 2}, "rust": {"shots": 30, "hits": 6, "kills": 2}})]))
-    write(os.path.join(root, "fights", "sumps-1.log"), "crashed\n")
+    write(os.path.join(root, "fights", "sumps-1.log"), "crashed\nSCRIPT ERROR: x\nSCRIPT ERROR: y\n")
     # moves: one run, never settled, one crew 30 m off its slot, two movers at the judge (one closing, one rocking)
     run = os.path.join(root, "moves", "gangs", "faced_move-7")
     write(os.path.join(run, "screen.json"), json.dumps([{"squads": [{"squad": "A", "arrived": True, "each": [
@@ -90,6 +90,7 @@ def test_every_number():
     assert o["all_in_median_s"] == 25.0           # the runs all in: 20 and 30
     assert o["twitch_median_m"] == 3.0 and o["twitch_worst_m"] == 4.0   # per run worst: 2, 4, 3
     assert o["cases"]["locks 3 click"] == {"runs": 2, "all_in_median_s": 20.0, "never_all_in": 1, "far_bank": 0}
+    assert row["script_errors"] == {"fights": 2, "moves": 0, "orders": 0}
     assert row["commit"] == "abc" and row["machine"] == "box" and row["run"] == [">> scoreboard-run on box | commit abc"]
 
 
@@ -125,6 +126,7 @@ def test_the_table_reads_per_fight_and_marks_what_is_missing():
     assert "| Orders where some squad never got in (90 s) | 1 of 3 | not run | lower |" in text
     assert "| Hit rate | 25 % | not run |  |" in text
     assert "**old main**<br>`abc`" in text
+    assert "SCRIPT ERROR lines fights 2 / moves 0 / orders 0" in text
 
 
 if __name__ == "__main__":
