@@ -70,4 +70,43 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-20 (orchestrator, at launch).** Not started.
+### O1 VERDICT: X3b CLOSES "NO WORKLOAD" (bar as filed; builder0 light lane, native, `61b6181e2`, 96 runs, NATIVE on in all)
+- `make native herringbone-lab`, 32 fixed cells x {off, on, nostep}, n 1 a cell a arm (the stage is deterministic):
+  **jam cells (off >= nostep + 3 s): 0 of 32** (needed >= 3). The arrived herringbone at s1's corner does not jam the
+  Sirens on builder0 in any of 32 geometries; the deploy step is FASTER than the old settle on mean (nostep - off +1.94 s;
+  in 2 cells the settle never got the Sirens in within 40 s).
+- PASS where it acts (pass_waits 1 in 26 of 32 cells): on - off **+1.53 s mean, 5 cells over +5 s, worst +15.6 s**: the held
+  deploy fires ~12.5 s in, in the middle of the passing traffic, instead of ~6 s, before it. The lab guard fails too.
+- Table: `references/round36/orders/x3b-lab-builder0-61b6181e2/` (+ the laptop design sweep's lines, seen before the bar).
+- **Reading:** R35.17's +6.1 s was one chaotic draw of the body stage (1 seed of 12), not a property of the geometry.
+  DEPLOY_PASS stays OFF; recommend deleting it (code, hook in element.gd, test) at the round close. No series run;
+  5101-5124 stay unseen. test_tactics_body's line (off + 8.1 s) stays as is (it is brains' file and the line still holds).
+
+### O2 trace (laptop GDScript, seed 34 = the dev seed, main + the probe's new deploy columns, the 6 click cells, 24 squads)
+`references/round36/orders/o2-trace-laptop-s34/rows.txt`. Per squad: the deploy's worst leg as seated, the best possible
+seating of the same seats (minmax), and the same halt with its depth along the heading halved (compact):
+- The herringbone is 33-48 m deep for 4-5 crews ((n-1) x 0.8 x spacing); the travel wedge 27-39 m wide. Every twitch over
+  20 m (Terminus 5 sq4 31.3, Locks 5 sq2 26.5, Crossing 3 sq1 25.2, Locks 5 sq4 21.3) is a squad with halt depth >= 33 m.
+- Two different causes: **seating** (Terminus 5 sq4: leg 47.4 m as seated v 19.2 best seating: D4's minimax case) and
+  **shape depth** (Locks 5 sq4: 37.1 / 30.8 best seating / 18.8 compact; Locks 5 sq2 16.4 -> 7.3 compact; Terminus 5 sq2
+  18.6 -> 7.4). Legs rarely drive THROUGH a squadmate (2 of 24 within 4 m): the move is long, not crossed.
+- Design note to the orchestrator next.
+
+### Plan (worker, 2026-10-20)
+1. C36.1 carry-over: DONE `a80bb28ab` (round35/orders's X3b code OFF + tooling + evidence, paths checked out exactly; main had
+   not touched them since the branch point d85e395d4).
+2. O1 lab stage: built `61b6181e2` (`make herringbone-lab`, `tests/control/herringbone_lane_stage.gd`), bar FILED in
+   workstreams *Bars (round 36)* before any builder0 number. builder0 light native run in flight.
+3. O2 the deploy move across a street: trace on the probe's street cells, design note, bar.
+4. O3 the reached halt (`REACHED_HALT`, X3c's note).
+5. O4 packing toward the click: design note first.
+6. Stretch: the bridge-mouth click; `uncross_paths` on a queued screen.
+Choice recorded: the lab's cells are a GRID of fixed geometries (Sirens lead x Hunters2 goal offset), not one cell: one
+deterministic cell is still one chaotic draw (R35.77's lesson), a grid shows whether the jam is a property of the geometry.
+
+### O1 (2026-10-20)
+- **Laptop GDScript design sweep** (stage uncommitted on `a80bb28ab`, 32 cells x {off, on, nostep}, n 1 a cell a arm; seen
+  BEFORE the bar was filed and named in it): the herringbone jams the Sirens (off >= nostep + 3 s) in **1 cell of 32**; PASS
+  on - off on the 31 non-jam cells **+1.17 s mean, 4 cells over +5 s (worst +13.2)**: a held deploy fires ~12.5 s in, in the
+  middle of the passing traffic, instead of at ~6 s before it. In 3 cells the NO-STEP arm never got the Sirens in (the old
+  settle jams too). Reading on the laptop: the arrived herringbone is rarely the jam, and PASS costs where it isn't.

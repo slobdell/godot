@@ -180,7 +180,11 @@ func _run() -> void:
 				"arrived_by": squad.get("arrived_by", ""),
 				"deploy_s": snappedf((int(squad["place_tick"]) - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 						if squad.has("place_tick") else -1.0, "deploy_cause": squad.get("deploy_cause", ""),
-				"place_m": snappedf(float(squad.get("place", -1.0)), 0.1), "twitch_m": snappedf(float(squad.get("twitch", -1.0)), 0.1)
+				"place_m": snappedf(float(squad.get("place", -1.0)), 0.1),
+				"deploy_leg_m": snappedf(float(squad.get("deploy_leg_m", -1.0)), 0.1), "deploy_passes": int(squad.get("deploy_passes", -1)),
+				"leg_minmax_m": snappedf(float(squad.get("leg_minmax_m", -1.0)), 0.1), "leg_compact_m": snappedf(float(squad.get("leg_compact_m", -1.0)), 0.1),
+				"travel_width_m": snappedf(float(squad.get("travel_width_m", -1.0)), 0.1),
+				"halt_depth_m": snappedf(float(squad.get("halt_depth_m", -1.0)), 0.1), "halt_shape": squad.get("halt_shape", ""), "twitch_m": snappedf(float(squad.get("twitch", -1.0)), 0.1)
 						if squad.has("placed") else -1.0,
 				"end_foreign_m": snappedf(_nearest(_living(squad), func(t: Tank) -> bool: return t.team == Match.Team.GREEN \
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
@@ -317,6 +321,8 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 		squad["twitch"] = 0.0
 		return
 	var since := _match.tick - int(squad["place_tick"])
+	if since == SimClock.TICK_RATE and element != null:
+		_deploy_legs(squad, alive, element)
 	if since <= int(PLACE_S * SimClock.TICK_RATE):
 		var from: Dictionary = squad["place_from"]
 		for n: String in alive:
@@ -329,6 +335,82 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 	for n: String in alive:
 		if placed.has(n):
 			squad["twitch"] = maxf(float(squad["twitch"]), _flat_d(_tank(n).global_position, placed[n]))
+
+
+## O2 (round 36): the deploy move's geometry, read 1 s after the deploy (the halt's seats issued): each crew's leg from where
+## it stood at the deploy to its halt seat, how many legs drive PAST a squadmate (the leg's segment within PASS_M of another
+## crew's spot at the deploy, that crew not at the leg's end), the travel shape's width across the heading and the halt's
+## depth along it, and the halt's shape.
+const PASS_M := 4.0
+
+
+func _deploy_legs(squad: Dictionary, alive: Array, element: Element) -> void:
+	var from: Dictionary = squad["place_from"]
+	var heading: Vector3 = element.deploy.get("heading", Vector3.FORWARD)
+	var side := Vector3(-heading.z, 0.0, heading.x)
+	var worst := 0.0
+	var passes := 0
+	var across: Array = []
+	var along: Array = []
+	for n: String in alive:
+		var seat: Variant = element.slots.get(n)
+		if not (seat is Vector3) or not from.has(n):
+			continue
+		var a: Vector3 = from[n]
+		var b: Vector3 = seat
+		worst = maxf(worst, _flat_d(a, b))
+		across.append(Vector3(a.x, 0.0, a.z).dot(side))
+		along.append(Vector3(b.x, 0.0, b.z).dot(heading))
+		for other: String in alive:
+			if other == n or not from.has(other):
+				continue
+			var o: Vector3 = from[other]
+			if _flat_d(o, b) > PASS_M and Geometry2D.get_closest_point_to_segment(Vector2(o.x, o.z), Vector2(a.x, a.z),
+					Vector2(b.x, b.z)).distance_to(Vector2(o.x, o.z)) <= PASS_M and _flat_d(o, a) > PASS_M:
+				passes += 1
+				break
+	# Counterfactuals (trace only): the worst leg with the best seating of the same seats, and with the halt's depth along
+	# the heading halved about its middle (side offsets kept).
+	var starts: Array = []
+	var seats: Array = []
+	for n: String in alive:
+		if from.has(n) and element.slots.get(n) is Vector3:
+			starts.append(from[n])
+			seats.append(element.slots[n])
+	var mid := 0.0
+	for seat: Vector3 in seats:
+		mid += seat.dot(heading) / float(seats.size())
+	var compact: Array = seats.map(func(seat: Vector3) -> Vector3: return seat - heading * (seat.dot(heading) - mid) * 0.5)
+	squad["leg_minmax_m"] = _minmax_leg(starts, seats)
+	squad["leg_compact_m"] = _minmax_leg(starts, compact)
+	squad["deploy_leg_m"] = worst
+	squad["deploy_passes"] = passes
+	squad["travel_width_m"] = (across.max() - across.min()) if across.size() > 1 else 0.0
+	squad["halt_depth_m"] = (along.max() - along.min()) if along.size() > 1 else 0.0
+	squad["halt_shape"] = element.formation
+
+
+## The shortest possible longest leg from `starts` to `seats` (every assignment; a squad is <= 6 crews).
+func _minmax_leg(starts: Array, seats: Array) -> float:
+	if starts.size() != seats.size() or starts.is_empty() or starts.size() > 6:
+		return -1.0
+	var best := [INF]
+	var walk := func(walk_self: Callable, i: int, used: Array, worst: float) -> void:
+		if worst >= float(best[0]):
+			return
+		if i == starts.size():
+			best[0] = worst
+			return
+		for j in seats.size():
+			if not used[j]:
+				used[j] = true
+				walk_self.call(walk_self, i + 1, used, maxf(worst, _flat_d(starts[i], seats[j])))
+				used[j] = false
+	var used: Array = []
+	used.resize(seats.size())
+	used.fill(false)
+	walk.call(walk, 0, used, 0.0)
+	return float(best[0])
 
 
 func _seats(alive: Array) -> Dictionary:
