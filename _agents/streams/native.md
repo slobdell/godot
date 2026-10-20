@@ -99,6 +99,14 @@ as named; N4 sweep; N5 lint; stretch.
   ab22849a9 + S2a mirror 18bc084c9 + traffic lab/yieldgap 76aea1185 + yieldgap mirror c66058c41 + a test fix. Quick on
   8e6a52fc9: 134/1 (the red my twin reading a freed hull's name); test_native_yield on 32ba4ca99 13/0, nose-on long hulls ON
   1 twinned 0 mismatches not recorded, OFF 1 twinned 0 mismatches recorded. test_manoeuvre_h1b_side 3/3 (native default arm
-  = GDScript, fires 5). Full check running on builder0.
+  = GDScript, fires 5). **GREEN:** builder0 `make check exited 0` on **32ba4ca99**, 2967/0, 25 + 2 NOT JUDGED (load), sim-baseline
+  13/13 unmoved. Manoeuvre names and merges it.
+- **The ± noise column (fe58b0dbf):** score.py by_seed; table.py 2 se of a difference from references/scoreboard/noise.txt's
+  rows (one main's seed blocks); SCORE_SEED_BASE / SCORE_TAG / SCORE_EXPECT for the second block. Provisional on e45bb6632's
+  2601+ block alone: 1c82d6d1e -> e45bb6632 twitch 12.6 -> 10.8 m v ± 1.2 m (moved); every other line inside its noise; never in
+  "no spread". The raw logs moved out of build/ (../godot-native-score-raw): a check's copy-back deletes build/'s non-.log
+  files, which ate three raws' screen.json / run.txt (their committed rows stand). **Owed:** the 2701+ block on builder2 after
+  T8's series, then noise.txt names both.
+- **Lesson (C36.1):** a full check goes behind `tools/builder_checks.sh --wait-below 1`; I put 32ba4ca99's beside orders'.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
