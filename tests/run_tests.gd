@@ -112,6 +112,18 @@ func _run() -> void:
 	for index in discovered.size():
 		if shard < 0 or int(owner[index]) == shard:
 			mine.append(discovered[index])
+	# Round 35 (brains E4b, R35.54), INTERIM: a warm-up before the first test -- one physics frame and the teardown every
+	# test gets -- so the first test of a process sees the same state as every later one. Without it a test read
+	# differently by whether anything ran before it in the process: test_tactics_scenarios_6 (attack_move_decisions)
+	# 3.2 alone v 4.8 after ANY earlier test, even one that only waited a frame (builder0 native); the same stage twice
+	# inside one test is identical, so it is the runner's TEARDOWN that changes the state, not playing a match. That
+	# means real play matches a process's FIRST test, and after this warm-up every test sees the post-teardown state
+	# instead: consistent, not the game's. Naming the field (drain_navigation or a lazily initialised static) so the
+	# tests can match real play is round 36's (streams/brains.md, E4b).
+	var warm_up := TestCase.new()
+	warm_up.tree = self
+	await physics_frame
+	await warm_up._teardown()
 	for path in mine:
 		var file_started := Time.get_ticks_msec()  # I1: measurement only (the runner's wall clock, never a decision)
 		var script: GDScript = load(path)
