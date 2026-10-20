@@ -589,6 +589,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);
 	c.PASS_BEYOND_M = config.get("PASS_BEYOND_M", 2.0);
+	c.PASS_STEP_M = config.get("PASS_STEP_M", 2.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());
 	c.planner_seam = c.keep_planner_seam.get_validated_object();

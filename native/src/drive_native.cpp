@@ -180,7 +180,7 @@ struct N {
 			underfire_holds{ "underfire_holds" },
 			// Round 35 (traffic T7, C35.8): refuse under fire only when the asker has a pass lane; the refused asker passes
 			underfire_gives{ "underfire_gives" }, passes{ "passes" }, passes_done{ "passes_done" },
-			passes_timeout{ "passes_timeout" }, pass_ticks{ "pass_ticks" }, _pass_lane{ "_pass_lane" }, is_alive{ "is_alive" };
+			passes_timeout{ "passes_timeout" }, pass_ticks{ "pass_ticks" }, _pass_lane{ "_pass_lane" }, is_alive{ "is_alive" }, _radii{ "_radii" };
 };
 const N &n_() {
 	static const N names;
@@ -2305,6 +2305,9 @@ struct Drive {
 	Vector2 travel_direction(const Vector3 &goal, bool direct);
 	// ---- Round 35 (traffic T7, C35.8): the pass ----
 	double pass_lane(const String &passer, const Vector3 &from, const Vector2 &direction);
+	bool pass_wheels_ok(Node3D *passer, const Vector3 &point);
+	bool pass_clear(const Vector3 &point, Node3D *passer);
+	bool pass_swept(const RID &map, Node3D *passer, const Vector3 *points, int count);
 	bool pass_start(const String &refuser, double side, const Vector2 &way);
 	void pass_end(bool timed_out = false);
 	Vector3 pass_point();
@@ -2480,13 +2483,123 @@ void Drive<V>::negotiate_body(const Vector3 &goal, bool direct, Node3D *other, O
 }
 
 // ---- Round 35 (traffic T7, C35.8; `--traffic-on=underfire`): the pass ----
-// Movement._pass_lane(passer, from, direction): the side (+1 / -1) of my hull the passer can drive past me on, else 0. A
-// GDScript call: it reads the navmesh, the Avoidance table and the two hulls only (never this crew's members; `gd` pushes
-// first anyway), and it runs only when a crew under fire is asked (T6: ~19 a fight). The sweep is NavNative::outline_ok's
-// bits in the GDScript already; a C++ port of it waits for T7's verdict (a parked rule's mirror is dead weight, R34.20).
+// Movement._pass_lane(passer, from, direction): the side (+1 / -1) of my hull the passer can drive past me on, else 0.
+// Round 35 (R35.8's follow-up, T7 shipped at R35.44): natively, line by line (it was a GDScript call while T7 was judged).
+// GDScript's widths: a Vector2 / Vector3 built from double differences narrows, `across.x * side * lateral` is double,
+// a Vector3 * float multiplies in real_t.
 template <class V>
 double Drive<V>::pass_lane(const String &passer, const Vector3 &from, const Vector2 &direction) {
-	return (double)gd(m, k._pass_lane, passer, from, direction);
+	Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	Node3D *other = root != nullptr ? Object::cast_to<Node3D>(root->get_node_or_null(NodePath(passer))) : nullptr;
+	if (other != nullptr && !is_tank(other)) {
+		other = nullptr; // `as Tank`
+	}
+	if (other == nullptr || (double)direction.length_squared() < 0.0001 || !pathing_ready()) {
+		return 0.0; // no navmesh to read the lane on: as today
+	}
+	const RID map = tank->get_world_3d()->get_navigation_map();
+	const Vector2 way = direction.normalized();
+	const Vector2 across(-way.y, way.x);
+	const double first = (double)across.dot(Vector2((real_t)((double)from.x - (double)here.x), (real_t)((double)from.z - (double)here.z))) >= 0.0 ? 1.0 : -1.0;
+	const String my_unit = tank->get(k.unit_id);
+	const String other_unit = other->get(k.unit_id);
+	const double lateral = avoid_radius(my_unit) + avoid_radius(other_unit) + c.YIELD_LINE_MARGIN;
+	const double beyond = (hull_length(my_unit) + hull_length(other_unit)) * 0.5 + c.PASS_BEYOND_M;
+	const Vector3 start(from.x, 0.0, from.z);
+	refresh_avoidance();
+	for (const double side : { first, -first }) {
+		const Vector3 p((real_t)((double)here.x + (double)across.x * side * lateral), 0.0,
+				(real_t)((double)here.z + (double)across.y * side * lateral));
+		const Vector3 q = p + Vector3(way.x, 0.0, way.y) * (real_t)beyond;
+		if ((double)Vector2((real_t)((double)p.x - (double)start.x), (real_t)((double)p.z - (double)start.z)).dot(way) <= 0.0) {
+			continue;
+		}
+		if (!pass_wheels_ok(other, p) || !pass_clear(p, other) || !pass_clear(q, other)) {
+			continue;
+		}
+		const Vector3 points[3] = { start, p, q };
+		if (pass_swept(map, other, points, 3)) {
+			return side;
+		}
+	}
+	return 0.0;
+}
+
+// Movement._pass_wheels_ok(passer, point): _ahead_of_wheels' arithmetic at the PASSER's pose (its mover's wheel_radius()).
+template <class V>
+bool Drive<V>::pass_wheels_ok(Node3D *passer, const Vector3 &point) {
+	Object *mover = mover_of(passer);
+	const double radius = mover != nullptr ? (double)mover->call(k.wheel_radius) : 0.0;
+	if (radius <= 0.0) {
+		return true;
+	}
+	const Vector3 bz = passer->get_global_basis().get_column(2);
+	const Vector2 forward = Vector2(-bz.x, -bz.z).normalized();
+	const Vector3 at = passer->get_global_position();
+	const Vector2 to((real_t)((double)point.x - (double)at.x), (real_t)((double)point.z - (double)at.z));
+	if ((double)to.dot(forward) <= 0.0) {
+		return false;
+	}
+	const Vector2 left(forward.y, -forward.x);
+	for (const double side : { 1.0, -1.0 }) {
+		if ((double)(to - left * (real_t)side * (real_t)radius).length() < radius) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// Movement._pass_clear(point, passer): no hull but me and the passer within both radii of `point` (Avoidance.neighbours,
+// called as free_spot calls it; Avoidance._radii by the row's index).
+template <class V>
+bool Drive<V>::pass_clear(const Vector3 &point, Node3D *passer) {
+	const double reach = avoid_radius(String(passer->get(k.unit_id)));
+	const String passer_name = passer->get_name();
+	const Array rows = gd(c.avoidance_script, k.neighbours, String(tank->get_name()), (double)point.x, (double)point.z);
+	if (rows.is_empty()) {
+		return true;
+	}
+	const PackedFloat32Array radii = c.avoidance_script->get(k._radii);
+	for (int64_t i = 0; i < rows.size(); i++) {
+		const Array row = rows[i];
+		if (String(row[1]) != passer_name && std::sqrt((double)row[0]) < reach + (double)radii[(int64_t)row[2]]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// Movement._pass_swept(map, passer, points): the passer's outline (_kturn_frame(passer)) clear every PASS_STEP_M along the
+// legs through `points`, heading along each leg, its own pose the start (_outline_offs / _outline_ok: NavNative's, the
+// kturn_cap rule, as yield_run_ok; the yield port runs only with kturn_cap).
+template <class V>
+bool Drive<V>::pass_swept(const RID &map, Node3D *passer, const Vector3 *points, int count) {
+	const String unit = passer->get(k.unit_id);
+	const double half_w = hull_width_of(unit) * 0.5;
+	const double half_l = hull_length(unit) * 0.5;
+	const double clear = bake_radius() - c.KTURN_MARGIN_M;
+	const Vector3 pos = passer->get_global_position();
+	const Vector3 bz = passer->get_global_basis().get_column(2);
+	const Vector3 at(pos.x, 0.0, pos.z);
+	const Vector3 heading = Vector3(-bz.x, 0.0, -bz.z).normalized();
+	const PackedFloat32Array start = c.nav->outline_offs(map, half_w, half_l, at, heading);
+	for (int j = 1; j < count; j++) {
+		const Vector3 &a = points[j - 1];
+		const Vector3 &b = points[j];
+		const Vector3 leg((real_t)((double)b.x - (double)a.x), 0.0, (real_t)((double)b.z - (double)a.z));
+		if ((double)leg.length() < 0.01) {
+			continue;
+		}
+		const Vector3 along = leg.normalized();
+		const int64_t steps = MAX((int64_t)1, (int64_t)std::ceil((double)leg.length() / c.PASS_STEP_M));
+		for (int64_t i = 1; i <= steps; i++) {
+			if (!c.nav->outline_ok(map, half_w, half_l, clear, a.lerp(b, (real_t)((double)i / (double)steps)), along, start,
+						Vector3(), Vector3())) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 // Movement._pass_start(refuser, side, way)
