@@ -180,8 +180,9 @@ _Filed here before any number._
 
 - **M6/T9 JOINT: the stuck asker asks again (W1c, manoeuvre) and the asked parked crew answers (T9 yieldfit2, traffic), filed
   2026-10-19 ~11:55 before any T9 code, replacing M6's two-arm read (R35.13).** T9 design: `stream/traffic` `0a1567b56`
-  `references/round35/traffic/t9_trace_design.md`. **Arms (one tree):** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
-  both; base = `--nav-off=stallintent --traffic-off=yieldfit2`. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
+  `references/round35/traffic/t9_trace_design.md`. **Arms:** candidate = W1c ON + `yieldfit2` ON + native's mirrors of
+  both; base = the same code with both switches off. **As run (R35.53/59): two native trees** (lab/joint3-on 872f82ae5 v lab/joint3-base
+  2a2682560), since `--nav-off` / `--traffic-off` flags would leave native's drive. Pair cut by manoeuvre (it runs the series) from manoeuvre's W1c +
   traffic's T9 + native's mirrors; gate = the pair's `make native check` on builder0 plus switch-OFF sim-baseline inertness. Seeds:
   M6's FRESH blocks (hull-rest **901–932** drawn, i.e. 128 pairs; fights + wedge probe on fixed locks/terminus/sumps x 940–963).
   **n raised 2026-10-19 ~12:30, before any judged number, the line itself unchanged:** the joint dev read (tuning 460–467, 32 an arm)
@@ -597,6 +598,23 @@ _Filed here before any number._
   time-box). **Real play matches the LATER tests** (a match starts many iterations after launch). So brains' warm-up is the CORRECT
   fix, not interim: every test now sees real play's state. R35.54's caveat ("tests should match the first-match state") is withdrawn.
   Round 36: optional, name the engine state below the main loop.
+- **R35.58 (2026-10-20 ~03:00) D6 merged (main 31e3d605c).** `93cdb1559`: builder2 `make native check exited 0`, 2941/0, sim-baseline 13
+  unmoved (the CPU never shift-clicks). Parked OFF behind switches on main: D3/D3b, D4, D5 (GATE_DEAL=on for his feel call). Main now
+  carries D6 + E4b's warm-up (checked separately): one batch `make native check` of 31e3d605c on builder2.
+  **GREEN in parts:** the first run reached 22/26 targets with 0 failed (test 2941/0) before the LAPTOP's slot.sh killed the
+  orchestrator's own `make gcp-remote` wrapper at 5400 s (builder2 loaded by M5's series; the remote make died with its ssh session);
+  lint passed alone; the 4 left (bridge-pooled, native-verify-scenarios 0 mismatches, native-live-guard, planner-pytest) passed on
+  builder2 under systemd-run. **Lessons (orchestrator):** launch long remote checks under `systemd-run` (orientation 86 already says
+  so); a multi-word `CHECK_TARGETS` is word-split by remote.sh down to its first word, so run the leftover targets as plain make goals.
+- **R35.59 (2026-10-20 ~03:10) joint3's gate (C31.1) passes; its series starts on builder0.** lab/joint3-on `872f82ae5` builder0 `make
+  native check exited 2`, 2931/0, 26/27, the one red sim-baseline (foundry, crossing, sumps, cut MOVED); lab/joint3-base `2a2682560`
+  sim-baseline 13/13 unmoved, so the 4 moves are W1c + T9's (adopt only if it ships). On main 5f05c997c: T7 ON, E1, E4. Series:
+  wedge probe + fights + traffic's jam census on 940–963 x locks/terminus/sumps, then hull-rest drawn 901–932, both arms native, JOBS 3.
+- **R35.60 (2026-10-20 ~04:30) stream/traffic's tip is red by construction only; T9 is judged on the joint pair.** 4fbbd4d3c (main 5f05c997c
+  + T8 + T9 OFF), builder0 `make native check exited 2`: 2916/1, sim-baseline unmoved; the one red test_native_exec_state wants T9's three
+  Movement members (`_unfinished_to/_count/_since`) in native/src/exec_fields.h, which native's T9 mirror carries in the joint pair.
+  stream/traffic is not a merge candidate on its own; T9 reaches main only via the joint pair (joint3-on 2931/0). T8's series cannot
+  fit this round behind the joint's (~8 h): its bar and pair plan open round 36.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

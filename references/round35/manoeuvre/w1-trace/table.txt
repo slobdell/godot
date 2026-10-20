@@ -1,0 +1,18 @@
+fights 24  deaths 984  wedged deaths 81 (8.2 %)
+deaths by cause: open:driving 50%, open:parked 26%, stuck:wedged 8%, jam:yielding 6%, stuck:still 4%, stuck:static 4%, jam:friend 1%, stuck:no_path 0%
+
+stuck:wedged deaths traced: 81
+  force on the death tick: hold 40%, orca_slow 32%, drive 10%, orca_turn 10%, kturn 7%, shove 1%
+  force over the last 3 s: hold 38%, orca_slow 32%, orca_turn 11%, drive 7%, kturn 7%, yield 2%, shove 2%, unstick 1%, press 0%
+  speed at death median 1.53 m/s; >= 0.5 m/s 57/81
+  hit in the last 10 s 80/81; stall rule counting in the last 3 s 10/81; Traffic hold at death 32/81; touching a hull 11/81
+  option at death: MOVE 78%, ENGAGE 10%, RETREAT 7%, FLANK 1%, HOLD 1%, FOLLOW 1%, PURSUE 1%
+  order at death: move 78%, attack_move 11%, attack 9%, hold 1%, follow 1%
+  units: gang_ifv 14%, gang_support 12%, gang_tank 10%, gang_scout 10%, ifv 9%, burner 7%, law_suppressor 6%, law_ifv 6%, scout 5%, law_tank 5%, tank 5%, law_scout 4%, syn_scout 2%, syn_tank 1%, syn_ifv 1%, syn_lancer 1%, lancer 1%
+
+the 3 longest wedged-death episodes:
+  locks s3510 Rust_Guns_1 (gang_tank) 18.33 s wedged at (76.1, -44.8), net 5.94 m, median 1.07 m/s; force {'hold': 516, 'orca_slow': 34}; phase {'driving': 550}; stall ticks 0, unstick fires 8; option {'MOVE': 550}; order {'move': 550}; friends<=14m max 1, enemies<=56m max 0
+  terminus s3507 Green_Burners II_3 (burner) 18.0 s wedged at (-12.0, 31.5), net 13.6 m, median 1.47 m/s; force {'hold': 540}; phase {'driving': 540}; stall ticks 0, unstick fires 9; option {'MOVE': 540}; order {'move': 540}; friends<=14m max 4, enemies<=56m max 6
+  terminus s3501 Green_Hunters_8 (law_ifv) 17.97 s wedged at (6.7, 43.9), net 11.86 m, median 1.36 m/s; force {'drive': 15, 'hold': 348, 'orca_slow': 81, 'orca_turn': 92, 'shove': 3}; phase {'driving': 539}; stall ticks 0, unstick fires 1; option {'HOLD': 111, 'MOVE': 428}; order {'hold': 111, 'move': 428}; friends<=14m max 5, enemies<=56m max 4
+
+all wedged episodes: 5679, 25484 s; force share: orca_slow 44%, drive 16%, hold 12%, orca_turn 12%, yield 11%, kturn 3%, shove 1%, unstick 1%, press 0%
