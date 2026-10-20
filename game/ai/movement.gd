@@ -1827,7 +1827,7 @@ func _yield_unfinished() -> bool:
 		return false
 	var here := ctl.tank.global_position
 	var mover := Movement.of(asker)
-	var passed := _flat_distance(here, asker.global_position) > YIELD_CLEAR \
+	var passed := _asker_clear(here, asker) \
 			or Vector2(asker.global_position.x - here.x, asker.global_position.z - here.z).dot(_yield_dir) > 0.0 \
 			or (mover != null and not mover.is_under_way())
 	if passed:
@@ -1849,6 +1849,25 @@ func _yield_unfinished() -> bool:
 		return false
 	yields_unfinished += 1
 	return true
+
+
+## Round 36 (traffic, R36.4; `--traffic-on=yieldgap`, DEFAULT_OFF until judged in manoeuvre's S2a pair): T9's "the asker is clear
+## by distance". YIELD_CLEAR is centre to centre, and a tank (9.70 m) nose-on to an artillery hull (8.20 m) touches at 8.95 m, so a
+## pinned asker read as passed and the give-way that freed nobody was recorded (manoeuvre's X4b trace, condemned-6325). With the
+## switch on, clear is the gap after both half-lengths (the nose-on contact distance) beyond YIELD_CLEAR_GAP.
+const YIELD_CLEAR_GAP := 2.0
+
+
+static func yieldgap_on() -> bool:
+	return not Traffic.off("yieldgap")
+
+
+func _asker_clear(here: Vector3, asker: Tank) -> bool:
+	var distance := _flat_distance(here, asker.global_position)
+	if not yieldgap_on():
+		return distance > YIELD_CLEAR
+	var noses := 0.5 * (float(hull_box(ctl.tank.unit_id)[2]) + float(hull_box(asker.unit_id)[2]))
+	return distance - noses > YIELD_CLEAR_GAP
 
 
 # ---- Round 34 (traffic T6, R34.15; `--traffic-on=underfire`, DEFAULT_OFF until judged): a crew under fire holds its lane ------
