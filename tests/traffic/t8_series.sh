@@ -44,7 +44,8 @@ while ! checked; do
 done
 fails=$(grep -E '^>> check: failed: ' "$OUT/check_$h.log" | sed 's/^>> check: failed: //' | tr ' ,' '\n\n' | grep -v -e '^$' -e '^sim-baseline$')
 if [ -n "$fails" ]; then log "STOP: the check is red beyond sim-baseline: $(echo $fails)"; exit 1; fi
-if ! grep -qE '^>> check: [0-9]+ passed, [0-9]+ FAILED, 0 NOT RUN' "$OUT/check_$h.log"; then log "STOP: targets NOT RUN: $(grep -E '^>> check: [0-9]+ passed' "$OUT/check_$h.log")"; exit 1; fi
+# a green check prints "N passed, M NOT JUDGED" with no FAILED/NOT RUN field; reds are read from the failed list above
+if grep -E '^>> check: [0-9]+ passed' "$OUT/check_$h.log" | grep -qE '[1-9][0-9]* NOT RUN'; then log "STOP: targets NOT RUN: $(grep -E '^>> check: [0-9]+ passed' "$OUT/check_$h.log")"; exit 1; fi
 
 # 2. switch-OFF inertness
 if ! grep -qE 'exited [0-9]+' "$OUT/inert_$h.log" 2>/dev/null || grep -q 'exited 255' "$OUT/inert_$h.log"; then  # 255: host lost
