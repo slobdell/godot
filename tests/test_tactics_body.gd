@@ -45,7 +45,11 @@ func test_his_three_squads_keep_together() -> void:
 	assert_eq(String((on["Sirens"]["choice"] as Dictionary).get("chosen", "")), "body", "the Sirens take the army's route")
 	assert_true(float(on["alone_s"]) < float(off["alone_s"]) * 0.5,
 			"squad-seconds alone at least halved: off %s, on %s" % [off["alone_s"], on["alone_s"]])
-	assert_true(float(on["arrived_s"]) > 0.0 and float(on["arrived_s"]) <= float(off["arrived_s"]) + 5.0,
+	# R35.17 (round 35, the deploy step ON): the line was off + 5 s, sized without the step. With it, Hunters2 re-forms from
+	# its travel wedge into its lane halt (a herringbone) on its spot, across the street the Sirens take (builder0 trace,
+	# make body-trace-orders: Sirens_1 held 9 s beside Hunters2_3), so the body arm costs 6.1 s (off 17.7, on 23.8); the
+	# lead chose the step knowing it is slower on some cells. The line is that measured cost plus 2 s headroom.
+	assert_true(float(on["arrived_s"]) > 0.0 and float(on["arrived_s"]) <= float(off["arrived_s"]) + 8.1,
 			"and the army is not much later for it: off %s s, on %s s" % [off["arrived_s"], on["arrived_s"]])
 
 

@@ -1163,7 +1163,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
-			# B8 (R34.14, prototype): the heading each squad lays its halt on when it deploys, fixed now (the approach).
+			# B8 (R34.14): the heading each squad lays its halt on when it deploys, fixed now (the approach).
 			if ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
 				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
 						Match.team_frame(team)["forward"])

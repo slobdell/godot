@@ -818,7 +818,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# A facing on a MOVE is an arrival heading and dies with the order; a facing on a HALT is a sector and is not the
 	# drawn one. A hold carrying `told` is the only combination that both persists and points where he pointed.
 	var holding_heading: bool = told is Vector3 and bool(plan["arrived"])
-	# B8 (R34.14): THE DEPLOY STEP (prototype, `--deploy-step=on`). Deployed, an AUTO plain move stands in its halt.
+	# B8 (R34.14): THE DEPLOY STEP (ON; `--deploy-step=off` is round 34's settle). Deployed, an AUTO plain move stands in its halt.
 	var deploy := _deploy_state(plan, situation, state, destination, center, told, table)
 	plan["deploy"] = deploy
 	if bool(deploy.get("deployed", false)):
@@ -1793,13 +1793,14 @@ static func herring_heading(state: Dictionary, current: Vector3) -> Vector3:
 	return current
 
 
-## B8 (R34.14; the lead's deploy-step question after B6, R34.7): a prototype, OFF by default. An AUTO squad on a plain
+## B8 (R34.14; the lead's deploy-step question after B6, R34.7): ON (his answer, round 34 close). An AUTO squad on a plain
 ## move keeps its TRAVEL seats until every living crew is in (within max(TankBrain.ORDER_ARRIVE, its settle radius) of
 ## the seat it was last sent to) or DEPLOY_CAP_S after it arrived, then lays its HALT (the table's hold pick) once, as
 ## one visible move, on a heading fixed when the order was given (the task's `lay`, the body's approach; else from where
 ## it stood to the click), and those seats stand (fixed seating; Element grounds them with the latch). B6's causes it
-## answers: no early lay, no per-update heading, the halt laid only when the crews are in. `--deploy-step=on` opts in.
-static var DEPLOY_STEP := OS.get_cmdline_user_args().has("--deploy-step=on") or OS.get_environment("DEPLOY_STEP") == "on"
+## answers: no early lay, no per-update heading, the halt laid only when the crews are in. CPU elements on a plain move
+## deploy too. `--deploy-step=off` (env DEPLOY_STEP=off) is round 34's settle.
+static var DEPLOY_STEP := not OS.get_cmdline_user_args().has("--deploy-step=off") and OS.get_environment("DEPLOY_STEP") != "off"
 ## B8b (the orchestrator, after B8's probe): the halt is laid CENTRED where the squad stands when it deploys (its centre
 ## then, latched), not on the click, so the deploy move is short (B8's ran 24-42 m), and stepped inland from water until
 ## every seat is dry and on its own bank (B8 on the Locks: seats clipped by the canal bunched on one strip of bank).
@@ -1808,6 +1809,7 @@ static var DEPLOY_ON_CLICK := OS.get_cmdline_user_args().has("--deploy-on-click"
 const DEPLOY_INLAND_STEP_M := 2.0
 const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
+const DEPLOY_ON_SPOT_M := 12.0
 
 
 ## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.
@@ -1842,7 +1844,11 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["deployed"] = true
 		deploy["tick"] = tick
 		deploy["cause"] = "all_in" if all_in else "cap"
-		var at: Vector3 = destination if DEPLOY_ON_CLICK else clamp_to_arena(Vector3(center.x, 0.0, center.z))
+		# D1 (round 35, the ship check): within DEPLOY_ON_SPOT_M of the spot it was sent to, the halt stands ON that spot
+		# (the scenarios' "every formation stands on the spot it was sent to": B8b's centred lay left anchors 1.5-9.5 m
+		# off); a squad that deployed on the cap far short of it stands where it is (B8b).
+		var on_spot := DEPLOY_ON_CLICK or Vector2(center.x - destination.x, center.z - destination.z).length() <= DEPLOY_ON_SPOT_M
+		var at: Vector3 = destination if on_spot else clamp_to_arena(Vector3(center.x, 0.0, center.z))
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), String(_halt_pick(situation, state, table)["formation"]),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy

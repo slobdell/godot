@@ -37,13 +37,23 @@ backwards. Workers told to `git merge main`.
 **main c32606204 = native N2 (C35.9)** (`2f7683d21`, builder0 `make check exited 0`, 27/27 ALL JUDGED, 2885/0, sim-baseline 13
 unmoved; INHERIT): FACE_KEEP_FAR deleted, series tools drop random-seed twins (`seed_twins.filter_logs`), judging table's owed rows
 (rounds 31–34) re-rendered. Tooling only: nothing he'd notice.
-**Round 35 in flight (2026-10-19 noon):** orders D1 (the deploy step ON; on-spot fix 0603f3274) checking; traffic T7 pair checking
-next; manoeuvre M5 (CP-F 5, turret hulls) gate queued; brains E1 (straggler release) check done, series next; W1b's mirror on
-pair/native-w1b; W1c + T9 (the 70 s scout dead-stop: a parked crew refused every repeat ask) joint dev read. Parked: D3 (R35.11).
-Rulings R35.1–R35.19 in workstreams.
+**Round 35 in flight (2026-10-19 ~18:00):** SHIPPED on main: the scout turn-in (C35.3), the deploy step ON (D1), native N2/N3 and
+`tools/builder_checks.sh`. PARKED: D3 tight packing (R35.11), D4 minimax seating (R35.31). JUDGED SERIES RUNNING on builder0: T7
+(traffic, under-fire give-way only when the asker has no lane; pair e95179252, gate green), E1 (brains, straggler release; partial
+check owed after), W1b (manoeuvre, a held wheeled hull sits still; gate green 7fc4a5307), M5 (manoeuvre, CP-F 5: his drawn facing on a
+wheeled turret hull ends on it and goes still; gate green 63336d690), D5 re-read (orders, the gate deal; fresh 3631–3636). QUEUED: the
+joint W1c + T9 (the 70 s stuck scout: asker re-asks, a parked crew answers; ON check running, series after; merges after T7's verdict,
+R35.19), D6 (a shift-click never replaces a squad's route, R35.28), T8 (after T7). Every full check launches behind
+`tools/builder_checks.sh --wait-below 2`. Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
+**main 1a18dd278 = orders D1, THE DEPLOY STEP IS ON (C35.2, his yes)** (`581b8a396`, builder0 `make check exited 0`, 2886/0,
+sim-baseline 13 unmoved). **Tell him in player terms:** squads sent together keep their travel shape until all are in, then spread
+to their places as one move; a squad sent to a spot ends ON it. The cost he chose: a squad that has just set up across a street can
+hold up the next squad for a few seconds (R35.17; a round-36 item in game_design.md). **Main's batch check of 1a18dd278 (D1 + N2 +
+N3): GREEN** (builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load (perf-judge 1.85x x3; scenario_perf unpinned),
+2886/0). perf-judge on a quiet builder0 is owed for main (and T7) when the box is quiet.
 
 ## 🏁 ROUND 34 IS CLOSED (2026-10-19)
 

@@ -631,7 +631,7 @@ five-squads-shots: import ## Round 21 (O1): five gang squads, one attack-move, i
 ORDERS_PROBE_MAPS ?= locks crossing terminus
 ORDERS_PROBE_SQUADS ?= 3 5
 ORDERS_PROBE_ROUTES ?= click route
-ORDERS_PROBE_ARMS ?= main: cap_off:--ground-cap=off halt_off:--halt-price=off
+ORDERS_PROBE_ARMS ?= main: deploy_off:--deploy-step=off
 ORDERS_PROBE_DIR ?= $(BUILD_DIR)/orders-probe
 ORDERS_PROBE_JOBS ?= 4
 .PHONY: orders-probe orders-probe-shots
@@ -648,7 +648,7 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
 
 ORDERS_PROBE_SHOT_SQUADS ?= 3 5
-ORDERS_PROBE_SHOT_ARMS ?= main: cap_off:--ground-cap=off
+ORDERS_PROBE_SHOT_ARMS ?= main: deploy_off:--deploy-step=off
 ORDERS_PROBE_SHOT_ROUTES ?= click
 orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later (desktop 1280x720, phone 1560x720), ORDERS_PROBE_MAPS x _SHOT_SQUADS x _SHOT_ROUTES x _SHOT_ARMS -> build/orders-probe/shots/*.png (needs a display)
 	@mkdir -p $(ORDERS_PROBE_DIR)/shots
@@ -659,3 +659,37 @@ orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later
 			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$(ORDERS_PROBE_DIR)/shots $$flags \
 			2>&1 | grep -E '^ORDERS_PROBE( \{|_SHOT)' || true; \
 	done; done; done; done
+
+# Round 35 (orders D1, C35.2): the deploy step reaches CPU elements, so its ship check carries this REPORTED fights census:
+# CPU v CPU on DEPLOY_CENSUS_ARENAS (fixed arenas; random ones deal twins, R34.15) x DEPLOY_CENSUS_SEEDS (fresh), factions
+# rotated by seed, each fight once per arm (on = main, off = --deploy-step=off) -> build/deploy-census/<arm>/*.log + the
+# paired table (deaths, kills, stuck crew-seconds and squads deployed, by side; a gross line is > 2 se).
+DEPLOY_CENSUS_ARENAS ?= locks terminus sumps
+DEPLOY_CENSUS_SEEDS ?= $(shell seq 3501 3516)
+DEPLOY_CENSUS_SECONDS ?= 150
+DEPLOY_CENSUS_JOBS ?= 4
+DEPLOY_CENSUS_DIR ?= $(BUILD_DIR)/deploy-census
+DEPLOY_CENSUS_FACTIONS ?= law,gangs condemned,syndicate gangs,condemned syndicate,law
+.PHONY: deploy-census
+deploy-census: native-for-check import ## Round 35 (orders D1): CPU v CPU fights census, deploy step on v --deploy-step=off, DEPLOY_CENSUS_ARENAS x _SEEDS -> build/deploy-census/ + table.txt
+	@rm -rf $(DEPLOY_CENSUS_DIR) && mkdir -p $(DEPLOY_CENSUS_DIR)/on $(DEPLOY_CENSUS_DIR)/off
+	@echo ">> deploy-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@set -- $(DEPLOY_CENSUS_FACTIONS); nf=$$#; for arm in on off; do for map in $(DEPLOY_CENSUS_ARENAS); do for seed in $(DEPLOY_CENSUS_SEEDS); do \
+		i=$$(( seed % nf + 1 )); eval pair=\$${$$i}; echo "$$arm $$map $$seed $$pair"; done; done; done | xargs -P $(DEPLOY_CENSUS_JOBS) -L 1 sh -c \
+		'g=$${3%%,*}; r=$${3#*,}; flags=""; [ "$$0" = off ] && flags="--deploy-step=off"; \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/deploy_census.gd -- --arena=$$1 --seed=$$2 \
+			--green=$$g --rust=$$r --credits=1000 --seconds=$(DEPLOY_CENSUS_SECONDS) $$flags > $(DEPLOY_CENSUS_DIR)/$$0/$$1-$$2.log 2>&1 || true; \
+		echo "  ran $$0 $$1 s$$2"'
+	@grep -L '^DEPLOY_CENSUS ' $(DEPLOY_CENSUS_DIR)/*/*.log | sed 's/^/MISSING (no DEPLOY_CENSUS line): /' || true
+	@$(PYTHON) tests/control/deploy_census_table.py $(DEPLOY_CENSUS_DIR)/off $(DEPLOY_CENSUS_DIR)/on | tee $(DEPLOY_CENSUS_DIR)/table.txt
+
+# Round 35 (orders D1): brains' body stage (his three squads on the Locks, seed 1, green, --body=on), traced every 0.25 s
+# (BODY_TICK), whole log kept, for BODY_TRACE_ARMS "name:flags" (e.g. "on: off:--deploy-step=off") -> build/body-trace/<name>.log
+BODY_TRACE_ARMS ?= on: off:--deploy-step=off
+.PHONY: body-trace-orders
+body-trace-orders: native-for-check import ## Round 35 (orders D1): the body stage traced per BODY_TRACE_ARMS -> build/body-trace/<arm>.log
+	@rm -rf $(BUILD_DIR)/body-trace && mkdir -p $(BUILD_DIR)/body-trace
+	@for arm in $(BODY_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
+			--seed=1 --body=on --side=green --seconds=60 --body-trace $$flags > $(BUILD_DIR)/body-trace/$$name.log 2>&1 || true; \
+		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-trace/$$name.log | cut -c1-300 || echo "$$name: no BODY_PROBE line"; done

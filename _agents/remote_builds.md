@@ -370,6 +370,12 @@ systemd-run --user --unit=<stream>-<what> --working-directory=<worktree> --colle
     /bin/bash -lc "make remote T=check > <log> 2>&1"
 systemctl --user is-active <stream>-<what>     # status; the result is the log's `>> remote: … exited <N>` line
 ```
+**Before launching a full check, count the ones running (round 35):** `tools/builder_checks.sh` prints how many full checks
+builder0 runs, one per worktree, in any form (`make check`, `make native check`, the slot wrapper's
+`make --no-print-directory [native] check`), then their folders. `tools/builder_checks.sh --wait-below 2` waits until fewer
+than two run (C35.1), so a launcher can be `systemd-run ... /bin/bash -lc "tools/builder_checks.sh --wait-below 2 && make
+remote T=check > log 2>&1"`. A hand-rolled `pgrep -f "make --no-print-directory check$"` misses `make native check` (round
+35: native's N3 check started as a third on the box that way).
 **Every killed wrapper leaves its builder0 half alive and queued** (trip-up 68). A relaunch is then REFUSED with exit 9
 ("already has a live run"). Kill the orphan on builder0 by cwd-verified PID first. A result with no exited line is NOT
 a result.
