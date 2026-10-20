@@ -118,3 +118,26 @@ corrupt node_modules/ws. Seed it with `cp -a ~/tank_squad/<warm>/node_modules <w
 **And touch the marker after copying** (brains, 2026-10-18): `cp -a` keeps `node_modules/.package-lock.json`'s old mtime, so make
 judges it older than the synced package-lock.json and both targets re-run `npm ci` anyway. Run
 `touch <wt>/node_modules/.package-lock.json` after the copy.
+
+## Choosing a cheaper machine (research, 2026-10-19; the lead decides)
+
+Our load is many independent single-thread Godot processes (test shards, series fights): the measure is **throughput per Spot
+dollar** = total CoreMark / Spot $ per hour. Memory need is light (~0.35 GB per check process, ~0.75 GB per series Godot), so a
+`highcpu` shape fits. Snapshot from gcloud-compute.com (third-party; data dated 2026-10-18; Spot prices change up to monthly,
+confirm in the console), x86 only (an ARM box would not share the sim-baseline hashes):
+
+| Machine (Spot) | vCPU / RAM | CPU | CoreMark | us-west1 $/h | CoreMark per $/h |
+|---|---|---|---|---|---|
+| **c3d-highcpu-60** | 60 / 118 GB | AMD Genoa | 1,363,944 | **0.542** | **2.52 M** |
+| **c3d-highcpu-30** | 30 / 59 GB | AMD Genoa | 682,826 | **0.271** | **2.52 M** |
+| c4d-highcpu-32 | 32 / 60 GB | AMD Turin | not listed (est. ~0.83 M) | 0.512 (us-west4 0.254) | ~1.6 M est. (us-west4 ~3.3 M) |
+| c4d-standard-32 (builder2 today) | 32 / 124 GB | AMD Turin | not listed (est. ~0.83 M) | 0.609 | ~1.4 M est. |
+| n2d-highcpu-32 | 32 / 32 GB | AMD Rome/Milan | 654,523 | 0.483 | 1.36 M |
+| t2d-standard-32 | 32 / 128 GB | AMD Milan, no SMT | 945,524 | 0.811 | 1.17 M |
+| c2d-highcpu-32 | 32 / 64 GB | AMD Milan | 710,036 | 0.610 | 1.16 M |
+| e2-highcpu-32 | 32 / 32 GB | mixed Intel/AMD | 416,599 | 0.475 (us-west4 0.112) | 0.88 M |
+
+**Recommendation:** c3d-highcpu-60 Spot in us-west1, about builder2's price for about twice its throughput (or c3d-highcpu-30 at
+half builder2's price for about the same). CoreMark is a proxy; one pinned series chunk on the chosen box (rows must equal
+builder0's) is the real check. Also: auto-stop after ~20 min with no `make` running, a dedicated ~40 GB pd-balanced disk (not the
+shared 100 GB hyperdisk), and a Spot vCPU quota of 60+ for C3D in the region.
