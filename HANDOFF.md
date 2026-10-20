@@ -4,7 +4,26 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-20 — **ROUND 35: HE ANSWERED BOTH QUESTIONS (ship D5 ON; ship the joint W1c + T9). Two hand-overs are in flight (R35.66); merge them, run one batch main check, then close the round.** Older headers below._
+_Last updated: 2026-10-20 ~14:45 — **ROUND 35 + ITS EXTENSION ARE IN FLIGHT. A NEW ORCHESTRATOR: read the box "IN FLIGHT RIGHT NOW" below, start the /loop, and carry on.** Older headers below._
+
+## ⏩ IN FLIGHT RIGHT NOW (2026-10-20 ~14:45) — a new orchestrator starts here
+
+Main is **36745fa4c** (D5 ON) + docs, green by INHERIT. The five worker sessions (`godot-<stream>-*`, `ListAgents`) are LIVE on
+their round-35 worktrees, working the **Round 35 extension** (workstreams.md, X1–X5). Rulings run to R35.77. Machine rule: one full
+check + one judged series per builder; checks behind `tools/builder_checks.sh`; long remote runs under `systemd-run`.
+
+| What | Who | State | Your next action |
+|---|---|---|---|
+| **The joint W1c + T9 SHIP** (his yes) | manoeuvre | hand-over `pair/joint-ship` d56685115 re-checking on builder0 (unit manoeuvre-shipcheck2; the first check was VOID, disk full); base 6f830ceea's sim-baseline follows | on its green: merge it ALONE; `make sim-baseline-adopt` the moved maps on the merged tree (joint3 moved foundry/crossing/sumps/cut; attribution = base); ONE batch `make native check` of main on builder2 under systemd-run; then tell traffic (T8) and brains (X4b) |
+| **T8** (a held crew under fire leaves the hold) | traffic | driver ready (`tests/traffic/t8_series.sh`), bar filed (1800–1827 with locks-1828 for locks-1800, R35.69) | after the joint merges: tell traffic to cut its pair from main and run on builder2 (after the scoreboard) |
+| **X1b** (is a still held hull a sitting duck?) | manoeuvre | series running on builder0 (24 fights an arm, 4300–4323), clean of the disk window | read the verdict: duck -> W1b dropped (T8 is the answer); not -> W1b re-tries in round 36 |
+| **The scoreboard** (his "concrete progress" ask) | native | 3 rows running on builder2 (c29a8c7b6, a0ae0aafd, 1c82d6d1e); README -> `references/scoreboard/README.md` on stream/native | when it reads: merge native's scoreboard + copy-back fix (1d8dd7648; shell-tools only) + the two Tank.place test fixes on their checks; then score each new main |
+| **X4b** (did the joint free E1's left-behind crews?) | brains | waits on the joint merge | tell brains when it merges |
+| X1(d) the choke wedge, X3b DEPLOY_PASS, X3c Crossing detours | — | traced / parked / noted for round 36 (R35.76, R35.77) | nothing |
+
+**When all of that has landed, close round 35** (orchestration.md *Close*): rescue anything untracked; archive the five briefs to
+`streams/archive/round35/`; rename `stream/*` -> `round35/*`; remove the worktrees AND their `~/tank_squad/<name>` folders on
+builder0 and builder2 (R35.73); update this file; then prepare round 36 from the candidates below (his playtest first, if he has one).
 
 ## 🏁 ROUND 35: THE WORK IS DONE (2026-10-20 morning) — for him when he wakes
 
