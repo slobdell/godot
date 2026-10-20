@@ -141,6 +141,16 @@ only round obstacles (round-36 design questions, below).
   legs); every route cell median all in <= gate_off x 1.2 + 3 s, and no more never-in seeds than gate_off; deck / far no
   higher than gate_off in any cell; drive/plan median <= gate_off + 0.2 in each cell.
 
+### D6 A/B 1 (builder0 `84ba02a69`, seeds 3641-3646): passed its bar as filed, HELD (R35.38) for 2 far-bank crossings
+Every squad every leg 144/144 with requeue v 117/144 off; click cells 36/36 identical; legs differ in 12 / 36 route runs.
+BUT Crossing 5 route s3643 with requeue: two squads reached the far bank (0 off). Traced on the laptop: squad 4's final
+place sat at the west bridge's mouth (-100, 28; his click at -103, 31), reached by its whole route from the north-east, so
+its shape's seats lay past the dry deck on the far bank (the water rule keeps seats off the canal, not off the deck's far
+end). **Fix `1b174f05d`:** a shifted leg's places step back from any deck their seats would reach (`SelectionSquads.deck_clear`,
+reach = half the squad's widest extent, along the way it came; a click on/beside a deck leaves them; under D6's switch).
+Laptop s3643: far bank 1 -> 0, two places moved, all in 44.5 s. `test_control_deck_clear` 3/0; control suite 467/0.
+**Re-read:** fresh 3651-3656, the same bar + "far bank 0 in every cell" (R35.38's standing guard); waits for the series lane.
+
 ### D5 re-read: FAILED its bar, the gate deal PARKED OFF (`84ba02a69`; `--gate-deal=on` opts in)
 builder0, `make native orders-probe`, `bd22ac4c8` (D5's fix try on, D4/D6 off), FRESH seeds 3631-3636, n 6; rows
 `references/round35/orders/d5-ab2-bd22ac4c8/`. Click cells 36/36 identical. Gain: Locks 5 route median all in 25.8 v 34.2 s
