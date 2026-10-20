@@ -1165,6 +1165,16 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 						func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
 				for i in uncrossed.size():
 					anchors[i] = uncrossed[i]
+		# Round 35 (D6, R35.38): a shifted leg's places step back from any bridge deck their seats would reach (Crossing 5
+		# route s3643: a place at the bridge's mouth laid seats past the deck and two squads crossed). Part of D6's switch.
+		if REQUEUE and bool(extra.get("queue", false)) and verb == "move" and anchors.size() >= squads.size():
+			var reach: Array = []
+			for block: Dictionary in blocks:
+				reach.append(0.5 * maxf(float(block["width"]), float(block.get("depth", 0.0))))
+			anchors = SelectionSquads.deck_clear(anchors, reach, click,
+					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.

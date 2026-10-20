@@ -197,7 +197,7 @@ func _run() -> void:
 			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them
 			"gates_laid": _static_or(RtsControls, "gates_laid"), "route_starts": _static_or(RtsControls, "route_starts"),
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
-			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"),
+			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),

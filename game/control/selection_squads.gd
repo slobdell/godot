@@ -1310,3 +1310,38 @@ static func paths_cross(a: PackedVector3Array, b: PackedVector3Array) -> bool:
 				continue
 			return true
 	return false
+
+
+## Round 35 (orders D6, R35.38; planner's Crossing 5 route s3643): a squad's place at a BRIDGE'S MOUTH put seats of its
+## shape past the dry deck on the far bank (the water rule keeps seats off the canal, not off the deck's far end); squad 4,
+## reaching its place by its whole route (D6) and laid on that heading, sent crews over the bridge he had not clicked
+## across. A place is stepped back from every deck, DECK_CLEAR_STEP_M at a time along `back` (the way the squad came),
+## until its reach (`reach[i]`: half the squad's widest extent) clears the deck, up to DECK_CLEAR_MAX_M; a click on or
+## beside a deck (within DECK_CLEAR_CLICK_M) leaves every place alone: he chose the bridge. `--deck-clear=off` is round 34's.
+static var DECK_CLEAR := not OS.get_cmdline_user_args().has("--deck-clear=off")
+const DECK_CLEAR_STEP_M := 2.0
+const DECK_CLEAR_MAX_M := 40.0
+const DECK_CLEAR_CLICK_M := 2.0
+## How many places it moved, this process (a probe reads it).
+static var deck_cleared := 0
+
+
+static func deck_clear(anchors: Array[Vector3], reach: Array, click: Vector3, back: Vector3, near_deck: Callable,
+		clamp: Callable) -> Array[Vector3]:
+	var out: Array[Vector3] = anchors.duplicate()
+	if not DECK_CLEAR or bool(near_deck.call(Vector3(click.x, 0.0, click.z), DECK_CLEAR_CLICK_M)):
+		return out
+	var away := TacticsFormation.flat(back)
+	for i in out.size():
+		var r := float(reach[i]) if i < reach.size() else 0.0
+		if not bool(near_deck.call(out[i], r)):
+			continue
+		var at := out[i]
+		var moved := 0.0
+		while moved < DECK_CLEAR_MAX_M and bool(near_deck.call(at, r)):
+			at = clamp.call(at + away * DECK_CLEAR_STEP_M)
+			moved += DECK_CLEAR_STEP_M
+		if not bool(near_deck.call(at, r)):
+			out[i] = at
+			deck_cleared += 1
+	return out
