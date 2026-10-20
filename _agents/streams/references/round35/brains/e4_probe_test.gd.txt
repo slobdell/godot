@@ -1,0 +1,101 @@
+extends "res://tests/tactics/mixed_legs_case.gd"
+## Round 35 (brains E4), TEMPORARY PROBE: the four-tank Sumps stage played twice in one process; each run's per-tick
+## Match.state_hash, and the first tick the two runs differ (with every tank's pose there).
+
+
+func _run(ids: Array, arena: String, seed_value: int, label: String) -> Array:
+	var lab := TacticsLab.create(self, seed_value, arena)
+	var game_match := lab.game_match
+	game_match.set_meta("player_team", Match.Team.GREEN)
+	var home := Match.spawn_position(Match.Team.GREEN, 0)
+	var toward := TacticsFormation.flat(Vector3(-home.x, 0.0, -home.z))
+	var right := Vector3(-toward.z, 0.0, toward.x)
+	var yaw := atan2(-toward.x, -toward.z)
+	var names: Array = []
+	for i in ids.size():
+		var at := home + right * ((i - (ids.size() - 1) * 0.5) * 8.0)
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_M_%d" % (i + 1), at, yaw, String(ids[i])).name))
+	if label.begins_with("fixed"):
+		for unit_name: String in names:
+			var tank := game_match.tanks.get_node(NodePath(unit_name)) as CollisionObject3D
+			var parent := tank.get_parent()
+			var at := tank.global_transform
+			parent.remove_child(tank)
+			tank.transform = at
+			parent.add_child(tank)
+	_overlaps(game_match, names, label + " before start")
+	await lab.start()
+	_overlaps(game_match, names, label + " after start")
+	var element := lab.elements.form(names, "Alpha")
+	var centre := _centre(game_match, names)
+	var goal := centre + toward * METRES
+	element.assign({"verb": "move", "to": [goal.x, goal.z]})
+	var hashes: Array = []
+	var arrived := -1
+	for tick in int(seconds * SimClock.TICK_RATE):
+		await lab.step()
+		var poses := []
+		for unit_name: String in names:
+			var t := game_match.tanks.get_node(NodePath(unit_name)) as Node3D
+			poses.append("%s (%.4f,%.4f,%.4f) yaw %.5f" % [unit_name, t.global_position.x, t.global_position.y, t.global_position.z, t.rotation.y])
+		hashes.append([game_match.state_hash(), " ".join(PackedStringArray(poses)), game_match.tick])
+		if element.arrived and arrived < 0:
+			arrived = tick
+	print("E4 %s arrived_s %.1f to_go %.1f reseats %d start_tick %d" % [label, arrived / float(SimClock.TICK_RATE),
+			_centre(game_match, names).distance_to(goal), element.reseats, int(hashes[0][2])])
+	lab.dispose()
+	return hashes
+
+
+func test_the_stage_twice_in_one_process() -> void:
+	seconds = 60.0
+	var ids := ["law_tank", "law_tank", "law_tank", "law_tank"]
+	var first: Array = await _run(ids, "sumps", 1, "fixed first")
+	var second: Array = await _run(ids, "sumps", 1, "fixed second")
+	var differ := 0
+	for i in mini(first.size(), second.size()):
+		if first[i][1] != second[i][1]:
+			differ += 1
+	print("E4 steps whose poses differ: %d of %d; hashes differ: %d" % [differ, mini(first.size(), second.size()),
+			range(mini(first.size(), second.size())).filter(func(i: int) -> bool: return first[i][0] != second[i][0]).size()])
+	for i in mini(first.size(), second.size()):
+		if first[i][0] != second[i][0]:
+			print("E4 first divergence at step %d (match tick %d v %d)" % [i, first[i][2], second[i][2]])
+			print("E4   first:  %s" % first[i][1])
+			print("E4   second: %s" % second[i][1])
+			if i > 0:
+				print("E4   step before, first:  %s" % first[i - 1][1])
+				print("E4   step before, second: %s" % second[i - 1][1])
+			break
+	assert_true(true, "probe")
+
+
+func _overlaps(game_match: Match, names: Array, label: String) -> void:
+	var space := (game_match.tanks.get_node(NodePath(String(names[0]))) as Node3D).get_world_3d().direct_space_state
+	for unit_name: String in names:
+		var tank := game_match.tanks.get_node(NodePath(unit_name)) as CollisionObject3D
+		var found := []
+		for owner_id in tank.get_shape_owners():
+			for i in tank.shape_owner_get_shape_count(owner_id):
+				var q := PhysicsShapeQueryParameters3D.new()
+				q.shape = tank.shape_owner_get_shape(owner_id, i)
+				q.transform = tank.global_transform * tank.shape_owner_get_transform(owner_id)
+				q.exclude = [tank.get_rid()]
+				q.collision_mask = 0xFFFFFFFF
+				for hit in space.intersect_shape(q, 8):
+					var c: Object = hit["collider"]
+					found.append("%s(%s)" % [c.name if c != null else "?", c.get_class() if c != null else "?"])
+		var shapes := []
+		for owner_id in tank.get_shape_owners():
+			for i in tank.shape_owner_get_shape_count(owner_id):
+				var sh: Shape3D = tank.shape_owner_get_shape(owner_id, i)
+				shapes.append("%s %s @%s" % [sh.get_class(), str(sh.size) if sh is BoxShape3D else "", str(tank.shape_owner_get_transform(owner_id).origin)])
+		var server: Transform3D = PhysicsServer3D.body_get_state(tank.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM)
+		print("E4 overlap %s %s node (%.3f, %.3f) server (%.3f, %.3f): %s" % [label, unit_name, tank.global_position.x, tank.global_position.z, server.origin.x, server.origin.z, found])
+	if label.ends_with("before start"):
+		for x in [-16.0, -15.0, -14.5, -14.0, -13.5, 13.5, 14.0, 14.5, 15.0, 16.0]:
+			var q := PhysicsShapeQueryParameters3D.new()
+			var b := BoxShape3D.new(); b.size = Vector3(0.2, 1.0, 0.2); q.shape = b
+			q.transform = Transform3D(Basis(), Vector3(x, 0.8, 90.0))
+			var hits: Array = space.intersect_shape(q, 4).map(func(h: Dictionary) -> String: return String((h["collider"] as Node).name))
+			print("E4 probe x %.1f z 90 y 0.8: %s" % [x, hits])
