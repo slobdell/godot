@@ -3739,6 +3739,14 @@ Dictionary drive_owned_counts(bool reset) {
 	return out;
 }
 
+double drive_pass_lane(const DriveConfig &config, Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction) {
+	Drive<ObjectView> d(config, mover, ObjectView(mover));
+	if (!config.ready || !config.yield_port_ready || mover == nullptr || !d.bind()) {
+		return -9.0; // not configured: the twin fails on it, never compares a stub
+	}
+	return d.pass_lane(passer, from, direction);
+}
+
 Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,
 		const Dictionary &order) {
 	Drive<ObjectView> d(config, mover, ObjectView(mover));

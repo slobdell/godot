@@ -219,5 +219,10 @@ static func around_fire(mover: Movement, waypoint: Vector3, goal: Vector3, order
 	return NativeBridge.impl.drive_around_fire(mover, waypoint, goal, order)
 
 
+## Round 35 (R35.8, tests): Movement._pass_lane natively on this mover, from its state now (-9 when not configured).
+static func pass_lane(mover: Movement, passer: String, from: Vector3, direction: Vector2) -> float:
+	return NativeBridge.impl.drive_pass_lane(mover, passer, from, direction)
+
+
 static func fire_ready() -> bool:
 	return configure() and NativeBridge.impl.drive_fire_ready()
