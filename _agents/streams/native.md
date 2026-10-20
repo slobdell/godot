@@ -98,6 +98,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     manoeuvre's stall_intent, W1c ON and OFF, 0 mismatches. With W1c ON the hold stage's intent ticks go 8 → 0 (own
     squadmates); the drive fight's 49 stay.
   - **R35.19:** this pair merges only after T7's verdict (if T7 parks, it is re-cut without T6b/T7 and re-twinned).
+- **Joint W1c+T9 re-cut on main (R35.53): `pair/native-joint3` `7a1435cdd`.**
+  - The base is manoeuvre's lab/joint3 813f6e1ff: main 5f05c997c + stream/manoeuvre + T9 cherry-picked, W1b's mirror out.
+  - Twins, builder0 light: both arms green, 35/0 + 14/0, 0 mismatches.
+  - With yieldfit2 ON, the under-fire stage's give-ways rise (66 v 39), natively beside T7's pass lane at 0 mismatches.
+  - It supersedes pair/native-w1c-t9 / -main for the joint series; manoeuvre cuts joint3 from it.
 - **D1 (orders' deploy step):** no native change (statement to the orchestrator).
 - **CP-F 5 / M5 (the orchestrator's question): W2's face settle and turnhull run on the native path, as GDScript, not
   bypassed** (lab/cpf5 63336d690).
