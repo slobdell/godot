@@ -386,6 +386,11 @@ _Filed here before any number._
   15.4 v 10.7; Crossing 5 route 29.4 v 21.4; Locks 5 click 21.4 v 13.9; Terminus 5 route 21.2 v 17.3); never-in up (Terminus 5 route 3
   v 2, Locks 5 route 1 v 0). Parked OFF (`bd22ac4c8`, `--deploy-minimax=on`). Round 36: the residual twitch IS the deploy move (a
   wedge across the street re-forming into a herringbone along it) plus seats reached only round obstacles (game_design.md).
+- **R35.32 (2026-10-19 ~17:10) E1's series: counter by inference; line (b) vacuous.** Releases > 0 in the ON arm (6 in the first 119
+  hull runs), INFERRED from the trace (a wait streak >= 8 s ending with the waited-on crew < 2 m nearer over its last 8 s = the release
+  rule; the once-a-second LEG_GATE line misses the release's update); the inference reads 0 in both arms on the pre-release census
+  c23acdbe2 (no false positives). Line (b) faced_move is VACUOUS (a plain move plans through `_plan_form_up`, not `_advance`; leg-wait
+  0 in every run), reported as vacuous, not a pass.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
