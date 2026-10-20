@@ -27,17 +27,27 @@ PARKED_GOAL_M = 9.0
 LONG_S = 10
 
 GATE = re.compile(r"LEG_GATE t=([\d.]+) \[([^\]]*)\] id (\d+) arrived (\w+) reached (\w+) \(([-\d.]+) m\) closed (\w+)(?: held by (\S+) ([\d.]+) m)?")
+TASK_RELEASED = re.compile(r"released this task (\d+)")
 STATE = re.compile(r"MANOEUVRE_STATE f (\d+) (\S+) \S+ order (\S+) from (\S*) .*? goal ([\d.inf]+) real ([\d.]+)")
 
 
 def read_run(path):
     crews = {}  # second -> crew -> (order, source, goal, real)
     gates = []  # (second, element key, reached, closed, held_by, gap)
-    releases = [0]  # LEG_GATE lines that say the straggler release stepped the leg (traced once a second: a lower bound)
+    releases = [0]  # the trace's exact count where it has one, else LEG_GATE lines that caught a release (a lower bound)
+    last_count, counted = {}, [False]
     with open(path, errors="replace") as handle:
         for line in handle:
             if "LEG_GATE" in line:
-                if " released " in line:
+                exact = TASK_RELEASED.search(line)
+                if exact:
+                    # Round 35: the trace's own count (Element.leg_wait "released", this task): its rises are the releases.
+                    key = line.split(" id ", 1)[1].split(" ", 1)[0] + line.split("[", 1)[1].split("]", 1)[0]
+                    count = int(exact.group(1))
+                    releases[0] += max(count - last_count.get(key, 0), 0)
+                    last_count[key] = count
+                    counted[0] = True
+                elif " released " in line:
                     releases[0] += 1
                 m = GATE.search(line)
                 if m and m.group(4) == "false":
@@ -49,7 +59,7 @@ def read_run(path):
                     second = int(m.group(1)) // 30
                     goal = float(m.group(5)) if m.group(5) != "inf" else float("inf")
                     crews.setdefault(second, {})[m.group(2)] = (m.group(3), m.group(4), goal, float(m.group(6)))
-    return gates, crews, releases[0]
+    return gates, crews, releases[0] if counted[0] else None
 
 
 def kind_of(state):
@@ -81,7 +91,7 @@ def main():
                     continue
                 task = run.rsplit("-", 1)[0]
                 gates, crews, released = read_run(log)
-                table[(arm, task)]["released"] += released
+                table[(arm, task)]["released"] += released or 0
                 key = (arm, task)
                 table[key]["runs"] += 1
                 streak = {}

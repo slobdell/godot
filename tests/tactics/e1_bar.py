@@ -19,24 +19,38 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import leg_wait_table as lw  # noqa: E402
 
 LEFT_M = 25.0
+STRAGGLER_S = 8
+STRAGGLER_GAIN_M = 2.0
 MOVER_MPS = 0.3
 ROW = re.compile(r"ELEMENT_TRACE t=([\d.]+) \[[^\]]*\] id (\d+) ")
 OFF = re.compile(r"(\S+) at \([-\d.,]+\) slot \([-\d.,]+\) ([\d.]+) m off")
 
 
 def long_seconds(log):
+    """(long-hold seconds, releases): a release is counted from the LEG_GATE line when the once-a-second trace caught it,
+    else INFERRED: a wait streak of at least STRAGGLER_S that ends (the leg stepped) while the crew waited on had come less
+    than STRAGGLER_GAIN_M nearer over its last STRAGGLER_S seconds -- the release rule, which the old gate cannot step under."""
     gates, _crews, released = lw.read_run(log)
-    total, streak = 0, {}
-    for second, element, reached, closed, held_by, _gap in gates:
-        if reached and not closed and held_by is not None:
-            start, _last = streak.get(element, (second, second))
-            streak[element] = (start, second)
-        elif element in streak:
-            start, last = streak.pop(element)
-            total += (last - start + 1) if last - start + 1 >= lw.LONG_S else 0
-    for start, last in streak.values():
+    total, streak, inferred = 0, {}, 0
+
+    def close(element, stepped):
+        nonlocal total, inferred
+        start, last, gaps = streak.pop(element)
         total += (last - start + 1) if last - start + 1 >= lw.LONG_S else 0
-    return total, released
+        recent = [g for s, g in gaps if s > last - STRAGGLER_S]
+        if stepped and last - start + 1 >= STRAGGLER_S and recent and max(recent) - recent[-1] < STRAGGLER_GAIN_M:
+            inferred += 1
+
+    for second, element, reached, closed, held_by, gap in gates:
+        if reached and not closed and held_by is not None:
+            start, _last, gaps = streak.get(element, (second, second, []))
+            streak[element] = (start, second, gaps + [(second, gap)])
+        elif element in streak:
+            close(element, not reached or closed)
+    for element in list(streak):
+        close(element, False)
+    # The trace's exact count when the log has one (Element.stragglers_released, round 35), else the inference.
+    return total, released if released is not None else inferred
 
 
 def left_behind(log):
@@ -110,6 +124,10 @@ def main():
             sd = math.sqrt(sum((d - mean) ** 2 for d in diffs) / (n - 1)) if n > 1 else 0.0
             print("  %-9s new %6d base %6d  paired diff %+6d  se %6.1f" % (line, sum(new[k][line] for k in pairs),
                   sum(base[k][line] for k in pairs), sum(diffs), sd * math.sqrt(n)))
+            moved = sorted(((d, k) for d, k in zip(diffs, pairs) if d != 0), key=lambda x: x[0])
+            if line in ("long_s", "left", "movers", "released") and moved:
+                print("            runs that differ (%d of %d): %s" % (len(moved), n, ", ".join("%s/%s-%s %+d" % (k[0], k[1][6:], k[2], d)
+                      for d, k in moved)))
 
 
 if __name__ == "__main__":

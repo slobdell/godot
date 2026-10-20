@@ -51,30 +51,74 @@ _(the worker keeps this current: report at the top, every number with commit, ma
    underfire mirror rebuilt with its pass-lane gate), CP-F 5 if it reaches C++.
 3. Stretch: R34.16's watch item when a face_pairs series runs.
 
-**REPORT (2026-10-19, laptop tests; the full check is queued behind orders' check on builder0):**
-- **N2 (a) done, `da93c3fea`:** FACE_KEEP_FAR deleted from `tests/planner/face_keep_table.py` (R34.5). face_pairs.py is the
-  judged reading. The seam's `face_far` field stays, because kept_share.py reads it. Test: `test_face_keep_far_is_deleted`.
-- **N2 (b) done, `8f29bff5a`:** `seed_twins.drop_twin_logs` / `filter_logs`. In a series folder of `<arena>-<seed>.log`,
-  a `random-<seed>.log` is dropped when the map it was dealt has `<map>-<seed>.log` in the same folder. The dealt map
-  comes from its own `*_CENSUS` line (Arena.active), else the R34.15 table. Both arms drop the same seeds, so paired
-  readings keep their pairs. `tests/traffic/far_table.py` calls it: one import + one call, MERGE NOTE (traffic's file,
-  covered by C35.9 per the orchestrator). `planner-pytest` now runs tools/judge's tests too, so they are in `make check`.
-  On the laptop that is about 50 s, mostly test_table.
-- **N2 (c) done, `339465130`:** the judging table's owed rows.
-  - **Inventory:** `tools/judge/lines_r31_34.py`, 185 lines of rounds 31–34, 171 of them judged.
-  - **Pairs pooled:** round 31/32's pairs in `probes.py`.
-  - **Copied rows:** round 31's traffic rows from `round31/traffic` (PROVENANCE.md).
-  - **Re-render:** judging.md *Round 35 re-render* has the details and the moved rows. The files are in
-    `references/round35/native/sizing/`.
-  - **Rounds 31–34:** 2 of 171 judged lines sit inside the noise, and 45 verdicts are within 1.645 se of their line.
-  - **Tests:** tools/judge 83 OK and tests/planner 19 OK (laptop).
-- **N1 D1 (orders' deploy step ON):** no native change. The step is ElementPlan only (GDScript on every path). The only C++
-  it reaches is el_native's grounding, a pure function of map and point. exec_fields doesn't change. Told the orchestrator.
+**REPORT (2026-10-19 evening; every number builder0 unless said; the light lane is `tools/remote.sh --light`).**
 
-**Requests to other streams:** traffic, through the orchestrator (relayed after T7's series). Any series reader that pools
-a folder containing random-arena fights calls `seed_twins.filter_logs(files)` first (far_ab, far_kills, jam_ab, jam_table).
+**On main (merged by the orchestrator):**
+- **N2 (C35.9) planner's leftovers**, main c32606204. Green hash `2f7683d21`: builder0 `make check exited 0`, 2885/0, 27 ALL
+  JUDGED, sim-baseline 13 unmoved.
+  - FACE_KEEP_FAR deleted (`da93c3fea`).
+  - seed_twins.filter_logs (`8f29bff5a`): a series folder's `random-<seed>.log` is dropped when the map it was dealt has its
+    own `<map>-<seed>.log` there. far_table.py calls it.
+  - The judging table's owed rows (`339465130`): rounds 31–34 in the inventory (`tools/judge/lines_r31_34.py`, 185 lines),
+    round 31/32 pairs pooled, re-rendered (judging.md *Round 35 re-render*, `references/round35/native/sizing/`).
+  - tools/judge's tests are in `planner-pytest`.
+- **N3 (R35.15) a source change always rebuilds**, main fc1f4ac0e. Green hash `944ad8c9b`: builder0 `make check exited 0`,
+  2885/0, 25 + 2 NOT JUDGED (load), sim-baseline unmoved.
+  - What it fixed: a remote run had built native from the pre-merge tree. The merge then arrived by rsync with OLDER mtimes,
+    and cmake rebuilt nothing.
+  - The fix: `native/src_sync.sh` touches every source whose sha256 differs from the last successful build's sums. No
+    record, or a removed file, touches all of them.
+  - Reproduced on builder0: a header changed at a 2000 mtime → `src-sync: 1 changed ... touched`. Test:
+    `tools/test_native_src_sync.sh` (10).
+- **tools/builder_checks.sh** (`467f3073c`) and the slot-exclusive light-lane test fix (`44d06cbbe`), main eea6fb9fa (light
+  `shell-tools-test exited 0`, 25 suites).
+  - builder_checks counts builder0's full checks in every form: `--wait-below 2` launches behind them.
+  - My first launcher's pgrep missed `make native check`, so a third check started on the box.
+  - The light-lane slot-exclusive 13 fails were the suite inheriting TANK_SQUAD_LIGHT, not load. I first read them as load
+    and corrected that with a reproduction.
 
-**Merge notes:** `tests/traffic/far_table.py` (traffic's: one import + one call). `references/` gains round35/native/sizing
-and `_agents/streams/references/round31/traffic/` (copies).
+**Pairs (C31.2), each with its twins green; merges are the owners' bars' and the orchestrator's:**
+- **T7 (traffic, underfire pass lane): `pair/native-t7` `21e5d69e4`** = traffic 95cc04a04 + my T6b mirror (e1bd2453b /
+  979c3fa5b / 15b1523da, re-cut) + the T7 mirror. test_native_yield 10/0, 0 mismatches.
+  - A new pass stage reaches: refusals 3, passes 2, done 2, holds 2. The rank stage forces passes (live / timeout / done).
+  - `_pass_lane` (and its sweep) is a GDScript call from C++ (R35.8). Port it only if T7 ships.
+- **W1b (manoeuvre, wheeled pace-0 halt): `pair/native-w1b` `f4f6bf1d2`.** native twins 107/0 halt OFF (423 asks a hold stage,
+  floor >= 100). On lab 1d2f0cac9, halt ON: 107/0, 1094 halts a stage, 0 mismatches. Merges on W1b's bar (the orchestrator).
+- **W1c + T9 (one joint pair, R35.14): `pair/native-w1c-t9`** = lab/w1c-t9 878200ede + traffic f432645dd + pair/native-t7 +
+  pair/native-w1b + T9's mirror (end_yield's gate, yield_unfinished, 3 exec rows) + W1c's (stall_throttle, against_friend
+  in unstick).
+  - Twins at `2446d46f9`: 111/0, 0 mismatches.
+  - W1c ON (lab): every twin 0 mismatches, but Sumps reaches no parked refusal and no plain refused ask. So floors moved
+    (C34.6): the Sumps pair is floored only with W1c off, and the parked refusal on the under-fire stages (4 both arms).
+  - A forced plain-refusal stage (5 Sumps poses from a sweep of ask; the orchestrator's request): **green hash
+    `6177ee87a`**, test_native_yield 12/0 on it and on lab `c8db0a442` (W1c ON): asks_refused 5/5 live and owned,
+    0 mismatches.
+  - **R35.39 (manoeuvre's scope predicate):** against_friend skips a squadmate of the crew's own element
+    (Manoeuvre._same_element called). **Current pair hash `7372e6118`:** 14/0 on test_native_drive, traffic_hold and
+    manoeuvre's stall_intent, W1c ON and OFF, 0 mismatches. With W1c ON the hold stage's intent ticks go 8 → 0 (own
+    squadmates); the drive fight's 49 stay.
+  - **R35.19:** this pair merges only after T7's verdict (if T7 parks, it is re-cut without T6b/T7 and re-twinned).
+- **D1 (orders' deploy step):** no native change (statement to the orchestrator).
+- **CP-F 5 / M5 (the orchestrator's question): W2's face settle and turnhull run on the native path, as GDScript, not
+  bypassed** (lab/cpf5 63336d690).
+  - A wheeled hull's `face` order hands its execute step back (execute_native.cpp ~363–378).
+  - face_turn's only caller is that branch.
+  - turnhull's lift is in TankBrain._order_move (no C++ port; only `decide` is native).
+  - Native cell on builder0 light (new_drawn, seed 460, gangs + law, 12 runs, a scratch counters() line): face_settles 27,
+    face_settle_fails 93, hull_turns 17535; execute_counts face hand-backs 205912, other_order 0.
+  - Found: face_settles / face_settle_fails were not in ManoeuvreCensus.counters(). Manoeuvre adds them (orchestrator).
+
+**Requests to other streams:** traffic, relayed after T7's series: any series reader that pools a folder containing random-arena
+fights calls `seed_twins.filter_logs(files)` first.
+
+**Merge notes:** `tests/traffic/far_table.py` (traffic's: one import + one call, merged with N2).
+
+- **T7's `_pass_lane` in C++ (R35.8's follow-up; T7 shipped, R35.44): stream/native `f75273624`.** pass_lane,
+  pass_wheels_ok, pass_clear and pass_swept run natively, line by line (they were a GDScript call while T7 was judged).
+  - New twin test_native_pass_lane: 576 poses (yard_open + Sumps, 4 hull kinds), 0 mismatches, 259 lanes / 317 none.
+  - test_native_yield's pass stage reads as before; 12/0 on builder0 light.
+  - Merges on a full check (asked the orchestrator for the go, R35.36).
+
+**Next:** the pass-lane port's full check (on the orchestrator's go); W2's mirror when its bar passes.
 
 **Questions for the lead:** none. **Known issues:** none.

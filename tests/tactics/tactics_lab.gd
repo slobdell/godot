@@ -54,16 +54,17 @@ static func fresh_events(before: Array, now: Array) -> Array:
 
 func unit(team: int, unit_name: String, position: Vector3, yaw: float, unit_id := "tank") -> Tank:
 	var tank := game_match.add_brain_tank(team, "Doctrine", unit_id, [], unit_name)
-	tank.global_position = position
-	tank.rotation.y = yaw
+	# Round 35 (brains E4, R35.47): `place`, not `global_position =`: a bare write left the physics body at its spawn slot
+	# until the first step, and from a process's second match on, a stale body overlapping a neighbour shoved it (four tanks
+	# abreast on the Sumps: 0.31 m, 50.0 v 55.9 s; test_tactics_lab_place).
+	tank.place(position, yaw)
 	return tank
 
 
 ## A vehicle on standing orders: by default it sits still and shoots anything it sees (an ambush party).
 func gun(team: int, unit_name: String, position: Vector3, yaw: float, unit_id := "tank") -> Tank:
 	var tank := game_match.spawn_tank(unit_name, 0, team, unit_id)
-	tank.global_position = position
-	tank.rotation.y = yaw
+	tank.place(position, yaw)  # round 35 (E4): as unit()
 	var controller := OrderController.new()
 	controller.name = "Orders_" + unit_name
 	controller.tank = tank

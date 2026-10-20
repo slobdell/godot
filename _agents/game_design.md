@@ -4085,3 +4085,9 @@ Asked in player terms with one recommendation each; his picks verbatim:
   mix; keeping arrivals apart (a narrow file on the last stretch) fixed the mixing but pushed every squad's places AWAY from his click
   (end spread 64 v 34 m on the Crossing) and, on the Crossing, across the river. Round 36: pack toward the click first and treat
   arrival overlap as transient (deploy each squad when ITS crews are in), rather than a strict every-seat-on-good-ground pack.
+- **Test hygiene for round 36 (R35.47; native's sort of its 13 of the 85 files that spawn then set `global_position`).** A stale
+  physics body sits at the Match spawn slot until the first step. Native twins compare two paths on one snapshot, so the equality
+  verdict never moves; the risk is a FLOOR that moves with process history. To fix (`Tank.place` or a fresh child):
+  test_native_avoid_gather, test_native_record. Order-proof already (FreshStage), cleaner with `place`: drive_twin_case,
+  gate_twin_case. Harmless (snapshot reads): incoming, combat, threat, scan, route, tick_profile, movement_geometry, perception,
+  shell. The other ~72 files belong to their owners' sorts.
