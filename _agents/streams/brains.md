@@ -77,7 +77,18 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   STRAGGLER_GAIN_M 2 m sized on the census (no re-tune after the series).
 - **Infra found:** the stale native library via an mtime race (R35.15 -> native's N3); a partial check needs `lint` in
   CHECK_TARGETS (every target is ordered after it); a hull-rest copy-back carries an earlier series' arm folders (read by seed).
-- **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). **E3:** stretch, below. **D1 fallout:** re-read
+- **E3 (stretch) written up, NO code (no lever found).** A cause the B9 census missed, traced in locks-1404 (laptop, lane spread
+  green, 24 v 4): at t 24.5 Green takes the far quay, `Posture.decide` flips to HOLD ('ahead on points') and the commander re-posts
+  ALL four elements to the quay, the two central ones in contact driving ~60 m across the enemy's front (Hunters gone by t 40).
+  Census (`74526bca1`, laptop, GDScript, lane_census showmatch locks/terminus/crossing x 1400-1409, n 30;
+  `references/round35/brains/e3_posture_flip_census_74526bca1_laptop.txt`, `tests/tactics/posture_flip_table.py`): 56 flips to
+  hold (35 'ahead on points', 21 'zone threatened'); engaged elements RE-POSTED > 40 m lost 15 / 30 / 25 % of their crews in the
+  next 30 s (crossing / locks / terminus) v engaged elements KEPT 19 / 40 / 33 %. Being pulled back to the zone is not worse
+  (if anything better), so locks-1404 is one fight's shape, not a pattern; like B9 (R34.19) the stacked/piecemeal look follows
+  the fight, it does not cause it. A bar draft is not proposed: the census gives no sign it would pass. If anyone wants the A/B
+  anyway: "engaged elements keep their task through a flip to hold for N s" v main, deciding on fight E (R34.19's scale),
+  guards deaths/kills/contact spread; `POSTURE_ENABLED` is the existing switch.
+- **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). **D1 fallout:** re-read
   `test_tactics_body`'s arrival after merging main (the deploy step + the release; orders' resize to off + 8.1 s, R35.17).
 - **Requests to other streams:** native: hash-stamp native/src in build.sh (done, N3). manoeuvre: the wedged crews
   (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3; law/faced_attack_move-614 G4 on lab/cpf4).
