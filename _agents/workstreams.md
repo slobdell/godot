@@ -166,7 +166,7 @@ _Filed here before any number._
   `d3d2e6478` (`references/round35/traffic/t8_design.md`), with two lines added by the orchestrator.** `--traffic-on=holdfire`
   (DEFAULT_OFF): in `Traffic.hold_of`, a held crew hit within UNDER_FIRE_S (5 s) is released from its squad's wait like a passed
   crew (`released_fire`), for good for that wait; native mirrors the hold. Pair cut AFTER T7's series reads (on T7's verdict).
-  Fixed arenas {terminus, locks, crossing, gorge, parade} x FRESH 1800–1827 (moved from 1700–1727: traffic read 1700–1701 in a T7 dev read before this bar reached it), n 140, native, builder0, pinned; k = 1.645 paired se.
+  Fixed arenas {terminus, locks, crossing, gorge, parade} x FRESH 1800–1827, locks-1800 swapped for locks-1828 (R35.69: read in a census smoke) (moved from 1700–1727: traffic read 1700–1701 in a T7 dev read before this bar reached it), n 140, native, builder0, pinned; k = 1.645 paired se.
   **Counter first (added):** `released_fire` > 0 in the arm. **G:** held deaths (dead while `Traffic.holding` the tick before, or
   within 3 s of a hold ending; jam_census `held`, T5's causes untouched) arm < base and (base - arm) - k·se > 0. **Guards:** stuck
   deaths, jam deaths, open deaths ±, far loops, kills / hit rate, all friendly contacts, crossing arrivals 44–46 x 6, `tr_holds` >=
