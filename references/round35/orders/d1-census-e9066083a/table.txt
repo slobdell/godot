@@ -1,0 +1,65 @@
+DEPLOY_CENSUS_TABLE off 48 on 48 paired 48
+DEPLOY_CENSUS_TABLE all arenas: fights paired 48
+  green deaths   off    356.0 on    356.0 diff     +0.0 se    0.0 within 2 se
+  green kills    off    280.0 on    280.0 diff     +0.0 se    0.0 within 2 se
+  green stuck_s  off   2178.7 on   2178.7 diff     +0.0 se    0.0 within 2 se
+  green deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  green alive    off    130.0 on    130.0 diff     +0.0 se    0.0 within 2 se
+  rust  deaths   off    282.0 on    282.0 diff     +0.0 se    0.0 within 2 se
+  rust  kills    off    356.0 on    356.0 diff     +0.0 se    0.0 within 2 se
+  rust  stuck_s  off   1829.2 on   1829.2 diff     +0.0 se    0.0 within 2 se
+  rust  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  rust  alive    off    180.0 on    180.0 diff     +0.0 se    0.0 within 2 se
+  both  deaths   off    638.0 on    638.0 diff     +0.0 se    0.0 within 2 se
+  both  kills    off    636.0 on    636.0 diff     +0.0 se    0.0 within 2 se
+  both  stuck_s  off   4007.9 on   4007.9 diff     +0.0 se    0.0 within 2 se
+  both  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  both  alive    off    310.0 on    310.0 diff     +0.0 se    0.0 within 2 se
+DEPLOY_CENSUS_TABLE locks: fights paired 16
+  green deaths   off    110.0 on    110.0 diff     +0.0 se    0.0 within 2 se
+  green kills    off     82.0 on     82.0 diff     +0.0 se    0.0 within 2 se
+  green stuck_s  off    722.1 on    722.1 diff     +0.0 se    0.0 within 2 se
+  green deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  green alive    off     52.0 on     52.0 diff     +0.0 se    0.0 within 2 se
+  rust  deaths   off     83.0 on     83.0 diff     +0.0 se    0.0 within 2 se
+  rust  kills    off    110.0 on    110.0 diff     +0.0 se    0.0 within 2 se
+  rust  stuck_s  off    603.1 on    603.1 diff     +0.0 se    0.0 within 2 se
+  rust  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  rust  alive    off     71.0 on     71.0 diff     +0.0 se    0.0 within 2 se
+  both  deaths   off    193.0 on    193.0 diff     +0.0 se    0.0 within 2 se
+  both  kills    off    192.0 on    192.0 diff     +0.0 se    0.0 within 2 se
+  both  stuck_s  off   1325.2 on   1325.2 diff     +0.0 se    0.0 within 2 se
+  both  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  both  alive    off    123.0 on    123.0 diff     +0.0 se    0.0 within 2 se
+DEPLOY_CENSUS_TABLE sumps: fights paired 16
+  green deaths   off    118.0 on    118.0 diff     +0.0 se    0.0 within 2 se
+  green kills    off     93.0 on     93.0 diff     +0.0 se    0.0 within 2 se
+  green stuck_s  off    811.9 on    811.9 diff     +0.0 se    0.0 within 2 se
+  green deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  green alive    off     44.0 on     44.0 diff     +0.0 se    0.0 within 2 se
+  rust  deaths   off     93.0 on     93.0 diff     +0.0 se    0.0 within 2 se
+  rust  kills    off    118.0 on    118.0 diff     +0.0 se    0.0 within 2 se
+  rust  stuck_s  off    650.9 on    650.9 diff     +0.0 se    0.0 within 2 se
+  rust  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  rust  alive    off     61.0 on     61.0 diff     +0.0 se    0.0 within 2 se
+  both  deaths   off    211.0 on    211.0 diff     +0.0 se    0.0 within 2 se
+  both  kills    off    211.0 on    211.0 diff     +0.0 se    0.0 within 2 se
+  both  stuck_s  off   1462.8 on   1462.8 diff     +0.0 se    0.0 within 2 se
+  both  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  both  alive    off    105.0 on    105.0 diff     +0.0 se    0.0 within 2 se
+DEPLOY_CENSUS_TABLE terminus: fights paired 16
+  green deaths   off    128.0 on    128.0 diff     +0.0 se    0.0 within 2 se
+  green kills    off    105.0 on    105.0 diff     +0.0 se    0.0 within 2 se
+  green stuck_s  off    644.7 on    644.7 diff     +0.0 se    0.0 within 2 se
+  green deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  green alive    off     34.0 on     34.0 diff     +0.0 se    0.0 within 2 se
+  rust  deaths   off    106.0 on    106.0 diff     +0.0 se    0.0 within 2 se
+  rust  kills    off    128.0 on    128.0 diff     +0.0 se    0.0 within 2 se
+  rust  stuck_s  off    575.2 on    575.2 diff     +0.0 se    0.0 within 2 se
+  rust  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  rust  alive    off     48.0 on     48.0 diff     +0.0 se    0.0 within 2 se
+  both  deaths   off    234.0 on    234.0 diff     +0.0 se    0.0 within 2 se
+  both  kills    off    233.0 on    233.0 diff     +0.0 se    0.0 within 2 se
+  both  stuck_s  off   1219.9 on   1219.9 diff     +0.0 se    0.0 within 2 se
+  both  deploys  off      0.0 on      0.0 diff     +0.0 se    0.0 within 2 se
+  both  alive    off     82.0 on     82.0 diff     +0.0 se    0.0 within 2 se

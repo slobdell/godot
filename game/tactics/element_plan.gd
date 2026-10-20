@@ -782,6 +782,12 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	else:
 		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
 				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+	# D3b (round 35, orders; R35.41, the one switched addition granted here): a squad the controls PACKED (its task carries
+	# `halt_at`, set only by the pack, itself off) travels its last INSET_NEAR_M in a file, which nests as tightly as the
+	# packed halts do, and its halt opens out of the file on its spot (the deploy step). D3's record: packed halts put two
+	# arriving WEDGES' slots 5.7 m apart. `--arrive-file=on` opts in.
+	if ARRIVE_FILE and (state.get("task", {}) as Dictionary).has("halt_at") and center.distance_to(destination) <= INSET_NEAR_M:
+		plan["formation"] = "column"
 	plan["anchor"] = destination
 	plan["technique"] = "traveling"
 	# X2: these slots are where the element STANDS when it gets there — the shape the player saw when he clicked —
@@ -822,15 +828,23 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var deploy := _deploy_state(plan, situation, state, destination, center, told, table)
 	plan["deploy"] = deploy
 	if bool(deploy.get("deployed", false)):
-		plan["formation"] = String(_halt_pick(situation, state, table)["formation"])
+		plan["formation"] = _deploy_shape(situation, state, table)
 		plan["heading"] = deploy["heading"]
 		plan["why"] = "deployed: %s on the spot" % String(plan["formation"]).replace("_", " ")
 		var stand: Vector3 = deploy.get("anchor", destination)
 		plan["anchor"] = stand
 		# Seated by the least total driving (B8b: B8 seated by exposure and sent crews across the shape, moves of 24-42 m),
 		# then fixed: the deploy is one move per crew.
-		_group(plan, slot_order(situation), String(plan["formation"]), stand, deploy["heading"],
-				table.spacing(String(situation["terrain"])), "move", "", true, true, null, false, "travel")
+		# D4 (round 35): seated so the LONGEST deploy leg is as short as it can be (then the least total), not by the least
+		# total alone, which handed one crew a 45 m leg past its squadmates (laptop, Terminus 5 click, seed 34, squad 4).
+		var ordered := slot_order(situation)
+		var spacing := table.spacing(String(situation["terrain"]))
+		var deploy_extra := {}
+		var pinned := _deploy_keep(ordered, String(plan["formation"]), stand, deploy["heading"], spacing)
+		if not pinned.is_empty():
+			deploy_extra["keep"] = pinned
+		_group(plan, ordered, String(plan["formation"]), stand, deploy["heading"], spacing, "move", "", true, true, null,
+				false, "travel", deploy_extra)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1810,6 +1824,8 @@ const DEPLOY_INLAND_STEP_M := 2.0
 const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
 const DEPLOY_ON_SPOT_M := 12.0
+## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
+static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
 
 
 ## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.
@@ -1849,9 +1865,85 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		# off); a squad that deployed on the cap far short of it stands where it is (B8b).
 		var on_spot := DEPLOY_ON_CLICK or Vector2(center.x - destination.x, center.z - destination.z).length() <= DEPLOY_ON_SPOT_M
 		var at: Vector3 = destination if on_spot else clamp_to_arena(Vector3(center.x, 0.0, center.z))
-		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), String(_halt_pick(situation, state, table)["formation"]),
+		# D3 (C35.4): a squad packed at the order stands where the pack laid it (its `halt_at`), in the shape priced there.
+		var packed_at: Variant = task.get("halt_at")
+		if packed_at is Array and (packed_at as Array).size() == 2:
+			at = Vector3(float(packed_at[0]), 0.0, float(packed_at[1]))
+		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy
+
+
+## The shape a deploy stands in: the task's `halt_shape` when the order priced one (D3: the pack laid its seats in it), else
+## the table's hold pick for this situation.
+static func _deploy_shape(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> String:
+	var priced := str((state.get("task", {}) as Dictionary).get("halt_shape", ""))
+	if TacticsFormation.NAMES.has(priced):
+		return priced
+	return String(_halt_pick(situation, state, table)["formation"])
+
+
+## D4 (round 35): the deploy's seating, {crew name: seat index}, chosen so the longest leg from where each crew stands to
+## its halt seat is the shortest it can be, ties to the least total (every assignment tried: a squad is at most
+## DEPLOY_MINIMAX_MAX crews). {} = _group's own seating (D1's least total, the default while parked).
+## PARKED OFF (round 35, D4's A/B failed its bar: builder0 68d4c06cd, seeds 3621-3626): `--deploy-minimax=on` opts in.
+static var DEPLOY_MINIMAX := OS.get_cmdline_user_args().has("--deploy-minimax=on")
+const DEPLOY_MINIMAX_MAX := 6
+
+
+static func _deploy_keep(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float) -> Dictionary:
+	var count := members.size()
+	if not DEPLOY_MINIMAX or count < 2 or count > DEPLOY_MINIMAX_MAX:
+		return {}
+	var seats := {}
+	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing, {"halt": true, "corridor_m": INF, "layout": true}):
+		seats[int(entry["index"])] = (entry["to"] as Vector3) + TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
+	if seats.size() != count:
+		return {}
+	var legs: Array = []  # legs[i][j]: crew i to seat j
+	for member: Dictionary in members:
+		var row: Array = []
+		var at: Vector3 = member["position"]
+		for j in count:
+			var seat: Vector3 = seats[j]
+			row.append(Vector2(at.x - seat.x, at.z - seat.z).length())
+		legs.append(row)
+	var best: Array = []
+	var best_key := [INF, INF]  # [longest leg, total] (an Array: a lambda captures a Vector2 by value)
+	var perm: Array = range(count)
+	# Every assignment (Heap's algorithm, iterative).
+	var c: Array = []
+	c.resize(count)
+	c.fill(0)
+	var visit := func(p: Array) -> void:
+		var worst := 0.0
+		var total := 0.0
+		for i in count:
+			var leg: float = legs[i][p[i]]
+			worst = maxf(worst, leg)
+			total += leg
+		if worst < float(best_key[0]) - 1e-6 or (absf(worst - float(best_key[0])) <= 1e-6 and total < float(best_key[1]) - 1e-6):
+			best_key[0] = worst
+			best_key[1] = total
+			best.assign(p)
+	visit.call(perm)
+	var i := 0
+	while i < count:
+		if int(c[i]) < i:
+			var k := 0 if i % 2 == 0 else int(c[i])
+			var swap: Variant = perm[k]
+			perm[k] = perm[i]
+			perm[i] = swap
+			visit.call(perm)
+			c[i] = int(c[i]) + 1
+			i = 0
+		else:
+			c[i] = 0
+			i += 1
+	var keep := {}
+	for n in count:
+		keep[String(members[n]["name"])] = int(best[n])
+	return keep
 
 
 ## B8b: `at` stepped away from water, DEPLOY_INLAND_STEP_M at a time (up to DEPLOY_INLAND_MAX_M), until every seat of the

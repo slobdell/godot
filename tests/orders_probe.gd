@@ -25,7 +25,7 @@ extends SceneTree
 ##     --probe-route=click [--ground-cap=off] [--halt-price=off] [--probe-shots=build/orders-probe] [--probe-click=x,z]
 ## The arms are main's own switches (O1's ground cap, O3's halt price; O2's when it lands), read by SelectionSquads.
 ## The click (unless given): the near bank of the deck nearest the arena's middle, DECK_BACK_M short of it on the
-## player's side, where an anchor laid 70 m sideways meets the river (his case). The route: the squads' middle, then
+## player's side, where an anchor laid 70 m sideways meets the river (his case); moved by the seed (`_jitter`) unless 34. The route: the squads' middle, then
 ## two points a third and two thirds of the way, then the click.
 
 const MAIN := "res://game/main.tscn"
@@ -115,7 +115,20 @@ func _run() -> void:
 	for i in _route.size():
 		var p: Vector3 = _route[i]
 		returned.append(_controls.order_selection("move", {"to": [p.x, p.z], "queue": i > 0}))
+		if _flag("probe-legs-each", "") == "on":
+			for squad: Dictionary in _squads:
+				var held := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
+				print("ORDERS_PROBE_CLICK %d squad %d task %s queued %s" % [i, int(squad["number"]),
+						str(held.task.get("to")) if held != null else "-", str(held.queued_tasks.map(func(t: Dictionary) -> Variant: return t.get("to"))) if held != null else "-"])
 	_order_tick = _match.tick
+	# Round 35 (D5): every squad's legs as dealt (its element's task, then its queued tasks' destinations).
+	for squad: Dictionary in _squads:
+		var held := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
+		if held != null:
+			var legs: Array = [held.task.get("to")]
+			for queued: Dictionary in held.queued_tasks:
+				legs.append(queued.get("to"))
+			print("ORDERS_PROBE_LEGS squad %d start %s legs %s" % [int(squad["number"]), _xz(squad["start"]), legs])
 	for squad: Dictionary in _squads:
 		squad["anchor"] = _anchor_of(squad)
 		var ground := _tank(String(squad["units"][0]))
@@ -149,6 +162,7 @@ func _run() -> void:
 	for squad: Dictionary in _squads:
 		var anchor: Variant = squad["anchor"]
 		var row := {"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"), "arm": _flag("probe-arm", ""),
+				"seed": int(_flag("seed", "34")),
 				"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 				"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "squad": squad["number"],
 				"crews": (squad["units"] as Array).size(), "start": _xz(squad["start"]), "anchor": _xz(anchor) if anchor is Vector3 else null,
@@ -182,6 +196,8 @@ func _run() -> void:
 			"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "capped": SelectionSquads.ground_capped,
 			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them
 			"gates_laid": _static_or(RtsControls, "gates_laid"), "route_starts": _static_or(RtsControls, "route_starts"),
+			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
+			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
@@ -361,11 +377,39 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 		var mid := Vector3((float(box[0]) + float(box[2])) * 0.5, 0.0, (float(box[1]) + float(box[3])) * 0.5)
 		if best == null or mid.length() < (best as Vector3).length():
 			best = mid
-	if best == null:
-		return Orders.clamp_to_arena(army + forward * 60.0)
-	# DECK_BACK_M short of the deck along the player's forward axis, on his side.
-	var back := forward * -1.0 if (best as Vector3).dot(forward) > army.dot(forward) else forward
-	return Orders.clamp_to_arena((best as Vector3) + back * DECK_BACK_M)
+	var picked := Orders.clamp_to_arena(army + forward * 60.0)
+	if best != null:
+		# DECK_BACK_M short of the deck along the player's forward axis, on his side.
+		var back := forward * -1.0 if (best as Vector3).dot(forward) > army.dot(forward) else forward
+		picked = Orders.clamp_to_arena((best as Vector3) + back * DECK_BACK_M)
+	return _jitter(picked)
+
+
+## Round 35 (D5's bar, fresh seeds): the probe's army and click are otherwise fixed, so every seed played the same run
+## (seed 3601 = seed 34, byte for byte). A seed other than REFERENCE_SEED moves the click up to CLICK_JITTER_M (and so the
+## route's waypoints), to a dry point his squads could stand on; seed 34 is round 34's reference cell, unmoved.
+const REFERENCE_SEED := 34
+const CLICK_JITTER_M := 12.0
+
+
+func _jitter(click: Vector3) -> Vector3:
+	var seed_value := int(_flag("seed", str(REFERENCE_SEED)))
+	if seed_value == REFERENCE_SEED:
+		return click
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var ground: Tank = null
+	for squad: Dictionary in _squads:
+		ground = _tank(String(squad["units"][0]))
+		if ground != null:
+			break
+	for attempt in 40:
+		var angle := rng.randf() * TAU
+		var r := sqrt(rng.randf()) * CLICK_JITTER_M
+		var p := Orders.clamp_to_arena(click + Vector3(cos(angle), 0.0, sin(angle)) * r)
+		if not SlotGround.over_water(p) and (ground == null or SlotGround.is_standable(ground, p)):
+			return p
+	return click
 
 
 func _shots(label: String) -> void:

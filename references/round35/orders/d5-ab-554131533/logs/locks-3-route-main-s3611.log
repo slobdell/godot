@@ -1,0 +1,23 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=3 units=15
+SKIRMISH_ARMY Green res://tests/control/orders_probe_3.json: 5 scouts, 2 tanks, 3 IFVs (1400 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 15 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust res://tests/control/orders_probe_enemy.json: 1 scout (110 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 1 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=3 green_squads=3 green=10 rust_squads=1 rust=1
+SKIRMISH_CAMERA focus=(-28, 89) zoom=0.63 vehicles=4
+CONTROL_GROUPS squads=3 (Alpha:4 Bravo:3 Charlie:3) groups=3 ungrouped=0 [] engaged_of=wired
+TANK_SQUAD_READY role=SKIRMISH flags={ "arena": "locks", "seed": "3611", "probe-squads": "3", "probe-route": "route", "probe-arm": "main", "skirmish": "", "player": "res://tests/control/orders_probe_3.json", "enemy": "res://tests/control/orders_probe_enemy.json", "budget": "6000", "no-control": "", "no-pick-faction": "", "hints": "off", "no-record": "", "squad-cap": "3" }
+ORDERS_PROBE_SETUP {"click":[-2.5,19.5],"decks":[[-8.0,-12.0,8.0,12.0],[-99.0,-12.0,-85.0,12.0],[85.0,-12.0,99.0,12.0]],"ground_cap":true,"map":"locks","route":[[-1.6,67.7],[-2.1,43.6],[-2.5,19.5]],"squads":3,"units":10}
+HUD_MESSAGE [info] 3 units: move
+ORDERS_PROBE_LEGS squad 1 start [-28.2, 95.9] legs [[-35.6402816772461, 72.6842803955078], [-10.2617530822754, 76.4361343383789], [-36.8690032958984, 18.2824230194092]]
+ORDERS_PROBE_LEGS squad 2 start [2.9, 90.1] legs [[0.86912727355957, 67.3295669555664], [-7.64713144302368, 66.070556640625], [-0.03789854049683, 19.3019599914551]]
+ORDERS_PROBE_LEGS squad 3 start [30.9, 88.1] legs [[34.9049987792969, 66.2175750732422], [-4.00986480712891, 41.4671058654785], [34.2978820800781, 17.2009143829346]]
+NATIVE_EXEC 12371 native, 7628 handed back (dead 0, reflexes 0, yielding 0, face 9, drive 0, other 0), 68 stale pulls, 591 part pulls, 0 verified, 0 verify mismatches 
+ORDERS_PROBE_SQUAD {"anchor":[-36.9,18.3],"anchor_offset_m":34.4,"arm":"main","arrived_by":"","arrived_s":-1.0,"crews":4,"crossed":false,"crossed_at":null,"deck":false,"deck_at":null,"deploy_cause":"","deploy_s":-1.0,"deploy_step":"on","driven_m":143.7,"end":{"arrived":false,"centre_to_anchor_m":26.1,"queued":0,"verb":"move"},"end_far_m":29.6,"end_foreign_m":6.9,"enemy_m":-1.0,"foreign_m":-1.0,"goals_across":[],"ground_cap":"on","halt_price":"on","map":"locks","place_m":-1.0,"plan_deck":false,"plan_drive_m":112.6,"route":"route","seed":3611,"shuffle_m":0.0,"squad":1,"squads":3,"start":[-28.2,95.9],"toward_m":46.3,"twitch_m":-1.0}
+ORDERS_PROBE_SQUAD {"anchor":[0.0,19.3],"anchor_offset_m":2.5,"arm":"main","arrived_by":"element","arrived_s":7.4,"crews":3,"crossed":false,"crossed_at":null,"deck":true,"deck_at":[[-0.1,11.9],20.6],"deploy_cause":"all_in","deploy_s":8.1,"deploy_step":"on","driven_m":84.6,"end":{"arrived":true,"centre_to_anchor_m":3.1,"queued":0,"verb":"move"},"end_far_m":14.6,"end_foreign_m":6.9,"enemy_m":158.2,"foreign_m":10.8,"goals_across":[],"ground_cap":"on","halt_price":"on","map":"locks","place_m":14.7,"plan_deck":false,"plan_drive_m":70.9,"route":"route","seed":3611,"shuffle_m":20.4,"squad":2,"squads":3,"start":[2.9,90.1],"toward_m":68.4,"twitch_m":9.6}
+ORDERS_PROBE_SQUAD {"anchor":[34.3,17.2],"anchor_offset_m":36.9,"arm":"main","arrived_by":"element","arrived_s":14.0,"crews":3,"crossed":false,"crossed_at":null,"deck":false,"deck_at":null,"deploy_cause":"all_in","deploy_s":15.1,"deploy_step":"on","driven_m":123.0,"end":{"arrived":true,"centre_to_anchor_m":3.0,"queued":0,"verb":"move"},"end_far_m":48.9,"end_foreign_m":29.0,"enemy_m":137.1,"foreign_m":17.9,"goals_across":[],"ground_cap":"on","halt_price":"on","map":"locks","place_m":8.8,"plan_deck":false,"plan_drive_m":103.9,"route":"route","seed":3611,"shuffle_m":12.5,"squad":3,"squads":3,"start":[30.9,88.1],"toward_m":39.4,"twitch_m":0.0}
+ORDERS_PROBE {"all_in_s":-1.0,"arm":"main","capped":2,"crossed":0,"gates_laid":1,"ground_cap":"on","halt_price":"on","map":"locks","on_deck":1,"packed":0,"returned":["","",""],"route":"route","route_starts":0,"squads":3,"uncrossed":0,"worst_offset_m":36.9,"worst_shuffle_m":20.4}

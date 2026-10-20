@@ -1088,6 +1088,10 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String:
 	var squads: Array = found["squads"]
 	var loose: Array = found["loose"]
+	# D6 (R35.28): a shifted move's squads stand on the elements their units belong to now (the gate below reads each
+	# squad's element for where its previous leg ends), and again after untangle, which re-deals vehicles.
+	if bool(extra.get("queue", false)) and elements != null and REQUEUE:
+		squads = _squads_on_their_elements(squads)
 	# O3: each AUTO squad is priced at its halt on the ground he clicked.
 	SelectionSquads.halt_terrain = ElementSituation.terrain_at(Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))) \
 			if extra.has("to") else ""
@@ -1098,6 +1102,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		blocks.append({"center": _middle_of(loose), "width": SelectionSquads.width("auto", loose.size()),
 				"depth": SelectionSquads.depth("auto", loose.size())})
 	var anchors: Array[Vector3] = []
+	var packed_shapes := {}  # D3: each packed anchor -> {shape, heading} its seats were packed in
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1130,6 +1135,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors = SelectionSquads.ground_anchors(anchors, blocks,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
+		# Round 35 (D3, C35.4): with the deploy step on, an AUTO body's halts are packed now by their seats (hull clearance,
+		# his correction 1) on the approach; the ranks above stand when the pack does not apply or finds no fit.
+		packed_shapes = _pack_halts(squads, blocks, click, drawn, loose, verb, extra, ground, anchors)
+		if not packed_shapes.is_empty():
+			anchors.clear()
+			for at: Vector3 in packed_shapes:
+				anchors.append(at)
 		# Round 34 (planner's O5, the Locks route): a route leg through one gate is dealt first through, farthest along,
 		# each squad starting the leg where its previous one ends.
 		if ground != null and bool(extra.get("queue", false)) and squads.size() >= 2 and anchors.size() >= squads.size():
@@ -1146,6 +1158,23 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
 			for i in dealt.size():
 				anchors[i] = dealt[i]
+			# Round 35 (D5, C35.5): then, on a route of moves, by the DRIVES: two squads whose navmesh paths off the last waypoint cross swap places
+			# (planner's Locks 5-squad route: squads 3 and 5 jammed ~55 s at the junction near (5, 65)), within a length guard.
+			if verb == "move":
+				var uncrossed := SelectionSquads.uncross_paths(anchors.slice(0, squads.size()), starts,
+						func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
+				for i in uncrossed.size():
+					anchors[i] = uncrossed[i]
+		# Round 35 (D6, R35.38): a shifted leg's places step back from any bridge deck their seats would reach (Crossing 5
+		# route s3643: a place at the bridge's mouth laid seats past the deck and two squads crossed). Part of D6's switch.
+		if REQUEUE and bool(extra.get("queue", false)) and verb == "move" and anchors.size() >= squads.size():
+			var reach: Array = []
+			for block: Dictionary in blocks:
+				reach.append(0.5 * maxf(float(block["width"]), float(block.get("depth", 0.0))))
+			anchors = SelectionSquads.deck_clear(anchors, reach, click,
+					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
@@ -1153,6 +1182,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
+	# Round 35 (D6, R35.28): a shift-click queues on the elements the squads' units belong to NOW. Round 22's untangle
+	# re-deals vehicles between squads at a click, so no element is exactly a control group after it; the shifted move then
+	# found no element to queue behind and REPLACED each squad's task (planner's Crossing 5 route s3614: three squads got one leg).
+	if queue and elements != null and REQUEUE:
+		squads = _squads_on_their_elements(squads)
 	# Round 34 (traffic O4): a further shift-waypoint makes the previous queued one in-between: re-laid as a gate.
 	if queue and verb == "move" and extra.has("to") and squads.size() > 1 and elements != null:
 		_relay_previous_waypoint(squads, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])))
@@ -1163,8 +1197,14 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
+			# D3: a packed squad deploys exactly where the pack laid its seats, in that shape, on the pack's heading.
+			if packed_shapes.has(anchors[i]):
+				given["halt_at"] = [anchors[i].x, anchors[i].z]
+				given["halt_shape"] = String(packed_shapes[anchors[i]]["shape"])
+				var lay: Vector3 = packed_shapes[anchors[i]]["heading"]
+				given["lay"] = [lay.x, lay.z]
 			# B8 (R34.14): the heading each squad lays its halt on when it deploys, fixed now (the approach).
-			if ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
+			elif ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
 				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
 						Match.team_frame(team)["forward"])
 				given["lay"] = [approach.x, approach.z]
@@ -1234,8 +1274,9 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
 	if extra.has("lay"):
-		task["lay"] = extra["lay"]  # B8: the halt's heading when the squad deploys (prototype)
+		task["lay"] = extra["lay"]  # B8: the halt's heading when the squad deploys
 	_copy_approach(extra, task)
+	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO:
 		task["formation"] = shape
 	if task["verb"] == "move" and not task.has("to"):
@@ -1308,6 +1349,7 @@ func _queue_task_for(units: Array, element: Element, number: int, verb: String, 
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
 	_copy_approach(extra, task)
+	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
 		task["formation"] = shape
 	if task["verb"] == "move" and not task.has("to"):
@@ -1336,6 +1378,7 @@ func _start_route(element: Element, units: Array, verb: String, extra: Dictionar
 	var task := {"verb": "move", "to": [float(extra["to"][0]), float(extra["to"][1])], "drills": false}
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
+	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO and shape != MIXED_FORMATION:
 		task["formation"] = shape
 	var error := element.assign(task)
@@ -1376,6 +1419,112 @@ func _waypoints_end(units: Array) -> Variant:
 
 
 ## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
+## D6 (R35.28): ON (its fresh re-read passed: builder0 ee3a8dab2, seeds 3651-3656, every squad every leg 144/144 v 121/144,
+## far bank 0). `--requeue=off` / env REQUEUE=off is round 34's (a squad with no exactly matching element has its task
+## REPLACED by a shift-click). The deck clearance for a shifted leg's places rides on this switch.
+static var REQUEUE := not OS.get_cmdline_user_args().has("--requeue=off") and OS.get_environment("REQUEUE") != "off"
+
+
+## D6: the squads, each given (as its "element") the element holding most of its units, when every unit of every squad
+## is in an element and the matching is one squad to one element; else the squads as they came. A squad whose element
+## already matches is untouched.
+func _squads_on_their_elements(squads: Array) -> Array:
+	var holders: Array = []
+	for squad: Dictionary in squads:
+		var held: Element = squad.get("element")
+		if held != null and is_instance_valid_element(held):
+			holders.append(held)
+			continue
+		var count := {}
+		for unit_name: String in squad["units"]:
+			var owner := elements.of(unit_name)
+			if owner == null:
+				return squads
+			count[owner] = int(count.get(owner, 0)) + 1
+		var best: Element = null
+		for owner: Element in count:
+			if best == null or int(count[owner]) > int(count[best]) or (int(count[owner]) == int(count[best]) and owner.id < best.id):
+				best = owner
+		holders.append(best)
+	for i in holders.size():
+		for j in range(i + 1, holders.size()):
+			if holders[i] == holders[j]:
+				return squads
+	var out: Array = []
+	for i in squads.size():
+		var squad: Dictionary = (squads[i] as Dictionary).duplicate()
+		squad["element"] = holders[i]
+		out.append(squad)
+	return out
+
+
+## D3 (C35.4): a packed squad's halt (where, in what shape, on what heading) rides its move task, queued or not.
+func _copy_pack(extra: Dictionary, task: Dictionary) -> void:
+	if extra.has("halt_at") and task["verb"] == "move":
+		for key: String in ["halt_at", "halt_shape", "lay"]:
+			if extra.has(key):
+				task[key] = extra[key]
+
+
+static var PACK_TRACE := OS.get_cmdline_user_args().has("--pack-trace")
+
+
+## D3 (C35.4): {anchor: {"shape", "heading"}} for each squad, in squad order, when the deploy step is on and the order is an AUTO
+## plain move of squads only (no loose units, no drawn facing) whose halts SelectionSquads.pack_halts can fit; else {}.
+## The heading is the body's approach: from the squads to the click, or for a shifted waypoint from where their routes
+## end now. The pack starts from `ranks` (the anchors laid so far) and only ever tightens them; a halt that fits only
+## turned across the approach gets that heading.
+func _pack_halts(squads: Array, blocks: Array, click: Vector3, drawn: Variant, loose: Array, verb: String,
+		extra: Dictionary, ground: Node3D, ranks: Array[Vector3]) -> Dictionary:
+	if not ElementPlan.DEPLOY_STEP or verb != "move" or drawn != null or not loose.is_empty() or ground == null \
+			or squads.size() < 2 or blocks.size() != squads.size():
+		return {}
+	var from_blocks := blocks
+	if bool(extra.get("queue", false)):
+		from_blocks = []
+		for i in squads.size():
+			var held: Element = squads[i].get("element")
+			var start: Variant = held.last_point() if held != null and is_instance_valid_element(held) \
+					and (not held.task.is_empty() or not held.queued_tasks.is_empty()) else null
+			var block: Dictionary = (blocks[i] as Dictionary).duplicate()
+			if start is Vector3:
+				block["center"] = start
+			from_blocks.append(block)
+	var heading := SelectionSquads.approach_of(from_blocks, click, Match.team_frame(team)["forward"])
+	# D3b (R35.41): with the file arrival on, a packed squad ARRIVES in a column, so the pack keeps columns (not wedges) apart.
+	if ElementPlan.ARRIVE_FILE:
+		var filed: Array = []
+		for block: Dictionary in from_blocks:
+			var b := block.duplicate()
+			if b.has("shape"):
+				b["shape"] = "column"
+			filed.append(b)
+		from_blocks = filed
+	var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_on(ground)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var seat_ok := func(p: Vector3) -> bool:
+		var inside := Orders.clamp_to_arena(p)
+		if Vector2(inside.x - p.x, inside.z - p.z).length() > 0.5 or SlotGround.over_water(p):
+			return false
+		var stand := SlotGround.standable_for(ground, p, clearance)
+		return Vector2(stand.x - p.x, stand.z - p.z).length() <= SelectionSquads.PACK_GROUND_SLACK_M
+	var reached := func(p: Vector3) -> bool:
+		return not SelectionSquads.GROUND_CAP or SelectionSquads._reached_from(flat_click, p, drive, crosses)
+	var headings: Array = []
+	var anchors := SelectionSquads.pack_halts(from_blocks, click, heading, seat_ok, reached, ranks, headings)
+	if PACK_TRACE:
+		print("PACK_TRACE click %s heading %s ranks %s -> %s halts %s" % [click, heading, ranks, anchors,
+				blocks.map(func(b: Dictionary) -> String: return String(b["halt"]))])
+	if anchors.is_empty():
+		return {}
+	var packed := {}
+	for i in anchors.size():
+		packed[anchors[i]] = {"shape": String(blocks[i]["halt"]), "heading": headings[i]}
+	return packed
+
+
 func _copy_approach(extra: Dictionary, task: Dictionary) -> void:
 	if extra.has("approach") and task["verb"] == "attack":
 		task["approach"] = extra["approach"]
@@ -1423,6 +1572,11 @@ func _direct(units: Array, verb: String, given: Dictionary, shape: String) -> St
 const GATE_SCAN_M := 60.0
 const GATE_STEP_M := 2.0
 const GATE_DETOUR := 1.5
+## Round 35 (D5): an in-between gate dealt by the squads' previous leg ends, nearest the gate in front, ranks stepped by
+## the travel shape, never behind the previous leg. `--gate-deal=off` is round 34's O4 (dealt left to right by where the
+## squads stand now, ranks a halt's depth apart), the default while parked.
+## PARKED OFF (round 35, D5's fresh re-read failed its bar, builder0 bd22ac4c8, seeds 3631-3636): `--gate-deal=on` opts in.
+static var GATE_DEAL := OS.get_cmdline_user_args().has("--gate-deal=on") or OS.get_environment("GATE_DEAL") == "on"
 ## Measurement: gates laid (a re-lay of a queued waypoint for several squads).
 static var gates_laid := 0
 
@@ -1452,7 +1606,8 @@ static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses
 
 ## The squads' anchors at an in-between waypoint: a gate as wide as the ground. `blocks` = [{"center", "width", "depth"}] (any
 ## order; laid left to right by where they stand across the approach, so no two cross on the way in); `approach` = the way
-## the route comes in. k = how many fit abreast in the clear width (capped at O2's MAX_FRONTAGE_M) at the widest block's
+## the route comes in. Round 35 (D5): squads nearest the gate (farthest along `approach`) take the front rank; a block's
+## `travel_depth` (the shape it passes in) steps the ranks when given. k = how many fit abreast in the clear width (capped at O2's MAX_FRONTAGE_M) at the widest block's
 ## frontage plus GAP_M, at least one; the rest in ranks behind along -approach, the deepest block's depth + GAP_M apart. A
 ## rank is centred in the CLEAR width (the ground may be clear to one side only); narrower than a squad = single file ON the
 ## click line. Returns one anchor per block, in `blocks`' order, each through `clamp`.
@@ -1472,15 +1627,33 @@ static func gate_anchors(blocks: Array, click: Vector3, approach: Vector3, drive
 	var deepest := 0.0
 	for block: Dictionary in blocks:
 		widest = maxf(widest, float(block["width"]))
-		deepest = maxf(deepest, float(block.get("depth", 0.0)))
+		deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0)) if GATE_DEAL else block.get("depth", 0.0)))
 	var single := clear < widest
 	var abreast := 1 if single else mini(blocks.size(), maxi(1, int(floor((clear + SelectionSquads.GAP_M) / maxf(widest + SelectionSquads.GAP_M, 1.0)))))
 	var centre := flat_click if single else flat_click + across * ((sides[1] - sides[0]) * 0.5)
-	var order: Array = []
+	# Round 35 (D5): the squads farthest along the approach (nearest the gate) take the front rank, the rest the ranks
+	# behind in turn, so nobody drives back past a squad to reach its place; within a rank, left to right.
+	var by_along: Array = []
 	for i in blocks.size():
 		var c: Vector3 = blocks[i]["center"]
-		order.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
-	order.sort()
+		by_along.append([-Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(ahead), i])
+	by_along.sort()
+	var order: Array = []
+	if not GATE_DEAL:
+		for i in blocks.size():
+			var c: Vector3 = blocks[i]["center"]
+			order.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
+		order.sort()
+	var start := 0
+	while GATE_DEAL and start < by_along.size():
+		var rank_members: Array = []
+		for n in range(start, mini(start + abreast, by_along.size())):
+			var i := int(by_along[n][1])
+			var c: Vector3 = blocks[i]["center"]
+			rank_members.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
+		rank_members.sort()
+		order.append_array(rank_members)
+		start += abreast
 	result.resize(blocks.size())
 	var step := widest + SelectionSquads.GAP_M
 	var rank := 0
@@ -1525,7 +1698,15 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 			earlier = _middle_of(squad["units"])
 		before += Vector3((earlier as Vector3).x, 0.0, (earlier as Vector3).z)
 		held_elements.append(held)
-		blocks.append(_squad_block(squad))
+		# Round 35 (D5, planner's Locks 5 route): the gate is dealt by where each squad's PREVIOUS leg ends (where it comes
+		# to the gate from), not where it stands now (at home, the middle squad was dealt the gate's far end and crossed the
+		# others twice), and ranks behind the gate step by the shape it TRAVELS through in, not its halt.
+		var block := _squad_block(squad)
+		if GATE_DEAL:
+			block["center"] = Vector3((earlier as Vector3).x, 0.0, (earlier as Vector3).z)
+		if GATE_DEAL and block.has("shape"):
+			block["travel_depth"] = SelectionSquads.depth(String(block["shape"]), int(block["count"]), (block["pitch_v"] as Vector2).y)
+		blocks.append(block)
 		if ground == null and game_match != null:
 			for unit_name: String in squad["units"]:
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D
@@ -1539,12 +1720,26 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var approach := prev - before
 	if approach.length() < 1.0:
 		approach = next_click - prev
+	# Round 35 (D5, the A/B's failing seed: Crossing 5 route s3614): when the waypoint's places were laid near the squads'
+	# previous legs, prev - before pointed BACKWARDS (-9.4, 4.2 against a route heading -x -z), so the deal's front rank and
+	# never_behind ran the wrong way and sent squad 1 17 m back. The gate is passed on the way from where the squads come
+	# from to where the route goes next.
+	if GATE_DEAL and (next_click - before).length() >= 1.0:
+		approach = next_click - before
 	var drive: Callable = SelectionSquads.drive_on(ground) if ground != null else func(a: Vector3, b: Vector3) -> float: return a.distance_to(b)
 	var crosses: Callable = SelectionSquads.crosses_on(ground) if ground != null else func(_a: Vector3, _b: Vector3) -> bool: return false
 	var gate := gate_anchors(blocks, prev, approach, drive, crosses, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	# Round 35 (D5): and no gate place behind where the squad's previous leg ends (R34.12b's rule, on the way through).
+	if GATE_DEAL:
+		gate = SelectionSquads.never_behind(gate, blocks, prev, approach)
 	for i in held_elements.size():
 		var element: Element = held_elements[i]
 		element.relay_queued(element.queued_tasks.size() - 1, [gate[i].x, gate[i].z])
+		# D3: a waypoint that is no longer the last is passed as a gate, not deployed on: its packed halt goes.
+		var relayed: Dictionary = element.queued_tasks[element.queued_tasks.size() - 1]
+		if relayed.has("halt_at"):
+			for key: String in ["halt_at", "halt_shape", "lay"]:
+				relayed.erase(key)
 	gates_laid += 1
 
 

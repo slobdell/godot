@@ -971,3 +971,377 @@ static func _group_exactly(groups: ControlGroups, members: Array[String], alive:
 		if living.size() == members.size() and living.all(func(n: String) -> bool: return members.has(n)):
 			return number
 	return 0
+
+
+## Round 35 (orders D3, C35.4; round 34's O2 (B), his correction 1: "isn't there enough spacing where we could intersect
+## two wedges basically?"). TIGHT PACKING ON THE DEPLOY STEP. With the deploy step on, an AUTO squad's final seats are
+## its halt shape (`block["halt"]`, O3's pick) laid on a heading fixed when the order is given (the body's approach), so
+## where every crew will finally stand is known now and the squads can be packed by those seats, not by boxes:
+##   * the squads' TRAVEL shapes at their anchors (what they arrive in) keep PACK_TRAVEL_CLEAR_M and do not mix;
+##   * every halt seat of one squad stands at least HALT_CLEAR_M (9 m) from every halt seat of another (wedges nest),
+##     and none inside another squad's halt outline (the convex hull of its seats): a coil is a ring with an empty middle,
+##     and by seat clearance alone a second coil stood inside it, the two squads' crews mixed (D3's first controls test);
+##     two squads that both halt in a column keep his COLUMN_GAP_M (28 m) between their files;
+##   * the squad nearest the click is placed first and takes the place nearest it, and so on outward (first in, front);
+##   * each squad keeps its own side of the approach (one standing clearly left of the click's line is never laid right
+##     of it, and the other way round), so no two squads' drives cross to reach their places (untangle stays as the backstop);
+##   * no anchor farther back along the approach than its own squad stands now (R34.12b: a back rank never drives away);
+##   * every seat on ground `seat_ok(p)` accepts (dry, standable: nothing on a building), and the anchor one the click
+##     reaches by ground (`reached(p)`, O1's ground cap), tried in order of cost up to PACK_REACH_TRIES.
+## The search starts from `start` (the ranks the controls laid, where they fit) and compacts: each squad, farthest
+## first, moves to the cheapest place that fits beside the others (cost: the farthest of its seats from the click), up to
+## PACK_PASSES passes; so a pack is never wider than the ranks it began from.
+## `headings` (out) gets each squad's halt heading: the approach, or the approach turned (PACK_TURNS).
+## Places are searched on a PACK_STEP_M grid in the body's frame, PACK_ACROSS_M either side of the click and PACK_BEHIND_M
+## behind it (never ahead: the front squad stands on the click). Returns [] (the caller keeps `ranks`) unless every
+## block carries a halt shape. PARKED (round 35, D3): OFF by default, `--pack=on` (env PACK=on) opts in. With the travel
+## shapes kept apart (PACK_TRAVEL_CLEAR_M) it is no tighter than the ranks (the wedge they arrive in binds, as round 34's
+## O2 found); without that, two squads' arrival slots mix (test_control_two_squads). Status *D3* has the record.
+static var PACK := OS.get_cmdline_user_args().has("--pack=on") or OS.get_environment("PACK") == "on"
+const PACK_STEP_M := 2.0
+const PACK_ACROSS_M := 90.0
+const PACK_BEHIND_M := 100.0
+## A squad whose centre stands more than this across the click's line has a side.
+const PACK_SIDE_M := 8.0
+const PACK_REACH_TRIES := 24
+const PACK_PASSES := 4
+## The turns a halt may be laid at, off the approach (degrees, the body's frame): the approach itself first, then across
+## it. On the Locks his Law squads halt in a herringbone 55 m deep, which laid along the approach toward the canal did
+## not fit the strip between the water and the buildings (the pack put them 48 m back, behind the buildings); laid along
+## the bank it does. A turned halt costs PACK_TURN_COST_M more, so the approach wins wherever it fits.
+const PACK_TURNS: Array[float] = [0.0, 90.0, -90.0]
+const PACK_TURN_COST_M := 6.0
+## A seat counts as on good ground when standable ground (a hull's clearance) lies within this of it: Element grounds
+## every seat onto the nearest such point anyway, and the strict test (0.5 m) put the Locks squads behind the buildings.
+## Water is never good ground (the controls' seat test refuses it outright).
+const PACK_GROUND_SLACK_M := 4.0
+## The squads arrive in their TRAVEL shapes (a block's nominal `shape`, laid on the approach at its anchor) and deploy
+## only once every crew is in, so those must not mix either: no travel seat of one squad within this of another's, nor
+## inside its outline (test_control_two_squads' bar: half the gap). Round 34's O2 note: "a fixed order-time heading
+## makes the HALT seats exact, but the travel seats before all-in still aren't" -- this is what keeps them apart.
+const PACK_TRAVEL_CLEAR_M := 7.0
+## How many packs the controls laid, this process (a probe reads it).
+static var packed := 0
+
+
+static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok: Callable, reached: Callable,
+		start: Array[Vector3] = [], headings: Array = []) -> Array[Vector3]:
+	var none: Array[Vector3] = []
+	headings.clear()
+	if not PACK or blocks.size() < 2:
+		return none
+	for block: Dictionary in blocks:
+		if not block.has("halt"):
+			return none
+	var ahead := TacticsFormation.flat(heading)
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	# Each block's halt seats in the body's frame (x across, y ahead) for each turn PACK_TURNS (seats[i][o]), their
+	# outlines, and where each block stands now in that frame.
+	var seats: Array = []
+	var hulls: Array = []
+	var travel: Array = []  # each block's TRAVEL shape at its anchor on the approach (its nominal `shape`), and outline
+	var travel_hulls: Array = []
+	var now: Array[Vector2] = []
+	for block: Dictionary in blocks:
+		var p: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		var moving := PackedVector2Array()
+		if block.has("shape"):
+			for o: Vector2 in TacticsFormation.offsets_at(String(block["shape"]), int(block.get("count", 1)), p):
+				moving.append(Vector2(o.x, -o.y))  # offsets_at's y is behind; this frame's is ahead
+		travel.append(moving)
+		travel_hulls.append(Geometry2D.convex_hull(moving) if moving.size() >= 3 else PackedVector2Array())
+		var offsets := halt_offsets(String(block["halt"]), int(block.get("count", 1)), p.x)
+		var by_turn: Array = []
+		var outline: Array = []
+		for turn: float in PACK_TURNS:
+			var turned := PackedVector2Array()
+			for o: Vector2 in offsets:
+				turned.append(o.rotated(deg_to_rad(turn)))
+			by_turn.append(turned)
+			outline.append(Geometry2D.convex_hull(turned) if turned.size() >= 3 else PackedVector2Array())
+		seats.append(by_turn)
+		hulls.append(outline)
+		var c := Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) - flat_click
+		now.append(Vector2(c.dot(across), c.dot(ahead)))
+	var local := func(p: Vector3) -> Vector2:
+		var d := Vector3(p.x, 0.0, p.z) - flat_click
+		return Vector2(d.dot(across), d.dot(ahead))
+	var world := func(at: Vector2) -> Vector3: return flat_click + across * at.x + ahead * at.y
+	# Squads that all halt in one shape lay PLACES (no side, no squad yet), then are dealt to them by the least total
+	# driving (`_assign`: straight paths that never cross); mixed shapes keep their side as they are placed.
+	var shared := true
+	for block: Dictionary in blocks:
+		if String(block["halt"]) != String(blocks[0]["halt"]) or int(block.get("count", 1)) != int(blocks[0].get("count", 1)) \
+				or block.get("pitch_v", Vector2(SPACING_M, SPACING_M)) != blocks[0].get("pitch_v", Vector2(SPACING_M, SPACING_M)):
+			shared = false
+	var lowest := 0.0
+	for p in now:
+		lowest = minf(lowest, p.y)
+	var ok_memo := {}
+	var seat_good := func(p: Vector3) -> bool:
+		var key := Vector2i(roundi(p.x), roundi(p.z))
+		if not ok_memo.has(key):
+			ok_memo[key] = bool(seat_ok.call(p))
+		return ok_memo[key]
+	var reach_memo := {}
+	var reaches := func(at: Vector2) -> bool:
+		var key := Vector2i(roundi(at.x), roundi(at.y))
+		if not reach_memo.has(key):
+			reach_memo[key] = bool(reached.call(world.call(at)))
+		return reach_memo[key]
+	# A place is Vector3(x, y, turn index).
+	var spread_of := func(i: int, place: Vector3) -> float:
+		var at := Vector2(place.x, place.y)
+		var far := 0.0
+		for o: Vector2 in seats[i][int(place.z)]:
+			far = maxf(far, (at + o).length())
+		return far
+	# Whether squad i fits at `place` beside the others placed (`places`: index -> place): hull clearance, no seat inside
+	# another's outline, every seat on good ground.
+	var fits := func(i: int, place: Vector3, places: Dictionary) -> bool:
+		var at := Vector2(place.x, place.y)
+		var mine: PackedVector2Array = seats[i][int(place.z)]
+		for j: int in places:
+			if j == i:
+				continue
+			var other: Vector3 = places[j]
+			var there := Vector2(other.x, other.y)
+			if (at - there).length() > 2.0 * PACK_ACROSS_M:
+				continue
+			var theirs: PackedVector2Array = seats[j][int(other.z)]
+			var gap := COLUMN_GAP_M if String(blocks[i]["halt"]) == "column" and String(blocks[j]["halt"]) == "column" else HALT_CLEAR_M
+			for a: Vector2 in mine:
+				for b: Vector2 in theirs:
+					if (at + a).distance_to(there + b) < gap:
+						return false
+			var hj: PackedVector2Array = hulls[j][int(other.z)]
+			if hj.size() >= 3:
+				for a: Vector2 in mine:
+					if Geometry2D.is_point_in_polygon(at + a - there, hj):
+						return false
+			var hi: PackedVector2Array = hulls[i][int(place.z)]
+			if hi.size() >= 3:
+				for b: Vector2 in theirs:
+					if Geometry2D.is_point_in_polygon(there + b - at, hi):
+						return false
+			# The squads ARRIVE in their travel shapes before they deploy: those must not mix either.
+			for a: Vector2 in travel[i]:
+				for b: Vector2 in travel[j]:
+					if (at + a).distance_to(there + b) < PACK_TRAVEL_CLEAR_M:
+						return false
+			var tj: PackedVector2Array = travel_hulls[j]
+			if tj.size() >= 3:
+				for a: Vector2 in travel[i]:
+					if Geometry2D.is_point_in_polygon(at + a - there, tj):
+						return false
+			var ti: PackedVector2Array = travel_hulls[i]
+			if ti.size() >= 3:
+				for b: Vector2 in travel[j]:
+					if Geometry2D.is_point_in_polygon(there + b - at, ti):
+						return false
+		for a: Vector2 in mine:
+			if not bool(seat_good.call(world.call(at + a))):
+				return false
+		return true
+	var grid: Array[Vector2] = []
+	var n_across := int(PACK_ACROSS_M / PACK_STEP_M)
+	for gi in range(-n_across, n_across + 1):
+		for gj in range(0, int(PACK_BEHIND_M / PACK_STEP_M) + 1):
+			grid.append(Vector2(gi * PACK_STEP_M, -gj * PACK_STEP_M))
+	# Each squad's candidate places (every grid point at every turn), sorted once and natively by one float key: its
+	# spread in dm (a turned halt PACK_TURN_COST_M dearer), then the anchor's own distance in dm, then the place index.
+	var sorted_keys := {}
+	var candidates := func(i: int) -> PackedFloat64Array:
+		if sorted_keys.has(i):
+			return sorted_keys[i]
+		var side := 0.0 if shared or absf(now[i].x) <= PACK_SIDE_M else signf(now[i].x)
+		var back := lowest if shared else minf(now[i].y, 0.0)
+		var keys := PackedFloat64Array()
+		for o in PACK_TURNS.size():
+			for g in grid.size():
+				var at := grid[g]
+				if side * at.x < 0.0 or at.y < back - 0.01:
+					continue
+				var cost: float = spread_of.call(i, Vector3(at.x, at.y, o)) + (PACK_TURN_COST_M if o > 0 else 0.0)
+				keys.append((roundf(cost * 10.0) * 10000.0 + roundf(at.length() * 10.0)) * 100000.0 + o * grid.size() + g)
+		keys.sort()
+		sorted_keys[i] = keys
+		return keys
+	var cost_of := func(i: int, place: Vector3) -> float:
+		return float(spread_of.call(i, place)) + (PACK_TURN_COST_M if int(place.z) > 0 else 0.0)
+	# The cheapest place for squad i beside `places` costing under `limit`, or null.
+	var best_place := func(i: int, places: Dictionary, limit: float) -> Variant:
+		var limit_key := roundf(limit * 10.0) * 1e9 if is_finite(limit) else INF
+		var tries := 0
+		for key in candidates.call(i):
+			if key >= limit_key:
+				return null
+			var index := int(fmod(key, 100000.0))
+			var at := grid[index % grid.size()]
+			var place := Vector3(at.x, at.y, float(index / grid.size()))
+			if not bool(fits.call(i, place, places)):
+				continue
+			if tries >= PACK_REACH_TRIES:
+				return place
+			tries += 1
+			if bool(reaches.call(at)):
+				return place
+		return null
+	var order := range(blocks.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		return now[a].length() < now[b].length() if now[a].length() != now[b].length() else a < b)
+	# Start: the ranks the caller laid (`start`, each kept only where it fits, on the approach), else nothing; every
+	# squad without a place is placed nearest first; then COMPACTION passes, each squad (dearest first) moved to the
+	# cheapest place that fits beside the others, until nothing moves. Never dearer than the start.
+	var places := {}
+	if start.size() == blocks.size():
+		for i: int in order:
+			var at: Vector2 = local.call(start[i])
+			if bool(fits.call(i, Vector3(at.x, at.y, 0.0), places)):
+				places[i] = Vector3(at.x, at.y, 0.0)
+	for i: int in order:
+		if not places.has(i):
+			var place: Variant = best_place.call(i, places, INF)
+			if place == null:
+				return none  # no place fits: the caller keeps the ranks
+			places[i] = place
+	for pass_index in PACK_PASSES:
+		var moved := false
+		var by_cost := order.duplicate()
+		by_cost.sort_custom(func(a: int, b: int) -> bool: return float(cost_of.call(a, places[a])) > float(cost_of.call(b, places[b])))
+		for i: int in by_cost:
+			var others := places.duplicate()
+			others.erase(i)
+			var place: Variant = best_place.call(i, others, float(cost_of.call(i, places[i])))
+			if place != null:
+				places[i] = place
+				moved = true
+		if not moved:
+			break
+	var dealt: Array = []
+	for i in blocks.size():
+		dealt.append(places[i])
+	if shared:
+		var centers: Array[Vector3] = []
+		var spots: Array[Vector3] = []
+		for k in blocks.size():
+			centers.append(Vector3((blocks[k]["center"] as Vector3).x, 0.0, (blocks[k]["center"] as Vector3).z))
+			spots.append(world.call(Vector2((places[k] as Vector3).x, (places[k] as Vector3).y)))
+		var given := _assign(centers, spots)
+		for k in blocks.size():
+			dealt[k] = places[given[k]]
+	var anchors: Array[Vector3] = []
+	for place: Vector3 in dealt:
+		anchors.append(world.call(Vector2(place.x, place.y)))
+		var turned := Vector2(0.0, 1.0).rotated(deg_to_rad(PACK_TURNS[int(place.z)]))
+		headings.append((across * turned.x + ahead * turned.y).normalized())
+	packed += 1
+	return anchors
+
+
+## Round 35 (orders D5, C35.5): A QUEUED LEG IS DEALT BY THE SQUADS' DRIVES. Planner's Locks 5-squad route: squads 3 and 5
+## jammed ~55 s at the junction near (5, 65); the final anchors did not cross in a straight line, but their navmesh drives
+## off the second waypoint did (`gate_order` found no shared gate; `untangle` reads straight lines and skips queued legs).
+## For every pair whose paths (`paths(start, place)`) cross, the two places are swapped when the swap uncrosses that pair
+## and the leg's total drive (`drive(start, place)`) grows by no more than UNCROSS_GUARD_RATIO + UNCROSS_GUARD_M (the
+## length guard: a swap that sends both squads the long way round is worse than a crossing). Up to UNCROSS_ROUNDS
+## sweeps. `starts[i]` is where squad i begins the leg. `--uncross=off` (UNCROSS false) is round 34's dealing.
+static var UNCROSS := not OS.get_cmdline_user_args().has("--uncross=off")
+const UNCROSS_GUARD_RATIO := 0.25
+const UNCROSS_GUARD_M := 10.0
+const UNCROSS_ROUNDS := 3
+## Two paths crossing within this of either path's END is two squads arriving side by side, not a crossing.
+const UNCROSS_END_M := 6.0
+## How many swaps this process made (a probe reads it).
+static var uncrossed := 0
+
+
+static func uncross_paths(anchors: Array[Vector3], starts: Array, paths: Callable, drive: Callable) -> Array[Vector3]:
+	var dealt: Array[Vector3] = anchors.duplicate()
+	if not UNCROSS or anchors.size() < 2 or starts.size() != anchors.size():
+		return dealt
+	var guard := 0.0
+	for i in dealt.size():
+		guard += float(drive.call(starts[i], dealt[i]))
+	guard = guard * (1.0 + UNCROSS_GUARD_RATIO) + UNCROSS_GUARD_M
+	for sweep in UNCROSS_ROUNDS:
+		var swapped := false
+		for i in dealt.size():
+			for j in range(i + 1, dealt.size()):
+				if not paths_cross(paths.call(starts[i], dealt[i]), paths.call(starts[j], dealt[j])):
+					continue
+				if paths_cross(paths.call(starts[i], dealt[j]), paths.call(starts[j], dealt[i])):
+					continue
+				var total := 0.0
+				for k in dealt.size():
+					var place := dealt[j] if k == i else (dealt[i] if k == j else dealt[k])
+					total += float(drive.call(starts[k], place))
+				if total > guard:
+					continue
+				var keep := dealt[i]
+				dealt[i] = dealt[j]
+				dealt[j] = keep
+				uncrossed += 1
+				swapped = true
+		if not swapped:
+			break
+	return dealt
+
+
+## Whether two drives (polylines on the ground) cross, other than near either one's end (squads arriving side by side).
+static func paths_cross(a: PackedVector3Array, b: PackedVector3Array) -> bool:
+	if a.size() < 2 or b.size() < 2:
+		return false
+	var a_end := Vector2(a[a.size() - 1].x, a[a.size() - 1].z)
+	var b_end := Vector2(b[b.size() - 1].x, b[b.size() - 1].z)
+	var a_start := Vector2(a[0].x, a[0].z)
+	var b_start := Vector2(b[0].x, b[0].z)
+	for i in range(1, a.size()):
+		var p := Vector2(a[i - 1].x, a[i - 1].z)
+		var q := Vector2(a[i].x, a[i].z)
+		for j in range(1, b.size()):
+			var hit: Variant = Geometry2D.segment_intersects_segment(p, q, Vector2(b[j - 1].x, b[j - 1].z), Vector2(b[j].x, b[j].z))
+			if hit == null:
+				continue
+			var at: Vector2 = hit
+			if at.distance_to(a_end) < UNCROSS_END_M or at.distance_to(b_end) < UNCROSS_END_M \
+					or at.distance_to(a_start) < UNCROSS_END_M or at.distance_to(b_start) < UNCROSS_END_M:
+				continue
+			return true
+	return false
+
+
+## Round 35 (orders D6, R35.38; planner's Crossing 5 route s3643): a squad's place at a BRIDGE'S MOUTH put seats of its
+## shape past the dry deck on the far bank (the water rule keeps seats off the canal, not off the deck's far end); squad 4,
+## reaching its place by its whole route (D6) and laid on that heading, sent crews over the bridge he had not clicked
+## across. A place is stepped back from every deck, DECK_CLEAR_STEP_M at a time along `back` (the way the squad came),
+## until its reach (`reach[i]`: half the squad's widest extent) clears the deck, up to DECK_CLEAR_MAX_M; a click on or
+## beside a deck (within DECK_CLEAR_CLICK_M) leaves every place alone: he chose the bridge. `--deck-clear=off` is round 34's.
+static var DECK_CLEAR := not OS.get_cmdline_user_args().has("--deck-clear=off")
+const DECK_CLEAR_STEP_M := 2.0
+const DECK_CLEAR_MAX_M := 40.0
+const DECK_CLEAR_CLICK_M := 2.0
+## How many places it moved, this process (a probe reads it).
+static var deck_cleared := 0
+
+
+static func deck_clear(anchors: Array[Vector3], reach: Array, click: Vector3, back: Vector3, near_deck: Callable,
+		clamp: Callable) -> Array[Vector3]:
+	var out: Array[Vector3] = anchors.duplicate()
+	if not DECK_CLEAR or bool(near_deck.call(Vector3(click.x, 0.0, click.z), DECK_CLEAR_CLICK_M)):
+		return out
+	var away := TacticsFormation.flat(back)
+	for i in out.size():
+		var r := float(reach[i]) if i < reach.size() else 0.0
+		if not bool(near_deck.call(out[i], r)):
+			continue
+		var at := out[i]
+		var moved := 0.0
+		while moved < DECK_CLEAR_MAX_M and bool(near_deck.call(at, r)):
+			at = clamp.call(at + away * DECK_CLEAR_STEP_M)
+			moved += DECK_CLEAR_STEP_M
+		if not bool(near_deck.call(at, r)):
+			out[i] = at
+			deck_cleared += 1
+	return out
