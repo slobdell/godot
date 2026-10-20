@@ -34,12 +34,17 @@ func _controller(game_match: Match, tank: Tank) -> OrderController:
 	return orders
 
 
-func _drive(fix: bool, seconds: float) -> Dictionary:
+## `stall`: manoeuvre W1c's `stallintent` (round 35), pinned whatever the tree's default; false = the behaviour the control
+## arm was written for (ORCA's crawl against the parked rig hides the stall, so nothing asks).
+func _drive(fix: bool, seconds: float, stall := false) -> Dictionary:
 	await ArenaFixture.build(self, "terminus")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var saved := Movement._off
-	Movement._off = PackedStringArray() if fix else PackedStringArray(["blockreach"])
+	var off := PackedStringArray() if fix else PackedStringArray(["blockreach"])
+	if stall != Manoeuvre.STALL_INTENT_DEFAULT:
+		off.append("stallintent")
+	Movement._off = off
 	var parked := game_match.spawn_tank("Parked", 0, Match.Team.GREEN, "gang_tank")
 	var mover := game_match.spawn_tank("Mover", 1, Match.Team.GREEN, "gang_tank")
 	_place(parked, PARKED_AT, PARKED_HDG)
@@ -83,3 +88,12 @@ func test_a_rig_pressed_against_a_parked_rig_asks_it_to_give_way_and_gets_past()
 	assert_eq(fixed["parked_phase_before"], "arrived", "precondition: the parked rig is parked (%s)" % fixed)
 	assert_true(fixed["yielded"], "the parked rig is asked, and gives way (%s)" % fixed)
 	assert_true(fixed["goal_m"] < 12.0, "and the mover gets past it to its goal (%s)" % fixed)
+
+
+## Round 35 (manoeuvre W1c): the control's stuck mover, with the stall gate reading the drive's intent against the friend it is
+## pinned on: H1's escape now runs, the parked rig is asked, gives way, and the mover gets to its goal even with blockreach off.
+func test_with_the_stall_intent_the_control_mover_asks_and_gets_past() -> void:
+	var w1c := await _drive(false, 30.0, true)
+	assert_eq(w1c["parked_phase_before"], "arrived", "precondition: the parked rig is parked (%s)" % w1c)
+	assert_true(w1c["yielded"], "W1c: the parked rig is asked, and gives way (%s)" % w1c)
+	assert_true(w1c["goal_m"] < 12.0, "and the mover gets past it to its goal (%s)" % w1c)

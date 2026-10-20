@@ -103,6 +103,11 @@ struct DriveConfig {
 	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).
 	int64_t UNDER_FIRE_TICKS = -1;
 	double PASS_MAX_S = 6.0, PASS_BEYOND_M = 2.0, PASS_STEP_M = 2.0; // round 35 (traffic T7): Movement.PASS_*
+	// Round 35 (traffic T9, `yieldfit2`): Movement.YIELD_CONTACT_M / YIELD_RETRIES / YIELD_RETRY_WINDOW_S; yieldfit2_ready
+	// false on a tree without T9 (the give-way recorded as before).
+	bool yieldfit2_ready = false;
+	double YIELD_CONTACT_M = 1.0, YIELD_RETRY_WINDOW_S = 30.0;
+	int64_t YIELD_RETRIES = 2;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs
 	// only with `Movement._off` empty). A crew the seam holds (PlannerSeam._crews has it) always takes the

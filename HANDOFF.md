@@ -33,9 +33,12 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
    `make sim-baseline-adopt` the maps that moved in the check AND not in the base (attribution = base), ONE `make native check` of
    main, then tell traffic, manoeuvre and orders to `git merge main`. Remove `godot-manoeuvre-ship` / `-shipbase` and their
    `~/tank_squad/` folders after.
-2. **The scoreboard rows** (`native-scoreboard` unit on builder2, writing into `godot-native/references/scoreboard/rows/`): when it
-   ends, commit the rows to `round35/native` (git mv the branch first), remove the old godot-native worktree and its remote folders,
-   `make worktree STREAM=native OFFSET=4`, tell the lead native can launch.
+2. ~~The scoreboard rows~~ DONE (13:18): native's session (launched by the lead at ~12:25 in the OLD godot-native worktree, which
+   it merged main into; `stream/native` was never renamed and continues as round 36's branch, no fresh worktree) committed all three
+   rows (cdda0bbf9, `references/scoreboard/README.md` on stream/native) and is on S3's pair. First read (builder2, n 40 fights / 48
+   moves / 36 group orders): round 35's main v round 34's close: group orders where a squad never got in 5 -> 0 of 36, moves never
+   settled 13 -> 10 of 48, jam-under-fire deaths 1.75 -> 1.3 a fight; deaths a fight 40.4 -> 41.9 (kills 40.0 -> 41.4: bloodier both
+   ways). c29a8c7b6 and a0ae0aafd read identical (no game source differs).
 3. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
    joint since).
 

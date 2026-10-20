@@ -30,18 +30,22 @@ static func _arms(names: Array) -> PackedStringArray:
 
 ## A parked at its slot facing north; B `behind` metres south of it, facing north, sent to a goal `past` metres north
 ## of A's centre (inside or just beyond A's hull: the slot A sits on). Returns what B did over SECONDS.
-func _parked(on: bool, unit_id: String, behind: float, past: float, seconds := SECONDS) -> Dictionary:
-	var key := "%s/%s/%.1f/%.1f/%.0f" % [on, unit_id, behind, past, seconds]
+## `stall`: manoeuvre W1c's `stallintent` (round 35), pinned whatever the tree's default; false = the behaviour H1b's tests were
+## written for (avoidance's crawl against the parked squadmate hides the stall from unstick).
+func _parked(on: bool, unit_id: String, behind: float, past: float, seconds := SECONDS, stall := false) -> Dictionary:
+	var key := "%s/%s/%.1f/%.1f/%.0f/%s" % [on, unit_id, behind, past, seconds, stall]
 	if not _runs.has(key):
-		_runs[key] = await _run_parked(on, unit_id, behind, past, seconds)
+		_runs[key] = await _run_parked(on, unit_id, behind, past, seconds, stall)
 	return _runs[key]
 
 
-func _run_parked(on: bool, unit_id: String, behind: float, past: float, seconds: float) -> Dictionary:
+func _run_parked(on: bool, unit_id: String, behind: float, past: float, seconds: float, stall := false) -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_off := _arms(["unstickback"] if not Movement.UNSTICK_BACK_DEFAULT else [])
 	if on != Movement.H1B_DEFAULT:
 		Movement._off.append("h1b")
+	if stall != Manoeuvre.STALL_INTENT_DEFAULT:
+		Movement._off.append("stallintent")
 	BrainSwitches.native = false
 	Movement.reset_escape_arms()
 	var lab := TacticsLab.create(self, 32)

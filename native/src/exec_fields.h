@@ -91,6 +91,9 @@
 	F(int64_t, INT, _face_retry) \
 	F(bool, BOOL, _nose_at_end) \
 	F(Vector3, VECTOR3, _nose_goal) \
+	F(String, STRING, _unfinished_to) \
+	F(int64_t, INT, _unfinished_count) \
+	F(int64_t, INT, _unfinished_since) \
 	F(double, FLOAT, pass_offer) \
 	F(String, STRING, _pass_by) \
 	F(double, FLOAT, _pass_side) \
