@@ -2007,6 +2007,18 @@ struct Drive {
 	// Round 35 (traffic T9, `yieldfit2`): Movement._yield_unfinished(), line by line: the give-way ended with the asker NOT
 	// passed (right_of_way's own reading) and this crew still in its way (touching, or ahead on its line within both radii +
 	// YIELD_LINE_MARGIN) is not recorded, at most YIELD_RETRIES times to one asker in YIELD_RETRY_WINDOW_S.
+	// Round 36 (traffic R36.4, `yieldgap`): Movement._asker_clear(here, asker). Off (or a tree without YIELD_CLEAR_GAP), the
+	// centre distance beyond YIELD_CLEAR as before; on, the gap after both half-lengths (hull_box[2]) beyond YIELD_CLEAR_GAP.
+	bool asker_clear(const Vector3 &at, Node3D *asker) {
+		static const String yieldgap("yieldgap");
+		const double distance = flat_distance(here, at);
+		if (!c.yieldgap_ready || traffic_off(yieldgap)) {
+			return distance > c.YIELD_CLEAR;
+		}
+		const double noses = 0.5 * (hull_length(String(tank->get(k.unit_id))) + hull_length(String(asker->get(k.unit_id))));
+		return distance - noses > c.YIELD_CLEAR_GAP;
+	}
+
 	bool yield_unfinished(const String &yield_to) {
 		static const String yieldfit2("yieldfit2"), arrived("arrived");
 		if (yield_to.is_empty() || !c.yieldfit2_ready || c.traffic_script == nullptr || traffic_off(yieldfit2)) {
@@ -2023,7 +2035,7 @@ struct Drive {
 		const Vector3 at = asker->get_global_position();
 		Object *asker_mover = mover_of(asker);
 		const Vector2 dir = v._yield_dir();
-		const bool passed = flat_distance(here, at) > c.YIELD_CLEAR ||
+		const bool passed = asker_clear(at, asker) ||
 				(double)Vector2((real_t)((double)at.x - (double)here.x), (real_t)((double)at.z - (double)here.z)).dot(dir) > 0.0 ||
 				(asker_mover != nullptr && String(asker_mover->get(k.phase)) == arrived);
 		if (passed) {
