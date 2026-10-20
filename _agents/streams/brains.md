@@ -55,6 +55,72 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Report (2026-10-19 evening)
+
+**E1 PASSES its bar (R35.42); merges when the partial gate is green.** Merge hash: `83b3b90b4` (E1 code `67a5a9db0` + main
+`fc1f4ac0e`'s N3 tooling), gate = the timed-out re-check's 16 finished targets (test 2890/0, sim-baseline 13/13 unmoved at main's
+lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished targets (R35.22; RUNNING on builder0 behind
+`builder_checks.sh --wait-below 1`, log `~/overnight-brains/e1_rest_83b3b90b4.log`).
+- **What he will notice:** a squad on an attack-move whose one crew is wedged takes the next leg after ~8 s instead of hanging
+  up to a minute or more; the wedged crew catches up if it can (if it can't, that is manoeuvre's W1 / traffic's, not this).
+- **Bar E1 series** (`83b3b90b4`, builder0, native, base `--straggler=off` on the same tree; seeds 701-716 x 4 factions, n 64
+  attack-move pairs; fights 720-743, n 24; `references/round35/brains/e1_bar_series_83b3b90b4_builder0.txt`):
+  (0) releases 6 v 0 (inferred: a wait >= 8 s ending with the crew < 2 m nearer over its last 8 s; 0 false positives on the
+  c23acdbe2 census); (a) long-hold s 89 v 358 (0.25x; paired -269, se 116.4, 2.3 se) PASS, a TAIL effect: all of it in the 6
+  releasing runs (law-705 -73, law-716 -68, condemned-701 -44, law-711 -40, law-701 -25, condemned-710 -19), the other 58
+  identical; (b) faced_move VACUOUS (a plain move plans in `_plan_form_up`, never `_advance`); (c) left > 25 m 17 v 20 (se 2.2),
+  wedged among them 9 v 10; (d) movers at 75 s 13 v 10 (+3, limit 4.4: released crews still driving), settled 35 v 34;
+  (e) squads arrived 194 v 190; (f) fights kills 970 v 970, deaths 984 v 984, hit rate 0.718 both (3 CPU releases in 24 fights).
+  (g) sim-baseline: no map moves either way (`--straggler=off` sim-variants on `83b3b90b4` = the baseline 13/13).
+- **Decisions:** the hold R34.18 blamed on the sector face is `_advance`'s cohesion gate waiting on a laggard (face 0-0.5 % of
+  wait seconds; wedged crews 44-61 %); the seam with manoeuvre is decoupled (R35.3), face_settled() stays out. STRAGGLER_S 8 s /
+  STRAGGLER_GAIN_M 2 m sized on the census (no re-tune after the series).
+- **Infra found:** the stale native library via an mtime race (R35.15 -> native's N3); a partial check needs `lint` in
+  CHECK_TARGETS (every target is ordered after it); a hull-rest copy-back carries an earlier series' arm folders (read by seed).
+- **E3 (stretch) written up, NO code (no lever found).** A cause the B9 census missed, traced in locks-1404 (laptop, lane spread
+  green, 24 v 4): at t 24.5 Green takes the far quay, `Posture.decide` flips to HOLD ('ahead on points') and the commander re-posts
+  ALL four elements to the quay, the two central ones in contact driving ~60 m across the enemy's front (Hunters gone by t 40).
+  Census (`74526bca1`, laptop, GDScript, lane_census showmatch locks/terminus/crossing x 1400-1409, n 30;
+  `references/round35/brains/e3_posture_flip_census_74526bca1_laptop.txt`, `tests/tactics/posture_flip_table.py`): 56 flips to
+  hold (35 'ahead on points', 21 'zone threatened'); engaged elements RE-POSTED > 40 m lost 15 / 30 / 25 % of their crews in the
+  next 30 s (crossing / locks / terminus) v engaged elements KEPT 19 / 40 / 33 %. These are SELECTED groups: no sign the re-post
+  is worse, nothing more (a cost is attributed only by removing it, R35.46), so locks-1404 is one fight's shape, not a pattern; like B9 (R34.19) the stacked/piecemeal look follows
+  the fight, it does not cause it. A bar draft is not proposed: the census gives no sign it would pass. If anyone wants the A/B
+  anyway: "engaged elements keep their task through a flip to hold for N s" v main, deciding on fight E (R34.19's scale),
+  guards deaths/kills/contact spread; `POSTURE_ENABLED` is the existing switch.
+- **E4 (R35.46, trace only) NAMED: a test harness that teleports a hull with a bare `global_position =` leaves its physics
+  body at its spawn SLOT until the first step, and how that transient overlap resolves depends on process history.** Probe
+  (`references/round35/brains/e4_probe_test.gd.txt`; laptop, GDScript, `3014d6cb9`'s tree): the four-tank Sumps stage
+  (`mixed_legs_case`, seed 1) played twice in one process: first 50.0 s, reseats 1; second 55.9 s, reseats 0 (manoeuvre's
+  "alone v after another test", R35.39). They diverge at step 0: in the SECOND match only, the outer tanks M_1/M_4 are pushed
+  0.31 m inward (x +-12.0 -> +-11.686) before anything moves. Before `lab.start` every body still sits at its
+  `Match.spawn_position` slot (server x 0 / -15 / 15 / -30 v nodes -12 / -4 / 4 / 12) in BOTH matches; M_2's stale body at -15
+  overlaps M_1 (and M_3's M_4); the first match syncs without a push, a later one resolves the overlap as penetration. What
+  inside Jolt carries between matches is not named (body ids / contact cache / broadphase are candidates); it does not need
+  to be: the stale overlap is ours. `TacticsLab.unit`/`.gun` write `global_position` directly; the game's own `Tank.place`
+  (writes the node, flushes the server, resets interpolation, `sync_position`; army_layout learned this in round 14) does not
+  leave the stale body. **With `Tank.place` in the probe: both matches 50.0 s, reseats 1, poses AND `Match.state_hash` identical
+  at all 1800 steps.** (`PhysicsServer3D.body_set_state` alone did not take; a remove/re-add equalled the poses only.)
+  **WRITTEN (R35.47 approved; bar on main + any line moving to other than its first-match value is traced): `78f60777a`**,
+  `test_tactics_lab_place` red before (first difference at step 0), green after; laptop GDScript: mixed_legs + body 8/0, four tanks
+  50.0 s reseats 1 run AFTER other tests (the first-match value). Builder0 check pending (after the batch main). **Proposed fix:** `TacticsLab.unit` and `.gun` and `BodyStage`'s spawn (`body_stage.gd:152`)
+  call `tank.place(position, yaw)`. `AiScenario.brain_tank` already does. **Bar draft:** builder0 native, (1) the suite green;
+  (2) order-independence: `test_tactics_mixed_legs` alone v after `test_planner_h1b_guard` / `test_nav_blocker_reach` in one
+  process reads the SAME arrival and reseats (today 50.6 s v 31.9 m short on joint-on); (3) every test line the change moves is
+  listed with its old and new value (expected: lines that today read their 'later match' value move to the 'first match'
+  value; none of them is a game change). 85 other test files spawn then assign `global_position` (fx, combat, nav, native
+  ...): not mine, for their owners: test_units_roster.gd test_combat_deploy.gd test_nav_tube.gd test_fx_orders.gd test_control_point.gd test_visibility.gd test_nav_route_retry.gd test_combat_mechanics.gd test_command_readability.gd test_native_incoming.gd test_weapons_and_intel.gd test_match_score.gd test_native_combat.gd test_nav_gate_inside.gd test_tank_yaw_fit.gd test_hud_score_bug.gd test_native_perception.gd test_native_shell.gd test_movement.gd test_order_completion_repair.gd test_assets_outriggers.gd test_arena_layouts.gd test_native_threat.gd test_nav_gate_v4.gd test_nav_gate_hold.gd test_native_scan.gd test_combat_weapons.gd test_native_movement_geometry.gd test_responsiveness.gd test_manoeuvre_escape.gd test_fx_light_rounds.gd test_artillery.gd test_navigation.gd test_station_keeping.gd test_nav_arrival_heading.gd test_native_tick_profile.gd test_nav_wall_contact.gd test_ai_player_orders_contact.gd test_radar.gd test_ammo_heat.gd test_fx_tank_shell.gd test_units_law_apc_tracked.gd test_shields.gd test_combat_locomotion.gd test_ai_player_holds.gd test_combat_cover.gd test_command_squad_bar.gd test_wheeled_arrival.gd test_ai_perf_equivalence.gd test_reflexes.gd test_combat_events.gd test_combat_weak_spots.gd test_turrets.gd test_friendly_fire.gd test_planner_trace_wedged.gd test_tank_place.gd test_ai_cover_map.gd test_native_avoid_gather.gd test_native_record.gd test_nav_face_recovery.gd test_ai_idle_fallback.gd test_control_response.gd test_combat_envelope.gd test_nav_clearance.gd test_combat.gd test_match_visfield_parity.gd native/gate_twin_case.gd test_native_route.gd native/drive_twin_case.gd scale/visfield_bench.gd arena/slope_probe.gd nav/test_nav_back_and_fill.gd nav/test_nav_yield_log.gd nav/rotation_capture.gd nav/test_nav_blocker_reach.gd nav/test_nav_guard_corner.gd nav/test_nav_yield_fit.gd nav/test_nav_kturn_brake.gd nav/test_nav_reverse_log.gd nav/test_nav_queue_census.gd nav/test_nav_creep_bound.gd nav/test_nav_planned_reverse.gd nav/test_nav_circle_fit.gd nav/test_nav_kturn_look.gd arena/water_probe.gd.
+- **D1 fallout DONE:** test_tactics_body on `c7c7d347a` (main f31b5430e = D1 + E1 + T7 merged; builder0 light lane, native ON):
+  PASS, body off arrived 17.8 s, on 24.0 s (+6.2, inside R35.17's +8.1; D1 alone read 23.8). E1 merged on main (bbe418b80, R35.42).
+- **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). (Old note:) re-read
+  `test_tactics_body`'s arrival after merging main (the deploy step + the release; orders' resize to off + 8.1 s, R35.17).
+- **Requests to other streams:** native: hash-stamp native/src in build.sh (done, N3). manoeuvre: the wedged crews
+  (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3; law/faced_attack_move-614 G4 on lab/cpf4).
+- **Questions for the lead:** none.
+- **Playtest:** `make skirmish ARENA=foundry`, attack-move (A) a squad across the map; a squad whose crew snags moves on.
+  The old behaviour: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --arena=foundry --straggler=off`.
+- **Next:** a real per-tick release counter in ELEMENT_TRACE (cheap; the orchestrator asked) after the merge; then E3.
+
 **Start (2026-10-19 08:40 PDT):** worktree `godot-brains` on `stream/brains` at `a0ae0aafd`; launch baseline is main's inherited
 green (HANDOFF), no baseline check run.
 

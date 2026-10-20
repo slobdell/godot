@@ -1,0 +1,57 @@
+# Bar E1 series: 83b3b90b4 (E1 code 67a5a9db0 + main fc1f4ac0e tooling), builder0, native, 2026-10-19
+# hull-rest drawn faced_attack_move + faced_move, seeds 701-716 x gangs/law/syndicate/condemned (n 64 a task an arm), --element-trace=all --turn-states; new = default, base = --straggler=off. HULL_JOBS=3.
+# releases INFERRED from the trace (a wait >= 8 s ending with the waited-on crew < 2 m nearer over its last 8 s; 0 false positives on the c23acdbe2 census).
+E1 bar: new_drawn v base_drawn, 128 paired runs (128 / 128 read)
+== faced_attack_move (n 64)
+  released  new      6 base      0  paired diff     +6  se    2.4
+            runs that differ (6 of 64): condemned/attack_move-701 +1, condemned/attack_move-710 +1, law/attack_move-701 +1, law/attack_move-705 +1, law/attack_move-711 +1, law/attack_move-716 +1
+  long_s    new     89 base    358  paired diff   -269  se  116.4
+            runs that differ (6 of 64): law/attack_move-705 -73, law/attack_move-716 -68, condemned/attack_move-701 -44, law/attack_move-711 -40, law/attack_move-701 -25, condemned/attack_move-710 -19
+  left      new     17 base     20  paired diff     -3  se    2.2
+            runs that differ (2 of 64): condemned/attack_move-701 -2, condemned/attack_move-710 -1
+  left_wedged new      9 base     10  paired diff     -1  se    1.0
+  movers    new     13 base     10  paired diff     +3  se    2.2
+            runs that differ (2 of 64): law/attack_move-705 +1, law/attack_move-716 +2
+  settled   new     35 base     34  paired diff     +1  se    1.0
+  arrived   new    194 base    190  paired diff     +4  se    2.4
+== faced_move (n 64)
+  released  new      0 base      0  paired diff     +0  se    0.0
+  long_s    new      0 base      0  paired diff     +0  se    0.0
+  left      new      8 base      8  paired diff     +0  se    0.0
+  left_wedged new      3 base      3  paired diff     +0  se    0.0
+  movers    new     10 base     10  paired diff     +0  se    0.0
+  settled   new     47 base     47  paired diff     +0  se    0.0
+  arrived   new    211 base    211  paired diff     +0  se    0.0
+
+leg waits (element reached its anchor, not closed up), seconds summed over runs; long = holds >= 10 s
+arm         task                    runs  wait_s  closing   wedged   parked     face     stop   long  long_s released
+base_drawn  faced_attack_move         64     561      212      342        0        1        6      9     358        0
+base_drawn  faced_move                64       0        0        0        0        0        0      0       0        0
+new_drawn   faced_attack_move         64     339      194      138        0        1        6      4      89        0
+new_drawn   faced_move                64       0        0        0        0        0        0      0       0        0
+
+long holds: arm task faction run element from-to (s) gap first->last (m) waiting on, seconds by kind
+  base_drawn faced_attack_move condemned faced_attack_move-701 Guns II#4 23-80 35.1->32.6 Green_Guns_7 {'closing': 11, 'wedged': 47}
+  base_drawn faced_attack_move condemned faced_attack_move-707 Guns II#4 19-30 36.7->20.1 Green_Guns_7 {'closing': 9, 'wedged': 3}
+  base_drawn faced_attack_move condemned faced_attack_move-708 Guns II#4 22-35 34.0->21.5 Green_Guns_7 {'wedged': 5, 'closing': 9}
+  base_drawn faced_attack_move condemned faced_attack_move-710 Burners#2 14-32 25.9->20.2 Green_Burners_2 {'closing': 12, 'wedged': 7}
+  base_drawn faced_attack_move law faced_attack_move-701 Eyes#2 7-80 27.4->27.9 Green_Eyes_2 {'wedged': 74}
+  base_drawn faced_attack_move law faced_attack_move-705 Eyes#3 8-80 32.1->28.9 Green_Eyes_3 {'wedged': 71, 'closing': 2}
+  base_drawn faced_attack_move law faced_attack_move-711 Guns#3 41-80 44.8->45.2 Green_Guns_7 {'wedged': 40}
+  base_drawn faced_attack_move law faced_attack_move-716 Guns#2 13-41 20.9->17.6 Green_Guns_4 {'closing': 6, 'wedged': 23}
+  base_drawn faced_attack_move law faced_attack_move-716 Guns#3 42-80 21.9->26.6 Green_Guns_8 {'closing': 5, 'wedged': 34}
+  new_drawn faced_attack_move condemned faced_attack_move-701 Guns II#4 43-56 48.2->44.0 Green_Guns_7 {'closing': 4, 'wedged': 10}
+  new_drawn faced_attack_move condemned faced_attack_move-707 Guns II#4 19-30 36.7->20.1 Green_Guns_7 {'closing': 9, 'wedged': 3}
+  new_drawn faced_attack_move condemned faced_attack_move-708 Guns II#4 22-35 34.0->21.5 Green_Guns_7 {'wedged': 5, 'closing': 9}
+  new_drawn faced_attack_move law faced_attack_move-701 Eyes#2 32-80 46.4->46.4 Green_Eyes_2 {'wedged': 49}
+
+# fights: manoeuvre-fights seeds 720-743 (n 24 an arm), FIGHT_JOBS=3, --element-trace=all --turn-states
+FIGHT_GUARD runs paired 24 (base 24, new 24)
+FIGHT_GUARD kills: base 970 new 970 diff +0 se 0.0 within 2 se
+FIGHT_GUARD deaths: base 984 new 984 diff +0 se 0.0 within 2 se
+FIGHT_GUARD shots: base 24865 new 24849 diff -16 se 16.0 within 2 se
+FIGHT_GUARD hits: base 17966 new 17944 diff -22 se 22.0 within 2 se
+FIGHT_GUARD touch_shots: base 1406 new 1405 diff -1 se 1.0 within 2 se
+FIGHT_GUARD touch_hits: base 896 new 895 diff -1 se 1.0 within 2 se
+FIGHT_GUARD hit rate: base 0.718 new 0.718 paired mean diff -0.000 se 0.000 within 2 se (n 24)
+FIGHT_GUARD hit rate on touching targets: base 0.691 new 0.691 paired mean diff -0.000 se 0.000 within 2 se (n 24)
