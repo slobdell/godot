@@ -288,3 +288,20 @@ traffic-t7-clip: import ## Round 35 (traffic T7): the pass at his pose, ON v OFF
 		grep -o 'T7_CLIP {.*' $$dir/$$tag.log || echo ">> traffic-t7-clip: $$aspect $$tag: no T7_CLIP line"; \
 		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -vf "select='not(mod(n\,10))',scale=320:-1,tile=5x3" -frames:v 1 $$dir/$${tag}_sheet.png || true; \
 	done; done
+
+# Round 36 (traffic T8): his Terminus head-on meeting with every held crew hit each tick (traffic_clip.gd --hit-held), T8
+# holdfire ON v OFF, from above the street -> build/traffic-t8-clip/<tag>.mp4 + a contact sheet each. Needs a display.
+T8_CLIP_SEED ?= 1
+T8_CLIP_SECONDS ?= 30
+.PHONY: traffic-t8-clip
+traffic-t8-clip: import ## Round 36 (traffic T8): a held crew being hit, holdfire ON v OFF, Terminus head-on -> build/traffic-t8-clip/ (needs a display)
+	@rm -rf $(BUILD_DIR)/traffic-t8-clip; dir=$(CURDIR)/$(BUILD_DIR)/traffic-t8-clip; mkdir -p $$dir; \
+	for arm in on:--traffic-on=holdfire off:--traffic-off=holdfire; do tag=$${arm%%:*}; flag=$${arm#*:}; \
+		timeout 900 $(GODOT) --path . --resolution 1280x720 --fixed-fps $(SIM_HZ) --script res://tests/traffic/traffic_clip.gd -- \
+			--arena=terminus --kind=head --seed=$(T8_CLIP_SEED) --seconds=$(T8_CLIP_SECONDS) --every=3 --tag=$$tag --out=$$dir \
+			--hit-held $$flag > $$dir/$$tag.log 2>&1 || echo ">> traffic-t8-clip: $$tag exited non-zero"; \
+		grep -o 'TRAFFIC_CLIP {.*' $$dir/$$tag.log | grep -oE '"tr_(holds|hold_ticks|released_fire|released_passed)": *[0-9]+' | tr '\n' ' '; echo " ($$tag)"; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -c:v libx264 -pix_fmt yuv420p $$dir/$$tag.mp4 || true; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -vf "select='not(mod(n\,10))',scale=320:-1,tile=6x5" -frames:v 1 $$dir/$${tag}_sheet.png || true; \
+		find $$dir -name "$${tag}_[0-9]*.png" ! -name "*0000.png" ! -name "*00[1-9]0.png" -delete; \
+	done
