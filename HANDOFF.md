@@ -41,11 +41,7 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 4. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
    joint since).
 
-**For him at the close (one page, player terms; collected, not asked mid-round):**
-- **Packing (orders O4, parked):** when several squads are sent to one spot, crews of different squads keep at least 9 m apart once
-  set up. That gap, not arrival overlap, is what stops a tighter pack (orders' laptop count: overlap is 3–8 % of refusals). Tighter
-  means one shell or artillery strike can catch two squads. **Recommendation: keep 9 m**; he can say "tighter" after a
-  `make skirmish ARENA=locks` with 3 squads clicked to one point.
+**His packing answer (2026-10-20, game_design.md *Round 36: his packing answer*): keep 9 m.** O4 stays parked.
 
 **Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
 X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36's stallnet.
