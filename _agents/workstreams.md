@@ -446,6 +446,13 @@ _Filed here before any number._
   tanks across the Sumps with W1c pinned ON arrive 57.3 s, reseats 1, identical to base. The exact nose-on pose is not rebuilt live
   (time-boxed); the rule test pins the predicate. What carries between tests is unproven; leading candidate trip-up 82 (Godot settles
   TOUCHING bodies differently in a process's first match); per-instance tables and W1c's counter ruled out.
+- **R35.40 (2026-10-19 ~20:05) D6's far-bank crossing traced and fixed; the re-read joins the series queue after W1b.** s3643:
+  squad 4's final place sat at the west bridge's MOUTH (-100, 28; his click 4 m from the deck's end); with requeue it arrives by its
+  whole route from the north-east and its shape, laid on that heading, puts seats past the dry deck on the far bank (the water rule
+  keeps seats off the canal, not off a deck's far end). Fix (`1b174f05d`, under D6's switch): a shifted leg's places step back along
+  the way the squad came from any deck their seats would reach; a click on or within 2 m of a deck leaves them. Laptop s3643 far bank
+  1 -> 0; test_control_deck_clear 3/0; control suite 467/0. **Series queue now: W1b -> D6 re-read (3651–3656) -> M5 -> joint -> T8.**
+  Round-36 watch: a plain click right at a bridge mouth could lay seats past the deck today (far bank 0 in every A/B this round).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
