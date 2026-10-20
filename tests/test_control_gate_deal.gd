@@ -34,7 +34,7 @@ func _blocks(centres: Array) -> Array:
 
 
 func test_nearest_the_gate_goes_first() -> void:
-	RtsControls.GATE_DEAL = true  # parked OFF by default (D5's re-read)
+	RtsControls.GATE_DEAL = true  # ON by default (R35.66)
 	# Three squads coming up one street at 20, 50 and 80 m behind the gate, listed out of order.
 	var blocks := _blocks([Vector3(0, 0, 80), Vector3(0, 0, 20), Vector3(0, 0, 50)])
 	var gate := RtsControls.gate_anchors(blocks, GATE, AHEAD, _drive, _never, func(p: Vector3) -> Vector3: return p)
