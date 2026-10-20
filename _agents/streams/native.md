@@ -26,6 +26,16 @@ Nothing alone: native keeps every C++ change a twin of its GDScript, so the game
    round 31–34 inventory lines; `python3 tools/judge/inventory.py` and `table.py`); make every series tool drop random-seed twins
    (`tools/judge/seed_twins.py`).
 3. **Stretch:** the watch item from R34.16 (one 9.1 m both-planned face) if a face_pairs series runs.
+4. **Round 35 extension X5 (2026-10-20, the lead away for the day; workstreams.md):**
+   - (d) Mirrors as asked, first: the joint W1c + T9 hand-over's twins (manoeuvre's pair/joint-ship d56685115).
+   - (a) **The round scoreboard** (his concern: "ensure that we're also generally making concrete progress"). A fixed workload
+     (fights on fixed arenas x fixed seeds, plus the orders probe's click / route cells) runs on builder2 against each main the
+     orchestrator names. It prints the player-facing numbers into one table across mains: deaths by cause incl. stuck / jam,
+     crews left behind, never-settled, all-in times, far bank, twitch. Rendered to `references/scoreboard/`, readable in player
+     terms. First rows: round 34's close c29a8c7b6, round 35's launch a0ae0aafd, and today's main.
+   - (b) The copy-back leak (stale `build/` rows from earlier runs reaching a series folder): fix it in tools/remote.sh
+     (granted), with a test.
+   - (c) R35.47's two Tank.place fixes: test_native_avoid_gather and test_native_record.
 
 ## How to verify
 
