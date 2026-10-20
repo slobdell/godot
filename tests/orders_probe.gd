@@ -192,6 +192,7 @@ func _run() -> void:
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
 				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
+				"twitch_seen": squad.get("twitch_seen", {}),
 				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
@@ -339,7 +340,18 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 	var placed: Dictionary = squad["placed"]
 	for n: String in alive:
 		if placed.has(n):
-			squad["twitch"] = maxf(float(squad["twitch"]), _flat_d(_tank(n).global_position, placed[n]))
+			var moved := _flat_d(_tank(n).global_position, placed[n])
+			if moved > TWITCH_SEEN_M:
+				# Round 36 (orders, the "neither" twitch): every brain option a crew shows while off its placed seat
+				# (+ "@goal" when it has an order goal then): MOVE@goal = driving to its seat; ADVANCE etc = its own fight.
+				var mover := Movement.of(_tank(n))
+				var option := String((mover.ctl as TankBrain).choice.get("option", "")) if mover != null and mover.ctl is TankBrain else "-"
+				if _controls.orders.goal_position(n) is Vector3:
+					option += "@goal"
+				var seen: Dictionary = squad.get("twitch_seen", {})
+				seen[option] = int(seen.get(option, 0)) + 1
+				squad["twitch_seen"] = seen
+			squad["twitch"] = maxf(float(squad["twitch"]), moved)
 
 
 ## O2 (round 36): the deploy move's geometry, read 1 s after the deploy (the halt's seats issued): each crew's leg from where
@@ -348,6 +360,8 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 ## depth along it, and the halt's shape.
 const PASS_M := 4.0
 const DETOUR_M := 8.0
+## A crew this far off its placed seat after the place window counts toward `twitch_seen` (ticks a brain option was shown).
+const TWITCH_SEEN_M := 3.0
 
 
 func _deploy_legs(squad: Dictionary, alive: Array, element: Element) -> void:
