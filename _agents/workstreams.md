@@ -488,6 +488,11 @@ _Filed here before any number._
   lands") is default behaviour in BOTH T7 arms and not on main; R34.20 parked T6 (T6b's series failed stuck and far loops), so T7's
   pass does not cover it: traffic shows a filed T6b pass, or T6b is switched and ships OFF with T7 re-verified on that tree;
   (2) the hand-over re-cut on current main + one `make native check`; (3) perf-judge alone on a quiet builder0.
+  **(1) settled (2026-10-19 ~20:55):** main never had a mid-step abort; T6 ADDED it as rule (c) and T6b removed it again, so the
+  hand-over's `right_of_way` differs from main by a comment only (checked by the orchestrator: `git diff main 3dbc206a0 --
+  game/ai/movement.gd`); the native abort was dropped in T6b's re-cut; T6b's kept parts (the refusal, the self-yield hold) are what T7
+  replaces and gates; switch-OFF inertness reads main's 13 lines. T7's pass covers the hand-over. Hand-over: `handover/t7-on-main`
+  `3dbc206a0` (= main 8be787afe + the judged pair); its check follows brains' partial.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
