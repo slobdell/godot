@@ -113,6 +113,12 @@ fights calls `seed_twins.filter_logs(files)` first.
 
 **Merge notes:** `tests/traffic/far_table.py` (traffic's: one import + one call, merged with N2).
 
+- **T7's `_pass_lane` in C++ (R35.8's follow-up; T7 shipped, R35.44): stream/native `f75273624`.** pass_lane,
+  pass_wheels_ok, pass_clear and pass_swept run natively, line by line (they were a GDScript call while T7 was judged).
+  - New twin test_native_pass_lane: 576 poses (yard_open + Sumps, 4 hull kinds), 0 mismatches, 259 lanes / 317 none.
+  - test_native_yield's pass stage reads as before; 12/0 on builder0 light.
+  - Merges on a full check (asked the orchestrator for the go, R35.36).
+
 **Next:** port T7's `_pass_lane` sweep if T7
 ships; W2's mirror when its bar passes.
 
