@@ -84,6 +84,21 @@ as named; N4 sweep; N5 lint; stretch.
 - **N3 S1 (stallnet mirror) stacked on S3, at manoeuvre's request:** `pair/native-s1s3-main` **20acbda5f** = S3 + manoeuvre's
   S1 (dbe6ed396/ab71634f4 cherry-picked) + mirror (779f31be5) + main a318a2cd3 (conflicts: OFF_NAMES; manoeuvre.gd's
   `_same_element` kept, W1b's block gone; native_drive.gd S1 + T9 keys) + main e45bb6632. Full check running on builder0; it
-  also stands as main's check (the orchestrator did not relaunch one). Manoeuvre names and merges this hash.
+  also stands as main's check (the orchestrator did not relaunch one).
+
+- **S1+S3 pair GREEN and MERGED:** builder0 `make check exited 0` on **20acbda5f**: 2961/0, 25 + 2 NOT JUDGED (perf-judge,
+  ai-scenarios CPU budget: load 9.5-12.9), sim-baseline 13/13 unmoved; test_manoeuvre_stall_net 3/3 (native default arm =
+  GDScript), test_native_h1b PASS. It stood as main e45bb6632's check. Main 5d6bb1de8 = it + manoeuvre's .uid; merged here
+  (06069057d).
+- **N2 e45bb6632 row** (9ccc92616): builder2, verdict ok. v 1c82d6d1e: tanks lost/fight 41.9 -> 40.9, twitch 12.6 -> 10.8 m,
+  left behind 0.06 -> 0.12/order (n=1 a main, noise unsized: no claim).
+- **Next for the scoreboard (orchestrator, R36):** a second seed block (2701+, same arenas and cells) on e45bb6632, per-seed sd
+  from both blocks -> a "± noise" column (a move called past ~2 se). A same-seed repeat is byte-identical (c29a8c7b6 =
+  a0ae0aafd), so it sizes nothing. builder2, after T8's judged series.
+- **S2a (h1bside) + traffic's yieldgap (R36.4), one pair:** `pair/native-s2a-yg` **32ba4ca99** = 20acbda5f + manoeuvre
+  ab22849a9 + S2a mirror 18bc084c9 + traffic lab/yieldgap 76aea1185 + yieldgap mirror c66058c41 + a test fix. Quick on
+  8e6a52fc9: 134/1 (the red my twin reading a freed hull's name); test_native_yield on 32ba4ca99 13/0, nose-on long hulls ON
+  1 twinned 0 mismatches not recorded, OFF 1 twinned 0 mismatches recorded. test_manoeuvre_h1b_side 3/3 (native default arm
+  = GDScript, fires 5). Full check running on builder0.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
