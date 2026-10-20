@@ -129,13 +129,14 @@ is judged, shift-click a three-waypoint route.
 `_deploy_keep`, DEPLOY_ON_SPOT_M); `tests/test_tactics_body.gd` one line (R35.17); `game/tactics/element_task.gd` two keys
 (R35.6, parked with D3). Everything else is in orders' own paths.
 
-### D3b draft (NOT FILED; waits on the orchestrator's scoping of the arrival shape, outside my carve-out)
+### D3b (R35.41 grant): bar FILED BEFORE CODE (2026-10-19 ~16:45 PDT)
 - **Design:** with the pack on, a squad whose task carries `halt_at` travels its last INSET_NEAR_M in a file (column) on its
   approach, and its halt opens out of the file on its packed spot (the deploy step, unchanged). Files nest as tightly as the
   halts do (his 28 m between two columns is between files of DIFFERENT squads abreast; files one behind another need only
   hull clearance).
-- **Bar draft:** `make native orders-probe` fresh seeds, arms `pack:--pack=on,--arrive-file=on` v `main:` (deploy step on,
-  pack off). Gain: the click cells' median `end far max m` >= 15 % lower summed (the original D3 line) AND closest foreign
+- **Bar:** `make native orders-probe ORDERS_PROBE_SEEDS="3661 3662 3663 3664 3665 3666"`, arms
+  `main:` v `pack:--pack=on,--arrive-file=on` (deploy step on; D4, D5, D6 at their switches' defaults), n 6, medians.
+  **Counter first:** `packed` > 0 in the click cells on the pack arm, and their rows differ from main's. Gain: the click cells' median `end far max m` >= 15 % lower summed (the original D3 line) AND closest foreign
   hull at arrival >= 7 m in every cell (the arrivals no longer mix: what failed D3). Guards: far bank 0 in every cell
   (R35.38); all in <= main x 1.2 + 3 s; never-in no higher; twitch median <= main + 3 m per cell; the click's 3-tick response
   (test_control_scale).
