@@ -83,7 +83,7 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3; law/faced_attack_move-614 G4 on lab/cpf4).
 - **Questions for the lead:** none.
 - **Playtest:** `make skirmish ARENA=foundry`, attack-move (A) a squad across the map; a squad whose crew snags moves on.
-  `--straggler=off` on the same command is the old behaviour.
+  The old behaviour: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --arena=foundry --straggler=off`.
 - **Next:** a real per-tick release counter in ELEMENT_TRACE (cheap; the orchestrator asked) after the merge; then E3.
 
 **Start (2026-10-19 08:40 PDT):** worktree `godot-brains` on `stream/brains` at `a0ae0aafd`; launch baseline is main's inherited
