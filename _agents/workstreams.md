@@ -76,6 +76,7 @@ idle auto-stop) = one full check + one judged series; every full check behind `t
 - **X1 manoeuvre:** (a) finish the joint W1c + T9 ship (R35.66, in flight). (b) W1b's deciding probe: a FIGHT_CENSUS line per impact
   with the target's held / pace-0 state and exposure ticks, then a small A/B (locks x 24 fresh seeds, both arms, builder0) that says
   whether a still held hull is a sitting duck; W1b re-tries only if not. (c) R34.16's watch item from a face_pairs read on main (M5 in).
+  (d) the estimated-velocity stuck test (R35.67): trace, design note, bar.
 - **X2 traffic:** T8 (a held crew under fire leaves the hold; bar filed, 1800–1827): cut its pair from main AFTER the joint ship merges
   (T9 on main), switch-OFF inertness, check + series on builder2 (after orders' D5 check). No native mirror (the drive calls
   Traffic.hold_of).
@@ -693,6 +694,13 @@ _Filed here before any number._
   the `_unfinished_*` exec rows, floors) + STALL_INTENT true + yieldfit2 out of DEFAULT_OFF; W1c's mirror is already on main (R35.62);
   twins ON, `make native check` on builder0, sim-baseline moves (joint3 moved foundry / crossing / sumps / cut) attributed with the
   switches off and adopted on the merged tree. Each merges alone; one batch main check after both. Then the round closes.
+- **R35.67 (2026-10-20 ~12:30) X4a: a released crew is not slow to rejoin; E1's +3 late movers are wedged hulls rocking.** Brains
+  (laptop read of 83b3b90b4's builder0 series, `tests/tactics/mover_kind.py`, stream/brains f1e3e6a9b): of 5 readable releases 3
+  rejoined (within 2–23 s), 2 never moved (wedged in both arms); all 3 extra movers rock in place (net <= 0.1 m in 10 s, real_mps
+  0.25–0.57), none released. A catch-up pace would change nothing (FormUp already gives the laggard pace 1.0): no fix. **New wedge
+  mechanism, to manoeuvre (X1 d):** law-716 Guns_7 pushes at throttle 0.83 for 50 s with estimated_velocity 9.98 m/s v real 0.32 m/s;
+  movement.gd:3673's stuck test reads estimated_velocity without an honest blocker, so `_stuck_time` never builds and unstick never
+  fires. **Bar lesson:** count movers by NET motion, not real_mps alone (a rocking hull reads >= 0.3 m/s).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
