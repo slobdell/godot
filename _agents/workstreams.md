@@ -154,6 +154,18 @@ _Filed here before any number._
   then manoeuvre's `test_manoeuvre_stall_intent_sumps.gd.uid` (4dd6ff750 -> 5d6bb1de8): the only file a check reads that differs is
   that generated .uid, so no main check. This also closes main e45bb6632's check (the joint + D5 together). Perf-judge on a quiet
   builder0 still owed (T8's hand-over window).
+- **R36.6 (2026-10-20 ~16:45 PDT) O2 DEPLOY_COMPACT FAILS; parked OFF.** Orders (builder0 light, native, 1bcd704cd, green at
+  7a4226932; 12 street cells x fresh 3681–3686, n 6, 576 squad rows, `compact_judge.py`): counter 72/72 differ. Gain (a) median worst
+  deploy leg 13.4 -> 11.4 m (−14.9 %, needed 20 %); gain (b) summed median twitch 168.7 -> 177.0 m (+4.9 %, WORSE; needed −15 %).
+  Guards: twitch over main + 3 m in Crossing 5 click (29.8 -> 34.1) and Terminus 5 route (18.6 -> 29.7); never-in 1 -> 2 (Crossing 5
+  route). Reading: a shallower halt shortens the deploy move but not the twitch, which is mostly what happens AFTER the deploy
+  (traffic between squads, engagement): orders' "neither" count is the lead. **The orchestrator's own-spacing guard was ill-posed:**
+  read at the window's end it fails MAIN too (3.8–8.6 m in every cell; crews meet in traffic), so a spacing guard reads the HALT
+  SEATS, not end positions (lesson). Hand-over `stream/orders` 515aeeccd (main 8ec433dee + tooling + DEPLOY_COMPACT OFF + DEPLOY_PASS
+  deleted) checking; merged on its green.
+- **R36.7 (2026-10-20 ~16:55 PDT) S2a + yieldgap merged OFF: main 10318ec81 INHERITS 32ba4ca99** (builder0 2967/0, 13 unmoved; inert
+  by default). S1 ON gate (lab/s1-on d9864ab07, builder2, glibc-2.43): 2961/0, sim-baseline moved foundry, crossing, sumps, docks;
+  base 20acbda5f read 13 unmoved, so the moves are stallnet's. S1's series (unit manoeuvre-s1series) waits on builder0's checks.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
