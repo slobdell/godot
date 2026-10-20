@@ -537,6 +537,14 @@ _Filed here before any number._
   places through TacticsLab.unit; history-dependent on main too): merged as known; brains bisects it on the light lane. Main now
   carries E4 + native's pass-lane port, checked separately: one `make native check` of 5f05c997c on builder2.
   **GREEN:** builder2 `make native check exited 0`, 2911/0, 25 passed + 2 NOT JUDGED (timing). Workers merge main.
+- **R35.52 (2026-10-20 ~01:00) W1b PARKS as filed (one guard misses, upward).** builder0, native both arms, ON 7fc4a5307 v base
+  ab9c50c76 (E1 not in), fresh 3820–3843 x locks/terminus/sumps, 72 pairs, 12/12 calls exited 0 (`references/round35/manoeuvre/
+  w1b-series/`, stream dccdedd8d). Counter: halts 105296 ON. Deciding: wheeled pace-0 ticks still creeping 63 % -> 4 %; wedged + held
+  deaths 242 v 239 (band 31.1). Guards pass: open, stuck, jam, far loops, kills, team 0 hit rate. **MISS:** team 1 hit rate 0.6733 ->
+  0.6970 (+0.0237 v 1.645 se 0.0230): two-sided, misses by 0.0007. All deaths 2860 v 2862. Not re-read. Trace from the existing rows
+  (no re-run): team 1's hits per exposed second on held wheeled crews at pace 0, base v ON. If up, a still held hull is a sitting
+  duck (the rocking dodged fire) and round 36's answer is T8 (leave the hold when hit); if flat, a round-36 re-try. W1b stays OFF; its
+  mirror unmerged. Series queue (builder0): D6 re-read -> the joint -> T8; builder2: M5.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
