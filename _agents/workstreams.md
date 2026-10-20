@@ -419,6 +419,12 @@ _Filed here before any number._
   W1b and M5 (restarted 30 s before) stop and wait. Full checks: ONE at a time, behind `tools/builder_checks.sh --wait-below 1`.
   Dev / light runs stay small (JOBS <= 2). **Lesson for orchestration.md:** the machine contract is the brief's, not the
   orchestrator's convenience; read C35.1 before granting a slot.
+- **R35.37 (2026-10-19 ~19:20) The joint-ON check is RED.** lab/joint-on `b04bfdda2` builder0 `make native check exited 2`, 2916/3;
+  sim-baseline moved foundry, crossing, sumps, cut (attribution by lab/joint-base). Reds: test_manoeuvre_h1b_guard and
+  test_nav_blocker_reach's control arm assert today's premises that W1c / T9 change by design (no escape fires; nobody is asked to
+  give way): pinned OFF in those arms PLUS an ON arm asserting the new behaviour (manoeuvre owns tests/nav/, nav's successor).
+  test_tactics_mixed_legs: four tanks attack-moved across the Sumps don't arrive (31.9 m short), NATIVE path only (laptop GDScript
+  passes on/off); being run natively on joint-base v joint-on to tell the carried T6b/T7-OFF code from the mirror. Series held.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
