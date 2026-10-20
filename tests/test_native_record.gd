@@ -33,7 +33,9 @@ func test_every_field_reads_back_as_the_live_value() -> void:
 		var team := Match.Team.GREEN if i % 2 == 0 else Match.Team.RUST
 		var tank := game_match.spawn_tank("Rec%d" % i, 0, team, UNITS[i])
 		# Close enough that some are each other's neighbours (Avoidance.NEIGHBOUR_RADIUS 14 m), some not.
-		tank.global_position = Vector3(-40.0 + 6.0 * i, 0.0, 3.0 * (i % 3))
+		# Round 35 (R35.47): Tank.place, not a bare global_position (a stale body at its spawn slot until a step, resolved by
+		# process history; the route and neighbour floors read the 20 stepped frames).
+		tank.place(Vector3(-40.0 + 6.0 * i, 0.0, 3.0 * (i % 3)), tank.rotation.y)
 		if i < UNITS.size() - 1:  # the last one has no controller: the player's hull (no mover, no route)
 			var orders := OrderController.new()
 			orders.tank = tank

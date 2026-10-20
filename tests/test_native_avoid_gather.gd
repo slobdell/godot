@@ -74,7 +74,9 @@ func _case(ghost: bool) -> void:
 	rng.seed = 2406
 	for i in UNITS.size():
 		var tank := game_match.spawn_tank("Gather%d" % i, 0, Match.Team.GREEN if i % 3 else Match.Team.RUST, UNITS[i])
-		tank.global_position = Vector3(rng.randf_range(-30.0, 30.0), 0.0, rng.randf_range(-30.0, 30.0))
+		# Round 35 (R35.47): Tank.place, not a bare global_position (that left the body at its spawn slot until a step, and how
+		# the stale overlap resolved depended on what ran earlier in the process: the floors below read the stepped stage).
+		tank.place(Vector3(rng.randf_range(-30.0, 30.0), 0.0, rng.randf_range(-30.0, 30.0)), tank.rotation.y)
 		if i < UNITS.size() - 2:  # the last two have no controller (no mover: still)
 			var orders := OrderController.new()
 			orders.tank = tank
