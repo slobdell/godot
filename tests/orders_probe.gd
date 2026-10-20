@@ -183,6 +183,8 @@ func _run() -> void:
 				"place_m": snappedf(float(squad.get("place", -1.0)), 0.1),
 				"deploy_leg_m": snappedf(float(squad.get("deploy_leg_m", -1.0)), 0.1), "deploy_passes": int(squad.get("deploy_passes", -1)),
 				"leg_minmax_m": snappedf(float(squad.get("leg_minmax_m", -1.0)), 0.1), "leg_compact_m": snappedf(float(squad.get("leg_compact_m", -1.0)), 0.1),
+				"detour_worst_m": snappedf(float(squad.get("detour_worst_m", -1.0)), 0.1), "detours": int(squad.get("detours", -1)),
+				"detours_caught": int(squad.get("detours_caught", -1)),
 				"travel_width_m": snappedf(float(squad.get("travel_width_m", -1.0)), 0.1),
 				"halt_depth_m": snappedf(float(squad.get("halt_depth_m", -1.0)), 0.1), "halt_shape": squad.get("halt_shape", ""), "twitch_m": snappedf(float(squad.get("twitch", -1.0)), 0.1)
 						if squad.has("placed") else -1.0,
@@ -342,6 +344,7 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 ## crew's spot at the deploy, that crew not at the leg's end), the travel shape's width across the heading and the halt's
 ## depth along it, and the halt's shape.
 const PASS_M := 4.0
+const DETOUR_M := 8.0
 
 
 func _deploy_legs(squad: Dictionary, alive: Array, element: Element) -> void:
@@ -383,6 +386,30 @@ func _deploy_legs(squad: Dictionary, alive: Array, element: Element) -> void:
 	var compact: Array = seats.map(func(seat: Vector3) -> Vector3: return seat - heading * (seat.dot(heading) - mid) * 0.5)
 	squad["leg_minmax_m"] = _minmax_leg(starts, seats)
 	squad["leg_compact_m"] = _minmax_leg(starts, compact)
+	# O3 (X3c's falsifier): each crew's DRIVE to its halt seat against the straight line, and whether X3c's anchor test
+	# (drive from the halt's anchor <= straight x 1.3 + 3 m, no deck) fails that seat. A detour the anchor test passes is a
+	# loop the reached halt would not catch.
+	var detour_worst := 0.0
+	var detours := 0
+	var caught := 0
+	var anchor: Vector3 = element.anchor if element.anchor is Vector3 else Vector3.ZERO
+	var drive := SelectionSquads.drive_on(_tank(alive[0]))
+	var crosses := SelectionSquads.crosses_on(_tank(alive[0]))
+	for n: String in alive:
+		var seat: Variant = element.slots.get(n)
+		if not (seat is Vector3) or not from.has(n):
+			continue
+		var straight := _flat_d(from[n], seat)
+		var detour := float(drive.call(from[n], seat)) - straight
+		detour_worst = maxf(detour_worst, detour)
+		if detour >= DETOUR_M:
+			detours += 1
+			var a_straight := _flat_d(anchor, seat)
+			if a_straight >= 0.5 and (float(drive.call(anchor, seat)) > a_straight * 1.3 + 3.0 or bool(crosses.call(anchor, seat))):
+				caught += 1
+	squad["detour_worst_m"] = detour_worst
+	squad["detours"] = detours
+	squad["detours_caught"] = caught
 	squad["deploy_leg_m"] = worst
 	squad["deploy_passes"] = passes
 	squad["travel_width_m"] = (across.max() - across.min()) if across.size() > 1 else 0.0
