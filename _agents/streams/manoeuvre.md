@@ -72,6 +72,16 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~15:30 (worker): where it stands.**
+- **S1 GDScript** `dbe6ed396` (+ the mirror spec `ab71634f4`). quick-remote on dbe6ed396 (builder0, 11 test files + lint): 53/2.
+  Both reds are the missing native mirror: the stage's native-default-arm line (holds 22 v 0) and test_native_h1b's twin
+  (`_stuck_from`). The stage's GDScript lines PASS: **ON fires 1.03 s after wedging; base never fires in 20 s (clock peaks at 0.83 s);
+  without the pop both arms fire alike**.
+- **Native cut both pairs:** `pair/native-s3` `eefc379c5` (check running on builder0) and `pair/native-s1` `e12a381c4`, to be
+  stacked on S3. The stream branch alone is red on those two lines until the pair merges back. That is by design (a pair).
+- **Next:** on S1-pair green, cut ON/base trees on main+CP36.1 and run `~/overnight-manoeuvre/r36/s1_series.sh` (Bar S1 guards).
+  S2's `x4b.sh` is ready and launches when CP36.1 is announced.
+
 **2026-10-20 ~14:00 (worker, Fable).** Plan, in order (smallest foundation first):
 1. C36.1 carry-over (measurement only) — DONE `05f4517e0`, `60a2dbc5c`: STALL_TRACE probe + census counters, fight_census
    exposure, wedge_trace under-fire/contact totals, joint_judge (+ w1b_judge, its import), rocking_census, mover_kind (brains'
