@@ -108,6 +108,27 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     face_settle_fails 93, hull_turns 17535; execute_counts face hand-backs 205912, other_order 0.
   - Found: face_settles / face_settle_fails were not in ManoeuvreCensus.counters(). Manoeuvre adds them (orchestrator).
 
+**Round-36 note (R35.47: tests that spawn a tank, then set `global_position` by hand; native's 13 of brains' 85; read only, no
+code):** a bare `global_position =` leaves the physics body at its Match spawn slot until a step, and how a stale overlap resolves
+depends on process history (the first match in a process syncs without a push, a later one pushes). The native twins compare the
+GDScript and C++ paths on ONE snapshot, so an overlap can move the sample but never the equality verdict; the risk is a FLOOR or
+coverage count that moves with what ran before.
+- **Can overlap, and a floor reads the stepped stage (fix in round 36: `Tank.place`, or a fresh child):**
+  - `test_native_avoid_gather`: random ±30 m poses, stepped every tick; floors on compared / still / real-velocity rows.
+  - `test_native_record`: 6 m spacing beside the spawn slots, 20 frames stepped; floors on routes and neighbours.
+- **Can overlap, but already order-proof** (every stage in its own child process, FreshStage, round 33):
+  - `native/drive_twin_case.gd` (test_native_drive*, the k-turn stage's mid-stage teleport then one frame).
+  - `native/gate_twin_case.gd` (test_native_gate*, 7 x 8 m grid at x -30 beside the slots; its floors moved with shard order
+    before the fresh-process fix).
+  - Converting them to `place` is still cleaner, low priority.
+- **Harmless** (a snapshot read, with no floor that depends on contact physics after the teleport, or none of the bodies within
+  a hull of another's slot):
+  - test_native_incoming, test_native_combat, test_native_threat, test_native_scan, test_native_route.
+  - test_native_tick_profile (counts ticks only), test_native_movement_geometry (navmesh queries).
+  - test_native_perception (rays may read stale bodies, the same in both arms).
+  - test_native_shell (waits a frame "so the bodies are where the rays look").
+- Native's round-35 stages (test_native_yield's pass and refusal stages, test_native_pass_lane) already use `Tank.place`.
+
 **Requests to other streams:** traffic, relayed after T7's series: any series reader that pools a folder containing random-arena
 fights calls `seed_twins.filter_logs(files)` first.
 
