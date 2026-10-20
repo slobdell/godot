@@ -84,6 +84,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   the ElementPlan branch, its test, probe column and make arms); `game/tactics/` = main's; brains' R35.74 grant lapsed. The
   lab stage stays as tooling (`make herringbone-lab`, arms off / nostep).
 
+### O3 first falsifier (X3c's note, "first, check every 20-30 m loop is a seat the anchor test fails")
+- Probe columns (`f5aa89ecd`): each crew's navmesh drive to its halt seat minus the straight line, read 1 s after the
+  deploy; `detours` = crews >= 8 m over; `detours_caught` = those whose seat fails X3c's anchor test (drive from the halt
+  anchor > straight x 1.3 + 3 m, or over a deck).
+- **Laptop GDScript, seed 34, main + joint (merged e45bb6632), 6 click cells, 24 squads: detours in 2 squads, caught 0.**
+  The traced loop (Crossing 3 sq1, twitch 25.8 m) is NOT a navmesh detour (worst crew 2.0 m over straight): Alpha_1's seat
+  is 8.7 m away in a straight drivable line; from t 18 to 36 it wanders round (-95, 33), where squads 2 and 3 arrive at
+  the deck mouth, then ends 14 m short. It's traffic between squads, not unreachable ground.
+- If builder0 agrees (the cause count below carries these columns), X3c's reached halt has no workload: write O3 up as
+  falsified, no switch built.
+
 ### O2 trace (laptop GDScript, seed 34 = the dev seed, main + the probe's new deploy columns, the 6 click cells, 24 squads)
 `references/round36/orders/o2-trace-laptop-s34/rows.txt`. Per squad: the deploy's worst leg as seated, the best possible
 seating of the same seats (minmax), and the same halt with its depth along the heading halved (compact):
@@ -94,8 +105,8 @@ seating of the same seats (minmax), and the same halt with its depth along the h
   18.6 -> 7.4). Legs rarely drive THROUGH a squadmate (2 of 24 within 4 m): the move is long, not crossed.
 - Design note DRAFT: `references/round36/orders/o2-deploy-move-note.md` (DEPLOY_COMPACT, the deploy's herringbone half as
   deep, chosen tentatively). R36.2 asks for each cause COUNTED over the probe's street cells on builder0 before choosing:
-  `tests/control/deploy_move_causes.py` (c9f3007a3) over `make native orders-probe`, main only, seeds 3621-3626 (D4's,
-  already seen; fresh seeds kept for the bar), builder0 light lane: running.
+  `tests/control/deploy_move_causes.py` over `make native orders-probe`, main only, seeds 3621-3626 (D4's, already seen;
+  fresh seeds kept for the bar), builder0 light lane at `f5aa89ecd` (relaunched with O3's columns): running.
 
 ### Plan (worker, 2026-10-20)
 1. C36.1 carry-over: DONE `a80bb28ab` (round35/orders's X3b code OFF + tooling + evidence, paths checked out exactly; main had
