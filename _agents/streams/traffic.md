@@ -63,6 +63,25 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### NOW (traffic, 2026-10-20 ~15:25 PDT)
+
+| item | state |
+|---|---|
+| 1 carry-over (C36.1) | **DONE.** On stream/traffic, quick GREEN `c9b2fab03` (builder0, 83/0). |
+| 2 T8 judged (C36.2) | **Series RUNNING.** Pair `pair/holdfire-r36` **`a2de32420`** (main e45bb6632 + carry-over + ON flip) check GREEN (builder2, `make native check` exit 0, 2963/0, 25 + 2 NOT JUDGED for load, sim-baseline 13/13 unmoved). Switch-OFF inert 13/13. Series on builder2, JOBS 10, unit `t8-series-r36e`, out `~/overnight-traffic/r36/t8series/`. Terminus base 28/28 at 15:13. |
+| 3 perf-judge | Orchestrator's ruling: on builder0, on the ON hand-over only, after a PASS; it gives the window. |
+| 4 seed twins | **DONE** (nothing to code; see below). |
+| 5 stretch: held deaths T8 doesn't release | Pre-read filed (`references/round36/traffic/held_preread.md`); the real read waits for T8's arm. |
+| R36.4 yieldgap (orchestrator's go) | **Quick GREEN** `lab/yieldgap` `76aea1185` (builder0, 105/0, both long-hull tests PASS); merged here `5cb41002c`. Native's mirror + S2a stack: `pair/native-s2a-yg` `8e6a52fc9` (native's). Rides in manoeuvre's S2a series. |
+| T8 smoke | `make traffic-t8-clip` (laptop): ON 5 held / 5 released for fire / 5 hold ticks; OFF 5 held / 1712 hold ticks. Sheets in `references/round36/traffic/t8_clip/`. |
+
+**Lessons this session (in remote_builds.md via the orchestrator):** a Spot run that lost its host is not a result (the driver now
+reads only the check's own verdict line); a green check prints "N passed, M NOT JUDGED" with no FAILED/NOT RUN field.
+**Cleanup owed after the series:** `git worktree remove ../godot-traffic-t8` and builder2's `~/tank_squad/godot-traffic-t8`.
+**Questions for the lead:** none. **Requests:** none open.
+
+### Log
+
 **Switch-OFF inertness: `a2de32420`, builder2, `sim-variants --traffic-off=holdfire`: base40 = the ON check's sim-baseline on 13 of 13 maps (T8 is inert off, and moves no sim-baseline map on). Series started ~14:53.** **T8 PAIR GREEN for the series: `pair/holdfire-r36` `a2de32420`, builder2, `make native check` exited 0, 2963 passed 0 failed, 25 targets passed + 2 NOT JUDGED (perf-judge, scenario_perf: load), sim-baseline 13 of 13 unmoved with T8 ON. Driver resumed 14:44:45 as unit `t8-series-r36d` (the stream copy of t8_series.sh, `7da1ab88e`: its NOT RUN guard had misread the green line; run with cwd = the pair tree, so h stays `a2de32420`).** **Quick of the merged carry-over GREEN: `c9b2fab03`, builder0, `make quick-remote` QUICK_BASE=main, 83 passed 0 failed (16 traffic/native/manoeuvre test files + lint, 1279 s).** **2026-10-20 ~14:10 PDT (traffic). Builder2 was preempted at 14:07:35, 4 min into the first check (void); the driver read the exit 255 as done, so it was fixed (`ee30b2194`: verdict line only, 3 tries, NOT RUN stops, series loops to completion) and the pair re-cut as `pair/holdfire-r36` `a2de32420` (same game code), unit `t8-series-r36c`, check from 14:10:30.** Earlier, ~14:00: CP36.1 landed (main `a318a2cd3`, adoption `e45bb6632`); merged into stream/traffic
 (`4a2a0d349`, DEFAULT_OFF `["holdfire"]`). **Pair cut: `pair/holdfire-r36` `46e6ba8a9`** = `4a2a0d349` + the ON flip, worktree
 `../godot-traffic-t8` (remove it and builder2's `~/tank_squad/godot-traffic-t8` after the series). **Driver** `t8_series.sh` running
