@@ -206,6 +206,13 @@ _Filed here before any number._
   failed D3). **Guards:** far bank 0 in every cell; all-in <= main x 1.2 + 3 s; never-in no higher; twitch median <= main + 3 m per
   cell; test_control_scale green.
 
+- **E4 lab hulls placed with `Tank.place` (brains, R35.47), filed before code from `stream/brains` `0fa9b5e29` Status.** TacticsLab.unit,
+  TacticsLab.gun and BodyStage's spawn (body_stage.gd:152) call `tank.place()` instead of a bare `global_position =`. builder0 native:
+  (1) the suite green; (2) test_tactics_mixed_legs alone v after h1b_guard / blocker_reach reads the same arrival and reseats (plus a
+  test pinning order-independence); (3) every test line that moves is listed old -> new, each expected to move from its "later-match"
+  value to its "first-match" value; any other move is traced before the merge. sim-baseline unmoved expected (Match spawns via
+  army_layout, already `place`).
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
@@ -493,6 +500,26 @@ _Filed here before any number._
   game/ai/movement.gd`); the native abort was dropped in T6b's re-cut; T6b's kept parts (the refusal, the self-yield hold) are what T7
   replaces and gates; switch-OFF inertness reads main's 13 lines. T7's pass covers the hand-over. Hand-over: `handover/t7-on-main`
   `3dbc206a0` (= main 8be787afe + the judged pair); its check follows brains' partial.
+- **R35.45 (2026-10-19 ~21:00) E1 merged (main bbe418b80); one batch main check after T7.** E1's gate: builder0 test 2890/0,
+  sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760 + the partial (lint + 10) exited 0, 2 NOT JUDGED by load. Main now carries
+  E1 and D1 (both in element_plan.gd, different functions) unchecked together; T7's hand-over (cut before E1) takes the full-check slot
+  next, then merges, then ONE main check of E1 + T7 + D1. Workers don't merge main until it's green.
+- **R35.46 (2026-10-19 ~21:30) E3 closed: no lever.** Brains' census (74526bca1, laptop GDScript, lane_census showmatch locks /
+  terminus / crossing x seeds 1400–1409, n 30): 56 flips to hold (35 ahead on points, 21 zone threatened); engaged elements re-posted
+  > 40 m at a flip lost 15 / 30 / 25 % of crews in the next 30 s v 19 / 40 / 33 % for those that kept their task (SELECTED groups: no
+  sign the pull-back is worse, not proof it is better). locks-1404 is one fight's shape (as B9 / R34.19). No A/B. **E4 (brains,
+  trace only):** what carries between matches in one process so test_tactics_mixed_legs plays differently after another test (trip-up
+  82 suspected; BodyStage R32.6), and whether a reset makes the second match equal the first.
+- **R35.47 (2026-10-19 ~22:00) E4 named: a bare `global_position =` leaves the physics body at its spawn slot until the first step.**
+  Brains' probe (laptop GDScript, the four-tank Sumps stage seed 1 played twice in one process): 1st 50.0 s / reseats 1, 2nd 55.9 s /
+  reseats 0; they diverge at step 0 (2nd match only: outer tanks pushed 0.31 m inward), because every body still sits at its Match
+  spawn slot before lab.start and stale bodies overlap neighbours; a later match resolves it as penetration. `Tank.place` (node +
+  server flush + interpolation + sync_position) makes both matches identical in poses AND Match.state_hash at all 1800 steps. Fix in
+  brains' lab paths approved (bar above), after the batch main check. 85 other test files (brains' corrected count) spawn then assign `global_position`; listed
+  for their owners in round 36 (orientation lesson).
+- **R35.48 (2026-10-19 ~22:20) Main's batch check of D1 + E1 + T7 is GREEN** (f2690c8ef, builder0 `make native check exited 0`, 2908/0,
+  25 passed + 2 NOT JUDGED by load). Workers merge main. Full-check order: manoeuvre's joint2-on C31.1 (319d63fec) now, then brains'
+  tip (E4 + the release counter) on the orchestrator's word. Series lane: W1b (~02:00) -> D6 re-read -> M5 -> joint -> T8.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
