@@ -28,7 +28,7 @@ S2. Brains' paths have no stream this round (C36.6).
 **Machines (C36.1):** builder0 (12 cores, 14 GB) = **manoeuvre's and orders' lane**; builder2 (e2-highcpu-32 Spot, us-west4, stops
 itself after 20 idle min; `make gcp-start`) = **traffic's T8 and native's scoreboard**. On each builder at most ONE full check and
 ONE judged series at a time; light runs (`tools/remote.sh --light`) freely. Every full check behind `tools/builder_checks.sh
---wait-below 2`; every run longer than a few minutes under `systemd-run --user` (remote_builds.md). The orchestrator's main checks
+--wait-below 1` (builder0; R36: `--wait-below 2` let two run); every run longer than a few minutes under `systemd-run --user` (remote_builds.md). The orchestrator's main checks
 go on whichever builder is free. Disks: builder0 sat at 90 % at launch; delete your own `~/tank_squad/<folder>` leftovers when a
 side worktree is done (R35.73).
 
