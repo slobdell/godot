@@ -1835,13 +1835,9 @@ struct Drive {
 		return false;
 	}
 
-	// Manoeuvre._same_element(tank, other) (absent before R35.39: never the same element, the rule as first shipped).
+	// Manoeuvre._same_element(tank, other), called (R35.39; every tree carrying this mirror has it).
 	bool same_element(Object *other) {
-		Object *man = c.manoeuvre_script;
-		if (man == nullptr || !man->has_method(k._same_element)) {
-			return false;
-		}
-		return (bool)gd(man, k._same_element, tank, other);
+		return c.manoeuvre_script != nullptr && (bool)gd(c.manoeuvre_script, k._same_element, tank, other);
 	}
 
 	bool is_tank(Object *o) const {
