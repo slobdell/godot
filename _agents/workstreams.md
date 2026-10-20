@@ -530,6 +530,12 @@ _Filed here before any number._
   `8f7c8a1f5`: builder2 `make native check exited 0`, 25 passed + 2 NOT JUDGED (timing; builder2 never judges timing), 2910/0,
   sim-baseline 13 unmoved; 576-pose twin 0 mismatches. Green by composition: the only other diff from the checked tree is
   mk/gcp.mk and tools/gcp/*.sh, which no check reads. First full check on the converted builder2.
+- **R35.51 (2026-10-20 ~00:30) E4 merged (main 5f05c997c); a batch main check on builder2.** E4's gate (code c7c7d347a, builder0):
+  2909/0, sim-baseline 13/13; bar (2) mixed_legs alone v after the others 50.03 s / reseats 1 both; bar (3) 33 of 34 moved behavioural
+  keys equal their alone value (table `references/round35/brains/e4_moved_lines_85fa139cf.txt`). The 34th, test_tactics_scenarios_6
+  `switches_per_unit_min` (main-suite 6.0, tip-suite 4.8, tip-alone 3.2), is a SECOND, pre-existing carry-over (that stage already
+  places through TacticsLab.unit; history-dependent on main too): merged as known; brains bisects it on the light lane. Main now
+  carries E4 + native's pass-lane port, checked separately: one `make native check` of 5f05c997c on builder2.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
