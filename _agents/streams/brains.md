@@ -88,6 +88,26 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   the fight, it does not cause it. A bar draft is not proposed: the census gives no sign it would pass. If anyone wants the A/B
   anyway: "engaged elements keep their task through a flip to hold for N s" v main, deciding on fight E (R34.19's scale),
   guards deaths/kills/contact spread; `POSTURE_ENABLED` is the existing switch.
+- **E4 (R35.46, trace only) NAMED: a test harness that teleports a hull with a bare `global_position =` leaves its physics
+  body at its spawn SLOT until the first step, and how that transient overlap resolves depends on process history.** Probe
+  (`references/round35/brains/e4_probe_test.gd.txt`; laptop, GDScript, `3014d6cb9`'s tree): the four-tank Sumps stage
+  (`mixed_legs_case`, seed 1) played twice in one process: first 50.0 s, reseats 1; second 55.9 s, reseats 0 (manoeuvre's
+  "alone v after another test", R35.39). They diverge at step 0: in the SECOND match only, the outer tanks M_1/M_4 are pushed
+  0.31 m inward (x +-12.0 -> +-11.686) before anything moves. Before `lab.start` every body still sits at its
+  `Match.spawn_position` slot (server x 0 / -15 / 15 / -30 v nodes -12 / -4 / 4 / 12) in BOTH matches; M_2's stale body at -15
+  overlaps M_1 (and M_3's M_4); the first match syncs without a push, a later one resolves the overlap as penetration. What
+  inside Jolt carries between matches is not named (body ids / contact cache / broadphase are candidates); it does not need
+  to be: the stale overlap is ours. `TacticsLab.unit`/`.gun` write `global_position` directly; the game's own `Tank.place`
+  (writes the node, flushes the server, resets interpolation, `sync_position`; army_layout learned this in round 14) does not
+  leave the stale body. **With `Tank.place` in the probe: both matches 50.0 s, reseats 1, poses AND `Match.state_hash` identical
+  at all 1800 steps.** (`PhysicsServer3D.body_set_state` alone did not take; a remove/re-add equalled the poses only.)
+  **Proposed fix (my paths, not written; bar first):** `TacticsLab.unit` and `.gun` and `BodyStage`'s spawn (`body_stage.gd:152`)
+  call `tank.place(position, yaw)`. `AiScenario.brain_tank` already does. **Bar draft:** builder0 native, (1) the suite green;
+  (2) order-independence: `test_tactics_mixed_legs` alone v after `test_planner_h1b_guard` / `test_nav_blocker_reach` in one
+  process reads the SAME arrival and reseats (today 50.6 s v 31.9 m short on joint-on); (3) every test line the change moves is
+  listed with its old and new value (expected: lines that today read their 'later match' value move to the 'first match'
+  value; none of them is a game change). About 20 other test files spawn then assign `global_position` (fx, combat, nav, native
+  ...): not mine; listed for their owners in the write-up.
 - **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). **D1 fallout:** re-read
   `test_tactics_body`'s arrival after merging main (the deploy step + the release; orders' resize to off + 8.1 s, R35.17).
 - **Requests to other streams:** native: hash-stamp native/src in build.sh (done, N3). manoeuvre: the wedged crews
