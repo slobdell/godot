@@ -57,11 +57,31 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (2026-10-20, final for the round so far)
 
-**Green:** tip `6b2f68d64` (merged main d068f7020) INHERITS main `5f05c997c`'s green check (builder2, 2911/0;
-`tools/merge_check_needed.sh 5f05c997c`: docs only). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
+**Green:** `4a6394932` (code = `0daea3d90`, the E4b runner warm-up) — builder2 `make check exited 0`, 2911/0, 25 passed + 2 NOT
+JUDGED (timing, by design there), sim-baseline 13/13 unmoved. Moved lines v main 5f05c997c's suite (builder2): 8 keys, none in what
+a test measures (5 process-tick stamps +1 from the warm-up frame; 3 c339 lines only in Manoeuvre's process-wide kturn census).
+scenarios_6 alone 4.8 = suite 4.8 (builder0 native). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
 R35.42), **E4** lab hulls placed with Tank.place (main 5f05c997c, R35.51), the per-tick release counter. Written up, no code:
-**E3** (no lever, R35.46), **E4b** (a second carry-over traced; runner warm-up proposed, the runner is not mine). **E2** waits on
+**E3** (no lever, R35.46), **E4b** (the runner warm-up, R35.54; native named the cause, R35.57: the engine's first main-loop iteration, so the warm-up matches real play; one physics frame is the point). **E2** waits on
 CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
+
+### Round-36 candidates (brains' view, 2026-10-20)
+
+1. **The wedged crew itself** (manoeuvre W1 / traffic): E1 stops the squad waiting, but 9 of the 17 crews left > 25 m behind in
+   Bar E1's new arm were still wedged at the judge (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3 traced). He still sees a
+   crew sitting idle behind its squad.
+2. **A released straggler's catch-up** (brains): Bar E1 (d) read +3 crews still driving at 75 s (law-705, law-716): the crew sent
+   on to its next slot takes its time. Candidate: a released crew gets the element's catch-up pace (`crew_paces`) toward its slot,
+   judged on movers-at-75 s and left-behind, guards as Bar E1.
+3. ~~The runner teardown's field~~ NAMED by native: the engine's first main-loop iteration, not the teardown; the warm-up matches
+   real play and can stay (optional: pin which engine state, e.g. the physics space's first step, if anyone needs it).
+4. **85 test files teleport by a bare `global_position =`** (list in E4 above): each owner moves to `Tank.place` (most are
+   harmless singles; the ones spawning touching hulls carry the same stale-body shove).
+5. **An arrived squad's herringbone across another squad's street** (orders, R35.17's resize of test_tactics_body to off + 8.1 s):
+   a jam he would see; native 24.0 v 17.8 s on c7c7d347a.
+6. **E2 B11b** (HOLD's return honours the post's facing for turret-mounted wheeled hulls) if CP-F 5 ships.
+7. Hygiene, low: `Element._body_memo` is keyed by `Engine.get_physics_frames()` (process-wide), not by match; ruled out as
+   E4b's cause, but a match-scoped key is the right shape.
 
 ### Report (2026-10-19 evening)
 
@@ -134,11 +154,15 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   ruled out). **Proposed fix (not written; bar first):** `tests/run_tests.gd` warms up before the first test (one physics frame +
   the same teardown every test gets), so every test sees the 'later' state: the 1-frame test above IS that warm-up and gives the
   suite value. Bar: scenarios_6 alone == in the suite; the full suite green with every moved line listed (expected: lines that
-  ran first in a shard move to their suite value). **WRITTEN (granted narrowly, R35.54, INTERIM): `0daea3d90`** (laptop
-  GDScript: scenarios_6 alone 3.0 = after 3.0; was 4.8 v 3.0). **Stated plainly:** the stage played twice inside ONE test is
-  identical, so it is the runner's TEARDOWN that changes the state, not playing a match. Real play (no runner teardown) matches
-  a process's FIRST test; after the warm-up every test sees the post-teardown state instead: consistent, not the game's. Naming
-  the field (drain_navigation or the lazy static) so tests can match real play's first-match state is a round-36 item.
+  ran first in a shard move to their suite value). **WRITTEN (R35.54; the correct fix per R35.57, not interim): `0daea3d90`** (laptop
+  GDScript: scenarios_6 alone 3.0 = after 3.0; was 4.8 v 3.0). **CORRECTED by native's trace (2026-10-20, laptop, main
+  5f05c997c):** it is NOT the teardown and NOT drain_navigation (an earlier test that steps no frame keeps the alone value, with or
+  without the drain), NOT a script static (all 815 `static var`s identical), NOT frame phase (1-4 and 97 frames all give the
+  'later' value), NOT the nav map's first sync. ONE main-loop iteration before a test's setup flips it: engine-side state set by
+  the first iteration (most likely the physics space's first step). Real play starts every match long after launch, so it matches
+  the 'later' value: **the warm-up makes the tests match real play** (my earlier 'real play matches the first test' was wrong;
+  the stage-twice-in-one-test reading never separated the teardown from the frame). One frame is the whole fix; the teardown in
+  the warm-up is incidental.
 - **D1 fallout DONE:** test_tactics_body on `c7c7d347a` (main f31b5430e = D1 + E1 + T7 merged; builder0 light lane, native ON):
   PASS, body off arrived 17.8 s, on 24.0 s (+6.2, inside R35.17's +8.1; D1 alone read 23.8). E1 merged on main (bbe418b80, R35.42).
 - **E2:** waits on CP-F 5 (manoeuvre's W2 ships on its own bar). (Old note:) re-read
