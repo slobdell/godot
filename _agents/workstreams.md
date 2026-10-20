@@ -190,6 +190,10 @@ _Filed here before any number._
   (attack-move movers by real_mps; never-settled), plus crews ending > 25 m off goal with a live move, new <= base. **Guards:**
   M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
   team <= base + 1.645 se.
+  **Added 2026-10-20 ~01:30 (R35.53, traffic's T9 x T7 note; before any joint3 number):** jam-under-fire deaths (T5's definition)
+  <= base + 1.645 se, and jam:yielding deaths <= base + 1.645 se (an unfinished give-way re-asked under fire meets T7's lane gate:
+  a lane -> refuse + pass; no lane -> up to 2 more step-asides under T9's cap). Base = main 5f05c997c's code (T7 ON) + the joint
+  code with both switches off.
 
 - **D6 a shift-click never replaces a squad's route (orders, R35.28 option (b)), filed before code on `stream/orders` `bda5db637`;
   seeds named by the orchestrator.** A shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal
