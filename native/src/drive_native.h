@@ -92,9 +92,6 @@ struct DriveConfig {
 	// default is the switch in force). With it, a `stop` on a fixed gun on wheels is handed back to the GDScript, whose
 	// OrderController._stop_turn_in turns gunnery's swing in. False on a tree without it.
 	bool TURN_IN = false;
-	// Round 35 (manoeuvre W1b): Manoeuvre.wheel_halt's switch (WHEEL_HALT_DEFAULT, the native drive running only with
-	// `Movement._off` empty) and TankMotion.WHEEL_CREEP_THROTTLE. wheel_halt_ready false on a tree without W1b.
-	bool wheel_halt_ready = false, WHEEL_HALT = false;
 	// Round 35 (manoeuvre W1c): Manoeuvre.stall_throttle's switch (STALL_INTENT_DEFAULT) and STALL_INTENT_MIN_PACE.
 	bool stall_intent_ready = false, STALL_INTENT = false;
 	double STALL_INTENT_MIN_PACE = 0.05;

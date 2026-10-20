@@ -102,8 +102,7 @@ struct N {
 			_wheel_radius_value{ "_wheel_radius_value" };
 	// Movement statics (through the script)
 	StringName leash_orders{ "leash_orders" }, avoidance_on{ "avoidance_on" }, station_on{ "station_on" },
-			kturn_eased{ "kturn_eased" }, wheel_halt_asks{ "wheel_halt_asks" }, wheel_halts{ "wheel_halts" },
-			stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
+			kturn_eased{ "kturn_eased" }, stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
 			wedged_units{ "wedged_units" }, a1_replans{ "a1_replans" }, a1_cadence_due{ "a1_cadence_due" },
 			a1_by_cause{ "a1_by_cause" }, route_not_ready{ "route_not_ready" }, guard_rescues{ "guard_rescues" };
 	// methods called back
@@ -3561,20 +3560,6 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				throttle = ease_throttle;
 				cmd->set(k.throttle, throttle);
 				sadd(k.kturn_eased, step);
-			}
-		}
-	}
-	// Round 35 (manoeuvre W1b): Manoeuvre.wheel_halt(cmd, radius, pace, _kturn_left_m, step): a wheeled hull whose pace is
-	// 0 with no planned leg, which would creep (|throttle| < WHEEL_CREEP_THROTTLE x |turn|), stands: turn 0 (the ON arm).
-	if (c.wheel_halt_ready && c.manoeuvre_script != nullptr && radius > 0.0 && !(kturn_left > 0.0) && !(pace > 0.0)) {
-		const double turn_now = cmd->get(k.turn);
-		const double throttle_now = cmd->get(k.throttle);
-		if (turn_now != 0.0 && !(std::fabs(throttle_now) >= c.WHEEL_CREEP_THROTTLE * std::fabs(turn_now))) {
-			Object *man = c.manoeuvre_script;
-			man->set(k.wheel_halt_asks, (int64_t)man->get(k.wheel_halt_asks) + step);
-			if (c.WHEEL_HALT) {
-				cmd->set(k.turn, 0.0);
-				man->set(k.wheel_halts, (int64_t)man->get(k.wheel_halts) + step);
 			}
 		}
 	}
