@@ -1,3 +1,5 @@
+> **ARCHIVED (round 35 closed 2026-10-20).** The branch is `round35/brains`; its unmerged references (`references/round35/` or `_agents/streams/references/round35/`) stay on that branch. Round 36's brief is `streams/brains.md` where one exists.
+
 # Stream: brains (squads on a route don't hang at each leg; the CPU's squad decisions)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/doctrine.md`, `_agents/workstreams.md` **Round 35** (C35.1, C35.7;
@@ -36,6 +38,11 @@ What he will notice: squads on an attack-move or a route that move on to the nex
 3. **E3 The CPU commander and lanes, a second look (stretch).** B9's census showed stacking correlates with losing; the A/B showed
    spreading doesn't help. If you see a cause the census missed (the piecemeal arrival in locks-1404), write it up; no code without
    a bar.
+5. **X4 (round-35 extension, 2026-10-20; workstreams.md *Round 35 extension*).** (a) The released straggler's catch-up (E1 (d):
+   +3 crews still driving at 75 s): trace why a released crew is slow to rejoin, design a fix, file the bar before numbers.
+   (b) After the joint W1c + T9 merges (the orchestrator says when), re-read Bar E1's left-behind crews on main (9 of 17 were still
+   wedged): did the joint free them? Report only. Laptop and light lane first; series slots through the orchestrator (builder0
+   after manoeuvre's probe A/B).
 4. **Merge fallout:** the deploy step ON (orders' D1) reaches CPU elements; answer orders' questions about element internals.
 
 ## How to verify
@@ -55,15 +62,80 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-20, final for the round so far)
+### X4 (round-35 extension, 2026-10-20)
 
-**Green:** `4a6394932` (code = `0daea3d90`, the E4b runner warm-up) — builder2 `make check exited 0`, 2911/0, 25 passed + 2 NOT
-JUDGED (timing, by design there), sim-baseline 13/13 unmoved. Moved lines v main 5f05c997c's suite (builder2): 8 keys, none in what
-a test measures (5 process-tick stamps +1 from the warm-up frame; 3 c339 lines only in Manoeuvre's process-wide kturn census).
-scenarios_6 alone 4.8 = suite 4.8 (builder0 native). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
-R35.42), **E4** lab hulls placed with Tank.place (main 5f05c997c, R35.51), the per-tick release counter. Written up, no code:
-**E3** (no lever, R35.46), **E4b** (the runner warm-up, R35.54; native named the cause, R35.57: the engine's first main-loop iteration, so the warm-up matches real play; one physics frame is the point). **E2** waits on
-CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
+**X4a TRACED: the premise does not hold; no fix, no bar (none would move).** Read of Bar E1's series (`83b3b90b4`, builder0, native,
+faced_attack_move + faced_move x 701-716 x 4 factions, n 64 a task an arm; laptop read, `tests/tactics/mover_kind.py`, filed
+`references/round35/brains/x4a_mover_kind_83b3b90b4_builder0.txt`).
+- **The released crews:** of the 6 releasing runs, 5 readable (law-701's hold ran to the judge). 3 rejoined: law-716 Guns_1 5.2 m off
+  by t 24 (released t 22), condemned-701 Guns_7 3.9 m by t 74 (released t 56), condemned-710 Burners_2 32.8 -> 11.4 -> 3.4 m by t 44
+  (released t 21). 2 never moved after the release: law-705 Eyes_3 (62.7 m off at the same spot (-2.8, 99.5) from t 17 to the
+  judge; cmd throttle 0.13, real 0.00) and law-711 Guns_7 (51.6 m off at (9.1, 95.8) from t 48): wedged, the same crews in both arms.
+  A slow catch-up is not in the data.
+- **The +3 movers at 75 s (E1 (d)) are wedged hulls rocking, none a released crew:** the attack-move movers by their last 10 s:
+  base closing 3 / jitter 4 / wander 3, new 3 / 7 / 3. The extra 3 are `jitter` (net <= 0.1 m in 10 s, real_mps 0.25-0.57 from
+  rocking): law-705 Eyes_5 (a squadmate of the released crew, sent on to the next leg and wedged 14.5 m short at (30.6, 90.9);
+  in base it waited at the gate, still), law-716 Guns_7 + Guns_8 (element id 3, which did NOT release: two tanks nose to tail in
+  one choke at (7-10, 97-101); the run diverges from base at ~t 20 and in base Guns_7 got through). Counted by net motion (closing +
+  wander), E1 (d) reads 6 v 6 on attack-move and 4 v 4 on faced_move.
+- **Why no catch-up fix:** a released crew is the element's laggard, so `FormUp.paces` already gives it 1.0 (the candidate,
+  `crew_paces` toward its slot, would change nothing), and the ones that do not rejoin are not driving. What is left is W1's (the
+  wedged hull), with one observation for manoeuvre: law-716 Guns_7 pushes at cmd 0.83 for 50 s, plant v 9.98, real 0.32, and
+  `_stuck_time` never reaches STUCK_SECONDS. ~~Because the stall test reads `estimated_velocity`~~ WRONG, corrected by manoeuvre's
+  X1(d) trace (stream/manoeuvre `f89b7679b`, builder0 native, `references/round35/manoeuvre/x1d-trace/README.md`): the 7.3 m
+  law_tank is wedged between friendly Hunters_2/6, so `_honest_blocker` holds and the test reads REAL velocity; the contact pops
+  ~once a second (one tick at 8.5-9.9 m/s, net <= 0.1 m in 10 s), which zeroes the clock at 0.73-0.99 s for ~50 s. My 9.98 was
+  MANOEUVRE_STATE's `moved` (estimated) column. Fix (reset on net motion) is manoeuvre's, round 36.
+- **Measurement lesson for future bars:** a mover guard should count net motion (`mover_kind.py`'s closing + wander), not
+  `real_mps` alone: a wedged hull rocking reads >= 0.3 m/s.
+
+**X4a ACCEPTED, no fix (R35.67)**; the stuck test went to manoeuvre as X1(d); the net-motion mover rule was offered to native for the X5 scoreboard ("crews still moving"); native TAKES it (tools/scoreboard/, from f1e3e6a9b).
+
+**X4b:** waiting on the joint W1c + T9 merge (the orchestrator says when).
+
+### Report (round 35 FINAL, 2026-10-20)
+
+**Brief complete.** Shipped to main: **E1** the straggler release (bbe418b80, R35.42), the per-tick release counter, **E4** lab hulls
+placed with Tank.place (5f05c997c, R35.51), **E4b** the runner warm-up (25f8bc52f + bfe25438b; cause named by native, R35.57: the
+engine's first main-loop iteration, so the warm-up matches real play). Written up, no code: **E3** (no lever, R35.46). Judged and
+PARKED: **E2 B11b** (R35.63; FAILS (a)/(d)/(f): with M5 in the medians are ~4 deg in both arms; stays on stream/brains `4b6b3c589`
+behind `--hold-return=turret`, NOT merged, no check by the orchestrator's call). **D1 fallout** done (test_tactics_body native 24.0
+v 17.8 s, inside R35.17's line).
+**Green:** main carries all brains code that ships; the last green check of a brains tree is `05ba49192` (builder2, 2953/0; E2 ON),
+and `4a6394932` (builder2, 2911/0) before it. The tip `4b6b3c589` is parked code with main's behaviour by default, unchecked by design.
+**Questions for the lead:** none. **Requests:** see round-36 candidates (wedged crews, test teleports, the copy-back leak).
+
+### E2 B11b (unblocked by M5, R35.61; 2026-10-20)
+
+**Code (`--hold-return`, GDScript only, no native twin):** `TankBrain.hold_return_faces(unit_id)`: HOLD's return carries his drawn
+facing for `Units` locomotion "wheels" + mount "turret" only (law_tank, gang_tank/the War Rig, ifv, gang_ifv, artillery, lancer,
+burner, suppressor...); `--hold-return=old` = no faced return (control), `--hold-return=faced` = every class (round 32's B11).
+`test_ai_hold_return` 2/0 (laptop). Judged on a tree WITH M5 (main ed121d24f), so the series waits for the merge.
+
+**Bar E2 (filed 2026-10-20 before any number; C33.3's lines).** One commit containing M5, builder2 (R35.61's lane), native, both
+arms the same tree (base `--hold-return=old`). Workload: `manoeuvre-hull-rest` drawn, all six faced tasks, FRESH seeds 801-816 x
+gangs/law/syndicate/condemned (384 runs an arm); fights: `manoeuvre-fights` fresh seeds 820-843 (24 an arm). Readers:
+`tests/manoeuvre/hull_rest_ab.py` (per class x task medians, permutation p), `tests/tactics/hold_return_table.py`.
+- (a) DECIDING: wheels/turret hull error at the judge on faced_move AND faced_right: new median < base, permutation p < 0.05 each.
+- (b) The pass case: gangs faced_move seed 66 Green_Guns_5 (hull-one, drawn, native) <= 90 deg from his heading (was 104-126 deg
+  under B11 without a face at rest); reported both arms.
+- (c) GUARD: no hull class worse at p < 0.05 on any task (wheels/fixed, tracks, hover must read identical or within noise: the
+  rule does not reach them by construction).
+- (d) GUARD: never settled in 75 s and movers at the judge (real_mps >= 0.3), new - base <= 2 se on each task.
+- (e) GUARD: squads arrived, base - new <= 2 se.
+- (f) GUARD: fights kills and deaths each side within 2 se (paired).
+- (g) `make check` green on the hash; moved sim-baseline maps attributed with `--hold-return=old`.
+
+**E2 JUDGED (2026-10-20): FAILS (a), (d), (f) -> PARKED, OFF** (`--hold-return=turret` opts in). Series on `05ba49192` (E2 + main
+c474fd455 with M5), builder2, native, base `--hold-return=old`; `references/round35/brains/e2_bar_series_05ba49192_builder2.txt`.
+(0) faced returns 2341 v 0 PASS; **(a) wheels/turret medians ~4 deg in BOTH arms** (faced_move 4.2 v 4.1, p 0.949; faced_right
+4.5 v 4.5, p 0.957) FAIL: M5 already ends these hulls facing his way, and the faced return trims only the tail (p90 85.3 -> 62.6,
+90.8 -> 64.5 deg; >= 100 deg 6 -> 5 %, 9 -> 5 %); (b) s66 Green_Guns_5 6.8 deg BOTH arms (M5's, not B11b's); (c) no class differs
+at p < 0.05 PASS; **(d) movers at the judge faced_move 30 v 12 (+18, 2.8 se), faced_right 22 v 9 (+13, 2.0 se) FAIL** (the hulls
+that drive back onto their spot are still turning at 75 s); settled and arrived within se; **(f) fights kills 934 v 972 and deaths
+944 v 982 (-38 each, se 18.0) FAIL** (fewer of both: hit rate equal). Per R33.34 a further attempt needs a new design (e.g. a faced
+return only past the tail angle), not a re-tune. Note: the copy-back again carried older series' runs (6xx/7xx; old fights) into
+the series folder; read from filtered copies.
 
 ### Round-36 candidates (brains' view, 2026-10-20)
 
@@ -79,7 +151,11 @@ CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
    harmless singles; the ones spawning touching hulls carry the same stale-body shove).
 5. **An arrived squad's herringbone across another squad's street** (orders, R35.17's resize of test_tactics_body to off + 8.1 s):
    a jam he would see; native 24.0 v 17.8 s on c7c7d347a.
-6. **E2 B11b** (HOLD's return honours the post's facing for turret-mounted wheeled hulls) if CP-F 5 ships.
+6. **E2 B11b** PARKED with M5 in (medians already ~4 deg); only a tail-only design is left, and it costs movers and fights.
+8. **Tooling: stale `build/` rows leak into series folders** (R35.63; FIXED by native on stream/native `1d8dd7648`, not merged yet: `tools/copyback_prune.sh` moves orphaned run.logs to `build/.stale-<ts>/`, nothing deleted): a series copied from `build/manoeuvre/hull-rest/<arm>`
+   and `build/manoeuvre/fights` carried older series' runs (E1's 6xx/7xx, old fight seeds) because the copy-back mirrors the remote
+   `build/`, which keeps every earlier run's folders; three of my reads had to be filtered by seed. Fix candidates: the recipes write
+   under a per-run dir (commit + seeds), or `manoeuvre-hull-rest` / `manoeuvre-fights` clear their whole output dir, not only the arm.
 7. Hygiene, low: `Element._body_memo` is keyed by `Engine.get_physics_frames()` (process-wide), not by match; ruled out as
    E4b's cause, but a match-scoped key is the right shape.
 

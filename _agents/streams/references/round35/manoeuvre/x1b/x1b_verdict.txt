@@ -1,0 +1,15 @@
+X1B pairs 24 (base 24, on 24)
+X1B counter first: wheel_halts base 0 on 52749; switch base ['False'] on ['True']; held_p0 exposure base 1581 s on 1721 s  PASS
+X1B held_p0  victim team 0  base     52 hits /      792 s = 0.0656/s   on    242 hits /      790 s = 0.3064/s   REPORTED
+X1B held_p0  victim team 1  base    133 hits /      788 s = 0.1687/s   on    186 hits /      931 s = 0.1998/s   REPORTED
+X1B held_p0  pooled         base    185 hits /     1581 s = 0.1170/s   on    428 hits /     1721 s = 0.2487/s   REPORTED
+X1B p0       victim team 0  base      8 hits /        1 s = 5.8537/s   on      0 hits /        1 s = 0.0000/s   REPORTED
+X1B p0       victim team 1  base      0 hits /       14 s = 0.0000/s   on      0 hits /       20 s = 0.0000/s   REPORTED
+X1B p0       pooled         base      8 hits /       15 s = 0.5322/s   on      0 hits /       20 s = 0.0000/s   REPORTED
+X1B all      victim team 0  base  11439 hits /    62290 s = 0.1836/s   on  10130 hits /    58107 s = 0.1743/s   REPORTED
+X1B all      victim team 1  base   9005 hits /    75807 s = 0.1188/s   on   8621 hits /    75531 s = 0.1141/s   REPORTED
+X1B all      pooled         base  20444 hits /   138097 s = 0.1480/s   on  18751 hits /   133638 s = 0.1403/s   REPORTED
+X1B held_p0  hits on a still hull (< 0.5 m/s): base 121 on 423  REPORTED
+X1B p0       hits on a still hull (< 0.5 m/s): base 0 on 0  REPORTED
+X1B DECIDING held_p0 hits per exposed second, pooled: base 0.1170 on 0.2487 D +0.1317 1.645se 0.1274 (paired bootstrap over 24 fights, 4000 draws)
+X1B VERDICT SITTING DUCK: W1b does not re-try; the answer is traffic's T8

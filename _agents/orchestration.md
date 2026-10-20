@@ -230,6 +230,12 @@ reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
 
 ## Lessons (add to this list every round)
 
+- **Round 35: side worktrees and their remote folders fill disks.** Each lab/pair worktree is a full copy (~0.6–1.3 GB) on the laptop
+  AND on every builder it ran on (`~/tank_squad/<worktree>`). Round 35 made 17 of them: the laptop reached 885 MB free and builder0 0
+  bytes (an rsync failed; a running check and series had to be re-verified). When a side worktree's series or check is done and
+  recorded, remove it locally (`git worktree remove`; the branch stays) AND its builder folders (not while any process has its cwd
+  there). The close checklist includes both machines' `~/tank_squad`.
+
 - **Round 35: the machine contract is the brief's, not the orchestrator's convenience.** C35.1 said one full check and one judged
   series on builder0; the orchestrator granted slots ad hoc and let two checks and five series share the box (load 22): a series step
   died at slot.sh's 5400 s cap and a re-check timed out. Read the round's machine line before granting any slot; gate every full check

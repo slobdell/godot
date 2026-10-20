@@ -4,7 +4,43 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-20 — **ROUND 35: HE ANSWERED BOTH QUESTIONS (ship D5 ON; ship the joint W1c + T9). Two hand-overs are in flight (R35.66); merge them, run one batch main check, then close the round.** Older headers below._
+_Last updated: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
+
+## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon) — read this first
+
+**His call (2026-10-20, the question tool): "use the agents' list"** (no new playtest). He had closed every round-35 session; the
+orchestrator read the leftovers itself. Split, ownership and contracts C36.1–C36.6 + CP36.1 are in `workstreams.md` *Round 36*;
+briefs in `_agents/streams/`; round 35's briefs in `streams/archive/round35/`; round 35's branches are `round35/<stream>`.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | a crew being shot while waiting its turn drives on | T8 (after CP36.1), builder2 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a crew wedged between friends backs out; fewer left behind | S3 drop W1b, S1 stallnet |
+| **native** | `godot-native` (4) | Opus | nothing alone: the scoreboard row per main, mirrors, test hygiene | hand over round 35's scoreboard |
+| **orders** | `godot-orders` (5) | Opus | an arrived squad doesn't block the next one's street; no deploy shuffle | the herringbone lab stage |
+
+No brains stream (its leftovers closed with no lever; X4b is manoeuvre's S2); brains' paths need a grant (C36.6).
+
+**To launch (the lead):** in each folder `~/projects/godot-<stream>`, start a CLI (manoeuvre on Fable, the rest on Opus) and paste
+the kickoff prompt from `_agents/orchestration.md` *The kickoff prompt*. **godot-native is created after the scoreboard rows finish
+on builder2** (its old worktree holds the running job); the orchestrator says when.
+
+**The orchestrator's open items (in order):**
+1. **CP36.1 the joint W1c + T9 ship (his yes, R35.66).** `pair/joint-ship` `d56685115` in `make native check` on builder0 (unit
+   `manoeuvre-shipcheck2`, log `~/overnight-manoeuvre/r35/ship/check_d56685115.log`; sim-baseline red is expected: the joint moves
+   maps); then the base `6f830ceea`'s sim-baseline (`base_simbaseline_6f830ceea.log`, done marker `done`). On green: merge it ALONE,
+   `make sim-baseline-adopt` the maps that moved in the check AND not in the base (attribution = base), ONE `make native check` of
+   main, then tell traffic, manoeuvre and orders to `git merge main`. Remove `godot-manoeuvre-ship` / `-shipbase` and their
+   `~/tank_squad/` folders after.
+2. **The scoreboard rows** (`native-scoreboard` unit on builder2, writing into `godot-native/references/scoreboard/rows/`): when it
+   ends, commit the rows to `round35/native` (git mv the branch first), remove the old godot-native worktree and its remote folders,
+   `make worktree STREAM=native OFFSET=4`, tell the lead native can launch.
+3. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
+   joint since).
+
+**Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
+X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36's stallnet.
 
 ## 🏁 ROUND 35: THE WORK IS DONE (2026-10-20 morning) — for him when he wakes
 
@@ -29,6 +65,9 @@ builder0, attributing the moved maps with the switches off. **The next orchestra
 joint's moved sim-baseline maps on the merged tree with `make sim-baseline-adopt`), run ONE batch `make native check` of main under
 systemd-run, then close: archive the five briefs to `streams/archive/round35/`, rename `stream/*` to `round35/*`, remove the
 worktrees (rescue anything untracked first), update this file. Then round 36 from the list below.
+
+**main 36745fa4c = D5, THE GATE DEAL ON (his call):** a 5-squad shift-clicked route through Locks gets everyone in ~8 s sooner.
+The joint W1c + T9 ship's hand-over (d56685115) is checking on builder0.
 
 **ROUND 35 EXTENSION (2026-10-20, the lead away for the day; workstreams.md *Round 35 extension*):** the same five worktrees keep
 working: X1 manoeuvre (the joint ship, then W1b's deciding probe, R34.16's watch item), X2 traffic (T8 after the joint merges),

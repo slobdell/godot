@@ -1,0 +1,381 @@
+> **ARCHIVED (round 35 closed 2026-10-20).** The branch is `round35/orders`; its unmerged references (`references/round35/` or `_agents/streams/references/round35/`) stay on that branch. Round 36's brief is `streams/orders.md` where one exists.
+
+# Stream: orders (squads arrive in their travel shape and deploy as one move, packed close; routes that don't jam)
+
+> Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 35** (C35.1, C35.2, C35.4, C35.5),
+> `_agents/game_design.md` *Round 34, his playtest words during the round* and *Round 34 close* (his answers, verbatim), and the
+> round-34 briefs `streams/archive/round34/orders.md` and `streams/archive/round34/brains.md` (B6, B8, B8b, O1–O4, R34.12: the
+> whole history of this code, with every trace). Evidence: `references/round34/orders/` (planner's probe, the lead's pass and its
+> screenshots), `_agents/streams/references/round34/brains/` (B6/B8 traces and tables).
+> **You own:** `game/control/**` (except manoeuvre's additive fields in `game/control/screen_playtest.gd`), `tests/test_control*.gd`,
+> `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`, and in `game/tactics/element_plan.gd` the deploy-step and
+> halt-lay functions (`DEPLOY_STEP`, the deploy step's helpers, the halt seat lay for a plain AUTO move; merge note to brains).
+> **Model:** Opus. **Machine:** builder0 only (C35.1).
+
+## The lead's direction
+
+His round-34 report, verbatim: *"If I select 3 squads and then tell them all to move to some point on the map, there's some
+algorithm that automatically determines new points for each squad … one of them was all the way across the bridge, thus causing
+one of my squads of scouts to go on a suicidal mission. How can we get behavior closer to starcraft…"* His corrections: squads may
+nest (*"isn't there enough spacing where we could intersect two wedges basically?"*), and waypoints are the squad's (*"it's more
+about the squad moving through that waypoint versus individual vehicles"*). His answer at round 34's close: **"Yes, use the deploy
+step"**: a squad arrives in its travel shape and spreads into its halt shape as one deliberate move.
+
+What he will notice this round: squads that arrive and deploy once, with no twitching afterwards; several squads sent to one point
+packed close but never on top of each other; five squads on a Locks route that don't jam at a junction.
+
+## Where things stand (main at the round-35 docs commit)
+
+- **Shipped in round 34:** O1 the ground cap (no squad sent over a bridge it wasn't clicked across), O3 squads priced at their halt
+  shape, O4 routes are the squad's (passed at about its width, gates), o4b, brains' two Locks fixes (stations and order goals stay
+  on the anchor's bank), the rank fix + rank depth (the back rank comes up), ground_anchors (an anchor on a building stands beside
+  it), the player-route stall fallback (12 s settled), gate order (first through a shared gate takes the farthest place). The
+  lead's pass on main 62d90dc97: no crossing in 24 cells; five squads all go; routes finish except the Locks cells below.
+- **The deploy step:** B8b is on main OFF. `round34/brains` `07c029732` is the WIP that flips it ON (tests updated, `test_on_by_default`),
+  **no check run**. It reaches CPU elements too (ElementCommander gives plain moves), so sim-baseline WILL move.
+- **The shuffle:** post-arrival seat moves 19–38 m worst with 3 squads, up to 87 m with 5 (main); with B8b, the twitch after the
+  deploy is ~0 in 4 of 6 cells, the deploy move itself 16–30 m. Remaining causes known (B6/B8b traces): the halt re-seat after 2 s,
+  travel seats re-grounded while the slowest crew arrives, the Locks strip between canal and building squeezing seats.
+- **O2 packing (parked R34.12):** an AUTO pack before the deploy step was neither tighter nor fast enough (the heading isn't known at
+  order time). With the deploy step, it is: the halt seats are laid on the order's approach heading. `wip/brains-o2` holds the
+  attempt and the rotation-tolerant core.
+- **Locks 5-squad route:** squads 3 and 5 jam for ~55 s at (5, 65); their drives cross though their anchors' lines don't
+  (planner's trace, `references/round34/orders/gate-order-f1034b904/`).
+
+## Backlog (in order)
+
+1. **D1 Ship the deploy step ON (C35.2).** Start from `round34/brains` `07c029732` (cherry-pick or merge onto your branch). Laptop
+   tests, then the full check on builder0 under systemd-run; attribute every moved sim-baseline map with `DEPLOY_STEP=off` on the same
+   tree. A REPORTED fights census beside it (fresh fixed arenas, both sides, deaths/kills/stuck), since the CPU gets it too; bring a
+   gross regression (> 2 se) to the orchestrator before shipping. Name the hash; the orchestrator adopts the baseline.
+2. **D2 The probe on the shipped hash.** `make orders-probe` (planner's, now yours): 24 cells, main v `--deploy-step=off`, with the
+   screenshots at arrival and +5 s. File as the "before" for D3.
+3. **D3 Tight packing (C35.4).** On the deploy step: the order fixes each squad's approach heading; the halt seats are known at
+   order time; pack by hull clearance (~9 m between crews of different squads), his 28 m between two columns, each squad on its own
+   side of the approach, back ranks no farther back than their own squad, nothing on a building. The click's 3-tick response kept.
+   Bar filed with the orchestrator before any number (the probe's cells + the squad-arrive / settle series, both arms).
+4. **D4 What's left of the shuffle.** Trace the 5-squad cells' remaining post-deploy moves and the Locks strip; fix what the trace
+   names (likely seats re-grounded during the wait, and the halt re-seat).
+5. **D5 Crossing drives on the last leg (C35.5).** Deal the last leg by navmesh paths where they cross; a length guard; the Locks
+   5-squad route as the test; probe before/after.
+6. **Stretch:** the order markers show each squad's real halt place before he lets go of the button.
+
+**Round 35 extension (X3, workstreams.md *Round 35 extension*, 2026-10-20; the lead away for the day).** Bar filed before numbers,
+fresh seeds, far bank 0 in every orders cell; builder2 = one full check + one judged series, behind `tools/builder_checks.sh`.
+7. **X3a D5 ON (R35.66).** GATE_DEAL default ON (`--gate-deal=off` restores O4); `make native check` on builder2; sim-baseline 13
+   unmoved, any move attributed with `--gate-deal=off`.
+8. **X3b "a deployed squad jams the next squad's street" (R35.17).** Trace on the body route; a design behind a switch (a halt that
+   keeps a through-lane open, or deploys off the street); bar filed first; its series on builder2 after traffic's T8.
+9. **X3c the Crossing halt detours.** A design note only (laptop): a driving-distance halt lay; ElementPlan stays pure unless the note
+   says otherwise.
+
+## How to verify
+
+Tests first; `make quick-remote` while iterating; `make remote T=check` only for a hash you'll name (one at a time on builder0).
+`make orders-probe` for anything he'll see, with screenshots looked at. Every number: commit, machine, map, n.
+
+## Don't touch
+
+`game/ai/**`, the rest of `game/tactics/**` (brains), `screen_playtest.gd`, `tests/baselines/**`. Don't push.
+
+## Waiting on the lead
+
+Nothing (his deploy-step yes is the go).
+
+## Status
+
+_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### ROUND 35 EXTENSION (X3; 2026-10-20)
+- **X3a D5 ON:** `d85e395d4` (GATE_DEAL default ON; main `b8ce86cc4` merged). `make native check` on builder2 running
+  (builder2 was idle-stopped; `make gcp-start`, relaunched).
+- **X3b PARKED (R35.77): code OFF on stream/orders, NOT for merge; round-36 evidence.** DEPLOY_PASS (R35.74 bar; `--deploy-pass=on`), `a7cd0fbc3`: the deploy waits for passing
+  traffic (an all-in squad keeps its travel seats while another element's crew drives by within 24 m, bound > 20 m away;
+  the cap still deploys). Trace that named it (builder2 `bfcbb132b`, s1, reproduces builder0 exactly): Hunters2_3's
+  herringbone seat sits 1.9 m into the Sirens' lane, Sirens_1 held 9+ s. Tests: test_control_deploy_pass 4/0 (laptop).
+  element.gd's one guarded hook (R35.74 grant; merge note to brains in the commit). DEV prototype (builder0 light lane,
+  seeds 1-12, NOT judged): s1 18.1 v pass_off 24.0 (off 18.5); main − off +0.23 s mean (worst +2.9); gain as filed
+  +0.41 s, se 0.79; the filed per-seed guard (+1 s) fails in 4 of 11 non-jam seeds (+1.7 to +3.7: seeds where the deploy
+  had made the Sirens faster). Ruled (c) park, R35.77: not judged (5101-5124 unseen), round-36 candidate 7
+  (`references/round35/orders/x3b-pass-dev-a7cd0fbc3/`). Judged seeds 5101-5124 (A), 1731-1736 (B), 3740-3755 (C, CPU
+  census) untouched.
+- **X3b builder0 confirmation (light lane, `c28901b14`, same 12 seeds x 2 arms, native): does NOT hold.** on − off mean
+  +0.63 s, sd 2.31, worst **s1 +5.5 s** (off 18.5, on 24.0; R35.17 read 17.7 v 23.8). R35.68's test (mean within ~1 s AND no
+  seed worse than +5) fails on s1, the test's own seed; the laptop's s1 (+1.0) differs from builder0's. Table:
+  `references/round35/orders/x3b-body-builder0-c28901b14/`. So X3b stays OPEN: the jam is one seed's (s1) on builder0;
+  next a builder0 trace of s1, then a design behind a switch, bar first.
+- **X3b R35.17 traced (laptop native, `d85e395d4`, body stage, seeds 1-12, `--deploy-step=off` v on): SUPERSEDED by the
+  builder0 read above. The laptop read the jam as gone on current main:** Sirens' arrival (= the stage's all-in) on − off: mean +0.13 s, sd 1.80, n 12 (s1 +1.0, worst s12 +3.0,
+  four seeds faster with the step on). At `0603f3274` builder0 read +6.1 s (s1). The s1 trace (`references/round35/orders/
+  x3b-body-laptop-d85e395d4/`): Hunters2 still deploys into its herringbone at the Sirens' corner (~(-60, 68)), Hunters2_3's
+  deploy leg crosses Sirens_2's line and the two give way ~4 s, but Sirens_1 is no longer held behind it. Not attributed:
+  between `0603f3274` and now main took D6, E4b, M5 and the inert mirrors (T9/W1c are NOT on main; W1c is there OFF only).
+  R35.68: confirm on builder0's light lane (`make remote LIGHT=1 T=body-seeds-orders`, `c28901b14`, same 12 seeds x 2
+  arms); holds if the mean is within ~1 s and no seed is worse than +5 s; then X3b closes "fixed on main, not attributed"
+  and test_tactics_body's line goes back to off + 5 s (brains' file, one line, R35.68).
+- **X3c design note:** `references/round35/orders/x3c-crossing-halt-detours.md`: the controls hand the deploy a REACHED halt
+  (`halt_at` from a navmesh seat test at order time, stepped away from seats reached only round an obstacle); ElementPlan
+  unchanged; gaps and a round-36 bar shape in the note.
+
+### ROUND 35 REPORT (orders; 2026-10-20). Every number names its commit, machine, workload and n.
+
+**Shipped (on main)**
+1. **D1, the deploy step ON (his yes)**: main `1a18dd278` from `581b8a396` (builder0 `make check exited 0`, 2886/0, sim-baseline
+   13/13 unmoved). A squad sent somewhere arrives in its travel shape, then steps once into its halt shape ON the spot it was
+   sent to (within 12 m). The CPU never deploys (48 CPU-v-CPU fights byte-identical on and off). Known cost (R35.17): a Law
+   herringbone halted across a street slows a neighbour driving through (+6.1 s in brains' Locks body stage).
+2. **D6, every squad follows a shift-clicked route**: main `31e3d605c` from `93cdb1559` (builder2 `native check exited 0`,
+   2941/0, sim-baseline 13/13 unmoved). About one squad in six used to skip his waypoints and drive straight to the last one
+   (round 22's untangle re-deals vehicles, so a later shift-click REPLACED the route). Fresh read (builder0 `ee3a8dab2`,
+   seeds 3651-3656, n 6): every squad every leg 144/144 v 121/144; far bank 0 in every cell; a shifted leg's places step
+   back from a bridge deck (the first A/B had crossed a bridge twice on s3643). `--requeue=off` is the old behaviour.
+3. **D2, the probe on the shipped step** (reported): `references/round35/orders/d2-main-1a18dd278/` (README in his terms,
+   table, 48 frames). Plus tools: `make deploy-census`, `make body-trace-orders`, the probe's deploy columns, seeds that move
+   the click, MEDIANS + EQUALITY, `--probe-legs-each`, `tests/control/legs_count.py`; `orders-probe-shots` fails on no frames.
+
+**Parked, with their readings (all in main's code, OFF; each switch opts in)**
+- **D3 tight packing** (`--pack=on`, D3b `--arrive-file=on`): the halts pack (five coils 64 v 74 m by halts alone) but the
+  arrivals don't: arriving wedges mixed (5.7 m), keeping them apart gave the gain back (R35.11); D3b's file arrival stopped
+  the mixing but the spread grew in every cell and two river crossings appeared (laptop, seed 34; not run on builder0, R35.43).
+- **D4 minimax deploy seating** (`--deploy-minimax=on`): failed (builder0 `68d4c06cd`, 3621-3626: twitch 6 % lower v 20 %,
+  four cells worse, never-in up). The trace stands: the residual twitch IS the deploy move.
+- **D5 the gate deal for in-between waypoints** (`--gate-deal=on`): failed twice; fresh read (builder0 `bd22ac4c8`,
+  3631-3636): the Locks 5-squad route in 25.8 v 34.2 s (line 23.9) and half the detour (drive/plan 1.49 v 3.37), with a little
+  more near-ramp nosing on the Crossing (never across).
+
+**His feel call (D5, via the orchestrator, R35.34):** "Five squads on a shift-clicked route on the Locks get in about 8 s
+sooner and drive half as far out of their way; on the Crossing a crew noses onto a bridge ramp a little more often (never
+across). Try it: `GATE_DEAL=on make skirmish ARENA=locks`, select five squads, shift-click three waypoints. Recommendation:
+turn it on if the route feels better."
+
+**Round-36 candidates (each traced this round)**
+1. The deploy move across a street: a wedge, wide across the street, re-forms into a herringbone along it, so wing crews
+   drive past their squadmates (D4's trace; the main source of the post-arrival "twitch").
+2. Halt seats reached only round an obstacle (the Crossing detours, 20-30 m): the halt lay needs a reachability input
+   (ElementPlan stays pure; R35-ruled).
+3. A herringbone halted across a street blocks the lane its neighbours drive through (R35.17).
+4. A click right at a bridge mouth could seat a crew past the deck (deck_clear covers shifted legs only).
+5. Tight packing with a new objective: pack toward the click, arrival overlap treated as transient (R35.43).
+6. `uncross_paths` on a queued screen changed behaviour through path planning alone (limited to plain moves; untraced).
+7. X3b's deploy-waits-for-traffic (DEPLOY_PASS, on stream/orders `a7cd0fbc3`, OFF, unmerged; R35.77): the cause pinned
+   (body s1: an arrived herringbone 1.9 m into the next squad's lane), the remedy works where the jam happens (s1 24.0 ->
+   18.1 s, 19 waits, builder0 dev seeds), but the body stage jams in 1 seed of 12, so no gain line clears its noise.
+   Round 36: a LAB stage that builds the arrived-herringbone-across-a-lane geometry deterministically as the deciding
+   workload, a paired non-jam guard (mean <= +1 s) and a +5 s per-seed cap; fresh seeds 5101-5124 kept unseen for it.
+8. X3c's reached halt (`references/round35/orders/x3c-crossing-halt-detours.md`): its bar shape is in the note (Crossing
+   cells' place/twitch medians -25 %, far bank 0, all-in and spread guards, Terminus EQUALITY; counter `reached_halt_stepped`).
+
+**Questions for the lead:** only D5's feel call. **Requests to other streams:** none open.
+**Merge notes:** `element_plan.gd` changes only in the deploy carve-out plus R35.41's one guarded block (`ARRIVE_FILE`, off);
+`element_task.gd` two keys (R35.6, used only with the pack on); `test_tactics_body.gd` one line (R35.17).
+
+### D3b: built (OFF, `--arrive-file=on` with `--pack=on`), NOT run on builder0: a laptop look at seed 34 says it fails
+Code: the one switched addition in `_plan_form_up` (R35.41) + the pack keeping arriving COLUMNS apart. Laptop GDScript, seed 34
+(reported only; 3661-3666 stay unseen), the 6 click cells, `references/round35/orders/d3b-laptop-s34/`: the arrivals no
+longer mix (closest foreign at arrival 7.0-13.1 m in 5 cells; 3.8 in Terminus 5), BUT the spread GROWS in every cell (end far
+Crossing 3 64.0 v 34.2, Locks 3 67.3 v 49.4, Terminus 5 80.4 v 76.0 ...) and the pack arm CROSSES the river in both Crossing
+cells (far bank 1 each). The strict pack (every seat on good ground, arrivals kept apart) pushes places away from the click
+on these maps; packing tighter than the ranks needs a different objective (round 36). Not spending a series slot on it.
+
+### D3b (R35.41 grant): bar FILED BEFORE CODE (2026-10-19 ~16:45 PDT)
+- **Design:** with the pack on, a squad whose task carries `halt_at` travels its last INSET_NEAR_M in a file (column) on its
+  approach, and its halt opens out of the file on its packed spot (the deploy step, unchanged). Files nest as tightly as the
+  halts do (his 28 m between two columns is between files of DIFFERENT squads abreast; files one behind another need only
+  hull clearance).
+- **Bar:** `make native orders-probe ORDERS_PROBE_SEEDS="3661 3662 3663 3664 3665 3666"`, arms
+  `main:` v `pack:--pack=on,--arrive-file=on` (deploy step on; D4, D5, D6 at their switches' defaults), n 6, medians.
+  **Counter first:** `packed` > 0 in the click cells on the pack arm, and their rows differ from main's. Gain: the click cells' median `end far max m` >= 15 % lower summed (the original D3 line) AND closest foreign
+  hull at arrival >= 7 m in every cell (the arrivals no longer mix: what failed D3). Guards: far bank 0 in every cell
+  (R35.38); all in <= main x 1.2 + 3 s; never-in no higher; twitch median <= main + 3 m per cell; the click's 3-tick response
+  (test_control_scale).
+
+### D1 the deploy step ON: check record
+- `orders-d1` `1a5e33c47` (= the flip + census + probe columns + main 0f4d528d7), builder0: `>> remote: make check exited 2`;
+  test 2884 passed, 2 failed; **sim-baseline passed, 13 maps unmoved** (glibc-2.43): nothing to attribute (the CPU never
+  reaches a plain move with the step on, as the census found). The 2 failures: test_tactics_scenarios_3/4 "every formation
+  stands on the spot it was sent to (anchor 1.5-9.5 m off)": B8b laid the halt centred where the squad stood.
+- Fix `orders-d1` `0603f3274`: within DEPLOY_ON_SPOT_M (12 m) of its spot the halt stands ON it; B8b's centred lay stays
+  for a squad deployed on the 10 s cap far short. Laptop GDScript: those two files + test_tactics_deploy_step 9/0.
+  builder0 full check: queued behind native's (C35.1: one check at a time).
+
+### D4 A/B: FAILED its bar, minimax seating PARKED OFF (`bd22ac4c8`; `--deploy-minimax=on` opts in)
+builder0, `make native orders-probe`, `68d4c06cd`, seeds 3621-3626, n 6, both arms `--gate-deal=off`; rows
+`references/round35/orders/d4-ab-68d4c06cd/`. Counter: acted (25 / 36 click runs differ). Gain: summed median twitch 169.1 v
+179.8 m (6 %, needed 20 %); Terminus 5 click 5.7 v 18.9 (better). Per-cell guard fails in 4 cells (Crossing 3 click 15.4 v
+10.7, Crossing 5 route 29.4 v 21.4, Locks 5 click 21.4 v 13.9, Terminus 5 route 21.2 v 17.3); never-in up (Terminus 5 route
+3 v 2, Locks 5 route 1 v 0). What stands from D4: the residual twitch is the deploy move itself, and halt seats reached
+only round obstacles (round-36 design questions, below).
+
+### D4 bar (minimax deploy seating), FILED BEFORE ANY BUILDER0 NUMBER (2026-10-19 11:35 PDT)
+- **Probe:** `make native orders-probe ORDERS_PROBE_SEEDS="3621 3622 3623 3624 3625 3626" ORDERS_PROBE_ARMS="main:--gate-deal=off minimax_off:--gate-deal=off,--deploy-minimax=off"`
+  (R35.26: both arms with the gate deal OFF, so D4 is judged on today's main behaviour whatever D5's fate); tree stream/orders
+  `68d4c06cd` (code = `554131533`).
+  on builder0 (native), 24 cells x 6 fresh seeds (never run anywhere; seeds move the click <= 12 m), medians a cell. Seed
+  34 (tuned on, laptop) reported only. **Counter first:** the two arms' rows differ in >= 1 cell (the seating acted).
+- **Gain (must pass):** summed over the 24 cells, the median `twitch worst m` at least 20 % lower on main; and the Terminus 5
+  click cell's median twitch lower on main.
+- **Guards (each cell):** median all in <= minimax_off x 1.2 + 3 s, no more never-in seeds; median `place worst m` <=
+  minimax_off + 5 m; median `twitch worst m` <= minimax_off + 3 m (the orchestrator's addition: a sum can hide one cell
+  getting worse, as the laptop's Locks 5 did); median end foreign min >= minimax_off - 3 m; deck / far no higher.
+
+### D4 what's left of the shuffle: traced (laptop GDScript, seed 34, the 6 click cells, stream/orders `9370f5ddb`)
+- Twitch after the place window (8 s from the deploy), worst crew: Crossing 3 25.2 m, Crossing 5 21.4, Locks 3 8.6, Locks 5
+  13.6, Terminus 3 9.8, Terminus 5 31.3. Squads deploy all-in or on the 10 s cap about half and half.
+- **Terminus 5, squad 4 (31.3 m), traced every second:** the last crew in (Delta_2, still driving to its travel seat on the
+  east wing at t 6-8) was seated at the deploy (t 9) on the far end of its own herringbone, 45 m away; it drove past its
+  squadmates in a street, sat blocked t 11-21 and stopped 18 m short behind Delta_1. So most of what reads as "twitch" is
+  the DEPLOY MOVE overrunning the 8 s window: a wedge (wide ACROSS the approach) re-forms into a herringbone 55 m deep ALONG
+  it, so the wing crews have up to ~27 m each to go, through squadmates, in lanes.
+- **Tried and reverted:** seating nobody past a standing squadmate (the battery rule's PAST_COST with every squadmate):
+  Terminus 5 unchanged (31.3 m), Locks 3 worse (23.1 v 8.6 m), Crossing 5 21.4 -> 27.3. Not kept.
+- **Built, `93c1b35db`: minimax deploy seating** (`ElementPlan._deploy_keep`, `--deploy-minimax=off`): every assignment
+  (<= 6 crews), the longest leg shortest, then the least total, pinned through `_group`'s `keep`. Laptop GDScript seed 34:
+  Terminus 5 twitch 31.3 -> 14.0 m (place 25.0 -> 22.4), Locks 5 13.6 -> 15.5 (place 28.7 -> 26.0), 4 cells identical.
+  `test_control_deploy_minimax` 3/0. Not judged yet (builder0, fresh seeds, a bar first).
+- **Crossing 3, squad 1 (25.2 m), traced:** a different cause. At the deploy (t 13) Alpha_1's seat is 8.7 m off and Alpha_3's
+  18.5 m, but both drive detours of 20-30 m (Alpha_1 to the west deck's end and back over 20 s; Alpha_3 30 m south and back):
+  the halt laid ON the spot puts seats that are reached only round an obstacle. The halt lay would need driving distance
+  (like `_dry_halt_anchor` steps inland from water); ElementPlan is pure (no navmesh) today. Ruled (orchestrator): the
+  halt lay stays pure this round; **round-36 design question:** give the deploy's halt lay a reachability input (e.g. the
+  controls pass, with the order, which grid cells near the spot are reached by a short drive), so seats behind a wall
+  or across a bank step away as `_dry_halt_anchor` does for water.
+- **What the trace points at (not built):** the deploy's shape change itself. Either the halt is laid so the travel seats
+  map onto it without crossing (a herringbone's seats ordered as the wedge's, wings to the far ends by side, not by
+  least total), or the halt in lanes is laid ACROSS the street as the travel shape is. Both are the halt-lay functions in
+  my carve-out; the first is the smaller change and the next D4 step.
+
+### D5 bar (C35.5), FILED BEFORE ANY BUILDER0 NUMBER; amended by the orchestrator (fresh seeds), as filed on main
+- **Probe:** `make orders-probe ORDERS_PROBE_SEEDS="3611 3612 3613 3614 3615 3616" ORDERS_PROBE_ARMS="main: gate_off:--gate-deal=off"`
+  on builder0 (native), the 24 cells x 6 FRESH seeds 3611-3616 (n 6 a cell; medians, the table's MEDIANS block; a seed moves the click, and the route's waypoints, <= 12 m to a dry standable point; 3601-3602 were seen on the laptop, so not judged; no laptop run on 3611-3616), the same tree (deploy
+  step ON, pack OFF). Seed 34 (the cell the fix was tuned on, 43.3 -> 16.9 s on the laptop) is REPORTED only.
+  **Counter first (R35.5):** `gates_laid` > 0 in the route cells on main; the legs (`ORDERS_PROBE_LEGS`) differ between arms.
+- **Gain (must pass):** the Locks 5-squad route's median all in <= 0.7 x gate_off's median (a seed never in counts as inf);
+  and over the 12 route cells the summed median all in lower on main.
+- **Guards:** the click cells identical across arms on every seed (the table's EQUALITY line: the deal acts only on queued
+  legs); every route cell median all in <= gate_off x 1.2 + 3 s, and no more never-in seeds than gate_off; deck / far no
+  higher than gate_off in any cell; drive/plan median <= gate_off + 0.2 in each cell.
+
+### D6 A/B 1 (builder0 `84ba02a69`, seeds 3641-3646): passed its bar as filed, HELD (R35.38) for 2 far-bank crossings
+Every squad every leg 144/144 with requeue v 117/144 off; click cells 36/36 identical; legs differ in 12 / 36 route runs.
+BUT Crossing 5 route s3643 with requeue: two squads reached the far bank (0 off). Traced on the laptop: squad 4's final
+place sat at the west bridge's mouth (-100, 28; his click at -103, 31), reached by its whole route from the north-east, so
+its shape's seats lay past the dry deck on the far bank (the water rule keeps seats off the canal, not off the deck's far
+end). **Fix `1b174f05d`:** a shifted leg's places step back from any deck their seats would reach (`SelectionSquads.deck_clear`,
+reach = half the squad's widest extent, along the way it came; a click on/beside a deck leaves them; under D6's switch).
+Laptop s3643: far bank 1 -> 0, two places moved, all in 44.5 s. `test_control_deck_clear` 3/0; control suite 467/0.
+**Re-read:** fresh 3651-3656, the same bar + "far bank 0 in every cell" (R35.38's standing guard); waits for the series lane.
+
+### D5 re-read: FAILED its bar, the gate deal PARKED OFF (`84ba02a69`; `--gate-deal=on` opts in)
+builder0, `make native orders-probe`, `bd22ac4c8` (D5's fix try on, D4/D6 off), FRESH seeds 3631-3636, n 6; rows
+`references/round35/orders/d5-ab2-bd22ac4c8/`. Click cells 36/36 identical. Gain: Locks 5 route median all in 25.8 v 34.2 s
+(25 % faster; the line was 0.7x = 23.9 s): fail; route medians summed 170.5 v 179.2 s. Guards: never-in, all-in, drive/plan
+pass (Locks 5 route drive/plan 1.49 v 3.37); deck touches up in Crossing 3 route (5 v 3) and Crossing 5 route (5 v 2), all
+near-ramp nosing, far bank 0: fail. In his terms: the Locks 5-squad route gets in ~8 s sooner, less than the bar asked.
+
+### D6 (R35.28): a shift-click never REPLACES a squad's route because its elements don't match the group. Bar FILED BEFORE CODE
+Option (b): a shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal stays: it is
+what stopped his interleaved squads crossing). Bar (as the orchestrator filed it on main): Crossing 5 route s3614 (the
+reproduction; reported) + fresh route seeds: every squad gets every leg (legs per squad = waypoints); round 22's Sumps seed
+5988 scenario keeps 0 path crossings; test_control_queued_task and the route tests green; the click cells byte-identical; a
+test that reproduces the replace. Fresh route seeds **3641-3646** (named on main); counter first: legs queued per squad
+differ between arms in >= 1 route cell; the reproduce-the-replace test red with the switch off, green with it on (built:
+`test_control_requeue`, both directions). Order: after D5's re-read and D4's A/B. Code: `862e60970`, OFF until then.
+
+### D5 A/B 1 (builder0, `554131533`, seeds 3611-3616): gain PASSED, guards FAILED; one fix try (R35.26)
+- **Read:** Locks 5 route median all in 19.9 v 33.4 s (gain line <= 23.4: pass); route medians summed 153.3 v 170.4 s; click
+  cells 36/36 identical. **Failed guards:** Crossing 5 route 1 never-in seed (s3614) v 0; deck touches Crossing 3 route 6 v
+  5 and Locks 3 route 4 v 2 (every extra one a crew nosing onto the NEAR end of a ramp, z 11.9 / ~31; far bank 0
+  everywhere); Crossing 5 route drive/plan 2.17 v 1.94 (+0.23 v +0.2). Rows: `references/round35/orders/d5-ab-554131533/`.
+- **Trace s3614 (reproduced on the laptop):** the gate's approach `prev - before` pointed BACKWARDS (-9.4, 4.2; the route
+  runs -x -z) because waypoint 2's places had been laid ~40 m behind the click, near the squads' first legs; so the deal's
+  front rank and never_behind ran the wrong way and sent squad 1 17 m back, and squad 4 (one of three squads whose route had
+  collapsed to a single leg, both arms: a separate bug, below) ended 29 m short in the changed traffic.
+- **Fix try (`45d34470a`):** with the deal on, the gate is passed from where the squads come from (`before`) toward the next
+  click. s3614 laptop: squad 1's place now forward and to the side; all in 33 s. Locks 5 route s34 unchanged (17 s).
+- **Separate bug seen (both arms, not touched; he would notice it):** in Crossing 5 route s3614 squads 3-5 got ONE leg each
+  (their task REPLACED at each shift-click, never queued). Traced with the probe's `--probe-legs-each=on`: from the first
+  click, `selection_squads()` returns squads 3-5 with MIXED units (squad 4 = Charlie_2, Charlie_3, Delta_4, Delta_5, Echo_4;
+  squad 3 = Echo_1-3), i.e. `SelectionSquads.split` dealt them west to east as if from one oversized group, so no element is
+  exactly theirs, `_queue_task_for` gets `held == null`, returns null, and the squad's task is replaced. **Cause (traced):**
+  the split is clean at every click; the mixing is round 22's `SelectionSquads.untangle` (O1b) inside the FIRST click,
+  which re-deals VEHICLES between squads whose drives would cross, so the elements formed then no longer match the control
+  groups, and every later shift-click finds no element exactly the group. Fix options: untangle whole squads (deal squads
+  to places, never vehicles across squads), or have a shifted move queue on the elements the units now belong to. A design
+  choice (O1b's re-deal was his round-22 case): to the orchestrator.
+- **Next:** the fresh re-read on 3631-3636 (filed on main, same bar) once D4's run frees this folder; fails again -> D5 parks.
+
+### D5 crossing drives: built on stream/orders `77c284868` (no builder0 number yet)
+- **Trace** (laptop GDScript, Locks 5 route, seed 34, `ORDERS_PROBE_LEGS` + `--probe-trace`): not the last leg. The IN-BETWEEN
+  gate (O4's `gate_anchors`, waypoint 2) dealt squads left to right by where they stood AT HOME and stepped ranks by the
+  HALT depth (herringbone, 55 m + gap): squad 3 (middle start, middle end) got the gate's far east (40, 60) and squads 2 / 4
+  places 11-15 m BEHIND their own first leg. Squad 3 drove 208.6 m for a 69.9 m plan and crossed squad 5 at the junction.
+- **Fix** (`RtsControls.GATE_DEAL`, `--gate-deal=off` = round 34): the gate is dealt by each squad's previous leg end, the
+  nearest the gate take the front rank (left to right within it), ranks step by the travel shape's depth, and no gate place
+  is behind the previous leg (R34.12b's never_behind). Plus `SelectionSquads.uncross_paths` (a leg's places swapped where
+  the squads' navmesh paths cross, length guard 1.25x + 10 m, `--uncross=off`): a backstop, 0 swaps in this cell.
+- **Laptop GDScript, Locks 5 route, seed 34, n 1:** all in 16.9 s v 43.3 s (`--gate-deal=off`), worst shuffle 32.6 v 53.8 m,
+  twitch 3.1 v 12.5 m, drive/plan 1.26 v 3.06, deck 0 v 1. Tests: `test_control_gate_deal` 3/0, `test_control_uncross` 5/0.
+- **Next:** the 24-cell probe on builder0 with arms main / `--gate-deal=off` (counter: gates_laid and the legs) after D1's
+  merge and D2; bar below before reading it.
+
+### D3 tight packing: PARKED, OFF by default (`--pack=on` / `PACK=on`), code on stream/orders `183eb4cd6`
+**What was built** (`SelectionSquads.pack_halts`, `RtsControls._pack_halts`, the task's `halt_at` / `halt_shape` / `lay` per
+R35.6, `ElementPlan._deploy_state` / `_deploy_shape` read them): with the deploy step on and 2+ AUTO squads on one plain
+click, each squad's HALT seats are laid at order time and packed on a 2 m grid: every halt seat 9 m from another squad's,
+no seat inside another squad's halt outline (a coil is a ring: by seat clearance alone a second coil stood inside it),
+columns 28 m, nobody sent back past where it stands, seats within 4 m of standable ground (water refused), the click's
+ground cap, halts may turn 90 deg across the approach (the Locks strip), started from the ranks and compacted (each squad,
+dearest first, to its cheapest place that still fits), squads of one shape dealt to the places by least driving. 14 tests
+(`tests/test_control_pack.gd`), laptop 14/0.
+**Why parked (what it found):** the brief's premise ("with the deploy step the halt seats are known, so packing is exact")
+holds for the HALT only. Squads ARRIVE in their travel shape (a wedge ~60 m wide for five) and deploy only when every crew
+is in, so packed halts put two arriving wedges' slots 5.7 m apart (`test_control_two_squads`' "slots do not mix" fails) and
+the 5-squad Locks cell jams (laptop GDScript probe: place move 40.7 m, twitch 27.3 m, drive/plan 2.25). Keeping the travel
+shapes apart too (`PACK_TRAVEL_CLEAR_M` 7 m) makes the pack no tighter than the ranks (five coils: 70.7 m v 68.7 m to the
+farthest crew; by halts alone 64.4 v 73.6). Round 34's O2 note said the same ("the travel seats before all-in still aren't").
+And on the Locks the strict ground test stacks squads back along the approach (the decided rule for tight ground), so end
+spread there grew (3 squads: 66.9 v 47.6 m), not shrank. No bar number was read on builder0 (laptop iteration only).
+**What would unlock it (a design question, for the orchestrator / the lead):** packed squads must ARRIVE in something that
+nests as tightly as their halts. Options, most reversible first: (a) a packed squad's last stretch in a narrower arrival
+shape (file / column) that its halt opens out of; (b) deploy each squad as soon as ITS crews are in, the first-in front ones
+first, so arrival overlap is transient (needs a stage); (c) accept B6-style shape-on-the-final-approach (failed its bar in
+round 34 on a stale goal, B7 found the cause). Recommendation: (a).
+
+### D3 bar (C35.4), FILED BEFORE ANY NUMBER (2026-10-19 ~09:20 PDT)
+- **Probe:** `make orders-probe` on builder0 (native), seed 34, n 1 a cell (deterministic): Locks / Crossing / Terminus x 3 / 5
+  squads x click / route = 24 cells, arms `main:` (pack on) v `pack_off:--pack=off`, the same tree, the deploy step ON in both.
+- **Gain (must pass):** over the 6 CLICK cells, the median of each cell's `end far max m` (the farthest crew from the click at
+  the window's end) at least 15 % below pack_off's; and in EVERY cell `end foreign min m` >= 7 m (the 9 m design, less
+  grounding slop), on both arms reported.
+- **Guards (each must hold in every cell):** all-in <= pack_off x 1.2 + 3 s, and no cell all-in on pack_off but not on main;
+  far bank 0; `toward min m` >= 0 (nobody sent away from the click); `twitch worst m` <= pack_off + 5 m.
+- **Response:** `test_control_scale` (the click's 3-tick response) passes in the check of the named hash.
+- **Single squads:** the pack acts only on 2+ squads; `make squad-arrive-series ARRIVE_ARM_FLAG=pack ARRIVE_MAPS="terminus sumps"
+  ARRIVE_SEEDS="1 2"` both arms must be byte-identical (an equality check, reported).
+- Screenshots (`orders-probe-shots`, arrival and +5 s, desktop and phone) looked at for every 5-squad click cell.
+
+### D1 census bar (C35.2), FILED AFTER THE READING (said plainly)
+The census ran (`e9066083a`, builder0) before the orchestrator asked for the bar, so this bar is written after its numbers.
+It is moot in this instance: the two arms are byte-identical (below), so no line could read differently.
+- **Probe:** `make deploy-census`: CPU v CPU (both sides ElementCommander), Locks / Terminus / Sumps x fresh seeds 3501-3516,
+  factions rotated by seed, 1000 credits, 150 s, paired by (arena, seed), on v `--deploy-step=off`; n 48 pairs.
+- **Gross (blocks shipping, to the orchestrator):** per side or pooled, deaths UP or kills DOWN by more than 2 se of the
+  summed paired difference; stuck crew-seconds UP by more than 2 se. Alive and deploys are reported only.
+- **Reading:** every line diff +0.0, se 0.0: arms byte-identical, 0 deploys on either side. The census's CPU gives
+  screen / attack / support_by_fire / ambush tasks, never a plain move (`--trace=on`, laptop, Locks s3501, 40 s), so the deploy
+  step never fires in a fight. **Not gross: D1 passes.** Rows: `references/round35/orders/d1-census-e9066083a/`.
+
+### Working rule (R35.15)
+After any merge of main that touches `native/src`, `touch native/src/*` before a remote run (builder0's rsync keeps the old
+mtimes, so a stale native library can survive) and check sim-baseline reads main's current lines.
+
+### Plan (2026-10-19, round 35)
+1. **D1** the flip (`ee16b1b1e` = main a0ae0aafd + 07c029732's code; brains' brief left out) → quick-remote → full check on
+   builder0 (one at a time: the orchestrator's C35.3 pair check is on the box at launch) → attribute moved sim-baseline maps
+   with `make remote T="native sim-variants VARIANTS_EXTRA=--deploy-step=off VARIANTS_TAG=deployoff"` (off must read the
+   recorded lines) → the REPORTED fights census (`make deploy-census`, new: CPU v CPU, Locks/Terminus/Sumps x fresh seeds
+   3501–3516, factions rotated, on v off, deaths/kills/stuck/deploys by side, > 2 se = gross) → name the hash.
+   *Decided:* own census probe (`tests/control/deploy_census.gd`) rather than manoeuvre's fight_census (random arenas deal
+   twins, R34.15; it has no stuck count) or traffic's jam census (not on main).
+2. **D2** `make orders-probe` arms `main:` v `deploy_off:--deploy-step=off` on the shipped hash + shots (arrival, +5 s).
+3. **D3** tight packing (bar filed first). 4. **D4** shuffle trace. 5. **D5** crossing drives. 6. Stretch: halt markers.

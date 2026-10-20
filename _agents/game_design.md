@@ -4100,3 +4100,11 @@ Asked in player terms with one recommendation each; his picks verbatim:
   in ~8 s sooner with half the detour; the cost (a little more near-ramp nosing on the Crossing, never across) is accepted.
 - **The joint W1c + T9 (R35.64): SHIP on the series' numbers** (attack-move never-settled 48 -> 23, crews 25+ m off goal 105 -> 59,
   every guard held), over the orchestrator's recommendation of a re-run; the failed (d) line was mis-sized and is recorded as such.
+
+## Round 36: the preparation (2026-10-20 afternoon, the orchestrator; no new playtest words)
+
+He answered the question tool's "playtest first, or build round 36 from the agents' own list?" with **"Use agents' list"**, and on
+launch timing: *"I'm confused about what's not on main. I just killed all the other agents, no one is actively working on
+anything"* (the orchestrator explained: the joint ship, the scoreboard tool and T8 were not on main; their remote jobs outlived the
+sessions). Round 36 goes after what he would notice from round 35's findings: the held crew under fire (T8), the crew wedged between
+friends (stallnet), crews left behind, and the arrived squad in the next squad's street.

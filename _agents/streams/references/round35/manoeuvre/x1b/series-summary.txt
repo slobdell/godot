@@ -1,0 +1,4 @@
+>> base start 12:11 on a8e629fb8
+>> remote: make native manoeuvre-fights FIGHT_AT=locks FIGHT_RANGE=4300-4323 FIGHT_JOBS=4 exited 0 (build/ copied back)
+>> on start 12:29 on d24558cd4
+>> remote: make native manoeuvre-fights FIGHT_AT=locks FIGHT_RANGE=4300-4323 FIGHT_JOBS=4 exited 0 (build/ copied back)
