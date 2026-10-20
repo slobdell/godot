@@ -1,4 +1,13 @@
-# builder2, the GCP burst builder (`balsa-worker-gcp`)
+# The GCP burst builder
+
+> **2026-10-19: Tank Squad has its own cost-optimized Spot VM, `tanksquad-builder` (`builder3`): e2-highcpu-32 (32 vCPU,
+> 32 GB) in us-west4-a, 40 GB pd-balanced, idle auto-stop after 20 min with no `make`.** Create it with `make gcp-provision`
+> (`tools/gcp/provision.sh`, startup `tools/gcp/startup.sh`); `make gcp-*` targets now default to it. Why e2 in us-west4: the
+> cheapest CoreMark per Spot dollar of everything compared (table at the end, ~$0.11/h listed). e2 lands on mixed CPU platforms
+> (Broadwell to Rome), so per-core speed varies by boot; throughput per dollar is still the best. builder2 below is plane_maker's
+> VM, kept as it was (reach it with `GCP_VM=balsa-worker-gcp GCP_ZONE=us-west1-a GCP_HOST=slobdell@builder2`).
+
+## builder2 (plane_maker's `balsa-worker-gcp`), the round-33 burst builder
 
 A second remote build machine for Tank Squad, powered on only when we want more throughput. builder0 stays the default
 for everything. This one is a Google Cloud VM that we start, use, and stop again. It is the plane_maker project's
@@ -137,7 +146,12 @@ confirm in the console), x86 only (an ARM box would not share the sim-baseline h
 | c2d-highcpu-32 | 32 / 64 GB | AMD Milan | 710,036 | 0.610 | 1.16 M |
 | e2-highcpu-32 | 32 / 32 GB | mixed Intel/AMD | 416,599 | 0.475 (us-west4 0.112) | 0.88 M |
 
-**Recommendation:** c3d-highcpu-60 Spot in us-west1, about builder2's price for about twice its throughput (or c3d-highcpu-30 at
+**Recommendation (first pass):** c3d-highcpu-60 Spot in us-west1, about builder2's price for about twice its throughput (or c3d-highcpu-30 at
 half builder2's price for about the same). CoreMark is a proxy; one pinned series chunk on the chosen box (rows must equal
 builder0's) is the real check. Also: auto-stop after ~20 min with no `make` running, a dedicated ~40 GB pd-balanced disk (not the
 shared 100 GB hyperdisk), and a Spot vCPU quota of 60+ for C3D in the region.
+
+**Decided (the lead, 2026-10-19): the cheapest.** e2-highcpu-32 (e2 stops at 32 vCPU) Spot in **us-west4**, listed at ~$0.112/h
+(about 3.7 M CoreMark per $/h, the best ratio; us-west1's e2 Spot is $0.475/h). Quota checked: us-west4 E2_CPUS 72, CPUS 200;
+PREEMPTIBLE_CPUS there is 0, so the Spot VM draws on regular CPU quota (the provision run confirms). Verify on first use: a pinned
+series chunk on builder3 reads the same rows as builder0, and sim-baseline reads the recorded lines (same glibc 2.43 image).
