@@ -11,7 +11,7 @@ extends RefCounted
 ##
 ## Report: the Sirens' arrival (`sirens_s`, the stage's all-in), Hunters2's arrival and deploy tick, THE JAM'S OWN COUNTER
 ## (`held_s`: Sirens crew-seconds standing, under HELD_SPEED, within HELD_NEAR_M of a Hunters2 crew, before the Sirens are
-## in; `held_worst_s` the worst crew's), and the deploy waits X3b's DEPLOY_PASS made (`pass_waits`).
+## in; `held_worst_s` the worst crew's), and Hunters2's deploy tick. (X3b's DEPLOY_PASS, the remedy this stage judged, closed R36.2: 0 jam cells of 32 on builder0.)
 
 const HUNTERS2 := {"name": "Hunters2", "unit": "law_ifv", "at": [[-43.8, 85.1], [-51.2, 71.8], [-21.4, 69.4]], "to": [-64.8, 69.8]}
 const SIRENS := {"name": "Sirens", "unit": "law_suppressor", "at": [[-7.2, 58.5], [-7.5, 64.3], [-13.0, 70.0], [-5.5, 73.1]],
@@ -52,7 +52,6 @@ static func run(case: TestCase, seconds: float, lead_m := 0.0, goal_dx := 0.0, g
 		await lab.step()
 	for squad: Dictionary in squads:
 		squad["element"] = lab.elements.form(squad["names"], String(squad["name"]))
-	var waits_before := int(ElementPlan.deploy_pass_waits)
 	for squad: Dictionary in squads:
 		(squad["element"] as Element).assign({"verb": "move", "to": [(squad["to"] as Vector3).x, (squad["to"] as Vector3).z],
 				"drills": false})
@@ -94,10 +93,9 @@ static func run(case: TestCase, seconds: float, lead_m := 0.0, goal_dx := 0.0, g
 	for unit_name: String in held:
 		total += int(held[unit_name])
 		worst = maxi(worst, int(held[unit_name]))
-	var report := {"lead_m": lead_m, "goal_dx": goal_dx, "goal_dz": goal_dz, "pass": ElementPlan.DEPLOY_PASS, "step": ElementPlan.DEPLOY_STEP,
+	var report := {"lead_m": lead_m, "goal_dx": goal_dx, "goal_dz": goal_dz, "step": ElementPlan.DEPLOY_STEP,
 			"sirens_s": _s(int(arrived.get("Sirens", -1))), "hunters2_s": _s(int(arrived.get("Hunters2", -1))),
-			"deployed_s": _s(deployed_tick), "held_s": _s(total), "held_worst_s": _s(worst),
-			"pass_waits": int(ElementPlan.deploy_pass_waits) - waits_before}
+			"deployed_s": _s(deployed_tick), "held_s": _s(total), "held_worst_s": _s(worst)}
 	lab.dispose()
 	return report
 

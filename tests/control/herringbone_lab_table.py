@@ -35,7 +35,7 @@ def main(path: str) -> None:
                 cells.append(f"{arm}: missing")
                 continue
             cells.append(f"{arm}: in {d['sirens_s']:5.1f} held {d['held_s']:4.1f}/{d['held_worst_s']:4.1f} "
-                         f"dep {d['deployed_s']:5.1f} w {d['pass_waits']}")
+                         f"dep {d['deployed_s']:5.1f}")
         jam = ""
         if "off" in by_arm and "nostep" in by_arm and _in(by_arm["off"]) - _in(by_arm["nostep"]) >= JAM_S:
             jam = " JAM"

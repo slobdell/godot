@@ -20,7 +20,7 @@ func _cell(flags: Array) -> Dictionary:
 			if parsed is Dictionary:
 				return parsed
 	assert_true(false, "the child printed its line: %s" % text.substr(0, 400))
-	return {"sirens_s": -1.0, "hunters2_s": -1.0, "deployed_s": -1.0, "pass_waits": 0}
+	return {"sirens_s": -1.0, "hunters2_s": -1.0, "deployed_s": -1.0}
 
 
 func test_the_stage_deploys_hunters2_while_the_sirens_drive_through() -> void:

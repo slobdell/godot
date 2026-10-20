@@ -1,7 +1,7 @@
 extends SceneTree
 ## Round 36 (orders O1): the herringbone-across-a-lane lab stage (tests/control/herringbone_lane_stage.gd), one run a process.
-##   godot --headless --fixed-fps 60 --path . --script res://tests/control/herringbone_lane_probe.gd -- --lead=0 --seconds=40 [--deploy-pass=on]
-##   HERRINGBONE_LAB {"lead_m", "pass", "step", "sirens_s", "hunters2_s", "deployed_s", "held_s", "held_worst_s", "pass_waits"}
+##   godot --headless --fixed-fps 60 --path . --script res://tests/control/herringbone_lane_probe.gd -- --lead=0 --seconds=40 [--deploy-step=off]
+##   HERRINGBONE_LAB {"lead_m", "step", "sirens_s", "hunters2_s", "deployed_s", "held_s", "held_worst_s"}
 
 var case: TestCase
 

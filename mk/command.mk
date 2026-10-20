@@ -706,20 +706,18 @@ body-seeds-orders: native-for-check import ## Round 35 (orders X3b): the body st
 	@rm -rf $(BUILD_DIR)/body-seeds && mkdir -p $(BUILD_DIR)/body-seeds
 	@for seed in $(BODY_SEEDS); do for arm in $(BODY_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
-			--seed=$$seed --body=on --side=green --seconds=60 --deploy-pass-trace $$flags > $(BUILD_DIR)/body-seeds/run.log 2>&1; \
+			--seed=$$seed --body=on --side=green --seconds=60 $$flags > $(BUILD_DIR)/body-seeds/run.log 2>&1; \
 		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-seeds/run.log | sed "s/^/$$name s$$seed /" >> $(BUILD_DIR)/body-seeds/lines.txt \
-			|| echo "$$name s$$seed: no BODY_PROBE line"; \
-		echo "$$name s$$seed $$(grep -c '^DEPLOY_PASS_WAIT' $(BUILD_DIR)/body-seeds/run.log)" >> $(BUILD_DIR)/body-seeds/pass_waits.txt; done; done
-	@awk '{w[$$1]+=$$3} END {for (a in w) printf "deploy_pass_waits %s %d\n", a, w[a]}' $(BUILD_DIR)/body-seeds/pass_waits.txt | sort
+			|| echo "$$name s$$seed: no BODY_PROBE line"; done; done
 	@$(PYTHON) tests/control/body_seeds_table.py $(BUILD_DIR)/body-seeds/lines.txt | tee $(BUILD_DIR)/body-seeds/table.txt
 
-# Round 36 (orders O1, C36.4): the herringbone-across-a-lane lab stage (tests/control/herringbone_lane_stage.gd), X3b's
-# DECIDING workload: HB_LEADS x HB_DX x HB_DZ fixed cells x HB_ARMS, one process a run (light-lane safe) ->
+# Round 36 (orders O1, C36.4): the herringbone-across-a-lane lab stage (tests/control/herringbone_lane_stage.gd), the deploy step's
+# street-jam workload (X3b's, closed R36.2): HB_LEADS x HB_DX x HB_DZ fixed cells x HB_ARMS, one process a run (light-lane safe) ->
 # build/herringbone-lab/lines.txt, then the per-cell table (jam cells: off - nostep >= 3 s) -> table.txt.
 HB_LEADS ?= -10 -20
 HB_DX ?= 0 3 6 9
 HB_DZ ?= 0 -2 -4 -6
-HB_ARMS ?= off: on:--deploy-pass=on nostep:--deploy-step=off
+HB_ARMS ?= off: nostep:--deploy-step=off
 .PHONY: herringbone-lab
 herringbone-lab: native-for-check import ## Round 36 (orders O1): the herringbone lab stage, every cell x HB_ARMS -> build/herringbone-lab/table.txt
 	@rm -rf $(BUILD_DIR)/herringbone-lab && mkdir -p $(BUILD_DIR)/herringbone-lab

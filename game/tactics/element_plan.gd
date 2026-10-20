@@ -1824,36 +1824,6 @@ const DEPLOY_INLAND_STEP_M := 2.0
 const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
 const DEPLOY_ON_SPOT_M := 12.0
-## X3b (round 35 extension, R35.17): THE DEPLOY WAITS FOR PASSING TRAFFIC. Traced (builder2 bfcbb132b, the body stage s1):
-## Hunters2's herringbone deploy put Hunters2_3 1.9 m into the Sirens' lane and held Sirens_1 9 s (off 18.5, on 24.0); its
-## travel seats let the Sirens by. An all-in squad keeps its travel seats while a friendly crew of ANOTHER element is passing
-## (`situation["passers"]`, DeployPassers): within DEPLOY_PASS_NEAR_M of its centre, moving, its own destination farther than
-## DEPLOY_PASS_BEYOND_M away. DEPLOY_CAP_S still deploys. OFF until judged (R35.74): `--deploy-pass=on` (env DEPLOY_PASS=on) opts in.
-static var DEPLOY_PASS := OS.get_cmdline_user_args().has("--deploy-pass=on") or OS.get_environment("DEPLOY_PASS") == "on"
-const DEPLOY_PASS_NEAR_M := 24.0
-const DEPLOY_PASS_BEYOND_M := 20.0
-const DEPLOY_PASS_SPEED := 1.0
-## Measurement: deploys held at least one update by a passer.
-static var deploy_pass_waits := 0
-static var DEPLOY_PASS_TRACE := OS.get_cmdline_user_args().has("--deploy-pass-trace")
-
-
-## Whether any passer ({"position", "velocity", "to"}) is driving past a squad centred at `center`. Pure.
-static func deploy_passing(passers: Array, center: Vector3) -> bool:
-	for passer: Dictionary in passers:
-		var at: Vector3 = passer.get("position", Vector3.INF)
-		var velocity: Vector3 = passer.get("velocity", Vector3.ZERO)
-		var to: Variant = passer.get("to")
-		if Vector2(at.x - center.x, at.z - center.z).length() > DEPLOY_PASS_NEAR_M:
-			continue
-		if Vector2(velocity.x, velocity.z).length() < DEPLOY_PASS_SPEED:
-			continue
-		if to is Vector3 and Vector2((to as Vector3).x - center.x, (to as Vector3).z - center.z).length() <= DEPLOY_PASS_BEYOND_M:
-			continue  # arriving here (a neighbour of the same click), not passing
-		return true
-	return false
-
-
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
 static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
 
@@ -1886,14 +1856,6 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 			break
 	var tick := int(situation.get("tick", 0))
 	var waited := int(state.get("arrived_tick", -1)) >= 0 and tick - int(state["arrived_tick"]) >= int(DEPLOY_CAP_S * SimClock.TICK_RATE)
-	# X3b (R35.17): an all-in squad keeps its travel seats while another squad's crew drives past it (the cap still deploys).
-	if all_in and not waited and DEPLOY_PASS and deploy_passing(situation.get("passers", []), center):
-		deploy["pass_waits"] = int(deploy.get("pass_waits", 0)) + 1
-		if int(deploy["pass_waits"]) == 1:
-			deploy_pass_waits += 1
-			if DEPLOY_PASS_TRACE:
-				print("DEPLOY_PASS_WAIT tick %d at (%.1f, %.1f)" % [tick, center.x, center.z])
-		return deploy
 	if all_in or waited:
 		deploy["deployed"] = true
 		deploy["tick"] = tick

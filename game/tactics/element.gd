@@ -564,7 +564,6 @@ func update(game_match: Match, orders: Object) -> bool:
 	var reseating := _reseat
 	_reseat = false
 	_reseat_keep = {}
-	if ElementPlan.DEPLOY_PASS and arrived and not bool(deploy.get("deployed", false)): situation["passers"] = DeployPassers.of(game_match, self, situation)  # X3b (orders, R35.74 grant): arrived/deploy are the last update's, so passers start one update late (harmless)
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	# Round 31 (B3b-2): the crossing's first route seating stands for this task point (ElementPlan holds it `fixed`).
 	if ROUTE_SEAT_ONCE and not crossing.is_empty() and not (plan.get("seats", {}) as Dictionary).is_empty():
