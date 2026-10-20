@@ -4091,3 +4091,12 @@ Asked in player terms with one recommendation each; his picks verbatim:
   test_native_avoid_gather, test_native_record. Order-proof already (FreshStage), cleaner with `place`: drive_twin_case,
   gate_twin_case. Harmless (snapshot reads): incoming, combat, threat, scan, route, tick_profile, movement_geometry, perception,
   shell. The other ~72 files belong to their owners' sorts.
+
+## Round 35 close: his two answers (2026-10-20, in chat, verbatim)
+
+> "ok the GATE_DEAL=on feature is clearly awesome let's keep it. For second question, yes, go ahead and ship it"
+
+- **D5, the gate deal (R35.34): SHIP, default ON.** He played `GATE_DEAL=on make skirmish ARENA=locks`: the Locks 5-squad route gets
+  in ~8 s sooner with half the detour; the cost (a little more near-ramp nosing on the Crossing, never across) is accepted.
+- **The joint W1c + T9 (R35.64): SHIP on the series' numbers** (attack-move never-settled 48 -> 23, crews 25+ m off goal 105 -> 59,
+  every guard held), over the orchestrator's recommendation of a re-run; the failed (d) line was mis-sized and is recorded as such.

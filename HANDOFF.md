@@ -4,7 +4,61 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-19 — **ROUND 35 IS RUNNING** (main 0f4d528d7 green, the scout turn-in shipped). Older header: **ROUND 34 IS PREPARED (below); round 33 is CLOSED.** Main inherits `d7d57f4cf`'s green check (builder2, `make check exited 0`, 2797/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved; `tools/merge_check_needed.sh d7d57f4cf` says INHERIT: only docs since). He pushes `main`._
+_Last updated: 2026-10-20 — **ROUND 35: HE ANSWERED BOTH QUESTIONS (ship D5 ON; ship the joint W1c + T9). Two hand-overs are in flight (R35.66); merge them, run one batch main check, then close the round.** Older headers below._
+
+## 🏁 ROUND 35: THE WORK IS DONE (2026-10-20 morning) — for him when he wakes
+
+**What he'll notice in play (all on main, each judged and checked):**
+- **His circled scout turns and fights** instead of shuffling backwards (C35.3).
+- **Squads sent together deploy as one move:** they keep their travel shape until all are in, then spread to their places; a squad
+  sent to a spot ends ON it (D1). The cost he chose: a squad that has just set up across a street can hold up the next for a few s.
+- **A shift-clicked route is followed by every squad** (D6): about one squad in six used to skip the waypoints; none crosses a bridge
+  he didn't click across.
+- **A crew under fire no longer steps aside into a killing zone** when the crew behind can drive round it (T7): jam-under-fire deaths
+  -13 % over 140 fights, nothing else worse.
+- **When one crew is wedged, its squad moves on to the next attack-move leg after ~8 s** instead of waiting a minute (E1).
+- **A War Rig (any wheeled turret hull) he tells to face a way turns to it and goes still** (M5, CP-F attempt 5, his round-32 ask):
+  within 15 deg 71–80 % of the time, nothing left creeping.
+- Under the hood: builder2 is back as a cheap Spot box (e2-highcpu-32, us-west4, ~$0.11/h, stops itself after 20 idle min);
+  native builds can't go stale; lab tests now match real play's engine state (E4/E4b); T7's lane test runs in C++.
+
+**HIS ANSWERS (2026-10-20, game_design.md *Round 35 close*): "the GATE_DEAL=on feature is clearly awesome let's keep it" and "yes,
+go ahead and ship it" (the joint). IN FLIGHT (R35.66):** orders flips GATE_DEAL ON and checks on builder2; manoeuvre cuts the joint
+hand-over on current main (T9's GDScript from traffic + T9's native half from native; W1c's mirror is already on main) and checks on
+builder0, attributing the moved maps with the switches off. **The next orchestrator:** merge each green hash alone (adopt the
+joint's moved sim-baseline maps on the merged tree with `make sim-baseline-adopt`), run ONE batch `make native check` of main under
+systemd-run, then close: archive the five briefs to `streams/archive/round35/`, rename `stream/*` to `round35/*`, remove the
+worktrees (rescue anything untracked first), update this file. Then round 36 from the list below.
+
+**ROUND 35 EXTENSION (2026-10-20, the lead away for the day; workstreams.md *Round 35 extension*):** the same five worktrees keep
+working: X1 manoeuvre (the joint ship, then W1b's deciding probe, R34.16's watch item), X2 traffic (T8 after the joint merges),
+X3 orders (D5 ON, then the deployed-squad street jam, the Crossing detour note), X4 brains (the released straggler's catch-up; the
+left-behind re-read after the joint), X5 native (**the round scoreboard**: player-facing numbers across mains, `references/scoreboard/`;
+the copy-back leak; two Tank.place test fixes). 14 finished side worktrees were removed (disk was at 885 MB free; now ~11 GB).
+
+**The two questions he answered (kept for the record):**
+1. **The Locks 5-squad route (D5, his item; parked as filed, R35.34):** with the gate deal on, all five squads get in about 8 s sooner
+   and drive half the detour, but crews nose onto a bridge ramp on the Crossing a little more often (never across). Try it:
+   `GATE_DEAL=on make skirmish ARENA=locks`. **Recommendation: try it; if it feels better, say ship and it flips ON.**
+2. **The 70-second stuck scout (W1c + T9, R35.64):** with both on, a crew pinned against a parked friend asks again and the parked
+   crew moves: attack-move crews that never settle 48 -> 23, crews left 25+ m off their goal 105 -> 59, every safety guard held. It
+   failed one line of its bar, but that line was mis-sized (it asked for a drop the base couldn't give). **Recommendation: a short
+   round-36 re-run on fresh seeds with the bar fixed**, not shipping on these numbers.
+
+**Parked this round, each with its reading (workstreams R35.x):** D3/D3b tight packing (packing pushed places away from the click;
+round 36 redesigns the objective), D4 arrival seating, D5 (above), W1b (a held wheeled hull standing still: the other side's accuracy
+rose past its guard), E2 (M5 already does it), the joint (above). E3: no lever (the piecemeal look follows the fight).
+
+**The orchestrator's own misses, recorded as lessons:** it let five series and two checks share builder0 for an afternoon against
+C35.1 (R35.36), launched a long remote check without systemd-run (killed at 90 min), let a multi-word CHECK_TARGETS be word-split, and
+sized the joint's deciding line without checking the base could reach it (R35.64).
+
+**Round 36 candidates (from each stream's final Status):** the joint re-run; T8 (a held crew under fire leaves the hold; bar filed);
+a deployed squad's herringbone across a street; the packing objective; the Crossing's halt detours; W1b's probe; the released
+straggler's catch-up; the 85 bare-teleport test files; the copy-back leak into series folders.
+
+**perf-judge on main, alone on a quiet builder0: JUDGED, PASS** (fde32f78c, ratio 1.01x, 7.0 ms AI a tick, attempt 1; covers T7, E1,
+D1, D6, M5). **Not yet done at the close:** worktrees not removed (they stay until his answers, as in round 34); briefs not archived.
 
 ## 🚀 ROUND 35 IS PREPARED (2026-10-19) — read this first
 
