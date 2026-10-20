@@ -149,7 +149,7 @@ static func run(case: TestCase, seed_value: int, seconds: float, mirror := false
 			# match from a different spot.
 			var intended: Vector3 = spawned[unit_name]
 			var at := SlotGround.for_unit(t, intended, String(t.unit_id))
-			t.global_position = Vector3(at.x, 0.0, at.z)
+			t.place(Vector3(at.x, 0.0, at.z), t.rotation.y)  # round 35 (E4): the body with the node, not a tick later
 			t.velocity = Vector3.ZERO
 			if TRACE:
 				print("BODY_PLACE %s snapped (%.2f, %.2f)" % [unit_name, at.x, at.z])
