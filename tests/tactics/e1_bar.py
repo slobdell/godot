@@ -49,7 +49,8 @@ def long_seconds(log):
             close(element, not reached or closed)
     for element in list(streak):
         close(element, False)
-    return total, max(released, inferred)
+    # The trace's exact count when the log has one (Element.stragglers_released, round 35), else the inference.
+    return total, released if released is not None else inferred
 
 
 def left_behind(log):

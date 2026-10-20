@@ -144,8 +144,10 @@ static var stalls_arrived := 0
 var _stall_best := INF
 var _stall_tick := -1
 var stall_arrived := false
-## Round 35 (brains E1): the leg gate's straggler clock (ElementPlan.leg_wait), reset with every task.
+## Round 35 (brains E1): the leg gate's straggler clock (ElementPlan.leg_wait), reset with every task. `stragglers_released`
+## counts the crews the gate stopped waiting for (process-wide), on the tick it happens; ELEMENT_TRACE prints this element's.
 var leg_wait := {}
+static var stragglers_released := 0
 ## B9: the task's `via` point has been driven through (ElementPlan's via leg), reset with every task.
 var via_done := false
 ## Round 25 (brains F3): {unit: the seat a crew stopped in a crossing's mouth was last sent on to} (once per seat).
@@ -1738,7 +1740,8 @@ func _trace_element(plan: Dictionary, situation: Dictionary) -> void:
 			forward.x, forward.z, String(plan.get("formation", "")), String(plan.get("technique", "")), float(plan.get("file", 0.0)),
 			plan.get("corridor_m", INF), (situation["center"] as Vector3).x, (situation["center"] as Vector3).z, arrived, inset,
 			" | ".join(PackedStringArray(rows))])
-	print("LEG_GATE t=%.1f [%s] id %d arrived %s %s" % [float(tick) / SimClock.TICK_RATE, element_name, id, arrived, String(plan.get("leg_gate", "-"))])
+	print("LEG_GATE t=%.1f [%s] id %d arrived %s %s | released this task %d" % [float(tick) / SimClock.TICK_RATE, element_name, id, arrived,
+			String(plan.get("leg_gate", "-")), int(leg_wait.get("released", 0))])
 
 
 ## R33.35, MEASUREMENT ONLY (under --arrive-trace): HERRING_LAY once a second while this element is in the herringbone
@@ -1795,12 +1798,14 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 		print("BATTERY_TRACE t=%.0f team %d %s %s/%s anchor %s | %s" % [float(situation.get("tick", 0)) / SimClock.TICK_RATE, team, element_name,
 				String(plan["formation"]), String(plan["technique"]), plan["anchor"], " | ".join(PackedStringArray(row))])
 	_latch_inset(plan)
+	var released_before := int(leg_wait.get("released", 0))
+	leg_wait = plan.get("leg_wait", leg_wait)
+	stragglers_released += maxi(int(leg_wait.get("released", 0)) - released_before, 0)
 	_trace_element(plan, situation)
 	formation = String(plan["formation"])
 	technique = String(plan["technique"])
 	reason = String(plan["why"])
 	anchor = plan["anchor"]
-	leg_wait = plan.get("leg_wait", leg_wait)
 	heading = plan["heading"]
 	bounding = int(plan["bounding"])
 	var was_arrived := arrived
