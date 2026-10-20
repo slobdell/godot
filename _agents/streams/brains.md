@@ -101,7 +101,9 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   (writes the node, flushes the server, resets interpolation, `sync_position`; army_layout learned this in round 14) does not
   leave the stale body. **With `Tank.place` in the probe: both matches 50.0 s, reseats 1, poses AND `Match.state_hash` identical
   at all 1800 steps.** (`PhysicsServer3D.body_set_state` alone did not take; a remove/re-add equalled the poses only.)
-  **Proposed fix (my paths, not written; bar first):** `TacticsLab.unit` and `.gun` and `BodyStage`'s spawn (`body_stage.gd:152`)
+  **WRITTEN (R35.47 approved; bar on main + any line moving to other than its first-match value is traced): `78f60777a`**,
+  `test_tactics_lab_place` red before (first difference at step 0), green after; laptop GDScript: mixed_legs + body 8/0, four tanks
+  50.0 s reseats 1 run AFTER other tests (the first-match value). Builder0 check pending (after the batch main). **Proposed fix:** `TacticsLab.unit` and `.gun` and `BodyStage`'s spawn (`body_stage.gd:152`)
   call `tank.place(position, yaw)`. `AiScenario.brain_tank` already does. **Bar draft:** builder0 native, (1) the suite green;
   (2) order-independence: `test_tactics_mixed_legs` alone v after `test_planner_h1b_guard` / `test_nav_blocker_reach` in one
   process reads the SAME arrival and reseats (today 50.6 s v 31.9 m short on joint-on); (3) every test line the change moves is
