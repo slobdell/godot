@@ -118,6 +118,9 @@ static func configure() -> bool:
 		# Round 35 (manoeuvre W1c, `stallintent`): the stall rule's intent reading (absent before W1c: the drive as before).
 		"STALL_INTENT_DEFAULT": (Manoeuvre as Script).get_script_constant_map().get("STALL_INTENT_DEFAULT", null),
 		"STALL_INTENT_MIN_PACE": float((Manoeuvre as Script).get_script_constant_map().get("STALL_INTENT_MIN_PACE", 0.05)),
+		# Round 36 (manoeuvre S1, `stallnet`): the stall clock's net-motion reset (absent before S1: the drive as before).
+		"STALL_NET_DEFAULT": (Movement as Script).get_script_constant_map().get("STALL_NET_DEFAULT", null),
+		"STUCK_NET_M": float((Movement as Script).get_script_constant_map().get("STUCK_NET_M", 0.5)),
 		"tank_script": Tank,
 		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
 		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).

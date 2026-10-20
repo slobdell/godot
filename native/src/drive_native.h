@@ -95,6 +95,10 @@ struct DriveConfig {
 	// Round 35 (manoeuvre W1c): Manoeuvre.stall_throttle's switch (STALL_INTENT_DEFAULT) and STALL_INTENT_MIN_PACE.
 	bool stall_intent_ready = false, STALL_INTENT = false;
 	double STALL_INTENT_MIN_PACE = 0.05;
+	// Round 36 (manoeuvre S1): Movement._stall_net_holds' switch (STALL_NET_DEFAULT, the native drive running only with
+	// `Movement._off` empty) and STUCK_NET_M. stall_net_ready false on a tree without S1.
+	bool stall_net_ready = false, STALL_NET = false;
+	double STUCK_NET_M = 0.5;
 	double WHEEL_CREEP_THROTTLE = 0.5;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).
