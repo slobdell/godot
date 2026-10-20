@@ -83,8 +83,8 @@ lines, determinism 8c3c1232b711a760) + the partial `lint` + the 10 unfinished ta
   Census (`74526bca1`, laptop, GDScript, lane_census showmatch locks/terminus/crossing x 1400-1409, n 30;
   `references/round35/brains/e3_posture_flip_census_74526bca1_laptop.txt`, `tests/tactics/posture_flip_table.py`): 56 flips to
   hold (35 'ahead on points', 21 'zone threatened'); engaged elements RE-POSTED > 40 m lost 15 / 30 / 25 % of their crews in the
-  next 30 s (crossing / locks / terminus) v engaged elements KEPT 19 / 40 / 33 %. Being pulled back to the zone is not worse
-  (if anything better), so locks-1404 is one fight's shape, not a pattern; like B9 (R34.19) the stacked/piecemeal look follows
+  next 30 s (crossing / locks / terminus) v engaged elements KEPT 19 / 40 / 33 %. These are SELECTED groups: no sign the re-post
+  is worse, nothing more (a cost is attributed only by removing it, R35.46), so locks-1404 is one fight's shape, not a pattern; like B9 (R34.19) the stacked/piecemeal look follows
   the fight, it does not cause it. A bar draft is not proposed: the census gives no sign it would pass. If anyone wants the A/B
   anyway: "engaged elements keep their task through a flip to hold for N s" v main, deciding on fight E (R34.19's scale),
   guards deaths/kills/contact spread; `POSTURE_ENABLED` is the existing switch.
