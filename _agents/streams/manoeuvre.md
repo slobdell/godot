@@ -72,6 +72,13 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~18:15 (worker): S2a built (the orchestrator's GO); Bar S2a filed `5d80b6291` (+ traffic's T9 rider, `dca90d9c0`).**
+`a1b7f7e59`, default OFF, `--nav-off=h1bside`: H1b's far loop goes round the friend (a side point abreast of it) or stands.
+Laptop GDScript lab (`test_manoeuvre_h1b_side`, 3/3 + 33/33 neighbours): room on one side, ON past the friend at 19.6 s (line
+20 s) v base 5 fires; one-hull street, ON stands (0 fires after the far loop, 0.00 m) v base 5 fires. Native mirror spec
+`76486a045`, sent. Queue: native's check of the S1+S3 pair `20acbda5f` (running, builder0) → S1 ON-tree check (queued) → S1
+series → the S2a pair (+ T9 rider) → its check → its series.
+
 **2026-10-20 ~17:30 (worker): S2 / X4b READ, design note sent; waiting on the orchestrator's go before a bar.**
 `references/round36/manoeuvre/x4b/README.md` (stream `5bf752b4f`). Main a318a2cd3, builder0 native, hull-rest drawn attack-move +
 move, fresh 6301–6332 x 4 factions (256 runs): **29 crews > 25 m behind at the judge, 17 still by net motion** (per 128 runs: 14.5 /
