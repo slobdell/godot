@@ -748,6 +748,13 @@ _Filed here before any number._
 - **R35.73 (2026-10-20 ~13:40) Disks.** The laptop was at 885 MB free (14 finished side worktrees removed: 11 GB free); builder0 hit
   0 bytes (orders' rsync failed; 14 stale remote folders removed: 13 GB free; manoeuvre re-verifies the joint ship check and X1b's
   series for write errors from that window); builder2 79 % (7 round-34 leftovers removed: 29 GB free). Lesson in orchestration.md.
+- **R35.75 (2026-10-20 ~14:00) X5 progress (native).** (b) the copy-back leak: `tools/copyback_prune.sh` (1d8dd7648; 18 known answers;
+  laptop shell-tools-test 26 suites exit 0) MOVES a run's stale logs to `build/.stale-<ts>/`, outside every series folder (readers use
+  os.listdir / walk / rglob, which count dot-folders). (a) the scoreboard (dc0298abe): `mk/scoreboard.mk` (40 fights: 5 maps x 8
+  seeds; 48 move orders: attack-move + move, 4 factions x 6 seeds; 36 group orders: 3 maps x 3 / 5 squads x click / route x 3 seeds;
+  seeds 2601+), `tools/scoreboard/run.sh` (any commit, scratch worktree, builder2), `score.py` + `table.py` -> `references/scoreboard/
+  README.md` in player terms; rows carry SCRIPT ERROR counts (the old tree hit 2387 from T7's `_pass_by` under today's census: the
+  scoreboard runs a guarded copy). Runs going: c29a8c7b6, a0ae0aafd, 1c82d6d1e. **builder2's lane:** the scoreboard -> T8 -> X3b.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
