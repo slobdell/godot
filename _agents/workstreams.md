@@ -163,6 +163,9 @@ _Filed here before any number._
   read at the window's end it fails MAIN too (3.8–8.6 m in every cell; crews meet in traffic), so a spacing guard reads the HALT
   SEATS, not end positions (lesson). Hand-over `stream/orders` 515aeeccd (main 8ec433dee + tooling + DEPLOY_COMPACT OFF + DEPLOY_PASS
   deleted) checking; merged on its green.
+- **R36.7 (2026-10-20 ~16:55 PDT) S2a + yieldgap merged OFF: main 10318ec81 INHERITS 32ba4ca99** (builder0 2967/0, 13 unmoved; inert
+  by default). S1 ON gate (lab/s1-on d9864ab07, builder2, glibc-2.43): 2961/0, sim-baseline moved foundry, crossing, sumps, docks;
+  base 20acbda5f read 13 unmoved, so the moves are stallnet's. S1's series (unit manoeuvre-s1series) waits on builder0's checks.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
