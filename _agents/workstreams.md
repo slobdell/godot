@@ -573,6 +573,13 @@ _Filed here before any number._
   real first-match state (no teardown in play).
   **Follow-up:** written `0daea3d90`; scenarios_6 alone 4.8 = the suite value (builder0 light, native; was 3.2 alone); laptop GDScript
   3.0 alone and after (was 4.8 v 3.0). Its full check runs on builder2 (load ~6 of 32 beside M5's series).
+- **R35.55 (2026-10-20 ~02:00) D6 PASSES on fresh seeds; REQUEUE flips ON.** builder0 `make native orders-probe`, orders-d6
+  `ee3a8dab2` (84ba02a69 + deck fix 1b174f05d), seeds 3651–3656, n 6 (`references/round35/orders/d6-ab2-ee3a8dab2/`). Counter: legs
+  differ in 22 of 36 route runs. Every squad every leg 144/144 v 121/144; far bank 0 in every cell, both arms; click cells 36/36
+  identical; tests green. Reported: all-in equal or better in 5 of 6 route cells (Crossing 3 route 15.9 v 19.8 s); Crossing 5 route
+  41.3 v 38.8 s but worst shuffle 39.5 v 80.6 m, drive/plan 2.39 v 1.71; Locks 3 route's never-in seed gone. **In his terms:** a
+  shift-clicked route is followed by every squad (about one squad in six used to skip the waypoints and drive straight to the end).
+  Next: the default flip on stream/orders, its full check after traffic's, merge alone.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
