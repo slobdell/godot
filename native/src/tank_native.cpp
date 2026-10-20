@@ -586,12 +586,13 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.UNSTICK_BACK = (bool)config.get("UNSTICK_BACK_DEFAULT", false);
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
 	c.TURN_IN = (bool)config.get("TURN_IN_DEFAULT", false);
-	c.wheel_halt_ready = config.get("WHEEL_HALT_DEFAULT", Variant()).get_type() == Variant::BOOL;
-	c.WHEEL_HALT = c.wheel_halt_ready && (bool)config.get("WHEEL_HALT_DEFAULT", false);
 	c.WHEEL_CREEP_THROTTLE = config.get("WHEEL_CREEP_THROTTLE", 0.5);
 	c.stall_intent_ready = config.get("STALL_INTENT_DEFAULT", Variant()).get_type() == Variant::BOOL;
 	c.STALL_INTENT = c.stall_intent_ready && (bool)config.get("STALL_INTENT_DEFAULT", false);
 	c.STALL_INTENT_MIN_PACE = config.get("STALL_INTENT_MIN_PACE", 0.05);
+	c.stall_net_ready = config.get("STALL_NET_DEFAULT", Variant()).get_type() == Variant::BOOL;
+	c.STALL_NET = c.stall_net_ready && (bool)config.get("STALL_NET_DEFAULT", false);
+	c.STUCK_NET_M = config.get("STUCK_NET_M", 0.5);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
 	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);

@@ -139,7 +139,7 @@ func _run() -> void:
 	var flags := SkirmishMode.demo_flags(LaunchFlags.parse(OS.get_cmdline_user_args())) if OS.get_cmdline_user_args().has("--demo-match") else null
 	print("FIGHT_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [], "teams": teams,
-			"exposure": exposure, "wheel_halt_on": Manoeuvre.wheel_halt_on(), "wheel_halts": Manoeuvre.wheel_halts,
+			"exposure": exposure,
 			"h1b": ManoeuvreCensus.h1b_report(), "h1b_on": Movement.h1b_on()}))  # round 32: H1b's counters (measurement only)
 	ManoeuvreCensus.print_new_far_rows()  # C32.10 amendment: each far loop with its blocker kind
 	quit(0)
