@@ -218,6 +218,14 @@ _Filed here before any number._
   value to its "first-match" value; any other move is traced before the merge. sim-baseline unmoved expected (Match spawns via
   army_layout, already `place`).
 
+- **E2 / B11b HOLD's return carries his drawn facing for wheels/turret hulls (brains), filed before any number on stream/brains (code
+  `f0b06d83e`), counter line added by the orchestrator.** Via `TankBrain.hold_return_faces`; `--hold-return=old` = control,
+  `--hold-return=faced` = round 32's B11 (every class); GDScript only. One commit WITH M5, builder2, native, base `--hold-return=old`
+  on the same tree. Hull-rest drawn, all six tasks, FRESH 801–816 x 4 factions (384 an arm); fights 820–843. **Counter first (added):**
+  hold returns carrying a facing > 0 in the arm. **(a) Deciding:** wheels/turret faced_move AND faced_right medians lower, p < 0.05 each.
+  (b) s66 gangs faced_move Green_Guns_5 <= 90 deg. (c) no class worse at p < 0.05. (d) never-settled and movers at the judge within 2 se.
+  (e) squads arrived within 2 se. (f) fights within 2 se. (g) check green, moved sim-baseline maps attributed with `--hold-return=old`.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
@@ -610,6 +618,22 @@ _Filed here before any number._
   native check exited 2`, 2931/0, 26/27, the one red sim-baseline (foundry, crossing, sumps, cut MOVED); lab/joint3-base `2a2682560`
   sim-baseline 13/13 unmoved, so the 4 moves are W1c + T9's (adopt only if it ships). On main 5f05c997c: T7 ON, E1, E4. Series:
   wedge probe + fights + traffic's jam census on 940–963 x locks/terminus/sumps, then hull-rest drawn 901–932, both arms native, JOBS 3.
+- **R35.60 (2026-10-20 ~04:30) stream/traffic's tip is red by construction only; T9 is judged on the joint pair.** 4fbbd4d3c (main 5f05c997c
+  + T8 + T9 OFF), builder0 `make native check exited 2`: 2916/1, sim-baseline unmoved; the one red test_native_exec_state wants T9's three
+  Movement members (`_unfinished_to/_count/_since`) in native/src/exec_fields.h, which native's T9 mirror carries in the joint pair.
+  stream/traffic is not a merge candidate on its own; T9 reaches main only via the joint pair (joint3-on 2931/0). T8's series cannot
+  fit this round behind the joint's (~8 h): its bar and pair plan open round 36.
+- **R35.61 (2026-10-20 ~07:20) M5 PASSES: CP-F attempt 5 ships (main ed121d24f).** lab/cpf5 `63336d690` (stream a960fa2c2 + TURN_HULL and
+  FACE_SETTLE defaults true; R35.23 scope), builder2, 60/60 calls exited 0 (`references/round35/manoeuvre/m5-series/README.md`, stream
+  ced0c8992). (a) wheels/turret point tasks: move 4.3 deg / 80.2 % within 15 deg, right 4.4 / 76.5 %, attack-move 5.0 / 71.3 %. (b) no
+  class worse at p < 0.05. (c) clicked +0.00 everywhere. (d) attack-move +6 v the A/A guard 15.4 (on the series' own se it would read
+  +6 v +4.5: the bar sizes (d) from the A/A, as filed). (e) within +4.9. (h) 18/18. (i) kills / deaths / hit rate within. (j) hull_turns
+  277373 v 0. (n) face_creep at the judge 0 v 0 (attempt 4: 8 v 0). (o2) builder2 sample: 9 give-ups, 16 cells identical crew for crew.
+  (l) SBF hull error at arrival 3.5 v 26.5 deg (reported). (p) not readable (no per-crew give-up mark). 7 hull-rest cells hit the 300 s
+  wall cap, unpaired (listed). The merge also brings W1b and W1c OFF (STALL_INTENT / WHEEL_HALT false), as on the gated tree. Batch
+  check of ed121d24f on builder2 (systemd-run): **GREEN**, `make native check exited 0`, 2951/0, 25 passed + 2 NOT JUDGED (timing).
+  **In his terms:** a War Rig he tells to face a way turns to it and goes still; nothing
+  is left creeping. Brains' E2 (B11b) is unblocked.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
