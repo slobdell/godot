@@ -584,6 +584,10 @@ _Filed here before any number._
   41.3 v 38.8 s but worst shuffle 39.5 v 80.6 m, drive/plan 2.39 v 1.71; Locks 3 route's never-in seed gone. **In his terms:** a
   shift-clicked route is followed by every squad (about one squad in six used to skip the waypoints and drive straight to the end).
   Next: the default flip on stream/orders, its full check after traffic's, merge alone.
+- **R35.56 (2026-10-20 ~02:20) main 25f8bc52f = brains' E4b warm-up (interim), green by INHERIT** from 4a6394932's builder2 check
+  (`make check exited 0`, 2911/0, sim-baseline 13/13). Moved lines v main's suite: 8, none in what a test measures (5 tick stamps +1;
+  Manoeuvre's process-wide plan census shifted once in 3 c339 lines; every stage field identical). Brains' brief: done except E2 (waits
+  on CP-F 5). Note: orders' D6 check (on 5f05c997c + its work) predates this; the runner change touches no game code.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
