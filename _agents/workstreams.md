@@ -453,6 +453,10 @@ _Filed here before any number._
   the way the squad came from any deck their seats would reach; a click on or within 2 m of a deck leaves them. Laptop s3643 far bank
   1 -> 0; test_control_deck_clear 3/0; control suite 467/0. **Series queue now: W1b -> D6 re-read (3651–3656) -> M5 -> joint -> T8.**
   Round-36 watch: a plain click right at a bridge mouth could lay seats past the deck today (far bank 0 in every A/B this round).
+- **R35.41 (2026-10-19 ~20:15) D3b grant (orders, in brains' `ElementPlan._plan_form_up`).** ONE switched addition, default OFF: when
+  the task carries `halt_at` (set only by orders' pack, itself OFF), the last INSET_NEAR_M of the move uses a file/column arrival.
+  Nothing else in the function; merge note to brains (told). Bar first (fresh seeds, far bank 0 in every cell, D3's gain/guards);
+  its series after T8.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
