@@ -588,6 +588,15 @@ _Filed here before any number._
   (`make check exited 0`, 2911/0, sim-baseline 13/13). Moved lines v main's suite: 8, none in what a test measures (5 tick stamps +1;
   Manoeuvre's process-wide plan census shifted once in 3 c339 lines; every stage field identical). Brains' brief: done except E2 (waits
   on CP-F 5). Note: orders' D6 check (on 5f05c997c + its work) predates this; the runner change touches no game code.
+- **R35.57 (2026-10-20 ~02:45) E4b's cause, corrected: the engine's FIRST main-loop iteration, not the runner's teardown.** Native's trace
+  (laptop GDScript, main 5f05c997c, scenarios_6 switches_per_unit_min 4.8 alone v 3.0 after): all 815 `static var`s identical at a
+  process's first test and after a 1-frame test (only the physics frame counter differs); an earlier test that steps NO frame changes
+  nothing, whatever its teardown (drain_navigation ruled out); waiting 1–97 frames all read 3.0 (not frame phase); forcing the nav map's
+  first sync without a frame: 4.8; one `await physics_frame` or `process_frame`: 3.0. So the state is engine-side, set by the first
+  main-loop iteration (leading candidate: the physics space's first step / Jolt's broadphase bookkeeping; not named within the
+  time-box). **Real play matches the LATER tests** (a match starts many iterations after launch). So brains' warm-up is the CORRECT
+  fix, not interim: every test now sees real play's state. R35.54's caveat ("tests should match the first-match state") is withdrawn.
+  Round 36: optional, name the engine state below the main loop.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
