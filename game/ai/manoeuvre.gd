@@ -560,9 +560,9 @@ static func face_settled_id(id: int, planned_leg: bool, since_tick: int) -> bool
 ## give-way drove it 2.4 m and left it touching), law-607 Green_Guns_6 23 m off its goal in a pack of friends. ORCA throttled
 ## both drives to pace 0.05-0.09, so the command was 0.05-0.09 while the drive asked for full: unstick's |throttle| > 0.5 (driving
 ## hard, not moving) never ran its clock, H1's escape (ask, reverse, stand) never started and nobody asked the parked crew again.
-## With this on, a ROUTED move (move_to, not direct) touching a friendly hull, or `blocked` by one, is tested on |throttle| /
-## pace (pace < 1); every other case keeps the command. `--nav-off=stallintent` flips STALL_INTENT_DEFAULT (false = OPT-IN).
-const STALL_INTENT_DEFAULT := false
+## With this on, a ROUTED move (move_to, not direct) touching a friendly hull of another element, or `blocked` by one, is tested on |throttle| /
+## pace (pace < 1); every other case keeps the command. `--nav-off=stallintent` flips STALL_INTENT_DEFAULT (ON since R35.66, the joint W1c+T9).
+const STALL_INTENT_DEFAULT := true
 ## The pace floor the intent divides by (a pace-0 drive is a Traffic hold or a stop: unstick does not run on a hold).
 const STALL_INTENT_MIN_PACE := 0.05
 ## Arm counter: unstick ticks whose throttle test passed only by the intent reading (stride ticks by their stride).
@@ -588,16 +588,29 @@ static func stall_throttle(mover: Movement, cmd: TankCommand, order: Dictionary)
 	return intent
 
 
+## R35.39 (the joint dev's third red, test_tactics_mixed_legs traced): only a friend of ANOTHER element (or an unseated
+## crew) counts. Against a squadmate of my own element the element's re-seat (round 18 D5: "a crew that keeps driving without
+## closing on its slot gets the element to re-seat once") is the way out, an H1 ask to it does nothing, and the escape's
+## reverse/forward cycling hid the re-seat's trigger (Sumps, four tanks: Green_M_3 nose-on to a parked Green_M_2 for 40 s).
 static func _against_friend(mover: Movement) -> bool:
 	var tank := mover.ctl.tank
 	for i in tank.get_slide_collision_count():
 		var hull := tank.get_slide_collision(i).get_collider() as Tank
-		if hull != null and hull.team == tank.team:
+		if hull != null and hull.team == tank.team and not _same_element(tank, hull):
 			return true
 	if mover.phase == "blocked" and mover.blocked_by != "" and mover.ctl.tanks_root != null:
 		var blocker := mover.ctl.tanks_root.get_node_or_null(NodePath(mover.blocked_by)) as Tank
-		return blocker != null and blocker.team == tank.team
+		return blocker != null and blocker.team == tank.team and not _same_element(tank, blocker)
 	return false
+
+
+static func _same_element(tank: Tank, other: Tank) -> bool:
+	var game_match := tank.get_parent().get_parent() as Match if tank.get_parent() != null else null
+	var elements := Elements.of_match(game_match)
+	if elements == null:
+		return false
+	var mine := elements.of(String(tank.name))
+	return mine != null and mine == elements.of(String(other.name))
 
 
 ## Arm counters: drawn faces a wheeled turret hull took with its hull (the decline lifted); face-plan steps refused

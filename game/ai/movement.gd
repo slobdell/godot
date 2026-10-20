@@ -277,7 +277,7 @@ static func route_arms() -> Dictionary:
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -320,6 +320,8 @@ static func reset_route_arms() -> void:
 	passes_done = 0
 	passes_timeout = 0
 	pass_ticks = 0
+	yields_unfinished = 0
+	yields_unfinished_capped = 0
 	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
@@ -1784,7 +1786,8 @@ func _end_yield() -> void:
 		_yield_rec["ended_frame"] = Engine.get_physics_frames()
 		_yield_rec["reached"] = _flat_distance(here, _yield_point) <= YIELD_REACHED
 		_yield_rec["end_gap_m"] = snappedf(_flat_distance(here, _yield_point), 0.1)
-	_last_yielded_to = yield_to
+	if not _yield_unfinished():
+		_last_yielded_to = yield_to
 	yield_to = ""
 	_yield_point = Vector3.INF
 	blocked_by = ""
@@ -1792,6 +1795,61 @@ func _end_yield() -> void:
 	stalled_ticks = 0
 	_progress_goal = Vector3.INF
 	_repath_left = 0.0
+
+
+# ---- Round 35 (traffic T9, R35.12/R35.14; `--traffic-on=yieldfit2`, DEFAULT_OFF until judged): an unfinished give-way -----------
+# The trace (law-605, `references/round35/traffic/t9_trace_design.md`): a PARKED crew gave way, its give-way ended on the 6 s
+# clock with the asker never past (pinned by other friends) and still beside it, and `_last_yielded_to` (built for two movers
+# taking turns) then refused every later ask of that asker for 65 s. A give-way that ends with the asker NOT passed (right_of_way's
+# own reading) and this crew still in its way (disc gap <= YIELD_CONTACT_M, or on the asker's line ahead within both radii +
+# YIELD_LINE_MARGIN) is not recorded, so the next ask is honoured from where the crew now stands; at most YIELD_RETRIES such
+# in YIELD_RETRY_WINDOW_S to one asker, then it records as today (no shuffle forever). Native mirrors (_end_yield, ask).
+const YIELD_CONTACT_M := 1.0
+const YIELD_RETRIES := 2
+const YIELD_RETRY_WINDOW_S := 30.0
+## Measurement: give-ways ended unfinished and not recorded; unfinished ones recorded anyway at the cap.
+static var yields_unfinished := 0
+static var yields_unfinished_capped := 0
+var _unfinished_to := ""
+var _unfinished_count := 0
+var _unfinished_since := 0
+
+
+static func yieldfit2_on() -> bool:
+	return not Traffic.off("yieldfit2")
+
+
+## Called by _end_yield before yield_to is cleared: true when this give-way must not be recorded as done.
+func _yield_unfinished() -> bool:
+	if yield_to == "" or not yieldfit2_on() or ctl.tanks_root == null:
+		return false
+	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank
+	if asker == null or not asker.is_alive():
+		return false
+	var here := ctl.tank.global_position
+	var mover := Movement.of(asker)
+	var passed := _flat_distance(here, asker.global_position) > YIELD_CLEAR \
+			or Vector2(asker.global_position.x - here.x, asker.global_position.z - here.z).dot(_yield_dir) > 0.0 \
+			or (mover != null and not mover.is_under_way())
+	if passed:
+		return false
+	var reach := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(asker.unit_id)
+	var touching := _flat_distance(here, asker.global_position) - reach <= YIELD_CONTACT_M
+	var ahead := Vector2(here.x - asker.global_position.x, here.z - asker.global_position.z).dot(_yield_dir) > 0.0
+	var on_line := ahead and _distance_to_ray(here, asker.global_position, _yield_dir) < reach + YIELD_LINE_MARGIN
+	if not touching and not on_line:
+		return false
+	var frame := Engine.get_physics_frames()
+	if _unfinished_to != yield_to or frame - _unfinished_since > int(YIELD_RETRY_WINDOW_S * SimClock.TICK_RATE):
+		_unfinished_to = yield_to
+		_unfinished_count = 0
+		_unfinished_since = frame
+	_unfinished_count += 1
+	if _unfinished_count > YIELD_RETRIES:
+		yields_unfinished_capped += 1
+		return false
+	yields_unfinished += 1
+	return true
 
 
 # ---- Round 34 (traffic T6, R34.15; `--traffic-on=underfire`, DEFAULT_OFF until judged): a crew under fire holds its lane ------

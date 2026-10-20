@@ -204,7 +204,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := []  # pair/underfire-t7: T7 ON (the judged arm; base = --traffic-off=underfire)
+const DEFAULT_OFF := []  # T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint W1c+T9 ships)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off

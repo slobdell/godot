@@ -121,6 +121,10 @@ static func configure() -> bool:
 		# Round 36 (manoeuvre S1, `stallnet`): the stall clock's net-motion reset (absent before S1: the drive as before).
 		"STALL_NET_DEFAULT": (Movement as Script).get_script_constant_map().get("STALL_NET_DEFAULT", null),
 		"STUCK_NET_M": float((Movement as Script).get_script_constant_map().get("STUCK_NET_M", 0.5)),
+		# Round 35 (traffic T9, `yieldfit2`): the unfinished give-way's contact gap and retry cap (absent before T9: off).
+		"YIELD_CONTACT_M": (Movement as Script).get_script_constant_map().get("YIELD_CONTACT_M", null),
+		"YIELD_RETRIES": int((Movement as Script).get_script_constant_map().get("YIELD_RETRIES", 0)),
+		"YIELD_RETRY_WINDOW_S": float((Movement as Script).get_script_constant_map().get("YIELD_RETRY_WINDOW_S", 0.0)),
 		"tank_script": Tank,
 		# Round 33 (N5.M): _manoeuvre's decision natively (Manoeuvre.choose and its simulation); the motion model's constants
 		# configured here, since the decision steps it whatever BrainSwitches.native_motion says (the same bits, N6.1).

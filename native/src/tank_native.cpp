@@ -598,6 +598,10 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);
 	c.PASS_BEYOND_M = config.get("PASS_BEYOND_M", 2.0);
 	c.PASS_STEP_M = config.get("PASS_STEP_M", 2.0);
+	c.yieldfit2_ready = config.get("YIELD_CONTACT_M", Variant()).get_type() == Variant::FLOAT;
+	c.YIELD_CONTACT_M = c.yieldfit2_ready ? (double)config["YIELD_CONTACT_M"] : 1.0;
+	c.YIELD_RETRIES = config.get("YIELD_RETRIES", 2);
+	c.YIELD_RETRY_WINDOW_S = config.get("YIELD_RETRY_WINDOW_S", 30.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());
 	c.planner_seam = c.keep_planner_seam.get_validated_object();
