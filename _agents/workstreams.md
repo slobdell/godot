@@ -28,7 +28,7 @@ S2. Brains' paths have no stream this round (C36.6).
 **Machines (C36.1):** builder0 (12 cores, 14 GB) = **manoeuvre's and orders' lane**; builder2 (e2-highcpu-32 Spot, us-west4, stops
 itself after 20 idle min; `make gcp-start`) = **traffic's T8 and native's scoreboard**. On each builder at most ONE full check and
 ONE judged series at a time; light runs (`tools/remote.sh --light`) freely. Every full check behind `tools/builder_checks.sh
---wait-below 2`; every run longer than a few minutes under `systemd-run --user` (remote_builds.md). The orchestrator's main checks
+--wait-below 1` (builder0; R36: `--wait-below 2` let two run); every run longer than a few minutes under `systemd-run --user` (remote_builds.md). The orchestrator's main checks
 go on whichever builder is free. Disks: builder0 sat at 90 % at launch; delete your own `~/tank_squad/<folder>` leftovers when a
 side worktree is done (R35.73).
 
@@ -101,6 +101,24 @@ _Filed here before any number._
   joint bar (d) movers by NET motion, (e), (f), (i), (q), (r), (s), give-ways; unstick fires <= base + 1.645 se. Rocking crews
   REPORTED. Pass ships ON. Full text: `stream/manoeuvre` brief *Bar S1*. **Orchestrator's note:** the deciding stage injects the
   pop (Jolt won't produce it in a lab), so it proves the rule, not the wedge; the series guards are where harm would show.
+- **S2a h1bside (manoeuvre, R36.3; filed 2026-10-20 ~15:05 in the brief before any number, stream 5d80b6291; copied here).** After
+  H1B_ASKS refused asks on the same unmoved friend with a far goal, H1b's far branch re-drives to a side point clear of the friend,
+  or the hull stands when there is no room; behind a switch; native mirrors (side waypoint + stand). DECIDING (lab, both paths):
+  `tests/test_manoeuvre_h1b_side.gd` (a) room on one side: ON past the friend within 20 s, base >= 3 fires in 30 s; (b) a one-hull
+  street: ON stands (no fire after its first far loop, < 0.5 m in its last 10 s), base >= 3 fires. Guards: Bar S1's set + far loops
+  + far bank 0 + unstick fires, fresh hull-rest 6501–6532 and fights 6540–6563. Player line REPORTED, paired: left behind > 25 m,
+  still by net motion. Series after S1's.
+- **O2 DEPLOY_COMPACT (orders, C36.4; filed in the brief 2026-10-20 15:10 PDT before any compact number; copied here).** The cause
+  count (builder0 light, native, f5aa89ecd, 12 street cells x 3621–3626, 287 deployed squads; of 57 squads twitching >= 15 m: depth
+  23, seating 10 (3 both), neither 27) chose depth: the deploy's herringbone half as deep. Code cd1043de8 (OFF, deploy carve-out),
+  named hash ab6bef22c (full check queued, `--wait-below 1`; the verdict stands only if it is green). Probe `make native orders-probe`
+  `main:` v `compact:--deploy-compact=on`, the 12 cells, FRESH seeds 3681–3686, n 6, medians, builder0 light, native. Counter:
+  halt_depth_m lower in every herringbone cell. GAIN (both): median worst deploy leg >= 20 % lower AND summed median twitch >= 15 %
+  lower. Guards per cell: all-in <= main x 1.2 + 3 s and no more never-in; twitch <= main + 3 m; end foreign min >= main − 3 m;
+  deck no higher, far bank 0; test_control_scale's 3-tick response. **Added by the orchestrator before any number (15:30):** own-squad
+  closest crews at the end >= 9 m CENTRE TO CENTRE in every cell (`end_own_min_m`; HALT_CLEAR_M, the O4 question's 9 m, is seat to
+  seat), the hull gap (`end_own_gap_m`) REPORTED per cell beside main's (the orchestrator first wrote "hull to hull", which main
+  itself fails at 6.2–11.5 m; corrected on orders' catch before any number). A pass ships ON.
 
 ## Rulings (round 36)
 
@@ -108,6 +126,35 @@ _Filed here before any number._
   native check exited 2`: 2961 passed, 0 failed; the one red sim-baseline (foundry, crossing, sumps, cut MOVED); base
   `6f830ceea` sim-baseline 13 unmoved, so the moves are the joint's. Adoption on the merged tree (`make sim-baseline-adopt`) and ONE
   main check follow; streams `git merge main` when told.
+- **R36.2 (2026-10-20 ~14:10 PDT) X3b CLOSES "no workload"; DEPLOY_PASS is deleted (orders).** By its bar as filed: builder0 light,
+  native, stage commit 61b6181e2, `make native herringbone-lab` (32 fixed cells x {off, on, nostep}, 96 runs): **0 jam cells of 32**
+  (the bar needed >= 3). The deploy step is FASTER than the old settle on mean (nostep - off +1.94 s); where DEPLOY_PASS acts it
+  costs (on - off +1.53 s mean, 5 cells over +5 s, worst +15.6: the held deploy fires mid-traffic). R35.17's +6.1 s was one chaotic
+  body-stage draw, not the geometry. No series; 5101–5124 stay unseen. DEPLOY_PASS (the element.gd hook, deploy_passers.gd,
+  test_control_deploy_pass) is deleted on stream/orders NOW, so it never reaches main. Table:
+  `references/round36/orders/x3b-lab-builder0-61b6181e2/`. Orders moves to O2 (the deploy move across a street).
+- **R36.3 (2026-10-20 ~15:05 PDT) S2/X4b read: the joint did NOT free the left-behind crews; S2a (H1b side re-drive) is a GO.**
+  Manoeuvre (main a318a2cd3, builder0 native, hull-rest drawn attack-move + move, fresh 6301–6332 x 4 factions, 256 runs; stream
+  5bf752b4f, `references/round36/manoeuvre/x4b/README.md`): 29 crews > 25 m behind, 17 still by net motion (per 128: 14.5 / 8.5 v
+  E1's 17 / 9; a census, not paired). Mechanisms of the 17: (A) 10 refused forever by the pinning friend (`ask` refuses when asker ==
+  _last_yielded_to after one or T9's 2–3 unfinished give-ways; 8 of 10 friends parked/unseated, 7 with < 1 m room behind); (B) 1
+  blocker yielding to another; (C) 6 untraced (one presses 0.96 with the clock at 0: S1's). S2a: after H1B_ASKS refused asks on the
+  same unmoved friend with a far goal, H1b's far branch re-drives to a side point clear of the friend, or the hull stands if no room;
+  switch; deciding = deterministic lab stage, guards Bar S1's + far loops / far bank 0 + unstick fires; left-behind and still REPORTED
+  paired on fresh seeds; series after S1's. (A)'s "recorded finished while still pinning" case relayed to traffic (T9's bookkeeping).
+- **R36.4 (2026-10-20 ~15:20 PDT) T9's distance guard mis-reads long hulls as passed; the fix rides in S2a's pair.** Traffic traced
+  X4b trace 1 (condemned-6325 Battery_2 / Guns_2; stream/traffic 9030a12dc, `references/round36/traffic/t9_finished_while_pinned.md`):
+  YIELD_CLEAR 9.0 m centre to centre, but a 9.70 m tank nose-on to an 8.20 m artillery hull touches at 8.95 m; a 0.1 m creep (8.99 ->
+  9.07) read as "passed" at the 6 s clock. Fix: in `_yield_unfinished` only, passed = distance − both half-lengths > 2.0 m, behind its
+  own switch (`yieldgap`), native mirror line, test in test_traffic_yieldfit2. Frees few alone (7 of 10 parked blockers have < 1 m
+  room); rides in manoeuvre's S2a pair as a second switch: one series both ON v both OFF; each lab test decides its own change.
+- **R36.5 (2026-10-20 ~15:45 PDT) S3 + S1 (OFF) merged: main 5d6bb1de8 is GREEN, inheriting 20acbda5f.** `pair/native-s1s3-main`
+  `20acbda5f` (S3: W1b deleted; S1 stallnet code, STALL_NET_DEFAULT false; both native mirrors; contains main e45bb6632): builder0
+  `make check exited 0`, 2961/0, 25 + 2 NOT JUDGED (perf-judge refused for load), sim-baseline 13/13 unmoved. Merged 4ecee1fdf,
+  then manoeuvre's `test_manoeuvre_stall_intent_sumps.gd.uid` (4dd6ff750 -> 5d6bb1de8): the only file a check reads that differs is
+  that generated .uid, so no main check. This also closes main e45bb6632's check (the joint + D5 together). Perf-judge on a quiet
+  builder0 still owed (T8's hand-over window).
+
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
 
