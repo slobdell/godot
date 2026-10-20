@@ -4,27 +4,29 @@ The same fixed workload run against each main, so the columns compare: what a pl
 
 **The workload** (`mk/scoreboard.mk`, native, pinned at 30 Hz): 40 showmatch fights (Terminus, Locks, Sumps, Gorge, Parade x 8 seeds, 180 s, CPU v CPU); 48 move orders drawn with a facing (attack-move and move, every faction x 6 seeds, Foundry, a quiet enemy); 36 group orders (Locks, Crossing, Terminus x 3 and 5 squads x one click and a route x 3 seeds). Seeds 2601+ on every main.
 
-| | **round 34 close**<br>`c29a8c7b6` | **round 35 launch**<br>`a0ae0aafd` | **today's main (2026-10-20)**<br>`1c82d6d1e` | **CP36.1: the joint W1c+T9, 4 maps adopted**<br>`e45bb6632` | better |
-|---|---|---|---|---|---|
-| **Fights** | | | | | |
-| Tanks lost per fight, any cause | 40.4 | 40.4 | 41.9 | 40.9 | lower |
-| ... shot in the open (the fight itself) | 32.2 | 32.2 | 33.9 | 33.1 |  |
-| ... stuck: wedged against terrain or a wreck when killed | 6.1 | 6.1 | 6.22 | 6.03 | lower |
-| ... jammed in our own traffic when killed | 2.08 | 2.08 | 1.77 | 1.8 | lower |
-| ... jammed AND under fire (the killing-zone case) | 1.75 | 1.75 | 1.3 | 1.48 | lower |
-| Kills per fight | 40.0 | 40.0 | 41.4 | 40.5 |  |
-| Hit rate | 74 % | 74 % | 75 % | 76 % |  |
-| Fights read (of fights run) | 40 of 40 | 40 of 40 | 40 of 40 | 40 of 40 |  |
-| **Moving out** | | | | | |
-| Orders where the squad never settled in 75 s | 13 of 48 | 13 of 48 | 10 of 48 | 9 of 48 | lower |
-| Crews left 25+ m behind their squad, per order | 0 | 0 | 0.06 | 0.12 | lower |
-| Crews still driving toward the spot at the end, per order | 0.1 | 0.1 | 0.12 | 0.1 | lower |
-| Crews rocking in place at the end (stuck), per order | 0.04 | 0.04 | 0.04 | 0.08 | lower |
-| **Group orders** | | | | | |
-| Seconds until every squad is in (median) | 18.9 s | 18.9 s | 18.9 s | 18.9 s | lower |
-| Orders where some squad never got in (90 s) | 5 of 36 | 5 of 36 | 0 of 36 | 0 of 36 | lower |
-| Squads that drove across to the far bank (should be 0) | 0 | 0 | 0 | 0 | lower |
-| Twitch after placing, median (metres a crew shuffles) | 12.9 m | 12.9 m | 12.6 m | 10.8 m | lower |
+| | **round 34 close**<br>`c29a8c7b6` | **round 35 launch**<br>`a0ae0aafd` | **today's main (2026-10-20)**<br>`1c82d6d1e` | **CP36.1: the joint W1c+T9, 4 maps adopted**<br>`e45bb6632` | better | ± noise |
+|---|---|---|---|---|---|---|
+| **Fights** | | | | | | |
+| Tanks lost per fight, any cause | 40.4 | 40.4 | 41.9 | 40.9 | lower | ± 9.59 |
+| ... shot in the open (the fight itself) | 32.2 | 32.2 | 33.9 | 33.1 |  | ± 7.46 |
+| ... stuck: wedged against terrain or a wreck when killed | 6.1 | 6.1 | 6.22 | 6.03 | lower | ± 1.91 |
+| ... jammed in our own traffic when killed | 2.08 | 2.08 | 1.77 | 1.8 | lower | ± 1.12 |
+| ... jammed AND under fire (the killing-zone case) | 1.75 | 1.75 | 1.3 | 1.48 | lower | ± 1.11 |
+| Kills per fight | 40.0 | 40.0 | 41.4 | 40.5 |  | ± 9.52 |
+| Hit rate | 74 % | 74 % | 75 % | 76 % |  | ± 7.15 % |
+| Fights read (of fights run) | 40 of 40 | 40 of 40 | 40 of 40 | 40 of 40 |  |  |
+| **Moving out** | | | | | | |
+| Orders where the squad never settled in 75 s | 13 of 48 | 13 of 48 | 10 of 48 | 9 of 48 | lower | ± 3.79 |
+| Crews left 25+ m behind their squad, per order | 0 | 0 | 0.06 | 0.12 | lower | ± 0.16 |
+| Crews still driving toward the spot at the end, per order | 0.1 | 0.1 | 0.12 | 0.1 | lower | ± 0.11 |
+| Crews rocking in place at the end (stuck), per order | 0.04 | 0.04 | 0.04 | 0.08 | lower | ± 0.15 |
+| **Group orders** | | | | | | |
+| Seconds until every squad is in (median) | 18.9 s | 18.9 s | 18.9 s | 18.9 s | lower | ± 2.29 s |
+| Orders where some squad never got in (90 s) | 5 of 36 | 5 of 36 | 0 of 36 | 0 of 36 | lower | no spread |
+| Squads that drove across to the far bank (should be 0) | 0 | 0 | 0 | 0 | lower | no spread |
+| Twitch after placing, median (metres a crew shuffles) | 12.9 m | 12.9 m | 12.6 m | 10.8 m | lower | ± 1.2 m |
+
+**± noise** is two standard errors of a difference between two columns: a line moved only when two mains differ by more than it. Sized from the seed-to-seed spread of `e45bb6632` (one main, 1 seed blocks; each seed's fights / move orders / group orders read on their own), se of one column = sd / sqrt(seeds a column has), a difference x sqrt(2). Medians and counts are approximate this way; a line near its noise needs a second block on both mains. "no spread" = the line read the same in every seed of the noise block (often 0), so nothing sizes it.
 
 **Where each column ran:**
 

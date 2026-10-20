@@ -121,12 +121,59 @@ def test_the_table_reads_per_fight_and_marks_what_is_missing():
             f.write("# comment\nabc old main\ndef new main\n")
         text = table.render(board)
     line = [l for l in text.splitlines() if l.startswith("| Tanks lost per fight")][0]
-    assert line == "| Tanks lost per fight, any cause | 4 | not run | lower |", line
-    assert "| Twitch after placing, median (metres a crew shuffles) | n/a | not run | lower |" in text
-    assert "| Orders where some squad never got in (90 s) | 1 of 3 | not run | lower |" in text
-    assert "| Hit rate | 25 % | not run |  |" in text
+    assert line == "| Tanks lost per fight, any cause | 4 | not run | lower | not sized |", line
+    assert "| Twitch after placing, median (metres a crew shuffles) | n/a | not run | lower | not sized |" in text
+    assert "| Orders where some squad never got in (90 s) | 1 of 3 | not run | lower | not sized |" in text
+    assert "| Hit rate | 25 % | not run |  | not sized |" in text
+    assert "| Fights read (of fights run) | 1 of 2 | not run |  |  |" in text
+    assert "not sized yet" in text
     assert "**old main**<br>`abc`" in text
     assert "SCRIPT ERROR lines fights 2 / moves 0 / orders 0" in text
+
+def test_each_seed_is_read_on_its_own():
+    with tempfile.TemporaryDirectory() as root:
+        build(root, True)
+        row = score(root)
+    b = row["by_seed"]
+    assert sorted(b) == ["1", "2", "7"], sorted(b)
+    assert (b["1"]["fights"]["ran"], b["1"]["fights"]["read"], b["1"]["fights"]["deaths"]) == (2, 1, 4)
+    assert b["2"]["fights"] == {"ran": 0, "read": 0} and b["7"]["fights"] == {"ran": 0, "read": 0}
+    assert b["7"]["moves"]["read"] == 1 and b["1"]["moves"]["read"] == 0
+    assert (b["1"]["orders"]["ran"], b["1"]["orders"]["read"], b["1"]["orders"]["never_all_in"]) == (2, 2, 0)
+    assert (b["2"]["orders"]["ran"], b["2"]["orders"]["never_all_in"]) == (1, 1)
+
+
+def unit(deaths, read=1):
+    return {"fights": {"ran": read, "read": read, "deaths": deaths}, "moves": {"read": 0}, "orders": {"read": 0}}
+
+
+def test_the_noise_column_is_two_se_of_a_difference():
+    sys.path.insert(0, HERE)
+    import table
+    # One main, two blocks of three seeds: deaths a fight 2, 4, 6 and 4, 4, 4. sd over the six = sqrt(8 / 5); a column has
+    # 3 seeds: se = sd / sqrt(3); a difference x sqrt(2); two of them: 2 x sqrt(2) x sqrt(1.6) / sqrt(3) = 2.0656.
+    a = {"by_seed": {"1": unit(2), "2": unit(4), "3": unit(6)}}
+    b = {"by_seed": {"11": unit(4), "12": unit(4), "13": unit(4)}}
+    value, units, n = table.noise([a, b], "Tanks lost per fight, any cause")
+    assert (units, n) == (6, 3) and abs(value - 2.0656) < 1e-3, (value, units, n)
+    assert table.noise([a, b], "Fights read (of fights run)") is None    # not a measured line
+    assert table.noise([], "Tanks lost per fight, any cause") is None    # no noise rows
+    assert table.noise([{"by_seed": {"1": unit(2), "2": unit(3)}}], "Tanks lost per fight, any cause") is None  # < 3 units
+    with tempfile.TemporaryDirectory() as board:
+        os.makedirs(os.path.join(board, "rows"))
+        for name, r in (("m", dict(a, fights={"ran": 3, "read": 3, "deaths": 12}, moves={"read": 0}, orders={"read": 0}, machine="box")),
+                        ("m-b2", b)):
+            with open(os.path.join(board, "rows", name + ".json"), "w") as f:
+                json.dump(r, f)
+        with open(os.path.join(board, "mains.txt"), "w") as f:
+            f.write("m a main\n")
+        with open(os.path.join(board, "noise.txt"), "w") as f:
+            f.write("# one main, two seed blocks\nm\nm-b2\n")
+        text = table.render(board)
+    assert "| Tanks lost per fight, any cause | 4 | lower | ± 2.07 |" in text, text
+    assert "`m`, `m-b2` (one main, 2 seed blocks" in text
+    flat = {"by_seed": {"1": unit(4), "2": unit(4), "3": unit(4)}}
+    assert table.noise([flat], "Tanks lost per fight, any cause")[0] == 0.0
 
 
 if __name__ == "__main__":

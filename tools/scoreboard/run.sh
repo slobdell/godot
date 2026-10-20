@@ -12,13 +12,17 @@
 # restored to COMMIT afterwards. Long: run it under systemd-run.
 # SCORE_VARS="SCORE_FIGHT_SEEDS=2601 ..." passes make variables (a smoke run: one of each); SCORE_ROWS puts the row
 # elsewhere than references/scoreboard/rows (a smoke's row is not a main's).
+# Round 36 (the noise column): a second seed block on one main is SCORE_VARS=SCORE_SEED_BASE=2700 SCORE_TAG=b2700
+# SCORE_EXPECT="40 fights, 48 moves, 36 orders": the row is rows/<commit>-<tag>.json (named in noise.txt, not mains.txt).
 set -uo pipefail
 commit=${1:?usage: tools/scoreboard/run.sh COMMIT [HOST]}
 host=${2:-slobdell@builder2}
 src=$(git rev-parse --show-toplevel)
 short=$(git -C "$src" rev-parse --short=9 "$commit") || { echo "scoreboard: no such commit $commit" >&2; exit 2; }
 wt=${SCORE_WORKTREE:-$(dirname "$src")/godot-native-score}
-out=${SCORE_OUT:-$src/build/scoreboard-raw}/$short
+# Round 36: the raw logs live OUTSIDE build/. A check's copy-back (tools/remote.sh) rsyncs build/ with --delete, protecting
+# only *.log, so a later check in the same tree deleted the raw screen.json and run.txt the moves and the verdict read.
+out=${SCORE_OUT:-$(dirname "$src")/godot-native-score-raw}/$short${SCORE_TAG:+-$SCORE_TAG}
 rows=${SCORE_ROWS:-$src/references/scoreboard/rows}
 overlay=(mk/scoreboard.mk tests/scoreboard/jam_census.gd tests/orders_probe.gd tools/remote.sh tools/remote_guard.sh
 	tools/slot.sh tools/quiet_window.sh tools/worktree.sh tools/copyback_verify.sh tools/copyback_prune.sh)
@@ -41,7 +45,9 @@ echo ">> scoreboard: $short on $host, workload and probes from $overlay_from ($(
 # Round 36 (remote_builds.md, the Spot rule): builder2 idle-stops after 20 min and can be preempted mid-run. Each attempt
 # starts from no local build/scoreboard (a dead copy-back must not leave an earlier main's files to score), a stopped box
 # is started first, an exit 255 (the box gone) is tried again, and a row is written only on verdict.sh's ok.
-expect=any; [ -z "${SCORE_VARS:-}" ] && expect=${SCORE_EXPECT:-40 fights, 48 moves, 36 orders}
+expect=any; [ -z "${SCORE_VARS:-}" ] && expect="40 fights, 48 moves, 36 orders"
+expect=${SCORE_EXPECT:-$expect}
+name=$short${SCORE_TAG:+-$SCORE_TAG}
 tries=${SCORE_TRIES:-3}
 for try in $(seq 1 "$tries"); do
 	case "$host" in *builder2*|*10.115.229.9)
@@ -62,6 +68,6 @@ bash "$src/tools/scoreboard/verdict.sh" "$out/remote.log" "$out/raw/run.txt" "$s
 [ "${PIPESTATUS[0]}" = 0 ] || { echo ">> scoreboard: NO ROW for $short (exit $status)" | tee -a "$out/driver.txt"; [ "$status" = 0 ] && exit 4; exit "$status"; }
 host_name=${host#*@}
 python3 -I "$src/tools/scoreboard/score.py" "$out/raw" --commit "$short" --machine "$host_name" --overlay "$overlay_from" \
-	--remote-status "$status" > "$rows/$short.json.tmp" && mv "$rows/$short.json.tmp" "$rows/$short.json" \
-	&& echo ">> scoreboard: row $rows/$short.json" | tee -a "$out/driver.txt"
+	--remote-status "$status" > "$rows/$name.json.tmp" && mv "$rows/$name.json.tmp" "$rows/$name.json" \
+	&& echo ">> scoreboard: row $rows/$name.json" | tee -a "$out/driver.txt"
 exit "$status"

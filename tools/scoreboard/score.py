@@ -32,9 +32,15 @@ import orders_probe_table  # noqa: E402
 import mover_kind  # noqa: E402
 
 
-def fights(root):
+def fight_seed(name):
+    return name[:-len(".log")].rsplit("-", 1)[-1]
+
+
+def fights(root, seed=None):
     d = os.path.join(root, "fights")
     names = sorted(n for n in os.listdir(d) if n.endswith(".log")) if os.path.isdir(d) else []
+    if seed is not None:
+        names = [n for n in names if fight_seed(n) == seed]
     tot = {"ran": len(names), "read": 0, "deaths": 0, "open": 0, "stuck": 0, "jam": 0, "jam_under_fire": 0, "kills": 0,
            "shots": 0, "hits": 0}
     for name in names:
@@ -58,7 +64,7 @@ def fights(root):
     return tot
 
 
-def moves(root):
+def moves(root, seed=None):
     d = os.path.join(root, "moves")
     tot = {"ran": 0, "read": 0, "crews_left_behind": 0, "left_behind_wedged": 0, "never_settled": 0, "squads": 0,
            "squads_arrived": 0, "movers": {"closing": 0, "wander": 0, "jitter": 0, "unknown": 0}}
@@ -69,7 +75,7 @@ def moves(root):
         for run in sorted(os.listdir(os.path.join(d, faction))):
             run_dir = os.path.join(d, faction, run)
             log = os.path.join(run_dir, "run.log")
-            if not os.path.exists(log):
+            if not os.path.exists(log) or (seed is not None and run.rsplit("-", 1)[-1] != seed):
                 continue
             tot["ran"] += 1
             judged = e1_bar.judge(run_dir)
@@ -103,9 +109,11 @@ def moves(root):
 SEED = re.compile(r"-s(\d+)\.log$")
 
 
-def orders(root):
+def orders(root, seed=None):
     d = os.path.join(root, "orders")
     names = sorted(n for n in os.listdir(d) if n.endswith(".log")) if os.path.isdir(d) else []
+    if seed is not None:
+        names = [n for n in names if SEED.search(n) and SEED.search(n).group(1) == seed]
     runs = {}
     for name in names:
         seed = int(SEED.search(name).group(1)) if SEED.search(name) else None
@@ -135,6 +143,27 @@ def orders(root):
     return out
 
 
+def seeds(root):
+    """Every seed the run dealt, in any part (fights <arena>-<seed>.log, moves <task>-<seed>/, orders ...-s<seed>.log)."""
+    out = set()
+    d = os.path.join(root, "fights")
+    if os.path.isdir(d):
+        out |= {fight_seed(n) for n in os.listdir(d) if n.endswith(".log")}
+    d = os.path.join(root, "moves")
+    if os.path.isdir(d):
+        out |= {run.rsplit("-", 1)[-1] for faction in os.listdir(d) for run in os.listdir(os.path.join(d, faction))}
+    d = os.path.join(root, "orders")
+    if os.path.isdir(d):
+        out |= {SEED.search(n).group(1) for n in os.listdir(d) if SEED.search(n)}
+    return sorted(out)
+
+
+def by_seed(root):
+    """Round 36 (the noise column): each seed's own fights / moves / orders, read the same way as the whole run. The seed is
+    the unit a second seed block repeats, so the spread of these across two blocks of one main sizes each line's noise."""
+    return {s: {"fights": fights(root, s), "moves": moves(root, s), "orders": orders(root, s)} for s in seeds(root)}
+
+
 def script_errors(root):
     """SCRIPT ERROR lines in every log of the run, by part: a probe that breaks on an older main shows on the page."""
     out = {}
@@ -160,7 +189,7 @@ def main():
     header = open(run_txt).read().strip().splitlines() if os.path.exists(run_txt) else []
     row = {"commit": a.commit, "machine": a.machine, "overlay": a.overlay, "remote_status": a.remote_status,
            "run": header, "fights": fights(a.raw), "moves": moves(a.raw), "orders": orders(a.raw),
-           "script_errors": script_errors(a.raw)}
+           "script_errors": script_errors(a.raw), "by_seed": by_seed(a.raw)}
     json.dump(row, sys.stdout, indent=1, sort_keys=True)
     print()
 

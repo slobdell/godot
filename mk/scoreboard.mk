@@ -12,11 +12,14 @@
 # Pinned at --fixed-fps $(SIM_HZ); native (the shipped path). Seeds fixed across mains, chosen fresh in round 35.
 SCORE_DIR ?= $(BUILD_DIR)/scoreboard
 SCORE_FIGHT_AT ?= terminus locks sumps gorge parade
-SCORE_FIGHT_SEEDS ?= 2601 2602 2603 2604 2605 2606 2607 2608
+# Round 36 (the noise column): SCORE_SEED_BASE moves every part's seeds together (2600 = the scoreboard's own 2601+; a second
+# block on the same main, e.g. 2700, sizes each line's noise: tools/scoreboard/table.py, references/scoreboard/noise.txt).
+SCORE_SEED_BASE ?= 2600
+SCORE_FIGHT_SEEDS ?= $(shell seq $$(($(SCORE_SEED_BASE) + 1)) $$(($(SCORE_SEED_BASE) + 8)))
 SCORE_MOVE_TASKS ?= faced_attack_move faced_move
-SCORE_MOVE_SEEDS ?= 2601 2602 2603 2604 2605 2606
+SCORE_MOVE_SEEDS ?= $(shell seq $$(($(SCORE_SEED_BASE) + 1)) $$(($(SCORE_SEED_BASE) + 6)))
 SCORE_ORDER_MAPS ?= locks crossing terminus
-SCORE_ORDER_SEEDS ?= 2601 2602 2603
+SCORE_ORDER_SEEDS ?= $(shell seq $$(($(SCORE_SEED_BASE) + 1)) $$(($(SCORE_SEED_BASE) + 3)))
 SCORE_JOBS ?= 10
 SCORE_PARTS ?= fights moves orders
 .PHONY: scoreboard-run
