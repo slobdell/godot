@@ -631,7 +631,8 @@ _Filed here before any number._
   277373 v 0. (n) face_creep at the judge 0 v 0 (attempt 4: 8 v 0). (o2) builder2 sample: 9 give-ups, 16 cells identical crew for crew.
   (l) SBF hull error at arrival 3.5 v 26.5 deg (reported). (p) not readable (no per-crew give-up mark). 7 hull-rest cells hit the 300 s
   wall cap, unpaired (listed). The merge also brings W1b and W1c OFF (STALL_INTENT / WHEEL_HALT false), as on the gated tree. Batch
-  check of ed121d24f on builder2 (systemd-run). **In his terms:** a War Rig he tells to face a way turns to it and goes still; nothing
+  check of ed121d24f on builder2 (systemd-run): **GREEN**, `make native check exited 0`, 2951/0, 25 passed + 2 NOT JUDGED (timing).
+  **In his terms:** a War Rig he tells to face a way turns to it and goes still; nothing
   is left creeping. Brains' E2 (B11b) is unblocked.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,

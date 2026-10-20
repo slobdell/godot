@@ -63,8 +63,11 @@ runs there.
 every squad drives every leg, and none ends on the far bank. Also on main: E4b (tests see real play's engine state, R35.57).
 Parked OFF this round, each with its reading: D3/D3b tight packing, D4 arrival seating, D5 the gate deal (**his feel call:** the Locks
 5-squad route gets in ~8 s sooner, at a little more near-ramp nosing on the Crossing; try `GATE_DEAL=on make skirmish ARENA=locks`),
-W1b (a held wheeled hull sits still: team 1 accuracy rose past its guard). One batch main check of 31e3d605c (D6 + E4b) is running
-on builder2. Rulings R35.1–R35.33 in workstreams.
+W1b (a held wheeled hull sits still: team 1 accuracy rose past its guard). Main 31e3d605c (D6 + E4b) green in parts on builder2.
+**main ed121d24f = manoeuvre M5, CP-F ATTEMPT 5 SHIPPED (R35.61)** (lab/cpf5 63336d690; builder2 batch check 2951/0). **Tell him:** a
+War Rig (any wheeled turret hull) he tells to face a way turns to it and goes still: within 15 deg 71–80 % of the time, nothing left
+creeping (attempt 4 left 8). It's what he asked for in round 32. Brains' E2 (a pushed-off rig returns facing his way) runs next on
+builder2; the joint W1c + T9 series (the 70 s stuck scout) is mid-way on builder0 (every guard in so far). Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
