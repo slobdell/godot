@@ -79,8 +79,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   deploy fires ~12.5 s in, in the middle of the passing traffic, instead of ~6 s, before it. The lab guard fails too.
 - Table: `references/round36/orders/x3b-lab-builder0-61b6181e2/` (+ the laptop design sweep's lines, seen before the bar).
 - **Reading:** R35.17's +6.1 s was one chaotic draw of the body stage (1 seed of 12), not a property of the geometry.
-  DEPLOY_PASS stays OFF; recommend deleting it (code, hook in element.gd, test) at the round close. No series run;
-  5101-5124 stay unseen. test_tactics_body's line (off + 8.1 s) stays as is (it is brains' file and the line still holds).
+  No series run; 5101-5124 stay unseen. test_tactics_body's line (off + 8.1 s) stays (brains' file; the line still holds).
+- **R36.2 (orchestrator, main 070508ace): DEPLOY_PASS DELETED** on stream/orders `4eff54d77` (element.gd hook, deploy_passers,
+  the ElementPlan branch, its test, probe column and make arms); `game/tactics/` = main's; brains' R35.74 grant lapsed. The
+  lab stage stays as tooling (`make herringbone-lab`, arms off / nostep).
 
 ### O2 trace (laptop GDScript, seed 34 = the dev seed, main + the probe's new deploy columns, the 6 click cells, 24 squads)
 `references/round36/orders/o2-trace-laptop-s34/rows.txt`. Per squad: the deploy's worst leg as seated, the best possible
@@ -90,7 +92,10 @@ seating of the same seats (minmax), and the same halt with its depth along the h
 - Two different causes: **seating** (Terminus 5 sq4: leg 47.4 m as seated v 19.2 best seating: D4's minimax case) and
   **shape depth** (Locks 5 sq4: 37.1 / 30.8 best seating / 18.8 compact; Locks 5 sq2 16.4 -> 7.3 compact; Terminus 5 sq2
   18.6 -> 7.4). Legs rarely drive THROUGH a squadmate (2 of 24 within 4 m): the move is long, not crossed.
-- Design note to the orchestrator next.
+- Design note DRAFT: `references/round36/orders/o2-deploy-move-note.md` (DEPLOY_COMPACT, the deploy's herringbone half as
+  deep, chosen tentatively). R36.2 asks for each cause COUNTED over the probe's street cells on builder0 before choosing:
+  `tests/control/deploy_move_causes.py` (c9f3007a3) over `make native orders-probe`, main only, seeds 3621-3626 (D4's,
+  already seen; fresh seeds kept for the bar), builder0 light lane: running.
 
 ### Plan (worker, 2026-10-20)
 1. C36.1 carry-over: DONE `a80bb28ab` (round35/orders's X3b code OFF + tooling + evidence, paths checked out exactly; main had
