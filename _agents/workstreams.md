@@ -425,6 +425,13 @@ _Filed here before any number._
   give way): pinned OFF in those arms PLUS an ON arm asserting the new behaviour (manoeuvre owns tests/nav/, nav's successor).
   test_tactics_mixed_legs: four tanks attack-moved across the Sumps don't arrive (31.9 m short), NATIVE path only (laptop GDScript
   passes on/off); being run natively on joint-base v joint-on to tell the carried T6b/T7-OFF code from the mirror. Series held.
+- **R35.38 (2026-10-19 ~19:30) D6 passes its bar as filed but is HELD: a squad crossed to the far bank.** builder0 `make native
+  orders-probe`, stream/orders 84ba02a69, seeds 3641–3646, n 6, main v `--requeue=on`. Counter: legs differ in 12 of 36 route runs;
+  every squad every leg 144/144 v 117/144; click cells 36/36 identical; queued-task / route / untangle / requeue tests green. But
+  Crossing 5 route s3643 with requeue ON: TWO squads reach the far bank (0 off; deck 9 v 4); squad 4's crews got goals across the
+  river at 31 s (Delta_3 at -79.3, -7.1) though its place (-100.5, 28.9) is on his side. Also: Crossing 5 route all-in 41.0 v 33.9 s,
+  Locks 5 route 35.4 v 29.3, Terminus 5 route never-in 2 v 1. The bar omitted D5's far-bank guard (the orchestrator's miss); **every
+  orders bar now carries far bank 0 in every cell.** Trace s3643 (laptop), fix, re-read on FRESH 3651–3656 with far bank 0.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
