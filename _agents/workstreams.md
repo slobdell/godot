@@ -1,8 +1,85 @@
 # Workstreams: the current round
 
-> **ROUND 35 PREPARED (2026-10-19; launched FRESH from the docs commit: no worktree or agent carried over from round
-> 34): five streams, ALL OPUS (the lead, 2026-10-19: "move all our agents back to Opus"), builder0 ONLY (builder2 powered off by
-> the lead the same morning).** Briefs in `streams/`.
+> **ROUND 36 PREPARED (2026-10-20 afternoon; launched FRESH from the docs commit: round 35's `stream/*` branches are
+> `round35/<stream>`; no agent carried over). FOUR streams: manoeuvre on FABLE (the lingering stuck crew), traffic, orders and
+> native on Opus. Builders: builder0 AND builder2 (C36.1).** Briefs in `streams/`. Round 35's section follows for the record.
+
+## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
+
+**Goal: the crew he sees sitting stuck, and the squad that has arrived but is still in the way.** No new playtest words (he chose
+"use the agents' list", 2026-10-20). Round 35 shipped the scout turn-in, the deploy step, shift-click routes for every squad, T7, E1,
+M5 and the gate deal (D5); the joint W1c + T9 ship (his yes) merges at CP36.1. What is left that he would notice: a crew under fire
+held in a take-turns hold (X1b, R35.78: a held still hull takes ~2x the hits; T8 is the answer), a crew wedged between friends whose
+stall clock never fills (X1(d)), crews left behind wedged (9 of 17 in Bar E1's new arm), an arrived squad's herringbone across the
+next squad's street (R35.17, R35.77), the wing crews' twitch as a squad deploys across a street (D4's trace), seats reached only by
+a 20–30 m detour (the Crossing, X3c), and packing that pushed places away from his click (D3/D3b).
+
+**Why four streams, not five:** brains' round-35 leftovers closed with no lever (X4a: the released crews that never catch up are
+wedged, W1's problem; E2 parked; E3 no lever). Its one live item, X4b (did the joint free the left-behind crews?), is manoeuvre's
+S2. Brains' paths have no stream this round (C36.6).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew being shot while waiting its turn in a street mouth drives on instead of sitting there | T8's pair and series on builder2, after CP36.1 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew wedged between two friends backs out within a few seconds; fewer crews left sitting behind their squad | S1 stallnet (net-motion stall clock) |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | a squad that has just set up doesn't block the next squad's street; less shuffling as squads deploy; seats he can drive straight to | O1 the herringbone-across-a-lane lab stage |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the scoreboard row for every main, the mirrors, cleaner tests | N1 hand over round 35's scoreboard + copy-back fix |
+
+**Machines (C36.1):** builder0 (12 cores, 14 GB) = **manoeuvre's and orders' lane**; builder2 (e2-highcpu-32 Spot, us-west4, stops
+itself after 20 idle min; `make gcp-start`) = **traffic's T8 and native's scoreboard**. On each builder at most ONE full check and
+ONE judged series at a time; light runs (`tools/remote.sh --light`) freely. Every full check behind `tools/builder_checks.sh
+--wait-below 2`; every run longer than a few minutes under `systemd-run --user` (remote_builds.md). The orchestrator's main checks
+go on whichever builder is free. Disks: builder0 sat at 90 % at launch; delete your own `~/tank_squad/<folder>` leftovers when a
+side worktree is done (R35.73).
+
+**Ownership:** round 35's table stands (round 34's with round 35's changes), EXCEPT:
+- **Brains' paths (`game/ai/tank_brain.gd`, the rest of `game/tactics/**` and `game/ai/**` outside the carve-outs, `tests/tactics/**`,
+  `tests/test_tactics*.gd`, `tests/test_ai*.gd`) have no owner this round.** A change there is a grant from the orchestrator, one
+  guarded line at a time, with a merge note. Standing grants: orders' R35.74 hook in `game/tactics/element.gd` (DEPLOY_PASS);
+  test_tactics_body's arrival line (R35.68) to orders.
+- **manoeuvre** may copy brains' read-only readers (`tests/tactics/mover_kind.py` from `round35/brains`) into `tests/manoeuvre/`.
+- **native** gets the test-hygiene grant (C36.5): in ANY owner's test file, replacing a bare `global_position =` spawn placement with
+  `Tank.place(...)` (or a fresh child) and nothing else.
+- **orders** owns its lab stage under `tests/control/**` (already its path).
+
+**Contracts (round 36):**
+
+- **C36.1 Fresh start; two builders.** Round 35's branches are `round35/<stream>`; every worktree is created from this docs commit.
+  Each stream's first commit brings over what it carries from `round35/<stream>` (listed in its brief) by cherry-pick or merge of
+  named commits, never the whole branch blind. The machine rule above.
+- **CP36.1 The joint W1c + T9 ship (the orchestrator; his yes, R35.66).** `pair/joint-ship` `d56685115` (base `pair/joint-ship-base`
+  `6f830ceea`) is in its builder0 `make native check`. On green the orchestrator merges it ALONE, adopts the moved sim-baseline
+  maps (attribution = the base's sim-baseline), runs ONE main check, and tells every stream to `git merge main`. **T8's pair is cut
+  only after it**; manoeuvre's S1/S2 measure on a main that has it.
+- **C36.2 T8, a held crew under fire leaves the hold (traffic).** The bar filed in *Bars (round 35)* and R35.69 stands unchanged
+  (fresh fixed arenas {terminus, locks, crossing, gorge, parade} x 1800–1827, locks 1801–1828, n 140, native, builder2 start to
+  end). Its code and tooling come from `round35/traffic` (`1a1bd58bf`, the jam tooling, `tests/traffic/t8_series.sh`). No native
+  mirror (the drive calls `Traffic.hold_of`). A pass ships ON on its green check (symmetric AI improvement, no lead gate).
+- **C36.3 The stuck crew (manoeuvre, Fable).** S1 stallnet: X1(d)'s design (A)–(C) and its draft bar (`round35/manoeuvre`
+  `references/round35/manoeuvre/x1d-trace/README.md`), the deciding line a deterministic lab stage (both paths), series guards on
+  FRESH seeds, native mirrors `_stuck_from`. S2 the left-behind crews after the joint: re-read Bar E1's left-behind on main after
+  CP36.1 (X4b), trace each crew still wedged, and only then a design and a bar. S3 W1b is dropped (R35.78): delete
+  WHEEL_HALT and its tests (native deletes its inert mirror in the same pair).
+- **C36.4 The arrived squad in the way (orders).** O1 the lab stage: an arrived herringbone across another squad's lane, built
+  deterministically, is the DECIDING workload for X3b's DEPLOY_PASS (`round35/orders` `a7cd0fbc3`); the guard is a PAIRED mean on the
+  body stage's non-jam seeds (≤ +1.0 s) with a +5 s per-seed cap (R35.77's lesson); fresh seeds 5101–5124 kept unseen for it. Then
+  the deploy move across a street (the twitch), the reached halt (X3c's note), packing toward the click, the bridge-mouth click.
+  `ElementPlan` stays pure (R35.68's ruling): reachability comes in as an input.
+- **C36.5 Native.** N1 hands over `round35/native` (the scoreboard, `tools/copyback_prune.sh`, the two Tank.place test fixes left
+  uncommitted in its worktree, committed by the orchestrator at the close) on one check. N2 scores every main the orchestrator names
+  (builder2). N3 mirrors: stallnet's `_stuck_from`, W1b's deletion. N4 the test-hygiene sweep under the grant above. N5 the census
+  gap lint (a counter named in a bar must appear in its series' printed line).
+- **C36.6 No stream owns brains' paths.** Ask the orchestrator for a grant (one guarded line, merge note) before touching them.
+
+## Bars (round 36)
+
+_Filed here before any number._
+
+- **T8:** as filed in *Bars (round 35)* (traffic's T8 bar) with R35.69's seed swap; unchanged.
+
+## Rulings (round 36)
+
+_(none yet)_
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
 
@@ -771,6 +848,14 @@ _Filed here before any number._
   merged. **Round 36:** a lab stage that reproduces an arrived herringbone across a lane deterministically as the deciding workload; a
   paired non-jam guard (mean <= +1.0 s) + a +5 s per-seed cap. **Lesson:** a per-seed guard on a chaotic per-seed number measures chaos;
   guard paired means, with a generous per-seed cap.
+- **R35.78 (2026-10-20 ~12:55 PDT, the orchestrator; the clock in R35.66–R35.77 ran ~2 h ahead) X1b READ: SITTING DUCK; W1b is
+  DROPPED, T8 is the answer.** Read by the orchestrator (manoeuvre's session had ended) with `tests/manoeuvre/x1b_judge.py` on
+  builder0 native, Locks x 4300–4323 (fresh, n 24 an arm, paired): base lab/x1b-base `a8e629fb8`, ON lab/x1b-on `d24558cd4`. Counter
+  PASS (wheel_halts 0 v 52749; held_p0 exposure 1581 v 1721 s). DECIDING held_p0 hits per exposed second pooled 0.117 v 0.249,
+  D +0.132 v 1.645 se 0.127 (paired bootstrap, 4000 draws): over the line, but only just. Victim team 0 0.066 -> 0.306/s, team 1
+  0.169 -> 0.200/s; hits on a still hull 121 -> 423; all-crew rate 0.148 v 0.140. Verdict file
+  `~/overnight-manoeuvre/r35/x1b/x1b_verdict.txt` (copied to `references/round35/manoeuvre/x1b/`). WHEEL_HALT_DEFAULT stays false;
+  native's inert W1b mirror is round 36's to delete (manoeuvre + native).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

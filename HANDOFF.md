@@ -4,26 +4,43 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-20 ~14:45 — **ROUND 35 + ITS EXTENSION ARE IN FLIGHT. A NEW ORCHESTRATOR: read the box "IN FLIGHT RIGHT NOW" below, start the /loop, and carry on.** Older headers below._
+_Last updated: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
 
-## ⏩ IN FLIGHT RIGHT NOW (2026-10-20 ~14:45) — a new orchestrator starts here
+## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon) — read this first
 
-Main is **36745fa4c** (D5 ON) + docs, green by INHERIT. The five worker sessions (`godot-<stream>-*`, `ListAgents`) are LIVE on
-their round-35 worktrees, working the **Round 35 extension** (workstreams.md, X1–X5). Rulings run to R35.77. Machine rule: one full
-check + one judged series per builder; checks behind `tools/builder_checks.sh`; long remote runs under `systemd-run`.
+**His call (2026-10-20, the question tool): "use the agents' list"** (no new playtest). He had closed every round-35 session; the
+orchestrator read the leftovers itself. Split, ownership and contracts C36.1–C36.6 + CP36.1 are in `workstreams.md` *Round 36*;
+briefs in `_agents/streams/`; round 35's briefs in `streams/archive/round35/`; round 35's branches are `round35/<stream>`.
 
-| What | Who | State | Your next action |
-|---|---|---|---|
-| **The joint W1c + T9 SHIP** (his yes) | manoeuvre | hand-over `pair/joint-ship` d56685115 re-checking on builder0 (unit manoeuvre-shipcheck2; the first check was VOID, disk full); base 6f830ceea's sim-baseline follows | on its green: merge it ALONE; `make sim-baseline-adopt` the moved maps on the merged tree (joint3 moved foundry/crossing/sumps/cut; attribution = base); ONE batch `make native check` of main on builder2 under systemd-run; then tell traffic (T8) and brains (X4b) |
-| **T8** (a held crew under fire leaves the hold) | traffic | driver ready (`tests/traffic/t8_series.sh`), bar filed (1800–1827 with locks-1828 for locks-1800, R35.69) | after the joint merges: tell traffic to cut its pair from main and run on builder2 (after the scoreboard) |
-| **X1b** (is a still held hull a sitting duck?) | manoeuvre | series running on builder0 (24 fights an arm, 4300–4323), clean of the disk window | read the verdict: duck -> W1b dropped (T8 is the answer); not -> W1b re-tries in round 36 |
-| **The scoreboard** (his "concrete progress" ask) | native | 3 rows running on builder2 (c29a8c7b6, a0ae0aafd, 1c82d6d1e); README -> `references/scoreboard/README.md` on stream/native | when it reads: merge native's scoreboard + copy-back fix (1d8dd7648; shell-tools only) + the two Tank.place test fixes on their checks; then score each new main |
-| **X4b** (did the joint free E1's left-behind crews?) | brains | waits on the joint merge | tell brains when it merges |
-| X1(d) the choke wedge, X3b DEPLOY_PASS, X3c Crossing detours | — | traced / parked / noted for round 36 (R35.76, R35.77) | nothing |
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **traffic** | `godot-traffic` (1) | Opus | a crew being shot while waiting its turn drives on | T8 (after CP36.1), builder2 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a crew wedged between friends backs out; fewer left behind | S3 drop W1b, S1 stallnet |
+| **native** | `godot-native` (4) | Opus | nothing alone: the scoreboard row per main, mirrors, test hygiene | hand over round 35's scoreboard |
+| **orders** | `godot-orders` (5) | Opus | an arrived squad doesn't block the next one's street; no deploy shuffle | the herringbone lab stage |
 
-**When all of that has landed, close round 35** (orchestration.md *Close*): rescue anything untracked; archive the five briefs to
-`streams/archive/round35/`; rename `stream/*` -> `round35/*`; remove the worktrees AND their `~/tank_squad/<name>` folders on
-builder0 and builder2 (R35.73); update this file; then prepare round 36 from the candidates below (his playtest first, if he has one).
+No brains stream (its leftovers closed with no lever; X4b is manoeuvre's S2); brains' paths need a grant (C36.6).
+
+**To launch (the lead):** in each folder `~/projects/godot-<stream>`, start a CLI (manoeuvre on Fable, the rest on Opus) and paste
+the kickoff prompt from `_agents/orchestration.md` *The kickoff prompt*. **godot-native is created after the scoreboard rows finish
+on builder2** (its old worktree holds the running job); the orchestrator says when.
+
+**The orchestrator's open items (in order):**
+1. **CP36.1 the joint W1c + T9 ship (his yes, R35.66).** `pair/joint-ship` `d56685115` in `make native check` on builder0 (unit
+   `manoeuvre-shipcheck2`, log `~/overnight-manoeuvre/r35/ship/check_d56685115.log`; sim-baseline red is expected: the joint moves
+   maps); then the base `6f830ceea`'s sim-baseline (`base_simbaseline_6f830ceea.log`, done marker `done`). On green: merge it ALONE,
+   `make sim-baseline-adopt` the maps that moved in the check AND not in the base (attribution = base), ONE `make native check` of
+   main, then tell traffic, manoeuvre and orders to `git merge main`. Remove `godot-manoeuvre-ship` / `-shipbase` and their
+   `~/tank_squad/` folders after.
+2. **The scoreboard rows** (`native-scoreboard` unit on builder2, writing into `godot-native/references/scoreboard/rows/`): when it
+   ends, commit the rows to `round35/native` (git mv the branch first), remove the old godot-native worktree and its remote folders,
+   `make worktree STREAM=native OFFSET=4`, tell the lead native can launch.
+3. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
+   joint since).
+
+**Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
+X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36's stallnet.
 
 ## 🏁 ROUND 35: THE WORK IS DONE (2026-10-20 morning) — for him when he wakes
 

@@ -1,55 +1,59 @@
-# Stream: traffic (a crew under fire doesn't step aside into a killing zone when the one behind can go round)
+# Stream: traffic (a crew being shot while it waits its turn in a street mouth drives on)
 
-> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 35** (C35.1, C35.8;
-> R34.9, R34.13, R34.15, R34.17, R34.20 in *Round 34*), and your round-34 brief `streams/archive/round34/traffic.md` (its Status is the
-> close-out). Evidence: `references/round34/traffic/` (T5 census, x6/x6b series, parkedroom v4/v4b).
-> **You own:** the give-way block (`_avoid`, `_around_friends`, `_ask_behind`, `_hull_within`, `_negotiate`, ask, `_begin_yield`,
-> `right_of_way`), `game/ai/traffic.gd`, `tests/traffic/**`, `tests/test_traffic*.gd`, `mk/traffic.mk`.
-> **Model:** Opus. **Machine:** builder0 only (C35.1).
+> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 36** (C36.1,
+> CP36.1, C36.2) and in *Round 35*: the T8 bar in *Bars (round 35)*, R35.69 (the seed swap), R35.78 (X1b: why T8). Then your round-35
+> brief `streams/archive/round35/traffic.md`: its Status is the close-out and holds T8's whole plan (code, tooling, driver, reader).
+> **You own:** the give-way block in `game/ai/movement.gd` (`_avoid`, `_around_friends`, `_ask_behind`, `_hull_within`, `_negotiate`,
+> ask, `_begin_yield`, `right_of_way`), `game/ai/traffic.gd`, `tests/traffic/**`, `tests/test_traffic*.gd`, `mk/traffic.mk`.
+> **Model:** Opus. **Machine:** builder2 for T8's check and series (C36.1); light runs on either builder.
 
 ## The lead's direction
 
-Smart AI on both sides; symmetric improvements ship without asking. His answer at round 34's close: **a firing mortar truck keeps
-its spot** ("Keep the truck firing"; his round-31 T1c-b2 rule stands).
+Smart AI on both sides; symmetric improvements ship without asking (memory: *smart AI on both sides*). For round 36 he chose "use the
+agents' list" (2026-10-20): no new playtest words. His standing rule: a firing mortar truck keeps its spot.
 
-What he will notice: fewer crews dying while stepping aside for a squadmate in a lane under fire, without the crew behind
-stalling there instead.
+What he will notice: a crew that is being shot while it waits its turn at a street mouth stops waiting and drives on, instead of
+sitting there until it dies.
 
 ## Where things stand
 
-- **Shipped in round 34:** O4 (routes are the squad's) and o4b (gates for squads that have the waypoint queued).
-- **Parked, each judged twice or more:** parkedroom (v4/v4b: hold-post loops −74 %, the far-loop total is the firing batteries he
-  keeps); T4 the ghost (the gain is spent by later rules); **T6/T6b under fire, no give-way** (R34.17, R34.20): refusing every ask
-  under fire cut yielding deaths 53–69 % but moved the dying to stuck/blocked/parked one for one; dropping the mid-step abort (c)
-  fixed the collision harm. `underfire` is DEFAULT_OFF on stream branches only (not on main); native's mirror `badfdb978` unmerged.
-- **T5's census:** jammed-by-friendly deaths 5.6 %, 83 % giving way, 77 % under fire, median jam 1.5 s, lanes 74 %.
+- **Shipped in round 35:** T7 (a crew under fire doesn't step aside into a killing zone when the one behind can go round). **T9**
+  (a give-way that ends with the asker not past is not recorded, so the next ask is honoured) ships inside the joint W1c + T9 at
+  **CP36.1** (the orchestrator merges it; you are told when).
+- **Why T8 is the answer (R35.78, X1b):** a held, still wheeled hull takes ~2x the hits per exposed second (builder0 native, Locks x
+  4300–4323, n 24 paired: 0.117 -> 0.249/s); manoeuvre's alternative (W1b, the wheeled halt) is dropped. From W1: 33 of 81
+  stuck:wedged deaths were HELD by the T1 street-mouth hold under fire, a median 5.4 s in.
+- **T8 is coded and its bar is filed** (round 35 Status): `1a1bd58bf` (`--traffic-on=holdfire`, DEFAULT_OFF; `Traffic.hold_of`
+  releases a held crew hit within `Movement.UNDER_FIRE_S`, counter `released_fire`), `tests/test_traffic_holdfire.gd` (+ .uid
+  `41f637d8e`), jam_census's `held_deaths` / `held_3s`, `jam_ab.py --bar t8` (`06144d171`), `tests/traffic/t8_series.sh`. All on
+  `round35/traffic`, none on main.
 
 ## Backlog (in order)
 
-1. **T7 Refuse under fire only when the asker has another way (C35.8).** Design note first, to the orchestrator: how "another way"
-   is read (parkedroom's room/route test, a navmesh detour bound, or the asker's own route options), what the asker does when it has
-   none (the give-way proceeds as today), and the interactions (the battery rule, the gate, O4 routes). Then tests, then a bar before
-   any number: deciding gain jam-under-fire deaths; guards stuck deaths, open deaths, far loops, kills, hit rate, contacts after a
-   give-way, crossings (as T6b's); fresh fixed arenas, no twins. Base it on `round34/traffic` (T6b's code) on current main; native
-   mirrors from `badfdb978` with the new gate.
-2. **T8 (R35.7, after T7's series; its own bar filed first):** a held crew that is being hit leaves the take-turns hold. From
-   manoeuvre's W1 (builder0, native, main a0ae0aafd, Locks/Terminus × 3500–3511, 24 fights): 33 of 81 stuck:wedged deaths were HELD
-   by the T1 street-mouth hold under fire, a median 5.4 s in; the 3 longest wedged episodes (18 s) are all holds. Not folded into T7.
-3. **(D) (R35.7, after T7's series reads):** jam_census adds `jam:held` as a REPORTED sub-cause (a death while held by the hold);
-   T5's definition (T7's G) unchanged until then.
-4. **After T7's series, once native's N2 is on main (the orchestrator says when):** every traffic series reader that pools a folder
-   that could hold random-arena fights (far_ab, far_kills, jam_ab, jam_table) calls `seed_twins.filter_logs` first (small commit).
-5. **Stretch:** the measurement notes for judging.md (random-seed twins are now dropped by `seed_twins.py`; the fresh-folder import
-   segfault is intermittent and a relaunch cures it).
+1. **Carry over (C36.1), after CP36.1 lands on main and the orchestrator tells you:** `git merge main`, then bring `round35/traffic`'s
+   T8 code and tooling across. Read `git diff main...round35/traffic` first: T9's commits arrive through the joint, so take the rest
+   (T8 OFF, the jam tooling, t8_series.sh, test_jam_ab, the judging.md measurement notes). `make quick-remote`.
+2. **T8 judged (C36.2).** Cut `pair/holdfire-r36` from that commit + the ON flip (holdfire out of `DEFAULT_OFF`); base arm
+   `--traffic-off=holdfire`. Driver `tests/traffic/t8_series.sh` on **builder2** under systemd-run: wait for builder2's checks → `make
+   native check` (stop if red beyond sim-baseline) → switch-OFF `sim-variants --traffic-off=holdfire` → the series → `jam_ab --bar t8`.
+   The bar is exactly as filed (fresh fixed arenas {terminus, locks, crossing, gorge, parade} x 1800–1827, locks 1801–1828, n 140).
+   Counter first. Report every line with commit, machine, n. **A pass:** name the green hash of the hand-over (the ON flip on current
+   main) and send it to the orchestrator; it ships ON. **A fail:** trace the worst fight first, write it up, no re-read on the same
+   seeds.
+3. **Perf-judge for T8 before the ship:** ask the orchestrator for a quiet slot (it is owed alone on a quiet builder).
+4. **The seed_twins call in every series reader** that pools a folder that could hold random-arena fights (far_ab, far_kills,
+   jam_ab, jam_table), if `round35/traffic` didn't already carry it (small commit, test).
+5. **Stretch: the next held-crew loss.** With T8's series in hand, read `jam:held` and the held deaths that T8 did NOT release
+   (hit before the hold, or held without being hit while its neighbour was): a design note to the orchestrator, no code before it.
 
 ## How to verify
 
-Tests first; `make quick-remote`; one full check at a time on builder0; series pinned, fresh seeds, no random twins. Every number:
-commit, machine, workload, n.
+Tests first; `make quick-remote`; one full check at a time a builder; the series pinned, fresh seeds, no random twins. Every number:
+commit, machine, workload, n. Smoke: `make skirmish ARENA=terminus` on the T8 hand-over; a held crew that's hit should drive on.
 
 ## Don't touch
 
-Manoeuvre's drive and unstick, brains' and orders' paths, `native/**`, `tests/baselines/**`. Don't push.
+Manoeuvre's drive and unstick, orders' paths, brains' paths (no owner this round, C36.6), `native/**`, `tests/baselines/**`. Don't push.
 
 ## Waiting on the lead
 
@@ -59,26 +63,4 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-19 (traffic, Opus).** No numbers yet.
-
-**Plan (ordered).** T7.0 design note (DONE, `321e752f1`, sent to the orchestrator) → T7.1 base: T6/T6b + jam tooling cherry-picked
-onto main without parkedroom (DONE) → T7.2 tests + code (built; iterating on builder0) → T7.3 native's mirror spec → T7.4 pair +
-`make native check` + switch-off inertness → T7.5 the judged series (below) → stretch: judging.md measurement notes.
-
-**T7's bar, FILED before any number (also in workstreams *Bars (round 35)*).** Pair = current main + T7 (`--traffic-on=underfire`,
-DEFAULT_OFF) + native's mirror + the ON flip; base arm `--traffic-off=underfire`; switch-OFF sim-baseline inertness beside the C31.1
-full check. Native, builder0 start to end, pinned, 180 s showmatch, FRESH fixed arenas `{terminus, locks, sumps, gorge, parade} ×
-1600–1627` (n 140, no random arena, no twins). k = 1.645, paired se (`tests/traffic/jam_ab.py`).
-- **G (deciding gain):** jam-under-fire deaths (T5's definition) arm < base AND (base − arm) − k·se > 0.
-- **Guards (T6b's):** (1) open deaths ± k·se; (2) stuck deaths ≤ base + k·se; (3) far loops ≤ base + k·se; (4) kills ± k·se, hit rate
-  ≥ base − k·se; (5) contacts in the 3 s after a hit-ended give-way ≤ base + k·se; (6) crossing arrivals 44–46 × 6 ≥ base − k·se a case;
-  **(7, new) all friendly hull contacts a fight ≤ base + k·se** (a pass must not buy bumps).
-- **Reported:** contacts with a crew passing, standoffs with durations, all/jam deaths, deaths by cause, `underfire_refusals/gives/
-  holds`, `passes/passes_done/passes_timeout`. A fail is traced (worst fight first); no re-read of a line.
-
-**Decisions.** "Another way" = a pass lane beside the refuser swept for the asker's hull (design note: parkedroom's room test answers
-the refuser's question, a navmesh detour cannot see hulls, a lane change is brains' and B9 showed it is not the lever). The refused
-asker steers by the lane (ORCA alone follows a slow mover: T6b's doubled far loops). (b) is gated by the same test, roles swapped.
-
-**Questions for the lead.** None.
-**Requests to other streams.** native: the T7 mirror (spec to follow with the first green commit).
+**2026-10-20 (orchestrator, at launch).** Not started. CP36.1 (the joint ship) was checking on builder0 at launch.

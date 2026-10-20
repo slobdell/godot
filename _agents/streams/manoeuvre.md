@@ -1,52 +1,68 @@
-# Stream: manoeuvre (fewer crews die shoved around in a lane mouth; a wheeled hull told to face a way faces it and goes still)
+# Stream: manoeuvre (a crew wedged between friends gets out; fewer crews left sitting behind their squad)
 
-> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md` (M1's A/A rows), `_agents/workstreams.md` **Round 35**
-> (C35.1, C35.3, C35.6, C35.7; R34.10, R34.18 in *Round 34*), and your round-34 brief `streams/archive/round34/manoeuvre.md`
-> (its Status is the close-out: M0, M1, M2, CP-F 4, the wedged-death table). Evidence: `references/round34/manoeuvre/`
-> (cpf4-series, wedged-deaths, m2-report), traffic's T5 census `references/round34/traffic/t5_jam_death_census.md`.
-> **You own:** round 34's carve-outs: the `drive()` body, `_nose_stop`, `unstick`, `_pressing_escape`, the k-turn executor, H1/H1b,
-> the face-at-rest path in `order_controller.gd`, the `_order_move` decline for wheeled turret hulls, `game/ai/manoeuvre*.gd`,
-> `tests/manoeuvre/**`, `tests/test_manoeuvre*.gd`, `mk/manoeuvre.mk`, additive fields in `game/control/screen_playtest.gd`.
-> **Model:** Opus. **Machine:** builder0 only (C35.1).
+> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 36** (C36.1, CP36.1,
+> C36.3) and in *Round 35*: R35.64, R35.66 (the joint), R35.67, R35.76 (X1(d) traced), R35.78 (X1b: W1b dropped). Then your round-35
+> brief `streams/archive/round35/manoeuvre.md` (its Status is the close-out) and brains' `streams/archive/round35/brains.md` (X4a: the
+> released crews that never rejoin are wedged; the net-motion mover rule). Evidence on `round35/manoeuvre`:
+> `references/round35/manoeuvre/x1d-trace/README.md` (the trace, design (A)–(D), the stallnet bar draft), `joint3-series/`, `w1-trace/`.
+> **You own:** the `drive()` body, `_nose_stop`, `unstick` (and its stall clock), `_pressing_escape`, the k-turn executor, H1/H1b,
+> W1c's stall intent, the face-at-rest path in `order_controller.gd`, the `_order_move` decline for wheeled turret hulls,
+> `game/ai/manoeuvre*.gd`, `tests/manoeuvre/**`, `tests/test_manoeuvre*.gd`, `mk/manoeuvre.mk`, additive fields in
+> `game/control/screen_playtest.gd`. You may copy brains' read-only readers (`tests/tactics/mover_kind.py`) into `tests/manoeuvre/`.
+> **Model:** **Fable** (this is the lingering problem: the wedged crew has been the biggest avoidable loss since round 34).
+> **Machine:** builder0 (C36.1); light runs on either builder.
 
 ## The lead's direction
 
-Smart AI on both sides; symmetric improvements ship without asking. His answer at round 34's close: **"Ship it"**: the scout
-turn-in (M0) ships (the orchestrator merges `pair/c339-r34b` `3902ade09` on its green check, C35.3). His standing CP-F ask: a War
-Rig or other wheeled turret vehicle told to face a direction ends facing it and sits still.
+Smart AI on both sides; symmetric improvements ship without asking. For round 36 he chose "use the agents' list" (2026-10-20).
+From his playtests across rounds: a crew sitting idle and stuck while its squad has moved on is the thing he notices most.
 
-What he will notice: fewer crews dying while being shoved around in a lane mouth; a wheeled hull told to face a way turns to it
-and goes still, without the squad hanging at each leg.
+What he will notice: a tank jammed between two friendly tanks at a choke backs out or finds a way within a few seconds instead of
+rocking for a minute; fewer crews left behind, sitting still, when the squad has gone on.
 
 ## Where things stand
 
-- **Shipped in round 34:** M1 the ruler (real_mps, wedged apart, A/A), M2 the arrival hold (ARRIVE_LEG_DEFAULT on), the M0 turn-in
-  (merging under C35.3).
-- **Wedged deaths (C35.6):** 499 of 5984 (8.3 %, 3.5 a fight) in T5's census, all `driving`, none held; mid-weight hulls (suppressor,
-  burner, IFV, tank, lancer 13–16 % of their own deaths); lanes, the Locks lane mouths worst; median speed at death 1.2 m/s, 85 %
-  under fire, only 26 % below STUCK_SPEED, so the stall rule never sees most of them.
-- **CP-F (R34.18):** the turn is right (3–4° v ~50°); it failed on settling: faces no plan fits creep at the 0.35 lock until the
-  judge, and attack-move elements step ~30 s later when arrived crews sit on a sector face (brains' side).
+- **Round 35 shipped M5** (a War Rig told to face a way turns there and goes still) and the joint W1c + T9 lands at **CP36.1** (his
+  yes): attack-move crews that never settle 48 -> 23, crews 25+ m off their goal 105 -> 59 (joint3 series, builder0).
+- **W1b is dropped (R35.78):** X1b read SITTING DUCK (a held still wheeled hull takes ~2x the hits); T8 (traffic) is the answer.
+- **X1(d) traced (R35.76):** the choke wedge's stall clock reads REAL velocity, but resets on any one tick >= 0.8 m/s; the contact pops
+  ~once a second (one tick 8.5–9.9 m/s, net <= 0.1 m in 10 s), so the clock reaches 0.73–0.99 s and is zeroed just short of 1.0 for
+  ~50 s. Rocking crews (`rocking_census.py`, joint3 hull-rest, 768 runs an arm): base 6, joint ON 3.
+- **The left-behind crews (Bar E1, brains):** 9 of the 17 crews left > 25 m behind in E1's new arm were still wedged at the judge
+  (law-605 Eyes_4, law-607 Guns_6, gangs-602 Hunters_3 traced; law-705 Eyes_3, law-711 Guns_7 never moved after release). X4b (did the
+  joint free them?) was never run: it is your S2.
+- **Measurement rule (brains, X4a):** count movers by NET motion (closing + wander in `mover_kind.py`), never `real_mps` alone: a
+  wedged hull rocking reads >= 0.3 m/s.
 
 ## Backlog (in order)
 
-1. **W1 Wedged deaths: trace first.** On main, fresh seeds on the Locks/Terminus lanes: for the three largest episodes, which force
-   moves the hull (ORCA, avoid, around_friends, the drive's own steer), what `Movement.wedged` and unstick saw, and what the crew was
-   ordered to do. Then a design note to the orchestrator (a wedged trigger that acts on walking-pace shoving; what a crew under
-   fire should do instead: back off, hold, or push through). Then a bar before any number: deciding gain wedged deaths; guards open,
-   stuck, jam deaths, far loops, kills, hit rate (as T6b's). Native mirrors anything in the drive.
-2. **W2 CP-F attempt 5, the face side (C35.7).** A face that gives up cleanly after N refused plans (no creep at the 0.35 lock).
-   The seam with brains' element step is agreed through the orchestrator before code. A fresh bar with guards from M1's A/A.
-3. **Stretch:** the watch item from R34.16 (one 9.1 m both-planned face) if a face_pairs series runs.
+1. **Carry over (C36.1):** after CP36.1, `git merge main`, then bring across from `round35/manoeuvre` what main lacks and you need
+   (the STALL_TRACE probe `248e7495c` as measurement-only code, `rocking_census.py`, `fight_census.gd`'s exposure lines, the judges).
+   Read `git diff main...round35/manoeuvre` first; W1c and the stall-intent tests arrive through the joint.
+2. **S3 delete W1b (R35.78), first because it's small:** WHEEL_HALT and its tests out of GDScript; native deletes its inert mirror
+   in the same pair (send native the commit). Switch-OFF inertness: sim-baseline unmoved (it was default OFF).
+3. **S1 stallnet (C36.3), the bar draft in x1d-trace/README.md, filed in workstreams *Bars (round 36)* before any number:** the
+   stall clock resets on NET motion from where it started (> STUCK_NET_M 0.5 m), routed move_to on the honest path only, behind
+   `--nav-off=stallnet` (default OFF until judged); native mirrors `_stuck_from` (send native the spec). The DECIDING line is the
+   deterministic lab stage `test_manoeuvre_stall_net` (a hull driven into a one-hull gap between two parked friends of another
+   element; ON escapes within 3 s, base never in 20 s, both paths); the series lines are guards (no harm) on FRESH seeds; movers by
+   net motion. A pass ships ON.
+4. **S2 the left-behind crews after the joint (X4b, then the fix):** on a main with CP36.1 (and S1 if it shipped), re-run Bar E1's
+   left-behind read (faced_attack_move + faced_move, fresh seeds, 4 factions, builder0 native) and REPORT: how many crews > 25 m behind
+   at the judge, and how many of those are wedged (net motion). Trace the worst three. Then a design note to the orchestrator, and
+   only then a bar. Expect the cause to be several mechanisms; name each with its count before choosing one.
+5. **Stretch: R34.16's watch item** (one 9.1 m both-planned face) if a native clicked face_pairs pair runs.
 
 ## How to verify
 
-Tests first; `make quick-remote`; one full check at a time on builder0; series pinned, fresh seeds, no random twins
-(`tools/judge/seed_twins.py`). Every number: commit, machine, workload, n.
+Lab stage first (it is the deciding line); `make quick-remote`; one full check at a time a builder; series pinned, fresh seeds.
+Every number: commit, machine, workload, n. Smoke like a player: `make skirmish ARENA=locks`, send two squads through the lock
+together, and look at the screenshots for a crew rocking between friends.
 
 ## Don't touch
 
-Traffic's give-way block, brains' tactics/ai outside your carve-outs, `native/**`, `tests/baselines/**`. Don't push.
+Traffic's give-way block and `traffic.gd`, orders' paths, brains' paths (no owner, C36.6: ask the orchestrator for a grant),
+`native/**` (send native specs), `tests/baselines/**`. Don't push.
 
 ## Waiting on the lead
 
@@ -56,118 +72,4 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Where it stands (2026-10-19 ~13:30 PDT) — read this first
-
-- **W1** traced and closed (design note, R35.7). **W1b** (wheeled hold creep) built OFF, dev read 60 % → 4 % creep; waits on native's
-  mirror (`pair/native-w1b`), then its bar (locks/terminus/sumps). **W1c** (stall gate reads intent against a friend) built OFF; alone
-  it rocks the asker; **joint with traffic's T9** (`lab/w1c-t9` ce091be7e) both traced stuck crews ARRIVE (law-605 Eyes_4 by 24 s,
-  law-607 Guns_6 by 48 s; base: stuck to the judge), attack-move dev 8 v 14 movers; mirror spec sent to native
-  (`references/round35/manoeuvre/w1c_native_spec.md`); joint M6/T9 bar on main; I cut the pair when native's mirrors land.
-- **W2** (CP-F 5 face side): turret-only give-up; candidate **lab/cpf5 9a463b0b9** (= a7167e4f9's code, on main 0f4d528d7, E1 not
-  in); Bar M5 on main as filed (hull-rest 701–716, fights 740–763; 901–932 and 940–963 are the JOINT W1c+T9 bar's 128 pairs); gate = `make native check` launches automatically at builder0's slot
-  (`~/overnight-manoeuvre/r35/m5_wait.sh`, log `m5_gate_a7167e4f9.log`), native/src touched (R35.15); the 14-step series is armed
-  (`m5_series.sh`, waits for `~/overnight-manoeuvre/r35/m5/go`, which the stream writes after reading the gate).
-- **Worktrees:** godot-manoeuvre (stream), -cpf5 (lab/cpf5), -trace (lab/w1c-t9), -pair2 (old). Raw runs `~/overnight-manoeuvre/r35/`.
-
-### W1c dev read: the counter fires, the crew still doesn't get out (2026-10-19 ~12:30 PDT) — `references/round35/manoeuvre/w1c-dev/`
-
-builder0, GDScript both arms, ec991cf7f. stall_intent_ticks 0 v 1434/2088, H1 escapes and asks up. The traced crews now ROCK (ask,
-stand, ≤ 3 m reverse, forward into the same friend): the parked Green_Eyes II_5 gave way once and refused every later ask. Hull-rest
-attack-move 460–467 (32 runs an arm): movers 10 v 14, never settled 4 v 7. To the orchestrator: hold M6's series for traffic's T9 (the
-parked crew's half), or drop the reverse against a parked friend. W1c stays OFF. **M5's gate** waits for its builder0 slot (orchestrator's
-order: native N2, brains E1 → orders D1 → traffic T7 → M5).
-
-### Dev reads (2026-10-19 afternoon; tuning seeds, NOT judged)
-
-- **W1b** (builder0, stream a0c874924 tree, wedge 3500–3503 × locks/terminus/sumps, 12 fights an arm, both arms GDScript drive):
-  wheeled pace-0 ticks still moving ≥ 0.5 m/s **60 % → 4 %** (7181/11871 → 636/15723; 7099 of the base's were Traffic holds); halts =
-  asks 15727. Deaths 483 v 485, wedged 48 v 46 (dev n). `references/round35/manoeuvre/w1b-dev/`. Native's mirror queued (orchestrator).
-- **W2** (builder0, lab/cpf5 bdacb1786, hull-rest 460–463 drawn, GDScript both arms): wheels/turret point tasks median 3.9–5.4° v
-  32–72° (≤ 15°: 73–80 % v 11–33 %); movers at the judge new ≤ base on 5 of 6 tasks (right 7 v 5), `face_creep` 0 in the new arm.
-  **Found:** hull-fixed scouts (wheels/fixed) ≥ 45° off rose 33 → 48 over six tasks: a scout's creep is how it aims, so the give-up is
-  now TURRET hulls only (5c692b507, test added). lab/cpf5 is re-cut on that before the gate.
-- **W1c traces** (brains' E1 laggards, native, main 0f4d528d7 + OFF switches): law-605 Green_Eyes_4 (scout) still wedges with the
-  turn-in shipped: 70 s blocked by a PARKED crew of another squad (Green_Eyes II_5, which gave way once but only 2.4 m, still
-  touching); law-607 Guns_6 the same in a pack of friends. ORCA pace 0.05–0.09 hides the stall from unstick's |throttle| > 0.5 gate.
-  W1c approved (R35.12), Bar M6 filed; built OFF (f9b3bb7f3). `references/round35/manoeuvre/w1c-trace/`.
-
-### W1b and W2 built, default OFF; quick green (2026-10-19 ~10:30 PDT)
-
-`9d2486dab` builder0 `make quick-remote` (QUICK_BASE 0f4d528d7) **exited 0, 75 passed 0 failed**, lint clean. W2's boxed War Rig
-(four parked squadmates, face 90° right): ON gives up after 3 failed plans and stands (throttle 0, moved 0.0 m over the last 3 s,
-`face_settled()` true); OFF creeps (throttle 0.7, 3.2 m). Open ground: turns to 3.4°, no give-up. W1b's rule test: 3/3. Orchestrator: W1b
-approved (R35.7, arenas locks/terminus/sumps); Bar M5 filed on main 8640ec500. Dev reads running (tuning seeds: wedge 3500–3503 ×
-locks/terminus/sumps, both arms GDScript; hull-rest 460–463 drawn on lab/cpf5 bdacb1786).
-
-### W1 TRACED, design note sent (2026-10-19 ~09:30 PDT): `references/round35/manoeuvre/w1-trace/README.md`
-
-builder0, native path, behaviour of main a0ae0aafd + the probe, Locks/Terminus × fresh 3500–3511, 24 fights × 180 s, 984 deaths:
-**81 stuck:wedged (8.2 %, T5's rate)**, 80/81 hit in the last 10 s, 67/81 wheeled. Two populations, neither one stuck: **41 % held by
-Traffic's take-turns hold** at a street mouth under fire (median 5.4 s into the hold; the 3 longest episodes, 18 s, all holds; on
-wheels the at-spot hold is throttle 0 at full lock = the plant's creep shuffle, 67/106 at-spot ticks moving); **59 % ORCA slowing a
-crew in a fight's crowd, wedged a median 1.2 s** before death. Unstick drove 1 % of ticks. Proposals: (A) no new wedged trigger;
-(B) traffic: a held crew that is hit leaves the hold (request); (C) mine W1b: a wheeled hull held to a standstill doesn't creep
-(native mirrors); (D) traffic's death_cause gets `jam:held`. Waiting on the orchestrator for (C); built OFF meanwhile.
-
-### Bar M5 (W2, CP-F attempt 5, the face side; C35.7, decoupled from brains by R35.3) — DRAFT, to the orchestrator before any number
-
-**Candidate:** stream/manoeuvre + `TURN_HULL_DEFAULT := true` + `FACE_SETTLE_DEFAULT := true` (lab/cpf5). **Base:** the same tree,
-`--nav-off=turnhull,facesettle`. **Gate (C31.1):** lab/cpf5's whole `make native check` green on builder0 (sim-baseline moves
-attributed with `--nav-off=turnhull,facesettle`). **Machine:** builder0 only, one series at a time (C35.1), FAR_JOBS/HULL_JOBS 3 while a
-check runs. **Seeds (fresh):** hull-rest 701–716 (4 factions × 16 × 6 tasks, drawn and clicked, GDScript M1_GD=1 both arms, plus
-the native drawn pair), Terminus 720–732, SBF 770–775, bridge-pooled's 18, fights on FIXED arenas locks/terminus/sumps × 740–763
-(`FIGHT_AT`, R34.15). **Ruler and noise:** M1's (real_mps, wedged apart, HULL_SHIFT_M 6, HULL_JITTER_DEG 20), the A/A table in
-round 34's Status. **Lines:** Bar M3's (a)–(m) unchanged (same rules, same A/A guards), plus:
-| line | reads | rule |
-|---|---|---|
-| (n) | `face_creep` crews at the judge (hull_rest_moving), wheels/turret, per task | new ≤ base + 1 (attempt 4 read 8 v 0 on screen; the mechanism this attempt removes) |
-| (o2) | counters in the new arm | `face_settles` > 0 and `face_settle_fails` REPORTED; `hull_turns` > 0 |
-| (p) | wheels/turret at rest error, the crews that gave up | REPORTED (median, and how many ≥ 45°): the price of standing still |
-**Partial:** (a)–(j), (n) are the gate; a miss parks it with a trace. Attack-move's step (attempt 4's mechanism 2) is brains' (R35.3,
-the straggler release); if (d)/(e) miss on attack-move only, the trace says which mechanism, and the verdict goes to the orchestrator.
-
-### Bar M6 (W1c, the stall gate reads the drive's intent against a friendly hull; R35.12) — DRAFT, to the orchestrator before code
-
-**Change:** in `Movement._unstick`, for a ROUTED move (`move_to`, not `direct`) whose hull is in contact with a friendly hull (slide
-collision) or whose phase is `blocked` by a friend, the stall rule's throttle test reads the drive's intent, |throttle| / pace when
-pace < 1; every other case keeps `|throttle| > 0.5`. H1's escape unchanged (ask, straight reverse by the sweep, stand). Switch
-`--nav-off=stallintent` (default OFF until this bar passes); native mirrors after the dev read. **Candidate** = stream + the
-default flipped (lab/w1c), as a pair with native's mirror; **base** = the same tree `--nav-off=stallintent`. **Gate:** the pair's
-whole `make native check` on builder0. **Seeds (fresh, outside E1's and M5's 701–716):** hull-rest 901–916 (4 factions × 16 × 6
-tasks, drawn, both arms on the pair's native path), fights on FIXED locks/terminus/sumps × 940–963 (`FIGHT_AT`; also the wedge probe's
-WEDGE_RANGE 940–963 for far loops / contacts / asks). Tuning seeds stay 460–475 and wedge 3500–3511.
-| line | reads | rule |
-|---|---|---|
-| (0) counter first | in the ON arm: stall clocks run under the intent reading (`stall_intent_ticks`), H1 escapes started (`esc_fires_hull`), asks (`esc_asks`) | each > 0, or nothing is read |
-| (d) deciding | hull-rest attack-move crews moving at the judge by `real_mps` (wedged apart) | new ≤ base − 1.645 × sd_run(A/A 1.17) × √pairs; also no other task worse than Bar M3's (d) guard (+1.645 sd√n: right 0.64, move 0.51, screen 0.41, ambush 0.24, SBF 0.23) |
-| (e) deciding | attack-move never settled (75 s) | new ≤ base, and no task over base + Bar M3's (e) guard (se 3.0 a task at 64 pairs) |
-| (f) | arrivals within ARRIVED_M | not down beyond 1.645 se paired |
-| (i) fights | kills, deaths, hit rate per team (fight_table) | within 1.645 se paired |
-| (q) jams | stuck, jam (yielding/friend) and open deaths (wedge probe's causes) | each within 1.645 se paired |
-| (r) far loops | ManoeuvreCensus far rows | ≤ base + 1.645 se |
-| (s) friendly contacts | ticks touching a friendly hull (wedge probe) | ≤ base + 1.645 se |
-| (t) asks | H1 asks and give-ways started, per fight | REPORTED (the churn risk) beside base |
-**Partial:** (0), (d), (e), (f), (i), (q)–(s) are the gate. A miss parks it with a trace.
-
-### Requests to other streams
-
-- **traffic:** (B) release a Traffic hold for a crew being hit; (D) `jam:held` in `death_cause` before `stuck:wedged`.
-- **native:** mirror W1b in drive_native (pace-0 wheeled hold: turn 0) once the switch's GDScript lands.
-
-### Plan (2026-10-19, Opus)
-
-1. **W1 trace** — `tests/manoeuvre/wedge_trace.gd` + `wedge_table.py`, `make native manoeuvre-wedge-trace` (WEDGE_AT, WEDGE_RANGE;
-   fresh seeds 3500+ on Locks/Terminus; native path). Per wedged episode: what shaped the motion each tick (unstick / k-turn /
-   yield / Traffic hold / ORCA turn / ORCA slow / sideways shove / the drive itself), what unstick's stall rule saw, the order and
-   brain option, hits, friends near. Per `stuck:wedged` death (T5's `death_cause`, verbatim): a 10 s timeline. → design note to
-   the orchestrator → bar → only then a change.
-2. **W2 face settle** — seam proposed to the orchestrator 2026-10-19 (a face no plan fits 3 times in a row stops still, `--nav-off=facesettle`,
-   ships with turnhull ON; `Movement.face_settled()` offered to brains). Code waits for the agreement.
-3. **Stretch** — the R34.16 watch item, if a face_pairs series runs.
-
-### W1 first read (laptop, stream a0ae0aafd + probe, locks s3500, 90 s, one fight, mechanism only)
-
-The `wedged` flag counts every tick whose pace is under 0.999 — so a crew **holding at a street mouth on purpose** (Traffic's
-take-turns hold, pace 0) and a crew **giving way** are "wedged" too. In that fight: 251 episodes; by tick, Traffic hold 37 %,
-ORCA slow 36 %, yield 10 %, drive 8 %, ORCA turn 6 %, k-turn 3 %, shove 1 %. Of 5 wedged-at-death crews, one was holding (pace 0,
-held True), which T5's `death_cause` files as `stuck:wedged`. The builder0 batch (24 fights) decides how big that share is.
+**2026-10-20 (orchestrator, at launch).** Not started. CP36.1 (the joint ship) was checking on builder0 at launch.

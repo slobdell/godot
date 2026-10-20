@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Round 35 (brains E1): Bar E1's lines (streams/brains.md) from one hull-rest series of two arms.
+"""Round 35 (brains E1): Bar E1's lines (streams/archive/round35/brains.md) from one hull-rest series of two arms.
 
 usage: e1_bar.py <dir> [new_arm] [base_arm]     (defaults new_drawn, base_drawn)
 
