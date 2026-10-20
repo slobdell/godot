@@ -571,6 +571,8 @@ _Filed here before any number._
   warms up before the first test (one physics frame + the standard teardown) so every test sees the same state; marked interim.
   Bar: scenarios_6 alone == in the suite; full suite green, moved lines listed. Round 36: name the field, so tests can match the game's
   real first-match state (no teardown in play).
+  **Follow-up:** written `0daea3d90`; scenarios_6 alone 4.8 = the suite value (builder0 light, native; was 3.2 alone); laptop GDScript
+  3.0 alone and after (was 4.8 v 3.0). Its full check runs on builder2 (load ~6 of 32 beside M5's series).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
