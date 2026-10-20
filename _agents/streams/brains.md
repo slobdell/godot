@@ -55,6 +55,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Report (2026-10-20, final for the round so far)
+
+**Green:** tip `6b2f68d64` (merged main d068f7020) INHERITS main `5f05c997c`'s green check (builder2, 2911/0;
+`tools/merge_check_needed.sh 5f05c997c`: docs only). Shipped from brains this round: **E1** the straggler release (main bbe418b80,
+R35.42), **E4** lab hulls placed with Tank.place (main 5f05c997c, R35.51), the per-tick release counter. Written up, no code:
+**E3** (no lever, R35.46), **E4b** (a second carry-over traced; runner warm-up proposed, the runner is not mine). **E2** waits on
+CP-F 5 (manoeuvre). **D1 fallout** done. Questions for the lead: none.
+
 ### Report (2026-10-19 evening)
 
 **E1 PASSES its bar (R35.42); merges when the partial gate is green.** Merge hash: `83b3b90b4` (E1 code `67a5a9db0` + main
