@@ -259,6 +259,21 @@ _Filed here before any number._
   **Counter first:** wheel_halts > 0 ON, 0 base. **Deciding:** D = ON - base held_p0 hits per exposed second, both teams pooled, paired
   bootstrap se: D > 1.645 se -> SITTING DUCK (W1b does not re-try; the answer is T8); otherwise NOT A DUCK (W1b re-tries in round 36).
 
+- **X3b DEPLOY_PASS: an arrived squad's deploy waits for passing traffic (orders, R35.72), filed before any number; seeds and grant
+  set by the orchestrator.** Trace (builder2 bfcbb132b, body stage s1, native; builder2 = builder0 exactly, on 24.0 v off 18.5):
+  Hunters2's herringbone deploy at ~8.5 s moves Hunters2_3 into the Sirens' lane; Sirens_1 held 9+ s. Design (`--deploy-pass=off`; OFF
+  until judged): an all-in squad keeps its TRAVEL seats while a friendly crew of ANOTHER element is passing (within 24 m of its centre,
+  > 1 m/s, its own element's destination > 20 m away); the 10 s cap still deploys. `ElementPlan._deploy_state` reads
+  `situation["passers"]` (carve-out); new `game/tactics/deploy_passers.gd`. **Grant (R35.74):** ONE guarded line in brains'
+  `element.gd` before `ElementPlan.build` (`if ElementPlan.DEPLOY_PASS and arrived and not deployed: situation["passers"] = ...`).
+  Arms: main (on) v `pass_off:--deploy-pass=off`, deploy step ON in both; `--deploy-step=off` reference. **Counter first:**
+  `deploy_pass_waits` > 0 in main on the body stage. **A (property by construction: Hunters2 sent onto the Sirens' route in every
+  seed):** body stage, FRESH seeds **5101–5124** (n 24), builder2 native. GAIN: Sirens' arrival (pass_off - main) - 1.645 se > 0 paired,
+  AND mean(main - deploy_off) <= +1.0 s. GUARD: in every seed where pass_off - deploy_off <= 1 s, main <= pass_off + 1 s. Reported:
+  Hunters2's deploy time. **B guards (orders probe):** 24 cells x FRESH 1731–1736, main v pass_off, builder2: far bank 0 every cell;
+  per cell all-in median <= pass_off + 1 s, `deploy last s` <= pass_off + 3 s, twitch <= pass_off + 3 m. Ship: `make native check`
+  switch ON, sim-baseline 13 unmoved (moves attributed with `--deploy-pass=off`); test_tactics_body back to off + 5 s only if A lands.
+
 ## Rulings (round 35)
 
 - **R35.1 (2026-10-19 09:20) C35.3 passed its bar and merged** (`c6fd30d71`; INHERIT from `3902ade09`'s check: builder0 26/27,
