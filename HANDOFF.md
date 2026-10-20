@@ -30,6 +30,12 @@ joint's moved sim-baseline maps on the merged tree with `make sim-baseline-adopt
 systemd-run, then close: archive the five briefs to `streams/archive/round35/`, rename `stream/*` to `round35/*`, remove the
 worktrees (rescue anything untracked first), update this file. Then round 36 from the list below.
 
+**ROUND 35 EXTENSION (2026-10-20, the lead away for the day; workstreams.md *Round 35 extension*):** the same five worktrees keep
+working: X1 manoeuvre (the joint ship, then W1b's deciding probe, R34.16's watch item), X2 traffic (T8 after the joint merges),
+X3 orders (D5 ON, then the deployed-squad street jam, the Crossing detour note), X4 brains (the released straggler's catch-up; the
+left-behind re-read after the joint), X5 native (**the round scoreboard**: player-facing numbers across mains, `references/scoreboard/`;
+the copy-back leak; two Tank.place test fixes). 14 finished side worktrees were removed (disk was at 885 MB free; now ~11 GB).
+
 **The two questions he answered (kept for the record):**
 1. **The Locks 5-squad route (D5, his item; parked as filed, R35.34):** with the gate deal on, all five squads get in about 8 s sooner
    and drive half the detour, but crews nose onto a bridge ramp on the Crossing a little more often (never across). Try it:
