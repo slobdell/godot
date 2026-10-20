@@ -63,4 +63,13 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**Round 36, 2026-10-20 (worker).** `stream/native` already carried round 35's tools (no `round35/native` branch was cut), so
+N1's hand-over is main merged into it (434640730, the brief taken from main) plus the two finished rows (5fabab534:
+c29a8c7b6, a0ae0aafd; builder2). The 1c82d6d1e row was running at launch.
+
+**Plan (in order):** N3's S3 pair first (it arrived at launch, small, and manoeuvre waits on it); then N1's check; N2 rows
+as named; N4 sweep; N5 lint; stretch.
+
+- **S3 (W1b's mirror deleted):** `pair/native-s3` = `lab/manoeuvre-s3` d44c13377 + native half eefc379c5. Check pending.
+
 **2026-10-20 (orchestrator, at launch).** Not started.
