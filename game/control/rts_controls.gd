@@ -1419,9 +1419,10 @@ func _waypoints_end(units: Array) -> Variant:
 
 
 ## Round 27 (O1, C27.3): a drawn approach rides an attack task as `task["approach"]` (brains' B0 honours it).
-## D6 (R35.28): OFF until its A/B (`--requeue=on` / env REQUEUE=on opts in; off = round 34's: a squad with no exactly
-## matching element has its task REPLACED by a shift-click). Kept off while D5's re-read and D4's A/B run on this tree.
-static var REQUEUE := OS.get_cmdline_user_args().has("--requeue=on") or OS.get_environment("REQUEUE") == "on"
+## D6 (R35.28): ON (its fresh re-read passed: builder0 ee3a8dab2, seeds 3651-3656, every squad every leg 144/144 v 121/144,
+## far bank 0). `--requeue=off` / env REQUEUE=off is round 34's (a squad with no exactly matching element has its task
+## REPLACED by a shift-click). The deck clearance for a shifted leg's places rides on this switch.
+static var REQUEUE := not OS.get_cmdline_user_args().has("--requeue=off") and OS.get_environment("REQUEUE") != "off"
 
 
 ## D6: the squads, each given (as its "element") the element holding most of its units, when every unit of every squad
