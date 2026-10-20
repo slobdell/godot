@@ -72,4 +72,40 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-20 ~14:00 (worker, Fable).** Plan, in order (smallest foundation first):
+1. C36.1 carry-over (measurement only) — DONE `05f4517e0`, `60a2dbc5c`: STALL_TRACE probe + census counters, fight_census
+   exposure, wedge_trace under-fire/contact totals, joint_judge (+ w1b_judge, its import), rocking_census, mover_kind (brains'
+   reader, copied; reads `tests/tactics/e1_bar.py` in place), x1d-trace + joint3-series references. `git merge main` waits for
+   CP36.1's announcement (worker contract 6).
+2. S3 drop W1b — GDScript half on **`lab/manoeuvre-s3` `d44c13377`** (kept off the stream branch: three `tests/native` files name the
+   deleted statics, so it parses only as a pair). Native's half: `references/round36/manoeuvre/s3_native_spec.md`, sent to native.
+3. S1 stallnet — code + deciding lab stage on the stream branch (below); bar filed below before any number; native mirror spec sent.
+4. S2 X4b on main after CP36.1 (+ S1 if it ships), then the trace and a design note.
+5. Stretch R34.16 watch.
+
+### Bar S1 (stallnet), filed before any number (2026-10-20, from the x1d-trace draft; C36.3)
+
+- **Change:** `Movement._unstick` on the HONEST path (routed move_to, `_honest_blocker` non-null): a fast tick (reading >=
+  STUCK_SPEED) while the clock runs zeroes it only when the hull stands > STUCK_NET_M (0.5 m) from `_stuck_from` (where the clock
+  started); otherwise the clock holds (no add). Blind path, other orders: bit for bit. `--nav-off=stallnet` flips
+  STALL_NET_DEFAULT (false until judged). Native mirrors `_stuck_from` + the hold (one Vector3 in exec_fields).
+- **Arms:** native, two trees on a main WITH CP36.1: ON = pair (stream + native's mirror) with STALL_NET_DEFAULT true; base = the
+  same code with it false. Gate: `make native check` on ON (sim-baseline may move: attribution = base's sim-baseline), base's
+  sim-baseline.
+- **(0) Counter first:** `Movement.stall_net_holds` > 0 in ON's series (it counts in both arms; REPORTED in base).
+- **DECIDING (lab, both paths):** `tests/test_manoeuvre_stall_net.gd`, the pinch stage (`tests/manoeuvre/stall_net_stage.gd`):
+  a law_tank wedged at pace 1 in a funnel between two parked law_ifvs (Hunters_2/6, another element), the traced one-tick pop
+  (9 m/s, net 0) injected every 26 ticks from the first wedged tick. ON fires an escape <= 3.0 s after wedging; base never in
+  20 s (pinned premise; it asserts the honest path names a parked friend). Without the pop both arms fire alike (no-change
+  line). Native: the tree-default arm's first fire, fires and holds equal GDScript's (on ON's tree that is the ON arm).
+  **Why the pop is injected:** Jolt stops a lab hull wedged this way cleanly (real 0.00 every tick, six geometries tried), so the
+  live pop doesn't arise in a lab; the stage injects the traced signal at the traced cadence (clock peaks 0.83 s, traced 0.73–0.99).
+- **Series guards (no harm), FRESH seeds:** hull-rest 6201–6232 drawn x 4 factions x 6 tasks (128 pairs a task, `--turn-states`);
+  wedge trace, fights, jam census on locks/terminus/sumps x 6240–6263 (72 fights an arm). Each within 1.645 se of base (series'
+  own se; paired where paired): the joint bar's (d) movers at the judge BY NET MOTION (`mover_kind.py` closing + wander, never
+  real_mps alone), (e) never settled, (f) squads arrived, (i) kills / hit rate per team, (q) open/stuck/jam deaths, (r) far loops,
+  (s) friendly contact ticks, give-ways started; plus **unstick fires (H1 escapes) <= base + 1.645 se** (no reverse storm).
+- **Series line, REPORTED:** `rocking_census.py` crews ON <= base (REPORTED only if base < 5, as the draft: ~3 in 768 expected).
+- **Pass = (0) + the deciding lab (both paths) + every guard. A pass ships ON** (symmetric AI improvement, no lead gate).
+
 **2026-10-20 (orchestrator, at launch).** Not started. CP36.1 (the joint ship) was checking on builder0 at launch.
