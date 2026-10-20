@@ -493,6 +493,10 @@ _Filed here before any number._
   game/ai/movement.gd`); the native abort was dropped in T6b's re-cut; T6b's kept parts (the refusal, the self-yield hold) are what T7
   replaces and gates; switch-OFF inertness reads main's 13 lines. T7's pass covers the hand-over. Hand-over: `handover/t7-on-main`
   `3dbc206a0` (= main 8be787afe + the judged pair); its check follows brains' partial.
+- **R35.45 (2026-10-19 ~21:00) E1 merged (main bbe418b80); one batch main check after T7.** E1's gate: builder0 test 2890/0,
+  sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760 + the partial (lint + 10) exited 0, 2 NOT JUDGED by load. Main now carries
+  E1 and D1 (both in element_plan.gd, different functions) unchecked together; T7's hand-over (cut before E1) takes the full-check slot
+  next, then merges, then ONE main check of E1 + T7 + D1. Workers don't merge main until it's green.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

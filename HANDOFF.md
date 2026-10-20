@@ -44,7 +44,10 @@ check owed after), W1b (manoeuvre, a held wheeled hull sits still; gate green 7f
 wheeled turret hull ends on it and goes still; gate green 63336d690), D5 re-read (orders, the gate deal; fresh 3631–3636). QUEUED: the
 joint W1c + T9 (the 70 s stuck scout: asker re-asks, a parked crew answers; ON check running, series after; merges after T7's verdict,
 R35.19), D6 (a shift-click never replaces a squad's route, R35.28), T8 (after T7). Every full check launches behind
-`tools/builder_checks.sh --wait-below 2`. Rulings R35.1–R35.33 in workstreams.
+`tools/builder_checks.sh --wait-below 2`.
+**main bbe418b80 = brains E1, THE STRAGGLER RELEASE (R35.42)** (`83b3b90b4`: its own gate green in two parts, R35.22). **Tell him:**
+when one crew is wedged, its squad moves on to the next attack-move leg after ~8 s instead of waiting a minute or more. E1 + D1
+together are UNCHECKED on main: one batch main check after T7's hand-over merges (R35.45); workers don't merge main until then. Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
