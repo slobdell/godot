@@ -1,0 +1,80 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   34.0 /   15.5   |    7   0 |     17.1 |               2.4 |            31.1 | 1.40 | 51.6
+crossing 3 click          requeue_on |   34.0 /   15.5   |    7   0 |     17.1 |               2.4 |            31.1 | 1.40 | 51.6
+crossing 3 route          main      |   34.0 /   15.5   |    4   0 |     26.9 |               2.9 |            35.6 | 1.76 | 51.6
+crossing 3 route          requeue_on |   34.0 /   21.5   |    3   0 |     21.9 |               3.2 |            36.7 | 1.77 | 51.6
+crossing 5 click          main      |   70.6 /   26.1   |    5   0 |     42.1 |               3.3 |            81.8 | 2.56 | 20.5
+crossing 5 click          requeue_on |   70.6 /   26.1   |    5   0 |     42.1 |               3.3 |            81.8 | 2.56 | 20.5
+crossing 5 route          main      |   70.6 /   26.1   |    6   0 |     40.8 |               3.4 |            85.8 | 2.35 | 20.5
+crossing 5 route          requeue_on |   70.6 /   27.8   |    2   0 |     59.8 |               3.2 |            76.8 | 2.54 | 20.5
+locks 3 click             main      |   37.9 /   34.5   |    5   0 |     38.8 |               3.3 |            36.1 | 1.75 | 31.5
+locks 3 click             requeue_on |   37.9 /   34.5   |    5   0 |     38.8 |               3.3 |            36.1 | 1.75 | 31.5
+locks 3 route             main      |   37.9 /   34.5   |    3   0 |        - |               5.8 |            38.5 | 2.01 | 31.5
+locks 3 route             requeue_on |   37.9 /   34.5   |    2   0 |     41.6 |               3.3 |            43.6 | 2.11 | 31.5
+locks 5 click             main      |   54.5 /   39.4   |    3   0 |     64.4 |               4.3 |            56.8 | 2.15 | 18.4
+locks 5 click             requeue_on |   54.5 /   39.4   |    3   0 |     64.4 |               4.3 |            56.8 | 2.15 | 18.4
+locks 5 route             main      |   54.5 /   39.4   |    0   0 |     39.8 |               2.9 |            49.3 | 4.43 | 18.4
+locks 5 route             requeue_on |   54.5 /   39.4   |    0   0 |     39.8 |               2.7 |            63.5 | 4.43 | 18.4
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     27.8 |               3.0 |            46.0 | 1.51 | 23.6
+terminus 3 click          requeue_on |   36.9 /   34.4   |    0   0 |     27.8 |               3.0 |            46.0 | 1.51 | 23.6
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     22.5 |              11.7 |            39.7 | 1.38 | 23.6
+terminus 3 route          requeue_on |   36.9 /   34.4   |    0   0 |     22.5 |              11.7 |            39.7 | 1.38 | 23.6
+terminus 5 click          main      |   61.7 /   39.4   |    0   0 |        - |               7.8 |            55.7 | 2.50 | 9.9
+terminus 5 click          requeue_on |   61.7 /   39.4   |    0   0 |        - |               7.8 |            55.7 | 2.50 | 9.9
+terminus 5 route          main      |   61.7 /   39.4   |    0   0 |     71.2 |               2.5 |            56.0 | 6.43 | 9.9
+terminus 5 route          requeue_on |   61.7 /   39.4   |    0   0 |     71.2 |               2.5 |            56.0 | 6.43 | 9.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          27.1 |          18.9 |           24.3 |               4.0 |          37.1
+crossing 3 click          requeue_on |          27.1 |          18.9 |           24.3 |               4.0 |          37.1
+crossing 3 route          main      |          36.9 |          18.3 |           24.9 |               3.2 |          40.2
+crossing 3 route          requeue_on |          31.9 |          21.4 |           12.6 |               2.6 |          40.0
+crossing 5 click          main      |          52.1 |          37.6 |           31.1 |               3.8 |         103.1
+crossing 5 click          requeue_on |          52.1 |          37.6 |           31.1 |               3.8 |         103.1
+crossing 5 route          main      |          50.8 |          46.2 |           31.1 |               2.6 |         102.2
+crossing 5 route          requeue_on |          69.8 |          38.4 |           25.6 |               3.5 |          89.0
+locks 3 click             main      |          45.8 |          21.2 |           27.2 |               3.9 |          52.5
+locks 3 click             requeue_on |          45.8 |          21.2 |           27.2 |               3.9 |          52.5
+locks 3 route             main      |             - |          33.6 |              - |               4.7 |          52.7
+locks 3 route             requeue_on |          51.6 |          22.8 |           24.0 |               5.0 |          57.6
+locks 5 click             main      |          74.4 |          36.7 |           25.0 |               6.7 |          77.0
+locks 5 click             requeue_on |          74.4 |          36.7 |           25.0 |               6.7 |          77.0
+locks 5 route             main      |          45.6 |          25.3 |           35.1 |               6.7 |          74.6
+locks 5 route             requeue_on |          50.6 |          34.6 |              - |               7.3 |          74.3
+terminus 3 click          main      |          34.8 |          37.7 |           18.0 |               6.7 |          64.2
+terminus 3 click          requeue_on |          34.8 |          37.7 |           18.0 |               6.7 |          64.2
+terminus 3 route          main      |          27.6 |          21.3 |            0.0 |               8.4 |          58.8
+terminus 3 route          requeue_on |          27.6 |          21.3 |            0.0 |               8.4 |          58.8
+terminus 5 click          main      |             - |          47.3 |              - |               3.5 |          83.3
+terminus 5 click          requeue_on |             - |          47.3 |              - |               3.5 |          83.3
+terminus 5 route          main      |          74.4 |          37.7 |           32.8 |               4.7 |          88.1
+terminus 5 route          requeue_on |          74.4 |          37.7 |           32.8 |               4.7 |          88.1
+
+MEDIANS over seeds [3651, 3652, 3653, 3654, 3655, 3656] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          main        | 6 |         16.5 |     0 |          27.1 |         12.2 |          34.8 |               4.0 |    7   0 | 1.36
+crossing 3 click          requeue_on  | 6 |         16.5 |     0 |          27.1 |         12.2 |          34.8 |               4.0 |    7   0 | 1.36
+crossing 3 route          main        | 6 |         19.8 |     0 |          27.0 |         10.8 |          38.5 |               3.2 |    4   0 | 1.29
+crossing 3 route          requeue_on  | 6 |         15.9 |     0 |          25.4 |          7.7 |          38.6 |               2.6 |    3   0 | 1.28
+crossing 5 click          main        | 6 |         35.6 |     0 |          77.9 |         23.2 |          94.6 |               3.8 |    5   0 | 1.75
+crossing 5 click          requeue_on  | 6 |         35.6 |     0 |          77.9 |         23.2 |          94.6 |               3.8 |    5   0 | 1.75
+crossing 5 route          main        | 6 |         38.8 |     0 |          80.6 |         27.6 |          94.3 |               2.6 |    6   0 | 1.71
+crossing 5 route          requeue_on  | 6 |         41.3 |     0 |          39.5 |         16.0 |          84.4 |               3.5 |    2   0 | 2.39
+locks 3 click             main        | 6 |         28.8 |     0 |          34.0 |         15.6 |          48.9 |               3.9 |    5   0 | 1.59
+locks 3 click             requeue_on  | 6 |         28.8 |     0 |          34.0 |         15.6 |          48.9 |               3.9 |    5   0 | 1.59
+locks 3 route             main        | 6 |         24.1 |     1 |          30.3 |          9.2 |          50.2 |               4.7 |    3   0 | 1.77
+locks 3 route             requeue_on  | 6 |         22.6 |     0 |          32.7 |         12.0 |          50.4 |               5.0 |    2   0 | 1.88
+locks 5 click             main        | 6 |         21.0 |     0 |          48.3 |         21.1 |          76.2 |               6.7 |    3   0 | 1.73
+locks 5 click             requeue_on  | 6 |         21.0 |     0 |          48.3 |         21.1 |          76.2 |               6.7 |    3   0 | 1.73
+locks 5 route             main        | 6 |         30.6 |     0 |          35.6 |         23.0 |          69.9 |               6.7 |    0   0 | 2.94
+locks 5 route             requeue_on  | 6 |         29.1 |     0 |          35.2 |         15.7 |          69.9 |               7.3 |    0   0 | 2.77
+terminus 3 click          main        | 6 |         21.2 |     0 |          33.2 |          7.0 |          52.3 |               6.7 |    0   0 | 1.43
+terminus 3 click          requeue_on  | 6 |         21.2 |     0 |          33.2 |          7.0 |          52.3 |               6.7 |    0   0 | 1.43
+terminus 3 route          main        | 6 |         18.1 |     0 |          28.1 |          0.0 |          54.8 |               8.4 |    0   0 | 1.16
+terminus 3 route          requeue_on  | 6 |         18.1 |     0 |          28.1 |          0.0 |          54.8 |               8.4 |    0   0 | 1.16
+terminus 5 click          main        | 6 |         10.8 |     1 |          41.8 |         26.6 |          75.2 |               3.5 |    0   0 | 2.33
+terminus 5 click          requeue_on  | 6 |         10.8 |     1 |          41.8 |         26.6 |          75.2 |               3.5 |    0   0 | 2.33
+terminus 5 route          main        | 6 |         47.0 |     0 |          45.0 |         25.5 |          72.9 |               4.7 |    0   0 | 5.27
+terminus 5 route          requeue_on  | 6 |         47.0 |     0 |          45.0 |         25.5 |          72.9 |               4.7 |    0   0 | 5.27
+
+EQUALITY click cells: 36 identical across arms, 0 differ
