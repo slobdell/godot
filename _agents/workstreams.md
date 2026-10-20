@@ -115,6 +115,15 @@ _Filed here before any number._
   body-stage draw, not the geometry. No series; 5101–5124 stay unseen. DEPLOY_PASS (the element.gd hook, deploy_passers.gd,
   test_control_deploy_pass) is deleted on stream/orders NOW, so it never reaches main. Table:
   `references/round36/orders/x3b-lab-builder0-61b6181e2/`. Orders moves to O2 (the deploy move across a street).
+- **R36.3 (2026-10-20 ~15:05 PDT) S2/X4b read: the joint did NOT free the left-behind crews; S2a (H1b side re-drive) is a GO.**
+  Manoeuvre (main a318a2cd3, builder0 native, hull-rest drawn attack-move + move, fresh 6301–6332 x 4 factions, 256 runs; stream
+  5bf752b4f, `references/round36/manoeuvre/x4b/README.md`): 29 crews > 25 m behind, 17 still by net motion (per 128: 14.5 / 8.5 v
+  E1's 17 / 9; a census, not paired). Mechanisms of the 17: (A) 10 refused forever by the pinning friend (`ask` refuses when asker ==
+  _last_yielded_to after one or T9's 2–3 unfinished give-ways; 8 of 10 friends parked/unseated, 7 with < 1 m room behind); (B) 1
+  blocker yielding to another; (C) 6 untraced (one presses 0.96 with the clock at 0: S1's). S2a: after H1B_ASKS refused asks on the
+  same unmoved friend with a far goal, H1b's far branch re-drives to a side point clear of the friend, or the hull stands if no room;
+  switch; deciding = deterministic lab stage, guards Bar S1's + far loops / far bank 0 + unstick fires; left-behind and still REPORTED
+  paired on fresh seeds; series after S1's. (A)'s "recorded finished while still pinning" case relayed to traffic (T9's bookkeeping).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
