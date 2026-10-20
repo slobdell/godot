@@ -407,6 +407,14 @@ _Filed here before any number._
   Gap: `face_settles` / `face_settle_fails` are not in `ManoeuvreCensus.counters()`, so the series' rows can't show (o2). Ruling: a
   measurement-only tree (63336d690 + the two census counters) on a sample of the drawn cells (~16 runs, the series' seeds); its rows
   must equal the series' on every non-counter line, and face_settles > 0 there satisfies (o2); native's counter run is the second check.
+- **R35.36 (2026-10-19 ~18:45) The orchestrator broke C35.1; the series lane is enforced from now.** C35.1 says at most ONE full
+  check and ONE judged series on builder0 at a time; through the afternoon the orchestrator let two full checks and up to five series
+  run together (load 20–22). Cost: W1b's first series step killed at slot.sh's 5400 s (64/72 fights, 3 corrupt copy-back files), E1's
+  re-check timed out, checks ran ~2x. builder2 stays OFF (his choice; builder0 only). **Series queue, one at a time:** the three
+  already mid-run finish (T7 at its last arena, E1, D6's probe), then **W1b -> M5 -> the joint W1c+T9 (after T7's verdict) -> T8**.
+  W1b and M5 (restarted 30 s before) stop and wait. Full checks: ONE at a time, behind `tools/builder_checks.sh --wait-below 1`.
+  Dev / light runs stay small (JOBS <= 2). **Lesson for orchestration.md:** the machine contract is the brief's, not the
+  orchestrator's convenience; read C35.1 before granting a slot.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
