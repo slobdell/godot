@@ -639,6 +639,13 @@ _Filed here before any number._
   but W1b's counter `wheel_halt_asks` reads 0 on the native path, and an ON flip would leave the native drive ignoring the rule.
   Native lands both mirrors (W1b from pair/native-w1b, W1c from pair/native-joint3; NOT T9's) re-cut on ed121d24f, defaults false,
   twins ON and OFF + a builder2 full check; code identical to joint3's so the joint merge is T9's half + the flip.
+- **R35.63 (2026-10-20 ~09:50) E2 / B11b PARKS (not merged; stream/brains 4b6b3c589, `--hold-return=turret` opts in).** builder2,
+  native, 05ba49192 (E2 + main with M5), base `--hold-return=old`, 801–816 x 4 factions (n 64 a task an arm), fights 820–843 (n 24).
+  (0) faced returns 2341 v 0. **(a) FAIL:** wheels/turret medians ~4 deg in BOTH arms (faced_move 4.2 v 4.1, p 0.95; faced_right 4.5 v
+  4.5): M5 already ends these hulls facing his way; B11b only trims the tail (p90 85 -> 63 deg). **(d) FAIL:** movers at the judge 30 v 12
+  and 22 v 9 (returning hulls still turning at 75 s). **(f) FAIL:** kills 934 v 972, deaths 944 v 982 (-38 each, se 18). (b)(c)(e) pass.
+  In his terms: with M5 a pushed-off War Rig already ends facing his way; driving back carrying the facing changes little and leaves
+  more hulls turning. Round-36 tooling: the copy-back carried older runs into the series folder (read from filtered copies).
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
