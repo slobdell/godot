@@ -232,6 +232,7 @@ public:
 	}
 	Dictionary drive_profile(bool reset) const;
 	Vector3 drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const;
+	double drive_pass_lane(Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction) const;
 	bool drive_fire_ready() const;
 
 	// N3d: build_situation's allies, contact selection and contact entries as one call (situation_native.cpp).

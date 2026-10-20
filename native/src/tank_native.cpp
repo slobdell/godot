@@ -127,6 +127,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive", "mover", "cmd", "order", "delta"), &TankNative::drive);
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
 	ClassDB::bind_method(D_METHOD("drive_around_fire", "mover", "waypoint", "goal", "order"), &TankNative::drive_around_fire);
+	ClassDB::bind_method(D_METHOD("drive_pass_lane", "mover", "passer", "from", "direction"), &TankNative::drive_pass_lane);
 	ClassDB::bind_method(D_METHOD("drive_fire_ready"), &TankNative::drive_fire_ready);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
 			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",
@@ -589,6 +590,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);
 	c.PASS_BEYOND_M = config.get("PASS_BEYOND_M", 2.0);
+	c.PASS_STEP_M = config.get("PASS_STEP_M", 2.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());
 	c.planner_seam = c.keep_planner_seam.get_validated_object();
@@ -755,6 +757,10 @@ bool TankNative::drive_owned(Object *mover, Object *cmd, const Dictionary &order
 
 Dictionary TankNative::drive_owned_counts(bool reset) const {
 	return ::godot::drive_owned_counts(reset);
+}
+
+double TankNative::drive_pass_lane(Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction) const {
+	return godot::drive_pass_lane(drive_config, mover, passer, from, direction);
 }
 
 Vector3 TankNative::drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const {

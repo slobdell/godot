@@ -95,7 +95,7 @@ struct DriveConfig {
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).
 	int64_t UNDER_FIRE_TICKS = -1;
-	double PASS_MAX_S = 6.0, PASS_BEYOND_M = 2.0; // round 35 (traffic T7): Movement.PASS_MAX_S, PASS_BEYOND_M
+	double PASS_MAX_S = 6.0, PASS_BEYOND_M = 2.0, PASS_STEP_M = 2.0; // round 35 (traffic T7): Movement.PASS_*
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs
 	// only with `Movement._off` empty). A crew the seam holds (PlannerSeam._crews has it) always takes the
@@ -197,6 +197,8 @@ Dictionary drive_owned_counts(bool reset);
 // Measurement only: microseconds a callback took (by name), "drives", "total"; `reset` zeroes it.
 Dictionary drive_profile(bool reset);
 // Movement._around_fire(waypoint, goal, order) natively on this mover (the proof asks it beside the live GDScript).
+// Round 35 (R35.8): Movement._pass_lane(passer, from, direction) natively on this mover (the twin asks it beside the live one).
+double drive_pass_lane(const DriveConfig &config, Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction);
 Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,
 		const Dictionary &order);
 
