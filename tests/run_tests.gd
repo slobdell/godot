@@ -112,6 +112,17 @@ func _run() -> void:
 	for index in discovered.size():
 		if shard < 0 or int(owner[index]) == shard:
 			mine.append(discovered[index])
+	# Round 35 (brains E4b, R35.54; cause named by native, R35.57): a warm-up before the first test -- one physics frame and the
+	# teardown every test gets -- so the first test of a process sees the same state as every later one. Without it a test
+	# read differently by whether anything ran before it in the process: test_tactics_scenarios_6 (attack_move_decisions)
+	# 3.2 alone v 4.8 after ANY earlier test (builder0 native). Native's trace: no script static differs (815 compared), and
+	# neither the teardown nor drain_navigation matters; ONE main-loop iteration before a test's setup flips it -- engine-side
+	# state set by the first iteration (most likely the physics space's first step). Real play starts every match long after
+	# launch, so the warm-up makes every test match REAL play; only the frame matters, the teardown is incidental.
+	var warm_up := TestCase.new()
+	warm_up.tree = self
+	await physics_frame
+	await warm_up._teardown()
 	for path in mine:
 		var file_started := Time.get_ticks_msec()  # I1: measurement only (the runner's wall clock, never a decision)
 		var script: GDScript = load(path)

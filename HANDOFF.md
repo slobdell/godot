@@ -57,7 +57,14 @@ alone on a quiet builder0 owed for main (T7, E1, D1).
 **main 5f05c997c GREEN** (builder2 `make native check exited 0`, 2911/0): + native's pass-lane port (T7's lane test in C++) + brains'
 E4 (lab matches no longer depend on what ran before them in the process; one pre-existing carry-over in scenarios_6 being bisected).
 **builder2 is back** as a cheap Spot VM (e2-highcpu-32, us-west4-a, idle auto-stop; R35.49, `_agents/gcp_builder.md`); M5's series
-runs there. Rulings R35.1–R35.33 in workstreams.
+runs there.
+**main 31e3d605c = orders D6, A SHIFT-CLICKED ROUTE IS FOLLOWED BY EVERY SQUAD (R35.55)** (`93cdb1559`, builder2 2941/0, sim-baseline
+13 unmoved). **Tell him:** about one squad in six used to skip a shift-clicked route's waypoints and drive straight to the end; now
+every squad drives every leg, and none ends on the far bank. Also on main: E4b (tests see real play's engine state, R35.57).
+Parked OFF this round, each with its reading: D3/D3b tight packing, D4 arrival seating, D5 the gate deal (**his feel call:** the Locks
+5-squad route gets in ~8 s sooner, at a little more near-ramp nosing on the Crossing; try `GATE_DEAL=on make skirmish ARENA=locks`),
+W1b (a held wheeled hull sits still: team 1 accuracy rose past its guard). One batch main check of 31e3d605c (D6 + E4b) is running
+on builder2. Rulings R35.1–R35.33 in workstreams.
 **main fc1f4ac0e = native N3 (R35.15)** (`944ad8c9b`, builder0 `make check exited 0`, 25 passed + 2 NOT JUDGED by load, 2885/0,
 sim-baseline 13 unmoved; INHERIT): native builds rebuild on a source CONTENT change (`native/src_sync.sh`), so a merge that syncs
 older mtimes can no longer leave builder0 a stale library (what voided brains' E1 check). Tooling only.
