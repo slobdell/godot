@@ -769,3 +769,14 @@ seeds 9–16, and one table read 16 seeds before it was caught. **Rule: `rm -rf 
 `ssh builder0 rm -rf ~/tank_squad/<folder>/build/<output-dir>` before a remote run whose output you will read as a
 table**, or have the series tool write a run id into every row and read only the newest. The `P build/` rsync filter
 that protects builds from `--delete` is what makes this possible; it stays.
+
+**Round 36 (2026-10-20): builder2 is a Spot box, and a preemption looks like a finished run.** builder2 (`balsa-worker-gcp`,
+e2-highcpu-32 Spot, us-west4) was preempted at 14:07:35 PDT, 4 min into traffic's T8 check. The wrapper exits 255 with an
+`exited` line of sorts, and T8's driver, which tested `grep exited` for completion, read it as done and went on to the series.
+**Rule for every driver that runs on builder2:** a check counts only with its own `N passed, M failed` verdict and the wrapper's
+`>> remote: make … exited 0|2` line; any target NOT RUN, an exit 255, or a missing verdict stops the driver; NOT JUDGED (perf-judge refusing for load) is NOT "not run": a green line reads `N targets, all passed`
+or `25 passed + 2 NOT JUDGED`, and a guard must accept both (traffic's 7da1ab88e); a series loops
+until every arena x arm is complete before it reads (traffic's `tests/traffic/t8_series.sh` at ee30b2194 is the model). Also,
+builder2 idle-stops after 20 min: a launch onto it needs `make gcp-start` first (round 36: the orchestrator's main check died
+on "No route to host"). And the box is shared with the lead's balsa/plane_maker project: its `generate_balsa_matrix.py` standing
+workers start on boot, so record builder2's load line beside every judged number.

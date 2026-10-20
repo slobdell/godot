@@ -27,16 +27,25 @@ the kickoff prompt from `_agents/orchestration.md` *The kickoff prompt*. **godot
 on builder2** (its old worktree holds the running job); the orchestrator says when.
 
 **The orchestrator's open items (in order):**
-1. ~~CP36.1~~ **MERGED (R36.1):** main a318a2cd3 (joint d56685115, builder0 2961/0), baselines adopted e45bb6632 (foundry,
-   crossing, sumps, cut; read twice, equal to the joint check's hashes). **Main's own check did NOT run (builder2 had idle-stopped; restarted 14:00) and is NOT re-run: native's `pair/native-s1s3-main` `20acbda5f` contains e45bb6632, and its builder0 check covers main (a red outside S1/S3 is main's).** All four streams told to merge main.
+1. ~~CP36.1~~ MERGED (R36.1, e45bb6632). **main 5d6bb1de8 is GREEN** (R36.5): it inherits `pair/native-s1s3-main` `20acbda5f`'s
+   builder0 check (2961/0, 13 unmoved), which contains the joint + D5 + S3 (W1b deleted) + S1 stallnet OFF.
 2. ~~The scoreboard rows~~ DONE (13:18): native's session (launched by the lead at ~12:25 in the OLD godot-native worktree, which
    it merged main into; `stream/native` was never renamed and continues as round 36's branch, no fresh worktree) committed all three
    rows (cdda0bbf9, `references/scoreboard/README.md` on stream/native) and is on S3's pair. First read (builder2, n 40 fights / 48
    moves / 36 group orders): round 35's main v round 34's close: group orders where a squad never got in 5 -> 0 of 36, moves never
    settled 13 -> 10 of 48, jam-under-fire deaths 1.75 -> 1.3 a fight; deaths a fight 40.4 -> 41.9 (kills 40.0 -> 41.4: bloodier both
    ways). c29a8c7b6 and a0ae0aafd read identical (no game source differs).
-3. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
+3. **T8: pair `a2de32420` green on builder2 (2963/0, 13 unmoved, switch-OFF inert); series running since 14:53 (unit
+   t8-series-r36d).** On PASS: traffic cuts the ON hand-over; the orchestrator grants ONE quiet builder0 window for perf-judge on it,
+   which also clears main's owed one.
+4. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
    joint since).
+
+**For him at the close (one page, player terms; collected, not asked mid-round):**
+- **Packing (orders O4, parked):** when several squads are sent to one spot, crews of different squads keep at least 9 m apart once
+  set up. That gap, not arrival overlap, is what stops a tighter pack (orders' laptop count: overlap is 3–8 % of refusals). Tighter
+  means one shell or artillery strike can catch two squads. **Recommendation: keep 9 m**; he can say "tighter" after a
+  `make skirmish ARENA=locks` with 3 squads clicked to one point.
 
 **Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
 X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36's stallnet.

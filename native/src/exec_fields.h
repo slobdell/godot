@@ -21,6 +21,7 @@
 	F(Vector3, VECTOR3, _path_goal) \
 	F(double, FLOAT, _repath_left) \
 	F(double, FLOAT, _stuck_time) \
+	F(Vector3, VECTOR3, _stuck_from) \
 	F(double, FLOAT, _unstick_left) \
 	F(bool, BOOL, _unstick_pivot) \
 	F(Vector3, VECTOR3, _progress_goal) \

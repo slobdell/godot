@@ -102,8 +102,7 @@ struct N {
 			_wheel_radius_value{ "_wheel_radius_value" };
 	// Movement statics (through the script)
 	StringName leash_orders{ "leash_orders" }, avoidance_on{ "avoidance_on" }, station_on{ "station_on" },
-			kturn_eased{ "kturn_eased" }, wheel_halt_asks{ "wheel_halt_asks" }, wheel_halts{ "wheel_halts" },
-			stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
+			kturn_eased{ "kturn_eased" }, stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
 			wedged_units{ "wedged_units" }, a1_replans{ "a1_replans" }, a1_cadence_due{ "a1_cadence_due" },
 			a1_by_cause{ "a1_by_cause" }, route_not_ready{ "route_not_ready" }, guard_rescues{ "guard_rescues" };
 	// methods called back
@@ -171,7 +170,7 @@ struct N {
 			integral{ "integral" }, _primed{ "_primed" }, alive{ "alive" }, _registry{ "_registry" },
 			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
 			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" },
-			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" },
+			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" }, stall_net_holds{ "stall_net_holds" },
 			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" }, ready_memo{ "ready_memo" },
 			_ready_map{ "_ready_map" }, _ready_iteration{ "_ready_iteration" }, _ready_answer{ "_ready_answer" },
 			locomotion{ "locomotion" }, min_turn_radius_m{ "min_turn_radius_m" }, for_unit{ "for_unit" },
@@ -1731,7 +1730,20 @@ struct Drive {
 		const bool honest = pinned_on != nullptr;
 		const Vector3 velocity = tank->get(honest ? k.real_velocity : k.estimated_velocity);
 		// Round 35 (W1c, R35.12, `stallintent`): against a friendly hull, the throttle test reads the drive's intent.
-		if (stall_throttle(cmd, order) > 0.5 && (double)velocity.length() < c.STUCK_SPEED) {
+		const bool pressing = stall_throttle(cmd, order) > 0.5;
+		// Round 36 (manoeuvre S1, `stallnet`): Movement._stall_net_holds: on the honest path a fast tick while the clock runs,
+		// with the hull still within STUCK_NET_M of where the clock started, is counted (both arms) and, ON, holds the clock.
+		if (pressing && honest && (double)velocity.length() >= c.STUCK_SPEED && c.stall_net_ready && v._stuck_time() > 0.0 &&
+				!(flat_distance(here, v._stuck_from()) > c.STUCK_NET_M)) {
+			sadd(k.stall_net_holds, step);
+			if (c.STALL_NET) {
+				return;
+			}
+		}
+		if (pressing && (double)velocity.length() < c.STUCK_SPEED) {
+			if (v._stuck_time() == 0.0) {
+				v.set__stuck_from(here);
+			}
 			const double stuck = v._stuck_time() + delta;
 			v.set__stuck_time(stuck);
 			if (stuck >= c.STUCK_SECONDS && honest) {
@@ -3617,20 +3629,6 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				throttle = ease_throttle;
 				cmd->set(k.throttle, throttle);
 				sadd(k.kturn_eased, step);
-			}
-		}
-	}
-	// Round 35 (manoeuvre W1b): Manoeuvre.wheel_halt(cmd, radius, pace, _kturn_left_m, step): a wheeled hull whose pace is
-	// 0 with no planned leg, which would creep (|throttle| < WHEEL_CREEP_THROTTLE x |turn|), stands: turn 0 (the ON arm).
-	if (c.wheel_halt_ready && c.manoeuvre_script != nullptr && radius > 0.0 && !(kturn_left > 0.0) && !(pace > 0.0)) {
-		const double turn_now = cmd->get(k.turn);
-		const double throttle_now = cmd->get(k.throttle);
-		if (turn_now != 0.0 && !(std::fabs(throttle_now) >= c.WHEEL_CREEP_THROTTLE * std::fabs(turn_now))) {
-			Object *man = c.manoeuvre_script;
-			man->set(k.wheel_halt_asks, (int64_t)man->get(k.wheel_halt_asks) + step);
-			if (c.WHEEL_HALT) {
-				cmd->set(k.turn, 0.0);
-				man->set(k.wheel_halts, (int64_t)man->get(k.wheel_halts) + step);
 			}
 		}
 	}

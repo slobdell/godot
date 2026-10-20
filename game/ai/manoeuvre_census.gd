@@ -216,6 +216,8 @@ static func report() -> Dictionary:
 static func counters() -> Dictionary:
 	return {"face_plans": Manoeuvre.face_plans, "face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none,
 			"face_refused": Manoeuvre.face_refused, "face_slot_kept": Manoeuvre.face_slot_kept,
+			"face_settles": Manoeuvre.face_settles, "face_settle_fails": Manoeuvre.face_settle_fails,  # round 35 (W2, R35.35)
+			"stall_intent_ticks": Manoeuvre.stall_intent_ticks,
 			"face_slot_refused": Manoeuvre.face_slot_refused, "hull_turns": Manoeuvre.hull_turns, "hull_holds": Manoeuvre.hull_holds, "off_seat_declines": Manoeuvre.off_seat_declines,
 			"arrivals_held": Manoeuvre.arrivals_held, "arrivals_held_ticks": Manoeuvre.arrivals_held_ticks,
 			"face_keep_refused": Manoeuvre.face_keep_refused, "face_keep_by_unit": Manoeuvre.face_keep_by_unit.duplicate(), "escape": Movement.escape_arms(),
@@ -416,3 +418,15 @@ static func trace(mover: Movement, cmd: TankCommand, order: Dictionary) -> void:
 			mover._kturn_left_m, str(mover._kturn_legs), mover._circling, mover._reverse_why, mover.contact.touching,
 			str(mover._face_legs), mover._face_left_m, mover._face_gear, str(mover._face_blocked != Vector3.ZERO),
 			mover._face_retry])
+	# X1(d) (the choke wedge): what the stall rule reads on this tick, beside what pins the hull.
+	var hulls: Array[String] = []
+	for i in tank.get_slide_collision_count():
+		var hit := tank.get_slide_collision(i).get_collider()
+		hulls.append(String(hit.name) if hit is Tank else "static")
+	var decided: Dictionary = mover.contact.decided if mover.contact != null else {}
+	var honest: Object = mover._honest_blocker(order) if Movement.unstick_back_on() else null
+	print("STALL_TRACE f %d %s phase %s driver %s pace %.2f held %s blocked %s est %.2f real %.2f stuck %.2f honest %s colliders %s hull_m %.1f esc %d unstick_left %.2f wedged %s" % [
+			tick, String(tank.name), mover.phase, String(decided.get("driver", "")), mover.pace_now,
+			str(Traffic.holding(String(tank.name))), mover.blocked_by, tank.estimated_velocity.length(),
+			tank.real_velocity.length(), mover._stuck_time, "none" if honest == null else String((honest as Node).name),
+			",".join(hulls), float(Movement.hull_box(tank.unit_id)[2]), mover._esc_stage, mover._unstick_left, str(mover.wedged)])

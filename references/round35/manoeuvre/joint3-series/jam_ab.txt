@@ -1,0 +1,22 @@
+jam_ab: SEED_TWINS kept 72 of 72 logs, dropped 0
+jam_ab: 72 paired fights; left out (no JAM_CENSUS) none
+G jam-under-fire deaths (deciding gain)        base  114.00  arm  122.00  drop   -8.00  se  13.85  drop - k*se -30.78  (n 72, fights differing 46): FAIL
+1 deaths in the open (guard, two-sided)        base 2416.00  arm 2450.00  drop  -34.00  se  45.06  band +- 74.12  (n 72, fights differing 62): PASS
+2 stuck deaths (guard)                         base  453.00  arm  464.00  drop  -11.00  se  23.43  line <= 491.54  (n 72, fights differing 57): PASS
+3 far loops, H1b (guard)                       base   35.00  arm   39.00  drop   -4.00  se  17.89  line <= 64.44  (n 72, fights differing 18): PASS
+4a kills (guard, two-sided)                    base 3000.00  arm 3054.00  drop  -54.00  se  38.92  band +- 64.02  (n 72, fights differing 55): PASS
+5 contacts in 3 s after a hit-ended give-way (guard) base  200.00  arm  269.00  drop  -69.00  se  50.66  line <= 283.34  (n 72, fights differing 45): PASS
+7 friendly hull contacts, all (guard; T7)      base 61577.00  arm 62316.00  drop -739.00  se 2473.59  line <= 65646.05  (n 72, fights differing 69): PASS
+R contacts with a crew passing (T7)            base  255.00  arm  196.00  drop   59.00  se  56.02  line <= 347.15  (n 72, fights differing 41): reported
+R held deaths, (D): held by the hold within 3 s base  148.00  arm  160.00  drop  -12.00  se  17.03  band +- 28.01  (n 72, fights differing 46): reported
+R jam deaths, all kinds                        base  153.00  arm  156.00  drop   -3.00  se  15.10  band +- 24.84  (n 72, fights differing 49): reported
+R jam:yielding deaths (dying while giving way) base  124.00  arm  125.00  drop   -1.00  se  13.55  line <= 146.29  (n 72, fights differing 50): reported
+R jam:yielding deaths under fire               base   93.00  arm  100.00  drop   -7.00  se  12.10  line <= 112.90  (n 72, fights differing 46): reported
+R all deaths                                   base 3022.00  arm 3070.00  drop  -48.00  se  39.85  band +- 65.55  (n 72, fights differing 56): reported
+R standoffs (count)                            base    2.00  arm    1.00  drop    1.00  se   1.00  line <= 3.65  (n 72, fights differing 1): reported
+R standoff seconds                             base    6.20  arm    2.80  drop    3.40  se   2.43  line <= 10.19  (n 72, fights differing 2): reported
+R give-ways ended by a hit (probe-read)        base  176.00  arm  202.00  drop  -26.00  se  19.33  line <= 207.80  (n 72, fights differing 41): reported
+4b hit rate (guard, one-sided): base 0.722 arm 0.716, paired se of the mean 0.0091, line >= 0.707: PASS
+R standoffs base: 2 (lasted s median 4.2, p90 4.2, max 4.2); Movement counters {'underfire_refusals': 150, 'underfire_holds': 32, 'underfire_aborts': 0, 'underfire_gives': 679, 'passes': 116, 'passes_done': 67, 'passes_timeout': 15}
+R standoffs arm: 1 (lasted s median 2.8, p90 2.8, max 2.8); Movement counters {'underfire_refusals': 151, 'underfire_holds': 26, 'underfire_aborts': 0, 'underfire_gives': 695, 'passes': 121, 'passes_done': 67, 'passes_timeout': 14}
+T6/T7 FAIL (G and every guard; line 6 crossing arrivals read apart)

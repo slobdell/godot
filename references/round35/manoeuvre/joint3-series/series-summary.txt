@@ -1,0 +1,80 @@
+>> joint3 series 03:03
+>> wedge-on-locks start 03:03 on 872f82ae5
+>> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=940-963 WEDGE_AT=locks WEDGE_JOBS=3 WEDGE_DIR=build/manoeuvre/wedge-locks exited 0 (build/ copied back)
+>> fights-on-locks start 03:17 on 872f82ae5
+>> remote: make native manoeuvre-fights FIGHT_RANGE=940-963 FIGHT_AT=locks FIGHT_JOBS=3 exited 0 (build/ copied back)
+>> jam-on-locks start 03:30 on 872f82ae5
+>> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=940-963 JAM_JOBS=3 JAM_DIR=build/traffic-jam-locks exited 0 (build/ copied back)
+>> wedge-base-locks start 03:47 on 2a2682560
+>> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=940-963 WEDGE_AT=locks WEDGE_JOBS=3 WEDGE_DIR=build/manoeuvre/wedge-locks exited 0 (build/ copied back)
+>> fights-base-locks start 04:01 on 2a2682560
+>> remote: make native manoeuvre-fights FIGHT_RANGE=940-963 FIGHT_AT=locks FIGHT_JOBS=3 exited 0 (build/ copied back)
+>> jam-base-locks start 04:15 on 2a2682560
+>> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=940-963 JAM_JOBS=3 JAM_DIR=build/traffic-jam-locks exited 0 (build/ copied back)
+>> wedge-on-terminus start 04:32 on 872f82ae5
+>> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=940-963 WEDGE_AT=terminus WEDGE_JOBS=3 WEDGE_DIR=build/manoeuvre/wedge-terminus exited 0 (build/ copied back)
+>> fights-on-terminus start 04:47 on 872f82ae5
+>> remote: make native manoeuvre-fights FIGHT_RANGE=940-963 FIGHT_AT=terminus FIGHT_JOBS=3 exited 0 (build/ copied back)
+>> jam-on-terminus start 05:00 on 872f82ae5
+>> remote: make native traffic-jam-census JAM_AT=terminus JAM_RANGE=940-963 JAM_JOBS=3 JAM_DIR=build/traffic-jam-terminus exited 0 (build/ copied back)
+>> wedge-base-terminus start 05:17 on 2a2682560
+>> RESUMED at higher jobs (the orchestrator, 05:28) 05:29
+>> wedge-on-locks skip (done earlier)
+>> fights-on-locks skip (done earlier)
+>> jam-on-locks skip (done earlier)
+>> wedge-base-locks skip (done earlier)
+>> fights-base-locks skip (done earlier)
+>> jam-base-locks skip (done earlier)
+>> wedge-on-terminus skip (done earlier)
+>> fights-on-terminus skip (done earlier)
+>> jam-on-terminus skip (done earlier)
+>> wedge-base-terminus skip (done earlier)
+>> fights-base-terminus start 05:31 on 2a2682560
+>> remote: make native manoeuvre-fights FIGHT_RANGE=940-963 FIGHT_AT=terminus FIGHT_JOBS=5 exited 0 (build/ copied back)
+>> jam-base-terminus start 05:42 on 2a2682560
+>> remote: make native traffic-jam-census JAM_AT=terminus JAM_RANGE=940-963 JAM_JOBS=5 JAM_DIR=build/traffic-jam-terminus exited 0 (build/ copied back)
+>> wedge-on-sumps start 05:56 on 872f82ae5
+>> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=940-963 WEDGE_AT=sumps WEDGE_JOBS=5 WEDGE_DIR=build/manoeuvre/wedge-sumps exited 0 (build/ copied back)
+>> fights-on-sumps start 06:08 on 872f82ae5
+>> remote: make native manoeuvre-fights FIGHT_RANGE=940-963 FIGHT_AT=sumps FIGHT_JOBS=5 exited 0 (build/ copied back)
+>> jam-on-sumps start 06:20 on 872f82ae5
+>> remote: make native traffic-jam-census JAM_AT=sumps JAM_RANGE=940-963 JAM_JOBS=5 JAM_DIR=build/traffic-jam-sumps exited 0 (build/ copied back)
+>> wedge-base-sumps start 06:35 on 2a2682560
+>> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=940-963 WEDGE_AT=sumps WEDGE_JOBS=5 WEDGE_DIR=build/manoeuvre/wedge-sumps exited 0 (build/ copied back)
+>> fights-base-sumps start 06:48 on 2a2682560
+>> remote: make native manoeuvre-fights FIGHT_RANGE=940-963 FIGHT_AT=sumps FIGHT_JOBS=5 exited 0 (build/ copied back)
+>> jam-base-sumps start 07:00 on 2a2682560
+>> remote: make native traffic-jam-census JAM_AT=sumps JAM_RANGE=940-963 JAM_JOBS=5 JAM_DIR=build/traffic-jam-sumps exited 0 (build/ copied back)
+>> hr-new_drawn-gangs-1 start 07:16 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=gangs FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-gangs-1 exited 0 (build/ copied back)
+>> hr-new_drawn-gangs-2 start 07:28 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=gangs FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-gangs-2 exited 0 (build/ copied back)
+>> hr-new_drawn-law-1 start 07:41 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=law FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-law-1 exited 0 (build/ copied back)
+>> hr-new_drawn-law-2 start 07:49 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=law FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-law-2 exited 0 (build/ copied back)
+>> hr-new_drawn-syndicate-1 start 07:58 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=syndicate FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-syndicate-1 exited 0 (build/ copied back)
+>> hr-new_drawn-syndicate-2 start 08:05 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=syndicate FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-syndicate-2 exited 0 (build/ copied back)
+>> hr-new_drawn-condemned-1 start 08:14 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=condemned FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-condemned-1 exited 0 (build/ copied back)
+>> hr-new_drawn-condemned-2 start 08:35 on 872f82ae5
+>> remote: make native manoeuvre-hull-rest M1_ARMS=new_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=condemned FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-new_drawn-condemned-2 exited 0 (build/ copied back)
+>> hr-base_drawn-gangs-1 start 08:55 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=gangs FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-gangs-1 exited 0 (build/ copied back)
+>> hr-base_drawn-gangs-2 start 09:13 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=gangs FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-gangs-2 exited 0 (build/ copied back)
+>> hr-base_drawn-law-1 start 09:27 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=law FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-law-1 exited 0 (build/ copied back)
+>> hr-base_drawn-law-2 start 09:36 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=law FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-law-2 exited 0 (build/ copied back)
+>> hr-base_drawn-syndicate-1 start 09:45 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=syndicate FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-syndicate-1 exited 0 (build/ copied back)
+>> hr-base_drawn-syndicate-2 start 09:50 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=syndicate FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-syndicate-2 exited 0 (build/ copied back)
+>> hr-base_drawn-condemned-1 start 09:55 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=condemned FACING_ONLY=faced_ambush,faced_attack_move,faced_move M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-condemned-1 exited 0 (build/ copied back)
+>> hr-base_drawn-condemned-2 start 10:08 on 2a2682560
+>> remote: make native manoeuvre-hull-rest M1_ARMS=base_drawn M1_NEW_OFF= M1_BASE_OFF= M1_SEEDS=901-932 HULL_JOBS=5 HULL_FACTIONS=condemned FACING_ONLY=faced_right,faced_screen,faced_support_by_fire M1_FLAGS=--turn-states M1_DIR=build/manoeuvre/hr-base_drawn-condemned-2 exited 0 (build/ copied back)
+>> series done 10:22
