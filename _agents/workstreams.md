@@ -763,6 +763,14 @@ _Filed here before any number._
   arrives (f 1655). Rocking crews (`tests/manoeuvre/rocking_census.py`, joint3 hull-rest, 768 runs an arm): base 6, joint ON 3.
   Design (A), round 36, low priority: reset on NET motion from the clock's start (> 0.5 m), routed + honest path, `--nav-off=stallnet`,
   native mirror; draft bar in `references/round35/manoeuvre/x1d-trace/README.md`.
+- **R35.77 (2026-10-20 ~14:30) X3b DEPLOY_PASS parks before its judged run (round-36 evidence).** Orders' prototype (DEV seeds 1–12
+  only, builder0 light, a7cd0fbc3, native, body stage): counter deploy_pass_waits 19 v 0; s1 main 18.1 v pass_off 24.0 (off 18.5): the
+  jam is gone where it happens; main - off mean +0.23 s (sd 1.17). But the jam occurs in 1 seed of 12 even with the geometry built in, so
+  the gain (+0.41 s, se 0.79) and the per-seed +1 s guard (fails in 4 of 11 on seeds where the deploy had made the Sirens faster) both
+  read noise, not the change: the orchestrator's bar was ill-posed. Not run on 5101–5124 (kept unseen). Code OFF on stream/orders, not
+  merged. **Round 36:** a lab stage that reproduces an arrived herringbone across a lane deterministically as the deciding workload; a
+  paired non-jam guard (mean <= +1.0 s) + a +5 s per-seed cap. **Lesson:** a per-seed guard on a chaotic per-seed number measures chaos;
+  guard paired means, with a generous per-seed cap.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the
