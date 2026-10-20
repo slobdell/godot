@@ -1,0 +1,57 @@
+>> perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=1.97x ratio=2.01x ratio=1.87x ) in 431s: the box was truly busy
+net-smoke/server: exited 143 (expected: named in its recipe)
+relay-smoke/host: exited 143 (expected: named in its recipe)
+>> check: 24m01s, 6/26 done, waiting on: test combat-smoke lobby-smoke garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard bridge-pooled native-verify-scenarios native-live-guard planner-pytest | already FAILED: sim-baseline
+ai-scenarios-check: exited 1 (expected: named in its recipe)
+ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.
+  scenarios: 52 passed, 0 failed, 4 pending, 1 unexpectedly passing
+ai-scenarios-check: scenarios: 52 passed, 0 failed, 4 pending, 1 unexpectedly passing
+  gate held (with NOT JUDGED above) (53,0 unchanged), but pending,unexpectedly_passing moved 5,0 -> 4,1.
+  ok   refusal: the other targets pass and perf-judge is NOT JUDGED
+  ok   refusal with no reason: NOT JUDGED with a default reason (pipefail cannot kill it)
+  ok   a judged FAIL reads FAIL, not NOT JUDGED
+  ok   the stage says the judge exited 1
+check-perf-judge: 10 passed, 0 failed
+check-trap: 4 passed, 0 failed
+  ok   NOT JUDGED is counted on its own
+check-verdict: 30 passed, 0 failed
+copyback-verify: 18 passed, 0 failed
+determinism: 7 passed, 0 failed
+  ok   the wrapper fails a target whose make exited 0 but printed the line (on stderr)
+engine-log-gate: 23 passed, 0 failed
+exit-gate: 5 passed, 0 failed
+filter-gate: 17 passed, 0 failed
+known-red: 12 passed, 0 failed
+lent-exit-codes: 9 passed, 0 failed
+lint-gate: 18 passed, 0 failed
+perf-fight-report: 7 passed, 0 failed
+  ok   refused every time: NOT JUDGED (3)
+perf-judge: 5 passed, 0 failed
+quiet-window: 28 passed, 0 failed
+remote-excludes: 7 passed, 0 failed
+remote-guard: 36 passed, 0 failed
+round-status: 44 passed, 0 failed
+series-arms: 12 passed, 0 failed
+sim-baseline: 53 passed, 0 failed
+slot-exclusive: 14 passed, 0 failed
+slot-light: 6 passed, 0 failed
+test-shards: 5 passed, 0 failed
+TIMING NOT JUDGED (make control-timing judges): ordering 30 units takes 110.9 reference workloads (budget 104; 10.32 ms)  [OVER BUDGET]
+TIMING NOT JUDGED (make control-timing judges): a right click on 30 units takes 111.2 reference workloads (budget 104; 9.56 ms)  [OVER BUDGET]
+TIMING NOT JUDGED (make control-timing judges): control costs 30.19 reference workloads a frame with 60 units (budget 26.0; 2.354 ms): awareness=0.326 compliance=0.272 edge_markers=0.035 horizon_zoom=0.621 order_marks=0.459 panel_summary=0.848 vision_state=0.311  [OVER BUDGET]
+TIMING NOT JUDGED (make control-timing judges): working them out costs 1.74 reference workloads a frame (0.108 ms)
+2902 passed, 0 failed
+combat-smoke/server: exited 143 (expected: named in its recipe)
+scenarios: 52 passed, 0 failed, 4 pending, 1 unexpectedly passing
+native-verify-scenarios: runner exited 1, 0 verify mismatches (build/native-verify-scenarios.log)
+>> check: hashes on builder0 (glibc-2.43) | sim-baseline foundry=2e54d6f5c9fc22ac(unmoved) yard=62d12a470d5c9ee3(MOVED from 10b591da31fbc932) pit=022e54dcc1c3e787(unmoved) terminus=c1e385944ff8073b(MOVED from 86d400c26dabd324) crossing=7dbbd4b72e0ac717(unmoved) sumps=8909a3d97aef76de(unmoved) locks=13c33de4419afb5e(MOVED from 68c7dcf476b05e89) parade=72b1c96369096248(unmoved) gorge=4da2720fa4085f3b(MOVED from ff3e73d984b8b671) archipelago=5595506fcfeac33f(unmoved) cut=f1c4d46cbe2732f0(MOVED from 66759bb811706337) docks=1ad07ab1883a1db8(unmoved) yard_open=9287bb338b29a976(unmoved) | determinism 8c3c1232b711a760
+>> check: 24 passed, 1 FAILED, 0 NOT RUN, 2 NOT JUDGED  [test x5, lint -P6, 2 at once, builder0]
+   NOT JUDGED perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=1.97x ratio=2.01x ratio=1.87x ) in 431s: the box was truly busy
+   FAIL     sim-baseline
+   NOT JUDGED ai-scenarios-check: scenario_perf::test_the_brains_stay_inside_the_cpu_budget (reason=unpinned cpu=mixed:0-11 (a hybrid machine: perf-judge judges, pinned to the P-cores)) (17.8s)
+>> check: failed: sim-baseline
+>> remote: make native check exited 2 (build/ copied back)
+
+# Inertness (switch OFF): tools/remote.sh sim-variants VARIANTS_EXTRA=--traffic-off=underfire on e95179252, builder0, exited 0:
+# base40 reads all 13 of main's glibc-2.43 lines (tests/baselines/sim_state_hash.txt) unmoved. With the switch ON the check
+# moved 5 (yard, terminus, + 3) = the ON arm's own.

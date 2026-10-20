@@ -149,6 +149,8 @@ static var holds := 0
 static var hold_ticks := 0
 static var released_passed := 0
 static var released_cap := 0
+## Round 35 (T8): crews released from a hold because they were being hit.
+static var released_fire := 0
 static var no_spot := 0
 ## The crossing's counters (measurement only): squad-pair verdicts made, crew-ticks a wish was slowed.
 static var cross_verdicts := 0
@@ -204,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := []  # pair/underfire-t7: T7 ON (the judged arm; base = --traffic-off=underfire)
+const DEFAULT_OFF := ["holdfire"]  # T7 underfire ON (shipped, R35.44); T8 holdfire OFF until judged (C36.2)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -252,7 +254,7 @@ static func holding(crew: String) -> bool:
 ## The counters as one reading (the traffic probe reports it), and back to zero.
 static func report() -> Dictionary:
 	return {"tr_verdicts": verdicts, "tr_holds": holds, "tr_hold_ticks": hold_ticks, "tr_released_passed": released_passed,
-			"tr_released_cap": released_cap, "tr_no_spot": no_spot, "tr_cross_verdicts": cross_verdicts,
+			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_cross_verdicts": cross_verdicts,
 			"tr_cross_slowed": cross_slowed, "tr_cross_reach_free": cross_reach_free}
 
 
@@ -262,6 +264,7 @@ static func reset_counters() -> void:
 	hold_ticks = 0
 	released_passed = 0
 	released_cap = 0
+	released_fire = 0
 	no_spot = 0
 	cross_verdicts = 0
 	cross_slowed = 0
@@ -310,6 +313,17 @@ static func hold_of(me: String) -> Array:
 		if log_waits:
 			print("TRAFFIC_RELEASE " + JSON.stringify({"frame": frame, "crew": me, "why": "cap", "group": group}))
 		return []
+	# Round 35 (traffic T8, R35.7; `--traffic-on=holdfire`, DEFAULT_OFF until judged): a held crew being hit leaves the hold, as
+	# a passed crew does, for good for this wait (manoeuvre's W1: 33 of 81 wedged deaths were crews held at a street mouth
+	# under fire, a median 5.4 s in). Hit = Movement.UNDER_FIRE_S, T6/T7's "under fire".
+	if not off("holdfire") and _hit(me):
+		(wait["released"] as Dictionary)[me] = true
+		released_fire += 1
+		if log_waits:
+			print("TRAFFIC_RELEASE " + JSON.stringify({"frame": frame, "crew": me, "why": "fire", "held_s": snappedf(float(frame - int(wait["since"])) / SimClock.TICK_RATE, 0.1)}))
+		if (wait["released"] as Dictionary).size() >= (wait["spots"] as Dictionary).size():
+			_end_wait(group, frame)
+		return []
 	var here := Vector2((cols["x"] as PackedFloat64Array)[i], (cols["z"] as PackedFloat64Array)[i])
 	if _passed(here, wait["dir"], wait["passer"], cols):
 		(wait["released"] as Dictionary)[me] = true
@@ -326,6 +340,14 @@ static func hold_of(me: String) -> Array:
 	var heading := Vector2((cols["dx"] as PackedFloat64Array)[i], (cols["dz"] as PackedFloat64Array)[i])
 	var there := gap <= HOLD_REACHED_M or (gap <= HOLD_OVERSHOT_M and (at - here).dot(heading) < 0.0)
 	return [at, spot[1], there]
+
+
+## T8: crew `me` hit within Movement.UNDER_FIRE_S (its mover from the table; a loaded table has none: never).
+static func _hit(me: String) -> bool:
+	var mover: Movement = _movers.get(me)
+	if mover == null or mover.ctl == null or mover.ctl.tank == null:
+		return false
+	return mover.ctl.tank.ticks_since_hit <= int(Movement.UNDER_FIRE_S * SimClock.TICK_RATE)
 
 
 ## Is every crew of `passer` still under way behind the crew at `here` going `dir` (or none left moving)?

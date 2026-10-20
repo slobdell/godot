@@ -14,12 +14,26 @@ Lines (filed in workstreams.md *Bars (round 34)* before any number; se = the pai
   R  (reported) standoffs (two friendly crews nose to nose, both under fire, neither yielding, still >= 2 s), with durations;
      Movement's underfire counters; jam deaths of every kind; all deaths.
 Crossing arrivals (line 6) are read by v2_lines.py on traffic-series, as parkedroom's L4 was.
+
+    python3 tests/traffic/jam_ab.py BASE_DIR ARM_DIR --bar t8
+
+T8's bar (R35.7, workstreams *Bars (round 35)*; base = --traffic-off=holdfire, arm ON): 0 (counter first) released_fire > 0 in
+the arm; G held deaths (jam_census held_deaths: held the tick before, or within 3 s of a hold) arm < base and (base - arm) - k*se
+> 0; guards 1 stuck, 2 jam (T5), 3 open (two-sided), 4 far loops, 5 kills (two-sided) and hit rate, 6 all friendly contacts,
+8 tr_holds >= half of base, 9 all deaths of each team <= base + k*se; line 7 crossing arrivals by v2_lines.py. Reported:
+released_fire, hold seconds, standoffs, all deaths, deaths by cause.
 """
 import collections
 import json
 import math
 import os
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "tools", "judge"))
+import seed_twins  # noqa: E402  (C35.9, R34.15: a random fight that twins a fixed one in the folder is read once)
+
+
+TICK_RATE = 30  # SimClock.TICK_RATE: tr_hold_ticks -> crew-seconds
 
 
 def read(path):
@@ -63,6 +77,8 @@ def per_fight(deaths, census, standoffs, aborts):
     return {
         "jam_uf": sum(1 for r in jam if under_fire(r)),
         "jam": len(jam),
+        "jam_yielding": sum(1 for r in jam if r.get("cause") == "jam:yielding"),
+        "jam_yielding_uf": sum(1 for r in jam if r.get("cause") == "jam:yielding" and under_fire(r)),
         "open": sum(1 for r in deaths if str(r.get("cause", "")).startswith("open:")),
         "stuck": sum(1 for r in deaths if str(r.get("cause", "")).startswith("stuck:")),
         "all": len(deaths),
@@ -76,12 +92,22 @@ def per_fight(deaths, census, standoffs, aborts):
         "friendly_contacts": int((census or {}).get("friendly_contacts", 0)),
         "pass_contacts": int((census or {}).get("pass_contacts", 0)),
         "held": int((census or {}).get("held_deaths", 0)),
+        # T8 (R35.7): the hold's own report (Traffic.report in JAM_CENSUS) and each team's deaths.
+        "released_fire": int(((census or {}).get("traffic") or {}).get("tr_released_fire", 0)),
+        "tr_holds": int(((census or {}).get("traffic") or {}).get("tr_holds", 0)),
+        "hold_s": int(((census or {}).get("traffic") or {}).get("tr_hold_ticks", 0)) / TICK_RATE,
+        "deaths_team_0": int(teams.get("0", {}).get("deaths", 0)),
+        "deaths_team_1": int(teams.get("1", {}).get("deaths", 0)),
         "counters": {k: int(((census or {}).get("route_arms") or {}).get(k, 0)) for k in ("underfire_refusals", "underfire_holds", "underfire_aborts", "underfire_gives", "passes", "passes_done", "passes_timeout")},
     }
 
 
-def read_dirs(base_dir, arm_dir):
+def read_dirs(base_dir, arm_dir, check_underfire=True, switch="underfire"):
     names = sorted(n for n in set(os.listdir(base_dir)) & set(os.listdir(arm_dir)) if n.endswith(".log"))
+    kept, said = seed_twins.filter_logs([os.path.join(base_dir, n) for n in names])
+    for line in said:
+        print("jam_ab: " + line)
+    names = [os.path.basename(f) for f in kept]
     rows = {"base": collections.defaultdict(list), "arm": collections.defaultdict(list)}
     skipped, warnings, durations = [], [], {"base": [], "arm": []}
     counters = {"base": collections.Counter(), "arm": collections.Counter()}
@@ -91,8 +117,9 @@ def read_dirs(base_dir, arm_dir):
         if b[1] is None or a[1] is None:
             skipped.append(name)
             continue
-        if b[1].get("underfire_on") or not a[1].get("underfire_on"):
-            warnings.append("%s: arms not as named (base on %s, arm on %s)" % (name, b[1].get("underfire_on"), a[1].get("underfire_on")))
+        on = switch + "_on"
+        if check_underfire and (b[1].get(on) or not a[1].get(on)):
+            warnings.append("%s: arms not as named (%s: base %s, arm %s)" % (name, switch, b[1].get(on), a[1].get(on)))
         for side, data in (("base", b), ("arm", a)):
             f = per_fight(*data)
             for k, v in f.items():
@@ -121,11 +148,70 @@ def line(label, stat, k, rule):
         label, stat["base"], stat["arm"], stat["drop"], stat["se"], extra, stat["n"], stat["differing"], "PASS" if ok else "FAIL"), ok
 
 
+def hit_rate_line(b, a, k):
+    """4b / 5b: hit rate, the mean of fights, paired se of the mean; arm >= base - k*se."""
+    d = [x - y for x, y in zip(a["hit_rate"], b["hit_rate"])]
+    n = len(d)
+    mean_b = sum(b["hit_rate"]) / n if n else 0.0
+    mean_a = sum(a["hit_rate"]) / n if n else 0.0
+    sd = math.sqrt(sum((x - sum(d) / n) ** 2 for x in d) / (n - 1)) if n > 1 else 0.0
+    se = sd / math.sqrt(n) if n else 0.0
+    ok = mean_a >= mean_b - k * se
+    return "base %.3f arm %.3f, paired se of the mean %.4f, line >= %.3f: %s" % (mean_b, mean_a, se, mean_b - k * se, "PASS" if ok else "FAIL"), ok
+
+
+def main_t8(argv, k):
+    """T8's bar as filed (R35.7): the counter first, then G and every guard; crossings (line 7) read apart by v2_lines.py."""
+    r = read_dirs(argv[0], argv[1], switch="holdfire")
+    for w in r["warnings"]:
+        print("jam_ab: WARNING " + w)
+    print("jam_ab: T8 bar, %d paired fights; left out (no JAM_CENSUS) %s" % (r["n"], r["skipped"] or "none"))
+    b, a = r["rows"]["base"], r["rows"]["arm"]
+    rel_b, rel_a = sum(b["released_fire"]), sum(a["released_fire"])
+    verdict = rel_a > 0
+    print("0 released_fire (counter first): base %d arm %d: %s" % (rel_b, rel_a, "PASS" if verdict else "FAIL"))
+    for label, key, rule, deciding in (
+            ("G held deaths (deciding gain)", "held", "gain", True),
+            ("1 stuck deaths (guard)", "stuck", "notup", True),
+            ("2 jam deaths, T5 (guard)", "jam", "notup", True),
+            ("3 deaths in the open (guard, two-sided)", "open", "two", True),
+            ("4 far loops, H1b (guard)", "far", "notup", True),
+            ("5a kills (guard, two-sided)", "kills", "two", True),
+            ("6 friendly hull contacts, all (guard)", "friendly_contacts", "notup", True),
+            ("9 all deaths, team 0 (guard)", "deaths_team_0", "notup", True),
+            ("9 all deaths, team 1 (guard)", "deaths_team_1", "notup", True),
+            ("R released_fire", "released_fire", "notup", False),
+            ("R hold seconds (crew-seconds held)", "hold_s", "two", False),
+            ("R all deaths", "all", "two", False),
+            ("R standoffs (count)", "standoffs", "notup", False),
+            ("R standoff seconds", "standoff_s", "notup", False)):
+        text, ok = line(label, paired(b[key], a[key]), k, rule)
+        print(text if deciding else text.rsplit(":", 1)[0] + ": reported")
+        if deciding:
+            verdict = verdict and ok
+    text, ok = hit_rate_line(b, a, k)
+    print("5b hit rate (guard, one-sided): " + text)
+    verdict = verdict and ok
+    holds_b, holds_a = sum(b["tr_holds"]), sum(a["tr_holds"])
+    ok = holds_a >= holds_b / 2.0
+    print("8 the hold still taken, tr_holds >= half of base: base %d arm %d, line >= %.1f: %s" % (holds_b, holds_a, holds_b / 2.0, "PASS" if ok else "FAIL"))
+    verdict = verdict and ok
+    print("T8 %s (the counter, G and every guard; line 7 crossing arrivals read apart)" % ("PASS" if verdict else "FAIL"))
+
+
 def main(argv):
     k = 1.645
     if "--k" in argv:
         i = argv.index("--k"); k = float(argv[i + 1]); argv = argv[:i] + argv[i + 2:]
-    r = read_dirs(argv[0], argv[1])
+    if "--bar" in argv:
+        i = argv.index("--bar"); bar = argv[i + 1]; argv = argv[:i] + argv[i + 2:]
+        if bar != "t8":
+            sys.exit("jam_ab: unknown --bar %s (t8)" % bar)
+        return main_t8(argv, k)
+    # --any-arms: the two arms differ by something other than T7's switch (e.g. the joint W1c+T9 series, T7 ON in both).
+    any_arms = "--any-arms" in argv
+    argv = [a for a in argv if a != "--any-arms"]
+    r = read_dirs(argv[0], argv[1], check_underfire=not any_arms)
     for w in r["warnings"]:
         print("jam_ab: WARNING " + w)
     print("jam_ab: %d paired fights; left out (no JAM_CENSUS) %s" % (r["n"], r["skipped"] or "none"))
@@ -142,6 +228,8 @@ def main(argv):
             ("R contacts with a crew passing (T7)", "pass_contacts", "notup", False),
             ("R held deaths, (D): held by the hold within 3 s", "held", "two", False),
             ("R jam deaths, all kinds", "jam", "two", False),
+            ("R jam:yielding deaths (dying while giving way)", "jam_yielding", "notup", False),
+            ("R jam:yielding deaths under fire", "jam_yielding_uf", "notup", False),
             ("R all deaths", "all", "two", False),
             ("R standoffs (count)", "standoffs", "notup", False),
             ("R standoff seconds", "standoff_s", "notup", False),
@@ -150,15 +238,8 @@ def main(argv):
         print(text if deciding else text.rsplit(":", 1)[0] + ": reported")
         if deciding:
             verdict = verdict and ok
-    # hit rate: mean of fights, paired se of the mean
-    d = [x - y for x, y in zip(a["hit_rate"], b["hit_rate"])]
-    n = len(d)
-    mean_b = sum(b["hit_rate"]) / n if n else 0.0
-    mean_a = sum(a["hit_rate"]) / n if n else 0.0
-    sd = math.sqrt(sum((x - sum(d) / n) ** 2 for x in d) / (n - 1)) if n > 1 else 0.0
-    se = sd / math.sqrt(n) if n else 0.0
-    ok = mean_a >= mean_b - k * se
-    print("4b hit rate (guard, one-sided): base %.3f arm %.3f, paired se of the mean %.4f, line >= %.3f: %s" % (mean_b, mean_a, se, mean_b - k * se, "PASS" if ok else "FAIL"))
+    text, ok = hit_rate_line(b, a, k)
+    print("4b hit rate (guard, one-sided): " + text)
     verdict = verdict and ok
     for side in ("base", "arm"):
         durs = sorted(r["durations"][side])

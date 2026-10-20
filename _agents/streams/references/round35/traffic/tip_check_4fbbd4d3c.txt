@@ -1,0 +1,47 @@
+# stream/traffic 4fbbd4d3c (main 5f05c997c + T8 + T9, both DEFAULT_OFF), builder0, make native check, 00:55-01:57 PDT 2026-10-20
+>> remote: make native check on slobdell@builder0
+>> perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=1.55x ratio=2.38x ratio=1.55x ) in 297s: the box was truly busy
+ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.
+  gate held (with NOT JUDGED above) (53,0 unchanged), but pending,unexpectedly_passing moved 5,0 -> 4,1.
+builder-checks: 6 passed, 0 failed
+  ok   refusal: the other targets pass and perf-judge is NOT JUDGED
+  ok   refusal with no reason: NOT JUDGED with a default reason (pipefail cannot kill it)
+  ok   a judged FAIL reads FAIL, not NOT JUDGED
+check-perf-judge: 10 passed, 0 failed
+check-trap: 4 passed, 0 failed
+  ok   NOT JUDGED is counted on its own
+check-verdict: 30 passed, 0 failed
+copyback-verify: 18 passed, 0 failed
+determinism: 7 passed, 0 failed
+engine-log-gate: 23 passed, 0 failed
+exit-gate: 5 passed, 0 failed
+filter-gate: 17 passed, 0 failed
+known-red: 12 passed, 0 failed
+lent-exit-codes: 9 passed, 0 failed
+lint-gate: 18 passed, 0 failed
+native-src-sync: 10 passed, 0 failed
+perf-fight-report: 7 passed, 0 failed
+  ok   refused every time: NOT JUDGED (3)
+perf-judge: 5 passed, 0 failed
+quiet-window: 28 passed, 0 failed
+reap: 5 passed, 0 failed
+remote-excludes: 7 passed, 0 failed
+remote-guard: 36 passed, 0 failed
+round-status: 44 passed, 0 failed
+series-arms: 12 passed, 0 failed
+sim-baseline: 53 passed, 0 failed
+slot-exclusive: 14 passed, 0 failed
+slot-light: 6 passed, 0 failed
+test-shards: 5 passed, 0 failed
+TIMING NOT JUDGED (make control-timing judges): ordering 30 units takes 100.6 reference workloads (budget 104; 8.05 ms)
+TIMING NOT JUDGED (make control-timing judges): a right click on 30 units takes 81.0 reference workloads (budget 104; 8.91 ms)
+TIMING NOT JUDGED (make control-timing judges): control costs 21.61 reference workloads a frame with 60 units (budget 26.0; 1.707 ms): awareness=0.252 compliance=0.179 edge_markers=0.027 horizon_zoom=0.522 order_marks=0.320 panel_summary=0.633 vision_state=0.209
+  FAIL  test_native_exec_state::test_the_table_is_the_scripts_members
+          add to native/src/exec_fields.h: owner 0: F(String, STRING, _unfinished_to), owner 0: F(int64_t, INT, _unfinished_count), owner 0: F(int64_t, INT, _unfinished_since)
+TIMING NOT JUDGED (make control-timing judges): working them out costs 2.04 reference workloads a frame (0.235 ms)
+2916 passed, 1 failed
+>> check: 24 passed, 1 FAILED, 0 NOT RUN, 2 NOT JUDGED  [test x5, lint -P6, 2 at once, builder0]
+   NOT JUDGED perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=1.55x ratio=2.38x ratio=1.55x ) in 297s: the box was truly busy
+   FAIL     test
+   NOT JUDGED ai-scenarios-check: scenario_perf::test_the_brains_stay_inside_the_cpu_budget (reason=unpinned cpu=mixed:0-11 (a hybrid machine: perf-judge judges, pinned to the P-cores)) (24.8s)
+>> remote: make native check exited 2 (build/ copied back)

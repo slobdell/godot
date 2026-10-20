@@ -1,0 +1,47 @@
+# T7 hand-over handover/t7-on-main 3dbc206a0 = main 8be787afe + pair e95179252; builder0, make native check, 2026-10-19 20:33-21:38 PDT
+>> remote: make native check on slobdell@builder0
+>> perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=2.23x ratio=1.67x ratio=1.53x ) in 105s: the box was truly busy
+ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.
+  gate held (with NOT JUDGED above) (53,0 unchanged), but pending,unexpectedly_passing moved 5,0 -> 4,1.
+builder-checks: 6 passed, 0 failed
+  ok   refusal: the other targets pass and perf-judge is NOT JUDGED
+  ok   refusal with no reason: NOT JUDGED with a default reason (pipefail cannot kill it)
+  ok   a judged FAIL reads FAIL, not NOT JUDGED
+check-perf-judge: 10 passed, 0 failed
+check-trap: 4 passed, 0 failed
+  ok   NOT JUDGED is counted on its own
+check-verdict: 30 passed, 0 failed
+copyback-verify: 18 passed, 0 failed
+determinism: 7 passed, 0 failed
+engine-log-gate: 23 passed, 0 failed
+exit-gate: 5 passed, 0 failed
+filter-gate: 17 passed, 0 failed
+known-red: 12 passed, 0 failed
+lent-exit-codes: 9 passed, 0 failed
+lint-gate: 18 passed, 0 failed
+native-src-sync: 10 passed, 0 failed
+perf-fight-report: 7 passed, 0 failed
+  ok   refused every time: NOT JUDGED (3)
+perf-judge: 5 passed, 0 failed
+quiet-window: 28 passed, 0 failed
+reap: 5 passed, 0 failed
+remote-excludes: 7 passed, 0 failed
+remote-guard: 36 passed, 0 failed
+round-status: 44 passed, 0 failed
+series-arms: 12 passed, 0 failed
+sim-baseline: 53 passed, 0 failed
+slot-exclusive: 14 passed, 0 failed
+slot-light: 6 passed, 0 failed
+test-shards: 5 passed, 0 failed
+TIMING NOT JUDGED (make control-timing judges): ordering 30 units takes 111.1 reference workloads (budget 104; 13.44 ms)  [OVER BUDGET]
+TIMING NOT JUDGED (make control-timing judges): a right click on 30 units takes 114.2 reference workloads (budget 104; 14.28 ms)  [OVER BUDGET]
+TIMING NOT JUDGED (make control-timing judges): control costs 21.69 reference workloads a frame with 60 units (budget 26.0; 1.605 ms): awareness=0.235 compliance=0.166 edge_markers=0.025 horizon_zoom=0.482 order_marks=0.306 panel_summary=0.602 vision_state=0.191
+TIMING NOT JUDGED (make control-timing judges): working them out costs 1.46 reference workloads a frame (0.104 ms)
+2903 passed, 0 failed
+>> check: hashes on builder0 (glibc-2.43) | sim-baseline foundry=2e54d6f5c9fc22ac(unmoved) yard=62d12a470d5c9ee3(MOVED from 10b591da31fbc932) pit=022e54dcc1c3e787(unmoved) terminus=c1e385944ff8073b(MOVED from 86d400c26dabd324) crossing=7dbbd4b72e0ac717(unmoved) sumps=8909a3d97aef76de(unmoved) locks=13c33de4419afb5e(MOVED from 68c7dcf476b05e89) parade=72b1c96369096248(unmoved) gorge=4da2720fa4085f3b(MOVED from ff3e73d984b8b671) archipelago=5595506fcfeac33f(unmoved) cut=f1c4d46cbe2732f0(MOVED from 66759bb811706337) docks=1ad07ab1883a1db8(unmoved) yard_open=9287bb338b29a976(unmoved) | determinism 8c3c1232b711a760
+>> check: 24 passed, 1 FAILED, 0 NOT RUN, 2 NOT JUDGED  [test x5, lint -P6, 2 at once, builder0]
+   NOT JUDGED perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=2.23x ratio=1.67x ratio=1.53x ) in 105s: the box was truly busy
+   FAIL     sim-baseline
+   NOT JUDGED ai-scenarios-check: scenario_perf::test_the_brains_stay_inside_the_cpu_budget (reason=unpinned cpu=mixed:0-11 (a hybrid machine: perf-judge judges, pinned to the P-cores)) (28.5s)
+>> remote: make native check exited 2 (build/ copied back)
+# moved maps identical (map and hash) to the judged pair e95179252's: cut gorge locks terminus yard; attributed by its switch-OFF read (13 unmoved)
