@@ -1,0 +1,105 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   29.6 /   13.5   |    8   0 |     25.9 |               2.6 |            33.7 | 1.41 | 52.3
+crossing 3 click          minimax_off |   29.6 /   13.5   |    6   0 |     20.1 |               2.6 |            33.7 | 1.46 | 52.3
+crossing 3 route          main      |   29.6 /   13.5   |    7   0 |     25.3 |               3.3 |            34.1 | 1.75 | 52.3
+crossing 3 route          minimax_off |   29.6 /   13.5   |    8   0 |     24.8 |               3.3 |            34.1 | 1.75 | 52.3
+crossing 5 click          main      |   72.4 /   26.1   |    8   0 |        - |               2.7 |            79.0 | 1.91 | 20.2
+crossing 5 click          minimax_off |   72.4 /   26.1   |    6   0 |        - |               2.7 |            79.0 | 1.94 | 20.2
+crossing 5 route          main      |   72.4 /   26.1   |    6   0 |     43.4 |               3.2 |            79.0 | 2.15 | 20.2
+crossing 5 route          minimax_off |   72.4 /   26.1   |    9   0 |     39.8 |               3.2 |            93.3 | 2.13 | 20.2
+locks 3 click             main      |   37.3 /   34.5   |    4   0 |     43.1 |               2.7 |            53.0 | 1.84 | 30.9
+locks 3 click             minimax_off |   37.3 /   34.5   |    5   1 |     67.9 |               2.7 |            53.0 | 1.91 | 30.9
+locks 3 route             main      |   37.3 /   34.5   |    6   0 |     55.8 |               3.4 |            37.2 | 2.20 | 30.9
+locks 3 route             minimax_off |   37.3 /   34.5   |    6   0 |     55.8 |               3.4 |            37.7 | 2.20 | 30.9
+locks 5 click             main      |   51.9 /   41.9   |    2   0 |     33.7 |               6.3 |            47.6 | 2.29 | 17.4
+locks 5 click             minimax_off |   51.9 /   41.9   |    2   0 |     33.7 |               6.3 |            44.4 | 2.29 | 17.4
+locks 5 route             main      |   51.9 /   41.9   |    2   0 |        - |               3.3 |            48.1 | 5.03 | 17.4
+locks 5 route             minimax_off |   51.9 /   41.9   |    3   0 |     46.1 |               2.5 |            64.0 | 5.05 | 17.4
+terminus 3 click          main      |   37.0 /   34.4   |    0   0 |     23.2 |               4.4 |            43.7 | 1.67 | 18.9
+terminus 3 click          minimax_off |   37.0 /   34.4   |    0   0 |     23.2 |               4.4 |            43.7 | 1.67 | 18.9
+terminus 3 route          main      |   37.0 /   34.4   |    0   0 |     25.5 |              10.5 |            39.3 | 1.38 | 18.9
+terminus 3 route          minimax_off |   37.0 /   34.4   |    0   0 |     25.5 |              10.5 |            39.8 | 1.38 | 18.9
+terminus 5 click          main      |   63.3 /   39.4   |    0   0 |     33.7 |               5.1 |            35.2 | 2.65 | 5.9
+terminus 5 click          minimax_off |   63.3 /   39.4   |    0   0 |     33.3 |               5.1 |            47.6 | 5.10 | 5.9
+terminus 5 route          main      |   63.3 /   39.4   |    0   0 |        - |               3.0 |            54.8 | 7.25 | 5.9
+terminus 5 route          minimax_off |   63.3 /   39.4   |    0   0 |        - |               3.0 |            57.7 | 7.25 | 5.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          35.9 |          22.7 |           20.0 |               3.6 |          39.5
+crossing 3 click          minimax_off |          28.5 |          25.3 |           22.7 |               3.7 |          36.4
+crossing 3 route          main      |          32.4 |          21.1 |           18.6 |               4.4 |          38.6
+crossing 3 route          minimax_off |          34.8 |          21.1 |           15.6 |               3.9 |          38.6
+crossing 5 click          main      |             - |          51.6 |              - |               2.9 |         105.9
+crossing 5 click          minimax_off |             - |          51.6 |              - |               2.9 |         106.8
+crossing 5 route          main      |          53.4 |          28.0 |           35.7 |               2.8 |         103.2
+crossing 5 route          minimax_off |          49.8 |          28.0 |           43.7 |               2.9 |         103.2
+locks 3 click             main      |          53.1 |          22.4 |           33.3 |               5.9 |          49.7
+locks 3 click             minimax_off |          77.9 |          19.0 |           33.3 |               5.9 |          49.0
+locks 3 route             main      |          63.1 |          21.4 |           21.2 |              11.1 |          52.2
+locks 3 route             minimax_off |          63.1 |          21.4 |           21.2 |               9.7 |          52.2
+locks 5 click             main      |             - |          33.3 |              - |               7.4 |          77.4
+locks 5 click             minimax_off |             - |          38.5 |              - |               7.0 |          77.1
+locks 5 route             main      |             - |          29.1 |              - |               4.2 |          74.6
+locks 5 route             minimax_off |          56.1 |          28.4 |           36.7 |               4.2 |          74.6
+terminus 3 click          main      |          32.2 |          31.6 |           20.2 |               9.4 |          58.7
+terminus 3 click          minimax_off |          33.1 |          36.7 |           20.2 |              11.7 |          59.6
+terminus 3 route          main      |          29.6 |          21.3 |           21.3 |               9.0 |          58.5
+terminus 3 route          minimax_off |          29.6 |          21.3 |            6.6 |               9.0 |          58.5
+terminus 5 click          main      |          39.6 |          30.8 |           12.9 |               5.6 |          84.9
+terminus 5 click          minimax_off |          37.4 |          34.6 |           27.4 |               5.6 |          84.9
+terminus 5 route          main      |             - |          39.8 |              - |               3.4 |          80.7
+terminus 5 route          minimax_off |             - |          37.7 |              - |               3.4 |          81.6
+
+MEDIANS over seeds [3621, 3622, 3623, 3624, 3625, 3626] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          main        | 6 |         20.3 |     0 |          25.3 |         15.4 |          36.3 |               3.6 |    8   0 | 1.35
+crossing 3 click          minimax_off | 6 |         17.4 |     0 |          30.1 |         10.7 |          35.2 |               3.7 |    6   0 | 1.35
+crossing 3 route          main        | 6 |         19.6 |     0 |          26.5 |          9.4 |          37.2 |               4.4 |    7   0 | 1.32
+crossing 3 route          minimax_off | 6 |         19.6 |     0 |          27.4 |         10.1 |          37.2 |               3.9 |    8   0 | 1.33
+crossing 5 click          main        | 6 |         37.1 |     1 |          77.5 |         19.5 |         100.2 |               2.9 |    8   0 | 1.69
+crossing 5 click          minimax_off | 6 |         36.6 |     1 |          74.0 |         26.3 |         100.2 |               2.9 |    6   0 | 1.73
+crossing 5 route          main        | 6 |         35.5 |     0 |          72.6 |         29.4 |          99.4 |               2.8 |    6   0 | 1.88
+crossing 5 route          minimax_off | 6 |         36.3 |     0 |          73.7 |         21.4 |          90.9 |               2.9 |    9   0 | 1.89
+locks 3 click             main        | 6 |         20.9 |     0 |          32.5 |         17.2 |          48.2 |               5.9 |    4   0 | 1.47
+locks 3 click             minimax_off | 6 |         21.6 |     0 |          31.1 |         19.5 |          48.2 |               5.9 |    5   1 | 1.49
+locks 3 route             main        | 6 |         26.1 |     0 |          31.4 |          8.7 |          49.1 |              11.1 |    6   0 | 1.89
+locks 3 route             minimax_off | 6 |         26.1 |     0 |          31.4 |          8.7 |          49.1 |               9.7 |    6   0 | 1.89
+locks 5 click             main        | 6 |         19.2 |     0 |          39.5 |         21.4 |          74.8 |               7.4 |    2   0 | 1.67
+locks 5 click             minimax_off | 6 |         19.1 |     0 |          38.4 |         13.9 |          75.9 |               7.0 |    2   0 | 1.56
+locks 5 route             main        | 6 |         32.4 |     1 |          44.8 |         10.8 |          69.9 |               4.2 |    2   0 | 3.46
+locks 5 route             minimax_off | 6 |         33.4 |     0 |          36.8 |         22.6 |          70.5 |               4.2 |    3   0 | 3.87
+terminus 3 click          main        | 6 |         21.1 |     0 |          30.0 |         10.4 |          50.9 |               9.4 |    0   0 | 1.42
+terminus 3 click          minimax_off | 6 |         21.1 |     0 |          33.1 |         10.4 |          50.9 |              11.7 |    0   0 | 1.44
+terminus 3 route          main        | 6 |         17.8 |     0 |          32.6 |          0.0 |          53.1 |               9.0 |    0   0 | 1.22
+terminus 3 route          minimax_off | 6 |         17.8 |     0 |          33.1 |          0.0 |          53.9 |               9.0 |    0   0 | 1.18
+terminus 5 click          main        | 6 |         10.4 |     0 |          29.5 |          5.7 |          73.2 |               5.6 |    0   0 | 1.86
+terminus 5 click          minimax_off | 6 |         10.4 |     0 |          43.0 |         18.9 |          72.9 |               5.6 |    0   0 | 2.23
+terminus 5 route          main        | 6 |          inf |     3 |          43.6 |         21.2 |          70.8 |               3.4 |    0   0 | 4.70
+terminus 5 route          minimax_off | 6 |         51.6 |     2 |          44.8 |         17.3 |          70.8 |               3.4 |    0   0 | 4.71
+
+EQUALITY click cells: 11 identical across arms, 25 differ
+  DIFFER crossing 3 click seed 3621
+  DIFFER crossing 3 click seed 3623
+  DIFFER crossing 3 click seed 3624
+  DIFFER crossing 3 click seed 3625
+  DIFFER crossing 5 click seed 3621
+  DIFFER crossing 5 click seed 3623
+  DIFFER crossing 5 click seed 3624
+  DIFFER crossing 5 click seed 3625
+  DIFFER locks 3 click seed 3621
+  DIFFER locks 3 click seed 3622
+  DIFFER locks 3 click seed 3623
+  DIFFER locks 3 click seed 3624
+  DIFFER locks 5 click seed 3621
+  DIFFER locks 5 click seed 3622
+  DIFFER locks 5 click seed 3623
+  DIFFER locks 5 click seed 3625
+  DIFFER locks 5 click seed 3626
+  DIFFER terminus 3 click seed 3621
+  DIFFER terminus 3 click seed 3623
+  DIFFER terminus 3 click seed 3624
+  DIFFER terminus 5 click seed 3621
+  DIFFER terminus 5 click seed 3622
+  DIFFER terminus 5 click seed 3624
+  DIFFER terminus 5 click seed 3625
+  DIFFER terminus 5 click seed 3626

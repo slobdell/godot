@@ -190,6 +190,10 @@ _Filed here before any number._
   (attack-move movers by real_mps; never-settled), plus crews ending > 25 m off goal with a live move, new <= base. **Guards:**
   M6's (f) (i) (q) (r) (s); yields started a fight <= base + 1.645 se (no shuffle storm); retries capped REPORTED; all deaths per
   team <= base + 1.645 se.
+  **Added 2026-10-20 ~01:30 (R35.53, traffic's T9 x T7 note; before any joint3 number):** jam-under-fire deaths (T5's definition)
+  <= base + 1.645 se, and jam:yielding deaths <= base + 1.645 se (an unfinished give-way re-asked under fire meets T7's lane gate:
+  a lane -> refuse + pass; no lane -> up to 2 more step-asides under T9's cap). Base = main 5f05c997c's code (T7 ON) + the joint
+  code with both switches off.
 
 - **D6 a shift-click never replaces a squad's route (orders, R35.28 option (b)), filed before code on `stream/orders` `bda5db637`;
   seeds named by the orchestrator.** A shifted move queues on the elements its units now belong to (round 22's cross-squad re-deal
@@ -530,6 +534,69 @@ _Filed here before any number._
   `8f7c8a1f5`: builder2 `make native check exited 0`, 25 passed + 2 NOT JUDGED (timing; builder2 never judges timing), 2910/0,
   sim-baseline 13 unmoved; 576-pose twin 0 mismatches. Green by composition: the only other diff from the checked tree is
   mk/gcp.mk and tools/gcp/*.sh, which no check reads. First full check on the converted builder2.
+- **R35.51 (2026-10-20 ~00:30) E4 merged (main 5f05c997c); a batch main check on builder2.** E4's gate (code c7c7d347a, builder0):
+  2909/0, sim-baseline 13/13; bar (2) mixed_legs alone v after the others 50.03 s / reseats 1 both; bar (3) 33 of 34 moved behavioural
+  keys equal their alone value (table `references/round35/brains/e4_moved_lines_85fa139cf.txt`). The 34th, test_tactics_scenarios_6
+  `switches_per_unit_min` (main-suite 6.0, tip-suite 4.8, tip-alone 3.2), is a SECOND, pre-existing carry-over (that stage already
+  places through TacticsLab.unit; history-dependent on main too): merged as known; brains bisects it on the light lane. Main now
+  carries E4 + native's pass-lane port, checked separately: one `make native check` of 5f05c997c on builder2.
+  **GREEN:** builder2 `make native check exited 0`, 2911/0, 25 passed + 2 NOT JUDGED (timing). Workers merge main.
+- **R35.52 (2026-10-20 ~01:00) W1b PARKS as filed (one guard misses, upward).** builder0, native both arms, ON 7fc4a5307 v base
+  ab9c50c76 (E1 not in), fresh 3820–3843 x locks/terminus/sumps, 72 pairs, 12/12 calls exited 0 (`references/round35/manoeuvre/
+  w1b-series/`, stream dccdedd8d). Counter: halts 105296 ON. Deciding: wheeled pace-0 ticks still creeping 63 % -> 4 %; wedged + held
+  deaths 242 v 239 (band 31.1). Guards pass: open, stuck, jam, far loops, kills, team 0 hit rate. **MISS:** team 1 hit rate 0.6733 ->
+  0.6970 (+0.0237 v 1.645 se 0.0230): two-sided, misses by 0.0007. All deaths 2860 v 2862. Not re-read. Trace from the existing rows
+  (no re-run): team 1's hits per exposed second on held wheeled crews at pace 0, base v ON. If up, a still held hull is a sitting
+  duck (the rocking dodged fire) and round 36's answer is T8 (leave the hold when hit); if flat, a round-36 re-try. W1b stays OFF; its
+  mirror unmerged. Series queue (builder0): D6 re-read -> the joint -> T8; builder2: M5.
+  **Follow-up:** the existing rows can't split hits by a held target (FIGHT_CENSUS keeps per-team totals). Proxies (72 pairs, base v
+  ON): held exposure equal (3468 v 3495 wheeled pace-0 s); held deaths 76 v 67 (down), but their last-10-s hits 9.2 v 11.4 per death;
+  pooled accuracy up for both teams. Undecided; the probe line (each impact's target held/pace-0 state + exposure ticks) and a small
+  re-run are round 36's first step, not this round's.
+- **R35.53 (2026-10-20 ~01:20) The joint W1c + T9 series is re-cut on current main before it runs.** joint2-on `319d63fec` check:
+  builder0 `make native check exited 2`, 2925/0, the one red sim-baseline (foundry, crossing, sumps, cut MOVED; joint2-base
+  attribution running). But joint2 predates T7's ship: its base has T7 OFF, main has T7 ON + E1 + E4, and W1c / T9 change the
+  give-way paths T7 gates under fire. Re-cut: native rebases its mirrors onto main 5f05c997c (`pair/native-w1c-t9-main`), manoeuvre
+  cuts joint3 (base switches off, ON both on), C31.1 check + attribution, then the series on 901–932 / 940–963 in builder0's lane
+  after D6. R35.19's T6b caveat is moot (T7 shipped).
+  **Trees:** GDScript lab/joint3 `813f6e1ff` (main 5f05c997c + stream/manoeuvre + T9 c7de7cf95/aba7f800e; DEFAULT_OFF ["yieldfit2"];
+  W1b excluded); native `pair/native-joint3` `7a1435cdd` (813f6e1ff + T9's and W1c's mirrors + floors + the forced refusal stage;
+  diff v 813f6e1ff is T9 + W1c only); ON twins on lab 441c4dbc5. Native's first cut e2fe62c9a (with T8 and W1b) is superseded.
+  The two new guards read traffic's jam_census (T5's definition), the probe's under-fire counts reported only.
+  **Series trees (joint3):** base lab/joint3-base `2a2682560`, ON lab/joint3-on `872f82ae5` (STALL_INTENT true, DEFAULT_OFF [] = T7 ON
+  + yieldfit2 ON), each = pair/native-joint3 `7a1435cdd` + one probe-only commit (friendly_contact_ticks per fight, guard (s)); E1, E4
+  in; C31.1 `make native check` on 872f82ae5 on builder0, base's sim-baseline for attribution. Native saw the under-fire stage's
+  give-ways 66 v 39 with yieldfit2 ON: the yields-started guard is the one to read closely.
+- **R35.54 (2026-10-20 ~01:50) E4b, the second carry-over (test_tactics_scenarios_6): it is the runner's teardown.** Brains' trace
+  (80ef83789): it flips on ANY earlier test in the process (even one that only waits 1 / 97 / 1000 frames, so not frame phase); the
+  stage played twice inside ONE test is identical (GDScript and native), so a match does not change it, the first test's TEARDOWN does;
+  per-tick dumps identical through step 28, then Rust_B_2 yields to its column leader only after a teardown. Candidates:
+  `drain_navigation` or a lazily initialised static (Element._body_memo ruled out). **Granted (brains, narrowly):** `tests/run_tests.gd`
+  warms up before the first test (one physics frame + the standard teardown) so every test sees the same state; marked interim.
+  Bar: scenarios_6 alone == in the suite; full suite green, moved lines listed. Round 36: name the field, so tests can match the game's
+  real first-match state (no teardown in play).
+  **Follow-up:** written `0daea3d90`; scenarios_6 alone 4.8 = the suite value (builder0 light, native; was 3.2 alone); laptop GDScript
+  3.0 alone and after (was 4.8 v 3.0). Its full check runs on builder2 (load ~6 of 32 beside M5's series).
+- **R35.55 (2026-10-20 ~02:00) D6 PASSES on fresh seeds; REQUEUE flips ON.** builder0 `make native orders-probe`, orders-d6
+  `ee3a8dab2` (84ba02a69 + deck fix 1b174f05d), seeds 3651–3656, n 6 (`references/round35/orders/d6-ab2-ee3a8dab2/`). Counter: legs
+  differ in 22 of 36 route runs. Every squad every leg 144/144 v 121/144; far bank 0 in every cell, both arms; click cells 36/36
+  identical; tests green. Reported: all-in equal or better in 5 of 6 route cells (Crossing 3 route 15.9 v 19.8 s); Crossing 5 route
+  41.3 v 38.8 s but worst shuffle 39.5 v 80.6 m, drive/plan 2.39 v 1.71; Locks 3 route's never-in seed gone. **In his terms:** a
+  shift-clicked route is followed by every squad (about one squad in six used to skip the waypoints and drive straight to the end).
+  Next: the default flip on stream/orders, its full check after traffic's, merge alone.
+- **R35.56 (2026-10-20 ~02:20) main 25f8bc52f = brains' E4b warm-up (interim), green by INHERIT** from 4a6394932's builder2 check
+  (`make check exited 0`, 2911/0, sim-baseline 13/13). Moved lines v main's suite: 8, none in what a test measures (5 tick stamps +1;
+  Manoeuvre's process-wide plan census shifted once in 3 c339 lines; every stage field identical). Brains' brief: done except E2 (waits
+  on CP-F 5). Note: orders' D6 check (on 5f05c997c + its work) predates this; the runner change touches no game code.
+- **R35.57 (2026-10-20 ~02:45) E4b's cause, corrected: the engine's FIRST main-loop iteration, not the runner's teardown.** Native's trace
+  (laptop GDScript, main 5f05c997c, scenarios_6 switches_per_unit_min 4.8 alone v 3.0 after): all 815 `static var`s identical at a
+  process's first test and after a 1-frame test (only the physics frame counter differs); an earlier test that steps NO frame changes
+  nothing, whatever its teardown (drain_navigation ruled out); waiting 1–97 frames all read 3.0 (not frame phase); forcing the nav map's
+  first sync without a frame: 4.8; one `await physics_frame` or `process_frame`: 3.0. So the state is engine-side, set by the first
+  main-loop iteration (leading candidate: the physics space's first step / Jolt's broadphase bookkeeping; not named within the
+  time-box). **Real play matches the LATER tests** (a match starts many iterations after launch). So brains' warm-up is the CORRECT
+  fix, not interim: every test now sees real play's state. R35.54's caveat ("tests should match the first-match state") is withdrawn.
+  Round 36: optional, name the engine state below the main loop.
 - **R35.5 (2026-10-19 ~09:50) D1's census measured nothing; D1 ships on the check alone.** Orders' `make deploy-census` on
   `e9066083a` (builder0, 48 paired CPU-v-CPU fights, Locks/Terminus/Sumps, seeds 3501–3516): on and off arms BYTE-IDENTICAL,
   0 deploys either side. The census CPU only gives screen/attack/support_by_fire/ambush tasks, never a plain move, so the

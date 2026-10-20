@@ -92,6 +92,10 @@ func _run() -> void:
 			if trail.size() > SimClock.TICK_RATE and trail[0].distance_to(here) < STILL_MPS:
 				sides[t.team]["stuck"] += 1
 		for element: Element in lab.elements.all():
+			if _flag("trace", "") == "on" and tick % (SimClock.TICK_RATE * 5) == 0:
+				print("DEPLOY_TRACE t=%d %s team %d verb %s drills %s formation %s arrived %s deploy %s" % [tick / SimClock.TICK_RATE,
+						element.element_name, element.team, str(element.task.get("verb", "")), str(element.task.get("drills", "-")),
+						str(element.task.get("formation", "-")), str(element.arrived), str(element.deploy)])
 			var now := bool(element.deploy.get("deployed", false))
 			if now and not bool(deployed.get(element.id, false)) and (element.team == 0 or element.team == 1):
 				sides[element.team]["deploys"] += 1
