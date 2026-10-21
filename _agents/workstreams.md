@@ -103,11 +103,134 @@ exit (remote_builds.md). Delete your own `~/tank_squad/<folder>` leftovers on bo
 
 ## Bars (round 37)
 
-_(each stream files its bar here BEFORE its first number; the orchestrator records rulings below as R37.x)_
+_(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never edit this file on a stream branch: it conflicts at merge. Rulings below as R37.x)_
+
+- **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
+  has parked keeps one shape; no crew drives to a point ~15 m off and back while the squad sits. The fix: an ARRIVED element
+  reads `ElementSituation.terrain_at` at its anchor (fixed), not its crews' centroid (`--halt-terrain=centre|anchor`; GDScript
+  only, terrain_at has no native twin). **Base rate (sizing, seen; builder0 native, 20005d611, orders-probe 12 street cells x
+  seeds 3621-3626, 285 placed squads):** 4 squads flip halt shape after the place window (18 flips, 50 reseats; locks 3 x 3,
+  terminus 5 x 1), centroid terrain changes 38 (shape flips + lanes <-> dense re-spacings), anchor terrain changes 0. Lab:
+  `test_control_halt_terrain` (locks, open spot 4 m off a lanes edge, the squad nudged across 6 times: centre 2 flips, anchor 0;
+  laptop GDScript). **Judged probe:** `make native orders-probe`, arms `main:` v `anchor:--halt-terrain=anchor`, the 12 cells,
+  FRESH seeds 3701-3712 (n 12 a cell), builder0, on a hash whose full check is green. **Counter:** base relays >= 10 (else
+  "no workload") and the arms' rows differ somewhere. **Deciding:** `relays` (an update where the halt's shape or the terrain
+  the element reads changed, after the place window, within one task) summed over all placed squads: arm <= 25 % of base, and
+  shape flips arm <= 1. **Guards (each cell, medians as R36.6's):** all-in <= base x 1.2 + 3 s and no more never-in seeds;
+  twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed (far bank) no higher; `test_control_scale`'s 3-tick
+  response (in check). **CPU guard (the read is symmetric: CPU elements halt too):** `make native traffic-census`, its 3
+  default cases x seeds 3701-3706 (18 CPU v CPU fights an arm), `TRAFFIC_FLAGS=--halt-terrain=anchor` v none: friendly
+  contacts arm <= base x 1.1 + 5, stuck s arm <= base x 1.2 + 10, outcomes reported. **A pass ships ON** (default "anchor",
+  `--halt-terrain=centre` keeps main's), sim-baseline maps that move attributed with the switch OFF.
+
+- **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 in stream/orders 9a5fb0868 Status before any O3 number; code 092cb34b7,
+  OFF).** What he would see: squads sent together arrive each with its own vehicles, and they don't bump each other more than today.
+  The change: where today's untangle re-deals vehicles between squads whose drives cross, the crossing squads swap whole PLACES
+  (fewest crossing drive pairs, then least driving); each keeps its element. **Base rate (seen):** 25 of 287 squads had a crew
+  re-dealt (builder0 native, 55c973cd4, round 36's 12 cells x 3621-3626). **Judged probe:** `make native orders-probe`, arms `main:`
+  v `whole:--untangle=whole`, the 12 cells, FRESH seeds 3713-3724 (n 12 a cell), builder0, on a hash whose full check is green.
+  **Counter:** swapped_whole > 0 on the whole arm, and the arms' rows differ. **Deciding:** squads arriving short (redealt > 0)
+  summed: arm 0, and base >= 10 (else "no workload"). **Guards (contention at no worse than today):** friend_contacts (physics hull
+  touches between his vehicles) summed over all runs arm <= base x 1.1 + 5, and the same for friend_contacts_foreign; per-cell medians
+  all-in <= base x 1.2 + 3 s and no more never-in seeds; twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed (far bank)
+  no higher; whole_still_crossed reported; test_control_untangle* and test_control_scale in check. **A pass ships ON** (player path
+  only: CPU elements are never untangled, so no CPU guard). If contacts fail, re-dealing stays (his answer).
+
+- **Bar K (cover, `--cover-on=hulldown`; filed 2026-10-21 by cover, before any number).** Arms: ON v OFF, same seeds, same tree
+  (the pair named), on CP37.1's two lines, both factions both ways, n as CP37.1 sizes it. **Positive control first:** ON's
+  `stats.cover_struck` > 0 on every map in the series, or the arm did not engage. **Deciding:** the blob line moves toward the blob
+  losing by more than CP37.1's stated 2-seed-block noise. **Guards:** the turtle line does not move toward the turtle winning beyond
+  that noise; kills a fight and match length per faction within +-10 % of OFF; perf-judge PASS. **Sequencing note:** on today's
+  maps a hull is within reach of low cover almost nowhere (K1: 0-4 lone 6 m barricades a dealt map, five maps none), so a series
+  BEFORE K5's re-shape is expected to read as no effect; cover runs it once as the null reading and judges on the re-shaped maps.
+
+- **Bar R (rules R1/R2/R3), DRAFT filed 2026-10-21 by rules before any judged number; k·se and n are filled from CP37.1's
+noise (native's base read on builder2) before the series starts.** Arms: base = main at CP37.1's merge; each rule's arm =
+the same tree with `--rules-on=<rule>` (sight / spread / pin_slow), plus a package arm `--rules-on=sight,spread,pin_slow`.
+Judging: each rule alone first (its own switch); the package only if two or more pass alone or each is inside its noise
+alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions both ways, the grid and seeds native names.
+- **Deciding (each arm):** blob v tactics: the blob's win rate DOWN v base by more than k·se (k = 2, se = CP37.1's 2-seed-block
+  se of the win rate), AND the blob's kill ratio not up.
+- **Guard 1:** turtle v tactics: the turtle's win rate not UP v base by more than 2 se (the turtle must not start winning).
+- **Guard 2:** kills per match and match length per faction within base ± 2 se (no faction breaks: the stabilised-gun check
+  in the brief; a faction outside is REPORTED with its units, not fixed here).
+- **Guard 3 (R2 only, ruling R37.2 (c)):** contention: friendly contacts, all-in time, crews held behind a halted friend,
+  and manoeuvre's wedge line, each no worse than base + 2 se on the scoreboard's moves/orders workload.
+- **Guard 4:** perf-judge on the arm's pair tree (the short halt and the motion-sight pass are per-crew GDScript).
+- **Equality:** sim-baseline maps unmoved with every switch OFF (attributed with the switch OFF, C37.2).
+- **Reports (not judged):** the R2 measure's movers' share of direct damage (`make rules-moving`, base 52.5 % at 9d63f709a,
+  builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
+- **Last attempt / partial rule:** one re-tune per rule only on the guard lines (brief's stretch), then judged as it stands.
+  _(Recorded from stream/rules a3906e8ed. Per R37.1(b): if CP37.1's base shows the blob already near the floor, the deciding
+  metric becomes the one native names from today's read; the bar is re-filed then, before any arm number.)_
 
 ## Rulings (round 37)
 
-_(none yet)_
+- **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
+  wraps the scoreboard's showmatch (`--skirmish --demo-match`, both sides today's CPU), sets `player_team` for the GUARD side so its
+  ElementCommander stands down, and tasks its elements through `Element.assign` (the call his tactical-map clicks make). BLOB: every
+  element attack-moves at once at the enemy-half zone, then any unheld zone, then the enemy spawn; re-tasked only when the target
+  changes. TURTLE: every element holds a post across its own half's zone (facing the enemy, 22 m apart), never advances. Tactics side
+  untouched. 5 scoreboard maps x 8 seeds x both factions as the guard = 80 fights a line a block; blocks 2601+ and 2701+ = 160; to 90
+  points or elimination, cap 600 s. **Conditions:** (a) the blob's elements get exactly what a player's plain attack-move click gets
+  (the default drill setting of that order, stated in the note; if "drills" means bounding/overwatch, the blob gets none beyond the
+  default); (b) the base rates come BEFORE any bar uses the lines: if the blob (or the turtle) already loses near the floor today, the
+  win rate has no room and the deciding line becomes the kill ratio or the zone-point margin, chosen from today's read (R35.64,
+  R36.23); (c) the 600 s cap's verdict is the points leader, and the share of capped fights is reported per line.
+- **R37.2 (2026-10-21) rules' build: no twins accepted pending native's confirmation; R2's halt limited to not-player-move.** rules
+  (stream/rules 12f410388, all OFF, `--rules-on=sight,spread,pin_slow`, `game/combat/rule_switches.gd`): R1 sets the sight after the
+  suppression settle (`Match._settle_motion_sight`) on both paths (native perception reads the `sight_radius` property:
+  `perception_native.cpp:81`); R2's short halt and R3's cap edit the tick's command in `tank.gd` before `NativeTank.drive`; the
+  gunnery/order_controller grant unused (whole-tick C++ ports would bypass it). Measured (builder0, 9d63f709a, 20 CPU showmatch fights,
+  5 maps x 4 seeds, 180 s): movers deal 52.5 % of direct-fire damage, 19.4 % from beyond 50 m. **Ruled:** (a) native confirms in
+  writing that no C++ path reads sight, the spread or the speed past these seams (else twins); (b) R2's short halt (<= 1.5 s, throttle 0
+  in the plant) must NOT fire on a crew under a player's plain MOVE order (his "under my control"): attack-move, hold, parked and CPU
+  crews only; (c) R2's bar carries contention guards (friendly contacts, all-in time, held behind a halted friend) at
+  no-worse-than-today beyond noise (his first movement priority), and manoeuvre's wedge line.
+- **R37.3 (2026-10-21) the blob is his right-click; builder2 preempted.** native: the A-click task (`{"verb":"move"}`, drills on) runs
+  react-to-contact drills and can bound/overwatch when contact is likely (doctrine table); the right-click (`"drills": false`,
+  `element_plan.gd:359` -> `_plan_form_up`) is a formed-up transit, no bounding, no drills, crews shoot what they pass. **Ruled:** the
+  BLOB is the right-click (the slug-fest he described); with R37.2(b) rules' short halt never fires on it. No A-click arm in the base.
+  builder2 (Spot, us-west4-a) preempted 08:47, 09:00, 09:04 PDT (GCP operations log); native's base read is a chunked, resumable
+  driver (one seed per remote call, raw logs outside build/, a 255 retried after gcp-start); the smoke ran on builder0's light lane.
+  On-demand (gcp_builder.md item 2) not switched: a spend on a box his other projects share; the lead is told.
+- **R37.4 (2026-10-21) no C++ twin for R1-R3 (native's written read, main 9d325e291 v stream/rules 12f410388).** Sight: every C++
+  reader reads the live `sight_radius` per call (perception_native.cpp:81, gun_native.cpp:296/:470, native_scan.gd:55); threat_native
+  .cpp:251-267 is the suppression settle's twin and R1's settle runs after it on both paths. Spread: no native file computes it
+  (gun_native.cpp:426 calls `FireLanes.for_shot` in GDScript; matchups_native uses base spread only, as matchups.gd). Drive: R2's halt
+  and R3's cap edit `drive_cmd.throttle` before `NativeTank.drive` (tank.gd:668 -> tank_drive_native.cpp:71); `max_forward_speed`
+  untouched. **Ruled:** accepted; the empirical form (rules' lab tests under `make native test`, each switch ON, both arms) runs on
+  rules' pair tree (N2) before their series.
+- **R37.5 (2026-10-21) orders' grants re-aimed.** O5: the CPU screen / support_by_fire tasks are given in `game/tactics/
+  element_commander.gd` (:402, :728, :963) and their seats laid in `element_plan.gd`'s `_plan_screen`; nothing in `cpu_commander.gd`
+  places them. **The O5 grant moves to** the screen / support_by_fire point choice in `element_commander.gd` and `_plan_screen` in
+  `element_plan.gd`, guarded, merge note. O2: in the no-fight probe a parked crew's "ADVANCE" is a crew pushed off its seat by a
+  friend's give-way walking back to its station; in a real fight (`--probe-fight=on`, laptop, locks s34/35) parked crews leave their
+  seats under SPOT, RETREAT, ENGAGE and INVESTIGATE (`tank_brain.gd`'s idle-crew options). The O2 grant (ADVANCE only) is extended
+  only on orders' design note (sized on builder0 first).
+- **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
+  `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
+  124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
+  asker out ahead along its line); give-ways were the biggest driver for 11 of the 16 worst crews: 196 m yielding + 77 m driving
+  back. This is orders' O2 "ADVANCE = walking back" seen from the yielder's side. **Ruled:** M5 (after M1), the give-way block:
+  a SEATED crew (arrived, deployed) yields by stepping aside and reversing straight back to its seat, spots scored by distance to
+  the yielder's seat, not leading the asker out. Bar before numbers (deciding: metres a seated crew is moved off its seat;
+  guards: the asker's wait and all-in time, friendly contacts, kills). Orders' O2 keeps the brain's idle-crew options (SPOT /
+  RETREAT / ENGAGE / INVESTIGATE); the two do not overlap.
+- **R37.7 (2026-10-21) cover's K1: low cover is where the fighting isn't; `tools/make_arenas.py` granted.** cover (stream/cover
+  616f6ec3b): the only low cover is the 0.9 m jersey barricade; foundry, sumps, locks, gorge have none, the rest 2-4 pieces; of every
+  hull hit (builder2, 5b4e79362, 4 fights a map, 180 s) 0-2.8 % land within 4 m of low cover (crossing 2.8, yard_open 1.6, the rest
+  <= 0.9). Re-shape-only finds 1-2 swaps on 7 maps, none on foundry, yard, locks, parade, cut, yard_open. K2 built (`Armor.low_cover_
+  strike`, front arc, honest geometry: a barricade hides 0.6-0.73 of a low car, 0.15-0.34 of trucks/tanks; lab ON 41 -> 13 frontal
+  hits, flank 45 -> 44). K3 built: `TacticalQuery.low_cover_seat(map: CoverMap, near, threat_dir, max_shift_m := 4.0, hull, node)`
+  (map first, as every TacticalQuery function; orders told). **Ruled:** cover gets `tools/make_arenas.py` (and the regenerated
+  `arenas/*.json`) for low cover only, merge note; his two questions (honest height; re-shape v a few added runs) go to him now;
+  Bar K recorded (the pre-K5 series is the null reading).
+- **R37.8 (2026-10-21) cover's K1-K3 merged OFF: main 821c7f494 merges e6f720619 alone (INHERIT).** builder2 `make check exited 0`,
+  2988 passed / 0 failed, native ON, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (refused 3x at ~2.5x, busy box): the
+  orchestrator runs `make remote T=perf-judge` on main on builder0 when quiet (OFF adds one dict lookup per front-arc hit).
+  `match.gd` gains two guarded calls (`_shell_hit`, `_fire_beam`; merge note to rules). Native: twins for `CoverMap.low_screen`,
+  `Armor.cover_roll`, `low_cover_seat` (low priority), and confirm whether a native shell path bypasses `_shell_hit` when ON.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
