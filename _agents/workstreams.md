@@ -173,7 +173,8 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   _(Recorded from stream/rules a3906e8ed. Per R37.1(b): if CP37.1's base shows the blob already near the floor, the deciding
   metric becomes the one native names from today's read; the bar is re-filed then, before any arm number.)_
 
-- **Bar O2 PARKED_HOLD (orders, R37.9; filed in stream/orders 8dc98b5f4 Status before any arm number; code ef6b17ea9, OFF).**
+- **Bar O2 PARKED_HOLD (orders, R37.9; filed in stream/orders 8dc98b5f4 Status before any arm number; code ef6b17ea9, OFF).
+  SUPERSEDED (R37.13) before any judged number: the deciding line is re-based on `off_idle_s`; the new text replaces this.**
   What he would see: a squad he parked stays where he put it and shoots from there; a crew pushed or pulling back drives all the way
   back onto its spot. The change: `tank_brain.gd` `_order_move`, his idle crews at their post only: a move of the crew's own option
   ending > 4 m from its post is refused (it holds and faces the threat); RETREAT kept (his question open); a crew > 3 m off its post
@@ -294,6 +295,15 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   `_order_move`; `controller_native.cpp:140` calls think in GDScript; C++ only READS `move_order` (execute_native.cpp:171/361,
   gun_native.cpp:548), never writes it. The drive layer's own manoeuvres (unstick, yield, k-turn, escape) move a hull without a brain
   order on both paths; O2's drive-back covers that drift on the next think, and give-way drift is M5's. No twin needed.
+- **R37.13 (2026-10-21) the parked "SPOT" leaves are a wheeled hull driving to FACE; O2 re-based.** orders (laptop GDScript trace,
+  locks 3 click s34 fight, scouts squad): under SPOT the brain's command is `face`, the round-5 held rule already refuses SPOT's move,
+  yet the wheeled scout drives ~7 m in a second (43.4 -> 26 m over 3 s). Builder0 re-count (probe 23ffe47fb, brain command read
+  directly, 18 fights): only RETREAT 3, RECHARGE 2, COVER_FIRE 1 were brain moves. Laptop A/B (mechanism only): idle crew-seconds
+  > 6 m off the station, locks s34 229.6 -> 19.4, s3621 10.8 -> 9.4. **Ruled:** Bar O2 superseded; its deciding line becomes
+  `off_idle_s` (an idle crew's seconds > 6 m off the seat his order left it on, whatever moved it; give-way time reported apart),
+  sized on seen seeds 3621-3626 before the final text. **M6 for manoeuvre (the face path is manoeuvre's):** a parked WHEELED hull
+  told to `face` covers metres; trace it (how far, which units, why the turn needs travel) and propose a turn-on-the-spot / small
+  shuffle limit; bar before numbers.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
