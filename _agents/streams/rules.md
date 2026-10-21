@@ -143,6 +143,11 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
 - **Last attempt / partial rule:** one re-tune per rule only on the guard lines (brief's stretch), then judged as it stands.
 
+**Series log (builder2, queue mine until done; M5a goes after):**
+- PAIR TREE **75c3e74e0** (pair/rules-r37) = main 291318ece (0baf6e1ff + docs) merged into stream/rules; it differs from main only in this
+  Status. Declared to native for the lab arms (each switch ON, `make native test`, both arms).
+- 13:23 PDT start: OFF base-gate replay, `GUARD_TAG=base` (systemd unit rules-guard-base). Gate: 0 flips v 9d325e291.fights.jsonl.
+
 **Arm recipe (from native, 2026-10-21; tooling in stream/native 420048f99 and pair/native-cp371 2bb41ef93):**
 `GUARD_ARGS=--rules-on=<rule> GUARD_TAG=<rule> tools/scoreboard/guard.sh <pair commit>`. This runs on builder2, chunked
 and resumable after preemptions; it uses one scratch folder (../godot-native-guard), so either one arm at a time or a separate
