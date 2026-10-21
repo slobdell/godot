@@ -209,6 +209,13 @@ _Filed here before any number._
   (test_ai_idle_fallback:34, test_ai_perf_equivalence:27/32, test_ai_player_holds:19/20, test_ai_player_orders_contact:17/24) may become
   `Tank.place` and nothing else, one commit, quick-remote, merge note; test_ai_perf_equivalence's compared numbers reported before/after
   if they move. C36.5's "any owner's test file" does not override C36.6's ask-first for brains' paths (native asked; recorded).
+- **R36.15 (2026-10-20 ~18:50 PDT) The scoreboard sees T8; one earlier "move" retracted.** Native (stream/native 0285bfe5f; main
+  3d46b2884 scored on builder2 in two seed blocks, 2601+ and 2701+, 40 fights / 48 moves / 36 orders each, 0 SCRIPT ERRORs): the
+  new line "killed while held at a street mouth" (traffic's held_3s, back-filled from each row's own logs, every other number
+  reproduced) 1.65 -> 0.42 a fight, noise ± 0.40: a clear move, T8's. Everything else inside its noise. The noise column now comes
+  from 16 seed units: one block had UNDERSTATED it (twitch ± 1.2 -> ± 3.59 m), so the orchestrator's earlier "twitch 12.6 -> 10.8 m,
+  past its noise" (told to the lead) is RETRACTED: 1.8 m is inside ± 3.59. Lesson: a noise figure from one seed block is not a noise
+  figure.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
