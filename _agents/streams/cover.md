@@ -138,11 +138,31 @@ side, the cover between the crew and `threat_dir`, hiding >= 15 % of its front (
 within `max_shift_m`; best = most hidden, then shortest shift, then lowest feature index (deterministic). The caller lays the
 facing (= threat_dir). null = keep your own seat.
 
-### Bar K (filed 2026-10-21 before any number; recorded on main as R37.7)
-Arms ON (`--cover-on=hulldown`) v OFF, same seeds, same tree (pair named), on CP37.1's two lines, both factions both ways, n as
-CP37.1 sizes it. Positive control: ON's `stats.cover_struck` > 0 on every map. Deciding: the blob line moves toward the blob losing
-by more than CP37.1's 2-seed-block noise. Guards: the turtle line not toward the turtle winning beyond that noise; kills a fight
-and match length per faction within +-10 % of OFF; perf-judge PASS. A series before K5's re-shape is the null reading. **Scope (R37.11):** the rule acts on direct shells and beams only, on
+### Bar K, RE-FILED PAIRED (2026-10-21, per R37.14(b), before any arm number; supersedes the R37.7 text)
+**Arms.** ON (`--cover-on=hulldown`) v OFF on ONE pair tree (named at the series; it merges stream/native at the CP37.1
+hand-over), the SAME 320 fights as CP37.1's base: `make guard-run` on the 5 guard maps (terminus, locks, sumps, gorge, parade) x
+seeds 2601-2608 + 2701-2708 x both sides as the guard x blob and turtle. Judged with `tools/scoreboard/guard.py --pair OFF ON`.
+**OFF is run on the pair tree, not read from `references/scoreboard/guards/9d325e291.fights.jsonl`:** that base predates cover's
+merge (821c7f494 is not in 9d325e291) and, after K5, the maps differ, so the paired base must be the same tree with the switch OFF.
+Before ON: OFF v the 9d325e291 jsonl on today's maps must give 0 flips (the switch-OFF equality, CP37.1's OFF v OFF check);
+any flip is attributed before an arm number.
+**Positive control first:** ON's `cover_struck` > 0 in every guard map's fights (summed per map), or the arm did not engage and
+nothing is judged. (Needs `cover_struck` in GUARD_RESULT: requested from native below.)
+**Deciding (blob line, 160 paired fights):** the blob's win share DOWN, ON v OFF, by more than 2 se of the paired difference
+(se = sd of the per-seed differences / sqrt(16 seeds)), AND the exact one-sided McNemar p < 0.05 on the flips (more blob wins
+turned to losses than the reverse); second line: the blob's kill ratio not UP by more than 2 paired se.
+**Guards:** (1) turtle line: the turtle's win share not UP by more than 2 paired se (McNemar reported the other way); (2) kills a
+fight and match length per faction (as the guard, both lines) within +-10 % of OFF, paired; a faction outside is REPORTED with its
+units; (3) perf-judge PASS on the pair tree; (4) sim-baseline unmoved with the switch OFF.
+**Map overlap (the orchestrator's check):** the guard maps are terminus, locks, sumps, gorge, parade. Option (b)'s draft maps are
+crossing, sumps, locks, gorge: 3 overlap; crossing is not a guard map; terminus and parade get nothing. Option (a)'s swaps fall
+on terminus (1 pair), sumps (2), gorge (1): locks and parade get nothing. K1 near-cover share on the guard maps today: terminus
+0.6 %, the other four 0 % -> **the pre-K5 series is a null reading by construction.** So whichever he picks, K5 places low cover
+on ALL FIVE guard maps (and crossing as drafted for (b)), or the series reads a null on the maps that got none. The (b) script
+fits two mirrored runs on every guard map (scratch run, heat 5b4e79362): terminus (-72,-26),(-68,26), 11-15 % of hull hits
+within 12 m; parade (-44,-8),(-16,22), 8-9 %; locks/sumps/gorge as drafted. For (a), locks and parade have no lone clutter near
+the fighting: they would need added runs, i.e. (b) on those two.
+**Scope (R37.11):** the rule acts on direct shells and beams only, on
 both the GDScript and native paths (native flies the round; the seam sits in `Match._shell_hit` / `_fire_beam`, before
 combat_native's damage maths). Artillery/mortar splash and cone/flame damage never pass through it, so low cover never stops them. A
 hull-down crew is fully exposed to those by design.
@@ -170,7 +190,9 @@ hull-down crew is fully exposed to those by design.
 - **K5:** waiting on his two answers (the orchestrator is asking). On (a): apply the draft's swaps in `tools/make_arenas.py`
   (granted R37.7) + regenerate, before/after frames at his pose, sim-baseline attribution with the switch OFF (maps move: the
   orchestrator adopts).
-- **K4:** waiting on CP37.1 on main; then the null reading on today's maps, then the judged series on the re-shaped maps.
+- **K4:** CP37.1's base is on main (R37.14). Waiting on its hand-over (stream/native merged here, guard.py --pair, the two asks
+  below); then the null reading on today's maps (OFF v 9d325e291 = 0 flips, then ON v OFF), then the judged series on the
+  re-shaped maps per the paired Bar K above.
 - **Stretch (CPU defends from low-cover seats):** needs a grant in the brains paths (`cpu_commander.gd` / tank_brain); requested.
 
 ### Native twins (N2, on stream/native 3d598cdaa; not merged here)
@@ -183,7 +205,10 @@ at its CP37.1 hand-over** (the orchestrator: no cherry-pick before then). Any la
 versions, with native told.
 
 ### Requests to other streams
-- **native:** ~~twins~~ DONE (N2, above).
+- **native:** ~~twins~~ DONE (N2, above). **For K4 (two asks, in native's paths):** (1) `GUARD_RESULT` carries
+  `cover_struck` (the match stats' `cover_struck`, 0 when absent) so the positive control reads from the same logs;
+  (2) `make guard-run` takes extra user args (e.g. `GUARD_ARGS=--cover-on=hulldown`, passed after `--`; rules' `--rules-on`
+  needs the same).
 - **orders (O6):** the API above is on `stream/cover` 5b4e79362; I'll say when it is on main.
 - **orchestrator:** a brains-path grant for the stretch (the CPU's defending crews take `low_cover_seat` once when they halt), only after K4 passes.
 - **rules (merge note):** two calls in `match.gd` (`_shell_hit`, `_fire_beam`), each guarded by `Armor.low_cover_strike`
