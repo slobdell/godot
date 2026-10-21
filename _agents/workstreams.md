@@ -119,6 +119,13 @@ _Filed here before any number._
   closest crews at the end >= 9 m CENTRE TO CENTRE in every cell (`end_own_min_m`; HALT_CLEAR_M, the O4 question's 9 m, is seat to
   seat), the hull gap (`end_own_gap_m`) REPORTED per cell beside main's (the orchestrator first wrote "hull to hull", which main
   itself fails at 6.2–11.5 m; corrected on orders' catch before any number). A pass ships ON.
+- **S4 "back in" (manoeuvre; filed 2026-10-20 ~20:15 in the brief before any number, stream c947c62e3; copied here).** A move_to goal
+  within 15 m and > 120 deg off the nose, with the outline clear along the straight reverse (the k-turn sweep), is driven in reverse;
+  switch, OFF. DECIDING (lab, both paths): hull at rest, goal 7 / 10 / 14 m behind at 0 / 30 / 60 deg off the tail, open ground and a
+  two-hull lane, 3 unit kinds: ON away_m <= 1.0 m where the rule fires, path <= 1.3x straight + 1 m; a blocked sweep declines (ON =
+  base). Lab guards: arrives in every cell, time to seat <= base + 2 s, 0 wall contact ticks; native default arm = GDScript. Series
+  after S1's and S2a's: orders' probe on fresh seeds (fresh-route metres, away_m, twitch_m not up), FRIENDLY CONTACT TICKS NOT UP,
+  arrivals not down, S1's movement guards.
 
 ## Rulings (round 36)
 
@@ -216,6 +223,14 @@ _Filed here before any number._
   from 16 seed units: one block had UNDERSTATED it (twitch ± 1.2 -> ± 3.59 m), so the orchestrator's earlier "twitch 12.6 -> 10.8 m,
   past its noise" (told to the lead) is RETRACTED: 1.8 m is inside ± 3.59. Lesson: a noise figure from one seed block is not a noise
   figure.
+- **R36.16 (2026-10-20 ~20:15 PDT) orders' LOOP twitch is mostly the give-way: T10 to traffic, S4 to manoeuvre.** Manoeuvre's split
+  (stream c947c62e3, `references/round36/manoeuvre/s4/README.md`; builder0 light, GDScript, 55c973cd4 + probes; 16 runs, 16 of 19 LOOP
+  squads, worst crew each): metres away from the goal by driver: give-way 196, route within 5 s after a give-way / hold / k-turn /
+  escape 96 (77 after give-ways), fresh route 100, k-turn legs 39, street hold 32 (one squad), escape 9; largest driver give-way in 11 of
+  16. Give-ways begun by those squads' crews (n 172): 124 within 10 m of their own seat when asked, 44 of them sent >= 10 m from it;
+  the asker had T7's pass lane in 22 of 124 (8 of the 44). **T10 (traffic):** spots scored by distance to the yielder's own seat when
+  near it, step aside and back instead of leading the asker out; contention guards (R36 lead answer). **S4 (manoeuvre):** the 10 fresh
+  episodes (goal 130–180 deg off the nose, 5.4–11.1 m away before turning) are "back in", bar above.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
