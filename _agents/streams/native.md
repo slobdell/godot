@@ -61,6 +61,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (round 37 worker, 2026-10-21 ~13:00 PDT)
 
+**MERGED (orchestrator):** CP37.1 (d9545d381 + 84c11a60d); the stream hand-over 6c9bc7239 + 14c10d1d4 (main 36a19ae30);
+ai_scenarios_count adopted 54,0,4,0 (4b62d2186). Main's check of 4b62d2186 is the orchestrator's. **Waiting:** a scoreboard
+row for each main the orchestrator names as shipped; twins as pairs arrive.
+
 **In player terms:** today a naive all-in rush (every squad right-clicked onto the enemy's zone) wins about **half** its fights
 against the CPU's tactics, and sitting tight on your own zone wins about **two in five**. Those are the two lines every rule this
 round is judged on; both should fall.
