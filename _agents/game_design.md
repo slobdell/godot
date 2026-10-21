@@ -4198,6 +4198,11 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    "unconfirmed contact" outline. Questions 2 and 3 do not depend on this one (the orchestrator had overstated that).
 2. **Firing on the move.** Today a moving shot spreads 1.5x (`Match.MOVING_SPREAD_FACTOR`). Raise it to ~2.5–3x so a stopped vehicle is
    clearly deadlier? Recommendation: yes, first.
+   **CORRECTION:** spread at full speed is (1 + MOVING_SPREAD_FACTOR) = **2.5x** today (`Match.shot_spread`, scaled by speed), not 1.5x.
+   **ANSWERED 2026-10-21:** "yes, firing on the move should be a lot less accurate". Proposal he accepted: ~**4x** at full speed
+   (MOVING_SPREAD_FACTOR 1.5 -> ~3.0), still scaled by speed, close range unchanged in effect. Measure first how much of a blob
+   charge's damage comes from movers (if little, the lever is weak and question 3 matters more). A fast unit that turns useless
+   gets its own lower penalty (a stabilised gun), not a softer rule for all; check the AI stops before long shots.
 3. **Dig in.** After ~10–15 s still, a vehicle entrenches (a visible berm), taking much less frontal damage. Recommendation: yes, first.
 4. **Ambush first shot.** A hidden unit's opening volley gets an accuracy bonus and briefly pins its target. Recommendation: after 1.
 5. **Pre-registered fire.** Mark a kill zone ahead of time; artillery into it is accurate from the first shell.
