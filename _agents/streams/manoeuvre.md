@@ -76,6 +76,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
 
+**2026-10-21 ~00:30 (worker): S4's drive share CLOSED with no rule** (README section (6)). "Back in" is round 26's M1, which already ships.
+M1's choice in the 10 fresh episodes: facing_nose 3 (by design: arrives facing), friendly 3 (a hull in the reverse corridor),
+route_faster 1, reverse law pulled forward first 1, beyond 25 m 1, paced overshoot 1, each 5–11 m. Bar S4 not run (no candidate).
+One player-terms question for the lead (loop forward v back in when the facing is the other way); recommendation: keep the loop.
+Lint note (native N5, census_lint): any new counter must print in ManoeuvreCensus.counters() from its first commit; turn_in_* are ALLOWED.
+
 **2026-10-20 ~23:00 (worker): S4 (new, the orchestrator's: orders' turn-around LOOP squads): traced, split, note + Bar S4 filed**
 (`references/round36/manoeuvre/s4/README.md`). builder0 light, 55c973cd4 + probe-only `lab/s4-trace` (c5fedd42c), GDScript path
 (away_m equals orders' native numbers), 16 runs covering 16 of the 19 LOOP squads. Neither named loop is the drive. Locks s3624 Bravo_1 is traffic's

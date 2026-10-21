@@ -92,3 +92,32 @@ north. Its goal is D in {7, 10, 14} m behind it, at {0, 30, 60} deg off its tail
     far loops, unstick fires).
   - REPORTED: the episodes by unit kind.
 - Ships ON only on a green full check with the series passing.
+
+## (6) Addendum (v4 probe, `lab/s4-trace` M1-decision rows, same runs byte-identical): "back in" already exists, and it is M1
+
+Building the stage found that round 26's **M1** (`Manoeuvre.choose`, `Movement._manoeuvre`) already is the proposal: once per
+goal, a goal within 25 m and > 100 deg off the nose (or inside the forward circle) is simulated both ways and driven in reverse when
+that is clear and quicker. So the question for my share is why M1 did not reverse in the 10 fresh episodes. M1's choice when each
+episode began:
+
+| why the forward loop ran | n | unit, goal, metres away |
+|---|---|---|
+| `facing_nose`: the order's facing is > 60 deg off the hull's nose, so M1 drives nose first and the hull arrives facing it | 3 | scouts: 19.4 m / 7.7, 15.5 / 6.6, 8.6 / 5.4 |
+| `friendly`: another hull stands in the reverse's swept corridor | 3 | scout 7.7 m / 6.5 (at 7.5 m/s), ifv 8.0 / 8.9, tank 8.6 / 11.1 (at 5.8 m/s) |
+| `route_faster`: a scout overran its goal at 13.2 m/s; the forward loop is quicker than braking and backing | 1 | 15.9 / 5.5 |
+| reverse chosen; the reverse law pulled forward first (goal inside the reverse circle, 50 deg off the tail) | 1 | scout 6.5 / 7.4 |
+| goal beyond M1's MAX_M (25 m) | 1 | ifv 29.4 / 9.2 |
+| an element-paced station overshoot (0.2 m off the goal at 4.9 m/s) | 1 | ifv / 6.1 |
+
+**Verdict: no new rule for S4's drive share. Bar S4 is not run.** Each piece is small (5–11 m), and most are by design:
+- **facing_nose:** a vehicle told to face the way it came has to turn round somewhere; the forward loop does it on the way in.
+- **friendly:** the reverse is refused because a friend stands in its path, which is the contention he asked to avoid.
+- **The rest:** single cases.
+
+The visible part is the 10–35 m sends from give-ways and holds (traffic's T10). One question is his to answer, in player terms
+(below). The rest is not worth a rule on 10 episodes in 16 runs.
+
+**Question for the lead (player terms):** *"You send a vehicle to a spot a few metres behind it and tell it to face the other way.
+Should it swing round forward in a small loop (about 5–8 m out, and it arrives already facing the right way), or back straight
+in and then turn on the spot?"* Recommendation: keep the loop. It is quicker, and a car turning round reads as natural. The case
+that looks dumb is the 20–35 m one, which is traffic's.
