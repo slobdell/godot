@@ -181,8 +181,13 @@ func blips() -> Array:
 			seen = null  # tanks_by_name()'s rule, without building it
 		result.append({"kind": "enemy" if contact["visible"] else "contact", "position": contact["position"],
 				"fade": 1.0 if contact["visible"] else clampf(1.0 - age, 0.15, 0.8),
-				"length": _hull_length(seen) if seen != null else 0.0})
+				"length": _hull_length(seen) if seen != null else 0.0,
+				"pinned": contact["visible"] and seen != null and FeedbackReader.pinned_level(seen.suppression) > 0.0})
 	return result
+
+
+## Round 37 (feedback stretch): the ring round a pinned enemy's diamond (UnitBars' pinned colour).
+const PINNED_COLOR := Color(1.0, 0.86, 0.25)
 
 
 ## Radar.hull_length, remembered per unit type (Units.stat formats a key per call).
@@ -444,6 +449,8 @@ func _marks_from_blips(list: Array) -> Dictionary:
 			"enemy":
 				# Diamonds for enemies, circles for us: readable without color (accessibility).
 				by_shape["diamond"].append([at, mark_dot * 1.3, enemy])
+				if bool(blip.get("pinned", false)):
+					by_shape["ring"].append([at, mark_dot * 1.3 + 3.0, PINNED_COLOR])
 			"contact":
 				by_shape["diamond_outline"].append([at, mark_dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
 			"destination":
@@ -558,6 +565,9 @@ func _marks() -> Dictionary:
 		var at := _to_radar(contact["position"], flip)
 		if contact["visible"]:
 			diamonds.append([at, mark_dot * 1.3, enemy])
+			# Round 37 (feedback stretch): a pinned enemy you can see wears a yellow ring (his answer 8: "show it").
+			if seen != null and FeedbackReader.pinned_level(seen.suppression) > 0.0:
+				rings.append([at, mark_dot * 1.3 + 3.0, PINNED_COLOR])
 		else:
 			var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
 			outlines.append([at, mark_dot * 1.3 + 0.75, Color(enemy, clampf(1.0 - age, 0.15, 0.8))])

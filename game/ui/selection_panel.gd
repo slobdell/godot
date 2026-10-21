@@ -383,7 +383,21 @@ func _card(unit_name: String) -> Dictionary:
 			"health": float(tank.health) / maxf(tank.max_health, 1.0),
 			"shield_fraction": tank.shield / tank.max_shield if tank.max_shield > 0.0 else 0.0,
 			"weapon": String(weapon.get("display_name", tank.weapon_id)).capitalize(),
-			"enemy": tank.team != controls.team, "orders": _order_words(unit_name, true) if tank.team == controls.team else ""}
+			"enemy": tank.team != controls.team, "orders": _order_words(unit_name, true) if tank.team == controls.team else "",
+			"state": _state_words(tank)}
+
+
+## Round 37 (feedback stretch): what the rules are doing to this vehicle right now, in a word or two -- "PINNED" while its
+## suppression shows (his answer 8), "REPAIRING +5/s" while a Resupply Tanker mends it (FeedbackReader: the rules' own
+## conditions). Empty when neither.
+func _state_words(tank: Tank) -> String:
+	var words: Array[String] = []
+	if FeedbackReader.pinned_level(tank.suppression) > 0.0:
+		words.append("PINNED")
+	var link := FeedbackReader.mending(tank, FeedbackReader.menders(controls.game_match.tanks.get_children()))
+	if not link.is_empty():
+		words.append("REPAIRING +%d/s" % roundi(float(link["rate"])))
+	return "  ".join(words)
 
 
 func _order_words(unit_name: String, with_queue: bool) -> String:
@@ -644,6 +658,11 @@ func _draw_timed() -> void:
 			_text(batch, font, Vector2(x, PAD * s + line * 0.9), ("ENEMY " if card["enemy"] else "") + String(card["name"]).to_upper(), 22.0 * s, color)
 			_text(batch, font, Vector2(x, PAD * s + line * 1.9), "%s   %s" % [card["hull"], card["shield"]], 16.0 * s, CyberStyle.TEXT)
 			_text(batch, font, Vector2(x, PAD * s + line * 2.8), "Weapon: %s" % card["weapon"], 16.0 * s, Color(CyberStyle.TEXT, 0.8))
+			if String(card.get("state", "")) != "":
+				var hull_width := font.get_string_size("%s   %s" % [card["hull"], card["shield"]], HORIZONTAL_ALIGNMENT_LEFT, -1,
+						roundi(16.0 * s)).x
+				_text(batch, font, Vector2(x + hull_width + 18.0 * s, PAD * s + line * 1.9), String(card["state"]), 16.0 * s,
+						CyberStyle.YELLOW)
 			if not card["enemy"]:
 				_text(batch, font, Vector2(x, PAD * s + line * 3.7), "Orders: %s" % card["orders"], 16.0 * s, CyberStyle.CYAN)
 			_bars(batch, Rect2(x, size.y - PAD * s - FOOTER * s - 12.0 * s, minf(260.0 * s, _card_left() - x - PAD * s), 10.0 * s),
