@@ -188,6 +188,19 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
   Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
 
+- **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
+  8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
+  shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
+  native light, f4437d26a, the fight probe, locks/crossing/terminus x 3 squads x click x 3621-3626 = 18 fights: `off_idle_s` (an idle
+  crew's seconds > 6 m off its station, the seat his order left it on, whatever moved it) = 1696.4 s, 94.2 a fight (sd 111.0, se
+  26.2). Split by what happens on each off tick: giveway (`Movement.yield_to` now or within 3 s; M5's) 79.9, face_drift (> 0.5 m/s
+  under the brain's face/stop; M6's) 956.2 (56 %), brain (under its own move_to) 81.2, still (standing off its seat) 579.4 (34 %).
+  Deterministic: the rerun on 3e43c4a24 v f4437d26a (both inert) reproduced the totals exactly. **Judged:** arms `fight:` v `parked:`
+  (+`--parked-hold=on`), the same 9 cells, FRESH seeds 3743-3754 (36 fights an arm), builder0, a green-checked hash. **Counter:**
+  parked_returns > 0. **Deciding:** off_idle_s a fight arm <= 50 % of base AND base - arm > 1.645 x the unpaired se of the difference.
+  **Reported:** the split (giveway for M5, face_drift for M6), brain-move leaves, RETREAT leaves. **Guards** (per-fight totals): his
+  kills, his losses and the CPU's losses a fight, each within base +/- 1.645 se (base arm's sd, n 36). **A pass ships ON**, his crews only.
+
 - **Bar O5 SEAT_ASIDE (orders, R37.5; filed in stream/orders 78c06ab1f Status before any builder0 arm number; code 8f5a8b08f,
   OFF).** What he would see: CPU squads set up their screens off the streets other squads use, so CPU crews stop stepping aside (and
   dying) for their own side's traffic. The change (`element_commander.gd`): a CPU screen point within 10 m of another living element's
