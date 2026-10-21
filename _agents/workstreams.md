@@ -407,6 +407,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   speed, not load). Cover's, rules' and manoeuvre's OFF code is unjudged for perf on main; the orchestrator runs ONE perf-judge on
   builder0 in the first quiet window and asks native whether perf-judge can ever judge on builder2. Rules cuts its pair from
   0baf6e1ff.
+- **R37.20 (2026-10-21) perf-judge cannot judge on builder2; builder0 only.** native (in writing): perf_nominal.json's "builder2"
+  (ref_ms 0.898, 2026-10-17) was the c4d-standard-32; since the 2026-10-19 conversion the box is e2-highcpu-32 (Intel Broadwell, mixed
+  platforms per start), reading the reference at 2.28-2.50 ms at 62-96 % idle: the steady 2.5x is the CPU, not load. And scenario_
+  perf's line is ABSOLUTE (FAIL_USEC 20,000 us a tick): builder2 reads 21,084-34,400, builder0's P-cores ~9,200, so a judged run there
+  would FAIL a healthy tree. **Ruled:** (a) ONE perf-judge on builder0 for main 0baf6e1ff (the round's OFF code), `make remote
+  T=perf-judge` alone, queued behind `--wait-below 1`; (b) granted to native: perf_judge.sh says at once on builder2 "NOT JUDGED:
+  builder2 is not a judging machine (e2 Broadwell, absolute line)" instead of three tries; (c) the machine-relative line
+  (ai_usec_per_ref_ms, nominals keyed by CPU model, an A/A) is round-38 work unless builder0 never goes quiet.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
