@@ -99,6 +99,18 @@ wedge/fights/jam locks/terminus/sumps x 6540–6563 and hull-rest 6501–6532 x 
 - **The series prints no S2a counter:** `ManoeuvreCensus.h1b_side_steps/stands` are read only by the lab stage, and the native
   exec doesn't count them. The bar files no counter-first line; the rule's firing is read from escape/unstick deltas.
 - **Gotcha:** gcloud lives in `~/projects/bin`, which is not on a `systemd-run --user` unit's PATH. The driver exports it.
+- **ON's check** (`bf678480c`, builder2, load 0.61 at the start): 23 passed, 2 FAILED (test, sim-baseline), 0 NOT RUN, 2 NOT JUDGED;
+  2970/2. sim-baseline moved crossing + sumps (11 unmoved).
+  - The 2 test reds are native's `test_native_yield` sumps stage, plain and owned: `spot:back 0 >= 1`.
+  - Native matches GDScript (413 negotiating drives, 0 mismatches): 20 give-ways are started, and none backs up. That checks the
+    stage still reaches the backing-up branch; it is not harm.
+  - The series is measured past it (series started 01:23). **A ship needs native to re-pin that stage's premise in the pair.**
+  - Log: `~/overnight-manoeuvre/r36/s2a/check_on_test.log`.
+- **Orchestrator's water condition (side points never take a hull across):** no log prints the side point, so it is being measured.
+  - Terminus has no terrain entries: 0 by construction.
+  - Locks/Sumps: lab `lab/s2a-sideprobe` `86e058424` (ON + H1B_SIDE rows) runs the fights seeds 6540–6563, GDScript twin, builder0
+    light lane (unit `manoeuvre-sideprobe`, outputs `~/overnight-manoeuvre/r36/sideprobe/`).
+  - Reader `tests/manoeuvre/side_water.py` (`db864edf1`). It must read 0 or be traced.
 
 **2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
