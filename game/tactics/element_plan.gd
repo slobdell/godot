@@ -847,6 +847,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 				false, "travel", deploy_extra)
 		if DEPLOY_COMPACT and String(plan["formation"]) == "herringbone":
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
+		if COVER_SEAT:
+			_cover_seats(plan, deploy)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1899,6 +1901,44 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy
+
+
+## O6 (round 37, C37.4; his answer (3): "short move to cover only when parking"): when the deploy lays its halt, each
+## crew's seat is offered ONCE to cover's `TacticalQuery.low_cover_seat(near, threat_dir, max_shift_m)` (a point within
+## COVER_SHIFT_M whose front faces the threat behind low cover, else null), the threat being the halt's heading. The
+## answers are kept in the deploy (`cover`) and stand for the life of the halt: never asked again, never while idle (his
+## "stay put" and "under my control"). Until cover's API is on main the call answers null (no seat moves).
+## `--cover-seat=on` (env COVER_SEAT=on) opts in.
+static var COVER_SEAT := OS.get_cmdline_user_args().has("--cover-seat=on") or OS.get_environment("COVER_SEAT") == "on"
+const COVER_SHIFT_M := 4.0
+## Measurement: seats cover's query moved, since start.
+static var cover_seats_moved := 0
+
+
+static func _cover_seats(plan: Dictionary, deploy: Dictionary) -> void:
+	if not deploy.has("cover"):
+		var found := {}
+		var threat: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+		for unit_name: String in plan["slots"]:
+			var seat: Variant = plan["slots"][unit_name]
+			if seat is Vector3:
+				var moved: Variant = low_cover_seat(seat, threat, COVER_SHIFT_M)
+				if moved is Vector3:
+					found[unit_name] = moved
+					cover_seats_moved += 1
+		deploy["cover"] = found
+	var cover: Dictionary = deploy["cover"]
+	for unit_name: String in cover:
+		if plan["slots"].has(unit_name):
+			plan["slots"][unit_name] = cover[unit_name]
+
+
+## C37.4's seam: cover's query when this build has it, else null.
+static func low_cover_seat(near: Vector3, threat_dir: Vector3, max_shift_m: float) -> Variant:
+	var query := Callable(TacticalQuery, "low_cover_seat")
+	if not query.is_valid():
+		return null
+	return query.call(near, threat_dir, max_shift_m)
 
 
 ## The shape a deploy stands in: the task's `halt_shape` when the order priced one (D3: the pack laid its seats in it), else
