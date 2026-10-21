@@ -136,6 +136,15 @@ _(each stream files its bar in its BRIEF's Status BEFORE its first number and me
   no higher; whole_still_crossed reported; test_control_untangle* and test_control_scale in check. **A pass ships ON** (player path
   only: CPU elements are never untangled, so no CPU guard). If contacts fail, re-dealing stays (his answer).
 
+- **O1 addendum (orders, R37.9; filed in stream/orders 379a83f13 Status before any judged O1 number): a SECOND deciding workload,
+  the fight probe.** Sizing (seen; builder0 native light, 3e43c4a24, `--probe-fight=on --probe-budget=1500`, locks/crossing/terminus x
+  3 squads x click x 3621-3626 = 18 fights, 51 placed squads): 175 halt-shape flips, 446 re-lays, 27 squads re-laying. **Judged:**
+  arms `fight:` v `fightanchor:` (+`--halt-terrain=anchor`), the same 9 cells, FRESH seeds 3731-3742 (36 fights an arm), builder0, on a
+  green-checked hash with the fight mode (>= 092cb34b7). **Deciding:** relays summed arm <= 25 % of base AND shape flips arm <= 25 %
+  of base. **Guards** (arms diverge: per-fight totals): his kills and his losses a fight each within base +/- 1.645 se (se from the
+  base arm's per-fight sd, n 36), the CPU's losses likewise. The no-fight read (f4365153f, 3701-3712, + census) stands as filed.
+  **O1 ships only when BOTH pass.** O2's fight bar uses seeds 3743-3754.
+
 - **Bar K (cover, `--cover-on=hulldown`; filed 2026-10-21 by cover, before any number).** Arms: ON v OFF, same seeds, same tree
   (the pair named), on CP37.1's two lines, both factions both ways, n as CP37.1 sizes it. **Positive control first:** ON's
   `stats.cover_struck` > 0 on every map in the series, or the arm did not engage. **Deciding:** the blob line moves toward the blob
