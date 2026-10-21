@@ -697,3 +697,19 @@ without paired se: their lines carry `none` or a Fisher/McNemar. X1's census (ro
 - **An OPT_IN behaviour named with either `--traffic-on=` or `--traffic-off=` is ON** (trip-up 84): the OFF arm of an OPT_IN
   switch passes no flag at all.
 - **The heavy lane's 90-minute cap kills a 144-fight census at 3 jobs** (trip-up 86): split the block.
+
+## Round 37 re-render: round 36's judged lines (2026-10-21, native N6, close step 5b owed by round 36)
+
+Laptop, pure Python, on `stream/native` (main `9d325e291` + this stream's commits). Round 36's lines are in
+`tools/judge/lines_r36.py` (20 lines, imported by `lines.py`): X3b (NULL, no workload), O2 DEPLOY_COMPACT (4), T8 (4), T10 (3),
+S1 stallnet (4), S2a + yieldgap (4). Every number is the ruling's own (R36.2 / .6 / .8 / .23 / .27 / .32); round 36's series
+kept their rows on `round36/*` branches, so a line's noise is the se or the bound its ruling printed (kind `se`). Outputs:
+`references/round37/native/sizing/inventory.{csv,md}` and `table.csv` beside them. **The table is unchanged** (`table.py`
+re-rendered byte-identical blocks): no round-36 pair's rows are on main to pool, so no probe row's sd moved. A later render can
+copy T8's (`round36/traffic` `references/round36/traffic/t8_series_a2de32420/`) and S2a's rows in, as round 31's were.
+
+**Round 36: 0 of its 9 se-quoted lines inside the noise.** Every line has a margin from "no change" larger than 1.645 se
+(C31.3's form). **Verdict margins under 1.645 se** (could flip on another seed set): T8's jam guard (+1.01) and kills band
+(+0.50), T10's deploy_s guard (+1.21) and its deciding line (−0.59: a miss of a little over half an se, R36.23), S1's team-0 kills
+guard (−0.32), S2a's far-loops line (+0.74). Clear by more: T8's deciding line (+5.12), S2a's rebuilt unstick line (+2.83),
+S1's unstick guard (−2.02, a clear fail). Counts and cells (O2, X3b) carry no se.

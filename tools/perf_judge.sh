@@ -25,6 +25,19 @@ idle_pct=${PERF_JUDGE_IDLE:-60}   # the P-cores count as quiet when at least thi
 mkdir -p "$out"
 : > "$out/perf-judge.log"
 : > "$out/perf-judge.txt"   # this run's attempts only (a stale line once crept into the verdict's list of ratios)
+# Round 37 (R37.20, native): a machine that cannot judge says so at once. builder2 is an e2-highcpu-32 Spot VM since
+# 2026-10-19 (Intel Broadwell today, mixed Intel/AMD by start; its perf_nominal.json entry is the old c4d's) and
+# scenario_perf's pass line is ABSOLUTE (FAIL_USEC 20,000 us a tick): its brains read 21-34k there with the box idle, so a
+# judged run would fail a healthy tree; three refused tries cost a check up to six minutes. The relative line (us per
+# reference ms) is round 38's. PERF_JUDGE_HOSTNAME overrides /etc/hostname (tests).
+host=${PERF_JUDGE_HOSTNAME:-$(cat /etc/hostname 2>/dev/null || hostname)}
+for no_judge in ${PERF_JUDGE_NOT_JUDGING:-builder2}; do
+	if [ "$host" = "$no_judge" ]; then
+		echo ">> perf-judge: NOT JUDGED: $host is not a judging machine (e2 Broadwell, absolute line); judge on builder0" \
+			| tee -a "$out/perf-judge.txt"
+		exit 3
+	fi
+done
 cpus=$(cat /sys/devices/cpu_core/cpus 2>/dev/null || echo "0-$(( $(nproc) - 1 ))")
 
 # % idle of a cpulist over 2 s, from /proc/stat (idle + iowait over total).
