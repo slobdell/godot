@@ -121,8 +121,14 @@ wedge/fights/jam locks/terminus/sumps x 6540–6563 and hull-rest 6501–6532 x 
 - **Eyes_3 traced: the side point equals the route's own waypoint, and the drive to it clips a long friend's corner.**
   `_side_clear` tests the point against centres, not the drive against the friend's oriented box. 1 of 17 crew–friend pairs
   loops (9 picks).
-  - Fix candidates (i) a drive-vs-box clearance and (ii) a stand after a side step that ends still blocked are NOT built;
-    they wait on the orchestrator's call.
+  - **Ruled: round 37, NOT in this hand-over** (orchestrator, ~02:05). What ships is what the series judged (`bf678480c`).
+  - **Round-37 items:** (ii) RECOMMENDED: a side step that ends with the hull still blocked by the same unmoved friend makes the
+    next far fire on it a stand, until the friend moves or the goal changes; this bounds the loop whatever the geometry.
+    (i) `_side_clear` also rejects a point whose straight drive passes within the hull's half-width of the friend's oriented box.
+  - **Deciding lab case:** a long parked friend (law_artillery) seen at 30–45 deg, the asker diagonal behind its corner. At most
+    one side step on an unmoved friend; ON takes a point whose drive clears the box, or stands; both paths.
+- **Hand-over if S2a passes:** `bf678480c`'s code + native's yield-stage re-pin + the bank lab case (`33919af3d`), on one green
+  check.
 
 **2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
