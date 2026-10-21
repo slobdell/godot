@@ -67,6 +67,31 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### REPORT (orders, round 37; updated 2026-10-21 ~09:25 PDT). Every number names its commit, machine, workload, n.
+- **O1 the flicker: BUILT, bar recorded on main (441d8951d), pre-series check running.** Base rate (builder0 native,
+  20005d611, orders-probe 12 cells x 3621-3626, 285 placed squads): 4 squads flip halt shape after the place window, 18
+  flips, 50 reseats; centroid terrain changes 38 (shape flips + lanes <-> dense re-spacings: the deploy re-picks shape AND
+  spacing from the situation's terrain every update); at the anchor 0. Fix `--halt-terrain=anchor` (eb102aada, default
+  still centre). Lab `test_control_halt_terrain` (laptop GDScript: centre 2 flips, anchor 0). quick-remote eb102aada:
+  builder0 120 passed / 0 failed, exited 0. Full check of f4365153f (builder0, native) running; the judged probe runs on
+  that hash from a detached side worktree (`~/projects/godot-orders-o1`).
+- **O2 parked squads: MEASURING.** Finding (laptop traces, locks 5 click s34): in the no-fight probe a parked crew's
+  "ADVANCE" is a crew pushed off its seat by a friend's give-way, then walking back (an idle crew's ADVANCE objective IS
+  its station). R37.6: the give-way half is manoeuvre's M5; orders keeps the idle-crew options. Probe `--probe-fight=on`
+  (a real CPU army, 120 s after all are in) with `left_by` (option at the moment a crew with no order passes 6 m off its
+  placed seat; GIVEWAY apart), `self_off_*`, `lost_after_placed`. builder0 sizing (light, 3 maps x 3 squads x 3621-3626)
+  running; design note + grant request to follow.
+- **O3 squads whole: BUILT OFF, bar recorded on main.** `--untangle=whole` (092cb34b7); `test_control_untangle_whole`;
+  probe `friend_contacts` (physics hull touches). Judged probe after O1's (needs its own green check).
+- **O4 away_m v a fixed seat: DONE (tooling).** `away_held_m` (goal unchanged) and `away_seat_m` (placed seat) beside
+  away_m. On the base rows (20005d611, 285 squads): away 820.2 m, held 813.8 m, seat 2411.9 m; the flicker's share of
+  away_m is small on these cells.
+- **O5 CPU seats: MEASURING.** Grant moved (R37.5) to element_commander.gd's screen / support_by_fire point choice and
+  `_plan_screen`. `make seat-yield-census` (4daa2d069): laptop locks s1828: 75 give-ways by crews holding CPU seats (67
+  screen) to another element's crew, 0 deaths. builder0 sizing queued.
+- **O6 cover seat: SEAM DONE, OFF** (`--cover-seat=on`, 5fbee5103): cover's real signature; null until cover's API is on
+  main (cover: low cover is scarce on today's maps, so it will rarely fire).
+
 ### Bars (filed here; the orchestrator records them on main)
 - **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
   has parked keeps one shape; no crew drives to a point ~15 m off and back while the squad sits. The fix: an ARRIVED element
