@@ -136,6 +136,14 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   no higher; whole_still_crossed reported; test_control_untangle* and test_control_scale in check. **A pass ships ON** (player path
   only: CPU elements are never untangled, so no CPU guard). If contacts fail, re-dealing stays (his answer).
 
+- **Bar K (cover, `--cover-on=hulldown`; filed 2026-10-21 by cover, before any number).** Arms: ON v OFF, same seeds, same tree
+  (the pair named), on CP37.1's two lines, both factions both ways, n as CP37.1 sizes it. **Positive control first:** ON's
+  `stats.cover_struck` > 0 on every map in the series, or the arm did not engage. **Deciding:** the blob line moves toward the blob
+  losing by more than CP37.1's stated 2-seed-block noise. **Guards:** the turtle line does not move toward the turtle winning beyond
+  that noise; kills a fight and match length per faction within +-10 % of OFF; perf-judge PASS. **Sequencing note:** on today's
+  maps a hull is within reach of low cover almost nowhere (K1: 0-4 lone 6 m barricades a dealt map, five maps none), so a series
+  BEFORE K5's re-shape is expected to read as no effect; cover runs it once as the null reading and judges on the re-shaped maps.
+
 ## Rulings (round 37)
 
 - **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
@@ -189,6 +197,15 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   the yielder's seat, not leading the asker out. Bar before numbers (deciding: metres a seated crew is moved off its seat;
   guards: the asker's wait and all-in time, friendly contacts, kills). Orders' O2 keeps the brain's idle-crew options (SPOT /
   RETREAT / ENGAGE / INVESTIGATE); the two do not overlap.
+- **R37.7 (2026-10-21) cover's K1: low cover is where the fighting isn't; `tools/make_arenas.py` granted.** cover (stream/cover
+  616f6ec3b): the only low cover is the 0.9 m jersey barricade; foundry, sumps, locks, gorge have none, the rest 2-4 pieces; of every
+  hull hit (builder2, 5b4e79362, 4 fights a map, 180 s) 0-2.8 % land within 4 m of low cover (crossing 2.8, yard_open 1.6, the rest
+  <= 0.9). Re-shape-only finds 1-2 swaps on 7 maps, none on foundry, yard, locks, parade, cut, yard_open. K2 built (`Armor.low_cover_
+  strike`, front arc, honest geometry: a barricade hides 0.6-0.73 of a low car, 0.15-0.34 of trucks/tanks; lab ON 41 -> 13 frontal
+  hits, flank 45 -> 44). K3 built: `TacticalQuery.low_cover_seat(map: CoverMap, near, threat_dir, max_shift_m := 4.0, hull, node)`
+  (map first, as every TacticalQuery function; orders told). **Ruled:** cover gets `tools/make_arenas.py` (and the regenerated
+  `arenas/*.json`) for low cover only, merge note; his two questions (honest height; re-shape v a few added runs) go to him now;
+  Bar K recorded (the pre-K5 series is the null reading).
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
