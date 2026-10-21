@@ -238,6 +238,12 @@ _Filed here before any number._
   the asker had T7's pass lane in 22 of 124 (8 of the 44). **T10 (traffic):** spots scored by distance to the yielder's own seat when
   near it, step aside and back instead of leading the asker out; contention guards (R36 lead answer). **S4 (manoeuvre):** the 10 fresh
   episodes (goal 130–180 deg off the nose, 5.4–11.1 m away before turning) are "back in", bar above.
+- **R36.18 (2026-10-20 ~20:50 PDT) S4 DROPPED, not run: "back in" already ships (round 26's M1).** Manoeuvre (stream b8de464e6,
+  s4 README section 6; builder0 light, same 16 runs byte-identical): M1's choice at the start of each of the 10 fresh forward-loop
+  episodes: facing_nose 3 (the order's facing is > 60 deg off the nose, so it drives nose first and arrives facing, by design),
+  friendly 3 (a hull in the reverse's corridor: avoids contention, his priority), route_faster 1, reverse chosen but pulled forward 1,
+  goal beyond 25 m 1, element-paced overshoot 1. Each 5–11 m. **Orchestrator's call (broad strokes):** keep the small 5–8 m forward
+  swing that arrives already facing the drawn way; the dumb-looking 20–35 m sends are T10's.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
