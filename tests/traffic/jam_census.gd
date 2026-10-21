@@ -34,6 +34,9 @@ var _pass_contacts := 0
 const HELD_RECENT_S := 3.0
 var _held_at := {}
 var _held_deaths := 0
+## (D), R35.7: the REPORTED sub-cause `jam:held` (a death while held by the take-turns hold the tick before), counted beside T5's
+## causes, never instead of them (manoeuvre's W1: held crews read as stuck:wedged).
+var _by_sub_cause := {}
 var _teams := {}
 var _seconds_run := 0.0
 var _printed := false
@@ -71,8 +74,9 @@ func _report() -> void:
 	print("JAM_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"seconds": snappedf(_seconds_run, 0.1), "deaths": _deaths, "by_cause": _by_cause, "teams": _teams,
 			"standoffs": _standoffs, "aborts": _aborts, "abort_contacts": _abort_contacts,
-			"friendly_contacts": _friendly_contacts, "pass_contacts": _pass_contacts, "held_deaths": _held_deaths,
-			"underfire_on": not Traffic.off("underfire"), "route_arms": Movement.route_arms()}))
+			"friendly_contacts": _friendly_contacts, "pass_contacts": _pass_contacts, "held_deaths": _held_deaths, "by_sub_cause": _by_sub_cause,
+			"underfire_on": not Traffic.off("underfire"), "route_arms": Movement.route_arms(),
+			"holdfire_on": not Traffic.off("holdfire"), "traffic": Traffic.report()}))  # T8 (R35.7): the hold's own report
 
 
 ## far_census.gd's death_cause, verbatim (traffic X1, round 34).
@@ -213,7 +217,7 @@ func _observe(game_match: Match, last_seen: Dictionary, moving_at: Dictionary, j
 		var held := Traffic.holding(name)
 		if held:
 			_held_at[name] = tick
-		alive[name] = {"held": held, "held_3s": _held_at.has(name) and tick - int(_held_at[name]) <= int(HELD_RECENT_S * SimClock.TICK_RATE),
+		alive[name] = {"sub_cause": "jam:held" if held else "", "held": held, "held_3s": _held_at.has(name) and tick - int(_held_at[name]) <= int(HELD_RECENT_S * SimClock.TICK_RATE),
 				"hull": tank.unit_id, "team": tank.team, "cause": cause, "phase": phase, "blocked_by": blocker_name,
 				"blocker_rel": blocker_rel, "blocker_setup": blocker_setup, "jam_s": snappedf(jam_ticks / float(SimClock.TICK_RATE), 0.1),
 				"hit_in_jam": cause.begins_with("jam:") and tank.ticks_since_hit <= jam_ticks, "hits_10s": hits_10s,
@@ -233,6 +237,9 @@ func _observe(game_match: Match, last_seen: Dictionary, moving_at: Dictionary, j
 			_by_cause[row["cause"]] = int(_by_cause.get(row["cause"], 0)) + 1
 			if bool(row.get("held_3s", false)):
 				_held_deaths += 1
+			if String(row.get("sub_cause", "")) != "":
+				var key := "%s<%s" % [row["sub_cause"], row["cause"]]
+				_by_sub_cause[key] = int(_by_sub_cause.get(key, 0)) + 1
 			print("JAM_DEATH " + JSON.stringify(row))
 	last_seen.clear()
 	last_seen.merge(alive)

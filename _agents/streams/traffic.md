@@ -63,4 +63,45 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### NOW (traffic, 2026-10-20 ~15:25 PDT)
+
+| item | state |
+|---|---|
+| 1 carry-over (C36.1) | **DONE.** On stream/traffic, quick GREEN `c9b2fab03` (builder0, 83/0). |
+| 2 T8 judged (C36.2) | **PASSES AS FILED.** Pair `a2de32420`, builder2, native, fixed arenas {terminus, locks, crossing, gorge, parade} x 1800–1827 (locks 1801–1828), n 140 paired, none missing, no twins; JOBS 10; load 4.7 at the start. Counter: released_fire base 0, arm 618. **G held deaths 253 -> 109 (−144, −57 %), se 21.3, drop − k·se = +108.9: PASS (6.8 se).** Guards, all PASS: stuck 871 -> 812; jam (T5) 267 -> 278 (line ≤ 295.5); open 4731 -> 4728; far loops 168 -> 126; kills 5812 -> 5752 (band ± 86); hit rate 0.725 -> 0.729; all friendly contacts 93916 -> 95881 (+2.1 %, line ≤ 96925); deaths team 0 2682 -> 2640, team 1 3187 -> 3178; tr_holds 3147 -> 3245 (≥ half); line 7 crossing arrivals 180/180 in all 4 cases both arms. Reported: hold crew-seconds 22275 -> 20229; all deaths 5869 -> 5818; standoffs 0/0. Raw: `references/round36/traffic/t8_series_a2de32420/`. Next: the ON hand-over on current main + its check, then the perf-judge window. |
+| 3 perf-judge | Orchestrator's ruling: on builder0, on the ON hand-over only, after a PASS; it gives the window. |
+| 4 seed twins | **DONE** (nothing to code; see below). |
+| 5 stretch: held deaths T8 doesn't release | Pre-read filed (`references/round36/traffic/held_preread.md`); the real read waits for T8's arm. |
+| R36.4 yieldgap (orchestrator's go) | **Quick GREEN** `lab/yieldgap` `76aea1185` (builder0, 105/0, both long-hull tests PASS); merged here `5cb41002c`. Native's mirror + S2a stack: `pair/native-s2a-yg` `8e6a52fc9` (native's). Rides in manoeuvre's S2a series. Native twin GREEN `32ba4ca99` (builder0 quick, test_native_yield 13/0; nose-on ON 1 twinned 0 mismatches not recorded, OFF recorded); S2a+yieldgap pair `32ba4ca99` full check GREEN (builder0, exit 0, 2967/0, 25 + 2 NOT JUDGED, sim-baseline 13/13 unmoved); manoeuvre names it and runs the S2a series. |
+| T8 smoke | `make traffic-t8-clip` (laptop): ON 5 held / 5 released for fire / 5 hold ticks; OFF 5 held / 1712 hold ticks. Sheets in `references/round36/traffic/t8_clip/`. |
+
+**Lessons this session (in remote_builds.md via the orchestrator):** a Spot run that lost its host is not a result (the driver now
+reads only the check's own verdict line); a green check prints "N passed, M NOT JUDGED" with no FAILED/NOT RUN field.
+**Cleanup owed after the series:** `git worktree remove ../godot-traffic-t8` and builder2's `~/tank_squad/godot-traffic-t8`.
+**Questions for the lead:** none. **Requests:** none open.
+
+### Log
+
+**Switch-OFF inertness: `a2de32420`, builder2, `sim-variants --traffic-off=holdfire`: base40 = the ON check's sim-baseline on 13 of 13 maps (T8 is inert off, and moves no sim-baseline map on). Series started ~14:53.** **T8 PAIR GREEN for the series: `pair/holdfire-r36` `a2de32420`, builder2, `make native check` exited 0, 2963 passed 0 failed, 25 targets passed + 2 NOT JUDGED (perf-judge, scenario_perf: load), sim-baseline 13 of 13 unmoved with T8 ON. Driver resumed 14:44:45 as unit `t8-series-r36d` (the stream copy of t8_series.sh, `7da1ab88e`: its NOT RUN guard had misread the green line; run with cwd = the pair tree, so h stays `a2de32420`).** **Quick of the merged carry-over GREEN: `c9b2fab03`, builder0, `make quick-remote` QUICK_BASE=main, 83 passed 0 failed (16 traffic/native/manoeuvre test files + lint, 1279 s).** **2026-10-20 ~14:10 PDT (traffic). Builder2 was preempted at 14:07:35, 4 min into the first check (void); the driver read the exit 255 as done, so it was fixed (`ee30b2194`: verdict line only, 3 tries, NOT RUN stops, series loops to completion) and the pair re-cut as `pair/holdfire-r36` `a2de32420` (same game code), unit `t8-series-r36c`, check from 14:10:30.** Earlier, ~14:00: CP36.1 landed (main `a318a2cd3`, adoption `e45bb6632`); merged into stream/traffic
+(`4a2a0d349`, DEFAULT_OFF `["holdfire"]`). **Pair cut: `pair/holdfire-r36` `46e6ba8a9`** = `4a2a0d349` + the ON flip, worktree
+`../godot-traffic-t8` (remove it and builder2's `~/tank_squad/godot-traffic-t8` after the series). **Driver** `t8_series.sh` running
+as systemd unit `t8-series-r36b` (needs `--setenv=PATH` for gcloud: the first unit died on `gcloud: command not found`), out
+`~/overnight-traffic/r36/t8series/`; its check started 14:00:43 on builder2 (the only full check there). Light quick of
+`4a2a0d349`'s carry-over on builder0 running (`~/overnight-traffic/r36/quick1.log`).
+
+**2026-10-20 (traffic, Opus).** Oriented. **Waiting on CP36.1** (main still `582650b36` at my start; the joint not merged).
+**Done meanwhile:** item 1's carry-over STAGED as `6a564673a` on current main (not checked yet): T8's traffic.gd hunk with
+`DEFAULT_OFF := ["holdfire"]` (T9's yieldfit2 comes through the joint, so not in my list), test_traffic_holdfire (+uid), the jam
+tooling (jam_census `held_deaths`/`holdfire_on`, jam_ab `--bar t8` + seed twins, jam_table, test_jam_ab: OK locally, python),
+t8_series.sh (OUT now `~/overnight-traffic/r36/t8series`), t7_clip + `make traffic-t7-clip`, round-35 references, judging.md's
+notes. round35/traffic's judging.md ended in a stray `||||||| c55471a5e` merge marker: left behind. movement.gd is identical to
+the joint's. When CP36.1 lands: `git merge main` (one expected conflict, the DEFAULT_OFF line: keep `["holdfire"]`) ->
+`make quick-remote`.
+**Item 4 (seed twins), read:** jam_ab and jam_table carry `seed_twins.filter_logs` (in the carry-over); far_table already has it on
+main; "far_ab"/"far_kills" don't exist as files (far_table is the far census reader). seq_hook reads runner rows of scenario cases,
+never a random arena: not applicable. Nothing more to code; closed with the carry-over.
+
+**Plan (ordered).** 1 carry-over (staged) -> merge main at CP36.1 + quick -> 2 cut `pair/holdfire-r36` + ON flip, t8_series.sh on
+builder2 under systemd-run -> 3 ask for a quiet perf-judge slot -> 5 stretch: the held deaths T8 did not release (design note).
+
 **2026-10-20 (orchestrator, at launch).** Not started. CP36.1 (the joint ship) was checking on builder0 at launch.

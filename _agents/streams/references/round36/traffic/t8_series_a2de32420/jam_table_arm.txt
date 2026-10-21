@@ -1,0 +1,71 @@
+jam_table: SEED_TWINS kept 140 of 140 logs, dropped 0
+jam census: 140 fights with JAM_CENSUS, 5818 deaths; parkedroom_on [None]
+
+Deaths by cause (share of all):
+  jam:friend        63  ( 1.1 %)
+  jam:yielding     215  ( 3.7 %)
+  open:driving    3116  (53.6 %)
+  open:enemy         8  ( 0.1 %)
+  open:parked     1604  (27.6 %)
+  stuck:no_path     13  ( 0.2 %)
+  stuck:static     198  ( 3.4 %)
+  stuck:still      269  ( 4.6 %)
+  stuck:wedged     332  ( 5.7 %)
+
+JAM deaths 278 of 5818 (4.8 %), 1.99 a fight
+  what it was doing | held by | that crew | where | n
+  jam:yielding  | other_squad | crew    | lanes  | 97
+  jam:yielding  | other_squad | crew    | dense  | 32
+  jam:yielding  | own_squad   | crew    | lanes  | 29
+  jam:friend    | other_squad | crew    | lanes  | 23
+  jam:yielding  | other_squad | crew    | open   | 14
+  jam:friend    | own_squad   | crew    | lanes  | 12
+  jam:yielding  | own_squad   | crew    | dense  | 10
+  jam:friend    | other_squad | crew    | dense  | 9
+  jam:yielding  | other_squad | crew    | base   | 8
+  jam:friend    | other_squad | crew    | open   | 8
+  jam:friend    | own_squad   | crew    | dense  | 7
+  jam:yielding  | unseated    | crew    | lanes  | 6
+  jam:yielding  | own_squad   | crew    | open   | 6
+  jam:yielding  | unseated    | crew    | open   | 5
+  jam:yielding  | unseated    | crew    | dense  | 4
+  jam:friend    | other_squad | battery | base   | 2
+  jam:friend    | other_squad | battery | dense  | 2
+  jam:yielding  | own_squad   | battery | lanes  | 1
+  jam:yielding  | own_squad   | battery | dense  | 1
+  jam:yielding  | unseated    | battery | base   | 1
+  jam:yielding  | own_squad   | crew    | base   | 1
+
+  by who held it: {'own_squad': 65, 'other_squad': 191, 'unseated': 15, 'own_squad/battery': 2, 'other_squad/battery': 4, 'unseated/battery': 1}
+  by where: {'lanes': 168, 'dense': 65, 'base': 12, 'open': 33}
+  by arena: {'crossing': 60, 'gorge': 69, 'locks': 71, 'parade': 35, 'terminus': 43}
+  by hull: {'gang_tank': 45, 'gang_scout': 43, 'gang_ifv': 38, 'ifv': 26, 'scout': 24, 'gang_support': 21, 'lancer': 19, 'law_ifv': 13}
+
+Under fire while jammed (last hit during the jam, or >= 2 hits in the 10 s before): 185 of 278 (67 %); hit_in_jam alone 145; hits_10s median 2
+Jammed for (s) before dying: p10 0.1 median 1.3 p90 3.8 max 24.9; >= 5 s: 19
+
+T6 lines: jam-under-fire deaths 185 (1.32 a fight); underfire_on [True]; Movement counters {'underfire_refusals': 451, 'underfire_holds': 82, 'underfire_aborts': 0, 'yields_started': 21100, 'asks_refused': 1077}
+  standoffs (two friendly crews nose to nose, both under fire, neither yielding, both still, >= 2 s): 0 in 140 fights
+  give-ways ended by a hit (probe-read) 297; friendly contacts of that crew in the 3 s after: 259
+  (D) jam:held deaths (REPORTED; T5's causes unchanged) 32: {'jam:held<stuck:wedged': 21, 'jam:held<open:driving': 10, 'jam:held<stuck:still': 1}; held within 3 s 109
+
+Episodes (one team, within 20 s and 40 m): 191; by size {1: 135, 2: 36, 3: 13, 4: 5, 5: 1, 7: 1}
+  gorge-1803 team 0: 7 jam deaths 11.8-33.6 s at lanes
+      11.8 s Green_Spears II_5  gang_scout     jam:friend    held by Green_Spears_6     (other_squad) jam  0.3 s hits10s 0 hit_in_jam False v 6.0
+      15.0 s Green_Spears_7     gang_scout     jam:yielding  held by Green_Spears_4     (own_squad) jam  5.9 s hits10s 0 hit_in_jam False v 0.0
+      19.4 s Green_Spears_6     gang_scout     jam:yielding  held by Green_Spears_4     (other_squad) jam  3.1 s hits10s 0 hit_in_jam False v 0.6
+      21.0 s Green_Spears_4     gang_scout     jam:yielding  held by Green_Wrenches_4   (other_squad) jam  0.9 s hits10s 0 hit_in_jam True v -2.5
+      21.2 s Green_Spears II_2  gang_scout     jam:yielding  held by Green_Spears_8     (other_squad) jam  3.1 s hits10s 2 hit_in_jam True v 0.0
+      33.4 s Green_Spears_1     gang_scout     jam:yielding  held by Green_Wrenches_7   (other_squad) jam  1.7 s hits10s 0 hit_in_jam True v 12.6
+      33.6 s Green_Hunters_7    gang_ifv       jam:yielding  held by Green_Wrenches_2   (unseated) jam  1.4 s hits10s 2 hit_in_jam True v -2.1
+  crossing-1818 team 1: 5 jam deaths 47.3-77.0 s at dense
+      47.3 s Rust_Lances_3      lancer         jam:yielding  held by Rust_Hunters_2     (other_squad) jam  0.3 s hits10s 0 hit_in_jam False v 2.7
+      51.3 s Rust_Hunters_3     ifv            jam:yielding  held by Rust_Guns2_5       (other_squad) jam  0.8 s hits10s 0 hit_in_jam False v -1.9
+      58.6 s Rust_Guns2_5       tank           jam:friend    held by Rust_Guns3_3       (other_squad) jam  0.1 s hits10s 0 hit_in_jam False v 2.0
+      60.6 s Rust_Guns3_3       tank           jam:yielding  held by Rust_Guns2_5       (unseated) jam  2.1 s hits10s 0 hit_in_jam False v -1.0
+      77.0 s Rust_Hunters_4     ifv            jam:friend    held by Rust_Lances_1      (other_squad) jam  0.9 s hits10s 0 hit_in_jam False v 2.6
+  crossing-1806 team 1: 4 jam deaths 49.4-67.8 s at dense
+      49.4 s Rust_Eyes_1        law_scout      jam:yielding  held by Rust_Eyes2_4       (other_squad) jam  2.3 s hits10s 0 hit_in_jam True v 11.0
+      52.4 s Rust_Guns_3        law_tank       jam:friend    held by Rust_Eyes2_4       (other_squad) jam  1.1 s hits10s 9 hit_in_jam True v 0.7
+      61.8 s Rust_Guns_2        law_tank       jam:friend    held by Rust_Eyes2_1       (other_squad) jam  2.8 s hits10s 3 hit_in_jam False v 2.5
+      67.8 s Rust_Eyes_5        law_scout      jam:yielding  held by Rust_Guns_1        (other_squad) jam  0.6 s hits10s 3 hit_in_jam False v 4.7
