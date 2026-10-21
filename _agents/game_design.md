@@ -4220,6 +4220,11 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    shooter the target can't see suppresses harder" (a tweak to existing suppression). Add it only if the blob-v-tactics line after
    1-3 shows the ambusher still lacks a decisive opening; watch the turtle guard (question 11).
 5. **Pre-registered fire.** Mark a kill zone ahead of time; artillery into it is accurate from the first shell.
+   **ANSWERED 2026-10-21: yes, after 1-3, simplest form; to be discussed again before it is built.** "Yes I want this, but I'm
+   sure we'll need to talk about it later". Form: one "mark kill zone" order per artillery unit, a visible circle (own side only),
+   much tighter scatter for shells landing inside it (today: scatter 2 m + 2 % of range, splash 9 m, 40 m/s flight), and it STILL
+   needs a spotted target (artillery needs eyes; scouts matter). The order must feel like the existing move/attack orders; the CPU
+   must use it too (choke points). Counters: scouting the zone, smoke.
 6. **Obstacles / channelling.** Mines, wrecks, roadblocks that force an attacker into a crowd (and pairs with area damage).
 7. **Short supply lines.** The defender near its resupply keeps fighting; a far-advanced attacker runs dry (ammo and repair exist).
 8. **Suppression stops an advance.** A pinned unit slows or halts, not just shoots wide: fire-and-manoeuvre becomes the way through.
