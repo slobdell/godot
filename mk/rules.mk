@@ -43,3 +43,10 @@ rules-shots: import ## Round 37 (rules): skirmish frames with the rules OFF and 
 	@ls $(RULES_SHOT_DIR)/*.png 2>/dev/null | wc -l | xargs -I{} echo "rules-shots: {} frames in $(RULES_SHOT_DIR)"
 	@errors=$$(cat $(RULES_SHOT_DIR)/*.log | grep -cE '^(ERROR|SCRIPT ERROR)' || true); echo "rules-shots: $$errors engine error lines"; \
 		[ "$$errors" -eq 0 ] || { cat $(RULES_SHOT_DIR)/*.log | grep -E '^(ERROR|SCRIPT ERROR)' | sort | uniq -c | sort -rn | head -5; exit 1; }
+
+# rules-skirmish: his playtest of the rules (make skirmish has no pass-through for flags). RULES defaults to all three.
+RULES ?= sight,spread,pin_slow
+
+.PHONY: rules-skirmish
+rules-skirmish: native-fresh import ## Round 37 (rules): play a skirmish with the rules ON (RULES=sight,spread,pin_slow; ARENA=terminus SEED=n)
+	$(GODOT) --path . -- --skirmish --enemy=cpu --seed=$(or $(SEED),3) --arena=$(or $(ARENA),terminus) --rules-on=$(RULES)

@@ -150,8 +150,8 @@ under `make native test`, each switch ON, both arms, before the series. Declare 
 - The short halt is in the plant, so the keyboard-driven tank of `make run` (legacy mode) would also halt for a long
   shot with the switch ON. Skirmish is unaffected beyond the rule itself.
 
-**What to playtest (once a rule is ON, or with the flags):** `make skirmish ARENA=terminus EXTRA="--rules-on=sight,spread,pin_slow"`
-(or the flags on the godot command line after `--`). Halt a squad at a crossroads (hold), send the CPU in: the halted squad
+**What to playtest (once a rule is ON, or with the flags):** `make rules-skirmish ARENA=terminus` (all three
+rules ON; `RULES=sight` for one; `make skirmish` for the OFF feel). Halt a squad at a crossroads (hold), send the CPU in: the halted squad
 should see the column first and shoot first. Then attack-move across open ground at a parked CPU squad: your crews make
 short halts for long shots, while a plain right-click move never stops to shoot. Under machine-gun fire a charge visibly slows.
 
