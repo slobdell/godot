@@ -1,8 +1,9 @@
 extends DriveTwinCase
 ## Round 37 (native, manoeuvre's unstick line for rules' R2): a crew in R2's short halt (`Tank.short_halt_seconds > 0`: the
 ## plant zeroes throttle to shoot) is not stalled, in Movement.unstick and in drive_native's unstick alike. A hull at rest,
-## a move order 40 m ahead, its stall clock a tick short of Movement.STUCK_SECONDS, so this tick's drive fires the unstick;
-## driven from one snapshot by the live GDScript and natively. Halted: neither fires. Not halted (the control): both fire.
+## a move order 40 m ahead, full throttle, its stall clock 0.01 s short of Movement.STUCK_SECONDS (DriveTwinCase's
+## `_unstick_compare` variant 1), unstuck from one forced state by the GDScript and natively (live and owned views). Halted:
+## neither fires. Not halted (the control): all three fire.
 
 const HALT_UNITS: Array[String] = ["tank", "ifv", "gang_tank"]
 
@@ -35,19 +36,33 @@ func _arm(halted: bool) -> Array:
 			var mover := Movement.of(tank)
 			var ahead := -tank.global_basis.z * 40.0
 			orders.set_orders({"type": "move_to", "x": ahead.x, "z": ahead.z}, null)
-			mover.phase = "driving"
-			mover._stuck_time = Movement.STUCK_SECONDS - 0.5 / float(SimClock.TICK_RATE)
+			# _unstick_compare's variant 1 (about to fire the stall rule), with the short halt set or not; the three arms
+			# (GDScript, native live, native owned) from one forced state.
+			mover._unstick_left = 0.0
+			mover._stuck_time = Movement.STUCK_SECONDS - 0.01
 			tank.short_halt_seconds = 1.0 if halted else 0.0
-			mover.native_stale |= Movement.STALE_ALL
-			var before := Movement.unstick_fires
 			var movers: Array[Movement] = [mover]
-			var controllers: Array[OrderController] = [orders]
-			var result := _compare_tick(movers, controllers, k, 0)
-			drives += result[0]
-			mismatches += result[1]
-			if first == "" and result[2] != "":
-				first = result[2]
-			fired += Movement.unstick_fires - before
+			var forced := _capture_all(movers)
+			var before := Movement.unstick_fires
+			var arms := []
+			for arm in 3:
+				_restore_all(movers, forced)
+				var cmd := TankCommand.new(1.0, 0.0, Vector3.ZERO)
+				if arm == 0:
+					mover.unstick(cmd, orders.move_order, 1.0 / float(SimClock.TICK_RATE))
+					fired += 1 if mover._unstick_left > 0.0 else 0
+				else:
+					NativeBridge.impl.unstick(mover, cmd, orders.move_order, 1.0 / float(SimClock.TICK_RATE), arm == 2)
+				arms.append([MoverState.command(cmd), _capture_all(movers)])
+			_restore_all(movers, forced)
+			Movement.unstick_fires = before
+			for arm in [1, 2]:
+				drives += 1
+				var differ := MoverState.diff(arms[0][1][0], arms[arm][1][0])
+				if arms[0][0] != arms[arm][0] or differ != "":
+					mismatches += 1
+					if first == "":
+						first = "%s arm %d: command live %s native %s; %s" % [tank.name, arm, arms[0][0], arms[arm][0], differ.left(400)]
 			tank.short_halt_seconds = 0.0
 			orders.queue_free()
 			tank.queue_free()
@@ -65,9 +80,9 @@ func test_a_crew_in_a_short_halt_is_not_unstuck_natively_either() -> void:
 	for halted: bool in [false, true]:
 		var got: Array = await _arm(halted)
 		var label := "short halt %s" % ("ON (1 s left)" if halted else "OFF (the control)")
-		print("native unstick, %s: %d drives compared, %d mismatches, unstick fires %d" % [label, got[0], got[1], got[3]])
+		print("native unstick, %s: %d native unsticks compared, %d mismatches, GDScript fires %d" % [label, got[0], got[1], got[3]])
 		assert_eq(int(got[1]), 0, "%s: the native unstick is the live GDScript's: %s" % [label, got[2]])
-		assert_true(int(got[0]) >= 9, "%s: every hull's drive was compared (%d)" % [label, got[0]])
+		assert_true(int(got[0]) >= 18, "%s: every hull compared, both native views (%d)" % [label, got[0]])
 		if halted:
 			assert_eq(int(got[3]), 0, "%s: no crew in a short halt is unstuck" % label)
 		else:
