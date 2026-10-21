@@ -29,6 +29,7 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 **The orchestrator's open items (in order):**
 1. ~~CP36.1~~ MERGED (R36.1, e45bb6632). **main 5d6bb1de8 is GREEN** (R36.5): it inherits `pair/native-s1s3-main` `20acbda5f`'s
    builder0 check (2961/0, 13 unmoved), which contains the joint + D5 + S3 (W1b deleted) + S1 stallnet OFF.
+   **main 3fc78e502 (83eaddf66) = + N4: GREEN, ALL JUDGED (R36.21), builder0 2972/0, perf-judge PASS 1.08x.**
    **main 6d4e18e29 = + orders' hand-over (R36.13): GREEN, builder0 `make native check exited 0`, 2972/0, 25 + 2 NOT JUDGED,
    sim-baseline 13/13 unmoved (T8 + S2a/yieldgap OFF + orders together).**
    **main 3d46b2884: T8 SHIPPED ON** (R36.12; held deaths 253 -> 109 / 140 fights). **main 10318ec81** adds S2a h1bside + yieldgap OFF (inherits 32ba4ca99, 2967/0, R36.7). O2 failed (R36.6); orders' hand-over
@@ -42,7 +43,7 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 3. **T8: pair `a2de32420` green on builder2 (2963/0, 13 unmoved, switch-OFF inert); series running since 14:53 (unit
    t8-series-r36d).** On PASS: traffic cuts the ON hand-over; the orchestrator grants ONE quiet builder0 window for perf-judge on it,
    which also clears main's owed one.
-4. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
+4. ~~Perf-judge owed~~ CLEARED (R36.21): main 83eaddf66 perf-judge PASS 1.08x inside its full check. Previously: perf-judge was owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
    joint since).
 
 **His packing answer (2026-10-20, game_design.md *Round 36: his packing answer*): keep 9 m.** O4 stays parked.

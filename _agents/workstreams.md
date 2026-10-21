@@ -258,6 +258,11 @@ _Filed here before any number._
   client1's first snapshot, which counts tanks seen AT ONCE). **Grant:** native fixes it in `tests/net/bot_client_check.gd` (a passing
   client lingers `--linger` s, default 8) and adds `make relay-linger-smoke` to `mk/net.mk` (known answers: linger 0 must FAIL 4/5,
   linger 20 must PASS); not added to check. N5 (census lint) rides with native's next hand-over.
+- **R36.21 (2026-10-20 ~22:55 PDT) main 3fc78e502 (83eaddf66) GREEN, ALL JUDGED; the owed perf-judge is CLEARED.** builder0 `make native
+  check exited 0`: 2972/0, 27 targets all passed, ALL JUDGED, sim-baseline unmoved. perf-judge JUDGED PASS on attempt 2 of 3: ratio
+  1.08x, 9.2 ms AI a tick (cpus 0-3, load 5.26, not a quiet box; attempt 1 refused at 1.76x). Covers the joint, D5, T8, S1/S2a/yieldgap
+  OFF, orders' tooling and N4 (round 35's last judged read: fde32f78c 1.01x, 7.0 ms a tick, quiet). The raw ms are not comparable
+  across loads; the ratio is the verdict.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
