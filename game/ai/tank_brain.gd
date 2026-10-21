@@ -3541,6 +3541,50 @@ static func turret_carries_aim(unit_id: String) -> bool:
 static var _turret_wheels := {}
 
 
+## Round 37 (orders O2, R37.9; his answer 2026-10-20: "Stay put and shoot": a squad he parked fires from its spot, HE
+## decides when it moves, and if it ever moves to fight it drives all the way back). Builder0's fight probe (3e43c4a24,
+## 18 fights): 34 of his 129 parked crews left their seats by their own option (SPOT 23, ENGAGE 4, RETREAT 4, RECHARGE 2,
+## COVER_FIRE 1), the worst a median 23 m off, through the held rule's under-fire moves and its 18 m leash; and nothing
+## brought them back (an idle crew's HOLD only turns). Under PARKED_HOLD, for his idle crew at its post (the station his
+## order left it on): a move its own option makes is refused when it ends more than PARKED_HOLD_M from the post (it holds
+## and shoots from there instead), except RETREAT (a crew about to be destroyed pulls back; his question is open); and a
+## crew off its post by more than PARKED_BACK_M with nothing else to do drives back onto it. CPU crews never have a post.
+## `--parked-hold=on` (env PARKED_HOLD=on).
+static var PARKED_HOLD := _parked_flag()
+
+
+static func _parked_flag() -> bool:
+	return OS.get_cmdline_user_args().has("--parked-hold=on") or OS.get_environment("PARKED_HOLD") == "on"
+
+
+const PARKED_HOLD_M := 4.0
+const PARKED_BACK_M := 3.0
+const PARKED_ARRIVE_M := 1.5
+## Measurement: moves PARKED_HOLD refused and returns it sent, since start.
+static var parked_refused := 0
+static var parked_returns := 0
+
+
+func _parked_move(order: Dictionary) -> Dictionary:
+	var post: Vector3 = _player_post
+	var here := _flat(tank.global_position)
+	var off := here.distance_to(_flat(post))
+	var kind := String(order.get("type", ""))
+	if kind == "move_to":
+		if String(choice.get("option", "")) == "RETREAT":
+			return order
+		if _flat(Vector3(float(order["x"]), 0.0, float(order["z"]))).distance_to(_flat(post)) <= PARKED_HOLD_M:
+			return order
+		parked_refused += 1
+		order = _held_face
+		kind = String(order.get("type", ""))
+	if (kind == "face" or kind == "stop") and off > PARKED_BACK_M:
+		parked_returns += 1
+		why = TankBrain._join(why, "back to its spot")
+		return TankBrain._move_to(post, false, 1.0, PARKED_ARRIVE_M)
+	return order
+
+
 func _order_move(order: Dictionary) -> void:
 	# The player's units hold until ordered (round-5 ruling; product constraint #4). A unit holding the post the player
 	# left it at may shoot, turn and — under fire — take cover or escape, and it goes back to its post; it may NOT start
@@ -3551,6 +3595,8 @@ func _order_move(order: Dictionary) -> void:
 			String(choice.get("option", "")), _held_under_fire, bool(order.get("to_safety", false))):
 		held_moves_refused += 1
 		order = _held_face
+	if PARKED_HOLD and _player_post != null:
+		order = _parked_move(order)
 
 	# Round 8 (the lead: "the semi trucks are yawing in place (should be impossible, they're not a tracker vehicle)"): a
 	# wheeled hull can only turn on the spot by creeping forward and back (TankMotion's multi-point turn), and the brain
