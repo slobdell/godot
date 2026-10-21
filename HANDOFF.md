@@ -45,13 +45,11 @@ kickoff prompt from `_agents/orchestration.md` *The kickoff prompt*.
 O3 (falsified), O4 parked (his call: keep 9 m), S4 (M1 already backs out), T10 (fails R36.23), S1 stallnet (fails its series,
 R36.27). Each ruling is in workstreams.md R36.x.
 
-**Close state:** briefs in `_agents/streams/archive/round36/`; all 14 side worktrees removed (laptop + builder0). **Still to do
-when he's back:** close the four worker CLI sessions (godot-traffic, godot-manoeuvre, godot-orders, godot-native), then the next
-orchestrator runs `make worktree-remove STREAM=<s>` for each, `ssh builder0 rm -rf ~/tank_squad/godot-<s>*`, and renames
-`stream/<s>` -> `round36/<s>` (traffic's T10 code stays only there, unmerged by design). builder2's `~/tank_squad` was not
-cleaned (the box was stopped): clean it on its next start. The judging table re-render (close step 5b) was not done this round.
+**Close state (done 2026-10-21):** briefs in `_agents/streams/archive/round36/`; every round-36 worktree removed (laptop, builder0,
+builder2); `stream/<s>` renamed `round36/<s>` (traffic's T10 code stays only there, unmerged by design). The judging-table re-render
+(close step 5b) moved to round 37's native N6.
 
-**Next: split round 37. The 11 OPEN QUESTIONS are answered** (game_design.md *Summary of his answers*, see *OPEN QUESTIONS for him before round
+**Round 37 was split from the 11 answered questions** (game_design.md *Summary of his answers*, see *OPEN QUESTIONS for him before round
 37*). Round-37 candidates are listed below under round 36.
 
 ## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon)
