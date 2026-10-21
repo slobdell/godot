@@ -210,6 +210,9 @@ func _run() -> void:
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"self_off_m": snappedf((squad.get("self_off", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"off_idle_s": snappedf(int(squad.get("off_idle_ticks", 0)) / float(SimClock.TICK_RATE), 0.1),
+				"off_split_s": (squad.get("off_split", {}) as Dictionary).keys().reduce(func(acc: Dictionary, k: String) -> Dictionary:
+						acc[k] = snappedf(int(squad["off_split"][k]) / float(SimClock.TICK_RATE), 0.1)
+						return acc, {}),
 				"self_off_crews": (squad.get("self_off", {}) as Dictionary).size(), "left_by": squad.get("left_by", {}),
 				"self_off_back": (squad.get("self_off", {}) as Dictionary).keys().filter(func(n: String) -> bool:
 						return _tank(n) != null and _tank(n).is_alive() and _flat_d(_tank(n).global_position, squad["placed"][n]) <= BACK_M).size(),
@@ -552,6 +555,22 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 		var spot: Variant = OrderFeed.station(_controls.orders, n)
 		if _flat_d(_tank(n).global_position, spot if spot is Vector3 else placed[n]) > PARKED_OFF_M:
 			off_ticks += 1
+			# R37.13: each off tick by what is happening: giveway (yielding now or within GIVEWAY_S: M5's), face_drift
+			# (moving while the brain's own command is face / stop: the drive layer, M6's), brain (moving under its
+			# move_to), still (standing off its seat).
+			var mv := Movement.of(_tank(n))
+			var cmd: Dictionary = (mv.ctl as OrderController).move_order if mv != null and mv.ctl is OrderController else {}
+			var moving := Vector2(_tank(n).velocity.x, _tank(n).velocity.z).length() > 0.5
+			var kind := "still"
+			if yielded.has(n) and _match.tick - int(yielded[n]) <= int(GIVEWAY_S * SimClock.TICK_RATE):
+				kind = "giveway"
+			elif moving and String(cmd.get("type", "")) == "move_to":
+				kind = "brain"
+			elif moving:
+				kind = "face_drift"
+			var split: Dictionary = squad.get("off_split", {})
+			split[kind] = int(split.get(kind, 0)) + 1
+			squad["off_split"] = split
 	squad["off_idle_ticks"] = int(squad.get("off_idle_ticks", 0)) + off_ticks
 	for n: String in alive:
 		if placed.has(n):
