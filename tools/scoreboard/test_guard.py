@@ -26,7 +26,7 @@ def fight(root, kind, arena, seed, side, winner, reason="control", kills=(0, 0),
     os.makedirs(os.path.dirname(path), exist_ok=True)
     role = "draw" if winner == "draw" else ("tactics" if kind == "none" or winner != side else "guard")
     # As the probe prints them: side and winner and the factions' keys in Match.TEAM_NAMES' case; kills etc lower case.
-    result = {"guard": kind, "side": side.capitalize(), "winner": winner.capitalize(), "role": role, "reason": reason, "seconds": seconds,
+    result = {"guard": kind, "arena": arena, "seed": seed, "side": side.capitalize(), "winner": winner.capitalize(), "role": role, "reason": reason, "seconds": seconds,
               "kills": {"green": kills[0], "rust": kills[1]}, "losses": {"green": losses[0], "rust": losses[1]},
               "control": {"green": control[0], "rust": control[1]},
               "factions": {"Green": factions[0], "Rust": factions[1]}}
@@ -74,6 +74,34 @@ with tempfile.TemporaryDirectory() as root:
     text = guard.render(report)
     check("render names the line", "BLOB: 4 of 5 fights read" in text, True)
     check("render says missing", "MISSING: locks-2-green.log" in text, True)
+
+# --pair (a rule's bar): the same fights, one flipped to a loss, one to a win, one more flipped to a loss.
+with tempfile.TemporaryDirectory() as base_root, tempfile.TemporaryDirectory() as arm_root:
+    for seed in (1, 2):
+        fight(base_root, "blob", "terminus", seed, "green", "green", kills=(10, 5), losses=(5, 10))
+        fight(base_root, "blob", "terminus", seed, "rust", "green", kills=(5, 5), losses=(5, 5))
+    fight(arm_root, "blob", "terminus", 1, "green", "rust", kills=(5, 10), losses=(10, 5))   # win -> loss
+    fight(arm_root, "blob", "terminus", 1, "rust", "rust", kills=(5, 5), losses=(5, 5))      # loss -> win
+    fight(arm_root, "blob", "terminus", 2, "green", "rust", kills=(5, 10), losses=(10, 5))   # win -> loss
+    fight(arm_root, "blob", "terminus", 2, "rust", "green", kills=(5, 5), losses=(5, 5))     # loss, unchanged
+    fight(arm_root, "blob", "locks", 9, "rust", "green")                                     # no base: not paired
+    paired = guard.pair([base_root], [arm_root])["blob"]
+    check("pair n", paired["n"], 4)
+    check("pair unpaired", paired["unpaired_in_arm"], 1)
+    check("pair worse", paired["worse"], 2)
+    check("pair better", paired["better"], 1)
+    check("pair mcnemar", paired["mcnemar_p_worse"], 4 / 8.0)   # P(>= 2 of 3) = (3 + 1) / 8
+    check("pair win diff", paired["win_diff"], 0.25 - 0.5)
+    check("pair seeds", paired["seeds"], 2)
+    # Jsonl input reads the same fights as the logs.
+    jsonl = os.path.join(base_root, "fights.jsonl")
+    with open(jsonl, "w") as out:
+        for path in sorted(__import__("glob").glob(os.path.join(base_root, "blob", "*.log"))):
+            for line in open(path):
+                if line.startswith("GUARD_RESULT "):
+                    out.write(line[len("GUARD_RESULT "):])
+    check("jsonl same win", guard.lines(guard.read([jsonl]))["blob"]["all"]["win"],
+          guard.lines(guard.read([base_root]))["blob"]["all"]["win"])
 
 # The scoreboard table's guard section (N3): a main with a guard read gets the lines; one without reads "not run".
 import table  # noqa: E402

@@ -13,7 +13,7 @@ extends SceneTree
 ## ElementCommander stands down, OrderFeed.player_team), and its elements get ElementTasks through Element.assign, the same
 ## call the tactical map makes for his right-click move (`{"verb": "move", "to": ..., "drills": false}`) and his hold.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean \
-##       --seed=N --arena=A --mute --guard=blob|turtle|none --guard-side=green|rust [--seconds=600]
+##       --seed=N --arena=A --mute --guard=blob|turtle|none --guard-side=green|rust [--seconds=600] [switches: GUARD_ARGS]
 ## Prints GUARD_RESULT {json} once: who won (the ordered side "guard", the CPU "tactics", or "draw"), why, how long, kills
 ## and losses a side, the zone points, and what the ordered side was told. Read by tools/scoreboard/guard.py.
 ## A fight that has not ended by --seconds is judged as the game judges a time-out (Match.result("time_limit")).
@@ -43,6 +43,17 @@ func _flag(name: String, fallback: String) -> String:
 		if String(arg).begins_with("--%s=" % name):
 			return String(arg).split("=", true, 1)[1]
 	return fallback
+
+
+## The run's switch arguments (`--rules-on=`, `--cover-on=`, `--traffic-on=`, `--nav-off=` ...: make guard-run's GUARD_ARGS),
+## recorded in GUARD_RESULT so an arm's fights say which arm they are.
+static func _arm_args() -> PackedStringArray:
+	var out := PackedStringArray()
+	for arg in OS.get_cmdline_user_args():
+		for prefix in ["--rules-", "--cover-", "--traffic-", "--nav-", "--tune="]:
+			if String(arg).begins_with(prefix):
+				out.append(String(arg))
+	return out
 
 
 static func _xz(point: Vector3) -> Array:
@@ -245,4 +256,6 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 			"kills": {"green": _kills[0], "rust": _kills[1]}, "losses": {"green": _losses[0], "rust": _losses[1]},
 			"shots": {"green": _shots[0], "rust": _shots[1]}, "hits": {"green": _hits[0], "rust": _hits[1]},
 			"control": result.get("control"), "tanks": result.get("tanks"), "army_cost": result.get("army_cost"),
-			"factions": factions, "blob_drills": _flag("blob-drills", "off"), "tasks": _tasks, "retargets": _retargets, "last_target": _target_name}))
+			"cover_struck": int((result.get("stats", {}) as Dictionary).get("cover_struck", 0)) \
+					if typeof(result.get("stats")) == TYPE_DICTIONARY else 0,
+			"args": " ".join(_arm_args()), "factions": factions, "blob_drills": _flag("blob-drills", "off"), "tasks": _tasks, "retargets": _retargets, "last_target": _target_name}))

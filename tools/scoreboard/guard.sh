@@ -9,7 +9,8 @@
 # build/'s non-.log files). A chunk whose logs are all there with a GUARD_RESULT is skipped, so re-running the script resumes.
 # An exit 255 (the box gone) starts builder2 again and retries, GUARD_TRIES times a chunk. Every attempt is a line in
 # driver.txt; `lost` there counts the attempts preemption cost. Long: run it under systemd-run (or setsid nohup).
-#   GUARD_SEEDS="2601 ... 2608 2701 ... 2708" (default the two blocks), GUARD_KINDS="blob turtle", GUARD_JOBS=20.
+#   GUARD_SEEDS="2601 ... 2608 2701 ... 2708" (default the two blocks), GUARD_KINDS="blob turtle", GUARD_JOBS=20,
+#   GUARD_ARGS="--cover-on=hulldown" GUARD_TAG=hulldown (an arm: its switches, its own folder; pair it with guard.py --pair).
 set -uo pipefail
 export PATH=$HOME/projects/bin:$PATH  # gcloud, for gcp-start (remote_builds.md: a systemd-run unit lacks it)
 commit=${1:?usage: tools/scoreboard/guard.sh COMMIT [HOST]}
@@ -17,7 +18,9 @@ host=${2:-slobdell@builder2}
 src=$(git rev-parse --show-toplevel)
 short=$(git -C "$src" rev-parse --short=9 "$commit") || { echo "guard: no such commit $commit" >&2; exit 2; }
 wt=${GUARD_WORKTREE:-$(dirname "$src")/godot-native-guard}
-out=${GUARD_OUT:-$(dirname "$src")/godot-native-guard-raw}/$short
+# GUARD_ARGS (an arm's switches, e.g. --cover-on=hulldown) go to every fight; GUARD_TAG names the arm's folder (<commit>-<tag>).
+args=${GUARD_ARGS:-}
+out=${GUARD_OUT:-$(dirname "$src")/godot-native-guard-raw}/$short${GUARD_TAG:+-$GUARD_TAG}
 seeds=${GUARD_SEEDS:-$(seq 2601 2608; seq 2701 2708)}
 kinds=${GUARD_KINDS:-blob turtle}
 arenas=${GUARD_AT:-terminus locks sumps gorge parade}
@@ -37,7 +40,7 @@ for f in "${overlay[@]}"; do [ -e "$src/$f" ] && { mkdir -p "$(dirname "$wt/$f")
 overlay_from=$(git -C "$src" rev-parse --short=9 HEAD)
 mkdir -p "$out"
 say() { echo "$*" | tee -a "$out/driver.txt"; }
-say ">> guard: $short on $host, probe from $overlay_from, kinds '$kinds', seeds $(echo $seeds | wc -w) ($(date '+%F %T'))"
+say ">> guard: $short on $host, probe from $overlay_from, kinds '$kinds', args '$args', seeds $(echo $seeds | wc -w) ($(date '+%F %T'))"
 
 complete() {  # complete SEED: every log of the chunk is in $out with its GUARD_RESULT
 	local seed=$1 kind arena side
@@ -57,7 +60,7 @@ for seed in $seeds; do
 		esac
 		rm -rf "$wt/build/guards"
 		( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native guard-run \
-			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="$seed" GUARD_JOBS="$jobs" ) > "$out/remote-$seed.log" 2>&1
+			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="$seed" GUARD_JOBS="$jobs" GUARD_ARGS="$args" ) > "$out/remote-$seed.log" 2>&1
 		status=$?
 		exited=$(grep -E '^>> remote: make .*guard-run.* exited ' "$out/remote-$seed.log" | tail -1)
 		load=$(grep -E '^>> guard-run on ' "$wt/build/guards/run.txt" 2>/dev/null | head -1 | sed 's/.*| load /load /')
