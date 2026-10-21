@@ -47,6 +47,11 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 
 **His packing answer (2026-10-20, game_design.md *Round 36: his packing answer*): keep 9 m.** O4 stays parked.
 
+**orders is DONE (2026-10-20 ~20:40):** last green a1156cffe merged as main b7449c5c1 (INHERIT, builder0 2972/0); O1 closed (no
+workload), O2 failed (OFF), O3 falsified, O4 parked (his 9 m); the 'neither' twitch counted and traced (LOOP -> T10 / S4; ENGAGEMENT ->
+his "stay put" answer; STOPPED SHORT -> round 37; re-dealt crews -> his "own squad unless contention" answer).
+**traffic reopened for T10** (seatyield / seathold, R36.16–R36.17).
+
 **traffic is DONE (2026-10-20 ~18:30):** stream/traffic 362848e6a green (builder2 2969/0); game code = main's; tooling/docs only, not a
 merge candidate (merge its tooling at the close if wanted). T8 does not show on the scoreboard (its gain has no line); native adds a
 "killed while held" line.
