@@ -101,7 +101,16 @@ the K5 draft `reshape-draft-page.html` (raw numbers `heat.json`). Tools: `make c
 (a swap needs >= 50 sampled hits within 12 m of it and its mirror; containers that are part of a street wall are never touched).
 Under "re-shape, don't add" that finds: pit 1 pair, terminus 1, crossing 2, sumps 2, gorge 1, archipelago 2, docks 2; **foundry,
 yard, locks, parade, cut, yard_open: nothing** (their hottest streets have no lone clutter). Each swap trades hard cover (a
-container or wreck hides a crew completely) for low cover. **Apply note:** the dealt maps are written by `tools/make_arenas.py`
+container or wreck hides a crew completely) for low cover. **Option (b) draft (the orchestrator's ask, NOT applied):** `addruns-draft-page.html`, from `tests/cover/add_runs_proposal.py`.
+Short 12 m runs (two barriers) ADDED across the hottest streets of the four maps with the most concentrated fighting (top four
+cell pairs >= 20 % of hull hits: crossing 0.28, sumps 0.27, locks 0.20, gorge 0.20), each with its mirror, 5 m clear all
+round, out of the spawn ends, 2 runs a map: 8 barriers a map. Each run has 6-16 % of its map's sampled hull hits within 12 m
+(crossing 172 / 182 of 2973; sumps 373 / 288 of 3165; locks 341 / 309 of 2400; gorge 303 / 316 of 2008). Crossing's
+hottest spot (the west bridge) has no room, so its runs sit on the bank facing the bridges.
+**Taller rubble (his Q1 alternative):** `rubble_note.md`. Two limits: rounds fly at 1.05-1.14 m, so anything over ~1.0 m blocks
+the sheltering crew's own shots unless rules moves low cover off the shells' hit layer; eye height 1.3 m caps low cover at
+~1.25 m, which lifts a 4 m tank only from 0.22 to 0.31 hidden. Not worth it unless Bar K shows hull-down working for the cars.
+**Apply note:** the dealt maps are written by `tools/make_arenas.py`
 (not cover's path): an approved re-shape must land there too, or the next `make arenas` undoes it (request to the orchestrator).
 
 ### K2: decisions (the rule as built)
