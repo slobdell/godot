@@ -200,7 +200,20 @@ as named; N4 sweep; N5 lint; stretch.
       built earlier in the frame, or in idle, ticks once against the stale transform.
   - **Real play:** `--skirmish` builds its squads in main._ready (main_ready is stale, the 3.0 class), so brains' warm-up stays
     the right fix, for the corrected reason. Respawns go through `place()` (_placed_settle skips their stale tick).
-  - **Stale text** (others' paths, proposed to the orchestrator): run_tests.gd:115-121's comment ("engine-side state set by the
+  - **Stale text:** R36.25 corrected R35.57 and HANDOFF; run_tests.gd's comment corrected by native under grant (cb9aef5aa,
+    comment only). Originally proposed: run_tests.gd:115-121's comment ("engine-side state set by the
     first iteration (most likely the physics space's first step)"), and R35.57 / HANDOFF "real play's engine state".
 
 **2026-10-20 (orchestrator, at launch).** Not started.
+- **R36.24 order flicker TRACED (ff1825b09; `references/round36/native/order_flip_trace.md`; no code).** builder0 light lane,
+  native loaded, cb9aef5aa (main e778ca5c6, T10 OFF) plus print-only probes, locks/3/click s3664, n=3 runs, the same ticks
+  each run.
+  - **Writer:** GDScript `Element.update` -> `Element._issue` (element.gd:1932) -> `Orders.issue`, source "element". It is
+    not the native execute.
+  - **Cause:** the halt formation flips herringbone <-> coil (doctrine: lanes/dense -> herringbone, open -> coil), and the
+    flip re-seats Bravo_2 17.6 m (key `reseat`).
+  - **The condition:** `ElementSituation.terrain_at(center)` has no hysteresis. One cover feature sits at 45.0-45.5 m (=
+    TERRAIN_RADIUS) from the crews' centroid, which Bravo_2's own creeping moves by 0.07 m. The terrain flips at the same
+    ticks as the order writes (1159 / 1276 / 1288 / 1294).
+  - **Round 37:** latch the halt shape per arrival, or read terrain at the anchor; size it by terrain-caused reseats.
+  - The laptop does not reproduce it.
