@@ -798,3 +798,6 @@ only `*.log`. Native lost the scoreboard's raw `screen.json` / `run.txt` in the 
 had already been scored). Anything a series or probe must keep that is not a `.log` goes OUTSIDE `build/` (a `~/overnight-<stream>/`
 folder or a sibling directory, as `tools/scoreboard/run.sh` now uses `../godot-native-score-raw`), or is copied out before the
 same worktree's next check.
+**Round 36: `make gcp-start` under systemd-run needs gcloud on the unit's PATH.** gcloud lives in `~/projects/bin`, which a `systemd-run
+--user` unit doesn't inherit unless passed: launch with `--setenv=PATH="$PATH"` from a shell that has it, or `export
+PATH=$HOME/projects/bin:$PATH` inside the unit's script; otherwise `make gcp-start` exits 127 and builder2 stays stopped (manoeuvre).
