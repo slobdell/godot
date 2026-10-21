@@ -61,9 +61,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 **2026-10-21 (cover worker, Opus).** Branch `stream/cover`. Launch base 9d325e291 (main GREEN per HANDOFF; no baseline re-run).
 
+**GREEN, merge here: e6f720619** (K1 tooling + pages, K2 OFF, K3): builder2 `make check exited 0`, 25 passed + 2 NOT JUDGED
+(perf-judge refused 3x at ratio ~2.5x, the box busy; scenario_perf loaded 4.21x), tests 2988 passed 0 failed, native ON, sim-baseline
+13/13 unmoved (the switch OFF is inert), scenarios 52/0, 4 pending, 1 unexpectedly passing (`scout_suppress::test_target_behind`,
+known, native's to promote). Perf-judge is owed on a quiet box (OFF adds one dictionary lookup per front-arc hit).
+
 ### Plan (in order) and where each stands
 1. **K1 the count** -- DONE: census + fight heat + page (below); reported to the orchestrator.
-2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 5b4e79362's tree, 183 passed 0 failed, lint 535 scripts); full check next.
+2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 183/0); full check GREEN at e6f720619 (above).
 3. **K3 the seat API** -- DONE at 5b4e79362 (laptop, `FILTER=cover_seat`, 7/7 PASS); orders told once it is on main.
 4. **K4 the bar** -- after CP37.1; see the sequencing note below (K4 before K5 measures ~nothing).
 5. **K5 the map re-shape** -- WAITING ON HIS GATE: draft page filed (below).
