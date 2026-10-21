@@ -354,6 +354,14 @@ static func set_off(name: String, value: bool) -> void:
 ## covers, each by min(1, feature height / hull height): a 0.9 m barricade hides most of a 1.24 m Rat Rod and a
 ## fifth of a 4 m bus. Pure and deterministic (the features in index order, a fixed slice count).
 func low_screen(center: Vector2, forward: Vector2, toward: Vector2, hull: Vector3) -> Dictionary:
+	# Round 37 (native N2): the same reading in C++ (CoverNative.low_screen); this GDScript stays the reference
+	# (tests/test_native_cover_low.gd).
+	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		return _native.low_screen(center, forward, toward, hull)
+	return low_screen_gd(center, forward, toward, hull)
+
+
+func low_screen_gd(center: Vector2, forward: Vector2, toward: Vector2, hull: Vector3) -> Dictionary:
 	var none := {"fraction": 0.0, "point": center, "far": 0.0}
 	if hull.y <= 0.0 or toward.length_squared() < 1e-9:
 		return none
@@ -422,6 +430,12 @@ func low_screen(center: Vector2, forward: Vector2, toward: Vector2, hull: Vector
 ## Round 37 (cover, K3): the LOW features (lower than EYE_HEIGHT) whose box comes within `radius` of `center`, in
 ## index order.
 func low_features_near(center: Vector2, radius: float) -> PackedInt32Array:
+	if _native != null and BrainSwitches.native and BrainSwitches.native_cover:
+		return _native.low_features_near(center, radius)  # round 37 (native N2): CoverNative's twin
+	return low_features_near_gd(center, radius)
+
+
+func low_features_near_gd(center: Vector2, radius: float) -> PackedInt32Array:
 	var seen := {}
 	for cx in range(floori((center.x - radius) / CELL), floori((center.x + radius) / CELL) + 1):
 		for cz in range(floori((center.y - radius) / CELL), floori((center.y + radius) / CELL) + 1):
