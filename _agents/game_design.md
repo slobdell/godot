@@ -4230,6 +4230,9 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    Wrecks stay passable (contention). Player-placed obstacles belong to question 10. Note for question 3's low-cover pass: he finds
    the maps busy, so low cover should mostly re-shape what is already there (rubble, low walls in place of clutter), not add to it.
 7. **Short supply lines.** The defender near its resupply keeps fighting; a far-advanced attacker runs dry (ammo and repair exist).
+   **ANSWERED 2026-10-21: NO.** "no, I don't want to introduce a supply concept". (Correction to the note: direct-fire guns have had
+   unlimited ammo since R8, 2026-09-14; only artillery keeps 24 rounds.) No ammo limits, no repair-only-near-trucks rule. The
+   support trucks' visible feedback (already decided) stands on its own.
 8. **Suppression stops an advance.** A pinned unit slows or halts, not just shoots wide: fire-and-manoeuvre becomes the way through.
 9. **The four levers from the first message:** clumping punished (area effects / splash), defender edge, flanks pay visibly (side
    and rear armour exist, front 4 / side 3 / rear 2, but aren't felt), information (ambushes unseen until sprung).
