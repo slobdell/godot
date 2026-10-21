@@ -426,6 +426,8 @@ func _physics_process(delta: float) -> void:
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
 		var t := _profile_start()
 		_update_suppression()
+		if RuleSwitches.sight_on:
+			_settle_motion_sight()
 		_profile("match/suppression", t)
 	if tick % INTEL_EVERY_TICKS == 0:
 		var t := _profile_start()
@@ -1215,6 +1217,15 @@ func _update_suppression() -> void:
 		stats["suppression_total"][tank.team] += tank.suppression
 		if tank.is_pinned():
 			stats["pinned_samples"][tank.team] += 1
+
+
+## Round 37 (rules R1): after the settle (GDScript or native), each living crew's own motion scales its sight
+## (Tank.settle_motion_sight). Sorted, counted in ticks: deterministic. GDScript on both paths on purpose: a few
+## multiplies per crew at 15 Hz, so native needs no twin of it.
+func _settle_motion_sight() -> void:
+	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / SimClock.TICK_RATE
+	for tank in _sorted_tanks():
+		tank.settle_motion_sight(seconds)
 
 
 func _update_intel() -> void:

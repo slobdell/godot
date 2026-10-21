@@ -1135,6 +1135,41 @@ func _apply_suppression_effects() -> void:
 	_shown_hull_turn = hull_turn_rate
 
 
+## Round 37 (rules R1, C37.2, his reframe: "a unit's vision shrinks a little when moving / expands a little when
+## stopped"): a crew's OWN motion scales its sight. Driving it watches ~85 % of its radius; halted for HALT_DWELL_SECONDS
+## (a brief halt doesn't count) ~110 %. The factor walks between the two at SIGHT_BLEND_PER_SECOND, so the fog edge he
+## sees never jumps. It multiplies whatever suppression left (Match runs this right after the settle, on both its
+## GDScript and native paths), and records the result as the shown sight so the next settle keeps the calm radius.
+## `RuleSwitches.sight_on`; OFF this never runs and sight is untouched.
+const MOVING_SIGHT_FACTOR := 0.85
+const HALTED_SIGHT_FACTOR := 1.10
+const HALT_DWELL_SECONDS := 2.0
+## 0.85 -> 1.10 in a second.
+const SIGHT_BLEND_PER_SECOND := 0.25
+## Slower than this over the ground (real_velocity, flat) counts as halted: a hull pivoting in place or creeping onto
+## its seat is watching, not driving.
+const HALTED_BELOW_SPEED := 1.0
+## The current factor (1 until the first dwell or drive) and how long this crew has been halted.
+var motion_sight := 1.0
+var halted_seconds := 0.0
+
+
+func settle_motion_sight(seconds: float) -> void:
+	if not alive:
+		return
+	if Vector2(real_velocity.x, real_velocity.z).length() >= HALTED_BELOW_SPEED:
+		halted_seconds = 0.0
+		motion_sight = maxf(MOVING_SIGHT_FACTOR, motion_sight - SIGHT_BLEND_PER_SECOND * seconds)
+	else:
+		halted_seconds += seconds
+		if halted_seconds >= HALT_DWELL_SECONDS:
+			motion_sight = minf(HALTED_SIGHT_FACTOR, motion_sight + SIGHT_BLEND_PER_SECOND * seconds)
+	if sight_radius != _shown_sight:
+		_apply_suppression_effects()  # someone set a new calm radius since the settle: take it first
+	sight_radius = _calm_sight * (1.0 - SUPPRESSION_SIGHT_PENALTY * suppression) * motion_sight
+	_shown_sight = sight_radius
+
+
 ## L2: heads down. What brains and battle drills trigger on.
 func is_pinned() -> bool:
 	return alive and suppression >= PINNED_SUPPRESSION
@@ -1300,6 +1335,8 @@ func _note_off_floor() -> void:
 func _set_alive(value: bool) -> void:
 	alive = value
 	suppression = 0.0  # a wreck is not pinned, and a fresh crew starts calm
+	motion_sight = 1.0  # R1: and starts from its plain radius, not the wreck's last stretch
+	halted_seconds = 0.0
 	_apply_suppression_effects()
 	visible = value
 	_shown_health = -1  # push everything to the visuals again on the next frame
