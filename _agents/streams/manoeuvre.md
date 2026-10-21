@@ -40,7 +40,12 @@ left wedged behind their squad.
    distance to the yielder's seat; it no longer leads the asker out. Bar in Status before any number (deciding: metres a seated
    crew is moved off its seat, base = round 36's S4 trace; guards: the asker's wait and all-in time, friendly contacts, kills).
    Symmetric: a pass ships ON. After M1.
-6. **Stretch:** the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped short / traffic split), trace only.
+6. **M6 a parked wheeled hull told to `face` drives off its spot (R37.13, godot-b0, 2026-10-21):** orders' trace (laptop
+   GDScript, locks 3 click s34, scouts): under SPOT the command is `face`, the move refused, yet a wheeled scout drives ~7 m in
+   a second (43.4 -> 26 m from its seat over 3 s); builder0 re-count (18 fights, orders' 23ffe47fb): 23 SPOT + 4 ENGAGE leaves
+   of parked crews were this face-path motion. After M1/M5: trace (how far, which units, why the turn needs travel), propose
+   a turn-in-place or a short back-and-forth limit for a parked hull, bar before any number.
+7. **Stretch:** the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped short / traffic split), trace only.
 
 ## How to verify
 
