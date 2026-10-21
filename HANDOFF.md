@@ -57,6 +57,8 @@ his "stay put" answer; STOPPED SHORT -> round 37; re-dealt crews -> his "own squ
 merge candidate (merge its tooling at the close if wanted). T8 does not show on the scoreboard (its gain has no line); native adds a
 "killed while held" line.
 
+**BEFORE ROUND 37: raise the 11 OPEN QUESTIONS with him (game_design.md *OPEN QUESTIONS for him before round 37*), one at a
+time, in player terms. He asked to come back to them before the next round.**
 **His round-37+ direction (game_design.md *Round 36: his direction against the slug-fest*):** the support trucks get visible
 feedback; rule levers so a blob frontal assault loses (area effects, defender edge, flanks, information); a blob-v-tactics
 scoreboard line as the measure.

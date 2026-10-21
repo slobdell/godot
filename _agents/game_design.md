@@ -4179,3 +4179,27 @@ with its own squad, and avoid crossings by swapping whole squads' patches and se
   (motion reveals; firing on the move is worse; digging in; pre-registered fire; obstacles; first-shot ambush).
 - **The measure:** a scoreboard line "an all-units frontal assault v the same army played with tactics", headless, many seeds;
   today the blob probably wins; each lever should move it. Guard: a pure turtle must not always win either.
+
+### OPEN QUESTIONS for him before round 37 (the slug-fest; he asked to come back to these, 2026-10-20 ~23:45)
+
+Asked to be persisted, not decided yet ("most of these ideas sound really good, and I want to talk about them later"). The next
+orchestrator raises them with him BEFORE splitting round 37, one at a time, in player terms, each with a recommendation.
+
+1. **Motion reveals.** A moving vehicle is spotted much farther away than a still one; still and in cover, closer still. (Not in the
+   game today.) Recommendation: yes, first.
+2. **Firing on the move.** Today a moving shot spreads 1.5x (`Match.MOVING_SPREAD_FACTOR`). Raise it to ~2.5–3x so a stopped vehicle is
+   clearly deadlier? Recommendation: yes, first.
+3. **Dig in.** After ~10–15 s still, a vehicle entrenches (a visible berm), taking much less frontal damage. Recommendation: yes, first.
+4. **Ambush first shot.** A hidden unit's opening volley gets an accuracy bonus and briefly pins its target. Recommendation: after 1.
+5. **Pre-registered fire.** Mark a kill zone ahead of time; artillery into it is accurate from the first shell.
+6. **Obstacles / channelling.** Mines, wrecks, roadblocks that force an attacker into a crowd (and pairs with area damage).
+7. **Short supply lines.** The defender near its resupply keeps fighting; a far-advanced attacker runs dry (ammo and repair exist).
+8. **Suppression stops an advance.** A pinned unit slows or halts, not just shoots wide: fire-and-manoeuvre becomes the way through.
+9. **The four levers from the first message:** clumping punished (area effects / splash), defender edge, flanks pay visibly (side
+   and rear armour exist, front 4 / side 3 / rear 2, but aren't felt), information (ambushes unseen until sprung).
+10. **Unit swaps (parked by his "the problem is not the units, but the rules"):** gangs' Oil Slick Rig, Law's Spike-Strip
+    Interceptor; alternates: roadblock truck, drone/spotter van, smoke layer.
+11. **The balance guard:** a blob frontal assault should lose, AND a pure turtle must not always win (the attacker keeps smoke,
+    artillery, scouting, flanking as tools).
+
+Already decided (not open): the support trucks get visible feedback; the measure is a blob-v-tactics scoreboard line.
