@@ -111,6 +111,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   contacts arm <= base x 1.1 + 5, stuck s arm <= base x 1.2 + 10, outcomes reported. **A pass ships ON** (default "anchor",
   `--halt-terrain=centre` keeps main's), sim-baseline maps that move attributed with the switch OFF.
   (Recorded on main 441d8951d by the orchestrator.)
+- **O1 addendum (R37.9; filed 2026-10-21 before any judged O1 number): a SECOND deciding workload, the fight probe.**
+  Sizing (seen; builder0 native light, 3e43c4a24, `--probe-fight=on --probe-budget=1500`, locks/crossing/terminus x 3
+  squads x click x 3621-3626, 18 fights, 51 placed squads): 175 halt-shape flips, 446 re-lays, 27 squads re-laying.
+  **Judged fight read:** arms `fight:--probe-fight=on,--probe-budget=1500` v `fightanchor:--probe-fight=on,--probe-budget=1500,
+  --halt-terrain=anchor`, the same 9 cells, FRESH seeds 3731-3742 (36 fights an arm), builder0, on a green-checked hash
+  that has the fight mode (>= 092cb34b7; f4365153f does not). **Deciding:** relays summed arm <= 25 % of base and shape
+  flips arm <= 25 % of base. **Guards (fights are not deterministic across arms once seats differ: read as per-fight
+  totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se from the base arm's per-fight sd,
+  n 36), the CPU's losses likewise. The no-fight read (f4365153f, seeds 3701-3712, + the census) stands as filed. O1
+  ships only when BOTH pass.
 - **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 ~10:10 PDT before any O3 number; code 092cb34b7, OFF).** What he
   would see: squads he sends together arrive each with its own vehicles (no squad one vehicle short, no stranger in it),
   and they do not bump each other more than today. The change: where today's untangle re-deals vehicles between squads
