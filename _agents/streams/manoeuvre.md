@@ -110,7 +110,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - kills and deaths per team, jam deaths (fights on locks/terminus/sumps).
 - **Pass = the lab + the base rate seen + deciding + guards. A pass ships ON** (symmetric).
 
-**2026-10-21 (worker): M1 built + lab-decided on GDScript; M2 done; M3 note written. quick-remote on builder0 running.**
+**2026-10-21 ~13:20 (worker): THE STREAM IS GREEN at b822e6696 (builder0):** `make native check exited 0`, 3011 passed / 0
+failed, 25 passed + 2 NOT JUDGED (perf-judge refused 3x for load, ratios 1.41-2.30x), sim-baseline 13/13 unmoved,
+determinism 8c3c1232b711a760 (log `~/overnight-manoeuvre/r37/check_b822e6696_builder0.log`). It contains M1 (OFF), M2,
+main a10846307, the unstick short-halt skip, and native's twin of it (pair/native-unstick ca6978178). The commits after it are
+judges and docs only. The M1 series started 13:22 on builder0 (unit `manoeuvre-m1-series2`).
+
+**2026-10-21 (worker): M1 built + lab-decided on GDScript; M2 done; M3 note written.**
 - **Plan (order):** M1 sidestand (switch OFF, lab case, Bar M1 filed in workstreams *Bars (round 37)*) -> M2 WEDGE_TRACE total ->
   M3 note -> M1 pair check + series (builder0) -> M4 after R3 is ON -> stretch.
 - **M1 (`sidestand`, SIDE_STAND_DEFAULT false):** `Movement._h1b_side`: a far fire on the friend a side step was already taken
