@@ -76,6 +76,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
 
+**2026-10-20 ~21:40 (worker): S1 series running** (builder0, ON arm: wedge + fights done, both exited 0; jam, then the base arm, then
+hull-rest). T8 shipped as main `3d46b2884` (a crew holds in a take-turns hold until hit). The series stays on its two trees as filed.
+**If S1 passes, the hand-over merges main (T8) FIRST**, because T8 changes fights. Next: judge it (`s1_judge.py`), re-read X4b (C)'s 6 crews on the ON arm, then S2a's
+series.
+
 **2026-10-20 ~20:15 (worker): S1's gate PASSES (C31.1), and the S1 series is launched.** ON tree `lab/s1-on` `d9864ab07` on builder2
 (moved there by the orchestrator): `make native check exited 2`, 2961/0, 24 passed + 2 NOT JUDGED + sim-baseline the one red
 (foundry, crossing, sumps, docks moved; 9 unmoved). Attribution = base `20acbda5f` (STALL_NET_DEFAULT false), read 13/13 unmoved by
