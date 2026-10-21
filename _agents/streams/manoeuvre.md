@@ -116,6 +116,12 @@ determinism 8c3c1232b711a760 (log `~/overnight-manoeuvre/r37/check_b822e6696_bui
 main a10846307, the unstick short-halt skip, and native's twin of it (pair/native-unstick ca6978178). The commits after it are
 judges and docs only. The M1 series started 13:22 on builder0 (unit `manoeuvre-m1-series2`).
 
+**2026-10-21 14:57 (worker): M1's ON tree is green** (lab/manoeuvre-m1on 339d3f2e2, builder0): `make native check exited 0`,
+3011 passed / 0 failed, 25 passed + 2 NOT JUDGED (the same two as the base: perf-judge lock held 300 s, ai-scenarios unpinned),
+sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760. The driver stopped on a false "NOT RUN" (it matched
+check's own self-test lines `ok   ... NOT RUN`); I anchored that grep to `^>> check:` and restarted the series at 14:58 (unit
+`manoeuvre-m1-series3`, wedge/fights/jam then hull-rest; the check is not re-run).
+
 **Stretch (the post-deploy twitch, trace only): DONE by decomposition, no new rule.** On one workload, orders' fight probe
 (f4437d26a + my probe-only driver tag, builder0 native light, locks/crossing/terminus x 3 squads x click x 3621-3626,
 budget 1500, deterministic), the 1696.4 s parked crews spent > 6 m off their seat split as follows:
