@@ -24,12 +24,12 @@ func test_counting_incoming_rounds_matches_the_full_incoming_list() -> void:
 	# near misses, some just outside the danger radius.
 	for i in 3:
 		var shooter := game_match.spawn_tank("Gun%d" % i, 0, Match.Team.GREEN, "scout" if i < 2 else "tank")
-		shooter.global_position = Vector3(LANE_X + i * 6.0, 0.0, 40.0)
+		shooter.place(Vector3(LANE_X + i * 6.0, 0.0, 40.0), shooter.rotation.y)
 		shooters.append(shooter)
 	var offsets := [-9.0, -5.0, -2.5, 0.0, 1.5, 4.0, 7.0, 11.0]
 	for i in offsets.size():
 		var target := game_match.spawn_tank("Target%d" % i, 0, Match.Team.RUST, "tank")
-		target.global_position = Vector3(LANE_X + 6.0 + float(offsets[i]), 0.0, -10.0 - 4.0 * i)
+		target.place(Vector3(LANE_X + 6.0 + float(offsets[i]), 0.0, -10.0 - 4.0 * i), target.rotation.y)
 		targets.append(target)
 	await wait_physics_frames(2)
 	var everyone: Array[Tank] = []

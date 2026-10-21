@@ -16,8 +16,8 @@ func _run(player_team: int) -> Dictionary:
 		game_match.set_meta("player_team", player_team)
 	var mine := game_match.add_brain_tank(Match.Team.GREEN, "Alpha", "tank", [{}], "Green_A_1")
 	var theirs := game_match.add_brain_tank(Match.Team.RUST, "Bravo", "tank", [{}], "Rust_A_1")
-	mine.global_position = Vector3(-60, 0, 90)
-	theirs.global_position = Vector3(60, 0, -90)
+	mine.place(Vector3(-60, 0, 90), mine.rotation.y)
+	theirs.place(Vector3(60, 0, -90), theirs.rotation.y)
 	var started_mine := mine.global_position
 	var started_theirs := theirs.global_position
 	# Seconds, not frames (lesson 30): `SECONDS * 60` ran 24 s at the 30 Hz tick, twice the intended window, against a

@@ -31,7 +31,7 @@ func _run(unit_id: String) -> Dictionary:
 	game_match.set_meta("player_team", Match.Team.GREEN)
 	game_match.objectives = [{"name": "middle", "position": Vector3.ZERO, "radius": 16.0, "owner": -1, "progress": 0.0}]
 	var mine := game_match.add_brain_tank(Match.Team.GREEN, "Alpha", unit_id, [{}], "Green_A_1")
-	mine.global_position = Vector3(-60, 0, 90)
+	mine.place(Vector3(-60, 0, 90), mine.rotation.y)
 	var started := mine.global_position
 	await wait_physics_frames(SECONDS * Engine.physics_ticks_per_second)
 	return {"moved": started.distance_to(mine.global_position),

@@ -14,14 +14,13 @@ func test_a_unit_ordered_across_contact_arrives() -> void:
 	_orders = Orders.new(_match)
 	Orders.attach(_match, _orders)
 	var mover := _match.add_brain_tank(Match.Team.GREEN, "Alpha", "tank", [{}], "Green_A_1")
-	mover.global_position = Vector3(-100, 0, 80)
-	mover.rotation.y = PI
+	mover.place(Vector3(-100, 0, 80), PI)
 	mover.max_health = 100000  # the question is whether it arrives, not whether it survives
 	mover.health = mover.max_health
 	# Two enemies beside the route, close enough to shoot it the whole way.
 	for i in 2:
 		var gun := _match.add_brain_tank(Match.Team.RUST, "Guns", "tank", [{}], "Rust_G_%d" % (i + 1))
-		gun.global_position = Vector3(-55.0, 0.0, 40.0 - i * 40.0)
+		gun.place(Vector3(-55.0, 0.0, 40.0 - i * 40.0), gun.rotation.y)
 		gun.max_health = 100000
 		gun.health = gun.max_health
 	await wait_physics_frames(SimClock.TICK_RATE)
