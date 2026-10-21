@@ -204,7 +204,6 @@ as named; N4 sweep; N5 lint; stretch.
     comment only). Originally proposed: run_tests.gd:115-121's comment ("engine-side state set by the
     first iteration (most likely the physics space's first step)"), and R35.57 / HANDOFF "real play's engine state".
 
-**2026-10-20 (orchestrator, at launch).** Not started.
 - **R36.24 order flicker TRACED (ff1825b09; `references/round36/native/order_flip_trace.md`; no code).** builder0 light lane,
   native loaded, cb9aef5aa (main e778ca5c6, T10 OFF) plus print-only probes, locks/3/click s3664, n=3 runs, the same ticks
   each run.
@@ -217,3 +216,5 @@ as named; N4 sweep; N5 lint; stretch.
     ticks as the order writes (1159 / 1276 / 1288 / 1294).
   - **Round 37:** latch the halt shape per arrival, or read terrain at the anchor; size it by terrain-caused reseats.
   - The laptop does not reproduce it.
+
+**2026-10-20 (orchestrator, at launch).** Not started.
