@@ -59,6 +59,84 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Report (round 37 worker, 2026-10-21 ~13:00 PDT)
+
+**In player terms:** today a naive all-in rush (every squad right-clicked onto the enemy's zone) wins about **half** its fights
+against the CPU's tactics, and sitting tight on your own zone wins about **two in five**. Those are the two lines every rule this
+round is judged on; both should fall.
+
+**CP37.1 the guard lines: DONE, merged on main (d9545d381 merges bc9c1301d; 84c11a60d takes 2bb41ef93).**
+- BASE (builder2, guard.sh cfb8120ba = main 9d325e291's game tree; 5 maps x seeds 2601-2608 + 2701-2708 x both sides as the
+  guard; 160 fights a line, 320 read, 0 attempts lost to preemption): BLOB **wins 48 % (± 11 %)**, kill ratio **0.88
+  (± 0.07)**, median 112 s; TURTLE **wins 39 % (± 15 %)**, kill ratio **0.80 (± 0.17)**, median 194 s; 0 % capped, 0 draws.
+  ± = 2 se of a difference between two mains from the 16 seeds (unpaired). A/A: blocks 2601+ / 2701+ blob 49 / 46 %, kr 0.88 /
+  0.88; turtle 41 / 38 %, 0.81 / 0.80. Faction pair dominates a seed (as blob: Syndicate 73 %, Condemned 56, Gangs 30, Law 22).
+- Today's main plays the same fights: bc9c1301d's tree (cover K2 code OFF), seed 2601, 20 of 20 GUARD_RESULT lines
+  byte-identical (builder2).
+- Bars pair the SAME fights: `GUARD_ARGS=--rules-on=sight GUARD_TAG=sight tools/scoreboard/guard.sh C`, then
+  `python3 tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl ../godot-native-guard-raw/C-sight`
+  (flips, exact McNemar, paired win and kill-ratio differences with per-seed se). GUARD_RESULT carries `cover_struck` and the
+  arm's `args`. Rules and cover have the recipe.
+- Design: the guard side is marked as the human-commanded side (`player_team`, so its ElementCommander stands down) and tasked
+  through `Element.assign`: no game code (design note below; R37.1 / R37.3).
+
+**N2 the twins:**
+- Cover K2/K3: `CoverNative.low_screen / low_features_near / cover_roll` (3d598cdaa + .uid 11f129b35): builder0 light quick
+  exited 0, 15000 answers 0 mismatches; cover's hull-down and seat tests pass on the native path. Seams in cover's files (merge
+  note below).
+- Manoeuvre M5a seatstep: `pair/native-m5` **156d563d9 GREEN** (builder2 `make native check exited 0`, 2984/0, 25 + 2 NOT
+  JUDGED, sim-baseline 13/13 unmoved); twin stages 0 mismatches, ON avoids the lead-out (12 of 18 beam, 6 of 9 ahead).
+  Manoeuvre merges it.
+- Unstick in R2's short halt (manoeuvre's b496101bd): `pair/native-unstick` ca6978178 (+ .uid): quick exited 0, OFF 18 compared
+  0 mismatches (9/9 fire), ON 18 compared 0 mismatches (0 fire). Manoeuvre merged it (4378658cb).
+- Written answers (no twin needed): rules R1-R3 (C++ reads sight live, never computes spread, drives the throttle tank.gd hands
+  it), K2 (no native hit path skips cover's seam), O2 (no C++ writes `move_order`), M1 sidestand (the far fire is GDScript-only).
+- OWED: rules' empirical run, their test_rules_* under `make native test` both arms (NATIVE=off for the GDScript arm), each
+  switch ON, on the pair commit rules declares (agreed with rules).
+
+**N3 the scoreboard:** the page has a *Guard lines* section (references/scoreboard/guards/<commit>.json); the round-37 launch
+column 9d325e291 is read (builder2, verdict ok 40/48/36): v 3d46b2884 every line inside its noise (stuck deaths 5.92 -> 5.17 a
+fight v ± 2.33). OWED: a row (fights + guard lines) for every main the round ships, as the orchestrator names them.
+
+**N4 the net-test diagnostics: DONE** (820633935): relay_host_up / broker-load / lobby-smoke fail loudly with the broker's log
+when BROKER_LISTENING never comes (mutation: `broker-load NODE=false` -> "broker never printed BROKER_LISTENING ... (process
+exited)", exit 1; a real broker-load exit 0, laptop); combat-smoke keeps the server-ERROR grep and the reap after a client FAIL.
+
+**N5 promote scenario_scout_suppress::test_target_behind: DONE** (e1053de12): it PASSES (builder2, n=3, shots=101). **The
+orchestrator adopts `tests/baselines/ai_scenarios_count.txt` 53,0,5,0 -> 54,0,4,0** (the gate counts passed + not judged).
+
+**N6 the judging re-render: DONE** (05e3982e0): round 36's 20 lines in `tools/judge/lines_r36.py`; `_agents/judging.md`
+*Round 37 re-render*; table unchanged (round 36's rows are on round36/* branches); 0 of 9 se lines inside the noise.
+
+**Checks:** cfb8120ba builder2 `exited 2`, 2973/0, sim-baseline unmoved, the one red N5's planned count move. Stream tip
+6c9bc7239 (main a10846307 + N2 cover twins + N4 + N5 + N6 + N3 row): full check QUEUED on builder2 behind main's.
+
+**Decisions (mine):** the blob re-targets only when its zone changes (a player clicks once); the turtle's posts are the CPU's own
+hold layout without its intruder attack; a fight runs to its own end (cap 600 s never reached); the CPU v CPU control (`none`)
+was not run (not asked; it would cost builder2's shared series slot): the both-ways pairing already separates role from faction.
+
+**Questions for the lead:** none.
+
+**Requests to other streams:** cover: the three dispatch lines in `cover_map.gd` / `armor.gd` (merge note). Rules: declare the
+pair commit for the empirical twin run.
+
+**Known issues:** the faction balance is lopsided (Syndicate wins 73 % as a blob and 67 % as a turtle; Law v Syndicate 0 %); not
+this stream's, but a rule's effect can hide inside a pairing, so read bars paired. Low cover is struck 0 times in 4 Terminus
+fights with hulldown ON (cover's K1: low cover is where the fighting isn't; K5's re-shape is the lever).
+
+**What to playtest:** nothing new to feel (tooling and twins). To watch a guard fight:
+`godot --path . --script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --seed=2601 --arena=locks --guard=blob --guard-side=green`
+(drop `--headless` to watch the cinematic camera).
+
+**Merge notes (shared / other owners' files):** `game/ai/cover_map.gd` (low_screen and low_features_near dispatch to CoverNative
+under BrainSwitches.native_cover; the GDScript kept as `low_screen_gd` / `low_features_near_gd`) and `game/combat/armor.gd`
+(low_cover_strike takes its roll from `map._native.cover_roll` on the native path): cover's files, three dispatch lines, 3d598cdaa.
+`mk/net.mk` (N4). `tests/scenario_scout_suppress.gd` PENDING list (N5). Side worktrees to remove at the close: ../godot-native-m5,
+../godot-native-unstick, ../godot-native-cp371, ../godot-native-guard, ../godot-native-score; builder0/builder2 folders
+`~/tank_squad/godot-native*`.
+
+### History (chronological notes)
+
 **CP37.1 BASE (2026-10-21 11:31 PDT, builder2, guard.sh cfb8120ba = main 9d325e291's game tree, n 160 a line, 0 attempts lost
 to preemption).** 5 maps x seeds 2601-2608 + 2701-2708 x both sides as the guard. BLOB (his right-click, every squad at once at the
 enemy's zone): **wins 48 % (± 11 %)**, kill ratio **0.88 (± 0.07)**, 0 % capped, median 112 s. TURTLE (posts on its own zone,
