@@ -17,6 +17,8 @@ const SEARCH_EVERY := 0.5
 ## True when the attached match is simulating and emits K2 events.
 var live := false
 var weapons: WeaponFx
+## Round 37 (feedback): the rules made visible take the same two events (set by FxWorld; null in a bare link).
+var feedback: FeedbackFx
 
 var _match: Node
 var _search_left := 0.0
@@ -111,10 +113,19 @@ func unit_nodes() -> Array:
 
 func _on_weapon_fired(event: Dictionary) -> void:
 	weapons.fired(event)
+	if feedback != null:
+		feedback.fired(event, _now())
 
 
 func _on_projectile_impact(event: Dictionary) -> void:
 	weapons.impact(event)
+	if feedback != null:
+		feedback.impact(event, _now())
+
+
+func _now() -> float:
+	var fx := get_parent() as FxWorld
+	return fx.now if fx != null else 0.0
 
 
 func _on_unit_destroyed(event: Dictionary) -> void:
