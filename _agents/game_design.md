@@ -4187,6 +4187,15 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
 
 1. **Motion reveals.** A moving vehicle is spotted much farther away than a still one; still and in cover, closer still. (Not in the
    game today.) Recommendation: yes, first.
+   **ANSWERED 2026-10-21 (his own reframe, replaces the idea above):** the enemy is never hidden inside a range the player was
+   shown. His objection: "the cognitive disconnect between a unit having whatever field of view (say 100 meters), and you're now
+   saying a tank will be invisible until closer". His answer: "isn't a much more coherent version of this idea simply that a
+   unit's vision shrinks a little when moving / expands a little when stopped?" ... "ok yeah, that's the answer for question 1".
+   **Rule:** the VIEWER's own motion sets its sight: driving ~85 % of its sight_radius, stopped for ~2 s ~110 % (a dwell, so a
+   brief halt doesn't flicker it). Same mechanism as X5's suppression sight penalty (`Tank.SUPPRESSION_SIGHT_PENALTY`). The
+   defender's edge: a parked crew sees the driving attacker first. Start at 85/110; widen only if the blob-v-tactics line says a
+   blob still wins. Rejected on the way: target-motion detection (a parked enemy invisible inside your range) and an
+   "unconfirmed contact" outline. Questions 2 and 3 do not depend on this one (the orchestrator had overstated that).
 2. **Firing on the move.** Today a moving shot spreads 1.5x (`Match.MOVING_SPREAD_FACTOR`). Raise it to ~2.5–3x so a stopped vehicle is
    clearly deadlier? Recommendation: yes, first.
 3. **Dig in.** After ~10–15 s still, a vehicle entrenches (a visible berm), taking much less frontal damage. Recommendation: yes, first.
