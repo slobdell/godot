@@ -4123,3 +4123,12 @@ friends (stallnet), crews left behind, and the arrived squad in the next squad's
   dumb*. Read as: squads end where he clicked, settle once, and don't wander or wedge. Round 36's O2 (compact deploy), S1/S2a (wedged
   and left-behind crews) and T8 serve it; traffic between squads arriving together (~half the remaining post-arrival shuffle, orders'
   O2 count) is the next candidate.
+
+## Round 36: his answer on parked squads (2026-10-20 ~19:20 PDT, in chat via the question tool)
+
+Question (orders' note, in his terms): *"When a crew in a squad you've parked spots an enemy, it drives out to fight it and then
+doesn't come all the way back to its spot. Should a parked squad stay put and shoot from where it stands, or chase?"*
+**His answer: "Stay put and shoot" (the recommendation):** a squad he parked holds its ground and fires from its spot; if it ever does
+move to fight, it drives all the way back afterwards; HE decides when it moves. Today's ADVANCE from a parked seat (brains'
+engagement code, orders' "neither" ENGAGEMENT kind, 16 of 55 twitchy squads) goes against this: a round-37 item for whoever owns
+brains' paths. The second question (a vehicle going with a neighbouring squad, round 22's untangle) is under discussion.
