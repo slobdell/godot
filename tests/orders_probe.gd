@@ -192,7 +192,7 @@ func _run() -> void:
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
 				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
-				"twitch_seen": squad.get("twitch_seen", {}),
+				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
@@ -295,8 +295,11 @@ func _watch() -> void:
 				var option := ""
 				if mover != null and mover.ctl is TankBrain:
 					option = String((mover.ctl as TankBrain).choice.get("option", ""))
-				parts.append("%s(%.1f,%.1f goal %s %s)" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
-						str(_xz(goal)) if goal is Vector3 else "-", option])
+				# Round 36 (orders): the crew's element NOW (untangle and the split re-deal vehicles between squads).
+				var elements := Elements.of_match(_match)
+				var now: Element = elements.of(n) if elements != null else null
+				parts.append("%s(%.1f,%.1f goal %s %s el %s)" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
+						str(_xz(goal)) if goal is Vector3 else "-", option, now.element_name if now != null else "-"])
 			print("ORDERS_PROBE_TRACE t=%d %s" % [(_match.tick - _order_tick) / SimClock.TICK_RATE, " ".join(parts)])
 		# Each crew's OWN destination (its formation slot, not the squad's anchor), sampled every half second: one past a
 		# deck on the far bank is a crew sent over the river however the anchor was capped.
@@ -310,7 +313,14 @@ func _watch() -> void:
 			for n: String in alive:
 				if seats.has(n):
 					squad["shuffle"] = maxf(float(squad["shuffle"]), _flat_d(_tank(n).global_position, seats[n]))
-			_watch_place(squad, alive, element)
+			# Round 36 (orders, R36.6 trace): a crew untangle dealt to ANOTHER squad's element drives with that squad, so the
+			# place move and twitch are read over the crews of this squad's own element only (Terminus 5 route s3624:
+			# Delta_2, element Echo from the order on, read as a 69.8 m "twitch"); `redealt` counts the others.
+			var elements_now := Elements.of_match(_match)
+			var mine: Array = alive.filter(func(n: String) -> bool:
+				return element == null or elements_now == null or elements_now.of(n) == element)
+			squad["redealt"] = maxi(int(squad.get("redealt", 0)), alive.size() - mine.size())
+			_watch_place(squad, mine, element)
 
 
 ## D2: the place move (from the deploy, or the arrival with the step off) and the twitch after it.
@@ -338,6 +348,22 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 			squad["placed"] = _seats(alive)
 		return
 	var placed: Dictionary = squad["placed"]
+	# Round 36 (orders, R36.6 traces): a crew driving AWAY from its own order goal (the distance to it growing while it has
+	# one), summed per crew after the place window; the worst crew's metres are `away_m`. A turn-around loop (Locks 3
+	# click s3624: Bravo_1's seat 7 m north, it drove 30 m south over the canal and back) reads as tens of metres.
+	var last_gap: Dictionary = squad.get("goal_gap", {})
+	var away: Dictionary = squad.get("away", {})
+	for n: String in alive:
+		var goal: Variant = _controls.orders.goal_position(n)
+		if goal is Vector3:
+			var gap := _flat_d(_tank(n).global_position, goal)
+			if last_gap.has(n) and gap > float(last_gap[n]):
+				away[n] = float(away.get(n, 0.0)) + gap - float(last_gap[n])
+			last_gap[n] = gap
+		else:
+			last_gap.erase(n)
+	squad["goal_gap"] = last_gap
+	squad["away"] = away
 	for n: String in alive:
 		if placed.has(n):
 			var moved := _flat_d(_tank(n).global_position, placed[n])

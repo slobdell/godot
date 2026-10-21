@@ -1,0 +1,24 @@
+squads with a crew re-dealt to another squad's element (untangle): 25 of 287; crews 43
+deployed squads 287, twitchy (>= 15 m) 55, of them neither seating nor depth 26
+  all twitchy : LOOP 19, ENGAGEMENT 16, STOPPED SHORT 19, TRAFFIC 1
+  neither     : LOOP 9, ENGAGEMENT 7, STOPPED SHORT 10, TRAFFIC 0
+per cell (neither): loop / engagement / stopped short / traffic
+  crossing  3 click   0 /  1 /  3 /  0
+  crossing  5 click   0 /  0 /  2 /  0
+  crossing  5 route   1 /  1 /  0 /  0
+  locks     3 click   3 /  0 /  0 /  0
+  locks     3 route   3 /  0 /  1 /  0
+  locks     5 click   0 /  1 /  1 /  0
+  locks     5 route   0 /  0 /  1 /  0
+  terminus  3 click   0 /  2 /  0 /  0
+  terminus  5 click   0 /  1 /  1 /  0
+  terminus  5 route   2 /  1 /  1 /  0
+per squad number (neither): 1: {'STOPPED SHORT': 2, 'ENGAGEMENT': 1, 'LOOP': 1}; 2: {'STOPPED SHORT': 5, 'ENGAGEMENT': 5, 'LOOP': 8}; 3: {'STOPPED SHORT': 1}; 4: {'ENGAGEMENT': 1}; 5: {'STOPPED SHORT': 2}
+fight options among ENGAGEMENT (ticks): {'ADVANCE': 2535}
+examples (largest twitch of each kind): map squads route seed squad twitch_m
+  LOOP          terminus 5 route 3623 sq2 46.5 away 67.8 {'ADVANCE': 30, 'HOLD': 2432, 'MOVE': 3, 'MOVE@goal': 2431}
+  LOOP          locks 3 click 3625 sq2 33.3 away 31.6 {'ADVANCE': 71, 'HOLD': 1679, 'MOVE': 2, 'MOVE@goal': 1616}
+  ENGAGEMENT    terminus 3 click 3624 sq2 20.2 away 9.0 {'ADVANCE': 50, 'HOLD': 109, 'MOVE': 1, 'MOVE@goal': 169}
+  ENGAGEMENT    terminus 5 route 3624 sq4 19.9 away 9.6 {'ADVANCE': 277, 'HOLD': 4193, 'MOVE': 4, 'MOVE@goal': 1159}
+  STOPPED SHORT crossing 5 click 3625 sq5 37.3 away 3.5 {'HOLD': 1299, 'MOVE': 2, 'MOVE@goal': 481}
+  STOPPED SHORT terminus 5 route 3624 sq2 28.4 away 7.9 {'HOLD': 2670, 'MOVE': 3, 'MOVE@goal': 371}

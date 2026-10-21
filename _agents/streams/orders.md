@@ -128,13 +128,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
    in HANDOFF), then ground; arrival overlap is 3-8 % of refusals.
 6. **Stretch:** the bridge-mouth click is already covered by the deploy's halt lay (0 of 24); uncross on a queued screen was a
    real swap, not path planning.
-7. **Next stretch (orchestrator, after O2 reads): the "neither" twitch.** 27 of 57 twitching squads in builder0's count
-   (`f5aa89ecd`) have neither cause: crews of squads arriving together wander in each other's traffic (O3's trace:
-   Crossing 3 sq1's Alpha_1 circles the deck mouth t 18-36 among squads 2 and 3 and ends 14 m short). His concern
-   (2026-10-20, verbatim): "My concern here is basically giving some squads an order and then feeling like they're not
-   actually following it, making the game appear dumb".
+7. **The "neither" twitch (R36.6, the main thread for his "squads don't look like they follow the order"): COUNTED and
+   TRACED; design note filed, no code.** `references/round36/orders/neither-twitch-note.md`. Builder0 light, native,
+   `55c973cd4`, 12 street cells x 3621-3626, 287 deployed squads, crews scored against their own element: of 55 twitchy
+   squads, **LOOP 19** (a turn-around loop to a seat behind the crew: Locks 3 click s3624 Bravo_1, seat 7 m north, drove 30 m
+   south over the lock and back), **ENGAGEMENT 16** (ADVANCE, then left short), **STOPPED SHORT 19** (mixed; trace first),
+   **TRAFFIC 1**. 25 of 287 squads have a crew re-dealt to another squad by untangle; that read as twitch before
+   `acd95603d` (Terminus 5 route s3624 Delta_2 drove with element Echo: a 69.8 m "twitch"). Recommendation: LOOP to
+   manoeuvre (a short reverse into a goal < ~15 m behind the hull, with a lab stage, `away_m` deciding); orders' fallback
+   facing-aware deploy seating. Two questions for the lead drafted in the note (parked squads chasing; vehicles going with
+   a neighbouring squad).
+   His concern (2026-10-20, verbatim): "My concern here is basically giving some squads an order and then feeling like
+   they're not actually following it, making the game appear dumb".
 **His O4 answer (2026-10-20): keep 9 m** (HALT_CLEAR_M, seat to seat); O4 stays parked.
-**Questions for the lead:** none open.
+**Questions for the lead:** two drafted for the orchestrator in the neither-twitch note (in his terms): a parked squad's
+crew chasing an enemy, and a vehicle going with a neighbouring squad. Neither blocks anything of mine.
 **Requests to other streams:** none. **Merge notes:** `element_plan.gd`: the deploy carve-out only (DEPLOY_COMPACT, OFF;
 `_deploy_compact`); `game/control/selection_squads.gd`: `pack_refused` (measurement only); `game/tactics/element.gd` =
 main's (the R35.74 hook removed).
