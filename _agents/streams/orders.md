@@ -126,7 +126,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. The change
   (tank_brain.gd `_order_move`, his idle crews at their post only): a move of its own option ending > 4 m from its post
   is refused (it holds and faces the threat), RETREAT kept (his question is open); a crew > 3 m off its post with nothing
-  else to do drives back onto it (1.5 m). **Sizing (seen; builder0 native light, f4437d26a, the fight probe, locks /
+  else to do drives back onto it (1.5 m). **Sizing (seen; builder0 native light, 3e5944657 = f4437d26a + evidence only, the fight probe, locks /
   crossing / terminus x 3 squads x click x 3621-3626, 18 fights):** `off_idle_s` (an idle crew's seconds > 6 m off its
   station, the seat his order left it on, whatever moved it) 1696.4 s, 94.2 a fight (sd 111.0, se 26.2); by what was
   happening: face_drift 956.2 (56 %, M6's), still 579.4 (34 %), giveway 79.9 (M5's: yielding now or within 3 s),
