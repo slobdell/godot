@@ -60,6 +60,17 @@ ElevenLabs until a `sounds/*` approval.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-21, F1 page up, picks pending.**
+- **305f71a37 check: builder0 `make remote T=check` exited 0, 2985 passed, 0 failed, scenarios 52/0, every
+  sim-baseline unmoved** (3811 s). Two NOT JUDGED on a busy box (perf-judge ratios 1.9-2.4x; one ai-scenario), being
+  re-run alone on the merge below.
+- Stretch done (305f71a37): the radar rings a pinned enemy in sight (yellow); the unit card says PINNED /
+  REPAIRING +5/s.
+- Merged main dcf7c3968 (CP37.1, rules R1-R3 OFF) as 6eed1f86a: `FeedbackReader.slowed()` already calls
+  `Tank.pin_slow()`, so the pinned look reads R3 as soon as `RuleSwitches.pin_slow_on`; no code change needed.
+- No picks in the page db yet (`picks`, `sounds` empty at last read). F2-F4 final and any ElevenLabs request wait
+  on the orchestrator's confirmation.
+
 **2026-10-21 report (F1 in progress).**
 - Built (a459ed338 + follow-ups): `FeedbackReader` (pure reads), `FeedbackLook` (`--feedback-look=hit:b,pinned:a+c,...`,
   three looks per slot, default = my recommendation), `FeedbackFx` (world half, pooled), UnitBars' screen half,
