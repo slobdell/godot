@@ -244,6 +244,14 @@ _Filed here before any number._
   friendly 3 (a hull in the reverse's corridor: avoids contention, his priority), route_faster 1, reverse chosen but pulled forward 1,
   goal beyond 25 m 1, element-paced overshoot 1. Each 5–11 m. **Orchestrator's call (broad strokes):** keep the small 5–8 m forward
   swing that arrives already facing the drawn way; the dumb-looking 20–35 m sends are T10's.
+- **R36.19 (2026-10-20 ~21:35 PDT) T10's deciding line resized before any number: restricted, 24 seeds.** Traffic's sizing (stream
+  806bb00aa, t10_design.md "Sizing the deciding line"; orders' 55c973cd4 rows, builder0 native, 72 runs, 288 squads, away_m 800.9 m,
+  sd 7.01, 21 LOOP squads 471.9 m): at 6 seeds the expected saving (~100–150 m, ceiling ~300) does not clear 1.645 se (196 m all, 160 m
+  restricted). **Ruled:** deciding = away_m summed and paired over squads with at least one crew that began a give-way or was given a
+  street hold within 10 m of its own seat in EITHER arm (in-arm `seat_near` counter, measurement only, under clearclock in both
+  arms; native mirrors the G increment), on 24 fresh seeds 3641–3664 (288 probe runs / 1152 squads an arm; expected ~400–600 m v
+  1.645 se ~320 m); arm < base by more than 1.645 se. Unrestricted and LOOP squads reported. **Grant:** traffic adds the one
+  additive `seat_near` field to `ORDERS_PROBE_SQUAD` in orders' `tests/orders_probe.gd` (orders' stream is done), with a merge note.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
