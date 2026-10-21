@@ -98,6 +98,13 @@ brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-ba
 - The brief's "a CPU tank halting to fire at 120 m": no direct-fire gun reaches 120 m (longest: railgun 110 m), so the lab
   case uses the Syndicate tank's railgun at > 80 m.
 
+**Rulings received:** R37.2 (a) no twins provisional, (b) **no short halt under his plain MOVE** (attack-move, hold, parked,
+CPU only; built: `ShortHalt.plain_player_move`, game/combat/short_halt.gd, lab cases in test_rules_spread), (c) R2's bar
+carries contention guards (friendly contacts, all-in time, held behind a halted friend, manoeuvre's wedge line).
+R37.3: the guard lines' blob is his right-click (plain move, drills:false), so the halt never fires on the blob.
+R37.4: native confirmed in writing no C++ twin for R1-R3; condition: when the pair tree is cut, native runs these lab tests
+under `make native test`, each switch ON, both arms, before the series. Declare the pair to native.
+
 **Questions for the lead:** none yet.
 
 **Requests to other streams:**

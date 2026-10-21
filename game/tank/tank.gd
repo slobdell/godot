@@ -1194,7 +1194,8 @@ func pin_slow() -> float:
 ## SHORT_HALT_COOLDOWN_S, so an ordered move still completes. Worth it = the halted hit chance beats the moving one by
 ## SHORT_HALT_GAIN (the Matchups model: a target TARGET_HALF_WIDTH wide against the shot's spread, Match.shot_spread
 ## with the range term) and the shot is at least SHORT_HALT_MIN_RANGE of the weapon's effective range: close in, a crew
-## keeps rolling and shooting. Direct fire only, never while reversing (a crew backing out keeps backing). It lives in
+## keeps rolling and shooting. Direct fire only, never while reversing (a crew backing out keeps backing), and never
+## under the player's plain MOVE (ruling R37.2 (b), ShortHalt.plain_player_move): attack-move, hold, parked and CPU. It lives in
 ## the plant beside the battery's dig-in (a fire command that a hull must stop for) because every controller, GDScript
 ## or native, ends in this command: one place, the same for both sides (his "smart AI on both sides").
 const SHORT_HALT_MIN_RANGE := 0.6
@@ -1247,7 +1248,7 @@ func _short_halt(cmd: TankCommand, drive_cmd: TankCommand, delta: float) -> void
 		return
 	var muzzle := global_position
 	var distance := Vector2(cmd.aim_point.x - muzzle.x, cmd.aim_point.z - muzzle.z).length()
-	if short_halt_worth(distance, moving):
+	if short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(self):  # R37.2 (b): he said drive
 		short_halt_seconds = SHORT_HALT_MAX_S
 		drive_cmd.throttle = 0.0
 		cmd.fire = false

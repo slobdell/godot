@@ -134,3 +134,46 @@ func test_a_cpu_crew_halts_to_fire_at_long_range_and_still_arrives() -> void:
 				"a %.0f m round left a nearly still hull (%.1f m/s)" % [s[0], s[1]])
 	assert_true(crew.global_position.distance_to(Vector3(-110.0, 0.0, -10.0)) < 8.0,
 			"and the move still completes (%.1f m short)" % crew.global_position.distance_to(Vector3(-110.0, 0.0, -10.0)))
+
+
+# ---- Ruling R37.2 (b): never under his plain MOVE ------------------------------------
+
+## His plain move on the lab tank (Orders, source player), then the scripted drive with a 60 m shot held.
+func test_a_crew_under_his_plain_move_never_halts_to_shoot() -> void:
+	RuleSwitches.spread_on = true
+	var game_match := _setup()
+	var orders := Orders.new(game_match)
+	Orders.attach(game_match, orders)
+	var tank := game_match.spawn_tank("Green_Lab_1", 0, Match.Team.GREEN, "tank")
+	tank.place(Vector3(-100.0, 0.0, 80.0), 0.0)
+	await wait_physics_frames(2)
+	assert_eq(orders.issue({"units": ["Green_Lab_1"], "verb": "move", "to": [-100.0, -80.0], "source": "player"},
+			Match.Team.GREEN), "", "his move order is valid")
+	assert_true(ShortHalt.plain_player_move(tank), "it reads as his plain move")
+	var speeds: Array[float] = []
+	tank.fired.connect(func(_muzzle: Vector3, _forward: Vector3) -> void: speeds.append(absf(tank.speed())))
+	for tick in SimClock.TICK_RATE * 5:
+		var aim := tank.global_position + Vector3(36.0, 0.0, -48.0)
+		tank.command = TankCommand.new(1.0, 0.0, aim, tick >= SimClock.TICK_RATE * 2)
+		await wait_physics_frames(1)
+	assert_true(not speeds.is_empty() and float(speeds[0]) > 0.5 * tank.max_forward_speed,
+			"he said drive: the 60 m round goes on the move, no halt (speeds %s)" % [speeds])
+
+
+func test_attack_move_and_the_cpu_may_still_halt() -> void:
+	var game_match := _setup()
+	var orders := Orders.new(game_match)
+	Orders.attach(game_match, orders)
+	var mine := game_match.spawn_tank("Green_Lab_1", 0, Match.Team.GREEN, "tank")
+	var cpu := game_match.spawn_tank("Rust_Lab_1", 0, Match.Team.RUST, "tank")
+	await wait_physics_frames(1)
+	assert_eq(orders.issue({"units": ["Green_Lab_1"], "verb": "attack_move", "to": [0.0, -80.0], "source": "player"},
+			Match.Team.GREEN), "", "attack-move is valid")
+	assert_true(not ShortHalt.plain_player_move(mine), "attack-move: a halt is allowed")
+	ElementCommander.install(game_match, Match.Team.RUST)
+	assert_eq(orders.issue({"units": ["Rust_Lab_1"], "verb": "move", "to": [0.0, 80.0]}, Match.Team.RUST), "",
+			"a CPU move is valid")
+	assert_true(not ShortHalt.plain_player_move(cpu), "a CPU-commanded team's crews may always halt")
+	assert_eq(orders.issue({"units": ["Green_Lab_1"], "verb": "move", "to": [0.0, -80.0], "source": "element"},
+			Match.Team.GREEN), "", "a squad leader's move is valid")
+	assert_true(not ShortHalt.plain_player_move(mine), "a leader's order defers to the squad's task (none here: no plain move)")
