@@ -68,6 +68,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   REPAIRING +5/s.
 - Merged main dcf7c3968 (CP37.1, rules R1-R3 OFF) as 6eed1f86a: `FeedbackReader.slowed()` already calls
   `Tank.pin_slow()`, so the pinned look reads R3 as soon as `RuleSwitches.pin_slow_on`; no code change needed.
+- Re-judged alone on builder0 (merge 6eed1f86a / a8690b304): perf-judge PASS 1.01x; control-timing 5/0 + 8/0 (the
+  4/1 in a first run was contention); ai-scenarios-check gate held 53,0 but NOT JUDGED again because
+  `scenario_scout_suppress::test_target_behind` UNEXPECTEDLY PASSES (pending 5 -> 4). That scenario is not mine
+  (feedback is presentation only, sim-baseline unmoved); likely main's rules/cover work. Flagged to the orchestrator.
+- **Cost (perf-scene, builder0, llvmpipe software GL, CPU v CPU 30-a-side spectated so every unit is shown, FxWorld
+  `fx_steps_ms.feedback`, the "all" phase, n = 10 and 8-10 phases per run):** a8690b304 read every unit every frame:
+  every look off 0.15-0.27 ms, every look of every slot on 0.33-0.57 ms. 5ce6f87fc reads at 10 Hz (REREAD_S): off
+  0.08-0.16 ms, all on 0.09-0.20 ms (whole FX 0.9-1.6 ms). Both runs hit perf-scene's 600 s timeout under llvmpipe
+  (exit 2, no PERF_SCENE_DONE; 0 engine errors), so only the CPU-side step times mean anything here; frame times don't.
 - No picks in the page db yet (`picks`, `sounds` empty at last read). F2-F4 final and any ElevenLabs request wait
   on the orchestrator's confirmation.
 
