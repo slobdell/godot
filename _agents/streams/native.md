@@ -155,5 +155,11 @@ as named; N4 sweep; N5 lint; stretch.
   clearclock on through every yield stage. **builder0 quick GREEN on 0ca19d829: 99/0, exited 0** (79ce37acc 26/0, cc5e11c72
   29/0 before). Found for traffic: H's `_count_seat_near()` marked no stale (the owned state would write it back): c917ac33b.
   Traffic takes the full check on builder2, then the T10 series.
+- **stream/native full check on 024232755 (builder0): RED 2971/1, exited 2**, on one flake not from this diff:
+  test_match_shell_dropped_peer's "the relay session has ended (expected 0, got 2)". Alone on builder0 (024232755,
+  `make remote T="quick QUICK_FILTER=test_match_shell_dropped_peer:: QUICK_LINT=-"`): 5/5 exited 0. The race is in the test:
+  `wait_physics_frames(2)` can mean 0-1 multiplayer polls under load (polls run per process frame; grace 0 needs > 0 ms).
+  The fix (outside native's paths, proposed to the orchestrator 2026-10-21): wait for DISCONNECTED, bounded 30 physics frames.
+  The hand-over (N5 + linger) waits on the orchestrator's call: R36.12 rerun-alone, or the fix and a fresh check.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
