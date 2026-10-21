@@ -1,0 +1,2 @@
+orders-probe-shots, builder0 light, native, 3929ea8a5 (OFF switches; arms main v --halt-terrain=anchor), seed 34; the run hit the 90-min light-lane cap after locks 3/5 both arms and terminus 3 main (exit 124): crossing and terminus anchor not shot.
+Looked at: locks 5 click main v anchor arrival_plus5 desktop: near-identical, squads parked in the streets south of the canal, magenta squad's crews sit slightly differently.
