@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+_Last updated: 2026-10-21 PDT — **S2a PASSED its series (R36.32: far loops 91 -> 35, left behind 77 -> 65 / 768, kills flat); manoeuvre is building `pair/manoeuvre-s2a` (bf678480c code + bank case + native re-pin 6a92e7a74, switches ON) for one builder0 check; on green the orchestrator merges it alone and adopts the moved sim-baseline maps (crossing, sumps expected), then closes round 36.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
 and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
 
 ## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon) — read this first
