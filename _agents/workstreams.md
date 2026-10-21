@@ -107,7 +107,17 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
 
 ## Rulings (round 37)
 
-_(none yet)_
+- **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
+  wraps the scoreboard's showmatch (`--skirmish --demo-match`, both sides today's CPU), sets `player_team` for the GUARD side so its
+  ElementCommander stands down, and tasks its elements through `Element.assign` (the call his tactical-map clicks make). BLOB: every
+  element attack-moves at once at the enemy-half zone, then any unheld zone, then the enemy spawn; re-tasked only when the target
+  changes. TURTLE: every element holds a post across its own half's zone (facing the enemy, 22 m apart), never advances. Tactics side
+  untouched. 5 scoreboard maps x 8 seeds x both factions as the guard = 80 fights a line a block; blocks 2601+ and 2701+ = 160; to 90
+  points or elimination, cap 600 s. **Conditions:** (a) the blob's elements get exactly what a player's plain attack-move click gets
+  (the default drill setting of that order, stated in the note; if "drills" means bounding/overwatch, the blob gets none beyond the
+  default); (b) the base rates come BEFORE any bar uses the lines: if the blob (or the turtle) already loses near the floor today, the
+  win rate has no room and the deciding line becomes the kill ratio or the zone-point margin, chosen from today's read (R35.64,
+  R36.23); (c) the 600 s cap's verdict is the points leader, and the share of capped fights is reported per line.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
