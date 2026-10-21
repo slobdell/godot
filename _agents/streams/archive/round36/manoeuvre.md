@@ -1,3 +1,5 @@
+> **ARCHIVED (round 36 closed 2026-10-21).** The branch is `round36/manoeuvre`; its unmerged references stay on that branch. Round 37's brief is `streams/manoeuvre.md` where one exists.
+
 # Stream: manoeuvre (a crew wedged between friends gets out; fewer crews left sitting behind their squad)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 36** (C36.1, CP36.1,
@@ -71,6 +73,56 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-21 (worker): ROUND 36 CLOSE NOTES. S2a has shipped; no round-36 item is left open.**
+- **The stream's last check is GREEN:** stream/manoeuvre `8b0b4ff55` on builder0: `>> check: 27 targets, all passed, ALL JUDGED [test x6,
+  lint -P6, 3 at once, builder0]`, tests 2968 passed, 0 failed, `>> remote: make check exited 0`. Its sim-baseline is unmoved on all
+  13 maps, because the switches are off on the stream branch. The commits after it are Status only.
+- **The scout_suppress unexpected pass is not S2a's:** `UNEXPECTED PASS scenario_scout_suppress::test_target_behind`, with the same
+  MEASURE row (on_point 0.84, shots 101), appears with both switches off (8b0b4ff55 builder0; lab/s1-on builder2, 2026-10-20) and on
+  (bf678480c builder2; 9ddf248f9 builder0). It predates S2a. Promoting it from pending is the scout scenario owner's call.
+- **Shipped:** S2a (h1bside + yieldgap ON). main adopted crossing/sumps at `c5e87cd50`. main `eee5b0afa` merges `pair/manoeuvre-s2a` `9ddf248f9` alone. The pair's builder0
+  check is inherited (R36.32), and the orchestrator adopts crossing and sumps.
+- **Backlog:**
+  - C36.1 done. S3 done.
+  - S1 stallnet FAILED Bar S1 and is parked OFF (R36.27). The code is on main behind `STALL_NET_DEFAULT := false`.
+  - S2 / X4b done. S2a SHIPPED. S4 dropped (R36.18).
+  - Stretch R34.16 never applied: no native clicked face_pairs run appeared.
+- **Round-37 items (orchestrator, R36.32 / this close):**
+  1. **The Eyes_3 stand rule (fix (ii)):** after a side step that ends still blocked by the same friend, which hasn't moved, stand
+     instead of picking again.
+     - The trace is `references/round36/manoeuvre/s2a/README.md`: locks-6550 Rust_Eyes_3 picks 9 times in about 30 s for 1.0 m of
+       net motion. The side point is the route's own waypoint, and the drive to it clips a parked law_artillery's corner.
+     - It loops in 1 of 17 crew-friend pairs.
+     - The deciding lab case: a long friend seen at 30–45°.
+     - The alternative is (i), a drive-vs-oriented-box clearance.
+  2. **A WEDGE_TRACE `unstick_fires` total** on main. The S1 tree printed it; main doesn't, so Bar S2a's judge line read 0 v 0
+     and the guard was rebuilt from per-episode rows. The stream branch carries the helper (`_unstick_fires` in
+     tests/manoeuvre/wedge_trace.gd); the pair dropped it.
+  3. **An S1 v2 needs a fresh bar** (e.g. hold only while in friendly contact). It's a candidate, the orchestrator's call.
+- **What a fresh agent needs:**
+  - `tests/manoeuvre/s1_judge.py --bar s1|s2a` is the paired-series judge.
+  - `side_water.py` reads a probe tree's H1B_SIDE rows against the arena's terrain.
+  - `tests/manoeuvre/h1b_side_stage.gd` holds the far-loop lab stages: left / both / bank / mouth.
+  - The series drivers live in `~/overnight-manoeuvre/r36/*.sh`. They export `~/projects/bin` for gcloud and count a step only
+    when all its rows are there.
+- **Side worktrees:** s2aon, s2abase, sideprobe, x4b, s1on, s1base, s4trace and pair have their own `local.mk` ports, 7400–7479.
+  The lab branches are measurement only and never merge. They can go when the round closes.
+
+**2026-10-21 ~07:30 (worker): S2a hand-over `pair/manoeuvre-s2a` `9ddf248f9`, all green except sim-baseline (as expected; builder0, test x6).**
+- Check: `>> check: 26 passed, 1 FAILED, 0 NOT RUN`; tests 2973 passed, 0 failed; `>> remote: make check exited 2`. The only red is
+  sim-baseline.
+- sim-baseline moved:
+  - crossing 44b576710c5e90f6 -> b8278fef90b45929;
+  - sumps cf40649922613233 -> 942300f8e7d0dcc5;
+  - the other 11 maps are unmoved.
+  - The orchestrator adopts these on merge (R36.32). tests/baselines/** isn't ours.
+- Contents, on main `590dc607e`:
+  - stream/manoeuvre `2ee4f4d08` (the bank lab case and the judge tooling);
+  - native's re-pin `6a92e7a74`;
+  - `6516e48a5`, which turns H1B_SIDE_DEFAULT and yieldgap ON (bf678480c's code);
+  - `9ddf248f9`, which leaves out the WEDGE_TRACE unstick_fires total (round 37).
+- Log: `~/overnight-manoeuvre/r36/pair/check.log`. Sent to godot-b0.
 
 **2026-10-21 ~06:50 (worker): S2a PASSES Bar S2a's series.** builder2 (GCP e2-highcpu-32 Spot) native, J=6, ON `lab/s2a-on`
 `bf678480c` v base `lab/s2a-base` = main `e525f7311`. Fights, wedge and jam: locks/terminus/sumps x 6540–6563, 72 pairs. Hull-rest:

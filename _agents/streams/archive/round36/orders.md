@@ -1,3 +1,5 @@
+> **ARCHIVED (round 36 closed 2026-10-21).** The branch is `round36/orders`; its unmerged references stay on that branch. Round 37's brief is `streams/orders.md` where one exists.
+
 # Stream: orders (a squad that has arrived isn't in the way; squads deploy without shuffling)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 36** (C36.1, CP36.1,
@@ -141,9 +143,20 @@ _(the worker keeps this current: report at the top, every number with commit, ma
    His concern (2026-10-20, verbatim): "My concern here is basically giving some squads an order and then feeling like
    they're not actually following it, making the game appear dumb".
 **His O4 answer (2026-10-20): keep 9 m** (HALT_CLEAR_M, seat to seat); O4 stays parked.
-**Questions for the lead:** two drafted for the orchestrator in the neither-twitch note (in his terms): a parked squad's
-crew chasing an enemy, and a vehicle going with a neighbouring squad. Neither blocks anything of mine.
-**Requests to other streams:** none. **Merge notes:** `element_plan.gd`: the deploy carve-out only (DEPLOY_COMPACT, OFF;
+**His answers (2026-10-20, game_design.md, main cab42c5cb), ROUND-37 ITEMS:**
+- **Parked squads: "stay put and shoot".** A squad he parked holds its ground and fires from its spot; if it moves to
+  fight it drives all the way back; HE decides when it moves. Brains' engagement code (ENGAGEMENT, 16 of 55 twitchy squads).
+- **Mixed squads:** every vehicle arrives with its own squad, PROVIDED contention doesn't get worse ("the general priority
+  is to mitigate vehicle contention with one another. If parking with a different squad mitigates path contention, that
+  would be acceptable"). A round-37 bar keeps squads whole, with friendly contacts, crossings and all-in time as no-worse
+  guards; if those can't hold, re-dealing stays (25 of 287 squads re-dealt today, `55c973cd4`).
+- **The principle:** "the feel of the game needs to have the user perceive that the units are smart and under their
+  control".
+- LOOP went to manoeuvre as S4. STOPPED SHORT (19) still needs its traces (orders, round 37).
+**Questions for the lead:** none open.
+**LAST GREEN: `a1156cffe`** (stream/orders + main, all tooling + the neither-twitch evidence): builder0 `make check exited
+0`, 2972 passed / 0 failed, sim-baseline unmoved (glibc-2.43). The tip after it changes this Status only.
+**Requests to other streams:** none (LOOP went to manoeuvre as S4 via the orchestrator). **Merge notes:** `element_plan.gd`: the deploy carve-out only (DEPLOY_COMPACT, OFF;
 `_deploy_compact`); `game/control/selection_squads.gd`: `pack_refused` (measurement only); `game/tactics/element.gd` =
 main's (the R35.74 hook removed).
 

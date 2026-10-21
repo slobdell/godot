@@ -1,3 +1,5 @@
+> **ARCHIVED (round 36 closed 2026-10-21).** The branch is `round36/native`; its unmerged references stay on that branch. Round 37's brief is `streams/native.md` where one exists.
+
 # Stream: native (the scoreboard row for every main; every mirror; cleaner tests)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 36** (C36.1, CP36.1,
@@ -216,5 +218,16 @@ as named; N4 sweep; N5 lint; stretch.
     ticks as the order writes (1159 / 1276 / 1288 / 1294).
   - **Round 37:** latch the halt shape per arrival, or read terrain at the anchor; size it by terrain-caused reseats.
   - The laptop does not reproduce it.
+- **Close hand-over MERGED: 4a6b345d9 = main 48f4dc979.** builder0 `make native check exited 0`, 2972/0, sim-baseline
+  unmoved. perf-judge was NOT JUDGED (the box was busy); the orchestrator ruled it moot, since the diff has no
+  game/native/server code and main's perf-judge stands at 83eaddf66. The rerun was cancelled and its remote tree killed.
+- **R36.28 yield re-pin: `pair/native-yield-repin` 6a92e7a74** (on main 5f2cd6187), to stack into S2a's hand-over pair.
+  - **The change:** the Sumps stage ranks go from 7 x 16 m to 6 x 13 m (SUMPS_GAP / SUMPS_ACROSS).
+  - **Why:** yieldgap stopped the re-yields that made every old back-up (laptop: spot:back 15 -> 0).
+  - **builder0 quick, the whole test_native_yield file:** 13/0 `exited 0` in both arms, OFF (main) and ON (+ bf678480c's two
+    flips). Sumps spot:back 21 / 21; 0 mismatches over 376 / 477 drives.
+  - **Laptop sweep** (gap 6/7 x across 11-14): 6/13, 7/11, 7/12 and 7/13 pass both arms.
+  - **Lesson:** side worktrees have no local.mk, so they share the default smoke ports. Two parallel remote quicks from them
+    collided in combat-smoke (peer=0, tanks_seen=3/2), twice. Run them one at a time, or give each a local.mk.
 
 **2026-10-20 (orchestrator, at launch).** Not started.

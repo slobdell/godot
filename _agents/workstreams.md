@@ -20,10 +20,10 @@ S2. Brains' paths have no stream this round (C36.6).
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew being shot while waiting its turn in a street mouth drives on instead of sitting there | T8's pair and series on builder2, after CP36.1 |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew wedged between two friends backs out within a few seconds; fewer crews left sitting behind their squad | S1 stallnet (net-motion stall clock) |
-| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | a squad that has just set up doesn't block the next squad's street; less shuffling as squads deploy; seats he can drive straight to | O1 the herringbone-across-a-lane lab stage |
-| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the scoreboard row for every main, the mirrors, cleaner tests | N1 hand over round 35's scoreboard + copy-back fix |
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/archive/round36/traffic.md) | a crew being shot while waiting its turn in a street mouth drives on instead of sitting there | T8's pair and series on builder2, after CP36.1 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/archive/round36/manoeuvre.md) | a crew wedged between two friends backs out within a few seconds; fewer crews left sitting behind their squad | S1 stallnet (net-motion stall clock) |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/archive/round36/orders.md) | a squad that has just set up doesn't block the next squad's street; less shuffling as squads deploy; seats he can drive straight to | O1 the herringbone-across-a-lane lab stage |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/archive/round36/native.md) | nothing alone: the scoreboard row for every main, the mirrors, cleaner tests | N1 hand over round 35's scoreboard + copy-back fix |
 
 **Machines (C36.1):** builder0 (12 cores, 14 GB) = **manoeuvre's and orders' lane**; builder2 (e2-highcpu-32 Spot, us-west4, stops
 itself after 20 idle min; `make gcp-start`) = **traffic's T8 and native's scoreboard**. On each builder at most ONE full check and
