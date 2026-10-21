@@ -214,6 +214,9 @@ var _score_presence: Array = []
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## Round 37 (rules R2, C37.2, his "firing on the move should be a lot less accurate"): with `RuleSwitches.spread_on`
+## a full-speed shot spreads 4x, not 2.5x (still scaled by speed). Read through moving_spread_factor().
+const RULES_MOVING_SPREAD_FACTOR := 3.0
 ## X1 (round 5): at a weapon's full range its spread is (1 + this) times what it is inside effective_range.
 const RANGE_SPREAD_FACTOR := 3.0
 ## L2 (round 4, contract L2): suppression and effective fire. Every round that resolves stamps the ground it swept
@@ -426,6 +429,8 @@ func _physics_process(delta: float) -> void:
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
 		var t := _profile_start()
 		_update_suppression()
+		if RuleSwitches.sight_on:
+			_settle_motion_sight()
 		_profile("match/suppression", t)
 	if tick % INTEL_EVERY_TICKS == 0:
 		var t := _profile_start()
@@ -1164,8 +1169,13 @@ func threat_along(team: int, from: Vector3, to: Vector3) -> float:
 ## X1 (round 5): `distance` (m, 0 = unknown) past the weapon's effective_range widens it too (see Weapons).
 static func shot_spread(weapon: Dictionary, moving: float, suppression: float, distance := 0.0) -> float:
 	var spread_deg := float(weapon.get("spread_deg", 0.0))
-	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
+	return deg_to_rad(spread_deg) * (1.0 + moving_spread_factor() * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
 			* range_spread_multiplier(weapon, distance)
+
+
+## The moving term's factor this run (R2's switch picks it).
+static func moving_spread_factor() -> float:
+	return RULES_MOVING_SPREAD_FACTOR if RuleSwitches.spread_on else MOVING_SPREAD_FACTOR
 
 
 ## X1: how much wider a shot at `distance` spreads than one inside the weapon's effective range (1 = no change).
@@ -1215,6 +1225,15 @@ func _update_suppression() -> void:
 		stats["suppression_total"][tank.team] += tank.suppression
 		if tank.is_pinned():
 			stats["pinned_samples"][tank.team] += 1
+
+
+## Round 37 (rules R1): after the settle (GDScript or native), each living crew's own motion scales its sight
+## (Tank.settle_motion_sight). Sorted, counted in ticks: deterministic. GDScript on both paths on purpose: a few
+## multiplies per crew at 15 Hz, so native needs no twin of it.
+func _settle_motion_sight() -> void:
+	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / SimClock.TICK_RATE
+	for tank in _sorted_tanks():
+		tank.settle_motion_sight(seconds)
 
 
 func _update_intel() -> void:
