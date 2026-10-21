@@ -269,6 +269,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   wheels). **M5a** the spot rule (nearest the seat, never a lead-out when anything else is legal; GDScript, native's T10 mirror on
   `pair/native-t10b` 0ca19d829 adapts) and **M5b** the return (a seated crew that gave way along its own heading reverses straight
   back: a drive-body change, native twin, traced first). Each judged on Bar M5 with its own switch.
+- **R37.11 (2026-10-21) K2 ON is live on the native path (native's written read, 9d325e291 / 821c7f494).** `shell_native.cpp` only
+  flies the round and emits `hit` (:53) to `Match._on_shell_hit` (match.gd:1494) -> `_shell_hit`, where `Armor.low_cover_strike`
+  sits before `_land_hit_result`; no native beam code; `combat_native.cpp`'s damage arithmetic runs downstream of the seam. Two
+  GDScript paths skip the seam on both paths, by design: artillery/mortar splash (match.gd ~1630; his "artillery from above ignores
+  it") and cone/flame damage (`_spray` -> `_land_hit` ~1720). **Ruled:** cones (flamethrower, sonic emitter) ignore low cover, as
+  K2 already states (a waist-high barrier doesn't stop flame or sound); cover's K4 bar says so.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
