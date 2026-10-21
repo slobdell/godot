@@ -181,6 +181,12 @@ _Filed here before any number._
   hold's purpose: NO); 77 within 3 s after a hold (base 75), 50 of them released and driving on, shot in the fight. Largest traffic
   cause left: jam:yielding 215 (3.7 %), 97 giving way to ANOTHER squad's crew. Traffic traces it from the series logs (note, no
   code), then the orchestrator rules.
+- **R36.10 (2026-10-20 ~17:50 PDT) jam:yielding: NO traffic bar; a round-37 routing candidate.** Traffic's read (stream/traffic
+  c93702d7b, `references/round36/traffic/jam_yielding_read.md`; T8's ON arm, n 140): 215 deaths (base 211); 151 giving way to another
+  squad's crew (lanes 101; locks 44, gorge 43), always the same side, mostly one-hull streets. Under fire at the start: 27 (18 %);
+  median 1.4 s from yield to death at 0.6 m/s: the give-way is what the crew was doing, not what exposed it. The one traffic lever caps
+  at 0.19 a fight (< se ~17 / 140). Two squads meeting head-on in a one-hull street mid-fight is upstream (routing). A two-fight trace
+  (locks-1828, gorge-1812) says whether the orders headed opposite ways (routing: orders/planner, round 37) or the fight did.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
