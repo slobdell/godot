@@ -63,7 +63,9 @@ time, in player terms. He asked to come back to them before the next round.**
 feedback; rule levers so a blob frontal assault loses (area effects, defender edge, flanks, information); a blob-v-tactics
 scoreboard line as the measure.
 
-**Round 37 candidates so far (from round 36's reads):** CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
+**Round 37 candidates so far (from round 36's reads):** (tooling, native's sweep) relay_host_up / broker-load / lobby-smoke wait 5 s for BROKER_LISTENING then fall through silently
+(a dead broker surfaces 30 s later as "host never opened a room"); combat-smoke under `-eu -o pipefail` exits on a client FAIL before
+the reap and the server-ERROR grep (red, but loses its diagnostics); CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
 9 of 11 jam:yielding-to-another-squad deaths); the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped
 short / traffic split); whatever S1 / S2a leave of the wedged and left-behind crews.
 
