@@ -98,6 +98,27 @@ brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-ba
 - The brief's "a CPU tank halting to fire at 120 m": no direct-fire gun reaches 120 m (longest: railgun 110 m), so the lab
   case uses the Syndicate tank's railgun at > 80 m.
 
+**Bar R (filed 2026-10-21, recorded on main by the orchestrator; per R37.1(b), if CP37.1's base shows the blob near the
+floor the deciding metric switches to the one native names, and the bar is re-filed before any arm number):**
+
+**Bar R (rules R1/R2/R3), DRAFT filed 2026-10-21 by rules before any judged number; k·se and n are filled from CP37.1's
+noise (native's base read on builder2) before the series starts.** Arms: base = main at CP37.1's merge; each rule's arm =
+the same tree with `--rules-on=<rule>` (sight / spread / pin_slow), plus a package arm `--rules-on=sight,spread,pin_slow`.
+Judging: each rule alone first (its own switch); the package only if two or more pass alone or each is inside its noise
+alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions both ways, the grid and seeds native names.
+- **Deciding (each arm):** blob v tactics: the blob's win rate DOWN v base by more than k·se (k = 2, se = CP37.1's 2-seed-block
+  se of the win rate), AND the blob's kill ratio not up.
+- **Guard 1:** turtle v tactics: the turtle's win rate not UP v base by more than 2 se (the turtle must not start winning).
+- **Guard 2:** kills per match and match length per faction within base ± 2 se (no faction breaks: the stabilised-gun check
+  in the brief; a faction outside is REPORTED with its units, not fixed here).
+- **Guard 3 (R2 only, ruling R37.2 (c)):** contention: friendly contacts, all-in time, crews held behind a halted friend,
+  and manoeuvre's wedge line, each no worse than base + 2 se on the scoreboard's moves/orders workload.
+- **Guard 4:** perf-judge on the arm's pair tree (the short halt and the motion-sight pass are per-crew GDScript).
+- **Equality:** sim-baseline maps unmoved with every switch OFF (attributed with the switch OFF, C37.2).
+- **Reports (not judged):** the R2 measure's movers' share of direct damage (`make rules-moving`, base 52.5 % at 9d63f709a,
+  builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
+- **Last attempt / partial rule:** one re-tune per rule only on the guard lines (brief's stretch), then judged as it stands.
+
 **Rulings received:** R37.2 (a) no twins provisional, (b) **no short halt under his plain MOVE** (attack-move, hold, parked,
 CPU only; built: `ShortHalt.plain_player_move`, game/combat/short_halt.gd, lab cases in test_rules_spread), (c) R2's bar
 carries contention guards (friendly contacts, all-in time, held behind a halted friend, manoeuvre's wedge line).
