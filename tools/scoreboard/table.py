@@ -88,6 +88,37 @@ NUM = {
                                                                lambda r: r["orders"]["read"]),
     "Twitch after placing, median (metres a crew shuffles)": ("orders", lambda r: r["orders"].get("twitch_median_m"), None),
 }
+# Round 37 (CP37.1, N3): the guard lines, his measure for every rule this round (game_design.md question 11). Each main's
+# guard read is references/scoreboard/guards/<commit>.json (tools/scoreboard/guard.py --json over its seed blocks); its own
+# noise (2 se of a difference, from the per-seed spread of that read's seeds) fills the ± column from the newest read.
+# (line in his words, better, kind, stat, as a share?)
+GUARD_LINES = [
+    ("A blob frontal assault WINS (should be rare)", "lower", "blob", "win", True),
+    ("... the blob's kill ratio (its kills / its losses)", "lower", "blob", "kill_ratio", False),
+    ("... blob fights decided on points at the 600 s cap", "", "blob", "capped", True),
+    ("A pure turtle WINS (should be rare too)", "lower", "turtle", "win", True),
+    ("... the turtle's kill ratio (its kills / its losses)", "lower", "turtle", "kill_ratio", False),
+    ("... turtle fights decided on points at the 600 s cap", "", "turtle", "capped", True),
+]
+
+
+def guard_cell(g, kind, stat, share):
+    line = (g or {}).get(kind)
+    if not line or not line.get("all", {}).get("n"):
+        return None
+    value = line["all"].get(stat)
+    if value is None:
+        return None
+    return "%d %%" % round(100 * value) if share else round(value, 2)
+
+
+def guard_noise(g, kind, stat, share):
+    value = ((g or {}).get(kind) or {}).get("noise", {}).get(stat)
+    if value is None:
+        return "not sized"
+    return "± %d %%" % round(100 * value) if share else "± %s" % fmt(round(value, 2))
+
+
 UNITS = {"Hit rate": " %", "Seconds until every squad is in (median)": " s", "Twitch after placing, median (metres a crew shuffles)": " m"}
 
 
@@ -166,6 +197,25 @@ def render(root):
         else:
             cell = "± %s%s" % (fmt(round(sized[0], 2)), UNITS.get(text, "")) if sized else ("" if text not in NUM else "not sized")
         out.append("| %s | %s | %s | %s |" % (text, " | ".join(cells), better, cell))
+    guards = {}
+    for commit, _label in mains:
+        path = os.path.join(root, "guards", commit + ".json")
+        if os.path.exists(path):
+            guards[commit] = json.load(open(path))
+    if guards:
+        newest = [c for c, _l in mains if c in guards][-1]
+        out.append("| **Guard lines** (his measure: both should be rare) |" + " |" * (len(mains) + 2))
+        for text, better, kind, stat, share in GUARD_LINES:
+            cells = []
+            for commit, _label in mains:
+                v = guard_cell(guards.get(commit), kind, stat, share) if commit in guards else "not run"
+                cells.append(fmt(v) if not isinstance(v, str) else v)
+            out.append("| %s | %s | %s | %s |" % (text, " | ".join(cells), better, guard_noise(guards[newest], kind, stat, share)))
+        cells = []
+        for commit, _label in mains:
+            g = guards.get(commit)
+            cells.append("not run" if g is None else " / ".join("%d of %d" % (g[k]["read"], g[k]["run"]) for k in ("blob", "turtle") if k in g))
+        out.append("| Guard fights read (blob / turtle, of run) | %s |  |  |" % " | ".join(cells))
     if noise_rows:
         out += ["", "**± noise** is two standard errors of a difference between two columns: a line moved only when two mains "
                 "differ by more than it. Sized from the seed-to-seed spread of %s (one main, %s seed blocks; each seed's fights "
@@ -174,6 +224,13 @@ def render(root):
                 % (", ".join("`%s`" % n for n in noise_names), len(noise_rows))]
     else:
         out += ["", "**± noise**: not sized yet (references/scoreboard/noise.txt names no rows): no move is called."]
+    if guards:
+        out += ["", "**The guard lines** (CP37.1, `tests/ai_scenarios/guard_line.gd`, `tools/scoreboard/guard.sh`): the showmatch fight "
+                "run to its end (90 zone points or the last crew; a fight still going at 600 s goes to the side ahead on points), one "
+                "side ordered and the other today's CPU. BLOB: every squad sent at once with his right-click (a plain move, no "
+                "drills) at the zone in the enemy's half. TURTLE: every squad holds a post on its own zone and never advances. "
+                "Terminus, Locks, Sumps, Gorge, Parade x seeds 2601-2608 and 2701-2708 x each side as the guard (both factions "
+                "both ways): 160 fights a line. Their ± is the same method as the noise column, from that read's own 16 seeds."]
     out += ["", "**Where each column ran:**", ""]
     for commit, label in mains:
         r = rows.get(commit)

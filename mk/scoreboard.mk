@@ -48,3 +48,28 @@ scoreboard-run: import ## X5: the round scoreboard's fixed workload on this tree
 			--seed=$$3 --probe-squads=$$1 --probe-route=$$2 --probe-arm=main > $(SCORE_DIR)/orders/$$0-$$1-$$2-main-s$$3.log 2>&1 || true; \
 		grep -q "^ORDERS_PROBE {" $(SCORE_DIR)/orders/$$0-$$1-$$2-main-s$$3.log || echo "  MISSING ORDERS_PROBE orders $$0-$$1-$$2 s$$3"'; fi
 	@echo ">> scoreboard-run done: $$(ls $(SCORE_DIR)/fights | wc -l) fights, $$(find $(SCORE_DIR)/moves -name run.log | wc -l) moves, $$(ls $(SCORE_DIR)/orders | wc -l) orders runs" | tee -a $(SCORE_DIR)/run.txt
+
+# ---- Round 37 (CP37.1, native): THE GUARD LINES ------------------------------------------------------------------------------
+# His measure for every rule this round (game_design.md, open question 11): a blob frontal assault should lose, AND a pure turtle
+# must not always win. The scoreboard's fight (showmatch, both sides the CPU) run to its END, with ONE side ordered by
+# tests/ai_scenarios/guard_line.gd (blob: every element attack-moves at the enemy's zone at once; turtle: every element holds a
+# post on its own zone, never advances; none: the CPU v CPU control), each seed's faction pair with each side as the guard.
+# Raw logs only (build/guards/<kind>/<arena>-<seed>-<side>.log); tools/scoreboard/guard.py reads them into the lines.
+GUARD_DIR ?= $(BUILD_DIR)/guards
+GUARD_KINDS ?= blob turtle
+GUARD_AT ?= $(SCORE_FIGHT_AT)
+GUARD_SEEDS ?= $(SCORE_FIGHT_SEEDS)
+GUARD_SIDES ?= green rust
+GUARD_SECONDS ?= 600
+GUARD_JOBS ?= 16
+.PHONY: guard-run
+guard-run: import ## CP37.1: the blob and turtle guard lines on this tree -> build/guards/ (read by tools/scoreboard/guard.py)
+	@rm -rf $(GUARD_DIR) && mkdir -p $(GUARD_DIR)
+	@echo ">> guard-run on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | kinds '$(GUARD_KINDS)' | seeds $(firstword $(GUARD_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee $(GUARD_DIR)/run.txt
+	@for kind in $(GUARD_KINDS); do mkdir -p $(GUARD_DIR)/$$kind; for seed in $(GUARD_SEEDS); do for arena in $(GUARD_AT); do \
+		for side in $(GUARD_SIDES); do echo "$$kind $$arena $$seed $$side"; done; done; done; done | \
+		xargs -P $(GUARD_JOBS) -L 1 sh -c 'timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean --seed=$$2 --arena=$$1 --mute \
+		--guard=$$0 --guard-side=$$3 --seconds=$(GUARD_SECONDS) > $(GUARD_DIR)/$$0/$$1-$$2-$$3.log 2>&1 || true; \
+		grep -q "^GUARD_RESULT" $(GUARD_DIR)/$$0/$$1-$$2-$$3.log || echo "  MISSING GUARD_RESULT $$0 $$1 s$$2 $$3"'
+	@echo ">> guard-run done: $$(grep -l '^GUARD_RESULT' $(GUARD_DIR)/*/*.log 2>/dev/null | wc -l) of $$(ls $(GUARD_DIR)/*/*.log | wc -l) fights" | tee -a $(GUARD_DIR)/run.txt
