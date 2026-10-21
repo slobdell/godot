@@ -144,6 +144,60 @@ def wreck(x, z, rot=0):
     return prop("wreck", x, z, rot)
 
 
+# ---- Round 37 (cover, K5; granted R37.7): low cover where the fighting is. PREPARED, NOT APPLIED. ----------------
+# `COVER_K5` picks the plan; None (the default) writes every map exactly as before. The lead chooses (a) or (b);
+# then this constant flips and `make arenas` regenerates (sim-baseline attributed with --cover-on OFF).
+#   "a" RE-SHAPE: a lone wreck / single container_20 in the hot fighting (and its mirror) becomes a barricade on the
+#       same spot; locks and parade have none near the fighting, so they take (b)'s runs (the guard maps must all get
+#       low cover, or Bar K reads a null there).
+#   "b" ADD: two mirrored 12 m runs (two barricades end to end) across each guard map's hottest streets, and crossing's.
+# Sites from the drafts (tests/cover/reshape_proposal.py, add_runs_proposal.py; heat 5b4e79362, builder2, 4 fights a
+# map; every run keeps 5 m clear and every lane passing R4). `make cover-k5 PLAN=a|b` checks a plan in a scratch folder.
+# COVER_K5 env overrides the constant, for that check only.
+COVER_K5 = None
+# (type, x, z) of one member of each mirrored pair; the barricade faces the base axis (a crew behind it faces the enemy).
+COVER_K5_SWAPS = {
+    "terminus": [("wreck", 55, -56)],
+    "sumps": [("wreck", 22, 52), ("container_20", 42, -80)],
+    "gorge": [("wreck", 24, -18)],
+    "crossing": [("container_20", 92, 50), ("wreck", 66, 34)],
+    "pit": [("wreck", 64, 56)],
+    "archipelago": [("container_20", 61, -24), ("container_20", 96, -2)],
+    "docks": [("wreck", 8, -24), ("container_20", 4, -80)],
+}
+# Run centres (each with its mirror): long side along x, square to the base axis.
+COVER_K5_RUNS = {
+    "terminus": [(-80, -28), (-62, 28)],
+    "locks": [(-26, -16), (-46, -16)],
+    "sumps": [(-20, 80), (-40, 70)],
+    "gorge": [(-62, 6), (-32, 26)],
+    "parade": [(-44, -8), (-16, 22)],
+    "crossing": [(-16, 32), (-36, 32)],
+}
+COVER_K5_A_RUNS = ("locks", "parade")
+
+
+def cover_k5(name, props):
+    """The authored half `props` with plan COVER_K5 applied to map `name` (its dry twin too). Unchanged when off."""
+    plan = os.environ.get("COVER_K5") or COVER_K5
+    if plan is None:
+        return props
+    assert plan in ("a", "b"), "COVER_K5 is a or b"
+    base = name[:-len("_dry")] if name.endswith("_dry") else name
+    props = list(props)
+    for kind, x, z in (COVER_K5_SWAPS.get(base, []) if plan == "a" else []):
+        hits = [i for i, p in enumerate(props) if p["type"] == kind
+                and (abs(p["position"][0] - x) + abs(p["position"][1] - z) < 0.01
+                     or abs(p["position"][0] + x) + abs(p["position"][1] + z) < 0.01)]
+        assert len(hits) == 1, "cover K5: %s has %d %s at (%s, %s)" % (name, len(hits), kind, x, z)
+        px, pz = props[hits[0]]["position"]
+        props[hits[0]] = barricade(px, pz, 0 if (px, pz) == (x, z) else 180)
+    if plan == "b" or base in COVER_K5_A_RUNS:
+        for x, z in COVER_K5_RUNS.get(base, []):
+            props += [barricade(x - 3, z, 0), barricade(x + 3, z, 0)]
+    return props
+
+
 def floodlight(x, z):
     return prop("floodlight", x, z)
 
@@ -256,7 +310,8 @@ def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), cont
         sp = spawns()
         props = container_skew.skew(list(props), fixed, sp["green"] + sp["rust"], spawn_clearance(),
                                     kit=arena_report.KIT, label=name)
-    layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": half_size, "fixture": fixture,
+    props = cover_k5(name, props)
+    layout ={"name": name, "schema": 2, "title": title, "note": fight, "half_size": half_size, "fixture": fixture,
               "obstacles": mirrored(list(obstacles)), "props": mirrored_props(list(props)),
               "spawns": spawns(), "spawn_zones": {"green": SPAWN_ZONE, "rust": {"center": [0.0, -102.0], "size": SPAWN_ZONE["size"]}},
               "lanes": mirrored_lanes([dict(l) for l in lanes]), "regions": mirrored_regions(list(regions)),

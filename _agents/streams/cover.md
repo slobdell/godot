@@ -187,6 +187,16 @@ hull-down crew is fully exposed to those by design.
   behind the re-shaped barrier, attack head-on (sparks on the barrier, fewer hits), then from the flank (no change).
 
 ### Next steps / blocked
+- **K5 PREPARED (R37.18), NOT APPLIED:** `tools/make_arenas.py` `COVER_K5 = None` (default: every map byte-identical,
+  `make cover-k5 PLAN=none` 0 files changed). Plan "a" = the re-shape draft's swaps (terminus 1, sumps 2, gorge 1, crossing 2,
+  pit 1, archipelago 2, docks 2 mirrored pairs) + (b)'s runs on locks and parade (no clutter near their fighting); plan "b" =
+  two mirrored 12 m runs on each guard map + crossing. `make cover-k5 PLAN=a|b` (laptop, no Godot): a 13 files / b 9 files
+  changed (dry twins included), 0 failures: only barricades in, only the named clutter out, runs clear 5 m, every lane that
+  passed R4 still passes. **The generator's own lane check caught two draft runs** (sumps (-26,80) closed the west causeway;
+  terminus's) -- add_runs_proposal now keeps R4: sites moved to terminus (-80,-28),(-62,28) (6-8 % of its hull hits within
+  12 m, was 11-15 %), sumps (-20,80),(-40,70), gorge (-32,26); the (b) page is refreshed with all six maps. On his answer:
+  flip the constant, `make arenas`, game-side lane/arena tests + sim-baseline attribution OFF, before/after frames, then the
+  OFF re-gate and Bar K's series on those maps.
 - **K5:** waiting on his two answers (the orchestrator is asking). On (a): apply the draft's swaps in `tools/make_arenas.py`
   (granted R37.7) + regenerate, before/after frames at his pose, sim-baseline attribution with the switch OFF (maps move: the
   orchestrator adopts).
@@ -194,7 +204,8 @@ hull-down crew is fully exposed to those by design.
   OFF gate (`GUARD_WORKTREE=../godot-cover-guard tools/scoreboard/guard.sh <tree>` on builder2, then `guard.py --pair
   references/scoreboard/guards/9d325e291.fights.jsonl <raw>`, 0 flips expected) once a10846307's builder2 check is green and
   builder2's series queue is free (orchestrator, R37.16). The arm still waits on his K5 answer; then the null reading on today's maps (OFF v 9d325e291 = 0 flips, then ON v OFF), then the judged series on the
-  re-shaped maps per the paired Bar K above.
+  re-shaped maps per the paired Bar K above. **R37.18:** the separate OFF gate on today's maps is DROPPED (rules' base gate
+  on a10846307 already replays 9d325e291's fights with my OFF code in); I re-gate OFF on the K5 maps. builder2 held till then.
 - **Stretch (CPU defends from low-cover seats):** needs a grant in the brains paths (`cpu_commander.gd` / tank_brain); requested.
 
 ### Native twins (N2, on stream/native 3d598cdaa; not merged here)

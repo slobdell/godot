@@ -7,7 +7,8 @@ fighting is most concentrated -- for the lead's before/after page; nothing appli
 A RUN is RUN_PIECES barricades end to end (12 m), its long side square to the base axis (a crew behind it faces the enemy's
 half), and its 180-degree mirror (layouts are point-symmetric). Where: the centre of a hot 10 m cell (hits summed over the cell
 and its mirror), nudged on a 2 m grid within the cell, kept only if the run grown by CLEAR_M touches nothing that collides,
-no water or pit, stays MID_Z_MAX from the base lines (out of the spawn ends) and MIN_APART_M from another run. Up to `--runs`
+no water or pit, stays MID_Z_MAX from the base lines (out of the spawn ends) and MIN_APART_M from another run, and every
+lane that passed R4 (two widest hulls drivable, corners clear: tools/terrain_measure) still passes with it. Up to `--runs`
 mirrored pairs a map, hottest first. Default maps: the four whose top four cell pairs hold >= 20 % of the hull hits (heat at
 5b4e79362): crossing 0.28, sumps 0.27, locks 0.20, gorge 0.20.
 """
@@ -77,6 +78,23 @@ def fits(layout, centre, half):
     return True
 
 
+def lanes_ok(layout):
+    """Names of the lanes that pass R4 on `layout` (terrain_measure, the generator's own measure)."""
+    import terrain_measure
+    return {lane["name"] for lane in terrain_measure.lanes_with_terrain(layout)
+            if lane["pass"] and all(c["pass"] for c in lane["corners"])}
+
+
+def with_run(layout, centre):
+    after = copy.deepcopy(layout)
+    x, z = centre
+    for k in range(RUN_PIECES):
+        offset = -RUN_PIECES * PIECE_M / 2 + PIECE_M * (k + 0.5)
+        after["props"].append({"type": "barricade", "position": [x + offset, z], "rotation_deg": 0.0})
+        after["props"].append({"type": "barricade", "position": [-x - offset, -z], "rotation_deg": 180.0})
+    return after
+
+
 def heat_near(cells, pos):
     return sum(count for key, count in cells.items()
                if math.hypot(int(key.split(",")[0]) * 10 + 5 - pos[0], int(key.split(",")[1]) * 10 + 5 - pos[1])
@@ -93,6 +111,8 @@ def propose(name, row, runs):
         k = min((x, z), (-x - 1, -z - 1))
         pairs[k] = pairs.get(k, 0) + count
     chosen = []
+    passing = lanes_ok(layout)
+    placed = layout
     for (cx, cz), _ in sorted(pairs.items(), key=lambda kv: (-kv[1], kv[0])):
         if len(chosen) >= runs:
             break
@@ -107,16 +127,13 @@ def propose(name, row, runs):
                     continue
                 heat = heat_near(cells, centre) + heat_near(cells, (-centre[0], -centre[1]))
                 if best is None or heat > best[1]:
+                    if not passing <= lanes_ok(with_run(placed, centre)):
+                        continue
                     best = (centre, heat)
         if best is not None:
             chosen.append(best)
-    after = copy.deepcopy(layout)
-    for (x, z), _ in chosen:
-        for k in range(RUN_PIECES):
-            offset = -RUN_PIECES * PIECE_M / 2 + PIECE_M * (k + 0.5)
-            after["props"].append({"type": "barricade", "position": [x + offset, z], "rotation_deg": 0.0})
-            after["props"].append({"type": "barricade", "position": [-x - offset, -z], "rotation_deg": 180.0})
-    return after, chosen
+            placed = with_run(placed, best[0])
+    return placed, chosen
 
 
 def main():
