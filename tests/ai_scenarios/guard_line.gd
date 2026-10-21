@@ -2,15 +2,16 @@ extends SceneTree
 ## Round 37 (CP37.1, native): THE GUARD LINES. His measure for every rule this round (game_design.md, open question 11): "a blob
 ## frontal assault should lose, AND a pure turtle must not always win". One showmatch fight (both sides the CPU at its normal
 ## doctrine, exactly as `--skirmish --demo-match` plays) in which ONE side is ordered instead:
-##   blob    every element attack-moves at once at the zone in the enemy's half (the other side's zone); when it holds that,
-##           at whichever zone it does not hold; when it holds both, at the enemy's spawn. Re-tasked only when that target
-##           changes, as a player would right-click once.
+##   blob    every element is sent at once (his RIGHT-click: a plain move, `drills: false`, R37.1 (a): no bounding, no overwatch,
+##           no contact drill; `--blob-drills=on` is his A-click instead, which may bound) at the zone in the enemy's half (the
+##           other side's zone); when it holds that, at whichever zone it does not hold; when it holds both, at the enemy's
+##           spawn. Re-tasked only when that target changes, as a player would right-click once.
 ##   turtle  every element holds a post across its OWN half's zone (facing the enemy spawn, 22 m apart, no drills, as the
 ##           CPU's own hold lays them), once, and never advances: its crews shoot what they see.
 ##   none    nobody is ordered: today's CPU v CPU, run to the end (the control).
 ## No game code: the ordered side is marked as the side a human commands (`player_team`, the game's own switch: its
 ## ElementCommander stands down, OrderFeed.player_team), and its elements get ElementTasks through Element.assign, the same
-## call the tactical map makes for his attack-move (`{"verb": "move", "to": ...}` with drills) and his hold.
+## call the tactical map makes for his right-click move (`{"verb": "move", "to": ..., "drills": false}`) and his hold.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean \
 ##       --seed=N --arena=A --mute --guard=blob|turtle|none --guard-side=green|rust [--seconds=600]
 ## Prints GUARD_RESULT {json} once: who won (the ordered side "guard", the CPU "tactics", or "draw"), why, how long, kills
@@ -182,8 +183,9 @@ func _order(game_match: Match, guard: String, side: int) -> void:
 		if retarget and _target_name != "":
 			_retargets += 1
 		_target_name = name
+		var drills := _flag("blob-drills", "off") == "on"
 		for element: Element in mine:
-			var task := {"verb": "move", "to": _xz(to)}
+			var task := {"verb": "move", "to": _xz(to)} if drills else {"verb": "move", "to": _xz(to), "drills": false}
 			if retarget or element.task.is_empty() or not _same_to(element.task, task):
 				if element.task.is_empty() and not retarget and _arrived(game_match, element, to):
 					continue  # an attack-move that arrived completes; a player would not click again
@@ -241,4 +243,4 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 			"kills": {"green": _kills[0], "rust": _kills[1]}, "losses": {"green": _losses[0], "rust": _losses[1]},
 			"shots": {"green": _shots[0], "rust": _shots[1]}, "hits": {"green": _hits[0], "rust": _hits[1]},
 			"control": result.get("control"), "tanks": result.get("tanks"), "army_cost": result.get("army_cost"),
-			"factions": factions, "tasks": _tasks, "retargets": _retargets, "last_target": _target_name}))
+			"factions": factions, "blob_drills": _flag("blob-drills", "off"), "tasks": _tasks, "retargets": _retargets, "last_target": _target_name}))
