@@ -35,7 +35,12 @@ left wedged behind their squad.
 3. **M3 S1 v2:** a design note to the orchestrator on what a fresh stall net would do differently from R36.27's (no code before a
    ruling).
 4. **M4 once rules' R3 (suppression slows) is ON:** re-read wedge and left-behind lines on main; report any rise.
-5. **Stretch:** the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped short / traffic split), trace only.
+5. **M5 seated crews step aside and come back (R37.6, the orchestrator via godot-b0, 2026-10-21):** in traffic's give-way
+   block, a SEATED crew (arrived, deployed) yields by stepping aside and reversing straight back to its seat; spots scored by
+   distance to the yielder's seat; it no longer leads the asker out. Bar in Status before any number (deciding: metres a seated
+   crew is moved off its seat, base = round 36's S4 trace; guards: the asker's wait and all-in time, friendly contacts, kills).
+   Symmetric: a pass ships ON. After M1.
+6. **Stretch:** the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped short / traffic split), trace only.
 
 ## How to verify
 
@@ -53,3 +58,50 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Bar M5 (`seatyield2`: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6)
+
+- **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
+  seat = the move_to goal) picks, of the spots legal today (none added, none refused), the one nearest its seat. This is
+  round 36's T10 G (`round36/traffic` 7f9760329), reused. The ahead-along-the-asker spots (10/16/24, 0) are taken only when
+  no side or back spot is legal. After the give-way, its return to the seat may reverse straight back when the seat is
+  straight behind (round 26's back-in law, unchanged). One switch, `seatyield2` in Traffic.DEFAULT_OFF. The native twin is a
+  request to native (T10's mirror is on `round36/native`, if any, or new).
+- **Why not T10's deciding line again (R36.23/R36.24):** orders' away_m counted goal flicker as driving. M5 measures only
+  inside give-way episodes, against the seat fixed at the give-way's start.
+- **Base rate first (R36.23):** on main, count seated give-ways and their seat metres, in orders' probe (12 street cells) and
+  in the jam census. n is sized from that count before the series. Lab first: a "not farther than standing" test
+  (R36.24 (3)); each pick is no farther from the seat than today's pick.
+- **DECIDING:** seat metres summed over seated give-ways, paired by seed. Seat metres = the give-way's farthest flat distance
+  from the seat, plus the path driven from its end until the crew is back within 2 m of the seat (cap 15 s). ON < base by more
+  than 1.645 se. The ahead-spot share is REPORTED.
+- **Guards, each no worse than base + 1.645 se:**
+  - the asker's wait: ticks from the give-way's start to the asker reading passed, and give-ways never cleared;
+  - all-in time (squads arrived, deploy seconds);
+  - friendly contact ticks;
+  - kills and deaths per team, jam deaths (fights on locks/terminus/sumps).
+- **Pass = the lab + the base rate seen + deciding + guards. A pass ships ON** (symmetric).
+
+**2026-10-21 (worker): M1 built + lab-decided on GDScript; M2 done; M3 note written. quick-remote on builder0 running.**
+- **Plan (order):** M1 sidestand (switch OFF, lab case, Bar M1 filed in workstreams *Bars (round 37)*) -> M2 WEDGE_TRACE total ->
+  M3 note -> M1 pair check + series (builder0) -> M4 after R3 is ON -> stretch.
+- **M1 (`sidestand`, SIDE_STAND_DEFAULT false):** `Movement._h1b_side`: a far fire on the friend a side step was already taken
+  on, same goal, friend unmoved since (`_side_over()` false) stands instead of picking again. GDScript only (native reads
+  `_side_stand` as today). Counters `h1b_side_repeats` / `h1b_side_restands`, printed in `ManoeuvreCensus.h1b_report()`.
+  - **Lab case** `tests/test_manoeuvre_side_stand.gd`, stage `eyes3:<yaw>`: R36.31's own Locks spot (scout behind a parked
+    artillery). The base reproduces the trace exactly: side points (45.35..45.86, -83.9), the trace's were (45.3..45.9, -83.9).
+    Laptop GDScript sweep (NATIVE=off): yaw 125/130/135 base 4 steps, 3 repeats, 9-10 fires in 30 s, never past; ON 1 step + 1
+    stand, 5 fires, the last one the stand's. yaw 140: one step, past at 19.6 s, both arms. 110-115 and 145: rule never reached.
+  - Why (ii) not (i): it bounds every loop shape, not only the traced one (R36.31's recommendation).
+  - Idea for later, not built: on the repeat, try the OTHER side point once before standing (a stood scout is still left behind).
+- **M2:** WEDGE_TRACE prints `unstick_fires` = `Movement.unstick_fires` (the game total); `wedge_table.py` prints its sum.
+  **Caveat found:** `unstick_fires` is a STATIC. Round 36's S1-tree helper summed it over every crew (static x crew count), and
+  WEDGE_EP's per-episode `unstick_fires` counts every crew's fires during that episode. So R36.27's +22 % and R36.32's rebuilt
+  "fires inside wedged episodes" were in the right direction but not exact in size. Detail: `references/round37/manoeuvre/m3_s1v2_note.md`.
+- **M3:** `references/round37/manoeuvre/m3_s1v2_note.md`. Recommendation: count the base rate on main first, then build v2
+  (hold only in contact with an unmoved friend, fire through H1's ask, cap per goal) only if the count is worth a series.
+- **Requests / follow-ups:** rules (via godot-b0): R2's `Tank.short_halting()` must not read as a stall. When R2 merges, my
+  `_unstick` stall clock skips a short-halting hull, and native mirrors that in its unstick twin (a request to native then).
+- **Parked yielders (godot-b0's question, from orders' O2 probe):** round 36's S4 trace (55c973cd4, builder0 light, 16 looping
+  squads): 124 of 172 give-ways (72 %) had a yielder within 10 m of its seat; 44 of those were sent >= 10 m away. The give-way
+  block is mine this round, so I can take a "parked crews step aside and come back, or passers go round" item if it is ruled.

@@ -105,6 +105,29 @@ exit (remote_builds.md). Delete your own `~/tank_squad/<folder>` leftovers on bo
 
 _(each stream files its bar here BEFORE its first number; the orchestrator records rulings below as R37.x)_
 
+### Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number
+
+- **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
+  for the same goal, with that friend unmoved since the step began (`_side_over()` false), STANDS (the existing stand: throttle 0
+  until the friend moves > H1B_MOVED_M or the goal jumps > NEW_GOAL_JUMP) instead of picking another side point. Fix (ii) of
+  R36.31. `--nav-off=sidestand` flips SIDE_STAND_DEFAULT (false until judged). GDScript only: the choice runs in the escape
+  callback both paths share; native reads `_side_stand` as today (no new exec field). Counters (ManoeuvreCensus, printed in
+  `h1b_report()`): `h1b_side_repeats` (both arms: the base's repeat loop) and `h1b_side_restands` (ON acts).
+- **(0) Counter first:** `h1b_side_restands` > 0 in ON's series; `h1b_side_repeats` REPORTED in both.
+- **DECIDING (lab, both paths):** `tests/test_manoeuvre_side_stand.gd`, the stage's `eyes3:<yaw>` (R36.31's traced Locks spot,
+  a law_scout behind a parked law_artillery, the artillery's yaw the parameter). At yaw 125/130/135 (its axis 45-55 deg off the
+  lane) base takes >= 3 side steps (>= 2 repeats) and never gets past; ON takes 1 step + 1 stand, identical fires up to the
+  stand, then still (< 0.5 m, no pressing) in the last 10 s. Guard: yaw 140 (one step gets past) ON = base exactly. Native =
+  GDScript in both arms (fires, stands, end within 0.05 m). The round-36 h1b_side cases unchanged.
+- **Series guards (no harm), FRESH seeds, each within 1.645 se of base:** Bar S2a's set on main: hull-rest 6601-6632 drawn x 4
+  factions x 6 tasks ((d) movers by net motion, (e), (f)); wedge/fights/jam on locks/terminus/sumps x 6640-6663 ((i) kills / hit
+  rate per team, (q) open/stuck/jam deaths, (r) far loops, (s) friendly contacts, give-ways); **unstick fires** from WEDGE_TRACE's
+  new total (M2) ON <= base + 1.645 se.
+- **Player line, REPORTED:** crews left behind (`left_behind.py`, hull-rest faced_attack_move + faced_move). Expect little: the
+  rule's base rate is small (R36.31: 17 crew-friend pairs reached the side rule in 48 fights, 2 repeated). So the series is a
+  harm check, not a gain line (R35.64): the lab decides, the series guards.
+- **Pass = (0) + the lab (both paths) + every guard. A pass ships ON** (symmetric movement fix, C37.7).
+
 ## Rulings (round 37)
 
 _(none yet)_

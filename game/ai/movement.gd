@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "h1bside", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "stallintent", "stallnet", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "h1bside", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "sidestand", "stallintent", "stallnet", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -4017,21 +4017,52 @@ static func h1b_side_on() -> bool:
 	return H1B_SIDE_DEFAULT != switched_off("h1bside")
 
 
+# ---- Round 37 (manoeuvre M1, `sidestand`): one side step per unmoved friend, then stand ---------------------------------
+# R36.31 (references/round36/manoeuvre/s2a, locks-6550 Rust_Eyes_3): `_side_clear` tests the side POINT against hull centres,
+# never the drive to it against the friend's oriented box, so a long friend seen at an angle has a corner across that drive:
+# the crew noses into it, H1b's far loop fires again, and the side point it picks is nearly the same one (9 picks in ~30 s,
+# net 1.0 m). With this on, a far fire on the friend a side step was already taken on, for the same goal, with that friend
+# unmoved since the step began (`_side_over()` false), STANDS instead of picking again, until the friend moves more than
+# H1B_MOVED_M or the goal changes (the stand's own end). Whatever the geometry, the loop is one step. Chosen over (i), a
+# drive-v-box clearance test, because it bounds every shape of the loop, not only the one traced. `--nav-off=sidestand`
+# flips SIDE_STAND_DEFAULT (false until judged).
+const SIDE_STAND_DEFAULT := false
+## A side step has been taken on `_side_friend` for `_side_goal` (cleared when a fire stands).
+var _side_stepped := false
+
+
+static func side_stand_on() -> bool:
+	return SIDE_STAND_DEFAULT != switched_off("sidestand")
+
+
 ## The far loop's fire on `friend` (h1bside on): a side point to drive to, or stand.
 func _h1b_side(friend: Tank) -> void:
 	native_stale |= STALE_ALL
 	_h1b_failed = 0
 	_escape_end()
+	# Read before the fields below are overwritten: `_side_over()` checks the friend is still valid before it is compared.
+	var again := _side_stepped and not _side_over() and _side_friend == friend
+	if again:
+		ManoeuvreCensus.h1b_side_repeats += 1
 	_side_friend = friend
 	_side_friend_at = friend.global_position
 	_side_goal = _goal
+	if again and side_stand_on():
+		# The step's own start stays the reference: the stand ends when the friend has moved from where it was then, too.
+		_side_to = Vector3.INF
+		_side_stand = true
+		_side_stepped = false
+		ManoeuvreCensus.h1b_side_restands += 1
+		return
 	_side_to = _side_point(friend)
 	if _side_to != Vector3.INF:
 		_side_left = SIDE_SECONDS
 		_side_stand = false
+		_side_stepped = true
 		ManoeuvreCensus.h1b_side_steps += 1
 	else:
 		_side_stand = true
+		_side_stepped = false
 		ManoeuvreCensus.h1b_side_stands += 1
 
 
