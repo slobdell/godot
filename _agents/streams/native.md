@@ -95,6 +95,11 @@ test_native_yield stage PASS (switch OFF); new twin stages 0 mismatches: ON beam
 avoided 12), ON ahead 8 m move_to and face_slot 9 each (9/9/6), ON 14 m never fires, OFF never fires; test_traffic_seatstep 3/3.
 M1 sidestand needs no mirror (the far fire is GDScript-only). Full check queued on builder2 after CP37.1's (manoeuvre asked).
 
+**Unstick short-halt twin (manoeuvre's b496101bd, for rules' R2):** `pair/native-unstick` ca6978178 (side worktree
+../godot-native-unstick) = b496101bd + drive_native's unstick early return when `tank.short_halt_seconds > 0` (after holding(),
+before seam_live(), as the GDScript) + tests/test_native_unstick_halt.gd: builder0 light quick exited 0, OFF 18 compared 0
+mismatches (GDScript fires 9/9), ON 18 compared 0 mismatches (0 fires). Rides in whichever pair ships first (M5a or R2).
+
 **Twin questions answered in writing (orchestrator):** R37.2 rules (no twin: C++ reads sight live, never computes spread,
 drives the throttle tank.gd hands it); K2 (no native hit path skips cover's seam: shell_native only flies and emits `hit`,
 beams are GDScript, combat_native runs downstream; splash and flames skip the seam on both paths, cover's call); O2 (no native
