@@ -73,7 +73,7 @@ beams are GDScript, combat_native runs downstream; splash and flames skip the se
 path issues an idle crew's move: decide_native returns the choice, every act call site goes through `_order_move`, no C++ writes
 `move_order`). **N2 cover twins** (3d598cdaa): CoverNative.low_screen / low_features_near / cover_roll + seams
 in cover_map.gd and armor.gd (merge note to cover: three dispatch lines, GDScript kept as `*_gd` reference), test
-`tests/test_native_cover_low.gd`; quick on builder0 light running.
+`tests/test_native_cover_low.gd`: builder0 light `make native quick` on 3d598cdaa exited 0: 15000 answers, 0 mismatches (1053 screened, 1830 near, of 3000 queries); test_cover_hulldown and test_cover_seat pass on the native path; test_native_cover 0 mismatches; combat-smoke PASS.
 
 **Done so far (unchecked unless named):** N4 net diagnostics 820633935 (broker waits fail loudly, mutation-tested on the
 laptop: `broker-load NODE=false` -> "broker never printed BROKER_LISTENING ... (process exited)" exit 1; a real broker-load exit
