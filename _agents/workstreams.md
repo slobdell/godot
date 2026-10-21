@@ -393,6 +393,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   guards (the contacts line is not loosened after the fact); "the guard is tighter than its noise" is argued in a re-filed bar
   before the new numbers, not applied to these. The fight read still runs in the HEAD batch (it tells whether the flicker win holds
   in fights).
+- **R37.18 (2026-10-21) the series queues.** builder2 (one judged series at a time): main a10846307's check -> rules' Bar R (base gate
+  + arms) -> manoeuvre's M5a (native's pair/native-m5 156d563d9 green on builder2, 2984/0, sim-baseline 13/13; trees BASE
+  lab/manoeuvre-r37-m5 936612334, ON lab/manoeuvre-r37-m5on 7ebbc7bdd; first look builder0 light, 2 Locks fights OFF: 136 seated
+  give-ways, 35 lead-outs, ~750 seat-metres a fight) -> cover's K4 after his K5 answer. builder0: M1's check + series, orders'
+  HEAD batch (O1 fight read, O3, O2, O5) in the order each stream states in Status. Cover's separate OFF gate is dropped: rules'
+  base gate on a10846307 (cover's OFF code in) already proves the replay; cover re-gates on the K5 maps.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
