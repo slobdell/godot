@@ -126,5 +126,20 @@ as named; N4 sweep; N5 lint; stretch.
   496d6d70a, score.py reads JAM_CENSUS held_deaths, `--backfill-held` adds it to an old row only when its raw fights
   reproduce the row's every other fight number. Dry-run on copies: c29a8c7b6 71, a0ae0aafd 71, 1c82d6d1e 73, e45bb6632 66,
   3d46b2884 17 held deaths in 40 fights. Rows and README after the 2701+ block on 3d46b2884 (builder2, running).
+- **N2 T8's main 3d46b2884, both seed blocks (0285bfe5f):** builder2, 2601+ and 2701+ (n = 8 + 8 seed units), both exit 0
+  and verified. verdict.sh refused the 2701+ log only because make's variables sit before "exited" (regex fixed, 2 known
+  answers added, test_verdict 14/0); that row was scored by hand from the same raw. noise.txt names both. v e45bb6632 per
+  fight: held at a street mouth 1.65 -> 0.42 v +-0.40 (moved); jammed under fire 1.48 -> 1.20 v 0.76, stuck 6.03 -> 5.92 v
+  2.33, lost 40.9 -> 40.4 v 9.8: every other line inside its noise. Held line back-filled onto every row.
+- **N4's full check:** `native-check-9c7d47380` (builder0, behind --wait-below 1) synced **0285bfe5f**, running.
+- **N5 the census gap lint, DONE (ca8145bd5):** tools/census_lint.py: each public int counter in Movement / Manoeuvre /
+  Traffic / ManoeuvreCensus the game increments must reach a census / probe / stage script under tests/ (directly or by a
+  static Dictionary report, followed transitively); fails on an unprinted counter, a stale or dangling ALLOWED entry, an
+  allowed counter named in backticks in a bar. This repo: 115 counters, 110 printed, 5 allowed (manoeuvre's turn_in_*,
+  test_manoeuvre_orbit only; manoeuvre told), 0 failures, 0.5 s laptop. Mutation: face_settles out of counters() fails it.
+  tools/test_census_lint.sh 9/0 laptop (shell-tools-test runs it in check).
+- **Next: traffic's T10 G `seatyield` mirror** (ahead of everything, orchestrator): the give-way spot nearest the yielder's
+  seat (move_to point, else face_slot) within SEAT_NEAR_M, DEFAULT_OFF; T10 is judged on native. C++ drafted (builds, laptop),
+  twin stage test_the_give_way_nearest_the_seat_both_arms drafted; waits on traffic's GDScript hash.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
