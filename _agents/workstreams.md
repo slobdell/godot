@@ -331,6 +331,16 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   sized on seen seeds 3621-3626 before the final text. **M6 for manoeuvre (the face path is manoeuvre's):** a parked WHEELED hull
   told to `face` covers metres; trace it (how far, which units, why the turn needs travel) and propose a turn-on-the-spot / small
   shuffle limit; bar before numbers.
+- **R37.14 (2026-10-21) CP37.1's BASE (native; builder2, guard.sh cfb8120ba = game tree main 9d325e291; right-click blob, R37.3;
+  5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights a line, 320 read, 0 lost to preemption, 0 % capped).**
+  **BLOB** wins 48 % (+-11), kill ratio 0.88 (+-0.07; 3281 kills / 3712 losses), median fight 112 s. **TURTLE** wins 39 % (+-15), kill
+  ratio 0.80 (+-0.17), median 194 s. (+- = 2 se of a difference between two mains, unpaired, from the 16 seeds; A/A blocks 2601+ v
+  2701+: blob 49/46 %, kr 0.88/0.88; turtle 41/38 %, kr 0.81/0.80.) Zone margin too noisy to decide. Faction dominates a seed:
+  Syndicate wins 73 % as blob / 67 % as turtle, Gangs 30/17 %, Law 22/22 %. **Ruled:** (a) the blob's WIN RATE has room and decides;
+  the kill ratio is the second line; (b) every rules/cover bar runs the SAME 320 fights and is judged PAIRED
+  (`tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>`: per-fight flips, exact McNemar
+  p, paired differences with per-seed se; OFF v OFF byte-identical, 0 flips); bars re-filed with paired thresholds before any arm
+  number; (c) the faction spread (Syndicate 73 % v Law 22 %) goes to the lead as a balance finding, not this round's lever.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
