@@ -63,7 +63,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row per shipped main.
 
 **N3:** the scoreboard page renders a *Guard lines* section from `references/scoreboard/guards/<commit>.json` (blob / turtle
-win, kill ratio, capped share, ± from that read's own seeds); known answers in test_guard.py. **N6 DONE** (bdc1b8f74's parent,
+win, kill ratio, capped share, ± from that read's own seeds); known answers in test_guard.py. **N6 DONE** (05e3982e0,
 see judging.md *Round 37 re-render*): round 36's 20 lines in `tools/judge/lines_r36.py`, table unchanged (no round-36 rows on
 main), 0 of 9 se lines inside the noise, 6 verdict margins under 1.645 se.
 
