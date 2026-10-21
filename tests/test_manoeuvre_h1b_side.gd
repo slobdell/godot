@@ -44,3 +44,35 @@ func test_the_native_path_matches_gdscript_in_the_default_arm() -> void:
 		assert_eq(native["past_at"], script["past_at"], "%s: the same pass" % walls)
 		var gap := Vector2(float(native["at"][0]) - float(script["at"][0]), float(native["at"][1]) - float(script["at"][1])).length()
 		assert_true(gap <= 0.05, "%s: the same end position (%.3f m apart)" % [walls, gap])
+
+
+## (c, R36.27) Beside water: a side point never leaves the hull's own bank or lands on a bridge deck, on either path.
+## "bank": the friend's water side a metre off the Locks' canal rim, the goal a little towards the water (the water side is the
+## nearer point): the rule must refuse it and go round on the land side. "mouth": the friend at the central bridge's north
+## mouth with a second friend abreast on its land side. The rim is cut at a bridge, so the open deck mouth is room: both arms
+## drive round over it with no H1 fire (measured, builder0 light, 2026-10-21), and the side rule never arises. That line is
+## pinned as ON = base, so a change that starts sending crews onto a deck from here shows.
+func _assert_on_its_bank(label: String, run: Dictionary) -> void:
+	for p: Array in run["side_points"]:
+		assert_true(float(p[1]) > CANAL_HALF_M, "%s: side point %s on the hull's own (north) bank" % [label, p])
+		assert_true(not (absf(float(p[0])) <= DECK_HALF_X and absf(float(p[1])) <= DECK_HALF_Z), "%s: side point %s off the deck" % [label, p])
+	assert_true(float(run["min_z"]) > CANAL_HALF_M, "%s: the hull never entered the canal (least z %.2f)" % [label, run["min_z"]])
+
+
+func test_beside_the_canal_the_side_point_stays_on_its_bank() -> void:
+	var paths := [false, true] if NativeBridge.available else [false]
+	for native: bool in paths:
+		var label := "native" if native else "GDScript"
+		var now := await far_loop(true, native, "bank")
+		var base := await far_loop(false, false, "bank")
+		report("bank %s" % label, now, base)
+		assert_true(int(base["fires"]) >= BASE_FIRES and base["past_at"] < 0.0, "premise: base re-rams beside the canal (%d fires)" % base["fires"])
+		assert_eq(int(now["steps"]), 1, "bank %s: one side step (the water side refused, the land side taken)" % label)
+		_assert_on_its_bank("bank " + label, now)
+		assert_true(now["past_at"] >= 0.0 and now["past_at"] <= PAST_BY_S, "bank %s: past the friend within %.0f s (%.1f s)" % [label, PAST_BY_S, now["past_at"]])
+		var mouth := await far_loop(true, native, "mouth")
+		var mouth_base := await far_loop(false, false, "mouth")
+		report("mouth %s" % label, mouth, mouth_base)
+		assert_eq(int(mouth["steps"]) + int(mouth["stands"]), 0, "mouth %s: the deck mouth is room, the side rule never arises" % label)
+		assert_eq(mouth["at"], mouth_base["at"], "mouth %s: ON drives as base" % label)
+		_assert_on_its_bank("mouth " + label, mouth)

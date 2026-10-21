@@ -1,0 +1,10 @@
+side points by arena: {'locks fires': 19, 'locks points': 12, 'locks stands': 7, 'sumps fires': 7, 'sumps points': 3, 'sumps stands': 4}
+flagged (in_carve / across / crosses), must be 0 or traced: 0
+on a deck: 0 (hull already on that deck: 0)
+
+Run: lab/s2a-sideprobe 86e058424 (ON bf678480c + H1B_SIDE rows), builder0 light lane, manoeuvre-fights locks,sumps x 6540-6563 (48 fights),
+--brains-off=native (GDScript twin; 0 NATIVE_EXEC files). Terminus has no terrain entries (0 by construction).
+Nearest any chosen side point came to water or a pit: 43.8 m (sumps-6546); to a deck: 46.8 m. The 15 points fall in the spawn and
+approach ground, far from the river, so the 0 holds but these fights never put the rule near water.
+Note: locks-6550 Rust_Eyes_3 chose 9 side points on the same friend within one run (here 41.5-42.2, -87.3 to -87.9: a re-drive
+that never reaches its point).

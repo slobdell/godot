@@ -156,6 +156,14 @@ func _pass_stage(owned: bool) -> void:
 ## different stages: the live one forces 60 set-up compares (`set_up`) and the owned one none, so their counts differ.
 ## Here, with the same parameters, owned = live exactly.
 const SUMPS_CENTRE := Vector3(-40.0, 0.0, 40.0)
+## Round 36 (native, R36.28's re-pin): the ranks 6 m apart side to side and 13 m across (were 7 and 16). With traffic's yieldgap
+## ON the asker reads clear sooner (the gap after both noses), so the old pose's back-ups, which all came from RE-yields after an
+## unfinished give-way, stopped: spot:back 15 -> 0 (laptop, main 17a3d967a v lab/s2a-on bf678480c). Tighter ranks leave no
+## side spot for a FIRST give-way often enough that the stage backs up in both arms. builder0 quick: spot:back 21 OFF (main)
+## and 21 ON (S2a + yieldgap), every floor reached, 0 mismatches over 376 and 477 compared drives. Laptop: 5 and 3 (a 16-cell
+## sweep of gap 6 / 7 x across 11-14).
+const SUMPS_GAP := 6.0
+const SUMPS_ACROSS := 13.0
 const SUMPS_FLOORS := {"": 10, "spot:spot": 1, "yield_spots_unfit": 1, "spot:back": 1, "spot:hold": 1,
 		"parked_refusals": 1, "asks_refused": 1}
 
@@ -177,7 +185,7 @@ func test_the_give_way_in_the_sumps() -> void:
 	if FreshStage.parent(self, "test_the_give_way_in_the_sumps"):  # its own process (tests/native/fresh_stage.gd)
 		return
 	var before := Tank.off_floor
-	await _stage("sumps", false, SUMPS_CENTRE, 7.0, 16.0, _sumps_floors())
+	await _stage("sumps", false, SUMPS_CENTRE, SUMPS_GAP, SUMPS_ACROSS, _sumps_floors())
 	assert_eq(Tank.off_floor - before, 0, "no hull of the Sumps stage leaves the floor (N5)")
 
 
@@ -185,7 +193,7 @@ func test_the_give_way_in_the_sumps_owned() -> void:
 	if FreshStage.parent(self, "test_the_give_way_in_the_sumps_owned"):  # its own process (tests/native/fresh_stage.gd)
 		return
 	var before := Tank.off_floor
-	await _stage("sumps", true, SUMPS_CENTRE, 7.0, 16.0, _sumps_floors())
+	await _stage("sumps", true, SUMPS_CENTRE, SUMPS_GAP, SUMPS_ACROSS, _sumps_floors())
 	assert_eq(Tank.off_floor - before, 0, "no hull of the Sumps stage leaves the floor (N5)")
 
 

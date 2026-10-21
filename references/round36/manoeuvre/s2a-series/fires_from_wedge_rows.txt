@@ -1,0 +1,3 @@
+S2A H1 escapes (esc_fires_hull)        base    2070 new    2003 diff    -67 1.645se   166.0 pairs 72 up in 29, down in 26
+S2A unstick fires in wedged episodes   base   28415 new   27223 diff  -1192 1.645se  1648.0 pairs 72 up in 25, down in 30
+S2A escape asks (esc_asks)             base    2033 new    1930 diff   -103 1.645se   161.5 pairs 72 up in 27, down in 28
