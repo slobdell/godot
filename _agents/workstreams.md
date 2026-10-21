@@ -430,6 +430,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   (~chance at 2 se). Reading: sight rarely limits spotting (shared intel; a 62 m sight against ~70 m guns). **Ruled:** R1 stays OFF;
   its one allowed re-tune is rules' call after spread and pin_slow are read (M5a may go ahead of it on builder2); the package arm
   needs two rules passing alone (Bar R).
+- **R37.23 (2026-10-21) feedback merged OFF; main's perf now judged.** main c76469184 merges stream/feedback 7e2ff0a4f alone
+  (INHERIT): builder0 `make check exited 0`, 3025 passed / 0 failed, 27 targets ALL JUDGED (perf-judge PASS), scenarios 53/0/4/0,
+  sim-baseline unmoved. 7e2ff0a4f contains main 4b62d2186, so this perf-judge PASS covers every OFF change on main this round
+  (cover, rules, manoeuvre, native, feedback): **R37.20's owed perf-judge is closed.** Every look and the radar/card marks are OFF
+  by default until his picks.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
