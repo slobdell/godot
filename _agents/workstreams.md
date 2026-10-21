@@ -215,6 +215,17 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   **A pass ships ON** (symmetric). **O6 (the cover seat call):** kept OFF and unjudged this round (fires once in 3 probe cells on
   today's maps); judged after cover's maps change.
 
+- **Bar R, PAIRED (rules; re-filed in stream/rules 104d231f5 Status before any arm number; replaces the draft above, R37.14).**
+  **Base:** main after CP37.1 + rules' merge, all switches OFF; it must replay `9d325e291.fights.jsonl` fight for fight, else the base
+  is re-run on the new tree and paired against that. **Workload:** the same 320 fights an arm, builder2. **Arms:** sight, spread,
+  pin_slow each alone; the package only if two or more pass alone. **Judging:** `guard.py --pair`, its paired per-seed se.
+  **Deciding:** the blob's win rate DOWN by > 2 x paired se AND exact McNemar p < 0.05. **Second line:** the blob's kill ratio not UP
+  by > 2 x paired se (win rate down with kill ratio up is a contradiction, not a pass). **Per faction (reported):** paired blob
+  win-rate difference per faction; a faction moving against the overall sign is named. **G1:** the turtle's win rate not up by > 2 x
+  paired se, and its McNemar p not < 0.05 in the turtle's favour. **G2:** kills per match and median length per faction within
+  +-2 x paired se. **G3 (R2 only):** the contention guards (R37.2 (c)), unchanged. **G4:** perf-judge with the arm ON, on builder2
+  (the OFF code is covered by the orchestrator's one judge on main).
+
 - **Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number (recorded from stream/manoeuvre ff40ed578)**
 
 - **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
