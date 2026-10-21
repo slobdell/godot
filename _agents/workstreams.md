@@ -297,6 +297,17 @@ _Filed here before any number._
   `--skirmish` (main._ready) are stale. So brains' warm-up stays right (tests match real play's first match); respawns use `place()`.
   Ruled out: physics and nav servers off during warm-up, the lab start frame, autoloads, global RNG. Caveat: flush order inferred, not
   read in source. **Grant:** native corrects the comment in tests/run_tests.gd:115-121 (comment only).
+- **R36.26 (2026-10-21 ~01:30 PDT) The flicker is the HALT SHAPE flipping on a terrain read with no hysteresis (round 37, brains'
+  paths).** Native (stream ff1825b09, `references/round36/native/order_flip_trace.md`; builder0 light, native loaded, cb9aef5aa +
+  print-only probes, locks/3/click s3664, n 3, identical ticks; the laptop does NOT reproduce it): `Element.update` (element.gd:644) ->
+  `Element._issue` (:1932) -> `Orders.issue` (source "element"), all GDScript, re-issues a reseat to the same anchor whenever the
+  HALT FORMATION flips herringbone <-> coil (Bravo_2: herringbone seat (-19.1, 17.9) v coil seat (-5.8, 29.5)). The flip is
+  `ElementSituation.terrain_at(center)` (element_situation.gd:145) counting cover within TERRAIN_RADIUS 45 m of the crews' CENTROID
+  with no hysteresis; one feature sits at 45.0–45.5 m; the crew's own 0.2–0.4 m creep (Bravo_2 ~30 m from its squadmates) moves the
+  centroid across the line, and each reseat sends it back. Writes 0.1–2 s apart. Only after ADVANCE because the ADVANCE dragged the
+  centroid to that edge. **Round 37 fix candidates:** latch the halt shape per arrival at an anchor (like ROUTE_SEAT_ONCE /
+  GROUND_LATCH), or read terrain at the fixed anchor once arrived, or hysteresis (± 5 m); size first by counting terrain-caused
+  reseats across a series. It also explains orders' away_m Locks rise in BOTH arms.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
