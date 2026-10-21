@@ -60,6 +60,7 @@ NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOT
 	NATIVE_DIR=$(NATIVE_DIR) NATIVE_BUILD=$(NATIVE_BUILD) NATIVE_BIN=$(NATIVE_BIN) NATIVE_SO=$(NATIVE_SO) \
 	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE)
 
+.PHONY: native-first-tick-sync
 .PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-price native-clean native-tp-headless
 
 native: $(GODOT) ## Build the native library (godot-cpp, once per machine, then native/src) into native/bin and switch it ON; NATIVE=off switches it OFF
@@ -300,6 +301,27 @@ native-live-guard: import ## Every ON native switch is LIVE under the tick profi
 		--budget=100000 --time-limit=24 --seed=92721 --arena=foundry --green-elements --rust-elements \
 		--native-tick-profile=20,22 > $(BUILD_DIR)/native-live-guard.log 2>&1 || true
 	@$(PYTHON) tests/native/live_guard.py $(BUILD_DIR)/native-live-guard.log
+
+# Round 36 (native, E4b): what the physics space holds at a new body's FIRST tick depends on where the setup ran, not on
+# engine state the first main-loop iteration sets (R35.57's naming, corrected). Two overlapping bodies, six setup contexts,
+# known answers: synced only from a call_deferred flushed inside the physics frame (run_tests.gd's first test before the
+# warm-up) or a node's _physics_process; stale from a physics/process signal, an idle-frame flush, or a main scene's _ready
+# (real play's --skirmish). Fails if the engine ever moves one (a Godot upgrade). Not part of check; a few seconds.
+FIRST_TICK_SYNCED := physics_flush in_tick
+FIRST_TICK_STALE := physics_signal process_signal process_flush main_ready
+native-first-tick-sync: import ## E4b: which setup contexts a new body's first tick sees synced (known answers; tests/native/first_tick_sync.gd)
+	@mkdir -p $(BUILD_DIR); fail=0; \
+	for arm in $(FIRST_TICK_SYNCED) $(FIRST_TICK_STALE); do \
+		if [ $$arm = main_ready ]; then $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . res://tests/native/first_tick_sync_scene.tscn; \
+		else $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/native/first_tick_sync.gd -- --arm=$$arm; fi \
+			> $(BUILD_DIR)/first-tick-sync-$$arm.log 2>&1 || true; \
+		line=$$(grep -m1 '^FIRST_TICK_SYNC ' $(BUILD_DIR)/first-tick-sync-$$arm.log || true); echo "$${line:0:150}"; \
+		want=stale; case " $(FIRST_TICK_SYNCED) " in *" $$arm "*) want=synced;; esac; \
+		got=$$(echo "$$line" | awk '{print $$3}'); \
+		if [ "$$got" != "$$want" ]; then echo "native-first-tick-sync: $$arm read '$${got:-nothing}', want $$want (build/first-tick-sync-$$arm.log)"; fail=1; fi; \
+		if grep -q 'ERROR' $(BUILD_DIR)/first-tick-sync-$$arm.log; then grep -m3 ERROR $(BUILD_DIR)/first-tick-sync-$$arm.log; fail=1; fi; \
+	done; \
+	[ $$fail = 0 ] && echo "native-first-tick-sync: synced = $(FIRST_TICK_SYNCED); stale = $(FIRST_TICK_STALE) (as known)"; exit $$fail
 
 # Round 26 (C25.6, orders' showmatch): a skirmish on the LAPTOP preset, headless, every faction against the next, both
 # sides faction armies (the case the cap folds). Fails on any "Elements.form ... refused" line (a squad past five that
