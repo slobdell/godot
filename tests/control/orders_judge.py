@@ -133,24 +133,39 @@ def main(argv):
                     dict(sorted(__import__("collections").Counter(str(r.get("outcome")) for r in cn).items()))))
                 ok = ok and c1 and c2
     elif mode == "o2":
-        own = lambda r: sum(v for k, v in r.get("left_by", {}).items() if not k.startswith(("GIVEWAY", "MOVE")))
-        retreat = lambda r: sum(v for k, v in r.get("left_by", {}).items() if k.startswith("RETREAT"))
-        drift = lambda r: sum(v for k, v in r.get("left_by", {}).items() if k.endswith("+drift"))
-        fb = len({(r["map"], r["squads"], r["seed"]) for r in rows if r["arm"] == base})
-        fn = len({(r["map"], r["squads"], r["seed"]) for r in rows if r["arm"] == new})
-        bo = sum(own(r) for r in rows if r["arm"] == base)
-        no = sum(own(r) for r in rows if r["arm"] == new)
-        dec = fn > 0 and fb > 0 and no / fn <= 0.25 * bo / fb
-        lines.append("%s deciding: own-option leaves a fight %.2f -> %.2f (<= %.2f); fights %d/%d" % (
-            "PASS" if dec else "FAIL", bo / max(fb, 1), no / max(fn, 1), 0.25 * bo / max(fb, 1), fb, fn))
-        lines.append("  reported: RETREAT %d -> %d; drive-layer drift (+drift) %d -> %d; GIVEWAY %d -> %d" % (
-            sum(retreat(r) for r in rows if r["arm"] == base), sum(retreat(r) for r in rows if r["arm"] == new),
-            sum(drift(r) for r in rows if r["arm"] == base), sum(drift(r) for r in rows if r["arm"] == new),
-            sum(r.get("left_by", {}).get("GIVEWAY", 0) for r in rows if r["arm"] == base),
-            sum(r.get("left_by", {}).get("GIVEWAY", 0) for r in rows if r["arm"] == new)))
+        # R37.13's final bar: off_idle_s a fight (unpaired: fights diverge), arm <= 50 % of base and the drop > 1.645 se.
+        def per_fight(arm):
+            f = defaultdict(float)
+            for r in rows:
+                if r["arm"] == arm:
+                    f[(r["map"], r["squads"], r["seed"])] += r.get("off_idle_s", 0.0)
+            return list(f.values())
+        b, n = per_fight(base), per_fight(new)
+        se = math.sqrt(st.variance(b) / len(b) + st.variance(n) / len(n)) if len(b) > 1 and len(n) > 1 else float("inf")
+        dec = st.mean(n) <= 0.5 * st.mean(b) and st.mean(b) - st.mean(n) > 1.645 * se
+        lines.append("%s deciding: off_idle_s a fight %.1f -> %.1f (<= %.1f), drop %.1f v 1.645 se %.1f; fights %d/%d" % (
+            "PASS" if dec else "FAIL", st.mean(b), st.mean(n), 0.5 * st.mean(b), st.mean(b) - st.mean(n), 1.645 * se,
+            len(b), len(n)))
+        for arm in (base, new):
+            split = defaultdict(float)
+            for r in rows:
+                if r["arm"] == arm:
+                    for k, v in r.get("off_split_s", {}).items():
+                        split[k] += v
+            lines.append("  split %-8s %s" % (arm, {k: round(v, 1) for k, v in sorted(split.items())}))
+        brain = lambda arm: sum(v for r in rows if r["arm"] == arm for k, v in r.get("left_by", {}).items()
+                                if not k.endswith("+drift") and not k.startswith(("GIVEWAY", "MOVE")))
+        retreat = lambda arm: sum(v for r in rows if r["arm"] == arm for k, v in r.get("left_by", {}).items()
+                                  if k.startswith("RETREAT"))
+        lines.append("  reported: brain-move leaves %d -> %d, RETREAT leaves %d -> %d" % (
+            brain(base), brain(new), retreat(base), retreat(new)))
         ok = dec
         if len(argv) >= 5:
-            ok = fight_guards(load(argv[4]), base, new, lines) and ok
+            runs = load(argv[4])
+            pr = sum(r.get("parked_returns", 0) for r in runs if r["arm"] == new)
+            lines.append("%s counter: parked_returns %d" % ("PASS" if pr > 0 else "FAIL", pr))
+            ok = ok and pr > 0
+            ok = fight_guards(runs, base, new, lines) and ok
     elif mode == "o3":
         bd = sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)
         nd = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
