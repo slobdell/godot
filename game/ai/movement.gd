@@ -4027,8 +4027,6 @@ static func h1b_side_on() -> bool:
 # drive-v-box clearance test, because it bounds every shape of the loop, not only the one traced. `--nav-off=sidestand`
 # flips SIDE_STAND_DEFAULT (false until judged).
 const SIDE_STAND_DEFAULT := false
-## A side step has been taken on `_side_friend` for `_side_goal` (cleared when a fire stands).
-var _side_stepped := false
 
 
 static func side_stand_on() -> bool:
@@ -4041,28 +4039,27 @@ func _h1b_side(friend: Tank) -> void:
 	_h1b_failed = 0
 	_escape_end()
 	# Read before the fields below are overwritten: `_side_over()` checks the friend is still valid before it is compared.
-	var again := _side_stepped and not _side_over() and _side_friend == friend
+	# No member of its own (every Movement member is a native exec field): `_side_friend` is set only by a far fire, and a
+	# stand ends only with `_side_over()` true, so "the same unmoved friend, same goal" means an earlier step on it, or a
+	# stand an order reset cut short (standing again is right then too).
+	var again := not _side_over() and _side_friend == friend
 	if again:
 		ManoeuvreCensus.h1b_side_repeats += 1
 	_side_friend = friend
 	_side_friend_at = friend.global_position
 	_side_goal = _goal
 	if again and side_stand_on():
-		# The step's own start stays the reference: the stand ends when the friend has moved from where it was then, too.
 		_side_to = Vector3.INF
 		_side_stand = true
-		_side_stepped = false
 		ManoeuvreCensus.h1b_side_restands += 1
 		return
 	_side_to = _side_point(friend)
 	if _side_to != Vector3.INF:
 		_side_left = SIDE_SECONDS
 		_side_stand = false
-		_side_stepped = true
 		ManoeuvreCensus.h1b_side_steps += 1
 	else:
 		_side_stand = true
-		_side_stepped = false
 		ManoeuvreCensus.h1b_side_stands += 1
 
 
