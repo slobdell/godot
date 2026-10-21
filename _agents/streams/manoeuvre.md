@@ -76,6 +76,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
 
+**2026-10-21 ~01:00 (worker): player smoke (laptop, window, `b8de464e6`):** `make orders-probe-shots ORDERS_PROBE_MAPS=locks
+ORDERS_PROBE_SHOT_SQUADS=3`, three arms (main; S1 `--nav-off=stallnet`; S2a `--nav-off=h1bside`). Arrival+5 s frames are byte-identical (md5
+22453163...): three squads seated south of the lock by their markers, none wedged or looping. Neither rule fires in a clean move. Gotcha:
+the recipe splits an arm's flags on commas, and `_parse_off` reads only the FIRST `--nav-off=`, so S1 and S2a ON together needs one
+`--nav-off=a,b` arg (not possible through ORDERS_PROBE_SHOT_ARMS). S4 dropped: R36.18, main 41aefad16.
+
 **2026-10-21 ~00:30 (worker): S4's drive share CLOSED with no rule** (README section (6)). "Back in" is round 26's M1, which already ships.
 M1's choice in the 10 fresh episodes: facing_nose 3 (by design: arrives facing), friendly 3 (a hull in the reverse corridor),
 route_faster 1, reverse law pulled forward first 1, beyond 25 m 1, paced overshoot 1, each 5–11 m. Bar S4 not run (no candidate).
