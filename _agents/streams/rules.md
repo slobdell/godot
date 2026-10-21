@@ -150,6 +150,10 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   20/0 with NATIVE=off. Every rules test passes in both arms (pin_slow 4, sight 6, spread 9). Equality is assertion by
   assertion, not bit for bit, which R37.4 did not ask for; the series checks the sim itself.
 - 13:23 PDT start: OFF base-gate replay, `GUARD_TAG=base` (systemd unit rules-guard-base). Gate: 0 flips v 9d325e291.fights.jsonl.
+- 14:52 PDT finish: base gate **PASSED**. OFF on 75c3e74e0 replays 9d325e291.fights.jsonl: 320 of 320 paired, 0 flips each way,
+  blob 48 % / kr 0.88, turtle 39 % / kr 0.80, unchanged (builder2, 16 of 16 seeds, 0 attempts lost). Arms pair against that file.
+- 14:55 PDT start: arms sight -> spread -> pin_slow, one after another (systemd unit rules-guard-arms; raw in
+  ../godot-native-guard-raw/75c3e74e0-<rule>). Each takes ~1.5 h on builder2.
 
 **Arm recipe (from native, 2026-10-21; tooling in stream/native 420048f99 and pair/native-cp371 2bb41ef93):**
 `GUARD_ARGS=--rules-on=<rule> GUARD_TAG=<rule> tools/scoreboard/guard.sh <pair commit>`. This runs on builder2, chunked
