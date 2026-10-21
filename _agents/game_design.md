@@ -4268,3 +4268,11 @@ pre-aimed artillery zone (talk again first), (4) unseen-fire suppression (only i
 (10) unit swaps, smoke. Measure: the two guard lines in (11).
 
 Already decided (not open): the support trucks get visible feedback; the measure is a blob-v-tactics scoreboard line.
+
+## Round 37 preparation (2026-10-21)
+
+He asked the orchestrator (same session, context kept) to prepare round 37 from the 11 answers above: "ok go ahead and prepare for
+round 37 ... Prepare the set of workstreams, ensure builder2 is online, and then give me the copy/paste prompt for each new agent I
+launch". Split (workstreams.md *Round 37*): rules (questions 1, 2, 8), cover (3), feedback (9a, the support trucks, the pinned look),
+native (the guard lines of 11, the twins), orders on Fable (the flicker and his parked/mixed-squad answers), manoeuvre (Eyes_3 and the
+stuck-crew tooling). Deferred items (4, 5) and rejected ones (6, 7, 10, smoke) have no stream.

@@ -1,8 +1,113 @@
 # Workstreams: the current round
 
-> **ROUND 36 PREPARED (2026-10-20 afternoon; launched FRESH from the docs commit: round 35's `stream/*` branches are
-> `round35/<stream>`; no agent carried over). FOUR streams: manoeuvre on FABLE (the lingering stuck crew), traffic, orders and
-> native on Opus. Builders: builder0 AND builder2 (C36.1).** Briefs in `streams/`. Round 35's section follows for the record.
+> **ROUND 37 PREPARED (2026-10-21; launched FRESH from the docs commit: round 36's `stream/*` branches are `round36/<stream>`; no
+> agent carried over). SIX streams: orders on FABLE (the flicker and the squads that must look smart), rules, cover, feedback,
+> manoeuvre and native on Opus. Builders: builder0 AND builder2 (C37.1).** Briefs in `streams/`. Round 36's section follows.
+
+## Round 37: six streams (prepared 2026-10-21; briefs in `streams/`)
+
+**Goal: tactics beat a blob.** His words (2026-10-20): a blob frontal assault wins too often, "one big slug fest"; "the problem is
+not the units, but the rules of the game". On 2026-10-21 he answered the 11 open questions (game_design.md *OPEN QUESTIONS for him
+before round 37* and *Summary of his answers*): build first (1) a crew's OWN motion sets its sight, (2) moving fire much less
+accurate, (3) hull-down behind REAL low cover, (8) suppression slows but never stops, shown, (9a) flank/rear hits visible, and the
+support trucks' visual feedback. The measure: two scoreboard lines, a blob loses most of the time AND a pure turtle loses most of
+the time. Plus round 36's movement leftovers, judged by his bar "the feel of the game needs to have the user perceive that the units
+are smart and under their control".
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **rules** | `godot-rules` (1) | Opus | [streams/rules.md](streams/rules.md) | a crew that stops sees further and shoots straighter; a charge under heavy fire slows | R1 own-motion sight (switch, twin, lab test) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew no longer steps aside again and again into the same friend | M1 Eyes_3's stand rule |
+| **feedback** | `godot-feedback` (3) | Opus | [streams/feedback.md](streams/feedback.md) | a rear hit looks and sounds different; a pinned crew shows it; the Tanker's repair and the Emitter's cone are visible | F1 the directions page |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the two guard lines every rule is judged on; the C++ twins | CP37.1 the blob and turtle lines |
+| **orders** | `godot-orders` (5) | **Fable** | [streams/orders.md](streams/orders.md) | a squad's order stops flickering; a parked squad stays put and shoots; squads arrive whole | O1 the halt-shape flicker |
+| **cover** | `godot-cover` (6) | Opus | [streams/cover.md](streams/cover.md) | a tank parked tight behind rubble or a low wall is hard to hit from the front | K1 count each map's low cover |
+
+**Machines (C37.1):** builder0 (12 cores) = **orders', manoeuvre's and feedback's lane**; builder2 (e2-highcpu-32 Spot, us-west4,
+stops itself after 20 idle min; `make gcp-start`, under `systemd-run` with `~/projects/bin` on PATH) = **native's guard lines,
+rules' and cover's series**. On each builder at most ONE full check and ONE judged series at a time (`tools/builder_checks.sh
+--wait-below 1` before a full check); light runs (`tools/remote.sh --light`) freely. builder2's series queue is shared by three
+streams: say in your Status when you start and finish one. Spot preemption reads as a finished run: read the verdict line, never the
+exit (remote_builds.md). Delete your own `~/tank_squad/<folder>` leftovers on both builders when a side worktree is done.
+
+**Ownership (round 37; supersedes the older tables for these paths):**
+- **rules:** `game/tank/tank.gd` (sight, suppression's effects, the drive speed cap), `game/match/match.gd`'s intel/spotting pass and
+  `shot_spread` (+ `MOVING_SPREAD_FACTOR`), `game/ai/fire_lanes.gd`'s spread line, `game/combat/**` EXCEPT cover's damage seam
+  (C37.3); GRANT (C37.2) in `game/ai/gunnery.gd` / `order_controller.gd`: the "stop before a long shot" choice, guarded; `tests/rules/**`,
+  `tests/test_rules*.gd`, `mk/rules.mk`.
+- **cover:** `game/ai/cover_map.gd`, `game/ai/tactical_query.gd`, the partial-cover damage seam (one function in `game/combat/armor.gd`
+  called from `Match.projectile_impact`, merge note to rules), `arenas/*.json` (low cover only, C37.3), `tests/cover/**`,
+  `tests/test_cover*.gd`, `mk/cover.mk`; the seat query API orders calls (C37.4).
+- **feedback:** `game/theme/**`, `game/ui/**` (except orders' order hints), `game/audio/**`, `game/announcer/**`, new assets under
+  `assets/` for its items, `tests/test_feedback*.gd`, `tests/feedback/**`, `mk/feedback.mk`.
+- **orders:** `game/control/**`, `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`; in
+  `game/tactics/element_plan.gd` the deploy-step and halt-lay functions; `game/tactics/deploy_passers.gd`; GRANTS (C37.5):
+  `ElementSituation.terrain_at` and the halt-shape choice in `game/tactics/**` for O1, `cpu_commander.gd`'s screen / support_by_fire
+  seat placement for O5.
+- **manoeuvre:** in `movement.gd` the `drive()` body, `_nose_stop`, `unstick`, `_pressing_escape`, the k-turn/planned-reverse executor
+  and the side-step rule (h1bside); traffic's give-way block (`right_of_way` .. `_blocker`, `_avoid`, `_around_friends`,
+  `_ask_behind`, `_hull_within`) and `game/ai/traffic.gd` (traffic has no stream this round); `tests/manoeuvre/**`,
+  `tests/traffic/**`, `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `mk/manoeuvre.mk`, `mk/traffic.mk`.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**` (the judging-table
+  re-render round 36 skipped), `tests/ai_scenarios/**` for the guard lines and for promoting `scenario_scout_suppress::
+  test_target_behind`, the net-test scripts (N4); the test-hygiene grant (C36.5) stands.
+- **Nobody** (a request through the orchestrator): the rest of `game/tactics/**` and `game/ai/**` (brains has no stream),
+  `game/units/**`, `game/garage/**`, `game/modes/**`, `game/camera/**`, `game/network/**`, `tests/baselines/**` (the orchestrator
+  adopts on main), `mk/core.mk`, `tools/remote.sh`.
+
+**Contracts (round 37):**
+
+- **C37.1 Fresh start; two builders.** Round 36's branches are `round36/<stream>`; every worktree is created from this docs commit.
+  Nothing carries over unless a brief names the commit. The machine rule above. C31.1 stands: every change to fights or driving is
+  DECLARED and checked on a pair tree before its series; bars are filed in *Bars (round 37)* before any number; deciding lines are
+  sized from the base rate (R35.64); a restricting property's base rate is checked first (R36.23); ship exactly what the series
+  judged (R36.31).
+- **CP37.1 The guard lines (native, FIRST).** Two scoreboard lines every rule change is judged on: **blob v tactics** (one side's
+  every squad sent straight at the other's held zones at once; the other side today's CPU at its normal doctrine) and **turtle v
+  tactics** (one side's every squad holds its own zones, never advances; the other today's CPU). Per line: the blob's (turtle's)
+  win rate and kill ratio, both factions both ways, n sized so the 2-seed-block noise is stated. Design note to the orchestrator
+  first (how the blob and turtle sides are ordered without new game code: the doctrine/army machinery or the match runner's
+  orders); then today's main read on builder2 = the BASE every rules/cover bar quotes. The orchestrator merges it alone and tells
+  every stream to `git merge main`. Rules and cover may build and lab-test before it; no series of theirs is judged before it.
+- **C37.2 The rules (rules).** R1 own-motion sight (driving ~85 % of `sight_radius`, stopped ~2 s ~110 %, a dwell so a short halt
+  doesn't flicker), R2 moving spread (`MOVING_SPREAD_FACTOR` 1.5 -> ~3.0, still scaled by speed) plus the AI choosing to stop before
+  a long shot, R3 suppression slows driving (up to ~40 % scaled by suppression, never stops). Each behind its own switch (OFF until
+  its bar passes), a native twin in the same pair (native writes the C++; 0 mismatches), a deterministic lab test. Bar per rule:
+  deciding = the blob line moves toward the blob losing by more than its noise; guards = the turtle line not toward the turtle
+  winning beyond noise, kills and match length per faction within stated bounds, perf-judge. A pass ships ON (his decision is made;
+  the subjective check is his playtest at the round's close, each switch kept so a rule can be turned off). Moved sim-baseline maps
+  are attributed with the switch OFF.
+- **C37.3 Cover (cover).** K1 count low cover per map (what a hull can hide behind with only its turret showing: low walls, rubble,
+  wrecks' footprints, crests) and file a page of screenshots per map; **his maps are "already kind of busy": low cover is RE-SHAPED
+  from existing clutter, not added**, and any map change goes to him as a before/after page (the orchestrator relays) before it
+  merges. K2 the partial-cover damage seam (front arc only; flank and rear fully exposed; artillery from above ignores it), switch +
+  native twin (`cover_native`) + lab test. K3 its bar on the guard lines (as C37.2).
+- **C37.4 The cover seat (cover + orders).** cover provides `TacticalQuery.low_cover_seat(near: Vector3, threat_dir: Vector3,
+  max_shift_m: float) -> Variant` (a reachable point within `max_shift_m`, default 4 m, whose front faces the threat behind low
+  cover, else null); orders calls it ONCE when laying a halt seat (never later, never while idle: his "stay put and shoot" and "under
+  my control"), behind its own switch. Until cover's API merges, orders stubs it (returns null).
+- **C37.5 Orders (Fable).** O1 the halt-shape flicker (R36.26: herringbone <-> coil on `ElementSituation.terrain_at` of the crews'
+  centroid, 45 m radius, no hysteresis; latch per arrival, read at the anchor, or hysteresis; size first), grant in
+  `game/tactics/**` for exactly that. O2 parked squads stay put and shoot (his answer). O3 every vehicle with its own squad unless
+  contention worsens (his answer). O4 `away_m` against a fixed seat (R36.24). O5 CPU screen / support_by_fire seats off other
+  elements' paths (R36.11), grant in `cpu_commander.gd`. O6 the cover seat call (C37.4).
+- **C37.6 Feedback (feedback).** F1 a directions page (2-3 directions each, short clips or stills) for: flank/rear hit flash, the
+  pinned look, the Tanker's repair, the Emitter's cone; he picks on the page (the orchestrator relays and records). Paid generation:
+  at most 4 new sounds (flank hit, rear/engine hit, repair loop, emitter hum) and no new 3D models without his yes. Reads only:
+  `Tank.suppression`, the `weak_spot` / facing flag on `Match.projectile_impact`, `Match` repair ticks, the emitter's cone. The pinned
+  look shows suppression from day one; when R3 lands it means "slowed". Presentation only: sim-baseline must not move.
+- **C37.7 Manoeuvre.** M1 Eyes_3's stand rule (R36.31 (ii): a side step that ends still blocked by the same unmoved friend makes the
+  next far fire a stand; deciding lab case a long friend at 30-45 deg), M2 an `unstick_fires` total in main's WEDGE_TRACE (R36.32),
+  M3 a candidate S1 v2 on a fresh bar (design note to the orchestrator first). Any rules change to drive speed (R3) is rules' in
+  `tank.gd`; manoeuvre re-reads its wedge/left-behind lines once R3 is ON.
+
+## Bars (round 37)
+
+_(each stream files its bar here BEFORE its first number; the orchestrator records rulings below as R37.x)_
+
+## Rulings (round 37)
+
+_(none yet)_
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 

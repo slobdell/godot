@@ -4,8 +4,33 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-21 PDT — **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+_Last updated: 2026-10-21 PDT — **ROUND 37 PREPARED (six streams; see the box below).** Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
 and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
+
+## 🚀 ROUND 37 IS PREPARED (2026-10-21) — read this first
+
+**Goal: tactics beat a blob** (his 11 answers, game_design.md *Summary of his answers*) **+ round 36's movement leftovers**, judged by
+"units must look smart and under his control". Split, ownership and contracts C37.1–C37.7 + CP37.1 in `workstreams.md` *Round 37*;
+briefs in `_agents/streams/`; round 36's briefs in `streams/archive/round36/`; round 36's branches are `round36/<stream>`.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **rules** | `godot-rules` (1) | Opus | a stopped crew sees further and shoots straighter; heavy fire slows a charge | R1 own-motion sight |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | no repeated side step into the same friend | M1 Eyes_3's stand rule |
+| **feedback** | `godot-feedback` (3) | Opus | rear hits look/sound different; pinned crews show it; Tanker/Emitter visible | F1 directions page (his pick) |
+| **native** | `godot-native` (4) | Opus | nothing alone: the blob/turtle guard lines; the C++ twins | CP37.1 the guard lines |
+| **orders** | `godot-orders` (5) | **Fable** | no flickering order; parked squads stay put; squads arrive whole | O1 the halt-shape flicker |
+| **cover** | `godot-cover` (6) | Opus | a tank tight behind rubble is hard to hit from the front | K1 count maps' low cover |
+
+**Machines:** builder0 = orders, manoeuvre, feedback; builder2 (GCP Spot, `make gcp-start`) = native, rules, cover series.
+**Main at launch is GREEN** (round 36's close: eee5b0afa inherits 9ddf248f9's builder0 check, 2973/0; baselines c5e87cd50). Workers
+do NOT re-run a baseline check.
+
+**Lead gates expected this round:** feedback's directions page (F1); cover's map before/after page (K1/K5). The orchestrator relays.
+**At the close:** he plays each rule ON (each has a switch).
+
+**To launch (the lead):** in each folder `~/projects/godot-<stream>`, start a CLI (orders on Fable, the rest on Opus) and paste the
+kickoff prompt from `_agents/orchestration.md` *The kickoff prompt*.
 
 ## 🏁 ROUND 36 CLOSED (2026-10-21 morning) — read this first
 
