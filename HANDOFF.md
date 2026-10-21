@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-21 PDT — **S2a PASSED its series (R36.32: far loops 91 -> 35, left behind 77 -> 65 / 768, kills flat); manoeuvre is building `pair/manoeuvre-s2a` (bf678480c code + bank case + native re-pin 6a92e7a74, switches ON) for one builder0 check; on green the orchestrator merges it alone and adopts the moved sim-baseline maps (crossing, sumps expected), then closes round 36.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+_Last updated: 2026-10-21 PDT — **S2a SHIPPED ON (main eee5b0afa, baselines c5e87cd50; R36.32). Round 36's work is done; the close (archive, worktrees) is next.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
 and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
 
 ## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon) — read this first
@@ -70,7 +70,17 @@ fixed seat (R36.24); (tooling, native's sweep) relay_host_up / broker-load / lob
 (a dead broker surfaces 30 s later as "host never opened a room"); combat-smoke under `-eu -o pipefail` exits on a client FAIL before
 the reap and the server-ERROR grep (red, but loses its diagnostics); CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
 9 of 11 jam:yielding-to-another-squad deaths); the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped
-short / traffic split); whatever S1 / S2a leave of the wedged and left-behind crews.
+short / traffic split); whatever S1 / S2a leave of the wedged and left-behind crews; **Eyes_3's repeat side step (R36.31: a side step
+that ends still blocked by the same unmoved friend makes the next far fire a stand; lab case a long friend at 30-45 deg)**; an
+`unstick_fires` total in main's WEDGE_TRACE so `s1_judge.py` reads it (R36.32); **promote `scenario_scout_suppress::test_target_behind`
+from pending**: it passes identically (n=3, shots=101) on every check since at least 2026-10-20, switches ON or OFF, both builders
+(manoeuvre's logs), so an earlier merge fixed it (the scenario's owner promotes it).
+
+**S2a SHIPPED ON (R36.32), main eee5b0afa** (merges pair/manoeuvre-s2a 9ddf248f9 alone; INHERITS its builder0 check, 2973/0,
+only sim-baseline red); **main c5e87cd50 adopts crossing + sumps** (read twice on builder0). What he'll notice: far loops 91 -> 35,
+crews left behind 77 -> 65 / 768 runs, kills flat (builder2, ON bf678480c v base e525f7311). Orchestrator lesson: `make
+sim-baseline-adopt WHY=...` breaks on an apostrophe in WHY (shell quoting); the remote reads still land in build/sim-baseline/, so
+run `tools/sim_baseline.py adopt` locally with SIM_BASELINE_WHY set instead of re-reading.
 
 **Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
 X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36's stallnet.
