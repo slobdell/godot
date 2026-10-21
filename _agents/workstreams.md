@@ -371,6 +371,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   11.0 / 90 % / 654; softer leashes leave 16-18 m and only cost aim. The distance is the turn-in's own arcs: a fixed gun on wheels must
   drive to aim at a circling enemy. **Ruled:** M6 parked OFF on its lab branch; the lead is told the recommendation is now to leave
   the turn-in (O2's drive-back returns the scout after the fight); option "hold still, fire only in arc" stays his to pick.
+- **R37.16 (2026-10-21) CP37.1 MERGED; a batch follows.** main d9545d381 merges pair/native-cp371 bc9c1301d ALONE (INHERIT its
+  builder2 `make native check exited 0`, 2988/0, sim-baseline 13/13 unmoved). Then one batch: 84c11a60d merges native's 2bb41ef93 (the
+  base's per-fight rows `references/scoreboard/guards/9d325e291.*`, `guard.py --pair`, GUARD_ARGS/GUARD_TAG, cover_struck in
+  GUARD_RESULT) and a10846307 merges stream/rules 2c85080fc (R1-R3, all OFF; builder0 check exited 0, 2992/0, sim-baseline unmoved).
+  `match.gd` auto-merged (cover's seam + rules' sight/spread): ONE builder2 `make native check` on a10846307 judges the batch, then a
+  perf-judge on main covers cover's and rules' OFF code. Every stream `git merge main`; rules and cover cut their pair trees from
+  a10846307 once it is green.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
