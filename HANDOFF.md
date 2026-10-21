@@ -27,7 +27,7 @@ orchestrator runs `make worktree-remove STREAM=<s>` for each, `ssh builder0 rm -
 cleaned (the box was stopped): clean it on its next start. The judging table re-render (close step 5b) was not done this round.
 
 **Next: split round 37. The 11 OPEN QUESTIONS are answered** (game_design.md *Summary of his answers*, see *OPEN QUESTIONS for him before round
-37*), one at a time, in player terms. Round-37 candidates are listed below under round 36.
+37*). Round-37 candidates are listed below under round 36.
 
 ## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon)
 
