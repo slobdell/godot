@@ -67,6 +67,14 @@ win, kill ratio, capped share, ± from that read's own seeds); known answers in 
 see judging.md *Round 37 re-render*): round 36's 20 lines in `tools/judge/lines_r36.py`, table unchanged (no round-36 rows on
 main), 0 of 9 se lines inside the noise, 6 verdict margins under 1.645 se.
 
+**Twin questions answered in writing (orchestrator):** R37.2 rules (no twin: C++ reads sight live, never computes spread,
+drives the throttle tank.gd hands it); K2 (no native hit path skips cover's seam: shell_native only flies and emits `hit`,
+beams are GDScript, combat_native runs downstream; splash and flames skip the seam on both paths, cover's call); O2 (no native
+path issues an idle crew's move: decide_native returns the choice, every act call site goes through `_order_move`, no C++ writes
+`move_order`). **N2 cover twins** (3d598cdaa): CoverNative.low_screen / low_features_near / cover_roll + seams
+in cover_map.gd and armor.gd (merge note to cover: three dispatch lines, GDScript kept as `*_gd` reference), test
+`tests/test_native_cover_low.gd`; quick on builder0 light running.
+
 **Done so far (unchecked unless named):** N4 net diagnostics 820633935 (broker waits fail loudly, mutation-tested on the
 laptop: `broker-load NODE=false` -> "broker never printed BROKER_LISTENING ... (process exited)" exit 1; a real broker-load exit
 0); N5 promotion e1053de12 (`tests/baselines/ai_scenarios_count.txt` must move 53,0,5,0 -> 54,0,4,0: **the orchestrator
