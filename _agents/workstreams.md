@@ -180,6 +180,15 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   friend's give-way walking back to its station; in a real fight (`--probe-fight=on`, laptop, locks s34/35) parked crews leave their
   seats under SPOT, RETREAT, ENGAGE and INVESTIGATE (`tank_brain.gd`'s idle-crew options). The O2 grant (ADVANCE only) is extended
   only on orders' design note (sized on builder0 first).
+- **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
+  `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
+  124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
+  asker out ahead along its line); give-ways were the biggest driver for 11 of the 16 worst crews: 196 m yielding + 77 m driving
+  back. This is orders' O2 "ADVANCE = walking back" seen from the yielder's side. **Ruled:** M5 (after M1), the give-way block:
+  a SEATED crew (arrived, deployed) yields by stepping aside and reversing straight back to its seat, spots scored by distance to
+  the yielder's seat, not leading the asker out. Bar before numbers (deciding: metres a seated crew is moved off its seat;
+  guards: the asker's wait and all-in time, friendly contacts, kills). Orders' O2 keeps the brain's idle-crew options (SPOT /
+  RETREAT / ENGAGE / INVESTIGATE); the two do not overlap.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
