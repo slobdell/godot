@@ -72,6 +72,20 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-21 ~01:10 (worker): S1 stallnet FAILS Bar S1's series; it stays OFF (does not ship).** builder0 native, ON `78a93fdb4`
+v base `9564cc66e`. Fights, wedge and jam: locks/terminus/sumps x 6240–6263, 72 pairs. Hull-rest: 6201–6232 drawn x 4 factions x 6
+tasks, 128 pairs a task. Judge: `references/round36/manoeuvre/s1-series/`. (0) counter PASS (stall_net_holds ON 404690).
+- Two guards FAIL:
+  - **Unstick fires** 157717 -> 192380 (+34663; bound 1.645 se 15576). It rose in 47 of 72 pairs, on all three maps.
+  - **Team 0 kills** 1607 -> 1557 (−50; bound 41.8).
+- Every other guard passes: (d)/(e)/(f) for all 6 tasks, (q), (r) 29 -> 49 (within 35.4), (s), give-ways, hit rate.
+- The aim does not move. In the wedge trace, escape fires per hull go up 1741 -> 2187 (+26 %), but **stuck:wedged deaths do not
+  fall (251 -> 256)**. Stuck:static 131 -> 101 and open:parked 813 -> 769 are within noise. Rocking crews 4 -> 3 in 768 runs.
+- So the net-motion hold makes the clock reach its fire more often, but the extra escapes don't free wedged crews in a fight.
+- A v2 needs a new bar (e.g. hold only while in friendly contact). That is the orchestrator's call; I am not starting one.
+- The X4b (C) re-read on S1's ON arm is moot.
+- **Next:** S2a's series (Bar S2a) on trees cut from main without S1.
+
 **2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.

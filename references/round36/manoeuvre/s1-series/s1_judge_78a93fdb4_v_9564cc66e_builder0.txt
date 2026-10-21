@@ -1,0 +1,37 @@
+S1 (0) counter first: stall_net_holds ON 404690 (base, counted the same way: 91272)  PASS
+S1 (q) open deaths                base     2271 new     2242 diff      -29 1.645se    67.4 pairs 72  PASS
+S1 (q) stuck deaths               base      559 new      532 diff      -27 1.645se    44.4 pairs 72  PASS
+S1 (q) jam deaths                 base      174 new      173 diff       -1 1.645se    28.4 pairs 72  PASS
+S1 all deaths                     base     3004 new     2947 diff      -57 1.645se    57.0 pairs 72  REPORTED
+S1 (s) friendly contacts          base  1439844 new  1472874 diff   +33030 1.645se 79664.6 pairs 72  PASS
+S1 give-ways started              base    11299 new    11417 diff     +118 1.645se   428.3 pairs 72  PASS
+S1 asks                           base     1716 new     2172 diff     +456 1.645se   200.5 pairs 72  REPORTED
+S1 unstick fires                  base   157717 new   192380 diff   +34663 1.645se 15576.3 pairs 72  FAIL
+S1 (r) far loops                  base       29 new       49 diff      +20 1.645se    35.4 pairs 72  PASS
+S1 deaths team 0                  base     1389 new     1385 diff       -4 1.645se    59.5 pairs 72  PASS
+S1 (i) kills team 0               base     1607 new     1557 diff      -50 1.645se    41.8 pairs 72  FAIL
+S1 (i) hit rate team 0               mean diff -0.0062 1.645se 0.0244 pairs 72  PASS
+S1 deaths team 1                  base     1615 new     1562 diff      -53 1.645se    40.8 pairs 72  PASS
+S1 (i) kills team 1               base     1366 new     1372 diff       +6 1.645se    59.9 pairs 72  PASS
+S1 (i) hit rate team 1               mean diff +0.0041 1.645se 0.0201 pairs 72  PASS
+S1 (d) movers net faced_ambush    base        5 new        8 diff       +3 1.645se     4.9 pairs 128  PASS
+S1 (e) never settled faced_ambush         base 12 new 16 (+4) <= +4.9  PASS
+S1 (f) arrived faced_ambush       base        0 new        0 diff       +0 1.645se     0.0 pairs 128  PASS
+S1 (d) movers net faced_attack_move base       19 new       18 diff       -1 1.645se     5.5 pairs 128  PASS
+S1 (e) never settled faced_attack_move    base 34 new 28 (-6) <= +4.9  PASS
+S1 (f) arrived faced_attack_move  base      422 new      421 diff       -1 1.645se     3.7 pairs 128  PASS
+S1 (d) movers net faced_move      base       15 new       12 diff       -3 1.645se     4.3 pairs 128  PASS
+S1 (e) never settled faced_move           base 31 new 29 (-2) <= +4.9  PASS
+S1 (f) arrived faced_move         base      433 new      432 diff       -1 1.645se     5.0 pairs 128  PASS
+S1 (d) movers net faced_right     base       15 new       12 diff       -3 1.645se     5.5 pairs 128  PASS
+S1 (e) never settled faced_right          base 26 new 22 (-4) <= +4.9  PASS
+S1 (f) arrived faced_right        base      432 new      432 diff       +0 1.645se     4.0 pairs 128  PASS
+S1 (d) movers net faced_screen    base       20 new       15 diff       -5 1.645se     7.9 pairs 128  PASS
+S1 (e) never settled faced_screen         base 21 new 24 (+3) <= +4.9  PASS
+S1 (f) arrived faced_screen       base      424 new      424 diff       +0 1.645se     3.3 pairs 128  PASS
+S1 (d) movers net faced_support_by_fire base        5 new        7 diff       +2 1.645se     5.7 pairs 128  PASS
+S1 (e) never settled faced_support_by_fire base 14 new 15 (+1) <= +4.9  PASS
+S1 (f) arrived faced_support_by_fire base        0 new        0 diff       +0 1.645se     0.0 pairs 128  PASS
+S1 rocking_census base_drawn: runs 768 crews rocking >=10 s with the clock running, no escape: 4 {'gang_tank': 1, 'scout': 3}  REPORTED
+S1 rocking_census new_drawn: runs 768 crews rocking >=10 s with the clock running, no escape: 3 {'gang_tank': 1, 'artillery': 1, 'law_artillery': 1}  REPORTED
+S1 VERDICT (series guards) FAIL (see lines)
