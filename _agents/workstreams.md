@@ -343,6 +343,15 @@ _Filed here before any number._
   series judged); round 37: (ii) a side step that ends still blocked by the same unmoved friend makes the next far fire a stand
   (recommended), deciding lab case a long friend at 30–45 deg. S2a's hand-over, if it passes: bf678480c's code + native's yield
   re-pin + the bank case, one green check.
+- **R36.32 (2026-10-21 PDT) S2a PASSES its series; hand-over next.** Manoeuvre (59dc89ba8, Status 2ee4f4d08; evidence
+  `references/round36/manoeuvre/s2a-series/`), builder2 native, ON bf678480c v base main e525f7311, 72 fight pairs + 128 hull-rest
+  pairs a task, judge `s1_judge.py --bar s2a`: far loops 91 -> 35 (-56, bound 38.6); kills, deaths, hit rate flat both teams;
+  (d)/(e)/(f) pass all 6 tasks; left behind 77 -> 65 of 768 runs (wander 21 -> 10, wedged:idle 36 -> 34). The judge's unstick-fires
+  line read 0 v 0 (main's WEDGE_TRACE has no unstick_fires total); rebuilt by seed from the wedge rows: fires in wedged episodes
+  28415 -> 27223 (-1192, bound 1648), H1 escapes 2070 -> 2003, asks 2033 -> 1930, none up. **Ruled:** the rebuilt line stands as the
+  guard (it reads the same rows, nothing is up); round 37 adds an unstick_fires total to WEDGE_TRACE so the judge reads it. Hand-over
+  `pair/manoeuvre-s2a` = main 590dc607e + the bank case + native's re-pin 6a92e7a74 + the two switch lines ON, one builder0 full
+  check; sim-baseline is expected to move (crossing + sumps, as on bf678480c's check) and the orchestrator adopts it on merge.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
