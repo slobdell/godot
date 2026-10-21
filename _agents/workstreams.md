@@ -118,6 +118,16 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   default); (b) the base rates come BEFORE any bar uses the lines: if the blob (or the turtle) already loses near the floor today, the
   win rate has no room and the deciding line becomes the kill ratio or the zone-point margin, chosen from today's read (R35.64,
   R36.23); (c) the 600 s cap's verdict is the points leader, and the share of capped fights is reported per line.
+- **R37.2 (2026-10-21) rules' build: no twins accepted pending native's confirmation; R2's halt limited to not-player-move.** rules
+  (stream/rules 12f410388, all OFF, `--rules-on=sight,spread,pin_slow`, `game/combat/rule_switches.gd`): R1 sets the sight after the
+  suppression settle (`Match._settle_motion_sight`) on both paths (native perception reads the `sight_radius` property:
+  `perception_native.cpp:81`); R2's short halt and R3's cap edit the tick's command in `tank.gd` before `NativeTank.drive`; the
+  gunnery/order_controller grant unused (whole-tick C++ ports would bypass it). Measured (builder0, 9d63f709a, 20 CPU showmatch fights,
+  5 maps x 4 seeds, 180 s): movers deal 52.5 % of direct-fire damage, 19.4 % from beyond 50 m. **Ruled:** (a) native confirms in
+  writing that no C++ path reads sight, the spread or the speed past these seams (else twins); (b) R2's short halt (<= 1.5 s, throttle 0
+  in the plant) must NOT fire on a crew under a player's plain MOVE order (his "under my control"): attack-move, hold, parked and CPU
+  crews only; (c) R2's bar carries contention guards (friendly contacts, all-in time, held behind a halted friend) at
+  no-worse-than-today beyond noise (his first movement priority), and manoeuvre's wedge line.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
