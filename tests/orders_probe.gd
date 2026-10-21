@@ -303,8 +303,9 @@ func _watch() -> void:
 				# Round 36 (orders): the crew's element NOW (untangle and the split re-deal vehicles between squads).
 				var elements := Elements.of_match(_match)
 				var now: Element = elements.of(n) if elements != null else null
-				parts.append("%s(%.1f,%.1f goal %s %s el %s)" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
-						str(_xz(goal)) if goal is Vector3 else "-", option, now.element_name if now != null else "-"])
+				# Round 37 (orders O2): the crew's own words (TankBrain.label + why), to read a parked crew that moves.
+				parts.append("%s(%.1f,%.1f goal %s %s el %s \"%s\")" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
+						str(_xz(goal)) if goal is Vector3 else "-", option, now.element_name if now != null else "-", _tank(n).intent])
 			print("ORDERS_PROBE_TRACE t=%d %s" % [(_match.tick - _order_tick) / SimClock.TICK_RATE, " ".join(parts)])
 		# Each crew's OWN destination (its formation slot, not the squad's anchor), sampled every half second: one past a
 		# deck on the far bank is a crew sent over the river however the anchor was capped.
