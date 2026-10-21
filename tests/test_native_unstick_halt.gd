@@ -4,7 +4,7 @@ extends DriveTwinCase
 ## a move order 40 m ahead, its stall clock a tick short of Movement.STUCK_SECONDS, so this tick's drive fires the unstick;
 ## driven from one snapshot by the live GDScript and natively. Halted: neither fires. Not halted (the control): both fire.
 
-const UNITS: Array[String] = ["tank", "ifv", "gang_tank"]
+const HALT_UNITS: Array[String] = ["tank", "ifv", "gang_tank"]
 
 
 func _arm(halted: bool) -> Array:
@@ -21,7 +21,7 @@ func _arm(halted: bool) -> Array:
 	var first := ""
 	var fired := 0
 	var k := 0
-	for unit: String in UNITS:
+	for unit: String in HALT_UNITS:
 		for yaw in [0, 3, 6]:
 			k += 1
 			var tank := game_match.spawn_tank("Halt%d_%s" % [k, unit], 0, Match.Team.GREEN, unit)
