@@ -325,6 +325,14 @@ _Filed here before any number._
 - **R36.29 (2026-10-21 ~02:20 PDT) native's close merged: main 48f4dc979 INHERITS 4a6b345d9** (builder0 2972/0, sim-baseline unmoved,
   perf-judge NOT JUDGED for load). Ruled: a diff with no game/native/server code needs no perf-judge (nothing it can slow); main's
   stands at 83eaddf66 (R36.21). Native's perf-judge rerun is cancelled (it would wait hours behind builder0's series).
+- **R36.30 (2026-10-21 ~02:30 PDT) S2a's water condition: 0 measured; a bank lab case added to the ship conditions.** Manoeuvre
+  (6e219d916, `references/round36/manoeuvre/s2a/side_water_86e058424_builder0.txt`; ON tree's GDScript twin, Locks + Sumps fights
+  6540–6563, 48 fights, builder0 light): 26 side fires (15 points, 11 stands), none in water / pit, on the opposite bank, over water off
+  a deck, or on a deck; Terminus 0 by construction. Caveat: the nearest point was 43.8 m from water (the rule fired only on spawn and
+  approach ground). Added before the series reads, as a SHIP condition (not a series gate): a deterministic lab case with the
+  pinned crew a few metres from a bank / bridge mouth; the side point stays on its own bank and off the deck, both paths. Being
+  traced: locks-6550 Rust_Eyes_3 chose 9 side points on one parked artillery ~3 s apart for < 1 m of motion (yields_unfinished
+  9 -> 20).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
