@@ -146,6 +146,9 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
 **Series log (builder2, queue mine until done; M5a goes after):**
 - PAIR TREE **75c3e74e0** (pair/rules-r37) = main 291318ece (0baf6e1ff + docs) merged into stream/rules; it differs from main only in this
   Status. Declared to native for the lab arms (each switch ON, `make native test`, both arms).
+- R37.4 CLEARED by native on 75c3e74e0 (builder0 light): `make native test FILTER=test_rules_` 20/0 with native ON and
+  20/0 with NATIVE=off. Every rules test passes in both arms (pin_slow 4, sight 6, spread 9). Equality is assertion by
+  assertion, not bit for bit, which R37.4 did not ask for; the series checks the sim itself.
 - 13:23 PDT start: OFF base-gate replay, `GUARD_TAG=base` (systemd unit rules-guard-base). Gate: 0 flips v 9d325e291.fights.jsonl.
 
 **Arm recipe (from native, 2026-10-21; tooling in stream/native 420048f99 and pair/native-cp371 2bb41ef93):**
