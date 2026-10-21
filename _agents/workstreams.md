@@ -146,6 +146,13 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   in the plant) must NOT fire on a crew under a player's plain MOVE order (his "under my control"): attack-move, hold, parked and CPU
   crews only; (c) R2's bar carries contention guards (friendly contacts, all-in time, held behind a halted friend) at
   no-worse-than-today beyond noise (his first movement priority), and manoeuvre's wedge line.
+- **R37.3 (2026-10-21) the blob is his right-click; builder2 preempted.** native: the A-click task (`{"verb":"move"}`, drills on) runs
+  react-to-contact drills and can bound/overwatch when contact is likely (doctrine table); the right-click (`"drills": false`,
+  `element_plan.gd:359` -> `_plan_form_up`) is a formed-up transit, no bounding, no drills, crews shoot what they pass. **Ruled:** the
+  BLOB is the right-click (the slug-fest he described); with R37.2(b) rules' short halt never fires on it. No A-click arm in the base.
+  builder2 (Spot, us-west4-a) preempted 08:47, 09:00, 09:04 PDT (GCP operations log); native's base read is a chunked, resumable
+  driver (one seed per remote call, raw logs outside build/, a 255 retried after gcp-start); the smoke ran on builder0's light lane.
+  On-demand (gcp_builder.md item 2) not switched: a spend on a box his other projects share; the lead is told.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
