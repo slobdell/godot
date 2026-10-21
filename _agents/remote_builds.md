@@ -805,3 +805,8 @@ PATH=$HOME/projects/bin:$PATH` inside the unit's script; otherwise `make gcp-sta
 (no `local.mk`, so SMOKE_NET_PORT 9181) ran combat-smoke at once on builder0 and collided: `NET_CHECK FAIL peer=0 tanks_seen=3/2 no
 damage` (2026-10-21 ~01:45 and ~02:00 PDT); each passed alone. A side worktree that runs smokes needs its own port offset (copy the
 stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), or its remotes run one at a time.
+
+- **Round 37: perf-judge never judges on builder2 (R37.20).** Since the 2026-10-19 conversion builder2 is an e2-highcpu-32 (Intel
+  Broadwell, mixed platforms per Spot start): it reads the perf reference ~2.5x slower than the stale c4d nominal and its brains at
+  21-34 ms a tick against scenario_perf's ABSOLUTE 20 ms line. A NOT JUDGED perf-judge on builder2 is the machine, not load; judge
+  perf on builder0 only (`make remote T=perf-judge`, alone, in a quiet window).

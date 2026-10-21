@@ -12,6 +12,10 @@ extends TestCase
 ## "mouth" with the friend parked at the central bridge's north mouth and a second friend abreast on its land side, the goal
 ## past them on the bank. The open side point is then over the water or on the deck, and must not be taken: in "bank" the
 ## hull goes round on its own bank; in "mouth" it stands.
+## Round 37 (M1, `sidestand`, R36.31): `walls` "eyes3:<yaw deg>" stands Rust_Eyes_3's traced spot on the Locks
+## (trace_locks-6550_Rust_Eyes_3): a LONG friend (ANGLED_FRIEND, an artillery) parked at the given yaw, the asker (ANGLED_UNIT,
+## a scout) where its first side pick stood, sent to the trace's goal. At yaw 125-135 the friend's corner stands across the
+## drive to the side point abreast of it. `rule` picks the switch the arm flips (h1bside by default; "sidestand" for M1).
 
 const SECONDS := 30.0
 const STILL_SECONDS := 10.0
@@ -28,6 +32,8 @@ const DECK_HALF_X := 8.0
 const DECK_HALF_Z := 12.0
 const BANK_X := 40.0
 const EAST := -PI / 2.0  # a yaw facing +x (a hull's forward is -z at yaw 0)
+const ANGLED_UNIT := "law_scout"
+const ANGLED_FRIEND := "law_artillery"
 static var _runs := {}
 
 
@@ -38,39 +44,47 @@ static func _controller_of(lab: TacticsLab, tank: Tank) -> OrderController:
 	return null
 
 
-static func arm(on: bool) -> PackedStringArray:
-	return PackedStringArray([]) if on == Movement.H1B_SIDE_DEFAULT else PackedStringArray(["h1bside"])
+static func default_of(rule: String) -> bool:
+	return Movement.SIDE_STAND_DEFAULT if rule == "sidestand" else Movement.H1B_SIDE_DEFAULT
 
 
-static func native_arm() -> bool:
-	return Movement.H1B_SIDE_DEFAULT
+static func arm(on: bool, rule := "h1bside") -> PackedStringArray:
+	return PackedStringArray([]) if on == default_of(rule) else PackedStringArray([rule])
 
 
-func far_loop(on: bool, native: bool, walls: String, trace := false) -> Dictionary:
-	var key := "%s/%s/%s" % [on, native, walls]
+static func native_arm(rule := "h1bside") -> bool:
+	return default_of(rule)
+
+
+func far_loop(on: bool, native: bool, walls: String, trace := false, rule := "h1bside") -> Dictionary:
+	var key := "%s/%s/%s/%s" % [on, native, walls, rule]
 	if not _runs.has(key) or trace:
-		_runs[key] = await _run(on, native, walls, trace)
+		_runs[key] = await _run(on, native, walls, trace, rule)
 	return _runs[key]
 
 
-func _run(on: bool, native: bool, walls: String, trace: bool) -> Dictionary:
+func _run(on: bool, native: bool, walls: String, trace: bool, rule := "h1bside") -> Dictionary:
 	var was_native := BrainSwitches.native
 	var was_off := Movement._off
-	Movement._off = arm(on)
+	Movement._off = arm(on, rule)
 	Movement._off_parsed = true
 	BrainSwitches.native = native
 	Movement.reset_escape_arms()
 	var bank := walls in ["bank", "mouth"]
-	var lab := TacticsLab.create(self, 37, "locks" if bank else "")
+	var angled := walls.begins_with("eyes3:")
+	var unit := ANGLED_UNIT if angled else UNIT
+	var friend := ANGLED_FRIEND if angled else FRIEND
+	var lab := TacticsLab.create(self, 37, "locks" if bank or walls.begins_with("eyes3:") else "")
 	var x := TacticsScenarios.LANE_X
-	var fw := float(Movement.hull_box(FRIEND)[0])
-	var flen := float(Movement.hull_box(FRIEND)[2])
-	var mlen := float(Movement.hull_box(UNIT)[2])
+	var fw := float(Movement.hull_box(friend)[0])
+	var flen := float(Movement.hull_box(friend)[2])
+	var mlen := float(Movement.hull_box(unit)[2])
 	var parked: Array[Tank] = []
 	var tank: Tank
 	var goal := Vector3(x, 0, -flen * 0.5 - PAST_M)
 	var front_z := -flen * 0.5  # the parked friend's nose: the asker is past it when its own tail is beyond
 	var front_x := INF
+	var past_z := INF  # eyes3: past when the asker's tail is beyond the friend's far (+z) end
 	if bank:
 		# East along the north bank. "bank": the friend's water side 1 m off the rim; "mouth": the friend across the bridge's
 		# north mouth (its centre on the deck's end line), so its south side point lies on the deck.
@@ -83,6 +97,18 @@ func _run(on: bool, native: bool, walls: String, trace: bool) -> Dictionary:
 		goal = Vector3(fx + flen * 0.5 + PAST_M, 0, fz - 1.0)
 		front_z = -INF
 		front_x = fx + flen * 0.5
+	elif walls.begins_with("eyes3:"):
+		# R36.31's own spot on the Locks (trace_locks-6550_Rust_Eyes_3): the parked artillery's centre, the scout where its
+		# first side pick stood, the goal it was sent to; the artillery's yaw is the stage's parameter (the trace has none).
+		var yaw := deg_to_rad(float(walls.split(":")[1]))
+		var at := Vector3(46.03, 0, -87.05)
+		parked.append(lab.gun(Match.Team.GREEN, "Green_Battery_2", at, yaw, friend))
+		var start := Vector3(41.7, 0, -89.2)
+		var aim := Vector3(45.5, 0, -83.7) - start
+		tank = lab.gun(Match.Team.GREEN, "Green_Eyes_3", start, atan2(-aim.x, -aim.z), unit)
+		goal = Vector3(44.18, 0, -70.51)
+		front_z = -INF
+		past_z = at.z + absf(flen * 0.5 * cos(yaw)) + absf(fw * 0.5 * sin(yaw))
 	else:
 		parked.append(lab.gun(Match.Team.GREEN, "Green_Hunters_2", Vector3(x, 0, 0), 0.0, FRIEND))
 		if walls in ["left", "both"]:
@@ -102,6 +128,8 @@ func _run(on: bool, native: bool, walls: String, trace: bool) -> Dictionary:
 	var far_before := ManoeuvreCensus.h1b_far
 	var steps_before := ManoeuvreCensus.h1b_side_steps
 	var stands_before := ManoeuvreCensus.h1b_side_stands
+	var repeats_before := ManoeuvreCensus.h1b_side_repeats
+	var restands_before := ManoeuvreCensus.h1b_side_restands
 	var fire_times: Array = []
 	var first_far := -1.0
 	var past_at := -1.0
@@ -122,7 +150,7 @@ func _run(on: bool, native: bool, walls: String, trace: bool) -> Dictionary:
 		if first_far < 0.0 and ManoeuvreCensus.h1b_far > far_before:
 			first_far = t
 		var at := tank.global_position
-		if past_at < 0.0 and (at.z + mlen * 0.5 < front_z or at.x - mlen * 0.5 > front_x):
+		if past_at < 0.0 and (at.z + mlen * 0.5 < front_z or at.x - mlen * 0.5 > front_x or at.z - mlen * 0.5 > past_z):
 			past_at = t
 		if mover._side_to != Vector3.INF and (side_points.is_empty() or Vector2(side_points[-1][0], side_points[-1][1]).distance_to(Vector2(mover._side_to.x, mover._side_to.z)) > 0.01):
 			side_points.append([snappedf(mover._side_to.x, 0.01), snappedf(mover._side_to.z, 0.01)])
@@ -146,6 +174,8 @@ func _run(on: bool, native: bool, walls: String, trace: bool) -> Dictionary:
 			"past_at": past_at, "late_moved_m": Vector2(tank.global_position.x - mark.x, tank.global_position.z - mark.z).length(),
 			"pressing_late": pressing_late, "far": ManoeuvreCensus.h1b_far - far_before,
 			"steps": ManoeuvreCensus.h1b_side_steps - steps_before, "stands": ManoeuvreCensus.h1b_side_stands - stands_before,
+			"repeats": ManoeuvreCensus.h1b_side_repeats - repeats_before,
+			"restands": ManoeuvreCensus.h1b_side_restands - restands_before,
 			"at": [snappedf(tank.global_position.x, 0.01), snappedf(tank.global_position.z, 0.01)],
 			"side_points": side_points, "min_z": snappedf(min_z, 0.01), "on_deck_ticks": on_deck_ticks}
 	lab.dispose()
@@ -155,7 +185,8 @@ func _run(on: bool, native: bool, walls: String, trace: bool) -> Dictionary:
 
 
 func report(label: String, now: Dictionary, base: Dictionary) -> void:
-	print("MEASURE h1b_side %s: ON fires %d at %s, first far %.1f s, fires after %d, past at %.1f s, steps %d, stands %d, late moved %.2f m, pressing late %d, at %s, side points %s, min z %.2f, deck ticks %d | base: fires %d at %s, past at %.1f s, at %s" % [
+	print("MEASURE h1b_side %s: ON fires %d at %s, first far %.1f s, fires after %d, past at %.1f s, steps %d, stands %d, repeats %d, restands %d, late moved %.2f m, pressing late %d, at %s, side points %s, min z %.2f, deck ticks %d | base: fires %d at %s, past at %.1f s, steps %d, stands %d, repeats %d, side points %s, at %s" % [
 			label, now["fires"], now["fire_times"], now["first_far"], now["fires_after_far"], now["past_at"], now["steps"],
-			now["stands"], now["late_moved_m"], now["pressing_late"], now["at"], now["side_points"], now["min_z"],
-			now["on_deck_ticks"], base["fires"], base["fire_times"], base["past_at"], base["at"]])
+			now["stands"], now["repeats"], now["restands"], now["late_moved_m"], now["pressing_late"], now["at"], now["side_points"],
+			now["min_z"], now["on_deck_ticks"], base["fires"], base["fire_times"], base["past_at"], base["steps"], base["stands"],
+			base["repeats"], base["side_points"], base["at"]])

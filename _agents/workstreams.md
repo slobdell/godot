@@ -371,6 +371,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   11.0 / 90 % / 654; softer leashes leave 16-18 m and only cost aim. The distance is the turn-in's own arcs: a fixed gun on wheels must
   drive to aim at a circling enemy. **Ruled:** M6 parked OFF on its lab branch; the lead is told the recommendation is now to leave
   the turn-in (O2's drive-back returns the scout after the fight); option "hold still, fire only in arc" stays his to pick.
+  **Reconciled (manoeuvre, orders' exact command, budget 1500):** face_drift 956.2 s, of which the scout turn-in is 944.7 s and
+  8,247 m (99 %): the turn-in is ~56 % of all parked off-seat time in O2's base. Evidence lab/manoeuvre-r37-m6trace,
+  `references/round37/manoeuvre/m6/README.md`.
 - **R37.16 (2026-10-21) CP37.1 MERGED; a batch follows.** main d9545d381 merges pair/native-cp371 bc9c1301d ALONE (INHERIT its
   builder2 `make native check exited 0`, 2988/0, sim-baseline 13/13 unmoved). Then one batch: 84c11a60d merges native's 2bb41ef93 (the
   base's per-fight rows `references/scoreboard/guards/9d325e291.*`, `guard.py --pair`, GUARD_ARGS/GUARD_TAG, cover_struck in
@@ -390,6 +393,28 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   guards (the contacts line is not loosened after the fact); "the guard is tighter than its noise" is argued in a re-filed bar
   before the new numbers, not applied to these. The fight read still runs in the HEAD batch (it tells whether the flicker win holds
   in fights).
+- **R37.18 (2026-10-21) the series queues.** builder2 (one judged series at a time): main a10846307's check -> rules' Bar R (base gate
+  + arms) -> manoeuvre's M5a (native's pair/native-m5 156d563d9 green on builder2, 2984/0, sim-baseline 13/13; trees BASE
+  lab/manoeuvre-r37-m5 936612334, ON lab/manoeuvre-r37-m5on 7ebbc7bdd; first look builder0 light, 2 Locks fights OFF: 136 seated
+  give-ways, 35 lead-outs, ~750 seat-metres a fight) -> cover's K4 after his K5 answer. builder0: M1's check + series, orders'
+  HEAD batch (O1 fight read, O3, O2, O5) in the order each stream states in Status. Cover's separate OFF gate is dropped: rules'
+  base gate on a10846307 (cover's OFF code in) already proves the replay; cover re-gates on the K5 maps.
+- **R37.19 (2026-10-21) main a10846307 GREEN; manoeuvre merged; perf-judge owed.** builder2 `make native check exited 0`, 3007
+  passed / 0 failed, 25 + 2 NOT JUDGED; the scout_suppress unexpected pass is the known one (N5 promotes it). Then main 0baf6e1ff
+  merges stream/manoeuvre b822e6696 alone (INHERIT; builder0 `make native check exited 0`, 3011/0, sim-baseline 13/13): M1 sidestand
+  OFF, M2's unstick_fires total, the unstick skipping a short-halting hull + its native twin. **Perf-judge:** every check this round
+  came back NOT JUDGED (builder0 busy; builder2 refuses at a steady 2.55-2.57x three tries running, which looks like the box's own
+  speed, not load). Cover's, rules' and manoeuvre's OFF code is unjudged for perf on main; the orchestrator runs ONE perf-judge on
+  builder0 in the first quiet window and asks native whether perf-judge can ever judge on builder2. Rules cuts its pair from
+  0baf6e1ff.
+- **R37.20 (2026-10-21) perf-judge cannot judge on builder2; builder0 only.** native (in writing): perf_nominal.json's "builder2"
+  (ref_ms 0.898, 2026-10-17) was the c4d-standard-32; since the 2026-10-19 conversion the box is e2-highcpu-32 (Intel Broadwell, mixed
+  platforms per start), reading the reference at 2.28-2.50 ms at 62-96 % idle: the steady 2.5x is the CPU, not load. And scenario_
+  perf's line is ABSOLUTE (FAIL_USEC 20,000 us a tick): builder2 reads 21,084-34,400, builder0's P-cores ~9,200, so a judged run there
+  would FAIL a healthy tree. **Ruled:** (a) ONE perf-judge on builder0 for main 0baf6e1ff (the round's OFF code), `make remote
+  T=perf-judge` alone, queued behind `--wait-below 1`; (b) granted to native: perf_judge.sh says at once on builder2 "NOT JUDGED:
+  builder2 is not a judging machine (e2 Broadwell, absolute line)" instead of three tries; (c) the machine-relative line
+  (ai_usec_per_ref_ms, nominals keyed by CPU model, an A/A) is round-38 work unless builder0 never goes quiet.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
