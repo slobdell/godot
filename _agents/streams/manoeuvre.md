@@ -116,6 +116,10 @@ determinism 8c3c1232b711a760 (log `~/overnight-manoeuvre/r37/check_b822e6696_bui
 main a10846307, the unstick short-halt skip, and native's twin of it (pair/native-unstick ca6978178). The commits after it are
 judges and docs only. The M1 series started 13:22 on builder0 (unit `manoeuvre-m1-series2`).
 
+**Player smoke, M1 ON** (lab/manoeuvre-m1on 339d3f2e2, builder0 light, `orders-probe-shots` on the Locks, 3 and 5 squads, click,
+arrival + 5 s, desktop frames looked at): every squad is seated by its marker south of the canal, with no crew wedged and none
+nosing into a friend. The rule does not arise in a clean move (as designed); the lab case and the series carry it.
+
 **2026-10-21 (worker): M1 built + lab-decided on GDScript; M2 done; M3 note written.**
 - **Plan (order):** M1 sidestand (switch OFF, lab case, Bar M1 filed in workstreams *Bars (round 37)*) -> M2 WEDGE_TRACE total ->
   M3 note -> M1 pair check + series (builder0) -> M4 after R3 is ON -> stretch.
