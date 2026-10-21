@@ -231,6 +231,17 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   orchestrator runs `make remote T=perf-judge` on main on builder0 when quiet (OFF adds one dict lookup per front-arc hit).
   `match.gd` gains two guarded calls (`_shell_hit`, `_fire_beam`; merge note to rules). Native: twins for `CoverMap.low_screen`,
   `Armor.cover_roll`, `low_cover_seat` (low priority), and confirm whether a native shell path bypasses `_shell_hit` when ON.
+- **R37.9 (2026-10-21) O2 PARKED_HOLD granted; O1 must read fights too.** orders (note `references/round37/orders/o2-parked-note.md`,
+  stream/orders baf3dbd8e; builder0 native light, 3e43c4a24, fight probe `--probe-fight=on`, CPU 15 v his 10 parked by one click,
+  locks/crossing/terminus x 3 squads x 3621-3626 = 18 fights, 129 placed crews; "left" = > 6 m off with no order goal): left by its
+  own option 34 crews (1.89 a fight: SPOT 23, ENGAGE 4, RETREAT 4, RECHARGE 2, COVER_FIRE 1), give-way 10 (M5's), seat moved under it
+  42 (O1's re-lay); 27 of 54 squads; worst crew median 23 m off (max 49). Mechanism: an idle crew's post is its station (5 m) inside
+  the 30 m IDLE_LEASH, every option competes inside it, ADVANCE returns only to 5 m. **Granted:** in `tank_brain.gd`, the idle-crew
+  candidate scoring (one guarded filter, `--parked-hold`, OFF until its bar passes: options that drive the hull > 4 m from a seat of
+  HIS arrived element score 0; HOLD stays) and the idle return radius (to the station itself). Player elements only; CPU unchanged.
+  **O1 workload:** the same fight probe shows 175 halt-shape flips and 446 re-lays over 27 of 51 squads (v 18 in the no-fight probe):
+  Bar O1 adds the fight probe (fresh seeds) as a second deciding workload, re-filed before its judged numbers.
+  **The retreat question** goes to him (RETREAT when critical stays in the arm until he answers).
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
