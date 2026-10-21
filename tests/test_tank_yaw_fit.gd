@@ -89,7 +89,7 @@ func _world() -> Match:
 func test_a_hull_in_the_open_turns_exactly_as_it_did() -> void:
 	var game_match := await _world()
 	var tank := game_match.spawn_tank("Green_Open_1", 0, Match.Team.GREEN, "tank")
-	tank.global_position = Vector3(0, 0, 40)  # open lane, nothing within a hull length
+	tank.place(Vector3(0, 0, 40), tank.rotation.y)  # open lane, nothing within a hull length
 	await wait_physics_frames(2)
 	_enable()
 	_mark()
@@ -115,7 +115,7 @@ func test_a_hull_against_a_wall_cannot_turn_through_it() -> void:
 	var tank := game_match.spawn_tank("Green_Wall_1", 0, Match.Team.GREEN, "gang_tank")  # the 14 m rig
 	# Foundry's centre crate blocks the line (-5,1.3,0) -> (5,1.3,0). Drive the rig into it, broadside on, so the
 	# slide reports contact, and only then ask for the turn that would sweep through it.
-	tank.global_position = Vector3(0, 0, 14.0)
+	tank.place(Vector3(0, 0, 14.0), tank.rotation.y)
 	tank.global_basis = Basis.looking_at(Vector3(0, 0, -1), Vector3.UP)
 	await wait_physics_frames(2)
 	tank.command.throttle = 1.0
@@ -144,16 +144,14 @@ func test_a_hull_against_a_wall_cannot_turn_through_it() -> void:
 func _pivot_beside_a_squadmate(world_only: bool) -> Array:
 	var game_match := await _world()
 	var pivot := game_match.spawn_tank("Green_Pivot_1", 0, Match.Team.GREEN, "tank")
-	pivot.global_position = Vector3(0, 0, 40)
-	pivot.rotation.y = PI
+	pivot.place(Vector3(0, 0, 40), PI)
 	# Boxed in on both sides, 0.8 m of air each side (2.40 m hulls at a 3.2 m pitch): one end of a pivoting hull swings
 	# toward each neighbour, so whichever way it turns it meets one. At five_squads' 6 m pitch a hull turning under
 	# throttle drives clear before it touches, and the control would measure nothing.
 	for side in [-1, 1]:
 		var mate := game_match.spawn_tank("Green_Pivot_%d" % (2 if side < 0 else 3), 1 if side < 0 else 2,
 				Match.Team.GREEN, "tank")
-		mate.global_position = Vector3(3.2 * side, 0, 40)
-		mate.rotation.y = PI
+		mate.place(Vector3(3.2 * side, 0, 40), PI)
 	await wait_physics_frames(2)
 	_enable()
 	Units.tuning["yaw_world"] = 1.0 if world_only else 0.0

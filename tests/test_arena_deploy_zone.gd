@@ -101,7 +101,7 @@ func test_the_checker_sees_a_bus_on_a_block_and_one_ahead_of_the_zone() -> void:
 	var deployed: Array = await _deploy("terminus")
 	var tanks: Array = deployed[1]
 	var tank: Tank = tanks[0]
-	tank.global_position = Vector3(30.0, 0.0, 78.0)  # inside block (30, 62), whose footprint runs z 42..82
+	tank.place(Vector3(30.0, 0.0, 78.0), tank.rotation.y)  # inside block (30, 62), whose footprint runs z 42..82
 	var found := problems([tank], Arena.active)
 	assert_true(found.size() >= 1 and found[0].contains("AHEAD"), "a bus at z 78 is ahead of the zone: %s" % [found])
 	assert_true(Array(found).any(func(l: String) -> bool: return l.contains("inside block")),

@@ -126,8 +126,7 @@ func test_contact_pip_when_an_enemy_is_in_sight() -> void:
 	for bearing in 12:
 		for reach: float in [24.0, 32.0, 40.0]:
 			var spot := lead.global_position + Vector3(sin(TAU * bearing / 12.0), 0.0, -cos(TAU * bearing / 12.0)) * reach
-			enemy.global_position = Vector3(spot.x, lead.global_position.y, spot.z)
-			enemy.reset_physics_interpolation()  # teleport: interpolation must not leave it at its old spot
+			enemy.place(Vector3(spot.x, lead.global_position.y, spot.z), enemy.rotation.y)
 			await wait_physics_frames(2)
 			# Not pushed out of the world by something it was placed inside, and really in sight.
 			if absf(enemy.global_position.y - lead.global_position.y) < 0.5 and Perception.has_line_of_sight(lead, enemy):
@@ -166,8 +165,7 @@ func test_ground_rings_mark_the_selected_squad_and_respect_fog() -> void:
 	var map: TacticalMap = setup[1]
 	var markers: SelectionMarkers = setup[3]
 	var hidden := game_match.spawn_tank("Rust_Far_1", 0, Match.Team.RUST)
-	hidden.global_position = Vector3(100, 0, -100)
-	hidden.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
+	hidden.place(Vector3(100, 0, -100), hidden.rotation.y)
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	markers.refresh()
 	var rings := markers.state()

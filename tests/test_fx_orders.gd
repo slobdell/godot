@@ -69,7 +69,7 @@ func test_attack_marks_the_target_and_sounds_different() -> void:
 	var s := await _ready_setup()
 	var fx: FxWorld = s["fx"]
 	var rust: Tank = s["rust"]
-	rust.global_position = Vector3(30, 0, 5)
+	rust.place(Vector3(30, 0, 5), rust.rotation.y)
 	_order(s["orders"], ["G0", "G1"], 2, "attack", {"target": "R0"})
 	fx.order_feedback.update(fx.now)
 	assert_eq(fx.order_feedback.last_marker_kind, "attack", "an attack marker")

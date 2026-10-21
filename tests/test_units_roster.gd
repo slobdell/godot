@@ -147,9 +147,8 @@ func test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range() -> void:
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, _army([{"unit": "scout", "directive": {"role": "scout"}}])), "", "setup: scout")
 	var scout := game_match.tanks.get_node("Green_A_1") as Tank
 	var enemy := game_match.spawn_tank("Rust_Target_1", 0, Match.Team.RUST)
-	scout.global_position = Vector3(-100, 0, 40)
-	enemy.global_position = Vector3(-100, 0, -15)  # 55 m: inside cannon range
-	enemy.rotation.y = PI
+	scout.place(Vector3(-100, 0, 40), scout.rotation.y)
+	enemy.place(Vector3(-100, 0, -15), PI)  # 55 m: inside cannon range
 	var closest := INF
 	var seen_ticks := 0
 	for tick in SimClock.TICK_RATE * 10:

@@ -36,7 +36,7 @@ func test_every_tank_reacts_to_a_move_order_within_a_quarter_second() -> void:
 	var squad: Squad = setup[1]
 	var tanks := _members(game_match, squad)
 	for i in tanks.size():
-		tanks[i].global_position = Vector3(LANE_X + (i - 1) * 12.0, 0.0, 40.0 + absf(i - 1) * 12.0)
+		tanks[i].place(Vector3(LANE_X + (i - 1) * 12.0, 0.0, 40.0 + absf(i - 1) * 12.0), tanks[i].rotation.y)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "hold", "to": [LANE_X, 40.0], "facing": [0, -1]}), "",
 			"setup: hold here")
 	await wait_physics_frames(SimClock.TICK_RATE * 4)  # settle into the hold
@@ -71,11 +71,10 @@ func test_ordered_tanks_follow_the_order_instead_of_chasing_a_fight() -> void:
 	var squad: Squad = setup[1]
 	var tanks := _members(game_match, squad)
 	for i in tanks.size():
-		tanks[i].global_position = Vector3(LANE_X + i * 12.0, 0.0, 40.0)
+		tanks[i].place(Vector3(LANE_X + i * 12.0, 0.0, 40.0), tanks[i].rotation.y)
 	# A harmless enemy 45 m north, in sight and in range: a tempting fight.
 	var enemy := game_match.spawn_tank("Rust_Bait_1", 0, Match.Team.RUST)
-	enemy.global_position = Vector3(LANE_X + 6.0, 0.0, -5.0)
-	enemy.rotation.y = PI
+	enemy.place(Vector3(LANE_X + 6.0, 0.0, -5.0), PI)
 	enemy.max_health = 100000
 	enemy.health = 100000
 	# The player sent them in (assault), and they're fighting.

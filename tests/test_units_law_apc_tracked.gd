@@ -19,7 +19,7 @@ func test_the_law_apc_pivots_in_place_on_open_ground() -> void:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = add_to_tree(MATCH.instantiate())
 	var apc := game_match.spawn_tank("Apc", 0, Match.Team.GREEN, "law_ifv")
-	apc.global_position = Vector3(-100.0, 0.0, 30.0)
+	apc.place(Vector3(-100.0, 0.0, 30.0), apc.rotation.y)
 	await wait_physics_frames(3)
 	var start := apc.global_position
 	var start_forward := -apc.global_basis.z

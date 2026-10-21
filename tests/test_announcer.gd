@@ -60,8 +60,8 @@ func test_orders_and_first_contact_are_announced() -> void:
 	assert_eq(_said("Can't"), ["Can't: no squad Zulu on Green", Hud.WARNING], "a rejected one explains why")
 	var enemy := game_match.tanks.get_node("Rust_X_1") as Tank
 	var scout := game_match.tanks.get_node("Green_Alpha_1") as Tank
-	scout.global_position = Vector3(-100, 0, 30)
-	enemy.global_position = Vector3(-100, 0, -10)
+	scout.place(Vector3(-100, 0, 30), scout.rotation.y)
+	enemy.place(Vector3(-100, 0, -10), enemy.rotation.y)
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS * 3)
 	assert_eq(_said("Contact"), ["Contact: 1 enemy in sight", Hud.WARNING], "first sight of the enemy is called out")
 	var contacts := 0

@@ -119,9 +119,9 @@ func test_fire_pits_burn_whoever_stands_in_them() -> void:
 	var burning := game_match.spawn_tank("Green_In_1", 0, Match.Team.GREEN, "tank")
 	var enemy := game_match.spawn_tank("Rust_In_1", 0, Match.Team.RUST, "ifv")
 	var safe := game_match.spawn_tank("Green_Out_1", 0, Match.Team.GREEN, "tank")
-	burning.global_position = pit["position"] + Vector3(1.5, 0, 0)
-	enemy.global_position = pit["position"] + Vector3(-3.0, 0, 0)
-	safe.global_position = pit["position"] + Vector3(float(pit["radius"]) + 6.0, 0, 0)
+	burning.place(pit["position"] + Vector3(1.5, 0, 0), burning.rotation.y)
+	enemy.place(pit["position"] + Vector3(-3.0, 0, 0), enemy.rotation.y)
+	safe.place(pit["position"] + Vector3(float(pit["radius"]) + 6.0, 0, 0), safe.rotation.y)
 	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	var toughness := func(tank: Tank) -> float: return tank.health + tank.shield
 	assert_true(toughness.call(burning) < burning.max_health + burning.max_shield - 60.0,

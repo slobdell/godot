@@ -62,8 +62,7 @@ func test_a_fresh_match_reads_level_and_names_the_sides_by_faction() -> void:
 func test_the_snapshot_follows_one_zone_being_taken_and_scoring() -> void:
 	var game_match := _setup()
 	var green := game_match.spawn_tank("Green_1", 0, Match.Team.GREEN)
-	green.global_position = Vector3(5, 0, 5)
-	green.reset_physics_interpolation()
+	green.place(Vector3(5, 0, 5), green.rotation.y)
 	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * 0.5 * float(SimClock.TICK_RATE)))
 	var half := game_match.score_snapshot()
 	var zone: Dictionary = half["sides"][0]["zones"][0]
