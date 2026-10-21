@@ -193,6 +193,11 @@ func _run() -> void:
 				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
 				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
+				"shape_flips": int(squad.get("shape_flips", -1)), "terrain_flips": int(squad.get("terrain_flips", -1)),
+				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "reseats": int(squad.get("reseats", 0)),
+				"shapes": squad.get("shapes", []),
+				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
+				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
@@ -321,6 +326,41 @@ func _watch() -> void:
 				return element == null or elements_now == null or elements_now.of(n) == element)
 			squad["redealt"] = maxi(int(squad.get("redealt", 0)), alive.size() - mine.size())
 			_watch_place(squad, mine, element)
+			_watch_halt(squad, mine, element)
+
+
+## Round 37 (orders O1, R36.26): the halt-shape flicker. From the end of the place window on, within one task (the element's
+## task_seq unchanged): `shape_flips` counts changes of the element's formation, `terrain_flips` changes of
+## ElementSituation.terrain_at at the crews' centroid (main's read), `anchor_terrain_flips` at the element's anchor, and
+## `reseats` the element's reseat goal moves (Element.goal_moves) since then. `shapes` lists the shapes seen.
+func _watch_halt(squad: Dictionary, alive: Array, element: Element) -> void:
+	if element == null or alive.is_empty() or not squad.has("placed"):
+		return  # from the end of the place window on (as twitch_m): the deploy's travel -> halt change is not a flip
+	var centre_terrain := ElementSituation.terrain_at(_centre(alive))
+	var anchor_terrain := ElementSituation.terrain_at(element.anchor) if element.anchor is Vector3 else "-"
+	var reseats := int(element.goal_moves.get("reseat", 0))
+	if not squad.has("halt_seq") or int(squad["halt_seq"]) != element.task_seq:
+		squad["halt_seq"] = element.task_seq
+		squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain]
+		squad["reseat_from"] = reseats
+		if not squad.has("shape_flips"):
+			squad["shape_flips"] = 0
+			squad["terrain_flips"] = 0
+			squad["anchor_terrain_flips"] = 0
+			squad["shapes"] = [element.formation]
+		return
+	var last: Array = squad["halt_last"]
+	if element.formation != String(last[0]):
+		squad["shape_flips"] = int(squad["shape_flips"]) + 1
+		if not (squad["shapes"] as Array).has(element.formation):
+			(squad["shapes"] as Array).append(element.formation)
+	if centre_terrain != String(last[1]):
+		squad["terrain_flips"] = int(squad["terrain_flips"]) + 1
+	if anchor_terrain != String(last[2]):
+		squad["anchor_terrain_flips"] = int(squad["anchor_terrain_flips"]) + 1
+	squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain]
+	squad["reseats"] = int(squad.get("reseats", 0)) + reseats - int(squad["reseat_from"])
+	squad["reseat_from"] = reseats
 
 
 ## D2: the place move (from the deploy, or the arrival with the step off) and the twitch after it.
@@ -364,6 +404,32 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 			last_gap.erase(n)
 	squad["goal_gap"] = last_gap
 	squad["away"] = away
+	# Round 37 (orders O4, R36.24): `away_m` counts a goal that FLIPS as driving away (Bravo_2's seat <-> a point ~15 m off,
+	# every second: 52.5 m of "away" with the hull creeping 3-5 m). Two reads that do not: `away_held_m` sums a crew's
+	# gap growth only while its goal is unchanged (within GOAL_SAME_M of last tick's), and `away_seat_m` against a fixed
+	# seat, the spot it stood on at the end of the place window. The worst crew's metres each.
+	var last_goal: Dictionary = squad.get("goal_last", {})
+	var held: Dictionary = squad.get("away_held", {})
+	var seat_gap: Dictionary = squad.get("seat_gap", {})
+	var seat_away: Dictionary = squad.get("away_seat", {})
+	for n: String in alive:
+		var goal: Variant = _controls.orders.goal_position(n)
+		if goal is Vector3 and last_goal.get(n) is Vector3 and _flat_d(goal, last_goal[n]) <= GOAL_SAME_M \
+				and last_gap.has(n) and squad.has("gap_prev") and (squad["gap_prev"] as Dictionary).has(n):
+			var grew := float(last_gap[n]) - float(squad["gap_prev"][n])
+			if grew > 0.0:
+				held[n] = float(held.get(n, 0.0)) + grew
+		last_goal[n] = goal
+		if placed.has(n):
+			var from_seat := _flat_d(_tank(n).global_position, placed[n])
+			if seat_gap.has(n) and from_seat > float(seat_gap[n]):
+				seat_away[n] = float(seat_away.get(n, 0.0)) + from_seat - float(seat_gap[n])
+			seat_gap[n] = from_seat
+	squad["gap_prev"] = last_gap.duplicate()
+	squad["goal_last"] = last_goal
+	squad["away_held"] = held
+	squad["seat_gap"] = seat_gap
+	squad["away_seat"] = seat_away
 	for n: String in alive:
 		if placed.has(n):
 			var moved := _flat_d(_tank(n).global_position, placed[n])
@@ -388,6 +454,8 @@ const PASS_M := 4.0
 const DETOUR_M := 8.0
 ## A crew this far off its placed seat after the place window counts toward `twitch_seen` (ticks a brain option was shown).
 const TWITCH_SEEN_M := 3.0
+## O4 (round 37): a crew's order goal this close to last tick's is the same goal (`away_held_m`).
+const GOAL_SAME_M := 0.5
 
 
 func _deploy_legs(squad: Dictionary, alive: Array, element: Element) -> void:

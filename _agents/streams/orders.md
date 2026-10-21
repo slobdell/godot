@@ -66,3 +66,13 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Plan (worker, 2026-10-21; start: main 9d325e291, green by the launch check named in HANDOFF)
+1. O1: probe columns first (per squad after arrival: halt-shape flips, terrain flips of the crews' centroid, reseats),
+   base rate on builder0 (native, light lane) over the 12 street cells x seeds 3621-3626 (already seen); then the fix.
+   **Choice: read the terrain at the element's fixed ANCHOR once arrived** (not the moving centroid). Stateless (no new
+   Element/Movement field, no native twin needed: terrain_at has none), and in player terms the shape belongs to the spot
+   he parked it on. Latch and hysteresis kept as fallbacks if the anchor read still flips. Switch `--halt-terrain=centre`
+   = main's rule. Bar filed before any arm number; fresh seeds for the judged read.
+2. O2 parked ADVANCE (brains' engagement grant), 3. O3 squads whole, 4. O4 away_m v a fixed seat (tooling; may land with
+   O1's columns since both are probe reads), 5. O5 CPU seats off paths, 6. O6 cover seat stub, 7. stretch.

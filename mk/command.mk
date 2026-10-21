@@ -648,6 +648,7 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_PROBE_DIR)/rows.jsonl || true
 	@grep -L '^ORDERS_PROBE {' $(ORDERS_PROBE_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
+	@$(PYTHON) tests/control/halt_flips.py $(ORDERS_PROBE_DIR)/rows.jsonl > $(ORDERS_PROBE_DIR)/halt_flips.txt && grep '^TOTAL' $(ORDERS_PROBE_DIR)/halt_flips.txt || true
 
 ORDERS_PROBE_SHOT_SQUADS ?= 3 5
 ORDERS_PROBE_SHOT_ARMS ?= main: deploy_off:--deploy-step=off
