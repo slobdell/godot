@@ -86,8 +86,11 @@ func _flips(mode: String) -> Dictionary:
 func test_a_halt_read_at_its_centroid_flips_on_a_terrain_edge_and_one_read_at_its_anchor_does_not() -> void:
 	var centre := await _flips("centre")
 	var anchored := await _flips("anchor")
-	if centre.is_empty() or anchored.is_empty():
+	var latched := await _flips("latch")
+	if centre.is_empty() or anchored.is_empty() or latched.is_empty():
 		return
+	assert_eq(int(latched["flips"]), 0, "latched at arrival the halt keeps its shape (%s)" % latched)
+	assert_eq(String(latched["first"]), String(centre["first"]), "and it is the shape the centroid picks (%s)" % latched)
 	print("HALT_TERRAIN_LAB centre %s | anchor %s" % [centre, anchored])
 	assert_true(int(centre["flips"]) >= 2, "counter: read at the centroid the halt flips across the edge (%s)" % centre)
 	assert_eq(int(anchored["flips"]), 0, "read at the anchor the halt keeps its shape (%s)" % anchored)

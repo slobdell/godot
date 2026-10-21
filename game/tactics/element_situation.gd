@@ -38,7 +38,11 @@ const PIECE_GAP := 1.5
 ## flip re-seating the crews (locks/3/click s3664: Bravo_2 sent between its seat and a point ~15 m off, every second).
 ## "anchor": once arrived, terrain is read at the element's anchor, the fixed point the halt stands on (where he parked
 ## it), so the shape cannot flip while it stays there. Before arrival (travelling) both read the centroid.
-## `--halt-terrain=centre|anchor` (env HALT_TERRAIN).
+## "latch" (R37.17, after "anchor" failed its guards: read at the anchor, the deploy picked a different shape than the
+## centroid would, coil -> herringbone in 14 of 576 squads, and the longer shapes crowded the next squad): the
+## centroid's read as today, taken the first update the element stands arrived and kept while it stays arrived (the
+## element passes it back as `halt_terrain`), so the shape is the one main picks at that moment and cannot flip.
+## `--halt-terrain=centre|anchor|latch` (env HALT_TERRAIN).
 static var HALT_TERRAIN := _halt_terrain_flag()
 
 
@@ -48,6 +52,13 @@ static func _halt_terrain_flag() -> String:
 			return arg.trim_prefix("--halt-terrain=")
 	var env := OS.get_environment("HALT_TERRAIN")
 	return env if env != "" else "centre"
+
+
+## The terrain an element reads: under "latch" its latched read while arrived, else terrain_at(terrain_point).
+static func terrain_read(center: Vector3, state: Dictionary) -> String:
+	if HALT_TERRAIN == "latch" and bool(state.get("arrived", false)) and String(state.get("halt_terrain", "")) != "":
+		return String(state["halt_terrain"])
+	return terrain_at(terrain_point(center, state))
 
 
 ## The point an element's terrain is judged at: its anchor once arrived under HALT_TERRAIN "anchor", else its centre.
@@ -130,7 +141,7 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		return String(a["name"]) < String(b["name"]))
 
 	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader,
-			"members": members, "contacts": contacts, "known": known, "terrain": terrain_at(terrain_point(center, state)),
+			"members": members, "contacts": contacts, "known": known, "terrain": terrain_read(center, state),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
 			"arrived": bool(state.get("arrived", false)),

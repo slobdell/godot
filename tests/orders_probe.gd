@@ -417,8 +417,8 @@ func _watch_halt(squad: Dictionary, alive: Array, element: Element) -> void:
 	var anchor_terrain := ElementSituation.terrain_at(element.anchor) if element.anchor is Vector3 else "-"
 	# The terrain the element itself reads this arm (its halt's shape AND spacing follow it): `relays` counts updates where
 	# the shape or that terrain changed, the deciding count (a lanes <-> dense flip keeps the herringbone but re-spaces it).
-	var read_terrain := ElementSituation.terrain_at(ElementSituation.terrain_point(_centre(alive),
-			{"arrived": element.arrived, "anchor": element.anchor}))
+	var read_terrain := ElementSituation.terrain_read(_centre(alive),
+			{"arrived": element.arrived, "anchor": element.anchor, "halt_terrain": element._halt_terrain})
 	var reseats := int(element.goal_moves.get("reseat", 0))
 	if not squad.has("halt_seq") or int(squad["halt_seq"]) != element.task_seq:
 		squad["halt_seq"] = element.task_seq
