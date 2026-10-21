@@ -848,7 +848,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		if DEPLOY_COMPACT and String(plan["formation"]) == "herringbone":
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
 		if COVER_SEAT:
-			_cover_seats(plan, deploy)
+			_cover_seats(plan, deploy, situation)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1915,14 +1915,18 @@ const COVER_SHIFT_M := 4.0
 static var cover_seats_moved := 0
 
 
-static func _cover_seats(plan: Dictionary, deploy: Dictionary) -> void:
+static func _cover_seats(plan: Dictionary, deploy: Dictionary, situation: Dictionary = {}) -> void:
 	if not deploy.has("cover"):
 		var found := {}
 		var threat: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+		var units := {}
+		for member: Dictionary in situation.get("members", []):
+			units[String(member["name"])] = String(member.get("unit", ""))
 		for unit_name: String in plan["slots"]:
 			var seat: Variant = plan["slots"][unit_name]
 			if seat is Vector3:
-				var moved: Variant = low_cover_seat(seat, threat, COVER_SHIFT_M)
+				var hull: Variant = Units.stat(String(units.get(unit_name, "tank")), "hull_size")
+				var moved: Variant = low_cover_seat(situation.get("cover_map"), seat, threat, COVER_SHIFT_M, hull)
 				if moved is Vector3:
 					found[unit_name] = moved
 					cover_seats_moved += 1
@@ -1933,12 +1937,14 @@ static func _cover_seats(plan: Dictionary, deploy: Dictionary) -> void:
 			plan["slots"][unit_name] = cover[unit_name]
 
 
-## C37.4's seam: cover's query when this build has it, else null.
-static func low_cover_seat(near: Vector3, threat_dir: Vector3, max_shift_m: float) -> Variant:
+## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` when this build
+## has it (cover 616f6ec3b's signature), else null. No map (a test's bare situation) or no hull size: null. `node` is
+## left null (the plan is pure: no tank to path from); cover's query then skips its navmesh reach test (merge note).
+static func low_cover_seat(map: Variant, near: Vector3, threat_dir: Vector3, max_shift_m: float, hull: Variant = null) -> Variant:
 	var query := Callable(TacticalQuery, "low_cover_seat")
-	if not query.is_valid():
+	if not query.is_valid() or map == null or hull == null:
 		return null
-	return query.call(near, threat_dir, max_shift_m)
+	return query.call(map, near, threat_dir, max_shift_m, hull, null)
 
 
 ## The shape a deploy stands in: the task's `halt_shape` when the order priced one (D3: the pack laid its seats in it), else

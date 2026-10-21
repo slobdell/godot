@@ -6,7 +6,7 @@ extends TestCase
 func test_the_seam_answers_null_until_covers_query_exists() -> void:
 	if Callable(TacticalQuery, "low_cover_seat").is_valid():
 		return  # cover's API has landed: its own tests cover the answer
-	assert_eq(ElementPlan.low_cover_seat(Vector3(1, 0, 2), Vector3.FORWARD, 4.0), null, "no query yet: no seat moves")
+	assert_eq(ElementPlan.low_cover_seat(null, Vector3(1, 0, 2), Vector3.FORWARD, 4.0, Vector3(3, 2, 6)), null, "no query yet: no seat moves")
 
 
 func test_cover_seats_are_asked_once_and_then_stand() -> void:
