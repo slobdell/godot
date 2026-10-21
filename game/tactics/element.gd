@@ -530,7 +530,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	if commanded.is_empty():
 		return _note_changes(before)
 	var situation := ElementSituation.build(game_match, team, commanded, leader,
-			{"heading": heading, "arrived": arrived, "known": _known})
+			{"heading": heading, "arrived": arrived, "known": _known, "anchor": anchor})
 	_known = situation["known"]
 	situation["corridor_m"] = _corridor(game_match, situation)
 	_advance_transit(game_match, situation)

@@ -32,6 +32,29 @@ const LANES_FEATURES := 2
 const DENSE_FEATURES := 5
 ## Boxes this close (meters) are one piece of cover when terrain is judged.
 const PIECE_GAP := 1.5
+## Round 37 (orders O1, R36.26): WHERE an arrived element judges its terrain. "centre" (main's rule until O1) counts cover
+## around the crews' centroid; the halt shape (herringbone in lanes, coil in the open) and its spacing follow, so a crew's
+## own 0.2-0.4 m creep moved the centroid across a feature's 45 m line and the halt flipped herringbone <-> coil, every
+## flip re-seating the crews (locks/3/click s3664: Bravo_2 sent between its seat and a point ~15 m off, every second).
+## "anchor": once arrived, terrain is read at the element's anchor, the fixed point the halt stands on (where he parked
+## it), so the shape cannot flip while it stays there. Before arrival (travelling) both read the centroid.
+## `--halt-terrain=centre|anchor` (env HALT_TERRAIN).
+static var HALT_TERRAIN := _halt_terrain_flag()
+
+
+static func _halt_terrain_flag() -> String:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--halt-terrain="):
+			return arg.trim_prefix("--halt-terrain=")
+	var env := OS.get_environment("HALT_TERRAIN")
+	return env if env != "" else "centre"
+
+
+## The point an element's terrain is judged at: its anchor once arrived under HALT_TERRAIN "anchor", else its centre.
+static func terrain_point(center: Vector3, state: Dictionary) -> Vector3:
+	if HALT_TERRAIN == "anchor" and bool(state.get("arrived", false)) and state.get("anchor") is Vector3:
+		return state["anchor"]
+	return center
 ## Fallback suppression when combat's L2 field isn't in this build yet: a unit hit this recently reads as
 ## suppressed, fading to 0 over FIRE_TICKS.
 const HIT_SUPPRESSION := 0.6
@@ -107,7 +130,7 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		return String(a["name"]) < String(b["name"]))
 
 	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader,
-			"members": members, "contacts": contacts, "known": known, "terrain": terrain_at(center),
+			"members": members, "contacts": contacts, "known": known, "terrain": terrain_at(terrain_point(center, state)),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
 			"arrived": bool(state.get("arrived", false)),

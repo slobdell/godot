@@ -194,7 +194,7 @@ func _run() -> void:
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
 				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"shape_flips": int(squad.get("shape_flips", -1)), "terrain_flips": int(squad.get("terrain_flips", -1)),
-				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "reseats": int(squad.get("reseats", 0)),
+				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)),
 				"shapes": squad.get("shapes", []),
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
@@ -338,18 +338,25 @@ func _watch_halt(squad: Dictionary, alive: Array, element: Element) -> void:
 		return  # from the end of the place window on (as twitch_m): the deploy's travel -> halt change is not a flip
 	var centre_terrain := ElementSituation.terrain_at(_centre(alive))
 	var anchor_terrain := ElementSituation.terrain_at(element.anchor) if element.anchor is Vector3 else "-"
+	# The terrain the element itself reads this arm (its halt's shape AND spacing follow it): `relays` counts updates where
+	# the shape or that terrain changed, the deciding count (a lanes <-> dense flip keeps the herringbone but re-spaces it).
+	var read_terrain := ElementSituation.terrain_at(ElementSituation.terrain_point(_centre(alive),
+			{"arrived": element.arrived, "anchor": element.anchor}))
 	var reseats := int(element.goal_moves.get("reseat", 0))
 	if not squad.has("halt_seq") or int(squad["halt_seq"]) != element.task_seq:
 		squad["halt_seq"] = element.task_seq
-		squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain]
+		squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain, read_terrain]
 		squad["reseat_from"] = reseats
 		if not squad.has("shape_flips"):
 			squad["shape_flips"] = 0
 			squad["terrain_flips"] = 0
 			squad["anchor_terrain_flips"] = 0
+			squad["relays"] = 0
 			squad["shapes"] = [element.formation]
 		return
 	var last: Array = squad["halt_last"]
+	if element.formation != String(last[0]) or read_terrain != String(last[3]):
+		squad["relays"] = int(squad["relays"]) + 1
 	if element.formation != String(last[0]):
 		squad["shape_flips"] = int(squad["shape_flips"]) + 1
 		if not (squad["shapes"] as Array).has(element.formation):
@@ -358,7 +365,7 @@ func _watch_halt(squad: Dictionary, alive: Array, element: Element) -> void:
 		squad["terrain_flips"] = int(squad["terrain_flips"]) + 1
 	if anchor_terrain != String(last[2]):
 		squad["anchor_terrain_flips"] = int(squad["anchor_terrain_flips"]) + 1
-	squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain]
+	squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain, read_terrain]
 	squad["reseats"] = int(squad.get("reseats", 0)) + reseats - int(squad["reseat_from"])
 	squad["reseat_from"] = reseats
 
