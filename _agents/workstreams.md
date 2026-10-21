@@ -279,6 +279,16 @@ _Filed here before any number._
   seat), so R36.19's sizing assumption was wrong: the orchestrator's lesson, check the restricting property's base rate before
   relying on it. Both switches stay DEFAULT_OFF; no re-read on these seeds. Next: trace the Locks rises (G or H) from the rows and a
   one-cell repro; the fight step is stopped (a failed bar's guards don't decide anything).
+- **R36.24 (2026-10-21 ~00:45 PDT) T10's Locks "rise" is GOAL FLICKER, not driving; the measure is flawed; a real bug found.** Traffic
+  (stream 7f9760329, `references/round36/traffic/t10_locks_trace.md`; builder2 native 0ca19d829, locks/3/click s3652 / s3664,
+  `--probe-trace=2`, four arms, each reproducing the series row): G causes it, H inert. Real driving away barely moved (worst crew
+  9.2 -> 9.8 m, 13.7 -> 6.2 m); the rise is GOAL FLIPS: after returning from its own ADVANCE, Bravo_2's current order alternates EVERY
+  SECOND between its seat and a point ~15 m off near its first move slot (s3652 0 -> 6 flips, 52.5 m of "away"). In player terms: a
+  crew back from a scrap wavers between two targets and creeps 3–5 m. **orders' away_m measures against the CURRENT goal, so it
+  counts flicker as driving away** (and T10's one big win, terminus/5/click s3645 sq4 479 -> 6 m, is untraced and may be flicker
+  too). **Round 37:** (1) away_m against a fixed seat, or only while the goal is unchanged; (2) find who writes the flickering second
+  order (`--order-trace` on s3664 base; brains/orders): a looks-dumb bug in its own right; (3) G, if retried, gets a "not farther
+  than standing" test and a base-rate check before sizing. Traffic DONE for the round.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
