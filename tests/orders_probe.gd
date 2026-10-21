@@ -192,7 +192,7 @@ func _run() -> void:
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
 				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
-				"twitch_seen": squad.get("twitch_seen", {}),
+				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)),
 				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
@@ -313,7 +313,14 @@ func _watch() -> void:
 			for n: String in alive:
 				if seats.has(n):
 					squad["shuffle"] = maxf(float(squad["shuffle"]), _flat_d(_tank(n).global_position, seats[n]))
-			_watch_place(squad, alive, element)
+			# Round 36 (orders, R36.6 trace): a crew untangle dealt to ANOTHER squad's element drives with that squad, so the
+			# place move and twitch are read over the crews of this squad's own element only (Terminus 5 route s3624:
+			# Delta_2, element Echo from the order on, read as a 69.8 m "twitch"); `redealt` counts the others.
+			var elements_now := Elements.of_match(_match)
+			var mine: Array = alive.filter(func(n: String) -> bool:
+				return element == null or elements_now == null or elements_now.of(n) == element)
+			squad["redealt"] = maxi(int(squad.get("redealt", 0)), alive.size() - mine.size())
+			_watch_place(squad, mine, element)
 
 
 ## D2: the place move (from the deploy, or the arrival with the step off) and the twitch after it.

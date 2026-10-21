@@ -34,6 +34,8 @@ def main(path: str) -> None:
     twitchy = [r for r in rows if r["twitch_m"] >= TWITCH_M]
     neither = [r for r in twitchy if not (r["deploy_leg_m"] - r["leg_minmax_m"] >= SEAT_M)
                and not (r["leg_minmax_m"] - r["leg_compact_m"] >= DEPTH_M)]
+    print(f"squads with a crew re-dealt to another squad's element (untangle): {sum(1 for r in rows if r.get('redealt', 0) > 0)}"
+          f" of {len(rows)}; crews {sum(r.get('redealt', 0) for r in rows)}")
     print(f"deployed squads {len(rows)}, twitchy (>= {TWITCH_M:.0f} m) {len(twitchy)}, of them neither seating nor depth {len(neither)}")
     for label, sel in (("all twitchy", twitchy), ("neither", neither)):
         c = collections.Counter(kind(r["twitch_seen"]) for r in sel)
