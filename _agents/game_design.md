@@ -4252,5 +4252,19 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
     visual feedback for the player" (gangs' Resupply Tanker, Law's Sonic Emitter). The work is their in-game visual feedback only.
 11. **The balance guard:** a blob frontal assault should lose, AND a pure turtle must not always win (the attacker keeps smoke,
     artillery, scouting, flanking as tools).
+    **ANSWERED 2026-10-21: smoke DEFERRED.** "ok I agree what we should defer this. The most obvious problem is that I don't know how
+    we'd employ smoke unless we deliberately added a button for the user for this, which adds UX overload and complexity". No smoke
+    and no new player button. (If smoke ever returns, it must not cost a button: e.g. crews pop it on their own when crossing open
+    ground under fire; that is a future idea, not agreed.) The guard itself stands as the measure (no UX): every rule change is
+    tuned against TWO scoreboard lines, blob v tactics (the blob loses most of the time) and pure turtle v tactics (the turtle loses
+    most of the time too); attacker tools under his answers: artillery from above (ignores hull-down), flanks (9a), suppression both
+    ways (8), bounding (1), zone scoring (a turtle bleeds points).
+
+**Summary of his answers (2026-10-21), the round-37+ rule package against the slug-fest:** (1) a crew's own motion sets its sight,
+~85 % driving / ~110 % stopped ~2 s; (2) moving fire ~4x spread at full speed; (3) hull-down behind REAL low cover (no dig-in; maps'
+low cover re-shaped, not added; short move to cover only when parking); (8) suppression slows up to ~40 %, never stops, shown;
+(9a) flank/rear hits made visible and audible; support trucks' visual feedback (Resupply Tanker, Sonic Emitter). Later: (5)
+pre-aimed artillery zone (talk again first), (4) unseen-fire suppression (only if 1-3 fall short). No: (6) obstacles, (7) supply,
+(10) unit swaps, smoke. Measure: the two guard lines in (11).
 
 Already decided (not open): the support trucks get visible feedback; the measure is a blob-v-tactics scoreboard line.

@@ -26,7 +26,7 @@ orchestrator runs `make worktree-remove STREAM=<s>` for each, `ssh builder0 rm -
 `stream/<s>` -> `round36/<s>` (traffic's T10 code stays only there, unmerged by design). builder2's `~/tank_squad` was not
 cleaned (the box was stopped): clean it on its next start. The judging table re-render (close step 5b) was not done this round.
 
-**Next: before splitting round 37, walk him through the 11 OPEN QUESTIONS** (game_design.md *OPEN QUESTIONS for him before round
+**Next: split round 37. The 11 OPEN QUESTIONS are answered** (game_design.md *Summary of his answers*, see *OPEN QUESTIONS for him before round
 37*), one at a time, in player terms. Round-37 candidates are listed below under round 36.
 
 ## 🚀 ROUND 36 IS PREPARED (2026-10-20 afternoon)
@@ -79,8 +79,8 @@ his "stay put" answer; STOPPED SHORT -> round 37; re-dealt crews -> his "own squ
 merge candidate (merge its tooling at the close if wanted). T8 does not show on the scoreboard (its gain has no line); native adds a
 "killed while held" line.
 
-**BEFORE ROUND 37: raise the 11 OPEN QUESTIONS with him (game_design.md *OPEN QUESTIONS for him before round 37*), one at a
-time, in player terms. He asked to come back to them before the next round.**
+**The 11 slug-fest questions are ANSWERED (2026-10-21; game_design.md, *Summary of his answers*): round 37 can be split from them.
+
 **His round-37+ direction (game_design.md *Round 36: his direction against the slug-fest*):** the support trucks get visible
 feedback; rule levers so a blob frontal assault loses (area effects, defender edge, flanks, information); a blob-v-tactics
 scoreboard line as the measure.
