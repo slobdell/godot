@@ -190,8 +190,10 @@ hull-down crew is fully exposed to those by design.
 - **K5:** waiting on his two answers (the orchestrator is asking). On (a): apply the draft's swaps in `tools/make_arenas.py`
   (granted R37.7) + regenerate, before/after frames at his pose, sim-baseline attribution with the switch OFF (maps move: the
   orchestrator adopts).
-- **K4:** CP37.1's base is on main (R37.14). Waiting on its hand-over (stream/native merged here, guard.py --pair, the two asks
-  below); then the null reading on today's maps (OFF v 9d325e291 = 0 flips, then ON v OFF), then the judged series on the
+- **K4:** CP37.1 + native's guard tooling + N2 twins + rules' OFF code merged here from main a10846307 (02535d3aa). NEXT: the
+  OFF gate (`GUARD_WORKTREE=../godot-cover-guard tools/scoreboard/guard.sh <tree>` on builder2, then `guard.py --pair
+  references/scoreboard/guards/9d325e291.fights.jsonl <raw>`, 0 flips expected) once a10846307's builder2 check is green and
+  builder2's series queue is free (orchestrator, R37.16). The arm still waits on his K5 answer; then the null reading on today's maps (OFF v 9d325e291 = 0 flips, then ON v OFF), then the judged series on the
   re-shaped maps per the paired Bar K above.
 - **Stretch (CPU defends from low-cover seats):** needs a grant in the brains paths (`cpu_commander.gd` / tank_brain); requested.
 
