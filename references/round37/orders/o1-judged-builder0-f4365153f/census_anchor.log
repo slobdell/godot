@@ -1,0 +1,60 @@
+tools/remote.sh native traffic-census TRAFFIC_CENSUS_SEEDS=3701\ 3702\ 3703\ 3704\ 3705\ 3706 TRAFFIC_JOBS=4 TRAFFIC_FLAGS=--halt-terrain=anchor
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native traffic-census TRAFFIC_CENSUS_SEEDS=3701 3702 3703 3704 3705 3706 TRAFFIC_JOBS=4 TRAFFIC_FLAGS=--halt-terrain=anchor on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> traffic-census on builder0 | commit f4365153f | flags '--halt-terrain=anchor' | load 27.60 19.29 16.41
+  ran        census foundry s3701
+  ran        census sumps s3702
+  ran        census sumps s3701
+  ran        census parade s3701
+  ran        census foundry s3702
+  ran        census sumps s3703
+  ran        census parade s3703
+  ran        census parade s3702
+  ran        census foundry s3703
+  ran        census sumps s3704
+  ran        census foundry s3704
+  ran        census sumps s3705
+  ran        census parade s3704
+  ran        census foundry s3705
+  ran        census parade s3705
+  ran        census parade s3706
+  ran        census foundry s3706
+  ran        census sumps s3706
+TRAFFIC_CENSUS_TABLE build/traffic-census.jsonl (18 runs, 0 missing)
+case             runs  underway    stuck   friend    enemy   static f_share contact  fast  kturn  kt_fr
+ALL                18     19375     1767      447       26     1295   0.253    1933  1092    521     70
+foundry@2000        6      4880      540       82        2      456   0.153     409   204     70     14
+parade@2000         6      8213      618      177       15      427   0.286     929   548     96     13
+sumps@1000          6      6282      609      187       10      412   0.308     595   340    355     43
+set-up hulls (T1c-b): repacks (all / while giving way / while giving way from the fire post), asks refused on the post, artillery shots:
+  ALL              repacks   74 /   4 /   0  setup_refusals   25  art_shots   441
+  foundry@2000     repacks   66 /   0 /   0  setup_refusals    5  art_shots   174
+  parade@2000      repacks    3 /   1 /   0  setup_refusals    8  art_shots   130
+  sumps@1000       repacks    5 /   3 /   0  setup_refusals   12  art_shots   137
+T1c-b by side (green / rust): repacks while firing, refusals on the post, refused askers that went round / never got past in 20 s; still pending at the end:
+  ALL              rwf 0 ref 12 round 7 never 0  |  rwf 0 ref 13 round 5 never 1  pending 0
+  foundry@2000     rwf 0 ref 5 round 3 never 0  |  rwf 0 ref 0 round 0 never 0  pending 0
+  parade@2000      rwf 0 ref 2 round 1 never 0  |  rwf 0 ref 6 round 3 never 0  pending 0
+  sumps@1000       rwf 0 ref 5 round 3 never 0  |  rwf 0 ref 7 round 2 never 1  pending 0
+TRAFFIC_CENSUS_SUMMARY {"ALL": {"art_shots": 441, "by_side": [{"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 12, "went_round": 7}, {"never_past": 1, "repacks_while_firing": 0, "setup_refusals": 13, "went_round": 5}], "contacts_friend": 1933, "contacts_friend_fast": 1092, "friend_share": 0.253, "go_round_pending": 0, "kturns": 521, "kturns_friend": 70, "repacks": 74, "repacks_while_firing": 0, "repacks_yield": 4, "runs": 18, "setup_refusals": 25, "stuck_enemy_s": 25.9, "stuck_friend_s": 446.6, "stuck_s": 1767.1, "stuck_static_s": 1294.8, "under_way_s": 19374.6}, "foundry@2000": {"art_shots": 174, "by_side": [{"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 5, "went_round": 3}, {"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 0, "went_round": 0}], "contacts_friend": 409, "contacts_friend_fast": 204, "friend_share": 0.153, "go_round_pending": 0, "kturns": 70, "kturns_friend": 14, "repacks": 66, "repacks_while_firing": 0, "repacks_yield": 0, "runs": 6, "setup_refusals": 5, "stuck_enemy_s": 1.6, "stuck_friend_s": 82.5, "stuck_s": 539.5, "stuck_static_s": 455.5, "under_way_s": 4879.6}, "parade@2000": {"art_shots": 130, "by_side": [{"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 2, "went_round": 1}, {"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 6, "went_round": 3}], "contacts_friend": 929, "contacts_friend_fast": 548, "friend_share": 0.286, "go_round_pending": 0, "kturns": 96, "kturns_friend": 13, "repacks": 3, "repacks_while_firing": 0, "repacks_yield": 1, "runs": 6, "setup_refusals": 8, "stuck_enemy_s": 14.799999999999999, "stuck_friend_s": 176.70000000000002, "stuck_s": 618.4, "stuck_static_s": 426.9, "under_way_s": 8213.3}, "sumps@1000": {"art_shots": 137, "by_side": [{"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 5, "went_round": 3}, {"never_past": 1, "repacks_while_firing": 0, "setup_refusals": 7, "went_round": 2}], "contacts_friend": 595, "contacts_friend_fast": 340, "friend_share": 0.308, "go_round_pending": 0, "kturns": 355, "kturns_friend": 43, "repacks": 5, "repacks_while_firing": 0, "repacks_yield": 3, "runs": 6, "setup_refusals": 12, "stuck_enemy_s": 9.5, "stuck_friend_s": 187.4, "stuck_s": 609.2, "stuck_static_s": 412.40000000000003, "under_way_s": 6281.7}}
+>> remote: copy-back verified, 330 files, sha256
+>> remote: make native traffic-census TRAFFIC_CENSUS_SEEDS=3701 3702 3703 3704 3705 3706 TRAFFIC_JOBS=4 TRAFFIC_FLAGS=--halt-terrain=anchor exited 0 (build/ copied back)

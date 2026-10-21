@@ -1,0 +1,128 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          anchor    |   30.6 /   18.6   |   10   0 |     21.9 |               2.6 |            32.2 | 1.51 | 53.1
+crossing 3 click          main      |   30.6 /   18.6   |    9   0 |     21.9 |               2.6 |            32.2 | 1.44 | 53.1
+crossing 3 route          anchor    |   30.6 /   23.8   |    2   0 |     26.8 |               2.7 |            37.6 | 1.63 | 53.1
+crossing 3 route          main      |   30.6 /   23.8   |    2   0 |     26.8 |               2.7 |            56.1 | 1.69 | 53.1
+crossing 5 click          anchor    |   72.4 /   25.6   |   12   0 |     53.0 |               2.5 |            96.9 | 2.60 | 19.6
+crossing 5 click          main      |   72.4 /   25.6   |   11   0 |     53.0 |               2.5 |            96.9 | 2.60 | 19.6
+crossing 5 route          anchor    |   72.4 /   29.2   |    3   0 |     63.5 |               3.4 |            68.5 | 2.35 | 19.6
+crossing 5 route          main      |   72.4 /   29.2   |    4   0 |        - |               3.4 |            59.5 | 2.27 | 19.6
+locks 3 click             anchor    |   45.8 /   34.9   |   13   1 |     40.5 |               3.0 |            67.3 | 2.21 | 20.8
+locks 3 click             main      |   45.8 /   34.9   |   13   1 |     52.8 |               3.0 |            67.3 | 4.11 | 20.8
+locks 3 route             anchor    |   45.8 /   34.9   |    5   0 |        - |               3.1 |            40.8 | 2.05 | 20.8
+locks 3 route             main      |   45.8 /   34.9   |    5   0 |        - |               3.1 |            42.0 | 2.06 | 20.8
+locks 5 click             anchor    |   54.8 /   41.9   |    1   0 |     37.5 |               4.6 |            60.9 | 2.11 | 15.8
+locks 5 click             main      |   54.8 /   41.9   |    3   0 |     32.5 |               5.8 |            57.4 | 2.09 | 15.8
+locks 5 route             anchor    |   54.8 /   41.9   |    0   0 |     58.6 |               3.5 |            58.2 | 3.07 | 15.8
+locks 5 route             main      |   54.8 /   41.9   |    0   0 |     58.6 |               3.5 |            58.2 | 3.20 | 15.8
+terminus 3 click          anchor    |   36.9 /   34.4   |    0   0 |     29.9 |               3.7 |            52.9 | 2.30 | 17.2
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     29.9 |               3.9 |            52.9 | 2.30 | 17.2
+terminus 3 route          anchor    |   36.9 /   34.4   |    0   0 |     21.1 |               3.9 |            37.4 | 2.34 | 17.2
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     21.1 |               3.9 |            37.4 | 2.37 | 17.2
+terminus 5 click          anchor    |   62.8 /   39.4   |    0   0 |     34.7 |               3.7 |            53.9 | 3.20 | 4.9
+terminus 5 click          main      |   62.8 /   39.4   |    0   0 |     33.8 |               4.1 |            59.5 | 5.00 | 4.9
+terminus 5 route          anchor    |   62.8 /   39.4   |    0   0 |        - |               2.8 |            77.8 | 9.46 | 4.9
+terminus 5 route          main      |   62.8 /   39.4   |    0   0 |        - |               2.8 |            67.6 | 9.88 | 4.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          anchor    |          28.1 |          23.5 |           21.9 |               3.4 |          40.8
+crossing 3 click          main      |          28.1 |          23.5 |           21.9 |               3.4 |          40.8
+crossing 3 route          anchor    |          36.8 |          25.5 |           15.4 |               3.7 |          40.8
+crossing 3 route          main      |          36.8 |          21.2 |           17.8 |               3.6 |          40.8
+crossing 5 click          anchor    |          63.0 |          33.2 |           39.0 |               3.3 |         107.5
+crossing 5 click          main      |          63.0 |          33.2 |           39.0 |               3.6 |         107.5
+crossing 5 route          anchor    |          73.5 |          29.6 |           30.8 |               3.1 |          92.5
+crossing 5 route          main      |             - |          31.6 |              - |               2.8 |          92.5
+locks 3 click             anchor    |          50.5 |          28.4 |           40.0 |               6.1 |          57.0
+locks 3 click             main      |          62.8 |          35.2 |           40.0 |               5.9 |          56.8
+locks 3 route             anchor    |             - |          27.8 |              - |               4.2 |          57.1
+locks 3 route             main      |             - |          29.7 |              - |               5.5 |          58.0
+locks 5 click             anchor    |             - |          40.4 |              - |               7.7 |          79.6
+locks 5 click             main      |          42.5 |          40.4 |           28.6 |               6.5 |          79.6
+locks 5 route             anchor    |          68.6 |          31.0 |           40.8 |               5.6 |          79.1
+locks 5 route             main      |          68.6 |          31.0 |           40.8 |               5.8 |          79.1
+terminus 3 click          anchor    |          33.7 |          35.6 |           40.2 |               8.1 |          63.2
+terminus 3 click          main      |          34.4 |          35.6 |           40.2 |               8.1 |          63.2
+terminus 3 route          anchor    |          28.7 |          28.5 |            8.8 |               6.6 |          56.0
+terminus 3 route          main      |          28.8 |          28.5 |            8.8 |               6.6 |          56.0
+terminus 5 click          anchor    |          38.2 |          38.3 |           35.5 |               3.7 |          85.2
+terminus 5 click          main      |          43.8 |          38.3 |           38.8 |               6.4 |          85.1
+terminus 5 route          anchor    |             - |          42.9 |              - |               3.4 |          86.5
+terminus 5 route          main      |             - |          45.5 |              - |               3.4 |          87.0
+
+MEDIANS over seeds [3701, 3702, 3703, 3704, 3705, 3706, 3707, 3708, 3709, 3710, 3711, 3712] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          anchor      | 12 |         16.3 |     0 |          24.7 |         13.2 |          35.3 |               3.4 |   10   0 | 1.38
+crossing 3 click          main        | 12 |         16.3 |     0 |          23.9 |         12.9 |          35.3 |               3.4 |    9   0 | 1.34
+crossing 3 route          anchor      | 12 |         18.2 |     0 |          25.0 |          5.5 |          37.0 |               3.7 |    2   0 | 1.36
+crossing 3 route          main        | 12 |         18.4 |     0 |          26.6 |          8.6 |          37.2 |               3.6 |    2   0 | 1.37
+crossing 5 click          anchor      | 12 |         33.5 |     0 |          80.0 |         22.2 |          87.8 |               3.3 |   12   0 | 1.81
+crossing 5 click          main        | 12 |         33.4 |     0 |          80.0 |         21.4 |          87.8 |               3.6 |   11   0 | 1.81
+crossing 5 route          anchor      | 12 |         39.2 |     0 |          40.0 |         17.8 |          83.2 |               3.1 |    3   0 | 1.94
+crossing 5 route          main        | 12 |         39.5 |     1 |          40.4 |         19.2 |          84.0 |               2.8 |    4   0 | 1.93
+locks 3 click             anchor      | 12 |         27.1 |     0 |          32.2 |         16.1 |          49.8 |               6.1 |   13   1 | 1.57
+locks 3 click             main        | 12 |         27.1 |     0 |          34.5 |         16.4 |          50.0 |               5.9 |   13   1 | 1.64
+locks 3 route             anchor      | 12 |         27.0 |     1 |          34.2 |         15.0 |          49.2 |               4.2 |    5   0 | 1.48
+locks 3 route             main        | 12 |         27.0 |     1 |          34.8 |         15.0 |          49.2 |               5.5 |    5   0 | 1.48
+locks 5 click             anchor      | 12 |         13.7 |     0 |          49.8 |         15.8 |          77.2 |               7.7 |    1   0 | 1.62
+locks 5 click             main        | 12 |         13.7 |     0 |          49.8 |         14.2 |          77.2 |               6.5 |    3   0 | 1.51
+locks 5 route             anchor      | 12 |         19.6 |     0 |          36.0 |         10.6 |          73.3 |               5.6 |    0   0 | 1.34
+locks 5 route             main        | 12 |         17.4 |     0 |          38.1 |          3.9 |          73.3 |               5.8 |    0   0 | 1.32
+terminus 3 click          anchor      | 12 |         22.1 |     0 |          42.2 |          9.4 |          55.3 |               8.1 |    0   0 | 1.43
+terminus 3 click          main        | 12 |         22.1 |     0 |          42.2 |          9.4 |          55.3 |               8.1 |    0   0 | 1.41
+terminus 3 route          anchor      | 12 |         19.0 |     0 |          27.9 |          0.0 |          53.5 |               6.6 |    0   0 | 1.17
+terminus 3 route          main        | 12 |         19.0 |     0 |          27.7 |          0.0 |          53.5 |               6.6 |    0   0 | 1.19
+terminus 5 click          anchor      | 12 |         11.1 |     0 |          42.6 |         17.0 |          74.5 |               3.7 |    0   0 | 2.40
+terminus 5 click          main        | 12 |         11.1 |     0 |          44.2 |         19.8 |          75.2 |               6.4 |    0   0 | 2.59
+terminus 5 route          anchor      | 12 |         43.8 |     1 |          46.9 |         23.2 |          71.0 |               3.4 |    0   0 | 5.98
+terminus 5 route          main        | 12 |         49.3 |     2 |          45.7 |         25.6 |          70.8 |               3.4 |    0   0 | 5.85
+
+EQUALITY click cells: 24 identical across arms, 48 differ
+  DIFFER crossing 3 click seed 3704
+  DIFFER crossing 3 click seed 3705
+  DIFFER crossing 3 click seed 3707
+  DIFFER crossing 3 click seed 3708
+  DIFFER crossing 3 click seed 3710
+  DIFFER crossing 5 click seed 3702
+  DIFFER crossing 5 click seed 3703
+  DIFFER crossing 5 click seed 3704
+  DIFFER crossing 5 click seed 3705
+  DIFFER crossing 5 click seed 3707
+  DIFFER crossing 5 click seed 3708
+  DIFFER crossing 5 click seed 3711
+  DIFFER locks 3 click seed 3701
+  DIFFER locks 3 click seed 3703
+  DIFFER locks 3 click seed 3704
+  DIFFER locks 3 click seed 3706
+  DIFFER locks 3 click seed 3710
+  DIFFER locks 3 click seed 3711
+  DIFFER locks 5 click seed 3701
+  DIFFER locks 5 click seed 3702
+  DIFFER locks 5 click seed 3703
+  DIFFER locks 5 click seed 3704
+  DIFFER locks 5 click seed 3705
+  DIFFER locks 5 click seed 3706
+  DIFFER locks 5 click seed 3707
+  DIFFER locks 5 click seed 3709
+  DIFFER locks 5 click seed 3710
+  DIFFER locks 5 click seed 3711
+  DIFFER locks 5 click seed 3712
+  DIFFER terminus 3 click seed 3701
+  DIFFER terminus 3 click seed 3704
+  DIFFER terminus 3 click seed 3705
+  DIFFER terminus 3 click seed 3706
+  DIFFER terminus 3 click seed 3707
+  DIFFER terminus 3 click seed 3709
+  DIFFER terminus 3 click seed 3712
+  DIFFER terminus 5 click seed 3701
+  DIFFER terminus 5 click seed 3702
+  DIFFER terminus 5 click seed 3703
+  DIFFER terminus 5 click seed 3704
+  DIFFER terminus 5 click seed 3705
+  DIFFER terminus 5 click seed 3706
+  DIFFER terminus 5 click seed 3707
+  DIFFER terminus 5 click seed 3708
+  DIFFER terminus 5 click seed 3709
+  DIFFER terminus 5 click seed 3710
+  DIFFER terminus 5 click seed 3711
+  DIFFER terminus 5 click seed 3712
