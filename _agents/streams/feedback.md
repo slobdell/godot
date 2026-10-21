@@ -54,13 +54,17 @@ F1's picks (the orchestrator relays). **The directions page: https://claude.ai/a
 a459ed338 tree + capture fixes, Terminus, 1854x1011). Picks land in its db: `picks/<hit|pinned|repair|cone>` =
 {letters, words, at}; sound and line approvals in `sounds/<flank_hit|rear_hit|repair_loop|caller.hit.flank.0N>` =
 {approved, words, at}. My recommendations: hit a, pinned a, repair a, cone b. Lead gate 1: nothing generated with
-ElevenLabs until a `sounds/*` approval.
+ElevenLabs until a `sounds/*` approval. Until his pick no look draws without the flag.
 
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **2026-10-21, F1 page up, picks pending.**
+- **Nothing new shows by default** (d22d6867c, orchestrator's ask): with no `--feedback-look` every slot is OFF, and
+  the stretch (radar ring, PINNED / REPAIRING on the card) sits behind `marks:a`. `FeedbackLook.RECOMMENDED` keeps my
+  recommendation; once he picks, DEFAULTS becomes his pick. To try them all: `--feedback-look=hit:a,pinned:a,repair:a,cone:b,marks:a`.
+  Merged main 406d00623 (cca1a994b); quick-remote builder0 129 passed, 0 failed.
 - **305f71a37 check: builder0 `make remote T=check` exited 0, 2985 passed, 0 failed, scenarios 52/0, every
   sim-baseline unmoved** (3811 s). Two NOT JUDGED on a busy box (perf-judge ratios 1.9-2.4x; one ai-scenario), being
   re-run alone on the merge below.
