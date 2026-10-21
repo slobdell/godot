@@ -112,6 +112,18 @@ wedge/fights/jam locks/terminus/sumps x 6540–6563 and hull-rest 6501–6532 x 
     light lane (unit `manoeuvre-sideprobe`, outputs `~/overnight-manoeuvre/r36/sideprobe/`).
   - Reader `tests/manoeuvre/side_water.py` (`db864edf1`). It must read 0 or be traced.
 
+**2026-10-21 ~02:00 (worker): S2a evidence beside the series** (`references/round36/manoeuvre/s2a/README.md`, `b498eb498`).
+- **Water: 0 of 15 side points** (26 fires), Locks + Sumps fights 6540–6563. The orchestrator accepted it as measured; the nearest
+  point was 43.8 m from water.
+- **Ship condition (R36.27): the bank lab case is GREEN.** `test_beside_the_canal_the_side_point_stays_on_its_bank`
+  (`33919af3d`, builder0 light, 4/4, both paths). On the Locks bank the water side is refused and the land side taken; at the
+  bridge mouth the rule never arises (pinned ON = base). It rides in the hand-over pair.
+- **Eyes_3 traced: the side point equals the route's own waypoint, and the drive to it clips a long friend's corner.**
+  `_side_clear` tests the point against centres, not the drive against the friend's oriented box. 1 of 17 crew–friend pairs
+  loops (9 picks).
+  - Fix candidates (i) a drive-vs-box clearance and (ii) a stand after a side step that ends still blocked are NOT built;
+    they wait on the orchestrator's call.
+
 **2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
