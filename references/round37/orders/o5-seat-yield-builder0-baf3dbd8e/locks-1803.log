@@ -1,0 +1,149 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (gangs): 16 rat rods, 7 gun trucks, 14 wrecker catapults, 7 resupply tankers (5180 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 109 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (law): 4 pursuit cruisers, 8 retired apcs, 4 assault guns, 4 gas rocket trucks, 4 sonic emitters (5080 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 326 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=44 rust_squads=6 rust=24
+SKIRMISH_CAMERA focus=(-52, 89) zoom=0.67 vehicles=14
+DEMO_SEED 1803 arena=locks gangs vs law (replay: make showmatch SEED=1803)
+CONTROL_GROUPS squads=5 (Battery:14 Hunters:7 Spears:8 Spears II:8 Wrenches:7) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T10-15-05-locks.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1803", "arena": "locks", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+SEAT_YIELD {"asker":"Green_Spears II_6","asker_verb":"screen","at":[35.2,89.0],"cpu":true,"died":false,"element":"Spears II II","end":107,"s":1.1,"seat_m":46.2,"start":32,"team":0,"unit":"Green_Spears II_4","verb":"screen","yield_s":2.5}
+NATIVE_EXEC 19826 native, 173 handed back (dead 0, reflexes 0, yielding 0, face 173, drive 0, other 0), 520 stale pulls, 1859 part pulls, 0 verified, 0 verify mismatches 
+Rust_Battery_1 destroyed Green_Spears_4 (score Green 0 : 1 Rust)
+SEAT_YIELD {"asker":"Green_Hunters_2","asker_verb":"ambush","at":[18.5,15.6],"cpu":true,"died":true,"element":"Spears II","end":295,"s":7.4,"seat_m":20.1,"start":222,"team":0,"unit":"Green_Spears_4","verb":"screen","yield_s":2.4}
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 7 left
+Rust_Hunters_1 destroyed Green_Spears_8 (score Green 0 : 2 Rust)
+SEAT_YIELD {"asker":"Green_Hunters_3","asker_verb":"ambush","at":[6.2,14.0],"cpu":true,"died":true,"died_after":true,"element":"Spears","end":302,"s":8.0,"seat_m":29.7,"start":241,"team":0,"unit":"Green_Spears_8","verb":"screen","yield_s":2.0}
+SEAT_YIELD {"asker":"Green_Spears II_1","asker_verb":"screen","at":[41.9,70.4],"cpu":true,"died":false,"element":"Spears II","end":297,"s":9.0,"seat_m":51.0,"start":270,"team":0,"unit":"Green_Spears_7","verb":"screen","yield_s":0.9}
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 6 left
+Rust_Hunters2_1 destroyed Green_Hunters_7 (score Green 0 : 3 Rust)
+SEAT_YIELD {"asker":"Rust_Hunters_5","asker_verb":"ambush","at":[-8.0,-55.1],"cpu":true,"died":false,"element":"Eyes","end":376,"s":9.3,"seat_m":5.4,"start":279,"team":1,"unit":"Rust_Eyes_3","verb":"screen","yield_s":3.2}
+Rust_Battery_1 destroyed Green_Spears_1 (score Green 0 : 4 Rust)
+Rust_Battery_1 destroyed Green_Spears_5 (score Green 0 : 5 Rust)
+SEAT_YIELD {"asker":"Green_Wrenches_3","asker_verb":"support_by_fire","at":[56.4,23.3],"cpu":true,"died":true,"died_after":true,"element":"Spears II","end":457,"s":12.8,"seat_m":19.4,"start":384,"team":0,"unit":"Green_Spears_5","verb":"screen","yield_s":2.4}
+HUD_MESSAGE [warning] Spears: commander down, Spears 2 takes command
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 6 left
+Rust_Hunters_1 destroyed Green_Hunters_4 (score Green 0 : 6 Rust)
+SEAT_YIELD {"asker":"Green_Wrenches_2","asker_verb":"support_by_fire","at":[58.0,33.0],"cpu":true,"died":false,"element":"Spears II","end":400,"s":10.5,"seat_m":23.3,"start":314,"team":0,"unit":"Green_Spears II_8","verb":"screen","yield_s":2.9}
+Rust_Battery_4 destroyed Green_Spears_3 (score Green 0 : 7 Rust)
+HUD_MESSAGE [warning] Spears lost 3 vehicles (Rat Rod, Rat Rod, Rat Rod), 3 left
+Green_Battery_14 destroyed Rust_Hunters_1 (score Green 1 : 7 Rust)
+HUD_MESSAGE [info] We hold the far quay (far)
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 5 left
+Green_Battery_5 destroyed Rust_Hunters2_1 (score Green 2 : 7 Rust)
+Green_Battery_5 destroyed Rust_Hunters_4 (score Green 3 : 7 Rust)
+SEAT_YIELD {"asker":"Green_Spears_7","asker_verb":"screen","at":[11.8,65.0],"cpu":true,"died":false,"element":"Spears II II","end":453,"s":13.1,"seat_m":5.8,"start":393,"team":0,"unit":"Green_Spears II_7","verb":"screen","yield_s":2.0}
+Rust_Guns_4 destroyed Green_Hunters_2 (score Green 3 : 8 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (21 left)
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 4 left
+NATIVE_EXEC 38105 native, 1894 handed back (dead 0, reflexes 0, yielding 0, face 1894, drive 0, other 0), 854 stale pulls, 5297 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Spears_3","asker_verb":"screen","at":[56.7,26.1],"cpu":true,"died":false,"element":"Spears II","end":555,"s":16.7,"seat_m":22.9,"start":501,"team":0,"unit":"Green_Spears II_1","verb":"screen","yield_s":1.8}
+Rust_Battery_1 destroyed Green_Spears II_1 (score Green 3 : 9 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 1 (35 tanks left)
+HUD_MESSAGE [warning] Spears II: commander down, Spears II 2 takes command
+Green_Battery_13 destroyed Rust_Sirens_1 (score Green 4 : 9 Rust)
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 7 left
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (20 left)
+Rust_Hunters_2 destroyed Green_Wrenches_7 (score Green 4 : 10 Rust)
+HUD_MESSAGE [warning] Wrenches lost a Resupply Tanker, 6 left
+Rust_Hunters_2 destroyed Green_Spears II_2 (score Green 4 : 11 Rust)
+HUD_MESSAGE [warning] Spears II lost Spears II 2 (33 tanks left)
+HUD_MESSAGE [warning] Spears II: commander down, Spears II 3 takes command
+SEAT_YIELD {"asker":"Rust_Guns_3","asker_verb":"attack","at":[-6.8,-58.4],"cpu":true,"died":false,"element":"Eyes","end":698,"s":21.3,"seat_m":2.1,"start":640,"team":1,"unit":"Rust_Eyes_3","verb":"screen","yield_s":1.9}
+HUD_MESSAGE [warning] The enemy took the far quay
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 6 left
+Rust_Guns_2 destroyed Green_Wrenches_2 (score Green 4 : 12 Rust)
+SEAT_YIELD {"asker":"Green_Wrenches_6","asker_verb":"hold","at":[7.9,53.7],"cpu":true,"died":false,"element":"Spears II","end":773,"s":24.8,"seat_m":23.0,"start":744,"team":0,"unit":"Green_Spears II_6","verb":"screen","yield_s":1.0}
+Green_Battery_8 destroyed Rust_Sirens_3 (score Green 5 : 12 Rust)
+HUD_MESSAGE [warning] Wrenches lost a Resupply Tanker, 5 left
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (19 left)
+SEAT_YIELD {"asker":"Green_Wrenches_6","asker_verb":"hold","at":[-0.3,56.6],"cpu":true,"died":false,"element":"Spears II","end":832,"s":26.8,"seat_m":44.0,"start":803,"team":0,"unit":"Green_Spears II_6","verb":"screen","yield_s":1.0}
+Rust_Guns_2 destroyed Green_Wrenches_1 (score Green 5 : 13 Rust)
+HUD_MESSAGE [warning] Wrenches: commander down, Wrenches 3 takes command
+Green_Battery_13 destroyed Rust_Hunters2_3 (score Green 6 : 13 Rust)
+NATIVE_EXEC 55326 native, 4673 handed back (dead 0, reflexes 0, yielding 0, face 4673, drive 0, other 0), 1026 stale pulls, 8756 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Wrenches lost a Resupply Tanker, 4 left
+SEAT_YIELD {"asker":"Green_Spears II_8","asker_verb":"screen","at":[60.8,38.7],"cpu":true,"died":false,"element":"Hunters II","end":914,"s":28.8,"seat_m":3.5,"start":865,"team":0,"unit":"Green_Hunters_3","verb":"hold","yield_s":1.6}
+Green_Battery_11 destroyed Rust_Hunters2_2 (score Green 7 : 13 Rust)
+Green_Battery_11 destroyed Rust_Hunters_5 (score Green 8 : 13 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (16 left)
+Green_Battery_12 destroyed Rust_Sirens_2 (score Green 9 : 13 Rust)
+SEAT_YIELD {"asker":"Green_Spears_6","asker_verb":"screen","at":[61.1,42.7],"cpu":true,"died":false,"element":"Hunters II","end":1028,"s":32.7,"seat_m":3.4,"start":981,"team":0,"unit":"Green_Hunters_3","verb":"hold","yield_s":1.6}
+SEAT_YIELD {"asker":"Green_Spears_2","asker_verb":"screen","at":[52.7,49.6],"cpu":true,"died":false,"element":"Spears II","end":1031,"s":33.0,"seat_m":4.0,"start":991,"team":0,"unit":"Green_Spears II_8","verb":"screen","yield_s":1.3}
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (15 left)
+Rust_Battery_1 destroyed Green_Wrenches_4 (score Green 9 : 14 Rust)
+HUD_MESSAGE [warning] Wrenches lost a Resupply Tanker, 3 left
+Rust_Battery_3 destroyed Green_Hunters_1 (score Green 9 : 15 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 3 takes command
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns_2 destroyed Green_Wrenches_3 (score Green 9 : 16 Rust)
+HUD_MESSAGE [warning] Wrenches: commander down, Wrenches 5 takes command
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 3 left
+NATIVE_EXEC 70908 native, 9091 handed back (dead 0, reflexes 0, yielding 0, face 9091, drive 0, other 0), 1135 stale pulls, 11087 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Wrenches lost a Resupply Tanker, 2 left
+Green_Battery_6 destroyed teammate Green_Spears II_6 (friendly fire)
+HUD_MESSAGE [warning] Spears II lost Spears II 6 to friendly fire from Battery 6 (27 tanks left)
+HUD_MESSAGE [warning] Friendly fire! Battery 6 destroyed Spears II 6
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 5 left
+Green_Battery_3 destroyed Rust_Sirens_4 (score Green 10 : 16 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (14 left)
+Rust_Guns_2 destroyed Green_Hunters_6 (score Green 10 : 17 Rust)
+NATIVE_EXEC 86033 native, 13966 handed back (dead 0, reflexes 0, yielding 0, face 13966, drive 0, other 0), 1273 stale pulls, 13573 part pulls, 0 verified, 0 verify mismatches 
+Green_Battery_1 destroyed Rust_Hunters_3 (score Green 11 : 17 Rust)
+Green_Battery_4 destroyed Rust_Guns_3 (score Green 12 : 17 Rust)
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 2 left
+HUD_MESSAGE [info] Destroyed 2 enemies (12 left)
+SEAT_YIELD {"asker":"Green_Hunters_5","asker_verb":"ambush","at":[60.4,43.3],"cpu":true,"died":false,"element":"Hunters II","end":1861,"s":60.3,"seat_m":3.2,"start":1809,"team":0,"unit":"Green_Hunters_3","verb":"hold","yield_s":1.7}
+SEAT_YIELD {"asker":"Rust_Hunters_2","asker_verb":"support_by_fire","at":[7.4,-11.3],"cpu":true,"died":false,"element":"Eyes","end":1878,"s":60.2,"seat_m":20.3,"start":1806,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":2.4}
+Rust_Guns_2 destroyed Green_Wrenches_6 (score Green 12 : 18 Rust)
+Green_Spears_2 destroyed Rust_Guns_2 (score Green 13 : 18 Rust)
+HUD_MESSAGE [warning] Wrenches lost a Resupply Tanker, 1 left
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (11 left)
+Green_Battery_6 destroyed Rust_Eyes_1 (score Green 14 : 18 Rust)
+SEAT_YIELD {"asker":"Rust_Guns_1","asker_verb":"attack","at":[6.3,-12.9],"cpu":true,"died":true,"died_after":true,"element":"Eyes","end":2093,"s":65.9,"seat_m":20.6,"start":1977,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":3.9}
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (10 left)
+Rust_Hunters_2 destroyed Green_Spears_6 (score Green 14 : 19 Rust)
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 2 left
+Green_Battery_12 destroyed Rust_Hunters_2 (score Green 15 : 19 Rust)
+Green_Battery_6 destroyed Rust_Eyes_3 (score Green 16 : 19 Rust)
+Green_Battery_10 destroyed Rust_Guns_1 (score Green 17 : 19 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (7 left)
+Rust_Battery_4 destroyed Green_Spears_2 (score Green 17 : 20 Rust)
+HUD_MESSAGE [warning] Spears: commander down, Spears 7 takes command
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [warning] Spears lost a Rat Rod, 1 left
+NATIVE_EXEC 101426 native, 18573 handed back (dead 0, reflexes 0, yielding 0, face 18488, drive 0, other 0), 1458 stale pulls, 16367 part pulls, 0 verified, 0 verify mismatches 
+Rust_Battery_3 destroyed Green_Hunters_3 (score Green 17 : 21 Rust)
+SEAT_YIELD {"asker":"Green_Hunters_5","asker_verb":"ambush","at":[57.3,41.6],"cpu":true,"died":true,"died_after":true,"element":"Hunters II","end":2780,"s":90.6,"seat_m":3.5,"start":2719,"team":0,"unit":"Green_Hunters_3","verb":"hold","yield_s":2.0}
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 5 takes command
+HUD_MESSAGE [warning] Hunters lost a Gun Truck, 1 left
+Green_Battery_11 destroyed Rust_Guns_4 (score Green 18 : 21 Rust)
+Rust_Battery_1 destroyed Green_Hunters_5 (score Green 18 : 22 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (6 left)
+HUD_MESSAGE [error] Hunters destroyed
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+NATIVE_EXEC 117319 native, 22680 handed back (dead 0, reflexes 0, yielding 0, face 22595, drive 0, other 0), 1778 stale pulls, 17344 part pulls, 0 verified, 0 verify mismatches 
+NATIVE_EXEC 132892 native, 27107 handed back (dead 0, reflexes 0, yielding 0, face 27022, drive 0, other 0), 1991 stale pulls, 18485 part pulls, 0 verified, 0 verify mismatches 
+Green_Battery_10 destroyed teammate Green_Spears II_8 (friendly fire)
+HUD_MESSAGE [warning] Spears II lost Spears II 8 to friendly fire from Battery 10 (20 tanks left)
+HUD_MESSAGE [warning] Friendly fire! Battery 10 destroyed Spears II 8
+Green_Battery_11 destroyed Rust_Eyes_4 (score Green 19 : 22 Rust)
+HUD_MESSAGE [warning] Spears II lost a Rat Rod, 4 left
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (5 left)
+SEAT_YIELD {"asker":"Green_Wrenches_5","asker_verb":"hold","at":[72.6,51.2],"cpu":true,"died":false,"element":"Spears II II","end":4231,"s":140.5,"seat_m":5.1,"start":4214,"team":0,"unit":"Green_Spears II_7","verb":"screen","yield_s":0.6}
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+NATIVE_EXEC 150907 native, 29092 handed back (dead 0, reflexes 0, yielding 0, face 29000, drive 0, other 0), 2185 stale pulls, 20592 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Spears II_5","asker_verb":"screen","at":[29.4,13.4],"cpu":true,"died":false,"element":"Spears II","end":4861,"s":160.3,"seat_m":3.2,"start":4809,"team":0,"unit":"Green_Spears_7","verb":"screen","yield_s":1.7}
+HUD_MESSAGE [warning] Battery 4 is out of ammo
+HUD_MESSAGE [warning] 15 points to win: hold the rings!
+SEAT_YIELD {"asker":"Green_Spears_7","asker_verb":"screen","at":[34.8,9.8],"cpu":true,"died":false,"element":"Spears II II","end":5005,"s":163.8,"seat_m":7.8,"start":4915,"team":0,"unit":"Green_Spears II_5","verb":"screen","yield_s":3.0}
+HUD_MESSAGE [warning] Enemy is 15 points from winning at the rings
+SEAT_YIELD {"asker":"Green_Spears_7","asker_verb":"screen","at":[36.1,12.8],"cpu":true,"died":false,"element":"Spears II II","end":5346,"s":172.2,"seat_m":2.3,"start":5167,"team":0,"unit":"Green_Spears II_3","verb":"screen","yield_s":6.0}
+SEAT_YIELD_CENSUS {"arena":"locks","by_verb":{"cpu:hold":{"deaths":1,"episodes":4},"cpu:screen":{"deaths":4,"episodes":19}},"deaths":43,"seat_aside":"off","seconds":180.0,"seed":1803}
