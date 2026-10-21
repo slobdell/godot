@@ -173,9 +173,17 @@ hull-down crew is fully exposed to those by design.
 - **K4:** waiting on CP37.1 on main; then the null reading on today's maps, then the judged series on the re-shaped maps.
 - **Stretch (CPU defends from low-cover seats):** needs a grant in the brains paths (`cpu_commander.gd` / tank_brain); requested.
 
+### Native twins (N2, on stream/native 3d598cdaa; not merged here)
+CoverNative.low_screen, low_features_near and cover_roll in C++, bit for bit. `test_native_cover_low.gd` gave 15000 answers, 0
+mismatches; test_cover_hulldown and test_cover_seat pass on the native path (builder0 light `make native quick` exited 0).
+low_cover_seat needs no twin. **Merge note (native's edits in cover's files):** cover_map.gd's `low_screen` / `low_features_near`
+dispatch to native under BrainSwitches.native_cover, with the GDScript kept as `low_screen_gd` / `low_features_near_gd`;
+armor.gd's `low_cover_strike` takes its roll from `map._native.cover_roll` on the native path. **K4's pair merges stream/native
+at its CP37.1 hand-over** (the orchestrator: no cherry-pick before then). Any later edit of mine to low_screen goes to both
+versions, with native told.
+
 ### Requests to other streams
-- **native:** declare twins for `CoverMap.low_screen`, `Armor.cover_roll`, `TacticalQuery.low_cover_seat` (cover_native).
-  Low priority for speed: low_screen runs once per frontal hit, the seat once per halt.
+- **native:** ~~twins~~ DONE (N2, above).
 - **orders (O6):** the API above is on `stream/cover` 5b4e79362; I'll say when it is on main.
 - **orchestrator:** a brains-path grant for the stretch (the CPU's defending crews take `low_cover_seat` once when they halt), only after K4 passes.
 - **rules (merge note):** two calls in `match.gd` (`_shell_hit`, `_fire_beam`), each guarded by `Armor.low_cover_strike`
