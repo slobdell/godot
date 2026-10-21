@@ -399,6 +399,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   give-ways, 35 lead-outs, ~750 seat-metres a fight) -> cover's K4 after his K5 answer. builder0: M1's check + series, orders'
   HEAD batch (O1 fight read, O3, O2, O5) in the order each stream states in Status. Cover's separate OFF gate is dropped: rules'
   base gate on a10846307 (cover's OFF code in) already proves the replay; cover re-gates on the K5 maps.
+- **R37.19 (2026-10-21) main a10846307 GREEN; manoeuvre merged; perf-judge owed.** builder2 `make native check exited 0`, 3007
+  passed / 0 failed, 25 + 2 NOT JUDGED; the scout_suppress unexpected pass is the known one (N5 promotes it). Then main 0baf6e1ff
+  merges stream/manoeuvre b822e6696 alone (INHERIT; builder0 `make native check exited 0`, 3011/0, sim-baseline 13/13): M1 sidestand
+  OFF, M2's unstick_fires total, the unstick skipping a short-halting hull + its native twin. **Perf-judge:** every check this round
+  came back NOT JUDGED (builder0 busy; builder2 refuses at a steady 2.55-2.57x three tries running, which looks like the box's own
+  speed, not load). Cover's, rules' and manoeuvre's OFF code is unjudged for perf on main; the orchestrator runs ONE perf-judge on
+  builder0 in the first quiet window and asks native whether perf-judge can ever judge on builder2. Rules cuts its pair from
+  0baf6e1ff.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
