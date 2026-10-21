@@ -270,6 +270,33 @@ _Filed here before any number._
   2-frame wait with a bounded wait for CONNECTION_DISCONNECTED (<= 30 frames), both asserts kept; it rides with native's next
   hand-over. **Pattern (third network-test flake today: net-smoke, relay-smoke, this one):** each a test waiting on a frame count or
   leaving early, not the game. Lesson: a networked test waits for the EVENT, bounded, never for a frame count.
+- **R36.23 (2026-10-21 ~00:20 PDT) T10 FAILS its deciding line; parked OFF, traced.** Builder2, native orders-probe, 0ca19d829, fresh
+  3641–3664 (24 seeds), restricted squads 940 of 1152: away_m base 4129.8 v arm 3551.4, drop 578.4, se 546.1, drop − 1.645 se = −320:
+  FAIL. Unrestricted drop 593.7, se 546.2. Guards pass (arrivals 1144 -> 1147, deploy_s 22482 -> 22543 (line 22711), twitch_m 8025 ->
+  7527); LOOP squads 118 -> 107 (their metres 2940 -> 1634). One pair dominates (terminus/5/click s3645 sq4 479.4 -> 5.9 m; without it
+  ~120 m v se ~200). Terminus and Crossing helped; **Locks click got WORSE** (3-squad 351 -> 410, 5-squad 306 -> 376; s3652 sq2 9.4 ->
+  79.4, s3664 sq2 56.7 -> 135.2). **The restriction did not restrict** (seat_near > 0 in 940 of 1152: most give-ways begin near the
+  seat), so R36.19's sizing assumption was wrong: the orchestrator's lesson, check the restricting property's base rate before
+  relying on it. Both switches stay DEFAULT_OFF; no re-read on these seeds. Next: trace the Locks rises (G or H) from the rows and a
+  one-cell repro; the fight step is stopped (a failed bar's guards don't decide anything).
+- **R36.24 (2026-10-21 ~00:45 PDT) T10's Locks "rise" is GOAL FLICKER, not driving; the measure is flawed; a real bug found.** Traffic
+  (stream 7f9760329, `references/round36/traffic/t10_locks_trace.md`; builder2 native 0ca19d829, locks/3/click s3652 / s3664,
+  `--probe-trace=2`, four arms, each reproducing the series row): G causes it, H inert. Real driving away barely moved (worst crew
+  9.2 -> 9.8 m, 13.7 -> 6.2 m); the rise is GOAL FLIPS: after returning from its own ADVANCE, Bravo_2's current order alternates EVERY
+  SECOND between its seat and a point ~15 m off near its first move slot (s3652 0 -> 6 flips, 52.5 m of "away"). In player terms: a
+  crew back from a scrap wavers between two targets and creeps 3–5 m. **orders' away_m measures against the CURRENT goal, so it
+  counts flicker as driving away** (and T10's one big win, terminus/5/click s3645 sq4 479 -> 6 m, is untraced and may be flicker
+  too). **Round 37:** (1) away_m against a fixed seat, or only while the goal is unchanged; (2) find who writes the flickering second
+  order (`--order-trace` on s3664 base; brains/orders): a looks-dumb bug in its own right; (3) G, if retried, gets a "not farther
+  than standing" test and a base-rate check before sizing. Traffic DONE for the round.
+- **R36.25 (2026-10-21 ~01:00 PDT) E4b's cause CORRECTED (R35.57 named the wrong one).** Native (stream e9190b443, `make
+  native-first-tick-sync`, laptop + builder0, Godot 4.7.2 Jolt): not first-iteration engine state but WHERE THE SETUP RUNS. A body placed
+  inside the physics frame's deferred flush or a node's _physics_process reaches the space before its first tick ("synced"); placed
+  from the physics/process signals, the process flush or a main scene's _ready, the space holds the add-time origin ("stale"). The old
+  "cold" first test ran via `_initialize -> _run.call_deferred()`, inside the physics flush (synced); every later test and real play's
+  `--skirmish` (main._ready) are stale. So brains' warm-up stays right (tests match real play's first match); respawns use `place()`.
+  Ruled out: physics and nav servers off during warm-up, the lab start frame, autoloads, global RNG. Caveat: flush order inferred, not
+  read in source. **Grant:** native corrects the comment in tests/run_tests.gd:115-121 (comment only).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
