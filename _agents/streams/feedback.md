@@ -65,6 +65,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   the stretch (radar ring, PINNED / REPAIRING on the card) sits behind `marks:a`. `FeedbackLook.RECOMMENDED` keeps my
   recommendation; once he picks, DEFAULTS becomes his pick. To try them all: `--feedback-look=hit:a,pinned:a,repair:a,cone:b,marks:a`.
   Merged main 406d00623 (cca1a994b); quick-remote builder0 129 passed, 0 failed.
+- **7e2ff0a4f is green: builder0 `make remote T=check` exited 0, 3025 passed, 0 failed, "27 targets, all passed, ALL
+  JUDGED", perf-judge PASS, scenarios 53/0/4 pending/0 unexpected, every sim-baseline unmoved.**
 - **305f71a37 check: builder0 `make remote T=check` exited 0, 2985 passed, 0 failed, scenarios 52/0, every
   sim-baseline unmoved** (3811 s). Two NOT JUDGED on a busy box (perf-judge ratios 1.9-2.4x; one ai-scenario), being
   re-run alone on the merge below.
