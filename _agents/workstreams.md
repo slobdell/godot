@@ -188,6 +188,20 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
   Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
 
+- **Bar O5 SEAT_ASIDE (orders, R37.5; filed in stream/orders 78c06ab1f Status before any builder0 arm number; code 8f5a8b08f,
+  OFF).** What he would see: CPU squads set up their screens off the streets other squads use, so CPU crews stop stepping aside (and
+  dying) for their own side's traffic. The change (`element_commander.gd`): a CPU screen point within 10 m of another living element's
+  way (its centre to its task destination, straight) steps across its own approach, 5 m steps alternating sides, up to 4, to the first
+  clear point (merge note: `_aside_task` at the top of `_give`, screen tasks only; `_aside` in `_give_screen`). **Sizing (seen):**
+  builder0 native light, baf3dbd8e, `make seat-yield-census`, locks/gorge/terminus x 1801-1806, 18 CPU v CPU fights: 542 give-ways by
+  crews holding a CPU seat to another element's crew (499 screen, 43 hold, 0 support_by_fire); 21 deaths in them (19 screen); 705
+  deaths in all. Laptop dev read (locks s1801, one fight): 15 -> 2. **Judged:** arms none v `SY_FLAGS=--seat-aside=on`, the same 3
+  maps x FRESH seeds 1811-1822 (36 fights an arm), builder0, a green-checked hash. **Counter:** seats_aside > 0. **Deciding:** screen
+  give-ways (episodes) summed, arm <= 50 % of base. **Reported:** deaths in seat give-ways, arm <= base + 1.645 sqrt(base) (Poisson).
+  **Guards** (per-fight totals, both sides CPU): deaths a fight per team within base +/- 1.645 se (base arm's per-fight sd, n 36).
+  **A pass ships ON** (symmetric). **O6 (the cover seat call):** kept OFF and unjudged this round (fires once in 3 probe cells on
+  today's maps); judged after cover's maps change.
+
 - **Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number (recorded from stream/manoeuvre ff40ed578)**
 
 - **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
