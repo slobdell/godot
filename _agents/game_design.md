@@ -4240,6 +4240,12 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    state on the unit (marker or bar colour) so the player sees why. Gives machine guns / autocannons a job against a blob.
 9. **The four levers from the first message:** clumping punished (area effects / splash), defender edge, flanks pay visibly (side
    and rear armour exist, front 4 / side 3 / rear 2, but aren't felt), information (ambushes unseen until sprung).
+   **ANSWERED 2026-10-21: "yes to both as recommended".** Defender edge = questions 1, 2, 3, 8; information = his question-1 rule.
+   **9a FLANKS FELT: yes.** The numbers already pay (`Armor.MULTIPLIER` front 0.5 / side 1.0 / rear 1.5, engine-deck weak spot
+   behind); the gap is feedback: a distinct flank/rear hit flash and sound, an announcer call (the `weak_spot` flag exists), a
+   differently coloured hit marker. Effects and audio only, no rule change. **9b CLUMPING: only via question 5's pre-aimed
+   artillery for now** (player-planned area damage); no bigger splash, no exploding wrecks until 1-8 are played (own squads crowd
+   at chokes and in traffic; contention first).
 10. **Unit swaps (parked by his "the problem is not the units, but the rules"):** gangs' Oil Slick Rig, Law's Spike-Strip
     Interceptor; alternates: roadblock truck, drone/spotter van, smoke layer.
 11. **The balance guard:** a blob frontal assault should lose, AND a pure turtle must not always win (the attacker keeps smoke,
