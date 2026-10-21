@@ -205,10 +205,14 @@ at its CP37.1 hand-over** (the orchestrator: no cherry-pick before then). Any la
 versions, with native told.
 
 ### Requests to other streams
-- **native:** ~~twins~~ DONE (N2, above). **For K4 (two asks, in native's paths):** (1) `GUARD_RESULT` carries
-  `cover_struck` (the match stats' `cover_struck`, 0 when absent) so the positive control reads from the same logs;
-  (2) `make guard-run` takes extra user args (e.g. `GUARD_ARGS=--cover-on=hulldown`, passed after `--`; rules' `--rules-on`
-  needs the same).
+- **native:** ~~twins~~ DONE (N2, above). ~~Two K4 asks~~ DONE (stream/native 420048f99; hand-over branch
+  pair/native-cp371 2bb41ef93, the orchestrator merges): GUARD_RESULT carries `cover_struck` and `args`; an arm runs as
+  `GUARD_ARGS=--cover-on=hulldown GUARD_TAG=hulldown tools/scoreboard/guard.sh <commit>` (raw logs in
+  ../godot-native-guard-raw/<commit>-hulldown/), then `guard.py --pair <OFF> <that folder>`. guard.sh uses ONE scratch folder
+  (../godot-native-guard): two arms at once from one tree collide; set GUARD_WORKTREE to a different path for the second.
+  Native's evidence for the OFF gate: 20 of 20 re-run fights byte-identical between 9d325e291 and a tree with K2 OFF. Native's
+  smoke (builder0 light, ON, terminus 2601 x blob/turtle x both sides, 4 fights): `cover_struck` = 0 in all 4 (the stat does
+  reach result["stats"]): today's maps fail the positive control, as K1 predicts. The pre-K5 run is the null reading only.
 - **orders (O6):** the API above is on `stream/cover` 5b4e79362; I'll say when it is on main.
 - **orchestrator:** a brains-path grant for the stretch (the CPU's defending crews take `low_cover_seat` once when they halt), only after K4 passes.
 - **rules (merge note):** two calls in `match.gd` (`_shell_hit`, `_fire_beam`), each guarded by `Armor.low_cover_strike`
