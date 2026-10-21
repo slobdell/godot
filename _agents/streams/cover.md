@@ -142,7 +142,10 @@ facing (= threat_dir). null = keep your own seat.
 Arms ON (`--cover-on=hulldown`) v OFF, same seeds, same tree (pair named), on CP37.1's two lines, both factions both ways, n as
 CP37.1 sizes it. Positive control: ON's `stats.cover_struck` > 0 on every map. Deciding: the blob line moves toward the blob losing
 by more than CP37.1's 2-seed-block noise. Guards: the turtle line not toward the turtle winning beyond that noise; kills a fight
-and match length per faction within +-10 % of OFF; perf-judge PASS. A series before K5's re-shape is the null reading.
+and match length per faction within +-10 % of OFF; perf-judge PASS. A series before K5's re-shape is the null reading. **Scope (R37.11):** the rule acts on direct shells and beams only, on
+both the GDScript and native paths (native flies the round; the seam sits in `Match._shell_hit` / `_fire_beam`, before
+combat_native's damage maths). Artillery/mortar splash and cone/flame damage never pass through it, so low cover never stops them. A
+hull-down crew is fully exposed to those by design.
 **R37.7 (orchestrator):** granted `tools/make_arenas.py` and the arenas it regenerates, for low cover only, with a merge note.
 
 ### Questions for the lead
