@@ -62,14 +62,24 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Round 37, 2026-10-21 (worker).** Plan: CP37.1 (design note, probe, base read on builder2) -> N2 twins as pairs arrive -> N5
 promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row per shipped main.
 
+**N3:** the scoreboard page renders a *Guard lines* section from `references/scoreboard/guards/<commit>.json` (blob / turtle
+win, kill ratio, capped share, ± from that read's own seeds); known answers in test_guard.py. **N6 DONE** (bdc1b8f74's parent,
+see judging.md *Round 37 re-render*): round 36's 20 lines in `tools/judge/lines_r36.py`, table unchanged (no round-36 rows on
+main), 0 of 9 se lines inside the noise, 6 verdict margins under 1.645 se.
+
 **Done so far (unchecked unless named):** N4 net diagnostics 820633935 (broker waits fail loudly, mutation-tested on the
 laptop: `broker-load NODE=false` -> "broker never printed BROKER_LISTENING ... (process exited)" exit 1; a real broker-load exit
 0); N5 promotion e1053de12 (`tests/baselines/ai_scenarios_count.txt` must move 53,0,5,0 -> 54,0,4,0: **the orchestrator
 adopts**); R37.2 twin audit answered in writing (no C++ twin needed for R1/R2/R3: C++ reads sight live, never computes spread,
 and drives the throttle tank.gd hands it).
 
-**builder2 queue (shared with rules, cover):** native's guard base read STARTED 2026-10-21 09:44 PDT (`guard.sh 73a7d5f46`:
-its game tree = main 9d325e291's; only tests/tools differ), first chunk = seed 2601. Will say here when it finishes.
+**builder2 queue (shared with rules, cover):** native's guard base read RUNNING since 2026-10-21 09:55 PDT (`guard.sh
+cfb8120ba`: its game tree = main 9d325e291's, only tests/tools differ; 16 seeds x 20 fights). A first chunk on 73a7d5f46 is VOID
+(the probe's `finished` lambda captured `result` by value, so every fight read as capped at 600 s; kept aside as
+`../godot-native-guard-raw/void-73a7d5f46-capbug`). Full check of cfb8120ba queued on builder2 behind `--wait-below 1`.
+**First valid chunk (seed 2601, builder2, cfb8120ba, n 20):** fights end by elimination or 90 points in 51-198 s, 0 capped. The
+seed is Law (26 vehicles) v Syndicate (16) and the Syndicate side won 9 of 10 whatever its role: one seed's faction pair
+dominates, so the line is read over 16 seeds and broken down by pairing (guard v tactics of the same faction, both ways).
 
 ### CP37.1 design note (sent to the orchestrator; no new game code)
 
