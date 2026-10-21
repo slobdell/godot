@@ -58,3 +58,95 @@ The map page (K1/K5) when you have it: the orchestrator relays.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-21 (cover worker, Opus).** Branch `stream/cover`. Launch base 9d325e291 (main GREEN per HANDOFF; no baseline re-run).
+
+### Plan (in order) and where each stands
+1. **K1 the count** -- DONE: census + fight heat + page (below); reported to the orchestrator.
+2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 5b4e79362's tree, 183 passed 0 failed, lint 535 scripts); full check next.
+3. **K3 the seat API** -- DONE at 5b4e79362 (laptop, `FILTER=cover_seat`, 7/7 PASS); orders told once it is on main.
+4. **K4 the bar** -- after CP37.1; see the sequencing note below (K4 before K5 measures ~nothing).
+5. **K5 the map re-shape** -- WAITING ON HIS GATE: draft page filed (below).
+6. Stretch: the CPU choosing low-cover seats when it defends (needs a brains-path grant).
+
+### K1: the static census (no Godot; `make cover-census`, arenas at 9d325e291)
+The ONLY low cover in the game is the jersey `barricade` (0.9 m; `ArenaKit.PROPS`). Everything else is >= eye height (1.3 m) and
+already all-or-nothing line-of-sight cover: wreck 2.0 m, containers 2.59 m, walls/crates 3 m.
+
+| map | low pieces | metres | facing the enemy's half | within 15 m of a lane |
+|---|---|---|---|---|
+| foundry, sumps, locks, gorge | 0 | 0 | - | - |
+| terminus | 2 | 12 | 0 | 2 |
+| parade, archipelago, cut, docks | 2 | 12 | 2 | 0 |
+| yard, crossing, pit, yard_open | 4 | 24 | 4 | 0-4 |
+
+(boulevard has 28 but is not dealt.) Yard's four sit at z = +-78, beside the bases, not where fights happen. **Every dealt map
+needs re-shaping for the rule to matter** (heat numbers will say where).
+
+### K1: where the fighting is (builder2, 5b4e79362 = launch game code, `make cover-heat`: 4 fights a map, 180 s, factions paired in turn)
+Of every hit on a hull, the share that landed on a hull within 4 m of low cover: foundry 0 % (2699 hits), yard 0.9 % (2820),
+pit 0.4 % (2424), terminus 0.6 % (2535), crossing 2.8 % (2973), sumps 0 % (3165), locks 0 % (2400), parade 0 % (2755), gorge
+0 % (2008), archipelago 0.1 % (2560), cut 0 % (2315), docks 0.1 % (2855), yard_open 1.6 % (3450). **No dealt map has its low
+cover where fights happen.**
+Pages (self-contained, from above, low cover bright, hits in red): `_agents/streams/references/round37/cover/low-cover-page.html`;
+the K5 draft `reshape-draft-page.html` (raw numbers `heat.json`). Tools: `make cover-census`, `make cover-heat`,
+`tests/cover/cover_page.py`, `tests/cover/reshape_proposal.py`.
+
+**K5 draft (his gate, NOT applied):** turn lone clutter in the fighting into jersey barriers on the same spot, facing the enemy
+(a swap needs >= 50 sampled hits within 12 m of it and its mirror; containers that are part of a street wall are never touched).
+Under "re-shape, don't add" that finds: pit 1 pair, terminus 1, crossing 2, sumps 2, gorge 1, archipelago 2, docks 2; **foundry,
+yard, locks, parade, cut, yard_open: nothing** (their hottest streets have no lone clutter). Each swap trades hard cover (a
+container or wreck hides a crew completely) for low cover. **Apply note:** the dealt maps are written by `tools/make_arenas.py`
+(not cover's path): an approved re-shape must land there too, or the next `make arenas` undoes it (request to the orchestrator).
+
+### K2: decisions (the rule as built)
+- `Armor.low_cover_strike` (one function + its `cover_roll` hash; merge note to rules) called from `Match._shell_hit` and
+  `Match._fire_beam`: a PROJECTILE or BEAM round in the hull's FRONT arc (Armor.ARC_DEG) whose shooter is beyond a low feature
+  lying between the hull's face and 3 m past it (`CoverMap.HULLDOWN_REACH_M`) strikes the cover (no damage, an impact event on
+  the cover, `stats.cover_struck` +1) with probability = `CoverMap.low_screen`'s fraction. Side/rear, ARC (artillery from
+  above) and CONE (flames) never. Switch: `--cover-on=hulldown` (CoverMap.DEFAULT_OFF; `CoverMap.set_off` for tests).
+- **The fraction is honest geometry:** the share of the hull's presented front width the cover's shadow spans, times
+  min(1, cover height / hull height). Decided because he rejects "cheating" visuals: a jersey barrier visibly hides most of a
+  low car and little of a bus. Consequence, per unit behind a 0.9 m barricade: Rat Rod 0.73, law_scout 0.68, syn_ifv 0.67,
+  scout 0.60, syn_tank 0.49, gang_ifv 0.43; tanks/IFVs/artillery 0.22-0.34; gang_tank 0.17, law_suppressor 0.15.
+  **So today's barricade protects scouts and the Syndicate's low hulls; the big trucks barely.** (A question for him below.)
+- The roll is a hash of the projectile id (no RNG draw): OFF is byte-identical, the twin is trivial.
+- Lab (5b4e79362, laptop): IFV autocannon v a Rat Rod tight behind yard's barricade, 20 s a leg: frontal hits OFF 41, ON 13
+  (+29 on the cover; kept 0.31 v expected 0.27); flank OFF 45, ON 44 (+0). Scout machine gun (beam), 8 s: frontal OFF 43, ON 11
+  (+30; 0.27); flank 68 v 71 (+0).
+
+### K3: the seat API (C37.4)
+`TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m := 4.0, hull := SEAT_DEFAULT_HULL, node := null) -> Variant`.
+**One deviation from C37.4's signature: `map: CoverMap` first** (every TacticalQuery function takes it; orders has it via
+`CoverMap.of(node)`), plus the crew's `hull` (hull_size as a Vector3; the seat depends on its length) and `node` (any arena
+node: with it the seat must be on the navmesh and reachable from `near`). The seat: nose 1 m short of a low feature's near
+side, the cover between the crew and `threat_dir`, hiding >= 15 % of its front (the same `low_screen` the damage rule reads),
+within `max_shift_m`; best = most hidden, then shortest shift, then lowest feature index (deterministic). The caller lays the
+facing (= threat_dir). null = keep your own seat.
+
+### Bar K (filed 2026-10-21 before any number; recorded on main as R37.7)
+Arms ON (`--cover-on=hulldown`) v OFF, same seeds, same tree (pair named), on CP37.1's two lines, both factions both ways, n as
+CP37.1 sizes it. Positive control: ON's `stats.cover_struck` > 0 on every map. Deciding: the blob line moves toward the blob losing
+by more than CP37.1's 2-seed-block noise. Guards: the turtle line not toward the turtle winning beyond that noise; kills a fight
+and match length per faction within +-10 % of OFF; perf-judge PASS. A series before K5's re-shape is the null reading.
+**R37.7 (orchestrator):** granted `tools/make_arenas.py` and the arenas it regenerates, for low cover only, with a merge note.
+
+### Questions for the lead
+1. **(player terms)** A tank parked tight behind a waist-high jersey barrier: should it be hard to hit from the front even when
+   it is a tall truck that visibly towers over the barrier? Recommendation: **no, keep it honest**: low cars mostly hidden, big
+   trucks barely, and give the big ones real protection by re-shaping some clutter into **taller rubble (about chest height,
+   still low enough to see and shoot over)** where fights happen. (Taller rubble is a new prop look: art, then his page.)
+
+2. **(player terms)** The fighting on every map happens away from the few waist-high barriers there are. Re-shaping only what
+   is already there gives at most one or two new barrier spots on seven maps and none on the other six. Would you rather (a) keep
+   to re-shaping (small effect, maps unchanged in feel), or (b) allow a FEW barrier runs added in each map's hottest streets (the
+   maps get a little busier)? Recommendation: **(a) first** on the seven maps, measured; (b) only if the blob line says hull-down
+   needs more ground. The draft page shows every map before/after.
+
+### Requests to other streams
+- **native:** declare twins for `CoverMap.low_screen`, `Armor.cover_roll`, `TacticalQuery.low_cover_seat` (cover_native).
+  Low priority for speed: low_screen runs once per frontal hit, the seat once per halt.
+- **orders (O6):** the API above is on `stream/cover` 5b4e79362; I'll say when it is on main.
+- **rules (merge note):** two calls in `match.gd` (`_shell_hit`, `_fire_beam`), each guarded by `Armor.low_cover_strike`
+  returning null when OFF; `stats["cover_struck"]` is created only when ON.
+

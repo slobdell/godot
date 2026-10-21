@@ -100,3 +100,46 @@ static func split_shield(raw: float, shield: float, shield_multiplier: float, ar
 		return Vector2(against_shield, 0.0)
 	var absorbed_fraction := shield / against_shield
 	return Vector2(shield, raw * (1.0 - absorbed_fraction) * armor_multiplier)
+
+
+## Round 37 (cover, K2 / C37.3; `--cover-on=hulldown`, OFF until its bar passes): HULL-DOWN behind real low cover. A
+## direct round (shell or beam) arriving in `victim`'s FRONT arc from `from` strikes the low cover in front of the hull
+## instead, with the probability CoverMap.low_screen gives (how much of the presented front the cover hides). Flank and
+## rear hits, lobbed rounds (artillery comes down from above) and flames are never stopped. Returns where the round
+## struck the cover (a Vector3 on it), or null: the hit lands as before. The roll is a hash of the projectile id, so
+## it draws nothing from the fire RNG and the switch OFF leaves every run byte-identical.
+## Called from Match._shell_hit and Match._fire_beam (merge note to rules, who own the rest of combat).
+## `arena_node` is any node in the arena (its CoverMap is read only once the cheap tests pass).
+static func low_cover_strike(arena_node: Node, victim: Tank, weapon: Dictionary, from: Vector3, direction: Vector3,
+		projectile_id: int) -> Variant:
+	if CoverMap.off("hulldown"):
+		return null
+	var kind := int(weapon.get("kind", -1))
+	if kind != Weapons.Kind.PROJECTILE and kind != Weapons.Kind.BEAM:
+		return null
+	var forward := -victim.global_basis.z
+	if facing(forward, direction) != Facing.FRONT:
+		return null
+	var map := CoverMap.of(arena_node)
+	var toward := Vector2(-direction.x, -direction.z).normalized()
+	var center := Vector2(victim.global_position.x, victim.global_position.z)
+	var hull: Array = Units.stat(victim.unit_id, "hull_size")
+	var screen := map.low_screen(center, Vector2(forward.x, forward.z).normalized(), toward,
+			Vector3(float(hull[0]), float(hull[1]), float(hull[2])))
+	var fraction := float(screen["fraction"])
+	# The shooter must be beyond the screen: a gun between the cover and the hull shoots past it.
+	if fraction <= 0.0 or Vector2(from.x - center.x, from.z - center.y).dot(toward) <= float(screen["far"]):
+		return null
+	if cover_roll(projectile_id) >= fraction:
+		return null
+	var point: Vector2 = screen["point"]
+	return Vector3(point.x, 0.6, point.y)
+
+
+## A uniform [0, 1) from a projectile id (an integer hash; native's twin repeats it bit for bit).
+static func cover_roll(projectile_id: int) -> float:
+	var x := (projectile_id * 2654435761 + 0x9E3779B9) & 0xFFFFFFFF
+	x = (((x >> 16) ^ x) * 0x45D9F3B) & 0xFFFFFFFF
+	x = (((x >> 16) ^ x) * 0x45D9F3B) & 0xFFFFFFFF
+	x = (x >> 16) ^ x
+	return float(x & 0xFFFFFF) / 16777216.0
