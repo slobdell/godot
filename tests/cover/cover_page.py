@@ -28,12 +28,13 @@ def corners(pos, size, rot):
             for sx, sz in ((1, 1), (-1, 1), (-1, -1), (1, -1))]
 
 
-def plot(name, row):
+def plot(name, row, layout=None):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.patches import Polygon, Rectangle
-    layout = json.load(open(ROOT / "arenas" / f"{name}.json"))
+    if layout is None:
+        layout = json.load(open(ROOT / "arenas" / f"{name}.json"))
     half = float(layout.get("half_size", 120.0))
     fig, ax = plt.subplots(figsize=(7, 7))
     ax.set_facecolor("#15161a")

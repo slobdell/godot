@@ -12,12 +12,12 @@ HEAT_PAIRS ?= gangs:law law:syndicate syndicate:condemned condemned:gangs
 cover-census: ## K1: low cover per dealt map (pieces, length, facing, distance to lanes), no Godot -> build/cover/census.json
 	$(PYTHON) tests/cover/low_cover_census.py --json $(BUILD_DIR)/cover/census.json
 
-cover-heat: import ## K1: where hulls are hit on every dealt map: HEAT_SEEDS matches a map with --combat-log (HEAT_TIME, HEAT_JOBS, HEAT_MAPS="yard pit", HEAT_FLAGS) + the census beside it -> build/cover-heat/*.log, build/cover/heat.json
-	rm -rf $(BUILD_DIR)/cover-heat && mkdir -p $(BUILD_DIR)/cover-heat $(BUILD_DIR)/cover
+cover-heat: import ## K1: where hulls are hit on every dealt map: HEAT_SEEDS matches a map with --combat-log (HEAT_TIME, HEAT_JOBS, HEAT_MAPS="yard pit", HEAT_FLAGS; resumes: a log with its MATCH_RESULT is kept unless HEAT_FRESH=1) + the census beside it -> build/cover-heat/*.log, build/cover/heat.json
+	$(if $(HEAT_FRESH),rm -rf $(BUILD_DIR)/cover-heat &&) mkdir -p $(BUILD_DIR)/cover-heat $(BUILD_DIR)/cover
 	maps="$(HEAT_MAPS)"; [ -n "$$maps" ] || maps=$$($(PYTHON) -c 'import sys; sys.path.insert(0, "tests/cover"); import low_cover_census as c; print(" ".join(c.dealt()))'); \
 	pairs=($(HEAT_PAIRS)); \
 	for map in $$maps; do i=0; for seed in $(HEAT_SEEDS); do pair=$${pairs[$$((i % $${#pairs[@]}))]}; i=$$((i + 1)); \
-		echo "$$map $$seed $${pair%%:*} $${pair##*:}"; done; done | xargs -P $(HEAT_JOBS) -L 1 sh -c '\
+		grep -qs '^MATCH_RESULT' $(BUILD_DIR)/cover-heat/$$map-$$seed.log || echo "$$map $$seed $${pair%%:*} $${pair##*:}"; done; done | xargs -P $(HEAT_JOBS) -L 1 sh -c '\
 		timeout $$(( $(HEAT_TIME) * 6 + 300 )) $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control \
 			--arena=$$0 --seed=$$1 --green-faction=$$2 --rust-faction=$$3 --budget=5200 --time-limit=$(HEAT_TIME) --combat-log $(HEAT_FLAGS) \
 			> $(BUILD_DIR)/cover-heat/$$0-$$1.log 2>&1; echo "HEAT_RUN $$0 seed $$1 $$2 v $$3 exit $$?"'
