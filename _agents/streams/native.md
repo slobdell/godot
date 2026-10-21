@@ -93,12 +93,13 @@ commits cherry-picked, files byte-identical to stream/native's), full check queu
 b94025dbe + begin_yield's seatstep mirror per manoeuvre's spec. builder0 light `make native quick` exited 0, 21/0: every old
 test_native_yield stage PASS (switch OFF); new twin stages 0 mismatches: ON beam 6 m 18 drives (seated 18, moved 15, lead-out
 avoided 12), ON ahead 8 m move_to and face_slot 9 each (9/9/6), ON 14 m never fires, OFF never fires; test_traffic_seatstep 3/3.
-M1 sidestand needs no mirror (the far fire is GDScript-only). Full check queued on builder2 after CP37.1's (manoeuvre asked).
+M1 sidestand needs no mirror (the far fire is GDScript-only). **GREEN: 156d563d9** builder2 `make native check exited 0`,
+2984/0, 25 + 2 NOT JUDGED, sim-baseline 13/13 unmoved; manoeuvre told (it merges the pair into its M5 trees).
 
 **Unstick short-halt twin (manoeuvre's b496101bd, for rules' R2):** `pair/native-unstick` ca6978178 (side worktree
 ../godot-native-unstick) = b496101bd + drive_native's unstick early return when `tank.short_halt_seconds > 0` (after holding(),
 before seam_live(), as the GDScript) + tests/test_native_unstick_halt.gd: builder0 light quick exited 0, OFF 18 compared 0
-mismatches (GDScript fires 9/9), ON 18 compared 0 mismatches (0 fires). Rides in whichever pair ships first (M5a or R2).
+mismatches (GDScript fires 9/9), ON 18 compared 0 mismatches (0 fires). Manoeuvre merged it into stream/manoeuvre (4378658cb); its .uid (uid://b6ujvp2xqaynp, manoeuvre's) committed on the pair.
 
 **Twin questions answered in writing (orchestrator):** R37.2 rules (no twin: C++ reads sight live, never computes spread,
 drives the throttle tank.gd hands it); K2 (no native hit path skips cover's seam: shell_native only flies and emits `hit`,
