@@ -173,5 +173,34 @@ as named; N4 sweep; N5 lint; stretch.
   that never listens shows ~30 s later as "host never opened a room";
   (b) under `-eu -o pipefail` a combat-smoke client FAIL exits before the reap and the server-ERROR grep: red, but no
   diagnostics.
+- **E4b (stretch) DONE: e9190b443, `make native-first-tick-sync`.** R35.57's naming was wrong: the state is NOT engine-side and
+  NOT set by the first main-loop iteration. **It is the call context of the setup**, which decides whether a new body's
+  placement reaches the physics server before the body's first tick.
+  - **The real test** (scenarios_6 alone; laptop, GDScript, NATIVE=off, the 6839efe50 tree with local probes; n=1 each):
+
+    | Setup runs from | Reads |
+    |---|---|
+    | the physics-frame signal (today's warm-up) | 3.0 |
+    | the process-frame signal | 3.0 |
+    | the idle-frame flush | 3.0 |
+    | a call_deferred flushed inside a LATER physics frame (physics=3 process=2) | **4.8** |
+    | no warm-up | 4.8 |
+
+    The no-warm-up arm is not "before any iteration". Its setup runs at physics=1 process=0, inside the physics frame's
+    deferred flush, because `_initialize -> _run.call_deferred()`.
+  - **Ruled out**, each server switched off during the warm-up iteration, every arm still 3.0: PhysicsServer3D, PhysicsServer2D,
+    NavigationServer3D and NavigationServer2D. Also ruled out: the lab's start frame (waited_frames=1, tick=1, physics_frames=3
+    in both arms), autoloads (none), global RNG (none on AI paths), and frame-0 sentinels (all -1 / -1000000).
+  - **The two-body repro** (laptop = builder0, Godot 4.7.2 Jolt):
+    - Synced (the space holds the placement at tick 0, and the pair separates to -0.871/3.871): physics_flush, in_tick.
+    - Stale (the space holds the add-time origin, and penetration recovery throws them over each other): physics_signal,
+      process_signal, process_flush, main_ready.
+    - Engine order is inferred from the measurements, not read in source. A placement reaches the server at the SceneTree's
+      transform flush that follows the physics frame's deferred-call flush. A body built before that flush ticks synced; one
+      built earlier in the frame, or in idle, ticks once against the stale transform.
+  - **Real play:** `--skirmish` builds its squads in main._ready (main_ready is stale, the 3.0 class), so brains' warm-up stays
+    the right fix, for the corrected reason. Respawns go through `place()` (_placed_settle skips their stale tick).
+  - **Stale text** (others' paths, proposed to the orchestrator): run_tests.gd:115-121's comment ("engine-side state set by the
+    first iteration (most likely the physics space's first step)"), and R35.57 / HANDOFF "real play's engine state".
 
 **2026-10-20 (orchestrator, at launch).** Not started.
