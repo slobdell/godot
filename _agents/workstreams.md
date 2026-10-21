@@ -258,6 +258,18 @@ _Filed here before any number._
   client1's first snapshot, which counts tanks seen AT ONCE). **Grant:** native fixes it in `tests/net/bot_client_check.gd` (a passing
   client lingers `--linger` s, default 8) and adds `make relay-linger-smoke` to `mk/net.mk` (known answers: linger 0 must FAIL 4/5,
   linger 20 must PASS); not added to check. N5 (census lint) rides with native's next hand-over.
+- **R36.21 (2026-10-20 ~22:55 PDT) main 3fc78e502 (83eaddf66) GREEN, ALL JUDGED; the owed perf-judge is CLEARED.** builder0 `make native
+  check exited 0`: 2972/0, 27 targets all passed, ALL JUDGED, sim-baseline unmoved. perf-judge JUDGED PASS on attempt 2 of 3: ratio
+  1.08x, 9.2 ms AI a tick (cpus 0-3, load 5.26, not a quiet box; attempt 1 refused at 1.76x). Covers the joint, D5, T8, S1/S2a/yieldgap
+  OFF, orders' tooling and N4 (round 35's last judged read: fde32f78c 1.01x, 7.0 ms a tick, quiet). The raw ms are not comparable
+  across loads; the ratio is the verdict.
+- **R36.22 (2026-10-21 ~00:00 PDT) N5 + the linger fix merged: main f2090ffa5 INHERITS 024232755.** builder0 2971/1: the one red,
+  test_match_shell_dropped_peer ("the relay session has ended (expected 0, got 2)"), re-ran ALONE 5/5 on 024232755; the diff is not on
+  its path (R36.12's rule). Native's trace: a TEST race (RelayPeer._poll ends the session only after the grace on a later
+  process-frame poll; the test waits 2 physics frames, which under load can carry 0–1 polls). **Grant:** native replaces the fixed
+  2-frame wait with a bounded wait for CONNECTION_DISCONNECTED (<= 30 frames), both asserts kept; it rides with native's next
+  hand-over. **Pattern (third network-test flake today: net-smoke, relay-smoke, this one):** each a test waiting on a frame count or
+  leaving early, not the game. Lesson: a networked test waits for the EVENT, bounded, never for a frame count.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)

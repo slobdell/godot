@@ -4154,3 +4154,52 @@ with its own squad, and avoid crossings by swapping whole squads' patches and se
   and under his control.* A behaviour with a good internal reason that LOOKS dumb (a loop to a seat behind, a squad that arrives one
   vehicle short, a parked crew that wanders off) counts against the game, as a reviewer would count it. Streams judge their work by
   what he would see, not only by the decision tree's logic.
+
+## Round 36: his direction against the slug-fest (2026-10-20 ~23:30 PDT, in chat, verbatim; round 37+ direction)
+
+> "basically, the non-lethal vehicles for the road gangs and the law (i.e. the medic vehicles for the road gangs, which don't seem
+> to do anything, and the law vehicles with the non-lethal sirents or whatever which also don't seem to do anything) just seem to be
+> wastes of units [...] the big challenge I have at this point is how to generally mitigate the game turning into one big slug fest.
+> FOr example, if I just select all units and have them all just do a frontal assault against the enemy, that strategy ends up
+> winning for the most part it seems. [...] How can we make it so that tactics and strategy can win out over a large frontal
+> assault?"
+
+> "from what you've said it sounds like the problem is not the units, but the rules of the game. For both the medic truck and the
+> siren truck, we need to add some sort of clear visualization in the game so the user has feedback to know that these things are
+> working. Then for each of the 4 recommended ideas (i.e. flanks pay off, splash damage, etc) we should definitely start to consider
+> those, and like you said, we can measure it where clumping units in a full frontal assault results in a negative outcome. What are
+> some other ideas, especially given the notion that in the real world, the defender generally has an advantage (i.e. thinking about
+> Russia / Ukraine conflict, advantage in terms of the number of casualties inflicted by acting as the defender)"
+
+- **Decided:** keep the gangs' Resupply Tanker (repairs 5 hp/s within 18 m) and the Law's Sonic Emitter (4 suppression/s in a 32 m
+  cone, 0 damage), and give each a CLEAR in-game visualisation so he can see them working (repair beams/sparks and rising health on
+  the mended vehicle; a visible sound cone and "pinned" markers / wild shots on suppressed targets).
+- **To consider (round 37+), the four rule levers:** clumping is punished (area effects), the defender has an edge, flanks pay off
+  visibly, information matters (ambushes unseen until sprung). Plus the defender-advantage ideas discussed the same evening
+  (motion reveals; firing on the move is worse; digging in; pre-registered fire; obstacles; first-shot ambush).
+- **The measure:** a scoreboard line "an all-units frontal assault v the same army played with tactics", headless, many seeds;
+  today the blob probably wins; each lever should move it. Guard: a pure turtle must not always win either.
+
+### OPEN QUESTIONS for him before round 37 (the slug-fest; he asked to come back to these, 2026-10-20 ~23:45)
+
+Asked to be persisted, not decided yet ("most of these ideas sound really good, and I want to talk about them later"). The next
+orchestrator raises them with him BEFORE splitting round 37, one at a time, in player terms, each with a recommendation.
+
+1. **Motion reveals.** A moving vehicle is spotted much farther away than a still one; still and in cover, closer still. (Not in the
+   game today.) Recommendation: yes, first.
+2. **Firing on the move.** Today a moving shot spreads 1.5x (`Match.MOVING_SPREAD_FACTOR`). Raise it to ~2.5–3x so a stopped vehicle is
+   clearly deadlier? Recommendation: yes, first.
+3. **Dig in.** After ~10–15 s still, a vehicle entrenches (a visible berm), taking much less frontal damage. Recommendation: yes, first.
+4. **Ambush first shot.** A hidden unit's opening volley gets an accuracy bonus and briefly pins its target. Recommendation: after 1.
+5. **Pre-registered fire.** Mark a kill zone ahead of time; artillery into it is accurate from the first shell.
+6. **Obstacles / channelling.** Mines, wrecks, roadblocks that force an attacker into a crowd (and pairs with area damage).
+7. **Short supply lines.** The defender near its resupply keeps fighting; a far-advanced attacker runs dry (ammo and repair exist).
+8. **Suppression stops an advance.** A pinned unit slows or halts, not just shoots wide: fire-and-manoeuvre becomes the way through.
+9. **The four levers from the first message:** clumping punished (area effects / splash), defender edge, flanks pay visibly (side
+   and rear armour exist, front 4 / side 3 / rear 2, but aren't felt), information (ambushes unseen until sprung).
+10. **Unit swaps (parked by his "the problem is not the units, but the rules"):** gangs' Oil Slick Rig, Law's Spike-Strip
+    Interceptor; alternates: roadblock truck, drone/spotter van, smoke layer.
+11. **The balance guard:** a blob frontal assault should lose, AND a pure turtle must not always win (the attacker keeps smoke,
+    artillery, scouting, flanking as tools).
+
+Already decided (not open): the support trucks get visible feedback; the measure is a blob-v-tactics scoreboard line.

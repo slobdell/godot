@@ -29,6 +29,7 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 **The orchestrator's open items (in order):**
 1. ~~CP36.1~~ MERGED (R36.1, e45bb6632). **main 5d6bb1de8 is GREEN** (R36.5): it inherits `pair/native-s1s3-main` `20acbda5f`'s
    builder0 check (2961/0, 13 unmoved), which contains the joint + D5 + S3 (W1b deleted) + S1 stallnet OFF.
+   **main 3fc78e502 (83eaddf66) = + N4: GREEN, ALL JUDGED (R36.21), builder0 2972/0, perf-judge PASS 1.08x.**
    **main 6d4e18e29 = + orders' hand-over (R36.13): GREEN, builder0 `make native check exited 0`, 2972/0, 25 + 2 NOT JUDGED,
    sim-baseline 13/13 unmoved (T8 + S2a/yieldgap OFF + orders together).**
    **main 3d46b2884: T8 SHIPPED ON** (R36.12; held deaths 253 -> 109 / 140 fights). **main 10318ec81** adds S2a h1bside + yieldgap OFF (inherits 32ba4ca99, 2967/0, R36.7). O2 failed (R36.6); orders' hand-over
@@ -42,7 +43,7 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 3. **T8: pair `a2de32420` green on builder2 (2963/0, 13 unmoved, switch-OFF inert); series running since 14:53 (unit
    t8-series-r36d).** On PASS: traffic cuts the ON hand-over; the orchestrator grants ONE quiet builder0 window for perf-judge on it,
    which also clears main's owed one.
-4. Perf-judge alone on a quiet builder for round 35's main is still owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
+4. ~~Perf-judge owed~~ CLEARED (R36.21): main 83eaddf66 perf-judge PASS 1.08x inside its full check. Previously: perf-judge was owed (T7, E1, D1, D6, M5 judged PASS at fde32f78c; D5 and the
    joint since).
 
 **His packing answer (2026-10-20, game_design.md *Round 36: his packing answer*): keep 9 m.** O4 stays parked.
@@ -55,6 +56,12 @@ his "stay put" answer; STOPPED SHORT -> round 37; re-dealt crews -> his "own squ
 **traffic is DONE (2026-10-20 ~18:30):** stream/traffic 362848e6a green (builder2 2969/0); game code = main's; tooling/docs only, not a
 merge candidate (merge its tooling at the close if wanted). T8 does not show on the scoreboard (its gain has no line); native adds a
 "killed while held" line.
+
+**BEFORE ROUND 37: raise the 11 OPEN QUESTIONS with him (game_design.md *OPEN QUESTIONS for him before round 37*), one at a
+time, in player terms. He asked to come back to them before the next round.**
+**His round-37+ direction (game_design.md *Round 36: his direction against the slug-fest*):** the support trucks get visible
+feedback; rule levers so a blob frontal assault loses (area effects, defender edge, flanks, information); a blob-v-tactics
+scoreboard line as the measure.
 
 **Round 37 candidates so far (from round 36's reads):** CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
 9 of 11 jam:yielding-to-another-squad deaths); the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped
