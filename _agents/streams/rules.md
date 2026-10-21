@@ -143,6 +143,14 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
 - **Last attempt / partial rule:** one re-tune per rule only on the guard lines (brief's stretch), then judged as it stands.
 
+**Arm recipe (from native, 2026-10-21; tooling in stream/native 420048f99 and pair/native-cp371 2bb41ef93):**
+`GUARD_ARGS=--rules-on=<rule> GUARD_TAG=<rule> tools/scoreboard/guard.sh <pair commit>`. This runs on builder2, chunked
+and resumable after preemptions; it uses one scratch folder (../godot-native-guard), so either one arm at a time or a separate
+GUARD_WORKTREE. Then `python3 tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl
+../godot-native-guard-raw/<commit>-<rule>`. The builder2 queue is shared, so each arm's start is written here.
+Base replay: native re-ran 20 of the 9d325e291 fights on today's main, byte-identical (builder2). Blocks 2601+ / 2701+:
+blob 49 / 46 %, turtle 41 / 38 %. **Waiting on:** CP37.1 and rules both on main (neither is as of bd2810019).
+
 **Rulings received:** R37.2 (a) no twins provisional, (b) **no short halt under his plain MOVE** (attack-move, hold, parked,
 CPU only; built: `ShortHalt.plain_player_move`, game/combat/short_halt.gd, lab cases in test_rules_spread), (c) R2's bar
 carries contention guards (friendly contacts, all-in time, held behind a halted friend, manoeuvre's wedge line).
