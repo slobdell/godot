@@ -62,14 +62,17 @@ GUARD_SEEDS ?= $(SCORE_FIGHT_SEEDS)
 GUARD_SIDES ?= green rust
 GUARD_SECONDS ?= 600
 GUARD_JOBS ?= 16
+# Round 37 (cover K4, rules): an ARM's switches, passed to every fight after `--` (GUARD_ARGS=--cover-on=hulldown), so a rule runs
+# on the same fights as the base (references/scoreboard/guards/<base>.fights.jsonl; tools/scoreboard/guard.py --pair).
+GUARD_ARGS ?=
 .PHONY: guard-run
 guard-run: import ## CP37.1: the blob and turtle guard lines on this tree -> build/guards/ (read by tools/scoreboard/guard.py)
 	@rm -rf $(GUARD_DIR) && mkdir -p $(GUARD_DIR)
-	@echo ">> guard-run on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | kinds '$(GUARD_KINDS)' | seeds $(firstword $(GUARD_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee $(GUARD_DIR)/run.txt
+	@echo ">> guard-run on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | kinds '$(GUARD_KINDS)' | args '$(GUARD_ARGS)' | seeds $(firstword $(GUARD_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee $(GUARD_DIR)/run.txt
 	@for kind in $(GUARD_KINDS); do mkdir -p $(GUARD_DIR)/$$kind; for seed in $(GUARD_SEEDS); do for arena in $(GUARD_AT); do \
 		for side in $(GUARD_SIDES); do echo "$$kind $$arena $$seed $$side"; done; done; done; done | \
 		xargs -P $(GUARD_JOBS) -L 1 sh -c 'timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
 		--script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean --seed=$$2 --arena=$$1 --mute \
-		--guard=$$0 --guard-side=$$3 --seconds=$(GUARD_SECONDS) > $(GUARD_DIR)/$$0/$$1-$$2-$$3.log 2>&1 || true; \
+		--guard=$$0 --guard-side=$$3 --seconds=$(GUARD_SECONDS) $(GUARD_ARGS) > $(GUARD_DIR)/$$0/$$1-$$2-$$3.log 2>&1 || true; \
 		grep -q "^GUARD_RESULT" $(GUARD_DIR)/$$0/$$1-$$2-$$3.log || echo "  MISSING GUARD_RESULT $$0 $$1 s$$2 $$3"'
 	@echo ">> guard-run done: $$(grep -l '^GUARD_RESULT' $(GUARD_DIR)/*/*.log 2>/dev/null | wc -l) of $$(ls $(GUARD_DIR)/*/*.log | wc -l) fights" | tee -a $(GUARD_DIR)/run.txt
