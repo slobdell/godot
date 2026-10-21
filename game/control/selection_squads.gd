@@ -131,8 +131,22 @@ static func deal(members: Array[String], position: Callable) -> Array:
 ## forms one for exactly those vehicles, and the next order he gives a group re-forms it from the group.
 ## `anchors[i]` is squad i's anchor; `position(name) -> Vector3`. Returns the squads in the same order, a dealt one
 ## marked "dealt": true.
+##
+## Round 37 (orders O3, his answer: "every vehicle with its own squad, PROVIDED contention is not worse"): under
+## UNTANGLE_WHOLE the squads that cross keep their vehicles and swap PLACES instead: `untangle_whole` writes the chosen
+## places into `anchors` (whole squads, each still under its own element) and returns the squads untouched.
+## `--untangle=whole` (env UNTANGLE=whole); today's deal is the default.
+static var UNTANGLE_WHOLE := OS.get_cmdline_user_args().has("--untangle=whole") or OS.get_environment("UNTANGLE") == "whole"
+## Measurement: squads given another squad's place by untangle_whole, and knots it could not uncross, since start.
+static var swapped_whole := 0
+static var whole_still_crossed := 0
+
+
 static func untangle(squads: Array, anchors: Array[Vector3], position: Callable) -> Array:
 	if squads.size() < 2 or anchors.size() < squads.size():
+		return squads
+	if UNTANGLE_WHOLE:
+		untangle_whole(squads, anchors, position)
 		return squads
 	# A deal inside one knot can, rarely, cross a squad outside it: a second pass deals that knot too.
 	var result := squads
@@ -203,6 +217,83 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 			if ",".join(piece) == ",".join(PackedStringArray(own)):
 				continue
 			result[i] = {"number": int(squads[i].get("number", 0)), "units": piece, "element": null, "dealt": true}
+	return result
+
+
+## O3: the places of crossing squads permuted WHOLE: within each knot of squads whose vehicles' straight drives cross
+## (the same knots `untangle` deals), every assignment of the knot's places to its squads is tried (a knot is at most five
+## squads: 120) and the one with the fewest crossing pairs of vehicle drives between different squads wins, then the least
+## total straight driving, then the order they had (stable). `anchors` is rewritten in place; returns the squads moved.
+static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable) -> int:
+	var starts := {}
+	for i in squads.size():
+		for unit_name: String in squads[i]["units"]:
+			var p: Vector3 = position.call(unit_name)
+			starts[unit_name] = Vector3(p.x, 0.0, p.z)
+	var family: Array[int] = []
+	for i in squads.size():
+		family.append(i)
+	for i in squads.size():
+		for j in range(i + 1, squads.size()):
+			if _root(family, i) != _root(family, j) and _pair_crosses(squads[i]["units"], anchors[i], squads[j]["units"], anchors[j], starts) > 0:
+				family[_root(family, i)] = _root(family, j)
+	var groups := {}
+	for i in squads.size():
+		var root := _root(family, i)
+		if not groups.has(root):
+			groups[root] = []
+		(groups[root] as Array).append(i)
+	var moved := 0
+	for members: Array in groups.values():
+		if members.size() < 2:
+			continue
+		var places: Array[Vector3] = []
+		for i: int in members:
+			places.append(anchors[i])
+		var best: Array = []
+		var best_key := [INF, INF]
+		for perm: Array in _permutations(members.size()):
+			var crossings := 0
+			var drive := 0.0
+			for a in members.size():
+				var at: Vector3 = places[perm[a]]
+				for unit_name: String in squads[members[a]]["units"]:
+					drive += _xz(starts[unit_name]).distance_to(_xz(at))
+				for b in range(a + 1, members.size()):
+					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
+			if crossings < best_key[0] or (crossings == best_key[0] and drive < best_key[1] - 0.01):
+				best_key = [crossings, drive]
+				best = perm
+		if best_key[0] > 0:
+			whole_still_crossed += 1
+		for a in members.size():
+			if int(best[a]) != a:
+				moved += 1
+			anchors[members[a]] = places[best[a]]
+	swapped_whole += moved
+	return moved
+
+
+## Crossing pairs between two squads' vehicle drives (each vehicle straight to its squad's place).
+static func _pair_crosses(units_a: Array, at_a: Vector3, units_b: Array, at_b: Vector3, starts: Dictionary) -> int:
+	var count := 0
+	for a: String in units_a:
+		for b: String in units_b:
+			if Geometry2D.segment_intersects_segment(_xz(starts[a]), _xz(at_a), _xz(starts[b]), _xz(at_b)) != null:
+				count += 1
+	return count
+
+
+## Every ordering of 0..n-1, the identity first (so a tie keeps the order they had).
+static func _permutations(n: int) -> Array:
+	if n <= 1:
+		return [[0]] if n == 1 else [[]]
+	var result: Array = []
+	for rest: Array in _permutations(n - 1):
+		for k in range(rest.size(), -1, -1):
+			var perm := rest.duplicate()
+			perm.insert(k, n - 1)
+			result.append(perm)
 	return result
 
 

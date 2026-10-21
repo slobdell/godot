@@ -32,6 +32,8 @@ const MAIN := "res://game/main.tscn"
 const DECK_BACK_M := 18.0
 const WINDOW_S := 90.0
 const AFTER_ARRIVAL_S := 30.0
+## O2 (round 37): how long a fight probe watches the parked squads after the last arrived.
+const FIGHT_AFTER_S := 120.0
 const PLACE_S := 8.0
 const SHOT_AFTER_S := 5
 ## Squad 1..5's anchor posts in the shots (the order the probe lists squads in).
@@ -66,8 +68,13 @@ func _run() -> void:
 	var map := _flag("arena", "locks")
 	var count := int(_flag("probe-squads", "3"))
 	var flags := LaunchFlags.from_environment()
+	# Round 37 (orders O2): `--probe-fight=on` parks his squads where the click puts them and lets a real CPU army
+	# (`--probe-enemy`, default cpu, at `--probe-budget` points) come to them, for FIGHT_AFTER_S after all are in.
+	var fight := _flag("probe-fight", "off") == "on"
+	var enemy := "--enemy=%s" % _flag("probe-enemy", "cpu") if fight else "--enemy=res://tests/control/orders_probe_enemy.json"
+	var budget := "--budget=%s" % _flag("probe-budget", "2500") if fight else "--budget=6000"
 	for extra: String in ["--skirmish", "--player=res://tests/control/orders_probe_%d.json" % count,
-			"--enemy=res://tests/control/orders_probe_enemy.json", "--budget=6000", "--no-control", "--no-pick-faction",
+			enemy, budget, "--no-control", "--no-pick-faction",
 			"--hints=off", "--no-record", "--squad-cap=%d" % count]:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		flags.values[parts[0]] = parts[1] if parts.size() > 1 else ""
@@ -84,11 +91,12 @@ func _run() -> void:
 	# The token enemy stands still at its base: its controllers are freed (a probe of driving, not of a fight; a picket
 	# that drove into sight was killed in the first windowed run and the VICTORY banner covered the shot).
 	# It is also held in the far corner every tick (`_park`): its brain lives outside `brains` in a skirmish.
-	for brain in _match.brains.get_children():
-		var driven: Variant = brain.get("tank")
-		if driven is Tank and (driven as Tank).team != Match.Team.GREEN:
-			brain.queue_free()
-	physics_frame.connect(_park)
+	if not fight:
+		for brain in _match.brains.get_children():
+			var driven: Variant = brain.get("tank")
+			if driven is Tank and (driven as Tank).team != Match.Team.GREEN:
+				brain.queue_free()
+		physics_frame.connect(_park)
 	if paused:
 		_controls.set_paused(false, "")
 	for i in 30:
@@ -144,7 +152,9 @@ func _run() -> void:
 		squad["shuffle"] = 0.0
 		_last_centre[squad["number"]] = squad["start"]
 	var all_in_tick := -1
-	while _match.tick - _order_tick < int(WINDOW_S * SimClock.TICK_RATE):
+	var window_s := WINDOW_S + (FIGHT_AFTER_S - AFTER_ARRIVAL_S if fight else 0.0)
+	var after_s := FIGHT_AFTER_S if fight else AFTER_ARRIVAL_S
+	while _match.tick - _order_tick < int(window_s * SimClock.TICK_RATE):
 		await physics_frame
 		_watch()
 		var all_in := _squads.all(func(s: Dictionary) -> bool: return int(s["arrived_tick"]) >= 0)
@@ -154,7 +164,7 @@ func _run() -> void:
 		# And 5 s later: what he sees once the squads have settled (or shuffled) after arriving.
 		if all_in_tick >= 0 and _match.tick - all_in_tick == SHOT_AFTER_S * SimClock.TICK_RATE:
 			await _shots("arrival_plus5")
-		if all_in_tick >= 0 and _match.tick - all_in_tick >= int(AFTER_ARRIVAL_S * SimClock.TICK_RATE):
+		if all_in_tick >= 0 and _match.tick - all_in_tick >= int(after_s * SimClock.TICK_RATE):
 			break
 	if all_in_tick < 0:
 		await _shots("window_end")
@@ -198,6 +208,16 @@ func _run() -> void:
 				"shapes": squad.get("shapes", []),
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
+				"self_off_m": snappedf((squad.get("self_off", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
+				"self_off_crews": (squad.get("self_off", {}) as Dictionary).size(), "left_by": squad.get("left_by", {}),
+				"self_off_back": (squad.get("self_off", {}) as Dictionary).keys().filter(func(n: String) -> bool:
+						return _tank(n) != null and _tank(n).is_alive() and _flat_d(_tank(n).global_position, squad["placed"][n]) <= BACK_M).size(),
+				"placed_crews": (squad.get("placed", {}) as Dictionary).size(),
+				"lost_after_placed": (squad.get("placed", {}) as Dictionary).keys().filter(func(n: String) -> bool:
+						return _tank(n) == null or not _tank(n).is_alive()).size(),
+				"end_seat_m": snappedf(_living(squad).filter(func(n: String) -> bool: return (squad.get("placed", {}) as Dictionary).has(n)) \
+						.map(func(n: String) -> float: return _flat_d(_tank(n).global_position, squad["placed"][n])).reduce(
+						func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
@@ -213,6 +233,11 @@ func _run() -> void:
 			"gates_laid": _static_or(RtsControls, "gates_laid"), "route_starts": _static_or(RtsControls, "route_starts"),
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
 			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "pack_refused": SelectionSquads.pack_refused, "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
+			"friend_contacts": _contacts, "friend_contacts_foreign": _contacts_foreign, "contact_ticks": _contact_ticks,
+			"swapped_whole": SelectionSquads.swapped_whole, "whole_still_crossed": SelectionSquads.whole_still_crossed,
+			"untangle": "whole" if SelectionSquads.UNTANGLE_WHOLE else "deal",
+			"fight": _flag("probe-fight", "off"), "green_kills": _sum_values(_match.kills_by_unit[Match.Team.GREEN]),
+			"green_lost": int(_match.units_lost[Match.Team.GREEN]), "rust_lost": int(_match.units_lost[Match.Team.RUST]),
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
@@ -251,8 +276,45 @@ func _park() -> void:
 			(t as Tank).velocity = Vector3.ZERO
 
 
+## O3 (round 37, the contention guard): friendly hull contacts, from each of his hulls' physics collisions this tick
+## (CharacterBody3D slide collisions with another of his Tanks); a pair counts once when it starts touching.
+## `_contacts` all pairs, `_contacts_foreign` pairs from different squads (as dealt at the start), `_contact_ticks`
+## pair-ticks in contact.
+var _contacts := 0
+var _contacts_foreign := 0
+var _contact_ticks := 0
+var _contact_last := {}
+
+
+func _watch_contacts() -> void:
+	var squad_of := {}
+	for squad: Dictionary in _squads:
+		for n: String in squad["units"]:
+			squad_of[n] = int(squad["number"])
+	var now := {}
+	for t: Node in _match.tanks.get_children():
+		var tank := t as Tank
+		if tank == null or tank.team != Match.Team.GREEN or not tank.is_alive():
+			continue
+		for k in tank.get_slide_collision_count():
+			var other := tank.get_slide_collision(k).get_collider() as Tank
+			if other == null or other.team != Match.Team.GREEN or other == tank:
+				continue
+			var a := String(tank.name)
+			var b := String(other.name)
+			now[a + "|" + b if a < b else b + "|" + a] = [a, b]
+	for key: String in now:
+		_contact_ticks += 1
+		if not _contact_last.has(key):
+			_contacts += 1
+			if squad_of.get(now[key][0], -1) != squad_of.get(now[key][1], -2):
+				_contacts_foreign += 1
+	_contact_last = now
+
+
 ## Every tick: decks crossed, the centre's path, arrival (and the hulls around it then), and the shuffle after it.
 func _watch() -> void:
+	_watch_contacts()
 	for squad: Dictionary in _squads:
 		var alive: Array = (squad["units"] as Array).filter(func(n: String) -> bool:
 			var t := _tank(n)
@@ -304,8 +366,12 @@ func _watch() -> void:
 				var elements := Elements.of_match(_match)
 				var now: Element = elements.of(n) if elements != null else null
 				# Round 37 (orders O2): the crew's own words (TankBrain.label + why), to read a parked crew that moves.
-				parts.append("%s(%.1f,%.1f goal %s %s el %s \"%s\")" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
-						str(_xz(goal)) if goal is Vector3 else "-", option, now.element_name if now != null else "-", _tank(n).intent])
+				var station: Variant = OrderFeed.station(_controls.orders, n)
+				var drive: Variant = mover.get("_goal") if mover != null else null
+				parts.append("%s(%.1f,%.1f goal %s %s el %s \"%s\" st %s drv %s)" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
+						str(_xz(goal)) if goal is Vector3 else "-", option, now.element_name if now != null else "-", _tank(n).intent,
+						str(_xz(station)) if station is Vector3 else "-",
+						str(_xz(drive)) if drive is Vector3 and (drive as Vector3).is_finite() else "-"])
 			print("ORDERS_PROBE_TRACE t=%d %s" % [(_match.tick - _order_tick) / SimClock.TICK_RATE, " ".join(parts)])
 		# Each crew's OWN destination (its formation slot, not the squad's anchor), sampled every half second: one past a
 		# deck on the far bank is a crew sent over the river however the anchor was capped.
@@ -438,6 +504,26 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 	squad["away_held"] = held
 	squad["seat_gap"] = seat_gap
 	squad["away_seat"] = seat_away
+	# O2 (round 37): a crew more than PARKED_OFF_M off its placed seat with NO order goal is off it by its own choice
+	# (his "stay put and shoot"); `self_off` keeps each such crew's farthest.
+	var self_off: Dictionary = squad.get("self_off", {})
+	for n: String in alive:
+		if placed.has(n) and not (_controls.orders.goal_position(n) is Vector3):
+			var off := _flat_d(_tank(n).global_position, placed[n])
+			if off > PARKED_OFF_M:
+				if not self_off.has(n):
+					# What took it off: the brain's option the tick it passed PARKED_OFF_M, "+nogoal" when its Movement had
+					# no goal set then (a give-way push, or an option that steers without one: SPOT, RETREAT read so).
+					var mover := Movement.of(_tank(n))
+					var why := String((mover.ctl as TankBrain).choice.get("option", "")) if mover != null and mover.ctl is TankBrain else "-"
+					var drive: Variant = mover.get("_goal") if mover != null else null
+					if not (drive is Vector3 and (drive as Vector3).is_finite()):
+						why += "+nogoal"
+					var by: Dictionary = squad.get("left_by", {})
+					by[why] = int(by.get(why, 0)) + 1
+					squad["left_by"] = by
+				self_off[n] = maxf(float(self_off.get(n, 0.0)), off)
+	squad["self_off"] = self_off
 	for n: String in alive:
 		if placed.has(n):
 			var moved := _flat_d(_tank(n).global_position, placed[n])
@@ -462,6 +548,10 @@ const PASS_M := 4.0
 const DETOUR_M := 8.0
 ## A crew this far off its placed seat after the place window counts toward `twitch_seen` (ticks a brain option was shown).
 const TWITCH_SEEN_M := 3.0
+## O2 (round 37): off its placed seat by more than this with no order goal = it left the seat by itself.
+const PARKED_OFF_M := 6.0
+## ... and back on it at the window's end within this.
+const BACK_M := 3.0
 ## O4 (round 37): a crew's order goal this close to last tick's is the same goal (`away_held_m`).
 const GOAL_SAME_M := 0.5
 
@@ -738,6 +828,13 @@ func _own_min(alive: Array, hulls: bool) -> float:
 				d -= SlotGround.envelope_of(String(a.unit_id)) + SlotGround.envelope_of(String(b.unit_id))
 			best = minf(best, d)
 	return best if best < INF else -1.0
+
+
+func _sum_values(d: Dictionary) -> int:
+	var total := 0
+	for v: Variant in d.values():
+		total += int(v)
+	return total
 
 
 func _living(squad: Dictionary) -> Array:
