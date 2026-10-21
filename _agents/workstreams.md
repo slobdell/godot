@@ -371,6 +371,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   11.0 / 90 % / 654; softer leashes leave 16-18 m and only cost aim. The distance is the turn-in's own arcs: a fixed gun on wheels must
   drive to aim at a circling enemy. **Ruled:** M6 parked OFF on its lab branch; the lead is told the recommendation is now to leave
   the turn-in (O2's drive-back returns the scout after the fight); option "hold still, fire only in arc" stays his to pick.
+  **Reconciled (manoeuvre, orders' exact command, budget 1500):** face_drift 956.2 s, of which the scout turn-in is 944.7 s and
+  8,247 m (99 %): the turn-in is ~56 % of all parked off-seat time in O2's base. Evidence lab/manoeuvre-r37-m6trace,
+  `references/round37/manoeuvre/m6/README.md`.
 - **R37.16 (2026-10-21) CP37.1 MERGED; a batch follows.** main d9545d381 merges pair/native-cp371 bc9c1301d ALONE (INHERIT its
   builder2 `make native check exited 0`, 2988/0, sim-baseline 13/13 unmoved). Then one batch: 84c11a60d merges native's 2bb41ef93 (the
   base's per-fight rows `references/scoreboard/guards/9d325e291.*`, `guard.py --pair`, GUARD_ARGS/GUARD_TAG, cover_struck in
