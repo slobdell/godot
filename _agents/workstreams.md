@@ -191,7 +191,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
-  native light, f4437d26a, the fight probe, locks/crossing/terminus x 3 squads x click x 3621-3626 = 18 fights: `off_idle_s` (an idle
+  native light, 3e5944657 (= f4437d26a + an evidence-only commit), the fight probe, locks/crossing/terminus x 3 squads x click x
+  3621-3626 = 18 fights (face_drift's definition is broader than manoeuvre's tag, 409.5 s; manoeuvre picks the tag both quote; the
+  deciding off_idle_s total doesn't depend on the split): `off_idle_s` (an idle
   crew's seconds > 6 m off its station, the seat his order left it on, whatever moved it) = 1696.4 s, 94.2 a fight (sd 111.0, se
   26.2). Split by what happens on each off tick: giveway (`Movement.yield_to` now or within 3 s; M5's) 79.9, face_drift (> 0.5 m/s
   under the brain's face/stop; M6's) 956.2 (56 %), brain (under its own move_to) 81.2, still (standing off its seat) 579.4 (34 %).
