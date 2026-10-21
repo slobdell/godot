@@ -1668,17 +1668,27 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 	var end := to
 	var victim: Tank = null
 	var result := {}
+	var screened := false
 	if not hit.is_empty():
 		end = hit.position
 		victim = hit.collider as Tank
-		if victim != null and victim.is_alive():
+		# Round 37 (cover, K2): as in _shell_hit, the low cover in front of a hull-down crew may take the pulse.
+		var screen: Variant = Armor.low_cover_strike(self, victim, weapon, from, direction, projectile_id) \
+				if victim != null and victim.is_alive() else null
+		if screen != null:
+			stats["cover_struck"] = int(stats.get("cover_struck", 0)) + 1
+			end = screen
+			victim = null
+			screened = true
+		elif victim != null and victim.is_alive():
 			result = _land_hit_result(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
 		else:
 			victim = null
 	# L2: hitscan rounds suppress the corridor they crossed, whether or not they hit (the wall of bullets).
 	var suppression := _suppress_lane(tank.team, from, end, weapon, victim)
 	if not hit.is_empty():
-		_emit_impact(projectile_id, hit.position, hit.normal, victim, result, suppression)
+		_emit_impact(projectile_id, end if screened else hit.position, -direction if screened else hit.normal, victim, result,
+				suppression)
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
@@ -2085,7 +2095,14 @@ func _shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	# L2: the round suppressed everything along the corridor it flew down before it stopped here.
 	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon,
 			victim if victim != null and victim.is_alive() else null)
-	if victim != null and victim.is_alive():
+	# Round 37 (cover, K2): a hull-down crew's low cover may take the round instead (`--cover-on=hulldown`; OFF: null).
+	var screen: Variant = Armor.low_cover_strike(self, victim, weapon, shell.ray_start, shell.direction,
+			shell.projectile_id) if victim != null and victim.is_alive() else null
+	if screen != null:
+		stats["cover_struck"] = int(stats.get("cover_struck", 0)) + 1
+		_emit_impact(shell.projectile_id, screen, -shell.direction, null, {}, suppression)
+		point = screen
+	elif victim != null and victim.is_alive():
 		var hit := _land_hit_result(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 		killed = hit["killed"]
 		_emit_impact(shell.projectile_id, point, shell.hit_normal, victim, hit, suppression)
