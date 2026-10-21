@@ -72,6 +72,128 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-21 ~06:50 (worker): S2a PASSES Bar S2a's series.** builder2 (GCP e2-highcpu-32 Spot) native, J=6, ON `lab/s2a-on`
+`bf678480c` v base `lab/s2a-base` = main `e525f7311`. Fights, wedge and jam: locks/terminus/sumps x 6540–6563, 72 pairs. Hull-rest:
+6501–6532 x 4 factions x 6 tasks, 128 pairs a task. Judge + README: `references/round36/manoeuvre/s2a-series/` (`59dc89ba8`).
+- **Far loops** 91 -> 35 (−56; bound 38.6). Stuck deaths 527 -> 497, jam 171 -> 188, open 2324 -> 2329: all within noise.
+- Kills, deaths and hit rate are flat for both teams. Friendly contacts −14127 and give-ways +150 are within noise.
+- (d)/(e)/(f) pass for all 6 tasks; faced_right never settled 19 -> 12.
+- **Player line** (left_behind, 768 runs an arm): 77 -> 65 crews left behind. wedged:idle 36 -> 34, wander 21 -> 10. Rocking 5 -> 5.
+- **Caveat, rebuilt:** the judge's "unstick fires" line reads 0 v 0 because main's WEDGE_TRACE row has no `unstick_fires` total
+  (only S1's tree printed it). The same guard, rebuilt paired by seed from main's own rows (`fires_from_wedge_rows.txt`):
+  - unstick fires inside wedged episodes 28415 -> 27223 (−1192; 1.645 se 1648);
+  - H1 escapes 2070 -> 2003 (−67; 166);
+  - asks 2033 -> 1930.
+  - None is up.
+- **Next:** the hand-over pair. The S2a ON switches + native's re-pin `6a92e7a74` + the bank lab case, on main, on one green check.
+
+**2026-10-21 ~01:10 (worker): S1 stallnet FAILS Bar S1's series; it stays OFF (does not ship).** builder0 native, ON `78a93fdb4`
+v base `9564cc66e`. Fights, wedge and jam: locks/terminus/sumps x 6240–6263, 72 pairs. Hull-rest: 6201–6232 drawn x 4 factions x 6
+tasks, 128 pairs a task. Judge: `references/round36/manoeuvre/s1-series/`. (0) counter PASS (stall_net_holds ON 404690).
+- Two guards FAIL:
+  - **Unstick fires** 157717 -> 192380 (+34663; bound 1.645 se 15576). It rose in 47 of 72 pairs, on all three maps.
+  - **Team 0 kills** 1607 -> 1557 (−50; bound 41.8).
+- Every other guard passes: (d)/(e)/(f) for all 6 tasks, (q), (r) 29 -> 49 (within 35.4), (s), give-ways, hit rate.
+- The aim does not move. In the wedge trace, escape fires per hull go up 1741 -> 2187 (+26 %), but **stuck:wedged deaths do not
+  fall (251 -> 256)**. Stuck:static 131 -> 101 and open:parked 813 -> 769 are within noise. Rocking crews 4 -> 3 in 768 runs.
+- So the net-motion hold makes the clock reach its fire more often, but the extra escapes don't free wedged crews in a fight.
+- A v2 needs a new bar (e.g. hold only while in friendly contact). That is the orchestrator's call; I am not starting one.
+- The X4b (C) re-read on S1's ON arm is moot.
+- **Next:** S2a's series (Bar S2a) on trees cut from main without S1.
+
+**2026-10-21 ~01:05 (worker): R36.27 (S1 parked, no v2 this round). S2a's series is RUNNING on builder2.** Unit
+`manoeuvre-s2aseries`, driver `~/overnight-manoeuvre/r36/s2a_series.sh` (preemption-safe on T8's model: a step counts only when
+all its rows are there; the check only with its own verdict; builder2's load is logged beside every step), outputs
+`~/overnight-manoeuvre/r36/s2a/`. Trees: ON `lab/s2a-on` `bf678480c` (main `e525f7311` + H1B_SIDE_DEFAULT true + yieldgap out of
+traffic's DEFAULT_OFF), base `lab/s2a-base` = main `e525f7311`. Order: ON's `make native check` first (sim-baseline may move), then
+wedge/fights/jam locks/terminus/sumps x 6540–6563 and hull-rest 6501–6532 x 4 factions x 6 tasks (`--turn-states
+--element-trace=all`, which also gives the player line). Judge: `python3 tests/manoeuvre/s1_judge.py ~/overnight-manoeuvre/r36/s2a
+--bar s2a` (`5c912c36d`).
+- **Far bank 0 holds by construction:** hull-rest runs on foundry, whose `arenas/foundry.json` has no terrain entries (no river,
+  no deck).
+- **The series prints no S2a counter:** `ManoeuvreCensus.h1b_side_steps/stands` are read only by the lab stage, and the native
+  exec doesn't count them. The bar files no counter-first line; the rule's firing is read from escape/unstick deltas.
+- **Gotcha:** gcloud lives in `~/projects/bin`, which is not on a `systemd-run --user` unit's PATH. The driver exports it.
+- **ON's check** (`bf678480c`, builder2, load 0.61 at the start): 23 passed, 2 FAILED (test, sim-baseline), 0 NOT RUN, 2 NOT JUDGED;
+  2970/2. sim-baseline moved crossing + sumps (11 unmoved).
+  - The 2 test reds are native's `test_native_yield` sumps stage, plain and owned: `spot:back 0 >= 1`.
+  - Native matches GDScript (413 negotiating drives, 0 mismatches): 20 give-ways are started, and none backs up. That checks the
+    stage still reaches the backing-up branch; it is not harm.
+  - The series is measured past it (series started 01:23). **A ship needs native to re-pin that stage's premise in the pair.**
+  - Log: `~/overnight-manoeuvre/r36/s2a/check_on_test.log`.
+- **Orchestrator's water condition (side points never take a hull across):** no log prints the side point, so it is being measured.
+  - Terminus has no terrain entries: 0 by construction.
+  - Locks/Sumps: lab `lab/s2a-sideprobe` `86e058424` (ON + H1B_SIDE rows) runs the fights seeds 6540–6563, GDScript twin, builder0
+    light lane (unit `manoeuvre-sideprobe`, outputs `~/overnight-manoeuvre/r36/sideprobe/`).
+  - Reader `tests/manoeuvre/side_water.py` (`db864edf1`). It must read 0 or be traced.
+
+**2026-10-21 ~02:00 (worker): S2a evidence beside the series** (`references/round36/manoeuvre/s2a/README.md`, `b498eb498`).
+- **Water: 0 of 15 side points** (26 fires), Locks + Sumps fights 6540–6563. The orchestrator accepted it as measured; the nearest
+  point was 43.8 m from water.
+- **Ship condition (R36.27): the bank lab case is GREEN.** `test_beside_the_canal_the_side_point_stays_on_its_bank`
+  (`33919af3d`, builder0 light, 4/4, both paths). On the Locks bank the water side is refused and the land side taken; at the
+  bridge mouth the rule never arises (pinned ON = base). It rides in the hand-over pair.
+- **Eyes_3 traced: the side point equals the route's own waypoint, and the drive to it clips a long friend's corner.**
+  `_side_clear` tests the point against centres, not the drive against the friend's oriented box. 1 of 17 crew–friend pairs
+  loops (9 picks).
+  - **Ruled: round 37, NOT in this hand-over** (orchestrator, ~02:05). What ships is what the series judged (`bf678480c`).
+  - **Round-37 items:** (ii) RECOMMENDED: a side step that ends with the hull still blocked by the same unmoved friend makes the
+    next far fire on it a stand, until the friend moves or the goal changes; this bounds the loop whatever the geometry.
+    (i) `_side_clear` also rejects a point whose straight drive passes within the hull's half-width of the friend's oriented box.
+  - **Deciding lab case:** a long parked friend (law_artillery) seen at 30–45 deg, the asker diagonal behind its corner. At most
+    one side step on an unmoved friend; ON takes a point whose drive clears the box, or stands; both paths.
+- **Hand-over if S2a passes:** `bf678480c`'s code + native's yield-stage re-pin + the bank lab case (`33919af3d`), on one green
+  check.
+
+**2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
+`make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
+Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
+
+**2026-10-21 ~01:00 (worker): player smoke (laptop, window, `b8de464e6`):** `make orders-probe-shots ORDERS_PROBE_MAPS=locks
+ORDERS_PROBE_SHOT_SQUADS=3`, three arms (main; S1 `--nav-off=stallnet`; S2a `--nav-off=h1bside`). Arrival+5 s frames are byte-identical (md5
+22453163...): three squads seated south of the lock by their markers, none wedged or looping. Neither rule fires in a clean move. Gotcha:
+the recipe splits an arm's flags on commas, and `_parse_off` reads only the FIRST `--nav-off=`, so S1 and S2a ON together needs one
+`--nav-off=a,b` arg (not possible through ORDERS_PROBE_SHOT_ARMS). S4 dropped: R36.18, main 41aefad16.
+
+**2026-10-21 ~00:30 (worker): S4's drive share CLOSED with no rule** (README section (6)). "Back in" is round 26's M1, which already ships.
+M1's choice in the 10 fresh episodes: facing_nose 3 (by design: arrives facing), friendly 3 (a hull in the reverse corridor),
+route_faster 1, reverse law pulled forward first 1, beyond 25 m 1, paced overshoot 1, each 5–11 m. Bar S4 not run (no candidate).
+One player-terms question for the lead (loop forward v back in when the facing is the other way); recommendation: keep the loop.
+Lint note (native N5, census_lint): any new counter must print in ManoeuvreCensus.counters() from its first commit; turn_in_* are ALLOWED.
+
+**2026-10-20 ~23:00 (worker): S4 (new, the orchestrator's: orders' turn-around LOOP squads): traced, split, note + Bar S4 filed**
+(`references/round36/manoeuvre/s4/README.md`). builder0 light, 55c973cd4 + probe-only `lab/s4-trace` (c5fedd42c), GDScript path
+(away_m equals orders' native numbers), 16 runs covering 16 of the 19 LOOP squads. Neither named loop is the drive. Locks s3624 Bravo_1 is traffic's
+street hold (spot 35 m away across the lock); Terminus s3623 Bravo_4 is a give-way, ~22 m. Metres away (worst crews): give-way 196,
+route after a give-way, hold or k-turn 96, FRESH route 100 (mine), k-turn 39, hold 32, escape 9. Give-ways: 124 of 172 from crews <= 10 m from their seat, 44 of them
+sent >= 10 m from it; T7 lane for the asker in 22 of 124. That part goes to traffic (T10, via the orchestrator). Mine: 10 fresh episodes, goal 130–180 deg off
+the nose, 5–11 m away. Proposal "back in" + lab stage (away_m deciding) + series guards (friendly contacts not up). Next: build the lab stage
+and the rule behind a switch (OFF); no series until S1's and S2a's are done.
+
+**2026-10-20 ~21:40 (worker): S1 series running** (builder0, ON arm: wedge + fights done, both exited 0; jam, then the base arm, then
+hull-rest). T8 shipped as main `3d46b2884` (a crew holds in a take-turns hold until hit). The series stays on its two trees as filed.
+**If S1 passes, the hand-over merges main (T8) FIRST**, because T8 changes fights. Next: judge it (`s1_judge.py`), re-read X4b (C)'s 6 crews on the ON arm, then S2a's
+series.
+
+**2026-10-20 ~20:15 (worker): S1's gate PASSES (C31.1), and the S1 series is launched.** ON tree `lab/s1-on` `d9864ab07` on builder2
+(moved there by the orchestrator): `make native check exited 2`, 2961/0, 24 passed + 2 NOT JUDGED + sim-baseline the one red
+(foundry, crossing, sumps, docks moved; 9 unmoved). Attribution = base `20acbda5f` (STALL_NET_DEFAULT false), read 13/13 unmoved by
+native's builder0 check. Series: unit `manoeuvre-s1series`, builder0 after its checks clear, logs `~/overnight-manoeuvre/r36/s1/`.
+Before the series started, both trees got one identical probe-only commit, in tests/manoeuvre only: WEDGE_TRACE / FIGHT_CENSUS
+print `stall_net_holds` (the bar's counter-first line had no printer) and the run's unstick fires. Series trees: ON `78a93fdb4`, base
+`9564cc66e`. Also fixed `3505cfb8d`: my 793ef5799 merge left diff3's base section in OFF_NAMES (a parse error on the stream branch
+only; main took 20acbda5f).
+
+**2026-10-20 ~19:15 (worker):** S1 + S3 are on main (5d6bb1de8, R36.5); main is merged into the stream (`4685fe5a4`). S2a +
+yieldgap quick-remote on native's `8e6a52fc9` (builder0): 134/1, h1b_side 3/3 (native default arm = GDScript; ON past at 19.6 s,
+one-hull street stands), traffic's long-hull tests PASS. The one red was native's own yield twin (it read a freed hull), fixed in
+`32ba4ca99`, which becomes the S2a pair's full-check hash. builder0 queue: my S1 ON-tree check, then the S1 series.
+
+**2026-10-20 ~18:45 (worker): S1 + S3 GREEN, merge here: `20acbda5f`** (pair/native-s1s3-main: S1 stallnet default OFF + S3 W1b
+deleted + native's mirrors + main e45bb6632). builder0 `make check exited 0`: 2961/0, 25 passed + 2 NOT JUDGED (load),
+sim-baseline 13/13 unmoved. Merged into the stream as `793ef5799`. Native cut the S2a mirror as `pair/native-s2a` `18bc084c9`, which
+I reviewed; with traffic's yieldgap on top it becomes `8e6a52fc9` (quick-remote next on builder0).
+
 **2026-10-20 ~18:15 (worker): S2a built (the orchestrator's GO); Bar S2a filed `5d80b6291` (+ traffic's T9 rider, `dca90d9c0`).**
 `a1b7f7e59`, default OFF, `--nav-off=h1bside`: H1b's far loop goes round the friend (a side point abreast of it) or stands.
 Laptop GDScript lab (`test_manoeuvre_h1b_side`, 3/3 + 33/33 neighbours): room on one side, ON past the friend at 19.6 s (line
@@ -134,8 +256,9 @@ Bar S1 is copied to workstreams (7bf08f3ed): the stage proves the rule, the seri
   waypoint until reached, its timer runs out, or the friend moves); with no side clear, STAND (throttle 0, no re-ram) until the
   friend moves > H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (false until judged). Native mirrors
   the side waypoint and the stand.
-- **Rider (the orchestrator's ruling, 2026-10-20): traffic's T9 "passed by half-lengths" fix** (stream/traffic `9030a12dc`, its own
-  switch, note `_agents/streams/references/round36/traffic/t9_finished_while_pinned.md`): in `_yield_unfinished` only, "passed" =
+- **Rider (the orchestrator's ruling, 2026-10-20): traffic's T9 "passed by half-lengths" fix** (GDScript `lab/yieldgap` `76aea1185`, quick-green builder0
+  105/0; design `9030a12dc`; native stacks it as `pair/native-s2a-yg` `8e6a52fc9`; switch `yieldgap` in Traffic.DEFAULT_OFF, the
+  ON tree flips it, the base keeps it off), note `_agents/streams/references/round36/traffic/t9_finished_while_pinned.md`): in `_yield_unfinished` only, "passed" =
   distance − both half-lengths > 2.0 m. It rides in this pair: ON = both switches on, base = both off; its own lab test
   (test_traffic_yieldfit2) decides its change; a red guard is traced by switch.
 - **Arms:** native, two trees on main (+ S1 if shipped): ON = pair with H1B_SIDE_DEFAULT true, base = same code false. Gate:

@@ -98,7 +98,7 @@ func _run() -> void:
 	print("WEDGE_TRACE " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"totals": _totals, "wedged_units": Movement.wedged_units,
 			"stall_intent_on": Manoeuvre.stall_intent_on(), "stall_intent_ticks": Manoeuvre.stall_intent_ticks,
-			"esc_fires_hull": Movement.esc_fires_hull, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started}))
+			"esc_fires_hull": Movement.esc_fires_hull, "stall_net_holds": Movement.stall_net_holds, "unstick_fires": _unstick_fires(game_match) if game_match != null and is_instance_valid(game_match) else -1, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started}))
 	quit(0)
 
 
@@ -346,3 +346,13 @@ func _on_death(game_match: Match, crew: String) -> void:
 		i -= step
 	print("WEDGE_DEATH " + JSON.stringify({"crew": crew, "tick": game_match.tick, "arena": String(Arena.active.get("name", "")),
 			"seed": int(_flag("seed", "0")), "timeline": timeline}))
+
+
+## Round 36 (Bar S1's unstick-fires guard): every live crew's unstick fires summed (H1's escapes count there too). Measurement only.
+static func _unstick_fires(game_match: Match) -> int:
+	var n := 0
+	for node in game_match.tanks.get_children():
+		var mover := Movement.of(node as Tank) if node is Tank else null
+		if mover != null:
+			n += mover.unstick_fires
+	return n

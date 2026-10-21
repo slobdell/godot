@@ -1,0 +1,204 @@
+case                         crew              away_m(orders)  driven away, m by driver
+crossing-5-click-3623-sq1    Green_Alpha_4       14.0          yield 9.4, route 1.9, route:after_yield 0.2
+crossing-5-route-3622-sq2    Green_Bravo_2       13.2          escape 8.8, yield 2.2, route_rev:after_escape 2.1, route_rev:after_yield 1.7, route_rev 1.6, route 0.8
+crossing-5-route-3624-sq2    Green_Bravo_1       12.4          yield 6.9, route:after_yield 5.4, route 5.1, kturn-1 3.4, route_rev 2.0, route:after_escape 0.2, route_rev:after_kturn-1 0.0, escape 0.0
+crossing-5-route-3626-sq2    Green_Bravo_1       12.4          route 8.7, route_rev:after_yield 7.6, kturn-1 5.8, yield 3.2, route_rev:after_kturn-1 2.7, route_rev 0.7, route:after_kturn-1 0.5, kturn1 0.0
+locks-3-click-3621-sq2       Green_Bravo_3       30.0          yield 22.8, route 11.4, route:after_yield 6.2, route_rev:after_yield 3.0, route_rev:after_kturn-1 0.3, kturn-1 0.2
+locks-3-click-3624-sq2       Green_Bravo_1       32.4          hold 31.5, route 0.7, route_rev:after_hold 0.3
+locks-3-click-3625-sq2       Green_Bravo_3       31.6          yield 13.8, route:after_yield 8.5, route 5.9, route_rev:after_kturn-1 2.1, kturn-1 1.3
+locks-3-route-3621-sq2       Green_Bravo_1       31.3          yield 10.0, route:after_yield 6.1, route 5.7, kturn-1 5.6, kturn1 2.1, route_rev:after_kturn-1 2.0, route:after_kturn-1 0.1, route_rev 0.1
+locks-3-route-3624-sq2       Green_Bravo_2       44.0          yield 33.9, route 6.3, kturn-1 5.6, route:after_yield 4.0, route_rev:after_kturn-1 1.3, route_rev:after_yield 1.2, route:after_kturn-1 0.5, route_rev 0.1, escape 0.0
+locks-5-click-3624-sq2       Green_Bravo_1       18.0          yield 10.2, route 7.1, kturn-1 1.2, route:after_yield 0.9, route_rev:after_kturn-1 0.4
+locks-5-click-3625-sq2       Green_Bravo_1       13.2          yield 7.6, route 3.3
+terminus-5-click-3622-sq4    Green_Delta_2       12.5          route 7.8, route:after_yield 5.5, yield 1.1
+terminus-5-route-3621-sq2    Green_Bravo_1       12.3          yield 16.7, kturn-1 7.4, route:after_yield 7.1, kturn1 3.8, route:after_kturn-1 3.7, route 1.3, route_rev:after_kturn-1 0.8, route_rev 0.0
+terminus-5-route-3623-sq2    Green_Bravo_4       67.8          yield 39.5, route:after_yield 14.1, route 10.6, kturn-1 2.1, route_rev:after_yield 1.6, route_rev:after_kturn-1 1.3, route:after_kturn-1 1.3, route_rev 0.9
+terminus-5-route-3625-sq4    Green_Delta_1       22.9          route 11.3, yield 8.5, route:after_yield 3.3
+terminus-5-route-3626-sq2    Green_Bravo_4       16.5          yield 10.2, route 5.8, route_rev 0.4, route:after_yield 0.2
+worst crew's largest driver, cases: {'yield': 11, 'route': 3, 'escape': 1, 'hold': 1}
+fresh route episodes >= 5 m away, the looping squads' crews (10; goal distance and angle off the nose at the start):
+  terminus-5-route-3625-sq4    Green_Delta_1    tank       f  1002  goal   8.6 m, 179 deg off the nose, v  5.84  -> 11.1 m away
+  locks-3-click-3625-sq2       Green_Bravo_2    ifv        f   799  goal  29.4 m, 165 deg off the nose, v  0.30  -> 9.2 m away
+  terminus-5-route-3625-sq4    Green_Delta_4    ifv        f   492  goal   8.0 m, 171 deg off the nose, v  2.99  -> 8.9 m away
+  crossing-5-route-3622-sq2    Green_Bravo_4    scout      f   521  goal  19.4 m, 163 deg off the nose, v  0.53  -> 7.7 m away
+  crossing-5-route-3626-sq2    Green_Bravo_3    scout      f    73  goal   6.5 m, 130 deg off the nose, v  0.53  -> 7.4 m away
+  locks-3-click-3624-sq2       Green_Bravo_3    scout      f   367  goal  15.5 m, 172 deg off the nose, v  0.89  -> 6.6 m away
+  locks-3-click-3621-sq2       Green_Bravo_3    scout      f  1339  goal   7.7 m, 134 deg off the nose, v  7.53  -> 6.5 m away
+  crossing-5-route-3626-sq2    Green_Bravo_1    ifv        f   249  goal   0.2 m, 180 deg off the nose, v  4.92  -> 6.1 m away
+  terminus-5-route-3621-sq2    Green_Bravo_4    scout      f   179  goal  15.9 m, 175 deg off the nose, v 13.21  -> 5.5 m away
+  locks-3-click-3625-sq2       Green_Bravo_3    scout      f   310  goal   8.6 m, 144 deg off the nose, v  0.53  -> 5.4 m away
+give-ways begun by the looping squads' crews (172): seat_m = the yielder's distance to its own seat at the ask; spot_seat_m = the spot's; lane = T7's pass lane for the asker (0 none, +-1 a side)
+  crossing-5-click-3623-sq1    f   561 Green_Alpha_3    ifv        stop     seat   4.1 -> spot spot(-3,-6)      6.7 m away,  10.1 m from seat; asker Green_Charlie_1 lane +0
+  crossing-5-click-3623-sq1    f   569 Green_Alpha_4    scout      stop     seat   3.2 -> spot spot(3,6)        6.7 m away,   3.8 m from seat; asker Green_Bravo_3 lane +0
+  crossing-5-click-3623-sq1    f   634 Green_Alpha_1    tank       face     seat   2.8 -> spot spot(0,-5)       5.0 m away,   4.7 m from seat; asker Green_Charlie_1 lane +0
+  crossing-5-click-3623-sq1    f   743 Green_Alpha_1    tank       face     seat   1.4 -> spot spot(-3,-6)      6.7 m away,   8.0 m from seat; asker Green_Charlie_3 lane +0
+  crossing-5-click-3623-sq1    f   806 Green_Alpha_3    ifv        stop     seat   3.6 -> spot spot(-3,-6)      6.7 m away,  10.3 m from seat; asker Green_Delta_4 lane +0
+  crossing-5-click-3623-sq1    f   823 Green_Alpha_4    scout      stop     seat   2.6 -> spot spot(5,-9)      10.3 m away,  10.5 m from seat; asker Green_Bravo_4 lane +1
+  crossing-5-click-3623-sq1    f   899 Green_Alpha_4    scout      move_to  seat   8.9 -> spot spot(5,-9)      10.3 m away,  18.8 m from seat; asker Green_Bravo_4 lane +0
+  crossing-5-click-3623-sq1    f   976 Green_Alpha_3    ifv        face     seat   6.9 -> spot spot(0,-5)       5.0 m away,  10.8 m from seat; asker Green_Delta_1 lane -1
+  crossing-5-route-3622-sq2    f   102 Green_Bravo_1    ifv        move_to  seat  28.3 -> spot spot(5,-9)      10.3 m away,  35.4 m from seat; asker Green_Bravo_2 lane +0
+  crossing-5-route-3622-sq2    f   354 Green_Bravo_2    ifv        stop     seat   2.9 -> spot spot(5,-9)      10.3 m away,   8.3 m from seat; asker Green_Bravo_3 lane -1
+  crossing-5-route-3622-sq2    f   511 Green_Bravo_3    scout      stop     seat   2.7 -> spot spot(16,0)      16.0 m away,  18.7 m from seat; asker Green_Charlie_3 lane +0
+  crossing-5-route-3622-sq2    f   559 Green_Bravo_3    scout      move_to  seat  13.0 -> spot spot(10,0)      10.0 m away,   4.6 m from seat; asker Green_Charlie_3 lane +0
+  crossing-5-route-3622-sq2    f   619 Green_Bravo_2    ifv        move_to  seat   6.4 -> spot spot(0,5)        5.0 m away,   9.2 m from seat; asker Green_Charlie_2 lane -1
+  crossing-5-route-3622-sq2    f   639 Green_Bravo_1    ifv        move_to  seat  17.0 -> spot spot(10,0)      10.0 m away,  18.8 m from seat; asker Green_Bravo_4 lane +0
+  crossing-5-route-3622-sq2    f   820 Green_Bravo_2    ifv        stop     seat   3.1 -> spot spot(-3,-6)      6.7 m away,   6.9 m from seat; asker Green_Bravo_1 lane +0
+  crossing-5-route-3622-sq2    f  1202 Green_Bravo_1    ifv        stop     seat   3.0 -> spot hold             0.0 m away,   3.0 m from seat; asker Green_Bravo_2 lane +0
+  crossing-5-route-3624-sq2    f   480 Green_Bravo_2    ifv        stop     seat   2.9 -> spot spot(5,-9)      10.3 m away,   8.1 m from seat; asker Green_Bravo_1 lane +0
+  crossing-5-route-3624-sq2    f   650 Green_Bravo_3    scout      stop     seat   2.6 -> spot spot(10,0)      10.0 m away,   8.8 m from seat; asker Green_Bravo_2 lane +0
+  crossing-5-route-3624-sq2    f   664 Green_Bravo_1    ifv        move_to  seat  11.2 -> spot spot(10,0)      10.0 m away,  19.2 m from seat; asker Green_Bravo_2 lane +0
+  crossing-5-route-3624-sq2    f   740 Green_Bravo_3    scout      move_to  seat  14.2 -> spot spot(0,5)        5.0 m away,  17.7 m from seat; asker Green_Bravo_1 lane +0
+  crossing-5-route-3624-sq2    f   861 Green_Bravo_1    ifv        move_to  seat  22.3 -> spot spot(3,6)        6.7 m away,  15.6 m from seat; asker Green_Bravo_3 lane +0
+  crossing-5-route-3624-sq2    f   875 Green_Bravo_4    scout      stop     seat   3.2 -> spot back(6)          6.0 m away,   9.2 m from seat; asker Green_Delta_2 lane -1
+  crossing-5-route-3624-sq2    f  1091 Green_Bravo_2    ifv        stop     seat   4.1 -> spot spot(5,-9)      10.3 m away,   7.2 m from seat; asker Green_Charlie_3 lane +0
+  crossing-5-route-3624-sq2    f  1106 Green_Bravo_4    scout      stop     seat   7.8 -> spot spot(10,0)      10.0 m away,  17.8 m from seat; asker Green_Delta_2 lane +0
+  crossing-5-route-3624-sq2    f  1144 Green_Bravo_4    scout      move_to  seat   8.7 -> spot spot(0,-11)     11.0 m away,  15.0 m from seat; asker Green_Delta_2 lane +0
+  crossing-5-route-3624-sq2    f  1233 Green_Bravo_1    ifv        stop     seat   3.6 -> spot spot(10,0)      10.0 m away,  13.5 m from seat; asker Green_Delta_2 lane +0
+  crossing-5-route-3624-sq2    f  1304 Green_Bravo_3    scout      stop     seat   2.8 -> spot spot(0,-11)     11.0 m away,  10.6 m from seat; asker Green_Delta_2 lane +0
+  crossing-5-route-3624-sq2    f  1331 Green_Bravo_2    ifv        stop     seat   1.6 -> spot spot(10,0)      10.0 m away,  11.1 m from seat; asker Green_Delta_1 lane +0
+  crossing-5-route-3624-sq2    f  1455 Green_Bravo_3    scout      stop     seat   9.4 -> spot spot(0,-11)     11.0 m away,  15.1 m from seat; asker Green_Charlie_1 lane +0
+  crossing-5-route-3624-sq2    f  1810 Green_Bravo_2    ifv        stop     seat   4.7 -> spot back(10)        10.0 m away,  14.5 m from seat; asker Green_Charlie_1 lane +0
+  crossing-5-route-3624-sq2    f  1886 Green_Bravo_3    scout      stop     seat  14.6 -> spot spot(5,9)       10.3 m away,  13.7 m from seat; asker Green_Bravo_2 lane +0
+  crossing-5-route-3626-sq2    f   536 Green_Bravo_4    scout      stop     seat   2.8 -> spot spot(0,-5)       5.0 m away,   4.3 m from seat; asker Green_Charlie_3 lane -1
+  crossing-5-route-3626-sq2    f   582 Green_Bravo_3    scout      stop     seat   2.8 -> spot spot(10,0)      10.0 m away,   7.4 m from seat; asker Green_Bravo_1 lane +0
+  crossing-5-route-3626-sq2    f   683 Green_Bravo_3    scout      stop     seat   6.2 -> spot spot(3,-6)       6.7 m away,  11.8 m from seat; asker Green_Echo_4 lane +0
+  crossing-5-route-3626-sq2    f   732 Green_Bravo_4    scout      stop     seat   3.1 -> spot spot(0,-5)       5.0 m away,   7.9 m from seat; asker Green_Echo_4 lane -1
+  crossing-5-route-3626-sq2    f   850 Green_Bravo_2    ifv        move_to  seat   8.9 -> spot spot(0,5)        5.0 m away,  13.5 m from seat; asker Green_Echo_2 lane +0
+  crossing-5-route-3626-sq2    f  1047 Green_Bravo_2    ifv        stop     seat   3.9 -> spot spot(-3,-6)      6.7 m away,   9.9 m from seat; asker Green_Delta_5 lane -1
+  crossing-5-route-3626-sq2    f  1578 Green_Bravo_1    ifv        stop     seat   3.8 -> spot spot(10,0)      10.0 m away,   6.5 m from seat; asker Green_Delta_5 lane +0
+  crossing-5-route-3626-sq2    f  1693 Green_Bravo_1    ifv        move_to  seat   6.5 -> spot spot(-3,-6)      6.7 m away,  11.1 m from seat; asker Green_Delta_5 lane +0
+  crossing-5-route-3626-sq2    f  1819 Green_Bravo_4    scout      stop     seat   3.3 -> spot spot(-3,-6)      6.7 m away,   9.9 m from seat; asker Green_Delta_5 lane -1
+  locks-3-click-3621-sq2       f   345 Green_Bravo_3    scout      move_to  seat  15.0 -> spot spot(0,5)        5.0 m away,  19.9 m from seat; asker Green_Charlie_1 lane +0
+  locks-3-click-3621-sq2       f   433 Green_Bravo_1    ifv        stop     seat   3.0 -> spot spot(10,0)      10.0 m away,  13.0 m from seat; asker Green_Bravo_3 lane +0
+  locks-3-click-3621-sq2       f   448 Green_Bravo_2    ifv        stop     seat   3.1 -> spot hold             0.0 m away,   3.1 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f   613 Green_Bravo_1    ifv        face     seat  10.3 -> spot spot(3,6)        6.7 m away,  16.7 m from seat; asker Green_Bravo_3 lane +0
+  locks-3-click-3621-sq2       f   650 Green_Bravo_2    ifv        stop     seat   3.0 -> spot spot(0,-8)       8.0 m away,   5.3 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-click-3621-sq2       f   685 Green_Bravo_3    scout      move_to  seat  13.0 -> spot spot(0,11)      11.0 m away,  15.8 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f   749 Green_Bravo_1    ifv        move_to  seat   9.0 -> spot spot(-3,-6)      6.7 m away,  15.6 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f   779 Green_Bravo_2    ifv        stop     seat   4.0 -> spot spot(5,-9)      10.3 m away,  13.4 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f   794 Green_Bravo_3    scout      move_to  seat  15.7 -> spot spot(24,0)      24.0 m away,  32.9 m from seat; asker Green_Alpha_1 lane +1
+  locks-3-click-3621-sq2       f   947 Green_Bravo_3    scout      move_to  seat   3.9 -> spot spot(0,-11)     11.0 m away,  10.6 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f   977 Green_Bravo_3    scout      stop     seat   2.8 -> spot spot(10,0)      10.0 m away,  12.8 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f  1101 Green_Bravo_3    scout      stop     seat  11.4 -> spot spot(-3,6)       6.7 m away,   6.9 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f  1276 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f  1307 Green_Bravo_3    scout      stop     seat   7.4 -> spot spot(0,11)      11.0 m away,  17.0 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-click-3621-sq2       f  1367 Green_Bravo_3    scout      move_to  seat  14.1 -> spot spot(0,-8)       8.0 m away,   8.5 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-click-3621-sq2       f  1390 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f  1486 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f  1530 Green_Bravo_3    scout      move_to  seat   4.3 -> spot spot(3,-6)       6.7 m away,   6.6 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f  1586 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f  1641 Green_Bravo_3    scout      move_to  seat   4.9 -> spot spot(-3,6)       6.7 m away,   9.6 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f  1679 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f  1736 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f  1829 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3621-sq2       f  1839 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3621-sq2       f  1949 Green_Bravo_2    ifv        stop     seat   3.7 -> spot hold             0.0 m away,   3.7 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3624-sq2       f   341 Green_Bravo_1    ifv        stop     seat   3.0 -> spot spot(10,0)      10.0 m away,   7.0 m from seat; asker Green_Bravo_2 lane +0
+  locks-3-click-3624-sq2       f   341 Green_Bravo_3    scout      stop     seat   2.6 -> spot spot(3,6)        6.7 m away,   5.1 m from seat; asker Green_Charlie_1 lane +0
+  locks-3-click-3624-sq2       f   461 Green_Bravo_1    ifv        stop     seat   1.5 -> spot spot(10,0)      10.0 m away,  11.5 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3624-sq2       f   543 Green_Bravo_2    ifv        stop     seat   3.5 -> spot hold             0.0 m away,   3.5 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3624-sq2       f   636 Green_Bravo_3    scout      move_to  seat  10.2 -> spot spot(0,5)        5.0 m away,  12.5 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-click-3624-sq2       f   643 Green_Bravo_1    ifv        stop     seat   3.9 -> spot short:spot(5,9)  10.3 m away,  13.5 m from seat; asker Green_Alpha_1 lane +1
+  locks-3-click-3624-sq2       f   727 Green_Bravo_2    ifv        stop     seat   3.5 -> spot hold             0.0 m away,   3.5 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3624-sq2       f   733 Green_Bravo_3    scout      move_to  seat  11.1 -> spot spot(10,0)      10.0 m away,   7.6 m from seat; asker Green_Alpha_1 lane -1
+  locks-3-click-3624-sq2       f   891 Green_Bravo_2    ifv        stop     seat   3.5 -> spot hold             0.0 m away,   3.5 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-click-3624-sq2       f   924 Green_Bravo_3    scout      move_to  seat  11.7 -> spot back(6)          6.0 m away,  17.2 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-click-3624-sq2       f  1133 Green_Bravo_3    scout      move_to  seat  13.8 -> spot spot(0,11)      11.0 m away,  12.7 m from seat; asker Green_Alpha_2 lane +1
+  locks-3-click-3624-sq2       f  1274 Green_Bravo_2    ifv        stop     seat   3.5 -> spot hold             0.0 m away,   3.5 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-click-3625-sq2       f   348 Green_Bravo_1    ifv        stop     seat   2.9 -> spot spot(10,0)      10.0 m away,   7.7 m from seat; asker Green_Bravo_2 lane +0
+  locks-3-click-3625-sq2       f   348 Green_Bravo_3    scout      move_to  seat  14.7 -> spot spot(0,-5)       5.0 m away,  19.1 m from seat; asker Green_Charlie_2 lane -1
+  locks-3-click-3625-sq2       f   431 Green_Bravo_3    scout      move_to  seat  20.2 -> spot spot(10,0)      10.0 m away,  26.8 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3625-sq2       f   604 Green_Bravo_1    ifv        move_to  seat   6.0 -> spot spot(5,9)       10.3 m away,  16.3 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3625-sq2       f   613 Green_Bravo_2    ifv        stop     seat   1.3 -> spot short:spot(10,0)  10.0 m away,   9.3 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-click-3625-sq2       f   683 Green_Bravo_3    scout      move_to  seat  27.8 -> spot spot(0,-5)       5.0 m away,  30.7 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-click-3625-sq2       f   715 Green_Bravo_2    ifv        stop     seat   4.9 -> spot spot(10,0)      10.0 m away,  14.9 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-route-3621-sq2       f   516 Green_Bravo_3    scout      stop     seat   3.3 -> spot spot(10,0)      10.0 m away,  12.2 m from seat; asker Green_Alpha_1 lane +1
+  locks-3-route-3621-sq2       f   587 Green_Bravo_2    ifv        stop     seat   3.1 -> spot hold             0.0 m away,   3.1 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-route-3621-sq2       f   678 Green_Bravo_1    ifv        stop     seat   2.9 -> spot spot(10,0)      10.0 m away,   7.1 m from seat; asker Green_Alpha_1 lane +1
+  locks-3-route-3621-sq2       f   770 Green_Bravo_2    ifv        stop     seat   3.1 -> spot spot(3,-6)       6.7 m away,   3.7 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-route-3621-sq2       f   854 Green_Bravo_1    ifv        move_to  seat  10.8 -> spot spot(-3,6)       6.7 m away,  16.0 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-route-3621-sq2       f   973 Green_Bravo_2    ifv        stop     seat   2.4 -> spot hold             0.0 m away,   2.4 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-route-3621-sq2       f  1161 Green_Bravo_2    ifv        stop     seat   2.4 -> spot hold             0.0 m away,   2.4 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-route-3621-sq2       f  1233 Green_Bravo_1    ifv        move_to  seat   5.3 -> spot spot(3,-6)       6.7 m away,   8.6 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-route-3621-sq2       f  1255 Green_Bravo_2    ifv        stop     seat   2.4 -> spot back(10)        10.0 m away,   7.6 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-route-3621-sq2       f  1355 Green_Bravo_1    ifv        move_to  seat  12.5 -> spot spot(0,-5)       5.0 m away,  17.1 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-route-3621-sq2       f  1457 Green_Bravo_2    ifv        stop     seat   4.8 -> spot hold             0.0 m away,   4.8 m from seat; asker Green_Alpha_2 lane +1
+  locks-3-route-3624-sq2       f   322 Green_Bravo_1    ifv        stop     seat   3.0 -> spot spot(5,-9)      10.3 m away,   8.0 m from seat; asker Green_Bravo_2 lane +0
+  locks-3-route-3624-sq2       f   526 Green_Bravo_1    ifv        face     seat   6.6 -> spot hold             0.0 m away,   6.6 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-route-3624-sq2       f   530 Green_Bravo_2    ifv        move_to  seat  18.2 -> spot back(6)          6.0 m away,  23.1 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-route-3624-sq2       f   715 Green_Bravo_1    ifv        face     seat   6.6 -> spot hold             0.0 m away,   6.6 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-route-3624-sq2       f   819 Green_Bravo_2    ifv        move_to  seat  15.8 -> spot spot(10,0)      10.0 m away,  24.9 m from seat; asker Green_Bravo_1 lane +0
+  locks-3-route-3624-sq2       f   861 Green_Bravo_1    ifv        move_to  seat   8.4 -> spot hold             0.0 m away,   8.4 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-route-3624-sq2       f   990 Green_Bravo_2    ifv        move_to  seat  24.1 -> spot back(6)          6.0 m away,  29.7 m from seat; asker Green_Alpha_3 lane +0
+  locks-3-route-3624-sq2       f  1042 Green_Bravo_1    ifv        move_to  seat   8.4 -> spot hold             0.0 m away,   8.4 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-route-3624-sq2       f  1222 Green_Bravo_1    ifv        move_to  seat   8.4 -> spot hold             0.0 m away,   8.4 m from seat; asker Green_Alpha_4 lane +0
+  locks-3-route-3624-sq2       f  1332 Green_Bravo_2    ifv        move_to  seat  17.3 -> spot spot(-3,-6)      6.7 m away,  23.9 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-route-3624-sq2       f  1491 Green_Bravo_1    ifv        move_to  seat  10.0 -> spot hold             0.0 m away,  10.0 m from seat; asker Green_Alpha_2 lane +0
+  locks-3-route-3624-sq2       f  1512 Green_Bravo_2    ifv        move_to  seat  22.5 -> spot spot(16,0)      16.0 m away,  23.3 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-route-3624-sq2       f  1739 Green_Bravo_1    ifv        move_to  seat  12.8 -> spot spot(-3,6)       6.7 m away,  19.4 m from seat; asker Green_Alpha_1 lane +0
+  locks-3-route-3624-sq2       f  2026 Green_Bravo_2    ifv        move_to  seat   8.7 -> spot spot(10,0)      10.0 m away,  18.1 m from seat; asker Green_Bravo_1 lane +0
+  locks-5-click-3624-sq2       f   295 Green_Bravo_2    ifv        move_to  seat   7.5 -> spot spot(10,0)      10.0 m away,  17.3 m from seat; asker Green_Bravo_4 lane +0
+  locks-5-click-3624-sq2       f   394 Green_Bravo_3    scout      stop     seat   2.6 -> spot spot(5,-9)      10.3 m away,  10.0 m from seat; asker Green_Echo_2 lane -1
+  locks-5-click-3624-sq2       f   525 Green_Bravo_1    ifv        stop     seat   3.0 -> spot spot(10,0)      10.0 m away,   7.4 m from seat; asker Green_Echo_4 lane +0
+  locks-5-click-3624-sq2       f   678 Green_Bravo_1    ifv        face     seat   7.1 -> spot spot(16,0)      16.0 m away,  22.8 m from seat; asker Green_Echo_3 lane +0
+  locks-5-click-3624-sq2       f   715 Green_Bravo_1    ifv        move_to  seat  13.7 -> spot spot(10,0)      10.0 m away,  23.6 m from seat; asker Green_Echo_3 lane +1
+  locks-5-click-3625-sq2       f   250 Green_Bravo_2    ifv        move_to  seat   8.8 -> spot hold             0.0 m away,   8.8 m from seat; asker Green_Bravo_4 lane +0
+  locks-5-click-3625-sq2       f   430 Green_Bravo_2    ifv        move_to  seat   8.6 -> spot spot(0,5)        5.0 m away,   4.0 m from seat; asker Green_Bravo_4 lane +0
+  locks-5-click-3625-sq2       f   483 Green_Bravo_1    ifv        stop     seat   3.0 -> spot spot(5,9)       10.3 m away,   7.7 m from seat; asker Green_Echo_4 lane +0
+  locks-5-click-3625-sq2       f   574 Green_Bravo_1    ifv        move_to  seat  11.6 -> spot spot(5,-9)      10.3 m away,  21.9 m from seat; asker Green_Echo_4 lane -1
+  terminus-5-click-3622-sq4    f   115 Green_Delta_5    ifv        stop     seat   6.5 -> spot spot(10,0)      10.0 m away,  10.9 m from seat; asker Green_Delta_4 lane +0
+  terminus-5-click-3622-sq4    f   420 Green_Delta_3    tank       face     seat   3.2 -> spot spot(3,-6)       6.7 m away,   8.0 m from seat; asker Green_Delta_2 lane +0
+  terminus-5-click-3622-sq4    f   530 Green_Delta_5    ifv        stop     seat   4.0 -> spot spot(5,-9)      10.3 m away,   6.7 m from seat; asker Green_Delta_2 lane +0
+  terminus-5-click-3622-sq4    f   556 Green_Delta_1    tank       face     seat   3.9 -> spot spot(5,9)       10.3 m away,   6.4 m from seat; asker Green_Delta_2 lane +0
+  terminus-5-click-3622-sq4    f  1003 Green_Delta_2    tank       move_to  seat   9.6 -> spot spot(3,-6)       6.7 m away,  15.9 m from seat; asker Green_Bravo_1 lane +0
+  terminus-5-route-3621-sq2    f   206 Green_Bravo_1    ifv        stop     seat  24.4 -> spot spot(10,0)      10.0 m away,  14.5 m from seat; asker Green_Alpha_3 lane +1
+  terminus-5-route-3621-sq2    f   277 Green_Bravo_2    ifv        face     seat  12.1 -> spot spot(10,0)      10.0 m away,  21.9 m from seat; asker Green_Bravo_1 lane +0
+  terminus-5-route-3621-sq2    f   307 Green_Bravo_1    ifv        move_to  seat  13.1 -> spot spot(10,0)      10.0 m away,  22.1 m from seat; asker Green_Alpha_3 lane +1
+  terminus-5-route-3621-sq2    f   449 Green_Bravo_3    scout      stop     seat   3.0 -> spot spot(16,0)      16.0 m away,  15.9 m from seat; asker Green_Alpha_1 lane +0
+  terminus-5-route-3621-sq2    f   508 Green_Bravo_1    ifv        move_to  seat  10.9 -> spot spot(10,0)      10.0 m away,  20.5 m from seat; asker Green_Alpha_1 lane +0
+  terminus-5-route-3621-sq2    f   623 Green_Bravo_1    ifv        move_to  seat  17.2 -> spot back(10)        10.0 m away,  10.5 m from seat; asker Green_Alpha_4 lane +0
+  terminus-5-route-3621-sq2    f   833 Green_Bravo_1    ifv        move_to  seat  13.3 -> spot hold             0.0 m away,  13.3 m from seat; asker Green_Bravo_3 lane +0
+  terminus-5-route-3621-sq2    f   854 Green_Bravo_3    scout      move_to  seat  28.8 -> spot back(6)          6.0 m away,  34.1 m from seat; asker Green_Alpha_2 lane +0
+  terminus-5-route-3621-sq2    f   864 Green_Bravo_1    ifv        move_to  seat  14.3 -> spot hold             0.0 m away,  14.3 m from seat; asker Green_Alpha_2 lane +0
+  terminus-5-route-3621-sq2    f  1068 Green_Bravo_1    ifv        move_to  seat  16.5 -> spot spot(16,0)      16.0 m away,   3.8 m from seat; asker Green_Bravo_3 lane +0
+  terminus-5-route-3623-sq2    f   312 Green_Bravo_2    ifv        stop     seat   3.2 -> spot spot(-3,-6)      6.7 m away,   9.4 m from seat; asker Green_Alpha_1 lane +0
+  terminus-5-route-3623-sq2    f   343 Green_Bravo_1    ifv        stop     seat   3.0 -> spot spot(3,6)        6.7 m away,   3.8 m from seat; asker Green_Delta_1 lane +0
+  terminus-5-route-3623-sq2    f   439 Green_Bravo_4    scout      stop     seat   2.6 -> spot spot(5,9)       10.3 m away,   8.9 m from seat; asker Green_Alpha_1 lane +0
+  terminus-5-route-3623-sq2    f   445 Green_Bravo_2    ifv        move_to  seat   7.8 -> spot back(6)          6.0 m away,  13.8 m from seat; asker Green_Alpha_2 lane +1
+  terminus-5-route-3623-sq2    f   799 Green_Bravo_4    scout      stop     seat   2.7 -> spot spot(0,11)      11.0 m away,  13.1 m from seat; asker Green_Alpha_2 lane +0
+  terminus-5-route-3623-sq2    f   901 Green_Bravo_4    scout      move_to  seat  14.1 -> spot spot(24,0)      24.0 m away,  35.7 m from seat; asker Green_Alpha_2 lane +0
+  terminus-5-route-3623-sq2    f  1175 Green_Bravo_1    ifv        move_to  seat   4.6 -> spot hold             0.0 m away,   4.6 m from seat; asker Green_Echo_2 lane +0
+  terminus-5-route-3623-sq2    f  1196 Green_Bravo_3    scout      move_to  seat  13.1 -> spot spot(16,0)      16.0 m away,  29.0 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3623-sq2    f  1304 Green_Bravo_4    scout      move_to  seat  24.6 -> spot spot(0,-5)       5.0 m away,  28.1 m from seat; asker Green_Echo_2 lane +0
+  terminus-5-route-3623-sq2    f  1385 Green_Bravo_1    ifv        move_to  seat   4.5 -> spot spot(5,9)       10.3 m away,   5.8 m from seat; asker Green_Bravo_3 lane +0
+  terminus-5-route-3623-sq2    f  1407 Green_Bravo_4    scout      move_to  seat  28.1 -> spot spot(5,-9)      10.3 m away,  30.4 m from seat; asker Green_Delta_1 lane +0
+  terminus-5-route-3623-sq2    f  1530 Green_Bravo_1    ifv        stop     seat   4.1 -> spot hold             0.0 m away,   4.1 m from seat; asker Green_Delta_3 lane +0
+  terminus-5-route-3623-sq2    f  1684 Green_Bravo_4    scout      move_to  seat  21.8 -> spot back(6)          6.0 m away,  27.8 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3623-sq2    f  1718 Green_Bravo_1    ifv        stop     seat   4.1 -> spot hold             0.0 m away,   4.1 m from seat; asker Green_Delta_3 lane +0
+  terminus-5-route-3623-sq2    f  1721 Green_Bravo_3    scout      stop     seat   3.0 -> spot spot(16,0)      16.0 m away,  19.0 m from seat; asker Green_Echo_3 lane +0
+  terminus-5-route-3623-sq2    f  1781 Green_Bravo_3    scout      move_to  seat   6.3 -> spot spot(10,0)      10.0 m away,  16.1 m from seat; asker Green_Echo_3 lane +0
+  terminus-5-route-3623-sq2    f  1885 Green_Bravo_4    scout      move_to  seat  26.4 -> spot spot(10,0)      10.0 m away,  36.4 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3625-sq4    f   102 Green_Delta_2    tank       move_to  seat   6.9 -> spot spot(0,-5)       5.0 m away,   8.8 m from seat; asker Green_Delta_3 lane +0
+  terminus-5-route-3625-sq4    f   102 Green_Delta_3    tank       move_to  seat  12.0 -> spot spot(0,-5)       5.0 m away,  12.2 m from seat; asker Green_Delta_1 lane +0
+  terminus-5-route-3625-sq4    f   221 Green_Delta_5    ifv        move_to  seat   4.7 -> spot spot(24,0)      24.0 m away,  22.1 m from seat; asker Green_Bravo_3 lane +0
+  terminus-5-route-3625-sq4    f   313 Green_Delta_3    tank       face     seat   3.0 -> spot back(6)          6.0 m away,   3.1 m from seat; asker Green_Delta_2 lane +0
+  terminus-5-route-3625-sq4    f   313 Green_Delta_2    tank       move_to  seat   8.3 -> spot spot(0,5)        5.0 m away,   4.6 m from seat; asker Green_Echo_4 lane +0
+  terminus-5-route-3625-sq4    f   451 Green_Delta_4    ifv        stop     seat   4.0 -> spot spot(3,-6)       6.7 m away,  10.7 m from seat; asker Green_Echo_2 lane -1
+  terminus-5-route-3625-sq4    f   468 Green_Delta_1    tank       face     seat   2.9 -> spot spot(10,0)      10.0 m away,   7.5 m from seat; asker Green_Alpha_3 lane +0
+  terminus-5-route-3625-sq4    f   557 Green_Delta_2    tank       move_to  seat  31.2 -> spot spot(10,0)      10.0 m away,  23.2 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3625-sq4    f   562 Green_Delta_3    tank       face     seat   1.7 -> spot spot(10,0)      10.0 m away,   9.5 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3625-sq4    f   653 Green_Delta_3    tank       move_to  seat   9.4 -> spot spot(0,-5)       5.0 m away,  12.6 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3625-sq4    f   733 Green_Delta_5    ifv        stop     seat   3.1 -> spot spot(0,5)        5.0 m away,   8.1 m from seat; asker Green_Echo_2 lane +0
+  terminus-5-route-3625-sq4    f   980 Green_Delta_1    tank       face     seat   6.3 -> spot spot(5,-9)      10.3 m away,  16.6 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3625-sq4    f  1211 Green_Delta_1    tank       move_to  seat  19.9 -> spot spot(5,-9)      10.3 m away,  29.7 m from seat; asker Green_Echo_1 lane +0
+  terminus-5-route-3625-sq4    f  1458 Green_Delta_2    tank       face     seat   2.8 -> spot spot(0,-5)       5.0 m away,   6.0 m from seat; asker Green_Echo_1 lane -1
+  terminus-5-route-3626-sq2    f   259 Green_Bravo_4    scout      stop     seat   2.7 -> spot spot(5,9)       10.3 m away,   9.7 m from seat; asker Green_Delta_1 lane -1
+  terminus-5-route-3626-sq2    f   448 Green_Bravo_4    scout      stop     seat   2.4 -> spot spot(3,6)        6.7 m away,   8.6 m from seat; asker Green_Delta_1 lane +1
+  terminus-5-route-3626-sq2    f   470 Green_Bravo_3    scout      stop     seat   1.6 -> spot spot(3,6)        6.7 m away,   5.1 m from seat; asker Green_Echo_4 lane -1
+  terminus-5-route-3626-sq2    f   573 Green_Bravo_1    ifv        stop     seat   6.2 -> spot back(6)          6.0 m away,   9.4 m from seat; asker Green_Delta_3 lane -1
+  terminus-5-route-3626-sq2    f   623 Green_Bravo_4    scout      move_to  seat   7.8 -> spot spot(10,0)      10.0 m away,  15.6 m from seat; asker Green_Delta_3 lane -1
+  terminus-5-route-3626-sq2    f   823 Green_Bravo_4    scout      move_to  seat   3.6 -> spot spot(-3,-6)      6.7 m away,   8.5 m from seat; asker Green_Delta_1 lane +0
+  terminus-5-route-3626-sq2    f   835 Green_Bravo_3    scout      stop     seat   4.0 -> spot spot(3,6)        6.7 m away,   2.8 m from seat; asker Green_Echo_2 lane +0
+  terminus-5-route-3626-sq2    f   926 Green_Bravo_3    scout      stop     seat   1.6 -> spot spot(-3,6)       6.7 m away,   5.8 m from seat; asker Green_Delta_1 lane +0
+  at or near their seat (<= 10 m) when asked: 124 of 172; of those sent >= 10 m from the seat: 44; with a lane for the asker: 22
+metres away summed over the worst crews: {'yield': 196.1, 'route': 93.9, 'route:after_yield': 61.6, 'kturn-1': 32.6, 'hold': 31.5, 'route_rev:after_yield': 15.1, 'route_rev:after_kturn-1': 10.9, 'escape': 8.8, 'route:after_kturn-1': 6.0, 'kturn1': 5.9, 'route_rev': 5.8, 'route_rev:after_escape': 2.1, 'route_rev:after_hold': 0.3, 'route:after_escape': 0.2}
