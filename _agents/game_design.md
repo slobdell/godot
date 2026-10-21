@@ -4234,6 +4234,10 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    unlimited ammo since R8, 2026-09-14; only artillery keeps 24 rounds.) No ammo limits, no repair-only-near-trucks rule. The
    support trucks' visible feedback (already decided) stands on its own.
 8. **Suppression stops an advance.** A pinned unit slows or halts, not just shoots wide: fire-and-manoeuvre becomes the way through.
+   **ANSWERED 2026-10-21: yes, SLOW never stop, and show it.** "ok yeah, let's go with your recommendation". Today suppression
+   (rise 0.6/s, recover 0.3/s) shrinks sight up to 40 %, slows hull turn up to 50 %, widens spread, but never slows driving. Rule:
+   a suppressed unit drives up to ~40 % slower (scaled by suppression), never halts (his "under my control"), with a visible pinned
+   state on the unit (marker or bar colour) so the player sees why. Gives machine guns / autocannons a job against a blob.
 9. **The four levers from the first message:** clumping punished (area effects / splash), defender edge, flanks pay visibly (side
    and rear armour exist, front 4 / side 3 / rear 2, but aren't felt), information (ambushes unseen until sprung).
 10. **Unit swaps (parked by his "the problem is not the units, but the rules"):** gangs' Oil Slick Rig, Law's Spike-Strip
