@@ -415,6 +415,11 @@ func _tick(delta: float) -> void:
 	# speed to turn and slide on low grip. Collisions stay with the physics body: the velocity after the slide feeds the
 	# next tick, so a wall eats a wheeled unit's momentum.
 	var drive_cmd := _deploy_step(cmd)
+	if RuleSwitches.pin_slow_on and suppression > 0.0:
+		var cap := 1.0 - PIN_SLOW_MAX * pin_slow()
+		drive_cmd.throttle = clampf(drive_cmd.throttle, -cap, cap)  # R3: heads down, the driver eases off
+	if RuleSwitches.spread_on:
+		_short_halt(cmd, drive_cmd, delta)  # R2: a long shot on the move waits for the hull to stop
 	var drive_started := Time.get_ticks_usec() if SimProfile.enabled else 0
 	_drive(drive_cmd, delta)
 	if drive_started > 0:
@@ -1170,6 +1175,89 @@ func settle_motion_sight(seconds: float) -> void:
 	_shown_sight = sight_radius
 
 
+## Round 37 (rules R3, C37.2, his "slow, never stop, and show it"): a suppressed crew's driver eases off. The drive's
+## throttle is capped at 1 - PIN_SLOW_MAX x pin_slow(), so a fully suppressed hull makes ~60 % of its speed and never
+## less: an ordered move still completes, it just takes longer under heavy fire. Applied to the tick's command before
+## the drive (GDScript and native plants alike). `RuleSwitches.pin_slow_on`.
+const PIN_SLOW_MAX := 0.4
+
+
+## R3 (C37.6, what feedback shows as "slowed"): how much of the full slow-down this crew has on, 0 (none, or the rule
+## OFF) .. 1 (fully suppressed: PIN_SLOW_MAX of its speed gone).
+func pin_slow() -> float:
+	return suppression if RuleSwitches.pin_slow_on and alive else 0.0
+
+
+## Round 37 (rules R2, C37.2, the AI half: "crews stop before a long shot when the shot is worth it"): the SHORT HALT.
+## With moving fire spreading 4x, a crew about to fire a long round on the move (the trigger held, the gun loaded) holds
+## the round, brakes, and fires once its hull is nearly still, then drives on; at most SHORT_HALT_MAX_S, and not again for
+## SHORT_HALT_COOLDOWN_S, so an ordered move still completes. Worth it = the halted hit chance beats the moving one by
+## SHORT_HALT_GAIN (the Matchups model: a target TARGET_HALF_WIDTH wide against the shot's spread, Match.shot_spread
+## with the range term) and the shot is at least SHORT_HALT_MIN_RANGE of the weapon's effective range: close in, a crew
+## keeps rolling and shooting. Direct fire only, never while reversing (a crew backing out keeps backing). It lives in
+## the plant beside the battery's dig-in (a fire command that a hull must stop for) because every controller, GDScript
+## or native, ends in this command: one place, the same for both sides (his "smart AI on both sides").
+const SHORT_HALT_MIN_RANGE := 0.6
+const SHORT_HALT_GAIN := 0.15
+## Below this fraction of top speed the hull is already as good as halted (no halt), and a halting crew fires.
+const SHORT_HALT_STILL := 0.15
+const SHORT_HALT_MAX_S := 1.5
+const SHORT_HALT_COOLDOWN_S := 4.0
+## Seconds left of the current short halt (0 = none) and before the next may start.
+var short_halt_seconds := 0.0
+var short_halt_cooldown := 0.0
+
+
+## R2: the chance a round from this crew at `distance` (m) hits a hull-sized target, moving at `moving` (0..1).
+func long_shot_hit_chance(distance: float, moving: float) -> float:
+	var spread := Match.shot_spread(weapon, moving, suppression, distance)
+	if spread <= 0.0:
+		return 1.0
+	return clampf((Matchups.TARGET_HALF_WIDTH / maxf(distance, 1.0)) / (1.5 * spread), 0.0, 1.0)
+
+
+## R2: whether a round fired now, at `distance`, is worth stopping for.
+func short_halt_worth(distance: float, moving: float) -> bool:
+	if moving < SHORT_HALT_STILL or distance < SHORT_HALT_MIN_RANGE * float(weapon.get("effective_range", weapon["range"])):
+		return false
+	return long_shot_hit_chance(distance, 0.0) - long_shot_hit_chance(distance, moving) >= SHORT_HALT_GAIN
+
+
+func _short_halt(cmd: TankCommand, drive_cmd: TankCommand, delta: float) -> void:
+	short_halt_cooldown = maxf(0.0, short_halt_cooldown - delta)
+	var kind: int = weapon["kind"]
+	if kind != Weapons.Kind.PROJECTILE and kind != Weapons.Kind.BEAM:
+		return
+	var moving := clampf(absf(_speed) / maxf(max_forward_speed, 0.1), 0.0, 1.0)
+	if short_halt_seconds > 0.0:
+		short_halt_seconds = maxf(0.0, short_halt_seconds - delta)
+		if not cmd.fire or drive_cmd.throttle < 0.0:
+			short_halt_seconds = 0.0  # the shot is gone (target lost, lane closed) or the crew is backing out
+			short_halt_cooldown = SHORT_HALT_COOLDOWN_S
+			return
+		drive_cmd.throttle = 0.0
+		if moving >= SHORT_HALT_STILL and short_halt_seconds > 0.0:
+			cmd.fire = false  # still rolling: hold the round
+		else:
+			short_halt_seconds = 0.0  # steady (or out of time): this tick's round goes, and the crew drives on
+			short_halt_cooldown = SHORT_HALT_COOLDOWN_S
+		return
+	if not cmd.fire or short_halt_cooldown > 0.0 or drive_cmd.throttle < 0.0 or _reload_ticks > 1 \
+			or _burst_rounds_left > 0 or not is_deployed():
+		return
+	var muzzle := global_position
+	var distance := Vector2(cmd.aim_point.x - muzzle.x, cmd.aim_point.z - muzzle.z).length()
+	if short_halt_worth(distance, moving):
+		short_halt_seconds = SHORT_HALT_MAX_S
+		drive_cmd.throttle = 0.0
+		cmd.fire = false
+
+
+## True while this crew is braking for a long shot (R2): readers that judge progress may want to know.
+func short_halting() -> bool:
+	return short_halt_seconds > 0.0
+
+
 ## L2: heads down. What brains and battle drills trigger on.
 func is_pinned() -> bool:
 	return alive and suppression >= PINNED_SUPPRESSION
@@ -1337,6 +1425,8 @@ func _set_alive(value: bool) -> void:
 	suppression = 0.0  # a wreck is not pinned, and a fresh crew starts calm
 	motion_sight = 1.0  # R1: and starts from its plain radius, not the wreck's last stretch
 	halted_seconds = 0.0
+	short_halt_seconds = 0.0
+	short_halt_cooldown = 0.0
 	_apply_suppression_effects()
 	visible = value
 	_shown_health = -1  # push everything to the visuals again on the next frame

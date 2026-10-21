@@ -66,3 +66,46 @@ Nothing (his answers are recorded). His playtest at the round's close is the sub
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Now (2026-10-21):** R1 built + lab-green; R2 (spread + short halt) and R3 (pin slow) built, lab tests written; R2's
+first MEASURE running (builder0, light). Bars wait for CP37.1 (native's guard lines).
+
+**Plan (in order; reasons in one line each):**
+1. R1 own-motion sight: DONE at 9d63f709a (lab 6/6, builder0 light, `test FILTER=test_rules_sight`).
+2. R2 measure (`make rules-moving`: CPU-v-CPU showmatch fights, share of direct-fire damage by shooter motion x range).
+3. R2 spread switch + short halt; R3 pin slow; lab tests both paths.
+4. quick-remote, then one full check on a named hash (pre-series gate).
+5. After CP37.1 merges: bars in workstreams *Bars (round 37)*, series on builder2.
+
+**Switches:** `game/combat/rule_switches.gd` (`RuleSwitches`): `--rules-on=sight,spread,pin_slow`, `--rules-off=...`, or the
+brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-baseline is untouched with them OFF.
+
+**Decisions:**
+- R1 is applied by `Match._settle_motion_sight()` right after the suppression settle on BOTH its GDScript and native paths,
+  writing `_shown_sight` so the next settle keeps the calm radius. **No C++ twin is needed** (a few multiplies per crew at
+  15 Hz in GDScript); native's `threat_native` settle is untouched. Halted = slower than 1 m/s over the ground
+  (`real_velocity`), dwell 2 s, blend 0.25/s (0.85 -> 1.10 in 1 s), a fresh crew starts at 1.0.
+- R2's moving factor: `Match.moving_spread_factor()` (1.5 OFF, 3.0 ON); `fire_lanes.gd` reads it. `shot_spread` has no C++
+  twin (checked: `native/src` never reads MOVING_SPREAD_FACTOR), so none to declare.
+- R2's AI half is a SHORT HALT in the plant (`Tank._short_halt`), NOT in gunnery/order_controller: both of those have
+  whole-tick C++ ports (`NativeController`, `NativeExec`, `NativeGun`) a GDScript hook would be bypassed by, and the plant
+  already has the precedent (a battery digs in when told to fire). A crew whose trigger is held, gun loaded, rolling >= 15 %
+  of top speed, shot >= 60 % of effective range, and whose halted hit chance beats its moving one by >= 0.15 (Matchups'
+  model + `shot_spread`) holds the round, brakes, fires once nearly still, drives on; at most 1.5 s, cooldown 4 s; never
+  while reversing. Same rule for both sides and for his crews. The grant in gunnery/order_controller is NOT used.
+- R3: the tick's throttle is capped at `1 - 0.4 x pin_slow()` before the drive (GDScript and native plants alike);
+  `Tank.pin_slow()` = suppression when ON, else 0 (C37.6, feedback's read).
+- The brief's "a CPU tank halting to fire at 120 m": no direct-fire gun reaches 120 m (longest: railgun 110 m), so the lab
+  case uses the Syndicate tank's railgun at > 80 m.
+
+**Questions for the lead:** none yet.
+
+**Requests to other streams:**
+- native: no C++ twin is needed for R1 (see Decisions); R2's short halt and R3's cap act on the command in `tank.gd` before
+  `NativeTank.drive`, so both drive paths see them. Please confirm nothing native reads `cmd.throttle` for the tick before
+  `Tank._physics_process` runs (I found none).
+- manoeuvre: R3 lowers top speed under fire to 60 %; R2's short halt stops a hull for <= 1.5 s with throttle 0 in the
+  plant (`Tank.short_halting()`); a stall clock that reads commanded throttle v motion may want to know.
+
+**Known issues:** none yet.
+

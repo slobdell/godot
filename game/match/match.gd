@@ -214,6 +214,9 @@ var _score_presence: Array = []
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## Round 37 (rules R2, C37.2, his "firing on the move should be a lot less accurate"): with `RuleSwitches.spread_on`
+## a full-speed shot spreads 4x, not 2.5x (still scaled by speed). Read through moving_spread_factor().
+const RULES_MOVING_SPREAD_FACTOR := 3.0
 ## X1 (round 5): at a weapon's full range its spread is (1 + this) times what it is inside effective_range.
 const RANGE_SPREAD_FACTOR := 3.0
 ## L2 (round 4, contract L2): suppression and effective fire. Every round that resolves stamps the ground it swept
@@ -1166,8 +1169,13 @@ func threat_along(team: int, from: Vector3, to: Vector3) -> float:
 ## X1 (round 5): `distance` (m, 0 = unknown) past the weapon's effective_range widens it too (see Weapons).
 static func shot_spread(weapon: Dictionary, moving: float, suppression: float, distance := 0.0) -> float:
 	var spread_deg := float(weapon.get("spread_deg", 0.0))
-	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
+	return deg_to_rad(spread_deg) * (1.0 + moving_spread_factor() * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
 			* range_spread_multiplier(weapon, distance)
+
+
+## The moving term's factor this run (R2's switch picks it).
+static func moving_spread_factor() -> float:
+	return RULES_MOVING_SPREAD_FACTOR if RuleSwitches.spread_on else MOVING_SPREAD_FACTOR
 
 
 ## X1: how much wider a shot at `distance` spreads than one inside the weapon's effective range (1 = no change).
