@@ -42,9 +42,7 @@ func _squad(formation := "") -> Match:
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, {"name": "T", "squads": [squad]}), "", "setup: the squad")
 	var i := 0
 	for tank: Tank in game_match.tanks.get_children():
-		tank.global_position = START + Vector3(-float(i) * 16.0, 0.0, 0.0)
-		tank.rotation.y = -PI / 2.0  # nose east (-Z is forward)
-		tank.reset_physics_interpolation()
+		tank.place(START + Vector3(-float(i) * 16.0, 0.0, 0.0), -PI / 2.0)  # nose east (-Z is forward)
 		i += 1
 	return game_match
 

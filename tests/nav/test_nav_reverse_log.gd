@@ -25,8 +25,7 @@ func _drive(at: Vector3, yaw: float, goal: Vector3, logging: bool, seconds: int,
 	var saved := Movement._off
 	Movement._off = off
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = at
-	tank.rotation.y = yaw
+	tank.place(at, yaw)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank

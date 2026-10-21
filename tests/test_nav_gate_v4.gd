@@ -17,8 +17,7 @@ func _car(at := START, unit_id := "ifv") -> OrderController:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, unit_id)
-	tank.global_position = at
-	tank.rotation.y = 0.0
+	tank.place(at, 0.0)
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks

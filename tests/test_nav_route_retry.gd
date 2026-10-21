@@ -19,7 +19,7 @@ func test_a_route_asked_before_the_map_is_ready_is_retried_next_tick() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Early", 0, Match.Team.GREEN, "tank")
-	tank.global_position = Vector3(-100, 0, 40)
+	tank.place(Vector3(-100, 0, 40), tank.rotation.y)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks

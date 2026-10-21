@@ -19,9 +19,7 @@ const GOAL := Vector3(57.0, 0.0, -33.0)
 func _place(tank: Tank, at: Vector3, heading_deg: float) -> void:
 	var h := deg_to_rad(heading_deg)
 	var nose := Vector3(sin(h), 0.0, -cos(h))
-	tank.global_position = at
-	tank.rotation.y = atan2(-nose.x, -nose.z)
-	tank.reset_physics_interpolation()
+	tank.place(at, atan2(-nose.x, -nose.z))
 
 
 func _controller(game_match: Match, tank: Tank) -> OrderController:

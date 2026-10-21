@@ -43,7 +43,7 @@ func test_the_bake_radius_is_read_from_the_arena_not_from_the_constant() -> void
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Reader", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(-100, 0, 40)
+	tank.place(Vector3(-100, 0, 40), tank.rotation.y)
 	await tree.physics_frame
 	Movement._bake_radius = -1.0  # clear the cache so this reads the arena rather than a previous test's value
 	var read := Movement.bake_radius(tank)
@@ -59,9 +59,9 @@ func test_the_shortfall_is_published_and_has_the_right_sign() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var big := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	big.global_position = Vector3(-100, 0, 40)
+	big.place(Vector3(-100, 0, 40), big.rotation.y)
 	var small := game_match.spawn_tank("Scout", 1, Match.Team.GREEN, "scout")
-	small.global_position = Vector3(-90, 0, 40)
+	small.place(Vector3(-90, 0, 40), small.rotation.y)
 	await tree.physics_frame
 	var big_short := Movement.clearance_shortfall(big, "gang_tank")
 	var small_short := Movement.clearance_shortfall(small, "scout")
@@ -94,9 +94,9 @@ func test_an_oversized_hull_refuses_the_shortcut_and_a_small_one_keeps_it() -> v
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var big := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	big.global_position = Vector3(-100, 0, 40)
+	big.place(Vector3(-100, 0, 40), big.rotation.y)
 	var small := game_match.spawn_tank("Scout", 1, Match.Team.GREEN, "scout")
-	small.global_position = Vector3(-90, 0, 40)
+	small.place(Vector3(-90, 0, 40), small.rotation.y)
 	# `Movement.of()` is null until the hull is DRIVEN -- there is no mover before an order. nav's first cut read
 	# the slack straight after spawning and got NAN from its own fallback, with `chords 0` beside it saying the rule
 	# had never been consulted. The counter reported the broken setup correctly; the test did not check it.
@@ -143,7 +143,7 @@ func test_the_switch_off_reproduces_the_old_slack() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var big := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	big.global_position = Vector3(-100, 0, 40)
+	big.place(Vector3(-100, 0, 40), big.rotation.y)
 	_drive(game_match, big)
 	for frame in 3:
 		await tree.physics_frame

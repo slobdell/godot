@@ -18,8 +18,7 @@ func _drive(off: PackedStringArray, start: Vector3, yaw: float, goal: Vector3) -
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	tank.global_position = start
-	tank.rotation.y = yaw
+	tank.place(start, yaw)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank
@@ -76,7 +75,7 @@ func _eased_throttle(off: PackedStringArray, hit: float) -> Dictionary:
 	var saved := Movement._off
 	Movement._off = off
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	tank.global_position = Vector3.ZERO
+	tank.place(Vector3.ZERO, tank.rotation.y)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank

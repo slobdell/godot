@@ -19,8 +19,7 @@ func _drive(kturn: bool) -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = START
-	tank.rotation.y = 0.0  # forward (-Z of the basis) points -z: straight at the block's face
+	tank.place(START, 0.0)  # forward (-Z of the basis) points -z: straight at the block's face
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank

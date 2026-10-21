@@ -23,8 +23,7 @@ func _drive(fill: bool, seconds: float) -> Dictionary:
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
 	var to_goal := Vector3(GOAL.x - START.x, 0.0, GOAL.z - START.z).normalized()
 	var forward := to_goal.rotated(Vector3.UP, -deg_to_rad(ERROR_DEG))
-	tank.global_position = START
-	tank.rotation.y = atan2(-forward.x, -forward.z)  # the basis' -Z is the nose
+	tank.place(START, atan2(-forward.x, -forward.z))  # the basis' -Z is the nose
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank
