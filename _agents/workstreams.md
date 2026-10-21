@@ -123,6 +123,19 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   contacts arm <= base x 1.1 + 5, stuck s arm <= base x 1.2 + 10, outcomes reported. **A pass ships ON** (default "anchor",
   `--halt-terrain=centre` keeps main's), sim-baseline maps that move attributed with the switch OFF.
 
+- **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 in stream/orders 9a5fb0868 Status before any O3 number; code 092cb34b7,
+  OFF).** What he would see: squads sent together arrive each with its own vehicles, and they don't bump each other more than today.
+  The change: where today's untangle re-deals vehicles between squads whose drives cross, the crossing squads swap whole PLACES
+  (fewest crossing drive pairs, then least driving); each keeps its element. **Base rate (seen):** 25 of 287 squads had a crew
+  re-dealt (builder0 native, 55c973cd4, round 36's 12 cells x 3621-3626). **Judged probe:** `make native orders-probe`, arms `main:`
+  v `whole:--untangle=whole`, the 12 cells, FRESH seeds 3713-3724 (n 12 a cell), builder0, on a hash whose full check is green.
+  **Counter:** swapped_whole > 0 on the whole arm, and the arms' rows differ. **Deciding:** squads arriving short (redealt > 0)
+  summed: arm 0, and base >= 10 (else "no workload"). **Guards (contention at no worse than today):** friend_contacts (physics hull
+  touches between his vehicles) summed over all runs arm <= base x 1.1 + 5, and the same for friend_contacts_foreign; per-cell medians
+  all-in <= base x 1.2 + 3 s and no more never-in seeds; twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed (far bank)
+  no higher; whole_still_crossed reported; test_control_untangle* and test_control_scale in check. **A pass ships ON** (player path
+  only: CPU elements are never untangled, so no CPU guard). If contacts fail, re-dealing stays (his answer).
+
 ## Rulings (round 37)
 
 - **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
@@ -160,6 +173,13 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   and R3's cap edit `drive_cmd.throttle` before `NativeTank.drive` (tank.gd:668 -> tank_drive_native.cpp:71); `max_forward_speed`
   untouched. **Ruled:** accepted; the empirical form (rules' lab tests under `make native test`, each switch ON, both arms) runs on
   rules' pair tree (N2) before their series.
+- **R37.5 (2026-10-21) orders' grants re-aimed.** O5: the CPU screen / support_by_fire tasks are given in `game/tactics/
+  element_commander.gd` (:402, :728, :963) and their seats laid in `element_plan.gd`'s `_plan_screen`; nothing in `cpu_commander.gd`
+  places them. **The O5 grant moves to** the screen / support_by_fire point choice in `element_commander.gd` and `_plan_screen` in
+  `element_plan.gd`, guarded, merge note. O2: in the no-fight probe a parked crew's "ADVANCE" is a crew pushed off its seat by a
+  friend's give-way walking back to its station; in a real fight (`--probe-fight=on`, laptop, locks s34/35) parked crews leave their
+  seats under SPOT, RETREAT, ENGAGE and INVESTIGATE (`tank_brain.gd`'s idle-crew options). The O2 grant (ADVANCE only) is extended
+  only on orders' design note (sized on builder0 first).
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
