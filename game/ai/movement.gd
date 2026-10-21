@@ -3998,8 +3998,8 @@ static func h1b_on() -> bool:
 # abreast of the friend, clear of every hull and on the navmesh, reached by a navmesh path no longer than SIDE_DETOUR_X x the
 # straight line (never across a bridge or the river), and drives to it: it replaces the route's waypoint until reached
 # (SIDE_REACHED_M), SIDE_SECONDS pass, or the friend moves. With neither side clear the hull STANDS (no re-ram) until the
-# friend moves more than H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (false = OPT-IN).
-const H1B_SIDE_DEFAULT := false
+# friend moves more than H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (true = ON: R36.27, Bar S2a series PASS on builder2, bf678480c v e525f7311).
+const H1B_SIDE_DEFAULT := true
 ## Beyond both hulls' half-widths, side to side.
 const SIDE_MARGIN_M := 1.2
 const SIDE_REACHED_M := 2.0
