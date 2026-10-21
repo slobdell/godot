@@ -88,7 +88,7 @@ X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36
 - **A War Rig (any wheeled turret hull) he tells to face a way turns to it and goes still** (M5, CP-F attempt 5, his round-32 ask):
   within 15 deg 71–80 % of the time, nothing left creeping.
 - Under the hood: builder2 is back as a cheap Spot box (e2-highcpu-32, us-west4, ~$0.11/h, stops itself after 20 idle min);
-  native builds can't go stale; lab tests now match real play's engine state (E4/E4b); T7's lane test runs in C++.
+  native builds can't go stale; lab tests now match real play's first match (E4/E4b; the cause corrected in R36.25: where the setup runs, not engine state); T7's lane test runs in C++.
 
 **HIS ANSWERS (2026-10-20, game_design.md *Round 35 close*): "the GATE_DEAL=on feature is clearly awesome let's keep it" and "yes,
 go ahead and ship it" (the joint). IN FLIGHT (R35.66):** orders flips GATE_DEAL ON and checks on builder2; manoeuvre cuts the joint

@@ -289,6 +289,14 @@ _Filed here before any number._
   too). **Round 37:** (1) away_m against a fixed seat, or only while the goal is unchanged; (2) find who writes the flickering second
   order (`--order-trace` on s3664 base; brains/orders): a looks-dumb bug in its own right; (3) G, if retried, gets a "not farther
   than standing" test and a base-rate check before sizing. Traffic DONE for the round.
+- **R36.25 (2026-10-21 ~01:00 PDT) E4b's cause CORRECTED (R35.57 named the wrong one).** Native (stream e9190b443, `make
+  native-first-tick-sync`, laptop + builder0, Godot 4.7.2 Jolt): not first-iteration engine state but WHERE THE SETUP RUNS. A body placed
+  inside the physics frame's deferred flush or a node's _physics_process reaches the space before its first tick ("synced"); placed
+  from the physics/process signals, the process flush or a main scene's _ready, the space holds the add-time origin ("stale"). The old
+  "cold" first test ran via `_initialize -> _run.call_deferred()`, inside the physics flush (synced); every later test and real play's
+  `--skirmish` (main._ready) are stale. So brains' warm-up stays right (tests match real play's first match); respawns use `place()`.
+  Ruled out: physics and nav servers off during warm-up, the lab start frame, autoloads, global RNG. Caveat: flush order inferred, not
+  read in source. **Grant:** native corrects the comment in tests/run_tests.gd:115-121 (comment only).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
