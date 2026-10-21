@@ -322,6 +322,9 @@ _Filed here before any number._
   _owned twin, "spot:back 0 >= 1": with yieldgap ON the asker clears sooner and the stage no longer reaches the back-up branch (20
   give-ways, none backs up; twins 413 drives, 0 mismatches). A floor whose premise the switch moved, not harm (lesson 307's class).
   A ship needs native's re-pin (still backs up with yieldgap ON and OFF) in the same pair + a green check.
+- **R36.29 (2026-10-21 ~02:20 PDT) native's close merged: main 48f4dc979 INHERITS 4a6b345d9** (builder0 2972/0, sim-baseline unmoved,
+  perf-judge NOT JUDGED for load). Ruled: a diff with no game/native/server code needs no perf-judge (nothing it can slow); main's
+  stands at 83eaddf66 (R36.21). Native's perf-judge rerun is cancelled (it would wait hours behind builder0's series).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
