@@ -1,0 +1,115 @@
+>> remote: syncing godot-traffic-t8 to slobdell@builder2:~/tank_squad/godot-traffic-t8
+>> remote: make sim-variants VARIANTS_EXTRA=--traffic-off=holdfire VARIANTS_TAG=hfoff on slobdell@builder2
+>> remote: no override.cfg in this checkout; this run's Godot user dir is tank_squad_godot-traffic-t8
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+WARNING: Missing .uid file for path "res://tests/test_manoeuvre_stall_intent_sumps.gd". The file was re-created from cache.
+     at: _process_file_system (editor/file_system/editor_file_system.cpp:1391)
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+base40	foundry	80f7b1bfb40d88bd	6.93	0
+base40	yard	62d12a470d5c9ee3	8.1	0
+base40	pit	022e54dcc1c3e787	7.37	0
+base40	terminus	c1e385944ff8073b	7.62	0
+base40	crossing	44b576710c5e90f6	8.26	0
+base40	sumps	cf40649922613233	7.87	0
+base40	locks	13c33de4419afb5e	7.71	0
+base40	parade	72b1c96369096248	6.9	0
+base40	gorge	4da2720fa4085f3b	7.44	0
+base40	archipelago	5595506fcfeac33f	8.74	0
+base40	cut	b0025e134b36118c	7.61	0
+base40	docks	1ad07ab1883a1db8	7.53	0
+base40	yard_open	9287bb338b29a976	6.91	0
+base90	foundry	705f87a61eee212f	12.42	0
+base90	yard	e2406352f34108b4	15.49	0
+base90	pit	89c6d591bcbd73a0	13.55	0
+base90	terminus	4b7de051a693c6e4	14.7	0
+base90	crossing	7e579fd004e9aa68	17.62	0
+base90	sumps	b3fa4764fd311028	16.01	0
+base90	locks	2dc421c6fba819fd	12.77	0
+base90	parade	5692d3cc76636fd1	13.63	0
+base90	gorge	7bfe402a0d5ab72b	14.72	0
+base90	archipelago	48086cfd0c04003e	16.61	0
+base90	cut	6183479ce27df1b8	14.6	0
+base90	docks	101f26ac62733793	10.54	0
+base90	yard_open	649fd0c623a6e355	12.32	0
+base40s11	foundry	1e1220c686963528	6.56	0
+base40s11	yard	4bd3b9b99a152c26	7.53	0
+base40s11	pit	874f01a7e77f2412	6.41	0
+base40s11	terminus	6542594f3277768a	7.43	0
+base40s11	crossing	e21d81446a10c509	7.83	0
+base40s11	sumps	dbec1accfd1a29fb	7.69	0
+base40s11	locks	97dbe70cc988d81e	7.85	0
+base40s11	parade	f0e0d4b588188b34	7.18	0
+base40s11	gorge	0d11d08204de523f	7.15	0
+base40s11	archipelago	546de808576f3cac	6.56	0
+base40s11	cut	b33358c646b5375f	7.04	0
+base40s11	docks	f158302026ee433b	6.85	0
+base40s11	yard_open	2ebe39d97d4582b1	6.22	0
+his40	foundry	d26b79a3eb1e4af9	9.0	0
+his40	yard	f9bbc7b8c82dbaf2	9.49	0
+his40	pit	45817d1b2c62f4e3	9.5	0
+his40	terminus	fbe60a5431fed01c	9.02	0
+his40	crossing	8273349ee65d8ceb	9.54	0
+his40	sumps	3d5c5ce1d2b7496f	9.56	0
+his40	locks	e99e835e4cdb0a0c	9.65	0
+his40	parade	50e069d889281f12	9.43	0
+his40	gorge	3c0b38508fd62368	9.1	0
+his40	archipelago	062258c0038d8e2c	9.19	0
+his40	cut	1c9c4a3cf9b3852b	9.4	0
+his40	docks	98987d3734cb5594	8.91	0
+his40	yard_open	8a5948c8cfd1940a	9.35	0
+his90	foundry	5d494b35a2cddc8e	17.14	0
+his90	yard	8d0451e1e5c466d6	17.64	0
+his90	pit	81deef8f21b281f6	18.62	0
+his90	terminus	21b9b22e36c0c6a5	15.99	0
+his90	crossing	fd2c508890d156b4	21.51	0
+his90	sumps	e1b3d898b9a0a92c	19.23	0
+his90	locks	1cf9b09a0caa01a1	15.85	0
+his90	parade	46441813b760fac6	20.33	0
+his90	gorge	165e7a1b887b8d96	18.6	0
+his90	archipelago	bc2992884c4cdd3c	15.83	0
+his90	cut	84c97ee3926ff645	19.2	0
+his90	docks	039bfe9b5a1fa7ad	13.48	0
+his90	yard_open	cc034ad0c325cd7d	17.11	0
+his4600c60	foundry	092b9431e584cc0a	47.84	0
+his4600c60	yard	34915031c537cce6	53.02	0
+his4600c60	pit	225a30b692be4ddc	49.97	0
+his4600c60	terminus	e0e7824844b048a1	52.43	0
+his4600c60	crossing	824983d3beb880a7	50.52	0
+his4600c60	sumps	bd4755fda7695132	49.22	0
+his4600c60	locks	5cde276835c29553	50.2	0
+his4600c60	parade	755cc3c3af4bd731	47.23	0
+his4600c60	gorge	d5e8573ce7d8d897	48.14	0
+his4600c60	archipelago	3b73ac80a1f8ecca	47.76	0
+his4600c60	cut	18b4405397f5b8af	47.89	0
+his4600c60	docks	41b688bf5ef66565	48.53	0
+his4600c60	yard_open	feb4565438249f12	47.57	0
+his4600c90	foundry	c4643f5b3662c1d4	64.23	0
+his4600c90	yard	a5990f02afff1534	71.79	0
+his4600c90	pit	3bdc1ed8c5ff9837	73.3	0
+his4600c90	terminus	e2bce9bc5b33ef11	78.05	0
+his4600c90	crossing	57f9ca811abf7ccd	73.3	0
+his4600c90	sumps	7b02767ce6ac4650	75.38	0
+his4600c90	locks	23eb347d2fdc84e7	82.04	0
+his4600c90	parade	10bdbae9c8932c45	71.57	0
+his4600c90	gorge	003937941c69e1a1	72.1	0
+his4600c90	archipelago	f1d9f5678168fea4	66.7	0
+his4600c90	cut	e876a7bfd2b7cb40	66.22	0
+his4600c90	docks	7d33f9425ab648c8	75.03	0
+his4600c90	yard_open	28bcbf3c645ded2c	66.67	0
+>> remote: copy-back verified, 236 files, sha256
+>> remote: make sim-variants VARIANTS_EXTRA=--traffic-off=holdfire VARIANTS_TAG=hfoff exited 0 (build/ copied back)
