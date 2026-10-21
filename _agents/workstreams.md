@@ -105,6 +105,24 @@ exit (remote_builds.md). Delete your own `~/tank_squad/<folder>` leftovers on bo
 
 _(each stream files its bar here BEFORE its first number; the orchestrator records rulings below as R37.x)_
 
+- **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
+  has parked keeps one shape; no crew drives to a point ~15 m off and back while the squad sits. The fix: an ARRIVED element
+  reads `ElementSituation.terrain_at` at its anchor (fixed), not its crews' centroid (`--halt-terrain=centre|anchor`; GDScript
+  only, terrain_at has no native twin). **Base rate (sizing, seen; builder0 native, 20005d611, orders-probe 12 street cells x
+  seeds 3621-3626, 285 placed squads):** 4 squads flip halt shape after the place window (18 flips, 50 reseats; locks 3 x 3,
+  terminus 5 x 1), centroid terrain changes 38 (shape flips + lanes <-> dense re-spacings), anchor terrain changes 0. Lab:
+  `test_control_halt_terrain` (locks, open spot 4 m off a lanes edge, the squad nudged across 6 times: centre 2 flips, anchor 0;
+  laptop GDScript). **Judged probe:** `make native orders-probe`, arms `main:` v `anchor:--halt-terrain=anchor`, the 12 cells,
+  FRESH seeds 3701-3712 (n 12 a cell), builder0, on a hash whose full check is green. **Counter:** base relays >= 10 (else
+  "no workload") and the arms' rows differ somewhere. **Deciding:** `relays` (an update where the halt's shape or the terrain
+  the element reads changed, after the place window, within one task) summed over all placed squads: arm <= 25 % of base, and
+  shape flips arm <= 1. **Guards (each cell, medians as R36.6's):** all-in <= base x 1.2 + 3 s and no more never-in seeds;
+  twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed (far bank) no higher; `test_control_scale`'s 3-tick
+  response (in check). **CPU guard (the read is symmetric: CPU elements halt too):** `make native traffic-census`, its 3
+  default cases x seeds 3701-3706 (18 CPU v CPU fights an arm), `TRAFFIC_FLAGS=--halt-terrain=anchor` v none: friendly
+  contacts arm <= base x 1.1 + 5, stuck s arm <= base x 1.2 + 10, outcomes reported. **A pass ships ON** (default "anchor",
+  `--halt-terrain=centre` keeps main's), sim-baseline maps that move attributed with the switch OFF.
+
 ## Rulings (round 37)
 
 - **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
