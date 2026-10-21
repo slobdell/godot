@@ -236,6 +236,7 @@ func _run() -> void:
 			"friend_contacts": _contacts, "friend_contacts_foreign": _contacts_foreign, "contact_ticks": _contact_ticks,
 			"swapped_whole": SelectionSquads.swapped_whole, "whole_still_crossed": SelectionSquads.whole_still_crossed,
 			"untangle": "whole" if SelectionSquads.UNTANGLE_WHOLE else "deal",
+			"cover_seat": "on" if ElementPlan.COVER_SEAT else "off", "cover_seats_moved": ElementPlan.cover_seats_moved,
 			"fight": _flag("probe-fight", "off"), "green_kills": _sum_values(_match.kills_by_unit[Match.Team.GREEN]),
 			"green_lost": int(_match.units_lost[Match.Team.GREEN]), "rust_lost": int(_match.units_lost[Match.Team.RUST]),
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)

@@ -1925,20 +1925,31 @@ static func _cover_seats(plan: Dictionary, deploy: Dictionary, situation: Dictio
 		for unit_name: String in plan["slots"]:
 			var seat: Variant = plan["slots"][unit_name]
 			if seat is Vector3:
-				var hull: Variant = Units.stat(String(units.get(unit_name, "tank")), "hull_size")
+				var size: Variant = Units.stat(String(units.get(unit_name, "tank")), "hull_size")
+				var hull: Variant = Vector3(float(size[0]), float(size[1]), float(size[2])) \
+						if size is Array and (size as Array).size() == 3 else null
 				var moved: Variant = low_cover_seat(situation.get("cover_map"), seat, threat, COVER_SHIFT_M, hull)
 				if moved is Vector3:
 					found[unit_name] = moved
 					cover_seats_moved += 1
 		deploy["cover"] = found
+	# A crew moved behind low cover faces the threat there (cover's contract: the caller lays that facing): its sector
+	# is the halt's heading, and its order goes to the cover seat facing it.
 	var cover: Dictionary = deploy["cover"]
+	var facing: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
 	for unit_name: String in cover:
 		if plan["slots"].has(unit_name):
 			plan["slots"][unit_name] = cover[unit_name]
+			if plan.get("sectors", {}).has(unit_name):
+				plan["sectors"][unit_name] = 0.0
+			var order: Variant = plan.get("orders", {}).get(unit_name)
+			if order is Dictionary:
+				order["to"] = cover[unit_name]
+				order["facing"] = facing
 
 
-## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` when this build
-## has it (cover 616f6ec3b's signature), else null. No map (a test's bare situation) or no hull size: null. `node` is
+## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` (cover's K3, on
+## main 821c7f494) when this build has it, else null. No map (a test's bare situation) or no hull size: null. `node` is
 ## left null (the plan is pure: no tank to path from); cover's query then skips its navmesh reach test (merge note).
 static func low_cover_seat(map: Variant, near: Vector3, threat_dir: Vector3, max_shift_m: float, hull: Variant = null) -> Variant:
 	var query := Callable(TacticalQuery, "low_cover_seat")
