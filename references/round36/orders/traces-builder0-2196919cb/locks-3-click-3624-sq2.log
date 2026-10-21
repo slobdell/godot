@@ -1,0 +1,88 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=3 units=15
+SKIRMISH_ARMY Green res://tests/control/orders_probe_3.json: 5 scouts, 2 tanks, 3 IFVs (1400 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 15 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust res://tests/control/orders_probe_enemy.json: 1 scout (110 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 1 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=3 green_squads=3 green=10 rust_squads=1 rust=1
+SKIRMISH_CAMERA focus=(-28, 89) zoom=0.63 vehicles=4
+CONTROL_GROUPS squads=3 (Alpha:4 Bravo:3 Charlie:3) groups=3 ungrouped=0 [] engaged_of=wired
+TANK_SQUAD_READY role=SKIRMISH flags={ "arena": "locks", "seed": "3624", "probe-squads": "3", "probe-route": "click", "probe-arm": "main", "probe-trace": "2", "skirmish": "", "player": "res://tests/control/orders_probe_3.json", "enemy": "res://tests/control/orders_probe_enemy.json", "budget": "6000", "no-control": "", "no-pick-faction": "", "hints": "off", "no-record": "", "squad-cap": "3" }
+ORDERS_PROBE_SETUP {"click":[-5.8,20.4],"decks":[[-8.0,-12.0,8.0,12.0],[-99.0,-12.0,-85.0,12.0],[85.0,-12.0,99.0,12.0]],"ground_cap":true,"map":"locks","route":[[-5.8,20.4]],"squads":3,"units":10}
+HUD_MESSAGE [info] 3 units: move
+ORDERS_PROBE_LEGS squad 1 start [-28.2, 95.9] legs [[-39.9883422851562, 18.2824230194092]]
+ORDERS_PROBE_LEGS squad 2 start [2.9, 90.1] legs [[-3.3010892868042, 20.1275596618652]]
+ORDERS_PROBE_LEGS squad 3 start [30.9, 88.1] legs [[30.900577545166, 16.4389247894287]]
+ORDERS_PROBE_TRACE t=1 Green_Bravo_1(2.8,80.9 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-3.1,90.6 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(8.7,88.3 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=2 Green_Bravo_1(2.1,73.9 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-4.3,81.8 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(8.4,80.0 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=3 Green_Bravo_1(0.8,66.8 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-5.7,72.2 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(8.4,70.6 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=4 Green_Bravo_1(-0.0,60.0 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-6.4,62.4 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(8.0,60.2 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=5 Green_Bravo_1(-0.9,49.0 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-6.5,53.9 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(7.2,49.8 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=6 Green_Bravo_1(-1.7,38.1 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-6.4,48.2 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(6.5,39.7 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=7 Green_Bravo_1(-2.7,27.1 goal [-3.5, 18.4] MOVE el Bravo) Green_Bravo_2(-6.1,37.7 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(6.4,31.0 goal [6.0, 22.7] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=8 Green_Bravo_1(-3.2,21.4 goal - HOLD el Bravo) Green_Bravo_2(-6.0,29.1 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(6.1,25.3 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=9 Green_Bravo_1(-3.2,21.4 goal - HOLD el Bravo) Green_Bravo_2(-6.0,29.0 goal [-5.8, 24.2] MOVE el Bravo) Green_Bravo_3(6.1,25.3 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=10 Green_Bravo_1(-3.3,17.4 goal - HOLD el Bravo) Green_Bravo_2(-6.0,28.1 goal [-19.1, 17.9] MOVE el Bravo) Green_Bravo_3(7.0,21.9 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=11 Green_Bravo_1(-3.3,17.0 goal - HOLD el Bravo) Green_Bravo_2(-5.8,24.8 goal [-19.1, 17.9] MOVE el Bravo) Green_Bravo_3(7.3,17.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=12 Green_Bravo_1(-3.3,17.0 goal - HOLD el Bravo) Green_Bravo_2(-11.1,17.4 goal [-19.1, 17.9] MOVE el Bravo) Green_Bravo_3(5.1,15.0 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=13 Green_Bravo_1(-3.3,16.9 goal - HOLD el Bravo) Green_Bravo_2(-13.4,16.1 goal [-19.1, 17.9] MOVE el Bravo) Green_Bravo_3(0.9,14.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=14 Green_Bravo_1(-3.4,12.6 goal - HOLD el Bravo) Green_Bravo_2(-11.7,15.9 goal [-19.1, 17.9] MOVE el Bravo) Green_Bravo_3(-1.1,20.2 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=15 Green_Bravo_1(-3.5,12.0 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-14.9,16.1 goal [-19.1, 17.9] MOVE el Bravo) Green_Bravo_3(-1.2,24.0 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=16 Green_Bravo_1(-3.5,14.4 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-0.4,24.1 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=17 Green_Bravo_1(-3.5,14.4 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(0.2,24.1 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=18 Green_Bravo_1(-3.4,14.4 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(0.1,24.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=19 Green_Bravo_1(-3.4,14.4 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-1.4,26.9 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=20 Green_Bravo_1(-2.2,11.0 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(0.2,25.9 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=21 Green_Bravo_1(-1.3,1.5 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.8,25.1 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=22 Green_Bravo_1(-2.5,-6.4 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(0.7,25.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=23 Green_Bravo_1(-3.4,-10.4 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-0.4,25.7 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=24 Green_Bravo_1(-3.9,-12.4 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-3.3,24.7 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=25 Green_Bravo_1(-4.3,-14.0 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-3.4,24.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=26 Green_Bravo_1(-5.6,-16.9 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-3.4,24.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=27 Green_Bravo_1(-6.7,-18.0 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-3.4,24.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=28 Green_Bravo_1(-7.3,-18.4 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-3.4,24.7 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=29 Green_Bravo_1(-5.7,-17.8 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.6,25.2 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=30 Green_Bravo_1(-5.9,-17.9 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.5,22.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=31 Green_Bravo_1(-6.1,-18.0 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.4,21.4 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=32 Green_Bravo_1(-6.3,-18.0 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.4,21.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=33 Green_Bravo_1(-6.5,-17.9 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.4,21.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=34 Green_Bravo_1(-6.7,-17.8 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.4,21.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=35 Green_Bravo_1(-7.4,-16.9 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-4.7,22.1 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=36 Green_Bravo_1(-7.5,-16.8 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-7.8,29.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=37 Green_Bravo_1(-8.1,-13.8 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(-1.1,30.5 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=38 Green_Bravo_1(-5.8,-9.1 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(2.2,26.3 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=39 Green_Bravo_1(-4.6,0.9 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(5.2,22.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=40 Green_Bravo_1(-4.0,11.7 goal [-3.6, 18.4] MOVE el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.2,22.8 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=41 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(3.2,26.2 goal [0.5, 36.5] MOVE el Bravo)
+ORDERS_PROBE_TRACE t=42 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=43 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=44 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=45 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=46 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=47 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=48 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=49 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=50 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=51 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=52 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=53 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=54 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=55 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=56 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=57 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=58 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=59 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=60 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=61 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=62 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=63 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=64 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+ORDERS_PROBE_TRACE t=65 Green_Bravo_1(-3.3,15.3 goal - HOLD el Bravo) Green_Bravo_2(-15.9,16.4 goal - HOLD el Bravo) Green_Bravo_3(1.7,34.0 goal - HOLD el Bravo)
+NATIVE_EXEC 13494 native, 6505 handed back (dead 0, reflexes 0, yielding 0, face 8, drive 0, other 0), 72 stale pulls, 578 part pulls, 0 verified, 0 verify mismatches 
+ORDERS_PROBE_SQUAD {"anchor":[-40.0,18.3],"anchor_offset_m":34.3,"arm":"main","arrived_by":"element","arrived_s":35.9,"crews":4,"crossed":false,"crossed_at":null,"deck":true,"deck_at":[[-6.6,11.9],29.5],"deploy_cause":"cap","deploy_leg_m":7.1,"deploy_passes":0,"deploy_s":45.9,"deploy_step":"on","detour_worst_m":0.0,"detours":0,"detours_caught":0,"driven_m":131.0,"end":{"arrived":true,"centre_to_anchor_m":2.3,"queued":0,"verb":"move"},"end_far_m":46.8,"end_foreign_m":10.8,"end_own_gap_m":-0.8,"end_own_min_m":5.2,"enemy_m":162.4,"foreign_m":3.2,"goals_across":[],"ground_cap":"on","halt_depth_m":8.1,"halt_price":"on","halt_shape":"coil","leg_compact_m":7.1,"leg_minmax_m":7.1,"map":"locks","place_m":4.1,"plan_deck":false,"plan_drive_m":115.7,"route":"click","seed":3624,"shuffle_m":28.5,"squad":1,"squads":3,"start":[-28.2,95.9],"toward_m":44.5,"travel_width_m":19.9,"twitch_m":0.0,"twitch_seen":{}}
+ORDERS_PROBE_SQUAD {"anchor":[-3.3,20.1],"anchor_offset_m":2.5,"arm":"main","arrived_by":"element","arrived_s":7.1,"crews":3,"crossed":true,"crossed_at":[[-3.8,-12.1],23.8],"deck":true,"deck_at":[[-3.5,11.9],14.1],"deploy_cause":"all_in","deploy_leg_m":16.7,"deploy_passes":0,"deploy_s":9.8,"deploy_step":"on","detour_worst_m":4.4,"detours":0,"detours_caught":0,"driven_m":123.3,"end":{"arrived":true,"centre_to_anchor_m":3.1,"queued":0,"verb":"move"},"end_far_m":15.5,"end_foreign_m":10.8,"end_own_gap_m":4.3,"end_own_min_m":12.7,"enemy_m":158.8,"foreign_m":5.1,"goals_across":[],"ground_cap":"on","halt_depth_m":20.5,"halt_price":"on","halt_shape":"herringbone","leg_compact_m":14.3,"leg_minmax_m":15.8,"map":"locks","place_m":15.5,"plan_deck":false,"plan_drive_m":70.3,"route":"click","seed":3624,"shuffle_m":44.3,"squad":2,"squads":3,"start":[2.9,90.1],"toward_m":67.8,"travel_width_m":13.4,"twitch_m":33.1,"twitch_seen":{"ADVANCE":1,"HOLD":723,"MOVE":1,"MOVE@goal":1087}}
+ORDERS_PROBE_SQUAD {"anchor":[30.9,16.4],"anchor_offset_m":36.9,"arm":"main","arrived_by":"element","arrived_s":10.2,"crews":3,"crossed":false,"crossed_at":null,"deck":false,"deck_at":null,"deploy_cause":"all_in","deploy_leg_m":9.0,"deploy_passes":0,"deploy_s":12.2,"deploy_step":"on","detour_worst_m":0.0,"detours":0,"detours_caught":0,"driven_m":108.5,"end":{"arrived":true,"centre_to_anchor_m":3.1,"queued":0,"verb":"move"},"end_far_m":41.0,"end_foreign_m":22.5,"end_own_gap_m":4.8,"end_own_min_m":8.3,"enemy_m":137.6,"foreign_m":3.5,"goals_across":[],"ground_cap":"on","halt_depth_m":9.7,"halt_price":"on","halt_shape":"herringbone","leg_compact_m":9.4,"leg_minmax_m":9.0,"map":"locks","place_m":9.0,"plan_deck":false,"plan_drive_m":100.7,"route":"click","seed":3624,"shuffle_m":25.7,"squad":3,"squads":3,"start":[30.9,88.1],"toward_m":40.1,"travel_width_m":10.2,"twitch_m":0.0,"twitch_seen":{}}
+ORDERS_PROBE {"all_in_s":35.9,"arm":"main","capped":0,"crossed":1,"deck_cleared":0,"gates_laid":0,"ground_cap":"on","halt_price":"on","map":"locks","on_deck":2,"pack_refused":{},"packed":0,"returned":[""],"route":"click","route_starts":0,"squads":3,"uncrossed":0,"worst_offset_m":36.9,"worst_shuffle_m":44.3}
