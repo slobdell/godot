@@ -128,6 +128,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   "fires inside wedged episodes" were in the right direction but not exact in size. Detail: `references/round37/manoeuvre/m3_s1v2_note.md`.
 - **M3:** `references/round37/manoeuvre/m3_s1v2_note.md`. Recommendation: count the base rate on main first, then build v2
   (hold only in contact with an unmoved friend, fire through H1's ask, cap per goal) only if the count is worth a series.
+- **M5a (seatstep):** the GDScript is on `lab/manoeuvre-r37-m5` b94025dbe (builder0 light 10/0). Native's mirror is on
+  `pair/native-m5` 156d563d9: builder0 light quick 21/0, every twin stage 0 mismatches. Native runs the pair's full check on
+  builder2 after its CP37.1 check. Then come the base-rate count and the series. M5b (reverse straight back) gets a trace
+  first.
+- **M1 fix:** the new member `_side_stepped` broke test_native_exec_state (every Movement member is a native exec field).
+  bf904625b drops it, and the repeat reads `_side_over()` alone. Native confirms M1 needs no mirror.
+- **M6 traced (waiting on a ruling):** it is round 33's shipped scout turn-in (R33.24). Workload: orders' fight probe,
+  builder0 native light, 18 fights (seeds 3621-3626), deterministic. 405 of 409.5 face-drift s and 3,500 m are
+  `Manoeuvre.turn_in`, all scouts: catching up 243 s, jinking on target 162 s, mostly 10-18 m from the seat (the 14/18 m
+  leash). Evidence: `lab/manoeuvre-r37-m6trace` 99e9b2bf4 `references/round37/manoeuvre/m6/README.md`. Options sent; I
+  recommend a ~6/9 m leash for a parked scout.
 - **Requests / follow-ups:** rules (via godot-b0): R2's `Tank.short_halting()` must not read as a stall. When R2 merges, my
   `_unstick` stall clock skips a short-halting hull, and native mirrors that in its unstick twin (a request to native then).
 - **Parked yielders (godot-b0's question, from orders' O2 probe):** round 36's S4 trace (55c973cd4, builder0 light, 16 looping
