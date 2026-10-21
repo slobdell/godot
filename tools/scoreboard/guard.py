@@ -2,10 +2,17 @@
 """Round 37 (CP37.1, native): read the guard lines from `make guard-run` logs.
 
     python3 tools/scoreboard/guard.py RAW [RAW2 ...] [--json]
+    python3 tools/scoreboard/guard.py --pair BASE ARM     (a rule's bar: the same fights, arm v base)
 
 RAW is a guard-run output folder (build/guards/ or a copy: <kind>/<arena>-<seed>-<side>.log, each with one GUARD_RESULT
 line). Several RAWs are seed blocks of ONE main (2601+, 2701+): their fights pool into the line, and the noise is sized
 from the seed-to-seed spread across all of them (a "seed unit" = one seed's fights over every arena and both sides).
+A RAW may also be a `.jsonl` of GUARD_RESULT objects (references/scoreboard/guards/<commit>.fights.jsonl, the base kept in
+the repo so a rule's arm can be paired with it).
+
+--pair: each fight of ARM matched to BASE's same (line, arena, seed, side); per line the guard's wins base -> arm, the fights
+that flipped each way and an exact one-sided McNemar p (the arm made the guard lose more), and the paired differences of the
+win share and the kill ratio with their se from the per-seed differences (sd / sqrt(seeds)).
 
 Per line (blob, turtle, none): fights read, the guard's win / loss / draw share, the share capped at the time limit (won on
 points), its kill ratio (its kills / its losses, totals), its zone-point margin (guard minus tactics, per fight), match
@@ -26,6 +33,14 @@ NAME = re.compile(r"^(?P<arena>[a-z_]+)-(?P<seed>\d+)-(?P<side>green|rust)\.log$
 def read(roots):
     fights = []
     for root in roots:
+        if root.endswith(".jsonl"):
+            with open(root) as f:
+                for line in f:
+                    if line.strip():
+                        r = json.loads(line)
+                        fights.append({"kind": r["guard"], "arena": r["arena"], "seed": int(r["seed"]),
+                                       "side": r["side"].lower(), "r": r, "path": root})
+            continue
         for path in sorted(glob.glob(os.path.join(root, "*", "*.log"))):
             m = NAME.match(os.path.basename(path))
             if not m:
@@ -151,11 +166,77 @@ def render(report):
     return "\n".join(out)
 
 
+def mcnemar_p(worse, better):
+    """Exact one-sided p of at least `worse` of the `worse + better` discordant pairs going one way by chance."""
+    n = worse + better
+    if n == 0:
+        return 1.0
+    return sum(math.comb(n, k) for k in range(worse, n + 1)) / 2.0 ** n
+
+
+def pair(base_roots, arm_roots):
+    def key(f):
+        return (f["kind"], f["arena"], f["seed"], f["side"])
+    base = {key(f): f for f in read(base_roots) if f["r"] is not None}
+    arm = {key(f): f for f in read(arm_roots) if f["r"] is not None}
+    report = {}
+    for kind in sorted({k[0] for k in arm}):
+        keys = sorted(k for k in arm if k[0] == kind and k in base)
+        won = lambda f: 1 if f["r"]["role"] == "guard" else 0
+        worse = sum(1 for k in keys if won(base[k]) and not won(arm[k]))
+        better = sum(1 for k in keys if won(arm[k]) and not won(base[k]))
+        per_seed = {}
+        for k in keys:
+            d = per_seed.setdefault(k[2], [[], []])
+            d[0].append(base[k])
+            d[1].append(arm[k])
+        win_d, kr_d = [], []
+        for b_rows, a_rows in per_seed.values():
+            sb, sa = stats_of(b_rows), stats_of(a_rows)
+            win_d.append(sa["win"] - sb["win"])
+            if sb["kill_ratio"] is not None and sa["kill_ratio"] is not None:
+                kr_d.append(sa["kill_ratio"] - sb["kill_ratio"])
+
+        def se(values):
+            if len(values) < 2:
+                return None
+            mean = sum(values) / len(values)
+            return math.sqrt(sum((v - mean) ** 2 for v in values) / (len(values) - 1)) / math.sqrt(len(values))
+        sb, sa = stats_of([base[k] for k in keys]), stats_of([arm[k] for k in keys])
+        report[kind] = {"n": len(keys), "unpaired_in_arm": sum(1 for k in arm if k[0] == kind and k not in base),
+                        "base_win": sb.get("win"), "arm_win": sa.get("win"), "worse": worse, "better": better,
+                        "mcnemar_p_worse": mcnemar_p(worse, better), "win_diff": (sa["win"] - sb["win"]) if keys else None,
+                        "win_diff_se": se(win_d), "base_kr": sb.get("kill_ratio"), "arm_kr": sa.get("kill_ratio"),
+                        "kr_diff": (sa["kill_ratio"] - sb["kill_ratio"]) if keys and sa.get("kill_ratio") is not None
+                        and sb.get("kill_ratio") is not None else None, "kr_diff_se": se(kr_d), "seeds": len(per_seed)}
+    return report
+
+
+def render_pair(report):
+    out = []
+    for kind, r in report.items():
+        out.append("%s paired: %d fights (%d seeds; %d in the arm without a base)" % (kind.upper(), r["n"], r["seeds"],
+                   r["unpaired_in_arm"]))
+        if not r["n"]:
+            continue
+        out.append("  the %s wins %s -> %s (diff %+.3f, se %s); flipped to a loss %d, to a win %d (McNemar p %.4f that the arm "
+                   "made it lose more)" % (kind, _pct(r["base_win"]), _pct(r["arm_win"]), r["win_diff"],
+                                           _num(r["win_diff_se"], 3), r["worse"], r["better"], r["mcnemar_p_worse"]))
+        out.append("  kill ratio %s -> %s (diff %s, se %s)" % (_num(r["base_kr"]), _num(r["arm_kr"]),
+                   "n/a" if r["kr_diff"] is None else "%+.3f" % r["kr_diff"], _num(r["kr_diff_se"], 3)))
+    return "\n".join(out)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser()
-    p.add_argument("raw", nargs="+")
+    p.add_argument("raw", nargs="*")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--pair", nargs=2, metavar=("BASE", "ARM"))
     args = p.parse_args(argv)
+    if args.pair:
+        report = pair([args.pair[0]], [args.pair[1]])
+        print(json.dumps(report, indent=1, sort_keys=True) if args.json else render_pair(report))
+        return 0
     report = lines(read(args.raw))
     print(json.dumps(report, indent=1, sort_keys=True) if args.json else render(report))
     return 0
