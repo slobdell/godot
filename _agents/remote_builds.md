@@ -801,3 +801,7 @@ same worktree's next check.
 **Round 36: `make gcp-start` under systemd-run needs gcloud on the unit's PATH.** gcloud lives in `~/projects/bin`, which a `systemd-run
 --user` unit doesn't inherit unless passed: launch with `--setenv=PATH="$PATH"` from a shell that has it, or `export
 PATH=$HOME/projects/bin:$PATH` inside the unit's script; otherwise `make gcp-start` exits 127 and builder2 stays stopped (manoeuvre).
+**Round 36: side worktrees without a `local.mk` share the DEFAULT smoke ports.** Two of native's quick-remotes from side worktrees
+(no `local.mk`, so SMOKE_NET_PORT 9181) ran combat-smoke at once on builder0 and collided: `NET_CHECK FAIL peer=0 tanks_seen=3/2 no
+damage` (2026-10-21 ~01:45 and ~02:00 PDT); each passed alone. A side worktree that runs smokes needs its own port offset (copy the
+stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), or its remotes run one at a time.
