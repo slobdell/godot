@@ -48,5 +48,10 @@ case_ "a smoke (EXPECT any) counts" 0 "$tmp/ok.log" "$tmp/smoke.txt" abc123def a
 sed 's/40 fights, 48 moves, 36 orders/1 fights, 0 moves, 1 orders/' "$tmp/ok.txt" > "$tmp/smoke0.txt"
 case_ "a smoke with an empty part" 1 "$tmp/ok.log" "$tmp/smoke0.txt" abc123def any
 
+sed 's/scoreboard-run exited 0/scoreboard-run SCORE_SEED_BASE=2700 exited 0/' "$tmp/ok.log" > "$tmp/vars.log"
+case_ "a second seed block (make variables before exited)" 0 "$tmp/vars.log" "$tmp/ok.txt" abc123def
+sed 's/scoreboard-run exited 0 (build\/ copied back)/scoreboard-run SCORE_SEED_BASE=2700 exited 255 (build\/ copied back: FAILED)/' "$tmp/ok.log" > "$tmp/vars255.log"
+case_ "a second seed block preempted" 1 "$tmp/vars255.log" "$tmp/ok.txt" abc123def
+
 echo "scoreboard verdict: $pass passed, $fail failed"
 [ "$fail" = 0 ]

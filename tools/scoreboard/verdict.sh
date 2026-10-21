@@ -18,7 +18,8 @@ expect=${4:-40 fights, 48 moves, 36 orders}
 no() { echo "scoreboard verdict: NOT COUNTED: $*"; exit 1; }
 
 [ -s "$log" ] || no "no wrapper log ($log)"
-exited=$(grep -E '^>> remote: make .*scoreboard-run exited ' "$log" | tail -1)
+# The make variables a second seed block passes sit between the target and "exited" (2026-10-20: SCORE_SEED_BASE=2700).
+exited=$(grep -E '^>> remote: make .*scoreboard-run( [^ ]+)* exited ' "$log" | tail -1)
 [ -n "$exited" ] || no "the wrapper never printed its exited line (killed or preempted)"
 case "$exited" in
 	*"exited 0 (build/ copied back)"*) ;;

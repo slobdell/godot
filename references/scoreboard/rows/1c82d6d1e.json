@@ -2,6 +2,7 @@
  "commit": "1c82d6d1e",
  "fights": {
   "deaths": 1675,
+  "held": 73,
   "hit_rate": 0.7538075959128591,
   "hits": 39100,
   "jam": 71,

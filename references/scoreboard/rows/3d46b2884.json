@@ -1,0 +1,769 @@
+{
+ "by_seed": {
+  "2601": {
+   "fights": {
+    "deaths": 141,
+    "held": 1,
+    "hit_rate": 0.6401137980085349,
+    "hits": 1800,
+    "jam": 1,
+    "jam_under_fire": 0,
+    "kills": 140,
+    "open": 128,
+    "ran": 5,
+    "read": 5,
+    "shots": 2812,
+    "stuck": 12
+   },
+   "moves": {
+    "crews_left_behind": 1,
+    "left_behind_wedged": 1,
+    "movers": {
+     "closing": 1,
+     "jitter": 0,
+     "unknown": 0,
+     "wander": 0
+    },
+    "never_settled": 1,
+    "per_task": {
+     "faced_attack_move": {
+      "crews_left_behind": 0,
+      "jitter": 0,
+      "never_settled": 0,
+      "runs": 4,
+      "still_moving": 0
+     },
+     "faced_move": {
+      "crews_left_behind": 1,
+      "jitter": 0,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 1
+     }
+    },
+    "ran": 8,
+    "read": 8,
+    "squads": 26,
+    "squads_arrived": 24,
+    "still_moving": 1
+   },
+   "orders": {
+    "all_in_median_s": 18.6,
+    "cases": {
+     "crossing 3 click": {
+      "all_in_median_s": 16.8,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 3 route": {
+      "all_in_median_s": 18.8,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 5 click": {
+      "all_in_median_s": 43.2,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 5 route": {
+      "all_in_median_s": 35.5,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 3 click": {
+      "all_in_median_s": 18.9,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 3 route": {
+      "all_in_median_s": 18.3,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 5 click": {
+      "all_in_median_s": 13.0,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 5 route": {
+      "all_in_median_s": 15.2,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 3 click": {
+      "all_in_median_s": 16.4,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 3 route": {
+      "all_in_median_s": 22.6,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 5 click": {
+      "all_in_median_s": 10.5,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 5 route": {
+      "all_in_median_s": 54.6,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     }
+    },
+    "far_bank_squads": 0,
+    "never_all_in": 0,
+    "ran": 12,
+    "read": 12,
+    "twitch_median_m": 9.8,
+    "twitch_worst_m": 27.5
+   }
+  },
+  "2602": {
+   "fights": {
+    "deaths": 166,
+    "held": 1,
+    "hit_rate": 0.7179206566347469,
+    "hits": 2624,
+    "jam": 4,
+    "jam_under_fire": 3,
+    "kills": 163,
+    "open": 140,
+    "ran": 5,
+    "read": 5,
+    "shots": 3655,
+    "stuck": 22
+   },
+   "moves": {
+    "crews_left_behind": 1,
+    "left_behind_wedged": 1,
+    "movers": {
+     "closing": 0,
+     "jitter": 2,
+     "unknown": 0,
+     "wander": 2
+    },
+    "never_settled": 2,
+    "per_task": {
+     "faced_attack_move": {
+      "crews_left_behind": 1,
+      "jitter": 2,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 1
+     },
+     "faced_move": {
+      "crews_left_behind": 0,
+      "jitter": 0,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 1
+     }
+    },
+    "ran": 8,
+    "read": 8,
+    "squads": 26,
+    "squads_arrived": 25,
+    "still_moving": 2
+   },
+   "orders": {
+    "all_in_median_s": 20.6,
+    "cases": {
+     "crossing 3 click": {
+      "all_in_median_s": 16.5,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 3 route": {
+      "all_in_median_s": 19.9,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 5 click": {
+      "all_in_median_s": 33.3,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 5 route": {
+      "all_in_median_s": 21.9,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 3 click": {
+      "all_in_median_s": 32.4,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 3 route": {
+      "all_in_median_s": 22.7,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 5 click": {
+      "all_in_median_s": 14.9,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 5 route": {
+      "all_in_median_s": 15.6,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 3 click": {
+      "all_in_median_s": 21.4,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 3 route": {
+      "all_in_median_s": 19.3,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 5 click": {
+      "all_in_median_s": 9.5,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 5 route": {
+      "all_in_median_s": 67.3,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     }
+    },
+    "far_bank_squads": 0,
+    "never_all_in": 0,
+    "ran": 12,
+    "read": 12,
+    "twitch_median_m": 11.2,
+    "twitch_worst_m": 73.1
+   }
+  },
+  "2603": {
+   "fights": {
+    "deaths": 201,
+    "held": 1,
+    "hit_rate": 0.779379157427938,
+    "hits": 6327,
+    "jam": 7,
+    "jam_under_fire": 6,
+    "kills": 200,
+    "open": 158,
+    "ran": 5,
+    "read": 5,
+    "shots": 8118,
+    "stuck": 36
+   },
+   "moves": {
+    "crews_left_behind": 0,
+    "left_behind_wedged": 0,
+    "movers": {
+     "closing": 0,
+     "jitter": 0,
+     "unknown": 0,
+     "wander": 1
+    },
+    "never_settled": 1,
+    "per_task": {
+     "faced_attack_move": {
+      "crews_left_behind": 0,
+      "jitter": 0,
+      "never_settled": 0,
+      "runs": 4,
+      "still_moving": 0
+     },
+     "faced_move": {
+      "crews_left_behind": 0,
+      "jitter": 0,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 1
+     }
+    },
+    "ran": 8,
+    "read": 8,
+    "squads": 26,
+    "squads_arrived": 26,
+    "still_moving": 1
+   },
+   "orders": {
+    "all_in_median_s": 17.9,
+    "cases": {
+     "crossing 3 click": {
+      "all_in_median_s": 15.8,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 3 route": {
+      "all_in_median_s": 20.9,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 5 click": {
+      "all_in_median_s": 39.6,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "crossing 5 route": {
+      "all_in_median_s": 25.1,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 3 click": {
+      "all_in_median_s": 18.7,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 3 route": {
+      "all_in_median_s": 23.6,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 5 click": {
+      "all_in_median_s": 12.8,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "locks 5 route": {
+      "all_in_median_s": 15.2,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 3 click": {
+      "all_in_median_s": 17.1,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 3 route": {
+      "all_in_median_s": 14.9,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 5 click": {
+      "all_in_median_s": 11.2,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     },
+     "terminus 5 route": {
+      "all_in_median_s": 50.5,
+      "far_bank": 0,
+      "never_all_in": 0,
+      "runs": 1
+     }
+    },
+    "far_bank_squads": 0,
+    "never_all_in": 0,
+    "ran": 12,
+    "read": 12,
+    "twitch_median_m": 10.9,
+    "twitch_worst_m": 30.4
+   }
+  },
+  "2604": {
+   "fights": {
+    "deaths": 222,
+    "held": 5,
+    "hit_rate": 0.7892335766423357,
+    "hits": 3460,
+    "jam": 16,
+    "jam_under_fire": 13,
+    "kills": 220,
+    "open": 173,
+    "ran": 5,
+    "read": 5,
+    "shots": 4384,
+    "stuck": 33
+   },
+   "moves": {
+    "crews_left_behind": 3,
+    "left_behind_wedged": 3,
+    "movers": {
+     "closing": 1,
+     "jitter": 0,
+     "unknown": 0,
+     "wander": 0
+    },
+    "never_settled": 2,
+    "per_task": {
+     "faced_attack_move": {
+      "crews_left_behind": 2,
+      "jitter": 0,
+      "never_settled": 2,
+      "runs": 4,
+      "still_moving": 1
+     },
+     "faced_move": {
+      "crews_left_behind": 1,
+      "jitter": 0,
+      "never_settled": 0,
+      "runs": 4,
+      "still_moving": 0
+     }
+    },
+    "ran": 8,
+    "read": 8,
+    "squads": 30,
+    "squads_arrived": 30,
+    "still_moving": 1
+   },
+   "orders": {
+    "ran": 0,
+    "read": 0
+   }
+  },
+  "2605": {
+   "fights": {
+    "deaths": 144,
+    "held": 1,
+    "hit_rate": 0.6519480519480519,
+    "hits": 2761,
+    "jam": 5,
+    "jam_under_fire": 4,
+    "kills": 144,
+    "open": 103,
+    "ran": 5,
+    "read": 5,
+    "shots": 4235,
+    "stuck": 36
+   },
+   "moves": {
+    "crews_left_behind": 1,
+    "left_behind_wedged": 0,
+    "movers": {
+     "closing": 0,
+     "jitter": 0,
+     "unknown": 0,
+     "wander": 0
+    },
+    "never_settled": 1,
+    "per_task": {
+     "faced_attack_move": {
+      "crews_left_behind": 1,
+      "jitter": 0,
+      "never_settled": 0,
+      "runs": 4,
+      "still_moving": 0
+     },
+     "faced_move": {
+      "crews_left_behind": 0,
+      "jitter": 0,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 0
+     }
+    },
+    "ran": 8,
+    "read": 8,
+    "squads": 28,
+    "squads_arrived": 27,
+    "still_moving": 0
+   },
+   "orders": {
+    "ran": 0,
+    "read": 0
+   }
+  },
+  "2606": {
+   "fights": {
+    "deaths": 238,
+    "held": 2,
+    "hit_rate": 0.6735036987222596,
+    "hits": 2003,
+    "jam": 5,
+    "jam_under_fire": 3,
+    "kills": 234,
+    "open": 204,
+    "ran": 5,
+    "read": 5,
+    "shots": 2974,
+    "stuck": 29
+   },
+   "moves": {
+    "crews_left_behind": 0,
+    "left_behind_wedged": 0,
+    "movers": {
+     "closing": 0,
+     "jitter": 2,
+     "unknown": 0,
+     "wander": 0
+    },
+    "never_settled": 2,
+    "per_task": {
+     "faced_attack_move": {
+      "crews_left_behind": 0,
+      "jitter": 1,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 0
+     },
+     "faced_move": {
+      "crews_left_behind": 0,
+      "jitter": 1,
+      "never_settled": 1,
+      "runs": 4,
+      "still_moving": 0
+     }
+    },
+    "ran": 8,
+    "read": 8,
+    "squads": 28,
+    "squads_arrived": 28,
+    "still_moving": 0
+   },
+   "orders": {
+    "ran": 0,
+    "read": 0
+   }
+  },
+  "2607": {
+   "fights": {
+    "deaths": 193,
+    "held": 3,
+    "hit_rate": 0.7994846568282971,
+    "hits": 3413,
+    "jam": 12,
+    "jam_under_fire": 8,
+    "kills": 191,
+    "open": 155,
+    "ran": 5,
+    "read": 5,
+    "shots": 4269,
+    "stuck": 26
+   },
+   "moves": {
+    "crews_left_behind": 0,
+    "left_behind_wedged": 0,
+    "movers": {
+     "closing": 0,
+     "jitter": 0,
+     "unknown": 0,
+     "wander": 0
+    },
+    "never_settled": 0,
+    "per_task": {},
+    "ran": 0,
+    "read": 0,
+    "squads": 0,
+    "squads_arrived": 0,
+    "still_moving": 0
+   },
+   "orders": {
+    "ran": 0,
+    "read": 0
+   }
+  },
+  "2608": {
+   "fights": {
+    "deaths": 312,
+    "held": 3,
+    "hit_rate": 0.8120198053611064,
+    "hits": 14268,
+    "jam": 12,
+    "jam_under_fire": 11,
+    "kills": 310,
+    "open": 257,
+    "ran": 5,
+    "read": 5,
+    "shots": 17571,
+    "stuck": 43
+   },
+   "moves": {
+    "crews_left_behind": 0,
+    "left_behind_wedged": 0,
+    "movers": {
+     "closing": 0,
+     "jitter": 0,
+     "unknown": 0,
+     "wander": 0
+    },
+    "never_settled": 0,
+    "per_task": {},
+    "ran": 0,
+    "read": 0,
+    "squads": 0,
+    "squads_arrived": 0,
+    "still_moving": 0
+   },
+   "orders": {
+    "ran": 0,
+    "read": 0
+   }
+  }
+ },
+ "commit": "3d46b2884",
+ "fights": {
+  "deaths": 1617,
+  "held": 17,
+  "hit_rate": 0.7633803990170352,
+  "hits": 36656,
+  "jam": 62,
+  "jam_under_fire": 48,
+  "kills": 1602,
+  "open": 1318,
+  "ran": 40,
+  "read": 40,
+  "shots": 48018,
+  "stuck": 237
+ },
+ "machine": "builder2",
+ "moves": {
+  "crews_left_behind": 6,
+  "left_behind_wedged": 5,
+  "movers": {
+   "closing": 2,
+   "jitter": 4,
+   "unknown": 0,
+   "wander": 3
+  },
+  "never_settled": 9,
+  "per_task": {
+   "faced_attack_move": {
+    "crews_left_behind": 4,
+    "jitter": 3,
+    "never_settled": 4,
+    "runs": 24,
+    "still_moving": 2
+   },
+   "faced_move": {
+    "crews_left_behind": 2,
+    "jitter": 1,
+    "never_settled": 5,
+    "runs": 24,
+    "still_moving": 3
+   }
+  },
+  "ran": 48,
+  "read": 48,
+  "squads": 164,
+  "squads_arrived": 160,
+  "still_moving": 5
+ },
+ "orders": {
+  "all_in_median_s": 18.9,
+  "cases": {
+   "crossing 3 click": {
+    "all_in_median_s": 16.5,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "crossing 3 route": {
+    "all_in_median_s": 19.9,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "crossing 5 click": {
+    "all_in_median_s": 39.6,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "crossing 5 route": {
+    "all_in_median_s": 25.1,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 3 click": {
+    "all_in_median_s": 18.9,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 3 route": {
+    "all_in_median_s": 22.7,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 5 click": {
+    "all_in_median_s": 13.0,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "locks 5 route": {
+    "all_in_median_s": 15.2,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 3 click": {
+    "all_in_median_s": 17.1,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 3 route": {
+    "all_in_median_s": 19.3,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 5 click": {
+    "all_in_median_s": 10.5,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   },
+   "terminus 5 route": {
+    "all_in_median_s": 54.6,
+    "far_bank": 0,
+    "never_all_in": 0,
+    "runs": 3
+   }
+  },
+  "far_bank_squads": 0,
+  "never_all_in": 0,
+  "ran": 36,
+  "read": 36,
+  "twitch_median_m": 10.8,
+  "twitch_worst_m": 73.1
+ },
+ "overlay": "b87ea18ac",
+ "remote_status": 0,
+ "run": [
+  ">> scoreboard-run on builder2 | commit 3d46b2884 | native on | parts 'fights moves orders' | load 6.26 3.65 7.85",
+  ">> scoreboard-run done: 40 fights, 48 moves, 36 orders runs"
+ ],
+ "script_errors": {
+  "fights": 0,
+  "moves": 0,
+  "orders": 0
+ }
+}
