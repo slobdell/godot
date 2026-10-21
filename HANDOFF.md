@@ -26,6 +26,12 @@ briefs in `_agents/streams/`; round 36's briefs in `streams/archive/round36/`; r
 **Main at launch is GREEN** (round 36's close: eee5b0afa inherits 9ddf248f9's builder0 check, 2973/0; baselines c5e87cd50). Workers
 do NOT re-run a baseline check.
 
+**Main now (2026-10-21 afternoon): 0baf6e1ff GREEN** (a10846307's builder2 check 3007/0 + manoeuvre's b822e6696 INHERIT). On main,
+all OFF: cover K1-K3, CP37.1's guard lines + base (blob wins 48 %, turtle 39 %; R37.14), rules R1-R3, manoeuvre M1/M2. **Perf-judge
+owed on main** (every check NOT JUDGED; R37.19). Running: rules' Bar R series (builder2), M1's series (builder0), orders' O1 traces.
+O1 failed its no-fight read on two guards (R37.17). M6 parked (R37.15). His open questions: feedback's page picks; barrier honesty;
+barrier runs on the 5 guard maps; a nearly dead parked crew pulls back; parked scouts' turn-in (recommend leave it).
+
 **Lead gates expected this round:** feedback's directions page (F1); cover's map before/after page (K1/K5). The orchestrator relays.
 **At the close:** he plays each rule ON (each has a switch).
 
