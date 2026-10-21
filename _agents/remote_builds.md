@@ -780,3 +780,9 @@ until every arena x arm is complete before it reads (traffic's `tests/traffic/t8
 builder2 idle-stops after 20 min: a launch onto it needs `make gcp-start` first (round 36: the orchestrator's main check died
 on "No route to host"). And the box is shared with the lead's balsa/plane_maker project: its `generate_balsa_matrix.py` standing
 workers start on boot, so record builder2's load line beside every judged number.
+
+**Round 36: a check's copy-back DELETES non-.log files under build/.** The copy-back rsyncs `build/` with `--delete` and protects
+only `*.log`. Native lost the scoreboard's raw `screen.json` / `run.txt` in the worktree that also runs checks (its committed rows
+had already been scored). Anything a series or probe must keep that is not a `.log` goes OUTSIDE `build/` (a `~/overnight-<stream>/`
+folder or a sibling directory, as `tools/scoreboard/run.sh` now uses `../godot-native-score-raw`), or is copied out before the
+same worktree's next check.

@@ -586,12 +586,16 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.UNSTICK_BACK = (bool)config.get("UNSTICK_BACK_DEFAULT", false);
 	c.KTURN_ARC = (bool)config.get("KTURN_ARC_DEFAULT", false);
 	c.TURN_IN = (bool)config.get("TURN_IN_DEFAULT", false);
-	c.wheel_halt_ready = config.get("WHEEL_HALT_DEFAULT", Variant()).get_type() == Variant::BOOL;
-	c.WHEEL_HALT = c.wheel_halt_ready && (bool)config.get("WHEEL_HALT_DEFAULT", false);
 	c.WHEEL_CREEP_THROTTLE = config.get("WHEEL_CREEP_THROTTLE", 0.5);
 	c.stall_intent_ready = config.get("STALL_INTENT_DEFAULT", Variant()).get_type() == Variant::BOOL;
 	c.STALL_INTENT = c.stall_intent_ready && (bool)config.get("STALL_INTENT_DEFAULT", false);
 	c.STALL_INTENT_MIN_PACE = config.get("STALL_INTENT_MIN_PACE", 0.05);
+	c.stall_net_ready = config.get("STALL_NET_DEFAULT", Variant()).get_type() == Variant::BOOL;
+	c.STALL_NET = c.stall_net_ready && (bool)config.get("STALL_NET_DEFAULT", false);
+	c.STUCK_NET_M = config.get("STUCK_NET_M", 0.5);
+	c.h1b_side_ready = config.get("H1B_SIDE_DEFAULT", Variant()).get_type() == Variant::BOOL;
+	c.SIDE_REACHED_M = config.get("SIDE_REACHED_M", 2.0);
+	c.H1B_MOVED_M = config.get("H1B_MOVED_M", 0.5);
 	c.UNSTICK_BLIND_MAX_LEN_M = config.get("UNSTICK_BLIND_MAX_LEN_M", 10.0);
 	c.UNDER_FIRE_TICKS = (int64_t)config.get("UNDER_FIRE_TICKS", -1);
 	c.PASS_MAX_S = config.get("PASS_MAX_S", 6.0);
@@ -600,6 +604,8 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.yieldfit2_ready = config.get("YIELD_CONTACT_M", Variant()).get_type() == Variant::FLOAT;
 	c.YIELD_CONTACT_M = c.yieldfit2_ready ? (double)config["YIELD_CONTACT_M"] : 1.0;
 	c.YIELD_RETRIES = config.get("YIELD_RETRIES", 2);
+	c.yieldgap_ready = config.get("YIELD_CLEAR_GAP", Variant()).get_type() == Variant::FLOAT;
+	c.YIELD_CLEAR_GAP = c.yieldgap_ready ? (double)config["YIELD_CLEAR_GAP"] : 2.0;
 	c.YIELD_RETRY_WINDOW_S = config.get("YIELD_RETRY_WINDOW_S", 30.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());

@@ -190,7 +190,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "stallintent", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhalt", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
+const OFF_NAMES: Array[String] = ["a1", "a11", "a4", "a6", "a7", "arriveleg", "backup", "behind", "blockreach", "carrot", "chord", "circlefit", "clearance", "commit", "creepbound", "facegiveup", "facesettle", "faceslot", "faceturn", "gategiveup", "gateinside", "gateside", "grace", "guard", "guardnear", "h1b", "h1bside", "holdband", "inflate", "kturn", "kturnarc", "kturnaway", "kturnawayall", "kturnbrake", "kturnbrakeall", "kturncircle", "kturnfill", "kturnlook", "kturnrollout", "kturnslide", "leash", "minpace", "nosestop", "notready", "oriented", "planner", "press", "pushidle", "r5sidestep", "repair", "repath", "stallintent", "stallnet", "standoff", "turnhull", "turnin", "unstick", "unstickback", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -412,6 +412,8 @@ var _path_index := 0
 var _path_goal := Vector3.INF
 var _repath_left := 0.0
 var _stuck_time := 0.0
+## Round 36 (S1, stallnet): where the hull stood when the stall clock started (see STALL_NET_DEFAULT).
+var _stuck_from := Vector3.ZERO
 var _unstick_left := 0.0
 var _unstick_pivot := false
 var _progress_goal := Vector3.INF
@@ -870,6 +872,8 @@ func reset() -> void:
 	_fire_since = -1
 	_unstick_left = 0.0
 	_stuck_time = 0.0
+	_side_to = Vector3.INF  # round 36 (S2a)
+	_side_stand = false
 	_press_time = 0.0
 	_escape_gear = 0.0
 	_esc_stage = ESC_NONE
@@ -991,6 +995,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
 	arc_live = aim != goal
 	var routed := aim if direct else _next_waypoint(aim, delta)
+	var side := _side_waypoint(delta)  # round 36 (S2a, h1bside): H1b's far loop going round its friend
+	if side != Vector3.INF:
+		routed = side
 	# Round 11: never a mid-route steering point under the hull, whichever branch of _next_waypoint chose it (arena's
 	# Crossing deadlock was the chord fallback; nav-orders then found a route whose next vertex sat 0.07 m from the
 	# hull - an IFV rocked in place on the plant's creep for 35 s at zero throttle, and the on/off throttle kept
@@ -1081,7 +1088,6 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		if cmd.throttle > _ease_throttle:
 			cmd.throttle = _ease_throttle
 			kturn_eased += ctl._step
-	Manoeuvre.wheel_halt(cmd, radius, pace, _kturn_left_m, ctl._step)  # round 35 (W1b): a held wheeled hull does not creep
 	# Round 11 (R1's before-arm): Steering's circle test backing a wheeled hull on a FORWARD order - the three-point
 	# turn discovered one tick at a time. Episodes (a run of reversing ticks) and ticks; measurement only.
 	var circling: bool = radius > 0.0 and not order.get("reverse", false) and drive_vector.x < 0.0 and _kturn_left_m <= 0.0
@@ -3714,6 +3720,15 @@ var _census: ManoeuvreCensus = null
 
 
 func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
+	if _side_stand:
+		# Round 36 (S2a, h1bside): no side clear of the friend that would not give way: stand, no re-ram.
+		if _side_over():
+			_side_stand = false
+		else:
+			cmd.throttle = 0.0
+			cmd.turn = 0.0
+			_stuck_time = 0.0
+			return
 	if _esc_stage != ESC_NONE:
 		_escape_step(cmd, order, delta)
 		return
@@ -3747,7 +3762,12 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var honest := pinned_on != null
 	var reading := ctl.tank.real_velocity if honest else ctl.tank.estimated_velocity
 	# Round 35 (W1c, R35.12, `stallintent`): against a friendly hull, the throttle test reads the drive's intent.
-	if Manoeuvre.stall_throttle(self, cmd, order) > 0.5 and reading.length() < STUCK_SPEED:
+	var pressing := Manoeuvre.stall_throttle(self, cmd, order) > 0.5
+	if pressing and honest and reading.length() >= STUCK_SPEED and _stall_net_holds():
+		return
+	if pressing and reading.length() < STUCK_SPEED:
+		if _stuck_time == 0.0:
+			_stuck_from = ctl.tank.global_position
 		_stuck_time += delta
 		if _stuck_time >= STUCK_SECONDS and honest:
 			_stuck_time = 0.0
@@ -3769,6 +3789,33 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 				_ask_behind(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing)
 	else:
 		_stuck_time = 0.0
+
+
+## Round 36 (manoeuvre S1, C36.3): THE STALL CLOCK RESETS ON NET MOTION, NOT ON ONE FAST TICK. X1(d)'s trace (references/
+## round35/manoeuvre/x1d-trace): a hull wedged at full throttle between two friends of another element read real speed
+## 8.5–9.9 m/s for ONE tick about once a second as the contact popped, net <= 0.1 m in 10 s; the clock reached 0.73–0.99 s and
+## was zeroed by that tick, every second, for ~50 s, so H1's escape never started. With this on, on the honest path (a routed
+## move_to, where the reading is already real_velocity), a fast tick while the clock runs zeroes it only when the hull has
+## gone more than STUCK_NET_M from where the clock started; otherwise the clock holds (it does not add that tick).
+## Every other path and order keeps the reset bit for bit. `--nav-off=stallnet` flips STALL_NET_DEFAULT (false = OPT-IN).
+const STALL_NET_DEFAULT := false
+## Under a hull's width: a one-tick pop moves <= 0.33 m.
+const STUCK_NET_M := 0.5
+## Arm counter: fast ticks whose reset the net rule held (strided ticks by their stride; counted in both arms, so the
+## base reads how often the old rule threw a running clock away within STUCK_NET_M).
+static var stall_net_holds := 0
+
+
+static func stall_net_on() -> bool:
+	return STALL_NET_DEFAULT != switched_off("stallnet")
+
+
+## A fast tick on the honest path while the clock runs: true = the net rule keeps the clock (the caller returns).
+func _stall_net_holds() -> bool:
+	if _stuck_time <= 0.0 or _flat_distance(ctl.tank.global_position, _stuck_from) > STUCK_NET_M:
+		return false
+	stall_net_holds += ctl._step
+	return stall_net_on()
 
 
 # ---- Round 31 (manoeuvre H1, C31.4): the stall escape redesigned, a consumer of the honest reading ----------------
@@ -3944,6 +3991,114 @@ static func h1b_on() -> bool:
 	return H1B_DEFAULT != switched_off("h1b")
 
 
+# ---- Round 36 (manoeuvre S2a, `h1bside`): H1b's FAR loop goes round the friend, or stands ---------------------------------
+# X4b (references/round36/manoeuvre/x4b): 10 of the 17 crews left behind and still at the judge looped H1's escape nose-on
+# to a friend that would not give way again (it had given way once, or to T9's cap, and had no room): ask, stand, back ~2 m,
+# re-drive into it every ~7 s to the judge, H1b's far branch counting. With this on, that loop's fire picks a SIDE point
+# abreast of the friend, clear of every hull and on the navmesh, reached by a navmesh path no longer than SIDE_DETOUR_X x the
+# straight line (never across a bridge or the river), and drives to it: it replaces the route's waypoint until reached
+# (SIDE_REACHED_M), SIDE_SECONDS pass, or the friend moves. With neither side clear the hull STANDS (no re-ram) until the
+# friend moves more than H1B_MOVED_M or the goal changes. `--nav-off=h1bside` flips H1B_SIDE_DEFAULT (false = OPT-IN).
+const H1B_SIDE_DEFAULT := false
+## Beyond both hulls' half-widths, side to side.
+const SIDE_MARGIN_M := 1.2
+const SIDE_REACHED_M := 2.0
+const SIDE_SECONDS := 8.0
+const SIDE_DETOUR_X := 1.6
+var _side_to := Vector3.INF
+var _side_left := 0.0
+var _side_stand := false
+var _side_friend: Tank = null
+var _side_friend_at := Vector3.INF
+var _side_goal := Vector3.INF
+
+
+static func h1b_side_on() -> bool:
+	return H1B_SIDE_DEFAULT != switched_off("h1bside")
+
+
+## The far loop's fire on `friend` (h1bside on): a side point to drive to, or stand.
+func _h1b_side(friend: Tank) -> void:
+	native_stale |= STALE_ALL
+	_h1b_failed = 0
+	_escape_end()
+	_side_friend = friend
+	_side_friend_at = friend.global_position
+	_side_goal = _goal
+	_side_to = _side_point(friend)
+	if _side_to != Vector3.INF:
+		_side_left = SIDE_SECONDS
+		_side_stand = false
+		ManoeuvreCensus.h1b_side_steps += 1
+	else:
+		_side_stand = true
+		ManoeuvreCensus.h1b_side_stands += 1
+
+
+## A point abreast of `friend`, on the side nearer the goal that is clear (no hull within both radii, on the navmesh, reached
+## by a short navmesh path); INF when neither side is.
+func _side_point(friend: Tank) -> Vector3:
+	var tank := ctl.tank
+	var here := tank.global_position
+	var at := friend.global_position
+	var axis := Vector2(at.x - here.x, at.z - here.z)
+	if axis.length_squared() < 0.01:
+		return Vector3.INF
+	axis = axis.normalized()
+	var side := Vector2(-axis.y, axis.x)
+	var lateral := float(hull_box(friend.unit_id)[0]) * 0.5 + float(hull_box(tank.unit_id)[0]) * 0.5 + SIDE_MARGIN_M
+	var options: Array = []
+	for sign in [1.0, -1.0]:
+		var point := Vector3(at.x + side.x * lateral * sign, 0.0, at.z + side.y * lateral * sign)
+		options.append([_flat_distance(point, _goal), point])
+	options.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	for option: Array in options:
+		if _side_clear(option[1], friend):
+			return option[1]
+	return Vector3.INF
+
+
+func _side_clear(point: Vector3, friend: Tank) -> bool:
+	var tank := ctl.tank
+	var mine := Avoidance.radius_of(tank.unit_id)
+	if ctl.tanks_root != null:
+		for node in ctl.tanks_root.get_children():
+			var other := node as Tank
+			if other == null or other == tank or not other.is_alive():
+				continue
+			var need := mine + Avoidance.radius_of(other.unit_id) * (0.5 if other == friend else 1.0)
+			if _flat_distance(other.global_position, point) < need:
+				return false
+	if not (Pathing.enabled and Pathing.is_ready(tank)):
+		return true
+	var map := tank.get_world_3d().navigation_map
+	if _flat_distance(Pathing.closest_point(map, point, "h1bside"), point) > 0.3:
+		return false
+	var path := NavigationServer3D.map_get_path(map, tank.global_position, point, true)
+	var length := 0.0
+	for i in range(1, path.size()):
+		length += _flat_distance(path[i - 1], path[i])
+	return path.size() >= 2 and length <= SIDE_DETOUR_X * _flat_distance(tank.global_position, point) + 1.0
+
+
+## The side step in force: the waypoint it replaces the route's with, INF when none (ended here when reached, timed out, the
+## friend moved or the goal changed).
+func _side_waypoint(delta: float) -> Vector3:
+	if _side_to == Vector3.INF:
+		return Vector3.INF
+	_side_left -= delta
+	if _side_left <= 0.0 or _flat_distance(ctl.tank.global_position, _side_to) <= SIDE_REACHED_M or _side_over():
+		_side_to = Vector3.INF
+		return Vector3.INF
+	return _side_to
+
+
+func _side_over() -> bool:
+	return _side_friend == null or not is_instance_valid(_side_friend) or not _side_friend.is_alive() \
+			or _flat_distance(_side_friend.global_position, _side_friend_at) > H1B_MOVED_M \
+			or _flat_distance(_goal, _side_goal) > NEW_GOAL_JUMP
+
+
 ## A fire on `friend`: true when H1b took the hull out of the loop (settled short) and the escape must not run.
 func _h1b_gives_up(friend: Tank) -> bool:
 	var key := String(friend.name)
@@ -3971,6 +4126,9 @@ func _h1b_gives_up(friend: Tank) -> bool:
 		return true
 	ManoeuvreCensus.h1b_far += 1
 	ManoeuvreCensus.note_h1b_far(self, friend)
+	if h1b_side_on():
+		_h1b_side(friend)
+		return true
 	return false
 
 

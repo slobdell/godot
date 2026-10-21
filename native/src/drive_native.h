@@ -92,12 +92,17 @@ struct DriveConfig {
 	// default is the switch in force). With it, a `stop` on a fixed gun on wheels is handed back to the GDScript, whose
 	// OrderController._stop_turn_in turns gunnery's swing in. False on a tree without it.
 	bool TURN_IN = false;
-	// Round 35 (manoeuvre W1b): Manoeuvre.wheel_halt's switch (WHEEL_HALT_DEFAULT, the native drive running only with
-	// `Movement._off` empty) and TankMotion.WHEEL_CREEP_THROTTLE. wheel_halt_ready false on a tree without W1b.
-	bool wheel_halt_ready = false, WHEEL_HALT = false;
 	// Round 35 (manoeuvre W1c): Manoeuvre.stall_throttle's switch (STALL_INTENT_DEFAULT) and STALL_INTENT_MIN_PACE.
 	bool stall_intent_ready = false, STALL_INTENT = false;
 	double STALL_INTENT_MIN_PACE = 0.05;
+	// Round 36 (manoeuvre S1): Movement._stall_net_holds' switch (STALL_NET_DEFAULT, the native drive running only with
+	// `Movement._off` empty) and STUCK_NET_M. stall_net_ready false on a tree without S1.
+	bool stall_net_ready = false, STALL_NET = false;
+	double STUCK_NET_M = 0.5;
+	// Round 36 (manoeuvre S2a): Movement._side_waypoint / _side_over's constants; h1b_side_ready false on a tree without
+	// S2a (its members absent: the reads skipped). The switch itself is read only where the side is chosen (GDScript).
+	bool h1b_side_ready = false;
+	double SIDE_REACHED_M = 2.0, H1B_MOVED_M = 0.5;
 	double WHEEL_CREEP_THROTTLE = 0.5;
 	double UNSTICK_BLIND_MAX_LEN_M = 10.0;
 	// Round 34 (traffic T6): Movement.UNDER_FIRE_S in ticks; -1 while the GDScript has no T6 (the switch is then off).
@@ -107,6 +112,9 @@ struct DriveConfig {
 	// false on a tree without T9 (the give-way recorded as before).
 	bool yieldfit2_ready = false;
 	double YIELD_CONTACT_M = 1.0, YIELD_RETRY_WINDOW_S = 30.0;
+	// Round 36 (traffic R36.4, `yieldgap`): Movement.YIELD_CLEAR_GAP; yieldgap_ready false on a tree without it.
+	bool yieldgap_ready = false;
+	double YIELD_CLEAR_GAP = 2.0;
 	int64_t YIELD_RETRIES = 2;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs

@@ -10,7 +10,13 @@ extends SceneTree
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/manoeuvre/fight_census.gd -- --skirmish --demo-match
 ##         --clean --seed=<n> --arena=random --mute [--seconds=180]
-##   FIGHT_CENSUS {"seed", "arena", "factions", "teams": {"0": {...}, "1": {...}}}
+##   FIGHT_CENSUS {"seed", "arena", "factions", "teams": {"0": {...}, "1": {...}}, "exposure": {"0": {...}, "1": {...}}}
+##
+## Round 35 extension X1(b) (W1b's deciding probe, R35.52): `exposure` per VICTIM team. A crew is in state `held_p0` on a
+## tick when it is wheeled, its drive is route/direct at pace 0 (W1b's halt condition, as the wedge probe's halt_ticks) and
+## Traffic holds it; `p0` the same without a Traffic hold. Per state: `<state>_ticks` (crew-ticks in it), `<state>_hits`
+## (enemy rounds that struck a crew in it), `<state>_still_hits` (of those, the hull below STILL_MPS at impact); `live_ticks`
+## and `hits` for every live crew. Measurement only: nothing here changes the match.
 
 
 func _initialize() -> void:
@@ -22,6 +28,20 @@ func _flag(name: String, fallback: String) -> String:
 		if String(arg).begins_with("--%s=" % name):
 			return String(arg).split("=", true, 1)[1]
 	return fallback
+
+
+const STILL_MPS := 0.5
+
+
+## X1(b): "held_p0", "p0" or "" for this crew now (see the header).
+static func _exposure_state(tank: Tank) -> String:
+	var mover := Movement.of(tank)
+	if mover == null or mover.wheel_radius() <= 0.0 or mover.pace_now > 0.0:
+		return ""
+	var decided: Dictionary = mover.contact.decided if mover.contact != null else {}
+	if not String(decided.get("driver", "")) in ["route", "direct"]:
+		return ""
+	return "held_p0" if Traffic.holding(String(tank.name)) else "p0"
 
 
 static func _touching(tank: Tank) -> bool:
@@ -40,6 +60,10 @@ func _run() -> void:
 	var game_match: Match = main.get("game_match")
 	var teams := {}
 	var shooter_of := {}  # projectile id -> [shooter team, aimed-at name, aimed-at touching]
+	var exposure := {}  # X1(b): victim team -> counters
+	var exposed := func(team: int) -> Dictionary:
+		return exposure.get_or_add(str(team), {"live_ticks": 0, "hits": 0, "held_p0_ticks": 0, "held_p0_hits": 0,
+				"held_p0_still_hits": 0, "p0_ticks": 0, "p0_hits": 0, "p0_still_hits": 0})
 	var row := func(team: int) -> Dictionary:
 		return teams.get_or_add(str(team), {"shots": 0, "hits": 0, "kills": 0, "deaths": 0, "touch_shots": 0,
 				"touch_hits": 0})
@@ -68,6 +92,13 @@ func _run() -> void:
 			return
 		var r: Dictionary = row.call(int(shot[0]))
 		r["hits"] = int(r["hits"]) + 1
+		var x: Dictionary = exposed.call(victim.team)
+		x["hits"] = int(x["hits"]) + 1
+		var state := _exposure_state(victim)
+		if state != "":
+			x[state + "_hits"] = int(x[state + "_hits"]) + 1
+			if victim.speed() < STILL_MPS:
+				x[state + "_still_hits"] = int(x[state + "_still_hits"]) + 1
 		if bool(shot[2]) and String(event["target"]) == String(shot[1]):
 			r["touch_hits"] = int(r["touch_hits"]) + 1)
 	game_match.unit_destroyed.connect(func(event: Dictionary) -> void:
@@ -92,6 +123,15 @@ func _run() -> void:
 				break
 			continue
 		last_tick = tick
+		for node in game_match.tanks.get_children():
+			var tank := node as Tank
+			if tank == null or not tank.is_alive():
+				continue
+			var x: Dictionary = exposed.call(tank.team)
+			x["live_ticks"] = int(x["live_ticks"]) + 1
+			var state := _exposure_state(tank)
+			if state != "":
+				x[state + "_ticks"] = int(x[state + "_ticks"]) + 1
 		if started < 0:
 			started = tick
 		if (tick - started) / float(SimClock.TICK_RATE) > seconds:
@@ -99,6 +139,7 @@ func _run() -> void:
 	var flags := SkirmishMode.demo_flags(LaunchFlags.parse(OS.get_cmdline_user_args())) if OS.get_cmdline_user_args().has("--demo-match") else null
 	print("FIGHT_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"factions": [flags.text("player-faction"), flags.text("enemy-faction")] if flags != null else [], "teams": teams,
+			"exposure": exposure,
 			"h1b": ManoeuvreCensus.h1b_report(), "h1b_on": Movement.h1b_on()}))  # round 32: H1b's counters (measurement only)
 	ManoeuvreCensus.print_new_far_rows()  # C32.10 amendment: each far loop with its blocker kind
 	quit(0)

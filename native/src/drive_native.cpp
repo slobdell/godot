@@ -102,8 +102,7 @@ struct N {
 			_wheel_radius_value{ "_wheel_radius_value" };
 	// Movement statics (through the script)
 	StringName leash_orders{ "leash_orders" }, avoidance_on{ "avoidance_on" }, station_on{ "station_on" },
-			kturn_eased{ "kturn_eased" }, wheel_halt_asks{ "wheel_halt_asks" }, wheel_halts{ "wheel_halts" },
-			stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
+			kturn_eased{ "kturn_eased" }, stall_intent_ticks{ "stall_intent_ticks" }, _same_element{ "_same_element" }, circle_reverse_ticks{ "circle_reverse_ticks" }, circle_reverses{ "circle_reverses" },
 			wedged_units{ "wedged_units" }, a1_replans{ "a1_replans" }, a1_cadence_due{ "a1_cadence_due" },
 			a1_by_cause{ "a1_by_cause" }, route_not_ready{ "route_not_ready" }, guard_rescues{ "guard_rescues" };
 	// methods called back
@@ -171,7 +170,7 @@ struct N {
 			integral{ "integral" }, _primed{ "_primed" }, alive{ "alive" }, _registry{ "_registry" },
 			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
 			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" },
-			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" },
+			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" }, stall_net_holds{ "stall_net_holds" },
 			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" }, ready_memo{ "ready_memo" },
 			_ready_map{ "_ready_map" }, _ready_iteration{ "_ready_iteration" }, _ready_answer{ "_ready_answer" },
 			locomotion{ "locomotion" }, min_turn_radius_m{ "min_turn_radius_m" }, for_unit{ "for_unit" },
@@ -1693,6 +1692,17 @@ struct Drive {
 		if (seam_live()) {
 			return; // round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
 		}
+		if (c.h1b_side_ready && v._side_stand()) {
+			// Round 36 (S2a, h1bside): no side clear of the friend that would not give way: stand, no re-ram.
+			if (side_over()) {
+				v.set__side_stand(false);
+			} else {
+				cmd->set(k.throttle, 0.0);
+				cmd->set(k.turn, 0.0);
+				v.set__stuck_time(0.0);
+				return;
+			}
+		}
 		if (c.UNSTICK_BACK && (int64_t)v._esc_stage() != 0) {
 			// Round 31 (manoeuvre H1): an escape under way (_esc_stage only leaves ESC_NONE with `unstickback` on).
 			cb(k._escape_step, cmd, order, delta);
@@ -1731,7 +1741,20 @@ struct Drive {
 		const bool honest = pinned_on != nullptr;
 		const Vector3 velocity = tank->get(honest ? k.real_velocity : k.estimated_velocity);
 		// Round 35 (W1c, R35.12, `stallintent`): against a friendly hull, the throttle test reads the drive's intent.
-		if (stall_throttle(cmd, order) > 0.5 && (double)velocity.length() < c.STUCK_SPEED) {
+		const bool pressing = stall_throttle(cmd, order) > 0.5;
+		// Round 36 (manoeuvre S1, `stallnet`): Movement._stall_net_holds: on the honest path a fast tick while the clock runs,
+		// with the hull still within STUCK_NET_M of where the clock started, is counted (both arms) and, ON, holds the clock.
+		if (pressing && honest && (double)velocity.length() >= c.STUCK_SPEED && c.stall_net_ready && v._stuck_time() > 0.0 &&
+				!(flat_distance(here, v._stuck_from()) > c.STUCK_NET_M)) {
+			sadd(k.stall_net_holds, step);
+			if (c.STALL_NET) {
+				return;
+			}
+		}
+		if (pressing && (double)velocity.length() < c.STUCK_SPEED) {
+			if (v._stuck_time() == 0.0) {
+				v.set__stuck_from(here);
+			}
 			const double stuck = v._stuck_time() + delta;
 			v.set__stuck_time(stuck);
 			if (stuck >= c.STUCK_SECONDS && honest) {
@@ -1755,6 +1778,30 @@ struct Drive {
 		} else {
 			v.set__stuck_time(0.0);
 		}
+	}
+
+	// Round 36 (manoeuvre S2a): Movement._side_over(): the friend gone (null, freed, dead), moved more than H1B_MOVED_M from
+	// where the side was chosen, or the goal jumped more than NEW_GOAL_JUMP.
+	bool side_over() {
+		Node3D *friend_hull = Object::cast_to<Node3D>(v._side_friend().get_validated_object());
+		if (friend_hull == nullptr || !(bool)friend_hull->call(k.is_alive)) {
+			return true;
+		}
+		return flat_distance(friend_hull->get_global_position(), v._side_friend_at()) > c.H1B_MOVED_M ||
+				flat_distance(v._goal(), v._side_goal()) > c.NEW_GOAL_JUMP;
+	}
+
+	// Movement._side_waypoint(delta): the side point while it runs (it ends at SIDE_SECONDS, within SIDE_REACHED_M, or over).
+	Vector3 side_waypoint(double delta) {
+		const Vector3 to = v._side_to();
+		if (to == V3_INF) {
+			return V3_INF;
+		}
+		v.set__side_left((double)v._side_left() - delta);
+		if ((double)v._side_left() <= 0.0 || flat_distance(here, to) <= c.SIDE_REACHED_M || side_over()) {
+			v.set__side_to(V3_INF);
+		}
+		return v._side_to();
 	}
 
 	// Movement._honest_blocker(order): what pins the hull (a Tank, or the hull itself for "terrain"), or null for round
@@ -1960,6 +2007,18 @@ struct Drive {
 	// Round 35 (traffic T9, `yieldfit2`): Movement._yield_unfinished(), line by line: the give-way ended with the asker NOT
 	// passed (right_of_way's own reading) and this crew still in its way (touching, or ahead on its line within both radii +
 	// YIELD_LINE_MARGIN) is not recorded, at most YIELD_RETRIES times to one asker in YIELD_RETRY_WINDOW_S.
+	// Round 36 (traffic R36.4, `yieldgap`): Movement._asker_clear(here, asker). Off (or a tree without YIELD_CLEAR_GAP), the
+	// centre distance beyond YIELD_CLEAR as before; on, the gap after both half-lengths (hull_box[2]) beyond YIELD_CLEAR_GAP.
+	bool asker_clear(const Vector3 &at, Node3D *asker) {
+		static const String yieldgap("yieldgap");
+		const double distance = flat_distance(here, at);
+		if (!c.yieldgap_ready || traffic_off(yieldgap)) {
+			return distance > c.YIELD_CLEAR;
+		}
+		const double noses = 0.5 * (hull_length(String(tank->get(k.unit_id))) + hull_length(String(asker->get(k.unit_id))));
+		return distance - noses > c.YIELD_CLEAR_GAP;
+	}
+
 	bool yield_unfinished(const String &yield_to) {
 		static const String yieldfit2("yieldfit2"), arrived("arrived");
 		if (yield_to.is_empty() || !c.yieldfit2_ready || c.traffic_script == nullptr || traffic_off(yieldfit2)) {
@@ -1976,7 +2035,7 @@ struct Drive {
 		const Vector3 at = asker->get_global_position();
 		Object *asker_mover = mover_of(asker);
 		const Vector2 dir = v._yield_dir();
-		const bool passed = flat_distance(here, at) > c.YIELD_CLEAR ||
+		const bool passed = asker_clear(at, asker) ||
 				(double)Vector2((real_t)((double)at.x - (double)here.x), (real_t)((double)at.z - (double)here.z)).dot(dir) > 0.0 ||
 				(asker_mover != nullptr && String(asker_mover->get(k.phase)) == arrived);
 		if (passed) {
@@ -3462,6 +3521,12 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 		Timed t("~next_waypoint");
 		routed = direct ? aim : next_waypoint(aim, delta);
 	}
+	if (c.h1b_side_ready) {
+		const Vector3 side = side_waypoint(delta); // round 36 (S2a, h1bside): H1b's far loop going round its friend
+		if (side != V3_INF) {
+			routed = side;
+		}
+	}
 	if (!direct && routed != aim && flat_distance(routed, here) < c.WAYPOINT_MIN_M) {
 		const PackedVector3Array path = v._path();
 		routed = corner_beyond(path, v._path_index(), aim);
@@ -3617,20 +3682,6 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				throttle = ease_throttle;
 				cmd->set(k.throttle, throttle);
 				sadd(k.kturn_eased, step);
-			}
-		}
-	}
-	// Round 35 (manoeuvre W1b): Manoeuvre.wheel_halt(cmd, radius, pace, _kturn_left_m, step): a wheeled hull whose pace is
-	// 0 with no planned leg, which would creep (|throttle| < WHEEL_CREEP_THROTTLE x |turn|), stands: turn 0 (the ON arm).
-	if (c.wheel_halt_ready && c.manoeuvre_script != nullptr && radius > 0.0 && !(kturn_left > 0.0) && !(pace > 0.0)) {
-		const double turn_now = cmd->get(k.turn);
-		const double throttle_now = cmd->get(k.throttle);
-		if (turn_now != 0.0 && !(std::fabs(throttle_now) >= c.WHEEL_CREEP_THROTTLE * std::fabs(turn_now))) {
-			Object *man = c.manoeuvre_script;
-			man->set(k.wheel_halt_asks, (int64_t)man->get(k.wheel_halt_asks) + step);
-			if (c.WHEEL_HALT) {
-				cmd->set(k.turn, 0.0);
-				man->set(k.wheel_halts, (int64_t)man->get(k.wheel_halts) + step);
 			}
 		}
 	}

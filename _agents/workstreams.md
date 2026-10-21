@@ -108,6 +108,17 @@ _Filed here before any number._
   street: ON stands (no fire after its first far loop, < 0.5 m in its last 10 s), base >= 3 fires. Guards: Bar S1's set + far loops
   + far bank 0 + unstick fires, fresh hull-rest 6501–6532 and fights 6540–6563. Player line REPORTED, paired: left behind > 25 m,
   still by net motion. Series after S1's.
+- **O2 DEPLOY_COMPACT (orders, C36.4; filed in the brief 2026-10-20 15:10 PDT before any compact number; copied here).** The cause
+  count (builder0 light, native, f5aa89ecd, 12 street cells x 3621–3626, 287 deployed squads; of 57 squads twitching >= 15 m: depth
+  23, seating 10 (3 both), neither 27) chose depth: the deploy's herringbone half as deep. Code cd1043de8 (OFF, deploy carve-out),
+  named hash ab6bef22c (full check queued, `--wait-below 1`; the verdict stands only if it is green). Probe `make native orders-probe`
+  `main:` v `compact:--deploy-compact=on`, the 12 cells, FRESH seeds 3681–3686, n 6, medians, builder0 light, native. Counter:
+  halt_depth_m lower in every herringbone cell. GAIN (both): median worst deploy leg >= 20 % lower AND summed median twitch >= 15 %
+  lower. Guards per cell: all-in <= main x 1.2 + 3 s and no more never-in; twitch <= main + 3 m; end foreign min >= main − 3 m;
+  deck no higher, far bank 0; test_control_scale's 3-tick response. **Added by the orchestrator before any number (15:30):** own-squad
+  closest crews at the end >= 9 m CENTRE TO CENTRE in every cell (`end_own_min_m`; HALT_CLEAR_M, the O4 question's 9 m, is seat to
+  seat), the hull gap (`end_own_gap_m`) REPORTED per cell beside main's (the orchestrator first wrote "hull to hull", which main
+  itself fails at 6.2–11.5 m; corrected on orders' catch before any number). A pass ships ON.
 
 ## Rulings (round 36)
 
@@ -137,6 +148,24 @@ _Filed here before any number._
   9.07) read as "passed" at the 6 s clock. Fix: in `_yield_unfinished` only, passed = distance − both half-lengths > 2.0 m, behind its
   own switch (`yieldgap`), native mirror line, test in test_traffic_yieldfit2. Frees few alone (7 of 10 parked blockers have < 1 m
   room); rides in manoeuvre's S2a pair as a second switch: one series both ON v both OFF; each lab test decides its own change.
+- **R36.5 (2026-10-20 ~15:45 PDT) S3 + S1 (OFF) merged: main 5d6bb1de8 is GREEN, inheriting 20acbda5f.** `pair/native-s1s3-main`
+  `20acbda5f` (S3: W1b deleted; S1 stallnet code, STALL_NET_DEFAULT false; both native mirrors; contains main e45bb6632): builder0
+  `make check exited 0`, 2961/0, 25 + 2 NOT JUDGED (perf-judge refused for load), sim-baseline 13/13 unmoved. Merged 4ecee1fdf,
+  then manoeuvre's `test_manoeuvre_stall_intent_sumps.gd.uid` (4dd6ff750 -> 5d6bb1de8): the only file a check reads that differs is
+  that generated .uid, so no main check. This also closes main e45bb6632's check (the joint + D5 together). Perf-judge on a quiet
+  builder0 still owed (T8's hand-over window).
+- **R36.6 (2026-10-20 ~16:45 PDT) O2 DEPLOY_COMPACT FAILS; parked OFF.** Orders (builder0 light, native, 1bcd704cd, green at
+  7a4226932; 12 street cells x fresh 3681–3686, n 6, 576 squad rows, `compact_judge.py`): counter 72/72 differ. Gain (a) median worst
+  deploy leg 13.4 -> 11.4 m (−14.9 %, needed 20 %); gain (b) summed median twitch 168.7 -> 177.0 m (+4.9 %, WORSE; needed −15 %).
+  Guards: twitch over main + 3 m in Crossing 5 click (29.8 -> 34.1) and Terminus 5 route (18.6 -> 29.7); never-in 1 -> 2 (Crossing 5
+  route). Reading: a shallower halt shortens the deploy move but not the twitch, which is mostly what happens AFTER the deploy
+  (traffic between squads, engagement): orders' "neither" count is the lead. **The orchestrator's own-spacing guard was ill-posed:**
+  read at the window's end it fails MAIN too (3.8–8.6 m in every cell; crews meet in traffic), so a spacing guard reads the HALT
+  SEATS, not end positions (lesson). Hand-over `stream/orders` 515aeeccd (main 8ec433dee + tooling + DEPLOY_COMPACT OFF + DEPLOY_PASS
+  deleted) checking; merged on its green.
+- **R36.7 (2026-10-20 ~16:55 PDT) S2a + yieldgap merged OFF: main 10318ec81 INHERITS 32ba4ca99** (builder0 2967/0, 13 unmoved; inert
+  by default). S1 ON gate (lab/s1-on d9864ab07, builder2, glibc-2.43): 2961/0, sim-baseline moved foundry, crossing, sumps, docks;
+  base 20acbda5f read 13 unmoved, so the moves are stallnet's. S1's series (unit manoeuvre-s1series) waits on builder0's checks.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)

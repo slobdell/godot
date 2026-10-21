@@ -356,7 +356,8 @@ func _stage(arena: String, owned: bool, centre: Vector3, gap: float, across: flo
 				# and under way), its whole execute step twinned; every other one with the retry count at the cap.
 				if yield_ends > 0 and movers[i].yield_to != "":
 					yield_ends -= 1
-					var result := _end_compare(movers, controllers[i], owned, yield_ends % 2 == 0, leg * STAGE_FRAMES + frame)
+					var result := _end_compare(movers, controllers[i], owned, yield_ends % 2 == 0, leg * STAGE_FRAMES + frame,
+							yield_ends % 4 < 2)
 					fire_executes += result[0]
 					mismatches += result[1]
 					if first == "" and result[2] != "":
@@ -529,10 +530,13 @@ func _pass_compare(movers: Array[Movement], controllers: Array[OrderController],
 ## Round 35 (traffic T9): a crew GIVING WAY whose give-way ends this tick (_yield_left 1), `yieldfit2` on, its whole execute
 ## step (right_of_way -> _end_yield -> _yield_unfinished) against the native one; `capped`: the retry count already at
 ## YIELD_RETRIES for this asker. The give-way counters' moves are tallied. [executes, mismatches, first]; all put back.
-func _end_compare(movers: Array[Movement], ctl: OrderController, owned: bool, capped: bool, frame: int) -> Array:
+func _end_compare(movers: Array[Movement], ctl: OrderController, owned: bool, capped: bool, frame: int, gap := false) -> Array:
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var was_off := Traffic.off("yieldfit2")
 	Traffic.set_off("yieldfit2", false)
+	# Round 36 (traffic R36.4, `yieldgap`): `gap` = the clear-by-gap reading ON for this end (the stage alternates).
+	var gap_was_off := Traffic.off("yieldgap")
+	Traffic.set_off("yieldgap", not gap)
 	var mover := Movement.of(ctl.tank)
 	var keep := [mover._yield_left, mover._unfinished_to, mover._unfinished_count, mover._unfinished_since]
 	mover._yield_left = 1
@@ -572,7 +576,55 @@ func _end_compare(movers: Array[Movement], ctl: OrderController, owned: bool, ca
 	mover._unfinished_count = keep[2]
 	mover._unfinished_since = keep[3]
 	Traffic.set_off("yieldfit2", was_off)
+	Traffic.set_off("yieldgap", gap_was_off)
 	return result
+
+
+## Round 36 (traffic R36.4, `yieldgap`): traffic's nose-on long-hull case (test_traffic_yieldfit2's _stage_long, manoeuvre's
+## X4b trace condemned-6325): a parked tank (9.70 m) giving way to an artillery asker (8.20 m) whose centre is 9.05 m off,
+## nose to nose. Its give-way ends this tick and the execute step is twinned in each arm; then the GDScript's own end shows
+## the arms differ here (ON: not recorded; OFF: recorded, YIELD_CLEAR's centre distance reads passed).
+func _long_end(gap: bool) -> Array:
+	var lab := TacticsLab.create(self, 7, "yard_open")
+	var parked := lab.gun(Match.Team.GREEN, "Green_Parked", Vector3.ZERO, 0.0, "tank")
+	var asker := lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 9.05), 0.0, "artillery")
+	await lab.start()
+	for i in 3:
+		await lab.step()
+	asker.global_position = Vector3(0.0, 0.0, 9.05)
+	parked.global_position = Vector3.ZERO
+	lab.element([String(asker.name)], "Go").assign({"verb": "move", "to": [0.0, -30.0]})
+	for i in 2:
+		await lab.step()
+	asker.global_position = Vector3(0.0, 0.0, 9.05)
+	parked.global_position = Vector3.ZERO
+	var mover := Movement.of(parked)
+	var was_off := [Traffic.off("yieldfit2"), Traffic.off("yieldgap")]
+	Traffic.set_off("yieldfit2", false)
+	Traffic.set_off("yieldgap", not gap)
+	var asked := mover.ask(String(asker.name), asker.global_position, Vector2(0.0, -1.0))
+	var movers: Array[Movement] = [mover, Movement.of(asker)]
+	var result := _end_compare(movers, mover.ctl, false, false, 0, gap) if asked else [0, 1, "setup: the parked tank did not give way"]
+	Traffic.set_off("yieldfit2", false)
+	Traffic.set_off("yieldgap", not gap)
+	mover._end_yield()
+	var recorded := mover._last_yielded_to
+	var asker_name := String(asker.name)  # read before dispose() frees the hull
+	Traffic.set_off("yieldfit2", was_off[0])
+	Traffic.set_off("yieldgap", was_off[1])
+	lab.dispose()
+	return [result, recorded, asker_name]
+
+
+func test_the_long_hull_nose_on_end_both_arms() -> void:
+	for gap: bool in [true, false]:
+		var got: Array = await _long_end(gap)
+		var result: Array = got[0]
+		print("native yield, nose-on long hulls, yieldgap %s: %d executes twinned, %d mismatches, the GDScript end recorded '%s'"
+				% ["ON" if gap else "OFF", result[0], result[1], got[1]])
+		assert_eq(int(result[0]), 1, "yieldgap %s: the give-way's end is twinned" % gap)
+		assert_eq(int(result[1]), 0, "yieldgap %s: the native end is the GDScript's: %s" % [gap, result[2]])
+		assert_eq(got[1], "" if gap else got[2], "yieldgap %s: the arms differ on this stage (ON not recorded, OFF as before)" % gap)
 
 
 ## Round 34 (traffic T6b): a crew GIVING WAY hit this tick, its whole execute step (OrderController.compute_command, where
