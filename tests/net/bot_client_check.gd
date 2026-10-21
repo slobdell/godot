@@ -22,11 +22,18 @@ extends SceneTree
 ##   6. with --measure=S: after passing, stay S more seconds and print NET_MEASURE {json}: relay
 ##      bytes and frames per second each way, and how often our tank's replicated position updated
 ##      (mean / p95 / max gap). Always reported: first_motion_ms, spawn → replicated movement ≥ 0.5 m.
+##   7. --linger=S (default LINGER_SEC): after passing, stay connected S more seconds before leaving, so a
+##      slower client of the same match still sees our tank (`make relay-linger-smoke` shows the race).
 ## Exits 0 on success, 1 on failure, printing NET_CHECK PASS/FAIL.
 
 const TIMEOUT_SEC := 25.0
 const PORT_WAIT_SEC := 15.0
 const DEFAULT_MIN_TRAVEL_M := 3.0
+## Round 36 (native, the orchestrator's grant): a client that passes stays this long before it leaves. Without it a client that
+## passed first left within a second, and a client still joining never saw its tank: relay-smoke's `tanks_seen=4/5` (builder0,
+## 0285bfe5f: the host logs client2 joined, client1 joined, client2 left, before any bot died) and net-smoke's 1/2 (builder2,
+## T8's hand-over). The count is the most tanks seen at once, so a tank that left before we saw it never counts.
+const LINGER_SEC := 8.0
 
 
 func _initialize() -> void:
@@ -152,12 +159,21 @@ func _run() -> void:
 				and (drop_state == "none" or (drop_state == "back" and travel_after_drop >= min_travel_after_drop)):
 			break
 
+	var damaged := start != null and lowest_health < full_health
+	var drop_ok := drop_state == "none" or (drop_state == "back" and travel_after_drop >= min_travel_after_drop)
+	var ok := start != null and seen >= expect_tanks and travel >= min_travel \
+			and (damaged or not expect_damage) and (any_damaged or not expect_any_damage) and drop_ok
+
 	var measure_seconds := float(flags.get("measure", "0"))
 	if measure_seconds > 0.0 and start != null:
 		await _measure(tanks, my_id, relay, measure_seconds)
+	var linger_seconds := float(flags.get("linger", str(LINGER_SEC)))
+	if ok and linger_seconds > 0.0:
+		print("NET_CHECK lingering %.0f s (passed; staying so slower clients see our tank)" % linger_seconds)
+		var until := Time.get_ticks_msec() + int(linger_seconds * 1000)
+		while Time.get_ticks_msec() < until:
+			await process_frame
 
-	var damaged := start != null and lowest_health < full_health
-	var drop_ok := drop_state == "none" or (drop_state == "back" and travel_after_drop >= min_travel_after_drop)
 	var summary := "peer=%d got_tank=%s tanks_seen=%d/%d travel=%.1fm/%.1fm lowest_health=%s%s%s" % [
 			my_id, start != null, seen, expect_tanks, travel, min_travel,
 			lowest_health if start != null else "-", " (damage expected)" if expect_damage else "",
@@ -169,8 +185,7 @@ func _run() -> void:
 	if relay != null:
 		summary += " relay_in=%dB/%df out=%dB/%df" % [relay.stats["bytes_in"], relay.stats["frames_in"],
 				relay.stats["bytes_out"], relay.stats["frames_out"]]
-	_finish(start != null and seen >= expect_tanks and travel >= min_travel
-			and (damaged or not expect_damage) and (any_damaged or not expect_any_damage) and drop_ok, summary)
+	_finish(ok, summary)
 
 
 ## Bandwidth and snapshot cadence over a window, printed as NET_MEASURE {json}.

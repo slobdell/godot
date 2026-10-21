@@ -126,5 +126,34 @@ as named; N4 sweep; N5 lint; stretch.
   496d6d70a, score.py reads JAM_CENSUS held_deaths, `--backfill-held` adds it to an old row only when its raw fights
   reproduce the row's every other fight number. Dry-run on copies: c29a8c7b6 71, a0ae0aafd 71, 1c82d6d1e 73, e45bb6632 66,
   3d46b2884 17 held deaths in 40 fights. Rows and README after the 2701+ block on 3d46b2884 (builder2, running).
+- **N2 T8's main 3d46b2884, both seed blocks (0285bfe5f):** builder2, 2601+ and 2701+ (n = 8 + 8 seed units), both exit 0
+  and verified. verdict.sh refused the 2701+ log only because make's variables sit before "exited" (regex fixed, 2 known
+  answers added, test_verdict 14/0); that row was scored by hand from the same raw. noise.txt names both. v e45bb6632 per
+  fight: held at a street mouth 1.65 -> 0.42 v +-0.40 (moved); jammed under fire 1.48 -> 1.20 v 0.76, stuck 6.03 -> 5.92 v
+  2.33, lost 40.9 -> 40.4 v 9.8: every other line inside its noise. Held line back-filled onto every row.
+- **N4's full check:** `native-check-9c7d47380` (builder0, behind --wait-below 1) synced **0285bfe5f**, running.
+- **N5 the census gap lint, DONE (ca8145bd5):** tools/census_lint.py: each public int counter in Movement / Manoeuvre /
+  Traffic / ManoeuvreCensus the game increments must reach a census / probe / stage script under tests/ (directly or by a
+  static Dictionary report, followed transitively); fails on an unprinted counter, a stale or dangling ALLOWED entry, an
+  allowed counter named in backticks in a bar. This repo: 115 counters, 110 printed, 5 allowed (manoeuvre's turn_in_*,
+  test_manoeuvre_orbit only; manoeuvre told), 0 failures, 0.5 s laptop. Mutation: face_settles out of counters() fails it.
+  tools/test_census_lint.sh 9/0 laptop (shell-tools-test runs it in check).
+- **N4 MERGED** as main 3fc78e502 (R36.20): its full check on 0285bfe5f (builder0) was 2967/0, sim-baseline 53/0 unmoved,
+  one red, relay-smoke (`tanks_seen=4/5`); relay-smoke alone on 0285bfe5f `exited 0`, 5/5 both (R36.12's rule: N4's diff
+  touches no net path). Main merged back here (5141af274).
+- **The net smokes' early-leave race, traced and fixed (0a4832c2f, granted R36.20):** the client counts the most tanks seen AT
+  ONCE, and one that passed closed at once (host: client2 joined, client1 joined, client2 left, before client1's first
+  snapshot). bot_client_check.gd: a passing client lingers --linger s (8) before leaving. `make relay-linger-smoke` (not in
+  check) forces it: laptop, --linger=0 -> late client FAIL 4/5, 20 -> PASS 5/5; relay-/net-/combat-/relay-drop-smoke exit 0
+  with the default (laptop, n=1). Rides with the next hand-over (with N5): owes a full check.
+- **T10 mirrors (traffic; T10 judged on native):** `pair/native-t10b` **0ca19d829** = traffic's pair/t10-r36 c917ac33b + 4
+  native commits: `seatyield` (begin_yield takes, of today's whole candidates, the one nearest the seat within SEAT_NEAR_M;
+  strict <, by index; not firing = today), the asker-clear clock under `clearclock` (_yield_clear_seen exec field;
+  yield_clear_n / ticks / never), `seat_near` (R36.19, exec field + seat_near_total, under clearclock either arm), all
+  configured from SEAT_NEAR_M (native_drive.gd). Twins: test_native_yield's seat stage (5 fresh-process arms, 18 drives each,
+  0 mismatches; ON 6 m move_to / face_slot seated 18 moved 15; 14 m and OFF never; seat_near 18 near in both arms, 0 at 14 m);
+  clearclock on through every yield stage. **builder0 quick GREEN on 0ca19d829: 99/0, exited 0** (79ce37acc 26/0, cc5e11c72
+  29/0 before). Found for traffic: H's `_count_seat_near()` marked no stale (the owned state would write it back): c917ac33b.
+  Traffic takes the full check on builder2, then the T10 series.
 
 **2026-10-20 (orchestrator, at launch).** Not started.

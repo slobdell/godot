@@ -140,6 +140,29 @@ relay-smoke: import $(BROKER_DEPS) ## Broker + headless player host (+2 bots) + 
 	$(call relay_client,relay-smoke-client2,--demo --expect-tanks=5 --expect-any-damage --timeout=60); \
 	$(call relay_verdict,relay-smoke,relay-smoke-client1 relay-smoke-client2)
 
+# Round 36 (native, the orchestrator's grant): the early-leave race, both arms. A client that needs one tank fewer passes before
+# the second joins; it leaves at once (--linger=0), and the late client can never see 5 (it must FAIL: the race), or it
+# lingers (it must PASS: the fix). Known answers, not part of check; ~1 min.
+RELAY_LINGER_DEMO_S ?= 20
+relay-linger-smoke: import $(BROKER_DEPS) ## The early-leave race shown both ways: no linger -> the late client sees 4/5; linger -> 5/5
+	mkdir -p $(BUILD_DIR)
+	@for arm in 0 $(RELAY_LINGER_DEMO_S); do \
+		got=0; $(MAKE) --no-print-directory relay-linger-arm LINGER=$$arm > $(BUILD_DIR)/relay-linger-$$arm.txt 2>&1 || got=$$?; \
+		grep -hE 'NET_CHECK (PASS|FAIL)' $(BUILD_DIR)/relay-linger-$$arm-late.log | sed "s/^/  linger $$arm: late /" || true; \
+		if [ $$arm = 0 ]; then [ $$got != 0 ] || { echo "relay-linger-smoke: with no linger the late client PASSED (the race not shown)"; exit 1; }; \
+		else [ $$got = 0 ] || { echo "relay-linger-smoke: lingering $$arm s, the late client FAILED:"; tail -5 $(BUILD_DIR)/relay-linger-$$arm.txt; exit 1; }; fi; \
+	done; echo "relay-linger-smoke: the race shown (no linger: FAIL) and fixed (linger: PASS)"
+
+relay-linger-arm: import $(BROKER_DEPS)
+	$(call relay_host_up,,relay-linger-$(LINGER)); \
+	pids=""; \
+	$(call relay_client,relay-linger-$(LINGER)-early,--demo --expect-tanks=4 --timeout=60 --linger=$(LINGER)); \
+	early=$$pids; \
+	if [ "$(LINGER)" = 0 ]; then wait $$early; else for i in $$(seq 1 300); do grep -q 'NET_CHECK lingering' $(BUILD_DIR)/relay-linger-$(LINGER)-early.log && break; sleep 0.2; done; fi; \
+	pids=""; \
+	$(call relay_client,relay-linger-$(LINGER)-late,--demo --expect-tanks=5 --timeout=20 --linger=0); \
+	$(call relay_verdict,relay-linger-$(LINGER),relay-linger-$(LINGER)-late)
+
 # Mobile backgrounding / losing signal: one client's socket is cut for RELAY_DROP_SECONDS (default 10)
 # and must resume its seat and keep playing; the other client must be unaffected.
 RELAY_DROP_SECONDS ?= 10
