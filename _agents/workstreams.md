@@ -226,6 +226,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   (map first, as every TacticalQuery function; orders told). **Ruled:** cover gets `tools/make_arenas.py` (and the regenerated
   `arenas/*.json`) for low cover only, merge note; his two questions (honest height; re-shape v a few added runs) go to him now;
   Bar K recorded (the pre-K5 series is the null reading).
+- **R37.8 (2026-10-21) cover's K1-K3 merged OFF: main 821c7f494 merges e6f720619 alone (INHERIT).** builder2 `make check exited 0`,
+  2988 passed / 0 failed, native ON, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (refused 3x at ~2.5x, busy box): the
+  orchestrator runs `make remote T=perf-judge` on main on builder0 when quiet (OFF adds one dict lookup per front-arc hit).
+  `match.gd` gains two guarded calls (`_shell_hit`, `_fire_beam`; merge note to rules). Native: twins for `CoverMap.low_screen`,
+  `Armor.cover_roll`, `low_cover_seat` (low priority), and confirm whether a native shell path bypasses `_shell_hit` when ON.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
