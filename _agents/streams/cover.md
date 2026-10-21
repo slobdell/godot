@@ -63,7 +63,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Plan (in order) and where each stands
 1. **K1 the count** -- DONE: census + fight heat + page (below); reported to the orchestrator.
-2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote running.
+2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 5b4e79362's tree, 183 passed 0 failed, lint 535 scripts); full check next.
 3. **K3 the seat API** -- DONE at 5b4e79362 (laptop, `FILTER=cover_seat`, 7/7 PASS); orders told once it is on main.
 4. **K4 the bar** -- after CP37.1; see the sequencing note below (K4 before K5 measures ~nothing).
 5. **K5 the map re-shape** -- WAITING ON HIS GATE: draft page filed (below).
@@ -123,6 +123,13 @@ node: with it the seat must be on the navmesh and reachable from `near`). The se
 side, the cover between the crew and `threat_dir`, hiding >= 15 % of its front (the same `low_screen` the damage rule reads),
 within `max_shift_m`; best = most hidden, then shortest shift, then lowest feature index (deterministic). The caller lays the
 facing (= threat_dir). null = keep your own seat.
+
+### Bar K (filed 2026-10-21 before any number; recorded on main as R37.7)
+Arms ON (`--cover-on=hulldown`) v OFF, same seeds, same tree (pair named), on CP37.1's two lines, both factions both ways, n as
+CP37.1 sizes it. Positive control: ON's `stats.cover_struck` > 0 on every map. Deciding: the blob line moves toward the blob losing
+by more than CP37.1's 2-seed-block noise. Guards: the turtle line not toward the turtle winning beyond that noise; kills a fight
+and match length per faction within +-10 % of OFF; perf-judge PASS. A series before K5's re-shape is the null reading.
+**R37.7 (orchestrator):** granted `tools/make_arenas.py` and the arenas it regenerates, for low cover only, with a merge note.
 
 ### Questions for the lead
 1. **(player terms)** A tank parked tight behind a waist-high jersey barrier: should it be hard to hit from the front even when

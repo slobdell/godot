@@ -105,14 +105,6 @@ exit (remote_builds.md). Delete your own `~/tank_squad/<folder>` leftovers on bo
 
 _(each stream files its bar here BEFORE its first number; the orchestrator records rulings below as R37.x)_
 
-- **Bar K (cover, `--cover-on=hulldown`; filed 2026-10-21 by cover, before any number).** Arms: ON v OFF, same seeds, same tree
-  (the pair named), on CP37.1's two lines, both factions both ways, n as CP37.1 sizes it. **Positive control first:** ON's
-  `stats.cover_struck` > 0 on every map in the series, or the arm did not engage. **Deciding:** the blob line moves toward the blob
-  losing by more than CP37.1's stated 2-seed-block noise. **Guards:** the turtle line does not move toward the turtle winning beyond
-  that noise; kills a fight and match length per faction within +-10 % of OFF; perf-judge PASS. **Sequencing note:** on today's
-  maps a hull is within reach of low cover almost nowhere (K1: 0-4 lone 6 m barricades a dealt map, five maps none), so a series
-  BEFORE K5's re-shape is expected to read as no effect; cover runs it once as the null reading and judges on the re-shaped maps.
-
 ## Rulings (round 37)
 
 _(none yet)_
