@@ -418,6 +418,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   **First try (main 0baf6e1ff, builder0, ~14:10 PDT): NOT JUDGED**, refused 3x at ratio 2.23-2.36x (load 9-10: M1's series and
   orders' runs); the brains read 12,681-14,402 us a tick, under the 20,000 line even loaded (evidence, not a verdict). Retried when
   builder0's series are done.
+- **R37.21 (2026-10-21) main 4b62d2186 GREEN.** builder2 `make native check exited 0`: 3012 passed / 0 failed, 25 + 2 NOT JUDGED
+  (perf-judge: builder2 is not a judging machine; ai-scenarios' scenario_perf loaded), sim-baseline 13/13 unmoved; the scenario
+  count holds at 54,0,4,0. Covers native's hand-over (36a19ae30) and manoeuvre's merge (0baf6e1ff). Perf on builder0 still owed.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
