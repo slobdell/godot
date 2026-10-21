@@ -228,6 +228,15 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   +-2 x paired se. **G3 (R2 only):** the contention guards (R37.2 (c)), unchanged. **G4:** perf-judge with the arm ON, on builder2
   (the OFF code is covered by the orchestrator's one judge on main).
 
+- **Bar K, PAIRED (cover; re-filed in stream/cover 010e68b25 Status before any arm number; replaces Bar K above, R37.14).** Arms ON
+  v OFF on ONE pair tree, the same 320 guard fights, `guard.py --pair OFF ON`; OFF runs on the pair tree (cover's code and K5's maps
+  are not in 9d325e291). **Gate before ON:** OFF v `9d325e291.fights.jsonl` on today's maps shows 0 flips. **Positive control:**
+  cover_struck > 0 on every guard map. **Deciding:** blob win share down by > 2 paired se (per-seed, 16 seeds) AND one-sided exact
+  McNemar p < 0.05. **Second line:** blob kill ratio not up by > 2 paired se. **Guards:** turtle win share not up by > 2 paired se;
+  kills/fight and length per faction within +-10 % of OFF; perf-judge PASS; sim-baseline unmoved OFF. **Maps:** the guard maps are
+  terminus, locks, sumps, gorge, parade; today's near-cover share there is terminus 0.6 %, the rest 0 %, so the pre-K5 series is null
+  by construction; K5 must put low cover on all five guard maps (his answer pending).
+
 - **Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number (recorded from stream/manoeuvre ff40ed578)**
 
 - **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
