@@ -316,6 +316,12 @@ _Filed here before any number._
   injected the pop), so the rule works but its target is rare in fights and its cost is everywhere: the stage-as-deciding-line lesson
   (R35.77) again. A v2 ("hold only while in friendly contact") is a round-37 candidate with a fresh bar. S2a's series runs on
   builder2 (idle) from current main WITHOUT S1.
+- **R36.28 (2026-10-21 ~02:00 PDT) S2a's ON gate: a coverage red, not harm; the series continues.** lab/s2a-on bf678480c (main e525f7311
+  + H1B_SIDE ON + yieldgap ON), builder2 native check: 2970/2, sim-baseline moved crossing + sumps (main 13 unmoved since 83eaddf66;
+  merges since are OFF code/tooling, so attributed to S2a + yieldgap). The 2 reds: test_native_yield's Sumps give-way stage and its
+  _owned twin, "spot:back 0 >= 1": with yieldgap ON the asker clears sooner and the stage no longer reaches the back-up branch (20
+  give-ways, none backs up; twins 413 drives, 0 mismatches). A floor whose premise the switch moved, not harm (lesson 307's class).
+  A ship needs native's re-pin (still backs up with yieldgap ON and OFF) in the same pair + a green check.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
