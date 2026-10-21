@@ -166,6 +166,15 @@ _Filed here before any number._
 - **R36.7 (2026-10-20 ~16:55 PDT) S2a + yieldgap merged OFF: main 10318ec81 INHERITS 32ba4ca99** (builder0 2967/0, 13 unmoved; inert
   by default). S1 ON gate (lab/s1-on d9864ab07, builder2, glibc-2.43): 2961/0, sim-baseline moved foundry, crossing, sumps, docks;
   base 20acbda5f read 13 unmoved, so the moves are stallnet's. S1's series (unit manoeuvre-s1series) waits on builder0's checks.
+- **R36.8 (2026-10-20 ~17:20 PDT) T8 PASSES (C36.2): a held crew under fire leaves the hold.** Pair a2de32420, builder2, native, fixed
+  arenas {terminus, locks, crossing, gorge, parade} x 1800–1827 (locks 1801–1828), n 140 paired, none missing, 0 twins. Counter
+  released_fire 0 -> 618. G held deaths 253 -> 109 (se 21.3, 6.8 se). Guards all pass: stuck 871 -> 812, jam 267 -> 278 (<= 295.5),
+  open 4731 -> 4728, far loops 168 -> 126, kills 5812 -> 5752 (± 86), hit rate 0.725 -> 0.729, friendly contacts +2.1 % (<= line),
+  deaths per team 2682 -> 2640 / 3187 -> 3178, tr_holds 3147 -> 3245, crossing arrivals 180/180 both arms. Raw on stream/traffic
+  `references/round36/traffic/t8_series_a2de32420/`. Hand-over `pair/holdfire-r36-ho` bcda4cd29 (main b917ba234 + T8 ON) checking on
+  builder2; **ships on that check's green**. **Perf-judge ruling:** builder0 carries S1's judged series for hours, so no quiet window
+  today; T8 adds a per-hit hold release (no new per-tick search), so it ships on its check, and ONE perf-judge on main covers T8, the
+  joint, D5 and whatever S1/S2a ship, in the first quiet builder0 window (between S1's and S2a's series, or at the close).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
