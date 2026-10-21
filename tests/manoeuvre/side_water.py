@@ -68,7 +68,7 @@ def main():
     flagged = []
     decks = []
     for name in sorted(os.listdir(root)):
-        if not name.endswith(".log"):
+        if not name.endswith(".log") or "-" not in name:
             continue
         arena = name.rsplit("-", 1)[0]
         ter = terrain(arena)
