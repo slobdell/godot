@@ -25,8 +25,7 @@ func test_a_right_click_slot_inside_an_obstacle_is_moved_onto_ground_and_says_so
 			biggest = feature
 	var inside: Vector3 = biggest["position"]
 	var tank := game_match.tanks.get_child(0) as Tank
-	tank.global_position = inside + Vector3(0, 0, 40)
-	tank.reset_physics_interpolation()
+	tank.place(inside + Vector3(0, 0, 40), tank.rotation.y)
 	var orders := Orders.new()
 	Orders.attach(game_match, orders)
 	assert_eq(orders.issue({"units": [String(tank.name)], "verb": "move", "to": [inside.x, inside.z], "source": "player"}), "", "ordered")

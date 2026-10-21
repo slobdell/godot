@@ -19,8 +19,7 @@ func _setup(units: Array = ["tank", "tank", "ifv"], enemy := false) -> Array:
 	var tanks: Array[Tank] = []
 	for i in units.size():
 		var tank := game_match.tanks.get_node("Green_Alpha_%d" % (i + 1)) as Tank
-		tank.global_position = Vector3(LANE_X + i * 10.0, 0.0, 40.0)
-		tank.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
+		tank.place(Vector3(LANE_X + i * 10.0, 0.0, 40.0), tank.rotation.y)
 		tanks.append(tank)
 	var orders := Orders.new()
 	Orders.attach(game_match, orders)
@@ -30,8 +29,7 @@ func _setup(units: Array = ["tank", "tank", "ifv"], enemy := false) -> Array:
 	add_to_tree(executor)
 	if enemy:
 		var bait := game_match.spawn_tank("Rust_Bait_1", 0, Match.Team.RUST)
-		bait.global_position = Vector3(LANE_X + 10.0, 0.0, 5.0)
-		bait.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
+		bait.place(Vector3(LANE_X + 10.0, 0.0, 5.0), bait.rotation.y)
 		bait.rotation.y = PI
 	return [game_match, orders, tanks]
 
