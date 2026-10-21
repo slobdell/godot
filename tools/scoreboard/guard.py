@@ -59,7 +59,7 @@ def stats_of(rows):
 
 
 def _side(f):
-    return f["r"]["side"]
+    return f["r"]["side"].lower()  # the probe prints Match.TEAM_NAMES ("Green"); kills / losses / control are keyed lower case
 
 
 def _other(f):
@@ -76,7 +76,14 @@ def _margin(f):
 
 
 def guard_faction(f):
-    return (f["r"].get("factions") or {}).get(_side(f), "?")
+    factions = {k.lower(): v for k, v in (f["r"].get("factions") or {}).items()}
+    return factions.get(_side(f), "?")
+
+
+def pairing(f):
+    """The seed's faction pair as "guard v tactics" (Syndicate v Law reads apart from Law v Syndicate)."""
+    factions = {k.lower(): v for k, v in (f["r"].get("factions") or {}).items()}
+    return "%s v %s" % (factions.get(_side(f), "?"), factions.get(_other(f), "?"))
 
 
 def noise(rows):
@@ -106,6 +113,7 @@ def lines(fights):
                 "missing": [os.path.basename(f["path"]) for f in all_rows if f["r"] is None]}
         line["by_faction"] = {fac: stats_of([f for f in rows if guard_faction(f) == fac])
                               for fac in sorted({guard_faction(f) for f in rows})}
+        line["by_pairing"] = {p: stats_of([f for f in rows if pairing(f) == p]) for p in sorted({pairing(f) for f in rows})}
         line["by_side"] = {side: stats_of([f for f in rows if f["side"] == side]) for side in ("green", "rust")}
         line["by_arena"] = {a: stats_of([f for f in rows if f["arena"] == a]) for a in sorted({f["arena"] for f in rows})}
         report[kind] = line
@@ -133,7 +141,7 @@ def render(report):
         out.append("  kill ratio %s (± %s; %d kills / %d losses); zone margin %s points a fight (± %s); median %s s" % (
             _num(a["kill_ratio"]), _num(nz["kill_ratio"]), a["kills"], a["losses"], _num(a["margin"], 1),
             _num(nz["margin"], 1), _num(a["median_s"], 0)))
-        for group in ("by_faction", "by_side", "by_arena"):
+        for group in ("by_faction", "by_pairing", "by_side", "by_arena"):
             parts = ["%s %s win, kr %s (n %d)" % (k, _pct(v["win"]), _num(v["kill_ratio"]), v["n"])
                      for k, v in line[group].items() if v["n"]]
             out.append("  %s: %s" % (group.replace("_", " "), "; ".join(parts)))

@@ -25,10 +25,11 @@ def fight(root, kind, arena, seed, side, winner, reason="control", kills=(0, 0),
     path = os.path.join(root, kind, "%s-%d-%s.log" % (arena, seed, side))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     role = "draw" if winner == "draw" else ("tactics" if kind == "none" or winner != side else "guard")
-    result = {"guard": kind, "side": side, "winner": winner, "role": role, "reason": reason, "seconds": seconds,
+    # As the probe prints them: side and winner and the factions' keys in Match.TEAM_NAMES' case; kills etc lower case.
+    result = {"guard": kind, "side": side.capitalize(), "winner": winner.capitalize(), "role": role, "reason": reason, "seconds": seconds,
               "kills": {"green": kills[0], "rust": kills[1]}, "losses": {"green": losses[0], "rust": losses[1]},
               "control": {"green": control[0], "rust": control[1]},
-              "factions": {"green": factions[0], "rust": factions[1]}}
+              "factions": {"Green": factions[0], "Rust": factions[1]}}
     with open(path, "w") as f:
         f.write("noise line\nGUARD_RESULT %s\n" % json.dumps(result))
 
@@ -64,6 +65,8 @@ with tempfile.TemporaryDirectory() as root:
     # By faction: green guard = law (seeds 1, 2), rust guard = gangs.
     check("law n", blob["by_faction"]["law"]["n"], 2)
     check("gangs win", blob["by_faction"]["gangs"]["win"], 0.5)
+    check("pairing law v gangs n", blob["by_pairing"]["law v gangs"]["n"], 2)
+    check("pairing gangs v law win", blob["by_pairing"]["gangs v law"]["win"], 0.5)
     # Noise: seed win shares 0.5 and 0.0 -> sd = sqrt(0.125), se = sd / sqrt(2), 2 se of a difference = 2 sqrt2 se.
     sd = math.sqrt(0.125)
     check("noise win", blob["noise"]["win"], 2 * math.sqrt(2) * sd / math.sqrt(2))

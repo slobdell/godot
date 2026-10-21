@@ -124,8 +124,10 @@ func _run() -> void:
 		var killer := game_match.tanks.get_node_or_null(String(event.get("killer", ""))) as Tank
 		if killer != null and String(event.get("cause", "")) == "enemy":
 			_kills[killer.team] += 1)
+	# A Dictionary filled in place: a lambda captures locals BY VALUE, so `result = r` inside it never reached this loop
+	# (the first builder2 chunk read every fight as capped at 600 s, eliminations and 90-point wins included).
 	var result := {}
-	game_match.finished.connect(func(r: Dictionary) -> void: result = r)
+	game_match.finished.connect(func(r: Dictionary) -> void: result.merge(r, true))
 	var started := -1
 	var last_tick := -1
 	var last_think := -1
