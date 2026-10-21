@@ -149,7 +149,11 @@ and resumable after preemptions; it uses one scratch folder (../godot-native-gua
 GUARD_WORKTREE. Then `python3 tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl
 ../godot-native-guard-raw/<commit>-<rule>`. The builder2 queue is shared, so each arm's start is written here.
 Base replay: native re-ran 20 of the 9d325e291 fights on today's main, byte-identical (builder2). Blocks 2601+ / 2701+:
-blob 49 / 46 %, turtle 41 / 38 %. **Waiting on:** CP37.1 and rules both on main (neither is as of bd2810019).
+blob 49 / 46 %, turtle 41 / 38 %. **Merged (2026-10-21):** CP37.1 is on main as d9545d381; rules 2c85080fc and native's guard tooling are on main as a10846307.
+`git merge main` -> 922713a0a. **Waiting on:** the orchestrator's builder2 `make native check` of the batch. Then the pair
+tree is cut from a10846307, native runs the lab arms, and the gate is checked: OFF must replay 9d325e291.fights.jsonl with 0 flips,
+else the base is re-run on the new tree. My arms set `GUARD_WORKTREE=../godot-rules-guard` so they never share native's
+scratch folder. Raw output goes to ../godot-native-guard-raw/<commit>-<rule>.
 
 **Rulings received:** R37.2 (a) no twins provisional, (b) **no short halt under his plain MOVE** (attack-move, hold, parked,
 CPU only; built: `ShortHalt.plain_player_move`, game/combat/short_halt.gd, lab cases in test_rules_spread), (c) R2's bar
