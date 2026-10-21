@@ -126,6 +126,13 @@ _Filed here before any number._
   base). Lab guards: arrives in every cell, time to seat <= base + 2 s, 0 wall contact ticks; native default arm = GDScript. Series
   after S1's and S2a's: orders' probe on fresh seeds (fresh-route metres, away_m, twitch_m not up), FRIENDLY CONTACT TICKS NOT UP,
   arrivals not down, S1's movement guards.
+- **T10 seatyield + seathold (traffic; filed 2026-10-20 ~20:30 in stream/traffic 758ff53f5, `references/round36/traffic/t10_design.md`,
+  before any number; copied here).** G `seatyield` (seat within 10 m: of the spots legal today, the one nearest the seat; never adds or
+  refuses a give-way) and H `seathold` (a crew behind the mouth with its seat within 10 m holds where it stands, else at its seat, if
+  `_fits` passes incl. the passer's runs; declines when the passer's destination is unknown), each DEFAULT_OFF, one arm. Deciding: the
+  LOOP squads' give-way + hold metres away from their seat DROP on orders' probe (12 street cells x 6 fresh seeds), in-arm
+  counterfactual counter read first. Guards no worse at 1.645 se: contacts, jam deaths, standoffs, all-in, asker-clear seconds, T8's
+  fight guards. **Ruled R36.17: judged on NATIVE** (native mirrors G first; H is GDScript-only, called from the drive as T8 is).
 
 ## Rulings (round 36)
 
