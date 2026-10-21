@@ -121,20 +121,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se from the base arm's per-fight sd,
   n 36), the CPU's losses likewise. The no-fight read (f4365153f, seeds 3701-3712, + the census) stands as filed. O1
   ships only when BOTH pass.
-- **O2 PARKED_HOLD (orders, R37.9; filed 2026-10-21 before any arm number; code ef6b17ea9, OFF).** What he would see: a
-  squad he parked stays where he put it and shoots from there; a crew that is pushed or pulls back drives all the way back
-  onto its spot. The change (tank_brain.gd `_order_move`, his idle crews at their post only): a move of the crew's own
-  option ending more than 4 m from its post is refused (it holds and faces the threat); RETREAT is kept (his question is
-  open); a crew more than 3 m off its post with nothing else to do drives back onto it (1.5 m). **Sizing (seen; builder0
-  native light, 3e43c4a24, the fight probe, 18 fights):** own-option leaves 34 (1.89 a fight). **Judged probe:** `make
-  native orders-probe`, arms `fight:--probe-fight=on,--probe-budget=1500` v `parked:` the same + `--parked-hold=on`,
-  locks/crossing/terminus x 3 squads x click, FRESH seeds 3743-3754 (36 fights an arm), builder0, on a green-checked
-  hash. **Counter:** `parked_refused` > 0 on the arm. **Deciding:** own-option leaves (`left_by` minus GIVEWAY and MOVE,
-  RETREAT kept in the count) a fight, arm <= 25 % of base (RETREAT stays allowed, so 10 % is not reachable if retreats
-  are a fifth of today's leaves: 4 of 34). **Reported:** RETREAT leaves alone; survivors that left and are back within 3 m
-  at the end. **Guards (per-fight totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se
-  from the base arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (default on,
-  `--parked-hold=off` keeps today's), his crews only.
+- **O2 PARKED_HOLD, FINAL BAR (orders, R37.13; filed 2026-10-21 before any judged number; supersedes the 8dc98b5f4
+  text; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and shoots
+  from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. The change
+  (tank_brain.gd `_order_move`, his idle crews at their post only): a move of its own option ending > 4 m from its post
+  is refused (it holds and faces the threat), RETREAT kept (his question is open); a crew > 3 m off its post with nothing
+  else to do drives back onto it (1.5 m). **Sizing (seen; builder0 native light, f4437d26a, the fight probe, locks /
+  crossing / terminus x 3 squads x click x 3621-3626, 18 fights):** `off_idle_s` (an idle crew's seconds > 6 m off its
+  station, the seat his order left it on, whatever moved it) 1696.4 s, 94.2 a fight (sd 111.0, se 26.2); by what was
+  happening: face_drift 956.2 (56 %, M6's), still 579.4 (34 %), giveway 79.9 (M5's: yielding now or within 3 s),
+  brain 81.2 (moving under its own move_to). **Judged probe:** arms `fight:--probe-fight=on,--probe-budget=1500` v
+  `parked:` the same + `--parked-hold=on`, the same 9 cells, FRESH seeds 3743-3754 (36 fights an arm), builder0, on a
+  green-checked hash. **Counter:** `parked_returns` > 0 on the arm. **Deciding:** `off_idle_s` a fight, arm <= 50 % of base
+  AND base - arm > 1.645 x the unpaired se of the difference (fights diverge between arms). **Reported:** the split
+  (giveway apart for M5, face_drift apart for M6), brain-move leaves (`left_by` without +drift), RETREAT leaves.
+  **Guards (per-fight totals):** his kills, his losses, the CPU's losses a fight each within base +/- 1.645 se (se from
+  the base arm's per-fight sd, n 36). **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
 - **O5 SEAT_ASIDE (orders, R37.5; filed 2026-10-21 before any builder0 arm number; code 8f5a8b08f, OFF).** What he would
   see: CPU squads set up their screens off the streets other squads use, so CPU crews stop stepping aside (and dying) for
   their own side's traffic. The change (element_commander.gd): a CPU screen point within 10 m of another living element's
