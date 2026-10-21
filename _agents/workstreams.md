@@ -289,6 +289,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   GDScript paths skip the seam on both paths, by design: artillery/mortar splash (match.gd ~1630; his "artillery from above ignores
   it") and cone/flame damage (`_spray` -> `_land_hit` ~1720). **Ruled:** cones (flamethrower, sonic emitter) ignore low cover, as
   K2 already states (a waist-high barrier doesn't stop flame or sound); cover's K4 bar says so.
+- **R37.12 (2026-10-21) O2 `--parked-hold` is live on native (native's written read, b2bef1e30 v stream/orders ef6b17ea9).**
+  `decide_native.cpp` returns only the CHOICE (tank_brain.gd:1348); turning it into an order is GDScript, all 56 call sites through
+  `_order_move`; `controller_native.cpp:140` calls think in GDScript; C++ only READS `move_order` (execute_native.cpp:171/361,
+  gun_native.cpp:548), never writes it. The drive layer's own manoeuvres (unstick, yield, k-turn, escape) move a hull without a brain
+  order on both paths; O2's drive-back covers that drift on the next think, and give-way drift is M5's. No twin needed.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
