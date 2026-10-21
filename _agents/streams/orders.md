@@ -121,6 +121,20 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se from the base arm's per-fight sd,
   n 36), the CPU's losses likewise. The no-fight read (f4365153f, seeds 3701-3712, + the census) stands as filed. O1
   ships only when BOTH pass.
+- **O2 PARKED_HOLD (orders, R37.9; filed 2026-10-21 before any arm number; code ef6b17ea9, OFF).** What he would see: a
+  squad he parked stays where he put it and shoots from there; a crew that is pushed or pulls back drives all the way back
+  onto its spot. The change (tank_brain.gd `_order_move`, his idle crews at their post only): a move of the crew's own
+  option ending more than 4 m from its post is refused (it holds and faces the threat); RETREAT is kept (his question is
+  open); a crew more than 3 m off its post with nothing else to do drives back onto it (1.5 m). **Sizing (seen; builder0
+  native light, 3e43c4a24, the fight probe, 18 fights):** own-option leaves 34 (1.89 a fight). **Judged probe:** `make
+  native orders-probe`, arms `fight:--probe-fight=on,--probe-budget=1500` v `parked:` the same + `--parked-hold=on`,
+  locks/crossing/terminus x 3 squads x click, FRESH seeds 3743-3754 (36 fights an arm), builder0, on a green-checked
+  hash. **Counter:** `parked_refused` > 0 on the arm. **Deciding:** own-option leaves (`left_by` minus GIVEWAY and MOVE,
+  RETREAT kept in the count) a fight, arm <= 25 % of base (RETREAT stays allowed, so 10 % is not reachable if retreats
+  are a fifth of today's leaves: 4 of 34). **Reported:** RETREAT leaves alone; survivors that left and are back within 3 m
+  at the end. **Guards (per-fight totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se
+  from the base arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (default on,
+  `--parked-hold=off` keeps today's), his crews only.
 - **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 ~10:10 PDT before any O3 number; code 092cb34b7, OFF).** What he
   would see: squads he sends together arrive each with its own vehicles (no squad one vehicle short, no stranger in it),
   and they do not bump each other more than today. The change: where today's untangle re-deals vehicles between squads
