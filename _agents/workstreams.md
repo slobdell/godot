@@ -270,6 +270,15 @@ _Filed here before any number._
   2-frame wait with a bounded wait for CONNECTION_DISCONNECTED (<= 30 frames), both asserts kept; it rides with native's next
   hand-over. **Pattern (third network-test flake today: net-smoke, relay-smoke, this one):** each a test waiting on a frame count or
   leaving early, not the game. Lesson: a networked test waits for the EVENT, bounded, never for a frame count.
+- **R36.23 (2026-10-21 ~00:20 PDT) T10 FAILS its deciding line; parked OFF, traced.** Builder2, native orders-probe, 0ca19d829, fresh
+  3641–3664 (24 seeds), restricted squads 940 of 1152: away_m base 4129.8 v arm 3551.4, drop 578.4, se 546.1, drop − 1.645 se = −320:
+  FAIL. Unrestricted drop 593.7, se 546.2. Guards pass (arrivals 1144 -> 1147, deploy_s 22482 -> 22543 (line 22711), twitch_m 8025 ->
+  7527); LOOP squads 118 -> 107 (their metres 2940 -> 1634). One pair dominates (terminus/5/click s3645 sq4 479.4 -> 5.9 m; without it
+  ~120 m v se ~200). Terminus and Crossing helped; **Locks click got WORSE** (3-squad 351 -> 410, 5-squad 306 -> 376; s3652 sq2 9.4 ->
+  79.4, s3664 sq2 56.7 -> 135.2). **The restriction did not restrict** (seat_near > 0 in 940 of 1152: most give-ways begin near the
+  seat), so R36.19's sizing assumption was wrong: the orchestrator's lesson, check the restricting property's base rate before
+  relying on it. Both switches stay DEFAULT_OFF; no re-read on these seeds. Next: trace the Locks rises (G or H) from the rows and a
+  one-cell repro; the fight step is stopped (a failed bar's guards don't decide anything).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
