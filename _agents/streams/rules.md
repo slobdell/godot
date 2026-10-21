@@ -67,14 +67,23 @@ Nothing (his answers are recorded). His playtest at the round's close is the sub
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Now (2026-10-21):** R1 built + lab-green; R2 (spread + short halt) and R3 (pin slow) built, lab tests written; R2's
-first MEASURE running (builder0, light). Bars wait for CP37.1 (native's guard lines).
+**Now (2026-10-21 ~10:15 PDT):** R1, R2 (spread + short halt, with ruling R37.2 (b)) and R3 are BUILT, all OFF, lab-green:
+`test_rules_` 19/19 on builder0 at 51e5c6ff4. quick-remote passed at 12f410388 (builder0: 83 passed, 0 failed; lint 586
+scripts). Full `make check` on **51e5c6ff4** is running on builder0 (the hash I will name). Smoke: `make rules-shots`
+(laptop, terminus, seed 3, --scripted, OFF v ON at 45/75 s, 1854x1011 and 1200x540): 8 frames, 0 engine errors, both arms
+play normally; one fight each, so the shape, not a count. **Next: wait for CP37.1 (native's guard lines + noise), fill
+bar R's k·se and n, cut the pair tree, native runs the lab tests under `make native test` with each switch ON (R37.4),
+then the series on builder2.**
+
+**Measured:** R2's question (does moving fire matter?): movers (>= 15 % of top speed) deal **52.5 %** of direct-fire
+damage and 19.4 % from beyond 50 m (`make rules-moving`, 9d63f709a, builder0, CPU-v-CPU showmatch fights, terminus/locks/
+sumps/gorge/parade x seeds 1-4, 180 s, n = 20 fights; direct damage 202 009, arc 95 182). So R2 is worth building.
 
 **Plan (in order; reasons in one line each):**
 1. R1 own-motion sight: DONE at 9d63f709a (lab 6/6, builder0 light, `test FILTER=test_rules_sight`).
-2. R2 measure (`make rules-moving`: CPU-v-CPU showmatch fights, share of direct-fire damage by shooter motion x range).
-3. R2 spread switch + short halt; R3 pin slow; lab tests both paths.
-4. quick-remote, then one full check on a named hash (pre-series gate).
+2. R2 measure (`make rules-moving`: CPU-v-CPU showmatch fights, share of direct-fire damage by shooter motion x range): DONE, 52.5 %.
+3. R2 spread switch + short halt; R3 pin slow; lab tests both paths: DONE (12f410388; ruling (b) at 51e5c6ff4).
+4. quick-remote (PASSED 12f410388), then one full check on a named hash: 51e5c6ff4 running.
 5. After CP37.1 merges: bars in workstreams *Bars (round 37)*, series on builder2.
 
 **Switches:** `game/combat/rule_switches.gd` (`RuleSwitches`): `--rules-on=sight,spread,pin_slow`, `--rules-off=...`, or the
@@ -135,5 +144,20 @@ under `make native test`, each switch ON, both arms, before the series. Declare 
 - manoeuvre: R3 lowers top speed under fire to 60 %; R2's short halt stops a hull for <= 1.5 s with throttle 0 in the
   plant (`Tank.short_halting()`); a stall clock that reads commanded throttle v motion may want to know.
 
-**Known issues:** none yet.
+**Known issues:**
+- builder0's desktop rendered no frame for `rules-shots` (four runs timed out at 300 s with game time stuck at ~15 s; the
+  first try also lacked --scripted). The laptop rendered all 8. Not chased further: report it if another stream sees it.
+- The short halt is in the plant, so the keyboard-driven tank of `make run` (legacy mode) would also halt for a long
+  shot with the switch ON. Skirmish is unaffected beyond the rule itself.
+
+**What to playtest (once a rule is ON, or with the flags):** `make skirmish ARENA=terminus EXTRA="--rules-on=sight,spread,pin_slow"`
+(or the flags on the godot command line after `--`). Halt a squad at a crossroads (hold), send the CPU in: the halted squad
+should see the column first and shoot first. Then attack-move across open ground at a parked CPU squad: your crews make
+short halts for long shots, while a plain right-click move never stops to shoot. Under machine-gun fire a charge visibly slows.
+
+**Merge notes (shared files):** `game/match/match.gd` (one call after `_update_suppression` in `_physics_process`, a new
+`_settle_motion_sight`, `RULES_MOVING_SPREAD_FACTOR` + `moving_spread_factor()`); `game/tank/tank.gd` (R1/R2/R3 blocks, two
+lines in `_physics_process` before `_drive`, resets in `_set_alive`); `game/ai/fire_lanes.gd:94` reads
+`Match.moving_spread_factor()`. New: `game/combat/rule_switches.gd`, `game/combat/short_halt.gd`, `mk/rules.mk`,
+`tests/rules/**`. Nothing in gunnery.gd / order_controller.gd (the grant is unused).
 
