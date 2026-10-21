@@ -86,6 +86,20 @@ tasks, 128 pairs a task. Judge: `references/round36/manoeuvre/s1-series/`. (0) c
 - The X4b (C) re-read on S1's ON arm is moot.
 - **Next:** S2a's series (Bar S2a) on trees cut from main without S1.
 
+**2026-10-21 ~01:05 (worker): R36.27 (S1 parked, no v2 this round). S2a's series is RUNNING on builder2.** Unit
+`manoeuvre-s2aseries`, driver `~/overnight-manoeuvre/r36/s2a_series.sh` (preemption-safe on T8's model: a step counts only when
+all its rows are there; the check only with its own verdict; builder2's load is logged beside every step), outputs
+`~/overnight-manoeuvre/r36/s2a/`. Trees: ON `lab/s2a-on` `bf678480c` (main `e525f7311` + H1B_SIDE_DEFAULT true + yieldgap out of
+traffic's DEFAULT_OFF), base `lab/s2a-base` = main `e525f7311`. Order: ON's `make native check` first (sim-baseline may move), then
+wedge/fights/jam locks/terminus/sumps x 6540–6563 and hull-rest 6501–6532 x 4 factions x 6 tasks (`--turn-states
+--element-trace=all`, which also gives the player line). Judge: `python3 tests/manoeuvre/s1_judge.py ~/overnight-manoeuvre/r36/s2a
+--bar s2a` (`5c912c36d`).
+- **Far bank 0 holds by construction:** hull-rest runs on foundry, whose `arenas/foundry.json` has no terrain entries (no river,
+  no deck).
+- **The series prints no S2a counter:** `ManoeuvreCensus.h1b_side_steps/stands` are read only by the lab stage, and the native
+  exec doesn't count them. The bar files no counter-first line; the rule's firing is read from escape/unstick deltas.
+- **Gotcha:** gcloud lives in `~/projects/bin`, which is not on a `systemd-run --user` unit's PATH. The driver exports it.
+
 **2026-10-20 ~21:00 (worker): S2a + yieldgap GREEN, merge here: `32ba4ca99`** (pair/native-s2a-yg; both default OFF): builder0
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
