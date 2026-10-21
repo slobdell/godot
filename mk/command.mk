@@ -760,3 +760,20 @@ seat-yield-census: import ## Round 37 (orders O5): seat give-ways to another ele
 		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/seat_yield_census.gd -- \
 		--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 $(SY_FLAGS) > $(SY_DIR)/$$0-$$1.log 2>&1 || true'
 	@$(PYTHON) tests/control/seat_yield_table.py $(SY_DIR) | tee $(SY_DIR)/table.txt
+
+# Round 37 (orders O1 trace, R37.17): parade s3704's census fight per arm (tests/control/contact_trace.gd: every friendly
+# contact with both elements' state) and locks 5 route s3703 squad 2's probe trace per arm -> build/o1-trace/*.log.
+# O1_TRACE_ARMS "name:flags" (flags comma-joined).
+O1_TRACE_ARMS ?= main: anchor:--halt-terrain=anchor latch:--halt-terrain=latch
+.PHONY: o1-trace
+o1-trace: native-for-check import ## Round 37 (orders): O1's two traces (parade s3704 contacts, locks 5 route s3703 sq2) per O1_TRACE_ARMS -> build/o1-trace/
+	@rm -rf $(BUILD_DIR)/o1-trace && mkdir -p $(BUILD_DIR)/o1-trace
+	@echo ">> o1-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"
+	@for arm in $(O1_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/contact_trace.gd -- \
+			--arena=parade --green=gangs --rust=law --credits=2000 --army=opponent --seed=3704 --seconds=150 $$flags \
+			> $(BUILD_DIR)/o1-trace/parade-3704-$$name.log 2>&1 || true; \
+		grep -o 'CONTACT_TRACE .*' $(BUILD_DIR)/o1-trace/parade-3704-$$name.log | cut -c1-300 || echo "$$name: no CONTACT_TRACE"; \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=locks --seed=3703 \
+			--probe-squads=5 --probe-route=route --probe-arm=$$name --probe-trace=2 $$flags > $(BUILD_DIR)/o1-trace/locks-5-route-3703-$$name.log 2>&1 || true; \
+		echo "$$name locks: $$(grep -c '^ORDERS_PROBE_TRACE' $(BUILD_DIR)/o1-trace/locks-5-route-3703-$$name.log) trace lines"; done
