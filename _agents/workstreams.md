@@ -378,6 +378,18 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   `match.gd` auto-merged (cover's seam + rules' sight/spread): ONE builder2 `make native check` on a10846307 judges the batch, then a
   perf-judge on main covers cover's and rules' OFF code. Every stream `git merge main`; rules and cover cut their pair trees from
   a10846307 once it is green.
+- **R37.17 (2026-10-21) O1's no-fight read FAILS AS FILED (two guards); traced before any ruling on a re-try.** orders (builder0
+  native, f4365153f green; probe 12 cells x 3701-3712, 1152 squad rows; traffic-census 3 cases x 3701-3706, 18 fights an arm; all
+  exited 0; `references/round37/orders/o1-judged-builder0-f4365153f/verdict.txt`, stream/orders 72686cab0): counter PASS (base relays
+  298); **deciding PASS**: relays 298 -> 0, shape flips 114 -> 0 (11 squads -> 0), reseats 258 -> 3. **Guard FAIL twitch**, locks 5
+  route: cell median 3.9 -> 10.6 m (line base + 3), three seeds ~0 -> 7.6-13.9 m (3703, 3707, 3712), nine flat. **Guard FAIL CPU
+  friendly contacts** 1665 -> 1933 (line 1836.5); paired per-fight +14.9, se 11.2 (1.3 se); parade s3704 alone 139 -> 309 (170 of
+  +268). Stuck s passes (1645 -> 1767, line 1984); every other probe guard passes in all 12 cells. **Ruled:** O1 does not ship on this
+  read. Orders traces both (parade s3704 census both arms: which elements, is it the anchor read's spacing; locks 5 route s3703 probe
+  trace of the rising squad), no re-run on these seeds. A fix found by the trace is a NEW arm judged on FRESH seeds with the same
+  guards (the contacts line is not loosened after the fact); "the guard is tighter than its noise" is argued in a re-filed bar
+  before the new numbers, not applied to these. The fight read still runs in the HEAD batch (it tells whether the flicker win holds
+  in fights).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
