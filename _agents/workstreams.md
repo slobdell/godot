@@ -144,6 +144,26 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   maps a hull is within reach of low cover almost nowhere (K1: 0-4 lone 6 m barricades a dealt map, five maps none), so a series
   BEFORE K5's re-shape is expected to read as no effect; cover runs it once as the null reading and judges on the re-shaped maps.
 
+- **Bar R (rules R1/R2/R3), DRAFT filed 2026-10-21 by rules before any judged number; k·se and n are filled from CP37.1's
+noise (native's base read on builder2) before the series starts.** Arms: base = main at CP37.1's merge; each rule's arm =
+the same tree with `--rules-on=<rule>` (sight / spread / pin_slow), plus a package arm `--rules-on=sight,spread,pin_slow`.
+Judging: each rule alone first (its own switch); the package only if two or more pass alone or each is inside its noise
+alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions both ways, the grid and seeds native names.
+- **Deciding (each arm):** blob v tactics: the blob's win rate DOWN v base by more than k·se (k = 2, se = CP37.1's 2-seed-block
+  se of the win rate), AND the blob's kill ratio not up.
+- **Guard 1:** turtle v tactics: the turtle's win rate not UP v base by more than 2 se (the turtle must not start winning).
+- **Guard 2:** kills per match and match length per faction within base ± 2 se (no faction breaks: the stabilised-gun check
+  in the brief; a faction outside is REPORTED with its units, not fixed here).
+- **Guard 3 (R2 only, ruling R37.2 (c)):** contention: friendly contacts, all-in time, crews held behind a halted friend,
+  and manoeuvre's wedge line, each no worse than base + 2 se on the scoreboard's moves/orders workload.
+- **Guard 4:** perf-judge on the arm's pair tree (the short halt and the motion-sight pass are per-crew GDScript).
+- **Equality:** sim-baseline maps unmoved with every switch OFF (attributed with the switch OFF, C37.2).
+- **Reports (not judged):** the R2 measure's movers' share of direct damage (`make rules-moving`, base 52.5 % at 9d63f709a,
+  builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
+- **Last attempt / partial rule:** one re-tune per rule only on the guard lines (brief's stretch), then judged as it stands.
+  _(Recorded from stream/rules a3906e8ed. Per R37.1(b): if CP37.1's base shows the blob already near the floor, the deciding
+  metric becomes the one native names from today's read; the bar is re-filed then, before any arm number.)_
+
 ## Rulings (round 37)
 
 - **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
