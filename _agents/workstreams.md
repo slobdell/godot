@@ -195,6 +195,12 @@ _Filed here before any number._
   placed off other elements' paths (brains' element seating, the CPU twin of orders' O1). **Side finding:** calling `_pass_lane` from
   the trace perturbed gorge-1812 at 36.4 s, so a query believed read-only has a side effect (traffic to name it; a determinism
   hazard if any reader calls it).
+- **R36.12 (2026-10-20 ~18:10 PDT) T8 SHIPPED ON: main 3d46b2884 inherits bcda4cd29.** Hand-over check (builder2, native): runner
+  2969/0, sim-baseline 13/13 unmoved; one FAILED target, net-smoke (a client tanks_seen 1/2: round 35's load-flake signature), so
+  combat-smoke NOT RUN. Accepted as a load flake because (1) both re-ran ALONE on bcda4cd29, builder2, and exited 0 (2/2), and (2) T8's
+  game diff is `game/ai/traffic.gd` only and runs only inside a take-turns wait, which net-smoke's two-player-tank match never forms.
+  `_pass_lane`'s "side effect" (R36.11) is an observer hazard, not a game bug (`Avoidance.refresh` snapshots once per physics frame
+  at its first caller; only drive code calls it, in a fixed order): traffic's note dd7634504, probe inert by default 4c458e4e8.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
