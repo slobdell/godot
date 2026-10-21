@@ -214,6 +214,9 @@ var _score_presence: Array = []
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## Round 37 (rules R2, C37.2, his "firing on the move should be a lot less accurate"): with `RuleSwitches.spread_on`
+## a full-speed shot spreads 4x, not 2.5x (still scaled by speed). Read through moving_spread_factor().
+const RULES_MOVING_SPREAD_FACTOR := 3.0
 ## X1 (round 5): at a weapon's full range its spread is (1 + this) times what it is inside effective_range.
 const RANGE_SPREAD_FACTOR := 3.0
 ## L2 (round 4, contract L2): suppression and effective fire. Every round that resolves stamps the ground it swept
@@ -426,6 +429,8 @@ func _physics_process(delta: float) -> void:
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
 		var t := _profile_start()
 		_update_suppression()
+		if RuleSwitches.sight_on:
+			_settle_motion_sight()
 		_profile("match/suppression", t)
 	if tick % INTEL_EVERY_TICKS == 0:
 		var t := _profile_start()
@@ -1164,8 +1169,13 @@ func threat_along(team: int, from: Vector3, to: Vector3) -> float:
 ## X1 (round 5): `distance` (m, 0 = unknown) past the weapon's effective_range widens it too (see Weapons).
 static func shot_spread(weapon: Dictionary, moving: float, suppression: float, distance := 0.0) -> float:
 	var spread_deg := float(weapon.get("spread_deg", 0.0))
-	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
+	return deg_to_rad(spread_deg) * (1.0 + moving_spread_factor() * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
 			* range_spread_multiplier(weapon, distance)
+
+
+## The moving term's factor this run (R2's switch picks it).
+static func moving_spread_factor() -> float:
+	return RULES_MOVING_SPREAD_FACTOR if RuleSwitches.spread_on else MOVING_SPREAD_FACTOR
 
 
 ## X1: how much wider a shot at `distance` spreads than one inside the weapon's effective range (1 = no change).
@@ -1215,6 +1225,15 @@ func _update_suppression() -> void:
 		stats["suppression_total"][tank.team] += tank.suppression
 		if tank.is_pinned():
 			stats["pinned_samples"][tank.team] += 1
+
+
+## Round 37 (rules R1): after the settle (GDScript or native), each living crew's own motion scales its sight
+## (Tank.settle_motion_sight). Sorted, counted in ticks: deterministic. GDScript on both paths on purpose: a few
+## multiplies per crew at 15 Hz, so native needs no twin of it.
+func _settle_motion_sight() -> void:
+	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / SimClock.TICK_RATE
+	for tank in _sorted_tanks():
+		tank.settle_motion_sight(seconds)
 
 
 func _update_intel() -> void:
@@ -1668,17 +1687,27 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 	var end := to
 	var victim: Tank = null
 	var result := {}
+	var screened := false
 	if not hit.is_empty():
 		end = hit.position
 		victim = hit.collider as Tank
-		if victim != null and victim.is_alive():
+		# Round 37 (cover, K2): as in _shell_hit, the low cover in front of a hull-down crew may take the pulse.
+		var screen: Variant = Armor.low_cover_strike(self, victim, weapon, from, direction, projectile_id) \
+				if victim != null and victim.is_alive() else null
+		if screen != null:
+			stats["cover_struck"] = int(stats.get("cover_struck", 0)) + 1
+			end = screen
+			victim = null
+			screened = true
+		elif victim != null and victim.is_alive():
 			result = _land_hit_result(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
 		else:
 			victim = null
 	# L2: hitscan rounds suppress the corridor they crossed, whether or not they hit (the wall of bullets).
 	var suppression := _suppress_lane(tank.team, from, end, weapon, victim)
 	if not hit.is_empty():
-		_emit_impact(projectile_id, hit.position, hit.normal, victim, result, suppression)
+		_emit_impact(projectile_id, end if screened else hit.position, -direction if screened else hit.normal, victim, result,
+				suppression)
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
@@ -2085,7 +2114,14 @@ func _shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	# L2: the round suppressed everything along the corridor it flew down before it stopped here.
 	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon,
 			victim if victim != null and victim.is_alive() else null)
-	if victim != null and victim.is_alive():
+	# Round 37 (cover, K2): a hull-down crew's low cover may take the round instead (`--cover-on=hulldown`; OFF: null).
+	var screen: Variant = Armor.low_cover_strike(self, victim, weapon, shell.ray_start, shell.direction,
+			shell.projectile_id) if victim != null and victim.is_alive() else null
+	if screen != null:
+		stats["cover_struck"] = int(stats.get("cover_struck", 0)) + 1
+		_emit_impact(shell.projectile_id, screen, -shell.direction, null, {}, suppression)
+		point = screen
+	elif victim != null and victim.is_alive():
 		var hit := _land_hit_result(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 		killed = hit["killed"]
 		_emit_impact(shell.projectile_id, point, shell.hit_normal, victim, hit, suppression)
