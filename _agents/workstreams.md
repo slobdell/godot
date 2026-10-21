@@ -187,6 +187,14 @@ _Filed here before any number._
   median 1.4 s from yield to death at 0.6 m/s: the give-way is what the crew was doing, not what exposed it. The one traffic lever caps
   at 0.19 a fight (< se ~17 / 140). Two squads meeting head-on in a one-hull street mid-fight is upstream (routing). A two-fight trace
   (locks-1828, gorge-1812) says whether the orders headed opposite ways (routing: orders/planner, round 37) or the fight did.
+- **R36.11 (2026-10-20 ~18:00 PDT) jam:yielding to another squad is CPU SEATING, not routing (round-37 candidate).** Traffic's two-fight
+  trace (stream/traffic f086799fb; builder2 native, a2de32420 + `--yield-trace`; locks-1828 39/39 and gorge-1812 55/55 rows identical
+  to the series): 11 deaths giving way to another squad: opposite orders 0, retreat/regroup 0, asker had another lane 0 of 8. In 9 of 11
+  the giver was HOLDING a CPU element's screen / support_by_fire seat in a one-hull street and another element's crew drove through it;
+  2 were overtaking in a same-way column. n = 2 fights: the shape, not the count. **Round 37:** CPU screen / support_by_fire seats
+  placed off other elements' paths (brains' element seating, the CPU twin of orders' O1). **Side finding:** calling `_pass_lane` from
+  the trace perturbed gorge-1812 at 36.4 s, so a query believed read-only has a side effect (traffic to name it; a determinism
+  hazard if any reader calls it).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
