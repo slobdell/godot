@@ -26,7 +26,7 @@ var clip_frames := 24
 var _match: Match
 var _rig: RtsCamera
 var _written := 0
-var _staged: Array[Tank] = []
+var _staged: Array = []
 ## name -> suppression held every physics frame (the pinned slot), name -> health held (the repair slot).
 var _hold_suppression := {}
 var _hold_health := {}
@@ -43,6 +43,8 @@ static func wanted() -> bool:
 func _init() -> void:
 	name = "FeedbackShots"
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# After the controllers (-10) write their commands, before the tanks (0) act on them.
+	process_physics_priority = -5
 
 
 func _ready() -> void:
@@ -58,13 +60,19 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if _match == null or not is_instance_valid(_match):
 		return
-	for tank in _staged:
-		if not is_instance_valid(tank):
+	_hold_army()
+	for node: Variant in _staged:
+		if not is_instance_valid(node):
 			continue
+		var tank: Tank = node
+		tank.shield = 0.0
 		if _hold_suppression.has(tank.name):
 			tank.suppression = float(_hold_suppression[tank.name])
 		if _hold_health.has(tank.name) and tank.health > int(_hold_health[tank.name]) + 20:
 			tank.health = int(_hold_health[tank.name])
+		# Staged targets are not there to die: the Emitter's 18 dps and the hit scene's rounds would wreck them mid-shot.
+		if not _hold_health.has(tank.name) and tank.health < tank.max_health * 0.6:
+			tank.health = tank.max_health
 	if _emitter != null and is_instance_valid(_emitter):
 		_emitter.command.aim_point = _emitter_target
 		_emitter.command.fire = true
@@ -73,18 +81,36 @@ func _physics_process(_delta: float) -> void:
 func _run() -> void:
 	while _find() == false:
 		await get_tree().process_frame
+	_army = _match.tanks.get_children()
 	await _seconds(2.0)
-	_site = _quiet_site()
-	_yaw = RtsCamera.yaw_facing(Vector3(-_site.x, 0.0, -_site.z)) if _site.length() > 1.0 else 0.0
-	print("FEEDBACK_SITE %s arena=%s yaw=%.2f" % [_site, Arena.active.get("name", "?"), _yaw])
-	for slot: String in slots:
-		match slot:
+	var sites := _open_sites(slots.size())
+	for i in slots.size():
+		_site = sites[i]
+		_yaw = 0.0
+		print("FEEDBACK_SITE %s %s arena=%s" % [slots[i], _site, Arena.active.get("name", "?")])
+		match String(slots[i]):
 			"hit": await _hits()
 			"pinned": await _pinned()
 			"repair": await _repair()
 			"cone": await _cone()
+		_settle_slot()
 	print("FEEDBACK_SHOTS_DONE files=%d" % _written)
 	get_tree().quit()
+
+
+## The armies that were on the map when the shots began: held still and silent every tick (after their controllers write
+## the command, before the tank acts on it), so the staged scenes are the only fight. A live battle drove through the
+## first capture's close-ups and killed the staged crews.
+var _army: Array = []
+
+
+func _hold_army() -> void:
+	for node: Variant in _army:
+		if is_instance_valid(node):
+			var tank: Tank = node
+			tank.command.throttle = 0.0
+			tank.command.turn = 0.0
+			tank.command.fire = false
 
 
 func _find() -> bool:
@@ -96,19 +122,62 @@ func _find() -> bool:
 	return _match != null and _rig != null and _match.tanks != null and _match.tanks.get_child_count() > 0
 
 
-## An open patch of ground away from both bases: the first candidate with nothing solid within 22 m.
-func _quiet_site() -> Vector3:
+## `count` open patches of ground (nothing solid within CLEAR_M), away from both bases and from each other, nearest the
+## middle first: each slot is staged on its own patch, so no vehicle has to be removed mid-match (the HUD and the effects
+## expect vehicles to die, not to vanish).
+const CLEAR_M := 14.0
+const APART_M := 55.0
+
+
+func _open_sites(count: int) -> Array:
 	var half := float(Arena.active.get("half_size", 120.0))
-	for candidate: Vector3 in [Vector3(half * 0.6, 0, 0), Vector3(-half * 0.6, 0, 0), Vector3(half * 0.6, 0, half * 0.25),
-			Vector3(-half * 0.6, 0, -half * 0.25), Vector3(half * 0.4, 0, -half * 0.3), Vector3(0, 0, 0)]:
-		var clear := true
-		for dx in range(-22, 23, 4):
-			for dz in range(-22, 23, 4):
-				if not RtsCamera.solid_at(candidate + Vector3(dx, 0, dz)).is_empty():
-					clear = false
-		if clear:
-			return candidate
-	return Vector3.ZERO
+	var open: Array = []
+	var step := 6.0
+	var x := -half * 0.8
+	while x <= half * 0.8:
+		var z := -half * 0.8
+		while z <= half * 0.8:
+			var point := Vector3(x, 0, z)
+			if _clear(point) and point.distance_to(Match.resupply_center(0)) > 45.0 and point.distance_to(Match.resupply_center(1)) > 45.0 \
+					and not _on_objective(point):
+				open.append(point)
+			z += step
+		x += step
+	open.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.length() < b.length())
+	var picked: Array = []
+	for point: Vector3 in open:
+		var far := true
+		for other: Vector3 in picked:
+			far = far and point.distance_to(other) >= APART_M
+		for node: Variant in _army:
+			if is_instance_valid(node) and (node as Tank).global_position.distance_to(point) <= 30.0:
+				far = false
+		if far:
+			picked.append(point)
+		if picked.size() == count:
+			break
+	while picked.size() < count:
+		picked.append(Vector3(0, 0, -half * 0.3 + picked.size() * APART_M))
+	return picked
+
+
+## Staged crews on a scoring zone would take it (the first capture's pinned crews scored the East Ring).
+func _on_objective(point: Vector3) -> bool:
+	for objective: Dictionary in _match.objectives:
+		var at: Variant = objective.get("position")
+		var centre := Vector3(float(at.x), 0.0, float(at.z)) if at is Vector3 else Vector3(float(at[0]), 0.0, float(at[1]))
+		if centre.distance_to(point) <= float(objective.get("radius", 15.0)) + 20.0:
+			return true
+	return false
+
+
+func _clear(point: Vector3) -> bool:
+	var reach := int(CLEAR_M)
+	for dx in range(-reach, reach + 1, 4):
+		for dz in range(-reach, reach + 1, 4):
+			if not RtsCamera.solid_at(point + Vector3(dx, 0, dz)).is_empty():
+				return false
+	return true
 
 
 func _spawn(tank_name: String, team: int, unit_id: String, offset: Vector3, facing: Vector3) -> Tank:
@@ -119,19 +188,18 @@ func _spawn(tank_name: String, team: int, unit_id: String, offset: Vector3, faci
 	return tank
 
 
-func _clear() -> void:
+## A slot is done: its vehicles stay where they are, held still and quiet like the armies.
+func _settle_slot() -> void:
 	_emitter = null
 	_hold_suppression.clear()
-	_hold_health.clear()
-	for tank in _staged:
-		if is_instance_valid(tank):
-			tank.queue_free()
+	for node: Variant in _staged:
+		_army.append(node)
 	_staged.clear()
-	await get_tree().physics_frame
 
 
 ## Look at the site at his pose (or close in), framed on `centre` (a site offset).
 func _pose(distance: float, centre := Vector3.ZERO) -> void:
+	_rig.stop_tracking("feedback-shots")
 	_rig.auto_frame = false
 	_rig.vision = Callable()
 	_rig.vision_region = null
@@ -146,10 +214,9 @@ func _pose(distance: float, centre := Vector3.ZERO) -> void:
 
 
 func _hits() -> void:
-	await _clear()
-	var targets: Array[Tank] = []
+	var targets: Array = []
 	for i in 3:
-		targets.append(_spawn("FbTarget%d" % i, Match.Team.RUST, "tank", Vector3(-12.0 + i * 12.0, 0, 0), Vector3.LEFT))
+		targets.append(_spawn("FbTarget%d" % i, Match.Team.RUST, "gang_ifv", Vector3(-9.0 + i * 9.0, 0, 0), Vector3.LEFT))
 	_spawn("FbEyes", Match.Team.GREEN, "scout", Vector3(0, 0, 26), Vector3.FORWARD)
 	await _seconds(1.0)
 	for letter: String in FeedbackLook.LETTERS:
@@ -171,15 +238,15 @@ func _hits() -> void:
 
 
 ## One cannon round into each target at once: from ahead (front), from its flank, from behind (rear).
-func _strike(targets: Array[Tank]) -> void:
+func _strike(targets: Array) -> void:
 	var fx := FxWorld.existing()
 	if fx == null:
 		return
 	var faces := ["front", "side", "rear"]
 	for i in targets.size():
-		var target := targets[i]
-		if not is_instance_valid(target):
+		if not is_instance_valid(targets[i]):
 			continue
+		var target: Tank = targets[i]
 		var forward := -target.global_basis.z
 		var from: Vector3
 		match faces[i]:
@@ -199,31 +266,28 @@ func _strike(targets: Array[Tank]) -> void:
 
 
 func _pinned() -> void:
-	await _clear()
 	var levels := [0.0, 0.45, 0.7, 1.0]
 	for i in levels.size():
-		var tank := _spawn("FbPinned%d" % i, Match.Team.RUST, "ifv", Vector3(-15.0 + i * 10.0, 0, 0), Vector3.BACK)
+		var tank := _spawn("FbPinned%d" % i, Match.Team.RUST, "gang_ifv", Vector3(-12.0 + i * 8.0, 0, 0), Vector3.BACK)
 		_hold_suppression[tank.name] = levels[i]
 	_spawn("FbEyes", Match.Team.GREEN, "scout", Vector3(0, 0, 26), Vector3.FORWARD)
 	await _shoot_held("pinned")
 
 
 func _repair() -> void:
-	await _clear()
 	_spawn("FbTanker", Match.Team.GREEN, "gang_support", Vector3(0, 0, 0), Vector3.FORWARD)
-	for spec: Array in [["FbMend0", Vector3(-11, 0, -5)], ["FbMend1", Vector3(10, 0, 6)], ["FbFar", Vector3(26, 0, -8)]]:
+	for spec: Array in [["FbMend0", Vector3(-9, 0, -5)], ["FbMend1", Vector3(10, 0, 6)], ["FbFar", Vector3(24, 0, -6)]]:
 		var tank := _spawn(String(spec[0]), Match.Team.GREEN, "gang_scout", spec[1], Vector3.FORWARD)
 		tank.health = tank.max_health / 2
 		tank.ticks_since_hit = 1_000_000
 		_hold_health[tank.name] = tank.health
-	await _shoot_held("repair", Vector3(6, 0, 0))
+	await _shoot_held("repair", Vector3(4, 0, 0))
 
 
 func _cone() -> void:
-	await _clear()
 	_emitter = _spawn("FbEmitter", Match.Team.GREEN, "law_suppressor", Vector3(0, 0, 14), Vector3.FORWARD)
-	_spawn("FbVictim0", Match.Team.RUST, "tank", Vector3(-4, 0, -6), Vector3.BACK)
-	_spawn("FbVictim1", Match.Team.RUST, "ifv", Vector3(5, 0, -10), Vector3.BACK)
+	_spawn("FbVictim0", Match.Team.RUST, "gang_ifv", Vector3(-4, 0, -6), Vector3.BACK)
+	_spawn("FbVictim1", Match.Team.RUST, "gang_scout", Vector3(5, 0, -10), Vector3.BACK)
 	_emitter_target = _site + Vector3(0, 1, -8).rotated(Vector3.UP, _yaw)
 	await _shoot_held("cone", Vector3(0, 0, 2))
 

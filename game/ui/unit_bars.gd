@@ -186,15 +186,16 @@ func _feedback(at: Vector2, head: Vector3, tank: Tank, s: float, camera: Camera3
 			# Heads down: one to three chevrons pointing at the hull, over the bar.
 			var count := 1 + int(level > 0.45) + int(level > 0.9)
 			for i in count:
-				var y := at.y - height * 0.5 - (5.0 + i * 5.0) * s
-				var half := 5.0 * s
-				draw_polyline(PackedVector2Array([Vector2(at.x - half, y - 3.0 * s), Vector2(at.x, y), Vector2(at.x + half, y - 3.0 * s)]),
-						Color(PIN_COLOR, pulse), 2.0 * s, true)
+				var y := at.y - height * 0.5 - (7.0 + i * 9.0) * s
+				var half := 11.0 * s
+				var chevron := PackedVector2Array([Vector2(at.x - half, y - 7.0 * s), Vector2(at.x, y), Vector2(at.x + half, y - 7.0 * s)])
+				draw_polyline(chevron, Color(0.0, 0.0, 0.0, 0.6 * pulse), 6.5 * s, true)
+				draw_polyline(chevron, Color(PIN_COLOR, pulse), 4.0 * s, true)
 			feedback_drawn.append([String(tank.name), "pinned:a"])
 		if FeedbackLook.has("pinned", "c"):
 			var rect := Rect2(at - Vector2(width * 0.5 + 2.0 * s, height * 0.5 + 2.0 * s), Vector2(width + 4.0 * s, height + 4.0 * s))
 			draw_rect(rect, Color(PIN_COLOR, pulse), false, 1.5 * s)
-			_text("PINNED", at + Vector2(0.0, height * 0.5 + 11.0 * s), PIN_COLOR, 9.0 * s)
+			_text("PINNED", at + Vector2(0.0, height * 0.5 + 20.0 * s), PIN_COLOR, 19.0 * s)
 			feedback_drawn.append([String(tank.name), "pinned:c"])
 	var link := feedback.mending_of(tank.name)
 	if not link.is_empty() and FeedbackLook.has("repair", "c"):
@@ -203,7 +204,7 @@ func _feedback(at: Vector2, head: Vector3, tank: Tank, s: float, camera: Camera3
 		var edge := at.x - width * 0.5 + width * hull
 		var sheen := fmod(_now * 1.5, 1.0)
 		draw_rect(Rect2(Vector2(edge - 4.0 * s, bottom - HULL_H * s), Vector2(4.0 * s, HULL_H * s)), Color(MEND_COLOR, 0.6 + 0.4 * sheen))
-		_text("+%d/s" % roundi(float(link["rate"])), Vector2(at.x + width * 0.5 + 14.0 * s, bottom - 1.0 * s), MEND_COLOR, 9.0 * s)
+		_text("+%d/s" % roundi(float(link["rate"])), Vector2(at.x + width * 0.5 + 20.0 * s, bottom + 2.0 * s), MEND_COLOR, 21.0 * s)
 		feedback_drawn.append([String(tank.name), "repair:c"])
 	if FeedbackLook.has("hit", "b"):
 		var hit := feedback.recent_hit(String(tank.name), _now)
@@ -216,10 +217,10 @@ func _feedback(at: Vector2, head: Vector3, tank: Tank, s: float, camera: Camera3
 			var side := camera.unproject_position(head + toward * 4.0) - at
 			side = side.normalized() if side.length() > 0.5 else Vector2.LEFT
 			var tip := at + side * (width * 0.5 + 6.0 * s)
-			var back := tip + side * 10.0 * s
-			var across := Vector2(-side.y, side.x) * 6.0 * s
+			var back := tip + side * 16.0 * s
+			var across := Vector2(-side.y, side.x) * 9.0 * s
 			draw_colored_polygon(PackedVector2Array([tip, back + across, back - across]), color)
-			_text(String(HIT_LABELS[String(hit["kind"])]), at + Vector2(0.0, -height * 0.5 - (8.0 + age * 10.0) * s), color, 11.0 * s)
+			_text(String(HIT_LABELS[String(hit["kind"])]), at + Vector2(0.0, -height * 0.5 - (10.0 + age * 12.0) * s), color, 19.0 * s)
 			feedback_drawn.append([String(tank.name), "hit:b:" + String(hit["kind"])])
 
 

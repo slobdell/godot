@@ -67,6 +67,26 @@ SLOTS = [
      }},
 ]
 RECOMMENDED = {"hit": "a", "pinned": "a", "repair": "a", "cone": "b"}
+## Lead gate 1: ElevenLabs is spent only on text he approves. At most 4 new sounds this round (C37.6); the Emitter already
+## has its horn loop (sonic_loop), so three are asked for.
+SOUNDS = [
+    ("flank_hit", "A flank hit", "A tank shell slamming into the thin side armour of a heavy vehicle: a sharp metallic crack, "
+     "a deep tearing clang as the plate buckles, fragments rattling inside the hull, a short ring of metal. Single impact, "
+     "no explosion, no music."),
+    ("rear_hit", "A rear hit", "A shell punching into the rear engine compartment of an armoured truck: a brutal hollow "
+     "crunch of metal, a burst of hissing steam, a whoomp of fuel catching, the engine coughing and grinding. Single impact, "
+     "no music."),
+    ("repair_loop", "The Tanker mending (a loop)", "Field repair on an armoured truck, seamless loop: an impact wrench "
+     "ratcheting in short bursts, a welding torch hiss and crackle, a hydraulic pump whine, spanners clinking on steel. "
+     "No voices, no music."),
+]
+## The caller already has rear and engine-deck lines (caller.hit.07-09, caller.kill.38-39); a flank hit has none. Voiced
+## lines are paid too, so their text goes to him first.
+LINES = [
+    ("caller.hit.flank.01", "Caught broadside! That is what happens when you show them your doors!"),
+    ("caller.hit.flank.02", "They went the long way round, and it paid off big!"),
+    ("caller.hit.flank.03", "Right in the side panel! Nobody was watching that flank!"),
+]
 
 
 def still(src: Path, out: Path, width: int = 1400) -> str:
@@ -131,6 +151,34 @@ def build(shots: Path, out: Path) -> Path:
       <span class="status" id="status-{sid}" aria-live="polite"></span></div>
     </div>
   </section>""")
+    rows = "".join(f"""
+      <article class="sound" data-sound="{sid}">
+        <h3>{html.escape(title)}</h3>
+        <p class="prompt">{html.escape(text)}</p>
+        <label for="sound-words-{sid}">Change the description (optional)</label>
+        <textarea id="sound-words-{sid}" rows="2"></textarea>
+        <div class="row"><button type="button" class="pick approve" id="approve-{sid}" data-sound="{sid}" aria-pressed="false">Make this sound</button>
+        <span class="status" id="sound-status-{sid}" aria-live="polite"></span></div>
+      </article>""" for sid, title, text in SOUNDS)
+    rows += "".join(f"""
+      <article class="sound" data-sound="{lid}">
+        <h3>The announcer, on a flank hit</h3>
+        <p class="prompt">&ldquo;{html.escape(text)}&rdquo;</p>
+        <label for="sound-words-{lid}">Change the line (optional)</label>
+        <textarea id="sound-words-{lid}" rows="2"></textarea>
+        <div class="row"><button type="button" class="pick approve" id="approve-{lid}" data-sound="{lid}" aria-pressed="false">Record this line</button>
+        <span class="status" id="sound-status-{lid}" aria-live="polite"></span></div>
+      </article>""" for lid, text in LINES)
+    sections.append(f"""
+  <section class="slot" id="sounds">
+    <header>
+      <p class="eyebrow">sounds</p>
+      <h2>New sounds and lines, written out before they are made</h2>
+      <p class="notice">These are the descriptions the sound generator gets. These are the descriptions the sound generator gets, and the announcer's new lines for a flank hit (he already calls rear and engine hits). Nothing is generated until you approve it. The Emitter already has its horn loop, so it gets no new sound.</p>
+    </header>
+    <div class="options">{rows}
+    </div>
+  </section>""")
     page = TEMPLATE.replace("{{SECTIONS}}", "".join(sections)).replace("{{SOURCE}}", html.escape(source)) \
         .replace("{{RECOMMENDED}}", json.dumps(RECOMMENDED))
     (out / "index.html").write_text(page)
@@ -190,6 +238,9 @@ button:disabled { opacity: 0.5; cursor: default; }
 .answer label { font-size: 0.9rem; color: var(--dim); }
 textarea { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 8px; resize: vertical; }
 .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.sound { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.sound .prompt { margin: 0; font-family: var(--mono); font-size: 0.9rem; color: var(--fg); }
+.sound label { font-size: 0.85rem; color: var(--dim); }
 .status { font-family: var(--mono); font-size: 0.85rem; color: var(--picked); }
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: grid; place-items: center; z-index: 20; cursor: zoom-out;
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
@@ -201,7 +252,7 @@ textarea { font: inherit; background: var(--panel); color: var(--fg); border: 1p
     <p class="eyebrow">Round 37 &middot; pick a look</p>
     <h1>What the rules are doing</h1>
     <p>Four things the game does today that you cannot see. Each has three looks, filmed in a real match on the Terminus with your laptop's settings and your camera. Pick one look per section, or two if you want both, add words if you like, and press Save. The recommended one is marked.</p>
-    <p>Sounds come after your picks: a flank hit, a rear hit, a repair hum and the Emitter's horn, written out for you to approve before any are made.</p>
+    <p>At the bottom: three new sounds (a flank hit, a rear hit, the Tanker mending) and three announcer lines for a flank hit, written out for you to approve before any are made.</p>
     <p class="source">{{SOURCE}}</p>
   </div>
 {{SECTIONS}}
@@ -248,6 +299,18 @@ document.querySelectorAll(".save").forEach(button => button.addEventListener("cl
     say(slot, "Not saved (" + (e && e.code || "error") + "). Try again, or tell Claude your pick.");
   } finally { button.disabled = false; }
 }));
+document.querySelectorAll(".approve").forEach(button => button.addEventListener("click", async () => {
+  const id = button.dataset.sound;
+  const on = button.getAttribute("aria-pressed") !== "true";
+  const status = document.getElementById("sound-status-" + id);
+  if (!db) { status.textContent = "Saving is not available here: tell Claude (" + id + ")."; return; }
+  button.disabled = true;
+  try {
+    await db.doc("sounds/" + id).set({approved: on, words: document.getElementById("sound-words-" + id).value.trim(), at: new Date().toISOString()});
+  } catch (e) {
+    status.textContent = "Not saved (" + (e && e.code || "error") + ").";
+  } finally { button.disabled = false; }
+}));
 (async () => {
   try { db = window.claude ? await window.claude.use("db") : null; } catch (e) { db = null; }
   if (!db) return;
@@ -261,6 +324,17 @@ document.querySelectorAll(".save").forEach(button => button.addEventListener("cl
       say(slot, "Saved: " + (data.letters || []).map(l => l.toUpperCase()).join(" + "));
     }, () => {});
   }
+  document.querySelectorAll(".approve").forEach(button => {
+    const id = button.dataset.sound;
+    db.doc("sounds/" + id).onSnapshot(snap => {
+      if (!snap.exists) return;
+      const data = snap.data();
+      button.setAttribute("aria-pressed", String(!!data.approved));
+      button.textContent = data.approved ? "Approved: will be made" : (id.startsWith("caller") ? "Record this line" : "Make this sound");
+      document.getElementById("sound-words-" + id).value = data.words || "";
+      document.getElementById("sound-status-" + id).textContent = data.approved ? "Saved" : "Not approved";
+    }, () => {});
+  });
 })();
 </script>
 """

@@ -51,7 +51,7 @@ void fragment() {
 	if (v_kind < 0.5) {
 		float radius = mix(0.55, 0.8, snap);
 		float sector = 1.0 - smoothstep(0.62, 0.82, abs(angle));
-		light = band(r, radius, 0.1) * 0.25 + band(r, radius, 0.26) * sector * 1.6;
+		light = band(r, radius, 0.1) * 0.3 + band(r, radius, 0.34) * sector * 2.4;
 		light += (1.0 - smoothstep(0.0, 0.5, abs(angle))) * band(r, radius + 0.14, 0.08) * 0.8;
 	} else if (v_kind < 1.5) {
 		float radius = mix(0.95, 0.72, strength);
@@ -71,10 +71,10 @@ void fragment() {
 		light *= strength;
 	} else if (v_kind < 3.5) {
 		float pulse = 0.65 + 0.35 * sin(now * 5.0);
-		light = (1.0 - smoothstep(0.1, 0.95, r)) * 0.55 * pulse;
+		light = (1.0 - smoothstep(0.1, 0.95, r)) * 1.1 * pulse;
 		float plus = (1.0 - smoothstep(0.06, 0.09, abs(p.x))) * step(abs(p.y), 0.3)
 				+ (1.0 - smoothstep(0.06, 0.09, abs(p.y))) * step(abs(p.x), 0.3);
-		light += min(plus, 1.0) * 0.9;
+		light += min(plus, 1.0) * 1.6;
 		light *= strength;
 	} else if (v_kind < 4.5) {
 		float half_cone = radians(cone_half_deg);

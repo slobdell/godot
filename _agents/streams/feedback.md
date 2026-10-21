@@ -49,11 +49,28 @@ Simulation code (rules', cover's, orders', manoeuvre's paths), `native/**`, `tes
 
 ## Waiting on the lead
 
-F1's picks (the orchestrator relays).
+F1's picks (the orchestrator relays). **The directions page: https://claude.ai/artifact/FDSA2k9cBPFfncfo2rCSHn**
+(private; published 2026-10-21 from build/feedback-page, shots builder0 `make feedback-shots FB_PRESET=laptop` on the
+a459ed338 tree + capture fixes, Terminus, 1854x1011). Picks land in its db: `picks/<hit|pinned|repair|cone>` =
+{letters, words, at}; sound and line approvals in `sounds/<flank_hit|rear_hit|repair_loop|caller.hit.flank.0N>` =
+{approved, words, at}. My recommendations: hit a, pinned a, repair a, cone b. Lead gate 1: nothing generated with
+ElevenLabs until a `sounds/*` approval.
 
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-21 report (F1 in progress).**
+- Built (a459ed338 + follow-ups): `FeedbackReader` (pure reads), `FeedbackLook` (`--feedback-look=hit:b,pinned:a+c,...`,
+  three looks per slot, default = my recommendation), `FeedbackFx` (world half, pooled), UnitBars' screen half,
+  `make feedback-shots` (stages each slot on its own open patch of a real skirmish, armies held still and silent, stills
+  at his pose + close in + 2 s clips) and `make feedback-page`. quick-remote builder0 at the a459ed338 tree: 203 passed,
+  0 failed. Sim untouched (reads only).
+- Capture lessons: a live battle drove through the first capture (armies are now held by zeroing their commands at
+  physics priority -5); vehicles must not be freed mid-match (SelectionMarkers/MotionFx assert), so each slot gets its
+  own site; staged crews on a scoring ring take it (sites avoid objectives); the RTS rig keeps tracking the army unless
+  `stop_tracking()`; shields hide hull-hit flares (targets are gang vehicles, no shields).
+- Incident: I killed rules' laptop `make lint` (pid 3152953) by mistake; told rules and the orchestrator.
 
 **2026-10-21, started.** Launch check: main 9d325e291 inherits round 36's green (HANDOFF); not re-run.
 

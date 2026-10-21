@@ -17,7 +17,7 @@ const WORLD_AABB := AABB(Vector3(-200, -20, -200), Vector3(400, 80, 400))
 enum Mark { HIT_SECTOR, PIN_RING, REACH_RING, MENDING_GLOW, RIPPLES, FOOTPRINT }
 
 ## The colours of the facts (never a team colour: those are cyan and magenta).
-const FACE_COLORS := {"front": Color(0.55, 0.7, 1.0), "side": Color(1.0, 0.58, 0.12), "rear": Color(1.0, 0.2, 0.1),
+const FACE_COLORS := {"front": Color(0.55, 0.7, 1.0), "side": Color(1.0, 0.9, 0.15), "rear": Color(1.0, 0.12, 0.08),
 		"deck": Color(1.0, 0.8, 0.22)}
 const PIN_COLOR := Color(1.0, 0.86, 0.25)
 const MEND_COLOR := Color(0.35, 1.0, 0.55)
@@ -196,7 +196,7 @@ func update(now: float) -> void:
 				_beam(beams, from, to)
 				beams += 1
 			if FeedbackLook.has("repair", "b") and held < HELD_MARKS:
-				held = _held(held, Mark.MENDING_GLOW, place, Vector3.FORWARD, _hull_span(tank) * 1.3, MEND_COLOR, 1.0, counts)
+				held = _held(held, Mark.MENDING_GLOW, place, Vector3.FORWARD, _hull_span(tank) * 2.0, MEND_COLOR, 1.0, counts)
 		if FeedbackLook.has("repair", "b"):
 			for mender: Tank in reaching:
 				var radius := float(Units.stat(mender.unit_id, "repair_radius_m", 0.0))
@@ -244,14 +244,15 @@ func _flare(kind: String, at: Vector3, toward: Vector3, target_name: String, now
 			_fx.bursts.spawn(BurstSystem.Kind.STAR, lift, 1.6, 0.12, color, now)
 			_fx.bursts.spawn(BurstSystem.Kind.SPARKS, lift, 2.2, 0.25, color, now, toward * 6.0 + Vector3.UP * 2.0, 3.0)
 		"side":
-			_fx.bursts.spawn(BurstSystem.Kind.FLARE, lift, 5.0, 0.4, color, now)
-			_fx.bursts.spawn(BurstSystem.Kind.SPARKS, lift, 4.0, 0.5, color, now)
-			_fx.lights.flash(lift + Vector3.UP, color, 2.5, 8.0, 0.2, LightPool.PRIORITY_EXPLOSION, now)
-		"rear":
-			_fx.bursts.spawn(BurstSystem.Kind.FLARE, lift, 7.5, 0.5, color, now)
-			_fx.bursts.spawn(BurstSystem.Kind.SHOCKWAVE, at + Vector3.UP * 0.3, 6.0, 0.45, color, now)
-			_fx.bursts.spawn(BurstSystem.Kind.SPARKS, lift, 6.0, 0.7, color, now)
+			# Bigger than the round's own fireball and a colour it never has, so it reads over it.
+			_fx.bursts.spawn(BurstSystem.Kind.FLARE, lift + Vector3.UP * 0.6, 9.0, 0.5, color, now)
+			_fx.bursts.spawn(BurstSystem.Kind.SPARKS, lift, 7.0, 0.6, color, now, Vector3.UP * 4.0, 1.5)
 			_fx.lights.flash(lift + Vector3.UP, color, 3.5, 10.0, 0.25, LightPool.PRIORITY_EXPLOSION, now)
+		"rear":
+			_fx.bursts.spawn(BurstSystem.Kind.FLARE, lift + Vector3.UP * 0.8, 13.0, 0.6, color, now)
+			_fx.bursts.spawn(BurstSystem.Kind.SHOCKWAVE, at + Vector3.UP * 0.3, 10.0, 0.5, color, now)
+			_fx.bursts.spawn(BurstSystem.Kind.SPARKS, lift, 9.0, 0.8, color, now, Vector3.UP * 6.0, 1.5)
+			_fx.lights.flash(lift + Vector3.UP, color, 5.0, 12.0, 0.3, LightPool.PRIORITY_EXPLOSION, now)
 
 
 ## Look c: the struck face's quarter of a ring under the target.
@@ -261,7 +262,7 @@ func _sector(kind: String, target: Tank, toward: Vector3, now: float) -> void:
 	var place := FxWorld.visual_transform(target).origin
 	_ground.multimesh.set_instance_transform(i, Transform3D(_yaw_basis(toward), place))
 	_ground.multimesh.set_instance_color(i, Color(FACE_COLORS[kind], 1.0))
-	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, _hull_span(target) * 2.0, float(Mark.HIT_SECTOR)))
+	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, _hull_span(target) * 1.7, float(Mark.HIT_SECTOR)))
 
 
 func _held(index: int, mark: int, place: Vector3, forward: Vector3, size: float, color: Color, strength: float,
@@ -295,8 +296,8 @@ func _air_cone(cone: MeshInstance3D, origin: Vector3, direction: Vector3, reach:
 		cone.mesh = mesh
 	var flat := Vector3(direction.x, 0.0, direction.z)
 	flat = flat.normalized() if flat.length() > 0.01 else Vector3.FORWARD
-	# The cylinder's axis is +Y with its narrow top at +height/2: turn +Y to point back at the horns, centre it mid-reach.
-	var basis := Basis(Vector3.RIGHT, -PI / 2.0)
+	# The cylinder's axis is +Y with its narrow top at +height/2: turn +Y to +Z (back at the horns), centre it mid-reach.
+	var basis := Basis(Vector3.RIGHT, PI / 2.0)
 	basis = _yaw_basis(flat) * basis
 	cone.global_transform = Transform3D(basis, origin + flat * reach * 0.5)
 	cone.visible = true
