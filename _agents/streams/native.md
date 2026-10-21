@@ -160,6 +160,18 @@ as named; N4 sweep; N5 lint; stretch.
   `make remote T="quick QUICK_FILTER=test_match_shell_dropped_peer:: QUICK_LINT=-"`): 5/5 exited 0. The race is in the test:
   `wait_physics_frames(2)` can mean 0-1 multiplayer polls under load (polls run per process frame; grace 0 needs > 0 ms).
   The fix (outside native's paths, proposed to the orchestrator 2026-10-21): wait for DISCONNECTED, bounded 30 physics frames.
-  The hand-over (N5 + linger) waits on the orchestrator's call: R36.12 rerun-alone, or the fix and a fresh check.
+  **Merged under R36.12 as main f2090ffa5 (R36.22).** The fix, granted: **e78f7cd9f** (main merged first, 35ac778f6) waits
+  for CONNECTION_DISCONNECTED, bounded 30 physics frames, both asserts kept. builder0, on e78f7cd9f's tree: 2/2 green; mutant
+  (grace_ms 300: the shell lands first) RED on "the shell was still in flight ... (expected 0, got 1)". Rides with the next
+  hand-over (owes a full check).
+- **R36.22 sweep: network tests' fixed frame-count waits on an event.** Files: tests/net/*, test_match_shell_dropped_peer,
+  test_relay_peer, test_lobby, test_network_input, test_manoeuvre_stall_net (every test naming RelayPeer, multiplayer_peer,
+  rpc or a connection status), plus mk/net.mk's recipes. **No other one found.** bot_client_check and lobby_check wait on
+  deadlines (`Time.get_ticks_msec() < deadline`). test_relay_peer is synchronous (on_control). test_lobby's 1-3 frames
+  are UI layout settling, with no network. Two side notes, neither a flake nor a false green:
+  (a) `relay_host_up`, broker-load and lobby-smoke wait 5 s for BROKER_LISTENING and fall through silently, so a broker
+  that never listens shows ~30 s later as "host never opened a room";
+  (b) under `-eu -o pipefail` a combat-smoke client FAIL exits before the reap and the server-ERROR grep: red, but no
+  diagnostics.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
