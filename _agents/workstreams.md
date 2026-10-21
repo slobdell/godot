@@ -205,6 +205,10 @@ _Filed here before any number._
   `make check exited 0`, 2964/0, 13 unmoved): DEPLOY_PASS deleted, DEPLOY_COMPACT OFF, the herringbone lab + probe columns +
   pack_refused (measurement) + readers. Main had moved (T8, S2a + yieldgap), so ONE builder0 `make native check` of 6d4e18e29 for the
   batch (unit orch-main-check-6d4e18e29, log `~/overnight-orch/r36/main_check_6d4e18e29.log`).
+- **R36.14 (2026-10-20 ~18:25 PDT) C36.6 grant to native (N4):** the 7 bare spawn seats in brains' test_ai* files
+  (test_ai_idle_fallback:34, test_ai_perf_equivalence:27/32, test_ai_player_holds:19/20, test_ai_player_orders_contact:17/24) may become
+  `Tank.place` and nothing else, one commit, quick-remote, merge note; test_ai_perf_equivalence's compared numbers reported before/after
+  if they move. C36.5's "any owner's test file" does not override C36.6's ask-first for brains' paths (native asked; recorded).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
