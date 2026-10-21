@@ -91,8 +91,9 @@ round is judged on; both should fall.
   0 mismatches (9/9 fire), ON 18 compared 0 mismatches (0 fire). Manoeuvre merged it (4378658cb).
 - Written answers (no twin needed): rules R1-R3 (C++ reads sight live, never computes spread, drives the throttle tank.gd hands
   it), K2 (no native hit path skips cover's seam), O2 (no C++ writes `move_order`), M1 sidestand (the far fire is GDScript-only).
-- OWED: rules' empirical run, their test_rules_* under `make native test` both arms (NATIVE=off for the GDScript arm), each
-  switch ON, on the pair commit rules declares (agreed with rules).
+- Rules' empirical run (R37.4) DONE on rules' pair 75c3e74e0 (builder0 light): `make native test FILTER=test_rules_` native ON
+  20/0 and NATIVE=off 20/0, both exited 0, every test PASS in both arms (the tests set each switch ON and OFF themselves; they
+  print no numbers, so the equality is per assertion). Rules told; its arms may start.
 
 **N3 the scoreboard:** the page has a *Guard lines* section (references/scoreboard/guards/<commit>.json); the round-37 launch
 column 9d325e291 is read (builder2, verdict ok 40/48/36): v 3d46b2884 every line inside its noise (stuck deaths 5.92 -> 5.17 a
@@ -107,6 +108,12 @@ orchestrator adopts `tests/baselines/ai_scenarios_count.txt` 53,0,5,0 -> 54,0,4,
 
 **N6 the judging re-render: DONE** (05e3982e0): round 36's 20 lines in `tools/judge/lines_r36.py`; `_agents/judging.md`
 *Round 37 re-render*; table unchanged (round 36's rows are on round36/* branches); 0 of 9 se lines inside the noise.
+
+**perf-judge on builder2 (R37.20):** it can never judge as built: builder2's nominal is the old c4d's (now e2-highcpu-32, Intel
+Broadwell; the reference reads 2.28-2.50 ms v 0.898 at 62-96 % idle) and scenario_perf's pass line is absolute (FAIL_USEC
+20,000; the brains read 21-34k there). Ruled: one perf-judge on builder0 for main (the orchestrator's); (b) DONE 14c10d1d4:
+perf_judge.sh says "NOT JUDGED: builder2 is not a judging machine" at once (laptop test_perf_judge 7/0, check-perf-judge 10/0);
+(c) a relative line (µs per reference ms) is round 38's.
 
 **Checks:** cfb8120ba builder2 `exited 2`, 2973/0, sim-baseline unmoved, the one red N5's planned count move. Stream tip
 6c9bc7239 (main a10846307 + N2 cover twins + N4 + N5 + N6 + N3 row): full check QUEUED on builder2 behind main's.
