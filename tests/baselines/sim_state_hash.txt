@@ -6,10 +6,10 @@ glibc-2.43 yard 62d12a470d5c9ee3
 glibc-2.43 pit 022e54dcc1c3e787
 # glibc-2.43 terminus: recorded on builder0 at 9e226c700, twice, agreeing (2026-10-19)
 glibc-2.43 terminus c1e385944ff8073b
-# glibc-2.43 crossing: recorded on builder0 at a318a2cd3, twice, agreeing (2026-10-20)
-glibc-2.43 crossing 44b576710c5e90f6
-# glibc-2.43 sumps: recorded on builder0 at a318a2cd3, twice, agreeing (2026-10-20)
-glibc-2.43 sumps cf40649922613233
+# glibc-2.43 crossing: recorded on builder0 at eee5b0afa, twice, agreeing (2026-10-21)
+glibc-2.43 crossing b8278fef90b45929
+# glibc-2.43 sumps: recorded on builder0 at eee5b0afa, twice, agreeing (2026-10-21)
+glibc-2.43 sumps 942300f8e7d0dcc5
 # glibc-2.43 locks: recorded on builder0 at 9e226c700, twice, agreeing (2026-10-19)
 glibc-2.43 locks 13c33de4419afb5e
 # glibc-2.43 parade: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
