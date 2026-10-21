@@ -91,5 +91,5 @@ static func for_shot(tanks_root: Node, shooter: Tank, aim: Vector3) -> Array:
 		var sigma := float(weapon.get("scatter", 0.0)) + float(weapon.get("scatter_per_meter", 0.0)) * muzzle.distance_to(aim)
 		return in_splash(aim, friends, float(weapon.get("splash_radius", 0.0)), sigma)
 	var moving := clampf(absf(shooter.speed()) / maxf(shooter.max_forward_speed, 0.1), 0.0, 1.0)
-	var spread := float(weapon.get("spread_deg", 0.0)) * (1.0 + Match.MOVING_SPREAD_FACTOR * moving)
+	var spread := float(weapon.get("spread_deg", 0.0)) * (1.0 + Match.moving_spread_factor() * moving)
 	return in_line(muzzle, aim, friends, spread, float(weapon.get("projectile_speed_mps", Shell.SPEED)) if weapon["kind"] == Weapons.Kind.PROJECTILE else 0.0)

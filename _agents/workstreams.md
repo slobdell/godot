@@ -173,6 +173,70 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   _(Recorded from stream/rules a3906e8ed. Per R37.1(b): if CP37.1's base shows the blob already near the floor, the deciding
   metric becomes the one native names from today's read; the bar is re-filed then, before any arm number.)_
 
+- **Bar O2 PARKED_HOLD (orders, R37.9; filed in stream/orders 8dc98b5f4 Status before any arm number; code ef6b17ea9, OFF).
+  SUPERSEDED (R37.13) before any judged number: the deciding line is re-based on `off_idle_s`; the new text replaces this.**
+  What he would see: a squad he parked stays where he put it and shoots from there; a crew pushed or pulling back drives all the way
+  back onto its spot. The change: `tank_brain.gd` `_order_move`, his idle crews at their post only: a move of the crew's own option
+  ending > 4 m from its post is refused (it holds and faces the threat); RETREAT kept (his question open); a crew > 3 m off its post
+  with nothing else to do drives back onto it (arrive 1.5 m). GDScript only (orders: `_order_move` has no native twin; native
+  confirms). **Sizing (seen):** builder0 native light, 3e43c4a24, the fight probe, 18 fights: 34 own-option leaves (1.89 a fight).
+  **Judged:** `make native orders-probe`, arms `fight:--probe-fight=on,--probe-budget=1500` v `parked:` (+`--parked-hold=on`),
+  locks/crossing/terminus x 3 squads x click, FRESH seeds 3743-3754 (36 fights an arm), builder0, a green-checked hash. **Counter:**
+  parked_refused > 0 on the arm. **Deciding:** own-option leaves a fight (left_by minus GIVEWAY and MOVE, RETREAT kept in the count)
+  arm <= 25 % of base (not 10 %: RETREAT stays allowed, 4 of 34). **Reported:** RETREAT leaves alone; survivors that left and are
+  back within 3 m at the end. **Guards** (per-fight totals): his kills and his losses a fight each within base +/- 1.645 se (base
+  arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
+  Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
+
+- **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
+  8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
+  shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
+  native light, 3e5944657 (= f4437d26a + an evidence-only commit), the fight probe, locks/crossing/terminus x 3 squads x click x
+  3621-3626 = 18 fights (face_drift's definition is broader than manoeuvre's tag, 409.5 s; manoeuvre picks the tag both quote; the
+  deciding off_idle_s total doesn't depend on the split): `off_idle_s` (an idle
+  crew's seconds > 6 m off its station, the seat his order left it on, whatever moved it) = 1696.4 s, 94.2 a fight (sd 111.0, se
+  26.2). Split by what happens on each off tick: giveway (`Movement.yield_to` now or within 3 s; M5's) 79.9, face_drift (> 0.5 m/s
+  under the brain's face/stop; M6's) 956.2 (56 %), brain (under its own move_to) 81.2, still (standing off its seat) 579.4 (34 %).
+  Deterministic: the rerun on 3e43c4a24 v f4437d26a (both inert) reproduced the totals exactly. **Judged:** arms `fight:` v `parked:`
+  (+`--parked-hold=on`), the same 9 cells, FRESH seeds 3743-3754 (36 fights an arm), builder0, a green-checked hash. **Counter:**
+  parked_returns > 0. **Deciding:** off_idle_s a fight arm <= 50 % of base AND base - arm > 1.645 x the unpaired se of the difference.
+  **Reported:** the split (giveway for M5, face_drift for M6), brain-move leaves, RETREAT leaves. **Guards** (per-fight totals): his
+  kills, his losses and the CPU's losses a fight, each within base +/- 1.645 se (base arm's sd, n 36). **A pass ships ON**, his crews only.
+
+- **Bar O5 SEAT_ASIDE (orders, R37.5; filed in stream/orders 78c06ab1f Status before any builder0 arm number; code 8f5a8b08f,
+  OFF).** What he would see: CPU squads set up their screens off the streets other squads use, so CPU crews stop stepping aside (and
+  dying) for their own side's traffic. The change (`element_commander.gd`): a CPU screen point within 10 m of another living element's
+  way (its centre to its task destination, straight) steps across its own approach, 5 m steps alternating sides, up to 4, to the first
+  clear point (merge note: `_aside_task` at the top of `_give`, screen tasks only; `_aside` in `_give_screen`). **Sizing (seen):**
+  builder0 native light, baf3dbd8e, `make seat-yield-census`, locks/gorge/terminus x 1801-1806, 18 CPU v CPU fights: 542 give-ways by
+  crews holding a CPU seat to another element's crew (499 screen, 43 hold, 0 support_by_fire); 21 deaths in them (19 screen); 705
+  deaths in all. Laptop dev read (locks s1801, one fight): 15 -> 2. **Judged:** arms none v `SY_FLAGS=--seat-aside=on`, the same 3
+  maps x FRESH seeds 1811-1822 (36 fights an arm), builder0, a green-checked hash. **Counter:** seats_aside > 0. **Deciding:** screen
+  give-ways (episodes) summed, arm <= 50 % of base. **Reported:** deaths in seat give-ways, arm <= base + 1.645 sqrt(base) (Poisson).
+  **Guards** (per-fight totals, both sides CPU): deaths a fight per team within base +/- 1.645 se (base arm's per-fight sd, n 36).
+  **A pass ships ON** (symmetric). **O6 (the cover seat call):** kept OFF and unjudged this round (fires once in 3 probe cells on
+  today's maps); judged after cover's maps change.
+
+- **Bar R, PAIRED (rules; re-filed in stream/rules 104d231f5 Status before any arm number; replaces the draft above, R37.14).**
+  **Base:** main after CP37.1 + rules' merge, all switches OFF; it must replay `9d325e291.fights.jsonl` fight for fight, else the base
+  is re-run on the new tree and paired against that. **Workload:** the same 320 fights an arm, builder2. **Arms:** sight, spread,
+  pin_slow each alone; the package only if two or more pass alone. **Judging:** `guard.py --pair`, its paired per-seed se.
+  **Deciding:** the blob's win rate DOWN by > 2 x paired se AND exact McNemar p < 0.05. **Second line:** the blob's kill ratio not UP
+  by > 2 x paired se (win rate down with kill ratio up is a contradiction, not a pass). **Per faction (reported):** paired blob
+  win-rate difference per faction; a faction moving against the overall sign is named. **G1:** the turtle's win rate not up by > 2 x
+  paired se, and its McNemar p not < 0.05 in the turtle's favour. **G2:** kills per match and median length per faction within
+  +-2 x paired se. **G3 (R2 only):** the contention guards (R37.2 (c)), unchanged. **G4:** perf-judge with the arm ON, on builder2
+  (the OFF code is covered by the orchestrator's one judge on main).
+
+- **Bar K, PAIRED (cover; re-filed in stream/cover 010e68b25 Status before any arm number; replaces Bar K above, R37.14).** Arms ON
+  v OFF on ONE pair tree, the same 320 guard fights, `guard.py --pair OFF ON`; OFF runs on the pair tree (cover's code and K5's maps
+  are not in 9d325e291). **Gate before ON:** OFF v `9d325e291.fights.jsonl` on today's maps shows 0 flips. **Positive control:**
+  cover_struck > 0 on every guard map. **Deciding:** blob win share down by > 2 paired se (per-seed, 16 seeds) AND one-sided exact
+  McNemar p < 0.05. **Second line:** blob kill ratio not up by > 2 paired se. **Guards:** turtle win share not up by > 2 paired se;
+  kills/fight and length per faction within +-10 % of OFF; perf-judge PASS; sim-baseline unmoved OFF. **Maps:** the guard maps are
+  terminus, locks, sumps, gorge, parade; today's near-cover share there is terminus 0.6 %, the rest 0 %, so the pre-K5 series is null
+  by construction; K5 must put low cover on all five guard maps (his answer pending).
+
 - **Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number (recorded from stream/manoeuvre ff40ed578)**
 
 - **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
@@ -275,6 +339,57 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   GDScript paths skip the seam on both paths, by design: artillery/mortar splash (match.gd ~1630; his "artillery from above ignores
   it") and cone/flame damage (`_spray` -> `_land_hit` ~1720). **Ruled:** cones (flamethrower, sonic emitter) ignore low cover, as
   K2 already states (a waist-high barrier doesn't stop flame or sound); cover's K4 bar says so.
+- **R37.12 (2026-10-21) O2 `--parked-hold` is live on native (native's written read, b2bef1e30 v stream/orders ef6b17ea9).**
+  `decide_native.cpp` returns only the CHOICE (tank_brain.gd:1348); turning it into an order is GDScript, all 56 call sites through
+  `_order_move`; `controller_native.cpp:140` calls think in GDScript; C++ only READS `move_order` (execute_native.cpp:171/361,
+  gun_native.cpp:548), never writes it. The drive layer's own manoeuvres (unstick, yield, k-turn, escape) move a hull without a brain
+  order on both paths; O2's drive-back covers that drift on the next think, and give-way drift is M5's. No twin needed.
+- **R37.13 (2026-10-21) the parked "SPOT" leaves are a wheeled hull driving to FACE; O2 re-based.** orders (laptop GDScript trace,
+  locks 3 click s34 fight, scouts squad): under SPOT the brain's command is `face`, the round-5 held rule already refuses SPOT's move,
+  yet the wheeled scout drives ~7 m in a second (43.4 -> 26 m over 3 s). Builder0 re-count (probe 23ffe47fb, brain command read
+  directly, 18 fights): only RETREAT 3, RECHARGE 2, COVER_FIRE 1 were brain moves. Laptop A/B (mechanism only): idle crew-seconds
+  > 6 m off the station, locks s34 229.6 -> 19.4, s3621 10.8 -> 9.4. **Ruled:** Bar O2 superseded; its deciding line becomes
+  `off_idle_s` (an idle crew's seconds > 6 m off the seat his order left it on, whatever moved it; give-way time reported apart),
+  sized on seen seeds 3621-3626 before the final text. **M6 for manoeuvre (the face path is manoeuvre's):** a parked WHEELED hull
+  told to `face` covers metres; trace it (how far, which units, why the turn needs travel) and propose a turn-on-the-spot / small
+  shuffle limit; bar before numbers.
+- **R37.14 (2026-10-21) CP37.1's BASE (native; builder2, guard.sh cfb8120ba = game tree main 9d325e291; right-click blob, R37.3;
+  5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights a line, 320 read, 0 lost to preemption, 0 % capped).**
+  **BLOB** wins 48 % (+-11), kill ratio 0.88 (+-0.07; 3281 kills / 3712 losses), median fight 112 s. **TURTLE** wins 39 % (+-15), kill
+  ratio 0.80 (+-0.17), median 194 s. (+- = 2 se of a difference between two mains, unpaired, from the 16 seeds; A/A blocks 2601+ v
+  2701+: blob 49/46 %, kr 0.88/0.88; turtle 41/38 %, kr 0.81/0.80.) Zone margin too noisy to decide. Faction dominates a seed:
+  Syndicate wins 73 % as blob / 67 % as turtle, Gangs 30/17 %, Law 22/22 %. **Ruled:** (a) the blob's WIN RATE has room and decides;
+  the kill ratio is the second line; (b) every rules/cover bar runs the SAME 320 fights and is judged PAIRED
+  (`tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>`: per-fight flips, exact McNemar
+  p, paired differences with per-seed se; OFF v OFF byte-identical, 0 flips); bars re-filed with paired thresholds before any arm
+  number; (c) the faction spread (Syndicate 73 % v Law 22 %) goes to the lead as a balance finding, not this round's lever.
+- **R37.15 (2026-10-21) M6's leash doesn't keep a parked scout home; recommendation to him corrected to "leave it".** manoeuvre
+  (trace, lab/manoeuvre-r37-m6trace 99e9b2bf4): of face_drift 409.5 s / 18 fights, 405.4 s and 3,500 m are `Manoeuvre.turn_in`
+  (R33.24, his round-34 "Ship it"), all scouts. Lab (round 33/34's orbit stage, parked scout, builder0 native light,
+  lab/manoeuvre-r37-m6leash, 1 seed a cell; farthest m / in-arc / damage): law_scout v syn_scout 30 m base 17.0 / 91 % / 555, leash
+  6/9 16.5 / 11 % / 0; gang_scout v syn_scout 30 m 20.1 / 92 % / 190 -> 13.7 / 5 % / 0; law_scout v gang_ifv 15 m 11.5 / 94 % / 852 ->
+  11.0 / 90 % / 654; softer leashes leave 16-18 m and only cost aim. The distance is the turn-in's own arcs: a fixed gun on wheels must
+  drive to aim at a circling enemy. **Ruled:** M6 parked OFF on its lab branch; the lead is told the recommendation is now to leave
+  the turn-in (O2's drive-back returns the scout after the fight); option "hold still, fire only in arc" stays his to pick.
+- **R37.16 (2026-10-21) CP37.1 MERGED; a batch follows.** main d9545d381 merges pair/native-cp371 bc9c1301d ALONE (INHERIT its
+  builder2 `make native check exited 0`, 2988/0, sim-baseline 13/13 unmoved). Then one batch: 84c11a60d merges native's 2bb41ef93 (the
+  base's per-fight rows `references/scoreboard/guards/9d325e291.*`, `guard.py --pair`, GUARD_ARGS/GUARD_TAG, cover_struck in
+  GUARD_RESULT) and a10846307 merges stream/rules 2c85080fc (R1-R3, all OFF; builder0 check exited 0, 2992/0, sim-baseline unmoved).
+  `match.gd` auto-merged (cover's seam + rules' sight/spread): ONE builder2 `make native check` on a10846307 judges the batch, then a
+  perf-judge on main covers cover's and rules' OFF code. Every stream `git merge main`; rules and cover cut their pair trees from
+  a10846307 once it is green.
+- **R37.17 (2026-10-21) O1's no-fight read FAILS AS FILED (two guards); traced before any ruling on a re-try.** orders (builder0
+  native, f4365153f green; probe 12 cells x 3701-3712, 1152 squad rows; traffic-census 3 cases x 3701-3706, 18 fights an arm; all
+  exited 0; `references/round37/orders/o1-judged-builder0-f4365153f/verdict.txt`, stream/orders 72686cab0): counter PASS (base relays
+  298); **deciding PASS**: relays 298 -> 0, shape flips 114 -> 0 (11 squads -> 0), reseats 258 -> 3. **Guard FAIL twitch**, locks 5
+  route: cell median 3.9 -> 10.6 m (line base + 3), three seeds ~0 -> 7.6-13.9 m (3703, 3707, 3712), nine flat. **Guard FAIL CPU
+  friendly contacts** 1665 -> 1933 (line 1836.5); paired per-fight +14.9, se 11.2 (1.3 se); parade s3704 alone 139 -> 309 (170 of
+  +268). Stuck s passes (1645 -> 1767, line 1984); every other probe guard passes in all 12 cells. **Ruled:** O1 does not ship on this
+  read. Orders traces both (parade s3704 census both arms: which elements, is it the anchor read's spacing; locks 5 route s3703 probe
+  trace of the rising squad), no re-run on these seeds. A fix found by the trace is a NEW arm judged on FRESH seeds with the same
+  guards (the contacts line is not loosened after the fact); "the guard is tighter than its noise" is argued in a re-filed bar
+  before the new numbers, not applied to these. The fight read still runs in the HEAD batch (it tells whether the flicker win holds
+  in fights).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
