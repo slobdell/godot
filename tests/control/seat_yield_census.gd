@@ -65,7 +65,8 @@ func _run() -> void:
 	_closed.clear()
 	print("SEAT_YIELD_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"seconds": snappedf(_seconds_run, 0.1), "deaths": _deaths, "by_verb": _totals,
-			"seat_aside": _flag("seat-aside", "off")}))
+			"seat_aside": "on" if ElementCommander.SEAT_ASIDE else "off", "seats_aside": ElementCommander.seats_aside,
+			"seats_aside_failed": ElementCommander.seats_aside_failed}))
 	quit(0)
 
 

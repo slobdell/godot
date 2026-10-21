@@ -919,8 +919,70 @@ func _spread(element: Element, task: Dictionary) -> Dictionary:
 	return spread
 
 
+## Round 37 (orders O5, R36.11; grant R37.5): a CPU SCREEN laid on another element's way. Traffic's trace: 9 of 11
+## jam:yielding deaths were a crew holding a screen / support_by_fire seat in a one-hull street that another element's
+## crew drove through; builder0's census (baf3dbd8e, 18 fights): 542 give-ways by crews holding a CPU seat to another
+## element's crew (499 on a screen), 21 of them died in it. Under SEAT_ASIDE a screen point within ASIDE_CLEAR_M of
+## another living element of this side's way (its centre to its task's destination, straight) steps across its own
+## approach by ASIDE_STEP_M, alternating sides, up to ASIDE_MAX_STEPS, to the first point clear of every way; none
+## clear: the point as chosen. `--seat-aside=on` (env SEAT_ASIDE=on).
+static var SEAT_ASIDE := OS.get_cmdline_user_args().has("--seat-aside=on") or OS.get_environment("SEAT_ASIDE") == "on"
+const ASIDE_CLEAR_M := 10.0
+const ASIDE_STEP_M := 5.0
+const ASIDE_MAX_STEPS := 4
+## Measurement: screen points moved aside, and points left on a way with nothing clear, since start.
+static var seats_aside := 0
+static var seats_aside_failed := 0
+
+
+func _aside_task(element: Element, task: Dictionary) -> Dictionary:
+	if not SEAT_ASIDE or String(task.get("verb", "")) != "screen" or not (task.get("to") is Array):
+		return task
+	var point := Vector3(float(task["to"][0]), 0.0, float(task["to"][1]))
+	var moved := _aside(element, point)
+	if moved == point:
+		return task
+	var out := task.duplicate()
+	out["to"] = _xz(moved)
+	return out
+
+
+func _aside(element: Element, point: Vector3) -> Vector3:
+	var ways: Array = []
+	for other: Element in elements.of_team(team):
+		if other == element or other.members().is_empty():
+			continue
+		var to: Variant = ElementTask.destination(other.task)
+		if to is Vector3:
+			ways.append([_center(other), _flat(to)])
+	if _clear_of(point, ways):
+		return point
+	var approach := TacticsFormation.flat(point - _center(element))
+	if approach.length_squared() < 1e-6:
+		approach = Vector3.FORWARD
+	var across := Vector3(-approach.z, 0.0, approach.x)
+	for step in range(1, ASIDE_MAX_STEPS + 1):
+		for side: float in [1.0, -1.0]:
+			var candidate := ElementPlan.clamp_to_arena(point + across * side * ASIDE_STEP_M * step)
+			if _clear_of(candidate, ways):
+				seats_aside += 1
+				return candidate
+	seats_aside_failed += 1
+	return point
+
+
+static func _clear_of(point: Vector3, ways: Array) -> bool:
+	var p := Vector2(point.x, point.z)
+	for way: Array in ways:
+		var a := Vector2((way[0] as Vector3).x, (way[0] as Vector3).z)
+		var b := Vector2((way[1] as Vector3).x, (way[1] as Vector3).z)
+		if p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b)) < ASIDE_CLEAR_M:
+			return false
+	return true
+
+
 func _give(element: Element, given: Dictionary) -> void:
-	var task := _spread(element, given)
+	var task := _aside_task(element, _spread(element, given))
 	var previous: Dictionary = assigned.get(element.id, {})
 	var same_verb := not previous.is_empty() and String(previous.get("verb", "")) == String(task["verb"])
 	if same_verb:
@@ -960,6 +1022,8 @@ func _give_screen(element: Element, contacts: Array) -> void:
 	if away.length_squared() < 1e-6:
 		away = TacticsFormation.flat(Match.spawn_position(team, 0) - enemy)
 	var point := ElementPlan.clamp_to_arena(enemy + away * SCREEN_STANDOFF_M)
+	if SEAT_ASIDE:
+		point = _aside(element, point)
 	var task := {"verb": "screen", "to": _xz(point)}
 	var previous: Dictionary = assigned.get(element.id, {})
 	if String(previous.get("verb", "")) == "screen" and previous.get("to") is Array:
