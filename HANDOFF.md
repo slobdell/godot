@@ -57,6 +57,10 @@ his "stay put" answer; STOPPED SHORT -> round 37; re-dealt crews -> his "own squ
 merge candidate (merge its tooling at the close if wanted). T8 does not show on the scoreboard (its gain has no line); native adds a
 "killed while held" line.
 
+**His round-37+ direction (game_design.md *Round 36: his direction against the slug-fest*):** the support trucks get visible
+feedback; rule levers so a blob frontal assault loses (area effects, defender edge, flanks, information); a blob-v-tactics
+scoreboard line as the measure.
+
 **Round 37 candidates so far (from round 36's reads):** CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
 9 of 11 jam:yielding-to-another-squad deaths); the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped
 short / traffic split); whatever S1 / S2a leave of the wedged and left-behind crews.

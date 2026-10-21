@@ -4154,3 +4154,28 @@ with its own squad, and avoid crossings by swapping whole squads' patches and se
   and under his control.* A behaviour with a good internal reason that LOOKS dumb (a loop to a seat behind, a squad that arrives one
   vehicle short, a parked crew that wanders off) counts against the game, as a reviewer would count it. Streams judge their work by
   what he would see, not only by the decision tree's logic.
+
+## Round 36: his direction against the slug-fest (2026-10-20 ~23:30 PDT, in chat, verbatim; round 37+ direction)
+
+> "basically, the non-lethal vehicles for the road gangs and the law (i.e. the medic vehicles for the road gangs, which don't seem
+> to do anything, and the law vehicles with the non-lethal sirents or whatever which also don't seem to do anything) just seem to be
+> wastes of units [...] the big challenge I have at this point is how to generally mitigate the game turning into one big slug fest.
+> FOr example, if I just select all units and have them all just do a frontal assault against the enemy, that strategy ends up
+> winning for the most part it seems. [...] How can we make it so that tactics and strategy can win out over a large frontal
+> assault?"
+
+> "from what you've said it sounds like the problem is not the units, but the rules of the game. For both the medic truck and the
+> siren truck, we need to add some sort of clear visualization in the game so the user has feedback to know that these things are
+> working. Then for each of the 4 recommended ideas (i.e. flanks pay off, splash damage, etc) we should definitely start to consider
+> those, and like you said, we can measure it where clumping units in a full frontal assault results in a negative outcome. What are
+> some other ideas, especially given the notion that in the real world, the defender generally has an advantage (i.e. thinking about
+> Russia / Ukraine conflict, advantage in terms of the number of casualties inflicted by acting as the defender)"
+
+- **Decided:** keep the gangs' Resupply Tanker (repairs 5 hp/s within 18 m) and the Law's Sonic Emitter (4 suppression/s in a 32 m
+  cone, 0 damage), and give each a CLEAR in-game visualisation so he can see them working (repair beams/sparks and rising health on
+  the mended vehicle; a visible sound cone and "pinned" markers / wild shots on suppressed targets).
+- **To consider (round 37+), the four rule levers:** clumping is punished (area effects), the defender has an edge, flanks pay off
+  visibly, information matters (ambushes unseen until sprung). Plus the defender-advantage ideas discussed the same evening
+  (motion reveals; firing on the move is worse; digging in; pre-registered fire; obstacles; first-shot ambush).
+- **The measure:** a scoreboard line "an all-units frontal assault v the same army played with tactics", headless, many seeds;
+  today the blob probably wins; each lever should move it. Guard: a pure turtle must not always win either.
