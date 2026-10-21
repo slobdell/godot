@@ -154,6 +154,12 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   blob 48 % / kr 0.88, turtle 39 % / kr 0.80, unchanged (builder2, 16 of 16 seeds, 0 attempts lost). Arms pair against that file.
 - 14:55 PDT start: arms sight -> spread -> pin_slow, one after another (systemd unit rules-guard-arms; raw in
   ../godot-native-guard-raw/75c3e74e0-<rule>). Each takes ~1.5 h on builder2.
+- Queued behind the arms (systemd unit rules-guard3): Guard 3 (R2 contention) runs the round scoreboard workload
+  (`tools/scoreboard/run.sh`, fights/moves/orders, builder2) on 75c3e74e0 (OFF) and on **4c02e3d78** (branch
+  pair/rules-r37-spread-on, ARM ONLY, never merged). That commit is the pair tree plus one line, `DEFAULT_ON = ["spread"]`, because the
+  workload passes no switches. It is judged on contacts, jam/wedge, all-in and held at a mouth, against the scoreboard's ± noise column.
+- Each arm is read by `python3 tests/rules/bar_r.py references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>` (e4d139813):
+  guard.py's pairing, plus the verdict lines, guard 1's McNemar in the turtle's favour, the faction report and guard 2.
 
 **Arm recipe (from native, 2026-10-21; tooling in stream/native 420048f99 and pair/native-cp371 2bb41ef93):**
 `GUARD_ARGS=--rules-on=<rule> GUARD_TAG=<rule> tools/scoreboard/guard.sh <pair commit>`. This runs on builder2, chunked
