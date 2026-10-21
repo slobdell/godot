@@ -116,9 +116,12 @@ func _run() -> void:
 	# teardown every test gets -- so the first test of a process sees the same state as every later one. Without it a test
 	# read differently by whether anything ran before it in the process: test_tactics_scenarios_6 (attack_move_decisions)
 	# 3.2 alone v 4.8 after ANY earlier test (builder0 native). Native's trace: no script static differs (815 compared), and
-	# neither the teardown nor drain_navigation matters; ONE main-loop iteration before a test's setup flips it -- engine-side
-	# state set by the first iteration (most likely the physics space's first step). Real play starts every match long after
-	# launch, so the warm-up makes every test match REAL play; only the frame matters, the teardown is incidental.
+	# neither the teardown nor drain_navigation matters. Round 36 (native E4b, R36.25) named it: not engine state but WHERE the
+	# setup runs. `_run` is a call_deferred, so without the warm-up the first test builds its match inside the physics frame's
+	# deferred-call flush, where a new body's placement reaches the space before its first tick; every later test (resumed
+	# from a frame signal) and real play's first match (main._ready) build where it does not, and tick once against the
+	# add-time transform. The await below moves the first test there too, so every test matches REAL play; only the await
+	# matters, the teardown is incidental (`make native-first-tick-sync`: the two-body known answers).
 	var warm_up := TestCase.new()
 	warm_up.tree = self
 	await physics_frame
