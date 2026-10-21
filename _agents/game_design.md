@@ -4204,6 +4204,16 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    charge's damage comes from movers (if little, the lever is weak and question 3 matters more). A fast unit that turns useless
    gets its own lower penalty (a stabilised gun), not a softer rule for all; check the AI stops before long shots.
 3. **Dig in.** After ~10–15 s still, a vehicle entrenches (a visible berm), taking much less frontal damage. Recommendation: yes, first.
+   **ANSWERED 2026-10-21: dig-in REJECTED, hull-down behind REAL cover instead.** His objection: "the sandbag rings or dirt would
+   just come out of nowhere". His answer: "the actual idea of using real cover would add an important element of the game. If I'm
+   understanding correctly here, idle units that are close to a piece of cover might drive a very short distance to take advantage
+   of the cover. While we might not have much waist-high cover on our maps currently, it's certainly something we could add or try
+   out". **Rule:** a vehicle stopped tight behind low cover that already exists (low wall, rubble, wreck, crest) is hard to hit from
+   the front (most shots strike the cover); flank and rear fully exposed; artillery from above ignores it. No timer, nothing
+   appears. Today cover is all-or-nothing line of sight (`TacticalQuery.hull_hidden`); partial cover is new combat work. Steps:
+   count each map's low cover first; add rubble / low walls where fights happen (map work, placed at build time). **The short move
+   to cover:** a few metres at most, chosen as part of where the crew parks on arrival (the seat), not a later idle wander, so it
+   squares with his parked-squads answer ("stay put and shoot") and "units must look under control".
 4. **Ambush first shot.** A hidden unit's opening volley gets an accuracy bonus and briefly pins its target. Recommendation: after 1.
 5. **Pre-registered fire.** Mark a kill zone ahead of time; artillery into it is accurate from the first shell.
 6. **Obstacles / channelling.** Mines, wrecks, roadblocks that force an attacker into a crowd (and pairs with area damage).
