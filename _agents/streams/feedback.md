@@ -54,3 +54,25 @@ F1's picks (the orchestrator relays).
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-21, started.** Launch check: main 9d325e291 inherits round 36's green (HANDOFF); not re-run.
+
+**Plan (smallest foundation first):**
+1. `FeedbackReader` (pure, `game/theme/fx/feedback_reader.gd`): reads, never writes, the four facts per frame: a hit's
+   face (front / side / rear / engine deck), a crew's pinned level (`Tank.suppression`; `pin_slow()` once R3 lands),
+   who a Tanker is mending and how fast (the same conditions as `Match.repair_rate_for`), whether an Emitter's cone is
+   blowing (its `weapon_fired` puffs). Tests first: `tests/test_feedback_reader.gd`.
+2. `FeedbackLook` (`--feedback-look=hit:b,pinned:a,...`): which direction each slot draws; the default is my
+   recommendation until his pick, then the losers are deleted.
+3. `FeedbackFx` under FxWorld (world marks: one MultiMesh + one shader, pooled like OrderFeedback) + overlays in
+   `UnitBars` (screen-space, crisp from his RTS camera). Fog respected: nothing drawn on a unit he can't see.
+4. `feedback_showcase` (`make feedback-shots`, builder0 display): each slot x direction staged with a real Match,
+   stills at his pose (21 deg, FOV 35, 49 m) and a close-up, on `--render-preset=laptop`, plus short clips.
+5. The page (`tests/feedback/directions_page.py` -> build/feedback-page/): tap-to-pick per slot, db capability.
+
+**Found while surveying (so nobody re-reads it):** weak-spot (engine deck) hits already flash gold and play
+`weak_spot_hit` (WeaponFx `_weak_spot`); side and rear hits outside the 25 deg deck arc look exactly like front hits.
+The announcer already tags `rear` / `weak_spot` on BIG hits and kills (`announcer_memory._on_damage`, lines
+caller.hit.07-09, caller.kill.38-39); no `side`/flank tag exists. The Emitter already has its `sonic_loop` sound but
+draws nothing (its fire_model is `stream`, kind CONE; Match emits a `weapon_fired` puff every 3 ticks while it blows).
+
