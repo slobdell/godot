@@ -62,6 +62,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Round 37, 2026-10-21 (worker).** Plan: CP37.1 (design note, probe, base read on builder2) -> N2 twins as pairs arrive -> N5
 promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row per shipped main.
 
+**Done so far (unchecked unless named):** N4 net diagnostics 820633935 (broker waits fail loudly, mutation-tested on the
+laptop: `broker-load NODE=false` -> "broker never printed BROKER_LISTENING ... (process exited)" exit 1; a real broker-load exit
+0); N5 promotion e1053de12 (`tests/baselines/ai_scenarios_count.txt` must move 53,0,5,0 -> 54,0,4,0: **the orchestrator
+adopts**); R37.2 twin audit answered in writing (no C++ twin needed for R1/R2/R3: C++ reads sight live, never computes spread,
+and drives the throttle tank.gd hands it).
+
 ### CP37.1 design note (sent to the orchestrator; no new game code)
 
 - **Where:** `tests/ai_scenarios/guard_line.gd`, a SceneTree probe around the scoreboard's own fight: `--skirmish --demo-match
@@ -72,8 +78,10 @@ promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row p
   (`player_team` meta, the game's own switch: `ElementCommander._physics_process` stands down for it, its elements take
   preempting player tasks), then gives its elements ElementTasks through `Element.assign`, the call the tactical map makes.
   So the blob/turtle side IS a player's army ordered naively; the tactics side is untouched.
-- **BLOB:** every element (recon and support included) attack-moves at once (`{"verb":"move","to":zone}`, drills on: his
-  A-click on an element) at the zone in the enemy's half; when it holds that, at the zone it does not hold; holding both, at
+- **BLOB (R37.1 (a) / R37.3):** every element (recon and support included) is sent at once with his RIGHT-click task
+  `{"verb":"move","to":zone,"drills":false}` (element_plan.gd:359 -> `_plan_form_up`: a formed-up transit, no bounding, no
+  overwatch, no contact drill; his A-click, drills on, may bound under "contact likely" and is kept only as `--blob-drills=on`,
+  not run) at the zone in the enemy's half; when it holds that, at the zone it does not hold; holding both, at
   the enemy spawn. Re-tasked only when that target changes (a player clicks once); unseated crews re-seated per squad.
 - **TURTLE:** every element holds a post across the zone in its OWN half (`hold`, facing the enemy spawn, 22 m apart, no
   drills: the CPU's own hold layout minus its intruder attack), given once, never advances. Crews shoot what they see.
@@ -81,6 +89,10 @@ promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row p
 - **Workload:** the scoreboard's 5 maps (terminus locks sumps gorge parade) x 8 seeds x BOTH sides (the same seed's
   faction pair with each faction as the guard: both factions both ways) = 80 fights a line a seed block; two blocks (2601+,
   2701+) = 160 a line. Lines: blob, turtle (+ `none`, the CPU v CPU control, if the box time allows).
+- **Driver (builder2 preempted every ~2 min from ~09:00 PDT 2026-10-21):** `tools/scoreboard/guard.sh COMMIT`: one seed a
+  remote call (20 fights), its own scratch worktree `../godot-native-guard`, raw logs in `../godot-native-guard-raw/<commit>/`,
+  a chunk counted only on `exited 0 (build/ copied back)` + a verified copy-back, resumable, a 255 restarts builder2 and
+  retries; driver.txt counts the attempts lost to preemption.
 - **Read per line:** the guard's win rate (draws counted apart), its kill ratio (kills / losses, totals), match length, per
   faction; noise from the two seed blocks (per-seed-unit sd -> 2 se of a difference, the scoreboard's ± column method).
 
