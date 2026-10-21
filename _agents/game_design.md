@@ -4248,6 +4248,8 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    at chokes and in traffic; contention first).
 10. **Unit swaps (parked by his "the problem is not the units, but the rules"):** gangs' Oil Slick Rig, Law's Spike-Strip
     Interceptor; alternates: roadblock truck, drone/spotter van, smoke layer.
+    **ANSWERED 2026-10-21: no swaps.** "no let's not worry about this for now, for the two units I identified earlier, we just need
+    visual feedback for the player" (gangs' Resupply Tanker, Law's Sonic Emitter). The work is their in-game visual feedback only.
 11. **The balance guard:** a blob frontal assault should lose, AND a pure turtle must not always win (the attacker keeps smoke,
     artillery, scouting, flanking as tools).
 
