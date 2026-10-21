@@ -84,7 +84,11 @@ sumps/gorge/parade x seeds 1-4, 180 s, n = 20 fights; direct damage 202 009, arc
 2. R2 measure (`make rules-moving`: CPU-v-CPU showmatch fights, share of direct-fire damage by shooter motion x range): DONE, 52.5 %.
 3. R2 spread switch + short halt; R3 pin slow; lab tests both paths: DONE (12f410388; ruling (b) at 51e5c6ff4).
 4. quick-remote (PASSED 12f410388), then one full check on a named hash: 51e5c6ff4 running.
-5. After CP37.1 merges: bars in workstreams *Bars (round 37)*, series on builder2.
+5. After CP37.1 merges: bar R filled from its noise, series on builder2.
+
+**Machine lane (C37.1, the orchestrator's reminder):** every further full check and series of mine on **builder2** (`make
+gcp-remote T=...`; `make gcp-start` first if stopped, under systemd-run with ~/projects/bin on PATH). builder0 only for light
+runs. The 51e5c6ff4 check started on builder0 while builder2 was unreachable; it is let finish.
 
 **Switches:** `game/combat/rule_switches.gd` (`RuleSwitches`): `--rules-on=sight,spread,pin_slow`, `--rules-off=...`, or the
 brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-baseline is untouched with them OFF.
