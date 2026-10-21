@@ -33,8 +33,14 @@ func test_a_shell_landing_after_the_relay_session_ended_sends_no_rpc() -> void:
 	var health := victim.health
 	shooter.fired.emit(shooter.muzzle_position(), -shooter.global_basis.z)
 	assert_eq(game_match.shells.get_child_count(), 1, "the shell is in flight")
-	peer.simulate_drop(60.0)  # the socket goes; the 0 ms grace ends the session at the next poll
-	await wait_physics_frames(2)
+	peer.simulate_drop(60.0)  # the socket goes; the 0 ms grace ends the session at a later poll
+	# Round 36 (native, R36.22): wait for the EVENT, bounded, never a frame count. The session ends on a multiplayer poll (one
+	# a process frame) at least 1 ms after the drop; under a full check's load two physics frames carried 0-1 polls (builder0,
+	# 024232755: "expected 0, got 2"). If the shell lands first, the in-flight assert below still fails.
+	for i in 30:
+		if peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+			break
+		await wait_physics_frames(1)
 	assert_eq(peer.get_connection_status(), MultiplayerPeer.CONNECTION_DISCONNECTED, "the relay session has ended")
 	assert_eq(impacts.size(), 0, "the shell was still in flight when the session ended")
 	for i in 30:

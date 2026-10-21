@@ -155,5 +155,66 @@ as named; N4 sweep; N5 lint; stretch.
   clearclock on through every yield stage. **builder0 quick GREEN on 0ca19d829: 99/0, exited 0** (79ce37acc 26/0, cc5e11c72
   29/0 before). Found for traffic: H's `_count_seat_near()` marked no stale (the owned state would write it back): c917ac33b.
   Traffic takes the full check on builder2, then the T10 series.
+- **stream/native full check on 024232755 (builder0): RED 2971/1, exited 2**, on one flake not from this diff:
+  test_match_shell_dropped_peer's "the relay session has ended (expected 0, got 2)". Alone on builder0 (024232755,
+  `make remote T="quick QUICK_FILTER=test_match_shell_dropped_peer:: QUICK_LINT=-"`): 5/5 exited 0. The race is in the test:
+  `wait_physics_frames(2)` can mean 0-1 multiplayer polls under load (polls run per process frame; grace 0 needs > 0 ms).
+  The fix (outside native's paths, proposed to the orchestrator 2026-10-21): wait for DISCONNECTED, bounded 30 physics frames.
+  **Merged under R36.12 as main f2090ffa5 (R36.22).** The fix, granted: **e78f7cd9f** (main merged first, 35ac778f6) waits
+  for CONNECTION_DISCONNECTED, bounded 30 physics frames, both asserts kept. builder0, on e78f7cd9f's tree: 2/2 green; mutant
+  (grace_ms 300: the shell lands first) RED on "the shell was still in flight ... (expected 0, got 1)". Rides with the next
+  hand-over (owes a full check).
+- **R36.22 sweep: network tests' fixed frame-count waits on an event.** Files: tests/net/*, test_match_shell_dropped_peer,
+  test_relay_peer, test_lobby, test_network_input, test_manoeuvre_stall_net (every test naming RelayPeer, multiplayer_peer,
+  rpc or a connection status), plus mk/net.mk's recipes. **No other one found.** bot_client_check and lobby_check wait on
+  deadlines (`Time.get_ticks_msec() < deadline`). test_relay_peer is synchronous (on_control). test_lobby's 1-3 frames
+  are UI layout settling, with no network. Two side notes, neither a flake nor a false green:
+  (a) `relay_host_up`, broker-load and lobby-smoke wait 5 s for BROKER_LISTENING and fall through silently, so a broker
+  that never listens shows ~30 s later as "host never opened a room";
+  (b) under `-eu -o pipefail` a combat-smoke client FAIL exits before the reap and the server-ERROR grep: red, but no
+  diagnostics.
+- **E4b (stretch) DONE: e9190b443, `make native-first-tick-sync`.** R35.57's naming was wrong: the state is NOT engine-side and
+  NOT set by the first main-loop iteration. **It is the call context of the setup**, which decides whether a new body's
+  placement reaches the physics server before the body's first tick.
+  - **The real test** (scenarios_6 alone; laptop, GDScript, NATIVE=off, the 6839efe50 tree with local probes; n=1 each):
+
+    | Setup runs from | Reads |
+    |---|---|
+    | the physics-frame signal (today's warm-up) | 3.0 |
+    | the process-frame signal | 3.0 |
+    | the idle-frame flush | 3.0 |
+    | a call_deferred flushed inside a LATER physics frame (physics=3 process=2) | **4.8** |
+    | no warm-up | 4.8 |
+
+    The no-warm-up arm is not "before any iteration". Its setup runs at physics=1 process=0, inside the physics frame's
+    deferred flush, because `_initialize -> _run.call_deferred()`.
+  - **Ruled out**, each server switched off during the warm-up iteration, every arm still 3.0: PhysicsServer3D, PhysicsServer2D,
+    NavigationServer3D and NavigationServer2D. Also ruled out: the lab's start frame (waited_frames=1, tick=1, physics_frames=3
+    in both arms), autoloads (none), global RNG (none on AI paths), and frame-0 sentinels (all -1 / -1000000).
+  - **The two-body repro** (laptop = builder0, Godot 4.7.2 Jolt):
+    - Synced (the space holds the placement at tick 0, and the pair separates to -0.871/3.871): physics_flush, in_tick.
+    - Stale (the space holds the add-time origin, and penetration recovery throws them over each other): physics_signal,
+      process_signal, process_flush, main_ready.
+    - Engine order is inferred from the measurements, not read in source. A placement reaches the server at the SceneTree's
+      transform flush that follows the physics frame's deferred-call flush. A body built before that flush ticks synced; one
+      built earlier in the frame, or in idle, ticks once against the stale transform.
+  - **Real play:** `--skirmish` builds its squads in main._ready (main_ready is stale, the 3.0 class), so brains' warm-up stays
+    the right fix, for the corrected reason. Respawns go through `place()` (_placed_settle skips their stale tick).
+  - **Stale text:** R36.25 corrected R35.57 and HANDOFF; run_tests.gd's comment corrected by native under grant (cb9aef5aa,
+    comment only). Originally proposed: run_tests.gd:115-121's comment ("engine-side state set by the
+    first iteration (most likely the physics space's first step)"), and R35.57 / HANDOFF "real play's engine state".
+
+- **R36.24 order flicker TRACED (ff1825b09; `references/round36/native/order_flip_trace.md`; no code).** builder0 light lane,
+  native loaded, cb9aef5aa (main e778ca5c6, T10 OFF) plus print-only probes, locks/3/click s3664, n=3 runs, the same ticks
+  each run.
+  - **Writer:** GDScript `Element.update` -> `Element._issue` (element.gd:1932) -> `Orders.issue`, source "element". It is
+    not the native execute.
+  - **Cause:** the halt formation flips herringbone <-> coil (doctrine: lanes/dense -> herringbone, open -> coil), and the
+    flip re-seats Bravo_2 17.6 m (key `reseat`).
+  - **The condition:** `ElementSituation.terrain_at(center)` has no hysteresis. One cover feature sits at 45.0-45.5 m (=
+    TERRAIN_RADIUS) from the crews' centroid, which Bravo_2's own creeping moves by 0.07 m. The terrain flips at the same
+    ticks as the order writes (1159 / 1276 / 1288 / 1294).
+  - **Round 37:** latch the halt shape per arrival, or read terrain at the anchor; size it by terrain-caused reseats.
+  - The laptop does not reproduce it.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
