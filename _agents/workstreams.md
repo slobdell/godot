@@ -421,6 +421,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
 - **R37.21 (2026-10-21) main 4b62d2186 GREEN.** builder2 `make native check exited 0`: 3012 passed / 0 failed, 25 + 2 NOT JUDGED
   (perf-judge: builder2 is not a judging machine; ai-scenarios' scenario_perf loaded), sim-baseline 13/13 unmoved; the scenario
   count holds at 54,0,4,0. Covers native's hand-over (36a19ae30) and manoeuvre's merge (0baf6e1ff). Perf on builder0 still owed.
+  **Perf evidence (feedback, builder0):** perf-judge PASS 1.01x run alone on stream/feedback 6eed1f86a = main a10846307 (cover K2/K3 +
+  rules R1-R3, all OFF) + feedback's FX; control-timing 5/0 and 8/0. So cover's and rules' OFF code is judged; manoeuvre's M1/M2 and
+  native's hand-over (0baf6e1ff..4b62d2186) still owe one builder0 perf-judge.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
