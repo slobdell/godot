@@ -40,6 +40,17 @@ const HULL_MARGIN := 1.6
 const PEEK_MARGIN := 1.5
 ## Overwatch spots are searched this close to where the element halted (the drill still owns the formation).
 const OVERWATCH_RADIUS := 12.0
+## Round 37 (cover, K3 / C37.4): low_cover_seat's numbers. A crew's nose sits this far short of the cover's near side
+## (inside CoverMap.HULLDOWN_REACH_M, so the damage rule counts it)...
+const SEAT_GAP_M := 1.0
+## ...seats are tried this far apart along the cover's back...
+const SEAT_STEP_M := 1.0
+## ...one that hides less than this of the hull's front is not worth the move...
+const SEAT_MIN_FRACTION := 0.15
+## ...a seat this far off the navmesh is not one...
+const SEAT_MESH_GAP_M := 0.5
+## ...and a caller that passes no hull is read as a mid-sized one [width, height, length].
+const SEAT_DEFAULT_HULL := Vector3(3.0, 3.0, 7.0)
 
 
 ## Up to `count` hiding places, best first: [{"point": Vector3, "score": float, "cover": float}].
@@ -140,6 +151,79 @@ static func find_overwatch(map: CoverMap, request: Dictionary) -> Vector3:
 			best_score = score
 			best = point
 	return best
+
+
+## Round 37 (cover, K3 / C37.4): where a crew parking near `near` should sit to be HULL-DOWN against `threat_dir`
+## (a flat direction from the crew toward the enemy): a point within `max_shift_m` of `near`, its nose SEAT_GAP_M off
+## the BACK of a low feature (a barricade), so the cover is between the crew and the threat and
+## hides at least SEAT_MIN_FRACTION of its front (CoverMap.low_screen, the same reading the damage rule uses).
+## Its hull faces `threat_dir` there (the caller lays that facing). `hull` = hull_size [width, height, length]. With
+## `node` (any node in the arena), a seat must also be on the navmesh and reachable from `near`. The best seat hides
+## the most, then needs the shortest shift; ties go to the lower feature index and then the first sample, so the answer
+## is deterministic. null when nothing low is close enough: the caller keeps its own seat.
+## Orders calls this ONCE when laying a halt seat (C37.4: never later, never while idle).
+static func low_cover_seat(map: CoverMap, near: Vector3, threat_dir: Vector3, max_shift_m := 4.0,
+		hull := SEAT_DEFAULT_HULL, node: Node3D = null) -> Variant:
+	var toward := Vector2(threat_dir.x, threat_dir.z)
+	if toward.length_squared() < 1e-6 or map == null:
+		return null
+	toward = toward.normalized()
+	var across := Vector2(-toward.y, toward.x)
+	var start := Vector2(near.x, near.z)
+	var depth := hull.z * 0.5
+	var best: Variant = null
+	var best_fraction := 0.0
+	var best_shift := INF
+	for index in map.low_features_near(start, max_shift_m + depth + SEAT_GAP_M + 1.0):
+		var a_min := INF
+		var s_min := INF
+		var s_max := -INF
+		for corner in map.corners_of(index):
+			var offset := corner - start
+			a_min = minf(a_min, offset.dot(toward))
+			s_min = minf(s_min, offset.dot(across))
+			s_max = maxf(s_max, offset.dot(across))
+		# The seat's centre, along the threat: its nose SEAT_GAP_M short of the feature's near side.
+		var along := a_min - SEAT_GAP_M - depth
+		var first := s_min + hull.x * 0.5
+		var last := s_max - hull.x * 0.5
+		if last < first:
+			first = (s_min + s_max) * 0.5
+			last = first
+		var steps := int(floor((last - first) / SEAT_STEP_M)) + 1
+		for step in steps + (1 if last - first - (steps - 1) * SEAT_STEP_M > 0.01 else 0):
+			var side := minf(first + step * SEAT_STEP_M, last)
+			var seat := start + toward * along + across * side
+			var shift := seat.distance_to(start)
+			if shift > max_shift_m:
+				continue
+			var fraction := float(map.low_screen(seat, toward, toward, hull)["fraction"])
+			if fraction < SEAT_MIN_FRACTION:
+				continue
+			if fraction < best_fraction - 1e-6 or (absf(fraction - best_fraction) <= 1e-6 and shift >= best_shift - 1e-6):
+				continue
+			if not _seat_clear(map, seat, toward, hull, node, near):
+				continue
+			best = Vector3(seat.x, near.y, seat.y)
+			best_fraction = fraction
+			best_shift = shift
+	return best
+
+
+## The hull at `seat` facing `toward` overlaps nothing, and (with `node`) is on the navmesh and reachable from `from`.
+static func _seat_clear(map: CoverMap, seat: Vector2, toward: Vector2, hull: Vector3, node: Node3D, from: Vector3) -> bool:
+	var half := maxf(hull.z * 0.5 - hull.x * 0.5, 0.0)
+	if map.path_blocked(seat - toward * half, seat + toward * half, hull.x * 0.5):
+		return false
+	if absf(seat.x) > CoverMap.EDGE or absf(seat.y) > CoverMap.EDGE:
+		return false
+	if node == null or not Pathing.is_ready(node):
+		return true
+	var point := Vector3(seat.x, from.y, seat.y)
+	var nearest := Pathing.closest_point(node.get_world_3d().navigation_map, point, "low_cover_seat")
+	if Vector2(nearest.x - seat.x, nearest.z - seat.y).length() > SEAT_MESH_GAP_M:
+		return false
+	return bool(Pathing.query(node, from, point)["reachable"])
 
 
 ## The nearest peek spot for `hide` against `target`, or null.
