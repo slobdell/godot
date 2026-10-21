@@ -148,10 +148,24 @@ and match length per faction within +-10 % of OFF; perf-judge PASS. A series bef
    maps get a little busier)? Recommendation: **(a) first** on the seven maps, measured; (b) only if the blob line says hull-down
    needs more ground. The draft page shows every map before/after.
 
+### What to playtest (when merged)
+- Lab: `make test FILTER=cover_` (hull-down both paths, the seat). Positive control in a real fight: any match with
+  `--cover-on=hulldown` prints `stats.cover_struck` in MATCH_RESULT (absent when OFF).
+- Player view (once K5 puts barriers where fights are): `make skirmish ARENA=pit` with `--cover-on=hulldown`; park a squad tight
+  behind the re-shaped barrier, attack head-on (sparks on the barrier, fewer hits), then from the flank (no change).
+
+### Next steps / blocked
+- **K5:** waiting on his two answers (the orchestrator is asking). On (a): apply the draft's swaps in `tools/make_arenas.py`
+  (granted R37.7) + regenerate, before/after frames at his pose, sim-baseline attribution with the switch OFF (maps move: the
+  orchestrator adopts).
+- **K4:** waiting on CP37.1 on main; then the null reading on today's maps, then the judged series on the re-shaped maps.
+- **Stretch (CPU defends from low-cover seats):** needs a grant in the brains paths (`cpu_commander.gd` / tank_brain); requested.
+
 ### Requests to other streams
 - **native:** declare twins for `CoverMap.low_screen`, `Armor.cover_roll`, `TacticalQuery.low_cover_seat` (cover_native).
   Low priority for speed: low_screen runs once per frontal hit, the seat once per halt.
 - **orders (O6):** the API above is on `stream/cover` 5b4e79362; I'll say when it is on main.
+- **orchestrator:** a brains-path grant for the stretch (the CPU's defending crews take `low_cover_seat` once when they halt), only after K4 passes.
 - **rules (merge note):** two calls in `match.gd` (`_shell_hit`, `_fire_beam`), each guarded by `Armor.low_cover_strike`
   returning null when OFF; `stats["cover_struck"]` is created only when ON.
 
