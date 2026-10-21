@@ -115,8 +115,11 @@ Broadwell; the reference reads 2.28-2.50 ms v 0.898 at 62-96 % idle) and scenari
 perf_judge.sh says "NOT JUDGED: builder2 is not a judging machine" at once (laptop test_perf_judge 7/0, check-perf-judge 10/0);
 (c) a relative line (µs per reference ms) is round 38's.
 
-**Checks:** cfb8120ba builder2 `exited 2`, 2973/0, sim-baseline unmoved, the one red N5's planned count move. Stream tip
-6c9bc7239 (main a10846307 + N2 cover twins + N4 + N5 + N6 + N3 row): full check QUEUED on builder2 behind main's.
+**Checks:** cfb8120ba builder2 `exited 2`, 2973/0, sim-baseline unmoved, the one red N5's planned count move. **Stream hand-over: 6c9bc7239**
+(main a10846307 + N2 cover twins + N4 + N5 + N6 + N3 row) builder2 `make native check exited 2`: runner 3008/0, sim-baseline
+13/13 unmoved, determinism 8c3c1232b711a760, 25 passed + 1 NOT JUDGED (perf-judge); the ONE red is ai-scenarios-check = N5's
+planned 53,0 -> 54,0 (pending 5 -> 4): **the orchestrator adopts 54,0,4,0**. Then 14c10d1d4 (perf_judge.sh + its test only,
+laptop 7/0 + 10/0) and Status docs. No file overlaps main's commits since a10846307.
 
 **Decisions (mine):** the blob re-targets only when its zone changes (a player clicks once); the turtle's posts are the CPU's own
 hold layout without its intruder attack; a fight runs to its own end (cap 600 s never reached); the CPU v CPU control (`none`)
