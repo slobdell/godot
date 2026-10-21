@@ -196,7 +196,7 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   harm check, not a gain line (R35.64): the lab decides, the series guards.
 - **Pass = (0) + the lab (both paths) + every guard. A pass ships ON** (symmetric movement fix, C37.7).
 
-- **Bar M5 (`seatyield2`: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6; recorded from stream/manoeuvre ff40ed578 Status)**
+- **Bar M5 (`seatstep` (renamed from `seatyield2`, d80a86b9c): a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6; recorded from stream/manoeuvre ff40ed578 Status)**
 
 - **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
   seat = the move_to goal) picks, of the spots legal today (none added, none refused), the one nearest its seat. This is
@@ -263,6 +263,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   friend's give-way walking back to its station; in a real fight (`--probe-fight=on`, laptop, locks s34/35) parked crews leave their
   seats under SPOT, RETREAT, ENGAGE and INVESTIGATE (`tank_brain.gd`'s idle-crew options). The O2 grant (ADVANCE only) is extended
   only on orders' design note (sized on builder0 first).
+- **R37.10 (2026-10-21) M5 lands in two parts.** manoeuvre (round 36's S4 rows): of 172 give-ways, 45 took an ahead spot; in 82 %
+  of those the asker had no lane (one-hull streets, asker behind), where today's tests refuse every side spot and the back-up, so a
+  lead-out is the only legal spot and spot scoring cannot remove it; what he'd see is the trip back (the crew turns round on its
+  wheels). **M5a** the spot rule (nearest the seat, never a lead-out when anything else is legal; GDScript, native's T10 mirror on
+  `pair/native-t10b` 0ca19d829 adapts) and **M5b** the return (a seated crew that gave way along its own heading reverses straight
+  back: a drive-body change, native twin, traced first). Each judged on Bar M5 with its own switch.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
