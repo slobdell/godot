@@ -363,6 +363,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   (`tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>`: per-fight flips, exact McNemar
   p, paired differences with per-seed se; OFF v OFF byte-identical, 0 flips); bars re-filed with paired thresholds before any arm
   number; (c) the faction spread (Syndicate 73 % v Law 22 %) goes to the lead as a balance finding, not this round's lever.
+- **R37.15 (2026-10-21) M6's leash doesn't keep a parked scout home; recommendation to him corrected to "leave it".** manoeuvre
+  (trace, lab/manoeuvre-r37-m6trace 99e9b2bf4): of face_drift 409.5 s / 18 fights, 405.4 s and 3,500 m are `Manoeuvre.turn_in`
+  (R33.24, his round-34 "Ship it"), all scouts. Lab (round 33/34's orbit stage, parked scout, builder0 native light,
+  lab/manoeuvre-r37-m6leash, 1 seed a cell; farthest m / in-arc / damage): law_scout v syn_scout 30 m base 17.0 / 91 % / 555, leash
+  6/9 16.5 / 11 % / 0; gang_scout v syn_scout 30 m 20.1 / 92 % / 190 -> 13.7 / 5 % / 0; law_scout v gang_ifv 15 m 11.5 / 94 % / 852 ->
+  11.0 / 90 % / 654; softer leashes leave 16-18 m and only cost aim. The distance is the turn-in's own arcs: a fixed gun on wheels must
+  drive to aim at a circling enemy. **Ruled:** M6 parked OFF on its lab branch; the lead is told the recommendation is now to leave
+  the turn-in (O2's drive-back returns the scout after the fight); option "hold still, fire only in arc" stays his to pick.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
