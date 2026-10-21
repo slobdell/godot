@@ -1,0 +1,5 @@
+L4 terminus,cross crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+L4 terminus,head crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+L4 yard_open,cross crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+L4 yard_open,head crews arrived: base 180 arm 180 diff +0 se 0.0 (n 18), line >= 180.0: PASS
+v2 L4 PASS

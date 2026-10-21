@@ -154,6 +154,57 @@ _Filed here before any number._
   then manoeuvre's `test_manoeuvre_stall_intent_sumps.gd.uid` (4dd6ff750 -> 5d6bb1de8): the only file a check reads that differs is
   that generated .uid, so no main check. This also closes main e45bb6632's check (the joint + D5 together). Perf-judge on a quiet
   builder0 still owed (T8's hand-over window).
+- **R36.6 (2026-10-20 ~16:45 PDT) O2 DEPLOY_COMPACT FAILS; parked OFF.** Orders (builder0 light, native, 1bcd704cd, green at
+  7a4226932; 12 street cells x fresh 3681–3686, n 6, 576 squad rows, `compact_judge.py`): counter 72/72 differ. Gain (a) median worst
+  deploy leg 13.4 -> 11.4 m (−14.9 %, needed 20 %); gain (b) summed median twitch 168.7 -> 177.0 m (+4.9 %, WORSE; needed −15 %).
+  Guards: twitch over main + 3 m in Crossing 5 click (29.8 -> 34.1) and Terminus 5 route (18.6 -> 29.7); never-in 1 -> 2 (Crossing 5
+  route). Reading: a shallower halt shortens the deploy move but not the twitch, which is mostly what happens AFTER the deploy
+  (traffic between squads, engagement): orders' "neither" count is the lead. **The orchestrator's own-spacing guard was ill-posed:**
+  read at the window's end it fails MAIN too (3.8–8.6 m in every cell; crews meet in traffic), so a spacing guard reads the HALT
+  SEATS, not end positions (lesson). Hand-over `stream/orders` 515aeeccd (main 8ec433dee + tooling + DEPLOY_COMPACT OFF + DEPLOY_PASS
+  deleted) checking; merged on its green.
+- **R36.7 (2026-10-20 ~16:55 PDT) S2a + yieldgap merged OFF: main 10318ec81 INHERITS 32ba4ca99** (builder0 2967/0, 13 unmoved; inert
+  by default). S1 ON gate (lab/s1-on d9864ab07, builder2, glibc-2.43): 2961/0, sim-baseline moved foundry, crossing, sumps, docks;
+  base 20acbda5f read 13 unmoved, so the moves are stallnet's. S1's series (unit manoeuvre-s1series) waits on builder0's checks.
+- **R36.8 (2026-10-20 ~17:20 PDT) T8 PASSES (C36.2): a held crew under fire leaves the hold.** Pair a2de32420, builder2, native, fixed
+  arenas {terminus, locks, crossing, gorge, parade} x 1800–1827 (locks 1801–1828), n 140 paired, none missing, 0 twins. Counter
+  released_fire 0 -> 618. G held deaths 253 -> 109 (se 21.3, 6.8 se). Guards all pass: stuck 871 -> 812, jam 267 -> 278 (<= 295.5),
+  open 4731 -> 4728, far loops 168 -> 126, kills 5812 -> 5752 (± 86), hit rate 0.725 -> 0.729, friendly contacts +2.1 % (<= line),
+  deaths per team 2682 -> 2640 / 3187 -> 3178, tr_holds 3147 -> 3245, crossing arrivals 180/180 both arms. Raw on stream/traffic
+  `references/round36/traffic/t8_series_a2de32420/`. Hand-over `pair/holdfire-r36-ho` bcda4cd29 (main b917ba234 + T8 ON) checking on
+  builder2; **ships on that check's green**. **Perf-judge ruling:** builder0 carries S1's judged series for hours, so no quiet window
+  today; T8 adds a per-hit hold release (no new per-tick search), so it ships on its check, and ONE perf-judge on main covers T8, the
+  joint, D5 and whatever S1/S2a ship, in the first quiet builder0 window (between S1's and S2a's series, or at the close).
+- **R36.9 (2026-10-20 ~17:35 PDT) The held-crew loss is closed; no group release; jam:yielding traced next (traffic).** T8's ON arm
+  (a2de32420, builder2, n 140; stream/traffic f0248ef71, `references/round36/traffic/held_after_t8.md`): of 109 held deaths, 32 died
+  WHILE held (31 on the first hit in 10 s: out of a hit-triggered release's reach; a group release caps at 0.22 a fight and costs the
+  hold's purpose: NO); 77 within 3 s after a hold (base 75), 50 of them released and driving on, shot in the fight. Largest traffic
+  cause left: jam:yielding 215 (3.7 %), 97 giving way to ANOTHER squad's crew. Traffic traces it from the series logs (note, no
+  code), then the orchestrator rules.
+- **R36.10 (2026-10-20 ~17:50 PDT) jam:yielding: NO traffic bar; a round-37 routing candidate.** Traffic's read (stream/traffic
+  c93702d7b, `references/round36/traffic/jam_yielding_read.md`; T8's ON arm, n 140): 215 deaths (base 211); 151 giving way to another
+  squad's crew (lanes 101; locks 44, gorge 43), always the same side, mostly one-hull streets. Under fire at the start: 27 (18 %);
+  median 1.4 s from yield to death at 0.6 m/s: the give-way is what the crew was doing, not what exposed it. The one traffic lever caps
+  at 0.19 a fight (< se ~17 / 140). Two squads meeting head-on in a one-hull street mid-fight is upstream (routing). A two-fight trace
+  (locks-1828, gorge-1812) says whether the orders headed opposite ways (routing: orders/planner, round 37) or the fight did.
+- **R36.11 (2026-10-20 ~18:00 PDT) jam:yielding to another squad is CPU SEATING, not routing (round-37 candidate).** Traffic's two-fight
+  trace (stream/traffic f086799fb; builder2 native, a2de32420 + `--yield-trace`; locks-1828 39/39 and gorge-1812 55/55 rows identical
+  to the series): 11 deaths giving way to another squad: opposite orders 0, retreat/regroup 0, asker had another lane 0 of 8. In 9 of 11
+  the giver was HOLDING a CPU element's screen / support_by_fire seat in a one-hull street and another element's crew drove through it;
+  2 were overtaking in a same-way column. n = 2 fights: the shape, not the count. **Round 37:** CPU screen / support_by_fire seats
+  placed off other elements' paths (brains' element seating, the CPU twin of orders' O1). **Side finding:** calling `_pass_lane` from
+  the trace perturbed gorge-1812 at 36.4 s, so a query believed read-only has a side effect (traffic to name it; a determinism
+  hazard if any reader calls it).
+- **R36.12 (2026-10-20 ~18:10 PDT) T8 SHIPPED ON: main 3d46b2884 inherits bcda4cd29.** Hand-over check (builder2, native): runner
+  2969/0, sim-baseline 13/13 unmoved; one FAILED target, net-smoke (a client tanks_seen 1/2: round 35's load-flake signature), so
+  combat-smoke NOT RUN. Accepted as a load flake because (1) both re-ran ALONE on bcda4cd29, builder2, and exited 0 (2/2), and (2) T8's
+  game diff is `game/ai/traffic.gd` only and runs only inside a take-turns wait, which net-smoke's two-player-tank match never forms.
+  `_pass_lane`'s "side effect" (R36.11) is an observer hazard, not a game bug (`Avoidance.refresh` snapshots once per physics frame
+  at its first caller; only drive code calls it, in a fixed order): traffic's note dd7634504, probe inert by default 4c458e4e8.
+- **R36.13 (2026-10-20 ~18:15 PDT) Orders' hand-over merged: main 6d4e18e29 (CHECK running).** `stream/orders` 515aeeccd (builder0
+  `make check exited 0`, 2964/0, 13 unmoved): DEPLOY_PASS deleted, DEPLOY_COMPACT OFF, the herringbone lab + probe columns +
+  pack_refused (measurement) + readers. Main had moved (T8, S2a + yieldgap), so ONE builder0 `make native check` of 6d4e18e29 for the
+  batch (unit orch-main-check-6d4e18e29, log `~/overnight-orch/r36/main_check_6d4e18e29.log`).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)

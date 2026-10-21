@@ -121,8 +121,15 @@ static func configure() -> bool:
 		# Round 36 (manoeuvre S1, `stallnet`): the stall clock's net-motion reset (absent before S1: the drive as before).
 		"STALL_NET_DEFAULT": (Movement as Script).get_script_constant_map().get("STALL_NET_DEFAULT", null),
 		"STUCK_NET_M": float((Movement as Script).get_script_constant_map().get("STUCK_NET_M", 0.5)),
+		# Round 36 (manoeuvre S2a, `h1bside`): H1b's far loop round the friend (absent before S2a: the drive as before). The side
+		# point is chosen in the GDScript (_escape_begin, called back); the drive reads _side_to and _side_stand.
+		"H1B_SIDE_DEFAULT": (Movement as Script).get_script_constant_map().get("H1B_SIDE_DEFAULT", null),
+		"SIDE_REACHED_M": float((Movement as Script).get_script_constant_map().get("SIDE_REACHED_M", 2.0)),
+		"H1B_MOVED_M": float((Movement as Script).get_script_constant_map().get("H1B_MOVED_M", 0.5)),
 		# Round 35 (traffic T9, `yieldfit2`): the unfinished give-way's contact gap and retry cap (absent before T9: off).
 		"YIELD_CONTACT_M": (Movement as Script).get_script_constant_map().get("YIELD_CONTACT_M", null),
+		# Round 36 (traffic R36.4, `yieldgap`): T9's clear-by-distance as the gap after both half-lengths (absent: off).
+		"YIELD_CLEAR_GAP": (Movement as Script).get_script_constant_map().get("YIELD_CLEAR_GAP", null),
 		"YIELD_RETRIES": int((Movement as Script).get_script_constant_map().get("YIELD_RETRIES", 0)),
 		"YIELD_RETRY_WINDOW_S": float((Movement as Script).get_script_constant_map().get("YIELD_RETRY_WINDOW_S", 0.0)),
 		"tank_script": Tank,

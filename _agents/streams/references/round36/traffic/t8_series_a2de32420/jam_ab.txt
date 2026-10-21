@@ -1,0 +1,20 @@
+jam_ab: SEED_TWINS kept 140 of 140 logs, dropped 0
+jam_ab: T8 bar, 140 paired fights; left out (no JAM_CENSUS) none
+0 released_fire (counter first): base 0 arm 618: PASS
+G held deaths (deciding gain)                  base  253.00  arm  109.00  drop  144.00  se  21.33  drop - k*se 108.91  (n 140, fights differing 76): PASS
+1 stuck deaths (guard)                         base  871.00  arm  812.00  drop   59.00  se  30.18  line <= 920.64  (n 140, fights differing 87): PASS
+2 jam deaths, T5 (guard)                       base  267.00  arm  278.00  drop  -11.00  se  17.33  line <= 295.51  (n 140, fights differing 71): PASS
+3 deaths in the open (guard, two-sided)        base 4731.00  arm 4728.00  drop    3.00  se  54.39  band +- 89.47  (n 140, fights differing 92): PASS
+4 far loops, H1b (guard)                       base  168.00  arm  126.00  drop   42.00  se  35.07  line <= 225.70  (n 140, fights differing 36): PASS
+5a kills (guard, two-sided)                    base 5812.00  arm 5752.00  drop   60.00  se  52.55  band +- 86.45  (n 140, fights differing 88): PASS
+6 friendly hull contacts, all (guard)          base 93916.00  arm 95881.00  drop -1965.00  se 1829.03  line <= 96924.75  (n 140, fights differing 103): PASS
+9 all deaths, team 0 (guard)                   base 2682.00  arm 2640.00  drop   42.00  se  38.18  line <= 2744.81  (n 140, fights differing 73): PASS
+9 all deaths, team 1 (guard)                   base 3187.00  arm 3178.00  drop    9.00  se  43.84  line <= 3259.12  (n 140, fights differing 60): PASS
+R released_fire                                base    0.00  arm  618.00  drop -618.00  se  53.52  line <= 88.04  (n 140, fights differing 104): reported
+R hold seconds (crew-seconds held)             base 22275.20  arm 20229.40  drop 2045.80  se 841.32  band +- 1383.97  (n 140, fights differing 103): reported
+R all deaths                                   base 5869.00  arm 5818.00  drop   51.00  se  51.24  band +- 84.28  (n 140, fights differing 91): reported
+R standoffs (count)                            base    0.00  arm    0.00  drop    0.00  se   0.00  line <= 0.00  (n 140, fights differing 0): reported
+R standoff seconds                             base    0.00  arm    0.00  drop    0.00  se   0.00  line <= 0.00  (n 140, fights differing 0): reported
+5b hit rate (guard, one-sided): base 0.725 arm 0.729, paired se of the mean 0.0051, line >= 0.717: PASS
+8 the hold still taken, tr_holds >= half of base: base 3147 arm 3245, line >= 1573.5: PASS
+T8 PASS (the counter, G and every guard; line 7 crossing arrivals read apart)

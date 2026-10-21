@@ -1,0 +1,26 @@
+condemned/faced_attack_move-6325 Green_Battery_2: 1 far rows; blocker Green_Guns_2 ('unseated', 'arrived', 'refused', 'blocker room 0.0', 'my room 3.0') gap 9.0 under_way False escaping_on_me False
+condemned/faced_attack_move-6306 Green_Battery_2: no H1B_FAR
+law/faced_attack_move-6310 Green_Guns_8: 7 far rows; blocker Green_Guns_6 ('other_element', 'blocked', 'refused', 'blocker room 0.0', 'my room 0.0') gap 7.8 under_way True escaping_on_me True
+condemned/faced_move-6318 Green_Burners_6: 7 far rows; blocker Green_Guns_4 ('unseated', 'arrived', 'refused', 'blocker room 0.0', 'my room 0.0') gap 5.4 under_way False escaping_on_me False
+condemned/faced_attack_move-6330 Green_Battery_2: 2 far rows; blocker Green_Guns_4 ('unseated', 'arrived', 'refused', 'blocker room 3.0', 'my room 3.0') gap 8.7 under_way False escaping_on_me False
+condemned/faced_attack_move-6316 Green_Battery_2: 1 far rows; blocker Green_Guns_2 ('unseated', 'arrived', 'refused', 'blocker room 0.0', 'my room 0.0') gap 9.2 under_way False escaping_on_me False
+gangs/faced_attack_move-6303 Green_Guns II_3: no H1B_FAR
+condemned/faced_attack_move-6315 Green_Guns_7: 6 far rows; blocker Green_Hunters_5 ('unseated', 'arrived', 'refused', 'blocker room 0.0', 'my room 3.0') gap 8.2 under_way False escaping_on_me False
+condemned/faced_attack_move-6325 Green_Battery_4: 2 far rows; blocker Green_Guns_5 ('unseated', 'arrived', 'refused', 'blocker room 2.5', 'my room 0.0') gap 9.1 under_way False escaping_on_me False
+law/faced_attack_move-6303 Green_Guns_7: 9 far rows; blocker Green_Hunters_2 ('unseated', 'arrived', 'refused', 'blocker room 0.0', 'my room 3.0') gap 5.6 under_way False escaping_on_me False
+condemned/faced_move-6317 Green_Battery_9: no H1B_FAR
+law/faced_attack_move-6332 Green_Eyes_1: no H1B_FAR
+condemned/faced_move-6315 Green_Guns_5: 5 far rows; blocker Green_Guns II_5 ('other_element', 'arrived', 'refused', 'blocker room 0.0', 'my room 0.0') gap 9.2 under_way False escaping_on_me False
+law/faced_attack_move-6310 Green_Guns_7: no H1B_FAR
+gangs/faced_attack_move-6309 Green_Guns_3: 8 far rows; blocker Green_Wrenches_2 ('unseated', 'arrived', 'refused', 'blocker room 0.0', 'my room 0.0') gap 10.3 under_way False escaping_on_me False
+law/faced_attack_move-6303 Green_Guns_6: 10 far rows; blocker Green_Guns_5 ('other_element', 'yielding', 'refused', 'blocker room 0.0', 'my room 2.0') gap 7.4 under_way True escaping_on_me False
+gangs/faced_attack_move-6309 Green_Hunters_5: no H1B_FAR
+
+6 no H1B_FAR
+3 ('unseated', 'arrived', 'refused', True, False)
+3 ('unseated', 'arrived', 'refused', True, True)
+1 ('other_element', 'blocked', 'refused', True, True)
+1 ('unseated', 'arrived', 'refused', False, False)
+1 ('unseated', 'arrived', 'refused', False, True)
+1 ('other_element', 'arrived', 'refused', True, True)
+1 ('other_element', 'yielding', 'refused', True, False)

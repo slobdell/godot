@@ -29,6 +29,9 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 **The orchestrator's open items (in order):**
 1. ~~CP36.1~~ MERGED (R36.1, e45bb6632). **main 5d6bb1de8 is GREEN** (R36.5): it inherits `pair/native-s1s3-main` `20acbda5f`'s
    builder0 check (2961/0, 13 unmoved), which contains the joint + D5 + S3 (W1b deleted) + S1 stallnet OFF.
+   **main 6d4e18e29 = + orders' hand-over (R36.13); its batch check runs on builder0 (orch-main-check-6d4e18e29).**
+   **main 3d46b2884: T8 SHIPPED ON** (R36.12; held deaths 253 -> 109 / 140 fights). **main 10318ec81** adds S2a h1bside + yieldgap OFF (inherits 32ba4ca99, 2967/0, R36.7). O2 failed (R36.6); orders' hand-over
+   515aeeccd (tooling, DEPLOY_COMPACT OFF, DEPLOY_PASS deleted) is checking: on green, merge and run ONE main check (main moved).
 2. ~~The scoreboard rows~~ DONE (13:18): native's session (launched by the lead at ~12:25 in the OLD godot-native worktree, which
    it merged main into; `stream/native` was never renamed and continues as round 36's branch, no fresh worktree) committed all three
    rows (cdda0bbf9, `references/scoreboard/README.md` on stream/native) and is on S3's pair. First read (builder2, n 40 fights / 48
@@ -42,6 +45,10 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
    joint since).
 
 **His packing answer (2026-10-20, game_design.md *Round 36: his packing answer*): keep 9 m.** O4 stays parked.
+
+**Round 37 candidates so far (from round 36's reads):** CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
+9 of 11 jam:yielding-to-another-squad deaths); the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped
+short / traffic split); whatever S1 / S2a leave of the wedged and left-behind crews.
 
 **Round 35's last readings:** X1b SITTING DUCK (R35.78: a held still wheeled hull takes ~2x the hits; W1b dropped, T8 is the answer).
 X3b DEPLOY_PASS parked for a lab stage (R35.77). X1(d) traced (R35.76): round 36's stallnet.

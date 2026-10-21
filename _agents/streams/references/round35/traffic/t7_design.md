@@ -104,3 +104,41 @@ pinned, 180 s showmatch. k = 1.645, paired se.
   a lane, G still clears at ~2–3 se. Stuck deaths' se ~32 (line ≈ base + 52).
 
 A fail is traced (worst fight first) and reported; no re-read of a line.
+
+## RESULT (2026-10-19 20:18 PDT): T7 PASSES its bar as filed.
+
+Pair `pair/underfire-t7` `e95179252` (C31.1 green: 2902/0, sim-baseline the ON arm's 5 moves, switch-OFF 13 unmoved), builder0 start
+to end, native, pinned, 180 s, fixed arenas {terminus, locks, sumps, gorge, parade} × 1600–1627, n 140 paired, none missing;
+crossing series 44–46 × 6 both arms. Raw: `t7_series_e95179252.txt`, `t7_series_crossings_e95179252.txt`, `t7_series_driver.log`;
+per-fight logs `~/overnight-traffic/r35/t7series/`.
+
+**Counters first:** arm underfire_refusals 427, passes 311 (192 ended abreast, 44 timed out), underfire_gives 1327 (an ask under fire
+with no lane: given way as before), holds 68; base all 0.
+
+| line | base → arm | se | verdict |
+|---|---|---|---|
+| **G jam-under-fire deaths** | **277 → 240 (−37, −13 %)** | 17.65 (drop − k·se = +7.97) | **PASS** (2.1 se) |
+| 1 deaths in the open | 4780 → 4746 | 51.8 (band ± 85) | PASS |
+| 2 stuck deaths | 958 → 960 | 31.9 (line ≤ 1010) | PASS |
+| 3 far loops | 108 → 108 | 23.0 | PASS |
+| 4a kills | 6037 → 5979 | 42.4 (band ± 70) | PASS |
+| 4b hit rate | 0.732 → 0.731 | 0.0051 (line ≥ 0.723) | PASS |
+| 5 contacts in 3 s after a hit-ended give-way | 416 → 407 | 55.5 | PASS |
+| 6 crossing arrivals (4 cases × 18) | 180/180 in every case, both arms | | PASS |
+| **7 all friendly hull contacts** | 107053 → 107271 (+0.2 %) | 1825 (line ≤ 110055) | PASS |
+| R contacts with a crew passing | 0 → 566 | | reported (0.5 % of contacts) |
+| R jam deaths, all kinds | 344 → 313 | 19.2 | reported |
+| R all deaths | 6082 → 6019 (−63) | 42.6 | reported (1.5 se, not a line) |
+| R standoffs | 3 → 3 (same durations) | | reported |
+| R held deaths ((D)) | 244 → 238 | 14.6 | reported |
+
+**By arena (reported; the bar is pooled):** G terminus 66 → 49, sumps 71 → 60, gorge 52 → 40, locks 55 → 56, parade 33 → 35; stuck
+deaths terminus 187 → 201, locks 210 → 197, sumps 227 → 191, gorge 181 → 196, parade 153 → 175 (each inside its own noise, the pooled
+total flat).
+
+**Reading.** The half of T6 that was free is kept and the half that cost is gone: stuck deaths and far loops do not move (T6b had
++61 and ×2), and nothing else moves either. The gain is smaller than T6b's (−13 % v −53 %) because only about 1 in 4 under-fire asks
+has a lane (427 refused v 1327 given way): in the lanes where most jam deaths happen the crew still steps aside, by design. The
+Terminus carries most of the gain (its streets have room beside a hull); the Locks' one-hull lane mouths give none. **Ship
+condition outstanding:** perf-judge alone on a quiet builder0 (owed; the check's three tries were refused for load), and a hand-over
+re-cut on current main (the pair's base is c55471a5e; main has since taken D1 and N3) with one fresh check.
