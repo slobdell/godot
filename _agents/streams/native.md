@@ -71,7 +71,8 @@ about half its fights against the CPU's tactics, and sitting tight wins about tw
 GUARD_RESULT lines byte-identical to the base's (builder2). **Arm tooling (cover K4 / rules ask):** GUARD_RESULT carries
 `cover_struck` and `args`; `GUARD_ARGS=--cover-on=hulldown GUARD_TAG=hulldown tools/scoreboard/guard.sh C` runs an arm on the same
 fights (builder0 light smoke: 4/4 fights, args recorded, cover_struck 0 in 4 Terminus fights). Cover and rules told.
-**Hand-over:** `pair/native-cp371` = bc9c1301d (five CP37.1 commits on main 2cc959224; full check on builder2 running) + 8a34906b9
+**Hand-over: CP37.1 is GREEN, merge here: `bc9c1301d`** (pair/native-cp371 = five CP37.1 commits on main 2cc959224): builder2
+`make native check exited 0`, 2988/0, 25 + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved. Follow-ups on the same branch + 8a34906b9
 (the base rows, --pair) + 2bb41ef93 (cover_struck / GUARD_ARGS), byte-identical to stream/native's files.
 
 **Round 37, 2026-10-21 (worker).** Plan: CP37.1 (design note, probe, base read on builder2) -> N2 twins as pairs arrive -> N5
