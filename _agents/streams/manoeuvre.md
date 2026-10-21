@@ -76,6 +76,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 `make check exited 0`, 2967/0, 25 passed + 2 NOT JUDGED (load), sim-baseline 13/13 unmoved; h1b_side 3/3, native yield 13/0.
 Merged into the stream as `b3a42e018`. `tests/manoeuvre/s1_judge.py` (`e4ad75a9b`) reads Bar S1's series.
 
+**2026-10-20 ~23:00 (worker): S4 (new, the orchestrator's: orders' turn-around LOOP squads): traced, split, note + Bar S4 filed**
+(`references/round36/manoeuvre/s4/README.md`). builder0 light, 55c973cd4 + probe-only `lab/s4-trace` (c5fedd42c), GDScript path
+(away_m equals orders' native numbers), 16 runs covering 16 of the 19 LOOP squads. Neither named loop is the drive. Locks s3624 Bravo_1 is traffic's
+street hold (spot 35 m away across the lock); Terminus s3623 Bravo_4 is a give-way, ~22 m. Metres away (worst crews): give-way 196,
+route after a give-way, hold or k-turn 96, FRESH route 100 (mine), k-turn 39, hold 32, escape 9. Give-ways: 124 of 172 from crews <= 10 m from their seat, 44 of them
+sent >= 10 m from it; T7 lane for the asker in 22 of 124. That part goes to traffic (T10, via the orchestrator). Mine: 10 fresh episodes, goal 130–180 deg off
+the nose, 5–11 m away. Proposal "back in" + lab stage (away_m deciding) + series guards (friendly contacts not up). Next: build the lab stage
+and the rule behind a switch (OFF); no series until S1's and S2a's are done.
+
 **2026-10-20 ~21:40 (worker): S1 series running** (builder0, ON arm: wedge + fights done, both exited 0; jam, then the base arm, then
 hull-rest). T8 shipped as main `3d46b2884` (a crew holds in a take-turns hold until hit). The series stays on its two trees as filed.
 **If S1 passes, the hand-over merges main (T8) FIRST**, because T8 changes fights. Next: judge it (`s1_judge.py`), re-read X4b (C)'s 6 crews on the ON arm, then S2a's
