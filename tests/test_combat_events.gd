@@ -78,9 +78,8 @@ func test_a_cannon_shell_reports_its_shot_and_its_hit() -> void:
 	var events := _record(game_match)
 	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
-	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
-	target.global_position = Vector3(LANE_X, 0.0, -10.0)
-	target.rotation.y = PI / 2.0  # its side toward the gunner
+	shooter.place(Vector3(LANE_X, 0.0, 20.0), shooter.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, -10.0), PI / 2.0)  # its side toward the gunner
 	await wait_physics_frames(2)
 	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
 	assert_true(events["fired"].size() >= 1, "the shot was announced")
@@ -115,9 +114,8 @@ func test_a_rear_hit_is_flagged_as_a_weak_spot() -> void:
 	var events := _record(game_match)
 	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
-	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
-	target.global_position = Vector3(LANE_X, 0.0, -10.0)
-	target.rotation.y = 0.0  # facing north, away from the gunner
+	shooter.place(Vector3(LANE_X, 0.0, 20.0), shooter.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, -10.0), 0.0)  # facing north, away from the gunner
 	_unshielded(target)
 	await wait_physics_frames(2)
 	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
@@ -132,8 +130,7 @@ func test_a_shell_into_a_wall_reports_an_impact_without_a_target() -> void:
 	var game_match := _setup()
 	var events := _record(game_match)
 	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
-	shooter.global_position = Vector3(0.0, 0.0, 100.0)
-	shooter.rotation.y = PI  # facing the south wall at z = 120
+	shooter.place(Vector3(0.0, 0.0, 100.0), PI)  # facing the south wall at z = 120
 	await wait_physics_frames(2)
 	await _hold_fire(shooter, Vector3(0.0, 1.0, 130.0), [], 90)
 	assert_true(not events["impacts"].is_empty(), "the wall stopped the shell")
@@ -150,8 +147,8 @@ func test_hitscan_weapons_report_shot_and_hit_on_the_same_tick() -> void:
 		var events := _record(game_match)
 		var shooter := game_match.spawn_tank("Shooter_" + unit_id, 0, Match.Team.GREEN, unit_id)
 		var target := game_match.spawn_tank("Target_" + unit_id, 0, Match.Team.RUST, "tank")
-		shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
-		target.global_position = Vector3(LANE_X, 0.0, 0.0)
+		shooter.place(Vector3(LANE_X, 0.0, 20.0), shooter.rotation.y)
+		target.place(Vector3(LANE_X, 0.0, 0.0), target.rotation.y)
 		await wait_physics_frames(2)
 		await _hold_fire(shooter, target.global_position, [target], 40)
 		assert_true(not events["fired"].is_empty() and not events["impacts"].is_empty(), "%s: shot and hit" % unit_id)
@@ -176,9 +173,9 @@ func test_a_mortar_burst_reports_one_impact_with_its_victims() -> void:
 	var battery := game_match.spawn_tank("Battery", 0, Match.Team.GREEN, "artillery")
 	var eyes := game_match.spawn_tank("Eyes", 0, Match.Team.GREEN, "scout")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
-	battery.global_position = Vector3(LANE_X, 0.0, 60.0)
-	eyes.global_position = Vector3(LANE_X + 10.0, 0.0, 40.0)
-	target.global_position = Vector3(LANE_X, 0.0, 0.0)
+	battery.place(Vector3(LANE_X, 0.0, 60.0), battery.rotation.y)
+	eyes.place(Vector3(LANE_X + 10.0, 0.0, 40.0), eyes.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, 0.0), target.rotation.y)
 	_unshielded(target)
 	await wait_physics_frames(2)
 	# Artillery deploys first (combat X5): the legs, then a 60 m flight.
@@ -202,8 +199,8 @@ func test_a_killing_hit_says_so() -> void:
 	var events := _record(game_match)
 	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "scout")
-	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
-	target.global_position = Vector3(LANE_X, 0.0, -10.0)
+	shooter.place(Vector3(LANE_X, 0.0, 20.0), shooter.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, -10.0), target.rotation.y)
 	_unshielded(target)
 	target.health = 1
 	await wait_physics_frames(2)
@@ -219,9 +216,9 @@ func test_a_unit_sees_the_shell_coming_at_it_and_nothing_else() -> void:
 	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
 	var bystander := game_match.spawn_tank("Bystander", 0, Match.Team.RUST, "tank")
-	shooter.global_position = Vector3(LANE_X, 0.0, 40.0)
-	target.global_position = Vector3(LANE_X, 0.0, -20.0)
-	bystander.global_position = Vector3(LANE_X + 30.0, 0.0, -20.0)
+	shooter.place(Vector3(LANE_X, 0.0, 40.0), shooter.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, -20.0), target.rotation.y)
+	bystander.place(Vector3(LANE_X + 30.0, 0.0, -20.0), bystander.rotation.y)
 	await wait_physics_frames(2)
 	for tick in SimClock.TICK_RATE:  # the turret starts on target
 		shooter.command = TankCommand.new(0.0, 0.0, target.global_position, false)
@@ -258,10 +255,10 @@ func test_a_unit_sees_a_mortar_round_that_will_land_on_it() -> void:
 	var eyes := game_match.spawn_tank("Eyes", 0, Match.Team.GREEN, "scout")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
 	var far := game_match.spawn_tank("Far", 0, Match.Team.RUST, "tank")
-	battery.global_position = Vector3(LANE_X, 0.0, 60.0)
-	eyes.global_position = Vector3(LANE_X + 10.0, 0.0, 40.0)
-	target.global_position = Vector3(LANE_X, 0.0, -20.0)
-	far.global_position = Vector3(LANE_X + 60.0, 0.0, -20.0)
+	battery.place(Vector3(LANE_X, 0.0, 60.0), battery.rotation.y)
+	eyes.place(Vector3(LANE_X + 10.0, 0.0, 40.0), eyes.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, -20.0), target.rotation.y)
+	far.place(Vector3(LANE_X + 60.0, 0.0, -20.0), far.rotation.y)
 	await wait_physics_frames(2)
 	var fired := [false]
 	game_match.weapon_fired.connect(func(_event: Dictionary) -> void: fired[0] = true)
@@ -299,9 +296,8 @@ func test_a_destroyed_unit_reports_where_its_wreck_lies() -> void:
 	game_match.unit_destroyed.connect(func(event: Dictionary) -> void: wrecks.append(event))
 	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "scout")
-	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
-	target.global_position = Vector3(LANE_X, 0.0, -10.0)
-	target.rotation.y = PI / 2.0  # facing west
+	shooter.place(Vector3(LANE_X, 0.0, 20.0), shooter.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, -10.0), PI / 2.0)  # facing west
 	await wait_physics_frames(2)
 	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
 	assert_eq(wrecks.size(), 1, "one wreck")

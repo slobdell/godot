@@ -305,7 +305,7 @@ func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 	var wheeled: Array[String] = ["ifv", "scout", "ifv", "scout", "ifv", "scout"]
 	for i in wheeled.size():
 		var tank := game_match.spawn_tank("Kturn%d" % i, 0, Match.Team.GREEN, wheeled[i])
-		tank.global_position = Vector3(25.0 * i - 60.0, 0.0, 80.0)
+		tank.place(Vector3(25.0 * i - 60.0, 0.0, 80.0), tank.rotation.y)
 		var orders := OrderController.new()
 		orders.tank = tank
 		orders.tanks_root = game_match.tanks
@@ -394,7 +394,7 @@ func _drive_case(owned: bool) -> void:
 	var movers: Array[Movement] = []
 	for i in UNITS.size():
 		var tank := game_match.spawn_tank("Drive%02d" % i, 0, Match.Team.GREEN, UNITS[i])
-		tank.global_position = Vector3(-30.0 + 6.0 * (i % 6), 0.0, -10.0 + 7.0 * (i / 6))
+		tank.place(Vector3(-30.0 + 6.0 * (i % 6), 0.0, -10.0 + 7.0 * (i / 6)), tank.rotation.y)
 		var orders := OrderController.new()
 		orders.tank = tank
 		orders.tanks_root = game_match.tanks
@@ -412,7 +412,7 @@ func _drive_case(owned: bool) -> void:
 	for f: int in followers:
 		var leader: Tank = controllers[followers[f]].tank
 		var slot := Vector3(leader.global_position.x + 4.0, leader.global_position.y, leader.global_position.z - 6.0)
-		controllers[f].tank.global_position = slot
+		controllers[f].tank.place(slot, controllers[f].tank.rotation.y)
 		controllers[f].set_orders({"type": "move_to", "x": slot.x, "z": slot.z}, null)
 	var delta := 1.0 / float(SimClock.TICK_RATE)
 	var asked := 0

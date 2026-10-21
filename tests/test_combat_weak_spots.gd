@@ -52,13 +52,12 @@ func _stream_from(bearing_deg: float) -> Dictionary:
 			flags["weak" if event["weak_spot"] else "plain"] += 1)
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
-	target.global_position = Vector3(LANE_X, 0.0, 0.0)
-	target.rotation.y = 0.0  # facing north (Rust spawns facing south)
+	target.place(Vector3(LANE_X, 0.0, 0.0), 0.0)  # facing north (Rust spawns facing south)
 	target.max_shield = 0.0
 	target.shield = 0.0
 	# Behind a north-facing tank is south (+z); rotate that point around the tank by the bearing.
 	var offset := Vector3(0.0, 0.0, 18.0).rotated(Vector3.UP, deg_to_rad(bearing_deg))
-	scout.global_position = target.global_position + offset
+	scout.place(target.global_position + offset, scout.rotation.y)
 	scout.look_at(target.global_position, Vector3.UP)
 	await wait_physics_frames(2)
 	for tick in SimClock.TICK_RATE:
@@ -89,9 +88,8 @@ func test_two_rear_shells_still_needed_for_a_full_tank() -> void:
 	game_match.seed_spawns(4, 0.0)
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "tank")
 	var gunner := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
-	target.global_position = Vector3(LANE_X, 0.0, 0.0)
-	target.rotation.y = 0.0  # facing north (Rust spawns facing south)
-	gunner.global_position = Vector3(LANE_X, 0.0, 25.0)  # dead astern of the north-facing target
+	target.place(Vector3(LANE_X, 0.0, 0.0), 0.0)  # facing north (Rust spawns facing south)
+	gunner.place(Vector3(LANE_X, 0.0, 25.0), gunner.rotation.y)  # dead astern of the north-facing target
 	var weak := [false]
 	game_match.projectile_impact.connect(func(event: Dictionary) -> void: weak[0] = weak[0] or bool(event["weak_spot"]))
 	await wait_physics_frames(2)

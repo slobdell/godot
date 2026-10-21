@@ -81,7 +81,7 @@ func test_predict_matches_a_real_tank_on_open_ground() -> void:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = add_to_tree(MATCH.instantiate())
 	var tank := game_match.spawn_tank("Driver", 0, Match.Team.GREEN, "tank")
-	tank.global_position = Vector3(LANE_X, 0.0, 30.0)
+	tank.place(Vector3(LANE_X, 0.0, 30.0), tank.rotation.y)
 	await wait_physics_frames(3)
 	var start := TankMotion.state_of(tank)
 	var poses := TankMotion.predict(start, 1.0, 0.5, SimClock.TICK_RATE)
@@ -217,7 +217,7 @@ func test_predict_matches_a_real_scout_carving_a_turn() -> void:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = add_to_tree(MATCH.instantiate())
 	var scout := game_match.spawn_tank("Driver", 0, Match.Team.GREEN, "scout")
-	scout.global_position = Vector3(LANE_X, 0.0, 60.0)
+	scout.place(Vector3(LANE_X, 0.0, 60.0), scout.rotation.y)
 	await wait_physics_frames(3)
 	for tick in SimClock.TICK_RATE:  # get up to speed first
 		scout.command = TankCommand.new(1.0, 0.0, Vector3.ZERO, false)

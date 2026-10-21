@@ -16,8 +16,7 @@ func _setup() -> Match:
 func test_one_tank_captures_the_center_and_scores() -> void:
 	var game_match := _setup()
 	var green := game_match.spawn_tank("Green_1", 0, Match.Team.GREEN)
-	green.global_position = Vector3(5, 0, 5)
-	green.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
+	green.place(Vector3(5, 0, 5), green.rotation.y)
 	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * float(SimClock.TICK_RATE)) - SimClock.TICK_RATE / 2)
 	assert_eq(game_match.control_owner, -1, "not captured before %.0f s" % Match.CONTROL_CAPTURE_SECONDS)
 	await wait_physics_frames(SimClock.TICK_RATE)
@@ -30,13 +29,11 @@ func test_a_bigger_army_does_not_capture_faster_and_contesting_freezes_it() -> v
 	var game_match := _setup()
 	for i in 4:
 		var tank := game_match.spawn_tank("Green_%d" % i, 0, Match.Team.GREEN)
-		tank.global_position = Vector3(-8 + i * 5, 0, 6)
-		tank.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
+		tank.place(Vector3(-8 + i * 5, 0, 6), tank.rotation.y)
 	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * float(SimClock.TICK_RATE)) / 2)
 	assert_true(game_match.control_owner == -1, "four tanks still take the full capture time (flat rate: anti-snowball)")
 	var rust := game_match.spawn_tank("Rust_1", 0, Match.Team.RUST)
-	rust.global_position = Vector3(0, 0, -8)
-	rust.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
+	rust.place(Vector3(0, 0, -8), rust.rotation.y)
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS)
 	var frozen := game_match.control_progress
 	await wait_physics_frames(SimClock.TICK_RATE * 4)

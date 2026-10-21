@@ -20,8 +20,7 @@ func _mover(unit_id := "tank") -> Array:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, unit_id)
-	tank.global_position = START
-	tank.rotation.y = 0.0
+	tank.place(START, 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
@@ -131,8 +130,7 @@ func test_the_tube_can_only_hold_a_plan_longer_never_shorter() -> void:
 		var on: bool = arm
 		var was := _tube(on)
 		var tank := game_match.spawn_tank("Mover_%s" % on, 0, Match.Team.GREEN, "tank")
-		tank.global_position = START
-		tank.rotation.y = 0.0
+		tank.place(START, 0.0)
 		var ctl := OrderController.new()
 		ctl.tank = tank
 		ctl.tanks_root = game_match.tanks

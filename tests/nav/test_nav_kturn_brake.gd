@@ -29,8 +29,7 @@ func _drive(off: PackedStringArray) -> Dictionary:
 	var saved := Movement._off
 	Movement._off = off
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	tank.global_position = START
-	tank.rotation.y = 0.0
+	tank.place(START, 0.0)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank
@@ -83,8 +82,7 @@ func _scout_tap(off: PackedStringArray) -> Dictionary:
 	var saved := Movement._off
 	Movement._off = off
 	var tank := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
-	tank.global_position = START
-	tank.rotation.y = 0.0
+	tank.place(START, 0.0)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank
@@ -143,7 +141,7 @@ func test_the_key_is_the_hull_length() -> void:
 		for unit_id: String in ["gang_tank", "ifv", "scout"]:
 			var orders := OrderController.new()
 			orders.tank = game_match.spawn_tank("K_%s_%d" % [unit_id, keyed.size()], 0, Match.Team.GREEN, unit_id)
-			orders.tank.global_position = Vector3(20.0 * float(keyed.size() % 3) - 20.0, 0.0, -20.0 * float(keyed.size() / 3))
+			orders.tank.place(Vector3(20.0 * float(keyed.size() % 3) - 20.0, 0.0, -20.0 * float(keyed.size() / 3)), orders.tank.rotation.y)
 			orders.tanks_root = game_match.tanks
 			add_to_tree(orders)
 			keyed["%s/%s" % [",".join(arm), unit_id]] = orders.movement.kturn_brake_on()

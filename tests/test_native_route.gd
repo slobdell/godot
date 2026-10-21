@@ -40,7 +40,7 @@ func test_the_route_tail_answers_as_the_live_gdscript() -> void:
 	var movers: Array[Movement] = []
 	for i in UNITS.size():
 		var tank := game_match.spawn_tank("Route%d" % i, 0, Match.Team.GREEN, UNITS[i])
-		tank.global_position = Vector3(12.0 * i, 0.0, 0.0)
+		tank.place(Vector3(12.0 * i, 0.0, 0.0), tank.rotation.y)
 		var orders := OrderController.new()
 		orders.tank = tank
 		orders.tanks_root = game_match.tanks

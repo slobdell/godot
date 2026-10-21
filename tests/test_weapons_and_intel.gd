@@ -15,8 +15,7 @@ func _setup() -> Match:
 
 
 func _place(tank: Tank, z: float, yaw: float) -> void:
-	tank.global_position = Vector3(LANE_X, 0.0, z)
-	tank.rotation.y = yaw
+	tank.place(Vector3(LANE_X, 0.0, z), yaw)
 
 
 func test_cone_geometry() -> void:
@@ -70,7 +69,7 @@ func test_team_vision_is_shared_and_remembered() -> void:
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
 	_place(spotter, 30.0, 0.0)
 	_place(enemy, 0.0, PI)
-	blind.global_position = Vector3(48, 0, 40)  # far across the map, no line of sight
+	blind.place(Vector3(48, 0, 40), blind.rotation.y)  # far across the map, no line of sight
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 2)
 	assert_true(game_match.intel[Match.Team.GREEN].has("Enemy"), "the spotter's sighting is team knowledge")
 	assert_true(game_match.intel[Match.Team.GREEN]["Enemy"]["visible"], "and marked visible")
@@ -128,7 +127,7 @@ func test_brain_shoots_what_it_can_see_while_its_target_is_hidden() -> void:
 	var exposed := game_match.spawn_tank("Exposed", 0, Match.Team.RUST)
 	_place(brain_tank, 20.0, 0.0)
 	_place(exposed, -15.0, PI / 2.0)
-	hidden.global_position = Vector3(LANE_X + 8.0, 0.0, 12.0)
+	hidden.place(Vector3(LANE_X + 8.0, 0.0, 12.0), hidden.rotation.y)
 	var crate: Node3D = CRATE.instantiate()
 	crate.position = Vector3(LANE_X + 4.0, 0.0, 15.0)
 	add_to_tree(crate)

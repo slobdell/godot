@@ -157,13 +157,12 @@ func test_two_crews_on_one_target_pin_it_where_one_cannot() -> void:
 	var target := game_match.tanks.get_node("Rust_A_1") as Tank
 	target.max_health = 1_000_000  # measuring suppression, not death
 	target.health = 1_000_000
-	target.global_position = Vector3(-60.0, 0.0, 0.0)
+	target.place(Vector3(-60.0, 0.0, 0.0), target.rotation.y)
 	var settled := {}
 	for crews in [1, 2]:
 		target.suppression = 0.0
 		for index in gunners.size():
-			gunners[index].global_position = Vector3(-60.0 + (index * 6.0 - 3.0), 0.0, -30.0)
-			gunners[index].rotation.y = PI  # facing +z, at the target: a fixed mount only swings 8 degrees
+			gunners[index].place(Vector3(-60.0 + (index * 6.0 - 3.0), 0.0, -30.0), PI)  # facing +z, at the target: a fixed mount only swings 8 degrees
 		for tick in SimClock.TICK_RATE * 5:
 			for index in gunners.size():
 				gunners[index].command = TankCommand.new(0.0, 0.0, target.global_position, index < crews)
@@ -191,8 +190,8 @@ func test_a_pinned_gunner_misses_what_it_would_otherwise_hit() -> void:
 		# (Match.range_spread_multiplier) dominated and the calm control only hit 46% — two effects in one number.
 		# What a long shot costs is measured on its own, below.
 		var band := Engagement.effective_range(Weapons.profile("cannon"))
-		gunner.global_position = Vector3(-60.0, 0.0, band * 0.4)
-		target.global_position = Vector3(-60.0, 0.0, -band * 0.4)
+		gunner.place(Vector3(-60.0, 0.0, band * 0.4), gunner.rotation.y)
+		target.place(Vector3(-60.0, 0.0, -band * 0.4), target.rotation.y)
 		target.max_health = 1_000_000
 		target.health = 1_000_000
 		target.max_shield = 0.0
@@ -230,10 +229,9 @@ func test_pinning_buys_a_flanker_time_to_get_round() -> void:
 		var pair: Array = await _pair(game_match, "tank", "scout")
 		var gunner: Tank = pair[0]
 		var flanker: Tank = pair[1]
-		gunner.global_position = Vector3(-60.0, 0.0, 0.0)
-		gunner.rotation.y = 0.0
+		gunner.place(Vector3(-60.0, 0.0, 0.0), 0.0)
 		gunner.turret.rotation.y = 0.0
-		flanker.global_position = Vector3(-20.0, 0.0, 0.0)  # dead on the gunner's flank
+		flanker.place(Vector3(-20.0, 0.0, 0.0), flanker.rotation.y)  # dead on the gunner's flank
 		var ticks := -1
 		for tick in SimClock.TICK_RATE * 8:
 			gunner.suppression = suppression
@@ -293,8 +291,8 @@ func test_a_shot_beyond_the_effective_band_is_a_real_gamble() -> void:
 		var pair: Array = await _pair(game_match, "tank", "tank")
 		var gunner: Tank = pair[0]
 		var target: Tank = pair[1]
-		gunner.global_position = Vector3(-60.0, 0.0, distance / 2.0)
-		target.global_position = Vector3(-60.0, 0.0, -distance / 2.0)
+		gunner.place(Vector3(-60.0, 0.0, distance / 2.0), gunner.rotation.y)
+		target.place(Vector3(-60.0, 0.0, -distance / 2.0), target.rotation.y)
 		target.max_health = 1_000_000
 		target.health = 1_000_000
 		target.max_shield = 0.0

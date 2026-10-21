@@ -274,9 +274,8 @@ func _ground_with_squad(width: float) -> Array:
 	var names: Array[String] = []
 	var i := 0
 	for tank: Tank in game_match.sorted_team_tanks(Match.Team.GREEN):
-		tank.global_position = Vector3(0, 0, 20 + i * 10)
+		tank.place(Vector3(0, 0, 20 + i * 10), 0.0)
 		tank.rotation = Vector3.ZERO
-		tank.reset_physics_interpolation()
 		names.append(String(tank.name))
 		i += 1
 	var orders := Orders.new()

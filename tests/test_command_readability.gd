@@ -106,7 +106,7 @@ func test_friend_and_foe_differ_by_shape_not_only_color() -> void:
 	markers.map = map
 	add_to_tree(markers)
 	var enemy := game_match.spawn_tank("Rust_Near_1", 0, Match.Team.RUST)
-	enemy.global_position = (game_match.tanks.get_node("Green_Alpha_1") as Tank).global_position + Vector3(0, 0, -25)
+	enemy.place((game_match.tanks.get_node("Green_Alpha_1") as Tank).global_position + Vector3(0, 0, -25), enemy.rotation.y)
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	markers.refresh()
 	assert_true(markers.state()["Rust_Near_1"]["visible"] and markers.state()["Rust_Near_1"]["kind"] == "enemy",

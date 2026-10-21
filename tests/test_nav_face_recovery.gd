@@ -42,8 +42,7 @@ func test_a_car_with_room_still_turns_to_its_face() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Turner", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(-100, 0, 40)
-	tank.rotation.y = 0.0
+	tank.place(Vector3(-100, 0, 40), 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
@@ -179,8 +178,7 @@ func _wedged_path(on: bool) -> float:
 	var at := Vector3(-100, 0, 40)
 	add_to_tree(_corridor(at))
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	tank.global_position = at
-	tank.rotation.y = 0.0  # 14 m of hull lying along z, in a corridor 5 m wide
+	tank.place(at, 0.0)  # 14 m of hull lying along z, in a corridor 5 m wide
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
@@ -235,8 +233,7 @@ func test_the_arrival_arc_publishes_whether_it_is_live() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Arcer", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(-100, 0, 40)
-	tank.rotation.y = 0.0
+	tank.place(Vector3(-100, 0, 40), 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
@@ -268,8 +265,7 @@ func test_the_legibility_key_control_signed_for_is_published() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Legible", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(-100, 0, 40)
-	tank.rotation.y = 0.0
+	tank.place(Vector3(-100, 0, 40), 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
@@ -302,8 +298,7 @@ func test_an_ordered_arrival_arc_names_itself_rather_than_looking_like_a6() -> v
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Arced", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(-100, 0, 40)
-	tank.rotation.y = 0.0
+	tank.place(Vector3(-100, 0, 40), 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks
@@ -330,8 +325,7 @@ func test_the_corridor_tangent_is_published_and_is_null_when_there_is_no_leg() -
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Corridor", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(-100, 0, 40)
-	tank.rotation.y = 0.0
+	tank.place(Vector3(-100, 0, 40), 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks

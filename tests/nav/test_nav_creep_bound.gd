@@ -21,8 +21,7 @@ func _face_round(bound: bool) -> Dictionary:
 	var saved := Movement._off
 	Movement._off = PackedStringArray() if bound else PackedStringArray(["creepbound", "faceturn"])
 	var tank := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
-	tank.global_position = START
-	tank.rotation.y = 0.0
+	tank.place(START, 0.0)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank

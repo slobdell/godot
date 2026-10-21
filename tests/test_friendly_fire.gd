@@ -15,8 +15,7 @@ func _setup() -> Match:
 
 
 func _at(tank: Tank, x: float, z: float, yaw := 0.0) -> Tank:
-	tank.global_position = Vector3(LANE_X + x, 0.0, z)
-	tank.rotation.y = yaw
+	tank.place(Vector3(LANE_X + x, 0.0, z), yaw)
 	return tank
 
 

@@ -1,0 +1,5 @@
+# The rows whose seed units size the scoreboard's ± noise column (tools/scoreboard/table.py): ONE main, its seed blocks.
+# 3d46b2884 (T8 shipped, R36.12): block 2601+ (its main row) and block 2701+ (SCORE_SEED_BASE=2700 SCORE_TAG=b2700), builder2.
+# (e45bb6632's 2601+ block alone sized the provisional column before the second block ran.)
+3d46b2884
+3d46b2884-b2700

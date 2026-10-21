@@ -16,8 +16,7 @@ func _run(station: bool) -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Follower", 0, Match.Team.GREEN)
-	tank.global_position = START
-	tank.rotation.y = -PI / 2.0  # facing +x
+	tank.place(START, -PI / 2.0)  # facing +x
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
@@ -66,8 +65,7 @@ func _drive_and_stop(gains: Dictionary) -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Follower", 0, Match.Team.GREEN)
-	tank.global_position = START
-	tank.rotation.y = -PI / 2.0
+	tank.place(START, -PI / 2.0)
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks

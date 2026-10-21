@@ -59,7 +59,7 @@ func test_a_curved_entry_still_arrives_on_the_ordered_heading() -> void:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var probe := game_match.spawn_tank("Probe", 0, Match.Team.GREEN, "ifv")
-	probe.global_position = Vector3.ZERO
+	probe.place(Vector3.ZERO, probe.rotation.y)
 	await tree.physics_frame
 	var pick := _blocked_gate(probe)
 	probe.queue_free()
@@ -97,8 +97,7 @@ func _arrival(game_match: Match, a4: bool, pick: Dictionary) -> Dictionary:
 	var facing: Vector2 = pick["facing"]
 	var tank := game_match.spawn_tank("Arriver_%s" % ("a4" if a4 else "straight"), 0, Match.Team.GREEN, "ifv")
 	# Start well back, so the approach is a real approach rather than a nudge.
-	tank.global_position = goal - Vector3(facing.x, 0.0, facing.y) * 35.0
-	tank.rotation.y = 0.0
+	tank.place(goal - Vector3(facing.x, 0.0, facing.y) * 35.0, 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks

@@ -12,8 +12,7 @@ const WALL_AT := Vector3(-36.0, 0.0, -20.0)
 
 func _hull(game_match: Match, unit_id: String, at: Vector3, yaw: float) -> OrderController:
 	var tank := game_match.spawn_tank("Driver", 0, Match.Team.GREEN, unit_id)
-	tank.global_position = at
-	tank.rotation.y = yaw
+	tank.place(at, yaw)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks

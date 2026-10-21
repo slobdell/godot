@@ -10,7 +10,7 @@ func _setup() -> Array:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Commanded", 0, Match.Team.GREEN)
-	tank.global_position = Vector3(-100, 0, 20)
+	tank.place(Vector3(-100, 0, 20), tank.rotation.y)
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
@@ -45,7 +45,7 @@ func test_halt_on_contact_stops_an_advance() -> void:
 	var game_match: Match = setup[0]
 	var orders: OrderController = setup[2]
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
-	enemy.global_position = Vector3(-100, 0, -40)  # far up the open lane, out of range but in sight
+	enemy.place(Vector3(-100, 0, -40), enemy.rotation.y)  # far up the open lane, out of range but in sight
 	orders.set_orders({"type": "move_to", "x": -100, "z": -30}, {"type": "hold_fire"}, [{"type": "halt_on_contact"}])
 	await wait_physics_frames(3)
 	assert_eq(orders.move_order["type"], "stop", "an enemy in sight halts the advance")

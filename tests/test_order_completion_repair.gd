@@ -61,9 +61,7 @@ func _run(goal: Vector3, until: String) -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
-	tank.global_position = Vector3(goal.x, 0.0, 31.0)
-	tank.rotation.y = 0.0
-	tank.reset_physics_interpolation()
+	tank.place(Vector3(goal.x, 0.0, 31.0), 0.0)
 	var driver := OrderController.new()
 	driver.tank = tank
 	driver.tanks_root = game_match.tanks

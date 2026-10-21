@@ -83,8 +83,7 @@ func test_hover_units_drive_in_a_real_match() -> void:
 		brain.queue_free()
 	await wait_physics_frames(1)
 	var skimmer := game_match.tanks.get_node("Green_A_1") as Tank
-	skimmer.global_position = Vector3(-90.0, 0.0, 0.0)
-	skimmer.rotation.y = 0.0
+	skimmer.place(Vector3(-90.0, 0.0, 0.0), 0.0)
 	var start := skimmer.global_position
 	for tick in 120:
 		skimmer.command = TankCommand.new(1.0, 0.0, start + Vector3(0.0, 0.0, -50.0), false)
@@ -110,9 +109,9 @@ func test_a_resupply_tanker_mends_the_pack_around_it() -> void:
 	var tanker := game_match.tanks.get_node("Green_A_2") as Tank
 	var far_unit := game_match.tanks.get_node("Green_A_3") as Tank
 	# Well away from either base, so this measures the tanker and not the home repair zone.
-	tanker.global_position = Vector3(-90.0, 0.0, 0.0)
-	near_unit.global_position = Vector3(-80.0, 0.0, 0.0)
-	far_unit.global_position = Vector3(-40.0, 0.0, 0.0)
+	tanker.place(Vector3(-90.0, 0.0, 0.0), tanker.rotation.y)
+	near_unit.place(Vector3(-80.0, 0.0, 0.0), near_unit.rotation.y)
+	far_unit.place(Vector3(-40.0, 0.0, 0.0), far_unit.rotation.y)
 	for unit in [near_unit, far_unit]:
 		unit.health = 60
 	await wait_physics_frames(1)
@@ -139,8 +138,8 @@ func test_field_repair_stops_while_the_fire_is_landing() -> void:
 	await wait_physics_frames(1)
 	var hurt := game_match.tanks.get_node("Green_A_1") as Tank
 	var tanker := game_match.tanks.get_node("Green_A_2") as Tank
-	tanker.global_position = Vector3(-90.0, 0.0, 0.0)
-	hurt.global_position = Vector3(-80.0, 0.0, 0.0)
+	tanker.place(Vector3(-90.0, 0.0, 0.0), tanker.rotation.y)
+	hurt.place(Vector3(-80.0, 0.0, 0.0), hurt.rotation.y)
 	hurt.health = 60
 	await wait_physics_frames(1)
 	for tick in SimClock.TICK_RATE * 6:

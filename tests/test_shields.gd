@@ -26,9 +26,8 @@ func _shot(target_shield: float, unit_id := "tank") -> Tank:
 	var game_match := _setup()
 	var shooter := game_match.spawn_tank("Shooter", 0, Match.Team.GREEN, unit_id)
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
-	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
-	target.global_position = Vector3(LANE_X, 0.0, 5.0)
-	target.rotation.y = PI / 2.0  # side-on
+	shooter.place(Vector3(LANE_X, 0.0, 20.0), shooter.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, 5.0), PI / 2.0)  # side-on
 	target.shield = target_shield
 	target.ticks_since_hit = 0  # as if just hit: no recharge during the test
 	await wait_physics_frames(2)
@@ -67,7 +66,7 @@ func test_lasers_strip_shields_faster() -> void:
 func test_the_shield_recharges_after_a_quiet_spell() -> void:
 	var game_match := _setup()
 	var tank := game_match.spawn_tank("Tank", 0, Match.Team.GREEN)
-	tank.global_position = Vector3(LANE_X, 0.0, 20.0)
+	tank.place(Vector3(LANE_X, 0.0, 20.0), tank.rotation.y)
 	await wait_physics_frames(2)
 	tank.take_hit(1000.0, 1.0, 0.0)  # shield gone, armor multiplier 0: the hull is untouched
 	assert_eq(tank.shield, 0.0, "setup: shield broken")
@@ -87,8 +86,8 @@ func test_the_hull_only_mends_at_base() -> void:
 	var game_match := _setup()
 	var home := game_match.spawn_tank("Home", 0, Match.Team.GREEN)
 	var field := game_match.spawn_tank("Field", 0, Match.Team.GREEN)
-	home.global_position = Match.resupply_center(Match.Team.GREEN) + Vector3(-8, 0, 0)
-	field.global_position = Vector3(LANE_X, 0.0, 0.0)
+	home.place(Match.resupply_center(Match.Team.GREEN) + Vector3(-8, 0, 0), home.rotation.y)
+	field.place(Vector3(LANE_X, 0.0, 0.0), field.rotation.y)
 	await wait_physics_frames(2)
 	for tank in [home, field]:
 		tank.shield = 0.0

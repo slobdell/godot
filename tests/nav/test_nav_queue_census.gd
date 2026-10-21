@@ -14,7 +14,7 @@ func _movers(names: Array) -> Dictionary:
 	var out := {"match": game_match}
 	for i in names.size():
 		var tank := game_match.spawn_tank(names[i], i, Match.Team.GREEN, "gang_tank")
-		tank.global_position = Vector3(-40.0 + 16.0 * i, 0.0, 30.0)
+		tank.place(Vector3(-40.0 + 16.0 * i, 0.0, 30.0), tank.rotation.y)
 		var orders := OrderController.new()
 		orders.tank = tank
 		orders.tanks_root = game_match.tanks

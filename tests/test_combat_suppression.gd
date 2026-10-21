@@ -271,7 +271,7 @@ func test_a_pinned_crew_really_fails_to_see_a_flanker_it_would_have_seen_calm() 
 	watcher.max_health = 100000
 	watcher.health = 100000
 	var calm_sight := watcher.sight_radius
-	flanker.global_position = watcher.global_position + Vector3(calm_sight * 0.8, 0.0, 0.0)
+	flanker.place(watcher.global_position + Vector3(calm_sight * 0.8, 0.0, 0.0), flanker.rotation.y)
 	for tick in Match.INTEL_EVERY_TICKS * 2:
 		flanker.command = TankCommand.new()
 		watcher.command = TankCommand.new()

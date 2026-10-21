@@ -23,7 +23,7 @@ func _field(game_match: Match) -> VisibilityField:
 func test_the_field_is_lit_in_the_open_and_dark_behind_cover() -> void:
 	var game_match := _setup()
 	var viewer := game_match.spawn_tank("Viewer", 0, Match.Team.GREEN)
-	viewer.global_position = Vector3(-24, 0, 30)  # 18 m north... south of Crate1Mirror at (-24, 12)
+	viewer.place(Vector3(-24, 0, 30), viewer.rotation.y)  # 18 m north... south of Crate1Mirror at (-24, 12)
 	await wait_physics_frames(2)
 	var field := _field(game_match)
 	field.refresh_all()
@@ -37,7 +37,7 @@ func test_the_field_is_lit_in_the_open_and_dark_behind_cover() -> void:
 func test_ground_you_have_left_is_remembered_as_seen() -> void:
 	var game_match := _setup()
 	var viewer := game_match.spawn_tank("Viewer", 0, Match.Team.GREEN)
-	viewer.global_position = Vector3(-100, 0, 60)
+	viewer.place(Vector3(-100, 0, 60), viewer.rotation.y)
 	await wait_physics_frames(2)
 	var field := _field(game_match)
 	field.refresh_all()
@@ -55,8 +55,8 @@ func test_team_vision_is_the_union_of_its_tanks() -> void:
 	var game_match := _setup()
 	var west := game_match.spawn_tank("West", 0, Match.Team.GREEN)
 	var east := game_match.spawn_tank("East", 0, Match.Team.GREEN)
-	west.global_position = Vector3(-100, 0, 60)
-	east.global_position = Vector3(100, 0, 60)
+	west.place(Vector3(-100, 0, 60), west.rotation.y)
+	east.place(Vector3(100, 0, 60), east.rotation.y)
 	await wait_physics_frames(2)
 	var field := _field(game_match)
 	field.refresh_all()
@@ -70,8 +70,8 @@ func test_intel_respects_each_tanks_sight_radius() -> void:
 	var short_sighted := game_match.spawn_tank("Short", 0, Match.Team.GREEN)
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
 	short_sighted.sight_radius = 30.0
-	short_sighted.global_position = Vector3(-100, 0, 30)
-	enemy.global_position = Vector3(-100, 0, -20)  # 50 m, clear lane
+	short_sighted.place(Vector3(-100, 0, 30), short_sighted.rotation.y)
+	enemy.place(Vector3(-100, 0, -20), enemy.rotation.y)  # 50 m, clear lane
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 2)
 	assert_true(not game_match.is_visible_to(Match.Team.GREEN, enemy), "50 m is beyond a 30 m sight radius")
 	short_sighted.sight_radius = 75.0
@@ -84,7 +84,7 @@ func test_a_full_refresh_is_cheap_enough() -> void:
 	var game_match := _setup()
 	for i in 5:
 		var tank := game_match.spawn_tank("Viewer_%d" % i, 0, Match.Team.GREEN)
-		tank.global_position = Vector3(-60 + i * 30, 0, 40)
+		tank.place(Vector3(-60 + i * 30, 0, 40), tank.rotation.y)
 	await wait_physics_frames(2)
 	var field := _field(game_match)
 	var started := Time.get_ticks_usec()

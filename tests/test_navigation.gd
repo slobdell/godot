@@ -38,10 +38,8 @@ func test_bot_reaches_target_hidden_behind_wall() -> void:
 	var game_match: Match = setup[1]
 	var target := game_match.spawn_tank("Target", 0, Match.Team.GREEN)
 	var bot := game_match.add_bot()
-	target.global_position = Vector3(28, 0, -72)
-	target.rotation.y = PI / 2.0
-	bot.global_position = Vector3(28, 0, -48)
-	bot.rotation.y = 0.0  # facing north, straight at the wall
+	target.place(Vector3(28, 0, -72), PI / 2.0)
+	bot.place(Vector3(28, 0, -48), 0.0)  # facing north, straight at the wall
 	await wait_physics_frames(2)
 	assert_true(not Perception.has_line_of_sight(bot, target), "setup: the wall hides the target")
 	var lowest_health := target.health

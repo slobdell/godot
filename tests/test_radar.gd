@@ -57,7 +57,7 @@ func test_enemies_appear_only_through_team_intel() -> void:
 	assert_eq(_kinds(radar, "friendly") + _kinds(radar, "commander"), 5, "all five of our tanks")
 	assert_eq(_kinds(radar, "commander"), 2, "each squad's commander is marked")
 	var hidden := game_match.spawn_tank("Rust_Far_1", 0, Match.Team.RUST)
-	hidden.global_position = Vector3(100, 0, -100)  # far from every Green tank
+	hidden.place(Vector3(100, 0, -100), hidden.rotation.y)  # far from every Green tank
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	assert_eq(_kinds(radar, "enemy") + _kinds(radar, "contact"), 0, "an enemy nobody has seen is not on the radar")
 	hidden.global_position = Vector3(0, 0, 40)  # in front of the base, in plain sight

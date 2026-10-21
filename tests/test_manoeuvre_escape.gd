@@ -160,8 +160,7 @@ func test_a_hull_driven_at_a_wall_under_a_drive_order_never_backs_off() -> void:
 	add_to_tree(game_match)
 	var wall_at := Vector3(-36.0, 0.0, -20.0)
 	var tank := game_match.spawn_tank("Driver", 0, Match.Team.GREEN, "tank")
-	tank.global_position = wall_at + Vector3(0, 0, 11.0)
-	tank.rotation.y = 0.0
+	tank.place(wall_at + Vector3(0, 0, 11.0), 0.0)
 	var ctl := OrderController.new()
 	ctl.tank = tank
 	ctl.tanks_root = game_match.tanks

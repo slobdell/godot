@@ -336,6 +336,11 @@ if [ "${REMOTE_VERIFY:-1}" != 0 ] && [ "${REMOTE_NO_COPYBACK:-0}" != 1 ] && [ "$
 	# writes none, and refusing every run over that would be worse than the problem. A MISMATCH (5) does.
 	[ "$verify_status" -eq 3 ] && verify_status=0
 fi
+# Round 35 (X5 (b)): `P *.log` above also kept an earlier run's series rows beside this run's (a run folder the box had
+# cleared kept its run.log here), and readers pooled both. Those are moved into a .stale-<timestamp>/ folder, never deleted.
+if [ "${REMOTE_NO_COPYBACK:-0}" != 1 ] && [ "$copy_status" -eq 0 ] && [ -x "$repo_root/tools/copyback_prune.sh" ]; then
+	"$repo_root/tools/copyback_prune.sh" "$verify_root" "$verify_root/build/.copyback.sha256" || true
+fi
 
 # The copy-back is done, so the directory is genuinely free now.
 run_guard release >/dev/null 2>&1 || true

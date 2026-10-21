@@ -36,7 +36,7 @@ func test_a_window_of_a_real_match_reports_its_parts() -> void:
 	add_to_tree(game_match)
 	for i in 6:
 		var tank := game_match.spawn_tank("Profiled%d" % i, 0, Match.Team.GREEN if i % 2 == 0 else Match.Team.RUST, "tank")
-		tank.global_position = Vector3(8.0 * i - 20.0, 0.0, 5.0 * (i % 2))
+		tank.place(Vector3(8.0 * i - 20.0, 0.0, 5.0 * (i % 2)), tank.rotation.y)
 		var orders := OrderController.new()
 		orders.tank = tank
 		orders.tanks_root = game_match.tanks

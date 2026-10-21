@@ -69,11 +69,9 @@ func test_an_ifv_cannot_crack_a_tank_front_in_a_real_fight() -> void:
 	var ifv := game_match.spawn_tank("Ifv", 0, Match.Team.GREEN, "ifv")
 	var tank := game_match.spawn_tank("Tank", 0, Match.Team.RUST, "tank")
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.RUST, "scout")
-	ifv.global_position = Vector3(LANE_X, 0.0, 20.0)
-	tank.global_position = Vector3(LANE_X, 0.0, -10.0)
-	tank.rotation.y = PI  # facing the IFV
-	scout.global_position = Vector3(LANE_X + 30.0, 0.0, -10.0)
-	scout.rotation.y = PI / 2.0  # showing its side
+	ifv.place(Vector3(LANE_X, 0.0, 20.0), ifv.rotation.y)
+	tank.place(Vector3(LANE_X, 0.0, -10.0), PI)  # facing the IFV
+	scout.place(Vector3(LANE_X + 30.0, 0.0, -10.0), PI / 2.0)  # showing its side
 	_unshielded(tank)
 	_unshielded(scout)
 	await wait_physics_frames(2)
@@ -95,8 +93,8 @@ func test_a_fixed_gun_swings_only_inside_its_arc() -> void:
 	var game_match := _setup()
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
 	var tank := game_match.spawn_tank("Tank", 0, Match.Team.GREEN, "tank")
-	scout.global_position = Vector3(LANE_X, 0.0, 20.0)
-	tank.global_position = Vector3(LANE_X + 20.0, 0.0, 20.0)
+	scout.place(Vector3(LANE_X, 0.0, 20.0), scout.rotation.y)
+	tank.place(Vector3(LANE_X + 20.0, 0.0, 20.0), tank.rotation.y)
 	await wait_physics_frames(2)
 	var right_of_scout := scout.global_position + Vector3(30.0, 0.0, 0.0)
 	var right_of_tank := tank.global_position + Vector3(30.0, 0.0, 0.0)
@@ -118,8 +116,8 @@ func test_a_scout_only_hits_what_it_points_at() -> void:
 		var game_match := _setup()
 		var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
 		var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
-		scout.global_position = Vector3(LANE_X, 0.0, 20.0)
-		target.global_position = scout.global_position + offset
+		scout.place(Vector3(LANE_X, 0.0, 20.0), scout.rotation.y)
+		target.place(scout.global_position + offset, target.rotation.y)
 		await wait_physics_frames(2)
 		for tick in SimClock.TICK_RATE * 2:
 			scout.command = TankCommand.new(0.0, 0.0, target.global_position, true)
@@ -141,9 +139,9 @@ func _worst_tracking_error(unit_id: String) -> float:
 	var game_match := _setup()
 	var gunner := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, unit_id)
 	var runner := game_match.spawn_tank("Runner", 0, Match.Team.RUST, "scout")
-	gunner.global_position = Vector3(LANE_X, 0.0, 20.0)
+	gunner.place(Vector3(LANE_X, 0.0, 20.0), gunner.rotation.y)
 	var start := Vector3(LANE_X - 14.0, 0.0, 10.0)
-	runner.global_position = start
+	runner.place(start, runner.rotation.y)
 	for tick in SimClock.TICK_RATE * 2:  # line up on the start point first
 		gunner.command = TankCommand.new(0.0, 0.0, runner.global_position, false)
 		await tree.physics_frame
@@ -174,9 +172,8 @@ func test_autocannon_rounds_fall_short_past_its_range() -> void:
 		var game_match := _setup()
 		var ifv := game_match.spawn_tank("Ifv", 0, Match.Team.GREEN, "ifv")
 		var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
-		ifv.global_position = Vector3(LANE_X, 0.0, 40.0)
-		target.global_position = Vector3(LANE_X, 0.0, 40.0 - distance)
-		target.rotation.y = PI / 2.0
+		ifv.place(Vector3(LANE_X, 0.0, 40.0), ifv.rotation.y)
+		target.place(Vector3(LANE_X, 0.0, 40.0 - distance), PI / 2.0)
 		_unshielded(target)
 		await wait_physics_frames(2)
 		for tick in SimClock.TICK_RATE * 3:
@@ -205,7 +202,7 @@ func test_unspotted_artillery_fire_scatters_wide() -> void:
 			"a blind round scatters %.0fx wider" % Match.BLIND_SCATTER_FACTOR)
 	var game_match := _setup()
 	var spotter := game_match.spawn_tank("Eyes", 0, Match.Team.GREEN, "scout")
-	spotter.global_position = Vector3(LANE_X, 0.0, 40.0)
+	spotter.place(Vector3(LANE_X, 0.0, 40.0), spotter.rotation.y)
 	await wait_physics_frames(2)
 	assert_true(game_match.is_point_spotted(Match.Team.GREEN, Vector3(LANE_X, 0.0, -40.0)), "80 m from a scout (110 m sight): spotted")
 	assert_true(not game_match.is_point_spotted(Match.Team.GREEN, Vector3(LANE_X, 0.0, -100.0)), "140 m away: blind")

@@ -14,8 +14,7 @@ func _setup() -> Array:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
-	tank.global_position = LANE
-	tank.rotation.y = 0.0
+	tank.place(LANE, 0.0)
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
@@ -104,7 +103,7 @@ func test_asked_to_give_way_it_steps_off_the_line_and_resumes() -> void:
 	var asker_orders: OrderController = setup[2]
 	# A friend parked in the lane, 12 m up it, holding a stop order.
 	var parked := game_match.spawn_tank("Parked", 1, Match.Team.GREEN)
-	parked.global_position = LANE + Vector3(0, 0, -12)
+	parked.place(LANE + Vector3(0, 0, -12), parked.rotation.y)
 	var parked_orders := OrderController.new()
 	parked_orders.tank = parked
 	parked_orders.tanks_root = game_match.tanks
@@ -163,8 +162,7 @@ func _drive_into_block(goal: Vector3, until := "blocked") -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
-	tank.global_position = Vector3(goal.x, 0.0, 31.0)  # the ring road, north of the block
-	tank.rotation.y = 0.0  # nose north... it has to turn round: the goal is behind it
+	tank.place(Vector3(goal.x, 0.0, 31.0), 0.0)  # the ring road, north of the block; nose north... it has to turn round: the goal is behind it
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
@@ -187,8 +185,7 @@ func test_two_hulls_spawned_on_one_spot_separate_and_both_drive_off() -> void:
 	var first: Tank = setup[1]
 	var first_orders: OrderController = setup[2]
 	var second := game_match.spawn_tank("Stacked", 1, Match.Team.GREEN)
-	second.global_position = first.global_position
-	second.rotation.y = first.rotation.y
+	second.place(first.global_position, first.rotation.y)
 	var second_orders := OrderController.new()
 	second_orders.tank = second
 	second_orders.tanks_root = game_match.tanks

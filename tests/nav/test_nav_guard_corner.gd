@@ -23,7 +23,7 @@ func _guard(near_fix: bool) -> Dictionary:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
-	tank.global_position = HERE
+	tank.place(HERE, tank.rotation.y)
 	tank.reset_physics_interpolation()
 	var orders := OrderController.new()
 	orders.tank = tank

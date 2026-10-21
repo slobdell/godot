@@ -83,7 +83,7 @@ func test_a_real_battery_lowers_its_legs_as_combat_deploys_it() -> void:
 	game_match.seed_spawns(2, 0.0)
 	var gun := game_match.spawn_tank("Gun", 0, Match.Team.GREEN, "artillery")
 	GameTheme.use(previous)
-	gun.global_position = Vector3(-100.0, 0.0, 60.0)
+	gun.place(Vector3(-100.0, 0.0, 60.0), gun.rotation.y)
 	await wait_physics_frames(2)
 	var hull := gun.get_node("HullVisual") as VisualSlot
 	var legs := hull.visual.find_children("Outrigger*", "MeshInstance3D", true, false) if hull.visual != null else []

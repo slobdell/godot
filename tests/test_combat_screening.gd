@@ -50,14 +50,12 @@ func _volley(shooter_unit: String, screen_offset_x: float, seconds: float) -> Di
 	await wait_physics_frames(1)
 	var protected_unit := game_match.tanks.get_node("Green_A_1") as Tank
 	var shooter := game_match.tanks.get_node("Rust_A_1") as Tank
-	protected_unit.global_position = Vector3(LANE_X, 0.0, PROTECTED_Z)
-	protected_unit.rotation.y = PI  # facing the shooter: this measures screening, not flanking
-	shooter.global_position = Vector3(LANE_X, 0.0, SHOOTER_Z)
+	protected_unit.place(Vector3(LANE_X, 0.0, PROTECTED_Z), PI)  # facing the shooter: this measures screening, not flanking
+	shooter.place(Vector3(LANE_X, 0.0, SHOOTER_Z), shooter.rotation.y)
 	var screen: Tank = null
 	if is_finite(screen_offset_x):
 		screen = game_match.tanks.get_node("Green_A_2") as Tank
-		screen.global_position = Vector3(LANE_X + screen_offset_x, 0.0, SCREEN_Z)
-		screen.rotation.y = PI
+		screen.place(Vector3(LANE_X + screen_offset_x, 0.0, SCREEN_Z), PI)
 	await wait_physics_frames(2)  # the physics server needs a step before a ray can see the hulls we just moved
 	var before := {"protected": protected_unit.health + protected_unit.shield,
 			"screen": (screen.health + screen.shield) if screen != null else 0.0}
@@ -138,9 +136,9 @@ func test_a_wreck_does_not_screen() -> void:
 	var protected_unit := game_match.tanks.get_node("Green_A_1") as Tank
 	var screen := game_match.tanks.get_node("Green_A_2") as Tank
 	var shooter := game_match.tanks.get_node("Rust_A_1") as Tank
-	protected_unit.global_position = Vector3(LANE_X, 0.0, PROTECTED_Z)
-	screen.global_position = Vector3(LANE_X, 0.0, SCREEN_Z)
-	shooter.global_position = Vector3(LANE_X, 0.0, SHOOTER_Z)
+	protected_unit.place(Vector3(LANE_X, 0.0, PROTECTED_Z), protected_unit.rotation.y)
+	screen.place(Vector3(LANE_X, 0.0, SCREEN_Z), screen.rotation.y)
+	shooter.place(Vector3(LANE_X, 0.0, SHOOTER_Z), shooter.rotation.y)
 	await wait_physics_frames(2)
 	assert_true(game_match.screen_for(protected_unit, shooter.global_position) == screen, "a living tank screens")
 	screen.apply_damage(screen.health)
@@ -162,9 +160,9 @@ func test_an_enemy_hull_is_not_a_screen() -> void:
 	var protected_unit := game_match.tanks.get_node("Green_A_1") as Tank
 	var enemy_between := game_match.tanks.get_node("Rust_A_1") as Tank
 	var shooter := game_match.tanks.get_node("Rust_A_2") as Tank
-	protected_unit.global_position = Vector3(LANE_X, 0.0, PROTECTED_Z)
-	enemy_between.global_position = Vector3(LANE_X, 0.0, SCREEN_Z)
-	shooter.global_position = Vector3(LANE_X, 0.0, SHOOTER_Z)
+	protected_unit.place(Vector3(LANE_X, 0.0, PROTECTED_Z), protected_unit.rotation.y)
+	enemy_between.place(Vector3(LANE_X, 0.0, SCREEN_Z), enemy_between.rotation.y)
+	shooter.place(Vector3(LANE_X, 0.0, SHOOTER_Z), shooter.rotation.y)
 	await wait_physics_frames(2)
 	assert_eq(game_match.screen_for(protected_unit, shooter.global_position), null,
 			"an enemy hull in the way is a friendly-fire problem for them, not cover for us")

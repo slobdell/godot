@@ -148,6 +148,18 @@ default 2), never a check's slot. Memory: 3 heavy × 2.5 GB + 2 light × ~0.75 G
   lands in `build/light/build/`: round 17 lost a frame-cost A/B's reports that way before they were re-read. Copy what
   you will quote out at once, or run the observer with `OBSERVE_KEEP=<your scratchpad>` (a second copy of every
   report outside `build/`).
+- **An earlier run's logs are moved out of the series, into `build/.stale-<timestamp>/` (round 35, X5 (b)).** The
+  copy-back's `P *.log` keeps local logs from `--delete` (for wrapper logs still being written). It also used to keep an
+  earlier run's series rows: a run folder the box had cleared kept its `run.log` here, and readers pooled the old seeds
+  with the new (brains' Bar E1 and E2). After every copy-back, `tools/copyback_prune.sh` moves a local `*.log` that meets
+  all of these:
+  - it is not in the manifest, and no process has it open;
+  - it is not directly in `build/` or `build/metrics/`;
+  - its top folder is one the box sent;
+  - it is not under a REMOTE_COPYBACK_PROTECT path.
+  The move keeps the path below `build/` and names each file on a `>> remote: copy-back moved N stale log(s)` line.
+  Nothing is deleted: filed evidence is in that folder. It sits at `build/`'s top because os.listdir / os.walk / rglob
+  readers see dot-folders. Test: `tools/test_copyback_prune.sh`.
 - A long series should take and release the slot PER RUN (each run through `tools/slot.sh` with
   `TANK_SQUAD_LIGHT=1`), which also keeps each run inside the 5400 s slot timeout.
 
