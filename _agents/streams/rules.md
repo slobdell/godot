@@ -69,7 +69,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 **Now (2026-10-21 ~10:15 PDT):** R1, R2 (spread + short halt, with ruling R37.2 (b)) and R3 are BUILT, all OFF, lab-green:
 `test_rules_` 19/19 on builder0 at 51e5c6ff4. quick-remote passed at 12f410388 (builder0: 83 passed, 0 failed; lint 586
-scripts). Full `make check` on **51e5c6ff4** is running on builder0 (the hash I will name). Smoke: `make rules-shots`
+scripts). **GREEN: 2c85080fc** (full `make check` on builder0, synced at the tip after 51e5c6ff4, so it covers the code plus mk/docs: tests 2992 passed, 0 failed; scenarios 52 passed, 0 failed, 4 pending; `make check exited 0`). Later commits are Status-only. Smoke: `make rules-shots`
 (laptop, terminus, seed 3, --scripted, OFF v ON at 45/75 s, 1854x1011 and 1200x540): 8 frames, 0 engine errors, both arms
 play normally; one fight each, so the shape, not a count. **Next: wait for CP37.1 (native's guard lines + noise), fill
 bar R's k·se and n, cut the pair tree, native runs the lab tests under `make native test` with each switch ON (R37.4),
@@ -83,12 +83,12 @@ sumps/gorge/parade x seeds 1-4, 180 s, n = 20 fights; direct damage 202 009, arc
 1. R1 own-motion sight: DONE at 9d63f709a (lab 6/6, builder0 light, `test FILTER=test_rules_sight`).
 2. R2 measure (`make rules-moving`: CPU-v-CPU showmatch fights, share of direct-fire damage by shooter motion x range): DONE, 52.5 %.
 3. R2 spread switch + short halt; R3 pin slow; lab tests both paths: DONE (12f410388; ruling (b) at 51e5c6ff4).
-4. quick-remote (PASSED 12f410388), then one full check on a named hash: 51e5c6ff4 running.
+4. quick-remote (PASSED 12f410388), then one full check on a named hash: GREEN 2c85080fc (builder0, 2992/0).
 5. After CP37.1 merges: bar R filled from its noise, series on builder2.
 
 **Machine lane (C37.1, the orchestrator's reminder):** every further full check and series of mine on **builder2** (`make
 gcp-remote T=...`; `make gcp-start` first if stopped, under systemd-run with ~/projects/bin on PATH). builder0 only for light
-runs. The 51e5c6ff4 check started on builder0 while builder2 was unreachable; it is let finish.
+runs. The check that went green on 2c85080fc ran on builder0 because builder2 was unreachable when it started. It was allowed to finish.
 
 **Switches:** `game/combat/rule_switches.gd` (`RuleSwitches`): `--rules-on=sight,spread,pin_slow`, `--rules-off=...`, or the
 brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-baseline is untouched with them OFF.
