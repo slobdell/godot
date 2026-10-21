@@ -86,6 +86,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   contacts arm <= base x 1.1 + 5, stuck s arm <= base x 1.2 + 10, outcomes reported. **A pass ships ON** (default "anchor",
   `--halt-terrain=centre` keeps main's), sim-baseline maps that move attributed with the switch OFF.
   (Recorded on main 441d8951d by the orchestrator.)
+- **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 ~10:10 PDT before any O3 number; code 092cb34b7, OFF).** What he
+  would see: squads he sends together arrive each with its own vehicles (no squad one vehicle short, no stranger in it),
+  and they do not bump each other more than today. The change: where today's untangle re-deals vehicles between squads
+  whose drives cross, the crossing squads swap whole PLACES (fewest crossing drive pairs, then least driving); each keeps
+  its element. **Base rate (seen):** 25 of 287 squads had a crew re-dealt (builder0 native, 55c973cd4, round 36's 12 cells x
+  3621-3626). **Judged probe:** `make native orders-probe`, arms `main:` v `whole:--untangle=whole`, the 12 cells, FRESH
+  seeds 3713-3724 (n 12 a cell), builder0, on a hash whose full check is green. **Counter:** `swapped_whole` > 0 on the
+  whole arm and the arms' rows differ. **Deciding:** squads arriving short (`redealt` > 0) summed: arm 0 and base >= 10
+  (else "no workload"). **Guards (his priority, contention, at no-worse-than-today):** friendly contacts summed over all
+  runs (`friend_contacts`, physics hull touches between his vehicles) arm <= base x 1.1 + 5, and the same for
+  `friend_contacts_foreign` (different squads); per cell medians: all-in <= base x 1.2 + 3 s and no more never-in seeds,
+  twitch worst <= base + 3 m, end foreign min >= base - 3 m, crossed (far bank) no higher; `whole_still_crossed` reported.
+  `test_control_untangle*` and `test_control_scale` in check. **A pass ships ON** (default whole, `--untangle=deal` keeps
+  today's); the player's path only (CPU elements are not untangled), so no CPU guard. If contacts fail, re-dealing stays
+  (his answer).
 
 ### Plan (worker, 2026-10-21; start: main 9d325e291, green by the launch check named in HANDOFF)
 1. O1: probe columns first (per squad after arrival: halt-shape flips, terrain flips of the crews' centroid, reseats),
