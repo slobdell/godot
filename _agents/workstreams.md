@@ -153,6 +153,13 @@ _(each stream files its bar here BEFORE its first number; the orchestrator recor
   builder2 (Spot, us-west4-a) preempted 08:47, 09:00, 09:04 PDT (GCP operations log); native's base read is a chunked, resumable
   driver (one seed per remote call, raw logs outside build/, a 255 retried after gcp-start); the smoke ran on builder0's light lane.
   On-demand (gcp_builder.md item 2) not switched: a spend on a box his other projects share; the lead is told.
+- **R37.4 (2026-10-21) no C++ twin for R1-R3 (native's written read, main 9d325e291 v stream/rules 12f410388).** Sight: every C++
+  reader reads the live `sight_radius` per call (perception_native.cpp:81, gun_native.cpp:296/:470, native_scan.gd:55); threat_native
+  .cpp:251-267 is the suppression settle's twin and R1's settle runs after it on both paths. Spread: no native file computes it
+  (gun_native.cpp:426 calls `FireLanes.for_shot` in GDScript; matchups_native uses base spread only, as matchups.gd). Drive: R2's halt
+  and R3's cap edit `drive_cmd.throttle` before `NativeTank.drive` (tank.gd:668 -> tank_drive_native.cpp:71); `max_forward_speed`
+  untouched. **Ruled:** accepted; the empirical form (rules' lab tests under `make native test`, each switch ON, both arms) runs on
+  rules' pair tree (N2) before their series.
 
 ## Round 36: four streams (prepared 2026-10-20; briefs in `streams/`)
 
