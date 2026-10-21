@@ -102,6 +102,24 @@ func test_a_look_that_is_off_draws_nothing() -> void:
 	assert_eq(fx.feedback.pinned_of(&"Pinned"), 1.0, "but the fact is still read, for the screen half")
 
 
+func test_the_reading_is_redone_ten_times_a_second_not_every_frame() -> void:
+	var world := _world()
+	var fx: FxWorld = world[0]
+	var game_match: Match = world[1]
+	var crew := game_match.spawn_tank("Crew", 0, Match.Team.RUST, "tank")
+	crew.global_position = FIELD
+	crew.suppression = 1.0
+	fx.feedback.update(fx.now)
+	assert_eq(fx.feedback.pinned_of(&"Crew"), 1.0, "read on the first frame")
+	crew.suppression = 0.0
+	fx.now += FeedbackFx.REREAD_S * 0.5
+	fx.feedback.update(fx.now)
+	assert_eq(fx.feedback.pinned_of(&"Crew"), 1.0, "a frame later the last reading stands")
+	fx.now += FeedbackFx.REREAD_S
+	fx.feedback.update(fx.now)
+	assert_eq(fx.feedback.pinned_of(&"Crew"), 0.0, "and the next reading sees it recover")
+
+
 func test_the_look_flag_parses_slots_and_combinations() -> void:
 	var picked := FeedbackLook.parse("hit:b,pinned:a+c,repair:off")
 	assert_eq(Array(picked["hit"]), ["b"], "one look")

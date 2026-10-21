@@ -35,6 +35,10 @@ const HIT_SECTOR_S := 0.9
 const FLARE_EVERY_S := 0.3
 ## Fired rounds remembered until they land (for where the shot came from and whether it fell from above).
 const MAX_TRACKED := 256
+## Who is pinned and who is being mended changes over seconds, so the reading (every unit, fog, menders) is redone this
+## often; the marks of the units it found still follow them every frame. perf-scene a8690b304 builder0: the reading
+## every frame cost ~0.2 ms with every look off.
+const REREAD_S := 0.1
 
 var reader := FeedbackReader.new()
 ## Hits drawn since load, by kind (tests and the showcase).
@@ -59,6 +63,10 @@ var _last_flare := {}
 ## patient name -> {node, rate}; name -> pinned level. This frame's, for UnitBars.
 var _mending := {}
 var _pinned := {}
+## The units the last reading found pinned or mended (and visible), and when to read again.
+var _marked: Array = []
+var _next_read := 0.0
+var _cone_half_deg := 20.0
 var _controls: Node
 var _search_left := 0.0
 
@@ -69,6 +77,7 @@ func _init(fx: FxWorld = null) -> void:
 	_ground_material.shader = GROUND_SHADER
 	_ribbon_material.shader = RIBBON_SHADER
 	_cone_material.shader = CONE_SHADER
+	_cone_half_deg = float(Weapons.profile("sonic_emitter").get("cone_deg", 40.0)) * 0.5
 	_setup(_ground, _ground_material, HIT_MARKS + HELD_MARKS, "Marks")
 	_setup(_beams, _ribbon_material, BEAMS, "Beams")
 	for i in HIT_MARKS:
@@ -161,34 +170,35 @@ func update(now: float) -> void:
 	_ground_material.set_shader_parameter("now", now)
 	_ribbon_material.set_shader_parameter("now", now)
 	_cone_material.set_shader_parameter("now", now)
-	_ground_material.set_shader_parameter("cone_half_deg", float(Weapons.profile("sonic_emitter").get("cone_deg", 40.0)) * 0.5)
-	_mending.clear()
-	_pinned.clear()
+	_ground_material.set_shader_parameter("cone_half_deg", _cone_half_deg)
 	var held := 0
 	var beams := 0
 	var cones := 0
 	var counts := {}
 	var game_match := _fx.link.attached_match() if _fx != null else null
-	if game_match != null:
-		_find_controls()
-		var tanks: Array = _fx.link.unit_nodes()
-		var menders := FeedbackReader.menders(tanks)
+	if game_match == null:
+		_mending.clear()
+		_pinned.clear()
+		_marked.clear()
+	else:
+		if now >= _next_read or now < _next_read - REREAD_S:
+			_next_read = now + REREAD_S
+			_read()
 		var reaching := {}
-		for node in tanks:
+		for node in _marked:
 			var tank := node as Tank
-			if tank == null or not tank.is_alive() or not _shown(tank):
+			if not is_instance_valid(tank) or not tank.is_alive():
 				continue
 			var place := FxWorld.visual_transform(tank).origin
-			var level := FeedbackReader.pinned_level(tank.suppression)
-			if level > 0.0:
-				_pinned[tank.name] = level
-				if FeedbackLook.has("pinned", "b") and held < HELD_MARKS:
-					held = _held(held, Mark.PIN_RING, place, Vector3.FORWARD, _hull_span(tank) * 1.5, PIN_COLOR, level, counts)
-			var link := FeedbackReader.mending(tank, menders)
+			var level := float(_pinned.get(tank.name, 0.0))
+			if level > 0.0 and FeedbackLook.has("pinned", "b") and held < HELD_MARKS:
+				held = _held(held, Mark.PIN_RING, place, Vector3.FORWARD, _hull_span(tank) * 1.5, PIN_COLOR, level, counts)
+			var link: Dictionary = _mending.get(tank.name, {})
 			if link.is_empty():
 				continue
-			_mending[tank.name] = link
 			var mender: Tank = link["node"]
+			if not is_instance_valid(mender):
+				continue
 			reaching[mender] = true
 			if FeedbackLook.has("repair", "a") and mender != tank and beams < BEAMS:
 				var from := FxWorld.visual_transform(mender).origin + Vector3.UP * _top(mender) * 0.8
@@ -327,6 +337,29 @@ static func _top(tank: Tank) -> float:
 
 
 ## Whether the local player may see `tank` (fog); with no local player (a showcase, a spectator) everything shows.
+## The reading: every visible unit's pinned level and mender, for the marks and for UnitBars, the radar and the card.
+func _read() -> void:
+	_find_controls()
+	_mending.clear()
+	_pinned.clear()
+	_marked.clear()
+	var tanks: Array = _fx.link.unit_nodes()
+	var menders := FeedbackReader.menders(tanks)
+	for node in tanks:
+		var tank := node as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var level := FeedbackReader.pinned_level(tank.suppression)
+		var link := FeedbackReader.mending(tank, menders)
+		if (level <= 0.0 and link.is_empty()) or not _shown(tank):
+			continue
+		_marked.append(tank)
+		if level > 0.0:
+			_pinned[tank.name] = level
+		if not link.is_empty():
+			_mending[tank.name] = link
+
+
 func _shown(tank: Tank) -> bool:
 	var game_match := _fx.link.attached_match() as Match if _fx != null else null
 	if game_match == null or not is_instance_valid(_controls):
