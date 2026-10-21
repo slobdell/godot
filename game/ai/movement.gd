@@ -3707,6 +3707,7 @@ func _remaining_path_distance(goal: Vector3) -> float:
 ## Blind unsticking: driving hard but not moving for STUCK_SECONDS → back off for UNSTICK_SECONDS.
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if Traffic.holding(String(ctl.tank.name)): return  # round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
+	if ctl.tank.short_halt_seconds > 0.0: return  # round 37 (rules R2): the plant holds a short halt to shoot; not a stall
 	if PlannerSeam.on() and PlannerSeam.live(String(ctl.tank.name)): return  # round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
 	_unstick(cmd, order, delta)
 	if ManoeuvreCensus.on:
