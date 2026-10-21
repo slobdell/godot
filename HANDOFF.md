@@ -46,6 +46,10 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 
 **His packing answer (2026-10-20, game_design.md *Round 36: his packing answer*): keep 9 m.** O4 stays parked.
 
+**traffic is DONE (2026-10-20 ~18:30):** stream/traffic 362848e6a green (builder2 2969/0); game code = main's; tooling/docs only, not a
+merge candidate (merge its tooling at the close if wanted). T8 does not show on the scoreboard (its gain has no line); native adds a
+"killed while held" line.
+
 **Round 37 candidates so far (from round 36's reads):** CPU screen / support_by_fire seats placed off other elements' paths (R36.11:
 9 of 11 jam:yielding-to-another-squad deaths); the post-deploy twitch that is neither depth nor seating (orders' engagement / stopped
 short / traffic split); whatever S1 / S2a leave of the wedged and left-behind crews.
