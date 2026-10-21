@@ -135,6 +135,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   at the end. **Guards (per-fight totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se
   from the base arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (default on,
   `--parked-hold=off` keeps today's), his crews only.
+- **O5 SEAT_ASIDE (orders, R37.5; filed 2026-10-21 before any builder0 arm number; code 8f5a8b08f, OFF).** What he would
+  see: CPU squads set up their screens off the streets other squads use, so CPU crews stop stepping aside (and dying) for
+  their own side's traffic. The change (element_commander.gd): a CPU screen point within 10 m of another living element's
+  way (its centre to its task destination, straight) steps across its own approach, 5 m steps alternating sides, up to
+  4, to the first clear point. **Sizing (seen; builder0 native light, baf3dbd8e, `make seat-yield-census`, locks / gorge /
+  terminus x 1801-1806, 18 CPU v CPU fights):** 542 give-ways by crews holding a CPU seat to another element's crew (499
+  screen, 43 hold, 0 support_by_fire), 21 deaths in them (19 screen), 705 deaths in all. Laptop dev read (locks s1801,
+  one fight): 15 -> 2. **Judged:** `make native seat-yield-census`, arms none v `SY_FLAGS=--seat-aside=on`, the same 3
+  maps x FRESH seeds 1811-1822 (36 fights an arm), builder0, on a green-checked hash. **Counter:** `seats_aside` > 0.
+  **Deciding:** screen give-ways (episodes) summed, arm <= 50 % of base. **Reported:** deaths in seat give-ways (base ~42
+  expected: too few to decide; must not rise beyond Poisson noise, arm <= base + 1.645 sqrt(base)).
+  **Guards (per-fight totals, both sides are CPU):** deaths a fight per team each within base +/- 1.645 se (se from the
+  base arm's per-fight sd, n 36). **A pass ships ON** (symmetric: every CPU commander), `--seat-aside=off` keeps today's.
 - **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 ~10:10 PDT before any O3 number; code 092cb34b7, OFF).** What he
   would see: squads he sends together arrive each with its own vehicles (no squad one vehicle short, no stranger in it),
   and they do not bump each other more than today. The change: where today's untangle re-deals vehicles between squads

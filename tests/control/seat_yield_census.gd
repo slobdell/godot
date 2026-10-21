@@ -18,6 +18,7 @@ var _open := {}  # unit -> episode dict
 var _closed: Array = []  # episodes awaiting the DIED_S window
 var _totals := {}
 var _deaths := 0
+var _deaths_by_team := {}
 var _seconds_run := 0.0
 
 
@@ -36,7 +37,10 @@ func _run() -> void:
 	var main: Node = (load("res://game/main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	var game_match: Match = main.get("game_match")
-	game_match.unit_destroyed.connect(func(_event: Dictionary) -> void: _deaths += 1)
+	game_match.unit_destroyed.connect(func(event: Dictionary) -> void:
+		_deaths += 1
+		var side := str(event.get("team", -1))
+		_deaths_by_team[side] = int(_deaths_by_team.get(side, 0)) + 1)
 	var seconds := float(_flag("seconds", "180"))
 	var started := -1
 	var last_tick := -1
@@ -64,7 +68,7 @@ func _run() -> void:
 		_emit(episode)
 	_closed.clear()
 	print("SEAT_YIELD_CENSUS " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
-			"seconds": snappedf(_seconds_run, 0.1), "deaths": _deaths, "by_verb": _totals,
+			"seconds": snappedf(_seconds_run, 0.1), "deaths": _deaths, "deaths_by_team": _deaths_by_team, "by_verb": _totals,
 			"seat_aside": "on" if ElementCommander.SEAT_ASIDE else "off", "seats_aside": ElementCommander.seats_aside,
 			"seats_aside_failed": ElementCommander.seats_aside_failed}))
 	quit(0)
