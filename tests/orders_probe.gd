@@ -192,7 +192,7 @@ func _run() -> void:
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
 				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
-				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)),
+				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
@@ -348,6 +348,22 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 			squad["placed"] = _seats(alive)
 		return
 	var placed: Dictionary = squad["placed"]
+	# Round 36 (orders, R36.6 traces): a crew driving AWAY from its own order goal (the distance to it growing while it has
+	# one), summed per crew after the place window; the worst crew's metres are `away_m`. A turn-around loop (Locks 3
+	# click s3624: Bravo_1's seat 7 m north, it drove 30 m south over the canal and back) reads as tens of metres.
+	var last_gap: Dictionary = squad.get("goal_gap", {})
+	var away: Dictionary = squad.get("away", {})
+	for n: String in alive:
+		var goal: Variant = _controls.orders.goal_position(n)
+		if goal is Vector3:
+			var gap := _flat_d(_tank(n).global_position, goal)
+			if last_gap.has(n) and gap > float(last_gap[n]):
+				away[n] = float(away.get(n, 0.0)) + gap - float(last_gap[n])
+			last_gap[n] = gap
+		else:
+			last_gap.erase(n)
+	squad["goal_gap"] = last_gap
+	squad["away"] = away
 	for n: String in alive:
 		if placed.has(n):
 			var moved := _flat_d(_tank(n).global_position, placed[n])
