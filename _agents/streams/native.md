@@ -68,6 +68,9 @@ laptop: `broker-load NODE=false` -> "broker never printed BROKER_LISTENING ... (
 adopts**); R37.2 twin audit answered in writing (no C++ twin needed for R1/R2/R3: C++ reads sight live, never computes spread,
 and drives the throttle tank.gd hands it).
 
+**builder2 queue (shared with rules, cover):** native's guard base read STARTED 2026-10-21 09:44 PDT (`guard.sh 73a7d5f46`:
+its game tree = main 9d325e291's; only tests/tools differ), first chunk = seed 2601. Will say here when it finishes.
+
 ### CP37.1 design note (sent to the orchestrator; no new game code)
 
 - **Where:** `tests/ai_scenarios/guard_line.gd`, a SceneTree probe around the scoreboard's own fight: `--skirmish --demo-match
