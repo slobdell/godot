@@ -845,6 +845,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			deploy_extra["keep"] = pinned
 		_group(plan, ordered, String(plan["formation"]), stand, deploy["heading"], spacing, "move", "", true, true, null,
 				false, "travel", deploy_extra)
+		if DEPLOY_COMPACT and String(plan["formation"]) == "herringbone":
+			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1824,6 +1826,31 @@ const DEPLOY_INLAND_STEP_M := 2.0
 const DEPLOY_INLAND_MAX_M := 24.0
 const DEPLOY_CAP_S := 10.0
 const DEPLOY_ON_SPOT_M := 12.0
+## O2 (round 36): THE DEPLOY'S HERRINGBONE STAGGERED HALF AS DEEP. Traced (laptop, seed 34, the 6 click cells): a 4-5
+## crew herringbone stands 33-48 m deep along the street ((n - 1) x 0.8 x spacing), and every post-deploy twitch over 20 m
+## was a squad that deep: the wedge's wing crews drive to its far ends. Deployed, its seats are pulled toward their middle
+## along the heading by DEPLOY_COMPACT_ALONG; the side offsets stay, so neighbours (which alternate sides) stay more than
+## a spacing apart and no pair comes closer than 0.75 spacing (test_control_deploy_compact).
+## OFF until judged: `--deploy-compact=on` (env DEPLOY_COMPACT=on) opts in.
+static var DEPLOY_COMPACT := OS.get_cmdline_user_args().has("--deploy-compact=on") or OS.get_environment("DEPLOY_COMPACT") == "on"
+const DEPLOY_COMPACT_ALONG := 0.5
+
+
+## `slots` (name -> seat) pulled toward their middle along `heading` by DEPLOY_COMPACT_ALONG. Pure.
+static func _deploy_compact(slots: Dictionary, heading: Vector3) -> Dictionary:
+	var axis := TacticsFormation.flat(heading)
+	if slots.is_empty():
+		return slots
+	var mid := 0.0
+	for seat: Vector3 in slots.values():
+		mid += seat.dot(axis) / float(slots.size())
+	var out := {}
+	for name: Variant in slots:
+		var seat: Vector3 = slots[name]
+		out[name] = seat - axis * (seat.dot(axis) - mid) * (1.0 - DEPLOY_COMPACT_ALONG)
+	return out
+
+
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
 static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
 

@@ -1,0 +1,18 @@
+seeds [3681, 3682, 3683, 3684, 3685, 3686]; cells 12
+counter: runs that differ 72
+gain (a) median worst deploy leg: main 13.4 compact 11.4 m (+14.9% lower; needs >= 20 %)
+cell                 | twitch med m main/comp | all-in med s main/comp (never) | foreign end min | deck | crossed | own min centre m main/comp | hull gap main/comp
+crossing  3 click | 14.45 / 14.45 | 16.700000000000003 / 16.700000000000003 (0/0) | 3.7 / 3.7 | 4/4 | 0 | 6.5 / 6.5 | 0.8 / 0.8  GUARD FAIL: own spacing
+crossing  3 route | 4.0 / 3.4 | 16.049999999999997 / 16.0 (0/0) | 4.6 / 4.6 | 2/1 | 0 | 8.6 / 8.6 | 0.2 / 0.2  GUARD FAIL: own spacing
+crossing  5 click | 29.75 / 34.099999999999994 | 35.3 / 34.7 (0/0) | 4.9 / 5.4 | 8/7 | 0 | 6.4 / 6.4 | 1.1 / 1.1  GUARD FAIL: twitch, own spacing
+crossing  5 route | 14.5 / 14.75 | 44.5 / 43.25 (1/2) | 4.0 / 4.0 | 0/0 | 0 | 5.4 / 5.0 | 1.2 / 1.2  GUARD FAIL: all-in, own spacing
+locks     3 click | 14.2 / 14.2 | 18.6 / 18.6 (0/0) | 12.350000000000001 / 12.350000000000001 | 6/6 | 0 | 5.6 / 5.6 | 2.0 / 2.0  GUARD FAIL: own spacing
+locks     3 route | 18.0 / 18.0 | 22.2 / 22.2 (0/0) | 11.3 / 11.3 | 8/8 | 0 | 3.8 / 3.8 | 0.0 / 0.0  GUARD FAIL: own spacing
+locks     5 click | 20.4 / 19.75 | 26.4 / 25.8 (0/0) | 10.2 / 11.2 | 2/2 | 0 | 4.7 / 4.7 | 0.4 / 0.4  GUARD FAIL: own spacing
+locks     5 route | 7.85 / 7.85 | 16.5 / 16.5 (0/0) | 12.2 / 12.149999999999999 | 0/0 | 0 | 5.6 / 5.6 | 0.7 / 0.7  GUARD FAIL: own spacing
+terminus  3 click | 7.550000000000001 / 7.550000000000001 | 20.049999999999997 / 20.049999999999997 (0/0) | 17.15 / 17.15 | 0/0 | 0 | 8.6 / 8.6 | 0.2 / 0.2  GUARD FAIL: own spacing
+terminus  3 route | 1.0 / 1.55 | 19.75 / 19.75 (0/0) | 10.2 / 10.2 | 0/0 | 0 | 3.9 / 3.7 | 0.5 / 0.5  GUARD FAIL: own spacing
+terminus  5 click | 18.45 / 11.7 | 11.45 / 11.45 (0/0) | 9.95 / 11.2 | 0/0 | 0 | 5.2 / 5.2 | 0.1 / 0.5  GUARD FAIL: own spacing
+terminus  5 route | 18.55 / 29.700000000000003 | 60.199999999999996 / 48.6 (2/0) | 8.75 / 8.45 | 0/0 | 0 | 4.8 / 5.0 | 0.0 / 0.0  GUARD FAIL: twitch, own spacing
+gain (b) summed median twitch: main 168.7 compact 177.0 m (-4.9% lower; needs >= 15 %)
+VERDICT: FAIL

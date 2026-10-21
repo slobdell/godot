@@ -180,10 +180,20 @@ func _run() -> void:
 				"arrived_by": squad.get("arrived_by", ""),
 				"deploy_s": snappedf((int(squad["place_tick"]) - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 						if squad.has("place_tick") else -1.0, "deploy_cause": squad.get("deploy_cause", ""),
-				"place_m": snappedf(float(squad.get("place", -1.0)), 0.1), "twitch_m": snappedf(float(squad.get("twitch", -1.0)), 0.1)
+				"place_m": snappedf(float(squad.get("place", -1.0)), 0.1),
+				"deploy_leg_m": snappedf(float(squad.get("deploy_leg_m", -1.0)), 0.1), "deploy_passes": int(squad.get("deploy_passes", -1)),
+				"leg_minmax_m": snappedf(float(squad.get("leg_minmax_m", -1.0)), 0.1), "leg_compact_m": snappedf(float(squad.get("leg_compact_m", -1.0)), 0.1),
+				"detour_worst_m": snappedf(float(squad.get("detour_worst_m", -1.0)), 0.1), "detours": int(squad.get("detours", -1)),
+				"detours_caught": int(squad.get("detours_caught", -1)),
+				"travel_width_m": snappedf(float(squad.get("travel_width_m", -1.0)), 0.1),
+				"halt_depth_m": snappedf(float(squad.get("halt_depth_m", -1.0)), 0.1), "halt_shape": squad.get("halt_shape", ""), "twitch_m": snappedf(float(squad.get("twitch", -1.0)), 0.1)
 						if squad.has("placed") else -1.0,
 				"end_foreign_m": snappedf(_nearest(_living(squad), func(t: Tank) -> bool: return t.team == Match.Team.GREEN \
 						and not (squad["units"] as Array).has(String(t.name))), 0.1),
+				# O2 (round 36, the orchestrator's guard): own squad's closest two crews at the window's end, centre to centre
+				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
+				"twitch_seen": squad.get("twitch_seen", {}),
+				"end_own_min_m": snappedf(_own_min(_living(squad), false), 0.1), "end_own_gap_m": snappedf(_own_min(_living(squad), true), 0.1),
 				"end_far_m": snappedf(_living(squad).map(func(n: String) -> float: return _flat_d(_tank(n).global_position, _click)).max()
 						if not _living(squad).is_empty() else -1.0, 0.1),
 				"deploy_step": "on" if ElementPlan.DEPLOY_STEP else "off",
@@ -197,7 +207,7 @@ func _run() -> void:
 			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them
 			"gates_laid": _static_or(RtsControls, "gates_laid"), "route_starts": _static_or(RtsControls, "route_starts"),
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
-			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
+			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "pack_refused": SelectionSquads.pack_refused, "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"returned": returned, "all_in_s": snappedf((all_in_tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
@@ -317,6 +327,8 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 		squad["twitch"] = 0.0
 		return
 	var since := _match.tick - int(squad["place_tick"])
+	if since == SimClock.TICK_RATE and element != null:
+		_deploy_legs(squad, alive, element)
 	if since <= int(PLACE_S * SimClock.TICK_RATE):
 		var from: Dictionary = squad["place_from"]
 		for n: String in alive:
@@ -328,7 +340,121 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 	var placed: Dictionary = squad["placed"]
 	for n: String in alive:
 		if placed.has(n):
-			squad["twitch"] = maxf(float(squad["twitch"]), _flat_d(_tank(n).global_position, placed[n]))
+			var moved := _flat_d(_tank(n).global_position, placed[n])
+			if moved > TWITCH_SEEN_M:
+				# Round 36 (orders, the "neither" twitch): every brain option a crew shows while off its placed seat
+				# (+ "@goal" when it has an order goal then): MOVE@goal = driving to its seat; ADVANCE etc = its own fight.
+				var mover := Movement.of(_tank(n))
+				var option := String((mover.ctl as TankBrain).choice.get("option", "")) if mover != null and mover.ctl is TankBrain else "-"
+				if _controls.orders.goal_position(n) is Vector3:
+					option += "@goal"
+				var seen: Dictionary = squad.get("twitch_seen", {})
+				seen[option] = int(seen.get(option, 0)) + 1
+				squad["twitch_seen"] = seen
+			squad["twitch"] = maxf(float(squad["twitch"]), moved)
+
+
+## O2 (round 36): the deploy move's geometry, read 1 s after the deploy (the halt's seats issued): each crew's leg from where
+## it stood at the deploy to its halt seat, how many legs drive PAST a squadmate (the leg's segment within PASS_M of another
+## crew's spot at the deploy, that crew not at the leg's end), the travel shape's width across the heading and the halt's
+## depth along it, and the halt's shape.
+const PASS_M := 4.0
+const DETOUR_M := 8.0
+## A crew this far off its placed seat after the place window counts toward `twitch_seen` (ticks a brain option was shown).
+const TWITCH_SEEN_M := 3.0
+
+
+func _deploy_legs(squad: Dictionary, alive: Array, element: Element) -> void:
+	var from: Dictionary = squad["place_from"]
+	var heading: Vector3 = element.deploy.get("heading", Vector3.FORWARD)
+	var side := Vector3(-heading.z, 0.0, heading.x)
+	var worst := 0.0
+	var passes := 0
+	var across: Array = []
+	var along: Array = []
+	for n: String in alive:
+		var seat: Variant = element.slots.get(n)
+		if not (seat is Vector3) or not from.has(n):
+			continue
+		var a: Vector3 = from[n]
+		var b: Vector3 = seat
+		worst = maxf(worst, _flat_d(a, b))
+		across.append(Vector3(a.x, 0.0, a.z).dot(side))
+		along.append(Vector3(b.x, 0.0, b.z).dot(heading))
+		for other: String in alive:
+			if other == n or not from.has(other):
+				continue
+			var o: Vector3 = from[other]
+			if _flat_d(o, b) > PASS_M and Geometry2D.get_closest_point_to_segment(Vector2(o.x, o.z), Vector2(a.x, a.z),
+					Vector2(b.x, b.z)).distance_to(Vector2(o.x, o.z)) <= PASS_M and _flat_d(o, a) > PASS_M:
+				passes += 1
+				break
+	# Counterfactuals (trace only): the worst leg with the best seating of the same seats, and with the halt's depth along
+	# the heading halved about its middle (side offsets kept).
+	var starts: Array = []
+	var seats: Array = []
+	for n: String in alive:
+		if from.has(n) and element.slots.get(n) is Vector3:
+			starts.append(from[n])
+			seats.append(element.slots[n])
+	var mid := 0.0
+	for seat: Vector3 in seats:
+		mid += seat.dot(heading) / float(seats.size())
+	var compact: Array = seats.map(func(seat: Vector3) -> Vector3: return seat - heading * (seat.dot(heading) - mid) * 0.5)
+	squad["leg_minmax_m"] = _minmax_leg(starts, seats)
+	squad["leg_compact_m"] = _minmax_leg(starts, compact)
+	# O3 (X3c's falsifier): each crew's DRIVE to its halt seat against the straight line, and whether X3c's anchor test
+	# (drive from the halt's anchor <= straight x 1.3 + 3 m, no deck) fails that seat. A detour the anchor test passes is a
+	# loop the reached halt would not catch.
+	var detour_worst := 0.0
+	var detours := 0
+	var caught := 0
+	var anchor: Vector3 = element.anchor if element.anchor is Vector3 else Vector3.ZERO
+	var drive := SelectionSquads.drive_on(_tank(alive[0]))
+	var crosses := SelectionSquads.crosses_on(_tank(alive[0]))
+	for n: String in alive:
+		var seat: Variant = element.slots.get(n)
+		if not (seat is Vector3) or not from.has(n):
+			continue
+		var straight := _flat_d(from[n], seat)
+		var detour := float(drive.call(from[n], seat)) - straight
+		detour_worst = maxf(detour_worst, detour)
+		if detour >= DETOUR_M:
+			detours += 1
+			var a_straight := _flat_d(anchor, seat)
+			if a_straight >= 0.5 and (float(drive.call(anchor, seat)) > a_straight * 1.3 + 3.0 or bool(crosses.call(anchor, seat))):
+				caught += 1
+	squad["detour_worst_m"] = detour_worst
+	squad["detours"] = detours
+	squad["detours_caught"] = caught
+	squad["deploy_leg_m"] = worst
+	squad["deploy_passes"] = passes
+	squad["travel_width_m"] = (across.max() - across.min()) if across.size() > 1 else 0.0
+	squad["halt_depth_m"] = (along.max() - along.min()) if along.size() > 1 else 0.0
+	squad["halt_shape"] = element.formation
+
+
+## The shortest possible longest leg from `starts` to `seats` (every assignment; a squad is <= 6 crews).
+func _minmax_leg(starts: Array, seats: Array) -> float:
+	if starts.size() != seats.size() or starts.is_empty() or starts.size() > 6:
+		return -1.0
+	var best := [INF]
+	var walk := func(walk_self: Callable, i: int, used: Array, worst: float) -> void:
+		if worst >= float(best[0]):
+			return
+		if i == starts.size():
+			best[0] = worst
+			return
+		for j in seats.size():
+			if not used[j]:
+				used[j] = true
+				walk_self.call(walk_self, i + 1, used, maxf(worst, _flat_d(starts[i], seats[j])))
+				used[j] = false
+	var used: Array = []
+	used.resize(seats.size())
+	used.fill(false)
+	walk.call(walk, 0, used, 0.0)
+	return float(best[0])
 
 
 func _seats(alive: Array) -> Dictionary:
@@ -495,6 +621,20 @@ func _nearest(alive: Array, keep: Callable) -> float:
 			continue
 		for n: String in alive:
 			best = minf(best, _flat_d((t as Tank).global_position, _tank(n).global_position))
+	return best if best < INF else -1.0
+
+
+## The closest two of `alive` (centre to centre, or hull to hull with `hulls`); -1 with fewer than two.
+func _own_min(alive: Array, hulls: bool) -> float:
+	var best := INF
+	for i in alive.size():
+		for j in range(i + 1, alive.size()):
+			var a := _tank(alive[i])
+			var b := _tank(alive[j])
+			var d := _flat_d(a.global_position, b.global_position)
+			if hulls:
+				d -= SlotGround.envelope_of(String(a.unit_id)) + SlotGround.envelope_of(String(b.unit_id))
+			best = minf(best, d)
 	return best if best < INF else -1.0
 
 

@@ -1022,6 +1022,15 @@ const PACK_GROUND_SLACK_M := 4.0
 const PACK_TRAVEL_CLEAR_M := 7.0
 ## How many packs the controls laid, this process (a probe reads it).
 static var packed := 0
+## O4 (round 36), measurement: in the pack's LAST compaction pass, why each candidate cheaper than a squad's place was
+## refused, by the first test that refused it ("halt", "outline", "travel", "travel_outline", "ground", "reach"): what keeps
+## the squads from packing nearer the click (a probe reads it).
+static var pack_refused := {}
+
+
+static func _refuse(reason: String) -> bool:
+	pack_refused[reason] = int(pack_refused.get(reason, 0)) + 1
+	return false
 
 
 static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok: Callable, reached: Callable,
@@ -1114,35 +1123,35 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 			for a: Vector2 in mine:
 				for b: Vector2 in theirs:
 					if (at + a).distance_to(there + b) < gap:
-						return false
+						return _refuse("halt")
 			var hj: PackedVector2Array = hulls[j][int(other.z)]
 			if hj.size() >= 3:
 				for a: Vector2 in mine:
 					if Geometry2D.is_point_in_polygon(at + a - there, hj):
-						return false
+						return _refuse("outline")
 			var hi: PackedVector2Array = hulls[i][int(place.z)]
 			if hi.size() >= 3:
 				for b: Vector2 in theirs:
 					if Geometry2D.is_point_in_polygon(there + b - at, hi):
-						return false
+						return _refuse("outline")
 			# The squads ARRIVE in their travel shapes before they deploy: those must not mix either.
 			for a: Vector2 in travel[i]:
 				for b: Vector2 in travel[j]:
 					if (at + a).distance_to(there + b) < PACK_TRAVEL_CLEAR_M:
-						return false
+						return _refuse("travel")
 			var tj: PackedVector2Array = travel_hulls[j]
 			if tj.size() >= 3:
 				for a: Vector2 in travel[i]:
 					if Geometry2D.is_point_in_polygon(at + a - there, tj):
-						return false
+						return _refuse("travel_outline")
 			var ti: PackedVector2Array = travel_hulls[i]
 			if ti.size() >= 3:
 				for b: Vector2 in travel[j]:
 					if Geometry2D.is_point_in_polygon(there + b - at, ti):
-						return false
+						return _refuse("travel_outline")
 		for a: Vector2 in mine:
 			if not bool(seat_good.call(world.call(at + a))):
-				return false
+				return _refuse("ground")
 		return true
 	var grid: Array[Vector2] = []
 	var n_across := int(PACK_ACROSS_M / PACK_STEP_M)
@@ -1187,6 +1196,7 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 			tries += 1
 			if bool(reaches.call(at)):
 				return place
+			_refuse("reach")
 		return null
 	var order := range(blocks.size())
 	order.sort_custom(func(a: int, b: int) -> bool:
@@ -1207,6 +1217,7 @@ static func pack_halts(blocks: Array, click: Vector3, heading: Vector3, seat_ok:
 				return none  # no place fits: the caller keeps the ranks
 			places[i] = place
 	for pass_index in PACK_PASSES:
+		pack_refused = {}  # O4 measurement: what the LAST pass refused (what keeps each squad from moving nearer the click)
 		var moved := false
 		var by_cost := order.duplicate()
 		by_cost.sort_custom(func(a: int, b: int) -> bool: return float(cost_of.call(a, places[a])) > float(cost_of.call(b, places[b])))

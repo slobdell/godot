@@ -1,0 +1,116 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          compact   |   28.5 /   18.7   |    4   0 |     23.8 |               3.5 |            34.6 | 1.46 | 56.2
+crossing 3 click          main      |   28.5 /   18.7   |    4   0 |     23.8 |               3.5 |            34.6 | 1.46 | 56.2
+crossing 3 route          compact   |   28.5 /   22.6   |    1   0 |     19.1 |               4.5 |            33.7 | 1.48 | 56.2
+crossing 3 route          main      |   28.5 /   22.6   |    2   0 |     19.1 |               4.5 |            33.7 | 1.47 | 56.2
+crossing 5 click          compact   |   70.8 /   26.6   |    7   0 |     44.6 |               2.8 |            88.8 | 2.34 | 20.0
+crossing 5 click          main      |   70.8 /   26.6   |    8   0 |     42.2 |               2.6 |            88.8 | 2.30 | 20.0
+crossing 5 route          compact   |   70.8 /   28.9   |    0   0 |        - |               2.8 |            61.5 | 2.04 | 20.0
+crossing 5 route          main      |   70.8 /   28.9   |    0   0 |        - |               2.8 |            61.5 | 2.04 | 20.0
+locks 3 click             compact   |   38.0 /   34.4   |    6   0 |     50.5 |               2.5 |            43.2 | 2.03 | 30.0
+locks 3 click             main      |   38.0 /   34.4   |    6   0 |     50.5 |               2.5 |            43.2 | 2.03 | 30.0
+locks 3 route             compact   |   38.0 /   34.4   |    8   0 |     89.4 |               4.4 |            48.3 | 2.16 | 30.0
+locks 3 route             main      |   38.0 /   34.4   |    8   0 |     89.4 |               4.4 |            48.3 | 2.16 | 30.0
+locks 5 click             compact   |   55.6 /   39.8   |    2   0 |     29.9 |               4.5 |            59.4 | 2.20 | 17.1
+locks 5 click             main      |   55.6 /   39.8   |    2   0 |     29.3 |               4.5 |            59.9 | 2.35 | 17.1
+locks 5 route             compact   |   55.6 /   39.8   |    0   0 |     28.2 |               3.7 |            43.1 | 2.34 | 17.1
+locks 5 route             main      |   55.6 /   39.8   |    0   0 |     28.2 |               3.7 |            43.1 | 2.34 | 17.1
+terminus 3 click          compact   |   36.9 /   34.4   |    0   0 |     27.7 |               2.9 |            57.2 | 1.57 | 19.5
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     27.7 |               2.9 |            57.2 | 1.57 | 19.5
+terminus 3 route          compact   |   36.9 /   34.4   |    0   0 |     21.2 |               4.6 |            38.9 | 1.34 | 19.5
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     21.2 |               4.6 |            38.9 | 1.33 | 19.5
+terminus 5 click          compact   |   63.9 /   39.4   |    0   0 |     34.9 |               7.9 |            55.4 | 2.65 | 6.2
+terminus 5 click          main      |   63.9 /   39.4   |    0   0 |     40.0 |               7.9 |            55.4 | 3.14 | 6.2
+terminus 5 route          compact   |   63.9 /   39.4   |    0   0 |     74.4 |               3.4 |            58.8 | 6.44 | 6.2
+terminus 5 route          main      |   63.9 /   39.4   |    0   0 |        - |               5.0 |            62.6 | 6.17 | 6.2
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          compact   |          33.6 |          22.4 |           26.7 |               3.2 |          37.9
+crossing 3 click          main      |          33.6 |          22.4 |           26.7 |               3.2 |          37.9
+crossing 3 route          compact   |          28.2 |          16.5 |           11.0 |               3.9 |          37.8
+crossing 3 route          main      |          28.2 |          16.5 |           11.3 |               3.5 |          37.8
+crossing 5 click          compact   |          54.6 |          42.1 |           45.0 |               4.6 |         105.7
+crossing 5 click          main      |          52.2 |          55.0 |           44.2 |               3.3 |         105.7
+crossing 5 route          compact   |             - |          30.2 |              - |               3.1 |          87.7
+crossing 5 route          main      |             - |          30.2 |              - |               3.1 |          87.7
+locks 3 click             compact   |          60.5 |          30.0 |           20.4 |               5.7 |          50.8
+locks 3 click             main      |          60.5 |          30.0 |           20.4 |               5.7 |          50.8
+locks 3 route             compact   |             - |          20.7 |              - |               5.2 |          51.6
+locks 3 route             main      |             - |          20.7 |              - |               5.2 |          51.6
+locks 5 click             compact   |          44.0 |          25.9 |           49.5 |               6.0 |          78.2
+locks 5 click             main      |          46.8 |          25.9 |           49.5 |               6.1 |          77.8
+locks 5 route             compact   |          38.2 |          35.0 |           19.3 |               9.9 |          76.5
+locks 5 route             main      |          38.2 |          35.0 |           19.3 |               9.9 |          76.5
+terminus 3 click          compact   |          37.7 |          37.4 |           13.8 |              11.6 |          60.8
+terminus 3 click          main      |          37.7 |          37.4 |           13.8 |              11.6 |          60.8
+terminus 3 route          compact   |          28.8 |          16.5 |            9.3 |               9.8 |          54.7
+terminus 3 route          main      |          28.8 |          16.5 |            9.3 |               9.8 |          55.2
+terminus 5 click          compact   |          44.3 |          44.2 |           37.1 |               6.0 |          85.5
+terminus 5 click          main      |          46.4 |          44.2 |           39.8 |               6.4 |          85.6
+terminus 5 route          compact   |          78.4 |          38.5 |           35.2 |               4.3 |          93.2
+terminus 5 route          main      |             - |          35.1 |              - |               4.2 |          90.1
+
+MEDIANS over seeds [3681, 3682, 3683, 3684, 3685, 3686] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          compact     | 6 |         16.7 |     0 |          25.3 |         14.4 |          35.5 |               3.2 |    4   0 | 1.32
+crossing 3 click          main        | 6 |         16.7 |     0 |          25.3 |         14.4 |          35.5 |               3.2 |    4   0 | 1.32
+crossing 3 route          compact     | 6 |         16.0 |     0 |          27.1 |          3.4 |          36.9 |               3.9 |    1   0 | 1.21
+crossing 3 route          main        | 6 |         16.0 |     0 |          27.1 |          4.0 |          36.8 |               3.5 |    2   0 | 1.21
+crossing 5 click          compact     | 6 |         34.7 |     0 |          78.1 |         34.1 |          99.8 |               4.6 |    7   0 | 2.03
+crossing 5 click          main        | 6 |         35.3 |     0 |          85.2 |         29.8 |          99.8 |               3.3 |    8   0 | 2.07
+crossing 5 route          compact     | 6 |         43.2 |     2 |          39.3 |         14.8 |          83.7 |               3.1 |    0   0 | 1.84
+crossing 5 route          main        | 6 |         44.5 |     1 |          33.4 |         14.2 |          83.7 |               3.1 |    0   0 | 1.84
+locks 3 click             compact     | 6 |         18.6 |     0 |          40.4 |         14.2 |          49.4 |               5.7 |    6   0 | 1.47
+locks 3 click             main        | 6 |         18.6 |     0 |          40.4 |         14.2 |          49.4 |               5.7 |    6   0 | 1.47
+locks 3 route             compact     | 6 |         22.2 |     0 |          36.0 |         18.2 |          48.8 |               5.2 |    8   0 | 1.61
+locks 3 route             main        | 6 |         22.2 |     0 |          36.0 |         18.2 |          48.8 |               5.2 |    8   0 | 1.61
+locks 5 click             compact     | 6 |         25.8 |     0 |          49.5 |         19.8 |          76.3 |               6.0 |    2   0 | 1.70
+locks 5 click             main        | 6 |         26.4 |     0 |          49.7 |         20.4 |          76.3 |               6.1 |    2   0 | 1.70
+locks 5 route             compact     | 6 |         16.5 |     0 |          31.3 |          7.8 |          73.2 |               9.9 |    0   0 | 1.37
+locks 5 route             main        | 6 |         16.5 |     0 |          31.4 |          7.8 |          73.2 |               9.9 |    0   0 | 1.37
+terminus 3 click          compact     | 6 |         20.0 |     0 |          28.8 |          7.6 |          47.2 |              11.6 |    0   0 | 1.38
+terminus 3 click          main        | 6 |         20.0 |     0 |          28.8 |          7.6 |          47.2 |              11.6 |    0   0 | 1.38
+terminus 3 route          compact     | 6 |         19.8 |     0 |          26.9 |          1.6 |          50.2 |               9.8 |    0   0 | 1.26
+terminus 3 route          main        | 6 |         19.8 |     0 |          26.9 |          1.0 |          50.2 |               9.8 |    0   0 | 1.25
+terminus 5 click          compact     | 6 |         11.4 |     0 |          45.4 |         11.7 |          78.5 |               6.0 |    0   0 | 2.27
+terminus 5 click          main        | 6 |         11.4 |     0 |          45.0 |         18.4 |          79.3 |               6.4 |    0   0 | 2.35
+terminus 5 route          compact     | 6 |         48.6 |     0 |          48.8 |         29.7 |          72.2 |               4.3 |    0   0 | 5.66
+terminus 5 route          main        | 6 |         60.2 |     2 |          41.4 |         18.6 |          73.2 |               4.2 |    0   0 | 5.64
+
+EQUALITY click cells: 0 identical across arms, 36 differ
+  DIFFER crossing 3 click seed 3681
+  DIFFER crossing 3 click seed 3682
+  DIFFER crossing 3 click seed 3683
+  DIFFER crossing 3 click seed 3684
+  DIFFER crossing 3 click seed 3685
+  DIFFER crossing 3 click seed 3686
+  DIFFER crossing 5 click seed 3681
+  DIFFER crossing 5 click seed 3682
+  DIFFER crossing 5 click seed 3683
+  DIFFER crossing 5 click seed 3684
+  DIFFER crossing 5 click seed 3685
+  DIFFER crossing 5 click seed 3686
+  DIFFER locks 3 click seed 3681
+  DIFFER locks 3 click seed 3682
+  DIFFER locks 3 click seed 3683
+  DIFFER locks 3 click seed 3684
+  DIFFER locks 3 click seed 3685
+  DIFFER locks 3 click seed 3686
+  DIFFER locks 5 click seed 3681
+  DIFFER locks 5 click seed 3682
+  DIFFER locks 5 click seed 3683
+  DIFFER locks 5 click seed 3684
+  DIFFER locks 5 click seed 3685
+  DIFFER locks 5 click seed 3686
+  DIFFER terminus 3 click seed 3681
+  DIFFER terminus 3 click seed 3682
+  DIFFER terminus 3 click seed 3683
+  DIFFER terminus 3 click seed 3684
+  DIFFER terminus 3 click seed 3685
+  DIFFER terminus 3 click seed 3686
+  DIFFER terminus 5 click seed 3681
+  DIFFER terminus 5 click seed 3682
+  DIFFER terminus 5 click seed 3683
+  DIFFER terminus 5 click seed 3684
+  DIFFER terminus 5 click seed 3685
+  DIFFER terminus 5 click seed 3686
