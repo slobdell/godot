@@ -138,8 +138,22 @@ as named; N4 sweep; N5 lint; stretch.
   allowed counter named in backticks in a bar. This repo: 115 counters, 110 printed, 5 allowed (manoeuvre's turn_in_*,
   test_manoeuvre_orbit only; manoeuvre told), 0 failures, 0.5 s laptop. Mutation: face_settles out of counters() fails it.
   tools/test_census_lint.sh 9/0 laptop (shell-tools-test runs it in check).
-- **Next: traffic's T10 G `seatyield` mirror** (ahead of everything, orchestrator): the give-way spot nearest the yielder's
-  seat (move_to point, else face_slot) within SEAT_NEAR_M, DEFAULT_OFF; T10 is judged on native. C++ drafted (builds, laptop),
-  twin stage test_the_give_way_nearest_the_seat_both_arms drafted; waits on traffic's GDScript hash.
+- **N4 MERGED** as main 3fc78e502 (R36.20): its full check on 0285bfe5f (builder0) was 2967/0, sim-baseline 53/0 unmoved,
+  one red, relay-smoke (`tanks_seen=4/5`); relay-smoke alone on 0285bfe5f `exited 0`, 5/5 both (R36.12's rule: N4's diff
+  touches no net path). Main merged back here (5141af274).
+- **The net smokes' early-leave race, traced and fixed (0a4832c2f, granted R36.20):** the client counts the most tanks seen AT
+  ONCE, and one that passed closed at once (host: client2 joined, client1 joined, client2 left, before client1's first
+  snapshot). bot_client_check.gd: a passing client lingers --linger s (8) before leaving. `make relay-linger-smoke` (not in
+  check) forces it: laptop, --linger=0 -> late client FAIL 4/5, 20 -> PASS 5/5; relay-/net-/combat-/relay-drop-smoke exit 0
+  with the default (laptop, n=1). Rides with the next hand-over (with N5): owes a full check.
+- **T10 mirrors (traffic; T10 judged on native):** `pair/native-t10b` **0ca19d829** = traffic's pair/t10-r36 c917ac33b + 4
+  native commits: `seatyield` (begin_yield takes, of today's whole candidates, the one nearest the seat within SEAT_NEAR_M;
+  strict <, by index; not firing = today), the asker-clear clock under `clearclock` (_yield_clear_seen exec field;
+  yield_clear_n / ticks / never), `seat_near` (R36.19, exec field + seat_near_total, under clearclock either arm), all
+  configured from SEAT_NEAR_M (native_drive.gd). Twins: test_native_yield's seat stage (5 fresh-process arms, 18 drives each,
+  0 mismatches; ON 6 m move_to / face_slot seated 18 moved 15; 14 m and OFF never; seat_near 18 near in both arms, 0 at 14 m);
+  clearclock on through every yield stage. **builder0 quick GREEN on 0ca19d829: 99/0, exited 0** (79ce37acc 26/0, cc5e11c72
+  29/0 before). Found for traffic: H's `_count_seat_near()` marked no stale (the owned state would write it back): c917ac33b.
+  Traffic takes the full check on builder2, then the T10 series.
 
 **2026-10-20 (orchestrator, at launch).** Not started.
