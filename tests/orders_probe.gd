@@ -209,6 +209,7 @@ func _run() -> void:
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"self_off_m": snappedf((squad.get("self_off", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
+				"off_idle_s": snappedf(int(squad.get("off_idle_ticks", 0)) / float(SimClock.TICK_RATE), 0.1),
 				"self_off_crews": (squad.get("self_off", {}) as Dictionary).size(), "left_by": squad.get("left_by", {}),
 				"self_off_back": (squad.get("self_off", {}) as Dictionary).keys().filter(func(n: String) -> bool:
 						return _tank(n) != null and _tank(n).is_alive() and _flat_d(_tank(n).global_position, squad["placed"][n]) <= BACK_M).size(),
@@ -371,10 +372,13 @@ func _watch() -> void:
 				# Round 37 (orders O2): the crew's own words (TankBrain.label + why), to read a parked crew that moves.
 				var station: Variant = OrderFeed.station(_controls.orders, n)
 				var drive: Variant = mover.get("_goal") if mover != null else null
+				var cmd: Dictionary = (mover.ctl as OrderController).move_order if mover != null and mover.ctl is OrderController else {}
 				parts.append("%s(%.1f,%.1f goal %s %s el %s \"%s\" st %s drv %s)" % [n, _tank(n).global_position.x, _tank(n).global_position.z,
 						str(_xz(goal)) if goal is Vector3 else "-", option, now.element_name if now != null else "-", _tank(n).intent,
 						str(_xz(station)) if station is Vector3 else "-",
 						str(_xz(drive)) if drive is Vector3 and (drive as Vector3).is_finite() else "-"])
+				parts[parts.size() - 1] += "[%s%s]" % [String(cmd.get("type", "")),
+						" %.1f,%.1f" % [float(cmd["x"]), float(cmd["z"])] if cmd.has("x") else ""]
 			print("ORDERS_PROBE_TRACE t=%d %s" % [(_match.tick - _order_tick) / SimClock.TICK_RATE, " ".join(parts)])
 		# Each crew's OWN destination (its formation slot, not the squad's anchor), sampled every half second: one past a
 		# deck on the far bank is a crew sent over the river however the anchor was capped.
@@ -523,13 +527,14 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 			var off := _flat_d(_tank(n).global_position, placed[n])
 			if off > PARKED_OFF_M:
 				if not self_off.has(n):
-					# What took it off: the brain's option the tick it passed PARKED_OFF_M, "+nogoal" when its Movement had
-					# no goal set then (a give-way push, or an option that steers without one: SPOT, RETREAT read so).
+					# What took it off: the brain's option the tick it passed PARKED_OFF_M.
 					var mover := Movement.of(_tank(n))
 					var why := String((mover.ctl as TankBrain).choice.get("option", "")) if mover != null and mover.ctl is TankBrain else "-"
-					var drive: Variant = mover.get("_goal") if mover != null else null
-					if not (drive is Vector3 and (drive as Vector3).is_finite()):
-						why += "+nogoal"
+					# "+drift" when the brain's own last motion command was not a move_to (it sent the hull nowhere: the drive
+					# layer's unstick / yield / k-turn / escape moved it, R37.12).
+					var ordered: Variant = (mover.ctl as OrderController).move_order if mover != null and mover.ctl is OrderController else {}
+					if String((ordered as Dictionary).get("type", "")) != "move_to":
+						why += "+drift"
 					if yielded.has(n) and _match.tick - int(yielded[n]) <= int(GIVEWAY_S * SimClock.TICK_RATE):
 						why = "GIVEWAY"
 					var by: Dictionary = squad.get("left_by", {})
@@ -537,6 +542,17 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 					squad["left_by"] = by
 				self_off[n] = maxf(float(self_off.get(n, 0.0)), off)
 	squad["self_off"] = self_off
+	# O2 (round 37, R37.12): crew-ticks an IDLE crew (no order goal) spent more than PARKED_OFF_M off its seat,
+	# whatever moved it (its own option, the drive layer, a give-way): what "stays put and comes all the way back" lowers.
+	# Measured from its STATION (Orders.station: the seat his order left it on), else where it stood when placed.
+	var off_ticks := 0
+	for n: String in alive:
+		if not placed.has(n) or _controls.orders.goal_position(n) is Vector3:
+			continue
+		var spot: Variant = OrderFeed.station(_controls.orders, n)
+		if _flat_d(_tank(n).global_position, spot if spot is Vector3 else placed[n]) > PARKED_OFF_M:
+			off_ticks += 1
+	squad["off_idle_ticks"] = int(squad.get("off_idle_ticks", 0)) + off_ticks
 	for n: String in alive:
 		if placed.has(n):
 			var moved := _flat_d(_tank(n).global_position, placed[n])

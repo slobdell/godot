@@ -646,6 +646,7 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$0 --seed=$$4 \
 			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(ORDERS_PROBE_DIR)/logs/$$0-$$1-$$2-$$name-s$$4.log 2>&1 || true'
 	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_PROBE_DIR)/rows.jsonl || true
+	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $(ORDERS_PROBE_DIR)/runs.jsonl || true
 	@grep -L '^ORDERS_PROBE {' $(ORDERS_PROBE_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
 	@$(PYTHON) tests/control/halt_flips.py $(ORDERS_PROBE_DIR)/rows.jsonl > $(ORDERS_PROBE_DIR)/halt_flips.txt && grep '^TOTAL' $(ORDERS_PROBE_DIR)/halt_flips.txt || true
