@@ -308,6 +308,14 @@ _Filed here before any number._
   centroid to that edge. **Round 37 fix candidates:** latch the halt shape per arrival at an anchor (like ROUTE_SEAT_ONCE /
   GROUND_LATCH), or read terrain at the fixed anchor once arrived, or hysteresis (± 5 m); size first by counting terrain-caused
   reseats across a series. It also explains orders' away_m Locks rise in BOTH arms.
+- **R36.27 (2026-10-21 ~01:50 PDT) S1 stallnet FAILS its series; parked OFF; no v2 this round.** Manoeuvre (f5d5e674e,
+  `references/round36/manoeuvre/s1-series/`; builder0 native, ON 78a93fdb4 v base 9564cc66e; fights/wedge/jam locks/terminus/sumps x
+  6240–6263, 72 pairs; hull-rest 6201–6232 x 4 factions x 6 tasks, 128 pairs a task): two guards FAIL: unstick fires 157717 -> 192380
+  (+34663, bound 15576; up in 47 of 72 pairs on all three maps) and team 0 kills 1607 -> 1557 (−50, bound 41.8); every other guard
+  passes. And the aim doesn't move: escape fires 1741 -> 2187 but stuck:wedged deaths 251 -> 256. The deciding lab stage passed (it
+  injected the pop), so the rule works but its target is rare in fights and its cost is everywhere: the stage-as-deciding-line lesson
+  (R35.77) again. A v2 ("hold only while in friendly contact") is a round-37 candidate with a fresh bar. S2a's series runs on
+  builder2 (idle) from current main WITHOUT S1.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
