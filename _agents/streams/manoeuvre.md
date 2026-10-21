@@ -72,6 +72,21 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-21 ~06:50 (worker): S2a PASSES Bar S2a's series.** builder2 (GCP e2-highcpu-32 Spot) native, J=6, ON `lab/s2a-on`
+`bf678480c` v base `lab/s2a-base` = main `e525f7311`. Fights, wedge and jam: locks/terminus/sumps x 6540–6563, 72 pairs. Hull-rest:
+6501–6532 x 4 factions x 6 tasks, 128 pairs a task. Judge + README: `references/round36/manoeuvre/s2a-series/` (`59dc89ba8`).
+- **Far loops** 91 -> 35 (−56; bound 38.6). Stuck deaths 527 -> 497, jam 171 -> 188, open 2324 -> 2329: all within noise.
+- Kills, deaths and hit rate are flat for both teams. Friendly contacts −14127 and give-ways +150 are within noise.
+- (d)/(e)/(f) pass for all 6 tasks; faced_right never settled 19 -> 12.
+- **Player line** (left_behind, 768 runs an arm): 77 -> 65 crews left behind. wedged:idle 36 -> 34, wander 21 -> 10. Rocking 5 -> 5.
+- **Caveat, rebuilt:** the judge's "unstick fires" line reads 0 v 0 because main's WEDGE_TRACE row has no `unstick_fires` total
+  (only S1's tree printed it). The same guard, rebuilt paired by seed from main's own rows (`fires_from_wedge_rows.txt`):
+  - unstick fires inside wedged episodes 28415 -> 27223 (−1192; 1.645 se 1648);
+  - H1 escapes 2070 -> 2003 (−67; 166);
+  - asks 2033 -> 1930.
+  - None is up.
+- **Next:** the hand-over pair. The S2a ON switches + native's re-pin `6a92e7a74` + the bank lab case, on main, on one green check.
+
 **2026-10-21 ~01:10 (worker): S1 stallnet FAILS Bar S1's series; it stays OFF (does not ship).** builder0 native, ON `78a93fdb4`
 v base `9564cc66e`. Fights, wedge and jam: locks/terminus/sumps x 6240–6263, 72 pairs. Hull-rest: 6201–6232 drawn x 4 factions x 6
 tasks, 128 pairs a task. Judge: `references/round36/manoeuvre/s1-series/`. (0) counter PASS (stall_net_holds ON 404690).
