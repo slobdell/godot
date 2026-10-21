@@ -173,6 +173,52 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   _(Recorded from stream/rules a3906e8ed. Per R37.1(b): if CP37.1's base shows the blob already near the floor, the deciding
   metric becomes the one native names from today's read; the bar is re-filed then, before any arm number.)_
 
+- **Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number (recorded from stream/manoeuvre ff40ed578)**
+
+- **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
+  for the same goal, with that friend unmoved since the step began (`_side_over()` false), STANDS (the existing stand: throttle 0
+  until the friend moves > H1B_MOVED_M or the goal jumps > NEW_GOAL_JUMP) instead of picking another side point. Fix (ii) of
+  R36.31. `--nav-off=sidestand` flips SIDE_STAND_DEFAULT (false until judged). GDScript only: the choice runs in the escape
+  callback both paths share; native reads `_side_stand` as today (no new exec field). Counters (ManoeuvreCensus, printed in
+  `h1b_report()`): `h1b_side_repeats` (both arms: the base's repeat loop) and `h1b_side_restands` (ON acts).
+- **(0) Counter first:** `h1b_side_restands` > 0 in ON's series; `h1b_side_repeats` REPORTED in both.
+- **DECIDING (lab, both paths):** `tests/test_manoeuvre_side_stand.gd`, the stage's `eyes3:<yaw>` (R36.31's traced Locks spot,
+  a law_scout behind a parked law_artillery, the artillery's yaw the parameter). At yaw 125/130/135 (its axis 45-55 deg off the
+  lane) base takes >= 3 side steps (>= 2 repeats) and never gets past; ON takes 1 step + 1 stand, identical fires up to the
+  stand, then still (< 0.5 m, no pressing) in the last 10 s. Guard: yaw 140 (one step gets past) ON = base exactly. Native =
+  GDScript in both arms (fires, stands, end within 0.05 m). The round-36 h1b_side cases unchanged.
+- **Series guards (no harm), FRESH seeds, each within 1.645 se of base:** Bar S2a's set on main: hull-rest 6601-6632 drawn x 4
+  factions x 6 tasks ((d) movers by net motion, (e), (f)); wedge/fights/jam on locks/terminus/sumps x 6640-6663 ((i) kills / hit
+  rate per team, (q) open/stuck/jam deaths, (r) far loops, (s) friendly contacts, give-ways); **unstick fires** from WEDGE_TRACE's
+  new total (M2) ON <= base + 1.645 se.
+- **Player line, REPORTED:** crews left behind (`left_behind.py`, hull-rest faced_attack_move + faced_move). Expect little: the
+  rule's base rate is small (R36.31: 17 crew-friend pairs reached the side rule in 48 fights, 2 repeated). So the series is a
+  harm check, not a gain line (R35.64): the lab decides, the series guards.
+- **Pass = (0) + the lab (both paths) + every guard. A pass ships ON** (symmetric movement fix, C37.7).
+
+- **Bar M5 (`seatyield2`: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6; recorded from stream/manoeuvre ff40ed578 Status)**
+
+- **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
+  seat = the move_to goal) picks, of the spots legal today (none added, none refused), the one nearest its seat. This is
+  round 36's T10 G (`round36/traffic` 7f9760329), reused. The ahead-along-the-asker spots (10/16/24, 0) are taken only when
+  no side or back spot is legal. After the give-way, its return to the seat may reverse straight back when the seat is
+  straight behind (round 26's back-in law, unchanged). One switch, `seatyield2` in Traffic.DEFAULT_OFF. The native twin is a
+  request to native (T10's mirror is on `round36/native`, if any, or new).
+- **Why not T10's deciding line again (R36.23/R36.24):** orders' away_m counted goal flicker as driving. M5 measures only
+  inside give-way episodes, against the seat fixed at the give-way's start.
+- **Base rate first (R36.23):** on main, count seated give-ways and their seat metres, in orders' probe (12 street cells) and
+  in the jam census. n is sized from that count before the series. Lab first: a "not farther than standing" test
+  (R36.24 (3)); each pick is no farther from the seat than today's pick.
+- **DECIDING:** seat metres summed over seated give-ways, paired by seed. Seat metres = the give-way's farthest flat distance
+  from the seat, plus the path driven from its end until the crew is back within 2 m of the seat (cap 15 s). ON < base by more
+  than 1.645 se. The ahead-spot share is REPORTED.
+- **Guards, each no worse than base + 1.645 se:**
+  - the asker's wait: ticks from the give-way's start to the asker reading passed, and give-ways never cleared;
+  - all-in time (squads arrived, deploy seconds);
+  - friendly contact ticks;
+  - kills and deaths per team, jam deaths (fights on locks/terminus/sumps).
+- **Pass = the lab + the base rate seen + deciding + guards. A pass ships ON** (symmetric).
+
 ## Rulings (round 37)
 
 - **R37.1 (2026-10-21) CP37.1's design accepted with three conditions.** native (stream/native Status): `tests/ai_scenarios/guard_line.gd`
