@@ -1,0 +1,14 @@
+main       all deployed     n 287 | seating  13 | depth  53 | both   4 | neither 225 | legs: as seated med  13.6, best seating  12.8, half depth  11.0 | depth med  26.0 m
+main       twitch >= 15 m   n  57 | seating  10 | depth  23 | both   3 | neither  27 | legs: as seated med  18.4, best seating  16.3, half depth  13.1 | depth med  33.1 m
+  main     crossing  3 click squads  18 twitchy   4 seating   0 depth   0
+  main     crossing  3 route squads  18 twitchy   0 seating   0 depth   1
+  main     crossing  5 click squads  30 twitchy  10 seating   0 depth  10
+  main     crossing  5 route squads  30 twitchy   9 seating   3 depth   7
+  main     locks     3 click squads  18 twitchy   4 seating   1 depth   1
+  main     locks     3 route squads  18 twitchy   4 seating   0 depth   0
+  main     locks     5 click squads  30 twitchy   6 seating   2 depth   7
+  main     locks     5 route squads  30 twitchy   1 seating   2 depth   6
+  main     terminus  3 click squads  18 twitchy   2 seating   0 depth   4
+  main     terminus  3 route squads  18 twitchy   0 seating   0 depth   3
+  main     terminus  5 click squads  30 twitchy   7 seating   4 depth   8
+  main     terminus  5 route squads  29 twitchy  10 seating   1 depth   6

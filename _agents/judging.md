@@ -677,3 +677,23 @@ CP-F 3's attack-move −0.13, M3's Terminus mixed −0.14).
 stream branches (`round34/*`), not on main; their lines carry the printed se and a later render can copy the rows as round
 31's traffic rows were. Brains' round-33 verdict-only series (battery, rejoin, War Rig, herringbone, R33.9) printed counts
 without paired se: their lines carry `none` or a Fisher/McNemar. X1's census (round 34) is in as REPORTED.
+
+
+## Measurement notes from traffic's rounds 34–35 (2026-10-19)
+
+- **A fresh builder folder's first `make import` can segfault, intermittently** (round 34: three times in one day, two of three
+  on a first launch, once at the CSV reimport and once AFTER the reimport finished, with `references/.gdignore` in place). A
+  relaunch, unchanged, cured it every time. A check or series with no `N passed, M failed` line (or no census row) is not a
+  result: relaunch it; never read it as a red.
+- **Random-seed twins** are dropped before pooling (above, R34.15); a fixed-arena-only block has none, which is why traffic's
+  T5+ bars name fixed arenas.
+- **A dev read spends its seeds.** Once a fight is read in any arm it is no longer fresh for any bar on that arena: put dev
+  reads on seeds outside every filed block (round 35: a T7 dev read on 1700–1701 took two arenas out of T8's filed block,
+  which moved to 1800–1827 before any number).
+- **A rule the native drive runs natively is invisible on the native path until mirrored.** `Movement._negotiate`'s body, `ask`
+  and `_begin_yield` run in `drive_native.cpp` (N5.Y): a live test or dev fight of a GDScript change there must pin
+  `BrainSwitches.native = false` (or `--brains-off=native`), and the judged series waits for the mirror's twins. A unit test
+  that calls `mover.ask()` directly runs the GDScript and passes regardless, so it proves nothing about the live path.
+- **An OPT_IN behaviour named with either `--traffic-on=` or `--traffic-off=` is ON** (trip-up 84): the OFF arm of an OPT_IN
+  switch passes no flag at all.
+- **The heavy lane's 90-minute cap kills a 144-fight census at 3 jobs** (trip-up 86): split the block.

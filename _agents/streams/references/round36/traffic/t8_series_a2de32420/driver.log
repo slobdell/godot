@@ -1,0 +1,56 @@
+2026-10-20T14:00:03-07:00 [46e6ba8a9 slobdell@builder2] T8 series driver start: range 1800-1827 (locks 1801-1828) arenas 'terminus locks crossing gorge parade' jobs 4
+2026-10-20T14:00:06-07:00 [46e6ba8a9 slobdell@builder2] host down: make gcp-start
+gcloud compute instances --project=leddrones start balsa-worker-gcp --zone=us-west4-a
+bash: line 1: gcloud: command not found
+make[1]: *** [mk/gcp.mk:25: gcp-start] Error 127
+make: *** [Makefile:103: gcp-start] Error 2
+2026-10-20T14:00:06-07:00 [46e6ba8a9 slobdell@builder2] check: waiting for builder2's checks to clear
+2026-10-20T14:00:09-07:00 [46e6ba8a9 slobdell@builder2] check start
+2026-10-20T14:00:15-07:00 [46e6ba8a9 slobdell@builder2] T8 series driver start: range 1800-1827 (locks 1801-1828) arenas 'terminus locks crossing gorge parade' jobs 4
+2026-10-20T14:00:16-07:00 [46e6ba8a9 slobdell@builder2] host down: make gcp-start
+gcloud compute instances --project=leddrones start balsa-worker-gcp --zone=us-west4-a
+Starting instance(s) balsa-worker-gcp...
+.....done.
+Updated [https://compute.googleapis.com/compute/v1/projects/leddrones/zones/us-west4-a/instances/balsa-worker-gcp].
+Instance internal IP is 10.182.0.2
+Instance external IP is 34.125.251.85
+>> gcp: ssh answers (slobdell@builder2)
+2026-10-20T14:00:43-07:00 [46e6ba8a9 slobdell@builder2] check: waiting for builder2's checks to clear
+0
+2026-10-20T14:00:43-07:00 [46e6ba8a9 slobdell@builder2] check start
+2026-10-20T14:09:28-07:00 [46e6ba8a9 slobdell@builder2] check end: >> check: 4m00s, 0/26 done, waiting on: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard bridge-pooled native-verify-scenarios native-live-guard planner-pytest >> remote: FAILED to copy build/ back (rsync exit 255); local build/ is STALE, not this run's >> remote: make native check exited 255 (build/ copied back: FAILED) 
+2026-10-20T14:09:31-07:00 [46e6ba8a9 slobdell@builder2] host down: make gcp-start
+gcloud compute instances --project=leddrones start balsa-worker-gcp --zone=us-west4-a
+Starting instance(s) balsa-worker-gcp...
+.......................................done.
+Updated [https://compute.googleapis.com/compute/v1/projects/leddrones/zones/us-west4-a/instances/balsa-worker-gcp].
+Instance internal IP is 10.182.0.2
+Instance external IP is 34.125.36.237
+make[1]: *** [mk/gcp.mk:26: gcp-start] Terminated
+make: *** [Makefile:103: gcp-start] Error 143
+2026-10-20T14:10:28-07:00 [traffic] the 46e6ba8a9 run is void (builder2 preempted 14:07:35, the driver misread exit 255); relaunching on a2de32420 (driver fixed ee30b2194)
+2026-10-20T14:10:28-07:00 [a2de32420 slobdell@builder2] T8 series driver start: range 1800-1827 (locks 1801-1828) arenas 'terminus locks crossing gorge parade' jobs 4
+2026-10-20T14:10:30-07:00 [a2de32420 slobdell@builder2] check: waiting for builder2's checks to clear
+0
+2026-10-20T14:10:30-07:00 [a2de32420 slobdell@builder2] check start (try 1)
+2026-10-20T14:44:14-07:00 [a2de32420 slobdell@builder2] check end: >> check: 25 passed, 2 NOT JUDGED  [test x11, lint -P16, 5 at once, builder2] >> remote: make native check exited 0 (build/ copied back) 
+2026-10-20T14:44:14-07:00 [a2de32420 slobdell@builder2] STOP: targets NOT RUN: >> check: 25 passed, 2 NOT JUDGED  [test x11, lint -P16, 5 at once, builder2]
+2026-10-20T14:44:45-07:00 [traffic] check of a2de32420 GREEN (2963/0, 25 passed + 2 NOT JUDGED for load, sim-baseline 13 unmoved); the STOP was the driver's guard misreading a green line; resuming with stream/traffic's fixed script (same pair tree, h stays a2de32420)
+2026-10-20T14:44:45-07:00 [a2de32420 slobdell@builder2] T8 series driver start: range 1800-1827 (locks 1801-1828) arenas 'terminus locks crossing gorge parade' jobs 4
+2026-10-20T14:52:32-07:00 [a2de32420 slobdell@builder2] inertness end: >> remote: make sim-variants VARIANTS_EXTRA=--traffic-off=holdfire VARIANTS_TAG=hfoff exited 0 (build/ copied back)
+2026-10-20T14:53:42-07:00 [load at series start, builder2]  21:53:43 up 43 min,  2 users,  load average: 4.67, 7.21, 11.95 balsa procs: 1 
+2026-10-20T15:01:46-07:00 [traffic] stopped at 15:02 to raise JOBS 4 -> 10 (builder2 32 cores, load ~6; pinned fixed-tick fights: jobs don't change a fight); terminus base partial (9 of 28) rerun whole
+2026-10-20T15:01:52-07:00 [a2de32420 slobdell@builder2] T8 series driver start: range 1800-1827 (locks 1801-1828) arenas 'terminus locks crossing gorge parade' jobs 10
+2026-10-20T15:13:16-07:00 [a2de32420 slobdell@builder2] terminus base: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=terminus JAM_RANGE=1800-1827 JA
+2026-10-20T15:24:38-07:00 [a2de32420 slobdell@builder2] terminus arm: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=terminus JAM_RANGE=1800-1827 JA
+2026-10-20T15:36:35-07:00 [a2de32420 slobdell@builder2] locks base: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=1801-1828 JAM_J
+2026-10-20T15:49:03-07:00 [a2de32420 slobdell@builder2] locks arm: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=1801-1828 JAM_J
+2026-10-20T16:07:49-07:00 [a2de32420 slobdell@builder2] crossing base: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=crossing JAM_RANGE=1800-1827 JA
+2026-10-20T16:28:42-07:00 [a2de32420 slobdell@builder2] crossing arm: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=crossing JAM_RANGE=1800-1827 JA
+2026-10-20T16:41:20-07:00 [a2de32420 slobdell@builder2] gorge base: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=gorge JAM_RANGE=1800-1827 JAM_J
+2026-10-20T16:52:12-07:00 [a2de32420 slobdell@builder2] gorge arm: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=gorge JAM_RANGE=1800-1827 JAM_J
+2026-10-20T17:01:44-07:00 [a2de32420 slobdell@builder2] parade base: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=parade JAM_RANGE=1800-1827 JAM_
+2026-10-20T17:11:27-07:00 [a2de32420 slobdell@builder2] parade arm: 28/28 with JAM_CENSUS; NATIVE 28; >> remote: make native traffic-jam-census JAM_AT=parade JAM_RANGE=1800-1827 JAM_
+2026-10-20T17:13:44-07:00 [a2de32420 slobdell@builder2] series base: >> remote: make native traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both 
+2026-10-20T17:16:01-07:00 [a2de32420 slobdell@builder2] series arm: >> remote: make native traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both 
+2026-10-20T17:16:01-07:00 [a2de32420 slobdell@builder2] T8 series done: T8 PASS (the counter, G and every guard; line 7 crossing arrivals read apart)

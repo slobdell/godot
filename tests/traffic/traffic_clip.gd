@@ -5,6 +5,9 @@ extends SceneTree
 ##
 ##   godot --path . --resolution 1280x720 --fixed-fps 30 --script res://tests/traffic/traffic_clip.gd -- --arena=yard_open
 ##         --kind=head --seed=1 --seconds=40 --every=3 --tag=main --out=/abs/dir --traffic-off=slide,keepright,crossing
+##
+## Round 36 (traffic T8): --hit-held marks every crew held at the mouth as hit each tick (test_traffic_holdfire's hook) and
+## pins the GDScript path as that test does, so the clip shows the held crew leave the hold (holdfire on) or wait (off).
 
 const HIS_PITCH_DEG := 21.0
 const HIS_FOV_DEG := 35.0
@@ -17,6 +20,7 @@ var tag := ""
 var every := 3
 var focus := Vector3.ZERO
 var heading := Vector3.RIGHT
+var hit_held := false
 
 
 func _initialize() -> void:
@@ -35,6 +39,9 @@ func _run() -> void:
 	case.tree = self
 	BrainSwitches.ensure_parsed()
 	TacticsFlags.requested()
+	hit_held = OS.get_cmdline_user_args().has("--hit-held")
+	if hit_held:
+		BrainSwitches.native = false
 	var arena := _flag("arena", "yard_open")
 	var kind := _flag("kind", "head")
 	out = _flag("out", ProjectSettings.globalize_path("res://build/traffic-clip"))
@@ -72,7 +79,12 @@ func _run() -> void:
 	quit(0)
 
 
-func _frame(_lab: TacticsLab, now: int) -> void:
+func _frame(lab: TacticsLab, now: int) -> void:
+	if hit_held:
+		for node in lab.game_match.tanks.get_children():
+			var tank := node as Tank
+			if tank != null and tank.is_alive() and Traffic.holding(String(tank.name)):
+				tank.ticks_since_hit = 0
 	if now % every != 0:
 		return
 	camera.current = true

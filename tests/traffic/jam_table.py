@@ -14,6 +14,9 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "tools", "judge"))
+import seed_twins  # noqa: E402  (C35.9, R34.15: a random fight that twins a fixed one in the folder is read once)
+
 BASE_M = 40.0
 EP_S = 20.0
 EP_M = 40.0
@@ -21,7 +24,10 @@ EP_M = 40.0
 
 def load(folder):
     deaths, census = [], []
-    for path in sorted(glob.glob(os.path.join(folder, "*.log"))):
+    paths, said = seed_twins.filter_logs(sorted(glob.glob(os.path.join(folder, "*.log"))))
+    for line in said:
+        print("jam_table: " + line)
+    for path in paths:
         fight = os.path.basename(path)[:-4]
         with open(path, errors="replace") as f:
             for line in f:
@@ -98,7 +104,7 @@ def main(argv):
     # jam_ab.py); here the totals, the standoffs with durations, and the give-ways ended by a hit with their contacts after.
     jam_uf = [r for r in jam if under_fire(r)]
     standoffs, aborts = [], []
-    for path in sorted(glob.glob(os.path.join(argv[0], "*.log"))):
+    for path in seed_twins.filter_logs(sorted(glob.glob(os.path.join(argv[0], "*.log"))))[0]:
         with open(path, errors="replace") as f:
             for line in f:
                 if line.startswith("STANDOFF "):
@@ -117,6 +123,12 @@ def main(argv):
         ("; lasted s median %.1f p90 %.1f max %.1f" % (durs[len(durs) // 2], durs[min(len(durs) - 1, 9 * len(durs) // 10)], durs[-1])) if durs else ""))
     print("  give-ways ended by a hit (probe-read) %d; friendly contacts of that crew in the %.0f s after: %d" % (
         len(aborts), 3.0, sum(int(a.get("contacts_3s", 0)) for a in aborts)))
+    # (D), R35.7: the REPORTED sub-cause jam:held (held by the take-turns hold the tick before), by the T5 cause it was counted as.
+    held = collections.Counter()
+    for c in census:
+        held.update({k: int(v) for k, v in (c.get("by_sub_cause") or {}).items()})
+    print("  (D) jam:held deaths (REPORTED; T5's causes unchanged) %d: %s; held within 3 s %d" % (
+        sum(held.values()), dict(held.most_common()), sum(int(c.get("held_deaths", 0)) for c in census)))
     eps = episodes(deaths)
     sizes = collections.Counter(len(g) for _, g in eps)
     print("\nEpisodes (one team, within %.0f s and %.0f m): %d; by size %s" % (EP_S, EP_M, len(eps), dict(sorted(sizes.items()))))

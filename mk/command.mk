@@ -697,3 +697,47 @@ body-trace-orders: native-for-check import ## Round 35 (orders D1): the body sta
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
 			--seed=1 --body=on --side=green --seconds=60 --body-trace $$flags > $(BUILD_DIR)/body-trace/$$name.log 2>&1 || true; \
 		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-trace/$$name.log | cut -c1-300 || echo "$$name: no BODY_PROBE line"; done
+
+# Round 35 extension (orders X3b, R35.17 re-read): the body stage per BODY_SEEDS x BODY_TRACE_ARMS, one process at a time
+# (light-lane safe), one "<arm> s<seed> BODY_PROBE {...}" line each -> build/body-seeds/lines.txt, then on - off per seed.
+BODY_SEEDS ?= 1 2 3 4 5 6 7 8 9 10 11 12
+.PHONY: body-seeds-orders
+body-seeds-orders: native-for-check import ## Round 35 (orders X3b): the body stage x BODY_SEEDS x BODY_TRACE_ARMS -> build/body-seeds/lines.txt
+	@rm -rf $(BUILD_DIR)/body-seeds && mkdir -p $(BUILD_DIR)/body-seeds
+	@for seed in $(BODY_SEEDS); do for arm in $(BODY_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/body_probe.gd -- \
+			--seed=$$seed --body=on --side=green --seconds=60 $$flags > $(BUILD_DIR)/body-seeds/run.log 2>&1; \
+		grep -o 'BODY_PROBE {.*' $(BUILD_DIR)/body-seeds/run.log | sed "s/^/$$name s$$seed /" >> $(BUILD_DIR)/body-seeds/lines.txt \
+			|| echo "$$name s$$seed: no BODY_PROBE line"; done; done
+	@$(PYTHON) tests/control/body_seeds_table.py $(BUILD_DIR)/body-seeds/lines.txt | tee $(BUILD_DIR)/body-seeds/table.txt
+
+# Round 36 (orders O1, C36.4): the herringbone-across-a-lane lab stage (tests/control/herringbone_lane_stage.gd), the deploy step's
+# street-jam workload (X3b's, closed R36.2): HB_LEADS x HB_DX x HB_DZ fixed cells x HB_ARMS, one process a run (light-lane safe) ->
+# build/herringbone-lab/lines.txt, then the per-cell table (jam cells: off - nostep >= 3 s) -> table.txt.
+HB_LEADS ?= -10 -20
+HB_DX ?= 0 3 6 9
+HB_DZ ?= 0 -2 -4 -6
+HB_ARMS ?= off: nostep:--deploy-step=off
+.PHONY: herringbone-lab
+herringbone-lab: native-for-check import ## Round 36 (orders O1): the herringbone lab stage, every cell x HB_ARMS -> build/herringbone-lab/table.txt
+	@rm -rf $(BUILD_DIR)/herringbone-lab && mkdir -p $(BUILD_DIR)/herringbone-lab
+	@for lead in $(HB_LEADS); do for dx in $(HB_DX); do for dz in $(HB_DZ); do for arm in $(HB_ARMS); do name=$${arm%%:*}; \
+		flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/herringbone_lane_probe.gd -- \
+			--lead=$$lead --goal-dx=$$dx --goal-dz=$$dz --seconds=40 $$flags > $(BUILD_DIR)/herringbone-lab/run.log 2>&1 || true; \
+		grep -q '^NATIVE' $(BUILD_DIR)/herringbone-lab/run.log && grep -m1 '^NATIVE' $(BUILD_DIR)/herringbone-lab/run.log >> $(BUILD_DIR)/herringbone-lab/native.txt || true; \
+		grep -o 'HERRINGBONE_LAB {.*' $(BUILD_DIR)/herringbone-lab/run.log | sed "s/^/$$name /" >> $(BUILD_DIR)/herringbone-lab/lines.txt \
+			|| echo "$$name lead $$lead dx $$dx dz $$dz: no HERRINGBONE_LAB line"; done; done; done; done
+	@sort $(BUILD_DIR)/herringbone-lab/native.txt 2>/dev/null | uniq -c || echo "no NATIVE line in any run"
+	@$(PYTHON) tests/control/herringbone_lab_table.py $(BUILD_DIR)/herringbone-lab/lines.txt | tee $(BUILD_DIR)/herringbone-lab/table.txt
+
+# Round 36 (orders, R36.6): one orders-probe run traced (`--probe-trace=N`: squad N's crews every second, position, goal,
+# brain option) per TRACE_CASES entry "map:squads:route:seed:squad" -> build/orders-probe-trace/<entry>.log
+TRACE_CASES ?= terminus:5:route:3624:4
+.PHONY: orders-probe-trace
+orders-probe-trace: native-for-check import ## Round 36 (orders): traced orders-probe runs, TRACE_CASES "map:squads:route:seed:squad" -> build/orders-probe-trace/*.log
+	@rm -rf $(BUILD_DIR)/orders-probe-trace && mkdir -p $(BUILD_DIR)/orders-probe-trace
+	@for c in $(TRACE_CASES); do IFS=: read map n route seed sq <<< "$$c"; \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
+			--probe-squads=$$n --probe-route=$$route --probe-arm=main --probe-trace=$$sq > $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log 2>&1 || true; \
+		echo "$$c: $$(grep -c '^ORDERS_PROBE_TRACE' $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log) trace lines"; done

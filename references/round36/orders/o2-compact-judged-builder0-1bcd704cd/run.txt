@@ -1,0 +1,2 @@
+>> orders-probe on builder0 | commit 1bcd704cd | native on
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3681 3682 3683 3684 3685 3686 ORDERS_PROBE_ARMS=main: compact:--deploy-compact=on ORDERS_PROBE_JOBS=1 WEB_PORT=8610 NET_PORT=9630 SMOKE_PORT=8611 SMOKE_NET_PORT=9731 AGENT_PORT=9315 exited 0 (light lane, build/light/build/ copied back)

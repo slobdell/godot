@@ -1,0 +1,28 @@
+T9_ASK {"asked":"Green_Eyes_4","asker":"Green_Eyes_1","f":104,"gap":5.4,"last":"","phase":"driving","under_way":true,"via":"asked","yield_to":""}
+T9_YIELD {"f":104,"run_m":6.7,"spot":"spot(-3,6)","to":"Green_Eyes_1","unit":"Green_Eyes_4","via":"asked"}
+T9_END {"asker_gap":25.3,"asker_under_way":true,"f":195,"gap_to_point":1.5,"held_s":0.0,"left_s":2.9,"stop_m":0.0,"to":"Green_Eyes_1","unit":"Green_Eyes_4"}
+T9_ASK {"asked":"Green_Eyes II_7","asker":"Green_Eyes_1","f":223,"gap":3.4,"last":"","phase":"arrived","under_way":false,"via":"asked","yield_to":""}
+T9_YIELD {"f":223,"run_m":8.0,"spot":"spot(0,-8)","to":"Green_Eyes_1","unit":"Green_Eyes II_7","via":"asked"}
+T9_ASK {"asked":"Green_Eyes II_5","asker":"Green_Eyes_4","f":256,"gap":6.4,"last":"","phase":"arrived","under_way":false,"via":"asked","yield_to":""}
+T9_YIELD {"f":256,"run_m":6.7,"spot":"spot(-3,6)","to":"Green_Eyes_4","unit":"Green_Eyes II_5","via":"asked"}
+T9_END {"asker_gap":11.2,"asker_under_way":true,"f":272,"gap_to_point":1.5,"held_s":0.0,"left_s":4.3,"stop_m":0.0,"to":"Green_Eyes_1","unit":"Green_Eyes II_7"}
+T9_ASK {"asked":"Green_Eyes II_7","asker":"Green_Eyes_2","f":330,"gap":4.0,"last":"Green_Eyes_1","phase":"arrived","under_way":false,"via":"asked","yield_to":""}
+T9_YIELD {"f":330,"run_m":24.0,"spot":"spot(24,0)","to":"Green_Eyes_2","unit":"Green_Eyes II_7","via":"asked"}
+T9_ASK {"asked":"Green_Eyes II_5","asker":"Green_Eyes_4","f":334,"gap":3.6,"last":"","phase":"yielding","under_way":true,"via":"pinned","yield_to":"Green_Eyes_4"}
+T9_END {"asker_gap":5.1,"asker_under_way":true,"f":435,"gap_to_point":1.4,"held_s":3.5,"left_s":0.0,"stop_m":0.0,"to":"Green_Eyes_4","unit":"Green_Eyes II_5"}
+T9_ASK {"asked":"Green_Eyes II_3","asker":"Green_Eyes_2","f":460,"gap":2.8,"last":"","phase":"arrived","under_way":false,"via":"asked","yield_to":""}
+T9_YIELD {"f":460,"run_m":11.0,"spot":"spot(0,11)","to":"Green_Eyes_2","unit":"Green_Eyes II_3","via":"asked"}
+T9_ASK {"asked":"Green_Eyes II_7","asker":"Green_Eyes_2","f":465,"gap":4.0,"last":"Green_Eyes_1","phase":"yielding","under_way":true,"via":"pinned","yield_to":"Green_Eyes_2"}
+T9_END {"asker_gap":4.0,"asker_under_way":true,"f":509,"gap_to_point":9.0,"held_s":0.0,"left_s":0.0,"stop_m":0.0,"to":"Green_Eyes_2","unit":"Green_Eyes II_7"}
+T9_ASK {"asked":"Green_Eyes II_7","asker":"Green_Eyes_2","f":616,"gap":4.0,"last":"Green_Eyes_2","phase":"arrived","under_way":false,"via":"pinned","yield_to":""}
+T9_END {"asker_gap":3.0,"asker_under_way":true,"f":639,"gap_to_point":9.0,"held_s":0.0,"left_s":0.0,"stop_m":0.0,"to":"Green_Eyes_2","unit":"Green_Eyes II_3"}
+T9_ASK {"asked":"Green_Eyes II_5","asker":"Green_Eyes_4","f":676,"gap":3.6,"last":"Green_Eyes_4","phase":"arrived","under_way":false,"via":"pinned","yield_to":""}
+T9_ASK {"asked":"Green_Eyes II_5","asker":"Green_Eyes_4","f":941,"gap":3.7,"last":"Green_Eyes_4","phase":"arrived","under_way":false,"via":"pinned","yield_to":""}
+T9_ASK {"asked":"Green_Eyes II_7","asker":"Green_Eyes_4","f":1306,"gap":3.5,"last":"Green_Eyes_2","phase":"arrived","under_way":false,"via":"asked","yield_to":""}
+T9_YIELD {"f":1306,"run_m":8.0,"spot":"spot(0,8)","to":"Green_Eyes_4","unit":"Green_Eyes II_7","via":"asked"}
+T9_ASK {"asked":"Green_Eyes II_5","asker":"Green_Eyes_4","f":1395,"gap":3.6,"last":"Green_Eyes_4","phase":"arrived","under_way":false,"via":"pinned","yield_to":""}
+T9_END {"asker_gap":6.9,"asker_under_way":true,"f":1485,"gap_to_point":8.0,"held_s":0.0,"left_s":0.0,"stop_m":0.0,"to":"Green_Eyes_4","unit":"Green_Eyes II_7"}
+T9_ASK {"asked":"Green_Eyes II_1","asker":"Green_Eyes_4","f":1756,"gap":6.2,"last":"","phase":"arrived","under_way":false,"via":"asked","yield_to":""}
+T9_YIELD {"f":1756,"run_m":5.0,"spot":"spot(0,-5)","to":"Green_Eyes_4","unit":"Green_Eyes II_1","via":"asked"}
+T9_END {"asker_gap":9.8,"asker_under_way":true,"f":1784,"gap_to_point":1.4,"held_s":0.0,"left_s":5.0,"stop_m":0.0,"to":"Green_Eyes_4","unit":"Green_Eyes II_1"}
+T9_ASK {"asked":"Green_Eyes II_7","asker":"Green_Eyes_4","f":2003,"gap":3.0,"last":"Green_Eyes_4","phase":"arrived","under_way":false,"via":"pinned","yield_to":""}

@@ -4123,3 +4123,34 @@ friends (stallnet), crews left behind, and the arrived squad in the next squad's
   dumb*. Read as: squads end where he clicked, settle once, and don't wander or wedge. Round 36's O2 (compact deploy), S1/S2a (wedged
   and left-behind crews) and T8 serve it; traffic between squads arriving together (~half the remaining post-arrival shuffle, orders'
   O2 count) is the next candidate.
+
+## Round 36: his answer on parked squads (2026-10-20 ~19:20 PDT, in chat via the question tool)
+
+Question (orders' note, in his terms): *"When a crew in a squad you've parked spots an enemy, it drives out to fight it and then
+doesn't come all the way back to its spot. Should a parked squad stay put and shoot from where it stands, or chase?"*
+**His answer: "Stay put and shoot" (the recommendation):** a squad he parked holds its ground and fires from its spot; if it ever does
+move to fight, it drives all the way back afterwards; HE decides when it moves. Today's ADVANCE from a parked seat (brains'
+engagement code, orders' "neither" ENGAGEMENT kind, 16 of 55 twitchy squads) goes against this: a round-37 item for whoever owns
+brains' paths. The second question (a vehicle going with a neighbouring squad, round 22's untangle) is under discussion.
+
+## Round 36: his answer on mixed squads, and the bar behind every movement change (2026-10-20 ~19:35 PDT, in chat, verbatim)
+
+Question: *"When you send several squads at once, a vehicle sometimes goes with a neighbouring squad instead of its own, so the
+squads' paths don't cross. Is that fine, or should every vehicle stay with its own squad?"* (orchestrator's recommendation: stay
+with its own squad, and avoid crossings by swapping whole squads' patches and seats within each squad).
+
+> "ok sure we'll go with your recommendation, but I would say that the general priority is to mitigate vehicle contention with one
+> another. If parking with a different squad mitigates path contention, that would be acceptable to me, but you mentioned that this
+> can be generally mitigated otherwise. I'm not sure of the impact of the change, but my consideration here is about a user's
+> perception of the game or some sort of game review - I recall many years ago seeing a scathing review of some RTS game because the
+> units seemed so dumb. In our case I understand there's generally some decision-tree and some good reason for units generally
+> behaving how they do, but ideally the feel of the game needs to have the user perceive that the units are smart and under their
+> control"
+
+- **Decision (round 37, orders):** every vehicle arrives with its own squad, PROVIDED vehicle contention does not get worse. Avoiding
+  contention between vehicles is the higher priority: a bar for this change carries contention (friendly contacts, crossings,
+  all-in time) as guards at no-worse-than-today, and if keeping squads whole cannot hold them, re-dealing stays.
+- **The bar behind every movement and orders change (his words, a design principle):** *the player must perceive the units as smart
+  and under his control.* A behaviour with a good internal reason that LOOKS dumb (a loop to a seat behind, a squad that arrives one
+  vehicle short, a parked crew that wanders off) counts against the game, as a reviewer would count it. Streams judge their work by
+  what he would see, not only by the decision tree's logic.

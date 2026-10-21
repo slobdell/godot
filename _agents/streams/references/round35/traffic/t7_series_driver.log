@@ -1,0 +1,14 @@
+T7 series start 2026-10-19T12:58:33-07:00 commit e95179252 range 1600-1627 jobs 3
+2026-10-19T13:34:34-07:00 terminus base: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=terminus JAM_RANGE=1600-1627 JAM_JOBS=
+2026-10-19T14:07:36-07:00 terminus arm: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=terminus JAM_RANGE=1600-1627 JAM_JOBS=
+2026-10-19T14:44:11-07:00 locks base: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=locks JAM_RANGE=1600-1627 JAM_JOBS=3 J
+2026-10-19T15:20:29-07:00 locks arm: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=locks JAM_RANGE=1600-1627 JAM_JOBS=3 J
+2026-10-19T16:03:17-07:00 sumps base: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=sumps JAM_RANGE=1600-1627 JAM_JOBS=3 J
+2026-10-19T16:37:34-07:00 sumps arm: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=sumps JAM_RANGE=1600-1627 JAM_JOBS=3 J
+2026-10-19T17:26:40-07:00 gorge base: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=gorge JAM_RANGE=1600-1627 JAM_JOBS=3 J
+2026-10-19T18:23:45-07:00 gorge arm: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=gorge JAM_RANGE=1600-1627 JAM_JOBS=3 J
+2026-10-19T19:39:04-07:00 parade base: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=parade JAM_RANGE=1600-1627 JAM_JOBS=3 
+2026-10-19T20:03:56-07:00 parade arm: 28 ran, 0 missing; >> remote: make traffic-jam-census JAM_AT=parade JAM_RANGE=1600-1627 JAM_JOBS=3 
+2026-10-19T20:11:17-07:00 series base: >> remote: make traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both TRAFFIC
+2026-10-19T20:18:39-07:00 series arm: >> remote: make traffic-series TRAFFIC_SEEDS=44 45 46 TRAFFIC_WHICH=both TRAFFIC
+T7 series done 2026-10-19T20:18:39-07:00

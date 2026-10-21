@@ -119,6 +119,20 @@ _Filed here before any number._
   closest crews at the end >= 9 m CENTRE TO CENTRE in every cell (`end_own_min_m`; HALT_CLEAR_M, the O4 question's 9 m, is seat to
   seat), the hull gap (`end_own_gap_m`) REPORTED per cell beside main's (the orchestrator first wrote "hull to hull", which main
   itself fails at 6.2–11.5 m; corrected on orders' catch before any number). A pass ships ON.
+- **S4 "back in" (manoeuvre; filed 2026-10-20 ~20:15 in the brief before any number, stream c947c62e3; copied here).** A move_to goal
+  within 15 m and > 120 deg off the nose, with the outline clear along the straight reverse (the k-turn sweep), is driven in reverse;
+  switch, OFF. DECIDING (lab, both paths): hull at rest, goal 7 / 10 / 14 m behind at 0 / 30 / 60 deg off the tail, open ground and a
+  two-hull lane, 3 unit kinds: ON away_m <= 1.0 m where the rule fires, path <= 1.3x straight + 1 m; a blocked sweep declines (ON =
+  base). Lab guards: arrives in every cell, time to seat <= base + 2 s, 0 wall contact ticks; native default arm = GDScript. Series
+  after S1's and S2a's: orders' probe on fresh seeds (fresh-route metres, away_m, twitch_m not up), FRIENDLY CONTACT TICKS NOT UP,
+  arrivals not down, S1's movement guards.
+- **T10 seatyield + seathold (traffic; filed 2026-10-20 ~20:30 in stream/traffic 758ff53f5, `references/round36/traffic/t10_design.md`,
+  before any number; copied here).** G `seatyield` (seat within 10 m: of the spots legal today, the one nearest the seat; never adds or
+  refuses a give-way) and H `seathold` (a crew behind the mouth with its seat within 10 m holds where it stands, else at its seat, if
+  `_fits` passes incl. the passer's runs; declines when the passer's destination is unknown), each DEFAULT_OFF, one arm. Deciding: the
+  LOOP squads' give-way + hold metres away from their seat DROP on orders' probe (12 street cells x 6 fresh seeds), in-arm
+  counterfactual counter read first. Guards no worse at 1.645 se: contacts, jam deaths, standoffs, all-in, asker-clear seconds, T8's
+  fight guards. **Ruled R36.17: judged on NATIVE** (native mirrors G first; H is GDScript-only, called from the drive as T8 is).
 
 ## Rulings (round 36)
 
@@ -163,6 +177,87 @@ _Filed here before any number._
   read at the window's end it fails MAIN too (3.8–8.6 m in every cell; crews meet in traffic), so a spacing guard reads the HALT
   SEATS, not end positions (lesson). Hand-over `stream/orders` 515aeeccd (main 8ec433dee + tooling + DEPLOY_COMPACT OFF + DEPLOY_PASS
   deleted) checking; merged on its green.
+- **R36.7 (2026-10-20 ~16:55 PDT) S2a + yieldgap merged OFF: main 10318ec81 INHERITS 32ba4ca99** (builder0 2967/0, 13 unmoved; inert
+  by default). S1 ON gate (lab/s1-on d9864ab07, builder2, glibc-2.43): 2961/0, sim-baseline moved foundry, crossing, sumps, docks;
+  base 20acbda5f read 13 unmoved, so the moves are stallnet's. S1's series (unit manoeuvre-s1series) waits on builder0's checks.
+- **R36.8 (2026-10-20 ~17:20 PDT) T8 PASSES (C36.2): a held crew under fire leaves the hold.** Pair a2de32420, builder2, native, fixed
+  arenas {terminus, locks, crossing, gorge, parade} x 1800–1827 (locks 1801–1828), n 140 paired, none missing, 0 twins. Counter
+  released_fire 0 -> 618. G held deaths 253 -> 109 (se 21.3, 6.8 se). Guards all pass: stuck 871 -> 812, jam 267 -> 278 (<= 295.5),
+  open 4731 -> 4728, far loops 168 -> 126, kills 5812 -> 5752 (± 86), hit rate 0.725 -> 0.729, friendly contacts +2.1 % (<= line),
+  deaths per team 2682 -> 2640 / 3187 -> 3178, tr_holds 3147 -> 3245, crossing arrivals 180/180 both arms. Raw on stream/traffic
+  `references/round36/traffic/t8_series_a2de32420/`. Hand-over `pair/holdfire-r36-ho` bcda4cd29 (main b917ba234 + T8 ON) checking on
+  builder2; **ships on that check's green**. **Perf-judge ruling:** builder0 carries S1's judged series for hours, so no quiet window
+  today; T8 adds a per-hit hold release (no new per-tick search), so it ships on its check, and ONE perf-judge on main covers T8, the
+  joint, D5 and whatever S1/S2a ship, in the first quiet builder0 window (between S1's and S2a's series, or at the close).
+- **R36.9 (2026-10-20 ~17:35 PDT) The held-crew loss is closed; no group release; jam:yielding traced next (traffic).** T8's ON arm
+  (a2de32420, builder2, n 140; stream/traffic f0248ef71, `references/round36/traffic/held_after_t8.md`): of 109 held deaths, 32 died
+  WHILE held (31 on the first hit in 10 s: out of a hit-triggered release's reach; a group release caps at 0.22 a fight and costs the
+  hold's purpose: NO); 77 within 3 s after a hold (base 75), 50 of them released and driving on, shot in the fight. Largest traffic
+  cause left: jam:yielding 215 (3.7 %), 97 giving way to ANOTHER squad's crew. Traffic traces it from the series logs (note, no
+  code), then the orchestrator rules.
+- **R36.10 (2026-10-20 ~17:50 PDT) jam:yielding: NO traffic bar; a round-37 routing candidate.** Traffic's read (stream/traffic
+  c93702d7b, `references/round36/traffic/jam_yielding_read.md`; T8's ON arm, n 140): 215 deaths (base 211); 151 giving way to another
+  squad's crew (lanes 101; locks 44, gorge 43), always the same side, mostly one-hull streets. Under fire at the start: 27 (18 %);
+  median 1.4 s from yield to death at 0.6 m/s: the give-way is what the crew was doing, not what exposed it. The one traffic lever caps
+  at 0.19 a fight (< se ~17 / 140). Two squads meeting head-on in a one-hull street mid-fight is upstream (routing). A two-fight trace
+  (locks-1828, gorge-1812) says whether the orders headed opposite ways (routing: orders/planner, round 37) or the fight did.
+- **R36.11 (2026-10-20 ~18:00 PDT) jam:yielding to another squad is CPU SEATING, not routing (round-37 candidate).** Traffic's two-fight
+  trace (stream/traffic f086799fb; builder2 native, a2de32420 + `--yield-trace`; locks-1828 39/39 and gorge-1812 55/55 rows identical
+  to the series): 11 deaths giving way to another squad: opposite orders 0, retreat/regroup 0, asker had another lane 0 of 8. In 9 of 11
+  the giver was HOLDING a CPU element's screen / support_by_fire seat in a one-hull street and another element's crew drove through it;
+  2 were overtaking in a same-way column. n = 2 fights: the shape, not the count. **Round 37:** CPU screen / support_by_fire seats
+  placed off other elements' paths (brains' element seating, the CPU twin of orders' O1). **Side finding:** calling `_pass_lane` from
+  the trace perturbed gorge-1812 at 36.4 s, so a query believed read-only has a side effect (traffic to name it; a determinism
+  hazard if any reader calls it).
+- **R36.12 (2026-10-20 ~18:10 PDT) T8 SHIPPED ON: main 3d46b2884 inherits bcda4cd29.** Hand-over check (builder2, native): runner
+  2969/0, sim-baseline 13/13 unmoved; one FAILED target, net-smoke (a client tanks_seen 1/2: round 35's load-flake signature), so
+  combat-smoke NOT RUN. Accepted as a load flake because (1) both re-ran ALONE on bcda4cd29, builder2, and exited 0 (2/2), and (2) T8's
+  game diff is `game/ai/traffic.gd` only and runs only inside a take-turns wait, which net-smoke's two-player-tank match never forms.
+  `_pass_lane`'s "side effect" (R36.11) is an observer hazard, not a game bug (`Avoidance.refresh` snapshots once per physics frame
+  at its first caller; only drive code calls it, in a fixed order): traffic's note dd7634504, probe inert by default 4c458e4e8.
+- **R36.13 (2026-10-20 ~18:15 PDT) Orders' hand-over merged: main 6d4e18e29 (CHECK running).** `stream/orders` 515aeeccd (builder0
+  `make check exited 0`, 2964/0, 13 unmoved): DEPLOY_PASS deleted, DEPLOY_COMPACT OFF, the herringbone lab + probe columns +
+  pack_refused (measurement) + readers. Main had moved (T8, S2a + yieldgap), so ONE builder0 `make native check` of 6d4e18e29 for the
+  batch (unit orch-main-check-6d4e18e29, log `~/overnight-orch/r36/main_check_6d4e18e29.log`).
+- **R36.14 (2026-10-20 ~18:25 PDT) C36.6 grant to native (N4):** the 7 bare spawn seats in brains' test_ai* files
+  (test_ai_idle_fallback:34, test_ai_perf_equivalence:27/32, test_ai_player_holds:19/20, test_ai_player_orders_contact:17/24) may become
+  `Tank.place` and nothing else, one commit, quick-remote, merge note; test_ai_perf_equivalence's compared numbers reported before/after
+  if they move. C36.5's "any owner's test file" does not override C36.6's ask-first for brains' paths (native asked; recorded).
+- **R36.15 (2026-10-20 ~18:50 PDT) The scoreboard sees T8; one earlier "move" retracted.** Native (stream/native 0285bfe5f; main
+  3d46b2884 scored on builder2 in two seed blocks, 2601+ and 2701+, 40 fights / 48 moves / 36 orders each, 0 SCRIPT ERRORs): the
+  new line "killed while held at a street mouth" (traffic's held_3s, back-filled from each row's own logs, every other number
+  reproduced) 1.65 -> 0.42 a fight, noise ± 0.40: a clear move, T8's. Everything else inside its noise. The noise column now comes
+  from 16 seed units: one block had UNDERSTATED it (twitch ± 1.2 -> ± 3.59 m), so the orchestrator's earlier "twitch 12.6 -> 10.8 m,
+  past its noise" (told to the lead) is RETRACTED: 1.8 m is inside ± 3.59. Lesson: a noise figure from one seed block is not a noise
+  figure.
+- **R36.16 (2026-10-20 ~20:15 PDT) orders' LOOP twitch is mostly the give-way: T10 to traffic, S4 to manoeuvre.** Manoeuvre's split
+  (stream c947c62e3, `references/round36/manoeuvre/s4/README.md`; builder0 light, GDScript, 55c973cd4 + probes; 16 runs, 16 of 19 LOOP
+  squads, worst crew each): metres away from the goal by driver: give-way 196, route within 5 s after a give-way / hold / k-turn /
+  escape 96 (77 after give-ways), fresh route 100, k-turn legs 39, street hold 32 (one squad), escape 9; largest driver give-way in 11 of
+  16. Give-ways begun by those squads' crews (n 172): 124 within 10 m of their own seat when asked, 44 of them sent >= 10 m from it;
+  the asker had T7's pass lane in 22 of 124 (8 of the 44). **T10 (traffic):** spots scored by distance to the yielder's own seat when
+  near it, step aside and back instead of leading the asker out; contention guards (R36 lead answer). **S4 (manoeuvre):** the 10 fresh
+  episodes (goal 130–180 deg off the nose, 5.4–11.1 m away before turning) are "back in", bar above.
+- **R36.18 (2026-10-20 ~20:50 PDT) S4 DROPPED, not run: "back in" already ships (round 26's M1).** Manoeuvre (stream b8de464e6,
+  s4 README section 6; builder0 light, same 16 runs byte-identical): M1's choice at the start of each of the 10 fresh forward-loop
+  episodes: facing_nose 3 (the order's facing is > 60 deg off the nose, so it drives nose first and arrives facing, by design),
+  friendly 3 (a hull in the reverse's corridor: avoids contention, his priority), route_faster 1, reverse chosen but pulled forward 1,
+  goal beyond 25 m 1, element-paced overshoot 1. Each 5–11 m. **Orchestrator's call (broad strokes):** keep the small 5–8 m forward
+  swing that arrives already facing the drawn way; the dumb-looking 20–35 m sends are T10's.
+- **R36.19 (2026-10-20 ~21:35 PDT) T10's deciding line resized before any number: restricted, 24 seeds.** Traffic's sizing (stream
+  806bb00aa, t10_design.md "Sizing the deciding line"; orders' 55c973cd4 rows, builder0 native, 72 runs, 288 squads, away_m 800.9 m,
+  sd 7.01, 21 LOOP squads 471.9 m): at 6 seeds the expected saving (~100–150 m, ceiling ~300) does not clear 1.645 se (196 m all, 160 m
+  restricted). **Ruled:** deciding = away_m summed and paired over squads with at least one crew that began a give-way or was given a
+  street hold within 10 m of its own seat in EITHER arm (in-arm `seat_near` counter, measurement only, under clearclock in both
+  arms; native mirrors the G increment), on 24 fresh seeds 3641–3664 (288 probe runs / 1152 squads an arm; expected ~400–600 m v
+  1.645 se ~320 m); arm < base by more than 1.645 se. Unrestricted and LOOP squads reported. **Grant:** traffic adds the one
+  additive `seat_near` field to `ORDERS_PROBE_SQUAD` in orders' `tests/orders_probe.gd` (orders' stream is done), with a merge note.
+- **R36.20 (2026-10-20 ~22:00 PDT) N4 merged: main 3fc78e502 (CHECK running on builder0).** stream/native 0285bfe5f: builder0 2967/0,
+  sim-baseline unmoved; relay-smoke red (client1 4/5) re-ran ALONE and exited 0 (5/5); N4's diff touches no game/server/native/net
+  path (R36.12's rule). The relay-smoke race is the TEST (native's trace: client2 passed the moment client1 spawned and left before
+  client1's first snapshot, which counts tanks seen AT ONCE). **Grant:** native fixes it in `tests/net/bot_client_check.gd` (a passing
+  client lingers `--linger` s, default 8) and adds `make relay-linger-smoke` to `mk/net.mk` (known answers: linger 0 must FAIL 4/5,
+  linger 20 must PASS); not added to check. N5 (census lint) rides with native's next hand-over.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)

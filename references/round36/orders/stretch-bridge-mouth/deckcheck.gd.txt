@@ -1,0 +1,26 @@
+extends SceneTree
+var case: TestCase
+func _initialize() -> void:
+	_run.call_deferred()
+func _run() -> void:
+	case = TestCase.new()
+	case.tree = self
+	var lab := TacticsLab.create(case, 1, "crossing")
+	await lab.start()
+	for count in [3, 4, 5]:
+		var members: Array = []
+		for i in count:
+			members.append({"name": "m%d" % i, "unit": "law_ifv", "role": "tank", "position": Vector3.ZERO})
+		for click in [Vector3(-92, 0, 33), Vector3(-92, 0, 36), Vector3(-92, 0, 40), Vector3(-88, 0, 36)]:
+			for heading in [Vector3(0, 0, 1), Vector3(-0.5, 0, 0.87).normalized()]:
+				var h: Vector3 = -(heading as Vector3)
+				var a: Vector3 = ElementPlan._dry_halt_anchor(click, members, "herringbone", h, 14.0)
+				var bad := []
+				for entry in TacticsFormation.place(members, "herringbone", a, h, 14.0, {"halt": true, "corridor_m": INF}):
+					var seat: Vector3 = entry["to"]
+					if SlotGround.near_deck(seat, 0.0) or SlotGround.on_anchor_side(seat, a).distance_to(seat) > 0.5:
+						bad.append("(%.0f,%.0f%s%s)" % [seat.x, seat.z, " DECK" if SlotGround.near_deck(seat, 0.0) else "", " FAR" if SlotGround.on_anchor_side(seat, a).distance_to(seat) > 0.5 else ""])
+				print("DECKCHECK n%d click (%.0f,%.0f) heading (%.2f,%.2f) anchor (%.1f,%.1f) bad %s" % [count, click.x, click.z, h.x, h.z, a.x, a.z, " ".join(bad)])
+	lab.dispose()
+	case.teardown()
+	quit(0)

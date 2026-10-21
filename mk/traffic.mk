@@ -273,3 +273,35 @@ traffic-jam-census: import ## Round 34 (traffic T5): deaths of crews jammed by f
 		--seconds=$(JAM_SECONDS) $(JAM_FLAGS) > $(JAM_DIR)/$$0-$$1.log 2>&1 || true; \
 		grep -q "^JAM_CENSUS" $(JAM_DIR)/$$0-$$1.log && echo "  ran $$0 s$$1" || echo "  MISSING JAM_CENSUS $$0 s$$1"'
 	@$(PYTHON) tests/traffic/jam_table.py $(JAM_DIR)
+
+# Round 35 (traffic T7): his view of the pass (tests/traffic/t7_clip.gd): a crew under fire on open ground and a squadmate sent
+# through it, T7 ON v OFF, at his camera pose, desktop and phone aspects -> build/traffic-t7-clip/<aspect>/<tag>_*.png + a contact
+# sheet each. Needs a display (make remote T=traffic-t7-clip).
+T7_CLIP_SIZES ?= desktop:1280x720 phone:720x1560
+.PHONY: traffic-t7-clip
+traffic-t7-clip: import ## Round 35 (traffic T7): the pass at his pose, ON v OFF, desktop + phone -> build/traffic-t7-clip/ (needs a display)
+	@rm -rf $(BUILD_DIR)/traffic-t7-clip
+	@for size in $(T7_CLIP_SIZES); do aspect=$${size%%:*}; res=$${size#*:}; dir=$(CURDIR)/$(BUILD_DIR)/traffic-t7-clip/$$aspect; mkdir -p $$dir; \
+		for arm in on:--traffic-on=underfire off:--traffic-off=underfire; do tag=$${arm%%:*}; flag=$${arm#*:}; \
+		timeout 600 $(GODOT) --path . --resolution $$res --fixed-fps $(SIM_HZ) --script res://tests/traffic/t7_clip.gd -- \
+			--tag=$$tag --out=$$dir $$flag > $$dir/$$tag.log 2>&1 || echo ">> traffic-t7-clip: $$aspect $$tag exited non-zero"; \
+		grep -o 'T7_CLIP {.*' $$dir/$$tag.log || echo ">> traffic-t7-clip: $$aspect $$tag: no T7_CLIP line"; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -vf "select='not(mod(n\,10))',scale=320:-1,tile=5x3" -frames:v 1 $$dir/$${tag}_sheet.png || true; \
+	done; done
+
+# Round 36 (traffic T8): his Terminus head-on meeting with every held crew hit each tick (traffic_clip.gd --hit-held), T8
+# holdfire ON v OFF, from above the street -> build/traffic-t8-clip/<tag>.mp4 + a contact sheet each. Needs a display.
+T8_CLIP_SEED ?= 1
+T8_CLIP_SECONDS ?= 30
+.PHONY: traffic-t8-clip
+traffic-t8-clip: import ## Round 36 (traffic T8): a held crew being hit, holdfire ON v OFF, Terminus head-on -> build/traffic-t8-clip/ (needs a display)
+	@rm -rf $(BUILD_DIR)/traffic-t8-clip; dir=$(CURDIR)/$(BUILD_DIR)/traffic-t8-clip; mkdir -p $$dir; \
+	for arm in on:--traffic-on=holdfire off:--traffic-off=holdfire; do tag=$${arm%%:*}; flag=$${arm#*:}; \
+		timeout 900 $(GODOT) --path . --resolution 1280x720 --fixed-fps $(SIM_HZ) --script res://tests/traffic/traffic_clip.gd -- \
+			--arena=terminus --kind=head --seed=$(T8_CLIP_SEED) --seconds=$(T8_CLIP_SECONDS) --every=3 --tag=$$tag --out=$$dir \
+			--hit-held $$flag > $$dir/$$tag.log 2>&1 || echo ">> traffic-t8-clip: $$tag exited non-zero"; \
+		grep -o 'TRAFFIC_CLIP {.*' $$dir/$$tag.log | grep -oE '"tr_(holds|hold_ticks|released_fire|released_passed)": *[0-9]+' | tr '\n' ' '; echo " ($$tag)"; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -c:v libx264 -pix_fmt yuv420p $$dir/$$tag.mp4 || true; \
+		ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$$dir/$${tag}_*.png" -vf "select='not(mod(n\,10))',scale=320:-1,tile=6x5" -frames:v 1 $$dir/$${tag}_sheet.png || true; \
+		find $$dir -name "$${tag}_[0-9]*.png" ! -name "*0000.png" ! -name "*00[1-9]0.png" -delete; \
+	done
