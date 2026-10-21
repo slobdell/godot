@@ -67,6 +67,12 @@ between two mains from 16 seeds (unpaired); blocks 2601+ / 2701+: blob 49 / 46 %
 0.80. Faction pair dominates a seed (Syndicate 73 % as blob, Gangs 30, Law 22): bars pair the SAME 320 fights,
 `guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl ARM`. In player terms: today a naive all-in rush wins
 about half its fights against the CPU's tactics, and sitting tight wins about two in five.
+**Today's main plays the same fights:** guard.sh on bc9c1301d (main 2cc959224's tree, cover's K2 OFF code in), seed 2601, 20 of 20
+GUARD_RESULT lines byte-identical to the base's (builder2). **Arm tooling (cover K4 / rules ask):** GUARD_RESULT carries
+`cover_struck` and `args`; `GUARD_ARGS=--cover-on=hulldown GUARD_TAG=hulldown tools/scoreboard/guard.sh C` runs an arm on the same
+fights (builder0 light smoke: 4/4 fights, args recorded, cover_struck 0 in 4 Terminus fights). Cover and rules told.
+**Hand-over:** `pair/native-cp371` = bc9c1301d (five CP37.1 commits on main 2cc959224; full check on builder2 running) + 8a34906b9
+(the base rows, --pair) + 2bb41ef93 (cover_struck / GUARD_ARGS), byte-identical to stream/native's files.
 
 **Round 37, 2026-10-21 (worker).** Plan: CP37.1 (design note, probe, base read on builder2) -> N2 twins as pairs arrive -> N5
 promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row per shipped main.
