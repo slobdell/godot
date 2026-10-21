@@ -139,6 +139,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   `Manoeuvre.turn_in`, all scouts: catching up 243 s, jinking on target 162 s, mostly 10-18 m from the seat (the 14/18 m
   leash). Evidence: `lab/manoeuvre-r37-m6trace` 99e9b2bf4 `references/round37/manoeuvre/m6/README.md`. Options sent; I
   recommend a ~6/9 m leash for a parked scout.
+- **M5 base rate (first look, R36.23's rule):** builder0 native light, `lab/manoeuvre-r37-m5` 3f23c12cc, jam census Locks
+  6700-6701, seatstep OFF. 97 + 39 seated give-ways; 27 + 8 of them lead-outs; seat metres 994 + 508; back on the seat
+  within 15 s in 10 + 11; closed by a new order in 55 + 13 (CPU orders change). The deciding line has a workload. The
+  series is sized from the base arm's first map.
+- **M6 parked (R37.15):** the parked leash measured harmful (aim lost, no closer: `lab/manoeuvre-r37-m6leash` 23add418f).
+  Reconciled with orders' 956.2 s on their exact command: the turn-in is 944.7 s / 8,247 m of it (`lab/manoeuvre-r37-m6trace`
+  e20f9ba89). The lead was told "leave the turn-in".
+- **Main merged** (a10846307 -> stream d8ba445d9). `unstick` skips a crew in rules' R2 short halt (`Tank.short_halt_seconds`;
+  b496101bd, inert while R2 is OFF). Native's twin is requested.
 - **Requests / follow-ups:** rules (via godot-b0): R2's `Tank.short_halting()` must not read as a stall. When R2 merges, my
   `_unstick` stall clock skips a short-halting hull, and native mirrors that in its unstick twin (a request to native then).
 - **Parked yielders (godot-b0's question, from orders' O2 probe):** round 36's S4 trace (55c973cd4, builder0 light, 16 looping
