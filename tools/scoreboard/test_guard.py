@@ -72,5 +72,20 @@ with tempfile.TemporaryDirectory() as root:
     check("render names the line", "BLOB: 4 of 5 fights read" in text, True)
     check("render says missing", "MISSING: locks-2-green.log" in text, True)
 
+# The scoreboard table's guard section (N3): a main with a guard read gets the lines; one without reads "not run".
+import table  # noqa: E402
+with tempfile.TemporaryDirectory() as root:
+    os.makedirs(os.path.join(root, "guards"))
+    with open(os.path.join(root, "mains.txt"), "w") as f:
+        f.write("aaaaaaaaa older main\nbbbbbbbbb newer main\n")
+    with open(os.path.join(root, "guards", "bbbbbbbbb.json"), "w") as f:
+        json.dump(report, f)
+    page = table.render(root)
+    blob_row = [l for l in page.splitlines() if l.startswith("| A blob frontal assault WINS")][0]
+    check("table blob win cells", blob_row.split(" | ")[1:3], ["not run", "25 %"])
+    check("table blob noise", blob_row.split(" | ")[-1].rstrip(" |"), "± 71 %")
+    read_row = [l for l in page.splitlines() if l.startswith("| Guard fights read")][0]
+    check("table read cell", read_row.split(" | ")[2], "4 of 5")
+
 print("%d failed" % len(failures))
 sys.exit(1 if failures else 0)
