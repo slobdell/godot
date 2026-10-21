@@ -103,7 +103,7 @@ exit (remote_builds.md). Delete your own `~/tank_squad/<folder>` leftovers on bo
 
 ## Bars (round 37)
 
-_(each stream files its bar here BEFORE its first number; the orchestrator records rulings below as R37.x)_
+_(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never edit this file on a stream branch: it conflicts at merge. Rulings below as R37.x)_
 
 - **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
   has parked keeps one shape; no crew drives to a point ~15 m off and back while the squad sits. The fix: an ARRIVED element
