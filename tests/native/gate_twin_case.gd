@@ -94,7 +94,7 @@ func _case(owned: bool, arena: String) -> void:
 	var movers: Array[Movement] = []
 	for i in UNITS.size():
 		var tank := game_match.spawn_tank("Gate%02d" % i, 0, Match.Team.GREEN, UNITS[i])
-		tank.place(Vector3(-30.0 + 7.0 * (i % 5), 0.0, -10.0 + 8.0 * (i / 5)), tank.rotation.y)
+		tank.global_position = Vector3(-30.0 + 7.0 * (i % 5), 0.0, -10.0 + 8.0 * (i / 5))
 		var orders := OrderController.new()
 		orders.tank = tank
 		orders.tanks_root = game_match.tanks
