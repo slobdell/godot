@@ -333,6 +333,16 @@ _Filed here before any number._
   pinned crew a few metres from a bank / bridge mouth; the side point stays on its own bank and off the deck, both paths. Being
   traced: locks-6550 Rust_Eyes_3 chose 9 side points on one parked artillery ~3 s apart for < 1 m of motion (yields_unfinished
   9 -> 20).
+- **R36.31 (2026-10-21 ~02:50 PDT) S2a's bank case green; Eyes_3's repeat side step is round 37.** Manoeuvre (b498eb498, s2a README):
+  test_manoeuvre_h1b_side::test_beside_the_canal_the_side_point_stays_on_its_bank (33919af3d), builder0 light 4/4 both paths: the
+  water-side point is refused (off the navmesh), the land side taken; at a bridge mouth the open deck mouth is room and both arms
+  drive round with 0 H1 fires (pinned ON = base). Eyes_3 (locks-6550): `_side_clear` tests only the POINT against hull centres (the
+  friend at half its radius), never the DRIVE to it against the friend's oriented box, so a long hull seen at an angle blocks the
+  drive and the crew picks nearly the same point every ~3 s (9 picks, net 1.0 m); 17 crew-friend pairs reached the side rule in 48
+  fights, 15 fired once, 1 twice, Eyes_3 9 times; base re-rams the same way. **Ruled:** not in this hand-over (what ships is what the
+  series judged); round 37: (ii) a side step that ends still blocked by the same unmoved friend makes the next far fire a stand
+  (recommended), deciding lab case a long friend at 30–45 deg. S2a's hand-over, if it passes: bf678480c's code + native's yield
+  re-pin + the bank case, one green check.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
