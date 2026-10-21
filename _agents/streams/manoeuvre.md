@@ -148,6 +148,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   e20f9ba89). The lead was told "leave the turn-in".
 - **Main merged** (a10846307 -> stream d8ba445d9). `unstick` skips a crew in rules' R2 short halt (`Tank.short_halt_seconds`;
   b496101bd, inert while R2 is OFF). Native's twin is requested.
+- **Series queue (2026-10-21 ~12:45):**
+  - **M1:** builder0. Unit `manoeuvre-m1-series` waits for the stream check on b822e6696 and starts only on its green
+    verdict. ON lab/manoeuvre-m1on 339d3f2e2 v BASE = stream b822e6696. Its ON-tree check runs first. Judge:
+    `s1_judge.py <dir> --bar m1`. Logs `~/overnight-manoeuvre/r37/m1/`.
+  - **M5a:** builder2 (R37.18), queued after rules' Bar R series (unit `manoeuvre-m5-series4` waits until a godot-rules
+    process has been seen there, then none for 10 min). ON lab/manoeuvre-r37-m5on 7ebbc7bdd v BASE lab/manoeuvre-r37-m5
+    936612334 (stream + native's green pair 156d563d9). Judge: `tests/manoeuvre/m5_judge.py`. Logs
+    `~/overnight-manoeuvre/r37/m5/`. START/FINISH get marked here.
 - **Requests / follow-ups:** rules (via godot-b0): R2's `Tank.short_halting()` must not read as a stall. When R2 merges, my
   `_unstick` stall clock skips a short-halting hull, and native mirrors that in its unstick twin (a request to native then).
 - **Parked yielders (godot-b0's question, from orders' O2 probe):** round 36's S4 trace (55c973cd4, builder0 light, 16 looping
