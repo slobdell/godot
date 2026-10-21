@@ -67,6 +67,18 @@ win, kill ratio, capped share, ± from that read's own seeds); known answers in 
 see judging.md *Round 37 re-render*): round 36's 20 lines in `tools/judge/lines_r36.py`, table unchanged (no round-36 rows on
 main), 0 of 9 se lines inside the noise, 6 verdict margins under 1.645 se.
 
+**Checks:** `cfb8120ba` (CP37.1 + N4 + N5 + N6 + N3, game tree = main 9d325e291) builder2 `make native check exited 2`: runner
+2973/0, sim-baseline 13/13 unmoved, perf-judge NOT JUDGED (busy box, 2.5-3.9x); the ONE red is ai-scenarios-check, N5's
+planned move (passed+not judged 53 -> 54, pending 5 -> 4: test_target_behind PASS n=3 shots=101; **the orchestrator adopts
+54,0,4,0** with N5). The hand-over is cut CP37.1-ONLY as `pair/native-cp371` bc9c1301d (main 2cc959224 + the five CP37.1
+commits cherry-picked, files byte-identical to stream/native's), full check queued on builder2, then pair/native-m5's.
+
+**M5a mirror (manoeuvre, R37.10):** `pair/native-m5` 156d563d9 (side worktree ../godot-native-m5) = lab/manoeuvre-r37-m5
+b94025dbe + begin_yield's seatstep mirror per manoeuvre's spec. builder0 light `make native quick` exited 0, 21/0: every old
+test_native_yield stage PASS (switch OFF); new twin stages 0 mismatches: ON beam 6 m 18 drives (seated 18, moved 15, lead-out
+avoided 12), ON ahead 8 m move_to and face_slot 9 each (9/9/6), ON 14 m never fires, OFF never fires; test_traffic_seatstep 3/3.
+M1 sidestand needs no mirror (the far fire is GDScript-only). Full check queued on builder2 after CP37.1's (manoeuvre asked).
+
 **Twin questions answered in writing (orchestrator):** R37.2 rules (no twin: C++ reads sight live, never computes spread,
 drives the throttle tank.gd hands it); K2 (no native hit path skips cover's seam: shell_native only flies and emits `hit`,
 beams are GDScript, combat_native runs downstream; splash and flames skip the seam on both paths, cover's call); O2 (no native
