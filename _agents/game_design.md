@@ -4215,6 +4215,10 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    to cover:** a few metres at most, chosen as part of where the crew parks on arrival (the seat), not a later idle wander, so it
    squares with his parked-squads answer ("stay put and shoot") and "units must look under control".
 4. **Ambush first shot.** A hidden unit's opening volley gets an accuracy bonus and briefly pins its target. Recommendation: after 1.
+   **ANSWERED 2026-10-21: held behind 1-3.** "ok we'll go with your recommendation, it sounds like this is a feature that needs to
+   be tested later". 1-3 already give the ambusher first sight, better accuracy and cover; the new part would only be "fire from a
+   shooter the target can't see suppresses harder" (a tweak to existing suppression). Add it only if the blob-v-tactics line after
+   1-3 shows the ambusher still lacks a decisive opening; watch the turtle guard (question 11).
 5. **Pre-registered fire.** Mark a kill zone ahead of time; artillery into it is accurate from the first shell.
 6. **Obstacles / channelling.** Mines, wrecks, roadblocks that force an attacker into a crowd (and pairs with area damage).
 7. **Short supply lines.** The defender near its resupply keeps fighting; a far-advanced attacker runs dry (ammo and repair exist).
