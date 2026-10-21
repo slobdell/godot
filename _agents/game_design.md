@@ -4226,6 +4226,9 @@ orchestrator raises them with him BEFORE splitting round 37, one at a time, in p
    needs a spotted target (artillery needs eyes; scouts matter). The order must feel like the existing move/attack orders; the CPU
    must use it too (choke points). Counters: scouting the zone, smoke.
 6. **Obstacles / channelling.** Mines, wrecks, roadblocks that force an attacker into a crowd (and pairs with area damage).
+   **ANSWERED 2026-10-21: DEFERRED.** "eh, let's defer on this one. The maps are already kind of busy". Not adding map obstacles.
+   Wrecks stay passable (contention). Player-placed obstacles belong to question 10. Note for question 3's low-cover pass: he finds
+   the maps busy, so low cover should mostly re-shape what is already there (rubble, low walls in place of clutter), not add to it.
 7. **Short supply lines.** The defender near its resupply keeps fighting; a far-advanced attacker runs dry (ammo and repair exist).
 8. **Suppression stops an advance.** A pinned unit slows or halts, not just shoots wide: fire-and-manoeuvre becomes the way through.
 9. **The four levers from the first message:** clumping punished (area effects / splash), defender edge, flanks pay visibly (side
