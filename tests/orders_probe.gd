@@ -507,6 +507,14 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 	# O2 (round 37): a crew more than PARKED_OFF_M off its placed seat with NO order goal is off it by its own choice
 	# (his "stay put and shoot"); `self_off` keeps each such crew's farthest.
 	var self_off: Dictionary = squad.get("self_off", {})
+	# R37.6: a crew that gave way to a friend (Movement.yield_to set) in the GIVEWAY_S before it passed PARKED_OFF_M was
+	# pushed off by traffic (manoeuvre's M5), not by its own option: it is counted apart, as "GIVEWAY".
+	var yielded: Dictionary = squad.get("yield_tick", {})
+	for n: String in alive:
+		var mv := Movement.of(_tank(n))
+		if mv != null and mv.yield_to != "":
+			yielded[n] = _match.tick
+	squad["yield_tick"] = yielded
 	for n: String in alive:
 		if placed.has(n) and not (_controls.orders.goal_position(n) is Vector3):
 			var off := _flat_d(_tank(n).global_position, placed[n])
@@ -519,6 +527,8 @@ func _watch_place(squad: Dictionary, alive: Array, element: Element) -> void:
 					var drive: Variant = mover.get("_goal") if mover != null else null
 					if not (drive is Vector3 and (drive as Vector3).is_finite()):
 						why += "+nogoal"
+					if yielded.has(n) and _match.tick - int(yielded[n]) <= int(GIVEWAY_S * SimClock.TICK_RATE):
+						why = "GIVEWAY"
 					var by: Dictionary = squad.get("left_by", {})
 					by[why] = int(by.get(why, 0)) + 1
 					squad["left_by"] = by
@@ -550,6 +560,8 @@ const DETOUR_M := 8.0
 const TWITCH_SEEN_M := 3.0
 ## O2 (round 37): off its placed seat by more than this with no order goal = it left the seat by itself.
 const PARKED_OFF_M := 6.0
+## A give-way this recent before leaving the seat makes it traffic's (R37.6).
+const GIVEWAY_S := 3.0
 ## ... and back on it at the window's end within this.
 const BACK_M := 3.0
 ## O4 (round 37): a crew's order goal this close to last tick's is the same goal (`away_held_m`).
