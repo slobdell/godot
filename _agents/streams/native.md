@@ -59,6 +59,15 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**CP37.1 BASE (2026-10-21 11:31 PDT, builder2, guard.sh cfb8120ba = main 9d325e291's game tree, n 160 a line, 0 attempts lost
+to preemption).** 5 maps x seeds 2601-2608 + 2701-2708 x both sides as the guard. BLOB (his right-click, every squad at once at the
+enemy's zone): **wins 48 % (± 11 %)**, kill ratio **0.88 (± 0.07)**, 0 % capped, median 112 s. TURTLE (posts on its own zone,
+never advances): **wins 39 % (± 15 %)**, kill ratio **0.80 (± 0.17)**, 0 % capped, median 194 s. ± = 2 se of a difference
+between two mains from 16 seeds (unpaired); blocks 2601+ / 2701+: blob 49 / 46 %, kr 0.88 / 0.88; turtle 41 / 38 %, 0.81 /
+0.80. Faction pair dominates a seed (Syndicate 73 % as blob, Gangs 30, Law 22): bars pair the SAME 320 fights,
+`guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl ARM`. In player terms: today a naive all-in rush wins
+about half its fights against the CPU's tactics, and sitting tight wins about two in five.
+
 **Round 37, 2026-10-21 (worker).** Plan: CP37.1 (design note, probe, base read on builder2) -> N2 twins as pairs arrive -> N5
 promote (small) -> N4 net-test diagnostics -> N6 judging re-render -> N3 a row per shipped main.
 
