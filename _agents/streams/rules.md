@@ -111,22 +111,33 @@ brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-ba
 - The brief's "a CPU tank halting to fire at 120 m": no direct-fire gun reaches 120 m (longest: railgun 110 m), so the lab
   case uses the Syndicate tank's railgun at > 80 m.
 
-**Bar R (filed 2026-10-21, recorded on main by the orchestrator; per R37.1(b), if CP37.1's base shows the blob near the
-floor the deciding metric switches to the one native names, and the bar is re-filed before any arm number):**
-
-**Bar R (rules R1/R2/R3), DRAFT filed 2026-10-21 by rules before any judged number; k·se and n are filled from CP37.1's
-noise (native's base read on builder2) before the series starts.** Arms: base = main at CP37.1's merge; each rule's arm =
-the same tree with `--rules-on=<rule>` (sight / spread / pin_slow), plus a package arm `--rules-on=sight,spread,pin_slow`.
-Judging: each rule alone first (its own switch); the package only if two or more pass alone or each is inside its noise
-alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions both ways, the grid and seeds native names.
-- **Deciding (each arm):** blob v tactics: the blob's win rate DOWN v base by more than k·se (k = 2, se = CP37.1's 2-seed-block
-  se of the win rate), AND the blob's kill ratio not up.
-- **Guard 1:** turtle v tactics: the turtle's win rate not UP v base by more than 2 se (the turtle must not start winning).
-- **Guard 2:** kills per match and match length per faction within base ± 2 se (no faction breaks: the stabilised-gun check
+**Bar R (rules R1/R2/R3), RE-FILED 2026-10-21 with PAIRED thresholds, before any arm number. The base comes from the
+orchestrator's CP37.1 base read (R37.14, recorded on main).** Base read: builder2, game tree main 9d325e291, the right-click
+blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0 % capped. Blob v tactics: blob wins 48 %
+(± 11, 2 se unpaired), kill ratio 0.88 (± 0.07), median 112 s. Turtle v tactics: turtle wins 39 % (± 15), kill ratio 0.80
+(± 0.17), median 194 s.
+- **Workload (n):** the SAME 320 fights per arm (both lines, the same maps, seeds and sides), on builder2.
+- **Base:** main after CP37.1 and the rules merge, every switch OFF. With all switches OFF it must replay
+  `references/scoreboard/guards/9d325e291.fights.jsonl` fight for fight (native shows the replay). If it does not, the base is
+  re-run on the new tree and the pairing uses that.
+- **Arms:** one arm per rule on that tree, `--rules-on=sight`, `spread` and `pin_slow`. Package arm `--rules-on=sight,spread,pin_slow`
+  only if two or more rules pass alone, or each sits inside its noise alone (argued in the verdict).
+- **Judged PAIRED** with `python3 tools/scoreboard/guard.py --pair <base fights.jsonl> <arm raw>`: flips per fight, exact
+  McNemar p, and paired differences with per-seed se. All se below are that paired per-seed se; none is the unpaired ± above.
+- **Deciding (each arm):** blob v tactics. The blob's win rate must be DOWN v base by more than 2 x paired se, AND the exact
+  McNemar p (blob win -> loss flips v loss -> win flips) must be < 0.05.
+- **Second line:** the blob's kill ratio must not be UP by more than 2 x paired se. A falling win rate with a rising kill
+  ratio is reported as a contradiction, not a pass.
+- **Faction:** faction dominates any single seed (base: Syndicate wins 73 % as blob, 67 % as turtle; Gangs 30/17 %; Law 22/22 %).
+  Every arm also reports the paired blob win-rate difference per faction. These per-faction differences are not judged
+  (n per faction is 1/3), but a faction whose sign is opposite to the overall result is named in the verdict.
+- **Guard 1:** turtle v tactics. The turtle's win rate must not be UP v base by more than 2 x paired se, and its McNemar p
+  must not fall below 0.05 in the turtle's favour (the turtle must not start winning).
+- **Guard 2:** kills per match and match length (median, both lines), per faction, within base ± 2 x paired se (no faction breaks: the stabilised-gun check
   in the brief; a faction outside is REPORTED with its units, not fixed here).
 - **Guard 3 (R2 only, ruling R37.2 (c)):** contention: friendly contacts, all-in time, crews held behind a halted friend,
   and manoeuvre's wedge line, each no worse than base + 2 se on the scoreboard's moves/orders workload.
-- **Guard 4:** perf-judge on the arm's pair tree (the short halt and the motion-sight pass are per-crew GDScript).
+- **Guard 4:** perf-judge with the arm ON, on builder2 (the short halt and the motion-sight pass are per-crew GDScript). The OFF code is judged once on main by the orchestrator, after CP37.1 and my merge.
 - **Equality:** sim-baseline maps unmoved with every switch OFF (attributed with the switch OFF, C37.2).
 - **Reports (not judged):** the R2 measure's movers' share of direct damage (`make rules-moving`, base 52.5 % at 9d63f709a,
   builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
