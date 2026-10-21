@@ -116,6 +116,15 @@ determinism 8c3c1232b711a760 (log `~/overnight-manoeuvre/r37/check_b822e6696_bui
 main a10846307, the unstick short-halt skip, and native's twin of it (pair/native-unstick ca6978178). The commits after it are
 judges and docs only. The M1 series started 13:22 on builder0 (unit `manoeuvre-m1-series2`).
 
+**Stretch (the post-deploy twitch, trace only): DONE by decomposition, no new rule.** On one workload, orders' fight probe
+(f4437d26a + my probe-only driver tag, builder0 native light, locks/crossing/terminus x 3 squads x click x 3621-3626,
+budget 1500, deterministic), the 1696.4 s parked crews spent > 6 m off their seat split as follows:
+- **Scout turn-in, 944.7 s / 8,247 m.** M6, parked by R37.15: the lead was told "leave it". The leash measured harmful.
+- **Standing off the seat, 579.4 s.** Orders' O2 drive-back.
+- **Brain moves under move_to, 81.2 s.** Orders' engagement.
+- **Give-ways, 79.9 s.** M5.
+- **Face plan, creep and coasting under stop, about 11 s.** This is the "drive layer" twitch proper. Too small to act on.
+
 **Player smoke, M1 ON** (lab/manoeuvre-m1on 339d3f2e2, builder0 light, `orders-probe-shots` on the Locks, 3 and 5 squads, click,
 arrival + 5 s, desktop frames looked at): every squad is seated by its marker south of the canal, with no crew wedged and none
 nosing into a friend. The rule does not arise in a clean move (as designed); the lab case and the series carry it.
