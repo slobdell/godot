@@ -415,6 +415,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   T=perf-judge` alone, queued behind `--wait-below 1`; (b) granted to native: perf_judge.sh says at once on builder2 "NOT JUDGED:
   builder2 is not a judging machine (e2 Broadwell, absolute line)" instead of three tries; (c) the machine-relative line
   (ai_usec_per_ref_ms, nominals keyed by CPU model, an A/A) is round-38 work unless builder0 never goes quiet.
+  **First try (main 0baf6e1ff, builder0, ~14:10 PDT): NOT JUDGED**, refused 3x at ratio 2.23-2.36x (load 9-10: M1's series and
+  orders' runs); the brains read 12,681-14,402 us a tick, under the 20,000 line even loaded (evidence, not a verdict). Retried when
+  builder0's series are done.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
