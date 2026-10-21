@@ -175,6 +175,12 @@ _Filed here before any number._
   builder2; **ships on that check's green**. **Perf-judge ruling:** builder0 carries S1's judged series for hours, so no quiet window
   today; T8 adds a per-hit hold release (no new per-tick search), so it ships on its check, and ONE perf-judge on main covers T8, the
   joint, D5 and whatever S1/S2a ship, in the first quiet builder0 window (between S1's and S2a's series, or at the close).
+- **R36.9 (2026-10-20 ~17:35 PDT) The held-crew loss is closed; no group release; jam:yielding traced next (traffic).** T8's ON arm
+  (a2de32420, builder2, n 140; stream/traffic f0248ef71, `references/round36/traffic/held_after_t8.md`): of 109 held deaths, 32 died
+  WHILE held (31 on the first hit in 10 s: out of a hit-triggered release's reach; a group release caps at 0.22 a fight and costs the
+  hold's purpose: NO); 77 within 3 s after a hold (base 75), 50 of them released and driving on, shot in the fight. Largest traffic
+  cause left: jam:yielding 215 (3.7 %), 97 giving way to ANOTHER squad's crew. Traffic traces it from the series logs (note, no
+  code), then the orchestrator rules.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
