@@ -201,6 +201,10 @@ _Filed here before any number._
   game diff is `game/ai/traffic.gd` only and runs only inside a take-turns wait, which net-smoke's two-player-tank match never forms.
   `_pass_lane`'s "side effect" (R36.11) is an observer hazard, not a game bug (`Avoidance.refresh` snapshots once per physics frame
   at its first caller; only drive code calls it, in a fixed order): traffic's note dd7634504, probe inert by default 4c458e4e8.
+- **R36.13 (2026-10-20 ~18:15 PDT) Orders' hand-over merged: main 6d4e18e29 (CHECK running).** `stream/orders` 515aeeccd (builder0
+  `make check exited 0`, 2964/0, 13 unmoved): DEPLOY_PASS deleted, DEPLOY_COMPACT OFF, the herringbone lab + probe columns +
+  pack_refused (measurement) + readers. Main had moved (T8, S2a + yieldgap), so ONE builder0 `make native check` of 6d4e18e29 for the
+  batch (unit orch-main-check-6d4e18e29, log `~/overnight-orch/r36/main_check_6d4e18e29.log`).
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)

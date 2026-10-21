@@ -29,6 +29,7 @@ on builder2** (its old worktree holds the running job); the orchestrator says wh
 **The orchestrator's open items (in order):**
 1. ~~CP36.1~~ MERGED (R36.1, e45bb6632). **main 5d6bb1de8 is GREEN** (R36.5): it inherits `pair/native-s1s3-main` `20acbda5f`'s
    builder0 check (2961/0, 13 unmoved), which contains the joint + D5 + S3 (W1b deleted) + S1 stallnet OFF.
+   **main 6d4e18e29 = + orders' hand-over (R36.13); its batch check runs on builder0 (orch-main-check-6d4e18e29).**
    **main 3d46b2884: T8 SHIPPED ON** (R36.12; held deaths 253 -> 109 / 140 fights). **main 10318ec81** adds S2a h1bside + yieldgap OFF (inherits 32ba4ca99, 2967/0, R36.7). O2 failed (R36.6); orders' hand-over
    515aeeccd (tooling, DEPLOY_COMPACT OFF, DEPLOY_PASS deleted) is checking: on green, merge and run ONE main check (main moved).
 2. ~~The scoreboard rows~~ DONE (13:18): native's session (launched by the lead at ~12:25 in the OLD godot-native worktree, which
