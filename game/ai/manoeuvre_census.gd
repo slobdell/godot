@@ -100,6 +100,10 @@ static var h1b_far_rows: Array = []
 ## Round 36 (S2a, h1bside): far loops that went round (a side point) and that stood (no side clear). ON arm only.
 static var h1b_side_steps := 0
 static var h1b_side_stands := 0
+## Round 37 (M1, `sidestand`): far fires on the same unmoved friend, for the same goal, after a side step on it (both arms: the
+## base's repeat loop), and the ones that stood for it (ON arm only).
+static var h1b_side_repeats := 0
+static var h1b_side_restands := 0
 static var _far_rows_printed := 0
 
 
@@ -174,10 +178,16 @@ static func reset_h1b() -> void:
 	h1b_short_m = 0.0
 	h1b_far = 0
 	h1b_loops = 0
+	h1b_side_steps = 0
+	h1b_side_stands = 0
+	h1b_side_repeats = 0
+	h1b_side_restands = 0
 
 
 static func h1b_report() -> Dictionary:
-	return {"failed_asks": h1b_failed_asks, "settles": h1b_settles, "short_m": snappedf(h1b_short_m, 0.1), "far": h1b_far, "loops": h1b_loops}
+	return {"failed_asks": h1b_failed_asks, "settles": h1b_settles, "short_m": snappedf(h1b_short_m, 0.1), "far": h1b_far, "loops": h1b_loops,
+			"side_steps": h1b_side_steps, "side_stands": h1b_side_stands, "side_repeats": h1b_side_repeats,
+			"side_restands": h1b_side_restands}
 
 
 ## Was this crew's last planner refusal `code`, within REFUSAL_ESC_S of physics frame `now`? Always false with the planner OFF.
