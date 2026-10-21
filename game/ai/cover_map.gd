@@ -304,6 +304,150 @@ func inside_any(point: Vector2, grow: float) -> bool:
 	return false
 
 
+# ---- Round 37 (cover, K2 / C37.3): hull-down behind LOW cover -------------------------------------------------
+
+## A low feature counts as a hull-down screen when its near side is at most this far in front of the hull's face
+## (the lead: "idle units that are close to a piece of cover"; C37.4's seat shifts at most 4 m to get here).
+const HULLDOWN_REACH_M := 3.0
+## ...and the hull's presented width is read at this many evenly spaced slices (deterministic, no interval union).
+const HULLDOWN_SLICES := 32
+## Hull-down behaviours, OFF unless `--cover-on=name,...` names them (`--cover-off=` wins). `hulldown`: a direct round
+## arriving in a hull's front arc may strike the low cover in front of it instead (Armor.low_cover_strike).
+const DEFAULT_OFF := ["hulldown"]
+static var _off := {}
+static var _off_parsed := false
+
+
+## Is the cover behaviour `name` off for this run?
+static func off(name: String) -> bool:
+	if not _off_parsed:
+		_off_parsed = true
+		for part: String in DEFAULT_OFF:
+			_off[part] = true
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--cover-on="):
+				for part in String(arg).trim_prefix("--cover-on=").split(",", false):
+					_off.erase(part.strip_edges())
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--cover-off="):
+				for part in String(arg).trim_prefix("--cover-off=").split(",", false):
+					_off[part.strip_edges()] = true
+	return _off.has(name)
+
+
+## Tests: switch a behaviour off (true) or on, whatever the command line said.
+static func set_off(name: String, value: bool) -> void:
+	off(name)
+	if value:
+		_off[name] = true
+	else:
+		_off.erase(name)
+
+
+## How much of a hull's FRONT the low cover in front of it hides from a shooter in direction `toward`:
+## {"fraction": 0..1, "point": Vector2 (where a round meets the screen), "far": float (metres from the hull's centre
+## to the screen's far side, along `toward`)}; fraction 0 when there is none.
+##
+## The hull (`hull` = hull_size [width, height, length]) at `center` facing `forward` presents a width
+## w|cos| + l|sin| and a depth l/2|cos| + w/2|sin| toward the shooter. A feature lower than EYE_HEIGHT whose
+## footprint lies between the hull's face and HULLDOWN_REACH_M beyond it screens the slices of that width its shadow
+## covers, each by min(1, feature height / hull height): a 0.9 m barricade hides most of a 1.24 m Rat Rod and a
+## fifth of a 4 m bus. Pure and deterministic (the features in index order, a fixed slice count).
+func low_screen(center: Vector2, forward: Vector2, toward: Vector2, hull: Vector3) -> Dictionary:
+	var none := {"fraction": 0.0, "point": center, "far": 0.0}
+	if hull.y <= 0.0 or toward.length_squared() < 1e-9:
+		return none
+	var along := absf(forward.dot(toward))
+	var aside := absf(forward.x * toward.y - forward.y * toward.x)
+	var width := hull.x * along + hull.z * aside
+	var depth := hull.z * 0.5 * along + hull.x * 0.5 * aside
+	if width <= 0.0:
+		return none
+	var across := Vector2(-toward.y, toward.x)
+	var reach := depth + HULLDOWN_REACH_M
+	# The cells under the corridor in front of the hull, each feature once, in index order.
+	var corners := [center + across * width * 0.5, center - across * width * 0.5,
+			center + toward * reach + across * width * 0.5, center + toward * reach - across * width * 0.5]
+	var low: Vector2 = corners[0]
+	var high: Vector2 = corners[0]
+	for corner: Vector2 in corners:
+		low = low.min(corner)
+		high = high.max(corner)
+	var seen := {}
+	for cx in range(floori(low.x / CELL), floori(high.x / CELL) + 1):
+		for cz in range(floori(low.y / CELL), floori(high.y / CELL) + 1):
+			for index: int in _grid.get(Vector2i(cx, cz), PackedInt32Array()):
+				seen[index] = true
+	var candidates: Array = seen.keys()
+	candidates.sort()
+	var cover := PackedFloat64Array()
+	cover.resize(HULLDOWN_SLICES)
+	cover.fill(0.0)
+	var near := INF
+	var far := 0.0
+	for index: int in candidates:
+		var height: float = _f_height[index]
+		if height >= EYE_HEIGHT or height <= 0.0:
+			continue
+		var a_min := INF
+		var a_max := -INF
+		var s_min := INF
+		var s_max := -INF
+		for corner in _corners(index, 0.0):
+			var offset: Vector2 = corner - center
+			a_min = minf(a_min, offset.dot(toward))
+			a_max = maxf(a_max, offset.dot(toward))
+			s_min = minf(s_min, offset.dot(across))
+			s_max = maxf(s_max, offset.dot(across))
+		if a_max < depth or a_min > reach:
+			continue  # beside or behind the hull, or too far out to be its screen
+		var hides := minf(1.0, height / hull.y)
+		var used := false
+		for slice in HULLDOWN_SLICES:
+			var s := -width * 0.5 + width * (float(slice) + 0.5) / HULLDOWN_SLICES
+			if s >= s_min and s <= s_max and hides > cover[slice]:
+				cover[slice] = hides
+				used = true
+		if used:
+			near = minf(near, maxf(a_min, depth))
+			far = maxf(far, a_max)
+	var total := 0.0
+	for slice in HULLDOWN_SLICES:
+		total += cover[slice]
+	if total <= 0.0:
+		return none
+	return {"fraction": total / HULLDOWN_SLICES, "point": center + toward * near, "far": far}
+
+
+## Round 37 (cover, K3): the LOW features (lower than EYE_HEIGHT) whose box comes within `radius` of `center`, in
+## index order.
+func low_features_near(center: Vector2, radius: float) -> PackedInt32Array:
+	var seen := {}
+	for cx in range(floori((center.x - radius) / CELL), floori((center.x + radius) / CELL) + 1):
+		for cz in range(floori((center.y - radius) / CELL), floori((center.y + radius) / CELL) + 1):
+			for index: int in _grid.get(Vector2i(cx, cz), PackedInt32Array()):
+				if _f_height[index] < EYE_HEIGHT and _f_height[index] > 0.0:
+					seen[index] = true
+	var found := PackedInt32Array()
+	var ordered: Array = seen.keys()
+	ordered.sort()
+	for index: int in ordered:
+		var corners := _corners(index, 0.0)
+		var inside := false
+		for k in 4:
+			if Geometry2D.get_closest_point_to_segment(center, corners[k], corners[(k + 1) % 4]).distance_to(center) <= radius:
+				inside = true
+				break
+		if inside:
+			found.append(index)
+	return found
+
+
+## A feature's footprint corners (no growth).
+func corners_of(index: int) -> PackedVector2Array:
+	return _corners(index, 0.0)
+
+
 ## Indices of static tactical points within `radius` of `center`, nearest first (ties by index).
 ## Round 19 (brains B3): the same points as points_near, UNSORTED (grid order) and without the pair array, for a caller
 ## whose answer does not depend on the order (AmbushSite picks its best by a full key).
