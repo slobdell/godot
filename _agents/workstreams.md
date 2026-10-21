@@ -173,6 +173,20 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   _(Recorded from stream/rules a3906e8ed. Per R37.1(b): if CP37.1's base shows the blob already near the floor, the deciding
   metric becomes the one native names from today's read; the bar is re-filed then, before any arm number.)_
 
+- **Bar O2 PARKED_HOLD (orders, R37.9; filed in stream/orders 8dc98b5f4 Status before any arm number; code ef6b17ea9, OFF).**
+  What he would see: a squad he parked stays where he put it and shoots from there; a crew pushed or pulling back drives all the way
+  back onto its spot. The change: `tank_brain.gd` `_order_move`, his idle crews at their post only: a move of the crew's own option
+  ending > 4 m from its post is refused (it holds and faces the threat); RETREAT kept (his question open); a crew > 3 m off its post
+  with nothing else to do drives back onto it (arrive 1.5 m). GDScript only (orders: `_order_move` has no native twin; native
+  confirms). **Sizing (seen):** builder0 native light, 3e43c4a24, the fight probe, 18 fights: 34 own-option leaves (1.89 a fight).
+  **Judged:** `make native orders-probe`, arms `fight:--probe-fight=on,--probe-budget=1500` v `parked:` (+`--parked-hold=on`),
+  locks/crossing/terminus x 3 squads x click, FRESH seeds 3743-3754 (36 fights an arm), builder0, a green-checked hash. **Counter:**
+  parked_refused > 0 on the arm. **Deciding:** own-option leaves a fight (left_by minus GIVEWAY and MOVE, RETREAT kept in the count)
+  arm <= 25 % of base (not 10 %: RETREAT stays allowed, 4 of 34). **Reported:** RETREAT leaves alone; survivors that left and are
+  back within 3 m at the end. **Guards** (per-fight totals): his kills and his losses a fight each within base +/- 1.645 se (base
+  arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
+  Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
+
 - **Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number (recorded from stream/manoeuvre ff40ed578)**
 
 - **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,
