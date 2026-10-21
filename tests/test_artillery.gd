@@ -16,7 +16,7 @@ func _setup() -> Match:
 ## An artillery tank driven by a plain OrderController that spots through team intel, like a brain.
 func _battery(game_match: Match, at: Vector3) -> Array:
 	var gun := game_match.spawn_tank("Green_Gun_1", 0, Match.Team.GREEN, "artillery")
-	gun.global_position = at
+	gun.place(at, gun.rotation.y)
 	var orders := OrderController.new()
 	orders.tank = gun
 	orders.tanks_root = game_match.tanks
@@ -36,7 +36,7 @@ func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 	var setup: Array = _battery(game_match, Vector3(-100, 0, 80))
 	var gun: Tank = setup[0]
 	var target := game_match.spawn_tank("Rust_Target_1", 0, Match.Team.RUST)
-	target.global_position = Vector3(-100, 0, -20)  # 100 m north
+	target.place(Vector3(-100, 0, -20), target.rotation.y)  # 100 m north
 	for i in 3:  # a wall of crates between them: no direct line of sight
 		var crate: Node3D = CRATE.instantiate()
 		crate.position = Vector3(-104 + i * 4.0, 0, 60)
@@ -46,7 +46,7 @@ func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with nobody spotting, it doesn't fire")
 	var spotter := game_match.spawn_tank("Green_Eyes_1", 0, Match.Team.GREEN, "scout")
-	spotter.global_position = Vector3(-80, 0, 40)  # 63 m from the target, clear view
+	spotter.place(Vector3(-80, 0, 40), spotter.rotation.y)  # 63 m from the target, clear view
 	var before := _toughness(target)
 	var lowest := before
 	for i in SimClock.TICK_RATE * 20:
@@ -64,7 +64,7 @@ func test_no_firing_inside_the_minimum_range() -> void:
 	var game_match := _setup()
 	var setup: Array = _battery(game_match, Vector3(-100, 0, 40))
 	var target := game_match.spawn_tank("Rust_Close_1", 0, Match.Team.RUST)
-	target.global_position = Vector3(-100, 0, 20)  # 20 m: inside the 35 m minimum
+	target.place(Vector3(-100, 0, 20), target.rotation.y)  # 20 m: inside the 35 m minimum
 	await wait_physics_frames(SimClock.TICK_RATE * 6)
 	assert_true(game_match.is_visible_to(Match.Team.GREEN, target), "setup: it's visible")
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "a mortar can't hit something that close")
@@ -76,10 +76,10 @@ func test_a_burst_hurts_everything_nearby_with_falloff() -> void:
 	var edge := game_match.spawn_tank("Rust_Edge_1", 0, Match.Team.RUST)
 	var far := game_match.spawn_tank("Rust_Far_1", 0, Match.Team.RUST)
 	var friend := game_match.spawn_tank("Green_Friend_1", 0, Match.Team.GREEN)
-	near.global_position = Vector3(-100, 0, 0)
-	edge.global_position = Vector3(-94, 0, 0)
-	far.global_position = Vector3(-80, 0, 0)
-	friend.global_position = Vector3(-104, 0, 0)  # inside the burst, not touching (overlapping hulls get pushed apart)
+	near.place(Vector3(-100, 0, 0), near.rotation.y)
+	edge.place(Vector3(-94, 0, 0), edge.rotation.y)
+	far.place(Vector3(-80, 0, 0), far.rotation.y)
+	friend.place(Vector3(-104, 0, 0), friend.rotation.y)  # inside the burst, not touching (overlapping hulls get pushed apart)
 	await wait_physics_frames(2)
 	var weapon := Weapons.profile("mortar")
 	game_match._rounds.append({"from": Vector3(-100, 1, 100), "to": Vector3(-100, 0, 0), "land_tick": game_match.tick + 1,

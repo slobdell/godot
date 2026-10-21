@@ -153,8 +153,8 @@ func test_a_gun_may_not_reach_past_the_eyes_that_aim_it() -> void:
 	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var enemy := _tank("tank", 1)
-	tank.global_position = Vector3.ZERO
-	enemy.global_position = Vector3(0.0, 0.0, tank.sight_radius + 5.0)
+	tank.place(Vector3.ZERO, tank.rotation.y)
+	enemy.place(Vector3(0.0, 0.0, tank.sight_radius + 5.0), enemy.rotation.y)
 	var nobody := Callable()
 	assert_true(not Engagement.is_seen(tank, enemy, nobody), "beyond its own sight, a crew has nothing to shoot at")
 	enemy.global_position = Vector3(0.0, 0.0, tank.sight_radius - 5.0)
@@ -164,8 +164,8 @@ func test_a_gun_may_not_reach_past_the_eyes_that_aim_it() -> void:
 func test_a_spotter_hands_over_a_contact_the_crew_cannot_see_itself() -> void:
 	var tank := _tank()
 	var enemy := _tank("tank", 1)
-	tank.global_position = Vector3.ZERO
-	enemy.global_position = Vector3(0.0, 0.0, tank.sight_radius + 20.0)
+	tank.place(Vector3.ZERO, tank.rotation.y)
+	enemy.place(Vector3(0.0, 0.0, tank.sight_radius + 20.0), enemy.rotation.y)
 	var team_sees := func(_other: Tank) -> bool: return true
 	assert_true(Engagement.is_seen(tank, enemy, team_sees),
 			"shared intel is what makes a scout's eyes worth a tank's gun")
@@ -180,7 +180,7 @@ func test_no_acquisition_restores_the_old_world_for_a_control_run() -> void:
 	Engagement.acquisition_enabled = false
 	var tank := _tank()
 	var enemy := _tank("tank", 1)
-	enemy.global_position = Vector3(0.0, 0.0, 1000.0)
+	enemy.place(Vector3(0.0, 0.0, 1000.0), enemy.rotation.y)
 	assert_true(Engagement.is_seen(tank, enemy, Callable()), "gate 1 is off")
 	var band := Engagement.effective_range(tank.weapon)
 	assert_true(Engagement.Lay.new().engage(tank, contact, band - 1.0, 0.0, false),
@@ -218,8 +218,8 @@ func _firing_line(weapon_order: Dictionary, enemy_z: float) -> Array:
 	var game_match := _match()
 	var shooter := game_match.spawn_tank("Shooter", 0, Match.Team.GREEN)
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
-	shooter.global_position = Vector3(LANE_X, 0.0, 30.0)
-	enemy.global_position = Vector3(LANE_X, 0.0, enemy_z)
+	shooter.place(Vector3(LANE_X, 0.0, 30.0), shooter.rotation.y)
+	enemy.place(Vector3(LANE_X, 0.0, enemy_z), enemy.rotation.y)
 	var orders := OrderController.new()
 	orders.tank = shooter
 	orders.tanks_root = game_match.tanks
@@ -326,14 +326,14 @@ func test_the_covering_range_follows_the_bands_when_they_move() -> void:
 
 func _moving(unit_id: String, at: Vector3, velocity: Vector3) -> Tank:
 	var tank := _tank(unit_id, 1)
-	tank.global_position = at
+	tank.place(at, tank.rotation.y)
 	tank.estimated_velocity = velocity
 	return tank
 
 
 func test_a_contact_crossing_the_sight_line_is_harder_to_lay_on_than_one_closing() -> void:
 	var gunner := _tank("lancer")
-	gunner.global_position = Vector3.ZERO
+	gunner.place(Vector3.ZERO, gunner.rotation.y)
 	var at := Vector3(0.0, 0.0, 60.0)
 	var speed := float(Units.stat("scout", "max_forward_speed"))
 	var closing := _moving("scout", at, Vector3(0.0, 0.0, -speed))  # straight down the sight line
@@ -348,7 +348,7 @@ func test_a_contact_crossing_the_sight_line_is_harder_to_lay_on_than_one_closing
 
 func test_the_same_speed_crosses_faster_up_close_than_far_away() -> void:
 	var gunner := _tank("lancer")
-	gunner.global_position = Vector3.ZERO
+	gunner.place(Vector3.ZERO, gunner.rotation.y)
 	var speed := 10.0
 	var near := _moving("scout", Vector3(0.0, 0.0, 20.0), Vector3(speed, 0.0, 0.0))
 	var far := _moving("scout", Vector3(0.0, 0.0, 80.0), Vector3(speed, 0.0, 0.0))
@@ -360,7 +360,7 @@ func test_charging_straight_down_the_sight_line_buys_a_scout_nothing() -> void:
 	# The rule has to pay for the RIGHT behaviour, or it is just a buff. A scout that drives at the gun gets no
 	# protection at all; only the attack run does.
 	var lancer := _tank("lancer")
-	lancer.global_position = Vector3.ZERO
+	lancer.place(Vector3.ZERO, lancer.rotation.y)
 	var speed := float(Units.stat("scout", "max_forward_speed"))
 	var charging := _moving("scout", Vector3(0.0, 0.0, 70.0), Vector3(0.0, 0.0, -speed))
 	var still := _moving("scout", Vector3(0.0, 0.0, 70.0), Vector3.ZERO)
@@ -370,7 +370,7 @@ func test_charging_straight_down_the_sight_line_buys_a_scout_nothing() -> void:
 
 func test_the_crossing_penalty_is_capped_so_a_contact_is_never_unlayable() -> void:
 	var gunner := _tank("tank")
-	gunner.global_position = Vector3.ZERO
+	gunner.place(Vector3.ZERO, gunner.rotation.y)
 	var blurring := _moving("scout", Vector3(0.0, 0.0, 6.0), Vector3(400.0, 0.0, 0.0))  # absurd angular rate
 	var still := _moving("scout", Vector3(0.0, 0.0, 6.0), Vector3.ZERO)
 	var worst := 1.0 + Engagement.CROSSING_ACQUIRE_PENALTY * Engagement.CROSSING_ACQUIRE_MAX
@@ -384,7 +384,7 @@ func test_the_crossing_penalty_has_its_own_control() -> void:
 	# to resolve" from "a contact moving across takes longer", because stacking discipline on the crossing penalty is
 	# the combination that could make fights too quiet.
 	var gunner := _tank("lancer")
-	gunner.global_position = Vector3.ZERO
+	gunner.place(Vector3.ZERO, gunner.rotation.y)
 	var crossing := _moving("scout", Vector3(0.0, 0.0, 60.0), Vector3(14.0, 0.0, 0.0))
 	var with_it := Engagement.acquire_seconds(gunner, crossing, 60.0)
 	Engagement.crossing_enabled = false
@@ -462,8 +462,8 @@ func test_the_match_counts_designators_fielded_and_paints_landed() -> void:
 	var game_match := _match()
 	var spotter := game_match.spawn_tank("Spotter", 0, Match.Team.GREEN, "syn_lancer")
 	var prey := game_match.spawn_tank("Prey", 0, Match.Team.RUST)
-	spotter.global_position = Vector3(LANE_X, 0.0, 20.0)
-	prey.global_position = Vector3(LANE_X, 0.0, -10.0)  # 30 m: inside the spotter's sight
+	spotter.place(Vector3(LANE_X, 0.0, 20.0), spotter.rotation.y)
+	prey.place(Vector3(LANE_X, 0.0, -10.0), prey.rotation.y)  # 30 m: inside the spotter's sight
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS * 3)
 	assert_eq(game_match.stats["designators_fielded"][Match.Team.GREEN], 1, "the census sees the designator")
 	assert_true(game_match.stats["designations"][Match.Team.GREEN] > 0,

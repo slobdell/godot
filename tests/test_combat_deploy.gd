@@ -13,7 +13,7 @@ func _battery() -> Array:
 	var game_match: Match = add_to_tree(MATCH.instantiate())
 	game_match.seed_spawns(2, 0.0)
 	var gun := game_match.spawn_tank("Gun", 0, Match.Team.GREEN, "artillery")
-	gun.global_position = Vector3(LANE_X, 0.0, 60.0)
+	gun.place(Vector3(LANE_X, 0.0, 60.0), gun.rotation.y)
 	var shots := [0]
 	game_match.weapon_fired.connect(func(_event: Dictionary) -> void: shots[0] += 1)
 	return [game_match, gun, shots]
@@ -122,7 +122,7 @@ func test_other_units_fire_on_the_move() -> void:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = add_to_tree(MATCH.instantiate())
 	var tank := game_match.spawn_tank("Tank", 0, Match.Team.GREEN, "tank")
-	tank.global_position = Vector3(LANE_X, 0.0, 60.0)
+	tank.place(Vector3(LANE_X, 0.0, 60.0), tank.rotation.y)
 	var shots := [0]
 	game_match.weapon_fired.connect(func(_event: Dictionary) -> void: shots[0] += 1)
 	await wait_physics_frames(2)

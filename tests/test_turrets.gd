@@ -29,8 +29,7 @@ func _pursuers(game_match: Match, count: int, z: float) -> Array[Tank]:
 	var result: Array[Tank] = []
 	for i in count:
 		var tank := game_match.spawn_tank("Rust_P_%d" % (i + 1), 0, Match.Team.RUST)
-		tank.global_position = Vector3(LANE_X + i * 8.0, 0.0, z)
-		tank.rotation.y = PI  # facing south
+		tank.place(Vector3(LANE_X + i * 8.0, 0.0, z), PI)  # facing south
 		result.append(tank)
 	return result
 
@@ -50,7 +49,7 @@ func test_turret_holds_its_world_heading_while_the_hull_turns() -> void:
 	# Rules R2: the tank's turret (50°/s) is slower than its hull on purpose; the order layer's heading hold is
 	# tested on the IFV, whose turret can out-turn its hull.
 	var tank := game_match.spawn_tank("Spinner", 0, Match.Team.GREEN, "ifv")
-	tank.global_position = Vector3(LANE_X, 0.0, 30.0)
+	tank.place(Vector3(LANE_X, 0.0, 30.0), tank.rotation.y)
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
@@ -69,11 +68,10 @@ func test_turret_watches_a_known_threat_it_cannot_shoot_yet() -> void:
 	var game_match := _setup()
 	var squad := _squad(game_match, 1, "ifv")  # a turret faster than the hull (the tank's is slower on purpose)
 	var tank := game_match.tanks.get_node("Green_Alpha_1") as Tank
-	tank.global_position = Vector3(LANE_X, 0.0, 40.0)
-	tank.rotation.y = 0.0
+	tank.place(Vector3(LANE_X, 0.0, 40.0), 0.0)
 	# 72 m east: inside the IFV's 85 m sight but beyond its autocannon's 60 m reach.
 	var enemy := game_match.spawn_tank("Rust_Far_1", 0, Match.Team.RUST)
-	enemy.global_position = Vector3(LANE_X + 72.0, 0.0, 40.0)
+	enemy.place(Vector3(LANE_X + 72.0, 0.0, 40.0), enemy.rotation.y)
 	await wait_physics_frames(3)
 	# Drive south: the hull turns around; the turret should stay on the enemy to the east, not ride along.
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": squad.squad_name, "verb": "move", "to": [LANE_X - 10.0, 100.0]}), "",
@@ -99,8 +97,7 @@ func _retreat_under_pursuit(verb: String, destination: Vector2) -> Dictionary:
 	var squad := _squad(game_match, 2)
 	var greens: Array[Tank] = [game_match.tanks.get_node("Green_Alpha_1"), game_match.tanks.get_node("Green_Alpha_2")]
 	for i in greens.size():
-		greens[i].global_position = Vector3(LANE_X + i * 8.0, 0.0, 10.0)
-		greens[i].rotation.y = 0.0  # facing north, toward the pursuers
+		greens[i].place(Vector3(LANE_X + i * 8.0, 0.0, 10.0), 0.0)  # facing north, toward the pursuers
 	# N5 (round 6): the pursuers start INSIDE the cannon's effective band, derived rather than hard-coded. This test is
 	# about the TURRET — "the hull turns to drive; the gun must not" — so the contact has to be one the crew would
 	# engage on its own judgement. At the old fixed -40 (50 m out) the tanks now correctly hold their fire under the

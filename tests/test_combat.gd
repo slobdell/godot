@@ -17,8 +17,7 @@ func _setup() -> Match:
 
 
 func _place(tank: Tank, z: float, yaw: float) -> void:
-	tank.global_position = Vector3(LANE_X, 0.0, z)
-	tank.rotation.y = yaw
+	tank.place(Vector3(LANE_X, 0.0, z), yaw)
 
 
 ## Shooter south of the target, both in the lane, one shot fired north.

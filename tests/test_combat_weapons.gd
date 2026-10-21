@@ -63,7 +63,7 @@ func test_an_ifv_burst_fires_its_rounds_then_waits_for_the_reload() -> void:
 	var game_match := _setup()
 	var ticks := _fired_ticks(game_match)
 	var ifv := game_match.spawn_tank("Ifv", 0, Match.Team.GREEN, "ifv")
-	ifv.global_position = Vector3(LANE_X, 0.0, 40.0)
+	ifv.place(Vector3(LANE_X, 0.0, 40.0), ifv.rotation.y)
 	await wait_physics_frames(2)
 	var gun := Weapons.profile("autocannon")
 	var cycle := roundi(float(gun["reload_s"]) * float(SimClock.TICK_RATE))
@@ -83,7 +83,7 @@ func test_a_burst_finishes_after_the_trigger_is_released() -> void:
 	var game_match := _setup()
 	var ticks := _fired_ticks(game_match)
 	var ifv := game_match.spawn_tank("Ifv", 0, Match.Team.GREEN, "ifv")
-	ifv.global_position = Vector3(LANE_X, 0.0, 40.0)
+	ifv.place(Vector3(LANE_X, 0.0, 40.0), ifv.rotation.y)
 	await wait_physics_frames(2)
 	var aim := ifv.global_position + Vector3(0.0, 1.0, -40.0)
 	ifv.command = TankCommand.new(0.0, 0.0, aim, true)
@@ -98,7 +98,7 @@ func test_a_scout_holding_the_trigger_streams_rounds() -> void:
 	var game_match := _setup()
 	var ticks := _fired_ticks(game_match)
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
-	scout.global_position = Vector3(LANE_X, 0.0, 40.0)
+	scout.place(Vector3(LANE_X, 0.0, 40.0), scout.rotation.y)
 	await wait_physics_frames(2)
 	for tick in SimClock.TICK_RATE:
 		scout.command = TankCommand.new(0.0, 0.0, scout.global_position + Vector3(0.0, 1.0, -30.0), true)
@@ -114,7 +114,7 @@ func test_a_gun_fired_by_a_controller_that_waits_for_ready_keeps_its_designed_ra
 	var game_match := _setup()
 	var ticks := _fired_ticks(game_match)
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
-	scout.global_position = Vector3(LANE_X, 0.0, 40.0)
+	scout.place(Vector3(LANE_X, 0.0, 40.0), scout.rotation.y)
 	await wait_physics_frames(2)
 	var aim := scout.global_position + Vector3(0.0, 1.0, -30.0)
 	for tick in SimClock.TICK_RATE * 2:
@@ -128,7 +128,7 @@ func test_a_missed_tank_shell_costs_the_whole_reload() -> void:
 	var game_match := _setup()
 	var ticks := _fired_ticks(game_match)
 	var tank := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
-	tank.global_position = Vector3(LANE_X, 0.0, 40.0)
+	tank.place(Vector3(LANE_X, 0.0, 40.0), tank.rotation.y)
 	await wait_physics_frames(2)
 	var aim := tank.global_position + Vector3(0.0, 1.0, -40.0)
 	var reload := roundi(float(Weapons.profile("cannon")["reload_s"]) * float(SimClock.TICK_RATE))
@@ -152,9 +152,8 @@ func _shells_to_kill(unit_id: String, target_yaw: float) -> Dictionary:
 			damage.append(float(event["damage"])))
 	var gunner := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, unit_id)
-	gunner.global_position = Vector3(LANE_X, 0.0, 30.0)
-	target.global_position = Vector3(LANE_X, 0.0, 0.0)
-	target.rotation.y = target_yaw
+	gunner.place(Vector3(LANE_X, 0.0, 30.0), gunner.rotation.y)
+	target.place(Vector3(LANE_X, 0.0, 0.0), target_yaw)
 	await wait_physics_frames(2)
 	var effective := float(target.max_health) + target.max_shield
 	var ticks := 0
