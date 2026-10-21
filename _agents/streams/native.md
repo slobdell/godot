@@ -108,5 +108,23 @@ as named; N4 sweep; N5 lint; stretch.
   files, which ate three raws' screen.json / run.txt (their committed rows stand). **Owed:** the 2701+ block on builder2 after
   T8's series, then noise.txt names both.
 - **Lesson (C36.1):** a full check goes behind `tools/builder_checks.sh --wait-below 1`; I put 32ba4ca99's beside orders'.
+- **N4 the test-hygiene sweep (C36.5), DONE:** every spawn placement (the hull acquired in the same function,
+  no await / assert / order between, its first seat) is `Tank.place(at, yaw)` (the next-line yaw folded, its
+  reset_physics_interpolation dropped). One commit an owner, each quick-remote green on builder0 (`exited 0`):
+  native b87ea18ac + 86ca41584 (33/2 then 4/0: `native/gate_twin_case:97` keeps its bare seat, the foundry stage latched no
+  gate under place(), 3 -> 0, 0 mismatches either way; drive twins moved and pass, replans 698 -> 798); manoeuvre 41a6c7cd6
+  (23 files, 96/0; clearance chords 5 -> 2, three counters one tick each); orders 91b8a1926 (6 files, 53/0; group arrival
+  322/330 -> 321/329 ticks); the combat family 393423053 (18 files, 116 seats, 162/0; skimmer 58.0 -> 57.4 m, screen_lost
+  65.9 -> 65.3); the other unowned f5bea473e (21 files, 46 seats, 117/0; station_keeping pid gap 0.126 -> 0.129 m, worst 0.342
+  -> 0.380, station_faction gaps +-0.03); brains' 7 test_ai seats d9b976128 (granted under C36.6 as R36.14; 7/0;
+  ai_start_of_match_cpu_only green 99.9 -> 99.6 m; test_ai_perf_equivalence prints no numbers, its tick-by-tick equality
+  passes). Merge notes sent (manoeuvre; orchestrator for orders and brains). Nothing in traffic's files is a spawn seat (all
+  re-seats after lab.start). Left everywhere: re-seats after a tick, mid-test moves, non-hulls, chained spawn_tank(...)
+  seats with no yaw handle, test_tank_place (the test of place), capture tools (rotation_capture, tactics_shots).
+  Every commit was checked with a quick, not a full check: the branch's full check is owed before it merges.
+- **Scoreboard: "killed while held at a street mouth"** (traffic's ask: T8 ships and the page had no line for it):
+  496d6d70a, score.py reads JAM_CENSUS held_deaths, `--backfill-held` adds it to an old row only when its raw fights
+  reproduce the row's every other fight number. Dry-run on copies: c29a8c7b6 71, a0ae0aafd 71, 1c82d6d1e 73, e45bb6632 66,
+  3d46b2884 17 held deaths in 40 fights. Rows and README after the 2701+ block on 3d46b2884 (builder2, running).
 
 **2026-10-20 (orchestrator, at launch).** Not started.
