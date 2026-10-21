@@ -7,7 +7,9 @@ usage: score.py RAW_DIR --commit C --machine M [--overlay O] [--remote-status N]
 
 The readers, unchanged:
   fights  tests/traffic/jam_ab.py: read + per_fight (T5's causes: open / stuck / jam; jammed under fire = the last hit
-          during the jam, or >= 2 hits in the 10 s before), kills; hit rate pooled over every shot
+          during the jam, or >= 2 hits in the 10 s before), kills; hit rate pooled over every shot; held (round 36, T8's
+          G: JAM_CENSUS held_deaths, the deaths whose JAM_DEATH says held_3s: killed in, or within 3 s of, a take-turns
+          hold at a street mouth; null when a fight's census lacks the field)
   moves   tests/tactics/e1_bar.py: judge (settled in 75 s, squads arrived) and left_behind (> 25 m off the slot in the
           element's last ELEMENT_TRACE row; wedged = holding a move, not moving, goal far); tools/scoreboard/mover_kind.py
           (brains' still-moving rule)
@@ -42,7 +44,7 @@ def fights(root, seed=None):
     if seed is not None:
         names = [n for n in names if fight_seed(n) == seed]
     tot = {"ran": len(names), "read": 0, "deaths": 0, "open": 0, "stuck": 0, "jam": 0, "jam_under_fire": 0, "kills": 0,
-           "shots": 0, "hits": 0}
+           "shots": 0, "hits": 0, "held": 0}
     for name in names:
         deaths, census, standoffs, aborts = jam_ab.read(os.path.join(d, name))
         if census is None:
@@ -55,6 +57,8 @@ def fights(root, seed=None):
         tot["jam"] += f["jam"]
         tot["jam_under_fire"] += f["jam_uf"]
         tot["kills"] += f["kills"]
+        if tot["held"] is not None:
+            tot["held"] = None if "held_deaths" not in census else tot["held"] + int(census["held_deaths"])
         for t in (census.get("teams") or {}).values():
             tot["shots"] += int(t.get("shots", 0))
             tot["hits"] += int(t.get("hits", 0))
@@ -177,7 +181,43 @@ def script_errors(root):
     return out
 
 
+FIGHT_KEYS = ("ran", "read", "deaths", "open", "stuck", "jam", "jam_under_fire", "kills", "shots", "hits")
+
+
+def backfill_held(row, raw):
+    """Round 36 (traffic's ask after T8 shipped): add fights.held to a row scored before the line existed, from its own raw
+    logs, ONLY when those logs read back to the row's every other fight number (whole run and each seed): the logs are that
+    row's. Returns the reason it refused, or None."""
+    whole = fights(raw)
+    if any(whole.get(k) != row["fights"].get(k) for k in FIGHT_KEYS):
+        return "the raw fights are not this row's: %s" % {k: (row["fights"].get(k), whole.get(k)) for k in FIGHT_KEYS
+                                                           if whole.get(k) != row["fights"].get(k)}
+    seeded = {}
+    for s, unit in (row.get("by_seed") or {}).items():
+        mine = fights(raw, s)
+        if any(mine.get(k) != unit["fights"].get(k) for k in FIGHT_KEYS):
+            return "seed %s's raw fights are not this row's" % s
+        seeded[s] = mine.get("held")
+    row["fights"]["held"] = whole.get("held")
+    for s, held in seeded.items():
+        row["by_seed"][s]["fights"]["held"] = held
+    return None
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--backfill-held":
+        if len(sys.argv) != 4:
+            sys.exit("usage: score.py --backfill-held ROW_JSON RAW_DIR")
+        row = json.load(open(sys.argv[2]))
+        why = backfill_held(row, sys.argv[3])
+        if why:
+            sys.exit("score.py: NOT back-filled: %s" % why)
+        with open(sys.argv[2] + ".tmp", "w") as f:
+            json.dump(row, f, indent=1, sort_keys=True)
+            f.write("\n")
+        os.replace(sys.argv[2] + ".tmp", sys.argv[2])
+        print("score.py: %s fights.held = %s" % (sys.argv[2], row["fights"]["held"]))
+        return
     p = argparse.ArgumentParser()
     p.add_argument("raw")
     p.add_argument("--commit", required=True)

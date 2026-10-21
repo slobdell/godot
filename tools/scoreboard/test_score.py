@@ -176,6 +176,37 @@ def test_the_noise_column_is_two_se_of_a_difference():
     assert table.noise([flat], "Tanks lost per fight, any cause")[0] == 0.0
 
 
+def test_held_deaths_read_from_the_census_and_back_filled_only_onto_their_own_row():
+    with tempfile.TemporaryDirectory() as root:
+        build(root, True)
+        row = score(root)
+        assert row["fights"]["held"] is None, row["fights"]    # the fixture's census has no held_deaths: null, never 0
+        old = os.path.join(root, "fights", "locks-1.log")
+        text = open(old).read().replace('JAM_CENSUS {"teams"', 'JAM_CENSUS {"held_deaths": 3, "teams"')
+        write(old, text)
+        held = score(root)
+        assert held["fights"]["held"] == 3 and held["by_seed"]["1"]["fights"]["held"] == 3
+        # A row scored before the line existed: back-filled from its own logs.
+        for k in ("fights",):
+            row[k].pop("held")
+        row["by_seed"]["1"]["fights"].pop("held")
+        path = os.path.join(root, "row.json")
+        with open(path, "w") as f:
+            json.dump(row, f)
+        run = lambda: subprocess.run([sys.executable, "-I", os.path.join(HERE, "score.py"), "--backfill-held", path, root],
+                                     capture_output=True, text=True)
+        assert run().returncode == 0
+        filled = json.load(open(path))
+        assert filled["fights"]["held"] == 3 and filled["by_seed"]["1"]["fights"]["held"] == 3
+        assert {k: v for k, v in filled.items() if k not in ("fights", "by_seed")} == \
+            {k: v for k, v in row.items() if k not in ("fights", "by_seed")}
+        # Logs that are not the row's (one more death): refused, the row untouched.
+        write(old, text.replace("JAM_CENSUS", death("open:los") + "JAM_CENSUS", 1))
+        refused = run()
+        assert refused.returncode != 0 and "not this row" in refused.stderr, refused.stderr
+        assert json.load(open(path)) == filled
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
