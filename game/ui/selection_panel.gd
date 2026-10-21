@@ -389,9 +389,11 @@ func _card(unit_name: String) -> Dictionary:
 
 ## Round 37 (feedback stretch): what the rules are doing to this vehicle right now, in a word or two -- "PINNED" while its
 ## suppression shows (his answer 8), "REPAIRING +5/s" while a Resupply Tanker mends it (FeedbackReader: the rules' own
-## conditions). Empty when neither.
+## conditions). Empty when neither, and always empty until the `marks` look is on (FeedbackLook: off by default).
 func _state_words(tank: Tank) -> String:
 	var words: Array[String] = []
+	if not FeedbackLook.has("marks", "a"):
+		return ""
 	if FeedbackReader.pinned_level(tank.suppression) > 0.0:
 		words.append("PINNED")
 	var link := FeedbackReader.mending(tank, FeedbackReader.menders(controls.game_match.tanks.get_children()))

@@ -1,9 +1,13 @@
 extends TestCase
 ## Round 37 (feedback stretch): the radar rings a pinned enemy the team can see, and the unit card names what the rules
-## are doing to a vehicle ("PINNED", "REPAIRING +5/s").
+## are doing to a vehicle ("PINNED", "REPAIRING +5/s"), both behind the `marks` look, off until his pick.
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
+
+
+func teardown() -> void:
+	FeedbackLook.reset()
 
 
 func _radar() -> Array:
@@ -48,6 +52,9 @@ func test_a_pinned_enemy_in_sight_is_ringed_on_the_radar() -> void:
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	assert_eq(_pinned_enemies(radar), 0, "seen, not pinned: a plain diamond")
 	enemy.suppression = 1.0
+	FeedbackLook.use("")
+	assert_eq(_pinned_enemies(radar), 0, "off by default: nothing he has not picked shows")
+	FeedbackLook.use("marks:a")
 	assert_eq(_pinned_enemies(radar), 1, "pinned: ringed")
 	var rings: Array = radar._marks_from_blips(radar.blips())["by_shape"]["ring"]
 	assert_true(rings.any(func(r: Array) -> bool: return r[2] == Radar.PINNED_COLOR), "in the pinned colour")
@@ -64,10 +71,14 @@ func test_the_pinned_and_repairing_words() -> void:
 	var controls := RtsControls.new()
 	controls.game_match = game_match
 	panel.controls = controls
+	FeedbackLook.use("marks:a")
 	assert_eq(panel._state_words(patient), "", "nothing happening: no words")
 	patient.health = patient.max_health / 2
 	patient.ticks_since_hit = 1_000_000
 	patient.suppression = 0.9
+	FeedbackLook.use("")
+	assert_eq(panel._state_words(patient), "", "off by default: no words until he picks them")
+	FeedbackLook.use("marks:a")
 	assert_eq(panel._state_words(patient), "PINNED  REPAIRING +5/s", "both, in his words")
 	panel.free()
 	controls.free()

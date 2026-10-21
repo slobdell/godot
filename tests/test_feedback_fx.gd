@@ -125,4 +125,6 @@ func test_the_look_flag_parses_slots_and_combinations() -> void:
 	assert_eq(Array(picked["hit"]), ["b"], "one look")
 	assert_eq(Array(picked["pinned"]), ["a", "c"], "two at once")
 	assert_eq(Array(picked["repair"]), [], "off")
-	assert_eq(Array(picked["cone"]), [FeedbackLook.DEFAULTS["cone"]], "unnamed slots keep the recommendation")
+	assert_eq(Array(picked["cone"]), [], "unnamed slots draw nothing until his pick")
+	for slot: String in FeedbackLook.SLOTS + FeedbackLook.EXTRA_SLOTS:
+		assert_eq(Array(FeedbackLook.parse("")[slot]), [], "%s is off with no flag" % slot)
