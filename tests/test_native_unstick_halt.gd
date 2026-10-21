@@ -8,15 +8,12 @@ extends DriveTwinCase
 const HALT_UNITS: Array[String] = ["tank", "ifv", "gang_tank"]
 
 
-func _arm(halted: bool) -> Array:
+## One arm in `game_match` (the arena is built once for both: a second build in one test collides with the first's
+## navigation regions).
+func _arm(game_match: Match, halted: bool) -> Array:
 	MoverState.world_reset()
 	_man_reset()
 	_yield_reset()
-	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
-	await ArenaFixture.build(self, "yard_open")
-	var game_match: Match = MATCH.instantiate()
-	add_to_tree(game_match)
-	game_match.seed_spawns(1, 0.0)
 	var drives := 0
 	var mismatches := 0
 	var first := ""
@@ -25,7 +22,7 @@ func _arm(halted: bool) -> Array:
 	for unit: String in HALT_UNITS:
 		for yaw in [0, 3, 6]:
 			k += 1
-			var tank := game_match.spawn_tank("Halt%d_%s" % [k, unit], 0, Match.Team.GREEN, unit)
+			var tank := game_match.spawn_tank("Halt%d%s_%s" % [k, "h" if halted else "c", unit], 0, Match.Team.GREEN, unit)
 			var orders := OrderController.new()
 			orders.tank = tank
 			orders.tanks_root = game_match.tanks
@@ -77,8 +74,13 @@ func test_a_crew_in_a_short_halt_is_not_unstuck_natively_either() -> void:
 	if not (Tank as Script).get_script_property_list().any(func(p: Dictionary) -> bool: return p["name"] == "short_halt_seconds"):
 		print("native: this tree's Tank has no short_halt_seconds (rules R2 not merged): nothing to compare")
 		return
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "yard_open")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.seed_spawns(1, 0.0)
 	for halted: bool in [false, true]:
-		var got: Array = await _arm(halted)
+		var got: Array = await _arm(game_match, halted)
 		var label := "short halt %s" % ("ON (1 s left)" if halted else "OFF (the control)")
 		print("native unstick, %s: %d native unsticks compared, %d mismatches, GDScript fires %d" % [label, got[0], got[1], got[3]])
 		assert_eq(int(got[1]), 0, "%s: the native unstick is the live GDScript's: %s" % [label, got[2]])
