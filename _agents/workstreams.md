@@ -252,6 +252,12 @@ _Filed here before any number._
   arms; native mirrors the G increment), on 24 fresh seeds 3641–3664 (288 probe runs / 1152 squads an arm; expected ~400–600 m v
   1.645 se ~320 m); arm < base by more than 1.645 se. Unrestricted and LOOP squads reported. **Grant:** traffic adds the one
   additive `seat_near` field to `ORDERS_PROBE_SQUAD` in orders' `tests/orders_probe.gd` (orders' stream is done), with a merge note.
+- **R36.20 (2026-10-20 ~22:00 PDT) N4 merged: main 3fc78e502 (CHECK running on builder0).** stream/native 0285bfe5f: builder0 2967/0,
+  sim-baseline unmoved; relay-smoke red (client1 4/5) re-ran ALONE and exited 0 (5/5); N4's diff touches no game/server/native/net
+  path (R36.12's rule). The relay-smoke race is the TEST (native's trace: client2 passed the moment client1 spawned and left before
+  client1's first snapshot, which counts tanks seen AT ONCE). **Grant:** native fixes it in `tests/net/bot_client_check.gd` (a passing
+  client lingers `--linger` s, default 8) and adds `make relay-linger-smoke` to `mk/net.mk` (known answers: linger 0 must FAIL 4/5,
+  linger 20 must PASS); not added to check. N5 (census lint) rides with native's next hand-over.
 
 
 ## Round 35: five streams, all Opus, builder0 only (prepared 2026-10-19; briefs in `streams/`)
