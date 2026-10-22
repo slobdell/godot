@@ -41,3 +41,16 @@ settle-series: native-for-check import ## Round 38 (settle): S1/S2's judged seri
 	@cd $(SETTLE_DIR) && : > verdict.txt && for arm in $(SETTLE_ARMS); do name=$${arm%%:*}; case $$name in fit*) mode=s1;; *) mode=s2;; esac; \
 		$(PYTHON) $(CURDIR)/tests/settle/settle_judge.py $$mode probe fight census-$(call _settle_name,$(SETTLE_BASE)).jsonl census-$$name.jsonl \
 			$(call _settle_name,$(SETTLE_BASE)) $$name | tee -a verdict.txt || true; done
+
+# S3 (O2 on settle) + the stretch (DEPLOY_HOLD): the fight probe only (locks/crossing/terminus x 3 5 squads x click x
+# SETTLE_S3_SEEDS), arms latch (S2 alone: the base), held (+ --deploy-hold=on), o2 (+ --parked-hold=on), then
+# tests/settle/settle_judge.py s3 -> build/settle-s3/verdict.txt. Runs after S2's verdict (the latch arm is its base).
+SETTLE_S3_SEEDS ?= $(shell seq 3891 3896)
+SETTLE_S3_ARMS ?= latch:--deploy-latch=on,--probe-fight=on,--probe-budget=1500 held:--deploy-latch=on,--deploy-hold=on,--probe-fight=on,--probe-budget=1500 o2:--deploy-latch=on,--deploy-hold=on,--parked-hold=on,--probe-fight=on,--probe-budget=1500
+.PHONY: settle-s3
+settle-s3: native-for-check import ## Round 38 (settle S3 + stretch): the fight probe, latch v held v o2 -> build/settle-s3/verdict.txt
+	@rm -rf $(BUILD_DIR)/settle-s3 && mkdir -p $(BUILD_DIR)/settle-s3
+	@echo ">> settle-s3 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arms '$(SETTLE_S3_ARMS)'" | tee $(BUILD_DIR)/settle-s3/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_ARMS="$(SETTLE_S3_ARMS)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_S3_SEEDS)" ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-s3/fight > $(BUILD_DIR)/settle-s3/fight.out 2>&1 || true
+	@cd $(BUILD_DIR)/settle-s3 && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s3 fight latch held o2 | tee verdict.txt || true

@@ -5,6 +5,10 @@
 
 s1 = Bar S1 DEPLOY_FIT, s2 = Bar S2 DEPLOY_LATCH (the same guards; each its own counter and deciding lines).
 
+    python3 tests/settle/settle_judge.py s3 FIGHT_DIR LATCH_ARM HELD_ARM O2_ARM
+
+s3 = Bar H DEPLOY_HOLD (held v latch) and Bar S3 O2-on-settle (o2 v held), the fight probe only.
+
 PROBE_DIR / FIGHT_DIR are orders-probe output folders (rows.jsonl, runs.jsonl, logs/). Prints PASS/FAIL per line and a
 final VERDICT line. The guards reuse orders' judge (tests/control/orders_judge.py) so the lines are the ones its bars read.
 """
@@ -126,7 +130,57 @@ def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new,
     return 0 if ok else 1
 
 
+def per_fight(rows, arm, field):
+    from collections import defaultdict
+    f = defaultdict(float)
+    for r in rows:
+        if r["arm"] == arm:
+            f[(r["map"], r["squads"], r["seed"])] += max(r.get(field, 0) or 0, 0)
+    return f
+
+
+def s3(argv):
+    import math
+    import statistics as st
+    fight, latch, held, o2 = argv
+    rows = oj.load(os.path.join(fight, "rows.jsonl"))
+    runs = oj.load(os.path.join(fight, "runs.jsonl"))
+    lines = []
+    # Bar H: held v latch.
+    rl, rh = per_fight(rows, latch, "parked_redeals"), per_fight(rows, held, "parked_redeals")
+    sl, sh = per_fight(rows, latch, "reseats"), per_fight(rows, held, "reseats")
+    tl, th = sum(rl.values()), sum(rh.values())
+    counter = tl >= 10
+    dec_h = counter and th <= 0.6 * tl and sum(sh.values()) <= sum(sl.values())
+    lines.append("%s Bar H deciding: parked re-deals %d -> %d (<= %.1f; latch >= 10: %s), reseats %d -> %d (no more); fights %d/%d" % (
+        "PASS" if dec_h else "FAIL", tl, th, 0.6 * tl, counter, sum(sl.values()), sum(sh.values()), len(rl), len(rh)))
+    ok_h = oj.fight_guards(runs, latch, held, lines) and dec_h
+    lines.append("VERDICT %s %s v %s" % ("PASS" if ok_h else "FAIL", held, latch))
+    # Bar S3: o2 v held (R37.13's line + the re-deals no higher).
+    b, n = list(per_fight(rows, held, "off_idle_s").values()), list(per_fight(rows, o2, "off_idle_s").values())
+    if len(b) < 2 or len(n) < 2:
+        lines.append("FAIL Bar S3 MISSING off_idle_s rows (%d/%d fights)" % (len(b), len(n)))
+        b, n = b or [0.0], n or [0.0]
+    se = math.sqrt(st.variance(b) / len(b) + st.variance(n) / len(n)) if len(b) > 1 and len(n) > 1 else float("inf")
+    dec = st.mean(n) <= 0.5 * st.mean(b) and st.mean(b) - st.mean(n) > 1.645 * se
+    lines.append("%s Bar S3 deciding: off_idle_s a fight %.1f -> %.1f (<= %.1f), drop %.1f v 1.645 se %.1f; fights %d/%d" % (
+        "PASS" if dec else "FAIL", st.mean(b), st.mean(n), 0.5 * st.mean(b), st.mean(b) - st.mean(n), 1.645 * se, len(b), len(n)))
+    ro = per_fight(rows, o2, "parked_redeals")
+    to = sum(ro.values())
+    red_ok = to <= th * 1.1 + 3
+    lines.append("%s Bar S3 re-deals: parked re-deals %d -> %d (<= %.1f) [latch alone %d]" % (
+        "PASS" if red_ok else "FAIL", th, to, th * 1.1 + 3, tl))
+    pr = sum(r.get("parked_returns", 0) for r in runs if r["arm"] == o2)
+    lines.append("%s counter: parked_returns %d" % ("PASS" if pr > 0 else "FAIL", pr))
+    ok = oj.fight_guards(runs, held, o2, lines) and dec and red_ok and pr > 0
+    lines.append("VERDICT %s %s v %s" % ("PASS" if ok else "FAIL", o2, held))
+    print("\n".join(lines))
+    return 0 if ok and ok_h else 1
+
+
 if __name__ == "__main__":
+    if len(sys.argv) >= 2 and sys.argv[1] == "s3":
+        sys.exit(s3(sys.argv[2:]))
     if len(sys.argv) < 2 or sys.argv[1] not in ("s1", "s2"):
         print(__doc__)
         sys.exit(2)

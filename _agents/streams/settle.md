@@ -79,8 +79,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 2. S2 latch v2: lab of test_tactics_scenarios_2's geometry first (must form herringbone); arm = the deploy latches the
    terrain its shape was decided on (at all-in) inside the deploy state (element_plan, mine: no element.gd edit); bar with the
    first-shape guard (C38.1); fresh seeds.
-3. S3 O2's re-deals: trace one (crossing 3 click, `--parked-hold=on`), fix, O2 (+ latch v2 if passed) on fresh seeds.
-4. Stretch: re-deals after a loss.
+3. S3 O2's re-deals: TRACED (below): terrain re-spacing (S2) + losses (the stretch's hold, built). `make native settle-s3`
+   after S2's verdict: Bar H and Bar S3.
+4. Stretch: re-deals after a loss: DEPLOY_HOLD built OFF, judged as Bar H in settle-s3.
 Decisions: the axis candidate (not a search over many headings): the squad already stands along the ground it fits on, and
 two candidates keep the deploy cheap and its choice explainable; 8 m gain so a squad that fits keeps the heading he gave.
 
@@ -114,6 +115,37 @@ S1 (one base for both arms, the same fresh seeds and workloads as Bar S1). **Cou
 each squad's FIRST halt shape (the property latch v1 broke: differs from main's in <= 3 % of squads), plus the full check
 (test_tactics_scenarios_2 runs in it) on the hash. Note: the probe's `relays` read ElementSituation's terrain, which this arm
 does not change, so relays are reported, not judged. **A pass ships ON** (`--deploy-latch=off` keeps today's).
+
+### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
+s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
+`references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
+- **Not the returning crew.** Alpha's re-deals are of two kinds: (a) `drift` goal moves on the same anchor and seat index
+  at t=79, 101, 106, 109, 111 with no loss, beside 4 relays: the terrain read flips as crews move in the fight (parked hold
+  keeps them on posts, so the centroid creeps across a feature line) and the deployed halt is re-SPACED, moving seats 7-14 m:
+  what S2's deploy latch removes; (b) a LOSS (t=117, Alpha_2): the halt is laid again at the smaller size and three
+  survivors are re-seated 11-18 m: what the stretch's DEPLOY_HOLD removes. Laptop GDScript, the same cell: the re-deals
+  came at the two losses (t=77, 102). Why parked hold doubles them: with crews held on their posts, more of them are
+  "parked" (>= 2 s on the station) when a re-lay lands, so the probe counts them; without it, they were off fighting.
+- **With both (`--deploy-latch=on --deploy-hold=on`, same tree, builder0 light, n 1 each; the fights diverge):** parked
+  re-deals s3747 7 -> 3, s3748 2 -> 0; Alpha's reseat moves 3 -> 0; one 14.3 m drift remains after a loss (residual, untraced).
+- **DEPLOY_HOLD (8bd480f96, OFF):** while every crew of a deployed halt is one the deploy dealt, a smaller squad (a loss)
+  stands on its own dealt seats (seat, sector, order kept) and the shape keeps its name; a crew joining re-lays as before.
+  Lab `tests/test_settle_deploy_hold.gd` 1/0 (laptop): one of five lost, survivors' worst seat move 16.7 m -> 0.0.
+- native (godot-native-fb, written audit on 8bd480f96): no twin needed for S1, S2 or the hold.
+
+### Bar H DEPLOY_HOLD and Bar S3 O2-ON-SETTLE (filed 2026-10-22 before any judged number; code 8bd480f96)
+`make native settle-s3`, judge `settle_judge.py s3`: the fight probe only (locks/crossing/terminus x 3/5 squads x click),
+FRESH seeds 3891-3896 (36 fights an arm), builder0, a green-checked hash, run AFTER S2's verdict. Arms: `latch`
+(--deploy-latch=on), `held` (+ --deploy-hold=on), `o2` (+ --parked-hold=on). If S2 fails, the arms drop the latch and the
+bars are re-read on the same seeds with the base `main` (said in the verdict, before the run).
+- **Bar H (held v latch).** What he would see: when a parked tank is killed, the rest of the squad stays where it is.
+  Counter: latch's parked re-deals >= 10. Deciding: parked re-deals summed held <= 60 % of latch AND reseat goal moves no
+  more. Guards: his kills, his losses, the CPU's losses a fight within latch +/- 1.645 se. A pass ships ON.
+- **Bar S3 (o2 v held).** What he would see: a squad he parked stays where he put it and shoots from there, and nobody in
+  it gets sent to a new spot. Deciding: R37.13's line (off_idle_s a fight o2 <= 50 % of held AND the drop > 1.645 se) AND
+  parked re-deals o2 <= held x 1.1 + 3 (R37.28's "no higher beyond noise", now against the settled halt). Counter:
+  parked_returns > 0. Guards: the kills / losses lines v held. A pass ships O2 ON with latch v2 and the hold (his crews only:
+  PARKED_HOLD is player-only), the seam in tank_brain.gd unchanged (orders' code; merge note to doctrine).
 
 ### Questions for the lead
 None.
