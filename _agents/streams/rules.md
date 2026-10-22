@@ -185,6 +185,11 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   (pair/rules-r37-spread-on) stays unmerged and can be deleted.
 - Stabilised-gun exception (stretch): NOT proposed. R2's series names no faction victim: the factions that lose are losing as the
   blob, which is the intended direction, and Syndicate gains.
+- R37.24: R2 stays OFF. After pin_slow, builder2 goes to manoeuvre's M5a.
+- The orchestrator's question (does the CPU defender fire on the move as much as the blob?): the guard rows carry no per-shot motion,
+  so `make rules-guard-motion` (68bfd11c1) re-plays the guard fights through tests/rules/guard_motion_probe.gd. It extends guard_line.gd
+  and is read-only. The run is the OFF blob line, seeds 2601-2608 (80 fights), on the builder0 light lane, so builder2 stays free.
+  Smoke (builder0 light, 2 fights x 60 s, terminus 2601): blob 82 % of shots faster than a crawl, CPU 56 %.
 - Each arm is read by `python3 tests/rules/bar_r.py references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>` (e4d139813):
   guard.py's pairing, plus the verdict lines, guard 1's McNemar in the turtle's favour, the faction report and guard 2.
 
