@@ -494,6 +494,10 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   5,999; guards fail only in Crossing 5: click crossed 0 -> 2, never-in 0 -> 2, twitch 21.2 -> 25.5 m, route twitch 17.6 -> 22.3 m:
   squad 4's swapped place sits at the west bridge mouth and a crew drives over a bridge he didn't click across). Traced on those seeds;
   any fix is a new arm on fresh seeds (R37.17's rule).
+  **O2's re-deals are REAL (orders, from the rows, 108 squads an arm):** the counter only sees ORDER goals, not the drive-back;
+  not more survivors (lost after placed 149 v 151); halt re-lays 187 -> 352, element reseat goal moves 103 -> 181, squads with any
+  re-deal 31 -> 55 (Crossing 27 -> 55, locks 9 -> 26, terminus 14 -> 24). Reading (untested): parked crews now sit on seats the element
+  keeps re-laying. O2 holds until the Crossing 3 click s3747 squad 1 trace; if O1-latch passes, O2 is re-read ON top of latch.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
