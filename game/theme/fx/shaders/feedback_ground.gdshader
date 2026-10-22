@@ -1,10 +1,11 @@
 // Round 37 (feedback, his pick "hit C"): the struck face's quarter of a ring flares under the tank, toward where the
-// round came from, so a flank or rear hit teaches facing. One MultiMesh, one draw; flat quads just above the floor,
-// additive. The instance basis turns the pattern: local +y is the basis's forward (-Z) = toward the shot's origin.
-// Per instance: COLOR.rgb = the face's colour, COLOR.a = strength; INSTANCE_CUSTOM = (start s, duration s, size m,
-// unused). Plays once. Additive, so the light is clamped: overlapping segments must not bloom into a white disc.
+// round came from, so a flank or rear hit teaches facing. One MultiMesh, one draw; flat quads just above the floor.
+// The instance basis turns the pattern: local +y is the basis's forward (-Z) = toward the shot's origin.
+// Per instance: COLOR.rgb = the face's colour, COLOR.a = strength (opacity); INSTANCE_CUSTOM = (start s, duration s, size m,
+// unused). Plays once. Blended, not added: segments overlapping under a firing line (and the glow at FX high, threshold
+// 0.9) settle at the face's colour instead of summing into a white pool.
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, skip_vertex_transform, fog_disabled;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, skip_vertex_transform, fog_disabled;
 
 uniform float now = 0.0;
 
@@ -39,5 +40,6 @@ void fragment() {
 	float sector = 1.0 - smoothstep(0.62, 0.82, abs(angle));
 	float light = band(r, radius, 0.1) * 0.25 + band(r, radius, 0.34) * sector * 1.5;
 	light += (1.0 - smoothstep(0.0, 0.5, abs(angle))) * band(r, radius + 0.14, 0.08) * 0.6;
-	ALBEDO = v_color.rgb * min(light, 1.2) * fade * v_color.a;
+	ALBEDO = v_color.rgb;
+	ALPHA = clamp(light, 0.0, 1.0) * fade * v_color.a;
 }

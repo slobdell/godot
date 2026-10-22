@@ -81,6 +81,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Looked at in a real fight** (`make remote T=feedback-fight`, laptop preset, his pose): the first capture of his picks
   showed the ring segment blooming into a white disc under a firing line (31 hits in 3 s on a War Rig); fixed in aae7355a2
   (one per target per 0.3 s unless the face changes, 12 m cap, clamped light).
+- **Desktop preset (F2, FX HIGH / LOOK FULL, builder0, seed 5):** the glow (threshold 0.9) still turned the
+  segments into a white pool under a firing line: they were additive and ~3 stack per face (0.9 s life, one every
+  0.3 s). The shader now blends instead (blend_mix, light as opacity), so overlaps settle at the face's colour. Seen in
+  hit-only recaptures on desktop and laptop: solid yellow side / red rear wedges, no white. Pinned chevrons and the cone
+  shimmer read the same on desktop as on the laptop. Clips: build/feedback-fight/{desktop,laptop}-seed5/, the additive
+  one kept in desktop-seed5-additive/.
+- **Check fixes (de57b3231, green on builder0: 25 passed, 2 NOT JUDGED (box busy), 3030 passed / 0 failed, sim-baseline
+  unmoved on 13 maps):** e35c6abcf failed announcer-transcripts-check (with the booth hearing hit faces, scouts_vs_tanks
+  seed 2 now calls "Caught broadside!": regenerated) and test_sfx_pipeline (SfxSystem.ALIAS now names a stand-in for
+  flank_hit, rear_hit and repair_loop).
 
 **2026-10-21, F1 page up, picks pending.**
 - **Real-fight clips of the recommended looks** (orchestrator's ask, kept in the tree, not published):
