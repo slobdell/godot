@@ -225,6 +225,11 @@ and friend_contacts_foreign <= base x 1.1 + 5; fights: his kills, his losses, th
 in each fight read, and no fight run that never starts. **Reported:** place + twitch >= 25 m squads. No CPU census (vacuous:
 the deploy step never fires in CPU v CPU fights, R38.9). Queued on builder2 behind S2's re-read. **A pass ships ON.**
 
+### Requests / cross-stream notes (round 38)
+- orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
+  column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
+  G3, after G1's verdict. The probe's budget-refusal print lands after orders' series.
+
 ### Questions for the lead
 None.
 
