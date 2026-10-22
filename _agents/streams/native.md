@@ -59,6 +59,41 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Close notes (round 37, 2026-10-22)
+
+**Merged, all of it:**
+- CP37.1: d9545d381 + 84c11a60d.
+- Stream hand-over: main 36a19ae30.
+- N5's count: 4b62d2186.
+- R37.35 re-pins + guard chunking: main 2fdd5bb82 merges 4238fb859 (builder2 3036/0).
+
+**Left for the close:** a scoreboard row (fights + guard lines) per main the orchestrator names as shipped:
+- `bash tools/scoreboard/run.sh <main>` + `bash tools/scoreboard/guard.sh <main>` on builder2, about 1 h each. Both
+  scripts are run with `bash`; they aren't executable.
+- Then `tools/scoreboard/guard.py <raw> --json` -> references/scoreboard/guards/<commit>.json, the row, the README
+  re-render.
+- Twins if a pair arrives.
+
+**For round 38: perf-judge's relative line (R37.20's open half).** Today scenario_perf passes a tree on an ABSOLUTE line,
+FAIL_USEC 20,000 us of brains a tick. Its reference workload is used only to refuse a busy box (over 1.5x the hostname's
+nominal in perf_nominal.json). So only a box like builder0's P-cores can judge. builder2 (e2, Broadwell or AMD by start)
+reads 21-34k idle, and perf_judge.sh refuses it at once (exit 3).
+- The idea: judge the RATIO, brains us a tick / the same attempt's reference ms. Both are measured on the same core in
+  the same moment, so the machine's speed cancels.
+- The line in those units: FAIL_RATIO = 20,000 / builder0's nominal reference ms. That's today's line, translated, so a
+  tree builder0 passes today still passes.
+- A fixed nominal per hostname is no longer needed for the verdict, only as a sanity print. The 1.5x busy refusal could
+  become "reference spread across the attempt's samples": a box whose reference wobbles is busy, whatever its speed.
+- To ship it: record the ratio beside the absolute number for a round of builder0 checks (both lines judged, absolute
+  still deciding). If the two verdicts agree on every check, switch, and let builder2 judge; drop
+  PERF_JUDGE_NOT_JUDGING.
+- Risk: the reference workload may not scale with the brains across microarchitectures (cache-bound v branch-bound). So
+  the round-38 trial should include builder2 runs on both an Intel and an AMD start, and compare the ratio's spread
+  with builder0's.
+
+**Known issues:** none open. **Side worktrees to remove at close:** ../godot-native-m5, -unstick, -cp371, -rulespair,
+-guard, -score, -k5, and the builder folders (godot-native-guard, -score, -k5).
+
 ### Update 2026-10-22 ~04:40 PDT: R37.35 re-pins, guard chunking (GREEN 4238fb859, builder2 3036/0)
 
 **For merge (orchestrator, alone; cover then merges main): stream/native 4238fb859**, check exited 0 on builder2, 3036 passed 0 failed.
