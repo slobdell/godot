@@ -95,8 +95,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   deploy step's slot assignment), bar on place + twitch (o1settle's guard) and parked re-deals.
 - **O2's real re-deal source:** not the shape flicker. Latch cut relays 442 -> 95 (fight) and 143 -> 2 (no-fight) but left
   parked re-deals flat (84 -> 88; 429 -> 428). O2's own trace (s3747) showed a parked crew shuttled between two seats three
-  times in 33 s while the squad re-laid its halt: the halt is re-laid when a crew RETURNS from an O2 pull-back (the element
-  sees a member off-seat and re-plans the whole halt), and the re-plan re-deals the seats of crews that never moved. Round 38:
+  times in 33 s while the squad re-laid its halt. HYPOTHESIS (not yet traced): the halt is re-laid when a crew RETURNS from an
+  O2 pull-back (the element sees a member off-seat and re-plans the whole halt), re-dealing the seats of crews that never moved. Round 38:
   trace one return (which `ElementPlan` path re-deals; likely `_plan_form_up` re-run on the returning member) and hold the
   other crews' `issued_slots` across a single member's return. Then O2 ships ON for his crews (the lead: a nearly dead parked
   crew pulls back, then returns, as built).
