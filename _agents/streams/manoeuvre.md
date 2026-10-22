@@ -113,6 +113,16 @@ jam census locks/terminus/sumps x 6840-6863 (72 pairs); hull-rest 6801-6832 x 4 
 M5b's reverse-back. Close notes carry it. This round: judge M1, then, if builder0 time allows, the ambusher-settle trace
 (light lane): why faced_ambush never-settled doubles.
 
+**Ambusher-settle trace, offline first look (2026-10-21, from the series' own run.logs, no new runs):** faced_ambush
+never-settled went 5 -> 10. All 5 flips are ON-only (none base-only): condemned 6805/6819/6830, gangs 6816, law 6828.
+In the 3 condemned cases, the last crew moving is a second-squad scout. With its order stop, it alternates move_to and face
+orders 4-6 m from its seat to the run's end (6830: Green_Eyes II_9 from f450 to f2460, seat (-2.4, 101.7)). In base 6830
+the never-ordered Green_Eyes III_3, parked at (3.0, 101.2) by that seat, moves away at f600-660 to (12.5, 98.7), and II_9
+settles by f840. In ON, III_3 never moves. Hypothesis: with seatstep, the parked crew's give-way either never starts or
+picks a spot that doesn't clear the asker (its seat is its face slot, so "nearest the seat" can mean staying). gangs 6816 /
+law 6828 differ (tanks under face orders turning late) and are not yet read. Next (light lane, after M1's judge): re-run
+the 5 cases ON and base with the give-way log, confirm reproduction, and read III_3's ask/pick.
+
 ### Bar M5 (`seatstep`, named `seatyield2` when filed: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6)
 
 - **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
