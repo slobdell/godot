@@ -207,6 +207,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   turtle 3 -> 4 (p 0.5); kills and median length flat per faction (gangs blob kills 51.0 -> 51.2, length 102 -> 99 s). Next: the
   default flip (REPAIR_UNDER_FIRE_DEFAULT = true) as its own commit, a full check naming what moves (sim-baseline, maybe announcer
   transcripts); the orchestrator adopts. builder2's series slot -> native's N3 trial -> doctrine.
+- **R38.5 (2026-10-22) D1's first read: the CPU meets a blob as an ATTACKER.** doctrine (stream/doctrine 640850023, builder0 light, 80
+  blob fights): the CPU fires 83 % of its rounds in ATTACK posture; its holding crews on their seats already fire still 93 % of the
+  time; moving rounds come from recon screens (54 %), support_by_fire lines re-seated on a moving focus (29 %), and crews 15 m+ off
+  their slots. Damage-weighted re-read running (6e049da5b), then the design note and D2's bar. builder2's series slot goes to settle's
+  S1+S2 meanwhile.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
