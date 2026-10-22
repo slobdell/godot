@@ -217,6 +217,10 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   1); relative PASS 5/5 (median 9,054 us per reference ms v line 25,840). The reference benchmark runs ~2.5x slower on builder2 than
   builder0 but the AI tick only ~1.6x, so one ratio would pass a 2x AI regression on builder2. **Ruled:** perf-judge stays builder0 /
   absolute; the honest option, if pursued, is a per-CPU-model line (round 39+).
+- **R38.7 (2026-10-22) "light" runs on builder0 are capped at J <= 4.** builder0 at 12:49: load ~22, Godot processes doctrine-light 32,
+  orders-light 14, manoeuvre-trace 11, feedback 2; two full checks (feedback 4b070b284, settle 39f57e7d6) were killed at slot.sh's 5400 s
+  cap with `test` still running (not failures). **Ruled:** light runs on builder0 at J <= 4; anything bigger is a series (the builder's
+  one series slot) or goes to builder2. Doctrine's re-read moves to builder2.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
