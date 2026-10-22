@@ -171,7 +171,7 @@ struct N {
 			yield_to{ "yield_to" }, goal_on_mesh{ "goal_on_mesh" }, end_gap_m{ "end_gap_m" },
 			kturn_check_ticks{ "kturn_check_ticks" }, trace_unit{ "trace_unit" }, native_cb{ "native_cb" },
 			_hull_within{ "_hull_within" }, _ask_behind{ "_ask_behind" }, unstick_fires{ "unstick_fires" }, stall_net_holds{ "stall_net_holds" },
-			press_escapes{ "press_escapes" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" }, ready_memo{ "ready_memo" },
+			press_escapes{ "press_escapes" }, short_halt_seconds{ "short_halt_seconds" }, on{ "on" }, unstick_m{ "unstick" }, type{ "type" }, _end_yield{ "_end_yield" }, ready_memo{ "ready_memo" },
 			_ready_map{ "_ready_map" }, _ready_iteration{ "_ready_iteration" }, _ready_answer{ "_ready_answer" },
 			locomotion{ "locomotion" }, min_turn_radius_m{ "min_turn_radius_m" }, for_unit{ "for_unit" },
 			goal_repairs{ "goal_repairs" }, goal_repairs_refused{ "goal_repairs_refused" },
@@ -1688,6 +1688,11 @@ struct Drive {
 	void unstick(Object *cmd, const Dictionary &order, double delta) {
 		if (holding()) {
 			return; // round 29 (traffic T1, C29.3): waiting at a street mouth on purpose
+		}
+		// Round 37 (rules R2, manoeuvre's unstick line): the plant holds a short halt to shoot; not a stall. A tree without
+		// R2 has no short_halt_seconds: the Variant reads nil, 0.0, and this never returns.
+		if ((double)tank->get(k.short_halt_seconds) > 0.0) {
+			return;
 		}
 		if (seam_live()) {
 			return; // round 31 (planner, R31.2): a planner-held hull is never unstuck under its plan
