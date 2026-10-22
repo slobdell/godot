@@ -187,17 +187,22 @@ hull-down crew is fully exposed to those by design.
   behind the re-shaped barrier, attack head-on (sparks on the barrier, fewer hits), then from the flank (no change).
 
 ### Next steps / blocked
-- **K5 PREPARED (R37.18), NOT APPLIED:** `tools/make_arenas.py` `COVER_K5 = None` (default: every map byte-identical,
-  `make cover-k5 PLAN=none` 0 files changed). Plan "a" = the re-shape draft's swaps (terminus 1, sumps 2, gorge 1, crossing 2,
-  pit 1, archipelago 2, docks 2 mirrored pairs) + (b)'s runs on locks and parade (no clutter near their fighting); plan "b" =
-  two mirrored 12 m runs on each guard map + crossing. `make cover-k5 PLAN=a|b` (laptop, no Godot): a 13 files / b 9 files
-  changed (dry twins included), 0 failures: only barricades in, only the named clutter out, runs clear 5 m, every lane that
-  passed R4 still passes. **The generator's own lane check caught two draft runs** (sumps (-26,80) closed the west causeway;
-  terminus's) -- add_runs_proposal now keeps R4: sites moved to terminus (-80,-28),(-62,28) (6-8 % of its hull hits within
-  12 m, was 11-15 %), sumps (-20,80),(-40,70), gorge (-32,26); the (b) page is refreshed with all six maps. On his answer:
-  flip the constant, `make arenas`, game-side lane/arena tests + sim-baseline attribution OFF, before/after frames, then the
-  OFF re-gate and Bar K's series on those maps.
-- **K5:** waiting on his two answers (the orchestrator is asking). On (a): apply the draft's swaps in `tools/make_arenas.py`
+- **K5 APPLIED (his answer, game_design.md 2026-10-21: honest barriers, no taller rubble; runs on the 5 guard maps,
+  lanes kept; crossing skipped).** `tools/make_arenas.py` `COVER_K5 = "b"`: two mirrored 12 m runs (two barricades) on
+  each guard map, 8 barricades a map; arenas regenerated (terminus, locks, locks_dry, sumps, sumps_dry, gorge, parade).
+  Sites (`add_runs_proposal.py --keep lanes`, heat 5b4e79362; share of sampled hull hits within 12 m of each run):
+  gorge (-62,6) 15 %, (-28,-6) 10 %; locks (-26,-16) 14 %, (-46,-16) 13 %; parade (-44,-8) 7.7 %, (-50,80) 3.4 %;
+  sumps (-36,72) 4.1 %, (-30,-60) 2.1 %; terminus (-80,70) 2.1 %, (-62,80) 1.8 %. **Terminus and sumps read weak:** a run
+  in their busy streets narrows a lane (or the dry twin's west causeway), which the arena tests forbid.
+  How the sites were kept honest (three rounds, each caught by the generator or the arena tests): the first draft's runs
+  closed sumps' west causeway (R4, the generator) and narrowed terminus's ring road 22 -> 15.4 m and broke parade's
+  base-to-base crossing line (arena-pytest); a strict shape guard (room/chokepoints unchanged too) pushed four maps' runs
+  out of the fighting (0.1-6 %), so the applied guard keeps lane widths (dry twins included) and arena_room's base-to-base
+  ambush read only. **Evidence:** `make cover-k5 PLAN=b` 7 files, 0 failures, arenas == plan b; builder0 `make arena-test
+  exited 0` at 3923ba026 (pytest 45/45, Godot 148/0). Frames at his pose (builder0, `container-frames`, spots on the runs):
+  `references/round37/cover/k5-frames/` -- every run reads as a low grey jersey line on open ground or a street, roads
+  past it open; locks' first spots (26,16)/(46,16) render black BEFORE and after (the tool, not the runs), retaken from
+  the other side (`locks_*_after2`).
   (granted R37.7) + regenerate, before/after frames at his pose, sim-baseline attribution with the switch OFF (maps move: the
   orchestrator adopts).
 - **K4:** CP37.1 + native's guard tooling + N2 twins + rules' OFF code merged here from main a10846307 (02535d3aa). NEXT: the
