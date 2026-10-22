@@ -660,6 +660,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   se 2.2), turtle kill ratio 0.80 -> 0.75 (2.5 se DOWN): nothing rises. Reading: 505 shots stopped in 320 fights, too few on hulls
   behind a run to change outcomes. The stretch (CPU taking low-cover seats) not started (gated on K4). Hand-over (K5 maps + re-pins,
   main merged 05300509a) full check on builder0; the orchestrator adopts the moved maps on green.
+- **R37.45 (2026-10-22) main c9996f0c4 GREEN and ALL JUDGED on builder0.** `make native check exited 0`, 3055 passed / 0 failed,
+  27 targets all passed, ALL JUDGED (perf-judge judged on builder0), sim-baseline 13/13 unmoved. This closes every perf-judge owed this
+  round: the artillery fix, his feedback picks, M1 sidestand, every OFF arm.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
