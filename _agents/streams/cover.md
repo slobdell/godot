@@ -66,6 +66,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 13/13 unmoved (the switch OFF is inert), scenarios 52/0, 4 pending, 1 unexpectedly passing (`scout_suppress::test_target_behind`,
 known, native's to promote). Perf-judge is owed on a quiet box (OFF adds one dictionary lookup per front-arc hit).
 
+**K5 full check RED at 3923ba026 (builder0, 4781 s, `make check exited 2`): test 3015 passed / 10 failed; sim-baseline
+MOVED exactly the five K5 maps (switch OFF, so the maps did it): terminus 64e5266ef0faa245, sumps f7fc6b91340c2231, locks
+a929186d10a30461, parade 69079de179015f0d, gorge 7a911a7558729ff1; 8 unmoved; determinism 8c3c1232b711a760.** The 10 failures
+are other streams' staged scenarios whose stage points sit on the runs (both chose the busy streets): native traffic hold x4
+(terminus west street x=-70, runs (-80,70)/(-62,80)); native yield sumps x2 (spot:hold 0); manoeuvre h1b_side bank (locks
+north bank ~(33,11), the mirror run (26,16)); brains cpu_opening / cpu_hold / cpu_hold_guns (parade depot bay, run (-44,-8)).
+None are my paths. Asked the orchestrator (2026-10-22): (1) owners re-pin their stages on the K5 maps [recommended], (2) I
+re-site the runs clear of the stages (costs hit share), (3) hold K5. builder2 series HELD until the answer (re-siting changes
+what Bar K judges).
+
 ### Plan (in order) and where each stands
 1. **K1 the count** -- DONE: census + fight heat + page (below); reported to the orchestrator.
 2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 183/0); full check GREEN at e6f720619 (above).
