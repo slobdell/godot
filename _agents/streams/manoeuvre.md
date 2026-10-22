@@ -135,6 +135,17 @@ picks a spot that doesn't clear the asker (its seat is its face slot, so "neares
 law 6828 differ (tanks under face orders turning late) and are not yet read. Next (light lane, after M1's judge): re-run
 the 5 cases ON and base with the give-way log, confirm reproduction, and read III_3's ask/pick.
 
+**Ambusher-settle trace, step 2 (2026-10-22, laptop, GDScript `--brains-off=native`, lab/manoeuvre-r37-ambushtrace = 936612334
++ a `--yield-trace` print; ON = `--traffic-on=seatstep`):** I re-ran the 5 series flips (faced_ambush, the same seeds and
+factions), one run per arm. Settled after (s), ON / base: condemned 6805 45.0 / 52.5, 6819 40.5 / 32.5, 6830 31.0 / never;
+gangs 6816 49.0 / 43.5; law 6828 39.0 / 34.5. **ON settled in all 5 here (never-settled 0 v base 1), the reverse of the
+series (builder2 native: ON never in all 5, base settled).** In 6830 the two arms match until f359, where one seated give-way
+picks differently (spot(0,8) v spot(3,-6)); the scouts' later asks then differ (ON: III_3 steps to (0,-5) at f370; base: III_2
+twice). Reading: in this task, whether the whole army settles flips on small path differences, so seatstep's (e) +5 / +6 is a
+redraw, not a mechanism found. No rule is supported. Caveat: one path, n = 5. Not done yet: re-running the series' native arm
+on these seeds (light lane) to confirm the native run reproduces itself. For round 38, the (e) guard should be read with that
+redraw in mind (the same task, base v base on a second path, gives its noise floor).
+
 ### Bar M5 (`seatstep`, named `seatyield2` when filed: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6)
 
 - **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
