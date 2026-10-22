@@ -51,6 +51,23 @@ Nothing (the shots go to him at the close).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### NOW (2026-10-22 ~17:40 PDT)
+- **G1 judged series RUNNING** (builder0 light lane, J 4 alongside manoeuvre per R38.8; tree 4a765e6e2 = 130cf487f + evidence;
+  fresh seeds 3881-3892; amended Bar G1). Its **full check** is queued on builder2 behind doctrine's (R38.2): the verdict counts
+  only if that check is green on the same game code. Output: `references/round38/orders/g1-judged-builder0-4a765e6e2/`.
+- **Last dev read (130cf487f, builder0 light, dev seeds 3801-3803, n 3; `g1-dev11-*`):** deciding all pass (click cells: places
+  outside 32 -> 7, metres after leaving 2,433 -> 321; re-dealt 20 -> 0 over all cells), contacts 3,232 -> 2,680, yard_open
+  48/48 identical; guards failing at n 3: crossing 5 route never-in 0 -> 1, terminus 5 route twitch 18.7 -> 27.6 (no column
+  laid there: whole-squad swaps v crew re-deals on a deploy already twitching 0-28 m in main), his 3-squad click twitch 2.3 ->
+  11.4 (deterministic, n 1: the halt flips herringbone -> coil after the deploy; settle's `--deploy-latch=on` removes it).
+- **Shots of his click (laptop, 4a765e6e2, seed 34, top-down at arrival + 5 s, desktop + phone; LOOKED at;
+  `references/round38/orders/g1-his-click-shots-laptop-4a765e6e2/`):** 5 squads, main: one squad sent up the street between
+  the two blocks (green post) and one piled on the right block's corner (pink); column: all five on the apron in front of
+  his base, his click's squad at the click, the rest along the apron, nobody up a street. 3 squads: same pattern.
+- **New item G3 (from settle's S2 trace, R38.10):** a place never lands on another squad's halt. crossing 5 click s3866: main
+  lays squads 3/4 6.3 m apart (squad 4 never in); the column lays all five >= 22 m apart. G3 is for the today's-body path; after
+  G1's verdict, OFF until its own bar. Also owed: the probe prints the `--probe-budget` refusal (not "no RtsControls").
+
 ### REPORT (orders, round 38; updated 2026-10-22 ~09:30 PDT)
 - **Start:** stream/orders = main 5b20bfd62 (round 38 docs; HANDOFF: main 1c484a525 GREEN on builder0, not re-run).
 - **Plan (in order):** G1 (a) open ground, (b) route legs, (c) whole squads -> lab -> dev read (builder0 light) -> bar filed
