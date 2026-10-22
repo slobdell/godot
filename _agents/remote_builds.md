@@ -815,3 +815,6 @@ stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), o
   io 0, 17.7 GB free of 32. A sim is ~one core, so a series' J sets the box's use. The e2-highcpu-32's 32 vCPUs are 16 physical cores
   (hyperthreads): run builder2 series at **J ~14** (memory allows it: ~0.6 GB a sim). Results don't depend on J (deterministic sims);
   builder0 (12 threads) stays at its own J.
+  **Correction (rules):** guard.sh (the blob/turtle lines) already runs GUARD_JOBS=20, one seed (20 fights) per remote call; its idle
+  time is the TAIL: each call waits for its slowest fight (up to 600 s sim) while the other cores sit idle. The lever there is more
+  fights per call (2 seeds a call, or a rolling queue that keeps ~14-20 running), not J. The J=6 note above is manoeuvre's driver.
