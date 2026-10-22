@@ -124,6 +124,23 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se from the base arm's per-fight sd,
   n 36), the CPU's losses likewise. The no-fight read (f4365153f, seeds 3701-3712, + the census) stands as filed. O1
   ships only when BOTH pass.
+- **O1 RE-FILED for the latch arm (R37.17; filed 2026-10-21 ~17:30 PDT, before any latch number).** Anchor failed as filed
+  (f4365153f) and does not ship. New arm `--halt-terrain=latch` (ca251254a): an element reads the centroid's terrain on
+  the update it arrives (the same read main makes, so it picks the same first shape and spacing) and keeps that read while
+  it stays arrived. A new task or leaving arrival takes a fresh read. What he would see: the same as main at the moment a
+  squad stops, then no flicker while it sits. Traces (edec107e0, builder0 light 52c15e0e1): locks 5 route s3703 sq2 latch
+  rows == main's (twitch 0); parade s3704 latch 238 contacts v main 136, with contacts at arrived elements flat
+  (44 / 44 / 45). The excess there is moving drill crews in a longer fight. **The same bar as filed, arm `latch:`, on
+  FRESH seeds, on a green-checked hash containing ca251254a (52c15e0e1 or later):**
+  (a) no-fight probe, arms `main:` v `latch:--halt-terrain=latch`, the 12 cells, seeds 3761-3772; counter, deciding
+  (relays arm <= 25 % of base, shape flips arm <= 1) and probe guards exactly as the O1 bar above.
+  (b) CPU guard, traffic-census 3 cases x seeds 3761-3766, `TRAFFIC_FLAGS=--halt-terrain=latch` v none: friendly contacts
+  <= base x 1.1 + 5, stuck s <= base x 1.2 + 10. **I am NOT re-arguing the contacts line.** Reported beside it, not judged:
+  contacts touching an arrived element, and contacts per fight-second.
+  (c) fight read, arms `fight:` v `fightlatch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch`, the 9 cells,
+  seeds 3773-3784 (36 fights an arm); deciding and guards as the O1 addendum. This replaces the anchor fight read (3731-3742),
+  which is not run.
+  Ships ON (default "latch") only when (a), (b) and (c) all pass.
 - **O2 PARKED_HOLD, FINAL BAR (orders, R37.13; filed 2026-10-21 before any judged number; supersedes the 8dc98b5f4
   text; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and shoots
   from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. The change
