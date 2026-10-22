@@ -1003,3 +1003,24 @@ tactics-hold-fire: import ## Round 38 (doctrine D1): the guard lines' CPU rounds
 	@grep -h "^HOLD_FIRE" $(TACTICS_HF_DIR)/*.log | sed 's/^HOLD_FIRE //' > $(TACTICS_HF_DIR)/rows.jsonl
 	@grep -h "^GUARD_RESULT" $(TACTICS_HF_DIR)/*.log | sed 's/^GUARD_RESULT //' > $(TACTICS_HF_DIR)/results.jsonl
 	@$(PYTHON) tests/tactics/hold_fire_table.py $(TACTICS_HF_DIR)/rows.jsonl | tee $(TACTICS_HF_DIR)/table.txt
+
+# Round 38 (doctrine D2): the defend doctrine in pictures. The guard line's blob fight (his right-click army charging the CPU's
+# near ring) rendered by the showmatch's own camera, defend OFF and ON, at his window and the phone, DOCTRINE_SHOT_DELAYS seconds
+# in (wall-clock real time; the fight is the guard line's, seed and side as given). Needs a display: make remote T=doctrine-shots.
+DOCTRINE_SHOT_ARENA ?= locks
+DOCTRINE_SHOT_SEED ?= 2602
+DOCTRINE_SHOT_SIDE ?= green
+DOCTRINE_SHOT_DELAYS ?= 40 60 80
+DOCTRINE_SHOT_DIR ?= $(BUILD_DIR)/doctrine-shots
+
+.PHONY: doctrine-shots
+doctrine-shots: import ## Round 38 (doctrine D2): blob-v-CPU frames with --cpu-defend OFF and ON, his window and the phone -> build/doctrine-shots/*.png (needs a display)
+	rm -rf $(DOCTRINE_SHOT_DIR) && mkdir -p $(DOCTRINE_SHOT_DIR)
+	for arm in off on; do for delay in $(DOCTRINE_SHOT_DELAYS); do for size in 1854x1011 1200x540; do \
+		flags=""; if [ $$arm = on ]; then flags="--cpu-defend"; fi; \
+		timeout 300 $(GODOT) --path . --resolution $$size --script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean \
+			--seed=$(DOCTRINE_SHOT_SEED) --arena=$(DOCTRINE_SHOT_ARENA) --mute --guard=blob --guard-side=$(DOCTRINE_SHOT_SIDE) $$flags \
+			--screenshot-delay=$$delay --screenshot=$(CURDIR)/$(DOCTRINE_SHOT_DIR)/$${arm}_$${delay}s_$$size.png \
+			> $(DOCTRINE_SHOT_DIR)/$${arm}_$${delay}s_$$size.log 2>&1 || echo "doctrine-shots: $$arm $$delay $$size exited $$?"; \
+	done; done; done
+	@ls $(DOCTRINE_SHOT_DIR)/*.png 2>/dev/null | wc -l | xargs -I{} echo "doctrine-shots: {} frames in $(DOCTRINE_SHOT_DIR)"
