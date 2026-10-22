@@ -66,13 +66,40 @@ func test_a_mending_tanker_and_a_blowing_emitter_are_drawn_while_true() -> void:
 	assert_eq(int(counts.get("beams", 0)), 1, "one mending beam, Tanker to patient")
 	assert_eq(fx.feedback.mending_of(&"Patient").get("node"), tanker, "the card knows who mends it")
 	assert_eq(int(counts.get("cones", 0)), 1, "the Emitter's cone shimmers in the air")
+	assert_eq(fx.feedback.mending_points.keys(), ["Patient"], "and the workshop sounds at the patient")
+	fx.repair_hum.update(Vector3.ZERO, fx.feedback.mending_points)
+	assert_eq(fx.repair_hum.active_count(), 1, "one repair voice while it mends")
 	pinned.suppression = 0.1
 	patient.health = patient.max_health
 	fx.now += 1.0
 	fx.feedback.update(fx.now)
 	counts = fx.feedback.last_counts
 	assert_eq(int(counts.get("beams", 0)) + int(counts.get("cones", 0)), 0, "mended and the horns quiet: nothing drawn")
+	fx.repair_hum.update(Vector3.ZERO, fx.feedback.mending_points)
+	assert_eq(fx.repair_hum.active_count(), 0, "and the workshop stops with the beam")
 	assert_eq(fx.feedback.pinned_of(&"Pinned"), 0.0, "and recovered")
+
+
+func test_a_flank_or_rear_round_is_heard_once_per_target_and_a_stream_never() -> void:
+	var world := _world()
+	var fx: FxWorld = world[0]
+	var target: Tank = (world[1] as Match).spawn_tank("Target", 0, Match.Team.RUST, "tank")
+	target.global_position = FIELD
+	var heard := func(sound: String) -> int: return int(fx.sfx.plays.get(sound, 0))
+	fx.feedback.fired(_shot(1, FIELD + Vector3(30, 1, 0)), 1.0)
+	fx.feedback.impact(_hit(1, "Target", "side"), 1.0)
+	assert_eq(heard.call("flank_hit"), 1, "a shell in the side: his flank sound")
+	fx.feedback.fired(_shot(2, FIELD + Vector3(0, 1, 30)), 1.1)
+	fx.feedback.impact(_hit(2, "Target", "rear"), 1.1)
+	assert_eq(heard.call("rear_hit"), 0, "the same crew again within HIT_SOUND_EVERY_S: once is enough")
+	fx.feedback.fired(_shot(3, FIELD + Vector3(0, 1, 30)), 1.0 + FeedbackFx.HIT_SOUND_EVERY_S + 0.1)
+	fx.feedback.impact(_hit(3, "Target", "rear"), 1.0 + FeedbackFx.HIT_SOUND_EVERY_S + 0.1)
+	assert_eq(heard.call("rear_hit"), 1, "later, a rear hit: his rear sound")
+	fx.feedback.fired(_shot(4, FIELD + Vector3(30, 1, 0), "stream"), 5.0)
+	fx.feedback.impact(_hit(4, "Target", "side"), 5.0)
+	assert_eq(heard.call("flank_hit"), 1, "a machine gun's stream in the side is not a flank shot: silent")
+	fx.feedback.impact(_hit(5, "Target", "front"), 9.0)
+	assert_eq(heard.call("flank_hit") + heard.call("rear_hit"), 2, "and the front makes none")
 
 
 func test_a_look_that_is_off_draws_nothing() -> void:

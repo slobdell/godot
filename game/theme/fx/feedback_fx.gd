@@ -24,6 +24,11 @@ const BEAMS := 48
 const CONES := 6
 ## How long a hit's ring segment plays (s).
 const HIT_SECTOR_S := 0.9
+## His approved flank / rear hit sounds (F3), over the round's own impact: one per target this often at most, and only
+## for a gun's round (a machine gun's or a flamer's stream is not a flank shot; artillery from above has no flank).
+const HIT_SOUNDS := {"side": "flank_hit", "rear": "rear_hit"}
+const HIT_SOUND_EVERY_S := 0.4
+const SOUNDLESS_MODELS := ["stream", "arc"]
 ## Fired rounds remembered until they land (for where the shot came from and whether it fell from above).
 const MAX_TRACKED := 256
 ## Who is pinned and who is being mended changes over seconds, so the reading (every unit, fog, menders) is redone this
@@ -35,6 +40,8 @@ var reader := FeedbackReader.new()
 ## Hits drawn since load, by kind, and the last ring segment's {kind, toward} (tests and the showcase).
 var hits_drawn := {}
 var last_segment := {}
+## Patient name -> where its repair sounds (this frame's mending beams, for RepairHum).
+var mending_points := {}
 ## What the last update held: beams and cones (tests and the showcase).
 var last_counts := {}
 
@@ -46,9 +53,11 @@ var _ribbon_material := ShaderMaterial.new()
 var _cone_material := ShaderMaterial.new()
 var _cones: Array[MeshInstance3D] = []
 var _next_hit := 0
-## projectile id -> {muzzle: Vector3, arc: bool}
+## projectile id -> {muzzle: Vector3, arc: bool, model: String}
 var _shots := {}
 var _shot_order: Array[int] = []
+## target name -> when its last flank / rear sound played.
+var _last_sound := {}
 ## patient name -> {node, rate}; name -> pinned level. This frame's, for UnitBars.
 var _mending := {}
 var _pinned := {}
@@ -105,7 +114,8 @@ func fired(event: Dictionary, now: float) -> void:
 	var id := int(event.get("projectile_id", -1))
 	if id < 0:
 		return
-	_shots[id] = {"muzzle": K2Events.to_vector(event.get("muzzle", [0, 0, 0])), "arc": String(event.get("fire_model", "")) == "arc"}
+	var model := String(event.get("fire_model", ""))
+	_shots[id] = {"muzzle": K2Events.to_vector(event.get("muzzle", [0, 0, 0])), "arc": model == "arc", "model": model}
 	_shot_order.append(id)
 	if _shot_order.size() > MAX_TRACKED:
 		_shots.erase(_shot_order.pop_front())
@@ -128,7 +138,9 @@ func impact(event: Dictionary, now: float) -> void:
 	var toward := Vector3(origin.x - target.global_position.x, 0.0, origin.z - target.global_position.z)
 	toward = toward.normalized() if toward.length() > 0.01 else Vector3.FORWARD
 	if kind == "deck" or not FeedbackLook.on("hit"):
-		return  # the engine deck already flares gold (WeaponFx)
+		return  # the engine deck already flares gold and crunches (WeaponFx)
+	if HIT_SOUNDS.has(kind) and not SOUNDLESS_MODELS.has(String(shot.get("model", ""))):
+		_hit_sound(kind, target_name, at, now)
 	hits_drawn[kind] = int(hits_drawn.get(kind, 0)) + 1
 	last_segment = {"kind": kind, "toward": toward}
 	_sector(kind, target, toward, now)
@@ -150,6 +162,7 @@ func update(now: float) -> void:
 	_cone_material.set_shader_parameter("now", now)
 	var beams := 0
 	var cones := 0
+	mending_points.clear()
 	var game_match := _fx.link.attached_match() if _fx != null else null
 	if game_match == null:
 		_mending.clear()
@@ -169,6 +182,7 @@ func update(now: float) -> void:
 			var to := FxWorld.visual_transform(tank).origin + Vector3.UP * _top(tank) * 0.7
 			_beam(beams, from, to)
 			beams += 1
+			mending_points[String(tank.name)] = to
 		for cone: Dictionary in reader.active_cones(now) if FeedbackLook.on("cone") else []:
 			var shooter := _unit(String(cone["shooter"]))
 			if shooter == null or not _shown(shooter) or cones >= CONES:
@@ -179,6 +193,15 @@ func update(now: float) -> void:
 	for i in range(cones, CONES):
 		_cones[i].visible = false
 	last_counts = {"beams": beams, "cones": cones}
+
+
+func _hit_sound(kind: String, target_name: String, at: Vector3, now: float) -> void:
+	if _fx == null or _fx.sfx == null or now - float(_last_sound.get(target_name, -10.0)) < HIT_SOUND_EVERY_S:
+		return
+	if _last_sound.size() > 64:
+		_last_sound.clear()
+	_last_sound[target_name] = now
+	_fx.sfx.play_at(String(HIT_SOUNDS[kind]), at)
 
 
 ## The struck face's quarter of a ring under the target, toward where the round came from.

@@ -1583,6 +1583,39 @@
    "text": "Right up the tailpipe! {faction} caught that {victim_unit} from behind!"
   },
   {
+   "id": "caller.hit.flank.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "flank"
+   ],
+   "intensity": 2,
+   "text": "Caught broadside! That is what happens when you show them your doors!"
+  },
+  {
+   "id": "caller.hit.flank.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "flank"
+   ],
+   "intensity": 2,
+   "text": "They went the long way round, and it paid off big!"
+  },
+  {
+   "id": "caller.hit.flank.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "flank"
+   ],
+   "intensity": 2,
+   "text": "Right in the side panel! Nobody was watching that flank!"
+  },
+  {
    "id": "caller.hit.10",
    "speaker": "caller",
    "act": "call",

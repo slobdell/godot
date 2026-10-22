@@ -114,7 +114,7 @@ const CROWD_BUS := "Crowd"
 ## cannon impact ducked them 5:1 and they dropped out exactly when the fight was busiest. Their own bus takes a 2:1 dip.
 const GUNFIRE_BUS := "Gunfire"
 const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
-		"dirt_impact", "shield_down", "impact_concrete_heavy", "impact_steel_heavy", "impact_water_heavy"]
+		"dirt_impact", "shield_down", "impact_concrete_heavy", "impact_steel_heavy", "impact_water_heavy", "flank_hit", "rear_hit"]
 const LIMIT_DB := -1.0
 const BOOTH_BUS := "Announcer"
 ## Distance filtering: a blast heard across the arena is dull, not just quiet. Per sound, the cutoff (Hz) at
@@ -136,6 +136,7 @@ const DISTANCE_FILTER := {
 	"impact_dirt_medium": [5000.0, -12.0], "impact_concrete_medium": [5000.0, -12.0], "impact_steel_medium": [5000.0, -12.0],
 	"impact_armor_medium": [5000.0, -12.0], "impact_dirt_light": [6000.0, -10.0], "impact_concrete_light": [6000.0, -10.0],
 	"impact_water_light": [6000.0, -10.0], "bullet_snap": [6000.0, -14.0],
+	"flank_hit": [5000.0, -12.0], "rear_hit": [4500.0, -12.0], "repair_loop": [4000.0, -14.0],
 }
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
 ## Round 17 (G2): the kill on top, then a tank shot, the 25 mm 7 dB under it, a machine-gun round no longer 20 dB under
@@ -165,6 +166,9 @@ const MIX := {
 	# G6: under the guns, never over them.
 	"track_skid": [-9.0, 0.1], "track_squeal": [-10.0, 0.1], "tyre_skid": [-10.0, 0.1], "wreck_fire_loop": [-8.0, 0.05],
 	"shield_up": [-8.0, 0.05], "shell_incoming": [-6.0, 0.05],
+	# Round 37 (feedback F3, his approved sounds): a flank or rear hit rings over the round's own impact, the rear's
+	# longer steam-and-fuel tail a little under it; the Tanker's repair is a workshop under the fight (RepairHum).
+	"flank_hit": [-3.0, 0.05], "rear_hit": [-4.0, 0.04], "repair_loop": [-12.0, 0.03],
 }
 
 ## Round 17 (G2): `--mix=launch` rebuilds the mix the lead heard before round 17 in this build, so a before/after runs
