@@ -67,7 +67,10 @@ waits until those two end. **10:12: the M5 v2 ON check (269d593c5) was KILLED by
 ~35; test / ai-scenarios-check / remote-guard-test Terminated with empty logs; sim-baseline MOVED on yard/pit/archipelago/cut, as
 expected with seatstep ON). Not a verdict. Driver patched (a slot kill = a lost try) and relaunched as `manoeuvre-m5v2b` ~11:10.
 M2 trace census (`manoeuvre-m2trace`, jam 3 maps x 7001-7008, J=3, both arms) started 11:01; M7 v2 dev read (`manoeuvre-aside2`,
-18 fights) ~11:05.
+18 fights) ~11:05. **M5 v2 ON check accepted (builder2, 269d593c5, R38.2):** `make native check exited 2` = 3,063 passed / 0
+failed, 0 native twin mismatches (seatstep yield cases incl.), sim-baseline MOVED yard/pit/archipelago/cut (expected, as round 37's
+ON tree), web-smoke missed first-sound 34.3 s > 30 s at 2 fps (load 27); web-smoke alone on builder2 at 269d593c5 PASSED.
+**The judged series STARTED 13:18 on builder0 (J=6, `manoeuvre-m5v2d`).** M2 trace and M7 dev read ENDED (~12:50 / ~11:50).
 
 **Native note for M5b (native, 2026-10-22):** `Manoeuvre.choose` / `behind` / `simulate` are MIRRORED in C++ since round 33
 (drive_native.cpp `manoeuvre_decide`, `man_choose`, ~3170-3270; twin test_native_manoeuvre.gd). A change there needs native's
