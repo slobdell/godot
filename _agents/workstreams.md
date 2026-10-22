@@ -593,6 +593,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   The CPU reacting sensibly, but it kills the depot-bay ambush he is meant to see. **Ruled:** parade's run moves off both depots'
   approach roads (no barrier within 12 m + margin of either base -> depot line), checked by the 3 brains tests; Bar K's arms finish at
   3923ba026 and ONLY parade's fights are re-run, both arms on the re-sited tree (pairing is per fight, the other 4 maps unchanged).
+  **Re-sited (cover c02b01d83):** parade's runs now (-50,80) and (-62,4)/(62,-4) (no run within 24 m of a base -> depot road; hit share
+  2.5 % from 7.7 %); builder0 `make test FILTER=tactics_cpu exited 0` 7/0 (cpu_opening, cpu_hold, cpu_hold_guns pass), arena-test 45/45
+  + 148/0. Bar K at 3923ba026: OFF arm 320 fights done; OFF-v-OFF replay of seed 2601 0 flips. Finding: by the same rule sumps (-30,-60)
+  sits 5.6 m from a depot road, gorge (-62,6) 7.2 m, locks (-46,-16) 17.7 m (no brains test covers them). **Ruled:** measure first:
+  OFF@K5 paired against the CP37.1 base (old maps) = the maps' own effect on the guard lines; re-site those three only if the maps make
+  the blob or the turtle win more beyond noise. The map-effect line goes in Bar K's verdict.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
