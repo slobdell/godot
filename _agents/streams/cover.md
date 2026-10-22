@@ -76,6 +76,14 @@ None are my paths. Asked the orchestrator (2026-10-22): (1) owners re-pin their 
 re-site the runs clear of the stages (costs hit share), (3) hold K5. builder2 series HELD until the answer (re-siting changes
 what Bar K judges).
 
+**HAND-OVER (2026-10-22): merge 43d16acc4** (code == 05300509a: main da3193cf5 merged + K5 maps with parade re-sited at
+c02b01d83 + K2 switch OFF). builder0 `make check exited 2` ONLY on sim-baseline's expected adoption: test 3055 passed 0 failed,
+24 passed / 1 FAILED (sim-baseline) / 2 NOT JUDGED (perf-judge refused 3x at 2.35/1.69/2.49x, box busy; scenario_perf
+unpinned), scenarios 53/0, 4 pending, determinism 8c3c1232b711a760. sim-baseline MOVED (switch OFF: the maps did it; the
+orchestrator adopts on merge): terminus 64e5266ef0faa245, sumps f7fc6b91340c2231, locks a929186d10a30461, parade
+d4cd790f2b1a157a, gorge 7a911a7558729ff1; the other 8 unmoved. Perf-judge still owed on a quiet box (K2 OFF adds one
+dictionary lookup per front-arc hit).
+
 **BAR K VERDICT (K4, 2026-10-22): FAIL on the deciding line; every guard holds. K2 stays OFF.** Paired, ON v OFF, one tree
 per fight: builder2, terminus/locks/sumps/gorge at 3923ba026 + parade's 64 fights per arm re-run at c02b01d83 (re-sited run,
 R37.35; seeds 2601-08 + 2701-08, both sides, blob + turtle, all 64 parade fights replaced in BOTH arms), 320 fights an arm,
