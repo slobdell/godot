@@ -53,8 +53,8 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-22, in progress):** D1 DONE (design note below). D2 coded OFF at 6877a099c (`--cpu-defend`); its bar is FILED
-below before any arm number; the lab arm (40 blob fights ON, builder0 light J=4) is running.
+**Report (2026-10-22, in progress):** D1 DONE (design note below). D2 coded OFF (`--cpu-defend`, b9f8a347c); its bar is FILED
+below before any arm number; lab 2 leans right (blob 18 -> 13 of 40); full check queued on builder0, then builder2's series.
 
 **D1 the read (DONE).** Tool: `make native tactics-hold-fire` (tests/tactics/hold_fire_probe.gd extends the guard line read-only;
 every direct round, the same weighted by damage a round, and a 2 Hz crew sample, split by posture, posture reason, map half,
@@ -91,7 +91,9 @@ at 6e049da5b; `tests/tactics/hold_fire_pair.py`).**
   laid after contact (hold|MOVE|away 87 % moving).
 - So (still before any judged number, same switch): (c) a defending post never breaks off for an intruder; (e) an element in
   contact within 35 m of its post stands where it is; (d) defend triggers at 100 m (Posture.DEFEND_M), not 60. Tests 18/0.
-- Lab 2, b9f8a347c: running.
+- Lab 2, b9f8a347c (a)-(e): **blob wins 18 -> 13 of 40 (flips to a loss 5, to a win 0)**; CPU damage fired moving 49.8 ->
+  **37.4 %** (per-seed se 3.8); in defend posture 43.4 %; holders (hold verb) 73 % still; kills blob 681 -> 655, CPU 894 -> 917.
+  The remaining movers: attack posture 31 % of damage (52 % moving), hold|MOVE|away 5 % (90 % moving). Lab only: the bar decides.
 
 **Bar D2 (FILED 2026-10-22 before any arm number; C38.1/C38.2).** Change: `--cpu-defend` ON v OFF.
 - **Base:** main 1c484a525's `references/scoreboard/guards/1c484a525.fights.jsonl` (320 fights, builder2). Gate: my pair tree
