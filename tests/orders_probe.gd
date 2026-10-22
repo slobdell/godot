@@ -114,6 +114,17 @@ func _run() -> void:
 	if _flag("probe-route", "click") == "route":
 		var from := _centre(units)
 		_route = [from.lerp(_click, 1.0 / 3.0), from.lerp(_click, 2.0 / 3.0), _click]
+	# Round 38 (orders G2): his own shift-click route, `--probe-points=x/z+x/z+...` (the first a plain click, the rest shifted).
+	if _flag("probe-points", "") != "":
+		_route = []
+		for point: String in _flag("probe-points", "").split("+"):
+			var xz := point.split("/")
+			if xz.size() != 2 or not xz[0].is_valid_float() or not xz[1].is_valid_float():
+				push_error("--probe-points=%s: want x/z+x/z+..." % _flag("probe-points", ""))
+				quit(2)
+				return
+			_route.append(Vector3(float(xz[0]), 0.0, float(xz[1])))
+		_click = _route[_route.size() - 1]
 	print("ORDERS_PROBE_SETUP " + JSON.stringify({"map": map, "squads": _squads.size(), "units": units.size(),
 			"click": _xz(_click), "route": _route.map(func(p: Vector3) -> Array: return _xz(p)),
 			"ground_cap": SelectionSquads.GROUND_CAP, "decks": SlotGround.deck_boxes()}))
@@ -138,6 +149,7 @@ func _run() -> void:
 			for queued: Dictionary in held.queued_tasks:
 				legs.append(queued.get("to"))
 			print("ORDERS_PROBE_LEGS squad %d start %s legs %s" % [int(squad["number"]), _xz(squad["start"]), legs])
+			squad["legs_outside"] = _legs_outside(legs, units)
 	for squad: Dictionary in _squads:
 		squad["anchor"] = _anchor_of(squad)
 		var ground := _tank(String(squad["units"][0]))
@@ -205,7 +217,7 @@ func _run() -> void:
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
 				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"shape_flips": int(squad.get("shape_flips", -1)), "terrain_flips": int(squad.get("terrain_flips", -1)),
-				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)), "route_m": snappedf(float(squad.get("route_m", 0.0)), 0.1), "route_out_m": snappedf(float(squad.get("route_out_m", 0.0)), 0.1), "route_left_m": snappedf(float(squad.get("route_left_m", 0.0)), 0.1), "anchor_outside": _outside_corridor(_anchor_of(squad)),
+				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)), "route_m": snappedf(float(squad.get("route_m", 0.0)), 0.1), "route_out_m": snappedf(float(squad.get("route_out_m", 0.0)), 0.1), "route_left_m": snappedf(float(squad.get("route_left_m", 0.0)), 0.1), "legs_outside": int(squad.get("legs_outside", -1)), "anchor_outside": _outside_corridor(_anchor_of(squad)),
 				"shapes": squad.get("shapes", []),
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
@@ -465,6 +477,35 @@ func _read_corridor(units: Array) -> void:
 			SelectionSquads.GROUP_SCAN_M)
 	_corridor = {"across": across, "left": sides[0], "right": sides[1]}
 	print("ORDERS_PROBE_CORRIDOR " + JSON.stringify({"click": _xz(_click), "across": _xz(across), "left": sides[0], "right": sides[1]}))
+
+
+## Round 38 (orders G2, "navigate my army through a specific path"): how many of a squad's legs end outside the street of
+## that leg: each waypoint's clear width across its own approach (from the waypoint before, the first from the army's
+## centre), GROUP_SCAN_M a side, as the click's corridor is read. -1 when the legs don't match the route (replaced/lost).
+var _leg_strips: Array = []
+func _legs_outside(legs: Array, units: Array) -> int:
+	if legs.size() != _route.size():
+		return -1
+	var ground := _tank(String(units[0]))
+	if ground == null:
+		return -1
+	if _leg_strips.is_empty():
+		var before := _centre(units)
+		for p: Vector3 in _route:
+			var ahead := TacticsFormation.flat(p - before)
+			var across := Vector3(-ahead.z, 0.0, ahead.x)
+			_leg_strips.append([p, across, RtsControls.gate_width(p, across, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
+					SelectionSquads.GROUP_SCAN_M)])
+			before = p
+	var outside := 0
+	for i in legs.size():
+		if not (legs[i] is Array):
+			continue
+		var strip: Array = _leg_strips[i]
+		var aside := Vector3(float(legs[i][0]) - strip[0].x, 0.0, float(legs[i][1]) - strip[0].z).dot(strip[1])
+		if aside < -float(strip[2][0]) - 0.5 or aside > float(strip[2][1]) + 0.5:
+			outside += 1
+	return outside
 
 
 func _outside_corridor(at: Variant) -> bool:

@@ -102,7 +102,7 @@ func _his_click() -> Dictionary:
 	blocks.append(_block(LOOSE, SelectionSquads.width("auto", LOOSE.size())))
 	var drive := SelectionSquads.drive_on(ground)
 	var crosses := SelectionSquads.crosses_on(ground)
-	return {"blocks": blocks, "drive": drive, "crosses": crosses,
+	return {"blocks": blocks, "drive": drive, "crosses": crosses, "ground": ground,
 			"approach": SelectionSquads.approach_of(blocks, CLICK, Match.team_frame(Match.Team.GREEN)["forward"]),
 			"width_at": func(p: Vector3, across: Vector3) -> Array:
 				return RtsControls.gate_width(p, across, drive, SelectionSquads.crosses_or_edge(crosses), SelectionSquads.GROUP_SCAN_M)}
@@ -118,7 +118,12 @@ func test_his_click_as_a_column_stays_in_the_corridor_nearest_squad_in_front() -
 	# G1 (v2): today's body is what the caller would lay; the column engages because two of its places stand off the ground.
 	var today := SelectionSquads.ground_cap(SelectionSquads.ranks(blocks, CLICK, null, Match.team_frame(Match.Team.GREEN)["forward"]),
 			CLICK, f["drive"], f["crosses"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-	var anchors := SelectionSquads.column_lay(blocks, CLICK, ahead, f["width_at"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), today)
+	var body := Vector3.ZERO
+	for block: Dictionary in blocks:
+		body += (block["center"] as Vector3) / blocks.size()
+	var anchors := SelectionSquads.column_lay(blocks, CLICK, ahead, f["width_at"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), today,
+			func() -> PackedVector3Array: return Pathing.find_path(f["ground"], CLICK, body),
+			func(p: Vector3) -> bool: return SelectionSquads.reached_from(CLICK, p, f["drive"], f["crosses"]))
 	assert_eq(anchors.size(), blocks.size(), "today's places stand off the ground he clicked: a column is laid")
 	var spread := 0.0
 	for i in anchors.size():
@@ -213,3 +218,41 @@ func test_g1_a_rank_is_as_deep_as_the_halt() -> void:
 	assert_true(SelectionSquads.column_depth(block) >= SelectionSquads.halt_footprint("herringbone", 5, 14.0).y - 0.01,
 			"the herringbone's depth (%.1f)" % SelectionSquads.column_depth(block))
 	assert_true(SelectionSquads.column_depth(block) > 20.0, "deeper than the formation's 20 m")
+
+
+## G1/G2 (laptop probe smoke, 4141ae445, terminus 5 squads, first leg of a route down the east street at (70, 50)): the
+## column stacked straight back 276 m from a waypoint 50 m from the army, off the map, and the clamp piled three squads on
+## the base's edge (z 117). Laid back along the drive to the body, every place stands inside the arena, apart.
+const ARMY := [Vector3(-58.1, 0, 95.8), Vector3(-26.7, 0, 94.2), Vector3(2.2, 0, 87.8), Vector3(32.4, 0, 92.5), Vector3(59.0, 0, 93.3)]
+func test_g1_a_column_near_the_army_follows_the_road_and_stays_on_the_map() -> void:
+	_lab = TacticsLab.create(self, 3801, "terminus")
+	var ground: Tank = null
+	for i in ARMY.size():
+		var t := _lab.unit(Match.Team.GREEN, "Green_S%d_1" % i, ARMY[i], 0.0, "law_tank")
+		ground = t if ground == null else ground
+	await _lab.start()
+	var click := Vector3(70, 0, 50)
+	var blocks: Array = []
+	var body := Vector3.ZERO
+	for c: Vector3 in ARMY:
+		blocks.append({"center": c, "width": SelectionSquads.width("wedge", 4), "depth": SelectionSquads.depth("wedge", 4),
+				"halt_depth": SelectionSquads.depth("coil", 4)})
+		body += c / ARMY.size()
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+	var ahead := SelectionSquads.approach_of(blocks, click, Match.team_frame(Match.Team.GREEN)["forward"])
+	var clamp := func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p)
+	var today := SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, null, ahead), clamp)
+	var out := SelectionSquads.column_lay(blocks, click, ahead,
+			func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M),
+			clamp, today, func() -> PackedVector3Array: return Pathing.find_path(ground, click, body),
+			func(p: Vector3) -> bool: return SelectionSquads.reached_from(click, p, drive, crosses))
+	print("GROUP_CLICK near-army column: %s" % [out])
+	if out.is_empty():
+		return  # today's body already on clear ground: nothing to check
+	for i in out.size():
+		assert_true(Orders.clamp_to_arena(out[i]).distance_to(out[i]) < 0.01, "place %d inside the arena (%s)" % [i, out[i]])
+		# Nobody's place past his click (beyond the front rank's width).
+		assert_true((out[i] - click).dot(ahead.normalized()) <= 1.0, "place %d not past the click (%s)" % [i, out[i]])
+		for j in range(i + 1, out.size()):
+			assert_true(Vector2(out[i].x - out[j].x, out[i].z - out[j].z).length() >= 20.0, "places %d and %d apart (%s / %s)" % [i, j, out[i], out[j]])

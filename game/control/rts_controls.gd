@@ -1136,9 +1136,14 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					lay_blocks.append(moved)
 			var drive_g := SelectionSquads.drive_on(ground)
 			var crosses_g := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+			var body := Vector3.ZERO
+			for block: Dictionary in lay_blocks:
+				body += Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) / lay_blocks.size()
 			var laid := SelectionSquads.column_lay(lay_blocks, click, SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors)
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors,
+					func() -> PackedVector3Array: return Pathing.find_path(ground, click, body),
+					func(p: Vector3) -> bool: return SelectionSquads.reached_from(click, p, drive_g, crosses_g))
 			column = not laid.is_empty()
 			if column:
 				anchors = laid
@@ -1201,7 +1206,9 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
 		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
-		if column and anchors.size() >= squads.size():
+		# G1: and on every group move under the switch, a body kept included (dev read 4141ae445: terminus 5 route re-dealt
+		# crews on the legs whose body stood).
+		if (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) and anchors.size() >= squads.size():
 			var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends
 			for i in queue_starts.size():
 				for unit_name: String in squads[i]["units"]:
@@ -1783,7 +1790,9 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		var crosses_e := SelectionSquads.crosses_or_edge(crosses)
 		var laid := SelectionSquads.column_lay(blocks, prev, approach,
 				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses_e, SelectionSquads.GROUP_SCAN_M),
-				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate)
+				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate,
+				func() -> PackedVector3Array: return Pathing.find_path(ground, prev, before),
+				func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e))
 		if not laid.is_empty():
 			gate = laid
 			as_column = true
