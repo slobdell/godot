@@ -1792,7 +1792,7 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses_e, SelectionSquads.GROUP_SCAN_M),
 				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate,
 				func() -> PackedVector3Array: return Pathing.find_path(ground, prev, before),
-				func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e))
+				func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e), true)
 		if not laid.is_empty():
 			gate = laid
 			as_column = true

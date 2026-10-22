@@ -302,8 +302,9 @@ static var bodies_kept := 0
 ## (the street he clicked) while each rank's point is on the map and `reached`; from the first that is not, back along the
 ## drive (G1: the column follows the road instead of stacking off the map). One anchor per block in `blocks`' order, or []
 ## when today's places all stand on clear ground. Pure.
+## `passing`: a gate (a waypoint passed through): ranks step by the shape each squad travels in (`travel_depth`), not its halt.
 static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable,
-		today: Array[Vector3] = [], path_back := Callable(), reached := Callable()) -> Array[Vector3]:
+		today: Array[Vector3] = [], path_back := Callable(), reached := Callable(), passing := false) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	if blocks.size() < 2:
 		return result
@@ -323,7 +324,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	var deepest := 0.0
 	for block: Dictionary in blocks:
 		widest = maxf(widest, float(block["width"]))
-		deepest = maxf(deepest, column_depth(block))
+		deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0))) if passing else column_depth(block))
 	var straight := _back_line(PackedVector3Array(), flat_click, ahead)
 	var road := _back_line(path_back.call() if path_back.is_valid() else PackedVector3Array(), flat_click, ahead)
 	# Front to back: nearest the click first (farthest along the approach).
@@ -331,6 +332,30 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	for i in blocks.size():
 		by_along.append([_arc_of(straight, blocks[i]["center"]), i])
 	by_along.sort()
+	# A column longer than the ground behind it (off the map even along the road) is laid again with ranks closer, down
+	# to half the step; at that the rest stand abreast in the last rank (dev read 4e25c1eab: two squads given one place).
+	var step := deepest + GAP_M
+	for attempt in COLUMN_SQUEEZES + 1:
+		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
+				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), attempt == COLUMN_SQUEEZES)
+		if not laid.is_empty():
+			result = laid
+			break
+	columns_laid += 1
+	return result
+
+
+## G1: how many times a column too long for the ground behind it is laid again with closer ranks.
+const COLUMN_SQUEEZES := 4
+
+
+## G1: the ranks of a column `step` metres apart, front to back in `by_along`'s order: straight back along the approach
+## while reached, then along the road; [] when a rank would stand off the map (unless `last_try`: then the rest stand
+## abreast in the last rank inside).
+static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahead: Vector3, straight: PackedVector3Array,
+		road: PackedVector3Array, at_click: Array, width_at: Callable, clamp: Callable, reached: Callable, widest: float,
+		step: float, last_try: bool) -> Array[Vector3]:
+	var result: Array[Vector3] = []
 	result.resize(blocks.size())
 	var behind := 0.0
 	var start := 0
@@ -349,9 +374,10 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 				skipped += RtsControls.GATE_STEP_M
 				at = _walk_back(road, behind + skipped)
 			behind += skipped
-		# Off the arena even along the road (a column longer than the ground behind it): the rest stand at the last rank
-		# point inside.
-		if (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0:
+		var out_of_room := (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0
+		if out_of_room and not last_try:
+			return []
+		if out_of_room:
 			at = last_inside
 		last_inside = at
 		var point: Vector3 = at[0]
@@ -361,7 +387,8 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
 		var single := clear < widest
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
-		abreast = mini(abreast, by_along.size() - start)
+		abreast = by_along.size() - start if out_of_room else mini(abreast, by_along.size() - start)
+		single = single and abreast == 1
 		# G1: a rank slides off the column's line only as far as keeps it on the clear ground (v1 centred it in the clear
 		# width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's edge, where they piled up).
 		var frontage := abreast * widest + (abreast - 1) * GAP_M
@@ -377,8 +404,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
 			result[int(rank_members[k][1])] = clamp.call(centre + rank_across * aside)
 		start += abreast
-		behind += deepest + GAP_M
-	columns_laid += 1
+		behind += step
 	return result
 
 

@@ -256,3 +256,21 @@ func test_g1_a_column_near_the_army_follows_the_road_and_stays_on_the_map() -> v
 		assert_true((out[i] - click).dot(ahead.normalized()) <= 1.0, "place %d not past the click (%s)" % [i, out[i]])
 		for j in range(i + 1, out.size()):
 			assert_true(Vector2(out[i].x - out[j].x, out[i].z - out[j].z).length() >= 20.0, "places %d and %d apart (%s / %s)" % [i, j, out[i], out[j]])
+
+
+## G1 (dev read 4e25c1eab, crossing / locks 5: two squads given one place where the column ran off the map): a column
+## longer than the ground behind it is laid with closer ranks, every squad its own place, all on the map.
+func test_g1_a_column_too_long_for_the_ground_squeezes_its_ranks() -> void:
+	var street := func(_p: Vector3, _across: Vector3) -> Array: return [15.0, 15.0]
+	var edge := func(p: Vector3) -> Vector3: return Vector3(p.x, p.y, minf(p.z, 90.0))  # the map ends 90 m behind the click
+	var blocks := []
+	for z: float in [100.0, 130.0, 160.0]:
+		blocks.append({"center": Vector3(0, 0, z), "width": 29.0, "depth": 40.0})
+	var today: Array[Vector3] = [Vector3(-40, 0, 0), Vector3(0, 0, 0), Vector3(40, 0, 0)]
+	var out := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street, edge, today)
+	assert_eq(out.size(), 3, "a column (%s)" % [out])
+	for i in out.size():
+		assert_true(out[i].z <= 90.0 + 0.01, "place %d on the map (%s)" % [i, out])
+		for j in range(i + 1, out.size()):
+			assert_true(out[i].distance_to(out[j]) >= 20.0, "places %d and %d apart (%s)" % [i, j, out])
+	assert_true(out[0].z < out[1].z and out[1].z < out[2].z, "still nearest in front (%s)" % [out])
