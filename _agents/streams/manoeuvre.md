@@ -84,6 +84,19 @@ and `_behind_plan` / `_behind_since` back, so the M2 trace's reads hold on the n
 3. **M7 (O5 v2):** read orders' O5 code and R37.32; the aside step also reads support_by_fire routes; bar from R37.32's base.
 4. **Stretch M3 (S1 v2):** base rate of stalls on main with M2's `unstick_fires` total first.
 
+### Stretch M3 (S1 v2 stall net): BASE RATE COUNTED, NOT BUILT (2026-10-22 ~13:30)
+
+No new runs: round 37's M1 series already printed M2's totals (builder0 native, wedge trace locks/terminus/sumps x 6640-6663, 72
+fights; the ON arm 339d3f2e2 = sidestand ON, today's main movement; rows in `~/overnight-manoeuvre/r37/m1/wedge-on/`).
+- `stall_net_holds` (ticks a pop would be held, game-wide, both arms count it): 48,875 in 72 fights; unstick fires 2,738.
+- v2's target (note step 4: wedged against a hull, net motion < 0.5 m, >= 3 s): **82 episodes in 72 fights (~1.1 a fight), 0
+  deaths**; median 6.8 s (max 178 s; 2,885 s in all); locks 35, sumps 26, terminus 21; tanks and artillery mostly.
+- In 69 of the 82 ORCA's slow-down acted and 71 ran at under half pace: the hull was NOT at full throttle, so the stall clock
+  (which runs only while pressing) mostly isn't the thing holding it (median stall ticks 15.5, 15 with none).
+- **Decision: S1 v2 not built** (the note's own rule: no deaths in its target, and the clock it changes is not what holds most of
+  these crews). For round 39, if he sees a tank grinding against a friend: trace the 82 long episodes' ORCA slow-down (who it
+  yields to, why neither moves), not the stall clock.
+
 ### M2 (M5b the reverse-back) TRACED, NOT BUILT (2026-10-22 ~13:00)
 
 Trace: `lab/manoeuvre-r38-m5btrace` 6d43ce7eb (SEAT_RETURN rows in the jam census, measurement only) + c16c4a0b6
