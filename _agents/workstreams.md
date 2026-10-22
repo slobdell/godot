@@ -568,6 +568,19 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   hull-rest (d)/(e)/(f) flat in all 6 tasks; left behind 54 -> 56 of 768 (reported). ON tree check 339d3f2e2: 3011/0, sim-baseline
   13/13 unmoved. Hand-over stream/manoeuvre 76c325844 (SIDE_STAND_DEFAULT := true; game code byte-identical to 339d3f2e2); its
   builder0 full check is running; the orchestrator merges it alone on green.
+- **R37.35 (2026-10-22) K5's check red on other streams' staged tests; option (1), with brains' parade traced first.** cover
+  (builder0, 3923ba026, 4781 s): `make check exited 2`, 3015 passed / 10 failed; sim-baseline moved exactly terminus 64e5266ef0faa245
+  (was c1e385944ff8073b), sumps f7fc6b91340c2231 (was 942300f8e7d0dcc5), locks a929186d10a30461 (was 13c33de4419afb5e), parade
+  69079de179015f0d (was 72b1c96369096248), gorge 7a911a7558729ff1 (was 4da2720fa4085f3b), switch OFF (the maps' moves); 8 unmoved.
+  The 10: test_native_traffic_hold{,_odd,_owned,_owned_odd} (terminus west street x=-70 v runs at (-80,70)/(-62,80)); test_native_yield
+  sumps plain + owned (stage at (-40,40), run at (-36,72)); test_manoeuvre_h1b_side bank (locks north bank, the mirrored run spans x
+  20..32); test_tactics_cpu_opening / cpu_hold / cpu_hold_guns (parade: the depot-bay ambush no longer sets up or springs).
+  **Ruled:** (1): the maps stay as he approved. native re-pins its traffic and yield stages (its test paths), manoeuvre its h1b bank
+  stage, both moving stage points off the runs with no logic change. **Brains' 3 parade tests are NOT re-pinned blind:** they test
+  CPU behaviour (an ambush that no longer sets up may be the CPU choosing worse on the new map). Cover traces one (read grant on
+  brains' paths; no edits) and reports in his terms; if it's staging, cover re-pins it (grant on those 3 test files); if it's
+  behaviour, it's a finding for him / round 38, and parade's run moves. Bar K's OFF arm and ON arm start now at 3923ba026 on builder2
+  (they read the maps, not those tests).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
