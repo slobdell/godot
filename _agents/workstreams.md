@@ -141,7 +141,9 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   amended Bar G1; `orders_judge.py g1`; builder0 light lane J <= 4; paired his-click shots (main v column, looked at). **Base:** settle's
   deploy latch ON for both arms; the judged read waits until the latch ships ON on main (orders merges main at that checkpoint); dev reads
   only until then. **Seeds:** the orchestrator moved them from 3901-3912 to **3951-3962**, so they never overlap the seeds that decide
-  the latch it sits on (S2 re-read 3903-3914).
+  the latch it sits on (S2 re-read 3903-3914). **Amended before any number (Status 6ff215661; code f2a94b6cc):** when his shift-click follows
+  within 2 s, the first click goes back to exactly today's places (kept out of the next gate), so a chained route drives as main until its
+  last click. Checked on v2's seeds only (laptop): s3889, s3891, s3886 now byte-identical to main. Seeds, guards, base unchanged.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
