@@ -518,6 +518,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   rear rank 40 m back at (-7,51); then the untangle re-dealt vehicles between squads whose paths crossed (Hunters got Battery_4 +
   Eyes_5). **O2's s3747 trace:** every parked re-deal is the squad re-seating a parked crew (one tank shuttled between two spots
   10-14 m apart three times in 33 s): O1's flicker landing on crews that now stay put; O2 waits for the O2-on-latch read.
+  **Design approved (orders d00602e43, `references/round37/orders/group-click-column-note.md`, lab `tests/test_control_group_click.gd`;
+  laptop GDScript, real Terminus navmesh, his vehicles at tick 1080, his click): today's anchors spread 128.8 m; the corridor at the
+  click reads 60 + 16 m; 2 of 4 anchors outside it. `--group-lay=column` (OFF until a bar): lay his final click the way round 35's gate
+  lays a waypoint (`RtsControls.gate_anchors`): approach from the body's centre to the click; each rank re-read at its own point and
+  centred in its own clear width; abreast k = floor((clear + gap) / (wedge frontage + gap)), capped at today's 3 / 200 m; narrower:
+  herringbone, then single file; open ground (scan reaches 100 m both sides) = today's body unchanged; the squad nearest the click in
+  front; no crew re-deal (whole squads swap); deck_clear applies. Bar additions ruled: route metres outside the corridor ("drove
+  through other streets"), paired shots of his exact click for him, the front-to-back order as a lab assertion; yard_open no-change.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
