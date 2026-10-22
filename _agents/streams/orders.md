@@ -79,6 +79,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   2 s or more on their seat with no order, then sent more than 6 m off it (the squad re-dealing seats; he sees a parked tank pull
   out). It falls before the place window ends, so twitch_m never saw it. Laptop GDScript locks 5 route s3703 (n 1): main 4,
   anchor 6.
+- **PRIORITY (the lead's playtest 2026-10-21, archipelago s44214): parked rocket trucks ignored his moves. CAUSE FOUND,
+  fix candidate 716c61310 (not merged; orchestrator's call).** A squad of nothing but Gas Rocket Trucks: parked trucks set up
+  by themselves (~3 s still), and round 33's battery seat ("a set-up crew keeps its place where it stands") seated them where
+  they stood on every NEW move: an order to their own spot, done at once, so they never drove and never packed. Lab
+  `test_control_artillery_move` (laptop GDScript): parked set-up trucks moved 0.0 m (1 and 2 trucks); `--battery-seat=off` 58.1 m.
+  Fix `--battery-seat-task` (ON): held only while standing on the seat last sent to (6 m). Lab 58.1 / 56.1 m;
+  `test_tactics_battery_seat` 7/0 (+1 case). Symmetric (CPU batteries too): needs a full check; sim-baseline may move.
 - **O1 the flicker: the judged no-fight read FAILED as filed** (builder0 native f4365153f, seeds 3701-3712, census 3701-3706;
   `references/round37/orders/o1-judged-builder0-f4365153f/`). The deciding line passed (relays 298 -> 0, shape flips
   114 -> 0). Two guards failed: twitch in locks 5 route (3.9 -> 10.6 m), and CPU friendly contacts (1665 -> 1933, line
